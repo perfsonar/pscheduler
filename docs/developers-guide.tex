@@ -1,0 +1,749 @@
+%
+% pScheduler Developer's Guide
+%
+
+% TODO: Add titlepage to the options.
+\documentclass[10pt,titlepage]{article}
+
+\input pscheduler-tex.tex
+
+\DRAFT
+
+\title{pScheduler Plug-In Developer's Guide}
+\author{The perfSONAR Development Team}
+
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+
+\part{Introduction}
+
+\section{Developing for pScheduler}
+
+This guide provides the information required to build software modules
+that add to pScheduler's capabilities.
+
+\todo{Expand this.}
+
+
+\section{Configuring a System for Development and Test}
+
+Development and test is currently supported on Red Hat Enterprise
+Linux or CentOS 6.{\it x}.
+
+\todo{Is the model going to be that we develop on CentOS and do ports to Debian?}
+
+
+\subsection{System Requirements}
+
+The minimum recommended configuration for build and development is as
+follows:
+
+\begin{itemize}
+\item 32- or 64-bit Intel CPU.  (64-bit recommended)
+\item 2 GiB DRAM
+\item 10 GB disk
+\item Network connection which can reach the Internet, specifically
+  the PostgreSQL YUM repository at {\tt yum.postgresql.org} and a RHEL
+  or CentOS mirror.  (The perfSONAR development team will eventually
+  make this repository available to sites unable to access non-R\&E
+  networks.)
+% TODO: Make PgSQL available on software.internet2.edu.
+\end{itemize}
+
+
+\subsection{Installation and Configuration}
+
+Follow these steps to configure the build/development system:
+
+\begin{enumerate}
+\item Boot the Red Hat Enterprise Linux or CentOS 6.{\it x} image.
+\item Configure the language, keyboard and storage devices
+  appropriately.
+\item Configure the network interface(s) to connect automatically.
+\item Configure the time, root password, and disk usage appropriately.
+\item Use the ``Basic Server'' configuration for installation.
+\item Finish the installation and reboot.
+\item Log in as \root.
+\item \rootcommand{iptables -A INPUT -p tcp --dport 22 -j ACCEPT}
+\item \rootcommand{iptables -A OUTPUT -p udp --sport 22 -j ACCEPT}
+\item \rootcommand{service iptables save}
+\item Copy the file {\tt scripts/system-prep} from the pScheduler
+  source distribution onto the new machine and place it on the new
+  system in {\tt /tmp}.
+\item If the system is a virtual machine hosted on VirtualBox on Linux
+  or OS X and you wish to have your account and home directory
+  available, configure the guest with a shared folder for your home
+  directory and named to match your login (e.g., {\tt /home/bob} as
+  {\tt bob}).  Then edit {\tt system-prep}, uncomment and set the four
+  environment variables at the top and attach the {\it VirtualBox
+    Guest Additions} CD image.
+\item \rootcommand{/tmp/system-prep}
+\end{enumerate}
+
+If the system is a virtual machine, this is a good point to create a
+snapshot or export it as an appliance.
+
+
+\subsection{Building and Installing pScheduler}
+
+pScheduler is divided into multiple packages, some of which have
+dependencies on others and each must be installed after being built.
+You should, therefore, consider the build/development system
+expendable and not do development on a production system.
+
+Other than the installation of finished packages, the build process
+does not produce by-products outside of the source directories.
+
+Once you have a system configured as described above, build and
+install pScheduler by doing the following:
+
+\begin{enumerate}
+\item Copy the pScheduler source distribution onto the system.
+\item Become \root.
+\item Unpack the source distribution.
+\item \rootcommand{cd {\it pScheduler source directory}}
+\item \rootcommand{make}
+\end{enumerate}
+
+Everything needed for pScheduler will be started on the next system
+boot.
+
+The effects of the installation can be un-done with \command{make
+  uninstall}.
+
+
+% -----------------------------------------------------------------------------
+% -----------------------------------------------------------------------------
+
+
+\part{The pScheduler Plug-In Architecture}
+
+As its name hints, pScheduler's job is to do five things, all of which
+center around making measurements:
+
+\begin{enumerate}
+\item Accept tasking from the outside.
+\item Maintain a schedule of one or more times when the tasking should
+  be carried out.  These events are called {\it runs}.
+\item Carry out the tasking by executing the scheduled runs.
+\item Receive run results.
+\item Distribute the results to archives for processing and long-term
+  storage.
+\end{enumerate}
+
+One of the key tenets of pScheduler's design is that it should have no
+understanding of the measurements it schedules or the programs which
+to carry them out.  This is accomplished through abstraction and a
+system of plug-ins which can be installed in any combination on a
+perfSONAR system.  By using plug-ins, perfSONAR's capabilities can be
+expanded by its user community without having to rely on the core
+development team's limited resrouces.  Software to handle measurements
+not of broad enough interest to be part of the mainstream perfSONAR
+distribution can be developed and maintained by those who need them.
+
+In order to make this happen, pScheduler establishes three classes of
+things with which it can interface:
+
+\begin{itemize}
+\item {\it Tests}, which are abstract descriptions of a measurement to
+  be made and the results.
+\item {\it Tools}, which are programs which, in single or multiple
+  instances working together, make a measurement specified by a test.
+\item {\it Archivers}, which send test results produced by tools
+  elsewhere for long-term storage.
+\end{itemize}
+
+Each of these will be described in more detail in later sections.
+
+\section{Concept of Operation}
+
+\todo{Introductory paragraph}
+
+This is the gist of what pScheduler does (or will do when completed):
+
+\begin{enumerate}
+\item On startup, pScheduler inventories the installed tests, tools
+  and archivers.  For tools, this includes getting information on
+  which tests they run.
+\item A task, consisting of a test specification, scheduling,
+  archiving and other administrative information is written and
+  provided to pScheduler.
+\item The test specfication is validated by the test whose type is
+  specified in the task.
+\item pScheduler consults all of the installed tools which have
+  indicated they can run the test type in the task.  This information
+  is passed back to the requester.
+\item The requester, having done the same with the other
+  participant(s) in the measurement, selects which tool will be used
+  and submitted to pScheduler for scheduling.
+\item At the scheduled time, the measurement is performed, producing a
+  result.
+\item The result is stored locally.
+\item The results are retrieved from all participants and merged into
+  a single result, which is stored for archiving.
+\item Each result is sent to each of the archivers specified in the
+  task, with repeating attempts after a failure.
+\end{enumerate}
+
+
+\section{Plug-In Concepts}
+
+\subsection{Classes}
+
+At the top level of the API are {\it classes}, each of which defines
+an entity pScheduler requires to function.
+
+There are three defined classes, which are the three items described
+earlier (tests, tools and archivers).
+
+\subsection{Methods}
+
+Each class defines one or more {\it methods}, which carry out
+functions specific to that class.
+
+Methods are invoked across a process boundary (i.e., by running
+programs external to pScheduler).  This almost completely decouples
+pScheduler's technology stack from those of the components, providing
+several benefits:
+
+\begin{itemize}
+\item Developers are free to select the right tool for the job 
+
+developers to select the right tool for the job and allowing
+significant evolution of one part without requiring the same of the
+others.
+\end{itemize}
+
+Each method program will:
+
+\begin{itemize}
+\item Be installed in a defined location.
+\item Have a defined name based on its function.
+\item Accept input in a defined format.  For most programs, this will
+  be JSON data.
+\item Provide output on the standard output stream in a defined
+  format.  For most programs, this will be JSON data.
+\item Provide error output on the standard error stream as plain,
+  human-readable text.
+\item Exit with one of several defined status values, usually
+  following the {\tt true}/{\tt false} convention or using values in
+  the \headerfile{sysexits.h} header found on many systems.
+\end{itemize}
+
+
+\subsection{Implementations}
+\todo{Write this.  (What was I going to put in this section?)}
+
+
+\subsection{Directory Structure}
+
+\note{This information is provided as background and should not be
+  used in determining where files should be installed.  Specific
+  instructions for use with the standard packaging systems for various
+  OS distributions can be found later in this document.}
+
+Generally, pScheduler's installation of files follows the conventions
+put forth in the {\it Filesystem Hierarchy Standard}
+(\url{http://www.pathname.com/fhs}).
+
+A typical directory tree on a system with several tests, tools and
+archivers installed might look like this:
+
+\dirtree{%
+.1 /usr.
+.2 libexec.
+.3 pscheduler.
+.4 classes $\odot$.
+.5 test $\odot$ {\it Implementations of tests}.
+.6 idle.
+.6 rtt.
+.5 tool $\odot$ {\it Implementations of tools}.
+.6 sleep.
+.6 snooze.
+.6 ping.
+.6 owping.
+.5 archiver $\odot$ {\it Implementations of archivers}.
+.6 bitbucket.
+.6 esmond.
+.2 share.
+.3 doc.
+.4 pscheduler.
+.5 test $\odot$ {\it Test documentation}.
+.5 tool $\odot$ {\it Tool documentation}.
+.5 archiver $\odot$ {\it Archiver documentation}.
+}
+
+The full paths of directories marked with the symbol $\odot$ should be
+provided as macros for packaging system specifications to use in
+ensuring correct placement of installed files.
+
+\todo{Should we specify the name of a directory inside each
+  test/tool/archiver where private code can live?  (Thinking about
+  common JSON validator modules which would to be used for tool {\tt
+    can-run} and {\tt run} methods.)  {\tt PRIVATE} might be a good
+  candidate.}
+
+
+% -----------------------------------------------------------------------------
+% -----------------------------------------------------------------------------
+
+
+\section{Plug-In Classes}
+
+\todo{Need to add a ``Command Line Arguments'' item to the description
+  of each method.}
+
+\todo{Change the ``Exit Status'' sections to be enumerated so they're easier to read.}
+
+%
+% TEST
+%
+\subsection{Test}
+
+\todo{Introductory material}
+
+\todo{Design of Tests}
+
+\todo{Work this in somewhere: Tests are not necessarily restricted to
+  the subset of parameters the tools which implement it have in
+  common, rather they should be the superset of all parameters.  This
+  makes it possible to use tool-unique features without requiring that
+  every tool understand every parameter.  Tools will seeing tests
+  containing parameters they do not understand or are outside of their
+  abilities will simply decline to perform them.}
+
+\todo{Test Specification}
+
+The specification for a round-trip time test might look like this:
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+  "schema": 1,
+  "source": null,
+  "target": "somehost.example.org",
+  "interval": "PT3S",
+  "size": 1024,
+  "ttl": 100,
+  "tos": "0x5a"
+  }
+}
+\end{lstlisting}
+
+
+
+Every test must implement the methods listed in the following sections.
+
+The directory tree of a test implementation would look like this ({\tt
+  *} denotes an executable file):
+\dirtree{%
+.1 /usr/libexec/pscheduler/classes/test.
+.2 {\itt test-name}.
+.3 enumerate*.
+.3 participants*.
+.3 spec-is-valid*.
+}
+
+
+
+\subsubsection{enumerate}
+
+This method produces a description of the test in a standard format
+used when pScheduler needs to determine what tests are installed.
+
+\calloutitem{Standard Input} Ignored.
+
+\calloutitem{Standard Output} JSON containing the following items:
+\begin{itemize}
+\item{\tt name} - A string serving as a short name for the test.  This
+  value should be lowercase and match the name of the directory where
+  the test class is installed.  Test names should be industry-standard
+  terms rather than the names of the tools which carry them out.  For
+  example, a test that determines how long it takes for packets to get
+  from one host to another should be called {\tt latency} and not {\tt
+    owamp}.  A test the determines the same for a round trip should be
+  called {\tt rtt} (short for {\it round-trip time} and not {\tt
+    ping}.
+\item{\tt description} - A short, textual description of what the test
+  measures.
+\item{\tt version} - A \jsonobject{version}.
+\item{\tt maintainer} - A \jsonobject{maintainer}.
+\end{itemize}
+
+\example
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "name": "rtt",
+    "description": "Round-trip time between hosts",
+    "version": "1.0",
+    "maintainer": {
+        "name": "Example Development Team",
+        "email": "plug-ins@example.org",
+        "href": "http://www.example.org/plug-ins"
+    }
+}
+\end{lstlisting}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if successful, nonzero on error.
+
+% TODO: At some point in the future, there will probably be an
+% enumeration of what the test itself should look like for use by
+% GUIs.
+
+
+\subsubsection{participants}
+This method produces a list of the systems participating in the test
+based on the test specification.
+
+\calloutitem{Standard Input} A JSON specification of the test.
+
+\calloutitem{Standard Output} A JSON array of the participants, with
+any {\tt null} values indicating the local host.  The order of this
+list will match the numbering of participant roles specified in the
+definition of the test.
+\example
+\begin{lstlisting}[language=json,firstnumber=1]
+[ "sendinghost.example.com", "receivinghost.example.com" ]
+\end{lstlisting}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if successful, nonzero on error.
+
+
+
+\subsubsection{spec-is-valid}
+This method determines whether not a test specification is valid.
+
+Validation of a parameter should be according to whether or not its
+value is usable in a test, not whether or not any of the tools
+actually implement it.  For example, a test with a {\tt port}
+parameter representing a UDP or TCP port should accept numeric values
+in the range {\tt 0} to {\tt 65535} and perhaps strings which can be
+translated to port numbers using {\tt getservbyname(3)}.  Tools will
+accept or decline individual tests based on their own restrictions.
+
+\calloutitem{Standard Input} A JSON test specification.
+
+\calloutitem{Standard Output} None.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if the test specification was valid,
+            {\tt 1} if not, {\tt 2} if there was some other problem
+            unrelated to the input.
+
+
+
+\subsubsection{result-is-valid}
+This method determines whether or not a result produced by a tool for
+this test conforms to the expected format.
+
+\calloutitem{Standard Input} JSON results for the test as produced by
+a tool.
+
+\calloutitem{Standard Output} None.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if the result was valid, {\tt 1} if
+not, {\tt 2} if there was some other problem unrelated to the input.
+
+
+
+\subsubsection{cli-to-spec}
+\todo{Validate command-line options and output a JSON spec for the
+  test.  This will be needed once we start scheduling tests from the
+  command line.  (There should also be the option to take the spec
+  directly as JSON from standard input.)}
+
+\todo{The existing test implementations don't have this yet.}
+
+
+\subsubsection{spec-to-cli}
+\todo{Produce command-line options from a JSON spec in a form that can
+  be pasted into a shell script.  Not strictly necessary, but will be
+  a nice convenience for users.}
+
+\todo{The existing test implementations don't have this yet.}
+
+
+
+%
+% TOOL
+%
+\subsection{Tool}
+\todo{Write this.}
+
+\subsubsection{enumerate}
+
+This method produces a description of the tool in a standard format
+used when pScheduler needs to determine what tools are installed.
+
+\calloutitem{Standard Input} Ignored.
+
+\calloutitem{Standard Output} JSON containing the following items:
+\begin{itemize}
+\item{\tt name} - A string serving as a short name for the tool.  This
+  value should be lowercase and match the name of the directory where
+  the tool class is installed.  The name should reflect the software
+  used, such as {\tt traceroute}, {\tt tracepath} or {\tt mtr}.
+\item{\tt description} - A short, textual description of what the tool
+  does.
+\item{\tt version} - A \jsonobject{version}.
+\item{\tt tests} - An array of strings listing the tests which the
+  tool is capable of accommodating.  Including a class here does not
+  imply that the tool is required to actually perform the test, only
+  that it should be asked if it can perform tests of those listed.
+\item{\tt preference} - An integer used to determine the order in
+  which tools are selected for tests, with larger numbers indicating
+  more oreference.  This allows current, better-supported tools to be
+  considered first while still allowing those that are deprecated to
+  be used if necessary.  Nominally, the value for most tools should be
+  {\tt 0} and deprecated tools should use a negative number.  This
+  value is considered advisory only, as some measurements may specify
+  that a specific tool be used to conduct a measurement.
+\item{\tt maintainer} - A \jsonobject{maintainer}.
+\end{itemize}
+
+\example
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "name": "mtr",
+    "description": "Determine network path using MTR",
+    "version": "1.0",
+    "tests": [ "path" ],
+    "preference": 0,
+    "maintainer": {
+        "name": "Example Development Team",
+        "email": "plug-ins@example.org",
+        "href": "http://www.example.org/plug-ins"
+    }
+}
+\end{lstlisting}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if successful, nonzero on error.
+
+
+
+\subsubsection{can-run}
+This method determines whether or not the tool can run a specified test.  The test must be 
+
+\calloutitem{Standard Input} A JSON test specification.
+
+\calloutitem{Standard Output} None.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if the tool is willing to run the
+specified test, {\tt 1} if not, {\tt 2} if there was an error related
+to the input and {\tt 3} for an error unrelated to the input.
+
+
+\subsubsection{run}
+This method carries out the test as one of its participants.
+\todo{Could use some examples.}
+
+\calloutitem{Standard Input} A JSON run specification containing the following items:
+\todo{Contents TBD.  Will include a participant number, schedule and the test spec.}
+
+\calloutitem{Standard Output} None.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if the test ran successfully, {\tt
+  1} if there was a test-related error (i.e., the test could run but
+was unable to produce results because a remote participant failed to
+answer) or {\tt 2} if there was an error unrelated to the test.
+
+
+
+%
+% ARCHIVER
+%
+\subsection{Archiver}
+\todo{Write this.}
+
+\subsubsection{enumerate}
+
+This method produces a description of the archiver in a standard
+format used when pScheduler needs to determine what archivers are
+installed.
+
+\calloutitem{Standard Input} Ignored.
+
+\calloutitem{Standard Output} JSON containing the following items:
+\begin{itemize}
+\item{\tt name} - A string serving as a short name for the archiver.
+  This value should be lowercase and match the name of the directory
+  where the archiver implementation is installed.  Archiver names
+  should reflect the destination, such as {\tt bitbucket} for a data
+  sink or {\tt esmond} for an archiving system like {\it esmond}.
+\item{\tt description} - A short, textual description of what the
+  archiver does.
+\item{\tt version} - A \jsonobject{version}.
+\item{\tt maintainer} - A \jsonobject{maintainer}.
+\end{itemize}
+
+\example
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "name": "bitbucket",
+    "description": "Dump results into the bit bucket.",
+    "version": "1.0",
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+        "email": "info@perfsonar.net",
+        "href": "http://www.perfsonar.net"
+    }
+}
+\end{lstlisting}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if successful, nonzero on error.
+
+
+\todo{Probably need a method to check whether an archive spec is valid
+  for this archiver.}
+
+\subsubsection{archive}
+
+This method sends the results of a run to the archiver.
+
+\calloutitem{Standard Input} JSON containing the following items:
+\begin{itemize}
+\item \todo{TBD}
+\end{itemize}
+\example
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "TODO": "TBD"
+}
+\end{lstlisting}
+
+\calloutitem{Standard Output} None.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if successful, nonzero on error.
+
+
+
+
+% -----------------------------------------------------------------------------
+
+\part{Building Plug-Ins}
+
+\section{Implementation}
+\todo{Write this.}
+
+\section{Packaging}
+
+\subsection{Red Hat Enterprise Linux, CentOS and Fedora}
+\todo{Write this.}
+
+The RPM specs for the {\tt pscheduler-archiver-bitbucket}, {\tt
+  pscheduler-test-idle} and {\tt pscheduler-tool-sleep} packages are
+recommended to be used as templates for new development.
+
+With {\tt pscheduler-rpm} installed on the system, the following
+macros are available for use in RPM specifications:
+\begin{center}
+  \begin{tabular}{ll} 
+    % Tests
+    {\tt \_pscheduler\_test\_libexec} & Test implementations \\
+    {\tt \_pscheduler\_test\_doc} & Test documentation \\
+    % Tools
+    {\tt \_pscheduler\_tool\_libexec} & Tool implementations \\
+    {\tt \_pscheduler\_tool\_doc} & Tool documentation \\
+    % Archivers
+    {\tt \_pscheduler\_archiver\_libexec} & Archiver implementations \\
+    {\tt \_pscheduler\_archiver\_doc} & Archiver documentation \\
+  \end{tabular}
+\end{center}
+
+Test, tool and archiver implementations should be installed in a
+subdirectory matching their names.  For example,
+{\tt\%\{\_pscheduler\_tool\_libexec\}/owamp} would be the recommended
+way to specify the installation directory for the {\tt owamp} tool.
+
+\subsection{Debian}
+\todo{Write this after Antoine has had a chance to package a few
+  things.}
+
+\subsection{OS X}
+\todo{Do we want to support OS X?  Nothing in pScheduler should be
+  Linux-specific.  Some tools may need to understand what environment
+  they're running in when invoking test programs because command line
+  switches or other things may be different (e.g., With {\tt ping(8)},
+  the switch to change TOS is {\tt -Q} where OS X uses {\tt -z}).
+  This will either need to be accommodated by making the tools smart
+  enough to detect and handle the differences or having multiple
+  versions.  Either way, there may be a need for a list of supported
+  OS names to be in the enumeration.  (Use the output of {\tt uname
+    -s} for this.)}
+
+
+% -----------------------------------------------------------------------------
+% -----------------------------------------------------------------------------
+
+
+\part{Reference Material}
+
+\section{JSON Object Dictionary}\label{jsondict}
+
+This section describes a number of standard JavaScript Object Notation
+(JSON) constructs used throught this document.  The nomenclature
+is documented at {\tt http://www.json.org}.
+
+
+\subsection{maintainer}
+
+This object lists identifying and contact information about the
+maintainer of a plug-in and contains the following items:
+
+\begin{itemize}
+\item{} {\btt name} - The name of the maintainer.
+\item{} {\btt email} - The maintainer's email address.
+\item{} {\btt href} - A URL where more information on the plug-in or
+  the maintainer's organization can be found.
+\end{itemize}
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "name": "Example Development Team",
+    "email": "plug-ins@example.org",
+    "href": "http://www.example.org/plug-ins"
+}
+\end{lstlisting}
+
+
+
+\subsection{version}
+This pair identifies a software version in the standard {\tt major.minor.patch} format.
+
+\example
+\begin{lstlisting}[language=json]
+"version": "3.2.7"
+\end{lstlisting}
+
+
+
+\end{document}

@@ -1,0 +1,84 @@
+#!/usr/bin/python
+#
+# Run a test.  Just the test spec is provided on stdin.
+#
+
+import datetime
+import sys
+import time
+
+import pscheduler
+
+input = pscheduler.json_load();
+
+# TODO: Remove this.
+import json
+sys.stderr.write(json.dumps(input))
+
+# TODO: Need a command-line switch --check to bail out after a check of everything.
+
+#
+# CHECK
+#
+
+### # TODO: Should be checking the package schema and the task spec schema.
+### if 'schema' in input:
+###     if not (1 <= input['schema'] <= 1):
+###         pscheduler.fail('Unsupported schema version {0}'.format(input['schema']))
+### else:
+###     pscheduler.fail("Missing schema")
+### 
+### try:
+###     if input['test']['type'] != 'idle':
+###         pscheduler.fail('Unsupported test type')
+### except KeyError:
+###     pscheduler.fail('Missing test type')
+### 
+### 
+### duration_iso = input['schedule']['duration']
+# TODO: Remove this.
+duration_iso = 'PT5S'
+duration = pscheduler.iso8601_as_timedelta(duration_iso)
+### if duration is None:
+###     pscheduler.fail_other(2, "Missing or invalid duration")
+### else:
+###     # TODO: Set this back to 5.
+###     if duration < datetime.timedelta(seconds=1):
+###         pscheduler.fail("Won't sleep for such a short time.")
+
+# TODO: See --check-only, above
+
+#
+# RUN
+#
+
+
+
+### try:
+###     sys.stderr.write(input['test']['spec']['starting_comment'] + '\n')
+### except KeyError:
+###     null
+
+
+# TODO: Use duration.total_seconds() when Py2.7 becomes standard fare.
+time.sleep(pscheduler.timedelta_as_seconds(duration))
+
+### try:
+###     sys.stderr.write(input['test']['spec']['parting_comment'] + '\n')
+### except KeyError:
+###     null
+
+#
+# RESULTS
+#
+
+# TODO: See if it's cleaner to do this with the JSON library  (Probably is.)
+
+print '{'
+print '"succeeded": true,'
+print '"output": "",'
+print '"error": "",'
+print '"result": { "time_slept": "' + duration_iso + '" }'
+print '}'
+
+pscheduler.succeed()

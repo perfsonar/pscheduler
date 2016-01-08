@@ -1,0 +1,159 @@
+#!/usr/bin/python
+#
+# Execute runs of tasks and put the results into the database.
+#
+
+import datetime
+import detach
+import json
+import optparse
+import os
+import pscheduler
+import psycopg2
+import psycopg2.extensions
+import select
+import signal
+import subprocess
+import sys
+import time
+
+
+# Gargle the arguments
+
+opt_parser = optparse.OptionParser()
+opt_parser.add_option("-c", "--channel",
+                      help="Schedule notification channel",
+                      action="store", type="string", dest="channel",
+                      default="schedule_change")
+# TODO: Do we want pscheduler as the default here?
+opt_parser.add_option("-d", "--dsn",
+                      help="Database connection string",
+                      action="store", type="string", dest="dsn",
+                      default="dbname=pscheduler")
+opt_parser.add_option("-r", "--refresh",
+                      help="Forced refresh interval (ISO8601)",
+                      action="store", type="string", dest="refresh",
+                      default="PT5S")
+opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
+
+(options, args) = opt_parser.parse_args()
+
+
+refresh = pscheduler.iso8601_as_timedelta(options.refresh)
+if refresh is None:
+    opt_parser.error('Invalid refresh interval "' + options.refresh + '"')
+if pscheduler.timedelta_as_seconds(refresh) == 0:
+    opt_parser.error("Refresh interval must be calculable as seconds.")
+
+def pg_connect():
+    """Connect to a PostgreSQL database"""
+    try:
+        pg = psycopg2.connect(options.dsn)
+        pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+        return pg
+    except Exception as ex:
+        # TODO: Do something more useful with this.
+        print ex
+        exit(1)
+
+
+#
+# Runs and things we do with them
+#
+class Run:
+    """What is known or can be inferred from a run pulled from the database"""
+
+    def __init__(self, id, start_in, participant, test):
+        self.id = id
+        self.start_in = start_in
+        self.participant = participant
+        self.test = test
+
+    def run(self):
+        print "TEST", json.dumps(self.test), "as", self.participant
+        with detach.Detach(close_fds=True, stdout=sys.stdout, stderr=sys.stderr) as detacher:
+
+            if detacher.pid:
+                self.pid = detacher.pid
+                return
+
+            try:
+                db = pg_connect()
+                cursor = pg.cursor()
+                process = subprocess.Popen(
+                    # TODO: Need to put the actual test name here.
+                    [ "pscheduler", "internal", "invoke", "tool", "sleep", "run" ],
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE )
+
+                stdout, stderr = process.communicate(json.dumps(self.test))
+                returncode = process.returncode
+
+                if len(stdout) == 0:
+                    stdout = None
+
+                if len(stderr) == 0:
+                    stderr = None
+
+                # TODO: This should call a stored procedure that does the update.
+                cursor.execute("UPDATE run SET status = %s, result = %s, errors = %s WHERE id = %s",
+                               [returncode, stdout, stderr, self.id])
+
+                cursor.close()
+                db.close()
+
+            except Exception as exception:
+                # TODO: Log this?
+                print "EXCEPTION: ", str(exception)
+
+
+
+
+
+#
+# Main Program
+#
+
+pg = pg_connect()
+cursor = pg.cursor()
+cursor.execute("LISTEN " + options.channel)
+
+while True:
+
+    cursor.execute("SELECT run, start_in, participant, test \
+                    FROM schedule_upcoming \
+                    WHERE start_in = (SELECT min(start_in) FROM schedule_upcoming)");
+
+    if cursor.rowcount:
+        runs = [ Run(row[0], row[1], row[2], row[3]) for row in cursor.fetchall() ]
+        wait_time = runs[0].start_in
+    else:
+        runs = []
+        wait_time = refresh
+
+    # TODO: Remove this
+    print "WAIT TIME", wait_time
+    if not pscheduler.timedelta_is_zero(wait_time):
+        # Wait for a notification or the wait time to elapse.  Eat all
+        # notifications as a group; we only care that we were notified.
+        if select.select([pg],[],[], pscheduler.timedelta_as_seconds(wait_time)) != ([],[],[]):
+            # Notified
+            pg.poll()
+            del pg.notifies[:]
+            # TODO: Remove this
+            print "Schedule change."
+            continue
+
+    for run in runs:
+        # TODO: Remove this
+        print "Running", run.id
+        # Do this here and not in the forked process to ensure we
+        # don't get this row in the next iteration.
+        cursor.execute("UPDATE run SET state = run_state_running() WHERE id = %s", [ run.id ])
+        run.run()
+
+
+
+# Not that this will ever be reached...
+pg.close()

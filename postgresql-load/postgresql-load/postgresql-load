@@ -1,0 +1,52 @@
+#!/bin/sh -e
+#
+# postgresql-load - Run a SQL file through psql
+#
+# See manual page for documentation.
+#
+
+die()
+{
+    echo "$@" 1>&2
+    exit 1
+}
+
+
+PG_USER=$(ps -e -o 'user,command' \
+    | awk '$2 == "postgres:" { print $1 }' \
+    | sort \
+    | uniq )
+if [ -z "${PG_USER}" ]
+then
+    die "Unable to determine PostgreSQL user."
+fi
+
+[ "${USER}" = "${PG_USER}" -o "${USER}" = 'root' ] \
+    || die "This program must be run as root or ${PG_USER}"
+
+
+
+if [ "$1" = '--role' ]
+then
+    shift
+    if [ $# -eq 0 ]
+    then
+	die "The --role switch requires an argument"
+    fi
+
+    ROLE="SET ROLE '$1';"
+    shift
+fi
+
+
+PSQL='PGOPTIONS="--client-min-messages=WARNING" psql -q -v ON_ERROR_STOP=1'
+if [ "${USER}" = 'root' ]
+then
+    (echo "${ROLE}" && cat "$@") \
+	| su - "${PG_USER}" -c "${PSQL}"
+else
+    (echo "${ROLE}" && cat "$@") \
+	| ${PSQL}
+fi
+
+exit 0

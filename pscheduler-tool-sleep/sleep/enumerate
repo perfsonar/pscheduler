@@ -1,0 +1,17 @@
+#!/bin/sed -e 1d
+{
+    "name": "sleep",
+    "description": "Do nothing by sleeping",
+    "version": "0.0",
+    "tests": [ "idle" ],
+
+    "_": "The preference is used to determine the order in which tools are selected, putting 'current' ones ahead of those that are deprecated.  The value is an integer, where larger values are preferred over smaller ones.  Most tools should be zero; deprecated ones should use a negative value.  This should be ignored if the task package specified preferred tools.",
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "info@perfsonar.net",
+	"href": "http://www.perfsonar.net"
+    }
+}

@@ -1,0 +1,38 @@
+#!/usr/bin/python
+#
+# Validator for 'idle' task spec
+#
+
+import pscheduler
+
+json = pscheduler.json_load()
+
+# Run through all of the tags we expect to see, deleting the valid ones
+
+if 'schema' in json:
+    if not (1 <= json['schema'] <= 1):
+        pscheduler.fail('Unsupported schema version {0}'.format(json['schema']))
+    del json['schema']
+else:
+    pscheduler.fail("Missing schema")
+
+# Strings
+
+for item in [
+    'starting_comment',
+    'parting_comment'
+    ]:
+    if (item in json) and (isinstance(json[item], basestring)):
+        del json[item]
+    else:
+        pscheduler.fail(item, ' is not a string.')
+
+
+# Anything left is bogus
+
+if len(json) > 0:
+    pscheduler.fail('Unknown elements in test specification:\n    '
+        + '\n    '.join(json.keys()))
+
+
+pscheduler.succeed()

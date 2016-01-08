@@ -1,0 +1,82 @@
+#!/usr/bin/python
+#
+# Operate all on-boot and periodic functions in the database.
+#
+
+import datetime
+import logging
+import optparse
+import pscheduler
+import psycopg2
+import psycopg2.extensions
+import sys
+import time
+
+#
+# Gargle the arguments
+#
+
+opt_parser = optparse.OptionParser()
+# TODO: Do we want pscheduler as the default here?
+opt_parser.add_option("-d", "--dsn",
+                      help="Database connection string",
+                      action="store", type="string", dest="dsn",
+                      default="dbname=pscheduler")
+opt_parser.add_option("-r", "--retry",
+                      help="No-rows-returned retry interval (ISO8601)",
+                      action="store", type="string", dest="retry",
+                      default="PT15S")
+
+(options, args) = opt_parser.parse_args()
+
+retry = pscheduler.iso8601_as_timedelta(options.retry)
+if retry is None:
+    opt_parser.error('Invalid retry interval "' + options.retry + '"')
+if pscheduler.timedelta_as_seconds(retry) == 0:
+    opt_parser.error("Retryinterval must be calculable as seconds.")
+
+
+#
+# Prepare the database connection
+#
+
+try:
+    pg = psycopg2.connect(options.dsn)
+    pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+    cursor = pg.cursor()
+except Exception as exception:
+    sys.stderr.write("Failed to connect to database: " + str(exception) + "\n")
+    exit(1)
+
+
+#
+# Main Program
+#
+
+try:
+    while True:
+
+        cursor.execute("SELECT ticker()")
+
+        if cursor.rowcount == 0:
+            # TODO: Log this
+            sys.stderr.write("Got no rows back from the database, retrying in"
+                             + str(options.retry) + "\n")
+            sleep(pscheduler.timedelta_as_seconds(options.retry))
+            continue
+
+        sleep_time = cursor.fetchone()[0]
+        seconds = pscheduler.timedelta_as_seconds(sleep_time)
+        time.sleep(seconds)
+
+    # Not that this will ever be reached...
+    pg.close()
+
+except KeyboardInterrupt:
+    # TODO: Log this
+    sys.stderr.write("Interrupted\n")
+    exit(0)
+except Exception as exception:
+    # TODO: Log this
+    sys.stderr.write("Error: " + str(exception) + "\n")
+    exit(1)

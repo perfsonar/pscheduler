@@ -1,0 +1,79 @@
+%
+% Standard LaTeX Utilities for pScheduler Documents
+%
+
+\usepackage{dirtree}
+\usepackage{fullpage}
+\usepackage{helvet}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{parskip}
+
+
+% DRAFT Watermark
+\usepackage{draftwatermark}
+
+\def\DRAFT{
+  \SetWatermarkText{DRAFT}
+  \SetWatermarkScale{1.25}
+  \SetWatermarkLightness{0.9}
+}
+
+\def\NOTDOC{
+  \SetWatermarkText{NOT DOCUMENTATION}
+  \SetWatermarkScale{0.45}
+  \SetWatermarkLightness{0.9}
+}
+
+
+
+% Highlighting
+%
+% Normally, you'd use the color and soul packages, but they have an
+% internal naming conflict that never got fixed.  See
+% http://tex.stackexchange.com/a/48549.
+\usepackage{xcolor}
+\usepackage[normalem]{ulem} % use normalem to protect \emph
+\newcommand\hl{\bgroup\markoverwith
+  {\textcolor{yellow}{\rule[-.5ex]{2pt}{2.5ex}}}\ULon}
+
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\font\tt=rm-lmtl10
+\font\itt=rm-lmtlo10
+\font\btt=rm-lmtk10
+\font\bitt=rm-lmtko10
+
+
+
+
+% Utilities
+
+\def\command#1{{\btt #1}}
+\def\calloutitem#1{{\bf #1:}}
+\def\example{For example:}
+\def\headerfile#1{{\tt \textless #1\textgreater} }
+\def\jsonobject#1{{\tt #1} object (see section \autoref{jsondict}, {\it \nameref{jsondict}})}
+\def\maychange{{\bf NOTE:} This information is subject to change.}
+\def\note#1{{\bf NOTE:} {#1}}
+\def\rootcommand#1{{\tt \# \command{#1}}}
+\def\root{{\tt root}}
+\def\todo#1{\hl{{\bf TODO:} #1}}
+\def\url#1{{\tt #1}}
+\def\usercommand#1{{\tt \% \command{#1}}}
+
+
+% Based on http://tex.stackexchange.com/a/83100
+\lstdefinelanguage{json}{
+    basicstyle=\footnotesize\ttfamily,
+    xleftmargin=0.5in,
+    xrightmargin=0.5in,
+    numbers=none,
+    numberstyle=\scriptsize,
+    stepnumber=1,
+    numbersep=8pt,
+    showstringspaces=false,
+    breaklines=true,
+    frame=single
+}

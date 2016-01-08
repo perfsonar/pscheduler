@@ -1,0 +1,18 @@
+#!/bin/sh
+
+exec cat << EOF
+{
+    "name": "failer",
+    "description": "Dummy archiver that fails 90% of the time",
+    "version": "0.0",
+
+    "_": "This is a list of the tests the archiver understands how to handle.  If not provided, it is assumed the archiver will happily ingest anything it is handed."
+    "_tests": [ "idle" ]
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "info@perfsonar.net",
+	"href": "http://www.perfsonar.net"
+    }
+}
+EOF

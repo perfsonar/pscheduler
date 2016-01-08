@@ -1,0 +1,17 @@
+#!/bin/sh -e
+#
+# Build all of the pScheduler RPMs and install them if running as
+# root.
+#
+
+WHEREAMI=$(dirname "$0")
+
+if [ "${USER}" = "root" ]
+then
+    INSTALL=install
+fi
+
+for PACKAGE in $(sed -e 's/#.*$//; /^\s*$/d' "${WHEREAMI}/RPM-BUILD-ORDER")
+do
+    make -C "${PACKAGE}" clean build rpmdump ${INSTALL}
+done

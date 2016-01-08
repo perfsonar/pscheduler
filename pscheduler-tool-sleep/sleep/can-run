@@ -1,0 +1,40 @@
+#!/usr/bin/python
+#
+# Determine if this tool can run a test based on a complete task
+# package provided on stdin.
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+json = pscheduler.json_load();
+
+
+# TODO: Should be checking the package schema and the task spec schema.
+if 'schema' in json:
+    if not (1 <= json['schema'] <= 1):
+        pscheduler.fail('Unsupported schema version {0}'.format(json['schema']))
+else:
+    pscheduler.fail("Missing schema")
+
+
+try:
+    if json['test']['type'] != 'idle':
+        pscheduler.fail('Unsupported test type')
+except KeyError:
+    pscheduler.fail('Missing test type')
+
+
+# This tool has a (forced) quirk that makes it not sleep for less than
+# 30 seconds.
+
+duration = pscheduler.iso8601_as_timedelta(json['schedule']['duration'])
+if duration is None:
+    pscheduler.fail_other(2, "Missing or invalid duration")
+else:
+    if duration < datetime.timedelta(seconds=30):
+        pscheduler.fail("Won't sleep for such a short time.")
+
+pscheduler.succeed()

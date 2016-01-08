@@ -1,0 +1,71 @@
+#!/bin/sh -e
+#
+# Script to prep a system for pScheduler build/test
+#
+# System should be CentOS 6.x in the "Basic Server" configuration.
+#
+# NOTE: You'll need to bring eth0 up manually and adjust its ifcfg
+# script so ONBOOT is yes before running this so you'll have a way to
+# get the script onto the system.
+#
+
+# Un-comment these and configure to taste.
+#NEW_USER=mfeit
+#NEW_NAME="Mark Feit"
+#NEW_UID=1838
+#NEW_PASS="${NEW_USER}"
+
+
+# No user-serviceable parts beyond this point.
+
+# -----------------------------------------------------------------------------
+
+if [ "${NEW_USER}" ]
+then
+    mount /dev/sr0 /mnt && true
+    if [ ! -x '/mnt/VBoxLinuxAdditions.run' ]
+    then
+	echo "VirtualBox Guest Additions CD is not mounted." 1>&2
+	exit 1
+    fi
+
+fi
+
+
+# PostgreSQL 9.4
+rpm -Uvh --force http://yum.postgresql.org/9.4/redhat/rhel-6-x86_64/pgdg-redhat94-9.4-2.noarch.rpm
+yum -y install postgresql94 postgresql94-server postgresql94-contrib postgresql94-python
+
+# Things needed for pScheduler
+yum -y install rpmdevtools python-psycopg2
+
+# Conveniences
+yum -y install emacs-nox screen
+
+
+#
+# Guest additions.  Only needed for convenience on VBox
+#
+# Make sure the guest additions ISO is attached before doing this.
+#
+#
+
+if [ "${NEW_USER}" ]
+then
+
+    yum -y install gcc kernel-devel-$(uname -r)
+
+    # This exits 1 when XOrg isn't installed, even if successful
+    /mnt/VBoxLinuxAdditions.run && true
+    umount /mnt
+
+    useradd -u "${NEW_UID}" -c "${NEW_NAME}" "${NEW_USER}"
+    chsh -s /bin/tcsh "${NEW_USER}"
+    echo "${NEW_PASS}" | passwd --stdin "${NEW_USER}"
+
+    cat >> /etc/fstab <<EOF
+${NEW_USER}                /home/${NEW_USER}          vboxsf  uid=${NEW_UID}        0 0
+EOF
+    mount /home/${NEW_USER}
+
+fi

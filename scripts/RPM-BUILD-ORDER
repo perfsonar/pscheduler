@@ -1,0 +1,56 @@
+#
+# Build Order for pScheduler RPMs
+#
+#
+# Packages must be listed in an order where dependent packages are
+# built after their dependencies.
+#
+
+#
+# DEVELOPMENT, LIBRARIES AND UTILITIES
+#
+
+make-generic-rpm
+
+# PostgreSQL Additions
+postgresql-init
+postgresql-load
+
+# Python Modules
+python-detach
+python-isodate
+
+#
+# Utility programs
+#
+# TODO: Add these once I2 is okay with the license and they're
+# actually being used for something.
+#
+#drop-in
+#sheller
+
+
+#
+# PSCHEDULER CORE PARTS
+#
+
+pscheduler-rpm
+python-pscheduler
+pscheduler-core
+pscheduler-server
+
+
+#
+# PSCHEDULER PLUG-INS
+#
+
+# Tests
+pscheduler-test-idle
+
+# Tools
+pscheduler-tool-sleep
+pscheduler-tool-snooze
+
+# Archivers
+pscheduler-archiver-bitbucket
+pscheduler-archiver-failer

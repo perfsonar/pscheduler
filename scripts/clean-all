@@ -1,0 +1,11 @@
+#!/bin/sh -e
+#
+# Clean all of the pScheduler source directories
+#
+
+WHEREAMI=$(dirname "$0")
+
+for PACKAGE in $(sed -e 's/#.*$//; /^\s*$/d' "${WHEREAMI}/RPM-BUILD-ORDER")
+do
+    make -C "${PACKAGE}" clean
+done

@@ -1,0 +1,8 @@
+#!/bin/sh
+#
+# Send a result to the bit bucket
+#
+
+cat > /dev/null
+
+exit 0

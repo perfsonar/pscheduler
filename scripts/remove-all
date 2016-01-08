@@ -1,0 +1,21 @@
+#!/bin/sh -e
+#
+# Remove all of the pScheduler RPMs
+# root.
+#
+
+WHEREAMI=$(dirname "$0")
+
+if [ "${USER}" != "root" ]
+then
+    echo "Must be root." 1>&2
+    exit 1
+fi
+
+for PACKAGE in $(sed -e 's/#.*$//; /^\s*$/d' "${WHEREAMI}/RPM-BUILD-ORDER" \
+    | awk '{ print NR, $0 }' | sort -rn | cut -d ' ' -f 2-)
+do
+    echo ${PACKAGE}
+    # Don't care if these fail, just get rid of them.
+    rpm -e ${PACKAGE} || true
+done

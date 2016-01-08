@@ -1,0 +1,17 @@
+#!/usr/bin/python
+#
+# Participant list generator for 'idle' task spec
+#
+# Input is a test spec, assumed to have been validated by spec-is-valid.
+#
+# Output is a list of hostnames or IPs that are participating.
+#
+
+import pscheduler
+
+json = pscheduler.json_load()
+
+# This is a one-participant test, always the local system (null).
+print '[ null ]'
+
+pscheduler.succeed()

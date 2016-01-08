@@ -1,0 +1,47 @@
+.\" postgresql-load man page
+.if !\n(.g \{\
+.	if !\w|\*(lq| \{\
+.		ds lq ``
+.		if \w'\(lq' .ds lq "\(lq
+.	\}
+.	if !\w|\*(rq| \{\
+.		ds rq ''
+.		if \w'\(rq' .ds rq "\(rq
+.	\}
+.\}
+.de Id
+.ds Dt \\$4
+..
+.TH POSTGRESQL-LOAD 1
+.SH NAME
+postgresql-load \- Execute SQL file(s) with PostgreSQL
+.SH SYNOPSIS
+.B postgresql-load
+.I [ OPTIONS ]
+.I [ SQL-FILE ... ]
+
+.SH DESCRIPTION
+.PP
+This program serves as a smart front-end for the system superuser
+(root) to execute SQL files on PostgreSQL as its superuser (usually
+postgres).
+
+Execution will be done quietly using PSQL's --quiet switch and will
+continue until the first error is encountered.
+
+This program must be run as root or the account running PostgreSQL.
+The latter will be determined automatically.
+
+
+.SH ARGUMENTS
+
+.IR SQL-FILE
+The name of a file or files to be executed.  If none are provided, SQL
+will be read from the standard input.
+
+.SH OPTIONS
+.TP
+.BI --role\ role
+Force a change to the role named
+.I role
+before executing the SQL.

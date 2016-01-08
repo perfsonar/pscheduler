@@ -1,0 +1,58 @@
+%
+% Misc. Bits of Documentation.  NOT FOR PRODUCTION.
+%
+
+% TODO: Add titlepage to the options.
+\documentclass[10pt,titlepage]{article}
+
+\input pscheduler-tex.tex
+
+\title{Miscellaneous Document Parts}
+\author{The perfSONAR Development Team}
+
+\NOTDOC
+
+\begin{document}
+\maketitle
+%\tableofcontents
+
+
+
+
+% -----------------------------------------------------------------------------
+
+This document contains miscellaneous bits of wisdom It is not intended
+to be an actual document, just a place to store things that will
+eventually be part of other documents.  Section numbers are meaningless.
+
+\section{Specifying Start Times}
+
+\todo{Write this.  See comments in source.}
+
+%	start := NEW.json #>> '{schedule, start}';
+%	IF start IS NULL THEN
+%	   NEW.start := now();
+%	ELSIF start = 'soonest' THEN
+%	   -- Earliest spot in the schedule where this task
+%	   NEW.start := schedule_soonest_available(NEW.duration);
+%	ELSIF start LIKE '<P%' THEN
+%	   -- TODO: Soonest within specified interval
+%	   RAISE EXCEPTION 'Soonest-within scheduling is not yet supported';
+%	ELSIF start LIKE '>P%' THEN
+%	   -- Soonest after specified interval
+%	   NEW.start := schedule_soonest_available(NEW.duration,
+%				now() + text_to_interval(substring(start FROM 2)));
+%	ELSIF start LIKE 'P%' THEN
+%	   -- ISO Interval
+%	   NEW.start := normalized_time(now() + text_to_interval(start));
+%	ELSE
+%	   -- Full timestamp
+%	   NEW.start := normalized_time(text_to_timestamp_with_time_zone(start));
+%	END IF;
+%	IF NEW.start is NULL THEN
+%	   RAISE EXCEPTION 'Unable to find a time to schedule the task.';
+%	END IF;
+
+
+
+\end{document}

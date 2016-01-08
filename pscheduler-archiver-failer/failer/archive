@@ -1,0 +1,10 @@
+#!/usr/bin/python
+#
+# Fail at archiving (mostly)
+#
+
+import random
+
+random.seed()
+
+exit (0 if random.random() > 0.9 else 1)
