@@ -21,37 +21,61 @@
 
 % -----------------------------------------------------------------------------
 
-This document contains miscellaneous bits of wisdom It is not intended
-to be an actual document, just a place to store things that will
-eventually be part of other documents.  Section numbers are meaningless.
+This document contains miscellaneous bits of wisdom.  It is not
+intended to be an actual document, just a place to store things that
+will eventually be part of other documents.  Section numbers are
+meaningless.
 
-\section{Specifying Start Times}
+\section{Specifying Task Start Times}
 
-\todo{Write this.  See comments in source.}
+Specify starting times for tasks in one of the following formats,
+where {\itt interval} is an ISO 8601 interval and {\itt timestamp} is
+an ISO 8601 timestamp:
 
-%	start := NEW.json #>> '{schedule, start}';
-%	IF start IS NULL THEN
-%	   NEW.start := now();
-%	ELSIF start = 'soonest' THEN
-%	   -- Earliest spot in the schedule where this task
-%	   NEW.start := schedule_soonest_available(NEW.duration);
-%	ELSIF start LIKE '<P%' THEN
-%	   -- TODO: Soonest within specified interval
-%	   RAISE EXCEPTION 'Soonest-within scheduling is not yet supported';
-%	ELSIF start LIKE '>P%' THEN
-%	   -- Soonest after specified interval
-%	   NEW.start := schedule_soonest_available(NEW.duration,
-%				now() + text_to_interval(substring(start FROM 2)));
-%	ELSIF start LIKE 'P%' THEN
-%	   -- ISO Interval
-%	   NEW.start := normalized_time(now() + text_to_interval(start));
-%	ELSE
-%	   -- Full timestamp
-%	   NEW.start := normalized_time(text_to_timestamp_with_time_zone(start));
-%	END IF;
-%	IF NEW.start is NULL THEN
-%	   RAISE EXCEPTION 'Unable to find a time to schedule the task.';
-%	END IF;
+\begin{center}
+\begin{tabular}{lll}
+{\tt soonest} & Earliest possible time & {\tt soonest} \\
+{\tt \textless{\itt interval}} & Soonest within {\itt interval} & {\tt \textless PT5M} \\
+{\tt \textgreater{\itt interval}} & Soonest after {\itt interval} & {\tt \textgreater PT5M} \\
+{\itt interval} & {\itt interval} from right now & {\tt PT5M} \\
+{\itt timestamp} & At absolute time {\itt timestamp} & {\tt 2016-04-09T12:38:05}
+\end{tabular}
+\end{center}
+
+
+
+\section{Sample Task Spec}
+
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "schema": 1,
+
+    "schedule": {
+        "duration": "PT5S",
+        "repeat": "PT10S",
+        "max_runs": 100
+    },
+
+    "test": {
+        "type": "idle",
+        "spec": {
+            "schema": 1,
+            "starting_comment": "Starting to sleep.",
+            "parting_comment": "Done sleeping."
+        }
+    },
+
+    "features": [
+        { "name": "mdvpn", "data": { "vpn": "abc123" }    },
+        { "name": "pie",   "data": { "factor": "3.1415" } }
+    ],
+
+    "archives": [
+        { ...TODO... }
+    ]
+}
+\end{lstlisting}
+
 
 
 
