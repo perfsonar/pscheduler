@@ -37,6 +37,7 @@ random-string
 #
 
 pscheduler-rpm
+pscheduler-account
 python-pscheduler
 pscheduler-core
 pscheduler-server
