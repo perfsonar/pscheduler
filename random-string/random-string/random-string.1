@@ -1,0 +1,32 @@
+.\" random-string man page
+.if !\n(.g \{\
+.	if !\w|\*(lq| \{\
+.		ds lq ``
+.		if \w'\(lq' .ds lq "\(lq
+.	\}
+.	if !\w|\*(rq| \{\
+.		ds rq ''
+.		if \w'\(rq' .ds rq "\(rq
+.	\}
+.\}
+.de Id
+.ds Dt \\$4
+..
+.TH RANDOM-STRING 1
+.SH NAME
+random-string \- Generate random strings of printable text
+.SH SYNOPSIS
+.B random-string
+.I [ OPTIONS ]
+
+.SH DESCRIPTION
+.PP
+This program generates strings of printable text suitable for use as
+passwords.
+
+.SH OPTIONS
+.TP
+.BI -l\ length
+Produce a string
+.I length
+characters long.  The default is 32.

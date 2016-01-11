@@ -1,0 +1,41 @@
+#!/usr/bin/python
+#
+# random-string - Generate random, printable strings.
+#
+
+import optparse
+import random
+
+
+# Gargle the arguments
+
+opt_parser = optparse.OptionParser()
+opt_parser.add_option("-l", "--length",
+                      help="Length of string produced",
+                      action="store", type="int", dest="length",
+                      default=32)
+
+(options, args) = opt_parser.parse_args()
+
+if options.length < 1:
+    opt_parser.error('Length must be greater than zero.')
+    exit(1)
+
+
+#
+# Main Program
+#
+
+random.seed()
+
+bottom = 0x21
+range = 0x7e - bottom
+
+remaining = options.length
+string = ""
+
+while remaining:
+    string += chr(bottom + int(random.random() * range))
+    remaining = remaining - 1
+
+print string

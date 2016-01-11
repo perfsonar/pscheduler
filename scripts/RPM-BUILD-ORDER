@@ -27,7 +27,9 @@ python-isodate
 # actually being used for something.
 #
 #drop-in
+random-string
 #sheller
+
 
 
 #
