@@ -16,18 +16,32 @@ Provides:	%{name} = %{version}-%{release}
 %description
 Macros for use by pScheduler RPM specs
 
+# Where macros live
+%define macro_dir %{_sysconfdir}/rpm
+%define macro_prefix %{macro_dir}/macros.
+
+# No punctuation between these is intentional.
+%define macro_file %{macro_prefix}%{name}
 
 %install
-%{__mkdir_p} $RPM_BUILD_ROOT/%{_sysconfdir}/rpm
-cat > $RPM_BUILD_ROOT/%{_sysconfdir}/rpm/macros.%{name} <<EOF
+%{__mkdir_p} $RPM_BUILD_ROOT/%{macro_dir}
+cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 
 #
 # Macros used in building pScheduler RPMs  (Version %{version})
 #
 
 %%_pscheduler_libexecdir %{_libexecdir}/pscheduler
+%%_pscheduler_sysconfdir %{_sysconfdir}/pscheduler
 %%_pscheduler_docdir %{_defaultdocdir}/pscheduler
 %%_pscheduler_datadir %{_datadir}/pscheduler
+
+
+# Where RPM Macros live
+%%_pscheduler_rpmmacrodir %{macro_dir}
+# Prefix for all macro files.  Use as %{_pscheduler_rpmmacroprefix}foo
+%%_pscheduler_rpmmacroprefix %{macro_prefix}
+
 
 # Where all classes live
 %%_pscheduler_classes %{_pscheduler_libexecdir}/classes
@@ -51,4 +65,4 @@ EOF
 
 
 %files
-%attr(444,root,root) %{_sysconfdir}/rpm/*
+%attr(444,root,root) %{macro_prefix}*
