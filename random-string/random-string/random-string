@@ -15,6 +15,11 @@ opt_parser.add_option("-l", "--length",
                       action="store", type="int", dest="length",
                       default=32)
 
+opt_parser.add_option("-q", "--quote-safe",
+                      help="Produce a quote-safe string",
+                      action="store_true", dest="quotesafe")
+
+
 (options, args) = opt_parser.parse_args()
 
 if options.length < 1:
@@ -31,11 +36,19 @@ random.seed()
 bottom = 0x21
 range = 0x7e - bottom
 
+if options.quotesafe:
+    filter_string = "'\"`"
+else:
+    filter_string = ""
+
+
 remaining = options.length
 string = ""
 
 while remaining:
-    string += chr(bottom + int(random.random() * range))
-    remaining = remaining - 1
+    char = chr(bottom + int(random.random() * range))
+    if char not in filter_string:
+        string += char
+        remaining -= 1
 
 print string
