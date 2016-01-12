@@ -82,7 +82,6 @@ fi
 
 # Generate the DSN file
 
-echo ROLE ${ROLE}
 awk -v "ROLE=${ROLE}" '{ printf "dbname=pscheduler user=%s password=%s\n", ROLE, $1 }' \
     "%{password_file}" \
     > "%{dsn_file}"
