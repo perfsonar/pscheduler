@@ -54,7 +54,7 @@ done
 # password up as empty.
 if [ ! -s '%{password_file}' ]
 then
-    random-string > '%{password_file}'
+    random-string --quote-safe > '%{password_file}'
 fi
 
 # Check our assumptions
@@ -66,15 +66,7 @@ then
 fi
 
 
-# Generate the DSN file
-
-awk '{ printf "dbname=pscheduler user=${ROLE} password=%s\n", $1 }' \
-    "%{password_file}" \
-    > "%{dsn_file}"
-
-
-
-# Load the database
+# Figure out the role that owns the database.
 
 ROLE=$(fgrep 'CREATE ROLE' %{_pscheduler_datadir}/database-build-super.sql \
 	     | head -1 \
@@ -85,6 +77,19 @@ then
 	echo "Can't find role name in SQL" 1>&2
 	exit 1
 fi
+
+
+
+# Generate the DSN file
+
+echo ROLE ${ROLE}
+awk -v "ROLE=${ROLE}" '{ printf "dbname=pscheduler user=%s password=%s\n", ROLE, $1 }' \
+    "%{password_file}" \
+    > "%{dsn_file}"
+
+
+
+# Load the database
 
 
 postgresql-load %{_pscheduler_datadir}/database-build-super.sql
