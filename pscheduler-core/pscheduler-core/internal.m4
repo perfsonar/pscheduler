@@ -33,13 +33,15 @@ case "${COMMAND}" in
 	TYPE=$1
 	shift
 	[ -d "${LIBEXEC}/classes/${TYPE}" ] || die "Unknown type '${TYPE}'"
+	printf '['
 	# This is a POSIX-clean equivalent to find . -type d -maxdepth 1
 	( cd "${LIBEXEC}/classes/${TYPE}" && find . -type d ) \
 	    | sed -e 's|^./||' \
 	    | egrep -ve '^\.' \
 	    | grep -v / \
 	    | tr '\n' '/' \
-	    | sed -e 's|/$||; s|/|", "|g; s|^|[ "|; s|$|" ]\n|'
+	    | sed -e 's|/$||; s|/|", "|g; s|^|"|; s|$|"|'
+	printf ']\n'
 	exit $?
 	;;
 
