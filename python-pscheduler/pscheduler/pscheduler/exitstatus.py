@@ -2,6 +2,7 @@
 Functions for exiting scripts in a standard way.
 """
 
+import json
 import sys
 
 
