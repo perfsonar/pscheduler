@@ -28,8 +28,20 @@ def fail_other(status, *args):
     exit(status)
 
 
-def succeed():
+def succeed(text = None):
     """
-    Exit with success.
+    Exit with success and an optional messsage to stdout.
     """
+    if text is not None:
+        print text
     exit(0)
+
+
+def succeed_json(result = None):
+    """
+    Exit with success, dumping JSON to stdout.
+    """
+    if result is not None:
+        json.dump(result, sys.stdout)
+    exit(0)
+
