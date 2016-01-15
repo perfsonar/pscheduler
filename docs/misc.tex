@@ -3,8 +3,9 @@
 %
 
 % TODO: Add titlepage to the options.
-\documentclass[10pt,titlepage]{article}
+\documentclass[10pt]{article}
 
+\usepackage{msc}
 \input pscheduler-tex.tex
 
 \title{Miscellaneous Document Parts}
@@ -26,21 +27,113 @@ intended to be an actual document, just a place to store things that
 will eventually be part of other documents.  Section numbers are
 meaningless.
 
-\section{Specifying Task Start Times}
 
-Specify starting times for tasks in one of the following formats,
-where {\itt interval} is an ISO 8601 interval and {\itt timestamp} is
-an ISO 8601 timestamp:
 
-\begin{center}
-\begin{tabular}{lll}
-{\tt soonest} & Earliest possible time & {\tt soonest} \\
-{\tt \textless{\itt interval}} & Soonest within {\itt interval} & {\tt \textless PT5M} \\
-{\tt \textgreater{\itt interval}} & Soonest after {\itt interval} & {\tt \textgreater PT5M} \\
-{\itt interval} & {\itt interval} from right now & {\tt PT5M} \\
-{\itt timestamp} & At absolute time {\itt timestamp} & {\tt 2016-04-09T12:38:05}
-\end{tabular}
-\end{center}
+\section{Multi-Participant Message Exchanges}
+
+\setmscvalues{large}
+
+%
+% NOTE:  This section requires \usepackage{msc}
+%
+
+\def\parts{
+  \declinst{o}{Originator}{}
+  \declinst{p0}{Participant 0}{Lead}
+  \declinst{p1}{Participant 1}{}
+  \declinst{pn}{Participant {\it n}}{}
+}
+\def\mn#1#2#3{\mess{#1}{#2}{#3}\nextlevel}
+\def\dn#1#2#3{\mess*{#1}{#2}{#3}\nextlevel}
+\def\act#1#2{\action{#1}{#2}\nextlevel[2]}
+
+\def\allparts#1{\condition{#1}{p0,p1,pn}\nextlevel[2]}
+
+%
+% Task Establishment
+%
+\begin{msc}{Task Establishment}
+\parts
+
+\mn{Task+Test}{o}{p0}
+
+\mn{What tools for test?}{p0}{p1}
+\mn{Tool list}{p1}{p0}
+
+\mn{What tools for test?}{p0}{pn}
+\mn{Tool list}{pn}{p0}
+
+\act{Intersect tool lists}{p0}
+
+\dn{Unable}{p0}{o}
+
+\act{Assign Task IDs}{p0}
+
+\mn{Task}{p0}{p1}
+\mn{OK}{p1}{p0}
+
+\mn{Task}{p0}{pn}
+\mn{OK}{pn}{p0}
+
+\mn{OK}{p0}{o}
+
+\end{msc}
+
+
+
+
+
+%
+% Run Scheduling
+%
+\begin{msc}{Run Scheduling}
+\parts
+
+\mn{Tentative Run Time}{p0}{p1}
+\mn{Proposal}{p1}{p0}
+
+\mn{Tentative Run Time}{p0}{pn}
+\mn{Proposal}{pn}{p0}
+\nextlevel
+\mn{Schedule Run}{p0}{p1}
+\mn{OK}{p1}{p0}
+
+\mn{Schedule Run}{p0}{pn}
+\mn{OK}{pn}{p0}
+
+\end{msc}
+
+
+
+%
+% Post-Run Results Merge
+%
+\begin{msc}{Run}
+\parts
+
+\allparts{Wait for scheduled run time}
+
+\action{Run Tool}{p0}
+\action{Run Tool}{p1}
+\action{Run Tool}{pn}
+\nextlevel[3]
+
+\mn{Fetch Result}{p0}{p1}
+\mn{Result}{p1}{p0}
+
+\mn{Fetch Result}{p0}{pn}
+\mn{Result}{pn}{p0}
+
+\act{Merge Results}{p0}
+\mn{Full Result}{p0}{p1}
+\mn{Full Result}{p0}{pn}
+
+\mn{Fetch Full}{o}{p0}
+\mn{Full Result}{p0}{o}
+
+\act{Archive}{p0}
+
+\end{msc}
 
 
 
@@ -51,9 +144,11 @@ an ISO 8601 timestamp:
     "schema": 1,
 
     "schedule": {
+        "start": "PT1M",
+        "slip": "PT15S",
         "duration": "PT5S",
-        "repeat": "PT10S",
-        "max_runs": 100
+        "repeat": "PT1M",
+        "until": "2016-03-14T06:30:00",
     },
 
     "test": {
@@ -76,6 +171,115 @@ an ISO 8601 timestamp:
 }
 \end{lstlisting}
 
+
+\section{Sample Tool Input}
+
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "schema": 1,
+
+    "schedule": {
+        "start": "2015-12-20T19:18:17",
+        "duration": "PT5S",
+    },
+
+    "test": {
+        "type": "idle",
+        "spec": {
+            "schema": 1,
+            "starting_comment": "Starting to sleep.",
+            "parting_comment": "Done sleeping."
+        }
+    }
+}
+\end{lstlisting}
+
+
+
+\section{Sample Tool Output}
+
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "schema": 1,
+
+    "succeeded": true,
+
+    "result": { ... Test-specific results for this participant ... }
+
+    "diags": " ... Diagnostic output from tool ... ",
+    "error": " ... Error output from tool ... ",
+}
+
+\end{lstlisting}
+
+
+
+
+\section{Sample Full Run Result}
+
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "schema": 1,
+
+    "task": "04a72888-8310-47ae-a913-e240f78a2711",
+    "run": "2d0db9af-4570-426b-856a-449dab93f7f8",
+
+    "schedule": {
+        "start": "2015-09-20T04:15:38",
+        "duration": "PT25S",
+	"slip": "PT7S"
+    },
+
+    "test": {
+        "type": "idle",
+        "spec": {
+            "schema": 1,
+            "starting_comment": "Starting to sleep.",
+            "parting_comment": "Done sleeping."
+        }
+    },
+
+    "tool": "snooze",
+
+    "participants": [
+        {
+            "participant": "perfsonar1.example.org",
+            "result": {
+                "succeeded": true,
+                "result": { ... Test Result for This Participant ... }
+                "diags": " ... Tool Diagnostic Output ... ",
+                "error": " ... Tool Error Output ... ",
+            },
+            "time": {
+                "start": "2015-09-20T12:19:56.31415",
+                "error": 50000000    // Est. nanoseconds from true time
+            }
+        }
+    ],
+
+    "result": {
+        ... Full Merged Result ...
+    }
+
+}
+\end{lstlisting}
+
+
+\section{Specifying Task Start Times}
+
+Specify starting times for tasks in one of the following formats,
+where {\itt interval} is an ISO 8601 interval and {\itt timestamp} is
+an ISO 8601 timestamp:
+
+\begin{center}
+\begin{tabular}{lll}
+{\tt soonest} & Earliest possible time & {\tt soonest} \\
+{\tt \textless{\itt interval}} & Soonest within {\itt interval} & {\tt \textless PT5M} \\
+{\tt \textgreater{\itt interval}} & Soonest after {\itt interval} & {\tt \textgreater PT5M} \\
+{\itt interval} & {\itt interval} from right now & {\tt PT5M} \\
+{\itt timestamp} & At absolute time {\itt timestamp} & {\tt 2016-04-09T12:38:05}
+\end{tabular}
+\end{center}
 
 
 

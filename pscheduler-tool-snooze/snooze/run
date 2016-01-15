@@ -11,9 +11,6 @@ import pscheduler
 
 input = pscheduler.json_load();
 
-# TODO: Remove this.
-import json
-sys.stderr.write(json.dumps(input))
 
 # TODO: Need a command-line switch --check to bail out after a check of everything.
 
