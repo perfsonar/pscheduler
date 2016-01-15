@@ -33,11 +33,10 @@ opt_parser.add_option("-d", "--dsn",
 opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
-                      default="PT5S")
+                      default="PT5M")
 opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
 
 (options, args) = opt_parser.parse_args()
-
 
 refresh = pscheduler.iso8601_as_timedelta(options.refresh)
 if refresh is None:
@@ -72,6 +71,22 @@ def pg_connect(autocommit = True):
 
 
 #
+# Utilities
+#
+
+is_verbose = options.verbose
+def verbose(first, *args):
+    if not is_verbose:
+        return
+    sys.stdout.write(first)
+    for arg in args:
+        sys.stdout.write(' ')
+        sys.stdout.write(str(arg))
+    sys.stdout.write('\n')
+
+
+
+#
 # Runs and things we do with them
 #
 class Run:
@@ -99,8 +114,8 @@ class Run:
 
 
     def run(self):
-        # TODO: Remove this.
-        print "TEST", self.id, "WITH", self.tool, ":  ", json.dumps(self.tool_input)
+        # TODO: Log this?
+        verbose("TEST", self.id, "WITH", self.tool, ":  ", json.dumps(self.tool_input))
         with detach.Detach(close_fds=True, stdout=sys.stdout, stderr=sys.stderr) as detacher:
 
             if detacher.pid:
@@ -127,9 +142,9 @@ class Run:
 
                 # TODO: Remove this.
                 if returncode == 0:
-                    print "TEST SUCCESS: ", stdout
+                    verbose("TEST SUCCESS: ", stdout)
                 else:
-                    print "TEST FAILED ", returncode, ": ", stderr
+                    verbose("TEST FAILED ", returncode, ": ", stderr)
 
                 cursor.execute("UPDATE run SET status = %s WHERE id = %s",
                                [returncode, self.id])
@@ -171,8 +186,7 @@ while True:
         runs = []
         wait_time = refresh
 
-    # TODO: Remove this
-    print "WAIT TIME", wait_time
+    verbose("Next run or check in", wait_time)
     if not pscheduler.timedelta_is_zero(wait_time):
         # Wait for a notification or the wait time to elapse.  Eat all
         # notifications as a group; we only care that we were notified.
@@ -180,13 +194,11 @@ while True:
             # Notified
             pg.poll()
             del pg.notifies[:]
-            # TODO: Remove this
-            print "Schedule change."
+            verbose("Schedule change.")
             continue
 
     for run in runs:
-        # TODO: Remove this
-        print "Running", run.id
+        verbose("Running", run.id)
         # Do this here and not in the forked process to ensure we
         # don't get this row in the next iteration.
         cursor.execute("UPDATE run SET state = run_state_running() WHERE id = %s", [ run.id ])
