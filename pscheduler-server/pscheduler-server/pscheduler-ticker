@@ -17,11 +17,10 @@ import time
 #
 
 opt_parser = optparse.OptionParser()
-# TODO: Do we want pscheduler as the default here?
 opt_parser.add_option("-d", "--dsn",
-                      help="Database connection string",
+                      help="Database connection string, prefix with @ to read from file",
                       action="store", type="string", dest="dsn",
-                      default="dbname=pscheduler")
+                      default="")
 opt_parser.add_option("-r", "--retry",
                       help="No-rows-returned retry interval (ISO8601)",
                       action="store", type="string", dest="retry",
@@ -36,12 +35,21 @@ if pscheduler.timedelta_as_seconds(retry) == 0:
     opt_parser.error("Retryinterval must be calculable as seconds.")
 
 
-#
-# Prepare the database connection
-#
+dsn = options.dsn
 
+# Read the DSN from a file if requested
+if dsn.startswith('@'):
+    try:
+        with open(dsn[1:], 'r') as dsnfile:
+            dsn = dsnfile.read().replace('\n', '')
+    except Exception as exception:
+        sys.stderr.write("Failed to open DSN file: " + str(exception) + "\n")        
+        exit(1);
+
+
+# Prepare the database connection
 try:
-    pg = psycopg2.connect(options.dsn)
+    pg = psycopg2.connect(dsn)
     pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
     cursor = pg.cursor()
 except Exception as exception:

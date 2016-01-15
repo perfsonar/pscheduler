@@ -45,11 +45,25 @@ if refresh is None:
 if pscheduler.timedelta_as_seconds(refresh) == 0:
     opt_parser.error("Refresh interval must be calculable as seconds.")
 
-def pg_connect():
+
+dsn = options.dsn
+
+# Read the DSN from a file if requested
+if dsn.startswith('@'):
+    try:
+        with open(dsn[1:], 'r') as dsnfile:
+            dsn = dsnfile.read().replace('\n', '')
+    except Exception as exception:
+        sys.stderr.write("Failed to open DSN file: " + str(exception) + "\n")        
+        exit(1);
+
+
+def pg_connect(autocommit = True):
     """Connect to a PostgreSQL database"""
     try:
-        pg = psycopg2.connect(options.dsn)
-        pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+        pg = psycopg2.connect(dsn)
+        if autocommit:
+            pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         return pg
     except Exception as ex:
         # TODO: Do something more useful with this.
@@ -63,14 +77,30 @@ def pg_connect():
 class Run:
     """What is known or can be inferred from a run pulled from the database"""
 
-    def __init__(self, id, start_in, participant, test):
+
+    def __init__(self, id, start_in, tool, participant, test, start, duration):
         self.id = id
         self.start_in = start_in
-        self.participant = participant
-        self.test = test
+        self.tool = tool
+        self.participant = participant,
+        self.test = test,
+        self.start = start,
+        self.duration = duration,
+
+        self.tool_input = {
+            'schema': 1,
+            'schedule': {
+                'start': pscheduler.datetime_as_iso8601(start),
+                'duration': pscheduler.timedelta_as_iso8601(duration)
+                },
+            'test': test,
+            'participant': participant
+            }
+
 
     def run(self):
-        print "TEST", json.dumps(self.test), "as", self.participant
+        # TODO: Remove this.
+        print "TEST", self.id, "WITH", self.tool, ":  ", json.dumps(self.tool_input)
         with detach.Detach(close_fds=True, stdout=sys.stdout, stderr=sys.stderr) as detacher:
 
             if detacher.pid:
@@ -78,16 +108,15 @@ class Run:
                 return
 
             try:
-                db = pg_connect()
+                db = pg_connect(False)
                 cursor = pg.cursor()
                 process = subprocess.Popen(
-                    # TODO: Need to put the actual test name here.
-                    [ "pscheduler", "internal", "invoke", "tool", "sleep", "run" ],
+                    [ "pscheduler", "internal", "invoke", "tool", self.tool, "run" ],
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE )
 
-                stdout, stderr = process.communicate(json.dumps(self.test))
+                stdout, stderr = process.communicate(json.dumps(self.tool_input))
                 returncode = process.returncode
 
                 if len(stdout) == 0:
@@ -96,9 +125,18 @@ class Run:
                 if len(stderr) == 0:
                     stderr = None
 
-                # TODO: This should call a stored procedure that does the update.
-                cursor.execute("UPDATE run SET status = %s, result = %s, errors = %s WHERE id = %s",
-                               [returncode, stdout, stderr, self.id])
+                # TODO: Remove this.
+                if returncode == 0:
+                    print "TEST SUCCESS: ", stdout
+                else:
+                    print "TEST FAILED ", returncode, ": ", stderr
+
+                cursor.execute("UPDATE run SET status = %s WHERE id = %s",
+                               [returncode, self.id])
+                cursor.execute("INSERT INTO run_result (run, participant, result, errors)"
+                               "VALUES (%s, %s, %s, %s)",
+                               [self.id, self.participant, stdout, stderr])
+                db.commit()
 
                 cursor.close()
                 db.close()
@@ -121,12 +159,13 @@ cursor.execute("LISTEN " + options.channel)
 
 while True:
 
-    cursor.execute("SELECT run, start_in, participant, test \
+    cursor.execute("SELECT run, start_in, tool, participant, test, start, duration \
                     FROM schedule_upcoming \
                     WHERE start_in = (SELECT min(start_in) FROM schedule_upcoming)");
 
     if cursor.rowcount:
-        runs = [ Run(row[0], row[1], row[2], row[3]) for row in cursor.fetchall() ]
+        # TODO: There must be a nicer way to take this array slice as args.
+        runs = [ Run(row[0], row[1], row[2], row[3], row[4], row[5], row[6]) for row in cursor.fetchall() ]
         wait_time = runs[0].start_in
     else:
         runs = []
