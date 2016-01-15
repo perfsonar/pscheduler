@@ -34,7 +34,12 @@ fi
 
 # PostgreSQL 9.4
 rpm -Uvh --force http://yum.postgresql.org/9.4/redhat/rhel-6-x86_64/pgdg-redhat94-9.4-2.noarch.rpm
-yum -y install postgresql94 postgresql94-server postgresql94-contrib postgresql94-python
+yum -y install \
+    postgresql94 \
+    postgresql94-server \
+    postgresql94-contrib \
+    postgresql94-python \
+    postgresql94-plpython
 
 # Things needed for pScheduler
 yum -y install rpmdevtools python-psycopg2
