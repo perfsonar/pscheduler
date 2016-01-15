@@ -95,6 +95,10 @@ CREATE TRIGGER run_alter BEFORE INSERT OR UPDATE ON run
        FOR EACH ROW EXECUTE PROCEDURE run_alter();
 
 
+-- TODO: Should do a trigger after any change to run that calls
+-- run_main_minute() to update any run statues.
+
+
 -- Calculate the number of runs for a task that start within a range
 -- of specified times.
 -- TODO: Need to test this carefully; no rows yet.
@@ -152,8 +156,7 @@ BEGIN
 
     UPDATE run
     SET
-        state = run_state_missed(),
-	errors = 'Started but never finished'
+        state = run_state_missed()
     WHERE
         state = run_state_running()
 	-- TODO: This interval should probably be a tunable.
@@ -167,11 +170,12 @@ $$ LANGUAGE plpgsql;
 
 -- Convenient ways to see the goings on
 
-CREATE VIEW run_status
+CREATE OR REPLACE VIEW run_status
 AS
     SELECT
         run.id,
 	run.task,
+	run.id AS run,
 	run.times,
 	run_state.display AS state
     FROM
