@@ -158,16 +158,25 @@ $$ LANGUAGE plpgsql;
 
 
 -- What's coming on the schedule and what to execute
+
+DROP VIEW IF EXISTS schedule_upcoming;
 CREATE OR REPLACE VIEW schedule_upcoming
 AS
     SELECT
-      run.id as run,
-      lower(run.times) - normalized_wall_clock() as start_in,
-      task.participant as participant,
-      task.json #> '{test}' as test
+      run.id AS run,
+      lower(run.times) - normalized_wall_clock() AS start_in,
+      tool.name AS tool,
+      -- Note that these bits have to be done in pieces because PgSQL
+      -- has no way to turn dates and intervals to ISO 8601.
+      -- TODO: See if this is actually the case.
+      task.participant AS participant,
+      task.json #> '{test}' AS test,
+      lower(run.times) AS start,
+      task.duration AS duration
     FROM
         run
 	JOIN task ON task.id = run.task
+	JOIN tool ON tool.id = task.tool
     WHERE
         run.state = run_state_pending()
         AND lower(run.times) >= normalized_now()

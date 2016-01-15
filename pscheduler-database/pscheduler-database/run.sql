@@ -10,28 +10,36 @@ CREATE TABLE run (
 	id		BIGSERIAL
 			PRIMARY KEY,
 
+	-- External-use identifier
+	uuid		UUID
+			UNIQUE
+			DEFAULT gen_random_uuid(),
+
 	-- Task this run belongs to
 	task		BIGINT
-			REFERENCES task(id),
+			REFERENCES task(id)
+			ON DELETE CASCADE,
 
 	-- Range of times when this task will be run
 	times		TSTZRANGE
 			NOT NULL,
 
-	-- State of this run (see run_states table)
+	-- State of this run (see run_state table)
 	state	    	 INTEGER DEFAULT run_state_pending()
 			 REFERENCES run_state(id),
 
-	-- How it went
-	status	    	 INTEGER,
 
-	-- What the test burped out (a.k.a., what showed on stdout)
-	-- TODO: Should we require that this be JSON?
-	result	    	 TEXT,
-
-	-- Errors (a.k.a., what showed on stderr)
-	errors	    	 TEXT
+	-- How it went locally
+	status	    	 INTEGER
 );
+
+
+-- This should be used when someone looks up the external ID.  Bring
+-- the row ID a long so it can be pulled without having to consult the
+-- table.
+CREATE INDEX run_uuid
+ON task(uuid, id);
+
 
 -- GIST accelerates range-specific operators like &&
 CREATE INDEX run_times ON run USING GIST (times);
@@ -122,23 +130,6 @@ $$ LANGUAGE plpgsql;
 
 
 
--- Accept the results of a run
-CREATE OR REPLACE FUNCTION run_results(
-       run_id BIGINT,
-       status INTEGER,
-       result TEXT DEFAULT '{ }',
-       errors TEXT DEFAULT ''
-       )
-RETURNS NUMERIC
-AS $$
-BEGIN
-	RAISE EXCEPTION 'Not implemented yet';
-	-- TODO: Update 
-END;
-$$ LANGUAGE plpgsql;
-
-
-
 -- Maintenance functions
 
 CREATE OR REPLACE FUNCTION run_maint_minute()
@@ -182,8 +173,7 @@ AS
         run.id,
 	run.task,
 	run.times,
-	run_state.display AS state,
-	COALESCE(run.result, run.errors) AS output
+	run_state.display AS state
     FROM
         run
 	JOIN run_state ON run_state.id = run.state

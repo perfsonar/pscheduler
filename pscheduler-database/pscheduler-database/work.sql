@@ -15,7 +15,7 @@ SELECT * FROM api_task_add( $$
     "schedule": {
 	"duration": "PT5S",
 	"repeat": "PT10S",
-	"max_runs": 100
+	"max_runs": 1000
     },
 
     "test": {
@@ -43,4 +43,3 @@ $$, 'sleep', 0 );
 
 --select count(*) from run;
 --select run, start_in from schedule_upcoming LIMIT 10;
-

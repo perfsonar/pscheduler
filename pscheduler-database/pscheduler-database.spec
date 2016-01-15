@@ -107,6 +107,8 @@ printf "';\n"  >> "${ROLESQL}"
 postgresql-load "${ROLESQL}"
 rm -f "${ROLESQL}"
 
+# TODO: What do we want to do about trust in pg_hba.conf?
+
 # TODO: Will eventually need to handle upgrades, but that's a ways off.
 
 

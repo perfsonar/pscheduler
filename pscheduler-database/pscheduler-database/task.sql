@@ -7,9 +7,13 @@ DROP TABLE IF EXISTS task CASCADE;
 CREATE TABLE task (
 
 	-- Row identifier
-	-- TODO: Make this a UUID in the future?
 	id		BIGSERIAL
 			PRIMARY KEY,
+
+	-- External-use identifier
+	uuid		UUID
+			UNIQUE
+			DEFAULT gen_random_uuid(),
 
 	-- JSON representation of the task.  This should be the only
 	-- column specified when inserting a row; all of the others
@@ -71,6 +75,8 @@ CREATE TABLE task (
 	--
 
 	-- Tool that will be used to run this test
+	-- TODO: Need to noodle through tool selection
+	-- TODO: What do we do if the tool disappears between boots?
 	tool	  	INTEGER
 			NOT NULL
 			REFERENCES tool(id),
@@ -78,8 +84,13 @@ CREATE TABLE task (
 	-- List of URIs for nodes participating in the test.
 	participants	JSONB,
 
+	-- Number of participants involved in the test, derived from
+	-- the participants field.
+	nparticipants	INTEGER,
+
 	-- This system's participant number
 	participant	INTEGER,
+
 
 	-- List of archives where the results are sent.
 	-- TODO: Validate this with a trigger
@@ -98,9 +109,11 @@ CREATE TABLE task (
 );
 
 
-
-
-
+-- This should be used when someone looks up the external ID.  Bring
+-- the row ID a long so it can be pulled without having to consult the
+-- table.
+CREATE INDEX task_uuid
+ON task(uuid, id);
 
 
 
@@ -206,12 +219,14 @@ BEGIN
 	-- TODO: Should probably check that the list members are
 	-- unique and that one of them includes the local system.
 
+	NEW.nparticipants := jsonb_array_length(NEW.participants);
+
 	-- Validate the participant number
 	IF NEW.participant IS NULL THEN
 	    RAISE EXCEPTION 'A participant number must be provided.';
 	END IF;
 	IF (NEW.participant < 0)
-	    OR (NEW.participant > (jsonb_array_length(NEW.participants) - 1)) THEN
+	    OR (NEW.participant > (NEW.nparticipants - 1)) THEN
 	    RAISE EXCEPTION 'Participant number is invalid for this test';
 	END IF;
 

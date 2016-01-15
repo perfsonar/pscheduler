@@ -50,12 +50,13 @@ CREATE TABLE tool_test (
 
 	-- Tool which says it can handle a test
 	tool		INTEGER
-			REFERENCES tool(id),
+			REFERENCES tool(id)
+			ON DELETE CASCADE,
 
 	-- The test the tool says it can handle
 	test		INTEGER
 			REFERENCES test(id)
-
+			ON DELETE CASCADE
 );
 
 
@@ -260,3 +261,7 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
+
+
+-- TODO: For multi-participant, will need a function that will return
+-- a list of the tools in order of preference.

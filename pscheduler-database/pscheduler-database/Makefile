@@ -22,6 +22,7 @@ FILES=\
 	task \
 	run_state \
 	run \
+	run_result \
 	schedule \
 	\
 	api \
