@@ -40,6 +40,9 @@ pscheduler-rpm
 pscheduler-account
 python-pscheduler
 pscheduler-core
+pscheduler-database
+
+# TODO: This should go away or become a bundle.
 pscheduler-server
 
 
