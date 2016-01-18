@@ -13,12 +13,17 @@ PROGRAMS=\
 # TODO: Put this back.
 #	pscheduler-runner \
 
+PROGRAMS_NOINIT=\
+	pscheduler-monitor
+
+PROGRAMS_ALL=$(PROGRAMS) $(PROGRAMS_NOINIT)
+
 INITS=$(PROGRAMS:%=%-init.d)
 
 default: build
 
 
-build: $(PROGRAMS) $(INITS)
+build: $(PROGRAMS) $(PROGRAMS_NOINIT) $(INITS)
 	@true
 
 
@@ -36,7 +41,7 @@ ifndef INITDDIR
 	@false
 endif
 	mkdir -p $(BINDIR)
-	cp -f $(PROGRAMS) $(BINDIR)
+	cp -f $(PROGRAMS_ALL) $(BINDIR)
 	chmod 555 $(PROGRAMS:%=$(BINDIR)/%)
 	mkdir -p $(INITDDIR)
 	@for SCRIPT in $(PROGRAMS) ; \

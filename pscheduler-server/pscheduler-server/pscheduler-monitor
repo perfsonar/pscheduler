@@ -1,0 +1,74 @@
+#!/bin/sh -e
+#
+# Monitor the state of pScheduler's schedule.
+#
+# Usage:  pscheduler-monitor [ --sleep n ]
+#
+# Where:
+#     --sleep n   Sleeps for n seconds between checks.  The default
+#                 is 2.
+#
+#
+# NOTE: This program is not particularly resource-efficient and should
+# really only be used for debug and diagnostics.
+# TODO: Write a better version of this in Python with curses.
+#
+
+SLEEP=2
+
+if [ $1 = '--sleep' ]
+then
+    shift
+    SLEEP="$1"
+    shift
+fi
+
+while true
+do
+    clear
+
+    printf "pScheduler Server Monitor | %s |  Updated every ${SLEEP} seconds\n\n" \
+	"$(date '+%Y-%m-%d %H:%M:%S')"
+
+
+    psql pscheduler <<EOF
+
+SELECT
+  id AS Run,
+  task,
+  lower(times) AS start,
+  upper(times) - lower (times) AS duration,
+  CASE
+    WHEN state = 'Pending' THEN 'AWOL'::char(10)
+    WHEN state = 'Finished' THEN 'Finished'::char(10)
+    ELSE state::char(10)
+    END
+FROM (SELECT * FROM run_status
+      WHERE
+        upper(times) < now()
+      ORDER BY times DESC
+      LIMIT 10) older
+UNION
+
+SELECT
+  id AS run,
+  task,
+  lower(times) AS start,
+  upper(times) - lower (times) AS duration,
+  CASE
+    WHEN state = 'Pending' THEN ''::char(10)
+    ELSE state::char(10)
+    END
+FROM (SELECT * FROM run_status
+      WHERE
+        times @> now()
+        OR lower(times) >= now()
+      LIMIT 10) newer
+
+ORDER BY start ASC
+;
+
+EOF
+
+    sleep $SLEEP
+done
