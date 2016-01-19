@@ -15,7 +15,13 @@ fi
 for PACKAGE in $(sed -e 's/#.*$//; /^\s*$/d' "${WHEREAMI}/RPM-BUILD-ORDER" \
     | awk '{ print NR, $0 }' | sort -rn | cut -d ' ' -f 2-)
 do
-    echo ${PACKAGE}
+    printf "Removing ${PACKAGE}..."
     # Don't care if these fail, just get rid of them.
-    rpm -e ${PACKAGE} || true
+    if rpm --quiet -q ${PACKAGE}
+    then
+	rpm -e ${PACKAGE} || true
+	echo "  Done."
+    else
+	echo "  Not installed."
+    fi
 done
