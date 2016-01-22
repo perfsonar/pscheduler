@@ -45,6 +45,10 @@ CREATE TABLE tool (
 CREATE INDEX tool_name ON tool(name);
 
 
+
+--
+-- Breaker table that maps tools to the tests they can run
+--
 DROP TABLE IF EXISTS tool_test CASCADE;
 CREATE TABLE tool_test (
 
