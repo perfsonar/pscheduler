@@ -2,6 +2,55 @@
 -- Functions that manage the schedule of runs
 --
 
+
+-- Gaps between scheduled time ranges.  This view does not
+-- self-order.
+
+-- Note that because PostgreSQL does not yet support infinite
+-- intervals (been in the plans since before 2008, apparently), the
+-- dates used for infinity are the minimum/maximum dates supported by
+-- the TIMESTAMP WITH TIME ZONE type.  Use of infinity would be more
+-- elegant, but for this application, the dates will do fine.
+--
+-- See:
+--   https://wiki.postgresql.org/wiki/Todo#Dates_and_Times
+--   http://www.postgresql.org/docs/9.5/static/datatype-datetime.html
+
+-- TODO: In testing, the query plan for this did a lot of sequential
+-- scans.  See if it uses the indexes when there are a larger number
+-- of records.
+
+DROP VIEW IF EXISTS schedule_gap;
+CREATE OR REPLACE VIEW schedule_gap
+AS
+    SELECT
+        -- Negative infinity to first start time
+        tstzrange( '4713-01-01 BC'::TIMESTAMP WITH TIME ZONE,
+                   (SELECT lower(times)
+                    FROM run
+                    ORDER BY times ASC
+                    LIMIT 1)
+        ) gap
+    UNION
+    SELECT
+        tstzrange( upper(r1.times),
+                   -- The last row will have a NULL for the subselect,
+                   -- which makes it the last one.that gap goes to infinity
+                   -- (and beyond!).
+                   COALESCE( (SELECT lower(times)
+                              FROM run r2
+                              WHERE lower(r2.times) > upper(r1.times)
+                              ORDER BY r2.times ASC
+                              LIMIT 1),
+                             '294276-12-31'::timestamp with time zone
+                   ),
+                   '[)' ) gap
+    FROM run r1
+;
+
+
+
+
 -- NOTE:  These functions implement a very simplistic first-come, first-served schedule.
 
 
@@ -26,6 +75,7 @@ BEGIN
 
     -- Examine the gaps between runs and see if there's enough space
     -- for the task.
+    -- TODO: Use the schedule_gaps view defined above for this.
 
     FOR run_rec IN (SELECT times FROM run ORDER BY times)
     LOOP
