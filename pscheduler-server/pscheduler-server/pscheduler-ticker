@@ -25,6 +25,8 @@ opt_parser.add_option("-r", "--retry",
                       help="No-rows-returned retry interval (ISO8601)",
                       action="store", type="string", dest="retry",
                       default="PT15S")
+opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
+
 
 (options, args) = opt_parser.parse_args()
 
@@ -33,6 +35,22 @@ if retry is None:
     opt_parser.error('Invalid retry interval "' + options.retry + '"')
 if pscheduler.timedelta_as_seconds(retry) == 0:
     opt_parser.error("Retryinterval must be calculable as seconds.")
+
+
+#
+# Utilities
+#
+
+is_verbose = options.verbose
+def verbose(first, *args):
+    if not is_verbose:
+        return
+    sys.stdout.write(first)
+    for arg in args:
+        sys.stdout.write(' ')
+        sys.stdout.write(str(arg))
+    sys.stdout.write('\n')
+
 
 
 dsn = options.dsn
@@ -75,6 +93,7 @@ try:
 
         sleep_time = cursor.fetchone()[0]
         seconds = pscheduler.timedelta_as_seconds(sleep_time)
+        verbose("Next check in", seconds)
         time.sleep(seconds)
 
     # Not that this will ever be reached...
