@@ -288,6 +288,7 @@ CREATE TRIGGER task_alter BEFORE INSERT OR UPDATE ON task
 
 
 -- TODO: This trigger should probably be part of schedule.sql
+-- TODO: It should go entirely when we do multi-participant
 CREATE OR REPLACE FUNCTION task_alter_post()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -298,17 +299,3 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER task_alter_post AFTER INSERT OR UPDATE ON task
        FOR EACH ROW EXECUTE PROCEDURE task_alter_post();
-
-
-
-CREATE OR REPLACE FUNCTION task_delete_pre()
-RETURNS TRIGGER AS $$
-BEGIN
-	DELETE FROM run WHERE task = OLD.id;
-
-	RETURN OLD;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER task_delete_pre BEFORE DELETE ON task
-       FOR EACH ROW EXECUTE PROCEDURE task_delete_pre();
