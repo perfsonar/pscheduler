@@ -24,7 +24,7 @@ CREATE TABLE run (
 	times		TSTZRANGE
 			NOT NULL,
 
-	-- State of this run (see run_state table)
+	-- State of this run
 	state	    	 INTEGER DEFAULT run_state_pending()
 			 REFERENCES run_state(id),
 
@@ -44,6 +44,7 @@ ON task(uuid, id);
 -- GIST accelerates range-specific operators like &&
 CREATE INDEX run_times ON run USING GIST (times);
 CREATE INDEX run_times_lower ON run(lower(times), state);
+CREATE INDEX run_times_upper ON run(upper(times));
 
 
 
@@ -86,6 +87,8 @@ BEGIN
         END IF;
 
     END IF;
+
+    NOTIFY run_change;
 
     RETURN NEW;
 END;
@@ -136,20 +139,30 @@ $$ LANGUAGE plpgsql;
 
 -- Maintenance functions
 
-CREATE OR REPLACE FUNCTION run_maint_minute()
+CREATE OR REPLACE FUNCTION run_handle_stragglers()
 RETURNS VOID
 AS $$
 BEGIN
 
-    -- Runs that are still pending after their completion
-    -- times as having been missed.
+    -- Runs that are still pending after their start times were
+    -- missed.
 
     UPDATE run
     SET state = run_state_missed()
     WHERE
         state = run_state_pending()
 	-- TODO: This interval should probably be a tunable.
-	AND upper(times) < normalized_now() - 'PT5S'::interval;
+	AND lower(times) < normalized_now() - 'PT5S'::interval;
+
+    -- Runs that started and didn't report back in a timely manner
+
+    UPDATE run
+    SET
+        state = run_state_overdue()
+    WHERE
+        state = run_state_running()
+	-- TODO: This interval should probably be a tunable.
+	AND upper(times) < normalized_now() - 'PT10S'::interval;
 
     -- Runs still running well after their expected completion times
     -- are treated as having failed.
@@ -158,11 +171,22 @@ BEGIN
     SET
         state = run_state_missed()
     WHERE
-        state = run_state_running()
+        state = run_state_overdue()
 	-- TODO: This interval should probably be a tunable.
 	AND upper(times) < normalized_now() - 'PT1M'::interval;
 
+END;
+$$ LANGUAGE plpgsql;
 
+
+
+-- Maintenance that happens once per minute.
+
+CREATE OR REPLACE FUNCTION run_maint_fifteen()
+RETURNS VOID
+AS $$
+BEGIN
+    PERFORM run_handle_stragglers();
 END;
 $$ LANGUAGE plpgsql;
 
@@ -173,21 +197,25 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE VIEW run_status
 AS
     SELECT
-        run.id,
-	run.task,
-	run.id AS run,
+        run.id AS run,
+	run.uuid AS run_uuid,
+	task.id AS task,
+	task.uuid AS task_uuid,
 	run.times,
 	run_state.display AS state
     FROM
         run
 	JOIN run_state ON run_state.id = run.state
+	JOIN task ON task.id = task
     WHERE
-        state != run_state_pending()
-    ORDER BY times;
+        run.state != run_state_pending()
+	OR (run.state = run_state_pending()
+            AND lower(run.times) < (now() + 'PT2M'::interval))
+    ORDER BY run.times;
 
 
 CREATE VIEW run_status_short
 AS
-    SELECT id, task, times, state
+    SELECT run, task, times, state
     FROM  run_status
 ;
