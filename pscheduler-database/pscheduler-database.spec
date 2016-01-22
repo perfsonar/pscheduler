@@ -90,6 +90,12 @@ awk -v "ROLE=${ROLE}" '{ printf "dbname=pscheduler user=%s password=%s\n", ROLE,
 
 # Load the database
 
+# TODO: Note that if these fail, the scriptlet stops but RPM doesn't
+# exit zero.  This is apparently not getting fixed.
+#
+# Discussion:
+#   https://bugzilla.redhat.com/show_bug.cgi?id=569930
+#   http://rpm5.org/community/rpm-users/0834.html
 
 postgresql-load %{_pscheduler_datadir}/database-build-super.sql
 postgresql-load --role '%{db_user}' %{_pscheduler_datadir}/database-build.sql
