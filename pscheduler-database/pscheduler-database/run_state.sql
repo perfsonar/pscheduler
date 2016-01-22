@@ -20,10 +20,11 @@ INSERT INTO run_state (id, display)
 VALUES
 	(1, 'Pending'),   -- Waiting to be run
 	(2, 'Running'),   -- Being executed
-	(3, 'Finished'),  -- Run successfully
-	(4, 'Missed'),    -- Didn't run
-	(5, 'Failed'),    -- Ran but didn't succeed
-	(6, 'Trumped')    -- Lost out to higher-priority run
+	(3, 'Finished'),  -- Ran successfully
+	(4, 'Overdue'),   -- No idea of outcome yet
+	(5, 'Missed'),    -- Didn't run
+	(6, 'Failed'),    -- Ran but didn't succeed
+	(7, 'Trumped')    -- Lost out to higher-priority run
 	;
 
 
@@ -52,8 +53,10 @@ CREATE OR REPLACE FUNCTION run_state_transition_is_valid(
 RETURNS BOOLEAN
 AS $$
 BEGIN
-    RETURN    ( old = 1 AND new IN (2, 3, 4, 5, 6) )
-           OR ( old = 2 AND new IN (3, 5) );
+   RETURN  new = old
+           OR   ( old = 1 AND new IN (2, 4, 5, 7)   )
+           OR ( old = 2 AND new IN (3, 4, 5, 6, 7) )
+           OR ( old = 4 AND new IN (3, 5, 6, 7)    );
 END;
 $$ LANGUAGE plpgsql;
 
@@ -88,7 +91,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION run_state_missed()
+CREATE OR REPLACE FUNCTION run_state_overdue()
 RETURNS INTEGER
 AS $$
 BEGIN
@@ -96,7 +99,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION run_state_failed()
+CREATE OR REPLACE FUNCTION run_state_missed()
 RETURNS INTEGER
 AS $$
 BEGIN
@@ -104,11 +107,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION run_state_failed()
+RETURNS INTEGER
+AS $$
+BEGIN
+	RETURN 6;
+END;
+$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION run_state_trumped()
 RETURNS INTEGER
 AS $$
 BEGIN
-	RETURN 6;
+	RETURN 7;
 END;
 $$ LANGUAGE plpgsql;
