@@ -4,10 +4,11 @@
 
 -- TODO: Remove this file from the sources when development is complete.
 
-select boot();
+-- select boot();
 --select id, name, description, version, updated, available from tool;
 --select * from tool_test;
 
+DELETE FROM task;
 
 SELECT * FROM api_task_add( $$
 {
@@ -15,7 +16,7 @@ SELECT * FROM api_task_add( $$
     "schedule": {
 	"duration": "PT5S",
 	"repeat": "PT10S",
-	"max_runs": 1000
+	"max_runs": 50
     },
 
     "test": {
@@ -25,11 +26,16 @@ SELECT * FROM api_task_add( $$
  	    "starting_comment": "Starting to sleep.",
 	    "parting_comment": "Done sleeping."
 	}
-    }
+    },
+
+    "archives": [
+        { "name": "bitbucket", "data": {} },
+        { "name": "failer",    "data": {} }
+    ]
+
 }
 
 $$, 'sleep', 0 );
-
 
 
 
