@@ -9,9 +9,10 @@ die()
     exit 1
 }
 
+# TODO: Turn on before production
 # Keep the uninitiated from running internal commands interactively.
-[ -t 0 -a -t 1 -a -t 2 -a -z "${PERFSONAR_DEVEL}" ] \
-    && die "You probably don't want to do that."
+#[ -t 0 -a -t 1 -a -t 2 -a -z "${PERFSONAR_DEVEL}" ] \
+#    && die "You probably don't want to do that."
 
 
 LIBEXEC=$(cd "${WHEREAMI}/.." && pwd)
