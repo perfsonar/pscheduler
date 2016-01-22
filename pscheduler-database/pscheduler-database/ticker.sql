@@ -3,12 +3,22 @@
 --
 
 
+-- Things that get done a fifteen-second intervals
+CREATE OR REPLACE FUNCTION ticker_fifteen()
+RETURNS VOID
+AS $$
+BEGIN
+    PERFORM run_maint_fifteen();
+END;
+$$ LANGUAGE plpgsql;
+
+
 -- Things that get done a one-minute intervals
 CREATE OR REPLACE FUNCTION ticker_minute()
 RETURNS VOID
 AS $$
 BEGIN
-    PERFORM run_maint_minute();
+    NULL;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -57,7 +67,12 @@ DECLARE
     clock_time TIMESTAMP WITH TIME ZONE;
 BEGIN
 
-    perform ticker_minute();
+    PERFORM ticker_fifteen();
+
+    -- Allow a small amount of slop for minute intervals.
+    IF EXTRACT(SECOND FROM now()) BETWEEN 0 and 5 THEN
+        PERFORM ticker_minute();
+    END IF;
 
     this_minute := date_trunc('minute', now());
 
@@ -70,11 +85,16 @@ BEGIN
     END IF;
 
     -- Use the actual wall clock time to determine how long until the
-    -- next call.  This will compensate for any time consumed running
-    -- the periodic functions.
+    -- next call (0/15/30/45 seconds within each minute).  This will
+    -- compensate for any time consumed running the periodic
+    -- functions.
 
     clock_time := clock_timestamp();  -- Note:  Not standard SQL
-    RETURN date_trunc('minute', (clock_time + 'PT1M')) - clock_time;
+    RETURN
+        date_trunc('minute', clock_time)
+        + (TRUNC(EXTRACT(SECONDS FROM clock_time) / 15) + 1)
+           * 'PT15S'::interval
+        - (clock_time - 'PT1S'::interval);
 
 END;
 $$ LANGUAGE plpgsql;
