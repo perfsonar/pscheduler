@@ -7,21 +7,47 @@
 # Where:
 #     --sleep n   Sleeps for n seconds between checks.  The default
 #                 is 2.
+#     --uuid      Show task/run UUIDs instead of DB row IDs
 #
 #
 # NOTE: This program is not particularly resource-efficient and should
 # really only be used for debug and diagnostics.
 # TODO: Write a better version of this in Python with curses.
+# TODO: Need to handle reading the DSN file.
 #
 
 SLEEP=2
+RUN_ID=run
+TASK_ID=task
 
-if [ $1 = '--sleep' ]
-then
-    shift
-    SLEEP="$1"
-    shift
-fi
+
+while echo "$1" | egrep -qe '^--.'
+do
+  OPTION="$1"
+  shift
+
+  case "${OPTION}" in
+
+      --sleep)
+          SLEEP="$1"
+          shift
+          ;;
+
+      --uuid)
+          RUN_ID=run_uuid
+	  TASK_ID=task_uuid
+          ;;
+
+      *)
+          die "Unknown option ${OPTION}"
+          ;;
+
+  esac
+
+done
+
+
+
 
 while true
 do
@@ -34,16 +60,18 @@ do
     psql pscheduler <<EOF
 
 SELECT
-  id AS Run,
-  task,
+  ${RUN_ID} AS run,
+  ${TASK_ID} AS task,
   lower(times) AS start,
-  upper(times) - lower (times) AS duration,
+  upper(times) - lower(times) AS duration,
   CASE
     WHEN state = 'Pending' THEN 'AWOL'::char(10)
     WHEN state = 'Finished' THEN 'Finished'::char(10)
     ELSE state::char(10)
     END
-FROM (SELECT * FROM run_status
+FROM (SELECT *
+      FROM
+          run_status
       WHERE
         upper(times) < now()
       ORDER BY times DESC
@@ -51,10 +79,10 @@ FROM (SELECT * FROM run_status
 UNION
 
 SELECT
-  id AS run,
-  task,
+  ${RUN_ID} AS run,
+  ${TASK_ID} AS task,
   lower(times) AS start,
-  upper(times) - lower (times) AS duration,
+  upper(times) - lower(times) AS duration,
   CASE
     WHEN state = 'Pending' THEN ''::char(10)
     ELSE state::char(10)
