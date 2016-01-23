@@ -7,7 +7,7 @@ exec cat << EOF
     "version": "0.0",
 
     "_": "This is a list of the tests the archiver understands how to handle.  If not provided, it is assumed the archiver will happily ingest anything it is handed.",
-    "_tests": [ "idle" ],
+    "tests": [ "idle" ],
 
     "maintainer": {
         "name": "perfSONAR Development Team",
