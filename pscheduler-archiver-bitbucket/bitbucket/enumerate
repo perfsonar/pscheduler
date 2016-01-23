@@ -6,8 +6,8 @@ exec cat << EOF
     "description": "Dump results into the bit bucket.",
     "version": "0.0",
 
-    "_": "This is a list of the tests the archiver understands how to handle.  If not provided, it is assumed the archiver will happily ingest anything it is handed."
-    "_tests": [ "idle" ]
+    "_": "This is a list of the tests the archiver understands how to handle.  If not provided, it is assumed the archiver will happily ingest anything it is handed.",
+    "_tests": [ "idle" ],
 
     "maintainer": {
         "name": "perfSONAR Development Team",
