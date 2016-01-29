@@ -21,6 +21,15 @@ CREATE TABLE task (
 	json		JSONB
 			NOT NULL,
 	
+
+	--
+	-- TEST
+	--
+
+	test		BIGINT
+			REFERENCES test(id)
+			ON DELETE CASCADE,
+
 	--
 	-- SCHEDULING
 	--
@@ -76,10 +85,10 @@ CREATE TABLE task (
 
 	-- Tool that will be used to run this test
 	-- TODO: Need to noodle through tool selection
-	-- TODO: What do we do if the tool disappears between boots?
 	tool	  	INTEGER
 			NOT NULL
-			REFERENCES tool(id),
+			REFERENCES tool(id)
+			ON DELETE CASCADE,
 
 	-- List of URIs for nodes participating in the test.
 	participants	JSONB,
@@ -124,6 +133,7 @@ RETURNS TRIGGER
 AS $$
 DECLARE
 	key TEXT;
+	test_type TEXT;
 	start TEXT;
 	until TEXT;
 	run_result external_program_result;
@@ -141,6 +151,13 @@ BEGIN
 	      RAISE EXCEPTION 'Unrecognized section "%" in task package.', key;
 	   END IF;
 	END LOOP;
+
+	test_type := (NEW.json #>> '{test, type}');
+	SELECT INTO NEW.test test.id FROM test WHERE test.name = test_type;
+	IF NOT FOUND THEN
+            RAISE EXCEPTION 'Unknown test type "%"', test_type;
+	END IF;
+
 
 	run_result := pscheduler_internal(ARRAY['invoke', 'test', (NEW.json #>> '{test, type}'), 'spec-is-valid'],
 		      NEW.json #>> '{test, spec}' );
