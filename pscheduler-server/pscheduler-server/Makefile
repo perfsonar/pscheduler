@@ -8,13 +8,14 @@
 #
 
 PROGRAMS=\
-	pscheduler-ticker
+	pscheduler-ticker \
 
-# TODO: Put this back.
-#	pscheduler-runner \
+# TODO: pscheduler-runner needs to have an init script and be moved to
+# PROGRAMS.
 
 PROGRAMS_NOINIT=\
-	pscheduler-monitor
+	pscheduler-monitor \
+	pscheduler-runner
 
 PROGRAMS_ALL=$(PROGRAMS) $(PROGRAMS_NOINIT)
 
