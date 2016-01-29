@@ -50,24 +50,54 @@ meaningless.
 \def\allparts#1{\condition{#1}{p0,p1,pn}\nextlevel[2]}
 
 %
+% Overview
+%
+
+\begin{msc}{Overview}
+\parts
+\mn{Task}{o}{p0}
+
+\act{Tool Determination}{p0}
+\dn{Unable}{p0}{o}
+\act{Task Establishment}{p0}
+\dn{Unable}{p0}{o}
+\mn{Task Identifier}{p0}{o}
+\act{Run(s)}{p0}
+\mn{Fetch Result}{o}{p0}
+\mn{Result}{p0}{o}
+\act{Archive}{p0}
+
+\end{msc}
+
+
+%
+% Tool Determination
+%
+\begin{msc}{Tool Determination}
+\parts
+
+\mn{Test Spec}{p0}{p1}
+\mn{Tool list}{p1}{p0}
+
+\mn{Test Spec}{p0}{pn}
+\mn{Tool list}{pn}{p0}
+
+\act{Intersect tool lists}{p0}
+\dn{Unable}{p0}{o}
+\act{Select Tool}{p0}
+
+\end{msc}
+
+
+%
 % Task Establishment
 %
 \begin{msc}{Task Establishment}
 \parts
 
-\mn{Task+Test}{o}{p0}
+\act{Assign Task ID}{p0}
 
-\mn{What tools for test?}{p0}{p1}
-\mn{Tool list}{p1}{p0}
-
-\mn{What tools for test?}{p0}{pn}
-\mn{Tool list}{pn}{p0}
-
-\act{Intersect tool lists}{p0}
-
-\dn{Unable}{p0}{o}
-
-\act{Assign Task IDs}{p0}
+\mn{Task, Tool}{p0}{p1}
 
 \mn{Task}{p0}{p1}
 \mn{OK}{p1}{p0}
@@ -75,7 +105,7 @@ meaningless.
 \mn{Task}{p0}{pn}
 \mn{OK}{pn}{p0}
 
-\mn{OK}{p0}{o}
+\mn{Task ID}{p0}{o}
 
 \end{msc}
 
@@ -94,9 +124,11 @@ meaningless.
 
 \mn{Tentative Run Time}{p0}{pn}
 \mn{Proposal}{pn}{p0}
-\nextlevel
+\act{Intersect Proposals}{p0}
 \mn{Schedule Run}{p0}{p1}
 \mn{OK}{p1}{p0}
+
+
 
 \mn{Schedule Run}{p0}{pn}
 \mn{OK}{pn}{p0}
@@ -134,6 +166,27 @@ meaningless.
 \act{Archive}{p0}
 
 \end{msc}
+
+
+
+\section{Sample Tool List Return}
+
+This is what is returned when given a task and asked to find the tools
+which can run it.  Note that the list of tools is not in any
+particular order.
+
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "schema": 1,
+
+    "tools": [
+        { "name": "foo", "preference": 5 },
+        { "name": "bar", "preference": 0 }
+        { "name": "baz", "preference": -1 }
+    ]
+}
+\end{lstlisting}
+
 
 
 
@@ -191,6 +244,7 @@ meaningless.
             "parting_comment": "Done sleeping."
         }
     }
+    "participant": 0
 }
 \end{lstlisting}
 
@@ -211,6 +265,7 @@ meaningless.
 }
 
 \end{lstlisting}
+
 
 
 
