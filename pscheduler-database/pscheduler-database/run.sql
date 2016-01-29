@@ -201,12 +201,16 @@ AS
 	run.uuid AS run_uuid,
 	task.id AS task,
 	task.uuid AS task_uuid,
+	test.name AS test,
+	tool.name AS tool,
 	run.times,
 	run_state.display AS state
     FROM
         run
 	JOIN run_state ON run_state.id = run.state
 	JOIN task ON task.id = task
+	JOIN test ON test.id = task.test
+	JOIN tool ON tool.id = task.tool
     WHERE
         run.state != run_state_pending()
 	OR (run.state = run_state_pending()
