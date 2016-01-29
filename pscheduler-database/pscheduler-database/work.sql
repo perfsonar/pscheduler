@@ -8,7 +8,7 @@
 --select id, name, description, version, updated, available from tool;
 --select * from tool_test;
 
-DELETE FROM task;
+-- DELETE FROM task;
 
 SELECT * FROM api_task_add( $$
 {
