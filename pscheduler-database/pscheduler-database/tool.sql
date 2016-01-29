@@ -238,7 +238,8 @@ $$ LANGUAGE plpgsql;
 
 
 
--- Determine whether or not a tool is willing to run a specific test
+-- Determine whether or not a tool is willing to run a specific test.
+
 
 CREATE OR REPLACE FUNCTION tool_can_run_task(tool_name TEXT, task JSONB)
 RETURNS BOOLEAN
@@ -246,6 +247,7 @@ AS $$
 DECLARE
     run_result external_program_result;
 BEGIN
+    -- TODO: Consider removing this.
     IF NOT EXISTS (SELECT * FROM tool where name = tool_name) THEN
         RAISE EXCEPTION 'Tool "%" is not installed.', tool_name;
     END IF;
