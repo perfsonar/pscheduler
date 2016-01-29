@@ -24,25 +24,27 @@ DROP VIEW IF EXISTS schedule_gap;
 CREATE OR REPLACE VIEW schedule_gap
 AS
     SELECT
-        -- Negative infinity to first start time
+        -- Negative infinity to first start time, or all time if no rows
         tstzrange( '4713-01-01 BC'::TIMESTAMP WITH TIME ZONE,
-                   (SELECT lower(times)
-                    FROM run
-                    ORDER BY times ASC
-                    LIMIT 1)
+                   COALESCE( (SELECT lower(times)
+                              FROM run
+                              ORDER BY times ASC
+                              LIMIT 1),
+                             '294276-12-31'::TIMESTAMP WITH TIME ZONE )
         ) gap
     UNION
     SELECT
+        -- All gaps in the schedule.
         tstzrange( upper(r1.times),
                    -- The last row will have a NULL for the subselect,
-                   -- which makes it the last one.that gap goes to infinity
-                   -- (and beyond!).
+                   -- which makes it the last one.  That gap goes to
+                   -- infinity (and beyond!).
                    COALESCE( (SELECT lower(times)
                               FROM run r2
                               WHERE lower(r2.times) > upper(r1.times)
                               ORDER BY r2.times ASC
                               LIMIT 1),
-                             '294276-12-31'::timestamp with time zone
+                             '294276-12-31'::TIMESTAMP WITH TIME ZONE
                    ),
                    '[)' ) gap
     FROM run r1
