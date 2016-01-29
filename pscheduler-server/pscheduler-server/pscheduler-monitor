@@ -62,6 +62,8 @@ do
 SELECT
   ${RUN_ID} AS run,
   ${TASK_ID} AS task,
+  test::char(10),
+  tool::char(10),
   lower(times) AS start,
   upper(times) - lower(times) AS duration,
   CASE
@@ -81,6 +83,8 @@ UNION
 SELECT
   ${RUN_ID} AS run,
   ${TASK_ID} AS task,
+  test::char(10),
+  tool::char(10),
   lower(times) AS start,
   upper(times) - lower(times) AS duration,
   CASE
