@@ -24,6 +24,7 @@ FILES=\
 	run \
 	run_result \
 	schedule \
+	archiver \
 	\
 	api \
 	boot \
