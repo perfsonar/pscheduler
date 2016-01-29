@@ -42,7 +42,10 @@ yum -y install \
     postgresql94-plpython
 
 # Things needed for pScheduler
-yum -y install rpmdevtools python-psycopg2
+yum -y install \
+    rpmdevtools \
+    python-psycopg2 \
+    texlive-latex
 
 # Conveniences
 yum -y install emacs-nox screen

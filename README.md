@@ -15,7 +15,7 @@ part of the build proces and must be built manually.
 There's a bit of a chicken-and-egg problem (TODO: fix this), so you'll
 need a system with LaTeX to build the manual.
 
-1. Install LaTex (TODO: Which package(s), specifically?)
+1. `yum -y install texlive-latex`
 2. `cd docs`
 3. `make`
 
