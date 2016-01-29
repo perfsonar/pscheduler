@@ -80,6 +80,11 @@ except Exception as exception:
 #
 
 try:
+
+    # TODO: This needs a whole lot of bulletproofing.
+
+    cursor.execute("SELECT boot()")
+
     while True:
 
         cursor.execute("SELECT ticker()")
