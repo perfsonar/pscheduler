@@ -1,0 +1,188 @@
+%
+% pScheduler JSON Style Guide and Dictionary
+%
+
+% TODO: Add titlepage to the options.
+\documentclass[10pt]{article}
+
+\input pscheduler-tex.tex
+
+\DRAFT
+
+\title{pScheduler JSON Style Guide and Type Dictionary}
+\author{The perfSONAR Development Team}
+
+
+\begin{document}
+\maketitle
+
+%
+% Utilities
+%
+
+\def\source#1#2{{\bf #1:}  \url{#2}}
+
+
+%
+% INTRODUCTION
+%
+
+\section{Introduction}
+\todo{Write this, mention ECMA-404.}
+
+Sources of reference for the standards referred to multiple times by
+this document can be found in section \autoref{standards}, {\it
+  \nameref{standards}}.
+
+
+%
+% JSON STYLE
+%
+
+\section{JSON Style}
+\todo{Write this.}
+
+\subsection{Quotation Marks}
+All element names and other string values will be surrounded by double
+quotation marks ({\tt "}...{\tt"}).
+
+\example\ {\tt "spaghetti"} and {\tt "meatballs"}.
+
+
+\subsection{Element Names}
+Element names will be lowercase with words separated by hyphens.
+
+\example\ {\tt this}, {\tt that} and {\tt the-other}.
+
+
+%
+% TYPE DICTIONARY
+%
+
+\section{Type Dictionary}
+
+This section covers simple and compound types used in pScheduler.
+
+
+\subsection{Boolean}
+A boolean value as defined by ECMA 404.
+
+\example\ {\tt true} and {\tt false}.  (Note that these are also
+the only two valid values.)
+
+
+\subsection{Duration}
+A length of time as defined by the ISO 8601 standard.
+
+\example\ {\tt P3D}, {\tt PT15M} and {\tt P3DT2H6M18S}.
+
+
+\subsection{Email}
+An electronic mail address as defined by RFC 5322, section 3.4.
+
+\example\ {\tt alice@finance.example.com} and {\tt
+  bob.smith@eng.example.org}.
+
+\source{IETF}{https://tools.ietf.org/html/rfc5322}
+
+
+\subsection{Geographic Position}
+A string representing coordinates on the Earth in the format defined
+by ISO 6709, Annex H.  The trailing slash mandated by the standard is
+optional but should be accepted if provided.
+
+\example\ {\tt +48.8577+002.295/} and {\tt +40.6894-074.0447/}.
+
+\source{ISO}{http://www.iso.org/iso/home/store/catalogue_tc/catalogue_detail.htm?csnumber=39242}\\
+\source{Wikipedia}{https://en.wikipedia.org/wiki/ISO_6709}
+
+
+
+\subsection{Integer}
+A subset of {\tt number} as defined by ECMA 404 with the restriction
+that the value contain no decimal point or scientific notation.
+
+\example\ {\tt 0}, {\tt 3713} and {\tt -6264}.
+
+
+\subsection{Maintainer}
+
+An object containing identifying and contact information about the
+maintainer of a piece of pSchedler software.  It contains these
+elements:
+
+\typeditem{name}{String} The name of the maintainer.
+
+\typeditem{email}{Email} The maintainer's email address.
+
+\typeditem{href}{URL} A URL where more information on the sofware or
+the maintainer's organization can be found.
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "name": "Example Software Development Team",
+    "email": "software@example.org",
+    "href": "http://www.example.org/software"
+}
+\end{lstlisting}
+
+
+\subsection{Number}
+A {\tt number} as defined by ECMA 404.
+
+\example\ {\tt 47}, {\tt -19.3} and {\tt 6.022e23}.
+
+
+\subsection{String}
+A {\tt string} as defined by ECMA 404.
+
+\example\ {\tt "Hello, World!"} and {\tt "He said
+  \textbackslash"hello\textbackslash" as he went by."}
+
+
+\subsection{Timestamp}
+A date and time specified as defined the ISO 8601 standard.
+
+\example\ {\tt 2015-02-27} and {\tt 2015-08-31T09:00:00-05}.
+
+
+\subsection{URL}
+A Uniform Resource Locator, Uniform Resource Identifier or Uniform
+Resource Name specified as defined by RFC 3986.
+
+\example\ {\tt http://www.example.org} and {\tt http://www.perfsonar.net}.
+
+\source{IETF}{https://tools.ietf.org/html/rfc3986}
+
+
+\subsection{Version}
+A software version in the standard {\tt major.minor.patch} format.
+
+\example\ {\tt 3.2.7}
+
+
+
+
+%
+% STANDARDS
+%
+
+\section{Standards}\label{standards}
+
+\subsection{ECMA 404}
+ECMA 404 describes a lightweight, plain-text format for data
+interchange based on a subset of the JavaScript language.
+
+\source{ECMA}{http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf}\\
+\source{JSON.Org}{http://json.org}
+
+
+\subsection{ISO 8601}
+ISO 8601 is an international standard for describing dates, times,
+intervals and repetition.
+
+\source{ISO}{http://www.iso.org/iso/home/store/catalogue_tc/catalogue_detail.htm?csnumber=40874}\\
+\source{Wikipedia}{https://en.wikipedia.org/wiki/ISO_8601}
+
+\end{document}

@@ -1,0 +1,91 @@
+%
+% pScheduler Test Guide for Idle
+%
+
+\def\testname{idle}
+
+
+% TODO: Add titlepage to the options.
+\documentclass[10pt]{article}
+
+\input pscheduler-tex.tex
+
+\DRAFT
+
+\title{pScheduler Test Guide: {\it \testname}}
+\author{The perfSONAR Development Team}
+
+
+\begin{document}
+\maketitle
+
+
+%
+% INTRODUCTION
+%
+
+\section{Introduction}
+
+The {\tt \testname} test does nothing for a length of time called the
+{\it idle} period.  This test is intended for use in development and
+testing and not for use in producion.
+
+Tools implementing this test should strive to be idle as efficiently
+as possible.
+
+This document describes schema version {\tt 1}.
+
+
+%
+% TEST SPECIFICATION
+%
+
+\section{Test Specification Format}
+
+\subsection{Description}
+
+The test specification consists of a single JSON object containing the
+pairs below.  \seejson
+
+
+\typeditem{duration}{Duration} Duration of the idle period.
+
+\typeditem{starting-comment}{String} Optional text to be output or
+logged by the test at the beginning of the idle period.
+
+\typeditem{parting-comment}{String} Optional text to be output or
+logged by the test at the conslusion of the idle period.
+
+\subsection{Example}
+\begin{lstlisting}[language=json]
+{
+    "duration": "PT30S",
+    "starting-comment": "Starting to do nothing",
+    "parting-comment": "Finished doing nothing"
+}
+\end{lstlisting}
+
+
+%
+% RESULT FORMAT
+%
+
+\section{Result Format}
+
+\subsection{Description}
+The result consists of a single JSON object containing the pairs
+below.  \seejson
+
+\typeditem{duration}{Duration} Length of time spent idle.  This should
+match the duration in the specification.
+
+
+\subsection{Example}
+\begin{lstlisting}[language=json]
+{
+    "duration": "PT30S"
+}
+\end{lstlisting}
+
+
+\end{document}

@@ -6,7 +6,9 @@ default: build
 
 LATEX=\
 	developers-guide \
-	misc
+	json \
+	misc \
+	test-idle
 
 
 TEXES=$(LATEX:%=%.tex)

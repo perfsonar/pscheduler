@@ -363,12 +363,12 @@ used when pScheduler needs to determine what tests are installed.
   example, a test that determines how long it takes for packets to get
   from one host to another should be called {\tt latency} and not {\tt
     owamp}.  A test the determines the same for a round trip should be
-  called {\tt rtt} (short for {\it round-trip time} and not {\tt
+  called {\tt rtt} (short for {\it round-trip time}) and not {\tt
     ping}.
 \item{\tt description} - A short, textual description of what the test
   measures.
-\item{\tt version} - A \jsonobject{version}.
-\item{\tt maintainer} - A \jsonobject{maintainer}.
+\item{\tt version} - A \jsonobject{Version}.
+\item{\tt maintainer} - A \jsonobject{Maintainer}.
 \end{itemize}
 
 \example
@@ -511,7 +511,7 @@ used when pScheduler needs to determine what tools are installed.
   used, such as {\tt traceroute}, {\tt tracepath} or {\tt mtr}.
 \item{\tt description} - A short, textual description of what the tool
   does.
-\item{\tt version} - A \jsonobject{version}.
+\item{\tt version} - A \jsonobject{Version}.
 \item{\tt tests} - An array of strings listing the tests which the
   tool is capable of accommodating.  Including a class here does not
   imply that the tool is required to actually perform the test, only
@@ -524,7 +524,7 @@ used when pScheduler needs to determine what tools are installed.
   {\tt 0} and deprecated tools should use a negative number.  This
   value is considered advisory only, as some measurements may specify
   that a specific tool be used to conduct a measurement.
-\item{\tt maintainer} - A \jsonobject{maintainer}.
+\item{\tt maintainer} - A \jsonobject{Maintainer}.
 \end{itemize}
 
 \example
@@ -607,8 +607,8 @@ installed.
   sink or {\tt esmond} for an archiving system like {\it esmond}.
 \item{\tt description} - A short, textual description of what the
   archiver does.
-\item{\tt version} - A \jsonobject{version}.
-\item{\tt maintainer} - A \jsonobject{maintainer}.
+\item{\tt version} - A \jsonobject{Version}.
+\item{\tt maintainer} - A \jsonobject{Maintainer}.
 \end{itemize}
 
 \example
@@ -681,20 +681,20 @@ macros are available for use in RPM specifications:
 \begin{center}
   \begin{tabular}{ll} 
     % Tests
-    {\tt \_pscheduler\_test\_libexec} & Test implementations \\
-    {\tt \_pscheduler\_test\_doc} & Test documentation \\
+    {\tt _pscheduler_test_libexec} & Test implementations \\
+    {\tt _pscheduler_test_doc} & Test documentation \\
     % Tools
-    {\tt \_pscheduler\_tool\_libexec} & Tool implementations \\
-    {\tt \_pscheduler\_tool\_doc} & Tool documentation \\
+    {\tt _pscheduler_tool_libexec} & Tool implementations \\
+    {\tt _pscheduler_tool_doc} & Tool documentation \\
     % Archivers
-    {\tt \_pscheduler\_archiver\_libexec} & Archiver implementations \\
-    {\tt \_pscheduler\_archiver\_doc} & Archiver documentation \\
+    {\tt _pscheduler_archiver_libexec} & Archiver implementations \\
+    {\tt _pscheduler_archiver_doc} & Archiver documentation \\
   \end{tabular}
 \end{center}
 
 Test, tool and archiver implementations should be installed in a
 subdirectory matching their names.  For example,
-{\tt\%\{\_pscheduler\_tool\_libexec\}/owamp} would be the recommended
+{\tt\%\{_pscheduler_tool_libexec\}/owamp} would be the recommended
 way to specify the installation directory for the {\tt owamp} tool.
 
 \subsection{Debian}
@@ -712,52 +712,5 @@ way to specify the installation directory for the {\tt owamp} tool.
   versions.  Either way, there may be a need for a list of supported
   OS names to be in the enumeration.  (Use the output of {\tt uname
     -s} for this.)}
-
-
-% -----------------------------------------------------------------------------
-% -----------------------------------------------------------------------------
-
-
-\part{Reference Material}
-
-\section{JSON Object Dictionary}\label{jsondict}
-
-This section describes a number of standard JavaScript Object Notation
-(JSON) constructs used throught this document.  The nomenclature
-is documented at {\tt http://www.json.org}.
-
-
-\subsection{maintainer}
-
-This object lists identifying and contact information about the
-maintainer of a plug-in and contains the following items:
-
-\begin{itemize}
-\item{} {\btt name} - The name of the maintainer.
-\item{} {\btt email} - The maintainer's email address.
-\item{} {\btt href} - A URL where more information on the plug-in or
-  the maintainer's organization can be found.
-\end{itemize}
-
-\example
-\begin{lstlisting}[language=json]
-{
-    "name": "Example Development Team",
-    "email": "plug-ins@example.org",
-    "href": "http://www.example.org/plug-ins"
-}
-\end{lstlisting}
-
-
-
-\subsection{version}
-This pair identifies a software version in the standard {\tt major.minor.patch} format.
-
-\example
-\begin{lstlisting}[language=json]
-"version": "3.2.7"
-\end{lstlisting}
-
-
 
 \end{document}

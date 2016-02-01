@@ -8,10 +8,13 @@
 \usepackage{hyperref}
 \usepackage{listings}
 \usepackage{parskip}
+\usepackage{underscore}
 
 
 % DRAFT Watermark
+
 \usepackage{draftwatermark}
+\SetWatermarkText{}
 
 \def\DRAFT{
   \SetWatermarkText{DRAFT}
@@ -20,6 +23,7 @@
 }
 
 \def\NOTDOC{
+  \usepackage{draftwatermark}
   \SetWatermarkText{NOT DOCUMENTATION}
   \SetWatermarkScale{0.45}
   \SetWatermarkLightness{0.9}
@@ -54,12 +58,15 @@
 \def\calloutitem#1{{\bf #1:}}
 \def\example{For example:}
 \def\headerfile#1{{\tt \textless #1\textgreater} }
-\def\jsonobject#1{{\tt #1} object (see section \autoref{jsondict}, {\it \nameref{jsondict}})}
+\def\jsonobject#1{\textbf{\textit{#1}} object as defined in the {\it pScheduler JSON Style Guide and Type Dictionary}}
 \def\maychange{{\bf NOTE:} This information is subject to change.}
 \def\note#1{{\bf NOTE:} {#1}}
 \def\rootcommand#1{{\tt \# \command{#1}}}
 \def\root{{\tt root}}
+\def\seejson{See the {\it pScheduler JSON Style Guide and Type
+    Dictionary} for a description of the types shown in parentheses.}
 \def\todo#1{\hl{{\bf TODO:} #1}}
+\def\typeditem#1#2{{\bf {\btt #1} (#2)} ---}
 \def\url#1{{\tt #1}}
 \def\usercommand#1{{\tt \% \command{#1}}}
 
