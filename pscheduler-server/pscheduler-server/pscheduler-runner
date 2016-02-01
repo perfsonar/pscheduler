@@ -47,28 +47,6 @@ if pscheduler.timedelta_as_seconds(refresh) == 0:
 
 dsn = options.dsn
 
-# Read the DSN from a file if requested
-if dsn.startswith('@'):
-    try:
-        with open(dsn[1:], 'r') as dsnfile:
-            dsn = dsnfile.read().replace('\n', '')
-    except Exception as exception:
-        sys.stderr.write("Failed to open DSN file: " + str(exception) + "\n")        
-        exit(1);
-
-
-def pg_connect(autocommit = True):
-    """Connect to a PostgreSQL database"""
-    try:
-        pg = psycopg2.connect(dsn)
-        if autocommit:
-            pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-        return pg
-    except Exception as ex:
-        # TODO: Do something more useful with this.
-        print ex
-        exit(1)
-
 
 #
 # Utilities
@@ -123,8 +101,8 @@ class Run:
                 return
 
             try:
-                db = pg_connect(False)
-                cursor = pg.cursor()
+                db = pscheduler.pg_connection(dsn, False)
+                cursor = db.cursor()
                 process = subprocess.Popen(
                     [ "pscheduler", "internal", "invoke", "tool", self.tool, "run" ],
                     stdin=subprocess.PIPE,
@@ -168,7 +146,7 @@ class Run:
 # Main Program
 #
 
-pg = pg_connect()
+pg = pscheduler.pg_connection(dsn)
 cursor = pg.cursor()
 cursor.execute("LISTEN " + options.channel)
 

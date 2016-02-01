@@ -55,25 +55,7 @@ def verbose(first, *args):
 
 dsn = options.dsn
 
-# Read the DSN from a file if requested
-if dsn.startswith('@'):
-    try:
-        with open(dsn[1:], 'r') as dsnfile:
-            dsn = dsnfile.read().replace('\n', '')
-    except Exception as exception:
-        sys.stderr.write("Failed to open DSN file: " + str(exception) + "\n")        
-        exit(1);
-
-
-# Prepare the database connection
-try:
-    pg = psycopg2.connect(dsn)
-    pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-    cursor = pg.cursor()
-except Exception as exception:
-    sys.stderr.write("Failed to connect to database: " + str(exception) + "\n")
-    exit(1)
-
+cursor = pscheduler.pg_cursor(dsn)
 
 #
 # Main Program
