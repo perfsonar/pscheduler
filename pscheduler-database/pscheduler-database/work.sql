@@ -14,7 +14,6 @@ SELECT * FROM api_task_add( $$
 {
     "schema": 1,
     "schedule": {
-	"duration": "PT5S",
 	"repeat": "PT10S",
 	"max_runs": 50
     },
@@ -23,8 +22,9 @@ SELECT * FROM api_task_add( $$
 	"type": "idle",
 	"spec": {
 	    "schema": 1,
- 	    "starting_comment": "Starting to sleep.",
-	    "parting_comment": "Done sleeping."
+	    "duration": "PT5S",
+ 	    "starting-comment": "Starting to sleep.",
+	    "parting-comment": "Done sleeping."
 	}
     },
 

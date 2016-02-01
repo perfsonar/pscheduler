@@ -19,8 +19,8 @@ else:
 # Strings
 
 for item in [
-    'starting_comment',
-    'parting_comment'
+    'starting-comment',
+    'parting-comment'
     ]:
     if (item in json) and (isinstance(json[item], basestring)):
         del json[item]

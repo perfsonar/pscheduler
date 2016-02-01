@@ -52,7 +52,7 @@ duration = pscheduler.iso8601_as_timedelta(duration_iso)
 
 
 ### try:
-###     sys.stderr.write(input['test']['spec']['starting_comment'] + '\n')
+###     sys.stderr.write(input['test']['spec']['starting-comment'] + '\n')
 ### except KeyError:
 ###     null
 
@@ -61,7 +61,7 @@ duration = pscheduler.iso8601_as_timedelta(duration_iso)
 time.sleep(pscheduler.timedelta_as_seconds(duration))
 
 ### try:
-###     sys.stderr.write(input['test']['spec']['parting_comment'] + '\n')
+###     sys.stderr.write(input['test']['spec']['parting-comment'] + '\n')
 ### except KeyError:
 ###     null
 

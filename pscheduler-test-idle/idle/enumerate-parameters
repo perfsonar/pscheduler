@@ -7,14 +7,14 @@
 exec cat << EOF
 [
     {
-        "name": "starting_comment",
+        "name": "starting-comment",
 	"display": "Starting Comment",
 	"description": "Something that goes to standard output when the test starts",
 	"required": false,
 	"_": "TODO: Need validation information"
     },
     {
-        "name": "parting_comment",
+        "name": "parting-comment",
 	"display": "Parting Comment",
 	"description": "Something that goes to standard output when the test ends",
 	"required": false,
