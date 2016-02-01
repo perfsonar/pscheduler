@@ -5,9 +5,11 @@
 NAME=sleep
 
 FILES=\
-	enumerate \
 	can-run \
-	run
+	duration \
+	enumerate \
+	run \
+
 
 DOCS=\
 	$(NAME).txt

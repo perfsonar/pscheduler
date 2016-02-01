@@ -323,6 +323,7 @@ The specification for a round-trip time test might look like this:
   "schema": 1,
   "source": null,
   "target": "somehost.example.org",
+  "duration": "PT20S",
   "interval": "PT3S",
   "size": 1024,
   "ttl": 100,
@@ -367,8 +368,8 @@ used when pScheduler needs to determine what tests are installed.
     ping}.
 \item{\tt description} - A short, textual description of what the test
   measures.
-\item{\tt version} - A \jsonobject{Version}.
-\item{\tt maintainer} - A \jsonobject{Maintainer}.
+\item{\tt version} - A \jsontype{Version}.
+\item{\tt maintainer} - A \jsontype{Maintainer}.
 \end{itemize}
 
 \example
@@ -511,7 +512,7 @@ used when pScheduler needs to determine what tools are installed.
   used, such as {\tt traceroute}, {\tt tracepath} or {\tt mtr}.
 \item{\tt description} - A short, textual description of what the tool
   does.
-\item{\tt version} - A \jsonobject{Version}.
+\item{\tt version} - A \jsontype{Version}.
 \item{\tt tests} - An array of strings listing the tests which the
   tool is capable of accommodating.  Including a class here does not
   imply that the tool is required to actually perform the test, only
@@ -524,7 +525,7 @@ used when pScheduler needs to determine what tools are installed.
   {\tt 0} and deprecated tools should use a negative number.  This
   value is considered advisory only, as some measurements may specify
   that a specific tool be used to conduct a measurement.
-\item{\tt maintainer} - A \jsonobject{Maintainer}.
+\item{\tt maintainer} - A \jsontype{Maintainer}.
 \end{itemize}
 
 \example
@@ -563,6 +564,27 @@ messages on error.
 \calloutitem{Exit Status} {\tt 0} if the tool is willing to run the
 specified test, {\tt 1} if not, {\tt 2} if there was an error related
 to the input and {\tt 3} for an error unrelated to the input.
+
+
+
+\subsubsection{duration}
+
+This method determines how long the tool will require to run the
+specified test.  This figure should include all time required to set
+up before the test and tear down afterward.
+
+\calloutitem{Standard Input} A JSON test specification.
+
+\calloutitem{Standard Output} The amount of time required, specified
+as a \jsontype{Duration}.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if determination of the duration was
+successful, {\tt 1} if not, {\tt 2} if there was an error related to
+the input and {\tt 3} for an error unrelated to the input.
+
 
 
 \subsubsection{run}
@@ -607,8 +629,8 @@ installed.
   sink or {\tt esmond} for an archiving system like {\it esmond}.
 \item{\tt description} - A short, textual description of what the
   archiver does.
-\item{\tt version} - A \jsonobject{Version}.
-\item{\tt maintainer} - A \jsonobject{Maintainer}.
+\item{\tt version} - A \jsontype{Version}.
+\item{\tt maintainer} - A \jsontype{Maintainer}.
 \end{itemize}
 
 \example

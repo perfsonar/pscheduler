@@ -5,9 +5,11 @@
 NAME=snooze
 
 FILES=\
-	enumerate \
 	can-run \
-	run
+	duration \
+	enumerate \
+	run \
+
 
 DOCS=\
 	$(NAME).txt
