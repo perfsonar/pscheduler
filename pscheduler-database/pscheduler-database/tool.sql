@@ -241,33 +241,34 @@ $$ LANGUAGE plpgsql;
 -- Determine whether or not a tool is willing to run a specific test.
 
 
-CREATE OR REPLACE FUNCTION tool_can_run_task(tool_name TEXT, task JSONB)
+CREATE OR REPLACE FUNCTION tool_can_run_test(tool_id INTEGER, test JSONB)
 RETURNS BOOLEAN
 AS $$
 DECLARE
+    tool_name TEXT;
     run_result external_program_result;
 BEGIN
-    -- TODO: Consider removing this.
-    IF NOT EXISTS (SELECT * FROM tool where name = tool_name) THEN
-        RAISE EXCEPTION 'Tool "%" is not installed.', tool_name;
+
+    SELECT INTO tool_name name FROM tool WHERE id = tool_id;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Tool ID % is invalid', tool_id;
     END IF;
 
-    run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_name, 'can-run'], task::TEXT);
+    run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_name, 'can-run'], test::TEXT);
 
     IF run_result.status = 0 THEN
         RETURN TRUE;
     END IF;
 
+    -- Any result other than 1 indicates a problem that shouldn't be
+    -- allowed to gum up the works.  Log it and assume the tool said
+    -- no dice.
+
     IF run_result.status <> 1 THEN
-        -- TODO: Log something
-        NULL;
+        NULL; -- TODO: Log something.
     END IF;
 
     RETURN FALSE;
 
 END;
 $$ LANGUAGE plpgsql;
-
-
--- TODO: For multi-participant, will need a function that will return
--- a list of the tools in order of preference.
