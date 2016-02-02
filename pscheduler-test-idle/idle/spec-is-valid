@@ -22,10 +22,11 @@ for item in [
     'starting-comment',
     'parting-comment'
     ]:
-    if (item in json) and (isinstance(json[item], basestring)):
-        del json[item]
-    else:
-        pscheduler.fail(item, ' is not a string.')
+    if (item in json):
+        if (isinstance(json[item], basestring)):
+            del json[item]
+        else:
+            pscheduler.fail(item, ' is not a string.')
 
 
 # Anything left is bogus
