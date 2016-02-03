@@ -28,6 +28,15 @@ for item in [
         else:
             pscheduler.fail(item, ' is not a string.')
 
+# Duration
+
+try:
+    if pscheduler.iso8601_as_timedelta(json['duration']) is None:
+        pscheduler.fail('Invalid duration "' + json[duration] + '"')
+    del json['duration']
+except KeyError:
+    pscheduler.fail('No duration in test specification')
+
 
 # Anything left is bogus
 
