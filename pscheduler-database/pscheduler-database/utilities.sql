@@ -130,3 +130,64 @@ BEGIN
 	RETURN normalized_time(clock_timestamp());
 END;
 $$LANGUAGE plpgsql;
+
+
+
+
+-- Practical alternatives to infinite timestamps for use with intervals.
+--
+-- These exist because PostgreSQL does not yet support infinite
+-- intervals (been in the plans since before 2008, apparently).  As a
+-- substitute, the minimum/maximum dates supported by the TIMESTAMP
+-- WITH TIME ZONE type are provided here.
+--
+-- See:
+--   https://wiki.postgresql.org/wiki/Todo#Dates_and_Times
+--   http://www.postgresql.org/docs/9.5/static/datatype-datetime.html
+
+
+CREATE OR REPLACE FUNCTION tstz_negative_infinity()
+RETURNS TIMESTAMP WITH TIME ZONE
+AS $$
+BEGIN
+	RETURN '4713-01-01 BC'::TIMESTAMP WITH TIME ZONE;
+END;
+$$LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION tstz_infinity()
+RETURNS TIMESTAMP WITH TIME ZONE
+AS $$
+BEGIN
+	RETURN '294276-12-31'::TIMESTAMP WITH TIME ZONE;
+END;
+$$LANGUAGE plpgsql;
+
+
+
+
+
+-- Find the next even occurence of a specified interval, truncating
+-- fractional seconds from both.  For example, '2016-02-02
+-- 11:27:36-05' and 'PT1H' would yield '2016-02-02 12:00:00-05'
+
+CREATE OR REPLACE FUNCTION time_next_interval(
+    start TIMESTAMP WITH TIME ZONE,
+    round_to INTERVAL
+)
+RETURNS TIMESTAMP WITH TIME ZONE
+AS $$
+DECLARE
+    start_epoch NUMERIC;
+    round_to_epoch NUMERIC;
+BEGIN
+    -- Convert times to epoch with fractional seconds
+
+    start_epoch := EXTRACT(EPOCH FROM start);
+    round_to_epoch := EXTRACT(EPOCH FROM round_to);
+
+    RETURN to_timestamp(
+        (TRUNC(start_epoch / round_to_epoch)::NUMERIC + 1)
+	* round_to_epoch
+	);
+END;
+$$ LANGUAGE plpgsql;
