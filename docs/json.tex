@@ -134,6 +134,40 @@ A {\tt number} as defined by ECMA 404.
 \example\ {\tt 47}, {\tt -19.3} and {\tt 6.022e23}.
 
 
+\subsection{SINumber}
+A {\tt number} as defined by ECMA 404 without any exponentiation
+(e.g., {\tt 38.5} but not {\tt 3.85e7}) followed optionally by suffix
+indicating magnitude.  The suffix can be any of the units listed in
+this table:
+
+\begin{center}
+  \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    \multicolumn{3}{|c}{{\bf ISO 80000-1 Decimal Units}} & \multicolumn{3}{|c|}{{\bf IEC 60027 Binary Units}} \\
+    \hline
+    {\bf Unit} & {\bf Prefix} & {\bf Multiplier} & {\bf Unit} & {\bf Prefix} & {\bf Multiplier} \\
+    \hline
+    {\tt k} & kilo & $1000^{1}$ & {\tt Ki} & kibi & $1024^{1}$ \\
+    {\tt M} & mega & $1000^{2}$ & {\tt Mi} & mebi & $1024^{2}$ \\
+    {\tt G} & giga & $1000^{3}$ & {\tt Gi} & gibi & $1024^{3}$ \\
+    {\tt T} & tera & $1000^{4}$ & {\tt Ti} & tebi & $1024^{4}$ \\
+    {\tt P} & peta & $1000^{5}$ & {\tt Pi} & pebi & $1024^{5}$ \\
+    {\tt E} & exa & $1000^{6}$ & {\tt Ei} & exbi & $1024^{6}$ \\
+    {\tt Z} & zetta & $1000^{7}$ & {\tt Zi} & zebi & $1024^{7}$ \\
+    {\tt Y} & yotta & $1000^{8}$ & {\tt Yi} & yobi & $1024^{8}$ \\
+    \hline
+  \end{tabular}
+\end{center}
+
+Whitespace and case are ignored.
+
+\example\ {\tt 1234},  {\tt 1.234}, {\tt 38k}, {\tt 12G}, {\tt 128Ki} and {\tt 3.1415Pi}
+
+\source{ISO}{http://www.iso.org/iso/catalogue_detail?csnumber=30669}\\
+\source{IEC}{https://webstore.iec.ch/publication/97}\\
+\source{Wikipedia}{https://en.wikipedia.org/wiki/Binary_prefix}
+
+
 \subsection{String}
 A {\tt string} as defined by ECMA 404.
 
