@@ -1,0 +1,116 @@
+%
+% pScheduler Test Guide for Simplestream
+%
+
+\def\testname{simplestream}
+
+
+% TODO: Add titlepage to the options.
+\documentclass[10pt]{article}
+
+\input pscheduler-tex.tex
+
+\DRAFT
+
+\title{pScheduler Test Guide: {\it \testname}}
+\author{The perfSONAR Development Team}
+
+
+\begin{document}
+\maketitle
+
+
+%
+% INTRODUCTION
+%
+
+\section{Introduction}
+
+The {\tt \testname} test establishes a TCP connection between two
+participants (a {\it sender} and a {\it receiver}), sends some test
+data and then closes the connection.  This test is intended for use in
+development and testing and not for use in producion.
+
+This document describes schema version {\tt 1}.
+
+\subsection{Participants}
+
+This test includes the following participants:
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+{\bf Number} & {\bf Role} \\
+\hline
+{\tt 0} & Sender \\
+{\tt 1} & Receiver \\
+\hline
+\end{tabular}
+\end{center}
+
+
+
+%
+% TEST SPECIFICATION
+%
+
+\section{Test Specification Format}
+
+\subsection{Description}
+
+The test specification consists of a single JSON object containing the
+pairs below.  \seejson
+
+\typeditem{schema}{Cardinal} - The schema version of this specification.
+
+\typeditem{receiver}{Host} The network address or hostname of the receiver.
+
+\typeditem{dawdle}{Duration} Optional maximum amount of time the sender
+may intentionally wait between the start of the test and establishing
+the connection to the receiver.  This value must be less than {\tt
+timeout}.  If not provided, the sender should begin the test
+immediately.  Tools implementing this test may select a random
+duration between {\tt P0} and this value.
+
+\typeditem{test-material}{String} Optional text to be sent across the
+connection.  If not provided, the sender may send any data it chooses.
+
+\typeditem{timeout}{Duration} The amount of time the receiver will wait
+before declaring the test a failure.  The default will be determined
+by the tool executing the test.
+
+
+\subsection{Example}
+\begin{lstlisting}[language=json]
+{
+    "schema": 1
+    "receiver": "test19.example.org",
+    "dawdle": "PT2S",
+    "test-material": "The quick brown fox jumped over the lazy dog's back.",
+    "timeout": "PT5S"
+}
+\end{lstlisting}
+
+
+
+%
+% RESULT FORMAT
+%
+
+\section{Result Format}
+
+\subsection{Description}
+The result consists of a single JSON object containing the pairs
+below.  \seejson
+
+\typeditem{elapsed-time}{Duration} time elapsed between the start of the test
+and when the sender closed the connection.
+
+
+\subsection{Example}
+\begin{lstlisting}[language=json]
+{ "elapsed-time": "PT3.14S" }
+\end{lstlisting}
+
+
+\end{document}
