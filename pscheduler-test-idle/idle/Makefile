@@ -5,8 +5,8 @@
 NAME=idle
 
 FILES=\
+	duration \
 	enumerate \
-	enumerate-parameters \
 	participants \
 	spec-is-valid
 
