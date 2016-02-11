@@ -1,0 +1,55 @@
+#!/usr/bin/python
+#
+# Validator for 'idle' task spec
+#
+
+import pscheduler
+
+json = pscheduler.json_load()
+
+# Run through all of the tags we expect to see, deleting the valid ones
+
+if 'schema' in json:
+    if not (1 <= json['schema'] <= 1):
+        pscheduler.fail('Unsupported schema version {0}'.format(json['schema']))
+    del json['schema']
+else:
+    pscheduler.fail("Missing schema")
+
+# Strings
+
+for item in [
+    'receiver',      # TODO: This should be validated as resolvable.
+    'test-material'
+    ]:
+    if (item in json):
+        if (isinstance(json[item], basestring)):
+            del json[item]
+        else:
+            pscheduler.fail(item, ' is not a string.')
+
+# Durations
+
+try:
+    if pscheduler.iso8601_as_timedelta(json['timeout']) is None:
+        pscheduler.fail('Invalid timeout "' + json['timeout'] + '"')
+    del json['timeout']
+except KeyError:
+    pscheduler.fail('No timeout in test specification')
+
+try:
+    if pscheduler.iso8601_as_timedelta(json['dawdle']) is None:
+        pscheduler.fail('Invalid dawdle "' + json['dawdle'] + '"')
+    del json['dawdle']
+except KeyError:
+    pass  # Missing is okay.
+
+
+# Anything left is bogus
+
+if len(json) > 0:
+    pscheduler.fail('Unknown elements in test specification:\n    '
+        + '\n    '.join(json.keys()))
+
+
+pscheduler.succeed()

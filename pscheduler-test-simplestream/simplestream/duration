@@ -1,0 +1,25 @@
+#!/usr/bin/python
+#
+# Determine duration of a test from its spec
+#
+
+import datetime
+import pscheduler
+
+json = pscheduler.json_load()
+
+# TODO: Should validate the test.
+
+# Duration
+
+try:
+    duration = pscheduler.iso8601_as_timedelta(json['timeout'])
+    if duration is None:
+        pscheduler.fail('Invalid duration "' + json['timeout'] + '"')
+    # Add a second beyond the timeout for safety
+    duration = duration + datetime.timedelta(seconds=1)
+    print pscheduler.timedelta_as_iso8601(duration)
+except KeyError:
+    pscheduler.fail('No timeout in test specification')
+
+pscheduler.succeed()
