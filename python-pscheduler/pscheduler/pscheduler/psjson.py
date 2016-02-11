@@ -2,8 +2,7 @@
 Functions for inhaling JSON in a pScheduler-normalized way
 """
 
-from json import load, loads
-
+from json import load, loads, dump, dumps
 import sys
 import pscheduler
 
@@ -45,3 +44,20 @@ def json_load(source=None):
 
     _json_scrub_comments(json_in)
     return json_in
+
+
+def json_dump(obj=None, dest=None):
+    """
+    Write a blob of JSON contained in a hash to a file destination.
+    If none is specified, it will be returned as a string.
+    """
+
+    # Return a string
+    if dest is None:
+        return '' if obj is None else dumps(obj) 
+
+    # Send to a file
+    if obj is not None:
+        dump(obj, dest)
+        print >> dest
+    return None
