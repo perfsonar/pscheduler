@@ -3,7 +3,7 @@
 exec cat << EOF
 {
     "name": "idle",
-    "description": "Consume time.",
+    "description": "Consume time - NOT FOR PRODUCTION",
     "version": "0.0",
     "maintainer": {
         "name": "perfSONAR Development Team",
