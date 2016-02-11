@@ -167,7 +167,8 @@ ifdef AUTO_TARBALL
 		$(MAKE) -C $(NAME) clean ; \
 	fi
 endif
-	rm -rf $(TO_CLEAN) *~
+	rm -rf $(TO_CLEAN)
+	find . -name '*~' | xargs rm -rf
 
 
 
