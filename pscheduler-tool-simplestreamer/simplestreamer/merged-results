@@ -1,0 +1,66 @@
+#!/usr/bin/python
+#
+# Merge the participant results of a run by this tool into a
+# test-standard result.
+#
+
+import pscheduler
+
+if True:
+    input = pscheduler.json_load();
+else:
+    # TODO: Remove this after development.
+    input = pscheduler.json_load("""
+    {
+        "test": {
+            "test": "simplestream",
+            "spec": {
+                "schema": 1,
+                "receiver": "localhost",
+                "dawdle": "PT1S",
+                "test-material": "Madam, in Eden, I'm Adam.",
+                "timeout": "PT5S"
+            }
+        },
+
+        "results": [
+            {
+                "diags": "Nothing to see at the sending end.",
+                "result": {
+                    "dawdled": "PT0.458257S",
+                    "sent": "Madam, in Eden, I'm Adam."
+                    },
+                "succeeded": true,
+                "error": null
+              },
+              {
+                  "diags": "Nothing to see at the receiving end.",
+                  "result": {
+                      "received": "Madam, in Eden, I'm Adam.",
+                      "elapsed-time": "PT2.078068S"
+                  },
+                  "succeeded": true,
+                  "error": null
+              }
+
+            ]
+      }""")
+
+
+# TODO: Validate the input
+
+results = {}
+
+succeeded = input['results'][0]['succeeded'] \
+    and input['results'][1]['succeeded']
+results['succeeded'] = succeeded
+
+if succeeded:
+    results['schema']       = 1
+    results['dawdled']      = input['results'][0]['result']['dawdled']
+    results['sent']         = input['results'][0]['result']['sent']
+    results['received']     = input['results'][1]['result']['received']
+    results['elapsed-time'] = input['results'][1]['result']['elapsed-time']
+
+
+pscheduler.succeed_json(results)

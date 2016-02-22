@@ -1,0 +1,356 @@
+#!/usr/bin/python
+#
+# pScheduler REST API Server
+#
+
+# TODO: This needs to be front-ended by something like Gunicorn to
+# make it spawn multiple workers, which we will want if any of them
+# are to be executing outside programs like 'pscheduler internal'.
+
+import json
+import optparse
+import pscheduler
+
+from flask import Flask
+from flask import request
+from flask import Response
+from flask import url_for
+
+
+app = Flask(__name__)
+
+
+#
+# Gargle the arguments
+#
+
+opt_parser = optparse.OptionParser()
+opt_parser.add_option("-d", "--dsn",
+                      help="Database connection string, prefix with @ to read from file",
+                      action="store", type="string", dest="dsn",
+                      default="")
+opt_parser.add_option("-g", "--debug",
+                      help="Enable debugging",
+                      action="store_true", dest="debug",
+                      default=False)
+opt_parser.add_option("-p", "--pretty",
+                      help="Force all JSON output to be pretty (implied by --debug)",
+                      action="store_true", dest="pretty",
+                      default=False)
+
+(options, args) = opt_parser.parse_args()
+
+# Connect to the database.
+
+dsn = options.dsn
+cursor = pscheduler.pg_cursor(dsn)
+
+#
+# Utility Functions and Declarations
+#
+
+def not_implemented():
+    return "Not implemented yet", 501
+
+def not_found():
+    return "Resource not found", 404
+
+def internal_url(path):
+    return request.url_root + path
+
+
+def root_url(path = None):
+    return request.url_root + ("" if path is None else path)
+
+def base_url(path = None):
+    return request.base_url + ("" if path is None else "/" + path)
+
+
+def arg_boolean(name):
+    """Determine if a boolean argument is part of a request.  The
+    argument is considered true if it is 'true', 'yes' or '1' or if it
+    is present but has no value.  Otherwise it is considered False."""
+    argval = request.args.get(name)
+    if argval is None:
+        return False;
+    argval = argval.lower()
+    if argval in [ '', 'true', 'yes', '1' ]:
+        return True
+    return False
+
+
+def is_expanded():
+    return arg_boolean('expanded')
+
+
+
+# Debug implies pretty.
+always_pretty = options.pretty or options.debug
+
+
+def json_dump(dump):
+    # TODO: Migrate prettiness into pscheduler.json_dump and use that
+    # here.
+    if always_pretty or arg_boolean('pretty'):
+        return json.dumps(dump, \
+                              sort_keys=True, \
+                              indent=4, \
+                              separators=(',', ': ') \
+                              ) + '\n'
+    else:
+        return json.dumps(dump) + '\n'
+
+
+
+def json_query_simple(query, query_args):
+    """Do a SQL query that selects one column and dump those values as
+    a JSON array"""
+
+    if request.method != 'GET':
+        return "Can't do that here", 405
+
+    # TODO: Handle failure
+    cursor.execute(query, query_args)
+    if cursor.rowcount == 0:
+        return not_found()
+    result = []
+    for row in cursor:
+        result.append(row[0])
+    return Response(json_dump(result), mimetype='text/json')
+
+
+
+def json_query(query, query_args, name = 'name', single = False):
+    """Do a SQL query that selects one column containing JSON and dump
+    the results, honoring the 'expanded' and 'pretty' arguments.  If
+    the 'single' argument is True, the first-returned row will be
+    returned as a single item instead of an array."""
+
+    if request.method != 'GET':
+        return "Can't do that here", 405
+
+    # TODO: Handle failure
+    cursor.execute(query, query_args)
+    if single and cursor.rowcount == 0:
+        return not_found()
+    result = []
+    for row in cursor:
+        this = base_url(None if single else row[0][name])
+        row[0]['href'] = this
+        result.append( row[0] if single or is_expanded() else this)
+    return Response(json_dump(result[0] if single else result), mimetype='text/json')
+
+
+
+#
+# The Root
+#
+
+@app.route("/")
+def root():
+    return Response("This is the pScheduler API server.\n",
+                    mimetype='text/plain')
+
+
+# TODO: Remove after development.
+@app.route("/s")
+def sandbox():
+    raise Exception('Pitching a fit')
+    return "SB %s\n" % request.endpoint
+
+
+
+
+#
+# Tests
+#
+
+# All tests
+@app.route("/tests")
+def tests():
+    return json_query("SELECT json FROM test", [])
+
+
+# Test <name>
+@app.route("/tests/<name>")
+def tests_name(name):
+    return json_query("SELECT json FROM test WHERE name = %s",
+                      [name], single=True)
+
+
+# Tools that can carry out test <name>
+@app.route("/tests/<name>/tools")
+def tests_name_tools(name):
+    expanded = is_expanded()
+    # TODO: Handle failure
+    cursor.execute("""
+        SELECT
+            tool.name,
+            tool.json
+        FROM
+            tool
+            JOIN tool_test ON tool_test.tool = tool.id
+            JOIN test ON test.id = tool_test.test
+        """)
+    result = []
+    for row in cursor:
+        url = root_url('tools/' + row[0])
+        if not expanded:
+            result.append(url)
+            continue
+        row[1]['href'] = url
+        result.append(row[1])
+    return Response(json_dump(result), mimetype='text/json')
+
+
+
+#
+# Tools
+#
+
+@app.route("/tools")
+def tools():
+    test_filter = request.args.get('test',None)
+    if test_filter is None:
+        return json_query("SELECT json FROM tool", [])
+    else:
+        return json_query("SELECT api_tools_for_test(%s)", [test_filter])
+
+@app.route("/tools/<name>")
+def tools_name(name):
+    return json_query("SELECT json FROM tool WHERE name = %s", [name], single=True)
+
+
+
+#
+# Tasks
+#
+
+@app.route("/tasks")
+def tasks():
+
+    if request.method == 'GET':
+
+        expanded = is_expanded()
+        # TODO: Handle failure
+        cursor.execute("SELECT json, uuid FROM task")
+        result = []
+        for row in cursor:
+            url = base_url(row[1])
+            if not expanded:
+                result.append(url)
+                continue
+            row[0]['href'] = url
+            result.append(row[0])
+        return Response(json_dump(result), mimetype='text/json')
+
+    elif request.method == 'POST':
+
+        return not_implemented()
+
+    elif request.method == 'DELETE':
+
+        # TODO: This should just disable the task.
+        return not_implemented()
+
+    else:
+
+        return "Can't do that here", 405
+
+
+@app.route("/tasks/<uuid>")
+def tasks_uuid(uuid):
+    return json_query("SELECT json FROM task WHERE uuid = %s", [uuid], single=True)
+
+
+@app.route("/tasks/<uuid>/details")
+def tasks_uuid_details(uuid):
+    return "Not implemented yet", 501
+
+
+@app.route("/tasks/<task>/runs")
+def tasks_uuid_runs(task):
+    # TODO: This should be exapandable and filterable by time, status,
+    # limit numbers, etc.
+    return json_query_simple(
+        "SELECT '" + base_url() + """/' || run.uuid
+         FROM
+             run
+             JOIN task ON task.id = run.task
+         WHERE
+             task.uuid = %s""", [task])
+
+
+@app.route("/tasks/<task>/runs/<run>")
+def tasks_uuid_runs_run(task, run):
+    # TODO: Should handle POST, PUT of full participant data and DELETE
+    cursor.execute("""
+        SELECT
+            lower(run.times),
+            upper(run.times),
+            upper(run.times) - lower(run.times),
+            task.participant,
+            task.nparticipants,
+            run_state.enum,
+            run_state.display
+        FROM
+            run
+            JOIN task ON task.id = run.task
+            JOIN run_state ON run_state.id = run.state
+        WHERE
+            task.uuid = %s
+            AND run.uuid = %s
+        """, [task, run])
+
+    if cursor.rowcount == 0:
+        return not_found()
+
+    result = {}
+    row = cursor.fetchone()
+    result['href'] = request.url
+    result['start-time'] = pscheduler.datetime_as_iso8601(row[0])
+    result['end-time'] = pscheduler.datetime_as_iso8601(row[1])
+    result['duration'] = pscheduler.timedelta_as_iso8601(row[2])
+    result['participant'] = row[3]
+    result['participants'] = row[4]
+    result['state'] = row[5]
+    result['state-display'] = row[6]
+    result['task-href'] = root_url('tasks/' + task)
+    # TODO: Add result (local)
+    # TODO: Add full result
+    return Response(json_dump(result), mimetype='text/json')
+
+
+
+@app.route("/tasks/<task>/runs/<run>/part-data")
+def tasks_uuid_runs_run_local_part_data(task, run):
+    cursor.execute("""
+        SELECT part_data_local
+        FROM
+            run
+            JOIN task ON task.id = run.task
+        WHERE
+            task.uuid = %s
+            AND run.uuid = %s
+        """, [task, run])
+    if cursor.rowcount == 0:
+        return not_found();
+    # TODO: Assert that rowcount should be 1 or just LIMIT the query?
+    row = cursor.fetchone()
+    return Response(json_dump(row[0]), mimetype='text/json')  
+                    
+
+
+# TODO: Need a catch-all to do 404s.
+
+
+
+
+if __name__ == "__main__":
+    app.run(
+        host='0.0.0.0',
+        port=29285,  # Spell out "BWCTL" on a phone and this is what you get.
+        debug=options.debug
+        )
+
+exit(0)

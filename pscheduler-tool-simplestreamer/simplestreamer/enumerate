@@ -1,0 +1,15 @@
+#!/bin/sed -e 1d
+{
+    "name": "simplestreamer",
+    "description": "Stream test traffic from one node to another",
+    "version": "0.0",
+    "tests": [ "simplestream" ],
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "info@perfsonar.net",
+	"href": "http://www.perfsonar.net"
+    }
+}

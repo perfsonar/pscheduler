@@ -1,0 +1,143 @@
+#!/usr/bin/python
+#
+# Run a test.  Just the test spec is provided on stdin.
+#
+
+import datetime
+import json
+import random
+import socket
+import sys
+import time
+
+import pscheduler
+
+input = pscheduler.json_load();
+
+# TODO: Validate the input
+
+# Perform the test
+
+# Ideally, the timeout would be for the whole operation (establishing
+# a connection and sending/receiving the data), but that
+# implementation is more complex than necessary for this example.
+# This makes a very rough approximation 
+
+# TODO: This should be turned into a class and put into the pscheduler
+# module.
+start_time = datetime.datetime.now()
+timeout = pscheduler.iso8601_as_timedelta(input['test']['spec']['timeout'])
+end_time = datetime.datetime.now() + timeout
+
+def time_left():
+    return pscheduler.timedelta_as_seconds(end_time - datetime.datetime.now())
+
+
+participant = input['participant']
+
+if participant == 0:
+
+    #
+    # Sender
+    #
+
+    # Dawdle if directed.
+
+    try:
+        dawdle = pscheduler.timedelta_as_seconds(
+            pscheduler.iso8601_as_timedelta(input['test']['spec']['dawdle']) )
+        random.seed()
+        dawdle *= random.random()
+        time.sleep(dawdle)
+    except KeyError:
+        # No dawdle element just means no dawdling.
+        pass
+
+    # Connect and send the material
+
+    succeeded = False
+    error = None
+
+    try:
+        material = input['test']['spec']['test-material']
+    except KeyError:
+        material = "Data sent at " + str(datetime.datetime.now())
+
+
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_address = (input['test']['spec']['receiver'],
+                          input['participant-data'][1]['listen-port'])
+        sock.settimeout(time_left())
+        sock.connect(server_address)
+        # TODO: How do we check for success?
+        sock.sendall(material)
+        succeeded = True    
+    except Exception as ex:
+        error = "Sender exception: " + str(ex)
+
+    results = {
+        'succeeded': succeeded,
+        'diags': 'Nothing to see at the sending end.',
+        'error': error,
+        'result': {
+            'dawdled': pscheduler.timedelta_as_iso8601(
+                pscheduler.seconds_as_timedelta(dawdle)),
+            'sent': material
+            } if succeeded else None
+        }
+
+elif participant == 1:
+
+    #
+    # Receiver
+    #
+
+    succeeded = False
+    full = ''
+    error = None
+
+    try:
+        # TODO: Need to handle exceptions gracefully.
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(time_left())
+        server_address = ('0.0.0.0', 
+                          input['participant-data'][1]['listen-port'])
+        sock.bind(server_address)
+        sock.listen(1)
+        connection, client_address = sock.accept()
+        connection.settimeout(time_left())
+
+        while True:
+            data = connection.recv(1024)
+            if data:
+                full += data
+            else:
+                break
+
+        connection.close()
+        succeeded = True
+
+    except socket.timeout as ex:
+        error = "Timed out"
+
+    except Exception as ex:
+        error = "Receiver exception: " + str(ex)
+
+    results = {
+        'succeeded': succeeded,
+        'diags': 'Nothing to see at the receiving end.',
+        'error': error if not succeeded else None,
+        'result': {
+            'received': full,
+            'elapsed-time':  pscheduler.timedelta_as_iso8601(
+                datetime.datetime.now() - start_time)
+            } if succeeded else None
+        }
+
+else:
+
+    pscheduler.fail("Invalid participant.")
+
+
+pscheduler.succeed_json(results)
