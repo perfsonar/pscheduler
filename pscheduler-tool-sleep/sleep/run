@@ -19,8 +19,9 @@ input = pscheduler.json_load();
 
 # TODO: Be more thorough.
 
+
 try:
-    duration_iso = input['schedule']['duration']
+    duration_iso = input['test']['spec']['duration']
 except KeyError:
     pscheduler.fail('Unable to find duration in input')
 

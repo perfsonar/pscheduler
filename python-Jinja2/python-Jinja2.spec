@@ -20,6 +20,7 @@ URL:		http://jinja.pocoo.org
 Source:		%{short}-%{version}.tar.gz
 
 Requires:	python
+Requires:	python-markupsafe
 
 BuildRequires:	python
 

@@ -32,7 +32,7 @@ date/time representations mentioned in the standard.
 
 
 %prep
-%setup -n %{short}-%{version}
+%setup -q -n %{short}-%{version}
 
 
 %build

@@ -12,19 +12,93 @@ CREATE TABLE run_state (
 
 	-- Display name
 	display		TEXT
+			UNIQUE NOT NULL,
+
+	-- Enumeration for use by programs
+	enum		TEXT
 			UNIQUE NOT NULL
 );
 
 
-INSERT INTO run_state (id, display)
+
+--
+-- Functions that encapsulate the numeric values for each state
+--
+
+-- Run is waiting to execute (not time yet)
+CREATE OR REPLACE FUNCTION run_state_pending()
+RETURNS INTEGER
+AS $$
+BEGIN
+	RETURN 1;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Run is being executed
+CREATE OR REPLACE FUNCTION run_state_running()
+RETURNS INTEGER
+AS $$
+BEGIN
+	RETURN 2;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Run finished successfully
+CREATE OR REPLACE FUNCTION run_state_finished()
+RETURNS INTEGER
+AS $$
+BEGIN
+	RETURN 3;
+END;
+$$ LANGUAGE plpgsql;
+
+-- No idea of the outcome yet
+CREATE OR REPLACE FUNCTION run_state_overdue()
+RETURNS INTEGER
+AS $$
+BEGIN
+	RETURN 4;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Run never happened
+CREATE OR REPLACE FUNCTION run_state_missed()
+RETURNS INTEGER
+AS $$
+BEGIN
+	RETURN 5;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Run ran but was not a success
+CREATE OR REPLACE FUNCTION run_state_failed()
+RETURNS INTEGER
+AS $$
+BEGIN
+	RETURN 6;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Run lost out to something with a higher priority
+CREATE OR REPLACE FUNCTION run_state_trumped()
+RETURNS INTEGER
+AS $$
+BEGIN
+	RETURN 7;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+INSERT INTO run_state (id, display, enum)
 VALUES
-	(1, 'Pending'),   -- Waiting to be run
-	(2, 'Running'),   -- Being executed
-	(3, 'Finished'),  -- Ran successfully
-	(4, 'Overdue'),   -- No idea of outcome yet
-	(5, 'Missed'),    -- Didn't run
-	(6, 'Failed'),    -- Ran but didn't succeed
-	(7, 'Trumped')    -- Lost out to higher-priority run
+	(run_state_pending(),  'Pending',  'pending'),
+	(run_state_running(),  'Running',  'running'),
+	(run_state_finished(), 'Finished', 'finished'),
+	(run_state_overdue(),  'Overdue',  'overdue'),
+	(run_state_missed(),   'Missed',   'missed'),
+	(run_state_failed(),   'Failed',   'failed'),
+	(run_state_trumped(),  'Trumped',  'trumped')
 	;
 
 
@@ -54,71 +128,25 @@ RETURNS BOOLEAN
 AS $$
 BEGIN
    RETURN  new = old
-           OR   ( old = 1 AND new IN (2, 4, 5, 7)   )
-           OR ( old = 2 AND new IN (3, 4, 5, 6, 7) )
-           OR ( old = 4 AND new IN (3, 5, 6, 7)    );
+           OR   ( old = run_state_pending()
+	          AND new IN (run_state_running(),
+		              run_state_overdue(),
+			      run_state_missed(),
+			      run_state_trumped()) )
+           OR ( old = run_state_running()
+	        AND new IN (run_state_finished(),
+		            run_state_overdue(),
+			    run_state_missed(),
+			    run_state_failed(),
+			    run_state_trumped()) )
+	   OR ( old = run_state_overdue()
+                AND new IN (run_state_finished(),
+		            run_state_missed(),
+		            run_state_failed(),
+		            run_state_trumped()) )
+           ;
 END;
 $$ LANGUAGE plpgsql;
 
 
 
---
--- Functions that encapsulate the hard-wired values above for use
--- outside this file
---
-
-CREATE OR REPLACE FUNCTION run_state_pending()
-RETURNS INTEGER
-AS $$
-BEGIN
-	RETURN 1;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION run_state_running()
-RETURNS INTEGER
-AS $$
-BEGIN
-	RETURN 2;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION run_state_finished()
-RETURNS INTEGER
-AS $$
-BEGIN
-	RETURN 3;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION run_state_overdue()
-RETURNS INTEGER
-AS $$
-BEGIN
-	RETURN 4;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION run_state_missed()
-RETURNS INTEGER
-AS $$
-BEGIN
-	RETURN 5;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION run_state_failed()
-RETURNS INTEGER
-AS $$
-BEGIN
-	RETURN 6;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION run_state_trumped()
-RETURNS INTEGER
-AS $$
-BEGIN
-	RETURN 7;
-END;
-$$ LANGUAGE plpgsql;

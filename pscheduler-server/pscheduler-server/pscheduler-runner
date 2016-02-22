@@ -24,7 +24,7 @@ opt_parser = optparse.OptionParser()
 opt_parser.add_option("-c", "--channel",
                       help="Schedule notification channel",
                       action="store", type="string", dest="channel",
-                      default="schedule_change")
+                      default="run_change")
 # TODO: Do we want pscheduler as the default here?
 opt_parser.add_option("-d", "--dsn",
                       help="Database connection string",
@@ -71,7 +71,7 @@ class Run:
     """What is known or can be inferred from a run pulled from the database"""
 
 
-    def __init__(self, id, start_in, tool, participant, test, start, duration):
+    def __init__(self, id, start_in, tool, participant, partdata, test, start, duration):
         self.id = id
         self.start_in = start_in
         self.tool = tool
@@ -87,7 +87,8 @@ class Run:
                 'duration': pscheduler.timedelta_as_iso8601(duration)
                 },
             'test': test,
-            'participant': participant
+            'participant': participant,
+            'participant-data': partdata
             }
 
 
@@ -103,6 +104,7 @@ class Run:
             try:
                 db = pscheduler.pg_connection(dsn, False)
                 cursor = db.cursor()
+                # TODO: Running a process (with timeout) should be its own module.
                 process = subprocess.Popen(
                     [ "pscheduler", "internal", "invoke", "tool", self.tool, "run" ],
                     stdin=subprocess.PIPE,
@@ -124,12 +126,32 @@ class Run:
                 else:
                     verbose("TEST FAILED ", returncode, ": ", stderr)
 
-                cursor.execute("UPDATE run SET status = %s WHERE id = %s",
-                               [returncode, self.id])
-                cursor.execute("INSERT INTO run_result (run, participant, result, errors)"
-                               "VALUES (%s, %s, %s, %s)",
-                               [self.id, self.participant, stdout, stderr])
+                cursor.execute("""
+                               UPDATE run
+                               SET
+                                   status = %s,
+                                   result = %s,
+                                   errors = %s
+                               WHERE id = %s
+                               """,
+                               [returncode, stdout, stderr, self.id])
                 db.commit()
+
+
+                # The lead participant takes care of gathering and merging the finished results.
+
+                if self.participant == 0:
+
+                    # TODO: Should probably wait until the end of the
+                    # scheduled run has passed.
+
+                                       
+
+                # TODO: Combine the results into a single result
+
+                # TODO: Store the single result and call the run finished.
+
+                # TODO: Schedule additional runs up to the horizon if merited
 
                 cursor.close()
                 db.close()
@@ -152,13 +174,13 @@ cursor.execute("LISTEN " + options.channel)
 
 while True:
 
-    cursor.execute("SELECT run, start_in, tool, participant, test, start, duration \
+    cursor.execute("SELECT run, start_in, tool, participant, part_data_full, test, start, duration \
                     FROM schedule_upcoming \
                     WHERE start_in = (SELECT min(start_in) FROM schedule_upcoming)");
 
     if cursor.rowcount:
         # TODO: There must be a nicer way to take this array slice as args.
-        runs = [ Run(row[0], row[1], row[2], row[3], row[4], row[5], row[6]) for row in cursor.fetchall() ]
+        runs = [ Run(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]) for row in cursor.fetchall() ]
         wait_time = runs[0].start_in
     else:
         runs = []

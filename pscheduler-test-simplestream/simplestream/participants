@@ -16,7 +16,7 @@ json = pscheduler.json_load()
 try:
     receiver = json['receiver']
 except KeyError:
-    pscheduler.fail('No timeout in test specification')
+    pscheduler.fail('No receiver in test specification')
 
 # This always leads with a null so the participant indexes line up.
 result = [ None, receiver ]

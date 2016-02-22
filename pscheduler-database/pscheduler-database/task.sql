@@ -13,7 +13,7 @@ CREATE TABLE task (
 	-- External-use identifier
 	uuid		UUID
 			UNIQUE
-			DEFAULT gen_random_uuid(),
+                        NOT NULL,
 
 	-- JSON representation of the task.  This should be the only
 	-- column specified when inserting a row; all of the others
@@ -39,15 +39,13 @@ CREATE TABLE task (
 	added		TIMESTAMP WITH TIME ZONE,
 
 
-	-- When the first iteration of the test should start
-	start		TIMESTAMP WITH TIME ZONE,
+	-- When the first run of the test should start.  If NULL, the
+	-- scheduler should find the first available time for the
+	-- first iteration and use that.
+	start		TIMESTAMP WITH TIME ZONE
+			DEFAULT NULL,
 
-	-- How long the test should last
-	duration	INTERVAL
-			NOT NULL,
-
-	-- Amount of slip permissible in start time without
-	-- sacrificing duration.
+	-- Amount of slip permissible in start time
 	slip		INTERVAL,
 
 	-- How much of the slip is randomly applied to the start time.
@@ -55,12 +53,13 @@ CREATE TABLE task (
 			DEFAULT 0.0
 			CHECK (randslip BETWEEN 0.0 AND 1.0),
 
-	-- How often the test should be repeated.
+        -- How long the tool that runs the test says it will take
+	duration        INTERVAL,
 
+	-- How often the test should be repeated.
 	-- TODO: This needs to handle CRON-style and streaming.  Might
 	-- be helped by https://pypi.python.org/pypi/croniter or a C
 	-- counterpart.
-
 	repeat		INTERVAL,
 
 	-- Time after which scheduling stops.
@@ -70,21 +69,19 @@ CREATE TABLE task (
 	-- Number of times successfully executed before scheduling stops
 	max_runs	NUMERIC,
 
-	-- Number of iterations that have been executed
-	repeats	  	NUMERIC
+	-- Number of times the task has been run
+	runs	  	NUMERIC
 			DEFAULT 0,
 
-	-- When this task should be removed.  This is used to do temporary holds.
-	-- TODO: Need something to enforce this.  Could probably do it when the scheduler runs.
-	expires	  	TIMESTAMP WITH TIME ZONE
-			DEFAULT NULL,
+	-- Last time the task was run
+	last_run  	TIMESTAMP WITH TIME ZONE,
 
 	--
 	-- TESTING
 	--
 
 	-- Tool that will be used to run this test
-	-- TODO: Need to noodle through tool selection
+	-- TODO: Do we want to determine this per run or just once?
 	tool	  	INTEGER
 			NOT NULL
 			REFERENCES tool(id)
@@ -97,7 +94,7 @@ CREATE TABLE task (
 	-- the participants field.
 	nparticipants	INTEGER,
 
-	-- This system's participant number
+	-- This node's participant number
 	participant	INTEGER,
 
 
@@ -106,7 +103,6 @@ CREATE TABLE task (
 	-- TODO: If NULL, the archiver will need to pull the system
 	-- defaults effective... when?  When scheduled?  When run?
 	archives	JSONB,
-
 
 	--
 	-- MISCELLANEOUS
@@ -134,100 +130,66 @@ AS $$
 DECLARE
 	key TEXT;
 	test_type TEXT;
+	tool_type TEXT;
 	start TEXT;
+	randslip TEXT;
 	until TEXT;
 	run_result external_program_result;
 BEGIN
 
 	--
-	-- Pull columns from the JSON
-	-- TODO: Only if changed?  (Probably a good idea.)
+	-- BASIC VALIDATION
 	--
+
+	-- TODO: Should probably only allow updates to the columns
+	-- that we don't want changing, which is the task package.
+
+	IF TG_OP = 'INSERT' THEN
+	    NEW.added := now();
+	ELSIF NEW.added <> OLD.added THEN
+	    RAISE EXCEPTION 'Insertion time cannot be updated.';
+	END IF;
 
 	FOR key IN (SELECT jsonb_object_keys(NEW.json))
 	LOOP
 	   IF (left(key, 1) != '_')
-	      AND (key NOT IN ('schema', 'schedule', 'test', 'archives', 'passthrough')) THEN
+              -- TODO: How was passthrough going to be used?
+	      AND (key NOT IN ('schema', 'test', 'tool', 'schedule', 'archives', 'passthrough')) THEN
 	      RAISE EXCEPTION 'Unrecognized section "%" in task package.', key;
 	   END IF;
 	END LOOP;
 
-	test_type := (NEW.json #>> '{test, type}');
-	SELECT INTO NEW.test test.id FROM test WHERE test.name = test_type;
-	IF NOT FOUND THEN
-            RAISE EXCEPTION 'Unknown test type "%"', test_type;
-	END IF;
 
-
-	run_result := pscheduler_internal(ARRAY['invoke', 'test', (NEW.json #>> '{test, type}'), 'spec-is-valid'],
-		      NEW.json #>> '{test, spec}' );
-	IF run_result.status != 0 THEN
-	   RAISE EXCEPTION 'Unusable task package: %', run_result.stderr;
-	END IF;
-
-	IF (NEW.json #> '{schedule}') IS NULL THEN
-	   RAISE EXCEPTION 'Task package has no schedule section.';
-	END IF;
-
-	IF TG_OP = 'INSERT' THEN
-	      NEW.added := now();
-	ELSIF NEW.added <> OLD.added THEN
-	      RAISE EXCEPTION 'Insertion time cannot be updated.';
-	END IF;
-
-	-- Need this first because a 'soonest' start depends on it.
-	NEW.duration := text_to_interval(NEW.json #>> '{schedule, duration}');
-
-	start := NEW.json #>> '{schedule, start}';
-	IF start IS NULL THEN
-	   NEW.start := now();
-	ELSIF start = 'soonest' THEN
-	   -- Earliest spot in the schedule where this task
-	   NEW.start := schedule_soonest_available(NEW.duration);
-	ELSIF start LIKE '<P%' THEN
-	   -- TODO: Soonest within specified interval
-	   RAISE EXCEPTION 'Soonest-within scheduling is not yet supported';
-	ELSIF start LIKE '>P%' THEN
-	   -- Soonest after specified interval
-	   NEW.start := schedule_soonest_available(NEW.duration,
-				now() + text_to_interval(substring(start FROM 2)));
-	ELSIF start LIKE 'P%' THEN
-	   -- ISO Interval
-	   NEW.start := normalized_time(now() + text_to_interval(start));
-	ELSE
-	   -- Full timestamp
-	   NEW.start := normalized_time(text_to_timestamp_with_time_zone(start));
-	END IF;
-	IF NEW.start is NULL THEN
-	   RAISE EXCEPTION 'Unable to find a time to schedule the task.';
-	END IF;
-
-	NEW.slip := text_to_interval(NEW.json #>> '{schedule, slip}');
-	NEW.randslip := text_to_numeric(NEW.json #>> '{schedule, randslip}');
-
-	NEW.repeat := text_to_interval(NEW.json #>> '{schedule, repeat}');
-
-	until := NEW.json #>> '{schedule, until}';
-	IF until LIKE 'P%' THEN
-	   NEW.until := now() + text_to_interval(until);
-	-- TODO: 'infinity' and 'doomsday' are not officially supported.
-	ELSIF until IN ('forever', 'infinity', 'doomsday') THEN
-	   NEW.until := 'infinity';
-	ELSE
-	   NEW.until := text_to_timestamp_with_time_zone(until);
-	END IF;
-
-	NEW.max_runs := text_to_numeric(NEW.json #>> '{schedule, max_runs}');
+	--
+	-- TEST
+	--
 
 	IF (NEW.json #> '{test}') IS NULL THEN
 	   RAISE EXCEPTION 'Task package has no test section';
 	END IF;
 
-	-- TODO: Validate test type once we have a table of those.
-	-- TODO: Validate test spec once we have test type classes
+
+	test_type := (NEW.json #>> '{test, type}');
+
+	IF test_type IS NULL THEN
+	   RAISE EXCEPTION 'Task contains no test type';
+	END IF;
+
+	SELECT INTO NEW.test id FROM test WHERE name = test_type;
+	IF NOT FOUND THEN
+            RAISE EXCEPTION 'Test type "%" is not available', test_type;
+	END IF;
+
+
+	run_result := pscheduler_internal(ARRAY['invoke', 'test', test_type, 'spec-is-valid'],
+		      NEW.json #>> '{test, spec}' );
+	IF run_result.status != 0 THEN
+	    RAISE EXCEPTION 'Task package contains unusable test: %', run_result.stderr;
+	END IF;
+
 
 	-- Extract participant list
-	run_result := pscheduler_internal(ARRAY['invoke', 'test', (NEW.json #>> '{test, type}'), 'participants'],
+	run_result := pscheduler_internal(ARRAY['invoke', 'test', test_type, 'participants'],
 		      NEW.json #>> '{test, spec}' );
 	IF run_result.status != 0 THEN
 	   RAISE EXCEPTION 'Unable to determine participants: %', run_result.stderr;
@@ -247,35 +209,85 @@ BEGIN
 	    RAISE EXCEPTION 'Participant number is invalid for this test';
 	END IF;
 
-	-- TODO: Validate archives section once we have a way to do that.
+        --
+        -- UUID
+        --
 
+	IF TG_OP = 'INSERT' THEN
+            IF NEW.participant = 0 THEN
+                IF NEW.uuid IS NOT NULL THEN
+                    RAISE EXCEPTION 'Lead participant should not be given a UUID.';
+                END IF;
+                NEW.uuid = gen_random_uuid();
+            ELSIF NEW.uuid IS NULL THEN
+                RAISE EXCEPTION 'Non-lead participants must have a UUID.';
+            END IF;
+        END IF;
 
 	--
-	-- Apply Defaults and corrections
+	-- TOOL
 	--
 
-	IF NEW.start IS NULL THEN
-	   NEW.start := now();
+	-- TODO: Validate tool name
+
+	tool_type := NEW.json #>> '{tool}';
+	IF tool_type IS NULL THEN
+	   RAISE EXCEPTION 'Task package specifies no tool';
 	END IF;
 
-	-- This prevents fractional gaps in the schedule
-	NEW.start := normalized_time(NEW.start);
+	SELECT INTO NEW.tool id FROM tool WHERE name = tool_type;
 
-	-- TODO: Get the tool to set the duration?
+	IF NOT FOUND THEN
+            RAISE EXCEPTION 'Tool "%" is not available', tool_type;
+	END IF;
 
+
+
+	--
+	-- SCHEDULE
+	--
+
+	IF (NEW.json #> '{schedule}') IS NULL THEN
+	    RAISE EXCEPTION 'Task package has no schedule section.';
+	END IF;
+
+	start := NEW.json #>> '{schedule, start}';
+	IF start IS NULL or start = 'soonest' THEN
+	    NEW.start := NULL;
+        ELSIF start LIKE '@P%' THEN
+            -- Start at the next increment of the specified interval,
+            -- e.g., @PT1H means to start at the top of the next hour.
+            -- Any interval not containing fractional seconds will
+            -- work.
+	    NEW.start := time_next_interval(now(),
+                text_to_interval(substring(start FROM 2)));
+	ELSIF start LIKE 'P%' THEN
+	    -- ISO Interval, from right now.
+	    NEW.start := normalized_time(now() + text_to_interval(start));
+	ELSE
+	    -- Full timestamp
+	    NEW.start := normalized_time(text_to_timestamp_with_time_zone(start));
+	END IF;
+
+
+	NEW.slip := text_to_interval(NEW.json #>> '{schedule, slip}');
 	IF NEW.slip IS NULL THEN
-	   -- TODO: Should this default be something greater than 0?
 	   NEW.slip := 'P0';
 	END IF;
 
-	IF (NEW.randslip < 0.0) OR (NEW.randslip > 1.0)
-	THEN
-		RAISE EXCEPTION 'Slip fraction must be in [0.0 .. 1.0]';
+	randslip := NEW.json #>> '{schedule, randslip}';
+	IF randslip IS NOT NULL THEN
+	    NEW.randslip := text_to_numeric(randslip);
+	    IF (NEW.randslip < 0.0) OR (NEW.randslip > 1.0) THEN
+	        RAISE EXCEPTION 'Slip fraction must be in [0.0 .. 1.0]';
+	    END IF;
 	END IF;
 
-	IF (NEW.repeat IS NOT NULL) AND (NEW.repeat <= NEW.duration) THEN
-	   RAISE EXCEPTION 'Repeat must be longer than the duration. %', NEW.repeat;
-	END IF;
+
+	NEW.repeat := text_to_interval(NEW.json #>> '{schedule, repeat}');
+
+	-- TODO: Should we check that the repeat interval is greater
+	-- than the duration (which we no longer have by default)?
 
 	IF NEW.repeat IS NULL THEN
 	   NEW.until := NULL;
@@ -287,13 +299,49 @@ BEGIN
 	   NEW.until := 'infinity';
 	END IF;
 
-	IF NEW.until <= NEW.start THEN
+
+	until := NEW.json #>> '{schedule, until}';
+
+	IF until LIKE 'P%' THEN
+	   NEW.until := now() + text_to_interval(until);
+	-- TODO: 'infinity' and 'doomsday' are not officially supported.
+	ELSIF until IN ('forever', 'infinity', 'doomsday') THEN
+	   NEW.until := 'infinity';
+	ELSE
+	   NEW.until := text_to_timestamp_with_time_zone(until);
+	END IF;
+
+	IF NEW.start IS NULL THEN
+            IF NEW.until <= now() THEN
+	        RAISE EXCEPTION 'Until must be in the future.';
+            END IF;
+        ELSIF NEW.until <= NEW.start THEN
 	   RAISE EXCEPTION 'Until must be after the start.';
 	END IF;
+
+
+	NEW.max_runs := text_to_numeric(NEW.json #>> '{schedule, max_runs}');
 
 	IF (NEW.max_runs IS NOT NULL) AND (NEW.max_runs < 1) THEN
 	   RAISE EXCEPTION 'Maximum runs must be positive.';
 	END IF;
+
+        -- See what the tool says about how long it should take.
+
+	run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_type, 'duration'],
+		      NEW.json #>> '{test, spec}' );
+	IF run_result.status != 0 THEN
+	    RAISE EXCEPTION 'Unable to determine duration of test: %', run_result.stderr;
+	END IF;
+	-- TODO: Pre-validate the output?
+	NEW.duration := interval_round_up(regexp_replace(run_result.stdout, '\s+$', '')::INTERVAL);
+
+
+	--
+	-- ARCHIVES
+	--
+
+	-- TODO: Validate archives section once we have a way to do that.
 
 
 	RETURN NEW;
@@ -304,15 +352,56 @@ CREATE TRIGGER task_alter BEFORE INSERT OR UPDATE ON task
        FOR EACH ROW EXECUTE PROCEDURE task_alter();
 
 
--- TODO: This trigger should probably be part of schedule.sql
--- TODO: It should go entirely when we do multi-participant
-CREATE OR REPLACE FUNCTION task_alter_post()
-RETURNS TRIGGER AS $$
+
+-- Register a run having taken place on a task
+CREATE OR REPLACE FUNCTION task_register_run(task_id BIGINT)
+RETURNS VOID
+AS $$
 BEGIN
-	PERFORM schedule_reschedule(NEW.id);
-	RETURN NEW;
+    UPDATE task
+    SET
+        runs = runs + 1,
+        last_run = now()
+    WHERE id = task_id;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER task_alter_post AFTER INSERT OR UPDATE ON task
-       FOR EACH ROW EXECUTE PROCEDURE task_alter_post();
+
+
+-- TODO: Will need a ticker job to hunt down and kill tasks that no
+-- longer need to be in the database.
+
+---
+--- API
+---
+
+
+-- Put a task on the timeline and return its UUID
+
+CREATE OR REPLACE FUNCTION api_task_post(
+    task_package JSONB,
+    participant INTEGER DEFAULT 0,
+    task_uuid UUID = NULL
+)
+RETURNS UUID
+AS $$
+DECLARE
+    inserted RECORD;
+BEGIN
+
+   WITH inserted_row AS (
+        INSERT INTO task(json, participant, uuid)
+        VALUES (task_package, participant, task_uuid)
+        RETURNING *
+    ) SELECT INTO inserted * from inserted_row;
+
+    RETURN inserted.uuid;
+
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- TODO: Need an api_task_get()
+-- TODO: Need an api_task_delete()
+
+

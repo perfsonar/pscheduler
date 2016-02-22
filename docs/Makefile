@@ -8,7 +8,8 @@ LATEX=\
 	developers-guide \
 	json \
 	misc \
-	test-idle
+	test-idle \
+	test-simplestream
 
 
 TEXES=$(LATEX:%=%.tex)

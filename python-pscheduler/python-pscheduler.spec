@@ -32,7 +32,7 @@ Utility functions for pScheduler
 
 
 %prep
-%setup -n %{short}-%{version}
+%setup -q -n %{short}-%{version}
 
 
 %build

@@ -4,6 +4,7 @@
 #
 
 import datetime
+import json
 import sys
 import time
 
@@ -11,71 +12,56 @@ import pscheduler
 
 input = pscheduler.json_load();
 
+# Validate the input
 
-# TODO: Need a command-line switch --check to bail out after a check of everything.
+# TODO: This should probably be in a module that can be shared with
+# can-run.
 
-#
-# CHECK
-#
+# TODO: Be more thorough.
 
-### # TODO: Should be checking the package schema and the task spec schema.
-### if 'schema' in input:
-###     if not (1 <= input['schema'] <= 1):
-###         pscheduler.fail('Unsupported schema version {0}'.format(input['schema']))
-### else:
-###     pscheduler.fail("Missing schema")
-### 
-### try:
-###     if input['test']['type'] != 'idle':
-###         pscheduler.fail('Unsupported test type')
-### except KeyError:
-###     pscheduler.fail('Missing test type')
-### 
-### 
-### duration_iso = input['schedule']['duration']
-# TODO: Remove this.
-duration_iso = 'PT5S'
+
+try:
+    duration_iso = input['test']['spec']['duration']
+except KeyError:
+    pscheduler.fail('Unable to find duration in input')
+
+
 duration = pscheduler.iso8601_as_timedelta(duration_iso)
-### if duration is None:
-###     pscheduler.fail_other(2, "Missing or invalid duration")
-### else:
-###     # TODO: Set this back to 5.
-###     if duration < datetime.timedelta(seconds=1):
-###         pscheduler.fail("Won't sleep for such a short time.")
-
-# TODO: See --check-only, above
-
-#
-# RUN
-#
+if duration is None:
+    pscheduler.fail_other(2, "Missing or invalid duration " + duration_iso)
+else:
+    if duration < datetime.timedelta(seconds=5):
+        pscheduler.fail("Won't sleep for such a short time.")
 
 
+# Perform the test
 
-### try:
-###     sys.stderr.write(input['test']['spec']['starting-comment'] + '\n')
-### except KeyError:
-###     null
+# The output is just mocked up.
+output = ''
 
+try:
+    output += input['test']['spec']['starting-comment'] + '\n'
+except KeyError:
+    null
 
-# TODO: Use duration.total_seconds() when Py2.7 becomes standard fare.
 time.sleep(pscheduler.timedelta_as_seconds(duration))
 
-### try:
-###     sys.stderr.write(input['test']['spec']['parting-comment'] + '\n')
-### except KeyError:
-###     null
+try:
+    output += input['test']['spec']['parting-comment'] + '\n'
+except KeyError:
+    null
+
+
 
 #
-# RESULTS
+# Produce results
 #
 
-# TODO: See if it's cleaner to do this with the JSON library  (Probably is.)
+results = {
+    'succeeded': True,
+    'diags': output,
+    'error': '',
+    'result': { 'time_slept': pscheduler.timedelta_as_iso8601(duration) }
+}
 
-print '{'
-print '"succeeded": true,'
-print '"output": "",'
-print '"error": "",'
-print '"result": { "time_slept": "' + duration_iso + '" }'
-print '}'
-
-pscheduler.succeed()
+pscheduler.succeed_json(results)

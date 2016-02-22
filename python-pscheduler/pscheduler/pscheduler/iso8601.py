@@ -25,5 +25,6 @@ def iso8601_as_datetime(iso):
         return None
 
 
+# TODO: This function exists in datetime as .isoformat()
 def datetime_as_iso8601(datetime):
     return isodate.datetime_isoformat(datetime)

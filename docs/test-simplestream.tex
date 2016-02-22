@@ -61,7 +61,7 @@ This test includes the following participants:
 The test specification consists of a single JSON object containing the
 pairs below.  \seejson
 
-\typeditem{schema}{Cardinal} - The schema version of this specification.
+\typeditem{schema}{Cardinal} The schema version of this specification.
 
 \typeditem{receiver}{Host} The network address or hostname of the receiver.
 
@@ -103,13 +103,39 @@ by the tool executing the test.
 The result consists of a single JSON object containing the pairs
 below.  \seejson
 
-\typeditem{elapsed-time}{Duration} time elapsed between the start of the test
-and when the sender closed the connection.
+\typeditem{schema}{Cardinal} The schema version of the result.
+
+\typeditem{dawdled}{Duration} The time the sender spend dawdling
+before opening the connection.
+
+\typeditem{elapsed-time}{Duration} The time elapsed between the start
+of the test and when the sender closed the connection, as measured by
+the receiver.
+
+\typeditem{succeeded}{Boolean} Whether or not the test was successful.
+
+\typeditem{dawdled}{Duration} How long the sender dawdled before
+connecting to the receiver.
+
+\typeditem{sent}{String} The test material sent by the sender.
+
+\typeditem{received}{String} The test material received by the receiver.
+
+\typeditem{elapsed-time}{Duration} The amount of time that elapsed between
+the time the reciever started listening for a connection and the
 
 
 \subsection{Example}
 \begin{lstlisting}[language=json]
-{ "elapsed-time": "PT3.14S" }
+{
+    "schema": 1,
+
+    "succeeded": true,
+    "dawdled": "PT0.23498S",
+    "sent": "This is a test.",
+    "received": "This is a test.",
+    "elapsed-time": "PT3.14S"
+}
 \end{lstlisting}
 
 

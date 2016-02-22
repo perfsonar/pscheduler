@@ -33,16 +33,21 @@ def json_load(source=None):
         source = sys.stdin
 
     try:
-        if type(source) is str:
-            json_in = loads(source)
+        if type(source) is str or type(source) is unicode:
+            json_in = loads(str(source))
         elif type(source) is file:
             json_in = load(source)
         else:
-            pscheduler.fail('Internal error: bad source type ', type(source))
+            raise Exception("Internal error: bad source type ", type(source))
     except ValueError:
-        pscheduler.fail('Invalid JSON')
+        # TODO: Make this consistent and fix scripts that use it.
+        if type(source) is str:
+            raise Exception("Invalid JSON")
+        else:
+            pscheduler.fail("Invalid JSON")
 
-    _json_scrub_comments(json_in)
+    # TODO: This doesn' work, so don't bother with it.
+    # _json_scrub_comments(json_in)
     return json_in
 
 

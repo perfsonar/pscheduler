@@ -7,7 +7,8 @@ default: build
 
 # TODO: The docs directory isn't built.
 build:
-	scripts/build-all
+	scripts/build-all | tee build.log
+TO_CLEAN += build.log
 
 
 # TODO: Need to build the repository index.

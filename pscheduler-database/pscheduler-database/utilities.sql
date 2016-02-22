@@ -191,3 +191,25 @@ BEGIN
 	);
 END;
 $$ LANGUAGE plpgsql;
+
+
+-- Round an interval up to the next whole second if there are any
+-- fractional seconds.
+
+-- TODO: FINISH THIS
+
+CREATE OR REPLACE function interval_round_up(candidate INTERVAL)
+RETURNS INTERVAL
+AS $$
+DECLARE
+    microseconds INTEGER;
+BEGIN
+    microseconds := EXTRACT(MICROSECONDS FROM candidate)::INTEGER % 1000000;
+    IF microseconds > 0 THEN
+        microseconds := 1000000 - microseconds;
+	candidate = candidate + make_interval(0, 0, 0, 0, 0, 0, microseconds / 1000000.0);
+    END IF;
+
+    return CANDIDATE;
+END;
+$$ LANGUAGE plpgsql;

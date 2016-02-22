@@ -31,7 +31,7 @@ Python module which cleanly forks a child and detaches it.
 
 
 %prep
-%setup -n %{short}-%{version}
+%setup -q -n %{short}-%{version}
 %patch0 -p1
 
 

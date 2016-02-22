@@ -3,211 +3,6 @@
 --
 
 
--- Gaps between scheduled time ranges.  This view does not
--- self-order.
-
--- Note that because PostgreSQL does not yet support infinite
--- intervals (been in the plans since before 2008, apparently), the
--- dates used for infinity are the minimum/maximum dates supported by
--- the TIMESTAMP WITH TIME ZONE type.  Use of infinity would be more
--- elegant, but for this application, the dates will do fine.
---
--- See:
---   https://wiki.postgresql.org/wiki/Todo#Dates_and_Times
---   http://www.postgresql.org/docs/9.5/static/datatype-datetime.html
-
--- TODO: In testing, the query plan for this did a lot of sequential
--- scans.  See if it uses the indexes when there are a larger number
--- of records.
-
-DROP VIEW IF EXISTS schedule_gap;
-CREATE OR REPLACE VIEW schedule_gap
-AS
-    SELECT
-        -- Negative infinity to first start time, or all time if no rows
-        tstzrange( '4713-01-01 BC'::TIMESTAMP WITH TIME ZONE,
-                   COALESCE( (SELECT lower(times)
-                              FROM run
-                              ORDER BY times ASC
-                              LIMIT 1),
-                             '294276-12-31'::TIMESTAMP WITH TIME ZONE )
-        ) gap
-    UNION
-    SELECT
-        -- All gaps in the schedule.
-        tstzrange( upper(r1.times),
-                   -- The last row will have a NULL for the subselect,
-                   -- which makes it the last one.  That gap goes to
-                   -- infinity (and beyond!).
-                   COALESCE( (SELECT lower(times)
-                              FROM run r2
-                              WHERE lower(r2.times) > upper(r1.times)
-                              ORDER BY r2.times ASC
-                              LIMIT 1),
-                             '294276-12-31'::TIMESTAMP WITH TIME ZONE
-                   ),
-                   '[)' ) gap
-    FROM run r1
-;
-
-
-
-
--- NOTE:  These functions implement a very simplistic first-come, first-served schedule.
-
-
--- Find a time for a soonest-start task to start.
--- TODO: Probably want to support bounding the time for <PT30M-type starts.
-CREATE OR REPLACE FUNCTION schedule_soonest_available(
-    duration INTERVAL,
-    after TIMESTAMP WITH TIME ZONE DEFAULT now())
-RETURNS TIMESTAMP WITH TIME ZONE
-AS $$
-DECLARE
-    last_end TIMESTAMP WITH TIME ZONE DEFAULT NULL;
-    run_rec RECORD;
-BEGIN
-    -- Easy case: Nothing on the schedule right now.  This will also
-    -- cover no runs being scheduled at all.
-
-    IF NOT EXISTS (SELECT * FROM run
-       	   	   WHERE times && tstzrange(after, after+duration, '[)')) THEN
-       RETURN normalized_now();
-    END IF;
-
-    -- Examine the gaps between runs and see if there's enough space
-    -- for the task.
-    -- TODO: Use the schedule_gaps view defined above for this.
-
-    FOR run_rec IN (SELECT times FROM run ORDER BY times)
-    LOOP
-	IF last_end IS NULL THEN
-	   last_end := upper(run_rec.times);
-	   CONTINUE;
-	END IF;
-
-	IF (lower(run_rec.times) - last_end) >= duration THEN
-	   RETURN last_end;
-	END IF;
-	last_end := upper(run_rec.times);
-    END LOOP;
-
-    -- If we got here, there was no suitable gap between scheduled
-    -- runs.  Schedule after whatever we had for the last end time.
-    RETURN last_end;
-
-END;
-$$ LANGUAGE plpgsql;
-
-
--- Reschedule a single task by its id
-CREATE OR REPLACE FUNCTION schedule_reschedule(
-       task_id BIGINT,
-       earliest TIMESTAMP WITH TIME ZONE DEFAULT now())
-RETURNS VOID
-AS $$
-DECLARE
-   task_rec RECORD;
-   starting_iteration NUMERIC;
-   repeats_left NUMERIC DEFAULT NULL;
-   stop_after TIMESTAMP WITH TIME ZONE;
-   remaining_time_horizon INTERVAL;
-BEGIN
-
-     IF earliest < now() THEN
-     	RAISE EXCEPTION 'Cannot reschedule runs that started in the past.';
-     END IF;
-
-     SELECT * INTO task_rec FROM task WHERE id = task_id;
-     IF NOT FOUND THEN
-     	RAISE EXCEPTION 'No task with ID %', task_id;
-     END IF;
-
-     earliest := normalized_time(earliest);
-
-     -- We don't care about non-repeaters that have already been run.
-     IF (task_rec.repeat IS NULL) AND (TASK_REC.repeats > 0) THEN
-     	RETURN;
-     END IF;
-
-     -- Nothing can happen before the task starts.
-     earliest := GREATEST(earliest, task_rec.start);
-
-     -- Clear out old runs that haven't happened yet
-     DELETE FROM run
-     WHERE
-	task = task_id
-	AND lower(times) >= earliest;
-
-     -- Figure out the time that the first run can be scheduled within
-     -- our window.
-
-     IF task_rec.repeat IS NOT NULL THEN
-          starting_iteration := TRUNC(
-     			EXTRACT(EPOCH FROM (earliest - task_rec.start)
-		        / EXTRACT(EPOCH FROM task_rec.repeat)) );
-
-	  earliest := earliest + (task_rec.repeat * starting_iteration);
-     END IF;
-
-
-     -- Figure out how far ahead in time we can schedule runs that
-     -- don't go past the scheduling time horizon.
-     stop_after := LEAST( task_rec.until, (normalized_now() + schedule_time_horizon()) )
-     		   - task_rec.duration;
-
-     -- Figure out how many runs we can schedule.
-     IF task_rec.max_runs IS NOT NULL THEN
-     	-- The easy case, when the task tells us.
-     	repeats_left := task_rec.max_runs - task_rec.repeats;
-     ELSE
-	-- Now until the edge of the time horizon
-	remaining_time_horizon := schedule_time_horizon() - (earliest - normalized_now());
-	repeats_left := ROUND(EXTRACT(EPOCH FROM remaining_time_horizon)
-		     / EXTRACT(EPOCH FROM task_rec.repeat));
-     END IF;
-
-     -- Adjust out anything on the schedule before our starting time
-     repeats_left := repeats_left
-     		  - run_runs_between(task_id, normalized_now(), earliest);
-
-     -- Reschedule all runs
-
-     -- TODO: Remove this.
-     -- raise notice 'T% RL=%  Start @ %   Stop + %', task_id, repeats_left, earliest, stop_after;
-     WHILE (repeats_left > 0) AND (earliest < stop_after)
-     LOOP
-	-- TODO: Remove this.
-	--raise notice 'T% RL=%  SA=%', task_id, repeats_left, earliest;
-	-- TODO: If this run would overlap, try to slip it.
-	INSERT INTO run (task, times)
-	VALUES (task_id, tstzrange(earliest, earliest + task_rec.duration, '[)'));
-	repeats_left := repeats_left - 1;
-	earliest := earliest + task_rec.repeat;
-     END LOOP;
-
-     NOTIFY schedule_change;
-     RETURN;
-END;
-$$ LANGUAGE plpgsql;
-
-
-
--- Reschedule every task
-CREATE OR REPLACE FUNCTION schedule_reschedule_all()
-RETURNS VOID
-AS $$
-DECLARE
-	task_rec RECORD;
-BEGIN
-	FOR task_rec IN SELECT id FROM task
-	LOOP
-		EXECUTE schedule_reschedule(task_rec.id);
-	END LOOP;
-END;
-$$ LANGUAGE plpgsql;
-
-
 
 -- What's coming on the schedule and what to execute
 
@@ -222,6 +17,7 @@ AS
       -- has no way to turn dates and intervals to ISO 8601.
       -- TODO: See if this is actually the case.
       task.participant AS participant,
+      run.part_data_full AS part_data_full,
       task.json #> '{test}' AS test,
       lower(run.times) AS start,
       task.duration AS duration
@@ -234,3 +30,111 @@ AS
         AND lower(run.times) >= normalized_now()
     ORDER BY run.times;
 ;
+
+
+
+--
+-- API
+--
+
+
+-- Come up with a list of proposed times to run a task that fall
+-- within a given time range.  If the start of the range is NULL, the
+-- current time will be used.  If the end is NULL, the start plus the
+-- length of the configured schedule time horizon will be used.  Under
+-- no circumstances will any times in the past or beyond the time
+-- horizon be proposed.
+
+CREATE OR REPLACE FUNCTION api_proposed_times(
+    task_uuid UUID,
+    range_start TIMESTAMP WITH TIME ZONE = normalized_now(),
+    range_end TIMESTAMP WITH TIME ZONE = tstz_infinity()
+)
+RETURNS TABLE (
+    lower TIMESTAMP WITH TIME ZONE,
+    upper TIMESTAMP WITH TIME ZONE
+)
+AS $$
+DECLARE
+    time_now TIMESTAMP WITH TIME ZONE;
+    horizon_end TIMESTAMP WITH TIME ZONE;
+    task RECORD;
+    time_range TSTZRANGE;
+    last_end TIMESTAMP WITH TIME ZONE;
+    run_record RECORD;
+BEGIN
+
+    -- Validate the input
+
+    SELECT INTO task * FROM task WHERE uuid = task_uuid;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'No task % exists', task_uuid;
+    END IF;
+
+    IF range_end < range_start THEN
+        RAISE EXCEPTION 'Range start and end must be in the proper order';
+    END IF;
+
+
+    -- Figure out the actual boundaries of where we can schedule and
+    -- trim accordingly.
+
+    time_now := normalized_now();
+    horizon_end := time_now + schedule_time_horizon();
+
+    IF range_end < time_now THEN
+        -- Completely in the past means nothing schedulable at all.
+        RETURN;
+    END IF;
+
+    -- This is partially correctable
+    range_start := greatest(range_start, time_now);
+    range_start := normalized_time(range_start);
+
+    -- Can't schedule past the end of the time horizon, either.
+    range_end := LEAST(range_end, horizon_end);
+    range_end := normalized_time(range_end);
+
+
+    -- Can't propose anything for ranges in the past or beyond the
+    -- scheduling horizon.
+    IF range_start > horizon_end OR range_end <= normalized_now() THEN
+	RETURN;
+    END IF;
+
+    time_range := tstzrange(range_start, range_end, '[)');
+
+    last_end := range_start;
+
+    FOR run_record IN
+        SELECT * FROM run
+        WHERE times && time_range
+        ORDER BY times
+    LOOP
+
+        -- A run that starts beyond the last end implies a gap, but
+        -- the gap must be longer than the duration of the task for it
+        -- to one that can be proposed.
+        IF lower(run_record.times) > last_end
+           AND lower(run_record.times) - last_end >= task.duration
+        THEN
+            RETURN QUERY
+                SELECT last_end AS lower, lower(run_record.times) AS UPPER;
+        END IF;
+
+        last_end := upper(run_record.times);
+
+    END LOOP;
+
+    -- If the end of the last run is before the end of the range,
+    -- that's also a gap.
+    IF last_end < range_end
+       AND range_end - last_end >= task.duration
+    THEN
+        RETURN QUERY SELECT last_end, range_end;
+    END IF;
+
+    RETURN;
+
+END;
+$$ LANGUAGE plpgsql;

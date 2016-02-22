@@ -19,6 +19,15 @@ postgresql-load
 # Python Modules
 python-detach
 python-isodate
+python-ntplib
+
+# Flask and its dependencies
+# TODO: Decide if these are to stay.
+python-itsdangerous
+python-Jinja2
+python-Werkzeug
+python-Flask
+
 
 #
 # Utility programs
@@ -52,8 +61,10 @@ pscheduler-server
 
 # Tests
 pscheduler-test-idle
+pscheduler-test-simplestream
 
 # Tools
+pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-snooze
 

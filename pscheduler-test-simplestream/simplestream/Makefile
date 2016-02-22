@@ -5,7 +5,6 @@
 NAME=simplestream
 
 FILES=\
-	duration \
 	enumerate \
 	participants \
 	spec-is-valid

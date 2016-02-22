@@ -44,5 +44,6 @@ def succeed_json(result = None):
     """
     if result is not None:
         json.dump(result, sys.stdout)
+        print
     exit(0)
 

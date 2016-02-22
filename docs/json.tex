@@ -64,11 +64,34 @@ Element names will be lowercase with words separated by hyphens.
 This section covers simple and compound types used in pScheduler.
 
 
+\subsection{AnyJSON}
+Any valid JSON object as defined by ECMA 404.
+
+
+\subsection{Array}
+An valid JSON array as defined by ECMA 404.
+
+
 \subsection{Boolean}
 A boolean value as defined by ECMA 404.
 
 \example\ {\tt true} and {\tt false}.  (Note that these are also
 the only two valid values.)
+
+
+\subsection{Cardinal}
+A subset of {\tt number} as defined by ECMA 404 with the restriction
+that the value be positive and contain no decimal point.
+
+\example\ {\tt 1}, {\tt 28} and {\tt 906}.
+
+
+\subsection{CardinalZero}
+A subset of {\tt number} as defined by ECMA 404 with the restriction
+that the value not be negative and contain no decimal point.
+
+\example\ {\tt 0}, {\tt 37} and {\tt 1732}.
+
 
 
 \subsection{Duration}
@@ -96,6 +119,27 @@ optional but should be accepted if provided.
 \source{ISO}{http://www.iso.org/iso/home/store/catalogue_tc/catalogue_detail.htm?csnumber=39242}\\
 \source{Wikipedia}{https://en.wikipedia.org/wiki/ISO_6709}
 
+
+
+\subsection{Host}
+The address of a host on the Internet as a string.
+
+{\bf IPv4.}  IPv4 addresses should be specified in the dotted-quad
+notation.  (Note that this format was never standardized, although it
+did first appear in RFC 790.)  Alternately, a hostname,
+partially-qualified domain name or fully-qualified domain name (FQDN)
+may be used.
+
+{\bf IPv6.}  IPv6 addresses should be specified in the format
+described by RFC 5952.  Alternately, a hostname, partially-qualified
+domain name or fully-qualified domain name (FQDN) may be used,
+prefixed with {\tt ipv6:}.  \todo{See if this is a good thing to do.}
+
+\example\ {\tt test.example.org}, {\tt 10.48.209.7}, {\tt
+  [2001:db8:a0b:12f0::1]} and {\tt ipv6:www6.example.net}.
+
+\source{IETF}{https://tools.ietf.org/html/rfc790}\\
+\source{IETF}{https://tools.ietf.org/html/rfc5952}
 
 
 \subsection{Integer}
@@ -132,6 +176,60 @@ the maintainer's organization can be found.
 A {\tt number} as defined by ECMA 404.
 
 \example\ {\tt 47}, {\tt -19.3} and {\tt 6.022e23}.
+
+
+\subsection{RunResult}
+A merged result containing all information about a run of a test.
+
+\typeditem{id}{UUID} A unique identifier for the run that produced this result.
+
+\typeditem{schedule}{TimeInterval} When the run was scheduled to start
+and how long it was scheduled to run.
+
+\typeditem{test}{TestSpecification} The test specification as provided
+when the task was instantiated.
+
+\typeditem{participants}{Array} A JSON array of {\tt Host} strings,
+one for each participant in the test.  The lead ({\tt 0}) participant
+should determine its host name in a way that will be most useful in
+identifying it from the outside.
+
+\typeditem{result}{AnyJSON} The full, merged result of the test in a
+test-specific format.  (See the pScheduler Test Guide for the test in
+question for details.)
+
+\typeditem{tool}{String} The name of the tool which conducted the
+test.  \todo{Consider adding version information.}
+
+\typeditem{tool-results}{Array} A JSON array containing one {\tt AnyJSON} for
+each participant containing the results as produced by the tool that
+ran the test.
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "id": "3c235f6e-672f-4c56-89f3-54d0398914eb",
+    "schedule": {
+        "start": "2016-02-08T17:35:03-05",
+        "duration": "PT30S"
+    },
+    "test": {
+        "test": "foo",
+        "spec": { ... Test Specification ... }
+    },
+    "participants": ["host1.example.org", "host2.example.org"],
+    "result": {
+        ... Result ...
+    },
+    "tool": "foomatic",
+    "tool-results": [
+        { ... Participant 0 Result ... },
+        { ... Participant 1 Result ... }
+    ]
+}
+\end{lstlisting}
+
+
 
 
 \subsection{SINumber}
@@ -175,6 +273,73 @@ A {\tt string} as defined by ECMA 404.
   \textbackslash"hello\textbackslash" as he went by."}
 
 
+
+\subsection{TestSpecification}
+A test specification consisting of a JSON object containing these
+elements:
+
+\typeditem{test}{String} The name of the test being carried out.
+
+\typeditem{spec}{AnyJSON} The specification of the test parameters.
+This must be valid for the test type specified by {\tt test}.
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "test": "idle",
+    "spec": {
+        "duration": "PT15S",
+        "parting-comment": "That's all, folks!"
+     }
+}
+\end{lstlisting}
+
+
+
+
+\subsection{TimeInterval}
+An interval of time consisting of a JSON object containing these
+elements:
+
+\typeditem{start}{Timestamp} The beginning of the time range.  This
+value is inclusive.
+
+\typeditem{duration}{Duration} The length of the time rage.
+
+Note that when constructing a range of times by adding {\tt duration}
+to {\tt start}, the calculated upper end of the range should be
+exclusive (e.g., {\tt 2015-04-19T00:00:00 + PT1H} adds up to {\tt
+  2015-04-19T01:00:00} but should cover all of the midnight hour and
+not the {\tt 01:00} hour).
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "start": "2016-02-16T13:44:18",
+    "duration": "PT1M30S"
+}
+\end{lstlisting}
+
+
+\subsection{TimeRange}
+A range of times consisting of a JSON object containing these
+elements:
+
+\typeditem{lower}{Timestamp} The beginning of the time range.  This
+value is inclusive.
+
+\typeditem{upper}{Timestamp} The end of the time range.  This
+value is exclusive.
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "lower": "2016-01-19T15:00:00",
+    "upper": "2016-01-19T15:30:00"
+}
+\end{lstlisting}
+
+
 \subsection{Timestamp}
 A date and time specified as defined the ISO 8601 standard.
 
@@ -188,6 +353,12 @@ Resource Name specified as defined by RFC 3986.
 \example\ {\tt http://www.example.org} and {\tt http://www.perfsonar.net}.
 
 \source{IETF}{https://tools.ietf.org/html/rfc3986}
+
+
+\subsection{UUID}
+A universally-unique identifier as defined in RFC 4122.
+
+\source{IETF}{https://www.ietf.org/rfc/rfc4122.txt}
 
 
 \subsection{Version}

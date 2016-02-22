@@ -16,12 +16,12 @@ json = pscheduler.json_load();
 
 # TODO: Make sure the type is one we like
 # TODO: Validate the spec
-# TODO: Extract the duration
+
 
 try:
     print json['spec']['duration']
 except KeyError:
     # TODO: This needs to match the default that will be used by run.
-    print 'PT10S'
+    pscheduler.fail('No duration found in test spec.')
 
 pscheduler.succeed()

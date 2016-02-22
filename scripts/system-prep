@@ -45,7 +45,8 @@ yum -y install \
 yum -y install \
     rpmdevtools \
     python-psycopg2 \
-    texlive-latex
+    texlive-latex \
+    python-markupsafe
 
 # Conveniences
 yum -y install emacs-nox screen

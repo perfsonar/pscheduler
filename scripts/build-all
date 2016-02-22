@@ -13,5 +13,14 @@ fi
 
 for PACKAGE in $(sed -e 's/#.*$//; /^\s*$/d' "${WHEREAMI}/RPM-BUILD-ORDER")
 do
+    cat <<EOF
+
+
+#
+# BUILDING ${PACKAGE}
+#
+
+EOF
+    
     make -C "${PACKAGE}" clean build rpmdump ${INSTALL}
 done

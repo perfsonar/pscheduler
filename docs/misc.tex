@@ -329,12 +329,19 @@ an ISO 8601 timestamp:
 \begin{center}
 \begin{tabular}{lll}
 {\tt soonest} & Earliest possible time & {\tt soonest} \\
-{\tt \textless{\itt interval}} & Soonest within {\itt interval} & {\tt \textless PT5M} \\
-{\tt \textgreater{\itt interval}} & Soonest after {\itt interval} & {\tt \textgreater PT5M} \\
 {\itt interval} & {\itt interval} from right now & {\tt PT5M} \\
+{\tt @{\itt interval}} & The nearest even {\itt interval} from right now & {\tt @PT1H} \\
 {\itt timestamp} & At absolute time {\itt timestamp} & {\tt 2016-04-09T12:38:05}
 \end{tabular}
 \end{center}
+
+Tricks:
+
+Schedule at the earliest time within an interval:  Start {\tt now} and set slip to the interval.
+
+Schedule at the earliest time after an interval:  Start {\tt PT5M} and slip infinitely.
+
+Note that both of these have side effects on repetitions.  See issue \#4 in GitHub.
 
 
 
