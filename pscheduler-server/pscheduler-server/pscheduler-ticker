@@ -42,15 +42,9 @@ if pscheduler.timedelta_as_seconds(retry) == 0:
 #
 
 is_verbose = options.verbose
-def verbose(first, *args):
-    if not is_verbose:
-        return
-    sys.stdout.write(first)
-    for arg in args:
-        sys.stdout.write(' ')
-        sys.stdout.write(str(arg))
-    sys.stdout.write('\n')
-
+def verbose(*args):
+    if is_verbose:
+        sys.stdout.write(' '.join(str(arg) for arg in args) + '\n')
 
 
 dsn = options.dsn

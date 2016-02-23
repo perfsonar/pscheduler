@@ -11,11 +11,15 @@ import os
 import pscheduler
 import psycopg2
 import psycopg2.extensions
+import requests
 import select
 import signal
 import subprocess
 import sys
 import time
+
+from dateutil.tz import tzlocal
+
 
 
 # Gargle the arguments
@@ -52,114 +56,177 @@ dsn = options.dsn
 # Utilities
 #
 
+# TODO: This should be swept into the pscheduler module.
 is_verbose = options.verbose
-def verbose(first, *args):
-    if not is_verbose:
-        return
-    sys.stdout.write(first)
-    for arg in args:
-        sys.stdout.write(' ')
-        sys.stdout.write(str(arg))
-    sys.stdout.write('\n')
-
+def verbose(*args):
+    if is_verbose:
+        sys.stdout.write(' '.join(str(arg) for arg in args) + '\n')
 
 
 #
 # Runs and things we do with them
 #
 class Run:
-    """What is known or can be inferred from a run pulled from the database"""
+
+    def __init__(self, id, start_in):
+
+        try:
+
+            with detach.Detach(close_fds=False,
+                               stdout=sys.stdout,
+                               stderr=sys.stderr) as detacher:
+
+                if detacher.pid:
+                    self.pid = detacher.pid
+                    return
+
+                self._run(id, start_in)
+
+        except Exception as ex:
+
+            # TODO: What do we do in production?  Log something?
+            print "EXCEPTION:", str(ex)
 
 
-    def __init__(self, id, start_in, tool, participant, partdata, test, start, duration):
-        self.id = id
-        self.start_in = start_in
-        self.tool = tool
-        self.participant = participant,
-        self.test = test,
-        self.start = start,
-        self.duration = duration,
+    # This method does the dirty work.  Don't worry about catching
+    # exception; that's the caller's responsibility.
+    def _run(self, id, start_in):
 
-        self.tool_input = {
+        db = pscheduler.pg_connection(dsn)
+        cursor = db.cursor()
+
+        # Don't try to do anyting until the start time.
+        sleep_time = pscheduler.timedelta_as_seconds(start_in)
+        verbose("Sleeping", sleep_time, "until test start.")
+        time.sleep(sleep_time)
+
+        cursor.execute("""
+                       SELECT
+                           tool.name,
+                           task.uuid,
+                           task.participant,
+                           task.participants,
+                           lower(run.times),
+                           upper(run.times),
+                           task.json #> '{test}',
+                           run.uuid,
+                           run.part_data_full
+                       FROM
+                           run
+                           JOIN task ON task.id = run.task
+                           JOIN tool ON tool.id = task.tool
+                       WHERE run.id = %s
+                       """, [id])
+
+        # TODO: Should get exactly one row back.
+        row = cursor.fetchone()
+
+        tool, task_uuid, participant, participants, start, end, test_spec, \
+            run_uuid, partdata = row
+
+        tool_input = {
             'schema': 1,
             'schedule': {
                 'start': pscheduler.datetime_as_iso8601(start),
-                'duration': pscheduler.timedelta_as_iso8601(duration)
+                'duration': pscheduler.timedelta_as_iso8601(end - start)
                 },
-            'test': test,
+            'test': test_spec,
             'participant': participant,
             'participant-data': partdata
             }
 
-
-    def run(self):
         # TODO: Log this?
-        verbose("TEST", self.id, "WITH", self.tool, ":  ", json.dumps(self.tool_input))
-        with detach.Detach(close_fds=True, stdout=sys.stdout, stderr=sys.stderr) as detacher:
+        verbose("TEST", id, "WITH", tool, ":  ", json.dumps(tool_input))
 
-            if detacher.pid:
-                self.pid = detacher.pid
-                return
+        # TODO: This should have a timeout in case the process hangs
+        # TODO: This should be in a module somewhere.
 
-            try:
-                db = pscheduler.pg_connection(dsn, False)
-                cursor = db.cursor()
-                # TODO: Running a process (with timeout) should be its own module.
-                process = subprocess.Popen(
-                    [ "pscheduler", "internal", "invoke", "tool", self.tool, "run" ],
-                    stdin=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE )
+        process = subprocess.Popen(
+            [ "pscheduler", "internal", "invoke", "tool", tool, "run" ],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE )
 
-                stdout, stderr = process.communicate(json.dumps(self.tool_input))
-                returncode = process.returncode
+        stdout, stderr = process.communicate(json.dumps(tool_input))
+        returncode = process.returncode
 
-                if len(stdout) == 0:
-                    stdout = None
+        if len(stdout) == 0:
+            stdout = None
 
-                if len(stderr) == 0:
-                    stderr = None
+        if len(stderr) == 0:
+            stderr = None
 
-                # TODO: Remove this.
-                if returncode == 0:
-                    verbose("TEST SUCCESS: ", stdout)
-                else:
-                    verbose("TEST FAILED ", returncode, ": ", stderr)
+        # TODO: Remove this.
+        if returncode == 0:
+            verbose("TEST SUCCESS: ", stdout)
+        else:
+            verbose("TEST FAILED ", returncode, ": ", stderr)
 
-                cursor.execute("""
-                               UPDATE run
-                               SET
-                                   status = %s,
-                                   result = %s,
-                                   errors = %s
-                               WHERE id = %s
-                               """,
-                               [returncode, stdout, stderr, self.id])
-                db.commit()
+        # TODO: Error check this.
+        cursor.execute("""
+                       UPDATE run
+                       SET
+                           status = %s,
+                           result = %s,
+                           errors = %s
+                       WHERE id = %s
+                       """,
+                       [returncode, stdout, stderr, id])
 
 
-                # The lead participant takes care of gathering and merging the finished results.
+        # The lead participant takes care of gathering and merging the finished results.
 
-                if self.participant == 0:
+        if participant == 0:
 
-                    # TODO: Should probably wait until the end of the
-                    # scheduled run has passed.
+            # Wait until the scheduled time has passed, which is the
+            # only time we can be sure results might be available.
 
-                                       
+            sleeptime = end - datetime.datetime.now(tzlocal())
+            if sleeptime > datetime.timedelta():
+                verbose("Waiting", sleeptime, "until run time ends")
+                time.sleep(pscheduler.timedelta_as_seconds(sleeptime))
 
-                # TODO: Combine the results into a single result
+            # Fetch and combine the results.
 
-                # TODO: Store the single result and call the run finished.
+            runs = [ pscheduler.api_url(host = host,
+                                        path = '/tasks/%s/runs/%s'
+                                        % (task_uuid, run_uuid) )
+                     for host in participants ]
 
-                # TODO: Schedule additional runs up to the horizon if merited
+            full_result = []
 
-                cursor.close()
-                db.close()
+            for run in runs:
+                r = requests.get(run)
+                if r.status_code != 200:
+                    raise Exception("Bad status code: " +  r.text)
+                try:
+                    full_result.append(pscheduler.json_load(str(r.text))['result'])
+                except Exception as ex:
+                    # TODO: What do we do here? 
+                    pscheduler.fail("Unable to load result: %s" % str(ex))
+                    full_result.append(None)
 
-            except Exception as exception:
-                # TODO: Log this?
-                print "EXCEPTION: ", str(exception)
+            verbose("FULL RESULT", full_result)
 
+            # Store the full result with each participant.
+
+            full_params = {
+                'run': pscheduler.json_dump({ 'result-full' : full_result })
+                }
+            for run in runs:
+                verbose("Storing in", run)
+                r = requests.put(run, params=full_params)
+                if r.status_code != 200:
+                    raise Exception("Bad status code: " +  r.text)
+
+            # TODO: Poke the archiver
+
+            # TODO: Schedule additional runs up to the horizon if merited
+
+            pass  # TODO: Remove this.
+
+        cursor.close()
+        db.close()
 
 
 
@@ -168,20 +235,38 @@ class Run:
 # Main Program
 #
 
+# TODO: This should be encapsulated in something that catches
+# exceptions and restarts (within reason).
+
 pg = pscheduler.pg_connection(dsn)
 cursor = pg.cursor()
 cursor.execute("LISTEN " + options.channel)
 
+
 while True:
 
-    cursor.execute("SELECT run, start_in, tool, participant, part_data_full, test, start, duration \
-                    FROM schedule_upcoming \
-                    WHERE start_in = (SELECT min(start_in) FROM schedule_upcoming)");
+    cursor.execute("""SELECT
+                          run,
+                          start_in
+                      FROM
+                          schedule_upcoming
+                      WHERE
+                          start_in = (SELECT min(start_in) FROM schedule_upcoming)
+                      ORDER BY start_in
+                   """);
 
     if cursor.rowcount:
         # TODO: There must be a nicer way to take this array slice as args.
-        runs = [ Run(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]) for row in cursor.fetchall() ]
-        wait_time = runs[0].start_in
+        rows = cursor.fetchall()
+        runs = [ Run(row[0], row[1]) for row in rows ]
+        wait_time = rows[0][1]
+
+        # Do this here to guarantee that we don't pick up rows for
+        # runs we just started in the next iteration of the loop.
+        cursor.execute( "UPDATE run SET state = run_state_running() WHERE id in (%s)",
+                    (tuple([row[0] for row in rows]),) )
+
+
     else:
         runs = []
         wait_time = refresh
@@ -196,13 +281,6 @@ while True:
             del pg.notifies[:]
             verbose("Schedule change.")
             continue
-
-    for run in runs:
-        verbose("Running", run.id)
-        # Do this here and not in the forked process to ensure we
-        # don't get this row in the next iteration.
-        cursor.execute("UPDATE run SET state = run_state_running() WHERE id = %s", [ run.id ])
-        run.run()
 
 
 

@@ -174,7 +174,7 @@ BEGIN
         IF (NEW.status IS NOT NULL) THEN
 
             IF lower(NEW.times) > normalized_now() THEN
-  	        RAISE EXCEPTION 'Cannot set state on future tasks.';
+  	        RAISE EXCEPTION 'Cannot set state on future runs. % / %', lower(NEW.times), normalized_now();
 	    END IF;
 
             NEW.state := CASE NEW.status

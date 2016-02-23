@@ -6,6 +6,9 @@
 
 -- What's coming on the schedule and what to execute
 
+-- TODO: Can probably clean this up a bit since the runner won't be
+-- using as much of it.
+
 DROP VIEW IF EXISTS schedule_upcoming;
 CREATE OR REPLACE VIEW schedule_upcoming
 AS
