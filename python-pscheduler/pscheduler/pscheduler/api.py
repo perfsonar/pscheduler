@@ -3,16 +3,16 @@ Functions relates to the pScheduler REST API
 """
 
 
-def api_url(host = '127.0.0.1',  # 'localhost' isn't guaranteed to resolve.
+def api_url(host = None,  # Don't default this.  It breaks 'None' behavior.
             path = None,
             port = 29285
             ):
     if path is not None and path.startswith('/'):
         path = path[1:]
     return 'http://' \
-        + host \
-        + (':' + str(port) if port is not None else '') \
-        + ('/' + path if path is not None else '')
+        + ('127.0.0.1' if host is None else str(host)) \
+        + ('' if port is None else (':' + str(port))) \
+        + ('' if path is None else ('/' + str(path)))
 
 if __name__ == "__main__":
     print api_url()
