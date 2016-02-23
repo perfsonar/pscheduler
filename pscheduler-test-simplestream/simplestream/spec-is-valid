@@ -45,6 +45,19 @@ except KeyError:
     pass  # Missing is okay.
 
 
+# Fail probability
+try:
+    prob = float(json['fail'])
+    if prob < 0.0 or prob > 1.0:
+        raise ValueError
+    del json['fail']
+except KeyError:
+    pass  # Missing is okay.
+except ValueError:
+    pscheduler.fail("Invalid fail probability")
+    
+
+
 # Anything left is bogus
 
 if len(json) > 0:
