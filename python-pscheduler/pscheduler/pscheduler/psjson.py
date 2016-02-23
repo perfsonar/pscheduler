@@ -51,18 +51,48 @@ def json_load(source=None):
     return json_in
 
 
-def json_dump(obj=None, dest=None):
+def json_dump(obj=None, dest=None, pretty=False):
     """
     Write a blob of JSON contained in a hash to a file destination.
     If none is specified, it will be returned as a string.
     """
 
+    # TODO: Make the use of dump/dumps less repetitive
+
     # Return a string
     if dest is None:
-        return '' if obj is None else dumps(obj) 
+        if obj is None:
+            return ''
+
+        if pretty:
+            return dumps(obj, 
+                         sort_keys=True,
+                         indent=4,
+                         separators=(',', ': ')
+                         )
+        else:
+            return dumps(obj)
 
     # Send to a file
     if obj is not None:
-        dump(obj, dest)
+        if pretty:
+            dump(obj, dest,
+                 sort_keys=True,
+                 indent=4,
+                 separators=(',', ': ')
+                 )
+        else:
+            dump(obj, dest)
         print >> dest
     return None
+
+
+    if always_pretty or arg_boolean('pretty'):
+        return json.dumps(dump, \
+                              sort_keys=True, \
+                              indent=4, \
+                              separators=(',', ': ') \
+                              ) + '\n'
+    else:
+        return json.dumps(dump) + '\n'
+
