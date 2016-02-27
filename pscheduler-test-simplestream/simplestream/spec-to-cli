@@ -1,0 +1,54 @@
+#!/usr/bin/python
+#
+# Convert a test specification to command-line options
+
+import pscheduler
+
+spec = pscheduler.json_load()
+
+if type(spec) != dict:
+    pscheduler.fail("Invalid JSON for this operation")
+
+result = []
+
+try:
+    result.append('--receiver')
+    result.append(spec['receiver'])
+except KeyError:
+    pscheduler.fail("Missing receiver")
+
+
+try:
+    dawdle = spec['dawdle']
+    result.append('--dawdle')
+    result.append(dawdle)
+except KeyError:
+    pass  # Missing is okay.
+
+
+try:
+    test_material = spec['test-material']
+    result.append('--test-material')
+    result.append(test_material)
+except KeyError:
+    pass  # Missing is okay.
+
+
+try:
+    timeout = spec['timeout']
+    result.append('--timeout')
+    result.append(timeout)
+except KeyError:
+    pass  # Missing is okay.
+
+try:
+    fail = spec['fail']
+    result.append('--fail')
+    result.append(fail)
+except KeyError:
+    pass  # Missing is okay.
+
+
+pscheduler.succeed_json(result)
+
+

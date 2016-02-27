@@ -1,0 +1,38 @@
+#!/usr/bin/python
+#
+# Convert a test specification to command-line options
+
+import pscheduler
+
+spec = pscheduler.json_load()
+
+result = []
+
+try:
+    result.append('--duration')
+    result.append(spec['duration'])
+except KeyError:
+    pscheduler.fail("Missing duration")
+
+
+try:
+    comment = spec['starting-comment']
+    result.append('--starting-comment')
+    result.append(comment)
+except KeyError:
+    pass  # Missing is okay.
+
+
+try:
+    comment = spec['parting-comment']
+    result.append('--parting-comment')
+    result.append(comment)
+except KeyError:
+    pass  # Missing is okay.
+
+
+
+
+pscheduler.succeed_json(result)
+
+

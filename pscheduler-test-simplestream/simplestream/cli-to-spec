@@ -1,0 +1,82 @@
+#!/usr/bin/python
+#
+# Convert comamnd-line options to a test specification
+
+import optparse
+import pscheduler
+import sys
+
+if len(sys.argv) > 1:
+
+   # Args are on the command line
+   args = sys.argv[1:]
+
+else:
+
+   # Args are in a JSON array on stdin
+   json_args = pscheduler.json_load()
+   args = []
+
+   if type(json_args) != list:
+      pscheduler.fail("Invalid JSON for this operation")
+   for arg in json_args:
+      if type(arg) not in (unicode, str, int, float):
+         pscheduler.fail("Invalid JSON for this operation")
+   args = [ str(arg) for arg in json_args ]
+
+
+
+# Gargle the arguments
+
+opt_parser = optparse.OptionParser()
+
+opt_parser.add_option("-r", "--receiver",
+                      help="Receiving host",
+                      action="store", type="string",
+                      dest="receiver")
+
+opt_parser.add_option("-d", "--dawdle",
+                      help="Time to dawdle (ISO8601 Duration)",
+                      action="store", type="string",
+                      dest="dawdle")
+
+opt_parser.add_option("-m", "--test-material",
+                      help="Test material",
+                      action="store", type="string",
+                      dest="test_material")
+
+opt_parser.add_option("-t", "--timeout",
+                      help="Time to wait (ISO8601 Duration)",
+                      action="store", type="string",
+                      dest="timeout")
+
+opt_parser.add_option("-f", "--fail",
+                      help="Probability of failure",
+                      action="store", type="float",
+                      dest="fail")
+
+
+(options, remaining_args) = opt_parser.parse_args(args)
+# TODO: Remaining_args should be none.
+
+result = {}
+
+if options.receiver is not None:
+   result['receiver'] = options.receiver
+
+if options.dawdle is not None:
+   result['dawdle'] = options.dawdle
+
+if options.test_material is not None:
+   result['test-material'] = options.test_material
+
+if options.timeout is not None:
+   result['timeout'] = options.timeout
+
+if options.fail is not None:
+   result['fail'] = options.fail
+
+
+pscheduler.succeed_json(result)
+
+

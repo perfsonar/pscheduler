@@ -1,0 +1,197 @@
+#!/usr/bin/python
+#
+# Command-Line Interface for running tasks
+#
+
+# General syntax:
+#     pscheduler task [options] [schedule-opts] test-type [test-opts]
+
+
+import optparse
+import pscheduler
+import subprocess
+import sys
+
+#
+# Gargle the arguments
+#
+
+usage = "Usage: %prog [options] test-type [test-options]"
+opt_parser = optparse.OptionParser(usage = usage)
+opt_parser.disable_interspersed_args()
+
+# GENERAL OPTIONS
+
+opt_parser.add_option("--dump",
+                      help="Dump JSON to run the test and exit",
+                      action="store_true", default=False,
+                      dest="dump")
+
+opt_parser.add_option("--template", "-t",
+                      help="Read JSON task template from a file, - for stdin",
+                      action="store", type="string",
+                      dest="task")
+
+opt_parser.add_option("--url",
+                      help="Dump a URL that points to the task after posting and exit",
+                      action="store_true", default=False,
+                      dest="url")
+
+opt_parser.add_option("--wait",
+                      help="Wait for n runs of test",
+                      action="store", type="int", default=1,
+                      dest="wait")
+
+# SCHEDULING OPTIONS
+
+opt_parser.add_option("--max-runs",
+                      help="Maximum number of repeats",
+                      action="store", type="int", default=1,
+                      dest="max_runs")
+
+opt_parser.add_option("--repeat",
+                      help="Repeat interval (ISO 8601 Duration)",
+                      action="store", type="string",
+                      dest="repeat")
+
+opt_parser.add_option("--slip",
+                      help="Allowed start slip (ISO8601 Duration)",
+                      action="store", type="string",
+                      dest="slip")
+
+# TODO: Is this a reasonable default, or should we let punt and let
+# the database decide?
+opt_parser.add_option("--start",
+                      help="Start time",
+                      action="store", type="string", default='P0',
+                      dest="start")
+
+(options, remaining_args) = opt_parser.parse_args()
+
+#
+# Validate the command line
+#
+
+if options.max_runs < 1:
+    pscheduler.fail("Invalid --max-runs; must be 1 or more")
+
+if options.repeat is not None:
+    repeat = pscheduler.iso8601_as_timedelta(options.repeat)
+    if repeat is None:
+        pscheduler.fail("Invalid --repeat; must be ISO 8601 duration")
+
+if options.slip is not None:
+    slip = pscheduler.iso8601_as_timedelta(options.slip)
+    if slip is None:
+        pscheduler.fail("Invalid --slip; must be ISO 8601 duration")
+
+if options.start is not None:
+    # TODO: Validate start.  See database source for valid values.
+    pass
+
+if options.wait < 0:
+    pscheduler.fail("Invalid --wait; must be 0 or more")
+
+
+#
+# If we were asked to read in some JSON, do that.  Anything the
+# options add will override it.
+#
+
+if options.task is None:
+    task = {
+        'schema': 1,
+        'schedule': {},
+        'test': {
+            'spec': {}
+            }
+        }
+    task_read = False
+else:
+    if options.task == '-':
+        file = sys.stdin
+    else:
+        try:
+            file = open(options.task)
+        except IOError as ex:
+            pscheduler.fail("Unable to open task %s" % (str(ex)))
+    task = pscheduler.json_load(file, exit_on_error=True)
+    # TODO: Validate what we read as a task.
+    task_read = True
+
+#
+# Overlay schedule options
+#
+
+if options.max_runs > 1:
+    task['schedule']['max-runs'] = options.max_runs
+
+if options.repeat is not None:
+    task['schedule']['repeat'] = options.repeat
+
+if options.slip is not None:
+    task['schedule']['slip'] = options.slip
+
+if options.start is not None:
+    task['schedule']['start'] = options.start
+
+
+#
+# Figure out what kind of test this is.  Don't worry about it being
+# valid, that will be checked later.
+#
+
+if task_read:
+    try:
+        test_type = task['test']['type']
+        try:
+            remaining_args.pop(0)
+        except IndexError:
+            pscheduler.fail("No placeholder task type specified; ",
+                            "should be '-'.")
+
+    except KeyError:
+        pscheduler.fail("Task has no type defined.")
+else:
+    try:
+        test_type = remaining_args.pop(0)
+    except IndexError:
+        pscheduler.fail("No test type specified.")
+
+assert test_type is not None
+
+task['test']['type'] = test_type
+
+#
+# Convert the remaining arguments to a test spec.
+# TODO: This should be in a module somewhere
+#
+
+try:
+    process = subprocess.Popen(
+        [ 'pscheduler', 'internal', 'invoke', 'test', \
+              test_type, 'cli-to-spec' ],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE )
+
+    # Do this using JSON input, because if remaining_args is empty,
+    # cli-to-spec will look fo JSON on stdin.
+    stdout, stderr = process.communicate(pscheduler.json_dump(remaining_args))
+    json_to_merge = pscheduler.json_load(stdout)
+    task['test']['spec'].update(json_to_merge)
+except Exception as ex:
+    pscheduler.fail('%s: %s' % (test_type, stderr))
+
+
+if options.dump:
+    pscheduler.json_dump(obj=task, dest=sys.stdout, pretty=True)
+    pscheduler.succeed()
+
+
+# TODO: Post the task and the first run
+
+# TODO: If asked to just dump the URL, do that and exit.
+if options.url:
+    pscheduler.fail("Not implemented yet.")
+

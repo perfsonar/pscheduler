@@ -1,0 +1,64 @@
+#!/usr/bin/python
+#
+# Convert comamnd-line options to a test specification
+
+import optparse
+import pscheduler
+import sys
+
+if len(sys.argv) > 1:
+
+   # Args are on the command line
+   args = sys.argv[1:]
+
+else:
+
+   # Args are in a JSON array on stdin
+   json_args = pscheduler.json_load()
+   args = []
+
+   if type(json_args) != list:
+      pscheduler.fail("Invalid JSON for this operation")
+   for arg in json_args:
+      if type(arg) not in (unicode, str, int, float):
+         pscheduler.fail("Invalid JSON for this operation")
+   args = [ str(arg) for arg in json_args ]
+
+
+
+# Gargle the arguments
+
+opt_parser = optparse.OptionParser()
+
+opt_parser.add_option("-d", "--duration",
+                      help="Idle duration (ISO8601)",
+                      action="store", type="string",
+                      dest="duration")
+
+opt_parser.add_option("-s", "--starting-comment",
+                      help="Starting comment",
+                      action="store", type="string",
+                      dest="starting_comment")
+
+opt_parser.add_option("-p", "--parting-comment",
+                      help="Parting comment",
+                      action="store", type="string",
+                      dest="parting_comment")
+
+(options, remaining_args) = opt_parser.parse_args(args)
+# TODO: Remaining_args should be none.
+
+result = {}
+
+if options.duration is not None:
+   result['duration'] = options.duration
+
+if options.starting_comment is not None:
+   result['starting-comment'] = options.starting_comment
+
+if options.parting_comment is not None:
+   result['parting-comment'] = options.parting_comment
+
+pscheduler.succeed_json(result)
+
+
