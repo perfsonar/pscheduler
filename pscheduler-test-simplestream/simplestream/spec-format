@@ -18,10 +18,11 @@ json = pscheduler.json_load(exit_on_error=True)
 if format == 'text/plain':
 
    template = """
-Receiver ........ {.section receiver}{receiver}{.or}Not Specified{.end}
-Max. Dawdle  .... {.section dawdle}{dawdle}{.or}Not Specified{.end}
-Test Material ... {.section test-material}{test-material}{.or}Not Specified{.end}
-Timeout ......... {.section timeout}{timeout}{.or}Not Specified{.end}
+Receiver ......... {.section receiver}{receiver}{.or}Not Specified{.end}
+Max. Dawdle  ..... {.section dawdle}{dawdle}{.or}Not Specified{.end}
+Test Material .... {.section test-material}{test-material}{.or}Not Specified{.end}
+Timeout .......... {.section timeout}{timeout}{.or}Not Specified{.end}
+Chance of Fail ... {.section fail}{fail}{.or}Not Specified{.end}
 
    """
 
@@ -40,6 +41,9 @@ elif format == 'text/html':
 </td></tr>
 <tr><td><b>Timeout</b></td><td>
 {.section timeout}{timeout}{.or}<i>Not Specified</i>{.end}
+</td></tr>
+<tr><td><b>Chance of Fail</b></td><td>
+{.section fail}{fail}{.or}<i>Not Specified</i>{.end}
 </td></tr>
 </table>
    """
