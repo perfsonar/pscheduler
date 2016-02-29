@@ -350,15 +350,17 @@ The directory tree of a test implementation would look like this ({\tt
 \dirtree{%
 .1 /usr/libexec/pscheduler/classes/test.
 .2 {\itt test-name}.
+.3 cli-to-spec*.
 .3 enumerate*.
 .3 participants*.
+.3 result-format*.
+.3 result-is-valid*.
 .3 spec-is-valid*.
-.3 cli-to-spec*.
 .3 spec-to-cli*.
-.3 format-result*.
 }
 
 
+\todo{Put these in alphabetical order.}
 
 \subsubsection{enumerate}
 
@@ -457,7 +459,8 @@ messages on error.
 
 \subsubsection{result-is-valid}
 This method determines whether or not a result produced by a tool for
-this test conforms to the expected format.
+this test conforms to the expected format.  \todo{None of the tests so
+  far have this.  Not sure there's a need for it.}
 
 \calloutitem{Standard Input} JSON results for the test as produced by
 a tool.
@@ -525,6 +528,27 @@ implementations must support at least {\tt text/plain} and {\tt
   text/html}.
 
 \calloutitem{Standard Input} JSON containing a result for this test.
+
+\calloutitem{Standard Output} The formatted output.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} on success, {\tt 1} if not, {\tt 2}
+if there was some other problem unrelated to the input.
+
+
+\subsubsection{specformat}
+This method converts a JSON specification for this test into some
+other format, usually intended for human consumption.
+
+\calloutitem{Arguments} The desired MIME type for the output.  All
+implementations must support at least {\tt text/plain} and {\tt
+  text/html}.  If no argument is provided, the default will be {\tt
+  text/plain}.
+
+\calloutitem{Standard Input} JSON containing a specification for this
+test.
 
 \calloutitem{Standard Output} The formatted output.
 
