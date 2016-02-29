@@ -17,6 +17,7 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-database
 Requires:	python-Flask
+Requires:	python-requests
 
 
 

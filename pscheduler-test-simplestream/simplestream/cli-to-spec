@@ -14,7 +14,7 @@ if len(sys.argv) > 1:
 else:
 
    # Args are in a JSON array on stdin
-   json_args = pscheduler.json_load()
+   json_args = pscheduler.json_load(exit_on_error=True)
    args = []
 
    if type(json_args) != list:
@@ -57,7 +57,9 @@ opt_parser.add_option("-f", "--fail",
 
 
 (options, remaining_args) = opt_parser.parse_args(args)
-# TODO: Remaining_args should be none.
+if len(remaining_args) != 0:
+   pscheduler.fail("Found superfluous arguments on command line.")
+
 
 result = {}
 

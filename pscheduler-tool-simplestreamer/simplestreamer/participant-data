@@ -7,7 +7,7 @@ import pscheduler
 import random
 import sys
 
-json = pscheduler.json_load()
+json = pscheduler.json_load(exit_on_error=True)
 
 # TODO: Validate the input
 

@@ -19,10 +19,11 @@ postgresql-load
 # Python Modules
 python-detach
 python-isodate
+python-jsontemplate
 python-ntplib
+python-subprocess32
 
 # Flask and its dependencies
-# TODO: Decide if these are to stay.
 python-itsdangerous
 python-Jinja2
 python-Werkzeug

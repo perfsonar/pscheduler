@@ -138,17 +138,14 @@ class Run:
         # TODO: Log this?
         verbose("TEST", id, "WITH", tool, ":  ", json.dumps(tool_input))
 
-        # TODO: This should have a timeout in case the process hangs
-        # TODO: This should be in a module somewhere.
-
-        process = subprocess.Popen(
+        returncode, stdout, stderr = pscheduler.run_program(
             [ "pscheduler", "internal", "invoke", "tool", tool, "run" ],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE )
-
-        stdout, stderr = process.communicate(json.dumps(tool_input))
-        returncode = process.returncode
+            stdin = json.dumps(tool_input),
+            # TODO: Make the overage on the timeout configurable, or
+            # is a couple of seconds beyond what the tool said it
+            # would take sufficient?
+            timeout = pscheduler.timedelta_as_seconds(end - start) + 2
+            )
 
         if len(stdout) == 0:
             stdout = None

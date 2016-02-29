@@ -10,10 +10,10 @@ def fail(*args):
     """
     Exit with failure with optional commentary to stderr.
     """
+    message = ''
     for arg in args:
-        sys.stderr.write(arg)
-    if len(args) > 0:
-        sys.stderr.write('\n')
+        message += arg
+    sys.stderr.write(message.strip() + '\n')
     exit(1)
 
 
@@ -22,10 +22,10 @@ def fail_other(status, *args):
     Exit with a specific failure code with optional commentary to stderr.
     """
     # TODO: Find out how to pass args so this doesn't have to be rubberstamped.
+    message = ''
     for arg in args:
-        sys.stderr.write(arg)
-    if len(args) > 0:
-        sys.stderr.write('\n')
+        message += arg
+    sys.stderr.write(message.strip() + '\n')
     exit(status)
 
 
@@ -34,7 +34,7 @@ def succeed(text = None):
     Exit with success and an optional messsage to stdout.
     """
     if text is not None:
-        print text
+        print strip(text)
     exit(0)
 
 

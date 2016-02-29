@@ -4,6 +4,9 @@
 
 NAME=sleep
 
+# TODO: Everything below this should be made into a template that can
+# be included.
+
 FILES=\
 	can-run \
 	duration \

@@ -4,10 +4,18 @@
 
 NAME=idle
 
+# TODO: Everything below this should be made into a template that can
+# be included.
+
 FILES=\
+	cli-to-spec \
 	enumerate \
 	participants \
-	spec-is-valid
+	result-format \
+	spec-format \
+	spec-is-valid \
+	spec-to-cli \
+
 
 DOCS=\
 	$(NAME).txt

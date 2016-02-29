@@ -5,7 +5,7 @@
 
 import pscheduler
 
-json = pscheduler.json_load()
+json = pscheduler.json_load(exit_on_error=True)
 
 # Run through all of the tags we expect to see, deleting the valid ones
 

@@ -5,9 +5,14 @@
 NAME=simplestream
 
 FILES=\
+	cli-to-spec \
 	enumerate \
 	participants \
-	spec-is-valid
+	result-format \
+	spec-format \
+	spec-is-valid \
+	spec-to-cli \
+
 
 DOCS=\
 	$(NAME).txt

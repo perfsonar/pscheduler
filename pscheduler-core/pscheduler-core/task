@@ -22,15 +22,15 @@ opt_parser.disable_interspersed_args()
 
 # GENERAL OPTIONS
 
-opt_parser.add_option("--dump",
-                      help="Dump JSON to run the test and exit",
+opt_parser.add_option("--export", '-e',
+                      help="Export task JSON to stdout and exit",
                       action="store_true", default=False,
-                      dest="dump")
+                      dest="export")
 
-opt_parser.add_option("--template", "-t",
+opt_parser.add_option("--import", "-i",
                       help="Read JSON task template from a file, - for stdin",
                       action="store", type="string",
-                      dest="task")
+                      dest="importt")  # Conflict with reserved word
 
 opt_parser.add_option("--url",
                       help="Dump a URL that points to the task after posting and exit",
@@ -63,7 +63,7 @@ opt_parser.add_option("--slip",
 # the database decide?
 opt_parser.add_option("--start",
                       help="Start time",
-                      action="store", type="string", default='P0',
+                      action="store", type="string",
                       dest="start")
 
 (options, remaining_args) = opt_parser.parse_args()
@@ -98,7 +98,7 @@ if options.wait < 0:
 # options add will override it.
 #
 
-if options.task is None:
+if options.importt is None:
     task = {
         'schema': 1,
         'schedule': {},
@@ -108,11 +108,11 @@ if options.task is None:
         }
     task_read = False
 else:
-    if options.task == '-':
+    if options.importt == '-':
         file = sys.stdin
     else:
         try:
-            file = open(options.task)
+            file = open(options.importt)
         except IOError as ex:
             pscheduler.fail("Unable to open task %s" % (str(ex)))
     task = pscheduler.json_load(file, exit_on_error=True)
@@ -122,6 +122,9 @@ else:
 #
 # Overlay schedule options
 #
+
+# TODO: Remove after validation
+assert 'schedule' in task
 
 if options.max_runs > 1:
     task['schedule']['max-runs'] = options.max_runs
@@ -144,14 +147,12 @@ if options.start is not None:
 if task_read:
     try:
         test_type = task['test']['type']
-        try:
-            remaining_args.pop(0)
-        except IndexError:
-            pscheduler.fail("No placeholder task type specified; ",
-                            "should be '-'.")
-
+        remaining_args.pop(0)
     except KeyError:
-        pscheduler.fail("Task has no type defined.")
+        pscheduler.fail("Template has no type defined.")
+    except IndexError:
+        pscheduler.fail("No placeholder task type specified.",
+                        "  (Should be '-'.)")
 else:
     try:
         test_type = remaining_args.pop(0)
@@ -164,27 +165,23 @@ task['test']['type'] = test_type
 
 #
 # Convert the remaining arguments to a test spec.
-# TODO: This should be in a module somewhere
 #
 
-try:
-    process = subprocess.Popen(
-        [ 'pscheduler', 'internal', 'invoke', 'test', \
-              test_type, 'cli-to-spec' ],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE )
 
-    # Do this using JSON input, because if remaining_args is empty,
-    # cli-to-spec will look fo JSON on stdin.
-    stdout, stderr = process.communicate(pscheduler.json_dump(remaining_args))
-    json_to_merge = pscheduler.json_load(stdout)
-    task['test']['spec'].update(json_to_merge)
-except Exception as ex:
-    pscheduler.fail('%s: %s' % (test_type, stderr))
+status, stdout, stderr = pscheduler.run_program(
+    [ 'pscheduler', 'internal', 'invoke', 'test', test_type, 'cli-to-spec' ],
+    stdin = pscheduler.json_dump(remaining_args),
+    short = True,
+    fail_message="Unable to parse %s arguments" % test_type
+)
+assert status == 0
+
+json_to_merge = pscheduler.json_load(stdout)
+assert 'spec' in task['test']
+task['test']['spec'].update(json_to_merge)
 
 
-if options.dump:
+if options.export:
     pscheduler.json_dump(obj=task, dest=sys.stdout, pretty=True)
     pscheduler.succeed()
 

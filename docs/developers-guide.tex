@@ -162,7 +162,7 @@ Each of these will be described in more detail in later sections.
 
 \todo{Introductory paragraph}
 
-This is the gist of what pScheduler does (or will do when completed):
+This is the lifecycle of a measurement:
 
 \begin{enumerate}
 \item On startup, pScheduler inventories the installed tests, tools
@@ -173,19 +173,28 @@ This is the gist of what pScheduler does (or will do when completed):
   provided to pScheduler.
 \item The test specfication is validated by the test whose type is
   specified in the task.
-\item pScheduler consults all of the installed tools which have
-  indicated they can run the test type in the task.  This information
-  is passed back to the requester.
-\item The requester, having done the same with the other
-  participant(s) in the measurement, selects which tool will be used
-  and submitted to pScheduler for scheduling.
+\item The test specification is given to the test, which uses it to
+  determine the list of nodes that will be participating.
+\item pScheduler provides the test to each of the participants and is
+  returned a list of the tools which are able and willing to carry out
+  the test in order of preference.
+\item The lead participant combs through the lists and selects a tool
+  to be used for runs of the task.
+\item The task is registered with each of the participants.
+\item One or more runs of the task are scheduled.  As part of the
+  scheduling process, the tool on each participant generates
+  participant-specific data for that run, such as ports to be used.
+\item The participant-specific data is collected, merged and
+  distributed to all participants.
 \item At the scheduled time, the measurement is performed, producing a
-  result.
-\item The result is stored locally.
-\item The results are retrieved from all participants and merged into
-  a single result, which is stored for archiving.
-\item Each result is sent to each of the archivers specified in the
-  task, with repeating attempts after a failure.
+  result which is stored locally by each participant.
+\item The lead participant retrieves and stores the other
+  participants' results.
+\item The set of participant results are merged into a full result,
+  which is stored by the lead participant.
+\item The lead participant puts the results in a queue to be archived.
+\item The results are sent to the specified archives, repeatedly if
+  necessary because of failures.
 \end{enumerate}
 
 
@@ -344,6 +353,9 @@ The directory tree of a test implementation would look like this ({\tt
 .3 enumerate*.
 .3 participants*.
 .3 spec-is-valid*.
+.3 cli-to-spec*.
+.3 spec-to-cli*.
+.3 format-result*.
 }
 
 
@@ -461,20 +473,66 @@ not, {\tt 2} if there was some other problem unrelated to the input.
 
 
 \subsubsection{cli-to-spec}
-\todo{Validate command-line options and output a JSON spec for the
-  test.  This will be needed once we start scheduling tests from the
-  command line.  (There should also be the option to take the spec
-  directly as JSON from standard input.)}
+This method produces a test specification from a set of command-line
+switches which, when fed to {\tt spec-to-cli} will produce the same
+set of command-line switches.
 
-\todo{The existing test implementations don't have this yet.}
+This method can be invoked as a filter by providing a JSON array of
+arguments on the standard input or as a converter by providing the
+arguments on the command line.  The set of valid arguments is
+test-specific.
+
+\calloutitem{Standard Input} None if arguments are present on the
+command line, otherwise a JSON array of strings, each being a
+command-line argument.
+
+\calloutitem{Standard Output} A JSON specification for the test.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if the conversion was a success,
+            {\tt 1} if not, {\tt 2} if there was some other problem
+            unrelated to the input.
+
 
 
 \subsubsection{spec-to-cli}
-\todo{Produce command-line options from a JSON spec in a form that can
-  be pasted into a shell script.  Not strictly necessary, but will be
-  a nice convenience for users.}
+This method produces a list of command-line switches from a test
+specification which, when fed to {\tt cli-to-spec} will produce the
+same specification.
 
-\todo{The existing test implementations don't have this yet.}
+\calloutitem{Standard Input} A specification valid for the test.
+
+\calloutitem{Standard Output} A JSON array of strings, each having
+being a command-line argument suitable for passing to {\tt
+  cli-to-spec}.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if the conversion was a success,
+            {\tt 1} if not, {\tt 2} if there was some other problem
+            unrelated to the input.
+
+
+\subsubsection{result-format}
+This method converts a JSON result for this test into some other
+format, usually intended for human consumption.
+
+\calloutitem{Arguments} The desired MIME type for the output.  All
+implementations must support at least {\tt text/plain} and {\tt
+  text/html}.
+
+\calloutitem{Standard Input} JSON containing a result for this test.
+
+\calloutitem{Standard Output} The formatted output.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} on success, {\tt 1} if not, {\tt 2}
+if there was some other problem unrelated to the input.
 
 
 %

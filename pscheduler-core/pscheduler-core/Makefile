@@ -11,14 +11,24 @@
 #   COMMANDSINSTALLED   Where $(COMMANDSDIR) is when installed
 #
 
-PROGRAMS=\
+PROGRAMS=
+
+M4PROGRAMS=\
 	pscheduler
 
 COMMANDS=\
+	task
+
+M4COMMANDS=\
 	internal
 
-ALL=$(PROGRAMS) $(COMMANDS)
-ALLM4=$(ALL:%=%.m4)
+ALLPROGRAMS=$(PROGRAMS) $(M4PROGRAMS)
+ALLCOMMANDS=$(COMMANDS) $(M4COMMANDS)
+
+ALLM4=$(M4PROGRAMS) $(M4COMMANDS)
+ALLM4=$(ALLM4:%=%.m4)
+
+ALL=$(PROGRAMS) $(M4PROGRAMS) $(COMMANDS) $(M4COMMANDS)
 
 default:  build
 
@@ -32,7 +42,7 @@ endif
 
 
 build: $(ALL)
-TO_CLEAN += $(ALL)
+TO_CLEAN += $(M4PROGRAMS) $(M4COMMANDS)
 
 
 install: $(ALL)
@@ -45,9 +55,10 @@ ifndef COMMANDSDIR
 	@false
 endif
 	mkdir -p $(BINDIR)
-	install -m 555 $(PROGRAMS) $(BINDIR)
+	echo $(ALLPROGRAMS) AP
+	install -m 555 $(ALLPROGRAMS) $(BINDIR)
 	mkdir -p $(COMMANDSDIR)
-	install -m 555 $(COMMANDS) $(COMMANDSDIR)
+	install -m 555 $(ALLCOMMANDS) $(COMMANDSDIR)
 
 
 clean:

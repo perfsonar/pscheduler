@@ -4,7 +4,7 @@
 
 import pscheduler
 
-spec = pscheduler.json_load()
+spec = pscheduler.json_load(exit_on_error=True)
 
 if type(spec) != dict:
     pscheduler.fail("Invalid JSON for this operation")

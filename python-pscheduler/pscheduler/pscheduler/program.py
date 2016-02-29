@@ -2,14 +2,17 @@
 Functions for running external programs neatly
 """
 
+import pscheduler
 import subprocess32
 
 # Note: Docs for the 3.x version of subprocess, the backport of which
 # is used here, is at https://docs.python.org/3/library/subprocess.html
 
 def run_program(argv,
-                stdin=None,   # What to send to stdin
-                timeout=None  # Seconds
+                stdin=None,        # What to send to stdin
+                timeout=None,      # Seconds
+                short=False,       # True to force timeout to 2 seconds
+                fail_message=None  # Exit with this failure message
                 ):
     """
     Run a program and return the results.
@@ -19,6 +22,8 @@ def run_program(argv,
     argv - Array containing arguments, including name of program
     stdin=s - String containing what should be sent to standard input
     timeout=n - Wait n seconds for the program to finish, otherwise kill it.
+    short - True to force timeout to two seconds
+    fail_message=s - Exit program and include string s if program fails.
 
     Return Values:
 
@@ -35,20 +40,23 @@ def run_program(argv,
                                      )
 
         stdout, stderr = process.communicate(stdin, timeout=timeout)
-        return process.returncode, stdout, stderr
+        status = process.returncode
+
     except subprocess32.TimeoutExpired as ex:
-        # TODO: Pick a better exit status
-        return 2, '', "Process took too long to run."
+        # Clean up after a timeout
+        process.kill()
+        process.communicate()
+
+        status = 2
+        stdout = ''
+        stderr = "Process took too long to run."
+
     except Exception as ex:
-        # TODO: Pick a better exit status
-        return 2, '', str(ex)
+        status = 2
+        stdout = ''
+        stderr = str(ex)
 
+    if fail_message is not None and status != 0:
+        pscheduler.fail("%s: %s" % (fail_message, stderr))
 
-def run_program_short(args,
-                      stdin=None,   # What to send to stdin
-                      ):
-    """
-    Run a program that should not run very long using a timeout of 2
-    seconds.
-    """
-    return run_program(args, stdin=stdin, timeout=2)
+    return status, stdout, stderr

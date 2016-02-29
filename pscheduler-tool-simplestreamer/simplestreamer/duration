@@ -12,7 +12,7 @@ import sys
 
 import pscheduler
 
-json = pscheduler.json_load();
+json = pscheduler.json_load(exit_on_error=True);
 
 # TODO: Make sure the type is one we like
 # TODO: Validate the spec

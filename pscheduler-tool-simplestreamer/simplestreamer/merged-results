@@ -6,46 +6,7 @@
 
 import pscheduler
 
-if True:
-    input = pscheduler.json_load();
-else:
-    # TODO: Remove this after development.
-    input = pscheduler.json_load("""
-    {
-        "test": {
-            "test": "simplestream",
-            "spec": {
-                "schema": 1,
-                "receiver": "localhost",
-                "dawdle": "PT1S",
-                "test-material": "Madam, in Eden, I'm Adam.",
-                "timeout": "PT5S"
-            }
-        },
-
-        "results": [
-            {
-                "diags": "Nothing to see at the sending end.",
-                "result": {
-                    "dawdled": "PT0.458257S",
-                    "sent": "Madam, in Eden, I'm Adam."
-                    },
-                "succeeded": true,
-                "error": null
-              },
-              {
-                  "diags": "Nothing to see at the receiving end.",
-                  "result": {
-                      "received": "Madam, in Eden, I'm Adam.",
-                      "elapsed-time": "PT2.078068S"
-                  },
-                  "succeeded": true,
-                  "error": null
-              }
-
-            ]
-      }""")
-
+input = pscheduler.json_load(exit_on_error=True);
 
 # TODO: Validate the input
 

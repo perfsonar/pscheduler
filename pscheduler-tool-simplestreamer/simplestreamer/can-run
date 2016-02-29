@@ -8,7 +8,7 @@ import sys
 
 import pscheduler
 
-json = pscheduler.json_load();
+json = pscheduler.json_load(exit_on_error=True);
 
 # TODO: Should be checking the package schema and the task spec schema.
 # TODO: Should be validating.

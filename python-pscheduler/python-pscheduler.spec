@@ -21,6 +21,7 @@ Source0:	%{short}-%{version}.tar.gz
 
 Requires:	python-isodate
 Requires:	python-detach
+Requires:	python-subprocess32
 
 
 %description

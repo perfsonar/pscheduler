@@ -30,20 +30,19 @@ CREATE OR REPLACE FUNCTION pscheduler_internal(
 RETURNS external_program_result
 AS $$
 
-import subprocess
+import pscheduler
 
 try:
 
-    process = subprocess.Popen(
+    status, stdout, stderr = pscheduler.run_program(
         [ 'pscheduler', 'internal' ] + argv,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE )
+	stdin = input,
+	short = True,
+	)
 
-    stdout, stderr = process.communicate(input)
-except:
-    plpy.error('Unable to run pscheduler front-end program')
+except Exception as ex:
+    plpy.error('Unable to run pscheduler front-end program: ' + str(ex))
 
-return { 'status': process.returncode, 'stdout': stdout, 'stderr': stderr }
+return { 'status': status, 'stdout': stdout, 'stderr': stderr }
 
 $$ LANGUAGE plpythonu;

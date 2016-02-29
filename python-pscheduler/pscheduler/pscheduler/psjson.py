@@ -20,7 +20,7 @@ def _json_scrub_comments(dict):
 
 
 
-def json_load(source=None):
+def json_load(source=None, exit_on_error=False):
     """
     Load a blob of JSON and exit with failure if it didn't read.
 
@@ -41,8 +41,8 @@ def json_load(source=None):
             raise Exception("Internal error: bad source type ", type(source))
     except ValueError:
         # TODO: Make this consistent and fix scripts that use it.
-        if type(source) is str:
-            raise Exception("Invalid JSON")
+        if type(source) is str or not exit_on_error:
+            raise ValueError("Invalid JSON")
         else:
             pscheduler.fail("Invalid JSON")
 
