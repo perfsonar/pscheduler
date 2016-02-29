@@ -1,0 +1,53 @@
+#!/usr/bin/python
+#
+# Format a spec
+#
+
+import jsontemplate
+import pscheduler
+import sys
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
+
+json = pscheduler.json_load(exit_on_error=True)
+# TODO: Validate the input
+
+if format == 'text/plain':
+
+   template = """
+Receiver ........ {.section receiver}{receiver}{.or}Not Specified{.end}
+Max. Dawdle  .... {.section dawdle}{dawdle}{.or}Not Specified{.end}
+Test Material ... {.section test-material}{test-material}{.or}Not Specified{.end}
+Timeout ......... {.section timeout}{timeout}{.or}Not Specified{.end}
+
+   """
+
+elif format == 'text/html':
+
+   template = """
+<table border="0">
+<tr><td><b>Receiver</b></td><td>
+{.section receiverf}{receiver}{.or}<i>Not Specified</i>{.end}
+</td></tr>
+<tr><td><b>Max. Dawdle</b></td><td>
+{.section dawdle}{dawdle}{.or}<i>Not Specified</i>{.end}
+</td></tr>
+<tr><td><b>Test Material</b></td><td>
+{.section test-material}<tt>{test-material}</tt>{.or}<i>Not Specified</i>{.end}
+</td></tr>
+<tr><td><b>Timeout</b></td><td>
+{.section timeout}{timeout}{.or}<i>Not Specified</i>{.end}
+</td></tr>
+</table>
+   """
+
+else:
+
+   pscheduler.fail("Unsupported format '%s'" % format)
+
+
+# TODO: Should probably handle exceptions in a nicer way.
+print jsontemplate.expand(template, json).strip()
