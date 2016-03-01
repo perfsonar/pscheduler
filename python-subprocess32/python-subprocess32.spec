@@ -19,6 +19,10 @@ Url:		https://github.com/google/python-subprocess32
 
 Source:		%{short}-%{version}.tar.gz
 
+Requires:	python
+
+BuildRequires:	python-devel
+
 
 %description
 Backport of Python 3.2's subprocess for Python 2.x
