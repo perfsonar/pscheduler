@@ -43,6 +43,10 @@ good intentions.
 %prep
 %setup -q -n %{short}-%{version}
 
+# The delivered tarball contains some stray Git files which causes git
+# against the source tree to misbehave.  Wipe 'em.
+find . -name '.git*' | xargs rm -rf
+
 
 %build
 python setup.py build
