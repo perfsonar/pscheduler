@@ -1,0 +1,13 @@
+#!/usr/bin/python
+#
+# Validate data for the bitbucket archiver
+#
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True)
+
+if json is None:
+    pscheduler.succeed()
+
+pscheduler.fail("Unrecognized JSON for this archiver.")

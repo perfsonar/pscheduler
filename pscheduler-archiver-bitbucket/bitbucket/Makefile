@@ -4,8 +4,11 @@
 
 NAME=bitbucket
 
+# TODO: This should be an includable template.
+
 FILES=\
 	enumerate \
+	data-is-valid \
 	archive
 
 DOCS=\

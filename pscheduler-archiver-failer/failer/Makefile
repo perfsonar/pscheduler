@@ -6,6 +6,7 @@ NAME=failer
 
 FILES=\
 	enumerate \
+	data-is-valid \
 	archive
 
 DOCS=\
