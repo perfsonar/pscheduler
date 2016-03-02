@@ -36,10 +36,8 @@ python-Flask
 # TODO: Add these once I2 is okay with the license and they're
 # actually being used for something.
 #
-#drop-in
+gunicorn
 random-string
-#sheller
-
 
 
 #
