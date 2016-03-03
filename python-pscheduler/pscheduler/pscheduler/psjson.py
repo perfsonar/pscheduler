@@ -39,12 +39,12 @@ def json_load(source=None, exit_on_error=False):
             json_in = load(source)
         else:
             raise Exception("Internal error: bad source type ", type(source))
-    except ValueError:
+    except ValueError as ex:
         # TODO: Make this consistent and fix scripts that use it.
         if type(source) is str or not exit_on_error:
-            raise ValueError("Invalid JSON")
+            raise ValueError("Invalid JSON: " + str(ex))
         else:
-            pscheduler.fail("Invalid JSON")
+            pscheduler.fail("Invalid JSON: " + str(ex))
 
     # TODO: This doesn' work, so don't bother with it.
     # _json_scrub_comments(json_in)
