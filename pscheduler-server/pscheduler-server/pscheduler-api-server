@@ -7,6 +7,10 @@
 # make it spawn multiple workers, which we will want if any of them
 # are to be executing outside programs like 'pscheduler internal'.
 
+# TODO: Should break this up into parts using Flask blueprints.  See
+# http://stackoverflow.com/a/15231623 and
+# http://flask.pocoo.org/docs/0.10/patterns/packages.
+
 # TODO: Need to add code to validate incoming UUIDs so the database
 # doesn't barf on them and leave a cryptic error message.
 

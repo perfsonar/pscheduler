@@ -1,0 +1,81 @@
+{
+    "#": "Sample JSON input for the syslog archiver",
+
+
+    "#": "Archiver-specific data",
+
+    "data": {
+        "ident": "lab-network",
+        "facility": "local4",
+        "priority": "info"
+    },
+
+
+    "#": "Test result",
+
+    "result": {
+
+        "id": "d206c24d-f44d-4d0a-a13c-0ab5eed91313",
+
+        "schedule": {
+            "start": "2016-02-19T04:35:50",
+            "duration": "PT31S"
+        },
+    
+        "test": {
+            "type": "simplestream",
+            "spec": {
+                "dawdle": "PT1S",
+                "receiver": "dev8",
+                "schema": 1,
+                "test-material": "Madam, in Eden, I'm Adam.",
+                "timeout": "PT3S"
+            }
+        },
+    
+        "tool": "simplestreamer",
+    
+        "participants": [
+	    {
+	        "host": "dev9",
+                "result": {
+                    "succeeded": true,
+                    "result": {
+                        "dawdled": "PT0.218357S",
+                        "sent": "Madam, in Eden, I'm Adam."
+                    },
+                    "diags": "Nothing to see at the sending end.",
+                    "error": null
+                }
+            },
+            {
+	        "host": "dev8",
+                "result": {
+                    "succeeded": true,
+                    "result": {
+                        "received": "Madam, in Eden, I'm Adam.",
+                        "elapsed-time": "PT1.13071S"
+                    },
+                    "diags": "Nothing to see at the receiving end.",
+                    "error": null
+                }
+            }
+        ],
+
+        "result": {
+            "schema": 1,
+    
+            "succeeded": true,
+            "dawdled": "PT0.218357S",
+            "sent": "Madam, in Eden, I'm Adam.",
+            "received": "Madam, in Eden, I'm Adam.",
+            "elapsed-time": "PT1.13071S"
+        }
+    },
+
+
+    "#": "Administrivia for making when-next decisions.",
+
+    "attempts": 3,
+    "last-attempt": "2016-03-04T12:34:56"
+}

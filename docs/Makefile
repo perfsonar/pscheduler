@@ -5,6 +5,7 @@
 default: build
 
 LATEX=\
+	archiver-syslog \
 	developers-guide \
 	json \
 	misc \

@@ -1,0 +1,15 @@
+#!/bin/sh
+
+exec cat << EOF
+{
+    "name": "syslog",
+    "description": "Send a raw JSON result to Syslog",
+    "version": "0.0",
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "info@perfsonar.net",
+	"href": "http://www.perfsonar.net"
+    }
+}
+EOF

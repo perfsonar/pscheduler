@@ -234,6 +234,45 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+
+-- Validate an archiver entry and raise an error if invalid.
+CREATE OR REPLACE FUNCTION archiver_validate(
+    candidate JSONB
+)
+RETURNS VOID
+AS $$
+DECLARE
+    archiver_name TEXT;
+    candidate_data JSONB;
+    run_result external_program_result;
+BEGIN
+    IF NOT candidate ? 'name' THEN
+        RAISE EXCEPTION 'No name specified in archiver.';
+    END IF;
+
+    archiver_name := candidate ->> 'name';
+
+    IF NOT EXISTS (SELECT * FROM archiver WHERE name = archiver_name) THEN
+        RAISE EXCEPTION 'Archiver "%" is not avaiable.', archiver_name;
+    END IF;
+
+    IF candidate ? 'data' THEN
+        candidate_data := candidate -> 'data';
+    ELSE
+        candidate_data := 'null'::JSONB;
+    END IF;
+
+    run_result := pscheduler_internal(ARRAY['invoke', 'archiver',
+    	       archiver_name, 'data-is-valid'], candidate_data::TEXT );
+    IF run_result.status != 0 THEN
+        RAISE EXCEPTION 'Bad data passed to archiver "%": %', archiver_name, run_result.stderr;
+    END IF;
+
+END;
+$$ LANGUAGE plpgsql;
+
+
+
 -- Quick summary
 
 CREATE OR REPLACE VIEW archiver_summary

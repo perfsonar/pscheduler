@@ -81,7 +81,6 @@ CREATE TABLE task (
 	--
 
 	-- Tool that will be used to run this test
-	-- TODO: Do we want to determine this per run or just once?
 	tool	  	INTEGER
 			NOT NULL
 			REFERENCES tool(id)
@@ -99,7 +98,6 @@ CREATE TABLE task (
 
 
 	-- List of archives where the results are sent.
-	-- TODO: Validate this with a trigger
 	-- TODO: If NULL, the archiver will need to pull the system
 	-- defaults effective... when?  When scheduled?  When run?
 	archives	JSONB,
@@ -135,6 +133,7 @@ DECLARE
 	randslip TEXT;
 	until TEXT;
 	run_result external_program_result;
+	archiver JSONB;
 BEGIN
 
 	--
@@ -302,6 +301,7 @@ BEGIN
 
 	until := NEW.json #>> '{schedule, until}';
 
+	-- TODO: Make this compatible with TimestampAbsoluteRelative
 	IF until LIKE 'P%' THEN
 	   NEW.until := now() + text_to_interval(until);
 	-- TODO: 'infinity' and 'doomsday' are not officially supported.
@@ -320,7 +320,7 @@ BEGIN
 	END IF;
 
 
-	NEW.max_runs := text_to_numeric(NEW.json #>> '{schedule, max_runs}');
+	NEW.max_runs := text_to_numeric(NEW.json #>> '{schedule, max-runs}');
 
 	IF (NEW.max_runs IS NOT NULL) AND (NEW.max_runs < 1) THEN
 	   RAISE EXCEPTION 'Maximum runs must be positive.';
@@ -339,9 +339,15 @@ BEGIN
 
 	--
 	-- ARCHIVES
+
 	--
 
-	-- TODO: Validate archives section once we have a way to do that.
+	IF NEW.json ? 'archivers' THEN
+	    FOR archiver IN (SELECT * FROM jsonb_array_elements_text(NEW.json -> 'archivers'))
+	    LOOP
+	        PERFORM archiver_validate(archiver);
+	    END LOOP;
+	END IF;
 
 
 	RETURN NEW;

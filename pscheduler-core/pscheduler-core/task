@@ -66,6 +66,11 @@ opt_parser.add_option("--start",
                       action="store", type="string",
                       dest="start")
 
+opt_parser.add_option("--until",
+                      help="Time after which scheduling should stop",
+                      action="store", type="string",
+                      dest="until")
+
 (options, remaining_args) = opt_parser.parse_args()
 
 #
@@ -87,10 +92,24 @@ if options.slip is not None:
 
 if options.start is not None:
     # TODO: Validate start.  See database source for valid values.
+    # Should have a module function that does this.
     pass
+
+if options.until is not None:
+    until = pscheduler.iso8601_as_datetime(options.until)
+    # TODO: Make sure this value isn't in the past.
 
 if options.wait < 0:
     pscheduler.fail("Invalid --wait; must be 0 or more")
+
+if ( options.repeat is None
+     and (
+        options.max_runs is not None
+        or options.until is not None
+        )
+     ):
+         pscheduler.fail("Using --repeat is required with other"
+                         " repetition-related options.")
 
 
 #
@@ -138,6 +157,9 @@ if options.slip is not None:
 if options.start is not None:
     task['schedule']['start'] = options.start
 
+if options.until is not None:
+    task['schedule']['until'] = options.until
+
 
 #
 # Figure out what kind of test this is.  Don't worry about it being
@@ -172,7 +194,7 @@ status, stdout, stderr = pscheduler.run_program(
     [ 'pscheduler', 'internal', 'invoke', 'test', test_type, 'cli-to-spec' ],
     stdin = pscheduler.json_dump(remaining_args),
     short = True,
-    fail_message="Unable to parse %s arguments" % test_type
+    fail_message="Unable to parse test arguments: "
 )
 assert status == 0
 

@@ -190,6 +190,7 @@ class Run:
                                         % (task_uuid, run_uuid) )
                      for host in participants ]
 
+
             full_result = []
 
             for run in runs:

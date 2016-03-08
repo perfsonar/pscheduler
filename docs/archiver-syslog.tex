@@ -1,0 +1,66 @@
+%
+% pScheduler Archiver Guide for Syslog
+%
+
+\def\archivername{syslog}
+
+
+% TODO: Add titlepage to the options.
+\documentclass[10pt]{article}
+
+\input pscheduler-tex.tex
+
+\DRAFT
+
+\title{pScheduler Archiver Guide: {\it \archivername}}
+\author{The perfSONAR Development Team}
+
+
+\begin{document}
+\maketitle
+
+
+%
+% INTRODUCTION
+%
+
+\section{Introduction}
+
+The {\tt \archivername} archiver sends a raw JSON result to syslog.
+
+This document describes schema version {\tt 1}.
+
+
+%
+% ARCHIVER DATA
+%
+
+\section{Archiver Data}
+
+The {\tt data} object in the archiver specification may contain any of
+the following:
+
+\typeditem{ident}{String} An optional identifier to be prepended to
+log entries.
+
+\typeditem{facility}{String} The name of the facility to use in the log entries.
+Valid values are {\tt kern}, {\tt user}, {\tt mail}, {\tt daemon},
+{\tt auth}, {\tt lpr}, {\tt news}, {\tt uucp}, {\tt cron}, {\tt
+syslog} and {\tt local0} through {\tt local7}.  If not provided, the
+system default will be used.
+
+\typeditem{priority}{String} The name of the priority to use in the log entries.
+Valid values are {\tt emerg}, {\tt alert}, {\tt crit}, {\tt err}, {\tt
+warning}, {\tt notice}, {\tt info}, and {\tt debug}.  If not provided,
+the system default will be used.
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "ident": "lab-network",
+    "facility": "local3",
+    "priority": "info"
+}
+\end{lstlisting}
+
+\end{document}

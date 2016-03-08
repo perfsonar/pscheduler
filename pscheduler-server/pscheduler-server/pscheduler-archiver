@@ -1,0 +1,252 @@
+#!/usr/bin/python
+#
+# 
+#
+
+import datetime
+import detach
+import json
+import optparse
+import os
+import pscheduler
+import psycopg2
+import psycopg2.extensions
+import select
+import socket
+import sys
+import time
+import traceback
+
+from dateutil.tz import tzlocal
+
+
+
+# Gargle the arguments
+
+opt_parser = optparse.OptionParser()
+opt_parser.add_option("-c", "--channel",
+                      help="Schedule notification channel",
+                      action="store", type="string", dest="channel",
+                      default="archiving_change")
+# TODO: Do we want pscheduler as the default here?
+opt_parser.add_option("-d", "--dsn",
+                      help="Database connection string",
+                      action="store", type="string", dest="dsn",
+                      default="dbname=pscheduler")
+opt_parser.add_option("-r", "--refresh",
+                      help="Forced refresh interval (ISO8601)",
+                      action="store", type="string", dest="refresh",
+                      default="PT1M")
+opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
+
+(options, args) = opt_parser.parse_args()
+
+refresh = pscheduler.iso8601_as_timedelta(options.refresh)
+if refresh is None:
+    opt_parser.error('Invalid refresh interval "' + options.refresh + '"')
+if pscheduler.timedelta_as_seconds(refresh) == 0:
+    opt_parser.error("Refresh interval must be calculable as seconds.")
+
+
+dsn = options.dsn
+
+
+#
+# Utilities
+#
+
+# TODO: This should be swept into the pscheduler module.
+is_verbose = options.verbose
+def verbose(*args):
+    if is_verbose:
+        sys.stdout.write(' '.join(str(arg) for arg in args) + '\n')
+
+
+
+
+#
+# Main Program
+#
+
+def main_program():
+
+    # TODO: All DB transactions need to be error checked
+
+    pg = pscheduler.pg_connection(dsn)
+    cursor = pg.cursor()
+    cursor.execute("LISTEN " + options.channel)
+
+    # This cursor is for doing updates inside the other's loop.
+    update_cursor = pg.cursor()
+
+
+    next_refresh = None
+
+    while True:
+
+        # Wait for something to happen.
+
+        if next_refresh is None:
+
+            verbose("Retrieving immediately.")
+
+        else:
+
+            verbose("Waiting", next_refresh, "for change or notification.")
+            if select.select([pg],[],[],
+                             pscheduler.timedelta_as_seconds(next_refresh)) \
+                             != ([],[],[]):
+
+                verbose("Notified.")
+                pg.poll()
+                del pg.notifies[:]
+
+
+        # Until we hear otherwise...
+        next_refresh = refresh
+
+        cursor.execute("""SELECT id, uuid, archiver, archiver_data, start,
+                      duration, test, tool, participants, result_full, result,
+                      attempts, last_attempt
+                      FROM archiving_eligible""")
+
+        if cursor.rowcount == 0:
+            verbose("Nothing to archive.")
+            continue
+
+
+
+        for row in cursor.fetchall():
+
+            run_id, uuid, archiver, archiver_data, start, duration, test, \
+                tool, participants, result_full, result_merged, attempts, \
+                last_attempt = row
+
+            assert len(participants) == len(result_full)
+            participants_merged = []
+            for participant in participants:
+                participants_merged.append({
+                        'host': socket.gethostname() if participant is None \
+                            else participant,
+                        'result': result_full.pop(0)
+                        })
+
+
+            json = {
+                'data': archiver_data,
+                'result': {
+                    'id': uuid,
+                    'schedule': {
+                        'start': pscheduler.datetime_as_iso8601(start),
+                        'duration': pscheduler.timedelta_as_iso8601(duration)
+                        },
+                    'test': test,
+                    'tool': {
+                        'name': tool['name'],
+                        'verion': tool['version'],
+                        },
+                    'participants': participants_merged,
+                    'result': result_merged
+                    },
+                'attempts': attempts,
+                'last-attempt': None if last_attempt is None \
+                    else pscheduler.datetime_as_iso8601(last_attempt) 
+                }
+
+
+            returncode, stdout, stderr = pscheduler.run_program(
+                [ "pscheduler", "internal", "invoke", "archiver", archiver, "archive" ],
+                stdin = pscheduler.json_dump(json),
+                timeout = 10  # TODO: What's appropriate here?
+                )
+
+            attempt = pscheduler.json_dump( [ {
+                        "time": pscheduler.datetime_as_iso8601(datetime.datetime.now(tzlocal())),
+                        "return-code": returncode,
+                        "stdout": stdout,
+                        "stderr": stderr
+                        } ] )
+
+            if returncode != 0:
+                verbose("Permanent Failure: ", stderr)
+                update_cursor.execute("""UPDATE archiving
+                                     SET
+                                       archived = TRUE,
+                                       attempts = attempts + 1,
+                                       last_attempt = now(),
+                                       next_attempt = NULL,
+                                       diags = diags || (%s::JSONB)
+                                     WHERE id = %s""",
+                                      [ attempt, run_id ])
+                pass  # TODO: Update with diags
+            else:
+                # TODO: Validate the JSON that came back on stdout
+                returned_json = pscheduler.json_load(stdout)
+                if returned_json['succeeded']:
+                    verbose("Succeeded: ", uuid, " to ", archiver)
+                    update_cursor.execute("""UPDATE archiving
+                                         SET
+                                             archived = TRUE,
+                                             attempts = attempts + 1,
+                                             last_attempt = now(),
+                                             next_attempt = NULL,
+                                             diags = diags || (%s::JSONB)
+                                         WHERE id = %s""",
+                                          [ attempt, run_id ])
+                else:
+                    verbose("Failed: ", uuid, " to ", archiver, ":", stdout)
+                    next_delta = pscheduler.iso8601_as_timedelta(
+                        returned_json['retry'])
+
+                    next = datetime.datetime.now(tzlocal()) \
+                        + next_delta
+
+                    update_cursor.execute("""UPDATE archiving
+                                         SET
+                                             attempts = attempts + 1,
+                                             last_attempt = now(),
+                                             next_attempt = %s,
+                                             diags = diags || (%s::JSONB)
+                                         WHERE id = %s""",
+                                          [ next, attempt, run_id ])
+
+                    if next_delta < next_refresh:
+                        next_refresh = next_delta
+
+
+
+#
+# Fail-Safe Wrapper for the main program with restart and a binary
+# backoff similar to what's used by Ethernet to prevent continuous
+# tries.
+#
+
+initial_backoff = 0.25
+
+backoff = initial_backoff
+
+while True:
+
+    try:
+        started = datetime.datetime.now(tzlocal())
+        main_program()
+
+    except KeyboardInterrupt:
+        print
+        break
+
+    except Exception as ex:
+        ran = pscheduler.timedelta_as_seconds(
+            datetime.datetime.now(tzlocal()) - started)
+
+        # Running longer than the backoff is a good excuse to try
+        # starting over.
+        if ran > backoff:
+            backoff = initial_backoff
+
+        # TODO: Log this instead of simply spitting it out.
+        traceback.print_exc(file=sys.stderr)
+        time.sleep(backoff)
+        backoff *= 2
+
+

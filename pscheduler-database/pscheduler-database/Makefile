@@ -19,11 +19,12 @@ FILES=\
 	schedule_time_horizon \
 	test \
 	tool \
+	archiver \
 	task \
 	run_state \
 	run \
+	archiving \
 	schedule \
-	archiver \
 	\
 	boot \
 	ticker

@@ -1,10 +1,24 @@
 #!/usr/bin/python
 #
-# Fail at archiving (mostly)
+# Fail at archiving most of the time.
 #
 
+import pscheduler
 import random
+import sys
 
 random.seed()
 
-exit (0 if random.random() > 0.9 else 1)
+if random.random() > 0.8:
+    json = {
+        'succeeded': True
+        }
+else:
+    json = {
+        'succeeded': False,
+        'retry': 'PT10S'
+        }
+    sys.stderr.write("Induced random failure.\n")
+    
+
+pscheduler.succeed_json(json)

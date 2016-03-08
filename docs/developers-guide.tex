@@ -801,7 +801,9 @@ was successful, {\tt 1} if there was an error related to the input or
 % ARCHIVER
 %
 \subsection{Archiver}
-\todo{Write this.}
+Archivers are plug-ins which transfer the results of a run to
+long-term storage.
+
 
 \subsubsection{enumerate}
 
@@ -845,30 +847,87 @@ messages on error.
 \calloutitem{Exit Status} {\tt 0} if successful, nonzero on error.
 
 
-\todo{Probably need a method to check whether an archive spec is valid
-  for this archiver.}
+
+\subsubsection{data-is-valid}
+
+This method determines whether or not provided data is valid for use
+by the archiver.  Note that this checks the data for validity only and
+not for whether or not the data will result in the archiving being
+successful.  It should not do anything that could be long-running or
+may be intermittent such as performing DNS lookups or determining if a
+web server answers.
+
+\calloutitem{Standard Input} JSON containing the {\tt data} element of
+a \jsontype{ArchiveSpecification}.  If the archive specification
+contained no {\tt data} element, the standard input will be the JSON
+{\tt null} value.
+
+\calloutitem{Standard Output} None.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages describing any errors.
+
+\calloutitem{Exit Status} {\tt 0} if successful and the JSON was
+valid, {\tt 1} if the JSON was invalid or {\tt 2} if there was an
+error unrelated to the input.
+
 
 \subsubsection{archive}
 
 This method sends the results of a run to the archiver.
 
 \calloutitem{Standard Input} JSON containing the following items:
+
+
 \begin{itemize}
-\item \todo{TBD}
+\item \typeditem{data}{AnyJSON} Archiver-specific information on how to proceed.
+
+\item \typeditem{result}{RunResult} A {\tt RunResult} describing
+  the results of the run.
+
+\item \typeditem{attempts}{Cardinal} The number of prior, unsuccessful
+  attempts to archive the run.
+
+\item \typeditem{last-attempt}{Timestamp} The time of the last attempt
+  to archive the run.  This will be {\tt null} if there have been no
+  prior attempts.
 \end{itemize}
+
 \example
 \begin{lstlisting}[language=json,firstnumber=1]
 {
-    "TODO": "TBD"
+    "data": { ...Archiver-Specific Data... },
+    "result": { ...Results of run... }
 }
 \end{lstlisting}
 
-\calloutitem{Standard Output} None.
+
+\calloutitem{Standard Output} A JSON object with information on how
+the attempt to archive the run went, containing the following pairs:
+
+\begin{itemize}
+\item \typeditem{succeeded}{Boolean} Whether or not the attempt to archive
+the run succeeded.
+\item \typeditem{retry}{Duration} The minimum amount of time that
+  should elapse before the next attempt.  Not provided if {\tt
+    succeeded} is {\tt false}.
+\end{itemize}
+
+\example
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "succeeded": false
+    "retry": "PT15M"
+}
+\end{lstlisting}
+
 
 \calloutitem{Standard Error} Empty if successful, plain text error
 messages on error.
 
-\calloutitem{Exit Status} {\tt 0} if successful, nonzero on error.
+\calloutitem{Exit Status} {\tt 0} if successful, {\tt 1} if there was
+an error.  Note that in this context, an error means a problem running
+the method and not with the archiving process.
 
 
 

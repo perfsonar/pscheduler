@@ -4,7 +4,7 @@
 
 # PostgreSQL version
 %define pg_major 9
-%define pg_minor 4
+%define pg_minor 5
 
 %define pg_point %{pg_major}.%{pg_minor}
 %define pg_ver   %{pg_major}%{pg_minor}

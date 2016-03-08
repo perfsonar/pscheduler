@@ -70,3 +70,4 @@ pscheduler-tool-snooze
 # Archivers
 pscheduler-archiver-bitbucket
 pscheduler-archiver-failer
+pscheduler-archiver-syslog

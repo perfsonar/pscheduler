@@ -33,13 +33,13 @@ fi
 
 
 # PostgreSQL 9.4
-rpm -Uvh --force http://yum.postgresql.org/9.4/redhat/rhel-6-x86_64/pgdg-redhat94-9.4-2.noarch.rpm
+rpm -Uvh --force https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-6-x86_64/pgdg-redhat95-9.5-2.noarch.rpm
 yum -y install \
-    postgresql94 \
-    postgresql94-server \
-    postgresql94-contrib \
-    postgresql94-python \
-    postgresql94-plpython
+    postgresql95 \
+    postgresql95-server \
+    postgresql95-contrib \
+    postgresql95-python \
+    postgresql95-plpython
 
 # Things needed for pScheduler
 yum -y install \
@@ -47,7 +47,12 @@ yum -y install \
     python-psycopg2 \
     texlive-latex \
     python-markupsafe \
+    python-requests \
     python-devel
+
+# Needed by pscheduler-tool-simplestreamer
+yum -y install nc
+
 
 # Conveniences
 yum -y install emacs-nox screen

@@ -42,17 +42,43 @@ this document can be found in section \autoref{standards}, {\it
 \section{JSON Style}
 \todo{Write this.}
 
-\subsection{Quotation Marks}
-All element names and other string values will be surrounded by double
-quotation marks ({\tt "}...{\tt"}).
+These guidelines apply to the definition of JSON for
+pScheduler-specific applications.  For JSON values which follow a
+different, established standard, that standard will be used instead.
 
-\example\ {\tt "spaghetti"} and {\tt "meatballs"}.
+\subsection{Pair Names}
+Pair names will be lowercase with words separated by hyphens.
 
-
-\subsection{Element Names}
-Element names will be lowercase with words separated by hyphens.
+For reasons described in \autoref{comments}, {\it
+  \nameref{comments}}.  No name in a pair will begin with the number
+sign (``{\tt \#}'')
 
 \example\ {\tt this}, {\tt that} and {\tt the-other}.
+
+
+\subsection{Comments}\label{comments}
+
+In the interest of supporting comments without violating the standard,
+pScheduler's internal JSON parser will discard any pair it encounters
+whose name begins with the number sign (``{\tt \#}'').
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "uncommented": "This pair will remain",
+    "#commented": "This pair will be removed",
+    "array": [
+        "This will remain",
+        "#This will, too, because it is not a pair name"
+    ]
+}
+\end{lstlisting}
+
+
+Developers wishing to use this loader in plugins written in Python
+should refer to the {\it pScheduler Plug-In Developer's Guide} for
+documentation on the {\tt json_load()} function.  \todo{This
+  documentation does not exist yet.}
 
 
 %
@@ -65,7 +91,32 @@ This section covers simple and compound types used in pScheduler.
 
 
 \subsection{AnyJSON}
-Any valid JSON object as defined by ECMA 404.
+Any valid JSON value as defined by ECMA 404.
+
+
+
+\subsection{ArchiveSpecification}
+Specification of an archive destination and supporting data, including these items:
+
+\typeditem{name}{String} The name of the archiver to be used.  The
+name provided must be one which is installed on the system.
+
+\typeditem{data}{AnyJSON} Data specific to the type of archiver which
+direct its behavior.  If not provided, {\tt null} will be used as the
+default.
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "name": "syslog",
+    "data": {
+        "facility": "local7",
+	"level": "info",
+        "tag": "nothing-important"
+    }
+}
+\end{lstlisting}
+
 
 
 \subsection{Array}
@@ -73,7 +124,7 @@ An valid JSON array as defined by ECMA 404.
 
 
 \subsection{Boolean}
-A boolean value as defined by ECMA 404.
+A JSON boolean value as defined by ECMA 404.
 
 \example\ {\tt true} and {\tt false}.  (Note that these are also
 the only two valid values.)
@@ -172,10 +223,41 @@ the maintainer's organization can be found.
 \end{lstlisting}
 
 
+
+\subsection{NameVersion}
+
+An object containing a name and version of some system item.
+
+\typeditem{name}{String} The name of the item.
+
+\typeditem{version}{Version} The version number of the item.
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "name": "foomatic",
+    "version": "7.2",
+}
+\end{lstlisting}
+
+
+
 \subsection{Number}
 A {\tt number} as defined by ECMA 404.
 
 \example\ {\tt 47}, {\tt -19.3} and {\tt 6.022e23}.
+
+
+
+\subsection{ParticipantResult}
+Information about a participant in a test and the result it produced.
+
+\typeditem{participant}{Host} The host which participated in the test
+and produced the result.
+
+\typeditem{result}{AnyJSON} The test-specifc partial result produced
+by the participant.
+
 
 
 \subsection{Probability}
@@ -185,9 +267,10 @@ A {\tt Number}, restricted to the range of {\tt [0.0, 1.0]}.
 
 
 \subsection{RunResult}
-A merged result containing all information about a run of a test.
+An object containing all information about a run of a test.
 
-\typeditem{id}{UUID} A unique identifier for the run that produced this result.
+\typeditem{id}{UUID} A globally-unique identifier for the run that
+produced this result.
 
 \typeditem{schedule}{TimeInterval} When the run was scheduled to start
 and how long it was scheduled to run.
@@ -195,46 +278,83 @@ and how long it was scheduled to run.
 \typeditem{test}{TestSpecification} The test specification as provided
 when the task was instantiated.
 
-\typeditem{participants}{Array} A JSON array of {\tt Host} strings,
-one for each participant in the test.  The lead ({\tt 0}) participant
-should determine its host name in a way that will be most useful in
-identifying it from the outside.
+\typeditem{tool}{NameVersion} The tool which conducted the
+test.
+
+\typeditem{participants}{Array} An array of {\tt ParticipantResult}
+objects, one for each participant in the test.
 
 \typeditem{result}{AnyJSON} The full, merged result of the test in a
 test-specific format.  (See the pScheduler Test Guide for the test in
 question for details.)
 
-\typeditem{tool}{String} The name of the tool which conducted the
-test.  \todo{Consider adding version information.}
-
-\typeditem{tool-results}{Array} A JSON array containing one {\tt AnyJSON} for
-each participant containing the results as produced by the tool that
-ran the test.
-
 \example
 \begin{lstlisting}[language=json]
 {
-    "id": "3c235f6e-672f-4c56-89f3-54d0398914eb",
+    "id": "3c235f6e-672f-d219-f00f-54d0398914eb",
     "schedule": {
         "start": "2016-02-08T17:35:03-05",
         "duration": "PT30S"
     },
     "test": {
-        "test": "foo",
+        "type": "foo",
         "spec": { ... Test Specification ... }
     },
-    "participants": ["host1.example.org", "host2.example.org"],
-    "result": {
-        ... Result ...
-    },
     "tool": "foomatic",
-    "tool-results": [
-        { ... Participant 0 Result ... },
-        { ... Participant 1 Result ... }
-    ]
+    "participants": [
+        {
+            "host": "ps34.example.org",
+            "result": { ... Participant 0 Result ... }
+        },
+        {
+            "host": "ps2.example.org",
+            "result": { ... Participant 1 Result ... }
+        }
+    ],
+    "result": { ... Result ... },
 }
 \end{lstlisting}
 
+
+\subsection{ScheduleSpecification}
+An object containing a description of how runs of a test should be scheduled:
+
+\typeditem{start}{TimestampAbsoluteRelative} When the first run of the
+test should be scheduled.  If not provided, some reasonable default
+close to the current time will be used.
+
+\typeditem{slip}{Duration} The amount of time the start time of each
+run may be delayed.
+
+\typeditem{randslip}{Float} A fraction in the range $[0.0, 1.0]$
+indicating how much to randomly vary the start time of each run within
+any remaining slip after scheduling.
+
+\typeditem{repeat}{Duration} How often runs should be repeated.  If
+not provided, the test will be run exactly once.
+
+\typeditem{until}{TimeStampAbsoluteRelative} When repeated runs of the
+test should end.  If not provided or the special value {\tt forever}
+is provided, repeats will continue forever or until other factors
+cause them to stop.  This value may not be provided without a {\tt
+  repeat}.
+
+\typeditem{max-runs}{Cardinal} The maximum number of successful runs
+of the test that may occur.  If not provided, the number of runs will
+not be counted.  This value may not be provided without a {\tt
+  repeat}.
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "start": "@P1D",
+    "slip": "PT30M",
+    "randslip": 0.5,
+    "repeat": "PT1H",
+    "until": "2016-06-01T06:00:00",
+    "max-runs": 100
+}
+\end{lstlisting}
 
 
 
@@ -277,6 +397,67 @@ A {\tt string} as defined by ECMA 404.
 
 \example\ {\tt "Hello, World!"} and {\tt "He said
   \textbackslash"hello\textbackslash" as he went by."}
+
+
+
+\subsection{TaskSpecification}
+Specification of a task consisting of a JSON object containing these
+elements:
+
+\typeditem{\tt schema} - A {\tt Cardinal} indicating the version
+of the structure.
+
+\typeditem{test}{TestSpecification} The test to be carried out.
+
+\typeditem{tools}{array} A list of the tools which may be used to
+carry out a test in order if preference.  Each tool is a {\tt String}.
+\todo{Current implementation has this as a single string.}
+
+\typeditem{schedule}{ScheduleSpecification} An object describing how
+runs of the test are to be scheduled.
+
+\typeditem{archives}{Array} A list of archivers to which the result of
+each run of the test should be sent.  Each element is an {\tt
+  ArchiveSpecification}.
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "schema": 1,
+    "test": {
+        "type": "idle",
+	"spec": {
+	    "schema": 1,
+	    "duration": "PT1M"
+            "parting-comment": "That's all, folks!"
+	}
+    },
+    "tools": [ "snooze", "sleep" ],
+    "schedule": {
+        "start": "@PT1H",
+        "slip": "PT15M",
+        "repeat": "1H"
+    },
+    "archives": [
+        {
+            "name": "syslog",
+            "data": {
+                "facility": "local7",
+        	"level": "info",
+                "tag": "nothing-important"
+        },
+        {
+            "name": "bitbucket",
+        }
+    ]
+}
+
+
+
+    ]
+}
+\end{lstlisting}
+
 
 
 
@@ -350,6 +531,22 @@ value is exclusive.
 A date and time specified as defined the ISO 8601 standard.
 
 \example\ {\tt 2015-02-27} and {\tt 2015-08-31T09:00:00-05}.
+
+
+
+\subsection{TimestampAbsoluteRelative}
+A date and time specified in one of the following formats:
+\begin{itemize}
+\item Absolutely, specified as a {\tt Timestamp}.
+\item Relative to the current time, specified as a {\tt Duration}.
+\item Time-aligned to the next even increment of time, specified as
+  {\tt Duration} preceded by an at sign ({\tt @}) and calculated
+  relative to the system's local time zone.  {\tt @PT1H} means the top
+  of the next hour from now, {\tt @P1D} means midnight tomorrow.
+\end{itemize}
+
+\example\ {\tt 2016-05-04T02:50:15}, {\tt PT30M} and {\tt @P1D}
+
 
 
 \subsection{URL}
