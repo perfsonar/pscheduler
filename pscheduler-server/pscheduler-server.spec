@@ -37,12 +37,16 @@ make \
      install
 
 %post
-chkconfig pscheduler-ticker on
-# TODO: chkconfig pscheduler-runner on
+for SERVICE in ticker runner archiver api-server
+do
+    chkconfig "pscheduler-${SERVICE}" on
+done
 
 %preun
-chkconfig pscheduler-ticker off
-# TODO: chkconfig pscheduler-runneroff
+for SERVICE in ticker runner archiver api-server
+do
+    chkconfig "pscheduler-${SERVICE}" off
+done
 
 
 
