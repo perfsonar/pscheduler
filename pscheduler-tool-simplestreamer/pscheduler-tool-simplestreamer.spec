@@ -42,6 +42,18 @@ make \
      DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_tool_doc} \
      install
 
+%post
+# Put our rule at the end of the input chain
+INPUT_LENGTH=$(iptables -L INPUT | egrep -e '^ACCEPT' | wc -l)
+iptables -I INPUT $(expr ${INPUT_LENGTH} + 1 ) \
+    -p tcp -m state --state NEW -m tcp --dport 10000:10100 -j ACCEPT
+service iptables save
+
+%postun
+iptables -D INPUT -p tcp -m state --state NEW -m tcp --dport 10000:10100 -j ACCEPT
+service iptables save
+
+
 
 %files
 %defattr(-,root,root,-)

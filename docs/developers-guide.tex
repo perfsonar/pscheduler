@@ -67,8 +67,7 @@ Follow these steps to configure the build/development system:
 \item Use the ``Basic Server'' configuration for installation.
 \item Finish the installation and reboot.
 \item Log in as \root.
-\item \rootcommand{iptables -A INPUT -p tcp --dport 22 -j ACCEPT}
-\item \rootcommand{iptables -A INPUT -p tcp --dport 29285 -j ACCEPT}
+\item \rootcommand{iptables -A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT}
 \item \rootcommand{service iptables save}
 \item Copy the file {\tt scripts/system-prep} from the pScheduler
   source distribution onto the new machine and place it on the new
