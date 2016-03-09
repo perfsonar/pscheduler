@@ -73,6 +73,10 @@ opt_parser.add_option("--until",
 
 (options, remaining_args) = opt_parser.parse_args()
 
+if len(remaining_args) < 1:
+    opt_parser.print_usage()
+    pscheduler.fail()
+
 #
 # Validate the command line
 #
@@ -104,7 +108,7 @@ if options.wait < 0:
 
 if ( options.repeat is None
      and (
-        options.max_runs is not None
+        (options.max_runs is not None and options.max_runs > 1)
         or options.until is not None
         )
      ):
@@ -194,7 +198,7 @@ status, stdout, stderr = pscheduler.run_program(
     [ 'pscheduler', 'internal', 'invoke', 'test', test_type, 'cli-to-spec' ],
     stdin = pscheduler.json_dump(remaining_args),
     short = True,
-    fail_message="Unable to parse test arguments: "
+    fail_message="Unable to parse test arguments"
 )
 assert status == 0
 
