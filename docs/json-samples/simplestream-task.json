@@ -1,0 +1,17 @@
+{
+    "schedule": {
+        "repeat": "PT1M",
+        "start": "@PT1H",
+        "until": "PT1H"
+    },
+    "schema": 1,
+    "test": {
+        "spec": {
+            "dawdle": "PT4S",
+            "receiver": "dev8",
+            "test-material": "This is a test.",
+            "timeout": "PT10S"
+        },
+        "type": "simplestream"
+    }
+}
