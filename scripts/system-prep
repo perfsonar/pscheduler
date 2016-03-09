@@ -33,7 +33,7 @@ fi
 
 
 # PostgreSQL 9.4
-rpm -Uvh --force https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-6-x86_64/pgdg-redhat95-9.5-2.noarch.rpm
+rpm -Uvh --force "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-6-$(uname -m)/pgdg-redhat95-9.5-2.noarch.rpm"
 yum -y install \
     postgresql95 \
     postgresql95-server \
