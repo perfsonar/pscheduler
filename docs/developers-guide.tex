@@ -46,10 +46,10 @@ follows:
 \item 2 GiB DRAM
 \item 10 GB disk
 \item Network connection which can reach the Internet, specifically
-  the PostgreSQL YUM repository at {\tt yum.postgresql.org} and a RHEL
-  or CentOS mirror.  (The perfSONAR development team will eventually
-  make this repository available to sites unable to access non-R\&E
-  networks.)
+  the PostgreSQL YUM repository at {\tt download.postgresql.org} and a
+  RHEL or CentOS mirror.  (The perfSONAR development team will
+  eventually make this repository available to sites unable to access
+  non-R\&E networks.)
 % TODO: Make PgSQL available on software.internet2.edu.
 \end{itemize}
 
@@ -68,7 +68,7 @@ Follow these steps to configure the build/development system:
 \item Finish the installation and reboot.
 \item Log in as \root.
 \item \rootcommand{iptables -A INPUT -p tcp --dport 22 -j ACCEPT}
-\item \rootcommand{iptables -A OUTPUT -p udp --sport 22 -j ACCEPT}
+\item \rootcommand{iptables -A INPUT -p tcp --dport 29285 -j ACCEPT}
 \item \rootcommand{service iptables save}
 \item Copy the file {\tt scripts/system-prep} from the pScheduler
   source distribution onto the new machine and place it on the new
