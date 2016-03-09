@@ -80,5 +80,3 @@ if options.fail is not None:
 
 
 pscheduler.succeed_json(result)
-
-
