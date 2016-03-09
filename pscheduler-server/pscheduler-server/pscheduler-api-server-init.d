@@ -1,22 +1,22 @@
 #!/bin/sh
 #
-# pscheduler-runner        Start/Stop the pScheduler Runner
+# pscheduler-api-server        Start/Stop the pScheduler API server
 #
 # chkconfig: 2345 99 10
-# description: Runner for pScheduler database
+# description: REST API server for pScheduler
 
 
 ### BEGIN INIT INFO
-# Provides: pscheduler-runner
+# Provides: pscheduler-api-server
 # Default-Start:  2345
 # Default-Stop: 10
-# Short-Description: Run pscheduler runner
-# Description: Runner for pscheduler database
+# Short-Description: Run pscheduler API server
+# Description: REST API server for pScheduler
 ### END INIT INFO
 
 
 RETVAL=0
-prog="pscheduler-runner"
+prog="pscheduler-api-server"
 exec=/usr/bin/$prog
 # TODO: This should come from the RPM macros
 config=/etc/pscheduler/database-dsn

@@ -1,22 +1,22 @@
 #!/bin/sh
 #
-# pscheduler-runner        Start/Stop the pScheduler Runner
+# pscheduler-archiver        Start/Stop the pScheduler Archiver
 #
 # chkconfig: 2345 99 10
-# description: Runner for pScheduler database
+# description: Archiver for pScheduler database
 
 
 ### BEGIN INIT INFO
-# Provides: pscheduler-runner
+# Provides: pscheduler-archiver
 # Default-Start:  2345
 # Default-Stop: 10
-# Short-Description: Run pscheduler runner
-# Description: Runner for pscheduler database
+# Short-Description: Run pscheduler archiver
+# Description: Archiver for pscheduler database
 ### END INIT INFO
 
 
 RETVAL=0
-prog="pscheduler-runner"
+prog="pscheduler-archiver"
 exec=/usr/bin/$prog
 # TODO: This should come from the RPM macros
 config=/etc/pscheduler/database-dsn

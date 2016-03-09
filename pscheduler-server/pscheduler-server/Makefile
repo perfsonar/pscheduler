@@ -8,15 +8,16 @@
 #
 
 PROGRAMS=\
-	pscheduler-ticker
+	pscheduler-api-server \
+	pscheduler-archiver \
+	pscheduler-runner \
+	pscheduler-ticker \
 
 # TODO: pscheduler-runner and pscheduler-archiver need to have an init
 # script and be moved to PROGRAMS.
 
 PROGRAMS_NOINIT=\
-	pscheduler-archiver \
 	pscheduler-monitor \
-	pscheduler-runner
 
 PROGRAMS_ALL=$(PROGRAMS) $(PROGRAMS_NOINIT)
 
