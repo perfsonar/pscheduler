@@ -60,32 +60,33 @@ cursor = pscheduler.pg_cursor(dsn)
 #
 
 
+# Responses
+
 def json_response(data):
     return Response(data, mimetype='application/json')
 
-
-# TODO: Make these use proper Response objects
-
-def ok(value="OK"):
-    return value , 200
+def ok(message="OK"):
+    return Response(message, status=200)
 
 def ok_json(value=''):
     return json_response(json_dump(value)), 200
 
 def bad_request(message="Bad request"):
-    return message, 400
+    return Response(message, status=400)
 
 def not_found():
-    return "Resource not found", 404
+    return Response("Resource not found", status=404)
 
 def not_allowed():
-    return "%s not allowed on this resource\n" % request.method, 405
+    return Response("%s not allowed on this resource\n" % request.method,
+                    status=405)
 
 def not_implemented():
-    return "Not implemented yet", 501
+    return Response("Not implemented yet", 501)
 
 
 
+# URLs
 
 def internal_url(path):
     return request.url_root + path
@@ -96,11 +97,12 @@ def root_url(path = None):
 def base_url(path = None):
     return request.base_url + ("" if path is None else "/" + path)
 
-
 def url_last_in_path(url):
     result = urlparse.urlparse(url)
     return result.path.split('/')[-1]
 
+
+# Arguments
 
 def arg_boolean(name):
     """Determine if a boolean argument is part of a request.  The
@@ -145,25 +147,16 @@ def is_expanded():
 
 
 
-
-
-
 # Debug implies pretty.
 always_pretty = options.pretty or options.debug
 
 
-def json_dump(dump):
-    # TODO: Migrate prettiness into pscheduler.json_dump and use that
-    # here.
-    if always_pretty or arg_boolean('pretty'):
-        return json.dumps(dump, \
-                              sort_keys=True, \
-                              indent=4, \
-                              separators=(',', ': ') \
-                              ) + '\n'
-    else:
-        return json.dumps(dump) + '\n'
+# JSON
 
+def json_dump(dump):
+    return pscheduler.json_dump(dump,
+                                pretty=(always_pretty or arg_boolean('pretty'))
+                                )
 
 
 def json_query_simple(query, query_args=[], empty_ok=False):
