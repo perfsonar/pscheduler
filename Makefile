@@ -5,19 +5,23 @@
 default: build
 
 
-# TODO: The docs directory isn't built.
-build:
+packages:
 	scripts/build-all | tee build.log
 TO_CLEAN += build.log
 
 
-# TODO: Need to build the repository index.
-REPO=./repo
-repo: build
+REPO=./REPO
+repo: packages
 	rm -rf $(REPO)
-	mkdir -p $(REPO)
-	cp */*.rpm $(REPO)
+	./scripts/build-repo . $(REPO)
 TO_CLEAN += $(REPO)
+
+# TODO: The docs directory isn't built.
+
+
+build: repo
+
+
 
 uninstall:
 	scripts/remove-all

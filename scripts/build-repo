@@ -1,0 +1,43 @@
+#!/bin/sh -e
+#
+# Build a YUM repository from RPMs
+#
+# Arguments:
+#
+#  1 - Directory to search for built RPMs
+#  2 - Path to finished repo.  Must not exist.
+#
+
+WHOAMI=$(basename "$0")
+WHEREAMI=$(dirname "$0")
+
+TMPBASE="${TMP:-/tmp}/${WHOAMI}.$$"
+cleanup()
+{
+    rm -rf ${TMPBASE}*
+}
+trap cleanup EXIT
+
+die()
+{
+    echo "$@" 1>&2
+    exit 1
+}
+
+SOURCES="$1"
+[ -d "${SOURCES}" ] || die "Can't find source directory ${SOURCES}"
+
+REPO="$2"
+[ -e "${REPO}" ] && die "Directory ${REPO} exists."
+
+# Go find the RPMs
+find "${SOURCES}" -name '*.rpm' -print | fgrep '/RPMS/' > "${TMPBASE}.rpms"
+
+# Build the repo directory
+rm -rf "${REPO}"
+mkdir -p "${REPO}"
+
+[ -s "${TMPBASE}.rpms" ] \
+    && xargs -I {} -n 1 cp {} "${REPO}" < "${TMPBASE}.rpms"
+
+createrepo -q "${REPO}"

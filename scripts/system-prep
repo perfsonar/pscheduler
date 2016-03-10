@@ -44,6 +44,7 @@ yum -y install \
 # Things needed for pScheduler
 yum -y install \
     rpmdevtools \
+    createrepo \
     python-psycopg2 \
     texlive-latex \
     python-markupsafe \
