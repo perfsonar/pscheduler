@@ -43,14 +43,13 @@ make \
      install
 
 %post
-# Put our rule at the end of the input chain
-INPUT_LENGTH=$(iptables -L INPUT | egrep -e '^ACCEPT' | wc -l)
-iptables -I INPUT $(expr ${INPUT_LENGTH} + 1 ) \
-    -p tcp -m state --state NEW -m tcp --dport 10000:10100 -j ACCEPT
+iptables -A INPUT \
+	 -p tcp -m state --state NEW -m tcp --dport 10000:10100 -j ACCEPT
 service iptables save
 
 %postun
-iptables -D INPUT -p tcp -m state --state NEW -m tcp --dport 10000:10100 -j ACCEPT
+iptables -D INPUT \
+	 -p tcp -m state --state NEW -m tcp --dport 10000:10100 -j ACCEPT
 service iptables save
 
 
