@@ -37,9 +37,14 @@ make \
      install
 
 %post
-iptables -A INPUT \
-    -p tcp -m state --state NEW -m tcp --dport 29285 -j ACCEPT
-service iptables save
+if [ "$1" -eq 1 ]
+then
+    # Put our rule after the last ACCEPT in the input chain
+    INPUT_LENGTH=$(iptables -L INPUT | egrep -e '^ACCEPT' | wc -l)
+    iptables -I INPUT $(expr ${INPUT_LENGTH} + 1 ) \
+        -p tcp -m state --state NEW -m tcp --dport 29285 -j ACCEPT
+    service iptables save
+fi
 
 for SERVICE in ticker runner archiver api-server
 do
@@ -52,10 +57,12 @@ do
     chkconfig "pscheduler-${SERVICE}" off
 done
 
-iptables -D INPUT \
-	 -p tcp -m state --state NEW -m tcp --dport 29285 -j ACCEPT
-service iptables save
-
+if [ "$1" -eq 0 ]
+then
+    iptables -D INPUT \
+        -p tcp -m state --state NEW -m tcp --dport 29285 -j ACCEPT
+    service iptables save
+fi
 %files
 %defattr(-,root,root,-)
 %{_initddir}/*

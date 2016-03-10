@@ -43,15 +43,22 @@ make \
      install
 
 %post
-iptables -A INPUT \
-	 -p tcp -m state --state NEW -m tcp --dport 10000:10100 -j ACCEPT
-service iptables save
+if [ "$1" -eq 1 ]
+then
+    # Put our rule after the last ACCEPT in the input chain
+    INPUT_LENGTH=$(iptables -L INPUT | egrep -e '^ACCEPT' | wc -l)
+    iptables -I INPUT $(expr ${INPUT_LENGTH} + 1 ) \
+        -p tcp -m state --state NEW -m tcp --dport 10000:10100 -j ACCEPT
+    service iptables save
+fi
 
 %postun
-iptables -D INPUT \
-	 -p tcp -m state --state NEW -m tcp --dport 10000:10100 -j ACCEPT
-service iptables save
-
+if [ "$1" -eq 0 ]
+then
+    iptables -D INPUT \
+        -p tcp -m state --state NEW -m tcp --dport 10000:10100 -j ACCEPT
+    service iptables save
+fi
 
 
 %files
