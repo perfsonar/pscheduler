@@ -104,6 +104,7 @@ class Run:
                        SELECT
                            tool.name,
                            task.uuid,
+                           task.id,
                            task.participant,
                            task.participants,
                            lower(run.times),
@@ -121,8 +122,8 @@ class Run:
         # TODO: Should get exactly one row back.
         row = cursor.fetchone()
 
-        tool, task_uuid, participant, participants, start, end, test_spec, \
-            run_uuid, partdata = row
+        tool, task_uuid, task_id, participant, participants, start, end, \
+            test_spec, run_uuid, partdata = row
 
         tool_input = {
             'schema': 1,
@@ -169,6 +170,11 @@ class Run:
                        WHERE id = %s
                        """,
                        [returncode, stdout, stderr, id])
+
+
+        # Note that the run happened.
+        # TODO: Error check this.
+        cursor.execute("SELECT task_register_run(%s)", [task_id])
 
 
         # The lead participant takes care of gathering and merging the finished results.
