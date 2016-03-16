@@ -281,7 +281,7 @@ $$ LANGUAGE plpgsql;
 
 
 
--- Maintenance that happens once per minute.
+-- Maintenance that happens four times a minute.
 
 CREATE OR REPLACE FUNCTION run_maint_fifteen()
 RETURNS VOID

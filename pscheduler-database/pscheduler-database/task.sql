@@ -374,6 +374,14 @@ $$ LANGUAGE plpgsql;
 
 
 
+
+---
+--- Maintenance
+---
+
+-- TODO: Need to schedule runs of repeating tasks
+
+
 -- TODO: Will need a ticker job to hunt down and kill tasks that no
 -- longer need to be in the database.
 
@@ -405,9 +413,5 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
-
-
--- TODO: Need an api_task_get()
--- TODO: Need an api_task_delete()
 
 
