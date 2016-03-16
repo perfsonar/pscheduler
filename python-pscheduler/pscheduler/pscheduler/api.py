@@ -1,5 +1,5 @@
 """
-Functions relates to the pScheduler REST API
+Functions related to the pScheduler REST API
 """
 
 
