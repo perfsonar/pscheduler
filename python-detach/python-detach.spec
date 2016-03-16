@@ -22,6 +22,8 @@ Source:		%{short}-%{version}.tar.gz
 # This patch removes the prerequisites for testing
 Patch0:		%{name}-00-no-nose.patch
 
+BuildRequires:	python-setuptools
+
 %description
 Python module which cleanly forks a child and detaches it.
 
