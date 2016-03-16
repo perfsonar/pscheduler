@@ -24,6 +24,13 @@ Source:		%{short}-%{version}.tar.gz
 Patch0:         %{name}-00-remove-gaiohttp.patch 
 
 
+BuildRequires:  python2-devel
+BuildRequires:  python-setuptools
+BuildRequires:  pytest
+
+Requires:       python-setuptools
+
+
 %description
 This module implements ISO 8601 date, time and duration parsing. The
 implementation follows ISO8601:2004 standard, and implements only
