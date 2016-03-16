@@ -1,0 +1,22 @@
+#!/bin/sh -e
+#
+# Start, stop or restart all services.
+#
+# This script is a convenience for development and is not intended for
+# use in production.
+
+ACTION="$1"
+case "${ACTION}" in
+    start|stop|restart)
+	true
+	;;
+    *)
+	echo "Usage: $(basename $0) (start|stop|restart)" 1>&2
+	exit 1
+	;;
+esac
+
+for SERVICE in ticker runner archiver api-server
+do
+    service "pscheduler-${SERVICE}" "${ACTION}"
+done
