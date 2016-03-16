@@ -7,6 +7,9 @@
 #   INITDDIR - Location for installed init scripts (/etc/rc.d/init.d)
 #
 
+# TODO: Should probably generate the init.d files since they're all
+# the same.
+
 PROGRAMS=\
 	pscheduler-api-server \
 	pscheduler-archiver \

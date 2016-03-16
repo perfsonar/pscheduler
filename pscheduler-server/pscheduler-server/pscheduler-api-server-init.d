@@ -15,19 +15,25 @@
 ### END INIT INFO
 
 
-RETVAL=0
 prog="pscheduler-api-server"
 exec=/usr/bin/$prog
-# TODO: This should come from the RPM macros
+
+# TODO: These should come from the RPM macros
 config=/etc/pscheduler/database-dsn
-pidfile=/var/run/$proc.pid
+proguser=pscheduler
+
+pidfile=/var/run/$prog.pid
 lockfile=/var/lock/subsys/$proc
+
+# TODO: Need to rotate this.
+logfile=/var/log/$prog.log
 
 # Source function library.
 . /etc/rc.d/init.d/functions
 
-[ $UID -eq 0 ]
+retval=0
 
+[ $UID -eq 0 ]
 
 start() {
     if [ $UID -ne 0 ] ; then
@@ -37,10 +43,12 @@ start() {
     [ -x $exec ] || exit 5
     [ -f $config ] || exit 6
     echo -n $"Starting $prog: "
-    # TODO: This user need to be resolved from RPM macros
-    # TODO: Find a cleaner way to do this.
-    su - pscheduler -c "exec /usr/bin/$prog --dsn '@$config'" &
-    echo $! > $pidfile
+    touch "$pidfile"
+    chown "$proguser.$proguser" "$pidfile"
+    nohup su pscheduler \
+	-s /bin/sh \
+	-c "echo \$\$ > '$pidfile' && exec $exec --dsn '@$config'" \
+	>> '$logfile' 2>&1 &
     retval=$?
     success
     echo
@@ -100,4 +108,3 @@ case "$1" in
         exit 2
 esac
 exit $?
-
