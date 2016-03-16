@@ -53,7 +53,6 @@ follows:
 % TODO: Make PgSQL available on software.internet2.edu.
 \end{itemize}
 
-
 \subsection{Installation and Configuration}
 
 Follow these steps to configure the build/development system:
@@ -64,11 +63,11 @@ Follow these steps to configure the build/development system:
   appropriately.
 \item Configure the network interface(s) to connect automatically.
 \item Configure the time, root password, and disk usage appropriately.
-\item Use the ``Basic Server'' configuration for installation.
+\item Use the ``Minimal'' configuration for installation.
 \item Finish the installation and reboot.
 \item Log in as \root.
-\item \rootcommand{iptables -A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT}
-\item \rootcommand{service iptables save}
+\item 
+\item \rootcommand{yum -y install openssh-clients}
 \item Copy the file {\tt scripts/system-prep} from the pScheduler
   source distribution onto the new machine and place it on the new
   system in {\tt /tmp}.
