@@ -267,6 +267,11 @@ while True:
 
         # Do this here to guarantee that we don't pick up rows for
         # runs we just started in the next iteration of the loop.
+
+        # TODO: A side effect of this is that the run shows as running
+        # while the Run is waiting for the start time to happen.  Need
+        # to base this list on runs we haven't done a process for.
+
         cursor.execute( "UPDATE run SET state = run_state_running() WHERE id in (%s)",
                     (tuple([row[0] for row in rows]),) )
 
