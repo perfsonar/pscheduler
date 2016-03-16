@@ -45,6 +45,8 @@ yum -y install \
 yum -y install \
     rpmdevtools \
     createrepo \
+    pytest \
+    python-setuptools \
     python-psycopg2 \
     texlive-latex \
     python-markupsafe \
@@ -56,7 +58,7 @@ yum -y install nc
 
 
 # Conveniences
-yum -y install emacs-nox screen
+yum -y install emacs-nox screen tcsh
 
 
 #
