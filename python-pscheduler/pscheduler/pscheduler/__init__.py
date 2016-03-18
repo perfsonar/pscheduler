@@ -9,5 +9,5 @@ from .iso8601 import *
 from .ntp import *
 from .program import *
 from .psjson import *
+from .pstime import *
 from .ranges import *
-from .time import *
