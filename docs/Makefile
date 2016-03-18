@@ -9,6 +9,7 @@ LATEX=\
 	developers-guide \
 	json \
 	misc \
+	parameters \
 	test-idle \
 	test-simplestream
 
