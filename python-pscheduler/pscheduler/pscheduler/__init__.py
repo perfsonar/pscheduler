@@ -10,4 +10,4 @@ from .ntp import *
 from .program import *
 from .psjson import *
 from .ranges import *
-from .timedelta import *
+from .time import *
