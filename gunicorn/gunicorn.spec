@@ -6,7 +6,7 @@
 Name:		%{short}
 Version:	19.4.5
 Release:	1%{?dist}
-Summary:	An ISO 8601 date/time/duration parser and formatter
+Summary:	Python WSGI HTTP Server for UNIX
 BuildArch:	noarch
 License:	MIT
 Group:		System Environment/Daemons
@@ -14,7 +14,7 @@ Group:		System Environment/Daemons
 Provides:	%{name} = %{version}-%{release}
 Prefix:		%{_prefix}
 
-Vendor:		Benoit 
+Vendor:		Benoit Chesneau
 Url:		http://www.gunicorn.org
 
 Source:		%{short}-%{version}.tar.gz
@@ -32,9 +32,10 @@ Requires:       python-setuptools
 
 
 %description
-This module implements ISO 8601 date, time and duration parsing. The
-implementation follows ISO8601:2004 standard, and implements only
-date/time representations mentioned in the standard.
+Gunicorn 'Green Unicorn' is a Python WSGI HTTP Server for UNIX. It's a
+pre-fork worker model ported from Ruby's Unicorn project. The Gunicorn
+server is broadly compatible with various web frameworks, simply
+implemented, light on server resources, and fairly speedy.
 
 
 
