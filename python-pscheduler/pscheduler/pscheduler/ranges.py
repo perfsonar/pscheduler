@@ -82,7 +82,8 @@ def coalesce_ranges(ranges, duration):
         final_lower = max(final_lower, match_lower)
         final_upper = min(final_upper, match_upper)
 
-    assert final_lower <= final_upper, "Came up with a bogus range."
+    assert final_lower <= final_upper, \
+        "Came up with a bogus range %s - %s." % (str(final_lower), str(final_upper))
     assert (final_upper - final_lower) >= duration,  "Duration %s is too short." % str(duration)
 
     return (final_lower, final_upper)
