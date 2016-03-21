@@ -29,6 +29,8 @@ FILES=\
 	boot \
 	ticker
 
+FILES_TEARDOWN=\
+	database-drop
 
 
 
@@ -38,7 +40,10 @@ BUILD_SUPER_SQL=database-build-super.sql
 UNPRIV=$(FILES:%=%.sql)
 BUILD_SQL=database-build.sql
 
-SQL=$(BUILD_SUPER_SQL) $(BUILD_SQL)
+TEARDOWN=$(FILES_TEARDOWN:%=%.sql)
+TEARDOWN_SQL=database-teardown.sql
+
+SQL=$(BUILD_SUPER_SQL) $(BUILD_SQL) $(TEARDOWN_SQL)
 
 
 default: build
@@ -57,6 +62,12 @@ $(BUILD_SQL): $(UNPRIV)
 	cat $^ > $@
 	chmod -w $@
 TO_CLEAN += $(BUILD_SQL)
+
+
+$(TEARDOWN_SQL): $(TEARDOWN)
+	cat $^ > $@
+	chmod -w $@
+TO_CLEAN += $(TEARDOWN_SQL)
 
 
 

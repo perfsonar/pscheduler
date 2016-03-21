@@ -113,13 +113,22 @@ printf "';\n"  >> "${ROLESQL}"
 postgresql-load "${ROLESQL}"
 rm -f "${ROLESQL}"
 
-# TODO: What do we want to do about trust in pg_hba.conf?
+# TODO: What do we want to do about trust in pg_hba.conf?  Local user
+# only and nothing over the network should be sufficient.
 
 # TODO: Will eventually need to handle upgrades, but that's a ways off.
 
 
 
-# TODO: Drop the database on uninstall or leave it?
+%preun
+# Have to do this before the files are erased.
+if [ "$1" = "0" ]
+then
+    postgresql-load %{_pscheduler_datadir}/database-teardown.sql
+fi
+
+
+
 
 %files
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
