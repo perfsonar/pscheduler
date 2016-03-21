@@ -46,15 +46,6 @@ chkconfig postgresql-%{pg_point} on
 service postgresql-%{pg_point} start
 
 
-%postun
-service postgresql-%{pg_point} stop
-chkconfig postgresql-%{pg_point} off
-
-### # Optional: Remove all data
-### PGDATA=$(egrep -e '^PGDATA=' /etc/rc.d/init.d/postgresql-%{pg_point} \
-###	       | awk -F= '{ print $2 }')
-### %{__rm} -rf ${PGDATA}/*
-
 
 %files
 # No files.
