@@ -56,6 +56,13 @@ yum -y install \
 # Needed by pscheduler-tool-simplestreamer
 yum -y install nc
 
+# Needed for jq
+yum -y install \
+    autoconf \
+    bison \
+    flex \
+    libtool
+
 
 # Conveniences
 yum -y install emacs-nox screen tcsh
