@@ -196,8 +196,6 @@ $$ LANGUAGE plpgsql;
 -- Round an interval up to the next whole second if there are any
 -- fractional seconds.
 
--- TODO: FINISH THIS
-
 CREATE OR REPLACE function interval_round_up(candidate INTERVAL)
 RETURNS INTERVAL
 AS $$
