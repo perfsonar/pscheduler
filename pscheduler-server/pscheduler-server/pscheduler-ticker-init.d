@@ -49,7 +49,7 @@ start() {
     nohup su pscheduler \
 	-s /bin/sh \
 	-c "echo \$\$ > '$pidfile' && exec $exec --dsn '@$config'" \
-	>> '$logfile' 2>&1 &
+	>> "$logfile" 2>&1 &
     retval=$?
     success
     echo
