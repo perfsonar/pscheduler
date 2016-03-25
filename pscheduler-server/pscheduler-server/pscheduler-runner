@@ -3,6 +3,8 @@
 # Execute runs of tasks and put the results into the database.
 #
 
+# TODO: Replace requests.* with pscheduler equivalents.
+
 import datetime
 import detach
 import json
@@ -25,19 +27,27 @@ from dateutil.tz import tzlocal
 # Gargle the arguments
 
 opt_parser = optparse.OptionParser()
+
 opt_parser.add_option("-c", "--channel",
                       help="Schedule notification channel",
                       action="store", type="string", dest="channel",
                       default="run_change")
+
 # TODO: Do we want pscheduler as the default here?
 opt_parser.add_option("-d", "--dsn",
                       help="Database connection string",
                       action="store", type="string", dest="dsn",
                       default="dbname=pscheduler")
+
+# NOTE: Changing the refresh interval will have an effect on how many
+# forked processes are running, connected to the database and waiting
+# for a run to start.  Increase this value only if you understand the
+# consequences.
 opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
-                      default="PT5M")
+                      default="PT1M")
+
 opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
 
 (options, args) = opt_parser.parse_args()
@@ -99,6 +109,12 @@ class Run:
         sleep_time = pscheduler.timedelta_as_seconds(start_in)
         verbose("Sleeping", sleep_time, "until test start.")
         time.sleep(sleep_time)
+
+        cursor.execute("""
+                       UPDATE run
+                       SET state = run_state_running()
+                       WHERE id = %s
+                       """, [id])
 
         cursor.execute("""
                        SELECT
@@ -202,7 +218,8 @@ class Run:
             for run in runs:
                 r = requests.get(run)
                 if r.status_code != 200:
-                    raise Exception("Bad status code: " +  r.text)
+                    raise Exception("Bad status code " + str(r.status_code)
+                                    + ": " +  r.text)
                 try:
                     full_result.append(pscheduler.json_load(str(r.text))['result'])
                 except Exception as ex:
@@ -249,30 +266,31 @@ cursor.execute("LISTEN " + options.channel)
 
 while True:
 
+    # Operate only on runs that are scheduled to start before the next
+    # forced refresh.
+
+    print "CHECK ", refresh
     cursor.execute("""SELECT
                           run,
                           start_in
                       FROM
                           schedule_upcoming
                       WHERE
-                          start_in = (SELECT min(start_in) FROM schedule_upcoming)
+                          start_in < %s
                       ORDER BY start_in
-                   """);
+                   """, [refresh]);
 
     if cursor.rowcount:
         # TODO: There must be a nicer way to take this array slice as args.
         rows = cursor.fetchall()
+        verbose( [ "RUN " + str(row[0]) + " " + str(row[1]) for row in rows ] )
         runs = [ Run(row[0], row[1]) for row in rows ]
         wait_time = rows[0][1]
 
         # Do this here to guarantee that we don't pick up rows for
         # runs we just started in the next iteration of the loop.
 
-        # TODO: A side effect of this is that the run shows as running
-        # while the Run is waiting for the start time to happen.  Need
-        # to base this list on runs we haven't done a process for.
-
-        cursor.execute( "UPDATE run SET state = run_state_running() WHERE id in (%s)",
+        cursor.execute( "UPDATE run SET state = run_state_on_deck() WHERE id in %s",
                     (tuple([row[0] for row in rows]),) )
 
 

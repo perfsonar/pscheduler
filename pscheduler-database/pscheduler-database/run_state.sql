@@ -34,12 +34,21 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- The runner is preparing to execute the run
+CREATE OR REPLACE FUNCTION run_state_on_deck()
+RETURNS INTEGER
+AS $$
+BEGIN
+	RETURN 2;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Run is being executed
 CREATE OR REPLACE FUNCTION run_state_running()
 RETURNS INTEGER
 AS $$
 BEGIN
-	RETURN 2;
+	RETURN 3;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -48,7 +57,7 @@ CREATE OR REPLACE FUNCTION run_state_finished()
 RETURNS INTEGER
 AS $$
 BEGIN
-	RETURN 3;
+	RETURN 4;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -57,7 +66,7 @@ CREATE OR REPLACE FUNCTION run_state_overdue()
 RETURNS INTEGER
 AS $$
 BEGIN
-	RETURN 4;
+	RETURN 5;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -66,7 +75,7 @@ CREATE OR REPLACE FUNCTION run_state_missed()
 RETURNS INTEGER
 AS $$
 BEGIN
-	RETURN 5;
+	RETURN 6;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -75,7 +84,7 @@ CREATE OR REPLACE FUNCTION run_state_failed()
 RETURNS INTEGER
 AS $$
 BEGIN
-	RETURN 6;
+	RETURN 7;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -84,7 +93,7 @@ CREATE OR REPLACE FUNCTION run_state_trumped()
 RETURNS INTEGER
 AS $$
 BEGIN
-	RETURN 7;
+	RETURN 8;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -93,6 +102,7 @@ $$ LANGUAGE plpgsql;
 INSERT INTO run_state (id, display, enum)
 VALUES
 	(run_state_pending(),  'Pending',  'pending'),
+	(run_state_on_deck(),  'On Deck',  'on-deck'),
 	(run_state_running(),  'Running',  'running'),
 	(run_state_finished(), 'Finished', 'finished'),
 	(run_state_overdue(),  'Overdue',  'overdue'),
@@ -119,6 +129,7 @@ ON run_state
 
 
 
+
 -- Determine if a transition between states is valid
 CREATE OR REPLACE FUNCTION run_state_transition_is_valid(
     old INTEGER,
@@ -129,6 +140,10 @@ AS $$
 BEGIN
    RETURN  new = old
            OR   ( old = run_state_pending()
+	          AND new IN (run_state_on_deck(),
+			      run_state_missed(),
+			      run_state_trumped()) )
+           OR   ( old = run_state_on_deck()
 	          AND new IN (run_state_running(),
 		              run_state_overdue(),
 			      run_state_missed(),

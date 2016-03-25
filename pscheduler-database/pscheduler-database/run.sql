@@ -280,6 +280,18 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+CREATE OR REPLACE FUNCTION run_purge()
+RETURNS VOID
+AS $$
+BEGIN
+
+    -- TODO: Remove runs older than the keep limit
+    NULL;
+
+END;
+$$ LANGUAGE plpgsql;
+
+
 
 -- Maintenance that happens four times a minute.
 
@@ -288,6 +300,7 @@ RETURNS VOID
 AS $$
 BEGIN
     PERFORM run_handle_stragglers();
+    PERFORM run_purge();
 END;
 $$ LANGUAGE plpgsql;
 
@@ -367,12 +380,3 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
-
-
--- TODO: Need api_run_get()
--- TODO: Need api_run_patch()
--- TODO: Need api_run_delete()
-
-
-
-

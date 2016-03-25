@@ -1,0 +1,157 @@
+#!/usr/bin/python
+#
+# pScheduler Run Scheduler
+#
+
+import optparse
+import pscheduler
+import psycopg2
+import psycopg2.extensions
+import select
+import socket
+import sys
+import time
+import traceback
+
+# Gargle the arguments
+
+opt_parser = optparse.OptionParser()
+opt_parser.add_option("-c", "--channel",
+                      help="Schedule notification channel",
+                      action="store", type="string", dest="channel",
+                      default="task_change")
+# TODO: Do we want pscheduler as the default here?
+opt_parser.add_option("-d", "--dsn",
+                      help="Database connection string",
+                      action="store", type="string", dest="dsn",
+                      default="dbname=pscheduler")
+opt_parser.add_option("-r", "--refresh",
+                      help="Forced refresh interval (ISO8601)",
+                      action="store", type="string", dest="refresh",
+                      default="PT15S")
+opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
+
+(options, args) = opt_parser.parse_args()
+
+refresh = pscheduler.iso8601_as_timedelta(options.refresh)
+if refresh is None:
+    opt_parser.error('Invalid refresh interval "' + options.refresh + '"')
+if pscheduler.timedelta_as_seconds(refresh) == 0:
+    opt_parser.error("Refresh interval must be calculable as seconds.")
+
+
+dsn = options.dsn
+
+
+#
+# Utilities
+#
+
+# TODO: This should be swept into the pscheduler module.
+is_verbose = options.verbose
+def verbose(*args):
+    if is_verbose:
+        sys.stdout.write(' '.join(str(arg) for arg in args) + '\n')
+
+
+
+
+#
+# Main Program
+#
+
+def main_program():
+
+    # TODO: All DB transactions need to be error checked
+
+    pg = pscheduler.pg_connection(dsn)
+    cursor = pg.cursor()
+    cursor.execute("LISTEN " + options.channel)
+
+    # This cursor is for doing updates inside the other's loop.
+    update_cursor = pg.cursor()
+
+    next_refresh = None
+
+    while True:
+
+        # Wait for something to happen.
+
+        if next_refresh is None:
+
+            verbose("Retrieving immediately.")
+
+        else:
+
+            verbose("Waiting", next_refresh, "for change or notification.")
+            if select.select([pg],[],[],
+                             pscheduler.timedelta_as_seconds(next_refresh)) \
+                             != ([],[],[]):
+
+                verbose("Notified.")
+                pg.poll()
+                del pg.notifies[:]
+
+
+        # Until we hear otherwise...
+        next_refresh = refresh
+
+
+        while True:
+
+            cursor.execute("""SELECT uuid, trynext from schedule_runs_to_schedule""")
+
+            if cursor.rowcount == 0:
+                verbose("No runs to schedule.")
+                break
+
+            for row in cursor.fetchall():
+
+                uuid, trynext = row
+
+                # TODO: This should come from som canonical source instead
+                # of building it here.
+                url = 'http://localhost:29285/tasks/' + uuid
+
+                verbose("Trying to schedule " + str(uuid) + " at " + str(trynext))
+                run_uri, start_time, end_time, error = pscheduler.run_post(url, trynext)
+                if error is not None:
+                    verbose("  Unable: " + error)
+                else:
+                    verbose("  Secheduled for " + str(start_time) + " - " + str(end_time))
+
+
+#
+# Fail-Safe Wrapper for the main program with restart and a binary
+# backoff similar to what's used by Ethernet to prevent continuous
+# tries.
+#
+
+initial_backoff = 0.25
+
+backoff = initial_backoff
+
+while True:
+
+    try:
+        started = pscheduler.time_now()
+        main_program()
+
+    except KeyboardInterrupt:
+        print
+        break
+
+    except Exception as ex:
+        ran = pscheduler.timedelta_as_seconds(pscheduler.time_now() - started)
+
+        # Running longer than the backoff is a good excuse to try
+        # starting over.
+        if ran > backoff:
+            backoff = initial_backoff
+
+        # TODO: Log this instead of simply spitting it out.
+        traceback.print_exc(file=sys.stderr)
+        time.sleep(backoff)
+        backoff *= 2
+
+

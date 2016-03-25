@@ -36,6 +36,11 @@ make \
      BINDIR=$RPM_BUILD_ROOT/%{_bindir} \
      install
 
+
+%pre
+# TODO: Should probably stop the service if this is an upgrade.
+
+
 %post
 if [ "$1" -eq 1 ]
 then
@@ -46,15 +51,19 @@ then
     service iptables save
 fi
 
-for SERVICE in ticker runner archiver api-server
+for SERVICE in ticker runner archiver scheduler api-server
 do
     chkconfig "pscheduler-${SERVICE}" on
+    # TODO: Should probably start the service
 done
+
 
 %preun
 for SERVICE in ticker runner archiver api-server
 do
-    chkconfig "pscheduler-${SERVICE}" off
+    NAME="pscheduler-${SERVICE}"
+    service "${NAME}" stop
+    chkconfig "${NAME}" off
 done
 
 if [ "$1" -eq 0 ]

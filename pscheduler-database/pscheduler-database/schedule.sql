@@ -36,6 +36,81 @@ AS
 
 
 
+-- What tasks need a run scheduled and when
+
+DROP VIEW IF EXISTS schedule_runs_to_schedule;
+CREATE OR REPLACE VIEW schedule_runs_to_schedule
+AS
+    WITH interim AS (
+
+        -- Tasks with no runs scheduled
+        SELECT
+            id AS task,
+	    uuid,
+            enabled,
+            added,
+            start,
+            duration,
+            now() AS after,
+            repeat,
+            max_runs,
+            runs,
+            task.until,
+            task_next_run(start, now(), repeat) AS trynext,
+	    participant
+        FROM
+            task
+        WHERE
+            NOT EXISTS (SELECT * FROM run WHERE run.task = task.id)
+    
+        UNION
+
+        -- Tasks with runs
+        SELECT
+            task.id AS task,
+	    task.uuid,
+            task.enabled,
+            task.added,
+            task.start,
+            duration,
+            greatest(now(), max(upper(run.times))) AS after,
+            task.repeat,
+            max_runs,
+            runs,
+            task.until,
+            task_next_run(start, greatest(now(), max(upper(run.times))), repeat) AS trynext,
+	    task.participant
+        FROM
+            run
+            JOIN task ON task.id = run.task
+        GROUP BY task.id
+    )
+    SELECT
+        task,
+	uuid,
+        trynext
+    FROM
+        interim
+    WHERE
+        enabled
+	AND participant = 0
+        AND repeat IS NOT NULL
+	-- TODO: This needs to count scheduled runs, too.
+        AND ( (max_runs IS NULL)
+              OR (runs + ( SELECT COUNT(*)
+                           FROM run
+                           WHERE
+                             task = task
+                           AND lower(times) > normalized_now())
+                  < max_runs) )
+        AND ( (until IS NULL) OR (trynext < until) )
+        AND trynext + duration < (normalized_now() + schedule_time_horizon())
+    ORDER BY added
+;
+
+
+
+
 --
 -- API
 --

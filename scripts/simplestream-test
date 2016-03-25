@@ -29,7 +29,7 @@ test_json_text = """
     "type": "simplestream",
     "spec": {
         "schema": 1,
-        "receiver": "dev7",
+        "receiver": "dev8",
         "dawdle": "PT1S",
         "test-material": "Madam, in Eden, I'm Adam.",
         "timeout": "PT3S"
@@ -84,6 +84,9 @@ else:
 #
 #
 
+
+# TODO: All of this needs to be wrapped into a function to post a new
+# task.
 
 # Figure out the participant list.  This we do directly since the code
 # will become part of the server-side code.
@@ -200,10 +203,10 @@ task = {
     'test': test_json,
     'tool': tool,
     'schedule': {
-        'start': 'PT2S',
-        'slip': 'PT15S',
+        'start': '@PT1M',
+        'slip': 'PT10S',
         'repeat': 'PT30S',
-        'max_runs': 50
+        'max-runs': 50
         },
     'archives': [
         {
@@ -232,12 +235,10 @@ try:
                       data=task_data)
     if r.status_code != 200:
         raise Exception("Bad status code: " +  r.text)
-    print "   ", r.text
     tasks_posted.append(r.text)
     lead_url = r.text
     task_uuid = urlparse.urlparse(lead_url).path.split('/')[-1]
     print "    Task URL is", lead_url
-    print "    Task ID is", task_uuid
 except Exception as ex:
     pscheduler.fail("Error from %s: %s" % (participants[0], ex))
 
@@ -269,142 +270,8 @@ if len(tasks_posted) < nparticipants:
     pscheduler.fail("Unable to continue.")
 
 
-
-print
-print "SCHEDULING:"
-print
-
-# TODO: Figure out the next desired time to run it.
-# For now, just punt five seconds.
-
-print "Time now is     ", datetime.datetime.now(tzlocal())
-
-# TODO: Get this directly form the database if the lead is local?
-r = requests.get(lead_url, params={ 'detail': 1 })
-if r.status_code != 200:
-    raise Exception("Bad status code")
-full_task = pscheduler.json_load(r.text)
-
-# Calculate the run time range based on the start, then ask the
-# servers for what ranges of time they have available.
-
-run_range_start = pscheduler.iso8601_as_datetime(full_task['detail']['start'])
-task_duration = pscheduler.iso8601_as_timedelta(full_task['detail']['duration'])
-task_slip = pscheduler.iso8601_as_timedelta(full_task['detail']['slip'])
-
-run_range_end = run_range_start + task_duration + task_slip
-
-print "Earliest start  ", run_range_start
-print "Latest end      ", run_range_end
-print "Duration        ", task_duration
-
-range_params = {
-    'start': pscheduler.datetime_as_iso8601(run_range_start),
-    'end': pscheduler.datetime_as_iso8601(run_range_end)
-}
-
-range_set = []
-
-for task_url in tasks_posted:
-    print "Run times from", task_url
-    r = requests.get(task_url + '/runtimes', params=range_params)
-    if r.status_code != 200:
-        raise Exception("Bad status code %d: %s" % (r.status_code, r.text))
-    json_ranges = pscheduler.json_load(r.text)
-    print "   ", json_ranges
-    # TODO: Assert: json_ranges should be an array?
-    if len(json_ranges) == 0:
-        pscheduler.fail("Not all servers have a time slot available.")
-    range_set.append( [ (pscheduler.iso8601_as_datetime(item['lower']),
-                         pscheduler.iso8601_as_datetime(item['upper']))
-                        for item in json_ranges ] )
-
-
-
-schedule_range = pscheduler.coalesce_ranges( range_set, task_duration )
-if schedule_range is None:
-    pscheduler.fail("No mutually-agreeable time to run this task.")
-
-(schedule_lower, schedule_upper) = schedule_range
-
-# TODO: If there's random slip and there's room to apply it, do so.
-schedule_upper = schedule_lower + task_duration
-
-print "Scheduling for", schedule_lower, "to", schedule_upper
-
-
-print
-print "POSTING RUNS:"
-print
-
-run_params = { 'start': schedule_lower.isoformat() }
-run_path = None
-runs_posted = []
-
-
-for participant in range(0, len(tasks_posted)):
-
-    if run_path is None:
-
-        # First one is the lead.  Post it and get the UUID.
-
-        r = requests.post( tasks_posted[participant] + '/runs',
-                           params=run_params )
-        if r.status_code != 200:
-            raise Exception("Bad status code: " +  r.text)
-
-        run_path = '/runs/' + urlparse.urlparse(r.text).path.split('/')[-1]
-
-    else:
-
-        r = requests.post( tasks_posted[participant] + run_path,
-                           params=run_params )
-        if r.status_code != 200:
-            raise Exception("Bad status code: " +  r.text)
-
-    runs_posted.append(r.text)
-
-    print "Participant %d: %s" % (participant, r.text)
-
-
-if len(runs_posted) != nparticipants:
-    # TODO: Delete the runs we did post.
-    pscheduler.fail("Didn't successfully post all runs")
-
-# TODO: Stash the posted runs in the database.
-
-
-
-
-print
-print "FETCHING AND DISTRIBUTING PARTICIPANT DATA:"
-print
-
-part_data = []
-
-for run in runs_posted:
-
-    r = requests.get(run)
-    if r.status_code != 200:
-        raise Exception("Bad status code: " +  r.text)
-    # TODO: Handle lack of participant data
-
-    print "Fetched run", run
-    part_data.append( pscheduler.json_load(str(r.text))['participant-data'] )
-
-
-print "Combined participant data:", part_data
-
-full_data = {
-    'run': pscheduler.json_dump({ 'part-data-full': part_data })
-    }
-
-for run in runs_posted:
-
-    print "Updating", run
-    r = requests.put(run, params=full_data)
-    if r.status_code != 200:
-        raise Exception("Bad status code: " +  r.text)
+print "STOPPED HERE"
+exit(99)
 
 
 
@@ -427,39 +294,6 @@ sleeptime = ( schedule_upper - datetime.datetime.now(tzlocal()) ) \
 print "Sleeping for", sleeptime
 time.sleep(pscheduler.timedelta_as_seconds(sleeptime))
 
-### The code below has been folded into the runner.
-
-### print
-### print "FETCHING RESULTS:"
-### print
-### 
-### full_result = []
-### 
-### for run in runs_posted:
-###     r = requests.get(run)
-###     if r.status_code != 200:
-###         raise Exception("Bad status code: " +  r.text)
-###     try:
-###         full_result.append(pscheduler.json_load(str(r.text))['result-local'])
-###     except Exception as ex:
-###         pscheduler.fail("Unable to load result: %s" % str(ex))
-### 
-### print "Full result: ", pscheduler.json_dump(full_result)
-### 
-### 
-### print
-### print "STORING FULL RESULTS:"
-### print
-### 
-### full_params = {
-###     'run': pscheduler.json_dump({ 'result-full' : full_result })
-###     }
-### for run in runs_posted:
-###     print "Storing in", run
-###     r = requests.put(run, params=full_params)
-###     if r.status_code != 200:
-###         raise Exception("Bad status code: " +  r.text)
-
 
 print
 print "FINAL FULL RESULT:"
@@ -471,27 +305,33 @@ if r.status_code != 200:
 
 merged_full_fetched = pscheduler.json_load(r.text)
 
-print "JSON:"
-print json.dumps(merged_full_fetched['result-merged'], \
-                              sort_keys=True, \
-                              indent=4, \
-                              separators=(',', ': ') \
-                              ) + '\n'
+print pscheduler.json_dump(merged_full_fetched, pretty=True)
+
+if 'result-merged' in merged_full_fetched:
+
+    print "JSON:"
+    print json.dumps(merged_full_fetched['result-merged'], \
+                         sort_keys=True, \
+                         indent=4, \
+                         separators=(',', ': ') \
+                         ) + '\n'
 
 
-for format in [ 'text/plain', 'text/html' ]:
-    print
-    print "Formatted %s:" % format
+    for format in [ 'text/plain', 'text/html' ]:
+        print
+        print "Formatted %s:" % format
 
-    returncode, stdout, stderr = pscheduler.run_program(
-        [ "pscheduler", "internal", "invoke", "test", test_type, "result-format", format ],
-        stdin = pscheduler.json_dump(merged_full_fetched['result-merged'])
-        )
+        returncode, stdout, stderr = pscheduler.run_program(
+            [ "pscheduler", "internal", "invoke", "test", test_type, "result-format", format ],
+            stdin = pscheduler.json_dump(merged_full_fetched['result-merged'])
+            )
 
-    if returncode == 0:
-        print stdout.strip()
-    else:
-        pscheduler.fail("Failed to format test: " + stderr)
+        if returncode == 0:
+            print stdout.strip()
+        else:
+            pscheduler.fail("Failed to format test: " + stderr)
+else:
+    print r.text
 
 
 

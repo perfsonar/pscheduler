@@ -15,9 +15,8 @@ PROGRAMS=\
 	pscheduler-archiver \
 	pscheduler-runner \
 	pscheduler-ticker \
+	pscheduler-scheduler \
 
-# TODO: pscheduler-runner and pscheduler-archiver need to have an init
-# script and be moved to PROGRAMS.
 
 PROGRAMS_NOINIT=\
 	pscheduler-monitor \

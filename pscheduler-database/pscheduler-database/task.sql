@@ -122,6 +122,8 @@ ON task(uuid, id);
 
 
 
+DROP TRIGGER IF EXISTS task_alter ON task CASCADE;
+
 CREATE OR REPLACE FUNCTION task_alter()
 RETURNS TRIGGER
 AS $$
@@ -355,7 +357,25 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER task_alter BEFORE INSERT OR UPDATE ON task
-       FOR EACH ROW EXECUTE PROCEDURE task_alter();
+    FOR EACH ROW EXECUTE PROCEDURE task_alter();
+
+
+
+
+DROP TRIGGER IF EXISTS task_alter_notify ON task CASCADE;
+CREATE OR REPLACE FUNCTION task_alter_notify()
+RETURNS TRIGGER
+AS $$
+BEGIN
+    NOTIFY task_change;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Note that this runs per-statement since only one notification is
+-- necessary to start a round of scheduling.
+CREATE TRIGGER task_alter_notify AFTER INSERT OR UPDATE ON task
+    FOR EACH STATEMENT EXECUTE PROCEDURE task_alter_notify();
 
 
 
@@ -375,15 +395,68 @@ $$ LANGUAGE plpgsql;
 
 
 
+-- Calculate when the next iteration of a task should take place after
+-- a given time.  This isn't actually a task-specific function, but
+-- tasks are the only context where it will be used.
+
+CREATE OR REPLACE FUNCTION task_next_run(
+       start TIMESTAMP WITH TIME ZONE,   -- Task's start (first run) time
+       after TIMESTAMP WITH TIME ZONE,  -- 
+       length INTERVAL                   -- Time between runs
+)
+RETURNS TIMESTAMP WITH TIME ZONE
+AS $$
+DECLARE
+    intervals NUMERIC;
+BEGIN
+    IF (length IS NULL OR length = 'P0') THEN
+        RAISE EXCEPTION 'Cannot divide by a zero interval';
+    END IF;
+
+    -- Number of runs that should have happened between the task start
+    -- and the after time.
+    intervals := 
+        TRUNC( (EXTRACT(EPOCH FROM after) - EXTRACT(EPOCH FROM start))
+            / EXTRACT(EPOCH FROM length) ) + 1;
+
+    RETURN start + (length * intervals);
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+
+
 ---
 --- Maintenance
 ---
 
--- TODO: Need to schedule runs of repeating tasks
+CREATE OR REPLACE FUNCTION task_purge()
+RETURNS VOID
+AS $$
+BEGIN
+
+    -- TODO: Remove tasks which won't be scheduling any more runs and
+    -- are older than the hold time.
+
+    NULL;
+
+END;
+$$ LANGUAGE plpgsql;
 
 
--- TODO: Will need a ticker job to hunt down and kill tasks that no
--- longer need to be in the database.
+
+-- Maintenance that happens four times a minute.
+
+CREATE OR REPLACE FUNCTION task_maint_fifteen()
+RETURNS VOID
+AS $$
+BEGIN
+    PERFORM task_purge();
+END;
+$$ LANGUAGE plpgsql;
+
+
 
 ---
 --- API

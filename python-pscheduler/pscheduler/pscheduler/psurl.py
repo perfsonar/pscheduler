@@ -2,7 +2,8 @@
 Functions for interacting with HTTP servers
 """
 
-import pscheduler
+from psjson import *
+
 import requests
 
 
@@ -24,7 +25,7 @@ def url_get( url,          # GET URL
 
     if status != 200:
         if throw:
-            raise URLException(request.text)
+            raise URLException(str(status) + ": " + request.text)
         else:
             return (status, request.text)
 

@@ -368,7 +368,8 @@ def tasks_uuid(uuid):
                 start,
                 slip,
                 duration,
-                runs
+                runs,
+                participants
             FROM task WHERE uuid = %s
         """, [uuid])
 
@@ -383,7 +384,8 @@ def tasks_uuid(uuid):
                 'start': pscheduler.datetime_as_iso8601(row[2]),
                 'slip': pscheduler.timedelta_as_iso8601(row[3]),
                 'duration': pscheduler.timedelta_as_iso8601(row[4]),
-                'runs': int(row[5])
+                'runs': int(row[5]),
+                'participants': row[6]
                 }
 
         return ok_json(json)
@@ -471,7 +473,7 @@ def tasks_uuid_runs(task):
         cursor.execute("SELECT api_run_post(%s, %s)", [task, start_time])
         # TODO: Handle failure
         # TODO: Assert that rowcount is 1
-        return ok(base_url(cursor.fetchone()[0]))
+        return ok('"' + base_url(cursor.fetchone()[0]) + '"')
 
     else:
 
@@ -479,7 +481,7 @@ def tasks_uuid_runs(task):
 
 
 
-@app.route("/tasks/<task>/runs/<run>", methods=['GET', 'POST', 'PUT'])
+@app.route("/tasks/<task>/runs/<run>", methods=['GET', 'POST', 'PUT', 'DELETE'])
 def tasks_uuid_runs_run(task, run):
 
     if request.method == 'GET':
@@ -539,7 +541,7 @@ def tasks_uuid_runs_run(task, run):
         cursor.execute("SELECT api_run_post(%s, %s, %s)", [task, start_time, run])
         # TODO: Handle failure
         # TODO: Assert that rowcount is 1
-        return ok(base_url())
+        return ok('"' + base_url() + '"')
 
     elif request.method == 'PUT':
 
@@ -584,6 +586,20 @@ def tasks_uuid_runs_run(task, run):
                 return not_found()
 
         return ok()
+
+    elif request.method == 'DELETE':
+
+        # TODO: If this is the lead, the run's counterparts on the
+        # other participating nodes need to be removed as well.
+
+        cursor.execute("""
+            DELETE FROM run
+            WHERE
+                task in (SELECT id FROM task WHERE uuid = %s)
+                AND uuid = %s 
+            """, [task, run])
+
+        return ok() if cursor.rowcount == 1 else not_found()
 
     else:
 

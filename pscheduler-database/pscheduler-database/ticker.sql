@@ -8,6 +8,7 @@ CREATE OR REPLACE FUNCTION ticker_fifteen()
 RETURNS VOID
 AS $$
 BEGIN
+    PERFORM task_maint_fifteen();
     PERFORM run_maint_fifteen();
 END;
 $$ LANGUAGE plpgsql;
