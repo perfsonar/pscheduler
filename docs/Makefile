@@ -9,9 +9,11 @@ LATEX=\
 	developers-guide \
 	json \
 	misc \
-	parameters \
 	test-idle \
-	test-simplestream
+	test-simplestream \
+	test-trace \
+	values \
+
 
 
 TEXES=$(LATEX:%=%.tex)
