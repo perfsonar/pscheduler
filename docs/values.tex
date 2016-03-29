@@ -1,0 +1,70 @@
+%
+% pScheduler Standard Value Dictionary
+%
+
+% TODO: Add titlepage to the options.
+\documentclass[10pt]{article}
+
+\input pscheduler-tex.tex
+
+\DRAFT
+
+\title{pScheduler Standard Value Dictionary}
+\author{The perfSONAR Development Team}
+
+
+\begin{document}
+\maketitle
+
+
+%
+% UTILITIES
+%
+
+%\def\valids#1{{\bf Valid Values:}\begin{itemize}#1\end{itemize}}
+%\def\value#1#2{\item{\tt #1} --- {#2}}
+
+\def\valids#1{
+  {The following values are valid for this parameter:}\\
+  \\
+  \hspace*{4em}\begin{tabular}{|c|l|}
+    \hline
+        {\bf Value} & {\bf Description} \\
+        \hline
+        #1
+        \hline
+  \end{tabular}
+}
+
+\def\value#1#2{{\tt #1} & {#2}\\}
+
+
+
+%
+% INTRODUCTION
+%
+
+\section{Introduction}
+\todo{Write this}
+
+
+
+%
+% PARAMETER DICTIONARY
+%
+
+\section{Parameter Dictionary}
+
+\todo{Write this.}
+
+
+\subsection{ip-version}
+A \jsontype{Cardinal} representing an Internet Protocol version.
+
+\valids{
+  \value{4}{Internet Protocol Version 4 (IPv4)}
+  \value{6}{Internet Protocol Version 6 (IPv6)}
+}
+
+
+\end{document}
