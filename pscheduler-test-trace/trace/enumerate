@@ -1,0 +1,14 @@
+#!/bin/sh
+
+exec cat << EOF
+{
+    "name": "trace",
+    "description": "Trace the path between IP hosts",
+    "version": "0.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "info@perfsonar.net",
+	"href": "http://www.perfsonar.net"
+    }
+}
+EOF

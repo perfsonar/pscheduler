@@ -1,0 +1,160 @@
+#!/usr/bin/python
+#
+# Convert comamnd-line options to a test specification
+#
+
+import optparse
+import pscheduler
+import sys
+
+if len(sys.argv) > 1:
+
+   # Args are on the command line
+   args = sys.argv[1:]
+
+else:
+
+   # Args are in a JSON array on stdin
+   json_args = pscheduler.json_load(exit_on_error=True)
+   args = []
+
+   if type(json_args) != list:
+      pscheduler.fail("Invalid JSON for this operation")
+   for arg in json_args:
+      if type(arg) not in (unicode, str, int, float):
+         pscheduler.fail("Invalid JSON for this operation")
+   args = [ str(arg) for arg in json_args ]
+
+
+
+# Gargle the arguments
+
+opt_parser = optparse.OptionParser()
+
+opt_parser.add_option("--dest",
+                      help="Destination host",
+                      action="store", type="string",
+                      dest="dest")
+
+opt_parser.add_option("--ip-version",
+                      help="IP Version",
+                      action="store", type="int",
+                      dest="ipversion")
+
+opt_parser.add_option("--probe-type",
+                      help="Probe type",
+                      action="store", type="string",
+                      dest="probetype")
+
+opt_parser.add_option("--fragment",
+                      help="Allow fragmentation",
+                      action="store_true",
+                      dest="fragment")
+opt_parser.add_option("--no-fragment",
+                      help="Don't allow fragmentation",
+                      action="store_false",
+                      dest="fragment")
+
+opt_parser.add_option("--first-ttl",
+                      help="First TTL value",
+                      action="store", type="int",
+                      dest="firstttl")
+
+opt_parser.add_option("--source",
+                      help="Source address",
+                      action="store", type="string",
+                      dest="source")
+
+opt_parser.add_option("--hops",
+                      help="Maximum number of hops",
+                      action="store", type="int",
+                      dest="hops")
+
+opt_parser.add_option("--hostnames",
+                      help="Resolve IPs to host names",
+                      action="store_true",
+                      dest="hostnames")
+opt_parser.add_option("--no-hostnames",
+                      help="Don't resolve IPs to host names",
+                      action="store_false",
+                      dest="hostnames")
+
+opt_parser.add_option("--dest-port",
+                      help="Destination port",
+                      action="store", type="int",
+                      dest="destport")
+
+# TODO: Need to add TOS once it's defined.
+
+opt_parser.add_option("--wait",
+                      help="Wait time",
+                      action="store", type="string",
+                      dest="wait")
+
+opt_parser.add_option("--sendwait",
+                      help="Wait time between probes",
+                      action="store", type="string",
+                      dest="sendwait")
+
+# Underscore used here dodges a reserved word.
+opt_parser.add_option("--as",
+                      help="Find AS for each hop",
+                      action="store_true",
+                      dest="as_")
+opt_parser.add_option("--no-as",
+                      help="Don't find AS for each hop",
+                      action="store_false",
+                      dest="as_")
+
+
+
+(options, remaining_args) = opt_parser.parse_args(args)
+if len(remaining_args) != 0:
+   pscheduler.fail("Found superfluous arguments on command line.")
+
+
+result = { 'schema': 1 }
+
+
+
+if options.dest is not None:
+   result['dest'] = options.dest
+
+if options.ipversion is not None:
+   result['ip-version'] = options.ipversion
+
+if options.probetype is not None:
+   result['probe-type'] = options.probetype
+
+if options.fragment:
+   result['fragment'] = True
+
+if options.firstttl is not None:
+   result['first-ttl'] = options.firstttl
+
+if options.source is not None:
+   result['source'] = options.source
+
+if options.hops is not None:
+   result['hops'] = options.hops
+
+if options.hostnames is not None:
+   result['hostnames'] = options.hostnames
+
+if options.destport is not None:
+   result['dest-port'] = options.destport
+
+if options.wait is not None:
+   result['wait'] = options.wait
+
+if options.sendwait is not None:
+   result['send-wait'] = options.sendwait
+
+if options.as_ is not None:
+   result['as'] = options.as_
+
+
+
+
+
+pscheduler.succeed_json(result)

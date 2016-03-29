@@ -1,0 +1,62 @@
+#!/usr/bin/python
+#
+# Format a spec
+#
+
+import jsontemplate
+import pscheduler
+import sys
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
+
+json = pscheduler.json_load(exit_on_error=True)
+# TODO: Validate the input
+
+if format == 'text/plain':
+
+   template = """
+Destination ........ {.section dest}{dest}{.or}Not Specified{.end}
+IP Version ......... {.section ip-version}{ip-version}{.or}Not Specified{.end}
+Probe Type ......... {.section probe-type}{probe-type}{.or}Not Specified{.end}
+Fragmentation ...... {.section fragment}{fragment}{.or}Not Specified{.end}
+First TTL .......... {.section first-ttl}{first-ttl}{.or}Not Specified{.end}
+Source ............. {.section source}{source}{.or}Not Specified{.end}
+Max Hops ........... {.section hops}{hops}{.or}Not Specified{.end}
+Resolve Hosts ...... {.section hostnames}{hostnames}{.or}Not Specified{.end}
+Destination Port ... {.section dest-port}{dest-port}{.or}Not Specified{.end}
+Type of Service .... {.section tos}{tos}{.or}Not Specified{.end}
+Response Wait ...... {.section wait}{wait}{.or}Not Specified{.end}
+Send Wait .......... {.section sendwait}{sendwait}{.or}Not Specified{.end}
+Resolve ASes ....... {.section as}{as}{.or}Not Specified{.end}
+"""
+
+elif format == 'text/html':
+
+   template = """
+<table>
+<tr><td>Destination</td><td>{.section dest}{dest}{.or}Not Specified{.end}</td></tr>
+<tr><td>IP Version</td><td>{.section ip-version}{ip-version}{.or}Not Specified{.end}</td></tr>
+<tr><td>Probe Type</td><td>{.section probe-type}{probe-type}{.or}Not Specified{.end}</td></tr>
+<tr><td>Fragmentation</td><td>{.section fragment}{fragment}{.or}Not Specified{.end}</td></tr>
+<tr><td>First TTL</td><td>{.section first-ttl}{first-ttl}{.or}Not Specified{.end}</td></tr>
+<tr><td>Source</td><td>{.section source}{source}{.or}Not Specified{.end}</td></tr>
+<tr><td>Max Hops</td><td>{.section hops}{hops}{.or}Not Specified{.end}</td></tr>
+<tr><td>Resolve Hosts</td><td>{.section hostnames}{hostnames}{.or}Not Specified{.end}</td></tr>
+<tr><td>Destination Port</td><td>{.section dest-port}{dest-port}{.or}Not Specified{.end}</td></tr>
+<tr><td>Type of Service</td><td>{.section tos}{tos}{.or}Not Specified{.end}</td></tr>
+<tr><td>Response Wait</td><td>{.section wait}{wait}{.or}Not Specified{.end}</td></tr>
+<tr><td>Send Wait</td><td>{.section sendwait}{sendwait}{.or}Not Specified{.end}</td></tr>
+<tr><td>Resolve ASes</td><td>{.section as}{as}{.or}Not Specified{.end}</td></tr>
+</table>
+   """
+
+else:
+
+   pscheduler.fail("Unsupported format '%s'" % format)
+
+
+# TODO: Should probably handle exceptions in a nicer way.
+print jsontemplate.expand(template, json).strip()

@@ -1,0 +1,95 @@
+#!/usr/bin/python
+#
+# Format a result
+#
+
+import jsontemplate
+import pscheduler
+import sys
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
+
+json = pscheduler.json_load(exit_on_error=True)
+# TODO: Validate the input
+
+if format == 'text/plain':
+
+   template = """
+Path to \
+{.section dest-host}{dest-host} ({.end}\
+{.section dest-ip}{dest-ip}{.or}{.end}\
+{.section dest-host}){.end}:
+"""
+
+   hop_template = """
+    {number}: \
+{.section hostname}{hostname} ({.or}No Response{.end}\
+{.section ip}{ip}{.end}\
+{.section hostname}){.end}\
+{.section as}  AS{as}{.end}\
+{.section rtt}  {rtt} ms{.end}
+"""
+
+   end_template = None
+
+elif format == 'text/html':
+
+   template = """
+<table>
+<tr><th colspan="6">Path to \
+{.section dest-host}{dest-host} ({.end}\
+{.section dest-ip}{dest-ip}{.or}{.end}\
+{.section dest-host}){.end}
+</td></tr>
+
+<tr>
+  <th>Hop</th>
+  <th>Host</th>
+  <th>Address</th>
+  <th>AS</th>
+  <th>RTT (ms)</th>
+</tr>
+   """
+
+   hop_template = """
+<tr>
+  <th>{number}</th>
+  <td>{.section hostname}{hostname}{.end}</td>
+  <td>{.section ip}{ip}{.end}</td>
+  <td>{.section as}{as}{.end}</td>
+  <td>{.section rtt}{rtt}{.end}</td>
+</tr>
+
+"""
+
+   end_template = """
+</table>
+"""
+
+
+else:
+
+   pscheduler.fail("Unsupported format '%s'" % format)
+
+
+# TODO: Should probably handle exceptions in a nicer way.
+
+print jsontemplate.expand(template, json).strip()
+
+hopno = 1
+for hop in json['hops']:
+   hop['number'] = hopno
+   try:
+      ms = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(hop['rtt'])) * 1000
+      hop['rtt'] = ('%f' % ms).rstrip('0')
+   except KeyError:
+      pass
+
+   print '  ', jsontemplate.expand(hop_template, hop).strip()
+   hopno += 1
+
+if end_template is not None:
+   print jsontemplate.expand(end_template, json).strip()

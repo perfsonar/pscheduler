@@ -1,0 +1,222 @@
+%
+% pScheduler Test Guide for Trace
+%
+
+\def\testname{trace}
+
+
+% TODO: Add titlepage to the options.
+\documentclass[10pt]{article}
+
+\input pscheduler-tex.tex
+
+\DRAFT
+
+\title{pScheduler Test Guide: {\it \testname}}
+\author{The perfSONAR Development Team}
+
+
+\begin{document}
+\maketitle
+
+
+%
+% INTRODUCTION
+%
+
+\section{Introduction}
+
+The {\tt \testname} test determines the route a packet will take from
+one host to another.
+
+Note that the name of this test, {\tt \testname}, was selected to
+avoid confusion with {\tt traceroute}, the name of a tool which
+carries out this test.
+
+This document describes schema version {\tt 1}.
+
+\subsection{Participants}
+
+This test includes the following participants:
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+{\bf Number} & {\bf Role} \\
+\hline
+{\tt 0} & Originator \\
+\hline
+\end{tabular}
+\end{center}
+
+
+
+%
+% TEST SPECIFICATION
+%
+
+\section{Test Specification Format}
+
+\subsection{Description}
+
+The test specification consists of a single JSON object containing the
+pairs below.  \seejson
+
+\typeditem{schema}{Cardinal} The schema version of this specification.
+
+\typeditem{dest}{Host} The network address or hostname of the receiver.
+
+\stdvalue{ip-version} If {\tt dest} provides clues about the type of
+address it represents, that type will be used.  Otherwise, the default
+will be {\tt 4}.
+
+\typeditem{probe-type}{String} The type of probe to be used in
+determining the path to the destination.  Valid values are {\tt udp}
+for UDP (the default), {\tt echo} for ICMP echos and {\tt tcp} for TCP
+SYN.
+
+\typeditem{fragment}{Boolean} Whether or not fragmentation of the
+probe packets should be allowed.  The default is \false.
+
+\typeditem{first-ttl}{Cardinal} What time-to-live value to use
+initially.  The default is {\tt 1}.
+
+% TODO:  Do we want to support the -g gateway option?
+
+
+% TODO: Do this by IP/hostname or interface?  I prefer IP --MF 
+
+\typeditem{source}{Host} The IP to use for the source interface.  The
+default behavior is to use the routing table.  Note that the format of
+this value must be compatible with the {\tt ip-version} in effect.
+
+\typeditem{hops}{Cardinal} The maximum number of hops that will be
+probed.  The default is {\tt 30}.
+
+\typeditem{hostnames}{Boolean} Whether or not attempts should be made
+to map IP addresses discovered during the test to hostnames.  The
+default is {\tt True}.
+
+\typeditem{dest-port}{IPPort} For the {\tt UDP} and {\tt TCP} probe
+types, the destination port to be used.
+
+\typeditem{tos}{IPTOS} Type of service to be used.  \todo{This needs to
+  be defined in the dictionary.}
+
+\typeditem{wait}{Duration} The amount of time to wait for a response
+to be sent after a probe is sent.
+
+\todo{Support the -r (bypass routing) switch?}
+
+\todo{Support the -s source_addr switch?}
+
+\typeditem{sendwait}{Duration} The amount of time to wait between
+probes.
+
+\typeditem{as}{Boolean} Whether or not the AS for each hop should be
+determined.  The default is \false.
+
+\todo{How many of the more esoteric {\tt traceroute} options do we
+  want to support?}
+
+
+\subsection{Example}
+\todo{Finish this.}
+\begin{lstlisting}[language=json]
+{
+    "schema": 1,
+    "dest": "somehost.example.org",
+    "ip-version": 4
+}
+\end{lstlisting}
+
+
+
+%
+% RESULT FORMAT
+%
+
+\section{Result Format}
+
+\subsection{Description}
+The result consists of a single JSON object containing the pairs
+below.  \seejson
+
+\todo{Write this.}
+
+\subsection{Hop Format}
+
+Each item in the {\tt hops} array of the result consists of a single
+JSON object containing the pairs below.  \seejson
+
+Note that  all pairs are  optional, and a  hop for which there  was no
+response will be an empty object.
+
+\typeditem{ip}{IPAddress} The IP address of a hop along the path.
+\todo{This needs to be defined in the dictionary.}
+
+\typeditem{hostname}{Host} The hostname of the responding host.  This
+value will not be provided if {\tt hostnames} in the test
+specification is \false.
+
+\typeditem{rtt}{Duration} The round-trip time between the originator
+and the responding host.
+
+\typeditem{as}{Cardinal} The autonomous system number of the host if
+known and {\tt as} in the test specification is \true.
+
+\typeditem{error}{String} If there was an error reported for this hop,
+one of the values enumerated below.
+
+\begin{itemize}
+\item ICMP Type 3 errors, from RFC 792:
+\subitem {\tt net-unreachable}
+\subitem {\tt host-unreachable}
+\subitem {\tt protocol-unreachable}
+\subitem {\tt port-unreachable}
+\subitem {\tt fragmentation-needed-and-df-set}
+\subitem {\tt source-route-failed}
+\subitem {\tt destination-network-unknown}
+\subitem {\tt destination-host-unknown}
+\subitem {\tt source-host-isolated}
+\subitem {\tt destination-network-administratively-prohibited}
+\subitem {\tt destination-host-administratively-prohibited}
+\subitem {\tt network-unreachable-for-type-of-service}
+\subitem {\tt icmp-destination-host-unreachable-tos}
+
+\item ICMP Type 3 errors, from RFC 1812:
+\subitem {\tt communication-administratively-prohibited}
+\subitem {\tt host-precedence-violation}
+\subitem {\tt precedence-cutoff-in-effect}
+\end{itemize}
+
+
+\subsection{Example}
+\begin{lstlisting}[language=json]
+{
+    "schema": 1,
+
+    "succeeded": true,
+    "dest-host": "www.example.org",
+    "dest-ip": "203.0.113.80",
+    "hops": [
+        {
+          "ip": "192.0.2.1",
+          "hostname": "eng-gw.example.com",
+          "rtt": "PT0.000219S",
+          "as": 2349
+        },
+        {
+        },
+        {
+          "ip": "198.51.100.12",
+          "hostname": "firewall.example.com",
+          "rtt": "PT0.00159S",
+          "error": "net-unreachable"
+        }
+    ]
+}
+\end{lstlisting}
+
+
+\end{document}

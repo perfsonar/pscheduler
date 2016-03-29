@@ -1,0 +1,69 @@
+#!/usr/bin/python
+#
+# Validator for 'idle' task spec
+#
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True)
+
+# Run through all of the tags we expect to see, deleting the valid ones
+
+if 'schema' in json:
+    if not (1 <= json['schema'] <= 1):
+        pscheduler.fail('Unsupported schema version {0}'.format(json['schema']))
+    del json['schema']
+else:
+    pscheduler.fail("Missing schema")
+
+# Strings
+
+for item in [
+    'dest',
+    'probe-type',
+    'first-ttl',
+    'source',
+    'hops',
+    'dest-port',
+    'tos',
+    'wait',
+    'sendwait',
+    ]:
+    if (item in json):
+        if (isinstance(json[item], basestring)):
+            del json[item]
+        else:
+            pscheduler.fail(item, ' is not a string.')
+
+# Numerics
+for item in [
+    'ip-version',
+    ]:
+    if (item in json):
+        if type(json[item]) == int:
+            del json[item]
+        else:
+            pscheduler.fail(item, ' is not an integer.')
+
+
+# Booleans
+
+for item in [
+    'fragment',
+    'hostnames',
+    'as',
+    ]:
+    if (item in json):
+        if type(json[item]) == bool:
+            del json[item]
+        else:
+            pscheduler.fail(item, ' is not a boolean.')
+
+# Anything left is bogus
+
+if len(json) > 0:
+    pscheduler.fail('Unknown elements in test specification:\n    '
+        + '\n    '.join(json.keys()))
+
+
+pscheduler.succeed()

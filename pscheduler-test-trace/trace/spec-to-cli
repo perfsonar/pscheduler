@@ -1,0 +1,33 @@
+#!/usr/bin/python
+#
+# Convert a test specification to command-line options
+
+import pscheduler
+
+spec = pscheduler.json_load(exit_on_error=True)
+# TODO: Validate spec
+
+if type(spec) != dict:
+    pscheduler.fail("Invalid JSON for this operation")
+
+result = pscheduler.speccli_build_args(spec, 
+                                       strings=[
+        # Strings
+        ( 'dest', 'dest' ),
+        ( 'ip-version', 'ip-version' ),
+        ( 'probe-type', 'probe-type' ),
+        ( 'first-ttl', 'first-ttl' ),
+        ( 'source', 'source' ),
+        ( 'hops', 'hops' ),
+        ( 'dest-port', 'dest-port' ),
+        ( 'tos', 'tos' ),
+        ( 'wait', 'wait' ),
+        ( 'sendwait', 'sendwait' ),
+        ],
+                                       bools=[
+        ( 'fragment', 'fragment' ),
+        ( 'hostnames', 'hostnames' ),
+        ( 'as', 'as' ),
+        ])
+
+pscheduler.succeed_json(result)
