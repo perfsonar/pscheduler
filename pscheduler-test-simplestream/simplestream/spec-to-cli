@@ -12,8 +12,9 @@ if type(spec) != dict:
 result = []
 
 try:
+    receiver = spec['receiver']
     result.append('--receiver')
-    result.append(spec['receiver'])
+    result.append(receiver)
 except KeyError:
     pscheduler.fail("Missing receiver")
 
