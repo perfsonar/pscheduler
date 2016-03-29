@@ -59,6 +59,7 @@ pscheduler-server
 # Tests
 pscheduler-test-idle
 pscheduler-test-simplestream
+pscheduler-test-trace
 
 # Tools
 pscheduler-tool-simplestreamer
