@@ -6,6 +6,8 @@ import pscheduler
 
 spec = pscheduler.json_load(exit_on_error=True)
 
+# TODO: Rewrite this using speccli_build_args
+
 result = []
 
 try:
