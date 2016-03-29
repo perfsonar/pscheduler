@@ -12,6 +12,6 @@ from .psjson import *
 from .pstime import *
 from .psurl import *
 from .ranges import *
+from .speccli import *
 
 from .postrun import *
-
