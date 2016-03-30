@@ -41,6 +41,11 @@ opt_parser.add_option("--ip-version",
                       action="store", type="int",
                       dest="ipversion")
 
+opt_parser.add_option("--length",
+                      help="Packet length",
+                      action="store", type="int",
+                      dest="length")
+
 opt_parser.add_option("--probe-type",
                       help="Probe type",
                       action="store", type="string",
@@ -122,6 +127,9 @@ if options.dest is not None:
 
 if options.ipversion is not None:
    result['ip-version'] = options.ipversion
+
+if options.length is not None:
+   result['length'] = options.length
 
 if options.probetype is not None:
    result['probe-type'] = options.probetype

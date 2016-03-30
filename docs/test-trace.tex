@@ -75,6 +75,9 @@ determining the path to the destination.  Valid values are {\tt udp}
 for UDP (the default), {\tt echo} for ICMP echos and {\tt tcp} for TCP
 SYN.
 
+\typeditem{length}{Cardinal} The length of test packets sent, in
+bytes.
+
 \typeditem{fragment}{Boolean} Whether or not fragmentation of the
 probe packets should be allowed.  The default is \false.
 
@@ -199,6 +202,7 @@ one of the values enumerated below.
     "succeeded": true,
     "dest-host": "www.example.org",
     "dest-ip": "203.0.113.80",
+    "length": 65536,
     "hops": [
         {
           "ip": "192.0.2.1",

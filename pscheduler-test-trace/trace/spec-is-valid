@@ -38,6 +38,7 @@ for item in [
 # Numerics
 for item in [
     'ip-version',
+    'length',
     ]:
     if (item in json):
         if type(json[item]) == int:

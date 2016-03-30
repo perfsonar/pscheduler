@@ -21,7 +21,9 @@ if format == 'text/plain':
 Path to \
 {.section dest-host}{dest-host} ({.end}\
 {.section dest-ip}{dest-ip}{.or}{.end}\
-{.section dest-host}){.end}:
+{.section dest-host}){.end}\
+{.section length}, packet length {length}{.end}\
+:
 """
 
    hop_template = """
@@ -42,7 +44,8 @@ elif format == 'text/html':
 <tr><th colspan="6">Path to \
 {.section dest-host}{dest-host} ({.end}\
 {.section dest-ip}{dest-ip}{.or}{.end}\
-{.section dest-host}){.end}
+{.section dest-host}){.end}\
+{.section length}<br/>Packet length {length}{.end}\
 </td></tr>
 
 <tr>

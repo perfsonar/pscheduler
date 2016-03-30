@@ -15,6 +15,7 @@ result = pscheduler.speccli_build_args(spec,
         # Strings
         ( 'dest', 'dest' ),
         ( 'ip-version', 'ip-version' ),
+        ( 'length', 'length' ),
         ( 'probe-type', 'probe-type' ),
         ( 'first-ttl', 'first-ttl' ),
         ( 'source', 'source' ),
