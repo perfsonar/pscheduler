@@ -270,8 +270,6 @@ if len(tasks_posted) < nparticipants:
     pscheduler.fail("Unable to continue.")
 
 
-print "STOPPED HERE"
-exit(99)
 
 
 
