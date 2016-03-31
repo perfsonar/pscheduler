@@ -61,10 +61,12 @@ pscheduler-server
 
 # Tests
 pscheduler-test-idle
+pscheduler-test-owdelay
 pscheduler-test-simplestream
 pscheduler-test-trace
 
 # Tools
+pscheduler-tool-owping
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-snooze
