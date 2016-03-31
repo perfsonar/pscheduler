@@ -571,7 +571,6 @@ def tasks_uuid_runs_run(task, run):
 
         elif 'result-full' in json_in:
 
-            print "\n\nRF UPDATE\n\n"
             cursor.execute("""UPDATE
                                   run
                               SET
