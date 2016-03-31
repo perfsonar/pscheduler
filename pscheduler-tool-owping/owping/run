@@ -1,0 +1,337 @@
+#!/usr/bin/python
+#
+# Run an owping test
+#
+
+import datetime
+import logging
+import json
+import pscheduler
+import re
+import tempfile
+import shutil
+import sys
+import time
+from owping_defaults import *
+from subprocess import Popen, PIPE
+
+#track when this run starts
+start_time = datetime.datetime.now()
+
+#TODO: Setup dynamically
+logging.basicConfig(filename='/var/log/pscheduler.log', format='%(asctime)s %(levelname)s: %(message)s', level=logging.DEBUG)
+
+#DEBUGGING: Set static values below
+# participant = 1
+# participant_data = [{}, {'ctrl-port': 11000, 'data-port-range': '11001-11002'}]
+# test_spec = {'sender': '10.0.1.28', 'receiver': '10.0.1.25', "packet-timeout": 7}
+# duration = pscheduler.iso8601_as_timedelta('PT15S')
+
+#parse JSON input
+input = pscheduler.json_load(exit_on_error=True)
+try:
+    participant = input['participant']
+    participant_data = input['participant-data']
+    test_spec = input['test']['spec']
+    duration = pscheduler.iso8601_as_timedelta(input['schedule']['duration'])
+except KeyError as e:
+    pscheduler.fail("Missing required key in run input: %s" % e)
+except:
+    pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
+flip = test_spec.get('flip', False)
+single_participant_mode = test_spec.get('single-participant-mode', False)
+    
+#constants
+CLIENT_ROLE = 0
+SERVER_ROLE = 1
+TIME_SCALE = .001 #use for millisecond conversions
+DEFAULT_BUCKET_WIDTH = TIME_SCALE #convert to ms
+DELAY_BUCKET_FORMAT = '%.2f' #Set buckets to nearest 2 decimal places
+DEFAULT_RAW_OUTPUT = False #don't display raw packets by default
+CLOCK_ERROR_FORMAT = '%.2f' #Set clock error to nearest 2 decimal places
+ADDR_FORMAT = "[%s]:%d"
+OWPING_VAL_ARGS = [
+    ('ip-tos', '-D'),    
+    ('udp-ports', '-P'),
+    ('packet-padding', '-s')
+]
+
+#determine whether we are the client(owping) or server(owampd)
+if participant == 0:
+    if single_participant_mode:
+        role = CLIENT_ROLE
+    elif flip:
+        role = SERVER_ROLE
+    else:
+        role = CLIENT_ROLE
+elif participant == 1:
+    if flip:
+        role = CLIENT_ROLE
+    else:
+        role = SERVER_ROLE
+else:
+    pscheduler.fail("Invalid participant.")
+
+#run test
+results = { 'succeeded': False }
+if role == CLIENT_ROLE:
+    #TODO: Get path to owping from config file
+    #Always use raw output (-R)
+    owping_args = ['/usr/bin/owping', '-R']
+    
+    #build basic arguments
+    for arg in OWPING_VAL_ARGS:
+        if arg[0] in test_spec:
+            owping_args.append(arg[1])
+            owping_args.append(str(test_spec[arg[0]]))
+    
+    #set interval,count and timeout to ensure consistent with duration
+    owping_args.append('-c')
+    owping_args.append(str(test_spec.get('packet-count', DEFAULT_PACKET_COUNT)))
+    owping_args.append('-i')
+    owping_args.append(str(test_spec.get('packet-interval', DEFAULT_PACKET_INTERVAL)))
+    owping_args.append('-L')
+    owping_args.append(str(test_spec.get('packet-timeout', DEFAULT_PACKET_TIMEOUT)))
+    
+    #set if ipv4 only or ipv6 only
+    ip_version = test_spec.get('ip-version', '')
+    if ip_version == '4':
+        owping_args.append('-4')
+    elif ip_version == '6':
+        owping_args.append('-6')
+    
+    #bucket width is used for rounding delay values used as buckets for histogram
+    bucket_width = test_spec.get('bucket-width', DEFAULT_BUCKET_WIDTH)
+    
+    #determine whether we will return raw packets
+    raw_output = test_spec.get('output-raw', DEFAULT_RAW_OUTPUT)
+    
+    #determine control port
+    control_port = DEFAULT_OWAMPD_PORT
+    if len(participant_data) > 1:
+        control_port = int(participant_data[1].get('ctrl-port', control_port))
+    
+    #finally, set the addresses and packet flow direction
+    if flip:
+        #reverse test
+        owping_args.append('-f')
+        owping_args.append('-S')
+        owping_args.append(test_spec['receiver'])
+        owping_args.append(ADDR_FORMAT % (test_spec['sender'], control_port))
+    else:
+        #forward test
+        owping_args.append('-t')
+        owping_args.append('-S')
+        owping_args.append(test_spec['sender'])
+        owping_args.append(ADDR_FORMAT % (test_spec['receiver'], control_port))
+    
+    #Run the process
+    time.sleep(DEFAULT_CLIENT_SLEEP) #wait for server to boot
+    logging.debug("Running command: %s" % " ".join(owping_args))
+    try:
+        proc = Popen(owping_args, stdout=PIPE, stderr=PIPE, shell=False)
+        #Could use communicate but could potentially have large buffer.
+        proc.wait()
+    except OSError as e:
+        logging.error("owping encountered an OS error: %s" % e)
+        #Note: Avoids reporting sensitive system details in error message
+        pscheduler.fail("The owping command failed during execution. See server logs for more details.")
+    except Exception:
+        logging.error("owping failed to complete execution: %s" % sys.exc_info()[0])
+        pscheduler.fail("The owping command failed during execution. See server logs for more details.")
+    
+    #see if command completed successfully
+    logging.debug("owping returned status %d" % proc.returncode)
+    if proc.returncode:
+        owp_error = ''
+        for line in proc.stderr:
+            owp_error += line.rstrip().lstrip() + " "
+        pscheduler.fail("owping returned an error: %s" % owp_error)
+        
+    #Parse output
+    owping_regex = re.compile('^(\d+) (\d+) (\d) ([-.0-9e+]*) (\d+) (\d) ([-.0-9e+]*) (\d+)$')
+    results['packets-sent'] = 0
+    results['packets-received'] = 0
+    results['packets-duplicated'] = 0
+    results['packets-reordered'] = 0
+    results['histogram-owdelay'] = {}
+    results['histogram-ttl'] = {}
+    if raw_output:
+        results['raw-packets'] = []
+    packets_seen = {}
+    prev_seq_number = -1
+    for line in proc.stdout:
+        owping_match = owping_regex.match(line)
+        if owping_match:
+            seq_number               = owping_match.group(1);
+            source_timestamp         = owping_match.group(2);
+            source_synchronized      = owping_match.group(3);
+            source_error             = owping_match.group(4);
+            destination_timestamp    = owping_match.group(5);
+            destination_synchronized = owping_match.group(6);
+            destination_error        = owping_match.group(7);
+            ttl                      = owping_match.group(8);
+            
+            #publish raw pings
+            if raw_output:
+                #init packet object
+                packet = {
+                    'seq-num': int(seq_number),
+                    'src-ts': int(source_timestamp),
+                    'src-clock-sync': source_synchronized == "1",
+                    'src-clock-err': source_error,
+                    'dst-ts': int(destination_timestamp),
+                    'dst-clock-sync': destination_synchronized == "1",
+                    'dst-clock-err': destination_error,
+                    'ip-ttl': int(ttl)
+                }
+                #The error values may not exist, but format as floats if they do
+                if source_error:
+                    packet['source-clock-error'] = float(source_error)
+                if destination_error:
+                    packet['destination-clock-error'] = float(destination_error)
+                #add to list
+                results['raw-packets'].append(packet)
+    
+            #duplicates
+            if seq_number in packets_seen:
+                results['packets-duplicated'] += 1
+                continue
+            
+            #sent
+            results['packets-sent'] += 1
+            
+            #packet lost
+            if int(destination_timestamp) == 0:
+                continue
+            
+            #received
+            results['packets-received'] += 1
+            
+            #delay histogram
+            ##calculate delay in terms of seconds. OWAMP uses odd timestamps so need the divide by 2 ^ 32
+            delay = (float(destination_timestamp) - float(source_timestamp)) / pow(2, 32)
+            delay_bucket = DELAY_BUCKET_FORMAT%(delay/bucket_width)
+            if delay_bucket in results['histogram-owdelay']:
+                results['histogram-owdelay'][delay_bucket] += 1
+            else:
+                results['histogram-owdelay'][delay_bucket] = 1
+                
+            #TTL histogram
+            if ttl in results['histogram-ttl']:
+                results['histogram-ttl'][ttl] += 1
+            else:
+                results['histogram-ttl'][ttl] = 1
+            
+            #reorders
+            if int(seq_number) < int(prev_seq_number):
+                results['packets-reordered'] += 1
+            prev_seq_number = seq_number
+            
+            #clock error
+            if source_error and destination_error:
+                clock_error = float(source_error) + float(destination_error)
+                if ('max-clock-error' not in results) or (clock_error > results['max-clock-error']):
+                    results['max-clock-error'] = clock_error
+
+    #add packets lost for convenience
+    results['packets-lost'] = results['packets-sent'] - results['packets-received']
+    
+    #convert clock error to ms
+    if ('max-clock-error' in results):
+        results['max-clock-error'] = CLOCK_ERROR_FORMAT % (results['max-clock-error']/TIME_SCALE)
+    
+    results['succeeded'] = True
+elif role == SERVER_ROLE:
+    #get and validate participant data
+    try:
+        recv_participant_data = participant_data[1]
+    except IndexError:
+        pscheduler.fail("Unable to find participant data for receiver")
+    if 'ctrl-port' not in recv_participant_data:
+        pscheduler.fail("Unable to find control port in participant data")
+    
+    if 'data-port-range' not in recv_participant_data:
+        pscheduler.fail("Unable to find data port range in participant data")
+    
+    #ctrl-port must be an integer
+    try:
+        int(recv_participant_data['ctrl-port'])
+    except ValueError:
+        pscheduler.fail("Control port must be an integer")
+    
+    #data-port-range must be in form N-M where N < M and both are integers
+    range_match = re.compile("(\d+)-(\d+)").match(recv_participant_data['data-port-range'])
+    if not range_match:
+        pscheduler.fail("Data port range is not a valid range. Must be in form N-M where N < M and both are integers")
+    elif range_match.group(1) >= range_match.group(2):
+        pscheduler.fail("Data port range is not a valid range. The first value must be less than the second")
+    
+    #init command
+    #TODO: Get command path from config file
+    owampd_args = ['/usr/bin/owampd', '-Z' ]
+    owampd_args.append('-f') #TODO: Remove this when we don't run as root
+    
+    #set data port range
+    owampd_args.append('-P')
+    owampd_args.append(str(recv_participant_data['data-port-range']))
+    
+    #set listening address
+    if flip:
+        listen_addr = test_spec['sender']
+    else:
+        listen_addr = test_spec['receiver']
+    owampd_args.append('-S')
+    owampd_args.append("[%s]:%d" % (listen_addr, recv_participant_data['ctrl-port']))
+    
+    #create temp dir for data and pid
+    tmpdir = tempfile.mkdtemp()
+    owampd_args.append('-R')
+    owampd_args.append(tmpdir)
+    owampd_args.append('-d')
+    owampd_args.append(tmpdir)
+    
+    #Run the process
+    logging.debug("Running command: %s" % " ".join(owampd_args))
+    try:
+        proc = Popen(owampd_args,stdout=PIPE, cwd=tmpdir, stderr=PIPE, shell=False)
+    except OSError as e:
+        logging.error("owampd encountered an OS error: %s" % e)
+        #Note: Avoids reporting sensitive system details in error message
+        pscheduler.fail("The owampd command failed during execution. See server logs for more details.")
+    except Exception:
+        logging.error("owampd failed to complete execution: %s" % sys.exc_info()[0])
+        pscheduler.fail("The owampd command failed during execution. See server logs for more details.")
+    
+    #sleep while we wait for test to complete in allotted time
+    try:
+        time.sleep(pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)))
+    except IOError as e:
+        logging.error("Unable to sleep while server runs. Your test may be out of time")
+        logging.debug("Sleep error: %s" % e)
+    
+    #check if server failed
+    if proc.poll():
+        #if we are here, the server died
+        owp_error = ''
+        for line in proc.stderr:
+            owp_error += line.rstrip().lstrip() + " "
+        pscheduler.fail("owampd returned an error: %s" % owp_error)
+    else:
+        #process is still running like it should be, kill it
+        proc.kill()
+    
+    #log stdout in debug mode
+    for line in proc.stdout:
+        logging.debug(line)
+    
+    #Remove our tmpdir, but don't fail the test if it doesn't remove
+    try:
+        shutil.rmtree(tmpdir, ignore_errors=False)
+    except:
+        logging.warn("Unable to remove owampd temporary directory %s: %s" % (tmpdir, sys.exc_info()[0]))
+    
+    results['succeeded'] = True
+
+logging.debug("Results: %s" % results)
+pscheduler.succeed_json(results)

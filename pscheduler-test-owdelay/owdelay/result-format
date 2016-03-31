@@ -1,0 +1,29 @@
+#!/usr/bin/python
+#
+# Format a result
+#
+
+import jsontemplate
+import pscheduler
+import sys
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
+
+json = pscheduler.json_load(exit_on_error=True)
+
+if format == 'text/plain':
+
+   template = """
+Packets Sent ......... {.section packets-sent}{packets-sent}{.or}Not Reported{.end}
+Packets Lost ....... {.section packets-lost}{packets-lost}{.or}Not Reported{.end}
+   """
+else:
+
+   pscheduler.fail("Unsupported format '%s'" % format)
+
+
+# TODO: Should probably handle exceptions in a nicer way.
+print jsontemplate.expand(template, json).strip()

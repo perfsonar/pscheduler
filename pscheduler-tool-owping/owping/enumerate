@@ -1,0 +1,15 @@
+#!/bin/sed -e 1d
+{
+    "name": "owping",
+    "description": "Run the OWAMP owping command for one-way network delay and associated metrics",
+    "version": "1.0",
+    "tests": [ "owdelay" ],
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@perfsonar.net",
+	"href": "http://www.perfsonar.net"
+    }
+}

@@ -1,0 +1,50 @@
+#!/usr/bin/python
+#
+# Return participant-specific data for a run
+#
+
+import pscheduler
+import random
+import sys
+
+
+#constants
+REQUIRED_PORTS = 3 #need a control port and 2 data ports
+
+json = pscheduler.json_load(exit_on_error=True)
+#json = {'participant': 1}
+result = {}
+
+def select_ports(port_range):
+    if len(port_range) < REQUIRED_PORTS:
+        pscheduler.fail("Not enough ports available to assign to owampd server")
+    elif len(port_range) <= (REQUIRED_PORTS + 1):
+        return port_range
+    
+    min_index = random.randrange(0, len(port_range) - REQUIRED_PORTS + 1, REQUIRED_PORTS)
+    max_index = min_index + REQUIRED_PORTS
+    ports = port_range[min_index:max_index]
+        
+    return ports
+    
+
+try:
+    participant = json['participant']
+except KeyError:
+    pscheduler.fail("Missing participant")
+
+if participant == 0:
+    # Nothing interesing for participant 0
+    pass
+elif participant == 1:
+    #TODO: get this from database
+    available_ports = range(11000,11300)
+    
+    #select random set of ports
+    selected_ports = select_ports(available_ports)
+    result['ctrl-port'] = selected_ports[0]
+    result['data-port-range'] = "%d-%d" % (selected_ports[1], selected_ports[-1])
+else:
+    pscheduler.fail("Invalid participant number for this test")
+
+pscheduler.succeed_json(result)
