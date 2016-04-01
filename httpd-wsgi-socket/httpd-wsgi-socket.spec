@@ -40,4 +40,5 @@ service httpd reload
 
 
 %files
+%defattr(-,root,root,-)
 %{conf}
