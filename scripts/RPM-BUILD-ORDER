@@ -32,6 +32,9 @@ python-Flask
 # Home-grown Python Modules
 python-icmperror
 
+# Apache add-ons
+http-wsgi-socket
+
 
 #
 # Utility programs
