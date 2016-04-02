@@ -3,12 +3,9 @@
 # pScheduler REST API Server
 #
 
-# TODO: This needs to be front-ended by something like Gunicorn to
-# make it spawn multiple workers, which we will want if any of them
-# are to be executing outside programs like 'pscheduler internal'.
 
-# TODO: Should break this up into parts using Flask blueprints.  See
-# http://stackoverflow.com/a/15231623 and
+# TODO: Should break this up into parts using Flask blueprints or
+# something similar.  See http://stackoverflow.com/a/15231623 and
 # http://flask.pocoo.org/docs/0.10/patterns/packages.
 
 # TODO: Need to add code to validate incoming UUIDs so the database
@@ -26,34 +23,23 @@ from flask import request
 from flask import Response
 from flask import url_for
 
+application = Flask(__name__)
+application.config["APPLICATION_ROOT"] = pscheduler.api_root()
 
-app = Flask(__name__)
 
+# TODO: For now, these are is hard-wired defaults.  At some point we
+# should be pulling this from a config file.
 
-#
-# Gargle the arguments
-#
-
-opt_parser = optparse.OptionParser()
-opt_parser.add_option("-d", "--dsn",
-                      help="Database connection string, prefix with @ to read from file",
-                      action="store", type="string", dest="dsn",
-                      default="")
-opt_parser.add_option("-g", "--debug",
-                      help="Enable debugging",
-                      action="store_true", dest="debug",
-                      default=False)
-opt_parser.add_option("-p", "--pretty",
-                      help="Force all JSON output to be pretty (implied by --debug)",
-                      action="store_true", dest="pretty",
-                      default=False)
-
-(options, args) = opt_parser.parse_args()
+dsn = "@/etc/pscheduler/database-dsn"
+opt_debug = False
+always_pretty = False
 
 # Connect to the database.
-
-dsn = options.dsn
 cursor = pscheduler.pg_cursor(dsn)
+
+# TODO: What happens if the connection goes south?
+
+
 
 #
 # Utility Functions and Declarations
@@ -147,8 +133,6 @@ def is_expanded():
 
 
 
-# Debug implies pretty.
-always_pretty = options.pretty or options.debug
 
 
 # JSON
@@ -203,25 +187,24 @@ def json_query(query, query_args=[], name = 'name', single = False):
 # The Root
 #
 
-@app.route("/", methods=['GET'])
+@application.route("/", methods=['GET'])
 def root():
     return ok("This is the pScheduler API server on %s.\n"
               % socket.gethostname())
 
 
 # TODO: Remove after development.
-@app.route("/s", methods=['GET', 'PUT'])
+@application.route("/s", methods=['GET', 'PUT'])
 def sandbox():
-    raise Exception('Pitching a fit')
-#    return "SB " + json.dumps(request.json) + "\n"
-# return not_allowed()
+    return ok("Sandbox")
+
 
 
 #
 # Administrative Information
 #
 
-@app.route("/schedule-horizon", methods=['GET'])
+@application.route("/schedule-horizon", methods=['GET'])
 def schedule_horizon():
     """Get the length of the server's scheduling horizon"""
     cursor.execute("SELECT schedule_time_horizon()")
@@ -237,20 +220,20 @@ def schedule_horizon():
 #
 
 # All tests
-@app.route("/tests", methods=['GET'])
+@application.route("/tests", methods=['GET'])
 def tests():
     return json_query("SELECT json FROM test", [])
 
 
 # Test <name>
-@app.route("/tests/<name>", methods=['GET'])
+@application.route("/tests/<name>", methods=['GET'])
 def tests_name(name):
     return json_query("SELECT json FROM test WHERE name = %s",
                       [name], single=True)
 
 
 # Tools that can carry out test <name>
-@app.route("/tests/<name>/tools", methods=['GET'])
+@application.route("/tests/<name>/tools", methods=['GET'])
 def tests_name_tools(name):
     expanded = is_expanded()
     # TODO: Handle failure
@@ -279,7 +262,7 @@ def tests_name_tools(name):
 # Tools
 #
 
-@app.route("/tools", methods=['GET'])
+@application.route("/tools", methods=['GET'])
 def tools():
     # Get only the tools that can run this test.
     test_filter = request.args.get('test', None)
@@ -291,7 +274,7 @@ def tools():
         return ok_json( cursor.fetchone()[0] )
 
 
-@app.route("/tools/<name>", methods=['GET'])
+@application.route("/tools/<name>", methods=['GET'])
 def tools_name(name):
     return json_query("SELECT json FROM tool WHERE name = %s", [name], single=True)
 
@@ -310,7 +293,7 @@ def task_exists(task):
     
 
 
-@app.route("/tasks", methods=['GET', 'POST', 'DELETE'])
+@application.route("/tasks", methods=['GET', 'POST', 'DELETE'])
 def tasks():
 
     if request.method == 'GET':
@@ -354,7 +337,7 @@ def tasks():
 
 
 
-@app.route("/tasks/<uuid>", methods=['GET', 'POST', 'DELETE'])
+@application.route("/tasks/<uuid>", methods=['GET', 'POST', 'DELETE'])
 def tasks_uuid(uuid):
     if request.method == 'GET':
 
@@ -433,7 +416,7 @@ def tasks_uuid(uuid):
 
 
 # Proposed times for a task
-@app.route("/tasks/<task>/runtimes", methods=['GET'])
+@application.route("/tasks/<task>/runtimes", methods=['GET'])
 def task_uuid_runtimes(task):
     try:
         range_start = arg_datetime('start')
@@ -451,7 +434,7 @@ def task_uuid_runtimes(task):
 
 
 # Established runs for a task
-@app.route("/tasks/<task>/runs", methods=['GET', 'POST'])
+@application.route("/tasks/<task>/runs", methods=['GET', 'POST'])
 def tasks_uuid_runs(task):
     if request.method == 'GET':
         # TODO: This should be exapandable and filterable by time, status,
@@ -481,7 +464,7 @@ def tasks_uuid_runs(task):
 
 
 
-@app.route("/tasks/<task>/runs/<run>", methods=['GET', 'POST', 'PUT', 'DELETE'])
+@application.route("/tasks/<task>/runs/<run>", methods=['GET', 'POST', 'PUT', 'DELETE'])
 def tasks_uuid_runs_run(task, run):
 
     if request.method == 'GET':
@@ -606,7 +589,7 @@ def tasks_uuid_runs_run(task, run):
 
 
 # TODO: This is probably OBE.
-@app.route("/tasks/<task>/runs/<run>/part-data-full", methods=['GET', 'PUT'])
+@application.route("/tasks/<task>/runs/<run>/part-data-full", methods=['GET', 'PUT'])
 def tasks_uuid_runs_run_part_data_full(task, run):
 
     if request.method == 'GET':
@@ -673,10 +656,8 @@ def tasks_uuid_runs_run_part_data_full(task, run):
 
 
 if __name__ == "__main__":
-    app.run(
+    application.run(
         host='0.0.0.0',
         port=29285,  # Spell out "BWCTL" on a phone and this is what you get.
-        debug=options.debug
+        debug=opt_debug
         )
-
-exit(0)

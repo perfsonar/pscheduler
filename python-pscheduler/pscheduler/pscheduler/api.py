@@ -2,6 +2,9 @@
 Functions related to the pScheduler REST API
 """
 
+def api_root():
+    return '/pscheduler'
+
 
 def api_url(host = None,  # Don't default this.  It breaks 'None' behavior.
             path = None,
@@ -12,7 +15,8 @@ def api_url(host = None,  # Don't default this.  It breaks 'None' behavior.
     return 'http://' \
         + ('127.0.0.1' if host is None else str(host)) \
         + ('' if port is None else (':' + str(port))) \
-        + ('' if path is None else ('/' + str(path)))
+        + api_root() + '/'\
+        + ('' if path is None else str(path))
 
 if __name__ == "__main__":
     print api_url()

@@ -11,7 +11,6 @@
 # the same.
 
 PROGRAMS=\
-	pscheduler-api-server \
 	pscheduler-archiver \
 	pscheduler-runner \
 	pscheduler-ticker \

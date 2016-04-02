@@ -82,7 +82,7 @@ fi
 
 # Generate the DSN file
 
-awk -v "ROLE=${ROLE}" '{ printf "dbname=pscheduler user=%s password=%s\n", ROLE, $1 }' \
+awk -v "ROLE=${ROLE}" '{ printf "host=127.0.0.1 dbname=pscheduler user=%s password=%s\n", ROLE, $1 }' \
     "%{password_file}" \
     > "%{dsn_file}"
 
@@ -113,8 +113,28 @@ printf "';\n"  >> "${ROLESQL}"
 postgresql-load "${ROLESQL}"
 rm -f "${ROLESQL}"
 
-# TODO: What do we want to do about trust in pg_hba.conf?  Local user
-# only and nothing over the network should be sufficient.
+
+# Allow the account we created to authenticate locally.
+
+HBA_FILE=$( (echo "\t on" ; echo "show hba_file;") \
+	    | postgresql-load \
+	    | head -1 \
+	    | sed -e 's/^\s*//' )
+
+
+drop-in -n -t %{name} - $HBA_FILE <<EOF
+#
+# pScheduler
+#
+# This user should never need to access the database from anywhere
+# other than locally.
+#
+host     pscheduler      pscheduler     127.0.0.1/32 md5
+EOF
+
+service $(basename $(ls %{_initddir}/postgresql* | head -1)) restart
+
+
 
 # TODO: Will eventually need to handle upgrades, but that's a ways off.
 
@@ -127,6 +147,15 @@ then
     postgresql-load %{_pscheduler_datadir}/database-teardown.sql
 fi
 
+%postun
+HBA_FILE=$( (echo "\t on" ; echo "show hba_file;") \
+	    | postgresql-load \
+	    | head -1 \
+	    | sed -e 's/^\s*//' )
+
+drop-in -r %{name} /dev/null $HBA_FILE
+
+service $(basename $(ls %{_initddir}/postgresql* | head -1)) restart
 
 
 

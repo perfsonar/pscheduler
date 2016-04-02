@@ -33,13 +33,13 @@ python-Flask
 python-icmperror
 
 # Apache add-ons
-http-wsgi-socket
+httpd-wsgi-socket
 
 
 #
 # Utility programs
 #
-gunicorn
+drop-in
 jq
 random-string
 
@@ -54,10 +54,6 @@ python-pscheduler
 pscheduler-core
 pscheduler-database
 
-# TODO: This should go away or become a bundle.
-pscheduler-server
-
-
 #
 # PSCHEDULER PLUG-INS
 #
@@ -69,7 +65,8 @@ pscheduler-test-simplestream
 pscheduler-test-trace
 
 # Tools
-pscheduler-tool-owping
+# TODO: This has dependencies outside the local tree.
+#pscheduler-tool-owping
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-snooze
@@ -78,3 +75,8 @@ pscheduler-tool-snooze
 pscheduler-archiver-bitbucket
 pscheduler-archiver-failer
 pscheduler-archiver-syslog
+
+
+# Servers
+pscheduler-server
+pscheduler-api-server

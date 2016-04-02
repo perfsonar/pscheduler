@@ -1,0 +1,78 @@
+Executing(%prep): /bin/sh -e /var/tmp/rpm-tmp.iWewZ8
++ umask 022
++ cd /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/rpmbuild/BUILD
++ LANG=C
++ export LANG
++ unset DISPLAY
++ cd /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/rpmbuild/BUILD
++ rm -rf pscheduler-api-server-0.0
++ /bin/tar -xf -
++ /usr/bin/gzip -dc /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/rpmbuild/SOURCES/pscheduler-api-server-0.0.tar.gz
++ STATUS=0
++ '[' 0 -ne 0 ']'
++ cd pscheduler-api-server-0.0
++ /bin/chmod -Rf a+rX,u+w,g-w,o-w .
++ exit 0
+Executing(%install): /bin/sh -e /var/tmp/rpm-tmp.WXB4jU
++ umask 022
++ cd /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/rpmbuild/BUILD
++ '[' /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/BUILD-ROOT '!=' / ']'
++ rm -rf /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/BUILD-ROOT
+++ dirname /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/BUILD-ROOT
++ mkdir -p /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server
++ mkdir /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/BUILD-ROOT
++ cd pscheduler-api-server-0.0
++ LANG=C
++ export LANG
++ unset DISPLAY
+++ python -c 'import pscheduler ; print pscheduler.api_root()'
++ API_ROOT=/pscheduler
++ make USER_NAME=pscheduler GROUP_NAME=pscheduler API_ROOT=/pscheduler API_DIR=/var/www/pscheduler-api-server CONF_D=/etc/httpd/conf.d PREFIX=/home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/BUILD-ROOT install
+make[2]: Entering directory `/home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/rpmbuild/BUILD/pscheduler-api-server-0.0'
+m4 \
+		"-D__NAME__=pscheduler-api-server" \
+		"-D__MODULE__=pschedulerapiserver" \
+		"-D__USER_NAME__=pscheduler" \
+		"-D__GROUP_NAME__=pscheduler" \
+		"-D__API_ROOT__=/pscheduler" \
+		"-D__API_DIR__=/var/www/pscheduler-api-server" \
+		< pscheduler-api-server.conf.m4 > pscheduler-api-server.conf
+m4 \
+		"-D__NAME__=pscheduler-api-server" \
+		"-D__MODULE__=pschedulerapiserver" \
+		"-D__USER_NAME__=pscheduler" \
+		"-D__GROUP_NAME__=pscheduler" \
+		"-D__API_ROOT__=/pscheduler" \
+		"-D__API_DIR__=/var/www/pscheduler-api-server" \
+		< pscheduler-api-server.wsgi.m4 > pscheduler-api-server.wsgi
+python -m compileall .
+Listing . ...
+Compiling ./pschedulerapiserver.py ...
+mkdir -p /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/BUILD-ROOT//etc/httpd/conf.d
+install -m 444 pscheduler-api-server.conf /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/BUILD-ROOT//etc/httpd/conf.d
+mkdir -p /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/BUILD-ROOT//var/www/pscheduler-api-server
+install -m 444 *.pyc *.wsgi /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/BUILD-ROOT//var/www/pscheduler-api-server
+make[2]: Leaving directory `/home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/rpmbuild/BUILD/pscheduler-api-server-0.0'
++ /usr/lib/rpm/check-buildroot
++ /usr/lib/rpm/redhat/brp-compress
++ /usr/lib/rpm/redhat/brp-strip /usr/bin/strip
++ /usr/lib/rpm/redhat/brp-strip-static-archive /usr/bin/strip
++ /usr/lib/rpm/redhat/brp-strip-comment-note /usr/bin/strip /usr/bin/objdump
++ /usr/lib/rpm/brp-python-bytecompile
++ /usr/lib/rpm/redhat/brp-python-hardlink
++ /usr/lib/rpm/redhat/brp-java-repack-jars
+Processing files: pscheduler-api-server-0.0-1.el6.noarch
+Provides: pscheduler-api-server = 0.0-1.el6
+Requires(interp): /bin/sh /bin/sh
+Requires(rpmlib): rpmlib(CompressedFileNames) <= 3.0.4-1 rpmlib(FileDigests) <= 4.6.0-1 rpmlib(PayloadFilesHavePrefix) <= 4.0-1 rpmlib(VersionedDependencies) <= 3.0.3-1
+Requires(post): /bin/sh
+Requires(postun): /bin/sh
+Checking for unpackaged file(s): /usr/lib/rpm/check-files /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/BUILD-ROOT
+Wrote: /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/rpmbuild/SRPMS/pscheduler-api-server-0.0-1.el6.src.rpm
+Wrote: /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/rpmbuild/RPMS/noarch/pscheduler-api-server-0.0-1.el6.noarch.rpm
+Executing(%clean): /bin/sh -e /var/tmp/rpm-tmp.DQukzg
++ umask 022
++ cd /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/rpmbuild/BUILD
++ cd pscheduler-api-server-0.0
++ /bin/rm -rf /home/mfeit/internet2/perfsonar/pscheduler/pscheduler-api-server/BUILD-ROOT
++ exit 0
