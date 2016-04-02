@@ -8,7 +8,7 @@ def api_root():
 
 def api_url(host = None,  # Don't default this.  It breaks 'None' behavior.
             path = None,
-            port = 29285
+            port = None
             ):
     if path is not None and path.startswith('/'):
         path = path[1:]
