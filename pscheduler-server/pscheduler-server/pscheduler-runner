@@ -216,6 +216,7 @@ class Run:
             full_result = []
 
             for run in runs:
+                # TODO: This should try repeatedly.
                 r = requests.get(run)
                 if r.status_code != 200:
                     raise Exception("Bad status code " + str(r.status_code)
