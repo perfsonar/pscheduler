@@ -16,7 +16,7 @@ case "${ACTION}" in
 	;;
 esac
 
-for SERVICE in ticker runner archiver api-server
+for SERVICE in ticker runner scheduler archiver
 do
     service "pscheduler-${SERVICE}" "${ACTION}"
 done
