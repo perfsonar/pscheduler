@@ -135,7 +135,7 @@ TO_CLEAN += $(BUILD_ROOT)
 build: $(BUILD_DEPS) $(BUILD_DIR) $(BUILD_ROOT)
 	set -o pipefail \
                 && HOME=$(shell pwd) \
-                   rpmbuild -ba \
+                   rpmbuild-with-deps -ba \
 			--buildroot $(shell cd $(BUILD_ROOT) && pwd) \
 			$(SPEC) 2>&1 \
 		| tee build.log
@@ -158,7 +158,7 @@ rpmdump:
 
 
 install:
-	find $(BUILD_RPMS) -name '*.rpm' | xargs rpm -Uvh --force
+	find $(BUILD_RPMS) -name '*.rpm' | xargs rpm-with-deps -Uvh --force
 
 
 
