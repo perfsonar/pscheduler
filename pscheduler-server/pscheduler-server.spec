@@ -54,7 +54,7 @@ fi
 for SERVICE in ticker runner archiver scheduler api-server
 do
     chkconfig "pscheduler-${SERVICE}" on
-    # TODO: Should probably start the service
+    service "pscheduler-${SERVICE}" start
 done
 
 
