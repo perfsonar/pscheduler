@@ -65,8 +65,9 @@ then
     setsebool -P httpd_can_network_connect_db 1
 fi
 
-# TODO: Do we want this or a reload?
-service httpd condrestart
+chkconfig httpd on
+
+service httpd restart
 
 
 %postun
