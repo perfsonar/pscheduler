@@ -7,10 +7,16 @@
 #
 
 #
+# RPM BUILD UTILITIES
+#
+# Everything else depends on these.
+#
+rpm-with-deps
+make-generic-rpm
+
+#
 # DEVELOPMENT, LIBRARIES AND UTILITIES
 #
-
-make-generic-rpm
 
 # PostgreSQL Additions
 postgresql-init
