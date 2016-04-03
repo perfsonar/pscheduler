@@ -22,5 +22,5 @@ do
 
 EOF
     
-    make -C "${PACKAGE}" clean build rpmdump ${INSTALL}
+    make -C "${PACKAGE}" clean build ${INSTALL}
 done
