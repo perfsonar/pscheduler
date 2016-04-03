@@ -4,6 +4,8 @@
 DROP DATABASE IF EXISTS pscheduler;
 DROP ROLE IF EXISTS pscheduler;
 
+-- The password for this role will be set when the database is
+-- installed.
 CREATE ROLE pscheduler
 WITH
     LOGIN
