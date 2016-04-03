@@ -58,10 +58,28 @@ make \
 
 
 %post
+# On systems with SELINUX, allow database connections.
+if selinuxenabled
+then
+    echo "Setting SELinux permissions (may take awhile)"
+    setsebool -P httpd_can_network_connect_db 1
+fi
+
+# TODO: Do we want this or a reload?
 service httpd condrestart
 
 
 %postun
+# TODO: Determine if we want to shut this off, as other services might
+# be using it.
+# if selinuxenabled
+# then
+#     echo "Setting SELinux permissions (may take awhile)"
+#     setsebool -P httpd_can_network_connect_db 1
+# fi
+
+
+# TODO: Do we want this or a reload?
 service httpd condrestart
 
 
