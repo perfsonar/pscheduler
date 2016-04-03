@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh
 #
 # postgresql-load - Run a SQL file through psql
 #
@@ -10,6 +10,15 @@ die()
     echo "$@" 1>&2
     exit 1
 }
+
+
+TMPBASE=${TMP:=/tmp}/$(basename $0).$$
+
+cleanup()
+{
+    rm -rf $TMPBASE/*
+}
+trap cleanup EXIT
 
 
 PG_USER=$(ps -e -o 'user,command' \
@@ -43,10 +52,18 @@ PSQL='PGOPTIONS="--client-min-messages=WARNING" psql -q -v ON_ERROR_STOP=1'
 if [ "${USER}" = 'root' ]
 then
     (echo "${ROLE}" && cat "$@") \
-	| su - "${PG_USER}" -c "${PSQL}"
+	| su - "${PG_USER}" -c "${PSQL}" 2>$TMPBASE.error
+    STATUS=$?
 else
     (echo "${ROLE}" && cat "$@") \
-	| ${PSQL}
+	| ${PSQL} 2>$TMPBASE.error
+    STATUS=$?
+fi
+
+if [ "$STATUS" -ne 0 ]
+then
+    cat $TMPBASE.error 1>&2
+    exit $STATUS
 fi
 
 exit 0
