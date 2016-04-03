@@ -32,36 +32,15 @@ then
 fi
 
 
-# PostgreSQL 9.4
+# PostgreSQL
 rpm -Uvh --force "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-6-$(uname -m)/pgdg-redhat95-9.5-2.noarch.rpm"
-yum -y install \
-    postgresql95 \
-    postgresql95-server \
-    postgresql95-contrib \
-    postgresql95-python \
-    postgresql95-plpython
 
-# Things needed for pScheduler
-yum -y install \
-    rpmdevtools \
-    createrepo \
-    pytest \
-    python-setuptools \
-    python-psycopg2 \
-    texlive-latex \
-    python-markupsafe \
-    python-requests \
-    python-devel
 
-# Needed by pscheduler-tool-simplestreamer
-yum -y install nc
-
-# Needed for jq
+# Basics for top-level build
 yum -y install \
-    autoconf \
-    bison \
-    flex \
-    libtool
+    rpm-build \
+    spectool \
+    createrepo
 
 
 # Conveniences
