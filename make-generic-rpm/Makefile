@@ -1,8 +1,10 @@
 #
-# Makefile for Generic RPM Makefile
+# Make-generic-rpm Makefile, Stage 1
 #
 
-AUTO_TARBALL=1
+default: build
 
-# Eat a healthy dose of our own dog food
-include ./make-generic-rpm/generic-rpm.make
+%:
+	which spectool 2>1 > /dev/null \
+		|| yum -y install spectool
+	$(MAKE) -f Makefile-stage2 $@
