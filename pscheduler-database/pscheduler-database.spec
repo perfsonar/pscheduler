@@ -18,6 +18,9 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	postgresql-init
 Requires:	postgresql-load
 Requires:	random-string
+Requires:	postgresql95-plpython
+# This is for pgcrypto
+Requires:	postgresql95-contrib
 
 
 %description
@@ -96,9 +99,11 @@ awk -v "ROLE=${ROLE}" '{ printf "host=127.0.0.1 dbname=pscheduler user=%s passwo
 # Discussion:
 #   https://bugzilla.redhat.com/show_bug.cgi?id=569930
 #   http://rpm5.org/community/rpm-users/0834.html
+#
 
 postgresql-load %{_pscheduler_datadir}/database-build-super.sql
 postgresql-load --role '%{db_user}' %{_pscheduler_datadir}/database-build.sql
+
 
 # Securely set the password for the role to match the one we generated.
 
