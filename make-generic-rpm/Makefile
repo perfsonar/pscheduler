@@ -5,6 +5,6 @@
 default: build
 
 %:
-	which spectool 2>1 > /dev/null \
+	which spectool 2>&1 > /dev/null \
 		|| yum -y install spectool
 	$(MAKE) -f Makefile-stage2 $@
