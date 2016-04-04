@@ -39,6 +39,7 @@ python-Flask
 python-icmperror
 
 # Apache add-ons
+httpd-iptables
 httpd-wsgi-socket
 
 

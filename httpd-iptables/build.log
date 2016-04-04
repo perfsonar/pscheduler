@@ -1,0 +1,5 @@
+Processing files: httpd-iptables-0.0-1.el6.noarch
+Checking for unpackaged file(s): /usr/lib/rpm/check-files /home/mfeit/ipp/httpd-iptables/BUILD-ROOT
+Wrote: /home/mfeit/internet2/perfsonar/pscheduler/httpd-iptables/rpmbuild/SRPMS/httpd-iptables-0.0-1.el6.src.rpm
+Wrote: /home/mfeit/internet2/perfsonar/pscheduler/httpd-iptables/rpmbuild/RPMS/noarch/httpd-iptables-0.0-1.el6.noarch.rpm
+Executing(%clean): /bin/sh -e /var/tmp/rpm-tmp.Qq4yQ4
