@@ -376,6 +376,7 @@ def tasks_uuid(uuid):
     elif request.method == 'POST':
 
         # TODO: This is only for participant 1+
+        # TODO: This should probably a PUT and not a POST.
 
         try:
             json_in = pscheduler.json_load(request.data)
