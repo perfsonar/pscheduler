@@ -17,6 +17,8 @@ Group:		Unspecified
 
 Provides:	%{name} = %{version}-%{release}
 
+Requires:	httpd
+
 
 %description
 Iptables configuration for allowing access to HTTPD
