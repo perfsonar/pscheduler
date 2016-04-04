@@ -36,13 +36,6 @@ fi
 rpm -Uvh --force "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-6-$(uname -m)/pgdg-redhat95-9.5-2.noarch.rpm"
 
 
-# Basics for top-level build
-yum -y install \
-    rpm-build \
-    spectool \
-    createrepo
-
-
 # Conveniences
 yum -y install emacs-nox screen tcsh
 
