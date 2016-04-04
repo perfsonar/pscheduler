@@ -58,7 +58,7 @@ pscheduler-rpm
 pscheduler-account
 python-pscheduler
 pscheduler-core
-pscheduler-database
+
 
 #
 # PSCHEDULER PLUG-INS
@@ -84,5 +84,6 @@ pscheduler-archiver-syslog
 
 
 # Servers
+pscheduler-database
 pscheduler-server
 pscheduler-api-server
