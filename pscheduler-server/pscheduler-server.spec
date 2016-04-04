@@ -42,16 +42,7 @@ make \
 
 
 %post
-if [ "$1" -eq 1 ]
-then
-    # Put our rule after the last ACCEPT in the input chain
-    INPUT_LENGTH=$(iptables -L INPUT | egrep -e '^ACCEPT' | wc -l)
-    iptables -I INPUT $(expr ${INPUT_LENGTH} + 1 ) \
-        -p tcp -m state --state NEW -m tcp --dport 29285 -j ACCEPT
-    service iptables save
-fi
-
-for SERVICE in ticker runner archiver scheduler api-server
+for SERVICE in ticker runner archiver scheduler
 do
     chkconfig "pscheduler-${SERVICE}" on
     service "pscheduler-${SERVICE}" start
@@ -59,19 +50,14 @@ done
 
 
 %preun
-for SERVICE in ticker runner archiver api-server
+for SERVICE in ticker runner archiver scheduler
 do
     NAME="pscheduler-${SERVICE}"
     service "${NAME}" stop
     chkconfig "${NAME}" off
 done
 
-if [ "$1" -eq 0 ]
-then
-    iptables -D INPUT \
-        -p tcp -m state --state NEW -m tcp --dport 29285 -j ACCEPT
-    service iptables save
-fi
+
 %files
 %defattr(-,root,root,-)
 %{_initddir}/*
