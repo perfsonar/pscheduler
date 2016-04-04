@@ -37,7 +37,11 @@ rpm -Uvh --force "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-
 
 
 # Conveniences
-yum -y install emacs-nox screen tcsh
+yum -y install \
+    emacs-nox \
+    git \
+    screen \
+    tcsh
 
 
 #
