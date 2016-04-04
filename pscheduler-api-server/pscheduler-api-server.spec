@@ -61,8 +61,12 @@ make \
 # On systems with SELINUX, allow database connections.
 if selinuxenabled
 then
-    echo "Setting SELinux permissions (may take awhile)"
-    setsebool -P httpd_can_network_connect_db 1
+    STATE=$(getsebool httpd_can_network_connect_db | awk '{ print $3 }')
+    if [ "${STATE}" != "on" ]
+    then
+        echo "Setting SELinux permissions (may take awhile)"
+        setsebool -P httpd_can_network_connect_db 1
+    fi
 fi
 
 chkconfig httpd on
