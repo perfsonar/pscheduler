@@ -19,10 +19,11 @@ Url:		http://www.perfsonar.net
 
 Source0:	%{short}-%{version}.tar.gz
 
-Requires:	python-isodate
+Requires:	python-dateutil
 Requires:	python-detach
-Requires:	python-subprocess32
+Requires:	python-isodate
 Requires:	python-psycopg2
+Requires:	python-subprocess32
 
 
 %description
