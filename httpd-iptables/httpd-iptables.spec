@@ -28,17 +28,11 @@ Iptables configuration for allowing access to HTTPD
 if [ "$1" -eq 1 ]
 then
 
-    # Put this rule after the last ACCEPT in the input chain
-    POSITION=$(iptables -L INPUT \
-        | sed -e '1,2d' \
-        | awk '$1 ==  "ACCEPT" { print NR, $0 }' \
-        | tail -1 \
-        | sed -e 's| .*$||')
-
-
-    iptables -I INPUT $(expr ${POSITION} + 1 ) \
+    # TODO: It would be nicer if this entry were placed at the end so
+    # it doesn't have to be evaluated when processing traffic that
+    # needs low latency.
+    iptables -I INPUT \
         -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT
-
     service iptables save
 fi
 
