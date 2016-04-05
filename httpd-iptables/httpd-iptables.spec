@@ -24,14 +24,21 @@ Requires:	httpd
 Iptables configuration for allowing access to HTTPD
 
 
-
 %post
 if [ "$1" -eq 1 ]
 then
+
     # Put this rule after the last ACCEPT in the input chain
-    INPUT_LENGTH=$(iptables -L INPUT | egrep -e '^ACCEPT' | wc -l)
-    iptables -I INPUT $(expr ${INPUT_LENGTH} + 1 ) \
+    POSITION=$(iptables -L INPUT \
+        | sed -e '1,2d' \
+        | awk '$1 ==  "ACCEPT" { print NR, $0 }' \
+        | tail -1 \
+        | sed -e 's| .*$||')
+
+
+    iptables -I INPUT $(expr ${POSITION} + 1 ) \
         -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT
+
     service iptables save
 fi
 
