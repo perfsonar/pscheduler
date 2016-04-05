@@ -41,7 +41,8 @@ yum -y install \
     emacs-nox \
     git \
     screen \
-    tcsh
+    tcsh \
+    tree \
 
 
 #
