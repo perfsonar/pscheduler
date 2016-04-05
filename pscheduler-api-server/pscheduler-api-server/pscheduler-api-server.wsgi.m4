@@ -10,3 +10,6 @@ sys.path.insert(0, '__API_DIR__')
 sys.stdout = sys.stderr
 
 from pschedulerapiserver import application
+
+# TODO: Remove this after development
+application.debug = True

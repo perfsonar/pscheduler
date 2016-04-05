@@ -61,3 +61,5 @@ endif
 
 clean:
 	rm -rf $(TO_CLEAN) *~
+	make -C pschedulerapiserver $@
+
