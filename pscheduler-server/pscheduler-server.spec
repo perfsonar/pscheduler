@@ -38,14 +38,23 @@ make \
 
 
 %pre
-# TODO: Should probably stop the service if this is an upgrade.
+if [ "$1" -eq 2 ]
+then
+    for SERVICE in ticker runner archiver scheduler
+    do
+        NAME="pscheduler-${SERVICE}"
+        service "${NAME}" stop
+        chkconfig "${NAME}" off
+    done
+fi
 
 
 %post
 for SERVICE in ticker runner archiver scheduler
 do
-    chkconfig "pscheduler-${SERVICE}" on
-    service "pscheduler-${SERVICE}" start
+    NAME="pscheduler-${SERVICE}"
+    chkconfig "${NAME}" on
+    service "${NAME}" start
 done
 
 
