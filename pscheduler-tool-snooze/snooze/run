@@ -42,14 +42,14 @@ output = ''
 try:
     output += input['test']['spec']['starting-comment'] + '\n'
 except KeyError:
-    null
+    pass
 
 time.sleep(pscheduler.timedelta_as_seconds(duration))
 
 try:
     output += input['test']['spec']['parting-comment'] + '\n'
 except KeyError:
-    null
+    pass
 
 
 
