@@ -31,9 +31,9 @@ def coalesce_ranges(ranges, duration):
 
     sets = len(ranges)
 
-    if sets < 2:
+    if sets < 1:
         # TODO: What's a good exception to raise here?
-        raise ValueError("Must have at least two sets of ranges")
+        raise ValueError("Must have at least one set of ranges")
 
     matches = []  # Ranges we came up with that matched
 
