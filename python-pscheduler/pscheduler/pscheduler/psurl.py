@@ -20,23 +20,31 @@ def url_get( url,          # GET URL
     Fetch a URL using GET with parameters, returning whatever came back.
     """
 
-    request = requests.get(url, params=params)
-    status = request.status_code
+    try:
+        request = requests.get(url, params=params)
+        status = request.status_code
+        text = request.text
+    except Exception as ex:
+        status = 400
+        # TODO: This doesn't come out looking as nice as it should.
+        text = "Error: " + str(ex)
 
     if status != 200:
         if throw:
-            raise URLException(str(status) + ": " + request.text)
+            raise URLException("GET " + url + " returned " + str(status)
+                               + ": " + text)
         else:
-            return (status, request.text)
+            return (status, text)
 
     if json:
-        return (status, pscheduler.json_load(request.text))
+        return (status, pscheduler.json_load(text))
     else:
-        return (status, request.text)
+        return (status, text)
 
 
 def url_post( url,          # GET URL
               params={},    # GET parameters
+              data=None,    # Data to post
               json=True,    # Interpret result as JSON
               throw=True    # Throw if status isn't 200
               ):
@@ -44,12 +52,13 @@ def url_post( url,          # GET URL
     Post to a URL, returning whatever came back.
     """
 
-    request = requests.post( url, params=params )
+    request = requests.post( url, params=params, data=data )
     status = request.status_code
 
     if status != 200 and status != 201:
         if throw:
-            raise URLException(request.text)
+            raise URLException("POST " + url + " returned " + str(status)
+                               + ": " + request.text)
         else:
             return (status, request.text)
 
@@ -73,7 +82,8 @@ def url_put( url,          # GET URL
 
     if status != 200 and status != 201:
         if throw:
-            raise URLException(request.text)
+            raise URLException("PUT " + url + " returned " + str(status)
+                               + ": " + request.text)
         else:
             return (status, request.text)
 
@@ -97,7 +107,8 @@ def url_delete( url,          # DELETE URL
 
     if status != 200:
         if throw:
-            raise URLException(request.text)
+            raise URLException("DELETE " + url + " returned " + str(status)
+                               + ": " + request.text)
         else:
             return (status, request.text)
 
