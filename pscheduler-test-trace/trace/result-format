@@ -16,15 +16,7 @@ json = pscheduler.json_load(exit_on_error=True)
 # TODO: Validate the input
 
 if format == 'text/plain':
-
-   template = """
-Path to \
-{.section dest-host}{dest-host} ({.end}\
-{.section dest-ip}{dest-ip}{.or}{.end}\
-{.section dest-host}){.end}\
-{.section length}, packet length {length}{.end}\
-:
-"""
+   template = None
 
    hop_template = """
     {number}: \
@@ -41,29 +33,24 @@ elif format == 'text/html':
 
    template = """
 <table>
-<tr><th colspan="6">Path to \
-{.section dest-host}{dest-host} ({.end}\
-{.section dest-ip}{dest-ip}{.or}{.end}\
-{.section dest-host}){.end}\
-{.section length}<br/>Packet length {length}{.end}\
-</td></tr>
-
 <tr>
-  <th>Hop</th>
-  <th>Host</th>
+  <th>TTL</th>
   <th>Address</th>
+  <th>Host</th>
   <th>AS</th>
   <th>RTT (ms)</th>
+  <th>Error</th>
 </tr>
    """
 
    hop_template = """
 <tr>
   <th>{number}</th>
-  <td>{.section hostname}{hostname}{.end}</td>
   <td>{.section ip}{ip}{.end}</td>
+  <td>{.section hostname}{hostname}{.end}</td>
   <td>{.section as}{as}{.end}</td>
   <td>{.section rtt}{rtt}{.end}</td>
+  <td>{.section error}{error}{.end}</td>
 </tr>
 
 """
@@ -80,7 +67,8 @@ else:
 
 # TODO: Should probably handle exceptions in a nicer way.
 
-print jsontemplate.expand(template, json).strip()
+if template is not None:
+   print jsontemplate.expand(template, json).strip()
 
 hopno = 1
 for hop in json['hops']:
