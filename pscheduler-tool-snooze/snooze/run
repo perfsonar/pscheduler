@@ -61,7 +61,7 @@ results = {
     'succeeded': True,
     'diags': output,
     'error': '',
-    'result': { 'time_slept': pscheduler.timedelta_as_iso8601(duration) }
+    'result': { 'time-slept': pscheduler.timedelta_as_iso8601(duration) }
 }
 
 pscheduler.succeed_json(results)

@@ -8,6 +8,7 @@ FILES=\
 	can-run \
 	duration \
 	enumerate \
+	merged-results \
 	participant-data \
 	run \
 
