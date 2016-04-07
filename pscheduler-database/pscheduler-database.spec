@@ -15,12 +15,14 @@ Source0:	%{name}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	postgresql-init
-Requires:	postgresql-load
-Requires:	random-string
-Requires:	postgresql95-plpython
+Requires:	drop-in
 # This is for pgcrypto
 Requires:	postgresql95-contrib
+Requires:	postgresql95-plpython
+Requires:	postgresql-init
+Requires:	postgresql-load
+Requires:	pscheduler-account
+Requires:	random-string
 
 
 %description
