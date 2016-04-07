@@ -41,9 +41,11 @@ AS
 DROP VIEW IF EXISTS schedule_runs_to_schedule;
 CREATE OR REPLACE VIEW schedule_runs_to_schedule
 AS
+
     WITH interim AS (
 
-        -- Tasks with no runs scheduled
+        -- Non-repeating tasks with no runs scheduled
+
         SELECT
             id AS task,
 	    uuid,
@@ -54,18 +56,21 @@ AS
             now() AS after,
             repeat,
             max_runs,
+	    0 AS scheduled,
             runs,
             task.until,
-            task_next_run(start, now(), repeat) AS trynext,
+            normalized_now() AS trynext,
 	    participant
         FROM
             task
         WHERE
-            NOT EXISTS (SELECT * FROM run WHERE run.task = task.id)
-    
-        UNION
+	    repeat IS NULL
+	    AND NOT EXISTS (SELECT * FROM run WHERE run.task = task.id)
 
-        -- Tasks with runs
+	UNION
+    
+        -- Repeating tasks
+
         SELECT
             task.id AS task,
 	    task.uuid,
@@ -76,6 +81,11 @@ AS
             greatest(now(), max(upper(run.times))) AS after,
             task.repeat,
             max_runs,
+	    (SELECT COUNT(*)
+             FROM run
+             WHERE
+                 task = id
+                 AND upper(times) > normalized_now()) AS scheduled,
             runs,
             task.until,
             task_next_run(start, greatest(now(), max(upper(run.times))), repeat) AS trynext,
@@ -83,7 +93,10 @@ AS
         FROM
             run
             JOIN task ON task.id = run.task
+	WHERE
+	    repeat IS NOT NULL
         GROUP BY task.id
+
     )
     SELECT
         task,
@@ -93,18 +106,11 @@ AS
         interim
     WHERE
         enabled
-	AND participant = 0
-        AND repeat IS NOT NULL
-	-- TODO: This needs to count scheduled runs, too.
-        AND ( (max_runs IS NULL)
-              OR (runs + ( SELECT COUNT(*)
-                           FROM run
-                           WHERE
-                             task = task
-                           AND lower(times) > normalized_now())
-                  < max_runs) )
-        AND ( (until IS NULL) OR (trynext < until) )
-        AND trynext + duration < (normalized_now() + schedule_time_horizon())
+--	AND participant = 0
+--        AND ( (max_runs IS NULL)
+--              OR (runs + scheduled) < max_runs )
+--        AND ( (until IS NULL) OR (trynext < until) )
+--        AND trynext + duration < (normalized_now() + schedule_time_horizon())
     ORDER BY added
 ;
 
