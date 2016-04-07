@@ -51,7 +51,8 @@ yum -y install \
     texlive-latex \
     python-markupsafe \
     python-requests \
-    python-devel
+    python-devel \
+    mod_wsgi
 
 # Needed by pscheduler-tool-simplestreamer
 yum -y install nc
