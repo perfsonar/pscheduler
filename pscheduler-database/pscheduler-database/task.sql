@@ -486,3 +486,21 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION api_task_delete(
+    task_uuid UUID
+)
+RETURNS VOID
+AS $$
+BEGIN
+
+    IF NOT EXISTS (SELECT * FROM task WHERE uuid = task_uuid)
+    THEN
+        RAISE EXCEPTION 'Task not found.';
+    END IF;
+
+   DELETE FROM task WHERE uuid = task_uuid;
+
+END;
+$$ LANGUAGE plpgsql;
