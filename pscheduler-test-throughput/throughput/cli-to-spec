@@ -1,0 +1,59 @@
+#!/usr/bin/python
+#
+# Convert comamnd-line options to a test specification
+
+import optparse
+import pscheduler
+import sys
+
+if len(sys.argv) > 1:
+
+   # Args are on the command line
+   args = sys.argv[1:]
+
+else:
+
+   # Args are in a JSON array on stdin
+   json_args = pscheduler.json_load(exit_on_error=True)
+   args = []
+
+   if type(json_args) != list:
+      pscheduler.fail("Invalid JSON for this operation")
+   for arg in json_args:
+      if type(arg) not in (unicode, str, int, float):
+         pscheduler.fail("Invalid JSON for this operation")
+   args = [ str(arg) for arg in json_args ]
+
+
+
+# Gargle the arguments
+
+opt_parser = optparse.OptionParser()
+
+opt_parser.add_option("-s", "--sender",
+                      help="Sending host",
+                      action="store", type="string",
+                      dest="sender")
+
+
+opt_parser.add_option("-r", "--receiver",
+                      help="Receiving host",
+                      action="store", type="string",
+                      dest="receiver")
+
+
+(options, remaining_args) = opt_parser.parse_args(args)
+if len(remaining_args) != 0:
+   pscheduler.fail("Found superfluous arguments on command line.")
+
+
+result = {}
+
+if options.sender is not None:
+   result['sender'] = options.sender
+   
+if options.receiver is not None:
+   result['receiver'] = options.receiver
+
+
+pscheduler.succeed_json(result)

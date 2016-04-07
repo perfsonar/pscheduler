@@ -1,0 +1,14 @@
+#!/bin/sh
+
+exec cat << EOF
+{
+    "name": "throughput",
+    "description": "Tests designed primarily to active measure network throughput between a set of hosts",
+    "version": "0.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@perfsonar.net",
+	"href": "http://www.perfsonar.net"
+    }
+}
+EOF
