@@ -33,7 +33,7 @@ python-Flask
 python-icmperror
 
 # Apache add-ons
-http-wsgi-socket
+httpd-wsgi-socket
 
 
 #
