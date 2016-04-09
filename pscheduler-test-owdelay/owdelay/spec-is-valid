@@ -44,8 +44,7 @@ for field in fields:
         del json[field]
 
 if len(json) > 0:
-    pscheduler.fail('Unknown elements in test specification:\n    '
-        + '\n    '.join(json.keys()))
-
+    pscheduler.fail('Unknown elements in test specification: '
+                    + ', '.join(json.keys()))
 
 pscheduler.succeed()
