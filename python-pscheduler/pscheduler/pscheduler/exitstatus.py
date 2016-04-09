@@ -34,7 +34,7 @@ def succeed(text = None):
     Exit with success and an optional messsage to stdout.
     """
     if text is not None:
-        print strip(text)
+        print text.strip()
     exit(0)
 
 
