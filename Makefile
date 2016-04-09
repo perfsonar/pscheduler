@@ -23,9 +23,10 @@ TO_CLEAN += $(REPO)
 build: repo
 
 
-
 uninstall:
 	scripts/remove-all
+
+fresh: uninstall build
 
 clean:
 	scripts/clean-all
