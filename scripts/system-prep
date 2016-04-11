@@ -35,9 +35,9 @@ fi
 # PostgreSQL
 rpm -Uvh --force "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-6-$(uname -m)/pgdg-redhat95-9.5-2.noarch.rpm"
 
+<<<<<<< HEAD
 # Needed for documentation, which isn't RPM-ified yet and can't load
 # this automatically.
-
 yum -y install \
     texlive-latex 
 

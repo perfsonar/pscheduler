@@ -1,0 +1,28 @@
+#!/usr/bin/python
+#
+# Convert a test specification to command-line options
+
+import pscheduler
+
+spec = pscheduler.json_load(exit_on_error=True)
+
+if type(spec) != dict:
+    pscheduler.fail("Invalid JSON for this operation")
+
+result = []
+
+try:
+    result.append('--sender')
+    result.append(spec['sender'])
+except KeyError:
+    pscheduler.fail("Missing sender")
+    
+try:
+    result.append('--receiver')
+    result.append(spec['receiver'])
+except KeyError:
+    pscheduler.fail("Missing receiver")
+
+pscheduler.succeed_json(result)
+
+

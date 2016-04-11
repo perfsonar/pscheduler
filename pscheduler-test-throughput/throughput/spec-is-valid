@@ -1,0 +1,42 @@
+#!/usr/bin/python
+#
+# Validator for 'owdelay' test spec
+#
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True)
+
+# Run through all of the tags we expect to see, deleting the valid ones
+
+if 'schema' in json:
+    if not (1 <= json['schema'] <= 1):
+        pscheduler.fail('Unsupported schema version {0}'.format(json['schema']))
+    del json['schema']
+else:
+    pscheduler.fail("Missing schema")
+
+if 'sender' in json:
+    del json['sender']
+else:
+    pscheduler.fail("Missing required field sender")
+
+if 'receiver' in json:
+    del json['receiver']
+else:
+    pscheduler.fail("Missing required field receiver")
+
+# TODO: need to start adding these    
+fields = [
+]
+
+for field in fields:
+    if field in json:
+        del json[field]
+
+if len(json) > 0:
+    pscheduler.fail('Unknown elements in test specification:\n    '
+        + '\n    '.join(json.keys()))
+
+
+pscheduler.succeed()

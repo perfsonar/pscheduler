@@ -68,12 +68,18 @@ pscheduler-core
 # Tests
 pscheduler-test-idle
 pscheduler-test-owdelay
+pscheduler-test-throughput
 pscheduler-test-simplestream
 pscheduler-test-trace
 
 # Tools
+<<<<<<< HEAD
 # TODO: This has dependencies outside the local tree.
 #pscheduler-tool-owping
+=======
+pscheduler-tool-owping
+pscheduler-tool-iperf
+>>>>>>> 4207ceb80a2117739ba260200e4580829c3990ec
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-snooze
