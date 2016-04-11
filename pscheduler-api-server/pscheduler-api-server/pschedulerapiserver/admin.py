@@ -3,6 +3,7 @@
 #
 
 import pscheduler
+import socket
 
 from pschedulerapiserver import application
 
@@ -39,6 +40,7 @@ def schedule_horizon():
 @application.route("/time", methods=['GET'])
 def time():
     """Return clock-related information"""
+
     result = {
         # TODO: This needs to show fractional seconds.
         'time': pscheduler.datetime_as_iso8601(pscheduler.time_now()),

@@ -33,7 +33,8 @@ class Log():
                  prefix=None,   # Prefix for name (e.g., prefix/progname)
                  level=INFO,    # Logging level
                  debug=False,   # Force level to DEBUG
-                 verbose=False  # Log to stderr, too.
+                 verbose=False, # Log to stderr, too.
+                 signals=True   # Enable debug on/off with SIGUSR1/SIGUSR2
                  ):
 
         if name is None:
@@ -69,10 +70,11 @@ class Log():
 
         # Grab signals and make them non-interrupting
         # TODO: How portable is this?
-        signal.signal(signal.SIGUSR1, self.sigusr1)
-        signal.signal(signal.SIGUSR2, self.sigusr2)
-        signal.siginterrupt(signal.SIGUSR1, False)
-        signal.siginterrupt(signal.SIGUSR2, False)
+        if signals:
+            signal.signal(signal.SIGUSR1, self.sigusr1)
+            signal.signal(signal.SIGUSR2, self.sigusr2)
+            signal.siginterrupt(signal.SIGUSR1, False)
+            signal.siginterrupt(signal.SIGUSR2, False)
 
         self.info("Started")
 
@@ -144,9 +146,9 @@ class Log():
 
         if state:
             self.level(DEBUG, save=False)
-            self.debug("Debug logging turned on")
+            self.debug("Debug enabled remotely")
         else:
-            self.debug("Debug logging turned off")
+            self.debug("Debug disabled remotely")
             self.level(self.last_level)
 
 

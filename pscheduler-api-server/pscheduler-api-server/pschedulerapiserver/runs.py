@@ -10,7 +10,9 @@ from flask import request
 
 from .dbcursor import dbcursor
 from .json import *
+from .log import log
 from .response import *
+from .tasks import task_exists
 
 
 # Proposed times for a task
@@ -34,27 +36,67 @@ def task_uuid_runtimes(task):
 # Established runs for a task
 @application.route("/tasks/<task>/runs", methods=['GET', 'POST'])
 def tasks_uuid_runs(task):
+
     if request.method == 'GET':
-        # TODO: This should be exapandable and filterable by time, status,
-        # limit numbers, etc.
-        return json_query_simple(dbcursor(),
-            "SELECT '" + base_url() + """/' || run.uuid
+
+        query = "SELECT '" + base_url() + """/' || run.uuid
              FROM
                  run
                  JOIN task ON task.id = run.task
              WHERE
-                task.uuid = %s""", [task])
+                task.uuid = %s"""
+        args = [task]
+
+        try:
+
+            start_time = arg_datetime('start')
+            if start_time is not None:
+                query += " AND lower(times) >= %s"
+                args.append(start_time)
+
+            end_time = arg_datetime('end')
+            if end_time is not None:
+                query += " AND upper(times) <= %s"
+                args.append(end_time)
+
+            query += " ORDER BY times"
+
+            limit = arg_cardinal('limit')
+            if limit is not None:
+                query += " LIMIT " + str(limit)
+
+            # TODO: This should be exapandable
+
+        except ValueError as ex:
+
+            return bad_request(str(ex))
+
+
+        return json_query_simple(dbcursor(), query, args, empty_ok=True)
 
     elif request.method == 'POST':
 
-        start_time = arg_datetime('start')
-        if start_time is None:
-            return bad_request("Missing or invalid start time")
+        log.debug("Run POST: %s --> %s", request.url, request.data)
 
-        dbcursor().execute("SELECT api_run_post(%s, %s)", [task, start_time])
-        # TODO: Handle failure
+        try:
+            data = pscheduler.json_load(request.data)
+            start_time = pscheduler.iso8601_as_datetime(data['start-time'])
+        except KeyError:
+            return bad_request("Missing start time")
+        except ValueError:
+            return bad_request("Invalid JSON:" + request.data)
+
+        try:
+            dbcursor().execute("SELECT api_run_post(%s, %s)", [task, start_time])
+            uuid = dbcursor().fetchone()[0]
+        except:
+            log.exception()
+            return error("Database query failed")
+
         # TODO: Assert that rowcount is 1
-        return ok('"' + base_url(dbcursor().fetchone()[0]) + '"')
+        url = base_url() + '/' + uuid
+        log.debug("New run posted to %s", url)
+        return ok_json(url)
 
     else:
 
@@ -62,8 +104,14 @@ def tasks_uuid_runs(task):
 
 
 
-@application.route("/tasks/<task>/runs/<run>", methods=['GET', 'POST', 'PUT', 'DELETE'])
+@application.route("/tasks/<task>/runs/<run>", methods=['GET', 'PUT', 'DELETE'])
 def tasks_uuid_runs_run(task, run):
+
+    if task is None:
+        return bad_request("Missing or invalid task")
+
+    if run is None:
+        return bad_request("Missing or invalid run")
 
     if request.method == 'GET':
 
@@ -111,31 +159,67 @@ def tasks_uuid_runs_run(task, run):
         result['state-display'] = row[11]
         result['task-href'] = root_url('tasks/' + task)
 
-        return json_response(json_dump(result))
-
-    elif request.method == 'POST':
-
-        start_time = arg_datetime('start')
-        if start_time is None:
-            return bad_request("Missing or invalid start time")
-
-        dbcursor().execute("SELECT api_run_post(%s, %s, %s)", [task, start_time, run])
-        # TODO: Handle failure
-        # TODO: Assert that rowcount is 1
-        return ok('"' + base_url() + '"')
+        return json_response(result)
 
     elif request.method == 'PUT':
 
+        log.debug("Run PUT %s", request.url)
+
+        # This expects one argument called 'run'
         try:
-            json_in = pscheduler.json_load(request.args.get('run'))
+            log.debug("ARG run %s", request.args.get('run'))
+            run_data = arg_json('run')
         except ValueError:
-            return bad_request("Invalid JSON")
+            log.exception()
+            log.debug("Run data was %s", request.args.get('run'))
+            return error("Invalid or missing run data")
 
-        # Only one thing can be udated at a time, and even that is a select subset.
-        if len(json_in) != 1:
-            return bad_request("Can only update one thing at a time.")
+        # If the run doesn't exist, take the whole thing as if it were
+        # a POST.
 
-        if 'part-data-full' in json_in:
+        dbcursor().execute("SELECT EXISTS (SELECT * FROM run WHERE uuid = %s)", [run])
+        # TODO: Handle Failure
+        # TODO: Assert that rowcount is 1
+        if not dbcursor().fetchone()[0]:
+
+            log.debug("Record does not exist; full PUT.")
+
+            try:
+                start_time = \
+                    pscheduler.iso8601_as_datetime(run_data['start-time'])
+            except KeyError:
+                return bad_request("Missing start time")
+            except ValueError:
+                return bad_request("Invalid start time")
+
+            try:
+                dbcursor().execute("SELECT api_run_post(%s, %s, %s)", [task, start_time, run])
+                # TODO: Assert that rowcount is 1
+                log.debug("Full put of %s, got back %s", run, dbcursor().fetchone()[0])
+            except:
+                log.exception()
+                return error("Database query failed")
+
+            return ok()
+
+        # For anything else, only one thing can be udated at a time,
+        # and even that is a select subset.
+
+        log.debug("Record exists; partial PUT.")
+
+        if 'part-data-full' in run_data:
+
+            log.debug("Updating part-data-full from %s", run_data)
+
+            try:
+                part_data_full = \
+                    pscheduler.json_dump(run_data['part-data-full'])
+            except KeyError:
+                return bad_request("Missing part-data-full")
+            except ValueError:
+                return bad_request("Invalid part-data-full")
+
+            log.debug("Full data is: %s", part_data_full)
 
             dbcursor().execute("""UPDATE
                                   run
@@ -145,12 +229,28 @@ def tasks_uuid_runs_run(task, run):
                                   uuid = %s
                                   AND EXISTS (SELECT * FROM task WHERE UUID = %s)
                               """,
-                           [ pscheduler.json_dump(json_in['part-data-full']),
-                             run, task])
+                           [ part_data_full, run, task])
             if dbcursor().rowcount != 1:
                 return not_found()
 
-        elif 'result-full' in json_in:
+            log.debug("Full data updated")
+
+            return ok()
+
+        elif 'result-full' in run_data:
+
+            log.debug("Updating result-full from %s", run_data)
+
+            try:
+                result_full = \
+                    pscheduler.json_dump(run_data['result-full'])
+            except KeyError:
+                return bad_request("Missing result-full")
+            except ValueError:
+                return bad_request("Invalid result-full")
+
+            log.debug("Updating result-full: %s", result_full)
+
 
             dbcursor().execute("""UPDATE
                                   run
@@ -160,12 +260,11 @@ def tasks_uuid_runs_run(task, run):
                                   uuid = %s
                                   AND EXISTS (SELECT * FROM task WHERE UUID = %s)
                               """,
-                           [ pscheduler.json_dump(json_in['result-full']),
-                             run, task])
+                           [ result_full, run, task])
             if dbcursor().rowcount != 1:
                 return not_found()
 
-        return ok()
+            return ok()
 
     elif request.method == 'DELETE':
 
@@ -184,64 +283,3 @@ def tasks_uuid_runs_run(task, run):
     else:
 
         return not_allowed()
-
-
-# TODO: This is probably OBE.  Or is it?
-@application.route("/tasks/<task>/runs/<run>/part-data-full", methods=['GET', 'PUT'])
-def tasks_uuid_runs_run_part_data_full(task, run):
-
-    if request.method == 'GET':
-
-        dbcursor().execute("""
-            SELECT part_data_full
-            FROM
-                run
-                JOIN task ON task.id = run.task
-            WHERE
-                task.uuid = %s
-                AND run.uuid = %s
-            """, [task, run])
-        if dbcursor().rowcount == 0:
-            return not_found();
-        # TODO: Assert that rowcount should be 1 or just LIMIT the query?
-        row = dbcursor().fetchone()
-        return json_response(json_dump(row[0]))
-
-    elif request.method == 'PUT':
-
-        # TODO: Can't Flask validate JSON?
-        try:
-            json_in = json.loads(request.data)
-        except ValueError:
-            return bad_request("Invalid JSON")
-
-
-
-        # Need to make sure the run exists.
-        dbcursor().execute("""
-            SELECT
-              run.id
-            FROM
-                run
-                JOIN task ON task.id = run.task
-            WHERE
-                task.uuid = %s
-                AND run.uuid = %s
-            """, [task, run])
-        if dbcursor().rowcount == 0:
-            return not_found();
-
-        # TODO: Assert that rowcount should be 1 or just LIMIT the query?
-        run_id = dbcursor().fetchone()[0]
-
-        dbcursor().execute("""
-            UPDATE run
-            SET part_data_full = %s
-            WHERE id = %s
-            """, [request.data, run_id])
-
-        return ok();
-
-    else:
-
-        assert False, "Should not be reached."

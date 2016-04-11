@@ -5,18 +5,31 @@
 
 import datetime
 import json
+import pscheduler
 import random
 import socket
 import sys
 import time
+import traceback
 
-import pscheduler
+# TODO: Turn off debugging.
+log = pscheduler.Log(prefix="simplestreamer", debug=True)
 
 input = pscheduler.json_load(exit_on_error=True);
 
+log.debug("Input is %s", input)
+
+#
+# Validate the input
+#
+
+# TODO: Validate more than just this.
+if not 'participant-data' in input:
+    pscheduler.fail("No participant data.")
 
 
-# TODO: Validate the input
+
+
 
 # Perform the test
 
@@ -68,8 +81,7 @@ if participant == 0:
         dawdle *= random.random()
         time.sleep(dawdle)
     except KeyError:
-        # No dawdle element just means no dawdling.
-        pass
+        dawdle = datetime.timedelta()
 
     # Connect and send the material
 
@@ -84,6 +96,7 @@ if participant == 0:
 
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
         server_address = (input['test']['spec']['receiver'],
                           input['participant-data'][1]['listen-port'])
         sock.settimeout(time_left())
@@ -92,7 +105,10 @@ if participant == 0:
         sock.sendall(material)
         succeeded = True
     except Exception as ex:
-        error = "Sender exception: " + str(ex)
+        log.exception()
+        error = "Sender exception: " + str(ex) \
+            + " " + traceback.format_exc()
+
 
     results = {
         'succeeded': succeeded,
@@ -140,7 +156,9 @@ elif participant == 1:
         error = "Timed out"
 
     except Exception as ex:
-        error = "Receiver exception: " + str(ex)
+        error = "Receiver exception: " + str(ex) \
+            + " " + traceback.format_exc()
+
 
     # TODO: The elapsed time doesn't seem right.
 
@@ -161,3 +179,7 @@ else:
 
 
 pscheduler.succeed_json(results)
+
+# TODO: This should probably have a simple wrapper that catches and
+# logs exceptions and produces valid JSON with an error.
+

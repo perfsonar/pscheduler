@@ -30,7 +30,7 @@ def json_query_simple(cursor, query, query_args=[], empty_ok=False):
     result = []
     for row in cursor:
         result.append(row[0])
-    return json_response(json_dump(result))
+    return json_response(result)
 
 
 
@@ -52,5 +52,4 @@ def json_query(cursor, query, query_args=[], name = 'name', single = False):
         this = base_url(None if single else row[0][name])
         row[0]['href'] = this
         result.append( row[0] if single or is_expanded() else this)
-    return json_response(json_dump(result[0] if single else result))
-
+    return json_response(result[0] if single else result)

@@ -39,6 +39,7 @@ CREATE TABLE run (
 	status           INTEGER,
 
 	-- Result from the local run
+	-- TODO: Change this to local_result to prevent confusion
 	result   	 JSONB,
 
 	-- Result from the local run
@@ -227,8 +228,6 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER run_alter BEFORE INSERT OR UPDATE ON run
        FOR EACH ROW EXECUTE PROCEDURE run_alter();
-
-
 
 
 

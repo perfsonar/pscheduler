@@ -4,7 +4,7 @@
 #
 
 import datetime
-import logging
+import errno
 import optparse
 import pscheduler
 import psycopg2
@@ -26,6 +26,7 @@ opt_parser.add_option("-r", "--retry",
                       action="store", type="string", dest="retry",
                       default="PT15S")
 opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
+opt_parser.add_option("--debug", action="store_true", dest="debug")
 
 
 (options, args) = opt_parser.parse_args()
@@ -37,15 +38,7 @@ if pscheduler.timedelta_as_seconds(retry) == 0:
     opt_parser.error("Retryinterval must be calculable as seconds.")
 
 
-#
-# Utilities
-#
-
-is_verbose = options.verbose
-def verbose(*args):
-    if is_verbose:
-        sys.stdout.write(' '.join(str(arg) for arg in args) + '\n')
-
+log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
 
 dsn = options.dsn
 
@@ -63,6 +56,7 @@ try:
 
     while True:
 
+        log.debug("Tick")
         cursor.execute("SELECT ticker()")
 
         if cursor.rowcount == 0:
@@ -74,17 +68,17 @@ try:
 
         sleep_time = cursor.fetchone()[0]
         seconds = pscheduler.timedelta_as_seconds(sleep_time)
-        verbose("Next check in", seconds)
+        log.debug("Next check in %d seconds", seconds)
         time.sleep(seconds)
 
     # Not that this will ever be reached...
     pg.close()
 
 except KeyboardInterrupt:
-    # TODO: Log this
+    log.debug("Interrupted")
     sys.stderr.write("Interrupted\n")
     exit(0)
-except Exception as exception:
-    # TODO: Log this
-    sys.stderr.write("Error: " + str(exception) + "\n")
-    exit(1)
+except Exception as ex:
+    log.exception()
+    raise ex
+

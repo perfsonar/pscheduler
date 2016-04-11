@@ -57,6 +57,9 @@ endif
 	install -m 444 $(CONFIG) $(PREFIX)/$(CONF_D)
 	mkdir -p $(PREFIX)/$(API_DIR)
 	install -m 444 *.pyc *.wsgi $(PREFIX)/$(API_DIR)
+	mkdir -p $(PREFIX)/$(API_DIR)/pschedulerapiserver
+	install -m 444 pschedulerapiserver/*.pyc $(PREFIX)/$(API_DIR)/pschedulerapiserver
+
 
 
 clean:

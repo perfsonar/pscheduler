@@ -16,6 +16,10 @@ PROGRAMS=\
 	pscheduler-ticker \
 	pscheduler-scheduler \
 
+# Commands to be installed as commands
+COMMANDS=\
+	debug
+
 
 PROGRAMS_NOINIT=\
 	pscheduler-monitor \
@@ -44,6 +48,10 @@ ifndef INITDDIR
 	@echo No INITDDIR specified for installation
 	@false
 endif
+ifndef COMMANDSDIR
+	@echo No COMMANDSDIR specified for installation
+	@false
+endif
 	mkdir -p $(BINDIR)
 	cp -f $(PROGRAMS_ALL) $(BINDIR)
 	chmod 555 $(PROGRAMS:%=$(BINDIR)/%)
@@ -54,6 +62,9 @@ endif
 		cp -f $${SCRIPT}-init.d $(INITDDIR)/$${SCRIPT} ; \
 		chmod 555 $(INITDDIR)/$${SCRIPT} ; \
 	done
+	mkdir -p $(COMMANDSDIR)
+	cp -f $(COMMANDS) $(COMMANDSDIR)
+	chmod 555 $(COMMANDS:%=$(COMMANDSDIR)/%)
 
 
 

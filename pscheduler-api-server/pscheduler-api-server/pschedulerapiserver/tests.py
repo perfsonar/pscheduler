@@ -51,7 +51,7 @@ def tests_name_tools(name):
             continue
         row[1]['href'] = url
         result.append(row[1])
-    return json_response(json_dump(result))
+    return json_response(result)
 
 
 
@@ -79,8 +79,7 @@ def tests_name_lead(name):
 
     part_list = pscheduler.json_load(stdout)
     lead = part_list[0]
-
     if lead is None:
         lead = pscheduler.api_this_host()
 
-    return json_response('"%s"' % lead)
+    return json_response(lead)

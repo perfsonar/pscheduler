@@ -5,6 +5,7 @@
 
 import datetime
 import detach
+import errno
 import json
 import optparse
 import os
@@ -37,7 +38,9 @@ opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
                       default="PT1M")
-opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
+opt_parser.add_option("--verbose", action="store_true", dest="verbose")
+opt_parser.add_option("--debug", action="store_true", dest="debug")
+
 
 (options, args) = opt_parser.parse_args()
 
@@ -47,20 +50,9 @@ if refresh is None:
 if pscheduler.timedelta_as_seconds(refresh) == 0:
     opt_parser.error("Refresh interval must be calculable as seconds.")
 
+log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
 
 dsn = options.dsn
-
-
-#
-# Utilities
-#
-
-# TODO: This should be swept into the pscheduler module.
-is_verbose = options.verbose
-def verbose(*args):
-    if is_verbose:
-        sys.stdout.write(' '.join(str(arg) for arg in args) + '\n')
-
 
 
 
@@ -88,18 +80,26 @@ def main_program():
 
         if next_refresh is None:
 
-            verbose("Retrieving immediately.")
+            log.debug("Retrieving immediately.")
 
         else:
 
-            verbose("Waiting", next_refresh, "for change or notification.")
-            if select.select([pg],[],[],
-                             pscheduler.timedelta_as_seconds(next_refresh)) \
-                             != ([],[],[]):
+            log.debug("Waiting %s for change or notification", next_refresh)
 
-                verbose("Notified.")
-                pg.poll()
-                del pg.notifies[:]
+            try:
+                if select.select([pg],[],[],
+                                 pscheduler.timedelta_as_seconds(wait_time)) \
+                                 != ([],[],[]):
+                    pg.poll()
+                    del pg.notifies[:]
+                    log.debug("Notified.")
+
+            except select.error as ex:
+
+                err_no, message = ex
+                if err_no != errno.EINTR:
+                    log.exception()
+                    raise ex
 
 
         # Until we hear otherwise...
@@ -111,7 +111,7 @@ def main_program():
                       FROM archiving_eligible""")
 
         if cursor.rowcount == 0:
-            verbose("Nothing to archive.")
+            log.debug("Nothing to archive.")
             continue
 
 
@@ -168,7 +168,7 @@ def main_program():
                         } ] )
 
             if returncode != 0:
-                verbose("Permanent Failure: ", stderr)
+                log.debug("Permanent Failure: %s", stderr)
                 update_cursor.execute("""UPDATE archiving
                                      SET
                                        archived = TRUE,
@@ -183,7 +183,7 @@ def main_program():
                 # TODO: Validate the JSON that came back on stdout
                 returned_json = pscheduler.json_load(stdout)
                 if returned_json['succeeded']:
-                    verbose("Succeeded: ", uuid, " to ", archiver)
+                    log.debug("Succeeded: %s to %s", uuid, archiver)
                     update_cursor.execute("""UPDATE archiving
                                          SET
                                              archived = TRUE,
@@ -194,7 +194,7 @@ def main_program():
                                          WHERE id = %s""",
                                           [ attempt, run_id ])
                 else:
-                    verbose("Failed: ", uuid, " to ", archiver, ":", stdout)
+                    log.debug("Failed: %s to %s: %s", uuid, archiver, stdout)
                     next_delta = pscheduler.iso8601_as_timedelta(
                         returned_json['retry'])
 

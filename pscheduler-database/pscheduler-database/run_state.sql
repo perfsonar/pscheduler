@@ -52,12 +52,21 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Post-run cleanup
+CREATE OR REPLACE FUNCTION run_state_cleanup()
+RETURNS INTEGER
+AS $$
+BEGIN
+	RETURN 4;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Run finished successfully
 CREATE OR REPLACE FUNCTION run_state_finished()
 RETURNS INTEGER
 AS $$
 BEGIN
-	RETURN 4;
+	RETURN 5;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -66,7 +75,7 @@ CREATE OR REPLACE FUNCTION run_state_overdue()
 RETURNS INTEGER
 AS $$
 BEGIN
-	RETURN 5;
+	RETURN 6;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -75,7 +84,7 @@ CREATE OR REPLACE FUNCTION run_state_missed()
 RETURNS INTEGER
 AS $$
 BEGIN
-	RETURN 6;
+	RETURN 7;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -84,7 +93,7 @@ CREATE OR REPLACE FUNCTION run_state_failed()
 RETURNS INTEGER
 AS $$
 BEGIN
-	RETURN 7;
+	RETURN 8;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -93,7 +102,7 @@ CREATE OR REPLACE FUNCTION run_state_trumped()
 RETURNS INTEGER
 AS $$
 BEGIN
-	RETURN 8;
+	RETURN 9;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -104,6 +113,7 @@ VALUES
 	(run_state_pending(),  'Pending',  'pending'),
 	(run_state_on_deck(),  'On Deck',  'on-deck'),
 	(run_state_running(),  'Running',  'running'),
+	(run_state_cleanup(),  'Cleanup',  'cleanup'),
 	(run_state_finished(), 'Finished', 'finished'),
 	(run_state_overdue(),  'Overdue',  'overdue'),
 	(run_state_missed(),   'Missed',   'missed'),
@@ -149,13 +159,18 @@ BEGIN
 			      run_state_missed(),
 			      run_state_trumped()) )
            OR ( old = run_state_running()
-	        AND new IN (run_state_finished(),
+	        AND new IN (run_state_cleanup(),
+		            run_state_finished(),
 		            run_state_overdue(),
 			    run_state_missed(),
 			    run_state_failed(),
 			    run_state_trumped()) )
-	   OR ( old = run_state_overdue()
+	   OR ( old = run_state_cleanup()
                 AND new IN (run_state_finished(),
+			    run_state_failed()) )
+	   OR ( old = run_state_overdue()
+                AND new IN (run_state_cleanup(),
+		            run_state_finished(),
 		            run_state_missed(),
 		            run_state_failed(),
 		            run_state_trumped()) )

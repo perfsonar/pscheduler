@@ -6,11 +6,16 @@
 # General syntax:
 #     pscheduler task [options] [schedule-opts] test-type [test-opts]
 
+# TODO: Get rid of the print statements in favor of some narrator
+# class we can shut off if the options call for quiet.
+
 
 import optparse
+import os
 import pscheduler
 import subprocess
 import sys
+import time
 
 #
 # Gargle the arguments
@@ -21,6 +26,11 @@ opt_parser = optparse.OptionParser(usage = usage)
 opt_parser.disable_interspersed_args()
 
 # GENERAL OPTIONS
+
+opt_parser.add_option("--assist", "-a",
+                      help="Use the named host for assistance (default localhost or $PSCHEDULER_ASSIST)",
+                      action="store", type="string",
+                      dest="assist")  # Conflict with reserved word
 
 opt_parser.add_option("--export", '-e',
                       help="Export task JSON to stdout and exit",
@@ -49,6 +59,8 @@ opt_parser.add_option("--max-runs",
                       action="store", type="int", default=1,
                       dest="max_runs")
 
+# TODO: Need a --randslip (float) switch.
+
 opt_parser.add_option("--repeat",
                       help="Repeat interval (ISO 8601 Duration)",
                       action="store", type="string",
@@ -70,6 +82,9 @@ opt_parser.add_option("--until",
                       help="Time after which scheduling should stop",
                       action="store", type="string",
                       dest="until")
+
+
+# TODO:  Need a --tool option to force a list of preferred tools.
 
 (options, remaining_args) = opt_parser.parse_args()
 
@@ -114,6 +129,16 @@ if ( options.repeat is None
      ):
          pscheduler.fail("Using --repeat is required with other"
                          " repetition-related options.")
+
+
+# Decide who assists us.
+
+assist = options.assist
+if assist is None:
+    assist = os.getenv('PSCHEDULER_ASSIST')
+
+if assist is not None:
+    print "Assistance will be from", assist
 
 
 #
@@ -193,7 +218,7 @@ task['test']['type'] = test_type
 # Convert the remaining arguments to a test spec.
 #
 
-
+# TODO:  Use the assisting server to do this.
 status, stdout, stderr = pscheduler.run_program(
     [ 'pscheduler', 'internal', 'invoke', 'test', test_type, 'cli-to-spec' ],
     stdin = pscheduler.json_dump(remaining_args),
@@ -206,15 +231,166 @@ json_to_merge = pscheduler.json_load(stdout)
 assert 'spec' in task['test']
 task['test']['spec'].update(json_to_merge)
 
+task_json_text = pscheduler.json_dump(task)
+
 
 if options.export:
     pscheduler.json_dump(obj=task, dest=sys.stdout, pretty=True)
+    print
     pscheduler.succeed()
 
 
-# TODO: Post the task and the first run
+print
+print "WARNING:  This program is still experimental.  Expect it not to work."
+print
 
-# TODO: If asked to just dump the URL, do that and exit.
+#
+# Contact the assist server
+#
+
+status, text =  pscheduler.url_get( pscheduler.api_url(assist, '/hostname'),
+                                    throw=False )
+if status != 200:
+    pscheduler.fail("Can't talk to the pScheduler server at %s: %s"
+                    % (assist, text))
+
+
+#
+# Determine the lead participant
+#
+
+url = pscheduler.api_url(assist, '/tests/%s/lead' % task['test']['type'])
+
+try:
+    status, lead = pscheduler.url_get( url, params={
+            'spec': pscheduler.json_dump(task['test']['spec'])
+            } )
+except Exception as ex:
+    pscheduler.fail("Unable to determine the lead participant: " + str(ex))
+
+print "This task will be lead by", lead
+
+
+#
+# Give the task to the lead for scheduling.
+#
+
+try:
+    status, task_url = pscheduler.url_post( pscheduler.api_url(lead, '/tasks'),
+                                            data=task_json_text,
+                                            throw=False)
+except Exception as ex:
+    pscheduler.fail("Unable to post task: " + str(ex))
+
+if status != 200:
+    pscheduler.fail("Unable to post task: " + task_url)
+
+# If asked to just dump the URL, do that and exit.
 if options.url:
-    pscheduler.fail("Not implemented yet.")
+    pscheduler.succeed(task_url)
+
+print "Task URL is", task_url
+
+
+#
+# Get the first future run.
+#
+
+print "Fetching first run..."
+
+tries = 40
+
+runs_url = task_url + '/runs'
+
+while tries > 0:
+    tries -= 1
+    # TODO: Get the whole thing once the API can expand the results.
+    status, runs = pscheduler.url_get(
+        runs_url,
+        params={ 'limit': 1 }, throw=False )
+
+    if status == 200 and len(runs) > 0:
+            run_url = runs[0]
+            break
+    elif status == 200 or status == 404:
+        time.sleep(0.25)
+        continue
+    else:
+        pscheduler.fail("Failed to fetch run: " + runs)
+
+if tries == 0:
+    pscheduler.fail("Run on server was never populated.")
+
+try:
+    status, run_json = pscheduler.url_get(run_url)
+except Exception as ex:
+    pscheduler.fail("Failed to fetch run: " + str(ex))
+
+
+#
+# Wait for the run to finish
+#
+
+wait_time = pscheduler.time_until_seconds(
+    pscheduler.iso8601_as_datetime(run_json['end-time']))
+
+print "Waiting for the run to finish (%d seconds)..." % wait_time
+time.sleep(wait_time)
+
+
+# TODO: Once pscheduler-runner implements the cleanup/finished
+# transition, query repeatedly for the task to become finished.  Maybe
+# have a /tasks/x/runs/y?finished option in the API to camp on the
+# database for a notification?
+
+# TODO: Remove this when the above has been done.
+print "Temporary wait for task cleanup.  Badger Mark about this until he fixes it..."
+time.sleep(5)
+
+
+
+#
+# Get the final result
+#
+
+tries = 40
+
+while tries > 0:
+    tries -= 1
+    status, result = pscheduler.url_get(run_url, throw=False)
+    if status == 200:
+        if result['result-merged'] is not None:
+            break
+        time.sleep(0.25)
+    else:
+        pscheduler.fail("Failed to fetch run: %d: %s" % (status, result))
+
+if tries == 0:
+    pscheduler.fail("Couldn't find full result.")
+
+
+#
+# Print the final result.
+#
+
+# TODO: If failed, dump diags.
+
+for format in [ 'text/plain', 'text/html' ]:
+    print
+    print "Formatted %s:" % format
+
+    # TODO: Use the helper server for this when supported.
+
+    returncode, stdout, stderr = pscheduler.run_program(
+        [ "pscheduler", "internal", "invoke", "test", test_type, "result-format", format ],
+        stdin = pscheduler.json_dump(result['result-merged'])
+        )
+
+    if returncode == 0:
+        print stdout.strip()
+    else:
+        pscheduler.fail("Failed to format test: " + stderr)
+
+pscheduler.succeed()
+
 

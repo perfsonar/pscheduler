@@ -15,6 +15,7 @@ Source0:	%{name}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
+Requires:	curl
 Requires:	pscheduler-database
 Requires:	python-Flask
 Requires:	python-requests
@@ -34,6 +35,7 @@ make
 make \
      INITDDIR=$RPM_BUILD_ROOT/%{_initddir} \
      BINDIR=$RPM_BUILD_ROOT/%{_bindir} \
+     COMMANDSDIR=$RPM_BUILD_ROOT/%{_pscheduler_commands} \
      install
 
 
@@ -71,3 +73,4 @@ done
 %defattr(-,root,root,-)
 %{_initddir}/*
 %{_bindir}/*
+%{_pscheduler_commands}/*

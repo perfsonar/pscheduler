@@ -3,6 +3,7 @@
 # pScheduler Run Scheduler
 #
 
+import errno
 import optparse
 import pscheduler
 import psycopg2
@@ -30,6 +31,7 @@ opt_parser.add_option("-r", "--refresh",
                       action="store", type="string", dest="refresh",
                       default="PT15S")
 opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
+opt_parser.add_option("--debug", action="store_true", dest="debug")
 
 (options, args) = opt_parser.parse_args()
 
@@ -39,21 +41,15 @@ if refresh is None:
 if pscheduler.timedelta_as_seconds(refresh) == 0:
     opt_parser.error("Refresh interval must be calculable as seconds.")
 
+log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
 
 dsn = options.dsn
 
-
-#
-# Utilities
-#
-
-# TODO: This should be swept into the pscheduler module.
-is_verbose = options.verbose
-def verbose(*args):
-    if is_verbose:
-        sys.stdout.write(' '.join(str(arg) for arg in args) + '\n')
-
-
+# Minimum amount of time from now when the first run of a task can be
+# scheduled.  This prevents "start now" tasks from being scheduled for
+# a time before the participants can prepare for them.
+# TODO: Potential race condition?
+first_run_offset = pscheduler.iso8601_as_timedelta('PT10S')
 
 
 #
@@ -68,57 +64,63 @@ def main_program():
     cursor = pg.cursor()
     cursor.execute("LISTEN " + options.channel)
 
-    # This cursor is for doing updates inside the other's loop.
-    update_cursor = pg.cursor()
-
-    next_refresh = None
-
     while True:
 
         # Wait for something to happen.
 
-        if next_refresh is None:
+        log.debug("Waiting %s for notification", refresh)
 
-            verbose("Retrieving immediately.")
-
-        else:
-
-            verbose("Waiting", next_refresh, "for change or notification.")
+        try:
             if select.select([pg],[],[],
-                             pscheduler.timedelta_as_seconds(next_refresh)) \
-                             != ([],[],[]):
-
-                verbose("Notified.")
+                             pscheduler.timedelta_as_seconds(refresh)) != ([],[],[]):
+                # Notified
                 pg.poll()
                 del pg.notifies[:]
+                log.debug("Notified.")
+
+        except select.error as ex:
+            err_no, message = ex
+            if err_no != errno.EINTR:
+                log.exception()
+                raise ex
 
 
-        # Until we hear otherwise...
-        next_refresh = refresh
+        failed = False
 
+        while not failed:
 
-        while True:
-
-            cursor.execute("""SELECT uuid, trynext from schedule_runs_to_schedule""")
+            cursor.execute("""SELECT uuid, runs, trynext from schedule_runs_to_schedule""")
 
             if cursor.rowcount == 0:
-                verbose("No runs to schedule.")
+                log.debug("No runs to schedule.")
                 break
 
             for row in cursor.fetchall():
 
-                uuid, trynext = row
+                uuid, runs, trynext = row
 
-                # TODO: This should come from som canonical source instead
-                # of building it here.
-                url = 'http://localhost:29285/tasks/' + uuid
+                url = pscheduler.api_url(path='/tasks/' + uuid)
 
-                verbose("Trying to schedule " + str(uuid) + " at " + str(trynext))
-                run_uri, start_time, end_time, error = pscheduler.run_post(url, trynext)
+                # For the first run only, push the start time out.
+                # See comment above near the declaration of
+                # first_run_offset.
+
+                if runs == 0:
+                    later_start = pscheduler.time_now() + first_run_offset
+                    if trynext < later_start:
+                        trynext = later_start                   
+
+                log.debug("Trying to schedule %s for %s at %s",
+                          uuid, trynext, url)
+                log.debug("URL is %s", url)
+                run_uri, start_time, end_time, error = \
+                    pscheduler.run_post(url, trynext, log)
                 if error is not None:
-                    verbose("  Unable: " + error)
+                    log.debug("Unable: %s", error)
+                    failed = True
                 else:
-                    verbose("  Secheduled for " + str(start_time) + " - " + str(end_time))
+                    log.debug("Scheduled for %s - %s at %s",
+                              start_time, end_time, run_uri)
 
 
 #
@@ -144,14 +146,14 @@ while True:
     except Exception as ex:
         ran = pscheduler.timedelta_as_seconds(pscheduler.time_now() - started)
 
+        log.exception()
+
         # Running longer than the backoff is a good excuse to try
         # starting over.
         if ran > backoff:
             backoff = initial_backoff
 
-        # TODO: Log this instead of simply spitting it out.
-        traceback.print_exc(file=sys.stderr)
+        log.debug("Backing off for %d seconds", backoff)
         time.sleep(backoff)
-        backoff *= 2
-
-
+        # TODO: Re-enable this.
+        #backoff *= 2

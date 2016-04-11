@@ -59,7 +59,7 @@ AS
 	    0 AS scheduled,
             runs,
             task.until,
-            normalized_now() AS trynext,
+            greatest(normalized_now(), start) AS trynext,
 	    participant
         FROM
             task
@@ -78,7 +78,7 @@ AS
             task.added,
             task.start,
             duration,
-            greatest(now(), max(upper(run.times))) AS after,
+            greatest(now(), task.start, max(upper(run.times))) AS after,
             task.repeat,
             max_runs,
 	    (SELECT COUNT(*)
@@ -88,7 +88,7 @@ AS
                  AND upper(times) > normalized_now()) AS scheduled,
             runs,
             task.until,
-            task_next_run(start, greatest(now(), max(upper(run.times))), repeat) AS trynext,
+            task_next_run(start, greatest(now(), task.start, max(upper(run.times))), repeat) AS trynext,
 	    task.participant
         FROM
             run
@@ -101,16 +101,17 @@ AS
     SELECT
         task,
 	uuid,
+	runs,
         trynext
     FROM
         interim
     WHERE
         enabled
---	AND participant = 0
---        AND ( (max_runs IS NULL)
---              OR (runs + scheduled) < max_runs )
---        AND ( (until IS NULL) OR (trynext < until) )
---        AND trynext + duration < (normalized_now() + schedule_time_horizon())
+	AND participant = 0
+        AND ( (max_runs IS NULL)
+              OR (runs + scheduled) < max_runs )
+        AND ( (until IS NULL) OR (trynext < until) )
+        AND trynext + duration < (normalized_now() + schedule_time_horizon())
     ORDER BY added
 ;
 

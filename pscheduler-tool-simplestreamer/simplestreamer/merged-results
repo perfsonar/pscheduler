@@ -17,6 +17,7 @@ succeeded = input['results'][0]['succeeded'] \
 results['succeeded'] = succeeded
 
 if succeeded:
+
     results['schema']       = 1
     results['dawdled']      = input['results'][0]['result']['dawdled']
     results['sent']         = input['results'][0]['result']['sent']

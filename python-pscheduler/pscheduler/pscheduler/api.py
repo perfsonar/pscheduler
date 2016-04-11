@@ -8,6 +8,10 @@ def api_root():
     "Return the standard root location of the pScheduler hierarchy"
     return '/pscheduler'
 
+def api_this_host():
+    "Return a fully-qualified name for this host"
+    return socket.getfqdn()
+
 
 def api_url(host = None,
             path = None,
@@ -18,7 +22,7 @@ def api_url(host = None,
     if path is not None and path.startswith('/'):
         path = path[1:]
     return protocol + '://' \
-        + (socket.getfqdn() if host is None else str(host)) \
+        + (api_this_host() if host is None else str(host)) \
         + ('' if port is None else (':' + str(port))) \
         + api_root() + '/'\
         + ('' if path is None else str(path))

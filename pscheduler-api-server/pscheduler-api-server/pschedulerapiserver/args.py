@@ -2,6 +2,8 @@
 # Argument-Related Functions
 #
 
+import pscheduler
+
 from flask import request
 
 
@@ -43,6 +45,15 @@ def arg_cardinal(name):
     except ValueError:
         raise ValueError("Invalid cardinal; expecting integer > 0")
     return cardinal
+
+
+def arg_json(name):
+    """Fetch and validate an argument as JSON"""
+    argval = request.args.get(name)
+    if argval is None:
+        return None
+    # This will throw a ValueError if something's wrong.
+    return pscheduler.json_load(argval)
 
 
 def is_expanded():

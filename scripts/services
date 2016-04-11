@@ -19,4 +19,7 @@ esac
 for SERVICE in ticker runner scheduler archiver
 do
     service "pscheduler-${SERVICE}" "${ACTION}"
+    [ "${ACTION}" = "stop" ] && killall "pscheduler-${SERVICE}" || true
 done
+
+service httpd "${ACTION}"

@@ -22,6 +22,11 @@ COMMANDS=\
 M4COMMANDS=\
 	internal
 
+PROFILE_D=\
+	pscheduler.csh \
+	pscheduler.sh
+
+
 ALLPROGRAMS=$(PROGRAMS) $(M4PROGRAMS)
 ALLCOMMANDS=$(COMMANDS) $(M4COMMANDS)
 
@@ -54,11 +59,17 @@ ifndef COMMANDSDIR
 	@echo No COMMANDSDIR specified for installation
 	@false
 endif
+ifndef PROFILEDDIR
+	@echo No PROFILEDDIR specified for installation
+	@false
+endif
 	mkdir -p $(BINDIR)
 	echo $(ALLPROGRAMS) AP
 	install -m 555 $(ALLPROGRAMS) $(BINDIR)
 	mkdir -p $(COMMANDSDIR)
 	install -m 555 $(ALLCOMMANDS) $(COMMANDSDIR)
+	mkdir -p $(PROFILEDDIR)
+	install -m 444 $(PROFILE_D) $(PROFILEDDIR)
 
 
 clean:
