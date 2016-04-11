@@ -31,6 +31,7 @@ make \
      BINDIR=$RPM_BUILD_ROOT/%{_bindir} \
      COMMANDSDIR=$RPM_BUILD_ROOT/%{_pscheduler_commands} \
      COMMANDSINSTALLED=%{_pscheduler_commands} \
+     PROFILEDDIR=%{_sysconfdir}/profile.d \
      install
 
 
