@@ -88,7 +88,7 @@ def main_program():
 
             try:
                 if select.select([pg],[],[],
-                                 pscheduler.timedelta_as_seconds(wait_time)) \
+                                 pscheduler.timedelta_as_seconds(next_refresh)) \
                                  != ([],[],[]):
                     pg.poll()
                     del pg.notifies[:]
@@ -154,11 +154,18 @@ def main_program():
                 }
 
 
+            archiver_in = pscheduler.json_dump(json)
+            log.debug("Running archiver %s with input %s", archiver, archiver_in)
+
             returncode, stdout, stderr = pscheduler.run_program(
                 [ "pscheduler", "internal", "invoke", "archiver", archiver, "archive" ],
-                stdin = pscheduler.json_dump(json),
+                stdin = archiver_in,
                 timeout = 10  # TODO: What's appropriate here?
                 )
+
+            log.debug("Archiver exited %d", returncode)
+            log.debug("Returned JSON from archiver: %s", stdout)
+            log.debug("Returned errors from archiver: %s", stderr)
 
             attempt = pscheduler.json_dump( [ {
                         "time": pscheduler.datetime_as_iso8601(datetime.datetime.now(tzlocal())),
@@ -168,6 +175,7 @@ def main_program():
                         } ] )
 
             if returncode != 0:
+
                 log.debug("Permanent Failure: %s", stderr)
                 update_cursor.execute("""UPDATE archiving
                                      SET
@@ -179,9 +187,25 @@ def main_program():
                                      WHERE id = %s""",
                                       [ attempt, run_id ])
                 pass  # TODO: Update with diags
+
             else:
-                # TODO: Validate the JSON that came back on stdout
-                returned_json = pscheduler.json_load(stdout)
+
+                try:
+                    returned_json = pscheduler.json_load(stdout)
+                except ValueError:
+                    log.error("Archiver %s returned invalid JSON", archiver)
+                    update_cursor.execute("""
+                        UPDATE archiving
+                        SET
+                            last_attempt = now(),
+                            next_attempt = now() + 'PT1H'::INTERVAL
+                        WHERE id = %s
+                        """, [ run_id ])
+
+                    continue
+
+                # TODO: Validate the JSON that came back
+
                 if returned_json['succeeded']:
                     log.debug("Succeeded: %s to %s", uuid, archiver)
                     update_cursor.execute("""UPDATE archiving
