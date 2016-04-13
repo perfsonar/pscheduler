@@ -68,7 +68,7 @@ pscheduler-core
 # Tests
 pscheduler-test-idle
 pscheduler-test-owdelay
-pscheduler-test-throughput
+#pscheduler-test-throughput
 pscheduler-test-simplestream
 pscheduler-test-trace
 
