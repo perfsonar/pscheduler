@@ -26,7 +26,7 @@ build: repo
 uninstall:
 	scripts/remove-all
 
-fresh: uninstall build
+fresh: uninstall clean build
 
 clean:
 	scripts/clean-all
