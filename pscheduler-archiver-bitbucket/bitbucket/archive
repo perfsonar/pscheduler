@@ -5,4 +5,9 @@
 
 cat > /dev/null
 
+cat <<EOF
+{ "succeeded": true }
+EOF
+
+
 exit 0
