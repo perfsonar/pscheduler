@@ -788,7 +788,15 @@ by the test being conducted.
 \end{itemize}
 
 \calloutitem{Standard Output} A single JSON object representing the
-result.
+result.  This object must contain at least the following:
+
+\begin{itemize}
+
+\item{\tt succeeded} - A \jsontype{Boolean} indicating whether the
+  test was a success or failure.
+
+\end{itemize}
+
 
 \calloutitem{Standard Error} Empty if successful, plain text error
 messages on error.

@@ -10,13 +10,12 @@ input = pscheduler.json_load(exit_on_error=True);
 
 # TODO: Validate the input
 
-results = {}
-
 succeeded = input['results'][0]['succeeded']
+
+results = { 'succeeded' : succeeded }
 
 if succeeded:
     results['schema']       = 1
-    results['succeeded']    = succeeded
     results['duration']     = input['results'][0]['result']['time-slept']
 
 pscheduler.succeed_json(results)
