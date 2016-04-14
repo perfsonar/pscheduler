@@ -16,6 +16,7 @@ succeeded = input['results'][0]['succeeded']
 
 if succeeded:
     results['schema']       = 1
+    results['succeeded']    = succeeded
     results['duration']     = input['results'][0]['result']['time-slept']
 
 pscheduler.succeed_json(results)
