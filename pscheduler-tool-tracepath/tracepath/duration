@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# Determine the duration of a specified test.
+#
+
+# Tracepath does a hardwaired maximum of 31 hops with a (guessed)
+# timeout of 2 seconds per hop = 62 seconds being the longest possible
+# run.  Add a few seconds of buffer time.
+
+echo 'PT1M5S'
+exit 0

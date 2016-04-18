@@ -1,0 +1,206 @@
+#!/usr/bin/python
+#
+# Run a test.  Just the test spec is provided on stdin.
+#
+
+
+import icmperror
+import pscheduler
+import re
+
+input = pscheduler.json_load(exit_on_error=True);
+
+# TODO: Validate the input
+# TODO: Verify can-run
+
+participant = input['participant']
+
+if participant != 0:
+    pscheduler.fail("Invalid participant.")
+
+spec = input['test']['spec']
+
+
+
+#
+# Figure out how to invoke the program
+#
+
+argv = []
+
+tracepath = 'tracepath'
+try:
+    ipversion = spec['ip-version']
+    if ipversion == 6:
+        tracepath = 'tracepath6'
+except KeyError:
+    pass
+argv.append(tracepath)
+
+
+
+try:
+    hostnames = spec['hostnames']
+    if not hostnames:
+        argv.append('-n')
+except KeyError:
+    hostnames = False
+
+try:
+    length = spec['length']
+    argv.append('-l')
+    argv.append(str(length))
+except KeyError:
+    pass
+
+
+# At some point, tracepath changed the way its command line works to
+# be more compatible with traceroute's options.  Since it doesn't
+# provide a way to determine which scheme is in use, the only way to
+# figure it out is to run the program, expect a return code of 255 and
+# figure out which style of invocation is expects.  That's quality
+# with a capital "K."
+#
+# Earlier:  tracepath [-n] [-l <len>]                <destination>[/<port>]
+# Later:    tracepath [-n] [-l <len>] [-b] [-p port] <destination>
+
+# TODO: Investigate whether we care about the -b switch.
+
+status, stdout, stderr = pscheduler.run_program( [tracepath], short=True)
+if status != 255 or '<destination>' not in stderr:
+    pscheduler.fail(
+        "Unable to determine which version of tracepath is installed.")
+
+if '[-p port]' in stderr:
+    traceroute_compatible = True
+else:
+    traceroute_compatible = False
+
+
+dest = spec['dest']
+
+try:
+    port = str(spec['dest-port'])
+    if traceroute_compatible:
+        argv.append('-p')
+        argv.append(port)
+    else:
+        dest += '/' + str(port)
+except KeyError:
+    pass
+
+argv.append(dest)
+
+
+#
+# Run the test
+#
+
+
+status, stdout, stderr = pscheduler.run_program( argv, timeout = 62 )
+
+# TODO: Re-enable this.
+if status != 0:
+    pscheduler.fail(stderr)
+
+# TODO Remove this.
+xxstdout = """
+ 1?: [LOCALHOST]     pmtu 1500
+ 1:  10.0.2.2 (10.0.2.2)                                    0.254ms
+ 1:  10.0.2.2 (10.0.2.2)                                    0.158ms
+ 2:  dc-desk-wifi-rtr1.internet2.edu (192.52.179.65)        2.440ms asymm 64
+ 3:  clpk-sura.maxgigapop.net (206.196.177.73)              2.981ms asymm 63
+ 4:  ae0.mcln-core.maxgigapop.net (206.196.178.80)          4.486ms asymm 62
+ 5:  te0-0-1-0.nr11.b005897-1.dca01.atlas.cogentco.com (38.122.166.5)   4.873ms asymm 61
+ 6:  te0-0-0-5.agr22.dca01.atlas.cogentco.com (154.24.27.113)   4.571ms asymm 60
+ 7:  te0-8-0-7.ccr41.dca01.atlas.cogentco.com (154.54.2.249)   4.925ms asymm 59
+ 8:  be2112.ccr41.atl01.atlas.cogentco.com (154.54.7.158)  15.718ms asymm 58
+ 9:  be2123.ccr22.mia01.atlas.cogentco.com (154.54.24.198)  30.084ms asymm 57
+10:  te0-0-1-0.agr11.mia01.atlas.cogentco.com (154.54.1.170)  30.504ms asymm 56
+11:  te0-0-2-2.nr11.b015452-0.mia01.atlas.cogentco.com (154.24.31.62)  30.337ms asymm 55
+12:  38.104.90.50 (38.104.90.50)                           29.806ms asymm 54
+13:  GW-10G-WEST-7-MIA.serverpronto.com (69.60.96.98)      30.835ms asymm 53
+14:  coop.notonthe.net (65.111.172.101)                    30.180ms reached
+     Resume: pmtu 1500 hops 14 back 52
+"""
+
+
+
+#
+# Dissect the results
+#
+
+try:
+    hostnames = spec['hostnames']
+except KeyError:
+    hostnames = True
+
+try:
+    as_ = spec['as']
+except KeyError:
+    as_ = False
+
+hops = []
+last_hop = 0
+
+for line in stdout.split('\n'):
+    line = re.sub('\s+', ' ', line).strip()
+    matches = re.match('^(\d*):\s+(.*)$', line)
+    if matches is None:
+        continue
+    this_hop =  int(matches.group(1))
+
+    # Repeats of a hop replace earlier ones
+    if this_hop == len(hops):
+        hops.pop()
+
+    elements = matches.group(2).split()
+
+    hop = {}
+
+    # No reply means no results
+
+    if elements[0] == 'no' and elements[1] == 'reply':
+        hops.append(hop)
+        continue
+
+    # Hostname and IP
+
+    if hostnames:
+        hostname = elements.pop(0)
+        ip = elements.pop(0)[1:-1]
+        hop['ip'] = ip
+        if hostname != ip:
+            hop['hostname'] = hostname
+    else:
+        hop['ip'] = elements.pop(0)
+
+    # RTT (ms)
+
+    rtt = float(elements.pop(0)[:-2]) / 1000.0
+    hop['rtt'] = 'PT%fS' % rtt
+
+    # Drop asymmetry if there is any.
+
+    if len(elements) > 0 and elements[0] == 'asymm':
+        elements.pop(0)
+        elements.pop(0)
+
+    # Anything left will either be 'reached' or an error
+
+    if len(elements) > 0:
+        reached_err = elements.pop(0)
+        if reached_err[0] == '!':
+            # TODO: Translate the error
+            hop['error'] = icmperror.translate(reached_err)
+
+
+    hops.append(hop)
+
+
+# Spit out the results
+
+pscheduler.succeed_json( {
+        'succeeded': True,
+        'hops': hops
+        } )

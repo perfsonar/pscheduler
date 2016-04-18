@@ -1,0 +1,91 @@
+#!/usr/bin/python
+#
+# Determine if this tool can run a test based on a test spec.
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True);
+
+# TODO: Should be checking the package schema and the task spec schema.
+# TODO: Should be validating.
+
+try:
+    if json['type'] != 'trace':
+        pscheduler.fail('Unsupported test type')
+except KeyError:
+    pscheduler.fail('Missing test type')
+
+
+spec = json['spec']
+
+errors = []
+
+def check_with_error(name, error):
+    if name in spec:
+        errors.append(error)
+
+
+try:
+    probe_type = spec['probe-type']
+    if probe_type != 'udp':
+        errors.append("Probe type '%s' is not supported" % probe_type)
+except KeyError:
+    pass  # None is okay, default behavior is UDP
+
+
+try:
+    length = spec['length']
+    # Length must be in 28..sys.maxint
+    if type(length) == int and (length < 28 or length > sys.maxint):
+        errors.append("Cannot handle specified packet length")
+except KeyError:
+    pass
+
+
+try:
+    fragment = spec['fragment']
+    if fragment != False:
+        errors.append("Allowing fragmentation is not supported")
+except KeyError:
+    pass
+
+
+check_with_error('first-ttl', "Cannot control first TTL")
+
+# TODO: source?
+
+# Note that the version of tracepath in CentOS 6 (20071127) supports
+# _only_ 31 hops.  A -m switch supporting 1..255 hops was added to the
+# sources on 2013-02-16 and appears to have been backported by Red Hat
+# in an RHEL7 update.
+
+try:
+    hops = spec['hops']
+    if hops != 31:
+        errors.append("Cannot set hop value to other than 31")
+except KeyError:
+    pass
+
+# hostnames is okay whether on, off or missing.
+
+check_with_error('tos', "Cannot control IP TOS")
+check_with_error('wait', "Cannot control response wait time")
+check_with_error('sendwait', "Cannot control delay between sends")
+
+try:
+    as_ = spec['as']
+    if as_ != False:
+        errors.append("AS lookup is not supported")
+except KeyError:
+    pass
+
+
+
+if len(errors) > 0:
+    pscheduler.fail('\n'.join(errors))
+
+pscheduler.succeed()

@@ -82,6 +82,7 @@ pscheduler-test-trace
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-snooze
+pscheduler-tool-tracepath
 
 # Archivers
 pscheduler-archiver-bitbucket
