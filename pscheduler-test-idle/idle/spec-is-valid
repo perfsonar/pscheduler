@@ -32,7 +32,7 @@ for item in [
 
 try:
     if pscheduler.iso8601_as_timedelta(json['duration']) is None:
-        pscheduler.fail('Invalid duration "' + json[duration] + '"')
+        pscheduler.fail('Invalid duration "' + json['duration'] + '"')
     del json['duration']
 except KeyError:
     pscheduler.fail('No duration in test specification')
