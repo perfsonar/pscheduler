@@ -3,6 +3,7 @@
 #
 
 import pscheduler
+import time
 
 from pschedulerapiserver import application
 
@@ -115,36 +116,63 @@ def tasks_uuid_runs_run(task, run):
 
     if request.method == 'GET':
 
-        # TODO: Should handle POST, PUT of full participant data and DELETE
-        dbcursor().execute("""
-            SELECT
-                lower(run.times),
-                upper(run.times),
-                upper(run.times) - lower(run.times),
-                task.participant,
-                task.nparticipants,
-                run.part_data,
-                run.part_data_full,
-                run.result,
-                run.result_full,
-                run.result_merged,
-                run_state.enum,
-                run_state.display
-            FROM
-                run
-                JOIN task ON task.id = run.task
-                JOIN run_state ON run_state.id = run.state
-            WHERE
-                task.uuid = %s
-                AND run.uuid = %s
-            """, [task, run])
+        wait_local = arg_boolean('wait-local')
+        wait_merged = arg_boolean('wait-merged')
 
-        if dbcursor().rowcount == 0:
-            return not_found()
+        if wait_local and wait_merged:
+            return error("Cannot wait on local and merged results")
+
+        # 40 tries at 0.25s intervals == 10 sec.
+        tries = 40 if (wait_local or wait_merged) else 1
+
+        while tries:
+
+            dbcursor().execute("""
+                SELECT
+                    lower(run.times),
+                    upper(run.times),
+                    upper(run.times) - lower(run.times),
+                    task.participant,
+                    task.nparticipants,
+                    run.part_data,
+                    run.part_data_full,
+                    run.result,
+                    run.result_full,
+                    run.result_merged,
+                    run_state.enum,
+                    run_state.display
+                FROM
+                    run
+                    JOIN task ON task.id = run.task
+                    JOIN run_state ON run_state.id = run.state
+                WHERE
+                    task.uuid = %s
+                    AND run.uuid = %s
+                """, [task, run])
+
+            if dbcursor().rowcount == 0:
+                return not_found()
+
+            row = dbcursor().fetchone()
+
+            if not (wait_local or wait_merged):
+                break
+            else:
+                if (wait_local and row[7] is None) \
+                        or (wait_merged and row[9] is None):
+                    time.sleep(0.25)
+                    tries -= 1
+                else:
+                    break
+
+        # Return a result Whether or not we timed out and let the
+        # client sort it out.
 
         result = {}
-        row = dbcursor().fetchone()
-        result['href'] = request.url
+
+        # This strips any query parameters
+        result['href'] = urlparse.urljoin( request.url,
+                                           urlparse.urlparse(request.url).path)
         result['start-time'] = pscheduler.datetime_as_iso8601(row[0])
         result['end-time'] = pscheduler.datetime_as_iso8601(row[1])
         result['duration'] = pscheduler.timedelta_as_iso8601(row[2])
