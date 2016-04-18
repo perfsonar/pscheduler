@@ -34,6 +34,7 @@ class Log():
                  level=INFO,    # Logging level
                  debug=False,   # Force level to DEBUG
                  verbose=False, # Log to stderr, too.
+                 quiet=False,   # Don't log anything on startup
                  signals=True   # Enable debug on/off with SIGUSR1/SIGUSR2
                  ):
 
@@ -76,7 +77,8 @@ class Log():
             signal.siginterrupt(signal.SIGUSR1, False)
             signal.siginterrupt(signal.SIGUSR2, False)
 
-        self.info("Started")
+        if not quiet:
+            self.info("Started")
 
 
 
