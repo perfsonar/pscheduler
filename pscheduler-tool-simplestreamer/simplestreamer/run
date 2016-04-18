@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Run a test.  Just the test spec is provided on stdin.
+# Run a test.
 #
 
 import datetime
@@ -81,7 +81,7 @@ if participant == 0:
         dawdle *= random.random()
         time.sleep(dawdle)
     except KeyError:
-        dawdle = datetime.timedelta()
+        dawdle = 0
 
     # Connect and send the material
 
@@ -93,21 +93,31 @@ if participant == 0:
     except KeyError:
         material = "Data sent at " + str(datetime.datetime.now())
 
+    tries = 10
+    sleep_time = pscheduler.timedelta_as_seconds(timeout) / tries
 
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    succeeded = False
 
-        server_address = (input['test']['spec']['receiver'],
-                          input['participant-data'][1]['listen-port'])
-        sock.settimeout(time_left())
-        sock.connect(server_address)
-        # TODO: How do we check for success?
-        sock.sendall(material)
-        succeeded = True
-    except Exception as ex:
-        log.exception()
-        error = "Sender exception: " + str(ex) \
-            + " " + traceback.format_exc()
+    while tries:
+
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+            server_address = (input['test']['spec']['receiver'],
+                              input['participant-data'][1]['listen-port'])
+            sock.settimeout(time_left())
+            sock.connect(server_address)
+            # TODO: How do we check for success?
+            sock.sendall(material)
+            succeeded = True
+            error = None
+            break
+        except Exception as ex:
+            error = "Sender exception: " + str(ex) \
+                + " " + traceback.format_exc()
+            time.sleep(sleep_time)
+
+        tries -= 1
 
 
     results = {
