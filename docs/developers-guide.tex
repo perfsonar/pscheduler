@@ -83,15 +83,19 @@ Follow these steps to configure the build/development system:
 \item \rootcommand{/tmp/system-prep}
 \end{enumerate}
 
+
 If the system is a VirtualBox VM and you intend to use a shared folder
-for development, the VM must have the ability to create symbolix links
-on those filesystems.  This can be enabled by shutting down the guest
-and executing executing the following command on the host:
+for development, the VM must have the ability to create symbolic links
+on those filesystems.  This requires at least VirtualBox verion 5.0.5
+and can be enabled by shutting down the guest and executing executing
+the following command on the host:
 
 \begin{lstlisting}[language=json,firstnumber=1]
 VBoxManage setextradata VM-NAME \
     VBoxInternal2/SharedFoldersEnableSymlinksCreate 1
 \end{lstlisting}
+
+
 
 If the system is a virtual machine, this is a good point to create a
 snapshot or export it as an appliance.
