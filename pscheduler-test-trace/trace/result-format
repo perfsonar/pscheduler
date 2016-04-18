@@ -18,13 +18,12 @@ json = pscheduler.json_load(exit_on_error=True)
 if format == 'text/plain':
    template = None
 
-   hop_template = """
-    {number}: \
-{.section hostname}{hostname} ({.or}No Response{.end}\
-{.section ip}{ip}{.end}\
+   hop_template = """{number}:  \
+{.section hostname}{hostname} ({.end}\
+{.section ip}{ip}{.or}{.section hostname}NONE{.or}No Response{.end}{.end}\
 {.section hostname}){.end}\
-{.section as}  AS{as}{.end}\
-{.section rtt}  {rtt} ms{.end}
+{.section as} AS{as}{.end}\
+{.section rtt} {rtt} ms{.end}
 """
 
    end_template = None
