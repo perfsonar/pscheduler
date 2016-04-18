@@ -41,7 +41,7 @@ task_json_text = """
         "#max-runs": 10
     },
 
-    "test": {
+    "#test": {
         "type": "simplestream",
         "spec": {
             "schema": 1,
@@ -60,14 +60,21 @@ task_json_text = """
         }
     },
 
-    "#test": {
+    "test": {
         "type": "idle",
         "spec": {
             "schema": 1,
             "duration": "PT5S",
             "parting-comment": "Adios!"
         }
-    }
+    },
+
+    "archives": [
+        {
+            "name": "bitbucket",
+            "data": {}
+        }
+    ]
 }
 """
 
@@ -193,45 +200,20 @@ time.sleep(wait_time)
 print " Done"
 
 
-# Temporary wait until we have a better run/result interlock.
-# TODO: Remove this
-
-print_partial("Temporary wait for results to be produced.  Badger Mark mercilessly about this...")
-time.sleep(5)
+print_partial("Fetching results...")
+status, result = pscheduler.url_get( run_url,
+                                     params={ 'wait': True },
+                                     throw=False )
 print " Done"
 
+if status != 200:
+    pscheduler.fail("Failed to fetch run: %d: %s" % (status, result))
 
-#
-# Get the final result
-#
-
-tries = 40
-
-print_partial("Fetching result...")
-while tries > 0:
-    tries -= 1
-    status, result = pscheduler.url_get(run_url, throw=False)
-    print_partial(".")
-    if status == 200:
-        if result['result-merged'] is not None:
-            print " Done"
-            break
-        time.sleep(0.25)
-    else:
-        print
-        pscheduler.fail("Failed to fetch run: %d: %s" % (status, result))
-
-if tries == 0:
-    pscheduler.fail("Couldn't find full result.")
 
 print
 print "FINAL FULL RESULT:"
 print
 
-if not result['result-merged']['succeeded']:
-    print "RUN FAILED.  Full JSON results:"
-    print pscheduler.json_dump(result['result-full'], pretty=True)
-    pscheduler.fail()
 
 print "JSON:"
 print pscheduler.json_dump(result['result-merged'], pretty=True)
