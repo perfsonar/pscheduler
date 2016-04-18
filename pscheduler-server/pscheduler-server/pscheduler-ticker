@@ -48,9 +48,9 @@ cursor = pscheduler.pg_cursor(dsn)
 # Main Program
 #
 
-try:
+def main_program():
 
-    # TODO: This needs a whole lot of bulletproofing.
+    # TODO: Bulletproof the SQL queries
 
     cursor.execute("SELECT boot()")
 
@@ -60,9 +60,8 @@ try:
         cursor.execute("SELECT ticker()")
 
         if cursor.rowcount == 0:
-            # TODO: Log this
-            sys.stderr.write("Got no rows back from the database, retrying in"
-                             + str(options.retry) + "\n")
+            log.debug("Got no rows back from the database, retrying in"
+                      + str(options.retry) + "\n")
             sleep(pscheduler.timedelta_as_seconds(options.retry))
             continue
 
@@ -74,11 +73,4 @@ try:
     # Not that this will ever be reached...
     pg.close()
 
-except KeyboardInterrupt:
-    log.debug("Interrupted")
-    sys.stderr.write("Interrupted\n")
-    exit(0)
-except Exception as ex:
-    log.exception()
-    raise ex
-
+pscheduler.safe_run(lambda: main_program())

@@ -174,6 +174,8 @@ def main_program():
                         "stderr": stderr
                         } ] )
 
+
+
             if returncode != 0:
 
                 log.debug("Permanent Failure: %s", stderr)
@@ -190,21 +192,12 @@ def main_program():
 
             else:
 
+
                 try:
                     returned_json = pscheduler.json_load(stdout)
                 except ValueError:
-                    log.error("Archiver %s returned invalid JSON", archiver)
-                    update_cursor.execute("""
-                        UPDATE archiving
-                        SET
-                            last_attempt = now(),
-                            next_attempt = now() + 'PT1H'::INTERVAL
-                        WHERE id = %s
-                        """, [ run_id ])
-
+                    log.error("Archiver %s returned invalid JSON: %s", archiver, stdout)
                     continue
-
-                # TODO: Validate the JSON that came back
 
                 if returned_json['succeeded']:
                     log.debug("Succeeded: %s to %s", uuid, archiver)
@@ -238,39 +231,4 @@ def main_program():
                         next_refresh = next_delta
 
 
-
-#
-# Fail-Safe Wrapper for the main program with restart and a binary
-# backoff similar to what's used by Ethernet to prevent continuous
-# tries.
-#
-
-initial_backoff = 0.25
-
-backoff = initial_backoff
-
-while True:
-
-    try:
-        started = datetime.datetime.now(tzlocal())
-        main_program()
-
-    except KeyboardInterrupt:
-        print
-        break
-
-    except Exception as ex:
-        ran = pscheduler.timedelta_as_seconds(
-            datetime.datetime.now(tzlocal()) - started)
-
-        # Running longer than the backoff is a good excuse to try
-        # starting over.
-        if ran > backoff:
-            backoff = initial_backoff
-
-        # TODO: Log this instead of simply spitting it out.
-        traceback.print_exc(file=sys.stderr)
-        time.sleep(backoff)
-        backoff *= 2
-
-
+pscheduler.safe_run(lambda: main_program())

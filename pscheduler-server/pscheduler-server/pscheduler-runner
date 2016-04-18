@@ -3,27 +3,16 @@
 # Execute runs of tasks and put the results into the database.
 #
 
-# TODO: Replace requests.* with pscheduler equivalents.
-
 # TODO: See which of these are still needed.
-import datetime
 import detach
 import errno
-import json
 import optparse
-import os
 import pscheduler
 import psycopg2
 import psycopg2.extensions
-import requests
 import select
-import signal
-import subprocess
 import sys
 import time
-import traceback
-
-from dateutil.tz import tzlocal
 
 
 # Gargle the arguments
@@ -35,11 +24,10 @@ opt_parser.add_option("-c", "--channel",
                       action="store", type="string", dest="channel",
                       default="run_change")
 
-# TODO: Do we want pscheduler as the default here?
 opt_parser.add_option("-d", "--dsn",
                       help="Database connection string",
                       action="store", type="string", dest="dsn",
-                      default="dbname=pscheduler")
+                      default="")
 
 # NOTE: Changing the refresh interval will have an effect on how many
 # forked processes are running, connected to the database and waiting
@@ -144,7 +132,7 @@ class Run:
         #
 
         if partdata is None:
-            log.error("%s: Got NULL part_data_full", id)
+            log.error("%d: Got NULL part_data_full", id)
 
         tool_input = {
             'schema': 1,
@@ -175,7 +163,6 @@ class Run:
         if len(stderr) == 0:
             stderr = None
 
-        # TODO: Remove this.
         if returncode == 0:
             log.debug("%d: Test Succeeded: %s", id, stdout)
         else:
@@ -209,11 +196,19 @@ class Run:
         # The lead participant takes care of gathering and merging the finished results.
 
         if participant == 0:
+
+            log.debug("%d: Doing lead participant duties", id)
            
             # Wait until the scheduled time has passed, which is the
             # only time we can be sure results might be available.
 
-            time.sleep(pscheduler.time_until_seconds(end))
+            # TODO:  Skip sleep if this is a single-participant test?
+
+            wait_time = pscheduler.time_until_seconds(end)
+            log.debug("%d: Waiting for task end time to pass (%s)",
+                      id, wait_time)
+            time.sleep(wait_time)
+            log.debug("%d: Task end time has passed", id)
 
             # Fetch and combine the results.
 
@@ -222,25 +217,32 @@ class Run:
                                         % (task_uuid, run_uuid) )
                      for host in participants ]
 
+            log.debug("%d: Runs are %s", id, runs)
 
-            full_result = []
+            try:
+                local_result = pscheduler.json_load(stdout)
+            except ValueError as ex:
+                log.error("%d: Tool %s returned invalid JSON", id, tool)
+                log.exception()
+                return
 
-            # Snooze a bit until the results are posted.
-            # TODO: This is a race condition.  Need a true interlock.
-            time.sleep(3)
+            full_result = [ local_result ]
+            log.debug("%d: Stored local result", id)
 
-            for run in runs:
-                # TODO: This should try repeatedly
-                r = requests.get(run)
-                if r.status_code != 200:
-                    raise Exception("Bad status code " + str(r.status_code)
-                                    + ": " +  r.text)
-                try:
-                    full_result.append(pscheduler.json_load(str(r.text))['result'])
-                except Exception as ex:
-                    pscheduler.exception()
-                    # TODO: This should produce a result indicating an error
+            for run in runs[1:]:
+
+                log.debug("%d: Fetching run %s", id, run)
+
+                status, result = pscheduler.url_get( run,
+                                     params={ 'wait-local': True },
+                                     throw=False )
+
+                if status == 200:
+                    full_result.append(result)
+                else:
+                    log.warning("%d: Unable to retrieve run %s", id, run)
                     full_result.append(None)
+
 
             log.debug("%d: Full result: %s",
                       id, pscheduler.json_dump(full_result, pretty=True))
@@ -251,17 +253,25 @@ class Run:
                 'run': pscheduler.json_dump({ 'result-full' : full_result })
                 }
 
+
+            # TODO: Store the local result in the database instead of
+            # doing it through the REST API.
+
             for run in runs:
                 log.debug("%d: Storing result in %s", id, run)
-                r = requests.put(run, params=full_params)
-                if r.status_code != 200:
-                    raise Exception("Bad status code: " +  r.text)
+                status, returned = pscheduler.url_put(run,
+                                                      params=full_params,
+                                                      throw = False)
+                if status != 200:
+                    log.warning("%d: Unable to update run %s: %d %s",
+                                id, run, status, returned)
 
 
         # TODO: Put the task into the finished state
 
         cursor.close()
         db.close()
+        log.debug("%d: Run complete", id)
 
 
 
@@ -270,75 +280,79 @@ class Run:
 # Main Program
 #
 
-# TODO: This should be encapsulated in something that catches
-# exceptions and restarts (within reason).
+def main_program():
 
-pg = pscheduler.pg_connection(dsn)
-cursor = pg.cursor()
-cursor.execute("LISTEN " + options.channel)
+    pg = pscheduler.pg_connection(dsn)
+    cursor = pg.cursor()
+    cursor.execute("LISTEN " + options.channel)
 
 
-while True:
+    while True:
 
-    # Operate only on runs that are scheduled to start before the next
-    # forced refresh.
+        # Operate only on runs that are scheduled to start before the next
+        # forced refresh.
 
-    cursor.execute("""SELECT
-                          run,
-                          start_in
-                      FROM
-                          schedule_upcoming
-                      WHERE
-                          start_in < %s
-                      ORDER BY start_in
+        cursor.execute("""SELECT
+                              run,
+                              start_in
+                          FROM
+                              schedule_upcoming
+                          WHERE
+                              start_in < %s
+                          ORDER BY start_in
                    """, [refresh]);
 
-    if cursor.rowcount:
-        # TODO: There must be a nicer way to take this array slice as args.
-        rows = cursor.fetchall()
-        log.debug(str([ "RUN " + str(row[0]) + " " + str(row[1]) for row in rows ]) )
-        runs = [ Run(row[0], row[1]) for row in rows ]
-        wait_time = rows[0][1]
+        if cursor.rowcount:
 
-        # Do this here to guarantee that we don't pick up rows for
-        # runs we just started in the next iteration of the loop.
+            # TODO: There must be a nicer way to take this array slice as args.
+            rows = cursor.fetchall()
+            log.debug(str([ "RUN " + str(row[0]) + " " + str(row[1]) for row in rows ]) )
+            runs = [ Run(row[0], row[1]) for row in rows ]
+            wait_time = rows[0][1]
 
-        cursor.execute( "UPDATE run SET state = run_state_on_deck() WHERE id in %s",
-                    (tuple([row[0] for row in rows]),) )
-        log.debug("Put %d runs on deck", len(runs))
+            # Do this here to guarantee that we don't pick up rows for
+            # runs we just started in the next iteration of the loop.
 
+            cursor.execute( "UPDATE run SET state = run_state_on_deck() WHERE id in %s",
+                            (tuple([row[0] for row in rows]),) )
+            log.debug("Put %d runs on deck", len(runs))
 
-    else:
-        log.debug("Nothing to do.")
-        runs = []
-        wait_time = refresh
+        else:
 
-
-    if not pscheduler.timedelta_is_zero(wait_time):
-
-        # Wait for a notification or the wait time to elapse.  Eat all
-        # notifications as a group; we only care that we were notified.
-
-        log.debug("Next run or check in %s", wait_time)
-
-        # TODO: This try needs to be brought to the other programs.
-
-        try:
-            if select.select([pg],[],[],
-                             pscheduler.timedelta_as_seconds(wait_time)) \
-                             != ([],[],[]):
-                # Notified
-                pg.poll()
-                del pg.notifies[:]
-                log.debug("Schedule change.")
-
-        except select.error as ex:
-
-            err_no, message = ex
-            if err_no != errno.EINTR:
-                log.exception()
-                raise ex
+            log.debug("Nothing to do.")
+            runs = []
+            wait_time = refresh
 
 
-# Not that this will ever be reached...
-pg.close()
+        if not pscheduler.timedelta_is_zero(wait_time):
+
+            # Wait for a notification or the wait time to elapse.  Eat all
+            # notifications as a group; we only care that we were notified.
+
+            log.debug("Next run or check in %s", wait_time)
+
+            # TODO: This try needs to be brought to the other programs.
+            # Better, make it a function in db.py.
+
+            try:
+                if select.select([pg],[],[],
+                                 pscheduler.timedelta_as_seconds(wait_time)) \
+                                 != ([],[],[]):
+                    # Notified
+                    pg.poll()
+                    del pg.notifies[:]
+                    log.debug("Schedule change.")
+
+            except select.error as ex:
+
+                err_no, message = ex
+                if err_no != errno.EINTR:
+                    log.exception()
+                    raise ex
+
+    # Not that this will ever be reached...
+    pg.close()
+
+
+
+pscheduler.safe_run(lambda: main_program())
