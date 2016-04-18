@@ -65,7 +65,11 @@ opt_parser.add_option("--max-runs",
                       action="store", type="int", default=1,
                       dest="max_runs")
 
-# TODO: Need a --randslip (float) switch.
+# TODO: Find a way to get rid of the rounding error in this.
+opt_parser.add_option("--randslip",
+                      help="Random slip fractiom (float in [0.0..1.0])",
+                      action="store", type="float",
+                      dest="randslip")
 
 opt_parser.add_option("--repeat",
                       help="Repeat interval (ISO 8601 Duration)",
@@ -112,6 +116,11 @@ if options.repeat is not None:
     repeat = pscheduler.iso8601_as_timedelta(options.repeat)
     if repeat is None:
         pscheduler.fail("Invalid --repeat; must be ISO 8601 duration")
+
+if options.randslip is not None:
+    randslip = options.randslip
+    if randslip < 0.0 or randslip > 1.0:
+        pscheduler.fail("Invalid --randslip; must be in [0.0..1.0]")
 
 if options.slip is not None:
     slip = pscheduler.iso8601_as_timedelta(options.slip)
@@ -188,6 +197,9 @@ if options.max_runs > 1:
 
 if options.repeat is not None:
     task['schedule']['repeat'] = options.repeat
+
+if options.randslip is not None:
+    task['schedule']['randslip'] = options.randslip
 
 if options.slip is not None:
     task['schedule']['slip'] = options.slip
