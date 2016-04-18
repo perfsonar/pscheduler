@@ -56,7 +56,7 @@ def time_until(when):
     
     now = time_now()
     if when < now:
-        return timedelta()
+        return datetime.timedelta()
     return when - now
 
 
