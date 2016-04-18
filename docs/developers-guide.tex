@@ -83,7 +83,11 @@ Follow these steps to configure the build/development system:
 \item \rootcommand{/tmp/system-prep}
 \end{enumerate}
 
-
+If the system is a VirtualBox VM, enable the creation of symbolic
+links in shared folders by executing the command {\tt VBoxManage
+  setextradata VM-NAME VBoxInternal2/SharedFoldersEnableSymlinksCreate
+  1} on the host, where {\tt VM-NAME} is the name of the virtual
+machine.
 
 If the system is a virtual machine, this is a good point to create a
 snapshot or export it as an appliance.
