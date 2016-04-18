@@ -30,13 +30,14 @@ duration = pscheduler.iso8601_as_timedelta(duration_iso)
 if duration is None:
     pscheduler.fail_other(2, "Missing or invalid duration " + duration_iso)
 else:
-    if duration < datetime.timedelta(seconds=5):
-        pscheduler.fail("Won't sleep for such a short time.")
+    if duration > datetime.timedelta(seconds=60):
+        pscheduler.fail("Won't sleep for such a long time.")
 
 
 # Perform the test
 
-# The output is just mocked up.
+# The output is just mocked up since there's no real tool being run.
+
 output = ''
 
 try:
