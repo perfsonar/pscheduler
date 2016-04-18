@@ -46,3 +46,7 @@ def pg_cursor(dsn='', autocommit=True):
 
     pg = pg_connection(dsn, autocommit)
     return pg.cursor()
+
+
+# TODO: Need a routine that does the select wait currently
+# rubberstamped into the services to do timed waits for notifications.
