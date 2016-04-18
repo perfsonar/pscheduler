@@ -24,6 +24,7 @@ Requires:	python-detach
 Requires:	python-isodate
 Requires:	python-psycopg2
 Requires:	python-subprocess32
+Requires:	python-tzlocal
 # This is because the Log class uses debugging.
 Requires:	rsyslog-debug
 

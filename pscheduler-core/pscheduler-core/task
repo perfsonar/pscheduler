@@ -81,8 +81,6 @@ opt_parser.add_option("--slip",
                       action="store", type="string",
                       dest="slip")
 
-# TODO: Is this a reasonable default, or should we let punt and let
-# the database decide?
 opt_parser.add_option("--start",
                       help="Start time",
                       action="store", type="string",
@@ -128,13 +126,18 @@ if options.slip is not None:
         pscheduler.fail("Invalid --slip; must be ISO 8601 duration")
 
 if options.start is not None:
-    # TODO: Validate start.  See database source for valid values.
+    # TODO: Support "Pxx" and "@Pxx" formats like the database does
     # Should have a module function that does this.
+    start = pscheduler.iso8601_as_datetime(options.start, localize=True)
+    if start <= pscheduler.time_now():
+        pscheduler.fail("Invalid --start; must be in the future.")
     pass
 
 if options.until is not None:
-    until = pscheduler.iso8601_as_datetime(options.until)
-    # TODO: Make sure this value isn't in the past.
+    # TODO: Support "Pxx" and "@Pxx" formats like the database does
+    until = pscheduler.iso8601_as_datetime(options.until, localize=True)
+    if until <= pscheduler.time_now():
+        pscheduler.fail("Invalid --until; must be in the future.")
 
 if options.wait < 0:
     pscheduler.fail("Invalid --wait; must be 0 or more")

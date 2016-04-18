@@ -30,7 +30,9 @@ python-detach
 python-isodate
 python-jsontemplate
 python-ntplib
+python-pytz
 python-subprocess32
+python-tzlocal
 
 # Flask and its dependencies
 python-itsdangerous
