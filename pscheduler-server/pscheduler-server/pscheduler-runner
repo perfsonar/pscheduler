@@ -77,6 +77,11 @@ class Run:
                     return
 
                 log.debug("Started runner for ID %d", id)
+
+                # TODO: Need to find a nice way to catch and log
+                # exceptions from these.  safe_run() doesn't quite cut
+                # it.
+
                 self._run(id, start_in)
 
         except:
@@ -187,11 +192,11 @@ class Run:
                         stderr,
                         id])
 
-
         # Note that the run happened.
         # TODO: Error check this.
         cursor.execute("SELECT task_register_run(%s)", [task_id])
 
+        log.debug("%d: Stored local result", id)
 
         # The lead participant takes care of gathering and merging the finished results.
 
@@ -222,9 +227,10 @@ class Run:
             try:
                 local_result = pscheduler.json_load(stdout)
             except ValueError as ex:
-                log.error("%d: Tool %s returned invalid JSON", id, tool)
-                log.exception()
-                return
+                log.error("%d: Tool %s returned invalid JSON %s",
+                          id, tool, stdout)
+                local_result = None
+
 
             full_result = [ local_result ]
             log.debug("%d: Stored local result", id)
@@ -238,7 +244,8 @@ class Run:
                                      throw=False )
 
                 if status == 200:
-                    full_result.append(result)
+                    log.debug("%d: Retrieved %s", id, result)
+                    full_result.append(result['result'])
                 else:
                     log.warning("%d: Unable to retrieve run %s", id, run)
                     full_result.append(None)
@@ -261,7 +268,8 @@ class Run:
                 log.debug("%d: Storing result in %s", id, run)
                 status, returned = pscheduler.url_put(run,
                                                       params=full_params,
-                                                      throw = False)
+                                                      throw=False,
+                                                      json=False)
                 if status != 200:
                     log.warning("%d: Unable to update run %s: %d %s",
                                 id, run, status, returned)
