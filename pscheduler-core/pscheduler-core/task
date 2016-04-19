@@ -413,12 +413,14 @@ if options.format in [ 'plain', 'html' ]:
         )
 
     if returncode == 0:
+        print
         print stdout.strip()
     else:
         pscheduler.fail("Failed to format test: " + stderr)
 
 elif options.format == 'json':
 
+    print
     print pscheduler.json_dump(result['result-merged'], pretty=True)
 
 # The 'none' format does nothing.
