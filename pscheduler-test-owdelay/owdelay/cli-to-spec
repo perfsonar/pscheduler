@@ -47,7 +47,7 @@ if len(remaining_args) != 0:
    pscheduler.fail("Found superfluous arguments on command line.")
 
 
-result = {}
+result = { 'schema': 1 }
 
 if options.sender is not None:
    result['sender'] = options.sender
