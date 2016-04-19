@@ -99,6 +99,8 @@ def main_program():
 
                 uuid, runs, trynext = row
 
+                log.debug("TASK %s, %d runs, try %s", uuid, runs, trynext)
+
                 url = pscheduler.api_url(path='/tasks/' + uuid)
 
                 # For the first run only, push the start time out.
