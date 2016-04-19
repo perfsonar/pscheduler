@@ -25,13 +25,14 @@ Core programs for pScheduler
 %prep
 %setup -q
 
+%define profile_d %{_sysconfdir}/profile.d
 
 %build
 make \
      BINDIR=$RPM_BUILD_ROOT/%{_bindir} \
      COMMANDSDIR=$RPM_BUILD_ROOT/%{_pscheduler_commands} \
      COMMANDSINSTALLED=%{_pscheduler_commands} \
-     PROFILEDDIR=%{_sysconfdir}/profile.d \
+     PROFILEDDIR=$RPM_BUILD_ROOT/%{profile_d} \
      install
 
 
@@ -40,3 +41,4 @@ make \
 %{_bindir}/*
 %{_pscheduler_commands}
 %{_pscheduler_commands}/*
+%{profile_d}/*
