@@ -67,9 +67,34 @@ AS
 	    repeat IS NULL
 	    AND NOT EXISTS (SELECT * FROM run WHERE run.task = task.id)
 
+        UNION
+
+        -- Repeating tasks without runs
+
+        SELECT
+            id AS task,
+            uuid,
+            enabled,
+            added,
+            start,
+            duration,
+            greatest(start, now()) AS after,
+            repeat,
+            max_runs,
+	    0 AS scheduled,
+            runs,
+            until,
+            greatest(start, normalized_now()) AS trynext,
+            participant
+        FROM
+            task
+        WHERE
+	    repeat IS NOT NULL
+            AND NOT EXISTS (SELECT * FROM run WHERE run.task = task.id)
+
 	UNION
     
-        -- Repeating tasks
+        -- Repeating tasks with runs
 
         SELECT
             task.id AS task,
@@ -84,17 +109,19 @@ AS
 	    (SELECT COUNT(*)
              FROM run
              WHERE
-                 task = id
+                 run.task = task.id
                  AND upper(times) > normalized_now()) AS scheduled,
             runs,
             task.until,
-            task_next_run(start, greatest(now(), task.start, max(upper(run.times))), repeat) AS trynext,
+ 	    task_next_run(coalesce(start, normalized_now()), 
+                          greatest(normalized_now(), task.start, max(upper(run.times))),
+                          repeat) AS trynext,
 	    task.participant
         FROM
             run
             JOIN task ON task.id = run.task
 	WHERE
-	    repeat IS NOT NULL
+	    task.repeat IS NOT NULL
         GROUP BY task.id
 
     )
