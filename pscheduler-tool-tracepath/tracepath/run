@@ -99,30 +99,8 @@ argv.append(dest)
 
 status, stdout, stderr = pscheduler.run_program( argv, timeout = 62 )
 
-# TODO: Re-enable this.
 if status != 0:
     pscheduler.fail(stderr)
-
-# TODO Remove this.
-xxstdout = """
- 1?: [LOCALHOST]     pmtu 1500
- 1:  10.0.2.2 (10.0.2.2)                                    0.254ms
- 1:  10.0.2.2 (10.0.2.2)                                    0.158ms
- 2:  dc-desk-wifi-rtr1.internet2.edu (192.52.179.65)        2.440ms asymm 64
- 3:  clpk-sura.maxgigapop.net (206.196.177.73)              2.981ms asymm 63
- 4:  ae0.mcln-core.maxgigapop.net (206.196.178.80)          4.486ms asymm 62
- 5:  te0-0-1-0.nr11.b005897-1.dca01.atlas.cogentco.com (38.122.166.5)   4.873ms asymm 61
- 6:  te0-0-0-5.agr22.dca01.atlas.cogentco.com (154.24.27.113)   4.571ms asymm 60
- 7:  te0-8-0-7.ccr41.dca01.atlas.cogentco.com (154.54.2.249)   4.925ms asymm 59
- 8:  be2112.ccr41.atl01.atlas.cogentco.com (154.54.7.158)  15.718ms asymm 58
- 9:  be2123.ccr22.mia01.atlas.cogentco.com (154.54.24.198)  30.084ms asymm 57
-10:  te0-0-1-0.agr11.mia01.atlas.cogentco.com (154.54.1.170)  30.504ms asymm 56
-11:  te0-0-2-2.nr11.b015452-0.mia01.atlas.cogentco.com (154.24.31.62)  30.337ms asymm 55
-12:  38.104.90.50 (38.104.90.50)                           29.806ms asymm 54
-13:  GW-10G-WEST-7-MIA.serverpronto.com (69.60.96.98)      30.835ms asymm 53
-14:  coop.notonthe.net (65.111.172.101)                    30.180ms reached
-     Resume: pmtu 1500 hops 14 back 52
-"""
 
 
 
@@ -191,7 +169,6 @@ for line in stdout.split('\n'):
     if len(elements) > 0:
         reached_err = elements.pop(0)
         if reached_err[0] == '!':
-            # TODO: Translate the error
             hop['error'] = icmperror.translate(reached_err)
 
 
