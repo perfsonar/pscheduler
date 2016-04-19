@@ -8,6 +8,7 @@ FILES=\
 	cli-to-spec \
 	enumerate \
 	participants \
+	pscheduler-schema-owdelay-request.json \
 	result-format \
 	spec-format \
 	spec-is-valid \

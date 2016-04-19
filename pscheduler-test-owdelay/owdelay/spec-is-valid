@@ -4,47 +4,40 @@
 #
 
 import pscheduler
+import jsonschema 
+import json
+import sys, os
 
-json = pscheduler.json_load(exit_on_error=True)
+#constants
+SCHEMA_FILE = "pscheduler-schema-owdelay-request.json"
 
-# Run through all of the tags we expect to see, deleting the valid ones
+#logging
+log = pscheduler.Log(prefix="test-owdelay.spec-is-valid")
 
-if 'schema' in json:
-    if not (1 <= json['schema'] <= 1):
-        pscheduler.fail('Unsupported schema version {0}'.format(json['schema']))
-    del json['schema']
-else:
-    pscheduler.fail("Missing schema")
+#load JSON
+test_spec_json = pscheduler.json_load(exit_on_error=True)
 
-if 'sender' in json:
-    del json['sender']
-else:
-    pscheduler.fail("Missing required field sender")
-
-if 'receiver' in json:
-    del json['receiver']
-else:
-    pscheduler.fail("Missing required field receiver")
+#find schema file
+schema_path = os.path.dirname(sys.argv[0])  
+if schema_path and not schema_path.endswith(os.sep):
+    schema_path += os.sep
+try:
+    schema = json.loads(open(schema_path + SCHEMA_FILE).read())
+except Exception, e:
+    pscheduler.fail("Problem loading owdelay schema file: %s" % e)
     
-fields = [
-    'packet-count',
-    'ip-tos',
-    'packet-interval',
-    'packet-timeout',        
-    'udp-ports',
-    'packet-padding',
-    'ip-version',
-    'bucket-width',
-    'output-raw',
-    'flip',
-    'single-participant-mode'
-]
-for field in fields:
-    if field in json:
-        del json[field]
-
-if len(json) > 0:
-    pscheduler.fail('Unknown elements in test specification: '
-                    + ', '.join(json.keys()))
+# Validate against schema
+try:
+    jsonschema.validate(test_spec_json, schema, format_checker=jsonschema.FormatChecker())
+except Exception, e:
+    log.debug("Owdelay schema validation error: %s" % e)
+    pscheduler.fail("Invalid owdelay test specification: %s" % e.message)
+    
+#Verify flip is set if receiver not included:
+if 'receiver' not in test_spec_json:
+    if 'flip' not in test_spec_json:
+        pscheduler.fail("You must specify the flip option if you do not specify a receiver")
+    elif not test_spec_json['flip']:
+         pscheduler.fail("The flip option must be true if you do not specify receiver")
 
 pscheduler.succeed()

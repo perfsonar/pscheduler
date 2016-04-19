@@ -18,16 +18,14 @@ if json.get('single-participant-mode', False):
     result = [ None ]
 else:
     #sender first participant, receiver the second
-    try:
+    sender = None
+    receiver = None
+    if 'sender' in json:
         sender = json['sender']
-    except KeyError:
-        pscheduler.fail('No sender in test specification')
-    
-    try:
+        
+    if 'receiver' in json:
         receiver = json['receiver']
-    except KeyError:
-        pscheduler.fail('No receiver in test specification')
-
+        
     result = [ sender, receiver ]
 
 pscheduler.json_dump(result, sys.stdout )

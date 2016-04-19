@@ -115,14 +115,16 @@ if role == CLIENT_ROLE:
     if flip:
         #reverse test
         owping_args.append('-f')
-        owping_args.append('-S')
-        owping_args.append(test_spec['receiver'])
+        if 'receiver' in test_spec:
+            owping_args.append('-S')
+            owping_args.append(test_spec['receiver'])
         owping_args.append(ADDR_FORMAT % (test_spec['sender'], control_port))
     else:
         #forward test
         owping_args.append('-t')
-        owping_args.append('-S')
-        owping_args.append(test_spec['sender'])
+        if 'sender' in test_spec:
+            owping_args.append('-S')
+            owping_args.append(test_spec['sender'])
         owping_args.append(ADDR_FORMAT % (test_spec['receiver'], control_port))
     
     #Run the process
