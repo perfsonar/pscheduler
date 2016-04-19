@@ -40,7 +40,7 @@ opt_parser.add_option("--export", '-e',
 opt_parser.add_option("--format", "-f",
                       help="Output format: plain (default), html, json or none",
                       action="store", type="string",
-                      default="plain",
+                      default="text",
                       dest="format")
 
 opt_parser.add_option("--import", "-i",
@@ -116,13 +116,14 @@ formats = {
     # Not "officially" supported, but here for completeness
     'text/html': 'text/html',
     'text/json': 'application/json',
-    'text/plain': 'text/plain'
+    'text/plain': 'text/plain',
     }
 
 try:
     format = formats[options.format]
 except KeyError:
     pscheduler.fail("Invalid --format; must be text, html, json or none")
+
 
 if options.repeat is not None:
     repeat = pscheduler.iso8601_as_timedelta(options.repeat)
@@ -172,8 +173,13 @@ assist = options.assist
 if assist is None:
     assist = os.getenv('PSCHEDULER_ASSIST')
 
-if assist is not None:
+# Last-ditch default
+if assist is None:
+    assist = '127.0.0.1'
+else:
+    # TODO: Narrate this when we start doing that.
     print "Assistance will be from", assist
+    pass
 
 
 #
@@ -256,16 +262,19 @@ task['test']['type'] = test_type
 # Convert the remaining arguments to a test spec.
 #
 
-# TODO:  Use the assisting server to do this.
-status, stdout, stderr = pscheduler.run_program(
-    [ 'pscheduler', 'internal', 'invoke', 'test', test_type, 'cli-to-spec' ],
-    stdin = pscheduler.json_dump(remaining_args),
-    short = True,
-    fail_message="Unable to parse test arguments"
-)
-assert status == 0
+status, raw_spec = pscheduler.url_get(
+    pscheduler.api_url(host=assist,
+                       path='/tests/' + test_type + '/spec'),
+    params={ 'args': pscheduler.json_dump(remaining_args) },
+    throw=False
+    )
 
-json_to_merge = pscheduler.json_load(stdout)
+if status == 404:
+    pscheduler.fail("Could not find test " + test_type + " on server")
+elif status != 200:
+        pscheduler.fail(raw_spec)
+
+json_to_merge = raw_spec
 assert 'spec' in task['test']
 task['test']['spec'].update(json_to_merge)
 
@@ -355,6 +364,10 @@ while tries > 0:
         continue
     else:
         pscheduler.fail("Failed to fetch run: " + runs)
+
+# TODO: Need to display something meaningful when this happens.  We
+# should have a way to put stillborn runs in the database with
+# diagnostics.
 
 if tries == 0:
     pscheduler.fail("Run on server was never populated.")

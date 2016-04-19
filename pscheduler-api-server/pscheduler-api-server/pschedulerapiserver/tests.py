@@ -29,6 +29,39 @@ def tests_name(name):
                       [name], single=True)
 
 
+# Derive a spec from command line arguments in 'arg'
+@application.route("/tests/<name>/spec", methods=['GET'])
+def tests_name_spec(name):
+
+    dbcursor().execute("SELECT EXISTS (SELECT * FROM test WHERE NAME = %s)",
+                       [ name ])
+
+    # TODO: Check that we got one row with one column
+    exists = dbcursor().fetchone()[0]
+    if not exists:
+        return not_found()
+
+    try:
+        args = arg_json('args')
+    except ValueError:
+        return error("Invalid JSON passed to 'args'")
+    
+    status, stdout, stderr = pscheduler.run_program(
+        [ 'pscheduler', 'internal', 'invoke', 'test', name, 'cli-to-spec' ],
+        stdin = pscheduler.json_dump(args),
+        short = True,
+        )
+
+    if status != 0:
+        return error(stderr)
+
+    # The extra parse here makes 'pretty' work.
+    returned_json = pscheduler.json_load(stdout)
+    return ok_json(returned_json)
+
+
+
+
 # Tools that can carry out test <name>
 @application.route("/tests/<name>/tools", methods=['GET'])
 def tests_name_tools(name):
