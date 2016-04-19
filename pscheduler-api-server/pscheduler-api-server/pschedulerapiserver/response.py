@@ -24,8 +24,10 @@ def json_response(data):
     return Response(response_json_dump(data) + '\n',
                     mimetype='application/json')
 
-def ok(message="OK"):
-    return Response(message + '\n', status=200)
+def ok(message="OK", mimetype=None):
+    return Response(message + '\n',
+                    status=200,
+                    mimetype=mimetype)
 
 def ok_json(data=None):
     return Response(response_json_dump(data) + '\n',

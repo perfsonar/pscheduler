@@ -107,7 +107,21 @@ if len(remaining_args) < 1:
 if options.max_runs < 1:
     pscheduler.fail("Invalid --max-runs; must be 1 or more")
 
-if options.format not in ['plain', 'html', 'json', 'none']:
+
+formats = {
+    'html': 'text/html',
+    'json': 'application/json',
+    'none': None,
+    'text': 'text/plain',
+    # Not "officially" supported, but here for completeness
+    'text/html': 'text/html',
+    'text/json': 'application/json',
+    'text/plain': 'text/plain'
+    }
+
+try:
+    format = formats[options.format]
+except KeyError:
     pscheduler.fail("Invalid --format; must be text, html, json or none")
 
 if options.repeat is not None:
@@ -400,29 +414,21 @@ if not status:
 # Print the final result.
 #
 
-stdin = pscheduler.json_dump(result['result-merged'])
+# Easy out.
+if format is None:
+    pscheduler.succeed()
 
-if options.format in [ 'plain', 'html' ]:
+status, formatted = pscheduler.url_get(
+    result['result-href'],
+    params={ 'wait': True,
+             'format': format },
+    json=False,
+    throw=False)
 
-    # TODO: Use the helper server for this when supported.
+if status != 200:
+    pscheduler.fail("Unable to retrieve formatted result: " + formatted)
 
-    returncode, stdout, stderr = pscheduler.run_program(
-        [ "pscheduler", "internal", "invoke", "test", test_type,
-          "result-format", 'text/' + options.format ],
-        stdin = stdin
-        )
-
-    if returncode == 0:
-        print
-        print stdout.strip()
-    else:
-        pscheduler.fail("Failed to format test: " + stderr)
-
-elif options.format == 'json':
-
-    print
-    print pscheduler.json_dump(result['result-merged'], pretty=True)
-
-# The 'none' format does nothing.
-
+# TODO: Remove the extra print if not narrating and on a TTY
+print
+print formatted.rstrip()
 pscheduler.succeed()

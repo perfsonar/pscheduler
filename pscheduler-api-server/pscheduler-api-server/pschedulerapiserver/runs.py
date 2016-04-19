@@ -171,8 +171,10 @@ def tasks_uuid_runs_run(task, run):
         result = {}
 
         # This strips any query parameters
-        result['href'] = urlparse.urljoin( request.url,
-                                           urlparse.urlparse(request.url).path)
+
+        href = urlparse.urljoin( request.url,
+                                 urlparse.urlparse(request.url).path )
+        result['href'] = href
         result['start-time'] = pscheduler.datetime_as_iso8601(row[0])
         result['end-time'] = pscheduler.datetime_as_iso8601(row[1])
         result['duration'] = pscheduler.timedelta_as_iso8601(row[2])
@@ -186,6 +188,7 @@ def tasks_uuid_runs_run(task, run):
         result['state'] = row[10]
         result['state-display'] = row[11]
         result['task-href'] = root_url('tasks/' + task)
+        result['result-href'] = href + '/result'
 
         return json_response(result)
 
@@ -311,3 +314,88 @@ def tasks_uuid_runs_run(task, run):
     else:
 
         return not_allowed()
+
+
+
+
+
+#
+# Merged results, optionally formatted.
+#
+
+@application.route("/tasks/<task>/runs/<run>/result", methods=['GET'])
+def tasks_uuid_runs_run_result(task, run):
+
+    if task is None:
+        return bad_request("Missing or invalid task")
+
+    if run is None:
+        return bad_request("Missing or invalid run")
+
+    wait = arg_boolean('wait')
+
+    format = request.args.get('format')
+
+    if format is None:
+        format = 'application/json'
+
+    if format not in [ 'application/json', 'text/html', 'text/plain' ]:
+        return bad_request("Unsupported format " + format)
+
+    #
+    # Camp on the run for a result
+    #
+
+    # 40 tries at 0.25s intervals == 10 sec.
+    tries = 40 if wait else 1
+
+    while tries:
+
+            dbcursor().execute("""
+                SELECT
+                    test.name,
+                    run.result_merged
+                FROM
+                    run
+                    JOIN task ON task.id = run.task
+                    JOIN test ON test.id = task.test
+                WHERE
+                    task.uuid = %s
+                    AND run.uuid = %s
+                """, [task, run])
+
+            if dbcursor().rowcount == 0:
+                return not_found()
+
+            # TODO: Make sure we got back one row with two columns.
+            row = dbcursor().fetchone()
+
+            if not wait and row[1] is None:
+                time.sleep(0.25)
+                tries -= 1
+            else:
+                break
+
+    if tries == 0:
+        return not_found()
+
+
+    test_type, merged_result = row
+
+
+    # JSON requires no formatting.
+    if format == 'application/json':
+
+        return ok_json(merged_result)
+
+
+    returncode, stdout, stderr = pscheduler.run_program(
+        [ "pscheduler", "internal", "invoke", "test", test_type,
+          "result-format", format ],
+        stdin = pscheduler.json_dump(merged_result)
+        )
+
+    if returncode != 0:
+        return error("Failed to format result: " + stderr)
+
+    return ok(stdout.rstrip(), mimetype=format)
