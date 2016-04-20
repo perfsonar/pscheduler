@@ -31,17 +31,71 @@ else:
 opt_parser = optparse.OptionParser()
 
 opt_parser.add_option("-s", "--sender",
-                      help="Sending host",
+                      help="The address of the entity sending packets in this test",
                       action="store", type="string",
                       dest="sender")
 
 
 opt_parser.add_option("-r", "--receiver",
-                      help="Receiving host",
+                      help="The address of the entity receiving packets in this test",
                       action="store", type="string",
                       dest="receiver")
 
+opt_parser.add_option("-c", "--packet-count",
+                      help="The number of packets to send",
+                      action="store", type="int",
+                      dest="packet_count")
 
+opt_parser.add_option("-i", "--packet-interval",
+                      help="The number of seconds to delay between sending packets",
+                      action="store", type="float",
+                      dest="packet_interval")
+
+opt_parser.add_option("-t", "--packet-timeout",
+                      help="The number of seconds to wait before declaring a packet lost",
+                      action="store", type="float",
+                      dest="packet_timeout")
+
+opt_parser.add_option("-p", "--packet-padding",
+                      help="The size of padding to add to the packet in bytes",
+                      action="store", type="int",
+                      dest="packet_padding")
+
+opt_parser.add_option("-P", "--udp-ports",
+                      help="The port range to use on the side of the test running the client. At least two ports required.",
+                      action="store", type="string",
+                      dest="udp_ports")
+
+opt_parser.add_option("-T", "--ip-tos",
+                      help="The port range to use on the side of the test running the client. At least two ports required.",
+                      action="store", type="int",
+                      dest="ip_tos")
+
+opt_parser.add_option("-4", "--ipv4-only",
+                      help="Force IPv4 when performing the test. Useful when specifying hostnames as sender or receiver that may map to both IPv4 and IPv6 addresses.",
+                      action="store_true", dest="ipv4_only")
+
+opt_parser.add_option("-6", "--ipv6-only",
+                      help="Force IPv46 when performing the test. Useful when specifying hostnames as sender or receiver that may map to both IPv4 and IPv6 addresses.",
+                      action="store_true", dest="ipv6_only")
+                      
+opt_parser.add_option("-b", "--bucket-width",
+                      help="The bin size to use for histogram calculations. This value is divided into the result as reported in seconds and truncated to the nearest 2 decimal places.",
+                      action="store", type="float",
+                      dest="bucket_width")
+                          
+opt_parser.add_option("-f", "--flip",
+                      help="In multi-participant mode, have the receiver start the client and request a reverse test. Useful in some firewall and NAT environments.",
+                      action="store_true", dest="flip", default=False)
+
+opt_parser.add_option("-1", "--single-participant-mode",
+                      help="Do not coordinate with the remote side. Useful for cases where remote side is not running pScheduler but known to have necessary daemon for test.",
+                      action="store_true", dest="single_participant_mode", default=False)
+
+opt_parser.add_option("-R", "--output-raw",
+                      help="Output individual packet statistics. This will substantially increase the size of a successful result.",
+                      action="store_true", dest="output_raw", default=False)
+                      
 (options, remaining_args) = opt_parser.parse_args(args)
 if len(remaining_args) != 0:
    pscheduler.fail("Found superfluous arguments on command line.")
@@ -51,9 +105,46 @@ result = { 'schema': 1 }
 
 if options.sender is not None:
    result['sender'] = options.sender
-   
+  
 if options.receiver is not None:
    result['receiver'] = options.receiver
+
+if options.packet_count is not None:
+   result['packet-count'] = options.packet_count
+
+if options.packet_interval is not None:
+   result['packet-interval'] = options.packet_interval
+  
+if options.packet_timeout is not None:
+   result['packet-timeout'] = options.packet_timeout
+
+if options.packet_padding is not None:
+   result['packet-padding'] = options.packet_padding
+
+if options.udp_ports is not None:
+   result['udp-ports'] = options.udp_ports
+
+if options.ip_tos is not None:
+   result['ip-tos'] = options.ip_tos
+
+if options.ipv4_only is not None and options.ipv4_only is not None:
+   pscheduler.fail("Cannot specify both -4 and -6 at the same time")
+elif options.ipv4_only is not None:
+   result['ipv4-only'] = options.ipv4_only
+elif options.ipv6_only is not None:
+   result['ipv6-only'] = options.ipv6_only
+
+if options.bucket_width is not None:
+   result['bucket-width'] = options.bucket_width
+
+if options.flip:
+   result['flip'] = options.flip
+
+if options.single_participant_mode:
+   result['single-participant-mode'] = options.single_participant_mode
+
+if options.output_raw:
+   result['output-raw'] = options.output_raw
 
 
 pscheduler.succeed_json(result)

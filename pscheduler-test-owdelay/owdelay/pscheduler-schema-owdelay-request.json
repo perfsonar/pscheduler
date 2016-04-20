@@ -87,7 +87,6 @@
     },
     "anyOf": [
         { "required": ["schema", "sender", "receiver"] },
-        { "required": ["schema", "sender", "flip" ] },
         { "required": ["schema", "receiver"] }
     ]
 }

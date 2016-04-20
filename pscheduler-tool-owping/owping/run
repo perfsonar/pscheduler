@@ -46,9 +46,10 @@ CLIENT_ROLE = 0
 SERVER_ROLE = 1
 TIME_SCALE = .001 #use for millisecond conversions
 DEFAULT_BUCKET_WIDTH = TIME_SCALE #convert to ms
+DELAY_BUCKET_DIGITS = 2 #number of digits to round delay buckets
 DELAY_BUCKET_FORMAT = '%.2f' #Set buckets to nearest 2 decimal places
 DEFAULT_RAW_OUTPUT = False #don't display raw packets by default
-CLOCK_ERROR_FORMAT = '%.2f' #Set clock error to nearest 2 decimal places
+CLOCK_ERROR_DIGITS = 2 #number of digits to round clock error
 ADDR_FORMAT = "[%s]:%d"
 OWPING_VAL_ARGS = [
     ('ip-tos', '-D'),    
@@ -73,7 +74,10 @@ else:
     pscheduler.fail("Invalid participant.")
 
 #run test
-results = { 'succeeded': False }
+results = { 
+    'schema': OWDELAY_SCHEMA_VERSION, 
+    'succeeded': False 
+    }
 if role == CLIENT_ROLE:
     #TODO: Get path to owping from config file
     #Always use raw output (-R)
@@ -213,7 +217,8 @@ if role == CLIENT_ROLE:
             #delay histogram
             ##calculate delay in terms of seconds. OWAMP uses odd timestamps so need the divide by 2 ^ 32
             delay = (float(destination_timestamp) - float(source_timestamp)) / pow(2, 32)
-            delay_bucket = DELAY_BUCKET_FORMAT%(delay/bucket_width)
+            #round and add 0 to prevent -0.00
+            delay_bucket = DELAY_BUCKET_FORMAT%(round(delay/bucket_width, DELAY_BUCKET_DIGITS) + 0)
             if delay_bucket in results['histogram-owdelay']:
                 results['histogram-owdelay'][delay_bucket] += 1
             else:
@@ -241,7 +246,7 @@ if role == CLIENT_ROLE:
     
     #convert clock error to ms
     if ('max-clock-error' in results):
-        results['max-clock-error'] = CLOCK_ERROR_FORMAT % (results['max-clock-error']/TIME_SCALE)
+        results['max-clock-error'] = round(results['max-clock-error']/TIME_SCALE, CLOCK_ERROR_DIGITS)
     
     results['succeeded'] = True
 elif role == SERVER_ROLE:

@@ -7,7 +7,7 @@ Name:		pscheduler-tool-%{short}
 Version:	0.0
 Release:	1%{?dist}
 
-Summary:	wping tool class for pScheduler
+Summary:	owping tool class for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0
 Group:		Unspecified

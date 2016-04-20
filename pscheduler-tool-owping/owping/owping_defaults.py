@@ -2,6 +2,9 @@
 # Contains variables shared across owping tool components
 ##########################################################
 
+#Version of the owdelay schema used
+OWDELAY_SCHEMA_VERSION = 1 
+
 # Default time between packets (in seconds) if not specified by user
 DEFAULT_PACKET_INTERVAL = .1
 
