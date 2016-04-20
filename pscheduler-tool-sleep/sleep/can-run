@@ -25,7 +25,7 @@ except KeyError:
 
 duration = pscheduler.iso8601_as_timedelta(json['spec']['duration'])
 if duration is not None:
-    if duration < datetime.timedelta(seconds=30):
+    if duration < datetime.timedelta(seconds=15):
         pscheduler.fail("Won't sleep for such a short time.")
 
 pscheduler.succeed()
