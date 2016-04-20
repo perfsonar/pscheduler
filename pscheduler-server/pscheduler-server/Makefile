@@ -3,35 +3,58 @@
 #
 # The following variables must be provided externally:
 #
-#   BINDIR - Location for installed programs
+#   COMMANDDIR - Location for installed programs
+#   DAEMONDIR - Where daemon programs should be installed
+#   DSNFILE - Location of DSN file for database logins
 #   INITDDIR - Location for installed init scripts (/etc/rc.d/init.d)
+#   PSUSER - Name of pScheduler user account
+#   VAR - Location of /var directory
 #
 
-# TODO: Should probably generate the init.d files since they're all
-# the same.
+DAEMONS=\
+	archiver \
+	runner \
+	ticker \
+	scheduler \
 
-PROGRAMS=\
-	pscheduler-archiver \
-	pscheduler-runner \
-	pscheduler-ticker \
-	pscheduler-scheduler \
 
-# Commands to be installed as commands
 COMMANDS=\
-	debug
+	debug \
+	monitor
 
-
-PROGRAMS_NOINIT=\
-	pscheduler-monitor \
-
-PROGRAMS_ALL=$(PROGRAMS) $(PROGRAMS_NOINIT)
-
-INITS=$(PROGRAMS:%=%-init.d)
+INITS=$(DAEMONS:%=init.d-%)
 
 default: build
 
 
-build: $(PROGRAMS) $(PROGRAMS_NOINIT) $(INITS)
+$(INITS): init.d-template.m4
+ifndef DAEMONDIR
+	@echo No DAEMONDIR specified for build
+	@false
+endif
+ifndef DSNFILE
+	@echo No DSNFILE specified for build
+	@false
+endif
+ifndef PSUSER
+	@echo No PSUSER specified for build
+	@false
+endif
+ifndef VAR
+	@echo No VAR specified for build
+	@false
+endif
+	m4 \
+		-D__DAEMONDIR__=$(DAEMONDIR) \
+		-D__DSN__=$(DSNFILE) \
+		-D__PROG__=$(@:init.d-%=%) \
+		-D__PSUSER__=$(PSUSER) \
+		-D__VAR__=$(VAR) \
+		< $< > $@
+TO_CLEAN += $(INITS)
+
+
+build: $(DAEMONS) $(INITS) $(COMMANDS)
 	@true
 
 
@@ -40,32 +63,31 @@ build: $(PROGRAMS) $(PROGRAMS_NOINIT) $(INITS)
 # the right value in the scripts.  (See TODOs)
 
 install: build
-ifndef BINDIR
-	@echo No BINDIR specified for installation
+ifndef COMMANDDIR
+	@echo No COMMANDDIR specified for installation
+	@false
+endif
+ifndef DAEMONDIR
+	@echo No DAEMONDIR specified for installation
 	@false
 endif
 ifndef INITDDIR
 	@echo No INITDDIR specified for installation
 	@false
 endif
-ifndef COMMANDSDIR
-	@echo No COMMANDSDIR specified for installation
-	@false
-endif
-	mkdir -p $(BINDIR)
-	cp -f $(PROGRAMS_ALL) $(BINDIR)
-	chmod 555 $(PROGRAMS:%=$(BINDIR)/%)
+	mkdir -p $(COMMANDDIR)
+	cp -f $(COMMANDS) $(COMMANDDIR)
+	chmod 555 $(COMMANDS:%=$(COMMANDDIR)/%)
+	mkdir -p $(DAEMONDIR)
+	cp -f $(DAEMONS) $(DAEMONDIR)
+	chmod 555 $(DAEMONS:%=$(DAEMONDIR)/%)
 	mkdir -p $(INITDDIR)
-	@for SCRIPT in $(PROGRAMS) ; \
+	@for SCRIPT in $(DAEMONS) ; \
 	do \
 		echo "Installing init.d for $${SCRIPT}" ; \
-		cp -f $${SCRIPT}-init.d $(INITDDIR)/$${SCRIPT} ; \
-		chmod 555 $(INITDDIR)/$${SCRIPT} ; \
+		cp -f init.d-$${SCRIPT} $(INITDDIR)/pscheduler-$${SCRIPT} ; \
+		chmod 555 $(INITDDIR)/pscheduler-$${SCRIPT} ; \
 	done
-	mkdir -p $(COMMANDSDIR)
-	cp -f $(COMMANDS) $(COMMANDSDIR)
-	chmod 555 $(COMMANDS:%=$(COMMANDSDIR)/%)
-
 
 
 

@@ -1,32 +1,34 @@
+changequote(<!,!>)dnl
+changecom()dnl
 #!/bin/sh
 #
-# pscheduler-runner        Start/Stop the pScheduler Runner
+# pscheduler-__PROG__  Start/Stop the pScheduler __PROG__
 #
 # chkconfig: 2345 99 10
-# description: Runner for pScheduler database
+# description: pScheduler __PROG__ daemon
 
 
 ### BEGIN INIT INFO
-# Provides: pscheduler-runner
+# Provides: pscheduler-__PROG__
 # Default-Start:  2345
 # Default-Stop: 10
-# Short-Description: Run pscheduler runner
-# Description: Runner for pscheduler database
+# Short-Description: Run pscheduler __PROG__
+# Description: pScheduler __PROG__ daemon
 ### END INIT INFO
 
 
-prog="pscheduler-runner"
-exec=/usr/bin/$prog
 
-# TODO: These should come from the RPM macros
-config=/etc/pscheduler/database-dsn
-proguser=pscheduler
+prog=__PROG__
+exec=__DAEMONDIR__/$prog
 
-pidfile=/var/run/$prog.pid
-lockfile=/var/lock/subsys/$proc
+config=__DSN__
+proguser=__PSUSER__
+
+pidfile=__VAR__/run/$prog.pid
+lockfile=__VAR__/lock/subsys/$proc
 
 # TODO: Need to rotate this.
-logfile=/var/log/$prog.log
+logfile=__VAR__/log/$prog.log
 
 # Source function library.
 . /etc/rc.d/init.d/functions
@@ -42,7 +44,7 @@ start() {
     fi
     [ -x $exec ] || exit 5
     [ -f $config ] || exit 6
-    echo -n $"Starting $prog: "
+    echo -n $"Starting pScheduler $prog: "
     touch "$pidfile"
     chown "$proguser.$proguser" "$pidfile"
     nohup su pscheduler \
@@ -60,9 +62,9 @@ stop() {
         echo "User has insufficient privilege."
         exit 4
     fi
-    echo -n $"Stopping $prog: "
+    echo -n $"Stopping pScheduler $prog: "
         if [ -s "$pidfile" ]; then
-	    kill $(cat $pidfile) || failure "Stopping $prog"
+	    kill $(cat $pidfile) || failure "Stopping pScheduler $prog"
 	    rm -f $pidfile
 	fi
     retval=$?
@@ -70,25 +72,10 @@ stop() {
     echo
 }
 
-restart() {
-    rh_status_q && stop
+restart()
+{
+    stop
     start
-}
-
-reload() {
-	echo -n $"Reloading $prog: "
-	if [ -n "`pidfileofproc $exec`" ]; then
-		killproc $exec -HUP
-	else
-		failure $"Reloading $prog"
-	fi
-	retval=$?
-	echo
-}
-
-force_reload() {
-	# new configuration takes effect after restart
-    restart
 }
 
 
