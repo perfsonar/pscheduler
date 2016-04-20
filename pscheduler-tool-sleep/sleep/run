@@ -30,26 +30,27 @@ duration = pscheduler.iso8601_as_timedelta(duration_iso)
 if duration is None:
     pscheduler.fail_other(2, "Missing or invalid duration " + duration_iso)
 else:
-    if duration < datetime.timedelta(seconds=5):
+    if duration < datetime.timedelta(seconds=15):
         pscheduler.fail("Won't sleep for such a short time.")
 
 
 # Perform the test
 
-# The output is just mocked up.
+# The output is just mocked up since there's no real tool being run.
+
 output = ''
 
 try:
     output += input['test']['spec']['starting-comment'] + '\n'
 except KeyError:
-    null
+    pass
 
 time.sleep(pscheduler.timedelta_as_seconds(duration))
 
 try:
     output += input['test']['spec']['parting-comment'] + '\n'
 except KeyError:
-    null
+    pass
 
 
 
@@ -61,7 +62,7 @@ results = {
     'succeeded': True,
     'diags': output,
     'error': '',
-    'result': { 'time_slept': pscheduler.timedelta_as_iso8601(duration) }
+    'result': { 'time-slept': pscheduler.timedelta_as_iso8601(duration) }
 }
 
 pscheduler.succeed_json(results)
