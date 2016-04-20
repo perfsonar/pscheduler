@@ -42,7 +42,7 @@ make \
 make \
      INITDDIR=$RPM_BUILD_ROOT/%{_initddir} \
      DAEMONDIR=$RPM_BUILD_ROOT/%{_pscheduler_daemons} \
-     COMMANDSDIR=$RPM_BUILD_ROOT/%{_pscheduler_commands} \
+     COMMANDDIR=$RPM_BUILD_ROOT/%{_pscheduler_commands} \
      install
 
 
