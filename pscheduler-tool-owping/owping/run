@@ -193,9 +193,9 @@ if role == CLIENT_ROLE:
                 }
                 #The error values may not exist, but format as floats if they do
                 if source_error:
-                    packet['source-clock-error'] = float(source_error)
+                    packet['src-clock-err'] = float(source_error)
                 if destination_error:
-                    packet['destination-clock-error'] = float(destination_error)
+                    packet['dst-clock-err'] = float(destination_error)
                 #add to list
                 results['raw-packets'].append(packet)
     
