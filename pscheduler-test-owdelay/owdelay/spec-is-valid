@@ -5,8 +5,7 @@
 
 import pscheduler
 import jsonschema 
-import json
-import sys, os
+from owdelay_utils import load_schema
 
 #constants
 SCHEMA_FILE = "pscheduler-schema-owdelay-request.json"
@@ -18,13 +17,7 @@ log = pscheduler.Log(prefix="test-owdelay.spec-is-valid")
 test_spec_json = pscheduler.json_load(exit_on_error=True)
 
 #find schema file
-schema_path = os.path.dirname(sys.argv[0])  
-if schema_path and not schema_path.endswith(os.sep):
-    schema_path += os.sep
-try:
-    schema = json.loads(open(schema_path + SCHEMA_FILE).read())
-except Exception, e:
-    pscheduler.fail("Problem loading owdelay schema file: %s" % e)
+schema = load_schema(SCHEMA_FILE)
     
 # Validate against schema
 try:
@@ -33,11 +26,8 @@ except Exception, e:
     log.debug("Owdelay schema validation error: %s" % e)
     pscheduler.fail("Invalid owdelay test specification: %s" % e.message)
     
-#Verify flip is set if receiver not included:
-if 'receiver' not in test_spec_json:
-    if 'flip' not in test_spec_json:
-        pscheduler.fail("You must specify the flip option if you do not specify a receiver")
-    elif not test_spec_json['flip']:
-         pscheduler.fail("The flip option must be true if you do not specify receiver")
+#Verify flip is not set if sender not included.
+if 'sender' not in test_spec_json and test_spec_json.get('flip', False):
+    pscheduler.fail("You must specify both sender and receiver when using the flip option")
 
 pscheduler.succeed()

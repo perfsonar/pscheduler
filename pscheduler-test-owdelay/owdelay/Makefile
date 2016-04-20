@@ -7,8 +7,10 @@ NAME=owdelay
 FILES=\
 	cli-to-spec \
 	enumerate \
+	owdelay_utils.py \
 	participants \
 	pscheduler-schema-owdelay-request.json \
+	pscheduler-schema-owdelay-response.json \
 	result-format \
 	spec-format \
 	spec-is-valid \

@@ -1,0 +1,108 @@
+{
+    "title": "pScheduler OWDelay Response Schema",
+    "type": "object",
+    "properties": {
+        "schema": {
+            "description": "The version of the schema",
+            "type": "integer",
+            "minimum": 1
+        },
+        "succeeded": {
+            "description": "Indicates if the test ran successfully",
+            "type": "boolean"
+        },
+        "packets-sent": {
+            "description": "The number of packets sent by the sender",
+            "type": "integer",
+            "minimum": 0
+        },
+        "packets-received": {
+            "description": "The number of packets received by the receiver",
+            "type": "integer",
+            "minimum": 0
+        },
+        "packets-lost": {
+            "description": "The difference between the number of packets sent and received",
+            "type": "integer",
+            "minimum": 0
+        },
+        "packets-duplicated": {
+            "description": "The number of duplicate packets seen by the receiver",
+            "type": "integer",
+            "minimum": 0
+        },
+        "packets-reordered": {
+            "description": "The number of packets received out of order seen by the receiver",
+            "type": "integer",
+            "minimum": 0
+        },
+        "max-clock-error": {
+            "description": "As the maximum estimate of difference between sender and receiver clocks in milliseconds",
+            "type": "number"
+        },
+        "histogram-owdelay": {
+            "description": "A histogram where the key is observed one-way delay values divided by bucket-width rounded to the nearest two decimal places, and the value is the number of packets that observed that value.",
+            "type": "object",
+            "patternProperties": {
+                "^[-+]?([0-9]+(\\.[0-9]+)?|\\.[0-9]+)$": { "type": "integer" }
+            },
+            "additionalProperties": false
+        },
+        "histogram-ttl": {
+            "description": "A histogram where the key is the IP time-to-live of the packet when it reached the receiver and the value is the number of packets that observed that value",
+            "type": "object",
+            "patternProperties": {
+                "^\\d+$": { "type": "integer" }
+            },
+            "additionalProperties": false
+        },
+        "raw-packets": {
+            "description": "List of individual packet measurements collected during test",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "seq-num": {
+                        "description": "A monotonically increasing number starting a 0 indicating when the packet was sent in relation to otehr packets ",
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "src-ts": {
+                        "description": "The timestamp when the packet was sent. Note this is a RFC1305 64-bit timestamp",
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "src-clock-sync": {
+                        "description": "Indicates if the clock on the sender is synced with NTP",
+                        "type": "boolean"
+                    },
+                    "src-clock-err": {
+                        "description": "The estimates NTP error of the sender's clock",
+                        "type": "number"
+                    },
+                    "dst-ts": {
+                        "description": "The timestamp when the packet was received. Note this is a RFC1305 64-bit timestamp",
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "dst-clock-sync": {
+                        "description": "Indicates if the clock on the receiver is synced with NTP",
+                        "type": "boolean"
+                    },
+                    "dst-clock-err": {
+                        "description": "The estimates NTP error of the receiver's clock",
+                        "type": "number"
+                    },
+                    "ip-ttl": {
+                        "description": "The time-to-live value in teh IP header when the packet reached the receiver",
+                        "type": "integer",
+                        "minimum": 0, 
+                        "maximum": 255
+                    }
+                },
+                "required": ["seq-num", "src-ts", "src-clock-sync", "dst-ts", "dst-clock-sync", "ip-ttl"]
+            }
+        }
+    },
+    "required": [ "schema", "succeeded"]
+}
