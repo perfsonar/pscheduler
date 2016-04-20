@@ -61,6 +61,9 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 # pScheduler front-end comands
 %%_pscheduler_commands %{_pscheduler_libexecdir}/commands
 
+# pScheduler daemons
+%%_pscheduler_daemons %{_pscheduler_libexecdir}/daemons
+
 EOF
 
 

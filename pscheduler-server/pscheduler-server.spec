@@ -16,6 +16,7 @@ Source0:	%{name}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	curl
+Requires:	pscheduler-account
 Requires:	pscheduler-database
 Requires:	python-Flask
 Requires:	python-requests
@@ -28,13 +29,19 @@ The pScheduler server
 %prep
 %setup -q
 
+
 %build
-make
+make \
+     DAEMONDIR=%{_pscheduler_daemons} \
+     DSNFILE=%{_pscheduler_database_dsn_file} \
+     PSUSER=%{_pscheduler_user} \
+     VAR=%{_var}
+
 
 %install
 make \
      INITDDIR=$RPM_BUILD_ROOT/%{_initddir} \
-     BINDIR=$RPM_BUILD_ROOT/%{_bindir} \
+     DAEMONDIR=$RPM_BUILD_ROOT/%{_pscheduler_daemons} \
      COMMANDSDIR=$RPM_BUILD_ROOT/%{_pscheduler_commands} \
      install
 
@@ -72,5 +79,5 @@ done
 %files
 %defattr(-,root,root,-)
 %{_initddir}/*
-%{_bindir}/*
+%{_pscheduler_daemons}/*
 %{_pscheduler_commands}/*

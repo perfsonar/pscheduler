@@ -32,6 +32,8 @@ The pScheduler database
 %define password_file %{_pscheduler_sysconfdir}/database-password
 %define dsn_file %{_pscheduler_sysconfdir}/database-dsn
 
+%define rpm_macros %{_pscheduler_rpmmacroprefix}%{name}
+
 %prep
 %setup -q
 
@@ -49,6 +51,15 @@ do
     touch "$RPM_BUILD_ROOT/${FILE}"
     chmod 440 "$RPM_BUILD_ROOT/${FILE}"
 done
+
+# RPM Macros
+mkdir -p $(dirname $RPM_BUILD_ROOT/%{rpm_macros})
+cat > $RPM_BUILD_ROOT/%{rpm_macros} <<EOF
+# %{name} %{version}
+%%_pscheduler_database_dsn_file %{dsn_file}
+%%_pscheduler_database_password_file %{password_file}
+EOF
+
 
 
 %post
@@ -176,3 +187,4 @@ service $(basename $(ls %{_initddir}/postgresql* | head -1)) restart
 %{_pscheduler_datadir}/*
 %verify(user group mode) %{password_file}
 %verify(user group mode) %{dsn_file}
+%{rpm_macros}
