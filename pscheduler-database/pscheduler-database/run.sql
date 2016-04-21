@@ -199,7 +199,7 @@ BEGIN
 
 	       result_merge_input := row_to_json(t) FROM (
 	           SELECT 
-		       task.json #>> '{test}' AS test,
+		       task.json -> 'test' AS test,
                        NEW.result_full AS results
                    ) t;
 
