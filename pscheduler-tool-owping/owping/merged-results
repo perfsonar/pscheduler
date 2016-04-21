@@ -6,14 +6,13 @@
 # test-standard result.
 #
 
-import logging
 import pscheduler
 
-#TODO: Setup dynamically
-logging.basicConfig(filename='/var/log/pscheduler.log', format='%(asctime)s %(levelname)s: %(message)s', level=logging.DEBUG)
+#Init logging
+log = pscheduler.Log(prefix="tool-owping")
 
 input = pscheduler.json_load(exit_on_error=True)
-logging.debug("input to merged results: %s" % input)
+log.debug("input to merged results: %s" % input)
 
 results = {'succeeded': False}
 
@@ -22,7 +21,7 @@ try:
     #TODO: I need this to get flip but right now the spec is a string and not a JSON object
     #test_spec = input['test']
 except KeyError as e:
-    logging.error("merged-result error %s" % e)
+    log.error("merged-result error %s" % e)
     pscheduler.fail("Missing required key in merged-result input: %s" % e)
 
 if len(result_list) == 1:
@@ -41,5 +40,5 @@ elif len(result_list) == 2:
 else:
     pscheduler.fail("Invalid merged-results input. Can only handle up to 2 results. ")
 
-logging.debug("merged results: %s" % results)
+log.debug("merged results: %s" % results)
 pscheduler.succeed_json(results)
