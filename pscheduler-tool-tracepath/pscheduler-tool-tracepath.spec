@@ -7,7 +7,7 @@ Name:		pscheduler-tool-%{short}
 Version:	0.0
 Release:	1%{?dist}
 
-Summary:	Simple Streamer tool class for pScheduler
+Summary:	pScheduler Tracepath Tool
 BuildArch:	noarch
 License:	Apache 2.0
 Group:		Unspecified
@@ -27,7 +27,7 @@ BuildRequires:	pscheduler-rpm
 %define directory %{_includedir}/make
 
 %description
-Simple Stream tool class for pScheduler
+pScheduler Tracepath Tool
 
 
 %prep
