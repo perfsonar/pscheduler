@@ -11,7 +11,7 @@ from owdelay_utils import load_schema
 SCHEMA_FILE = "pscheduler-schema-owdelay-request.json"
 
 #logging
-log = pscheduler.Log(prefix="test-owdelay.spec-is-valid")
+log = pscheduler.Log(prefix="test-owdelay")
 
 #load JSON
 test_spec_json = pscheduler.json_load(exit_on_error=True)

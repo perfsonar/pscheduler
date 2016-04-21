@@ -4,7 +4,6 @@
 #
 
 import datetime
-import logging
 import json
 import pscheduler
 import re
@@ -18,8 +17,8 @@ from subprocess import Popen, PIPE
 #track when this run starts
 start_time = datetime.datetime.now()
 
-#TODO: Setup dynamically
-logging.basicConfig(filename='/var/log/pscheduler.log', format='%(asctime)s %(levelname)s: %(message)s', level=logging.DEBUG)
+#Init logging
+log = pscheduler.Log(prefix="tool-owping")
 
 #DEBUGGING: Set static values below
 # participant = 1
@@ -133,21 +132,21 @@ if role == CLIENT_ROLE:
     
     #Run the process
     time.sleep(DEFAULT_CLIENT_SLEEP) #wait for server to boot
-    logging.debug("Running command: %s" % " ".join(owping_args))
+    log.debug("Running command: %s" % " ".join(owping_args))
     try:
         proc = Popen(owping_args, stdout=PIPE, stderr=PIPE, shell=False)
         #Could use communicate but could potentially have large buffer.
         proc.wait()
     except OSError as e:
-        logging.error("owping encountered an OS error: %s" % e)
+        log.error("owping encountered an OS error: %s" % e)
         #Note: Avoids reporting sensitive system details in error message
         pscheduler.fail("The owping command failed during execution. See server logs for more details.")
     except Exception:
-        logging.error("owping failed to complete execution: %s" % sys.exc_info()[0])
+        log.error("owping failed to complete execution: %s" % sys.exc_info()[0])
         pscheduler.fail("The owping command failed during execution. See server logs for more details.")
     
     #see if command completed successfully
-    logging.debug("owping returned status %d" % proc.returncode)
+    log.debug("owping returned status %d" % proc.returncode)
     if proc.returncode:
         owp_error = ''
         for line in proc.stderr:
@@ -299,23 +298,23 @@ elif role == SERVER_ROLE:
     owampd_args.append(tmpdir)
     
     #Run the process
-    logging.debug("Running command: %s" % " ".join(owampd_args))
+    log.debug("Running command: %s" % " ".join(owampd_args))
     try:
         proc = Popen(owampd_args,stdout=PIPE, cwd=tmpdir, stderr=PIPE, shell=False)
     except OSError as e:
-        logging.error("owampd encountered an OS error: %s" % e)
+        log.error("owampd encountered an OS error: %s" % e)
         #Note: Avoids reporting sensitive system details in error message
         pscheduler.fail("The owampd command failed during execution. See server logs for more details.")
     except Exception:
-        logging.error("owampd failed to complete execution: %s" % sys.exc_info()[0])
+        log.error("owampd failed to complete execution: %s" % sys.exc_info()[0])
         pscheduler.fail("The owampd command failed during execution. See server logs for more details.")
     
     #sleep while we wait for test to complete in allotted time
     try:
         time.sleep(pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)))
     except IOError as e:
-        logging.error("Unable to sleep while server runs. Your test may be out of time")
-        logging.debug("Sleep error: %s" % e)
+        log.error("Unable to sleep while server runs. Your test may be out of time")
+        log.debug("Sleep error: %s" % e)
     
     #check if server failed
     if proc.poll():
@@ -330,15 +329,15 @@ elif role == SERVER_ROLE:
     
     #log stdout in debug mode
     for line in proc.stdout:
-        logging.debug(line)
+        log.debug(line)
     
     #Remove our tmpdir, but don't fail the test if it doesn't remove
     try:
         shutil.rmtree(tmpdir, ignore_errors=False)
     except:
-        logging.warn("Unable to remove owampd temporary directory %s: %s" % (tmpdir, sys.exc_info()[0]))
+        log.warn("Unable to remove owampd temporary directory %s: %s" % (tmpdir, sys.exc_info()[0]))
     
     results['succeeded'] = True
 
-logging.debug("Results: %s" % results)
+log.debug("Results: %s" % results)
 pscheduler.succeed_json(results)
