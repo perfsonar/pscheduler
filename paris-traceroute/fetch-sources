@@ -1,0 +1,28 @@
+#!/bin/sh -e 
+#
+# Fetch the paris-traceroute sources and make a tarball out of it that
+# has the usual expected layout.
+#
+# This script exists only to codify what needs to be done to get the
+# sources and should be run only when there's a new version, not as
+# part of the regular build process. 
+#
+# When there's a new version, remember to update the spec and get rid
+# of the old tarball when there's a version number change.
+#
+
+git clone https://code.google.com/p/paris-traceroute.libparistraceroute
+rm -rf paris-traceroute.libparistraceroute/libparistraceroute/.git
+
+
+# This is the only enumerable source of a version number anywhere in
+# the sources.
+VERSION=$(sed -e '/^%_topdir/!d; s/^.*\([0-9]\+\.[0-9]\+\).*$/\1/g' \
+	      paris-traceroute.libparistraceroute/libparistraceroute/dummy.rpmmacros)
+DIR="paris-traceroute-${VERSION}"
+
+mv paris-traceroute.libparistraceroute/libparistraceroute "${DIR}"
+rm -rf paris-traceroute.libparistraceroute
+
+tar czf "paris-traceroute-${VERSION}.tar.gz" "${DIR}"
+rm -rf "${DIR}"

@@ -49,10 +49,11 @@ httpd-wsgi-socket
 
 
 #
-# Utility programs
+# Utility and Tool programs
 #
 drop-in
 jq
+paris-traceroute
 random-string
 
 
