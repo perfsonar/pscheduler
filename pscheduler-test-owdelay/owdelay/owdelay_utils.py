@@ -85,6 +85,8 @@ class Histogram(object):
                 stats['mode'].append(k)
             mean_num += (float(k) * self.hist_dict[k])
             sample_size += self.hist_dict[k]
+        if sample_size == 0:
+            return {}
         stats['mean'] = (mean_num/(1.0*sample_size))
         
         #sort items. make sure sort as numbers not strings
