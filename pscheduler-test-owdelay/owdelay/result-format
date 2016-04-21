@@ -90,5 +90,13 @@ output += "Histogram:\n"
 for ttl_bucket in sorted(json.get('histogram-ttl', {}).items()):
     output += "    %s: %d packets\n" % (ttl_bucket[0], ttl_bucket[1])
 
+#output raw packets if we have them
+if 'raw-packets' in json:
+    output += "\nRaw packets\n"
+    output += "----------\n"
+    output +=  "SEQ SRC-TS SRC-CLOCK-SYNC SRC-CLOCK-ERR DST-TS DST-CLOCK-SYNC DST-CLOCK-ERR TTL\n"
+    for p in json['raw-packets']:
+        output += "%d %d %s %s %d %s %s %d\n" % (p['seq-num'], p['src-ts'], p['src-clock-sync'], p.get('src-clock-err', 'n/a'),  p['dst-ts'], p['dst-clock-sync'], p.get('dst-clock-err', 'n/a'), p['ip-ttl'])
+
 #Print to stdout
 print output
