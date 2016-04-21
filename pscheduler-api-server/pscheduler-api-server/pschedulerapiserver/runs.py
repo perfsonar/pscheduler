@@ -134,6 +134,7 @@ def tasks_uuid_runs_run(task, run):
                     upper(run.times) - lower(run.times),
                     task.participant,
                     task.nparticipants,
+                    task.participants,
                     run.part_data,
                     run.part_data_full,
                     run.result,
@@ -179,14 +180,18 @@ def tasks_uuid_runs_run(task, run):
         result['end-time'] = pscheduler.datetime_as_iso8601(row[1])
         result['duration'] = pscheduler.timedelta_as_iso8601(row[2])
         result['participant'] = row[3]
-        result['participants'] = row[4]
-        result['participant-data'] = row[5]
-        result['participant-data-full'] = row[6]
-        result['result'] = row[7]
-        result['result-full'] = row[8]
-        result['result-merged'] = row[9]
-        result['state'] = row[10]
-        result['state-display'] = row[11]
+        result['participants'] = [
+            participant if participant is not None
+            else pscheduler.api_this_host()
+            for participant in row[5]
+            ]
+        result['participant-data'] = row[6]
+        result['participant-data-full'] = row[7]
+        result['result'] = row[8]
+        result['result-full'] = row[9]
+        result['result-merged'] = row[10]
+        result['state'] = row[11]
+        result['state-display'] = row[12]
         result['task-href'] = root_url('tasks/' + task)
         result['result-href'] = href + '/result'
 
