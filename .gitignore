@@ -1,0 +1,20 @@
+# Ignore mac hidden file
+.DS_Store
+
+# Ignore rpms, logs and other build artifacts
+*.rpm
+*.pyc
+*.log
+*/rpmbuild
+REPO/
+*/.rpmmacros
+*/BUILD-ROOT/
+
+#ignore tarballs from build process
+make-generic-rpm/*.tar.gz
+postgresql-load/*.tar.gz
+pscheduler*/*.tar.gz
+python-icmperror/*.tar.gz
+python-pscheduler/*.tar.gz
+random-string/*.tar.gz
+rpm-with-deps/*.tar.gz
