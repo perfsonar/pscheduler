@@ -12,8 +12,7 @@ import sys
 import time
 import traceback
 
-# TODO: Turn off debugging.
-log = pscheduler.Log(prefix="simplestreamer", debug=True)
+log = pscheduler.Log(prefix="simplestreamer")
 
 input = pscheduler.json_load(exit_on_error=True);
 
