@@ -35,6 +35,7 @@ class Log():
     If the 'propagate' parameter is True (which it is by default), the
     logging state (level, forced debug, quiet) will be passed along to
     any child process which instantiates a Log instance.  This happens
+
     via the environment, so anything that scrubs it clean (e.g., sudo)
     will cause this feaure not to function.
     """
@@ -49,25 +50,6 @@ class Log():
                  signals=True,  # Enable debug on/off with SIGUSR1/SIGUSR2
                  propagate=True # Pass debug state on to child processes
                  ):
-
-        #
-        # Set up the logger
-        #
-      
-        self.logger = logging.getLogger(name)
-
-        # Syslog
-        self.syslog_handler = logging.handlers.SysLogHandler('/dev/log')
-        self.syslog_handler.formatter = logging.Formatter(
-            fmt     = '%(name)s %(levelname)-8s %(message)s')
-        self.logger.addHandler(self.syslog_handler)
-
-        # Stderr
-        self.stderr_handler = logging.StreamHandler(sys.stderr)
-        formatter = logging.Formatter(
-            fmt     = '%(asctime)s %(message)s',
-            datefmt = '%Y-%m-%dT%H:%M:%S')
-        self.stderr_handler.setFormatter(formatter)
 
         #
         # Handle the parameters
@@ -87,20 +69,39 @@ class Log():
         self.is_propagating = propagate
         self.is_propagating = True
 
-        self.is_verbose = verbose
-        self.verbose(verbose)
+        # This prevents verbose() from choking on this being undefined.
+        self.is_verbose = False
 
         self.is_quiet = quiet
 
-        # Grab signals and make them non-interrupting
-        # TODO: How portable is this?
-        if signals:
-            signal.signal(signal.SIGUSR1, self.sigusr1)
-            signal.signal(signal.SIGUSR2, self.sigusr2)
-            signal.siginterrupt(signal.SIGUSR1, False)
-            signal.siginterrupt(signal.SIGUSR2, False)
-
         self.forced_debug = False
+
+        #
+        # Set up the logger
+        #
+
+        self.logger = logging.getLogger(name)
+        self.logger.propagate = False
+
+        # Syslog
+        self.syslog_handler = logging.handlers.SysLogHandler('/dev/log')
+        self.syslog_handler.setFormatter(
+            logging.Formatter(
+                fmt = '%(name)s %(levelname)-8s %(message)s'
+                )
+            )
+        self.logger.addHandler(self.syslog_handler)
+
+
+        # Stderr
+        self.stderr_handler = logging.StreamHandler(sys.stderr)
+        self.stderr_handler.setFormatter(
+            logging.Formatter(
+                fmt     = '%(asctime)s %(message)s',
+                datefmt = '%Y-%m-%dT%H:%M:%S'
+                )
+            )
+        # Don't add this handler; verbose will cover it.
 
         #
         # Inherit state from the environment 
@@ -124,9 +125,24 @@ class Log():
                 self.exception("Failed to decode %s '%s'" \
                                    % (STATE_VARIABLE, os.environ[STATE_VARIABLE]))
 
+
+        #
+        # Get everything set to go
+        #
+
+        self.verbose(verbose)
         self.level(level)
         self.set_debug(self.forced_debug)
         self.__update_env()
+
+        # Grab signals and make them non-interrupting
+        # TODO: How portable is this?
+        if signals:
+            signal.signal(signal.SIGUSR1, self.sigusr1)
+            signal.signal(signal.SIGUSR2, self.sigusr2)
+            signal.siginterrupt(signal.SIGUSR1, False)
+            signal.siginterrupt(signal.SIGUSR2, False)
+
 
         if not self.is_quiet:
             self.info("Started")
@@ -137,8 +153,7 @@ class Log():
     def __update_env(self):
         """
         (INTERNAL USE ONLY) Update the environment variable passed to
-        child processes to pre-set the state.  See comments in
-        __init__() for more details.
+        child processes to pre-set the state.
         """
         if self.is_propagating:
             to_pickle = {
@@ -199,7 +214,7 @@ class Log():
         extype, ex, tb = sys.exc_info()
         self.error(
             "Exception: %s%s%s",
-            message if message is not None else '',
+            message+': ' if message is not None else '',
             ''.join(traceback.format_exception_only(extype, ex)),
             ''.join(traceback.format_exception(extype, ex, tb)).strip()
             )
@@ -243,7 +258,7 @@ if __name__ == "__main__":
     try:
         raise ValueError("Test exception")
     except Exception as ex:
-        log.exception("Exception with test message")
+        log.exception("Test exception with message")
 
     for num in range(1,5):
         log.debug("Debug")
