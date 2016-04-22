@@ -1,10 +1,4 @@
 #!/usr/bin/python
-#
-#NOTE: THIS NEEDS A LOT OF WORK. 
-# Merge overal is not working quite right so lost of code that just prevents things from exploding
-# Merge the participant results of a run by this tool into a
-# test-standard result.
-#
 
 import pscheduler
 
@@ -18,8 +12,7 @@ results = {'succeeded': False}
 
 try:
     result_list = input['results']
-    #TODO: I need this to get flip but right now the spec is a string and not a JSON object
-    #test_spec = input['test']
+    test_spec = input['test']['spec']
 except KeyError as e:
     log.error("merged-result error %s" % e)
     pscheduler.fail("Missing required key in merged-result input: %s" % e)
@@ -33,10 +26,11 @@ elif len(result_list) == 2:
         pass    
     else:
         succeeded = result_list[0]['succeeded'] and result_list[1]['succeeded']
-        if succeeded:
+        if succeeded and test_spec.get("flip", False):
+            #if we used the flip option, the receiver has the result we want
+            results = result_list[1]
+        elif succeeded:
             results = result_list[0]
-        else:
-            results["succeeded"] = False
 else:
     pscheduler.fail("Invalid merged-results input. Can only handle up to 2 results. ")
 
