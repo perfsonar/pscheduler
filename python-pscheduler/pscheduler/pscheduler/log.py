@@ -5,6 +5,7 @@ Functions for Logging
 import logging
 import logging.handlers
 import os
+import pickle
 import signal
 import sys
 import time
@@ -19,6 +20,10 @@ WARNING = logging.WARNING
 ERROR = logging.ERROR
 CRITICAL = logging.CRITICAL
 
+
+# Internal-use name of environment variable
+STATE_VARIABLE = 'PSCHEDULER_LOG_STATE'
+
 class Log():
 
     """
@@ -26,6 +31,12 @@ class Log():
 
     Sendig SIGUSR1 will force the log level to DEBUG.  Sending SIGUSR2
     will set it to whatever level was previously set.
+
+    If the 'propagate' parameter is True (which it is by default), the
+    logging state (level, forced debug, quiet) will be passed along to
+    any child process which instantiates a Log instance.  This happens
+    via the environment, so anything that scrubs it clean (e.g., sudo)
+    will cause this feaure not to function.
     """
 
     def __init__(self,
@@ -35,19 +46,13 @@ class Log():
                  debug=False,   # Force level to DEBUG
                  verbose=False, # Log to stderr, too.
                  quiet=False,   # Don't log anything on startup
-                 signals=True   # Enable debug on/off with SIGUSR1/SIGUSR2
+                 signals=True,  # Enable debug on/off with SIGUSR1/SIGUSR2
+                 propagate=True # Pass debug state on to child processes
                  ):
 
-        if name is None:
-            name = os.path.basename(sys.argv[0])
-        assert type(name) == str
-
-        if prefix is not None:
-            assert type(prefix) == str
-            name = prefix + "/" + name
-
-        if debug:
-            level = DEBUG
+        #
+        # Set up the logger
+        #
       
         self.logger = logging.getLogger(name)
 
@@ -64,10 +69,28 @@ class Log():
             datefmt = '%Y-%m-%dT%H:%M:%S')
         self.stderr_handler.setFormatter(formatter)
 
-        self.forced_debug = False
-        self.is_verbose = False
+        #
+        # Handle the parameters
+        #
+
+        if name is None:
+            name = os.path.basename(sys.argv[0])
+        assert type(name) == str
+
+        if prefix is not None:
+            assert type(prefix) == str
+            name = prefix + "/" + name
+
+        if debug:
+            level = DEBUG
+
+        self.is_propagating = propagate
+        self.is_propagating = True
+
+        self.is_verbose = verbose
         self.verbose(verbose)
-        self.level(level)
+
+        self.is_quiet = quiet
 
         # Grab signals and make them non-interrupting
         # TODO: How portable is this?
@@ -77,8 +100,54 @@ class Log():
             signal.siginterrupt(signal.SIGUSR1, False)
             signal.siginterrupt(signal.SIGUSR2, False)
 
-        if not quiet:
+        self.forced_debug = False
+
+        #
+        # Inherit state from the environment 
+        #
+
+        if STATE_VARIABLE in os.environ:
+
+            try:
+                depickled = pickle.loads(os.environ[STATE_VARIABLE])
+
+                level = depickled['last_level']
+                assert type(level) == int
+
+                self.forced_debug = depickled['forced_debug']
+                assert type(self.forced_debug) == bool
+
+                self.is_quiet = depickled['is_quiet']
+                assert type(self.is_quiet) == bool
+
+            except Exception as ex:
+                self.exception("Failed to decode %s '%s'" \
+                                   % (STATE_VARIABLE, os.environ[STATE_VARIABLE]))
+
+        self.level(level)
+        self.set_debug(self.forced_debug)
+        self.__update_env()
+
+        if not self.is_quiet:
             self.info("Started")
+
+
+
+
+    def __update_env(self):
+        """
+        (INTERNAL USE ONLY) Update the environment variable passed to
+        child processes to pre-set the state.  See comments in
+        __init__() for more details.
+        """
+        if self.is_propagating:
+            to_pickle = {
+                'forced_debug': self.forced_debug,
+                'last_level': self.last_level,
+                'is_quiet': self.is_quiet
+                }
+            os.environ[STATE_VARIABLE] = pickle.dumps(to_pickle)
+
 
 
 
@@ -92,6 +161,9 @@ class Log():
         else:
             self.logger.removeHandler(self.stderr_handler)
 
+        self.is_verbose = state
+
+
 
     def level(self, level, save=True):
         "Set the log level"
@@ -99,6 +171,7 @@ class Log():
         self.logger.setLevel(level)
         if save:
             self.last_level = level
+        self.__update_env()
 
 
     # Logging
@@ -121,11 +194,12 @@ class Log():
     def critical(self, format, *args):
         self.log(CRITICAL, format, *args)
 
-    def exception(self):
+    def exception(self, message=None):
         "Log an exception as an error"
         extype, ex, tb = sys.exc_info()
         self.error(
-            "Exception: %s%s",
+            "Exception: %s%s%s",
+            message if message is not None else '',
             ''.join(traceback.format_exception_only(extype, ex)),
             ''.join(traceback.format_exception(extype, ex, tb)).strip()
             )
@@ -148,13 +222,13 @@ class Log():
 
         if state:
             self.level(DEBUG, save=False)
-            self.debug("Debug enabled remotely")
+            self.debug("Debug started")
         else:
-            self.debug("Debug disabled remotely")
+            self.debug("Debug discontinued")
             self.level(self.last_level)
 
-
         self.forced_debug = state
+        self.__update_env()
 
 
 
@@ -169,7 +243,7 @@ if __name__ == "__main__":
     try:
         raise ValueError("Test exception")
     except Exception as ex:
-        log.exception()
+        log.exception("Exception with test message")
 
     for num in range(1,5):
         log.debug("Debug")
