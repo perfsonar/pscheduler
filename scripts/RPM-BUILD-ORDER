@@ -26,13 +26,18 @@ postgresql-init
 postgresql-load
 
 # Python Modules
+python-argparse
 python-detach
 python-isodate
-python-jsontemplate
 python-ntplib
 python-pytz
+python-repoze.lru
 python-subprocess32
 python-tzlocal
+
+# JSON Tools
+python-jsonschema
+python-jsontemplate
 
 # Flask and its dependencies
 python-itsdangerous
