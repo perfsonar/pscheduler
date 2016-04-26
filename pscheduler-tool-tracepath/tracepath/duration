@@ -4,8 +4,8 @@
 #
 
 # Tracepath does a hardwaired maximum of 31 hops with a (guessed)
-# timeout of 2 seconds.  Take that plus a couple of seconds to do DNS
-# resolution and some buffer time.
+# timeout of 3 seconds.  Take that plus a couple of seconds to do DNS
+# resolution afterward and some buffer time.
 
-echo 'PT1M10S'
+echo 'PT2M'
 exit 0
