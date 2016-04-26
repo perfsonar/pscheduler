@@ -105,6 +105,30 @@ def tasks_uuid_runs(task):
 
 
 
+def __runs_first_run(
+    task   # UUID of task
+    ):
+    """
+    Find the UUID of the first run of the specified task, returning
+    None if none exists.
+    """
+    dbcursor().execute("""
+                SELECT run.uuid
+                FROM
+                  task
+                  JOIN run ON run.task = task.id
+                WHERE
+                  task.uuid = %s
+                ORDER BY run.times
+                LIMIT 1
+                """, [task])
+    # TODO: Handle failure.
+
+    return none if dbcursor().rowcount == 0 \
+        else dbcursor().fetchone()[0]
+
+
+
 @application.route("/tasks/<task>/runs/<run>", methods=['GET', 'PUT', 'DELETE'])
 def tasks_uuid_runs_run(task, run):
 
@@ -121,6 +145,14 @@ def tasks_uuid_runs_run(task, run):
 
         if wait_local and wait_merged:
             return error("Cannot wait on local and merged results")
+
+        # If asked for 'first', dig up the first run and use its UUID.
+        # This is more for debug convenience than anything else.
+        if run == 'first':
+            run = __runs_first_run(task)
+            if run is None:
+                return not_found()
+
 
         # 40 tries at 0.25s intervals == 10 sec.
         tries = 40 if (wait_local or wait_merged) else 1
@@ -346,6 +378,15 @@ def tasks_uuid_runs_run_result(task, run):
 
     if format not in [ 'application/json', 'text/html', 'text/plain' ]:
         return bad_request("Unsupported format " + format)
+
+    # If asked for 'first', dig up the first run and use its UUID.
+    # This is more for debug convenience than anything else.
+    if run == 'first':
+        run = __runs_first_run(task)
+        if run is None:
+            return not_found()
+
+
 
     #
     # Camp on the run for a result
