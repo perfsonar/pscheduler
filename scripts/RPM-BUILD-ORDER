@@ -28,6 +28,7 @@ postgresql-load
 # Python Modules
 python-argparse
 python-detach
+python-dnspython
 python-isodate
 python-ntplib
 python-pytz
