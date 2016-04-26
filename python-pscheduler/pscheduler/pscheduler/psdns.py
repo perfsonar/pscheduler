@@ -51,6 +51,8 @@ def dns_bulk_resolve(candidates, reverse=False, threads=50):
     threads.
     """
 
+    # This is based loosely on http://stackoverflow.com/a/34377198
+
     result = {}
 
     pool = multiprocessing.pool.ThreadPool(
