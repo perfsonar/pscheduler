@@ -21,6 +21,7 @@ if participant != 0:
 spec = input['test']['spec']
 
 
+log = pscheduler.Log(prefix='tracepath')
 
 #
 # Figure out how to invoke the program
@@ -37,14 +38,9 @@ except KeyError:
     pass
 argv.append(tracepath)
 
+# Always run without resolving IPs; we'll do that in parallel after it finishes.
+argv.append('-n')
 
-
-try:
-    hostnames = spec['hostnames']
-    if not hostnames:
-        argv.append('-n')
-except KeyError:
-    hostnames = False
 
 try:
     length = spec['length']
@@ -109,16 +105,12 @@ if status != 0:
 #
 
 try:
-    hostnames = spec['hostnames']
-except KeyError:
-    hostnames = True
-
-try:
     as_ = spec['as']
 except KeyError:
     as_ = False
 
 hops = []
+ips = []
 last_hop = 0
 
 for line in stdout.split('\n'):
@@ -127,6 +119,8 @@ for line in stdout.split('\n'):
     if matches is None:
         continue
     this_hop =  int(matches.group(1))
+
+    log.debug("LINE %s", line)
 
     # Repeats of a hop replace earlier ones
     if this_hop == len(hops):
@@ -142,16 +136,11 @@ for line in stdout.split('\n'):
         hops.append(hop)
         continue
 
-    # Hostname and IP
-
-    if hostnames:
-        hostname = elements.pop(0)
-        ip = elements.pop(0)[1:-1]
-        hop['ip'] = ip
-        if hostname != ip:
-            hop['hostname'] = hostname
-    else:
-        hop['ip'] = elements.pop(0)
+    # IP.  We forced tracepath to behave this way.
+    ip = elements.pop(0)
+    hop['ip'] = ip
+    ips.append(ip)
+    log.debug("  IP %s", ip)
 
     # RTT (ms)
 
@@ -171,8 +160,23 @@ for line in stdout.split('\n'):
         if reached_err[0] == '!':
             hop['error'] = icmperror.translate(reached_err)
 
-
     hops.append(hop)
+
+
+# If we're doing hostnames, bulk-resolve them.
+
+try:
+    hostnames = spec['hostnames']
+except KeyError:
+    hostnames = True
+
+if hostnames and len(ips) > 0:
+    log.debug("Reverse-resolving IPs: %s", str(ips))
+    revmap = pscheduler.dns_bulk_resolve(ips, reverse=True, threads=len(hops))
+    for hop in hops:
+        ip = hop['ip']
+        if ip in revmap:
+            hop.update({ 'hostname': revmap[ip] })
 
 
 # Spit out the results

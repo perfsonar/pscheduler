@@ -10,6 +10,7 @@ from .jsonval import *
 from .log import *
 from .ntp import *
 from .program import *
+from .psdns import *
 from .psjson import *
 from .pstime import *
 from .psurl import *

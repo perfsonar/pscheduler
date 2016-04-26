@@ -4,8 +4,8 @@
 #
 
 # Tracepath does a hardwaired maximum of 31 hops with a (guessed)
-# timeout of 2 seconds per hop = 62 seconds being the longest possible
-# run.  Add a few seconds of buffer time.
+# timeout of 2 seconds.  Take that plus a couple of seconds to do DNS
+# resolution and some buffer time.
 
-echo 'PT1M5S'
+echo 'PT1M10S'
 exit 0
