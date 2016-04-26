@@ -150,7 +150,7 @@ class Run:
             'participant-data': partdata
             }
 
-        tool_input = pscheduler.json_dump(tool_input, pretty=True)
+        tool_input = pscheduler.json_dump(tool_input)
         log.debug("%d: Testing with %s: %s", id, tool, tool_input)
 
         returncode, stdout, stderr = pscheduler.run_program(
