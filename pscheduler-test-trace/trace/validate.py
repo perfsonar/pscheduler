@@ -52,7 +52,7 @@ def result_is_valid(json):
                     "error": { "$ref": "#/pScheduler/icmp-error" },
                     },
                 "required": [
-                    "ip"
+                    # Nothing required.
                     ]
                 }
             },
