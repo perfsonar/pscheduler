@@ -1,33 +1,31 @@
 #
-# RPM Spec for Python Jsonschema
+# RPM Spec for repoze.lru
 #
 
-%define short	jsonschema
+%define short	vcversioner
 Name:		python-%{short}
-Version:	2.5.1
+Version:	2.16.0.0
 Release:	1%{?dist}
-Summary:	JSON Schema for Python
+Summary:	Python version extractor
 BuildArch:	noarch
-License:	MIT
+License:	ISC
 Group:		Development/Libraries
 
 Provides:	%{name} = %{version}-%{release}
 Prefix:		%{_prefix}
 
-Vendor:		Julian Berman
-URL:		https://github.com/Julian/jsonschema
+Vendor:		Aaron Gallagher
+URL:		https://github.com/habnabit/vcversioner 
 
 Source:		%{short}-%{version}.tar.gz
 
 Requires:	python
-Requires:	python-argparse
-Requires:	python-repoze.lru
 
 BuildRequires:	python
-Requires:	python-vcversioner
+
 
 %description
-JSON Schema for Python
+Python version extractor
 
 
 

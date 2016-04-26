@@ -72,7 +72,7 @@ will be {\tt 4}.
 
 \typeditem{probe-type}{String} The type of probe to be used in
 determining the path to the destination.  Valid values are {\tt udp}
-for UDP (the default), {\tt echo} for ICMP echos and {\tt tcp} for TCP
+for UDP (the default), {\tt icmp} for ICMP echos and {\tt tcp} for TCP
 SYN.
 
 \typeditem{length}{Cardinal} The length of test packets sent, in
@@ -113,7 +113,7 @@ to be sent after a probe is sent.
 
 \todo{Support the -s source_addr switch?}
 
-\typeditem{sendwait}{Duration} The amount of time to wait between
+\typeditem{send-wait}{Duration} The amount of time to wait between
 probes.
 
 \typeditem{as}{Boolean} Whether or not the AS for each hop should be

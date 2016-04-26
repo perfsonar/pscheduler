@@ -63,6 +63,8 @@ The test specification consists of a single JSON object containing the
 pairs below.  \seejson
 
 
+\typeditem{schema}{SchemaVersion} Version of the specification format.
+
 \typeditem{duration}{Duration} Duration of the idle period.
 
 \typeditem{starting-comment}{String} Optional text to be output or
@@ -74,6 +76,7 @@ logged by the test at the conslusion of the idle period.
 \subsection{Example}
 \begin{lstlisting}[language=json]
 {
+    "schema": 1,
     "duration": "PT30S",
     "starting-comment": "Starting to do nothing",
     "parting-comment": "Finished doing nothing"
@@ -91,6 +94,8 @@ logged by the test at the conslusion of the idle period.
 The result consists of a single JSON object containing the pairs
 below.  \seejson
 
+\typeditem{schema}{SchemaVersion} Version of the result format.
+
 \typeditem{duration}{Duration} Length of time spent idle.  This should
 match the duration in the specification.
 
@@ -98,6 +103,7 @@ match the duration in the specification.
 \subsection{Example}
 \begin{lstlisting}[language=json]
 {
+    "schema": 1,
     "duration": "PT30S"
 }
 \end{lstlisting}

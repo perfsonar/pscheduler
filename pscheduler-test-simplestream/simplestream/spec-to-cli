@@ -4,53 +4,24 @@
 
 import pscheduler
 
+from validate import spec_is_valid
+
+
 spec = pscheduler.json_load(exit_on_error=True)
 
-if type(spec) != dict:
-    pscheduler.fail("Invalid JSON for this operation")
+valid, message = spec_is_valid(spec)
 
-# TODO: Rewrite this using speccli_build_args
+if not valid:
+    pscheduler.fail(message)
 
-result = []
-
-try:
-    receiver = spec['receiver']
-    result.append('--receiver')
-    result.append(receiver)
-except KeyError:
-    pscheduler.fail("Missing receiver")
-
-
-try:
-    dawdle = spec['dawdle']
-    result.append('--dawdle')
-    result.append(dawdle)
-except KeyError:
-    pass  # Missing is okay.
-
-
-try:
-    test_material = spec['test-material']
-    result.append('--test-material')
-    result.append(test_material)
-except KeyError:
-    pass  # Missing is okay.
-
-
-try:
-    timeout = spec['timeout']
-    result.append('--timeout')
-    result.append(timeout)
-except KeyError:
-    pass  # Missing is okay.
-
-try:
-    fail = spec['fail']
-    result.append('--fail')
-    result.append(fail)
-except KeyError:
-    pass  # Missing is okay.
-
+result = pscheduler.speccli_build_args(json, 
+                                       strings=[
+        ( 'receiver', 'receiver' ),
+        ( 'dawdle', 'dawdle' ),
+        ( 'test-material', 'test-material' ),
+        ( 'timeout', 'timeout' ),
+        ( 'fail', 'fail' ),
+        ])
 
 pscheduler.succeed_json(result)
 

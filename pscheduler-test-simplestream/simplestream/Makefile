@@ -4,6 +4,9 @@
 
 NAME=simplestream
 
+# TODO: Everything below this should be made into a template that can
+# be included.
+
 FILES=\
 	cli-to-spec \
 	enumerate \
@@ -13,13 +16,22 @@ FILES=\
 	spec-is-valid \
 	spec-to-cli \
 
+MODULES=\
+	validate \
 
 DOCS=\
 	$(NAME).txt
 
 
+FILES += $(MODULES:%=%.py)
+PYCS=$(MODULES:%=%.pyc)
 
-install: $(FILES) $(DOCS)
+$(PYCS):
+	python -m compileall .
+TO_CLEAN += $(PYCS)
+
+
+install: $(FILES) $(PYCS) $(DOCS)
 ifndef DESTDIR
 	@echo No DESTDIR specified for installation
 	@false
@@ -31,12 +43,11 @@ ifndef DOCDIR
 endif
 endif
 	mkdir -p $(DESTDIR)
-	install -m 555 $(FILES) $(DESTDIR)
+	install -m 555 $(FILES) $(PYCS) $(DESTDIR)
 ifdef DOCS
 	mkdir -p $(DOCDIR)
 	install -m 444 $(DOCS) $(DOCDIR)
 endif
-
 
 
 clean:

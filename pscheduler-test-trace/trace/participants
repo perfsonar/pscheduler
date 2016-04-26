@@ -1,13 +1,19 @@
-#!/bin/sh
+#!/usr/bin/python
 #
-# Participant list generator for 'trace' task spec
-#
-# Input is a test spec, assumed to have been validated by spec-is-valid.
-#
-# Output is a list of hostnames or IPs that are participating.
+# Participant list generator for 'trace' test spec
 #
 
-# There's only ever one participant, the local system.
-cat <<EOF
-[ null ]
-EOF
+import pscheduler
+import sys
+
+from validate import spec_is_valid
+
+json = pscheduler.json_load(exit_on_error=True)
+
+valid, message = spec_is_valid(json)
+
+if not valid:
+    pscheduler.fail(message)
+
+# There's only ever one participant, and that's us.
+pscheduler.succeed_json([None])

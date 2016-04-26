@@ -4,37 +4,21 @@
 
 import pscheduler
 
-spec = pscheduler.json_load(exit_on_error=True)
-
-# TODO: Rewrite this using speccli_build_args
-
-result = []
-
-try:
-    result.append('--duration')
-    result.append(spec['duration'])
-except KeyError:
-    pscheduler.fail("Missing duration")
+from validate import spec_is_valid
 
 
-try:
-    comment = spec['starting-comment']
-    result.append('--starting-comment')
-    result.append(comment)
-except KeyError:
-    pass  # Missing is okay.
+json = pscheduler.json_load(exit_on_error=True)
 
+valid, message = spec_is_valid(json)
 
-try:
-    comment = spec['parting-comment']
-    result.append('--parting-comment')
-    result.append(comment)
-except KeyError:
-    pass  # Missing is okay.
+if not valid:
+    pscheduler.fail(message)
 
-
-
+result = pscheduler.speccli_build_args(json, 
+                                       strings=[
+        ( 'duration', 'duration' ),
+        ( 'starting-comment', 'starting-comment' ),
+        ( 'parting-comment', 'parting-comment' ),
+        ])
 
 pscheduler.succeed_json(result)
-
-

@@ -7,13 +7,22 @@ import jsontemplate
 import pscheduler
 import sys
 
+from validate import result_is_valid
+
+
 try:
    format = sys.argv[1]
 except IndexError:
    format = 'text/plain'
 
 json = pscheduler.json_load(exit_on_error=True)
-# TODO: Validate the input
+
+valid, message = result_is_valid(json)
+
+if not valid:
+    pscheduler.fail(message)
+
+
 
 if format == 'text/plain':
 

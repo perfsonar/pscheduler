@@ -5,44 +5,14 @@
 
 import pscheduler
 
+from validate import spec_is_valid
+
+
 json = pscheduler.json_load(exit_on_error=True)
 
-# Run through all of the tags we expect to see, deleting the valid ones
+valid, message = spec_is_valid(json)
 
-if 'schema' in json:
-    if not (1 <= json['schema'] <= 1):
-        pscheduler.fail('Unsupported schema version {0}'.format(json['schema']))
-    del json['schema']
-else:
-    pscheduler.fail("Missing schema")
-
-# Strings
-
-for item in [
-    'starting-comment',
-    'parting-comment'
-    ]:
-    if (item in json):
-        if (isinstance(json[item], basestring)):
-            del json[item]
-        else:
-            pscheduler.fail(item, ' is not a string.')
-
-# Duration
-
-try:
-    if pscheduler.iso8601_as_timedelta(json['duration']) is None:
-        pscheduler.fail('Invalid duration "' + json['duration'] + '"')
-    del json['duration']
-except KeyError:
-    pscheduler.fail('No duration in test specification')
-
-
-# Anything left is bogus
-
-if len(json) > 0:
-    pscheduler.fail('Unknown elements in test specification: '
-                    + ', '.join(json.keys()))
-
+if not valid:
+    pscheduler.fail(message)
 
 pscheduler.succeed()
