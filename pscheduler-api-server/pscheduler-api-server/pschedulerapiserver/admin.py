@@ -17,12 +17,6 @@ def root():
               % socket.gethostname())
 
 
-# TODO: Remove after development.
-@application.route("/s", methods=['GET', 'PUT'])
-def sandbox():
-    return ok("Sandbox: " + base_url())
-
-
 @application.route("/hostname", methods=['GET'])
 def hostname():
     """Return the hosts's name"""
