@@ -1,0 +1,29 @@
+#!/bin/sh
+#
+# Preprocess the build order into something machine-usable
+#
+
+WHEREAMI="$(dirname $0)"
+
+if ! which m4 > /dev/null 2>&1
+then
+    if [ "${USER}" == "root" ]
+    then
+	yum -y install m4
+    else
+	echo "M4 is not installed" 1>&2
+	exit 1
+    fi
+fi
+
+# Determine the RHEL version without depending on lsb_release.
+REDHAT_RELEASE=$(sed -e 's/^.* \([0-9.]\+\) .*$/\1/' /etc/redhat-release)
+REDHAT_RELEASE_MAJOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 }')
+REDHAT_RELEASE_MAJOR_MINOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 "." $2 }')
+
+m4 \
+    "-DREDHAT_RELEASE_MAJOR=${REDHAT_RELEASE_MAJOR}" \
+    "-DREDHAT_RELEASE_MAJOR_MINOR=${REDHAT_RELEASE_MAJORMINOR}" \
+    $WHEREAMI/RPM-BUILD-ORDER.m4 \
+    | sed -e 's/#.*$//' \
+    | egrep -ve '^\s*$'
