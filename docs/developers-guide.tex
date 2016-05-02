@@ -58,7 +58,8 @@ follows:
 Follow these steps to configure the build/development system:
 
 \begin{enumerate}
-\item Boot the Red Hat Enterprise Linux or CentOS 6.{\it x} image.
+\item Boot the Red Hat Enterprise Linux or CentOS 6.{\it x} or 7.{\it
+  x} image.
 \item Configure the language, keyboard and storage devices
   appropriately.
 \item Configure the network interface(s) to connect automatically.
@@ -66,7 +67,9 @@ Follow these steps to configure the build/development system:
 \item Use the ``Minimal'' configuration for installation.
 \item Finish the installation and reboot.
 \item Log in as \root.
-\item \rootcommand{yum -y install openssh-clients}
+\item On CentOS6, \rootcommand{yum -y install openssh-clients}
+\item \rootcommand{yum -y upgrade}
+\item Reboot.
 \item Copy the file {\tt scripts/system-prep} from the pScheduler
   source distribution onto the new machine and place it on the new
   system in {\tt /tmp}.

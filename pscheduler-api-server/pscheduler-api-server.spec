@@ -40,6 +40,11 @@ The pScheduler REST API server
 %define api_dir	     %{_var}/www/%{name}
 
 %prep
+%if 0%{?el6}%{?el7} == 0
+echo "This package cannot be built on %{dist}."
+false
+%endif
+
 %setup -q
 
 
@@ -69,9 +74,17 @@ then
     fi
 fi
 
-chkconfig httpd on
 
+
+%if 0%{?el6}
+chkconfig httpd on
 service httpd restart
+%endif
+%if 0%{?el7}
+systemctl enable httpd
+systemctl restart httpd
+%endif
+
 
 
 %postun
@@ -83,9 +96,13 @@ service httpd restart
 #     setsebool -P httpd_can_network_connect_db 1
 # fi
 
+%if 0%{?el6}
+service httpd restart
+%endif
+%if 0%{?el7}
+systemctl restart httpd
+%endif
 
-# TODO: Do we want this or a reload?
-service httpd condrestart
 
 
 %files

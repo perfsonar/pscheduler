@@ -31,6 +31,11 @@ owping tool class for pScheduler
 
 
 %prep
+%if 0%{?el6}%{?el7} == 0
+echo "This package cannot be built on %{dist}."
+false
+%endif
+
 %setup -q -n %{short}-%{version}
 
 
@@ -45,19 +50,15 @@ make \
 %post
 if [ "$1" -eq 1 ]
 then
-    # Put our rule after the last ACCEPT in the input chain
-    INPUT_LENGTH=$(iptables -L INPUT | egrep -e '^ACCEPT' | wc -l)
-    iptables -I INPUT $(expr ${INPUT_LENGTH} + 1 ) \
-        -p tcp -m state --state NEW -m tcp --dport 10000:10100 -j ACCEPT
-    service iptables save
+  # TODO: Add firewall rules if necessary
+  true
 fi
 
 %postun
 if [ "$1" -eq 0 ]
 then
-    iptables -D INPUT \
-        -p tcp -m state --state NEW -m tcp --dport 10000:10100 -j ACCEPT
-    service iptables save
+  # TODO: Add firewall rules if necessary
+  true
 fi
 
 

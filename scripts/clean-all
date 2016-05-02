@@ -12,7 +12,7 @@ then
 fi
 
 
-for PACKAGE in $(sed -e 's/#.*$//; /^\s*$/d' "${WHEREAMI}/RPM-BUILD-ORDER")
+for PACKAGE in $("${WHEREAMI}/build-order")
 do
     make -C "${PACKAGE}" clean
 done

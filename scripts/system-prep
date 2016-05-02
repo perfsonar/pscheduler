@@ -32,8 +32,18 @@ then
 fi
 
 
+# Determine the RHEL version without depending on lsb_release.
+REDHAT_RELEASE=$(sed -e 's/^.* \([0-9.]\+\) .*$/\1/' /etc/redhat-release)
+REDHAT_RELEASE_MAJOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 }')
+REDHAT_RELEASE_MAJOR_MINOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 "." $2 }')
+
+
+# Bring everything up to date
+yum -y upgrade
+
+
 # PostgreSQL
-rpm -Uvh --force "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-6-$(uname -m)/pgdg-redhat95-9.5-2.noarch.rpm"
+rpm -Uvh --force "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-${REDHAT_RELEASE_MAJOR_MINOR}-$(uname -m)/pgdg-redhat95-9.5-2.noarch.rpm"
 
 # Needed for documentation, which isn't RPM-ified yet and can't load
 # this automatically.
@@ -61,7 +71,17 @@ yum -y install \
 if [ "${NEW_USER}" ]
 then
 
-    yum -y install gcc kernel-devel-$(uname -r)
+    case "${REDHAT_RELEASE_MAJOR}" in
+	6)
+	    KERNEL_DEVEL=kernel-devel-$(uname -r)
+	    ;;
+	7)
+	    yum -y install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${REDHAT_RELEASE_MAJOR}.noarch.rpm"
+	    KERNEL_DEVEL="kernel-devel dkms"
+	    ;;
+    esac
+
+    yum -y install bzip2 gcc ${KERNEL_DEVEL}
 
     # This exits 1 when XOrg isn't installed, even if successful
     /mnt/VBoxLinuxAdditions.run && true
@@ -71,9 +91,20 @@ then
     chsh -s /bin/tcsh "${NEW_USER}"
     echo "${NEW_PASS}" | passwd --stdin "${NEW_USER}"
 
+    # Arrange for the user's home directory to be mounted.  CentOS 7
+    # goes into emergency mode if the device can't be mounted
+    # immediately at boot, so make this noauto and make rc.local do
+    # it.
+
+    USER_HOME=$(su - "${NEW_USER}" -c 'echo $HOME')
+
     cat >> /etc/fstab <<EOF
-${NEW_USER}                /home/${NEW_USER}          vboxsf  uid=${NEW_UID}        0 0
+${NEW_USER}                ${USER_HOME}          vboxsf  noauto,uid=${NEW_UID}        0 0
 EOF
-    mount /home/${NEW_USER}
+
+    mount "${USER_HOME}"
+
+    echo "mount '${USER_HOME}'" >> /etc/rc.local
+    chmod +x /etc/rc.local
 
 fi

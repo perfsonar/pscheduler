@@ -1,6 +1,13 @@
-#
-# Build Order for pScheduler RPMs
-#
+dnl
+dnl Build Order for pScheduler RPMs
+dnl
+dnl
+dnl Pre-process with M4.
+dnl
+dnl
+changequote(<!,!>)dnl
+changecom()dnl
+dnl
 #
 # Packages must be listed in an order where dependent packages are
 # built after their dependencies.
@@ -29,6 +36,8 @@ postgresql-load
 python-argparse
 python-detach
 python-dnspython
+ifelse(REDHAT_RELEASE_MAJOR,7,
+    python-functools32,)
 python-isodate
 python-ntplib
 python-pytz
@@ -51,7 +60,7 @@ python-Flask
 python-icmperror
 
 # Apache add-ons
-httpd-iptables
+httpd-firewall
 httpd-wsgi-socket
 
 

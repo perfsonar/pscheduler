@@ -24,6 +24,14 @@ Debug configuration for rsyslog.
 
 %define rsyslog_d %{_sysconfdir}/rsyslog.d
 
+
+%prep
+%if 0%{?el6}%{?el7} == 0
+echo "This package cannot be built for %{dist}."
+false
+%endif
+
+
 %install
 mkdir -p $RPM_BUILD_ROOT/%{rsyslog_d}
 cat > $RPM_BUILD_ROOT/%{rsyslog_d}/%{name}.conf <<EOF
@@ -35,11 +43,21 @@ EOF
 
 
 %post
+%if 0%{?el6}
 service rsyslog restart
+%endif
+%if 0%{?el7}
+systemctl restart rsyslog
+%endif
 
 
 %postun
+%if 0%{?el6}
 service rsyslog restart
+%endif
+%if 0%{?el7}
+systemctl restart rsyslog
+%endif
 
 
 %files

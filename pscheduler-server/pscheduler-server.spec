@@ -2,6 +2,10 @@
 # RPM Spec for pScheduler Server
 #
 
+# TODO: Need to write proper systemd services for this package and
+# make the scriptlets use them on CentOS 7.  For now the old-style
+# init scripts function just fine.
+
 Name:		pscheduler-server
 Version:	0.0
 Release:	1%{?dist}
@@ -27,6 +31,10 @@ Requires:	python-requests
 The pScheduler server
 
 %prep
+%if 0%{?el6}%{?el7} == 0
+echo "This package cannot be built for %{dist}."
+false
+%endif
 %setup -q
 
 

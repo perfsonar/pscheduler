@@ -2,6 +2,9 @@
 # RPM Spec for pScheduler Database
 #
 
+# TODO: Should probably extract the user name from the macro
+# pscheduler-account sets.
+
 Name:		pscheduler-database
 Version:	0.0
 Release:	1%{?dist}
@@ -34,8 +37,15 @@ The pScheduler database
 
 %define rpm_macros %{_pscheduler_rpmmacroprefix}%{name}
 
+
 %prep
+%if 0%{?el6}%{?el7} == 0
+echo "This package cannot be built for %{dist}."
+false
+%endif
+
 %setup -q
+
 
 %build
 make
@@ -131,8 +141,9 @@ printf "';\n"  >> "${ROLESQL}"
 postgresql-load "${ROLESQL}"
 rm -f "${ROLESQL}"
 
-
+#
 # Allow the account we created to authenticate locally.
+#
 
 HBA_FILE=$( (echo "\t on" ; echo "show hba_file;") \
 	    | postgresql-load \
@@ -140,23 +151,35 @@ HBA_FILE=$( (echo "\t on" ; echo "show hba_file;") \
 	    | sed -e 's/^\s*//' )
 
 
-drop-in -n -t %{name} - $HBA_FILE <<EOF
+drop-in -n -t %{name} - "${HBA_FILE}" <<EOF
 #
 # pScheduler
 #
 # This user should never need to access the database from anywhere
 # other than locally.
 #
-
-# TODO: SECURITY: This doesn't work consistently when set up for
-# password authentication.  Find out why and fix it.
+%if 0%{?el6}
+# TODO: SECURITY: The password method doesn't seem to work on pg 9.5
+# when installed on el6.  Find out why and how to fix that.
+AUTHMETHOD=trust
 local     pscheduler      pscheduler                            trust
-host      pscheduler      pscheduler     127.0.0.1/32           trust
+%endif
+%if 0%{?el7}
+local     pscheduler      pscheduler                            md5
+%endif
+host      pscheduler      pscheduler     127.0.0.1/32           md5
+host      pscheduler      pscheduler     ::1/128                md5
 EOF
 
 
+%if 0%{?el6}
 service $(basename $(ls %{_initddir}/postgresql* | head -1)) restart
-
+%endif
+%if 0%{?el7}
+SERVICE=$(systemctl | fgrep postgresql | awk '{ print $1 }' \
+    | sed -e 's/\.service//')
+systemctl restart "${SERVICE}"
+%endif
 
 
 # TODO: Will eventually need to handle upgrades, but that's a ways off.
@@ -178,7 +201,15 @@ HBA_FILE=$( (echo "\t on" ; echo "show hba_file;") \
 
 drop-in -r %{name} /dev/null $HBA_FILE
 
+%if 0%{?el6}
 service $(basename $(ls %{_initddir}/postgresql* | head -1)) restart
+%endif
+%if 0%{?el7}
+SERVICE=$(systemctl | fgrep postgresql | awk '{ print $1 }' \
+    | sed -e 's/\.service//')
+systemctl restart "${SERVICE}"
+%endif
+
 
 
 

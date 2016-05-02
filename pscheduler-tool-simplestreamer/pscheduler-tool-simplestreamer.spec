@@ -31,6 +31,11 @@ Simple Stream tool class for pScheduler
 
 
 %prep
+%if 0%{?el6}%{?el7} == 0
+echo "This package cannot be built on %{dist}."
+false
+%endif
+
 %setup -q -n %{short}-%{version}
 
 
@@ -45,20 +50,32 @@ make \
 %post
 if [ "$1" -eq 1 ]
 then
+%if 0%{?el6}
     # TODO: It would be nicer if this entry were placed at the end so
     # it doesn't have to be evaluated when processing traffic that
     # needs low latency.
     iptables -I INPUT \
         -p tcp -m state --state NEW -m tcp --dport 10000:10100 -j ACCEPT
     service iptables save
+%endif
+%if 0%{?el7}
+    firewall-cmd -q --add-port=10000-10100/tcp --permanent
+    systemctl restart firewalld
+%endif
 fi
 
 %postun
 if [ "$1" -eq 0 ]
 then
+%if 0%{?el6}
     iptables -D INPUT \
         -p tcp -m state --state NEW -m tcp --dport 10000:10100 -j ACCEPT
     service iptables save
+%endif
+%if 0%{?el7}
+    firewall-cmd -q --remove-port=10000-10100/tcp --permanent
+    systemctl restart firewalld
+%endif
 fi
 
 

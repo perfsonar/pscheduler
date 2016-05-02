@@ -6,12 +6,22 @@
 
 WHEREAMI=$(dirname "$0")
 
+TMPBASE="${TMP:-/tmp}/${WHOAMI}.$$"
+cleanup()
+{
+    rm -rf ${TMPBASE}*
+}
+trap cleanup EXIT
+
+
 if [ "${USER}" = "root" ]
 then
     INSTALL=install
 fi
 
-for PACKAGE in $(sed -e 's/#.*$//; /^\s*$/d' "${WHEREAMI}/RPM-BUILD-ORDER")
+${WHEREAMI}/build-order > "${TMPBASE}.list"
+
+for PACKAGE in $(cat "${TMPBASE}.list")
 do
     cat <<EOF
 
