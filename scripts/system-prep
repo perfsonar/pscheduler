@@ -47,8 +47,14 @@ rpm -Uvh --force "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-
 
 # Needed for documentation, which isn't RPM-ified yet and can't load
 # this automatically.
+
+# TODO: CentOS 6 installed enough of TeXLive to build the
+# documentation.  Installing texlive-* is very heavy; see if it can be
+# trimmed down.
+
 yum -y install \
-    texlive-latex 
+    texlive-\*
+
 
 
 # Conveniences
