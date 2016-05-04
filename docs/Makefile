@@ -4,11 +4,13 @@
 
 default: build
 
+# TODO: Re-add misc after figuring out where msc.sty went in CentOS 7.
+
 LATEX=\
 	archiver-syslog \
 	developers-guide \
 	json \
-	misc \
+#	misc \
 	test-idle \
 	test-simplestream \
 	test-trace \

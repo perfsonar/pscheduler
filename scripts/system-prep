@@ -52,8 +52,11 @@ rpm -Uvh --force "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-
 # documentation.  Installing texlive-* is very heavy; see if it can be
 # trimmed down.
 
+# GhostScript is for dvipdf
+
 yum -y install \
-    texlive-\*
+    texlive-\* \
+    ghostscript
 
 
 
