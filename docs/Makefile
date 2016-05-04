@@ -10,7 +10,6 @@ LATEX=\
 	archiver-syslog \
 	developers-guide \
 	json \
-#	misc \
 	test-idle \
 	test-simplestream \
 	test-trace \
