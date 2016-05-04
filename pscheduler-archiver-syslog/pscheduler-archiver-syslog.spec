@@ -7,7 +7,7 @@ Name:		pscheduler-archiver-%{short}
 Version:	0.0
 Release:	1%{?dist}
 
-Summary:	Bitbucket archiver class for pScheduler
+Summary:	Syslog archiver class for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0
 Group:		Unspecified
@@ -24,7 +24,7 @@ BuildRequires:	pscheduler-rpm
 %define directory %{_includedir}/make
 
 %description
-This archiver disposes of measurements by dropping them on the floor.
+This archiver sends JSON test results to syslog
 
 
 %prep
