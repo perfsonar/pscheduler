@@ -25,8 +25,13 @@ def json_query_simple(cursor, query, query_args=[], empty_ok=False):
 
     # TODO: Handle failure
     cursor.execute(query, query_args)
-    if cursor.rowcount == 0 and not empty_ok:
-        return not_found()
+
+    if cursor.rowcount == 0:
+        if empty_ok:
+            return json_response([])
+        else:
+            return not_found()
+
     result = []
     for row in cursor:
         result.append(row[0])
