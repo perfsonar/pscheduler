@@ -64,8 +64,13 @@ except KeyError:
 
 status, stdout, stderr = pscheduler.run_program( [tracepath], short=True)
 if status != 255 or '<destination>' not in stderr:
-    pscheduler.fail(
-        "Unable to determine which version of tracepath is installed.")
+    pscheduler.succeed_json( {
+            'succeeded': False,
+            'diags': None,
+            'error': "Unable to determine version of tracepath installed.",
+            'result': None
+            } )
+
 
 if '[-p port]' in stderr:
     traceroute_compatible = True
@@ -183,5 +188,9 @@ if hostnames and len(ips) > 0:
 
 pscheduler.succeed_json( {
         'succeeded': True,
-        'hops': hops
+        'diags': stdout,
+        'error': stderr,
+        'result': {
+            'hops': hops
+            }
         } )
