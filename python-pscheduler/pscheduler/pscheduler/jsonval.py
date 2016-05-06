@@ -6,6 +6,9 @@ values dictionaries
 import jsonschema
 
 
+# TODO: Consider adding tile/description and maybe "example" (not
+# officially supported) as a way to generate the JSON dictionary.
+
 #
 # Types from the dictionary
 #
@@ -49,21 +52,6 @@ __dictionary__ = {
 
     "Email": { "type": "string", "format": "email" },
 
-    "GeneralNumber": {
-        # TODO: This doesn't exist in the doc.
-        "anyOf": [
-            { "type": "number" },
-            {
-                # Binary number (Decimal, octal, hex or binary)
-                "type": "string",
-                # Source: https://www.safaribooksonline.com/library/view/regular-expressions-cookbook/9781449327453/ch07s03.html
-                "pattern": "^(?:([1-9][0-9]*)|(0[0-7]*)|0x([0-9A-Fa-f]+)|0b([01]+))$"
-                },
-
-            { "$ref": "#/pScheduler/si-number" },
-            ]
-        },
-
     "GeographicPosition": {
         "type": "string",
         # ISO 6709
@@ -78,7 +66,6 @@ __dictionary__ = {
 
     "Integer": { "type": "integer" },
 
-    # TODO: This needs to go into the dict doc
     "IPAddress": {
         "oneOf": [
             { "type": "string", "format": "ipv4" },
@@ -129,7 +116,6 @@ __dictionary__ = {
 
     "UUID": {
         "type": "string",
-        # TODO: POSIX xdigit doesn't seem to work here.
         "pattern": r'^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$'
         },
 
@@ -140,7 +126,140 @@ __dictionary__ = {
 
 
     #
+    # Compound Types
+    #
+
+    "ArchiveSpecification": {
+        "type": "object",
+        "properties": {
+            "name": { "type": "string" },
+            "data": { "$ref": "#/pScheduler/AnyJSON" },
+            },
+        "required": [
+            "name",
+            "data",
+            ]
+        },
+
+    "Maintainer": {
+        "type": "object",
+        "properties": {
+            "name":  { "type": "string" },
+            "email": { "$ref": "#/pScheduler/Email" },
+            "href":  { "$ref": "#/pScheduler/URL" },
+            },
+        "required": [
+            "name",
+            ]
+        },
+
+    "NameVersion": {
+        "type": "object",
+        "properties": {
+            "name":    { "type": "string" },
+            "version": { "$ref": "#/pScheduler/Version" },
+            },
+        "required": [
+            "name",
+            "version",
+            ]
+        },
+
+    "ParticipantResult": {
+        "type": "object",
+        "properties": {
+            "participant": { "$ref": "#/pScheduler/Host" },
+            "result":      { "$ref": "#/pScheduler/AnyJSON" },
+            },
+        "required": [
+            "participant",
+            "result",
+            ]
+        },
+
+    "RunResult": {
+        "type": "object",
+        "properties": {
+            "id":           { "$ref": "#/pScheduler/UUID" },
+            "schedule":     { "$ref": "#/pScheduler/TimeRange" },
+            "test":         { "$ref": "#/pScheduler/TestSpecification" },
+            "tool":         { "$ref": "#/pScheduler/NameVersion" },
+            "participants": {
+                "type": "array",
+                "items": { "$ref": "#/pScheduler/ParticipantResult" },
+                },
+            "result":       { "$ref": "#/pScheduler/AnyJSON" }
+            },
+        "required": [
+            "id",
+            "schedule",
+            "test",
+            "tool",
+            "participants",
+            "result",
+            ]
+        },
+
+    "ScheduleSpecification": {
+        "type": "object",
+        "properties": {
+            "start":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
+            "slip":     { "$ref": "#/pScheduler/Duration" },
+            # TODO: Should probably have its own type.
+            "randslip": { "$ref": "#/pScheduler/Probability" },
+            "repeat":   { "$ref": "#/pScheduler/Duration" },
+            "until":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
+            "max-runs": { "$ref": "#/pScheduler/Cardinal" },
+            },
+        },
+
+    "TaskSpecification": {
+        "type": "object",
+        "properties": {
+            "schema":   { "$ref": "#/pScheduler/Cardinal" },
+            "test":     { "$ref": "#/pScheduler/TestSpecification" },
+            # TODO: This is currently a string, needs to be an array.
+            "tools":    { "type": "string" },
+            "schedule": { "$ref": "#/pScheduler/ScheduleSpecification" },
+            "archives": {
+                "type": "array",
+                "items": { "$ref": "#/pScheduler/ArchiveSpecification" },
+                },
+            },
+        "required": [
+            "schema",
+            "test",
+            ]
+        },
+
+    "TestSpecification": {
+        "type": "object",
+        "properties": {
+            "test": { "type": "String" },
+            "spec": { "$ref": "#/pScheduler/AnyJSON" },
+            },
+        "required": [
+            "test",
+            "spec",
+            ],
+        },
+
+    "TimeRange": {
+        "type": "object",
+        "properties": {
+            "start": { "$ref": "#/pScheduler/Timestamp" },
+            "end":   { "$ref": "#/pScheduler/Timestamp" },
+            },
+        },
+
+
+
+
+    #
     # Standard Values
+    #
+    # Note that these are lowercase with hyphens, matching the style
+    # of the names used.
     #
 
     # TODO: Put this into the documentation
@@ -170,23 +289,6 @@ __dictionary__ = {
         "type": "integer",
         "enum": [ 4, 6 ]
         }
-
-
-    #
-    # Compound Types
-    #
-
-    # TODO: ArchiveSpecification (Compound)
-    # TODO: Maintainer (Compound)
-    # TODO: NameVersion (Compound)
-    # TODO: ParticipantResult (Compound)
-    # TODO: RunResult (Compound)
-    # TODO: ScheduleSpecification (Compound)
-    # TODO: TaskSpecification (Compound)
-    # TODO: TestSpecification (Compound)
-    # TODO: TimeInterval (Compound) -- Is this being used anywhere?
-    # TODO: TimeRange (Compound) -- Is this being used anywhere?
-
 
     }
 
@@ -253,9 +355,10 @@ def json_validate(json, skeleton):
 
     # Let this throw whatever it's going to throw, since schema errors
     # are problems wih the software, not the data.
+
+    # TODO: This doesn't seem to validate references.
     jsonschema.Draft4Validator.check_schema(schema)
 
-    jsonschema.Draft4Validator.check_schema(schema)
 
     try:
         jsonschema.validate(json, schema,
@@ -280,7 +383,8 @@ if __name__ == "__main__":
         "x-factor": 3.14,
         "protocol": "udp",
         "ipv": 6,
-        "ip": "fc80:dead:beef::"
+        "ip": "fc80:dead:beef::",
+        "archspec": { "name": "foo", "data": None },
         }
 
     schema = {
@@ -300,6 +404,7 @@ if __name__ == "__main__":
             "ip":       { "$ref": "#/pScheduler/IPAddress" },
             "protocol": { "$ref": "#/local/protocol" },
             "x-factor": { "type": "number" },
+            "archspec": { "$ref": "#/pScheduler/ArchiveSpecification" },
 
             },
         "required": [ "sendto", "x-factor" ]
