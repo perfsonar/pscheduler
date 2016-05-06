@@ -21,6 +21,8 @@ Source0:	%{short}-%{version}.tar.gz
 
 Requires:	python
 
+BuildRequires:	python-setuptools
+
 
 %description
 Functions for translating ICMP error codes to enumerated values

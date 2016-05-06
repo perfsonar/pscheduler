@@ -22,9 +22,12 @@ Source:		%{short}-%{version}.tar.gz
 Requires:	python
 Requires:	python-argparse
 Requires:	python-repoze.lru
+Requires:	python-vcversioner
 
 BuildRequires:	python
-Requires:	python-vcversioner
+BuildRequires:	python-setuptools
+
+
 
 %description
 JSON Schema for Python

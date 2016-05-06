@@ -24,7 +24,7 @@ Source:		%{short}-%{version}.tar.gz
 Requires:	python
 
 BuildRequires:	python
-
+BuildRequires:	python-setuptools
 
 %description
 Python argument parser

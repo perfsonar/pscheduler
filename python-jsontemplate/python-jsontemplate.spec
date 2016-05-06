@@ -19,6 +19,10 @@ Url:		https://code.google.com/archive/p/json-template
 
 Source:		%{short}-%{version}.tar.gz
 
+Requires:	python
+
+BuildRequires:	python-setuptools
+
 
 %description
 Template system for JSON

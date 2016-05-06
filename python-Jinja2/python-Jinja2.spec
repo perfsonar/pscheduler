@@ -23,7 +23,7 @@ Requires:	python
 Requires:	python-markupsafe
 
 BuildRequires:	python
-
+BuildRequires:	python-setuptools
 
 %description
 A small but fast and easy to use stand-alone template engine written

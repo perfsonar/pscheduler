@@ -19,6 +19,9 @@ Url:		http://cheeseshop.python.org/pypi/isodate
 
 Source:		%{short}-%{version}.tar.gz
 
+Requires:	python
+
+BuildRequires:	python-setuptools
 
 %description
 This module implements ISO 8601 date, time and duration parsing. The
