@@ -55,7 +55,7 @@ install: build
 
 
 uninstall:
-	rpm -e $(NAME) || true
+	yum -y remove $(NAME) || true
 
 
 clean:
