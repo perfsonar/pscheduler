@@ -275,8 +275,10 @@ def tasks_uuid(uuid):
                     else pscheduler.timedelta_as_iso8601(row[3]),
                 'duration': None if row[4] is None \
                     else pscheduler.timedelta_as_iso8601(row[4]),
-                'runs': int(row[5]),
-                'participants': row[6]
+                'runs': None if row[5] is None \
+                    else int(row[5]),
+                'participants': None if row[6] is None \
+                    else row[6]
                 }
 
         return ok_json(json)
