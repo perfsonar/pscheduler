@@ -10,18 +10,26 @@ import re
 
 input = pscheduler.json_load(exit_on_error=True);
 
+log = pscheduler.Log(prefix='tracepath')
+
 # TODO: Validate the input
 # TODO: Verify can-run
 
 participant = input['participant']
 
+log.debug("Participant %d", participant)
 if participant != 0:
-    pscheduler.fail("Invalid participant.")
+    pscheduler.succeed_json( {
+            'succeeded': False,
+            'diags': None,
+            'error': "Invalid participant %d" % participant,
+            'result': None
+            } )
 
 spec = input['test']['spec']
 
 
-log = pscheduler.Log(prefix='tracepath')
+
 
 #
 # Figure out how to invoke the program
@@ -101,7 +109,12 @@ argv.append(dest)
 status, stdout, stderr = pscheduler.run_program( argv, timeout = 62 )
 
 if status != 0:
-    pscheduler.fail(stderr)
+    pscheduler.succeed_json( {
+            'succeeded': False,
+            'diags': None,
+            'error': stderr,
+            'result': None
+            } )
 
 
 
