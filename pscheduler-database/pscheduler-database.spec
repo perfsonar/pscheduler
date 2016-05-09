@@ -151,6 +151,7 @@ HBA_FILE=$( (echo "\t on" ; echo "show hba_file;") \
 	    | sed -e 's/^\s*//' )
 
 
+
 drop-in -n -t %{name} - "${HBA_FILE}" <<EOF
 #
 # pScheduler
@@ -161,14 +162,15 @@ drop-in -n -t %{name} - "${HBA_FILE}" <<EOF
 %if 0%{?el6}
 # TODO: SECURITY: The password method doesn't seem to work on pg 9.5
 # when installed on el6.  Find out why and how to fix that.
-AUTHMETHOD=trust
 local     pscheduler      pscheduler                            trust
+host      pscheduler      pscheduler     127.0.0.1/32           trust
+host      pscheduler      pscheduler     ::1/128                trust
 %endif
 %if 0%{?el7}
 local     pscheduler      pscheduler                            md5
-%endif
 host      pscheduler      pscheduler     127.0.0.1/32           md5
 host      pscheduler      pscheduler     ::1/128                md5
+%endif
 EOF
 
 

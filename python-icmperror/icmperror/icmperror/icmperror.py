@@ -11,7 +11,9 @@ icmp_errors = {
     'N': 'net-unreachable',
     'P': 'protocol-unreachable',
     'S': 'source-route-failed',
+    'F':  'fragmentation-needed-and-df-set',
     'X': 'communication-administratively-prohibited',
+    'V': 'host-precedence-violation',
     'C': 'precedence-cutoff-in-effect',
     # ICMP Type 3 Error Codes, from RFC 792
     '0':  'net-unreachable',

@@ -20,6 +20,7 @@ Url:		https://github.com/regebro/tzlocal
 Source:		%{short}-%{version}.tar.gz
 
 BuildRequires:	python
+BuildRequires:	python-setuptools
 
 Requires:	python
 

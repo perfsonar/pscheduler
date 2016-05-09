@@ -12,7 +12,8 @@ input = pscheduler.json_load(exit_on_error=True);
 
 # The lone participant produces the full set of results.
 
-results = input['results'][0]
+results = input['results'][0]['result']
 results['schema'] = 1
+results['succeeded'] = input['results'][0]['succeeded']
 
 pscheduler.succeed_json(results)

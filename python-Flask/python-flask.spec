@@ -28,7 +28,7 @@ BuildRequires:	python
 BuildRequires:	python-Jinja2
 BuildRequires:	python-Werkzeug
 BuildRequires:	python-itsdangerous
-
+BuildRequires:	python-setuptools
 
 %description
 Flask is a microframework for Python based on Werkzeug, Jinja 2 and

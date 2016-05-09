@@ -22,7 +22,7 @@ do
     # Don't care if these fail, just get rid of them.
     if rpm --quiet -q ${PACKAGE}
     then
-	rpm -e ${PACKAGE} || true
+	yum -q -y remove ${PACKAGE} || true
 	echo "  Done."
     else
 	echo "  Not installed."

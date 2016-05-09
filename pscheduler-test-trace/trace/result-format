@@ -23,6 +23,9 @@ if not valid:
     pscheduler.fail(message)
 
 
+# TODO: These should do something reasonable if there are no hops in
+# the result.
+
 if format == 'text/plain':
    template = None
 
@@ -31,7 +34,8 @@ if format == 'text/plain':
 {.section ip}{ip}{.or}{.section hostname}NONE{.or}No Response{.end}{.end}\
 {.section hostname}){.end}\
 {.section as} AS{as}{.end}\
-{.section rtt} {rtt} ms{.end}
+{.section rtt} {rtt} ms{.end}\
+{.section error} {error}{.end}
 """
 
    end_template = None

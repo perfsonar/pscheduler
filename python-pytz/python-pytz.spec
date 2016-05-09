@@ -20,6 +20,7 @@ Url:		https://pypi.python.org/pypi/pytz
 Source:		%{short}-%{version}.tar.gz
 
 BuildRequires:	python
+BuildRequires:	python-setuptools
 
 Requires:	python
 

@@ -224,8 +224,14 @@ class Run:
 
             log.debug("%d: Runs are %s", id, runs)
 
+
+            # TODO: Shouldn't be doing this if the local run failed.
             try:
-                local_result = pscheduler.json_load(stdout)
+                if returncode == 0:
+                    local_result = pscheduler.json_load(stdout)
+                else:
+                    local_result = None
+                    log.debug("%d: Tool returned failure: %s", id, stderr)
             except ValueError as ex:
                 log.error("%d: Tool %s returned invalid JSON %s",
                           id, tool, stdout)

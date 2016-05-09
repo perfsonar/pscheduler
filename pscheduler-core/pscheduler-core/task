@@ -336,7 +336,8 @@ if status != 200:
 if options.url:
     pscheduler.succeed(task_url)
 
-print "Task URL is", task_url
+print "Task URL:"
+print task_url
 
 
 #
@@ -345,56 +346,41 @@ print "Task URL is", task_url
 
 print "Fetching first run..."
 
-tries = 40
-
-runs_url = task_url + '/runs'
-
-while tries > 0:
-    tries -= 1
-    # TODO: Get the whole thing once the API can expand the results.
-    status, runs = pscheduler.url_get(
-        runs_url,
-        params={ 'limit': 1 }, throw=False )
-
-    if status == 200 and len(runs) > 0:
-            run_url = runs[0]
-            break
-    elif status == 200 or status == 404:
-        time.sleep(0.25)
-        continue
-    else:
-        pscheduler.fail("Failed to fetch run: " + runs)
+runs_url = task_url + '/runs/first'
+status, run_json = pscheduler.url_get(runs_url,
+                                      params= { 'wait-local': True },
+                                      throw=False)
 
 # TODO: Need to display something meaningful when this happens.  We
 # should have a way to put stillborn runs in the database with
 # diagnostics.
 
-if tries == 0:
+if status == 404:
     pscheduler.fail("Run on server was never populated.")
 
-try:
-    status, run_json = pscheduler.url_get(run_url)
-except Exception as ex:
-    pscheduler.fail("Failed to fetch run: " + str(ex))
+if status != 200:
+    pscheduler.fail("Failed to fetch run: " + run_json)
+
+run_url = run_json['href']
+
+print "Run URL:"
+print run_url
 
 
 #
 # Wait for the run to finish and fetch the results
 #
 
-# TODO: This would be much nicer if we could ask the lead to camp on
-# the results for us, which would get the results as soon as they were
-# available.
+wait_time = pscheduler.time_until_seconds(
+    pscheduler.iso8601_as_datetime(run_json['end-time']))
+print "Waiting", wait_time, "seconds for run..."
 
-print "Waiting for run..."
-
-time.sleep( pscheduler.time_until_seconds(
-        pscheduler.iso8601_as_datetime(run_json['end-time'])) )
+time.sleep(wait_time)
 
 print "Waiting for results..."
 
 status, result = pscheduler.url_get( run_url,
-                                     params={ 'wait-merged': True },
+                                      params={ 'wait-merged': True },
                                      throw=False )
 
 if status != 200:

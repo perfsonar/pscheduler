@@ -19,6 +19,11 @@ Url:		https://pypi.python.org/pypi/ntplib
 
 Source:		%{short}-%{version}.tar.gz
 
+Requires:	python
+
+BuildRequires:	python-setuptools
+
+
 
 %description 
 This module offers a simple interface to query NTP servers from

@@ -29,6 +29,7 @@ Source:		%{short}-%{pkg_verpatch}.tar.gz
 Requires:	python
 
 BuildRequires:	python
+BuildRequires:	python-setuptools
 
 
 %description

@@ -124,7 +124,7 @@ def __runs_first_run(
                 """, [task])
     # TODO: Handle failure.
 
-    return none if dbcursor().rowcount == 0 \
+    return None if dbcursor().rowcount == 0 \
         else dbcursor().fetchone()[0]
 
 
@@ -147,11 +147,20 @@ def tasks_uuid_runs_run(task, run):
             return error("Cannot wait on local and merged results")
 
         # If asked for 'first', dig up the first run and use its UUID.
-        # This is more for debug convenience than anything else.
+
         if run == 'first':
-            run = __runs_first_run(task)
+            # 40 tries at 0.25s intervals == 10 sec.
+            tries = 40 if (wait_local or wait_merged) else 1
+            while tries:
+                run = __runs_first_run(task)
+                if run is not None:
+                    break
+                time.sleep(0.25)
+                tries -= 1
+
             if run is None:
                 return not_found()
+
 
 
         # 40 tries at 0.25s intervals == 10 sec.
@@ -203,10 +212,15 @@ def tasks_uuid_runs_run(task, run):
 
         result = {}
 
-        # This strips any query parameters
+        # This strips any query parameters and replaces the last item
+        # with the run, which might be needed if the 'first' option
+        # was used.
 
-        href = urlparse.urljoin( request.url,
-                                 urlparse.urlparse(request.url).path )
+        href_path_parts = urlparse.urlparse(request.url).path.split('/')
+        href_path_parts[-1] = run
+        href_path = '/'.join(href_path_parts)
+        href = urlparse.urljoin( request.url, href_path )
+
         result['href'] = href
         result['start-time'] = pscheduler.datetime_as_iso8601(row[0])
         result['end-time'] = pscheduler.datetime_as_iso8601(row[1])

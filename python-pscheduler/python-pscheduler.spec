@@ -30,6 +30,9 @@ Requires:	python-tzlocal
 # This is because the Log class uses debugging.
 Requires:	rsyslog-debug
 
+BuildRequires:	python-setuptools
+
+
 
 %description
 Utility functions for pScheduler
