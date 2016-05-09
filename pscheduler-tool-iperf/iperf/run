@@ -24,6 +24,9 @@ logger.debug("starting iperf tool")
 
 # parse JSON input
 input = pscheduler.json_load(exit_on_error=True)
+
+logger.debug("Input is %s" % input)
+
 try:
     participant = input['participant']
     participant_data = input['participant-data']
@@ -42,8 +45,11 @@ def run_client():
 
     iperf_args = ['/usr/bin/iperf']
 
+    logger.debug(participant)
+    logger.debug(participant_data)
+
     iperf_args.append('-c')
-    iperf_args.append(participant_data['receiver'])
+    iperf_args.append(input['test']['spec']['receiver'])
 
     logger.debug("Running command: %s" % " ".join(iperf_args))
 
@@ -61,6 +67,9 @@ def run_client():
         for line in stderr:
             iperf_error += line.rstrip().lstrip() + " "
         pscheduler.fail("iperf returned an error: %s" % iperf_error)
+
+    logger.debug("Stdout = %s" % stdout)
+    logger.debug("Stderr = %s" % stderr)
         
     # TODO Parse output
     for line in stdout:
