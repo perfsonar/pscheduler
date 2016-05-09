@@ -13,13 +13,14 @@ import shutil
 import sys
 import time
 from iperf_defaults import *
-from subprocess import Popen, PIPE
+
 
 # track when this run starts
 start_time = datetime.datetime.now()
 
-# TODO: Setup dynamically
-logging.basicConfig(filename='/var/log/pscheduler.log', format='%(asctime)s %(levelname)s: %(message)s', level=logging.DEBUG)
+logger = pscheduler.Log()
+
+logger.debug("starting iperf tool")
 
 # parse JSON input
 input = pscheduler.json_load(exit_on_error=True)
@@ -35,20 +36,8 @@ except:
     
 results = { 'succeeded': False }
 
-#determine whether we are the client or server mode for iperf
-if participant == 0:
-    run_server()
-elif participant == 1:
-    run_client()
-else:
-    pscheduler.fail("Invalid participant.")
-
-logging.debug("Results: %s" % results)
-pscheduler.succeed_json(results)
-
 
 def run_client():    
-    #Run the process
     time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to boot
 
     iperf_args = ['/usr/bin/iperf']
@@ -56,31 +45,26 @@ def run_client():
     iperf_args.append('-c')
     iperf_args.append(participant_data['receiver'])
 
-    logging.debug("Running command: %s" % " ".join(iperf_args))
+    logger.debug("Running command: %s" % " ".join(iperf_args))
 
     try:
-        proc = Popen(iperf_args, stdout=PIPE, stderr=PIPE, shell=False)
-        #Could use communicate but could potentially have large buffer.
-        proc.wait()
-    except OSError as e:
-        logging.error("iperf encountered an OS error: %s" % e)
-        #Note: Avoids reporting sensitive system details in error message
-        pscheduler.fail("The iperf command failed during execution. See server logs for more details.")
-    except Exception:
-        logging.error("iperf failed to complete execution: %s" % sys.exc_info()[0])
+        status, stdout, stderr = pscheduler.run_program(iperf_args)
+    except Exception as e:
+        logger.error("iperf failed to complete execution: %s" % sys.exc_info()[0])
         pscheduler.fail("The iperf command failed during execution. See server logs for more details.")
     
     #see if command completed successfully
-    logging.debug("iperf returned status %d" % proc.returncode)
-    if proc.returncode:
+    logger.debug("iperf returned status %d" % status)
+
+    if status:
         iperf_error = ''
-        for line in proc.stderr:
+        for line in stderr:
             iperf_error += line.rstrip().lstrip() + " "
         pscheduler.fail("iperf returned an error: %s" % iperf_error)
         
     # TODO Parse output
-    for line in proc.stdout:
-        logging.debug(line)
+    for line in stdout:
+        logger.debug(line)
         pass
     
     results['succeeded'] = True
@@ -92,38 +76,37 @@ def run_server():
     iperf_args = ['/usr/bin/iperf', '-s' ]
     
     #Run the process
-    logging.debug("Running command: %s" % " ".join(iperf_args))
+    logger.debug("Running command: %s" % " ".join(iperf_args))
     try:
-        proc = Popen(iperf_args,stdout=PIPE, cwd=tmpdir, stderr=PIPE, shell=False)
-    except OSError as e:
-        logging.error("iperf encountered an OS error: %s" % e)
-        #Note: Avoids reporting sensitive system details in error message
-        pscheduler.fail("The iperf command failed during execution. See server logs for more details.")
+        status, stdout, stderr = pscheduler.run_prorgam(iperf_args,
+                                                        timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)),
+                                                        timeout_ok = True)
     except Exception:
-        logging.error("iperf failed to complete execution: %s" % sys.exc_info()[0])
+        logger.error("iperf failed to complete execution: %s" % sys.exc_info()[0])
         pscheduler.fail("The iperf command failed during execution. See server logs for more details.")
-    
-    #sleep while we wait for test to complete in allotted time
-    try:
-        time.sleep(pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)))
-    except IOError as e:
-        logging.error("Unable to sleep while server runs. Your test may be out of time")
-        logging.debug("Sleep error: %s" % e)
     
     #check if server failed
-    if proc.poll():
-        #if we are here, the server died
+    if status:
         iperf_error = ''
-        for line in proc.stderr:
+        for line in stderr:
             iperf_error += line.rstrip().lstrip() + " "
-        pscheduler.fail("iperf returned an error: %s" % ipwed_error)
-    else:
-        #process is still running like it should be, kill it
-        proc.kill()
+        pscheduler.fail("iperf returned an error: %s" % iperf_error)
     
     #log stdout in debug mode
     for line in proc.stdout:
-        logging.debug(line)
+        logger.debug(line)
         
     results['succeeded'] = True
 
+
+
+#determine whether we are the client or server mode for iperf
+if participant == 0:
+    run_server()
+elif participant == 1:
+    run_client()
+else:
+    pscheduler.fail("Invalid participant.")
+
+logger.debug("Results: %s" % results)
+pscheduler.succeed_json(results)
