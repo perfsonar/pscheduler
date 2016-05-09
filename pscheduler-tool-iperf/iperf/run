@@ -45,11 +45,17 @@ def run_client():
 
     iperf_args = ['/usr/bin/iperf']
 
+
     logger.debug(participant)
     logger.debug(participant_data)
 
+    # who to connect to
     iperf_args.append('-c')
     iperf_args.append(input['test']['spec']['receiver'])
+
+    # duration
+    iperf_args.append('-t')
+    iperf_args.append(duration)
 
     logger.debug("Running command: %s" % " ".join(iperf_args))
 
@@ -70,12 +76,13 @@ def run_client():
 
     logger.debug("Stdout = %s" % stdout)
     logger.debug("Stderr = %s" % stderr)
-        
-    # TODO Parse output
-    for line in stdout:
+
+
+    lines = stdout.split("\n")
+
+    for line in lines:
         logger.debug(line)
-        pass
-    
+        
     results['succeeded'] = True
 
 

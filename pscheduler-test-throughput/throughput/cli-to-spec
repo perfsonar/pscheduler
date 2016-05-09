@@ -41,6 +41,11 @@ opt_parser.add_option("-r", "--receiver",
                       action="store", type="string",
                       dest="receiver")
 
+opt_parser.add_option("-d", "--duration",
+                      help="Receiving host",
+                      action="store", type="string",
+                      dest="duration")
+
 
 (options, remaining_args) = opt_parser.parse_args(args)
 if len(remaining_args) != 0:
@@ -54,6 +59,9 @@ if options.sender is not None:
    
 if options.receiver is not None:
    result['receiver'] = options.receiver
+
+if options.receiver is not None:
+   result['duration'] = options.duration
 
 
 pscheduler.succeed_json(result)
