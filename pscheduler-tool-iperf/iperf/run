@@ -101,9 +101,9 @@ def run_server():
 
 #determine whether we are the client or server mode for iperf
 if participant == 0:
-    run_server()
-elif participant == 1:
     run_client()
+elif participant == 1:
+    run_server()
 else:
     pscheduler.fail("Invalid participant.")
 
