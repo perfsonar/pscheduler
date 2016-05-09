@@ -50,7 +50,7 @@ def run_client():
     try:
         status, stdout, stderr = pscheduler.run_program(iperf_args)
     except Exception as e:
-        logger.error("iperf failed to complete execution: %s" % sys.exc_info()[0])
+        logger.error("iperf failed to complete execution: %s" % e)
         pscheduler.fail("The iperf command failed during execution. See server logs for more details.")
     
     #see if command completed successfully
@@ -75,14 +75,13 @@ def run_server():
     #init command
     iperf_args = ['/usr/bin/iperf', '-s' ]
     
-    #Run the process
     logger.debug("Running command: %s" % " ".join(iperf_args))
     try:
-        status, stdout, stderr = pscheduler.run_prorgam(iperf_args,
+        status, stdout, stderr = pscheduler.run_program(iperf_args,
                                                         timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)),
                                                         timeout_ok = True)
-    except Exception:
-        logger.error("iperf failed to complete execution: %s" % sys.exc_info()[0])
+    except Exception as e:
+        logger.error("iperf failed to complete execution: %s" % e);
         pscheduler.fail("The iperf command failed during execution. See server logs for more details.")
     
     #check if server failed
@@ -93,7 +92,7 @@ def run_server():
         pscheduler.fail("iperf returned an error: %s" % iperf_error)
     
     #log stdout in debug mode
-    for line in proc.stdout:
+    for line in stdout:
         logger.debug(line)
         
     results['succeeded'] = True
