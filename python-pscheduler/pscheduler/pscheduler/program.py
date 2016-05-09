@@ -11,6 +11,7 @@ import subprocess32
 def run_program(argv,
                 stdin=None,        # What to send to stdin
                 timeout=None,      # Seconds
+                timeout_ok=False,  # Treat timeouts as not being an error
                 short=False,       # True to force timeout to 2 seconds
                 fail_message=None  # Exit with this failure message
                 ):
@@ -22,6 +23,7 @@ def run_program(argv,
     argv - Array containing arguments, including name of program
     stdin=s - String containing what should be sent to standard input
     timeout=n - Wait n seconds for the program to finish, otherwise kill it.
+    timeout_ok - True to prevent timeouts from being treated as errors.
     short - True to force timeout to two seconds
     fail_message=s - Exit program and include string s if program fails.
 
@@ -47,7 +49,10 @@ def run_program(argv,
         process.kill()
         process.communicate()
 
-        status = 2
+        status = 0 if timeout_ok else 2
+
+        # TODO: See if the exception has the contents of stdout and
+        # stderr available.
         stdout = ''
         stderr = "Process took too long to run."
 
