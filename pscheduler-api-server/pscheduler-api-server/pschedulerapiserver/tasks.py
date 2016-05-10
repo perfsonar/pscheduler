@@ -122,6 +122,8 @@ def tasks():
         except Exception as ex:
             return error("Unable to validate test spec: " + str(ex))
 
+        log.debug("Validated test: %s", pscheduler.json_dump(task['test']))
+
 
         # Find the participants
 
