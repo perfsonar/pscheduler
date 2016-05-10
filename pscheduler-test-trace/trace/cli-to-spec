@@ -101,6 +101,12 @@ opt_parser.add_option("--sendwait",
                       action="store", type="string",
                       dest="sendwait")
 
+
+opt_parser.add_option("--tos",
+                      help="Packet length",
+                      action="store", type="int",
+                      dest="tos")
+
 # Underscore used here dodges a reserved word.
 opt_parser.add_option("--as",
                       help="Find AS for each hop",
@@ -157,6 +163,9 @@ if options.wait is not None:
 
 if options.sendwait is not None:
    result['send-wait'] = options.sendwait
+
+if options.tos is not None:
+   result['tos'] = options.tos
 
 if options.as_ is not None:
    result['as'] = options.as_

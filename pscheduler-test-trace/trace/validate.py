@@ -27,7 +27,6 @@ def spec_is_valid(json):
             "schema":      { "$ref": "#/pScheduler/Cardinal" },
             "sendwait":    { "$ref": "#/pScheduler/Duration" },
             "source":      { "$ref": "#/pScheduler/Host" },
-            # TODO: This should be changed to whatever we come up with for TOS
             "tos":         { "$ref": "#/pScheduler/Cardinal" },
             "wait":        { "$ref": "#/pScheduler/Duration" },
             },
