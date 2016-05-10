@@ -27,8 +27,7 @@ else:
     pscheduler.fail("Missing required field receiver")
 
 # TODO: need to start adding these    
-fields = [
-]
+fields = ["duration"]
 
 for field in fields:
     if field in json:
