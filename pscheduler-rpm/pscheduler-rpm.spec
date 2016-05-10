@@ -33,6 +33,7 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 
 %%_pscheduler_libexecdir %{_libexecdir}/pscheduler
 %%_pscheduler_sysconfdir %{_sysconfdir}/pscheduler
+%%_pscheduler_sudoersdir %{_sysconfdir}/sudoers.d
 %%_pscheduler_docdir %{_defaultdocdir}/pscheduler
 %%_pscheduler_datadir %{_datadir}/pscheduler
 

@@ -1,0 +1,15 @@
+#!/bin/sed -e 1d
+{
+    "name": "traceroute",
+    "description": "Map the route between hosts using traceroute",
+    "version": "0.0",
+    "tests": [ "trace" ],
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "info@perfsonar.net",
+	"href": "http://www.perfsonar.net"
+    }
+}
