@@ -29,7 +29,7 @@ if not valid:
 if format == 'text/plain':
    template = None
 
-   hop_template = """{number}:  \
+   hop_template = """{number}\t\
 {.section hostname}{hostname} ({.end}\
 {.section ip}{ip}{.or}{.section hostname}NONE{.or}No Response{.end}{.end}\
 {.section hostname}){.end}\
@@ -90,7 +90,7 @@ for hop in json['hops']:
    except KeyError:
       pass
 
-   print '  ', jsontemplate.expand(hop_template, hop).strip()
+   print jsontemplate.expand(hop_template, hop).strip()
    hopno += 1
 
 if end_template is not None:
