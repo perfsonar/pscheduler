@@ -371,9 +371,10 @@ print run_url
 # Wait for the run to finish and fetch the results
 #
 
+end_time = run_json['end-time']
 wait_time = pscheduler.time_until_seconds(
-    pscheduler.iso8601_as_datetime(run_json['end-time']))
-print "Waiting", wait_time, "seconds for run..."
+    pscheduler.iso8601_as_datetime(end_time))
+print "Run begins at %s (~%s seconds)" % (end_time, int(wait_time))
 
 time.sleep(wait_time)
 
