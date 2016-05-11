@@ -302,6 +302,7 @@ if status != 200:
                     % (assist, text))
 
 
+
 #
 # Determine the lead participant
 #
@@ -391,6 +392,9 @@ if status != 200:
 # If failed, dump diags.
 #
 
+# TODO: Need to do a better job picking this apart.  The full-result
+# member needs to be populated whether the test succeeded or not.
+
 try:
     if (not 'result-merged' in result) \
             or (result['result-merged'] is None):
@@ -405,8 +409,21 @@ except KeyError as ex:
 if not status:
     # TODO: Should have something nicer that dumps out the
     # participants and what they said.
-    print "RUN FAILED.  Full JSON results:"
-    print pscheduler.json_dump(result['result-full'], pretty=True)
+    print
+    print "Run failed.  The following errors were reported:"
+
+    participants = result['participants']
+    full = result['result-full']
+
+    for participant in range(0, len(result['participants'])):
+        print "%s:" % participants[participant]
+        try:
+            print '   ',
+            print '\n    '.join(full[participant]['error'].split('\n'))
+        except KeyError:
+            # TODO: There should be an 'error' in the JSON, but don't
+            # punish the user if there isn't.
+            print "  (No error reported)"
     pscheduler.fail()
 
 
