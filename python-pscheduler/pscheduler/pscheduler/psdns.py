@@ -22,7 +22,8 @@ def __check_ip_version__(ip_version):
 
 def dns_resolve(host, ip_version=4):
     """
-    Resolve a hostname to its A record, returning None if not found
+    Resolve a hostname to its A record, returning None if not found or
+    there was a timeout.
     """
     __check_ip_version__(ip_version)
     try:
@@ -31,13 +32,16 @@ def dns_resolve(host, ip_version=4):
         resolver.lifetime = __TIMEOUT__
         answers = resolver.query(host, 'A' if ip_version == 4 else 'AAAA')
         return str(answers[0])
+    except dns.exception.Timeout:
+        return None
     except dns.resolver.NXDOMAIN:
         return None
 
 
 def dns_resolve_reverse(ip):
     """
-    Resolve an IP (v4 or v6) to its hostname, returning None if not found.
+    Resolve an IP (v4 or v6) to its hostname, returning None if not
+    found or there was a timeout.
     """
     try:
         resolver = dns.resolver.Resolver()
@@ -46,6 +50,8 @@ def dns_resolve_reverse(ip):
         revname = dns.reversename.from_address(ip)
         answers = resolver.query(revname, 'PTR')
         return str(answers[0])
+    except dns.exception.Timeout:
+        return None
     except dns.resolver.NXDOMAIN:
         return None
     except dns.exception.SyntaxError:
