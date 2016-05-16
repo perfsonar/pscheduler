@@ -68,7 +68,7 @@ CREATE TABLE run (
 -- table.
 DROP INDEX IF EXISTS run_uuid;
 CREATE INDEX run_uuid
-ON task(uuid, id);
+ON run(uuid, id);
 
 
 
