@@ -112,8 +112,8 @@ BEGIN
     IF ( (TG_OP = 'INSERT')
          AND (EXISTS (SELECT * FROM run WHERE run.times && NEW.times)) )
        OR ( (TG_OP = 'UPDATE')  -- TODO:  Do we want to allow times to change?
-            AND (NEW.times != OLD.times)
-            AND (EXISTS (SELECT * FROM run WHERE id != NEW.id AND run.times && NEW.times)) )
+            AND (NEW.times <> OLD.times)
+            AND (EXISTS (SELECT * FROM run WHERE id <> NEW.id AND run.times && NEW.times)) )
     THEN
        RAISE EXCEPTION 'Runs may not overlap with others.';
     END IF;
@@ -164,7 +164,7 @@ BEGIN
     SELECT INTO tool_name name FROM tool WHERE id = task.tool;
 
     run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_name, 'participant-data'], pdata_out::TEXT );
-	IF run_result.status != 0 THEN
+	IF run_result.status <> 0 THEN
 	    RAISE EXCEPTION 'Unable to get participant data: %', run_result.stderr;
 	END IF;
     NEW.part_data := regexp_replace(run_result.stdout, '\s+$', '')::JSONB;
@@ -205,7 +205,7 @@ BEGIN
 
  	       run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_name,
 	           'merged-results'], result_merge_input::TEXT );
-   	       IF run_result.status != 0 THEN
+   	       IF run_result.status <> 0 THEN
 	           RAISE EXCEPTION 'Unable to get merged result: %', run_result.stderr;
 	       END IF;
   	      NEW.result_merged := regexp_replace(run_result.stdout, '\s+$', '')::JSONB;
@@ -325,7 +325,7 @@ AS
 	JOIN test ON test.id = task.test
 	JOIN tool ON tool.id = task.tool
     WHERE
-        run.state != run_state_pending()
+        run.state <> run_state_pending()
 	OR (run.state = run_state_pending()
             AND lower(run.times) < (now() + 'PT2M'::interval))
     ORDER BY run.times;

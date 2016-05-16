@@ -153,7 +153,7 @@ BEGIN
 
 	FOR key IN (SELECT jsonb_object_keys(NEW.json))
 	LOOP
-	   IF (left(key, 1) != '_')
+	   IF (left(key, 1) <> '_')
               -- TODO: How was passthrough going to be used?
 	      AND (key NOT IN ('schema', 'test', 'tool', 'schedule', 'archives', 'passthrough')) THEN
 	      RAISE EXCEPTION 'Unrecognized section "%" in task package.', key;
@@ -184,7 +184,7 @@ BEGIN
 
 	run_result := pscheduler_internal(ARRAY['invoke', 'test', test_type, 'spec-is-valid'],
 		      NEW.json #>> '{test, spec}' );
-	IF run_result.status != 0 THEN
+	IF run_result.status <> 0 THEN
 	    RAISE EXCEPTION 'Task package contains unusable test: %', run_result.stderr;
 	END IF;
 
@@ -192,7 +192,7 @@ BEGIN
 	-- Extract participant list
 	run_result := pscheduler_internal(ARRAY['invoke', 'test', test_type, 'participants'],
 		      NEW.json #>> '{test, spec}' );
-	IF run_result.status != 0 THEN
+	IF run_result.status <> 0 THEN
 	   RAISE EXCEPTION 'Unable to determine participants: %', run_result.stderr;
 	END IF;
         NEW.participants := run_result.stdout;
@@ -332,7 +332,7 @@ BEGIN
 
 	run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_type, 'duration'],
 		      NEW.json #>> '{test, spec}' );
-	IF run_result.status != 0 THEN
+	IF run_result.status <> 0 THEN
 	    RAISE EXCEPTION 'Unable to determine duration of test: %', run_result.stderr;
 	END IF;
 	-- TODO: Pre-validate the output?

@@ -201,7 +201,7 @@ DECLARE
     archiver_enumeration JSONB;
 BEGIN
     run_result := pscheduler_internal(ARRAY['list', 'archiver']);
-    IF run_result.status != 0 THEN
+    IF run_result.status <> 0 THEN
        RAISE EXCEPTION 'Unable to list installed archivers: %', run_result.stderr;
     END IF;
 
@@ -211,7 +211,7 @@ BEGIN
     LOOP
 
 	run_result := pscheduler_internal(ARRAY['invoke', 'archiver', archiver_name, 'enumerate']);
-        IF run_result.status != 0 THEN
+        IF run_result.status <> 0 THEN
          RAISE EXCEPTION 'Archiver "%" failed to enumerate: %',
 	       archiver_name, run_result.stderr;
         END IF;
@@ -264,7 +264,7 @@ BEGIN
 
     run_result := pscheduler_internal(ARRAY['invoke', 'archiver',
     	       archiver_name, 'data-is-valid'], candidate_data::TEXT );
-    IF run_result.status != 0 THEN
+    IF run_result.status <> 0 THEN
         RAISE EXCEPTION 'Bad data passed to archiver "%": %', archiver_name, run_result.stderr;
     END IF;
 
