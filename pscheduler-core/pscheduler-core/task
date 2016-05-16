@@ -303,6 +303,8 @@ if status != 200:
 
 
 
+# TODO: Validate the test before figuring out who's involved.
+
 #
 # Determine the lead participant
 #
@@ -369,14 +371,19 @@ print run_url
 
 
 #
-# Wait for the run to finish and fetch the results
+# Wait for the run to start and finish and fetch the results
 #
+
+start_time = run_json['start-time']
+wait_time = pscheduler.time_until_seconds(
+    pscheduler.iso8601_as_datetime(start_time))
+print "Run start: %s (~%s seconds)" % (start_time, int(wait_time))
+time.sleep(wait_time)
 
 end_time = run_json['end-time']
 wait_time = pscheduler.time_until_seconds(
     pscheduler.iso8601_as_datetime(end_time))
-print "Run begins at %s (~%s seconds)" % (end_time, int(wait_time))
-
+print "Run end:   %s (~%s seconds)" % (end_time, int(wait_time))
 time.sleep(wait_time)
 
 print "Waiting for results..."
