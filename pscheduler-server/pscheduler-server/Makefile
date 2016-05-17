@@ -20,6 +20,7 @@ DAEMONS=\
 
 COMMANDS=\
 	debug \
+	load-ips \
 	monitor
 
 INITS=$(DAEMONS:%=init.d-%)
