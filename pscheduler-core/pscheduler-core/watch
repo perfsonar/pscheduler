@@ -6,6 +6,8 @@
 # General syntax:
 #     pscheduler attach [options] task-url
 
+# TODO: Need to catch KeyboardInterrupts and exit nicely.
+
 
 import optparse
 import os
