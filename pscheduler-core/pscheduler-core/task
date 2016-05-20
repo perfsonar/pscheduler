@@ -343,6 +343,9 @@ print "Task URL:"
 print task_url
 
 
+# TODO: Everything below this is fundamentally what's in the 'watch'
+# program.  Should probably just run that instead.
+
 #
 # Get the first future run.
 #

@@ -27,6 +27,9 @@ if not valid:
 # the result.
 
 if format == 'text/plain':
+
+   fail_template = "Test failed."
+
    template = None
 
    hop_template = """{number}\t\
@@ -41,6 +44,8 @@ if format == 'text/plain':
    end_template = None
 
 elif format == 'text/html':
+
+   fail_template = "<p>Test failed.</p>"
 
    template = """
 <table>
@@ -77,6 +82,9 @@ else:
 
 
 # TODO: Should probably handle exceptions in a nicer way.
+
+if not json['succeeded']:
+   print jsontemplate.expand(fail_template, json).strip()
 
 if template is not None:
    print jsontemplate.expand(template, json).strip()

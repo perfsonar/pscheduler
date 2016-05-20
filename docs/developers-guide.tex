@@ -537,7 +537,9 @@ messages on error.
 
 \subsubsection{result-format}
 This method converts a JSON result for this test into some other
-format, usually intended for human consumption.
+format, usually intended for human consumption.  Note that
+implementations of this method must be able to format output for a
+failed test, normally a short ``test failed'' message.
 
 \calloutitem{Arguments} The desired MIME type for the output.  All
 implementations must support at least {\tt text/plain} and {\tt

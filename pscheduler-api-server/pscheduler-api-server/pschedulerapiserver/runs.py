@@ -60,6 +60,9 @@ def tasks_uuid_runs(task):
                 query += " AND upper(times) <= %s"
                 args.append(end_time)
 
+            if arg_boolean('upcoming'):
+                query += " AND state IN (run_state_pending(), run_state_on_deck(), run_state_running())"
+
             query += " ORDER BY times"
 
             limit = arg_cardinal('limit')
@@ -445,9 +448,14 @@ def tasks_uuid_runs_run_result(task, run):
 
     # JSON requires no formatting.
     if format == 'application/json':
-
         return ok_json(merged_result)
 
+    if not merged_result['succeeded']:
+        if format == 'text/plain':
+            return ok("Test failed.", mimetype=format)
+        elif format == 'text/html':
+            return ok("<p>Test failed.</p>", mimetype=format)
+        return error("Unsupported format " + format)
 
     returncode, stdout, stderr = pscheduler.run_program(
         [ "pscheduler", "internal", "invoke", "test", test_type,
