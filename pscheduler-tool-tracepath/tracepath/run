@@ -165,6 +165,9 @@ for line in stdout.split('\n'):
     rtt = float(elements.pop(0)[:-2]) / 1000.0
     hop['rtt'] = 'PT%fS' % rtt
 
+    # TODO: Extract PMTU if present.  Need to find out if this is
+    # produced before or after asymm.
+
     # Drop asymmetry if there is any.
 
     if len(elements) > 0 and elements[0] == 'asymm':
@@ -192,9 +195,13 @@ if hostnames and len(ips) > 0:
     log.debug("Reverse-resolving IPs: %s", str(ips))
     revmap = pscheduler.dns_bulk_resolve(ips, reverse=True, threads=len(hops))
     for hop in hops:
-        ip = hop['ip']
-        if ip in revmap:
-            hop.update({ 'hostname': revmap[ip] })
+        try:
+            ip = hop['ip']
+            if ip in revmap:
+                hop.update({ 'hostname': revmap[ip] })
+        except KeyError:
+            # No IP is fine.
+            pass
 
 
 # Spit out the results

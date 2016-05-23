@@ -64,6 +64,9 @@ pairs below.  \seejson
 
 \typeditem{schema}{Cardinal} The schema version of this specification.
 
+\typeditem{algorithm}{String} The algorithm to be used in performing the
+trace.  Valid values are {\tt paris-traceroute} and {\tt mda}.
+
 \typeditem{dest}{Host} The network address or hostname of the receiver.
 
 \stdvalue{ip-version} If {\tt dest} provides clues about the type of
@@ -164,6 +167,9 @@ specification is \false.
 
 \typeditem{rtt}{Duration} The round-trip time between the originator
 and the responding host.
+
+\typeditem{pmtu}{Cardinal} The maximum transmission unit along the path
+to the host, if known.
 
 \typeditem{as}{Cardinal} The autonomous system number of the host if
 known and {\tt as} in the test specification is \true.
