@@ -18,7 +18,7 @@ from iperf_defaults import *
 # track when this run starts
 start_time = datetime.datetime.now()
 
-logger = pscheduler.Log()
+logger = pscheduler.Log(prefix='iperf', quiet=True)
 
 logger.debug("starting iperf tool")
 

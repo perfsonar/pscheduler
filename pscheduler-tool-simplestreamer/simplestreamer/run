@@ -12,7 +12,7 @@ import sys
 import time
 import traceback
 
-log = pscheduler.Log(prefix="simplestreamer")
+log = pscheduler.Log(prefix="simplestreamer", quiet=True)
 
 input = pscheduler.json_load(exit_on_error=True);
 

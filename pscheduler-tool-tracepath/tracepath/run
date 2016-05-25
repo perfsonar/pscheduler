@@ -10,7 +10,7 @@ import re
 
 input = pscheduler.json_load(exit_on_error=True);
 
-log = pscheduler.Log(prefix='tracepath')
+log = pscheduler.Log(prefix='tracepath', quiet=True)
 
 # TODO: Validate the input
 # TODO: Verify can-run
