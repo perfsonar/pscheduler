@@ -127,7 +127,7 @@ try:
 except KeyError:
     as_ = False
 
-hops = []
+traced_hops = []
 ips = []
 last_hop = 0
 
@@ -141,8 +141,8 @@ for line in stdout.split('\n'):
     log.debug("LINE %s", line)
 
     # Repeats of a hop replace earlier ones
-    if this_hop == len(hops):
-        hops.pop()
+    if this_hop == len(traced_hops):
+        traced_hops.pop()
 
     elements = matches.group(2).split()
 
@@ -151,7 +151,7 @@ for line in stdout.split('\n'):
     # No reply means no results
 
     if elements[0] == 'no' and elements[1] == 'reply':
-        hops.append(hop)
+        traced_hops.append(hop)
         continue
 
     # IP.  We forced tracepath to behave this way.
@@ -181,7 +181,7 @@ for line in stdout.split('\n'):
         if reached_err[0] == '!':
             hop['error'] = icmperror.translate(reached_err)
 
-    hops.append(hop)
+    traced_hops.append(hop)
 
 
 # If we're doing hostnames, bulk-resolve them.
@@ -193,8 +193,8 @@ except KeyError:
 
 if hostnames and len(ips) > 0:
     log.debug("Reverse-resolving IPs: %s", str(ips))
-    revmap = pscheduler.dns_bulk_resolve(ips, reverse=True, threads=len(hops))
-    for hop in hops:
+    revmap = pscheduler.dns_bulk_resolve(ips, reverse=True, threads=len(traced_hops))
+    for hop in traced_hops:
         try:
             ip = hop['ip']
             if ip in revmap:
@@ -204,6 +204,34 @@ if hostnames and len(ips) > 0:
             pass
 
 
+# Figure out ASes if we're doing that
+
+try:
+    do_ases = spec['as']
+except KeyError:
+    do_ases = True
+
+if do_ases:
+    ases = pscheduler.as_bulk_resolve(ips, threads=len(ips))
+    for index, hop in enumerate(traced_hops):
+        try:
+            hop_as = ases[hop['ip']]
+            if hop_as is None:
+                continue
+
+            (asn, owner) = hop_as
+            if asn is None:
+                continue
+
+            result = { 'number': asn }
+            if owner is not None:
+                result['owner'] = owner
+            traced_hops[index]['as'] = result
+        except KeyError:
+            pass
+
+
+
 # Spit out the results
 
 pscheduler.succeed_json( {
@@ -211,6 +239,6 @@ pscheduler.succeed_json( {
         'diags': stdout,
         'error': stderr,
         'result': {
-            'hops': hops
+            'hops': traced_hops
             }
         } )

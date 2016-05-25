@@ -357,21 +357,31 @@ for line in stdout.split('\n'):
 
 
 
-# Reverse-resolve the IPs if we're doing that.
+# Figure out ASes if we're doing that
 
 try:
-    hostnames = spec['hostnames']
+    do_ases = spec['as']
 except KeyError:
-    hostnames = True
+    do_ases = True
 
-if hostnames:
-    hosts = pscheduler.dns_bulk_resolve(ips, reverse=True, threads=len(ips))
+if do_ases:
+    ases = pscheduler.as_bulk_resolve(ips, threads=len(ips))
     for index, hop in enumerate(traced_hops):
         try:
-            traced_hops[index]['hostname'] = hosts[hop['ip']]
+            hop_as = ases[hop['ip']]
+            if hop_as is None:
+                continue
+
+            (asn, owner) = hop_as
+            if asn is None:
+                continue
+
+            result = { 'number': asn }
+            if owner is not None:
+                result['owner'] = owner
+            traced_hops[index]['as'] = result
         except KeyError:
             pass
-
 
 
 # Spit out the results

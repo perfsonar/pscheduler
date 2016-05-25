@@ -119,9 +119,6 @@ to be sent after a probe is sent.
 \typeditem{send-wait}{Duration} The amount of time to wait between
 probes.
 
-\typeditem{as}{Boolean} Whether or not the AS for each hop should be
-determined.  The default is \false.
-
 \todo{How many of the more esoteric {\tt traceroute} options do we
   want to support?}
 
@@ -171,8 +168,8 @@ and the responding host.
 \typeditem{pmtu}{Cardinal} The maximum transmission unit along the path
 to the host, if known.
 
-\typeditem{as}{Cardinal} The autonomous system number of the host if
-known and {\tt as} in the test specification is \true.
+\typeditem{as}{AS} The autonomous system number of the host if
+known.
 
 \typeditem{error}{String} If there was an error reported for this hop,
 one of the values enumerated below.

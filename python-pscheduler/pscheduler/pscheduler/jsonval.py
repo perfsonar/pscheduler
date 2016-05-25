@@ -32,6 +32,15 @@ __dictionary__ = {
 
     "Array": { "type": "array" },
 
+    "AS": {
+        "type": "object",
+        "properties": {            
+            "number": { "$ref": "#/pScheduler/Cardinal" },
+            "owner": { "type": "string" },
+            },
+        "required": [ "number" ]
+        },
+
     "Boolean": { "type": "boolean" },
 
     "Cardinal": {

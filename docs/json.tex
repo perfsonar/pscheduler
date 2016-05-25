@@ -123,6 +123,26 @@ default.
 An valid JSON array as defined by ECMA 404.
 
 
+\subsection{AS}
+An object containing information about an autonomous system (AS).  It
+contains the these elements:
+
+\typeditem{number}{Cardinal} The AS's number.
+
+\typeditem{owner}{String} Optional free-form information about the
+organization that owns the AS.
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "number": 65432,
+    "owner": "Fictitous Networks, Inc."
+}
+\end{lstlisting}
+
+
+
+
 \subsection{Boolean}
 A JSON boolean value as defined by ECMA 404.
 

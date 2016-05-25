@@ -24,8 +24,11 @@ spec = json['spec']
 
 errors = []
 
-# Traceroute can handle the entire spec.  The restriction is that
-# first-ttl must be within max-ttl.
+if 'algorithm' in spec:
+    errors.append("Algorithm '%s' is not supported" % spec['algorithm'])
+
+# Other than algorithm, traceroute can handle the entire spec.  The
+# restriction is that first-ttl must be within max-ttl.
 
 try:
     first_ttl = spec['first-ttl']

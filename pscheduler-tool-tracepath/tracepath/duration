@@ -1,11 +1,65 @@
-#!/bin/sh
+#!/usr/bin/python
 #
 # Determine the duration of a specified test.
 #
 
-# Tracepath does a hardwaired maximum of 31 hops with a (guessed)
-# timeout of 3 seconds.  Take that plus a couple of seconds to do DNS
-# resolution afterward and some buffer time.
+import datetime
+import sys
 
-echo 'PT2M'
-exit 0
+import pscheduler
+
+
+spec = pscheduler.json_load(exit_on_error=True);
+
+# TODO: Make sure the type is one we like
+# TODO: Validate the spec
+
+#
+# Trace time
+#
+
+# Tracepath does a hardwaired maximum of 31 hops with what looks like
+# a timeout of 3 seconds.
+
+total = datetime.timedelta(seconds=93)
+
+
+#
+# DNS Resolution
+#
+
+try:
+    hostnames = spec['hostnames']
+except KeyError:
+    hostnames = True
+
+# Some time for DNS, which will be done in parallel.
+# TODO: Should probably ask the DNS module for the timeout.
+if hostnames:
+    total += datetime.timedelta(seconds=2)
+
+
+#
+# AS Resolution
+#
+
+try:
+    ases = spec['as']
+except KeyError:
+    ases = True
+
+# Some time for AS, which will be done in parallel.
+# TODO: Should probably ask the AS module for the timeout.
+if ases:
+    total += datetime.timedelta(seconds=4)
+
+
+#
+# Slop
+#
+
+total += datetime.timedelta(seconds=2)
+
+print pscheduler.timedelta_as_iso8601(total)
+
+pscheduler.succeed()

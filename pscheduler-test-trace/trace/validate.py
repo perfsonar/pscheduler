@@ -7,13 +7,18 @@ from pscheduler import json_validate
 def spec_is_valid(json):
     schema = {
         "local": {
+            "algorithm": {
+                "type": "string",
+                "enum": ["paris-traceroute", "mda"]
+                },
             "probe-type": {
                 "type": "string",
-                "enum": ['icmp', 'udp', 'tcp']
+                "enum": ["icmp", "udp", "tcp"]
                 }
             },
         "type": "object",
         "properties": {
+            "algorithm":   { "$ref": "#/local/algorithm" },
             "as":          { "$ref": "#/pScheduler/Boolean" },
             "dest-port":   { "$ref": "#/pScheduler/IPPort" },
             "dest":        { "$ref": "#/pScheduler/Host" },
@@ -47,7 +52,7 @@ def result_is_valid(json):
                     "ip": { "$ref": "#/pScheduler/IPAddress" },
                     "host": { "$ref": "#/pScheduler/Host" },
                     "rtt": { "$ref": "#/pScheduler/Duration" },
-                    "as": { "$ref": "#/pScheduler/Cardinal" },
+                    "as": { "$ref": "#/pScheduler/AS" },
                     "error": { "$ref": "#/pScheduler/icmp-error" },
                     },
                 "required": [

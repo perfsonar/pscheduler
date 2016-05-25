@@ -31,6 +31,20 @@ else:
 
 opt_parser = optparse.OptionParser()
 
+opt_parser.add_option("--algorithm",
+                      help="Trace algorithm",
+                      action="store", type="string",
+                      dest="algorithm")
+
+opt_parser.add_option("--as",
+                      help="Find AS for each hop",
+                      action="store_true",
+                      dest="as_")
+opt_parser.add_option("--no-as",
+                      help="Don't find AS for each hop",
+                      action="store_false",
+                      dest="as_")
+
 opt_parser.add_option("--dest",
                       help="Destination host",
                       action="store", type="string",
@@ -107,16 +121,6 @@ opt_parser.add_option("--tos",
                       action="store", type="int",
                       dest="tos")
 
-# Underscore used here dodges a reserved word.
-opt_parser.add_option("--as",
-                      help="Find AS for each hop",
-                      action="store_true",
-                      dest="as_")
-opt_parser.add_option("--no-as",
-                      help="Don't find AS for each hop",
-                      action="store_false",
-                      dest="as_")
-
 
 
 (options, remaining_args) = opt_parser.parse_args(args)
@@ -127,6 +131,9 @@ if len(remaining_args) != 0:
 result = { 'schema': 1 }
 
 
+
+if options.algorithm is not None:
+   result['algorithm'] = options.algorithm
 
 if options.dest is not None:
    result['dest'] = options.dest
@@ -168,8 +175,8 @@ if options.tos is not None:
    result['tos'] = options.tos
 
 if options.as_ is not None:
-   result['as'] = options.as_
-
+   result['as'] = options.as_ if \
+       options.as_ is not None else True
 
 
 

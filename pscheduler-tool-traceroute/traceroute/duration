@@ -40,9 +40,6 @@ except KeyError:
     send_wait = datetime.timedelta(seconds=5)
 
 
-# TODO: Need to consider time for AS resolution.  1S per hop?
-
-
 #
 # DNS Resolution
 #
@@ -53,8 +50,24 @@ except KeyError:
     hostnames = True
 
 # Some time for DNS, which will be done in parallel.
+# TODO: Should probably ask the DNS module for the timeout.
 if hostnames:
-    total += datetime.timedelta(seconds=5)
+    total += datetime.timedelta(seconds=2)
+
+
+#
+# AS Resolution
+#
+
+try:
+    hostnames = spec['as']
+except KeyError:
+    hostnames = True
+
+# Some time for AS, which will be done in parallel.
+# TODO: Should probably ask the AS module for the timeout.
+if hostnames:
+    total += datetime.timedelta(seconds=4)
 
 
 #

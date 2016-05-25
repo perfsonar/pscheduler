@@ -29,6 +29,10 @@ def check_with_error(name, error):
         errors.append(error)
 
 
+if 'algorithm' in spec:
+    errors.append("Algorithm '%s' is not supported" % spec['algorithm'])
+
+
 try:
     probe_type = spec['probe-type']
     if probe_type != 'udp':
@@ -76,13 +80,8 @@ check_with_error('tos', "Cannot control IP TOS")
 check_with_error('wait', "Cannot control response wait time")
 check_with_error('sendwait', "Cannot control delay between sends")
 
-try:
-    as_ = spec['as']
-    if as_ != False:
-        errors.append("AS lookup is not supported")
-except KeyError:
-    pass
 
+# as is okay since they're done outside the program.
 
 
 if len(errors) > 0:

@@ -17,6 +17,8 @@ if not valid:
 result = pscheduler.speccli_build_args(spec, 
                                        strings=[
         # Strings
+        ( 'algorithm', 'algorithm' ),
+        ( 'as', 'as' ),
         ( 'dest', 'dest' ),
         ( 'ip-version', 'ip-version' ),
         ( 'length', 'length' ),
@@ -32,7 +34,6 @@ result = pscheduler.speccli_build_args(spec,
                                        bools=[
         ( 'fragment', 'fragment' ),
         ( 'hostnames', 'hostnames' ),
-        ( 'as', 'as' ),
         ])
 
 pscheduler.succeed_json(result)

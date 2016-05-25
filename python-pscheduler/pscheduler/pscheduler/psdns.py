@@ -20,7 +20,7 @@ def __check_ip_version__(ip_version):
 # Single Resolution
 #
 
-def dns_resolve(host, ip_version=4):
+def dns_resolve(host, query=None, ip_version=4):
     """
     Resolve a hostname to its A record, returning None if not found or
     there was a timeout.
@@ -30,11 +30,13 @@ def dns_resolve(host, ip_version=4):
         resolver = dns.resolver.Resolver()
         resolver.timeout = __TIMEOUT__
         resolver.lifetime = __TIMEOUT__
-        answers = resolver.query(host, 'A' if ip_version == 4 else 'AAAA')
+        if query is None:
+            query = 'A' if ip_version == 4 else 'AAAA'
+        answers = resolver.query(host, query)
         return str(answers[0])
-    except dns.exception.Timeout:
-        return None
-    except dns.resolver.NXDOMAIN:
+    except (dns.exception.Timeout,
+            dns.resolver.NXDOMAIN,
+            dns.resolver.NoAnswer):
         return None
 
 
@@ -117,6 +119,7 @@ def dns_bulk_resolve(candidates, reverse=False, ip_version=None, threads=50):
 
 if __name__ == "__main__":
     print dns_resolve('www.perfsonar.net', ip_version=4)
+    print dns_resolve('www.perfsonar.net', ip_version=4, query='SOA')
     print dns_bulk_resolve([
         'www.perfsonar.net',
         'www.es.net',
@@ -139,3 +142,6 @@ if __name__ == "__main__":
         '2607:f8b0:4002:c06::67',
         'this-is-not-valid'
     ], reverse=True)
+
+    print dns_bulk_resolve([
+            ])

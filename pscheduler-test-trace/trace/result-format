@@ -36,9 +36,11 @@ if format == 'text/plain':
 {.section hostname}{hostname} ({.end}\
 {.section ip}{ip}{.or}{.section hostname}NONE{.or}No Response{.end}{.end}\
 {.section hostname}){.end}\
-{.section as} AS{as}{.end}\
+{.section as}{.section number} AS{number}{.or}{.end}{.or}{.end}\
 {.section rtt} {rtt} ms{.end}\
 {.section error} {error}{.end}
+{.section as}{.section owner}\t  {owner}{.or}{.end}{.or}{.end}
+
 """
 
    end_template = None
@@ -53,9 +55,10 @@ elif format == 'text/html':
   <th>TTL</th>
   <th>Address</th>
   <th>Host</th>
-  <th>AS</th>
   <th>RTT (ms)</th>
   <th>Error</th>
+  <th>AS</th>
+  <th>Operator</th>
 </tr>
    """
 
@@ -64,9 +67,13 @@ elif format == 'text/html':
   <th>{number}</th>
   <td>{.section ip}{ip}{.end}</td>
   <td>{.section hostname}{hostname}{.end}</td>
-  <td>{.section as}{as}{.end}</td>
   <td>{.section rtt}{rtt}{.end}</td>
   <td>{.section error}{error}{.end}</td>
+  <td>{.section as}
+
+{.section number}{number}{.or}{.end}
+{.end}</td>
+  <td>{.section as}{.section owner}{owner}{.or}{.end}{.end}</td>
 </tr>
 
 """
