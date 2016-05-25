@@ -1,0 +1,86 @@
+#!/usr/bin/python
+#
+# Determine the duration of a specified test.
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+spec = pscheduler.json_load(exit_on_error=True);
+
+# TODO: Make sure the type is one we like
+# TODO: Validate the spec
+
+total = datetime.timedelta()
+
+#
+# Traceroute time
+#
+
+try:
+    hops = spec['hops']
+except KeyError:
+    hops = 30
+
+
+try:
+    send_wait = pscheduler.iso8601_as_timedelta(spec['send-wait'])
+    total += send_wait * hops
+except KeyError:
+    # Program default is zero.
+    pass
+
+
+try:
+    total += pscheduler.iso8601_as_timedelta(spec['wait'])
+except KeyError:
+    # This is the program's default
+    send_wait = datetime.timedelta(seconds=5)
+
+
+# Count time for undiscovered hops.  Program default is 3.
+total += 3 * send_wait
+
+
+
+#
+# DNS Resolution
+#
+
+try:
+    hostnames = spec['hostnames']
+except KeyError:
+    hostnames = True
+
+# Some time for DNS, which will be done in parallel.
+# TODO: Should probably ask the DNS module for the timeout.
+if hostnames:
+    total += datetime.timedelta(seconds=2)
+
+
+#
+# AS Resolution
+#
+
+try:
+    hostnames = spec['as']
+except KeyError:
+    hostnames = True
+
+# Some time for AS, which will be done in parallel.
+# TODO: Should probably ask the AS module for the timeout.
+if hostnames:
+    total += datetime.timedelta(seconds=4)
+
+
+#
+# Slop
+#
+
+total += datetime.timedelta(seconds=2)
+
+print pscheduler.timedelta_as_iso8601(total)
+
+pscheduler.succeed()

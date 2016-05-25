@@ -1,0 +1,94 @@
+#!/usr/bin/python
+#
+# Determine if this tool can run a test based on a test spec.
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True);
+
+# TODO: Should be checking the package schema and the task spec schema.
+# TODO: Should be validating.
+
+try:
+    if json['type'] != 'trace':
+        pscheduler.fail('Unsupported test type')
+except KeyError:
+    pscheduler.fail('Missing test type')
+
+
+spec = json['spec']
+
+errors = []
+
+try:
+    algorithm = spec['algorithm']
+    if not algorithm in ['paris-traceroute', 'mda']:
+        errors.append("Algorithm '%s' is not supported" % spec['algorithm'])
+except KeyError:
+    # No algorithm is just fine.
+    pass
+
+
+# ip-version - Both are supported.
+
+# probe-type - All are supported
+
+if 'length' in spec:
+    errors.append("Unable to control packet length")
+
+try:
+    fragment = spec['fragment']
+    if fragment:
+        errors.append("Unable to control fragmentation.")
+except KeyError:
+    # No fragmentation is just fine.
+    pass
+
+try:
+    first_ttl = spec['first-ttl']
+    max_ttl = spec['max-ttl'] if 'max-ttl' in spec else 30
+    if first_ttl < 1 or first_ttl > 255:
+        errors.append("First TTL value not supported")
+    elif first_ttl > max_ttl:
+        errors.append("First TTL must be less than the number of hops.")
+except KeyError:
+    pass  # None is okay
+
+# source - Not supported
+
+try:
+    hops = spec['hops']
+    if hops < 1 or hops > 255:
+        errors.append("Maximum hop value not supported")
+except KeyError:
+    pass  # None is okay
+
+# hostnames - All are supported
+
+try:
+    dest_port = spec['dest-port']
+    if not protocol in ['udp', 'tcp']:
+        errors.append("Cannot support destination port on " . protocol)
+except KeyError:
+    pass  # None is okay.
+
+try:
+    tos = spec['tos']
+    errors.append("TOS is not supported")
+except KeyError:
+    pass  # None is okay.
+
+# wait - All are supported
+
+# send-wait - All are supported
+
+# as - All are supported
+
+if len(errors) > 0:
+    pscheduler.fail('\n'.join(errors))
+
+pscheduler.succeed()
