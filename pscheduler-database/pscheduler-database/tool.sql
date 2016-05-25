@@ -11,7 +11,7 @@ DROP TABLE IF EXISTS tool CASCADE;
 CREATE TABLE tool (
 
 	-- Row identifier
-	id		SERIAL
+	id		BIGSERIAL
 			PRIMARY KEY,
 
 	-- Original JSON

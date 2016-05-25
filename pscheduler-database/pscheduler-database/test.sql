@@ -11,7 +11,7 @@ DROP TABLE IF EXISTS test CASCADE;
 CREATE TABLE test (
 
 	-- Row identifier
-	id		SERIAL
+	id		BIGSERIAL
 			PRIMARY KEY,
 
 	-- Original JSON

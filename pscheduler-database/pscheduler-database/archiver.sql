@@ -11,7 +11,7 @@ DROP TABLE IF EXISTS archiver CASCADE;
 CREATE TABLE archiver (
 
 	-- Row identifier
-	id		SERIAL
+	id		BIGSERIAL
 			PRIMARY KEY,
 
 	-- Original JSON
