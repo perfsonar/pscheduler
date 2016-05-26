@@ -41,7 +41,11 @@ def __asresolve__(arg):
     if ip_returned is None:
         return (arg, None)
 
-    asn = ip_returned[1:].split(' | ')[0]
+    # Some IPs map to multiple ASNs.  For now, just return the first
+    # one.
+    # TODO: Decide what to do with multiples.
+
+    asn = ip_returned[1:].split(' | ')[0].split(' ')[0]
 
     # Determine the owner
 
@@ -50,6 +54,8 @@ def __asresolve__(arg):
         owner = owner_returned.split(' | ')[-1][:-1]
     else:
         owner = None
+
+
 
     return (arg, (int(asn), owner))
 
