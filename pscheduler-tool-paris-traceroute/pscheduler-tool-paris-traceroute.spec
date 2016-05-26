@@ -63,10 +63,12 @@ Defaults!PSCHEDULER_TOOL_PARIS_TRACEROUTE !requiretty
 EOF
 
 %post
+ldconfig
 # TODO: Insert iptables rules to allow traceroute out?
 
 
 %postun
+ldconfig
 # TODO: Delete iptables rules to allow traceroute out?
 
 
