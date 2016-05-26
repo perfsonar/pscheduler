@@ -172,14 +172,11 @@ install:
 
 
 clean:
-ifdef AUTO_TARBALL
-	@if [ -f "${NAME}/Makefile" ] ; then \
-		$(MAKE) -C $(NAME) clean ; \
-	fi
-endif
 	rm -rf $(TO_CLEAN)
 	find . -name '*~' | xargs rm -rf
-
+	find . -depth -name Makefile \
+	    -exec /bin/sh -c \
+	    '[ "{}" != "./Makefile" ] && make -C `dirname {}` clean' \;
 
 
 #
