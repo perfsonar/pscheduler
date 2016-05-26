@@ -241,7 +241,7 @@ $$ LANGUAGE plpgsql;
 -- Determine whether or not a tool is willing to run a specific test.
 
 
-CREATE OR REPLACE FUNCTION tool_can_run_test(tool_id INTEGER, test JSONB)
+CREATE OR REPLACE FUNCTION tool_can_run_test(tool_id BIGINT, test JSONB)
 RETURNS BOOLEAN
 AS $$
 DECLARE

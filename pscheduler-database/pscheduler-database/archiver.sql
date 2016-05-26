@@ -49,12 +49,12 @@ DROP TABLE IF EXISTS archiver_test CASCADE;
 CREATE TABLE archiver_test (
 
 	-- Archiver which says it can handle a test
-	archiver	INTEGER
+	archiver	BIGINT
 			REFERENCES archiver(id)
 			ON DELETE CASCADE,
 
 	-- The test the archiver says it can handle
-	test		INTEGER
+	test		BIGINT
 			REFERENCES test(id)
 			ON DELETE CASCADE
 );
@@ -103,7 +103,7 @@ RETURNS TRIGGER
 AS $$
 DECLARE
     test_name TEXT;
-    test_id INTEGER;
+    test_id BIGINT;
 BEGIN
 
     -- Update the breaker table between this and test.
@@ -158,7 +158,7 @@ CREATE OR REPLACE FUNCTION archiver_upsert(new_json JSONB)
 RETURNS VOID
 AS $$
 DECLARE
-    existing_id INTEGER;
+    existing_id BIGINT;
     new_name TEXT;
 BEGIN
 

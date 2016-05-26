@@ -78,7 +78,7 @@ CREATE OR REPLACE FUNCTION test_upsert(new_json JSONB)
 RETURNS VOID
 AS $$
 DECLARE
-    existing_id INTEGER;
+    existing_id BIGINT;
     new_name TEXT;
 BEGIN
 
