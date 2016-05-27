@@ -357,6 +357,25 @@ for line in stdout.split('\n'):
 
 
 
+# If we're doing hostnames, bulk-resolve them.
+
+try:
+    hostnames = spec['hostnames']
+except KeyError:
+    hostnames = True
+
+if hostnames and len(ips) > 0:
+    log.debug("Reverse-resolving IPs: %s", str(ips))
+    revmap = pscheduler.dns_bulk_resolve(ips, reverse=True, threads=len(traced_hops))
+    for hop in traced_hops:
+        try:
+            ip = hop['ip']
+            if ip in revmap:
+                hop.update({ 'hostname': revmap[ip] })
+        except KeyError:
+            # No IP is fine.
+            pass
+
 # Figure out ASes if we're doing that
 
 try:
