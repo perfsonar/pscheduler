@@ -30,7 +30,7 @@ if format == 'text/plain':
 Algorithm .......... {.section algorithm}{algorithm}{.or}Not Specified{.end}
 Destination ........ {.section dest}{dest}{.or}Not Specified{.end}
 IP Version ......... {.section ip-version}{ip-version}{.or}Not Specified{.end}
-Packet Length ...... {.section length}{Length}{.or}Not Specified{.end}
+Packet Length ...... {.section length}{length}{.or}Not Specified{.end}
 Probe Type ......... {.section probe-type}{probe-type}{.or}Not Specified{.end}
 Fragmentation ...... {.section fragment}{fragment}{.or}Not Specified{.end}
 First TTL .......... {.section first-ttl}{first-ttl}{.or}Not Specified{.end}
