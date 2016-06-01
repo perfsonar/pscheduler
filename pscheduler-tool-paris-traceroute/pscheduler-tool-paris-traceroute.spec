@@ -27,8 +27,6 @@ BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
 BuildRequires:	paris-traceroute
 
-%define directory %{_includedir}/make
-
 %description
 pScheduler Paris Traceroute Tool
 

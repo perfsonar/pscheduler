@@ -23,8 +23,6 @@ Requires:   python-jsonschema
 BuildRequires:	pscheduler-rpm
 
 
-%define directory %{_includedir}/make
-
 %description
 OWDelay test class for pScheduler
 

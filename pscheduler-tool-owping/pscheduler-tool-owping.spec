@@ -24,8 +24,6 @@ requires:	owamp-client
 BuildRequires:	pscheduler-rpm
 
 
-%define directory %{_includedir}/make
-
 %description
 owping tool class for pScheduler
 

@@ -23,8 +23,6 @@ Requires:	pscheduler-test-idle
 BuildRequires:	pscheduler-rpm
 
 
-%define directory %{_includedir}/make
-
 %description
 Snooze tool class for pScheduler
 

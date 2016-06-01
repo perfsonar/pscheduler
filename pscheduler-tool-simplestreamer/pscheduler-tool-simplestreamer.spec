@@ -24,8 +24,6 @@ requires:	nc
 BuildRequires:	pscheduler-rpm
 
 
-%define directory %{_includedir}/make
-
 %description
 Simple Stream tool class for pScheduler
 
