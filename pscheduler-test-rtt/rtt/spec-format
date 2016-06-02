@@ -1,0 +1,69 @@
+#!/usr/bin/python
+#
+# Format a spec
+#
+
+import jsontemplate
+import pscheduler
+import sys
+
+from validate import spec_is_valid
+
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
+
+
+json = pscheduler.json_load(exit_on_error=True)
+
+valid, message = spec_is_valid(json)
+
+if not valid:
+    pscheduler.fail(message)
+
+
+if format == 'text/plain':
+
+   template = """
+Destination ................... {.section dest}{dest}{.or}Not Specified{.end}
+IP Version .................... {.section ip-version}{ip-version}{.or}Not Specified{.end}
+Packet Count .................. {.section count}{count}{.or}Not Specified{.end}
+Source ........................ {.section source}{source}{.or}Not Specified{.end}
+Flow Label .................... {.section flowlabel}{flowlabel}{.or}Not Specified{.end}
+Interval ...................... {.section interval}{interval}{.or}Not Specified{.end}
+Suppress Multicast Loopback ... {.section suppress-loopback}{suppress-loopback}{.or}Not Specified{.end}
+Type of Service ............... {.section tos}{tos}{.or}Not Specified{.end}
+Packet Length ................. {.section length}{length}{.or}Not Specified{.end}
+Time to Live .................. {.section ttl}{ttl}{.or}Not Specified{.end}
+Deadline ...................... {.section deadline}{deadline}{.or}Not Specified{.end}
+Timeout .,..................... {.section timeout}{timeout}{.or}Not Specified{.end}
+"""
+
+elif format == 'text/html':
+
+   template = """
+<table>
+<tr><td>Destination</td><td>{.section dest}{dest}{.or}Not Specified{.end}</td></tr>
+<tr><td>IP Version</td><td>{.section ip-version}{ip-version}{.or}Not Specified{.end}</td></tr>
+<tr><td>Packet Count</td><td>{.section count}{count}{.or}Not Specified{.end}</td></tr>
+<tr><td>Source</td><td>{.section source}{source}{.or}Not Specified{.end}</td></tr>
+<tr><td>Flow Label</td><td>{.section flowlabel}{flowlabel}{.or}Not Specified{.end}</td></tr>
+<tr><td>Interval</td><td>{.section interval}{interval}{.or}Not Specified{.end}</td></tr>
+<tr><td>Suppress Multicast Loopback</td><td>{.section suppress-loopback}{suppress-loopback}{.or}Not Specified{.end}</td></tr>
+<tr><td>Type of Service</td><td>{.section tos}{tos}{.or}Not Specified{.end}</td></tr>
+<tr><td>Packet Length</td><td>{.section length}{length}{.or}Not Specified{.end}</td></tr>
+<tr><td>Time to Live</td><td>{.section ttl}{ttl}{.or}Not Specified{.end}</td></tr>
+<tr><td>Deadline</td><td>{.section deadline}{deadline}{.or}Not Specified{.end}</td></tr>
+<tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
+</table>
+   """
+
+else:
+
+   pscheduler.fail("Unsupported format '%s'" % format)
+
+
+# TODO: Should probably handle exceptions in a nicer way.
+print jsontemplate.expand(template, json).strip()

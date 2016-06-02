@@ -1,0 +1,43 @@
+#!/usr/bin/python
+#
+# Determine if this tool can run a test based on a test spec.
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True);
+
+# TODO: Should be checking the package schema and the task spec schema.
+# TODO: Should be validating.
+
+try:
+    if json['type'] != 'rtt':
+        pscheduler.fail('Unsupported test type')
+except KeyError:
+    pscheduler.fail('Missing test type')
+
+
+spec = json['spec']
+
+# This tool runs thre entire version 1 schema.
+
+errors = []
+
+try:
+    ip_version = spec['ip-version']
+except KeyError:
+    ip_version = 4
+
+
+if 'flow-label' in spec and ip_version != 6:
+    errors.append("Cannot apply flow labels except with IPv6")
+
+
+
+if len(errors) > 0:
+    pscheduler.fail('\n'.join(errors))
+
+pscheduler.succeed()

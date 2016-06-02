@@ -1,0 +1,15 @@
+#!/bin/sed -e 1d
+{
+    "name": "ping",
+    "description": "Measure the round-trip time to another host",
+    "version": "0.0",
+    "tests": [ "rtt" ],
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "info@perfsonar.net",
+	"href": "http://www.perfsonar.net"
+    }
+}

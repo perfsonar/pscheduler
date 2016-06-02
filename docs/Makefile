@@ -11,6 +11,7 @@ LATEX=\
 	developers-guide \
 	json \
 	test-idle \
+	test-rtt \
 	test-simplestream \
 	test-trace \
 	values \
