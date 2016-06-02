@@ -171,31 +171,7 @@ to the host, if known.
 \typeditem{as}{AS} The autonomous system number of the host if
 known.
 
-\typeditem{error}{String} If there was an error reported for this hop,
-one of the values enumerated below.
-
-\begin{itemize}
-\item ICMP Type 3 errors, from RFC 792:
-\subitem {\tt net-unreachable}
-\subitem {\tt host-unreachable}
-\subitem {\tt protocol-unreachable}
-\subitem {\tt port-unreachable}
-\subitem {\tt fragmentation-needed-and-df-set}
-\subitem {\tt source-route-failed}
-\subitem {\tt destination-network-unknown}
-\subitem {\tt destination-host-unknown}
-\subitem {\tt source-host-isolated}
-\subitem {\tt destination-network-administratively-prohibited}
-\subitem {\tt destination-host-administratively-prohibited}
-\subitem {\tt network-unreachable-for-type-of-service}
-\subitem {\tt icmp-destination-host-unreachable-tos}
-
-\item ICMP Type 3 errors, from RFC 1812:
-\subitem {\tt communication-administratively-prohibited}
-\subitem {\tt host-precedence-violation}
-\subitem {\tt precedence-cutoff-in-effect}
-\end{itemize}
-
+\typeditem{error}{ICMPError} Any error reported for this hop.
 
 \subsection{Example}
 \begin{lstlisting}[language=json]
