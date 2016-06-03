@@ -26,6 +26,9 @@ def dns_resolve(host, query=None, ip_version=4):
     there was a timeout.
     """
     __check_ip_version__(ip_version)
+
+    # TODO: Need to also try resolution by local means (/etc/hosts)
+
     try:
         resolver = dns.resolver.Resolver()
         resolver.timeout = __TIMEOUT__
@@ -45,6 +48,9 @@ def dns_resolve_reverse(ip):
     Resolve an IP (v4 or v6) to its hostname, returning None if not
     found or there was a timeout.
     """
+
+    # TODO: Need to also try resolution by local means (/etc/hosts)
+
     try:
         resolver = dns.resolver.Resolver()
         resolver.timeout = __TIMEOUT__
