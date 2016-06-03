@@ -6,6 +6,7 @@
 
 import datetime
 import icmperror
+import ipaddr
 import pscheduler
 import re
 
@@ -172,10 +173,17 @@ argv.append(str(timeout))
 # doesn't get bogged down doing it.
 
 dest = spec['dest']
-dest_ip_map = pscheduler.dns_bulk_resolve([dest])
-dest_ip = dest_ip_map[dest]
 
-if dest_ip is None:
+try:
+    dest_ip_addr = ipaddr.IPAddress(dest)
+except ValueError:
+    dest_ip_addr = None
+
+if dest_ip_addr is None:
+    dest_ip_map = pscheduler.dns_bulk_resolve([dest])
+    dest_ip_addr = dest_ip_map[dest]
+
+if dest_ip_addr is None:
     pscheduler.succeed_json( {
             'succeeded': False,
             'diags': None,
@@ -183,7 +191,7 @@ if dest_ip is None:
             'result': None
             } )
 
-argv.append(dest_ip)
+argv.append(str(dest_ip_addr))
 
 
 
