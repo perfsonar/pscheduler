@@ -70,6 +70,38 @@ yum -y install \
     tree \
 
 
+
+#
+# Force the default BASH prompt to be something more like CentOS 6,
+# which doesn't make a mess of what's in screen's hard status line.
+#
+
+cat > /etc/profile.d/pscheduler-prompt.sh <<EOF
+if [ -z "\$PROMPT_COMMAND" ]; then
+  case \$TERM in
+  xterm*)
+      if [ -e /etc/sysconfig/bash-prompt-xterm ]; then
+          PROMPT_COMMAND=/etc/sysconfig/bash-prompt-xterm
+      else
+          PROMPT_COMMAND='printf "\\033]0;%s@%s:%s\\007" "\${USER}" "\${HOSTNAME%%.*}" "\${PWD/#\$HOME/~}"'
+      fi
+      ;;
+  screen)
+      if [ -e /etc/sysconfig/bash-prompt-screen ]; then
+          PROMPT_COMMAND=/etc/sysconfig/bash-prompt-screen
+      else
+          PROMPT_COMMAND='printf "\\033]0;%s@%s:%s\\033\\\\" "\${USER}" "\${HOSTNAME%%.*}" "\${PWD/#\$HOME/~}"'
+      fi
+      ;;
+  *)
+      [ -e /etc/sysconfig/bash-prompt-default ] && PROMPT_COMMAND=/etc/sysconfig/bash-prompt-default
+      ;;
+    esac
+fi
+EOF
+
+
+
 #
 # Guest additions.  Only needed for convenience on VBox
 #
