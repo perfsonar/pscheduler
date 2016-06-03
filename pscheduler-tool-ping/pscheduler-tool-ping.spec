@@ -46,28 +46,28 @@ make \
      install
 
 
-# Enable sudo for traceroute
+# Enable sudo for ping
 
-TRACEROUTE=$(which traceroute)
+PING=$(which ping)
 
 mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}
 cat > $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}/%{name} <<EOF
 #
 # %{name}
 #
-Cmnd_Alias PSCHEDULER_TOOL_TRACEROUTE = ${TRACEROUTE}
-%{_pscheduler_user} ALL = (root) NOPASSWD: ${TRACEROUTE}
-Defaults!PSCHEDULER_TOOL_TRACEROUTE !requiretty
+Cmnd_Alias PSCHEDULER_TOOL_PING = ${PING}
+%{_pscheduler_user} ALL = (root) NOPASSWD: ${PING}
+Defaults!PSCHEDULER_TOOL_PING !requiretty
 
 
 EOF
 
 %post
-# TODO: Insert iptables rules to allow traceroute out?
+# TODO: Insert iptables rules to allow ping out?
 
 
 %postun
-# TODO: Delete iptables rules to allow traceroute out?
+# TODO: Delete iptables rules to allow ping out?
 
 
 %files
