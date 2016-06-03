@@ -10,6 +10,7 @@ LATEX=\
 	archiver-syslog \
 	developers-guide \
 	json \
+	limits \
 	test-idle \
 	test-rtt \
 	test-simplestream \
