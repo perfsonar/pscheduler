@@ -89,6 +89,9 @@ run_timeout += ( count * interval )
 
 # Interface/Source Address
 
+# TODO: This needs to be forward-resolved like dest.  Should do both
+# in parallel.
+
 try:
     source = spec['source']
     argv.append('-I')
@@ -97,8 +100,8 @@ except KeyError:
     pass  # Don't care.
 
 
-# TODO: Need to add preload to the spec.  This will require
-# adjustments to the duration and may require root.
+# TODO: Add preload to the spec?  This will require adjustments to the
+# duration and may require root.
 
 
 # Multicast Loopback Suppression
@@ -164,9 +167,23 @@ argv.append(str(timeout))
 
 
 
-# Destination (must be last since it's an argument, not a switch))
+# Destination (must be last since it's an argument, not a switch)).
+# If it doesn't look like an IP, resolve it down to one so ping
+# doesn't get bogged down doing it.
 
-argv.append(spec['dest'])
+dest = spec['dest']
+dest_ip_map = pscheduler.dns_bulk_resolve([dest])
+dest_ip = dest_ip_map[dest]
+
+if dest_ip is None:
+    pscheduler.succeed_json( {
+            'succeeded': False,
+            'diags': None,
+            'error': "Unable to resolve destination '%s'" % dest,
+            'result': None
+            } )
+
+argv.append(dest_ip)
 
 
 

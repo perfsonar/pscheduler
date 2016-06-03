@@ -19,6 +19,10 @@ total = datetime.timedelta()
 # Tool run time
 #
 
+# TODO: Don't include this time if the destination is already an IP
+# TODO: Get the timeout from the DNS module
+total = datetime.timedelta(seconds=2)
+
 try:
     count = int(spec['count'])
 except KeyError:
