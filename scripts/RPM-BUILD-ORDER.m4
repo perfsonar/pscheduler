@@ -93,6 +93,7 @@ pscheduler-core
 pscheduler-test-idle
 #pscheduler-test-owdelay
 #pscheduler-test-throughput
+pscheduler-test-rtt
 pscheduler-test-simplestream
 pscheduler-test-trace
 
@@ -103,6 +104,7 @@ pscheduler-test-trace
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-snooze
+pscheduler-tool-ping
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
 pscheduler-tool-paris-traceroute
