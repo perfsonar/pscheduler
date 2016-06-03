@@ -34,6 +34,7 @@ The pScheduler database
 %define db_user %{_pscheduler_user}
 %define password_file %{_pscheduler_sysconfdir}/database-password
 %define dsn_file %{_pscheduler_sysconfdir}/database-dsn
+%define pgpass_file %{_pscheduler_sysconfdir}/pgpassfile
 
 %define rpm_macros %{_pscheduler_rpmmacroprefix}%{name}
 
@@ -48,13 +49,13 @@ false
 
 
 %build
-make
+make PGPASSFILE=$RPM_BULID_ROOT/%{pgpass_file}
 
 %install
 make DATADIR=$RPM_BUILD_ROOT/%{_pscheduler_datadir} install
 
 # These will be populated on installation
-for FILE in %{password_file} %{dsn_file}
+for FILE in %{password_file} %{dsn_file} %{pgpass_file}
 do
     DIR=$(dirname "$RPM_BUILD_ROOT/${FILE}")
     mkdir -p "${DIR}"
@@ -62,14 +63,26 @@ do
     chmod 440 "$RPM_BUILD_ROOT/${FILE}"
 done
 
+
 # RPM Macros
 mkdir -p $(dirname $RPM_BUILD_ROOT/%{rpm_macros})
 cat > $RPM_BUILD_ROOT/%{rpm_macros} <<EOF
 # %{name} %{version}
 %%_pscheduler_database_dsn_file %{dsn_file}
 %%_pscheduler_database_password_file %{password_file}
+%%_pscheduler_database_pgpass_file %{pgpass_file}
 EOF
 
+%define profile_d %{_sysconfdir}/profile.d
+
+# Shell Aliases
+mkdir -p $RPM_BUILD_ROOT/%{profile_d}
+cat > $RPM_BUILD_ROOT/%{profile_d}/%{name}.sh <<EOF
+alias pssql='PGPASSFILE=%{pgpass_file} psql -U pscheduler'
+EOF
+cat > $RPM_BUILD_ROOT/%{profile_d}/%{name}.csh <<EOF
+alias pssql 'setenv PGPASSFILE "%{pgpass_file}" && psql -U pscheduler'
+EOF
 
 
 %post
@@ -110,9 +123,15 @@ fi
 
 awk -v "ROLE=${ROLE}" '{ printf "host=127.0.0.1 dbname=pscheduler user=%s password=%s\n", ROLE, $1 }' \
     "%{password_file}" \
-    > "%{dsn_file}"
+    > "${RPM_BUILD_ROOT}/%{dsn_file}"
 
 
+# Generate a PostgreSQL password file
+# Format is hostname:port:database:username:password
+awk -v "ROLE=${ROLE}" '{ printf "*:*:pscheduler:%s:%s\n", ROLE, $1 }' \
+    "%{password_file}" \
+    > "${RPM_BUILD_ROOT}/%{pgpass_file}"
+chmod 400 "${RPM_BUILD_ROOT}/%{pgpass_file}"
 
 # Load the database
 
@@ -220,4 +239,6 @@ systemctl restart "${SERVICE}"
 %{_pscheduler_datadir}/*
 %verify(user group mode) %{password_file}
 %verify(user group mode) %{dsn_file}
+%verify(user group mode) %{pgpass_file}
 %{rpm_macros}
+%{profile_d}/*
