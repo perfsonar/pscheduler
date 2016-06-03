@@ -140,7 +140,7 @@ if end_template is not None:
    for item in ['min', 'mean', 'max', 'stddev']:
       if item in json:
          json[item + '-fmt'] = "%f" % \
-             pscheduler.timedelta_as_seconds( \
-            pscheduler.iso8601_as_timedelta(json[item]) )
+             ( pscheduler.timedelta_as_seconds( \
+               pscheduler.iso8601_as_timedelta(json[item]) ) * 1000.0 )
 
    print jsontemplate.expand(end_template, json).rstrip()
