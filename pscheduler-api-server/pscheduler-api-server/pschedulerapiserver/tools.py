@@ -10,6 +10,7 @@ from flask import request
 
 from .dbcursor import dbcursor
 from .json import *
+from .log import log
 from .response import *
 
 #
@@ -23,6 +24,7 @@ def tools():
     if test_filter is None:
         return json_query(dbcursor(), "SELECT json FROM tool", [])
     else:
+        log.debug("Looking for tools against filter %s", test_filter)
         dbcursor().execute("SELECT api_tools_for_test(%s)", [test_filter])
         # TODO: Assert that there's one row.
         return ok_json( dbcursor().fetchone()[0] )
