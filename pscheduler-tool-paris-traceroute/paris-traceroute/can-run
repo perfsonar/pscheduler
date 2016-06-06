@@ -26,7 +26,7 @@ errors = []
 
 try:
     algorithm = spec['algorithm']
-    if not algorithm in ['paris-traceroute', 'mda']:
+    if not algorithm in ['paris-traceroute']:
         errors.append("Algorithm '%s' is not supported" % spec['algorithm'])
 except KeyError:
     # No algorithm is just fine.

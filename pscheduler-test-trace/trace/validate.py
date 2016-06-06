@@ -9,7 +9,7 @@ def spec_is_valid(json):
         "local": {
             "algorithm": {
                 "type": "string",
-                "enum": ["paris-traceroute", "mda"]
+                "enum": ["paris-traceroute"]
                 },
             "probe-type": {
                 "type": "string",
