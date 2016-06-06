@@ -39,7 +39,8 @@ def dns_resolve(host, query=None, ip_version=4):
         return str(answers[0])
     except (dns.exception.Timeout,
             dns.resolver.NXDOMAIN,
-            dns.resolver.NoAnswer):
+            dns.resolver.NoAnswer,
+            dns.resolver.NoNameservers):
         return None
 
 
@@ -58,11 +59,10 @@ def dns_resolve_reverse(ip):
         revname = dns.reversename.from_address(ip)
         answers = resolver.query(revname, 'PTR')
         return str(answers[0])
-    except dns.exception.Timeout:
-        return None
-    except dns.resolver.NXDOMAIN:
-        return None
-    except dns.exception.SyntaxError:
+    except (dns.exception.Timeout,
+            dns.resolver.NXDOMAIN,
+            dns.exception.SyntaxError,
+            dns.resolver.NoNameservers):
         return None
 
 
@@ -108,6 +108,9 @@ def dns_bulk_resolve(candidates, reverse=False, ip_version=None, threads=50):
 
     result = {}
 
+    if len(candidates) == 0:
+        return result
+
     pool = multiprocessing.pool.ThreadPool(
         processes=min(len(candidates), threads) )
 
@@ -142,6 +145,7 @@ if __name__ == "__main__":
 
 
     print dns_bulk_resolve([
+        '192.168.12.34',
         '8.8.8.8',
         '198.6.1.1',
         '8.8.8.0',
