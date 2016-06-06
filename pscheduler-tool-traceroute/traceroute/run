@@ -371,7 +371,9 @@ if hostnames and len(ips) > 0:
         try:
             ip = hop['ip']
             if ip in revmap:
-                hop.update({ 'hostname': revmap[ip] })
+                rev = revmap[ip]
+                if rev is not None:
+                    hop.update({ 'hostname': rev })
         except KeyError:
             # No IP is fine.
             pass
