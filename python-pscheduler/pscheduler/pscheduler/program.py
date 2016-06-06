@@ -5,6 +5,8 @@ Functions for running external programs neatly
 import pscheduler
 import select
 import subprocess32
+import sys
+import traceback
 
 # Note: Docs for the 3.x version of subprocess, the backport of which
 # is used here, is at https://docs.python.org/3/library/subprocess.html
@@ -56,7 +58,10 @@ def run_program(argv,              # Program name and args
 
             except subprocess32.TimeoutExpired:
                 # Clean up after a timeout
-                process.kill()
+                try:
+                    process.kill()
+                except OSError:
+                    pass  # Can't kill things that change UID
                 process.communicate()
 
                 status = 0 if timeout_ok else 2
@@ -116,9 +121,12 @@ def run_program(argv,              # Program name and args
             stdout = None
 
     except Exception as ex:
+        extype, ex_dummy, tb = sys.exc_info()
         status = 2
         stdout = ''
-        stderr = str(ex)
+        stderr = ''.join(traceback.format_exception_only(extype, ex)) \
+            + ''.join(traceback.format_exception(extype, ex, tb)).strip()
+
 
     if fail_message is not None and status != 0:
         pscheduler.fail("%s: %s" % (fail_message, stderr))
