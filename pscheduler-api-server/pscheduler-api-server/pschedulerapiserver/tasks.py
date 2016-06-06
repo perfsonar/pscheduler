@@ -16,7 +16,9 @@ from .response import *
 def task_exists(task):
     """Determine if a task exists by its UUID"""
     dbcursor().execute("SELECT EXISTS (SELECT * FROM task WHERE uuid = %s)", [task])
-    # TODO: Assert that rowcount is 1
+
+    if dbcursor().rowcount == 0:
+        return False
     return dbcursor().fetchone()[0]
     
 
@@ -198,8 +200,11 @@ def tasks():
 
         # TODO: Handle failure.
         dbcursor().execute("SELECT * FROM api_task_post(%s, 0)", [task_data])
-        # TODO: Assert that rowcount is 1 and has one column
 
+        if dbcursor().rowcount == 0:
+            return error("Task post failed; poster returned nothing.")
+
+        # TODO: Assert that rowcount is 1 and has one column
         task_uuid = dbcursor().fetchone()[0]
 
         # Other participants get the UUID forced upon them.
@@ -259,7 +264,9 @@ def tasks_uuid(uuid):
             FROM task WHERE uuid = %s
         """, [uuid])
 
-        # TODO: Assert that we got one row
+        if dbcursor().rowcount == 0:
+            return not_found()
+
         row = dbcursor().fetchone()
         if row is None:
             return not_found()
@@ -306,6 +313,8 @@ def tasks_uuid(uuid):
         # TODO: Handle failure.
         dbcursor().execute("SELECT * FROM api_task_post(%s, %s, %s)",
                        [request.data, participant, uuid])
+        if dbcursor().rowcount == 0:
+            return error("Task post failed; poster returned nothing.")
         # TODO: Assert that rowcount is 1
         return ok(base_url())
 
