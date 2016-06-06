@@ -78,6 +78,7 @@ if participant == 0:
         dawdle = pscheduler.timedelta_as_seconds(
             pscheduler.iso8601_as_timedelta(input['test']['spec']['dawdle']) )
         dawdle *= random.random()
+        log.debug("Dawdling %s", dawdle)
         time.sleep(dawdle)
     except KeyError:
         dawdle = 0
@@ -104,20 +105,25 @@ if participant == 0:
 
             server_address = (input['test']['spec']['receiver'],
                               input['participant-data'][1]['listen-port'])
+            log.debug("Connecting to %s", str(server_address))
             sock.settimeout(time_left())
             sock.connect(server_address)
+            log.debug("Connected")
             # TODO: How do we check for success?
             sock.sendall(material)
+            log.debug("Sent")
             succeeded = True
             error = None
             break
         except Exception as ex:
             error = "Sender exception: " + str(ex) \
                 + " " + traceback.format_exc()
+            log.debug(error)
+            log.debug("Sleeping %s", sleep_time)
             time.sleep(sleep_time)
 
         tries -= 1
-
+        log.debug("%d tries left", tries)
 
     results = {
         'succeeded': succeeded,
