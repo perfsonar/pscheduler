@@ -45,6 +45,8 @@ end_time = datetime.datetime.now() + timeout
 
 def time_left():
     return pscheduler.timedelta_as_seconds(end_time - datetime.datetime.now())
+    
+    
 
 random.seed()
 
@@ -106,6 +108,7 @@ if participant == 0:
             server_address = (input['test']['spec']['receiver'],
                               input['participant-data'][1]['listen-port'])
             log.debug("Connecting to %s", str(server_address))
+            log.debug("Timeout is %s", str(time_left))
             sock.settimeout(time_left())
             sock.connect(server_address)
             log.debug("Connected")
