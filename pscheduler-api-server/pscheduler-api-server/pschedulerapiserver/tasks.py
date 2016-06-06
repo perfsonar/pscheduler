@@ -273,7 +273,7 @@ def tasks_uuid(uuid):
                     else pscheduler.datetime_as_iso8601(row[1]),
                 'start': None if row[2] is None \
                     else pscheduler.datetime_as_iso8601(row[2]),
-                'start': None if row[3] is None \
+                'slip': None if row[3] is None \
                     else pscheduler.timedelta_as_iso8601(row[3]),
                 'duration': None if row[4] is None \
                     else pscheduler.timedelta_as_iso8601(row[4]),
