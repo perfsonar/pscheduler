@@ -6,6 +6,7 @@
 
 import datetime
 import icmperror
+import ipaddr
 import pscheduler
 import re
 
@@ -25,6 +26,30 @@ spec = input['test']['spec']
 
 
 run_timeout = datetime.timedelta()
+
+
+# Resolve the destination.  If it doesn't look like an IP, resolve it
+# down to one so the program doesn't get bogged down doing it.
+
+dest = spec['dest']
+
+try:
+    dest_ip_addr = ipaddr.IPAddress(dest)
+except ValueError:
+    dest_ip_addr = None
+
+if dest_ip_addr is None:
+    dest_ip_map = pscheduler.dns_bulk_resolve([dest])
+    dest_ip_addr = dest_ip_map[dest]
+
+if dest_ip_addr is None:
+    pscheduler.succeed_json( {
+            'succeeded': False,
+            'diags': None,
+            'error': "Unable to resolve destination '%s'" % dest,
+            'result': None
+            } )
+
 
 
 #
@@ -147,7 +172,8 @@ run_timeout += send_wait * hops
 
 
 # This must be last since it's an argument, not a switch)
-argv.append(spec['dest'])
+argv.append(str(dest_ip_addr))
+
 
 
 
@@ -161,13 +187,14 @@ diags = run_string + '\n\n'
 log.debug("Running %s", run_string)
 
 # Add some run slop
-run_timeout += datetime.timedelta(seconds=2)
+run_timeout += datetime.timedelta(seconds=5)
 log.debug("Timeout is %s", run_timeout)
 
 run_timeout_secs = pscheduler.timedelta_as_seconds(run_timeout)
 
 status, stdout, stderr \
     = pscheduler.run_program(argv, timeout = run_timeout_secs)
+
 
 diags += stdout
 

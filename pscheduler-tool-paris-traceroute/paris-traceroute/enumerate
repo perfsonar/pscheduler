@@ -5,7 +5,7 @@
     "version": "0.0",
     "tests": [ "trace" ],
 
-    "preference": 5,
+    "preference": -5,
 
     "maintainer": {
         "name": "perfSONAR Development Team",

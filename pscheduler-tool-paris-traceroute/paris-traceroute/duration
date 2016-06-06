@@ -15,6 +15,19 @@ spec = pscheduler.json_load(exit_on_error=True);
 
 total = datetime.timedelta()
 
+
+#
+# Pre-Run DNS Resolution
+#
+
+try:
+    dest_ip_addr = ipaddr.IPAddress(spec['dest'])
+except ValueError:
+    # TODO: Should probably ask the DNS module for the timeout.
+    total += datetime.timedelta(seconds=2)
+    dest_ip_addr = None
+
+
 #
 # Traceroute time
 #
@@ -46,7 +59,7 @@ total += 3 * send_wait
 
 
 #
-# DNS Resolution
+# Post-Run DNS Resolution
 #
 
 try:
