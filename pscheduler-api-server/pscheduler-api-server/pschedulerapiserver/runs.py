@@ -127,8 +127,11 @@ def __runs_first_run(
                 """, [task])
     # TODO: Handle failure.
 
-    return None if dbcursor().rowcount == 0 \
-        else dbcursor().fetchone()[0]
+    log.debug("Fetch first RC = %d", dbcursor().rowcount)
+    if dbcursor().rowcount == 0:
+        return None 
+    else:
+        return dbcursor().fetchone()[0]
 
 
 
@@ -143,7 +146,10 @@ def tasks_uuid_runs_run(task, run):
 
     if request.method == 'GET':
 
+        # Wait for there to be a local result
         wait_local = arg_boolean('wait-local')
+
+        # Wait for there to be a merged result
         wait_merged = arg_boolean('wait-merged')
 
         if wait_local and wait_merged:
@@ -154,7 +160,7 @@ def tasks_uuid_runs_run(task, run):
         if run == 'first':
             # 40 tries at 0.25s intervals == 10 sec.
             tries = 40 if (wait_local or wait_merged) else 1
-            while tries:
+            while tries > 0:
                 run = __runs_first_run(task)
                 if run is not None:
                     break
