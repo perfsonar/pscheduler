@@ -7,6 +7,8 @@
 #   DAEMONDIR - Where daemon programs should be installed
 #   DSNFILE - Location of DSN file for database logins
 #   INITDDIR - Location for installed init scripts (/etc/rc.d/init.d)
+#   PGPASSFILE - Path to PostgreSQL password file
+#   PGUSER - Name of pScheduler PostgreSQL account
 #   PSUSER - Name of pScheduler user account
 #   VAR - Location of /var directory
 #
@@ -27,6 +29,26 @@ INITS=$(DAEMONS:%=init.d-%)
 
 default: build
 
+
+monitor: monitor.m4
+ifndef PGPASSFILE
+	@echo No PGPASSFILE specified for build
+	@false
+endif
+ifndef PGUSER
+	@echo No PGUSER specified for build
+	@false
+endif
+ifndef PGDATABASE
+	@echo No PGDATABASE specified for build
+	@false
+endif
+	m4 \
+		-D__PGPASSFILE__=$(PGPASSFILE) \
+		-D__PGUSER__=$(PGUSER) \
+		-D__PGDATABASE__=$(PGDATABASE) \
+		< $< > $@
+TO_CLEAN += monitor
 
 $(INITS): init.d-template.m4
 ifndef DAEMONDIR

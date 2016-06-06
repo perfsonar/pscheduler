@@ -42,6 +42,9 @@ false
 make \
      DAEMONDIR=%{_pscheduler_daemons} \
      DSNFILE=%{_pscheduler_database_dsn_file} \
+     PGDATABASE=%{_pscheduler_database_name} \
+     PGPASSFILE=%{_pscheduler_database_pgpass_file} \
+     PGUSER=%{_pscheduler_database_user} \
      PSUSER=%{_pscheduler_user} \
      VAR=%{_var}
 

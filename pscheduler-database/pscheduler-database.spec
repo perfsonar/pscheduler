@@ -68,6 +68,8 @@ done
 mkdir -p $(dirname $RPM_BUILD_ROOT/%{rpm_macros})
 cat > $RPM_BUILD_ROOT/%{rpm_macros} <<EOF
 # %{name} %{version}
+%%_pscheduler_database_user %{db_user}
+%%_pscheduler_database_name %{db_user}
 %%_pscheduler_database_dsn_file %{dsn_file}
 %%_pscheduler_database_password_file %{password_file}
 %%_pscheduler_database_pgpass_file %{pgpass_file}
