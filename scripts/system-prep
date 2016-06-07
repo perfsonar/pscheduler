@@ -9,11 +9,16 @@
 # get the script onto the system.
 #
 
+# Un-comment this to add IPs for a private backplane interface if
+# you're using one.
+ADD_BACKPLANE_HOSTS=1
+
 # Un-comment these and configure to taste.
 #NEW_USER=mfeit
 #NEW_NAME="Mark Feit"
 #NEW_UID=1838
 #NEW_PASS="${NEW_USER}"
+
 
 
 # No user-serviceable parts beyond this point.
@@ -42,8 +47,45 @@ REDHAT_RELEASE_MAJOR_MINOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 "." $2
 yum -y upgrade
 
 
+#
+# Install backplane hosts if requested
+#
+
+if [ "${ADD_BACKPLANE_HOSTS}" ]
+then
+    HOSTS=/etc/hosts
+    sed -i -e '/^10\.0\.0\.[0-9]\+/d; /^# Backplane hosts/d' "${HOSTS}"
+    cat >> "${HOSTS}" <<EOF
+# Backplane hosts for development on VMs
+10.0.0.1 dev1
+10.0.0.2 dev2
+10.0.0.3 dev3
+10.0.0.4 dev4
+10.0.0.5 dev5
+10.0.0.6 dev6
+10.0.0.7 dev7
+10.0.0.8 dev8
+10.0.0.9 dev9
+EOF
+fi
+
+
+#
+# Install Other Repositories
+#
+
 # PostgreSQL
-rpm -Uvh --force "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-${REDHAT_RELEASE_MAJOR_MINOR}-$(uname -m)/pgdg-redhat95-9.5-2.noarch.rpm"
+yum -y install "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-${REDHAT_RELEASE_MAJOR_MINOR}-$(uname -m)/pgdg-redhat95-9.5-2.noarch.rpm"
+
+# EPEL
+yum -y install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${REDHAT_RELEASE_MAJOR}.noarch.rpm"
+
+# Internet2
+rpm --import http://software.internet2.edu/rpms/RPM-GPG-KEY-Internet2
+# TODO: We should have a symlink to the latest that stays constant.
+yum -y install "http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/$(uname -m)/RPMS.main/Internet2-repo-0.7-1.noarch.rpm"
+
+
 
 # Needed for documentation, which isn't RPM-ified yet and can't load
 # this automatically.
@@ -117,7 +159,6 @@ then
 	    KERNEL_DEVEL=kernel-devel-$(uname -r)
 	    ;;
 	7)
-	    yum -y install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${REDHAT_RELEASE_MAJOR}.noarch.rpm"
 	    KERNEL_DEVEL="kernel-devel dkms"
 	    ;;
     esac
