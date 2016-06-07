@@ -48,6 +48,16 @@ opt_parser.add_option("--import", "-i",
                       action="store", type="string",
                       dest="importt")  # Conflict with reserved word
 
+opt_parser.add_option("--quiet", '-q',
+                      help="Operate quietly",
+                      action="store_true", default=False,
+                      dest="quiet")
+opt_parser.add_option("--no-quiet",
+                      help="Don't operate quietly",
+                      action="store_false",
+                      dest="quiet")
+
+
 opt_parser.add_option("--url",
                       help="Dump a URL that points to the task after posting and exit",
                       action="store_true", default=False,
@@ -147,7 +157,6 @@ elif options.repeat is None:
     slip = datetime.timedelta(minutes=10)
     
 
-
 if options.start is not None:
     # TODO: Support "Pxx" and "@Pxx" formats like the database does
     # Should have a module function that does this.
@@ -175,6 +184,9 @@ if ( options.repeat is None
                          " repetition-related options.")
 
 
+verbose = not options.quiet
+
+
 # Decide who assists us.
 
 assist = options.assist
@@ -185,8 +197,8 @@ if assist is None:
 if assist is None:
     assist = '127.0.0.1'
 else:
-    # TODO: Narrate this when we start doing that.
-    print "Assistance will be from", assist
+    if verbose:
+        print "Assistance will be from", assist
     pass
 
 
@@ -295,10 +307,6 @@ if options.export:
     pscheduler.succeed()
 
 
-print
-print "WARNING:  This program is still experimental.  Expect it not to work."
-print
-
 #
 # Contact the assist server
 #
@@ -326,8 +334,6 @@ try:
 except Exception as ex:
     pscheduler.fail("Unable to determine the lead participant: " + str(ex))
 
-print "This task will be led by", lead
-
 
 #
 # Give the task to the lead for scheduling.
@@ -347,8 +353,9 @@ if status != 200:
 if options.url:
     pscheduler.succeed(task_url)
 
-print "Task URL:"
-print task_url
+if verbose:
+    print "Task URL:"
+    print task_url
 
 
 # TODO: Everything below this is fundamentally what's in the 'watch'
@@ -358,7 +365,8 @@ print task_url
 # Get the first future run.
 #
 
-print "Fetching first run..."
+if verbose:
+    print "Fetching first run..."
 
 # TODO: It would be more RESTful to have this URL available as part of
 # the task instead of building it here.
@@ -380,8 +388,9 @@ if status != 200:
 
 run_url = run_json['href']
 
-print "Run URL:"
-print run_url
+if verbose:
+    print "Run URL:"
+    print run_url
 
 
 #
@@ -391,16 +400,19 @@ print run_url
 start_time = run_json['start-time']
 wait_time = pscheduler.time_until_seconds(
     pscheduler.iso8601_as_datetime(start_time))
-print "Run start: %s (~%s seconds)" % (start_time, int(wait_time))
+if verbose:
+    print "Run start: %s (~%s seconds)" % (start_time, int(wait_time))
 time.sleep(wait_time)
 
 end_time = run_json['end-time']
 wait_time = pscheduler.time_until_seconds(
     pscheduler.iso8601_as_datetime(end_time))
-print "Run end:   %s (~%s seconds)" % (end_time, int(wait_time))
+if verbose:
+    print "Run end:   %s (~%s seconds)" % (end_time, int(wait_time))
 time.sleep(wait_time)
 
-print "Waiting for results..."
+if verbose:
+    print "Waiting for results..."
 
 status, result = pscheduler.url_get( run_url,
                                       params={ 'wait-merged': True },
@@ -470,7 +482,7 @@ status, formatted = pscheduler.url_get(
 if status != 200:
     pscheduler.fail("Unable to retrieve formatted result: " + formatted)
 
-# TODO: Remove the extra print if not narrating and on a TTY
-print
+if verbose:
+    print
 print formatted.rstrip()
 pscheduler.succeed()
