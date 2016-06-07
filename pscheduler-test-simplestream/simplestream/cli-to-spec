@@ -30,10 +30,10 @@ else:
 
 opt_parser = optparse.OptionParser()
 
-opt_parser.add_option("-r", "--receiver",
-                      help="Receiving host",
+opt_parser.add_option("-e", "--dest",
+                      help="Destination host",
                       action="store", type="string",
-                      dest="receiver")
+                      dest="dest")
 
 opt_parser.add_option("-d", "--dawdle",
                       help="Time to dawdle (ISO8601 Duration)",
@@ -63,8 +63,8 @@ if len(remaining_args) != 0:
 
 result = { 'schema': 1 }
 
-if options.receiver is not None:
-   result['receiver'] = options.receiver
+if options.dest is not None:
+   result['dest'] = options.dest
 
 if options.dawdle is not None:
    result['dawdle'] = options.dawdle

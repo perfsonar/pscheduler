@@ -19,9 +19,15 @@ json = pscheduler.json_load(exit_on_error=True);
 
 
 try:
-    print json['timeout']
+    timeout = json['timeout']
 except KeyError:
-    # TODO: This needs to match the default that will be used by run.
-    pscheduler.fail('No timeoutfound in test spec.')
+    # If no default but there's a dawdle, double that.
+    try:
+        delta = pscheduler.iso8601_as_timedelta(json['dawdle']) * 2
+        timeout = pscheduler.timedelta_as_iso8601(delta)
+    except KeyError:
+        timeout = 'PT5S'
+
+print timeout
 
 pscheduler.succeed()

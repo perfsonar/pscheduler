@@ -22,12 +22,12 @@ if not valid:
 
 
 try:
-    receiver = json['receiver']
+    dest = json['dest']
 except KeyError:
-    pscheduler.fail('No receiver in test specification')
+    pscheduler.fail('No dest in test specification')
 
 # This always leads with a null so the participant indexes line up.
-result = [ None, receiver ]
+result = [ None, dest ]
 
 pscheduler.json_dump(result, sys.stdout )
 pscheduler.succeed()

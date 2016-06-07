@@ -40,7 +40,10 @@ if not 'participant-data' in input:
 # TODO: This should be turned into a class and put into the pscheduler
 # module.
 start_time = datetime.datetime.now()
-timeout = pscheduler.iso8601_as_timedelta(input['test']['spec']['timeout'])
+try:
+    timeout = pscheduler.iso8601_as_timedelta(input['test']['spec']['timeout'])
+except KeyError:
+    timeout = pscheduler.iso8601_as_timedelta('PT5S')
 end_time = datetime.datetime.now() + timeout
 
 def time_left():
@@ -105,7 +108,7 @@ if participant == 0:
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-            server_address = (input['test']['spec']['receiver'],
+            server_address = (input['test']['spec']['dest'],
                               input['participant-data'][1]['listen-port'])
             log.debug("Connecting to %s", str(server_address))
             log.debug("Timeout is %s", str(time_left))
@@ -142,7 +145,7 @@ if participant == 0:
 elif participant == 1:
 
     #
-    # Receiver
+    # Dest
     #
 
     succeeded = False
