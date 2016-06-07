@@ -37,7 +37,7 @@ bottom = 0x21
 range = 0x7e - bottom
 
 if options.quotesafe:
-    filter_string = "'\"`:"
+    filter_string = "'\"`:\\#"
 else:
     filter_string = ""
 
