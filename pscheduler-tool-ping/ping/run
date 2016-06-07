@@ -82,6 +82,9 @@ try:
 except KeyError:
     interval=datetime.timedelta(seconds=1)
 
+if interval < datetime.timedelta(seconds=0.2):
+    need_root = True
+
 
 argv.append('-i')
 argv.append(str(pscheduler.timedelta_as_seconds(interval)))
@@ -102,7 +105,7 @@ except KeyError:
 
 
 # TODO: Add preload to the spec?  This will require adjustments to the
-# duration and may require root.
+# duration and requires root if more than 3.
 
 
 # Multicast Loopback Suppression
