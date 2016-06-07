@@ -18,6 +18,7 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-core
 Requires:	pscheduler-account
+Requires:	python-ipaddr
 Requires:	python-pscheduler
 Requires:	pscheduler-test-trace
 requires:	paris-traceroute

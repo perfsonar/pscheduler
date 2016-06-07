@@ -39,7 +39,6 @@ python-dnspython
 ifelse(REDHAT_RELEASE_MAJOR,7,
     python-functools32,)
 python-isodate
-python-ipaddr
 python-netaddr
 python-ntplib
 python-pytz

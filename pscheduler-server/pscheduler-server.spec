@@ -23,6 +23,7 @@ Requires:	curl
 Requires:	pscheduler-account
 Requires:	pscheduler-database
 Requires:	python-Flask
+Requires:	python-ipaddr
 Requires:	python-requests
 
 
