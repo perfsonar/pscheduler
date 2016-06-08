@@ -262,6 +262,10 @@ class Run:
             log.debug("%d: Full result: %s",
                       id, pscheduler.json_dump(full_result, pretty=True))
 
+            # TODO: If any of the tests resulted in a failure, check
+            # if the participants' clocks are off and add that to the
+            # diagnostics.
+
             # Store the full result with each participant.
 
             full_params = {
