@@ -153,6 +153,9 @@ def tasks():
             return bad_request("Wrong host %s; should be asking %s."
                                % (netloc, participants[0]))
 
+        # TODO: The participants must be unique.  This should be
+        # verified by fetching the host name from each one.
+
         #
         # TOOL SELECTION
         #
