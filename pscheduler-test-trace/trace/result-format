@@ -101,7 +101,7 @@ for hop in json['hops']:
    hop['number'] = hopno
    try:
       ms = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(hop['rtt'])) * 1000
-      hop['rtt'] = ('%f' % ms).rstrip('0')
+      hop['rtt'] = ('%f' % ms).rstrip('0').rstrip('.')
    except KeyError:
       pass
 
