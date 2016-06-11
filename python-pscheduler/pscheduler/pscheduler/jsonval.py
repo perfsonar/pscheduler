@@ -396,9 +396,8 @@ def json_validate(json, skeleton):
         jsonschema.validate(json, schema,
                             format_checker=jsonschema.FormatChecker())
     except jsonschema.exceptions.ValidationError as ex:
-        return (False, "At %s: Invalid %s: %s" % (
-            '/' + ('/'.join(ex.absolute_path)),
-            ex.validator,
+        return (False, "At %s: %s" % (
+            '/' + ('/'.join([str(x) for x in ex.absolute_path])),
             ex.message
             ))
 
