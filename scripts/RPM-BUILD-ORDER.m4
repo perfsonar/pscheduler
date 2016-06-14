@@ -41,6 +41,7 @@ ifelse(REDHAT_RELEASE_MAJOR,7,
 python-isodate
 python-netaddr
 python-ntplib
+python-py-radix
 python-pytz
 python-repoze.lru
 python-subprocess32
