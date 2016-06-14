@@ -110,6 +110,7 @@ yum -y install \
     screen \
     tcsh \
     tree \
+    wget \
 
 
 
