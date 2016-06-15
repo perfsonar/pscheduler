@@ -75,6 +75,16 @@ __dictionary__ = {
 
     "Integer": { "type": "integer" },
 
+    "IntegerSI": {
+        "oneOf": [
+            { "type": "integer" },
+            {
+                "type": "string",
+                "pattern": "^(-?[0-9]+(\.[0-9]+)?)\s*([kmgtpezy][i]?)?$"
+            }
+            ]
+        },
+
     "IPAddress": {
         "oneOf": [
             { "type": "string", "format": "ipv4" },
