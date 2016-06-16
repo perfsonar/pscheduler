@@ -161,13 +161,18 @@ if options.start is not None:
     # TODO: Support "Pxx" and "@Pxx" formats like the database does
     # Should have a module function that does this.
     start = pscheduler.iso8601_as_datetime(options.start, localize=True)
+    if start is None:
+        pscheduler.fail("Invalid --start")
     if start <= pscheduler.time_now():
         pscheduler.fail("Invalid --start; must be in the future.")
     pass
 
 if options.until is not None:
     # TODO: Support "Pxx" and "@Pxx" formats like the database does
+    # TODO: Error handling in iso8601_as_datetime() needs improvement.
     until = pscheduler.iso8601_as_datetime(options.until, localize=True)
+    if until is None:
+        pscheduler.fail("Invalid --until")
     if until <= pscheduler.time_now():
         pscheduler.fail("Invalid --until; must be in the future.")
 
