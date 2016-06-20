@@ -23,6 +23,7 @@ Requires:	python
 
 BuildRequires:	python
 BuildRequires:	python-setuptools
+BuildRequires:	python-devel
 
 %description
 A network address manipulation library for Python
