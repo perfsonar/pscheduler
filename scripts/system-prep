@@ -86,6 +86,10 @@ rpm --import http://software.internet2.edu/rpms/RPM-GPG-KEY-Internet2
 yum -y install "http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/$(uname -m)/RPMS.main/Internet2-repo-0.7-1.noarch.rpm"
 
 
+# Things we need to build:
+yum -y install \
+    m4
+
 
 # Needed for documentation, which isn't RPM-ified yet and can't load
 # this automatically.
