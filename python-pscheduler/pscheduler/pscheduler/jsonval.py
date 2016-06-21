@@ -3,6 +3,7 @@ Functions for validating JSON against the pScheduler JSON and standard
 values dictionaries
 """
 
+import copy
 import jsonschema
 
 
@@ -362,6 +363,7 @@ def json_validate(json, skeleton):
         type         (array, boolean, integer, null, number, object, string)
         items        (Only when type is array)
         properties   (Only when type is object)
+        additionalProperties  (Only when type is an object)
         required     Required items
         local        (Optional; see below.)
 
@@ -390,8 +392,12 @@ def json_validate(json, skeleton):
 
     # Build up the schema from the dictionaries and user input.
 
-    schema = __default_schema__
-    for element in [ 'type', 'items', 'properties', 'required', 'local' ]:
+    # A shallow copy is sufficient for this since we don't clobber the
+    # innards.
+    schema = copy.copy(__default_schema__)
+
+    for element in [ 'type', 'items', 'properties', 'additionalProperties',
+                     'required', 'local' ]:
         if element in skeleton:
             schema[element] = skeleton[element]
 
