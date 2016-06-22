@@ -111,6 +111,7 @@ if __name__ == "__main__":
 
     # These should convert
 
+    print "Simple:"
     for value in [
             "1234",
             "1234K",
@@ -128,6 +129,7 @@ if __name__ == "__main__":
     # These should not.
 
     print
+    print "Simple, should throw exceptions:"
 
     for value in [
             "ki",
@@ -143,6 +145,7 @@ if __name__ == "__main__":
 
 
     print
+    print "Ranges:"
 
     for value in [
             15,
