@@ -30,8 +30,14 @@ si_regex = re.compile('^(-?[0-9]+(\.[0-9]+)?)\s*([kmgtpezy][i]?)?$')
 
 def si_as_integer(text):
 
+    """Convert a string containing an SI value to an integer or return an
+    integer if that is what was passed in."""
+
     if type(text) == int:
         return text
+
+    if type(text) not in [ str, unicode ]:
+        raise ValueError("Source value must be string or integer")
 
     matches = si_regex.search(text.lower(),0)
 
@@ -46,6 +52,42 @@ def si_as_integer(text):
     multiplier = 1 if unit is None else si_multipliers.get(unit.lower(), '')
 
     return int(number * multiplier)
+
+
+
+def si_range(value):
+    """Convert a range of SI numbers to a range of integers.
+
+    The 'value' is a dict containing members 'lower' and 'upper', each
+    being an integer or string suitable for si_as_integer().  If
+    'value' is not a dict, it will be passed directly to
+    si_as_integer() and treated as a non-range (see below).
+
+    Returns a dict containing memebers 'lower' and 'upper', both
+    integers.  For non-ranges, both will be identical.
+
+    Raises ValueError if something doesn't make sense.
+    """
+
+    if type(value) in [ int, str, unicode ]:
+        result = si_as_integer(value)
+        return { "lower": result, "upper": result }
+
+    # TODO: Complain about anything else in the input?
+
+    result = {}
+
+    for member in [ "lower", "upper" ]:
+        try:
+            result[member] = si_as_integer(value[member])
+        except KeyError:
+            raise ValueError("Missing '%s' in input" % member)
+
+    if result['lower'] > result['upper']:
+        raise ValueError("Lower value must be less than upper value")
+
+    return result
+
 
 
 #
@@ -78,9 +120,32 @@ if __name__ == "__main__":
             "ki",
             "Steak",
             "123e1",
+            3.1415
             ]:
         try:
             integer = si_as_integer(value)
             print value, integer
         except ValueError:
             print value, "-> ValueError"
+
+
+    print
+
+    for value in [
+            15,
+            "16ki",
+            { "lower": 1000, "upper": 2000 },
+            { "lower": 1000, "upper": "2k" },
+            { "lower": "1k", "upper": 2000 },
+            { "lower": "1k", "upper": "2k" },
+            { "lower": "2k", "upper": "1k" }
+            ]:
+        try:
+            returned = si_range(value)
+            print value, "->", returned
+        except Exception as ex:
+            print value, "-> Exception:", ex
+
+
+
+
