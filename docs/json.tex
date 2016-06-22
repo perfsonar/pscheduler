@@ -498,6 +498,33 @@ A {\tt string} as defined by ECMA 404.
   \textbackslash"hello\textbackslash" as he went by."}
 
 
+\subsection{StringMatch}
+A description for performaing matches on a string consisting of a JSON
+object containing these elements:
+
+\typeditem{style}{string} - The type of match to be attempted.  Must
+be one of {\tt exact} (strings must match exactly), {\tt contains}
+(string must contain the match) or {\tt regex} (string must match a
+regular expression).
+
+\typeditem{match}{String} - String or regular expression to match.
+
+\typeditem{case-insensitive}{Boolean} - Match in a case-insensitive
+way.
+
+\typeditem{invert}{Boolean} - Invert the result if {\tt true}
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "style": "regex",
+    "match": "^(apple|banana|cherry)$",
+    "case-sensitive": true,
+    "invert": true
+}
+\end{lstlisting}
+
+
 
 \subsection{TaskSpecification}
 Specification of a task consisting of a JSON object containing these

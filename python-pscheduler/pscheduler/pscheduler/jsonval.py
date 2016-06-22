@@ -137,6 +137,25 @@ __dictionary__ = {
 
     "String": { "type": "string" },
 
+    "StringMatch": {
+        "type": "object",
+        "properties": {
+            "style": {
+                "type": "string",
+                "enum": [
+                    "exact",
+                    "contains",
+                    "regex"
+                    ],
+            },
+            "match": { "$ref": "#/pScheduler/String" },
+            "case-insensitive": { "$ref": "#/pScheduler/Boolean" },
+            "invert": { "$ref": "#/pScheduler/Boolean" },
+        },
+        "additionalProperties": False,
+        "required": [ "style", "match" ]
+    },
+
     "Timestamp": {
         "type": "string",
         # ISO 8601.  Source: https://gist.github.com/philipashlock/8830168
