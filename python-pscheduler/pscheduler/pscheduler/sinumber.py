@@ -2,6 +2,7 @@
 Functions for converting numbers with SI units to integers
 """
 
+import copy
 import re
 
 si_multipliers = {
@@ -55,27 +56,39 @@ def si_as_integer(text):
 
 
 
-def si_range(value):
+def si_range(value, default_lower=0):
     """Convert a range of SI numbers to a range of integers.
 
     The 'value' is a dict containing members 'lower' and 'upper', each
     being an integer or string suitable for si_as_integer().  If
     'value' is not a dict, it will be passed directly to
-    si_as_integer() and treated as a non-range (see below).
+    si_as_integer() and treated as a non-range (see below).  If there
+    is no 'lower' member and 'default_lower' has been provided, that
+    value will be used for the lower number.
 
     Returns a dict containing memebers 'lower' and 'upper', both
     integers.  For non-ranges, both will be identical.
 
     Raises ValueError if something doesn't make sense.
+
     """
 
     if type(value) in [ int, str, unicode ]:
         result = si_as_integer(value)
         return { "lower": result, "upper": result }
 
+    if type(default_lower) != int:
+        raise ValueError("Default lower value must be integer")
+
     # TODO: Complain about anything else in the input?
 
     result = {}
+
+    if "lower" not in value:
+        # Copy this because altering it would clobber the original (not cool)
+        vrange = copy.copy(value)
+        vrange["lower"] = default_lower
+        value = vrange
 
     for member in [ "lower", "upper" ]:
         try:
@@ -134,6 +147,7 @@ if __name__ == "__main__":
     for value in [
             15,
             "16ki",
+            { "upper": 1000 },
             { "lower": 1000, "upper": 2000 },
             { "lower": 1000, "upper": "2k" },
             { "lower": "1k", "upper": 2000 },
@@ -141,11 +155,7 @@ if __name__ == "__main__":
             { "lower": "2k", "upper": "1k" }
             ]:
         try:
-            returned = si_range(value)
+            returned = si_range(value, default_lower=0)
             print value, "->", returned
         except Exception as ex:
             print value, "-> Exception:", ex
-
-
-
-
