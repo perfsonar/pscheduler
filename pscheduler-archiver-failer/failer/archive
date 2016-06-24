@@ -11,14 +11,13 @@ random.seed()
 
 if random.random() > 0.8:
     json = {
-        'succeeded': True
+        "succeeded": True
         }
 else:
     json = {
-        'succeeded': False,
-        'retry': 'PT10S'
+        "succeeded": False,
+        "error": "Induced random failure",
+        "retry": "PT10S"
         }
-    sys.stderr.write("Induced random failure.\n")
-    
 
 pscheduler.succeed_json(json)

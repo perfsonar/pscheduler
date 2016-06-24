@@ -830,6 +830,8 @@ was successful, {\tt 1} if there was an error related to the input or
 Archivers are plug-ins which transfer the results of a run to
 long-term storage.
 
+\todo{Flesh this out.}
+
 
 \subsubsection{enumerate}
 
@@ -884,18 +886,26 @@ may be intermittent such as performing DNS lookups or determining if a
 web server answers.
 
 \calloutitem{Standard Input} JSON containing the {\tt data} element of
-a \jsontype{ArchiveSpecification}.  If the archive specification
-contained no {\tt data} element, the standard input will be the JSON
-{\tt null} value.
+an \jsontype{ArchiveSpecification}.  If the archive specification
+contained no {\tt data} element, the standard input will be an empty
+JSON object (i.e., {\tt \{ \}}).
 
-\calloutitem{Standard Output} None.
+\calloutitem{Standard Output} A JSON object containing the following pairs:
+
+\begin{itemize}
+\item \typeditem{valid}{Boolean} An indication of whether or not the
+  input was valid.
+
+\item \typeditem{error}{String} if {\tt valid} was \false, a plain
+  text message indicating the reason.
+\end{itemize}
+
 
 \calloutitem{Standard Error} Empty if successful, plain text error
-messages describing any errors.
+messages describing any errors other than the data being invald.
 
-\calloutitem{Exit Status} {\tt 0} if successful and the JSON was
-valid, {\tt 1} if the JSON was invalid or {\tt 2} if there was an
-error unrelated to the input.
+\calloutitem{Exit Status} {\tt 0} if successful, {\tt 1} if there was
+any error unrelated to the input.
 
 
 \subsubsection{archive}
@@ -934,22 +944,26 @@ the attempt to archive the run went, containing the following pairs:
 \begin{itemize}
 \item \typeditem{succeeded}{Boolean} Whether or not the attempt to archive
 the run succeeded.
+\item \typeditem{error}{String} An optional explanation of why the
+  attempt to archive the run did not succeed.
 \item \typeditem{retry}{Duration} The minimum amount of time that
   should elapse before the next attempt.  Not provided if {\tt
-    succeeded} is \false.
+    succeeded} is \true\  or no further attempts should be made to
+  archive the run.
 \end{itemize}
 
 \example
 \begin{lstlisting}[language=json,firstnumber=1]
 {
-    "succeeded": false
+    "succeeded": false,
+    "error": "Unable to connect: Unknown host 'badhost'",
     "retry": "PT15M"
 }
 \end{lstlisting}
 
 
 \calloutitem{Standard Error} Empty if successful, plain text error
-messages on error.
+messages describing any problem unrelated to the input.
 
 \calloutitem{Exit Status} {\tt 0} if successful, {\tt 1} if there was
 an error.  Note that in this context, an error means a problem running

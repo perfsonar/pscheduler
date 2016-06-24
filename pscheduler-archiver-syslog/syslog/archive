@@ -8,7 +8,7 @@ import syslog
 
 json = pscheduler.json_load(exit_on_error=True)
 
-
+errors = ()
 
 try:
     ident = json['data']['ident']
@@ -45,7 +45,7 @@ except KeyError:
 try:
     facility = facilities[facility_str]
 except KeyError:
-    pscheduler.fail("Invalid facility")
+    errors.append("Invalid facility")
 
 
 
@@ -67,8 +67,13 @@ except KeyError:
 try:
     priority = priorities[priority_str]
 except KeyError:
-    pscheduler.fail("Invalid priority '%s'" % priority_str)
+    errors.append("Invalid priority '%s'" % priority_str)
 
+if errors:
+    pscheduler.succeed_json({
+        "succeeded": False,
+        "error": '; '.join(errors)
+    })
 
 
 try:
@@ -77,6 +82,10 @@ try:
     syslog.syslog(priority, pscheduler.json_dump(json['result']))
     syslog.closelog()
 except Exception as ex:
-    pscheduler.fail("Failed to log result: " + str(ex))
+    pscheduler.succeed_json({
+        "succeeded": False,
+        "error": "Failed to log result: " + str(ex)
+    })
+
 
 pscheduler.succeed_json({'succeeded': True})

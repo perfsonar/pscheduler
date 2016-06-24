@@ -1,81 +1,68 @@
 #!/usr/bin/python
 #
-# Validate data for the bitbucket archiver
+# Validate data for the syslogarchiver
 #
 
 import pscheduler
 
-json = pscheduler.json_load(exit_on_error=True)
-
-if json is None:
-    pscheduler.succeed()
-
 try:
-    if type(json['ident']) not in (unicode, str):
-        pscheduler.fail("Invalid ident; must be string or unicode.")
-    del json['ident']
-except KeyError:
-    pass    # Missing is okay.
+    json = pscheduler.json_load()
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+        })
 
+data_validator = {
+    "type": "object",
+    "properties": {
+        "ident": { "$ref": "#/pScheduler/String" },
+        "facility": {
+            "type": "string",
+            "enum": [
+                "kern",
+                "user",
+                "mail",
+                "daemon",
+                "auth",
+                "lpr",
+                "news",
+                "uucp",
+                "cron",
+                "syslog",
+                "local0",
+                "local1",
+                "local2",
+                "local3",
+                "local4",
+                "local5",
+                "local6",
+                "local7"
+            ]
+        },
+        "priority": {
+            "type": "string",
+            "enum": [
+                "emerg",
+                "alert",
+                "crit",
+                "err",
+                "warning",
+                "notice",
+                "info",
+                "debug"
+            ]
+        }
+    },
+    "additionalProperties": False
+}
 
-facilities = [
-    'kern',
-    'user',
-    'mail',
-    'daemon',
-    'auth',
-    'lpr',
-    'news',
-    'uucp',
-    'cron',
-    'syslog',
-    'local0',
-    'local1',
-    'local2',
-    'local3',
-    'local4',
-    'local5',
-    'local6',
-    'local7'
-    ]
+valid, error = pscheduler.json_validate(json, data_validator)
 
-try:
-    facility = json['facility']
-    if type(facility) not in (unicode, str):
-        pscheduler.fail("Invalid facility; must be a string.")
-    if facility not in facilities:
-        pscheduler.fail("Invalid facility.")
-    del json['facility']
-except KeyError:
-    pass    # Missing is okay.
-
-
-priorities = [
-    'emerg',
-    'alert',
-    'crit',
-    'err',
-    'warning',
-    'notice',
-    'info',
-    'debug'
-    ]
-
-try:
-    priority = json['priority']
-    if type(priority) not in (unicode, str):
-        pscheduler.fail("Invalid priority; must be a string.")
-    if priority not in priorities:
-        pscheduler.fail("Invalid priority.")
-    del json['priority']
-except KeyError:
-    pass    # Missing is okay.
-
-
-
-# Anything left in the JSON is bogus.
-if len(json) > 0:
-    pscheduler.fail("Found unrecognized elements in JSON.")
-
-
-pscheduler.succeed()
+if not valid:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": error
+        })
+    
+pscheduler.succeed_json({ "valid": True })
