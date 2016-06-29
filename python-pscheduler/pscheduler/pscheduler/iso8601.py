@@ -2,6 +2,7 @@
 Functions for dealing with ISO 8601 timestamps and intervals
 """
 
+import datetime
 import isodate
 
 from tzlocal import get_localzone
@@ -9,11 +10,14 @@ from tzlocal import get_localzone
 
 def iso8601_as_timedelta(iso):
     """Convert an ISO 8601 string to a timdelta"""
+    # TODO: Decide what to do with months or years.
     try:
-        return isodate.parse_duration(iso)
+        duration = isodate.parse_duration(iso)
     except isodate.isoerror.ISO8601Error:
-        # TODO: Throw a ValueError?
-        return None
+        raise ValueError("Invalid ISO duration")
+    if type(duration) != datetime.timedelta:
+        raise ValueError("Cannot support months or years")
+    return duration
 
 
 def timedelta_as_iso8601(timedelta):
@@ -30,9 +34,7 @@ def iso8601_as_datetime(iso,
             parsed = get_localzone().localize(parsed)
         return parsed
     except isodate.isoerror.ISO8601Error as ex:
-        print ex
-        # TODO: Throw a ValueError?
-        return None
+        raise ValueError("Invalid ISO8601 date")
 
 # TODO: This function exists in datetime as .isoformat()
 def datetime_as_iso8601(datetime):
