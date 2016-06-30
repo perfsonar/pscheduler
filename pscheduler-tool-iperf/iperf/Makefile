@@ -9,9 +9,10 @@ FILES=\
 	duration \
 	enumerate \
 	merged-results \
-	iperf_defaults.py\
 	participant-data \
 	run \
+	iperf_parser.py \
+	iperf_defaults.py\
 
 
 DOCS=\

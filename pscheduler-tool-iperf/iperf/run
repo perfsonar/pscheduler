@@ -12,8 +12,8 @@ import tempfile
 import shutil
 import sys
 import time
+import iperf_parser
 from iperf_defaults import *
-
 
 # track when this run starts
 start_time = datetime.datetime.now()
@@ -36,9 +36,8 @@ except KeyError as e:
     pscheduler.fail("Missing required key in run input: %s" % e)
 except:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
-    
-results = { 'succeeded': False }
 
+    
 
 def run_client():    
     time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to boot
@@ -55,9 +54,10 @@ def run_client():
 
     # duration
     iperf_args.append('-t')
-    iperf_args.append(duration)
+    iperf_args.append(input['test']['spec']['duration'])
 
-    logger.debug("Running command: %s" % " ".join(iperf_args))
+
+    logger.info("Running command: %s" % " ".join(iperf_args))
 
     try:
         status, stdout, stderr = pscheduler.run_program(iperf_args)
@@ -72,26 +72,29 @@ def run_client():
         iperf_error = ''
         for line in stderr:
             iperf_error += line.rstrip().lstrip() + " "
-        pscheduler.fail("iperf returned an error: %s" % iperf_error)
+        pscheduler.fail("iperf returned an error: %s" %iperf_error)
 
     logger.debug("Stdout = %s" % stdout)
     logger.debug("Stderr = %s" % stderr)
 
+    lines = stdout.split("\n")    
 
-    lines = stdout.split("\n")
+    logger.debug("Lines are %s " % lines)
 
-    for line in lines:
-        logger.debug(line)
-        
-    results['succeeded'] = True
+    seen_header = False
 
+    results = iperf_parser.parse_output(lines)
+    results['diag'] = stdout
+
+    return results
 
 def run_server():
 
     #init command
     iperf_args = ['/usr/bin/iperf', '-s' ]
     
-    logger.debug("Running command: %s" % " ".join(iperf_args))
+    logger.info("Running command: %s" % " ".join(iperf_args))
+
     try:
         status, stdout, stderr = pscheduler.run_program(iperf_args,
                                                         timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)),
@@ -110,18 +113,23 @@ def run_server():
     #log stdout in debug mode
     for line in stdout:
         logger.debug(line)
-        
-    results['succeeded'] = True
+          
+    return {"succeeded": True}
 
 
 
 #determine whether we are the client or server mode for iperf
-if participant == 0:
-    run_client()
-elif participant == 1:
-    run_server()
-else:
-    pscheduler.fail("Invalid participant.")
+results = {}
+try:
+    if participant == 0:
+        results = run_client()
+    elif participant == 1:
+        results = run_server()
+    else:
+        pscheduler.fail("Invalid participant.")
+except Exception as e:
+    logger.error("Exception %s" % e);
 
-logger.debug("Results: %s" % results)
+logger.info("Results: %s" % results)
+
 pscheduler.succeed_json(results)

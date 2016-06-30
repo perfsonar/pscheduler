@@ -6,38 +6,22 @@
 # test-standard result.
 #
 
-import logging
+
 import pscheduler
 
-#TODO: Setup dynamically
-logging.basicConfig(filename='/var/log/pscheduler.log', format='%(asctime)s %(levelname)s: %(message)s', level=logging.DEBUG)
+logger = pscheduler.Log()
 
 input = pscheduler.json_load(exit_on_error=True)
-logging.debug("input to merged results: %s" % input)
+logger.warning("input to merged results: %s" % input)
 
 results = {'succeeded': False}
 
 try:
     result_list = input['results']
 except KeyError as e:
-    logging.error("merged-result error %s" % e)
+    logger.error("merged-result error %s" % e)
     pscheduler.fail("Missing required key in merged-result input: %s" % e)
 
-if len(result_list) == 1:
-    results = result_list[0]
-elif len(result_list) == 2:
-    if result_list[0] is None or result_list[1] is  None:
-        pass
-    elif 'succeeded' not in result_list[0] or 'succeeded' not in result_list[0]:
-        pass    
-    else:
-        succeeded = result_list[0]['succeeded'] and result_list[1]['succeeded']
-        if succeeded:
-            results = result_list[0]
-        else:
-            results["succeeded"] = False
-else:
-    pscheduler.fail("Invalid merged-results input. Can only handle up to 2 results. ")
 
-logging.debug("merged results: %s" % results)
+results = result_list[0]
 pscheduler.succeed_json(results)

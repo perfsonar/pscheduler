@@ -7,6 +7,8 @@ import jsontemplate
 import pscheduler
 import sys
 
+logger = pscheduler.Log()
+
 try:
    format = sys.argv[1]
 except IndexError:
@@ -14,12 +16,13 @@ except IndexError:
 
 json = pscheduler.json_load(exit_on_error=True)
 
+logger.debug("json is %s" % json)
+
 if format == 'text/plain':
 
    template = """
-Packets Sent ......... {.section packets-sent}{packets-sent}{.or}Not Reported{.end}
-Packets Lost ....... {.section packets-lost}{packets-lost}{.or}Not Reported{.end}
-   """
+{.section diag}{diag}{.end}
+"""
 else:
 
    pscheduler.fail("Unsupported format '%s'" % format)
