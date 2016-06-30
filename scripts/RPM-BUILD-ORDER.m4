@@ -39,7 +39,9 @@ python-dnspython
 ifelse(REDHAT_RELEASE_MAJOR,7,
     python-functools32,)
 python-isodate
+python-netaddr
 python-ntplib
+python-py-radix
 python-pytz
 python-repoze.lru
 python-subprocess32
@@ -90,18 +92,22 @@ pscheduler-core
 # Tests
 pscheduler-test-idle
 #pscheduler-test-owdelay
-pscheduler-test-throughput
+#pscheduler-test-throughput
+pscheduler-test-rtt
 pscheduler-test-simplestream
 pscheduler-test-trace
 
 # Tools
 # TODO: This has dependencies outside the local tree.
 #pscheduler-tool-owping
-pscheduler-tool-iperf
+#pscheduler-tool-iperf
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-snooze
+pscheduler-tool-ping
 pscheduler-tool-tracepath
+pscheduler-tool-traceroute
+pscheduler-tool-paris-traceroute
 
 # Archivers
 pscheduler-archiver-bitbucket

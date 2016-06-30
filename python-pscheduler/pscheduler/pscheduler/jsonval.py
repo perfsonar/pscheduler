@@ -3,6 +3,7 @@ Functions for validating JSON against the pScheduler JSON and standard
 values dictionaries
 """
 
+import copy
 import jsonschema
 
 
@@ -31,6 +32,15 @@ __dictionary__ = {
         },
 
     "Array": { "type": "array" },
+
+    "AS": {
+        "type": "object",
+        "properties": {            
+            "number": { "$ref": "#/pScheduler/Cardinal" },
+            "owner": { "type": "string" },
+            },
+        "required": [ "number" ]
+        },
 
     "Boolean": { "type": "boolean" },
 
@@ -66,12 +76,45 @@ __dictionary__ = {
 
     "Integer": { "type": "integer" },
 
+    "IntegerSI": {
+        "oneOf": [
+            { "type": "integer" },
+            {
+                "type": "string",
+                "pattern": "^(-?[0-9]+(\.[0-9]+)?)\s*([kmgtpezy][i]?)?$"
+            }
+            ]
+        },
+
     "IPAddress": {
         "oneOf": [
             { "type": "string", "format": "ipv4" },
             { "type": "string", "format": "ipv6" },
             ]
         },
+
+    "IPv4": { "type": "string", "format": "ipv4" },
+
+    "IPv6": { "type": "string", "format": "ipv6" },
+
+    "IPv4CIDR": {
+        "type": "string",
+        # Source: http://blog.markhatton.co.uk/2011/03/15/regular-expressions-for-ip-addresses-cidr-ranges-and-hostnames
+        "pattern":r'^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$'
+        },
+
+    "IPv6CIDR": {
+        "type": "string",
+        # Source: http://www.regexpal.com/93988
+        "pattern": r'^s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:)))(%.+)?s*(\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))?$'
+    },
+
+    "IPCIDR": {
+        "oneOf": [
+            { "$ref": "#/pScheduler/IPv4CIDR" },
+            { "$ref": "#/pScheduler/IPv6CIDR" },
+        ]
+    },
 
     "IPPort": {
         "type": "integer",
@@ -93,6 +136,25 @@ __dictionary__ = {
         },
 
     "String": { "type": "string" },
+
+    "StringMatch": {
+        "type": "object",
+        "properties": {
+            "style": {
+                "type": "string",
+                "enum": [
+                    "exact",
+                    "contains",
+                    "regex"
+                    ],
+            },
+            "match": { "$ref": "#/pScheduler/String" },
+            "case-insensitive": { "$ref": "#/pScheduler/Boolean" },
+            "invert": { "$ref": "#/pScheduler/Boolean" },
+        },
+        "additionalProperties": False,
+        "required": [ "style", "match" ]
+    },
 
     "Timestamp": {
         "type": "string",
@@ -320,6 +382,7 @@ def json_validate(json, skeleton):
         type         (array, boolean, integer, null, number, object, string)
         items        (Only when type is array)
         properties   (Only when type is object)
+        additionalProperties  (Only when type is an object)
         required     Required items
         local        (Optional; see below.)
 
@@ -348,8 +411,12 @@ def json_validate(json, skeleton):
 
     # Build up the schema from the dictionaries and user input.
 
-    schema = __default_schema__
-    for element in [ 'type', 'items', 'properties', 'required', 'local' ]:
+    # A shallow copy is sufficient for this since we don't clobber the
+    # innards.
+    schema = copy.copy(__default_schema__)
+
+    for element in [ 'type', 'items', 'properties', 'additionalProperties',
+                     'required', 'local' ]:
         if element in skeleton:
             schema[element] = skeleton[element]
 
@@ -364,8 +431,10 @@ def json_validate(json, skeleton):
         jsonschema.validate(json, schema,
                             format_checker=jsonschema.FormatChecker())
     except jsonschema.exceptions.ValidationError as ex:
-        # TODO: Need something human-readable here.
-        return (False, str(ex))
+        return (False, "At %s: %s" % (
+            '/' + ('/'.join([str(x) for x in ex.absolute_path])),
+            ex.message
+            ))
 
 
     return (True, 'OK')

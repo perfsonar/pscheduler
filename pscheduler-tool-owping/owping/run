@@ -18,7 +18,7 @@ from subprocess import Popen, PIPE
 start_time = datetime.datetime.now()
 
 #Init logging
-log = pscheduler.Log(prefix="tool-owping")
+log = pscheduler.Log(prefix="tool-owping", quiet=True)
 
 #DEBUGGING: Set static values below
 # participant = 1

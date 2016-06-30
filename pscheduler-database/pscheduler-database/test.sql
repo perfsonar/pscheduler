@@ -11,7 +11,7 @@ DROP TABLE IF EXISTS test CASCADE;
 CREATE TABLE test (
 
 	-- Row identifier
-	id		SERIAL
+	id		BIGSERIAL
 			PRIMARY KEY,
 
 	-- Original JSON
@@ -78,7 +78,7 @@ CREATE OR REPLACE FUNCTION test_upsert(new_json JSONB)
 RETURNS VOID
 AS $$
 DECLARE
-    existing_id INTEGER;
+    existing_id BIGINT;
     new_name TEXT;
 BEGIN
 
@@ -121,7 +121,7 @@ DECLARE
     test_enumeration JSONB;
 BEGIN
     run_result := pscheduler_internal(ARRAY['list', 'test']);
-    IF run_result.status != 0 THEN
+    IF run_result.status <> 0 THEN
        RAISE EXCEPTION 'Unable to list installed tests: %', run_result.stderr;
     END IF;
 
@@ -130,7 +130,7 @@ BEGIN
     FOR test_name IN (select * from jsonb_array_elements_text(test_list))
     LOOP
 	run_result := pscheduler_internal(ARRAY['invoke', 'test', test_name, 'enumerate']);
-        IF run_result.status != 0 THEN
+        IF run_result.status <> 0 THEN
          RAISE EXCEPTION 'Test "%" failed to enumerate: %',
 	       test_name, run_result.stderr;
         END IF;

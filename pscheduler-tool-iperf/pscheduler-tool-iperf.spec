@@ -24,8 +24,6 @@ requires:	iperf
 BuildRequires:	pscheduler-rpm
 
 
-%define directory %{_includedir}/make
-
 %description
 iperf tool class for pScheduler
 

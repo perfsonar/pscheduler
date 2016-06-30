@@ -25,13 +25,13 @@ except KeyError:
 try:
     timeout = pscheduler.iso8601_as_timedelta(json['spec']['timeout'])
 except KeyError:
-    pscheduler.fail("Missing timeout.")
+    timeout = None
 except ValueError:
     pscheduler.fail("Invalid timeout.")
 
 try:
     dawdle = pscheduler.iso8601_as_timedelta(json['spec']['dawdle'])
-    if dawdle * 2 > timeout:
+    if timeout is not None and dawdle * 2 > timeout:
         pscheduler.fail("Dawdle duration must be less than half the timeout.")
 except KeyError:
     pass  # No dawdle is okay.

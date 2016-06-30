@@ -49,6 +49,10 @@ done
 
 
 
+
+
+
+
 while true
 do
     clear
@@ -57,7 +61,7 @@ do
 	"$(date '+%Y-%m-%d %H:%M:%S')"
 
 
-    psql pscheduler <<EOF
+    PGPASSFILE=__PGPASSFILE__ psql -U __PGUSER__ __PGDATABASE__ <<EOF
 
 SELECT
   ${RUN_ID} AS run,

@@ -16,7 +16,7 @@ if not valid:
 
 result = pscheduler.speccli_build_args(json, 
                                        strings=[
-        ( 'receiver', 'receiver' ),
+        ( 'dest', 'dest' ),
         ( 'dawdle', 'dawdle' ),
         ( 'test-material', 'test-material' ),
         ( 'timeout', 'timeout' ),

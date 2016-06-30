@@ -27,7 +27,11 @@ FILES=\
 	schedule \
 	\
 	boot \
-	ticker
+	ticker \
+	\
+	auth_identifier \
+	auth_ip \
+
 
 FILES_TEARDOWN=\
 	database-drop

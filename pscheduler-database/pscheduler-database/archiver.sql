@@ -11,7 +11,7 @@ DROP TABLE IF EXISTS archiver CASCADE;
 CREATE TABLE archiver (
 
 	-- Row identifier
-	id		SERIAL
+	id		BIGSERIAL
 			PRIMARY KEY,
 
 	-- Original JSON
@@ -49,12 +49,12 @@ DROP TABLE IF EXISTS archiver_test CASCADE;
 CREATE TABLE archiver_test (
 
 	-- Archiver which says it can handle a test
-	archiver	INTEGER
+	archiver	BIGINT
 			REFERENCES archiver(id)
 			ON DELETE CASCADE,
 
 	-- The test the archiver says it can handle
-	test		INTEGER
+	test		BIGINT
 			REFERENCES test(id)
 			ON DELETE CASCADE
 );
@@ -103,7 +103,7 @@ RETURNS TRIGGER
 AS $$
 DECLARE
     test_name TEXT;
-    test_id INTEGER;
+    test_id BIGINT;
 BEGIN
 
     -- Update the breaker table between this and test.
@@ -158,7 +158,7 @@ CREATE OR REPLACE FUNCTION archiver_upsert(new_json JSONB)
 RETURNS VOID
 AS $$
 DECLARE
-    existing_id INTEGER;
+    existing_id BIGINT;
     new_name TEXT;
 BEGIN
 
@@ -201,7 +201,7 @@ DECLARE
     archiver_enumeration JSONB;
 BEGIN
     run_result := pscheduler_internal(ARRAY['list', 'archiver']);
-    IF run_result.status != 0 THEN
+    IF run_result.status <> 0 THEN
        RAISE EXCEPTION 'Unable to list installed archivers: %', run_result.stderr;
     END IF;
 
@@ -211,7 +211,7 @@ BEGIN
     LOOP
 
 	run_result := pscheduler_internal(ARRAY['invoke', 'archiver', archiver_name, 'enumerate']);
-        IF run_result.status != 0 THEN
+        IF run_result.status <> 0 THEN
          RAISE EXCEPTION 'Archiver "%" failed to enumerate: %',
 	       archiver_name, run_result.stderr;
         END IF;
@@ -245,6 +245,7 @@ DECLARE
     archiver_name TEXT;
     candidate_data JSONB;
     run_result external_program_result;
+    validate_result JSONB;
 BEGIN
     IF NOT candidate ? 'name' THEN
         RAISE EXCEPTION 'No name specified in archiver.';
@@ -264,8 +265,18 @@ BEGIN
 
     run_result := pscheduler_internal(ARRAY['invoke', 'archiver',
     	       archiver_name, 'data-is-valid'], candidate_data::TEXT );
-    IF run_result.status != 0 THEN
-        RAISE EXCEPTION 'Bad data passed to archiver "%": %', archiver_name, run_result.stderr;
+    IF run_result.status <> 0 THEN
+        RAISE EXCEPTION 'Archiver "%" failed to validate: %', archiver_name, run_result.stderr;
+    END IF;
+
+    validate_result := run_result.stdout::JSONB;
+
+    IF NOT (validate_result ->> 'valid') THEN
+        IF validate_result ? 'reason' THEN
+            RAISE EXCEPTION 'Invalid data for archiver "%": %', archiver_name, validate_result ->> 'reason';
+        ELSE
+            RAISE EXCEPTION 'Invalid data for archiver "%"', archiver_name;
+        END IF;
     END IF;
 
 END;

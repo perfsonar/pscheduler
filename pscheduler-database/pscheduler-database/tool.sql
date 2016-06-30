@@ -11,7 +11,7 @@ DROP TABLE IF EXISTS tool CASCADE;
 CREATE TABLE tool (
 
 	-- Row identifier
-	id		SERIAL
+	id		BIGSERIAL
 			PRIMARY KEY,
 
 	-- Original JSON
@@ -204,7 +204,7 @@ DECLARE
     tool_enumeration JSONB;
 BEGIN
     run_result := pscheduler_internal(ARRAY['list', 'tool']);
-    IF run_result.status != 0 THEN
+    IF run_result.status <> 0 THEN
        RAISE EXCEPTION 'Unable to list installed tools: %', run_result.stderr;
     END IF;
 
@@ -214,7 +214,7 @@ BEGIN
     LOOP
 
 	run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_name, 'enumerate']);
-        IF run_result.status != 0 THEN
+        IF run_result.status <> 0 THEN
          RAISE EXCEPTION 'Tool "%" failed to enumerate: %',
 	       tool_name, run_result.stderr;
         END IF;
@@ -241,7 +241,7 @@ $$ LANGUAGE plpgsql;
 -- Determine whether or not a tool is willing to run a specific test.
 
 
-CREATE OR REPLACE FUNCTION tool_can_run_test(tool_id INTEGER, test JSONB)
+CREATE OR REPLACE FUNCTION tool_can_run_test(tool_id BIGINT, test JSONB)
 RETURNS BOOLEAN
 AS $$
 DECLARE

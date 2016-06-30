@@ -64,6 +64,9 @@ pairs below.  \seejson
 
 \typeditem{schema}{Cardinal} The schema version of this specification.
 
+\typeditem{algorithm}{String} The algorithm to be used in performing the
+trace.  Valid values are {\tt paris-traceroute} and {\tt mda}.
+
 \typeditem{dest}{Host} The network address or hostname of the receiver.
 
 \stdvalue{ip-version} If {\tt dest} provides clues about the type of
@@ -116,9 +119,6 @@ to be sent after a probe is sent.
 \typeditem{send-wait}{Duration} The amount of time to wait between
 probes.
 
-\typeditem{as}{Boolean} Whether or not the AS for each hop should be
-determined.  The default is \false.
-
 \todo{How many of the more esoteric {\tt traceroute} options do we
   want to support?}
 
@@ -165,34 +165,13 @@ specification is \false.
 \typeditem{rtt}{Duration} The round-trip time between the originator
 and the responding host.
 
-\typeditem{as}{Cardinal} The autonomous system number of the host if
-known and {\tt as} in the test specification is \true.
+\typeditem{pmtu}{Cardinal} The maximum transmission unit along the path
+to the host, if known.
 
-\typeditem{error}{String} If there was an error reported for this hop,
-one of the values enumerated below.
+\typeditem{as}{AS} The autonomous system number of the host if
+known.
 
-\begin{itemize}
-\item ICMP Type 3 errors, from RFC 792:
-\subitem {\tt net-unreachable}
-\subitem {\tt host-unreachable}
-\subitem {\tt protocol-unreachable}
-\subitem {\tt port-unreachable}
-\subitem {\tt fragmentation-needed-and-df-set}
-\subitem {\tt source-route-failed}
-\subitem {\tt destination-network-unknown}
-\subitem {\tt destination-host-unknown}
-\subitem {\tt source-host-isolated}
-\subitem {\tt destination-network-administratively-prohibited}
-\subitem {\tt destination-host-administratively-prohibited}
-\subitem {\tt network-unreachable-for-type-of-service}
-\subitem {\tt icmp-destination-host-unreachable-tos}
-
-\item ICMP Type 3 errors, from RFC 1812:
-\subitem {\tt communication-administratively-prohibited}
-\subitem {\tt host-precedence-violation}
-\subitem {\tt precedence-cutoff-in-effect}
-\end{itemize}
-
+\typeditem{error}{ICMPError} Any error reported for this hop.
 
 \subsection{Example}
 \begin{lstlisting}[language=json]

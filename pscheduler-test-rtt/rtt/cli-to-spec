@@ -1,0 +1,149 @@
+#!/usr/bin/python
+#
+# Convert comamnd-line options to a test specification
+#
+
+import optparse
+import pscheduler
+import sys
+
+if len(sys.argv) > 1:
+
+   # Args are on the command line
+   args = sys.argv[1:]
+
+else:
+
+   # Args are in a JSON array on stdin
+   json_args = pscheduler.json_load(exit_on_error=True)
+   args = []
+
+   if type(json_args) != list:
+      pscheduler.fail("Invalid JSON for this operation")
+   for arg in json_args:
+      if type(arg) not in (unicode, str, int, float):
+         pscheduler.fail("Invalid JSON for this operation")
+   args = [ str(arg) for arg in json_args ]
+
+
+
+# Gargle the arguments
+
+opt_parser = optparse.OptionParser()
+
+opt_parser.add_option("--count",
+                      help="Test count",
+                      action="store", type="int",
+                      dest="count")
+
+opt_parser.add_option("--dest",
+                      help="Destination host",
+                      action="store", type="string",
+                      dest="dest")
+
+opt_parser.add_option("--flowlabel",
+                      help="Flow label",
+                      action="store", type="int",
+                      dest="flowlabel")
+
+opt_parser.add_option("--hostnames",
+                      help="Look up hostnames from IPs",
+                      action="store_true",
+                      dest="hostnames")
+opt_parser.add_option("--no-hostnames",
+                      help="Don't look up hostnames from IPs",
+                      action="store_false",
+                      dest="hostnames")
+
+opt_parser.add_option("--interval",
+                      help="Time to wait between packets sent",
+                      action="store", type="string",
+                      dest="interval")
+
+opt_parser.add_option("--source",
+                      help="Source address or interface",
+                      action="store", type="string",
+                      dest="source")
+
+opt_parser.add_option("--suppress-loopback",
+                      help="Suppress multicast loopback",
+                      action="store_true",
+                      dest="suppress_loopback")
+opt_parser.add_option("--no-suppress-loopback",
+                      help="Don't suppress multicast loopback",
+                      action="store_false",
+                      dest="suppress_loopback")
+
+opt_parser.add_option("--tos",
+                      help="IP TOS",
+                      action="store", type="int",
+                      dest="tos")
+
+opt_parser.add_option("--length",
+                      help="Packet length",
+                      action="store", type="int",
+                      dest="length")
+
+opt_parser.add_option("--ttl",
+                      help="Time to live",
+                      action="store", type="int",
+                      dest="ttl")
+
+opt_parser.add_option("--deadline",
+                      help="Deadline for all measurements to complete",
+                      action="store", type="string",
+                      dest="deadline")
+
+opt_parser.add_option("--timeout",
+                      help="Timeout for each round trip",
+                      action="store", type="string",
+                      dest="timeout")
+
+
+
+(options, remaining_args) = opt_parser.parse_args(args)
+if len(remaining_args) != 0:
+   pscheduler.fail("Found superfluous arguments on command line.")
+
+
+result = { 'schema': 1 }
+
+
+if options.count is not None:
+   result['count'] = options.count
+
+if options.dest is not None:
+   result['dest'] = options.dest
+
+if options.flowlabel is not None:
+   result['flowlabel'] = options.flowlabel
+
+if options.hostnames is not None:
+   result['hostnames'] = options.hostnames
+
+if options.interval is not None:
+   result['interval'] = options.interval
+
+if options.source is not None:
+   result['source'] = options.source
+
+if options.suppress_loopback is not None:
+   result['suppress-loopback'] = options.suppress_loopback
+
+if options.tos is not None:
+   result['tos'] = options.tos
+
+if options.length is not None:
+   result['length'] = options.length
+
+if options.ttl is not None:
+   result['ttl'] = options.ttl
+
+if options.deadline is not None:
+   result['deadline'] = options.deadline
+
+if options.timeout is not None:
+   result['timeout'] = options.timeout
+
+
+pscheduler.succeed_json(result)

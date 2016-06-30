@@ -12,7 +12,7 @@ import sys
 import time
 import traceback
 
-log = pscheduler.Log(prefix="simplestreamer")
+log = pscheduler.Log(prefix="simplestreamer", quiet=True)
 
 input = pscheduler.json_load(exit_on_error=True);
 
@@ -40,11 +40,16 @@ if not 'participant-data' in input:
 # TODO: This should be turned into a class and put into the pscheduler
 # module.
 start_time = datetime.datetime.now()
-timeout = pscheduler.iso8601_as_timedelta(input['test']['spec']['timeout'])
+try:
+    timeout = pscheduler.iso8601_as_timedelta(input['test']['spec']['timeout'])
+except KeyError:
+    timeout = pscheduler.iso8601_as_timedelta('PT5S')
 end_time = datetime.datetime.now() + timeout
 
 def time_left():
     return pscheduler.timedelta_as_seconds(end_time - datetime.datetime.now())
+    
+    
 
 random.seed()
 
@@ -78,6 +83,7 @@ if participant == 0:
         dawdle = pscheduler.timedelta_as_seconds(
             pscheduler.iso8601_as_timedelta(input['test']['spec']['dawdle']) )
         dawdle *= random.random()
+        log.debug("Dawdling %s", dawdle)
         time.sleep(dawdle)
     except KeyError:
         dawdle = 0
@@ -102,22 +108,28 @@ if participant == 0:
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-            server_address = (input['test']['spec']['receiver'],
+            server_address = (input['test']['spec']['dest'],
                               input['participant-data'][1]['listen-port'])
+            log.debug("Connecting to %s", str(server_address))
+            log.debug("Timeout is %s", str(time_left))
             sock.settimeout(time_left())
             sock.connect(server_address)
+            log.debug("Connected")
             # TODO: How do we check for success?
             sock.sendall(material)
+            log.debug("Sent")
             succeeded = True
             error = None
             break
         except Exception as ex:
             error = "Sender exception: " + str(ex) \
                 + " " + traceback.format_exc()
+            log.debug(error)
+            log.debug("Sleeping %s", sleep_time)
             time.sleep(sleep_time)
 
         tries -= 1
-
+        log.debug("%d tries left", tries)
 
     results = {
         'succeeded': succeeded,
@@ -133,7 +145,7 @@ if participant == 0:
 elif participant == 1:
 
     #
-    # Receiver
+    # Dest
     #
 
     succeeded = False

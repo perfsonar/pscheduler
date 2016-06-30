@@ -1,0 +1,335 @@
+#!/usr/bin/python
+#
+# Run a test.  Just the test spec is provided on stdin.
+#
+
+
+import datetime
+import icmperror
+import ipaddr
+import pscheduler
+import re
+
+log = pscheduler.Log(prefix='paris-traceroute', quiet=True)
+
+input = pscheduler.json_load(exit_on_error=True);
+
+# TODO: Validate the input
+# TODO: Verify can-run
+
+participant = input['participant']
+
+if participant != 0:
+    pscheduler.fail("Invalid participant.")
+
+spec = input['test']['spec']
+
+
+run_timeout = datetime.timedelta()
+
+
+# Resolve the destination.  If it doesn't look like an IP, resolve it
+# down to one so the program doesn't get bogged down doing it.
+
+dest = spec['dest']
+
+try:
+    dest_ip_addr = ipaddr.IPAddress(dest)
+except ValueError:
+    dest_ip_addr = None
+
+if dest_ip_addr is None:
+    dest_ip_map = pscheduler.dns_bulk_resolve([dest])
+    dest_ip_addr = dest_ip_map[dest]
+
+if dest_ip_addr is None:
+    pscheduler.succeed_json( {
+            'succeeded': False,
+            'diags': None,
+            'error': "Unable to resolve destination '%s'" % dest,
+            'result': None
+            } )
+
+
+
+#
+# Figure out how to invoke the program
+#
+
+argv = [
+    'sudo',
+    'paris-traceroute',
+    '-q', '1'
+    ]
+
+
+# algorithm
+
+try:
+    algorithm = spec['algorithm']
+    argv.append('--algorithm')
+    argv.append(algorithm)
+except KeyError:
+    pass
+
+# dest is covered later.
+
+# TODO: Determine if the destination address is IPv4 or IPv6 if it's
+# not a DNS name.
+try:
+    ipversion = spec['ip-version']
+    # TODO: Make sure this is compatible with the destination address
+    argv.append('-' + str(ipversion))
+except KeyError:
+    pass
+
+# Hold the probe type for use in TCP and UDP destination ports
+try:
+    probe_type = spec['probe-type']
+    argv.append('--' + probe_type)
+except KeyError:
+    probe_type = 'udp'
+
+# length - Not supported
+
+# fragment - Not supported
+
+try:
+    first_ttl = spec['first-ttl']
+    argv.append('--first')
+    argv.append(str(first_ttl))
+except KeyError:
+    pass
+
+# source - Not supported.
+
+try:
+    hops = spec['hops']
+    argv.append('--max-hops')
+    argv.append(str(hops))
+except KeyError:
+    hops = 30  # Program default
+    pass
+
+
+# hostnames - Always forced so we can do a better equivalent later.
+argv.append('-n')
+
+try:
+    dest_port = spec['dest_port']
+    argv.append('--dst-port')
+    argv.append(str(dest_port))
+except KeyError:
+    pass
+
+# tos - Not supported.
+
+try:
+    dest_port = spec['wait']
+    argv.append('--dst-port')
+    argv.append(str(dest_port))
+except KeyError:
+    pass
+
+
+try:
+    wait = pscheduler.iso8601_as_timedelta(spec['wait'])
+    argv.append('--wait')
+    argv.append(pscheduler.timedelta_as_seconds(wait))
+except KeyError:
+    # Program default
+    wait = datetime.timedelta(seconds=5)
+run_timeout += wait
+
+
+try:
+    send_wait = spec['send-wait']
+
+    # This has weird behavior, per the manual page:
+    #
+    # If the value is more than 10, then it specifies a number in
+    # milliseconds, else it is a number of seconds (float point values
+    # allowed too)
+    #
+    # That means the rules are:
+    #   -- Convert everything to milliseconds
+    #   -- If < 10 ms, express as a float
+
+    send_wait_delta = pscheduler.iso8601_as_timedelta(send_wait)
+    send_wait_secs = pscheduler.timedelta_as_seconds(send_wait_delta)
+    
+    if send_wait_secs >= 0.010:
+        send_wait_secs *= 1000.0
+
+    argv.append('-z')
+    argv.append(str(send_wait_value))
+except KeyError:
+    # This will be used in a calculation later.
+    send_wait = datetime.timedelta()
+    pass
+
+run_timeout += send_wait * hops
+
+
+# This must be last since it's an argument, not a switch)
+argv.append(str(dest_ip_addr))
+
+
+
+
+#
+# Run the test
+#
+
+run_string = ' '.join(argv)
+diags = run_string + '\n\n'
+
+log.debug("Running %s", run_string)
+
+# Add some run slop
+run_timeout += datetime.timedelta(seconds=5)
+log.debug("Timeout is %s", run_timeout)
+
+run_timeout_secs = pscheduler.timedelta_as_seconds(run_timeout)
+
+status, stdout, stderr \
+    = pscheduler.run_program(argv, timeout = run_timeout_secs)
+
+
+diags += stdout
+
+log.debug("Paris-traceroute exited %d: %s",
+          status, stdout if status == 0 else stderr)
+
+if status != 0:
+    pscheduler.succeed_json( {
+            'succeeded': False,
+            'diags': diags,
+            'error': stderr,
+            'result': None
+            } )
+
+
+#
+# Dissect the results
+#
+
+try:
+    as_ = spec['as']
+except KeyError:
+    as_ = False
+
+traced_hops = []
+ips = []
+last_hop = 0
+
+for line in stdout.split('\n'):
+    line = re.sub('\s+', ' ', line).strip()
+
+
+    matches = re.match('^(\d*)\s+(.*)$', line)
+    if matches is None:
+        log.debug("Discarding: %s", line)
+        continue
+
+    log.debug("Output Line: %s", line)
+
+    this_hop =  int(matches.group(1))
+
+    # Repeats of a hop replace earlier ones
+    # TODO: Does this happen in traceroute or only tracepath?
+    if this_hop == len(traced_hops):
+        log.debug("This hop is a repeat")
+        traced_hops.pop()
+
+    elements = matches.group(2).split()
+    log.debug("Line elements: %s", elements)
+
+    hop = {}
+
+    # No reply means no results
+
+    if elements[0] == '*':
+        log.debug("No reply for this hop")
+        traced_hops.append(hop)
+        continue
+
+    # IP
+
+    ip = elements.pop(0)
+    hop['ip'] = ip
+    ips.append(ip)
+
+
+    # RTT ("1234.56ms")
+
+    rtt = float(elements.pop(0)[:-2]) / 1000.0
+    rtt_delta = datetime.timedelta(seconds=rtt)
+    hop['rtt'] = pscheduler.timedelta_as_iso8601(rtt_delta)
+
+    # Anything left will be an error
+
+    if len(elements) > 0:
+        error = elements.pop(0)
+        if error[0] == '!':
+            hop['error'] = icmperror.translate(error)
+
+    traced_hops.append(hop)
+
+
+
+# Reverse-resolve the IPs if we're doing that.
+
+try:
+    hostnames = spec['hostnames']
+except KeyError:
+    hostnames = True
+
+if hostnames:
+    hosts = pscheduler.dns_bulk_resolve(ips, reverse=True, threads=len(ips))
+    for index, hop in enumerate(traced_hops):
+        try:
+            traced_hops[index]['hostname'] = hosts[hop['ip']]
+        except KeyError:
+            pass
+
+
+# Figure out ASes if we're doing that
+
+try:
+    ases = spec['as']
+except KeyError:
+    ases = True
+
+if ases:
+    ases = pscheduler.as_bulk_resolve(ips, threads=len(ips))
+    for index, hop in enumerate(traced_hops):
+        try:
+            hop_as = ases[hop['ip']]
+            if hop_as is None:
+                continue
+
+            (asn, owner) = hop_as
+            if asn is None:
+                continue
+
+            result = { 'number': asn }
+            if owner is not None:
+                result['owner'] = owner
+            traced_hops[index]['as'] = result
+        except KeyError:
+            pass
+
+
+
+# Spit out the results
+
+pscheduler.succeed_json( {
+        'schema': 1,
+        'succeeded': True,
+        'diags': diags,
+        'error': None,
+        'result': {
+            'hops': traced_hops
+            }
+        } )

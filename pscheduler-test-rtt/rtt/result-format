@@ -1,0 +1,146 @@
+#!/usr/bin/python
+#
+# Format a result
+#
+
+import jsontemplate
+import pscheduler
+import sys
+
+from validate import result_is_valid
+
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
+
+json = pscheduler.json_load(exit_on_error=True)
+
+valid, message = result_is_valid(json)
+
+if not valid:
+    pscheduler.fail(message)
+
+
+# TODO: These should do something reasonable if there are no rts in
+# the result.
+
+if format == 'text/plain':
+
+   fail_template = "Test failed."
+
+   template = None
+
+   rt_template = """{number}\t\
+{.section hostname}{hostname} ({.end}\
+{.section ip}{ip}{.or}{.section hostname}NONE{.or}No Response{.end}{.end}\
+{.section hostname}){.end}\
+{.section length}  {length} Bytes{.or}{.end}\
+{.section ttl}  TTL {ttl}{.or}{.end}\
+{.section rtt}  RTT {rtt} ms{.or}{.end}
+"""
+
+   error_template = """
+{number}\t\
+{.section hostname}{hostname} ({.end}\
+{.section ip}{ip}{.or}{.section hostname}NONE{.or}No Response{.end}{.end}\
+{.section hostname}){.end}\
+{.section error}: {error}{.end}\
+"""
+
+   end_template = """
+{.section loss-pct}{loss-pct}% Packet Loss{.end}\
+  RTT Min/Mean/Max/StdDev = \
+{.section min-fmt}{min-fmt}{.or}Unknown{.end}\
+/{.section mean-fmt}{mean-fmt}{.or}Unknown{.end}\
+/{.section max-fmt}{max-fmt}{.or}Unknown{.end}\
+/{.section stddev-fmt}{stddev-fmt}{.or}Unknown{.end}\
+ ms
+"""
+
+elif format == 'text/html':
+
+   fail_template = "<p>Test failed.</p>"
+
+   template = """
+<table>
+<tr>
+  <th>Packet</th>
+  <th>Address</th>
+  <th>Host</th>
+  <th>Length</th>
+  <th>RTT (ms)</th>
+</tr>
+   """
+
+   rt_template = """
+<tr>
+  <th>{number}</th>
+  <td>{.section ip}{ip}{.end}</td>
+  <td>{.section hostname}{hostname}{.end}</td>
+  <td>{.section length}{length}{.end}</td>
+  <td>{.section rtt}{rtt}{.end}</td>
+  <td>{.section error}{error}{.end}</td>
+</tr>
+"""
+
+   error_template = """
+<tr>
+  <th>{number}</th>
+  <td colspan="5">{.section error}Error: {error}{.or}Unknown Error{.end}</td>
+</tr>
+"""
+
+   end_template = """
+<tr>
+<td align="middle" colspan="5">\
+{.section loss-pct}{loss-pct}% Packet Loss{.end}<br/>\
+RTT Min/Mean/Max/StdDev = \
+{.section min}{min-fmt}{.or}Unknown{.end}\
+/{.section mean}{mean-fmt}{.or}Unknown{.end}\
+/{.section max}{max-fmt}{.or}Unknown{.end}\
+/{.section stddev}{stddev-fmt}{.or}Unknown{.end}\
+ ms</td></tr>
+</table>
+"""
+
+
+else:
+
+   pscheduler.fail("Unsupported format '%s'" % format)
+
+
+# TODO: Should probably handle exceptions in a nicer way.
+
+if not json['succeeded']:
+   print jsontemplate.expand(fail_template, json).strip()
+
+if template is not None:
+   print jsontemplate.expand(template, json).strip()
+
+rtno = 1
+for rt in json['roundtrips']:
+   rt['number'] = rtno
+   try:
+      ms = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(rt['rtt'])) * 1000
+      rt['rtt'] = '%8.4f' % ms
+   except KeyError:
+      pass
+
+   if 'error' in rt:
+      print jsontemplate.expand(error_template, rt).strip()
+   else:
+      print jsontemplate.expand(rt_template, rt).strip()
+
+   rtno += 1
+
+if end_template is not None:
+   json['loss-pct'] = str(int(json['loss'] * 100.0))
+   for item in ['min', 'mean', 'max', 'stddev']:
+      if item in json:
+         json[item + '-fmt'] = "%f" % \
+             ( pscheduler.timedelta_as_seconds( \
+               pscheduler.iso8601_as_timedelta(json[item]) ) * 1000.0 )
+
+   print jsontemplate.expand(end_template, json).rstrip()

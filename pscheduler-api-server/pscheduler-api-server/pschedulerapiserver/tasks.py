@@ -16,7 +16,9 @@ from .response import *
 def task_exists(task):
     """Determine if a task exists by its UUID"""
     dbcursor().execute("SELECT EXISTS (SELECT * FROM task WHERE uuid = %s)", [task])
-    # TODO: Assert that rowcount is 1
+
+    if dbcursor().rowcount == 0:
+        return False
     return dbcursor().fetchone()[0]
     
 
@@ -122,6 +124,8 @@ def tasks():
         except Exception as ex:
             return error("Unable to validate test spec: " + str(ex))
 
+        log.debug("Validated test: %s", pscheduler.json_dump(task['test']))
+
 
         # Find the participants
 
@@ -148,6 +152,9 @@ def tasks():
         if netloc != participants[0]:
             return bad_request("Wrong host %s; should be asking %s."
                                % (netloc, participants[0]))
+
+        # TODO: The participants must be unique.  This should be
+        # verified by fetching the host name from each one.
 
         #
         # TOOL SELECTION
@@ -196,8 +203,11 @@ def tasks():
 
         # TODO: Handle failure.
         dbcursor().execute("SELECT * FROM api_task_post(%s, 0)", [task_data])
-        # TODO: Assert that rowcount is 1 and has one column
 
+        if dbcursor().rowcount == 0:
+            return error("Task post failed; poster returned nothing.")
+
+        # TODO: Assert that rowcount is 1 and has one column
         task_uuid = dbcursor().fetchone()[0]
 
         # Other participants get the UUID forced upon them.
@@ -257,7 +267,9 @@ def tasks_uuid(uuid):
             FROM task WHERE uuid = %s
         """, [uuid])
 
-        # TODO: Assert that we got one row
+        if dbcursor().rowcount == 0:
+            return not_found()
+
         row = dbcursor().fetchone()
         if row is None:
             return not_found()
@@ -271,7 +283,7 @@ def tasks_uuid(uuid):
                     else pscheduler.datetime_as_iso8601(row[1]),
                 'start': None if row[2] is None \
                     else pscheduler.datetime_as_iso8601(row[2]),
-                'start': None if row[3] is None \
+                'slip': None if row[3] is None \
                     else pscheduler.timedelta_as_iso8601(row[3]),
                 'duration': None if row[4] is None \
                     else pscheduler.timedelta_as_iso8601(row[4]),
@@ -304,6 +316,8 @@ def tasks_uuid(uuid):
         # TODO: Handle failure.
         dbcursor().execute("SELECT * FROM api_task_post(%s, %s, %s)",
                        [request.data, participant, uuid])
+        if dbcursor().rowcount == 0:
+            return error("Task post failed; poster returned nothing.")
         # TODO: Assert that rowcount is 1
         return ok(base_url())
 

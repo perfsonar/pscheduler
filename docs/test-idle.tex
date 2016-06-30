@@ -109,4 +109,45 @@ match the duration in the specification.
 \end{lstlisting}
 
 
+
+%
+% LIMIT FORMAT
+%
+
+\section{Limit Format}
+
+\subsection{Description}
+Limits for this test consist of a single JSON object containing the
+pairs below.  \seejson
+
+\typeditem{xxx}{yyy} Version of the result format.
+
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "duration": {
+        "lower": "P15S",
+	"upper": "PT1M"
+    },
+    "starting-comment" : {
+	"description": "Starting comment can't contain the word 'platypus'.",
+	"match": {
+	    "style": "regex",
+	    "match": "platypus",
+	    "invert": true
+	}
+    },
+    "parting-comment" : {
+	"description": "Parting comment must contain a vowel if not empty", 
+	"match": {
+	    "style": "regex",
+	    "match": "(^$|[aeiou])"
+	}
+    }
+}
+
+\end{lstlisting}
+
+
 \end{document}

@@ -226,7 +226,9 @@ class Run:
 
 
             # TODO: Shouldn't be doing this if the local run failed.
+
             try:
+                log.debug("Local run returned %d", returncode)
                 if returncode == 0:
                     local_result = pscheduler.json_load(stdout)
                 else:
@@ -239,7 +241,7 @@ class Run:
 
 
             full_result = [ local_result ]
-            log.debug("%d: Stored local result", id)
+            log.debug("%d: Accumulated local result", id)
 
             for run in runs[1:]:
 
@@ -259,6 +261,10 @@ class Run:
 
             log.debug("%d: Full result: %s",
                       id, pscheduler.json_dump(full_result, pretty=True))
+
+            # TODO: If any of the tests resulted in a failure, check
+            # if the participants' clocks are off and add that to the
+            # diagnostics.
 
             # Store the full result with each participant.
 

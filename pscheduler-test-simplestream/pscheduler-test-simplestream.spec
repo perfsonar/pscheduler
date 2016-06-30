@@ -22,8 +22,6 @@ Requires:	python-pscheduler
 BuildRequires:	pscheduler-rpm
 
 
-%define directory %{_includedir}/make
-
 %description
 Simplestream test class for pScheduler
 

@@ -10,13 +10,13 @@ def spec_is_valid(json):
         "properties": {
             "dawdle":         { "$ref": "#/pScheduler/Duration" },
             "fail":           { "$ref": "#/pScheduler/Probability" },
-            "receiver":       { "$ref": "#/pScheduler/Host" },
+            "dest":           { "$ref": "#/pScheduler/Host" },
             "schema":         { "$ref": "#/pScheduler/Cardinal" },
             "test-material":  { "$ref": "#/pScheduler/String" },
             "timeout":        { "$ref": "#/pScheduler/Duration" },
             },
         "required": [
-            "receiver",
+            "dest",
             "schema",
             ]
         }

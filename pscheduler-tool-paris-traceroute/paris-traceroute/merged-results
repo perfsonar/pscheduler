@@ -1,0 +1,24 @@
+#!/usr/bin/python
+#
+# Merge the participant results of a run by this tool into a
+# test-standard result.
+#
+
+import pscheduler
+
+input = pscheduler.json_load(exit_on_error=True);
+
+# TODO: Validate the input
+
+# The lone participant produces the full set of results.
+
+succeeded = input['results'][0]['succeeded']
+merged = {
+    'schema': 1,
+    'succeeded': succeeded
+    }
+
+if succeeded:
+    merged['hops'] = input['results'][0]['result']['hops']
+
+pscheduler.succeed_json(merged)

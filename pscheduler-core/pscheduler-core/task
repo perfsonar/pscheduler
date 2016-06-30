@@ -9,7 +9,7 @@
 # TODO: Get rid of the print statements in favor of some narrator
 # class we can shut off if the options call for quiet.
 
-
+import datetime
 import optparse
 import os
 import pscheduler
@@ -47,6 +47,16 @@ opt_parser.add_option("--import", "-i",
                       help="Read JSON task template from a file, - for stdin",
                       action="store", type="string",
                       dest="importt")  # Conflict with reserved word
+
+opt_parser.add_option("--quiet", '-q',
+                      help="Operate quietly",
+                      action="store_true", default=False,
+                      dest="quiet")
+opt_parser.add_option("--no-quiet",
+                      help="Don't operate quietly",
+                      action="store_false",
+                      dest="quiet")
+
 
 opt_parser.add_option("--url",
                       help="Dump a URL that points to the task after posting and exit",
@@ -130,6 +140,7 @@ if options.repeat is not None:
     if repeat is None:
         pscheduler.fail("Invalid --repeat; must be ISO 8601 duration")
 
+
 if options.randslip is not None:
     randslip = options.randslip
     if randslip < 0.0 or randslip > 1.0:
@@ -139,18 +150,29 @@ if options.slip is not None:
     slip = pscheduler.iso8601_as_timedelta(options.slip)
     if slip is None:
         pscheduler.fail("Invalid --slip; must be ISO 8601 duration")
+elif options.repeat is None:
+    # TODO: This is a stopgap that forces slip on non-repeating tasks
+    # so scheduling won't fail if there isn't an immediate slot
+    # available on the schedule.  See issue #30.
+    slip = datetime.timedelta(minutes=10)
+    
 
 if options.start is not None:
     # TODO: Support "Pxx" and "@Pxx" formats like the database does
     # Should have a module function that does this.
     start = pscheduler.iso8601_as_datetime(options.start, localize=True)
+    if start is None:
+        pscheduler.fail("Invalid --start")
     if start <= pscheduler.time_now():
         pscheduler.fail("Invalid --start; must be in the future.")
     pass
 
 if options.until is not None:
     # TODO: Support "Pxx" and "@Pxx" formats like the database does
+    # TODO: Error handling in iso8601_as_datetime() needs improvement.
     until = pscheduler.iso8601_as_datetime(options.until, localize=True)
+    if until is None:
+        pscheduler.fail("Invalid --until")
     if until <= pscheduler.time_now():
         pscheduler.fail("Invalid --until; must be in the future.")
 
@@ -167,6 +189,9 @@ if ( options.repeat is None
                          " repetition-related options.")
 
 
+verbose = not options.quiet
+
+
 # Decide who assists us.
 
 assist = options.assist
@@ -177,8 +202,8 @@ if assist is None:
 if assist is None:
     assist = '127.0.0.1'
 else:
-    # TODO: Narrate this when we start doing that.
-    print "Assistance will be from", assist
+    if verbose:
+        print "Assistance will be from", assist
     pass
 
 
@@ -287,10 +312,6 @@ if options.export:
     pscheduler.succeed()
 
 
-print
-print "WARNING:  This program is still experimental.  Expect it not to work."
-print
-
 #
 # Contact the assist server
 #
@@ -301,6 +322,9 @@ if status != 200:
     pscheduler.fail("Can't talk to the pScheduler server at %s: %s"
                     % (assist, text))
 
+
+
+# TODO: Validate the test before figuring out who's involved.
 
 #
 # Determine the lead participant
@@ -314,8 +338,6 @@ try:
             } )
 except Exception as ex:
     pscheduler.fail("Unable to determine the lead participant: " + str(ex))
-
-print "This task will be led by", lead
 
 
 #
@@ -336,15 +358,23 @@ if status != 200:
 if options.url:
     pscheduler.succeed(task_url)
 
-print "Task URL:"
-print task_url
+if verbose:
+    print "Task URL:"
+    print task_url
 
+
+# TODO: Everything below this is fundamentally what's in the 'watch'
+# program.  Should probably just run that instead.
 
 #
 # Get the first future run.
 #
 
-print "Fetching first run..."
+if verbose:
+    print "Fetching first run..."
+
+# TODO: It would be more RESTful to have this URL available as part of
+# the task instead of building it here.
 
 runs_url = task_url + '/runs/first'
 status, run_json = pscheduler.url_get(runs_url,
@@ -363,21 +393,31 @@ if status != 200:
 
 run_url = run_json['href']
 
-print "Run URL:"
-print run_url
+if verbose:
+    print "Run URL:"
+    print run_url
 
 
 #
-# Wait for the run to finish and fetch the results
+# Wait for the run to start and finish and fetch the results
 #
 
+start_time = run_json['start-time']
 wait_time = pscheduler.time_until_seconds(
-    pscheduler.iso8601_as_datetime(run_json['end-time']))
-print "Waiting", wait_time, "seconds for run..."
-
+    pscheduler.iso8601_as_datetime(start_time))
+if verbose:
+    print "Run start: %s (~%s seconds)" % (start_time, int(wait_time))
 time.sleep(wait_time)
 
-print "Waiting for results..."
+end_time = run_json['end-time']
+wait_time = pscheduler.time_until_seconds(
+    pscheduler.iso8601_as_datetime(end_time))
+if verbose:
+    print "Run end:   %s (~%s seconds)" % (end_time, int(wait_time))
+time.sleep(wait_time)
+
+if verbose:
+    print "Waiting for results..."
 
 status, result = pscheduler.url_get( run_url,
                                       params={ 'wait-merged': True },
@@ -389,6 +429,9 @@ if status != 200:
 #
 # If failed, dump diags.
 #
+
+# TODO: Need to do a better job picking this apart.  The full-result
+# member needs to be populated whether the test succeeded or not.
 
 try:
     if (not 'result-merged' in result) \
@@ -404,8 +447,25 @@ except KeyError as ex:
 if not status:
     # TODO: Should have something nicer that dumps out the
     # participants and what they said.
-    print "RUN FAILED.  Full JSON results:"
-    print pscheduler.json_dump(result['result-full'], pretty=True)
+    print
+    print "Run failed.  The following errors were reported:"
+
+    participants = result['participants']
+    full = result['result-full']
+
+    for participant in range(0, len(result['participants'])):
+        print "%s:" % participants[participant]
+        try:
+            print '   ',
+            full_part = full[participant]
+            if full_part is not None:
+                print '\n    '.join(full[participant]['error'].split('\n'))
+            else:
+                print '(No error reported)'
+        except KeyError:
+            # TODO: There should be an 'error' in the JSON, but don't
+            # punish the user if there isn't.
+            print "  (No error reported)"
     pscheduler.fail()
 
 
@@ -427,7 +487,7 @@ status, formatted = pscheduler.url_get(
 if status != 200:
     pscheduler.fail("Unable to retrieve formatted result: " + formatted)
 
-# TODO: Remove the extra print if not narrating and on a TTY
-print
+if verbose:
+    print
 print formatted.rstrip()
 pscheduler.succeed()

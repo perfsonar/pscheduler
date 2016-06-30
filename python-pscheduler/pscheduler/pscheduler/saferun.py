@@ -63,6 +63,7 @@ def safe_run(function,
                 time.sleep(current_backoff)
                 if current_backoff < backoff_max:
                     current_backoff += initial_backoff
+                log.error("Restarting")
 
 
 

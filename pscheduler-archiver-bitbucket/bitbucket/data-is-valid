@@ -5,9 +5,28 @@
 
 import pscheduler
 
-json = pscheduler.json_load(exit_on_error=True)
+try:
+    json = pscheduler.json_load()
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+        })
 
-if json is None:
-    pscheduler.succeed()
+data_validator = {
 
-pscheduler.fail("Unrecognized JSON for this archiver.")
+    "type": "object",
+    "properties": {
+    },
+    "additionalProperties": False
+}
+
+valid, error = pscheduler.json_validate(json, data_validator)
+
+if not valid:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": error
+        })
+    
+pscheduler.succeed_json({ "valid": True })

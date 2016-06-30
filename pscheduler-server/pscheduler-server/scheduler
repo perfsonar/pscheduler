@@ -29,7 +29,7 @@ opt_parser.add_option("-d", "--dsn",
 opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
-                      default="PT15S")
+                      default="PT1M")
 opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
 opt_parser.add_option("--debug", action="store_true", dest="debug")
 
@@ -49,7 +49,9 @@ dsn = options.dsn
 # scheduled.  This prevents "start now" tasks from being scheduled for
 # a time before the participants can prepare for them.
 # TODO: Potential race condition?
-first_run_offset = pscheduler.iso8601_as_timedelta('PT10S')
+first_run_offset = pscheduler.iso8601_as_timedelta('PT5S')
+
+
 
 
 #

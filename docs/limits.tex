@@ -1,0 +1,180 @@
+%
+% pScheduler Limit System
+%
+
+% TODO: Add titlepage to the options.
+\documentclass[10pt,titlepage]{article}
+
+\input pscheduler-tex.tex
+
+\DRAFT
+
+\title{The pScheduler Limit System}
+\author{The perfSONAR Development Team}
+
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+
+\todo{This document is in the larval stage.}
+
+\section{Introduction}
+\todo{Write this.}
+
+\section{Limit Concepts}
+\todo{Write this.}
+
+
+\section{Limit Configuration}
+The limits for pScheduler are configured using a 
+
+{\tt /etc/pscheduler/limits.conf}
+
+The file is a plain text containing a single JSON object.  The general
+format of the file is shown below, and details on each of the pairs
+will be outlined in later sections.
+
+\begin{lstlisting}[language=json]
+{
+    "identifiers": { ... },
+    "classifiers": { ... },
+    "limits": { ... },
+    "applications": { ... }
+}
+\end{lstlisting}
+
+
+
+\subsection{Identification}
+
+Before any limits can be applied, pScheduler must determine what
+entity (or {\it requester}) is asking for the task to be run.  This is
+accomplished by matching one the requester's attributes against a
+number of conditions linked to an {\it identifier}.  If the conditions
+match, the requester is considered having been identified by the
+identifier.  
+
+A requesting entity may match multiple identifiers.  For example, a
+user who had authenticaed using a password from IP address {\tt
+  10.10.1.5} might be identified as {\tt bob} and {\tt private-ips}.
+
+Identifiers are listed in the JSON in this format:
+
+\begin{lstlisting}[language=json]
+"identifiers": {
+    "identifier-1": { ... },
+    "identifier-2": { ... },
+    ...
+    "identifier-n": { ... }
+}
+\end{lstlisting}
+
+pScheduler currently supports identification by the means described
+below.
+
+
+\subsubsection{IP Address}
+
+This identification matches the requester's IP address against a list
+of addresses or CIDR blocks.  These may be specified in the {\tt
+  identifiers} section of the limit file like this:
+
+\begin{lstlisting}[language=json]
+"private-ip": {
+    "description": "Private IP blocks per RFCs 1918 and 4193",
+    "type": "ip-cidr-list",
+    "data": [ "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16",
+              "fd00::/8" ]
+}
+\end{lstlisting}
+
+Alternately, the list of IP blocks may be retrieved using a URL by
+specifying the following:
+
+\begin{lstlisting}[language=json]
+"bogons": {
+    "description": "Bogon/Martian addresses",
+    "type": "ip-cidr-list-url",
+    "data": {
+        "sources": [
+            "http://www.team-cymru.org/Services/Bogons/fullbogons-ipv4.txt",
+            "http://www.team-cymru.org/Services/Bogons/fullbogons-ipv6.txt"
+        ],
+        "update": "PT1D",
+        "retry": "PT1H"
+    }
+}
+\end{lstlisting}
+
+The retrieved content should be MIME type {\tt text/plain} with one
+IPv4 or IPv6 address or CIDR block per line.  Text beginning with a
+{\tt \#} is removed as a comment and whitespace is ignored.
+
+The {\tt update} and {\tt retry} pairs indicate how often the list
+should be fetched and how often to re-attempt after a failure.
+
+
+\subsubsection{Host Name}
+
+This identification matches the fully-qualified domain name (FQDN)
+reverse-resolved requester's IP against a list of host names with
+optional wildcards.  For example, if {\tt 198.51.100.38} reverse
+resolves to {\tt perfsonar.example.org}, that will match {\tt
+  *.example.org}. in the example below.
+
+Host name identifiers are included in the limit configuration in this
+format:
+
+\begin{lstlisting}[language=json]
+"example-domains": {
+    "description": "Hosts in the example domains",
+    "type": "hostname",
+    "data": [
+        "*.example.com", "*.example.net",
+        "*.example.org", "*.example.edu",
+        "*.example"
+    ]
+}
+\end{lstlisting}
+
+\note{For security reasons, the implementation of this identification
+  must verify that the reverse-resolved host name forward resolves to
+  the original IP.  There is also the risk that an adversary could
+  slow pScheduler down by making many requests and taking a long time
+  to reverse-resolve the IP.}
+
+
+
+\subsubsection{Authenticated User}
+
+A user authenticated using a login and password or a token provided by
+a trusted third party.
+
+\todo{Need JSON for this and some idea how it's going to be
+  supported.}
+
+
+
+
+\subsection{Classification}
+
+Once one or more indentities have been established, 
+
+\subsection{Limits}
+
+\subsection{Application}
+
+In the final stage, limits are applied to the classifications.
+
+Application can be {\it pass-one}, where at least one of the applied limits is required to pass or {\it pass-all}
+
+Each application is assigned a score, and a test passing 
+
+Scores can be positive or negative, 
+
+
+
+
+\end{document}

@@ -1,0 +1,45 @@
+#!/usr/bin/python
+#
+# Determine if this tool can run a test based on a test spec.
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True);
+
+# TODO: Should be checking the package schema and the task spec schema.
+# TODO: Should be validating.
+
+try:
+    if json['type'] != 'trace':
+        pscheduler.fail('Unsupported test type')
+except KeyError:
+    pscheduler.fail('Missing test type')
+
+
+spec = json['spec']
+
+errors = []
+
+if 'algorithm' in spec:
+    errors.append("Algorithm '%s' is not supported" % spec['algorithm'])
+
+# Other than algorithm, traceroute can handle the entire spec.  The
+# restriction is that first-ttl must be within max-ttl.
+
+try:
+    first_ttl = spec['first-ttl']
+    max_ttl = spec['max-ttl'] if 'max-ttl' in spec else 30
+    if first_ttl > max_ttl:
+        errors.append("First TTL must be less than the number of hops.")
+except KeyError:
+    pass  # None is okay
+
+
+if len(errors) > 0:
+    pscheduler.fail('\n'.join(errors))
+
+pscheduler.succeed()

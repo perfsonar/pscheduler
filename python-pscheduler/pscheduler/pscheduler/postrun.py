@@ -71,6 +71,8 @@ def run_post(
         'start': pscheduler.datetime_as_iso8601(start_time),
         'end': pscheduler.datetime_as_iso8601(run_range_end)
         }
+    log and log.debug("Range parameters are %s", str(range_params))
+
 
     #
     # Get a list of the time ranges each participant has available to

@@ -26,6 +26,8 @@ if not valid:
 
 if format == 'text/plain':
 
+   fail_template = "Test failed."
+
    template = """
 Dawdled ......... {.section dawdled}{dawdled}{.or}Not Reported{.end}
 Text Sent ....... {.section sent}{sent}{.or}Not Reported{.end}
@@ -34,6 +36,8 @@ Elapsed Time .... {.section elapsed-time}{elapsed-time}{.or}Not Reported{.end}
    """
 
 elif format == 'text/html':
+
+   fail_template = "<p>Test failed.</p>"
 
    template = """
 <table border="0">
@@ -63,4 +67,6 @@ else:
 
 
 # TODO: Should probably handle exceptions in a nicer way.
-print jsontemplate.expand(template, json).strip()
+print jsontemplate.expand(
+   template if json['succeeded'] else fail_template,
+   json).strip()

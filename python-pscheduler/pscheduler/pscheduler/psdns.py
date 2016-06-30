@@ -20,25 +20,38 @@ def __check_ip_version__(ip_version):
 # Single Resolution
 #
 
-def dns_resolve(host, ip_version=4):
+def dns_resolve(host, query=None, ip_version=4):
     """
-    Resolve a hostname to its A record, returning None if not found
+    Resolve a hostname to its A record, returning None if not found or
+    there was a timeout.
     """
     __check_ip_version__(ip_version)
+
+    # TODO: Need to also try resolution by local means (/etc/hosts)
+
     try:
         resolver = dns.resolver.Resolver()
         resolver.timeout = __TIMEOUT__
         resolver.lifetime = __TIMEOUT__
-        answers = resolver.query(host, 'A' if ip_version == 4 else 'AAAA')
+        if query is None:
+            query = 'A' if ip_version == 4 else 'AAAA'
+        answers = resolver.query(host, query)
         return str(answers[0])
-    except dns.resolver.NXDOMAIN:
+    except (dns.exception.Timeout,
+            dns.resolver.NXDOMAIN,
+            dns.resolver.NoAnswer,
+            dns.resolver.NoNameservers):
         return None
 
 
 def dns_resolve_reverse(ip):
     """
-    Resolve an IP (v4 or v6) to its hostname, returning None if not found.
+    Resolve an IP (v4 or v6) to its hostname, returning None if not
+    found or there was a timeout.
     """
+
+    # TODO: Need to also try resolution by local means (/etc/hosts)
+
     try:
         resolver = dns.resolver.Resolver()
         resolver.timeout = __TIMEOUT__
@@ -46,9 +59,10 @@ def dns_resolve_reverse(ip):
         revname = dns.reversename.from_address(ip)
         answers = resolver.query(revname, 'PTR')
         return str(answers[0])
-    except dns.resolver.NXDOMAIN:
-        return None
-    except dns.exception.SyntaxError:
+    except (dns.exception.Timeout,
+            dns.resolver.NXDOMAIN,
+            dns.exception.SyntaxError,
+            dns.resolver.NoNameservers):
         return None
 
 
@@ -94,6 +108,9 @@ def dns_bulk_resolve(candidates, reverse=False, ip_version=None, threads=50):
 
     result = {}
 
+    if len(candidates) == 0:
+        return result
+
     pool = multiprocessing.pool.ThreadPool(
         processes=min(len(candidates), threads) )
 
@@ -111,6 +128,7 @@ def dns_bulk_resolve(candidates, reverse=False, ip_version=None, threads=50):
 
 if __name__ == "__main__":
     print dns_resolve('www.perfsonar.net', ip_version=4)
+    print dns_resolve('www.perfsonar.net', ip_version=4, query='SOA')
     print dns_bulk_resolve([
         'www.perfsonar.net',
         'www.es.net',
@@ -127,9 +145,13 @@ if __name__ == "__main__":
 
 
     print dns_bulk_resolve([
+        '192.168.12.34',
         '8.8.8.8',
         '198.6.1.1',
         '8.8.8.0',
         '2607:f8b0:4002:c06::67',
         'this-is-not-valid'
     ], reverse=True)
+
+    print dns_bulk_resolve([
+            ])

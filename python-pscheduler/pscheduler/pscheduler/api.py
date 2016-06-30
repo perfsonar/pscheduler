@@ -3,6 +3,8 @@ Functions related to the pScheduler REST API
 """
 
 import socket
+import urlparse
+import uuid
 
 def api_root():
     "Return the standard root location of the pScheduler hierarchy"
@@ -26,6 +28,47 @@ def api_url(host = None,
         + ('' if port is None else (':' + str(port))) \
         + api_root() + '/'\
         + ('' if path is None else str(path))
+
+
+
+
+def api_is_task(url):
+    """Determine if a URL looks like a valid task URL"""
+    # Note that this generates an extra array element because of the
+    # leading slash.
+    url_parts = urlparse.urlparse(url).path.split('/')
+
+    if len(url_parts) != 4 \
+            or (url_parts[:3] != ['', 'pscheduler', 'tasks' ]):
+        return False
+
+    try:
+        uuid.UUID(url_parts[3])
+    except ValueError:
+        return False
+
+    return True
+
+
+
+def api_is_run(url):
+    """Determine if a URL looks like a valid run URL"""
+    # Note that this generates an extra array element because of the
+    # leading slash.
+    url_parts = urlparse.urlparse(url).path.split('/')
+    if len(url_parts) != 6 \
+            or (url_parts[:3] != ['', 'pscheduler', 'tasks' ]) \
+            or (url_parts[4] != 'runs'):
+        return False
+
+    try:
+        uuid.UUID(url_parts[3])
+        uuid.UUID(url_parts[5])
+    except ValueError:
+        return False
+
+    return True
+
 
 if __name__ == "__main__":
     print api_url()

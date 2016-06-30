@@ -123,6 +123,26 @@ default.
 An valid JSON array as defined by ECMA 404.
 
 
+\subsection{AS}
+An object containing information about an autonomous system (AS).  It
+contains the these elements:
+
+\typeditem{number}{Cardinal} The AS's number.
+
+\typeditem{owner}{String} Optional free-form information about the
+organization that owns the AS.
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "number": 65432,
+    "owner": "Fictitous Networks, Inc."
+}
+\end{lstlisting}
+
+
+
+
 \subsection{Boolean}
 A JSON boolean value as defined by ECMA 404.
 
@@ -171,6 +191,32 @@ optional but should be accepted if provided.
 \source{Wikipedia}{https://en.wikipedia.org/wiki/ISO_6709}
 
 
+\subsection{ICMPError}
+A string representing one of the possible ICMP type 3 errors defined by RFC 792 or RFC 1812:
+
+\begin{itemize}
+\item {\tt net-unreachable}
+\item {\tt host-unreachable}
+\item {\tt protocol-unreachable}
+\item {\tt port-unreachable}
+\item {\tt fragmentation-needed-and-df-set}
+\item {\tt source-route-failed}
+\item {\tt destination-network-unknown}
+\item {\tt destination-host-unknown}
+\item {\tt source-host-isolated}
+\item {\tt destination-network-administratively-prohibited}
+\item {\tt destination-host-administratively-prohibited}
+\item {\tt network-unreachable-for-type-of-service}
+\item {\tt icmp-destination-host-unreachable-tos}
+\item {\tt communication-administratively-prohibited}
+\item {\tt host-precedence-violation}
+\item {\tt precedence-cutoff-in-effect}
+\end{itemize}
+
+\source{IETF}{https://tools.ietf.org/html/rfc792}\\
+\source{IETF}{https://tools.ietf.org/html/rfc1812}
+
+
 
 \subsection{Host}
 The address of a host on the Internet as a string.
@@ -198,6 +244,86 @@ A subset of {\tt number} as defined by ECMA 404 with the restriction
 that the value contain no decimal point or scientific notation.
 
 \example\ {\tt 0}, {\tt 3713} and {\tt -6264}.
+
+
+\subsection{IntegerSI}
+An integer expressed as an {\tt Integer} or a string with SI units.
+The string will contain a {\tt number} as defined by ECMA 404 without
+any exponentiation (e.g., {\tt 38.5} but not {\tt 3.85e7}), followed
+optionally by suffix indicating magnitude.  The suffix may be any of
+the units listed in this table:
+
+\begin{center}
+  \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    \multicolumn{3}{|c}{{\bf ISO 80000-1 Decimal Units}} & \multicolumn{3}{|c|}{{\bf IEC 60027 Binary Units}} \\
+    \hline
+    {\bf Unit} & {\bf Prefix} & {\bf Multiplier} & {\bf Unit} & {\bf Prefix} & {\bf Multiplier} \\
+    \hline
+    {\tt k} & kilo & $1000^{1}$ & {\tt Ki} & kibi & $1024^{1}$ \\
+    {\tt M} & mega & $1000^{2}$ & {\tt Mi} & mebi & $1024^{2}$ \\
+    {\tt G} & giga & $1000^{3}$ & {\tt Gi} & gibi & $1024^{3}$ \\
+    {\tt T} & tera & $1000^{4}$ & {\tt Ti} & tebi & $1024^{4}$ \\
+    {\tt P} & peta & $1000^{5}$ & {\tt Pi} & pebi & $1024^{5}$ \\
+    {\tt E} & exa & $1000^{6}$ & {\tt Ei} & exbi & $1024^{6}$ \\
+    {\tt Z} & zetta & $1000^{7}$ & {\tt Zi} & zebi & $1024^{7}$ \\
+    {\tt Y} & yotta & $1000^{8}$ & {\tt Yi} & yobi & $1024^{8}$ \\
+    \hline
+  \end{tabular}
+\end{center}
+
+Whitespace and case are ignored.
+
+\example\ {\tt 1234},  {\tt "19.2k"}, {\tt "12G"}, {\tt "128Ki"} and {\tt "3.1415Pi"}
+
+Note to developers: The pScheduler Python module contains a {\tt
+  si_as_integer()} function which will convert an integer or string
+for this type to an integer.
+
+\source{ISO}{http://www.iso.org/iso/catalogue_detail?csnumber=30669}\\
+\source{IEC}{https://webstore.iec.ch/publication/97}\\
+\source{Wikipedia}{https://en.wikipedia.org/wiki/Binary_prefix}
+
+
+
+
+
+
+\subsection{IPAddress}
+A valid IPv4 or IPv6 address.  See {\tt IPv4} and {\tt IPv6}.
+
+
+\subsection{IPCIDR}
+A valid IPv4 or IPv6 CIDR block.  See {\tt IPv4CIDR} and {\tt IPv6CIDR}.
+
+
+\subsection{IPv4}
+A valid IPv4 address.
+
+\example\ {\tt 192.168.1.5} and {\tt 10.38.19.7}.
+
+
+\subsection{IPv4CIDR}
+A valid IPv4 CIDR block, consisting of an IPv4 network address, a
+slash and a {\tt Cardinal} indicating the number of bits in the
+netmask.
+
+\example\ {\tt 192.168.1.0/24} and {\tt 10.0.0.0/8}.
+
+
+\subsection{IPv6}
+A valid IPv6 address.
+
+\example\ {\tt  2001:0db8:0a0b:12f0:0000:0000:0000:0001} and {\tt 2001:db8:1234:67e4::1}.
+
+
+\subsection{IPv6CIDR}
+A valid IPv6 CIDR block, consisting of an IPv6 network address, a
+slash and a {\tt Cardinal} indicating the number of bits in the
+netmask.
+
+\example\ {\tt 2001:0db8::/51} and {\tt 2001:0db8:dead:beef/64}.
+
 
 
 \subsection{IPPort}
@@ -365,45 +491,38 @@ not be counted.  This value may not be provided without a {\tt
 \end{lstlisting}
 
 
-\subsection{SINumber}
-A {\tt number} as defined by ECMA 404 without any exponentiation
-(e.g., {\tt 38.5} but not {\tt 3.85e7}) followed optionally by suffix
-indicating magnitude.  The suffix may be any of the units listed in
-this table:
-
-\begin{center}
-  \begin{tabular}{|c|c|c|c|c|c|}
-    \hline
-    \multicolumn{3}{|c}{{\bf ISO 80000-1 Decimal Units}} & \multicolumn{3}{|c|}{{\bf IEC 60027 Binary Units}} \\
-    \hline
-    {\bf Unit} & {\bf Prefix} & {\bf Multiplier} & {\bf Unit} & {\bf Prefix} & {\bf Multiplier} \\
-    \hline
-    {\tt k} & kilo & $1000^{1}$ & {\tt Ki} & kibi & $1024^{1}$ \\
-    {\tt M} & mega & $1000^{2}$ & {\tt Mi} & mebi & $1024^{2}$ \\
-    {\tt G} & giga & $1000^{3}$ & {\tt Gi} & gibi & $1024^{3}$ \\
-    {\tt T} & tera & $1000^{4}$ & {\tt Ti} & tebi & $1024^{4}$ \\
-    {\tt P} & peta & $1000^{5}$ & {\tt Pi} & pebi & $1024^{5}$ \\
-    {\tt E} & exa & $1000^{6}$ & {\tt Ei} & exbi & $1024^{6}$ \\
-    {\tt Z} & zetta & $1000^{7}$ & {\tt Zi} & zebi & $1024^{7}$ \\
-    {\tt Y} & yotta & $1000^{8}$ & {\tt Yi} & yobi & $1024^{8}$ \\
-    \hline
-  \end{tabular}
-\end{center}
-
-Whitespace and case are ignored.
-
-\example\ {\tt 1234},  {\tt 1.234}, {\tt 38k}, {\tt 12G}, {\tt 128Ki} and {\tt 3.1415Pi}
-
-\source{ISO}{http://www.iso.org/iso/catalogue_detail?csnumber=30669}\\
-\source{IEC}{https://webstore.iec.ch/publication/97}\\
-\source{Wikipedia}{https://en.wikipedia.org/wiki/Binary_prefix}
-
-
 \subsection{String}
 A {\tt string} as defined by ECMA 404.
 
 \example\ {\tt "Hello, World!"} and {\tt "He said
   \textbackslash"hello\textbackslash" as he went by."}
+
+
+\subsection{StringMatch}
+A description for performaing matches on a string consisting of a JSON
+object containing these elements:
+
+\typeditem{style}{string} - The type of match to be attempted.  Must
+be one of {\tt exact} (strings must match exactly), {\tt contains}
+(string must contain the match) or {\tt regex} (string must match a
+regular expression).
+
+\typeditem{match}{String} - String or regular expression to match.
+
+\typeditem{case-insensitive}{Boolean} - Match in a case-insensitive
+way.
+
+\typeditem{invert}{Boolean} - Invert the result if {\tt true}
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "style": "regex",
+    "match": "^(apple|banana|cherry)$",
+    "case-sensitive": true,
+    "invert": true
+}
+\end{lstlisting}
 
 
 

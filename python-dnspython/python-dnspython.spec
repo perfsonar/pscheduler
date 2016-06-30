@@ -6,7 +6,7 @@
 Name:		python-%{short}
 Version:	1.12.0
 Release:	1%{?dist}
-Summary:	Fork and detach the current processe.
+Summary:	DNS resolver library
 BuildArch:	noarch
 License:	BSD-derived
 Group:		Development/Libraries
@@ -22,7 +22,7 @@ Source:		%{short}-%{version}.tar.gz
 BuildRequires:	python-setuptools
 
 %description
-Python module which cleanly forks a child and detaches it.
+DNS resolver library
 
 
 # Don't do automagic post-build things.

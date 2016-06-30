@@ -1,0 +1,15 @@
+#!/bin/sed -e 1d
+{
+    "name": "paris-traceroute",
+    "description": "Map the route between hosts using Paris Traceroute",
+    "version": "0.0",
+    "tests": [ "trace" ],
+
+    "preference": -5,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "info@perfsonar.net",
+	"href": "http://www.perfsonar.net"
+    }
+}

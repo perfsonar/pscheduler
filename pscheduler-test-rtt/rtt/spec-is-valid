@@ -1,0 +1,18 @@
+#!/usr/bin/python
+#
+# Validator for 'trace' task spec
+#
+
+import pscheduler
+
+from validate import spec_is_valid
+
+
+json = pscheduler.json_load(exit_on_error=True)
+
+valid, message = spec_is_valid(json)
+
+if not valid:
+    pscheduler.fail(message)
+
+pscheduler.succeed()

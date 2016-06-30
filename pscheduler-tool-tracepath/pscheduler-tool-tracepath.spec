@@ -24,8 +24,6 @@ requires:	iputils
 BuildRequires:	pscheduler-rpm
 
 
-%define directory %{_includedir}/make
-
 %description
 pScheduler Tracepath Tool
 

@@ -17,7 +17,8 @@ M4PROGRAMS=\
 	pscheduler
 
 COMMANDS=\
-	task
+	task \
+	watch
 
 M4COMMANDS=\
 	internal

@@ -1,13 +1,32 @@
 #!/usr/bin/python
 #
-# Validate data for the bitbucket archiver
+# Validate data for the failer archiver
 #
 
 import pscheduler
 
-json = pscheduler.json_load(exit_on_error=True)
+try:
+    json = pscheduler.json_load()
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "reason": str(ex)
+        })
 
-if json is None:
-    pscheduler.succeed()
+data_validator = {
 
-pscheduler.fail("Unrecognized JSON for this archiver.")
+    "type": "object",
+    "properties": {
+    },
+    "additionalProperties": False
+}
+
+valid, reason = pscheduler.json_validate(json, data_validator)
+
+if not valid:
+    pscheduler.succeed_json({
+        "valid": False,
+        "reason": reason
+        })
+    
+pscheduler.succeed_json({ "valid": True })

@@ -1,0 +1,210 @@
+%
+% pScheduler Test Guide for Round Trip Time
+%
+
+\def\testname{rtt}
+
+
+% TODO: Add titlepage to the options.
+\documentclass[10pt]{article}
+
+\input pscheduler-tex.tex
+
+\DRAFT
+
+\title{pScheduler Test Guide: {\it \testname}}
+\author{The perfSONAR Development Team}
+
+
+\begin{document}
+\maketitle
+
+
+%
+% INTRODUCTION
+%
+
+\section{Introduction}
+
+The {\tt \testname} test measures the amount of time taken for a
+packet to leave one host, reach another and be returned to the host
+where it originated.
+
+This document describes schema version {\tt 1}.
+
+\subsection{Participants}
+
+This test includes the following participants:
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+{\bf Number} & {\bf Role} \\
+\hline
+{\tt 0} & Originator \\
+\hline
+\end{tabular}
+\end{center}
+
+
+
+%
+% TEST SPECIFICATION
+%
+
+\section{Test Specification Format}
+
+\subsection{Description}
+
+The test specification consists of a single JSON object containing the
+pairs below.  \seejson
+
+\typeditem{schema}{Cardinal} The schema version of this specification.
+
+\typeditem{count}{Cardinal} The number of measurements to take.
+
+\typeditem{dest}{Host} The network address or hostname of the receiver.
+
+\typeditem{flow-label}{CardinalZero} Set the flow label on
+measurements made to IPv6 addresses.  This is a 20-bit number and
+therefore must be less than {\tt 1048576}. If {\tt 0}, a random value
+will be selected and used.
+
+\typeditem{interval}{Duration} Time to wait between measurements.
+
+\stdvalue{ip-version} If {\tt dest} provides clues about the type of
+address it represents, that type will be used.  Otherwise, the default
+will be {\tt 4}.
+
+\typeditem{source}{Host} The network address or hostname of the
+interface to use.
+
+\typeditem{suppress-loopback}{Boolean} Suppress loopback of multicast packets
+when sending to a multicast address.
+
+\typeditem{tos}{IPTOS} Type of service to be used.  \todo{This needs to
+  be defined in the dictionary.}
+
+\typeditem{length}{Cardinal} The length of test packets sent, in
+bytes.
+
+\typeditem{ttl}{Cardinal} IP time-to-live value for sent packets.
+
+\typeditem{deadline}{Duration} How long the measurement should run
+regardless of how many packets have been sent or received.
+
+\typeditem{timeout}{Duration} Amount of time to wait for a response
+for each packet sent.
+
+\typeditem{hostnames}{Boolean} Whether or not attempts should be made
+to map IP addresses discovered during the test to hostnames.  The
+default is {\tt True}.
+
+
+\subsection{Example}
+\begin{lstlisting}[language=json]
+{
+    "schema": 1,
+    "dest": "somehost.example.org",
+    "ip-version": 4,
+    "count": 10,
+    "interval": "PT2S",
+    "timeout": "PT1S"
+}
+\end{lstlisting}
+
+
+
+%
+% RESULT FORMAT
+%
+
+\section{Result Format}
+
+\subsection{Description}
+The result consists of a single JSON object containing the pairs
+below.  \seejson
+
+\typeditem{succeeded}{Boolean} Whether or not the test was a success.
+
+\typeditem{roundtrips}{Array} An array of round trip objects as
+described below.  The array should contain one object per packet sent
+in order (i.e., the third element should contain information about the
+thrid packet sent/received).
+
+\typeditem{loss}{Number} Amount of packet loss, as a fraction
+(e.g. {\tt 0.375} represents $37.5\%$ packet loss).  This pair is
+required and should be {\tt 1.0} if {\tt roundtrips} contains no
+elements.
+
+\typeditem{min}{Duration} If any packets made a successful round trip,
+the shortest time observed.
+
+\typeditem{max}{Duration} If any packets made a successful round trip,
+the longest time observed.
+
+\typeditem{mean}{Duration} If any packets made a successful round trip,
+the mean of the times observed.
+
+\typeditem{stddev}{Duration} If any packets made a successful round
+trip, the population standard deviation of all times observed.
+
+
+
+
+\subsection{Round Trip Format}
+
+Each item in the {\tt packets} array of the result consists of a single
+JSON object containing the pairs below.  \seejson
+
+Note that all pairs are optional, and a packet for which there was no
+response will be an empty object.
+
+\typeditem{length}{Cardinal} The length of the returned packet in bytes.
+
+\typeditem{ip}{IPAddress} The IP from which the packet was returned.
+
+\typeditem{ttl}{ttl} Time-to-live value on the returned packet.
+
+\typeditem{rtt}{Duration} The round-trip time between the originator
+and the responding host.
+
+\typeditem{error}{ICMPError} The ICMP error reported for this
+measurement, if any.
+
+
+\subsection{Example}
+\begin{lstlisting}[language=json]
+{
+    "schema": 1,
+
+    "succeeded": true,
+    "roundtrips": [
+        {
+          "ip": "198.51.100.209",
+          "hostname": "foo.example.com",
+          "rtt": "PT0.0159S",
+          "length": 64
+        },
+        { },
+        {
+          "ip": "192.0.2.1",
+          "error": "net-unreachable"
+        },
+        {
+          "ip": "198.51.100.209",
+          "hostname": "foo.example.com",
+          "rtt": "PT0.0167S",
+          "length": 64
+        }
+    ],
+    "loss": 0.5,
+    "min": "PT0.0159S",
+    "max": "PT0.0167S",
+    "mean": "PT0.0163S",
+    "stddev": "PT0.0004S"
+}
+\end{lstlisting}
+
+
+\end{document}

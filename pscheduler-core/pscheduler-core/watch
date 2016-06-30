@@ -1,0 +1,182 @@
+#!/usr/bin/python
+#
+# Attach to a task and watch runs as they happen
+#
+
+# General syntax:
+#     pscheduler attach [options] task-url
+
+# TODO: Need to catch KeyboardInterrupts and exit nicely.
+
+
+import optparse
+import os
+import pscheduler
+import subprocess
+import sys
+import time
+
+#
+# Gargle the arguments
+#
+
+usage = "Usage: %prog [options] task-url"
+opt_parser = optparse.OptionParser(usage = usage)
+opt_parser.disable_interspersed_args()
+
+# GENERAL OPTIONS
+
+opt_parser.add_option("--runs", "-r",
+                      help="Exit after this many runs (default 0=infinite)",
+                      action="store", type="int", default=0,
+                      dest="runs")
+
+(options, remaining_args) = opt_parser.parse_args()
+
+if len(remaining_args) < 1:
+    opt_parser.print_usage()
+    pscheduler.fail()
+
+#
+# Validate the command line
+#
+
+if options.runs < 0:
+    pscheduler.fail("Invalid --runs; must be 0 or more")
+max_runs = options.runs
+
+if len(remaining_args) != 1:
+    opt_parser.print_usage()
+    pscheduler.fail()
+
+[task_url] = remaining_args
+
+if not pscheduler.api_is_task(task_url):
+    pscheduler.fail("Invalid task URL.")
+
+# TODO: Get task and see if there will be any future runs.  Need to
+# have something in the database that says whether or not the task is
+# completely over with.
+
+# TODO: Might be nice to dump the test parameters, but need to add a
+# 'format' parameter to the REST API like was done for runs.
+
+run_count = 0
+
+while True:
+
+    status, runs = pscheduler.url_get(
+        task_url + '/runs',
+        params={
+            'upcoming': True,
+            'limit' : 1
+            },
+        throw=False
+        )
+
+    if status != 200:
+        pscheduler.fail("Unable to fetch task or its runs")
+
+    if len(runs) == 0:
+        if run_count == 0:
+            pscheduler.fail("No runs scheduled for this task.")
+        else:
+            pscheduler.succeed()
+
+    run_url = runs[0]
+
+    print
+    print "Next run:"
+    print run_url
+    try:
+        status, run_json = pscheduler.url_get(run_url)
+    except pscheduler.psurl.URLException as ex:
+        pscheduler.fail(str(ex))
+
+
+    #
+    # Wait for the run to start and finish and fetch the results
+    #
+
+    start_time = run_json['start-time']
+    wait_time = pscheduler.time_until_seconds(
+        pscheduler.iso8601_as_datetime(start_time))
+    print "Starts %s (~%s seconds)" % (start_time, int(wait_time))
+    time.sleep(wait_time)
+
+    end_time = run_json['end-time']
+    wait_time = pscheduler.time_until_seconds(
+        pscheduler.iso8601_as_datetime(end_time))
+    print "Ends   %s (~%s seconds)" % (end_time, int(wait_time))
+    time.sleep(wait_time)
+
+    status, result = pscheduler.url_get( run_url,
+                                         params={ 'wait-merged': True },
+                                         throw=False )
+
+    if status != 200:
+        pscheduler.fail("Failed to fetch run: %d: %s" % (status, result))
+
+    #
+    # If failed, dump diags.
+    #
+
+    # TODO: Need to do a better job picking this apart.  The full-result
+    # member needs to be populated whether the test succeeded or not.
+
+    try:
+        if (not 'result-merged' in result) \
+                or (result['result-merged'] is None):
+            raise KeyError()
+        status = result['result-merged']['succeeded']
+    except KeyError as ex:
+        print "Unable to determine success or failure.  Returned JSON:"
+        print pscheduler.json_dump(result, pretty=True)
+        continue
+
+
+    if not status:
+        print
+        print "Run failed.  The following errors were reported:"
+
+        participants = result['participants']
+        full = result['result-full']
+
+        for participant in range(0, len(result['participants'])):
+            print "%s:" % participants[participant]
+            try:
+                print '   ',
+                print '\n    '.join(full[participant]['error'].split('\n'))
+            except (KeyError, TypeError, AttributeError):
+                # TODO: There should be an 'error' in the JSON, but don't
+                # punish the user if there isn't.
+                print "  (No error reported)"
+
+
+    #
+    # Print the final result.
+    #
+
+    status, formatted = pscheduler.url_get(
+        result['result-href'],
+        params={ 'wait': True,
+                 'format': 'text/plain' },
+        json=False,
+        throw=False)
+
+    if status != 200:
+        pscheduler.fail("Unable to retrieve formatted result: " + formatted)
+
+    # TODO: Remove the extra print if not narrating and on a TTY
+    print
+    print formatted.rstrip()
+    print
+
+    run_count += 1
+
+    if run_count == max_runs:
+        break
+
+
+
+pscheduler.succeed()
