@@ -1002,7 +1002,10 @@ This method sends the results of a run to the archiver.
 \begin{lstlisting}[language=json,firstnumber=1]
 {
     "data": { ...Archiver-Specific Data... },
-    "result": { ...Results of run... }
+    "task": { ...Task specification... },
+    "result": { ...Results of run... },
+    "attempts": 2,
+    "last-attempt": "2016-05-07T13:05:27"
 }
 \end{lstlisting}
 
