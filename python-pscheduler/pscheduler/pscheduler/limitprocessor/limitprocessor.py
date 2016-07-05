@@ -18,8 +18,27 @@ class LimitProcessor():
 
 
     def __init__(self,
-                 source   # Open file or path to file with limit set
+                 source=None  # Open file or path to file with limit set
     ):
+        """Construct a limit processor.
+
+        The 'source' argument can be one of three types:
+
+        string - Path to a file to open and read.
+
+        file - Open file handle to read.
+
+        None - The limit processor becomes inert and passes all limits
+        unconditionally.
+        """
+
+        # If we were given no source, put the processor into an inert
+        # mode where everything passes.
+        self.inert = source is None
+        if self.inert:
+            return
+
+
         #
         # Load the validation data
         #
@@ -36,7 +55,9 @@ class LimitProcessor():
         #
 
         if type(source) is str or type(source) is unicode:
-            source = open(source, 'r')
+            source = open(source
+
+        , 'r')
         elif type(source) is file:
             pass  # We're good with this.
         else:
@@ -63,6 +84,8 @@ class LimitProcessor():
         self.applications = ApplicationSet(limit_config['applications'],
                                            self.classifiers, self.limits)
 
+
+
     def process(self, task, hints):
         """Process a task against the full limit set.
 
@@ -74,6 +97,10 @@ class LimitProcessor():
             passed - True if the proposed task passed the limits applied
             diags - A textual summary of how the conclusion was reached
         """
+
+        if self.inert:
+            return True, "No limits were applied"
+
 
         # TODO: Consider checking to see if the source file has
         # changed and reloading it if it has.
