@@ -1,0 +1,46 @@
+{
+    "spec": {
+        "schema": 1,
+	"dawdle": "PT1M",
+	"fail": 0.9123,
+	"dest": "www.perfsonar.net",
+	"test-material": "platypusSONAR",
+	"timeout": "PT5S"
+    },
+
+    "limit": {
+        "dawdle": {
+            "range": {
+                "lower": "P0D",
+                "upper": "PT3S"
+            }
+        },
+	"fail": {
+	    "range": {
+		"lower": 0.0,
+		"upper": 0.75
+		}
+	},
+        "dest": {
+            "fail-message": "EDU hosts only for dest",
+            "match": {
+                "match": "\\.edu$",
+                "style": "regex"
+            }
+        },
+	"test-material": {
+	    "match": {
+		"style": "regex",
+		"match": "platypus",
+		"invert": true
+	    },
+	    "fail-message": "No platypi allowed"
+	},
+        "timeout": {
+            "range": {
+                "lower": "PT0.1S",
+                "upper": "PT4S"
+            }
+        }
+    }
+}

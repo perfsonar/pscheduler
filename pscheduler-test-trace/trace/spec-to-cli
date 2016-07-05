@@ -29,7 +29,7 @@ result = pscheduler.speccli_build_args(spec,
         ( 'dest-port', 'dest-port' ),
         ( 'tos', 'tos' ),
         ( 'wait', 'wait' ),
-        ( 'sendwait', 'sendwait' ),
+        ( 'send-wait', 'send-wait' ),
         ],
                                        bools=[
         ( 'fragment', 'fragment' ),

@@ -77,3 +77,30 @@ def result_is_valid(json):
             ]
         }
     return json_validate(json, schema)
+
+
+
+def limit_is_valid(json):
+    schema = {
+        "type": "object",
+        "properties": {
+            "algorithm":  { "$ref": "#/pScheduler/Limit/String" },
+            "as":         { "$ref": "#/pScheduler/Limit/Boolean" },
+            "dest-port":  { "$ref": "#/pScheduler/Limit/Cardinal" },
+            "dest":       { "$ref": "#/pScheduler/Limit/String" },
+            "first-ttl":  { "$ref": "#/pScheduler/Limit/Cardinal" },
+            "fragment":   { "$ref": "#/pScheduler/Limit/Boolean" },
+            "hops":       { "$ref": "#/pScheduler/Limit/Cardinal" },
+            "hostnames":  { "$ref": "#/pScheduler/Limit/Boolean" },
+            "ip-version": { "$ref": "#/pScheduler/Limit/CardinalList" },
+            "length":     { "$ref": "#/pScheduler/Limit/Cardinal" },
+            "probe-type": { "$ref": "#/pScheduler/Limit/String" },
+            "sendwait":   { "$ref": "#/pScheduler/Limit/Duration" },
+            "source":     { "$ref": "#/pScheduler/Limit/String" },
+            "tos":        { "$ref": "#/pScheduler/Limit/CardinalZeroList" },
+            "wait":       { "$ref": "#/pScheduler/Limit/Duration" }
+        },
+        "additionalProperties": False
+        }
+
+    return json_validate(json, schema)

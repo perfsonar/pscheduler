@@ -577,6 +577,73 @@ messages on error.
 if there was some other problem unrelated to the input.
 
 
+\subsubsection{limit-is-valid}
+This method validates a limit specification for the test.
+
+\calloutitem{Arguments} None
+
+\calloutitem{Standard Input} JSON containing the limit specification
+to be validated.
+
+\calloutitem{Standard Output} A JSON object containing the following pairs:
+
+\todo{This is duplicated from above; should be part of the JSON
+  dictionary.}
+\begin{itemize}
+\item \typeditem{valid}{Boolean} An indication of whether or not the
+  input was valid.
+
+\item \typeditem{error}{String} if {\tt valid} was \false, a plain
+  text message indicating the reason.
+\end{itemize}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} on success, {\tt 1} if there was a
+problem unrelated to the input.
+
+
+
+\subsubsection{limit-passes}
+
+This method checks to see if a test specification falls within the
+restrictions of a limit.
+
+\calloutitem{Arguments} None
+
+\calloutitem{Standard Input} A JSON object containing the following
+pairs:
+
+\begin{itemize}
+\item \typeditem{spec}{AnyJSON} The specification of the test parameters.
+This must be valid for the current test type.
+
+\item \typeditem{limit}{AnyJSON} The limit to be checked.  This must be
+valid for the current test type.
+
+\end{itemize}
+
+
+\calloutitem{Standard Output} A JSON object containing the following pairs:
+
+\begin{itemize}
+\item \typeditem{passed}{Boolean} An indication of whether or not the
+  test was within the limit's constraints.
+
+\item \typeditem{errors}{Array} if {\tt valid} was \false, an array of
+  strings containing text messages enumerating the reasons for the
+  failure.
+\end{itemize}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} on success, {\tt 1} if there was a
+problem unrelated to the input.
+
+
+
 %
 % FEATURE
 %
@@ -892,6 +959,8 @@ JSON object (i.e., {\tt \{ \}}).
 
 \calloutitem{Standard Output} A JSON object containing the following pairs:
 
+\todo{This gets used in multiple places and should be brought into the
+  JSON dictionary.}
 \begin{itemize}
 \item \typeditem{valid}{Boolean} An indication of whether or not the
   input was valid.

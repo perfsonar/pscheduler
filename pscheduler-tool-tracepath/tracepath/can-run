@@ -78,7 +78,7 @@ except KeyError:
 
 check_with_error('tos', "Cannot control IP TOS")
 check_with_error('wait', "Cannot control response wait time")
-check_with_error('sendwait', "Cannot control delay between sends")
+check_with_error('send-wait', "Cannot control delay between sends")
 
 
 # as is okay since they're done outside the program.

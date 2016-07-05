@@ -1,0 +1,96 @@
+{
+    "spec": {
+        "schema": 1,
+	"algorithm": "paris-traceroute",
+	"as": true,
+	"dest-port": 20041,
+	"dest": "www.perfsonar.net",
+	"first-ttl": 100,
+	"fragment": true,
+	"hops": 86,
+	"hostnames": true,
+	"ip-version": 6,
+	"length": 5000,
+	"probe-type": "udp",
+	"send-wait": "PT45M",
+	"tos": 86,
+	"wait": "PT45M"
+    },
+
+    "limit": {
+
+        "algorithm": {
+            "match": {
+                "match": "mda",
+                "style": "exact"
+            }
+        },
+	"as": {
+	    "match": false
+	},
+        "dest-port": {
+            "range": {
+                "lower": 1024,
+                "upper": 2047
+            }
+        },
+        "dest": {
+            "fail-message": "EDU hosts only for dest",
+            "match": {
+                "match": "\\.edu$",
+                "style": "regex"
+            }
+	},
+        "first-ttl": {
+            "range": {
+                "lower": 1,
+                "upper": 3
+            }
+        },
+	"fragment": {
+	    "match": false
+	},
+        "hops": {
+            "range": {
+                "lower": 1,
+                "upper": 20
+            }
+        },
+	"hostnames": {
+	    "match": false
+	},
+        "ip-version": {
+            "match": [ 4 ]
+        },
+        "length": {
+            "range": {
+                "lower": 1,
+                "upper": 128
+            }
+        },
+        "probe-type": {
+            "match": {
+                "match": "^(icmp|udp)$",
+                "style": "regex"
+            }
+	},
+        "send-wait": {
+            "range": {
+                "lower": "PT0.1S",
+                "upper": "PT4S"
+            }
+        },
+        "tos": {
+            "match": [ 5, 6, 7 ]
+        },
+        "hostnames": {
+            "match": false
+        },
+        "wait": {
+            "range": {
+                "lower": "PT0.1S",
+                "upper": "PT3S"
+            }
+        }
+    }
+}

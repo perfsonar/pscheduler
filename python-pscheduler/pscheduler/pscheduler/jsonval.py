@@ -10,6 +10,9 @@ import jsonschema
 # TODO: Consider adding tile/description and maybe "example" (not
 # officially supported) as a way to generate the JSON dictionary.
 
+# TODO: Need to go through and add "additionalProperties": False to
+# all object entries.
+
 #
 # Types from the dictionary
 #
@@ -47,20 +50,66 @@ __dictionary__ = {
     "Cardinal": {
         "type": "integer",
         "minimum": 1,
+    },
+
+    "CardinalList": {
+        "type": "array",
+        "items": { "$ref": "#/pScheduler/Cardinal" },
+    },
+
+    "CardinalRange": {
+        "type": "object",
+        "properties": {
+            "lower": { "$ref": "#/pScheduler/Cardinal" },
+            "upper": { "$ref": "#/pScheduler/Cardinal" }
         },
+        "additionalProperties": False,
+        "required": [ "lower", "upper" ]
+    },
 
     "CardinalZero": {
         "type": "integer",
         "minimum": 0,
         },
 
+    "CardinalZeroList": {
+        "type": "array",
+        "items": { "$ref": "#/pScheduler/CardinalZero" },
+    },
+
+    "CardinalZeroRange": {
+        "type": "object",
+        "properties": {
+            "lower": { "$ref": "#/pScheduler/CardinalZero" },
+            "upper": { "$ref": "#/pScheduler/CardinalZero" }
+        },
+        "additionalProperties": False,
+        "required": [ "lower", "upper" ]
+    },
+
+
     "Duration": {
         "type": "string",
         # ISO 8601.  Source: https://gist.github.com/philipashlock/8830168
-        "pattern": r'^(R\d*\/)?P(?:\d+(?:\.\d+)?Y)?(?:\d+(?:\.\d+)?M)?(?:\d+(?:\.\d+)?W)?(?:\d+(?:\.\d+)?D)?(?:T(?:\d+(?:\.\d+)?H)?(?:\d+(?:\.\d+)?M)?(?:\d+(?:\.\d+)?S)?)?$'
+        # Modified not to accept months or years, which are inexact.
+        "pattern": r'^(R\d*\/)?P(?:\d+(?:\.\d+)?W)?(?:\d+(?:\.\d+)?D)?(?:T(?:\d+(?:\.\d+)?H)?(?:\d+(?:\.\d+)?M)?(?:\d+(?:\.\d+)?S)?)?$'
         },
 
+    "DurationRange": {
+        "type": "object",
+        "properties": {
+            "lower": { "$ref": "#/pScheduler/Duration" },
+            "upper": { "$ref": "#/pScheduler/Duration" }
+        },
+        "additionalProperties": False,
+        "required": [ "lower", "upper" ]
+    },
+
     "Email": { "type": "string", "format": "email" },
+
+    "Float": {
+        "type": "number"
+    },
 
     "GeographicPosition": {
         "type": "string",
@@ -75,16 +124,6 @@ __dictionary__ = {
         },
 
     "Integer": { "type": "integer" },
-
-    "IntegerSI": {
-        "oneOf": [
-            { "type": "integer" },
-            {
-                "type": "string",
-                "pattern": "^(-?[0-9]+(\.[0-9]+)?)\s*([kmgtpezy][i]?)?$"
-            }
-            ]
-        },
 
     "IPAddress": {
         "oneOf": [
@@ -124,16 +163,55 @@ __dictionary__ = {
 
     "Number": { "type": "number" },
 
+    "Numeric": {
+        "oneOf": [
+            { "$ref": "#/pScheduler/Number" },
+            { "$ref": "#/pScheduler/SINumber" },
+            ]
+    },
+
+    "NumericRange": {
+        "type": "object",
+        "properties": {
+            "lower": { "$ref": "#/pScheduler/Numeric" },
+            "upper": { "$ref": "#/pScheduler/Numeric" }
+        },
+        "additionalProperties": False,
+        "required": [ "lower", "upper" ]
+    },
+
     "Probability": {
         "type": "number",
         "minimum": 0.0,
         "maximum": 1.0
         },
 
+    "ProbabilityRange": {
+        "type": "object",
+        "properties": {
+            "lower": { "$ref": "#/pScheduler/Probability" },
+            "upper": { "$ref": "#/pScheduler/Probability" }
+        },
+        "additionalProperties": False,
+        "required": [ "lower", "upper" ]
+    },
+
+
     "SINumber":  {
         "type": "string",
-        "pattern": r'^[0-9]+(\.[0-9]+)?([KkMmGgTtPpEeZzYy][Ii]?)?$'
+        "pattern": "^[0-9]+(\\.[0-9]+)?(\\s*[KkMmGgTtPpEeZzYy][Ii]?)?$"
         },
+
+    # TODO: This should be subsumed by NumericRange,
+    "SINumberRange": {
+        "type": "object",
+        "properties": {
+            "lower": { "$ref": "#/pScheduler/SINumber" },
+            "upper": { "$ref": "#/pScheduler/SINumber" }
+        },
+        "additionalProperties": False,
+        "required": [ "lower", "upper" ]
+    },
 
     "String": { "type": "string" },
 
@@ -267,7 +345,6 @@ __dictionary__ = {
         "properties": {
             "start":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
             "slip":     { "$ref": "#/pScheduler/Duration" },
-            # TODO: Should probably have its own type.
             "randslip": { "$ref": "#/pScheduler/Probability" },
             "repeat":   { "$ref": "#/pScheduler/Duration" },
             "until":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
@@ -350,9 +427,121 @@ __dictionary__ = {
     "ip-version": {
         "type": "integer",
         "enum": [ 4, 6 ]
+        },
+
+
+    #
+    # Standard Limit Types
+    #
+
+    "Limit": {
+
+        "Boolean": {
+            "type": "object",
+            "properties": {
+                "description":  { "$ref": "#/pScheduler/String" },
+                "match":        { "$ref": "#/pScheduler/Boolean" },
+                "fail-message": { "$ref": "#/pScheduler/String" }
+            },
+            "additionalProperties": False,
+            "required": [ "match" ]
+        },
+
+        "Cardinal": {
+            "type": "object",
+            "properties": {
+                "description":  { "$ref": "#/pScheduler/String" },
+                "range":        { "$ref": "#/pScheduler/CardinalRange" },
+                "invert":       { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": False,
+            "required": [ "range" ]
+        },
+
+        "CardinalList": {
+            "type": "object",
+            "properties": {
+                "description":  { "$ref": "#/pScheduler/String" },
+                "match":        { "$ref": "#/pScheduler/CardinalList" },
+                "invert":       { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": False,
+            "required": [ "match" ]
+
+        },
+
+        "CardinalZero": {
+            "type": "object",
+            "properties": {
+                "description":  { "$ref": "#/pScheduler/String" },
+                "range":        { "$ref": "#/pScheduler/CardinalZeroRange" },
+                "invert":       { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": False,
+            "required": [ "range" ]
+        },
+
+        "CardinalZeroList": {
+            "type": "object",
+            "properties": {
+                "description":  { "$ref": "#/pScheduler/String" },
+                "match":        { "$ref": "#/pScheduler/CardinalZeroList" },
+                "invert":       { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": False,
+            "required": [ "match" ]
+
+        },
+
+        "Duration": {
+            "type": "object",
+            "properties": {
+                "description":  { "$ref": "#/pScheduler/String" },
+                "range":        { "$ref": "#/pScheduler/DurationRange" },
+                "invert":       { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": False,
+            "required": [ "range" ]
+        },
+
+        "SINumber": {
+            "properties": {
+                "description":  { "$ref": "#/pScheduler/String" },
+                "range":        { "$ref": "#/pScheduler/SINumberRange" },
+                "invert":       { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": False,
+            "required": [ "range" ]
+        },
+
+        "IPVersion": {
+            "#": "TODO: Develop this."
+        },
+
+        "Probability": {
+            "properties": {
+                "description": { "$ref": "#/pScheduler/String" },
+                "range":       { "$ref": "#/pScheduler/ProbabilityRange" },
+                "invert":      { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": False,
+            "required": [ "range" ]
+        },
+
+        "String": {
+            "type": "object",
+            "properties": {
+                "description":  { "$ref": "#/pScheduler/String" },
+                "match":        { "$ref": "#/pScheduler/StringMatch" },
+                "fail-message": { "$ref": "#/pScheduler/String" }
+            },
+            "additionalProperties": False,
+            "required": [ "match" ]
         }
 
     }
+}
+
 
 
 __default_schema__ = {
