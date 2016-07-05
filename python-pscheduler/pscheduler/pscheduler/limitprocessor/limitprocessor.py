@@ -55,9 +55,7 @@ class LimitProcessor():
         #
 
         if type(source) is str or type(source) is unicode:
-            source = open(source
-
-        , 'r')
+            source = open(source, 'r')
         elif type(source) is file:
             pass  # We're good with this.
         else:
