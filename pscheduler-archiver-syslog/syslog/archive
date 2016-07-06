@@ -84,7 +84,7 @@ try:
 except Exception as ex:
     pscheduler.succeed_json({
         "succeeded": False,
-        "error": "Failed to log result: " + str(ex)
+        "error": "Failed to log result: %s" % str(ex)
     })
 
 
