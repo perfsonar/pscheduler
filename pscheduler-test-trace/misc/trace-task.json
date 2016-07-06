@@ -1,0 +1,23 @@
+{
+    "schedule": {},
+    "schema": 1,
+    "test": {
+        "spec": {
+	    "algorithm": "paris-traceroute",
+            "dest": "www.perfsonar.net",
+            "schema": 1
+        },
+        "type": "trace"
+    },
+
+    "archives": [
+	{
+	    "name": "syslog",
+	    "data": {
+		"facility": "local7",
+		"level": "info",
+		"ident": "just-a-test"
+	    }
+	}
+    ]
+}

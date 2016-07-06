@@ -74,11 +74,21 @@ try:
 except KeyError:
     pass
 
+
+try:
+    queries = spec['queries']
+    if queries != 1:
+        errors.append("Cannot handle more than one query per hop")
+except KeyError:
+    pass
+
+
+
 # hostnames is okay whether on, off or missing.
 
 check_with_error('tos', "Cannot control IP TOS")
 check_with_error('wait', "Cannot control response wait time")
-check_with_error('sendwait', "Cannot control delay between sends")
+check_with_error('send-wait', "Cannot control delay between sends")
 
 
 # as is okay since they're done outside the program.

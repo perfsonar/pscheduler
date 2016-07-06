@@ -89,6 +89,11 @@ opt_parser.add_option("--hops",
                       action="store", type="int",
                       dest="hops")
 
+opt_parser.add_option("--queries",
+                      help="Queries sent per hop",
+                      action="store", type="int",
+                      dest="queries")
+
 opt_parser.add_option("--hostnames",
                       help="Resolve IPs to host names",
                       action="store_true",
@@ -158,6 +163,9 @@ if options.source is not None:
 
 if options.hops is not None:
    result['hops'] = options.hops
+
+if options.queries is not None:
+   result['queries'] = options.queries
 
 if options.hostnames is not None:
    result['hostnames'] = options.hostnames

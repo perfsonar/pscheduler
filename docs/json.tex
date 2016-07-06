@@ -74,11 +74,21 @@ whose name begins with the number sign (``{\tt \#}'').
 }
 \end{lstlisting}
 
-
 Developers wishing to use this loader in plugins written in Python
 should refer to the {\it pScheduler Plug-In Developer's Guide} for
 documentation on the {\tt json_load()} function.  \todo{This
   documentation does not exist yet.}
+
+
+
+\subsection{Ranges}\label{ranges}
+A number of types have range subtypes which consist of an object with
+an {\tt upper} and {\tt lower} pair.
+
+
+
+
+
 
 
 %
@@ -88,6 +98,9 @@ documentation on the {\tt json_load()} function.  \todo{This
 \section{Type Dictionary}
 
 This section covers simple and compound types used in pScheduler.
+
+For descriptions of standard types used by the limit system, refer to
+{\it The pScheduler Limit System}.
 
 
 \subsection{AnyJSON}
@@ -157,6 +170,20 @@ that the value be positive and contain no decimal point.
 \example\ {\tt 1}, {\tt 28} and {\tt 906}.
 
 
+
+\subsection{CardinalList}
+An array of zero or more {\it Cardinal} elements.
+
+\example\ {\tt [ 72, 897 ]} and {\tt [1, 2, 3]}
+
+
+\subsection{CardinalRange}
+A range of {\tt Cardinal} values.  See note about ranges in
+introductory material.
+
+
+
+
 \subsection{CardinalZero}
 A subset of {\tt number} as defined by ECMA 404 with the restriction
 that the value not be negative and contain no decimal point.
@@ -164,11 +191,45 @@ that the value not be negative and contain no decimal point.
 \example\ {\tt 0}, {\tt 37} and {\tt 1732}.
 
 
+\subsection{CardinalZeroList}
+An array of zero or more {\it CardinalZero} elements.
+
+\example\ {\tt [ 72, 897 ]} and {\tt [1, 2, 3]}
+
+
+\subsection{CardinalZeroRange}
+A range of {\tt CardinalZero} values.  See note about ranges in
+introductory material.
+
+
 
 \subsection{Duration}
-A length of time as defined by the ISO 8601 standard.
+A length of time as defined by a subset the ISO 8601 standard.  All
+types of intervals in the standard are supported except years (e.g.,
+{\tt P2Y}) and months (e.g., {\tt P7M}), which are inexact.  Use of
+either as part of a duration will result in an error.
 
 \example\ {\tt P3D}, {\tt PT15M} and {\tt P3DT2H6M18S}.
+
+
+\subsection{DurationRange}
+A JSON object containing a range of durations.
+
+\typeditem{lower}{Duration} The lower end of the range.
+
+\typeditem{upper}{Duration} The upper end of the range.
+
+The upper end of the range must be greater than the lower.
+
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "lower": "PT30S",
+    "upper": "PT1M"
+}
+\end{lstlisting}
+
 
 
 \subsection{Email}
@@ -191,7 +252,32 @@ optional but should be accepted if provided.
 \source{Wikipedia}{https://en.wikipedia.org/wiki/ISO_6709}
 
 
+
+
+
+\subsection{Host}
+The address of a host on the Internet as a string.
+
+{\bf IPv4.}  IPv4 addresses should be specified in the dotted-quad
+notation.  (Note that this format was never standardized, although it
+did first appear in RFC 790.)  Alternately, a hostname,
+partially-qualified domain name or fully-qualified domain name (FQDN)
+may be used.
+
+{\bf IPv6.}  IPv6 addresses should be specified in the format
+described by RFC 5952.  Alternately, a hostname, partially-qualified
+domain name or fully-qualified domain name (FQDN) may be used,
+prefixed with {\tt ipv6:}.  \todo{See if this is a good thing to do.}
+
+\example\ {\tt test.example.org}, {\tt 10.48.209.7}, {\tt
+  [2001:db8:a0b:12f0::1]} and {\tt ipv6:www6.example.net}.
+
+\source{IETF}{https://tools.ietf.org/html/rfc790}\\
+\source{IETF}{https://tools.ietf.org/html/rfc5952}
+
+
 \subsection{ICMPError}
+\todo{This is a standard value; should not be a type.}
 A string representing one of the possible ICMP type 3 errors defined by RFC 792 or RFC 1812:
 
 \begin{itemize}
@@ -218,71 +304,11 @@ A string representing one of the possible ICMP type 3 errors defined by RFC 792 
 
 
 
-\subsection{Host}
-The address of a host on the Internet as a string.
-
-{\bf IPv4.}  IPv4 addresses should be specified in the dotted-quad
-notation.  (Note that this format was never standardized, although it
-did first appear in RFC 790.)  Alternately, a hostname,
-partially-qualified domain name or fully-qualified domain name (FQDN)
-may be used.
-
-{\bf IPv6.}  IPv6 addresses should be specified in the format
-described by RFC 5952.  Alternately, a hostname, partially-qualified
-domain name or fully-qualified domain name (FQDN) may be used,
-prefixed with {\tt ipv6:}.  \todo{See if this is a good thing to do.}
-
-\example\ {\tt test.example.org}, {\tt 10.48.209.7}, {\tt
-  [2001:db8:a0b:12f0::1]} and {\tt ipv6:www6.example.net}.
-
-\source{IETF}{https://tools.ietf.org/html/rfc790}\\
-\source{IETF}{https://tools.ietf.org/html/rfc5952}
-
-
 \subsection{Integer}
 A subset of {\tt number} as defined by ECMA 404 with the restriction
 that the value contain no decimal point or scientific notation.
 
 \example\ {\tt 0}, {\tt 3713} and {\tt -6264}.
-
-
-\subsection{IntegerSI}
-An integer expressed as an {\tt Integer} or a string with SI units.
-The string will contain a {\tt number} as defined by ECMA 404 without
-any exponentiation (e.g., {\tt 38.5} but not {\tt 3.85e7}), followed
-optionally by suffix indicating magnitude.  The suffix may be any of
-the units listed in this table:
-
-\begin{center}
-  \begin{tabular}{|c|c|c|c|c|c|}
-    \hline
-    \multicolumn{3}{|c}{{\bf ISO 80000-1 Decimal Units}} & \multicolumn{3}{|c|}{{\bf IEC 60027 Binary Units}} \\
-    \hline
-    {\bf Unit} & {\bf Prefix} & {\bf Multiplier} & {\bf Unit} & {\bf Prefix} & {\bf Multiplier} \\
-    \hline
-    {\tt k} & kilo & $1000^{1}$ & {\tt Ki} & kibi & $1024^{1}$ \\
-    {\tt M} & mega & $1000^{2}$ & {\tt Mi} & mebi & $1024^{2}$ \\
-    {\tt G} & giga & $1000^{3}$ & {\tt Gi} & gibi & $1024^{3}$ \\
-    {\tt T} & tera & $1000^{4}$ & {\tt Ti} & tebi & $1024^{4}$ \\
-    {\tt P} & peta & $1000^{5}$ & {\tt Pi} & pebi & $1024^{5}$ \\
-    {\tt E} & exa & $1000^{6}$ & {\tt Ei} & exbi & $1024^{6}$ \\
-    {\tt Z} & zetta & $1000^{7}$ & {\tt Zi} & zebi & $1024^{7}$ \\
-    {\tt Y} & yotta & $1000^{8}$ & {\tt Yi} & yobi & $1024^{8}$ \\
-    \hline
-  \end{tabular}
-\end{center}
-
-Whitespace and case are ignored.
-
-\example\ {\tt 1234},  {\tt "19.2k"}, {\tt "12G"}, {\tt "128Ki"} and {\tt "3.1415Pi"}
-
-Note to developers: The pScheduler Python module contains a {\tt
-  si_as_integer()} function which will convert an integer or string
-for this type to an integer.
-
-\source{ISO}{http://www.iso.org/iso/catalogue_detail?csnumber=30669}\\
-\source{IEC}{https://webstore.iec.ch/publication/97}\\
-\source{Wikipedia}{https://en.wikipedia.org/wiki/Binary_prefix}
 
 
 
@@ -382,6 +408,14 @@ A {\tt number} as defined by ECMA 404.
 \example\ {\tt 47}, {\tt -19.3} and {\tt 6.022e23}.
 
 
+\subsection{Numeric}
+A numeric value, consisiting of a {\tt Number} or {\tt SINumber}.
+
+\subsection{NumericRange}
+A JSON object containing a range of {\tt Numeric} values.
+
+
+
 
 \subsection{ParticipantResult}
 Information about a participant in a test and the result it produced.
@@ -398,6 +432,11 @@ by the participant.
 A {\tt Number}, restricted to the range of {\tt [0.0, 1.0]}.
 
 \example\ {\tt 0.2874}, {\tt 0} and {\tt 0.31415}.
+
+
+\subsection{ProbabilityRange}
+A JSON object containing a range of {\tt Probability} values.
+
 
 
 \subsection{RunResult}
@@ -491,6 +530,46 @@ not be counted.  This value may not be provided without a {\tt
 \end{lstlisting}
 
 
+\subsection{SINumber}
+An integer expressed as an {\tt Integer} or a string with SI units.
+The string will contain a {\tt number} as defined by ECMA 404 without
+any exponentiation (e.g., {\tt 38.5} but not {\tt 3.85e7}), followed
+optionally by suffix indicating magnitude.  The suffix may be any of
+the units listed in this table:
+
+\begin{center}
+  \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    \multicolumn{3}{|c}{{\bf ISO 80000-1 Decimal Units}} & \multicolumn{3}{|c|}{{\bf IEC 60027 Binary Units}} \\
+    \hline
+    {\bf Unit} & {\bf Prefix} & {\bf Multiplier} & {\bf Unit} & {\bf Prefix} & {\bf Multiplier} \\
+    \hline
+    {\tt k} & kilo & $1000^{1}$ & {\tt Ki} & kibi & $1024^{1}$ \\
+    {\tt M} & mega & $1000^{2}$ & {\tt Mi} & mebi & $1024^{2}$ \\
+    {\tt G} & giga & $1000^{3}$ & {\tt Gi} & gibi & $1024^{3}$ \\
+    {\tt T} & tera & $1000^{4}$ & {\tt Ti} & tebi & $1024^{4}$ \\
+    {\tt P} & peta & $1000^{5}$ & {\tt Pi} & pebi & $1024^{5}$ \\
+    {\tt E} & exa & $1000^{6}$ & {\tt Ei} & exbi & $1024^{6}$ \\
+    {\tt Z} & zetta & $1000^{7}$ & {\tt Zi} & zebi & $1024^{7}$ \\
+    {\tt Y} & yotta & $1000^{8}$ & {\tt Yi} & yobi & $1024^{8}$ \\
+    \hline
+  \end{tabular}
+\end{center}
+
+Whitespace and case are ignored.
+
+\example\ {\tt 1234},  {\tt "19.2k"}, {\tt "12G"}, {\tt "128Ki"} and {\tt "3.1415Pi"}
+
+Note to developers: The pScheduler Python module contains a {\tt
+  si_as_integer()} function which will convert an integer or string
+for this type to an integer.
+
+\source{ISO}{http://www.iso.org/iso/catalogue_detail?csnumber=30669}\\
+\source{IEC}{https://webstore.iec.ch/publication/97}\\
+\source{Wikipedia}{https://en.wikipedia.org/wiki/Binary_prefix}
+
+
+
 \subsection{String}
 A {\tt string} as defined by ECMA 404.
 
@@ -518,7 +597,7 @@ way.
 \begin{lstlisting}[language=json]
 {
     "style": "regex",
-    "match": "^(apple|banana|cherry)$",
+    "match": "^(apple|banana|cherry)\$",
     "case-sensitive": true,
     "invert": true
 }

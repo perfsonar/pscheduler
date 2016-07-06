@@ -12,7 +12,7 @@ def spec_is_valid(json):
             "count":             { "$ref": "#/pScheduler/Cardinal" },
             "dest":              { "$ref": "#/pScheduler/Host" },
             # TODO: This is supposed to be a 20-bit number.  Validate that.
-            "flow-label":        { "$ref": "#/pScheduler/CardinalZero" },
+            "flowlabel":         { "$ref": "#/pScheduler/CardinalZero" },
             "hostnames":         { "$ref": "#/pScheduler/Boolean" },
             "interval":          { "$ref": "#/pScheduler/Duration" },
             "ip-version":        { "$ref": "#/pScheduler/ip-version" },
@@ -70,4 +70,28 @@ def result_is_valid(json):
             "loss",
             ]
         }
+    return json_validate(json, schema)
+
+
+def limit_is_valid(json):
+    schema = {
+        "type": "object",
+        "properties": {
+            "count":             { "$ref": "#/pScheduler/Limit/Cardinal" },
+            "dest":              { "$ref": "#/pScheduler/Limit/String" },
+            "flowlabel":         { "$ref": "#/pScheduler/Limit/CardinalZeroList" },
+            "hostnames":         { "$ref": "#/pScheduler/Limit/Boolean" },
+            "interval":          { "$ref": "#/pScheduler/Limit/Duration" },
+            "ip-version":        { "$ref": "#/pScheduler/Limit/CardinalList" },
+            "source":            { "$ref": "#/pScheduler/Limit/String" },
+            "suppress-loopback": { "$ref": "#/pScheduler/Limit/Boolean" },
+            "tos":               { "$ref": "#/pScheduler/Limit/CardinalList" },
+            "length":            { "$ref": "#/pScheduler/Limit/Cardinal" },
+            "ttl":               { "$ref": "#/pScheduler/Limit/Cardinal" },
+            "deadline":          { "$ref": "#/pScheduler/Limit/Duration" },
+            "timeout":           { "$ref": "#/pScheduler/Limit/Duration" }
+        },
+        "additionalProperties": False
+        }
+
     return json_validate(json, schema)

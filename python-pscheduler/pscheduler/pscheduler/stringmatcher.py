@@ -57,10 +57,10 @@ class StringMatcher():
                 self.match = self.match.lower()
 
 
+    def __matches(self, string):
 
-    def matches(self, string):
-
-        "Try to match a candidate string and return a Boolean"
+        """Do all of the match except the inversion, which wil be done by the
+        caller."""
 
         # TODO: There's probably a more elegant way to do this...
 
@@ -91,6 +91,16 @@ class StringMatcher():
 
 
 
+    def matches(self, string):
+
+        "Try to match a candidate string and return a Boolean"
+
+        result = self.__matches(string)
+        return not result if self.invert else result
+
+
+
+
 # Test program
 
 if __name__ == "__main__":
@@ -98,7 +108,8 @@ if __name__ == "__main__":
     matcher = StringMatcher({
         "style": "regex",
         "match": "fo+",
-        "case-insensitive": False
+        "case-insensitive": False,
+        "invert": False
         })
 
     for string in [ "foo", "bar", "foobar", "bazbarfoo" ]:

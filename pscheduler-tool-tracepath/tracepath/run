@@ -235,10 +235,14 @@ if do_ases:
 # Spit out the results
 
 pscheduler.succeed_json( {
+    'succeeded': True,
+    'diags': stdout,
+    'error': None,
+    'result': {
+        'schema': 1,
         'succeeded': True,
-        'diags': stdout,
-        'error': stderr,
-        'result': {
-            'hops': traced_hops
-            }
-        } )
+        'paths': [
+            traced_hops
+        ]
+    }
+} )

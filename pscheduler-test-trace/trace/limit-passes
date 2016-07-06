@@ -1,0 +1,344 @@
+#!/usr/bin/python
+#
+# Checker for 'trace' task limits
+#
+
+import pscheduler
+
+from validate import spec_is_valid
+from validate import limit_is_valid
+
+#
+# Load and validate everything
+#
+
+try:
+    json = pscheduler.json_load()
+except ValueError as ex:
+    pscheduler.fail("Invalid JSON %s" % str(ex))
+
+spec = json["spec"]
+valid, message = spec_is_valid(spec)
+if not valid:
+    raise ValueError("Invalid test spec: %s" % message)
+
+limit = json["limit"]
+valid, message = limit_is_valid(limit)
+if not valid:
+    raise ValueError("Invalid limit: %s" % message)
+
+
+#
+# Evaluate everything
+#
+
+errors = []
+
+
+
+#
+# Algorithm
+#
+
+try:
+    match = pscheduler.StringMatcher(limit["algorithm"]["match"])
+    try:
+        invert = limit["algorithm"]["invert"]
+    except KeyError:
+        invert = False
+    in_limit = match.matches(spec["algorithm"])
+    if not in_limit or (invert and in_limit):
+        try:
+            errors.append(limit["algorithm"]["fail-message"])
+        except KeyError:
+            errors.append("Algorithm does not match limit")
+except KeyError:
+    pass  # Don't care if not there.
+
+
+#
+# AS
+#
+
+try:
+    # Dodges a reserved word.
+    as_ = spec["as"]
+    if as_ != limit["as"]["match"]:
+        try:
+            errors.append(limit["as"]["fail-message"])
+        except KeyError:
+            errors.append("AS resolution must be %s"
+                          % str(not as_).lower())
+except KeyError:
+    pass  # Don't care if not there.
+
+
+
+#
+# Destination Port
+#
+
+try:
+    nrange = pscheduler.NumericRange(limit["dest-port"]["range"])
+    try:
+        invert = limit["dest-port"]["invert"]
+    except KeyError:
+        invert = False
+
+    contains, message = nrange.contains(spec["dest-port"], invert)
+    if not contains:
+        errors.append("Destination port is %s" % message)
+
+except KeyError:
+    pass  # Not there?  Don't care.
+
+
+
+#
+# Dest
+#
+
+try:
+    match = pscheduler.StringMatcher(limit["dest"]["match"])
+    try:
+        invert = limit["dest"]["invert"]
+    except KeyError:
+        invert = False
+    in_limit = match.matches(spec["dest"])
+    if not in_limit or (invert and in_limit):
+        try:
+            errors.append(limit["dest"]["fail-message"])
+        except KeyError:
+            errors.append("Destination does not match limit")
+except KeyError:
+    pass  # Don't care if not there.
+
+
+
+#
+# First TTL
+#
+
+try:
+    nrange = pscheduler.NumericRange(limit["first-ttl"]["range"])
+    try:
+        invert = limit["first-ttl"]["invert"]
+    except KeyError:
+        invert = False
+
+    contains, message = nrange.contains(spec["first-ttl"], invert)
+    if not contains:
+        errors.append("First time to live is %s" % message)
+
+except KeyError:
+    pass  # Not there?  Don't care.
+
+
+#
+# Fragment
+#
+
+try:
+    fragment = spec["fragment"]
+    if fragment != limit["fragment"]["match"]:
+        try:
+            errors.append(limit["fragment"]["fail-message"])
+        except KeyError:
+            errors.append("Fragmentation must be %s"
+                          % str(not fragment).lower())
+except KeyError:
+    pass  # Don't care if not there.
+
+
+
+#
+# Hops
+#
+
+try:
+    nrange = pscheduler.NumericRange(limit["hops"]["range"])
+    try:
+        invert = limit["hops"]["invert"]
+    except KeyError:
+        invert = False
+
+    contains, message = nrange.contains(spec["hops"], invert)
+    if not contains:
+        errors.append("Number of hops is %s" % message)
+
+except KeyError:
+    pass  # Not there?  Don't care.
+
+
+#
+# Queries
+#
+
+try:
+    nrange = pscheduler.NumericRange(limit["queries"]["range"])
+    try:
+        invert = limit["queries"]["invert"]
+    except KeyError:
+        invert = False
+
+    contains, message = nrange.contains(spec["queries"], invert)
+    if not contains:
+        errors.append("Number of queries is %s" % message)
+
+except KeyError:
+    pass  # Not there?  Don't care.
+
+
+#
+# Hostnames
+#
+
+try:
+    hostnames = spec["hostnames"]
+    if hostnames != limit["hostnames"]["match"]:
+        try:
+            errors.append(limit["hostnames"]["fail-message"])
+        except KeyError:
+            errors.append("Hostname resolution must be %s"
+                          % str(not hostnames).lower())
+except KeyError:
+    pass  # Don't care if not there.
+
+
+
+#
+# IP Version
+#
+
+# TODO: Most of the tools default to 4.  Need to figure out how we
+# deal with being given a source or destination that violates this
+# limit.
+
+try:
+    if spec["ip-version"] not in limit["ip-version"]["match"]:
+        try:
+            errors.append(limit["ip-version"]["fail-message"])
+        except KeyError:
+            errors.append("IP version %d not allowed" % spec["ip-version"])
+except KeyError:
+    pass  # Don't care if not there.
+
+
+
+#
+# Length
+#
+
+try:
+    nrange = pscheduler.NumericRange(limit["length"]["range"])
+    try:
+        invert = limit["length"]["invert"]
+    except KeyError:
+        invert = False
+
+    contains, message = nrange.contains(spec["length"], invert)
+    if not contains:
+        errors.append("Length is %s" % message)
+
+except KeyError:
+    pass  # Not there?  Don't care.
+
+
+
+#
+# Probe Type
+#
+
+try:
+    match = pscheduler.StringMatcher(limit["probe-type"]["match"])
+    try:
+        invert = limit["probe-type"]["invert"]
+    except KeyError:
+        invert = False
+    in_limit = match.matches(spec["probe-type"])
+    if not in_limit or (invert and in_limit):
+        try:
+            errors.append(limit["probe-type"]["fail-message"])
+        except KeyError:
+            errors.append("Probe type does not match limit")
+except KeyError:
+    pass  # Don't care if not there.
+
+
+
+#
+# Send Wait
+#
+try:
+    match = pscheduler.DurationRange(limit["send-wait"]["range"])
+    if spec["send-wait"] not in match:
+        try:
+            errors.append(limit["send-wait"]["fail-message"])
+        except KeyError:
+            errors.append("Send wait %s not within limit %s..%s"
+                          % (spec["send-wait"],
+                             limit["send-wait"]["range"]["lower"],
+                             limit["send-wait"]["range"]["upper"]))
+except KeyError:
+    pass  # Don't care if not there.
+
+
+#
+# Source
+#
+
+try:
+    match = pscheduler.StringMatcher(limit["source"]["match"])
+    if not match.matches(spec["source"]):
+        try:
+            errors.append(limit["source"]["fail-message"])
+        except KeyError:
+            errors.append("Source does not match limit")
+except KeyError:
+    pass  # Don't care if not there.
+
+
+
+#
+# TOS
+#
+
+try:
+    if spec["tos"] not in limit["tos"]["match"]:
+        try:
+            errors.append(limit["tos"]["fail-message"])
+        except KeyError:
+            errors.append("Type of service not within limit")
+except KeyError:
+    pass  # Don't care if not there.
+
+
+
+
+#
+# Wait
+#
+try:
+    match = pscheduler.DurationRange(limit["wait"]["range"])
+    if spec["wait"] not in match:
+        try:
+            errors.append(limit["wait"]["fail-message"])
+        except KeyError:
+            errors.append("Wait %s not within limit %s..%s"
+                          % (spec["wait"],
+                             limit["wait"]["range"]["lower"],
+                             limit["wait"]["range"]["upper"]))
+except KeyError:
+    pass  # Don't care if not there.
+
+
+#
+# Finish up
+#
+
+result = { "passes": not errors }
+
+if errors:
+    result["errors"] = errors
+
+pscheduler.succeed_json(result)

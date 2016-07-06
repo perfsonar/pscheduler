@@ -15,6 +15,8 @@ FILES=\
 	spec-format \
 	spec-is-valid \
 	spec-to-cli \
+	limit-is-valid \
+	limit-passes
 
 MODULES=\
 	validate \

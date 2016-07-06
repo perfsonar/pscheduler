@@ -27,7 +27,7 @@ def result_is_valid(json):
         "properties": {
             "duration":         { "$ref": "#/pScheduler/Duration" },
             "schema":           { "$ref": "#/pScheduler/Cardinal" },
-            "succeeded":         { "$ref": "#/pScheduler/Boolean" },
+            "succeeded":        { "$ref": "#/pScheduler/Boolean" },
             },
         "required": [
             "duration",
@@ -35,4 +35,18 @@ def result_is_valid(json):
             "succeeded",
             ]
         }
+    return json_validate(json, schema)
+
+
+def limit_is_valid(json):
+    schema = {
+        "type": "object",
+        "properties": {
+            "duration":         { "$ref": "#/pScheduler/Limit/Duration" },
+            "starting-comment": { "$ref": "#/pScheduler/Limit/String" },
+            "parting-comment":  { "$ref": "#/pScheduler/Limit/String" }
+        },
+        "additionalProperties": False
+        }
+
     return json_validate(json, schema)

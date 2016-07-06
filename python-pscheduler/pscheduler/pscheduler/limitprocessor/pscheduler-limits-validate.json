@@ -1,0 +1,125 @@
+{
+    "local": {
+
+	"Identifier": { 
+	    "type": "object",
+	    "properties": {
+		"name": { "$ref": "#/pScheduler/String" },
+		"description": { "$ref": "#/pScheduler/String" },
+		"type": { "$ref": "#/pScheduler/String" },
+		"data": { "$ref": "#/pScheduler/AnyJSON" },
+		"invert": { "$ref": "#/pScheduler/Boolean" }
+	    },
+	    "additionalProperties": false,
+	    "required": [ "name", "description", "type", "data" ]
+	},
+
+	"Classifier": {
+	    "type": "object",
+	    "properties": {
+		"name": { "$ref": "#/pScheduler/String" },
+		"description": { "$ref": "#/pScheduler/String" },
+		"identifiers": {
+		    "type": "array",
+		    "items": { "$ref": "#/pScheduler/String" }
+		}
+	    },
+	    "additionalProperties": false,
+	    "required": [ "name", "description", "identifiers" ]
+	},
+
+	"LimitFull": { 
+	    "type": "object",
+	    "properties": {
+		"name": { "$ref": "#/pScheduler/String" },
+		"description": { "$ref": "#/pScheduler/String" },
+		"type": { "$ref": "#/pScheduler/String" },
+		"data": { "$ref": "#/pScheduler/AnyJSON" }
+	    },
+	    "additionalProperties": false,
+	    "required": [ "name", "description", "type", "data" ]
+	},
+
+	"LimitCloned": { 
+	    "type": "object",
+	    "properties": {
+		"name": { "$ref": "#/pScheduler/String" },
+		"description": { "$ref": "#/pScheduler/String" },
+		"clone": { "$ref": "#/pScheduler/String" },
+		"data": { "$ref": "#/pScheduler/AnyJSON" }
+	    },
+	    "additionalProperties": false,
+	    "required": [ "name", "description", "type", "data" ]
+	},
+
+	"Limit": {
+	    "one-of": [ "LimitFull", "LimitCloned" ]
+	},
+
+	"Application": {
+	    "type": "object",
+	    "properties": {
+		"description": { "$ref": "#/pScheduler/String" },
+		"classifier": { "$ref": "#/pScheduler/String" },
+		"apply": {
+		    "type": "array",
+		    "items": { "$ref": "#/local/ApplicationLimit" }
+		    },
+		"stop-on-failure": {
+		    "type": "boolean",
+		    "default": false
+		},
+		"invert": { "$ref": "#/pScheduler/Boolean" }
+	    },
+	    "additionalProperties": false,
+	    "required": [ "apply" ]
+	},
+
+	"ApplicationLimit": {
+	    "type": "object",
+	    "properties": {
+		"require": {
+		    "type": "string",
+		    "enum": [ "none", "one", "any", "all" ]
+		},
+		"limits": {
+		    "type": "array",
+		    "items": { "$ref": "#/pScheduler/String" }
+		}
+	    },
+	    "additionalProperties": false,
+	    "required": [ "require", "limits" ]
+	}
+    },
+
+    "type": "object",
+    "properties": {
+        "schema": {
+	    "$ref": "#/pScheduler/Cardinal"
+	},
+        "identifiers": { 
+	    "type": "array",
+	    "items": { "$ref": "#/local/Identifier" }
+	},
+        "classifiers": { 
+	    "type": "array",
+	    "items": { "$ref": "#/local/Classifier" }
+	},
+        "limits": { 
+	    "type": "array",
+	    "items": { "$ref": "#/local/Limit" }
+	},
+        "applications": { 
+	    "type": "array",
+	    "items": { "$ref": "#/local/Application" }
+	}
+    },
+    "additionalProperties": false,
+    "required": [
+        "schema",
+        "identifiers",
+        "classifiers",
+        "limits",
+        "applications"
+    ]
+}

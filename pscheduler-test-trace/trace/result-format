@@ -32,6 +32,9 @@ if format == 'text/plain':
 
    template = None
 
+   path_template = """
+Path {number}:"""
+
    hop_template = """{number}\t\
 {.section hostname}{hostname} ({.end}\
 {.section ip}{ip}{.or}{.section hostname}NONE{.or}No Response{.end}{.end}\
@@ -62,6 +65,12 @@ elif format == 'text/html':
 </tr>
    """
 
+   path_template = """
+<tr>
+  <th colspan="7">Path {number}</th>
+</tr>
+"""
+
    hop_template = """
 <tr>
   <th>{number}</th>
@@ -70,7 +79,6 @@ elif format == 'text/html':
   <td>{.section rtt}{rtt}{.end}</td>
   <td>{.section error}{error}{.end}</td>
   <td>{.section as}
-
 {.section number}{number}{.or}{.end}
 {.end}</td>
   <td>{.section as}{.section owner}{owner}{.or}{.end}{.end}</td>
@@ -96,17 +104,27 @@ if not json['succeeded']:
 if template is not None:
    print jsontemplate.expand(template, json).strip()
 
-hopno = 1
-for hop in json['hops']:
-   hop['number'] = hopno
-   try:
-      ms = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(hop['rtt'])) * 1000
-      hop['rtt'] = ('%f' % ms).rstrip('0').rstrip('.')
-   except KeyError:
-      pass
 
-   print jsontemplate.expand(hop_template, hop).strip()
-   hopno += 1
+pathno = 0
+npaths = len(json['paths'])
+
+for path in json['paths']:
+
+   pathno += 1
+   if npaths > 1:
+      print jsontemplate.expand(path_template, { 'number': pathno })
+
+   hopno = 1
+   for hop in path:
+      hop['number'] = hopno
+      try:
+         ms = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(hop['rtt'])) * 1000
+         hop['rtt'] = ('%f' % ms).rstrip('0').rstrip('.')
+      except KeyError:
+         pass
+
+      print jsontemplate.expand(hop_template, hop).strip()
+      hopno += 1
 
 if end_template is not None:
    print jsontemplate.expand(end_template, json).strip()

@@ -67,6 +67,16 @@ try:
 except KeyError:
     pass  # None is okay
 
+
+# TODO:  Remove this when we can do multiples.
+try:
+    queries = spec['queries']
+    if queries != 1:
+        errors.append("Cannot handle more than one query per hop")
+except KeyError:
+    pass
+
+
 # hostnames - All are supported
 
 try:

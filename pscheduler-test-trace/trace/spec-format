@@ -36,6 +36,7 @@ Fragmentation ...... {.section fragment}{fragment}{.or}Not Specified{.end}
 First TTL .......... {.section first-ttl}{first-ttl}{.or}Not Specified{.end}
 Source ............. {.section source}{source}{.or}Not Specified{.end}
 Max Hops ........... {.section hops}{hops}{.or}Not Specified{.end}
+Queries per Hop .... {.section queries}{queries}{.or}Not Specified{.end}
 Resolve Hosts ...... {.section hostnames}{hostnames}{.or}Not Specified{.end}
 Destination Port ... {.section dest-port}{dest-port}{.or}Not Specified{.end}
 Type of Service .... {.section tos}{tos}{.or}Not Specified{.end}
@@ -56,6 +57,7 @@ elif format == 'text/html':
 <tr><td>First TTL</td><td>{.section first-ttl}{first-ttl}{.or}Not Specified{.end}</td></tr>
 <tr><td>Source</td><td>{.section source}{source}{.or}Not Specified{.end}</td></tr>
 <tr><td>Max Hops</td><td>{.section hops}{hops}{.or}Not Specified{.end}</td></tr>
+<tr><td>Queries per Hop</td><td>{.section queries}{queries}{.or}Not Specified{.end}</td></tr>
 <tr><td>Resolve Hosts</td><td>{.section hostnames}{hostnames}{.or}Not Specified{.end}</td></tr>
 <tr><td>Destination Port</td><td>{.section dest-port}{dest-port}{.or}Not Specified{.end}</td></tr>
 <tr><td>Type of Service</td><td>{.section tos}{tos}{.or}Not Specified{.end}</td></tr>

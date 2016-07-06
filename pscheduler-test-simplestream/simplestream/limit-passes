@@ -1,0 +1,146 @@
+#!/usr/bin/python
+#
+# Checker for 'simplestream' task limits
+#
+
+import pscheduler
+
+from validate import spec_is_valid
+from validate import limit_is_valid
+
+#
+# Load and validate everything
+#
+
+try:
+    json = pscheduler.json_load()
+except ValueError as ex:
+    pscheduler.fail("Invalid JSON %s" % str(ex))
+
+spec = json['spec']
+valid, message = spec_is_valid(spec)
+if not valid:
+    raise ValueError("Invalid test spec: %s" % message)
+
+limit = json['limit']
+valid, message = limit_is_valid(limit)
+if not valid:
+    raise ValueError("Invalid limit: %s" % message)
+
+
+#
+# Evaluate everything
+#
+
+errors = []
+
+
+#
+# Dawdle
+#
+
+try:
+    drange = pscheduler.DurationRange(limit["dawdle"]["range"])
+    try:
+        invert = limit["dawdle"]["invert"]
+    except KeyError:
+        invert = False
+
+    contains, message = drange.contains(spec["dawdle"], invert)
+    if not contains:
+        errors.append("Dawdle is %s" % message)
+except KeyError:
+    pass
+
+
+#
+# Fail
+#
+
+try:
+    nrange = pscheduler.NumericRange(limit["fail"]["range"])
+    try:
+        invert = limit["fail"]["invert"]
+    except KeyError:
+        invert = False
+
+    fail = spec["fail"]
+
+    contains, message = nrange.contains(fail, invert)
+    if not contains:
+        errors.append("Fail %s is %s" % (fail, message))
+
+except KeyError:
+    pass  # Not there?  Don't care.
+
+
+#
+# Dest
+#
+
+try:
+    match = pscheduler.StringMatcher(limit["dest"]["match"])
+    try:
+        invert = limit["dest"]["invert"]
+    except KeyError:
+        invert = False
+    in_limit = match.matches(spec["dest"])
+    if not in_limit or (invert and in_limit):
+        try:
+            errors.append(limit["dest"]["fail-message"])
+        except KeyError:
+            errors.append("Destination does not match limit")
+except KeyError:
+    pass  # Don't care if not there.
+
+
+
+#
+# Test Material
+#
+
+try:
+    match = pscheduler.StringMatcher(limit["test-material"]["match"])
+    try:
+        invert = limit["test-material"]["invert"]
+    except KeyError:
+        invert = False
+    in_limit = match.matches(spec["test-material"])
+    if not in_limit or (invert and in_limit):
+        try:
+            errors.append(limit["test-material"]["fail-message"])
+        except KeyError:
+            errors.append("Test material does not match limit")
+except KeyError:
+    pass  # Don't care if not there.
+
+
+
+#
+# Timeout
+#
+
+try:
+    drange = pscheduler.DurationRange(limit["timeout"]["range"])
+    try:
+        invert = limit["timeout"]["invert"]
+    except KeyError:
+        invert = False
+
+    contains, message = drange.contains(spec["timeout"], invert)
+    if not contains:
+        errors.append("Timeout is %s" % message)
+except KeyError:
+    pass
+
+
+#
+# Finish up
+#
+
+result = { "passes": not errors }
+
+if errors:
+    result["errors"] = errors
+
+pscheduler.succeed_json(result)

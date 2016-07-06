@@ -124,12 +124,12 @@ probes.
 
 
 \subsection{Example}
-\todo{Finish this.}
 \begin{lstlisting}[language=json]
 {
     "schema": 1,
     "dest": "somehost.example.org",
-    "ip-version": 4
+    "ip-version": 4,
+    "hops": 12
 }
 \end{lstlisting}
 
@@ -145,18 +145,37 @@ probes.
 The result consists of a single JSON object containing the pairs
 below.  \seejson
 
-\todo{Write this.}
+\typeditem{schema}{Cardinal} The schema version of the result.
 
-\subsection{Hop Format}
+\typeditem{succeeded}{Boolean} Whether or not the trace succeeded
 
-Each item in the {\tt hops} array of the result consists of a single
-JSON object containing the pairs below.  \seejson
+\typeditem{paths}{Array} An array of arrays, each containing one or
+more of the hops found along the path to the destination.  Each hop is
+a JSON object as described in \autoref{hopformat},
+{\it \nameref{hopformat}}.  The array might look like this:
+\begin{lstlisting}[language=json]
+{
+    ...
+    "paths": [
+	[ { ...Path 1, hop1... }, { ...Path 1, hop2 ...}, ... ],
+	[ { ...Path 2, hop1... }, { ...Path 2, hop2 ...}, ... ],
+    ],
+    ...
+}
+\end{lstlisting}
+
+
+
+
+\subsection{Hop Format}\label{hopformat}
+
+Each hop in the result consists of a single JSON object containing the
+pairs below.  \seejson
 
 Note that  all pairs are  optional, and a  hop for which there  was no
 response will be an empty object.
 
 \typeditem{ip}{IPAddress} The IP address of a hop along the path.
-\todo{This needs to be defined in the dictionary.}
 
 \typeditem{hostname}{Host} The hostname of the responding host.  This
 value will not be provided if {\tt hostnames} in the test
@@ -173,30 +192,46 @@ known.
 
 \typeditem{error}{ICMPError} Any error reported for this hop.
 
+A complete hop might look like this:
+\begin{lstlisting}[language=json]
+{
+    "ip": "192.0.2.1",
+    "hostname": "eng-gw.example.com",
+    "rtt": "PT0.000219S",
+    "as": {
+        "number": 11537,
+        "owner": "ABILENE - Internet2, US"
+    }
+}
+\end{lstlisting}
+
+
+
 \subsection{Example}
 \begin{lstlisting}[language=json]
 {
     "schema": 1,
-
     "succeeded": true,
-    "dest-host": "www.example.org",
-    "dest-ip": "203.0.113.80",
-    "length": 65536,
-    "hops": [
-        {
-          "ip": "192.0.2.1",
-          "hostname": "eng-gw.example.com",
-          "rtt": "PT0.000219S",
-          "as": 2349
-        },
-        {
-        },
-        {
-          "ip": "198.51.100.12",
-          "hostname": "firewall.example.com",
-          "rtt": "PT0.00159S",
-          "error": "net-unreachable"
-        }
+    "paths": [
+	[
+            {
+		"ip": "192.0.2.1",
+		"hostname": "eng-gw.example.com",
+		"rtt": "PT0.000219S",
+		"as": {
+                    "number": 11537,
+                    "owner": "ABILENE - Internet2, US"
+                }
+            },
+            {
+            },
+            {
+		"ip": "198.51.100.12",
+		"hostname": "firewall.example.com",
+		"rtt": "PT0.00159S",
+		"error": "net-unreachable"
+            }
+	]
     ]
 }
 \end{lstlisting}

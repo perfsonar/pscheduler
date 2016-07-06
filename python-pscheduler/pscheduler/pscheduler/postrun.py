@@ -38,6 +38,7 @@ def run_post(
 
     status, task = pscheduler.url_get(task_url_text, params={'detail': 1})
 
+
     # Generate a list of the task URLs
 
     task_urls =[]
