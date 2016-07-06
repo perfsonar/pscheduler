@@ -331,6 +331,7 @@ pscheduler.succeed_json( {
     'error': None,
     'result': {
         'schema': 1,
+        'succeeded': True,
         'paths': [
             traced_hops
         ]

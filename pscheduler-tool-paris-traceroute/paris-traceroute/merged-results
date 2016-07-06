@@ -19,6 +19,6 @@ merged = {
     }
 
 if succeeded:
-    merged['hops'] = input['results'][0]['result']['hops']
+    merged['paths'] = input['results'][0]['result']['paths']
 
 pscheduler.succeed_json(merged)
