@@ -171,6 +171,25 @@ except KeyError:
 
 
 #
+# Queries
+#
+
+try:
+    nrange = pscheduler.NumericRange(limit["queries"]["range"])
+    try:
+        invert = limit["queries"]["invert"]
+    except KeyError:
+        invert = False
+
+    contains, message = nrange.contains(spec["queries"], invert)
+    if not contains:
+        errors.append("Number of queries is %s" % message)
+
+except KeyError:
+    pass  # Not there?  Don't care.
+
+
+#
 # Hostnames
 #
 
