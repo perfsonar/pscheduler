@@ -37,7 +37,6 @@ except KeyError as e:
 except:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 
-    
 
 def run_client():    
     time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to boot
@@ -50,12 +49,15 @@ def run_client():
 
     # who to connect to
     iperf_args.append('-c')
-    iperf_args.append(input['test']['spec']['receiver'])
+    iperf_args.append(test_spec['receiver'])
 
     # duration
     iperf_args.append('-t')
-    iperf_args.append(input['test']['spec']['duration'])
+    iperf_args.append(test_spec['duration'])
 
+    if test_spec.has_key('interval'):
+        iperf_args.append('-i')
+        iperf_args.append(test_spec['interval'])
 
     logger.info("Running command: %s" % " ".join(iperf_args))
 

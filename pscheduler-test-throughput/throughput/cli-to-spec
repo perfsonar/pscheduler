@@ -42,9 +42,14 @@ opt_parser.add_option("-r", "--receiver",
                       dest="receiver")
 
 opt_parser.add_option("-d", "--duration",
-                      help="Receiving host",
+                      help="Total runtime of test",
                       action="store", type="string",
                       dest="duration")
+
+opt_parser.add_option("-i", "--interval",
+                      help="How often to report results (internally, results still reported in aggregate at end)",
+                      action="store", type="string",
+                      dest="interval")
 
 
 (options, remaining_args) = opt_parser.parse_args(args)
@@ -62,6 +67,9 @@ if options.receiver is not None:
 
 if options.receiver is not None:
    result['duration'] = options.duration
+
+if options.receiver is not None:
+   result['interval'] = options.interval
 
 
 pscheduler.succeed_json(result)

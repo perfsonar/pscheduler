@@ -18,6 +18,8 @@ json = pscheduler.json_load(exit_on_error=True)
 
 logger.debug("json is %s" % json)
 
+print json
+
 if format == 'text/plain':
 
    template = """
