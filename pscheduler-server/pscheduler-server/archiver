@@ -125,12 +125,9 @@ def main_program():
             assert len(participants) == len(result_full)
             participants_merged = []
             for participant in participants:
-                participants_merged.append({
-                        'host': socket.gethostname() if participant is None \
-                            else participant,
-                        'result': result_full.pop(0)
-                        })
-
+                participants_merged.append(socket.gethostname() \
+                                           if participant is None \
+                                           else participant)
 
             json = {
                 'data': archiver_data,

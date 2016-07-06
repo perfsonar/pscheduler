@@ -983,9 +983,11 @@ This method sends the results of a run to the archiver.
 
 \calloutitem{Standard Input} JSON containing the following items:
 
-
 \begin{itemize}
 \item \typeditem{data}{AnyJSON} Archiver-specific information on how to proceed.
+
+\item\typeditem{participants}{Array}: An array of {\tt String} items
+  listing the nodes that participated in the test.
 
 \item \typeditem{result}{RunResult} A {\tt RunResult} describing
   the results of the run.
@@ -1002,6 +1004,7 @@ This method sends the results of a run to the archiver.
 \begin{lstlisting}[language=json,firstnumber=1]
 {
     "data": { ...Archiver-Specific Data... },
+    "participants": [ "host1", "host2" ],
     "task": { ...Task specification... },
     "result": { ...Results of run... },
     "attempts": 2,
