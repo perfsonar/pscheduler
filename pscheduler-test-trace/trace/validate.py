@@ -58,20 +58,25 @@ def result_is_valid(json):
                 "required": [
                     # Nothing required.
                     ]
-                }
-            },
+                },
+
+            "hoparray": {
+                "type": "array",
+                "items": { "$ref": "#/local/hop" }
+            }
+        },
 
         "type": "object",
         "properties": {
-            "hops": {
+            "paths": {
                 "type": "array",
-                "items": { "$ref": "#/local/hop" },
+                "items": { "$ref": "#/local/hoparray" },
                 },
             "schema": { "$ref": "#/pScheduler/Cardinal" },
             "succeeded": { "$ref": "#/pScheduler/Boolean" },
             },
         "required": [
-            "hops",
+            "paths",
             "schema",
             "succeeded",
             ]
