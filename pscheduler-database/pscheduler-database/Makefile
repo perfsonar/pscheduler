@@ -28,9 +28,6 @@ FILES=\
 	\
 	boot \
 	ticker \
-	\
-	auth_identifier \
-	auth_ip \
 
 
 FILES_TEARDOWN=\
