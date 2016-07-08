@@ -3,6 +3,7 @@
 #
 
 # PostgreSQL version
+# TODO: Make the scripts figure this out.
 %define pg_major 9
 %define pg_minor 5
 
