@@ -1,0 +1,40 @@
+--- a/database.sql
++++ b/database.sql
+@@ -1,25 +1,3 @@
+---
+--- Database creation
+---
+-DROP DATABASE IF EXISTS pscheduler;
+-DROP ROLE IF EXISTS pscheduler;
+-
+--- The password for this role will be set when the database is
+--- installed.
+-CREATE ROLE pscheduler
+-WITH
+-    LOGIN
+-    ;
+-
+-CREATE DATABASE pscheduler
+-WITH
+-    OWNER=pscheduler
+-    ;
+-
+-GRANT ALL ON DATABASE pscheduler TO pscheduler;
+-
+-\c pscheduler
+-
+ CREATE OR REPLACE LANGUAGE plpythonu;
+ 
+ -- Needed for generating UUIDs
+--- a/preamble.sql
++++ b/preamble.sql
+@@ -1,9 +1,3 @@
+ --
+ -- Preamble for non-privileged portion of database
+ --
+-
+-
+-\c pscheduler
+-
+--- TODO: This should be taken care of by postgresql-load but isn't.
+-SET ROLE pscheduler;
