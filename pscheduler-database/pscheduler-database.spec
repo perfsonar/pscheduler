@@ -31,10 +31,11 @@ Requires:	random-string
 %description
 The pScheduler database
 
+%define db_config_dir %{_sysconfdir}/%{name}
 %define db_user %{_pscheduler_user}
-%define password_file %{_pscheduler_sysconfdir}/database-password
-%define dsn_file %{_pscheduler_sysconfdir}/database-dsn
-%define pgpass_file %{_pscheduler_sysconfdir}/pgpassfile
+%define password_file %{db_config_dir}/database-password
+%define dsn_file %{db_config_dir}/database-dsn
+%define pgpass_file %{db_config_dir}/pgpassfile
 
 %define rpm_macros %{_pscheduler_rpmmacroprefix}%{name}
 
