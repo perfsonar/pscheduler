@@ -364,6 +364,7 @@ __dictionary__ = {
                 "type": "array",
                 "items": { "$ref": "#/pScheduler/ArchiveSpecification" },
                 },
+            "reference": { "$ref": "#/pScheduler/AnyJSON" },
             },
         "required": [
             "schema",

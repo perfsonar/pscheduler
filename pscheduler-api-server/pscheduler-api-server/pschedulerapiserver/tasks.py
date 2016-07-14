@@ -89,11 +89,26 @@ def tasks():
     if request.method == 'GET':
 
         expanded = is_expanded()
-        # TODO: Handle failure
-        dbcursor().execute("""
+
+        query = """
             SELECT json, uuid
-            FROM task ORDER BY added
-            """)
+            FROM task
+            """
+        args = []
+
+        try:
+            json_query = arg_json("json")
+        except ValueError as ex:
+            return bad_request(str(ex))
+
+        if json_query is not None:
+            query += "WHERE json @> %s"
+            args.append(request.args.get("json"))
+
+        query += " ORDER BY added"
+
+        # TODO: Handle failure
+        dbcursor().execute(query, args)
         result = []
         for row in dbcursor():
             url = base_url(row[1])
@@ -110,6 +125,8 @@ def tasks():
             task = pscheduler.json_load(request.data)
         except ValueError:
             return bad_request("Invalid JSON:" + request.data)
+
+        # TODO: Validate the JSON against a TaskSpecification
 
         # See if the task spec is valid
 

@@ -120,6 +120,12 @@ CREATE INDEX task_uuid
 ON task(uuid, id);
 
 
+-- This helps the 'json' query limiter in the REST API
+CREATE INDEX task_json
+ON task(json);
+
+
+
 
 
 
@@ -152,11 +158,12 @@ BEGIN
 	    RAISE EXCEPTION 'Insertion time cannot be updated.';
 	END IF;
 
+	-- TODO: We don't really need to do this since the JSON is validated.
 	FOR key IN (SELECT jsonb_object_keys(NEW.json))
 	LOOP
-	   IF (left(key, 1) <> '_')
-              -- TODO: How was passthrough going to be used?
-	      AND (key NOT IN ('schema', 'test', 'tool', 'schedule', 'archives', 'passthrough')) THEN
+	   -- Ignore comments
+	   IF (left(key, 1) <> '#')
+	      AND (key NOT IN ('schema', 'test', 'tool', 'schedule', 'archives', 'reference')) THEN
 	      RAISE EXCEPTION 'Unrecognized section "%" in task package.', key;
 	   END IF;
 	END LOOP;

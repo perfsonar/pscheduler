@@ -57,6 +57,12 @@ opt_parser.add_option("--no-quiet",
                       action="store_false",
                       dest="quiet")
 
+opt_parser.add_option("--reference",
+                      help="Save arbitrary JSON for reference",
+                      action="store", type="string",
+                      dest="reference")  # Conflict with reserved word
+
+
 
 opt_parser.add_option("--url",
                       help="Dump a URL that points to the task after posting and exit",
@@ -141,6 +147,13 @@ if options.randslip is not None:
     if randslip < 0.0 or randslip > 1.0:
         pscheduler.fail("Invalid --randslip; must be in [0.0..1.0]")
 
+if options.reference is not None:
+    try:
+        reference = pscheduler.json_load(options.reference)
+    except ValueError:
+        pscheduler.fail("Invalid --reference; must be JSON")
+
+
 if options.slip is not None:
     slip = pscheduler.iso8601_as_timedelta(options.slip)
     if slip is None:
@@ -224,6 +237,11 @@ else:
     task = pscheduler.json_load(file, exit_on_error=True)
     # TODO: Validate what we read as a task.
     task_read = True
+
+
+# Overlay the reference if specified
+if options.reference is not None:
+    task["reference"] = reference
 
 #
 # Overlay schedule options
