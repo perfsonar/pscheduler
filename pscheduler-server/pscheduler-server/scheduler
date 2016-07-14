@@ -87,9 +87,7 @@ def main_program():
                 raise ex
 
 
-        failed = False
-
-        while not failed:
+        while True:
 
             cursor.execute("""SELECT uuid, runs, trynext from schedule_runs_to_schedule""")
 
@@ -121,7 +119,6 @@ def main_program():
                     pscheduler.run_post(url, trynext, log)
                 if error is not None:
                     log.debug("Unable: %s", error)
-                    failed = True
                 else:
                     log.debug("Scheduled for %s - %s at %s",
                               start_time, end_time, run_uri)
