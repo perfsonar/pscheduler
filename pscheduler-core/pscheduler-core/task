@@ -63,11 +63,6 @@ opt_parser.add_option("--url",
                       action="store_true", default=False,
                       dest="url")
 
-opt_parser.add_option("--wait",
-                      help="Wait for n runs of test",
-                      action="store", type="int", default=1,
-                      dest="wait")
-
 # SCHEDULING OPTIONS
 
 opt_parser.add_option("--max-runs",
@@ -175,9 +170,6 @@ if options.until is not None:
         pscheduler.fail("Invalid --until")
     if until <= pscheduler.time_now():
         pscheduler.fail("Invalid --until; must be in the future.")
-
-if options.wait < 0:
-    pscheduler.fail("Invalid --wait; must be 0 or more")
 
 if ( options.repeat is None
      and (
