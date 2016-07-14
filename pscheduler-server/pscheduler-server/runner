@@ -192,10 +192,6 @@ class Run:
                         stderr,
                         id])
 
-        # Note that the run happened.
-        # TODO: Error check this.
-        cursor.execute("SELECT task_register_run(%s)", [task_id])
-
         log.debug("%d: Stored local result", id)
 
         # The lead participant takes care of gathering and merging the finished results.

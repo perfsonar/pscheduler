@@ -14,12 +14,7 @@ FILES=\
 	spec-to-cli \
 
 
-DOCS=\
-	$(NAME).txt
-
-
-
-install: $(FILES) $(DOCS)
+install: $(FILES)
 ifndef DESTDIR
 	@echo No DESTDIR specified for installation
 	@false

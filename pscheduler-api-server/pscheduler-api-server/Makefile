@@ -27,6 +27,14 @@ ifndef API_DIR
 	@echo No API_DIR specified for build
 	@false
 endif
+ifndef DSN_FILE
+	@echo No DSN_FILE specified for build
+	@false
+endif
+ifndef LIMITS_FILE
+	@echo No LIMITS_FILE specified for build
+	@false
+endif
 	m4 \
 		"-D__NAME__=$(NAME)" \
 		"-D__MODULE__=$(MODULE)" \
@@ -34,6 +42,8 @@ endif
 		"-D__GROUP_NAME__=$(GROUP_NAME)" \
 		"-D__API_ROOT__=$(API_ROOT)" \
 		"-D__API_DIR__=$(API_DIR)" \
+		"-D__DSN_FILE__=$(DSN_FILE)" \
+		"-D__LIMITS_FILE__=$(LIMITS_FILE)" \
 		< $^ > $@
 	@if egrep -e '__[A-Z_]+__' $@ ; then \
 		echo "Found un-substituted values in processed file $@" ; \
@@ -44,7 +54,7 @@ endif
 CONFIG=$(NAME).conf
 WSGI=$(NAME).wsgi
 
-build: $(CONFIG) $(WSGI)
+build: $(CONFIG) $(WSGI) pschedulerapiserver/__init__.py
 	python -m compileall .
 TO_CLEAN += $(CONFIG) $(WSGI) *.pyc
 

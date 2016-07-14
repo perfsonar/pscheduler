@@ -73,9 +73,6 @@ CREATE TABLE task (
 	runs	  	NUMERIC
 			DEFAULT 0,
 
-	-- Last time the task was run
-	last_run  	TIMESTAMP WITH TIME ZONE,
-
 	--
 	-- TESTING
 	--
@@ -108,7 +105,11 @@ CREATE TABLE task (
 
 	-- Whether or not the task should be scheduled
 	enabled	    	BOOLEAN
-			DEFAULT(TRUE)
+			DEFAULT(TRUE),
+
+	-- Hints used by the limit system
+	hints	    	JSONB
+
 );
 
 
@@ -379,21 +380,6 @@ CREATE TRIGGER task_alter_notify AFTER INSERT OR UPDATE ON task
 
 
 
--- Register a run having taken place on a task
-CREATE OR REPLACE FUNCTION task_register_run(task_id BIGINT)
-RETURNS VOID
-AS $$
-BEGIN
-    UPDATE task
-    SET
-        runs = runs + 1,
-        last_run = now()
-    WHERE id = task_id;
-END;
-$$ LANGUAGE plpgsql;
-
-
-
 
 -- Calculate when the next iteration of a task should take place after
 -- a given time.  This isn't actually a task-specific function, but
@@ -467,6 +453,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION api_task_post(
     task_package JSONB,
+    hints JSONB,
     participant INTEGER DEFAULT 0,
     task_uuid UUID = NULL
 )
@@ -477,8 +464,8 @@ DECLARE
 BEGIN
 
    WITH inserted_row AS (
-        INSERT INTO task(json, participant, uuid)
-        VALUES (task_package, participant, task_uuid)
+        INSERT INTO task(json, participant, uuid, hints)
+        VALUES (task_package, participant, task_uuid, hints)
         RETURNING *
     ) SELECT INTO inserted * from inserted_row;
 

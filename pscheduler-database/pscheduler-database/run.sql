@@ -35,15 +35,19 @@ CREATE TABLE run (
 	state	    	 INTEGER DEFAULT run_state_pending()
 			 REFERENCES run_state(id),
 
+	-- Any errors that prevented the run from being put on the
+	-- schedule, used when state is run_state_nonstart().  Any
+	-- test- or tool-related errors will be incorporated into the
+	-- local or merged results.
+	errors   	 TEXT,
+
 	-- How it went locally, i.e., what the test returned
+	-- TODO: See if this is used anywhere.
 	status           INTEGER,
 
 	-- Result from the local run
 	-- TODO: Change this to local_result to prevent confusion
 	result   	 JSONB,
-
-	-- Result from the local run
-	errors   	 TEXT,
 
 
 	--
@@ -106,11 +110,12 @@ BEGIN
         RAISE EXCEPTION 'Cannot schedule runs more than % in advance', horizon;
     END IF;
 
-    -- Disallow overlap
-    -- TODO: Remove this when the scheduler can decide which run runs
+    -- Disallow overlap except for non-starters, which don't run.
 
     IF ( (TG_OP = 'INSERT')
-         AND (EXISTS (SELECT * FROM run WHERE run.times && NEW.times)) )
+         AND ( EXISTS (SELECT * FROM run
+                       WHERE run.times && NEW.times
+                       AND run.state <> run_state_nonstart()) ) )
        OR ( (TG_OP = 'UPDATE')  -- TODO:  Do we want to allow times to change?
             AND (NEW.times <> OLD.times)
             AND (EXISTS (SELECT * FROM run WHERE id <> NEW.id AND run.times && NEW.times)) )
@@ -217,6 +222,12 @@ BEGIN
             NEW.result_merged := NULL;
 
         END IF;
+
+    ELSIF (TG_OP = 'INSERT') THEN
+
+        -- Make a note that this run was put on the schedule
+
+        UPDATE task t SET runs = runs + 1 WHERE t.id = task.id;
 
     END IF;
 
@@ -348,13 +359,15 @@ AS
 CREATE OR REPLACE FUNCTION api_run_post(
     task_uuid UUID,
     start_time TIMESTAMP WITH TIME ZONE,
-    run_uuid UUID = NULL
+    run_uuid UUID,  -- NULL to assign one
+    nonstart_reason TEXT = NULL
 )
 RETURNS UUID
 AS $$
 DECLARE
     task RECORD;
     time_range TSTZRANGE;
+    initial_state INTEGER;
 BEGIN
 
     SELECT INTO task * FROM task WHERE uuid = task_uuid;
@@ -369,9 +382,15 @@ BEGIN
     start_time := normalized_time(start_time);
     time_range := tstzrange(start_time, start_time + task.duration, '[)');
 
+    IF nonstart_reason IS NOT NULL THEN
+       initial_state := run_state_nonstart();
+    ELSE
+       initial_state := run_state_pending();
+    END IF;
+
     WITH inserted_row AS (
-        INSERT INTO run (uuid, task, times)
-        VALUES (run_uuid, task.id, time_range)
+        INSERT INTO run (uuid, task, times, state, errors)
+        VALUES (run_uuid, task.id, time_range, initial_state, nonstart_reason)
         RETURNING *
     ) SELECT INTO run_uuid uuid FROM inserted_row;
 

@@ -11,6 +11,7 @@ from flask import request
 
 from .dbcursor import dbcursor
 from .json import *
+from .limitproc import *
 from .log import log
 from .response import *
 from .tasks import task_exists
@@ -27,10 +28,59 @@ def task_uuid_runtimes(task):
     if not task_exists(task):
         return not_found()
 
+    # TODO: At some point, we will likely have to consider making the
+    # proposals fall within the limits, which is going to be complex.
+
     return json_query_simple(dbcursor(), """
         SELECT row_to_json(apt.*)
         FROM  api_proposed_times(%s, %s, %s) apt
         """, [task, range_start, range_end], empty_ok=True)
+
+
+
+# Evaluate the limits for a run.
+def __evaluate_limits(
+    task,       # Task UUID
+    start_time  # When the task should start
+    ):
+
+    log.debug("Applying limits")
+    dbcursor().execute(
+        "SELECT json, duration, hints FROM task where uuid = %s", [task])
+    if dbcursor().rowcount == 0:
+        # TODO: This or bad_request when the task isn't there?
+        return not_found()
+    task_spec, duration, hints = dbcursor().fetchone()
+    log.debug("Task is %s, duration is %s" % (task_spec, duration))
+
+    limit_input = {
+        'type': task_spec['test']['type'],
+        'spec': task_spec['test']['spec'],
+        'schedule': {
+            'start': pscheduler.datetime_as_iso8601(start_time),
+            'duration': pscheduler.timedelta_as_iso8601(duration)
+            }
+        }
+
+    log.debug("Checking limits against %s" % str(limit_input))
+
+    processor, whynot = limitprocessor()
+    if processor is None:
+        log.debug("Limit processor is not initialized. %s", whynot)
+        return no_can_do("Limit processor is not initialized: %s" % whynot)
+
+    # Don't pass hints since that would have been covered when the
+    # task was submitted and only the scheduler will be submitting
+    # runs.
+    passed, diags = processor.process(limit_input, hints)
+
+    log.debug("Passed: %s.  Diags: %s" % (passed, diags))
+
+    # This prevents the run from being put in a non-starter state
+    if passed:
+        diags = None
+
+    return passed, diags
 
 
 
@@ -61,7 +111,8 @@ def tasks_uuid_runs(task):
                 args.append(end_time)
 
             if arg_boolean('upcoming'):
-                query += " AND state IN (run_state_pending(), run_state_on_deck(), run_state_running())"
+                query += " AND lower(times) > now()"
+                query += " AND state IN (run_state_pending(), run_state_on_deck(), run_state_running(), run_state_nonstart())"
 
             query += " ORDER BY times"
 
@@ -90,8 +141,14 @@ def tasks_uuid_runs(task):
         except ValueError:
             return bad_request("Invalid JSON:" + request.data)
 
+
+        passed, diags = __evaluate_limits(task, start_time)
+
         try:
-            dbcursor().execute("SELECT api_run_post(%s, %s)", [task, start_time])
+            log.debug("Posting run for task %s starting %s"
+                      % (task, start_time))
+            dbcursor().execute("SELECT api_run_post(%s, %s, NULL, %s)",
+                               [task, start_time, diags])
             uuid = dbcursor().fetchone()[0]
         except:
             log.exception()
@@ -127,7 +184,6 @@ def __runs_first_run(
                 """, [task])
     # TODO: Handle failure.
 
-    log.debug("Fetch first RC = %d", dbcursor().rowcount)
     if dbcursor().rowcount == 0:
         return None 
     else:
@@ -191,7 +247,8 @@ def tasks_uuid_runs_run(task, run):
                     run.result_full,
                     run.result_merged,
                     run_state.enum,
-                    run_state.display
+                    run_state.display,
+                    run.errors
                 FROM
                     run
                     JOIN task ON task.id = run.task
@@ -247,6 +304,7 @@ def tasks_uuid_runs_run(task, run):
         result['result-merged'] = row[10]
         result['state'] = row[11]
         result['state-display'] = row[12]
+        result['errors'] = row[13]
         result['task-href'] = root_url('tasks/' + task)
         result['result-href'] = href + '/result'
 
@@ -282,6 +340,8 @@ def tasks_uuid_runs_run(task, run):
                 return bad_request("Missing start time")
             except ValueError:
                 return bad_request("Invalid start time")
+
+            passed, diags = __evaluate_limits(task, start_time)
 
             try:
                 dbcursor().execute("SELECT api_run_post(%s, %s, %s)", [task, start_time, run])

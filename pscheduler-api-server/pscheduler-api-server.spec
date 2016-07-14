@@ -34,6 +34,9 @@ The pScheduler REST API server
 %define httpd_conf_d %{_sysconfdir}/httpd/conf.d
 %define conf	     %{httpd_conf_d}/%{name}.conf
 
+%define server_conf_dir %{_sysconfdir}/%{name}
+%define limits_file     %{server_conf_dir}/limits
+
 # Note that we want this here because it seems to work well without
 # assistance on systems where selinux is enabled.  Anywhere else and
 # there'd have to be a 'chcon -R -t httpd_user_content_t'.
@@ -59,7 +62,11 @@ make \
      "API_DIR=%{api_dir}" \
      "CONF_D=%{httpd_conf_d}" \
      "PREFIX=${RPM_BUILD_ROOT}" \
+     "DSN_FILE=%{_pscheduler_database_dsn_file}" \
+     "LIMITS_FILE=%{limits_file}" \
      install
+
+mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}
 
 
 %post
@@ -108,4 +115,5 @@ systemctl restart httpd
 %files
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
 %{api_dir}
+%{server_conf_dir}
 %attr(444,root,root) %{conf}

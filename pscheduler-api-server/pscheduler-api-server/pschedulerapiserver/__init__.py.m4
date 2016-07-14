@@ -17,6 +17,8 @@ from .admin import *
 from .args import *
 from .dbcursor import *
 from .json import *
+from .limitproc import *
+from .limits import *
 from .log import *
 from .response import *
 from .runs import *
@@ -26,6 +28,12 @@ from .tools import *
 from .url import *
 
 
-# TODO: Find something better than a hard-wired default.
-dsn = "@/etc/pscheduler/database-dsn"
+# These values are not hard-wired; they were filled in during the
+# build.
+
+dsn = "@__DSN_FILE__"
 dbcursor_init(dsn)
+
+# TODO: Find something better than a hard-wired default.
+limit_file = "__LIMITS_FILE__"
+limitproc_init(limit_file)

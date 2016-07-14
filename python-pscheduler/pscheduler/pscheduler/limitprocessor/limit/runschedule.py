@@ -284,10 +284,14 @@ class LimitRunSchedule():
 
 
     def evaluate(self,
-                 run   # The proposed run
+                 run,            # The proposed run
+                 check_schedule  # Keep/disregard time-related limits
                  ):
 
         """Check that the proposed times don't overlap with this limit"""
+
+        if not check_schedule:
+            return { "passed": "True" }
 
         start = pscheduler.iso8601_as_datetime(run['schedule']['start'])
         duration = pscheduler.iso8601_as_timedelta(run['schedule']['duration'])
@@ -342,17 +346,17 @@ if __name__ == "__main__":
         }
 
     limit = LimitRunSchedule({
-        "year": [ 2015, 2016, 2017, 2018 ],
+#        "year": [ 2015, 2016, 2017, 2018 ],
 #        "month": [ { "lower": 1, "upper": 6 } ],
 #        "week": [],
 #        "day": [],
 #        "weekday": [ { "lower": 3, "upper": 6 } ],
 #        "hour": [3, 4, { "lower": 7, "upper": 11 } ],
-#        "minute": [],
+        "minute": [ 12,34 ],
 #        "second": [],
-        "overlap": False
+#        "overlap": False
     })
 
 
-    ev = limit.evaluate(test)
+    ev = limit.evaluate(test, True)
     print test, ev

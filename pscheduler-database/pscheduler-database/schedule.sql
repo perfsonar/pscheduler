@@ -220,7 +220,9 @@ BEGIN
 
     FOR run_record IN
         SELECT * FROM run
-        WHERE times && time_range
+        WHERE
+	    times && time_range
+            AND state <> run_state_nonstart()
         ORDER BY times
     LOOP
 

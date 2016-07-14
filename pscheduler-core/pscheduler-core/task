@@ -363,9 +363,6 @@ if verbose:
     print task_url
 
 
-# TODO: Everything below this is fundamentally what's in the 'watch'
-# program.  Should probably just run that instead.
-
 #
 # Get the first future run.
 #
@@ -381,113 +378,8 @@ status, run_json = pscheduler.url_get(runs_url,
                                       params= { 'wait-local': True },
                                       throw=False)
 
-# TODO: Need to display something meaningful when this happens.  We
-# should have a way to put stillborn runs in the database with
-# diagnostics.
-
 if status == 404:
     pscheduler.fail("Run on server was never populated.")
 
-if status != 200:
-    pscheduler.fail("Failed to fetch run: " + run_json)
-
-run_url = run_json['href']
-
-if verbose:
-    print "Run URL:"
-    print run_url
-
-
-#
-# Wait for the run to start and finish and fetch the results
-#
-
-start_time = run_json['start-time']
-wait_time = pscheduler.time_until_seconds(
-    pscheduler.iso8601_as_datetime(start_time))
-if verbose:
-    print "Run start: %s (~%s seconds)" % (start_time, int(wait_time))
-time.sleep(wait_time)
-
-end_time = run_json['end-time']
-wait_time = pscheduler.time_until_seconds(
-    pscheduler.iso8601_as_datetime(end_time))
-if verbose:
-    print "Run end:   %s (~%s seconds)" % (end_time, int(wait_time))
-time.sleep(wait_time)
-
-if verbose:
-    print "Waiting for results..."
-
-status, result = pscheduler.url_get( run_url,
-                                      params={ 'wait-merged': True },
-                                     throw=False )
-
-if status != 200:
-    pscheduler.fail("Failed to fetch run: %d: %s" % (status, result))
-
-#
-# If failed, dump diags.
-#
-
-# TODO: Need to do a better job picking this apart.  The full-result
-# member needs to be populated whether the test succeeded or not.
-
-try:
-    if (not 'result-merged' in result) \
-            or (result['result-merged'] is None):
-        raise KeyError()
-    status = result['result-merged']['succeeded']
-except KeyError as ex:
-    print "Unable to determine success or failure.  Returned JSON:"
-    print pscheduler.json_dump(result, pretty=True)
-    pscheduler.fail()
-
-
-if not status:
-    # TODO: Should have something nicer that dumps out the
-    # participants and what they said.
-    print
-    print "Run failed.  The following errors were reported:"
-
-    participants = result['participants']
-    full = result['result-full']
-
-    for participant in range(0, len(result['participants'])):
-        print "%s:" % participants[participant]
-        try:
-            print '   ',
-            full_part = full[participant]
-            if full_part is not None:
-                print '\n    '.join(full[participant]['error'].split('\n'))
-            else:
-                print '(No error reported)'
-        except KeyError:
-            # TODO: There should be an 'error' in the JSON, but don't
-            # punish the user if there isn't.
-            print "  (No error reported)"
-    pscheduler.fail()
-
-
-#
-# Print the final result.
-#
-
-# Easy out.
-if format is None:
-    pscheduler.succeed()
-
-status, formatted = pscheduler.url_get(
-    result['result-href'],
-    params={ 'wait': True,
-             'format': format },
-    json=False,
-    throw=False)
-
-if status != 200:
-    pscheduler.fail("Unable to retrieve formatted result: " + formatted)
-
-if verbose:
-    print
-print formatted.rstrip()
-pscheduler.succeed()
+# Watch the task run.
+os.execl('/bin/sh', '/bin/sh', '-c', "pscheduler watch %s" % task_url)

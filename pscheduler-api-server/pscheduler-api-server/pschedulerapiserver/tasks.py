@@ -10,6 +10,7 @@ from flask import request
 
 from .dbcursor import dbcursor
 from .json import *
+from .limitproc import *
 from .log import log
 from .response import *
 
@@ -120,7 +121,7 @@ def tasks():
                 )
 
             if returncode != 0:
-                return error(stderr)
+                return error("Invalid test specification: " + stderr)
         except Exception as ex:
             return error("Unable to validate test spec: " + str(ex))
 
@@ -137,7 +138,7 @@ def tasks():
                 )
 
             if returncode != 0:
-                return error(stderr)
+                return error("Unable to determine participants: " + stderr)
 
             participants = [ host if host is not None
                              else pscheduler.api_this_host()
@@ -198,11 +199,34 @@ def tasks():
 
         tasks_posted = []
 
+        # Evaluate the task against the limits and reject the request
+        # if it doesn't pass.
+
+        log.debug("Checking limits on %s", task["test"])
+
+        (processor, whynot) = limitprocessor()
+        if processor is None:
+            log.debug("Limit processor is not initialized. %s", whynot)
+            return no_can_do("Limit processor is not initialized: %s" % whynot)
+
+        # TODO: This is cooked up in two places.  Make a function of it.
+        hints = {
+            "ip": request.remote_addr
+            }
+        hints_data = pscheduler.json_dump(hints)
+
+        log.debug("Processor = %s" % processor)
+        passed, diags = processor.process(task["test"], hints)
+
+        if not passed:
+            return forbidden("Task forbidden by limits:\n" + diags)
+
         # Post the lead with the local database, which also assigns
         # its UUID.
 
         # TODO: Handle failure.
-        dbcursor().execute("SELECT * FROM api_task_post(%s, 0)", [task_data])
+        dbcursor().execute("SELECT * FROM api_task_post(%s, %s, 0)",
+                           [task_data, hints_data])
 
         if dbcursor().rowcount == 0:
             return error("Task post failed; poster returned nothing.")
@@ -220,7 +244,8 @@ def tasks():
                                   params={ 'participant': participant },
                                   data=task_data)
                 if r.status_code != 200:
-                    raise Exception("%d: %s" % (r.status_code, r.text))
+                    raise Exception("Unable to post task to %s: %s"
+                                    % (part_name, r.text))
                 tasks_posted.append(r.text)
 
             except Exception as ex:
@@ -310,12 +335,34 @@ def tasks_uuid(uuid):
         except ValueError as ex:
             return bad_request("Invalid participant: " + str(ex))
 
+
+        # Evaluate the task against the limits and reject the request
+        # if it doesn't pass.
+
+        log.debug("Checking limits on %s", task["test"])
+
+        processor = limitprocessor()
+        if processor is None:
+            log.debug("Limit processor is not initialized.")
+            return no_can_do("Limit processor is not initialized.")
+
+        # TODO: This is cooked up in two places.  Make a function of it.
+        hints = {
+            "ip": request.remote_addr
+            }
+        hints_data = pscheduler.json_dump(hints)
+
+        passed, diags = processor.process(task["test"], hints)
+
+        if not passed:
+            return forbidden("Task forbidden by limits:\n" + diags)
+
         # TODO: Pluck UUID from URI
         uuid = url_last_in_path(request.url)
 
         # TODO: Handle failure.
         dbcursor().execute("SELECT * FROM api_task_post(%s, %s, %s)",
-                       [request.data, participant, uuid])
+                       [request.data, hints_data, participant, uuid])
         if dbcursor().rowcount == 0:
             return error("Task post failed; poster returned nothing.")
         # TODO: Assert that rowcount is 1
