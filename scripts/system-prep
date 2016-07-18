@@ -83,7 +83,7 @@ yum -y install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${REDH
 # Internet2
 rpm --import http://software.internet2.edu/rpms/RPM-GPG-KEY-Internet2
 # TODO: We should have a symlink to the latest that stays constant.
-yum -y install "http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/$(uname -m)/RPMS.main/Internet2-repo-0.7-1.noarch.rpm"
+yum -y install "http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/$(uname -m)/RPMS.main/Internet2-repo-0.${REDHAT_RELEASE_MAJOR}-1.noarch.rpm"
 
 
 # Things we need to build:
@@ -169,6 +169,15 @@ then
     esac
 
     yum -y install bzip2 gcc ${KERNEL_DEVEL}
+
+    KDEVEL_VER=$(rpm -q kernel-devel | sed -e 's/^kernel-devel-//')
+
+    if [ "${KDEVEL_VER}" != "$(uname -r)" ]
+    then
+	echo "Running kernel is different than installed headers." 1>&2
+	echo "You might need to reboot." 1>&2
+	exit 1
+    fi
 
     # This exits 1 when XOrg isn't installed, even if successful
     /mnt/VBoxLinuxAdditions.run && true
