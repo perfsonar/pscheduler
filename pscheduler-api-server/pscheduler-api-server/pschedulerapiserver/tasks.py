@@ -356,12 +356,13 @@ def tasks_uuid(uuid):
         # Evaluate the task against the limits and reject the request
         # if it doesn't pass.
 
-        log.debug("Checking limits on %s", task["test"])
+        log.debug("Checking limits on task")
 
-        processor = limitprocessor()
+        processor, whynot = limitprocessor()
         if processor is None:
-            log.debug("Limit processor is not initialized.")
-            return no_can_do("Limit processor is not initialized.")
+            message = "Limit processor is not initialized: %s" % whynot
+            log.debug(message)
+            return no_can_do(message)
 
         # TODO: This is cooked up in two places.  Make a function of it.
         hints = {
@@ -369,7 +370,7 @@ def tasks_uuid(uuid):
             }
         hints_data = pscheduler.json_dump(hints)
 
-        passed, diags = processor.process(task["test"], hints)
+        passed, diags = processor.process(json_in["test"], hints)
 
         if not passed:
             return forbidden("Task forbidden by limits:\n" + diags)
@@ -378,7 +379,7 @@ def tasks_uuid(uuid):
         uuid = url_last_in_path(request.url)
 
         # TODO: Handle failure.
-        dbcursor().execute("SELECT * FROM api_task_post(%s, %s, %s)",
+        dbcursor().execute("SELECT * FROM api_task_post(%s, %s, %s, %s)",
                        [request.data, hints_data, participant, uuid])
         if dbcursor().rowcount == 0:
             return error("Task post failed; poster returned nothing.")
