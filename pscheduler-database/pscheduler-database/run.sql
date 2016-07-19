@@ -105,7 +105,7 @@ BEGIN
     -- TODO: What changes to a run don't we allow?
 
     -- No scheduling beyond the time horizon
-    SELECT INTO horizon duration FROM schedule_time_horizon;
+    SELECT INTO horizon schedule_horizon FROM configurables;
     IF (upper(NEW.times) - now()) > horizon THEN
         RAISE EXCEPTION 'Cannot schedule runs more than % in advance', horizon;
     END IF;

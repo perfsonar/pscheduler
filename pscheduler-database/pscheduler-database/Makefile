@@ -17,7 +17,6 @@ FILES=\
 	utilities \
 	\
 	configurables \
-	schedule_time_horizon \
 	test \
 	tool \
 	archiver \

@@ -131,14 +131,15 @@ AS
 	runs,
         trynext
     FROM
-        interim
+        interim, 
+        configurables
     WHERE
         enabled
 	AND participant = 0
         AND ( (max_runs IS NULL)
               OR (runs + scheduled) < max_runs )
         AND ( (until IS NULL) OR (trynext < until) )
-        AND trynext + duration < (normalized_now() + schedule_time_horizon())
+        AND trynext + duration < (normalized_now() + schedule_horizon)
     ORDER BY added
 ;
 
@@ -192,7 +193,7 @@ BEGIN
     -- trim accordingly.
 
     time_now := normalized_now();
-    horizon_end := time_now + schedule_time_horizon();
+    SELECT INTO horizon_end time_now + schedule_horizon FROM configurables;
 
     IF range_end < time_now THEN
         -- Completely in the past means nothing schedulable at all.
