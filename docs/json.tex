@@ -614,9 +614,12 @@ of the structure.
 
 \typeditem{test}{TestSpecification} The test to be carried out.
 
-\typeditem{tools}{array} A list of the tools which may be used to
-carry out a test in order if preference.  Each tool is a {\tt String}.
-\todo{Current implementation has this as a single string.}
+\typeditem{tool}{array} The tool which will be used to carry out that
+task.  This is valid to provide but may be overwritten internally; see
+{\tt tools}, below.
+
+\typeditem{tools}{array} An array of strings naming the tools which
+may be used to carry out a test in order if preference.
 
 \typeditem{schedule}{ScheduleSpecification} An object describing how
 runs of the test are to be scheduled.

@@ -163,7 +163,7 @@ BEGIN
 	LOOP
 	   -- Ignore comments
 	   IF (left(key, 1) <> '#')
-	      AND (key NOT IN ('schema', 'test', 'tool', 'schedule', 'archives', 'reference')) THEN
+	      AND (key NOT IN ('schema', 'test', 'tool', 'tools', 'schedule', 'archives', 'reference')) THEN
 	      RAISE EXCEPTION 'Unrecognized section "%" in task package.', key;
 	   END IF;
 	END LOOP;
