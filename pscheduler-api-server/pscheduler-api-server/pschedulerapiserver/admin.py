@@ -7,6 +7,7 @@ import socket
 
 from pschedulerapiserver import application
 
+from .dbcursor import dbcursor
 from .response import *
 from .url import *
 
@@ -26,7 +27,7 @@ def hostname():
 @application.route("/schedule-horizon", methods=['GET'])
 def schedule_horizon():
     """Get the length of the server's scheduling horizon"""
-    cursor.execute("SELECT schedule_time_horizon()")
+    dbcursor().execute("SELECT schedule_horizon FROM configurables")
     # TODO: Assert that rowcount is 1
     return ok_json(pscheduler.timedelta_as_iso8601(cursor.fetchone()[0]))
 
