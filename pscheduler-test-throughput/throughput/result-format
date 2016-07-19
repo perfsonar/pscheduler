@@ -3,32 +3,82 @@
 # Format a result
 #
 
-import jsontemplate
 import pscheduler
 import sys
+import validate
 
-logger = pscheduler.Log()
+#constants
+SCHEMA_FILE = "pscheduler-schema-throughput-response.json"
+logger      = pscheduler.Log(prefix="test-throughput")
 
 try:
    format = sys.argv[1]
 except IndexError:
    format = 'text/plain'
 
-json = pscheduler.json_load(exit_on_error=True)
+#load JSON
+test_spec_json = pscheduler.json_load(exit_on_error=True)
+logger.debug(test_spec_json)
 
-logger.debug("json is %s" % json)
+# Validate against schema
+valid, message = validate.result_is_valid(test_spec_json)
 
-print json
+if not valid:
+   pscheduler.fail(message)
 
-if format == 'text/plain':
+logger.debug("jsonschema passed for test result")
 
-   template = """
-{.section diag}{diag}{.end}
-"""
-else:
+output = "Throughput Results\n"
 
-   pscheduler.fail("Unsupported format '%s'" % format)
+intervals = test_spec_json["intervals"]
+intervals.sort(key=lambda x: x["summary"]["start"])
+
+# We're going to convert from interval view to stream view to keep
+# all the same data together
+stream_blocks = {}
+
+for interval in intervals:
+   streams = interval["streams"]
+   summary = interval["summary"]
+   start   = summary["start"]
+   end     = summary["end"]
+
+   # Make sure we get them in stream id order each time
+   streams.sort(key=lambda x:  x["stream-id"])
+
+   for stream in streams:
+      stream_block = stream_blocks.get(stream["stream-id"], [])      
+      stream_block.append(stream)
+      stream_blocks[stream["stream-id"]] = stream_block
 
 
-# TODO: Should probably handle exceptions in a nicer way.
-print jsontemplate.expand(template, json).strip()
+stream_ids = stream_blocks.keys()
+stream_ids.sort()
+
+for stream_id in stream_ids:
+   output += "Stream %s\n" % stream_id
+   output += "Interval   Throughput     Sent/Lost    Jitter\n" 
+   
+   for block in stream_blocks[stream_id]:
+      output += "%s - %s      %s        %s / %s     %s\n" % (block["start"],
+                                                             block["end"],
+                                                             block["throughput-bits"],
+                                                             block["sent"],
+                                                             block["lost"],
+                                                             block["jitter"])
+   
+
+
+print output
+
+summary = test_spec_json["summary"]
+summary_streams = summary["streams"]
+summary_summary = summary["summary"]
+
+summary_streams.sort(key=lambda x: x["stream-id"])
+
+for stream in summary_streams:
+   pass
+
+
+

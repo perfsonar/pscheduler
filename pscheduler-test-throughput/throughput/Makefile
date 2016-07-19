@@ -11,7 +11,9 @@ FILES=\
 	result-format \
 	spec-format \
 	spec-is-valid \
-	spec-to-cli \
+        validate.py \
+        spec-to-cli
+
 
 
 install: $(FILES)

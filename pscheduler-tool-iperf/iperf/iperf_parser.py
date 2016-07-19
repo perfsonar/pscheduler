@@ -89,11 +89,11 @@ def parse_output(lines):
             streams[key].append({"jitter": jitter,
                                  "lost": lost,
                                  "sent": sent,
-                                 "throughput_bits": throughput_bits,
-                                 "throughput_bytes": throughput_bytes,
+                                 "throughput-bits": throughput_bits,
+                                 "throughput-bytes": throughput_bytes,
                                  "start": interval_start,
                                  "end": interval_end,
-                                 "stream_id": stream_id})
+                                 "stream-id": stream_id})
 
         
 
@@ -114,7 +114,7 @@ def parse_output(lines):
 
         # try to find the SUM if possible
         for stream in streams[interval]:
-            if stream['stream_id'] == "SUM":
+            if stream['stream-id'] == "SUM":
                 summary_stream = stream
             else:
                 interval_streams.append(stream)

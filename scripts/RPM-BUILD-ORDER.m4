@@ -100,7 +100,7 @@ pscheduler-test-trace
 # Tools
 # TODO: This has dependencies outside the local tree.
 #pscheduler-tool-owping
-#pscheduler-tool-iperf
+pscheduler-tool-iperf
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-snooze
