@@ -30,18 +30,18 @@ else:
 
 opt_parser = optparse.OptionParser()
 
-opt_parser.add_option("-s", "--sender",
+opt_parser.add_option("-s", "--source",
                       help="Sending host",
                       action="store", type="string",
                       dest="sender")
 
 
-opt_parser.add_option("-r", "--receiver",
+opt_parser.add_option("-d", "--destination",
                       help="Receiving host",
                       action="store", type="string",
                       dest="receiver")
 
-opt_parser.add_option("-d", "--duration",
+opt_parser.add_option("-t", "--duration",
                       help="Total runtime of test",
                       action="store", type="string",
                       dest="duration")
@@ -50,6 +50,11 @@ opt_parser.add_option("-i", "--interval",
                       help="How often to report results (internally, results still reported in aggregate at end)",
                       action="store", type="string",
                       dest="interval")
+
+opt_parser.add_option("-P", "--parallel",
+                      help="How many parallel streams to run during the test",
+                      action="store", type="string",
+                      dest="parallel")
 
 
 (options, remaining_args) = opt_parser.parse_args(args)
@@ -65,11 +70,13 @@ if options.sender is not None:
 if options.receiver is not None:
    result['receiver'] = options.receiver
 
-if options.receiver is not None:
+if options.duration is not None:
    result['duration'] = options.duration
 
-if options.receiver is not None:
+if options.interval is not None:
    result['interval'] = options.interval
 
+if options.parallel is not None:
+   result['parallel'] = options.parallel
 
 pscheduler.succeed_json(result)

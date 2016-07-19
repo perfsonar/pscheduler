@@ -39,13 +39,12 @@ except:
 
 
 def run_client():    
-    time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to boot
+
+    logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
+
+    time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
 
     iperf_args = ['/usr/bin/iperf']
-
-
-    logger.debug(participant)
-    logger.debug(participant_data)
 
     # who to connect to
     iperf_args.append('-c')
@@ -55,9 +54,13 @@ def run_client():
     iperf_args.append('-t')
     iperf_args.append(test_spec['duration'])
 
-    if test_spec.has_key('interval'):
+    if test_spec.has_key('interval') and test_spec['interval'] != None:
         iperf_args.append('-i')
         iperf_args.append(test_spec['interval'])
+
+    if test_spec.has_key('parallel') and test_spec['parallel'] != None:
+        iperf_args.append('-P')
+        iperf_args.append(test_spec['parallel'])
 
     logger.info("Running command: %s" % " ".join(iperf_args))
 
