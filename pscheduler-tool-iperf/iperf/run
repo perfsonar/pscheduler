@@ -49,7 +49,7 @@ def run_client():
 
     # who to connect to
     iperf_args.append('-c')
-    iperf_args.append(test_spec['receiver'])
+    iperf_args.append(test_spec['destination'])
 
     # duration
     iperf_args.append('-t')
