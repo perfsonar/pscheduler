@@ -24,7 +24,7 @@ def task_exists(task):
     
 
 
-def pick_tool(lists):
+def pick_tool(lists, pick_from=None):
     """Count and score the number of times each tool appears in a list
     of lists retrieved from servers, then return the name of the tool
     that was preferred or None if there were none in common.  (Not to
@@ -73,13 +73,25 @@ def pick_tool(lists):
             common[tool] = score[tool]
 
     # Nothing in common means no thing can be picked.
-
     if not len(common):
         return None
 
-    # Pick out the common tool with the lowest score.
-    ordered = sorted(common.items(), key=lambda value: value[1])
-    return ordered[0][0]
+    if pick_from is None:
+
+        # Take the tool with the lowest score.
+        ordered = sorted(common.items(), key=lambda value: value[1])
+        return ordered[0][0]
+
+    else:
+
+        # Find the first tool in the pick list that matches
+        for candidate in pick_from:
+            if candidate in common:
+                return candidate
+
+    # If we got here, nothing matched.
+    return None
+
 
 
 
@@ -127,6 +139,7 @@ def tasks():
             return bad_request("Invalid JSON:" + request.data)
 
         # TODO: Validate the JSON against a TaskSpecification
+
 
         # See if the task spec is valid
 
@@ -183,8 +196,6 @@ def tasks():
 
         tools = []
 
-        # TODO: Get the local tool list out of the database instead of
-        # doing a HTTP round trip.
         for participant in participants:
 
             try:
@@ -201,10 +212,14 @@ def tasks():
         if len(tools) != nparticipants:
             return error("Didn't get a full set of tool responses")
 
-        tool = pick_tool(tools)
+        if "tools" in task:
+            tool = pick_tool(tools, pick_from=task['tools'])
+        else:
+            tool = pick_tool(tools)
+
         if tool is None:
             # TODO: This could stand some additional diagnostics.
-            return no_can_do("Couldn't find a tool in common")
+            return no_can_do("Couldn't find a tool in common among the participants.")
 
         task['tool'] = tool
 

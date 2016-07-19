@@ -215,6 +215,11 @@ __dictionary__ = {
 
     "String": { "type": "string" },
 
+    "StringList": {
+        "type": "array",
+        "items": { "$ref": "#/pScheduler/String" }
+        },
+
     "StringMatch": {
         "type": "object",
         "properties": {
@@ -357,8 +362,8 @@ __dictionary__ = {
         "properties": {
             "schema":   { "$ref": "#/pScheduler/Cardinal" },
             "test":     { "$ref": "#/pScheduler/TestSpecification" },
-            # TODO: This is currently a string, needs to be an array.
-            "tools":    { "type": "string" },
+            "tool":     {" $ref": "#/pScheduler/String" },
+            "tools":    {"$ref": "#/pScheduler/StringList" },
             "schedule": { "$ref": "#/pScheduler/ScheduleSpecification" },
             "archives": {
                 "type": "array",

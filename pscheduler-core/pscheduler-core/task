@@ -62,7 +62,11 @@ opt_parser.add_option("--reference",
                       action="store", type="string",
                       dest="reference")  # Conflict with reserved word
 
-
+opt_parser.add_option("--tool", "-t",
+                      help="Tool to use for the test (may be repeated)",
+                      default=[],
+                      action="append", type="string",
+                      dest="tool")
 
 opt_parser.add_option("--url",
                       help="Dump a URL that points to the task after posting and exit",
@@ -102,8 +106,6 @@ opt_parser.add_option("--until",
                       action="store", type="string",
                       dest="until")
 
-
-# TODO:  Need a --tool option to force a list of preferred tools.
 
 (options, remaining_args) = opt_parser.parse_args()
 
@@ -292,6 +294,15 @@ else:
 assert test_type is not None
 
 task['test']['type'] = test_type
+
+
+
+# Add desired tools, if any.
+
+if options.tool:
+    task['tools'] = options.tool
+
+
 
 #
 # Convert the remaining arguments to a test spec.
