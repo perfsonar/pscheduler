@@ -6,6 +6,7 @@
 import pscheduler
 import sys
 import validate
+import throughput_utils
 
 #constants
 SCHEMA_FILE = "pscheduler-schema-throughput-response.json"
@@ -20,7 +21,7 @@ except IndexError:
 test_spec_json = pscheduler.json_load(exit_on_error=True)
 logger.debug(test_spec_json)
 
-# Validate against schema
+# Validate output against schema
 valid, message = validate.result_is_valid(test_spec_json)
 
 if not valid:
@@ -55,21 +56,12 @@ for interval in intervals:
 stream_ids = stream_blocks.keys()
 stream_ids.sort()
 
+# Don't show the per stream info if we only have the one, kind
+# of pointless
 for stream_id in stream_ids:
-   output += "Stream %s\n" % stream_id
-   output += "Interval   Throughput     Sent/Lost    Jitter\n" 
-   
-   for block in stream_blocks[stream_id]:
-      output += "%s - %s      %s        %s / %s     %s\n" % (block["start"],
-                                                             block["end"],
-                                                             block["throughput-bits"],
-                                                             block["sent"],
-                                                             block["lost"],
-                                                             block["jitter"])
-   
-
-
-print output
+   output += "* Stream ID %s\n" % stream_id
+   output += throughput_utils.format_stream_output(stream_blocks[stream_id])   
+   output += "\n"
 
 summary = test_spec_json["summary"]
 summary_streams = summary["streams"]
@@ -77,8 +69,15 @@ summary_summary = summary["summary"]
 
 summary_streams.sort(key=lambda x: x["stream-id"])
 
-for stream in summary_streams:
-   pass
+# Same reasoning as above, don't bother to show summary for a single
+# thing
+if len(summary_streams) > 1:
+   for stream in summary_streams:
+      output += "* Stream ID %s Summary\n" % stream['stream-id']
+      output += throughput_utils.format_stream_output([stream])
+      output += "\n"
 
+output += "Summary\n"
+output += throughput_utils.format_stream_output([summary_summary])
 
-
+print output

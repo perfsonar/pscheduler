@@ -5,6 +5,9 @@
 import optparse
 import pscheduler
 import sys
+import socket
+
+logger = pscheduler.Log(prefix='test-throughput')
 
 if len(sys.argv) > 1:
 
@@ -33,13 +36,13 @@ opt_parser = optparse.OptionParser()
 opt_parser.add_option("-s", "--source",
                       help="Sending host",
                       action="store", type="string",
-                      dest="sender")
+                      dest="source")
 
 
 opt_parser.add_option("-d", "--destination",
                       help="Receiving host",
                       action="store", type="string",
-                      dest="receiver")
+                      dest="destination")
 
 opt_parser.add_option("-t", "--duration",
                       help="Total runtime of test",
@@ -64,11 +67,11 @@ if len(remaining_args) != 0:
 
 result = { 'schema': 1 }
 
-if options.sender is not None:
-   result['sender'] = options.sender
+if options.source is not None:
+   result['source'] = options.source
    
-if options.receiver is not None:
-   result['receiver'] = options.receiver
+if options.destination is not None:
+   result['destination'] = options.destination
 
 if options.duration is not None:
    result['duration'] = options.duration
@@ -78,5 +81,18 @@ if options.interval is not None:
 
 if options.parallel is not None:
    result['parallel'] = options.parallel
+
+# Set default of either source or destination to "me" if not
+# provided
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s.connect(('8.8.8.8', 0))  # connecting to a UDP address doesn't send packets
+me = s.getsockname()[0]
+
+logger.debug("Me = %s" % me)
+
+if not result.has_key("source") and result.has_key("destination"):
+   result["source"] = me
+elif not result.has_key("destination") and result.has_key("source"):
+   result["destination"] = me
 
 pscheduler.succeed_json(result)

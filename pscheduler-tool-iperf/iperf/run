@@ -13,12 +13,13 @@ import shutil
 import sys
 import time
 import iperf_parser
+import traceback
 from iperf_defaults import *
 
 # track when this run starts
 start_time = datetime.datetime.now()
 
-logger = pscheduler.Log(prefix='iperf', quiet=True)
+logger = pscheduler.Log(prefix='tool-iperf')
 
 logger.debug("starting iperf tool")
 
@@ -52,7 +53,7 @@ def run_client():
 
     # duration
     iperf_args.append('-t')
-    iperf_args.append(test_spec['duration'])
+    iperf_args.append(test_spec.get('duration', str(DEFAULT_DURATION)))
 
     if test_spec.has_key('interval') and test_spec['interval'] != None:
         iperf_args.append('-i')
@@ -85,8 +86,6 @@ def run_client():
     lines = stdout.split("\n")    
 
     logger.debug("Lines are %s " % lines)
-
-    seen_header = False
 
     results = iperf_parser.parse_output(lines)
     results['diag'] = stdout
@@ -132,8 +131,14 @@ try:
         results = run_server()
     else:
         pscheduler.fail("Invalid participant.")
-except Exception as e:
-    logger.error("Exception %s" % e);
+except Exception as ex:
+    _, _, ex_traceback = sys.exc_info()
+    if ex_traceback is None:
+        ex_traceback = ex.__traceback__
+    tb_lines = [ line.rstrip('\n') for line in
+                 traceback.format_exception(ex.__class__, ex, ex_traceback)]
+    logger.debug(tb_lines)
+    logger.error("Exception %s" % ex);
 
 logger.info("Results: %s" % results)
 

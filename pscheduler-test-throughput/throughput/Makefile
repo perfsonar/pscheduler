@@ -12,7 +12,8 @@ FILES=\
 	spec-format \
 	spec-is-valid \
         validate.py \
-        spec-to-cli
+        spec-to-cli \
+        throughput_utils.py
 
 
 
