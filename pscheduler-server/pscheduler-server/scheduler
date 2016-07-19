@@ -48,8 +48,8 @@ dsn = options.dsn
 # Minimum amount of time from now when the first run of a task can be
 # scheduled.  This prevents "start now" tasks from being scheduled for
 # a time before the participants can prepare for them.
-# TODO: Potential race condition?
-first_run_offset = pscheduler.iso8601_as_timedelta('PT5S')
+# TODO: Potential race condition?  Yep.
+first_run_offset = pscheduler.iso8601_as_timedelta('PT10S')
 
 
 
