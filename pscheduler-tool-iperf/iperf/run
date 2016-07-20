@@ -63,6 +63,20 @@ def run_client():
         iperf_args.append('-P')
         iperf_args.append(test_spec['parallel'])
 
+    if test_spec.has_key('window-size') and test_spec['window-size'] != None:
+        iperf_args.append('-w')
+        iperf_args.append(test_spec['window-size'])
+
+    if test_spec.has_key('mss') and test_spec['mss'] != None:
+        iperf_args.append('-m')
+        iperf_args.append(test_spec['mss'])
+
+    if test_spec.has_key('bandwidth') and test_spec['bandwidth'] != None:
+        iperf_args.append('-u') # iperf only support UDP bandwidth throttling, this is checked for earlier too
+        iperf_args.append('-b')
+        iperf_args.append(test_spec['bandwidth'])
+      
+
     logger.info("Running command: %s" % " ".join(iperf_args))
 
     try:

@@ -59,6 +59,26 @@ opt_parser.add_option("-P", "--parallel",
                       action="store", type="string",
                       dest="parallel")
 
+opt_parser.add_option("-u", "--udp",
+                      help="Use UDP instead of TCP testing",
+                      action="store_true", 
+                      dest="udp")
+
+opt_parser.add_option("-b", "--bandwidth",
+                      help="Bandwidth to rate limit the test to",
+                      action="store", type="string",
+                      dest="bandwidth")
+
+opt_parser.add_option("-w", "--window-size",
+                      help="TCP window size to use for the test",
+                      action="store", type="string",
+                      dest="window_size")
+
+opt_parser.add_option("-m", "--mss",
+                      help="TCP maximum segment size",
+                      action="store", type="string",
+                      dest="mss")
+
 
 (options, remaining_args) = opt_parser.parse_args(args)
 if len(remaining_args) != 0:
@@ -81,6 +101,19 @@ if options.interval is not None:
 
 if options.parallel is not None:
    result['parallel'] = options.parallel
+
+if options.udp:
+   result['udp'] = True
+
+if options.bandwidth is not None:
+   result['bandwidth'] = options.bandwidth
+
+if options.window_size is not None:
+   result["window-size"] = options.window_size
+
+if options.mss is not None:
+   result["mss"] = options.mss
+
 
 # Set default of either source or destination to "me" if not
 # provided

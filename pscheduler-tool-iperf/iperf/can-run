@@ -13,6 +13,10 @@ json = pscheduler.json_load(exit_on_error=True)
 try:
     if json['type'] != 'throughput':
         pscheduler.fail('Unsupported test type')
+
+    if json.has_key('bandwidth') and not json.has_key('udp'):
+        pscheduler.fail('iperf cannot run TCP tests with throttled bandwidth')
+
 except KeyError:
     pscheduler.fail('Missing test type')
 
