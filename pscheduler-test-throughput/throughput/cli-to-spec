@@ -79,6 +79,11 @@ opt_parser.add_option("-m", "--mss",
                       action="store", type="string",
                       dest="mss")
 
+opt_parser.add_option("-l", "--buffer-length",
+                      help="length of the buffer to read/write from",
+                      action="store", type="string",
+                      dest="buffer_length")
+
 
 (options, remaining_args) = opt_parser.parse_args(args)
 if len(remaining_args) != 0:
@@ -113,6 +118,9 @@ if options.window_size is not None:
 
 if options.mss is not None:
    result["mss"] = options.mss
+
+if options.buffer_length is not None:
+   result["buffer-length"] = options.buffer_length
 
 
 # Set default of either source or destination to "me" if not

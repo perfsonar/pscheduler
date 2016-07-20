@@ -75,6 +75,10 @@ def run_client():
         iperf_args.append('-u') # iperf only support UDP bandwidth throttling, this is checked for earlier too
         iperf_args.append('-b')
         iperf_args.append(test_spec['bandwidth'])
+
+    if test_spec.has_key('buffer-length') and test_spec['buffer-length'] != None:
+        iperf_args.append('-l')
+        iperf_args.append(test_spec['buffer-length'])
       
 
     logger.info("Running command: %s" % " ".join(iperf_args))
