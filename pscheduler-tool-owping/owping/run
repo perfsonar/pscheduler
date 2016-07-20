@@ -74,7 +74,7 @@ else:
 
 #run test
 results = { 
-    'schema': OWDELAY_SCHEMA_VERSION, 
+    'schema': LATENCY_SCHEMA_VERSION, 
     'succeeded': False 
     }
 if role == CLIENT_ROLE:
@@ -159,7 +159,7 @@ if role == CLIENT_ROLE:
     results['packets-received'] = 0
     results['packets-duplicated'] = 0
     results['packets-reordered'] = 0
-    results['histogram-owdelay'] = {}
+    results['histogram-latency'] = {}
     results['histogram-ttl'] = {}
     if raw_output:
         results['raw-packets'] = []
@@ -218,10 +218,10 @@ if role == CLIENT_ROLE:
             delay = (float(destination_timestamp) - float(source_timestamp)) / pow(2, 32)
             #round and add 0 to prevent -0.00
             delay_bucket = DELAY_BUCKET_FORMAT%(round(delay/bucket_width, DELAY_BUCKET_DIGITS) + 0)
-            if delay_bucket in results['histogram-owdelay']:
-                results['histogram-owdelay'][delay_bucket] += 1
+            if delay_bucket in results['histogram-latency']:
+                results['histogram-latency'][delay_bucket] += 1
             else:
-                results['histogram-owdelay'][delay_bucket] = 1
+                results['histogram-latency'][delay_bucket] = 1
                 
             #TTL histogram
             if ttl in results['histogram-ttl']:

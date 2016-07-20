@@ -2,15 +2,15 @@
 # Makefile for any test class
 #
 
-NAME=owdelay
+NAME=latency
 
 FILES=\
 	cli-to-spec \
 	enumerate \
-	owdelay_utils.py \
+	latency_utils.py \
 	participants \
-	pscheduler-schema-owdelay-request.json \
-	pscheduler-schema-owdelay-response.json \
+	pscheduler-schema-latency-request.json \
+	pscheduler-schema-latency-response.json \
 	result-format \
 	spec-format \
 	spec-is-valid \

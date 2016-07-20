@@ -1,5 +1,5 @@
 ###################################################################
-# Contains classes and functions helpful in handling owdelay tests
+# Contains classes and functions helpful in handling latency tests
 ###################################################################
 
 import json

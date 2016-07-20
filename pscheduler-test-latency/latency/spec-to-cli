@@ -4,10 +4,10 @@
 
 import pscheduler
 import jsonschema
-from owdelay_utils import load_schema
+from latency_utils import load_schema
 
 #constants
-SCHEMA_FILE = "pscheduler-schema-owdelay-request.json"
+SCHEMA_FILE = "pscheduler-schema-latency-request.json"
 
 #load spec JSON
 spec = pscheduler.json_load(exit_on_error=True)
@@ -19,7 +19,7 @@ schema = load_schema(SCHEMA_FILE)
 try:
     jsonschema.validate(spec, schema, format_checker=jsonschema.FormatChecker())
 except Exception, e:
-    pscheduler.fail("Invalid owdelay test specification: %s" % e.message)
+    pscheduler.fail("Invalid latency test specification: %s" % e.message)
 schema_props = schema.get('properties', {})
 if not schema_props:
     pscheduler.fail("Error retrieving schema properties")

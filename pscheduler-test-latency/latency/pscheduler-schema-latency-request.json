@@ -1,5 +1,5 @@
 {
-    "title": "pScheduler OWDelay Request Schema",
+    "title": "pScheduler One-way Latency Request Schema",
     "type": "object",
     "properties": {
         "schema": {

@@ -7,10 +7,10 @@ import pscheduler
 import sys
 import math
 import jsonschema
-from owdelay_utils import Histogram, load_schema
+from latency_utils import Histogram, load_schema
 
 #constants
-SCHEMA_FILE = "pscheduler-schema-owdelay-response.json"
+SCHEMA_FILE = "pscheduler-schema-latency-response.json"
 
 #Get format. Currently only support text/plain
 try:
@@ -42,9 +42,9 @@ output += "Packets Duplicated ... %s packets\n" % json.get('packets-duplicated',
 output += "Packets Reordered .... %s packets\n" % json.get('packets-reordered', 'Not Reported')
 
 #Output one-way delay histogram
-output += "\nOne-way Delay Statistics\n"
-output += "------------------------\n"
-owd_hist = Histogram(json.get('histogram-owdelay', {}))
+output += "\nOne-way Latency Statistics\n"
+output += "--------------------------\n"
+owd_hist = Histogram(json.get('histogram-latency', {}))
 stats = owd_hist.get_stats()
 output += "Delay Median ......... %.2f ms\n" % stats.get('median', 'Not Reported')
 output += "Delay Minimum ........ %.2f ms\n" % stats.get('minimum', 'Not Reported')
@@ -67,7 +67,7 @@ if stats.get('percentile-75', None) and stats.get('percentile-25', None):
 output += "    Variance ......... %.2f ms\n" % stats.get('variance', 'Not Reported')
 output += "    Std Deviation .... %.2f ms\n" % stats.get('standard-deviation', 'Not Reported')
 output += "Histogram:\n"
-for owd_bucket in sorted(json.get('histogram-owdelay', {}).items()):
+for owd_bucket in sorted(json.get('histogram-latency', {}).items()):
     output += "    %s ms: %d packets\n" % (owd_bucket[0], owd_bucket[1])
     
 #Output TTL histogram

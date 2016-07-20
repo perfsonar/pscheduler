@@ -1,13 +1,13 @@
 #
-# RPM Spec for pScheduler OWDelay Test
+# RPM Spec for pScheduler Latency Test
 #
 
-%define short	owdelay
+%define short	latency
 Name:		pscheduler-test-%{short}
 Version:	0.0
 Release:	1%{?dist}
 
-Summary:	OWDelay test class for pScheduler
+Summary:	Latency test class for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0
 Group:		Unspecified
@@ -24,7 +24,7 @@ BuildRequires:	pscheduler-rpm
 
 
 %description
-OWDelay test class for pScheduler
+Latency test class for pScheduler
 
 
 %prep

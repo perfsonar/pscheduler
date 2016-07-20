@@ -1,17 +1,17 @@
 #!/usr/bin/python
 #
-# Validator for 'owdelay' test spec
+# Validator for 'latency' test spec
 #
 
 import pscheduler
 import jsonschema 
-from owdelay_utils import load_schema
+from latency_utils import load_schema
 
 #constants
-SCHEMA_FILE = "pscheduler-schema-owdelay-request.json"
+SCHEMA_FILE = "pscheduler-schema-latency-request.json"
 
 #logging
-log = pscheduler.Log(prefix="test-owdelay")
+log = pscheduler.Log(prefix="test-latency")
 
 #load JSON
 test_spec_json = pscheduler.json_load(exit_on_error=True)
@@ -23,8 +23,8 @@ schema = load_schema(SCHEMA_FILE)
 try:
     jsonschema.validate(test_spec_json, schema, format_checker=jsonschema.FormatChecker())
 except Exception, e:
-    log.debug("Owdelay schema validation error: %s" % e)
-    pscheduler.fail("Invalid owdelay test specification: %s" % e.message)
+    log.debug("Latency schema validation error: %s" % e)
+    pscheduler.fail("Invalid latency test specification: %s" % e.message)
     
 #Verify flip is not set if sender not included.
 if 'sender' not in test_spec_json and test_spec_json.get('flip', False):

@@ -18,7 +18,7 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-core
 Requires:	python-pscheduler
-Requires:	pscheduler-test-owdelay
+Requires:	pscheduler-test-latency
 requires:	owamp-client
 
 BuildRequires:	pscheduler-rpm
