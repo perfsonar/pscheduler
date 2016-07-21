@@ -268,10 +268,6 @@ class Run:
                 'run': pscheduler.json_dump({ 'result-full' : full_result })
                 }
 
-
-            # TODO: Store the local result in the database instead of
-            # doing it through the REST API.
-
             for run in runs:
                 log.debug("%d: Storing result in %s", id, run)
                 status, returned = pscheduler.url_put(run,
