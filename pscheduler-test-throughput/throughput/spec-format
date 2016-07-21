@@ -17,8 +17,8 @@ json = pscheduler.json_load(exit_on_error=True)
 if format == 'text/plain':
 
    template = """
-Sender   ......... {.section sender}{sender}{.or}Not Specified{.end}
-Receiver ......... {.section receiver}{receiver}{.or}Not Specified{.end}
+Sender   ......... {.section source}{source}{.or}Not Specified{.end}
+Receiver ......... {.section destination}{destination}{.or}Not Specified{.end}
    """
 else:
 

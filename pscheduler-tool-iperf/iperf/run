@@ -13,12 +13,13 @@ import shutil
 import sys
 import time
 import iperf_parser
+import traceback
 from iperf_defaults import *
 
 # track when this run starts
 start_time = datetime.datetime.now()
 
-logger = pscheduler.Log(prefix='iperf', quiet=True)
+logger = pscheduler.Log(prefix='tool-iperf')
 
 logger.debug("starting iperf tool")
 
@@ -48,11 +49,11 @@ def run_client():
 
     # who to connect to
     iperf_args.append('-c')
-    iperf_args.append(test_spec['receiver'])
+    iperf_args.append(test_spec['destination'])
 
     # duration
     iperf_args.append('-t')
-    iperf_args.append(test_spec['duration'])
+    iperf_args.append(test_spec.get('duration', str(DEFAULT_DURATION)))
 
     if test_spec.has_key('interval') and test_spec['interval'] != None:
         iperf_args.append('-i')
@@ -61,6 +62,24 @@ def run_client():
     if test_spec.has_key('parallel') and test_spec['parallel'] != None:
         iperf_args.append('-P')
         iperf_args.append(test_spec['parallel'])
+
+    if test_spec.has_key('window-size') and test_spec['window-size'] != None:
+        iperf_args.append('-w')
+        iperf_args.append(test_spec['window-size'])
+
+    if test_spec.has_key('mss') and test_spec['mss'] != None:
+        iperf_args.append('-m')
+        iperf_args.append(test_spec['mss'])
+
+    if test_spec.has_key('bandwidth') and test_spec['bandwidth'] != None:
+        iperf_args.append('-u') # iperf only support UDP bandwidth throttling, this is checked for earlier too
+        iperf_args.append('-b')
+        iperf_args.append(test_spec['bandwidth'])
+
+    if test_spec.has_key('buffer-length') and test_spec['buffer-length'] != None:
+        iperf_args.append('-l')
+        iperf_args.append(test_spec['buffer-length'])
+      
 
     logger.info("Running command: %s" % " ".join(iperf_args))
 
@@ -85,8 +104,6 @@ def run_client():
     lines = stdout.split("\n")    
 
     logger.debug("Lines are %s " % lines)
-
-    seen_header = False
 
     results = iperf_parser.parse_output(lines)
     results['diag'] = stdout
@@ -132,8 +149,14 @@ try:
         results = run_server()
     else:
         pscheduler.fail("Invalid participant.")
-except Exception as e:
-    logger.error("Exception %s" % e);
+except Exception as ex:
+    _, _, ex_traceback = sys.exc_info()
+    if ex_traceback is None:
+        ex_traceback = ex.__traceback__
+    tb_lines = [ line.rstrip('\n') for line in
+                 traceback.format_exception(ex.__class__, ex, ex_traceback)]
+    logger.debug(tb_lines)
+    logger.error("Exception %s" % ex);
 
 logger.info("Results: %s" % results)
 

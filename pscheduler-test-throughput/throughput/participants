@@ -14,16 +14,16 @@ json = pscheduler.json_load(exit_on_error=True)
 
 #sender first participant, receiver the second
 try:
-    sender = json['sender']
+    source = json['source']
 except KeyError:
-    pscheduler.fail('No sender in test specification')
+    pscheduler.fail('No source in test specification')
     
 try:
-    receiver = json['receiver']
+    destination = json['destination']
 except KeyError:
-    pscheduler.fail('No receiver in test specification')
+    pscheduler.fail('No destination in test specification')
 
-result = [ sender, receiver ]
+result = [ source, destination ]
 
 pscheduler.json_dump(result, sys.stdout )
 pscheduler.succeed()

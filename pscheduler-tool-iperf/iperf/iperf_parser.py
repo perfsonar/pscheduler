@@ -136,6 +136,8 @@ def parse_output(lines):
             intervals.append(finalized)
 
 
+    logger.debug(intervals)
+
     # sort according to start interval
     intervals.sort(key = lambda x: x['summary']['start'])
 
@@ -183,11 +185,67 @@ TCP window size: 19800 Byte (default)
 [  3]  0.0-10.0 sec  2169110528 Bytes  1735167481 bits/sec
 """
 
+    #result = parse_output(test_output.split("\n"))
+    #pprint.PrettyPrinter(indent=4).pprint(result)
+
+
+
+    test_output = """
+------------------------------------------------------------
+Client connecting to 10.0.2.4, TCP port 5001
+TCP window size: 19.3 KByte (default)
+------------------------------------------------------------
+[  5] local 10.0.2.15 port 42309 connected with 10.0.2.4 port 5001
+[  3] local 10.0.2.15 port 42307 connected with 10.0.2.4 port 5001
+[  4] local 10.0.2.15 port 42308 connected with 10.0.2.4 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  5]  0.0- 1.0 sec  74.8 MBytes   627 Mbits/sec
+[  4]  0.0- 1.0 sec  67.0 MBytes   562 Mbits/sec
+[  3]  0.0- 1.0 sec  59.0 MBytes   495 Mbits/sec
+[SUM]  0.0- 1.0 sec   201 MBytes  1.68 Gbits/sec
+[  5]  1.0- 2.0 sec  76.4 MBytes   641 Mbits/sec
+[  3]  1.0- 2.0 sec  68.1 MBytes   571 Mbits/sec
+[  4]  1.0- 2.0 sec  63.8 MBytes   535 Mbits/sec
+[SUM]  1.0- 2.0 sec   208 MBytes  1.75 Gbits/sec
+[  5]  2.0- 3.0 sec  76.9 MBytes   645 Mbits/sec
+[  3]  2.0- 3.0 sec  61.8 MBytes   518 Mbits/sec
+[  4]  2.0- 3.0 sec  65.9 MBytes   553 Mbits/sec
+[SUM]  2.0- 3.0 sec   204 MBytes  1.72 Gbits/sec
+[  5]  3.0- 4.0 sec  72.6 MBytes   609 Mbits/sec
+[  3]  3.0- 4.0 sec  68.8 MBytes   577 Mbits/sec
+[  4]  3.0- 4.0 sec  60.9 MBytes   511 Mbits/sec
+[SUM]  3.0- 4.0 sec   202 MBytes  1.70 Gbits/sec
+[  5]  4.0- 5.0 sec  73.4 MBytes   616 Mbits/sec
+[  3]  4.0- 5.0 sec  71.5 MBytes   600 Mbits/sec
+[  4]  4.0- 5.0 sec  61.6 MBytes   517 Mbits/sec
+[SUM]  4.0- 5.0 sec   206 MBytes  1.73 Gbits/sec
+[  3]  5.0- 6.0 sec  73.2 MBytes   614 Mbits/sec
+[  4]  5.0- 6.0 sec  67.0 MBytes   562 Mbits/sec
+[  5]  5.0- 6.0 sec  64.5 MBytes   541 Mbits/sec
+[SUM]  5.0- 6.0 sec   205 MBytes  1.72 Gbits/sec
+[  5]  6.0- 7.0 sec  65.6 MBytes   551 Mbits/sec
+[  3]  6.0- 7.0 sec  75.0 MBytes   629 Mbits/sec
+[  4]  6.0- 7.0 sec  70.4 MBytes   590 Mbits/sec
+[SUM]  6.0- 7.0 sec   211 MBytes  1.77 Gbits/sec
+[  3]  7.0- 8.0 sec  77.0 MBytes   646 Mbits/sec
+[  4]  7.0- 8.0 sec  65.9 MBytes   553 Mbits/sec
+[  5]  7.0- 8.0 sec  63.8 MBytes   535 Mbits/sec
+[SUM]  7.0- 8.0 sec   207 MBytes  1.73 Gbits/sec
+[  3]  8.0- 9.0 sec  76.2 MBytes   640 Mbits/sec
+[  5]  8.0- 9.0 sec  65.0 MBytes   545 Mbits/sec
+[  4]  8.0- 9.0 sec  68.4 MBytes   574 Mbits/sec
+[SUM]  8.0- 9.0 sec   210 MBytes  1.76 Gbits/sec
+[  5]  9.0-10.0 sec  67.6 MBytes   567 Mbits/sec
+[  5]  0.0-10.0 sec   701 MBytes   588 Mbits/sec
+[  3]  9.0-10.0 sec  71.1 MBytes   597 Mbits/sec
+[  3]  0.0-10.0 sec   702 MBytes   589 Mbits/sec
+[  4]  9.0-10.0 sec  72.2 MBytes   606 Mbits/sec
+[SUM]  9.0-10.0 sec   211 MBytes  1.77 Gbits/sec
+[  4]  0.0-10.0 sec   663 MBytes   556 Mbits/sec
+[SUM]  0.0-10.0 sec  2.02 GBytes  1.73 Gbits/sec
+"""
+
     result = parse_output(test_output.split("\n"))
-
     pprint.PrettyPrinter(indent=4).pprint(result)
-
-
-
 
     
