@@ -2,8 +2,11 @@
 # Administrative Information
 #
 
+import datetime
 import pscheduler
+import pytz
 import socket
+import tzlocal
 
 from pschedulerapiserver import application
 
@@ -36,14 +39,10 @@ def schedule_horizon():
 def time():
     """Return clock-related information"""
 
-    result = {
-        # TODO: This needs to show fractional seconds.
-        'time': pscheduler.datetime_as_iso8601(pscheduler.time_now()),
-        # TODO: The next four lines are dummied up.
-        'sync': False,
-        'accuracy': 0.060,
-        'method': 'ntp',
-        'message': "THIS IS DUMMY DATA\nsynchronised to NTP server (97.107.128.58) at stratum 3\n    time correct to within 60 ms\n   polling server every 1024 s"
 
-        }
-    return ok_json(result)
+    # TODO: Get NTP sync information and un-dummy the lines below.
+
+    try:
+        return ok_json(pscheduler.clock_state())
+    except Exception as ex:
+        return error("Unable to fetch clock state: " + str(ex))
