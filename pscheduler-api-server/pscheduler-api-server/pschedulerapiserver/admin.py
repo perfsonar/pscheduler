@@ -35,7 +35,7 @@ def schedule_horizon():
     return ok_json(pscheduler.timedelta_as_iso8601(cursor.fetchone()[0]))
 
 
-@application.route("/time", methods=['GET'])
+@application.route("/clock", methods=['GET'])
 def time():
     """Return clock-related information"""
 
