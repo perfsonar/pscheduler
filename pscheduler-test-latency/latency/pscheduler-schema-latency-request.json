@@ -46,7 +46,7 @@
             "type": "integer",
             "minimum": 0
         },
-        "udp-ports": {
+        "data-ports": {
             "description": "The port range to use on the side of the test running the client. At least two ports required.",
             "type": "string",
             "pattern": "^(\\d+)-(\\d+)$"

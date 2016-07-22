@@ -160,7 +160,23 @@ __dictionary__ = {
         "minimum": 0,
         "maximum": 65535
         },
-
+    
+    "IPPortRange": {
+        "type": "object",
+        "properties": {
+            "lower": { "$ref": "#/pScheduler/IPPort" },
+            "upper": { "$ref": "#/pScheduler/IPPort" }
+        },
+        "additionalProperties": False,
+        "required": [ "lower", "upper" ]
+    },
+    
+    "IPTOS": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 63
+        },
+    
     "Number": { "type": "number" },
 
     "Numeric": {

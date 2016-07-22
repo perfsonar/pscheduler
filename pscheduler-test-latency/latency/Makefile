@@ -8,6 +8,7 @@ FILES=\
 	cli-to-spec \
 	enumerate \
 	latency_utils.py \
+	validate.py \
 	participants \
 	pscheduler-schema-latency-request.json \
 	pscheduler-schema-latency-response.json \

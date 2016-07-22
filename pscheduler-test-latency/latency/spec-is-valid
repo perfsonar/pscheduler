@@ -4,30 +4,24 @@
 #
 
 import pscheduler
-import jsonschema 
-from latency_utils import load_schema
 
-#constants
-SCHEMA_FILE = "pscheduler-schema-latency-request.json"
+from validate import spec_is_valid
 
 #logging
 log = pscheduler.Log(prefix="test-latency")
 
-#load JSON
-test_spec_json = pscheduler.json_load(exit_on_error=True)
+#get json
+json = pscheduler.json_load(exit_on_error=True)
 
-#find schema file
-schema = load_schema(SCHEMA_FILE)
-    
-# Validate against schema
-try:
-    jsonschema.validate(test_spec_json, schema, format_checker=jsonschema.FormatChecker())
-except Exception, e:
-    log.debug("Latency schema validation error: %s" % e)
-    pscheduler.fail("Invalid latency test specification: %s" % e.message)
-    
-#Verify flip is not set if sender not included.
-if 'sender' not in test_spec_json and test_spec_json.get('flip', False):
-    pscheduler.fail("You must specify both sender and receiver when using the flip option")
+#validate
+valid, message = spec_is_valid(json)
 
+if not valid:
+    pscheduler.fail(message)
+
+#Verify flip is not set if source not included.
+if 'source' not in json and json.get('flip', False):
+    pscheduler.fail("You must specify both source and dest when using the flip option")
+    
 pscheduler.succeed()
+

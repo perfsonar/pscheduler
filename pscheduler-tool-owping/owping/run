@@ -23,7 +23,7 @@ log = pscheduler.Log(prefix="tool-owping", quiet=True)
 #DEBUGGING: Set static values below
 # participant = 1
 # participant_data = [{}, {'ctrl-port': 11000, 'data-port-range': '11001-11002'}]
-# test_spec = {'sender': '10.0.1.28', 'receiver': '10.0.1.25', "packet-timeout": 7}
+# test_spec = {'source': '10.0.1.28', 'dest': '10.0.1.25', "packet-timeout": 7}
 # duration = pscheduler.iso8601_as_timedelta('PT15S')
 
 #parse JSON input
@@ -50,9 +50,11 @@ DELAY_BUCKET_FORMAT = '%.2f' #Set buckets to nearest 2 decimal places
 DEFAULT_RAW_OUTPUT = False #don't display raw packets by default
 CLOCK_ERROR_DIGITS = 2 #number of digits to round clock error
 ADDR_FORMAT = "[%s]:%d"
+OWPING_RANGE_ARGS = [
+    ('data-ports', '-P'),
+]
 OWPING_VAL_ARGS = [
     ('ip-tos', '-D'),    
-    ('udp-ports', '-P'),
     ('packet-padding', '-s')
 ]
 
@@ -87,7 +89,11 @@ if role == CLIENT_ROLE:
         if arg[0] in test_spec:
             owping_args.append(arg[1])
             owping_args.append(str(test_spec[arg[0]]))
-    
+    for rarg in OWPING_RANGE_ARGS:
+        if rarg[0] in test_spec:
+            owping_args.append(rarg[1])
+            owping_args.append("%d-%d" % (test_spec[rarg[0]]['lower'], test_spec[rarg[0]]['upper']))
+            
     #set interval,count and timeout to ensure consistent with duration
     owping_args.append('-c')
     owping_args.append(str(test_spec.get('packet-count', DEFAULT_PACKET_COUNT)))
@@ -118,17 +124,17 @@ if role == CLIENT_ROLE:
     if flip:
         #reverse test
         owping_args.append('-f')
-        if 'receiver' in test_spec:
+        if 'dest' in test_spec:
             owping_args.append('-S')
-            owping_args.append(test_spec['receiver'])
-        owping_args.append(ADDR_FORMAT % (test_spec['sender'], control_port))
+            owping_args.append(test_spec['dest'])
+        owping_args.append(ADDR_FORMAT % (test_spec['source'], control_port))
     else:
         #forward test
         owping_args.append('-t')
-        if 'sender' in test_spec:
+        if 'source' in test_spec:
             owping_args.append('-S')
-            owping_args.append(test_spec['sender'])
-        owping_args.append(ADDR_FORMAT % (test_spec['receiver'], control_port))
+            owping_args.append(test_spec['source'])
+        owping_args.append(ADDR_FORMAT % (test_spec['dest'], control_port))
     
     #Run the process
     time.sleep(DEFAULT_CLIENT_SLEEP) #wait for server to boot
@@ -253,7 +259,7 @@ elif role == SERVER_ROLE:
     try:
         recv_participant_data = participant_data[1]
     except IndexError:
-        pscheduler.fail("Unable to find participant data for receiver")
+        pscheduler.fail("Unable to find participant data for dest")
     if 'ctrl-port' not in recv_participant_data:
         pscheduler.fail("Unable to find control port in participant data")
     
@@ -284,9 +290,9 @@ elif role == SERVER_ROLE:
     
     #set listening address
     if flip:
-        listen_addr = test_spec['sender']
+        listen_addr = test_spec['source']
     else:
-        listen_addr = test_spec['receiver']
+        listen_addr = test_spec['dest']
     owampd_args.append('-S')
     owampd_args.append("[%s]:%d" % (listen_addr, recv_participant_data['ctrl-port']))
     

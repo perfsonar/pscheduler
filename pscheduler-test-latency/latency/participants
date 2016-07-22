@@ -17,16 +17,16 @@ if json.get('single-participant-mode', False):
     #lead participant only participant
     result = [ None ]
 else:
-    #sender first participant, receiver the second
-    sender = None
-    receiver = None
-    if 'sender' in json:
-        sender = json['sender']
+    #source first participant, dest the second
+    source = None
+    dest = None
+    if 'source' in json:
+        source = json['source']
         
-    if 'receiver' in json:
-        receiver = json['receiver']
+    if 'dest' in json:
+        dest = json['dest']
         
-    result = [ sender, receiver ]
+    result = [ source, dest ]
 
 pscheduler.json_dump(result, sys.stdout )
 pscheduler.succeed()
