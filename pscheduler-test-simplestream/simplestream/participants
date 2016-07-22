@@ -22,12 +22,13 @@ if not valid:
 
 
 try:
+    source = json['source']
+except KeyError:
+    source = None
+
+try:
     dest = json['dest']
 except KeyError:
     pscheduler.fail('No dest in test specification')
 
-# This always leads with a null so the participant indexes line up.
-result = [ None, dest ]
-
-pscheduler.json_dump(result, sys.stdout )
-pscheduler.succeed()
+pscheduler.succeed_json([ source, dest ])

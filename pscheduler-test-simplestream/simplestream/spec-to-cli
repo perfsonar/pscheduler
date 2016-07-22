@@ -18,6 +18,7 @@ result = pscheduler.speccli_build_args(json,
                                        strings=[
         ( 'dest', 'dest' ),
         ( 'dawdle', 'dawdle' ),
+        ( 'source', 'source' ),
         ( 'test-material', 'test-material' ),
         ( 'timeout', 'timeout' ),
         ( 'fail', 'fail' ),

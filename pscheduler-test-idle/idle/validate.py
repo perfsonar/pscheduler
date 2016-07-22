@@ -9,6 +9,7 @@ def spec_is_valid(json):
         "type": "object",
         "properties": {
             "duration":         { "$ref": "#/pScheduler/Duration" },
+            "host":             { "$ref": "#/pScheduler/Host" },
             "parting-comment":  { "$ref": "#/pScheduler/String" },
             "schema":           { "$ref": "#/pScheduler/Cardinal" },
             "starting-comment": { "$ref": "#/pScheduler/String" },
