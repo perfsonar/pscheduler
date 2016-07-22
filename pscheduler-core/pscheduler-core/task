@@ -402,5 +402,6 @@ status, run_json = pscheduler.url_get(runs_url,
 if status == 404:
     pscheduler.fail("Run on server was never populated.")
 
+# TODO: Pass the output format through to watch.
 # Watch the task run.
 os.execl('/bin/sh', '/bin/sh', '-c', "pscheduler watch %s" % task_url)
