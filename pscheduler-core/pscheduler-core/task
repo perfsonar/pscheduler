@@ -206,12 +206,9 @@ if assist is None:
     assist = os.getenv('PSCHEDULER_ASSIST')
 
 # Last-ditch default
+last_ditch_assist = '127.0.0.1'
 if assist is None:
-    assist = '127.0.0.1'
-else:
-    if verbose:
-        print "Assistance will be from", assist
-    pass
+    assist = last_ditch_assist
 
 
 #
@@ -359,6 +356,16 @@ try:
             } )
 except Exception as ex:
     pscheduler.fail("Unable to determine the lead participant: " + str(ex))
+
+
+# If the lead is None, the usual behavior would be to task the server
+# on the local host.  If an assist server is being used, that's
+# probably a good indication that the local system has no server.
+# Barf mightily.
+
+if lead is None and assist != last_ditch_assist:
+    pscheduler.fail("""Test parameters are too ambiguous to use with an assist server.  All
+points involved in the test must be specified explicitly.""")
 
 
 #
