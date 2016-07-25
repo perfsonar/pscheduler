@@ -55,6 +55,41 @@ def si_as_integer(text):
     return int(number * multiplier)
 
 
+def integer_as_si(number, places=2, base=10):
+    """Convert a number to the largest possible SI
+    representation of that number"""
+  
+    # Try to cast any input to a float to make
+    # division able to get some deci places
+    number = float(number)
+
+    if base not in [2, 10]:
+        raise ValueError("base must be either 2 or 10")
+
+    # Ensure we get all the things in the correct order
+    sorted_si = sorted(si_multipliers.items(), key=lambda x: x[1], reverse=True)
+
+    number_format = "{0:.%sf}" % places
+
+    for unit, value in sorted_si:
+
+        # Make string ops later happy
+        if unit is None:
+            unit = ""
+
+        # Kind of hacky, depending on what base we're in
+        # we need to skip either all the base 2 or base 10 entries
+        if base == 10 and unit.endswith("i"):
+            continue
+        if base == 2 and not unit.endswith("i"):
+            continue
+
+        if number > value:
+            return number_format.format(number/value) + unit.title()
+
+    # no matches, must be less than anything so just return number
+    return number_format.format(number/value)
+
 
 def si_range(value, default_lower=0):
     """Convert a range of SI numbers to a range of integers.
@@ -100,6 +135,7 @@ def si_range(value, default_lower=0):
         raise ValueError("Lower value must be less than upper value")
 
     return result
+
 
 
 
@@ -162,3 +198,26 @@ if __name__ == "__main__":
             print value, "->", returned
         except Exception as ex:
             print value, "-> Exception:", ex
+
+
+    # Convert to SI
+    print
+    print "Convert from number to SI representation:"
+    for value in [
+        1000,
+        1000 ** 3,
+        1234567890,
+        "9.8",
+        0
+        ]:
+        result = integer_as_si(value)
+        print "%s -> %s (base 10)" % (value, result)
+
+        result = integer_as_si(value, base=2)
+        print "%s -> %s (base 2)" % (value, result)
+
+        result = integer_as_si(value, places=3)
+        print "%s -> %s (3 places)" % (value, result)
+
+
+        
