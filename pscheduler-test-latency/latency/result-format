@@ -6,11 +6,8 @@
 import pscheduler
 import sys
 import math
-import jsonschema
-from latency_utils import Histogram, load_schema
-
-#constants
-SCHEMA_FILE = "pscheduler-schema-latency-response.json"
+from latency_utils import Histogram
+from validate import result_is_valid
 
 #Get format. Currently only support text/plain
 try:
@@ -25,12 +22,9 @@ if format != 'text/plain':
 json = pscheduler.json_load(exit_on_error=True)
 
 #validate against JSON schema file
-schema = load_schema(SCHEMA_FILE)
-try:
-    jsonschema.validate(json, schema, format_checker=jsonschema.FormatChecker())
-except Exception, e:
-    # may want to just print warning in future so can get partial results
-    pscheduler.fail("Invalid response from server: %s" % e.message)
+valid, message = result_is_valid(json)
+if not valid:
+    pscheduler.fail(message)
 
 #Output basic stats
 output = "\nPacket Statistics\n"
