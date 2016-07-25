@@ -79,8 +79,12 @@ def run_client():
     if test_spec.has_key('buffer-length') and test_spec['buffer-length'] != None:
         iperf_args.append('-l')
         iperf_args.append(test_spec['buffer-length'])
-      
 
+    
+    # join and run_program want these all to be string types, so
+    # just to be safe cast everything in the list to a string
+    iperf_args = map(lambda x: str(x), iperf_args)
+      
     logger.info("Running command: %s" % " ".join(iperf_args))
 
     try:

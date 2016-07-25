@@ -6,6 +6,7 @@ import optparse
 import pscheduler
 import sys
 import socket
+import pscheduler
 
 logger = pscheduler.Log(prefix='test-throughput')
 
@@ -39,24 +40,24 @@ opt_parser.add_option("-s", "--source",
                       dest="source")
 
 
-opt_parser.add_option("-d", "--destination",
+opt_parser.add_option("-d", "--dest", "--destination",
                       help="Receiving host",
                       action="store", type="string",
                       dest="destination")
 
 opt_parser.add_option("-t", "--duration",
                       help="Total runtime of test",
-                      action="store", type="string",
+                      action="store", type="int",
                       dest="duration")
 
 opt_parser.add_option("-i", "--interval",
                       help="How often to report results (internally, results still reported in aggregate at end)",
-                      action="store", type="string",
+                      action="store", type="int",
                       dest="interval")
 
 opt_parser.add_option("-P", "--parallel",
                       help="How many parallel streams to run during the test",
-                      action="store", type="string",
+                      action="store", type="int",
                       dest="parallel")
 
 opt_parser.add_option("-u", "--udp",
@@ -65,24 +66,60 @@ opt_parser.add_option("-u", "--udp",
                       dest="udp")
 
 opt_parser.add_option("-b", "--bandwidth",
-                      help="Bandwidth to rate limit the test to",
+                      help="Bandwidth to rate limit the test to, supports SI notation such as 1G",
                       action="store", type="string",
                       dest="bandwidth")
 
 opt_parser.add_option("-w", "--window-size",
-                      help="TCP window size to use for the test",
+                      help="TCP window size to use for the test, supports SI notation such as 64M",
                       action="store", type="string",
                       dest="window_size")
 
+opt_parser.add_option("-W", "--dynamic-window-size",
+                      help="Dynamic TCP window fallback size, supports SI notation such as 64M",
+                      action="store", type="string",
+                      dest="dynamic_window_size")
+
 opt_parser.add_option("-m", "--mss",
                       help="TCP maximum segment size",
-                      action="store", type="string",
+                      action="store", type="int",
                       dest="mss")
 
 opt_parser.add_option("-l", "--buffer-length",
                       help="length of the buffer to read/write from",
-                      action="store", type="string",
+                      action="store", type="int",
                       dest="buffer_length")
+
+opt_parser.add_option("-4", "--force-ipv4",
+                      help="Force the test to use IPv4 for source/destination",
+                      action="store_true",
+                      dest="force_ipv4")
+
+opt_parser.add_option("-6", "--force-ipv6",
+                      help="Force the test to use IPv6 for source/destination",
+                      action="store_true", 
+                      dest="force_ipv6")
+
+opt_parser.add_option("-B", "--local-address",
+                      help="Use this as a local address for control and tests",
+                      action="store", type="string",
+                      dest="local_address")
+
+opt_parser.add_option("--dscp",
+                      help="DSCP value for ToS byte",
+                      action="store", type="int",
+                      dest="dscp")
+
+opt_parser.add_option("-O", "--omit",
+                      help="Number of seconds to omit from the start of the test",
+                      action="store", type="int",
+                      dest="omit")
+
+opt_parser.add_option("--tos",
+                      help="Type of service for outgoing packets",
+                      action="store", type="int",
+                      dest="tos")
+
 
 
 (options, remaining_args) = opt_parser.parse_args(args)
@@ -111,10 +148,22 @@ if options.udp:
    result['udp'] = True
 
 if options.bandwidth is not None:
-   result['bandwidth'] = options.bandwidth
+   try:
+      result['bandwidth'] = pscheduler.si_as_number(options.bandwidth)
+   except ValueError as e:
+      pscheduler.fail("Invalid value \"%s\" for bandwidth: %s" % (options.bandwidth, e))
 
 if options.window_size is not None:
-   result["window-size"] = options.window_size
+   try:
+      result["window-size"] = pscheduler.si_as_number(options.window_size)
+   except ValueError as e:
+      pscheduler.fail("Invalid value \"%s\" for window size: %s" % (options.window_size, e))
+
+if options.dynamic_window_size is not None:
+   try:
+      result["dynamic-window-size"] = pscheduler.si_as_number(options.dynamic_window_size)
+   except ValueError as e:
+      pscheduler.fail("Invalid value \"%s\" for dynamic window size: %s" % (options.dynamic_window_size, e))
 
 if options.mss is not None:
    result["mss"] = options.mss
@@ -122,9 +171,30 @@ if options.mss is not None:
 if options.buffer_length is not None:
    result["buffer-length"] = options.buffer_length
 
+if options.force_ipv4:
+   result["force-ipv4"] = True
 
-# Set default of either source or destination to "me" if not
-# provided
+if options.force_ipv6:
+   result["force-ipv6"] = True
+
+if options.local_address:
+   result["local-address"] = options.local_address
+
+if options.dscp:
+   result["dscp"] = options.dscp
+
+if options.omit:
+   result["omit"] = options.omit
+
+if options.tos:
+   result["tos"] = options.tos
+
+# This sort of belongs in spec-is-valid but has to be here because of 
+# the below step where we assume "me" if one isn't specified
+if not result.has_key("source") and not result.has_key("destination"):
+   pscheduler.fail("Either or both of source or destination must be specified")
+
+# Set default of either source or destination to "me" if not provided
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(('8.8.8.8', 0))  # connecting to a UDP address doesn't send packets
 me = s.getsockname()[0]
