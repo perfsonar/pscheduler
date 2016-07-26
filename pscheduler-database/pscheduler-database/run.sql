@@ -164,7 +164,7 @@ BEGIN
     -- TODO: New runs get participant data.  The table needs a column for this.
 
     pdata_out := row_to_json(t) FROM ( SELECT task.participant AS participant,
-                                       task.json #>> '{test, spec}' AS test ) t;
+                                       cast ( task.json #>> '{test, spec}' AS json ) AS test ) t;
 
     SELECT INTO tool_name name FROM tool WHERE id = task.tool;
 

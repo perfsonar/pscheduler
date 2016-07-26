@@ -173,7 +173,7 @@ def run_post(
 
     errors = []
 
-    put_params = { 'run': pscheduler.json_dump(run_params) }
+    run_data = pscheduler.json_dump(run_params)
 
     for task_url in task_urls[1:]:
 
@@ -184,7 +184,7 @@ def run_post(
             log.debug("Parameters: %s", run_params)
 
         status, output = pscheduler.url_put(put_url,
-                                            params=put_params,
+                                            data=run_data,
                                             throw=False,
                                             json=False  # No output.
                                             )
@@ -234,7 +234,7 @@ def run_post(
     for run in runs_posted:
         log and log.debug("Putting full part data to %s", run)
         status, result = pscheduler.url_put(run,
-                                            params={ 'run': full_data },
+                                            data=full_data,
                                             json=False,
                                             throw=False)
         if status != 200:
