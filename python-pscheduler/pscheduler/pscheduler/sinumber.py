@@ -29,7 +29,7 @@ si_multipliers = {
 
 si_regex = re.compile('^(-?[0-9]+(\.[0-9]+)?)\s*([kmgtpezy][i]?)?$')
 
-def si_as_integer(text):
+def si_as_number(text):
 
     """Convert a string containing an SI value to an integer or return an
     integer if that is what was passed in."""
@@ -52,17 +52,52 @@ def si_as_integer(text):
 
     multiplier = 1 if unit is None else si_multipliers.get(unit.lower(), '')
 
-    return int(number * multiplier)
+    return number * multiplier
 
+
+def number_as_si(number, places=2, base=10):
+    """Convert a number to the largest possible SI
+    representation of that number"""
+  
+    # Try to cast any input to a float to make
+    # division able to get some deci places
+    number = float(number)
+
+    if base not in [2, 10]:
+        raise ValueError("base must be either 2 or 10")
+
+    # Ensure we get all the things in the correct order
+    sorted_si = sorted(si_multipliers.items(), key=lambda x: x[1], reverse=True)
+
+    number_format = "{0:.%sf}" % places
+
+    for unit, value in sorted_si:
+
+        # Make string ops later happy
+        if unit is None:
+            unit = ""
+
+        # Kind of hacky, depending on what base we're in
+        # we need to skip either all the base 2 or base 10 entries
+        if base == 10 and unit.endswith("i"):
+            continue
+        if base == 2 and not unit.endswith("i"):
+            continue
+
+        if number > value:
+            return number_format.format(number/value) + unit.title()
+
+    # no matches, must be less than anything so just return number
+    return number_format.format(number/value)
 
 
 def si_range(value, default_lower=0):
     """Convert a range of SI numbers to a range of integers.
 
     The 'value' is a dict containing members 'lower' and 'upper', each
-    being an integer or string suitable for si_as_integer().  If
+    being an integer or string suitable for si_as_number().  If
     'value' is not a dict, it will be passed directly to
-    si_as_integer() and treated as a non-range (see below).  If there
+    si_as_number() and treated as a non-range (see below).  If there
     is no 'lower' member and 'default_lower' has been provided, that
     value will be used for the lower number.
 
@@ -74,7 +109,7 @@ def si_range(value, default_lower=0):
     """
 
     if type(value) in [ int, str, unicode ]:
-        result = si_as_integer(value)
+        result = si_as_number(value)
         return { "lower": result, "upper": result }
 
     if type(default_lower) != int:
@@ -92,7 +127,7 @@ def si_range(value, default_lower=0):
 
     for member in [ "lower", "upper" ]:
         try:
-            result[member] = si_as_integer(value[member])
+            result[member] = si_as_number(value[member])
         except KeyError:
             raise ValueError("Missing '%s' in input" % member)
 
@@ -100,6 +135,7 @@ def si_range(value, default_lower=0):
         raise ValueError("Lower value must be less than upper value")
 
     return result
+
 
 
 
@@ -123,7 +159,7 @@ if __name__ == "__main__":
             "106.9m",
             "3.1415P"
             ]:
-        integer = si_as_integer(value)
+        integer = si_as_number(value)
         print value, integer
 
     # These should not.
@@ -138,7 +174,7 @@ if __name__ == "__main__":
             3.1415
             ]:
         try:
-            integer = si_as_integer(value)
+            integer = si_as_number(value)
             print value, integer
         except ValueError:
             print value, "-> ValueError"
@@ -162,3 +198,26 @@ if __name__ == "__main__":
             print value, "->", returned
         except Exception as ex:
             print value, "-> Exception:", ex
+
+
+    # Convert to SI
+    print
+    print "Convert from number to SI representation:"
+    for value in [
+        1000,
+        1000 ** 3,
+        1234567890,
+        "9.8",
+        0
+        ]:
+        result = number_as_si(value)
+        print "%s -> %s (base 10)" % (value, result)
+
+        result = number_as_si(value, base=2)
+        print "%s -> %s (base 2)" % (value, result)
+
+        result = number_as_si(value, places=3)
+        print "%s -> %s (3 places)" % (value, result)
+
+
+        

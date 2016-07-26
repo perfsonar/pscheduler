@@ -37,14 +37,14 @@ class NumericRange():
 
         lower = nrange['lower']
         if type(lower) in [ str, unicode ]:
-            self.lower = pscheduler.si_as_integer(lower)
+            self.lower = pscheduler.si_as_number(lower)
         else:
             self.lower = lower
         self.lower_str = str(lower)
 
         upper = nrange['upper']
         if type(upper) in [ str, unicode ]:
-            self.upper = pscheduler.si_as_integer(upper)
+            self.upper = pscheduler.si_as_number(upper)
         else:
             self.upper = upper
         self.upper_str = str(upper)
@@ -58,7 +58,7 @@ class NumericRange():
         if type(number) == float:
             test_value = number
         else:
-            test_value = pscheduler.si_as_integer(number)
+            test_value = pscheduler.si_as_number(number)
 
         return self.lower <= test_value <= self.upper
 
