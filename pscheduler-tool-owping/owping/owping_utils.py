@@ -2,8 +2,15 @@
 # utilities used by owping command
 #
 
+from owping_defaults import *
+import ConfigParser
+
+#Role constants
 CLIENT_ROLE = 0
 SERVER_ROLE = 1
+
+##
+# Determine whether particpant will act as client or server
 def get_role(participant, test_spec):   
     role = None
     flip = test_spec.get('flip', False)
@@ -24,3 +31,15 @@ def get_role(participant, test_spec):
         pscheduler.fail("Invalid participant.")
     
     return role
+
+##
+# Open config file
+def get_config():
+    config = None
+    try:
+        config = ConfigParser.ConfigParser()
+        config.read(CONFIG_FILE)
+    except:
+        log.warn("Unable to read configuration file %s. Proceeding with defaults.")
+    
+    return config

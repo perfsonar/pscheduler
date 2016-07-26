@@ -12,7 +12,7 @@ import shutil
 import sys
 import time
 from owping_defaults import *
-from owping_utils import CLIENT_ROLE, SERVER_ROLE, get_role
+from owping_utils import CLIENT_ROLE, SERVER_ROLE, get_role, get_config
 from subprocess import Popen, PIPE
 
 #track when this run starts
@@ -22,7 +22,7 @@ start_time = datetime.datetime.now()
 log = pscheduler.Log(prefix="tool-owping", quiet=True)
 
 #DEBUGGING: Set static values below
-# participant = 1
+# participant = 0
 # participant_data = [{}, {'ctrl-port': 11000, 'data-port-range': '11001-11002'}]
 # test_spec = {'source': '10.0.1.28', 'dest': '10.0.1.25', "packet-timeout": 7}
 # duration = pscheduler.iso8601_as_timedelta('PT15S')
@@ -39,9 +39,10 @@ except KeyError as e:
 except:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 flip = test_spec.get('flip', False)
-    
+
 #constants
 TIME_SCALE = .001 #use for millisecond conversions
+DEFAULT_OWPING_CMD = '/usr/bin/owping'
 DEFAULT_BUCKET_WIDTH = TIME_SCALE #convert to ms
 DELAY_BUCKET_DIGITS = 2 #number of digits to round delay buckets
 DELAY_BUCKET_FORMAT = '%.2f' #Set buckets to nearest 2 decimal places
@@ -65,9 +66,15 @@ results = {
     'succeeded': False 
     }
 if role == CLIENT_ROLE:
+    #read config file
+    config = get_config()
+    owping_cmd = DEFAULT_OWPING_CMD
+    if config and config.has_option(CONFIG_SECTION, CONFIG_OPT_OWPING_CMD):
+        owping_cmd = config.get(CONFIG_SECTION, CONFIG_OPT_OWPING_CMD)
+    
     #TODO: Get path to owping from config file
     #Always use raw output (-R)
-    owping_args = ['/usr/bin/owping', '-R']
+    owping_args = [owping_cmd, '-R']
     
     #build basic arguments
     for arg in OWPING_VAL_ARGS:

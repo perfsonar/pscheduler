@@ -6,9 +6,8 @@
 import pscheduler
 import random
 import sys
-import ConfigParser
 from owping_defaults import *
-from owping_utils import CLIENT_ROLE, SERVER_ROLE, get_role
+from owping_utils import CLIENT_ROLE, SERVER_ROLE, get_role, get_config
 
 #Init logging
 log = pscheduler.Log(prefix="tool-owping", quiet=True)
@@ -61,13 +60,8 @@ if role == CLIENT_ROLE:
     pass
 elif role == SERVER_ROLE:
     #read config file
-    config = None
-    try:
-        config = ConfigParser.ConfigParser()
-        config.read(CONFIG_FILE)
-    except:
-        log.warn("Unable to read configuration file %s. Proceeding with defaults.")
-
+    config = get_config()
+    
     #determine if we can run servers
     disable_server = False
     if config and config.has_option(CONFIG_SECTION, CONFIG_OPT_DISABLE_SERVER):
