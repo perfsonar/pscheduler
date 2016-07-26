@@ -43,8 +43,14 @@ REDHAT_RELEASE_MAJOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 }')
 REDHAT_RELEASE_MAJOR_MINOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 "." $2 }')
 
 
+# Make sure there's at least the minimal package group on the system.
+# This is mostly for Docker's benefit.
+yum -y groupinstall "Minimal Install"
+
 # Bring everything up to date
 yum -y upgrade
+
+
 
 
 #
@@ -88,7 +94,10 @@ yum -y install "http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/$(u
 
 # Things we need to build:
 yum -y install \
-    m4
+    m4 \
+    make \
+    which
+
 
 
 # Needed for documentation, which isn't RPM-ified yet and can't load
