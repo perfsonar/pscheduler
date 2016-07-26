@@ -37,10 +37,12 @@ Latency test class for pScheduler
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_test_doc} \
+     CONFDIR=$RPM_BUILD_ROOT/%{_pscheduler_testconfdir}\
      install
 
 
 %files
 %defattr(-,root,root,-)
+%config(noreplace) %{_pscheduler_testconfdir}/*
 %{dest}
 %{_pscheduler_test_doc}/*

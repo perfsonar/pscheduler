@@ -6,45 +6,106 @@
 import pscheduler
 import random
 import sys
+import ConfigParser
+from owping_defaults import *
+from owping_utils import CLIENT_ROLE, SERVER_ROLE, get_role
 
+#Init logging
+log = pscheduler.Log(prefix="tool-owping", quiet=True)
 
-#constants
-REQUIRED_PORTS = 3 #need a control port and 2 data ports
-
-json = pscheduler.json_load(exit_on_error=True)
-#json = {'participant': 1}
-result = {}
-
-def select_ports(port_range):
-    if len(port_range) < REQUIRED_PORTS:
-        pscheduler.fail("Not enough ports available to assign to owampd server")
-    elif len(port_range) <= (REQUIRED_PORTS + 1):
+def read_range(range_str):
+    range_vals = range_str.strip().split('-')
+    range_arr = []
+    if len(range_vals) == 1:
+        try:
+            range_arr = [ int(range_vals[0]) ]
+        except:
+            pscheduler.fail("Server configuration error. Port must be an integer")
+    elif len(range_vals) == 2:
+        lower = int(range_vals[0])
+        upper = int(range_vals[1])
+        if lower >= upper:
+            pscheduler.fail("Server configuration error. First port in range must be less than second port")
+        range_arr = range(lower, upper)
+    else:
+        pscheduler.fail("Server configuration error. Ports must contain an integer or range of integers")
+    
+    return range_arr
+    
+def select_random_ports(port_range, required_ports):
+    if len(port_range) < required_ports:
+        pscheduler.fail("Not enough ports available to assign to owamp-server")
+    elif len(port_range) <= (required_ports + 1):
         return port_range
     
-    min_index = random.randrange(0, len(port_range) - REQUIRED_PORTS + 1, REQUIRED_PORTS)
-    max_index = min_index + REQUIRED_PORTS
+    min_index = random.randrange(0, len(port_range) - required_ports + 1, required_ports)
+    max_index = min_index + required_ports
     ports = port_range[min_index:max_index]
         
     return ports
-    
 
+############
+#json = {'participant': 1}
+json = pscheduler.json_load(exit_on_error=True)
+result = {}
 try:
     participant = json['participant']
 except KeyError:
     pscheduler.fail("Missing participant")
+test_spec = json.get('test', {})
 
-if participant == 0:
-    # Nothing interesing for participant 0
+#determine role
+role = get_role(participant, test_spec)
+if role == CLIENT_ROLE:
+    #Nothing to do
     pass
-elif participant == 1:
-    #TODO: get this from database
-    available_ports = range(11000,11300)
-    
-    #select random set of ports
-    selected_ports = select_ports(available_ports)
-    result['ctrl-port'] = selected_ports[0]
-    result['data-port-range'] = "%d-%d" % (selected_ports[1], selected_ports[-1])
-else:
-    pscheduler.fail("Invalid participant number for this test")
+elif role == SERVER_ROLE:
+    #read config file
+    config = None
+    try:
+        config = ConfigParser.ConfigParser()
+        config.read(CONFIG_FILE)
+    except:
+        log.warn("Unable to read configuration file %s. Proceeding with defaults.")
 
+    #determine if we can run servers
+    disable_server = False
+    if config and config.has_option(CONFIG_SECTION, CONFIG_OPT_DISABLE_SERVER):
+        disable_server = config.getboolean(CONFIG_SECTION, CONFIG_OPT_DISABLE_SERVER)
+    if disable_server:
+        pscheduler.fail("This host cannot act as server as the ability to do so has been disabled.")
+    
+    #look if user specified a control port
+    user_ctrl_port = None
+    if 'test' in json and 'ctrl-port' in json['test']:
+        # make sure its an int
+        try:
+            user_ctrl_port = int(json['test']['ctrl-port'])
+        except:
+             pscheduler.fail("The ctrl-port must be an integer")
+    
+    #read config file values and set defaults
+    ctrl_ports = [ DEFAULT_OWAMPD_PORT ]
+    if config and config.has_option(CONFIG_SECTION, CONFIG_OPT_CTRL_PORTS):
+        ctrl_ports = read_range(config.get(CONFIG_SECTION, CONFIG_OPT_CTRL_PORTS))
+    
+    #if they have disabled server, that means they have no owampd and cannot be receiver
+    if disable_server:
+        pscheduler.fail("The destination has disabled its ability to run in server mode.")
+    
+    #Select port
+    if user_ctrl_port and user_ctrl_port in ctrl_ports:
+        #prefer user port if in range of known existing servers
+        result['ctrl-port'] = ctrl_port
+    elif user_ctrl_port:
+        #specified control-port with no known server
+        pscheduler.fail("The specified ctrl-port has no known running owamp-server " +
+                            "instance, and the server is only configured to use an " +
+                            "existing owamp-server")
+    else:
+        #select on from range
+        selected_ctrl_ports = select_random_ports(ctrl_ports, 1)    
+        result['ctrl-port'] = selected_ctrl_ports[0]
+
+log.debug("participant-data: %s" % result)
 pscheduler.succeed_json(result)

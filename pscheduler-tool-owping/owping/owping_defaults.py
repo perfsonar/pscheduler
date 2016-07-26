@@ -26,3 +26,17 @@ DEFAULT_EARLY_SERVER_STOP = 2
 
 # The default OWAMPD control port
 DEFAULT_OWAMPD_PORT = 861
+
+# The default owampd contol port range
+DEFAULT_OWAMPD_CTRL_PORTS = range(5601, 5900)
+
+# The default owampd data port range
+DEFAULT_OWAMPD_DATA_PORTS = range(8760, 9960)
+
+#constants for working with config file
+CONFIG_FILE = '/etc/pscheduler/test/latency.conf'
+CONFIG_SECTION = 'latency'
+CONFIG_OPT_DISABLE_SERVER = 'disable_server'
+#CONFIG_OPT_USE_EXISTING_OWAMPD = 'use_existing_owampd'
+CONFIG_OPT_CTRL_PORTS = 'control_ports'
+#CONFIG_OPT_DATA_PORTS = 'data_ports'
