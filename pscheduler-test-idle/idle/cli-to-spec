@@ -35,6 +35,13 @@ opt_parser.add_option("-d", "--duration",
                       action="store", type="string",
                       dest="duration")
 
+
+# The short version is capitalized because -h is for help.
+opt_parser.add_option("-H", "--host",
+                      help="Host which should be idle",
+                      action="store", type="string",
+                      dest="host")
+
 opt_parser.add_option("-s", "--starting-comment",
                       help="Starting comment",
                       action="store", type="string",
@@ -53,6 +60,9 @@ result = { 'schema': 1 }
 
 if options.duration is not None:
    result['duration'] = options.duration
+
+if options.host is not None:
+   result['host'] = options.host
 
 if options.starting_comment is not None:
    result['starting-comment'] = options.starting_comment

@@ -7,7 +7,7 @@ setup(name='icmperror',
       description='Functions for translating ICMP error codes to enumerated values',
       url='http://www.perfsonar.net',
       author='The perfSONAR Development Team',
-      author_email='TODO:@perfsonar.net',
+      author_email='perfsonar-developer@perfsonar.net',
       license='Apache 2.0',
       packages=['icmperror'],
       )

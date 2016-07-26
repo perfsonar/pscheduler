@@ -112,7 +112,5 @@ def tests_name_lead(name):
 
     part_list = pscheduler.json_load(stdout)
     lead = part_list[0]
-    if lead is None:
-        lead = pscheduler.api_this_host()
 
     return json_response(lead)

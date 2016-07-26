@@ -1,20 +1,21 @@
-#
-# Originally from BWCTL2
-#
+"""
+Functions for determining the state of the system clock.  See
+clock_state() below.
+"""
 
-# TODO: Works on Linux, but not OS X.
-
-# TODO: Do this with ntplib, which is pure Python and talks to the
-# local NTPD.
 
 import datetime
+import ntplib
+import pytz
+import tzlocal
+
+# The ntp_adjtime code is the only bit of BWCTL (actually BWCTL2) that
+# survived into pScheduler.
 
 from ctypes import *
 from ctypes.util import find_library
 
 """
-/* TODO: Can the structures here be #included? */
-
 int ntp_adjtime(struct timex *);
 
 #define STA_UNSYNC      0x0040  /* clock unsynchronized (rw) */
@@ -63,7 +64,6 @@ struct timeval {
 };
 """
 
-# TODO: Can these be derived form the above?
 STA_NANO=0x2000
 STA_UNSYNC=0x0040
 
@@ -97,36 +97,9 @@ class TimexStruct(Structure):
         ("tai", c_int),
     ]
 
-    # Return true if the system is synchronized
     @property
-    def is_synchronized(self):
+    def synchronized(self):
         return (self.status & STA_UNSYNC) == 0
-
-    # Return a timedelta with the offset in seconds
-    # TODO: Check this on a NTP-synchronized host
-
-    # TODO: This ain't working.
-
-    @property
-    def clock_offset(self):
-        print self.offset
-        return datetime.timedelta(
-            seconds=5.0
-            / float(10.0**9 if (self.status & STA_NANO) else 10.0**6)
-            )
-
-    @property
-    def clock_precision(self):
-        return datetime.timedelta(microseconds=self.precision)
-
-    @property
-    def error_est(self):
-        return datetime.timedelta(seconds=self.esterror / 1000000.0)
-
-    @property
-    def error_max(self):
-        return datetime.timedelta(seconds=self.maxerror / 1000000.0)
-
 
 def ntp_adjtime():
     retval = None
@@ -139,19 +112,78 @@ def ntp_adjtime():
 
         retval = p_timex.contents
     except Exception as e:
-        # TODO: Log something?
-        pass
+        return None
 
     return retval
 
-if __name__ == "__main__":
-    timex = ntp_adjtime()
 
-    if timex is not None:
-        print "Synchronized: ", timex.is_synchronized
-        print "Offset: ", timex.clock_offset
-        print "Precision: ", timex.clock_precision
-        print "Est Error: ", timex.error_est
-        print "Max Error: ", timex.error_max
+# ---------------------------
+
+
+def clock_state():
+
+    """
+    Determine the state of the system clock and return a hash of
+    information conforming to the definition of a SystemClockStatus
+    object as described in the JSON dictionary.
+
+    time - Current system time as an ISO 8601 string
+
+    synchronized - Whether or not the clock is synchronized to an
+    outside source.
+
+    source - The source of synchronization.  Currently, the only valid
+    value is "ntp."  Not provided if not synchronized.
+
+    reference - A human-readable string describing the source.  Not
+    provided if not synchronized.
+
+    offset - A float indicating the estimated clock offset.  Not
+    provided if not synchronized.
+
+    error - 
+
+    """
+
+    adjtime = ntp_adjtime()
+    system_synchronized = adjtime.synchronized
+
+    # Format the local time with offset as ISO 8601.  Python's
+    # strftime() only does "-0400" format; we need "-04:00".
+
+    utc = datetime.datetime.utcnow()
+    local_tz = tzlocal.get_localzone()
+    time_here = pytz.utc.localize(utc).astimezone(local_tz)
+
+    raw_offset = time_here.strftime("%z")
+    if len(raw_offset):
+        offset = raw_offset[:3] + ":" + raw_offset[-2:]
     else:
-        print "Not supported here."
+        offset = ""
+
+    result = {
+        "time": time_here.strftime("%Y-%m-%dT%H:%M:%S.%f") + offset,
+        "synchronized": system_synchronized
+        }
+
+    if system_synchronized:
+
+        # Assume NTP for the time being
+
+        try:
+            ntp = ntplib.NTPClient().request("127.0.0.1")
+            result["offset"] = ntp.offset
+            result["source"] = "ntp"
+            result["reference"] = "%s from %s" % (
+                ntplib.stratum_to_text(ntp.stratum),
+                ntplib.ref_id_to_text(ntp.ref_id)
+                )
+        except Exception as ex:
+            result["error"] = str(ex)
+
+    return result
+
+
+if __name__ == "__main__":
+    import pscheduler
+    print pscheduler.json_dump(clock_state(), pretty=True)

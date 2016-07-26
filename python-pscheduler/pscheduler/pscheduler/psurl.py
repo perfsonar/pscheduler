@@ -70,6 +70,7 @@ def url_post( url,          # GET URL
 
 def url_put( url,          # GET URL
              params={},    # GET parameters
+             data=None,    # Data for body
              json=True,    # Interpret result as JSON
              throw=True    # Throw if status isn't 200
              ):
@@ -77,7 +78,7 @@ def url_put( url,          # GET URL
     PUT to a URL, returning whatever came back.
     """
 
-    request = requests.put( url, params=params )
+    request = requests.put( url, params=params, data=data )
     status = request.status_code
 
     if status != 200 and status != 201:

@@ -23,6 +23,7 @@ BuildRequires:	m4
 Requires:	pscheduler-server
 Requires:	mod_wsgi
 Requires:	python-pscheduler
+Requires:	python-pytz
 # TODO: See what else this needs at runtime.
 
 

@@ -113,13 +113,5 @@ endif
 	done
 
 
-
-TODO=TODO:
-todo:
-	@fgrep '$(TODO)' $(SUPER) $(UNPRIV) Makefile \
-	| sed -e 's/:.*$(TODO)\s*/~/' \
-	| awk -F '~' 'BEGIN { FN="" } $$1 != FN { print "\n" $$1 ":"; FN=$$1 } { print "    ", $$2 }'
-
-
 clean:
 	rm -rf $(TO_CLEAN) *~

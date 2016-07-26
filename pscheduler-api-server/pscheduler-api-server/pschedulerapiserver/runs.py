@@ -314,13 +314,12 @@ def tasks_uuid_runs_run(task, run):
 
         log.debug("Run PUT %s", request.url)
 
-        # This expects one argument called 'run'
+        # Get the JSON from the body
         try:
-            log.debug("ARG run %s", request.args.get('run'))
-            run_data = arg_json('run')
+            run_data = pscheduler.json_load(request.data)
         except ValueError:
             log.exception()
-            log.debug("Run data was %s", request.args.get('run'))
+            log.debug("Run data was %s", request.data)
             return error("Invalid or missing run data")
 
         # If the run doesn't exist, take the whole thing as if it were
@@ -417,6 +416,8 @@ def tasks_uuid_runs_run(task, run):
 
             return ok()
 
+
+
     elif request.method == 'DELETE':
 
         # TODO: If this is the lead, the run's counterparts on the
@@ -480,7 +481,7 @@ def tasks_uuid_runs_run_result(task, run):
 
     while tries:
 
-            dbcursor().execute("""
+        dbcursor().execute("""
                 SELECT
                     test.name,
                     run.result_merged
@@ -493,17 +494,17 @@ def tasks_uuid_runs_run_result(task, run):
                     AND run.uuid = %s
                 """, [task, run])
 
-            if dbcursor().rowcount == 0:
-                return not_found()
+        if dbcursor().rowcount == 0:
+            return not_found()
 
-            # TODO: Make sure we got back one row with two columns.
-            row = dbcursor().fetchone()
+        # TODO: Make sure we got back one row with two columns.
+        row = dbcursor().fetchone()
 
-            if not wait and row[1] is None:
-                time.sleep(0.25)
-                tries -= 1
-            else:
-                break
+        if not wait and row[1] is None:
+            time.sleep(0.25)
+            tries -= 1
+        else:
+            break
 
     if tries == 0:
         return not_found()

@@ -16,14 +16,12 @@ json = pscheduler.json_load(exit_on_error=True)
 try:
     source = json['source']
 except KeyError:
-    pscheduler.fail('No source in test specification')
+    source = None
     
 try:
     destination = json['destination']
 except KeyError:
     pscheduler.fail('No destination in test specification')
 
-result = [ source, destination ]
+pscheduler.succeed_json( [ source, destination ] )
 
-pscheduler.json_dump(result, sys.stdout )
-pscheduler.succeed()

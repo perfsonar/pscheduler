@@ -15,5 +15,7 @@ valid, message = spec_is_valid(json)
 if not valid:
     pscheduler.fail(message)
 
-# There's only ever one participant, and that's us.
-pscheduler.succeed_json([None])
+try:
+    pscheduler.succeed_json([ json["source"] ])
+except KeyError:
+    pscheduler.succeed_json([None])

@@ -26,8 +26,8 @@ if 'destination' in json:
 else:
     pscheduler.fail("Missing required field destination")
 
-# TODO: need to start adding these    
-fields = ["duration", "interval", "parallel"]
+# TODO: need to start adding these to jsonschema file    
+fields = ["duration", "interval", "parallel", "udp", "bandwidth", "window-size", "mss", "buffer-length"]
 
 for field in fields:
     if field in json:

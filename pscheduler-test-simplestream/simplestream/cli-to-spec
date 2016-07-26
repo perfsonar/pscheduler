@@ -45,6 +45,11 @@ opt_parser.add_option("-m", "--test-material",
                       action="store", type="string",
                       dest="test_material")
 
+opt_parser.add_option("-s", "--source",
+                      help="Source host",
+                      action="store", type="string",
+                      dest="source")
+
 opt_parser.add_option("-t", "--timeout",
                       help="Time to wait (ISO8601 Duration)",
                       action="store", type="string",
@@ -68,6 +73,9 @@ if options.dest is not None:
 
 if options.dawdle is not None:
    result['dawdle'] = options.dawdle
+
+if options.source is not None:
+   result['source'] = options.source
 
 if options.test_material is not None:
    result['test-material'] = options.test_material
