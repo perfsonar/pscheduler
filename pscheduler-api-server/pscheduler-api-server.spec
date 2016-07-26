@@ -21,6 +21,10 @@ BuildRequires:	python-pscheduler
 BuildRequires:	m4
 
 Requires:	pscheduler-server
+# Note that the actual definition of what protocol is used is part of
+# python-pscheduler, but this package is what does the serving, so
+# mod_ssl is required here.
+Requires:	mod_ssl
 Requires:	mod_wsgi
 Requires:	python-pscheduler
 Requires:	python-pytz
