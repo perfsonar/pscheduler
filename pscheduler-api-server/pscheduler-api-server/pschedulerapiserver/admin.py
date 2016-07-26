@@ -30,17 +30,18 @@ def hostname():
 @application.route("/schedule-horizon", methods=['GET'])
 def schedule_horizon():
     """Get the length of the server's scheduling horizon"""
+
     dbcursor().execute("SELECT schedule_horizon FROM configurables")
-    # TODO: Assert that rowcount is 1
+
+    if dbcursor().rowcount != 1:
+        return error("Did not get expected data from database")
+
     return ok_json(pscheduler.timedelta_as_iso8601(cursor.fetchone()[0]))
 
 
 @application.route("/clock", methods=['GET'])
 def time():
     """Return clock-related information"""
-
-
-    # TODO: Get NTP sync information and un-dummy the lines below.
 
     try:
         return ok_json(pscheduler.clock_state())
