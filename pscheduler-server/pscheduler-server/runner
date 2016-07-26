@@ -264,14 +264,12 @@ class Run:
 
             # Store the full result with each participant.
 
-            full_params = {
-                'run': pscheduler.json_dump({ 'result-full' : full_result })
-                }
+            full_params = pscheduler.json_dump({ 'result-full' : full_result })
 
             for run in runs:
                 log.debug("%d: Storing result in %s", id, run)
                 status, returned = pscheduler.url_put(run,
-                                                      params=full_params,
+                                                      data=full_params,
                                                       throw=False,
                                                       json=False)
                 if status != 200:
