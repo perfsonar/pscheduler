@@ -28,6 +28,9 @@ test_spec = json['spec']
 if test_spec.get('bandwidth') and not test_spec.get('udp'):
     pscheduler.fail('iperf cannot run TCP tests with throttled bandwidth')
 
+if test_spec.get('omit'):
+    pscheduler.fail('iperf does not support the --omit flag')
+
 logger.debug("can-run succeeded")
 
 pscheduler.succeed()

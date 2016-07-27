@@ -48,12 +48,33 @@ def run_client():
     iperf_args = ['/usr/bin/iperf']
 
     # who to connect to
+    destination = test_spec['destination']
+    
+    # iperf has no inherent ability to force v4 or v6, so we do it here
+    if test_spec.has_key('force-ipv4'):
+        destination = pscheduler.dns_resolve(destination, ip_version=4)
+        
+        logger.info("Resolved %s to %s" % (test_spec["destination"], destination))
+                    
+        if destination == None:
+            pscheduler.fail("Unable to resolve %s to an IPv4 address" % test_spec["destination"])
+
+    elif test_spec.has_key('force-ipv6'):
+        destination = pscheduler.dns_resolve(destination, ip_version=6)
+                    
+        logger.info("Resolved %s to %s" % (test_spec["destination"], destination))
+
+        if destination == None:
+            pscheduler.fail("Unable to resolve %s to an IPv6 address" % test_spec["destination"])
+            
+
+
     iperf_args.append('-c')
-    iperf_args.append(test_spec['destination'])
+    iperf_args.append(destination)
 
     # duration
     iperf_args.append('-t')
-    iperf_args.append(test_spec.get('duration', str(DEFAULT_DURATION)))
+    iperf_args.append(test_spec.get('duration', DEFAULT_DURATION))
 
     if test_spec.has_key('interval') and test_spec['interval'] != None:
         iperf_args.append('-i')
@@ -79,8 +100,12 @@ def run_client():
     if test_spec.has_key('buffer-length') and test_spec['buffer-length'] != None:
         iperf_args.append('-l')
         iperf_args.append(test_spec['buffer-length'])
-      
 
+    
+    # join and run_program want these all to be string types, so
+    # just to be safe cast everything in the list to a string
+    iperf_args = map(lambda x: str(x), iperf_args)
+      
     logger.info("Running command: %s" % " ".join(iperf_args))
 
     try:
@@ -124,9 +149,13 @@ def run_server():
     except Exception as e:
         logger.error("iperf failed to complete execution: %s" % e);
         pscheduler.fail("The iperf command failed during execution. See server logs for more details.")
+
+    log_debug("Return = %s" % status)
     
-    #check if server failed
-    if status:
+    # For whatever reason, iperf doesn't always exit with the right code
+    # in the event of failures so we can also look to see if anything
+    # showed up in stderr
+    if status or stderr:
         iperf_error = ''
         for line in stderr:
             iperf_error += line.rstrip().lstrip() + " "

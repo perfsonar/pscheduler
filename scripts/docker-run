@@ -1,0 +1,42 @@
+#!/bin/sh -e
+#
+# Run script for Dockerized pScheduler
+#
+
+# Start all services needed for pScheduler
+service rsyslog start
+service postgresql-9.5 start
+
+# Wait for Pg to come all the way up
+
+TRIES=10
+DELAY=2
+echo -n "Waiting for PostgreSQL to come up..."
+while [ "${TRIES}" -gt 0 ]
+do
+    echo ';' | postgresql-load > /dev/null
+    [ $? -eq 0 ] && break
+    echo -n '.'
+    sleep "${DELAY}"
+    TRIES=$(($TRIES - 1))
+done
+
+if [ "${TRIES}" -eq 0 ]
+then
+    echo
+    echo "PostgreSQL failed to come up" 1>&2
+    exit 1
+fi
+echo " Done"
+
+service httpd start
+service pscheduler-archiver start
+service pscheduler-runner start
+service pscheduler-scheduler start
+service pscheduler-ticker start
+
+# Do nothing so the container never exits.
+while true
+do
+    sleep 3600
+done

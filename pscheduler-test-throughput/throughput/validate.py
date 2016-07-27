@@ -6,7 +6,38 @@ from pscheduler import json_validate
 import json
 
 def spec_is_valid(input_json):
-    schema = {}
+
+    schema = {        
+        "title": "pScheduler Throughput Specification Schema",
+        "type": "object",
+        "additionalProperties": False,
+        "local": {
+            },
+        "required": ["source", "destination"],
+        "properties": {           
+            "schema":      { "$ref": "#/pScheduler/Cardinal" },
+            "source":      { "$ref": "#/pScheduler/Host" },
+            "destination": { "$ref": "#/pScheduler/Host" },
+            "duration":    { "$ref": "#/pScheduler/Cardinal" },
+            "interval":    { "$ref": "#/pScheduler/Cardinal" },
+            "parallel":    { "$ref": "#/pScheduler/Cardinal" },
+            "udp":         { "$ref": "#/pScheduler/Boolean" },
+            "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },
+            "duration":    { "$ref": "#/pScheduler/Cardinal" },
+            "window-size": { "$ref": "#/pScheduler/Cardinal" },
+            "dynamic-window-size":    { "$ref": "#/pScheduler/Cardinal" },
+            "mss":         { "$ref": "#/pScheduler/Cardinal" },
+            "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
+            "force-ipv4":    { "$ref": "#/pScheduler/Boolean" },
+            "force-ipv6":    { "$ref": "#/pScheduler/Boolean" },
+            "local-address": { "$ref": "#/pScheduler/Host" },
+            "dscp":          { "$ref": "#/pScheduler/Cardinal" },
+            "omit":          { "$ref": "#/pScheduler/Cardinal" },
+            "tos":           { "$ref": "#/pScheduler/Cardinal" }
+            }
+        }
+
+
 
     return json_validate(input_json, schema)
 
