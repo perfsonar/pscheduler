@@ -70,7 +70,8 @@ httpd-wsgi-socket
 # Utility and Tool programs
 #
 drop-in
-jq
+# JQ was used in development but isn't needed for production.
+#jq
 paris-traceroute
 random-string
 
