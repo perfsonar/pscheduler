@@ -30,7 +30,7 @@ then
     die "Unable to determine PostgreSQL user."
 fi
 
-[ "${USER}" = "${PG_USER}" -o "${USER}" = 'root' ] \
+[ "${USER}" = "${PG_USER}" -o "$(id -u)" = "0" ] \
     || die "This program must be run as root or ${PG_USER}"
 
 
@@ -49,7 +49,7 @@ fi
 
 
 PSQL='PGOPTIONS="--client-min-messages=WARNING" psql -q -v ON_ERROR_STOP=1'
-if [ "${USER}" = 'root' ]
+if [ "$(id -u)" = "0" ]
 then
     (echo "${ROLE}" && cat "$@") \
 	| su - "${PG_USER}" -c "${PSQL}" 2>$TMPBASE.error
