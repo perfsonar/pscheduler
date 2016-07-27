@@ -27,7 +27,7 @@ elif len(result_list) == 2:
     else:
         succeeded = result_list[0]['succeeded'] and result_list[1]['succeeded']
         if succeeded and test_spec.get("flip", False):
-            #if we used the flip option, the receiver has the result we want
+            #if we used the flip option, the dest has the result we want
             results = result_list[1]
         elif succeeded:
             results = result_list[0]

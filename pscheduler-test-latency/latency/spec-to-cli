@@ -4,23 +4,20 @@
 
 import pscheduler
 import jsonschema
-from owdelay_utils import load_schema
-
-#constants
-SCHEMA_FILE = "pscheduler-schema-owdelay-request.json"
+from validate import spec_is_valid, REQUEST_SCHEMA
 
 #load spec JSON
 spec = pscheduler.json_load(exit_on_error=True)
 if type(spec) != dict:
     pscheduler.fail("Invalid JSON for this operation")
 
-#load and validate against schema
-schema = load_schema(SCHEMA_FILE)
-try:
-    jsonschema.validate(spec, schema, format_checker=jsonschema.FormatChecker())
-except Exception, e:
-    pscheduler.fail("Invalid owdelay test specification: %s" % e.message)
-schema_props = schema.get('properties', {})
+#validate spec
+valid, message = spec_is_valid(json)
+if not valid:
+    pscheduler.fail(message)
+
+#get properties from schema
+schema_props = REQUEST_SCHEMA.get('properties', {})
 if not schema_props:
     pscheduler.fail("Error retrieving schema properties")
 
@@ -30,8 +27,6 @@ for prop in schema_props:
     if prop in spec:
         if prop == "schema":
             continue
-        elif prop == "ip-version":
-            result.append("--%d" % spec[prop])
         elif schema_props[prop].get('type', '') == "boolean":
             result.append("--%s" % prop)
         else:

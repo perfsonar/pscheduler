@@ -2,8 +2,8 @@
 # Contains variables shared across owping tool components
 ##########################################################
 
-#Version of the owdelay schema used
-OWDELAY_SCHEMA_VERSION = 1 
+#Version of the latency schema used
+LATENCY_SCHEMA_VERSION = 1 
 
 # Default time between packets (in seconds) if not specified by user
 DEFAULT_PACKET_INTERVAL = .1
@@ -26,3 +26,18 @@ DEFAULT_EARLY_SERVER_STOP = 2
 
 # The default OWAMPD control port
 DEFAULT_OWAMPD_PORT = 861
+
+# The default owampd contol port range
+DEFAULT_OWAMPD_CTRL_PORTS = range(5601, 5900)
+
+# The default owampd data port range
+DEFAULT_OWAMPD_DATA_PORTS = range(8760, 9960)
+
+#constants for working with config file
+CONFIG_FILE = '/etc/pscheduler/test/latency.conf'
+CONFIG_SECTION = 'latency'
+CONFIG_OPT_OWPING_CMD = 'owping_cmd'
+CONFIG_OPT_DISABLE_SERVER = 'disable_server'
+#CONFIG_OPT_USE_EXISTING_OWAMPD = 'use_existing_owampd'
+CONFIG_OPT_CTRL_PORTS = 'control_ports'
+#CONFIG_OPT_DATA_PORTS = 'data_ports'

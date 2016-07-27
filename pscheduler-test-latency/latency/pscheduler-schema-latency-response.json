@@ -1,5 +1,5 @@
 {
-    "title": "pScheduler OWDelay Response Schema",
+    "title": "pScheduler One-way Latency Response Schema",
     "type": "object",
     "properties": {
         "schema": {
@@ -40,8 +40,8 @@
             "description": "As the maximum estimate of difference between sender and receiver clocks in milliseconds",
             "type": "number"
         },
-        "histogram-owdelay": {
-            "description": "A histogram where the key is observed one-way delay values divided by bucket-width rounded to the nearest two decimal places, and the value is the number of packets that observed that value.",
+        "histogram-latency": {
+            "description": "A histogram where the key is observed one-way latency values divided by bucket-width rounded to the nearest two decimal places, and the value is the number of packets that observed that value.",
             "type": "object",
             "patternProperties": {
                 "^[-+]?([0-9]+(\\.[0-9]+)?|\\.[0-9]+)$": { "type": "integer" }
