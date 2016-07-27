@@ -18,7 +18,7 @@ def api_this_host():
 def api_url(host = None,
             path = None,
             port = None,
-            protocol = 'http'
+            protocol = 'https'
             ):
     """Format a URL for use with the pScheduler API."""
     if path is not None and path.startswith('/'):

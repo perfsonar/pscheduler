@@ -21,6 +21,7 @@ Source:		%{short}-%{version}.tar.gz
 
 Requires:	python
 
+BuildRequires:	gcc
 BuildRequires:	python
 BuildRequires:	python-setuptools
 BuildRequires:	python-devel

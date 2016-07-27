@@ -199,11 +199,14 @@ def tasks():
         for participant in participants:
 
             try:
-                r = requests.get(pscheduler.api_url(participant, "tools"),
-                                 params={ 'test': pscheduler.json_dump(task['test']) })
-                if r.status_code != 200:
-                    raise Exception("%d: %s" % (r.status_code, r.text))
-                tools.append( pscheduler.json_load(str(r.text)) )
+                # TODO: This will fail with a very large test spec.
+                status, result = pscheduler.url_get(
+                    pscheduler.api_url(participant, "tools"),
+                    params={ 'test': pscheduler.json_dump(task['test']) }
+                    )
+                if status != 200:
+                    raise Exception("%d: %s" % (status, result))
+                tools.append(result)
             except Exception as ex:
                 return error("Error getting tools from %s: %s" \
                                      % (participant, str(ex)))
@@ -271,19 +274,21 @@ def tasks():
         for participant in range(1,nparticipants):
             part_name = participants[participant]
             try:
-                r = requests.post(pscheduler.api_url(part_name,
-                                                     'tasks/' + task_uuid),
-                                  params={ 'participant': participant },
-                                  data=task_data)
-                if r.status_code != 200:
+                status, result = pscheduler.url_post(
+                    pscheduler.api_url(part_name,
+                                       'tasks/' + task_uuid),
+                    params={ 'participant': participant },
+                    data=task_data)
+                if status != 200:
                     raise Exception("Unable to post task to %s: %s"
-                                    % (part_name, r.text))
-                tasks_posted.append(r.text)
+                                    % (part_name, result))
+                tasks_posted.append(result)
 
             except Exception as ex:
 
                 for url in tasks_posted:
-                    r = requests.delete(url)
+                    # TODO: Handle failure?
+                    status, result = requests.delete(url)
                 
                 # TODO: Handle failure?
                 dbcursor().execute("SELECT api_task_delete(%s)", [task_uuid])
