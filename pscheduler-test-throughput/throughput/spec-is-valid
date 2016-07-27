@@ -6,7 +6,7 @@
 import pscheduler
 import validate
 
-logger = pscheduler.Log(prefix="throughput/spec-is-valid")
+logger = pscheduler.Log(prefix='test-throughput')
 
 json = pscheduler.json_load(exit_on_error=True)
 logger.debug("Input to spec is valid: %s" % json)
