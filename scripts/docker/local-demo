@@ -1,0 +1,70 @@
+#!/bin/sh -e
+#
+# Run 
+#
+
+IMAGE=pscheduler-demo
+NETWORK="${IMAGE}-net"
+PREFIX=psc
+
+COMMAND="$1"; shift
+case "${COMMAND}" in
+
+    start)
+	# TODO: Enable this once the image is on Docker Hub
+	echo "Pulling image from DockerHub"
+	# docker pull "${IMAGE}"
+	echo
+
+	echo -n "Creating private network '${NETWORK}'..."
+	docker network create "${NETWORK}" > /dev/null
+	echo " Done"
+
+	echo -n "Creating containers..."
+	for HOST in 1 2 3
+	do
+	    FULL="${PREFIX}${HOST}"
+	    docker run \
+		--detach \
+		--hostname "${FULL}" \
+		--name "${FULL}" \
+		--net "${NETWORK}" \
+		"${IMAGE}" \
+		> /dev/null
+	    echo -n " ${FULL}"
+	done
+	echo
+	;;
+
+
+    login)
+	DEST="$1"
+	[ "${DEST}" ] || DEST="${PREFIX}1"
+	docker exec -i -t "${DEST}" /bin/bash -c 'su - demo'
+	;;
+
+
+    stop)
+	echo -n "Removing containers..."
+	for HOST in 1 2 3
+	do
+	    FULL="${PREFIX}${HOST}"
+	    docker rm -f "${FULL}" > /dev/null || true
+	    echo -n " ${FULL}"
+	done
+	echo
+
+	echo -n "Removing private network '${NETWORK}'..."
+	docker network rm "${NETWORK}" > /dev/null || true
+	echo " Done."
+	;;
+
+
+    *)
+	echo "Usage: $(basename $0) start|login|stop" 1>&2
+	exit 1
+	;;
+
+esac
+
+exit 0
