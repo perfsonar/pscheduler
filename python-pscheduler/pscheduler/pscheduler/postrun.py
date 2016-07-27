@@ -43,6 +43,7 @@ def run_post(
 
     task_urls =[]
     participants = task['detail']['participants']
+    log and log.debug("Participant list is %s", participants)
     assert len(participants) >= 1
 
     parts = list(task_url)
@@ -158,7 +159,9 @@ def run_post(
         log.debug("Data %s", run_params)
     status, run_lead_url \
         = pscheduler.url_post(task_urls[0] + '/runs',
-                              data=pscheduler.json_dump(run_params))
+                              data=pscheduler.json_dump(run_params),
+                              throw=False,
+                              json=True)
     log and log.debug("Lead URL is %s", run_lead_url)
     assert type(run_lead_url) in [str, unicode]
     runs_posted.append(run_lead_url)
@@ -200,6 +203,7 @@ def run_post(
         log and log.debug("Succeeded.")
 
     if len(runs_posted) != len(task_urls):
+        log and log.debug("Removing runs: %s", runs_posted)
         pscheduler.url_delete_list(runs_posted)
         # TODO: Better error?
         return (None, None, None, "Failed to post/put runs to all participants.")
