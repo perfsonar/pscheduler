@@ -269,22 +269,32 @@ def tasks():
         # TODO: Assert that rowcount is 1 and has one column
         task_uuid = dbcursor().fetchone()[0]
 
+        log.debug("Tasked lead, UUID %s", task_uuid)
+
         # Other participants get the UUID forced upon them.
 
         for participant in range(1,nparticipants):
             part_name = participants[participant]
             try:
+                log.debug("Tasking %d@%s: %s", participant, part_name, task_data)
+                post_url = pscheduler.api_url(part_name,
+                                              'tasks/' + task_uuid)
+                log.debug("Posting task to %s", post_url)
                 status, result = pscheduler.url_post(
-                    pscheduler.api_url(part_name,
-                                       'tasks/' + task_uuid),
+                    post_url,
                     params={ 'participant': participant },
-                    data=task_data)
+                    data=task_data,
+                    json=False,
+                    throw=False)
+                log.debug("Remote returned %d: %s", status, result)
                 if status != 200:
                     raise Exception("Unable to post task to %s: %s"
                                     % (part_name, result))
                 tasks_posted.append(result)
 
             except Exception as ex:
+
+                log.exception()
 
                 for url in tasks_posted:
                     # TODO: Handle failure?
@@ -293,7 +303,7 @@ def tasks():
                 # TODO: Handle failure?
                 dbcursor().execute("SELECT api_task_delete(%s)", [task_uuid])
 
-                return error("Error while tasking %d: %s" % (participant, ex))
+                return error("Error while tasking %d@%s: %s" % (participant, part_name, ex))
 
         return ok_json(pscheduler.api_url(path='/tasks/' + task_uuid))
 
