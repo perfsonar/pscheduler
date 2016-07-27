@@ -5,8 +5,6 @@
 
 # Start all services needed for pScheduler
 service rsyslog start
-service iptables start
-service ip6tables start
 service postgresql-9.5 start
 service httpd start
 service pscheduler-archiver start
