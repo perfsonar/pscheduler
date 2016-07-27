@@ -49,7 +49,7 @@ yum -y upgrade
 
 # Make sure there's at least the minimal package group on the system.
 # This is mostly for Docker's benefit.
-case ${REDHAT_RELASE_MAJOR} in
+case ${REDHAT_RELEASE_MAJOR} in
     6)
 	# TODO: Find the equivalnet to Minimal in CentOS 6
 	true
