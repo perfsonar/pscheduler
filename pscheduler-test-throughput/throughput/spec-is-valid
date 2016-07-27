@@ -1,14 +1,16 @@
 #!/usr/bin/python
 #
-# Validator for 'owdelay' test spec
+# Validator for 'throughput' test spec
 #
 
 import pscheduler
 import validate
 
-json = pscheduler.json_load(exit_on_error=True)
+logger = pscheduler.Log(prefix="throughput/spec-is-valid")
 
-# Run through all of the tags we expect to see, deleting the valid ones
+json = pscheduler.json_load(exit_on_error=True)
+logger.debug("Input to spec is valid: %s" % json)
+
 valid, message = validate.spec_is_valid(json)
 
 if not valid:
