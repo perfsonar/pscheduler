@@ -47,6 +47,22 @@ REDHAT_RELEASE_MAJOR_MINOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 "." $2
 yum -y upgrade
 
 
+# Make sure there's at least the minimal package group on the system.
+# This is mostly for Docker's benefit.
+case ${REDHAT_RELEASE_MAJOR} in
+    6)
+	# TODO: Find the equivalnet to Minimal in CentOS 6
+	true
+	;;
+    7)
+	yum -y groupinstall "Minimal Install"
+	;;
+    *)
+	echo "This version of RHEL/CentOS is not supported." 1>&2
+	exit 1
+	;;
+esac
+
 #
 # Install backplane hosts if requested
 #
@@ -88,7 +104,10 @@ yum -y install "http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/$(u
 
 # Things we need to build:
 yum -y install \
-    m4
+    m4 \
+    make \
+    which
+
 
 
 # Needed for documentation, which isn't RPM-ified yet and can't load

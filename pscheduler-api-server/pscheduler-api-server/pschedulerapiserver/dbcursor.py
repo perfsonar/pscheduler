@@ -5,9 +5,6 @@
 import pscheduler
 import sys
 
-# TODO: Don't like the global nature of this.  Do a better job
-# encapsulating it.
-
 this = sys.modules[__name__]
 
 this.cursor = None

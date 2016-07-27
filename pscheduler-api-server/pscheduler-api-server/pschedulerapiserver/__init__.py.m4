@@ -10,8 +10,7 @@ from flask import Flask
 application = Flask(__name__)
 application.config["APPLICATION_ROOT"] = pscheduler.api_root()
 
-# TODO: Turn this off after development.  Or leave it on?
-application.config["DEBUG"] = True
+application.config["DEBUG"] = False
 
 from .admin import *
 from .args import *
@@ -34,6 +33,6 @@ from .url import *
 dsn = "@__DSN_FILE__"
 dbcursor_init(dsn)
 
-# TODO: Find something better than a hard-wired default.
+
 limit_file = "__LIMITS_FILE__"
 limitproc_init(limit_file)

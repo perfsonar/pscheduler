@@ -2,6 +2,10 @@
 # Makefile for pScheduler Documentation
 #
 
+# Note for the future: These documents can be converted to other
+# formats using Pandoc.  http://pandoc.org
+
+
 default: build
 
 # TODO: Re-add misc after figuring out where msc.sty went in CentOS 7.
