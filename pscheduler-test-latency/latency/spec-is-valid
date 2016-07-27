@@ -1,0 +1,26 @@
+#!/usr/bin/python
+#
+# Validator for 'latency' test spec
+#
+
+import pscheduler
+
+from validate import spec_is_valid
+
+#logging
+log = pscheduler.Log(prefix="test-latency")
+
+#get json
+json = pscheduler.json_load(exit_on_error=True)
+
+#validate
+valid, message = spec_is_valid(json)
+if not valid:
+    pscheduler.fail(message)
+
+#Verify flip is not set if source not included.
+if 'source' not in json and json.get('flip', False):
+    pscheduler.fail("You must specify both source and dest when using the flip option")
+    
+pscheduler.succeed()
+

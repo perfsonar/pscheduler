@@ -2,8 +2,8 @@
 
 exec cat << EOF
 {
-    "name": "owdelay",
-    "description": "Tests designed primarily to measure one-way network delay and associated metrics",
+    "name": "latency",
+    "description": "Tests designed primarily to measure one-way network latency and associated metrics",
     "version": "0.0",
     "maintainer": {
         "name": "perfSONAR Development Team",

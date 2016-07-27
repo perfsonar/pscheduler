@@ -10,6 +10,7 @@ FILES=\
 	enumerate \
 	merged-results \
 	owping_defaults.py\
+	owping_utils.py\
 	participant-data \
 	run \
 

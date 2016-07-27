@@ -30,16 +30,16 @@ else:
 
 opt_parser = optparse.OptionParser()
 
-opt_parser.add_option("-s", "--sender",
+opt_parser.add_option("-s", "--source",
                       help="The address of the entity sending packets in this test",
                       action="store", type="string",
-                      dest="sender")
+                      dest="source")
 
 
-opt_parser.add_option("-r", "--receiver",
+opt_parser.add_option("-d", "--dest",
                       help="The address of the entity receiving packets in this test",
                       action="store", type="string",
-                      dest="receiver")
+                      dest="dest")
 
 opt_parser.add_option("-c", "--packet-count",
                       help="The number of packets to send",
@@ -61,34 +61,35 @@ opt_parser.add_option("-p", "--packet-padding",
                       action="store", type="int",
                       dest="packet_padding")
 
-opt_parser.add_option("-P", "--udp-ports",
+opt_parser.add_option("-C", "--ctrl-port",
+                      help="The port to use for making a control connection to the side acting as a server.",
+                      action="store", type="int",
+                      dest="ctrl_port")
+
+opt_parser.add_option("-P", "--data-ports",
                       help="The port range to use on the side of the test running the client. At least two ports required.",
                       action="store", type="string",
-                      dest="udp_ports")
+                      dest="data_ports")
 
 opt_parser.add_option("-T", "--ip-tos",
                       help="The port range to use on the side of the test running the client. At least two ports required.",
                       action="store", type="int",
                       dest="ip_tos")
 
-opt_parser.add_option("-4", "--ipv4-only",
-                      help="Force IPv4 when performing the test. Useful when specifying hostnames as sender or receiver that may map to both IPv4 and IPv6 addresses.",
-                      action="store_true", dest="ipv4_only")
+opt_parser.add_option("--ip-version",
+                      help="Force an IP version when performing the test. Useful when specifying hostnames as source or dest that may map to both IPv4 and IPv6 addresses.",
+                      action="store_true", dest="ip_version")
 
-opt_parser.add_option("-6", "--ipv6-only",
-                      help="Force IPv46 when performing the test. Useful when specifying hostnames as sender or receiver that may map to both IPv4 and IPv6 addresses.",
-                      action="store_true", dest="ipv6_only")
-                      
 opt_parser.add_option("-b", "--bucket-width",
                       help="The bin size to use for histogram calculations. This value is divided into the result as reported in seconds and truncated to the nearest 2 decimal places.",
                       action="store", type="float",
                       dest="bucket_width")
                           
 opt_parser.add_option("-f", "--flip",
-                      help="In multi-participant mode, have the receiver start the client and request a reverse test. Useful in some firewall and NAT environments.",
+                      help="In multi-participant mode, have the dest start the client and request a reverse test. Useful in some firewall and NAT environments.",
                       action="store_true", dest="flip", default=False)
 
-opt_parser.add_option("-1", "--single-participant-mode",
+opt_parser.add_option("-S", "--single-participant-mode",
                       help="Do not coordinate with the remote side. Useful for cases where remote side is not running pScheduler but known to have necessary daemon for test.",
                       action="store_true", dest="single_participant_mode", default=False)
 
@@ -103,11 +104,11 @@ if len(remaining_args) != 0:
 
 result = { 'schema': 1 }
 
-if options.sender is not None:
-   result['sender'] = options.sender
+if options.source is not None:
+   result['source'] = options.source
   
-if options.receiver is not None:
-   result['receiver'] = options.receiver
+if options.dest is not None:
+   result['dest'] = options.dest
 
 if options.packet_count is not None:
    result['packet-count'] = options.packet_count
@@ -121,18 +122,27 @@ if options.packet_timeout is not None:
 if options.packet_padding is not None:
    result['packet-padding'] = options.packet_padding
 
-if options.udp_ports is not None:
-   result['udp-ports'] = options.udp_ports
+if options.ctrl_port is not None:
+    result['ctrl-port'] = options.ctrl_port
+
+if options.data_ports is not None:
+   ports = options.data_ports.strip().split("-");
+   if len(ports) != 2:
+        pscheduler.fail("Invalid data-ports. Must be in the form of LOWER-UPPER")
+   if ports[0] > ports[1]:
+        pscheduler.fail("Invalid data-ports. First value in range must be less than second")
+   if ports[0] == ports[1]:
+        pscheduler.fail("Invalid data-ports.First value and second value cannot be equal. Must specify at least two ports.")
+   result['data-ports'] = {
+        "lower": int(ports[0]),
+        "upper": int(ports[1])
+   }
 
 if options.ip_tos is not None:
    result['ip-tos'] = options.ip_tos
 
-if options.ipv4_only is not None and options.ipv4_only is not None:
-   pscheduler.fail("Cannot specify both -4 and -6 at the same time")
-elif options.ipv4_only is not None:
-   result['ipv4-only'] = options.ipv4_only
-elif options.ipv6_only is not None:
-   result['ipv6-only'] = options.ipv6_only
+if options.ip_version is not None:
+   result['ip-version'] = options.ip_version
 
 if options.bucket_width is not None:
    result['bucket-width'] = options.bucket_width
