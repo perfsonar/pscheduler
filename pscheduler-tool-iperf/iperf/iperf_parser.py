@@ -70,9 +70,9 @@ def parse_output(lines):
             # If the output was in say GBytes convert back to regular Bytes for ease
             # of things later
             if si_bytes:
-                throughput_bytes = convert(throughput_bytes, si_bytes)
+                throughput_bytes = pscheduler.si_as_number("%s%s" % (throughput_bytes, si_bytes))
             if si_bits:
-                throughput_bits = convert(throughput_bits, si_bits)
+                throughput_bits = pscheduler.si_as_number("%s%s" % (throughput_bits, si_bits))
 
         # if we found a matching line, we can add this info to our streams
         if stream_id:
@@ -146,20 +146,6 @@ def parse_output(lines):
     results["summary"]   = summary_interval
 
     return results
-
-
-def convert(number, si):
-
-    rates = {
-        'P': 15,
-        'T': 12,
-        'G': 9,
-        'M': 6,
-        'K': 3    
-    }
-
-    return number * (10 ** rates[si])
-
 
 
 if __name__ == "__main__":
