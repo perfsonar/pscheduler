@@ -43,15 +43,25 @@ REDHAT_RELEASE_MAJOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 }')
 REDHAT_RELEASE_MAJOR_MINOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 "." $2 }')
 
 
-# Make sure there's at least the minimal package group on the system.
-# This is mostly for Docker's benefit.
-yum -y groupinstall "Minimal Install"
-
 # Bring everything up to date
 yum -y upgrade
 
 
-
+# Make sure there's at least the minimal package group on the system.
+# This is mostly for Docker's benefit.
+case ${REDHAT_RELASE_MAJOR} in
+    6)
+	# TODO: Find the equivalnet to Minimal in CentOS 6
+	true
+	;;
+    7)
+	yum -y groupinstall "Minimal Install"
+	;;
+    *)
+	echo "This version of RHEL/CentOS is not supported." 1>&2
+	exit 1
+	;;
+esac
 
 #
 # Install backplane hosts if requested
