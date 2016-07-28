@@ -159,7 +159,7 @@ while True:
         full = result['result-full']
 
         for participant in range(0, len(result['participants'])):
-            print "%s:" % participants[participant]
+            print "By %s:" % participants[participant]
             try:
                 print '   ',
                 print '\n    '.join(full[participant]['error'].split('\n'))
