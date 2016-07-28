@@ -3,17 +3,17 @@
 # Run 
 #
 
-IMAGE=pscheduler-demo
-NETWORK="${IMAGE}-net"
+NAME=pscheduler-demo
+IMAGE="perfsonar/pscheduler-demo"
+NETWORK="${NAME}-net"
 PREFIX=psc
 
 COMMAND="$1"; shift
 case "${COMMAND}" in
 
     start)
-	# TODO: Enable this once the image is on Docker Hub
 	echo "Pulling image from DockerHub"
-	# docker pull "${IMAGE}"
+	docker pull "${IMAGE}"
 	echo
 
 	echo -n "Creating private network '${NETWORK}'..."
