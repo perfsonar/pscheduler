@@ -83,7 +83,8 @@ def run_client():
     # duration
     test_duration = test_spec.get('duration')
     if test_duration:
-        test_duration = pscheduler.iso8601_as_timedelta(test_duration)
+        delta = pscheduler.iso8601_as_timedelta(test_duration)
+        test_duration = int(pscheduler.timedelta_as_seconds(delta))
     else:
         test_duration = DEFAULT_DURATION
 
@@ -92,7 +93,8 @@ def run_client():
 
     if test_spec.has_key('interval') and test_spec['interval'] != None:
         iperf_args.append('-i')
-        iperf_args.append(pscheduler.iso8601_as_timedelta(test_spec['interval']))
+        delta = pscheduler.iso8601_as_timedelta(test_spec['interval'])
+        iperf_args.append(int(pscheduler.timedelta_as_seconds(delta)))
 
     if test_spec.has_key('parallel') and test_spec['parallel'] != None:
         iperf_args.append('-P')

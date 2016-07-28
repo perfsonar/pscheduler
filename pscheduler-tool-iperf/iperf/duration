@@ -11,7 +11,12 @@ from iperf_defaults import *
 
 json = pscheduler.json_load(exit_on_error=True)
 
-duration = int(json.get('duration', DEFAULT_DURATION))
+duration = json.get('duration', None)
+if duration:
+    delta = pscheduler.iso8601_as_timedelta(duration)
+    duration = int(pscheduler.timedelta_as_seconds(delta))
+else:
+    duration = DEFAULT_DURATION
 
 print 'PT%dS' % (duration + DEFAULT_FUDGE_FACTOR + DEFAULT_WAIT_SLEEP)
 
