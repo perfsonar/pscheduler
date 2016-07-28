@@ -14,7 +14,7 @@ RUN git clone https://github.com/perfsonar/pscheduler.git
 RUN sed -i -e 's/^ADD_BACKPLANE_HOSTS/#ADD_BACKPLANE_HOSTS/' pscheduler/scripts/system-prep
 RUN pscheduler/scripts/system-prep
 RUN make -C pscheduler
-RUN install -m 544 pscheduler/scripts/docker-run /usr/bin
+RUN install -m 544 pscheduler/scripts/docker/docker-run /usr/bin
 RUN useradd -c "pScheduler Demo" demo
 
 # TODO: What network ports should be exposed?
