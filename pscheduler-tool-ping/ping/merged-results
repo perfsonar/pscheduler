@@ -11,18 +11,24 @@ input = pscheduler.json_load(exit_on_error=True);
 # TODO: Validate the input
 
 try:
-    succeeded = input['results'][0]['succeeded']
+    succeeded = input["results"][0]["result"]["succeeded"]
 except:
     succeeded = False
 
-results = { 'succeeded': succeeded }
+results = {
+    "schema": 1,
+    "succeeded": succeeded
+}
 
 if succeeded:
 
     try:
-        for field in [ "mean", "min", "roundtrips", "stddev" ]:
-            results[field] = input["results"][0][field]
+        for field in [ "loss", "max", "mean", "min", "roundtrips", "stddev" ]:
+            results[field] = input["results"][0]["result"][field]
     except:
-        results = { 'succeeded': False }
+        results = {
+            "schema": 1,
+            "succeeded": False
+            }
 
 pscheduler.succeed_json(results)
