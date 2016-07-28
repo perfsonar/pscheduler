@@ -97,6 +97,22 @@ def result_is_valid(input_json):
                 "description": "Raw output from the underlying tool",
                 "type": "string"
                 },
+            "mss": {
+                "description": "The max segment size reported by the tool",
+                "type": "integer"
+                },
+            "mtu": {
+                "description": "The MTU reported by the tool",
+                "type": "integer"
+                },
+            "tcp-window-size": {
+                "description": "The tcp window size used by the tool",
+                "type": "integer"
+                },
+            "requested-tcp-window-size": {
+                "description": "The tcp window size used by the tool",
+                "type": "integer"
+                },
             "intervals": {
                 "description": "The breakdown of intervals of the test",
                 "type": "array",

@@ -31,6 +31,7 @@ def parse_output(lines):
             results["error"]     = "Connection refused"
             break
 
+        print "line is %s" % line
 
         test = re.match('local ([^ ]+) port (\d+) connected with ([^ ]+) port (\d+)', line)
         if test:
@@ -38,6 +39,34 @@ def parse_output(lines):
             dest_port = test.group(2)
             src_ip    = test.group(3)
             src_port  = test.group(4)
+
+        # Example lines
+        # TCP window size:  244 KByte (WARNING: requested 64.0 MByte)
+        # TCP window size: 19800 Byte (default)
+        test = re.match('TCP window size:\s+(\d+(\.\d+)?) (\S)?Byte(.*\(WARNING:\s+requested\s+(\d+(\.\d+)?) (\S)?Byte)?', line)
+        if test:
+            window_size = test.group(1)
+            window_si   = test.group(3)
+
+            request_size = test.group(5)
+            request_si   = test.group(7)
+
+            if window_si:
+                window_size = pscheduler.si_as_number("%s%s" % (window_size, window_si))
+
+            if request_size:
+                if request_si:
+                    request_size = pscheduler.si_as_number("%s%s" % (request_size, request_si))
+                results["requested-tcp-window-size"] = int(request_size)
+
+            results["tcp-window-size"] = int(window_size)
+
+        # Example line
+        # [  3] MSS size 1448 bytes (MTU 1500 bytes, ethernet)
+        test = re.match('.*MSS size (\d+) bytes \(MTU (\d+) bytes', line)
+        if test:
+            results['mss'] = int(test.group(1))
+            results['mtu'] = int(test.group(2))
 
 
         stream_id        = None
@@ -179,7 +208,7 @@ TCP window size: 19800 Byte (default)
     test_output = """
 ------------------------------------------------------------
 Client connecting to 10.0.2.4, TCP port 5001
-TCP window size: 19.3 KByte (default)
+TCP window size:  244 KByte (WARNING: requested 7.63 MByte)
 ------------------------------------------------------------
 [  5] local 10.0.2.15 port 42309 connected with 10.0.2.4 port 5001
 [  3] local 10.0.2.15 port 42307 connected with 10.0.2.4 port 5001
@@ -229,6 +258,7 @@ TCP window size: 19.3 KByte (default)
 [SUM]  9.0-10.0 sec   211 MBytes  1.77 Gbits/sec
 [  4]  0.0-10.0 sec   663 MBytes   556 Mbits/sec
 [SUM]  0.0-10.0 sec  2.02 GBytes  1.73 Gbits/sec
+[  3] MSS size 1448 bytes (MTU 1500 bytes, ethernet)
 """
 
     result = parse_output(test_output.split("\n"))

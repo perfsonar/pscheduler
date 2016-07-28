@@ -80,4 +80,22 @@ if len(summary_streams) > 1:
 output += "Summary\n"
 output += throughput_utils.format_stream_output([summary_summary])
 
+output += "\n"
+
+if test_spec_json.get('mss-size'):
+   output += "MSS: %s bytes\n" % (test_spec_json['mss-size'])
+if test_spec_json.get('mtu'):
+   output += "MTU: %s bytes\n" % (test_spec_json['mtu'])
+if test_spec_json.get('tcp-window-size'):
+   output += "TCP Window Size: %sbytes" % (throughput_utils.format_si(test_spec_json['tcp-window-size']))
+
+   if test_spec_json.get('requested-tcp-window-size'):
+      output += "  Requested: %sbytes" % (throughput_utils.format_si(test_spec_json['requested-tcp-window-size']))
+   output += "\n"
+
+
+
+#output += "\n\nDiag....\n"
+#output += test_spec_json['diag']
+
 print output
