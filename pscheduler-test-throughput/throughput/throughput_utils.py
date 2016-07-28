@@ -1,4 +1,5 @@
 def format_si(number, places=2):
+    number = float(number)
     if number > 10**9:
         return ("{0:.%sf} G" % places).format(number / 10**9)
 
