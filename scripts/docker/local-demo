@@ -1,6 +1,7 @@
 #!/bin/sh -e
 #
-# Run 
+# Run a demonstration of pScheduler in multple containers on the local
+# host bound to a private network.
 #
 
 NAME=pscheduler-demo
