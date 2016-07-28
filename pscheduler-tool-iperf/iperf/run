@@ -50,14 +50,13 @@ def run_client():
     # who to connect to
     destination = test_spec['destination']
 
-
     try:
         ipaddr.IPAddress(destination)
         is_ip_address = True
     except ValueError:
         is_ip_address = False
     
-    # iperf has no inherent ability to force v4 or v6, so we do it here
+    # iperf has no inherent ability to force v4 or v6, so we do it here but
     # don't bother doing lookups on just a straight IP address, seems like
     # a silly combination of flags but whatever
     if not is_ip_address and test_spec.has_key('force-ipv4'):
@@ -82,12 +81,20 @@ def run_client():
     iperf_args.append(destination)
 
     # duration
+    test_duration = test_spec.get('duration')
+    if test_duration:
+        delta = pscheduler.iso8601_as_timedelta(test_duration)
+        test_duration = int(pscheduler.timedelta_as_seconds(delta))
+    else:
+        test_duration = DEFAULT_DURATION
+
     iperf_args.append('-t')
-    iperf_args.append(test_spec.get('duration', DEFAULT_DURATION))
+    iperf_args.append(test_duration)
 
     if test_spec.has_key('interval') and test_spec['interval'] != None:
         iperf_args.append('-i')
-        iperf_args.append(test_spec['interval'])
+        delta = pscheduler.iso8601_as_timedelta(test_spec['interval'])
+        iperf_args.append(int(pscheduler.timedelta_as_seconds(delta)))
 
     if test_spec.has_key('parallel') and test_spec['parallel'] != None:
         iperf_args.append('-P')
@@ -110,6 +117,14 @@ def run_client():
         iperf_args.append('-l')
         iperf_args.append(test_spec['buffer-length'])
 
+    if test_spec.has_key('dscp') and test_spec['dscp'] != None:
+        iperf_args.append('-S')
+        iperf_args.append(test_spec['dscp'])
+
+    if test_spec.has_key('tos') and test_spec['tos'] != None:
+        iperf_args.append('-S')
+        iperf_args.append(test_spec['tos'])
+
     
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string
@@ -126,11 +141,11 @@ def run_client():
     #see if command completed successfully
     logger.debug("iperf returned status %d" % status)
 
-    if status:
-        iperf_error = ''
-        for line in stderr:
-            iperf_error += line.rstrip().lstrip() + " "
-        pscheduler.fail("iperf returned an error: %s" %iperf_error)
+    # For whatever reason, iperf doesn't always exit with the right code
+    # in the event of failures so we can also look to see if anything
+    # showed up in stderr
+    if status or stderr:
+        pscheduler.fail("iperf returned an error: %s" % stderr)
 
     logger.debug("Stdout = %s" % stdout)
     logger.debug("Stderr = %s" % stderr)
@@ -163,10 +178,7 @@ def run_server():
     # in the event of failures so we can also look to see if anything
     # showed up in stderr
     if status or stderr:
-        iperf_error = ''
-        for line in stderr:
-            iperf_error += line.rstrip().lstrip() + " "
-        pscheduler.fail("iperf returned an error: %s" % iperf_error)
+        pscheduler.fail("iperf returned an error: %s" % stderr)
     
     #log stdout in debug mode
     for line in stdout:

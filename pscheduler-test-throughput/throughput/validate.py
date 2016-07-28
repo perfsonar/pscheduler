@@ -18,14 +18,12 @@ def spec_is_valid(input_json):
             "schema":      { "$ref": "#/pScheduler/Cardinal" },
             "source":      { "$ref": "#/pScheduler/Host" },
             "destination": { "$ref": "#/pScheduler/Host" },
-            "duration":    { "$ref": "#/pScheduler/Cardinal" },
-            "interval":    { "$ref": "#/pScheduler/Cardinal" },
+            "duration":    { "$ref": "#/pScheduler/Duration" },
+            "interval":    { "$ref": "#/pScheduler/Duration" },
             "parallel":    { "$ref": "#/pScheduler/Cardinal" },
             "udp":         { "$ref": "#/pScheduler/Boolean" },
-            "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },
-            "duration":    { "$ref": "#/pScheduler/Cardinal" },
+            "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },           
             "window-size": { "$ref": "#/pScheduler/Cardinal" },
-            "dynamic-window-size":    { "$ref": "#/pScheduler/Cardinal" },
             "mss":         { "$ref": "#/pScheduler/Cardinal" },
             "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
             "force-ipv4":    { "$ref": "#/pScheduler/Boolean" },
@@ -33,7 +31,8 @@ def spec_is_valid(input_json):
             "local-address": { "$ref": "#/pScheduler/Host" },
             "dscp":          { "$ref": "#/pScheduler/Cardinal" },
             "omit":          { "$ref": "#/pScheduler/Cardinal" },
-            "tos":           { "$ref": "#/pScheduler/Cardinal" }
+            "tos":           { "$ref": "#/pScheduler/Cardinal" },
+            "dynamic-window-size":    { "$ref": "#/pScheduler/Cardinal" }
             }
         }
 
@@ -135,6 +134,7 @@ def result_is_valid(input_json):
 def limit_is_valid(json):
     schema = {}
 
+    return (True, "")
     return json_validate(input_json, schema)
 
 

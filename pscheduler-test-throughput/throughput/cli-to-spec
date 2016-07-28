@@ -7,6 +7,7 @@ import pscheduler
 import sys
 import socket
 import pscheduler
+import datetime
 
 logger = pscheduler.Log(prefix='test-throughput')
 
@@ -47,12 +48,12 @@ opt_parser.add_option("-d", "--dest", "--destination",
 
 opt_parser.add_option("-t", "--duration",
                       help="Total runtime of test",
-                      action="store", type="int",
+                      action="store", type="string",
                       dest="duration")
 
 opt_parser.add_option("-i", "--interval",
                       help="How often to report results (internally, results still reported in aggregate at end)",
-                      action="store", type="int",
+                      action="store", type="string",
                       dest="interval")
 
 opt_parser.add_option("-P", "--parallel",
@@ -136,10 +137,25 @@ if options.destination is not None:
    result['destination'] = options.destination
 
 if options.duration is not None:
-   result['duration'] = options.duration
+   duration = options.duration
+
+   # convert epoch seconds to is8601
+   if duration.isdigit():
+      delta = datetime.timedelta(seconds=int(duration))
+      duration = pscheduler.timedelta_as_iso8601(delta)
+
+   result['duration'] = duration
 
 if options.interval is not None:
-   result['interval'] = options.interval
+
+   interval = options.interval
+
+   # convert epoch seconds to is8601
+   if interval.isdigit():
+      delta = datetime.timedelta(seconds=int(interval))
+      interval = pscheduler.timedelta_as_iso8601(delta)
+
+   result['interval'] = interval
 
 if options.parallel is not None:
    result['parallel'] = options.parallel
@@ -205,5 +221,7 @@ if not result.has_key("source") and result.has_key("destination"):
    result["source"] = me
 elif not result.has_key("destination") and result.has_key("source"):
    result["destination"] = me
+
+logger.debug("cli-to-spec -> %s" % result)
 
 pscheduler.succeed_json(result)
