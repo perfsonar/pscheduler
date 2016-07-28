@@ -8,7 +8,11 @@ IMAGE="perfsonar/pscheduler-demo"
 NETWORK="${NAME}-net"
 PREFIX=psc
 
-COMMAND="$1"; shift
+if [ "$1" ]
+then
+    COMMAND="$1"; shift
+fi
+
 case "${COMMAND}" in
 
     start)
