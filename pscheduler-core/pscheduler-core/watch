@@ -147,13 +147,11 @@ while True:
             raise KeyError()
         status = result['result-merged']['succeeded']
     except KeyError as ex:
-        print "Unable to determine success or failure.  Returned JSON:"
-        print pscheduler.json_dump(result, pretty=True)
+        status = False
         run_count += 1
-        continue
-
 
     if not status:
+
         print
         print "Run failed.  The following errors were reported:"
 
@@ -169,6 +167,8 @@ while True:
                 # TODO: There should be an 'error' in the JSON, but don't
                 # punish the user if there isn't.
                 print "  (No error reported)"
+        print
+        continue
 
 
     #
