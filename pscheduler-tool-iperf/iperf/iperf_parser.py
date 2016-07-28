@@ -31,8 +31,6 @@ def parse_output(lines):
             results["error"]     = "Connection refused"
             break
 
-        print "line is %s" % line
-
         test = re.match('local ([^ ]+) port (\d+) connected with ([^ ]+) port (\d+)', line)
         if test:
             dest_ip   = test.group(1)
