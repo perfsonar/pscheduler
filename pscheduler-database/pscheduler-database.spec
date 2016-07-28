@@ -184,6 +184,8 @@ drop-in -n -t %{name} - "${HBA_FILE}" <<EOF
 %if 0%{?el6}
 # TODO: SECURITY: The password method doesn't seem to work on pg 9.5
 # when installed on el6.  Find out why and how to fix that.
+# Followup: The md5 method does seem to work on the pS toolkit.  Check
+# to see if it works on 6.8.
 local     pscheduler      pscheduler                            trust
 host      pscheduler      pscheduler     127.0.0.1/32           trust
 host      pscheduler      pscheduler     ::1/128                trust
