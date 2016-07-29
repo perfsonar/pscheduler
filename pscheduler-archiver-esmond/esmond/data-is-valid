@@ -17,8 +17,18 @@ data_validator = {
     "type": "object",
     "properties": {
         "url": { "$ref": "#/pScheduler/URL" },
-        "api-key": { "$ref": "#/pScheduler/String" },
+        "auth-token": { "$ref": "#/pScheduler/String" },
         "verify-ssl": { "$ref": "#/pScheduler/Boolean" },
+        "retry-policy": {
+            "type": "array,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "attempts": {"$ref": "#/pScheduler/Cardinal" },
+                    "wait": {"$ref": "#/pScheduler/Duration" },
+                }
+            }
+        },
         "data-formatting-policy": {
             "type": "string",
             "enum": [

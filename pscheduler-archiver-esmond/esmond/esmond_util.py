@@ -219,21 +219,47 @@ def add_data_rate(data_point={}, event_type=None, test_result={}, numerator='', 
         return
     data_point['val'].append({ 'event-type': event_type, 
                                 'val': {'numerator': test_result[numerator], 'denominator': test_result[denominator]}})
-                                    
-                                        
+
+
+def init_failure_datapoints(ts=None, test_result={}, msg_field='error'): 
+    data_point = { 'ts': ts, 'val': [] }
+    msg = ""
+    if msg_field in test_result and test_result[msg_field]:
+        msg = test_result[msg_field]
+    else:
+        msg = "The test failed for an unspecified reason. See the server logs of the testing host(s)."
+    data_point['val'].append({ 'event-type': 'failures', 'val': { 'error': msg }})
+    return [ data_point ]
+
+def handle_storage_error(result, attempts=0, policy=[]):
+    #build object
+    retry = False
+    archive_err_result = { 'succeeded': False, 'error': result }
+    policy_attempt_sum = 0
+    for p in policy:
+        policy_attempt_sum += p['attempts']
+        if policy_attempt_sum > attempts:
+            retry = True
+            archive_err_result['retry'] = p['wait']
+            break
+    if retry:
+        pscheduler.succeed_json(archive_err_result)
+    else:
+        pscheduler.fail("Archiver permanently abandoned registering test after %d attempt(s): %s" % (attempts+1, result))
+  
 class EsmondClient:
     url = ""
     verify_ssl = False
     headers = {}
     
     def __init__(self, url="http://127.0.0.1/esmond/perfsonar/archive", 
-                        api_key=None, 
+                        auth_token=None, 
                         verify_ssl=False):
         self.url = url
         self.verify_ssl = verify_ssl
         self.headers = { 'Content-Type': 'application/json' }
-        if api_key:
-            self.headers['Authorization'] = "Token %s" % api_key
+        if auth_token:
+            self.headers['Authorization'] = "Token %s" % auth_token
     
     def create_metadata(self, metadata):
         result = {}
@@ -249,7 +275,7 @@ class EsmondClient:
                 return False, "%d: %s" % (r.status_code, r.text)
         try:
             rjson = pscheduler.json_load(r.text)
-            log.debug("rjson=%s" % rjson)
+            log.debug("Metadata POST result: %s" % rjson)
         except:
             return False, "Invalid JSON returned from server: %s" % r.text 
         
