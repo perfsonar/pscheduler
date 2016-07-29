@@ -33,8 +33,6 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 
 %%_pscheduler_libexecdir %{_libexecdir}/pscheduler
 %%_pscheduler_sysconfdir %{_sysconfdir}/pscheduler
-# TODO: This should be moved beolow and renamed _pscheduler_test_confdir
-%%_pscheduler_testconfdir %{_pscheduler_sysconfdir}/test
 %%_pscheduler_sudoersdir %{_sysconfdir}/sudoers.d
 %%_pscheduler_docdir %{_defaultdocdir}/pscheduler
 %%_pscheduler_datadir %{_datadir}/pscheduler
@@ -52,6 +50,8 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 # Tests
 %%_pscheduler_test_libexec %{_pscheduler_classes}/test
 %%_pscheduler_test_doc %{_pscheduler_docdir}/test
+%%_pscheduler_test_confdir %{_pscheduler_sysconfdir}/test
+
 
 # Tools
 %%_pscheduler_tool_libexec %{_pscheduler_classes}/tool
