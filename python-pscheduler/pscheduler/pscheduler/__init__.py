@@ -7,6 +7,7 @@ from .clockstate import *
 from .db import *
 from .durationrange import *
 from .exitstatus import *
+from .filestring import *
 from .iso8601 import *
 from .jsonval import *
 from .log import *

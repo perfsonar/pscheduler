@@ -26,7 +26,17 @@ opt_parser.disable_interspersed_args()
 
 # GENERAL OPTIONS
 
-opt_parser.add_option("--runs", "-r",
+opt_parser.add_option("--format",
+                      help="Result format (text, html, json, none)",
+                      action="store", type="string", default="text",
+                      dest="format")
+
+opt_parser.add_option("--quiet",
+                      help="Operate quietly",
+                      action="store_true", default=False,
+                      dest="quiet")
+
+opt_parser.add_option("--runs",
                       help="Exit after this many runs (default 0=infinite)",
                       action="store", type="int", default=0,
                       dest="runs")
@@ -45,6 +55,25 @@ if options.runs < 0:
     pscheduler.fail("Invalid --runs; must be 0 or more")
 max_runs = options.runs
 
+formats = {
+    'html': 'text/html',
+    'json': 'application/json',
+    'none': None,
+    'text': 'text/plain',
+    # Not "officially" supported, but here for completeness
+    'text/html': 'text/html',
+    'application/json': 'application/json',
+    'text/plain': 'text/plain',
+    }
+
+try:
+    out_format = formats[options.format]
+except KeyError:
+    pscheduler.fail("Invalid --format '%s'; must be text, html, json or none"
+                    % (options.format) )
+
+
+
 if len(remaining_args) != 1:
     opt_parser.print_usage()
     pscheduler.fail()
@@ -53,6 +82,12 @@ if len(remaining_args) != 1:
 
 if not pscheduler.api_is_task(task_url):
     pscheduler.fail("Invalid task URL.")
+
+
+verbose = (not options.quiet) and (out_format == "text/plain")
+
+
+
 
 # TODO: Get task and see if there will be any future runs.  Need to
 # have something in the database that says whether or not the task is
@@ -85,9 +120,11 @@ while True:
 
     run_url = runs[0]
 
-    print
-    print "Next run:"
-    print run_url
+    if verbose:
+        print
+        print "Next run:"
+        print run_url
+
     try:
         status, run_json = pscheduler.url_get(run_url)
     except pscheduler.psurl.URLException as ex:
@@ -98,15 +135,17 @@ while True:
 
     if run_json['state'] == 'nonstart':
 
-        print "Run scheduled at", run_json['start-time'], "is a non-starter:"
-        print run_json['errors']
-        print
+        if verbose:
+            print "Run scheduled at", run_json['start-time'], "is a non-starter:"
+            print run_json['errors']
+            print
 
         end_time = run_json['end-time']
         wait_time = pscheduler.time_until_seconds(
             pscheduler.iso8601_as_datetime(end_time))
-        print "Waiting until this run would have ended (%s, ~%s seconds)" \
-            % (end_time, int(wait_time))
+        if verbose:
+            print "Waiting until this run would have ended (%s, ~%s seconds)" \
+                % (end_time, int(wait_time))
         time.sleep(wait_time)
         run_count += 1
         continue
@@ -118,13 +157,15 @@ while True:
     start_time = run_json['start-time']
     wait_time = pscheduler.time_until_seconds(
         pscheduler.iso8601_as_datetime(start_time))
-    print "Starts %s (~%s seconds)" % (start_time, int(wait_time))
+    if verbose:
+        print "Starts %s (~%s seconds)" % (start_time, int(wait_time))
     time.sleep(wait_time)
 
     end_time = run_json['end-time']
     wait_time = pscheduler.time_until_seconds(
         pscheduler.iso8601_as_datetime(end_time))
-    print "Ends   %s (~%s seconds)" % (end_time, int(wait_time))
+    if verbose:
+        print "Ends   %s (~%s seconds)" % (end_time, int(wait_time))
     time.sleep(wait_time)
 
     status, result = pscheduler.url_get( run_url,
@@ -152,22 +193,24 @@ while True:
 
     if not status:
 
-        print
-        print "Run failed.  The following errors were reported:"
+        if verbose:
+            print
+            print "Run failed.  The following errors were reported:"
 
         participants = result['participants']
         full = result['result-full']
 
         for participant in range(0, len(result['participants'])):
-            print "By %s:" % participants[participant]
-            try:
-                print '   ',
-                print '\n    '.join(full[participant]['error'].split('\n'))
-            except (KeyError, TypeError, AttributeError):
-                # TODO: There should be an 'error' in the JSON, but don't
-                # punish the user if there isn't.
-                print "  (No error reported)"
-        print
+            if verbose:
+                print "By %s:" % participants[participant]
+                try:
+                    print '   ',
+                    print '\n    '.join(full[participant]['error'].split('\n'))
+                except (KeyError, TypeError, AttributeError):
+                    # TODO: There should be an 'error' in the JSON, but don't
+                    # punish the user if there isn't.
+                    print "  (No error reported)"
+                print
         continue
 
 
@@ -178,7 +221,7 @@ while True:
     status, formatted = pscheduler.url_get(
         result['result-href'],
         params={ 'wait': True,
-                 'format': 'text/plain' },
+                 'format': out_format },
         json=False,
         throw=False)
 
@@ -186,9 +229,11 @@ while True:
         pscheduler.fail("Unable to retrieve formatted result: " + formatted)
 
     # TODO: Remove the extra print if not narrating and on a TTY
-    print
+    if verbose:
+        print
     print formatted.rstrip()
-    print
+    if verbose:
+        print
 
     run_count += 1
 
