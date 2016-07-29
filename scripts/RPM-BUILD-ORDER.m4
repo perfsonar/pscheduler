@@ -112,6 +112,7 @@ pscheduler-tool-paris-traceroute
 
 # Archivers
 pscheduler-archiver-bitbucket
+pscheduler-archiver-esmond
 pscheduler-archiver-failer
 pscheduler-archiver-syslog
 

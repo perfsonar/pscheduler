@@ -1,0 +1,55 @@
+#!/usr/bin/python
+#
+# Validate data for the syslogarchiver
+#
+
+import pscheduler
+
+try:
+    json = pscheduler.json_load()
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+        })
+
+data_validator = {
+    "type": "object",
+    "properties": {
+        "url": { "$ref": "#/pScheduler/URL" },
+        "api-key": { "$ref": "#/pScheduler/String" },
+        "verify-ssl": { "$ref": "#/pScheduler/Boolean" },
+        "data-formatting-policy": {
+            "type": "string",
+            "enum": [
+                "prefer-mapped",
+                "mapped-and-raw",
+                "mapped-only",
+                "raw-only",
+            ]
+        }
+        "summaries": {
+            "type": "array,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "event-type": { "$ref": "#/pScheduler/String" },
+                    "summary-type": { "$ref": "#/pScheduler/String" },
+                    "summary-window": { "$ref": "#/pScheduler/CardinalZero" },
+                }
+            }
+        }
+    },
+    "additionalProperties": False,
+    "required": [ "url"]
+}
+
+valid, error = pscheduler.json_validate(json, data_validator)
+
+if not valid:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": error
+        })
+    
+pscheduler.succeed_json({ "valid": True })

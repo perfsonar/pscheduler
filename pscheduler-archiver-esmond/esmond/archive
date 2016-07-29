@@ -1,0 +1,139 @@
+#!/usr/bin/python
+#
+# Send a result to syslog.
+#
+
+import pscheduler
+import calendar
+import esmond_util
+
+#TODO: handle failures
+
+
+#constants
+#initialize logging
+log = pscheduler.Log(prefix="archiver-esmond", quiet=True)
+
+#read JSON
+#json = {u'last-attempt': None, u'attempts': 0, u'data': {u'url': u'http://10.0.1.17/esmond/perfsonar/archive', u'api-key': u'74c67388ca1d3c48b3660bda88de9729ac2c6f07'}, u'result': {u'schedule': {u'duration': u'PT15S', u'start': u'2016-07-28T10:55:31-04:00'}, u'tool': {u'verion': u'1.0', u'name': u'owping'}, u'participants': [u'psched-dev2'], u'result': {u'max-clock-error': 1.9199999999999999, u'packets-duplicated': 0, u'succeeded': True, u'histogram-latency': {u'-0.33': 5, u'-0.28': 11, u'-0.29': 9, u'-0.24': 2, u'-0.25': 12, u'-0.26': 4, u'-0.27': 3, u'-0.20': 5, u'-0.21': 5, u'-0.22': 6, u'-0.23': 8, u'-0.43': 1, u'-0.40': 2, u'-0.15': 1, u'-0.32': 3, u'-0.31': 4, u'-0.30': 6, u'-0.41': 2, u'-0.36': 1, u'-0.35': 1, u'-0.34': 1, u'-0.39': 2, u'-0.38': 1, u'-0.19': 2, u'-0.17': 3}, u'histogram-ttl': {u'255': 100}, u'packets-sent': 100, u'packets-reordered': 0, u'packets-lost': 0, u'packets-received': 100, u'schema': 1}, u'test': {u'type': u'latency', u'spec': {u'dest': u'10.0.1.25', u'source': u'10.0.1.28', u'single-participant-mode': True, u'schema': 1}}, u'id': u'f9b66107-05ea-4e79-ac71-bb16f8f82e3c'}}
+json = pscheduler.json_load(exit_on_error=True)
+log.debug("Archiver received: %s" % json)
+test_type = json['result']['test']['type']
+test_spec = json['result']['test']['spec']
+test_result = json['result']['result']
+tool_name = 'pscheduler/%s' % json['result']['tool']['name']
+test_start_time = calendar.timegm(pscheduler.iso8601_as_datetime(json['result']['schedule']['start']).timetuple())
+lead_participant = json['result']['participants'][0]
+duration = esmond_util.iso8601_to_seconds(json['result']['schedule']['duration'])
+
+try:
+    url = json['data']['url']
+except KeyError:
+    pscheduler.succeed_json({
+        "succeeded": False,
+        "error": "You must provide the URL of the Esmond archive"
+    })
+api_key = None
+if "api-key" in json['data']:
+    api_key = json['data']['api-key']
+verify_ssl=False
+if "verify-ssl" in json['data']:
+    verify_ssl = json['data']['verify-ssl']
+verify_ssl=False
+if "verify-ssl" in json['data']:
+    verify_ssl = json['data']['verify-ssl']
+format_mapping = True
+format_raw = False
+fallback_raw = True
+if "data-formatting-policy" in json['data']:
+    if json['data']['data-formatting-policy'] == 'prefer-mapped':
+        pass # this is the default
+    elif json['data']['data-formatting-policy'] == 'mapped-and-raw':
+        format_raw = True
+    elif json['data']['data-formatting-policy'] == 'mapped-only':
+        fallback_raw = False 
+    elif json['data']['data-formatting-policy'] == 'raw-only':
+        format_mapping = False 
+summary_map = None
+if "summaries" in json['data']:
+    summary_map = json['data']['summaries']
+
+#init client
+client = esmond_util.EsmondClient(url=url, api_key=api_key, verify_ssl=verify_ssl)
+
+#determine test type and format metadata and data
+metadata = None
+data_points = None
+if test_type == 'latency':
+    event_types = [
+        'failures',
+        'packet-count-sent',
+        'histogram-owdelay',
+        'histogram-ttl',
+        'packet-duplicates',
+        'packet-loss-rate',
+        'packet-count-lost',
+        'packet-reorders',
+        'time-error-estimates'
+    ]
+    metadata = esmond_util.init_metadata(test_spec=test_spec,
+                    lead_participant=lead_participant, 
+                    tool_name=tool_name,
+                    summaries=summary_map,
+                    event_types=event_types,
+                    duration=duration)
+    esmond_util.add_metadata_fields(metadata=metadata, test_spec=test_spec, field_map={
+                 "packet-count":  "sample-size", 
+                 "bucket-width":  "sample-bucket-width", 
+                 "packet-interval": "time-probe-interval", 
+                 "packet-timeout": "time-probe-timeout", 
+                 "ip-tos": "ip-tos", 
+                 "flip": "mode-flip", 
+                 "packet-padding": "ip-packet-padding", 
+                 "single-participant-mode": "mode-single-participant"
+             }
+            )
+         
+    #handle data 
+    data_points = esmond_util.init_datapoints(ts=test_start_time,
+                                    test_result=test_result, 
+                                    field_map={
+                                        'histogram-latency': 'histogram-owdelay',
+                                        'histogram-ttl': 'histogram-ttl',
+                                        'packets-sent': 'packet-count-sent',
+                                        'packets-lost': 'packet-count-lost',
+                                        'packets-reordered': 'packet-reorders',
+                                        'packets-duplicated': 'packet-duplicates',
+                                        'max-clock-error': 'time-error-estimates',
+                                        })
+    esmond_util.add_data_rate(data_point=data_points[0],event_type='packet-loss-rate',
+                        test_result=test_result, 
+                        numerator='packets-lost',
+                        denominator='packets-sent')
+elif test_type == 'throughput':
+    pass
+elif test_type == 'trace':
+    pass
+elif test_type == 'throughput':
+    pass
+elif fallback_raw:
+    format_raw = True
+
+
+#send results to MA
+if metadata and data_points:
+    #POST metadata 
+    success, result = client.create_metadata(metadata)
+    #print result
+    if not success:
+        pscheduler.succeed_json({'succeeded': False, 'error': result})
+    metadata_key = result['metadata-key']
+
+    #PUT data
+    success, result = client.create_data(metadata_key, data_points)
+    if not success:
+        pscheduler.succeed_json({'succeeded': False, 'error': result})
+    #print "Success!"
+
+#exit
+pscheduler.succeed_json({'succeeded': True})
