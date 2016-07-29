@@ -378,8 +378,12 @@ status, raw_spec = pscheduler.url_get(
 
 if status == 404:
     pscheduler.fail("Could not find test " + test_type + " on server")
+if status == 500:
+    pscheduler.fail("Internal error on on %s.  Consult system logs for details." \
+                        % ( "local pScheduler server" if assist == last_ditch_assist
+                            else assist ))
 elif status != 200:
-        pscheduler.fail(raw_spec)
+    pscheduler.fail(raw_spec)
 
 json_to_merge = raw_spec
 assert 'spec' in task['test']
