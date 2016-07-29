@@ -106,6 +106,9 @@ DEFAULT_SUMMARIES = {
     ],
 }
 
+
+###
+# Utility functions
 def iso8601_to_seconds(val):
     td = pscheduler.iso8601_as_timedelta(val)
     return (td.seconds + td.days * 86400)
@@ -141,96 +144,6 @@ def normalize_ip_versions(src, dest, ip_version=None):
 
     return src_ip, dest_ip
 
-def build_event_type(event_type, summaries):
-    et = { "event-type": event_type }
-    if event_type in summaries:
-        et["summaries"] = summaries[event_type]
-    return et
-
-def init_metadata(
-                    test_spec=None,
-                    lead_participant=None, 
-                    tool_name=None,
-                    event_types=[], 
-                    summaries=None,
-                    duration=None,
-                    src_field="source", 
-                    dst_field="dest", 
-                    ipv_field="ip-version"
-                ):
-    #init
-    metadata = { 'subject-type': 'point-to-point', 'event-types': [] }
-    
-    #determine source since its optional
-    input_source = lead_participant
-    if src_field in test_spec:
-        input_source = test_spec[src_field]
-        
-    #get dest - should be required
-    input_dest = test_spec[dst_field]
-    
-    #determine if we are forcing an ip-version
-    ip_version = None
-    if ipv_field in test_spec:
-        ip_version = test_spec[ipv_field]
-        
-    #normalize ips
-    src_ip, dest_ip = normalize_ip_versions(input_source, input_dest, ip_version=ip_version)
-    
-    #set fields
-    metadata['source'] = src_ip
-    metadata['destination'] = dest_ip
-    metadata['input-source'] = input_source
-    metadata['input-destination'] = input_dest
-    metadata['tool-name'] = tool_name
-    metadata['time-duration'] = duration
-    #Make measurement-agent the lead participant, with same ip type as source
-    src_ip, metadata['measurement-agent'] = normalize_ip_versions(src_ip, lead_participant)
-    
-    #Handle event types
-    summary_map = DEFAULT_SUMMARIES
-    if summaries:
-        summary_map = summaries
-    for et in event_types:
-        metadata['event-types'].append(build_event_type(et, summary_map))
-    
-    return metadata
-
-def add_metadata_fields(metadata={}, test_spec={}, field_map={}):
-        for field in field_map:
-            if field in test_spec:
-                metadata[field_map[field]] = test_spec[field]
-
-def init_datapoints(ts=None, test_result={}, field_map={}):
-    data_point = { 'ts': ts, 'val': [] }
-    for field in field_map:
-        if field in test_result:
-            data_point['val'].append({ 'event-type': field_map[field], 'val': test_result[field]})
-    return [ data_point ]
-
-def add_data_rate(data_point={}, event_type=None, test_result={}, numerator='', denominator=''):
-    rate = 0
-    if (numerator not in test_result) or (denominator not in test_result) or (test_result[numerator] is None) or (test_result[denominator] is None):
-        return
-    try:
-        int(test_result[numerator])
-        if int(test_result[denominator]) == 0: return 
-    except:
-        return
-    data_point['val'].append({ 'event-type': event_type, 
-                                'val': {'numerator': test_result[numerator], 'denominator': test_result[denominator]}})
-
-
-def init_failure_datapoints(ts=None, test_result={}, msg_field='error'): 
-    data_point = { 'ts': ts, 'val': [] }
-    msg = ""
-    if msg_field in test_result and test_result[msg_field]:
-        msg = test_result[msg_field]
-    else:
-        msg = "The test failed for an unspecified reason. See the server logs of the testing host(s)."
-    data_point['val'].append({ 'event-type': 'failures', 'val': { 'error': msg }})
-    return [ data_point ]
-
 def handle_storage_error(result, attempts=0, policy=[]):
     #build object
     retry = False
@@ -246,7 +159,10 @@ def handle_storage_error(result, attempts=0, policy=[]):
         pscheduler.succeed_json(archive_err_result)
     else:
         pscheduler.fail("Archiver permanently abandoned registering test after %d attempt(s): %s" % (attempts+1, result))
-  
+
+
+###
+# Utility classes
 class EsmondClient:
     url = ""
     verify_ssl = False
@@ -300,4 +216,279 @@ class EsmondClient:
                 return False, "%d: %s" % (r.status_code, r.text)
         
         return True, ""
+
+class EsmondBaseRecord:
+    metadata ={}
+    data = []
     
+    def __init__(self,
+                    test_spec=None,
+                    lead_participant=None, 
+                    tool_name=None,
+                    summaries=None,
+                    duration=None,
+                    ts=None, 
+                    test_result={},
+                    src_field="source", 
+                    dst_field="dest", 
+                    ipv_field="ip-version",
+                    succeeded_field="succeeded",
+                    error_field="error"
+                ):
+        #init
+        self.metadata = { 'subject-type': 'point-to-point', 'event-types': [] }
+    
+        #determine source since its optional
+        input_source = lead_participant
+        if src_field in test_spec:
+            input_source = test_spec[src_field]
+        
+        #get dest - should be required
+        input_dest = test_spec[dst_field]
+    
+        #determine if we are forcing an ip-version
+        ip_version = None
+        if ipv_field in test_spec:
+            ip_version = test_spec[ipv_field]
+        
+        #normalize ips
+        src_ip, dest_ip = normalize_ip_versions(input_source, input_dest, ip_version=ip_version)
+    
+        #set fields
+        self.metadata['source'] = src_ip
+        self.metadata['destination'] = dest_ip
+        self.metadata['input-source'] = input_source
+        self.metadata['input-destination'] = input_dest
+        self.metadata['tool-name'] = tool_name
+        self.metadata['time-duration'] = duration
+        #Make measurement-agent the lead participant, with same ip type as source
+        src_ip, self.metadata['measurement-agent'] = normalize_ip_versions(src_ip, lead_participant)
+    
+        #Handle event types
+        summary_map = DEFAULT_SUMMARIES
+        if summaries:
+            summary_map = summaries
+        for et in self.get_event_types(test_spec=test_spec):
+            self.add_event_type(et, summary_map)
+        
+        #add extra metadata fields
+        self.add_metadata_fields(test_spec=test_spec)
+        self.add_additional_metadata(test_spec=test_spec)
+        
+        #handle data 
+        data_point = { 'ts': ts, 'val': [] }
+        if test_result[succeeded_field]:
+            data_field_map = self.get_data_field_map()
+            for field in data_field_map:
+                if field in test_result:
+                    data_point['val'].append({ 'event-type': data_field_map[field], 'val': test_result[field]})
+            self.add_additional_data(data_point=data_point, test_spec=test_spec, test_result=test_result)
+            
+        else:
+            #run failed, record the results
+            msg = ""
+            if error_field in test_result and test_result[error_field]:
+                msg = test_result[error_field]
+            else:
+                msg = "The test failed for an unspecified reason. See the server logs of the testing host(s)."
+            data_point['val'].append({ 'event-type': 'failures', 'val': { 'error': msg }})
+        
+        self.data.append(data_point)
+    
+    def add_metadata_fields(self, test_spec={}):
+        field_map = self.get_metadata_field_map()
+        for field in field_map:
+            if field in test_spec:
+                self.metadata[field_map[field]] = test_spec[field]
+    
+    def add_event_type(self, event_type, summaries):
+        et = { "event-type": event_type }
+        if event_type in summaries:
+            et["summaries"] = summaries[event_type]
+        self.metadata['event-types'].append(et)
+    
+    def add_data(self, data_point={}, event_type=None, val=None):
+        data_point['val'].append({ 'event-type': event_type, 'val': val})
+    
+    def add_data_if_exists(self, data_point={}, event_type=None, obj={}, field=""):
+        if field in obj and obj[field] is not None:
+            data_point['val'].append({ 'event-type': event_type, 'val': obj[field]})
+        
+    def add_data_rate(self, data_point={}, event_type=None, test_result={}, numerator='', denominator=''):
+        rate = 0
+        if (numerator not in test_result) or (denominator not in test_result) or (test_result[numerator] is None) or (test_result[denominator] is None):
+            return
+        try:
+            int(test_result[numerator])
+            if int(test_result[denominator]) == 0: return 
+        except:
+            return
+        data_point['val'].append({ 'event-type': event_type, 
+                                    'val': {'numerator': test_result[numerator], 'denominator': test_result[denominator]}})
+
+    ## Override
+    def get_event_types(self, test_spec={}):
+        return []
+    def get_metadata_field_map(self):
+        return {}
+    def add_additional_metadata(self, test_spec={}):
+        return
+    def get_data_field_map(self):
+        return {}
+    def add_additional_data(self, data_point={}, test_result={}):
+        return
+        
+
+class EsmondLatencyRecord(EsmondBaseRecord):
+
+    def get_event_types(self, test_spec={}):
+        event_types = [
+            'failures',
+            'packet-count-sent',
+            'histogram-owdelay',
+            'histogram-ttl',
+            'packet-duplicates',
+            'packet-loss-rate',
+            'packet-count-lost',
+            'packet-reorders',
+            'time-error-estimates'
+        ]
+        return event_types
+        
+    def get_metadata_field_map(self):
+        field_map = {
+            "packet-count":  "sample-size", 
+            "bucket-width":  "sample-bucket-width", 
+            "packet-interval": "time-probe-interval", 
+            "packet-timeout": "time-probe-timeout", 
+            "ip-tos": "ip-tos", 
+            "flip": "mode-flip", 
+            "packet-padding": "ip-packet-padding", 
+            "single-participant-mode": "mode-single-participant"
+        }
+        return field_map
+        
+    def get_data_field_map(self):
+        field_map = {
+            'histogram-latency': 'histogram-owdelay',
+            'histogram-ttl': 'histogram-ttl',
+            'packets-sent': 'packet-count-sent',
+            'packets-lost': 'packet-count-lost',
+            'packets-reordered': 'packet-reorders',
+            'packets-duplicated': 'packet-duplicates',
+            'max-clock-error': 'time-error-estimates'
+        }
+        return field_map
+        
+    def add_additional_data(self, data_point={}, test_result={}):
+        self.add_data_rate(
+            data_point=data_point,
+            event_type='packet-loss-rate',
+            test_result=test_result, 
+            numerator='packets-lost',
+            denominator='packets-sent')
+
+class EsmondThroughputRecord(EsmondBaseRecord):
+
+    def get_event_types(self, test_spec={}):
+        event_types = [
+            'failures',
+            'throughput',
+            'throughput-subintervals',
+        ]
+        if 'parallel' in test_spec and test_spec['parallel'] > 1:
+            event_types.append('streams-throughput')
+            event_types.append('streams-throughput-subintervals')
+        if 'udp' in test_spec and test_spec['udp']:
+            event_types.append('packet-loss-rate')
+            event_types.append('packet-count-lost')
+            event_types.append('packet-count-sent')
+        else:
+            event_types.append('packet-retransmits')
+            event_types.append('packet-retransmits-subintervals')
+            if 'parallel' in test_spec and test_spec['parallel'] > 1:
+                event_types.append('streams-packet-retransmits')
+                event_types.append('streams-packet-retransmits-subintervals')
+        return event_types
+        
+    def get_metadata_field_map(self):
+        field_map = {
+            'tos': 'ip-tos',
+            'dscp': 'ip-dscp',
+            'buffer-length': 'bw-buffer-size',
+            'parallel': 'bw-parallel-streams',
+            'bandwidth': 'bw-target-bandwidth',
+            'window-size': 'tcp-window-size',
+            'dynamic-window-size': 'tcp-dynamic-window-size',
+            'mss': 'tcp-max-segment-size',
+            'omit': 'bw-ignore-first-seconds',
+        }
+        return field_map
+           
+    def add_additional_metadata(self, test_spec={}):
+        if 'udp' in test_spec and test_spec['udp']:
+            self.metadata['ip-transport-protocol'] = 'udp'
+        else:
+            self.metadata['ip-transport-protocol'] = 'tcp'
+        
+    def add_additional_data(self, data_point={}, test_spec={}, test_result={}):
+        if test_result.get("summary", None):
+            if test_result["summary"].get("summary", None):
+                summary = test_result["summary"]["summary"]
+                self.add_data_if_exists(data_point=data_point, event_type="throughput", obj=summary, field="throughput-bits")
+                if 'udp' in test_spec and test_spec['udp']:
+                    self.add_data_if_exists(data_point=data_point, event_type="packet-count-sent", obj=summary, field="sent")
+                    self.add_data_if_exists(data_point=data_point, event_type="packet-count-lost", obj=summary, field="lost")
+                    self.add_data_rate(data_point=data_point, event_type="packet-loss-rate", test_result=summary, numerator='lost', denominator='sent')
+            if test_result["summary"].get("streams", None):
+                if 'parallel' in test_spec and test_spec['parallel'] > 1:
+                    streams = test_result["summary"]["streams"]
+                    streams.sort(key=lambda x: x["stream-id"])
+                    streams_throughput = []
+                    for stream in streams:
+                        streams_throughput.append(stream.get("throughput-bits", None))
+                    self.add_data(data_point=data_point, event_type="streams-throughput", val=streams_throughput)
+        if test_result.get("intervals", None):
+            throughput_intervals = []
+            throughput_stream_intervals = {}
+            for interval in test_result["intervals"]:
+                if interval.get("summary", None):
+                    start = interval["summary"].get("start", None)
+                    end = interval["summary"].get("end", None)
+                    if start is None or end is None:
+                        continue
+                    duration = end - start
+                    throughput = interval["summary"].get("throughput-bits", None)
+                    if throughput is not None:
+                        throughput_intervals.append({ "start": start, "duration": duration, "val": throughput})
+                if interval.get("streams", None):
+                    if 'parallel' in test_spec and test_spec['parallel'] > 1:
+                        for stream in interval["streams"]:
+                            start = stream.get("start", None)
+                            end = stream.get("end", None)
+                            if start is None or end is None:
+                                continue
+                            duration = end - start
+                            stream_id = stream.get("stream-id", None)
+                            if stream_id is None:
+                                continue
+                            if stream_id not in throughput_stream_intervals:
+                                throughput_stream_intervals[stream_id] = []
+                            throughput = stream.get("throughput-bits", None)
+                            if throughput is not None:
+                                throughput_stream_intervals[stream_id].append({
+                                    "start": start,
+                                     "duration": duration, 
+                                     "val": throughput
+                                })
+                        self.add_data(data_point=data_point, event_type="throughput-subintervals", val=throughput_intervals)
+                        #TODO: sort this
+                        formatted_tsi = []
+                        sorted_streams = throughput_stream_intervals.keys()
+                        sorted_streams.sort()
+                        for id in sorted_streams:
+                            formatted_tsi.append(throughput_stream_intervals[id])
+                        self.add_data(data_point=data_point, event_type="streams-throughput-subintervals", val=formatted_tsi)
+                            
+                        
+                
