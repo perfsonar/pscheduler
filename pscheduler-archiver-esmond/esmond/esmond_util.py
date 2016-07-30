@@ -111,7 +111,7 @@ DEFAULT_SUMMARIES = {
 # Utility functions
 def iso8601_to_seconds(val):
     td = pscheduler.iso8601_as_timedelta(val)
-    return (td.seconds + td.days * 86400)
+    return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10.0**6) / 10.0**6
 
 def get_ips(addr):
     ip_v4 = None
@@ -516,7 +516,7 @@ class EsmondTraceRecord(EsmondBaseRecord):
         if test_spec.get("sendwait", None):
             self.metadata["time-probe-interval"] = iso8601_to_seconds(test_spec["sendwait"])
         if test_spec.get("wait", None):
-            self.metadata["time-max-wait"] = iso8601_to_seconds(test_spec["wait"])
+            self.metadata["time-test-timeout"] = iso8601_to_seconds(test_spec["wait"])
     
     def add_additional_data(self, data_point={}, test_spec={}, test_result={}):
         paths = test_result['paths']
@@ -545,7 +545,7 @@ class EsmondTraceRecord(EsmondBaseRecord):
                 if hop.get("as", None): 
                     formatted_hop['as'] = hop['as']
                 if ("rtt" in hop) and (hop["rtt"] is not None): 
-                    formatted_hop['rtt'] = iso8601_to_seconds(hop['rtt'])
+                    formatted_hop['rtt'] = iso8601_to_seconds(hop['rtt'])*1000 #convert to ms
                 if ("mtu" in hop) and (hop["mtu"] is not None): 
                     formatted_hop['mtu'] = hop["mtu"]
                     mtu = hop["mtu"]
@@ -568,5 +568,74 @@ class EsmondTraceRecord(EsmondBaseRecord):
             self.add_data(data_point=data_point, event_type="path-mtu", val=packet_trace)
         #if packet_trace_multi:
         #    self.add_data(data_point=data_point, event_type="packet-trace-multi", val=packet_trace_multi)
+
+class EsmondRTTRecord(EsmondBaseRecord):     
+    def get_event_types(self, test_spec={}):
+        event_types = [
+            'failures',
+            'packet-count-sent',
+            'histogram-rtt',
+            'histogram-ttl-reverse',
+            'packet-duplicates-bidir',
+            'packet-loss-rate-bidir',
+            'packet-count-lost-bidir',
+            'packet-reorders-bidir'
+        ]
+        return event_types
+    
+    def get_metadata_field_map(self):
+        field_map = {
+            "count": "sample-size",
+            "flowlabel": "ip-packet-flowlabel",
+            "tos": "ip-tos",
+            "length": "ip-packet-size",
+            "ttl": "ip-ttl",
+        }
+        return field_map
+    
+    def add_additional_metadata(self, test_spec={}):
+        if test_spec.get("interval", None):
+            self.metadata["time-probe-interval"] = iso8601_to_seconds(test_spec["interval"])
+        if test_spec.get("timeout", None):
+            self.metadata["time-test-timeout"] = iso8601_to_seconds(test_spec["timeout"])
+        if test_spec.get("deadline", None):
+            self.metadata["time-probe-timeout"] = iso8601_to_seconds(test_spec["deadline"])
+    
+    def get_data_field_map(self):
+        field_map = {
+            'sent': 'packet-count-sent',
+            'lost': 'packet-count-lost-bidir',
+            'duplicates': 'packet-duplicates-bidir',
+            'reorders': 'packet-reorders-bidir',
+        }
+        return field_map
         
-                   
+    def add_additional_data(self, data_point={}, test_spec={}, test_result={}):
+        #handle histograms
+        histogram_rtt = {}
+        histogram_ttl = {}
+        for rt in test_result.get("roundtrips", []):
+            if rt.get('rtt', None):
+                rtt = "%.2f" % (iso8601_to_seconds(rt['rtt']) * 1000)
+                if rtt in histogram_rtt:
+                    histogram_rtt[rtt] += 1
+                else:
+                    histogram_rtt[rtt] = 1
+            if rt.get('ttl', None):
+                if rt['ttl'] in histogram_ttl:
+                    histogram_ttl[rt['ttl']] += 1
+                else:
+                    histogram_ttl[rt['ttl']] = 1
+        if histogram_rtt:
+            self.add_data(data_point=data_point, event_type="histogram-rtt", val=histogram_rtt)
+        if histogram_ttl:
+            self.add_data(data_point=data_point, event_type="histogram-ttl-reverse", val=histogram_ttl)
+        
+        #handle packet loss rate
+        self.add_data_rate(
+            data_point=data_point,
+            event_type='packet-loss-rate-bidir',
+            test_result=test_result, 
+            numerator='lost',
+            denominator='sent')
+                
