@@ -335,7 +335,7 @@ class EsmondBaseRecord:
         return
     def get_data_field_map(self):
         return {}
-    def add_additional_data(self, data_point={}, test_result={}):
+    def add_additional_data(self, data_point={}, test_spec={}, test_result={}):
         return
         
 
@@ -380,7 +380,7 @@ class EsmondLatencyRecord(EsmondBaseRecord):
         }
         return field_map
         
-    def add_additional_data(self, data_point={}, test_result={}):
+    def add_additional_data(self, data_point={},  test_spec={}, test_result={}):
         self.add_data_rate(
             data_point=data_point,
             event_type='packet-loss-rate',
@@ -489,6 +489,84 @@ class EsmondThroughputRecord(EsmondBaseRecord):
                         for id in sorted_streams:
                             formatted_tsi.append(throughput_stream_intervals[id])
                         self.add_data(data_point=data_point, event_type="streams-throughput-subintervals", val=formatted_tsi)
-                            
-                        
-                
+
+class EsmondTraceRecord(EsmondBaseRecord):            
+    def get_event_types(self, test_spec={}):
+        event_types = [
+            'failures',
+            'packet-trace',
+            'path-mtu'
+        ]
+        return event_types
+    
+    def get_metadata_field_map(self):
+        field_map = {
+            "algorithm":   'trace-algorithm',
+            "first-ttl":   'trace-first-ttl',
+            "fragment":    'ip-fragment',
+            "hops":        'trace-max-ttl',
+            "length":      'ip-packet-size',
+            "probe-type":  'ip-transport-protocol',
+            "queries":     'trace-num-queries',
+            "tos":         'ip-tos'
+        }
+        return field_map
+    
+    def add_additional_metadata(self, test_spec={}):
+        if test_spec.get("sendwait", None):
+            self.metadata["time-probe-interval"] = iso8601_to_seconds(test_spec["sendwait"])
+        if test_spec.get("wait", None):
+            self.metadata["time-max-wait"] = iso8601_to_seconds(test_spec["wait"])
+    
+    def add_additional_data(self, data_point={}, test_spec={}, test_result={}):
+        paths = test_result['paths']
+        #Note: packet-trace only supports one path so just store first
+        packet_trace_multi = []
+        packet_trace = None
+        mtu = None  # current mtu
+        pmtu = None # path mtu
+        for path in paths:
+            formatted_path = []
+            for (hop_num, hop) in enumerate(path):
+                formatted_hop = {}
+                formatted_hop['ttl'] = hop_num + 1
+                formatted_hop['query'] = 1 #trace test doesn't support multiple  queries
+                #determine success
+                if hop.get("error", None):
+                    formatted_hop['success'] = 0
+                    formatted_hop['error-message'] = hop["error"]
+                else:
+                    formatted_hop['success'] = 1
+                #figure out what other info we have
+                if hop.get("ip", None): 
+                    formatted_hop['ip'] = hop['ip']
+                if hop.get("host", None): 
+                    formatted_hop['host'] = hop['host']
+                if hop.get("as", None): 
+                    formatted_hop['as'] = hop['as']
+                if ("rtt" in hop) and (hop["rtt"] is not None): 
+                    formatted_hop['rtt'] = iso8601_to_seconds(hop['rtt'])
+                if ("mtu" in hop) and (hop["mtu"] is not None): 
+                    formatted_hop['mtu'] = hop["mtu"]
+                    mtu = hop["mtu"]
+                    if pmtu is None or pmtu > mtu: 
+                        # set pmtu as minimum mtu observed
+                        pmtu = mtu
+                elif mtu is not None:
+                    formatted_hop['mtu'] = mtu
+                formatted_path.append(formatted_hop)
+            #append formatted path to list of paths
+            packet_trace_multi.append(formatted_path)
+            #add first path as packet-trace path - need this for backward compatibility
+            if not packet_trace:
+                packet_trace = formatted_path
+        
+        #add data points
+        if packet_trace:
+            self.add_data(data_point=data_point, event_type="packet-trace", val=packet_trace)
+        if pmtu is not None:
+            self.add_data(data_point=data_point, event_type="path-mtu", val=packet_trace)
+        #if packet_trace_multi:
+        #    self.add_data(data_point=data_point, event_type="packet-trace-multi", val=packet_trace_multi)
+        
+                   
