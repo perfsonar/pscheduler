@@ -218,10 +218,12 @@ class EsmondClient:
         return True, ""
 
 class EsmondBaseRecord:
+    test_type = None
     metadata ={}
     data = []
     
     def __init__(self,
+                    test_type=None,
                     test_spec=None,
                     lead_participant=None, 
                     tool_name=None,
@@ -236,34 +238,49 @@ class EsmondBaseRecord:
                     error_field="error"
                 ):
         #init
-        self.metadata = { 'subject-type': 'point-to-point', 'event-types': [] }
-    
+        self.metadata = { 'event-types': [] }
+        
         #determine source since its optional
         input_source = lead_participant
-        if src_field in test_spec:
+        if src_field and src_field in test_spec:
             input_source = test_spec[src_field]
         
-        #get dest - should be required
-        input_dest = test_spec[dst_field]
-    
         #determine if we are forcing an ip-version
         ip_version = None
         if ipv_field in test_spec:
             ip_version = test_spec[ipv_field]
-        
-        #normalize ips
-        src_ip, dest_ip = normalize_ip_versions(input_source, input_dest, ip_version=ip_version)
+            
+        #get dest if this is point-to-point
+        src_ip = None
+        dest_ip = None
+        input_dest = None
+        if dst_field:
+            self.metadata['subject-type'] = 'point-to-point'
+            input_dest = test_spec[dst_field]
+            src_ip, dest_ip = normalize_ip_versions(input_source, input_dest, ip_version=ip_version)
+        else:
+            self.metadata['subject-type'] = 'network-element'
+            src_ip, tmp_ip = normalize_ip_versions(input_source, input_source, ip_version=ip_version)
     
         #set fields
         self.metadata['source'] = src_ip
-        self.metadata['destination'] = dest_ip
+        if dest_ip:
+            self.metadata['destination'] = dest_ip
         self.metadata['input-source'] = input_source
-        self.metadata['input-destination'] = input_dest
+        if input_dest:
+            self.metadata['input-destination'] = input_dest
         self.metadata['tool-name'] = tool_name
         self.metadata['time-duration'] = duration
         #Make measurement-agent the lead participant, with same ip type as source
         src_ip, self.metadata['measurement-agent'] = normalize_ip_versions(src_ip, lead_participant)
-    
+        
+        #set test type to new value if provided
+        if test_type:
+            self.test_type = test_type
+        #may be overridden by subclass, so use value even if not in constructor params
+        if self.test_type:
+            self.metadata['pscheduler-test-type'] = self.test_type
+        
         #Handle event types
         summary_map = DEFAULT_SUMMARIES
         if summaries:
@@ -326,7 +343,13 @@ class EsmondBaseRecord:
         data_point['val'].append({ 'event-type': event_type, 
                                     'val': {'numerator': test_result[numerator], 'denominator': test_result[denominator]}})
 
+    def enable_data_raw(self, test_result={}, data_index=0):
+        self.add_event_type('pscheduler-raw', {})
+        self.add_data(data_point=self.data[data_index], event_type='pscheduler-raw', val=test_result)
+        
     ## Override
+    def set_test(self, test_spec={}):
+        return []
     def get_event_types(self, test_spec={}):
         return []
     def get_metadata_field_map(self):
@@ -340,7 +363,8 @@ class EsmondBaseRecord:
         
 
 class EsmondLatencyRecord(EsmondBaseRecord):
-
+    test_type = 'latency'
+    
     def get_event_types(self, test_spec={}):
         event_types = [
             'failures',
@@ -389,7 +413,8 @@ class EsmondLatencyRecord(EsmondBaseRecord):
             denominator='packets-sent')
 
 class EsmondThroughputRecord(EsmondBaseRecord):
-
+    test_type = 'throughput'
+    
     def get_event_types(self, test_spec={}):
         event_types = [
             'failures',
@@ -490,11 +515,14 @@ class EsmondThroughputRecord(EsmondBaseRecord):
                             formatted_tsi.append(throughput_stream_intervals[id])
                         self.add_data(data_point=data_point, event_type="streams-throughput-subintervals", val=formatted_tsi)
 
-class EsmondTraceRecord(EsmondBaseRecord):            
+class EsmondTraceRecord(EsmondBaseRecord):   
+    test_type = 'trace'
+             
     def get_event_types(self, test_spec={}):
         event_types = [
             'failures',
             'packet-trace',
+            'packet-trace-multi',
             'path-mtu'
         ]
         return event_types
@@ -566,10 +594,12 @@ class EsmondTraceRecord(EsmondBaseRecord):
             self.add_data(data_point=data_point, event_type="packet-trace", val=packet_trace)
         if pmtu is not None:
             self.add_data(data_point=data_point, event_type="path-mtu", val=pmtu)
-        #if packet_trace_multi:
-        #    self.add_data(data_point=data_point, event_type="packet-trace-multi", val=packet_trace_multi)
+        if packet_trace_multi:
+            self.add_data(data_point=data_point, event_type="packet-trace-multi", val=packet_trace_multi)
 
-class EsmondRTTRecord(EsmondBaseRecord):     
+class EsmondRTTRecord(EsmondBaseRecord):  
+    test_type = 'rtt'
+       
     def get_event_types(self, test_spec={}):
         event_types = [
             'failures',
@@ -638,4 +668,36 @@ class EsmondRTTRecord(EsmondBaseRecord):
             test_result=test_result, 
             numerator='lost',
             denominator='sent')
-                
+
+class EsmondRawRecord(EsmondBaseRecord):
+    
+    def get_event_types(self, test_spec={}):
+        event_types = [
+            'pscheduler-raw'
+        ]
+        return event_types
+    
+    def _parse_test_spec_field(self, key, val):
+        if type(val) is list:
+            for (i, v) in enumerate(val):
+                k = "%s-%d" % (key, i)
+                self.metadata[k] = v
+        elif type(val) is dict:
+            for sub_key in val:
+                k = "%s-%s" % (key, sub_key)
+                self._parse_test_spec_field(k, val[sub_key])
+        else:
+            self.metadata[key] = val
+            
+    def add_additional_metadata(self, test_spec={}):
+        #this should not happen
+        if not self.test_type:
+            pscheduler.fail("Developer error. The test type must be set if storing a raw record.")
+            
+        for field in test_spec:
+            key = "pscheduler-%s-%s" % (self.test_type, field)
+            val = test_spec[field]
+            self._parse_test_spec_field(key, val)
+    
+    def add_additional_data(self, data_point={}, test_spec={}, test_result={}):
+        self.add_data(data_point=data_point, event_type='pscheduler-raw', val=test_result)
