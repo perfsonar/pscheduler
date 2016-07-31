@@ -360,7 +360,7 @@ if options.archive:
             # TODO:  Do we need to validate the JSON or will the server catch it?
             archives.append(archive_json)
         except (IOError, ValueError) as ex:
-            pscheduler.fail("Archiver '%s': %s" % (archiver, str(ex)))
+            pscheduler.fail("Archiver '%s': %s" % (archive, str(ex)))
 
     task['archives'] = archives
 
