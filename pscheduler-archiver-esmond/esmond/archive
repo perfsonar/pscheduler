@@ -23,8 +23,7 @@ test_type = json['result']['test']['type']
 test_spec = json['result']['test']['spec']
 test_result = json['result']['result']
 tool_name = 'pscheduler/%s' % json['result']['tool']['name']
-#TODO: Fix start time
-test_start_time = calendar.timegm(pscheduler.iso8601_as_datetime(json['result']['schedule']['start']).timetuple())
+test_start_time = calendar.timegm(pscheduler.iso8601_as_datetime(json['result']['schedule']['start']).utctimetuple())
 lead_participant = json['result']['participants'][0]
 duration = esmond_util.iso8601_to_seconds(json['result']['schedule']['duration'])
 try:
