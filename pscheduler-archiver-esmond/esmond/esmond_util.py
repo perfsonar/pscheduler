@@ -565,7 +565,7 @@ class EsmondTraceRecord(EsmondBaseRecord):
         if packet_trace:
             self.add_data(data_point=data_point, event_type="packet-trace", val=packet_trace)
         if pmtu is not None:
-            self.add_data(data_point=data_point, event_type="path-mtu", val=packet_trace)
+            self.add_data(data_point=data_point, event_type="path-mtu", val=pmtu)
         #if packet_trace_multi:
         #    self.add_data(data_point=data_point, event_type="packet-trace-multi", val=packet_trace_multi)
 
