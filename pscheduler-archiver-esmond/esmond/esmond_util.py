@@ -522,9 +522,11 @@ class EsmondTraceRecord(EsmondBaseRecord):
         event_types = [
             'failures',
             'packet-trace',
-            'packet-trace-multi',
             'path-mtu'
         ]
+        if "paris-traceroute" == test_spec.get('algorithm', ''):
+            event_types.append('packet-trace-multi')
+            
         return event_types
     
     def get_metadata_field_map(self):
@@ -594,7 +596,7 @@ class EsmondTraceRecord(EsmondBaseRecord):
             self.add_data(data_point=data_point, event_type="packet-trace", val=packet_trace)
         if pmtu is not None:
             self.add_data(data_point=data_point, event_type="path-mtu", val=pmtu)
-        if packet_trace_multi:
+        if "paris-traceroute" == test_spec.get('algorithm', '') and packet_trace_multi:
             self.add_data(data_point=data_point, event_type="packet-trace-multi", val=packet_trace_multi)
 
 class EsmondRTTRecord(EsmondBaseRecord):  
