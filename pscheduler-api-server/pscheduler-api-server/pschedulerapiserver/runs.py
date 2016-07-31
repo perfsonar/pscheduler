@@ -401,7 +401,6 @@ def tasks_uuid_runs_run(task, run):
 
             log.debug("Updating result-full: %s", result_full)
 
-
             dbcursor().execute("""UPDATE
                                   run
                               SET
@@ -410,7 +409,8 @@ def tasks_uuid_runs_run(task, run):
                                   uuid = %s
                                   AND EXISTS (SELECT * FROM task WHERE UUID = %s)
                               """,
-                           [ result_full, run, task])
+                               [ result_full, run, task ])
+
             if dbcursor().rowcount != 1:
                 return not_found()
 

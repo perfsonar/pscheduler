@@ -13,6 +13,7 @@ FILES=\
 	spec-is-valid \
         validate.py \
         spec-to-cli \
+        limit-is-valid \
         throughput_utils.py
 
 

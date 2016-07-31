@@ -31,7 +31,7 @@ Requires:	random-string
 %description
 The pScheduler database
 
-%define db_config_dir %{_sysconfdir}/%{name}
+%define db_config_dir %{_pscheduler_sysconfdir}/database
 %define db_user %{_pscheduler_user}
 %define password_file %{db_config_dir}/database-password
 %define dsn_file %{db_config_dir}/database-dsn
@@ -54,6 +54,8 @@ make PGPASSFILE=$RPM_BULID_ROOT/%{pgpass_file}
 
 %install
 make DATADIR=$RPM_BUILD_ROOT/%{_pscheduler_datadir} install
+
+mkdir -p $RPM_BUILD_ROOT/%{db_config_dir}
 
 # These will be populated on installation
 for FILE in %{password_file} %{dsn_file} %{pgpass_file}
@@ -134,7 +136,7 @@ awk -v "ROLE=${ROLE}" '{ printf "host=127.0.0.1 dbname=pscheduler user=%s passwo
 awk -v "ROLE=${ROLE}" '{ printf "*:*:pscheduler:%s:%s\n", ROLE, $1 }' \
     "%{password_file}" \
     > "${RPM_BUILD_ROOT}/%{pgpass_file}"
-chmod 400 "${RPM_BUILD_ROOT}/%{pgpass_file}"
+chmod 440 "${RPM_BUILD_ROOT}/%{pgpass_file}"
 
 # Load the database
 
@@ -184,6 +186,8 @@ drop-in -n -t %{name} - "${HBA_FILE}" <<EOF
 %if 0%{?el6}
 # TODO: SECURITY: The password method doesn't seem to work on pg 9.5
 # when installed on el6.  Find out why and how to fix that.
+# Followup: The md5 method does seem to work on the pS toolkit.  Check
+# to see if it works on 6.8.
 local     pscheduler      pscheduler                            trust
 host      pscheduler      pscheduler     127.0.0.1/32           trust
 host      pscheduler      pscheduler     ::1/128                trust
@@ -240,8 +244,7 @@ systemctl restart "${SERVICE}"
 %files
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
 %{_pscheduler_datadir}/*
-%verify(user group mode) %{password_file}
-%verify(user group mode) %{dsn_file}
-%verify(user group mode) %{pgpass_file}
+%attr(550,-,-) %{db_config_dir}
+%attr(440,-,-)%verify(user group mode) %{db_config_dir}/*
 %{rpm_macros}
 %{profile_d}/*
