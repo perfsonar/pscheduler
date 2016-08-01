@@ -223,6 +223,7 @@ def run_post(
         log and log.debug("Getting part data from %s", run)
         status, result = pscheduler.url_get(run, throw=False)
         if status != 200 or not 'participant-data' in result:
+            log.debug("Deleting runs: %s", runs_posted)
             pscheduler.url_delete_list(runs_posted)
             # TODO: Better error?
             return (None, None, None, "Failed to get run data from all participants")
