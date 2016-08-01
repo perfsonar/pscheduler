@@ -7,6 +7,7 @@ import pscheduler
 from flask import request
 
 from .args import *
+from .dbcursor import dbcursor_query
 from .response import *
 from .url import *
 
@@ -16,15 +17,17 @@ def json_dump(dump):
                                 )
 
 
-def json_query_simple(cursor, query, query_args=[], empty_ok=False):
+def json_query_simple(query, query_args=[], empty_ok=False):
     """Do a SQL query that selects one column and dump those values as
     a JSON array"""
 
     if request.method != 'GET':
         return not_allowed()
 
-    # TODO: Handle failure
-    cursor.execute(query, query_args)
+    try:
+        cursor = dbcursor_query(query, query_args)
+    except Exception as ex:
+        return error(str(ex))
 
     if cursor.rowcount == 0:
         if empty_ok:
@@ -39,7 +42,7 @@ def json_query_simple(cursor, query, query_args=[], empty_ok=False):
 
 
 
-def json_query(cursor, query, query_args=[], name = 'name', single = False):
+def json_query(query, query_args=[], name = 'name', single = False):
     """Do a SQL query that selects one column containing JSON and dump
     the results, honoring the 'expanded' and 'pretty' arguments.  If
     the 'single' argument is True, the first-returned row will be
@@ -48,8 +51,11 @@ def json_query(cursor, query, query_args=[], name = 'name', single = False):
     if request.method != 'GET':
         return not_allowed()
 
-    # TODO: Handle failure
-    cursor.execute(query, query_args)
+    try:
+        cursor = dbcursor_query(query, query_args)
+    except Exception as ex:
+        return error(str(ex))
+
     if single and cursor.rowcount == 0:
         return not_found()
     result = []
