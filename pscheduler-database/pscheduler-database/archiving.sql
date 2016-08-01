@@ -79,7 +79,7 @@ BEGIN
 	    INSERT INTO archiving (run, archiver, archiver_data)
     	    VALUES (
     	        NEW.id,
-    	        (SELECT id from archiver WHERE name = archive #>> '{name}'),
+    	        (SELECT id from archiver WHERE name = archive #>> '{archiver}'),
 	        (archive #> '{data}')::JSONB
     	    );
             inserted := TRUE;

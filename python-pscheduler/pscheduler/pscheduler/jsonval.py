@@ -293,11 +293,11 @@ __dictionary__ = {
     "ArchiveSpecification": {
         "type": "object",
         "properties": {
-            "name": { "type": "string" },
+            "archiver": { "type": "string" },
             "data": { "$ref": "#/pScheduler/AnyJSON" },
             },
         "required": [
-            "name",
+            "archiver",
             "data",
             ]
         },

@@ -111,7 +111,7 @@ Any valid JSON value as defined by ECMA 404.
 \subsection{ArchiveSpecification}
 Specification of an archive destination and supporting data, including these items:
 
-\typeditem{name}{String} The name of the archiver to be used.  The
+\typeditem{archiver}{String} The name of the archiver to be used.  The
 name provided must be one which is installed on the system.
 
 \typeditem{data}{AnyJSON} Data specific to the type of archiver which
@@ -121,7 +121,7 @@ default.
 \example
 \begin{lstlisting}[language=json]
 {
-    "name": "syslog",
+    "archiver": "syslog",
     "data": {
         "facility": "local7",
 	"level": "info",
