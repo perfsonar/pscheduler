@@ -248,8 +248,7 @@ result = {
     }
 
 
-# Every packet sent gets its own entry no matter what.
-roundtrips = [ {} for _ in xrange(count) ]
+roundtrips = []
 
 
 
@@ -289,8 +288,6 @@ error_matches = [
     ( re.compile("^Frag needed and DF set"), 'fragmentation-needed-and-df-set' )
     ]
 
-
-
 # Times:   rtt min/avg/max/mdev = 19.631/24.191/29.874/4.262 ms
 times_returned = re.compile("""^\
 rtt min/avg/max/mdev\s*=\s*\
@@ -301,8 +298,6 @@ rtt min/avg/max/mdev\s*=\s*\
 \s+ms\
 $""")
 
-
-packets_returned = 0
 ips = []
 
 for line in stdout.split('\n'):
@@ -321,15 +316,16 @@ for line in stdout.split('\n'):
         if seq > count:
             log.warning("Discarding sequence %s; greater than count %s", seq, count)
             continue
-        roundtrips[seq-1] = {
+        #append as we may get multiple of same seq (duplicates) or seq out of order (reorders)
+        roundtrips.append({
+            'seq': seq,
             'length': length,
             'ip': ip,
             'ttl': ttl,
             'rtt': pscheduler.timedelta_as_iso8601(
                 datetime.timedelta(seconds=rtt/1000.0) )
-            }
-        log.debug("Packet returned: %s", roundtrips[seq-1])
-        packets_returned += 1
+            })
+        log.debug("Packet returned: %s", roundtrips[-1])
         ips.append(ip)
         continue
 
@@ -353,14 +349,15 @@ for line in stdout.split('\n'):
                     error = string
                     break
 
-        roundtrips[seq-1] = {
+        roundtrips.append({
+            'seq': seq,
             'ip': ip,
             'error': error
-            }
-        log.debug("Error returned: %s", roundtrips[seq-1])
+            })
+        log.debug("Error returned: %s", roundtrips[-1])
         ips.append(ip)
         continue
-
+    
     # Final times
     matches = times_returned.match(line)
     if matches is not None:
@@ -381,12 +378,40 @@ for line in stdout.split('\n'):
 
 result['roundtrips'] = roundtrips
 
-result['loss'] = 1.0 - (float(packets_returned) / float(count))
-
 result['succeeded'] = True
 
-
-
+#calculate some stats
+packets_seen = {}
+sent = 0
+recvd = 0
+dups = 0
+reorders = 0
+prev_seq = None
+for rt in roundtrips:
+    #duplicate packet
+    if rt["seq"] in packets_seen:
+        dups += 1
+        continue
+    #increase sent
+    sent += 1
+    
+    #skip lost
+    if rt.get('error', None):
+        continue
+    #made it to other end
+    packets_seen[rt["seq"]] = True
+    recvd += 1
+    #check for reorder
+    if prev_seq is not None and rt["seq"] < prev_seq:
+        reorders += 1
+    prev_seq = rt["seq"]
+#save results
+result['sent'] = sent
+result['received'] = recvd
+result['lost'] = sent - recvd
+result['loss'] = float((sent - recvd)/float(sent))
+result['duplicates'] = dups
+result['reorders'] = reorders
 
 # If we're doing hostnames, bulk-resolve them.
 

@@ -131,55 +131,56 @@ traced_hops = []
 ips = []
 last_hop = 0
 
+ttl_re = re.compile('^(\d*)\??:');
+no_reply_re = re.compile('no reply');
+reached_re = re.compile('reached');
+rtt_re = re.compile('([0-9]+\.[0-9]+)ms');
+mtu_re = re.compile('pmtu ([0-9]+)');
+error_re = re.compile('!(\w+)$');
+path_mtu = None
 for line in stdout.split('\n'):
     line = re.sub('\s+', ' ', line).strip()
-    matches = re.match('^(\d*):\s+(.*)$', line)
+    matches = ttl_re.match(line)
     if matches is None:
         continue
-    this_hop =  int(matches.group(1))
+    ttl =  int(matches.group(1))
 
     log.debug("LINE %s", line)
 
-    # Repeats of a hop replace earlier ones
-    if this_hop == len(traced_hops):
-        traced_hops.pop()
-
-    elements = matches.group(2).split()
-
     hop = {}
+    # Repeats of a hop usually contain more info for first, but replace any repeat info
+    if ttl == len(traced_hops):
+        hop = traced_hops.pop()
 
     # No reply means no results
-
-    if elements[0] == 'no' and elements[1] == 'reply':
+    if no_reply_re.search(line):
         traced_hops.append(hop)
         continue
 
     # IP.  We forced tracepath to behave this way.
-    ip = elements.pop(0)
+    line_parts = line.split(' ')
+    ip = line_parts[1]
     hop['ip'] = ip
     ips.append(ip)
     log.debug("  IP %s", ip)
 
     # RTT (ms)
+    matches = rtt_re.search(line)
+    if matches:
+        rtt = float(matches.group(1)) / 1000.0
+        hop['rtt'] = 'PT%fS' % rtt
 
-    rtt = float(elements.pop(0)[:-2]) / 1000.0
-    hop['rtt'] = 'PT%fS' % rtt
+    # Path MTU (bytes) - update if changes, otherwise carry over from prev hop
+    matches = mtu_re.search(line)
+    if matches:
+        path_mtu = int(matches.group(1))
+    if path_mtu is not None:
+         hop['mtu'] = path_mtu
 
-    # TODO: Extract PMTU if present.  Need to find out if this is
-    # produced before or after asymm.
-
-    # Drop asymmetry if there is any.
-
-    if len(elements) > 0 and elements[0] == 'asymm':
-        elements.pop(0)
-        elements.pop(0)
-
-    # Anything left will either be 'reached' or an error
-
-    if len(elements) > 0:
-        reached_err = elements.pop(0)
-        if reached_err[0] == '!':
-            hop['error'] = icmperror.translate(reached_err)
+    # Search for errors
+    matches = error_re.search(line)
+    if matches:
+        hop['error'] = icmperror.translate(matches.group(1))
 
     traced_hops.append(hop)
 
