@@ -17,6 +17,7 @@ M4PROGRAMS=\
 	pscheduler
 
 COMMANDS=\
+	diags \
 	task \
 	watch
 
