@@ -28,7 +28,23 @@ else:
 
 # Gargle the arguments
 
-opt_parser = optparse.OptionParser()
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""Examples:
+
+  task simplestream --dest ps.example.com
+      Send data from here to ps.example.com
+
+  task simplestream --test-material "Hello, world!" --dest ps.example.com
+      Use a custom string for the data to be sent
+
+  task simplestream --dawdle PT30S --dest ps.example.com
+      Wait up to 30 seconds before sending the data
+
+  task simplestream --fail 0.65 --dest ps.example.com
+      Force failure 65% of the time
+"""
+                                            )
+
 
 opt_parser.add_option("-e", "--dest",
                       help="Destination host",
@@ -41,7 +57,7 @@ opt_parser.add_option("-d", "--dawdle",
                       dest="dawdle")
 
 opt_parser.add_option("-m", "--test-material",
-                      help="Test material",
+                      help="Test material to be sent",
                       action="store", type="string",
                       dest="test_material")
 
@@ -51,19 +67,20 @@ opt_parser.add_option("-s", "--source",
                       dest="source")
 
 opt_parser.add_option("-t", "--timeout",
-                      help="Time to wait (ISO8601 Duration)",
+                      help="Time for receiver to wait (ISO8601 Duration)",
                       action="store", type="string",
                       dest="timeout")
 
 opt_parser.add_option("-f", "--fail",
-                      help="Probability of failure",
+                      help="Probability of forced failure",
                       action="store", type="float",
                       dest="fail")
 
 
 (options, remaining_args) = opt_parser.parse_args(args)
+
 if len(remaining_args) != 0:
-   pscheduler.fail("Found superfluous arguments on command line.")
+   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
 
 result = { 'schema': 1 }

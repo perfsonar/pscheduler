@@ -8,7 +8,7 @@ from pschedulerapiserver import application
 
 from flask import request
 
-from .dbcursor import dbcursor
+from .dbcursor import dbcursor_query
 from .json import *
 from .limitproc import *
 from .log import log
@@ -16,11 +16,13 @@ from .response import *
 
 def task_exists(task):
     """Determine if a task exists by its UUID"""
-    dbcursor().execute("SELECT EXISTS (SELECT * FROM task WHERE uuid = %s)", [task])
+    try:
+        cursor = dbcursor_query("SELECT EXISTS (SELECT * FROM task WHERE uuid = %s)",
+                                [task], onereow=True)
+    except Exception as ex:
+        return error(str(ex))
 
-    if dbcursor().rowcount == 0:
-        return False
-    return dbcursor().fetchone()[0]
+    return cursor.fetchone()[0]
     
 
 
@@ -119,10 +121,13 @@ def tasks():
 
         query += " ORDER BY added"
 
-        # TODO: Handle failure
-        dbcursor().execute(query, args)
+        try:
+            cursor = dbcursor_query(query, args)
+        except Exception as ex:
+            return error(str(ex))
+
         result = []
-        for row in dbcursor():
+        for row in cursor:
             url = base_url(row[1])
             if not expanded:
                 result.append(url)
@@ -259,15 +264,16 @@ def tasks():
         # Post the lead with the local database, which also assigns
         # its UUID.
 
-        # TODO: Handle failure.
-        dbcursor().execute("SELECT * FROM api_task_post(%s, %s, 0)",
-                           [task_data, hints_data])
+        try:
+            cursor = dbcursor_query("SELECT * FROM api_task_post(%s, %s, 0)",
+                                    [task_data, hints_data], onerow=True)
+        except Exception as ex:
+            return error(str(ex))
 
-        if dbcursor().rowcount == 0:
+        if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
 
-        # TODO: Assert that rowcount is 1 and has one column
-        task_uuid = dbcursor().fetchone()[0]
+        task_uuid = cursor.fetchone()[0]
 
         log.debug("Tasked lead, UUID %s", task_uuid)
 
@@ -299,9 +305,13 @@ def tasks():
                 for url in tasks_posted:
                     # TODO: Handle failure?
                     status, result = requests.delete(url)
-                
-                # TODO: Handle failure?
-                dbcursor().execute("SELECT api_task_delete(%s)", [task_uuid])
+
+                    try:
+                        dbcursor_query("SELECT api_task_delete(%s)",
+                                       [task_uuid])
+                    except Exception as ex:
+                        log.exception()
+                        pass
 
                 return error("Error while tasking %d@%s: %s" % (participant, part_name, ex))
 
@@ -327,22 +337,25 @@ def tasks_uuid(uuid):
         # Get a task, adding server-derived details if a 'detail'
         # argument is present.
 
-        dbcursor().execute("""
-            SELECT
-                json,
-                added,
-                start,
-                slip,
-                duration,
-                runs,
-                participants
-            FROM task WHERE uuid = %s
-        """, [uuid])
+        try:
+            cursor = dbcursor_query("""
+                SELECT
+                    json,
+                    added,
+                    start,
+                    slip,
+                    duration,
+                    runs,
+                    participants
+                FROM task WHERE uuid = %s
+            """, [uuid])
+        except Exception as ex:
+            return error(str(ex))
 
-        if dbcursor().rowcount == 0:
+        if cursor.rowcount == 0:
             return not_found()
 
-        row = dbcursor().fetchone()
+        row = cursor.fetchone()
         if row is None:
             return not_found()
         json = row[0]
@@ -408,10 +421,13 @@ def tasks_uuid(uuid):
         # TODO: Pluck UUID from URI
         uuid = url_last_in_path(request.url)
 
-        # TODO: Handle failure.
-        dbcursor().execute("SELECT * FROM api_task_post(%s, %s, %s, %s)",
-                       [request.data, hints_data, participant, uuid])
-        if dbcursor().rowcount == 0:
+        try:
+            cursor = dbcursor_query(
+                "SELECT * FROM api_task_post(%s, %s, %s, %s)",
+                [request.data, hints_data, participant, uuid])
+        except Exception as ex:
+            return error(str(ex))
+        if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
         # TODO: Assert that rowcount is 1
         return ok(base_url())

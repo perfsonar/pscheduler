@@ -71,14 +71,12 @@ $(TEARDOWN_SQL): $(TEARDOWN)
 TO_CLEAN += $(TEARDOWN_SQL)
 
 
-
 install: $(SQL)
 ifndef DATADIR
 	@echo No DATADIR specified for installation
 	@false
 endif
 	mkdir -p $(DATADIR)
-	# These only need to be readable by the owner or trusted associates.
 	install -m 440 $^ $(DATADIR)
 
 

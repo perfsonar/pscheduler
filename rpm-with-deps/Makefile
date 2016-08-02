@@ -1,7 +1,7 @@
 #
 # Makefile for rpm-with-deps RPM
 #
-# This package is build by hand because make-generic-rpm depends on
+# This package is built by hand because make-generic-rpm depends on
 # it.
 #
 
@@ -51,7 +51,7 @@ TO_CLEAN += $(RPMDIR) $(BUILDROOT) $(LOG)
 
 
 install: build
-	find $(RPMDIR)/RPMS -name "*.rpm" | xargs rpm -Uvh --force 
+	find $(RPMDIR)/RPMS -name "*.rpm" | xargs rpm -Uvh --force
 
 
 uninstall:

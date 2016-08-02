@@ -349,7 +349,6 @@ BEGIN
 
 	--
 	-- ARCHIVES
-
 	--
 
 	IF NEW.json ? 'archivers' THEN

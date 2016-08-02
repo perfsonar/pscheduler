@@ -33,7 +33,22 @@ else:
 
 # Gargle the arguments
 
-opt_parser = optparse.OptionParser()
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""Examples:
+
+  task throughput --dest ps.example.com
+      Measure througput from here to ps.example.com
+
+  task throughput --source ps.example.org --dest ps.example.com
+      Measure througput between ps.example.org and ps.example.com
+
+  task throughput --bandwidth 384M --dest ps.example.com
+      Limit bandwidth to 384 Mb per second
+
+  task throughput --parallel 4 --dest ps.example.com
+      Run four parallel streams
+"""
+                                            )
 
 opt_parser.add_option("-s", "--source",
                       help="Sending host",
@@ -124,8 +139,9 @@ opt_parser.add_option("--tos",
 
 
 (options, remaining_args) = opt_parser.parse_args(args)
+
 if len(remaining_args) != 0:
-   pscheduler.fail("Found superfluous arguments on command line.")
+   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
 
 result = { 'schema': 1 }

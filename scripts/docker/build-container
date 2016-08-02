@@ -5,7 +5,7 @@
 docker login
 curl -s -O https://raw.githubusercontent.com/perfsonar/pscheduler/master/scripts/docker/Dockerfile
 TIMESTAMP=$(date +%Y%m%d%H%M%S)
-docker build -t "perfsonar/pscheduler-demo:${TIMESTAMP}" .
+docker build --no-cache -t "perfsonar/pscheduler-demo:${TIMESTAMP}" .
 docker tag "perfsonar/pscheduler-demo:${TIMESTAMP}" perfsonar/pscheduler-demo:latest
 docker push "perfsonar/pscheduler-demo:${TIMESTAMP}"
 docker push perfsonar/pscheduler-demo:latest

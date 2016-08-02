@@ -10,7 +10,7 @@ import tzlocal
 
 from pschedulerapiserver import application
 
-from .dbcursor import dbcursor
+from .dbcursor import dbcursor_query
 from .response import *
 from .url import *
 
@@ -31,10 +31,12 @@ def hostname():
 def schedule_horizon():
     """Get the length of the server's scheduling horizon"""
 
-    dbcursor().execute("SELECT schedule_horizon FROM configurables")
-
-    if dbcursor().rowcount != 1:
-        return error("Did not get expected data from database")
+    try:
+        cursor = dbcursor_query(
+            "SELECT schedule_horizon FROM configurables", onerow=True)
+    except Exception as ex:
+        log.exception()
+        return error(str(ex))
 
     return ok_json(pscheduler.timedelta_as_iso8601(cursor.fetchone()[0]))
 

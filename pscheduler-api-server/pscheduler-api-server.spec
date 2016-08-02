@@ -39,7 +39,7 @@ The pScheduler REST API server
 %define httpd_conf_d %{_sysconfdir}/httpd/conf.d
 %define conf	     %{httpd_conf_d}/%{name}.conf
 
-%define server_conf_dir %{_sysconfdir}/%{name}
+%define server_conf_dir %{_pscheduler_sysconfdir}
 %define limits_file     %{server_conf_dir}/limits
 
 # Note that we want this here because it seems to work well without
@@ -120,5 +120,4 @@ systemctl restart httpd
 %files
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
 %{api_dir}
-%{server_conf_dir}
 %attr(444,root,root) %{conf}

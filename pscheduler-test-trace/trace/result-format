@@ -41,6 +41,7 @@ Path {number}:"""
 {.section hostname}){.end}\
 {.section as}{.section number} AS{number}{.or}{.end}{.or}{.end}\
 {.section rtt} {rtt} ms{.end}\
+{.section mtu} mtu {mtu} bytes{.end}\
 {.section error} {error}{.end}
 {.section as}{.section owner}\t  {owner}{.or}{.end}{.or}{.end}
 
