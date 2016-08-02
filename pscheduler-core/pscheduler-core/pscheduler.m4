@@ -37,7 +37,7 @@ shift
 
 case "${COMMAND}" in
     
-    --help)
+    --help|-h|help)
 	help
 	exit 0
 	;;
