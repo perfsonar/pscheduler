@@ -388,6 +388,10 @@ if status == 400:
             "Usage: psc task [task-options] %s [test-options]\n\n%s"
             % (test_type, raw_spec))
 
+    # Anything else is a bona-fide bad request.
+
+    pscheduler.fail("%s: %s" % (test_type, raw_spec))
+
 if status == 404:
     pscheduler.fail("Could not find test " + test_type + " on server")
 
@@ -396,7 +400,7 @@ if status == 500:
                         % ( "local pScheduler server" if assist == last_ditch_assist
                             else assist ))
 elif status != 200:
-    pscheduler.fail("Unknown error %d: %s", (status, raw_spec))
+    pscheduler.fail("Unknown error %d: %s" % (status, raw_spec))
 
 json_to_merge = raw_spec
 assert 'spec' in task['test']
