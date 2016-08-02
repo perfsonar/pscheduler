@@ -36,6 +36,10 @@ case "${COMMAND}" in
 	docker exec -i -t "${CONTAINER}" /bin/bash -c 'su - demo'
 	;;
 
+    root)
+	docker exec -i -t "${CONTAINER}" /bin/bash -c 'su -'
+        ;;
+
 
     stop)
 	echo -n "Removing container..."

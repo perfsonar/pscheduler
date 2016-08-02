@@ -48,6 +48,11 @@ case "${COMMAND}" in
 	docker exec -i -t "${DEST}" /bin/bash -c 'su - demo'
 	;;
 
+    root)
+        DEST="$1"
+        [ "${DEST}" ] || DEST="${PREFIX}1"
+        docker exec -i -t "${DEST}" /bin/bash -c 'su -'
+        ;;
 
     stop)
 	echo -n "Removing containers..."
