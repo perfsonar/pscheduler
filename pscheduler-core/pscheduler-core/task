@@ -27,26 +27,30 @@ opt_parser = VerbatimParser(
 # TODO: Need to add note about how to ask for test-specific help when
 # we have that.
 """
+For help with a test:
+
+  task test-type --help  (e.g., task trace --help)
+
 Examples:
 
-   task rtt --dest ps.example.com
-       Round-trip test from here to ps.example.com
+  task rtt --dest ps.example.com
+      Round-trip test from here to ps.example.com
 
-   task --repeat PT30M --max-runs 5 rtt --dest ps.example.com
-       Same, repeated every 30 minutes for five tests
+  task --repeat PT30M --max-runs 5 rtt --dest ps.example.com
+      Same, repeated every 30 minutes up to five times
 
-   task --tool tracepath trace --dest ps.example.com
-       Trace test using the tool "tracepath"
+  task --tool tracepath trace --dest ps.example.com
+      Trace test using the tool "tracepath"
 
-   task --export rtt --count 10 --length 128 --dest ps.example.com > mytask
-       Export JSON describing task to file "mytask"
+  task --export rtt --count 10 --length 128 --dest ps.example.com > mytask
+      Export JSON describing task to file "mytask"
 
-   task --import mytest rtt 
-       Import and run the task described in the file "mytask"
+  task --import mytest rtt 
+      Import and run the task described in the file "mytask"
 
-   task --import mytest rtt --dest ps.example.net
-       Import the task described in the file "mytask", change the destination
-       to ps.example.net and run it.
+  task --import mytask rtt --dest ps.example.net
+      Import the task described in the file "mytask", change the destination
+      to ps.example.net and run it.
 """
     )
 opt_parser.disable_interspersed_args()
@@ -377,9 +381,16 @@ status, raw_spec = pscheduler.url_get(
     )
 
 if status == 400:
-    pscheduler.fail("Invalid task specification: " + raw_spec)
+
+    # Anything with --help or -h in it is a plea for help.
+    if "--help" in remaining_args or "-h" in remaining_args:
+        pscheduler.succeed(
+            "Usage: psc task [task-options] %s [test-options]\n\n%s"
+            % (test_type, raw_spec))
+
 if status == 404:
     pscheduler.fail("Could not find test " + test_type + " on server")
+
 if status == 500:
     pscheduler.fail("Internal error on on %s.  Consult system logs for details." \
                         % ( "local pScheduler server" if assist == last_ditch_assist
@@ -492,4 +503,3 @@ watch_args.append(task_url)
 watch_args = [ pipes.quote(arg) for arg in watch_args ]
 
 os.execl("/bin/sh", "/bin/sh", "-c", " ".join(watch_args))
-

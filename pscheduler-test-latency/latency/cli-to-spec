@@ -28,7 +28,23 @@ else:
 
 # Gargle the arguments
 
-opt_parser = optparse.OptionParser()
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""Examples:
+
+  task latency --dest ps.example.com
+      Measure latency from here to ps.example.com
+
+  task latency --source ps2.example.org --dest ps.example.com
+      Measure latency from ps2.example.org to ps.example.com
+
+  task latency --packet-count 38 --dest ps.example.com
+      Send 38 packets
+
+  task latency --ip-version 6 --dest ps.example.com
+      Use IPv6
+"""
+                                            )
+
 
 opt_parser.add_option("-s", "--source",
                       help="The address of the entity sending packets in this test",
@@ -98,8 +114,9 @@ opt_parser.add_option("-R", "--output-raw",
                       action="store_true", dest="output_raw", default=False)
                       
 (options, remaining_args) = opt_parser.parse_args(args)
+
 if len(remaining_args) != 0:
-   pscheduler.fail("Found superfluous arguments on command line.")
+   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
 
 result = { 'schema': 1 }
