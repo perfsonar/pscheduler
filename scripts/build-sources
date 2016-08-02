@@ -1,0 +1,53 @@
+#!/bin/sh -e
+#
+# Build all of the pScheduler SRPMs and install them in a directory.
+#
+# Usage:  build-sources output-path
+#
+# Note that the output path is not required to be empty but should be.
+#
+
+WHOAMI=$(basename "$0")
+WHEREAMI=$(dirname "$0")
+
+if [ $# -ne 1 ]
+then
+    echo "Usage: ${WHOAMI} output-dir" 1>&2
+    exit 1
+fi
+
+OUTPUT="$1"
+
+if [ ! -d "${OUTPUT}" -o ! -w "${OUTPUT}" ]
+then
+    echo "${OUTPUT} is not a writable directory." 1>&2
+    exit 1
+fi
+
+BUILD_LIST="${OUTPUT}/build-order"
+rm -f "${BUILD_LIST}"
+touch "${BUILD_LIST}"
+
+BUILD_LOG="${OUTPUT}/build.log"
+rm -f "${BUILD_LOG}"
+touch "${BUILD_LOG}"
+
+
+
+for PACKAGE in $(${WHEREAMI}/build-order)
+do
+    cat <<EOF | tee -a "${BUILD_LOG}"
+
+
+#
+# BUILDING SOURCES FOR ${PACKAGE}
+#
+
+EOF
+    
+    make -C "${PACKAGE}" srpm | tee -a "${BUILD_LOG}"
+    SRPM=$(echo ${PACKAGE}/${PACKAGE}-*.src.rpm)
+    cp -pf "${SRPM}" "${OUTPUT}"
+    echo "$(basename ${SRPM})" >> "${BUILD_LIST}"
+    
+done

@@ -33,8 +33,7 @@ $(TARBALL):
 TO_CLEAN += $(TARBALL) $(FULLNAME)
 
 
-LOG=build.log
-build: .rpmmacros $(TARBALL)
+$(RPMDIR): $(TARBALL)
 	rpm -q rpm-build || yum -y install rpm-build
 	mkdir -p \
 		$(RPMDIR)/BUILD \
@@ -45,9 +44,21 @@ build: .rpmmacros $(TARBALL)
 		$(BUILDROOT)
 	cp -pf $(TARBALL) $(RPMDIR)/SOURCES
 	cp -pf $(NAME).spec $(RPMDIR)/SPECS
+TO_CLEAN += $(RPMDIR) $(BUILDROOT)
+
+LOG=build.log
+build: .rpmmacros $(TARBALL) $(RPMDIR)
 	HOME=$(shell pwd) rpmbuild -v -ba --buildroot $(BUILDROOT) ./$(NAME).spec 2>&1 \
                 | tee $(LOG)
-TO_CLEAN += $(RPMDIR) $(BUILDROOT) $(LOG)
+TO_CLEAN += $(LOG)
+
+
+srpm: .rpmmacros $(TARBALL) $(RPMDIR)
+	HOME=$(shell pwd) rpmbuild -v -bs --buildroot $(BUILDROOT) ./$(NAME).spec 2>&1
+	rm -f *.src.rpm
+	find $(BUILD_DIR) -name '*.src.rpm' | xargs -I{} cp -pf {} .
+TO_CLEAN += *.src.rpm
+
 
 
 install: build
