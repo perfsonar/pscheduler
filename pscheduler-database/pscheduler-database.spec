@@ -22,9 +22,9 @@ Requires:	drop-in
 # This is for pgcrypto
 Requires:	postgresql95-contrib
 Requires:	postgresql95-plpython
-Requires:	postgresql-init
 Requires:	postgresql-load
 Requires:	pscheduler-account
+Requires:	pscheduler-database-init
 Requires:	random-string
 
 

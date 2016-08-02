@@ -24,6 +24,7 @@ Group:		Unspecified
 # No Source:
 
 Provides:	%{name} = %{version}-%{release}
+Provides:	pscheduler-database-init
 
 Requires:	postgresql%{pg_ver}-server
 
