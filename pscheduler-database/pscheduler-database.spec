@@ -201,7 +201,8 @@ EOF
 
 
 %if 0%{?el6}
-service $(basename $(ls %{_initddir}/postgresql* | head -1)) restart
+#sort in reverse order (ls -r) to get newest installed version
+service $(basename $(ls -r %{_initddir}/postgresql* | head -1)) restart
 %endif
 %if 0%{?el7}
 SERVICE=$(systemctl | fgrep postgresql | awk '{ print $1 }' \
