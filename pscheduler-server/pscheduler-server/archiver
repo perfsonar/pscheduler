@@ -140,7 +140,7 @@ def main_program():
                     'test': test,
                     'tool': {
                         'name': tool['name'],
-                        'verion': tool['version'],
+                        'version': tool['version'],
                         },
                     'participants': participants_merged,
                     'result': result_merged
