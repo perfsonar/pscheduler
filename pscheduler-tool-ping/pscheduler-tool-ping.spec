@@ -21,9 +21,10 @@ Requires:	pscheduler-account
 Requires:	python-ipaddr
 Requires:	python-pscheduler
 Requires:	pscheduler-test-rtt
+Requires:	python-icmperror
 # This supplies ping.
-requires:	iputils
-requires:	sudo
+Requires:	iputils
+Requires:	sudo
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm

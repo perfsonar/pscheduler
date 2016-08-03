@@ -19,7 +19,8 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-core
 Requires:	python-pscheduler
 Requires:	pscheduler-test-trace
-requires:	iputils
+Requires:	python-icmperror
+Requires:	iputils
 
 BuildRequires:	pscheduler-rpm
 

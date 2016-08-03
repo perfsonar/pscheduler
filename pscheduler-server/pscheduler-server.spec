@@ -25,7 +25,7 @@ Requires:	pscheduler-database
 Requires:	python-Flask
 Requires:	python-ipaddr
 Requires:	python-requests
-
+Requires:	python-jsontemplate
 
 
 %description
