@@ -24,7 +24,12 @@ Requires:	python-detach
 Requires:	python-dnspython
 Requires:	python-isodate
 Requires:	python-jsonschema
+Requires:	python-netaddr
+Requires:	python-ntplib
 Requires:	python-psycopg2 >= 2.2.0
+Requires:	python-py-radix
+Requires:	python-pytz
+Requires:	python-requests
 Requires:	python-subprocess32
 Requires:	python-tzlocal
 # This is because the Log class uses debugging.

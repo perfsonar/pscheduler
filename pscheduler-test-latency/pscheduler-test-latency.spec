@@ -19,6 +19,7 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-core
 Requires:	python-pscheduler
 Requires:   python-jsonschema
+Requires:	python-jsontemplate
 
 BuildRequires:	pscheduler-rpm
 

@@ -25,8 +25,9 @@ Requires:	pscheduler-database
 Requires:	python-Flask
 Requires:	python-ipaddr
 Requires:	python-requests
+Requires:	python-jsontemplate
 
-
+BuildRequires:	m4
 
 %description
 The pScheduler server
