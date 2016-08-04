@@ -16,6 +16,7 @@ Source0:	%{name}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	m4
 
 
 %description
