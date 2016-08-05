@@ -8,25 +8,16 @@ CREATE TABLE configurables (
 
     -- How far in advance we should schedule runs
     schedule_horizon    INTERVAL
-			NOT NULL,
+			DEFAULT 'P1D',
 
     -- How long we should keep old runs and tasks
     keep_runs_tasks	INTERVAL
-			NOT NULL
-
+			DEFAULT 'P7D'
 );
 
 
 -- This table gets exactly one row that can only ever be updated.
-INSERT INTO configurables(
-    schedule_horizon,
-    keep_runs_tasks
-)
-VALUES (
-    'P1D',     -- schedule_horizon
-    'P7D'      -- keep_runs_tasks
-)
-;
+INSERT INTO configurables DEFAULT VALUES;
 
 
 CREATE OR REPLACE FUNCTION configurables_update()
