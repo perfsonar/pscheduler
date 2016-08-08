@@ -67,6 +67,10 @@ def tests_name_spec(name):
 # Tools that can carry out test <name>
 @application.route("/tests/<name>/tools", methods=['GET'])
 def tests_name_tools(name):
+
+    # TODO: Should probably 404 if the test doesn't exist.
+    # TODO: Is this used anywhere?
+
     expanded = is_expanded()
     try:
         cursor = dbcursor_query("""
@@ -77,7 +81,9 @@ def tests_name_tools(name):
             tool
             JOIN tool_test ON tool_test.tool = tool.id
             JOIN test ON test.id = tool_test.test
-        """)
+        WHERE
+            test.name = %s
+        """, [name])
     except Exception as ex:
         return error(str(ex))
 
