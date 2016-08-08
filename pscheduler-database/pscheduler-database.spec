@@ -136,7 +136,7 @@ awk -v "ROLE=${ROLE}" '{ printf "host=127.0.0.1 dbname=pscheduler user=%s passwo
 awk -v "ROLE=${ROLE}" '{ printf "*:*:pscheduler:%s:%s\n", ROLE, $1 }' \
     "%{password_file}" \
     > "${RPM_BUILD_ROOT}/%{pgpass_file}"
-chmod 440 "${RPM_BUILD_ROOT}/%{pgpass_file}"
+chmod 400 "${RPM_BUILD_ROOT}/%{pgpass_file}"
 
 # Load the database
 
