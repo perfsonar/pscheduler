@@ -31,6 +31,21 @@ if test_spec.get('bandwidth') and not test_spec.get('udp'):
 if test_spec.get('omit'):
     pscheduler.fail('iperf does not support the --omit flag')
 
+if test_spec.get('flow-label'):
+    pscheduler.fail('iperf does not support the --flow-label flag')
+
+if test_spec.get('zero-copy'):
+    pscheduler.fail('iperf does not support the --zero-copy flag')
+
+if test_spec.get('congestion'):
+    pscheduler.fail('iperf does not support the --congestion flag')
+
+if test_spec.get('cpu-affinity'):
+    pscheduler.fail('iperf does not support the --omit flag')
+
+if test_spec.get('no-delay'):
+    pscheduler.fail('iperf does not support the --no-delay flag')
+
 logger.debug("can-run succeeded")
 
 pscheduler.succeed()
