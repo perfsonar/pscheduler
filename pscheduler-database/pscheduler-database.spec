@@ -245,7 +245,7 @@ systemctl restart "${SERVICE}"
 %files
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
 %{_pscheduler_datadir}/*
-%attr(550,-,-) %{db_config_dir}
-%attr(440,-,-)%verify(user group mode) %{db_config_dir}/*
+%attr(500,-,-) %{db_config_dir}
+%attr(400,-,-)%verify(user group mode) %{db_config_dir}/*
 %{rpm_macros}
 %{profile_d}/*
