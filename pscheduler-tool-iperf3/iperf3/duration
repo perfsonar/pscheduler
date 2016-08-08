@@ -1,0 +1,23 @@
+#!/usr/bin/python
+#
+# Determine the duration of the iperf3
+
+import datetime
+import sys
+
+import pscheduler
+
+from iperf3_defaults import *
+
+json = pscheduler.json_load(exit_on_error=True)
+
+duration = json.get('duration', None)
+if duration:
+    delta = pscheduler.iso8601_as_timedelta(duration)
+    duration = int(pscheduler.timedelta_as_seconds(delta))
+else:
+    duration = DEFAULT_DURATION
+
+print 'PT%dS' % (duration + DEFAULT_FUDGE_FACTOR + DEFAULT_WAIT_SLEEP)
+
+pscheduler.succeed()
