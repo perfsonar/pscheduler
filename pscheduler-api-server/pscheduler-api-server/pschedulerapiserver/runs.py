@@ -220,8 +220,8 @@ def tasks_uuid_runs_run(task, run):
         # If asked for 'first', dig up the first run and use its UUID.
 
         if run == 'first':
-            # 40 tries at 0.25s intervals == 10 sec.
-            tries = 40 if (wait_local or wait_merged) else 1
+            # 60 tries at 0.25s intervals == 15 sec.
+            tries = 60 if (wait_local or wait_merged) else 1
             while tries > 0:
                 try:
                     run = __runs_first_run(task)
