@@ -12,7 +12,11 @@ CREATE TABLE configurables (
 
     -- How long we should keep old runs and tasks
     keep_runs_tasks	INTERVAL
-			DEFAULT 'P7D'
+			DEFAULT 'P7D',
+
+    -- Maximum runs in parallel
+    max_parallel_runs	INTEGER
+			DEFAULT 50
 );
 
 
@@ -24,6 +28,11 @@ CREATE OR REPLACE FUNCTION configurables_update()
 RETURNS TRIGGER
 AS $$
 BEGIN
+    IF NEW.max_parallel_runs < 1
+    THEN
+        RAISE EXCEPTION 'Maximum parallel runs must be positive.';
+    END IF;
+
     NOTIFY configurables_changed;
     RETURN NEW;
 END;
@@ -56,4 +65,3 @@ CREATE TRIGGER configurables_truncate
 BEFORE TRUNCATE
 ON configurables
 EXECUTE PROCEDURE configurables_noalter();
-

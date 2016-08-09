@@ -340,14 +340,22 @@ def tasks_uuid(uuid):
         try:
             cursor = dbcursor_query("""
                 SELECT
-                    json,
-                    added,
-                    start,
-                    slip,
-                    duration,
-                    runs,
-                    participants
-                FROM task WHERE uuid = %s
+                    task.json,
+                    task.added,
+                    task.start,
+                    task.slip,
+                    task.duration,
+                    task.runs,
+                    task.participants,
+                    scheduling_class.anytime,
+                    scheduling_class.exclusive,
+                    scheduling_class.multi_result
+                FROM
+                    task
+                    JOIN test ON test.id = task.test
+                    JOIN scheduling_class
+                        ON scheduling_class.id = test.scheduling_class
+                WHERE uuid = %s
             """, [uuid])
         except Exception as ex:
             return error(str(ex))
@@ -375,7 +383,11 @@ def tasks_uuid(uuid):
                 'runs': None if row[5] is None \
                     else int(row[5]),
                 'participants': None if row[6] is None \
-                    else row[6]
+                    else row[6],
+                'anytime':  row[7],
+                'exclusive':  row[8],
+                'multi-result':  row[9],
+
                 }
 
         return ok_json(json)

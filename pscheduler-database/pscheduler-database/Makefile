@@ -17,6 +17,7 @@ FILES=\
 	utilities \
 	\
 	configurables \
+	scheduling_class \
 	test \
 	tool \
 	archiver \

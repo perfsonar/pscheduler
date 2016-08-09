@@ -171,7 +171,7 @@ AS $$
 DECLARE
     time_now TIMESTAMP WITH TIME ZONE;
     horizon_end TIMESTAMP WITH TIME ZONE;
-    task RECORD;
+    taskrec RECORD;
     time_range TSTZRANGE;
     last_end TIMESTAMP WITH TIME ZONE;
     run_record RECORD;
@@ -179,7 +179,17 @@ BEGIN
 
     -- Validate the input
 
-    SELECT INTO task * FROM task WHERE uuid = task_uuid;
+    SELECT INTO taskrec
+        task.*,
+        scheduling_class.anytime,
+        scheduling_class.exclusive
+    FROM
+        task
+        JOIN test ON test.id = task.test
+        JOIN scheduling_class ON scheduling_class.id = test.scheduling_class
+    WHERE
+        uuid = task_uuid;
+
     IF NOT FOUND THEN
         RAISE EXCEPTION 'No task % exists', task_uuid;
     END IF;
@@ -219,11 +229,45 @@ BEGIN
 
     last_end := range_start;
 
+    -- If the scheduling class for the task is background, the entire
+    -- range is fair game.
+
+    IF taskrec.anytime THEN
+        RETURN QUERY
+            SELECT range_start AS lower, range_end AS upper;
+    END IF;
+
+
+    -- Sift through everything on the timeline that overlaps with the
+    -- time range and find the gaps.  Other than non-starters, the
+    -- runs we care about avoiding are represented by this truth
+    -- table:
+    --
+    -- Proposed  ||   Run on Timeline  |
+    -- Run       || Normal | Exclusive |
+    -- ----------++--------+-----------+
+    -- Normal    || Ignore |   Avoid   |
+    -- Exclusive || Avoid  |   Avoid   |
+
     FOR run_record IN
-        SELECT * FROM run
+        SELECT run.*
+        FROM
+            run
+            JOIN task ON task.id = run.task
+            JOIN test ON test.id = task.test
+            JOIN scheduling_class
+                 ON scheduling_class.id = test.scheduling_class
         WHERE
+            -- Overlap
 	    times && time_range
+            -- Ignore non-starters
             AND state <> run_state_nonstart()
+            AND (
+                -- Always avoid exclusive runs
+                (scheduling_class.exclusive)
+                -- Avoid normal runs if the proposed run is exclusive
+                OR (taskrec.exclusive AND NOT scheduling_class.exclusive)
+            )
         ORDER BY times
     LOOP
 
@@ -231,10 +275,10 @@ BEGIN
         -- the gap must be longer than the duration of the task for it
         -- to one that can be proposed.
         IF lower(run_record.times) > last_end
-           AND lower(run_record.times) - last_end >= task.duration
+           AND lower(run_record.times) - last_end >= taskrec.duration
         THEN
             RETURN QUERY
-                SELECT last_end AS lower, lower(run_record.times) AS UPPER;
+                SELECT last_end AS lower, lower(run_record.times) AS upper;
         END IF;
 
         last_end := upper(run_record.times);
@@ -244,7 +288,7 @@ BEGIN
     -- If the end of the last run is before the end of the range,
     -- that's also a gap.
     IF last_end < range_end
-       AND range_end - last_end >= task.duration
+       AND range_end - last_end >= taskrec.duration
     THEN
         RETURN QUERY SELECT last_end, range_end;
     END IF;

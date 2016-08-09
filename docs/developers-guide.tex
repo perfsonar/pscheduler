@@ -400,6 +400,19 @@ used when pScheduler needs to determine what tests are installed.
   measures.
 \item{\tt version} - A \jsontype{Version}.
 \item{\tt maintainer} - A \jsontype{Maintainer}.
+\item{\tt scheduling-class} - A string indicating how runs of this
+  kind of test should be scheduled.  Valid values are as follows:
+  \begin{itemize}
+  \item {\tt background} - These tests are always run, even if the run
+    start time has passed and produce multiple results.  (See
+    \autoref{toolrun}, {\it \nameref{toolrun}} for details on how this
+    is accomplished.)
+  \item {\tt exclusive} - Runs are given time on the schedule
+    that is not shared with any scheduling class other than {\tt
+      background}.
+  \item {\tt normal} - These runs share schedule time with {\tt
+    background} and other {\tt normal} runs but not {\tt exclusive}.
+  \end{itemize}
 \end{itemize}
 
 \example
@@ -412,7 +425,8 @@ used when pScheduler needs to determine what tests are installed.
         "name": "Example Development Team",
         "email": "plug-ins@example.org",
         "href": "http://www.example.org/plug-ins"
-    }
+    },
+    "scheduling-class": "normal"
 }
 \end{lstlisting}
 
@@ -795,7 +809,7 @@ related to the input and {\tt 3} for an error unrelated to the input.
 
 
 
-\subsubsection{run}
+\subsubsection{run}\label{toolrun}
 This method carries out the test as one of its participants.
 \todo{Could use some examples.}
 

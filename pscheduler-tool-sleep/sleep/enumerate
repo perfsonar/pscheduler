@@ -3,7 +3,7 @@
     "name": "sleep",
     "description": "Do nothing by sleeping",
     "version": "0.0",
-    "tests": [ "idle" ],
+    "tests": [ "idle", "idlebg", "idleex" ],
 
     "preference": 0,
 

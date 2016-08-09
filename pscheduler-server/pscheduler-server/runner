@@ -296,6 +296,9 @@ def main_program():
     cursor = pg.cursor()
     cursor.execute("LISTEN " + options.channel)
 
+    # TODO: Start any background runs that should still be running.
+    # Need to make sure they haven't already been started just in case
+    # this is restarted by an exception.
 
     while True:
 

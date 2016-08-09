@@ -9,6 +9,8 @@ exec cat << EOF
         "name": "perfSONAR Development Team",
 	"email": "info@perfsonar.net",
 	"href": "http://www.perfsonar.net"
-    }
+    },
+
+    "scheduling-class": "normal"
 }
 EOF

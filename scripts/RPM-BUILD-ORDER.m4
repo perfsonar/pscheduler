@@ -92,6 +92,8 @@ pscheduler-core
 
 # Tests
 pscheduler-test-idle
+pscheduler-test-idlebg
+pscheduler-test-idleex
 pscheduler-test-latency
 pscheduler-test-throughput
 pscheduler-test-rtt

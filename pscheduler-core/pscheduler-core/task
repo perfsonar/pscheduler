@@ -465,7 +465,7 @@ except Exception as ex:
     pscheduler.fail("Unable to post task: " + str(ex))
 
 if status != 200:
-    pscheduler.fail("Unable to post task: " + task_url)
+    pscheduler.fail("Failed to post task: " + task_url)
 
 # If asked to just dump the URL, do that and exit.
 if options.url:

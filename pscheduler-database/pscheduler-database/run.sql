@@ -90,12 +90,32 @@ CREATE INDEX run_times_upper ON run(upper(times));
 
 
 
+-- Runs which could cause conflicts
+
+CREATE OR REPLACE VIEW run_conflictable
+AS
+    SELECT
+        run.*,
+        scheduling_class.anytime,
+        scheduling_class.exclusive
+    FROM
+        run
+        JOIN task ON task.id = run.task
+	JOIN test ON test.id = task.test
+        JOIN scheduling_class ON scheduling_class.id = test.scheduling_class
+    WHERE
+        run.state <> run_state_nonstart()
+        AND NOT scheduling_class.anytime
+;
+
+
+
 CREATE OR REPLACE FUNCTION run_alter()
 RETURNS TRIGGER
 AS $$
 DECLARE
     horizon INTERVAL;
-    task RECORD;
+    taskrec RECORD;
     tool_name TEXT;
     run_result external_program_result;
     pdata_out JSONB;
@@ -110,30 +130,62 @@ BEGIN
         RAISE EXCEPTION 'Cannot schedule runs more than % in advance', horizon;
     END IF;
 
-    -- Disallow overlap except for non-starters, which don't run.
 
-    IF ( (TG_OP = 'INSERT')
-         AND ( EXISTS (SELECT * FROM run
-                       WHERE run.times && NEW.times
-                       AND run.state <> run_state_nonstart()) ) )
-       OR ( (TG_OP = 'UPDATE')  -- TODO:  Do we want to allow times to change?
-            AND (NEW.times <> OLD.times)
-            AND (EXISTS (SELECT * FROM run WHERE id <> NEW.id AND run.times && NEW.times)) )
-    THEN
-       RAISE EXCEPTION 'Runs may not overlap with others.';
-    END IF;
+    SELECT INTO taskrec
+        task.*,
+        scheduling_class.anytime,
+        scheduling_class.exclusive
+    FROM
+        task
+        JOIN test ON test.id = task.test
+        JOIN scheduling_class ON scheduling_class.id = test.scheduling_class
+    WHERE
+        task.id = NEW.task;
 
-
-    -- Make sure UUID assignment follows a sane pattern.
-
-    SELECT INTO task * FROM task WHERE id = NEW.task;
     IF NOT FOUND THEN
         RAISE EXCEPTION 'No task % exists.', NEW.task;
     END IF;
 
+
+    -- Reject new runs that overlap with anything that isn't a
+    -- non-starter or where this insert would cause a normal/exclusive
+    -- conflict
+
+    IF ( (TG_OP = 'INSERT')
+        -- Don't care about non-starters
+        AND NEW.state <> run_state_nonstart()
+        -- These don't count, either.
+        AND NOT taskrec.anytime
+        AND ( 
+            -- Exclusive can't collide with anything
+            ( taskrec.exclusive
+              AND EXISTS (SELECT * FROM run_conflictable
+                          WHERE times && new.times) )
+            -- Non-exclusive can't collide with exclusive
+              OR ( NOT taskrec.exclusive
+                   AND EXISTS (SELECT * FROM run_conflictable
+                               WHERE exclusive AND times && new.times) )
+            )
+       )
+    THEN
+       RAISE EXCEPTION 'Run would result in a scheduling conflict.';
+    END IF;
+
+
+    -- Only allow time changes that shorten the run
+    IF (TG_OP = 'UPDATE')
+        AND ( (lower(NEW.times) <> lower(OLD.times))
+              OR ( upper(NEW.times) > upper(OLD.times) ) )
+    THEN
+        RAISE EXCEPTION 'Runs cannot be rescheduled, only shortened.';
+    END IF;
+
+    -- Make sure UUID assignment follows a sane pattern.
+
+
     IF (TG_OP = 'INSERT') THEN
 
-        IF task.participant = 0 THEN
+        IF taskrec.participant = 0 THEN
 	    -- Lead participant should be assigning a UUID
             IF NEW.uuid IS NOT NULL THEN
                 RAISE EXCEPTION 'Lead participant should not be given a run UUID.';
@@ -146,7 +198,7 @@ BEGIN
             END IF;
         END IF;
 
-    ELSIF (TG_OP = 'UPDATE') THEN
+    ELSEIF (TG_OP = 'UPDATE') THEN
 
         IF NEW.uuid <> OLD.uuid THEN
             RAISE EXCEPTION 'UUID cannot be changed';
@@ -163,10 +215,10 @@ BEGIN
 
     -- TODO: New runs get participant data.  The table needs a column for this.
 
-    pdata_out := row_to_json(t) FROM ( SELECT task.participant AS participant,
-                                       cast ( task.json #>> '{test, spec}' AS json ) AS test ) t;
+    pdata_out := row_to_json(t) FROM ( SELECT taskrec.participant AS participant,
+                                       cast ( taskrec.json #>> '{test, spec}' AS json ) AS test ) t;
 
-    SELECT INTO tool_name name FROM tool WHERE id = task.tool;
+    SELECT INTO tool_name name FROM tool WHERE id = taskrec.tool;
 
     run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_name, 'participant-data'], pdata_out::TEXT );
 	IF run_result.status <> 0 THEN
@@ -204,7 +256,7 @@ BEGIN
 
 	       result_merge_input := row_to_json(t) FROM (
 	           SELECT 
-		       task.json -> 'test' AS test,
+		       taskrec.json -> 'test' AS test,
                        NEW.result_full AS results
                    ) t;
 
@@ -227,7 +279,7 @@ BEGIN
 
         -- Make a note that this run was put on the schedule
 
-        UPDATE task t SET runs = runs + 1 WHERE t.id = task.id;
+        UPDATE task t SET runs = runs + 1 WHERE t.id = taskrec.id;
 
     END IF;
 
