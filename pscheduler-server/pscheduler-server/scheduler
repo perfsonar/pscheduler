@@ -86,42 +86,39 @@ def main_program():
                 log.exception()
                 raise ex
 
+        cursor.execute("""SELECT uuid, runs, trynext from schedule_runs_to_schedule""")
 
-        while True:
+        if cursor.rowcount == 0:
+            log.debug("No runs to schedule.")
+            break
 
-            cursor.execute("""SELECT uuid, runs, trynext from schedule_runs_to_schedule""")
+        for row in cursor.fetchall():
 
-            if cursor.rowcount == 0:
-                log.debug("No runs to schedule.")
-                break
+            uuid, runs, trynext = row
 
-            for row in cursor.fetchall():
+            log.debug("TASK %s, %d runs, try %s", uuid, runs, trynext)
 
-                uuid, runs, trynext = row
+            url = pscheduler.api_url(path='/tasks/' + uuid)
 
-                log.debug("TASK %s, %d runs, try %s", uuid, runs, trynext)
+            # For the first run only, push the start time out.
+            # See comment above near the declaration of
+            # first_run_offset.
 
-                url = pscheduler.api_url(path='/tasks/' + uuid)
+            if runs == 0:
+                later_start = pscheduler.time_now() + first_run_offset
+                if trynext < later_start:
+                    trynext = later_start                   
 
-                # For the first run only, push the start time out.
-                # See comment above near the declaration of
-                # first_run_offset.
-
-                if runs == 0:
-                    later_start = pscheduler.time_now() + first_run_offset
-                    if trynext < later_start:
-                        trynext = later_start                   
-
-                log.debug("Trying to schedule %s for %s at %s",
-                          uuid, trynext, url)
-                log.debug("URL is %s", url)
-                run_uri, start_time, end_time, error = \
-                    pscheduler.run_post(url, trynext, log)
-                if error is not None:
-                    log.debug("Unable: %s", error)
-                else:
-                    log.debug("Scheduled for %s - %s at %s",
-                              start_time, end_time, run_uri)
+            log.debug("Trying to schedule %s for %s at %s",
+                      uuid, trynext, url)
+            log.debug("URL is %s", url)
+            run_uri, start_time, end_time, error = \
+                pscheduler.run_post(url, trynext, log)
+            if error is not None:
+                log.debug("Unable: %s", error)
+            else:
+                log.debug("Scheduled for %s - %s at %s",
+                          start_time, end_time, run_uri)
 
 
 pscheduler.safe_run(lambda: main_program())
