@@ -187,9 +187,10 @@ except KeyError:
 
 
 if options.repeat is not None:
-    repeat = pscheduler.iso8601_as_timedelta(options.repeat)
-    if repeat is None:
-        pscheduler.fail("Invalid --repeat; must be ISO 8601 duration")
+    try:
+        repeat = pscheduler.iso8601_as_timedelta(options.repeat)
+    except ValueError as ex:
+        pscheduler.fail("Invalid --repeat: %s" % str(ex))
 
 
 if options.randslip is not None:
@@ -209,9 +210,10 @@ if options.reference is not None:
 
 
 if options.slip is not None:
-    slip = pscheduler.iso8601_as_timedelta(options.slip)
-    if slip is None:
-        pscheduler.fail("Invalid --slip; must be ISO 8601 duration")
+    try:
+        slip = pscheduler.iso8601_as_timedelta(options.slip)
+    except ValueError as ex:
+        pscheduler.fail("Invalid --slip: %s" % str(ex))
 elif options.repeat is None:
     # TODO: This is a stopgap that forces slip on non-repeating tasks
     # so scheduling won't fail if there isn't an immediate slot
@@ -222,9 +224,10 @@ elif options.repeat is None:
 if options.start is not None:
     # TODO: Support "Pxx" and "@Pxx" formats like the database does
     # Should have a module function that does this.
-    start = pscheduler.iso8601_as_datetime(options.start, localize=True)
-    if start is None:
-        pscheduler.fail("Invalid --start")
+    try:
+        start = pscheduler.iso8601_as_datetime(options.start, localize=True)
+    except ValueError as ex:
+        pscheduler.fail("Invalid --start: %s" % str(ex))
     if start <= pscheduler.time_now():
         pscheduler.fail("Invalid --start; must be in the future.")
     pass
@@ -232,9 +235,10 @@ if options.start is not None:
 if options.until is not None:
     # TODO: Support "Pxx" and "@Pxx" formats like the database does
     # TODO: Error handling in iso8601_as_datetime() needs improvement.
-    until = pscheduler.iso8601_as_datetime(options.until, localize=True)
-    if until is None:
-        pscheduler.fail("Invalid --until")
+    try:
+        until = pscheduler.iso8601_as_datetime(options.until, localize=True)
+    except ValueError as ex:
+        pscheduler.fail("Invalid --until: %s" % str(ex))
     if until <= pscheduler.time_now():
         pscheduler.fail("Invalid --until; must be in the future.")
 
