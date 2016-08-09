@@ -136,6 +136,33 @@ opt_parser.add_option("--tos",
                       action="store", type="int",
                       dest="tos")
 
+opt_parser.add_option("--no-delay",
+                      help="Set TCP no-delay flag, disables Nagle's algorith",
+                      action="store",
+                      dest="no_delay")
+
+opt_parser.add_option("--congestion",
+                      help="Set TCP no-delay flag, disables Nagle's algorith",
+                      action="store", type="string",
+                      dest="congestion")
+
+opt_parser.add_option("--zero-copy",
+                      help="Use a 'zero copy' method of sending data",
+                      action="store",
+                      dest="zero_copy")
+
+opt_parser.add_option("--flow-label",
+                      help="Set the IPv6 flow label, implies -6",
+                      action="store", type="string",
+                      dest="flow_label")
+
+opt_parser.add_option("--cpu-affinity",
+                      help="Set CPU affinity",
+                      action="store", type="string",
+                      dest="cpu_affinity")
+
+
+
 
 
 (options, remaining_args) = opt_parser.parse_args(args)
@@ -220,6 +247,23 @@ if options.omit:
 
 if options.tos:
    result["tos"] = options.tos
+
+if options.no_delay:
+   result["no-delay"] = True
+
+if options.congestion:
+   result["congestion"] = options.congestion
+
+if options.zero_copy:
+   result["zero-copy"] = True
+
+if options.flow_label:
+   result["flow-label"] = options.flow_label
+   result["force-ipv6"] = True
+
+if options.cpu_affinity:
+   result["cpu-affinity"] = options.cpu_affinity
+
 
 # This sort of belongs in spec-is-valid but has to be here because of 
 # the below step where we assume "me" if one isn't specified
