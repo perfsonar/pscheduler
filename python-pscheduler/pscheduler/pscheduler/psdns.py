@@ -8,7 +8,7 @@ import multiprocessing
 import multiprocessing.pool
 
 
-__TIMEOUT__ = 2
+__DEFAULT_TIMEOUT__ = 2
 
 
 def __check_ip_version__(ip_version):
@@ -20,7 +20,11 @@ def __check_ip_version__(ip_version):
 # Single Resolution
 #
 
-def dns_resolve(host, query=None, ip_version=4):
+def dns_resolve(host,
+                query=None,
+                ip_version=4,
+                timeout=__DEFAULT_TIMEOUT__,
+                ):
     """
     Resolve a hostname to its A record, returning None if not found or
     there was a timeout.
@@ -31,8 +35,8 @@ def dns_resolve(host, query=None, ip_version=4):
 
     try:
         resolver = dns.resolver.Resolver()
-        resolver.timeout = __TIMEOUT__
-        resolver.lifetime = __TIMEOUT__
+        resolver.timeout = timeout
+        resolver.lifetime = timeout
         if query is None:
             query = 'A' if ip_version == 4 else 'AAAA'
         answers = resolver.query(host, query)
@@ -44,7 +48,8 @@ def dns_resolve(host, query=None, ip_version=4):
         return None
 
 
-def dns_resolve_reverse(ip):
+def dns_resolve_reverse(ip,
+                        timeout=__DEFAULT_TIMEOUT__):
     """
     Resolve an IP (v4 or v6) to its hostname, returning None if not
     found or there was a timeout.
@@ -54,8 +59,8 @@ def dns_resolve_reverse(ip):
 
     try:
         resolver = dns.resolver.Resolver()
-        resolver.timeout = __TIMEOUT__
-        resolver.lifetime = __TIMEOUT__
+        resolver.timeout = timeout
+        resolver.lifetime = timeout
         revname = dns.reversename.from_address(ip)
         answers = resolver.query(revname, 'PTR')
         return str(answers[0])
