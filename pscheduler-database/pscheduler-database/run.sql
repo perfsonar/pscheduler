@@ -275,15 +275,16 @@ BEGIN
 
         END IF;
 
+
     ELSIF (TG_OP = 'INSERT') THEN
 
         -- Make a note that this run was put on the schedule
 
         UPDATE task t SET runs = runs + 1 WHERE t.id = taskrec.id;
 
-    END IF;
+        PERFORM pg_notify('run_new', NEW.uuid::TEXT);
 
-    NOTIFY run_change;
+    END IF;
 
     RETURN NEW;
 END;

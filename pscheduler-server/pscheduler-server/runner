@@ -3,8 +3,6 @@
 # Execute runs of tasks and put the results into the database.
 #
 
-# TODO: See which of these are still needed.
-import detach
 import errno
 import optparse
 import pscheduler
@@ -12,17 +10,13 @@ import psycopg2
 import psycopg2.extensions
 import select
 import sys
+import threading
 import time
 
 
 # Gargle the arguments
 
 opt_parser = optparse.OptionParser()
-
-opt_parser.add_option("-c", "--channel",
-                      help="Schedule notification channel",
-                      action="store", type="string", dest="channel",
-                      default="run_change")
 
 opt_parser.add_option("-d", "--dsn",
                       help="Database connection string",
@@ -56,58 +50,48 @@ dsn = options.dsn
 
 
 
-#
-# Runs and things we do with them
-#
-class Run:
+class RunWorker:
 
-    def __init__(self, id, start_in):
+    def __init__(self, db, log, id, start_in):
 
+        # Per http://initd.org/psycopg/docs/usage.html#thread-safety,
+        # Psycopg is thread-safe when you use multiple cursors against the
+        # same connection.
+        self.cursor = db.cursor()
+        self.log = log
+        self.id = id
+        self.start_in = start_in
+        self.finished = False
+
+        self.worker = threading.Thread(target=lambda: self.run())
+        self.worker.start()
+        self.log.debug("%d: Started thread", self.id)
+
+
+    def run(self):
+        self.log.debug("%d: Thread running", self.id)
         try:
-
-            # TODO: May not want to fully detach so children die with
-            # the parent.
-
-            with detach.Detach(close_fds=False,
-                               stdout=sys.stdout,
-                               stderr=sys.stderr) as detacher:
-
-                if detacher.pid:
-                    self.pid = detacher.pid
-                    return
-
-                log.debug("Started runner for ID %d", id)
-
-                # TODO: Need to find a nice way to catch and log
-                # exceptions from these.  safe_run() doesn't quite cut
-                # it.
-
-                self._run(id, start_in)
-
-        except:
+            self.__run()
+        except Exception as ex:
+            self.log.debug("%d: Exception: %s", self.id, ex)
             log.exception()
+        self.log.debug("%d: Thread finished", self.id)
 
 
-    # This method does the dirty work.  Don't worry about catching
-    # exception; that's the caller's responsibility.
-    def _run(self, id, start_in):
-
-        db = pscheduler.pg_connection(dsn)
-        cursor = db.cursor()
+    def __run(self):
 
         # Don't try to do anyting until the start time.
-        sleep_time = pscheduler.timedelta_as_seconds(start_in)
-
-        log.debug("%d: Sleeping %s until test start", id, sleep_time)
+        sleep_time = pscheduler.timedelta_as_seconds(self.start_in)
+        self.log.debug("%d: Sleeping %s until test start", self.id, sleep_time)
         time.sleep(sleep_time)
 
-        cursor.execute("""
+        self.cursor.execute("""
                        UPDATE run
-                       SET state = run_state_running()
-                       WHERE id = %s
-                       """, [id])
+                           SET state = run_state_running()
+                           WHERE id = %s
+                       """, [self.id])
 
-        cursor.execute("""
+        self.cursor.execute("""
                        SELECT
                            tool.name,
                            task.uuid,
@@ -124,10 +108,10 @@ class Run:
                            JOIN task ON task.id = run.task
                            JOIN tool ON tool.id = task.tool
                        WHERE run.id = %s
-                       """, [id])
+                       """, [self.id])
 
         # TODO: Should get exactly one row back.
-        row = cursor.fetchone()
+        row = self.cursor.fetchone()
 
         tool, task_uuid, task_id, participant, participants, start, end, \
             test_spec, run_uuid, partdata = row
@@ -137,9 +121,9 @@ class Run:
         #
 
         if partdata is None:
-            log.error("%d: Got NULL part_data_full", id)
+            self.log.error("%d: Got NULL part_data_full", self.id)
 
-        tool_input = {
+        tool_input = pscheduler.json_dump({
             'schema': 1,
             'schedule': {
                 'start': pscheduler.datetime_as_iso8601(start),
@@ -148,18 +132,14 @@ class Run:
             'test': test_spec,
             'participant': participant,
             'participant-data': partdata
-            }
+            })
 
-        tool_input = pscheduler.json_dump(tool_input)
-        log.debug("%d: Testing with %s: %s", id, tool, tool_input)
+        self.log.debug("%d: Testing with %s: %s", self.id, tool, tool_input)
 
         returncode, stdout, stderr = pscheduler.run_program(
             [ "pscheduler", "internal", "invoke", "tool", tool, "run" ],
             stdin = tool_input,
-            # TODO: Make the overage on the timeout configurable, or
-            # is a couple of seconds beyond what the tool said it
-            # would take sufficient?
-            timeout = pscheduler.timedelta_as_seconds(end - start) + 2
+            timeout = pscheduler.timedelta_as_seconds(end - start) + 1
             )
 
         if len(stdout) == 0:
@@ -169,47 +149,43 @@ class Run:
             stderr = None
 
         if returncode == 0:
-            log.debug("%d: Test Succeeded: %s", id, stdout)
+            self.log.debug("%d: Test Succeeded: %s", self.id, stdout)
         else:
-            log.debug("%d: Test failed %d: %s", id, returncode, stderr)
-
-
-        # TODO: Put the task into the cleanup state and take the
-        # automatic trigger out of the database.  Should go
-        # direct to finished if not the lead participant.
+            self.log.debug("%d: Test failed %d: %s", self.id, returncode, stderr)
 
         # TODO: Error check this.
-        cursor.execute("""
-                       UPDATE run
-                       SET
-                           status = %s,
-                           result = %s,
-                           errors = %s
-                       WHERE id = %s
-                       """,
-                       [returncode,
-                        stdout,
-                        stderr,
-                        id])
+        self.cursor.execute("""
+                            UPDATE run
+                            SET
+                                status = %s,
+                                result = %s,
+                                errors = %s
+                            WHERE id = %s
+                            """,
+                            [returncode,
+                             stdout,
+                             stderr,
+                             self.id])
 
-        log.debug("%d: Stored local result", id)
+        self.log.debug("%d: Stored local result", self.id)
 
         # The lead participant takes care of gathering and merging the finished results.
 
         if participant == 0:
 
-            log.debug("%d: Doing lead participant duties", id)
-           
+            self.log.debug("%d: Doing lead participant duties", self.id)
+
             # Wait until the scheduled time has passed, which is the
             # only time we can be sure results might be available.
 
-            # TODO:  Skip sleep if this is a single-participant test?
-
-            wait_time = pscheduler.time_until_seconds(end)
-            log.debug("%d: Waiting for task end time to pass (%s)",
-                      id, wait_time)
-            time.sleep(wait_time)
-            log.debug("%d: Task end time has passed", id)
+            if len(participants) > 1:
+                wait_time = pscheduler.time_until_seconds(end)
+                self.log.debug("%d: Waiting for task end time to pass (%s)",
+                               self.id, wait_time)
+                time.sleep(wait_time)
+                self.log.debug("%d: Task end time has passed", self.id)
+            else:
+                self.log.debug("%d: Only one participant; not waiting.", self.id)
 
             # Fetch and combine the results.
 
@@ -218,45 +194,45 @@ class Run:
                                         % (task_uuid, run_uuid) )
                      for host in participants ]
 
-            log.debug("%d: Runs are %s", id, runs)
-
-
-            # TODO: Shouldn't be doing this if the local run failed.
+            self.log.debug("%d: Runs are %s", self.id, runs)
 
             try:
-                log.debug("Local run returned %d", returncode)
+                self.log.debug("%d: Local run returned %d",
+                               self.id, returncode)
                 if returncode == 0:
                     local_result = pscheduler.json_load(stdout)
                 else:
                     local_result = None
-                    log.debug("%d: Tool returned failure: %s", id, stderr)
+                    self.log.debug("%d: Tool returned failure: %s",
+                                   self.id, stderr)
             except ValueError as ex:
-                log.error("%d: Tool %s returned invalid JSON %s",
-                          id, tool, stdout)
+                self.log.error("%d: Tool %s returned invalid JSON %s",
+                               self.id, tool, stdout)
                 local_result = None
 
 
             full_result = [ local_result ]
-            log.debug("%d: Accumulated local result", id)
+            self.log.debug("%d: Accumulated local result", self.id)
 
             for run in runs[1:]:
 
-                log.debug("%d: Fetching run %s", id, run)
+                self.log.debug("%d: Fetching run %s", self.id, run)
 
                 status, result = pscheduler.url_get( run,
-                                     params={ 'wait-local': True },
-                                     throw=False )
+                                                     params={ 'wait-local': True },
+                                                     throw=False )
 
                 if status == 200:
-                    log.debug("%d: Retrieved %s", id, result)
+                    self.log.debug("%d: Retrieved %s", self.id, result)
                     full_result.append(result['result'])
                 else:
-                    log.warning("%d: Unable to retrieve run %s", id, run)
+                    self.log.warning("%d: Unable to retrieve run %s", self.id, run)
                     full_result.append(None)
 
 
-            log.debug("%d: Full result: %s",
-                      id, pscheduler.json_dump(full_result, pretty=True))
+            self.log.debug("%d: Full result: %s",
+                           self.id,
+                           pscheduler.json_dump(full_result, pretty=True))
 
             # TODO: If any of the tests resulted in a failure, check
             # if the participants' clocks are off and add that to the
@@ -267,38 +243,33 @@ class Run:
             full_params = pscheduler.json_dump({ 'result-full' : full_result })
 
             for run in runs:
-                log.debug("%d: Storing result in %s", id, run)
+                self.log.debug("%d: Storing full result in %s, params=%s",
+                               self.id, run, full_params)
                 status, returned = pscheduler.url_put(run,
                                                       data=full_params,
                                                       throw=False,
                                                       json=False)
                 if status != 200:
-                    log.warning("%d: Unable to update run %s: %d %s",
-                                id, run, status, returned)
+                    self.log.warning("%d: Unable to update run %s: %d %s",
+                                     self.id, run, status, returned)
 
 
-        # TODO: Put the task into the finished state
-
-        cursor.close()
-        db.close()
-        log.debug("%d: Run complete", id)
-
-
+        self.cursor.close()
+        self.log.debug("%d: Run complete", self.id)
+        self.finished = True
 
 
 #
 # Main Program
 #
 
+
 def main_program():
 
-    pg = pscheduler.pg_connection(dsn)
-    cursor = pg.cursor()
-    cursor.execute("LISTEN " + options.channel)
+    db = pscheduler.pg_connection(dsn)
+    cursor = db.cursor()
 
-    # TODO: Start any background runs that should still be running.
-    # Need to make sure they haven't already been started just in case
-    # this is restarted by an exception.
+    cursor.execute("LISTEN run_new")
 
     while True:
 
@@ -315,25 +286,36 @@ def main_program():
                           ORDER BY start_in
                    """, [refresh]);
 
+        wait_time = None
+
         if cursor.rowcount:
 
-            # TODO: There must be a nicer way to take this array slice as args.
-            rows = cursor.fetchall()
-            log.debug(str([ "RUN " + str(row[0]) + " " + str(row[1]) for row in rows ]) )
-            runs = [ Run(row[0], row[1]) for row in rows ]
-            wait_time = rows[0][1]
+            run_ids = []
+
+            for row in cursor:
+
+                run_id, start_in = row
+                run_ids.append(run_id)
+                log.debug("Run %s starts in %s" % (run_id, start_in))
+
+                # TODO: Hold this
+                worker = RunWorker(db, log, run_id, start_in)
+
+                if wait_time is None:
+                    wait_time = start_in
+
 
             # Do this here to guarantee that we don't pick up rows for
             # runs we just started in the next iteration of the loop.
+            cursor.execute("""
+                           UPDATE run
+                           SET state = run_state_on_deck()
+                           WHERE id in %s""", (tuple(run_ids),))
 
-            cursor.execute( "UPDATE run SET state = run_state_on_deck() WHERE id in %s",
-                            (tuple([row[0] for row in rows]),) )
-            log.debug("Put %d runs on deck", len(runs))
 
         else:
 
             log.debug("Nothing to do.")
-            runs = []
             wait_time = refresh
 
 
@@ -348,12 +330,12 @@ def main_program():
             # Better, make it a function in db.py.
 
             try:
-                if select.select([pg],[],[],
+                if select.select([db],[],[],
                                  pscheduler.timedelta_as_seconds(wait_time)) \
                                  != ([],[],[]):
                     # Notified
-                    pg.poll()
-                    del pg.notifies[:]
+                    db.poll()
+                    del db.notifies[:]
                     log.debug("Schedule change.")
 
             except select.error as ex:
@@ -364,7 +346,7 @@ def main_program():
                     raise ex
 
     # Not that this will ever be reached...
-    pg.close()
+    db.close()
 
 
 

@@ -23,11 +23,13 @@ AS
       run.part_data_full AS part_data_full,
       task.json #> '{test}' AS test,
       lower(run.times) AS start,
-      task.duration AS duration
+      task.duration AS duration,
+      test.scheduling_class
     FROM
         run
 	JOIN task ON task.id = run.task
 	JOIN tool ON tool.id = task.tool
+        JOIN test ON test.id = task.test
     WHERE
         run.state = run_state_pending()
         AND lower(run.times) >= normalized_now()
