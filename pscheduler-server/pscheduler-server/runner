@@ -62,10 +62,22 @@ class RunWorker:
         self.id = id
         self.start_in = start_in
         self.finished = False
+        self.output = []
 
         self.worker = threading.Thread(target=lambda: self.run())
         self.worker.start()
-        self.log.debug("%d: Started thread", self.id)
+
+
+    def __post_new_result(self, json):
+        pass  # TODO: Write this.
+
+
+    def __accumulate_output(self, line):
+        if line == '--8<-- pScheduler End Result -->8--':
+            __post_new_result("\n".join(self.output))
+            self.output = []
+        else:
+            self.output.append(line)
 
 
     def run(self):
@@ -139,8 +151,11 @@ class RunWorker:
         returncode, stdout, stderr = pscheduler.run_program(
             [ "pscheduler", "internal", "invoke", "tool", tool, "run" ],
             stdin = tool_input,
-            timeout = pscheduler.timedelta_as_seconds(end - start) + 1
+            timeout = pscheduler.timedelta_as_seconds(end - start) + 1,
+            line_call = lambda l: self.__accumulate_output(l)
             )
+
+        stdout = "\n".join(self.output)
 
         if len(stdout) == 0:
             stdout = None
@@ -229,10 +244,9 @@ class RunWorker:
                     self.log.warning("%d: Unable to retrieve run %s", self.id, run)
                     full_result.append(None)
 
-
             self.log.debug("%d: Full result: %s",
                            self.id,
-                           pscheduler.json_dump(full_result, pretty=True))
+                           pscheduler.json_dump(full_result))
 
             # TODO: If any of the tests resulted in a failure, check
             # if the participants' clocks are off and add that to the
