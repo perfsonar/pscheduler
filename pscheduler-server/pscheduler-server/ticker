@@ -42,7 +42,6 @@ log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
 
 dsn = options.dsn
 
-cursor = pscheduler.pg_cursor(dsn)
 
 #
 # Main Program
@@ -52,7 +51,12 @@ def main_program():
 
     # TODO: Bulletproof the SQL queries
 
+    db = pscheduler.pg_connection(dsn)
+    cursor = db.cursor()
+
+    log.debug("Booting")
     cursor.execute("SELECT boot()")
+    log.debug("Booted")
 
     while True:
 

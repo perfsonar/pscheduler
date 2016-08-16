@@ -106,6 +106,7 @@ pscheduler-tool-owping
 pscheduler-tool-iperf
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
+pscheduler-tool-sleepbg
 pscheduler-tool-snooze
 pscheduler-tool-ping
 pscheduler-tool-tracepath

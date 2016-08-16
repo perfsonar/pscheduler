@@ -38,7 +38,8 @@ AS
 
 
 
--- What tasks need a run scheduled and when
+-- What tasks need a run scheduled and when.  This explicitly excludes
+-- background tasks, which are handled separately.
 
 DROP VIEW IF EXISTS schedule_runs_to_schedule;
 CREATE OR REPLACE VIEW schedule_runs_to_schedule
@@ -49,22 +50,24 @@ AS
         -- Non-repeating tasks with no runs scheduled
 
         SELECT
-            id AS task,
-	    uuid,
-            enabled,
-            added,
-            start,
-            duration,
+            task.id AS task,
+	    task.uuid,
+            task.enabled,
+            task.added,
+            task.start,
+            task.duration,
             now() AS after,
-            repeat,
-            max_runs,
+            task.repeat,
+            task.max_runs,
 	    0 AS scheduled,
-            runs,
+            task.runs,
             task.until,
-            greatest(normalized_now(), start) AS trynext,
-	    participant
+            greatest(normalized_now(), task.start) AS trynext,
+	    task.participant,
+            test.scheduling_class
         FROM
             task
+            JOIN test ON test.id = task.test
         WHERE
 	    repeat IS NULL
 	    AND NOT EXISTS (SELECT * FROM run WHERE run.task = task.id)
@@ -74,22 +77,24 @@ AS
         -- Repeating tasks without runs
 
         SELECT
-            id AS task,
-            uuid,
-            enabled,
-            added,
-            start,
-            duration,
-            greatest(start, now()) AS after,
-            repeat,
-            max_runs,
+            task.id AS task,
+            task.uuid,
+            task.enabled,
+            task.added,
+            task.start,
+            task.duration,
+            greatest(task.start, now()) AS after,
+	    task.repeat,
+            task.max_runs,
 	    0 AS scheduled,
-            runs,
-            until,
-            greatest(start, normalized_now()) AS trynext,
-            participant
+            task.runs,
+            task.until,
+            greatest(task.start, normalized_now()) AS trynext,
+            task.participant,
+            test.scheduling_class
         FROM
             task
+            JOIN test on test.id = task.test
         WHERE
 	    repeat IS NOT NULL
             AND NOT EXISTS (SELECT * FROM run WHERE run.task = task.id)
@@ -109,7 +114,9 @@ AS
             task.repeat,
             max_runs,
 	    (SELECT COUNT(*)
-             FROM run
+             FROM
+                 run
+                 JOIN test ON test.id = task.test
              WHERE
                  run.task = task.id
                  AND upper(times) > normalized_now()) AS scheduled,
@@ -118,13 +125,15 @@ AS
  	    task_next_run(coalesce(start, normalized_now()), 
                           greatest(normalized_now(), task.start, max(upper(run.times))),
                           repeat) AS trynext,
-	    task.participant
+	    task.participant,
+	    test.scheduling_class
         FROM
             run
             JOIN task ON task.id = run.task
+            JOIN test ON test.id = task.test
 	WHERE
 	    task.repeat IS NOT NULL
-        GROUP BY task.id
+        GROUP BY task.id, test.scheduling_class
 
     )
     SELECT
@@ -138,6 +147,7 @@ AS
     WHERE
         enabled
 	AND participant = 0
+        AND scheduling_class <> scheduling_class_background()
         AND ( (max_runs IS NULL)
               OR (runs + scheduled) < max_runs )
         AND ( (until IS NULL) OR (trynext < until) )
@@ -145,6 +155,41 @@ AS
     ORDER BY added
 ;
 
+
+
+-- Background tasks that should be running but aren't.  This is done
+-- separately in the hopes that we can get rid of background tasks at
+-- some point.
+
+DROP VIEW IF EXISTS schedule_background_runs_to_schedule;
+CREATE OR REPLACE VIEW schedule_background_runs_to_schedule
+AS
+    SELECT
+        task.id,
+	task.uuid,
+	task.runs,
+	normalized_now() AS trynext
+    FROM
+        task
+        JOIN test ON test.id = task.test
+    WHERE
+        task.enabled
+        AND test.scheduling_class = scheduling_class_background()
+        -- Time is still within runtime
+        AND now() BETWEEN COALESCE(start, added)
+            AND COALESCE(start, added) + duration
+        -- Nothing pending or running
+        AND NOT EXISTS (
+            SELECT * FROM run
+            WHERE
+                run.task = task.id
+                AND run.state IN (
+                    run_state_pending(),
+                    run_state_on_deck(),
+                    run_state_running()
+                )
+        )
+;
 
 
 

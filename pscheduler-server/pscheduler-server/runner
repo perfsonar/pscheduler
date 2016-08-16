@@ -23,10 +23,6 @@ opt_parser.add_option("-d", "--dsn",
                       action="store", type="string", dest="dsn",
                       default="")
 
-# NOTE: Changing the refresh interval will have an effect on how many
-# forked processes are running, connected to the database and waiting
-# for a run to start.  Increase this value only if you understand the
-# consequences.
 opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
@@ -48,7 +44,42 @@ log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
 
 dsn = options.dsn
 
+# Get this once so we don't have to do a function call every time.
+delimiter = pscheduler.api_result_delimiter()
 
+
+#
+# Directory of what we believe to be running and what we don't.
+#
+# Even though Python de-parallelizes threads, force this to become
+# thread-safe in case it gets smarter later.
+#
+
+class RunDictionary:
+
+    def __init__(self):
+        self.dict = {}
+        self.lock = threading.Lock()
+
+    def start(self, id, worker):
+        with self.lock:
+            self.dict[id] = worker
+
+    def finish(self, id):
+        with self.lock:
+            del self.dict[id]
+
+    def is_running(self, id):
+        with self.lock:
+            result = id in self.dict
+        return result
+
+run_dict = RunDictionary()
+
+
+#
+# Class that does the test runs
+#
 
 class RunWorker:
 
@@ -68,29 +99,65 @@ class RunWorker:
         self.worker.start()
 
 
-    def __post_new_result(self, json):
-        pass  # TODO: Write this.
+    def __post_new_result(self, result):
+        """
+        Post a finished run for this task using the result provided.
+        """
+        self.log.debug("%d: POSTING RESULT %s", self.id, result)
+        try:
+            json = pscheduler.json_load(result)
+        except ValueError:
+            log.warning("Discarding bogus result %s", result)
+            return
+        self.cursor.execute("""
+            INSERT INTO run (task, uuid, times, state, status, result_merged)
+            VALUES (%s,
+                    NULL,
+                    tstzrange(normalized_now(), normalized_now(), '[]'),
+                    run_state_finished(),
+                    0,
+                    %s)
+            """, [ self.task_id, result ])
+        # TODO: Error check this.
 
 
     def __accumulate_output(self, line):
-        if line == '--8<-- pScheduler End Result -->8--':
-            __post_new_result("\n".join(self.output))
+        """
+        Accumulate lines of output from the tool in an array until the
+        magic delimiter appears.  When it does, use it to post a
+        finished run for the same task.
+        """
+        # TODO: This should be available in the pScheduler module
+        if line == delimiter:
+            self.__post_new_result("\n".join(self.output))
             self.output = []
         else:
             self.output.append(line)
 
 
     def run(self):
+        """
+        Run the tool in an exception-safe way
+        """
         self.log.debug("%d: Thread running", self.id)
+        run_dict.start(self.id, self)
         try:
             self.__run()
         except Exception as ex:
+            # Don't worry about the result here.  If __run() failed to
+            # post anything, that will be the end of it.  If it did,
+            # it might be salvageable.
             self.log.debug("%d: Exception: %s", self.id, ex)
             log.exception()
         self.log.debug("%d: Thread finished", self.id)
+        run_dict.finish(self.id)
 
 
     def __run(self):
+        """
+        Run the tool and, if the lead participant, gather, aggregate
+        and post the results.
+        """
 
         # Don't try to do anyting until the start time.
         sleep_time = pscheduler.timedelta_as_seconds(self.start_in)
@@ -114,10 +181,14 @@ class RunWorker:
                            upper(run.times),
                            task.json #> '{test}',
                            run.uuid,
-                           run.part_data_full
+                           run.part_data_full,
+                           scheduling_class.enum
                        FROM
                            run
                            JOIN task ON task.id = run.task
+                           JOIN test ON test.id = task.test
+                           JOIN scheduling_class
+                                ON scheduling_class.id = test.scheduling_class
                            JOIN tool ON tool.id = task.tool
                        WHERE run.id = %s
                        """, [self.id])
@@ -126,7 +197,10 @@ class RunWorker:
         row = self.cursor.fetchone()
 
         tool, task_uuid, task_id, participant, participants, start, end, \
-            test_spec, run_uuid, partdata = row
+            test_spec, run_uuid, partdata, scheduling_class = row
+
+        # This will be used when a background run produces a result.
+        self.task_id = task_id
 
         #
         # Do the local tool run
@@ -184,9 +258,11 @@ class RunWorker:
 
         self.log.debug("%d: Stored local result", self.id)
 
-        # The lead participant takes care of gathering and merging the finished results.
+        # The lead participant in non-background tasks takes care of
+        # gathering and merging the finished results.  Background
+        # tasks take care of inserting their own results.
 
-        if participant == 0:
+        if participant == 0 and scheduling_class != "background":
 
             self.log.debug("%d: Doing lead participant duties", self.id)
 
@@ -309,8 +385,12 @@ def main_program():
             for row in cursor:
 
                 run_id, start_in = row
+
+                if run_dict.is_running(run_id):
+                    log.debug("Run %d is already running", run_id)
+                    continue
+
                 run_ids.append(run_id)
-                log.debug("Run %s starts in %s" % (run_id, start_in))
 
                 # TODO: Hold this
                 worker = RunWorker(db, log, run_id, start_in)

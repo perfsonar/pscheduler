@@ -87,11 +87,19 @@ if not pscheduler.api_is_task(task_url):
 verbose = (not options.quiet) and (out_format == "text/plain")
 
 
+# Get the task with details and find out its class.
 
+status, task = pscheduler.url_get(task_url, params={"detail":True}, throw=False)
 
-# TODO: Get task and see if there will be any future runs.  Need to
-# have something in the database that says whether or not the task is
-# completely over with.
+if status != 200:
+    pscheduler.fail("Unable to fetch task: Error " + str(status))
+
+# TODO: This is in anticipation of multi-result.
+try:
+    multi_result = task["detail"]["multi-result"]
+    multi_duration = task["detail"]["duration"]
+except KeyError:
+    pscheduler.fail("Server returned malformed test specification.")
 
 # TODO: Might be nice to dump the test parameters, but need to add a
 # 'format' parameter to the REST API like was done for runs.
@@ -110,7 +118,8 @@ while True:
         )
 
     if status != 200:
-        pscheduler.fail("Unable to fetch task or its runs")
+        pscheduler.fail("Unable to fetch runs.")
+
 
     if len(runs) == 0:
         if run_count == 0:

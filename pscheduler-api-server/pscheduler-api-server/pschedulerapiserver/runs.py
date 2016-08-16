@@ -424,7 +424,9 @@ def tasks_uuid_runs_run(task, run):
             except ValueError:
                 return bad_request("Invalid result-full")
 
-            log.debug("Updating result-full: %s", result_full)
+            log.debug("Updating result-full: JSON %s", result_full)
+            log.debug("Updating result-full: Run  %s", run)
+            log.debug("Updating result-full: Task %s", task)
 
             try:
                 cursor = dbcursor_query("""

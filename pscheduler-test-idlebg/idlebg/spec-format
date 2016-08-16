@@ -28,6 +28,7 @@ if format == 'text/plain':
    template = """
 Starting Comment ... {.section starting-comment}{starting-comment}{.or}Not Specified{.end}
 Duration ........... {.section duration}{duration}{.or}Not Specified{.end}
+Report Interval .... {.section interval}{interval}{.or}Not Specified{.end}
 Parting Comment .... {.section parting-comment}{parting-comment}{.or}Not Specified{.end}
    """
 
@@ -41,7 +42,9 @@ elif format == 'text/html':
 <tr><td><b>Duration</b></td><td>
 {.section duration}{duration}{.or}<i>Not Specified</i>{.end}
 </td></tr>
-<table border="0">
+<tr><td><b>Report Interval</b></td><td>
+{.section interval}{interval}{.or}<i>Not Specified</i>{.end}
+</td></tr>
 <tr><td><b>Parting Comment</b></td><td>
 {.section parting-comment}{parting-comment}{.or}<i>Not Specified</i>{.end}
 </td></tr>

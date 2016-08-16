@@ -386,8 +386,7 @@ def tasks_uuid(uuid):
                     else row[6],
                 'anytime':  row[7],
                 'exclusive':  row[8],
-                'multi-result':  row[9],
-
+                'multi-result':  row[9]
                 }
 
         return ok_json(json)

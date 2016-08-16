@@ -1,9 +1,9 @@
 #!/bin/sed -e 1d
 {
-    "name": "sleep",
-    "description": "Do nothing by sleeping",
+    "name": "sleepbg",
+    "description": "Do nothing by sleeping in the background",
     "version": "0.0",
-    "tests": [ "idle", "idleex" ],
+    "tests": [ "idlebg" ],
 
     "preference": 0,
 

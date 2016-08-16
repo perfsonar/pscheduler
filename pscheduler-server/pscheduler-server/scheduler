@@ -17,10 +17,6 @@ import traceback
 # Gargle the arguments
 
 opt_parser = optparse.OptionParser()
-opt_parser.add_option("-c", "--channel",
-                      help="Schedule notification channel",
-                      action="store", type="string", dest="channel",
-                      default="task_change")
 # TODO: Do we want pscheduler as the default here?
 opt_parser.add_option("-d", "--dsn",
                       help="Database connection string",
@@ -64,39 +60,35 @@ def main_program():
 
     pg = pscheduler.pg_connection(dsn)
     cursor = pg.cursor()
-    cursor.execute("LISTEN " + options.channel)
+    cursor.execute("LISTEN task_change")
 
     while True:
 
-        # Wait for something to happen.
+        wait = True
 
-        log.debug("Waiting %s for notification", refresh)
+        cursor.execute("""
+            SELECT uuid, runs, trynext, FALSE
+            FROM schedule_runs_to_schedule
+            UNION
+            SELECT uuid, runs, trynext, TRUE
+            FROM schedule_background_runs_to_schedule
+            """)
 
-        try:
-            if select.select([pg],[],[],
-                             pscheduler.timedelta_as_seconds(refresh)) != ([],[],[]):
-                # Notified
-                pg.poll()
-                del pg.notifies[:]
-                log.debug("Notified.")
+        # Check if any notifications arrived while this query executed.
+        if pg.notifies:
+            wait = False
+            del pg.notifies[:]
+            log.debug("Received notifications.")
 
-        except select.error as ex:
-            err_no, message = ex
-            if err_no != errno.EINTR:
-                log.exception()
-                raise ex
 
-        cursor.execute("""SELECT uuid, runs, trynext from schedule_runs_to_schedule""")
+        for row in cursor:
 
-        if cursor.rowcount == 0:
-            log.debug("No runs to schedule.")
-            break
+            uuid, runs, trynext, background = row
 
-        for row in cursor.fetchall():
+            log.debug("%sTASK %s, %d runs, try %s", 
+                      "BACKGROUND " if background else "",
+                      uuid, runs, trynext)
 
-            uuid, runs, trynext = row
-
-            log.debug("TASK %s, %d runs, try %s", uuid, runs, trynext)
 
             url = pscheduler.api_url(path='/tasks/' + uuid)
 
@@ -119,6 +111,31 @@ def main_program():
             else:
                 log.debug("Scheduled for %s - %s at %s",
                           start_time, end_time, run_uri)
+            # We did something, even a failure, so don't wait.
+            wait = False
+
+        # Wait for something to happen.
+          
+
+        if wait:
+
+            log.debug("Waiting %s for notification", refresh)
+
+            try:
+                if select.select([pg],[],[],
+                                 pscheduler.timedelta_as_seconds(refresh)) \
+                                 != ([],[],[]):
+                    # Notified
+                    pg.poll()
+                    log.debug("Notified: %s", pg.notifies)
+                    del pg.notifies[:]
+
+
+            except select.error as ex:
+                err_no, message = ex
+                if err_no != errno.EINTR:
+                    log.exception()
+                    raise ex
 
 
 pscheduler.safe_run(lambda: main_program())

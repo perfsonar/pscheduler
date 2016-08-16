@@ -1,5 +1,5 @@
 """
-Functions related to the pScheduler REST API
+Functions related to the pScheduler REST and Plugin APIs
 """
 
 import socket
@@ -68,6 +68,14 @@ def api_is_run(url):
         return False
 
     return True
+
+
+def api_result_delimiter():
+    """
+    Return the delimiter to be used by background tests when producing
+    multiple results.
+    """
+    return "---- pScheduler End Result ----"
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@
 Functions for running external programs neatly
 """
 
+import atexit
 import pscheduler
 import select
 import subprocess32
@@ -10,6 +11,20 @@ import traceback
 
 # Note: Docs for the 3.x version of subprocess, the backport of which
 # is used here, is at https://docs.python.org/3/library/subprocess.html
+
+
+# Keep a hash of what processes are running so they can be killed off
+# when the program exits.  Note that it would behoove any callers to
+# make sure they exit cleanly on most signals so this gets called.
+
+__running = {}
+
+def __terminate_running():
+    for process in __running:
+        process.terminate()
+
+atexit.register(__terminate_running)
+
 
 def run_program(argv,              # Program name and args
                 stdin=None,        # What to send to stdin
@@ -41,12 +56,19 @@ def run_program(argv,              # Program name and args
     stderr - Contents of standard erroras a single string
     """
 
+    process = None
+
+    if filter(lambda v: v is None, argv):
+        raise Exception("Can't run with null arguments.")
+
     try:
         process = subprocess32.Popen(argv,
                                      stdin=subprocess32.PIPE,
                                      stdout=subprocess32.PIPE,
-                                     stderr=subprocess32.PIPE
+                                     stderr=subprocess32.PIPE,
                                      )
+
+        __running[process] = 1
 
         if line_call is None:
 
@@ -100,6 +122,7 @@ def run_program(argv,              # Program name and args
                 reads, writes, specials = select.select(fds, [], [], time_left)
 
                 if len(reads) == 0:
+                    del __running[process]
                     return 2, None, "Process took too long to run."
 
                 for fd in reads:
@@ -128,7 +151,22 @@ def run_program(argv,              # Program name and args
             + ''.join(traceback.format_exception(extype, ex, tb)).strip()
 
 
+    if process is not None:
+        del __running[process]
+
     if fail_message is not None and status != 0:
         pscheduler.fail("%s: %s" % (fail_message, stderr))
 
     return status, stdout, stderr
+
+
+
+if __name__ == "__main__":
+
+    status, out, err = run_program(["cat", "/etc/issue", "-"],
+                                   stdin="Hello, world.",
+                                   short=True
+                                   )
+    print "Status:", status
+    print "Out:   ", out
+    print "Err:   ", err

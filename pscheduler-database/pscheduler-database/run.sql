@@ -207,25 +207,28 @@ BEGIN
 	-- TODO: Make sure part_data_full, result_ful and
 	-- result_merged happen in the right order.
 
+	NOTIFY run_change;
+
     END IF;
 
 
     -- TODO: When there's resource management, assign the resources to this run.
 
+    SELECT INTO tool_name name FROM tool WHERE id = taskrec.tool; 
 
-    -- TODO: New runs get participant data.  The table needs a column for this.
+    -- Finished runs are what get inserted for background tasks.
+    IF NEW.state <> run_state_finished() THEN
 
-    pdata_out := row_to_json(t) FROM ( SELECT taskrec.participant AS participant,
-                                       cast ( taskrec.json #>> '{test, spec}' AS json ) AS test ) t;
+        pdata_out := row_to_json(t) FROM ( SELECT taskrec.participant AS participant,
+                                           cast ( taskrec.json #>> '{test, spec}' AS json ) AS test ) t;
 
-    SELECT INTO tool_name name FROM tool WHERE id = taskrec.tool;
-
-    run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_name, 'participant-data'], pdata_out::TEXT );
-	IF run_result.status <> 0 THEN
+        run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_name, 'participant-data'], pdata_out::TEXT );
+        IF run_result.status <> 0 THEN
 	    RAISE EXCEPTION 'Unable to get participant data: %', run_result.stderr;
 	END IF;
-    NEW.part_data := regexp_replace(run_result.stdout, '\s+$', '')::JSONB;
+        NEW.part_data := regexp_replace(run_result.stdout, '\s+$', '')::JSONB;
 
+    END IF;
 
     IF (TG_OP = 'UPDATE') THEN
 
@@ -263,7 +266,9 @@ BEGIN
  	       run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_name,
 	           'merged-results'], result_merge_input::TEXT );
    	       IF run_result.status <> 0 THEN
-	           RAISE EXCEPTION 'Unable to get merged result: %', run_result.stderr;
+                   -- TODO: This leaves the result empty.  Maybe post some sort of failure?
+	           RAISE EXCEPTION 'Unable to get merged result on %: %',
+		       result_merge_input::TEXT, run_result.stderr;
 	       END IF;
   	      NEW.result_merged := regexp_replace(run_result.stdout, '\s+$', '')::JSONB;
 

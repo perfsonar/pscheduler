@@ -811,6 +811,24 @@ related to the input and {\tt 3} for an error unrelated to the input.
 
 \subsubsection{run}\label{toolrun}
 This method carries out the test as one of its participants.
+
+For tests whose scheduling class is {\tt normal} or {\tt exclusive},
+the method runs the test, produces the output described below and exits.
+
+When the scheduling class is {\tt background}, the method will produce
+multiple results until its time to run (duration) has expired.  Each
+result will be in the format described below followed by the delimiter
+string ``{\tt ---- pScheduler End Result ----}'' (four hyphens and a
+space on either end) placed on its own line.  The {\tt
+  api_result_delimiter()} function in the {\tt pscheduler} Python
+module makes this value available to programs.  It is recommended that
+programs implementing this method for background tests not buffer
+their output or make sure to flush it after writing the delimiter.
+Once the run is complete, the method should exit without producing any
+output.  Errors may be generated in the same way as for non-background
+tasks.
+
+
 \todo{Could use some examples.}
 
 \calloutitem{Standard Input} A JSON run specification containing the following items:

@@ -14,18 +14,9 @@ json = pscheduler.json_load(exit_on_error=True);
 # TODO: Should be checking the package schema and the task spec schema.
 
 try:
-    if json['type'] not in [ 'idle', 'idleex' ]:
+    if json['type'] != 'idlebg' :
         pscheduler.fail('Unsupported test type')
 except KeyError:
     pscheduler.fail('Missing test type')
-
-
-# This tool has a (forced) quirk that makes it not sleep for less than
-# 30 seconds.
-
-duration = pscheduler.iso8601_as_timedelta(json['spec']['duration'])
-if duration is not None:
-    if duration > datetime.timedelta(seconds=60):
-        pscheduler.fail("Won't sleep for that long.")
 
 pscheduler.succeed()
