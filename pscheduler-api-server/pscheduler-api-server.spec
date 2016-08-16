@@ -27,8 +27,8 @@ Requires:	pscheduler-server
 Requires:	mod_ssl
 Requires:	mod_wsgi
 Requires:	python-pscheduler
-Requires:	python-pytz
 Requires:	python-requests
+Requires:	pytz
 # TODO: See what else this needs at runtime.
 
 

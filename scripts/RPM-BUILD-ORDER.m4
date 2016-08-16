@@ -42,7 +42,6 @@ python-isodate
 python-netaddr
 python-ntplib
 python-py-radix
-python-pytz
 python-repoze.lru
 python-subprocess32
 python-tzlocal
