@@ -21,6 +21,14 @@ def api_url(host = None,
             protocol = 'https'
             ):
     """Format a URL for use with the pScheduler API."""
+
+    # IPv6 addresses get special treatment
+    try:
+        socket.inet_pton(socket.AF_INET6, host)
+        host = "[%s]" % host
+    except socket.error:
+        pass  # Not an IPv6 address.
+
     if path is not None and path.startswith('/'):
         path = path[1:]
     return protocol + '://' \
