@@ -206,25 +206,38 @@ def main_program():
                                              diags = diags || (%s::JSONB)
                                          WHERE id = %s""",
                                           [ attempt, run_id ])
+
                 else:
+
                     log.debug("Failed: %s to %s: %s", uuid, archiver, stdout)
-                    next_delta = pscheduler.iso8601_as_timedelta(
-                        returned_json['retry'])
 
-                    next = datetime.datetime.now(tzlocal()) \
-                        + next_delta
+                    # If there's a retry, schedule the next one.
 
-                    update_cursor.execute("""UPDATE archiving
-                                         SET
-                                             attempts = attempts + 1,
-                                             last_attempt = now(),
-                                             next_attempt = %s,
-                                             diags = diags || (%s::JSONB)
-                                         WHERE id = %s""",
-                                          [ next, attempt, run_id ])
+                    if "retry" in returned_json:
 
-                    if next_delta < next_refresh:
-                        next_refresh = next_delta
+                        next_delta = pscheduler.iso8601_as_timedelta(
+                            returned_json['retry'])
+
+                        next = datetime.datetime.now(tzlocal()) \
+                            + next_delta
+
+                        log.debug("Rescheduling for %s", next)
+
+                        update_cursor.execute("""UPDATE archiving
+                                             SET
+                                                 attempts = attempts + 1,
+                                                 last_attempt = now(),
+                                                 next_attempt = %s,
+                                                 diags = diags || (%s::JSONB)
+                                             WHERE id = %s""",
+                                              [ next, attempt, run_id ])
+
+                        if next_delta < next_refresh:
+                            next_refresh = next_delta
+
+                    else:
+
+                        log.debug("No retry requested.  Giving up.")
 
 
 pscheduler.safe_run(lambda: main_program())
