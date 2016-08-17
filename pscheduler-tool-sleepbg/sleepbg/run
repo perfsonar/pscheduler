@@ -61,8 +61,6 @@ while next_output < end_time:
     runs += 1
     results['diags'] = "Run #%d" % runs
     print pscheduler.json_dump(results)
-    # The magic result delimiter
-    # TODO: This should be available in the pScheduler module
     print delimiter
     sys.stdout.flush()
     next_output += interval

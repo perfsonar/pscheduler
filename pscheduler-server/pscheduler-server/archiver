@@ -106,7 +106,7 @@ def main_program():
         next_refresh = refresh
 
         cursor.execute("""SELECT id, uuid, archiver, archiver_data, start,
-                      duration, test, tool, participants, result_full, result,
+                      duration, test, tool, participants, result,
                       attempts, last_attempt
                       FROM archiving_eligible""")
 
@@ -119,10 +119,9 @@ def main_program():
         for row in cursor.fetchall():
 
             run_id, uuid, archiver, archiver_data, start, duration, test, \
-                tool, participants, result_full, result_merged, attempts, \
+                tool, participants, result_merged, attempts, \
                 last_attempt = row
 
-            assert len(participants) == len(result_full)
             participants_merged = []
             for participant in participants:
                 participants_merged.append(socket.gethostname() \
