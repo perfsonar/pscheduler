@@ -11,7 +11,7 @@
 
 # Un-comment this to add IPs for a private backplane interface if
 # you're using one.
-ADD_BACKPLANE_HOSTS=1
+#ADD_BACKPLANE_HOSTS=1
 
 # Un-comment these and configure to taste.
 #NEW_USER=mfeit
