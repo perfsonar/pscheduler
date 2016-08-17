@@ -52,10 +52,10 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %%_pscheduler_test_doc %{_pscheduler_docdir}/test
 %%_pscheduler_test_confdir %{_pscheduler_sysconfdir}/test
 
-
 # Tools
 %%_pscheduler_tool_libexec %{_pscheduler_classes}/tool
 %%_pscheduler_tool_doc %{_pscheduler_docdir}/tool
+%%_pscheduler_tool_confdir %{_pscheduler_sysconfdir}/tool
 
 # Archivers
 %%_pscheduler_archiver_libexec %{_pscheduler_classes}/archiver
