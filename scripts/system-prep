@@ -98,8 +98,31 @@ yum -y install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${REDH
 
 # Internet2
 rpm --import http://software.internet2.edu/rpms/RPM-GPG-KEY-Internet2
-# TODO: We should have a symlink to the latest that stays constant.
-yum -y install "http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/$(uname -m)/RPMS.main/Internet2-repo-0.${REDHAT_RELEASE_MAJOR}-1.noarch.rpm"
+
+# TODO: Use the default when the I2 repo for EL7 becomes production
+case ${REDHAT_RELEASE_MAJOR} in
+
+    7)
+	cat > /etc/yum.repos.d/internet2-staging.repo <<EOF
+# Name: Internet2 Staging RPM Repository
+# URL: http://software.internet2.edu
+[Internet2-staging]
+name = Internet2 Staging RPM Repository
+baseurl = http://software.internet2.edu/branches/staging/rpms/el${REDHAT_RELEASE_MAJOR}/\$basearch/main/
+enabled = 1
+protect = 0
+gpgcheck = 0
+EOF
+	break
+	;;
+
+    *)
+	# TODO: We should have a symlink to the latest that stays constant.
+	yum -y install "http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/$(uname -m)/RPMS.main/Internet2-repo-0.${REDHAT_RELEASE_MAJOR}-1.noarch.rpm"
+	break
+	;;
+
+esac
 
 
 # Things we need to build:
