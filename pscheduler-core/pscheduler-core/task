@@ -24,8 +24,6 @@ class VerbatimParser(optparse.OptionParser):
 opt_parser = VerbatimParser(
     usage="Usage: %prog [options] test-type [test-options]",
     epilog=
-# TODO: Need to add note about how to ask for test-specific help when
-# we have that.
 """
 For help with a test:
 
