@@ -22,6 +22,8 @@ def api_url(host = None,
             ):
     """Format a URL for use with the pScheduler API."""
 
+    host = api_this_host() if host is None else str(host)
+
     # IPv6 addresses get special treatment
     try:
         socket.inet_pton(socket.AF_INET6, host)
@@ -32,7 +34,7 @@ def api_url(host = None,
     if path is not None and path.startswith('/'):
         path = path[1:]
     return protocol + '://' \
-        + (api_this_host() if host is None else str(host)) \
+        + host \
         + ('' if port is None else (':' + str(port))) \
         + api_root() + '/'\
         + ('' if path is None else str(path))

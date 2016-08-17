@@ -4,14 +4,19 @@
 #
 
 import errno
+import multiprocessing
 import optparse
 import pscheduler
 import psycopg2
 import psycopg2.extensions
 import select
+import socket
 import sys
 import threading
 import time
+
+# See Python 2.6 workaround below
+import weakref
 
 
 # Gargle the arguments
@@ -78,6 +83,72 @@ run_dict = RunDictionary()
 
 
 #
+# Clock Survey
+#
+
+def is_ip(addr):
+    """
+    Determine if an address looks like IPv4 or IPv6
+    """
+    for family in [socket.AF_INET, socket.AF_INET6]:
+        try:
+            socket.inet_pton(family, addr)
+            return True
+        except socket.error:
+            pass
+
+    return False
+
+
+def get_clock(arg):
+    slot, url = arg
+    status, result = pscheduler.url_get(url, throw=False)
+    if status != 200:
+        result = { "error": status }
+    return (slot, result)
+
+
+def clock_survey(hosts):
+
+    if len(hosts) == 0:
+        return []
+
+    # Any null hosts become the local host
+    # TODO: Should this call api_this_host()?
+    hosts = [ "127.0.0.1" if host is None else host for host in hosts ]
+
+    # Pre-Resolve the hosts to IPs so there's no test time spent on it
+    resolved = pscheduler.dns_bulk_resolve(hosts)
+    hosts = [ host if is_ip(host) else resolved[host] for host in hosts ]
+
+    host_args = []
+    for slot in range(0,len(hosts)):
+        host = hosts[slot]
+        if host is None:
+            continue
+        host_args.append((slot, pscheduler.api_url(host, "/clock")))
+
+    # Prime the result with empties for anything that didn't get
+    # tested.
+    result = [None] * len(hosts)
+
+    # Work around a bug in 2.6
+    # TODO: Get rid of this when 2.6 is no longer in the picture.
+    if not hasattr(threading.current_thread(), "_children"):
+        threading.current_thread()._children = weakref.WeakKeyDictionary()
+
+    # Run the lot of tests in parallel
+    pool = multiprocessing.pool.ThreadPool(processes=len(host_args))
+    for slot, clock in pool.imap(get_clock, host_args, chunksize=1):
+        result[slot] = clock
+    pool.close()
+
+    return pscheduler.json_dump(result)
+
+
+
+
+#
 # Class that does the test runs
 #
 
@@ -109,6 +180,7 @@ class RunWorker:
         except ValueError:
             log.warning("Discarding bogus result %s", result)
             return
+        # TODO: Error check this.
         self.cursor.execute("""
             INSERT INTO run (task, uuid, times, state, status, result_merged)
             VALUES (%s,
@@ -118,7 +190,7 @@ class RunWorker:
                     0,
                     %s)
             """, [ self.task_id, result ])
-        # TODO: Error check this.
+
 
 
     def __accumulate_output(self, line):
@@ -159,17 +231,21 @@ class RunWorker:
         and post the results.
         """
 
+        failures = 0
+
         # Don't try to do anyting until the start time.
         sleep_time = pscheduler.timedelta_as_seconds(self.start_in)
         self.log.debug("%d: Sleeping %s until test start", self.id, sleep_time)
         time.sleep(sleep_time)
 
+        # TODO: Error check this.
         self.cursor.execute("""
                        UPDATE run
                            SET state = run_state_running()
                            WHERE id = %s
                        """, [self.id])
 
+        # TODO: Error check this.
         self.cursor.execute("""
                        SELECT
                            tool.name,
@@ -233,6 +309,17 @@ class RunWorker:
 
         if len(stdout) == 0:
             stdout = None
+        else:
+            # See if the test claimed failure
+            try:
+                result_json = pscheduler.json_load(stdout)
+                if "succeeded" in result_json \
+                        and type(result_json["succeeded"]) == bool \
+                        and result_json["succeeded"] == False:
+                    failures += 1
+            except ValueError:
+                self.log.error("%d: Test returned invalid JSON: %s", self.id, stdout)
+                
 
         if len(stderr) == 0:
             stderr = None
@@ -296,6 +383,8 @@ class RunWorker:
                     local_result = None
                     self.log.debug("%d: Tool returned failure: %s",
                                    self.id, stderr)
+                    failures += 1
+
             except ValueError as ex:
                 self.log.error("%d: Tool %s returned invalid JSON %s",
                                self.id, tool, stdout)
@@ -319,14 +408,11 @@ class RunWorker:
                 else:
                     self.log.warning("%d: Unable to retrieve run %s", self.id, run)
                     full_result.append(None)
+                    failures += 1
 
             self.log.debug("%d: Full result: %s",
                            self.id,
                            pscheduler.json_dump(full_result))
-
-            # TODO: If any of the tests resulted in a failure, check
-            # if the participants' clocks are off and add that to the
-            # diagnostics.
 
             # Store the full result with each participant.
 
@@ -342,6 +428,20 @@ class RunWorker:
                 if status != 200:
                     self.log.warning("%d: Unable to update run %s: %d %s",
                                      self.id, run, status, returned)
+
+
+                # If there were any failures, survey all of the
+                # particpants' clocks and stash it in the local run
+                # record.
+
+                if failures > 0:
+                    self.log.debug("Saw failures; surveying clocks")
+                    # TODO: Error check this.
+                    self.cursor.execute("""
+                                        UPDATE run SET clock_survey = %s
+                                        WHERE id = %s
+                                        """,
+                            [clock_survey(participants), self.id])
 
 
         self.cursor.close()
@@ -366,6 +466,7 @@ def main_program():
         # Operate only on runs that are scheduled to start before the next
         # forced refresh.
 
+        # TODO: Error check this.
         cursor.execute("""SELECT
                               run,
                               start_in
@@ -401,6 +502,7 @@ def main_program():
 
             # Do this here to guarantee that we don't pick up rows for
             # runs we just started in the next iteration of the loop.
+            # TODO: Error check this.
             cursor.execute("""
                            UPDATE run
                            SET state = run_state_on_deck()

@@ -260,7 +260,8 @@ def tasks_uuid_runs_run(task, run):
                         run.result_merged,
                         run_state.enum,
                         run_state.display,
-                        run.errors
+                        run.errors,
+                        run.clock_survey
                     FROM
                         run
                         JOIN task ON task.id = run.task
@@ -320,6 +321,8 @@ def tasks_uuid_runs_run(task, run):
         result['state'] = row[11]
         result['state-display'] = row[12]
         result['errors'] = row[13]
+        if row[14] is not None:
+            result['clock-survey'] = row[14]
         result['task-href'] = root_url('tasks/' + task)
         result['result-href'] = href + '/result'
 
