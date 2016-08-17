@@ -34,8 +34,8 @@ DEFAULT_OWAMPD_CTRL_PORTS = range(5601, 5900)
 DEFAULT_OWAMPD_DATA_PORTS = range(8760, 9960)
 
 #constants for working with config file
-CONFIG_FILE = '/etc/pscheduler/test/latency.conf'
-CONFIG_SECTION = 'latency'
+CONFIG_FILE = '/etc/pscheduler/tool/owping.conf'
+CONFIG_SECTION = 'owping'
 CONFIG_OPT_OWPING_CMD = 'owping_cmd'
 CONFIG_OPT_DISABLE_SERVER = 'disable_server'
 #CONFIG_OPT_USE_EXISTING_OWAMPD = 'use_existing_owampd'

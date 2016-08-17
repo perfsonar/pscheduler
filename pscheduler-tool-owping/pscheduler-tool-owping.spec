@@ -44,6 +44,7 @@ false
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_tool_doc} \
+     CONFDIR=$RPM_BUILD_ROOT/%{_pscheduler_tool_confdir}\
      install
 
 %post
@@ -63,5 +64,6 @@ fi
 
 %files
 %defattr(-,root,root,-)
+%config(noreplace) %{_pscheduler_tool_confdir}/*
 %{dest}
 %{_pscheduler_tool_doc}/*
