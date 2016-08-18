@@ -128,15 +128,10 @@ BEGIN
 
     -- TODO: What changes to a run don't we allow?
 
-    -- No scheduling beyond the time horizon
-    SELECT INTO horizon schedule_horizon FROM configurables;
-    IF (upper(NEW.times) - now()) > horizon THEN
-        RAISE EXCEPTION 'Cannot schedule runs more than % in advance', horizon;
-    END IF;
-
 
     SELECT INTO taskrec
         task.*,
+        test.scheduling_class,
         scheduling_class.anytime,
         scheduling_class.exclusive
     FROM
@@ -148,6 +143,16 @@ BEGIN
 
     IF NOT FOUND THEN
         RAISE EXCEPTION 'No task % exists.', NEW.task;
+    END IF;
+
+
+    -- Non-background gets bounced if trying to schedule beyond the
+    -- scheduling horizon.
+
+    SELECT INTO horizon schedule_horizon FROM configurables;
+    IF taskrec.scheduling_class <> scheduling_class_background()
+       AND (upper(NEW.times) - now()) > horizon THEN
+        RAISE EXCEPTION 'Cannot schedule runs more than % in advance', horizon;
     END IF;
 
 

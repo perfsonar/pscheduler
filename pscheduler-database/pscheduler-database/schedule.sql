@@ -228,6 +228,7 @@ BEGIN
 
     SELECT INTO taskrec
         task.*,
+	test.scheduling_class,
         scheduling_class.anytime,
         scheduling_class.exclusive
     FROM
@@ -243,6 +244,14 @@ BEGIN
 
     IF range_end < range_start THEN
         RAISE EXCEPTION 'Range start and end must be in the proper order';
+    END IF;
+
+
+    -- If the scheduling class for the task is background, the entire
+    -- range is fair game.
+    IF taskrec.anytime THEN
+        RETURN QUERY
+            SELECT range_start AS lower, range_end AS upper;
     END IF;
 
 
@@ -276,13 +285,6 @@ BEGIN
 
     last_end := range_start;
 
-    -- If the scheduling class for the task is background, the entire
-    -- range is fair game.
-
-    IF taskrec.anytime THEN
-        RETURN QUERY
-            SELECT range_start AS lower, range_end AS upper;
-    END IF;
 
 
     -- Sift through everything on the timeline that overlaps with the
