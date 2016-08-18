@@ -76,7 +76,7 @@ client = esmond_util.EsmondClient(url=url, auth_token=auth_token, verify_ssl=ver
 #determine test type and format metadata and data
 record = None
 if format_mapping:
-    if test_type == 'latency':
+    if test_type == 'latency' or test_type == 'latencybg':
         record = esmond_util.EsmondLatencyRecord(
             test_spec=test_spec,
             lead_participant=lead_participant, 

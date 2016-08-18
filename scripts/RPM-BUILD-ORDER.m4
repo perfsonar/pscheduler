@@ -94,6 +94,7 @@ pscheduler-test-idle
 pscheduler-test-idlebg
 pscheduler-test-idleex
 pscheduler-test-latency
+pscheduler-test-latencybg
 pscheduler-test-throughput
 pscheduler-test-rtt
 pscheduler-test-simplestream
@@ -102,6 +103,7 @@ pscheduler-test-trace
 # Tools
 # TODO: This has dependencies outside the local tree.
 pscheduler-tool-owping
+pscheduler-tool-powstream
 pscheduler-tool-iperf
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep

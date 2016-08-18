@@ -62,6 +62,11 @@ opt_parser.add_option("-c", "--packet-count",
                       action="store", type="int",
                       dest="packet_count")
 
+opt_parser.add_option("-t", "--duration",
+                      help="The duration of he test in seconds or ISO8601",
+                      action="store", type="string",
+                      dest="duration")
+                      
 opt_parser.add_option("-i", "--packet-interval",
                       help="The number of seconds to delay between sending packets",
                       action="store", type="float",
@@ -105,10 +110,6 @@ opt_parser.add_option("-f", "--flip",
                       help="In multi-participant mode, have the dest start the client and request a reverse test. Useful in some firewall and NAT environments.",
                       action="store_true", dest="flip", default=False)
 
-opt_parser.add_option("-S", "--single-participant-mode",
-                      help="Do not coordinate with the remote side. Useful for cases where remote side is not running pScheduler but known to have necessary daemon for test.",
-                      action="store_true", dest="single_participant_mode", default=False)
-
 opt_parser.add_option("-R", "--output-raw",
                       help="Output individual packet statistics. This will substantially increase the size of a successful result.",
                       action="store_true", dest="output_raw", default=False)
@@ -127,6 +128,16 @@ if options.source is not None:
 if options.dest is not None:
    result['dest'] = options.dest
 
+if options.duration is not None:
+   duration = options.duration
+
+   # convert epoch seconds to is8601
+   if duration.isdigit():
+      delta = datetime.timedelta(seconds=int(duration))
+      duration = pscheduler.timedelta_as_iso8601(delta)
+
+   result['duration'] = duration
+   
 if options.packet_count is not None:
    result['packet-count'] = options.packet_count
 
@@ -166,9 +177,6 @@ if options.bucket_width is not None:
 
 if options.flip:
    result['flip'] = options.flip
-
-if options.single_participant_mode:
-   result['single-participant-mode'] = options.single_participant_mode
 
 if options.output_raw:
    result['output-raw'] = options.output_raw
