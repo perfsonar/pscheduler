@@ -3,6 +3,7 @@
 # Execute runs of tasks and put the results into the database.
 #
 
+import daemon
 import datetime
 import errno
 import multiprocessing
@@ -25,11 +26,23 @@ import weakref
 
 opt_parser = optparse.OptionParser()
 
+# Daemon-related options
+
+opt_parser.add_option("--daemon",
+                      help="Daemonize",
+                      action="store_true",
+                      dest="daemon", default=False)
+opt_parser.add_option("--pid-file",
+                      help="Location of PID file",
+                      action="store", type="string", dest="pidfile",
+                      default=None)
+
+# Program options
+
 opt_parser.add_option("-d", "--dsn",
                       help="Database connection string",
                       action="store", type="string", dest="dsn",
                       default="")
-
 opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
@@ -458,6 +471,18 @@ class RunWorker:
 
 def main_program():
 
+
+    # Exit nicely when certain signals arrive so running processes are
+    # cleaned up.
+
+    def exit_handler(signum, frame):
+        log.info("Exiting on signal %d", signum)
+        exit(0)
+
+    for sig in [ signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM ]:
+        signal.signal(sig, exit_handler)
+
+
     db = pscheduler.pg_connection(dsn)
     cursor = db.cursor()
 
@@ -577,14 +602,10 @@ def main_program():
     db.close()
 
 
-# Exit nicely when certain signals arrive so running processes are
-# cleaned up.
+if options.daemon:
+    pidfile = pscheduler.PidFile(options.pidfile)
+    with daemon.DaemonContext(pidfile=pidfile):
+        pscheduler.safe_run(lambda: main_program())
+else:
+    pscheduler.safe_run(lambda: main_program())
 
-def exit_handler(signum, frame):
-    log.info("Exiting on signal %d", signum)
-    exit(0)
-for sig in [ signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM ]:
-    signal.signal(sig, exit_handler)
-
-
-pscheduler.safe_run(lambda: main_program())

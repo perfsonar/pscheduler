@@ -3,6 +3,7 @@
 # pScheduler Run Scheduler
 #
 
+import daemon
 import errno
 import optparse
 import pscheduler
@@ -17,6 +18,20 @@ import traceback
 # Gargle the arguments
 
 opt_parser = optparse.OptionParser()
+
+# Daemon-related options
+
+opt_parser.add_option("--daemon",
+                      help="Daemonize",
+                      action="store_true",
+                      dest="daemon", default=False)
+opt_parser.add_option("--pid-file",
+                      help="Location of PID file",
+                      action="store", type="string", dest="pidfile",
+                      default=None)
+
+# Program options
+
 # TODO: Do we want pscheduler as the default here?
 opt_parser.add_option("-d", "--dsn",
                       help="Database connection string",
@@ -138,4 +153,10 @@ def main_program():
                     raise ex
 
 
-pscheduler.safe_run(lambda: main_program())
+if options.daemon:
+    pidfile = pscheduler.PidFile(options.pidfile)
+    with daemon.DaemonContext(pidfile=pidfile):
+        pscheduler.safe_run(lambda: main_program())
+else:
+    pscheduler.safe_run(lambda: main_program())
+

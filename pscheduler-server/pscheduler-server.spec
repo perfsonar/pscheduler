@@ -22,6 +22,7 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	curl
 Requires:	pscheduler-account
 Requires:	pscheduler-database
+Requires:	python-daemon
 Requires:	python-Flask
 Requires:	python-ipaddr
 Requires:	python-requests

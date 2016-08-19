@@ -3,6 +3,7 @@
 # 
 #
 
+import daemon
 import datetime
 import detach
 import errno
@@ -26,6 +27,20 @@ from dateutil.tz import tzlocal
 # Gargle the arguments
 
 opt_parser = optparse.OptionParser()
+
+# Daemon-related options
+
+opt_parser.add_option("--daemon",
+                      help="Daemonize",
+                      action="store_true",
+                      dest="daemon", default=False)
+opt_parser.add_option("--pid-file",
+                      help="Location of PID file",
+                      action="store", type="string", dest="pidfile",
+                      default=None)
+
+# Program options
+
 opt_parser.add_option("-c", "--channel",
                       help="Schedule notification channel",
                       action="store", type="string", dest="channel",
@@ -62,6 +77,17 @@ dsn = options.dsn
 #
 
 def main_program():
+
+    # Exit nicely when certain signals arrive so running processes are
+    # cleaned up.
+
+    def exit_handler(signum, frame):
+        log.info("Exiting on signal %d", signum)
+        exit(0)
+
+    for sig in [ signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM ]:
+        signal.signal(sig, exit_handler)
+
 
     # TODO: All DB transactions need to be error checked
 
@@ -241,14 +267,10 @@ def main_program():
                         log.debug("No retry requested.  Giving up.")
 
 
-# Exit nicely when certain signals arrive so running processes are
-# cleaned up.
 
-def exit_handler(signum, frame):
-    log.info("Exiting on signal %d", signum)
-    exit(0)
-for sig in [ signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM ]:
-    signal.signal(sig, exit_handler)
-
-
-pscheduler.safe_run(lambda: main_program())
+if options.daemon:
+    pidfile = pscheduler.PidFile(options.pidfile)
+    with daemon.DaemonContext(pidfile=pidfile):
+        pscheduler.safe_run(lambda: main_program())
+else:
+    pscheduler.safe_run(lambda: main_program())

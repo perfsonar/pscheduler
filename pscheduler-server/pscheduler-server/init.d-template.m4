@@ -47,9 +47,8 @@ start() {
     echo -n $"Starting pScheduler $prog: "
     touch "$pidfile"
     chown "$proguser.$proguser" "$pidfile"
-    nohup su pscheduler \
-	-s /bin/sh \
-	-c "echo \$\$ > '$pidfile' && exec $exec --dsn '@$config'" \
+    su $proguser \
+       -c "$exec --daemon --pid-file '$pidfile' --dsn '@$config'" \
 	>> "$logfile" 2>&1 &
     retval=$?
     success

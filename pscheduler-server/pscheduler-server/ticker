@@ -3,6 +3,7 @@
 # Operate all on-boot and periodic functions in the database.
 #
 
+import daemon
 import datetime
 import errno
 import optparse
@@ -17,6 +18,20 @@ import time
 #
 
 opt_parser = optparse.OptionParser()
+
+# Daemon-related options
+
+opt_parser.add_option("--daemon",
+                      help="Daemonize",
+                      action="store_true",
+                      dest="daemon", default=False)
+opt_parser.add_option("--pid-file",
+                      help="Location of PID file",
+                      action="store", type="string", dest="pidfile",
+                      default=None)
+
+# Program options
+
 opt_parser.add_option("-d", "--dsn",
                       help="Database connection string, prefix with @ to read from file",
                       action="store", type="string", dest="dsn",
@@ -38,8 +53,6 @@ if pscheduler.timedelta_as_seconds(retry) == 0:
     opt_parser.error("Retryinterval must be calculable as seconds.")
 
 
-log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
-
 dsn = options.dsn
 
 
@@ -48,6 +61,8 @@ dsn = options.dsn
 #
 
 def main_program():
+
+    log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
 
     # TODO: Bulletproof the SQL queries
 
@@ -77,4 +92,10 @@ def main_program():
     # Not that this will ever be reached...
     pg.close()
 
-pscheduler.safe_run(lambda: main_program())
+
+if options.daemon:
+    pidfile = pscheduler.PidFile(options.pidfile)
+    with daemon.DaemonContext(pidfile=pidfile):
+        pscheduler.safe_run(lambda: main_program())
+else:
+    pscheduler.safe_run(lambda: main_program())

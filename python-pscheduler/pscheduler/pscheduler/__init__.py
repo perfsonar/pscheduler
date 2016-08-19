@@ -14,6 +14,7 @@ from .jsonval import *
 from .log import *
 from .numericrange import *
 from .program import *
+from .pidfile import *
 from .psas import *
 from .psdns import *
 from .psjson import *
