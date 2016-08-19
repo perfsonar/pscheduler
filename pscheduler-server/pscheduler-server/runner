@@ -3,6 +3,7 @@
 # Execute runs of tasks and put the results into the database.
 #
 
+import datetime
 import errno
 import multiprocessing
 import optparse
@@ -34,8 +35,8 @@ opt_parser.add_option("-r", "--refresh",
                       action="store", type="string", dest="refresh",
                       default="PT1M")
 
-opt_parser.add_option("--verbose", action="store_true", dest="verbose")
-opt_parser.add_option("--debug", action="store_true", dest="debug")
+opt_parser.add_option("--verbose", action="store_true", dest="verbose", default=False)
+opt_parser.add_option("--debug", action="store_true", dest="debug", default=False)
 
 (options, args) = opt_parser.parse_args()
 
@@ -468,17 +469,38 @@ def main_program():
         # forced refresh.
 
         # TODO: Error check this.
-        cursor.execute("""SELECT
-                              run,
-                              start_in
-                          FROM
-                              schedule_upcoming
-                          WHERE
-                              start_in < %s
-                          ORDER BY start_in
+        cursor.execute("""
+                       SELECT * FROM (
+                       -- Tasks that haven't started
+                       SELECT
+                           run,
+                           start_in,
+                           FALSE as background
+                       FROM
+                           schedule_upcoming
+                       WHERE
+                           start_in < %s
+
+                       UNION
+
+                       -- Background tasks that should be running.
+                       SELECT
+                           run.id AS run,
+                           'PT1S'::INTERVAL AS start_in,
+                           TRUE as background
+                       FROM
+                           run
+                           JOIN task ON task.id = run.task
+                           JOIN test ON test.id = task.test
+                       WHERE
+                           times @> normalized_now()
+                           AND test.scheduling_class = scheduling_class_background()
+                       ) t ORDER BY start_in
                    """, [refresh]);
 
-        wait_time = None
+        log.debug("Got %d upcoming rows", cursor.rowcount)
+
+        wait_time = refresh
 
         if cursor.rowcount:
 
@@ -486,7 +508,9 @@ def main_program():
 
             for row in cursor:
 
-                run_id, start_in = row
+                run_id, start_in, background = row
+
+                log.debug("Run %d, starts in %s", run_id, start_in)
 
                 if run_dict.is_running(run_id):
                     log.debug("Run %d is already running", run_id)
@@ -497,17 +521,23 @@ def main_program():
                 # TODO: Hold this
                 worker = RunWorker(db, log, run_id, start_in)
 
-                if wait_time is None:
+                if not background and start_in < wait_time:
+                    log.debug("Dropping wait time to %s", start_in)
                     wait_time = start_in
 
 
             # Do this here to guarantee that we don't pick up rows for
             # runs we just started in the next iteration of the loop.
-            # TODO: Error check this.
-            cursor.execute("""
-                           UPDATE run
-                           SET state = run_state_on_deck()
-                           WHERE id in %s""", (tuple(run_ids),))
+            if run_ids:
+                # TODO: Error check this.
+                log.debug("Putting runs on deck: %s", run_ids)
+                cursor.execute("""
+                               UPDATE run
+                               SET state = run_state_on_deck()
+                               WHERE
+                                   id in %s
+                                   AND state <> run_state_running()
+                               """, (tuple(run_ids),))
 
 
         else:
@@ -516,12 +546,13 @@ def main_program():
             wait_time = refresh
 
 
+
+        log.debug("Next run or check in %s", wait_time)
         if not pscheduler.timedelta_is_zero(wait_time):
 
             # Wait for a notification or the wait time to elapse.  Eat all
             # notifications as a group; we only care that we were notified.
 
-            log.debug("Next run or check in %s", wait_time)
 
             # TODO: This try needs to be brought to the other programs.
             # Better, make it a function in db.py.

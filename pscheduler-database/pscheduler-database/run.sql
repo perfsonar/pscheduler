@@ -257,7 +257,8 @@ BEGIN
         END IF;
 
 	IF NOT run_state_transition_is_valid(OLD.state, NEW.state) THEN
-            RAISE EXCEPTION 'Invalid transition between states.';
+            RAISE EXCEPTION 'Invalid transition between states (% to %).',
+                OLD.state, NEW.state;
         END IF;
 
 	-- If the full result changed, update the merged version.
