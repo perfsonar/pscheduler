@@ -99,7 +99,7 @@ opt_parser.add_option("-T", "--ip-tos",
 
 opt_parser.add_option("--ip-version",
                       help="Force an IP version when performing the test. Useful when specifying hostnames as source or dest that may map to both IPv4 and IPv6 addresses.",
-                      action="store", dest="ip_version")
+                      action="store", type="int", dest="ip_version")
 
 opt_parser.add_option("-b", "--bucket-width",
                       help="The bin size to use for histogram calculations. This value is divided into the result as reported in seconds and truncated to the nearest 2 decimal places.",
