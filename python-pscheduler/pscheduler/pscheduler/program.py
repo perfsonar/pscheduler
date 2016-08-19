@@ -17,13 +17,34 @@ import traceback
 # when the program exits.  Note that it would behoove any callers to
 # make sure they exit cleanly on most signals so this gets called.
 
+initialized = False
 __running = {}
 
 def __terminate_running():
     for process in __running:
-        process.terminate()
+        try:
+            process.terminate()
+        except Exception:
+            pass  # This is a best-effort effort.
+    # Sometimes this gets called twice, so clean the list.
+    __running.clear()
 
-atexit.register(__terminate_running)
+
+def __running_add(process):
+    if not initialized:
+        atexit.register(__terminate_running)
+        __initialized = True
+    __running[process] = 1
+
+
+def __running_drop(process):
+    try:
+        del __running[process]
+    except KeyError:
+        pass
+
+
+
 
 
 def run_program(argv,              # Program name and args
@@ -68,7 +89,7 @@ def run_program(argv,              # Program name and args
                                      stderr=subprocess32.PIPE,
                                      )
 
-        __running[process] = 1
+        __running_add(process)
 
         if line_call is None:
 
@@ -122,7 +143,7 @@ def run_program(argv,              # Program name and args
                 reads, writes, specials = select.select(fds, [], [], time_left)
 
                 if len(reads) == 0:
-                    del __running[process]
+                    __running_drop(process)
                     return 2, None, "Process took too long to run."
 
                 for fd in reads:
@@ -152,7 +173,7 @@ def run_program(argv,              # Program name and args
 
 
     if process is not None:
-        del __running[process]
+        __running_drop(process)
 
     if fail_message is not None and status != 0:
         pscheduler.fail("%s: %s" % (fail_message, stderr))
@@ -163,6 +184,15 @@ def run_program(argv,              # Program name and args
 
 if __name__ == "__main__":
 
+    import signal
+
+    def exit_handler(signum, frame):
+        print "Exiting on signal %d" % signum
+        exit(0)
+
+    for sig in [ signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM ]:
+        signal.signal(sig, exit_handler)
+
     status, out, err = run_program(["cat", "/etc/issue", "-"],
                                    stdin="Hello, world.",
                                    short=True
@@ -170,3 +200,12 @@ if __name__ == "__main__":
     print "Status:", status
     print "Out:   ", out
     print "Err:   ", err
+
+
+    # Use this when testing termination
+    if False:
+        status, out, err = run_program(["sleep", "15"])
+        print "Status:", status
+        print "Out:   ", out
+        print "Err:   ", err
+

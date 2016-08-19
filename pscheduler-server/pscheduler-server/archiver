@@ -13,6 +13,7 @@ import pscheduler
 import psycopg2
 import psycopg2.extensions
 import select
+import signal
 import socket
 import sys
 import time
@@ -238,6 +239,16 @@ def main_program():
                     else:
 
                         log.debug("No retry requested.  Giving up.")
+
+
+# Exit nicely when certain signals arrive so running processes are
+# cleaned up.
+
+def exit_handler(signum, frame):
+    log.info("Exiting on signal %d", signum)
+    exit(0)
+for sig in [ signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM ]:
+    signal.signal(sig, exit_handler)
 
 
 pscheduler.safe_run(lambda: main_program())
