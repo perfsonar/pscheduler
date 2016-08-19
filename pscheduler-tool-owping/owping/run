@@ -141,10 +141,12 @@ if role == CLIENT_ROLE:
     except OSError as e:
         log.error("owping encountered an OS error: %s" % e)
         #Note: Avoids reporting sensitive system details in error message
-        pscheduler.fail("The owping command failed during execution. See server logs for more details.")
+        results['error'] = "The owping command failed during execution. See server logs for more details."
+        pscheduler.succeed_json(results)
     except Exception:
         log.error("owping failed to complete execution: %s" % sys.exc_info()[0])
-        pscheduler.fail("The owping command failed during execution. See server logs for more details.")
+        results['error'] = "The owping command failed during execution. See server logs for more details."
+        pscheduler.succeed_json(results)
     
     #see if command completed successfully
     log.debug("owping returned status %d" % proc.returncode)
@@ -152,7 +154,8 @@ if role == CLIENT_ROLE:
         owp_error = ''
         for line in proc.stderr:
             owp_error += line.rstrip().lstrip() + " "
-        pscheduler.fail("owping returned an error: %s" % owp_error)
+        results['error'] = "owping returned an error: %s" % owp_error
+        pscheduler.succeed_json(results)
         
     #Parse output
     owping_regex = re.compile('^(\d+) (\d+) (\d) ([-.0-9e+]*) (\d+) (\d) ([-.0-9e+]*) (\d+)$')
