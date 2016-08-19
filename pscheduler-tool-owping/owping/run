@@ -95,7 +95,7 @@ if role == CLIENT_ROLE:
     owping_args.append(str(test_spec.get('packet-timeout', DEFAULT_PACKET_TIMEOUT)))
     
     #set if ipv4 only or ipv6 only
-    ip_version = test_spec.get('ip-version', '')
+    ip_version = str(test_spec.get('ip-version', ''))
     if ip_version == '4':
         owping_args.append('-4')
     elif ip_version == '6':
