@@ -412,6 +412,9 @@ class EsmondLatencyRecord(EsmondBaseRecord):
             numerator='packets-lost',
             denominator='packets-sent')
 
+class EsmondLatencyBGRecord(EsmondLatencyRecord):
+    test_type = 'latencybg'
+    
 class EsmondThroughputRecord(EsmondBaseRecord):
     test_type = 'throughput'
     
