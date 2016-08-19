@@ -31,16 +31,16 @@ else:
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """Examples:
 
-  task latency --dest ps.example.com
+  task latencybg --dest ps.example.com
       Measure latency from here to ps.example.com
 
-  task latency --source ps2.example.org --dest ps.example.com
+  task latencybg --source ps2.example.org --dest ps.example.com
       Measure latency from ps2.example.org to ps.example.com
 
-  task latency --packet-count 38 --dest ps.example.com
+  task latencybg --packet-count 38 --dest ps.example.com
       Send 38 packets
 
-  task latency --ip-version 6 --dest ps.example.com
+  task latencybg --ip-version 6 --dest ps.example.com
       Use IPv6
 """
                                             )
@@ -99,7 +99,7 @@ opt_parser.add_option("-T", "--ip-tos",
 
 opt_parser.add_option("--ip-version",
                       help="Force an IP version when performing the test. Useful when specifying hostnames as source or dest that may map to both IPv4 and IPv6 addresses.",
-                      action="store_true", dest="ip_version")
+                      action="store", dest="ip_version")
 
 opt_parser.add_option("-b", "--bucket-width",
                       help="The bin size to use for histogram calculations. This value is divided into the result as reported in seconds and truncated to the nearest 2 decimal places.",
