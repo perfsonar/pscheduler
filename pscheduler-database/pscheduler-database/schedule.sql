@@ -147,49 +147,19 @@ AS
     WHERE
         enabled
 	AND participant = 0
-        AND scheduling_class <> scheduling_class_background()
         AND ( (max_runs IS NULL)
               OR (runs + scheduled) < max_runs )
         AND ( (until IS NULL) OR (trynext < until) )
-        AND trynext + duration < (normalized_now() + schedule_horizon)
+	-- Anything that fits the scheduling horizon or is a backgrounder
+        AND (
+            trynext + duration < (normalized_now() + schedule_horizon)
+            OR scheduling_class = scheduling_class_background()
+        )
     ORDER BY added
 ;
 
 
 
--- Background tasks that should be running but aren't.  This is done
--- separately in the hopes that we can get rid of background tasks at
--- some point.
-
-DROP VIEW IF EXISTS schedule_background_runs_to_schedule;
-CREATE OR REPLACE VIEW schedule_background_runs_to_schedule
-AS
-    SELECT
-        task.id,
-	task.uuid,
-	task.runs,
-	normalized_now() AS trynext
-    FROM
-        task
-        JOIN test ON test.id = task.test
-    WHERE
-        task.enabled
-        AND test.scheduling_class = scheduling_class_background()
-        -- Time is still within runtime
-        AND now() BETWEEN COALESCE(start, added)
-            AND COALESCE(start, added) + duration
-        -- Nothing pending or running
-        AND NOT EXISTS (
-            SELECT * FROM run
-            WHERE
-                run.task = task.id
-                AND run.state IN (
-                    run_state_pending(),
-                    run_state_on_deck(),
-                    run_state_running()
-                )
-        )
-;
 
 
 

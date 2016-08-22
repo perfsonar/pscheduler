@@ -84,9 +84,6 @@ def main_program():
         cursor.execute("""
             SELECT uuid, runs, trynext, FALSE
             FROM schedule_runs_to_schedule
-            UNION
-            SELECT uuid, runs, trynext, TRUE
-            FROM schedule_background_runs_to_schedule
             """)
 
         # Check if any notifications arrived while this query executed.
