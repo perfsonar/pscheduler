@@ -310,6 +310,28 @@ CREATE TRIGGER run_alter BEFORE INSERT OR UPDATE ON run
 
 
 
+-- If the scheduling horizon changes and becomes smaller, remove runs
+-- that go beyond it.
+
+CREATE OR REPLACE FUNCTION run_horizon_change()
+RETURNS TRIGGER
+AS $$
+BEGIN
+
+    IF NEW.schedule_horizon < OLD.schedule_horizon THEN
+        DELETE FROM run
+        WHERE upper(times) > (normalized_now() + NEW.schedule_horizon);
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER run_horizon_change AFTER UPDATE ON configurables
+    FOR EACH ROW EXECUTE PROCEDURE run_horizon_change();
+
+
+
 -- TODO: Should do a trigger after any change to run that calls
 -- run_main_minute() to update any run states.
 

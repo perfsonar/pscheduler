@@ -92,6 +92,11 @@ def main_program():
             del pg.notifies[:]
             log.debug("Received notifications.")
 
+        # Any rows returned means we query again.
+        if cursor.rowcount > 0:
+            log.debug("Got %d rows", cursor.rowcount)
+            wait = False
+
 
         for row in cursor:
 
@@ -123,12 +128,9 @@ def main_program():
             else:
                 log.debug("Scheduled for %s - %s at %s",
                           start_time, end_time, run_uri)
-            # We did something, even a failure, so don't wait.
-            wait = False
 
         # Wait for something to happen.
           
-
         if wait:
 
             log.debug("Waiting %s for notification", refresh)
@@ -142,12 +144,14 @@ def main_program():
                     log.debug("Notified: %s", pg.notifies)
                     del pg.notifies[:]
 
-
             except select.error as ex:
                 err_no, message = ex
                 if err_no != errno.EINTR:
                     log.exception()
                     raise ex
+                else:
+                    log.debug("Interrupted")
+
 
 
 if options.daemon:
