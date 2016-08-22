@@ -44,7 +44,11 @@ if interval is None:
 results = {
     'succeeded': True,
     'error': '',
-    'result': { 'time-slept': interval_iso }
+    'result': { 
+        'schema': 1,
+        'succeeded': True,
+        'time-slept': interval_iso
+        }
 }
 
 

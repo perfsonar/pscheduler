@@ -17,7 +17,9 @@ except IndexError:
 
 json = pscheduler.json_load(exit_on_error=True)
 
-valid, message = result_is_valid(json)
+result = json["result"]
+
+valid, message = result_is_valid(result)
 
 if not valid:
     pscheduler.fail(message)
@@ -28,7 +30,7 @@ if format == 'text/plain':
    fail_template = "Test failed."
 
    template = """
-Duration ... {.section duration}{duration}{.or}Not Reported{.end}
+Slept ... {.section time-slept}{time-slept}{.or}Not Reported{.end}
    """
 
 elif format == 'text/html':
@@ -38,8 +40,8 @@ elif format == 'text/html':
    template = """
 <table border="0">
 
-<tr><td><b>Duration</b></td><td>
-{.section duration}{duration}{.or}<i>Not Reported</i>{.end}
+<tr><td><b>Time Slept</b></td><td>
+{.section time-slept}{time-slept}{.or}<i>Not Reported</i>{.end}
 </td></tr>
 </table>
    """
@@ -51,5 +53,5 @@ else:
 
 # TODO: Should probably handle exceptions in a nicer way.
 print jsontemplate.expand(
-   template if json['succeeded'] else fail_template,
-   json).strip()
+   template if result['succeeded'] else fail_template,
+   result).strip()

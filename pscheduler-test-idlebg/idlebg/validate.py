@@ -27,14 +27,14 @@ def result_is_valid(json):
     schema = {
         "type": "object",
         "properties": {
-            "duration":         { "$ref": "#/pScheduler/Duration" },
             "schema":           { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":        { "$ref": "#/pScheduler/Boolean" },
+            "time-slept":         { "$ref": "#/pScheduler/Duration" },
             },
         "required": [
-            "duration",
             "schema",
             "succeeded",
+            "time-slept",
             ]
         }
     return json_validate(json, schema)
