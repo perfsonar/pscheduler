@@ -314,6 +314,18 @@ CREATE TRIGGER run_alter BEFORE INSERT OR UPDATE ON run
 -- run_main_minute() to update any run states.
 
 
+CREATE OR REPLACE VIEW run_straggler_info
+AS
+    SELECT
+        run.id,
+        run.state,
+        run.times,
+        test.scheduling_class
+    FROM
+        run
+        JOIN task on task.id = run.task
+        JOIN test on test.id = task.test
+;
 
 
 -- Maintenance functions
@@ -323,39 +335,52 @@ RETURNS VOID
 AS $$
 BEGIN
 
+    -- TODO: These should ignore background tests
+
     -- Runs that are still pending after their start times were
     -- missed.
 
     UPDATE run
     SET state = run_state_missed()
-    WHERE
-        state = run_state_pending()
-	-- TODO: This interval should probably be a tunable.
-	AND lower(times) < normalized_now() - 'PT5S'::interval;
+    WHERE id IN (
+        SELECT id FROM run_straggler_info
+        WHERE
+            scheduling_class <> scheduling_class_background()
+            AND state = run_state_pending()
+            -- TODO: This interval should probably be a tunable.
+            AND lower(times) < normalized_now() - 'PT5S'::interval
+    );
 
     -- Runs that started and didn't report back in a timely manner
 
     UPDATE run
-    SET
-        state = run_state_overdue()
-    WHERE
-        state = run_state_running()
-	-- TODO: This interval should probably be a tunable.
-	AND upper(times) < normalized_now() - 'PT10S'::interval;
+    SET state = run_state_overdue()
+    WHERE id IN (
+        SELECT id FROM run_straggler_info
+        WHERE
+            scheduling_class <> scheduling_class_background()
+            AND state = run_state_running()
+            -- TODO: This interval should probably be a tunable.
+            AND upper(times) < normalized_now() - 'PT10S'::interval
+    );
 
     -- Runs still running well after their expected completion times
     -- are treated as having failed.
 
     UPDATE run
-    SET
-        state = run_state_missed()
-    WHERE
-        state = run_state_overdue()
-	-- TODO: This interval should probably be a tunable.
-	AND upper(times) < normalized_now() - 'PT1M'::interval;
+    SET state = run_state_missed()
+    WHERE id IN (
+        SELECT id FROM run_straggler_info
+        WHERE
+            scheduling_class <> scheduling_class_background()
+            AND state = run_state_overdue()
+            -- TODO: This interval should probably be a tunable.
+            AND upper(times) < normalized_now() - 'PT1M'::interval
+    );
 
 END;
 $$ LANGUAGE plpgsql;
+
 
 
 CREATE OR REPLACE FUNCTION run_purge()
