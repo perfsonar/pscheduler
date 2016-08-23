@@ -20,11 +20,11 @@ verify_keys = False
 # using HTTPS.
 
 if not verify_keys:
-    from requests.packages.urllib3.exceptions import InsecureRequestWarning
-    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-
-
-
+    # NOTE: This used to do a separate import of
+    # InsercureRequestWarning but can't because of the way Debian
+    # de-vendorizes the requests package.
+    requests.packages.urllib3.disable_warnings(
+        requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 
 
