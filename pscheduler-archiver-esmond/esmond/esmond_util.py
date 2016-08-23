@@ -54,6 +54,11 @@ DEFAULT_SUMMARIES = {
             "summary-type":   "aggregation",
         },
         {
+            "summary-window":   0,
+            "event-type":   "histogram-owdelay",
+            "summary-type":   "statistics",
+        },
+        {
             "summary-window":   3600,
             "event-type":   "histogram-owdelay",
             "summary-type":   "statistics",
