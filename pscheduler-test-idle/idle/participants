@@ -19,8 +19,8 @@ valid, message = spec_is_valid(json)
 if not valid:
     pscheduler.fail(message)
 
-
-# This is a one-participant test, always the local system (null).
-print '[ null ]'
-
-pscheduler.succeed()
+try:
+    pscheduler.succeed_json([json["host"]])
+except KeyError:
+    # Default is the local host.
+    pscheduler.succeed_json([None])

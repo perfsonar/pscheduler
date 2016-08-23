@@ -80,6 +80,7 @@ FROM (SELECT *
           run_status
       WHERE
         upper(times) < now()
+        AND upper(times) > lower(times)
       ORDER BY times DESC
       LIMIT 10) older
 UNION

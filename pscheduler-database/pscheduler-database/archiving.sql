@@ -57,8 +57,24 @@ BEGIN
 
     -- Start an archive if conditions are right
 
-    IF OLD.result_merged IS NULL 
-       AND NEW.result_merged IS NOT NULL THEN
+    IF ( -- Non-Background run
+         TG_OP = 'UPDATE'
+         AND OLD.result_merged IS NULL 
+         AND NEW.result_merged IS NOT NULL )
+       OR ( -- Background Run
+            TG_OP = 'INSERT'
+            AND NEW.state = run_state_finished()
+            AND NEW.result_merged IS NOT NULL
+            AND EXISTS (SELECT *
+                        FROM
+                            task
+                            JOIN test ON test.id = task.test
+                        WHERE
+                            task.id = NEW.task
+                            AND test.scheduling_class = scheduling_class_background())
+          )
+
+       THEN
 
        inserted := FALSE;
 
@@ -79,7 +95,7 @@ BEGIN
 	    INSERT INTO archiving (run, archiver, archiver_data)
     	    VALUES (
     	        NEW.id,
-    	        (SELECT id from archiver WHERE name = archive #>> '{name}'),
+    	        (SELECT id from archiver WHERE name = archive #>> '{archiver}'),
 	        (archive #> '{data}')::JSONB
     	    );
             inserted := TRUE;
@@ -96,7 +112,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS archiving_run_after ON run;
-CREATE TRIGGER archiving_run_after AFTER UPDATE ON run
+CREATE TRIGGER archiving_run_after AFTER INSERT OR UPDATE ON run
        FOR EACH ROW EXECUTE PROCEDURE archiving_run_after();
 
 

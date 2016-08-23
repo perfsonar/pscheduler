@@ -2,11 +2,15 @@
 # Administrative Information
 #
 
+import datetime
 import pscheduler
+import pytz
 import socket
+import tzlocal
 
 from pschedulerapiserver import application
 
+from .dbcursor import dbcursor_query
 from .response import *
 from .url import *
 
@@ -26,23 +30,22 @@ def hostname():
 @application.route("/schedule-horizon", methods=['GET'])
 def schedule_horizon():
     """Get the length of the server's scheduling horizon"""
-    cursor.execute("SELECT schedule_time_horizon()")
-    # TODO: Assert that rowcount is 1
+
+    try:
+        cursor = dbcursor_query(
+            "SELECT schedule_horizon FROM configurables", onerow=True)
+    except Exception as ex:
+        log.exception()
+        return error(str(ex))
+
     return ok_json(pscheduler.timedelta_as_iso8601(cursor.fetchone()[0]))
 
 
-@application.route("/time", methods=['GET'])
+@application.route("/clock", methods=['GET'])
 def time():
     """Return clock-related information"""
 
-    result = {
-        # TODO: This needs to show fractional seconds.
-        'time': pscheduler.datetime_as_iso8601(pscheduler.time_now()),
-        # TODO: The next four lines are dummied up.
-        'sync': False,
-        'accuracy': 0.060,
-        'method': 'ntp',
-        'message': "THIS IS DUMMY DATA\nsynchronised to NTP server (97.107.128.58) at stratum 3\n    time correct to within 60 ms\n   polling server every 1024 s"
-
-        }
-    return ok_json(result)
+    try:
+        return ok_json(pscheduler.clock_state())
+    except Exception as ex:
+        return error("Unable to fetch clock state: " + str(ex))

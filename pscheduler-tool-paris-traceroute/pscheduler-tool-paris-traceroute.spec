@@ -21,8 +21,9 @@ Requires:	pscheduler-account
 Requires:	python-ipaddr
 Requires:	python-pscheduler
 Requires:	pscheduler-test-trace
-requires:	paris-traceroute
-requires:	sudo
+Requires:	paris-traceroute
+Requires:	sudo
+Requires:	python-icmperror
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm

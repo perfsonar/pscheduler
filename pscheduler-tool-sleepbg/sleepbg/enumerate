@@ -1,0 +1,15 @@
+#!/bin/sed -e 1d
+{
+    "name": "sleepbg",
+    "description": "Do nothing by sleeping in the background",
+    "version": "0.0",
+    "tests": [ "idlebg" ],
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "info@perfsonar.net",
+	"href": "http://www.perfsonar.net"
+    }
+}

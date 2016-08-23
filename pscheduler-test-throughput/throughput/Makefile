@@ -11,15 +11,14 @@ FILES=\
 	result-format \
 	spec-format \
 	spec-is-valid \
-	spec-to-cli \
+        validate.py \
+        spec-to-cli \
+        limit-is-valid \
+        throughput_utils.py
 
 
-DOCS=\
-	$(NAME).txt
 
-
-
-install: $(FILES) $(DOCS)
+install: $(FILES)
 ifndef DESTDIR
 	@echo No DESTDIR specified for installation
 	@false

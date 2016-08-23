@@ -21,8 +21,14 @@ BuildRequires:	python-pscheduler
 BuildRequires:	m4
 
 Requires:	pscheduler-server
+# Note that the actual definition of what protocol is used is part of
+# python-pscheduler, but this package is what does the serving, so
+# mod_ssl is required here.
+Requires:	mod_ssl
 Requires:	mod_wsgi
 Requires:	python-pscheduler
+Requires:	python-requests
+Requires:	pytz
 # TODO: See what else this needs at runtime.
 
 
@@ -33,6 +39,9 @@ The pScheduler REST API server
 
 %define httpd_conf_d %{_sysconfdir}/httpd/conf.d
 %define conf	     %{httpd_conf_d}/%{name}.conf
+
+%define server_conf_dir %{_pscheduler_sysconfdir}
+%define limits_file     %{server_conf_dir}/limits
 
 # Note that we want this here because it seems to work well without
 # assistance on systems where selinux is enabled.  Anywhere else and
@@ -59,7 +68,11 @@ make \
      "API_DIR=%{api_dir}" \
      "CONF_D=%{httpd_conf_d}" \
      "PREFIX=${RPM_BUILD_ROOT}" \
+     "DSN_FILE=%{_pscheduler_database_dsn_file}" \
+     "LIMITS_FILE=%{limits_file}" \
      install
+
+mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}
 
 
 %post

@@ -19,7 +19,7 @@ CREATE OR REPLACE FUNCTION ticker_minute()
 RETURNS VOID
 AS $$
 BEGIN
-    NULL;
+    PERFORM schedule_maint_minute();
 END;
 $$ LANGUAGE plpgsql;
 

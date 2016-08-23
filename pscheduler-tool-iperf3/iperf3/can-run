@@ -1,0 +1,30 @@
+#!/usr/bin/python
+#
+# Determine if this tool can run a test based on a test spec.
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+logger = pscheduler.Log(prefix='tool-iperf3')
+
+json = pscheduler.json_load(exit_on_error=True)
+
+logger.info("can-run for %s" % json)
+
+if not json.get('type'):
+    pscheduler.fail('Missing test type')
+
+if json['type'] != 'throughput':
+    pscheduler.fail('Unsupported test type')
+
+if not json.get('spec'):
+    pscheduler.fail('Missing test spec')
+
+test_spec = json['spec']
+    
+logger.debug("can-run succeeded")
+
+pscheduler.succeed()

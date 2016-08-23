@@ -11,7 +11,7 @@
 
 # Un-comment this to add IPs for a private backplane interface if
 # you're using one.
-ADD_BACKPLANE_HOSTS=1
+#ADD_BACKPLANE_HOSTS=1
 
 # Un-comment these and configure to taste.
 #NEW_USER=mfeit
@@ -46,6 +46,22 @@ REDHAT_RELEASE_MAJOR_MINOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 "." $2
 # Bring everything up to date
 yum -y upgrade
 
+
+# Make sure there's at least the minimal package group on the system.
+# This is mostly for Docker's benefit.
+case ${REDHAT_RELEASE_MAJOR} in
+    6)
+	# TODO: Find the equivalnet to Minimal in CentOS 6
+	true
+	;;
+    7)
+	yum -y groupinstall "Minimal Install"
+	;;
+    *)
+	echo "This version of RHEL/CentOS is not supported." 1>&2
+	exit 1
+	;;
+esac
 
 #
 # Install backplane hosts if requested
@@ -82,13 +98,39 @@ yum -y install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${REDH
 
 # Internet2
 rpm --import http://software.internet2.edu/rpms/RPM-GPG-KEY-Internet2
-# TODO: We should have a symlink to the latest that stays constant.
-yum -y install "http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/$(uname -m)/RPMS.main/Internet2-repo-0.7-1.noarch.rpm"
+
+# TODO: Use the default when the I2 repo for EL7 becomes production
+case ${REDHAT_RELEASE_MAJOR} in
+
+    7)
+	cat > /etc/yum.repos.d/internet2-staging.repo <<EOF
+# Name: Internet2 Staging RPM Repository
+# URL: http://software.internet2.edu
+[Internet2-staging]
+name = Internet2 Staging RPM Repository
+baseurl = http://software.internet2.edu/branches/staging/rpms/el${REDHAT_RELEASE_MAJOR}/\$basearch/main/
+enabled = 1
+protect = 0
+gpgcheck = 0
+EOF
+	break
+	;;
+
+    *)
+	# TODO: We should have a symlink to the latest that stays constant.
+	yum -y install "http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/$(uname -m)/RPMS.main/Internet2-repo-0.${REDHAT_RELEASE_MAJOR}-1.noarch.rpm"
+	break
+	;;
+
+esac
 
 
 # Things we need to build:
 yum -y install \
-    m4
+    m4 \
+    make \
+    which
+
 
 
 # Needed for documentation, which isn't RPM-ified yet and can't load
@@ -169,6 +211,15 @@ then
     esac
 
     yum -y install bzip2 gcc ${KERNEL_DEVEL}
+
+    KDEVEL_VER=$(rpm -q kernel-devel | sed -e 's/^kernel-devel-//')
+
+    if [ "${KDEVEL_VER}" != "$(uname -r)" ]
+    then
+	echo "Running kernel is different than installed headers." 1>&2
+	echo "You might need to reboot." 1>&2
+	exit 1
+    fi
 
     # This exits 1 when XOrg isn't installed, even if successful
     /mnt/VBoxLinuxAdditions.run && true

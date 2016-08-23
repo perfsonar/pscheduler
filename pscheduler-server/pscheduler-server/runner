@@ -3,43 +3,53 @@
 # Execute runs of tasks and put the results into the database.
 #
 
-# TODO: See which of these are still needed.
-import detach
+import daemon
+import datetime
 import errno
+import multiprocessing
 import optparse
 import pscheduler
 import psycopg2
 import psycopg2.extensions
 import select
+import signal
+import socket
 import sys
+import threading
 import time
+
+# See Python 2.6 workaround below
+import weakref
 
 
 # Gargle the arguments
 
 opt_parser = optparse.OptionParser()
 
-opt_parser.add_option("-c", "--channel",
-                      help="Schedule notification channel",
-                      action="store", type="string", dest="channel",
-                      default="run_change")
+# Daemon-related options
+
+opt_parser.add_option("--daemon",
+                      help="Daemonize",
+                      action="store_true",
+                      dest="daemon", default=False)
+opt_parser.add_option("--pid-file",
+                      help="Location of PID file",
+                      action="store", type="string", dest="pidfile",
+                      default=None)
+
+# Program options
 
 opt_parser.add_option("-d", "--dsn",
                       help="Database connection string",
                       action="store", type="string", dest="dsn",
                       default="")
-
-# NOTE: Changing the refresh interval will have an effect on how many
-# forked processes are running, connected to the database and waiting
-# for a run to start.  Increase this value only if you understand the
-# consequences.
 opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
                       default="PT1M")
 
-opt_parser.add_option("--verbose", action="store_true", dest="verbose")
-opt_parser.add_option("--debug", action="store_true", dest="debug")
+opt_parser.add_option("--verbose", action="store_true", dest="verbose", default=False)
+opt_parser.add_option("--debug", action="store_true", dest="debug", default=False)
 
 (options, args) = opt_parser.parse_args()
 
@@ -54,60 +64,204 @@ log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
 
 dsn = options.dsn
 
+# Get this once so we don't have to do a function call every time.
+delimiter = pscheduler.api_result_delimiter()
 
 
 #
-# Runs and things we do with them
+# Directory of what we believe to be running and what we don't.
 #
-class Run:
+# Even though Python de-parallelizes threads, force this to become
+# thread-safe in case it gets smarter later.
+#
 
-    def __init__(self, id, start_in):
+class RunDictionary:
 
+    def __init__(self):
+        self.dict = {}
+        self.lock = threading.Lock()
+
+    def start(self, id, worker):
+        with self.lock:
+            self.dict[id] = worker
+
+    def finish(self, id):
+        with self.lock:
+            del self.dict[id]
+
+    def is_running(self, id):
+        with self.lock:
+            result = id in self.dict
+        return result
+
+run_dict = RunDictionary()
+
+
+#
+# Clock Survey
+#
+
+def is_ip(addr):
+    """
+    Determine if an address looks like IPv4 or IPv6
+    """
+    for family in [socket.AF_INET, socket.AF_INET6]:
         try:
+            socket.inet_pton(family, addr)
+            return True
+        except socket.error:
+            pass
 
-            # TODO: May not want to fully detach so children die with
-            # the parent.
+    return False
 
-            with detach.Detach(close_fds=False,
-                               stdout=sys.stdout,
-                               stderr=sys.stderr) as detacher:
 
-                if detacher.pid:
-                    self.pid = detacher.pid
-                    return
+def get_clock(arg):
+    slot, url = arg
+    status, result = pscheduler.url_get(url, throw=False)
+    if status != 200:
+        result = { "error": status }
+    return (slot, result)
 
-                log.debug("Started runner for ID %d", id)
 
-                # TODO: Need to find a nice way to catch and log
-                # exceptions from these.  safe_run() doesn't quite cut
-                # it.
+def clock_survey(hosts):
 
-                self._run(id, start_in)
+    if len(hosts) == 0:
+        return []
 
-        except:
+    # Any null hosts become the local host
+    # TODO: Should this call api_this_host()?
+    hosts = [ "127.0.0.1" if host is None else host for host in hosts ]
+
+    # Pre-Resolve the hosts to IPs so there's no test time spent on it
+    resolved = pscheduler.dns_bulk_resolve(hosts)
+    hosts = [ host if is_ip(host) else resolved[host] for host in hosts ]
+
+    host_args = []
+    for slot in range(0,len(hosts)):
+        host = hosts[slot]
+        if host is None:
+            continue
+        host_args.append((slot, pscheduler.api_url(host, "/clock")))
+
+    # Prime the result with empties for anything that didn't get
+    # tested.
+    result = [None] * len(hosts)
+
+    # Work around a bug in 2.6
+    # TODO: Get rid of this when 2.6 is no longer in the picture.
+    if not hasattr(threading.current_thread(), "_children"):
+        threading.current_thread()._children = weakref.WeakKeyDictionary()
+
+    # Run the lot of tests in parallel
+    pool = multiprocessing.pool.ThreadPool(processes=len(host_args))
+    for slot, clock in pool.imap(get_clock, host_args, chunksize=1):
+        result[slot] = clock
+    pool.close()
+
+    return pscheduler.json_dump(result)
+
+
+
+
+#
+# Class that does the test runs
+#
+
+class RunWorker:
+
+    def __init__(self, db, log, id, start_in):
+
+        # Per http://initd.org/psycopg/docs/usage.html#thread-safety,
+        # Psycopg is thread-safe when you use multiple cursors against the
+        # same connection.
+        self.cursor = db.cursor()
+        self.log = log
+        self.id = id
+        self.start_in = start_in
+        self.finished = False
+        self.output = []
+
+        self.worker = threading.Thread(target=lambda: self.run())
+        self.worker.start()
+
+
+    def __post_new_result(self, result):
+        """
+        Post a finished run for this task using the result provided.
+        """
+        self.log.debug("%d: POSTING RESULT %s", self.id, result)
+        try:
+            json = pscheduler.json_load(result)
+        except ValueError:
+            log.warning("Discarding bogus result %s", result)
+            return
+        # TODO: Error check this.
+        self.cursor.execute("""
+            INSERT INTO run (task, uuid, times, state, status, result_merged)
+            VALUES (%s,
+                    NULL,
+                    tstzrange(normalized_now(), normalized_now(), '[]'),
+                    run_state_finished(),
+                    0,
+                    %s)
+            """, [ self.task_id, result ])
+
+
+
+    def __accumulate_output(self, line):
+        """
+        Accumulate lines of output from the tool in an array until the
+        magic delimiter appears.  When it does, use it to post a
+        finished run for the same task.
+        """
+        # TODO: This should be available in the pScheduler module
+        if line == delimiter:
+            self.__post_new_result("\n".join(self.output))
+            self.output = []
+        else:
+            self.output.append(line)
+
+
+    def run(self):
+        """
+        Run the tool in an exception-safe way
+        """
+        self.log.debug("%d: Thread running", self.id)
+        run_dict.start(self.id, self)
+        try:
+            self.__run()
+        except Exception as ex:
+            # Don't worry about the result here.  If __run() failed to
+            # post anything, that will be the end of it.  If it did,
+            # it might be salvageable.
+            self.log.debug("%d: Exception: %s", self.id, ex)
             log.exception()
+        self.log.debug("%d: Thread finished", self.id)
+        run_dict.finish(self.id)
 
 
-    # This method does the dirty work.  Don't worry about catching
-    # exception; that's the caller's responsibility.
-    def _run(self, id, start_in):
+    def __run(self):
+        """
+        Run the tool and, if the lead participant, gather, aggregate
+        and post the results.
+        """
 
-        db = pscheduler.pg_connection(dsn)
-        cursor = db.cursor()
+        failures = 0
 
         # Don't try to do anyting until the start time.
-        sleep_time = pscheduler.timedelta_as_seconds(start_in)
-
-        log.debug("%d: Sleeping %s until test start", id, sleep_time)
+        sleep_time = pscheduler.timedelta_as_seconds(self.start_in)
+        self.log.debug("%d: Sleeping %s until test start", self.id, sleep_time)
         time.sleep(sleep_time)
 
-        cursor.execute("""
+        # TODO: Error check this.
+        self.cursor.execute("""
                        UPDATE run
-                       SET state = run_state_running()
-                       WHERE id = %s
-                       """, [id])
+                           SET state = run_state_running()
+                           WHERE id = %s
+                       """, [self.id])
 
-        cursor.execute("""
+        # TODO: Error check this.
+        self.cursor.execute("""
                        SELECT
                            tool.name,
                            task.uuid,
@@ -118,28 +272,35 @@ class Run:
                            upper(run.times),
                            task.json #> '{test}',
                            run.uuid,
-                           run.part_data_full
+                           run.part_data_full,
+                           scheduling_class.enum
                        FROM
                            run
                            JOIN task ON task.id = run.task
+                           JOIN test ON test.id = task.test
+                           JOIN scheduling_class
+                                ON scheduling_class.id = test.scheduling_class
                            JOIN tool ON tool.id = task.tool
                        WHERE run.id = %s
-                       """, [id])
+                       """, [self.id])
 
         # TODO: Should get exactly one row back.
-        row = cursor.fetchone()
+        row = self.cursor.fetchone()
 
         tool, task_uuid, task_id, participant, participants, start, end, \
-            test_spec, run_uuid, partdata = row
+            test_spec, run_uuid, partdata, scheduling_class = row
+
+        # This will be used when a background run produces a result.
+        self.task_id = task_id
 
         #
         # Do the local tool run
         #
 
         if partdata is None:
-            log.error("%d: Got NULL part_data_full", id)
+            self.log.error("%d: Got NULL part_data_full", self.id)
 
-        tool_input = {
+        tool_input = pscheduler.json_dump({
             'schema': 1,
             'schedule': {
                 'start': pscheduler.datetime_as_iso8601(start),
@@ -148,72 +309,76 @@ class Run:
             'test': test_spec,
             'participant': participant,
             'participant-data': partdata
-            }
+            })
 
-        tool_input = pscheduler.json_dump(tool_input)
-        log.debug("%d: Testing with %s: %s", id, tool, tool_input)
+        self.log.debug("%d: Testing with %s: %s", self.id, tool, tool_input)
 
         returncode, stdout, stderr = pscheduler.run_program(
             [ "pscheduler", "internal", "invoke", "tool", tool, "run" ],
             stdin = tool_input,
-            # TODO: Make the overage on the timeout configurable, or
-            # is a couple of seconds beyond what the tool said it
-            # would take sufficient?
-            timeout = pscheduler.timedelta_as_seconds(end - start) + 2
+            timeout = pscheduler.timedelta_as_seconds(end - start) + 1,
+            line_call = lambda l: self.__accumulate_output(l)
             )
+
+        stdout = "\n".join(self.output)
 
         if len(stdout) == 0:
             stdout = None
+        else:
+            # See if the test claimed failure
+            try:
+                result_json = pscheduler.json_load(stdout)
+                if "succeeded" in result_json \
+                        and type(result_json["succeeded"]) == bool \
+                        and result_json["succeeded"] == False:
+                    failures += 1
+            except ValueError:
+                self.log.error("%d: Test returned invalid JSON: %s", self.id, stdout)
+                
 
         if len(stderr) == 0:
             stderr = None
 
         if returncode == 0:
-            log.debug("%d: Test Succeeded: %s", id, stdout)
+            self.log.debug("%d: Test Succeeded: %s", self.id, stdout)
         else:
-            log.debug("%d: Test failed %d: %s", id, returncode, stderr)
-
-
-        # TODO: Put the task into the cleanup state and take the
-        # automatic trigger out of the database.  Should go
-        # direct to finished if not the lead participant.
+            self.log.debug("%d: Test failed %d: %s", self.id, returncode, stderr)
 
         # TODO: Error check this.
-        cursor.execute("""
-                       UPDATE run
-                       SET
-                           status = %s,
-                           result = %s,
-                           errors = %s
-                       WHERE id = %s
-                       """,
-                       [returncode,
-                        stdout,
-                        stderr,
-                        id])
+        self.cursor.execute("""
+                            UPDATE run
+                            SET
+                                status = %s,
+                                result = %s,
+                                errors = %s
+                            WHERE id = %s
+                            """,
+                            [returncode,
+                             stdout,
+                             stderr,
+                             self.id])
 
-        # Note that the run happened.
-        # TODO: Error check this.
-        cursor.execute("SELECT task_register_run(%s)", [task_id])
+        self.log.debug("%d: Stored local result", self.id)
 
-        log.debug("%d: Stored local result", id)
+        # The lead participant in non-background tasks takes care of
+        # gathering and merging the finished results.  Background
+        # tasks take care of inserting their own results.
 
-        # The lead participant takes care of gathering and merging the finished results.
+        if participant == 0 and scheduling_class != "background":
 
-        if participant == 0:
+            self.log.debug("%d: Doing lead participant duties", self.id)
 
-            log.debug("%d: Doing lead participant duties", id)
-           
             # Wait until the scheduled time has passed, which is the
             # only time we can be sure results might be available.
 
-            # TODO:  Skip sleep if this is a single-participant test?
-
-            wait_time = pscheduler.time_until_seconds(end)
-            log.debug("%d: Waiting for task end time to pass (%s)",
-                      id, wait_time)
-            time.sleep(wait_time)
-            log.debug("%d: Task end time has passed", id)
+            if len(participants) > 1:
+                wait_time = pscheduler.time_until_seconds(end)
+                self.log.debug("%d: Waiting for task end time to pass (%s)",
+                               self.id, wait_time)
+                time.sleep(wait_time)
+                self.log.debug("%d: Task end time has passed", self.id)
+            else:
+                self.log.debug("%d: Only one participant; not waiting.", self.id)
 
             # Fetch and combine the results.
 
@@ -222,145 +387,208 @@ class Run:
                                         % (task_uuid, run_uuid) )
                      for host in participants ]
 
-            log.debug("%d: Runs are %s", id, runs)
-
-
-            # TODO: Shouldn't be doing this if the local run failed.
+            self.log.debug("%d: Runs are %s", self.id, runs)
 
             try:
-                log.debug("Local run returned %d", returncode)
+                self.log.debug("%d: Local run returned %d",
+                               self.id, returncode)
                 if returncode == 0:
                     local_result = pscheduler.json_load(stdout)
                 else:
                     local_result = None
-                    log.debug("%d: Tool returned failure: %s", id, stderr)
+                    self.log.debug("%d: Tool returned failure: %s",
+                                   self.id, stderr)
+                    failures += 1
+
             except ValueError as ex:
-                log.error("%d: Tool %s returned invalid JSON %s",
-                          id, tool, stdout)
+                self.log.error("%d: Tool %s returned invalid JSON %s",
+                               self.id, tool, stdout)
                 local_result = None
 
 
             full_result = [ local_result ]
-            log.debug("%d: Accumulated local result", id)
+            self.log.debug("%d: Accumulated local result", self.id)
 
             for run in runs[1:]:
 
-                log.debug("%d: Fetching run %s", id, run)
+                self.log.debug("%d: Fetching run %s", self.id, run)
 
                 status, result = pscheduler.url_get( run,
-                                     params={ 'wait-local': True },
-                                     throw=False )
+                                                     params={ 'wait-local': True },
+                                                     throw=False )
 
                 if status == 200:
-                    log.debug("%d: Retrieved %s", id, result)
+                    self.log.debug("%d: Retrieved %s", self.id, result)
                     full_result.append(result['result'])
                 else:
-                    log.warning("%d: Unable to retrieve run %s", id, run)
+                    self.log.warning("%d: Unable to retrieve run %s", self.id, run)
                     full_result.append(None)
+                    failures += 1
 
-
-            log.debug("%d: Full result: %s",
-                      id, pscheduler.json_dump(full_result, pretty=True))
-
-            # TODO: If any of the tests resulted in a failure, check
-            # if the participants' clocks are off and add that to the
-            # diagnostics.
+            self.log.debug("%d: Full result: %s",
+                           self.id,
+                           pscheduler.json_dump(full_result))
 
             # Store the full result with each participant.
 
-            full_params = {
-                'run': pscheduler.json_dump({ 'result-full' : full_result })
-                }
-
-
-            # TODO: Store the local result in the database instead of
-            # doing it through the REST API.
+            full_params = pscheduler.json_dump({ 'result-full' : full_result })
 
             for run in runs:
-                log.debug("%d: Storing result in %s", id, run)
+                self.log.debug("%d: Storing full result in %s, params=%s",
+                               self.id, run, full_params)
                 status, returned = pscheduler.url_put(run,
-                                                      params=full_params,
+                                                      data=full_params,
                                                       throw=False,
                                                       json=False)
                 if status != 200:
-                    log.warning("%d: Unable to update run %s: %d %s",
-                                id, run, status, returned)
+                    self.log.warning("%d: Unable to update run %s: %d %s",
+                                     self.id, run, status, returned)
 
 
-        # TODO: Put the task into the finished state
+                # If there were any failures, survey all of the
+                # particpants' clocks and stash it in the local run
+                # record.
 
-        cursor.close()
-        db.close()
-        log.debug("%d: Run complete", id)
+                if failures > 0:
+                    self.log.debug("Saw failures; surveying clocks")
+                    # TODO: Error check this.
+                    self.cursor.execute("""
+                                        UPDATE run SET clock_survey = %s
+                                        WHERE id = %s
+                                        """,
+                            [clock_survey(participants), self.id])
 
 
+        self.cursor.close()
+        self.log.debug("%d: Run complete", self.id)
+        self.finished = True
 
 
 #
 # Main Program
 #
 
+
 def main_program():
 
-    pg = pscheduler.pg_connection(dsn)
-    cursor = pg.cursor()
-    cursor.execute("LISTEN " + options.channel)
 
+    # Exit nicely when certain signals arrive so running processes are
+    # cleaned up.
+
+    def exit_handler(signum, frame):
+        log.info("Exiting on signal %d", signum)
+        exit(0)
+
+    for sig in [ signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM ]:
+        signal.signal(sig, exit_handler)
+
+
+    db = pscheduler.pg_connection(dsn)
+    cursor = db.cursor()
+
+    cursor.execute("LISTEN run_new")
 
     while True:
 
         # Operate only on runs that are scheduled to start before the next
         # forced refresh.
 
-        cursor.execute("""SELECT
-                              run,
-                              start_in
-                          FROM
-                              schedule_upcoming
-                          WHERE
-                              start_in < %s
-                          ORDER BY start_in
+        # TODO: Error check this.
+        cursor.execute("""
+                       SELECT * FROM (
+                       -- Tasks that haven't started
+                       SELECT
+                           run,
+                           start_in,
+                           FALSE as background
+                       FROM
+                           schedule_upcoming
+                       WHERE
+                           start_in < %s
+
+                       UNION
+
+                       -- Background tasks that should be running.
+                       SELECT
+                           run.id AS run,
+                           'PT1S'::INTERVAL AS start_in,
+                           TRUE as background
+                       FROM
+                           run
+                           JOIN task ON task.id = run.task
+                           JOIN test ON test.id = task.test
+                       WHERE
+                           times @> normalized_now()
+                           AND test.scheduling_class = scheduling_class_background()
+                       ) t ORDER BY start_in
                    """, [refresh]);
+
+        log.debug("Got %d upcoming rows", cursor.rowcount)
+
+        wait_time = refresh
 
         if cursor.rowcount:
 
-            # TODO: There must be a nicer way to take this array slice as args.
-            rows = cursor.fetchall()
-            log.debug(str([ "RUN " + str(row[0]) + " " + str(row[1]) for row in rows ]) )
-            runs = [ Run(row[0], row[1]) for row in rows ]
-            wait_time = rows[0][1]
+            run_ids = []
+
+            for row in cursor:
+
+                run_id, start_in, background = row
+
+                log.debug("Run %d, starts in %s", run_id, start_in)
+
+                if run_dict.is_running(run_id):
+                    log.debug("Run %d is already running", run_id)
+                    continue
+
+                run_ids.append(run_id)
+
+                # TODO: Hold this
+                worker = RunWorker(db, log, run_id, start_in)
+
+                if not background and start_in < wait_time:
+                    log.debug("Dropping wait time to %s", start_in)
+                    wait_time = start_in
+
 
             # Do this here to guarantee that we don't pick up rows for
             # runs we just started in the next iteration of the loop.
+            if run_ids:
+                # TODO: Error check this.
+                log.debug("Putting runs on deck: %s", run_ids)
+                cursor.execute("""
+                               UPDATE run
+                               SET state = run_state_on_deck()
+                               WHERE
+                                   id in %s
+                                   AND state <> run_state_running()
+                               """, (tuple(run_ids),))
 
-            cursor.execute( "UPDATE run SET state = run_state_on_deck() WHERE id in %s",
-                            (tuple([row[0] for row in rows]),) )
-            log.debug("Put %d runs on deck", len(runs))
 
         else:
 
             log.debug("Nothing to do.")
-            runs = []
             wait_time = refresh
 
 
+
+        log.debug("Next run or check in %s", wait_time)
         if not pscheduler.timedelta_is_zero(wait_time):
 
             # Wait for a notification or the wait time to elapse.  Eat all
             # notifications as a group; we only care that we were notified.
 
-            log.debug("Next run or check in %s", wait_time)
 
             # TODO: This try needs to be brought to the other programs.
             # Better, make it a function in db.py.
 
             try:
-                if select.select([pg],[],[],
+                if select.select([db],[],[],
                                  pscheduler.timedelta_as_seconds(wait_time)) \
                                  != ([],[],[]):
                     # Notified
-                    pg.poll()
-                    del pg.notifies[:]
+                    db.poll()
+                    del db.notifies[:]
                     log.debug("Schedule change.")
 
             except select.error as ex:
@@ -371,8 +599,13 @@ def main_program():
                     raise ex
 
     # Not that this will ever be reached...
-    pg.close()
+    db.close()
 
 
+if options.daemon:
+    pidfile = pscheduler.PidFile(options.pidfile)
+    with daemon.DaemonContext(pidfile=pidfile):
+        pscheduler.safe_run(lambda: main_program())
+else:
+    pscheduler.safe_run(lambda: main_program())
 
-pscheduler.safe_run(lambda: main_program())

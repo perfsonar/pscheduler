@@ -1,0 +1,22 @@
+#!/usr/bin/python
+#
+# Determine if this tool can run a test based on a test spec.
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True);
+
+
+# TODO: Should be checking the package schema and the task spec schema.
+
+try:
+    if json['type'] != 'idlebg' :
+        pscheduler.fail('Unsupported test type')
+except KeyError:
+    pscheduler.fail('Missing test type')
+
+pscheduler.succeed()

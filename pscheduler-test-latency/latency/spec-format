@@ -1,0 +1,39 @@
+#!/usr/bin/python
+#
+# Format a spec
+#
+
+import jsontemplate
+import pscheduler
+import sys
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
+
+json = pscheduler.json_load(exit_on_error=True)
+
+if format == 'text/plain':
+
+   template = """
+Source   ............ {.section source}{@}{.or}Not Specified{.end}
+Destination ......... {.section dest}{@}{.or}Not Specified{.end}
+Packet Count ........ {.section packet-count}{@}{.or}Not Specified{.end}
+Packet Interval ..... {.section packet-interval}{@}{.or}Not Specified{.end}
+Packet Timeout. ..... {.section packet-timeout}{@}{.or}Not Specified{.end}
+Packet Padding. ..... {.section packet-padding}{@}{.or}Not Specified{.end}
+Data Ports .......... {.section data-ports}{@}{.or}Not Specified{.end}
+IP TOS .............. {.section ip-tos}{@}{.or}Not Specified{.end}
+IP Version .......... {.section ip-version}IPv{@}{.or}Not Specified{.end}
+Bucket Width ........ {.section bucket-width}{@}{.or}Not Specified{.end}
+Output Raw Packets .. {.section output-raw}{@}{.or}Not Specified{.end}
+Flip Mode ........... {.section flip}{@}{.or}Not Specified{.end}
+Single Participant .. {.section single-participant-mode}{@}{.or}Not Specified{.end}
+   """
+else:
+
+   pscheduler.fail("Unsupported format '%s'" % format)
+
+
+print jsontemplate.expand(template, json).strip()

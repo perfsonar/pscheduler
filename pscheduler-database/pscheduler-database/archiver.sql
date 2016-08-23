@@ -247,11 +247,11 @@ DECLARE
     run_result external_program_result;
     validate_result JSONB;
 BEGIN
-    IF NOT candidate ? 'name' THEN
-        RAISE EXCEPTION 'No name specified in archiver.';
+    IF NOT candidate ? 'archiver' THEN
+        RAISE EXCEPTION 'No archiver name specified in archiver.';
     END IF;
 
-    archiver_name := candidate ->> 'name';
+    archiver_name := candidate ->> 'archiver';
 
     IF NOT EXISTS (SELECT * FROM archiver WHERE name = archiver_name) THEN
         RAISE EXCEPTION 'Archiver "%" is not avaiable.', archiver_name;

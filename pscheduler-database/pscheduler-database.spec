@@ -22,19 +22,20 @@ Requires:	drop-in
 # This is for pgcrypto
 Requires:	postgresql95-contrib
 Requires:	postgresql95-plpython
-Requires:	postgresql-init
 Requires:	postgresql-load
 Requires:	pscheduler-account
+Requires:	pscheduler-database-init
 Requires:	random-string
 
 
 %description
 The pScheduler database
 
+%define db_config_dir %{_pscheduler_sysconfdir}/database
 %define db_user %{_pscheduler_user}
-%define password_file %{_pscheduler_sysconfdir}/database-password
-%define dsn_file %{_pscheduler_sysconfdir}/database-dsn
-%define pgpass_file %{_pscheduler_sysconfdir}/pgpassfile
+%define password_file %{db_config_dir}/database-password
+%define dsn_file %{db_config_dir}/database-dsn
+%define pgpass_file %{db_config_dir}/pgpassfile
 
 %define rpm_macros %{_pscheduler_rpmmacroprefix}%{name}
 
@@ -53,6 +54,8 @@ make PGPASSFILE=$RPM_BULID_ROOT/%{pgpass_file}
 
 %install
 make DATADIR=$RPM_BUILD_ROOT/%{_pscheduler_datadir} install
+
+mkdir -p $RPM_BUILD_ROOT/%{db_config_dir}
 
 # These will be populated on installation
 for FILE in %{password_file} %{dsn_file} %{pgpass_file}
@@ -183,6 +186,8 @@ drop-in -n -t %{name} - "${HBA_FILE}" <<EOF
 %if 0%{?el6}
 # TODO: SECURITY: The password method doesn't seem to work on pg 9.5
 # when installed on el6.  Find out why and how to fix that.
+# Followup: The md5 method does seem to work on the pS toolkit.  Check
+# to see if it works on 6.8.
 local     pscheduler      pscheduler                            trust
 host      pscheduler      pscheduler     127.0.0.1/32           trust
 host      pscheduler      pscheduler     ::1/128                trust
@@ -196,7 +201,8 @@ EOF
 
 
 %if 0%{?el6}
-service $(basename $(ls %{_initddir}/postgresql* | head -1)) restart
+#sort in reverse order (ls -r) to get newest installed version
+service $(basename $(ls -r %{_initddir}/postgresql* | head -1)) restart
 %endif
 %if 0%{?el7}
 SERVICE=$(systemctl | fgrep postgresql | awk '{ print $1 }' \
@@ -239,8 +245,7 @@ systemctl restart "${SERVICE}"
 %files
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
 %{_pscheduler_datadir}/*
-%verify(user group mode) %{password_file}
-%verify(user group mode) %{dsn_file}
-%verify(user group mode) %{pgpass_file}
+%attr(500,-,-) %{db_config_dir}
+%attr(400,-,-)%verify(user group mode) %{db_config_dir}/*
 %{rpm_macros}
 %{profile_d}/*

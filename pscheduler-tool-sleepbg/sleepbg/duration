@@ -1,0 +1,27 @@
+#!/usr/bin/python
+#
+# Determine the duration of a specified test.
+#
+#
+# TODO: This is a bare-bones, unreliable implementation that should be
+# used only for testing.
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True);
+
+# TODO: Make sure the type is one we like
+# TODO: Validate the spec
+
+
+try:
+    print json['duration']
+except KeyError:
+    # TODO: This needs to match the default that will be used by run.
+    pscheduler.fail('No duration found in test spec.')
+
+pscheduler.succeed()

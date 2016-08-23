@@ -16,7 +16,8 @@ FILES=\
 	preamble \
 	utilities \
 	\
-	schedule_time_horizon \
+	configurables \
+	scheduling_class \
 	test \
 	tool \
 	archiver \
@@ -28,9 +29,6 @@ FILES=\
 	\
 	boot \
 	ticker \
-	\
-	auth_identifier \
-	auth_ip \
 
 
 FILES_TEARDOWN=\
@@ -74,24 +72,13 @@ $(TEARDOWN_SQL): $(TEARDOWN)
 TO_CLEAN += $(TEARDOWN_SQL)
 
 
-
 install: $(SQL)
 ifndef DATADIR
 	@echo No DATADIR specified for installation
 	@false
 endif
 	mkdir -p $(DATADIR)
-	# These only need to be readable by the owner or trusted associates.
 	install -m 440 $^ $(DATADIR)
-
-
-
-
-TODO=TODO:
-todo:
-	@fgrep '$(TODO)' $(SUPER) $(UNPRIV) Makefile \
-	| sed -e 's/:.*$(TODO)\s*/~/' \
-	| awk -F '~' 'BEGIN { FN="" } $$1 != FN { print "\n" $$1 ":"; FN=$$1 } { print "    ", $$2 }'
 
 
 clean:

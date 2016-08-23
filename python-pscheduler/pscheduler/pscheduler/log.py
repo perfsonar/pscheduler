@@ -210,14 +210,18 @@ class Log():
         self.log(CRITICAL, format, *args)
 
     def exception(self, message=None):
-        "Log an exception as an error"
+        "Log an exception as an error and debug if we're doing that."
         extype, ex, tb = sys.exc_info()
-        self.error(
-            "Exception: %s%s%s",
+        message = "Exception: %s%s%s" % (
             message+': ' if message is not None else '',
             ''.join(traceback.format_exception_only(extype, ex)),
             ''.join(traceback.format_exception(extype, ex, tb)).strip()
             )
+        if self.forced_debug:
+            self.debug(message)
+        else:
+            self.error(message)
+
 
 
     # Forced setting of debug level

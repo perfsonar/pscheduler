@@ -13,6 +13,8 @@ FILES=\
 	enumerate \
 	participant-data \
 	run \
+	merged-results \
+
 
 
 DOCS=\

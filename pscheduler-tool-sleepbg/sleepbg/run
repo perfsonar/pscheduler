@@ -1,0 +1,73 @@
+#!/usr/bin/python
+#
+# Run a test.  Just the test spec is provided on stdin.
+#
+
+import datetime
+import json
+import sys
+import time
+
+import pscheduler
+
+logger = pscheduler.Log(prefix='tool-sleepbg')
+
+input = pscheduler.json_load(exit_on_error=True);
+
+# TODO: Validate the input
+
+try:
+    duration_iso = input['test']['spec']['duration']
+except KeyError:
+    pscheduler.fail('Unable to find duration in input')
+
+duration = pscheduler.iso8601_as_timedelta(duration_iso)
+if duration is None:
+    pscheduler.fail_other(2, "Missing or invalid duration " + duration_iso)
+
+
+try:
+    interval_iso = input['test']['spec']['interval']
+except KeyError:
+    interval_iso = "PT1S"
+
+interval = pscheduler.iso8601_as_timedelta(interval_iso)
+if interval is None:
+    pscheduler.fail_other(2, "Missing or invalid interval " + interval_iso)
+
+
+
+# Perform the test
+
+# The output is just mocked up since there's no real tool being run.
+
+results = {
+    'succeeded': True,
+    'error': '',
+    'result': { 
+        'schema': 1,
+        'succeeded': True,
+        'time-slept': interval_iso
+        }
+}
+
+
+interval_secs = pscheduler.timedelta_as_seconds(interval)
+end_time = pscheduler.time_now() + duration
+next_output = pscheduler.time_now() + interval
+runs = 0
+
+delimiter = pscheduler.api_result_delimiter()
+
+while next_output < end_time:
+    logger.debug("Sleeping %d", interval_secs)
+    time.sleep(interval_secs)
+    runs += 1
+    results['diags'] = "Run #%d" % runs
+    print pscheduler.json_dump(results)
+    print delimiter
+    sys.stdout.flush()
+    next_output += interval
+    logger.debug("Wrote result")
+
+pscheduler.succeed()

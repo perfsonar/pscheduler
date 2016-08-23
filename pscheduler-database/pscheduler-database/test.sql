@@ -34,7 +34,14 @@ CREATE TABLE test (
 
 	-- Whether or not the test is currently available
 	available	BOOLEAN
-			DEFAULT TRUE
+			DEFAULT TRUE,
+
+        -- Scheduling class for this type of test
+	scheduling_class INTEGER
+                        NOT NULL
+			REFERENCES scheduling_class(id)
+			-- Deletes should never happen but for consistency...
+			ON DELETE CASCADE
 );
 
 
@@ -43,7 +50,9 @@ RETURNS BOOLEAN
 AS $$
 BEGIN
     RETURN (json ->> 'name') IS NOT NULL
-      AND text_to_numeric(json ->> 'version', false) IS NOT NULL;
+      AND text_to_numeric(json ->> 'version', false) IS NOT NULL
+      AND scheduling_class_find(json ->> 'scheduling-class') IS NOT NULL
+      ;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -60,6 +69,7 @@ BEGIN
     NEW.name := NEW.json ->> 'name';
     NEW.description := NEW.json ->> 'description';
     NEW.version := text_to_numeric(NEW.json ->> 'version');
+    NEW.scheduling_class := scheduling_class_find(NEW.json ->> 'scheduling-class');
 
     RETURN NEW;
 END;

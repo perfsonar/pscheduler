@@ -3,6 +3,7 @@
 #
 
 # PostgreSQL version
+# TODO: Make the scripts figure this out.
 %define pg_major 9
 %define pg_minor 5
 
@@ -23,6 +24,7 @@ Group:		Unspecified
 # No Source:
 
 Provides:	%{name} = %{version}-%{release}
+Provides:	pscheduler-database-init
 
 Requires:	postgresql%{pg_ver}-server
 

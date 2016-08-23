@@ -18,6 +18,7 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-core
 Requires:	python-pscheduler
+Requires:	python-jsontemplate
 
 BuildRequires:	pscheduler-rpm
 
@@ -42,4 +43,3 @@ make \
 %files
 %defattr(-,root,root,-)
 %{dest}
-%{_pscheduler_test_doc}/*

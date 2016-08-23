@@ -8,17 +8,18 @@ import logging
 import json
 import pscheduler
 import re
-import tempfile
 import shutil
 import sys
 import time
 import iperf_parser
+import traceback
+import ipaddr
 from iperf_defaults import *
 
 # track when this run starts
 start_time = datetime.datetime.now()
 
-logger = pscheduler.Log(prefix='iperf', quiet=True)
+logger = pscheduler.Log(prefix='tool-iperf')
 
 logger.debug("starting iperf tool")
 
@@ -39,26 +40,103 @@ except:
 
 
 def run_client():    
-    time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to boot
+
+    logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
+
+    time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
 
     iperf_args = ['/usr/bin/iperf']
 
-
-    logger.debug(participant)
-    logger.debug(participant_data)
-
     # who to connect to
+    destination = test_spec['destination']
+
+    try:
+        ipaddr.IPAddress(destination)
+        is_ip_address = True
+    except ValueError:
+        is_ip_address = False
+    
+    # iperf has no inherent ability to force v4 or v6, so we do it here but
+    # don't bother doing lookups on just a straight IP address, seems like
+    # a silly combination of flags but whatever
+    if not is_ip_address and test_spec.has_key('force-ipv4'):
+        destination = pscheduler.dns_resolve(destination, ip_version=4)
+        
+        logger.info("Resolved %s to %s" % (test_spec["destination"], destination))
+                    
+        if destination == None:
+            pscheduler.fail("Unable to resolve %s to an IPv4 address" % test_spec["destination"])
+
+    elif not is_ip_address and test_spec.has_key('force-ipv6'):
+        destination = pscheduler.dns_resolve(destination, ip_version=6)
+                    
+        logger.info("Resolved %s to %s" % (test_spec["destination"], destination))
+
+        if destination == None:
+            pscheduler.fail("Unable to resolve %s to an IPv6 address" % test_spec["destination"])
+            
+
+
     iperf_args.append('-c')
-    iperf_args.append(test_spec['receiver'])
+    iperf_args.append(destination)
 
     # duration
+    test_duration = test_spec.get('duration')
+    if test_duration:
+        delta = pscheduler.iso8601_as_timedelta(test_duration)
+        test_duration = int(pscheduler.timedelta_as_seconds(delta))
+    else:
+        test_duration = DEFAULT_DURATION
+
     iperf_args.append('-t')
-    iperf_args.append(test_spec['duration'])
+    iperf_args.append(test_duration)
 
-    if test_spec.has_key('interval'):
+    # always show mss because why not
+    iperf_args.append('-m')
+
+    if test_spec.has_key('interval') and test_spec['interval'] != None:
         iperf_args.append('-i')
-        iperf_args.append(test_spec['interval'])
+        delta = pscheduler.iso8601_as_timedelta(test_spec['interval'])
+        iperf_args.append(int(pscheduler.timedelta_as_seconds(delta)))
 
+    if test_spec.has_key('parallel') and test_spec['parallel'] != None:
+        iperf_args.append('-P')
+        iperf_args.append(test_spec['parallel'])
+
+    if test_spec.has_key('window-size') and test_spec['window-size'] != None:
+        iperf_args.append('-w')
+        iperf_args.append(test_spec['window-size'])
+
+    if test_spec.has_key('mss') and test_spec['mss'] != None:
+        iperf_args.append('-M')
+        iperf_args.append(test_spec['mss'])
+
+    if test_spec.has_key('bandwidth') and test_spec['bandwidth'] != None:
+        iperf_args.append('-u') # iperf only support UDP bandwidth throttling, this is checked for earlier too
+        iperf_args.append('-b')
+        iperf_args.append(test_spec['bandwidth'])
+
+    if test_spec.has_key('buffer-length') and test_spec['buffer-length'] != None:
+        iperf_args.append('-l')
+        iperf_args.append(test_spec['buffer-length'])
+
+    if test_spec.has_key('dscp') and test_spec['dscp'] != None:
+        iperf_args.append('-S')
+        iperf_args.append(test_spec['dscp'])
+
+    if test_spec.has_key('tos') and test_spec['tos'] != None:
+        iperf_args.append('-S')
+        iperf_args.append(test_spec['tos'])
+
+    if test_spec.has_key('local-address') and test_spec['local-address'] != None:
+        iperf_args.append('-B')
+        iperf_args.append(test_spec['local-address'])
+
+    
+    # join and run_program want these all to be string types, so
+    # just to be safe cast everything in the list to a string
+    iperf_args = map(lambda x: str(x), iperf_args)
+      
     logger.info("Running command: %s" % " ".join(iperf_args))
 
     try:
@@ -70,11 +148,11 @@ def run_client():
     #see if command completed successfully
     logger.debug("iperf returned status %d" % status)
 
-    if status:
-        iperf_error = ''
-        for line in stderr:
-            iperf_error += line.rstrip().lstrip() + " "
-        pscheduler.fail("iperf returned an error: %s" %iperf_error)
+    # For whatever reason, iperf doesn't always exit with the right code
+    # in the event of failures so we can also look to see if anything
+    # showed up in stderr
+    if status or stderr:
+        pscheduler.fail("iperf returned an error: %s" % stderr)
 
     logger.debug("Stdout = %s" % stdout)
     logger.debug("Stderr = %s" % stderr)
@@ -82,8 +160,6 @@ def run_client():
     lines = stdout.split("\n")    
 
     logger.debug("Lines are %s " % lines)
-
-    seen_header = False
 
     results = iperf_parser.parse_output(lines)
     results['diag'] = stdout
@@ -104,13 +180,12 @@ def run_server():
     except Exception as e:
         logger.error("iperf failed to complete execution: %s" % e);
         pscheduler.fail("The iperf command failed during execution. See server logs for more details.")
-    
-    #check if server failed
-    if status:
-        iperf_error = ''
-        for line in stderr:
-            iperf_error += line.rstrip().lstrip() + " "
-        pscheduler.fail("iperf returned an error: %s" % iperf_error)
+
+    # For whatever reason, iperf doesn't always exit with the right code
+    # in the event of failures so we can also look to see if anything
+    # showed up in stderr
+    if status or stderr:
+        pscheduler.fail("iperf returned an error: %s" % stderr)
     
     #log stdout in debug mode
     for line in stdout:
@@ -129,8 +204,14 @@ try:
         results = run_server()
     else:
         pscheduler.fail("Invalid participant.")
-except Exception as e:
-    logger.error("Exception %s" % e);
+except Exception as ex:
+    _, _, ex_traceback = sys.exc_info()
+    if ex_traceback is None:
+        ex_traceback = ex.__traceback__
+    tb_lines = [ line.rstrip('\n') for line in
+                 traceback.format_exception(ex.__class__, ex, ex_traceback)]
+    logger.debug(tb_lines)
+    logger.error("Exception %s" % ex);
 
 logger.info("Results: %s" % results)
 

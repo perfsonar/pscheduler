@@ -1,0 +1,15 @@
+#!/bin/sed -e 1d
+{
+    "name": "iperf3",
+    "description": "Run the iperf3 command for measuring network throughput",
+    "version": "1.0",
+    "tests": [ "throughput" ],
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@perfsonar.net",
+	"href": "http://www.perfsonar.net"
+    }
+}

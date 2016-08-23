@@ -20,8 +20,9 @@ Requires:	pscheduler-core
 Requires:	pscheduler-account
 Requires:	python-pscheduler
 Requires:	pscheduler-test-trace
-requires:	traceroute
-requires:	sudo
+Requires:	python-icmperror
+Requires:	traceroute
+Requires:	sudo
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm

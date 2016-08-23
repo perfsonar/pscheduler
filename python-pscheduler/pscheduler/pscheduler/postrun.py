@@ -43,6 +43,7 @@ def run_post(
 
     task_urls =[]
     participants = task['detail']['participants']
+    log and log.debug("Participant list is %s", participants)
     assert len(participants) >= 1
 
     parts = list(task_url)
@@ -158,7 +159,9 @@ def run_post(
         log.debug("Data %s", run_params)
     status, run_lead_url \
         = pscheduler.url_post(task_urls[0] + '/runs',
-                              data=pscheduler.json_dump(run_params))
+                              data=pscheduler.json_dump(run_params),
+                              throw=False,
+                              json=True)
     log and log.debug("Lead URL is %s", run_lead_url)
     assert type(run_lead_url) in [str, unicode]
     runs_posted.append(run_lead_url)
@@ -173,7 +176,7 @@ def run_post(
 
     errors = []
 
-    put_params = { 'run': pscheduler.json_dump(run_params) }
+    run_data = pscheduler.json_dump(run_params)
 
     for task_url in task_urls[1:]:
 
@@ -184,7 +187,7 @@ def run_post(
             log.debug("Parameters: %s", run_params)
 
         status, output = pscheduler.url_put(put_url,
-                                            params=put_params,
+                                            data=run_data,
                                             throw=False,
                                             json=False  # No output.
                                             )
@@ -200,6 +203,7 @@ def run_post(
         log and log.debug("Succeeded.")
 
     if len(runs_posted) != len(task_urls):
+        log and log.debug("Removing runs: %s", runs_posted)
         pscheduler.url_delete_list(runs_posted)
         # TODO: Better error?
         return (None, None, None, "Failed to post/put runs to all participants.")
@@ -219,6 +223,7 @@ def run_post(
         log and log.debug("Getting part data from %s", run)
         status, result = pscheduler.url_get(run, throw=False)
         if status != 200 or not 'participant-data' in result:
+            log.debug("Deleting runs: %s", runs_posted)
             pscheduler.url_delete_list(runs_posted)
             # TODO: Better error?
             return (None, None, None, "Failed to get run data from all participants")
@@ -234,7 +239,7 @@ def run_post(
     for run in runs_posted:
         log and log.debug("Putting full part data to %s", run)
         status, result = pscheduler.url_put(run,
-                                            params={ 'run': full_data },
+                                            data=full_data,
                                             json=False,
                                             throw=False)
         if status != 200:

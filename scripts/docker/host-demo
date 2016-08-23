@@ -1,0 +1,58 @@
+#!/bin/sh -e
+#
+# Run a demonstration of pScheduler in a single container bound to the
+# host's network
+#
+
+NAME=pscheduler-demo
+IMAGE="perfsonar/pscheduler-demo"
+CONTAINER=psc
+
+if [ "$1" ]
+then
+    COMMAND="$1"; shift
+fi
+
+case "${COMMAND}" in
+
+    start)
+	echo "Pulling image from DockerHub"
+	docker pull "${IMAGE}"
+	echo
+
+	echo -n "Creating container..."
+	docker run \
+	    --detach \
+	    --hostname "${CONTAINER}" \
+	    --name "${CONTAINER}" \
+	    --net host \
+	    "${IMAGE}" \
+	    > /dev/null
+	echo " Done."
+	;;
+
+
+    login)
+	docker exec -i -t "${CONTAINER}" /bin/bash -c 'su - demo'
+	;;
+
+    root)
+	docker exec -i -t "${CONTAINER}" /bin/bash -c 'su -'
+        ;;
+
+
+    stop)
+	echo -n "Removing container..."
+	docker rm -f "${CONTAINER}" > /dev/null || true
+	echo " Done."
+	;;
+
+
+    *)
+	echo "Usage: $(basename $0) start|login|stop" 1>&2
+	exit 1
+	;;
+
+esac
+
+exit 0

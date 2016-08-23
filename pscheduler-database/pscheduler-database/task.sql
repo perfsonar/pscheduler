@@ -73,9 +73,6 @@ CREATE TABLE task (
 	runs	  	NUMERIC
 			DEFAULT 0,
 
-	-- Last time the task was run
-	last_run  	TIMESTAMP WITH TIME ZONE,
-
 	--
 	-- TESTING
 	--
@@ -108,7 +105,11 @@ CREATE TABLE task (
 
 	-- Whether or not the task should be scheduled
 	enabled	    	BOOLEAN
-			DEFAULT(TRUE)
+			DEFAULT(TRUE),
+
+	-- Hints used by the limit system
+	hints	    	JSONB
+
 );
 
 
@@ -117,6 +118,12 @@ CREATE TABLE task (
 -- table.
 CREATE INDEX task_uuid
 ON task(uuid, id);
+
+
+-- This helps the 'json' query limiter in the REST API
+CREATE INDEX task_json
+ON task(json);
+
 
 
 
@@ -151,11 +158,12 @@ BEGIN
 	    RAISE EXCEPTION 'Insertion time cannot be updated.';
 	END IF;
 
+	-- TODO: We don't really need to do this since the JSON is validated.
 	FOR key IN (SELECT jsonb_object_keys(NEW.json))
 	LOOP
-	   IF (left(key, 1) <> '_')
-              -- TODO: How was passthrough going to be used?
-	      AND (key NOT IN ('schema', 'test', 'tool', 'schedule', 'archives', 'passthrough')) THEN
+	   -- Ignore comments
+	   IF (left(key, 1) <> '#')
+	      AND (key NOT IN ('schema', 'test', 'tool', 'tools', 'schedule', 'archives', 'reference')) THEN
 	      RAISE EXCEPTION 'Unrecognized section "%" in task package.', key;
 	   END IF;
 	END LOOP;
@@ -341,7 +349,6 @@ BEGIN
 
 	--
 	-- ARCHIVES
-
 	--
 
 	IF NEW.json ? 'archivers' THEN
@@ -376,21 +383,6 @@ $$ LANGUAGE plpgsql;
 -- necessary to start a round of scheduling.
 CREATE TRIGGER task_alter_notify AFTER INSERT OR UPDATE ON task
     FOR EACH STATEMENT EXECUTE PROCEDURE task_alter_notify();
-
-
-
--- Register a run having taken place on a task
-CREATE OR REPLACE FUNCTION task_register_run(task_id BIGINT)
-RETURNS VOID
-AS $$
-BEGIN
-    UPDATE task
-    SET
-        runs = runs + 1,
-        last_run = now()
-    WHERE id = task_id;
-END;
-$$ LANGUAGE plpgsql;
 
 
 
@@ -467,6 +459,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION api_task_post(
     task_package JSONB,
+    hints JSONB,
     participant INTEGER DEFAULT 0,
     task_uuid UUID = NULL
 )
@@ -477,8 +470,8 @@ DECLARE
 BEGIN
 
    WITH inserted_row AS (
-        INSERT INTO task(json, participant, uuid)
-        VALUES (task_package, participant, task_uuid)
+        INSERT INTO task(json, participant, uuid, hints)
+        VALUES (task_package, participant, task_uuid, hints)
         RETURNING *
     ) SELECT INTO inserted * from inserted_row;
 

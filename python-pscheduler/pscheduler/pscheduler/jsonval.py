@@ -160,7 +160,23 @@ __dictionary__ = {
         "minimum": 0,
         "maximum": 65535
         },
-
+    
+    "IPPortRange": {
+        "type": "object",
+        "properties": {
+            "lower": { "$ref": "#/pScheduler/IPPort" },
+            "upper": { "$ref": "#/pScheduler/IPPort" }
+        },
+        "additionalProperties": False,
+        "required": [ "lower", "upper" ]
+    },
+    
+    "IPTOS": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 63
+        },
+    
     "Number": { "type": "number" },
 
     "Numeric": {
@@ -214,6 +230,11 @@ __dictionary__ = {
     },
 
     "String": { "type": "string" },
+
+    "StringList": {
+        "type": "array",
+        "items": { "$ref": "#/pScheduler/String" }
+        },
 
     "StringMatch": {
         "type": "object",
@@ -272,11 +293,11 @@ __dictionary__ = {
     "ArchiveSpecification": {
         "type": "object",
         "properties": {
-            "name": { "type": "string" },
+            "archiver": { "type": "string" },
             "data": { "$ref": "#/pScheduler/AnyJSON" },
             },
         "required": [
-            "name",
+            "archiver",
             "data",
             ]
         },
@@ -357,13 +378,14 @@ __dictionary__ = {
         "properties": {
             "schema":   { "$ref": "#/pScheduler/Cardinal" },
             "test":     { "$ref": "#/pScheduler/TestSpecification" },
-            # TODO: This is currently a string, needs to be an array.
-            "tools":    { "type": "string" },
+            "tool":     {" $ref": "#/pScheduler/String" },
+            "tools":    {"$ref": "#/pScheduler/StringList" },
             "schedule": { "$ref": "#/pScheduler/ScheduleSpecification" },
             "archives": {
                 "type": "array",
                 "items": { "$ref": "#/pScheduler/ArchiveSpecification" },
                 },
+            "reference": { "$ref": "#/pScheduler/AnyJSON" },
             },
         "required": [
             "schema",

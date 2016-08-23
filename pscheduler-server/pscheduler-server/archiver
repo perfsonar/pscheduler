@@ -3,6 +3,7 @@
 # 
 #
 
+import daemon
 import datetime
 import detach
 import errno
@@ -13,6 +14,7 @@ import pscheduler
 import psycopg2
 import psycopg2.extensions
 import select
+import signal
 import socket
 import sys
 import time
@@ -25,6 +27,20 @@ from dateutil.tz import tzlocal
 # Gargle the arguments
 
 opt_parser = optparse.OptionParser()
+
+# Daemon-related options
+
+opt_parser.add_option("--daemon",
+                      help="Daemonize",
+                      action="store_true",
+                      dest="daemon", default=False)
+opt_parser.add_option("--pid-file",
+                      help="Location of PID file",
+                      action="store", type="string", dest="pidfile",
+                      default=None)
+
+# Program options
+
 opt_parser.add_option("-c", "--channel",
                       help="Schedule notification channel",
                       action="store", type="string", dest="channel",
@@ -61,6 +77,17 @@ dsn = options.dsn
 #
 
 def main_program():
+
+    # Exit nicely when certain signals arrive so running processes are
+    # cleaned up.
+
+    def exit_handler(signum, frame):
+        log.info("Exiting on signal %d", signum)
+        exit(0)
+
+    for sig in [ signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM ]:
+        signal.signal(sig, exit_handler)
+
 
     # TODO: All DB transactions need to be error checked
 
@@ -106,7 +133,7 @@ def main_program():
         next_refresh = refresh
 
         cursor.execute("""SELECT id, uuid, archiver, archiver_data, start,
-                      duration, test, tool, participants, result_full, result,
+                      duration, test, tool, participants, result,
                       attempts, last_attempt
                       FROM archiving_eligible""")
 
@@ -119,10 +146,9 @@ def main_program():
         for row in cursor.fetchall():
 
             run_id, uuid, archiver, archiver_data, start, duration, test, \
-                tool, participants, result_full, result_merged, attempts, \
+                tool, participants, result_merged, attempts, \
                 last_attempt = row
 
-            assert len(participants) == len(result_full)
             participants_merged = []
             for participant in participants:
                 participants_merged.append(socket.gethostname() \
@@ -140,7 +166,7 @@ def main_program():
                     'test': test,
                     'tool': {
                         'name': tool['name'],
-                        'verion': tool['version'],
+                        'version': tool['version'],
                         },
                     'participants': participants_merged,
                     'result': result_merged
@@ -207,25 +233,44 @@ def main_program():
                                              diags = diags || (%s::JSONB)
                                          WHERE id = %s""",
                                           [ attempt, run_id ])
+
                 else:
+
                     log.debug("Failed: %s to %s: %s", uuid, archiver, stdout)
-                    next_delta = pscheduler.iso8601_as_timedelta(
-                        returned_json['retry'])
 
-                    next = datetime.datetime.now(tzlocal()) \
-                        + next_delta
+                    # If there's a retry, schedule the next one.
 
-                    update_cursor.execute("""UPDATE archiving
-                                         SET
-                                             attempts = attempts + 1,
-                                             last_attempt = now(),
-                                             next_attempt = %s,
-                                             diags = diags || (%s::JSONB)
-                                         WHERE id = %s""",
-                                          [ next, attempt, run_id ])
+                    if "retry" in returned_json:
 
-                    if next_delta < next_refresh:
-                        next_refresh = next_delta
+                        next_delta = pscheduler.iso8601_as_timedelta(
+                            returned_json['retry'])
+
+                        next = datetime.datetime.now(tzlocal()) \
+                            + next_delta
+
+                        log.debug("Rescheduling for %s", next)
+
+                        update_cursor.execute("""UPDATE archiving
+                                             SET
+                                                 attempts = attempts + 1,
+                                                 last_attempt = now(),
+                                                 next_attempt = %s,
+                                                 diags = diags || (%s::JSONB)
+                                             WHERE id = %s""",
+                                              [ next, attempt, run_id ])
+
+                        if next_delta < next_refresh:
+                            next_refresh = next_delta
+
+                    else:
+
+                        log.debug("No retry requested.  Giving up.")
 
 
-pscheduler.safe_run(lambda: main_program())
+
+if options.daemon:
+    pidfile = pscheduler.PidFile(options.pidfile)
+    with daemon.DaemonContext(pidfile=pidfile):
+        pscheduler.safe_run(lambda: main_program())
+else:
+    pscheduler.safe_run(lambda: main_program())

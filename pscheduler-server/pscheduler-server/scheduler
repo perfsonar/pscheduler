@@ -3,6 +3,7 @@
 # pScheduler Run Scheduler
 #
 
+import daemon
 import errno
 import optparse
 import pscheduler
@@ -17,10 +18,20 @@ import traceback
 # Gargle the arguments
 
 opt_parser = optparse.OptionParser()
-opt_parser.add_option("-c", "--channel",
-                      help="Schedule notification channel",
-                      action="store", type="string", dest="channel",
-                      default="task_change")
+
+# Daemon-related options
+
+opt_parser.add_option("--daemon",
+                      help="Daemonize",
+                      action="store_true",
+                      dest="daemon", default=False)
+opt_parser.add_option("--pid-file",
+                      help="Location of PID file",
+                      action="store", type="string", dest="pidfile",
+                      default=None)
+
+# Program options
+
 # TODO: Do we want pscheduler as the default here?
 opt_parser.add_option("-d", "--dsn",
                       help="Database connection string",
@@ -48,8 +59,8 @@ dsn = options.dsn
 # Minimum amount of time from now when the first run of a task can be
 # scheduled.  This prevents "start now" tasks from being scheduled for
 # a time before the participants can prepare for them.
-# TODO: Potential race condition?
-first_run_offset = pscheduler.iso8601_as_timedelta('PT5S')
+# TODO: Potential race condition?  Yep.
+first_run_offset = pscheduler.iso8601_as_timedelta('PT10S')
 
 
 
@@ -64,67 +75,89 @@ def main_program():
 
     pg = pscheduler.pg_connection(dsn)
     cursor = pg.cursor()
-    cursor.execute("LISTEN " + options.channel)
+    cursor.execute("LISTEN task_change")
 
     while True:
 
+        wait = True
+
+        cursor.execute("""
+            SELECT uuid, runs, trynext, FALSE
+            FROM schedule_runs_to_schedule
+            """)
+
+        # Check if any notifications arrived while this query executed.
+        if pg.notifies:
+            wait = False
+            del pg.notifies[:]
+            log.debug("Received notifications.")
+
+        # Any rows returned means we query again.
+        if cursor.rowcount > 0:
+            log.debug("Got %d rows", cursor.rowcount)
+            wait = False
+
+
+        for row in cursor:
+
+            uuid, runs, trynext, background = row
+
+            log.debug("%sTASK %s, %d runs, try %s", 
+                      "BACKGROUND " if background else "",
+                      uuid, runs, trynext)
+
+
+            url = pscheduler.api_url(path='/tasks/' + uuid)
+
+            # For the first run only, push the start time out.
+            # See comment above near the declaration of
+            # first_run_offset.
+
+            if runs == 0:
+                later_start = pscheduler.time_now() + first_run_offset
+                if trynext < later_start:
+                    trynext = later_start                   
+
+            log.debug("Trying to schedule %s for %s at %s",
+                      uuid, trynext, url)
+            log.debug("URL is %s", url)
+            run_uri, start_time, end_time, error = \
+                pscheduler.run_post(url, trynext, log)
+            if error is not None:
+                log.debug("Unable: %s", error)
+            else:
+                log.debug("Scheduled for %s - %s at %s",
+                          start_time, end_time, run_uri)
+
         # Wait for something to happen.
+          
+        if wait:
 
-        log.debug("Waiting %s for notification", refresh)
+            log.debug("Waiting %s for notification", refresh)
 
-        try:
-            if select.select([pg],[],[],
-                             pscheduler.timedelta_as_seconds(refresh)) != ([],[],[]):
-                # Notified
-                pg.poll()
-                del pg.notifies[:]
-                log.debug("Notified.")
+            try:
+                if select.select([pg],[],[],
+                                 pscheduler.timedelta_as_seconds(refresh)) \
+                                 != ([],[],[]):
+                    # Notified
+                    pg.poll()
+                    log.debug("Notified: %s", pg.notifies)
+                    del pg.notifies[:]
 
-        except select.error as ex:
-            err_no, message = ex
-            if err_no != errno.EINTR:
-                log.exception()
-                raise ex
-
-
-        failed = False
-
-        while not failed:
-
-            cursor.execute("""SELECT uuid, runs, trynext from schedule_runs_to_schedule""")
-
-            if cursor.rowcount == 0:
-                log.debug("No runs to schedule.")
-                break
-
-            for row in cursor.fetchall():
-
-                uuid, runs, trynext = row
-
-                log.debug("TASK %s, %d runs, try %s", uuid, runs, trynext)
-
-                url = pscheduler.api_url(path='/tasks/' + uuid)
-
-                # For the first run only, push the start time out.
-                # See comment above near the declaration of
-                # first_run_offset.
-
-                if runs == 0:
-                    later_start = pscheduler.time_now() + first_run_offset
-                    if trynext < later_start:
-                        trynext = later_start                   
-
-                log.debug("Trying to schedule %s for %s at %s",
-                          uuid, trynext, url)
-                log.debug("URL is %s", url)
-                run_uri, start_time, end_time, error = \
-                    pscheduler.run_post(url, trynext, log)
-                if error is not None:
-                    log.debug("Unable: %s", error)
-                    failed = True
+            except select.error as ex:
+                err_no, message = ex
+                if err_no != errno.EINTR:
+                    log.exception()
+                    raise ex
                 else:
-                    log.debug("Scheduled for %s - %s at %s",
-                              start_time, end_time, run_uri)
+                    log.debug("Interrupted")
 
 
-pscheduler.safe_run(lambda: main_program())
+
+if options.daemon:
+    pidfile = pscheduler.PidFile(options.pidfile)
+    with daemon.DaemonContext(pidfile=pidfile):
+        pscheduler.safe_run(lambda: main_program())
+else:
+    pscheduler.safe_run(lambda: main_program())
+

@@ -106,6 +106,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Run was dead on arrival
+CREATE OR REPLACE FUNCTION run_state_nonstart()
+RETURNS INTEGER
+AS $$
+BEGIN
+	RETURN 10;
+END;
+$$ LANGUAGE plpgsql;
+
 
 
 INSERT INTO run_state (id, display, enum)
@@ -118,7 +127,8 @@ VALUES
 	(run_state_overdue(),  'Overdue',  'overdue'),
 	(run_state_missed(),   'Missed',   'missed'),
 	(run_state_failed(),   'Failed',   'failed'),
-	(run_state_trumped(),  'Trumped',  'trumped')
+	(run_state_trumped(),  'Trumped',  'trumped'),
+	(run_state_nonstart(), 'Non-Starter', 'nonstart')
 	;
 
 
@@ -148,11 +158,13 @@ CREATE OR REPLACE FUNCTION run_state_transition_is_valid(
 RETURNS BOOLEAN
 AS $$
 BEGIN
+   -- TODO: This might be worth putting into a table.
    RETURN  new = old
            OR   ( old = run_state_pending()
 	          AND new IN (run_state_on_deck(),
 			      run_state_missed(),
-			      run_state_trumped()) )
+			      run_state_trumped(),
+			      run_state_nonstart()) )
            OR   ( old = run_state_on_deck()
 	          AND new IN (run_state_running(),
 		              run_state_overdue(),
@@ -177,6 +189,3 @@ BEGIN
            ;
 END;
 $$ LANGUAGE plpgsql;
-
-
-

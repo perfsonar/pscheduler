@@ -22,7 +22,6 @@ DAEMONS=\
 
 COMMANDS=\
 	debug \
-	load-ips \
 	monitor
 
 INITS=$(DAEMONS:%=init.d-%)
@@ -111,14 +110,6 @@ endif
 		cp -f init.d-$${SCRIPT} $(INITDDIR)/pscheduler-$${SCRIPT} ; \
 		chmod 555 $(INITDDIR)/pscheduler-$${SCRIPT} ; \
 	done
-
-
-
-TODO=TODO:
-todo:
-	@fgrep '$(TODO)' $(SUPER) $(UNPRIV) Makefile \
-	| sed -e 's/:.*$(TODO)\s*/~/' \
-	| awk -F '~' 'BEGIN { FN="" } $$1 != FN { print "\n" $$1 ":"; FN=$$1 } { print "    ", $$2 }'
 
 
 clean:

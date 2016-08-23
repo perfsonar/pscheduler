@@ -84,8 +84,6 @@ do
     PID=$(cat "${PID_FILE}")
 
     # Don't care if this fails, just keep going.
-    # TODO: Error handling from this could be a bit neater.
-    # TODO: Consider moving this into the init script (service foo debug-on/off)
     kill -${SIGNAL} ${PID} || true
     
 done

@@ -1,5 +1,5 @@
 #
-# Tool-Related Pages
+# Test-Related Pages
 #
 
 import pscheduler
@@ -8,7 +8,7 @@ from pschedulerapiserver import application
 
 from flask import request
 
-from .dbcursor import dbcursor
+from .dbcursor import dbcursor_query
 from .json import *
 from .response import *
 
@@ -19,13 +19,13 @@ from .response import *
 # All tests
 @application.route("/tests", methods=['GET'])
 def tests():
-    return json_query(dbcursor(), "SELECT json FROM test", [])
+    return json_query("SELECT json FROM test", [])
 
 
 # Test <name>
 @application.route("/tests/<name>", methods=['GET'])
 def tests_name(name):
-    return json_query(dbcursor(), "SELECT json FROM test WHERE name = %s",
+    return json_query("SELECT json FROM test WHERE name = %s",
                       [name], single=True)
 
 
@@ -33,11 +33,13 @@ def tests_name(name):
 @application.route("/tests/<name>/spec", methods=['GET'])
 def tests_name_spec(name):
 
-    dbcursor().execute("SELECT EXISTS (SELECT * FROM test WHERE NAME = %s)",
-                       [ name ])
+    try:
+        cursor = dbcursor_query("SELECT EXISTS (SELECT * FROM test WHERE NAME = %s)",
+                                [ name ])
+    except Exception as ex:
+        return error(str(ex))
 
-    # TODO: Check that we got one row with one column
-    exists = dbcursor().fetchone()[0]
+    exists = cursor.fetchone()[0]
     if not exists:
         return not_found()
 
@@ -53,7 +55,7 @@ def tests_name_spec(name):
         )
 
     if status != 0:
-        return error(stderr)
+        return bad_request(stderr)
 
     # The extra parse here makes 'pretty' work.
     returned_json = pscheduler.json_load(stdout)
@@ -65,9 +67,13 @@ def tests_name_spec(name):
 # Tools that can carry out test <name>
 @application.route("/tests/<name>/tools", methods=['GET'])
 def tests_name_tools(name):
+
+    # TODO: Should probably 404 if the test doesn't exist.
+    # TODO: Is this used anywhere?
+
     expanded = is_expanded()
-    # TODO: Handle failure
-    dbcursor().execute("""
+    try:
+        cursor = dbcursor_query("""
         SELECT
             tool.name,
             tool.json
@@ -75,9 +81,14 @@ def tests_name_tools(name):
             tool
             JOIN tool_test ON tool_test.tool = tool.id
             JOIN test ON test.id = tool_test.test
-        """)
+        WHERE
+            test.name = %s
+        """, [name])
+    except Exception as ex:
+        return error(str(ex))
+
     result = []
-    for row in dbcursor():
+    for row in cursor:
         url = root_url('tools/' + row[0])
         if not expanded:
             result.append(url)
@@ -112,7 +123,5 @@ def tests_name_lead(name):
 
     part_list = pscheduler.json_load(stdout)
     lead = part_list[0]
-    if lead is None:
-        lead = pscheduler.api_this_host()
 
     return json_response(lead)

@@ -1,0 +1,185 @@
+#!/usr/bin/python
+#
+# Convert comamnd-line options to a test specification
+
+import optparse
+import pscheduler
+import sys
+
+if len(sys.argv) > 1:
+
+   # Args are on the command line
+   args = sys.argv[1:]
+
+else:
+
+   # Args are in a JSON array on stdin
+   json_args = pscheduler.json_load(exit_on_error=True)
+   args = []
+
+   if type(json_args) != list:
+      pscheduler.fail("Invalid JSON for this operation")
+   for arg in json_args:
+      if type(arg) not in (unicode, str, int, float):
+         pscheduler.fail("Invalid JSON for this operation")
+   args = [ str(arg) for arg in json_args ]
+
+
+
+# Gargle the arguments
+
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""Examples:
+
+  task latencybg --dest ps.example.com
+      Measure latency from here to ps.example.com
+
+  task latencybg --source ps2.example.org --dest ps.example.com
+      Measure latency from ps2.example.org to ps.example.com
+
+  task latencybg --packet-count 38 --dest ps.example.com
+      Send 38 packets
+
+  task latencybg --ip-version 6 --dest ps.example.com
+      Use IPv6
+"""
+                                            )
+
+
+opt_parser.add_option("-s", "--source",
+                      help="The address of the entity sending packets in this test",
+                      action="store", type="string",
+                      dest="source")
+
+
+opt_parser.add_option("-d", "--dest",
+                      help="The address of the entity receiving packets in this test",
+                      action="store", type="string",
+                      dest="dest")
+
+opt_parser.add_option("-c", "--packet-count",
+                      help="The number of packets to send",
+                      action="store", type="int",
+                      dest="packet_count")
+
+opt_parser.add_option("-t", "--duration",
+                      help="The duration of he test in seconds or ISO8601",
+                      action="store", type="string",
+                      dest="duration")
+                      
+opt_parser.add_option("-i", "--packet-interval",
+                      help="The number of seconds to delay between sending packets",
+                      action="store", type="float",
+                      dest="packet_interval")
+
+opt_parser.add_option("-L", "--packet-timeout",
+                      help="The number of seconds to wait before declaring a packet lost",
+                      action="store", type="float",
+                      dest="packet_timeout")
+
+opt_parser.add_option("-p", "--packet-padding",
+                      help="The size of padding to add to the packet in bytes",
+                      action="store", type="int",
+                      dest="packet_padding")
+
+opt_parser.add_option("-C", "--ctrl-port",
+                      help="The port to use for making a control connection to the side acting as a server.",
+                      action="store", type="int",
+                      dest="ctrl_port")
+
+opt_parser.add_option("-P", "--data-ports",
+                      help="The port range to use on the side of the test running the client. At least two ports required.",
+                      action="store", type="string",
+                      dest="data_ports")
+
+opt_parser.add_option("-T", "--ip-tos",
+                      help="The port range to use on the side of the test running the client. At least two ports required.",
+                      action="store", type="int",
+                      dest="ip_tos")
+
+opt_parser.add_option("--ip-version",
+                      help="Force an IP version when performing the test. Useful when specifying hostnames as source or dest that may map to both IPv4 and IPv6 addresses.",
+                      action="store", type="int", dest="ip_version")
+
+opt_parser.add_option("-b", "--bucket-width",
+                      help="The bin size to use for histogram calculations. This value is divided into the result as reported in seconds and truncated to the nearest 2 decimal places.",
+                      action="store", type="float",
+                      dest="bucket_width")
+                          
+opt_parser.add_option("-f", "--flip",
+                      help="In multi-participant mode, have the dest start the client and request a reverse test. Useful in some firewall and NAT environments.",
+                      action="store_true", dest="flip", default=False)
+
+opt_parser.add_option("-R", "--output-raw",
+                      help="Output individual packet statistics. This will substantially increase the size of a successful result.",
+                      action="store_true", dest="output_raw", default=False)
+                      
+(options, remaining_args) = opt_parser.parse_args(args)
+
+if len(remaining_args) != 0:
+   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
+
+
+result = { 'schema': 1 }
+
+if options.source is not None:
+   result['source'] = options.source
+  
+if options.dest is not None:
+   result['dest'] = options.dest
+
+if options.duration is not None:
+   duration = options.duration
+
+   # convert epoch seconds to is8601
+   if duration.isdigit():
+      delta = datetime.timedelta(seconds=int(duration))
+      duration = pscheduler.timedelta_as_iso8601(delta)
+
+   result['duration'] = duration
+   
+if options.packet_count is not None:
+   result['packet-count'] = options.packet_count
+
+if options.packet_interval is not None:
+   result['packet-interval'] = options.packet_interval
+  
+if options.packet_timeout is not None:
+   result['packet-timeout'] = options.packet_timeout
+
+if options.packet_padding is not None:
+   result['packet-padding'] = options.packet_padding
+
+if options.ctrl_port is not None:
+    result['ctrl-port'] = options.ctrl_port
+
+if options.data_ports is not None:
+   ports = options.data_ports.strip().split("-");
+   if len(ports) != 2:
+        pscheduler.fail("Invalid data-ports. Must be in the form of LOWER-UPPER")
+   if ports[0] > ports[1]:
+        pscheduler.fail("Invalid data-ports. First value in range must be less than second")
+   if ports[0] == ports[1]:
+        pscheduler.fail("Invalid data-ports.First value and second value cannot be equal. Must specify at least two ports.")
+   result['data-ports'] = {
+        "lower": int(ports[0]),
+        "upper": int(ports[1])
+   }
+
+if options.ip_tos is not None:
+   result['ip-tos'] = options.ip_tos
+
+if options.ip_version is not None:
+   result['ip-version'] = options.ip_version
+
+if options.bucket_width is not None:
+   result['bucket-width'] = options.bucket_width
+
+if options.flip:
+   result['flip'] = options.flip
+
+if options.output_raw:
+   result['output-raw'] = options.output_raw
+
+
+pscheduler.succeed_json(result)

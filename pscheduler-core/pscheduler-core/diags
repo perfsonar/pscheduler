@@ -1,0 +1,148 @@
+#!/bin/sh
+#
+# Dump host diagnostics
+#
+
+# TODO: Would be nice if this could be appropriately sudoed (sudone?)
+
+if [ "$(id -u)" -ne 0 ]
+then
+    echo "This program must be run as root." 1>&2
+    exit 1
+fi
+
+# ------------------------------------------------------------------------------
+
+# Code in this section from ShellER under the Apache License, Version
+# 2.0.  See https://github.com/markfeit/sheller.
+
+# Print a horizontal line to the standard output
+line()
+{
+    cat <<EOF
+-------------------------------------------------------------------------------
+EOF
+}
+
+
+# Print all lines of input centered for an 80-character line
+center()
+{
+    awk '{ printf "%*s%s\n", int((80-length)/2), "", $0 }'   
+}
+
+
+
+# Print a nicely-formatted section header
+section()
+{
+    echo
+    echo
+    line
+    echo "$@" | tr a-z A-Z | center
+    line
+    echo
+}
+
+
+# ------------------------------------------------------------------------------
+
+#
+# Header
+#
+
+echo "pScheduler System Diagnostic Dump" | center
+echo
+echo "Generated for $(id -nu) @ $(hostname)" | center
+echo "$(date)" | center
+
+
+#
+# pScheduler
+#
+
+dump_url()
+{
+    curl -s -k "$1" 2>&1
+}
+
+section "Installed Tests"
+dump_url 'https://localhost/pscheduler/tests?pretty&expanded=true'
+
+section "Installed Tools"
+dump_url 'https://localhost/pscheduler/tests?pretty&expanded=true'
+
+# TODO: Need to dump archivers when API supports it
+
+section "Clock State"
+dump_url 'https://localhost/pscheduler/clock?pretty'
+
+
+# TODO: Need to dump tasks and runs when API supports it
+
+
+#
+# Network
+#
+
+
+section Network Interfaces
+ip address
+
+section Resolver Configuration
+cat /etc/resolv.conf
+
+section Routing Table
+ip route
+
+
+section Sockets
+netstat -a
+
+
+#
+# System
+#
+
+section Process Table
+ps -ef
+
+section Memory
+vmstat
+
+section Storage
+df -h
+
+section System Message Log
+LOG="/var/log/messages"
+if [ -r "${LOG}" ]
+then
+    cat "${LOG}"
+else
+    echo "${LOG} is unreadable."
+fi
+
+section HTTPD Error Log
+LOG="/var/log/httpd/error_log"
+if [ -r "${LOG}" ]
+then
+    cat "${LOG}"
+else
+    echo "${LOG} is unreadable."
+fi
+
+section Kernel Message Log
+dmesg
+
+
+section Installed Packages
+
+if [ -e /etc/redhat-release ]
+then
+    rpm -qa --last | sort
+elif which dpkg-query > /dev/null 2>&1
+then
+    dpkg-query
+else
+    echo "Don't know how to list packages in this environment."
+fi

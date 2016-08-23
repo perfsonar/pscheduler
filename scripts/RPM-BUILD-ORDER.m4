@@ -42,7 +42,6 @@ python-isodate
 python-netaddr
 python-ntplib
 python-py-radix
-python-pytz
 python-repoze.lru
 python-subprocess32
 python-tzlocal
@@ -70,7 +69,8 @@ httpd-wsgi-socket
 # Utility and Tool programs
 #
 drop-in
-jq
+# JQ was used in development but isn't needed for production.
+#jq
 paris-traceroute
 random-string
 
@@ -91,7 +91,10 @@ pscheduler-core
 
 # Tests
 pscheduler-test-idle
-#pscheduler-test-owdelay
+pscheduler-test-idlebg
+pscheduler-test-idleex
+pscheduler-test-latency
+pscheduler-test-latencybg
 pscheduler-test-throughput
 pscheduler-test-rtt
 pscheduler-test-simplestream
@@ -99,10 +102,12 @@ pscheduler-test-trace
 
 # Tools
 # TODO: This has dependencies outside the local tree.
-#pscheduler-tool-owping
+pscheduler-tool-owping
+pscheduler-tool-powstream
 pscheduler-tool-iperf
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
+pscheduler-tool-sleepbg
 pscheduler-tool-snooze
 pscheduler-tool-ping
 pscheduler-tool-tracepath
@@ -111,6 +116,7 @@ pscheduler-tool-paris-traceroute
 
 # Archivers
 pscheduler-archiver-bitbucket
+pscheduler-archiver-esmond
 pscheduler-archiver-failer
 pscheduler-archiver-syslog
 

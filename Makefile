@@ -5,6 +5,14 @@
 default: build
 
 
+SOURCES_DIR=./SRPMS
+srpms::
+	rm -rf $(SOURCES_DIR)
+	mkdir -p $(SOURCES_DIR)
+	./scripts/build-sources $(SOURCES_DIR)
+TO_CLEAN += $(SOURCES_DIR)
+
+
 packages:
 	scripts/build-all | tee build.log
 TO_CLEAN += build.log

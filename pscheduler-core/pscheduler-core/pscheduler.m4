@@ -7,18 +7,55 @@ WHOAMI=$(basename $0)
 
 die()
 {
-    echo "$@" 1>&2
+    [ "$@" ] && echo "$@" 1>&2
     exit 1
 }
 
 
-[ $# -ge 1 ] || die "Usage: ${WHOAMI} command [ arguments ]"
+help()
+{
+    echo "Usage: ${WHOAMI} command [ arguments ]"
+    echo
+    echo "Commands:  (Use 'command --help' for further help.)"
+    echo
+    ls "__COMMANDS__" \
+	| fgrep -xv internal \
+	| pr -4 -T -t \
+	| sed -e 's/^/    /g'
+    echo
+}
 
-COMMAND=$1
+
+if [ $# -lt 1 ]
+then
+    help 1>&2
+    die
+fi
+
+COMMAND="$1"
 shift
 
-RUN="__COMMANDS__/${COMMAND}"
+case "${COMMAND}" in
+    
+    --help|-h|help)
+	help
+	exit 0
+	;;
 
-[ -x "${RUN}" ] || die "${COMMAND}: Unknown command"
+    --*)
+	die "Unknown option ${COMMAND}.  Use --help for help."
+	exit 1
+	;;
 
-exec "${RUN}" "$@"
+    *)
+	RUN="__COMMANDS__/${COMMAND}"
+
+	[ -x "${RUN}" ] \
+	    || die "${COMMAND}: Unknown command.  Use --help for help."
+
+	exec "${RUN}" "$@"
+	;;
+
+esac
+
+die "Internal error:  this should not be reached."

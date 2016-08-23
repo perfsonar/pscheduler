@@ -63,7 +63,11 @@ class IdentifierIPReverseDNS():
 
         """
 
-        ip = hints['ip']
+        try:
+            ip = hints['ip']
+        except KeyError:
+            return False
+
         addr = ipaddr.IPAddress(ip)
 
         ip_reverse = dns.reversename.from_address(ip)

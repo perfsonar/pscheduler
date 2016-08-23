@@ -8,22 +8,25 @@ from pschedulerapiserver import application
 
 from flask import request
 
-from .dbcursor import dbcursor
+from .dbcursor import dbcursor_query
 from .json import *
+from .limitproc import *
 from .log import log
 from .response import *
 
 def task_exists(task):
     """Determine if a task exists by its UUID"""
-    dbcursor().execute("SELECT EXISTS (SELECT * FROM task WHERE uuid = %s)", [task])
+    try:
+        cursor = dbcursor_query("SELECT EXISTS (SELECT * FROM task WHERE uuid = %s)",
+                                [task], onereow=True)
+    except Exception as ex:
+        return error(str(ex))
 
-    if dbcursor().rowcount == 0:
-        return False
-    return dbcursor().fetchone()[0]
+    return cursor.fetchone()[0]
     
 
 
-def pick_tool(lists):
+def pick_tool(lists, pick_from=None):
     """Count and score the number of times each tool appears in a list
     of lists retrieved from servers, then return the name of the tool
     that was preferred or None if there were none in common.  (Not to
@@ -72,13 +75,25 @@ def pick_tool(lists):
             common[tool] = score[tool]
 
     # Nothing in common means no thing can be picked.
-
     if not len(common):
         return None
 
-    # Pick out the common tool with the lowest score.
-    ordered = sorted(common.items(), key=lambda value: value[1])
-    return ordered[0][0]
+    if pick_from is None:
+
+        # Take the tool with the lowest score.
+        ordered = sorted(common.items(), key=lambda value: value[1])
+        return ordered[0][0]
+
+    else:
+
+        # Find the first tool in the pick list that matches
+        for candidate in pick_from:
+            if candidate in common:
+                return candidate
+
+    # If we got here, nothing matched.
+    return None
+
 
 
 
@@ -88,13 +103,31 @@ def tasks():
     if request.method == 'GET':
 
         expanded = is_expanded()
-        # TODO: Handle failure
-        dbcursor().execute("""
+
+        query = """
             SELECT json, uuid
-            FROM task ORDER BY added
-            """)
+            FROM task
+            """
+        args = []
+
+        try:
+            json_query = arg_json("json")
+        except ValueError as ex:
+            return bad_request(str(ex))
+
+        if json_query is not None:
+            query += "WHERE json @> %s"
+            args.append(request.args.get("json"))
+
+        query += " ORDER BY added"
+
+        try:
+            cursor = dbcursor_query(query, args)
+        except Exception as ex:
+            return error(str(ex))
+
         result = []
-        for row in dbcursor():
+        for row in cursor:
             url = base_url(row[1])
             if not expanded:
                 result.append(url)
@@ -110,6 +143,9 @@ def tasks():
         except ValueError:
             return bad_request("Invalid JSON:" + request.data)
 
+        # TODO: Validate the JSON against a TaskSpecification
+
+
         # See if the task spec is valid
 
         try:
@@ -120,7 +156,7 @@ def tasks():
                 )
 
             if returncode != 0:
-                return error(stderr)
+                return error("Invalid test specification: " + stderr)
         except Exception as ex:
             return error("Unable to validate test spec: " + str(ex))
 
@@ -137,7 +173,7 @@ def tasks():
                 )
 
             if returncode != 0:
-                return error(stderr)
+                return error("Unable to determine participants: " + stderr)
 
             participants = [ host if host is not None
                              else pscheduler.api_this_host()
@@ -165,16 +201,17 @@ def tasks():
 
         tools = []
 
-        # TODO: Get the local tool list out of the database instead of
-        # doing a HTTP round trip.
         for participant in participants:
 
             try:
-                r = requests.get(pscheduler.api_url(participant, "tools"),
-                                 params={ 'test': pscheduler.json_dump(task['test']) })
-                if r.status_code != 200:
-                    raise Exception("%d: %s" % (r.status_code, r.text))
-                tools.append( pscheduler.json_load(str(r.text)) )
+                # TODO: This will fail with a very large test spec.
+                status, result = pscheduler.url_get(
+                    pscheduler.api_url(participant, "tools"),
+                    params={ 'test': pscheduler.json_dump(task['test']) }
+                    )
+                if status != 200:
+                    raise Exception("%d: %s" % (status, result))
+                tools.append(result)
             except Exception as ex:
                 return error("Error getting tools from %s: %s" \
                                      % (participant, str(ex)))
@@ -183,10 +220,14 @@ def tasks():
         if len(tools) != nparticipants:
             return error("Didn't get a full set of tool responses")
 
-        tool = pick_tool(tools)
+        if "tools" in task:
+            tool = pick_tool(tools, pick_from=task['tools'])
+        else:
+            tool = pick_tool(tools)
+
         if tool is None:
             # TODO: This could stand some additional diagnostics.
-            return no_can_do("Couldn't find a tool in common")
+            return no_can_do("Couldn't find a tool in common among the participants.")
 
         task['tool'] = tool
 
@@ -198,40 +239,81 @@ def tasks():
 
         tasks_posted = []
 
+        # Evaluate the task against the limits and reject the request
+        # if it doesn't pass.
+
+        log.debug("Checking limits on %s", task["test"])
+
+        (processor, whynot) = limitprocessor()
+        if processor is None:
+            log.debug("Limit processor is not initialized. %s", whynot)
+            return no_can_do("Limit processor is not initialized: %s" % whynot)
+
+        # TODO: This is cooked up in two places.  Make a function of it.
+        hints = {
+            "ip": request.remote_addr
+            }
+        hints_data = pscheduler.json_dump(hints)
+
+        log.debug("Processor = %s" % processor)
+        passed, diags = processor.process(task["test"], hints)
+
+        if not passed:
+            return forbidden("Task forbidden by limits:\n" + diags)
+
         # Post the lead with the local database, which also assigns
         # its UUID.
 
-        # TODO: Handle failure.
-        dbcursor().execute("SELECT * FROM api_task_post(%s, 0)", [task_data])
+        try:
+            cursor = dbcursor_query("SELECT * FROM api_task_post(%s, %s, 0)",
+                                    [task_data, hints_data], onerow=True)
+        except Exception as ex:
+            return error(str(ex))
 
-        if dbcursor().rowcount == 0:
+        if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
 
-        # TODO: Assert that rowcount is 1 and has one column
-        task_uuid = dbcursor().fetchone()[0]
+        task_uuid = cursor.fetchone()[0]
+
+        log.debug("Tasked lead, UUID %s", task_uuid)
 
         # Other participants get the UUID forced upon them.
 
         for participant in range(1,nparticipants):
             part_name = participants[participant]
             try:
-                r = requests.post(pscheduler.api_url(part_name,
-                                                     'tasks/' + task_uuid),
-                                  params={ 'participant': participant },
-                                  data=task_data)
-                if r.status_code != 200:
-                    raise Exception("%d: %s" % (r.status_code, r.text))
-                tasks_posted.append(r.text)
+                log.debug("Tasking %d@%s: %s", participant, part_name, task_data)
+                post_url = pscheduler.api_url(part_name,
+                                              'tasks/' + task_uuid)
+                log.debug("Posting task to %s", post_url)
+                status, result = pscheduler.url_post(
+                    post_url,
+                    params={ 'participant': participant },
+                    data=task_data,
+                    json=False,
+                    throw=False)
+                log.debug("Remote returned %d: %s", status, result)
+                if status != 200:
+                    raise Exception("Unable to post task to %s: %s"
+                                    % (part_name, result))
+                tasks_posted.append(result)
 
             except Exception as ex:
 
-                for url in tasks_posted:
-                    r = requests.delete(url)
-                
-                # TODO: Handle failure?
-                dbcursor().execute("SELECT api_task_delete(%s)", [task_uuid])
+                log.exception()
 
-                return error("Error while tasking %d: %s" % (participant, ex))
+                for url in tasks_posted:
+                    # TODO: Handle failure?
+                    status, result = requests.delete(url)
+
+                    try:
+                        dbcursor_query("SELECT api_task_delete(%s)",
+                                       [task_uuid])
+                    except Exception as ex:
+                        log.exception()
+                        pass
+
+                return error("Error while tasking %d@%s: %s" % (participant, part_name, ex))
 
         return ok_json(pscheduler.api_url(path='/tasks/' + task_uuid))
 
@@ -255,22 +337,33 @@ def tasks_uuid(uuid):
         # Get a task, adding server-derived details if a 'detail'
         # argument is present.
 
-        dbcursor().execute("""
-            SELECT
-                json,
-                added,
-                start,
-                slip,
-                duration,
-                runs,
-                participants
-            FROM task WHERE uuid = %s
-        """, [uuid])
+        try:
+            cursor = dbcursor_query("""
+                SELECT
+                    task.json,
+                    task.added,
+                    task.start,
+                    task.slip,
+                    task.duration,
+                    task.runs,
+                    task.participants,
+                    scheduling_class.anytime,
+                    scheduling_class.exclusive,
+                    scheduling_class.multi_result
+                FROM
+                    task
+                    JOIN test ON test.id = task.test
+                    JOIN scheduling_class
+                        ON scheduling_class.id = test.scheduling_class
+                WHERE uuid = %s
+            """, [uuid])
+        except Exception as ex:
+            return error(str(ex))
 
-        if dbcursor().rowcount == 0:
+        if cursor.rowcount == 0:
             return not_found()
 
-        row = dbcursor().fetchone()
+        row = cursor.fetchone()
         if row is None:
             return not_found()
         json = row[0]
@@ -290,7 +383,10 @@ def tasks_uuid(uuid):
                 'runs': None if row[5] is None \
                     else int(row[5]),
                 'participants': None if row[6] is None \
-                    else row[6]
+                    else row[6],
+                'anytime':  row[7],
+                'exclusive':  row[8],
+                'multi-result':  row[9]
                 }
 
         return ok_json(json)
@@ -310,13 +406,39 @@ def tasks_uuid(uuid):
         except ValueError as ex:
             return bad_request("Invalid participant: " + str(ex))
 
+
+        # Evaluate the task against the limits and reject the request
+        # if it doesn't pass.
+
+        log.debug("Checking limits on task")
+
+        processor, whynot = limitprocessor()
+        if processor is None:
+            message = "Limit processor is not initialized: %s" % whynot
+            log.debug(message)
+            return no_can_do(message)
+
+        # TODO: This is cooked up in two places.  Make a function of it.
+        hints = {
+            "ip": request.remote_addr
+            }
+        hints_data = pscheduler.json_dump(hints)
+
+        passed, diags = processor.process(json_in["test"], hints)
+
+        if not passed:
+            return forbidden("Task forbidden by limits:\n" + diags)
+
         # TODO: Pluck UUID from URI
         uuid = url_last_in_path(request.url)
 
-        # TODO: Handle failure.
-        dbcursor().execute("SELECT * FROM api_task_post(%s, %s, %s)",
-                       [request.data, participant, uuid])
-        if dbcursor().rowcount == 0:
+        try:
+            cursor = dbcursor_query(
+                "SELECT * FROM api_task_post(%s, %s, %s, %s)",
+                [request.data, hints_data, participant, uuid])
+        except Exception as ex:
+            return error(str(ex))
+        if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
         # TODO: Assert that rowcount is 1
         return ok(base_url())

@@ -23,11 +23,13 @@ AS
       run.part_data_full AS part_data_full,
       task.json #> '{test}' AS test,
       lower(run.times) AS start,
-      task.duration AS duration
+      task.duration AS duration,
+      test.scheduling_class
     FROM
         run
 	JOIN task ON task.id = run.task
 	JOIN tool ON tool.id = task.tool
+        JOIN test ON test.id = task.test
     WHERE
         run.state = run_state_pending()
         AND lower(run.times) >= normalized_now()
@@ -36,7 +38,8 @@ AS
 
 
 
--- What tasks need a run scheduled and when
+-- What tasks need a run scheduled and when.  This explicitly excludes
+-- background tasks, which are handled separately.
 
 DROP VIEW IF EXISTS schedule_runs_to_schedule;
 CREATE OR REPLACE VIEW schedule_runs_to_schedule
@@ -47,22 +50,24 @@ AS
         -- Non-repeating tasks with no runs scheduled
 
         SELECT
-            id AS task,
-	    uuid,
-            enabled,
-            added,
-            start,
-            duration,
+            task.id AS task,
+	    task.uuid,
+            task.enabled,
+            task.added,
+            task.start,
+            task.duration,
             now() AS after,
-            repeat,
-            max_runs,
+            task.repeat,
+            task.max_runs,
 	    0 AS scheduled,
-            runs,
+            task.runs,
             task.until,
-            greatest(normalized_now(), start) AS trynext,
-	    participant
+            greatest(normalized_now(), task.start) AS trynext,
+	    task.participant,
+            test.scheduling_class
         FROM
             task
+            JOIN test ON test.id = task.test
         WHERE
 	    repeat IS NULL
 	    AND NOT EXISTS (SELECT * FROM run WHERE run.task = task.id)
@@ -72,22 +77,24 @@ AS
         -- Repeating tasks without runs
 
         SELECT
-            id AS task,
-            uuid,
-            enabled,
-            added,
-            start,
-            duration,
-            greatest(start, now()) AS after,
-            repeat,
-            max_runs,
+            task.id AS task,
+            task.uuid,
+            task.enabled,
+            task.added,
+            task.start,
+            task.duration,
+            greatest(task.start, now()) AS after,
+	    task.repeat,
+            task.max_runs,
 	    0 AS scheduled,
-            runs,
-            until,
-            greatest(start, normalized_now()) AS trynext,
-            participant
+            task.runs,
+            task.until,
+            greatest(task.start, normalized_now()) AS trynext,
+            task.participant,
+            test.scheduling_class
         FROM
             task
+            JOIN test on test.id = task.test
         WHERE
 	    repeat IS NOT NULL
             AND NOT EXISTS (SELECT * FROM run WHERE run.task = task.id)
@@ -107,7 +114,9 @@ AS
             task.repeat,
             max_runs,
 	    (SELECT COUNT(*)
-             FROM run
+             FROM
+                 run
+                 JOIN test ON test.id = task.test
              WHERE
                  run.task = task.id
                  AND upper(times) > normalized_now()) AS scheduled,
@@ -116,13 +125,15 @@ AS
  	    task_next_run(coalesce(start, normalized_now()), 
                           greatest(normalized_now(), task.start, max(upper(run.times))),
                           repeat) AS trynext,
-	    task.participant
+	    task.participant,
+	    test.scheduling_class
         FROM
             run
             JOIN task ON task.id = run.task
+            JOIN test ON test.id = task.test
 	WHERE
 	    task.repeat IS NOT NULL
-        GROUP BY task.id
+        GROUP BY task.id, test.scheduling_class
 
     )
     SELECT
@@ -131,16 +142,23 @@ AS
 	runs,
         trynext
     FROM
-        interim
+        interim, 
+        configurables
     WHERE
         enabled
 	AND participant = 0
         AND ( (max_runs IS NULL)
               OR (runs + scheduled) < max_runs )
         AND ( (until IS NULL) OR (trynext < until) )
-        AND trynext + duration < (normalized_now() + schedule_time_horizon())
+	-- Anything that fits the scheduling horizon or is a backgrounder
+        AND (
+            trynext + duration < (normalized_now() + schedule_horizon)
+            OR scheduling_class = scheduling_class_background()
+        )
     ORDER BY added
 ;
+
+
 
 
 
@@ -170,7 +188,7 @@ AS $$
 DECLARE
     time_now TIMESTAMP WITH TIME ZONE;
     horizon_end TIMESTAMP WITH TIME ZONE;
-    task RECORD;
+    taskrec RECORD;
     time_range TSTZRANGE;
     last_end TIMESTAMP WITH TIME ZONE;
     run_record RECORD;
@@ -178,7 +196,18 @@ BEGIN
 
     -- Validate the input
 
-    SELECT INTO task * FROM task WHERE uuid = task_uuid;
+    SELECT INTO taskrec
+        task.*,
+	test.scheduling_class,
+        scheduling_class.anytime,
+        scheduling_class.exclusive
+    FROM
+        task
+        JOIN test ON test.id = task.test
+        JOIN scheduling_class ON scheduling_class.id = test.scheduling_class
+    WHERE
+        uuid = task_uuid;
+
     IF NOT FOUND THEN
         RAISE EXCEPTION 'No task % exists', task_uuid;
     END IF;
@@ -188,11 +217,19 @@ BEGIN
     END IF;
 
 
+    -- If the scheduling class for the task is background, the entire
+    -- range is fair game.
+    IF taskrec.anytime THEN
+        RETURN QUERY
+            SELECT range_start AS lower, range_end AS upper;
+    END IF;
+
+
     -- Figure out the actual boundaries of where we can schedule and
     -- trim accordingly.
 
     time_now := normalized_now();
-    horizon_end := time_now + schedule_time_horizon();
+    SELECT INTO horizon_end time_now + schedule_horizon FROM configurables;
 
     IF range_end < time_now THEN
         -- Completely in the past means nothing schedulable at all.
@@ -218,9 +255,38 @@ BEGIN
 
     last_end := range_start;
 
+
+
+    -- Sift through everything on the timeline that overlaps with the
+    -- time range and find the gaps.  Other than non-starters, the
+    -- runs we care about avoiding are represented by this truth
+    -- table:
+    --
+    -- Proposed  ||   Run on Timeline  |
+    -- Run       || Normal | Exclusive |
+    -- ----------++--------+-----------+
+    -- Normal    || Ignore |   Avoid   |
+    -- Exclusive || Avoid  |   Avoid   |
+
     FOR run_record IN
-        SELECT * FROM run
-        WHERE times && time_range
+        SELECT run.*
+        FROM
+            run
+            JOIN task ON task.id = run.task
+            JOIN test ON test.id = task.test
+            JOIN scheduling_class
+                 ON scheduling_class.id = test.scheduling_class
+        WHERE
+            -- Overlap
+	    times && time_range
+            -- Ignore non-starters
+            AND state <> run_state_nonstart()
+            AND (
+                -- Always avoid exclusive runs
+                (scheduling_class.exclusive)
+                -- Avoid normal runs if the proposed run is exclusive
+                OR (taskrec.exclusive AND NOT scheduling_class.exclusive)
+            )
         ORDER BY times
     LOOP
 
@@ -228,10 +294,10 @@ BEGIN
         -- the gap must be longer than the duration of the task for it
         -- to one that can be proposed.
         IF lower(run_record.times) > last_end
-           AND lower(run_record.times) - last_end >= task.duration
+           AND lower(run_record.times) - last_end >= taskrec.duration
         THEN
             RETURN QUERY
-                SELECT last_end AS lower, lower(run_record.times) AS UPPER;
+                SELECT last_end AS lower, lower(run_record.times) AS upper;
         END IF;
 
         last_end := upper(run_record.times);
@@ -241,12 +307,52 @@ BEGIN
     -- If the end of the last run is before the end of the range,
     -- that's also a gap.
     IF last_end < range_end
-       AND range_end - last_end >= task.duration
+       AND range_end - last_end >= taskrec.duration
     THEN
         RETURN QUERY SELECT last_end, range_end;
     END IF;
 
     RETURN;
+
+END;
+$$ LANGUAGE plpgsql;
+
+
+--
+-- Maintenance
+--
+
+CREATE OR REPLACE FUNCTION schedule_maint_minute()
+RETURNS VOID
+AS $$
+DECLARE
+    older_than TIMESTAMP WITH TIME ZONE;
+BEGIN
+
+    SELECT INTO older_than normalized_now() - keep_runs_tasks
+    FROM configurables;
+
+    -- Get rid of runs that finished
+    DELETE FROM run
+    WHERE upper(times) < older_than
+    ;
+
+
+    -- Get rid of tasks that no longer have runs and can be considered
+    -- completed.
+
+    DELETE FROM task
+    WHERE
+        NOT EXISTS (SELECT * FROM run where run.task = task.id)
+        -- Use time added as a proxy for start time in non-repeaters
+        AND COALESCE(start, added) < older_than
+        AND (
+            -- Complete based on runs
+            (max_runs IS NOT NULL AND runs >= max_runs)
+            -- One-shot
+            OR repeat IS NULL
+            )
+    ;
 
 END;
 $$ LANGUAGE plpgsql;

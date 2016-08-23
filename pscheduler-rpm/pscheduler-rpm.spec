@@ -36,7 +36,7 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %%_pscheduler_sudoersdir %{_sysconfdir}/sudoers.d
 %%_pscheduler_docdir %{_defaultdocdir}/pscheduler
 %%_pscheduler_datadir %{_datadir}/pscheduler
-
+%%_pscheduler_vardir %{_var}/lib/pscheduler
 
 # Where RPM Macros live
 %%_pscheduler_rpmmacrodir %{macro_dir}
@@ -50,10 +50,13 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 # Tests
 %%_pscheduler_test_libexec %{_pscheduler_classes}/test
 %%_pscheduler_test_doc %{_pscheduler_docdir}/test
+%%_pscheduler_test_confdir %{_pscheduler_sysconfdir}/test
 
 # Tools
 %%_pscheduler_tool_libexec %{_pscheduler_classes}/tool
 %%_pscheduler_tool_doc %{_pscheduler_docdir}/tool
+%%_pscheduler_tool_confdir %{_pscheduler_sysconfdir}/tool
+%%_pscheduler_tool_vardir %{_pscheduler_vardir}/tool
 
 # Archivers
 %%_pscheduler_archiver_libexec %{_pscheduler_classes}/archiver

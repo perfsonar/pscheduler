@@ -31,7 +31,7 @@ that add to pScheduler's capabilities.
 \section{Configuring a System for Development and Test}
 
 Development and test is currently supported on Red Hat Enterprise
-Linux or CentOS 6.{\it x}.
+Linux or CentOS versions 6.{\it x} and 7.{\it x}.
 
 \todo{Is the model going to be that we develop on CentOS and do ports to Debian?}
 
@@ -400,6 +400,19 @@ used when pScheduler needs to determine what tests are installed.
   measures.
 \item{\tt version} - A \jsontype{Version}.
 \item{\tt maintainer} - A \jsontype{Maintainer}.
+\item{\tt scheduling-class} - A string indicating how runs of this
+  kind of test should be scheduled.  Valid values are as follows:
+  \begin{itemize}
+  \item {\tt background} - These tests are always run, even if the run
+    start time has passed and produce multiple results.  (See
+    \autoref{toolrun}, {\it \nameref{toolrun}} for details on how this
+    is accomplished.)
+  \item {\tt exclusive} - Runs are given time on the schedule
+    that is not shared with any scheduling class other than {\tt
+      background}.
+  \item {\tt normal} - These runs share schedule time with {\tt
+    background} and other {\tt normal} runs but not {\tt exclusive}.
+  \end{itemize}
 \end{itemize}
 
 \example
@@ -412,7 +425,8 @@ used when pScheduler needs to determine what tests are installed.
         "name": "Example Development Team",
         "email": "plug-ins@example.org",
         "href": "http://www.example.org/plug-ins"
-    }
+    },
+    "scheduling-class": "normal"
 }
 \end{lstlisting}
 
@@ -795,8 +809,26 @@ related to the input and {\tt 3} for an error unrelated to the input.
 
 
 
-\subsubsection{run}
+\subsubsection{run}\label{toolrun}
 This method carries out the test as one of its participants.
+
+For tests whose scheduling class is {\tt normal} or {\tt exclusive},
+the method runs the test, produces the output described below and exits.
+
+When the scheduling class is {\tt background}, the method will produce
+multiple results until its time to run (duration) has expired.  Each
+result will be in the format described below followed by the delimiter
+string ``{\tt ---- pScheduler End Result ----}'' (four hyphens and a
+space on either end) placed on its own line.  The {\tt
+  api_result_delimiter()} function in the {\tt pscheduler} Python
+module makes this value available to programs.  It is recommended that
+programs implementing this method for background tests not buffer
+their output or make sure to flush it after writing the delimiter.
+Once the run is complete, the method should exit without producing any
+output.  Errors may be generated in the same way as for non-background
+tasks.
+
+
 \todo{Could use some examples.}
 
 \calloutitem{Standard Input} A JSON run specification containing the following items:
