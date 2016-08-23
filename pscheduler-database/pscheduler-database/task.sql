@@ -142,7 +142,7 @@ DECLARE
 	randslip TEXT;
 	until TEXT;
 	run_result external_program_result;
-	archiver JSONB;
+	archive JSONB;
 BEGIN
 
 	--
@@ -351,10 +351,10 @@ BEGIN
 	-- ARCHIVES
 	--
 
-	IF NEW.json ? 'archivers' THEN
-	    FOR archiver IN (SELECT * FROM jsonb_array_elements_text(NEW.json -> 'archivers'))
+	IF NEW.json ? 'archives' THEN
+	    FOR archive IN (SELECT * FROM jsonb_array_elements_text(NEW.json -> 'archives'))
 	    LOOP
-	        PERFORM archiver_validate(archiver);
+	        PERFORM archiver_validate(archive);
 	    END LOOP;
 	END IF;
 

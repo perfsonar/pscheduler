@@ -268,7 +268,7 @@ def tasks():
             cursor = dbcursor_query("SELECT * FROM api_task_post(%s, %s, 0)",
                                     [task_data, hints_data], onerow=True)
         except Exception as ex:
-            return error(str(ex))
+            return error(str(ex.diag.message_primary))
 
         if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
