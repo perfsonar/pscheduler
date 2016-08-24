@@ -12,6 +12,4 @@ BuildArch:	noarch
 License:	Apache 2.0
 Group:		Unspecified
 
-%description
-Bundle of all pScheduler packages
 
