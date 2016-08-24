@@ -34,7 +34,7 @@ clean c: $(SPEC)
 	$(MAKE) -f $(RPM_MAKEFILE) $@
 	rm -rf $(TO_CLEAN) *~
 
-build b install i rpmdump r cb cbr cbi: $(SPEC)
+build b install i rpmdump r cb cbr cbi srpm: $(SPEC)
 	$(MAKE) -f $(RPM_MAKEFILE) $@
 
 cbic cbrc: $(SPEC)
