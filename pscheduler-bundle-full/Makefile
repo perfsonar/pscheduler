@@ -20,7 +20,7 @@ $(SPEC): $(SPEC)-top $(SPEC)-bottom
 	cat $(SPEC)-top > $@
 	../scripts/build-order \
 		| egrep -e '^pscheduler-' \
-		| egrep -ve '^pscheduler-bundle-'
+		| egrep -ve '^pscheduler-bundle-' \
 		| sed -e 's/^/Requires: /g' \
 		>> $@
 	cat $(SPEC)-bottom >> $@
