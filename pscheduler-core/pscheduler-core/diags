@@ -131,6 +131,25 @@ else
     echo "${LOG} is unreadable."
 fi
 
+
+section PostgreSQL Log
+
+PG_DATA=$(postgresql-load <<EOF
+\\t
+\\a
+SELECT setting FROM pg_settings WHERE name = 'data_directory';
+EOF
+)
+PG_LOG="${PG_DATA}/pg_log"
+
+if [ -d "${PG_LOG}" ]
+then
+    ls -rtd ${PG_DATA}/pg_log/* | xargs cat
+else
+    echo "PostgreSQL logs not found in ${PG_LOG}"
+fi
+
+
 section Kernel Message Log
 dmesg
 
