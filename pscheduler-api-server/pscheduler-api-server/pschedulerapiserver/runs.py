@@ -220,7 +220,7 @@ def tasks_uuid_runs_run(task, run):
         # If asked for 'first', dig up the first run and use its UUID.
 
         if run == 'first':
-            # 60 tries at 0.25s intervals == 15 sec.
+            # 60 tries at 0.5s intervals == 30 sec.
             tries = 60 if (wait_local or wait_merged) else 1
             while tries > 0:
                 try:
@@ -230,7 +230,7 @@ def tasks_uuid_runs_run(task, run):
                     return error(str(ex))
                 if run is not None:
                     break
-                time.sleep(0.25)
+                time.sleep(0.5)
                 tries -= 1
 
             if run is None:
@@ -238,8 +238,8 @@ def tasks_uuid_runs_run(task, run):
 
 
 
-        # 40 tries at 0.25s intervals == 10 sec.
-        tries = 40 if (wait_local or wait_merged) else 1
+        # 60 tries at 0.5s intervals == 30 sec.
+        tries = 60 if (wait_local or wait_merged) else 1
 
         while tries:
 
@@ -284,7 +284,7 @@ def tasks_uuid_runs_run(task, run):
             else:
                 if (wait_local and row[7] is None) \
                         or (wait_merged and row[9] is None):
-                    time.sleep(0.25)
+                    time.sleep(0.5)
                     tries -= 1
                 else:
                     break
