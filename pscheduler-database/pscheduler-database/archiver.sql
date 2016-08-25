@@ -254,7 +254,7 @@ BEGIN
     archiver_name := candidate ->> 'archiver';
 
     IF NOT EXISTS (SELECT * FROM archiver WHERE name = archiver_name) THEN
-        RAISE EXCEPTION 'Archiver "%" is not avaiable.', archiver_name;
+        RAISE EXCEPTION 'No archiver "%" is avaiable.', archiver_name;
     END IF;
 
     IF candidate ? 'data' THEN
