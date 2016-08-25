@@ -41,6 +41,10 @@ opt_parser.add_option("--pid-file",
 
 # Program options
 
+opt_parser.add_option("-a", "--archive-defaults",
+                      help="Directory containing default archivers",
+                      action="store", type="string", dest="archive_defaults",
+                      default="__DEFAULT_DIR__")
 opt_parser.add_option("-c", "--channel",
                       help="Schedule notification channel",
                       action="store", type="string", dest="channel",
@@ -71,6 +75,122 @@ log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
 dsn = options.dsn
 
 
+#
+# Maintainer for default archives
+#
+
+class DefaultArchiveMaintainer:
+
+    def __init__(self, path):
+
+        self.path = path
+
+        # Most recent file or directory change we saw
+        self.most_recent = 0
+
+
+    def __write_db(self, db, log, archives):
+
+        log.debug("Writing the database")
+
+        cursor = db.cursor()
+
+        try:
+            cursor.execute("DELETE FROM archive_default")
+        except Exception as ex:
+            log.error("Failed to delete defaults: %s", str(ex))
+
+        for archive in archives:
+
+            cursor.execute("SAVEPOINT archiver_insert")
+            failed = True
+            try:
+                cursor.execute("INSERT INTO archive_default (archive) VALUES (%s)",
+                               [ pscheduler.json_dump(archive["spec"]) ])
+                log.debug("Inserted data from %s", archive["path"])
+                failed = False
+            except psycopg2.Error as ex:
+                log.warning("Ignoring %s: %s", archive["path"], ex.diag.message_primary)
+            except Exception as ex:
+                log.error("%s: %s", archive["path"], str(ex))
+
+            if failed:
+                cursor.execute("ROLLBACK TO SAVEPOINT archiver_insert")
+
+        # Finish up and get out
+
+        db.commit()
+
+
+
+    def refresh(self, db, log):
+
+        log.debug("Refreshing default archivers")
+
+        if not os.path.isdir(self.path):
+            log.debug("%s is not a directory", self.path)
+            return
+
+        timestamps = [ os.path.getmtime(self.path) ]
+
+        # Examine everything before tinkering with the database
+
+        archives = []
+
+        # Hold warnings until after we see something's changed so we
+        # don't spew them repeatedly.
+        warnings = []
+
+        for path in [ os.path.join(self.path, f)
+                      for f in os.listdir(self.path) ]:
+
+            log.debug("Examining file %s", path)
+
+            if os.path.isfile(path):
+
+                # Append the timestamp whether the file is valid or
+                # not, because we're looking for any kind of change.
+                # Note that we check mtime *and* ctime to catch
+                # permission changes and the like.
+                timestamps.append( max(os.path.getctime(path),
+                                       os.path.getmtime(path)) )
+            else:
+                log.debug("Not a file")
+                continue
+
+            try:
+                with open(path, 'r') as content:
+                    spec = pscheduler.json_load(content)
+            except Exception as ex:
+                warnings.append("Ignoring %s: %s" % (path, str(ex)))
+                continue
+
+            archives.append({
+                    "path": path,
+                    "spec": spec
+                    })
+
+        newest = sorted(timestamps, reverse=True)[0]
+        if newest <= self.most_recent:
+            log.debug("Nothing has changed; not updating.")
+            return
+
+        for warning in warnings:
+            log.warning(warning)
+
+        self.most_recent = newest
+
+        # Commit to the database as safely as possible.
+
+        autocommit_original = db.autocommit
+        db.autocommit = False
+        try:
+            self.__write_db(db, log, archives)
+        except Exception as ex:
+            log.error("Unexpected exception: %s", str(ex))
+        db.autocommit = autocommit_original
+
+
 
 #
 # Main Program
@@ -89,6 +209,7 @@ def main_program():
         signal.signal(sig, exit_handler)
 
 
+
     # TODO: All DB transactions need to be error checked
 
     pg = pscheduler.pg_connection(dsn)
@@ -97,6 +218,12 @@ def main_program():
 
     # This cursor is for doing updates inside the other's loop.
     update_cursor = pg.cursor()
+
+
+    # Something to maintain the default archiver list
+    default_maintainer = DefaultArchiveMaintainer(options.archive_defaults)
+    default_maintainer.refresh(pg, log)
+
 
 
     next_refresh = None
@@ -127,6 +254,9 @@ def main_program():
                 if err_no != errno.EINTR:
                     log.exception()
                     raise ex
+
+            # Only refresh after there's been a wait.
+            default_maintainer.refresh(pg, log)
 
 
         # Until we hear otherwise...

@@ -78,11 +78,10 @@ BEGIN
 
        inserted := FALSE;
 
-        -- TODO: This would be a good place to grab system default
-        -- archivers to fill in for having none or as a forced add.
-     
         -- Insert rows into the archiving table.
-        FOR archive IN (SELECT
+        FOR archive IN (
+                        -- Task-provided archivers
+                        SELECT
                             jsonb_array_elements(task.json #> '{archives}')
                         FROM
                             run
@@ -90,6 +89,11 @@ BEGIN
                         WHERE
                             run.id = NEW.id
 			    AND task.participant = 0
+
+                        UNION
+
+                        -- System-wide default archivers
+                        SELECT archive_default.archive FROM archive_default
                        )
         LOOP
 	    INSERT INTO archiving (run, archiver, archiver_data)

@@ -33,6 +33,10 @@ BuildRequires:	m4
 %description
 The pScheduler server
 
+
+%define archiver_default_dir %{_pscheduler_sysconfdir}/default-archives
+
+
 %prep
 %if 0%{?el6}%{?el7} == 0
 echo "This package cannot be built for %{dist}."
@@ -49,6 +53,7 @@ make \
      PGPASSFILE=%{_pscheduler_database_pgpass_file} \
      PGUSER=%{_pscheduler_database_user} \
      PSUSER=%{_pscheduler_user} \
+     ARCHIVERDEFAULTDIR=%{archiver_default_dir} \
      VAR=%{_var}
 
 
@@ -58,6 +63,8 @@ make \
      DAEMONDIR=$RPM_BUILD_ROOT/%{_pscheduler_daemons} \
      COMMANDDIR=$RPM_BUILD_ROOT/%{_pscheduler_commands} \
      install
+
+mkdir -p $RPM_BUILD_ROOT/%{archiver_default_dir}
 
 
 %pre
@@ -95,3 +102,4 @@ done
 %{_initddir}/*
 %{_pscheduler_daemons}/*
 %{_pscheduler_commands}/*
+%attr(750,%{_pscheduler_user},%{_pscheduler_group}) %{archiver_default_dir}

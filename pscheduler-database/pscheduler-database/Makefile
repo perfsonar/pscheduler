@@ -20,6 +20,7 @@ FILES=\
 	scheduling_class \
 	test \
 	tool \
+	archive_default \
 	archiver \
 	task \
 	run_state \
@@ -33,6 +34,11 @@ FILES=\
 
 FILES_TEARDOWN=\
 	database-drop
+
+
+# pScheduler internal commands
+INTERNALS=\
+	load-default-archives
 
 
 
@@ -72,13 +78,19 @@ $(TEARDOWN_SQL): $(TEARDOWN)
 TO_CLEAN += $(TEARDOWN_SQL)
 
 
-install: $(SQL)
+install: $(SQL) $(INTERNALS)
 ifndef DATADIR
 	@echo No DATADIR specified for installation
 	@false
 endif
+ifndef INTERNALDIR
+	@echo No INTERNALDIR specified for installation
+	@false
+endif
 	mkdir -p $(DATADIR)
-	install -m 440 $^ $(DATADIR)
+	install -m 440 $(SQL) $(DATADIR)
+	mkdir -p $(INTERNALDIR)
+	install -m 440 $(SQL) $(INTERNALDIR)
 
 
 clean:
