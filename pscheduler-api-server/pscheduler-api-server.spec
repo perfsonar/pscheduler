@@ -20,6 +20,7 @@ BuildRequires:	pscheduler-rpm
 BuildRequires:	python-pscheduler
 BuildRequires:	m4
 
+Requires:	httpd-wsgi-socket
 Requires:	pscheduler-server
 # Note that the actual definition of what protocol is used is part of
 # python-pscheduler, but this package is what does the serving, so
