@@ -307,10 +307,12 @@ def tasks_uuid_runs_run(task, run):
         result['start-time'] = pscheduler.datetime_as_iso8601(row[0])
         result['end-time'] = pscheduler.datetime_as_iso8601(row[1])
         result['duration'] = pscheduler.timedelta_as_iso8601(row[2])
-        result['participant'] = row[3]
+        participant_num = row[3]
+        result['participant'] = participant_num
         result['participants'] = [
-            participant if participant is not None
-            else pscheduler.api_this_host()
+            pscheduler.api_this_host()
+            if participant is None and participant_num == 0
+            else participant
             for participant in row[5]
             ]
         result['participant-data'] = row[6]
