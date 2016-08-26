@@ -56,9 +56,7 @@ make PGPASSFILE=$RPM_BULID_ROOT/%{pgpass_file}
 %install
 make \
      DATADIR=$RPM_BUILD_ROOT/%{_pscheduler_datadir} \
-     INTERNALDIR=$RPM_BUILD_ROOT/%{_pscheduler_datadir} \
-default_archives
-install
+     install
 
 mkdir -p $RPM_BUILD_ROOT/%{db_config_dir}
 

@@ -36,12 +36,6 @@ FILES_TEARDOWN=\
 	database-drop
 
 
-# pScheduler internal commands
-INTERNALS=\
-	load-default-archives
-
-
-
 SUPER=$(FILES_SUPERUSER:%=%.sql)
 BUILD_SUPER_SQL=database-build-super.sql
 
@@ -83,14 +77,9 @@ ifndef DATADIR
 	@echo No DATADIR specified for installation
 	@false
 endif
-ifndef INTERNALDIR
-	@echo No INTERNALDIR specified for installation
-	@false
-endif
 	mkdir -p $(DATADIR)
 	install -m 440 $(SQL) $(DATADIR)
-	mkdir -p $(INTERNALDIR)
-	install -m 440 $(SQL) $(INTERNALDIR)
+
 
 
 clean:
