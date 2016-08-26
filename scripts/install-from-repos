@@ -1,0 +1,53 @@
+#!/bin/sh -e
+#
+# Install pScheduler from RPMs in the usual places.
+#
+# This program requires an Internet connection that can reach the
+# following hosts via HTTP and/or HTTPS:
+#
+#     download.postgresql.org
+#     dl.fedoraproject.org
+#     software.internet2.edu
+#
+
+cat <<EOF
+WARNING:
+
+Untill pScheduler has been formally released, this program will
+install from the nightly build.  This version may contain unstable
+code.
+
+Break to abort or press Enter to continue.
+EOF
+read DUMMY
+
+
+# Determine the RHEL version without depending on lsb_release.
+REDHAT_RELEASE=$(sed -e 's/^.* \([0-9.]\+\) .*$/\1/' /etc/redhat-release)
+REDHAT_RELEASE_MAJOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 }')
+REDHAT_RELEASE_MAJOR_MINOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 "." $2 }')
+
+# PostgreSQL
+yum -y install "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-${REDHAT_RELEASE_MAJOR_MINOR}-$(uname -m)/pgdg-redhat95-9.5-2.noarch.rpm"
+
+# EPEL
+yum -y install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${REDHAT_RELEASE_MAJOR}.noarch.rpm"
+
+# Internet2
+rpm --import http://software.internet2.edu/rpms/RPM-GPG-KEY-Internet2
+# TODO: Need to add the switch statement that pulls the right one here.
+
+# I2 Nightly 
+cat > /etc/yum.repos.d/internet2-nightly.repo <<EOF
+# Name: Internet2 Nightly RPM Repository
+# URL: http://software.internet2.edu
+[Internet2-nightly]
+name = Internet2 Nightly RPM Repository
+baseurl = http://software.internet2.edu/branches/nightly/rpms/el${REDHAT_RELEASE_MAJOR}/\$basearch/main/
+enabled = 1
+protect = 0
+gpgcheck = 0
+EOF
+
+# pScheduler
+yum -y install httpd-wsgi-socket pscheduler-bundle-full
