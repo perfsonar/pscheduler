@@ -369,7 +369,19 @@ def tasks_uuid(uuid):
             return not_found()
         json = row[0]
 
+        # Redact anything in the test spec or archivers that's marked
+        # private.
+
+        json["test"]["spec"] = pscheduler.json_decomment(
+            json["test"]["spec"], prefix="_", null=True)
+
+        for archive in range(0,len(json["archives"])):
+            json["archives"][archive]["data"]
+            = pscheduler.json_decomment(json["archives"][archive]["data"],
+                                        prefix="_", null=True)
+
         # Add details if we were asked for them.
+
         if arg_boolean('detail'):
 
             part_list = row[6];
