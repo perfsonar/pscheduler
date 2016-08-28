@@ -376,9 +376,7 @@ def tasks_uuid(uuid):
             json["test"]["spec"], prefix="_", null=True)
 
         for archive in range(0,len(json["archives"])):
-            json["archives"][archive]["data"]
-            = pscheduler.json_decomment(json["archives"][archive]["data"],
-                                        prefix="_", null=True)
+            json["archives"][archive]["data"] = pscheduler.json_decomment(json["archives"][archive]["data"], prefix="_", null=True)
 
         # Add details if we were asked for them.
 
