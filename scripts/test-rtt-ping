@@ -385,8 +385,9 @@ make_input <<EOF
 }
 EOF
 do_test tool/ping/duration 0 <<EOF
-PT11S
+{"duration": "PT11S"}
 EOF
+
 
 # participant-data
 

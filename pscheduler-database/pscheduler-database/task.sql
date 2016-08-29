@@ -142,6 +142,7 @@ DECLARE
 	randslip TEXT;
 	until TEXT;
 	run_result external_program_result;
+	temp_json JSONB;
 	archive JSONB;
 BEGIN
 
@@ -343,8 +344,8 @@ BEGIN
 	IF run_result.status <> 0 THEN
 	    RAISE EXCEPTION 'Unable to determine duration of test: %', run_result.stderr;
 	END IF;
-	-- TODO: Pre-validate the output?
-	NEW.duration := interval_round_up(regexp_replace(run_result.stdout, '\s+$', '')::INTERVAL);
+	temp_json := run_result.stdout::JSONB;
+	NEW.duration := interval_round_up( (temp_json #>> '{duration}')::INTERVAL );
 
 
 	--

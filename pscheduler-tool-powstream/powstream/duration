@@ -8,6 +8,9 @@ from powstream_defaults import DEFAULT_DURATION
 
 json = pscheduler.json_load(exit_on_error=True)
 
-print json.get('duration', DEFAULT_DURATION)
 
-pscheduler.succeed()
+duration = json.get('duration', DEFAULT_DURATION)
+
+pscheduler.succeed_json({
+        "duration": pscheduler.timedelta_as_iso8601(duration)
+})
