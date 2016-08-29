@@ -1,13 +1,13 @@
 #
-# RPM Spec for pScheduler iperf Tool
+# RPM Spec for pScheduler iperf2 Tool
 #
 
-%define short	iperf
+%define short	iperf2
 Name:		pscheduler-tool-%{short}
 Version:	0.0
 Release:	1%{?dist}
 
-Summary:	iperf tool class for pScheduler
+Summary:	iperf2 tool class for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0
 Group:		Unspecified
@@ -25,7 +25,7 @@ BuildRequires:	pscheduler-rpm
 
 
 %description
-iperf tool class for pScheduler
+iperf2 tool class for pScheduler
 
 
 %prep

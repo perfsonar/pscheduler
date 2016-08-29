@@ -103,7 +103,7 @@ pscheduler-test-trace
 # Tools
 pscheduler-tool-owping
 pscheduler-tool-powstream
-pscheduler-tool-iperf
+pscheduler-tool-iperf2
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbg
