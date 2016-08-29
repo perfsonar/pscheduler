@@ -529,7 +529,8 @@ def tasks_uuid_runs_run_result(task, run):
             cursor = dbcursor_query("""
                 SELECT
                     test.name,
-                    run.result_merged
+                    run.result_merged,
+                    task.json #>> '{test, spec}'
                 FROM
                     run
                     JOIN task ON task.id = run.task
@@ -558,7 +559,7 @@ def tasks_uuid_runs_run_result(task, run):
         return not_found()
 
 
-    test_type, merged_result = row
+    test_type, merged_result, test_spec = row
 
 
     # JSON requires no formatting.
@@ -572,10 +573,15 @@ def tasks_uuid_runs_run_result(task, run):
             return ok("<p>Test failed.</p>", mimetype=format)
         return error("Unsupported format " + format)
 
+    formatter_input = {
+        "spec": test_spec,
+        "result": merged_result
+        }
+
     returncode, stdout, stderr = pscheduler.run_program(
         [ "pscheduler", "internal", "invoke", "test", test_type,
           "result-format", format ],
-        stdin = pscheduler.json_dump(merged_result)
+        stdin = pscheduler.json_dump(formatter_input)
         )
 
     if returncode != 0:

@@ -130,12 +130,14 @@ if format != 'text/plain':
     pscheduler.fail("Unsupported format '%s'" % format)
 
 #parse JSON input
-json = pscheduler.json_load(exit_on_error=True)
+input = pscheduler.json_load(exit_on_error=True)
 
 #validate against JSON schema file
-valid, message = result_is_valid(json)
+valid, message = result_is_valid(input["result"])
 if not valid:
     pscheduler.fail(message)
+
+json = input["result"]
 
 #Output basic stats
 output = "\nPacket Statistics\n"

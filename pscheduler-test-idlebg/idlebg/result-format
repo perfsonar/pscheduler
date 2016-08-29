@@ -15,14 +15,14 @@ try:
 except IndexError:
    format = 'text/plain'
 
-json = pscheduler.json_load(exit_on_error=True)
+input = pscheduler.json_load(exit_on_error=True)
 
-result = json["result"]
-
-valid, message = result_is_valid(result)
+valid, message = result_is_valid(input["result"])
 
 if not valid:
     pscheduler.fail(message)
+
+json = input["result"]
 
 
 if format == 'text/plain':
@@ -53,5 +53,5 @@ else:
 
 # TODO: Should probably handle exceptions in a nicer way.
 print jsontemplate.expand(
-   template if result['succeeded'] else fail_template,
-   result).strip()
+   template if json['succeeded'] else fail_template,
+   json).strip()

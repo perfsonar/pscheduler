@@ -456,7 +456,12 @@ failed test, normally a short ``test failed'' message.
 implementations must support at least {\tt text/plain} and {\tt
   text/html}.
 
-\calloutitem{Standard Input} JSON containing a result for this test.
+\calloutitem{Standard Input} A JSON object containing the following
+elements:
+\begin{itemize}
+\item{\tt spec} - The specification for the test that was run.
+\item{\tt result} - The result produced by the run.
+\end{itemize}
 
 \calloutitem{Standard Output} The formatted output.
 
