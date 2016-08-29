@@ -181,6 +181,8 @@ while True:
                                          params={ 'wait-merged': True },
                                          throw=False )
 
+    if status == 404:
+        pscheduler.succeed("Run not found; task may have been ended.")
     if status != 200:
         pscheduler.fail("Failed to fetch run: %d: %s" % (status, result))
 

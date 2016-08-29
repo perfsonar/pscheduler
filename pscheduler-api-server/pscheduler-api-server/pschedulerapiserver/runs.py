@@ -268,8 +268,7 @@ def tasks_uuid_runs_run(task, run):
                         JOIN run_state ON run_state.id = run.state
                     WHERE
                         task.uuid = %s
-                        AND run.uuid = %s
-                    """, [task, run])
+                        AND run.uuid = %s""", [task, run])
             except Exception as ex:
                 log.exception()
                 return error(str(ex))

@@ -284,7 +284,13 @@ class RunWorker:
                        WHERE run.id = %s
                        """, [self.id])
 
-        # TODO: Should get exactly one row back.
+        # Should get exactly one row back.  If not, the run probably
+        # vanished.
+
+        if self.cursor.rowcount != 1:
+            self.log.info("%d: Can no longer find run.  Stopping.")
+            return
+
         row = self.cursor.fetchone()
 
         tool, task_uuid, task_id, participant, participants, start, end, \
