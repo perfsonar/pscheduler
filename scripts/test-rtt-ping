@@ -148,11 +148,13 @@ make_input <<EOF
   "--dest", "somehost.example.org",
   "--count", "10",
   "--interval", "PT2S",
-  "--timeout", "PT1S"
+  "--timeout", "PT1S",
+  "--ip-version", "6"
 ]
 EOF
 do_test test/rtt/cli-to-spec 0 <<EOF
-{"count": 10, "dest": "somehost.example.org", "interval": "PT2S", "source": "ps.example.com", "timeout": "PT1S", "schema": 1}
+{"count": 10, "dest": "somehost.example.org", "interval": "PT2S", "source": "ps.example.com", "ip-version": 6, "timeout": "PT1S", 
+"schema": 1}
 EOF
 
 
