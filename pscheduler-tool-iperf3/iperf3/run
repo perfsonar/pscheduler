@@ -38,7 +38,6 @@ except KeyError as e:
 except:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 
-
 def run_client():    
 
     logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
@@ -64,7 +63,10 @@ def run_client():
     iperf3_args.append('-t')
     iperf3_args.append(test_duration)
 
+    # always ask for json output, a lot more consistent to parse
+    iperf3_args.append("--json")
 
+    # big list of optional arguments to iperf3, map from test spec
     if test_spec.has_key('interval') and test_spec['interval'] != None:
         iperf3_args.append('-i')
         delta = pscheduler.iso8601_as_timedelta(test_spec['interval'])
@@ -110,7 +112,23 @@ def run_client():
 
     if test_spec.has_key('force-ipv6'):
         iperf3_args.append('-6')
-    
+
+    if test_spec.has_key('congestion') and test_spec['congestion'] != None:
+        iperf3_args.append('-C')
+        iperf3_args.append(test_spec['congestion'])
+
+    if test_spec.has_key('zero-copy'):
+        iperf3_args.append('-Z')
+
+    if test_spec.has_key('flow-label') and test_spec['flow-label'] != None:
+        iperf3_args.append('-L')
+        iperf3_args.append(test_spec['flow-label'])
+
+    if test_spec.has_key('cpu-affinity') and test_spec['cpu-affinity'] != None:
+        iperf3_args.append('-A')
+        iperf3_args.append(test_spec['cpu-affinity'])
+
+
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string
     iperf3_args = map(lambda x: str(x), iperf3_args)
@@ -121,10 +139,12 @@ def run_client():
         status, stdout, stderr = pscheduler.run_program(iperf3_args)
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e)
-        pscheduler.fail("The iperf3 command failed during execution. See server logs for more details.")
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "The iperf3 command failed during execution. See server logs for more details."})
     
     if status:
-        pscheduler.fail("iperf3 returned an error: %s" % stderr)
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "iperf3 returned an error: %s" % stderr})
 
     logger.debug("Stdout = %s" % stdout)
     logger.debug("Stderr = %s" % stderr)
@@ -151,10 +171,12 @@ def run_server():
                                                         timeout_ok = True)
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e);
-        pscheduler.fail("The iperf3 command failed during execution. See server logs for more details.")
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "The iperf3 command failed during execution. See server logs for more details."})
 
     if status:
-        pscheduler.fail("iperf3 returned an error: %s" % stderr)
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "iperf3 returned an error: %s" % stderr})
     
     #log stdout in debug mode
     for line in stdout:
