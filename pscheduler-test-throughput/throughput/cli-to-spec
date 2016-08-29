@@ -142,7 +142,7 @@ opt_parser.add_option("--no-delay",
                       dest="no_delay")
 
 opt_parser.add_option("--congestion",
-                      help="Set TCP no-delay flag, disables Nagle's algorith",
+                      help="Set TCP congestion control algorith",
                       action="store", type="string",
                       dest="congestion")
 
@@ -259,7 +259,7 @@ if options.zero_copy:
 
 if options.flow_label:
    result["flow-label"] = options.flow_label
-   result["force-ipv6"] = True
+   result["force-ipv6"] = True # flow label only works on ipv6
 
 if options.cpu_affinity:
    result["cpu-affinity"] = options.cpu_affinity
