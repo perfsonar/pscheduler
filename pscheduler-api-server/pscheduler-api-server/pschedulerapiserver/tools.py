@@ -22,7 +22,7 @@ def tools():
     # Get only the tools that can run this test.
     test_filter = request.args.get('test', None)
     if test_filter is None:
-        return json_query("SELECT json FROM tool", [])
+        return json_query("SELECT json FROM tool WHERE available", [])
     else:
         log.debug("Looking for tools against filter %s", test_filter)
         try:
