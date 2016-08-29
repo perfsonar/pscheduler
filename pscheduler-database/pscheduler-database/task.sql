@@ -105,7 +105,7 @@ CREATE TABLE task (
 
 	-- Whether or not the task should be scheduled
 	enabled	    	BOOLEAN
-			DEFAULT(TRUE),
+			DEFAULT TRUE,
 
 	-- Hints used by the limit system
 	hints	    	JSONB
