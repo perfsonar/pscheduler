@@ -50,10 +50,21 @@ def parse_output(lines):
     else:
         summary = sum_end['sum']
 
-    final_summary = rename_json(summary)
+    renamed_summary = rename_json(summary)
+
+
+    # kind of like above, the streams summary is in a different key
+    sum_streams = sum_end['streams']
+
+    renamed_sum_streams = []
+    for sum_stream in sum_streams:
+        if sum_stream.has_key("udp"):
+            renamed_sum_streams.append(rename_json(sum_stream['udp']))
+        elif sum_stream.has_key("sender"):
+            renamed_sum_streams.append(rename_json(sum_stream['sender']))
 
     results["intervals"] = final_streams
-    results["summary"]   = final_summary
+    results["summary"]   = {"streams": renamed_sum_streams, "summary": renamed_summary}
 
     return results
 
@@ -67,7 +78,7 @@ def rename_json(obj):
         "end": "end",
         "bytes": "throughput-bytes",
         "bits_per_second": "throughput-bits",
-        "ommitted": "omitted",
+        "omitted": "omitted",
 
         # only for UDP
         "packets": "sent",
@@ -75,8 +86,9 @@ def rename_json(obj):
 
         # only for TCP
         "retransmits": "retransmits",
-        "snd_cwnd": "window",
-        "rtt": "rtt"
+        "snd_cwnd": "tcp-window-size",
+        "rtt": "rtt",
+        "mean_rtt": "rtt"
         }
 
     for k,v in obj.iteritems():

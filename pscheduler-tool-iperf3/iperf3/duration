@@ -18,6 +18,10 @@ if duration:
 else:
     duration = DEFAULT_DURATION
 
+# factor in omit time as well
+if json.get('omit'):
+    duration += int(json['omit'])
+
 pscheduler.succeed_json({
         "duration": 'PT%dS' % (duration + DEFAULT_FUDGE_FACTOR + DEFAULT_WAIT_SLEEP)
 })
