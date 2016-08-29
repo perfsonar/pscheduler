@@ -29,6 +29,17 @@ INITS=$(DAEMONS:%=init.d-%)
 default: build
 
 
+archiver: archiver.m4
+ifndef ARCHIVERDEFAULTDIR
+	@echo No ARCHIVERDEFAULTDIR specified for build
+	@false
+endif
+	m4 \
+		-D__DEFAULT_DIR__=$(ARCHIVERDEFAULTDIR) \
+		< $< > $@
+TO_CLEAN += archiver
+
+
 monitor: monitor.m4
 ifndef PGPASSFILE
 	@echo No PGPASSFILE specified for build

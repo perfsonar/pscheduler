@@ -36,6 +36,7 @@ The pScheduler database
 %define password_file %{db_config_dir}/database-password
 %define dsn_file %{db_config_dir}/database-dsn
 %define pgpass_file %{db_config_dir}/pgpassfile
+%define default_archives %{_pscheduler_sysconfdir}/archives
 
 %define rpm_macros %{_pscheduler_rpmmacroprefix}%{name}
 
@@ -53,7 +54,9 @@ false
 make PGPASSFILE=$RPM_BULID_ROOT/%{pgpass_file}
 
 %install
-make DATADIR=$RPM_BUILD_ROOT/%{_pscheduler_datadir} install
+make \
+     DATADIR=$RPM_BUILD_ROOT/%{_pscheduler_datadir} \
+     install
 
 mkdir -p $RPM_BUILD_ROOT/%{db_config_dir}
 

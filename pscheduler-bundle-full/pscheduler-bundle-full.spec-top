@@ -1,0 +1,15 @@
+#
+# RPM Spec for Full pScheduler Bundle
+#
+
+Name:		pscheduler-bundle-full
+Version:	1.0
+Release:	1%{?dist}
+
+Summary:	Full pScheduler Bundle
+BuildArch:	noarch
+
+License:	Apache 2.0
+Group:		Unspecified
+
+

@@ -20,7 +20,7 @@ data_validator = {
         "auth-token": { "$ref": "#/pScheduler/String" },
         "verify-ssl": { "$ref": "#/pScheduler/Boolean" },
         "retry-policy": {
-            "type": "array,
+            "type": "array",
             "items": {
                 "type": "object",
                 "properties": {
@@ -37,9 +37,9 @@ data_validator = {
                 "mapped-only",
                 "raw-only",
             ]
-        }
+        },
         "summaries": {
-            "type": "array,
+            "type": "array",
             "items": {
                 "type": "object",
                 "properties": {

@@ -4,8 +4,5 @@
 #
 
 import pscheduler
-import random
-import sys
-from powstream_defaults import *
 
 pscheduler.succeed_json({})

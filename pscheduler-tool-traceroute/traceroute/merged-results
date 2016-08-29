@@ -10,5 +10,23 @@ input = pscheduler.json_load(exit_on_error=True);
 
 # TODO: Validate the input
 
-# The lone participant produces the full set of results.
-pscheduler.succeed_json(input['results'][0]['result'])
+try:
+    succeeded = input["results"][0]["result"]["succeeded"]
+except:
+    succeeded = False
+
+results = {
+    "schema": 1,
+    "succeeded": succeeded
+}
+
+if succeeded:
+    try:
+        results["paths"] = input["results"][0]["result"]["paths"]
+    except:
+        results = {
+            "schema": 1,
+            "succeeded": False
+            }
+
+pscheduler.succeed_json(results)

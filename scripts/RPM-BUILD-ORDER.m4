@@ -101,7 +101,6 @@ pscheduler-test-simplestream
 pscheduler-test-trace
 
 # Tools
-# TODO: This has dependencies outside the local tree.
 pscheduler-tool-owping
 pscheduler-tool-powstream
 pscheduler-tool-iperf
@@ -125,3 +124,6 @@ pscheduler-archiver-syslog
 pscheduler-database
 pscheduler-server
 pscheduler-api-server
+
+# Bundles
+pscheduler-bundle-full

@@ -254,7 +254,7 @@ BEGIN
     archiver_name := candidate ->> 'archiver';
 
     IF NOT EXISTS (SELECT * FROM archiver WHERE name = archiver_name) THEN
-        RAISE EXCEPTION 'Archiver "%" is not avaiable.', archiver_name;
+        RAISE EXCEPTION 'No archiver "%" is avaiable.', archiver_name;
     END IF;
 
     IF candidate ? 'data' THEN
@@ -271,7 +271,7 @@ BEGIN
 
     validate_result := run_result.stdout::JSONB;
 
-    IF NOT (validate_result ->> 'valid') THEN
+    IF NOT (validate_result ->> 'valid')::BOOLEAN THEN
         IF validate_result ? 'reason' THEN
             RAISE EXCEPTION 'Invalid data for archiver "%": %', archiver_name, validate_result ->> 'reason';
         ELSE

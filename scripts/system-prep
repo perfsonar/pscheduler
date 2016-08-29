@@ -151,7 +151,6 @@ yum -y install \
 # Conveniences
 yum -y install \
     emacs-nox \
-    git \
     ntp \
     screen \
     tcsh \

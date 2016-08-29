@@ -268,7 +268,7 @@ def tasks():
             cursor = dbcursor_query("SELECT * FROM api_task_post(%s, %s, 0)",
                                     [task_data, hints_data], onerow=True)
         except Exception as ex:
-            return error(str(ex))
+            return error(str(ex.diag.message_primary))
 
         if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
@@ -349,7 +349,8 @@ def tasks_uuid(uuid):
                     task.participants,
                     scheduling_class.anytime,
                     scheduling_class.exclusive,
-                    scheduling_class.multi_result
+                    scheduling_class.multi_result,
+                    task.participant
                 FROM
                     task
                     JOIN test ON test.id = task.test
@@ -368,8 +369,22 @@ def tasks_uuid(uuid):
             return not_found()
         json = row[0]
 
+        # Redact anything in the test spec or archivers that's marked
+        # private.
+
+        json["test"]["spec"] = pscheduler.json_decomment(
+            json["test"]["spec"], prefix="_", null=True)
+
+        for archive in range(0,len(json["archives"])):
+            json["archives"][archive]["data"] = pscheduler.json_decomment(json["archives"][archive]["data"], prefix="_", null=True)
+
         # Add details if we were asked for them.
+
         if arg_boolean('detail'):
+
+            part_list = row[6];
+            if row[10] == 0 and part_list[0] is None:
+                part_list[0] = pscheduler.api_this_host()
 
             json['detail'] = {
                 'added': None if row[1] is None \
@@ -382,8 +397,7 @@ def tasks_uuid(uuid):
                     else pscheduler.timedelta_as_iso8601(row[4]),
                 'runs': None if row[5] is None \
                     else int(row[5]),
-                'participants': None if row[6] is None \
-                    else row[6],
+                'participants': part_list,
                 'anytime':  row[7],
                 'exclusive':  row[8],
                 'multi-result':  row[9]

@@ -1,0 +1,87 @@
+#!/bin/sh
+#
+# Download and dissect ESNet's bwctl.limits
+#
+# Usage: extract-limit-groups [ -o OUTPUT-DIR ]
+#
+#
+# Compatibility:  POSIX.  Requires CURL.
+#
+
+#
+# Configurables
+#
+
+URL="http://stats.es.net/sample_configs/bwctld.limits"
+
+
+#
+# Utilities
+#
+
+WHOAMI=$(basename $0)
+TMPBASE="${TMP:=/tmp}/${WHOAMI}.$$"
+
+
+cleanup()
+{
+    rm -rf ${TMPBASE}*
+}
+trap cleanup EXIT
+
+die()
+{
+    echo "$@" 1>&2
+    exit 1
+}
+
+
+#
+# Gargle the options
+#
+
+if [ "$1" = "-o" ]
+then
+    shift
+    OUTDIR="$1"
+    shift
+    [ "${OUTDIR}" ] \
+	|| die "Usage: ${WHOAMI} [ -o outdir ] infile ..."
+    [ -d "${OUTDIR}" -a -w "${OUTDIR}" ] \
+	|| die "${OUTDIR} is not a writable directory."
+else
+    OUTDIR="."
+fi
+
+
+#
+# Main Program
+#
+
+set -e
+
+curl --fail --insecure --silent --show-error --output "${TMPBASE}.limits" "${URL}" 
+
+awk '$1 == "assign" && $2 == "net" { print $4, $3 }' "${TMPBASE}.limits" \
+    > "${TMPBASE}.list"
+
+EPOCH=$(awk 'BEGIN{srand();print srand()}')
+DATE=$(date)
+
+for GROUP in $(awk '{ print $1 }' "${TMPBASE}.list" | sort | uniq)
+do
+    OUTPUT="${OUTDIR}/${GROUP}"
+    cat > "${OUTPUT}" <<EOF
+#
+# IP CIDR Blocks in Category '${GROUP}'
+#
+# Updated ${EPOCH} (${DATE})
+#
+EOF
+
+    awk -v "GROUP=${GROUP}" '$1 == GROUP { print $2 }' "${TMPBASE}.list" \
+	>> "${OUTPUT}"
+
+done
+
+exit 0
