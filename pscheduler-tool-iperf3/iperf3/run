@@ -38,6 +38,7 @@ except KeyError as e:
 except:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 
+
 def run_client():    
 
     logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
@@ -83,6 +84,10 @@ def run_client():
     if test_spec.has_key('mss') and test_spec['mss'] != None:
         iperf3_args.append('-M')
         iperf3_args.append(test_spec['mss'])
+
+    if test_spec.has_key('omit') and test_spec['omit'] != None:
+        iperf3_args.append('-O')
+        iperf3_args.append(test_spec['omit'])
 
     if test_spec.has_key('bandwidth') and test_spec['bandwidth'] != None:
         iperf3_args.append('-b')
@@ -141,16 +146,17 @@ def run_client():
         logger.error("iperf3 failed to complete execution: %s" % e)
         pscheduler.succeed_json({"succeeded": False,
                                  "error": "The iperf3 command failed during execution. See server logs for more details."})
+
+    logger.debug("Stdout = %s" % stdout)
+    logger.debug("Stderr = %s" % stderr)
+
     
     if status:
         pscheduler.succeed_json({"succeeded": False,
                                  "error": "iperf3 returned an error: %s" % stderr})
 
-    logger.debug("Stdout = %s" % stdout)
-    logger.debug("Stderr = %s" % stderr)
 
     lines = stdout.split("\n")    
-
     logger.debug("Lines are %s " % lines)
 
     results = iperf3_parser.parse_output(lines)
@@ -165,9 +171,13 @@ def run_server():
     
     logger.info("Running command: %s" % " ".join(iperf3_args))
 
+    # need thi
+    omit = test_spec.get('omit', 0)
+
+
     try:
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
-                                                        timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)),
+                                                        timeout = pscheduler.timedelta_as_seconds((duration + omit) - (datetime.datetime.now() - start_time)),
                                                         timeout_ok = True)
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e);

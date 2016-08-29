@@ -73,10 +73,6 @@ def result_is_valid(input_json):
                         "description": "Summarized view of the overall lost packets",
                         "type": ["integer", "null"]
                         },
-                    "jitter": {
-                        "description": "Summarized view of the jitter",
-                        "type": ["integer", "null"]
-                        },
                     "stream-id": {
                         "description": "The ID of the stream, most relevant when running parallel streams",
                         "type": ["string", "integer"]
@@ -88,6 +84,22 @@ def result_is_valid(input_json):
                     "end": {
                         "description": "The relative end time of this reporting interval, relative to the start of the test",
                         "type": "number"
+                        },
+                    "rtt": {
+                        "description": "The RTT of the request",
+                        "type": ["number", "null"]
+                        },
+                    "tcp-window-size": {
+                        "description": "The TCP window size at this point in time",
+                        "type": ["integer", "null"]
+                        },
+                    "retransmits": {
+                        "description": "The number of retransmitted packets during this window",
+                        "type": ["integer", "null"]
+                        },
+                    "omitted": {
+                        "description": "Whether this interval was omitted for the summary",
+                        "$ref": "#/pScheduler/Boolean"
                         }
                     }
                 }

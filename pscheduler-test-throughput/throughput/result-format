@@ -32,7 +32,7 @@ logger.debug("jsonschema passed for test result")
 output = "Throughput Results\n"
 
 intervals = test_spec_json["intervals"]
-intervals.sort(key=lambda x: x["summary"]["start"])
+intervals.sort(key=lambda x: (not x["summary"].get("omitted"), x["summary"]["start"]))
 
 # We're going to convert from interval view to stream view to keep
 # all the same data together
@@ -41,8 +41,6 @@ stream_blocks = {}
 for interval in intervals:
    streams = interval["streams"]
    summary = interval["summary"]
-   start   = summary["start"]
-   end     = summary["end"]
 
    # Make sure we get them in stream id order each time
    streams.sort(key=lambda x:  x["stream-id"])
