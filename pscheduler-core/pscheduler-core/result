@@ -1,0 +1,96 @@
+#!/usr/bin/python
+#
+# Fetch the result of a run by its URL
+#
+
+import datetime
+import optparse
+import pscheduler
+
+#
+# Gargle the arguments
+#
+
+
+class VerbatimParser(optparse.OptionParser):
+    def format_epilog(self, formatter):
+        return self.epilog
+
+opt_parser = VerbatimParser(
+    usage="Usage: %prog [options] run-url",
+    epilog=
+"""
+Examples:
+
+  result https://ps.foo.org/pscheduler/task/12345...
+      Fetch a result of the specified run as plain text
+
+  result --format text https://ps.foo.org/pscheduler/task/12345...
+      Same as above, with explicit format
+
+  result --format html https://ps.foo.org/pscheduler/task/12345...
+      Fetch a result of the specified run and format as HTML
+
+  result --format json html https://ps.foo.org/pscheduler/task/12345...
+      Fetch a result of the specified run and format as JSON
+"""
+    )
+opt_parser.disable_interspersed_args()
+
+opt_parser.add_option("--format",
+                      help="Format for output: text (the default), html or json",
+                      action="store", type="string",
+		      default="text",
+                      dest="format")
+
+(options, remaining_args) = opt_parser.parse_args()
+
+if len(remaining_args) < 1:
+    opt_parser.print_usage()
+    pscheduler.fail()
+
+formats = {
+    'html': 'text/html',
+    'json': 'application/json',
+    'text': 'text/plain',
+    # Not "officially" supported, but here for completeness
+    'text/html': 'text/html',
+    'application/json': 'application/json',
+    'text/plain': 'text/plain',
+    }
+
+try:
+    out_format = formats[options.format]
+except KeyError:
+    pscheduler.fail("Invalid --format; must be text, html, or json")
+
+
+run_url = remaining_args[0]
+
+
+# Fetch the run so we can pluck out the result URL.
+
+try:
+    status, run_json = pscheduler.url_get(run_url, json=True)
+except Exception as ex:
+    pscheduler.fail(str(ex))
+
+
+try:
+    result_url = run_json["result-href"]
+except KeyError:
+    pscheduler.fail("No result URL returned by the server.")
+
+
+try:
+    status, result = pscheduler.url_get(
+        result_url,
+        params={ "format": out_format },
+        json=False)
+except Exception as ex:
+    pscheduler.fail(str(ex))
+
+# The strip gets rid of any pesky newlines
+print result.rstrip()
+
+pscheduler.succeed()
