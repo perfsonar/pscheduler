@@ -231,6 +231,7 @@ class EsmondBaseRecord:
                     test_type=None,
                     test_spec=None,
                     lead_participant=None, 
+                    measurement_agent=None, 
                     tool_name=None,
                     summaries=None,
                     duration=None,
@@ -276,8 +277,11 @@ class EsmondBaseRecord:
             self.metadata['input-destination'] = input_dest
         self.metadata['tool-name'] = tool_name
         self.metadata['time-duration'] = duration
-        #Make measurement-agent the lead participant, with same ip type as source
-        src_ip, self.metadata['measurement-agent'] = normalize_ip_versions(src_ip, lead_participant)
+        #Make measurement-agent the created_by_address if we have it, otherwise the lead participant, with same ip type as source
+        if measurement_agent:
+            src_ip, self.metadata['measurement-agent'] = normalize_ip_versions(src_ip, measurement_agent)
+        else:
+            src_ip, self.metadata['measurement-agent'] = normalize_ip_versions(src_ip, lead_participant)
         
         #set test type to new value if provided
         if test_type:
