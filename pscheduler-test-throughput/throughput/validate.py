@@ -13,7 +13,7 @@ def spec_is_valid(input_json):
         "additionalProperties": False,
         "local": {
             },
-        "required": ["source", "destination"],
+        "required": ["schema", "destination"],
         "properties": {           
             "schema":      { "$ref": "#/pScheduler/Cardinal" },
             "source":      { "$ref": "#/pScheduler/Host" },
