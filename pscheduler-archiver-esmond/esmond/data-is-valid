@@ -17,7 +17,7 @@ data_validator = {
     "type": "object",
     "properties": {
         "url": { "$ref": "#/pScheduler/URL" },
-        "auth-token": { "$ref": "#/pScheduler/String" },
+        "_auth-token": { "$ref": "#/pScheduler/String" },
         "verify-ssl": { "$ref": "#/pScheduler/Boolean" },
         "retry-policy": {
             "type": "array",
