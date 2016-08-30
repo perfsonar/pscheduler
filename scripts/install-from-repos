@@ -74,3 +74,12 @@ EOF
 #
 
 yum -y install httpd-wsgi-socket pscheduler-bundle-full
+
+
+#
+# Restart the ticker to force a warm boot.
+#
+
+# TODO: When there's an internal command to do this, use it instead.
+
+service pscheduler-ticker
