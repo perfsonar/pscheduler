@@ -65,7 +65,9 @@ def run_client():
         logger.info("Resolved %s to %s" % (test_spec["destination"], destination))
                     
         if destination == None:
-            pscheduler.fail("Unable to resolve %s to an IPv4 address" % test_spec["destination"])
+            pscheduler.succeed_json({"succeeded": False,
+                                     "error": "Unable to resolve %s to an IPv4 address" % test_spec["destination"]
+                                     })
 
     elif not is_ip_address and test_spec.has_key('force-ipv6'):
         destination = pscheduler.dns_resolve(destination, ip_version=6)
@@ -73,8 +75,10 @@ def run_client():
         logger.info("Resolved %s to %s" % (test_spec["destination"], destination))
 
         if destination == None:
-            pscheduler.fail("Unable to resolve %s to an IPv6 address" % test_spec["destination"])
-            
+            pscheduler.succeed_json({"succeeded": False,
+                                     "error": "Unable to resolve %s to an IPv6 address" % test_spec["destination"]
+                                     })
+
 
 
     iperf_args.append('-c')
@@ -132,6 +136,10 @@ def run_client():
         iperf_args.append('-B')
         iperf_args.append(test_spec['local-address'])
 
+    if test_spec.has_key('congestion') and test_spec['congestion'] != None:
+        iperf_args.append('-Z')
+        iperf_args.append(test_spec['congestion'])
+
     
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string
@@ -142,8 +150,9 @@ def run_client():
     try:
         status, stdout, stderr = pscheduler.run_program(iperf_args)
     except Exception as e:
-        logger.error("iperf failed to complete execution: %s" % e)
-        pscheduler.fail("The iperf command failed during execution. See server logs for more details.")
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "The iperf command failed during execution. See server logs for more details."
+                                 })
     
     #see if command completed successfully
     logger.debug("iperf returned status %d" % status)
@@ -152,7 +161,9 @@ def run_client():
     # in the event of failures so we can also look to see if anything
     # showed up in stderr
     if status or stderr:
-        pscheduler.fail("iperf returned an error: %s" % stderr)
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "iperf returned an error: %s" % stderr
+                                 })
 
     logger.debug("Stdout = %s" % stdout)
     logger.debug("Stderr = %s" % stderr)
@@ -179,13 +190,17 @@ def run_server():
                                                         timeout_ok = True)
     except Exception as e:
         logger.error("iperf failed to complete execution: %s" % e);
-        pscheduler.fail("The iperf command failed during execution. See server logs for more details.")
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "The iperf command failed during execution. See server logs for more details."
+                                 })
 
     # For whatever reason, iperf doesn't always exit with the right code
     # in the event of failures so we can also look to see if anything
     # showed up in stderr
     if status or stderr:
-        pscheduler.fail("iperf returned an error: %s" % stderr)
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "iperf returned an error: %s" % stderr
+                                 })
     
     #log stdout in debug mode
     for line in stdout:

@@ -17,11 +17,11 @@ try:
     source = json['source']
 except KeyError:
     source = None
-    
-try:
+
+try: 
     destination = json['destination']
 except KeyError:
-    pscheduler.fail('No destination in test specification')
-
+    pscheduler.fail("Missing destination argument in spec")
+    
 pscheduler.succeed_json( [ source, destination ] )
 
