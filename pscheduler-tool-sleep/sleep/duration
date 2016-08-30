@@ -19,9 +19,8 @@ json = pscheduler.json_load(exit_on_error=True);
 
 
 try:
-    print json['duration']
+    pscheduler.succeed_json({
+            "duration": json["duration"]
+            })
 except KeyError:
-    # TODO: This needs to match the default that will be used by run.
-    pscheduler.fail('No duration found in test spec.')
-
-pscheduler.succeed()
+    pscheduler.fail("Missing duration in spec")

@@ -456,7 +456,12 @@ failed test, normally a short ``test failed'' message.
 implementations must support at least {\tt text/plain} and {\tt
   text/html}.
 
-\calloutitem{Standard Input} JSON containing a result for this test.
+\calloutitem{Standard Input} A JSON object containing the following
+elements:
+\begin{itemize}
+\item{\tt spec} - The specification for the test that was run.
+\item{\tt result} - The result produced by the run.
+\end{itemize}
 
 \calloutitem{Standard Output} The formatted output.
 
@@ -654,10 +659,15 @@ up before the test and tear down afterward.
 
 \calloutitem{Standard Input} A \jsontype{TestSpecification}.
 
-\calloutitem{Standard Output} The amount of time required, specified
-as a \jsontype{Duration}.  This value should be in whole seconds; any
-fraction will be increased to the next-largest number of seconds
-(e.g., {\tt PT7.13S} will be converted to {\tt PT8S}).
+\calloutitem{Standard Output} A JSON object containing the following
+items:
+
+\begin{itemize}
+\item{\tt duration} - The amount of time required, specified as a
+  \jsontype{Duration}.  This value should be in whole seconds; any
+  fraction will be increased to the next-largest number of seconds
+  (e.g., {\tt PT7.13S} will be converted to {\tt PT8S}).
+\end{itemize}
 
 \calloutitem{Standard Error} Empty if successful, plain text error
 messages on error.

@@ -1,0 +1,520 @@
+#!/bin/sh
+#
+# Rudimentary test of the 'rtt' test and 'ping' tool, largely for
+# making sure Debian packaging works.
+#
+
+for FIND_PREFIX in \
+    "/usr/libexec/pscheduler/classes" \
+    "/usr/lib/pscheduler/classes"
+do
+    if [ -d "${FIND_PREFIX}" ]
+    then
+	PREFIX="${FIND_PREFIX}"
+	break
+    fi
+done
+
+if [ ! "$PREFIX" ]
+then
+    echo "Can't find pScheduler classes directory"
+    exit 1
+fi
+
+
+TMPBASE=${TMP:=/tmp}/$(basename $0).$$
+
+cleanup()
+{
+    rm -rf ${TMPBASE}*
+}
+trap cleanup EXIT
+
+INPUT=${TMPBASE}.input
+OUTPUT=${TMPBASE}.output
+EXPECTED_OUTPUT=${TMPBASE}.expected
+
+
+FAILURES=0
+
+make_input()
+{
+    cat > "${INPUT}"
+}
+
+do_test()
+{
+    PROGRAM="$1"
+    EXPECTED_EXIT="$2"
+    cat >> ${EXPECTED_OUTPUT}
+
+    echo "Testing ${PROGRAM}"
+    "${PREFIX}/${PROGRAM}" < "${INPUT}" > "${OUTPUT}"
+    EXITED=$?
+
+    if [ "${EXITED}" -ne "${EXPECTED_EXIT}" ]
+    then
+	echo "FAIL: Exited ${EXITED}, expecting ${EXPECTED_EXIT}"
+    fi
+
+
+    DIFFS=${TMPBASE}.diffs
+    if diff -w "${EXPECTED_OUTPUT}" "${OUTPUT}" > "${DIFFS}"
+    then
+	echo "PASS"
+    else
+	echo "FAIL: Difference in output"
+	cat "${DIFFS}"
+	FAILURES=$((${FAILURES} + 1 ))
+    fi
+    echo
+    echo
+    cleanup
+}
+
+
+#
+# Test 'rtt'
+#
+
+
+# enumerate
+
+make_input <<EOF
+EOF
+do_test test/rtt/enumerate 0 <<EOF
+{
+    "name": "rtt",
+    "description": "Measure the round trip time between hosts",
+    "version": "0.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+        "email": "info@perfsonar.net",
+        "href": "http://www.perfsonar.net"
+    },
+    "scheduling-class": "normal"
+}
+EOF
+
+
+# spec-is-valid
+make_input <<EOF
+{
+   "schema": 1,
+   "source": "ps.example.com",
+   "dest": "somehost.example.org",
+   "ip-version": 4,
+   "count": 10,
+   "interval": "PT2S",
+   "timeout": "PT1S"
+}
+EOF
+do_test test/rtt/spec-is-valid 0 <<EOF
+EOF
+
+
+# spec-format
+make_input <<EOF
+{
+   "schema": 1,
+   "source": "ps.example.com",
+   "dest": "somehost.example.org",
+   "ip-version": 4,
+   "count": 10,
+   "interval": "PT2S",
+   "timeout": "PT1S"
+}
+EOF
+do_test test/rtt/spec-format 0 <<EOF
+Destination ................... somehost.example.org
+IP Version .................... 4
+Packet Count .................. 10
+Source ........................ ps.example.com
+Flow Label .................... Not Specified
+Interval ...................... PT2S
+Suppress Multicast Loopback ... Not Specified
+Type of Service ............... Not Specified
+Packet Length ................. Not Specified
+Time to Live .................. Not Specified
+Deadline ...................... Not Specified
+Timeout .,..................... PT1S
+EOF
+
+
+# cli-to-spec
+
+make_input <<EOF
+[ "--source", "ps.example.com",
+  "--dest", "somehost.example.org",
+  "--count", "10",
+  "--interval", "PT2S",
+  "--timeout", "PT1S",
+  "--ip-version", "6"
+]
+EOF
+do_test test/rtt/cli-to-spec 0 <<EOF
+{"count": 10, "dest": "somehost.example.org", "interval": "PT2S", "source": "ps.example.com", "ip-version": 6, "timeout": "PT1S", "schema": 1}
+EOF
+
+
+# spec-to-cli
+
+make_input <<EOF
+{
+   "schema": 1,
+   "source": "ps.example.com",
+   "dest": "somehost.example.org",
+   "ip-version": 4,
+   "count": 10,
+   "interval": "PT2S",
+   "timeout": "PT1S"
+}
+EOF
+
+do_test test/rtt/spec-to-cli 0 <<EOF
+["--count", "10", "--dest", "somehost.example.org", "--interval", "PT2S", "--ip-version", "4", "--source", "ps.example.com", "--timeout", "PT1S"]
+EOF
+
+
+# participants
+
+make_input <<EOF
+{
+   "schema": 1,
+   "source": "ps.example.com",
+   "dest": "somehost.example.org",
+   "ip-version": 4,
+   "count": 10,
+   "interval": "PT2S",
+   "timeout": "PT1S"
+}
+EOF
+
+do_test test/rtt/participants 0 <<EOF
+["ps.example.com"]
+EOF
+
+
+# limit-is-valid
+
+make_input <<EOF
+{
+    "count": {
+        "range": {
+            "lower": 1,
+            "upper": 10
+        }
+    },
+    "length": {
+        "range": {
+            "lower": 1,
+            "upper": 128
+        }
+    }
+}
+EOF
+do_test test/rtt/limit-is-valid 0 <<EOF
+{"valid": true}
+EOF
+
+
+
+# limit-passes
+
+make_input <<EOF
+{
+    "limit": {
+        "count": {
+            "range": {
+                "lower": 1,
+                "upper": 10
+            }
+        },
+        "length": {
+            "range": {
+                "lower": 1,
+                "upper": 128
+            }
+        }
+    },
+    "spec": {
+        "count": 100,
+        "dest": "somehost.example.org",
+        "interval": "PT2S",
+        "ip-version": 4,
+        "schema": 1,
+        "source": "ps.example.com",
+        "timeout": "PT1S"
+    }
+}
+EOF
+do_test test/rtt/limit-passes 0 <<EOF
+{"passes": false, "errors": ["Count 100 is not in 1..10"]}
+EOF
+
+
+# result-format
+
+make_input <<EOF
+{
+    "loss": 0.0,
+    "max": "PT0.047155S",
+    "mean": "PT0.040442S",
+    "min": "PT0.035694S",
+    "roundtrips": [
+        {
+            "hostname": "internet2.edu.",
+            "ip": "207.75.164.248",
+            "length": 64,
+            "rtt": "PT0.0356S",
+            "seq": 1,
+            "ttl": 63
+        },
+        {
+            "hostname": "internet2.edu.",
+            "ip": "207.75.164.248",
+            "length": 64,
+            "rtt": "PT0.0456S",
+            "seq": 2,
+            "ttl": 63
+        },
+        {
+            "hostname": "internet2.edu.",
+            "ip": "207.75.164.248",
+            "length": 64,
+            "rtt": "PT0.0471S",
+            "seq": 3,
+            "ttl": 63
+        },
+        {
+            "hostname": "internet2.edu.",
+            "ip": "207.75.164.248",
+            "length": 64,
+            "rtt": "PT0.0372S",
+            "seq": 4,
+            "ttl": 63
+        },
+        {
+            "hostname": "internet2.edu.",
+            "ip": "207.75.164.248",
+            "length": 64,
+            "rtt": "PT0.0364S",
+            "seq": 5,
+            "ttl": 63
+        }
+    ],
+    "schema": 1,
+    "stddev": "PT0.004925S",
+    "succeeded": true
+}
+EOF
+do_test test/rtt/result-format 0 <<EOF
+1     internet2.edu. (207.75.164.248)  64 Bytes  TTL 63  RTT  35.6000 ms
+2     internet2.edu. (207.75.164.248)  64 Bytes  TTL 63  RTT  45.6000 ms
+3     internet2.edu. (207.75.164.248)  64 Bytes  TTL 63  RTT  47.1000 ms
+4     internet2.edu. (207.75.164.248)  64 Bytes  TTL 63  RTT  37.2000 ms
+5     internet2.edu. (207.75.164.248)  64 Bytes  TTL 63  RTT  36.4000 ms
+
+0% Packet Loss  RTT Min/Mean/Max/StdDev = 35.694000/40.442000/47.155000/4.925000 ms
+EOF
+
+
+
+
+#
+# Tool 'ping'
+#
+
+
+# enumerate
+
+make_input <<EOF
+EOF
+do_test tool/ping/enumerate 0 <<EOF
+{
+    "name": "ping",
+    "description": "Measure the round-trip time to another host",
+    "version": "0.0",
+    "tests": [ "rtt" ],
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+        "email": "info@perfsonar.net",
+        "href": "http://www.perfsonar.net"
+    }
+}
+EOF
+
+
+# can-run
+
+make_input <<EOF
+{
+    "spec": {
+        "count": 10,
+        "dest": "somehost.example.org",
+        "interval": "PT2S",
+        "ip-version": 4,
+        "schema": 1,
+        "source": "ps.example.com",
+        "timeout": "PT1S"
+    },
+    "type": "rtt"
+}
+EOF
+do_test tool/ping/can-run 0 <<EOF
+EOF
+
+
+# duration
+
+make_input <<EOF
+{
+    "spec": {
+        "count": 10,
+        "dest": "somehost.example.org",
+        "interval": "PT2S",
+        "ip-version": 4,
+        "schema": 1,
+        "source": "ps.example.com",
+        "timeout": "PT1S"
+    },
+    "type": "rtt"
+}
+EOF
+do_test tool/ping/duration 0 <<EOF
+{"duration": "PT11S"}
+EOF
+
+
+# participant-data
+
+make_input <<EOF
+{
+    "participant": 0,
+    "test": {
+        "spec": {
+            "count": 10,
+            "dest": "somehost.example.org",
+            "interval": "PT2S",
+            "ip-version": 4,
+            "schema": 1,
+            "source": "ps.example.com",
+            "timeout": "PT1S"
+        },
+        "type": "rtt"
+    }
+}
+EOF
+do_test tool/ping/participant-data 0 <<EOF
+{}
+EOF
+
+
+# merged-results
+
+make_input <<EOF
+{
+    "results": [
+        {
+            "diags": "ping -n -c 5 -i 1.0 -W 1.0 207.75.164.248\n\nPING 207.75.164.248 (207.75.164.248) 56(84) bytes of data.\n64 bytes from 207.75.164.248: icmp_seq=1 ttl=63 time=35.6 ms\n64 bytes from 207.75.164.248: icmp_seq=2 ttl=63 time=45.6 ms\n64 bytes from 207.75.164.248: icmp_seq=3 ttl=63 time=47.1 ms\n64 bytes from 207.75.164.248: icmp_seq=4 ttl=63 time=37.2 ms\n64 bytes from 207.75.164.248: icmp_seq=5 ttl=63 time=36.4 ms\n\n--- 207.75.164.248 ping statistics ---\n5 packets transmitted, 5 received, 0% packet loss, time 4044ms\nrtt min/avg/max/mdev = 35.694/40.442/47.155/4.925 ms\n",
+            "error": null,
+            "result": {
+                "duplicates": 0,
+                "loss": 0.0,
+                "lost": 0,
+                "max": "PT0.047155S",
+                "mean": "PT0.040442S",
+                "min": "PT0.035694S",
+                "received": 5,
+                "reorders": 0,
+                "roundtrips": [
+                    {
+                        "hostname": "internet2.edu.",
+                        "ip": "207.75.164.248",
+                        "length": 64,
+                        "rtt": "PT0.0356S",
+                        "seq": 1,
+                        "ttl": 63
+                    },
+                    {
+                        "hostname": "internet2.edu.",
+                        "ip": "207.75.164.248",
+                        "length": 64,
+                        "rtt": "PT0.0456S",
+                        "seq": 2,
+                        "ttl": 63
+                    },
+                    {
+                        "hostname": "internet2.edu.",
+                        "ip": "207.75.164.248",
+                        "length": 64,
+                        "rtt": "PT0.0471S",
+                        "seq": 3,
+                        "ttl": 63
+                    },
+                    {
+                        "hostname": "internet2.edu.",
+                        "ip": "207.75.164.248",
+                        "length": 64,
+                        "rtt": "PT0.0372S",
+                        "seq": 4,
+                        "ttl": 63
+                    },
+                    {
+                        "hostname": "internet2.edu.",
+                        "ip": "207.75.164.248",
+                        "length": 64,
+                        "rtt": "PT0.0364S",
+                        "seq": 5,
+                        "ttl": 63
+                    }
+                ],
+                "schema": 1,
+                "sent": 5,
+                "stddev": "PT0.004925S",
+                "succeeded": true
+            },
+            "schema": 1,
+            "succeeded": true
+        }
+    ]
+}
+EOF
+do_test tool/ping/merged-results 0 <<EOF
+{"loss": 0.0, "succeeded": true, "min": "PT0.035694S", "max": "PT0.047155S", "stddev": "PT0.004925S", "roundtrips": [{"seq": 1, "ip": "207.75.164.248", "hostname": "internet2.edu.", "rtt": "PT0.0356S", "length": 64, "ttl": 63}, {"seq": 2, "ip": "207.75.164.248", "hostname": "internet2.edu.", "rtt": "PT0.0456S", "length": 64, "ttl": 63}, {"seq": 3, "ip": "207.75.164.248", "hostname": "internet2.edu.", "rtt": "PT0.0471S", "length": 64, "ttl": 63}, {"seq": 4, "ip": "207.75.164.248", "hostname": "internet2.edu.", "rtt": "PT0.0372S", "length": 64, "ttl": 63}, {"seq": 5, "ip": "207.75.164.248", "hostname": "internet2.edu.", "rtt": "PT0.0364S", "length": 64, "ttl": 63}], "schema": 1, "mean": "PT0.040442S"}
+EOF
+
+
+# run
+
+make_input <<EOF
+{
+    "participant": 0,
+    "test": {
+        "spec": {
+            "count": 5,
+            "dest": "www.perfsonar.net",
+            "interval": "PT2S",
+            "ip-version": 4,
+            "schema": 1,
+            "timeout": "PT1S"
+        },
+        "type": "rtt"
+    }
+}
+EOF
+do_test tool/ping/run 0 <<EOF
+EXPECT THIS TO FAIL.
+
+Output will vary based on where the test is run but should be approximately this:
+
+{"diags": "ping -n -c 5 -i 2.0 -W 1.0 207.75.164.248\n\nPING 207.75.164.248 (207.75.164.248) 56(84) bytes of data.\n64 bytes from 207.75.164.248: icmp_seq=1 ttl=63 time=36.1 ms\n64 bytes from 207.75.164.248: icmp_seq=2 ttl=63 time=35.9 ms\n64 bytes from 207.75.164.248: icmp_seq=3 ttl=63 time=36.8 ms\n64 bytes from 207.75.164.248: icmp_seq=4 ttl=63 time=36.3 ms\n64 bytes from 207.75.164.248: icmp_seq=5 ttl=63 time=37.4 ms\n\n--- 207.75.164.248 ping statistics ---\n5 packets transmitted, 5 received, 0% packet loss, time 8044ms\nrtt min/avg/max/mdev = 35.920/36.537/37.406/0.553 ms\n", "error": null, "result": {"received": 5, "lost": 0, "succeeded": true, "min": "PT0.03592S", "duplicates": 0, "max": "PT0.037406S", "reorders": 0, "stddev": "PT0.000553S", "loss": 0.0, "roundtrips": [{"rtt": "PT0.0361S", "length": 64, "seq": 1, "ttl": 63, "ip": "207.75.164.248", "hostname": "internet2.edu."}, {"rtt": "PT0.0359S", "length": 64, "seq": 2, "ttl": 63, "ip": "207.75.164.248", "hostname": "internet2.edu."}, {"rtt": "PT0.0368S", "length": 64, "seq": 3, "ttl": 63, "ip": "207.75.164.248", "hostname": "internet2.edu."}, {"rtt": "PT0.0363S", "length": 64, "seq": 4, "ttl": 63, "ip": "207.75.164.248", "hostname": "internet2.edu."}, {"rtt": "PT0.0374S", "length": 64, "seq": 5, "ttl": 63, "ip": "207.75.164.248", "hostname": "internet2.edu."}], "schema": 1, "sent": 5, "mean": "PT0.036537S"}, "succeeded": true, "schema": 1}
+EOF
+
+
+
+# We expect exactly one failure.
+[ "${FAILURES}" -eq 1 ] && exit 0 || exit 1

@@ -10,7 +10,7 @@ import throughput_utils
 
 #constants
 SCHEMA_FILE = "pscheduler-schema-throughput-response.json"
-logger      = pscheduler.Log(prefix="test-throughput")
+logger      = pscheduler.Log(prefix="test-throughput", debug=True)
 
 try:
    format = sys.argv[1]
@@ -18,21 +18,23 @@ except IndexError:
    format = 'text/plain'
 
 #load JSON
-test_spec_json = pscheduler.json_load(exit_on_error=True)
-logger.debug(test_spec_json)
+input = pscheduler.json_load(exit_on_error=True)
+logger.debug("Input %s", input)
 
 # Validate output against schema
-valid, message = validate.result_is_valid(test_spec_json)
+valid, message = validate.result_is_valid(input["result"])
 
 if not valid:
    pscheduler.fail(message)
 
 logger.debug("jsonschema passed for test result")
 
+json = input["result"]
+
 output = "Throughput Results\n"
 
-intervals = test_spec_json["intervals"]
-intervals.sort(key=lambda x: x["summary"]["start"])
+intervals = json["intervals"]
+intervals.sort(key=lambda x: (not x["summary"].get("omitted"), x["summary"]["start"]))
 
 # We're going to convert from interval view to stream view to keep
 # all the same data together
@@ -41,8 +43,6 @@ stream_blocks = {}
 for interval in intervals:
    streams = interval["streams"]
    summary = interval["summary"]
-   start   = summary["start"]
-   end     = summary["end"]
 
    # Make sure we get them in stream id order each time
    streams.sort(key=lambda x:  x["stream-id"])
@@ -63,7 +63,7 @@ for stream_id in stream_ids:
    output += throughput_utils.format_stream_output(stream_blocks[stream_id])   
    output += "\n"
 
-summary = test_spec_json["summary"]
+summary = json["summary"]
 summary_streams = summary["streams"]
 summary_summary = summary["summary"]
 
@@ -82,20 +82,20 @@ output += throughput_utils.format_stream_output([summary_summary])
 
 output += "\n"
 
-if test_spec_json.get('mss-size'):
-   output += "MSS: %s bytes\n" % (test_spec_json['mss-size'])
-if test_spec_json.get('mtu'):
-   output += "MTU: %s bytes\n" % (test_spec_json['mtu'])
-if test_spec_json.get('tcp-window-size'):
-   output += "TCP Window Size: %sbytes" % (throughput_utils.format_si(test_spec_json['tcp-window-size']))
+if json.get('mss-size'):
+   output += "MSS: %s bytes\n" % (json['mss-size'])
+if json.get('mtu'):
+   output += "MTU: %s bytes\n" % (json['mtu'])
+if json.get('tcp-window-size'):
+   output += "TCP Window Size: %sbytes" % (throughput_utils.format_si(json['tcp-window-size']))
 
-   if test_spec_json.get('requested-tcp-window-size'):
-      output += "  Requested: %sbytes" % (throughput_utils.format_si(test_spec_json['requested-tcp-window-size']))
+   if json.get('requested-tcp-window-size'):
+      output += "  Requested: %sbytes" % (throughput_utils.format_si(json['requested-tcp-window-size']))
    output += "\n"
 
 
 
 #output += "\n\nDiag....\n"
-#output += test_spec_json['diag']
+#output += json['diag']
 
 print output

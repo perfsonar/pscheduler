@@ -18,6 +18,10 @@ if duration:
 else:
     duration = DEFAULT_DURATION
 
-print 'PT%dS' % (duration + DEFAULT_FUDGE_FACTOR + DEFAULT_WAIT_SLEEP)
+pscheduler.succeed_json({
+        "duration": 'PT%dS' % (duration + DEFAULT_FUDGE_FACTOR + DEFAULT_WAIT_SLEEP)
+})
+
+
 
 pscheduler.succeed()

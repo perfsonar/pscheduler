@@ -161,7 +161,7 @@ then
     rpm -qa --last | sort
 elif which dpkg-query > /dev/null 2>&1
 then
-    dpkg-query
+    dpkg-query --list
 else
     echo "Don't know how to list packages in this environment."
 fi

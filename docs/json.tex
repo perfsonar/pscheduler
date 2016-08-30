@@ -116,7 +116,11 @@ name provided must be one which is installed on the system.
 
 \typeditem{data}{AnyJSON} Data specific to the type of archiver which
 direct its behavior.  If not provided, {\tt null} will be used as the
-default.
+default.  Note that the REST API will change the value of any element
+whose name begins with an underscore to {\tt null} before returning it
+as part of a query.  This mechanism allows for information that needs
+to be kept private (e.g., authentication keys) to be provided as
+archiver data.
 
 \example
 \begin{lstlisting}[language=json]
@@ -685,7 +689,12 @@ elements:
 \typeditem{test}{String} The name of the test being carried out.
 
 \typeditem{spec}{AnyJSON} The specification of the test parameters.
-This must be valid for the test type specified by {\tt test}.
+This must be valid for the test type specified by {\tt test}.  Note
+that the REST API will change the value of any element whose name
+begins with an underscore to {\tt null} before returning it as part of
+a query.  This mechanism allows for information that needs to be kept
+private (e.g., authentication keys) to be provided as a test
+parameter.
 
 \example
 \begin{lstlisting}[language=json]

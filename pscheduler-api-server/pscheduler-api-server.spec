@@ -42,7 +42,7 @@ The pScheduler REST API server
 %define conf	     %{httpd_conf_d}/%{name}.conf
 
 %define server_conf_dir %{_pscheduler_sysconfdir}
-%define limits_file     %{server_conf_dir}/limits
+%define limits_file     %{server_conf_dir}/limits.conf
 
 # Note that we want this here because it seems to work well without
 # assistance on systems where selinux is enabled.  Anywhere else and
@@ -122,4 +122,5 @@ systemctl restart httpd
 %files
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
 %{api_dir}
+%config(noreplace) %{_pscheduler_sysconfdir}/*
 %attr(444,root,root) %{conf}

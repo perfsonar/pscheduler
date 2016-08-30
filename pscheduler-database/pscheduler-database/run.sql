@@ -310,6 +310,27 @@ CREATE TRIGGER run_alter BEFORE INSERT OR UPDATE ON run
 
 
 
+-- If a task becomes disabled, remove all future runs.
+
+CREATE OR REPLACE FUNCTION run_task_disabled()
+RETURNS TRIGGER
+AS $$
+BEGIN
+    IF NEW.enabled <> OLD.enabled AND NOT NEW.enabled THEN
+        DELETE FROM run
+        WHERE
+            task = NEW.id
+            AND lower(times) > normalized_now();
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER run_task_disabled BEFORE UPDATE ON task
+   FOR EACH ROW EXECUTE PROCEDURE run_task_disabled();
+
+
 -- If the scheduling horizon changes and becomes smaller, remove runs
 -- that go beyond it.
 

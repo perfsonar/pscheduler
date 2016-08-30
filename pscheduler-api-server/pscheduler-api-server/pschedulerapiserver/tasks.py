@@ -97,7 +97,7 @@ def pick_tool(lists, pick_from=None):
 
 
 
-@application.route("/tasks", methods=['GET', 'POST', 'DELETE'])
+@application.route("/tasks", methods=['GET', 'POST'])
 def tasks():
 
     if request.method == 'GET':
@@ -317,13 +317,6 @@ def tasks():
 
         return ok_json(pscheduler.api_url(path='/tasks/' + task_uuid))
 
-
-
-    elif request.method == 'DELETE':
-
-        # TODO: This should just disable the task.
-        return not_implemented()
-
     else:
 
         return not_allowed()
@@ -350,7 +343,8 @@ def tasks_uuid(uuid):
                     scheduling_class.anytime,
                     scheduling_class.exclusive,
                     scheduling_class.multi_result,
-                    task.participant
+                    task.participant,
+                    task.enabled
                 FROM
                     task
                     JOIN test ON test.id = task.test
@@ -375,8 +369,12 @@ def tasks_uuid(uuid):
         json["test"]["spec"] = pscheduler.json_decomment(
             json["test"]["spec"], prefix="_", null=True)
 
-        for archive in range(0,len(json["archives"])):
-            json["archives"][archive]["data"] = pscheduler.json_decomment(json["archives"][archive]["data"], prefix="_", null=True)
+        try:
+            for archive in range(0,len(json["archives"])):
+                json["archives"][archive]["data"] = pscheduler.json_decomment(
+                    json["archives"][archive]["data"], prefix="_", null=True)
+        except KeyError:
+            pass  # Don't care if not there.
 
         # Add details if we were asked for them.
 
@@ -400,7 +398,8 @@ def tasks_uuid(uuid):
                 'participants': part_list,
                 'anytime':  row[7],
                 'exclusive':  row[8],
-                'multi-result':  row[9]
+                'multi-result':  row[9],
+                'enabled':  row[11]
                 }
 
         return ok_json(json)
@@ -459,8 +458,13 @@ def tasks_uuid(uuid):
 
     elif request.method == 'DELETE':
 
-        # TODO: This should just disable the task.
-        return not_implemented()
+        try:
+            cursor = dbcursor_query(
+                "UPDATE task SET enabled = FALSE WHERE uuid = %s", [uuid])
+        except Exception as ex:
+            return error(str(ex))
+
+        return ok() if cursor.rowcount == 1 else not_found()
 
     else:
 

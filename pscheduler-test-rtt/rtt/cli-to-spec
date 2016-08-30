@@ -76,6 +76,11 @@ opt_parser.add_option("--interval",
                       action="store", type="string",
                       dest="interval")
 
+opt_parser.add_option("--ip-version",
+                      help="IP version to use",
+                      action="store", type="int",
+                      dest="ip_version")
+
 opt_parser.add_option("--source",
                       help="Source address or interface",
                       action="store", type="string",
@@ -140,6 +145,9 @@ if options.hostnames is not None:
 
 if options.interval is not None:
    result['interval'] = options.interval
+
+if options.ip_version is not None:
+   result['ip-version'] = options.ip_version
 
 if options.source is not None:
    result['source'] = options.source
