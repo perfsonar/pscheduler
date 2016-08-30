@@ -33,10 +33,24 @@ case "${COMMAND}" in
 	[ $# -eq 1 ] || die "Usage: list type"
 	TYPE=$1
 	shift
-	[ -d "${LIBEXEC}/classes/${TYPE}" ] || die "Unknown type '${TYPE}'"
+	case "${TYPE}" in
+	    test|tool|archiver)
+		true
+		;;
+	    *)
+		die "Unknown type ${TYPE}"
+		;;
+	esac
+	DIR="${LIBEXEC}/classes/${TYPE}"
+	if [ ! -d "${DIR}" ]
+	then
+	    echo '[]'
+	    # No directory means nothing of the type installed.
+	    exit 0
+        fi
 	printf '['
 	# This is a POSIX-clean equivalent to find . -type d -maxdepth 1
-	( cd "${LIBEXEC}/classes/${TYPE}" && find . -type d ) \
+	( cd "${DIR}" && find . -type d ) \
 	    | sed -e 's|^./||' \
 	    | egrep -ve '^\.' \
 	    | grep -v / \
