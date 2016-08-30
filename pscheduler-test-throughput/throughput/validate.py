@@ -73,6 +73,10 @@ def result_is_valid(input_json):
                         "description": "Summarized view of the overall lost packets",
                         "type": ["integer", "null"]
                         },
+                    "jitter": {
+                        "description": "Jitter reported",
+                        "type": ["integer", "null"]
+                        },
                     "stream-id": {
                         "description": "The ID of the stream, most relevant when running parallel streams",
                         "type": ["string", "integer"]
