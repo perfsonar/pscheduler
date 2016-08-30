@@ -530,7 +530,7 @@ def tasks_uuid_runs_run_result(task, run):
                 SELECT
                     test.name,
                     run.result_merged,
-                    task.json #>> '{test, spec}'
+                    task.json #> '{test, spec}'
                 FROM
                     run
                     JOIN task ON task.id = run.task
