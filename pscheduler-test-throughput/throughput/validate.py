@@ -75,7 +75,7 @@ def result_is_valid(input_json):
                         },
                     "jitter": {
                         "description": "Jitter reported",
-                        "type": ["integer", "null"]
+                        "type": ["number", "null"]
                         },
                     "stream-id": {
                         "description": "The ID of the stream, most relevant when running parallel streams",

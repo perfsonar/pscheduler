@@ -79,6 +79,7 @@ def rename_json(obj):
         "bytes": "throughput-bytes",
         "bits_per_second": "throughput-bits",
         "omitted": "omitted",
+        "jitter_ms": "jitter",
 
         # only for UDP
         "packets": "sent",
@@ -95,12 +96,6 @@ def rename_json(obj):
         if lookup.has_key(k):
             new_obj[lookup[k]] = v
 
-
-    # alright this is a hack. the "lost_packets" key won't be
-    # present if it's == 0, but "packets" will be. To make things
-    # easier later, add the missing field if needed
-    if new_obj.has_key("sent") and not new_obj.has_key("lost"):
-        new_obj["lost"] = 0
 
     return new_obj
 

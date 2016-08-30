@@ -9,6 +9,8 @@ import pscheduler
 
 from iperf3_defaults import *
 
+logger = pscheduler.Log(prefix='tool-iperf3')
+
 json = pscheduler.json_load(exit_on_error=True)
 
 duration = json.get('duration', None)
@@ -20,7 +22,10 @@ else:
 
 # factor in omit time as well
 if json.get('omit'):
+    logger.debug("Adding %s seconds because of omit flag" % json['omit'])
     duration += int(json['omit'])
+
+logger.info("duration = %ss" % duration)
 
 pscheduler.succeed_json({
         "duration": 'PT%dS' % (duration + DEFAULT_FUDGE_FACTOR + DEFAULT_WAIT_SLEEP)

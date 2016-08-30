@@ -82,11 +82,11 @@ summary_streams.sort(key=lambda x: x["stream-id"])
 if len(summary_streams) > 1:
    for stream in summary_streams:
       output += "* Stream ID %s Summary\n" % stream['stream-id']
-      output += throughput_utils.format_stream_output([stream], udp=is_udp)
+      output += throughput_utils.format_stream_output([stream], udp=is_udp, summary=True)
       output += "\n"
 
 output += "Summary\n"
-output += throughput_utils.format_stream_output([summary_summary], udp=is_udp)
+output += throughput_utils.format_stream_output([summary_summary], udp=is_udp, summary=True)
 
 output += "\n"
 

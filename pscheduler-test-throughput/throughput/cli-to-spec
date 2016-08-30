@@ -137,12 +137,12 @@ opt_parser.add_option("--tos",
                       dest="tos")
 
 opt_parser.add_option("--no-delay",
-                      help="Set TCP no-delay flag, disables Nagle's algorith",
+                      help="Set TCP no-delay flag, disables Nagle's algorithm",
                       action="store",
                       dest="no_delay")
 
 opt_parser.add_option("--congestion",
-                      help="Set TCP congestion control algorith",
+                      help="Set TCP congestion control algorithm",
                       action="store", type="string",
                       dest="congestion")
 
