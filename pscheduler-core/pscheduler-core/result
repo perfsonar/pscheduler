@@ -5,7 +5,11 @@
 
 import datetime
 import optparse
+import os
+import pipes
 import pscheduler
+import sys
+import textwrap
 
 #
 # Gargle the arguments
@@ -75,6 +79,24 @@ except KeyError:
 run_url = remaining_args[0]
 
 
+#
+# A utility
+#
+
+def prefixed_wrap(prefix, text, width=80, indent=0):
+    wrapped = textwrap.wrap(text, width-len(prefix))
+    leader = " " * (len(prefix) + indent)
+    return "%s%s%s%s" % (prefix,
+                      wrapped.pop(0), "\n",
+                      "\n".join([ "%s%s" % (leader, line)
+                                  for line in wrapped])
+                      )
+
+
+#
+# Main Program
+#
+
 # Fetch the run so we can pluck out the result URL.
 
 try:
@@ -102,13 +124,6 @@ if run_json["state"] == "failed":
     pscheduler.fail("Run failed")
 
 
-if not options.quiet:
-    #print pscheduler.json_dump(run_json, pretty=True)
-    print "Ran .......", run_json["start-time"], "to", run_json["end-time"]
-    print "Node(s) ...", ", ".join(run_json["participants"])
-    print
-
-
 try:
     result_url = run_json["result-href"]
 except KeyError:
@@ -116,12 +131,42 @@ except KeyError:
 
 
 try:
+    task_url = run_json["task-href"]
+except KeyError:
+    pscheduler.fail("No task URL returned by the server.")
+
+
+
+try:
     status, result = pscheduler.url_get(
         result_url,
         params={ "format": out_format },
         json=False)
+
+    status, task_cli = pscheduler.url_get(
+        "%s/cli" % task_url,
+        json=True)
+
 except Exception as ex:
     pscheduler.fail(str(ex))
+
+if not options.quiet:
+
+    print "%s on %s:" % \
+        (run_json["start-time"], ", ".join(run_json["participants"]))
+    print
+    if sys.stdout.isatty():
+        # TODO: This only works on Unix.
+        rows, columns = [ int(x) for x in
+                          os.popen('stty size', 'r').read().split() ]
+    else:
+        columns = 80
+    options = [ pipes.quote(arg) for arg in task_cli ]
+    print prefixed_wrap("", " ".join(options), width=columns, indent=2),
+
+
+    print
+
 
 # The strip gets rid of any pesky newlines
 print result.rstrip()

@@ -469,3 +469,47 @@ def tasks_uuid(uuid):
     else:
 
         return not_allowed()
+
+
+
+
+
+@application.route("/tasks/<uuid>/cli", methods=['GET'])
+def tasks_uuid_cli(uuid):
+
+    # Get a task, adding server-derived details if a 'detail'
+    # argument is present.
+
+    try:
+        cursor = dbcursor_query(
+            """SELECT
+                   task.json #>> '{test, spec}',
+                   test.name
+               FROM
+                   task
+                   JOIN test on test.id = task.test
+               WHERE task.uuid = %s""", [uuid])
+    except Exception as ex:
+        return error(str(ex))
+
+    if cursor.rowcount == 0:
+        return not_found()
+
+    row = cursor.fetchone()
+    if row is None:
+        return not_found()
+    json, test = row
+
+    try:
+        returncode, stdout, stderr = pscheduler.run_program(
+            [ "pscheduler", "internal", "invoke", "test",
+              test, "spec-to-cli" ], stdin = json )
+        if returncode != 0:
+            return error("Unable to convert test spec: " + stderr)
+    except Exception as ex:
+        return error("Unable to convert test spec: " + str(ex))
+
+    returned = pscheduler.json_load(stdout)
+    returned.insert(0, test)
+
+    return ok(pscheduler.json_dump(returned))
