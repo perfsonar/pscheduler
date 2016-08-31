@@ -34,6 +34,7 @@ case "${COMMAND}" in
 		--hostname "${FULL}" \
 		--name "${FULL}" \
 		--net "${NETWORK}" \
+		--cap-add SYS_TIME \
 		"${IMAGE}" \
 		> /dev/null
 	    echo -n " ${FULL}"
