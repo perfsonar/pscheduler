@@ -2,11 +2,17 @@
 #
 # Build pScheduler as a Docker container and push it
 #
-docker login
+
+[ "$1" = "--nopush" ] && PUSH=false || NOPUSH=true
+
+
+$PUSH && docker login
 curl -s -O https://raw.githubusercontent.com/perfsonar/pscheduler/master/scripts/docker/Dockerfile
 TIMESTAMP=$(date +%Y%m%d%H%M%S)
 docker build --no-cache -t "perfsonar/pscheduler-demo:${TIMESTAMP}" .
-docker tag "perfsonar/pscheduler-demo:${TIMESTAMP}" perfsonar/pscheduler-demo:latest
-docker push "perfsonar/pscheduler-demo:${TIMESTAMP}"
-docker push perfsonar/pscheduler-demo:latest
+
+$PUSH && docker tag "perfsonar/pscheduler-demo:${TIMESTAMP}" perfsonar/pscheduler-demo:latest
+$PUSH && docker push "perfsonar/pscheduler-demo:${TIMESTAMP}"
+$PUSH && docker push perfsonar/pscheduler-demo:latest
+
 rm -f Dockerfile
