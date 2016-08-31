@@ -417,6 +417,11 @@ if options.export:
     pscheduler.succeed()
 
 
+if verbose:
+    print ("Submitting task to %s..." % assist) if assist != last_ditch_assist \
+        else "Submitting task..."
+
+
 #
 # Contact the assist server
 #
