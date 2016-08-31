@@ -120,7 +120,7 @@ if run_json["state"] in ["pending", "on-deck", "running", "cleanup"]:
     pscheduler.fail("Run has not completed.")
 
 if run_json["state"] in ["overdue", "missed", "trumped"]:
-    pscheduler.fail("Run did not complete: %s", run_json["state_display"])
+    pscheduler.fail("Run did not complete: %s" % run_json["state-display"])
 
 if run_json["state"] == "failed":
     # TODO: Find reason?
@@ -151,12 +151,21 @@ try:
         json=True)
 
 except Exception as ex:
-    pscheduler.fail(str(ex))
+    pscheduler.fail("Problem fetching results: %s" % str(ex))
 
 if not options.quiet and out_format == "text/plain":
 
-    print "%s on %s:" % \
-        (run_json["start-time"], ", ".join(run_json["participants"]))
+    parts = run_json["participants"]
+    if len(parts) == 1:
+        partlist = parts[0]
+    else:
+        last = parts.pop()
+        partlist = "%s and %s" % (
+            ", ".join(run_json["participants"]),
+            last)
+        
+
+    print "%s on %s:" % (run_json["start-time"], partlist)
     print
     if sys.stdout.isatty():
         # TODO: This only works on Unix.
