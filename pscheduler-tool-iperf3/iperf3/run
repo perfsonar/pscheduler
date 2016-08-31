@@ -177,7 +177,7 @@ def run_server():
 
     try:
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
-                                                        timeout = pscheduler.timedelta_as_seconds((duration + omit) - (datetime.datetime.now() - start_time)),
+                                                        timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)) + omit,
                                                         timeout_ok = True)
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e);
