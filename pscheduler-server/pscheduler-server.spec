@@ -33,7 +33,7 @@ BuildRequires:	m4
 %description
 The pScheduler server
 
-
+%define log_dir %{_var}/log/pscheduler
 %define archiver_default_dir %{_pscheduler_sysconfdir}/default-archives
 
 
@@ -49,6 +49,7 @@ false
 make \
      DAEMONDIR=%{_pscheduler_daemons} \
      DSNFILE=%{_pscheduler_database_dsn_file} \
+     LOGDIR=%{log_dir} \
      PGDATABASE=%{_pscheduler_database_name} \
      PGPASSFILE=%{_pscheduler_database_pgpass_file} \
      PGUSER=%{_pscheduler_database_user} \
@@ -65,6 +66,7 @@ make \
      install
 
 mkdir -p $RPM_BUILD_ROOT/%{archiver_default_dir}
+mkdir -p $RPM_BUILD_ROOT/%{log_dir}
 
 
 %pre
@@ -103,3 +105,4 @@ done
 %{_pscheduler_daemons}/*
 %{_pscheduler_commands}/*
 %attr(750,%{_pscheduler_user},%{_pscheduler_group}) %{archiver_default_dir}
+%attr(750,%{_pscheduler_user},%{_pscheduler_group}) %{log_dir}

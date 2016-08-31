@@ -27,8 +27,8 @@ proguser=__PSUSER__
 pidfile=__VAR__/run/pscheduler-$prog.pid
 lockfile=__VAR__/lock/subsys/$proc
 
-# TODO: Need to rotate this.
-logfile=__VAR__/log/$prog.log
+# TODO: Should probably rotate this, but should almost always be empty.
+logfile=__LOGDIR__/$prog.log
 
 # Source function library.
 . /etc/rc.d/init.d/functions
@@ -47,6 +47,9 @@ start() {
     echo -n $"Starting pScheduler $prog: "
     touch "$pidfile"
     chown "$proguser.$proguser" "$pidfile"
+    if [ ! -s "$logfile" ] ; then
+        echo "(This file should be empty unless there's a catastrophic failure.)" >> "$logfile"
+    fi
     su $proguser \
        -c "$exec --daemon --pid-file '$pidfile' --dsn '@$config'" \
 	>> "$logfile" 2>&1 &

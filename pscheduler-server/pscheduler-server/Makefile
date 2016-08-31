@@ -69,6 +69,11 @@ ifndef DSNFILE
 	@echo No DSNFILE specified for build
 	@false
 endif
+ifndef LOGDIR
+	@echo No LOGDIR specified for build
+	@false
+endif
+
 ifndef PSUSER
 	@echo No PSUSER specified for build
 	@false
@@ -83,6 +88,7 @@ endif
 		-D__PROG__=$(@:init.d-%=%) \
 		-D__PSUSER__=$(PSUSER) \
 		-D__VAR__=$(VAR) \
+		-D__LOGDIR__=$(LOGDIR) \
 		< $< > $@
 TO_CLEAN += $(INITS)
 
