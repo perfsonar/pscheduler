@@ -43,6 +43,13 @@ opt_parser.add_option("--format",
 		      default="text",
                       dest="format")
 
+opt_parser.add_option("--quiet",
+                      help="For text output, don't display anything but the result",
+                      action="store_true",
+		      default=False,
+                      dest="quiet")
+
+
 (options, remaining_args) = opt_parser.parse_args()
 
 if len(remaining_args) < 1:
@@ -74,6 +81,32 @@ try:
     status, run_json = pscheduler.url_get(run_url, json=True)
 except Exception as ex:
     pscheduler.fail(str(ex))
+
+# Deal with the various reasons why the run might not have happened
+
+if run_json["state"] == "nonstart":
+    try:
+        reason = run_json["errors"] 
+    except KeyError:
+        reason = "No reason provided."
+    pscheduler.fail("Run never started: %s" % reason)
+
+if run_json["state"] in ["pending", "on-deck", "running", "cleanup"]:
+    pscheduler.fail("Run has not completed.")
+
+if run_json["state"] in ["overdue", "missed", "trumped"]:
+    pscheduler.fail("Run did not complete: %s", run_json["state_display"])
+
+if run_json["state"] == "failed":
+    # TODO: Find reason?
+    pscheduler.fail("Run failed")
+
+
+if not options.quiet:
+    #print pscheduler.json_dump(run_json, pretty=True)
+    print "Ran .......", run_json["start-time"], "to", run_json["end-time"]
+    print "Node(s) ...", ", ".join(run_json["participants"])
+    print
 
 
 try:
