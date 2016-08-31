@@ -20,7 +20,7 @@ RUN useradd -c "pScheduler Demo" demo
 # TODO: What network ports should be exposed?
 
 # Allow for backups
-VOLUME  ["/var/lib/pgsql", "/etc/pscheduler-api-server", "/etc/pscheduler-database"]
+VOLUME  ["/var/lib/pgsql", "/etc/pscheduler"]
 
 
 # Set the default command to run when starting the container
