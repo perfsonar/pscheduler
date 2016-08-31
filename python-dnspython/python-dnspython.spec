@@ -1,5 +1,5 @@
 #
-# RPM Spec for Python Detach Module
+# RPM Spec for DNSPython Module
 #
 
 %define short	dnspython

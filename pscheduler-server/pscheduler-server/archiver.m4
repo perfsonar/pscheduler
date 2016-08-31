@@ -5,7 +5,6 @@
 
 import daemon
 import datetime
-import detach
 import errno
 import json
 import optparse

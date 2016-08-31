@@ -20,7 +20,6 @@ Url:		http://www.perfsonar.net
 Source0:	%{short}-%{version}.tar.gz
 
 Requires:	python-dateutil
-Requires:	python-detach
 Requires:	python-dnspython
 Requires:	python-isodate
 Requires:	python-jsonschema
