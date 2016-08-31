@@ -106,6 +106,9 @@ except Exception as ex:
 
 # Deal with the various reasons why the run might not have happened
 
+if "state" not in run_json:
+    pscheduler.fail("Data returned from the server doesn't look like a run result.")
+
 if run_json["state"] == "nonstart":
     try:
         reason = run_json["errors"] 
@@ -150,7 +153,7 @@ try:
 except Exception as ex:
     pscheduler.fail(str(ex))
 
-if not options.quiet:
+if not options.quiet and out_format == "text/plain":
 
     print "%s on %s:" % \
         (run_json["start-time"], ", ".join(run_json["participants"]))
