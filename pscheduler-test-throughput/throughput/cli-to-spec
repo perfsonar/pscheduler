@@ -5,7 +5,6 @@
 import optparse
 import pscheduler
 import sys
-import socket
 import pscheduler
 import datetime
 
@@ -137,12 +136,12 @@ opt_parser.add_option("--tos",
                       dest="tos")
 
 opt_parser.add_option("--no-delay",
-                      help="Set TCP no-delay flag, disables Nagle's algorith",
+                      help="Set TCP no-delay flag, disables Nagle's algorithm",
                       action="store",
                       dest="no_delay")
 
 opt_parser.add_option("--congestion",
-                      help="Set TCP congestion control algorith",
+                      help="Set TCP congestion control algorithm",
                       action="store", type="string",
                       dest="congestion")
 
@@ -269,18 +268,6 @@ if options.cpu_affinity:
 # the below step where we assume "me" if one isn't specified
 if not result.has_key("source") and not result.has_key("destination"):
    pscheduler.fail("Either or both of source or destination must be specified")
-
-# Set default of either source or destination to "me" if not provided
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-s.connect(('8.8.8.8', 0))  # connecting to a UDP address doesn't send packets
-me = s.getsockname()[0]
-
-logger.debug("Me = %s" % me)
-
-if not result.has_key("source") and result.has_key("destination"):
-   result["source"] = me
-elif not result.has_key("destination") and result.has_key("source"):
-   result["destination"] = me
 
 logger.debug("cli-to-spec -> %s" % result)
 

@@ -52,11 +52,14 @@ then
     # Put our rule after the last ACCEPT in the input chain
     INPUT_LENGTH=$(iptables -L INPUT | egrep -e '^ACCEPT' | wc -l)
     iptables -I INPUT $(expr ${INPUT_LENGTH} + 1 ) \
-        -p tcp -m state --state NEW -m tcp --dport 5001:5300 -j ACCEPT
+        -p tcp -m state --state NEW -m tcp --dport 5001 -j ACCEPT
+    iptables -I INPUT $(expr ${INPUT_LENGTH} + 1 ) \
+        -p udp -m state --state NEW -m udp --dport 5001 -j ACCEPT
     service iptables save
 %endif
 %if 0%{?el7}
-    firewall-cmd -q --add-port=5001-5300/tcp --permanent
+    firewall-cmd -q --add-port=5001/tcp --permanent
+    firewall-cmd -q --add-port=5001/udp --permanent
     systemctl restart firewalld
 %endif
 
