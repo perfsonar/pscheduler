@@ -182,13 +182,6 @@ def tasks():
             return error("Unable to determine participants: " + str(ex))
         nparticipants = len(participants)
 
-        # The host in the requested URL should match participant 0.
-
-        netloc = urlparse.urlparse(request.url)[1].split(':')[0]
-        if netloc != participants[0]:
-            return bad_request("Wrong host %s; should be asking %s."
-                               % (netloc, participants[0]))
-
         # TODO: The participants must be unique.  This should be
         # verified by fetching the host name from each one.
 
