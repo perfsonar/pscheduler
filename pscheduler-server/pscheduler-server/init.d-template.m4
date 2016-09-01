@@ -4,7 +4,7 @@ changecom()dnl
 #
 # pscheduler-__PROG__  Start/Stop the pScheduler __PROG__
 #
-# chkconfig: 2345 99 10
+# chkconfig: 2345 90 10
 # description: pScheduler __PROG__ daemon
 
 
