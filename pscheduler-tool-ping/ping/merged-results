@@ -23,7 +23,7 @@ results = {
 if succeeded:
 
     try:
-        for field in [ "loss", "max", "mean", "min", "roundtrips", "stddev" ]:
+        for field in [ "loss", "max", "mean", "min", "roundtrips", "stddev", "lost", "duplicates", "received", "reorders", "sent" ]:
             results[field] = input["results"][0]["result"][field]
     except:
         results = {
