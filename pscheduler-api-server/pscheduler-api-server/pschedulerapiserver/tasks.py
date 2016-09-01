@@ -308,7 +308,8 @@ def tasks():
 
                 return error("Error while tasking %d@%s: %s" % (participant, part_name, ex))
 
-        return ok_json(pscheduler.api_url(path='/tasks/' + task_uuid))
+
+        return ok_json("%s/%s" % (request.base_url, task_uuid))
 
     else:
 
