@@ -30,6 +30,8 @@ FILES=\
 	\
 	boot \
 	ticker \
+	version \
+
 
 
 FILES_TEARDOWN=\
