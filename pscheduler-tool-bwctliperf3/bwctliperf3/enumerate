@@ -1,0 +1,15 @@
+#!/bin/sed -e 1d
+{
+    "name": "bwctliperf3",
+    "description": "Run the BWCTL command for measuring network throughput. Only for backward compatibility.",
+    "version": "1.0",
+    "tests": [ "throughput" ],
+
+    "preference": 20,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@perfsonar.net",
+	"href": "http://www.perfsonar.net"
+    }
+}

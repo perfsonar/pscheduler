@@ -104,6 +104,7 @@ pscheduler-tool-owping
 pscheduler-tool-powstream
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
+pscheduler-tool-bwctliperf3
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbg
