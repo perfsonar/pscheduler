@@ -82,4 +82,4 @@ yum -y install httpd-wsgi-socket pscheduler-bundle-full
 
 # TODO: When there's an internal command to do this, use it instead.
 
-service pscheduler-ticker
+service pscheduler-ticker restart
