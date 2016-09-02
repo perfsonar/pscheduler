@@ -12,6 +12,7 @@ from flask import request
 from .args import *
 from .response import *
 
+# This is thread-safe, so no need to do anything special with it.
 log = pscheduler.Log(name='pscheduler-api',
                      signals=False)
 
