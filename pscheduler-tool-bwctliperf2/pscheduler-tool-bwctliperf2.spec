@@ -19,6 +19,7 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-core
 Requires:	python-pscheduler
 Requires:	pscheduler-test-throughput
+Requires:	bwctl-client
 requires:	iperf
 
 BuildRequires:	pscheduler-rpm
