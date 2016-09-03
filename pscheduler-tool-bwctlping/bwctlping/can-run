@@ -1,0 +1,47 @@
+#!/usr/bin/python
+#
+# Determine if this tool can run a test based on a test spec.
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+def has_pscheduler(address):
+    #null participant means localhost, which means has psc by definition
+    if address is None:
+        return True
+    
+    #test query for /tests...oh the irony
+    status, raw_spec = pscheduler.url_get(
+                                            pscheduler.api_url( host=address,
+                                                                path='/tests'),
+                                            throw=False
+                                        )
+    return status == 200
+
+json = pscheduler.json_load(exit_on_error=True);
+
+# TODO: Should be checking the package schema and the task spec schema.
+# TODO: Should be validating.
+
+try:
+    if json['type'] != 'rtt':
+        pscheduler.fail('Unsupported test type')
+except KeyError:
+    pscheduler.fail('Missing test type')
+
+
+spec = json['spec']
+
+unsupported_options = [ 'flowlabel', 'hostnames', 'suppress-loopback', 'deadline' ]
+for unsupported_option in unsupported_options:
+    if spec.has_key(unsupported_option):
+        pscheduler.fail("BWCTL does not support " . unsupported_option)
+
+if has_pscheduler(spec.get("source", None)):
+    pscheduler.fail("Source has pscheduler, no need for BWCTL")
+
+
+pscheduler.succeed()
