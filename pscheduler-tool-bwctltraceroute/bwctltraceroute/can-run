@@ -19,7 +19,7 @@ def has_pscheduler(address):
                                                                 path='/tests'),
                                             throw=False
                                         )
-
+    return status == 200
 
 json = pscheduler.json_load(exit_on_error=True);
 
