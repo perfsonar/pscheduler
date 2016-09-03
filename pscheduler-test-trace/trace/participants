@@ -20,4 +20,38 @@ if "source" in json:
 else:
     source = None
 
-pscheduler.succeed_json([ source ])
+######################################################################
+#Backward Compatibility Code: We can remove this once we drop BWCTL
+#
+# Check that both sides have pScheduler and do the following:
+# * if source has pscheduler, proceed as normal (i.e. use source as only participant)
+# * otherwise if dest has pscheduler use that instead
+# * otherwise fail the test if no one has pscheduler
+def has_pscheduler(address):
+    #null participant means localhost, which means has psc by definition
+    if address is None:
+        return True
+    
+    #test query for /tests...oh the irony
+    status, raw_spec = pscheduler.url_get(
+                                            pscheduler.api_url( host=address,
+                                                                path='/tests'),
+                                            throw=False
+                                        )
+    return status == 200
+
+participants = []
+if "dest" in json:
+    destination = json["dest"]
+else:
+     pscheduler.fail("Missing required field dest")
+    
+if source is None or has_pscheduler(source):
+    participants = [ source ]
+elif has_pscheduler(destination):
+    participants = [ destination ]
+else:
+    pscheduler.fail("Neither the source nor destination is running pScheduler.")
+######################################################################
+
+pscheduler.succeed_json(participants)
