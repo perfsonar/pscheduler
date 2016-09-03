@@ -122,9 +122,7 @@ pscheduler-archiver-syslog
 
 
 # Servers
-pscheduler-database
 pscheduler-server
-pscheduler-api-server
 
 # Bundles
 pscheduler-bundle-full
