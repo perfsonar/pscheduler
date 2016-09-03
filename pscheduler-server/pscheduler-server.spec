@@ -397,6 +397,16 @@ do
     chkconfig "${NAME}" off
 done
 
+# Have to stop this while we're uninstalling so connections to the
+# database go away.
+%if 0%{?el6}
+service httpd stop
+%endif
+%if 0%{?el7}
+systemctl stop httpd
+%endif
+
+
 #
 # API Server
 #
@@ -448,6 +458,8 @@ EOF
 #
 # (Nothing)
 
+
+
 #
 # API Server
 #
@@ -460,10 +472,10 @@ EOF
 # fi
 
 %if 0%{?el6}
-service httpd restart
+service httpd start
 %endif
 %if 0%{?el7}
-systemctl restart httpd
+systemctl start httpd
 %endif
 
 
