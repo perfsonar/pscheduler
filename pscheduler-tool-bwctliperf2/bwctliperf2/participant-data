@@ -1,0 +1,27 @@
+#!/usr/bin/python
+#
+# Return participant-specific data for a run
+#
+
+import pscheduler
+import random
+import sys
+
+
+json = pscheduler.json_load(exit_on_error=True)
+result = {}
+
+try:
+    participant = json['participant']
+except KeyError:
+    pscheduler.fail("Missing participant")
+
+if participant == 0:
+    # Nothing interesing for participant 0
+    pass
+elif participant == 1:
+    pass
+else:
+    pscheduler.fail("Invalid participant number for this test")
+
+pscheduler.succeed_json(result)
