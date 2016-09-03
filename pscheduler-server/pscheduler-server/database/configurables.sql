@@ -3,25 +3,70 @@
 --
 
 
-DROP TABLE IF EXISTS configurables;
-CREATE TABLE configurables (
+DO $$
+DECLARE
+    t_name TEXT;            -- Name of the table being worked on
+    t_version INTEGER;      -- Current version of the table
+    t_version_old INTEGER;  -- Version of the table at the start
+BEGIN
 
-    -- How far in advance we should schedule runs
-    schedule_horizon    INTERVAL
-			DEFAULT 'P1D',
+    --
+    -- Preparation
+    --
 
-    -- How long we should keep old runs and tasks
-    keep_runs_tasks	INTERVAL
-			DEFAULT 'P7D',
+    t_name := 'configurables';
 
-    -- Maximum runs in parallel
-    max_parallel_runs	INTEGER
-			DEFAULT 50
-);
+    t_version := table_version_find(t_name);
+    t_version_old := t_version;
 
 
--- This table gets exactly one row that can only ever be updated.
-INSERT INTO configurables DEFAULT VALUES;
+    --
+    -- Upgrade Blocks
+    --
+
+    -- Version 0 (nonexistant) to version 1
+    IF t_version = 0
+    THEN
+
+        CREATE TABLE configurables (
+
+            -- How far in advance we should schedule runs
+            schedule_horizon    INTERVAL
+        			DEFAULT 'P1D',
+
+            -- How long we should keep old runs and tasks
+            keep_runs_tasks	INTERVAL
+        			DEFAULT 'P7D',
+
+            -- Maximum runs in parallel
+            max_parallel_runs	INTEGER
+        			DEFAULT 50
+        );
+
+        -- This table gets exactly one row that can only ever be updated.
+        INSERT INTO configurables DEFAULT VALUES;
+
+	t_version := t_version + 1;
+
+    END IF;
+
+    -- Version 1 to version 2
+    --IF t_version = 1
+    --THEN
+    --    ALTER TABLE ...
+    --    t_version := t_version + 1;
+    --END IF;
+
+
+    --
+    -- Cleanup
+    --
+
+    PERFORM table_version_set(t_name, t_version, t_version_old);
+
+END;
+$$ LANGUAGE plpgsql;
+
 
 
 DROP TRIGGER IF EXISTS configurables_update ON configurables CASCADE;

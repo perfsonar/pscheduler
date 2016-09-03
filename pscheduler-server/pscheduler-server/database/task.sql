@@ -2,127 +2,165 @@
 -- Task Table
 --
 
+DO $$
+DECLARE
+    t_name TEXT;            -- Name of the table being worked on
+    t_version INTEGER;      -- Current version of the table
+    t_version_old INTEGER;  -- Version of the table at the start
+BEGIN
 
-DROP TABLE IF EXISTS task CASCADE;
-CREATE TABLE task (
+    --
+    -- Preparation
+    --
 
-	-- Row identifier
-	id		BIGSERIAL
-			PRIMARY KEY,
+    t_name := 'task';
 
-	-- External-use identifier
-	uuid		UUID
-			UNIQUE
-                        NOT NULL,
-
-	-- JSON representation of the task.  This should be the only
-	-- column specified when inserting a row; all of the others
-	-- are derived and will be overwritten.
-	json		JSONB
-			NOT NULL,
-	
-
-	--
-	-- TEST
-	--
-
-	test		BIGINT
-			REFERENCES test(id)
-			ON DELETE CASCADE,
-
-	--
-	-- SCHEDULING
-	--
-
-	-- When this task was first added to the schedule.  This is
-	-- used for breaking ties on equal-priority tasks.
-	added		TIMESTAMP WITH TIME ZONE,
+    t_version := table_version_find(t_name);
+    t_version_old := t_version;
 
 
-	-- When the first run of the test should start.  If NULL, the
-	-- scheduler should find the first available time for the
-	-- first iteration and use that.
-	start		TIMESTAMP WITH TIME ZONE
-			DEFAULT NULL,
+    --
+    -- Upgrade Blocks
+    --
 
-	-- Amount of slip permissible in start time
-	slip		INTERVAL,
+    -- Version 0 (nonexistant) to version 1
+    IF t_version = 0
+    THEN
 
-	-- How much of the slip is randomly applied to the start time.
-	randslip	NUMERIC
-			DEFAULT 0.0
-			CHECK (randslip BETWEEN 0.0 AND 1.0),
+        CREATE TABLE task (
 
-        -- How long the tool that runs the test says it will take
-	duration        INTERVAL,
+        	-- Row identifier
+        	id		BIGSERIAL
+        			PRIMARY KEY,
 
-	-- How often the test should be repeated.
-	-- TODO: This needs to handle CRON-style and streaming.  Might
-	-- be helped by https://pypi.python.org/pypi/croniter or a C
-	-- counterpart.
-	repeat		INTERVAL,
+        	-- External-use identifier
+        	uuid		UUID
+        			UNIQUE
+                                NOT NULL,
 
-	-- Time after which scheduling stops.
-	until		TIMESTAMP WITH TIME ZONE
-			DEFAULT 'infinity',
+        	-- JSON representation of the task.  This should be the only
+        	-- column specified when inserting a row; all of the others
+        	-- are derived and will be overwritten.
+        	json		JSONB
+        			NOT NULL,
 
-	-- Number of times successfully executed before scheduling stops
-	max_runs	NUMERIC,
+        	--
+        	-- TEST
+        	--
 
-	-- Number of times the task has been run
-	runs	  	NUMERIC
-			DEFAULT 0,
+        	test		BIGINT
+        			REFERENCES test(id)
+        			ON DELETE CASCADE,
 
-	--
-	-- TESTING
-	--
+        	--
+        	-- SCHEDULING
+        	--
 
-	-- Tool that will be used to run this test
-	tool	  	INTEGER
-			NOT NULL
-			REFERENCES tool(id)
-			ON DELETE CASCADE,
+        	-- When this task was first added to the schedule.  This is
+        	-- used for breaking ties on equal-priority tasks.
+        	added		TIMESTAMP WITH TIME ZONE,
 
-	-- List of URIs for nodes participating in the test.
-	participants	JSONB,
+        	-- When the first run of the test should start.  If NULL, the
+        	-- scheduler should find the first available time for the
+        	-- first iteration and use that.
+        	start		TIMESTAMP WITH TIME ZONE
+        			DEFAULT NULL,
 
-	-- Number of participants involved in the test, derived from
-	-- the participants field.
-	nparticipants	INTEGER,
+        	-- Amount of slip permissible in start time
+        	slip		INTERVAL,
 
-	-- This node's participant number
-	participant	INTEGER,
+        	-- How much of the slip is randomly applied to the start time.
+        	randslip	NUMERIC
+        			DEFAULT 0.0
+        			CHECK (randslip BETWEEN 0.0 AND 1.0),
+
+                -- How long the tool that runs the test says it will take
+        	duration        INTERVAL,
+
+        	-- How often the test should be repeated.
+        	-- TODO: This needs to handle CRON-style and streaming.  Might
+        	-- be helped by https://pypi.python.org/pypi/croniter or a C
+        	-- counterpart.
+        	repeat		INTERVAL,
+
+        	-- Time after which scheduling stops.
+        	until		TIMESTAMP WITH TIME ZONE
+        			DEFAULT 'infinity',
+
+        	-- Number of times successfully executed before scheduling stops
+        	max_runs	NUMERIC,
+
+        	-- Number of times the task has been run
+        	runs	  	NUMERIC
+        			DEFAULT 0,
+
+        	--
+        	-- TESTING
+        	--
+
+        	-- Tool that will be used to run this test
+        	tool	  	INTEGER
+        			NOT NULL
+        			REFERENCES tool(id)
+        			ON DELETE CASCADE,
+
+        	-- List of URIs for nodes participating in the test.
+        	participants	JSONB,
+
+        	-- Number of participants involved in the test, derived from
+        	-- the participants field.
+        	nparticipants	INTEGER,
+
+        	-- This node's participant number
+        	participant	INTEGER,
+
+        	-- List of archives where the results are sent.
+               	archives	JSONB,
+
+        	--
+        	-- MISCELLANEOUS
+        	--
+
+        	-- Whether or not the task should be scheduled
+        	enabled	    	BOOLEAN
+        			DEFAULT TRUE,
+
+        	-- Hints used by the limit system
+        	hints	    	JSONB
+        );
 
 
-	-- List of archives where the results are sent.
-	-- TODO: If NULL, the archiver will need to pull the system
-	-- defaults effective... when?  When scheduled?  When run?
-	archives	JSONB,
+        -- This should be used when someone looks up the external ID.  Bring
+        -- the row ID a long so it can be pulled without having to consult the
+        -- table.
+        CREATE INDEX task_uuid
+        ON task(uuid, id);
 
-	--
-	-- MISCELLANEOUS
-	--
+        -- This helps the 'json' query limiter in the REST API
+        CREATE INDEX task_json
+        ON task(json);
 
-	-- Whether or not the task should be scheduled
-	enabled	    	BOOLEAN
-			DEFAULT TRUE,
+	t_version := t_version + 1;
 
-	-- Hints used by the limit system
-	hints	    	JSONB
+    END IF;
 
-);
-
-
--- This should be used when someone looks up the external ID.  Bring
--- the row ID a long so it can be pulled without having to consult the
--- table.
-CREATE INDEX task_uuid
-ON task(uuid, id);
+    -- Version 1 to version 2
+    --IF t_version = 1
+    --THEN
+    --    ALTER TABLE ...
+    --    t_version := t_version + 1;
+    --END IF;
 
 
--- This helps the 'json' query limiter in the REST API
-CREATE INDEX task_json
-ON task(json);
+    --
+    -- Cleanup
+    --
+
+    PERFORM table_version_set(t_name, t_version, t_version_old);
+
+END;
+$$ LANGUAGE plpgsql;
+
 
 
 

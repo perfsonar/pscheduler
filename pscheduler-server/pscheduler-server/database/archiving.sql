@@ -2,48 +2,93 @@
 -- Table of archiving records for a run
 --
 
-DROP TABLE IF EXISTS archiving CASCADE;
-CREATE TABLE archiving (
+DO $$
+DECLARE
+    t_name TEXT;            -- Name of the table being worked on
+    t_version INTEGER;      -- Current version of the table
+    t_version_old INTEGER;  -- Version of the table at the start
+BEGIN
 
-	-- Row identifier
-	id		BIGSERIAL
-			PRIMARY KEY,
+    --
+    -- Preparation
+    --
 
-	-- Run this archiving is part of
-	run		BIGINT
-			NOT NULL
-			REFERENCES run(id)
-			ON DELETE CASCADE,
+    t_name := 'archiving';
 
-        -- Archiver to be used
-	archiver        BIGINT
-			NOT NULL
-			REFERENCES archiver(id)
-			ON DELETE CASCADE,
+    t_version := table_version_find(t_name);
+    t_version_old := t_version;
 
-        -- Data for the archiver
-	archiver_data   JSONB,
 
-	-- How many times we've tried to archive the result
-	attempts    	INTEGER
-			DEFAULT 0
-			CHECK(attempts >= 0),
+    --
+    -- Upgrade Blocks
+    --
 
-	-- How many times we've tried to archive
-	last_attempt   	TIMESTAMP WITH TIME ZONE,
+    -- Version 0 (nonexistant) to version 1
+    IF t_version = 0
+    THEN
 
-	-- Whether or not this archiving has been completed
-	archived   	BOOLEAN
-			DEFAULT FALSE,
+        CREATE TABLE archiving (
 
-	-- When we should try again if not successful
-	next_attempt  	TIMESTAMP WITH TIME ZONE
-			DEFAULT '-infinity'::TIMESTAMP WITH TIME ZONE,
+        	-- Row identifier
+        	id		BIGSERIAL
+        			PRIMARY KEY,
 
-	-- Array of results from each attempt
-	diags	   	JSONB
-			DEFAULT '[]'::JSONB
-);
+        	-- Run this archiving is part of
+        	run		BIGINT
+        			NOT NULL
+        			REFERENCES run(id)
+        			ON DELETE CASCADE,
+
+                -- Archiver to be used
+        	archiver        BIGINT
+        			NOT NULL
+        			REFERENCES archiver(id)
+        			ON DELETE CASCADE,
+
+                -- Data for the archiver
+        	archiver_data   JSONB,
+
+        	-- How many times we've tried to archive the result
+        	attempts    	INTEGER
+        			DEFAULT 0
+        			CHECK(attempts >= 0),
+
+        	-- How many times we've tried to archive
+        	last_attempt   	TIMESTAMP WITH TIME ZONE,
+
+        	-- Whether or not this archiving has been completed
+        	archived   	BOOLEAN
+        			DEFAULT FALSE,
+
+        	-- When we should try again if not successful
+        	next_attempt  	TIMESTAMP WITH TIME ZONE
+        			DEFAULT '-infinity'::TIMESTAMP WITH TIME ZONE,
+
+        	-- Array of results from each attempt
+        	diags	   	JSONB
+                			DEFAULT '[]'::JSONB
+        );
+
+	t_version := t_version + 1;
+
+    END IF;
+
+    -- Version 1 to version 2
+    --IF t_version = 1
+    --THEN
+    --    ALTER TABLE ...
+    --    t_version := t_version + 1;
+    --END IF;
+
+
+    --
+    -- Cleanup
+    --
+
+    PERFORM table_version_set(t_name, t_version, t_version_old);
+
+END;
+$$ LANGUAGE plpgsql;
 
 
 

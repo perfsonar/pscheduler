@@ -2,18 +2,61 @@
 -- Table of archives to be used with every run
 --
 
+DO $$
+DECLARE
+    t_name TEXT;            -- Name of the table being worked on
+    t_version INTEGER;      -- Current version of the table
+    t_version_old INTEGER;  -- Version of the table at the start
+BEGIN
 
-DROP TABLE IF EXISTS archive_default;
-CREATE TABLE archive_default (
+    --
+    -- Preparation
+    --
 
-    -- Archive specification
-    archive             JSONB,
+    t_name := 'archive_default';
 
-    -- When the record was inserted (for debug only)
-    inserted            TIMESTAMP WITH TIME ZONE
-                        DEFAULT now()
+    t_version := table_version_find(t_name);
+    t_version_old := t_version;
 
-);
+
+    --
+    -- Upgrade Blocks
+    --
+
+    -- Version 0 (nonexistant) to version 1
+    IF t_version = 0
+    THEN
+
+        CREATE TABLE archive_default (
+
+            -- Archive specification
+            archive             JSONB,
+
+            -- When the record was inserted (for debug only)
+            inserted            TIMESTAMP WITH TIME ZONE
+                                DEFAULT now()
+        );
+
+	t_version := t_version + 1;
+
+    END IF;
+
+    -- Version 1 to version 2
+    --IF t_version = 1
+    --THEN
+    --    ALTER TABLE ...
+    --    t_version := t_version + 1;
+    --END IF;
+
+
+    --
+    -- Cleanup
+    --
+
+    PERFORM table_version_set(t_name, t_version, t_version_old);
+
+END;
+$$ LANGUAGE plpgsql;
 
 
 DROP TRIGGER IF EXISTS archive_default_insert ON archive_default CASCADE;

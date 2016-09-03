@@ -261,16 +261,7 @@ then
     exit 1
 fi
 
-# Figure out the role that owns the database.
-ROLE=$(fgrep 'CREATE ROLE' %{_pscheduler_datadir}/database-build-super.sql \
-	     | head -1 \
-	     | awk '{ print $3 }')
-
-if [ -z "${ROLE}" ]
-then
-	echo "Can't find role name in SQL" 1>&2
-	exit 1
-fi
+ROLE="%{_pscheduler_user}"
 
 # Generate the DSN file
 awk -v "ROLE=${ROLE}" '{ printf "host=127.0.0.1 dbname=pscheduler user=%s password=%s\n", ROLE, $1 }' \
@@ -294,13 +285,8 @@ chmod 400 "${RPM_BUILD_ROOT}/%{pgpass_file}"
 #   http://rpm5.org/community/rpm-users/0834.html
 #
 
-echo
-echo LOAD DB
-echo
-
 postgresql-load %{_pscheduler_datadir}/database-build-super.sql
 postgresql-load --role '%{db_user}' %{_pscheduler_datadir}/database-build.sql
-
 
 # Securely set the password for the role to match the one we generated.
 
@@ -347,17 +333,20 @@ host      pscheduler      pscheduler     ::1/128                md5
 %endif
 EOF
 
-%if 0%{?el6}
-#sort in reverse order (ls -r) to get newest installed version
-service $(basename $(ls -r %{_initddir}/postgresql* | head -1)) restart
-%endif
-%if 0%{?el7}
-SERVICE=$(systemctl | fgrep postgresql | awk '{ print $1 }' \
-    | sed -e 's/\.service//')
-systemctl restart "${SERVICE}"
-%endif
-
-# TODO: Will eventually need to handle upgrades, but that's a ways off.
+# Make Pg reload what we just changed.
+postgresql-load <<EOF
+DO \$\$
+DECLARE
+    status BOOLEAN;
+BEGIN
+    SELECT INTO status pg_reload_conf();
+    IF NOT status
+    THEN
+        RAISE EXCEPTION 'Failed to reload the server configuration';
+    END IF;
+END;
+\$\$ LANGUAGE plpgsql;
+EOF
 
 
 #
@@ -399,15 +388,6 @@ systemctl restart httpd
 
 %preun
 #
-# Database
-#
-if [ "$1" = "0" ]
-then
-    # Have to do this before the files are erased.
-    postgresql-load %{_pscheduler_datadir}/database-teardown.sql
-fi
-
-#
 # Daemons
 #
 for SERVICE in ticker runner archiver scheduler
@@ -421,6 +401,16 @@ done
 # API Server
 #
 # (Nothing)
+
+#
+# Database  (This has to be done after all services are stopped.)
+#
+if [ "$1" = "0" ]
+then
+    # Have to do this before the files are erased.
+    postgresql-load %{_pscheduler_datadir}/database-teardown.sql
+fi
+
 
 
 # ------------------------------------------------------------------------------
@@ -437,14 +427,21 @@ HBA_FILE=$( (echo "\t on" ; echo "show hba_file;") \
 
 drop-in -r %{name} /dev/null $HBA_FILE
 
-%if 0%{?el6}
-service $(basename $(ls %{_initddir}/postgresql* | head -1)) restart
-%endif
-%if 0%{?el7}
-SERVICE=$(systemctl | fgrep postgresql | awk '{ print $1 }' \
-    | sed -e 's/\.service//')
-systemctl restart "${SERVICE}"
-%endif
+# Make Pg reload what we just changed.
+postgresql-load <<EOF
+DO \$\$
+DECLARE
+    status BOOLEAN;
+BEGIN
+    SELECT INTO status pg_reload_conf();
+    IF NOT status
+    THEN
+        RAISE EXCEPTION 'Failed to reload the server configuration';
+    END IF;
+END;
+\$\$ LANGUAGE plpgsql;
+EOF
+
 
 #
 # Daemons

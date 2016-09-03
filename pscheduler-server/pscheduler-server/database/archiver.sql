@@ -7,60 +7,148 @@
 -- TODO: Use native upserting when Pg is upgraded to 9.5
 
 
-DROP TABLE IF EXISTS archiver CASCADE;
-CREATE TABLE archiver (
+DO $$
+DECLARE
+    t_name TEXT;            -- Name of the table being worked on
+    t_version INTEGER;      -- Current version of the table
+    t_version_old INTEGER;  -- Version of the table at the start
+BEGIN
 
-	-- Row identifier
-	id		BIGSERIAL
-			PRIMARY KEY,
+    --
+    -- Preparation
+    --
 
-	-- Original JSON
-	json		JSONB
-			NOT NULL,
+    t_name := 'archiver';
 
-	-- Archiver Name
-	name		TEXT
-			UNIQUE NOT NULL,
-
-	-- Verbose description
-	description	TEXT,
-
-	-- Version
-	version		NUMERIC
-			NOT NULL,
-
-	-- When this record was last updated
-	updated		TIMESTAMP WITH TIME ZONE,
-
-	-- Whether or not the archiver is currently available
-	available	BOOLEAN
-			DEFAULT TRUE
-);
+    t_version := table_version_find(t_name);
+    t_version_old := t_version;
 
 
-CREATE INDEX archiver_name ON archiver(name);
+    --
+    -- Upgrade Blocks
+    --
 
+    -- Version 0 (nonexistant) to version 1
+    IF t_version = 0
+    THEN
+
+        CREATE TABLE archiver (
+
+        	-- Row identifier
+        	id		BIGSERIAL
+        			PRIMARY KEY,
+
+        	-- Original JSON
+        	json		JSONB
+        			NOT NULL,
+
+        	-- Archiver Name
+        	name		TEXT
+        			UNIQUE NOT NULL,
+
+        	-- Verbose description
+        	description	TEXT,
+
+        	-- Version
+        	version		NUMERIC
+        			NOT NULL,
+
+        	-- When this record was last updated
+        	updated		TIMESTAMP WITH TIME ZONE,
+
+        	-- Whether or not the archiver is currently available
+        	available	BOOLEAN
+        			DEFAULT TRUE
+        );
+
+
+        CREATE INDEX archiver_name ON archiver(name);
+
+	t_version := t_version + 1;
+
+    END IF;
+
+    -- Version 1 to version 2
+    --IF t_version = 1
+    --THEN
+    --    ALTER TABLE ...
+    --    t_version := t_version + 1;
+    --END IF;
+
+
+    --
+    -- Cleanup
+    --
+
+    PERFORM table_version_set(t_name, t_version, t_version_old);
+
+END;
+$$ LANGUAGE plpgsql;
 
 
 --
 -- Breaker table that maps archivers to the tests they can run
 --
-DROP TABLE IF EXISTS archiver_test CASCADE;
-CREATE TABLE archiver_test (
-
-	-- Archiver which says it can handle a test
-	archiver	BIGINT
-			REFERENCES archiver(id)
-			ON DELETE CASCADE,
-
-	-- The test the archiver says it can handle
-	test		BIGINT
-			REFERENCES test(id)
-			ON DELETE CASCADE
-);
 
 
+DO $$
+DECLARE
+    t_name TEXT;            -- Name of the table being worked on
+    t_version INTEGER;      -- Current version of the table
+    t_version_old INTEGER;  -- Version of the table at the start
+BEGIN
 
+    --
+    -- Preparation
+    --
+
+    t_name := 'archiver_test';
+
+    t_version := table_version_find(t_name);
+    t_version_old := t_version;
+
+
+    --
+    -- Upgrade Blocks
+    --
+
+    -- Version 0 (nonexistant) to version 1
+    IF t_version = 0
+    THEN
+
+        CREATE TABLE archiver_test (
+
+        	-- Archiver which says it can handle a test
+        	archiver	BIGINT
+        			REFERENCES archiver(id)
+        			ON DELETE CASCADE,
+
+        	-- The test the archiver says it can handle
+        	test		BIGINT
+        			REFERENCES test(id)
+        			ON DELETE CASCADE
+        );
+
+	t_version := t_version + 1;
+
+    END IF;
+
+    -- Version 1 to version 2
+    --IF t_version = 1
+    --THEN
+    --    ALTER TABLE ...
+    --    t_version := t_version + 1;
+    --END IF;
+
+
+    --
+    -- Cleanup
+    --
+
+    PERFORM table_version_set(t_name, t_version, t_version_old);
+
+END;
+$$ LANGUAGE plpgsql;
 
 
 

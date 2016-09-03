@@ -7,42 +7,88 @@
 -- TODO: Use native upserting when Pg is upgraded to 9.5
 
 
-DROP TABLE IF EXISTS test CASCADE;
-CREATE TABLE test (
+DO $$
+DECLARE
+    t_name TEXT;            -- Name of the table being worked on
+    t_version INTEGER;      -- Current version of the table
+    t_version_old INTEGER;  -- Version of the table at the start
+BEGIN
 
-	-- Row identifier
-	id		BIGSERIAL
-			PRIMARY KEY,
+    --
+    -- Preparation
+    --
 
-	-- Original JSON
-	json		JSONB
-			NOT NULL,
+    t_name := 'test';
 
-	-- Test Name
-	name		TEXT
-			UNIQUE NOT NULL,
+    t_version := table_version_find(t_name);
+    t_version_old := t_version;
 
-	-- Verbose description
-	description	TEXT,
 
-	-- Version
-	version		NUMERIC
-			NOT NULL,
+    --
+    -- Upgrade Blocks
+    --
 
-	-- When this record was last updated
-	updated		TIMESTAMP WITH TIME ZONE,
+    -- Version 0 (nonexistant) to version 1
+    IF t_version = 0
+    THEN
 
-	-- Whether or not the test is currently available
-	available	BOOLEAN
-			DEFAULT TRUE,
+        CREATE TABLE test (
 
-        -- Scheduling class for this type of test
-	scheduling_class INTEGER
-                        NOT NULL
-			REFERENCES scheduling_class(id)
-			-- Deletes should never happen but for consistency...
-			ON DELETE CASCADE
-);
+        	-- Row identifier
+        	id		BIGSERIAL
+        			PRIMARY KEY,
+
+        	-- Original JSON
+        	json		JSONB
+        			NOT NULL,
+
+        	-- Test Name
+        	name		TEXT
+        			UNIQUE NOT NULL,
+
+        	-- Verbose description
+        	description	TEXT,
+
+        	-- Version
+        	version		NUMERIC
+        			NOT NULL,
+
+        	-- When this record was last updated
+        	updated		TIMESTAMP WITH TIME ZONE,
+
+        	-- Whether or not the test is currently available
+        	available	BOOLEAN
+        			DEFAULT TRUE,
+
+                -- Scheduling class for this type of test
+        	scheduling_class INTEGER
+                                NOT NULL
+        			REFERENCES scheduling_class(id)
+        			-- Deletes should never happen but for consistency...
+        			ON DELETE CASCADE
+        );
+
+	t_version := t_version + 1;
+
+    END IF;
+
+    -- Version 1 to version 2
+    --IF t_version = 1
+    --THEN
+    --    ALTER TABLE ...
+    --    t_version := t_version + 1;
+    --END IF;
+
+
+    --
+    -- Cleanup
+    --
+
+    PERFORM table_version_set(t_name, t_version, t_version_old);
+
+END;
+$$ LANGUAGE plpgsql;
+
 
 
 CREATE OR REPLACE FUNCTION test_json_is_valid(json JSONB)

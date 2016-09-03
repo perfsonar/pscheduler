@@ -15,6 +15,7 @@ FILES_SUPERUSER=\
 FILES=\
 	preamble \
 	utilities \
+	table_version \
 	\
 	configurables \
 	scheduling_class \
@@ -27,11 +28,10 @@ FILES=\
 	run \
 	archiving \
 	schedule \
-	\
 	boot \
 	ticker \
-	version \
-
+	\
+	postamble
 
 
 FILES_TEARDOWN=\

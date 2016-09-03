@@ -7,3 +7,6 @@
 
 -- TODO: This should be taken care of by postgresql-load but isn't.
 SET ROLE pscheduler;
+
+
+BEGIN TRANSACTION;

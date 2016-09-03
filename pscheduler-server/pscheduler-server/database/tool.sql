@@ -6,62 +6,151 @@
 -- or updated) using the tool_upsert() function.
 -- TODO: Use native upserting when Pg is upgraded to 9.5
 
+DO $$
+DECLARE
+    t_name TEXT;            -- Name of the table being worked on
+    t_version INTEGER;      -- Current version of the table
+    t_version_old INTEGER;  -- Version of the table at the start
+BEGIN
 
-DROP TABLE IF EXISTS tool CASCADE;
-CREATE TABLE tool (
+    --
+    -- Preparation
+    --
 
-	-- Row identifier
-	id		BIGSERIAL
-			PRIMARY KEY,
+    t_name := 'tool';
 
-	-- Original JSON
-	json		JSONB
-			NOT NULL,
-
-	-- Tool Name
-	name		TEXT
-			UNIQUE NOT NULL,
-
-	-- Verbose description
-	description	TEXT,
-
-	-- Version
-	version		NUMERIC
-			NOT NULL,
-
-	-- Preference value
-	preference      INTEGER
-			DEFAULT 0,
-
-	-- When this record was last updated
-	updated		TIMESTAMP WITH TIME ZONE,
-
-	-- Whether or not the tool is currently available
-	available	BOOLEAN
-			DEFAULT TRUE
-);
+    t_version := table_version_find(t_name);
+    t_version_old := t_version;
 
 
-CREATE INDEX tool_name ON tool(name);
+    --
+    -- Upgrade Blocks
+    --
 
+    -- Version 0 (nonexistant) to version 1
+    IF t_version = 0
+    THEN
+
+        CREATE TABLE tool (
+
+        	-- Row identifier
+        	id		BIGSERIAL
+        			PRIMARY KEY,
+
+        	-- Original JSON
+        	json		JSONB
+        			NOT NULL,
+
+        	-- Tool Name
+        	name		TEXT
+        			UNIQUE NOT NULL,
+
+        	-- Verbose description
+        	description	TEXT,
+
+        	-- Version
+        	version		NUMERIC
+        			NOT NULL,
+
+        	-- Preference value
+        	preference      INTEGER
+        			DEFAULT 0,
+
+        	-- When this record was last updated
+        	updated		TIMESTAMP WITH TIME ZONE,
+
+        	-- Whether or not the tool is currently available
+        	available	BOOLEAN
+        			DEFAULT TRUE
+        );
+
+        CREATE INDEX tool_name ON tool(name);
+
+	t_version := t_version + 1;
+
+    END IF;
+
+    -- Version 1 to version 2
+    --IF t_version = 1
+    --THEN
+    --    ALTER TABLE ...
+    --    t_version := t_version + 1;
+    --END IF;
+
+
+    --
+    -- Cleanup
+    --
+
+    PERFORM table_version_set(t_name, t_version, t_version_old);
+
+END;
+$$ LANGUAGE plpgsql;
 
 
 --
 -- Breaker table that maps tools to the tests they can run
 --
-DROP TABLE IF EXISTS tool_test CASCADE;
-CREATE TABLE tool_test (
 
-	-- Tool which says it can handle a test
-	tool		INTEGER
-			REFERENCES tool(id)
-			ON DELETE CASCADE,
 
-	-- The test the tool says it can handle
-	test		INTEGER
-			REFERENCES test(id)
-			ON DELETE CASCADE
-);
+DO $$
+DECLARE
+    t_name TEXT;            -- Name of the table being worked on
+    t_version INTEGER;      -- Current version of the table
+    t_version_old INTEGER;  -- Version of the table at the start
+BEGIN
+
+    --
+    -- Preparation
+    --
+
+    t_name := 'tool_test';
+
+    t_version := table_version_find(t_name);
+    t_version_old := t_version;
+
+
+    --
+    -- Upgrade Blocks
+    --
+
+    -- Version 0 (nonexistant) to version 1
+    IF t_version = 0
+    THEN
+
+        CREATE TABLE tool_test (
+
+        	-- Tool which says it can handle a test
+        	tool		INTEGER
+        			REFERENCES tool(id)
+        			ON DELETE CASCADE,
+
+        	-- The test the tool says it can handle
+        	test		INTEGER
+        			REFERENCES test(id)
+        			ON DELETE CASCADE
+        );
+
+	t_version := t_version + 1;
+
+    END IF;
+
+    -- Version 1 to version 2
+    --IF t_version = 1
+    --THEN
+    --    ALTER TABLE ...
+    --    t_version := t_version + 1;
+    --END IF;
+
+
+    --
+    -- Cleanup
+    --
+
+    PERFORM table_version_set(t_name, t_version, t_version_old);
+
+END;
+$$ LANGUAGE plpgsql;
 
 
 
