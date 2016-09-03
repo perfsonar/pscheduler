@@ -24,6 +24,8 @@ CREATE TABLE configurables (
 INSERT INTO configurables DEFAULT VALUES;
 
 
+DROP TRIGGER IF EXISTS configurables_update ON configurables CASCADE;
+
 CREATE OR REPLACE FUNCTION configurables_update()
 RETURNS TRIGGER
 AS $$
@@ -46,6 +48,8 @@ FOR EACH ROW
 
 
 
+DROP TRIGGER IF EXISTS configurables_alter ON configurables CASCADE;
+DROP TRIGGER IF EXISTS configurables_truncate ON configurables CASCADE;
 
 CREATE OR REPLACE FUNCTION configurables_noalter()
 RETURNS TRIGGER

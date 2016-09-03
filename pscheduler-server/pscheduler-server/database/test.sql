@@ -58,6 +58,8 @@ $$ LANGUAGE plpgsql;
 
 
 
+DROP TRIGGER IF EXISTS test_alter ON test CASCADE;
+
 CREATE OR REPLACE FUNCTION test_alter()
 RETURNS TRIGGER
 AS $$

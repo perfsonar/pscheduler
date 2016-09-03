@@ -114,6 +114,8 @@ AS
 
 
 
+DROP TRIGGER IF EXISTS run_alter ON run CASCADE;
+
 CREATE OR REPLACE FUNCTION run_alter()
 RETURNS TRIGGER
 AS $$
@@ -312,6 +314,8 @@ CREATE TRIGGER run_alter BEFORE INSERT OR UPDATE ON run
 
 -- If a task becomes disabled, remove all future runs.
 
+DROP TRIGGER IF EXISTS run_task_disabled ON run CASCADE;
+
 CREATE OR REPLACE FUNCTION run_task_disabled()
 RETURNS TRIGGER
 AS $$
@@ -333,6 +337,8 @@ CREATE TRIGGER run_task_disabled BEFORE UPDATE ON task
 
 -- If the scheduling horizon changes and becomes smaller, remove runs
 -- that go beyond it.
+
+DROP TRIGGER IF EXISTS run_horizon_change ON run CASCADE;
 
 CREATE OR REPLACE FUNCTION run_horizon_change()
 RETURNS TRIGGER

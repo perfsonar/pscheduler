@@ -16,6 +16,9 @@ INSERT INTO version (version) VALUES (1);
 
 
 
+DROP TRIGGER IF EXISTS version_alter ON version CASCADE;
+DROP TRIGGER IF EXISTS version_truncate ON version CASCADE;
+
 CREATE OR REPLACE FUNCTION version_noalter()
 RETURNS TRIGGER
 AS $$

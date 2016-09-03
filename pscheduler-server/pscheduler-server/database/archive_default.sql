@@ -16,6 +16,7 @@ CREATE TABLE archive_default (
 );
 
 
+DROP TRIGGER IF EXISTS archive_default_insert ON archive_default CASCADE;
 
 CREATE OR REPLACE FUNCTION archive_default_insert()
 RETURNS TRIGGER
@@ -36,6 +37,8 @@ FOR EACH ROW
 
 -- Rows in this can't be updated, only inserted and deleted.  (And
 -- usually the whole table at once.)
+
+DROP TRIGGER IF EXISTS archive_default_update ON archive_default CASCADE;
 
 CREATE OR REPLACE FUNCTION archive_default_update()
 RETURNS TRIGGER

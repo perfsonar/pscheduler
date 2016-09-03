@@ -47,6 +47,8 @@ CREATE TABLE archiving (
 
 
 
+DROP TRIGGER IF EXISTS archiving_run_after ON archiving CASCADE;
+
 CREATE OR REPLACE FUNCTION archiving_run_after()
 RETURNS TRIGGER
 AS $$
@@ -120,6 +122,8 @@ CREATE TRIGGER archiving_run_after AFTER INSERT OR UPDATE ON run
        FOR EACH ROW EXECUTE PROCEDURE archiving_run_after();
 
 
+
+DROP TRIGGER IF EXISTS archiving_alter ON archiving CASCADE;
 
 CREATE OR REPLACE FUNCTION archiving_alter()
 RETURNS TRIGGER

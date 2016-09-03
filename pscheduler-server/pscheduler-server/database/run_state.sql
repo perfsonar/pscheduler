@@ -133,6 +133,8 @@ VALUES
 
 
 
+DROP TRIGGER IF EXISTS run_state_alter ON run_state CASCADE;
+
 CREATE OR REPLACE FUNCTION run_state_alter()
 RETURNS TRIGGER
 AS $$

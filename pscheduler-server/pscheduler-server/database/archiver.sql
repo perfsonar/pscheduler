@@ -75,6 +75,8 @@ $$ LANGUAGE plpgsql;
 
 
 
+DROP TRIGGER IF EXISTS archiver_alter ON archiver CASCADE;
+
 CREATE OR REPLACE FUNCTION archiver_alter()
 RETURNS TRIGGER
 AS $$
@@ -97,6 +99,8 @@ FOR EACH ROW
     EXECUTE PROCEDURE archiver_alter();
 
 
+
+DROP TRIGGER IF EXISTS archiver_alter_post ON archiver CASCADE;
 
 CREATE OR REPLACE FUNCTION archiver_alter_post()
 RETURNS TRIGGER
@@ -132,6 +136,7 @@ FOR EACH ROW
     EXECUTE PROCEDURE archiver_alter_post();
 
 
+DROP TRIGGER IF EXISTS archiver_delete ON archiver CASCADE;
 
 CREATE OR REPLACE FUNCTION archiver_delete()
 RETURNS TRIGGER

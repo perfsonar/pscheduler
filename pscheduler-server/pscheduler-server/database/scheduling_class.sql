@@ -73,6 +73,7 @@ VALUES
 	;
 
 
+DROP TRIGGER IF EXISTS scheduling_class_alter ON scheduling_class CASCADE;
 
 CREATE OR REPLACE FUNCTION scheduling_class_alter()
 RETURNS TRIGGER
