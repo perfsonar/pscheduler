@@ -20,6 +20,7 @@ Requires:	pscheduler-core
 Requires:	python-pscheduler
 Requires:	pscheduler-test-throughput
 Requires:	bwctl-client
+Requires:	bwctl-server
 requires:	iperf
 
 BuildRequires:	pscheduler-rpm

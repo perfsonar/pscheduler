@@ -22,6 +22,7 @@ Requires:	pscheduler-test-trace
 Requires:	python-icmperror
 Requires:	iputils
 Requires:	bwctl-client
+Requires:	bwctl-server
 
 BuildRequires:	pscheduler-rpm
 
