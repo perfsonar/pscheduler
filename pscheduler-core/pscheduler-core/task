@@ -267,6 +267,7 @@ if assist is None:
 last_ditch_assist = '127.0.0.1'
 if assist is None:
     assist = last_ditch_assist
+log.debug("Assistance is from %s", assist)
 
 
 #
@@ -379,9 +380,11 @@ if options.archive:
 # Convert the remaining arguments to a test spec.
 #
 
+spec_url = pscheduler.api_url(host=assist,
+                              path='/tests/' + test_type + '/spec')
+log.debug("Converting to spec via %s", spec_url)
 status, raw_spec = pscheduler.url_get(
-    pscheduler.api_url(host=assist,
-                       path='/tests/' + test_type + '/spec'),
+    spec_url,
     params={ 'args': pscheduler.json_dump(remaining_args) },
     throw=False
     )
@@ -421,7 +424,6 @@ if options.export:
     pscheduler.succeed()
 
 
-log.debug("Assistance is from %s", assist)
 if verbose:
     print ("Submitting task to %s..." % assist) if assist != last_ditch_assist \
         else "Submitting task..."
