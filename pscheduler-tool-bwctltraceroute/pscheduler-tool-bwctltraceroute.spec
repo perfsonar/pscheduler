@@ -22,6 +22,7 @@ Requires:	python-pscheduler
 Requires:	pscheduler-test-trace
 Requires:	python-icmperror
 Requires:	bwctl-client
+Requires:	bwctl-server
 Requires:   traceroute
 
 BuildRequires:	pscheduler-account

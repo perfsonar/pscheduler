@@ -25,6 +25,7 @@ Requires:	python-icmperror
 # This supplies ping.
 Requires:	iputils
 Requires:	bwctl-client
+Requires:	bwctl-server
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
