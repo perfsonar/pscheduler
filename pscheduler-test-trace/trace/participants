@@ -32,10 +32,10 @@ def has_pscheduler(address):
     if address is None:
         return True
     
-    #test query for /tests...oh the irony
+    # Ask the server for something really basic.
     status, raw_spec = pscheduler.url_get(
                                             pscheduler.api_url( host=address,
-                                                                path='/tests'),
+                                                                path='hostname'),
                                             throw=False
                                         )
     return status == 200
