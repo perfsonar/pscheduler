@@ -94,8 +94,6 @@ def dbcursor_query(query,
     the rowcount being < 0 and throwing an error.
     """
 
-    log.debug("Query %s %s" % (query, args))
-
     while tries > 0:
 
         cursor = dbcursor()
@@ -116,7 +114,7 @@ def dbcursor_query(query,
         break
 
     rows = cursor.rowcount
-    log.debug("Returned %d rows", rows)
+
     if rows < 0:
         raise psycopg2.Error("No results returned; may be an internal problem")
     if onerow and rows != 1:
