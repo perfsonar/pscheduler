@@ -9,79 +9,71 @@ import threading
 
 from .log import log
 
-this = sys.modules[__name__]
+module = sys.modules[__name__]
 
-this.lock = threading.RLock()
-this.threadlocal = threading.local()
+module.tries = 10
+module.interval = 0.5
 
-this.dsn = None   # DSN for DB connection
-this.db = None    # DB connection
-this.db_gen = 0   # Generation of DB connection
+module.threadlocal = threading.local()
+
+module.dsn = None   # DSN for DB connection
+
+
+def dbcursor_init(dsn):
+    """Initialize the module.  Yes, this is global state."""
+    module.dsn = dsn
 
 
 
-def dbcursor_init(dsn, reconnect=False, tries=10, interval=0.5):
-    """Connect to the database"""
+class DBCursor:
 
-    with this.lock:
+    def __init__(self):
+        self.db = None
+        self.ccursor = None  # Dodges conflict with a method name.
 
-        if reconnect:
-            log.debug("Reconnecting to database")
-            this.db = None
 
-        if this.db is None:
-            log.debug("Connecting to database")
+    def cursor(self):
+        """Get the cursor, reconnecting if necessary."""
 
-            db = None
-            reason = None
+        # Make sure we have a working database connection
+
+        if self.db is None or self.db.closed:
+
+            # Reset everything.
+
+            self.db = None
+            self.ccursor = None
+
+            assert (module.dsn is not None)
+
+            tries = module.tries
 
             while tries:
                 try:
-                    db = pscheduler.pg_connection(dsn)
+                    self.db = pscheduler.pg_connection(module.dsn)
                     break
                 except psycopg2.OperationalError as ex:
                     reason = ex
                     tries -= 1
-                    time.sleep(interval)
+                    log.debug("Attempt failed, %d left", tries)
+                    time.sleep(module.interval)
 
-            if db is None:
+            if self.db is None:
                 log.warning("Failed to connect to the database.")
                 raise reason;
 
-            log.debug("Successfully connected")
+        # Make sure we have a cursor.
 
-            this.dsn = dsn
-            this.db = db
-            this.db_gen += 1
+        if self.ccursor is None or self.ccursor.closed():
+            self.ccursor = self.db.cursor()
 
+        return self.ccursor
 
-def __make_cursor():
-    """Make a cursor for this thread."""
-    with lock:
-        assert (this.db is not None)
-        if this.db.closed:
-            dbcursor_init(this.dsn, reconnect=True)
-        cursor = this.db.cursor()
-            
-        this.threadlocal.cursor = cursor
-        this.threadlocal.db_gen = this.db_gen
-    return cursor
-    
 
 
 def dbcursor():
-
-    cursor = getattr(threadlocal, "cursor", __make_cursor())
-
-    if cursor.closed:
-        log.warning("Database cursor is closed; reconnecting")
-        with lock:
-            # Connection died on current connection, time for a new one.
-            if this.threadlocal.db_gen == this.db_gen:
-                dbcursor_init(this.dsn, reconnect=True)
-        cursor = __make_cursor()
-
-    return cursor
+    """Get this thread's database cursor"""
+    return getattr(threadlocal, "cursor", DBCursor()).cursor()
 
 
 def dbcursor_query(query,
@@ -94,9 +86,12 @@ def dbcursor_query(query,
     the rowcount being < 0 and throwing an error.
     """
 
+    log.debug("QUERY: %s, %s", query, args)
+
     while tries > 0:
 
         cursor = dbcursor()
+
         try:
             cursor.execute(query, args)
         except psycopg2.OperationalError as ex:
@@ -119,4 +114,7 @@ def dbcursor_query(query,
         raise psycopg2.Error("No results returned; may be an internal problem")
     if onerow and rows != 1:
         raise psycopg2.Error("Expected one row; got %d" % cursor)
+
+    log.debug("QUERY returned %s rows", rows)
+
     return cursor
