@@ -25,6 +25,26 @@ case "$1" in
             . /usr/share/dbconfig-common/dpkg/postinst.pgsql
             dbc_go pscheduler-database $@
         fi
+
+        # update database passwords
+        if [ -r /etc/dbconfig-common/pscheduler-database.conf ]; then
+            (
+                . /etc/dbconfig-common/pscheduler-database.conf
+
+                echo "host=127.0.0.1 dbname=$dbc_dbname user=$dbc_dbuser password=$dbc_dbpass" \
+                    > /etc/pscheduler/database/database-dsn
+                echo "$dbc_dbpass" > /etc/pscheduler/database/database-password
+                echo "*:*:$dbc_dbname:$dbc_dbuser:$dbc_dbpass" > /etc/pscheduler/database/pgpassfile
+
+                chmod 600 /etc/pscheduler/database/database-dsn \
+                          /etc/pscheduler/database/database-password \
+                          /etc/pscheduler/database/pgpassfile
+                chown pscheduler:root /etc/pscheduler/database/database-dsn \
+                                      /etc/pscheduler/database/database-password \
+                                      /etc/pscheduler/database/pgpassfile
+            )
+        fi
+
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
