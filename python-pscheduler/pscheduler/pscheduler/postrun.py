@@ -81,16 +81,35 @@ def run_post(
     # run the task that overlap with the range we want.
     #
 
-    # TODO: Get lead's list from the database.
-
     range_set = []
+
+    log and log.debug("%s URLs in this task", len(task_urls))
 
     for task_url in task_urls:
 
         runtime_url = task_url + '/runtimes'
-        status, json_ranges = pscheduler.url_get( runtime_url,
-                                                  params=range_params,
-                                                  throw = False )
+
+        log.debug("Fetching %s", task_url)
+
+
+        # TODO: These two blocks of code are supposed to be
+        # equivalent, but the call to url_get() causes this call to
+        # just return for no apparent reason.  The version that uses
+        # requests is added below as a temporary fix until fixed.  See
+        # issue #116
+
+        #status, json_ranges = pscheduler.url_get(runtime_url,
+        #                                         params=range_params,
+        #                                         Throw=False)
+
+        r = requests.get(runtime_url, params=range_params, verify=False)
+        status = r.status_code
+        json_ranges = pscheduler.json_load(r.text)
+
+
+
+        # TODO: In either of these cases, should probably delete any
+        # runs that were scheduled before returning.
 
         if status != 200:
             return (None, None, None,
@@ -101,10 +120,15 @@ def run_post(
             return (None, None, None,
                     "Host %s cannot schedule this run: %s %d: %s"
                     % (participant, runtime_url, status, json_ranges))
+
+        log and log.debug("Scheduled against %s", task_url)
         
         range_set.append( [ (pscheduler.iso8601_as_datetime(item['lower']),
                              pscheduler.iso8601_as_datetime(item['upper']))
                             for item in json_ranges ] )
+
+
+    log and log.debug("Done fetching time ranges")
 
     #
     # Find the range that fits
