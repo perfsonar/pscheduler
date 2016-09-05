@@ -18,7 +18,7 @@ def task_exists(task):
     """Determine if a task exists by its UUID"""
     try:
         cursor = dbcursor_query("SELECT EXISTS (SELECT * FROM task WHERE uuid = %s)",
-                                [task], onereow=True)
+                                [task], onerow=True)
     except Exception as ex:
         return error(str(ex))
 
@@ -229,6 +229,7 @@ def tasks():
         #
 
         task_data = pscheduler.json_dump(task)
+        log.debug("Task data: %s", task_data)
 
         tasks_posted = []
 
@@ -400,6 +401,9 @@ def tasks_uuid(uuid):
 
     elif request.method == 'POST':
 
+        log.debug("Posting to %s", uuid)
+        log.debug("Data is %s", request.data)
+
         # TODO: This is only for participant 1+
         # TODO: This should probably a PUT and not a POST.
 
@@ -407,12 +411,13 @@ def tasks_uuid(uuid):
             json_in = pscheduler.json_load(request.data)
         except ValueError:
             return bad_request("Invalid JSON")
+        log.debug("JSON is %s", json_in)
 
         try:
             participant = arg_cardinal('participant')
         except ValueError as ex:
             return bad_request("Invalid participant: " + str(ex))
-
+        log.debug("Participant %d", participant)
 
         # Evaluate the task against the limits and reject the request
         # if it doesn't pass.
@@ -435,9 +440,12 @@ def tasks_uuid(uuid):
 
         if not passed:
             return forbidden("Task forbidden by limits:\n" + diags)
+        log.debug("Limits passed")
 
         # TODO: Pluck UUID from URI
         uuid = url_last_in_path(request.url)
+
+        log.debug("Posting task %s", uuid)
 
         try:
             cursor = dbcursor_query(
@@ -448,6 +456,7 @@ def tasks_uuid(uuid):
         if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
         # TODO: Assert that rowcount is 1
+        log.debug("All done: %s", base_url())
         return ok(base_url())
 
     elif request.method == 'DELETE':

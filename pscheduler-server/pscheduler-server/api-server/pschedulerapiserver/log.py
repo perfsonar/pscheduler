@@ -10,11 +10,14 @@ from pschedulerapiserver import application
 from flask import request
 
 from .args import *
-from .response import *
 
 # This is thread-safe, so no need to do anything special with it.
 log = pscheduler.Log(name='pscheduler-api',
                      signals=False)
+
+
+# Don't use anything out of .response in this because it uses the
+# logger.
 
 @application.route("/debug", methods=['PUT'])
 def debug():
@@ -24,11 +27,11 @@ def debug():
         try:
             new_state = arg_boolean('state')
         except ValueError:
-            return error("Invalid state")
+            return Response("Invalid state", status=500)
 
         # TODO: Allow only from localhost
         if not request.remote_addr in ['127.0.0.1', '::1']:
-            return forbidden()
+            return Response("Not allowed", status=403)
 
         log.set_debug(new_state)
-        return ok()
+        return Response(status=200)
