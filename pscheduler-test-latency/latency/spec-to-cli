@@ -12,7 +12,7 @@ if type(spec) != dict:
     pscheduler.fail("Invalid JSON for this operation")
 
 #validate spec
-valid, message = spec_is_valid(json)
+valid, message = spec_is_valid(spec)
 if not valid:
     pscheduler.fail(message)
 

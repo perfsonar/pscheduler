@@ -10,6 +10,26 @@
 #     software.internet2.edu
 #
 
+RELEASE_FILE="/etc/redhat-release"
+
+#
+# Determine the RHEL version without depending on lsb_release.
+#
+
+if [ ! -f "${RELEASE_FILE}" ]
+then
+    echo "This doesn't look like RHEL or CentOS." 1>&2
+    exit 1
+fi
+
+REDHAT_RELEASE=$(sed -e 's/^.* \([0-9.]\+\) .*$/\1/' "${RELEASE_FILE}")
+REDHAT_RELEASE_MAJOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 }')
+REDHAT_RELEASE_MAJOR_MINOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 "." $2 }')
+
+#
+# Warning about stability
+#
+
 cat <<EOF
 WARNING:
 
@@ -22,10 +42,9 @@ EOF
 read DUMMY
 
 
-# Determine the RHEL version without depending on lsb_release.
-REDHAT_RELEASE=$(sed -e 's/^.* \([0-9.]\+\) .*$/\1/' /etc/redhat-release)
-REDHAT_RELEASE_MAJOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 }')
-REDHAT_RELEASE_MAJOR_MINOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 "." $2 }')
+#
+# Install Repos
+#
 
 # PostgreSQL
 yum -y install "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-${REDHAT_RELEASE_MAJOR_MINOR}-$(uname -m)/pgdg-redhat95-9.5-2.noarch.rpm"
@@ -37,7 +56,7 @@ yum -y install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${REDH
 rpm --import http://software.internet2.edu/rpms/RPM-GPG-KEY-Internet2
 # TODO: Need to add the switch statement that pulls the right one here.
 
-# I2 Nightly 
+# Internet2 Nightly 
 cat > /etc/yum.repos.d/internet2-nightly.repo <<EOF
 # Name: Internet2 Nightly RPM Repository
 # URL: http://software.internet2.edu
@@ -49,5 +68,18 @@ protect = 0
 gpgcheck = 0
 EOF
 
-# pScheduler
+
+#
+# Install pScheduler
+#
+
 yum -y install httpd-wsgi-socket pscheduler-bundle-full
+
+
+#
+# Restart the ticker to force a warm boot.
+#
+
+# TODO: When there's an internal command to do this, use it instead.
+
+service pscheduler-ticker restart

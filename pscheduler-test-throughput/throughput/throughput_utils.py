@@ -11,15 +11,23 @@ def format_si(number, places=2):
 
     return ("{0:.%sf}" % places).format(number)    
 
-def format_stream_output(stream_list):
+def format_stream_output(stream_list, udp=False, summary=False):
     output = ""
 
-    output += "%s%s%s%s\n" % ("{0:<15}".format("Interval"),
-                              "{0:<15}".format("Throughput"),
-                              "{0:<15}".format("Retransmits"),
-                              "{0:<15}".format("Sent/Lost")
-                              )
-    
+    output += "%s%s" % ("{0:<15}".format("Interval"),
+                        "{0:<15}".format("Throughput")
+                        )
+
+    if udp:
+        output += "{0:<15}".format("Lost / Sent")
+    else:
+        output += "{0:<15}".format("Retransmits")
+
+        if not summary:
+            output += "{0:<15}".format("Current Window")
+                            
+    output += "\n"
+
     for block in stream_list:
         
         formatted_throughput = format_si(block["throughput-bits"])
@@ -33,22 +41,51 @@ def format_stream_output(stream_list):
         interval   = "{0:<15}".format("%s - %s" % (start, end))
         throughput = "{0:<15}".format(formatted_throughput)
 
-        sent    = block.get("sent")
-        lost    = block.get("lost")
         jitter  = block.get("jitter")
-        retrans = block.get('retransmits')
 
-        if sent == None:
-            loss = "{0:<15}".format("Not Reported")
-        else:
-            loss = "{0:<15}".format("%s / %s" % (sent, lost))
+        output += "%s%s" % (interval, throughput)
 
-        if retrans == None:
-            retransmits = "{0:<15}".format("Not Reported")
+        if udp:
+            sent    = block.get("sent")
+            lost    = block.get("lost")
+
+            if sent == None:
+                loss = "{0:<15}".format("Not Reported")
+            else:
+                if lost == None:
+                    loss = "{0:<15}".format("%s sent" % sent)
+                else:
+                    loss = "{0:<15}".format("%s / %s" % (lost, sent))
+
+
+            output += loss
+
         else:
-            retransmits = "{0:<15}".format(retrans)
+            retrans = block.get('retransmits')
+
+            if retrans == None:
+                retransmits = "{0:<15}".format("Not Reported")
+            else:
+                retransmits = "{0:<15}".format(retrans)
     
-        output += "%s%s%s%s" % (interval, throughput, retransmits, loss)
+            output += retransmits
+
+
+            if not summary:
+                window = block.get('tcp-window-size')
+
+                if window == None:
+                    tcp_window = "{0:<15}".format("Not Reported")
+                else:
+                    window = format_si(window) + "Bytes"
+                    tcp_window = "{0:<15}".format(window)
+
+                output += tcp_window
+
+
+        jitter = block.get('jitter')
+        if jitter != None:
+            output += "{0:<20}".format("Jitter: %s ms" % jitter)
 
         if block.get('omitted'):
             output += " (omitted)"

@@ -13,7 +13,7 @@ def spec_is_valid(input_json):
         "additionalProperties": False,
         "local": {
             },
-        "required": ["source", "destination"],
+        "required": ["schema", "destination"],
         "properties": {           
             "schema":      { "$ref": "#/pScheduler/Cardinal" },
             "source":      { "$ref": "#/pScheduler/Host" },
@@ -72,6 +72,10 @@ def result_is_valid(input_json):
                     "lost": {
                         "description": "Summarized view of the overall lost packets",
                         "type": ["integer", "null"]
+                        },
+                    "jitter": {
+                        "description": "Jitter reported",
+                        "type": ["number", "null"]
                         },
                     "stream-id": {
                         "description": "The ID of the stream, most relevant when running parallel streams",

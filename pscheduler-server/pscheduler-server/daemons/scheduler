@@ -1,0 +1,187 @@
+#!/usr/bin/python
+#
+# pScheduler Run Scheduler
+#
+
+import daemon
+import errno
+import optparse
+import pscheduler
+import psycopg2
+import psycopg2.extensions
+import select
+import socket
+import sys
+import time
+import traceback
+
+# Gargle the arguments
+
+opt_parser = optparse.OptionParser()
+
+# Daemon-related options
+
+opt_parser.add_option("--daemon",
+                      help="Daemonize",
+                      action="store_true",
+                      dest="daemon", default=False)
+opt_parser.add_option("--pid-file",
+                      help="Location of PID file",
+                      action="store", type="string", dest="pidfile",
+                      default=None)
+
+# Program options
+
+# TODO: Do we want pscheduler as the default here?
+opt_parser.add_option("-d", "--dsn",
+                      help="Database connection string",
+                      action="store", type="string", dest="dsn",
+                      default="dbname=pscheduler")
+opt_parser.add_option("-r", "--refresh",
+                      help="Forced refresh interval (ISO8601)",
+                      action="store", type="string", dest="refresh",
+                      default="PT1M")
+opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
+opt_parser.add_option("--debug", action="store_true", dest="debug")
+
+(options, args) = opt_parser.parse_args()
+
+refresh = pscheduler.iso8601_as_timedelta(options.refresh)
+if refresh is None:
+    opt_parser.error('Invalid refresh interval "' + options.refresh + '"')
+if pscheduler.timedelta_as_seconds(refresh) == 0:
+    opt_parser.error("Refresh interval must be calculable as seconds.")
+
+log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
+
+dsn = options.dsn
+
+# Minimum amount of time from now when the first run of a task can be
+# scheduled.  This prevents "start now" tasks from being scheduled for
+# a time before the participants can prepare for them.
+# TODO: Potential race condition?  Yep.
+first_run_offset = pscheduler.iso8601_as_timedelta('PT10S')
+
+
+
+
+#
+# Main Program
+#
+
+def main_program():
+
+    # TODO: All DB transactions need to be error checked
+
+    pg = pscheduler.pg_connection(dsn)
+    cursor = pg.cursor()
+    cursor.execute("LISTEN task_change")
+
+    # This is for use inside the to-schedule loop for doing updates
+    # after failures.
+    fail_cursor = pg.cursor()
+
+    while True:
+
+        wait = True
+
+        cursor.execute("""
+            SELECT uuid, runs, trynext, FALSE
+            FROM schedule_runs_to_schedule
+            """)
+
+        # Check if any notifications arrived while this query executed.
+        if pg.notifies:
+            wait = False
+            del pg.notifies[:]
+            log.debug("Received notifications.")
+
+        # Any rows returned means we query again.
+        if cursor.rowcount > 0:
+            log.debug("Got %d rows", cursor.rowcount)
+            wait = False
+
+
+        for row in cursor:
+
+            uuid, runs, trynext, background = row
+
+            log.debug("%sTASK %s, %d runs, try %s", 
+                      "BACKGROUND " if background else "",
+                      uuid, runs, trynext)
+
+
+            url = pscheduler.api_url(path='/tasks/' + uuid)
+
+            # For the first run only, push the start time out.
+            # See comment above near the declaration of
+            # first_run_offset.
+
+            if runs == 0:
+                later_start = pscheduler.time_now() + first_run_offset
+                if trynext < later_start:
+                    trynext = later_start                   
+
+            log.debug("Trying to schedule %s for %s at %s",
+                      uuid, trynext, url)
+            log.debug("URL is %s", url)
+            run_uri, start_time, end_time, error = \
+                pscheduler.run_post(url, trynext, log)
+
+            if error is not None:
+                log.debug("Unable: %s", error)
+
+                # Post a non-starting run to avoid having the
+                # scheduler continue to hammer away at it.
+
+                # TODO: This would be nicer as an API call inside the
+                # database.
+                try:
+                    fail_cursor.execute("""
+                        INSERT INTO run (uuid, task, times, state, errors)
+                        SELECT
+                            NULL,
+                            id,
+                            tstzrange(%s, %s, '[)'),
+                            run_state_nonstart(),
+                            %s
+                        FROM task WHERE task.uuid = %s
+                        """, [start_time, start_time, error, uuid])
+                except Exception as ex:
+                    log.exception("Failed to add non-starter after failed post")
+            else:
+                log.debug("Scheduled for %s - %s at %s",
+                          start_time, end_time, run_uri)
+
+        # Wait for something to happen.
+          
+        if wait:
+
+            log.debug("Waiting %s for notification", refresh)
+
+            try:
+                if select.select([pg],[],[],
+                                 pscheduler.timedelta_as_seconds(refresh)) \
+                                 != ([],[],[]):
+                    # Notified
+                    pg.poll()
+                    log.debug("Notified: %s", pg.notifies)
+                    del pg.notifies[:]
+
+            except select.error as ex:
+                err_no, message = ex
+                if err_no != errno.EINTR:
+                    log.exception()
+                    raise ex
+                else:
+                    log.debug("Interrupted")
+
+
+
+if options.daemon:
+    pidfile = pscheduler.PidFile(options.pidfile)
+    with daemon.DaemonContext(pidfile=pidfile):
+        pscheduler.safe_run(lambda: main_program())
+else:
+    pscheduler.safe_run(lambda: main_program())
+

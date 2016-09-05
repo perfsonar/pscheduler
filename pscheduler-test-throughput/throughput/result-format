@@ -29,11 +29,19 @@ if not valid:
 
 logger.debug("jsonschema passed for test result")
 
-json = input["result"]
+json      = input["result"]
+test_spec = input["spec"]
+
+# we'll format the output slightly different depending on UDP vs TCP
+is_udp = False
+if test_spec.get("udp"):
+   is_udp = True
 
 output = "Throughput Results\n"
 
 intervals = json["intervals"]
+# make sure intervals are sorted first by whether they were omitted or not, and 
+# then by their start times
 intervals.sort(key=lambda x: (not x["summary"].get("omitted"), x["summary"]["start"]))
 
 # We're going to convert from interval view to stream view to keep
@@ -60,7 +68,7 @@ stream_ids.sort()
 # of pointless
 for stream_id in stream_ids:
    output += "* Stream ID %s\n" % stream_id
-   output += throughput_utils.format_stream_output(stream_blocks[stream_id])   
+   output += throughput_utils.format_stream_output(stream_blocks[stream_id], udp=is_udp)   
    output += "\n"
 
 summary = json["summary"]
@@ -74,11 +82,11 @@ summary_streams.sort(key=lambda x: x["stream-id"])
 if len(summary_streams) > 1:
    for stream in summary_streams:
       output += "* Stream ID %s Summary\n" % stream['stream-id']
-      output += throughput_utils.format_stream_output([stream])
+      output += throughput_utils.format_stream_output([stream], udp=is_udp, summary=True)
       output += "\n"
 
 output += "Summary\n"
-output += throughput_utils.format_stream_output([summary_summary])
+output += throughput_utils.format_stream_output([summary_summary], udp=is_udp, summary=True)
 
 output += "\n"
 

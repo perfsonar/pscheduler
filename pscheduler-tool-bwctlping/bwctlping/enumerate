@@ -1,0 +1,15 @@
+#!/bin/sed -e 1d
+{
+    "name": "bwctlping",
+    "description": "Run the BWCTL ping command for measuring network paths. Only for backward compatibility.",
+    "version": "0.0",
+    "tests": [ "rtt" ],
+
+    "preference": 10,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "info@perfsonar.net",
+	"href": "http://www.perfsonar.net"
+    }
+}

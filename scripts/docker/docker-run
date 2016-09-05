@@ -6,6 +6,7 @@
 # Start all services needed for pScheduler
 service rsyslog start
 service postgresql-9.5 start
+service owamp-server start
 
 # Wait for Pg to come all the way up
 

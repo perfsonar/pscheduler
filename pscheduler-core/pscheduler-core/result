@@ -1,0 +1,186 @@
+#!/usr/bin/python
+#
+# Fetch the result of a run by its URL
+#
+
+import datetime
+import optparse
+import os
+import pipes
+import pscheduler
+import sys
+import textwrap
+
+#
+# Gargle the arguments
+#
+
+
+class VerbatimParser(optparse.OptionParser):
+    def format_epilog(self, formatter):
+        return self.epilog
+
+opt_parser = VerbatimParser(
+    usage="Usage: %prog [options] run-url",
+    epilog=
+"""
+Examples:
+
+  result https://ps.foo.org/pscheduler/task/12345...
+      Fetch a result of the specified run as plain text
+
+  result --format text https://ps.foo.org/pscheduler/task/12345...
+      Same as above, with explicit format
+
+  result --format html https://ps.foo.org/pscheduler/task/12345...
+      Fetch a result of the specified run and format as HTML
+
+  result --format json html https://ps.foo.org/pscheduler/task/12345...
+      Fetch a result of the specified run and format as JSON
+"""
+    )
+opt_parser.disable_interspersed_args()
+
+opt_parser.add_option("--format",
+                      help="Format for output: text (the default), html or json",
+                      action="store", type="string",
+		      default="text",
+                      dest="format")
+
+opt_parser.add_option("--quiet",
+                      help="For text output, don't display anything but the result",
+                      action="store_true",
+		      default=False,
+                      dest="quiet")
+
+
+(options, remaining_args) = opt_parser.parse_args()
+
+if len(remaining_args) < 1:
+    opt_parser.print_usage()
+    pscheduler.fail()
+
+formats = {
+    'html': 'text/html',
+    'json': 'application/json',
+    'text': 'text/plain',
+    # Not "officially" supported, but here for completeness
+    'text/html': 'text/html',
+    'application/json': 'application/json',
+    'text/plain': 'text/plain',
+    }
+
+try:
+    out_format = formats[options.format]
+except KeyError:
+    pscheduler.fail("Invalid --format; must be text, html, or json")
+
+
+run_url = remaining_args[0]
+
+
+#
+# A utility
+#
+
+def prefixed_wrap(prefix, text, width=80, indent=0):
+    wrapped = textwrap.wrap(text, width-len(prefix))
+    leader = " " * (len(prefix) + indent)
+    return "%s%s%s%s" % (prefix,
+                      wrapped.pop(0), "\n",
+                      "\n".join([ "%s%s" % (leader, line)
+                                  for line in wrapped])
+                      )
+
+
+#
+# Main Program
+#
+
+# Fetch the run so we can pluck out the result URL.
+
+try:
+    status, run_json = pscheduler.url_get(run_url, json=True)
+except Exception as ex:
+    pscheduler.fail(str(ex))
+
+# Deal with the various reasons why the run might not have happened
+
+if "state" not in run_json:
+    pscheduler.fail("Data returned from the server doesn't look like a run result.")
+
+if run_json["state"] == "nonstart":
+    try:
+        reason = run_json["errors"] 
+    except KeyError:
+        reason = "No reason provided."
+    pscheduler.fail("Run never started: %s" % reason)
+
+if run_json["state"] in ["pending", "on-deck", "running", "cleanup"]:
+    pscheduler.fail("Run has not completed.")
+
+if run_json["state"] in ["overdue", "missed", "trumped"]:
+    pscheduler.fail("Run did not complete: %s" % run_json["state-display"])
+
+if run_json["state"] == "failed":
+    # TODO: Find reason?
+    pscheduler.fail("Run failed")
+
+
+try:
+    result_url = run_json["result-href"]
+except KeyError:
+    pscheduler.fail("No result URL returned by the server.")
+
+
+try:
+    task_url = run_json["task-href"]
+except KeyError:
+    pscheduler.fail("No task URL returned by the server.")
+
+
+
+try:
+    status, result = pscheduler.url_get(
+        result_url,
+        params={ "format": out_format },
+        json=False)
+
+    status, task_cli = pscheduler.url_get(
+        "%s/cli" % task_url,
+        json=True)
+
+except Exception as ex:
+    pscheduler.fail("Problem fetching results: %s" % str(ex))
+
+if not options.quiet and out_format == "text/plain":
+
+    parts = run_json["participants"]
+    if len(parts) == 1:
+        partlist = parts[0]
+    else:
+        last = parts.pop()
+        partlist = "%s and %s" % (
+            ", ".join(run_json["participants"]),
+            last)
+        
+
+    print "%s on %s:" % (run_json["start-time"], partlist)
+    print
+    if sys.stdout.isatty():
+        # TODO: This only works on Unix.
+        rows, columns = [ int(x) for x in
+                          os.popen('stty size', 'r').read().split() ]
+    else:
+        columns = 80
+    options = [ pipes.quote(arg) for arg in task_cli ]
+    print prefixed_wrap("", " ".join(options), width=columns, indent=2),
+
+
+    print
+
+
+# The strip gets rid of any pesky newlines
+print result.rstrip()
+
+pscheduler.succeed()

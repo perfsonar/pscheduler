@@ -18,6 +18,7 @@ M4PROGRAMS=\
 
 COMMANDS=\
 	diags \
+	result \
 	task \
 	watch
 

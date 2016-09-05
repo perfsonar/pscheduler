@@ -8,7 +8,7 @@ exec cat << EOF
     "version": "0.0",
     "maintainer": {
         "name": "perfSONAR Development Team",
-	"email": "perfsonar-developer@perfsonar.net",
+	"email": "perfsonar-developer@internet2.edu",
 	"href": "http://www.perfsonar.net"
     },
     "scheduling-class": "exclusive"

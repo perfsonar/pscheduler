@@ -1,0 +1,327 @@
+#!/usr/bin/python
+#
+# Run a test.  Just the test spec is provided on stdin.
+#
+
+
+import datetime
+import icmperror
+import ipaddr
+import pscheduler
+import re
+
+log = pscheduler.Log(prefix='ping', quiet=True)
+
+input = pscheduler.json_load(exit_on_error=True);
+#input = {"test": {"type": "rtt", "spec": {"dest": "10.0.1.17", "schema": 1}}, "participant-data": [{}], "schedule": {"duration": "PT1M11S", "start": "2016-09-02T14:55:35-04:00"}, "participant": 0, "schema": 1}
+
+# TODO: Validate the input
+
+participant = input['participant']
+
+if participant != 0:
+    pscheduler.fail("Invalid participant.")
+
+spec = input['test']['spec']
+
+
+run_timeout = datetime.timedelta()
+
+
+#
+# Figure out how to invoke the program
+#
+argv = [
+    'bwping',
+    '-T', 'ping',
+    ]
+
+# Count
+
+log.debug("SPEC: %s", spec)
+try:
+    count = spec['count']
+except KeyError:
+    count = 5
+
+argv.append('-N')
+argv.append(str(count))
+
+# Interval
+try:
+    interval = pscheduler.iso8601_as_timedelta(spec['interval'])
+except KeyError:
+    interval=datetime.timedelta(seconds=1)
+
+
+argv.append('-i')
+argv.append(str(pscheduler.timedelta_as_seconds(interval)))
+run_timeout += ( count * interval )
+
+
+# TOS
+
+try:
+    tos = spec['tos']
+    argv.append('-S')
+    argv.append(str(tos))
+except KeyError:
+    pass  # Whatever.
+
+
+# Packet Length
+    
+try:
+    length = spec['length']
+    argv.append('-l')
+    argv.append(str(length))
+except KeyError:
+    pass
+
+
+# Time to Live
+    
+try:
+    ttl = spec['ttl']
+    argv.append('-t')
+    argv.append(str(ttl))
+except KeyError:
+    pass
+
+
+# Source
+try:
+    source = spec['source']
+    argv.append('-s')
+    argv.append(source)
+except KeyError:
+    pass  # Don't care.
+    
+# Destination (must be last since it's an argument, not a switch)).
+
+dest = spec['dest']
+argv.append('-c')
+argv.append(str(dest))
+
+#
+# Run the test
+#
+argv_string =  ' '.join(argv)
+log.debug("Running %s", argv_string)
+
+# Add some run slop
+run_timeout += datetime.timedelta(seconds=60)
+log.debug("Timeout is %s", run_timeout)
+
+run_timeout_secs = pscheduler.timedelta_as_seconds(run_timeout)
+
+status, stdout, stderr \
+    = pscheduler.run_program(argv, timeout = run_timeout_secs)
+
+log.debug("Program exited %d: %s",
+          status, stdout if status == 0 else stderr)
+
+# Ping exits 1 if the host isn't up, which for us is still a success.
+if not status in [0, 1]:
+    pscheduler.succeed_json( {
+            'succeeded': False,
+            'diags': argv_string,
+            'error': stderr,
+            'result': None
+            } )
+
+
+#
+# Dissect the results
+#
+
+err_lines = stderr.split("\n")
+for err_line in err_lines:
+    if err_line.strip().startswith("bwctl: Unable to initiate peer handshake"):
+        pscheduler.succeed_json({"succeeded": False, "error": err_line.strip()})
+    elif err_line.strip().startswith("bwctl: Unable to connect"):
+        pscheduler.succeed_json({"succeeded": False, "error": err_line.strip()})
+        
+final_result = {
+    'schema': 1,
+    'succeeded': True,
+    'diags': argv_string + '\n\n' + stdout,
+    'error': None
+}
+
+result = {
+    'schema': 1
+    }
+
+
+roundtrips = []
+
+
+
+#
+# Matchers for output lines we care about
+#
+
+packet_returned = re.compile("""^\
+([0-9]+) bytes\
+\s+from (.*):\
+\s+icmp_seq=([0-9]+)\
+\s+ttl=([0-9]+)\
+\s+time=([0-9.]+) ms\
+$""")
+
+# Error:   From 5.6.7.8 icmp_seq=7 Destination Net Unreachable
+
+error_returned = re.compile("""^\
+From\
+\s+([^\s]+)\
+\s+icmp_seq=([0-9]+)\
+\s+(.*)\
+$""")
+
+# Error messages known to be output by ping
+error_strings = {
+    "Destination Net Unreachable": 'net-unreachable',
+    "Destination Host Unreachable": 'host-unreachable',
+    "Destination Protocol Unreachable": 'protocol-unreachable',
+    "Destination Port Unreachable": 'port-unreachable',
+    "Source Route Failed": 'source-route-failed',
+    "Packet filtered": 'communication-administratively-prohibited',    
+    }
+
+# Same, but require regexps to match
+error_matches = [
+    ( re.compile("^Frag needed and DF set"), 'fragmentation-needed-and-df-set' )
+    ]
+
+# Times:   rtt min/avg/max/mdev = 19.631/24.191/29.874/4.262 ms
+times_returned = re.compile("""^\
+rtt min/avg/max/mdev\s*=\s*\
+([0-9.]+)\
+/([0-9.]+)\
+/([0-9.]+)\
+/([0-9.]+)\
+\s+ms\
+$""")
+
+ips = []
+
+for line in stdout.split('\n'):
+    line = line.strip()
+    log.debug("LINE: %s", line)
+
+    # Returned Packet
+
+    matches = packet_returned.match(line)
+    if matches is not None:
+        length, ip, seq, ttl, rtt = matches.groups()
+        length = int(length)
+        seq = int(seq)
+        ttl = int(ttl)
+        rtt = float(rtt)
+        if seq > count:
+            log.warning("Discarding sequence %s; greater than count %s", seq, count)
+            continue
+        #append as we may get multiple of same seq (duplicates) or seq out of order (reorders)
+        roundtrips.append({
+            'seq': seq,
+            'length': length,
+            'ip': ip,
+            'ttl': ttl,
+            'rtt': pscheduler.timedelta_as_iso8601(
+                datetime.timedelta(seconds=rtt/1000.0) )
+            })
+        log.debug("Packet returned: %s", roundtrips[-1])
+        ips.append(ip)
+        continue
+
+    # Error
+
+    matches = error_returned.match(line)
+    if matches is not None:
+        ip, seq, error = matches.groups()
+        seq = int(seq)
+        if seq > count:
+            log.warning("Discarding sequence %s; greater than count %s", seq, count)
+            continue
+
+        if error in error_strings:
+            error = error_strings[error]
+        else:
+            error_str = error
+            error = None
+            for regex, string in error_matches:
+                if regex.match(error_str):
+                    error = string
+                    break
+
+        roundtrips.append({
+            'seq': seq,
+            'ip': ip,
+            'error': error
+            })
+        log.debug("Error returned: %s", roundtrips[-1])
+        ips.append(ip)
+        continue
+    
+    # Final times
+    matches = times_returned.match(line)
+    if matches is not None:
+        min_, mean, max_, stddev = matches.groups()
+        result['min'] = pscheduler.timedelta_as_iso8601(
+            datetime.timedelta(seconds=float(min_)/1000.0) )
+        result['mean'] = pscheduler.timedelta_as_iso8601(
+            datetime.timedelta(seconds=float(mean)/1000.0) )
+        result['max'] = pscheduler.timedelta_as_iso8601(
+                datetime.timedelta(seconds=float(max_)/1000.0) )
+        result['stddev'] = pscheduler.timedelta_as_iso8601(
+            datetime.timedelta(seconds=float(stddev)/1000.0) )
+        log.debug("Got time summary")
+        # This is the last line we care about.
+        break
+
+    # Anything else we just ignore.
+
+result['roundtrips'] = roundtrips
+
+result['succeeded'] = True
+
+#calculate some stats
+packets_seen = {}
+sent = 0
+recvd = 0
+dups = 0
+reorders = 0
+prev_seq = None
+for rt in roundtrips:
+    #duplicate packet
+    if rt["seq"] in packets_seen:
+        dups += 1
+        continue
+    #increase sent
+    sent += 1
+    
+    #skip lost
+    if rt.get('error', None):
+        continue
+    #made it to other end
+    packets_seen[rt["seq"]] = True
+    recvd += 1
+    #check for reorder
+    if prev_seq is not None and rt["seq"] < prev_seq:
+        reorders += 1
+    prev_seq = rt["seq"]
+#save results
+result['sent'] = sent
+result['received'] = recvd
+result['lost'] = sent - recvd
+result['loss'] = float((sent - recvd)/float(sent))
+result['duplicates'] = dups
+result['reorders'] = reorders
+
+# Spit out the results
+
+final_result['result'] = result
+pscheduler.succeed_json( final_result )
+
+
