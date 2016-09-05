@@ -104,9 +104,6 @@ def run_post(
 
         r = requests.get(runtime_url, params=range_params, verify=False)
         status = r.status_code
-        json_ranges = pscheduler.json_load(r.text)
-
-
 
         # TODO: In either of these cases, should probably delete any
         # runs that were scheduled before returning.
@@ -115,6 +112,8 @@ def run_post(
             return (None, None, None,
                     "Error trying to schedule with %s: %s %d: %s"
                     % (participant, runtime_url, status, json_ranges))
+
+        json_ranges = pscheduler.json_load(r.text)
 
         if len(json_ranges) == 0:
             return (None, None, None,
