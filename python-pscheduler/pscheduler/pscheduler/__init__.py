@@ -25,6 +25,3 @@ from .saferun import *
 from .sinumber import *
 from .stringmatcher import *
 from .speccli import *
-
-# This needs to happen last.
-from .postrun import *
