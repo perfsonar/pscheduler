@@ -77,10 +77,6 @@ def main_program():
     cursor = pg.cursor()
     cursor.execute("LISTEN task_change")
 
-    # This is for use inside the to-schedule loop for doing updates
-    # after failures.
-    fail_cursor = pg.cursor()
-
     while True:
 
         wait = True
@@ -130,25 +126,6 @@ def main_program():
 
             if error is not None:
                 log.debug("Unable: %s", error)
-
-                # Post a non-starting run to avoid having the
-                # scheduler continue to hammer away at it.
-
-                # TODO: This would be nicer as an API call inside the
-                # database.
-                try:
-                    fail_cursor.execute("""
-                        INSERT INTO run (uuid, task, times, state, errors)
-                        SELECT
-                            NULL,
-                            id,
-                            tstzrange(%s, %s, '[)'),
-                            run_state_nonstart(),
-                            %s
-                        FROM task WHERE task.uuid = %s
-                        """, [start_time, start_time, error, uuid])
-                except Exception as ex:
-                    log.exception("Failed to add non-starter after failed post")
             else:
                 log.debug("Scheduled for %s - %s at %s",
                           start_time, end_time, run_uri)
