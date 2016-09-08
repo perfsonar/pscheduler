@@ -49,11 +49,29 @@ TEARDOWN_SQL=database-teardown.sql
 
 SQL=$(BUILD_SUPER_SQL) $(BUILD_SQL) $(TEARDOWN_SQL)
 
+INTERNALS=\
+	warmboot
+
+%: %.m4
+ifndef DATABASE
+	@echo No DATABASE specified for build
+	@false
+endif
+ifndef ROLE
+	@echo No ROLE specified for build
+	@false
+endif
+	m4 \
+	-D__DATABASE__=$(DATABASE) \
+	-D__ROLE__=$(ROLE) \
+	< $^ > $@
+TO_CLEAN += $(INTERNALS)
+
 
 default: build
 
 
-build: $(SQL)
+build: $(SQL) $(INTERNALS)
 
 
 $(BUILD_SUPER_SQL): $(SUPER)
@@ -79,9 +97,14 @@ ifndef DATADIR
 	@echo No DATADIR specified for installation
 	@false
 endif
+ifndef INTERNALSDIR
+	@echo No INTERNALSDIRDIR specified for installation
+	@false
+endif
 	mkdir -p $(DATADIR)
 	install -m 440 $(SQL) $(DATADIR)
-
+	mkdir -p $(INTERNALSDIR)
+	install -m 550 $(INTERNALS) $(INTERNALSDIR)
 
 
 clean:

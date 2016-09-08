@@ -110,6 +110,8 @@ false
 # Database
 #
 make -C database \
+     DATABASE=%{db_user} \
+     ROLE=%{db_user} \
      PGPASSFILE=$RPM_BULID_ROOT/%{pgpass_file}
 
 #
@@ -141,6 +143,7 @@ make -C daemons \
 #
 make -C database \
      DATADIR=$RPM_BUILD_ROOT/%{_pscheduler_datadir} \
+     INTERNALSDIR=$RPM_BUILD_ROOT/%{_pscheduler_internals} \
      install
 
 mkdir -p $RPM_BUILD_ROOT/%{db_config_dir}
@@ -489,6 +492,7 @@ systemctl start httpd
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
 %{_pscheduler_datadir}/*
 %attr(400,-,-)%verify(user group mode) %{db_config_dir}/*
+%{_pscheduler_internals}/*
 %{rpm_macros}
 %{profile_d}/*
 

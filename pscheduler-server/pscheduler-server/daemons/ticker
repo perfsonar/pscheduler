@@ -70,7 +70,7 @@ def main_program():
     cursor = db.cursor()
 
     log.debug("Booting")
-    cursor.execute("SELECT boot()")
+    cursor.execute("SELECT cold_boot()")
     log.debug("Booted")
 
     while True:

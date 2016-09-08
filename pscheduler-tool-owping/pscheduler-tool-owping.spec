@@ -16,7 +16,7 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-core
+Requires:	pscheduler-server
 Requires:	python-pscheduler
 Requires:	pscheduler-test-latency
 Requires:	owamp-client
@@ -47,19 +47,13 @@ make \
      CONFDIR=$RPM_BUILD_ROOT/%{_pscheduler_tool_confdir}\
      install
 
+
 %post
-if [ "$1" -eq 1 ]
-then
-  # TODO: Add firewall rules if necessary
-  true
-fi
+pscheduler internal warmboot
+
 
 %postun
-if [ "$1" -eq 0 ]
-then
-  # TODO: Add firewall rules if necessary
-  true
-fi
+pscheduler internal warmboot
 
 
 %files

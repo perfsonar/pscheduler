@@ -82,7 +82,7 @@ pscheduler-rpm
 pscheduler-account
 python-pscheduler
 pscheduler-core
-
+pscheduler-server
 
 #
 # PSCHEDULER PLUG-INS
@@ -124,9 +124,6 @@ pscheduler-archiver-esmond
 pscheduler-archiver-failer
 pscheduler-archiver-syslog
 
-
-# Servers
-pscheduler-server
 
 # Bundles
 pscheduler-bundle-full

@@ -16,7 +16,7 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-core
+Requires:	pscheduler-server
 Requires:	python-pscheduler
 Requires:	pscheduler-test-simplestream
 requires:	nc
@@ -61,6 +61,8 @@ then
     systemctl restart firewalld
 %endif
 fi
+pscheduler internal warmboot
+
 
 %postun
 if [ "$1" -eq 0 ]
@@ -75,6 +77,14 @@ then
     systemctl restart firewalld
 %endif
 fi
+pscheduler internal warmboot
+
+
+
+
+
+
+
 
 
 %files

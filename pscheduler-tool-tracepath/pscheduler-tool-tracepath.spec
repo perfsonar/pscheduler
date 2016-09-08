@@ -16,7 +16,7 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-core
+Requires:	pscheduler-server
 Requires:	python-pscheduler
 Requires:	pscheduler-test-trace
 Requires:	python-icmperror
@@ -41,12 +41,12 @@ make \
      DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_tool_doc} \
      install
 
+
 %post
-# TODO: Insert iptables rules to allow traceroute out?  Tracepath
-# sweeps a range of UDP ports.
+pscheduler internal warmboot
 
 %postun
-# TODO: Delete iptables rules to allow traceroute out?
+pscheduler internal warmboot
 
 
 %files

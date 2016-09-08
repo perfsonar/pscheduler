@@ -16,7 +16,7 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-core
+Requires:	pscheduler-server
 Requires:	python-pscheduler
 Requires:	pscheduler-test-throughput
 Requires:	bwctl-client
@@ -64,8 +64,9 @@ then
     firewall-cmd -q --add-port=5001/udp --permanent
     systemctl restart firewalld
 %endif
-
 fi
+pscheduler internal warmboot
+
 
 %postun
 if [ "$1" -eq 0 ]
@@ -81,6 +82,7 @@ then
     systemctl restart firewalld
 %endif
 fi
+pscheduler internal warmboot
 
 
 %files

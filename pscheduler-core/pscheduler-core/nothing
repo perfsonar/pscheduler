@@ -1,0 +1,10 @@
+#!/bin/sh
+#
+# Do nothing useful.
+#
+
+echo "Doing nothing (stdout)"
+echo "Doing nothing (stderr)" 1>&2
+
+exit 0
+
