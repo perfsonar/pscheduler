@@ -53,11 +53,11 @@ then
     # it doesn't have to be evaluated when processing traffic that
     # needs low latency.
     iptables -I INPUT \
-        -p tcp -m state --state NEW -m tcp --dport 10000:10100 -j ACCEPT
+        -p tcp -m state --state NEW -m tcp --dport 10000:10010 -j ACCEPT
     service iptables save
 %endif
 %if 0%{?el7}
-    firewall-cmd -q --add-port=10000-10100/tcp --permanent
+    firewall-cmd -q --add-port=10000-10010/tcp --permanent
     systemctl restart firewalld
 %endif
 fi
@@ -67,11 +67,11 @@ if [ "$1" -eq 0 ]
 then
 %if 0%{?el6}
     iptables -D INPUT \
-        -p tcp -m state --state NEW -m tcp --dport 10000:10100 -j ACCEPT
+        -p tcp -m state --state NEW -m tcp --dport 10000:10010 -j ACCEPT
     service iptables save
 %endif
 %if 0%{?el7}
-    firewall-cmd -q --remove-port=10000-10100/tcp --permanent
+    firewall-cmd -q --remove-port=10000-10010/tcp --permanent
     systemctl restart firewalld
 %endif
 fi
