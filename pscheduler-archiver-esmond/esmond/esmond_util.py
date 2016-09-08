@@ -307,9 +307,12 @@ class EsmondBaseRecord:
             data_field_map = self.get_data_field_map()
             for field in data_field_map:
                 if field in test_result:
-                    data_point['val'].append({ 'event-type': data_field_map[field], 'val': test_result[field]})
+                    if isinstance(test_result[field], dict) and not test_result[field]:
+                        #esmond doesn't like empty dicts so skip
+                        pass
+                    else:
+                        data_point['val'].append({ 'event-type': data_field_map[field], 'val': test_result[field]})
             self.add_additional_data(data_point=data_point, test_spec=test_spec, test_result=test_result)
-            
         else:
             #run failed, record the results
             msg = ""
