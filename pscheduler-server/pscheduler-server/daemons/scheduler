@@ -167,8 +167,8 @@ def run_post(
 
         if status != 200:
             return (None, None, None,
-                    "Error trying to schedule with %s: %s %d: %s"
-                    % (participant, runtime_url, status, json_ranges))
+                    "Error trying to schedule with %s: %s %d"
+                    % (participant, runtime_url, status))
 
         json_ranges = pscheduler.json_load(r.text)
 
