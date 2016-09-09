@@ -150,32 +150,40 @@ try:
         "%s/cli" % task_url,
         json=True)
 
+    status, task_json = pscheduler.url_get(task_url, json=True)
+
 except Exception as ex:
     pscheduler.fail("Problem fetching results: %s" % str(ex))
 
 if not options.quiet and out_format == "text/plain":
 
-    parts = run_json["participants"]
-    if len(parts) == 1:
-        partlist = parts[0]
-    else:
-        last = parts.pop()
-        partlist = "%s and %s" % (
-            ", ".join(run_json["participants"]),
-            last)
-        
-
-    print "%s on %s:" % (run_json["start-time"], partlist)
-    print
     if sys.stdout.isatty():
         # TODO: This only works on Unix.
         rows, columns = [ int(x) for x in
                           os.popen('stty size', 'r').read().split() ]
+        print
     else:
         columns = 80
-    options = [ pipes.quote(arg) for arg in task_cli ]
-    print prefixed_wrap("", " ".join(options), width=columns, indent=2),
 
+    firstline = [ run_json["start-time"], "on" ]
+
+    parts = run_json["participants"]
+    if len(parts) == 1:
+        firstline.append(parts[0])
+    else:
+        last = parts.pop()
+        if len(parts) == 1:
+            firstline.append(parts[0])
+        else:
+            firstline.extend([ "%s," % part for part in parts ])
+        firstline.append("and")
+        firstline.append(last)
+
+    firstline.append("with")
+    firstline.append(task_json["tool"] + ":")
+    print prefixed_wrap("", " ".join(firstline), width=columns, indent=2)
+
+    print prefixed_wrap("", " ".join([ pipes.quote(arg) for arg in task_cli ]), width=columns, indent=2),
 
     print
 
