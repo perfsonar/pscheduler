@@ -308,6 +308,7 @@ class RunWorker:
 
         tool_input = pscheduler.json_dump({
             'schema': 1,
+            'task-uuid': task_uuid,
             'schedule': {
                 'start': pscheduler.datetime_as_iso8601(start),
                 'duration': pscheduler.timedelta_as_iso8601(end - start)
