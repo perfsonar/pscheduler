@@ -36,6 +36,8 @@ override_dh_auto_build:
 		VAR=/var 
 
 	make -C database \
+		DATABASE=pscheduler \
+		ROLE=pscheduler \
 		PGPASSFILE=$(ROOT)/etc/pscheduler/database/pgpassfile
 
 override_dh_auto_install:
@@ -44,6 +46,12 @@ override_dh_auto_install:
 		DAEMONDIR=$(ROOT)/usr/lib/pscheduler/daemons \
 		COMMANDDIR=$(ROOT)/usr/lib/pscheduler/commands \
 		install
+
+	make -C database \
+		DATADIR=$(ROOT)/usr/share/pscheduler \
+		INTERNALSDIR=$(ROOT)/usr/lib/pscheduler/internals \
+		install
+	rm -rf $(ROOT)/usr/share/pscheduler/
 
 	make -C api-server \
 		USER_NAME=pscheduler \
