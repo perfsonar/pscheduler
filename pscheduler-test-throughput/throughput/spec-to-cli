@@ -12,10 +12,11 @@ if type(spec) != dict:
 result = []
 
 try:
+    source = spec['source']
     result.append('--source')
-    result.append(spec['source'])
+    result.append(source)
 except KeyError:
-    pscheduler.fail("Missing source")
+    pass  # Don't care if it's not there.
     
 try:
     result.append('--destination')
