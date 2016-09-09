@@ -1,0 +1,14 @@
+[Unit]
+Description=pScheduler server - archiver
+
+[Service]
+Type=simple
+User=pscheduler
+Group=pscheduler
+PermissionsStartOnly=true
+ExecStart=/usr/lib/pscheduler/daemons/archiver --dsn @/etc/pscheduler/database/database-dsn
+ExecStartPost=/bin/sh -c "echo $MAINPID > /run/pscheduler-archiver.pid"
+ExecStopPost=/bin/rm -f /run/pscheduler-archiver.pid
+
+[Install]
+WantedBy=multi-user.target

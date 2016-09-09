@@ -1,0 +1,2 @@
+Tests: service, database, hostname, debug
+Restrictions: needs-root

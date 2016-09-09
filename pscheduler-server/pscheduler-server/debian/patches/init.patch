@@ -1,0 +1,102 @@
+--- a/daemons/init.d-template.m4
++++ b/daemons/init.d-template.m4
+@@ -10,8 +10,10 @@
+ 
+ ### BEGIN INIT INFO
+ # Provides: pscheduler-__PROG__
+-# Default-Start:  2345
+-# Default-Stop: 10
++# Default-Start: 2 3 4 5
++# Default-Stop:
++# Required-Start: $remote_fs $syslog
++# Required-Stop: $remote_fs $syslog
+ # Short-Description: Run pscheduler __PROG__
+ # Description: pScheduler __PROG__ daemon
+ ### END INIT INFO
+@@ -25,17 +27,16 @@
+ proguser=__PSUSER__
+ 
+ pidfile=__VAR__/run/pscheduler-$prog.pid
+-lockfile=__VAR__/lock/subsys/$proc
+ 
+ # TODO: Should probably rotate this, but should almost always be empty.
+ logfile=__LOGDIR__/$prog.log
+ 
+ # Source function library.
+-. /etc/rc.d/init.d/functions
++. /lib/lsb/init-functions
+ 
+ retval=0
+ 
+-[ $UID -eq 0 ]
++UID=$(id -u)
+ 
+ start() {
+     if [ $UID -ne 0 ] ; then
+@@ -44,9 +45,9 @@
+     fi
+     [ -x $exec ] || exit 5
+     [ -f $config ] || exit 6
+-    echo -n $"Starting pScheduler $prog: "
++    log_daemon_msg "Starting pScheduler $prog" "pscheduler-$prog"
+     touch "$pidfile"
+-    chown "$proguser.$proguser" "$pidfile"
++    chown "$proguser:$proguser" "$pidfile"
+     if [ ! -s "$logfile" ] ; then
+         echo "(This file should be empty unless there's a catastrophic failure.)" >> "$logfile"
+     fi
+@@ -54,24 +55,21 @@
+        -c "$exec --daemon --pid-file '$pidfile' --dsn '@$config'" \
+ 	>> "$logfile" 2>&1 &
+     retval=$?
+-    success
+-    echo
++    log_end_msg $retval
+ }
+ 
+-
+ stop() {
+     if [ $UID -ne 0 ] ; then
+         echo "User has insufficient privilege."
+         exit 4
+     fi
+-    echo -n $"Stopping pScheduler $prog: "
+-        if [ -s "$pidfile" ]; then
+-	    kill $(cat $pidfile) || failure "Stopping pScheduler $prog"
+-	    rm -f $pidfile
+-	fi
++    log_daemon_msg "Stopping pScheduler $prog" "pscheduler-$prog"
++    if [ -s "$pidfile" ]; then
++        kill $(cat $pidfile) || failure "Stopping pScheduler $prog"
++        rm -f $pidfile
++    fi
+     retval=$?
+-    success
+-    echo
++    log_end_msg $retval
+ }
+ 
+ restart()
+@@ -80,8 +78,6 @@
+     start
+ }
+ 
+-
+-
+ case "$1" in
+     start)
+         $1
+@@ -89,11 +85,11 @@
+     stop)
+         $1
+         ;;
+-    restart)
++    restart|force-reload)
+         $1
+         ;;
+     *)
+-        echo $"Usage: $0 {start|stop|restart}"
++        echo $"Usage: $0 {start|stop|restart|force-reload}"
+         exit 2
+ esac
+ exit $?
