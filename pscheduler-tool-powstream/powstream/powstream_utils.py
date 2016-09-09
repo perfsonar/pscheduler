@@ -88,7 +88,7 @@ def handle_run_error(msg, diags=None, do_log=True):
 
 ##
 # Calculates time to sleep or returns True if end time reached
-def sleep_or_end(seconds, end_time):
+def sleep_or_end(seconds, end_time, parent_pid):
     #check if we are at or beyond endtime
     now = datetime.datetime.now()
     if now >= end_time:
@@ -97,6 +97,10 @@ def sleep_or_end(seconds, end_time):
         #if we don't care about sleeping, don't mess with the rest
         return False
     
+    #check parent still running
+    if (parent_pid is not None) and (not os.path.exists("/proc/%d" % parent_pid)):
+         return True
+        
     #Determine how long to sleep
     time_left = end_time - now
     if time_left > datetime.timedelta(seconds=seconds) :
