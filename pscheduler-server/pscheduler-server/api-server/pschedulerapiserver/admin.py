@@ -13,13 +13,16 @@ from pschedulerapiserver import application
 from .dbcursor import dbcursor_query
 from .response import *
 from .url import *
-
+from .log import log
 
 @application.route("/", methods=['GET'])
 def root():
     return ok("This is the pScheduler API server on %s.\n"
               % socket.gethostname())
 
+@application.before_request
+def before_req():
+    log.debug("REQUEST: %s %s", request.method, request.url)
 
 @application.route("/hostname", methods=['GET'])
 def hostname():

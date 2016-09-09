@@ -43,6 +43,8 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 # Prefix for all macro files.  Use as %{_pscheduler_rpmmacroprefix}foo
 %%_pscheduler_rpmmacroprefix %{macro_prefix}
 
+# Internal commands
+%%_pscheduler_internals %{_pscheduler_libexecdir}/internals
 
 # Where all classes live
 %%_pscheduler_classes %{_pscheduler_libexecdir}/classes

@@ -16,7 +16,7 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-core
+Requires:	pscheduler-server
 Requires:	pscheduler-account
 Requires:	python-pscheduler
 Requires:	pscheduler-test-trace
@@ -43,6 +43,15 @@ make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_tool_doc} \
      install
+
+
+
+%post
+pscheduler internal warmboot
+
+
+%postun
+pscheduler internal warmboot
 
 
 %files

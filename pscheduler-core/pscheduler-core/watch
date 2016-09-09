@@ -177,6 +177,9 @@ while True:
         print "Ends   %s (~%s seconds)" % (end_time, int(wait_time))
     time.sleep(wait_time)
 
+    if verbose:
+        print "Waiting for result..."
+
     status, result = pscheduler.url_get( run_url,
                                          params={ 'wait-merged': True },
                                          throw=False )
@@ -193,6 +196,9 @@ while True:
     # TODO: Need to do a better job picking this apart.  The full-result
     # member needs to be populated whether the test succeeded or not.
 
+
+
+
     try:
         if (not 'result-merged' in result) \
                 or (result['result-merged'] is None):
@@ -204,15 +210,32 @@ while True:
 
     if not status:
 
-        if verbose:
-            print
-            print "Run failed.  The following errors were reported:"
-
         participants = result['participants']
         full = result['result-full']
 
-        for participant in range(0, len(result['participants'])):
-            if verbose:
+        if verbose:
+
+            if "state" not in result:
+                pscheduler.fail("Data returned from the server doesn't look like a run result.")
+
+            if result["state"] == "nonstart":
+                try:
+                    reason = result["errors"] 
+                except KeyError:
+                    reason = "No reason provided."
+                pscheduler.fail("Run never started: %s" % reason)
+
+            if result["state"] in ["pending", "on-deck", "running", "cleanup"]:
+                pscheduler.fail("Run has not completed.")
+
+            if result["state"] in ["overdue", "missed", "trumped"]:
+                pscheduler.fail("Run did not complete: %s" % result["state-display"])
+
+
+            print
+            print "Run failed.  The following errors were reported:"
+
+            for participant in range(0, len(result['participants'])):
                 print "By %s:" % participants[participant]
                 try:
                     print '   ',
@@ -222,6 +245,7 @@ while True:
                     # punish the user if there isn't.
                     print "  (No error reported)"
                 print
+
         continue
 
 

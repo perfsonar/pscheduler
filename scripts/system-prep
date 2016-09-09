@@ -127,6 +127,7 @@ esac
 
 # Things we need to build:
 yum -y install \
+    git \
     m4 \
     make \
     which
