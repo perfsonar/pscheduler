@@ -32,7 +32,11 @@ Produce a string
 characters long.  The default is 32.
 
 .TP
-.BI -q
-Make the string produced safe for quotes and some kinds of password
-files by not putting apostrophes, quotes, backticks, colons,
-backslashes or pound signs in it.
+.BI -r
+Randomize the length of the string to anywhere between half and all of
+the specified length.
+
+
+.TP
+.BI -s
+Produce a safe string consisting only of letters and digits.
