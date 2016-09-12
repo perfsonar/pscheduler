@@ -65,7 +65,7 @@ def no_can_do(message=None):
                     status=422)
 
 def error(message=None):
-    log.debug("Response 500: %s", message)
+    log.error("Response 500: %s", message)
     if message is None:
         message = "Unknown internal error"
     return Response(message + '\n', 500)
