@@ -128,12 +128,12 @@ def url_delete( url,          # DELETE URL
     request = requests.delete(url, verify=verify_keys)
     status = request.status_code
 
-    if status != 200:
-        if throw:
-            raise URLException("DELETE " + url + " returned " + str(status)
-                               + ": " + request.text)
-        else:
-            return (status, request.text)
+    if status != 200 and throw:
+        raise URLException("DELETE " + url + " returned " + str(status)
+                           + ": " + request.text)
+
+    return (status, request.text)
+
 
 
 def url_delete_list( urls ):
