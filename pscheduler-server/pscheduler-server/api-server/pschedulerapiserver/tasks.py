@@ -359,7 +359,10 @@ def tasks_uuid(uuid):
         json = row[0]
 
         # Redact anything in the test spec or archivers that's marked
-        # private.
+        # private as well as _key at the top level if there is one.
+
+        if "_key" in json:
+            json["_key"] = None 
 
         json["test"]["spec"] = pscheduler.json_decomment(
             json["test"]["spec"], prefix="_", null=True)
