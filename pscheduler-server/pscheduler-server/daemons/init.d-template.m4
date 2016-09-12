@@ -67,6 +67,8 @@ stop() {
     echo -n $"Stopping pScheduler $prog: "
         if [ -s "$pidfile" ]; then
 	    kill $(cat $pidfile) || failure "Stopping pScheduler $prog"
+	    sleep 3
+	    kill -9 $(cat $pidfile) 2> /dev/null || :
 	    rm -f $pidfile
 	fi
     retval=$?

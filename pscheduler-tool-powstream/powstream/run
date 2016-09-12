@@ -8,7 +8,6 @@ import datetime
 import fcntl
 import json
 import pscheduler
-import tempfile
 import sys
 import os
 import signal
@@ -24,6 +23,7 @@ start_time = datetime.datetime.now()
 log = pscheduler.Log(prefix="tool-powstream", quiet=True)
 
 #DEBUGGING: Set static values below
+# task_uuid = 'ABC123'
 # participant = 0
 # participant_data = [{}, {'ctrl-port': 861}]
 # test_spec = {'source': '10.0.1.28', 'dest': '10.0.1.25'}
@@ -32,6 +32,7 @@ log = pscheduler.Log(prefix="tool-powstream", quiet=True)
 #parse JSON input
 input = pscheduler.json_load(exit_on_error=True)
 try:
+    task_uuid = input['task-uuid']
     participant = input['participant']
     participant_data = input['participant-data']
     test_spec = input['test']['spec']
@@ -58,6 +59,7 @@ atexit.register(terminate_proc)
 ADDR_FORMAT = "[%s]:%d"
 DEFAULT_POWSTREAM_CMD = '/usr/bin/powstream'
 DEFAULT_OWSTATS_CMD = '/usr/bin/owstats'
+DEFAULT_PKILL_CMD = '/usr/bin/pkill'
 DEFAULT_DATA_DIR = '/var/lib/pscheduler/tool/powstream'
 DEFAULT_BUCKET_WIDTH = TIME_SCALE #convert to ms
 DEFAULT_RAW_OUTPUT = False #don't display raw packets by default
@@ -79,25 +81,27 @@ if config and config.has_option(CONFIG_SECTION, CONFIG_OPT_POWSTREAM_CMD):
 owstats_cmd = DEFAULT_OWSTATS_CMD
 if config and config.has_option(CONFIG_SECTION, CONFIG_OPT_OWSTATS_CMD):
     owstats_cmd = config.get(CONFIG_SECTION, CONFIG_OPT_OWSTATS_CMD)
+
+pkill_cmd = DEFAULT_PKILL_CMD
+if config and config.has_option(CONFIG_SECTION, CONFIG_OPT_PKILL_CMD):
+    pkill_cmd = config.get(CONFIG_SECTION, CONFIG_OPT_PKILL_CMD)
     
 keep_data_files = False
 if config and config.has_option(CONFIG_SECTION, CONFIG_OPT_KEEP_DATA_FILES):
     keep_data_files = config.getboolean(CONFIG_SECTION, CONFIG_OPT_KEEP_DATA_FILES)
-
-#Always print files (-p)
-powstream_args = [powstream_cmd, '-p', '-d']
 
 #determine data directory
 parent_data_dir = DEFAULT_DATA_DIR
 data_dir=None
 if config and config.has_option(CONFIG_SECTION, CONFIG_OPT_DATA_DIR):
     parent_data_dir = config.get(CONFIG_SECTION, CONFIG_OPT_DATA_DIR)
-try:
-    data_dir = tempfile.mkdtemp(dir=parent_data_dir)
-except Exception as e:
-    log.error("Unable to create temp directory to hold result data in %s: %s" % (parent_data_dir, e))
-    pscheduler.fail("Unable to create temp directory to hold result data")
-powstream_args.append(data_dir)
+if not parent_data_dir.endswith("/"):
+    parent_data_dir += "/" 
+data_dir = parent_data_dir + task_uuid
+
+#Always print files (-p)
+powstream_args = [powstream_cmd, '-p', '-d', data_dir]
+
 #register various handlers that make sure data dir is removed on exit
 atexit.register(cleanup_dir, data_dir, keep_data_files=keep_data_files)
 cleanup_handler = lambda signum, frame: graceful_exit(data_dir, keep_data_files=keep_data_files)
@@ -168,11 +172,25 @@ else:
 time.sleep(DEFAULT_CLIENT_SLEEP) #wait for server to boot
 powstream_start_attempts = 0
 got_result = False
+parent_pid = os.getppid()
+log.debug("Parent pid is %s" % parent_pid)
 while True:
     try:
         #make sure we are not past end time
-        if sleep_or_end(0, end_time): break
-            
+        if sleep_or_end(0, end_time, parent_pid): break
+        
+        #cleanup an previous runs - i really don't trust powstream
+        try:
+            #kill anything referencing our data_dir
+            Popen([pkill_cmd, '-9', '-f', data_dir ], stdout=PIPE, stderr=PIPE, shell=False)
+        except:
+            #best effort clean-up
+            pass
+        if os.path.exists(data_dir):
+            cleanup_dir(data_dir, keep_data_files=keep_data_files)
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir)
+        
         #spawn process
         log.debug("Running command: %s" % " ".join(powstream_args))
         proc = Popen(powstream_args, stdout=PIPE, stderr=PIPE, shell=False)
@@ -180,7 +198,7 @@ while True:
         cleanup_handler = lambda signum, frame: graceful_exit(data_dir, keep_data_files=keep_data_files, proc=proc)
         signal.signal(signal.SIGTERM, cleanup_handler)
         #give it a minute to fire-up
-        if sleep_or_end(DEFAULT_CLIENT_SLEEP, end_time):
+        if sleep_or_end(DEFAULT_CLIENT_SLEEP, end_time, parent_pid):
             break
             
         #check that it is still running
@@ -191,7 +209,7 @@ while True:
                 pow_error += line.strip() + " "
             if powstream_start_attempts > MAX_POWSTREAM_START_ATTEMPTS:
                 handle_run_error("powstream returned an error on startup for %d consectutive attempts. Giving up. This is the error it reported: %s" % (powstream_start_attempts, pow_error))
-            elif sleep_or_end(DEFAULT_RESTART_SLEEP, end_time):
+            elif sleep_or_end(DEFAULT_RESTART_SLEEP, end_time, parent_pid):
                 handle_run_error("powstream returned an error on startup, end time reached, so giving up" % pow_error)
                 break
             else:
@@ -206,7 +224,7 @@ while True:
         fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
         
         #sleep until expect result. don't exit if stop earlier so we can check for results
-        sleep_or_end(result_sleep, end_time)
+        sleep_or_end(result_sleep, end_time, parent_pid)
         attempts_without_result = 0
         while True:
             #can't use proc.communicate because waits for EOF
@@ -270,11 +288,11 @@ while True:
                 #sleep until next result
                 if got_result and attempts_without_result == 1:
                     #if first blank line since we got result, sleep until next result
-                    if sleep_or_end(result_sleep, end_time):
+                    if sleep_or_end(result_sleep, end_time, parent_pid):
                         break
                 else:
                     #...otherwise try again after a shorter sleep
-                    if sleep_or_end(DEFAULT_RETRY_SLEEP, end_time):
+                    if sleep_or_end(DEFAULT_RETRY_SLEEP, end_time, parent_pid):
                         break
         
         #command completed, this should not happen. log and restart
@@ -286,7 +304,7 @@ while True:
             if owp_error == '':
                 owp_error = "Nothing on stderr, may have been killed by external command (e.g. something ran 'kill')"
             handle_run_error("powstream exited with error, will attempt restart: %s" % owp_error)
-        elif not sleep_or_end(0, end_time):
+        elif not sleep_or_end(0, end_time, parent_pid):
             #if powstream exited before end time, report that fact
             handle_run_error("powstream exited with no errors but should have kept running, will attempt restart")
     except OSError as e:

@@ -3,7 +3,7 @@
 #
 
 Name:		random-string
-Version:	1.0
+Version:	1.1
 Release:	1%{?dist}
 
 Summary:	Create random strings

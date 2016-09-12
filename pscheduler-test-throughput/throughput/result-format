@@ -37,7 +37,7 @@ is_udp = False
 if test_spec.get("udp"):
    is_udp = True
 
-output = "Throughput Results\n"
+output = ""
 
 intervals = json["intervals"]
 # make sure intervals are sorted first by whether they were omitted or not, and 

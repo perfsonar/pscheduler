@@ -5,6 +5,7 @@
 
 import optparse
 import random
+import string
 
 
 # Gargle the arguments
@@ -15,10 +16,13 @@ opt_parser.add_option("-l", "--length",
                       action="store", type="int", dest="length",
                       default=32)
 
-opt_parser.add_option("-q", "--quote-safe",
-                      help="Produce a quote-safe string",
-                      action="store_true", dest="quotesafe")
+opt_parser.add_option("-r", "--randlength",
+                      help="Randomize the string length",
+                      action="store_true", dest="randlength")
 
+opt_parser.add_option("-s", "--safe",
+                      help="Produce a conservative, non-confusing string",
+                      action="store_true", dest="safe")
 
 (options, args) = opt_parser.parse_args()
 
@@ -33,22 +37,22 @@ if options.length < 1:
 
 random.seed()
 
-bottom = 0x21
-range = 0x7e - bottom
-
-if options.quotesafe:
-    filter_string = "'\"`:\\#"
-else:
-    filter_string = ""
-
-
 remaining = options.length
+if options.randlength:
+    half = int(remaining/2)
+    remaining = half + int(random.random() * half)
+
+
+charset = string.digits + string.ascii_letters
+if not options.safe:
+    charset += string.punctuation
+charset_len = len(charset)
+
+
 string = ""
 
 while remaining:
-    char = chr(bottom + int(random.random() * range))
-    if char not in filter_string:
-        string += char
-        remaining -= 1
+    string += charset[int((random.random() * charset_len))]
+    remaining -= 1
 
 print string

@@ -253,7 +253,7 @@ fi
 # password up as empty.
 if [ ! -s '%{password_file}' ]
 then
-    random-string --quote-safe > '%{password_file}'
+    random-string --safe --length 60 --randlength > '%{password_file}'
 fi
 
 # Check our assumptions
