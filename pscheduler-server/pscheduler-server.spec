@@ -430,49 +430,52 @@ fi
 
 %postun
 
-#
-# Database
-#
-HBA_FILE=$( (echo "\t on" ; echo "show hba_file;") \
-	    | postgresql-load \
-	    | head -1 \
-	    | sed -e 's/^\s*//' )
+#only do this stuff if we are actually uninstalling
+if [ "$1" = "0" ]; then
+    #
+    # Database
+    #
+    HBA_FILE=$( (echo "\t on" ; echo "show hba_file;") \
+            | postgresql-load \
+            | head -1 \
+            | sed -e 's/^\s*//' )
 
-drop-in -r %{name} /dev/null $HBA_FILE
+    drop-in -r %{name} /dev/null $HBA_FILE
 
-# Make Pg reload what we just changed.
-postgresql-load <<EOF
-DO \$\$
-DECLARE
-    status BOOLEAN;
-BEGIN
-    SELECT INTO status pg_reload_conf();
-    IF NOT status
-    THEN
-        RAISE EXCEPTION 'Failed to reload the server configuration';
-    END IF;
-END;
-\$\$ LANGUAGE plpgsql;
-EOF
-
-
-#
-# Daemons
-#
-# (Nothing)
+    # Make Pg reload what we just changed.
+    postgresql-load <<EOF
+    DO \$\$
+    DECLARE
+        status BOOLEAN;
+    BEGIN
+        SELECT INTO status pg_reload_conf();
+        IF NOT status
+        THEN
+            RAISE EXCEPTION 'Failed to reload the server configuration';
+        END IF;
+    END;
+    \$\$ LANGUAGE plpgsql;
+    EOF
 
 
+    #
+    # Daemons
+    #
+    # (Nothing)
 
-#
-# API Server
-#
-# TODO: Determine if we want to shut this off, as other services might
-# be using it.
-# if selinuxenabled
-# then
-#     echo "Setting SELinux permissions (may take awhile)"
-#     setsebool -P httpd_can_network_connect_db 1
-# fi
+
+
+    #
+    # API Server
+    #
+    # TODO: Determine if we want to shut this off, as other services might
+    # be using it.
+    # if selinuxenabled
+    # then
+    #     echo "Setting SELinux permissions (may take awhile)"
+    #     setsebool -P httpd_can_network_connect_db 1
+    # fi
+fi
 
 %if 0%{?el6}
 service httpd start
