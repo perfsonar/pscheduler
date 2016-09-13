@@ -4,7 +4,7 @@ exec cat << EOF
 {
     "name": "syslog",
     "description": "Send a raw JSON result to Syslog",
-    "version": "0.0",
+    "version": "1.0",
 
     "maintainer": {
         "name": "perfSONAR Development Team",

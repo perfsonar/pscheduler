@@ -4,8 +4,8 @@
 
 %define short	iperf2
 Name:		pscheduler-tool-%{short}
-Version:	0.0
-Release:	1%{?dist}
+Version:	1.0
+Release:	0.0.rc1%{?dist}
 
 Summary:	iperf2 tool class for pScheduler
 BuildArch:	noarch

@@ -3,8 +3,8 @@
 #
 
 Name:		pscheduler-core
-Version:	0.0
-Release:	1%{?dist}
+Version:	1.0
+Release:	0.0.rc1%{?dist}
 
 Summary:	pScheduler Core Programs
 BuildArch:	noarch

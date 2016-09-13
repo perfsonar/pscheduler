@@ -4,7 +4,7 @@ exec cat << EOF
 {
     "name": "bitbucket",
     "description": "Dump results into the bit bucket.",
-    "version": "0.0",
+    "version": "1.0",
 
     "maintainer": {
         "name": "perfSONAR Development Team",

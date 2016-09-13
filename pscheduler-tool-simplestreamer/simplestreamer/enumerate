@@ -2,7 +2,7 @@
 {
     "name": "simplestreamer",
     "description": "Stream test traffic from one node to another",
-    "version": "0.0",
+    "version": "1.0",
     "tests": [ "simplestream" ],
 
     "preference": 0,

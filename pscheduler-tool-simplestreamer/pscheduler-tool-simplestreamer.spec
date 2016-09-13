@@ -4,8 +4,8 @@
 
 %define short	simplestreamer
 Name:		pscheduler-tool-%{short}
-Version:	0.0
-Release:	1%{?dist}
+Version:	1.0
+Release:	0.0.rc1%{?dist}
 
 Summary:	Simple Streamer tool class for pScheduler
 BuildArch:	noarch
