@@ -24,6 +24,22 @@ def root():
 def before_req():
     log.debug("REQUEST: %s %s", request.method, request.url)
 
+@application.errorhandler(Exception)
+def exception_handler(ex):
+    log.exception()
+    return error("Internal problem; see system logs.")
+
+
+@application.route("/exception", methods=['GET'])
+def exception():
+    """Throw an exception"""
+    # Allow only from localhost
+    if not request.remote_addr in ['127.0.0.1', '::1']:
+        return not_allowed()
+
+    raise Exception("Forced exception.")
+
+
 @application.route("/hostname", methods=['GET'])
 def hostname():
     """Return the hosts's name"""
