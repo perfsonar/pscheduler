@@ -12,12 +12,13 @@ import sys
 import os
 import signal
 import time
+import pytz
 from powstream_defaults import *
 from powstream_utils import get_config, parse_raw_owamp_output, cleanup_dir, cleanup_file, handle_run_error, sleep_or_end, graceful_exit
 from subprocess import Popen, PIPE
 
-#track when this run starts
-start_time = datetime.datetime.now()
+#track when this run starts - make sure it is aware that it is UTC
+start_time = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
 
 #Init logging
 log = pscheduler.Log(prefix="tool-powstream", quiet=True)
@@ -28,6 +29,7 @@ log = pscheduler.Log(prefix="tool-powstream", quiet=True)
 # participant_data = [{}, {'ctrl-port': 861}]
 # test_spec = {'source': '10.0.1.28', 'dest': '10.0.1.25'}
 # duration = pscheduler.iso8601_as_timedelta('PT2M')
+# input = { 'schedule': {'until': "2016-09-15T15:22:40Z" }}
 
 #parse JSON input
 input = pscheduler.json_load(exit_on_error=True)
@@ -41,7 +43,15 @@ except KeyError as e:
     pscheduler.fail("Missing required key in run input: %s" % e)
 except:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
+    
+#set end time - use lesser of now + duration and until time
 end_time = start_time + duration
+if ('schedule' in input) and ('until' in input['schedule']):
+    until_time = pscheduler.iso8601_as_datetime(input['schedule']['until'])
+    if until_time < end_time:
+        end_time = until_time
+log.debug("Powstream run ends at %s" % end_time)
+#determine whether this is a reverse test
 flip = test_spec.get('flip', False)
 
 #setup infrastructure for killing processes on normal exit
