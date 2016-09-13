@@ -3,6 +3,7 @@
 #
 
 import pscheduler
+import urlparse
 
 from pschedulerapiserver import application
 
@@ -464,13 +465,17 @@ def tasks_uuid(uuid):
 
     elif request.method == 'DELETE':
 
+        parsed = list(urlparse.urlsplit(request.url))
+        parsed[1] = "%s"
+        template = urlparse.urlunsplit(parsed)
+
         try:
             cursor = dbcursor_query(
-                "UPDATE task SET enabled = FALSE WHERE uuid = %s", [uuid])
+                "SELECT api_task_disable(%s, %s)", [uuid, template])
         except Exception as ex:
             return error(str(ex))
 
-        return ok() if cursor.rowcount == 1 else not_found()
+        return ok()
 
     else:
 

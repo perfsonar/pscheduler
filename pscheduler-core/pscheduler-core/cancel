@@ -1,0 +1,52 @@
+#!/usr/bin/python
+#
+# Cancel a task
+#
+
+import optparse
+import pscheduler
+import urlparse
+
+#
+# Gargle the arguments
+#
+
+
+class VerbatimParser(optparse.OptionParser):
+    def format_epilog(self, formatter):
+        return self.epilog
+
+opt_parser = VerbatimParser(
+    usage="Usage: %prog task-url",
+    epilog=
+"""
+Example:
+
+  cancel https://ps.foo.org/pscheduler/task/12345...
+      Cancel a task
+"""
+    )
+opt_parser.disable_interspersed_args()
+
+(options, remaining_args) = opt_parser.parse_args()
+
+if len(remaining_args) != 1:
+    opt_parser.print_usage()
+    pscheduler.fail()
+
+task_url = remaining_args[0]
+
+parsed = list(urlparse.urlsplit(task_url))
+
+path_parts = parsed[2].split("/")
+
+if (len(path_parts) != 4) \
+        or (path_parts[0:3] != ["", "pscheduler", "tasks"]):
+    pscheduler.fail("%s: Not a task URL" % task_url)
+
+status, result = pscheduler.url_delete(task_url, throw=False)
+
+if status == 200:
+    pscheduler.succeed()
+else:
+    pscheduler.fail(result)

@@ -521,19 +521,49 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE FUNCTION api_task_delete(
-    task_uuid UUID
+-- This function disables a task and does the corresponding DELETE on
+-- the other participants.  The task_url_format argument is the URL of
+-- the task with the hostname replaced with %s, which will be filled
+-- in with the hostname of each participant.
+
+CREATE OR REPLACE FUNCTION api_task_disable(
+    task_uuid UUID,       -- UUID of task to disable
+    task_url_format TEXT  -- URL template.  See above.
 )
 RETURNS VOID
 AS $$
+DECLARE
+    taskrec RECORD;
+    host TEXT;
 BEGIN
 
-    IF NOT EXISTS (SELECT * FROM task WHERE uuid = task_uuid)
+    SELECT INTO taskrec * FROM task WHERE uuid = task_uuid;
+    IF NOT FOUND
     THEN
         RAISE EXCEPTION 'Task not found.';
     END IF;
 
-   DELETE FROM task WHERE uuid = task_uuid;
+    IF NOT taskrec.enabled
+    THEN
+        -- Don't so anything redundant redundant.
+        RETURN;
+    END IF;
+
+    UPDATE task SET enabled = FALSE WHERE uuid = task_uuid;
+
+    -- Sling a DELETE at the non-lead participants if there are any
+    -- and we're the lead.
+
+    IF taskrec.participant = 0
+    THEN
+        FOR host IN (SELECT jsonb_array_elements_text(taskrec.participants)
+                     FROM task WHERE uuid = task_uuid OFFSET 1)
+        LOOP
+            INSERT INTO http_queue (operation, uri)
+                VALUES ('DELETE', format(task_url_format, host));
+        END LOOP;
+    END IF;
+   
 
 END;
 $$ LANGUAGE plpgsql;

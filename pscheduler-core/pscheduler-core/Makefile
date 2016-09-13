@@ -19,6 +19,7 @@ M4PROGRAMS=\
 	pscheduler
 
 COMMANDS=\
+	cancel \
 	diags \
 	result \
 	task \
