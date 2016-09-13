@@ -21,7 +21,7 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server
 Requires:	python-pscheduler
 Requires:	pscheduler-test-latency
-Requires:	python-pytz
+Requires:	pytz
 Requires:	owamp-client
 Requires:	owamp-server
 
