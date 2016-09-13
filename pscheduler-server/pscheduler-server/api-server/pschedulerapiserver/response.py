@@ -43,16 +43,16 @@ def bad_request(message="Bad request"):
     log.debug("Response 400: %s", message)
     return Response(message + '\n', status=400)
 
-def forbidden(text="Not allowed."):
+def forbidden(message="Not allowed."):
     log.debug("Response 403: %s", message)
-    return Response(text, status=403)
+    return Response(message, status=403)
 
-def not_found():
+def not_found(message="Reource Not found."):
     log.debug("Response 404: %s", message)
-    return Response("Resource not found\n", status=404)
+    return Response(message + "\n", status=404)
 
-def not_allowed(text=None):
-    log.debug("Response 405: Not allowed")
+def not_allowed():
+    log.debug("Response 405: %s not allowed.", request.method)
     return Response("%s not allowed on this resource\n" % request.method, status=405)
 
 def no_can_do(message=None):
