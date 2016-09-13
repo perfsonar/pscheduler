@@ -17,12 +17,14 @@ from .log import log
 
 @application.route("/", methods=['GET'])
 def root():
-    return ok("This is the pScheduler API server on %s.\n"
-              % socket.gethostname())
+    return ok('"This is the pScheduler API server on %s."'
+              % pscheduler.api_this_host())
+
 
 @application.before_request
 def before_req():
     log.debug("REQUEST: %s %s", request.method, request.url)
+
 
 @application.errorhandler(Exception)
 def exception_handler(ex):
