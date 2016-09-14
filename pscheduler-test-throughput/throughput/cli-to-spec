@@ -110,11 +110,6 @@ opt_parser.add_option("--ip-version",
                       action="store", type="int",
                       dest="ip_version")
 
-opt_parser.add_option("-6", "--force-ipv6",
-                      help="Force the test to use IPv6 for source/destination",
-                      action="store_true", 
-                      dest="force_ipv6")
-
 opt_parser.add_option("-B", "--local-address",
                       help="Use this as a local address for control and tests",
                       action="store", type="string",
@@ -151,7 +146,7 @@ opt_parser.add_option("--zero-copy",
                       dest="zero_copy")
 
 opt_parser.add_option("--flow-label",
-                      help="Set the IPv6 flow label, implies -6",
+                      help="Set the IPv6 flow label, implies --ip-version 6",
                       action="store", type="string",
                       dest="flow_label")
 
@@ -232,9 +227,6 @@ if options.buffer_length is not None:
 if options.ip_version is not None:
    result["ip-version"] = options.ip_version
 
-if options.force_ipv6:
-   result["force-ipv6"] = True
-
 if options.local_address:
    result["local-address"] = options.local_address
 
@@ -266,7 +258,7 @@ if options.zero_copy:
 
 if options.flow_label:
    result["flow-label"] = options.flow_label
-   result["force-ipv6"] = True # flow label only works on ipv6
+   result["ip-version"] = 6 # flow label only works on ipv6
 
 if options.cpu_affinity:
    result["cpu-affinity"] = options.cpu_affinity
