@@ -33,7 +33,9 @@ def spec_is_valid(input_json):
             "tos":           { "$ref": "#/pScheduler/Cardinal" },
             "dynamic-window-size":    { "$ref": "#/pScheduler/Cardinal" },
             "no-delay":    { "$ref": "#/pScheduler/Boolean" },
-            "congestion":    { "$ref": "#/pScheduler/String" },
+            "congestion":    { "enum": ["reno", "cubic", "bic", "htcp", "vegas",
+                                        "westwood", "YeAH"]
+                               },
             "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
             "flow-label":    { "$ref": "#/pScheduler/String" },
             "cpu-affinity":    { "$ref": "#/pScheduler/String" }
