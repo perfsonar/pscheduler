@@ -1,0 +1,4 @@
+#!/bin/sh -e
+
+id pscheduler
+groups pscheduler | grep -c :.*pscheduler
