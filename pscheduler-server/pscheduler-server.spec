@@ -228,7 +228,6 @@ then
     do
         NAME="pscheduler-${SERVICE}"
         service "${NAME}" stop
-        chkconfig "${NAME}" off
     done
 fi
 
@@ -397,7 +396,6 @@ for SERVICE in ticker runner archiver scheduler
 do
     NAME="pscheduler-${SERVICE}"
     service "${NAME}" stop
-    chkconfig "${NAME}" off
 done
 
 # Have to stop this while we're uninstalling so connections to the
@@ -475,6 +473,13 @@ if [ "$1" = "0" ]; then
     #     echo "Setting SELinux permissions (may take awhile)"
     #     setsebool -P httpd_can_network_connect_db 1
     # fi
+else
+    #we're doing an update so restart services
+    for SERVICE in ticker runner archiver scheduler
+    do
+        NAME="pscheduler-${SERVICE}"
+        service "${NAME}" restart
+    done
 fi
 
 %if 0%{?el6}
