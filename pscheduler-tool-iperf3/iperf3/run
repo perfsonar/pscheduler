@@ -86,8 +86,12 @@ def run_client():
         iperf3_args.append(test_spec['mss'])
 
     if test_spec.has_key('omit') and test_spec['omit'] != None:
+
+        # convert from iso to seconds
+        omit_sec = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(test_spec['omit'])) 
+
         iperf3_args.append('-O')
-        iperf3_args.append(test_spec['omit'])
+        iperf3_args.append(omit_sec)
 
     if test_spec.has_key('bandwidth') and test_spec['bandwidth'] != None:
         iperf3_args.append('-b')
