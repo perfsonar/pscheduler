@@ -112,8 +112,7 @@ if format_mapping:
             summaries=summary_map,
             duration=duration,
             ts=test_start_time, 
-            test_result=test_result,
-            dst_field='destination'
+            test_result=test_result
         )
     elif test_type == 'trace':
         record = esmond_util.EsmondTraceRecord(
