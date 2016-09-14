@@ -29,7 +29,7 @@ def spec_is_valid(input_json):
             "ip-version":    { "$ref": "#/pScheduler/ip-version" },
             "local-address": { "$ref": "#/pScheduler/Host" },
             "dscp":          { "$ref": "#/pScheduler/Cardinal" },
-            "omit":          { "$ref": "#/pScheduler/Cardinal" },
+            "omit":          { "$ref": "#/pScheduler/Duration" },
             "tos":           { "$ref": "#/pScheduler/Cardinal" },
             "dynamic-window-size":    { "$ref": "#/pScheduler/Cardinal" },
             "no-delay":    { "$ref": "#/pScheduler/Boolean" },

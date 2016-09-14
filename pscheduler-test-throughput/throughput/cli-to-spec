@@ -127,7 +127,7 @@ opt_parser.add_option("--dscp",
 
 opt_parser.add_option("-O", "--omit",
                       help="Number of seconds to omit from the start of the test",
-                      action="store", type="int",
+                      action="store", type="string",
                       dest="omit")
 
 opt_parser.add_option("--tos",
@@ -242,7 +242,15 @@ if options.dscp:
    result["dscp"] = options.dscp
 
 if options.omit:
-   result["omit"] = options.omit
+   omit = options.omit
+
+   # convert epoch seconds to is8601
+   if omit.isdigit():
+      delta = datetime.timedelta(seconds=int(omit))
+      omit  = pscheduler.timedelta_as_iso8601(delta)
+
+   result["omit"] = omit
+   
 
 if options.tos:
    result["tos"] = options.tos
