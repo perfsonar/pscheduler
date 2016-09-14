@@ -192,7 +192,7 @@ def run_server():
 
     if status:
         pscheduler.succeed_json({"succeeded": False,
-                                 "error": "iperf3 returned an error: %s" % stderr})
+                                 "error": "iperf3 returned an error: %s\n%s" % (stdout, stderr)})
     
     #log stdout in debug mode
     for line in stdout:
