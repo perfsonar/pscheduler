@@ -1,0 +1,12 @@
+{
+    "spec": {
+        "count": 10,
+        "dest": "somehost.example.org",
+        "interval": "PT2S",
+        "ip-version": 4,
+        "schema": 1,
+        "source": "ps.example.com",
+        "timeout": "PT1S"
+    },
+    "type": "rtt"
+}     
