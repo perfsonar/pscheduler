@@ -48,7 +48,7 @@ def run_client():
     iperf3_args = ['/usr/bin/iperf3']
 
     # who to connect to
-    destination = test_spec['destination']          
+    destination = test_spec['dest']          
 
     iperf3_args.append('-c')
     iperf3_args.append(destination)

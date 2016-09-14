@@ -105,10 +105,10 @@ opt_parser.add_option("-l", "--buffer-length",
                       action="store", type="int",
                       dest="buffer_length")
 
-opt_parser.add_option("-4", "--force-ipv4",
-                      help="Force the test to use IPv4 for source/destination",
-                      action="store_true",
-                      dest="force_ipv4")
+opt_parser.add_option("--ip-version",
+                      help="Specificy which IP version to use, 4 or 6",
+                      action="store", type="int",
+                      dest="ip_version")
 
 opt_parser.add_option("-6", "--force-ipv6",
                       help="Force the test to use IPv6 for source/destination",
@@ -176,7 +176,7 @@ if options.source is not None:
    result['source'] = options.source
    
 if options.destination is not None:
-   result['destination'] = options.destination
+   result['dest'] = options.destination
 
 if options.duration is not None:
    duration = options.duration
@@ -229,8 +229,8 @@ if options.mss is not None:
 if options.buffer_length is not None:
    result["buffer-length"] = options.buffer_length
 
-if options.force_ipv4:
-   result["force-ipv4"] = True
+if options.ip_version is not None:
+   result["ip-version"] = options.ip_version
 
 if options.force_ipv6:
    result["force-ipv6"] = True
@@ -262,12 +262,6 @@ if options.flow_label:
 
 if options.cpu_affinity:
    result["cpu-affinity"] = options.cpu_affinity
-
-
-# This sort of belongs in spec-is-valid but has to be here because of 
-# the below step where we assume "me" if one isn't specified
-if not result.has_key("source") and not result.has_key("destination"):
-   pscheduler.fail("Either or both of source or destination must be specified")
 
 logger.debug("cli-to-spec -> %s" % result)
 

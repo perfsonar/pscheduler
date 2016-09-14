@@ -13,11 +13,11 @@ def spec_is_valid(input_json):
         "additionalProperties": False,
         "local": {
             },
-        "required": ["schema", "destination"],
+        "required": ["schema", "dest"],
         "properties": {           
             "schema":      { "$ref": "#/pScheduler/Cardinal" },
             "source":      { "$ref": "#/pScheduler/Host" },
-            "destination": { "$ref": "#/pScheduler/Host" },
+            "dest":        { "$ref": "#/pScheduler/Host" },
             "duration":    { "$ref": "#/pScheduler/Duration" },
             "interval":    { "$ref": "#/pScheduler/Duration" },
             "parallel":    { "$ref": "#/pScheduler/Cardinal" },
@@ -26,8 +26,7 @@ def spec_is_valid(input_json):
             "window-size": { "$ref": "#/pScheduler/Cardinal" },
             "mss":         { "$ref": "#/pScheduler/Cardinal" },
             "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
-            "force-ipv4":    { "$ref": "#/pScheduler/Boolean" },
-            "force-ipv6":    { "$ref": "#/pScheduler/Boolean" },
+            "ip-version":    { "$ref": "#/pScheduler/ip-version" },
             "local-address": { "$ref": "#/pScheduler/Host" },
             "dscp":          { "$ref": "#/pScheduler/Cardinal" },
             "omit":          { "$ref": "#/pScheduler/Cardinal" },
