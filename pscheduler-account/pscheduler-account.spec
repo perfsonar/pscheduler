@@ -17,7 +17,8 @@ Group:		Unspecified
 Provides:	%{name} = %{version}-%{release}
 
 BuildRequires:	pscheduler-rpm
-
+Requires: shadow-utils
+Requires(post): shadow-utils
 
 %define user pscheduler
 %define group pscheduler
