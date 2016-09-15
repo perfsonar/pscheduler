@@ -242,7 +242,7 @@ BEGIN
 	IF run_result.status <> 0 THEN
 	   RAISE EXCEPTION 'Unable to determine participants: %', run_result.stderr;
 	END IF;
-        NEW.participants := run_result.stdout;
+        NEW.participants := run_result.stdout::JSONB -> 'participants';
 	-- TODO: Should probably check that the list members are
 	-- unique and that one of them includes the local system.
 

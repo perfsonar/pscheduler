@@ -178,7 +178,7 @@ def tasks():
 
             participants = [ host if host is not None
                              else pscheduler.api_this_host()
-                             for host in pscheduler.json_load(stdout) ]
+                             for host in pscheduler.json_load(stdout)["participants"] ]
         except Exception as ex:
             return error("Unable to determine participants: " + str(ex))
         nparticipants = len(participants)

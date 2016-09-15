@@ -15,6 +15,8 @@ from validate import spec_is_valid
 
 json = pscheduler.json_load(exit_on_error=True)
 
+null_reason = None
+
 valid, message = spec_is_valid(json)
 
 if not valid:
@@ -25,10 +27,17 @@ try:
     source = json['source']
 except KeyError:
     source = None
+    null_reason = "No source specified"
+
 
 try:
     dest = json['dest']
 except KeyError:
     pscheduler.fail('No dest in test specification')
 
-pscheduler.succeed_json([ source, dest ])
+
+result = { "participants": [ source, dest ] }
+if null_reason is not None:
+    result["null-reason"] = null_reason
+
+pscheduler.succeed_json(result)
