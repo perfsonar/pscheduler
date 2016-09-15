@@ -8,7 +8,7 @@
 
 Name:		pscheduler-server
 Version:	1.0
-Release:	0.1.rc1%{?dist}
+Release:	0.2.rc1%{?dist}
 
 Summary:	pScheduler Server
 BuildArch:	noarch
@@ -218,6 +218,15 @@ mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}
 # Database
 #
 # (Nothing)
+
+# TODO: Remove this before 4.0 ships.  See #135
+# This undoes something caused by a bug in a RC1 build.
+PG_HBA=/var/lib/pgsql/9.5/data/pg_hba.conf
+if [ -e "${PG_HBA}" ]
+then
+    sed -i -e 's/#END-pscheduler-serverlocal/#END-pscheduler-server\nlocal/' \
+     "${PG_HBA}"
+fi
 
 #
 # Daemons

@@ -11,7 +11,13 @@ import pscheduler
 import sys
 
 json = pscheduler.json_load(exit_on_error=True)
+
+null_reason = None
+
 source = json.get('source', None)
+if source is None:
+    null_reason = "No source specified"
+
 dest = json.get('dest', None)
 
 #participant depends on mode
@@ -19,12 +25,17 @@ if json.get('single-participant-mode', False):
     #lead is whomever should be running the client. None is localhost
     flip = json.get('flip', False)
     if flip:
-        result = [ dest ]
+        participants = [ dest ]
     else:
-        result = [ source ]
+        participants = [ source ]
 else:
     #source first participant, dest the second
-    result = [ source, dest ]
+    participants = [ source, dest ]
 
-pscheduler.json_dump(result, sys.stdout )
-pscheduler.succeed()
+
+result = { "participants": participants }
+if null_reason is not None:
+    result["null-reason"] = null_reason
+
+pscheduler.succeed_json(result)
+
