@@ -1,0 +1,15 @@
+Source: python-icmperror
+Section: net
+Priority: optional
+Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9), dh-python
+Standards-Version: 3.9.6
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: python-icmperror
+Architecture: all
+Depends: ${misc:Depends}, python
+Description: ICMP error codes library
+ Functions for translating ICMP error codes to enumerated values
