@@ -1,0 +1,16 @@
+Source: pscheduler-test-latency
+Section: net
+Priority: optional
+Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9), python
+Standards-Version: 3.9.6
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-test-latency
+Architecture: all
+Depends: ${misc:Depends}, python, python-pscheduler,
+ python-jsontemplate, python-jsonschema
+Description: pScheduler latency test
+ Latency test class for pScheduler
