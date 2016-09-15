@@ -5,7 +5,7 @@
 %define short	rtt
 Name:		pscheduler-test-%{short}
 Version:	1.0
-Release:	0.1.rc1%{?dist}
+Release:	0.2.rc1%{?dist}
 
 Summary:	Round trip time test class for pScheduler
 BuildArch:	noarch
