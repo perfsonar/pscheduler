@@ -5,7 +5,7 @@
 %define short	snooze
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.0.rc1%{?dist}
+Release:	0.1.rc1%{?dist}
 
 Summary:	Sleep tool class for pScheduler
 BuildArch:	noarch

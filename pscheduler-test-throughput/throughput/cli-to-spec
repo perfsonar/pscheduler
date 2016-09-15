@@ -105,15 +105,10 @@ opt_parser.add_option("-l", "--buffer-length",
                       action="store", type="int",
                       dest="buffer_length")
 
-opt_parser.add_option("-4", "--force-ipv4",
-                      help="Force the test to use IPv4 for source/destination",
-                      action="store_true",
-                      dest="force_ipv4")
-
-opt_parser.add_option("-6", "--force-ipv6",
-                      help="Force the test to use IPv6 for source/destination",
-                      action="store_true", 
-                      dest="force_ipv6")
+opt_parser.add_option("--ip-version",
+                      help="Specificy which IP version to use, 4 or 6",
+                      action="store", type="int",
+                      dest="ip_version")
 
 opt_parser.add_option("-B", "--local-address",
                       help="Use this as a local address for control and tests",
@@ -127,7 +122,7 @@ opt_parser.add_option("--dscp",
 
 opt_parser.add_option("-O", "--omit",
                       help="Number of seconds to omit from the start of the test",
-                      action="store", type="int",
+                      action="store", type="string",
                       dest="omit")
 
 opt_parser.add_option("--tos",
@@ -151,7 +146,7 @@ opt_parser.add_option("--zero-copy",
                       dest="zero_copy")
 
 opt_parser.add_option("--flow-label",
-                      help="Set the IPv6 flow label, implies -6",
+                      help="Set the IPv6 flow label, implies --ip-version 6",
                       action="store", type="string",
                       dest="flow_label")
 
@@ -176,7 +171,7 @@ if options.source is not None:
    result['source'] = options.source
    
 if options.destination is not None:
-   result['destination'] = options.destination
+   result['dest'] = options.destination
 
 if options.duration is not None:
    duration = options.duration
@@ -229,11 +224,8 @@ if options.mss is not None:
 if options.buffer_length is not None:
    result["buffer-length"] = options.buffer_length
 
-if options.force_ipv4:
-   result["force-ipv4"] = True
-
-if options.force_ipv6:
-   result["force-ipv6"] = True
+if options.ip_version is not None:
+   result["ip-version"] = options.ip_version
 
 if options.local_address:
    result["local-address"] = options.local_address
@@ -242,7 +234,15 @@ if options.dscp:
    result["dscp"] = options.dscp
 
 if options.omit:
-   result["omit"] = options.omit
+   omit = options.omit
+
+   # convert epoch seconds to is8601
+   if omit.isdigit():
+      delta = datetime.timedelta(seconds=int(omit))
+      omit  = pscheduler.timedelta_as_iso8601(delta)
+
+   result["omit"] = omit
+   
 
 if options.tos:
    result["tos"] = options.tos
@@ -258,16 +258,10 @@ if options.zero_copy:
 
 if options.flow_label:
    result["flow-label"] = options.flow_label
-   result["force-ipv6"] = True # flow label only works on ipv6
+   result["ip-version"] = 6 # flow label only works on ipv6
 
 if options.cpu_affinity:
    result["cpu-affinity"] = options.cpu_affinity
-
-
-# This sort of belongs in spec-is-valid but has to be here because of 
-# the below step where we assume "me" if one isn't specified
-if not result.has_key("source") and not result.has_key("destination"):
-   pscheduler.fail("Either or both of source or destination must be specified")
 
 logger.debug("cli-to-spec -> %s" % result)
 

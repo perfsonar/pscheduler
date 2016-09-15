@@ -18,7 +18,7 @@ if format == 'text/plain':
 
    template = """
 Sender   ......... {.section source}{source}{.or}Not Specified{.end}
-Receiver ......... {.section destination}{destination}{.or}Not Specified{.end}
+Receiver ......... {.section dest}{dest}{.or}Not Specified{.end}
    """
 else:
 

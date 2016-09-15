@@ -22,7 +22,7 @@ except KeyError:
     null_reason = "No source specified"
 
 try: 
-    destination = json['destination']
+    destination = json['dest']
 except KeyError:
     pscheduler.fail("Missing destination argument in spec")
 
