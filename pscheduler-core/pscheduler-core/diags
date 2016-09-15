@@ -97,7 +97,7 @@ ip route
 
 
 section Sockets
-netstat -a
+netstat -n -a
 
 
 #
