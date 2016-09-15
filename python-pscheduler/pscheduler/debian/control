@@ -1,0 +1,19 @@
+Source: python-pscheduler
+Section: net
+Priority: optional
+Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9), python, dh-python
+Standards-Version: 3.9.6
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: python-pscheduler
+Architecture: all
+Depends: ${python:Depends}, ${misc:Depends},
+ python-ntplib, python-tz, python-tzlocal,
+ python-psycopg2, python-jsonschema, python-isodate,
+ python-subprocess32, python-netaddr, python-dnspython,
+ python-dateutil, python-requests
+Description: pScheduler library
+ Utility functions for pScheduler
