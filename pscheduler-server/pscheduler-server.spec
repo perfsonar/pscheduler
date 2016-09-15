@@ -224,8 +224,13 @@ mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}
 PG_HBA=/var/lib/pgsql/9.5/data/pg_hba.conf
 if [ -e "${PG_HBA}" ]
 then
-    sed -i -e 's/#END-pscheduler-serverlocal/#END-pscheduler-server\nlocal/' \
+    # Remove #BEGIN-xxx that got jammed up onto previous lines
+    sed -i -e 's/\(.\)\(#BEGIN-\)/\1\n\2/' "${PG_HBA}"
+    # Remove stock pg_hba line that got jammed up on an #END
+    sed -i -e 's/#END-pscheduler-serverlocal/#END-pscheduler-server\nlocal/g' \
      "${PG_HBA}"
+    # Remove old pscheduler-database segment on hosts that had that package
+    drop-in -r pscheduler-database /dev/null "${PG_HBA}"
 fi
 
 #
