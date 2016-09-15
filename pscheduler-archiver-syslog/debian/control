@@ -10,6 +10,7 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 
 Package: pscheduler-archiver-syslog
 Architecture: all
-Depends: ${misc:Depends}, python, python-pscheduler
+Depends: ${misc:Depends}, python, python-pscheduler,
+ pscheduler-server
 Description: Syslog archiver class for pScheduler
  Archiver sends JSON test results to syslog.

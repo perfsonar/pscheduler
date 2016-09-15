@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-archiver-esmond
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
- python-requests
+ python-requests, pscheduler-server
 Description: Esmond archiver class for pScheduler
  Archiver sends JSON test results to Esmond Measurement Archive.
