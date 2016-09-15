@@ -7,13 +7,8 @@
 # init scripts function just fine.
 
 Name:		pscheduler-server
-<<<<<<< HEAD
-Version:	1.1
-Release:	0.0.rc1%{?dist}
-=======
 Version:	1.0
-Release:	0.1.rc1%{?dist}
->>>>>>> c7637eb79addb2c5218466c3555d1bba9dffafe7
+Release:	0.2.rc1%{?dist}
 
 Summary:	pScheduler Server
 BuildArch:	noarch
