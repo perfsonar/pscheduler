@@ -168,11 +168,19 @@ def result_is_valid(input_json):
     return json_validate(input_json, schema)
 
 
-#TODO
-def limit_is_valid(json):
-    schema = {}
+def limit_is_valid(input_json):
 
-    return (True, "")
+    schema = {
+        "type": "object",
+        "properties": {
+            "bandwidth":  { "$ref": "#/pScheduler/Limit/SINumber" },
+            "duration":   { "$ref": "#/pScheduler/Limit/Duration" },
+            "udp":        { "$ref": "#/pScheduler/Limit/Boolean" },
+            "ip-version": { "$ref": "#/pScheduler/Limit/IPVersionList" }
+        },
+        "additionalProperties": False
+        }
+
     return json_validate(input_json, schema)
 
 

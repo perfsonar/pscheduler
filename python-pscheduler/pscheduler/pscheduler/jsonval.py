@@ -255,6 +255,21 @@ __dictionary__ = {
         "required": [ "style", "match" ]
     },
 
+    "EnumMatch": {
+        "type": "array",
+        "properties": {
+            "enumeration": { "type": "array",
+                             "items": {
+                                 "anyOf": [{ "type": "string" },
+                                           { "$ref": "#/pScheduler/Number" }]
+                              }
+                           },
+            "invert": { "$ref": "#/pScheduler/Boolean" },
+        },
+        "additionalProperties": False,
+        "required": [ "enumeration" ]
+    },
+
     "Timestamp": {
         "type": "string",
         # ISO 8601.  Source: https://gist.github.com/philipashlock/8830168
@@ -452,6 +467,11 @@ __dictionary__ = {
         "enum": [ 4, 6 ]
         },
 
+    "ip-version-list": {
+        "type": "array",
+        "items": { "$ref": "#/pScheduler/ip-version" },
+        },
+
 
     #
     # Standard Limit Types
@@ -538,7 +558,24 @@ __dictionary__ = {
         },
 
         "IPVersion": {
-            "#": "TODO: Develop this."
+            "properties": {
+                "description": { "$ref": "#/pScheduler/String" },
+                "match":       { "$ref": "#/pScheduler/ip-version" },
+                "invert":      { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": False,
+            "required": ["version"]  
+        },
+
+
+        "IPVersionList": {
+            "properties": {
+                "description": { "$ref": "#/pScheduler/String" },
+                "enumeration": { "$ref": "#/pScheduler/ip-version-list"},
+                "invert":      { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": False,
+            "required": ["enumeration"]  
         },
 
         "Probability": {
