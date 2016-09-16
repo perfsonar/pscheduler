@@ -395,23 +395,21 @@ class RunWorker:
                      for host in participants ]
 
             self.log.debug("%d: Runs are %s", self.id, runs)
+            self.log.debug("%d: Local run returned %d",
+                           self.id, returncode)
 
-            try:
-                self.log.debug("%d: Local run returned %d",
-                               self.id, returncode)
-                if returncode == 0:
+            if returncode == 0:
+                try:
                     local_result = pscheduler.json_load(stdout)
-                else:
+                except ValueError as ex:
+                    self.log.error("%d: Tool %s returned invalid JSON %s",
+                                   self.id, tool, stdout)
                     local_result = None
-                    self.log.debug("%d: Tool returned failure: %s",
-                                   self.id, stderr)
                     failures += 1
-
-            except ValueError as ex:
-                self.log.error("%d: Tool %s returned invalid JSON %s",
-                               self.id, tool, stdout)
-                local_result = None
-
+            else:
+                self.log.debug("%d: Tool returned failure: %s",
+                               self.id, stderr)
+                failures += 1
 
             full_result = [ local_result ]
             self.log.debug("%d: Accumulated local result", self.id)
