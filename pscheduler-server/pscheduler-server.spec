@@ -467,7 +467,7 @@ if [ "$1" = "0" ]; then
         END IF;
     END;
     \$\$ LANGUAGE plpgsql;
-    EOF
+EOF
 
 
     #
