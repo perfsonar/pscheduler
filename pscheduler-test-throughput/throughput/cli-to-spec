@@ -132,7 +132,7 @@ opt_parser.add_option("--tos",
 
 opt_parser.add_option("--no-delay",
                       help="Set TCP no-delay flag, disables Nagle's algorithm",
-                      action="store",
+                      action="store_true",
                       dest="no_delay")
 
 opt_parser.add_option("--congestion",
@@ -142,7 +142,7 @@ opt_parser.add_option("--congestion",
 
 opt_parser.add_option("--zero-copy",
                       help="Use a 'zero copy' method of sending data",
-                      action="store",
+                      action="store_true",
                       dest="zero_copy")
 
 opt_parser.add_option("--flow-label",
