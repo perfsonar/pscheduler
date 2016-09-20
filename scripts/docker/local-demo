@@ -74,7 +74,7 @@ case "${COMMAND}" in
 
     stop)
 	echo -n "Removing containers..."
-	for HOST in $(docker ps --filter "name=${PREFIX}[0-9]+" --format '{{.Names}}')
+	for HOST in $(docker ps --all --filter "name=${PREFIX}[0-9]+" --format '{{.Names}}')
 	do
 	    echo -n " ${HOST}..."
 	    docker rm -f "${HOST}" > /dev/null || true
