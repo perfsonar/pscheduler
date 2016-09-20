@@ -5,7 +5,7 @@
 %define short	sleepbg
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.3.rc1%{?dist}
+Release:	0.6.rc1%{?dist}
 
 Summary:	Background Sleep tool class for pScheduler
 BuildArch:	noarch
