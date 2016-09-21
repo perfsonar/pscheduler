@@ -5,7 +5,7 @@
 %define short	idlebg
 Name:		pscheduler-test-%{short}
 Version:	1.0
-Release:	0.6.rc1%{?dist}
+Release:	0.7.rc1%{?dist}
 
 Summary:	Idle Background test class for pScheduler
 BuildArch:	noarch
