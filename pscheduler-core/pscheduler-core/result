@@ -9,7 +9,6 @@ import os
 import pipes
 import pscheduler
 import sys
-import textwrap
 
 #
 # Gargle the arguments
@@ -80,20 +79,6 @@ run_url = remaining_args[0]
 
 
 #
-# A utility
-#
-
-def prefixed_wrap(prefix, text, width=80, indent=0):
-    wrapped = textwrap.wrap(text, width-len(prefix))
-    leader = " " * (len(prefix) + indent)
-    return "%s%s%s%s" % (prefix,
-                      wrapped.pop(0), "\n",
-                      "\n".join([ "%s%s" % (leader, line)
-                                  for line in wrapped])
-                      )
-
-
-#
 # Main Program
 #
 
@@ -157,14 +142,6 @@ except Exception as ex:
 
 if not options.quiet and out_format == "text/plain":
 
-    if sys.stdout.isatty():
-        # TODO: This only works on Unix.
-        rows, columns = [ int(x) for x in
-                          os.popen('stty size', 'r').read().split() ]
-        print
-    else:
-        columns = 80
-
     firstline = [ run_json["start-time"], "on" ]
 
     parts = run_json["participants"]
@@ -181,9 +158,14 @@ if not options.quiet and out_format == "text/plain":
 
     firstline.append("with")
     firstline.append(task_json["tool"] + ":")
-    print prefixed_wrap("", " ".join(firstline), width=columns, indent=2)
+    print pscheduler.prefixed_wrap(
+        "", " ".join(firstline), indent=2)
 
-    print prefixed_wrap("", " ".join([ pipes.quote(arg) for arg in task_cli ]), width=columns, indent=2),
+    print
+
+    print pscheduler.prefixed_wrap(
+        "", " ".join([ pipes.quote(arg) for arg in task_cli ]),
+        indent=2)
 
     print
 

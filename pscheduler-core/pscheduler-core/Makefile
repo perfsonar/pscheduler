@@ -22,6 +22,7 @@ COMMANDS=\
 	cancel \
 	diags \
 	result \
+	schedule \
 	task \
 	watch
 
