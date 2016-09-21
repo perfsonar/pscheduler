@@ -5,7 +5,7 @@
 %define short	bitbucket
 Name:		pscheduler-archiver-%{short}
 Version:	1.0
-Release:	0.3.rc1%{?dist}
+Release:	0.6.rc1%{?dist}
 
 Summary:	Bitbucket archiver class for pScheduler
 BuildArch:	noarch

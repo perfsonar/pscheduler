@@ -5,7 +5,7 @@
 %define short	bwctliperf3
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.3.rc1%{?dist}
+Release:	0.6.rc1%{?dist}
 
 Summary:	BWCTL iperf3 tool class for pScheduler
 BuildArch:	noarch
