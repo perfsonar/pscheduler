@@ -189,8 +189,9 @@ BEGIN
     LOOP
 	run_result := pscheduler_internal(ARRAY['invoke', 'test', test_name, 'enumerate']);
         IF run_result.status <> 0 THEN
-         RAISE EXCEPTION 'Test "%" failed to enumerate: %',
-	       test_name, run_result.stderr;
+            RAISE WARNING 'Test "%" failed to enumerate: %',
+	        test_name, run_result.stderr;
+            CONTINUE;
         END IF;
 
 	test_enumeration := run_result.stdout::JSONB;
