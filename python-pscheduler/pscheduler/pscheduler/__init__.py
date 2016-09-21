@@ -26,3 +26,4 @@ from .saferun import *
 from .sinumber import *
 from .stringmatcher import *
 from .speccli import *
+from .text import *
