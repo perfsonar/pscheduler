@@ -19,7 +19,7 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server
 Requires:	python-pscheduler
 Requires:	pscheduler-test-throughput
-requires:	nuttcp
+Requires:	nuttcp >= 8.1.3
 
 BuildRequires:	pscheduler-rpm
 
