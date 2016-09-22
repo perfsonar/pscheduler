@@ -89,7 +89,7 @@ def parse_output(lines):
             duration = int(test.group(1))
             value    = test.group(2)
             si       = test.group(4)
-            retrans  = test.group(5)
+            retrans  = int(test.group(5))
             cwnd     = test.group(7)
             cwnd_si  = test.group(8)
            

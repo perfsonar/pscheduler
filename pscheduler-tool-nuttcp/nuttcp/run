@@ -90,7 +90,8 @@ def run_client():
 
     if test_spec.has_key('bandwidth') and test_spec['bandwidth'] != None:
         nuttcp_args.append('-R')
-        nuttcp_args.append(test_spec['bandwidth'])
+        # nuttcp specifies bandwidth in Kbps, so need to convert here
+        nuttcp_args.append(test_spec['bandwidth'] / 1000)
 
     if test_spec.has_key('udp'):
         nuttcp_args.append('-u')
