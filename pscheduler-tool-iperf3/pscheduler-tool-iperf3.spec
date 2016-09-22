@@ -72,12 +72,15 @@ if [ "$1" -eq 0 ]
 then
 %if 0%{?el6}
     iptables -D INPUT \
-        -p tcp -m state --state NEW -m tcp --dport 5001:5300 -j ACCEPT
+        -p tcp -m state --state NEW -m tcp --dport 5201 -j ACCEPT
+    iptables -D INPUT \
+        -p udp -m state --state NEW -m udp --dport 5201 -j ACCEPT
     # TODO: Make this use systemd on CentOS 7
     service iptables save
 %endif
 %if 0%{?el7}
-    firewall-cmd -q --remove-port=5001-5200/tcp --permanent
+    firewall-cmd -q --remove-port=5201/tcp --permanent
+    firewall-cmd -q --remove-port=5201/udp --permanent
     systemctl restart firewalld
 %endif
 fi
