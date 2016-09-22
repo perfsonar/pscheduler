@@ -1,0 +1,27 @@
+#!/usr/bin/python
+#
+# Determine the duration of the nuttcp
+
+import datetime
+import sys
+
+import pscheduler
+
+from nuttcp_defaults import *
+
+logger = pscheduler.Log(prefix='tool-nuttcp')
+
+json = pscheduler.json_load(exit_on_error=True)
+
+duration = json.get('duration', None)
+if duration:
+    delta = pscheduler.iso8601_as_timedelta(duration)
+    duration = int(pscheduler.timedelta_as_seconds(delta))
+else:
+    duration = DEFAULT_DURATION
+
+logger.info("duration = %ss" % duration)
+
+pscheduler.succeed_json({
+        "duration": 'PT%dS' % (duration + DEFAULT_FUDGE_FACTOR + DEFAULT_WAIT_SLEEP)
+})

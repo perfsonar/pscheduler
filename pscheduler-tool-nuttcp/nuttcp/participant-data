@@ -1,0 +1,48 @@
+#!/usr/bin/python
+#
+# Return participant-specific data for a run
+#
+
+import pscheduler
+import random
+import sys
+import nuttcp_utils
+from nuttcp_defaults import *
+
+json = pscheduler.json_load(exit_on_error=True)
+result = {}
+
+try:
+    participant = json['participant']
+except KeyError:
+    pscheduler.fail("Missing participant")
+
+config = nuttcp_utils.get_config()
+
+# both server and client need path to nuttcp
+# command
+if config == None or not config.has_option("nuttcp", "nuttcp_cmd"):
+    result["nuttcp_cmd"] = DEFAULT_NUTTCP_PATH
+else:
+    result["nuttcp_cmd"] = config.get("nuttcp", "nuttcp_cmd")
+
+# Nothing else interesting for sender
+if participant == 0:
+    pass
+# Receiver has to figure out what port it's going
+# to listen on
+elif participant == 1:
+    if config == None or not config.has_option("nuttcp", "server_port"):
+        result["server_port"] = DEFAULT_SERVER_PORT
+    else:
+        result["server_port"] = int(config.get("nuttcp", "server_port"))
+
+    if config == None or not config.has_option("nuttcp", "data_port_start"):
+        result["data_port_start"] = DEFAULT_DATA_PORT_START
+    else:
+        result["data_port_start"] = int(config.get("nuttcp", "data_port_start"))
+
+else:
+    pscheduler.fail("Invalid participant number for this test")
+
+pscheduler.succeed_json(result)

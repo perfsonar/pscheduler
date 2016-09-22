@@ -1,0 +1,205 @@
+#!/usr/bin/python
+#
+# Run an nuttcp test
+#
+
+import datetime
+import logging
+import json
+import pscheduler
+import re
+import shutil
+import sys
+import time
+import nuttcp_parser
+import traceback
+import ipaddr
+import nuttcp_utils
+from nuttcp_defaults import *
+
+
+
+# track when this run starts
+start_time = datetime.datetime.now()
+
+logger = pscheduler.Log(prefix='tool-nuttcp')
+
+logger.debug("starting nuttcp tool")
+
+# parse JSON input
+input = pscheduler.json_load(exit_on_error=True)
+
+logger.debug("Input is %s" % input)
+
+try:
+    participant = input['participant']
+    participant_data = input['participant-data']
+    test_spec = input['test']['spec']
+    duration = pscheduler.iso8601_as_timedelta(input['schedule']['duration'])
+except KeyError as e:
+    pscheduler.fail("Missing required key in run input: %s" % e)
+except:
+    pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
+
+nuttcp_cmd  = participant_data[participant]['nuttcp_cmd']
+server_port = participant_data[1]['server_port']
+data_port_start = participant_data[1]['data_port_start']
+
+def run_client():    
+
+    logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
+
+    time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
+
+    nuttcp_args = [ nuttcp_cmd ]
+
+    nuttcp_args.append('-p')
+    nuttcp_args.append(data_port_start)
+
+    nuttcp_args.append('-P')
+    nuttcp_args.append(server_port)
+
+    # duration
+    test_duration = test_spec.get('duration')
+    if test_duration:
+        delta = pscheduler.iso8601_as_timedelta(test_duration)
+        test_duration = int(pscheduler.timedelta_as_seconds(delta))
+    else:
+        test_duration = DEFAULT_DURATION
+
+    nuttcp_args.append('-T')
+    nuttcp_args.append(test_duration)
+
+    # big list of optional arguments to nuttcp, map from test spec
+    if test_spec.has_key('interval') and test_spec['interval'] != None:
+        nuttcp_args.append('-i')
+        delta = pscheduler.iso8601_as_timedelta(test_spec['interval'])
+        nuttcp_args.append(int(pscheduler.timedelta_as_seconds(delta)))
+
+    if test_spec.has_key('parallel') and test_spec['parallel'] != None:
+        nuttcp_args.append('-N')
+        nuttcp_args.append(test_spec['parallel'])
+
+    if test_spec.has_key('window-size') and test_spec['window-size'] != None:
+        nuttcp_args.append('-w')
+        nuttcp_args.append(test_spec['window-size'])
+
+    if test_spec.has_key('mss') and test_spec['mss'] != None:
+        nuttcp_args.append('-M')
+        nuttcp_args.append(test_spec['mss'])
+
+    if test_spec.has_key('bandwidth') and test_spec['bandwidth'] != None:
+        nuttcp_args.append('-R')
+        nuttcp_args.append(test_spec['bandwidth'])
+
+    if test_spec.has_key('udp'):
+        nuttcp_args.append('-u')
+        nuttcp_args.append('-j') # add jitter reporting
+
+    if test_spec.has_key('buffer-length') and test_spec['buffer-length'] != None:
+        nuttcp_args.append('-l')
+        nuttcp_args.append(test_spec['buffer-length'])
+
+    if test_spec.has_key('dscp') and test_spec['dscp'] != None:
+        nuttcp_args.append('-c')
+        nuttcp_args.append(test_spec['dscp'])
+
+    if test_spec.has_key('ip-version') and test_spec['ip-version'] != None:
+        if test_spec['ip-version'] == 4:
+            iperf3_args.append('-4')
+        else:
+            iperf3_args.append('-6')
+
+    if test_spec.has_key('cpu-affinity') and test_spec['cpu-affinity'] != None:
+        nuttcp_args.append('-xc')
+        nuttcp_args.append(test_spec['cpu-affinity'])
+
+    # who to connect to
+    destination = test_spec['dest']
+    nuttcp_args.append(destination)
+
+    # join and run_program want these all to be string types, so
+    # just to be safe cast everything in the list to a string
+    nuttcp_args = map(lambda x: str(x), nuttcp_args)
+      
+    logger.info("Running command: %s" % " ".join(nuttcp_args))
+
+    try:
+        status, stdout, stderr = pscheduler.run_program(nuttcp_args)
+    except Exception as e:
+        logger.error("nuttcp failed to complete execution: %s" % e)
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "The nuttcp command failed during execution. See server logs for more details."})
+
+    logger.debug("Stdout = %s" % stdout)
+    logger.debug("Stderr = %s" % stderr)
+    
+    if status:
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "nuttcp returned an error: %s\n%s" % (stdout, stderr)})
+
+
+    lines = stdout.split("\n")    
+    logger.debug("Lines are %s " % lines)
+
+    results = nuttcp_parser.parse_output(lines)
+    results['diag'] = stdout
+
+    return results
+
+def run_server():
+
+    #init command
+    nuttcp_args = [ nuttcp_cmd, '-S', '-1', '--nofork']
+
+    nuttcp_args.append("-p")
+    nuttcp_args.append(data_server_port)
+
+    nuttcp_args.append("-P")
+    nuttcp_args.append(server_port)
+
+    nuttcp_args = map(lambda x: str(x), nuttcp_args)
+    logger.info("Running command: %s" % " ".join(nuttcp_args))
+
+    try:
+        status, stdout, stderr = pscheduler.run_program(nuttcp_args,
+                                                        timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)),
+                                                        timeout_ok = True)
+    except Exception as e:
+        logger.error("nuttcp failed to complete execution: %s" % e);
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "The nuttcp command failed during execution. See server logs for more details."})
+
+    if status:
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "nuttcp returned an error: %s\n%s" % (stdout, stderr)})
+    
+    #log stdout in debug mode
+    for line in stdout:
+        logger.debug(line)
+          
+    return {"succeeded": True}
+
+
+
+#determine whether we are the client or server mode for iperf
+results = {}
+try:
+    if participant == 0:
+        results = run_client()
+    elif participant == 1:
+        results = run_server()
+    else:
+        pscheduler.fail("Invalid participant.")
+except Exception as ex:
+    _, _, ex_traceback = sys.exc_info()
+    if ex_traceback is None:
+        ex_traceback = ex.__traceback__
+    tb_lines = [ line.rstrip('\n') for line in
+                 traceback.format_exception(ex.__class__, ex, ex_traceback)]
+    logger.debug(tb_lines)
+    logger.error("Exception %s" % ex);
+
+logger.info("Results: %s" % results)
+
+pscheduler.succeed_json(results)
