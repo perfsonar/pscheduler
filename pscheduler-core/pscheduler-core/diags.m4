@@ -72,13 +72,28 @@ dump_url 'https://localhost/pscheduler/tests?pretty&expanded=true'
 section "Installed Tools"
 dump_url 'https://localhost/pscheduler/tests?pretty&expanded=true'
 
-# TODO: Need to dump archivers when API supports it
+section "Tool Configurations"
+
+for CONFIG in $(find __TOOLCONFIGDIR__ -type f -print)
+do
+    echo "$(basename ${CONFIG}):"
+    echo
+    cat  "${CONFIG}"
+    echo
+    echo
+done
+
+section "Installed Archivers"
+dump_url 'https://localhost/pscheduler/archivers?pretty&expanded=true'
 
 section "Clock State"
 dump_url 'https://localhost/pscheduler/clock?pretty'
 
 
-# TODO: Need to dump tasks and runs when API supports it
+
+section "Near-Term Schedule"
+
+pscheduler schedule -PT2H +PT2H
 
 
 #

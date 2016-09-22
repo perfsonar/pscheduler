@@ -229,24 +229,38 @@ BEGIN
 	END IF;
 
 
-	run_result := pscheduler_internal(ARRAY['invoke', 'test', test_type, 'spec-is-valid'],
-		      NEW.json #>> '{test, spec}' );
-	IF run_result.status <> 0 THEN
-	    RAISE EXCEPTION 'Task package contains unusable test: %', run_result.stderr;
-	END IF;
+	-- Do this only if the JSON has changed
+	IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND NEW.json <> OLD.json)
+        THEN
 
+	    run_result := pscheduler_internal(ARRAY['invoke', 'test', test_type, 'spec-is-valid'],
+		          NEW.json #>> '{test, spec}' );
+	    IF run_result.status <> 0 THEN
+	        RAISE EXCEPTION 'Task package contains unusable test: %', run_result.stderr;
+	    END IF;
 
-	-- Extract participant list
-	run_result := pscheduler_internal(ARRAY['invoke', 'test', test_type, 'participants'],
-		      NEW.json #>> '{test, spec}' );
-	IF run_result.status <> 0 THEN
-	   RAISE EXCEPTION 'Unable to determine participants: %', run_result.stderr;
-	END IF;
-        NEW.participants := run_result.stdout::JSONB -> 'participants';
+	    -- Extract participant list
+	    run_result := pscheduler_internal(ARRAY['invoke', 'test', test_type, 'participants'],
+		          NEW.json #>> '{test, spec}' );
+	    IF run_result.status <> 0 THEN
+	        RAISE EXCEPTION 'Unable to determine participants: %', run_result.stderr;
+	    END IF;
+            NEW.participants := run_result.stdout::JSONB -> 'participants';
+	    IF NEW.participants IS NULL
+            THEN
+                RAISE EXCEPTION 'INTERNAL ERROR: Test produced no list of participants from task.';
+            END IF;
+
+	    NEW.nparticipants := jsonb_array_length(NEW.participants);
+	    IF NEW.nparticipants IS NULL OR NEW.nparticipants = 0
+            THEN
+                RAISE EXCEPTION 'INTERNAL ERROR: Test produced empty participant list from task.';
+            END IF;
+
+        END IF;
+
 	-- TODO: Should probably check that the list members are
 	-- unique and that one of them includes the local system.
-
-	NEW.nparticipants := jsonb_array_length(NEW.participants);
 
 	-- Validate the participant number
 	IF NEW.participant IS NULL THEN
@@ -376,15 +390,17 @@ BEGIN
 	END IF;
 
         -- See what the tool says about how long it should take.
-
-	run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_type, 'duration'],
-		      NEW.json #>> '{test, spec}' );
-	IF run_result.status <> 0 THEN
-	    RAISE EXCEPTION 'Unable to determine duration of test: %', run_result.stderr;
-	END IF;
-	temp_json := run_result.stdout::JSONB;
-	NEW.duration := interval_round_up( (temp_json #>> '{duration}')::INTERVAL );
-
+	
+	IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND NEW.json <> OLD.json)
+        THEN
+	    run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_type, 'duration'],
+		          NEW.json #>> '{test, spec}' );
+	    IF run_result.status <> 0 THEN
+	        RAISE EXCEPTION 'Unable to determine duration of test: %', run_result.stderr;
+	    END IF;
+	    temp_json := run_result.stdout::JSONB;
+	    NEW.duration := interval_round_up( (temp_json #>> '{duration}')::INTERVAL );
+        END IF;
 
 	--
 	-- ARCHIVES
