@@ -6,7 +6,8 @@
 import pscheduler
 import random
 import sys
-
+import iperf3_utils
+from iperf3_defaults import *
 
 json = pscheduler.json_load(exit_on_error=True)
 result = {}
@@ -16,11 +17,26 @@ try:
 except KeyError:
     pscheduler.fail("Missing participant")
 
+config = iperf3_utils.get_config()
+
+# both server and client need path to iperf
+# command
+if config == None or not config.has_option("iperf3", "iperf3_cmd"):
+    result["iperf3_cmd"] = DEFAULT_IPERF3_PATH
+else:
+    result["iperf3_cmd"] = config.get("iperf3", "iperf3_cmd")
+
+# Nothing else interesting for sender
 if participant == 0:
-    # Nothing interesing for participant 0
     pass
+# Receiver has to figure out what port it's going
+# to listen on
 elif participant == 1:
-    pass
+    if config == None or not config.has_option("iperf3", "server-port"):
+        result["server_port"] = DEFAULT_SERVER_PORT
+    else:
+        result["server_port"] = int(config.get("iperf3", "server_port"))
+
 else:
     pscheduler.fail("Invalid participant number for this test")
 

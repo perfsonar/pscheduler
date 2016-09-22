@@ -14,3 +14,9 @@ DEFAULT_WAIT_SLEEP = 2
 
 # The default iperf3 control port
 DEFAULT_SERVER_PORT = 5201
+
+# The default location of the config file
+CONFIG_FILE = '/etc/pscheduler/tool/iperf3.conf'
+
+# Default install location of iperf3
+DEFAULT_IPERF3_PATH = '/usr/bin/iperf3'
