@@ -67,7 +67,7 @@ def result_is_valid(input_json):
                         "type": "number"
                         },
                     "sent": {
-                        "description": "The ID of the stream, most relevant when running parallel streams",
+                        "description": "The number of packets sent",
                         "type": ["integer", "null"]
                         },
                     "lost": {
