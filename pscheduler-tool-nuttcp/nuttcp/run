@@ -153,7 +153,7 @@ def run_server():
     nuttcp_args = [ nuttcp_cmd, '-S', '-1', '--nofork']
 
     nuttcp_args.append("-p")
-    nuttcp_args.append(data_server_port)
+    nuttcp_args.append(data_port_start)
 
     nuttcp_args.append("-P")
     nuttcp_args.append(server_port)
