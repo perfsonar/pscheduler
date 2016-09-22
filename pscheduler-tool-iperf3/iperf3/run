@@ -124,11 +124,11 @@ def run_client():
         iperf3_args.append('-B')
         iperf3_args.append(test_spec['local-address'])
 
-    if test_spec.has_key('force-ipv4'):
-        iperf3_args.append('-4')
-
-    if test_spec.has_key('force-ipv6'):
-        iperf3_args.append('-6')
+    if test_spec.has_key('ip-version') and test_spec['ip-version'] != None:
+        if test_spec['ip-version'] == 4:
+            iperf3_args.append('-4')
+        else:
+            iperf3_args.append('-6')
 
     if test_spec.has_key('congestion') and test_spec['congestion'] != None:
         iperf3_args.append('-C')
