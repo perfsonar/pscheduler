@@ -183,14 +183,15 @@ def run_server():
 
     iperf3_args.append("-p")
     iperf3_args.append(server_port)
-  
-    logger.info("Running command: %s" % " ".join(iperf3_args))
 
     # need this to pad out the wait timeout,
     # convert to seconds
     omit = test_spec.get('omit', 0)
     if omit:
         omit = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(omit)) 
+
+    iperf3_args = map(lambda x: str(x), iperf3_args)
+    logger.info("Running command: %s" % " ".join(iperf3_args))
 
     try:
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
