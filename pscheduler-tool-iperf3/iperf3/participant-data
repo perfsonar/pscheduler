@@ -32,7 +32,7 @@ if participant == 0:
 # Receiver has to figure out what port it's going
 # to listen on
 elif participant == 1:
-    if config == None or not config.has_option("iperf3", "server-port"):
+    if config == None or not config.has_option("iperf3", "server_port"):
         result["server_port"] = DEFAULT_SERVER_PORT
     else:
         result["server_port"] = int(config.get("iperf3", "server_port"))
