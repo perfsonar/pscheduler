@@ -1,0 +1,34 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: ntplib
+Source: https://pypi.python.org/pypi/ntplib/
+
+Files: *
+Copyright: 2009 Charles-Francois Natali <cf.natali@gmail.com>
+License: LGPL-2+
+ ntplib is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2 of the License, or (at your option) any later version.
+ .
+ This package is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+ .
+ You should have received a copy of the GNU Lesser General Public
+ License along with this program; if not, write to the Free Software
+ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+ USA
+ .
+ On Debian systems, the complete text of the GNU Lesser General
+ Public License can be found in "/usr/share/common-licenses/LGPL-2".
+
+Files: debian/*
+Copyright: 2013 Tim Retout <diocles@debian.org>
+License: LGPL-2+
+ The Debian packaging is licensed under the same terms as ntplib
+ itself; either ntplib version 0.3.1 or, at your option, any later
+ version of ntplib you may have available.
+ .
+ On Debian systems, the complete text of the GNU Lesser General
+ Public License can be found in "/usr/share/common-licenses/LGPL-2".
