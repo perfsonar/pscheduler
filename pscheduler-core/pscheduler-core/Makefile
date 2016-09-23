@@ -11,6 +11,7 @@
 #   COMMANDSINSTALLED   Where $(COMMANDSDIR) is when installed
 #   INTERNALSDIR         Where internal programs should be installed
 #   INTERNALSINSTALLED   Where $(INTERNALSDIR) is when installed
+#   TOOLCONFIGDIR       Where tool configuration files live
 #
 
 PROGRAMS=
@@ -20,13 +21,13 @@ M4PROGRAMS=\
 
 COMMANDS=\
 	cancel \
-	diags \
 	result \
 	schedule \
 	task \
 	watch
 
 M4COMMANDS=\
+	diags \
 	internal
 
 INTERNALS=\
@@ -65,10 +66,15 @@ ifndef INTERNALSINSTALLED
 	@echo No INTERNALSSINSTALLED specified for build of $@
 	@false
 endif
+ifndef TOOLCONFIGDIR
+	@echo No TOOLCONFIGDIR specified for build of $@
+	@false
+endif
 	m4 \
 		-D__COMMANDS__=$(COMMANDSINSTALLED) \
 		-D__CLASSES__=$(CLASSESINSTALLED) \
 		-D__INTERNALS__=$(INTERNALSINSTALLED) \
+		-D__TOOLCONFIGDIR__=$(TOOLCONFIGDIR) \
 		$< > $@
 
 

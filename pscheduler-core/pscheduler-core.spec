@@ -41,6 +41,7 @@ make \
      INTERNALSDIR=$RPM_BUILD_ROOT/%{_pscheduler_internals} \
      INTERNALSINSTALLED=%{_pscheduler_internals} \
      PROFILEDDIR=$RPM_BUILD_ROOT/%{profile_d} \
+     TOOLCONFIGDIR=%{_pscheduler_tool_confdir} \
      install
 
 
