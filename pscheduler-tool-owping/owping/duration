@@ -15,6 +15,6 @@ interval = json.get('packet-interval', DEFAULT_PACKET_INTERVAL)
 count = json.get('packet-count', DEFAULT_PACKET_COUNT)
 packet_timeout = json.get('packet-timeout', DEFAULT_PACKET_TIMEOUT)
 
-print 'PT%dS' % ((interval * count) + packet_timeout + DEFAULT_FUDGE_FACTOR + DEFAULT_CLIENT_SLEEP)
-
-pscheduler.succeed()
+pscheduler.succeed_json({
+        "duration": 'PT%dS' % ((interval * count) + packet_timeout + DEFAULT_FUDGE_FACTOR + DEFAULT_CLIENT_SLEEP)
+})

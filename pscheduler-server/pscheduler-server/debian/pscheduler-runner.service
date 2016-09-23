@@ -1,0 +1,14 @@
+[Unit]
+Description=pScheduler server - runner
+
+[Service]
+Type=simple
+User=pscheduler
+Group=pscheduler
+PermissionsStartOnly=true
+ExecStart=/usr/lib/pscheduler/daemons/runner --dsn @/etc/pscheduler/database/database-dsn
+ExecStartPost=/bin/sh -c "echo $MAINPID > /run/pscheduler-runner.pid"
+ExecStopPost=/bin/rm -f /run/pscheduler-runner.pid
+
+[Install]
+WantedBy=multi-user.target

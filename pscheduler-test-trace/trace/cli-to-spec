@@ -29,7 +29,22 @@ else:
 
 # Gargle the arguments
 
-opt_parser = optparse.OptionParser()
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""Examples:
+
+  task trace --dest www.example.com
+      Trace from here to www.example.com
+
+  task trace --source ps2.example.org --dest www.example.com
+      Trace from ps2.example.org to www.example.com
+
+  task trace --length 512 --dest www.example.com
+      Use 512-byte probe packets
+
+  task trace --sendwait PT3S --dest www.example.com
+      Wait 3 seconds between probes
+"""
+                                            )
 
 opt_parser.add_option("--algorithm",
                       help="Trace algorithm",
@@ -108,8 +123,6 @@ opt_parser.add_option("--dest-port",
                       action="store", type="int",
                       dest="destport")
 
-# TODO: Need to add TOS once it's defined.
-
 opt_parser.add_option("--wait",
                       help="Wait time",
                       action="store", type="string",
@@ -127,14 +140,13 @@ opt_parser.add_option("--tos",
                       dest="tos")
 
 
-
 (options, remaining_args) = opt_parser.parse_args(args)
+
 if len(remaining_args) != 0:
-   pscheduler.fail("Found superfluous arguments on command line.")
+   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
 
 result = { 'schema': 1 }
-
 
 
 if options.algorithm is not None:

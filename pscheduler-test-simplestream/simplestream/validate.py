@@ -12,6 +12,7 @@ def spec_is_valid(json):
             "fail":           { "$ref": "#/pScheduler/Probability" },
             "dest":           { "$ref": "#/pScheduler/Host" },
             "schema":         { "$ref": "#/pScheduler/Cardinal" },
+            "source":         { "$ref": "#/pScheduler/Host" },
             "test-material":  { "$ref": "#/pScheduler/String" },
             "timeout":        { "$ref": "#/pScheduler/Duration" },
             },

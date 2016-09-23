@@ -57,7 +57,8 @@ class LimitTest():
 
 
     def evaluate(self,
-                 run   # The proposed run
+                 run,            # The proposed run
+                 check_schedule  # Keep/disregard time-related limits
                  ):
 
         # Dissent if the test isn't our type

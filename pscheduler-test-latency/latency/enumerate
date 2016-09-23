@@ -1,0 +1,15 @@
+#!/bin/sh
+
+exec cat << EOF
+{
+    "name": "latency",
+    "description": "Tests designed primarily to measure one-way network latency and associated metrics",
+    "version": "0.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+    "scheduling-class": "normal"
+}
+EOF

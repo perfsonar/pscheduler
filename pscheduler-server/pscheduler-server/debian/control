@@ -1,0 +1,20 @@
+Source: pscheduler-server
+Section: net
+Priority: optional
+Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9), dh-systemd, m4, python
+Standards-Version: 3.9.6
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-server
+Architecture: all
+Depends: ${misc:Depends}, python, curl, pscheduler-account,
+ python-daemon, python-flask, python-ipaddr, python-requests,
+ python-jsontemplate, python-detach, python-radix, python-pscheduler,
+ apache2 | httpd, libapache2-mod-wsgi, pscheduler-core,
+ dbconfig-common, postgresql, postgresql-9.4,
+ postgresql-plpython-9.4, postgresql-contrib-9.4
+Description: pScheduler server components
+ The pScheduler database, daemons and API web server

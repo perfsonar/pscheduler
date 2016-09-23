@@ -4,6 +4,8 @@ Functions for connecting to the pScheduler database
 
 import psycopg2
 
+from filestring import string_from_file
+
 def pg_connection(dsn='', autocommit=True):
     """
     Connect to the database, and return a handle to it
@@ -18,10 +20,7 @@ def pg_connection(dsn='', autocommit=True):
     quesies are issued.
     """
 
-    # Read the DSN from a file if requested
-    if dsn.startswith('@'):
-        with open(dsn[1:], 'r') as dsnfile:
-            dsn = dsnfile.read().replace('\n', '')
+    dsn = string_from_file(dsn)
 
     pg = psycopg2.connect(dsn)
     if autocommit:

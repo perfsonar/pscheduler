@@ -79,6 +79,6 @@ if hostnames:
 
 total += datetime.timedelta(seconds=1)
 
-print pscheduler.timedelta_as_iso8601(total)
-
-pscheduler.succeed()
+pscheduler.succeed_json({
+        "duration": pscheduler.timedelta_as_iso8601(total)
+})

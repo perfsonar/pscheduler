@@ -1,0 +1,30 @@
+Source: python-subprocess32
+Section: python
+Priority: optional
+Maintainer: Daniel Stender <debian@danielstender.com>
+Uploaders:
+ Debian Python Modules Team <python-modules-team@lists.alioth.debian.org>
+Build-Depends:
+ debhelper (>= 9),
+ dh-python,
+ python-all-dev
+Standards-Version: 3.9.8
+Homepage: https://pypi.python.org/pypi/subprocess32
+Vcs-Git: https://anonscm.debian.org/git/python-modules/packages/python-subprocess32.git
+Vcs-Browser: https://anonscm.debian.org/cgit/python-modules/packages/python-subprocess32.git
+X-Python-Version: >= 2.6
+Testsuite: autopkgtest-pkg-python
+
+Package: python-subprocess32
+Architecture: any
+Depends:
+ ${misc:Depends},
+ ${python:Depends},
+ ${shlibs:Depends}
+Description: backport of the Py3 stdlib subprocess module for Py2
+ This is a backport of the Python 3.2 subprocess module to replace the stdlib
+ subprocess module of Python versions 2.4 through 2.7, strongly recommended for
+ POSIX systems. It includes a C extension used internally to handle the code
+ path between fork() and exec(), which is more reliable when an application uses
+ threads. Timeout support backported from Python 3.3 is also included. On the
+ background, see PEP-324.

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+exec cat << EOF
+{
+    "name": "esmond",
+    "description": "Archive test results in an Esmond measurement archive",
+    "version": "0.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    }
+}
+EOF

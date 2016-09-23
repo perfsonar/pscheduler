@@ -1,0 +1,31 @@
+--- a/diags
++++ b/diags
+@@ -123,7 +123,7 @@
+ fi
+ 
+ section HTTPD Error Log
+-LOG="/var/log/httpd/error_log"
++LOG="/var/log/apache2/error.log"
+ if [ -r "${LOG}" ]
+ then
+     cat "${LOG}"
+@@ -134,17 +134,11 @@
+ 
+ section PostgreSQL Log
+ 
+-PG_DATA=$(postgresql-load <<EOF
+-\\t
+-\\a
+-SELECT setting FROM pg_settings WHERE name = 'data_directory';
+-EOF
+-)
+-PG_LOG="${PG_DATA}/pg_log"
++PG_LOG="/var/log/postgresql"
+ 
+ if [ -d "${PG_LOG}" ]
+ then
+-    ls -rtd ${PG_DATA}/pg_log/* | xargs cat
++    ls -rtd ${PG_DATA}/*.log | xargs cat
+ else
+     echo "PostgreSQL logs not found in ${PG_LOG}"
+ fi

@@ -1,0 +1,15 @@
+#!/bin/sed -e 1d
+{
+    "name": "powstream",
+    "description": "Run the OWAMP powstream command for one-way network latency and associated metrics",
+    "version": "1.0",
+    "tests": [ "latencybg" ],
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    }
+}

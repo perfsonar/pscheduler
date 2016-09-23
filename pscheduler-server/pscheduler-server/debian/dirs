@@ -1,0 +1,3 @@
+etc/pscheduler/database
+etc/pscheduler/default-archives
+var/log/pscheduler

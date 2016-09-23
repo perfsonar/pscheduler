@@ -1,0 +1,57 @@
+#!/usr/bin/python
+#
+# Format a result
+#
+
+import jsontemplate
+import pscheduler
+import sys
+
+from validate import result_is_valid
+
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
+
+input = pscheduler.json_load(exit_on_error=True)
+
+valid, message = result_is_valid(input["result"])
+
+if not valid:
+    pscheduler.fail(message)
+
+
+json = input["result"]
+
+if format == 'text/plain':
+
+   fail_template = "Test failed."
+
+   template = """
+Duration ... {.section duration}{duration}{.or}Not Reported{.end}
+   """
+
+elif format == 'text/html':
+
+   fail_template = "<p>Test failed.</p>"
+
+   template = """
+<table border="0">
+
+<tr><td><b>Duration</b></td><td>
+{.section duration}{duration}{.or}<i>Not Reported</i>{.end}
+</td></tr>
+</table>
+   """
+
+else:
+
+   pscheduler.fail("Unsupported format '%s'" % format)
+
+
+# TODO: Should probably handle exceptions in a nicer way.
+print jsontemplate.expand(
+   template if json['succeeded'] else fail_template,
+   json).strip()

@@ -5,6 +5,10 @@
 import optparse
 import pscheduler
 import sys
+import pscheduler
+import datetime
+
+logger = pscheduler.Log(prefix='test-throughput')
 
 if len(sys.argv) > 1:
 
@@ -28,20 +32,35 @@ else:
 
 # Gargle the arguments
 
-opt_parser = optparse.OptionParser()
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""Examples:
 
-opt_parser.add_option("-s", "--sender",
+  task throughput --dest ps.example.com
+      Measure througput from here to ps.example.com
+
+  task throughput --source ps.example.org --dest ps.example.com
+      Measure througput between ps.example.org and ps.example.com
+
+  task throughput --bandwidth 384M --dest ps.example.com
+      Limit bandwidth to 384 Mb per second
+
+  task throughput --parallel 4 --dest ps.example.com
+      Run four parallel streams
+"""
+                                            )
+
+opt_parser.add_option("-s", "--source",
                       help="Sending host",
                       action="store", type="string",
-                      dest="sender")
+                      dest="source")
 
 
-opt_parser.add_option("-r", "--receiver",
+opt_parser.add_option("-d", "--dest", "--destination",
                       help="Receiving host",
                       action="store", type="string",
-                      dest="receiver")
+                      dest="destination")
 
-opt_parser.add_option("-d", "--duration",
+opt_parser.add_option("-t", "--duration",
                       help="Total runtime of test",
                       action="store", type="string",
                       dest="duration")
@@ -51,25 +70,205 @@ opt_parser.add_option("-i", "--interval",
                       action="store", type="string",
                       dest="interval")
 
+opt_parser.add_option("-P", "--parallel",
+                      help="How many parallel streams to run during the test",
+                      action="store", type="int",
+                      dest="parallel")
+
+opt_parser.add_option("-u", "--udp",
+                      help="Use UDP instead of TCP testing",
+                      action="store_true", 
+                      dest="udp")
+
+opt_parser.add_option("-b", "--bandwidth",
+                      help="Bandwidth to rate limit the test to, supports SI notation such as 1G",
+                      action="store", type="string",
+                      dest="bandwidth")
+
+opt_parser.add_option("-w", "--window-size",
+                      help="TCP window size to use for the test, supports SI notation such as 64M",
+                      action="store", type="string",
+                      dest="window_size")
+
+opt_parser.add_option("-W", "--dynamic-window-size",
+                      help="Dynamic TCP window fallback size, supports SI notation such as 64M",
+                      action="store", type="string",
+                      dest="dynamic_window_size")
+
+opt_parser.add_option("-m", "--mss",
+                      help="TCP maximum segment size",
+                      action="store", type="int",
+                      dest="mss")
+
+opt_parser.add_option("-l", "--buffer-length",
+                      help="length of the buffer to read/write from",
+                      action="store", type="int",
+                      dest="buffer_length")
+
+opt_parser.add_option("-4", "--force-ipv4",
+                      help="Force the test to use IPv4 for source/destination",
+                      action="store_true",
+                      dest="force_ipv4")
+
+opt_parser.add_option("-6", "--force-ipv6",
+                      help="Force the test to use IPv6 for source/destination",
+                      action="store_true", 
+                      dest="force_ipv6")
+
+opt_parser.add_option("-B", "--local-address",
+                      help="Use this as a local address for control and tests",
+                      action="store", type="string",
+                      dest="local_address")
+
+opt_parser.add_option("--dscp",
+                      help="DSCP value for ToS byte",
+                      action="store", type="int",
+                      dest="dscp")
+
+opt_parser.add_option("-O", "--omit",
+                      help="Number of seconds to omit from the start of the test",
+                      action="store", type="int",
+                      dest="omit")
+
+opt_parser.add_option("--tos",
+                      help="Type of service for outgoing packets",
+                      action="store", type="int",
+                      dest="tos")
+
+opt_parser.add_option("--no-delay",
+                      help="Set TCP no-delay flag, disables Nagle's algorithm",
+                      action="store",
+                      dest="no_delay")
+
+opt_parser.add_option("--congestion",
+                      help="Set TCP congestion control algorithm",
+                      action="store", type="string",
+                      dest="congestion")
+
+opt_parser.add_option("--zero-copy",
+                      help="Use a 'zero copy' method of sending data",
+                      action="store",
+                      dest="zero_copy")
+
+opt_parser.add_option("--flow-label",
+                      help="Set the IPv6 flow label, implies -6",
+                      action="store", type="string",
+                      dest="flow_label")
+
+opt_parser.add_option("--cpu-affinity",
+                      help="Set CPU affinity",
+                      action="store", type="string",
+                      dest="cpu_affinity")
+
+
+
+
 
 (options, remaining_args) = opt_parser.parse_args(args)
+
 if len(remaining_args) != 0:
-   pscheduler.fail("Found superfluous arguments on command line.")
+   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
 
 result = { 'schema': 1 }
 
-if options.sender is not None:
-   result['sender'] = options.sender
+if options.source is not None:
+   result['source'] = options.source
    
-if options.receiver is not None:
-   result['receiver'] = options.receiver
+if options.destination is not None:
+   result['destination'] = options.destination
 
-if options.receiver is not None:
-   result['duration'] = options.duration
+if options.duration is not None:
+   duration = options.duration
 
-if options.receiver is not None:
-   result['interval'] = options.interval
+   # convert epoch seconds to is8601
+   if duration.isdigit():
+      delta = datetime.timedelta(seconds=int(duration))
+      duration = pscheduler.timedelta_as_iso8601(delta)
 
+   result['duration'] = duration
+
+if options.interval is not None:
+
+   interval = options.interval
+
+   # convert epoch seconds to is8601
+   if interval.isdigit():
+      delta = datetime.timedelta(seconds=int(interval))
+      interval = pscheduler.timedelta_as_iso8601(delta)
+
+   result['interval'] = interval
+
+if options.parallel is not None:
+   result['parallel'] = options.parallel
+
+if options.udp:
+   result['udp'] = True
+
+if options.bandwidth is not None:
+   try:
+      result['bandwidth'] = pscheduler.si_as_number(options.bandwidth)
+   except ValueError as e:
+      pscheduler.fail("Invalid value \"%s\" for bandwidth: %s" % (options.bandwidth, e))
+
+if options.window_size is not None:
+   try:
+      result["window-size"] = pscheduler.si_as_number(options.window_size)
+   except ValueError as e:
+      pscheduler.fail("Invalid value \"%s\" for window size: %s" % (options.window_size, e))
+
+if options.dynamic_window_size is not None:
+   try:
+      result["dynamic-window-size"] = pscheduler.si_as_number(options.dynamic_window_size)
+   except ValueError as e:
+      pscheduler.fail("Invalid value \"%s\" for dynamic window size: %s" % (options.dynamic_window_size, e))
+
+if options.mss is not None:
+   result["mss"] = options.mss
+
+if options.buffer_length is not None:
+   result["buffer-length"] = options.buffer_length
+
+if options.force_ipv4:
+   result["force-ipv4"] = True
+
+if options.force_ipv6:
+   result["force-ipv6"] = True
+
+if options.local_address:
+   result["local-address"] = options.local_address
+
+if options.dscp:
+   result["dscp"] = options.dscp
+
+if options.omit:
+   result["omit"] = options.omit
+
+if options.tos:
+   result["tos"] = options.tos
+
+if options.no_delay:
+   result["no-delay"] = True
+
+if options.congestion:
+   result["congestion"] = options.congestion
+
+if options.zero_copy:
+   result["zero-copy"] = True
+
+if options.flow_label:
+   result["flow-label"] = options.flow_label
+   result["force-ipv6"] = True # flow label only works on ipv6
+
+if options.cpu_affinity:
+   result["cpu-affinity"] = options.cpu_affinity
+
+
+# This sort of belongs in spec-is-valid but has to be here because of 
+# the below step where we assume "me" if one isn't specified
+if not result.has_key("source") and not result.has_key("destination"):
+   pscheduler.fail("Either or both of source or destination must be specified")
+
+logger.debug("cli-to-spec -> %s" % result)
 
 pscheduler.succeed_json(result)

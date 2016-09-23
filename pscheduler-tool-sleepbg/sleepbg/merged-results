@@ -1,0 +1,17 @@
+#!/usr/bin/python
+#
+# Merge the participant results of a run by this tool into a
+# test-standard result.
+#
+
+import pscheduler
+
+input = pscheduler.json_load(exit_on_error=True);
+
+# Being a background test, this doesn't really have a result.
+results = {
+    "succeeded" : True,
+    "duration": "P0D"
+    }
+
+pscheduler.succeed_json(results)

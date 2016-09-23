@@ -1,0 +1,9 @@
+#!/usr/bin/python
+#
+# Determine the duration of a specified test.
+#
+import pscheduler
+
+pscheduler.succeed_json({
+        "duration": "PT60S"
+})

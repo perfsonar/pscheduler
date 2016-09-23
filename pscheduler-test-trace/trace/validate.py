@@ -55,6 +55,7 @@ def result_is_valid(json):
                     "rtt": { "$ref": "#/pScheduler/Duration" },
                     "as": { "$ref": "#/pScheduler/AS" },
                     "error": { "$ref": "#/pScheduler/icmp-error" },
+                    "mtu":     { "$ref": "#/pScheduler/Cardinal" }
                     },
                 "required": [
                     # Nothing required.

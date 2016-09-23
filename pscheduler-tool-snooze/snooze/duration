@@ -17,6 +17,9 @@ json = pscheduler.json_load(exit_on_error=True);
 # TODO: Make sure the type is one we like
 # TODO: Validate the spec
 
-print json['duration']
-
-pscheduler.succeed()
+try:
+    pscheduler.succeed_json({
+            "duration": json["duration"]
+            })
+except KeyError:
+    pscheduler.fail("Missing duration in spec")

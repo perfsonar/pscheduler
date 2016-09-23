@@ -16,14 +16,15 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-core
+Requires:	pscheduler-server
 Requires:	pscheduler-account
 Requires:	python-ipaddr
 Requires:	python-pscheduler
 Requires:	pscheduler-test-rtt
+Requires:	python-icmperror
 # This supplies ping.
-requires:	iputils
-requires:	sudo
+Requires:	iputils
+Requires:	sudo
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
@@ -63,12 +64,12 @@ Defaults!PSCHEDULER_TOOL_PING !requiretty
 
 EOF
 
-%post
-# TODO: Insert iptables rules to allow ping out?
 
+%post
+pscheduler internal warmboot
 
 %postun
-# TODO: Delete iptables rules to allow ping out?
+pscheduler internal warmboot
 
 
 %files

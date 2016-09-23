@@ -3,13 +3,13 @@
     "name": "snooze",
     "description": "Take very short sleeps",
     "version": "0.0",
-    "tests": [ "idle" ],
+    "tests": [ "idle", "idleex" ],
 
     "preference": 0,
 
     "maintainer": {
         "name": "perfSONAR Development Team",
-	"email": "info@perfsonar.net",
+	"email": "perfsonar-developer@internet2.edu",
 	"href": "http://www.perfsonar.net"
     }
 }

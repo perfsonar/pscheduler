@@ -46,7 +46,8 @@ class LimitTestType():
 
 
     def evaluate(self,
-                 run   # The proposed run
+                 run,            # The proposed run
+                 check_schedule  # Keep/disregard time-related limits
                  ):
 
         """Always return the set value"""

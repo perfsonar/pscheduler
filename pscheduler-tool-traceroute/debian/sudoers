@@ -1,0 +1,3 @@
+Cmnd_Alias PSCHEDULER_TOOL_TRACEROUTE = /usr/bin/traceroute
+pscheduler ALL = (root) NOPASSWD: PSCHEDULER_TOOL_TRACEROUTE
+Defaults!PSCHEDULER_TOOL_TRACEROUTE !requiretty

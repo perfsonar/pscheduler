@@ -1,0 +1,17 @@
+Source: pscheduler-archiver-failer
+Section: net
+Priority: optional
+Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.6
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-archiver-failer
+Architecture: all
+Depends: ${misc:Depends}, python, python-pscheduler,
+ pscheduler-server
+Description: Sometimes-failing archiver class for pScheduler
+ Archiver just like the bitbucket archiver but fails randomly about
+ 10% of the time.

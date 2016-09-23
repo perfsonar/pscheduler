@@ -270,7 +270,7 @@ log.debug("Traceroute exited %d: %s",
 if status != 0:
     pscheduler.succeed_json( {
             'succeeded': False,
-            'diags': None,
+            'diags': " ".join(argv),
             'error': stderr,
             'result': None
             } )

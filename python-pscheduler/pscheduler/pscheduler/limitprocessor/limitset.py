@@ -92,8 +92,10 @@ class LimitSet():
 
 
     def check(self,
-              task,   # Task to use as limit fodder
-              limit,  # The limit to check against
+              task,           # Task to use as limit fodder
+              limit,          # The limit to check against
+              check_schedule  # Keep/disregard time-related limits
+
               ):
         """Evaluate a single limit and return a hash:
         {
@@ -107,7 +109,7 @@ class LimitSet():
         except KeyError:
             raise ValueError("Undefined limit '%s'" % limit)
         assert evaluator is not None
-        evaluated = evaluator.evaluate(task)
+        evaluated = evaluator.evaluate(task, check_schedule)
 
         return evaluated
 

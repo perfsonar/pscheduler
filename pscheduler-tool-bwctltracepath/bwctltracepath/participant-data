@@ -1,0 +1,8 @@
+#!/bin/sh
+#
+# Return participant-specific data for a run
+#
+
+# Nothing in this case.
+echo '{}'
+exit 0

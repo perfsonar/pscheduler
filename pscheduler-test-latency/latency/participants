@@ -1,0 +1,30 @@
+#!/usr/bin/python
+#
+# Participant list generator for 'idle' task spec
+#
+# Input is a test spec, assumed to have been validated by spec-is-valid.
+#
+# Output is a list of hostnames or IPs that are participating.
+#
+
+import pscheduler
+import sys
+
+json = pscheduler.json_load(exit_on_error=True)
+source = json.get('source', None)
+dest = json.get('dest', None)
+
+#participant depends on mode
+if json.get('single-participant-mode', False):
+    #lead is whomever should be running the client. None is localhost
+    flip = json.get('flip', False)
+    if flip:
+        result = [ dest ]
+    else:
+        result = [ source ]
+else:
+    #source first participant, dest the second
+    result = [ source, dest ]
+
+pscheduler.json_dump(result, sys.stdout )
+pscheduler.succeed()

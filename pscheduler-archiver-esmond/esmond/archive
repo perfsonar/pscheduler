@@ -1,0 +1,193 @@
+#!/usr/bin/python
+#
+# Send a result to syslog.
+#
+
+import pscheduler
+import calendar
+import esmond_util
+
+#TODO: handle generic fallback
+
+#initialize logging
+log = pscheduler.Log(prefix="archiver-esmond", quiet=True)
+
+#read required JSON fields
+#json = {u'last-attempt': None, u'attempts': 0, u'data': {u'retry-policy': [{'attempts': 2, 'wait': "PT10S"}, {'attempts': 1, 'wait': "PT60S"}], u'url': u'http://10.0.1.17/esmond/perfsonar/archive', u'_auth-token': u'74c67388ca1d3c48b3660bda88de9729ac2c6f07'}, u'result': {u'schedule': {u'duration': u'PT15S', u'start': u'2016-07-29T12:47:31-04:00'}, u'tool': {u'verion': u'1.0', u'name': u'owping'}, u'participants': [u'psched-dev2'], u'result': {u'max-clock-error': 1.9199999999999999, u'packets-duplicated': 0, u'succeeded': True, u'histogram-latency': {u'-0.33': 5, u'-0.28': 11, u'-0.29': 9, u'-0.24': 2, u'-0.25': 12, u'-0.26': 4, u'-0.27': 3, u'-0.20': 5, u'-0.21': 5, u'-0.22': 6, u'-0.23': 8, u'-0.43': 1, u'-0.40': 2, u'-0.15': 1, u'-0.32': 3, u'-0.31': 4, u'-0.30': 6, u'-0.41': 2, u'-0.36': 1, u'-0.35': 1, u'-0.34': 1, u'-0.39': 2, u'-0.38': 1, u'-0.19': 2, u'-0.17': 3}, u'histogram-ttl': {u'255': 100}, u'packets-sent': 100, u'packets-reordered': 0, u'packets-lost': 0, u'packets-received': 100, u'schema': 1}, u'test': {u'type': u'latency', u'spec': {u'dest': u'10.0.1.25', u'source': u'10.0.1.28', u'single-participant-mode': True, u'schema': 1}}, u'id': u'f9b66107-05ea-4e79-ac71-bb16f8f82e3c'}}
+#json={u'last-attempt': None, u'attempts': 0, u'data': {u'url': u'http://10.0.1.17/esmond/perfsonar/archive', u'_auth-token': u'74c67388ca1d3c48b3660bda88de9729ac2c6f07', u'retry-policy': [{u'attempts': 2, u'wait': u'PT10S'}, {u'attempts': 1, u'wait': u'PT30S'}]}, u'result': {u'schedule': {u'duration': u'PT15S', u'start': u'2016-07-31T11:48:18-04:00'}, u'tool': {u'verion': u'1.0', u'name': u'iperf'}, u'participants': [u'10.0.1.28', u'10.0.1.25'], u'result': {u'diag': u'------------------------------------------------------------\nClient connecting to 10.0.1.25, TCP port 5001\nTCP window size: 19.3 KByte (default)\n------------------------------------------------------------\n[  3] local 10.0.1.28 port 60318 connected with 10.0.1.25 port 5001\n[ ID] Interval       Transfer     Bandwidth\n[  3]  0.0-10.0 sec  2.30 GBytes  1.98 Gbits/sec\n', u'intervals': [], u'succeeded': True, u'summary': {u'streams': [{u'jitter': None, u'lost': None, u'stream-id': u'3', u'throughput-bytes': 2300000000.0, u'start': 0.0, u'end': 10.0, u'throughput-bits': 1980000000.0, u'sent': None}], u'summary': {u'jitter': None, u'lost': None, u'stream-id': u'3', u'throughput-bytes': 2300000000.0, u'start': 0.0, u'end': 10.0, u'throughput-bits': 1980000000.0, u'sent': None}}}, u'test': {u'type': u'throughput', u'spec': {u'source': u'10.0.1.28', u'destination': u'10.0.1.25', u'schema': 1}}, u'id': u'd05436cb-b4f3-44fb-9581-0ed5c1622868'}}
+#json={u'last-attempt': None, u'attempts': 0, u'data': {u'url': u'http://10.0.1.17/esmond/perfsonar/archive', u'_auth-token': u'74c67388ca1d3c48b3660bda88de9729ac2c6f07', 'data-formatting-policy': 'mapped-and-raw', u'retry-policy': [{u'attempts': 2, u'wait': u'PT10S'}, {u'attempts': 1, u'wait': u'PT30S'}]}, u'result': {u'schedule': {u'duration': u'PT8S', u'start': u'2016-07-29T20:54:14-04:00'}, u'tool': {u'verion': u'0.0', u'name': u'traceroute'}, u'participants': [u'psched-dev2'], u'result': {u'paths': [[{u'ip': u'10.0.1.25', u'rtt': u'PT0.0005S'}]], u'succeeded': True, u'schema': 1}, u'test': {u'type': u'trace', u'spec': {u'dest': u'10.0.1.25', u'schema': 1}}, u'id': u'58404bb5-8a72-459a-b118-12e879d9dc99'}}
+#json={"last-attempt": None, "attempts": 0, "data": {"url": "http://10.0.1.17/esmond/perfsonar/archive", "_auth-token": "74c67388ca1d3c48b3660bda88de9729ac2c6f07", "retry-policy": [{"attempts": 2, "wait": "PT10S"}, {"attempts": 1, "wait": "PT30S"}]}, "result": {"schedule": {"duration": "PT11S", "start": "2016-07-30T00:19:03-04:00"}, "tool": {"verion": "0.0", "name": "ping"}, "participants": ["psched-dev2"], "result": {"loss": 0.0, "succeeded": True, "lost": 0, "min": "PT0.000333S", "duplicates": 0, "max": "PT0.000624S", "received": 5, "reorders": 0, "stddev": "PT0.000104S", "roundtrips": [{"ip": "10.0.1.25", "length": 64, "ttl": 64, "seq": 1, "rtt": "PT0.000333S"}, {"ip": "10.0.1.25", "length": 64, "ttl": 64, "seq": 2, "rtt": "PT0.000421S"}, {"ip": "10.0.1.25", "length": 64, "ttl": 64, "seq": 3, "rtt": "PT0.000362S"}, {"ip": "10.0.1.25", "length": 64, "ttl": 64, "seq": 4, "rtt": "PT0.000624S"}, {"ip": "10.0.1.25", "length": 64, "ttl": 64, "seq": 5, "rtt": "PT0.000408S"}], "schema": 1, "sent": 5, "mean": "PT0.000429S"}, "test": {"type": "rtt", "spec": {"dest": "10.0.1.25", "schema": 1}}, "id": "ee1f2ee6-8c6b-45ee-b89a-8ee32a71b981"}}
+json = pscheduler.json_load(exit_on_error=True)
+log.debug("Archiver received: %s" % json)
+test_type = json['result']['test']['type']
+test_spec = json['result']['test']['spec']
+test_result = json['result']['result']
+tool_name = 'pscheduler/%s' % json['result']['tool']['name']
+test_start_time = calendar.timegm(pscheduler.iso8601_as_datetime(json['result']['schedule']['start']).utctimetuple())
+lead_participant = json['result']['participants'][0]
+duration = esmond_util.iso8601_to_seconds(json['result']['schedule']['duration'])
+try:
+    url = json['data']['url']
+except KeyError:
+    pscheduler.succeed_json({
+        "succeeded": False,
+        "error": "You must provide the URL of the Esmond archive"
+    })
+    
+#Get security and auth-related optional fields
+auth_token = None
+if "_auth-token" in json['data']:
+    auth_token = json['data']['_auth-token']
+verify_ssl=False
+if "verify-ssl" in json['data']:
+    verify_ssl = json['data']['verify-ssl']
+
+#get explicit measurement-agent if set
+measurement_agent = None
+if "measurement-agent" in json['data']:
+     measurement_agent = json['data']['measurement-agent']
+    
+#get fields related to data formatting
+format_mapping = True
+add_raw_event_type = False
+fallback_raw = True
+if "data-formatting-policy" in json['data']:
+    if json['data']['data-formatting-policy'] == 'prefer-mapped':
+        pass # this is the default
+    elif json['data']['data-formatting-policy'] == 'mapped-and-raw':
+        add_raw_event_type = True
+    elif json['data']['data-formatting-policy'] == 'mapped-only':
+        fallback_raw = False 
+    elif json['data']['data-formatting-policy'] == 'raw-only':
+        format_mapping = False 
+
+#setup default data summaries
+summary_map = None
+if "summaries" in json['data']:
+    summary_map = json['data']['summaries']
+
+#prep retry policy
+try:
+    attempts = int(json['attempts'])
+except:
+    pscheduler.fail("Archiver must be given 'attempts' as a valid integer")
+retry_policy= []
+if 'retry-policy' in json['data']:
+    retry_policy = json['data']['retry-policy']
+
+#init client
+client = esmond_util.EsmondClient(url=url, auth_token=auth_token, verify_ssl=verify_ssl)
+
+#determine test type and format metadata and data
+record = None
+if format_mapping:
+    if test_type == 'latency':
+        record = esmond_util.EsmondLatencyRecord(
+            test_spec=test_spec,
+            lead_participant=lead_participant,
+            measurement_agent=measurement_agent,
+            tool_name=tool_name,
+            summaries=summary_map,
+            duration=duration,
+            ts=test_start_time, 
+            test_result=test_result
+        )
+    elif test_type == 'latencybg':
+        record = esmond_util.EsmondLatencyBGRecord(
+            test_spec=test_spec,
+            lead_participant=lead_participant,
+            measurement_agent=measurement_agent,
+            tool_name=tool_name,
+            summaries=summary_map,
+            duration=duration,
+            ts=test_start_time, 
+            test_result=test_result
+        )
+    elif test_type == 'throughput':
+        record = esmond_util.EsmondThroughputRecord(
+            test_spec=test_spec,
+            lead_participant=lead_participant,
+            measurement_agent=measurement_agent,
+            tool_name=tool_name,
+            summaries=summary_map,
+            duration=duration,
+            ts=test_start_time, 
+            test_result=test_result,
+            dst_field='destination'
+        )
+    elif test_type == 'trace':
+        record = esmond_util.EsmondTraceRecord(
+            test_spec=test_spec,
+            lead_participant=lead_participant,
+            measurement_agent=measurement_agent,
+            tool_name=tool_name,
+            summaries=summary_map,
+            duration=duration,
+            ts=test_start_time, 
+            test_result=test_result
+        )
+    elif test_type == 'rtt':
+        record = esmond_util.EsmondRTTRecord(
+            test_spec=test_spec,
+            lead_participant=lead_participant,
+            measurement_agent=measurement_agent,
+            tool_name=tool_name,
+            summaries=summary_map,
+            duration=duration,
+            ts=test_start_time, 
+            test_result=test_result
+        )
+    elif fallback_raw:
+        record = esmond_util.EsmondRawRecord(
+            test_type=test_type,
+            test_spec=test_spec,
+            lead_participant=lead_participant,
+            measurement_agent=measurement_agent,
+            tool_name=tool_name,
+            summaries=summary_map,
+            duration=duration,
+            ts=test_start_time, 
+            test_result=test_result,
+            src_field=None,
+            dst_field=None
+        )
+        #we already added raw type, so don't add it again
+        add_raw_event_type = False
+    else:
+        pscheduler.fail("Unable to store result because 'mapped-only' policy is being used and the test is of an unrecognized type %s" % test_type)
+else:
+    record = esmond_util.EsmondRawRecord(
+            test_type=test_type,
+            test_spec=test_spec,
+            lead_participant=lead_participant,
+            measurement_agent=measurement_agent,
+            tool_name=tool_name,
+            summaries=summary_map,
+            duration=duration,
+            ts=test_start_time, 
+            test_result=test_result,
+            src_field=None,
+            dst_field=None
+        )
+
+#add raw test result if it was requested we do so
+if add_raw_event_type:
+    record.enable_data_raw(test_result=test_result)
+    
+#send results to MA
+if record and record.metadata and record.data:
+    #POST metadata 
+    success, result = client.create_metadata(record.metadata)
+    #print result
+    if not success:
+        esmond_util.handle_storage_error(result, attempts=attempts, policy=retry_policy)
+    
+    metadata_key = result['metadata-key']
+
+    #PUT data
+    success, result = client.create_data(metadata_key, record.data)
+    if not success:
+        esmond_util.handle_storage_error(result, attempts=attempts, policy=retry_policy)
+
+#exit
+pscheduler.succeed_json({'succeeded': True})

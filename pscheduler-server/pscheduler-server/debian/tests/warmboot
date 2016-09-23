@@ -1,0 +1,3 @@
+#!/bin/sh -e
+
+pscheduler internal warmboot

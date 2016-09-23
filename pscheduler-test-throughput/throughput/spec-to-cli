@@ -12,16 +12,17 @@ if type(spec) != dict:
 result = []
 
 try:
-    result.append('--sender')
-    result.append(spec['sender'])
+    source = spec['source']
+    result.append('--source')
+    result.append(source)
 except KeyError:
-    pscheduler.fail("Missing sender")
+    pass  # Don't care if it's not there.
     
 try:
-    result.append('--receiver')
-    result.append(spec['receiver'])
+    result.append('--destination')
+    result.append(spec['destination'])
 except KeyError:
-    pscheduler.fail("Missing receiver")
+    pscheduler.fail("Missing destination")
 
 pscheduler.succeed_json(result)
 

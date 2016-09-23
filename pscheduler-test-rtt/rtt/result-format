@@ -15,12 +15,14 @@ try:
 except IndexError:
    format = 'text/plain'
 
-json = pscheduler.json_load(exit_on_error=True)
+input = pscheduler.json_load(exit_on_error=True)
 
-valid, message = result_is_valid(json)
+valid, message = result_is_valid(input["result"])
 
 if not valid:
     pscheduler.fail(message)
+
+json = input["result"]
 
 
 # TODO: These should do something reasonable if there are no rts in

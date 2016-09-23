@@ -28,12 +28,36 @@ else:
 
 # Gargle the arguments
 
-opt_parser = optparse.OptionParser()
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""Examples:
+
+  task idle --duration PT1M15S
+      Do nothing locally for one minute and 15 seconds
+
+  task idle --duration PT20S --host ps2.example.org
+      Make ps2.example.org be idle for 20 seconds
+
+  task idle --duration PT20S --starting-comment "Let's get lazy."
+      Emit a custom comment before idling
+
+  task idle --duration PT20S --parting-comment "I got nothing done."
+      Emit a custom comment after idling
+
+"""
+                                            )
+
 
 opt_parser.add_option("-d", "--duration",
                       help="Idle duration (ISO8601)",
                       action="store", type="string",
                       dest="duration")
+
+
+# The short version is capitalized because -h is for help.
+opt_parser.add_option("-H", "--host",
+                      help="Host which should be idle",
+                      action="store", type="string",
+                      dest="host")
 
 opt_parser.add_option("-s", "--starting-comment",
                       help="Starting comment",
@@ -46,13 +70,18 @@ opt_parser.add_option("-p", "--parting-comment",
                       dest="parting_comment")
 
 (options, remaining_args) = opt_parser.parse_args(args)
+
 if len(remaining_args) != 0:
-   pscheduler.fail("Found superfluous arguments on command line.")
+   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
+
 
 result = { 'schema': 1 }
 
 if options.duration is not None:
    result['duration'] = options.duration
+
+if options.host is not None:
+   result['host'] = options.host
 
 if options.starting_comment is not None:
    result['starting-comment'] = options.starting_comment

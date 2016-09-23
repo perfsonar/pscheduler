@@ -29,7 +29,23 @@ else:
 
 # Gargle the arguments
 
-opt_parser = optparse.OptionParser()
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""Examples:
+
+  task rtt --dest ps.example.com
+      Measure round trip time from here to ps.example.com
+
+  task rtt --source ps2.example.org --dest ps.example.com
+      Measure round trip time from ps2.example.org to www.example.com
+
+  task rtt --length 512 --dest ps.example.com
+      Use 512-byte packets
+
+  task rtt --ttl 12 --dest ps.example.com
+      Limit time to live to 12 hops
+"""
+                                            )
+
 
 opt_parser.add_option("--count",
                       help="Test count",
@@ -59,6 +75,11 @@ opt_parser.add_option("--interval",
                       help="Time to wait between packets sent",
                       action="store", type="string",
                       dest="interval")
+
+opt_parser.add_option("--ip-version",
+                      help="IP version to use",
+                      action="store", type="int",
+                      dest="ip_version")
 
 opt_parser.add_option("--source",
                       help="Source address or interface",
@@ -102,8 +123,9 @@ opt_parser.add_option("--timeout",
 
 
 (options, remaining_args) = opt_parser.parse_args(args)
+
 if len(remaining_args) != 0:
-   pscheduler.fail("Found superfluous arguments on command line.")
+   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
 
 result = { 'schema': 1 }
@@ -123,6 +145,9 @@ if options.hostnames is not None:
 
 if options.interval is not None:
    result['interval'] = options.interval
+
+if options.ip_version is not None:
+   result['ip-version'] = options.ip_version
 
 if options.source is not None:
    result['source'] = options.source

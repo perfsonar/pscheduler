@@ -3,32 +3,107 @@
 # Format a result
 #
 
-import jsontemplate
 import pscheduler
 import sys
+import validate
+import throughput_utils
 
-logger = pscheduler.Log()
+#constants
+SCHEMA_FILE = "pscheduler-schema-throughput-response.json"
+logger      = pscheduler.Log(prefix="test-throughput", debug=True)
 
 try:
    format = sys.argv[1]
 except IndexError:
    format = 'text/plain'
 
-json = pscheduler.json_load(exit_on_error=True)
+#load JSON
+input = pscheduler.json_load(exit_on_error=True)
+logger.debug("Input %s", input)
 
-logger.debug("json is %s" % json)
+# Validate output against schema
+valid, message = validate.result_is_valid(input["result"])
 
-print json
+if not valid:
+   pscheduler.fail(message)
 
-if format == 'text/plain':
+logger.debug("jsonschema passed for test result")
 
-   template = """
-{.section diag}{diag}{.end}
-"""
-else:
+json      = input["result"]
+test_spec = input["spec"]
 
-   pscheduler.fail("Unsupported format '%s'" % format)
+# we'll format the output slightly different depending on UDP vs TCP
+is_udp = False
+if test_spec.get("udp"):
+   is_udp = True
+
+output = ""
+
+intervals = json["intervals"]
+# make sure intervals are sorted first by whether they were omitted or not, and 
+# then by their start times
+intervals.sort(key=lambda x: (not x["summary"].get("omitted"), x["summary"]["start"]))
+
+# We're going to convert from interval view to stream view to keep
+# all the same data together
+stream_blocks = {}
+
+for interval in intervals:
+   streams = interval["streams"]
+   summary = interval["summary"]
+
+   # Make sure we get them in stream id order each time
+   streams.sort(key=lambda x:  x["stream-id"])
+
+   for stream in streams:
+      stream_block = stream_blocks.get(stream["stream-id"], [])      
+      stream_block.append(stream)
+      stream_blocks[stream["stream-id"]] = stream_block
 
 
-# TODO: Should probably handle exceptions in a nicer way.
-print jsontemplate.expand(template, json).strip()
+stream_ids = stream_blocks.keys()
+stream_ids.sort()
+
+# Don't show the per stream info if we only have the one, kind
+# of pointless
+for stream_id in stream_ids:
+   output += "* Stream ID %s\n" % stream_id
+   output += throughput_utils.format_stream_output(stream_blocks[stream_id], udp=is_udp)   
+   output += "\n"
+
+summary = json["summary"]
+summary_streams = summary["streams"]
+summary_summary = summary["summary"]
+
+summary_streams.sort(key=lambda x: x["stream-id"])
+
+# Same reasoning as above, don't bother to show summary for a single
+# thing
+if len(summary_streams) > 1:
+   for stream in summary_streams:
+      output += "* Stream ID %s Summary\n" % stream['stream-id']
+      output += throughput_utils.format_stream_output([stream], udp=is_udp, summary=True)
+      output += "\n"
+
+output += "Summary\n"
+output += throughput_utils.format_stream_output([summary_summary], udp=is_udp, summary=True)
+
+output += "\n"
+
+if json.get('mss-size'):
+   output += "MSS: %s bytes\n" % (json['mss-size'])
+if json.get('mtu'):
+   output += "MTU: %s bytes\n" % (json['mtu'])
+if json.get('tcp-window-size'):
+   output += "TCP Window Size: %sbytes" % (throughput_utils.format_si(json['tcp-window-size']))
+
+   if json.get('requested-tcp-window-size'):
+      output += "  Requested: %sbytes" % (throughput_utils.format_si(json['requested-tcp-window-size']))
+   output += "\n"
+
+
+
+#output += "\n\nDiag....\n"
+#output += json['diag']
+
+print output

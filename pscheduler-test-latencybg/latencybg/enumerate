@@ -1,0 +1,16 @@
+#!/bin/sh
+
+exec cat << EOF
+{
+    "name": "latencybg",
+    "description": "Run one-way latency tests that can run at same time as other tests",
+    "version": "0.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+
+    "scheduling-class": "background"
+}
+EOF

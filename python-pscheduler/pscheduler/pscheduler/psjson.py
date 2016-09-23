@@ -7,24 +7,28 @@ import sys
 import pscheduler
 
 
-def json_decomment(json, prefix='#'):
+def json_decomment(json, prefix='#', null=False):
     """
     Remove any JSON object emember whose name begins with 'prefix'
-    (default '#') and return the result.
+    (default '#') and return the result.  If 'null' is True, replace
+    the prefixed items with a null value instead of deleting them.
     """
     if type(json) is dict:
         result = {}
         for item in json.keys():
             if item.startswith(prefix):
-                next
+                if null:
+                    result[item] = None
+                else:
+                    next
             else:
-                result[item] = json_decomment(json[item])
+                result[item] = json_decomment(json[item], prefix=prefix)
         return result
 
     elif type(json) is list:
         result = []
         for item in json:
-            result.append(json_decomment(item))
+            result.append(json_decomment(item,prefix=prefix))
         return result
 
     else:

@@ -14,10 +14,16 @@ if random.random() > 0.8:
         "succeeded": True
         }
 else:
-    json = {
-        "succeeded": False,
-        "error": "Induced random failure",
-        "retry": "PT10S"
-        }
+    if random.random() > 0.5:
+        json = {
+            "succeeded": False,
+            "error": "Induced random failure with retry",
+            "retry": "PT10S"
+            }
+    else:
+        json = {
+            "succeeded": False,
+            "error": "Induced random failure, not retrying",
+            }
 
 pscheduler.succeed_json(json)

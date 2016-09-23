@@ -1,0 +1,17 @@
+Source: pscheduler-tool-bwctlping
+Section: net
+Priority: optional
+Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.6
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-tool-bwctlping
+Architecture: all
+Depends: ${misc:Depends}, python, python-pscheduler,
+ python-ipaddr, python-icmperror, iputils-ping,
+ bwctl-client, bwctl-server
+Description: pScheduler bwctlping tool
+ bwctlping tool class for pScheduler

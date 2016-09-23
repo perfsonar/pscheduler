@@ -1,0 +1,11 @@
+# see git-dpm(1) from git-dpm package
+244bdf570970dd319a91a5e6d1eaa95b9cfd7a34
+244bdf570970dd319a91a5e6d1eaa95b9cfd7a34
+244bdf570970dd319a91a5e6d1eaa95b9cfd7a34
+244bdf570970dd319a91a5e6d1eaa95b9cfd7a34
+python-subprocess32_3.2.7.orig.tar.gz
+75a8664ba54663016315dae17510af97c5a96953
+54240
+debianTag="debian/%e%v"
+patchedTag="patched/%e%v"
+upstreamTag="upstream/%e%u"

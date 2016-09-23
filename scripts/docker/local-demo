@@ -1,0 +1,101 @@
+#!/bin/sh -e
+#
+# Run a demonstration of pScheduler in multple containers on the local
+# host bound to a private network.
+#
+
+WHOAMI=$(basename $0)
+
+NAME=pscheduler-demo
+IMAGE="perfsonar/pscheduler-demo"
+NETWORK="${NAME}-net"
+PREFIX=psc
+
+if [ "$1" ]
+then
+    COMMAND="$1"; shift
+fi
+
+case "${COMMAND}" in
+
+    start)
+
+	# Check for detritus
+
+	if [ \
+	    $(docker ps --filter "name=${PREFIX}[0-9]+" --format '{{.Names}}' \
+	    | wc -l ) -gt 0 \
+	    -o \
+	    $(docker network ls --filter "name=${NETWORK}" | wc -l) -eq 2 ]
+	then
+	    echo "This demo may already be running.  To clean up any leftovers,"
+	    echo "run '${WHOAMI} stop', then re-run '${WHOAMI} start'."
+	    exit 1
+	fi
+
+	echo "Pulling image from DockerHub"
+	docker pull "${IMAGE}"
+	echo
+
+	echo -n "Creating private network '${NETWORK}'..."
+	docker network create "${NETWORK}" > /dev/null
+	echo " Done"
+
+	echo -n "Creating containers..."
+	for HOST in 1 2 3
+	do
+	    FULL="${PREFIX}${HOST}"
+	    docker run \
+		--detach \
+		--hostname "${FULL}" \
+		--name "${FULL}" \
+		--net "${NETWORK}" \
+		--privileged \
+		"${IMAGE}" \
+		> /dev/null
+	    echo -n " ${FULL}"
+	done
+	echo
+	;;
+
+
+    login)
+	DEST="$1"
+	[ "${DEST}" ] || DEST="${PREFIX}1"
+	docker exec -i -t "${DEST}" /bin/bash -c 'su - demo'
+	;;
+
+    root)
+        DEST="$1"
+        [ "${DEST}" ] || DEST="${PREFIX}1"
+        docker exec -i -t "${DEST}" /bin/bash -c 'su -'
+        ;;
+
+
+    stop)
+	echo -n "Removing containers..."
+	for HOST in $(docker ps --filter "name=${PREFIX}[0-9]+" --format '{{.Names}}')
+	do
+	    echo -n " ${HOST}..."
+	    docker rm -f "${HOST}" > /dev/null || true
+	done
+	echo " Done."
+
+	echo -n "Removing networks..."
+	if [ $(docker network ls --filter "name=${NETWORK}" | wc -l) -eq 2 ]
+	then
+	    echo -n " ${NETWORK}..."
+	    docker network rm "${NETWORK}" > /dev/null || true
+	fi
+	echo " Done."
+	;;
+
+
+    *)
+	echo "Usage: $(basename $0) start|login|stop" 1>&2
+	exit 1
+	;;
+
+esac
+
+exit 0

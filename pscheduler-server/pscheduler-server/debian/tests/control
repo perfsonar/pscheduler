@@ -1,0 +1,2 @@
+Tests: service, database, hostname, debug, warmboot
+Restrictions: needs-root

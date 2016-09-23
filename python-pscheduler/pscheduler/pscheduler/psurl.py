@@ -7,8 +7,30 @@ from psjson import *
 import requests
 
 
+# TODO: Decide what to do about these.  They're necessary for the time
+# being because perfSONAR generates a self-signed key that's used by
+# default.  Consider a global configuration item that turns this on
+# and off so sites that want to do verification can.
+
+# SECURITY: This disables key verification when using HTTPS.
+verify_keys = False
+
+
+# SECURITY: This suppressses warnings about not verifying keys when
+# using HTTPS.
+
+if not verify_keys:
+    # NOTE: This used to do a separate import of
+    # InsercureRequestWarning but can't because of the way Debian
+    # de-vendorizes the requests package.
+    requests.packages.urllib3.disable_warnings(
+        requests.packages.urllib3.exceptions.InsecureRequestWarning)
+
+
+
 class URLException(Exception):
     pass
+
 
 
 def url_get( url,          # GET URL
@@ -21,7 +43,7 @@ def url_get( url,          # GET URL
     """
 
     try:
-        request = requests.get(url, params=params)
+        request = requests.get(url, params=params, verify=verify_keys)
         status = request.status_code
         text = request.text
     except Exception as ex:
@@ -52,7 +74,7 @@ def url_post( url,          # GET URL
     Post to a URL, returning whatever came back.
     """
 
-    request = requests.post( url, params=params, data=data )
+    request = requests.post(url, params=params, data=data, verify=verify_keys)
     status = request.status_code
 
     if status != 200 and status != 201:
@@ -70,6 +92,7 @@ def url_post( url,          # GET URL
 
 def url_put( url,          # GET URL
              params={},    # GET parameters
+             data=None,    # Data for body
              json=True,    # Interpret result as JSON
              throw=True    # Throw if status isn't 200
              ):
@@ -77,7 +100,7 @@ def url_put( url,          # GET URL
     PUT to a URL, returning whatever came back.
     """
 
-    request = requests.put( url, params=params )
+    request = requests.put(url, params=params, data=data, verify=verify_keys)
     status = request.status_code
 
     if status != 200 and status != 201:
@@ -102,7 +125,7 @@ def url_delete( url,          # DELETE URL
     Delete a URL.
     """
 
-    request = requests.delete(url)
+    request = requests.delete(url, verify=verify_keys)
     status = request.status_code
 
     if status != 200:

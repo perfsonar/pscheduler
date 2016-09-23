@@ -1,0 +1,4 @@
+Tests: diags
+Restrictions: needs-root
+
+Tests: internal, task, watch

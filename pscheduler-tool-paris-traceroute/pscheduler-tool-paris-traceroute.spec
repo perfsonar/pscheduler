@@ -16,13 +16,14 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-core
+Requires:	pscheduler-server
 Requires:	pscheduler-account
 Requires:	python-ipaddr
 Requires:	python-pscheduler
 Requires:	pscheduler-test-trace
-requires:	paris-traceroute
-requires:	sudo
+Requires:	paris-traceroute
+Requires:	sudo
+Requires:	python-icmperror
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
@@ -61,14 +62,13 @@ Defaults!PSCHEDULER_TOOL_PARIS_TRACEROUTE !requiretty
 
 EOF
 
-%post
-ldconfig
-# TODO: Insert iptables rules to allow traceroute out?
 
+%post
+pscheduler internal warmboot
 
 %postun
 ldconfig
-# TODO: Delete iptables rules to allow traceroute out?
+pscheduler internal warmboot
 
 
 %files

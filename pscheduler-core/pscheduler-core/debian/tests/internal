@@ -1,0 +1,4 @@
+#!/bin/sh -e
+
+pscheduler internal list tool > $AUTOPKGTEST_TMP/output
+grep -C 20 '^[[]' $AUTOPKGTEST_TMP/output

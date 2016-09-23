@@ -3,15 +3,10 @@
 # Command-Line Interface for running tasks
 #
 
-# General syntax:
-#     pscheduler task [options] [schedule-opts] test-type [test-opts]
-
-# TODO: Get rid of the print statements in favor of some narrator
-# class we can shut off if the options call for quiet.
-
 import datetime
 import optparse
 import os
+import pipes
 import pscheduler
 import subprocess
 import sys
@@ -21,88 +16,144 @@ import time
 # Gargle the arguments
 #
 
-usage = "Usage: %prog [options] test-type [test-options]"
-opt_parser = optparse.OptionParser(usage = usage)
+
+class VerbatimParser(optparse.OptionParser):
+    def format_epilog(self, formatter):
+        return self.epilog
+
+opt_parser = VerbatimParser(
+    usage="Usage: %prog [options] test-type [test-options]",
+    epilog=
+"""
+For help with a test:
+
+  task test-type --help  (e.g., task trace --help)
+
+Examples:
+
+  task rtt --dest ps.example.com
+      Round-trip test from here to ps.example.com
+
+  task --repeat PT30M --max-runs 5 rtt --dest ps.example.com
+      Same, repeated every 30 minutes up to five times
+
+  task --tool tracepath trace --dest ps.example.com
+      Trace test using the tool "tracepath"
+
+  task --export rtt --count 10 --length 128 --dest ps.example.com > mytask
+      Export JSON describing task to file "mytask"
+
+  task --import mytest rtt 
+      Import and run the task described in the file "mytask"
+
+  task --import mytask rtt --dest ps.example.net
+      Import the task described in the file "mytask", change the destination
+      to ps.example.net and run it.
+"""
+    )
 opt_parser.disable_interspersed_args()
 
-# GENERAL OPTIONS
 
-opt_parser.add_option("--assist", "-a",
-                      help="Use the named host for assistance (default localhost or $PSCHEDULER_ASSIST)",
+# TASK OPTIONS
+
+task_group = optparse.OptionGroup(opt_parser, "Task Options")
+opt_parser.add_option_group(task_group)
+
+task_group.add_option("--archive",
+                      help="Specify where to archive result(s) (JSON; optionally @/path/to/file; may be repeated)",
+                      default=[],
+                      action="append", type="string",
+                      dest="archive")
+
+task_group.add_option("--reference",
+                      help="Save arbitrary JSON with task for reference (Optional @/path/to/file)",
                       action="store", type="string",
-                      dest="assist")  # Conflict with reserved word
+                      dest="reference")
 
-opt_parser.add_option("--export", '-e',
-                      help="Export task JSON to stdout and exit",
-                      action="store_true", default=False,
-                      dest="export")
+task_group.add_option("--tool",
+                      help="Choose a tool to use for the test (May be repeated for a preferred-order selection)",
+                      default=[],
+                      action="append", type="string",
+                      dest="tool")
 
-opt_parser.add_option("--format", "-f",
-                      help="Output format: plain (default), html, json or none",
-                      action="store", type="string",
-                      default="text",
-                      dest="format")
-
-opt_parser.add_option("--import", "-i",
-                      help="Read JSON task template from a file, - for stdin",
-                      action="store", type="string",
-                      dest="importt")  # Conflict with reserved word
-
-opt_parser.add_option("--quiet", '-q',
-                      help="Operate quietly",
-                      action="store_true", default=False,
-                      dest="quiet")
-opt_parser.add_option("--no-quiet",
-                      help="Don't operate quietly",
-                      action="store_false",
-                      dest="quiet")
-
-
-opt_parser.add_option("--url",
-                      help="Dump a URL that points to the task after posting and exit",
-                      action="store_true", default=False,
-                      dest="url")
-
-opt_parser.add_option("--wait",
-                      help="Wait for n runs of test",
-                      action="store", type="int", default=1,
-                      dest="wait")
 
 # SCHEDULING OPTIONS
 
-opt_parser.add_option("--max-runs",
-                      help="Maximum number of repeats",
+schedule_group = optparse.OptionGroup(opt_parser, "Scheduling Options")
+opt_parser.add_option_group(schedule_group)
+
+schedule_group.add_option("--max-runs",
+                      help="Maximum number of repeats (requires --repeat)",
                       action="store", type="int", default=1,
                       dest="max_runs")
 
 # TODO: Find a way to get rid of the rounding error in this.
-opt_parser.add_option("--randslip",
+schedule_group.add_option("--randslip",
                       help="Random slip fractiom (float in [0.0..1.0])",
                       action="store", type="float",
                       dest="randslip")
 
-opt_parser.add_option("--repeat",
+schedule_group.add_option("--repeat",
                       help="Repeat interval (ISO 8601 Duration)",
                       action="store", type="string",
                       dest="repeat")
 
-opt_parser.add_option("--slip",
+schedule_group.add_option("--slip",
                       help="Allowed start slip (ISO8601 Duration)",
                       action="store", type="string",
                       dest="slip")
 
-opt_parser.add_option("--start",
+schedule_group.add_option("--start",
                       help="Start time",
                       action="store", type="string",
                       dest="start")
 
-opt_parser.add_option("--until",
+schedule_group.add_option("--until",
                       help="Time after which scheduling should stop",
                       action="store", type="string",
                       dest="until")
 
 
-# TODO:  Need a --tool option to force a list of preferred tools.
+# OTHER OPTIONS
+
+other_group = optparse.OptionGroup(opt_parser, "Other Options")
+opt_parser.add_option_group(other_group)
+
+other_group.add_option("--assist",
+                      help="Use the host ASSIST for assistance (default localhost or $PSCHEDULER_ASSIST)",
+                      action="store", type="string",
+                      dest="assist")  # Conflict with reserved word
+
+other_group.add_option("--export",
+                      help="Export task JSON to stdout and exit",
+                      action="store_true", default=False,
+                      dest="export")
+
+other_group.add_option("--format",
+                      help="Output format: plain (default), html, json or none",
+                      action="store", type="string",
+                      default="text",
+                      dest="format")
+
+other_group.add_option("--import",
+                      help="Read JSON task template from a file, - for stdin",
+                      action="store", type="string",
+                      dest="importfile")
+
+other_group.add_option("--quiet",
+                      help="Operate quietly",
+                      action="store_true", default=False,
+                      dest="quiet")
+
+other_group.add_option("--url",
+                      help="Dump a URL that points to the task after posting and exit",
+                      action="store_true", default=False,
+                      dest="url")
+
+other_group.add_option("--debug", action="store_true", dest="debug")
+
+
+
 
 (options, remaining_args) = opt_parser.parse_args()
 
@@ -125,20 +176,21 @@ formats = {
     'text': 'text/plain',
     # Not "officially" supported, but here for completeness
     'text/html': 'text/html',
-    'text/json': 'application/json',
+    'application/json': 'application/json',
     'text/plain': 'text/plain',
     }
 
 try:
-    format = formats[options.format]
+    out_format = formats[options.format]
 except KeyError:
     pscheduler.fail("Invalid --format; must be text, html, json or none")
 
 
 if options.repeat is not None:
-    repeat = pscheduler.iso8601_as_timedelta(options.repeat)
-    if repeat is None:
-        pscheduler.fail("Invalid --repeat; must be ISO 8601 duration")
+    try:
+        repeat = pscheduler.iso8601_as_timedelta(options.repeat)
+    except ValueError as ex:
+        pscheduler.fail("Invalid --repeat: %s" % str(ex))
 
 
 if options.randslip is not None:
@@ -146,10 +198,22 @@ if options.randslip is not None:
     if randslip < 0.0 or randslip > 1.0:
         pscheduler.fail("Invalid --randslip; must be in [0.0..1.0]")
 
+if options.reference is not None:
+    try:
+        reference = pscheduler.string_from_file(options.reference)
+        reference = pscheduler.json_load(reference)
+    except IOError as ex:
+        pscheduler.fail("Unable to read reference file: " + str(ex))
+    except ValueError as ex:
+        pscheduler.fail("Invalid --reference '%s': %s"
+                        % (options.reference, str(ex)))
+
+
 if options.slip is not None:
-    slip = pscheduler.iso8601_as_timedelta(options.slip)
-    if slip is None:
-        pscheduler.fail("Invalid --slip; must be ISO 8601 duration")
+    try:
+        slip = pscheduler.iso8601_as_timedelta(options.slip)
+    except ValueError as ex:
+        pscheduler.fail("Invalid --slip: %s" % str(ex))
 elif options.repeat is None:
     # TODO: This is a stopgap that forces slip on non-repeating tasks
     # so scheduling won't fail if there isn't an immediate slot
@@ -160,9 +224,10 @@ elif options.repeat is None:
 if options.start is not None:
     # TODO: Support "Pxx" and "@Pxx" formats like the database does
     # Should have a module function that does this.
-    start = pscheduler.iso8601_as_datetime(options.start, localize=True)
-    if start is None:
-        pscheduler.fail("Invalid --start")
+    try:
+        start = pscheduler.iso8601_as_datetime(options.start, localize=True)
+    except ValueError as ex:
+        pscheduler.fail("Invalid --start: %s" % str(ex))
     if start <= pscheduler.time_now():
         pscheduler.fail("Invalid --start; must be in the future.")
     pass
@@ -170,14 +235,12 @@ if options.start is not None:
 if options.until is not None:
     # TODO: Support "Pxx" and "@Pxx" formats like the database does
     # TODO: Error handling in iso8601_as_datetime() needs improvement.
-    until = pscheduler.iso8601_as_datetime(options.until, localize=True)
-    if until is None:
-        pscheduler.fail("Invalid --until")
+    try:
+        until = pscheduler.iso8601_as_datetime(options.until, localize=True)
+    except ValueError as ex:
+        pscheduler.fail("Invalid --until: %s" % str(ex))
     if until <= pscheduler.time_now():
         pscheduler.fail("Invalid --until; must be in the future.")
-
-if options.wait < 0:
-    pscheduler.fail("Invalid --wait; must be 0 or more")
 
 if ( options.repeat is None
      and (
@@ -189,8 +252,10 @@ if ( options.repeat is None
                          " repetition-related options.")
 
 
-verbose = not options.quiet
+verbose = (not options.quiet) and (out_format == "text/plain")
 
+# TODO: Tie this to the options.
+log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True)
 
 # Decide who assists us.
 
@@ -199,12 +264,10 @@ if assist is None:
     assist = os.getenv('PSCHEDULER_ASSIST')
 
 # Last-ditch default
+last_ditch_assist = '127.0.0.1'
 if assist is None:
-    assist = '127.0.0.1'
-else:
-    if verbose:
-        print "Assistance will be from", assist
-    pass
+    assist = last_ditch_assist
+log.debug("Assistance is from %s", assist)
 
 
 #
@@ -212,7 +275,7 @@ else:
 # options add will override it.
 #
 
-if options.importt is None:
+if options.importfile is None:
     task = {
         'schema': 1,
         'schedule': {},
@@ -222,16 +285,21 @@ if options.importt is None:
         }
     task_read = False
 else:
-    if options.importt == '-':
+    if options.importfile == '-':
         file = sys.stdin
     else:
         try:
-            file = open(options.importt)
+            file = open(options.importfile)
         except IOError as ex:
             pscheduler.fail("Unable to open task %s" % (str(ex)))
     task = pscheduler.json_load(file, exit_on_error=True)
-    # TODO: Validate what we read as a task.
+    # TODO: Validate what we read as a task.  Or will the server cover this?
     task_read = True
+
+
+# Overlay the reference if specified
+if options.reference is not None:
+    task["reference"] = reference
 
 #
 # Overlay schedule options
@@ -283,21 +351,65 @@ assert test_type is not None
 
 task['test']['type'] = test_type
 
+
+
+# Add desired tools, if any.
+
+if options.tool:
+    task['tools'] = options.tool
+
+
+# Add archivers, if any.
+if options.archive:
+
+    archives = []
+
+    for archive in options.archive:
+        try:
+            archive_text = pscheduler.string_from_file(archive)
+            archive_json = pscheduler.json_load(archive_text)
+            # TODO:  Do we need to validate the JSON or will the server catch it?
+            archives.append(archive_json)
+        except (IOError, ValueError) as ex:
+            pscheduler.fail("Archiver '%s': %s" % (archive, str(ex)))
+
+    task['archives'] = archives
+
+
 #
 # Convert the remaining arguments to a test spec.
 #
 
+spec_url = pscheduler.api_url(host=assist,
+                              path='/tests/' + test_type + '/spec')
+log.debug("Converting to spec via %s", spec_url)
 status, raw_spec = pscheduler.url_get(
-    pscheduler.api_url(host=assist,
-                       path='/tests/' + test_type + '/spec'),
+    spec_url,
     params={ 'args': pscheduler.json_dump(remaining_args) },
     throw=False
     )
 
+if status == 400:
+
+    # Anything with --help or -h in it is a plea for help.
+    if "--help" in remaining_args or "-h" in remaining_args:
+        pscheduler.succeed(
+            "Usage: psc task [task-options] %s [test-options]\n\n%s"
+            % (test_type, raw_spec))
+
+    # Anything else is a bona-fide bad request.
+
+    pscheduler.fail("%s: %s" % (test_type, raw_spec))
+
 if status == 404:
     pscheduler.fail("Could not find test " + test_type + " on server")
+
+if status == 500:
+    pscheduler.fail("Internal error on on %s.  Consult system logs for details." \
+                        % ( "local pScheduler server" if assist == last_ditch_assist
+                            else assist ))
 elif status != 200:
-        pscheduler.fail(raw_spec)
+    pscheduler.fail("Unknown error %d: %s" % (status, raw_spec))
 
 json_to_merge = raw_spec
 assert 'spec' in task['test']
@@ -312,15 +424,20 @@ if options.export:
     pscheduler.succeed()
 
 
+if verbose:
+    print ("Submitting task to %s..." % assist) if assist != last_ditch_assist \
+        else "Submitting task..."
+
+
 #
 # Contact the assist server
 #
-
 status, text =  pscheduler.url_get( pscheduler.api_url(assist, '/hostname'),
                                     throw=False )
 if status != 200:
     pscheduler.fail("Can't talk to the pScheduler server at %s: %s"
                     % (assist, text))
+log.debug("Assist server says it is %s", text)
 
 
 
@@ -338,21 +455,35 @@ try:
             } )
 except Exception as ex:
     pscheduler.fail("Unable to determine the lead participant: " + str(ex))
+log.debug("Lead is %d/%s", status, lead)
+
+
+# If the lead is None, the usual behavior would be to task the server
+# on the local host.  If an assist server is being used, that's
+# probably a good indication that the local system has no server.
+# Barf mightily.
+
+if lead is None and assist != last_ditch_assist:
+    pscheduler.fail("""Test parameters are too ambiguous to use with an assist server.  All
+points involved in the test must be specified explicitly.""")
 
 
 #
 # Give the task to the lead for scheduling.
 #
 
+tasks_url = pscheduler.api_url(lead, '/tasks')
+log.debug("Posting task to %s", tasks_url)
+log.debug("Data is %s", task_json_text)
 try:
-    status, task_url = pscheduler.url_post( pscheduler.api_url(lead, '/tasks'),
+    status, task_url = pscheduler.url_post( tasks_url,
                                             data=task_json_text,
-                                            throw=False)
+                                            throw=True)
 except Exception as ex:
     pscheduler.fail("Unable to post task: " + str(ex))
 
 if status != 200:
-    pscheduler.fail("Unable to post task: " + task_url)
+    pscheduler.fail("Failed to post task: " + task_url)
 
 # If asked to just dump the URL, do that and exit.
 if options.url:
@@ -361,10 +492,8 @@ if options.url:
 if verbose:
     print "Task URL:"
     print task_url
+log.debug("Posted %s", task_url)
 
-
-# TODO: Everything below this is fundamentally what's in the 'watch'
-# program.  Should probably just run that instead.
 
 #
 # Get the first future run.
@@ -377,117 +506,25 @@ if verbose:
 # the task instead of building it here.
 
 runs_url = task_url + '/runs/first'
+log.debug("Fetching %s", runs_url)
 status, run_json = pscheduler.url_get(runs_url,
                                       params= { 'wait-local': True },
                                       throw=False)
 
-# TODO: Need to display something meaningful when this happens.  We
-# should have a way to put stillborn runs in the database with
-# diagnostics.
-
 if status == 404:
     pscheduler.fail("Run on server was never populated.")
 
-if status != 200:
-    pscheduler.fail("Failed to fetch run: " + run_json)
-
-run_url = run_json['href']
-
-if verbose:
-    print "Run URL:"
-    print run_url
+# Watch the task run.
 
 
-#
-# Wait for the run to start and finish and fetch the results
-#
+watch_args = [ "pscheduler", "watch",
+               "--format", out_format
+               ]
+if options.quiet:
+    watch_args.append("--quiet")
+# TODO: Pass --verbose and --debug once watch supports that.
+watch_args.append(task_url)
 
-start_time = run_json['start-time']
-wait_time = pscheduler.time_until_seconds(
-    pscheduler.iso8601_as_datetime(start_time))
-if verbose:
-    print "Run start: %s (~%s seconds)" % (start_time, int(wait_time))
-time.sleep(wait_time)
-
-end_time = run_json['end-time']
-wait_time = pscheduler.time_until_seconds(
-    pscheduler.iso8601_as_datetime(end_time))
-if verbose:
-    print "Run end:   %s (~%s seconds)" % (end_time, int(wait_time))
-time.sleep(wait_time)
-
-if verbose:
-    print "Waiting for results..."
-
-status, result = pscheduler.url_get( run_url,
-                                      params={ 'wait-merged': True },
-                                     throw=False )
-
-if status != 200:
-    pscheduler.fail("Failed to fetch run: %d: %s" % (status, result))
-
-#
-# If failed, dump diags.
-#
-
-# TODO: Need to do a better job picking this apart.  The full-result
-# member needs to be populated whether the test succeeded or not.
-
-try:
-    if (not 'result-merged' in result) \
-            or (result['result-merged'] is None):
-        raise KeyError()
-    status = result['result-merged']['succeeded']
-except KeyError as ex:
-    print "Unable to determine success or failure.  Returned JSON:"
-    print pscheduler.json_dump(result, pretty=True)
-    pscheduler.fail()
-
-
-if not status:
-    # TODO: Should have something nicer that dumps out the
-    # participants and what they said.
-    print
-    print "Run failed.  The following errors were reported:"
-
-    participants = result['participants']
-    full = result['result-full']
-
-    for participant in range(0, len(result['participants'])):
-        print "%s:" % participants[participant]
-        try:
-            print '   ',
-            full_part = full[participant]
-            if full_part is not None:
-                print '\n    '.join(full[participant]['error'].split('\n'))
-            else:
-                print '(No error reported)'
-        except KeyError:
-            # TODO: There should be an 'error' in the JSON, but don't
-            # punish the user if there isn't.
-            print "  (No error reported)"
-    pscheduler.fail()
-
-
-#
-# Print the final result.
-#
-
-# Easy out.
-if format is None:
-    pscheduler.succeed()
-
-status, formatted = pscheduler.url_get(
-    result['result-href'],
-    params={ 'wait': True,
-             'format': format },
-    json=False,
-    throw=False)
-
-if status != 200:
-    pscheduler.fail("Unable to retrieve formatted result: " + formatted)
-
-if verbose:
-    print
-print formatted.rstrip()
-pscheduler.succeed()
+watch_args = " ".join([ pipes.quote(arg) for arg in watch_args ])
+log.debug("Handing off: %s", watch_args)
+os.execl("/bin/sh", "/bin/sh", "-c", watch_args)

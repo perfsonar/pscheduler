@@ -85,9 +85,14 @@ class LimitProcessor():
 
 
     def process(self, task, hints):
-        """Process a task against the full limit set.
+        """Evaluate a proposed task against the full limit set.
 
-        Arguments::
+        If the task has no 'schedule' section it will be assumed that
+        is being evaluated on all other parameters except when it
+        runs.  (This will be used for restricting submission of new
+        tasks.)
+
+        Arguments:
             task - The proposed task
             hints - A hash of the hints to be used in identification
 
@@ -118,10 +123,15 @@ class LimitProcessor():
             return False, '\n'.join(diags)
         diags.append("Classified as %s" % (', '.join(classifications)))
 
-        passed, app_diags = self.applications.check(task, classifications)
+        check_schedule='schedule' in task
+
+        passed, app_diags = self.applications.check(task,
+                                                    classifications,
+                                                    check_schedule)
+
         diags.append(app_diags)
 
-        diags.append("Run is %s" % ("ALLOWED" if passed else "DENIED"))
+        diags.append("Proposal %s limits" % ("meets" if passed else "does not meet"))
 
         return passed, '\n'.join(diags)
 

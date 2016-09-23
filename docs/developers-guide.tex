@@ -28,109 +28,6 @@ that add to pScheduler's capabilities.
 \todo{Expand this.}
 
 
-\section{Configuring a System for Development and Test}
-
-Development and test is currently supported on Red Hat Enterprise
-Linux or CentOS 6.{\it x}.
-
-\todo{Is the model going to be that we develop on CentOS and do ports to Debian?}
-
-
-\subsection{System Requirements}
-
-The minimum recommended configuration for build and development is as
-follows:
-
-\begin{itemize}
-\item 32- or 64-bit Intel CPU.  (64-bit recommended)
-\item 2 GiB DRAM
-\item 10 GB disk
-\item Network connection which can reach the Internet, specifically
-  the PostgreSQL YUM repository at {\tt download.postgresql.org} and a
-  RHEL or CentOS mirror.  (The perfSONAR development team will
-  eventually make this repository available to sites unable to access
-  non-R\&E networks.)
-% TODO: Make PgSQL available on software.internet2.edu.
-\end{itemize}
-
-\subsection{Installation and Configuration}
-
-Follow these steps to configure the build/development system:
-
-\begin{enumerate}
-\item Boot the Red Hat Enterprise Linux or CentOS 6.{\it x} or 7.{\it
-  x} image.
-\item Configure the language, keyboard and storage devices
-  appropriately.
-\item Configure the network interface(s) to connect automatically.
-\item Configure the time, root password, and disk usage appropriately.
-\item Use the ``Minimal'' configuration for installation.
-\item Finish the installation and reboot.
-\item Log in as \root.
-\item On CentOS6, \rootcommand{yum -y install openssh-clients}
-\item \rootcommand{yum -y upgrade}
-\item Reboot.
-\item Copy the file {\tt scripts/system-prep} from the pScheduler
-  source distribution onto the new machine and place it on the new
-  system in {\tt /tmp}.
-\item If the system is a virtual machine hosted on VirtualBox on Linux
-  or OS X and you wish to have your account and home directory
-  available, configure the guest with a shared folder for your home
-  directory and named to match your login (e.g., {\tt /home/bob} as
-  {\tt bob}).  Then edit {\tt system-prep}, uncomment and set the four
-  environment variables at the top and attach the {\it VirtualBox
-    Guest Additions} CD image.  \todo{How do we handle a CD-only
-    install, where the Guest Additions image has to be in one drive
-    and the CentOS image has to be in the other?  Also need access to
-    the PostgreSQL repo, which needs network.}
-\item \rootcommand{/tmp/system-prep}
-\end{enumerate}
-
-
-If the system is a VirtualBox VM and you intend to use a shared folder
-for development, the VM must have the ability to create symbolic links
-on those filesystems.  This requires at least VirtualBox verion 5.0.5
-and can be enabled by shutting down the guest and executing executing
-the following command on the host:
-
-\begin{lstlisting}[language=json,firstnumber=1]
-VBoxManage setextradata VM-NAME \
-    VBoxInternal2/SharedFoldersEnableSymlinksCreate/SHARE-NAME 1
-\end{lstlisting}
-
-
-If the system is a virtual machine, this is a good point to create a
-snapshot or export it as an appliance.
-
-
-\subsection{Building and Installing pScheduler}
-
-pScheduler is divided into multiple packages, some of which have
-dependencies on others and each must be installed after being built.
-You should, therefore, consider the build/development system
-expendable and not do development on a production system.
-
-Other than the installation of finished packages, the build process
-does not produce by-products outside of the source directories.
-
-Once you have a system configured as described above, build and
-install pScheduler by doing the following:
-
-\begin{enumerate}
-\item Copy the pScheduler source distribution onto the system.
-\item Become \root.
-\item Unpack the source distribution.
-\item \rootcommand{cd {\it pScheduler source directory}}
-\item \rootcommand{make}
-\end{enumerate}
-
-Everything needed for pScheduler will be started on the next system
-boot.
-
-The effects of the installation can be un-done with \command{make
-  uninstall}.
-
-
 % -----------------------------------------------------------------------------
 % -----------------------------------------------------------------------------
 
@@ -400,6 +297,19 @@ used when pScheduler needs to determine what tests are installed.
   measures.
 \item{\tt version} - A \jsontype{Version}.
 \item{\tt maintainer} - A \jsontype{Maintainer}.
+\item{\tt scheduling-class} - A string indicating how runs of this
+  kind of test should be scheduled.  Valid values are as follows:
+  \begin{itemize}
+  \item {\tt background} - These tests are always run, even if the run
+    start time has passed and produce multiple results.  (See
+    \autoref{toolrun}, {\it \nameref{toolrun}} for details on how this
+    is accomplished.)
+  \item {\tt exclusive} - Runs are given time on the schedule
+    that is not shared with any scheduling class other than {\tt
+      background}.
+  \item {\tt normal} - These runs share schedule time with {\tt
+    background} and other {\tt normal} runs but not {\tt exclusive}.
+  \end{itemize}
 \end{itemize}
 
 \example
@@ -412,7 +322,8 @@ used when pScheduler needs to determine what tests are installed.
         "name": "Example Development Team",
         "email": "plug-ins@example.org",
         "href": "http://www.example.org/plug-ins"
-    }
+    },
+    "scheduling-class": "normal"
 }
 \end{lstlisting}
 
@@ -545,7 +456,12 @@ failed test, normally a short ``test failed'' message.
 implementations must support at least {\tt text/plain} and {\tt
   text/html}.
 
-\calloutitem{Standard Input} JSON containing a result for this test.
+\calloutitem{Standard Input} A JSON object containing the following
+elements:
+\begin{itemize}
+\item{\tt spec} - The specification for the test that was run.
+\item{\tt result} - The result produced by the run.
+\end{itemize}
 
 \calloutitem{Standard Output} The formatted output.
 
@@ -743,10 +659,15 @@ up before the test and tear down afterward.
 
 \calloutitem{Standard Input} A \jsontype{TestSpecification}.
 
-\calloutitem{Standard Output} The amount of time required, specified
-as a \jsontype{Duration}.  This value should be in whole seconds; any
-fraction will be increased to the next-largest number of seconds
-(e.g., {\tt PT7.13S} will be converted to {\tt PT8S}).
+\calloutitem{Standard Output} A JSON object containing the following
+items:
+
+\begin{itemize}
+\item{\tt duration} - The amount of time required, specified as a
+  \jsontype{Duration}.  This value should be in whole seconds; any
+  fraction will be increased to the next-largest number of seconds
+  (e.g., {\tt PT7.13S} will be converted to {\tt PT8S}).
+\end{itemize}
 
 \calloutitem{Standard Error} Empty if successful, plain text error
 messages on error.
@@ -795,8 +716,26 @@ related to the input and {\tt 3} for an error unrelated to the input.
 
 
 
-\subsubsection{run}
+\subsubsection{run}\label{toolrun}
 This method carries out the test as one of its participants.
+
+For tests whose scheduling class is {\tt normal} or {\tt exclusive},
+the method runs the test, produces the output described below and exits.
+
+When the scheduling class is {\tt background}, the method will produce
+multiple results until its time to run (duration) has expired.  Each
+result will be in the format described below followed by the delimiter
+string ``{\tt ---- pScheduler End Result ----}'' (four hyphens and a
+space on either end) placed on its own line.  The {\tt
+  api_result_delimiter()} function in the {\tt pscheduler} Python
+module makes this value available to programs.  It is recommended that
+programs implementing this method for background tests not buffer
+their output or make sure to flush it after writing the delimiter.
+Once the run is complete, the method should exit without producing any
+output.  Errors may be generated in the same way as for non-background
+tasks.
+
+
 \todo{Could use some examples.}
 
 \calloutitem{Standard Input} A JSON run specification containing the following items:

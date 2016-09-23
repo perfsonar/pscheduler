@@ -1,0 +1,8 @@
+#!/usr/bin/python
+#
+# Return participant-specific data for a run
+#
+
+import pscheduler
+
+pscheduler.succeed_json({})

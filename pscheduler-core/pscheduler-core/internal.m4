@@ -28,25 +28,7 @@ shift
 
 case "${COMMAND}" in
 
-    list)
-	# List the instances of a given class
-	[ $# -eq 1 ] || die "Usage: list type"
-	TYPE=$1
-	shift
-	[ -d "${LIBEXEC}/classes/${TYPE}" ] || die "Unknown type '${TYPE}'"
-	printf '['
-	# This is a POSIX-clean equivalent to find . -type d -maxdepth 1
-	( cd "${LIBEXEC}/classes/${TYPE}" && find . -type d ) \
-	    | sed -e 's|^./||' \
-	    | egrep -ve '^\.' \
-	    | grep -v / \
-	    | tr '\n' '/' \
-	    | sed -e 's|/$||; s|/|", "|g; s|^|"|; s|$|"|'
-	printf ']\n'
-	exit $?
-	;;
-
-
+    # This is done here to cut back on the number of execs.
     invoke)
 	# Invoke a method on an instance of a class
 	[ $# -ge 3 ] \
@@ -56,7 +38,6 @@ case "${COMMAND}" in
 	WHICH=$2
 	OP=$3
 	shift 3
-
 
 	RUN="${WHEREAMI}/../classes/${TYPE}"
 	[ -d "${RUN}" ] || die "INTERNAL ERROR: Unknown class ${TYPE}"
@@ -71,13 +52,9 @@ case "${COMMAND}" in
 	exec "${RUN}" "$@"
 	;;
 
-    nothing)
-	echo "Doing nothing (stdout)"
-	echo "Doing nothing (stderr)" 1>&2
-	exit 0
-	;;
-
     *)
+	INTERNAL_COMMAND="__INTERNALS__/${COMMAND}"
+	[ -x "${INTERNAL_COMMAND}" ] && exec "${INTERNAL_COMMAND}" "$@"	   
 	die "Usage: ${WHOAMI} command [args]"
 	;;
 

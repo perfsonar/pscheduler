@@ -1,0 +1,24 @@
+python-subprocess32 (3.2.7-1~bpo8+1) UNRELEASED; urgency=medium
+
+  * Rebuild for jessie-backports.
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Thu, 15 Sep 2016 10:07:35 +0200
+
+python-subprocess32 (3.2.7-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream release
+  * Fixed VCS URL (https)
+  * d/docs: README.txt -> README.md
+  * Standards-Version is 3.9.8 now (no changes needed)
+  * d/control: Changed homepage to PyPI
+  * Enabled autopkgtest-pkg-python testsuite
+  * d/copyright: Added myself to Debian part
+
+ -- Ondřej Nový <novy@ondrej.org>  Sat, 04 Jun 2016 14:43:26 +0200
+
+python-subprocess32 (3.2.6-1) unstable; urgency=medium
+
+  * Initial release (Closes: #797583).
+
+ -- Daniel Stender <debian@danielstender.com>  Tue, 01 Sep 2015 21:00:09 +0200

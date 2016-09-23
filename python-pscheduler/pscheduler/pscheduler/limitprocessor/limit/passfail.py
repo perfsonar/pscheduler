@@ -44,7 +44,8 @@ class LimitPassFail():
 
 
     def evaluate(self,
-                 run  # The proposed run (ignored here)
+                 run,            # The proposed run (ignored here)
+                 check_schedule  # Keep/disregard time-related limits
                  ):
 
         """Always return the set value"""

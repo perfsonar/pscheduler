@@ -111,17 +111,21 @@ Any valid JSON value as defined by ECMA 404.
 \subsection{ArchiveSpecification}
 Specification of an archive destination and supporting data, including these items:
 
-\typeditem{name}{String} The name of the archiver to be used.  The
+\typeditem{archiver}{String} The name of the archiver to be used.  The
 name provided must be one which is installed on the system.
 
 \typeditem{data}{AnyJSON} Data specific to the type of archiver which
 direct its behavior.  If not provided, {\tt null} will be used as the
-default.
+default.  Note that the REST API will change the value of any element
+whose name begins with an underscore to {\tt null} before returning it
+as part of a query.  This mechanism allows for information that needs
+to be kept private (e.g., authentication keys) to be provided as
+archiver data.
 
 \example
 \begin{lstlisting}[language=json]
 {
-    "name": "syslog",
+    "archiver": "syslog",
     "data": {
         "facility": "local7",
 	"level": "info",
@@ -614,9 +618,12 @@ of the structure.
 
 \typeditem{test}{TestSpecification} The test to be carried out.
 
-\typeditem{tools}{array} A list of the tools which may be used to
-carry out a test in order if preference.  Each tool is a {\tt String}.
-\todo{Current implementation has this as a single string.}
+\typeditem{tool}{array} The tool which will be used to carry out that
+task.  This is valid to provide but may be overwritten internally; see
+{\tt tools}, below.
+
+\typeditem{tools}{array} An array of strings naming the tools which
+may be used to carry out a test in order if preference.
 
 \typeditem{schedule}{ScheduleSpecification} An object describing how
 runs of the test are to be scheduled.
@@ -624,6 +631,11 @@ runs of the test are to be scheduled.
 \typeditem{archives}{Array} A list of archivers to which the result of
 each run of the test should be sent.  Each element is an {\tt
   ArchiveSpecification}.
+
+\typeditem{reference}{AnyJSON} An optional block of arbitrary JSON
+provided by the tasker for reference purposes, such as adding tags to
+a task for later query.
+
 
 \example
 \begin{lstlisting}[language=json]
@@ -654,7 +666,11 @@ each run of the test should be sent.  Each element is an {\tt
         {
             "name": "bitbucket",
         }
-    ]
+    ],
+    "reference": {
+        "tags": [ "this", "that" ],
+        "pie": 3.14
+    }
 }
 
 
@@ -673,7 +689,12 @@ elements:
 \typeditem{test}{String} The name of the test being carried out.
 
 \typeditem{spec}{AnyJSON} The specification of the test parameters.
-This must be valid for the test type specified by {\tt test}.
+This must be valid for the test type specified by {\tt test}.  Note
+that the REST API will change the value of any element whose name
+begins with an underscore to {\tt null} before returning it as part of
+a query.  This mechanism allows for information that needs to be kept
+private (e.g., authentication keys) to be provided as a test
+parameter.
 
 \example
 \begin{lstlisting}[language=json]

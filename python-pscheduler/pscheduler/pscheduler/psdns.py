@@ -6,9 +6,17 @@ import dns.reversename
 import dns.resolver 
 import multiprocessing
 import multiprocessing.pool
+import os
+import Queue
+import socket
+import threading
+
+# See Python 2.6 workaround below.
+
+import weakref
 
 
-__TIMEOUT__ = 2
+__DEFAULT_TIMEOUT__ = 2
 
 
 def __check_ip_version__(ip_version):
@@ -20,31 +28,88 @@ def __check_ip_version__(ip_version):
 # Single Resolution
 #
 
-def dns_resolve(host, query=None, ip_version=4):
+def __dns_resolve_host(host, ip_version, timeout):
+    """
+    Resolve a host using the system's facilities
+    """
+    family = socket.AF_INET if ip_version == 4 else socket.AF_INET6
+
+    def proc(host, family, queue):
+        try:
+            queue.put(socket.getaddrinfo(host, 0, family))
+        except socket.gaierror as ex:
+            # TODO: Would be nice if we could isolate just the not
+            # found error.
+            queue.put([])
+        except socket.timeout:
+            # Don't care, we just want the queue to be empty if
+            # there's an error.
+            pass
+
+    queue = Queue.Queue()
+    thread = threading.Thread(target=proc, args=(host, family, queue))
+    # Don't make Python wait for this thread to exit.
+    thread.daemon = True
+    thread.start()
+    try:
+        results = queue.get(True, timeout)
+        if len(results) == 0:
+            return None
+        family, socktype, proto, canonname, sockaddr = results[0]
+    except Queue.Empty:
+        return None
+
+    # NOTE: Don't make any attempt to kill the thread, as it will get
+    # Python all confused if it holds the GIL.
+
+    (ip) = sockaddr
+    return str(ip[0])
+
+
+
+def dns_resolve(host,
+                query=None,
+                ip_version=4,
+                timeout=__DEFAULT_TIMEOUT__,
+                ):
     """
     Resolve a hostname to its A record, returning None if not found or
     there was a timeout.
     """
     __check_ip_version__(ip_version)
 
-    # TODO: Need to also try resolution by local means (/etc/hosts)
+    if query is None:
 
-    try:
-        resolver = dns.resolver.Resolver()
-        resolver.timeout = __TIMEOUT__
-        resolver.lifetime = __TIMEOUT__
-        if query is None:
-            query = 'A' if ip_version == 4 else 'AAAA'
-        answers = resolver.query(host, query)
+        # The default query is for a host,
+
+        return __dns_resolve_host(host, ip_version, timeout)
+
+    else:
+
+        # Any other explicit query value is forced to use DNS.
+
+        try:
+            resolver = dns.resolver.Resolver()
+            resolver.timeout = timeout
+            resolver.lifetime = timeout
+            if query is None:
+                query = 'A' if ip_version == 4 else 'AAAA'
+            answers = resolver.query(host, query)
+        except (dns.exception.Timeout,
+                dns.resolver.NXDOMAIN,
+                dns.resolver.NoAnswer,
+                dns.resolver.NoNameservers):
+            return None
+
         return str(answers[0])
-    except (dns.exception.Timeout,
-            dns.resolver.NXDOMAIN,
-            dns.resolver.NoAnswer,
-            dns.resolver.NoNameservers):
-        return None
 
 
-def dns_resolve_reverse(ip):
+
+
+
+
+def dns_resolve_reverse(ip,
+                        timeout=__DEFAULT_TIMEOUT__):
     """
     Resolve an IP (v4 or v6) to its hostname, returning None if not
     found or there was a timeout.
@@ -54,8 +119,8 @@ def dns_resolve_reverse(ip):
 
     try:
         resolver = dns.resolver.Resolver()
-        resolver.timeout = __TIMEOUT__
-        resolver.lifetime = __TIMEOUT__
+        resolver.timeout = timeout
+        resolver.lifetime = timeout
         revname = dns.reversename.from_address(ip)
         answers = resolver.query(revname, 'PTR')
         return str(answers[0])
@@ -111,6 +176,11 @@ def dns_bulk_resolve(candidates, reverse=False, ip_version=None, threads=50):
     if len(candidates) == 0:
         return result
 
+    # Work around a bug in 2.6
+    # TODO: Get rid of this when 2.6 is no longer in the picture.
+    if not hasattr(threading.current_thread(), "_children"):
+        threading.current_thread()._children = weakref.WeakKeyDictionary()
+
     pool = multiprocessing.pool.ThreadPool(
         processes=min(len(candidates), threads) )
 
@@ -127,6 +197,8 @@ def dns_bulk_resolve(candidates, reverse=False, ip_version=None, threads=50):
 
 
 if __name__ == "__main__":
+    print "IPv4:"
+    print dns_resolve('localhost')
     print dns_resolve('www.perfsonar.net', ip_version=4)
     print dns_resolve('www.perfsonar.net', ip_version=4, query='SOA')
     print dns_bulk_resolve([
@@ -138,12 +210,15 @@ if __name__ == "__main__":
         'does-not-exist.internet2.edu',
     ], ip_version=4)
 
+
+    print "IPv6:"
     print dns_resolve('www.perfsonar.net', ip_version=6)
     print dns_bulk_resolve([
         'www.perfsonar.net',
     ], ip_version=6)
 
 
+    print "Bulk reverse:"
     print dns_bulk_resolve([
         '192.168.12.34',
         '8.8.8.8',
@@ -153,5 +228,6 @@ if __name__ == "__main__":
         'this-is-not-valid'
     ], reverse=True)
 
+    print "Bulk none:"
     print dns_bulk_resolve([
             ])

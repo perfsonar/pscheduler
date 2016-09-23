@@ -153,6 +153,14 @@ TO_CLEAN += build.log
 TO_CLEAN += *.rpm
 
 
+
+srpm: $(BUILD_DEPS) $(BUILD_DIR)
+	HOME=$(shell pwd) rpmbuild -v -bs $(RPMBUILD_OPTS) $(SPEC)
+	find $(BUILD_DIR) -name '*.src.rpm' | xargs -I{} cp {} .
+TO_CLEAN += *.src.rpm
+
+
+
 rpmdump:
 	@if [ -d "$(BUILD_RPMS)" ] ; then \
 	    for RPM in `find $(BUILD_RPMS) -name '*.rpm'` ; do \

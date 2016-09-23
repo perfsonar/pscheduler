@@ -42,11 +42,14 @@ then
     # needs low latency.
     iptables -I INPUT \
         -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT
+    iptables -I INPUT \
+        -p tcp -m state --state NEW -m tcp --dport 443 -j ACCEPT
     service iptables save
 %endif
 
 %if 0%{?el7}
     firewall-cmd -q --add-service=http --permanent
+    firewall-cmd -q --add-service=https --permanent
     systemctl restart firewalld
 %endif
 
@@ -58,10 +61,13 @@ then
 %if 0%{?el6}
     iptables -D INPUT \
         -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT
+    iptables -D INPUT \
+        -p tcp -m state --state NEW -m tcp --dport 443 -j ACCEPT
     service iptables save
 %endif
 %if 0%{?el7}
     firewall-cmd -q --add-service=http --permanent
+    firewall-cmd -q --add-service=https --permanent
     systemctl restart firewalld
 %endif
 fi

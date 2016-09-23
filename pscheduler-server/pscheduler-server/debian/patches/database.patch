@@ -1,0 +1,33 @@
+--- a/database/run_state.sql
++++ b/database/run_state.sql
+@@ -193,11 +193,7 @@
+     (run_state_missed(),   'Missed',   'missed'),
+     (run_state_failed(),   'Failed',   'failed'),
+     (run_state_trumped(),  'Trumped',  'trumped'),
+-    (run_state_nonstart(), 'Non-Starter', 'nonstart')
+-ON CONFLICT (id) DO UPDATE
+-SET
+-    display = EXCLUDED.display,
+-    enum = EXCLUDED.enum;
++    (run_state_nonstart(), 'Non-Starter', 'nonstart');
+ ALTER TABLE run_state ENABLE TRIGGER run_state_alter;
+ 
+ 
+--- a/database/scheduling_class.sql
++++ b/database/scheduling_class.sql
+@@ -135,14 +135,7 @@
+ VALUES
+     (scheduling_class_background(), 'Background', 'background', TRUE,  FALSE, TRUE),
+     (scheduling_class_exclusive(),  'Exclusive',  'exclusive',  FALSE, TRUE,  FALSE),
+-    (scheduling_class_normal(),     'Normal',     'normal',     FALSE, FALSE, FALSE)
+-ON CONFLICT (id) DO UPDATE
+-SET
+-    display = EXCLUDED.display,
+-    enum = EXCLUDED.enum,
+-    anytime = EXCLUDED.anytime,
+-    exclusive = EXCLUDED.exclusive,
+-    multi_result = EXCLUDED.multi_result;
++    (scheduling_class_normal(),     'Normal',     'normal',     FALSE, FALSE, FALSE);
+ ALTER TABLE scheduling_class ENABLE TRIGGER scheduling_class_alter;
+ 
+ 

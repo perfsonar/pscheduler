@@ -1,0 +1,219 @@
+#!/usr/bin/python
+#
+# Run an iperf3 test
+#
+
+import datetime
+import logging
+import json
+import pscheduler
+import re
+import shutil
+import sys
+import time
+import iperf3_parser
+import traceback
+import ipaddr
+from iperf3_defaults import *
+
+# track when this run starts
+start_time = datetime.datetime.now()
+
+logger = pscheduler.Log(prefix='tool-iperf3')
+
+logger.debug("starting iperf3 tool")
+
+# parse JSON input
+input = pscheduler.json_load(exit_on_error=True)
+
+logger.debug("Input is %s" % input)
+
+try:
+    participant = input['participant']
+    participant_data = input['participant-data']
+    test_spec = input['test']['spec']
+    duration = pscheduler.iso8601_as_timedelta(input['schedule']['duration'])
+except KeyError as e:
+    pscheduler.fail("Missing required key in run input: %s" % e)
+except:
+    pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
+
+
+def run_client():    
+
+    logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
+
+    time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
+
+    iperf3_args = ['/usr/bin/iperf3']
+
+    # who to connect to
+    destination = test_spec['destination']          
+
+    iperf3_args.append('-c')
+    iperf3_args.append(destination)
+
+    # duration
+    test_duration = test_spec.get('duration')
+    if test_duration:
+        delta = pscheduler.iso8601_as_timedelta(test_duration)
+        test_duration = int(pscheduler.timedelta_as_seconds(delta))
+    else:
+        test_duration = DEFAULT_DURATION
+
+    iperf3_args.append('-t')
+    iperf3_args.append(test_duration)
+
+    # always ask for json output, a lot more consistent to parse
+    iperf3_args.append("--json")
+
+    # big list of optional arguments to iperf3, map from test spec
+    if test_spec.has_key('interval') and test_spec['interval'] != None:
+        iperf3_args.append('-i')
+        delta = pscheduler.iso8601_as_timedelta(test_spec['interval'])
+        iperf3_args.append(int(pscheduler.timedelta_as_seconds(delta)))
+
+    if test_spec.has_key('parallel') and test_spec['parallel'] != None:
+        iperf3_args.append('-P')
+        iperf3_args.append(test_spec['parallel'])
+
+    if test_spec.has_key('window-size') and test_spec['window-size'] != None:
+        iperf3_args.append('-w')
+        iperf3_args.append(test_spec['window-size'])
+
+    if test_spec.has_key('mss') and test_spec['mss'] != None:
+        iperf3_args.append('-M')
+        iperf3_args.append(test_spec['mss'])
+
+    if test_spec.has_key('omit') and test_spec['omit'] != None:
+        iperf3_args.append('-O')
+        iperf3_args.append(test_spec['omit'])
+
+    if test_spec.has_key('bandwidth') and test_spec['bandwidth'] != None:
+        iperf3_args.append('-b')
+        iperf3_args.append(test_spec['bandwidth'])
+
+    if test_spec.has_key('udp'):
+        iperf3_args.append('-u')
+
+    if test_spec.has_key('buffer-length') and test_spec['buffer-length'] != None:
+        iperf3_args.append('-l')
+        iperf3_args.append(test_spec['buffer-length'])
+
+    if test_spec.has_key('dscp') and test_spec['dscp'] != None:
+        iperf3_args.append('-S')
+        iperf3_args.append(test_spec['dscp'])
+
+    if test_spec.has_key('tos') and test_spec['tos'] != None:
+        iperf3_args.append('-S')
+        iperf3_args.append(test_spec['tos'])
+
+    if test_spec.has_key('local-address') and test_spec['local-address'] != None:
+        iperf3_args.append('-B')
+        iperf3_args.append(test_spec['local-address'])
+
+    if test_spec.has_key('force-ipv4'):
+        iperf3_args.append('-4')
+
+    if test_spec.has_key('force-ipv6'):
+        iperf3_args.append('-6')
+
+    if test_spec.has_key('congestion') and test_spec['congestion'] != None:
+        iperf3_args.append('-C')
+        iperf3_args.append(test_spec['congestion'])
+
+    if test_spec.has_key('zero-copy'):
+        iperf3_args.append('-Z')
+
+    if test_spec.has_key('flow-label') and test_spec['flow-label'] != None:
+        iperf3_args.append('-L')
+        iperf3_args.append(test_spec['flow-label'])
+
+    if test_spec.has_key('cpu-affinity') and test_spec['cpu-affinity'] != None:
+        iperf3_args.append('-A')
+        iperf3_args.append(test_spec['cpu-affinity'])
+
+
+    # join and run_program want these all to be string types, so
+    # just to be safe cast everything in the list to a string
+    iperf3_args = map(lambda x: str(x), iperf3_args)
+      
+    logger.info("Running command: %s" % " ".join(iperf3_args))
+
+    try:
+        status, stdout, stderr = pscheduler.run_program(iperf3_args)
+    except Exception as e:
+        logger.error("iperf3 failed to complete execution: %s" % e)
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "The iperf3 command failed during execution. See server logs for more details."})
+
+    logger.debug("Stdout = %s" % stdout)
+    logger.debug("Stderr = %s" % stderr)
+
+    
+    if status:
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "iperf3 returned an error: %s" % stderr})
+
+
+    lines = stdout.split("\n")    
+    logger.debug("Lines are %s " % lines)
+
+    results = iperf3_parser.parse_output(lines)
+    results['diag'] = stdout
+
+    return results
+
+def run_server():
+
+    #init command
+    iperf3_args = ['/usr/bin/iperf3', '-s', '-1']
+    
+    logger.info("Running command: %s" % " ".join(iperf3_args))
+
+    # need thi
+    omit = test_spec.get('omit', 0)
+
+
+    try:
+        status, stdout, stderr = pscheduler.run_program(iperf3_args,
+                                                        timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)) + omit,
+                                                        timeout_ok = True)
+    except Exception as e:
+        logger.error("iperf3 failed to complete execution: %s" % e);
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "The iperf3 command failed during execution. See server logs for more details."})
+
+    if status:
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "iperf3 returned an error: %s" % stderr})
+    
+    #log stdout in debug mode
+    for line in stdout:
+        logger.debug(line)
+          
+    return {"succeeded": True}
+
+
+
+#determine whether we are the client or server mode for iperf
+results = {}
+try:
+    if participant == 0:
+        results = run_client()
+    elif participant == 1:
+        results = run_server()
+    else:
+        pscheduler.fail("Invalid participant.")
+except Exception as ex:
+    _, _, ex_traceback = sys.exc_info()
+    if ex_traceback is None:
+        ex_traceback = ex.__traceback__
+    tb_lines = [ line.rstrip('\n') for line in
+                 traceback.format_exception(ex.__class__, ex, ex_traceback)]
+    logger.debug(tb_lines)
+    logger.error("Exception %s" % ex);
+
+logger.info("Results: %s" % results)
+
+pscheduler.succeed_json(results)

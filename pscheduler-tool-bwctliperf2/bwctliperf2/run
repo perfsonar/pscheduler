@@ -1,0 +1,186 @@
+#!/usr/bin/python
+#
+# Run an iperf test
+#
+
+import datetime
+import logging
+import json
+import pscheduler
+import re
+import shutil
+import sys
+import time
+import iperf_parser
+import traceback
+import ipaddr
+from iperf_defaults import *
+
+# track when this run starts
+start_time = datetime.datetime.now()
+
+logger = pscheduler.Log(prefix='tool-bwctl')
+
+logger.debug("starting bwctl tool")
+
+# parse JSON input
+input = pscheduler.json_load(exit_on_error=True)
+#input = {"test": {"type": "throughput", "spec": {"destination": "10.0.1.17", "schema": 1}}, "participant-data": [{}], "schedule": {"duration": "PT1M11S", "start": "2016-09-02T14:55:35-04:00"}, "participant": 0, "schema": 1}
+
+logger.debug("Input is %s" % input)
+
+try:
+    participant = input['participant']
+    participant_data = input['participant-data']
+    test_spec = input['test']['spec']
+    duration = pscheduler.iso8601_as_timedelta(input['schedule']['duration'])
+except KeyError as e:
+    pscheduler.fail("Missing required key in run input: %s" % e)
+except:
+    pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
+
+
+def run_client():    
+
+    logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
+
+    time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
+
+    bwctl_args = ['/usr/bin/bwctl', '-T', 'iperf']
+    
+    #set source 
+    source = test_spec.get('source', None)
+    if source:
+        bwctl_args.append('-s')
+        bwctl_args.append(source)
+        
+    # who to connect to
+    destination = test_spec['destination']
+    bwctl_args.append('-c')
+    bwctl_args.append(destination)
+    
+    #ipv4 and ipv6
+    if test_spec.has_key('force-ipv4'):
+        bwctl_args.append('-4')
+
+    if test_spec.has_key('force-ipv6'):
+        bwctl_args.append('-6')
+
+    # duration
+    test_duration = test_spec.get('duration')
+    if test_duration:
+        delta = pscheduler.iso8601_as_timedelta(test_duration)
+        test_duration = int(pscheduler.timedelta_as_seconds(delta))
+    else:
+        test_duration = DEFAULT_DURATION
+
+    bwctl_args.append('-t')
+    bwctl_args.append(test_duration)
+
+    if test_spec.has_key('interval') and test_spec['interval'] != None:
+        bwctl_args.append('-i')
+        delta = pscheduler.iso8601_as_timedelta(test_spec['interval'])
+        bwctl_args.append(int(pscheduler.timedelta_as_seconds(delta)))
+
+    if test_spec.has_key('parallel') and test_spec['parallel'] != None:
+        bwctl_args.append('-P')
+        bwctl_args.append(test_spec['parallel'])
+
+    if test_spec.has_key('window-size') and test_spec['window-size'] != None:
+        bwctl_args.append('-w')
+        bwctl_args.append(test_spec['window-size'])
+
+    if test_spec.has_key('mss') and test_spec['mss'] != None:
+        bwctl_args.append('-m')
+        bwctl_args.append(test_spec['mss'])
+
+    if test_spec.has_key('bandwidth') and test_spec['bandwidth'] != None:
+        bwctl_args.append('-u') # iperf only support UDP bandwidth throttling, this is checked for earlier too
+        bwctl_args.append('-b')
+        bwctl_args.append(test_spec['bandwidth'])
+
+    if test_spec.has_key('buffer-length') and test_spec['buffer-length'] != None:
+        bwctl_args.append('-l')
+        bwctl_args.append(test_spec['buffer-length'])
+
+    if test_spec.has_key('dscp') and test_spec['dscp'] != None:
+        bwctl_args.append('-D')
+        bwctl_args.append(test_spec['dscp'])
+
+    if test_spec.has_key('tos') and test_spec['tos'] != None:
+        bwctl_args.append('-S')
+        bwctl_args.append(test_spec['tos'])
+
+    if test_spec.has_key('local-address') and test_spec['local-address'] != None:
+        bwctl_args.append('-B')
+        bwctl_args.append(test_spec['local-address'])
+    
+    # join and run_program want these all to be string types, so
+    # just to be safe cast everything in the list to a string
+    bwctl_args = map(lambda x: str(x), bwctl_args)
+      
+    logger.info("Running command: %s" % " ".join(bwctl_args))
+    
+    try:
+        status, stdout, stderr = pscheduler.run_program(bwctl_args)
+    except Exception as e:
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "The bwctl command failed during execution. See server logs for more details."
+                                 })
+    
+    #see if command completed successfully
+    logger.debug("bwctl returned status %d" % status)
+
+    if status:
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "iperf returned an error: %s" % stderr
+                                 })
+    
+    err_lines = stderr.split("\n")
+    for err_line in err_lines:
+        if err_line.strip().startswith("bwctl: Unable to initiate peer handshake"):
+            pscheduler.succeed_json({"succeeded": False, "error": err_line.strip()})
+        elif err_line.strip().startswith("bwctl: Unable to connect"):
+            pscheduler.succeed_json({"succeeded": False, "error": err_line.strip()})
+    
+    lines = stdout.split("\n")   
+    iperf_lines = []
+    in_iperf = False
+    for line in lines:
+        if line.rstrip() == "RECEIVER START":
+            in_iperf = True
+        elif line.rstrip() == "RECEIVER END":
+            in_iperf = False
+        elif in_iperf:
+            iperf_lines.append(line)
+            
+    logger.debug("Stdout = %s" % stdout)
+    logger.debug("Stderr = %s" % stderr) 
+
+    logger.debug("Lines are %s " % lines)
+    logger.debug("iperf lines are %s " % iperf_lines)
+    
+    results = iperf_parser.parse_output(iperf_lines)
+    results['diag'] = stdout
+
+    return results
+
+#determine whether we are the client or server mode for iperf
+results = {}
+try:
+    if participant == 0:
+        results = run_client()
+    else:
+        pscheduler.fail("Invalid participant.")
+except Exception as ex:
+    _, _, ex_traceback = sys.exc_info()
+    if ex_traceback is None:
+        ex_traceback = ex.__traceback__
+    tb_lines = [ line.rstrip('\n') for line in
+                 traceback.format_exception(ex.__class__, ex, ex_traceback)]
+    logger.debug(tb_lines)
+    logger.error("Exception %s" % ex);
+
+logger.info("Results: %s" % results)
+
+pscheduler.succeed_json(results)

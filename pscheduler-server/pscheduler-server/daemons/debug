@@ -1,0 +1,91 @@
+#!/bin/sh -e
+#
+# Set debugging on one of the pScheduler services
+#
+# Usage: debug on|off [service ...]
+#
+# If no services are listed, all will be set.
+#
+
+VAR_RUN="/var/run"
+
+WHOAMI=$(basename $0)
+
+usage()
+{
+    echo "Usage: ${WHOAMI} on|off [service ...]" 1>&2
+    exit 1
+}
+
+[ $# -ge 1 ] || usage
+
+case "$1" in
+    on)
+	STATE=1
+	SIGNAL=USR1
+	;;
+    off)
+	STATE=0
+	SIGNAL=USR2
+	;;
+    *)
+	usage
+	;;
+esac
+shift
+
+
+if [ $# -eq 0 ]
+then
+    SERVICE_LIST="ticker scheduler runner archiver api"
+else
+    SERVICE_LIST="$@"
+fi
+
+# Validate everything before proceeding
+
+for SERVICE in $SERVICE_LIST
+do
+    case "$SERVICE" in
+	ticker|scheduler|runner|archiver|api)
+	    true
+	    ;;
+	*)
+	    echo "Unknown pScheduler service '$SERVICE'" 1>&2
+	    exit 1
+	    ;;
+    esac
+done
+
+# Hit 'em!
+
+for SERVICE in $SERVICE_LIST
+do
+    # The API is a special case
+    if [ "${SERVICE}" = "api" ]
+    then
+	# Don't care if this fails; keep going.
+	curl \
+	    --silent --show-error \
+	    --interface localhost \
+	    -o /dev/null \
+	    -X PUT "http://localhost/pscheduler/debug?state=${STATE}" \
+	    || true
+	continue
+    fi
+
+    PID_FILE="${VAR_RUN}/pscheduler-${SERVICE}.pid"
+    if [ ! -r "${PID_FILE}" ]
+    then
+	echo "Warning: ${SERVICE} does not appear to be running." 1>&2
+	continue
+    fi
+
+    PID=$(cat "${PID_FILE}")
+
+    # Don't care if this fails, just keep going.
+    kill -${SIGNAL} ${PID} || true
+    
+done
+
+exit 0

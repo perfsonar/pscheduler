@@ -1,0 +1,16 @@
+Source: pscheduler-tool-iperf3
+Section: net
+Priority: optional
+Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.6
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-tool-iperf3
+Architecture: all
+Depends: ${misc:Depends}, python, python-pscheduler,
+ python-ipaddr, iperf3
+Description: pScheduler iperf3 tool
+ iperf3 tool class for pScheduler

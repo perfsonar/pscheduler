@@ -23,6 +23,9 @@ Requires:	python
 Requires:	python-argparse
 Requires:	python-repoze.lru
 Requires:	python-vcversioner
+%if 0%{?el7}
+Requires:       python-functools32
+%endif
 
 BuildRequires:	python
 BuildRequires:	python-setuptools

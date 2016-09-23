@@ -88,7 +88,7 @@ class ApplicationSet():
         self.limits = limits
 
 
-    def __check_group(self, task, group):
+    def __check_group(self, task, group, check_schedule):
         """
         Check a group of limits and return pass/fail and an array of diags
         """
@@ -98,7 +98,7 @@ class ApplicationSet():
         requirement = group['require']
  
         conditions = group_conditions[requirement]
-        total = len(conditions)
+        total = len(group['limits'])
 
         stop_on = conditions['stop-on']
 
@@ -111,7 +111,13 @@ class ApplicationSet():
         stopped = False
 
         for limit in group['limits']:
-            evaluated = self.limits.check(task, limit)
+
+            # TODO: Consider finding a way to cache these results so
+            # that if the same limit is applied in multiple places, it
+            # doesn't have to be processed again.  Might not actually
+            # be an issue.
+
+            evaluated = self.limits.check(task, limit, check_schedule)
             limit_passed = evaluated['passed']
 
             if limit_passed:
@@ -142,7 +148,7 @@ class ApplicationSet():
         return passed, diags
 
 
-    def __check_application(self, application, task, classifiers):
+    def __check_application(self, application, task, classifiers, check_schedule):
 
         """Evaluate the groups of limits in an application, stopping when one fails."""
 
@@ -153,7 +159,7 @@ class ApplicationSet():
 
         for group in application['apply']:
             group_no += 1
-            group_passed, group_diags = self.__check_group(task, group)
+            group_passed, group_diags = self.__check_group(task, group, check_schedule)
             diags.extend([ "Group %d: %s" % (group_no, diag) for diag in group_diags ])
             if group_passed:
                 groups_failed -= 1
@@ -180,8 +186,9 @@ class ApplicationSet():
 
 
     def check(self,
-              task,        # Task to check
-              classifiers  # List of the classifiers 
+              task,                # Task to check
+              classifiers,         # List of the classifiers
+              check_schedule=True  # Keep/disregard time-related limits
               ):
 
         """Determine if a task can be run, return true/false and a string of
@@ -213,11 +220,12 @@ class ApplicationSet():
 
 
             passed, forced_stop, app_diags \
-                = self.__check_application(application, task, classifiers)
+                = self.__check_application(application, task, classifiers,
+                                           check_schedule)
 
             diags.extend(["    " + diag for diag in app_diags])
             if passed or forced_stop:
-                if forced_stop:
+                if not passed and forced_stop:
                     diags.append("    Failed - Stop Forced")
                 return passed, '\n'.join(diags)
 

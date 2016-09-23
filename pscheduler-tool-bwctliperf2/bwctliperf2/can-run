@@ -1,0 +1,84 @@
+#!/usr/bin/python
+#
+# Determine if this tool can run a test based on a test spec.
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+logger = pscheduler.Log(prefix='tool-iperf')
+
+def has_pscheduler(address):
+    #null participant means localhost, which means has psc by definition
+    if address is None:
+        return True
+    
+    #test query for /tests...oh the irony
+    status, raw_spec = pscheduler.url_get(
+                                            pscheduler.api_url( host=address,
+                                                                path='/tests'),
+                                            throw=False
+                                        )
+    return status == 200
+    
+json = pscheduler.json_load(exit_on_error=True)
+
+logger.info("can-run for %s" % json)
+
+if not json.get('type'):
+    pscheduler.fail('Missing test type')
+
+if json['type'] != 'throughput':
+    pscheduler.fail('Unsupported test type')
+
+if not json.get('spec'):
+    pscheduler.fail('Missing test spec')
+
+test_spec = json['spec']
+    
+if test_spec.get('bandwidth') and not test_spec.get('udp'):
+    pscheduler.fail('iperf cannot run TCP tests with throttled bandwidth')
+
+if test_spec.get('omit'):
+    pscheduler.fail('iperf does not support the --omit flag')
+
+if test_spec.get('flow-label'):
+    pscheduler.fail('iperf does not support the --flow-label flag')
+
+if test_spec.get('zero-copy'):
+    pscheduler.fail('iperf does not support the --zero-copy flag')
+
+if test_spec.get('congestion'):
+    pscheduler.fail('iperf does not support the --congestion flag')
+
+if test_spec.get('cpu-affinity'):
+    pscheduler.fail('iperf does not support the --cpu-affinity flag')
+
+if test_spec.get('no-delay'):
+    pscheduler.fail('iperf does not support the --no-delay flag')
+
+try:
+    source = test_spec['source']
+except KeyError:
+    source = None
+
+try: 
+    destination = test_spec['destination']
+except KeyError:
+    pscheduler.fail("Missing destination argument in spec")
+
+
+src_has_psc = has_pscheduler(source)
+dst_has_psc = has_pscheduler(destination)
+if src_has_psc and dst_has_psc:
+    pscheduler.fail("Both sides have pscheduler, no need for BWCTL")
+ 
+logger.debug("can-run succeeded")
+
+pscheduler.succeed()
+
+logger.debug("can-run succeeded")
+
+pscheduler.succeed()

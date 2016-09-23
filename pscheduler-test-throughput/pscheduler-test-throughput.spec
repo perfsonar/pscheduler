@@ -16,8 +16,9 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-core
+Requires:	pscheduler-server
 Requires:	python-pscheduler
+Requires:	python-jsontemplate
 
 BuildRequires:	pscheduler-rpm
 
@@ -39,7 +40,15 @@ make \
      install
 
 
+
+%post
+pscheduler internal warmboot
+
+
+%postun
+pscheduler internal warmboot
+
+
 %files
 %defattr(-,root,root,-)
 %{dest}
-%{_pscheduler_test_doc}/*

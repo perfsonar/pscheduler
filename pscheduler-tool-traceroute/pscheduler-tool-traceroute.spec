@@ -16,12 +16,13 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-core
+Requires:	pscheduler-server
 Requires:	pscheduler-account
 Requires:	python-pscheduler
 Requires:	pscheduler-test-trace
-requires:	traceroute
-requires:	sudo
+Requires:	python-icmperror
+Requires:	traceroute
+Requires:	sudo
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
@@ -61,11 +62,10 @@ Defaults!PSCHEDULER_TOOL_TRACEROUTE !requiretty
 EOF
 
 %post
-# TODO: Insert iptables rules to allow traceroute out?
-
+pscheduler internal warmboot
 
 %postun
-# TODO: Delete iptables rules to allow traceroute out?
+pscheduler internal warmboot
 
 
 %files

@@ -28,6 +28,6 @@ except KeyError:
     except KeyError:
         timeout = 'PT5S'
 
-print timeout
-
-pscheduler.succeed()
+pscheduler.succeed_json({
+        "duration": timeout
+})

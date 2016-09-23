@@ -1,5 +1,5 @@
 """
-Functions related to the pScheduler REST API
+Functions related to the pScheduler REST and Plugin APIs
 """
 
 import socket
@@ -18,13 +18,23 @@ def api_this_host():
 def api_url(host = None,
             path = None,
             port = None,
-            protocol = 'http'
+            protocol = 'https'
             ):
     """Format a URL for use with the pScheduler API."""
+
+    host = api_this_host() if host is None else str(host)
+
+    # IPv6 addresses get special treatment
+    try:
+        socket.inet_pton(socket.AF_INET6, host)
+        host = "[%s]" % host
+    except socket.error:
+        pass  # Not an IPv6 address.
+
     if path is not None and path.startswith('/'):
         path = path[1:]
     return protocol + '://' \
-        + (api_this_host() if host is None else str(host)) \
+        + host \
         + ('' if port is None else (':' + str(port))) \
         + api_root() + '/'\
         + ('' if path is None else str(path))
@@ -68,6 +78,14 @@ def api_is_run(url):
         return False
 
     return True
+
+
+def api_result_delimiter():
+    """
+    Return the delimiter to be used by background tests when producing
+    multiple results.
+    """
+    return "---- pScheduler End Result ----"
 
 
 if __name__ == "__main__":
