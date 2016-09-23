@@ -26,8 +26,10 @@ if json.get('omit'):
     logger.debug("Adding %s seconds because of omit flag" % omit_seconds)
     duration += omit_seconds
 
-logger.info("duration = %ss" % duration)
+duration = duration + DEFAULT_FUDGE_FACTOR + DEFAULT_WAIT_SLEEP
+
+logger.info("final duration = %ss" % duration)
 
 pscheduler.succeed_json({
-        "duration": 'PT%dS' % (duration + DEFAULT_FUDGE_FACTOR + DEFAULT_WAIT_SLEEP)
+        "duration": 'PT%dS' % (duration)
 })
