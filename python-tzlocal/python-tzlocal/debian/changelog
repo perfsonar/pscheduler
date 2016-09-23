@@ -1,6 +1,6 @@
-python-tzlocal (1.2.2-1~bpo8+1) jessie-backports; urgency=medium
+python-tzlocal (1.2.2-1~bpo7+1) wheezy-backports; urgency=medium
 
-  * Rebuild for jessie-backports.
+  * Rebuild for wheezy-backports.
 
  -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Thu, 15 Sep 2016 09:43:05 +0200
 
