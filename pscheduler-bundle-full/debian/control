@@ -1,0 +1,44 @@
+Source: pscheduler-bundle-full
+Section: net
+Priority: optional
+Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.6
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-bundle-full
+Architecture: all
+Depends:
+ pscheduler-account,
+ pscheduler-core,
+ pscheduler-test-idle,
+ pscheduler-test-idlebg,
+ pscheduler-test-idleex,
+ pscheduler-test-latency,
+ pscheduler-test-latencybg,
+ pscheduler-test-throughput,
+ pscheduler-test-rtt,
+ pscheduler-test-simplestream,
+ pscheduler-test-trace,
+ pscheduler-tool-owping,
+ pscheduler-tool-powstream,
+ pscheduler-tool-iperf2,
+ pscheduler-tool-iperf3,
+ pscheduler-tool-simplestreamer,
+ pscheduler-tool-sleep,
+ pscheduler-tool-sleepbg,
+ pscheduler-tool-snooze,
+ pscheduler-tool-ping,
+ pscheduler-tool-tracepath,
+ pscheduler-tool-traceroute,
+ pscheduler-tool-paris-traceroute,
+ pscheduler-archiver-bitbucket,
+ pscheduler-archiver-esmond,
+ pscheduler-archiver-failer,
+ pscheduler-archiver-syslog,
+ pscheduler-database,
+ pscheduler-server,
+Description: Full pScheduler Bundle
+ Bundle of all pScheduler packages
