@@ -380,6 +380,10 @@ def tasks_uuid(uuid):
         if arg_boolean('detail'):
 
             part_list = row[6];
+            # The database is not supposed to allow this, but spit out
+            # a sane default as a last resort in case it happens.
+            if part_list is None:
+                part_list = [None]
             if row[10] == 0 and part_list[0] is None:
                 part_list[0] = pscheduler.api_this_host()
 
