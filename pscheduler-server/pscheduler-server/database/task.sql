@@ -243,10 +243,19 @@ BEGIN
 	   RAISE EXCEPTION 'Unable to determine participants: %', run_result.stderr;
 	END IF;
         NEW.participants := run_result.stdout::JSONB -> 'participants';
-	-- TODO: Should probably check that the list members are
-	-- unique and that one of them includes the local system.
+	IF NEW.participants IS NULL
+        THEN
+            RAISE EXCEPTION 'INTERNAL ERROR: Test produced no list of participants from task.';
+        END IF;
 
 	NEW.nparticipants := jsonb_array_length(NEW.participants);
+	IF NEW.nparticipants IS NULL OR NEW.nparticipants = 0
+        THEN
+            RAISE EXCEPTION 'INTERNAL ERROR: Test produced empty participant list from task.';
+        END IF;
+
+	-- TODO: Should probably check that the list members are
+	-- unique and that one of them includes the local system.
 
 	-- Validate the participant number
 	IF NEW.participant IS NULL THEN
