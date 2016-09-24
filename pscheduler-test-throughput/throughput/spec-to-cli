@@ -3,27 +3,34 @@
 # Convert a test specification to command-line options
 
 import pscheduler
+import validate
 
 spec = pscheduler.json_load(exit_on_error=True)
 
 if type(spec) != dict:
     pscheduler.fail("Invalid JSON for this operation")
 
-result = []
+valid, message = validate.spec_is_valid(spec)
+if not valid:
+    pscheduler.fail(message)
 
-try:
-    source = spec['source']
-    result.append('--source')
-    result.append(source)
-except KeyError:
-    pass  # Don't care if it's not there.
-    
-try:
-    result.append('--destination')
-    result.append(spec['dest'])
-except KeyError:
-    pscheduler.fail("Missing destination")
+strings = []
+bools = []
 
+spec_properties = validate.SPEC_SCHEMA['properties']
+
+for item in spec_properties.keys():
+    if item == 'schema': continue
+    if spec_properties[item].has_key("$ref") and "Boolean" in spec_properties[item]['$ref']:
+        bools.append( (item, item) )
+    else:
+        strings.append( (item, item) )
+
+result = pscheduler.speccli_build_args(spec, 
+                                       strings=strings,
+                                       bools=bools)
 pscheduler.succeed_json(result)
+
+
 
 

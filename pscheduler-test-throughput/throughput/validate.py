@@ -5,185 +5,180 @@
 from pscheduler import json_validate
 import json
 
-def spec_is_valid(input_json):
-
-    schema = {        
-        "title": "pScheduler Throughput Specification Schema",
-        "type": "object",
-        "additionalProperties": False,
-        "local": {
-            },
-        "required": ["schema", "dest"],
-        "properties": {           
-            "schema":      { "$ref": "#/pScheduler/Cardinal" },
-            "source":      { "$ref": "#/pScheduler/Host" },
-            "dest":        { "$ref": "#/pScheduler/Host" },
-            "duration":    { "$ref": "#/pScheduler/Duration" },
-            "interval":    { "$ref": "#/pScheduler/Duration" },
-            "parallel":    { "$ref": "#/pScheduler/Cardinal" },
-            "udp":         { "$ref": "#/pScheduler/Boolean" },
-            "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },           
-            "window-size": { "$ref": "#/pScheduler/Cardinal" },
-            "mss":         { "$ref": "#/pScheduler/Cardinal" },
-            "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
-            "ip-version":    { "$ref": "#/pScheduler/ip-version" },
-            "local-address": { "$ref": "#/pScheduler/Host" },
-            "dscp":          { "$ref": "#/pScheduler/Cardinal" },
-            "omit":          { "$ref": "#/pScheduler/Duration" },
-            "tos":           { "$ref": "#/pScheduler/Cardinal" },
-            "dynamic-window-size":    { "$ref": "#/pScheduler/Cardinal" },
-            "no-delay":    { "$ref": "#/pScheduler/Boolean" },
-            "congestion":    { "enum": ["reno", "cubic", "bic", "htcp", "vegas",
-                                        "westwood", "YeAH"]
-                               },
-            "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
-            "flow-label":    { "$ref": "#/pScheduler/String" },
-            "cpu-affinity":    { "$ref": "#/pScheduler/String" }
-            }
+SPEC_SCHEMA = {        
+    "title": "pScheduler Throughput Specification Schema",
+    "type": "object",
+    "additionalProperties": False,
+    "local": {
+        },
+    "required": ["schema", "dest"],
+    "properties": {           
+        "schema":      { "$ref": "#/pScheduler/Cardinal" },
+        "source":      { "$ref": "#/pScheduler/Host" },
+        "dest":        { "$ref": "#/pScheduler/Host" },
+        "duration":    { "$ref": "#/pScheduler/Duration" },
+        "interval":    { "$ref": "#/pScheduler/Duration" },
+        "parallel":    { "$ref": "#/pScheduler/Cardinal" },
+        "udp":         { "$ref": "#/pScheduler/Boolean" },
+        "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },           
+        "window-size": { "$ref": "#/pScheduler/Cardinal" },
+        "mss":         { "$ref": "#/pScheduler/Cardinal" },
+        "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
+        "ip-version":    { "$ref": "#/pScheduler/ip-version" },
+        "local-address": { "$ref": "#/pScheduler/Host" },
+        "dscp":          { "$ref": "#/pScheduler/Cardinal" },
+        "omit":          { "$ref": "#/pScheduler/Duration" },
+        "tos":           { "$ref": "#/pScheduler/Cardinal" },
+        "dynamic-window-size":    { "$ref": "#/pScheduler/Cardinal" },
+        "no-delay":    { "$ref": "#/pScheduler/Boolean" },
+        "congestion":    { "enum": ["reno", "cubic", "bic", "htcp", "vegas",
+                                    "westwood", "YeAH"]
+                           },
+        "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
+        "flow-label":    { "$ref": "#/pScheduler/String" },
+        "cpu-affinity":    { "$ref": "#/pScheduler/String" }
         }
+    }
 
 
-
-    return json_validate(input_json, schema)
-
-
-def result_is_valid(input_json):
-
-    schema = {        
-        "title": "pScheduler Throughput Response Schema",
-        "type": "object",
-        "additionalProperties": False,
-        "local": {
-            "throughput-data": {
-                "type": "object",
-                "additionalProperties": False,
-                "properties": {
-                    "throughput-bits": {
-                        "description": "Summarized view of the overall throughput rate in bits/second",
-                        "type": "number"
-                        },
-                    "throughput-bytes": {
-                        "description": "Summarized view of the overall throughput rate in bytes/second",
-                        "type": "number"
-                        },
-                    "sent": {
-                        "description": "The ID of the stream, most relevant when running parallel streams",
-                        "type": ["integer", "null"]
-                        },
-                    "lost": {
-                        "description": "Summarized view of the overall lost packets",
-                        "type": ["integer", "null"]
-                        },
-                    "jitter": {
-                        "description": "Jitter reported",
-                        "type": ["number", "null"]
-                        },
-                    "stream-id": {
-                        "description": "The ID of the stream, most relevant when running parallel streams",
-                        "type": ["string", "integer"]
-                        },
-                    "start": {
-                        "description": "The relative start time of this reporting interval, relative to the start of the test",
-                        "type": "number"
-                        },
-                    "end": {
-                        "description": "The relative end time of this reporting interval, relative to the start of the test",
-                        "type": "number"
-                        },
-                    "rtt": {
-                        "description": "The RTT of the request",
-                        "type": ["number", "null"]
-                        },
-                    "tcp-window-size": {
-                        "description": "The TCP window size at this point in time",
-                        "type": ["integer", "null"]
-                        },
-                    "retransmits": {
-                        "description": "The number of retransmitted packets during this window",
-                        "type": ["integer", "null"]
-                        },
-                    "omitted": {
-                        "description": "Whether this interval was omitted for the summary",
-                        "$ref": "#/pScheduler/Boolean"
-                        }
+RESULT_SCHEMA = {        
+    "title": "pScheduler Throughput Response Schema",
+    "type": "object",
+    "additionalProperties": False,
+    "local": {
+        "throughput-data": {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "throughput-bits": {
+                    "description": "Summarized view of the overall throughput rate in bits/second",
+                    "type": "number"
+                    },
+                "throughput-bytes": {
+                    "description": "Summarized view of the overall throughput rate in bytes/second",
+                    "type": "number"
+                    },
+                "sent": {
+                    "description": "The ID of the stream, most relevant when running parallel streams",
+                    "type": ["integer", "null"]
+                    },
+                "lost": {
+                    "description": "Summarized view of the overall lost packets",
+                    "type": ["integer", "null"]
+                    },
+                "jitter": {
+                    "description": "Jitter reported",
+                    "type": ["number", "null"]
+                    },
+                "stream-id": {
+                    "description": "The ID of the stream, most relevant when running parallel streams",
+                    "type": ["string", "integer"]
+                    },
+                "start": {
+                    "description": "The relative start time of this reporting interval, relative to the start of the test",
+                    "type": "number"
+                    },
+                "end": {
+                    "description": "The relative end time of this reporting interval, relative to the start of the test",
+                    "type": "number"
+                    },
+                "rtt": {
+                    "description": "The RTT of the request",
+                    "type": ["number", "null"]
+                    },
+                "tcp-window-size": {
+                    "description": "The TCP window size at this point in time",
+                    "type": ["integer", "null"]
+                    },
+                "retransmits": {
+                    "description": "The number of retransmitted packets during this window",
+                    "type": ["integer", "null"]
+                    },
+                "omitted": {
+                    "description": "Whether this interval was omitted for the summary",
+                    "$ref": "#/pScheduler/Boolean"
                     }
                 }
+            }
+        },
+    "required": ["succeeded", "diag", "intervals", "summary"],
+    "properties": {           
+        "succeeded": {
+            "description": "Indicates if the test ran successfully",
+            "type": "boolean"
             },
-        "required": ["succeeded", "diag", "intervals", "summary"],
-        "properties": {           
-            "succeeded": {
-                "description": "Indicates if the test ran successfully",
-                "type": "boolean"
-                },
-            "diag": {
-                "description": "Raw output from the underlying tool",
-                "type": "string"
-                },
-            "mss": {
-                "description": "The max segment size reported by the tool",
-                "type": "integer"
-                },
-            "mtu": {
-                "description": "The MTU reported by the tool",
-                "type": "integer"
-                },
-            "tcp-window-size": {
-                "description": "The tcp window size used by the tool",
-                "type": "integer"
-                },
-            "requested-tcp-window-size": {
-                "description": "The tcp window size used by the tool",
-                "type": "integer"
-                },
-            "intervals": {
-                "description": "The breakdown of intervals of the test",
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "streams": {
-                            "description": "An array of information about each of the streams during this interval",
-                            "type": "array",
-                            "items": { "$ref": "#/local/throughput-data" }
-                            },
-                        "summary": { "$ref": "#/local/throughput-data" }                        
-                        }
-                    }
-                },
-            "summary": {
-                "description": "An object containing summaries of each stream and the test as a whole",
+        "diag": {
+            "description": "Raw output from the underlying tool",
+            "type": "string"
+            },
+        "mss": {
+            "description": "The max segment size reported by the tool",
+            "type": "integer"
+            },
+        "mtu": {
+            "description": "The MTU reported by the tool",
+            "type": "integer"
+            },
+        "tcp-window-size": {
+            "description": "The tcp window size used by the tool",
+            "type": "integer"
+            },
+        "requested-tcp-window-size": {
+            "description": "The tcp window size used by the tool",
+            "type": "integer"
+            },
+        "intervals": {
+            "description": "The breakdown of intervals of the test",
+            "type": "array",
+            "items": {
                 "type": "object",
                 "properties": {
                     "streams": {
-                        "description": "An array of objects containing summarized information for all streams for a given start/end period",
+                        "description": "An array of information about each of the streams during this interval",
                         "type": "array",
                         "items": { "$ref": "#/local/throughput-data" }
                         },
-                    "summary": {"$ref": "#/local/throughput-data"}
+                    "summary": { "$ref": "#/local/throughput-data" }                        
                     }
+                }
+            },
+        "summary": {
+            "description": "An object containing summaries of each stream and the test as a whole",
+            "type": "object",
+            "properties": {
+                "streams": {
+                    "description": "An array of objects containing summarized information for all streams for a given start/end period",
+                    "type": "array",
+                    "items": { "$ref": "#/local/throughput-data" }
+                    },
+                "summary": {"$ref": "#/local/throughput-data"}
                 }
             }
         }
+    }
 
-    return json_validate(input_json, schema)
+LIMIT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "bandwidth":  { "$ref": "#/pScheduler/Limit/SINumber" },
+        "duration":   { "$ref": "#/pScheduler/Limit/Duration" },
+        "udp":        { "$ref": "#/pScheduler/Limit/Boolean" },
+        "ip-version": { "$ref": "#/pScheduler/Limit/IPVersionList" }
+        },
+    "additionalProperties": False
+    }
+
+
+def spec_is_valid(input_json):
+    return json_validate(input_json, SPEC_SCHEMA)
+
+
+def result_is_valid(input_json):
+    return json_validate(input_json, RESULT_SCHEMA)
 
 
 def limit_is_valid(input_json):
-
-    schema = {
-        "type": "object",
-        "properties": {
-            "bandwidth":  { "$ref": "#/pScheduler/Limit/SINumber" },
-            "duration":   { "$ref": "#/pScheduler/Limit/Duration" },
-            "udp":        { "$ref": "#/pScheduler/Limit/Boolean" },
-            "ip-version": { "$ref": "#/pScheduler/Limit/IPVersionList" }
-        },
-        "additionalProperties": False
-        }
-
-    return json_validate(input_json, schema)
-
-
+    return json_validate(input_json, LIMIT_SCHEMA)
 
 
 if __name__ == "__main__":
