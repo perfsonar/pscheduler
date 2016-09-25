@@ -7,6 +7,7 @@ from .clockstate import *
 from .db import *
 from .durationrange import *
 from .exitstatus import *
+from .enummatcher import *
 from .failopt import *
 from .filestring import *
 from .iso8601 import *
@@ -25,3 +26,4 @@ from .saferun import *
 from .sinumber import *
 from .stringmatcher import *
 from .speccli import *
+from .text import *

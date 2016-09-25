@@ -2,7 +2,7 @@
 {
     "name": "sleepbg",
     "description": "Do nothing by sleeping in the background",
-    "version": "0.0",
+    "version": "1.0",
     "tests": [ "idlebg" ],
 
     "preference": 0,

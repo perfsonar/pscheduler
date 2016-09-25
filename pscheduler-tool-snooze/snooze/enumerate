@@ -2,7 +2,7 @@
 {
     "name": "snooze",
     "description": "Take very short sleeps",
-    "version": "0.0",
+    "version": "1.0",
     "tests": [ "idle", "idleex" ],
 
     "preference": 0,

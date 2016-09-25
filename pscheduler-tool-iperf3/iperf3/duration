@@ -22,8 +22,9 @@ else:
 
 # factor in omit time as well
 if json.get('omit'):
-    logger.debug("Adding %s seconds because of omit flag" % json['omit'])
-    duration += int(json['omit'])
+    omit_seconds = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(json['omit'])) 
+    logger.debug("Adding %s seconds because of omit flag" % omit_seconds)
+    duration += omit_seconds
 
 logger.info("duration = %ss" % duration)
 

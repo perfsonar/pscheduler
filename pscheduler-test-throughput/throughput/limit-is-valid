@@ -6,6 +6,8 @@
 import pscheduler
 import validate
 
+logger = pscheduler.Log()
+
 try:
     json = pscheduler.json_load()
 except ValueError as ex:
@@ -19,6 +21,8 @@ valid, message = validate.limit_is_valid(json)
 result = {
     "valid": valid
 }
+
+logger.debug("limit valid = %s" % valid)
 
 if not valid:
     result["message"] = message

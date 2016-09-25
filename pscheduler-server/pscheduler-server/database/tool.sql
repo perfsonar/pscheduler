@@ -310,8 +310,9 @@ BEGIN
 
 	run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_name, 'enumerate']);
         IF run_result.status <> 0 THEN
-         RAISE EXCEPTION 'Tool "%" failed to enumerate: %',
-	       tool_name, run_result.stderr;
+            RAISE WARNING 'Tool "%" failed to enumerate: %',
+	        tool_name, run_result.stderr;
+            CONTINUE;
         END IF;
 
 	tool_enumeration := run_result.stdout::JSONB;

@@ -10,7 +10,8 @@ DBNAME=pscheduler
 
 FILES_SUPERUSER=\
 	database \
-	external_program
+	external_program \
+	http_ops
 
 FILES=\
 	preamble \
@@ -18,6 +19,7 @@ FILES=\
 	table_version \
 	\
 	configurables \
+	http_queue \
 	scheduling_class \
 	test \
 	tool \

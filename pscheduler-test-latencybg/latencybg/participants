@@ -12,17 +12,26 @@ import sys
 
 json = pscheduler.json_load(exit_on_error=True)
 
+null_reason = None
+
 #participant depends on whether we flipped the test or not
 
 #source first participant, dest the second
 source = json.get('source', None)
+if source is None:
+    null_reason = "No source specified"
 dest = json.get('dest', None)
 flip = json.get('flip', False)
 
 if flip:
-    result = [ dest ]
+    participants = [ dest ]
 else:
-    result = [ source ]
+    participants = [ source ]
 
-pscheduler.json_dump(result, sys.stdout )
-pscheduler.succeed()
+
+result = { "participants": participants }
+if null_reason is not None:
+    result["null-reason"] = null_reason
+
+pscheduler.succeed_json(result)
+

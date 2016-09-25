@@ -252,7 +252,9 @@ if ( options.repeat is None
                          " repetition-related options.")
 
 
-verbose = (not options.quiet) and (out_format == "text/plain")
+verbose = (not options.quiet) \
+    and not (options.url) \
+    and (out_format == "text/plain") 
 
 # TODO: Tie this to the options.
 log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True)
@@ -380,6 +382,10 @@ if options.archive:
 # Convert the remaining arguments to a test spec.
 #
 
+if verbose:
+    print ("Submitting with assistance from %s..." % assist) if assist != last_ditch_assist \
+        else "Submitting task..."
+
 spec_url = pscheduler.api_url(host=assist,
                               path='/tests/' + test_type + '/spec')
 log.debug("Converting to spec via %s", spec_url)
@@ -424,10 +430,6 @@ if options.export:
     pscheduler.succeed()
 
 
-if verbose:
-    print ("Submitting task to %s..." % assist) if assist != last_ditch_assist \
-        else "Submitting task..."
-
 
 #
 # Contact the assist server
@@ -447,16 +449,51 @@ log.debug("Assist server says it is %s", text)
 # Determine the lead participant
 #
 
-url = pscheduler.api_url(assist, '/tests/%s/lead' % task['test']['type'])
+lead = None
+null_reason = None
 
-try:
-    status, lead = pscheduler.url_get( url, params={
-            'spec': pscheduler.json_dump(task['test']['spec'])
-            } )
-except Exception as ex:
+# For the time being, try the later version of the API, falling back
+# on the older one.  This should only be a problem for a few days.
+# TODO: Remove fallback prior to 4.0; see #53.
+
+# Get participants
+
+log.debug("Fetching participant list from %s", assist)
+url = pscheduler.api_url(assist, '/tests/%s/participants' % task['test']['type'])
+
+log.debug("%s", pscheduler.json_dump(task['test']['spec']))
+status, participants = pscheduler.url_get( url, params={
+        'spec': pscheduler.json_dump(task['test']['spec'])
+        }, throw=False )
+
+log.debug("%s, status %d", url, status)
+if status not in [ 200, 404 ]:
     pscheduler.fail("Unable to determine the lead participant: " + str(ex))
-log.debug("Lead is %d/%s", status, lead)
+if status == 200:
+    log.debug("Got participants: %s", participants)
+    lead = participants["participants"][0]
+    try:
+        null_reason = participants["null-reason"]
+    except KeyError:
+        null_reason = None
 
+# Fallback
+
+if status == 404:
+    log.debug("Falling back to lead method")
+    url = pscheduler.api_url(assist, '/tests/%s/lead' % task['test']['type'])
+    try:
+        status, lead = pscheduler.url_get( url, params={
+                'spec': pscheduler.json_dump(task['test']['spec'])
+                } )
+    except Exception as ex:
+        pscheduler.fail("Unable to determine the lead participant: " + str(ex))
+
+
+if null_reason is None:
+    null_reason = "No reason provided.  (Server is running old software.)"
+
+log.debug("Lead is %s, null reason is %s", lead, null_reason)
 
 # If the lead is None, the usual behavior would be to task the server
 # on the local host.  If an assist server is being used, that's
@@ -464,8 +501,8 @@ log.debug("Lead is %d/%s", status, lead)
 # Barf mightily.
 
 if lead is None and assist != last_ditch_assist:
-    pscheduler.fail("""Test parameters are too ambiguous to use with an assist server.  All
-points involved in the test must be specified explicitly.""")
+    pscheduler.fail("Cannot use an assist server with ambiguous parameters: %s"
+                    % null_reason)
 
 
 #

@@ -2,7 +2,7 @@
 {
     "name": "sleep",
     "description": "Do nothing by sleeping",
-    "version": "0.0",
+    "version": "1.0",
     "tests": [ "idle", "idleex" ],
 
     "preference": 0,

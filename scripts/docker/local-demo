@@ -58,6 +58,12 @@ case "${COMMAND}" in
 	echo
 	;;
 
+    status)
+        docker ps \
+            --all \
+            --filter "name=${PREFIX}[0-9]+" \
+            --format 'table {{.Names}}\t{{.Status}}' \
+        ;;
 
     login)
 	DEST="$1"
@@ -74,7 +80,7 @@ case "${COMMAND}" in
 
     stop)
 	echo -n "Removing containers..."
-	for HOST in $(docker ps --filter "name=${PREFIX}[0-9]+" --format '{{.Names}}')
+	for HOST in $(docker ps --all --filter "name=${PREFIX}[0-9]+" --format '{{.Names}}')
 	do
 	    echo -n " ${HOST}..."
 	    docker rm -f "${HOST}" > /dev/null || true
@@ -92,7 +98,7 @@ case "${COMMAND}" in
 
 
     *)
-	echo "Usage: $(basename $0) start|login|stop" 1>&2
+	echo "Usage: $(basename $0) start|status|login|stop" 1>&2
 	exit 1
 	;;
 

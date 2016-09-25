@@ -2,7 +2,7 @@
 {
     "name": "tracepath",
     "description": "Map the route between hosts using tracepath",
-    "version": "0.0",
+    "version": "1.0",
     "tests": [ "trace" ],
 
     "preference": -10,

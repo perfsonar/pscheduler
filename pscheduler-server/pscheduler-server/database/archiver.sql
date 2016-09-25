@@ -305,8 +305,9 @@ BEGIN
 
 	run_result := pscheduler_internal(ARRAY['invoke', 'archiver', archiver_name, 'enumerate']);
         IF run_result.status <> 0 THEN
-         RAISE EXCEPTION 'Archiver "%" failed to enumerate: %',
-	       archiver_name, run_result.stderr;
+            RAISE WARNING 'Archiver "%" failed to enumerate: %',
+	        archiver_name, run_result.stderr;
+            CONTINUE;
         END IF;
 
 	archiver_enumeration := run_result.stdout::JSONB;

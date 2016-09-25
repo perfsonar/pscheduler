@@ -13,11 +13,11 @@ def spec_is_valid(input_json):
         "additionalProperties": False,
         "local": {
             },
-        "required": ["schema", "destination"],
+        "required": ["schema", "dest"],
         "properties": {           
             "schema":      { "$ref": "#/pScheduler/Cardinal" },
             "source":      { "$ref": "#/pScheduler/Host" },
-            "destination": { "$ref": "#/pScheduler/Host" },
+            "dest":        { "$ref": "#/pScheduler/Host" },
             "duration":    { "$ref": "#/pScheduler/Duration" },
             "interval":    { "$ref": "#/pScheduler/Duration" },
             "parallel":    { "$ref": "#/pScheduler/Cardinal" },
@@ -26,15 +26,16 @@ def spec_is_valid(input_json):
             "window-size": { "$ref": "#/pScheduler/Cardinal" },
             "mss":         { "$ref": "#/pScheduler/Cardinal" },
             "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
-            "force-ipv4":    { "$ref": "#/pScheduler/Boolean" },
-            "force-ipv6":    { "$ref": "#/pScheduler/Boolean" },
+            "ip-version":    { "$ref": "#/pScheduler/ip-version" },
             "local-address": { "$ref": "#/pScheduler/Host" },
             "dscp":          { "$ref": "#/pScheduler/Cardinal" },
-            "omit":          { "$ref": "#/pScheduler/Cardinal" },
+            "omit":          { "$ref": "#/pScheduler/Duration" },
             "tos":           { "$ref": "#/pScheduler/Cardinal" },
             "dynamic-window-size":    { "$ref": "#/pScheduler/Cardinal" },
             "no-delay":    { "$ref": "#/pScheduler/Boolean" },
-            "congestion":    { "$ref": "#/pScheduler/String" },
+            "congestion":    { "enum": ["reno", "cubic", "bic", "htcp", "vegas",
+                                        "westwood", "YeAH"]
+                               },
             "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
             "flow-label":    { "$ref": "#/pScheduler/String" },
             "cpu-affinity":    { "$ref": "#/pScheduler/String" }
@@ -167,11 +168,19 @@ def result_is_valid(input_json):
     return json_validate(input_json, schema)
 
 
-#TODO
-def limit_is_valid(json):
-    schema = {}
+def limit_is_valid(input_json):
 
-    return (True, "")
+    schema = {
+        "type": "object",
+        "properties": {
+            "bandwidth":  { "$ref": "#/pScheduler/Limit/SINumber" },
+            "duration":   { "$ref": "#/pScheduler/Limit/Duration" },
+            "udp":        { "$ref": "#/pScheduler/Limit/Boolean" },
+            "ip-version": { "$ref": "#/pScheduler/Limit/IPVersionList" }
+        },
+        "additionalProperties": False
+        }
+
     return json_validate(input_json, schema)
 
 

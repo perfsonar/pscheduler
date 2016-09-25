@@ -3,8 +3,8 @@
 #
 
 Name:		pscheduler-bundle-full
-Version:	1.1
-Release:	1%{?dist}
+Version:	1.0
+Release:	0.0.rc1%{?dist}
 
 Summary:	Full pScheduler Bundle
 BuildArch:	noarch

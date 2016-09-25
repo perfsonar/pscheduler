@@ -14,6 +14,7 @@ FILES=\
         validate.py \
         spec-to-cli \
         limit-is-valid \
+        limit-passes \
         throughput_utils.py
 
 

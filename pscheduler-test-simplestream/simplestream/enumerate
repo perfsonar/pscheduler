@@ -4,7 +4,7 @@ exec cat << EOF
 {
     "name": "simplestream",
     "description": "Simple TCP stream test - NOT FOR PRODUCTION",
-    "version": "0.0",
+    "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",
 	"email": "perfsonar-developer@internet2.edu",

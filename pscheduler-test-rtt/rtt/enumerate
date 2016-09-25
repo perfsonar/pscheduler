@@ -4,7 +4,7 @@ exec cat << EOF
 {
     "name": "rtt",
     "description": "Measure the round trip time between hosts",
-    "version": "0.0",
+    "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",
 	"email": "perfsonar-developer@internet2.edu",
