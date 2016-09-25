@@ -1,0 +1,3 @@
+[submodule "toolkit-building"]
+	path = toolkit-building
+	url = https://github.com/perfsonar/toolkit-building.git
