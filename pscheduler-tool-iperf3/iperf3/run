@@ -48,7 +48,7 @@ def run_client():
     iperf3_args = ['/usr/bin/iperf3']
 
     # who to connect to
-    destination = test_spec['destination']          
+    destination = test_spec['dest']          
 
     iperf3_args.append('-c')
     iperf3_args.append(destination)
@@ -86,8 +86,12 @@ def run_client():
         iperf3_args.append(test_spec['mss'])
 
     if test_spec.has_key('omit') and test_spec['omit'] != None:
+
+        # convert from iso to seconds
+        omit_sec = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(test_spec['omit'])) 
+
         iperf3_args.append('-O')
-        iperf3_args.append(test_spec['omit'])
+        iperf3_args.append(omit_sec)
 
     if test_spec.has_key('bandwidth') and test_spec['bandwidth'] != None:
         iperf3_args.append('-b')
@@ -153,7 +157,7 @@ def run_client():
     
     if status:
         pscheduler.succeed_json({"succeeded": False,
-                                 "error": "iperf3 returned an error: %s" % stderr})
+                                 "error": "iperf3 returned an error: %s\n%s" % (stdout, stderr)})
 
 
     lines = stdout.split("\n")    
@@ -171,9 +175,11 @@ def run_server():
     
     logger.info("Running command: %s" % " ".join(iperf3_args))
 
-    # need thi
+    # need this to pad out the wait timeout,
+    # convert to seconds
     omit = test_spec.get('omit', 0)
-
+    if omit:
+        omit = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(omit)) 
 
     try:
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
@@ -186,7 +192,7 @@ def run_server():
 
     if status:
         pscheduler.succeed_json({"succeeded": False,
-                                 "error": "iperf3 returned an error: %s" % stderr})
+                                 "error": "iperf3 returned an error: %s\n%s" % (stdout, stderr)})
     
     #log stdout in debug mode
     for line in stdout:

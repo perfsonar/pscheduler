@@ -3,6 +3,28 @@
 --
 
 
+-- Schedule, for use by the REST API
+
+DROP VIEW IF EXISTS schedule;
+CREATE OR REPLACE VIEW schedule
+AS
+    SELECT
+        run.times,
+        task.uuid AS task,
+        run.uuid AS run,
+        run_state.enum AS state_enum,
+        run_state.display AS state_display,
+        -- TODO: Pull full JSON with details when that's available.  See #95.
+        task.json AS task_json,
+	FALSE AS remove_this
+    FROM
+        run
+        JOIN run_state ON run_state.id = run.state
+        JOIN task ON task.id = run.task
+    ORDER BY run.times
+;
+
+
 
 -- What's coming on the schedule and what to execute
 

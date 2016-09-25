@@ -2,7 +2,7 @@
 {
     "name": "ping",
     "description": "Measure the round-trip time to another host",
-    "version": "0.0",
+    "version": "1.0",
     "tests": [ "rtt" ],
 
     "preference": 0,

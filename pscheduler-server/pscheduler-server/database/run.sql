@@ -472,7 +472,9 @@ RETURNS VOID
 AS $$
 BEGIN
 
-    -- TODO: Remove runs older than the keep limit
+    DELETE FROM run
+        WHERE (now() - lower(times))
+            > (SELECT keep_runs_tasks FROM configurables);
     NULL;
 
 END;

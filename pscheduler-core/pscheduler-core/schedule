@@ -1,0 +1,168 @@
+#!/usr/bin/python
+#
+# Show a summary of what's on the schedule
+#
+
+# General syntax:
+#     pscheduler schedule [options]
+
+import datetime
+import os
+import pipes
+import pscheduler
+import sys
+
+
+#
+# Utilities
+#
+
+usage = "Usage: %s [ --host h ] [ delta | start end ]" \
+                    % os.path.basename(sys.argv[0])
+
+def get_time_with_delta(string):
+    """
+    TODO: Fill this in.
+    """
+
+    # If it looks like a time, return that.
+    try:
+        return pscheduler.iso8601_as_datetime(string)
+    except ValueError:
+        pass
+
+    try:
+        if string[0] == "+":
+            delta = pscheduler.iso8601_as_timedelta(string[1:])
+        else:
+            delta = pscheduler.iso8601_as_timedelta(string)
+    except ValueError:
+        pscheduler.fail("Invalid duration %s" % string)
+
+    return pscheduler.time_now() + delta
+
+
+#
+# Gargle the arguments
+#
+
+whoami = os.path.basename(sys.argv[0])
+args = sys.argv[1:]
+
+# Do this manually because the arg parser will have difficulties with hyphens used for negative offsets.
+
+host = "localhost"
+try:
+    if args[0] in [ '--help', '-h' ]:
+        pscheduler.succeed(usage)
+    if args[0] in [ '--host', '-H' ]:
+        host = args[1]
+        args = args[2:]
+except IndexError:
+    pass
+
+
+
+
+now = pscheduler.time_now()
+
+if len(args) == 0:
+
+    # Default; show an hour's worth.
+    start = now
+    end = start + datetime.timedelta(hours=1)
+
+elif len(args) == 1:
+
+    # One argument is an absolute time or a timedelta.
+
+    arg = get_time_with_delta(args[0])
+    if arg < now:
+        start = arg
+        end = now
+    else:
+        start = now
+        end = arg
+
+elif len(args) == 2:
+
+    start = get_time_with_delta(args[0])
+    end = get_time_with_delta(args[1])
+
+    if end < start:
+        start, end = end, start
+
+else:
+    pscheduler.fail(usage)
+
+
+#
+# Fetch the schedule
+#
+
+status, schedule = pscheduler.url_get(
+    pscheduler.api_url(host=host, path="schedule"),
+    params={
+        "start": pscheduler.datetime_as_iso8601(start),
+        "end": pscheduler.datetime_as_iso8601(end)
+        },
+    throw = False
+    )
+
+if status != 200:
+    pscheduler.fail("Server returned status %d: %s" % (status, schedule))
+
+
+#
+# Dump it out
+#
+
+if len(schedule) == 0:
+    print "Nothing scheduled %s to %s" % (
+        pscheduler.datetime_as_iso8601(start),
+        pscheduler.datetime_as_iso8601(end)
+        )
+    pscheduler.succeed()
+
+first = True
+
+for run in schedule:
+
+    # TODO: This needs to come with what we get from the server.  See
+    # #60.
+    try:
+        status, task_cli = pscheduler.url_get(
+            "%s/cli" % run["task"]["href"],
+            json=True)
+    except Exception as ex:
+        print ex
+        task_cli = [run["task"]["test"]["type"],
+                    "(CLI Unavailable)"]
+
+    task_cli = [ pipes.quote(arg) for arg in task_cli ]
+
+
+
+    if not first:
+        print
+        print
+    else:
+        first = False
+
+    print "%s - %s  (%s)" % (
+        run["start-time"],
+        run["end-time"],
+        run["state-display"]
+        )
+
+    task_cli.append("(Run with tool '%s')" % run["task"]["tool"])
+
+    print pscheduler.prefixed_wrap(
+        "", " ".join(task_cli), indent=2)
+
+    print run["href"]
+
+    # TODO: If task finished, fetch the result?
+
+pscheduler.succeed()
+

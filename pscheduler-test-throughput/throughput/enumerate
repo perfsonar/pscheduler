@@ -5,7 +5,7 @@ exec cat << EOF
 {
     "name": "throughput",
     "description": "Tests designed primarily to active measure network throughput between a set of hosts",
-    "version": "0.0",
+    "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",
 	"email": "perfsonar-developer@internet2.edu",

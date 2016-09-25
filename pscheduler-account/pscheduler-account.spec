@@ -4,7 +4,7 @@
 
 Name:		pscheduler-account
 Version:	1.0
-Release:	1%{?dist}
+Release:	0.7.rc1%{?dist}
 
 Summary:	Account for pScheduler
 BuildArch:	noarch
@@ -17,7 +17,8 @@ Group:		Unspecified
 Provides:	%{name} = %{version}-%{release}
 
 BuildRequires:	pscheduler-rpm
-
+Requires: shadow-utils
+Requires(post): shadow-utils
 
 %define user pscheduler
 %define group pscheduler

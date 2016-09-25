@@ -3,6 +3,7 @@
 #
 
 import pscheduler
+import urlparse
 
 from pschedulerapiserver import application
 
@@ -177,7 +178,7 @@ def tasks():
 
             participants = [ host if host is not None
                              else pscheduler.api_this_host()
-                             for host in pscheduler.json_load(stdout) ]
+                             for host in pscheduler.json_load(stdout)["participants"] ]
         except Exception as ex:
             return error("Unable to determine participants: " + str(ex))
         nparticipants = len(participants)
@@ -359,7 +360,10 @@ def tasks_uuid(uuid):
         json = row[0]
 
         # Redact anything in the test spec or archivers that's marked
-        # private.
+        # private as well as _key at the top level if there is one.
+
+        if "_key" in json:
+            json["_key"] = None 
 
         json["test"]["spec"] = pscheduler.json_decomment(
             json["test"]["spec"], prefix="_", null=True)
@@ -461,13 +465,17 @@ def tasks_uuid(uuid):
 
     elif request.method == 'DELETE':
 
+        parsed = list(urlparse.urlsplit(request.url))
+        parsed[1] = "%s"
+        template = urlparse.urlunsplit(parsed)
+
         try:
             cursor = dbcursor_query(
-                "UPDATE task SET enabled = FALSE WHERE uuid = %s", [uuid])
+                "SELECT api_task_disable(%s, %s)", [uuid, template])
         except Exception as ex:
             return error(str(ex))
 
-        return ok() if cursor.rowcount == 1 else not_found()
+        return ok()
 
     else:
 

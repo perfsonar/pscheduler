@@ -343,14 +343,24 @@ based on the test specification.
 
 \calloutitem{Standard Input} A JSON specification of the test.
 
-\calloutitem{Standard Output} A JSON array of the participants, with
-any {\tt null} values indicating the lead participant.  The order of
-this list will match the numbering of participant roles specified in
-the definition of the test.
+\calloutitem{Standard Output} A JSON object containing the following
+items:
+
+\begin{itemize}
+\item{\tt participants} - An array of the participants, with any {\tt
+  null} values indicating the lead participant.  The order of this
+  list will match the numbering of participant roles specified in the
+  definition of the test.
+\item{\tt null-reason} - If the first element of {\tt participants} is
+  {\tt null}, a string giving the reason why.
+\end{itemize}
 
 \example
 \begin{lstlisting}[language=json,firstnumber=1]
-[ null, "receivinghost.example.com" ]
+{
+    "participants": [ null, "receivinghost.example.com" ],
+    "null-reason": "No source specified"
+}
 \end{lstlisting}
 
 \calloutitem{Standard Error} Empty if successful, plain text error

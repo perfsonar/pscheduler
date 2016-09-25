@@ -48,7 +48,7 @@ def run_client():
     iperf_args = ['/usr/bin/iperf']
 
     # who to connect to
-    destination = test_spec['destination']
+    destination = test_spec['dest']
 
     try:
         ipaddr.IPAddress(destination)
@@ -62,21 +62,21 @@ def run_client():
     if not is_ip_address and test_spec.has_key('force-ipv4'):
         destination = pscheduler.dns_resolve(destination, ip_version=4)
         
-        logger.info("Resolved %s to %s" % (test_spec["destination"], destination))
+        logger.info("Resolved %s to %s" % (test_spec["dest"], destination))
                     
         if destination == None:
             pscheduler.succeed_json({"succeeded": False,
-                                     "error": "Unable to resolve %s to an IPv4 address" % test_spec["destination"]
+                                     "error": "Unable to resolve %s to an IPv4 address" % test_spec["dest"]
                                      })
 
     elif not is_ip_address and test_spec.has_key('force-ipv6'):
         destination = pscheduler.dns_resolve(destination, ip_version=6)
                     
-        logger.info("Resolved %s to %s" % (test_spec["destination"], destination))
+        logger.info("Resolved %s to %s" % (test_spec["dest"], destination))
 
         if destination == None:
             pscheduler.succeed_json({"succeeded": False,
-                                     "error": "Unable to resolve %s to an IPv6 address" % test_spec["destination"]
+                                     "error": "Unable to resolve %s to an IPv6 address" % test_spec["dest"]
                                      })
 
 

@@ -7,8 +7,8 @@
 # init scripts function just fine.
 
 Name:		pscheduler-server
-Version:	0.0
-Release:	1%{?dist}
+Version:	1.0
+Release:	0.7.rc1%{?dist}
 
 Summary:	pScheduler Server
 BuildArch:	noarch
@@ -219,6 +219,20 @@ mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}
 #
 # (Nothing)
 
+# TODO: Remove this before 4.0 ships.  See #135
+# This undoes something caused by a bug in a RC1 build.
+PG_HBA=/var/lib/pgsql/9.5/data/pg_hba.conf
+if [ -e "${PG_HBA}" ]
+then
+    # Remove #BEGIN-xxx that got jammed up onto previous lines
+    sed -i -e 's/\(.\)\(#BEGIN-\)/\1\n\2/' "${PG_HBA}"
+    # Remove stock pg_hba line that got jammed up on an #END
+    sed -i -e 's/#END-pscheduler-serverlocal/#END-pscheduler-server\nlocal/g' \
+     "${PG_HBA}"
+    # Remove old pscheduler-database segment on hosts that had that package
+    drop-in -r pscheduler-database /dev/null "${PG_HBA}"
+fi
+
 #
 # Daemons
 #
@@ -228,7 +242,6 @@ then
     do
         NAME="pscheduler-${SERVICE}"
         service "${NAME}" stop
-        chkconfig "${NAME}" off
     done
 fi
 
@@ -397,7 +410,6 @@ for SERVICE in ticker runner archiver scheduler
 do
     NAME="pscheduler-${SERVICE}"
     service "${NAME}" stop
-    chkconfig "${NAME}" off
 done
 
 # Have to stop this while we're uninstalling so connections to the
@@ -430,49 +442,59 @@ fi
 
 %postun
 
-#
-# Database
-#
-HBA_FILE=$( (echo "\t on" ; echo "show hba_file;") \
-	    | postgresql-load \
-	    | head -1 \
-	    | sed -e 's/^\s*//' )
+#only do this stuff if we are actually uninstalling
+if [ "$1" = "0" ]; then
+    #
+    # Database
+    #
+    HBA_FILE=$( (echo "\t on" ; echo "show hba_file;") \
+            | postgresql-load \
+            | head -1 \
+            | sed -e 's/^\s*//' )
 
-drop-in -r %{name} /dev/null $HBA_FILE
+    drop-in -r %{name} /dev/null $HBA_FILE
 
-# Make Pg reload what we just changed.
-postgresql-load <<EOF
-DO \$\$
-DECLARE
-    status BOOLEAN;
-BEGIN
-    SELECT INTO status pg_reload_conf();
-    IF NOT status
-    THEN
-        RAISE EXCEPTION 'Failed to reload the server configuration';
-    END IF;
-END;
-\$\$ LANGUAGE plpgsql;
+    # Make Pg reload what we just changed.
+    postgresql-load <<EOF
+    DO \$\$
+    DECLARE
+        status BOOLEAN;
+    BEGIN
+        SELECT INTO status pg_reload_conf();
+        IF NOT status
+        THEN
+            RAISE EXCEPTION 'Failed to reload the server configuration';
+        END IF;
+    END;
+    \$\$ LANGUAGE plpgsql;
 EOF
 
 
-#
-# Daemons
-#
-# (Nothing)
+    #
+    # Daemons
+    #
+    # (Nothing)
 
 
 
-#
-# API Server
-#
-# TODO: Determine if we want to shut this off, as other services might
-# be using it.
-# if selinuxenabled
-# then
-#     echo "Setting SELinux permissions (may take awhile)"
-#     setsebool -P httpd_can_network_connect_db 1
-# fi
+    #
+    # API Server
+    #
+    # TODO: Determine if we want to shut this off, as other services might
+    # be using it.
+    # if selinuxenabled
+    # then
+    #     echo "Setting SELinux permissions (may take awhile)"
+    #     setsebool -P httpd_can_network_connect_db 1
+    # fi
+else
+    #we're doing an update so restart services
+    for SERVICE in ticker runner archiver scheduler
+    do
+        NAME="pscheduler-${SERVICE}"
+        service "${NAME}" restart
+    done
+fi
 
 %if 0%{?el6}
 service httpd start

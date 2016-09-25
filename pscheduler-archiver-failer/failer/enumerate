@@ -4,7 +4,7 @@ exec cat << EOF
 {
     "name": "failer",
     "description": "Dummy archiver that fails 90% of the time",
-    "version": "0.0",
+    "version": "1.0",
 
     "maintainer": {
         "name": "perfSONAR Development Team",
