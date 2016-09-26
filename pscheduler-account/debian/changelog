@@ -1,8 +1,8 @@
-pscheduler-account (1.0~1.rc1-1) unstable; urgency=medium
+pscheduler-account (1.0~7.1.rc1-1) unstable; urgency=low
 
   * New upstream version
 
- -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Wed, 14 Sep 2016 10:53:05 +0200
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Mon, 26 Sep 2016 15:33:11 +0000
 
 pscheduler-account (0.0-1) unstable; urgency=low
 
