@@ -1,6 +1,7 @@
 python-subprocess32 (3.2.7-1~bpo7+1) UNRELEASED; urgency=medium
 
   * Rebuild for wheezy-backports.
+  * Increase test timeout for slow arm builds.
 
  -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Thu, 15 Sep 2016 10:07:35 +0200
 
