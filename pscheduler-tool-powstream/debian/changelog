@@ -1,4 +1,16 @@
-pscheduler-tool-powstream (0.0-1~bpo70+1) unstable; urgency=low
+pscheduler-tool-powstream (1.0~7.1.rc1-1~bpo70+1) unstable; urgency=low
+
+  * Backport to Wheezy.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 26 Sep 2016 16:04:00 +0000
+
+pscheduler-tool-powstream (1.0~7.1.rc1-1) unstable; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 26 Sep 2016 15:34:36 +0000
+
+pscheduler-tool-powstream (0.0-1) unstable; urgency=low
 
   * Initial release
 
