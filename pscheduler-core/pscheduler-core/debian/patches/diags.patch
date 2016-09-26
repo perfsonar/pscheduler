@@ -1,6 +1,6 @@
---- a/diags
-+++ b/diags
-@@ -123,7 +123,7 @@
+--- a/diags.m4
++++ b/diags.m4
+@@ -138,7 +138,7 @@
  fi
  
  section HTTPD Error Log
@@ -9,7 +9,7 @@
  if [ -r "${LOG}" ]
  then
      cat "${LOG}"
-@@ -134,17 +134,11 @@
+@@ -149,17 +149,11 @@
  
  section PostgreSQL Log
  
