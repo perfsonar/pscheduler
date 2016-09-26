@@ -382,10 +382,6 @@ if options.archive:
 # Convert the remaining arguments to a test spec.
 #
 
-if verbose:
-    print ("Submitting with assistance from %s..." % assist) if assist != last_ditch_assist \
-        else "Submitting task..."
-
 spec_url = pscheduler.api_url(host=assist,
                               path='/tests/' + test_type + '/spec')
 log.debug("Converting to spec via %s", spec_url)
@@ -430,10 +426,14 @@ if options.export:
     pscheduler.succeed()
 
 
-
 #
 # Contact the assist server
 #
+
+if verbose:
+    print ("Submitting with assistance from %s..." % assist) if assist != last_ditch_assist \
+        else "Submitting task..."
+
 status, text =  pscheduler.url_get( pscheduler.api_url(assist, '/hostname'),
                                     throw=False )
 if status != 200:
