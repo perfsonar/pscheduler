@@ -1,0 +1,13 @@
+--- a/esmond/esmond_util.py
++++ b/esmond/esmond_util.py
+@@ -6,10 +6,6 @@
+ import requests
+ import socket
+ 
+-#disable SSL warnings
+-from requests.packages.urllib3.exceptions import InsecureRequestWarning
+-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+-
+ log = pscheduler.Log(prefix="archiver-esmond", quiet=True)
+ 
+ DEFAULT_SUMMARIES = {

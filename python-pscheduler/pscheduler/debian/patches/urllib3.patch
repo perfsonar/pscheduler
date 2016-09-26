@@ -1,0 +1,15 @@
+--- a/pscheduler/psurl.py
++++ b/pscheduler/psurl.py
+@@ -20,11 +20,7 @@
+ # using HTTPS.
+ 
+ if not verify_keys:
+-    # NOTE: This used to do a separate import of
+-    # InsercureRequestWarning but can't because of the way Debian
+-    # de-vendorizes the requests package.
+-    requests.packages.urllib3.disable_warnings(
+-        requests.packages.urllib3.exceptions.InsecureRequestWarning)
++    pass
+ 
+ 
+ 
