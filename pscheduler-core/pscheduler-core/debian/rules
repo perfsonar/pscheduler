@@ -33,6 +33,7 @@ override_dh_auto_build:
 		CLASSESINSTALLED=/usr/lib/pscheduler/classes \
 		INTERNALSDIR=$(ROOT)/usr/lib/pscheduler/internals \
 		INTERNALSINSTALLED=/usr/lib/pscheduler/internals \
+		TOOLCONFIGDIR=$(ROOT)/usr/lib/pscheduler/tool \
 		PROFILEDDIR=$(ROOT)/etc/profile.d
 
 override_dh_auto_install:
@@ -44,5 +45,6 @@ override_dh_auto_install:
 		CLASSESINSTALLED=/usr/lib/pscheduler/classes \
 		INTERNALSDIR=$(ROOT)/usr/lib/pscheduler/internals \
 		INTERNALSINSTALLED=/usr/lib/pscheduler/internals \
+		TOOLCONFIGDIR=$(ROOT)/usr/lib/pscheduler/tool \
 		PROFILEDDIR=$(ROOT)/etc/profile.d \
 		install
