@@ -12,7 +12,7 @@ Package: python-pscheduler
 Architecture: all
 Depends: ${python:Depends}, ${misc:Depends},
  python-ntplib, python-tz, python-tzlocal,
- python-psycopg2, python-jsonschema, python-isodate,
+ python-psycopg2 (>= 2.5.4), python-jsonschema, python-isodate,
  python-subprocess32, python-netaddr, python-dnspython,
  python-dateutil, python-requests
 Description: pScheduler library
