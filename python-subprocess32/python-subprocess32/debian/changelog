@@ -1,9 +1,9 @@
-python-subprocess32 (3.2.7-1~bpo8+1) UNRELEASED; urgency=medium
+python-subprocess32 (3.2.7-1~bpo8+1) perfsonar-jessie-staging; urgency=medium
 
   * Rebuild for jessie-backports.
   * Increase test timeout for slow arm builds.
 
- -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Thu, 15 Sep 2016 10:07:35 +0200
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Tue, 27 Sep 2016 20:30:04 +0000
 
 python-subprocess32 (3.2.7-1) unstable; urgency=medium
 
