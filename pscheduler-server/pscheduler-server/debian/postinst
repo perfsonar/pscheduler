@@ -52,6 +52,10 @@ case "$1" in
             apache2_invoke enmod ssl || echo $?
             apache2_invoke ensite default-ssl || echo $?
             apache2_invoke enconf pscheduler-server.conf || echo $?
+        else
+            a2enmod -q ssl
+            a2ensite -q default-ssl
+            service apache2 restart
         fi
     ;;
 
