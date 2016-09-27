@@ -1,14 +1,14 @@
-pscheduler-tool-paris-traceroute (1.0~7.1.rc1-1~bpo70+1) unstable; urgency=low
+pscheduler-tool-paris-traceroute (1.0~7.1.rc1-1~bpo70+1) perfsonar-wheezy-staging; urgency=low
 
   * Backport to Wheezy.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 26 Sep 2016 16:04:00 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 27 Sep 2016 21:04:03 +0000
 
-pscheduler-tool-paris-traceroute (1.0~7.1.rc1-1) unstable; urgency=low
+pscheduler-tool-paris-traceroute (1.0~7.1.rc1-1) perfsonar-jessie-staging; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 26 Sep 2016 15:34:36 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 27 Sep 2016 20:27:54 +0000
 
 pscheduler-tool-paris-traceroute (0.0-1) unstable; urgency=low
 
