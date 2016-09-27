@@ -77,10 +77,10 @@ override_dh_auto_install:
 	cp database/database-build-super.sql $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/install-dbadmin/pgsql
 
 override_dh_installinit:
-	dh_installinit --name=pscheduler-archiver
-	dh_installinit --name=pscheduler-runner
-	dh_installinit --name=pscheduler-scheduler
-	dh_installinit --name=pscheduler-ticker
+	dh_installinit --onlyscripts --name=pscheduler-archiver
+	dh_installinit --onlyscripts --name=pscheduler-runner
+	dh_installinit --onlyscripts --name=pscheduler-scheduler
+	dh_installinit --onlyscripts --name=pscheduler-ticker
 
 override_dh_auto_clean:
 	make -C api-server clean
