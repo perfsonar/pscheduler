@@ -31,9 +31,6 @@ case "$1" in
                /etc/pscheduler/database/database-dsn \
                /etc/pscheduler/database/pgpassfile
         rm -rf /var/log/pscheduler
-
-        # release debconf descriptor
-        db_stop
     ;;
 
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
