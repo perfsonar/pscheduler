@@ -1,0 +1,52 @@
+Source: python-jsonschema
+Section: python
+Priority: optional
+Maintainer: PKG OpenStack <openstack-devel@lists.alioth.debian.org>
+Uploaders: Julien Danjou <acid@debian.org>,
+           Thomas Goirand <zigo@debian.org>,
+           Mehdi Abaakouk <sileht@sileht.net>
+Build-Depends: autopkgtest,
+               debhelper (>= 9),
+               python-all (>= 2.6.6-3~),
+               python-setuptools (>= 0.6b3),
+               python3-all,
+               python3-setuptools
+Build-Depends-Indep: python-mock,
+                     python-nose,
+                     python-pytest,
+                     python3-mock,
+                     python3-nose,
+                     python3-pytest
+Standards-Version: 3.9.4
+Vcs-Browser: http://anonscm.debian.org/gitweb/?p=openstack/python-jsonschema.git
+Vcs-Git: git://anonscm.debian.org/openstack/python-jsonschema.git
+Homepage: https://github.com/Julian/jsonschema
+XS-Testsuite: autopkgtest
+
+Package: python-jsonschema
+Architecture: all
+Pre-Depends: dpkg (>= 1.15.6~)
+Depends: python-mock, ${misc:Depends}, ${python:Depends}
+Description: An(other) implementation of JSON Schema (Draft 3) for Python
+ JSON Schema is a specification for a JSON-based format for defining
+ the structure of JSON data. JSON Schema provides a contract for what
+ JSON data is required for a given application and how it can be
+ modified, much like what XML Schema provides for XML. JSON Schema is
+ intended to provide validation, documentation, and interaction control
+ of JSON data.
+ .
+ This package contains the Python 2.x module.
+
+Package: python3-jsonschema
+Architecture: all
+Pre-Depends: dpkg (>= 1.15.6~)
+Depends: python3 (>= 3.2.3), ${misc:Depends}
+Description: An(other) implementation of JSON Schema (Draft 3) for Python 3
+ JSON Schema is a specification for a JSON-based format for defining
+ the structure of JSON data. JSON Schema provides a contract for what
+ JSON data is required for a given application and how it can be
+ modified, much like what XML Schema provides for XML. JSON Schema is
+ intended to provide validation, documentation, and interaction control
+ of JSON data.
+ .
+ This package contains the Python 3.x module.

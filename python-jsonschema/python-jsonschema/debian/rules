@@ -1,0 +1,31 @@
+#!/usr/bin/make -f
+
+#export DH_VERBOSE=1
+
+PYTHON3:=$(shell py3versions -r)
+py3sdo=set -ex; $(foreach py, $(PYTHON3), $(py) $(1);)
+
+UPSTREAM_GIT = git://github.com/Julian/jsonschema.git
+-include /usr/share/openstack-pkg-tools/pkgos.make
+
+%:
+	dh $@ --with python2,python3
+
+override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	nosetests
+	nosetests3
+endif
+
+override_dh_auto_build:
+	dh_auto_build
+	$(call py3sdo, setup.py build)
+
+override_dh_auto_install:
+	dh_auto_install
+	$(call py3sdo, setup.py install --root=$(CURDIR)/debian/tmp --install-layout=deb)
+
+override_dh_auto_clean:
+	dh_auto_clean
+	rm -rf build
+	rm -rf *.egg-info __pycache__
