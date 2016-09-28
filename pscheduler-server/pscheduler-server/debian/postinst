@@ -46,6 +46,9 @@ case "$1" in
             )
         fi
 
+        # release debconf descriptor
+        db_stop
+
         # apache setup
         if [ -e /usr/share/apache2/apache2-maintscript-helper ] ; then
             . /usr/share/apache2/apache2-maintscript-helper
