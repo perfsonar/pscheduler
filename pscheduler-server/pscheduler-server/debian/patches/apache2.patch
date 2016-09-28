@@ -1,0 +1,18 @@
+--- a/api-server/pscheduler-api-server.conf.m4
++++ b/api-server/pscheduler-api-server.conf.m4
+@@ -14,8 +14,13 @@
+     WSGIProcessGroup __USER_NAME__
+     WSGIApplicationGroup __USER_NAME__
+ 
+-    Order deny,allow
+-    Allow from all
++    <IfVersion >= 2.4>
++        Require all granted
++    </IfVersion>
++    <IfVersion < 2.4>
++        Order allow,deny
++        Allow from all
++    </IfVersion>
+ 
+ </Directory>
+ 
