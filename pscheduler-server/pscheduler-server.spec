@@ -27,6 +27,7 @@ Requires:	postgresql95-contrib
 Requires:	postgresql95-plpython
 Requires:	postgresql-load
 Requires:	pscheduler-account
+Requires:	pscheduler-core
 Requires:	pscheduler-database-init
 Requires:	random-string
 
