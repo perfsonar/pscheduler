@@ -1,0 +1,2 @@
+01_use-system-ca-certificates.patch
+02_use-system-chardet-and-urllib3.patch

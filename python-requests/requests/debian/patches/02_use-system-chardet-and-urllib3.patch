@@ -1,0 +1,81 @@
+Description: Use the system python-chardet and python-urllib3 instead of the
+ embedded copies.
+Author: Daniele Tricoli <eriol@mornie.org>
+Forwarded: not-needed
+Last-Update: 2013-10-17
+
+--- a/requests/adapters.py
++++ b/requests/adapters.py
+@@ -11,17 +11,17 @@
+ import socket
+ 
+ from .models import Response
+-from .packages.urllib3.poolmanager import PoolManager, proxy_from_url
+-from .packages.urllib3.response import HTTPResponse
+-from .packages.urllib3.util import Timeout as TimeoutSauce
++from urllib3.poolmanager import PoolManager, proxy_from_url
++from urllib3.response import HTTPResponse
++from urllib3.util import Timeout as TimeoutSauce
+ from .compat import urlparse, basestring, urldefrag, unquote
+ from .utils import (DEFAULT_CA_BUNDLE_PATH, get_encoding_from_headers,
+                     except_on_missing_scheme, get_auth_from_url)
+ from .structures import CaseInsensitiveDict
+-from .packages.urllib3.exceptions import MaxRetryError
+-from .packages.urllib3.exceptions import TimeoutError
+-from .packages.urllib3.exceptions import SSLError as _SSLError
+-from .packages.urllib3.exceptions import HTTPError as _HTTPError
++from urllib3.exceptions import MaxRetryError
++from urllib3.exceptions import TimeoutError
++from urllib3.exceptions import SSLError as _SSLError
++from urllib3.exceptions import HTTPError as _HTTPError
+ from .cookies import extract_cookies_to_jar
+ from .exceptions import ConnectionError, Timeout, SSLError
+ from .auth import _basic_auth_str
+--- a/requests/compat.py
++++ b/requests/compat.py
+@@ -4,7 +4,7 @@
+ pythoncompat
+ """
+ 
+-from .packages import charade as chardet
++import chardet
+ 
+ import sys
+ 
+@@ -89,7 +89,7 @@
+     import cookielib
+     from Cookie import Morsel
+     from StringIO import StringIO
+-    from .packages.urllib3.packages.ordered_dict import OrderedDict
++    from urllib3.packages.ordered_dict import OrderedDict
+     from httplib import IncompleteRead
+ 
+     builtin_str = str
+--- a/requests/models.py
++++ b/requests/models.py
+@@ -17,8 +17,8 @@
+ 
+ from .auth import HTTPBasicAuth
+ from .cookies import cookiejar_from_dict, get_cookie_header
+-from .packages.urllib3.filepost import encode_multipart_formdata
+-from .packages.urllib3.util import parse_url
++from urllib3.filepost import encode_multipart_formdata
++from urllib3.util import parse_url
+ from .exceptions import (
+     HTTPError, RequestException, MissingSchema, InvalidURL,
+     ChunkedEncodingError)
+--- a/setup.py
++++ b/setup.py
+@@ -16,12 +16,6 @@
+ 
+ packages = [
+     'requests',
+-    'requests.packages',
+-    'requests.packages.charade',
+-    'requests.packages.urllib3',
+-    'requests.packages.urllib3.packages',
+-    'requests.packages.urllib3.contrib',
+-    'requests.packages.urllib3.packages.ssl_match_hostname'
+ ]
+ 
+ requires = []

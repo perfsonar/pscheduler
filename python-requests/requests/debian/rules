@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+
+export PYBUILD_DESTDIR_python2=debian/python-requests/
+export PYBUILD_DESTDIR_python3=debian/python3-requests/
+
+
+%:
+	dh $@ --with python2,python3 --buildsystem=pybuild
+
+override_dh_installchangelogs:
+	dh_installchangelogs HISTORY.rst
