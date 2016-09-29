@@ -1,4 +1,4 @@
-python-tzlocal (1.2.2-1~bpo8+1) jessie-backports; urgency=medium
+python-tzlocal (1.2.2-1~bpo8+1) perfsonar-jessie-staging; urgency=medium
 
   * Rebuild for jessie-backports.
 
