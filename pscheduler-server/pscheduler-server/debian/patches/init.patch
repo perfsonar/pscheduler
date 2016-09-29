@@ -45,7 +45,7 @@
      if [ ! -s "$logfile" ] ; then
          echo "(This file should be empty unless there's a catastrophic failure.)" >> "$logfile"
      fi
-@@ -54,26 +55,24 @@
+@@ -54,26 +55,23 @@
         -c "$exec --daemon --pid-file '$pidfile' --dsn '@$config'" \
  	>> "$logfile" 2>&1 &
      retval=$?
@@ -60,16 +60,16 @@
          echo "User has insufficient privilege."
          exit 4
      fi
-+    log_daemon_msg "Stopping pScheduler $prog" "pscheduler-$prog"
-     echo -n $"Stopping pScheduler $prog: "
+-    echo -n $"Stopping pScheduler $prog: "
 -        if [ -s "$pidfile" ]; then
 -	    kill $(cat $pidfile) || failure "Stopping pScheduler $prog"
 -	    sleep 3
 -	    kill -9 $(cat $pidfile) 2> /dev/null || :
 -	    rm -f $pidfile
 -	fi
++    log_daemon_msg "Stopping pScheduler $prog" "pscheduler-$prog"
 +    if [ -s "$pidfile" ]; then
-+        kill $(cat $pidfile) || failure "Stopping pScheduler $prog"
++        kill $(cat $pidfile)
 +        sleep 3
 +        kill -9 $(cat $pidfile) 2> /dev/null || :
 +        rm -f $pidfile
@@ -81,7 +81,7 @@
  }
  
  restart()
-@@ -82,8 +81,6 @@
+@@ -82,8 +80,6 @@
      start
  }
  
@@ -90,7 +90,7 @@
  case "$1" in
      start)
          $1
-@@ -91,11 +88,11 @@
+@@ -91,11 +87,11 @@
      stop)
          $1
          ;;
