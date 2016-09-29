@@ -1,4 +1,4 @@
-isodate (0.5.0-1~bpo70+1) wheezy-backports; urgency=medium
+isodate (0.5.0-1~bpo70+1) perfsonar-wheezy-staging; urgency=medium
 
   * Backport for wheezy.
 

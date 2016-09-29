@@ -1,4 +1,4 @@
-python-tzlocal (1.2.2-1~bpo7+1) wheezy-backports; urgency=medium
+python-tzlocal (1.2.2-1~bpo7+1) perfsonar-wheezy-stagings; urgency=medium
 
   * Rebuild for wheezy-backports.
 

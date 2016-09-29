@@ -1,4 +1,4 @@
-requests (2.0.0-1~bpo70+2) wheezy-backports; urgency=medium
+requests (2.0.0-1~bpo70+2) perfsonar-wheezy-stagings; urgency=medium
 
   * Rebuild with python2.6 support.
 

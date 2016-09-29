@@ -1,4 +1,4 @@
-python-urllib3 (1.7.1-1~bpo70+1) wheezy-backports; urgency=high
+python-urllib3 (1.7.1-1~bpo70+1) perfsonar-wheezy-stagings; urgency=high
 
   * Backport to wheezy-backports.
   * Add myself to Uploaders.
