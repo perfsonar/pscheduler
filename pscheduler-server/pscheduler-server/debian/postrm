@@ -31,6 +31,10 @@ case "$1" in
                /etc/pscheduler/database/database-dsn \
                /etc/pscheduler/database/pgpassfile
         rm -rf /var/log/pscheduler
+
+        if ! [ -e /usr/share/apache2/apache2-maintscript-helper ]; then
+            service apache2 reload >/dev/null || true
+        fi
     ;;
 
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
