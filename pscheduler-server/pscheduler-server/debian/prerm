@@ -19,6 +19,7 @@ set -e
 
 case "$1" in
     remove|upgrade|deconfigure)
+        . /usr/share/debconf/confmodule
         if [ -e /usr/share/apache2/apache2-maintscript-helper ] ; then
             . /usr/share/apache2/apache2-maintscript-helper
             apache2_invoke disconf pscheduler-server.conf || exit $?
@@ -41,7 +42,6 @@ esac
 
 case "$1" in
     remove|upgrade|deconfigure)
-        . /usr/share/debconf/confmodule
         if [ -f /usr/share/dbconfig-common/dpkg/prerm.pgsql ]; then
             . /usr/share/dbconfig-common/dpkg/prerm.pgsql
             dbc_go pscheduler-server $@
