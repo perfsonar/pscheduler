@@ -1,8 +1,8 @@
-pscheduler-server (1.0~7.1.rc1-3) perfsonar-jessie-staging; urgency=low
+pscheduler-server (1.0~7.1.rc1-4) perfsonar-jessie-staging; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 28 Sep 2016 12:59:30 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 29 Sep 2016 14:48:58 +0000
 
 pscheduler-server (0.0-1) unstable; urgency=low
 
