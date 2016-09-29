@@ -1,0 +1,26 @@
+Description: Do not use setuptools.
+Author: Daniele Tricoli <eriol@mornie.org>
+Forwarded: not-needed
+Last-Update: 2013-05-10
+
+--- a/setup.py
++++ b/setup.py
+@@ -5,11 +5,6 @@
+ import os
+ import re
+ 
+-try:
+-    import setuptools
+-except ImportError:
+-    pass # No 'develop' command, oh well.
+-
+ base_path = os.path.dirname(__file__)
+ 
+ # Get the version (borrowed from SQLAlchemy)
+@@ -49,6 +44,4 @@
+                 'urllib3.contrib',
+                 ],
+       requires=requirements,
+-      tests_require=tests_requirements,
+-      test_suite='test',
+       )

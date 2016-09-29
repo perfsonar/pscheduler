@@ -1,0 +1,106 @@
+Description: Do not use embedded copy of python-six.
+Author: Daniele Tricoli <eriol@mornie.org>
+Forwarded: not-needed
+Last-Update: 2013-10-16
+
+--- a/test/test_collections.py
++++ b/test/test_collections.py
+@@ -1,7 +1,7 @@
+ import unittest
+ 
+ from urllib3._collections import RecentlyUsedContainer as Container
+-from urllib3.packages import six
++import six
+ xrange = six.moves.xrange
+ 
+ 
+--- a/urllib3/connectionpool.py
++++ b/urllib3/connectionpool.py
+@@ -55,7 +55,7 @@
+     ProxyError,
+ )
+ from .packages.ssl_match_hostname import CertificateError, match_hostname
+-from .packages import six
++import six
+ from .request import RequestMethods
+ from .response import HTTPResponse
+ from .util import (
+--- a/urllib3/filepost.py
++++ b/urllib3/filepost.py
+@@ -10,8 +10,8 @@
+ from uuid import uuid4
+ from io import BytesIO
+ 
+-from .packages import six
+-from .packages.six import b
++import six
++from six import b
+ from .fields import RequestField
+ 
+ writer = codecs.lookup('utf-8')[3]
+--- a/urllib3/response.py
++++ b/urllib3/response.py
+@@ -10,7 +10,7 @@
+ import io
+ 
+ from .exceptions import DecodeError
+-from .packages.six import string_types as basestring, binary_type
++from six import string_types as basestring, binary_type
+ from .util import is_fp_closed
+ 
+ 
+--- a/urllib3/util.py
++++ b/urllib3/util.py
+@@ -32,7 +32,7 @@
+ except ImportError:
+     pass
+ 
+-from .packages import six
++import six
+ from .exceptions import LocationParseError, SSLError, TimeoutStateError
+ 
+ 
+--- a/test/test_filepost.py
++++ b/test/test_filepost.py
+@@ -2,7 +2,7 @@
+ 
+ from urllib3.filepost import encode_multipart_formdata, iter_fields
+ from urllib3.fields import RequestField
+-from urllib3.packages.six import b, u
++from six import b, u
+ 
+ 
+ BOUNDARY = '!! test boundary !!'
+--- a/dummyserver/handlers.py
++++ b/dummyserver/handlers.py
+@@ -186,7 +186,7 @@
+     """
+     import tornado.httputil
+     import email.utils
+-    from urllib3.packages import six
++    import six
+     if not six.PY3:
+         line = line.encode('utf-8')
+     parts = tornado.httputil._parseparam(';' + line)
+--- a/urllib3/fields.py
++++ b/urllib3/fields.py
+@@ -7,7 +7,7 @@
+ import email.utils
+ import mimetypes
+ 
+-from .packages import six
++import six
+ 
+ 
+ def guess_content_type(filename, default='application/octet-stream'):
+--- a/test/test_fields.py
++++ b/test/test_fields.py
+@@ -1,7 +1,7 @@
+ import unittest
+ 
+ from urllib3.fields import guess_content_type, RequestField
+-from urllib3.packages.six import b, u
++from six import b, u
+ 
+ 
+ class TestRequestField(unittest.TestCase):

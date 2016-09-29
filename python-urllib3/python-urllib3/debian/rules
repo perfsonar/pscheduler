@@ -1,0 +1,29 @@
+#!/usr/bin/make -f
+
+export PYBUILD_DESTDIR_python2=debian/python-urllib3/
+export PYBUILD_DESTDIR_python3=debian/python3-urllib3/
+export PYTHONWARNINGS=d
+
+
+%:
+	dh $@ --with python2,python3 --buildsystem=pybuild
+
+override_dh_auto_configure:
+	rm -f urllib3/packages/six.py
+
+override_dh_auto_install:
+	dh_auto_install
+	# Remove dummyserver/ tests to not pollute namespace.
+	rm -rf debian/python*-urllib3/usr/lib/python*/dist-packages/dummyserver
+
+override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	# Python3 testing is not possible at the moment because missing
+	# dependencies: python3-coverage.
+	# Upstream is using a python2.7 features: assertRaises() as a context
+	# manager
+	set -ex; python2.7 /usr/bin/nosetests
+endif
+
+override_dh_installchangelogs:
+	dh_installchangelogs CHANGES.rst

@@ -1,0 +1,37 @@
+Author: Jamie Strandboge <jamie@canonical.com>
+Description: require SSL certificate validation by default by using
+ CERT_REQUIRED and using the system /etc/ssl/certs/ca-certificates.crt
+Bug-Ubuntu: https://launchpad.net/bugs/1047054
+Bug-Debian: http://bugs.debian.org/686872
+Last-Update: 2013-10-16
+
+--- a/urllib3/connectionpool.py
++++ b/urllib3/connectionpool.py
+@@ -87,12 +87,13 @@
+     Based on httplib.HTTPSConnection but wraps the socket with
+     SSL certification.
+     """
+-    cert_reqs = None
+-    ca_certs = None
++    # On Debian, SSL certificate validation is required by default
++    cert_reqs = 'CERT_REQUIRED'
++    ca_certs = '/etc/ssl/certs/ca-certificates.crt'
+     ssl_version = None
+ 
+     def set_cert(self, key_file=None, cert_file=None,
+-                 cert_reqs=None, ca_certs=None,
++                 cert_reqs='CERT_REQUIRED', ca_certs='/etc/ssl/certs/ca-certificates.crt',
+                  assert_hostname=None, assert_fingerprint=None):
+ 
+         self.key_file = key_file
+@@ -644,8 +645,8 @@
+                  strict=False, timeout=None, maxsize=1,
+                  block=False, headers=None,
+                  _proxy=None, _proxy_headers=None,
+-                 key_file=None, cert_file=None, cert_reqs=None,
+-                 ca_certs=None, ssl_version=None,
++                 key_file=None, cert_file=None, cert_reqs='CERT_REQUIRED',
++                 ca_certs='/etc/ssl/certs/ca-certificates.crt', ssl_version=None,
+                  assert_hostname=None, assert_fingerprint=None):
+ 
+         HTTPConnectionPool.__init__(self, host, port, strict, timeout, maxsize,

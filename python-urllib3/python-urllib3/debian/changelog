@@ -1,0 +1,131 @@
+python-urllib3 (1.7.1-1~bpo70+1) wheezy-backports; urgency=high
+
+  * Backport to wheezy-backports.
+  * Add myself to Uploaders.
+
+ -- Micah Anderson <micah@debian.org>  Tue, 29 Oct 2013 11:53:21 -0400
+
+python-urllib3 (1.7.1-1) unstable; urgency=low
+
+  * New upstream release
+  * Switched to pybuild
+  * debian/clean
+    - Switched to debian/clean for cleaning instead of using debian/rules
+  * debian/compat
+    - Bumped debhelper compatibility level to 9
+  * debian/control
+    - Added python-mock to Build-Depends
+    - Bumped debhelper B-D to (>= 9)
+  * debian/copyright
+    - Removed stanza about mimetools_choose_boundary since not shipped
+      anymore
+  * debian/patches/01_do-not-use-embedded-python-six.patch
+    - Refreshed
+  * debian/patches/02_require-cert-verification.patch
+    - Refreshed
+  * debian/patches/04_relax_nosetests_options.patch
+    - Refreshed
+  * debian/patches/05_fix_python3_syntax_error_in_ntlmpool.patch
+    - Removed since fixed upstream
+  * debian/patches/06_fix_abuse_of_match_hostname_for_DoS.patch
+    - Removed since fixed upstream
+  * debian/watch
+    - Switched download URL to https
+
+ -- Daniele Tricoli <eriol@mornie.org>  Thu, 17 Oct 2013 13:28:10 +0200
+
+python-urllib3 (1.6-2) unstable; urgency=high
+
+  * debian/patches/06_fix_abuse_of_match_hostname_for_DoS.patch
+    - Added upstream patch to fix possible abuse of ssl.match_hostname()
+      for denial of service using certificates with many wildcards
+      (CVE-2013-2099) (Closes: #709070) Thanks Henri Salo and Jakub
+      Wilk for the report
+
+ -- Daniele Tricoli <eriol@mornie.org>  Mon, 20 May 2013 19:34:17 +0200
+
+python-urllib3 (1.6-1) unstable; urgency=low
+
+  [ Jakub Wilk ]
+  * Use canonical URIs for Vcs-* fields.
+
+  [ Daniele Tricoli ]
+  * New upstream release
+  * Upload to unstable (Closes: #707780)
+  * debian/control
+    - Added python3-six to Build-Depends field
+    - Bumped debhelper dependency to 8.1 for build-{arch,indep} support
+    - Removed python-setuptools from Build-Depends field
+  * debian/copyright
+    - Updated copyright years
+    - Added stanza for urllib3/packages/ordered_dict.py
+  * debian/patches/01_do-not-use-embedded-python-six.patch
+    - Refreshed
+  * debian/patches/02_require-cert-verification.patch
+    - Refreshed
+  * debian/patches/03_no-setuptools.patch
+    - Do not use setuptools
+  * debian/patches/04_relax_nosetests_options.patch
+    - Do not use logging-clear-handlers to see all logging output and
+      disabled cover-min-percentage since it require python-nose (>= 1.3):
+      this way it will be easier to backport python-urllib3 to Wheezy.
+  * debian/patches/05_fix_python3_syntax_error_in_ntlmpool.patch
+    - Fix syntax error 'unicodeescape' codec can't decode bytes in
+      position 130-132 for Python3
+
+ -- Daniele Tricoli <eriol@mornie.org>  Sat, 11 May 2013 15:15:38 +0200
+
+python-urllib3 (1.5-1) experimental; urgency=low
+
+  * New upstream release
+  * debian/control
+    - Bumped Standards-Version to 3.9.4 (no changes needed)
+  * debian/patches/01_do-not-use-embedded-python-six.patch
+    - Refreshed
+  * debian/rules
+    - Run tests only for python2.7 since upstream is using
+      assertRaises() as a context manager
+
+ -- Daniele Tricoli <eriol@mornie.org>  Fri, 09 Nov 2012 04:23:18 +0100
+
+python-urllib3 (1.3-3) unstable; urgency=low
+
+  * debian/control
+    - Added ca-certificates to Recommends field
+  * debian/patches/02_require-cert-verification.patch
+    - require SSL certificate validation by default by using
+      CERT_REQUIRED and using the system
+      /etc/ssl/certs/ca-certificates.crt.
+      Thanks to Jamie Strandboge for report and patch
+      (Closes: #686872)
+
+ -- Daniele Tricoli <eriol@mornie.org>  Mon, 10 Sep 2012 14:33:35 +0200
+
+python-urllib3 (1.3-2) unstable; urgency=low
+
+  * debian/control
+    - Tightened B-D of python-coverage to >= 3.4 (Closes: #668427)
+    - Fixed typo in python3-urllib3's ${python3:Depends}
+  * debian/patches/01_do-not-use-embedded-python-six.patch
+    - Refreshed
+  * debian/rules
+    - Actually remove the embedded python-six from binary packages
+    - Cleaned .egg-info to build packages twice in a row
+
+ -- Daniele Tricoli <eriol@mornie.org>  Tue, 17 Apr 2012 21:34:49 +0200
+
+python-urllib3 (1.3-1) unstable; urgency=low
+
+  * New upstream release
+  * debian/control
+    - Bumped Standards-Version to 3.9.3 (no changes needed)
+  * debian/patches/01_do-not-use-embedded-python-six.patch
+    - Refreshed
+
+ -- Daniele Tricoli <eriol@mornie.org>  Thu, 29 Mar 2012 02:09:04 +0200
+
+python-urllib3 (1.2.2-1) unstable; urgency=low
+
+  * Initial release (Closes: #648783)
+
+ -- Daniele Tricoli <eriol@mornie.org>  Fri, 10 Feb 2012 04:41:11 +0100

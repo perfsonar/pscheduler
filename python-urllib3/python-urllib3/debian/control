@@ -1,0 +1,67 @@
+Source: python-urllib3
+Maintainer: Debian Python Modules Team <python-modules-team@lists.alioth.debian.org>
+Uploaders: Daniele Tricoli <eriol@mornie.org>,
+ Micah Anderson <micah@debian.org>
+Section: python
+Priority: optional
+Build-Depends:
+ debhelper (>= 9),
+ dh-python,
+ python-all (>= 2.6.6-3),
+ python-coverage (>= 3.4),
+ python-mock,
+ python-nose (>=1.1.2),
+ python-six,
+ python-tornado,
+ python3-all,
+ python3-six,
+Standards-Version: 3.9.4
+X-Python-Version: >= 2.6
+X-Python3-Version: >= 3.0
+Homepage: http://urllib3.readthedocs.org
+Vcs-Svn: svn://anonscm.debian.org/python-modules/packages/python-urllib3/trunk/
+Vcs-Browser: http://anonscm.debian.org/viewvc/python-modules/packages/python-urllib3/trunk/
+
+Package: python-urllib3
+Architecture: all
+Depends:
+ ${misc:Depends},
+ ${python:Depends},
+ python-six
+Recommends:
+ ca-certificates
+Description: HTTP library with thread-safe connection pooling for Python
+ urllib3 supports features left out of urllib and urllib2 libraries.
+ .
+   - Re-use the same socket connection for multiple requests (HTTPConnectionPool
+     and HTTPSConnectionPool) (with optional client-side certificate
+     verification).
+   - File posting (encode_multipart_formdata).
+   - Built-in redirection and retries (optional).
+   - Supports gzip and deflate decoding.
+   - Thread-safe and sanity-safe.
+   - Small and easy to understand codebase perfect for extending and
+     building upon.
+
+Package: python3-urllib3
+Architecture: all
+Depends:
+ ${misc:Depends},
+ ${python3:Depends},
+ python3-six
+Recommends:
+ ca-certificates
+Description: HTTP library with thread-safe connection pooling for Python3
+ urllib3 supports features left out of urllib and urllib2 libraries.
+ .
+   - Re-use the same socket connection for multiple requests (HTTPConnectionPool
+     and HTTPSConnectionPool) (with optional client-side certificate
+     verification).
+   - File posting (encode_multipart_formdata).
+   - Built-in redirection and retries (optional).
+   - Supports gzip and deflate decoding.
+   - Thread-safe and sanity-safe.
+   - Small and easy to understand codebase perfect for extending and
+     building upon.
+ .
+ This package contains the Python 3 version of the library.

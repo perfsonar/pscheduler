@@ -1,0 +1,4 @@
+01_do-not-use-embedded-python-six.patch
+02_require-cert-verification.patch
+03_no-setuptools.patch
+04_relax_nosetests_options.patch
