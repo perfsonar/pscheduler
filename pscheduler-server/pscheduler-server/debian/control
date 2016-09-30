@@ -14,7 +14,7 @@ Depends: ${misc:Depends}, python, curl, pscheduler-account,
  python-daemon, python-flask, python-ipaddr, python-requests,
  python-jsontemplate, python-detach, python-radix, python-pscheduler,
  apache2 | httpd, libapache2-mod-wsgi, pscheduler-core,
- dbconfig-common, postgresql (>= 165+deb8u1~bpo7+1), postgresql-9.4,
+ dbconfig-common, postgresql (>= 9.4), postgresql-9.4,
  postgresql-plpython-9.4, postgresql-contrib-9.4
 Description: pScheduler server components
  The pScheduler database, daemons and API web server

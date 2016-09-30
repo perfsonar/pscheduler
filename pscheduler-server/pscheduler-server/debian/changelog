@@ -1,20 +1,14 @@
-pscheduler-server (1.0~7.1.rc1-6~bpo70+2) perfsonar-wheezy-staging; urgency=low
-
-  * Increasing postgresl-common dependency to 165+deb8u1~bpo7+1
-
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 30 Sep 2016 14:23:51 +0000
-
-pscheduler-server (1.0~7.1.rc1-5~bpo70+1) perfsonar-wheezy-staging; urgency=low
+pscheduler-server (1.0~7.1.rc1-7~pbo70+1) perfsonar-wheezy-staging; urgency=low
 
   * Backport to Wheezy.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 29 Sep 2016 16:47:40 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 30 Sep 2016 15:28:21 +0000
 
-pscheduler-server (1.0~7.1.rc1-5) perfsonar-jessie-staging; urgency=low
+pscheduler-server (1.0~7.1.rc1-7) perfsonar-jessie-staging; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 29 Sep 2016 16:46:01 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 30 Sep 2016 15:26:52 +0000
 
 pscheduler-server (0.0-1) unstable; urgency=low
 
