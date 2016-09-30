@@ -1,8 +1,8 @@
-pscheduler-server (1.0~7.1.rc1-7~pbo70+1) perfsonar-wheezy-staging; urgency=low
+pscheduler-server (1.0~7.1.rc1-7~bpo70+1) perfsonar-wheezy-staging; urgency=low
 
   * Backport to Wheezy.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 30 Sep 2016 15:28:21 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 30 Sep 2016 15:33:14 +0000
 
 pscheduler-server (1.0~7.1.rc1-7) perfsonar-jessie-staging; urgency=low
 
