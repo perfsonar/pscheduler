@@ -10,6 +10,7 @@ import datetime
 import os
 import pipes
 import pscheduler
+import pytz
 import sys
 
 
@@ -27,7 +28,11 @@ def get_time_with_delta(string):
 
     # If it looks like a time, return that.
     try:
-        return pscheduler.iso8601_as_datetime(string)
+        absolute = pscheduler.iso8601_as_datetime(string)
+        # Default behavior is to localize naive times.
+        if absolute.tzinfo is None:
+            absolute = pytz.utc.localize(absolute)
+        return absolute
     except ValueError:
         pass
 

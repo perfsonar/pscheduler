@@ -16,6 +16,7 @@ Source0:	%{name}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:       python-pscheduler
+Requires:       pytz
 Requires:	curl
 
 BuildRequires:	pscheduler-rpm
