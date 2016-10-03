@@ -1,0 +1,15 @@
+#!/bin/sed -e 1d
+{
+    "name": "nuttcp",
+    "description": "Run the nuttcp command for measuring network throughput",
+    "version": "1.0",
+    "tests": [ "throughput" ],
+
+    "preference": 5,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    }
+}
