@@ -409,6 +409,7 @@ class RunWorker:
             else:
                 self.log.debug("%d: Tool returned failure: %s",
                                self.id, stderr)
+                local_result = None
                 failures += 1
 
             full_result = [ local_result ]
