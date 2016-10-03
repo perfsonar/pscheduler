@@ -83,19 +83,17 @@ restart()
 }
 
 
-
 case "$1" in
-    start)
+    start|stop|restart)
         $1
         ;;
-    stop)
-        $1
+
+    status)
+        status -p ${pidfile} $exec
         ;;
-    restart)
-        $1
-        ;;
+
     *)
-        echo $"Usage: $0 {start|stop|restart}"
+        echo $"Usage: $0 {start|stop|restart|status}"
         exit 2
 esac
 exit $?
