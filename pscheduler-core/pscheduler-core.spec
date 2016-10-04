@@ -4,7 +4,7 @@
 
 Name:		pscheduler-core
 Version:	1.0
-Release:	0.7.rc1%{?dist}
+Release:	0.8.rc1%{?dist}
 
 Summary:	pScheduler Core Programs
 BuildArch:	noarch
@@ -16,6 +16,7 @@ Source0:	%{name}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:       python-pscheduler
+Requires:       pytz
 Requires:	curl
 
 BuildRequires:	pscheduler-rpm

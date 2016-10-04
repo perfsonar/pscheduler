@@ -5,7 +5,7 @@
 %define short	latencybg
 Name:		pscheduler-test-%{short}
 Version:	1.0
-Release:	0.7.rc1%{?dist}
+Release:	0.8.rc1%{?dist}
 
 Summary:	Latency Background test class for pScheduler
 BuildArch:	noarch

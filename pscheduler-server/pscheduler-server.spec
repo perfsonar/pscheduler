@@ -8,7 +8,7 @@
 
 Name:		pscheduler-server
 Version:	1.0
-Release:	0.7.rc1%{?dist}
+Release:	0.8.rc1%{?dist}
 
 Summary:	pScheduler Server
 BuildArch:	noarch
@@ -27,6 +27,7 @@ Requires:	postgresql95-contrib
 Requires:	postgresql95-plpython
 Requires:	postgresql-load
 Requires:	pscheduler-account
+Requires:	pscheduler-core
 Requires:	pscheduler-database-init
 Requires:	random-string
 

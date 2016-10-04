@@ -95,7 +95,9 @@
     "type": "object",
     "properties": {
         "schema": {
-	    "$ref": "#/pScheduler/Cardinal"
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1
 	},
         "identifiers": { 
 	    "type": "array",

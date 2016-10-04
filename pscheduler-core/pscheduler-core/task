@@ -468,7 +468,7 @@ status, participants = pscheduler.url_get( url, params={
 
 log.debug("%s, status %d", url, status)
 if status not in [ 200, 404 ]:
-    pscheduler.fail("Unable to determine the lead participant: " + str(ex))
+    pscheduler.fail("Unable to determine the lead participant: %s" % participants)
 if status == 200:
     log.debug("Got participants: %s", participants)
     lead = participants["participants"][0]
