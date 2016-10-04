@@ -259,7 +259,7 @@ roundtrips = []
 packet_returned = re.compile("""^\
 ([0-9]+) bytes\
 \s+from (.*):\
-\s+icmp_seq=([0-9]+)\
+\s+icmp_[rs]eq=([0-9]+)\
 \s+ttl=([0-9]+)\
 \s+time=([0-9.]+) ms\
 $""")
@@ -409,7 +409,7 @@ for rt in roundtrips:
 result['sent'] = sent
 result['received'] = recvd
 result['lost'] = sent - recvd
-result['loss'] = float((sent - recvd)/float(sent))
+result['loss'] = float((sent - recvd)/float(sent)) if sent > 0 else 0
 result['duplicates'] = dups
 result['reorders'] = reorders
 
