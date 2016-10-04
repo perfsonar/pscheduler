@@ -1,3 +1,9 @@
+python-pscheduler (1.0~8.rc1-1) perfsonar-jessie-staging; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 04 Oct 2016 18:53:40 +0000
+
 python-pscheduler (1.0~7.1.rc1-4) perfsonar-jessie-staging; urgency=low
 
   * New upstream version

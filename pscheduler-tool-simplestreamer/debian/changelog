@@ -1,3 +1,9 @@
+pscheduler-tool-simplestreamer (1.0~8.rc1-1) perfsonar-jessie-staging; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.pozna.pl>  Tue, 04 Oct 2016 18:55:39 +0000
+
 pscheduler-tool-simplestreamer (1.0~7.1.rc1-1) perfsonar-jessie-staging; urgency=low
 
   * New upstream version
