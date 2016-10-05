@@ -175,8 +175,6 @@ def update_tasks(screen):
     show_schedule.extend(present)
     show_schedule.extend(future)
 
-    assert len(show_schedule) <= height
-
     screen.clear()
 
     row = 0
