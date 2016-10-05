@@ -16,7 +16,7 @@ AS
         run_state.display AS state_display,
         -- TODO: Pull full JSON with details when that's available.  See #95.
         task.json AS task_json,
-	FALSE AS remove_this
+	task.cli AS task_cli
     FROM
         run
         JOIN run_state ON run_state.id = run.state

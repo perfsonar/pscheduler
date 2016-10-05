@@ -1,0 +1,280 @@
+#!/usr/bin/python
+#
+# Monitor pScheduler's Schedule
+#
+
+
+import curses
+import datetime
+import optparse
+import pscheduler
+import time
+
+#
+# Gargle the arguments
+#
+
+usage = "Usage: %prog [options]"
+opt_parser = optparse.OptionParser(usage = usage)
+opt_parser.disable_interspersed_args()
+
+# GENERAL OPTIONS
+
+opt_parser.add_option("--future",
+                      help="Percentage of available screen lines to occupy with future runs (0..100)",
+                      action="store", type="int",
+                      default=75,
+                      dest="future")
+
+opt_parser.add_option("--host",
+                      help="pScheduler host",
+                      action="store", type="string",
+                      default=pscheduler.api_this_host(),
+                      dest="host")
+
+opt_parser.add_option("--refresh",
+                      help="Seconds between refreshes of the schedule data",
+                      action="store", type="int",
+                      default=3,
+                      dest="refresh")
+
+
+(options, remaining_args) = opt_parser.parse_args()
+
+if len(remaining_args) != 0:
+    opt_parser.print_usage()
+    pscheduler.fail()
+
+if options.future < 0 or options.future > 100:
+    pscheduler.fail("Invalid --future; must be in 0..100")
+future_fraction = options.future / 100.0
+
+
+# TODO: Make these options
+if options.refresh < 0:
+    pscheduler.fail("Invalid --refresh; must be > 0")
+update_interval = datetime.timedelta(seconds=options.refresh)
+
+
+
+#
+# Some utilities
+#
+
+
+def hline(screen, line):
+    height, width = screen.getmaxyx()
+    screen.hline(line, 0, curses.ACS_HLINE, width)
+
+def center_on_line(screen, line, string):
+    height, width = screen.getmaxyx()
+    screen.addstr(line, (width - len(string))/2, string)
+
+def draw_static(screen):
+    height, width = screen.getmaxyx()
+    screen.clear()
+    center_on_line(screen, 0, "pScheduler Monitor")
+    screen.addstr(0, 0, options.host)
+    hline(screen, 1)
+    screen.refresh()
+
+
+def update_time(screen):
+    time_str = pscheduler.time_now().strftime("%F T %T %z")
+    height, width = screen.getmaxyx()
+    screen.addstr(0, width-len(time_str), time_str)
+    screen.refresh()
+
+
+
+def update_tasks(screen):
+
+    height, width = screen.getmaxyx()
+
+    # Put something in the corner to show we're busy
+    loading_str = "   [LOADING]"
+    screen.addstr(0, width-len(loading_str), loading_str)
+    screen.refresh()
+
+    status, schedule = pscheduler.url_get(
+        pscheduler.api_url(host=options.host, path="/schedule"), throw=False)
+
+    # Easy outs
+
+    error_lines = []
+
+    if status != 200:
+        error_lines = [ "Unable to read schedule from server.",
+                        "",
+                        "Error code %d" % status,
+                        "",
+                        schedule.replace("\n", "  ")
+                        ]
+    elif len(schedule) == 0:
+        error_lines = [ "Schedule is empty." ]
+
+    if error_lines:
+        screen.clear()
+        line = (height - len(error_lines)) / 2
+        for text in error_lines:
+            if len(text) > width:
+                text = "%s%s" % (text[:width-3], "...")
+            center_on_line(screen, line, text)
+            line += 1
+        screen.refresh()
+        return
+
+
+
+    # Sort the schedule into bins (what was, what is, what shall be)
+
+    past = []
+    present = []
+    future = []
+
+    for run in schedule:
+        state = run["state"]
+        if state in [ "pending", "on-deck" ]:
+            future.append(run)
+        elif state in ["running", "cleanup" ]:
+            present.append(run)
+        else:
+            past.append(run)
+
+
+    # Dole out screen real estate.
+
+    # Curses uses zero-based geometry.
+    rows_left = height + 1
+    last_row = height - 1
+
+    # Things running take top priority
+    if len(present) > rows_left:
+        present = present[:rows_left-1]
+    rows_left -= len(present)
+
+    # Things upcoming take up to some fraction of what's left.
+    if rows_left > 0:
+        future_max = int(rows_left * future_fraction)
+        if len(future) > future_max:
+            future = future[:future_max-1]
+        rows_left -= len(future)
+    else:
+        future = []
+
+
+    # Things in the past get whatever's left.
+    if rows_left:
+        if len(past) > rows_left:
+            past = past[-(rows_left-1):]
+        rows_left -= len(past)
+    else:
+        past = []
+        
+    show_schedule = past
+    show_schedule.extend(present)
+    show_schedule.extend(future)
+
+    assert len(show_schedule) <= height
+
+    screen.clear()
+
+    row = 0
+    for run in show_schedule:
+
+        cli = [ run["task"]["test"]["type"] ]
+        cli.extend(run["cli"])
+
+        # Pad the string out to the width so inverse shows properly.
+        line = "%s %-12s %s" % (run["start-time"],
+                                run["state-display"], " ".join(cli))
+        line = "%s%s" % (line, " " * (width-len(line)))
+
+        if len(line) > width:
+            line = "%s%s" % (line[:width-3], "...")
+
+        state = run["state"]
+
+        if state in [ "pending", "on-deck" ]:
+            # TODO: Color default
+            line_attr = curses.A_NORMAL
+        elif state in [ "running", "cleanup" ]:
+            # TODO: Color default
+            line_attr = curses.A_REVERSE
+        elif state in [ "overdue", "missed", "failed" ]:
+            # TODO: Color red
+            line_attr = curses.A_BOLD
+        elif state in [ "trumped" ]:
+            # TODO: Color yellow
+            line_attr = curses.A_NORMAL
+        else:
+            line_attr = curses.A_NORMAL
+
+        # The last row gets chopped by one character because curses
+        # doesn't allow writing to the last character on the screen
+        # with addstr.
+        if row == last_row:
+            line = line[:-1]
+
+        screen.addstr(row, 0, line, line_attr)
+
+        row += 1
+
+    screen.refresh()
+
+
+
+#
+# Main Program
+#
+
+try:
+
+    stdscr = curses.initscr()
+    stdscr.nodelay(1)
+    curses.curs_set(0)
+    curses.cbreak()
+    curses.noecho()
+    task_window = stdscr.subwin(2,0)
+  
+
+    draw_static(stdscr)
+    update_tasks(task_window)
+
+    last_update = pscheduler.time_now() - update_interval
+
+    while True:
+
+        input = stdscr.getch()
+
+        if input == -1:
+            pass
+        elif input == curses.KEY_RESIZE:
+            stdscr.clear()
+            task_window = stdscr.subwin(2,0)
+            draw_static(stdscr)
+            # TODO: This causes lots of fetches during resizes.
+            update_tasks(task_window)
+            continue
+        elif chr(input) == " ":
+            update_tasks(task_window)
+        elif chr(input) in [ "Q", "q", "\033"]:
+                break
+
+        update_time(stdscr)
+        if pscheduler.time_now() > last_update + update_interval:
+            update_tasks(task_window)
+            last_update = pscheduler.time_now()
+
+        time.sleep(0.1)
+
+except KeyboardInterrupt:
+    pass
+
+finally:
+    curses.nocbreak()
+    stdscr.keypad(0)
+    curses.echo()
+    curses.endwin()
+
+pscheduler.succeed()

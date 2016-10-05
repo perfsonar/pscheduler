@@ -340,7 +340,8 @@ def tasks_uuid(uuid):
                     scheduling_class.exclusive,
                     scheduling_class.multi_result,
                     task.participant,
-                    task.enabled
+                    task.enabled,
+                    task.cli
                 FROM
                     task
                     JOIN test ON test.id = task.test
@@ -402,7 +403,8 @@ def tasks_uuid(uuid):
                 'anytime':  row[7],
                 'exclusive':  row[8],
                 'multi-result':  row[9],
-                'enabled':  row[11]
+                'enabled':  row[11],
+                'cli':  row[12]
                 }
 
         return ok_json(json)

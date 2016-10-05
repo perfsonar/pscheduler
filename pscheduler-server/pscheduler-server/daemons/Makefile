@@ -22,7 +22,7 @@ DAEMONS=\
 
 COMMANDS=\
 	debug \
-	monitor
+
 
 INITS=$(DAEMONS:%=init.d-%)
 
