@@ -47,7 +47,7 @@ def forbidden(message="Not allowed."):
     log.debug("Response 403: %s", message)
     return Response(message, status=403)
 
-def not_found(message="Reource Not found."):
+def not_found(message="Resource Not found."):
     log.debug("Response 404: %s", message)
     return Response(message + "\n", status=404)
 
