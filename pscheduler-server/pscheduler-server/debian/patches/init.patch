@@ -81,26 +81,23 @@
  }
  
  restart()
-@@ -82,8 +80,6 @@
+@@ -82,9 +80,8 @@
      start
  }
  
 -
--
  case "$1" in
-     start)
-         $1
-@@ -91,11 +87,11 @@
-     stop)
+-    start|stop|restart)
++    start|stop|restart|force-reload)
          $1
          ;;
--    restart)
-+    restart|force-reload)
-         $1
+ 
+@@ -93,7 +90,7 @@
          ;;
+ 
      *)
--        echo $"Usage: $0 {start|stop|restart}"
-+        echo $"Usage: $0 {start|stop|restart|force-reload}"
+-        echo $"Usage: $0 {start|stop|restart|status}"
++        echo $"Usage: $0 {start|stop|restart|force-reload|status}"
          exit 2
  esac
  exit $?
