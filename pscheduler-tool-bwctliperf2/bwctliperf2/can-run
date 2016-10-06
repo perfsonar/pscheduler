@@ -65,9 +65,9 @@ except KeyError:
     source = None
 
 try: 
-    destination = test_spec['destination']
+    destination = test_spec['dest']
 except KeyError:
-    pscheduler.fail("Missing destination argument in spec")
+    pscheduler.fail("Missing dest argument in spec")
 
 
 src_has_psc = has_pscheduler(source)

@@ -25,7 +25,7 @@ logger.debug("starting bwctl tool")
 
 # parse JSON input
 input = pscheduler.json_load(exit_on_error=True)
-#input = {"test": {"type": "throughput", "spec": {"destination": "10.0.1.17", "schema": 1}}, "participant-data": [{}], "schedule": {"duration": "PT1M11S", "start": "2016-09-02T14:55:35-04:00"}, "participant": 0, "schema": 1}
+#input = {"test": {"type": "throughput", "spec": {"dest": "10.0.1.17", "schema": 1}}, "participant-data": [{}], "schedule": {"duration": "PT1M11S", "start": "2016-09-02T14:55:35-04:00"}, "participant": 0, "schema": 1}
 logger.debug("Input is %s" % input)
 
 try:
@@ -54,7 +54,7 @@ def run_client():
         bwctl_args.append(source)
     
     # who to connect to
-    destination = test_spec['destination']          
+    destination = test_spec['dest']          
 
     bwctl_args.append('-c')
     bwctl_args.append(destination)
