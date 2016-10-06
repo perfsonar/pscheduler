@@ -11,6 +11,7 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-tool-traceroute
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
+ pscheduler-server, pscheduler-test-trace, pscheduler-account,
  python-icmperror, traceroute, sudo
 Description: pScheduler traceroute tool
  Traceroute tool class for pScheduler

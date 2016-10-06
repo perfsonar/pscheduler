@@ -10,10 +10,11 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 
 Package: pscheduler-server
 Architecture: all
-Depends: ${misc:Depends}, python, curl, pscheduler-account,
+Depends: ${misc:Depends}, python, curl,
  python-daemon, python-flask, python-ipaddr, python-requests,
- python-jsontemplate, python-detach, python-radix, python-pscheduler,
- apache2 | httpd, libapache2-mod-wsgi, pscheduler-core,
+ python-tz, python-jsontemplate, python-detach, python-radix,
+ python-pscheduler, pscheduler-core, pscheduler-account,
+ apache2, libapache2-mod-wsgi,
  dbconfig-common, postgresql (>= 9.4), postgresql-9.4,
  postgresql-plpython-9.4, postgresql-contrib-9.4
 Description: pScheduler server components

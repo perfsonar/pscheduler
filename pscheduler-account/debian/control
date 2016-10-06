@@ -10,6 +10,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 
 Package: pscheduler-account
 Architecture: all
-Depends: ${misc:Depends}
+Depends: ${misc:Depends}, adduser
 Description: pScheduler system account
  Create pscheduler system user and group.

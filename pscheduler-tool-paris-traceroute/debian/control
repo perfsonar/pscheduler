@@ -11,6 +11,7 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-tool-paris-traceroute
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
+ pscheduler-server, pscheduler-test-trace, pscheduler-account,
  python-ipaddr, python-icmperror, sudo, paris-traceroute
 Description: pScheduler Paris Traceroute Tool
  Paris Traceroute tool class for pScheduler

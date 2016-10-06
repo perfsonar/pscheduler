@@ -10,6 +10,7 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 
 Package: pscheduler-tool-simplestreamer
 Architecture: all
-Depends: ${misc:Depends}, python, python-pscheduler
+Depends: ${misc:Depends}, python, python-pscheduler,
+ pscheduler-server, pscheduler-test-simplestream
 Description: pScheduler simple stream tool
  Simple Stream tool class for pScheduler
