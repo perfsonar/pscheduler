@@ -30,6 +30,7 @@ Depends:
  pscheduler-tool-sleep,
  pscheduler-tool-sleepbg,
  pscheduler-tool-snooze,
+ pscheduler-tool-nuttcp,
  pscheduler-tool-ping,
  pscheduler-tool-tracepath,
  pscheduler-tool-traceroute,
