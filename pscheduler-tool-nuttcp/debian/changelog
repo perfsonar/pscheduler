@@ -1,0 +1,5 @@
+pscheduler-tool-nuttcp (1.0~8.rc1-1~bpo70+1) perfsonar-wheezy-staging; urgency=low
+
+  * Backport to Wheezy.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 04 Oct 2016 19:06:59 +0000
