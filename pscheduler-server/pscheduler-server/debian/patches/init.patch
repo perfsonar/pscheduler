@@ -1,6 +1,8 @@
---- a/daemons/init.d-template.m4
-+++ b/daemons/init.d-template.m4
-@@ -10,8 +10,10 @@
+Index: pscheduler-server/daemons/init.d-template.m4
+===================================================================
+--- pscheduler-server.orig/daemons/init.d-template.m4
++++ pscheduler-server/daemons/init.d-template.m4
+@@ -10,8 +10,10 @@ changecom()dnl
  
  ### BEGIN INIT INFO
  # Provides: pscheduler-__PROG__
@@ -13,7 +15,7 @@
  # Short-Description: Run pscheduler __PROG__
  # Description: pScheduler __PROG__ daemon
  ### END INIT INFO
-@@ -25,17 +27,16 @@
+@@ -25,17 +27,16 @@ config=__DSN__
  proguser=__PSUSER__
  
  pidfile=__VAR__/run/pscheduler-$prog.pid
@@ -33,7 +35,7 @@
  
  start() {
      if [ $UID -ne 0 ] ; then
-@@ -44,9 +45,9 @@
+@@ -44,9 +45,9 @@ start() {
      fi
      [ -x $exec ] || exit 5
      [ -f $config ] || exit 6
@@ -45,7 +47,7 @@
      if [ ! -s "$logfile" ] ; then
          echo "(This file should be empty unless there's a catastrophic failure.)" >> "$logfile"
      fi
-@@ -54,26 +55,24 @@
+@@ -54,26 +55,24 @@ start() {
         -c "$exec --daemon --pid-file '$pidfile' --dsn '@$config'" \
  	>> "$logfile" 2>&1 &
      retval=$?
@@ -81,26 +83,23 @@
  }
  
  restart()
-@@ -82,8 +81,6 @@
+@@ -82,9 +81,8 @@ restart()
      start
  }
  
 -
--
  case "$1" in
-     start)
-         $1
-@@ -91,11 +88,11 @@
-     stop)
+-    start|stop|restart)
++    start|stop|restart|force-reload)
          $1
          ;;
--    restart)
-+    restart|force-reload)
-         $1
+ 
+@@ -93,7 +91,7 @@ case "$1" in
          ;;
+ 
      *)
--        echo $"Usage: $0 {start|stop|restart}"
-+        echo $"Usage: $0 {start|stop|restart|force-reload}"
+-        echo $"Usage: $0 {start|stop|restart|status}"
++        echo $"Usage: $0 {start|stop|restart|force-reload|status}"
          exit 2
  esac
  exit $?
