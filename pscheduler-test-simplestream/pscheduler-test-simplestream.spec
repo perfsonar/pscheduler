@@ -5,7 +5,7 @@
 %define short	simplestream
 Name:		pscheduler-test-%{short}
 Version:	1.0
-Release:	0.8.rc1%{?dist}
+Release:	0.9.rc1%{?dist}
 
 Summary:	Simplestream test class for pScheduler
 BuildArch:	noarch
