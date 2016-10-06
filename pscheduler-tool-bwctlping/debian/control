@@ -11,6 +11,7 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-tool-bwctlping
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
+ pscheduler-server, pscheduler-test-rtt,
  python-ipaddr, python-icmperror, iputils-ping,
  bwctl-client, bwctl-server
 Description: pScheduler bwctlping tool

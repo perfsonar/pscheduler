@@ -11,6 +11,7 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-tool-tracepath
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
+ pscheduler-server, pscheduler-test-trace,
  python-icmperror, iputils-tracepath
 Description: pScheduler tracepath tool
  Tracepath tool class for pScheduler

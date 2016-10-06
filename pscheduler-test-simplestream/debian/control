@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-test-simplestream
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
- python-jsontemplate
+ pscheduler-server, python-jsontemplate
 Description: pScheduler simplestream test
  Simplestream test class for pScheduler
