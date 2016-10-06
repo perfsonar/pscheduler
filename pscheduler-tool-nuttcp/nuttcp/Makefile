@@ -2,7 +2,7 @@
 # Makefile for any tool class
 #
 
-NAME=iperf3
+NAME=nuttcp
 
 FILES=\
 	can-run \
@@ -11,9 +11,9 @@ FILES=\
 	merged-results \
 	participant-data \
 	run \
-	iperf3_parser.py \
-	iperf3_defaults.py \
-	iperf3_utils.py
+	nuttcp_parser.py \
+	nuttcp_defaults.py \
+	nuttcp_utils.py
 
 DOCS=\
 	$(NAME).txt

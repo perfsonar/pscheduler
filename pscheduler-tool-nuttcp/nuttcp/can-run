@@ -1,0 +1,51 @@
+#!/usr/bin/python
+#
+# Determine if this tool can run a test based on a test spec.
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+logger = pscheduler.Log(prefix='tool-nuttcp')
+
+json = pscheduler.json_load(exit_on_error=True)
+
+logger.info("can-run for %s" % json)
+
+if not json.get('type'):
+    pscheduler.fail('Missing test type')
+
+if json['type'] != 'throughput':
+    pscheduler.fail('Unsupported test type')
+
+if not json.get('spec'):
+    pscheduler.fail('Missing test spec')
+
+test_spec = json['spec']
+
+if test_spec.has_key('local-address'):
+    pscheduler.fail('nuttcp does not support the --local-address flag')
+
+if test_spec.has_key('omit'):
+    pscheduler.fail('nuttcp does not support the --omit flag')
+
+if test_spec.has_key('tos'):
+    pscheduler.fail('nuttcp does not support the --tos flag')
+
+if test_spec.has_key('dynamic-window-size'):
+    pscheduler.fail('nuttcp does not support the --dynamic-window-size flag')
+
+if test_spec.has_key('congestion'):
+    pscheduler.fail('nuttcp does not support the --congestion flag')
+
+if test_spec.has_key('zero-copy'):
+    pscheduler.fail('nuttcp does not support the --zero-copy flag')
+
+if test_spec.has_key('flow-label'):
+    pscheduler.fail('nuttcp does not support the --flow-label flag')
+
+logger.debug("can-run succeeded")
+
+pscheduler.succeed()

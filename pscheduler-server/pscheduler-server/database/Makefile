@@ -52,6 +52,7 @@ TEARDOWN_SQL=database-teardown.sql
 SQL=$(BUILD_SUPER_SQL) $(BUILD_SQL) $(TEARDOWN_SQL)
 
 INTERNALS=\
+	reset \
 	warmboot
 
 %: %.m4

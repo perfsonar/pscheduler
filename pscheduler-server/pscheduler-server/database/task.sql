@@ -7,6 +7,10 @@ DECLARE
     t_name TEXT;            -- Name of the table being worked on
     t_version INTEGER;      -- Current version of the table
     t_version_old INTEGER;  -- Version of the table at the start
+
+    -- Used by version 1 to 2 upgrade
+    v1_2_record RECORD;
+    v1_2_run_result external_program_result;
 BEGIN
 
     --
@@ -145,11 +149,32 @@ BEGIN
     END IF;
 
     -- Version 1 to version 2
-    --IF t_version = 1
-    --THEN
-    --    ALTER TABLE ...
-    --    t_version := t_version + 1;
-    --END IF;
+    IF t_version = 1
+    THEN
+	-- CLI equivalent to what's in the JSON task spec
+        ALTER TABLE task ADD COLUMN
+	cli JSON;
+
+	-- Calculate CLI for all existing tasks
+	FOR v1_2_record IN (SELECT * FROM task)
+	LOOP
+	    v1_2_run_result := pscheduler_internal(ARRAY['invoke', 'test',
+	        v1_2_record.json #>> '{test, type}', 'spec-to-cli'],
+		v1_2_record.json #>> '{test, spec}' );
+	    IF v1_2_run_result.status <> 0 THEN
+	        RAISE EXCEPTION 'Unable to divine CLI from spec id %: %',
+		  v1_2_run_result.id, v1_2_run_result.stderr;
+	    END IF;
+
+	    UPDATE TASK SET cli = v1_2_run_result.stdout::JSON
+            WHERE id = v1_2_record.id;
+	END LOOP;
+
+	ALTER TABLE task
+	ALTER COLUMN cli SET NOT NULL;
+
+        t_version := t_version + 1;
+    END IF;
 
 
     --
@@ -238,6 +263,14 @@ BEGIN
 	    IF run_result.status <> 0 THEN
 	        RAISE EXCEPTION 'Task package contains unusable test: %', run_result.stderr;
 	    END IF;
+
+	    -- Calculate CLI equivalent
+	    run_result := pscheduler_internal(ARRAY['invoke', 'test', test_type, 'spec-to-cli'],
+		          NEW.json #>> '{test, spec}' );
+	    IF run_result.status <> 0 THEN
+	        RAISE EXCEPTION 'Unable to divine CLI from spec: %', run_result.stderr;
+	    END IF;
+	    NEW.cli = run_result.stdout::JSON;
 
 	    -- Extract participant list
 	    run_result := pscheduler_internal(ARRAY['invoke', 'test', test_type, 'participants'],

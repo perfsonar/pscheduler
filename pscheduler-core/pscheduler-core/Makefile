@@ -23,6 +23,7 @@ COMMANDS=\
 	cancel \
 	result \
 	schedule \
+	monitor \
 	task \
 	watch
 
