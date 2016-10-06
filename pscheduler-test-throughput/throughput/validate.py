@@ -40,7 +40,6 @@ SPEC_SCHEMA = {
         }
     }
 
-
 RESULT_SCHEMA = {        
     "title": "pScheduler Throughput Response Schema",
     "type": "object",
@@ -59,7 +58,7 @@ RESULT_SCHEMA = {
                     "type": "number"
                     },
                 "sent": {
-                    "description": "The ID of the stream, most relevant when running parallel streams",
+                    "description": "Number of packets sent",
                     "type": ["integer", "null"]
                     },
                 "lost": {

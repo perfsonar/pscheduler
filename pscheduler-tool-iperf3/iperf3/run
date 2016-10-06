@@ -14,7 +14,10 @@ import time
 import iperf3_parser
 import traceback
 import ipaddr
+import iperf3_utils
 from iperf3_defaults import *
+
+
 
 # track when this run starts
 start_time = datetime.datetime.now()
@@ -38,6 +41,8 @@ except KeyError as e:
 except:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 
+iperf3_cmd  = participant_data[participant]['iperf3_cmd']
+server_port = participant_data[1]['server_port']
 
 def run_client():    
 
@@ -45,7 +50,10 @@ def run_client():
 
     time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
 
-    iperf3_args = ['/usr/bin/iperf3']
+    iperf3_args = [ iperf3_cmd ]
+
+    iperf3_args.append('-p')
+    iperf3_args.append(server_port)
 
     # who to connect to
     destination = test_spec['dest']          
@@ -116,11 +124,11 @@ def run_client():
         iperf3_args.append('-B')
         iperf3_args.append(test_spec['local-address'])
 
-    if test_spec.has_key('force-ipv4'):
-        iperf3_args.append('-4')
-
-    if test_spec.has_key('force-ipv6'):
-        iperf3_args.append('-6')
+    if test_spec.has_key('ip-version') and test_spec['ip-version'] != None:
+        if test_spec['ip-version'] == 4:
+            iperf3_args.append('-4')
+        else:
+            iperf3_args.append('-6')
 
     if test_spec.has_key('congestion') and test_spec['congestion'] != None:
         iperf3_args.append('-C')
@@ -171,15 +179,19 @@ def run_client():
 def run_server():
 
     #init command
-    iperf3_args = ['/usr/bin/iperf3', '-s', '-1']
-    
-    logger.info("Running command: %s" % " ".join(iperf3_args))
+    iperf3_args = [ iperf3_cmd, '-s', '-1']
+
+    iperf3_args.append("-p")
+    iperf3_args.append(server_port)
 
     # need this to pad out the wait timeout,
     # convert to seconds
     omit = test_spec.get('omit', 0)
     if omit:
         omit = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(omit)) 
+
+    iperf3_args = map(lambda x: str(x), iperf3_args)
+    logger.info("Running command: %s" % " ".join(iperf3_args))
 
     try:
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
