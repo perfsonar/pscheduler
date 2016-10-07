@@ -5,7 +5,7 @@
 %define short	tracepath
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.9.rc1%{?dist}
+Release:	0.10.rc1%{?dist}
 
 Summary:	pScheduler Tracepath Tool
 BuildArch:	noarch
