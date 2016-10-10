@@ -1,1 +1,2 @@
+Depends: @, pscheduler-bundle-full
 Tests: task
