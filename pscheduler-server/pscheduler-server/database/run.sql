@@ -291,6 +291,10 @@ BEGIN
     	        WHEN 0 THEN run_state_finished()
 	        ELSE        run_state_failed()
 	        END;
+
+	    -- This serves to shorten the run if if didn't take the full duration
+            NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
+
         END IF;
 
 	IF NOT run_state_transition_is_valid(OLD.state, NEW.state) THEN
