@@ -535,4 +535,4 @@ systemctl start httpd
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
 %{api_dir}
 %config(noreplace) %{api_httpd_conf}
-%config(noreplace) %{limits_file}
+

@@ -63,18 +63,12 @@ ifndef CONF_D
 	@echo No CONF_D specified for $@
 	@false
 endif
-ifndef LIMITS_FILE
-	@echo No LIMITS_FILE specified for $@
-	@false
-endif
 	mkdir -p $(PREFIX)/$(CONF_D)
 	install -m 444 $(CONFIG) $(PREFIX)/$(CONF_D)
 	mkdir -p $(PREFIX)/$(API_DIR)
 	install -m 444 *.pyc *.wsgi $(PREFIX)/$(API_DIR)
 	mkdir -p $(PREFIX)/$(API_DIR)/pschedulerapiserver
 	install -m 444 pschedulerapiserver/*.pyc $(PREFIX)/$(API_DIR)/pschedulerapiserver
-	mkdir -p $(PREFIX)/$(shell dirname $(LIMITS_FILE))
-	install -D -m 740 $(shell basename $(LIMITS_FILE)) $(PREFIX)/$(LIMITS_FILE)
 
 
 
