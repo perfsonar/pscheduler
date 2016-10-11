@@ -177,6 +177,21 @@ BEGIN
     END IF;
 
 
+    -- Version 2 to version 3
+    -- Improve indexing on json field
+    IF t_version = 2
+    THEN
+
+        DROP INDEX IF EXISTS task_json;
+
+        -- This helps the 'json' query limiter in the REST API
+        CREATE INDEX task_json
+        ON task USING GIN (json);
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
