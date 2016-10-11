@@ -11,6 +11,8 @@ WSGIRestrictEmbedded On
 
 <Directory __API_DIR__>
 
+    SSLRequireSSL
+
     WSGIProcessGroup __USER_NAME__
     WSGIApplicationGroup __USER_NAME__
 
