@@ -3,4 +3,4 @@
 set -e
 
 getent passwd pscheduler
-getent group pscheduler | grep :pscheduler
+getent group pscheduler
