@@ -5,4 +5,4 @@ set -e
 pscheduler task --archive '{ "archiver": "syslog", "data": { "ident": "test-archiver-syslog" } }' \
     rtt --dest=localhost
 
-grep test-archiver-syslog /var/log/syslog
+grep test-archiver-syslog: /var/log/syslog
