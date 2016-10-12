@@ -10,6 +10,8 @@
 import pscheduler
 import sys
 
+logger = pscheduler.Log(prefix='test-throughput')
+
 json = pscheduler.json_load(exit_on_error=True)
 
 null_reason = None
@@ -37,17 +39,33 @@ def has_pscheduler(address):
     #null participant means localhost, which means has psc by definition
     if address is None:
         return True
-    
+
+    # Have to make sure address resolves, otherwise url_get
+    # will return non-200 and this will make it think it's a single
+    # participant test when it might just be a bad hostname
+    resolved = pscheduler.dns_resolve(address, ip_version=4)
+
+    # try again with v6 if we failed
+    if not resolved:
+        resolved = pscheduler.dns_resolve(address, ip_version=6)
+
+    if not resolved:
+        pscheduler.fail("Unable to resolve %s to any address" % address)
+ 
     # Ask the server for something really basic.
     status, raw_spec = pscheduler.url_get(
                                             pscheduler.api_url( host=address,
                                                                 path='hostname'),
                                             throw=False
                                         )
+
     return status == 200
 
 src_has_psc = has_pscheduler(source)
 dst_has_psc = has_pscheduler(destination)
+
+logger.debug("src_has_psc = %s, dst_has_psc = %s" % (src_has_psc, dst_has_psc))
+
 if src_has_psc and dst_has_psc:
     participants = [ source, destination ]
 elif src_has_psc:
