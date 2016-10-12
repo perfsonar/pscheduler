@@ -15,6 +15,8 @@ Source0:	%{name}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
+# This is for netstat.
+Requires:       net-tools
 Requires:       python-pscheduler
 Requires:       pytz
 Requires:	curl
