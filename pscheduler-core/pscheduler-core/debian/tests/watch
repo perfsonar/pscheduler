@@ -1,9 +1,0 @@
-#!/bin/sh -e
-
-if pscheduler watch >$AUTOPKGTEST_TMP/output 2>/dev/null
-then
-  echo pscheduler watch did not fail
-  exit 1
-fi
-
-grep -C 20 ^Usage $AUTOPKGTEST_TMP/output
