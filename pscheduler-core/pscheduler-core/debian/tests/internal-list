@@ -2,6 +2,6 @@
 
 set -e
 
-pscheduler internal list archive
+pscheduler internal list archiver
 pscheduler internal list test
 pscheduler internal list tool
