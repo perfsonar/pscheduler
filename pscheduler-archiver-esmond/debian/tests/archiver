@@ -2,4 +2,8 @@
 
 set -e
 
-pscheduler task --archive '{ "archiver": "esmond", "data": { "url": "http://localhost/esmond/perfsonar/archive/", "_auth-token": "${KEY}" } }' rtt --dest=localhost
+KEY=$( esmond_manage add_api_key_user pscheduler 2>&1 | sed -n 's/^Key: //p' )
+
+pscheduler task --archive '{ "archiver": "esmond", "data": { "url": "http://localhost/esmond/perfsonar/archive/", "_auth-token": "'${KEY}'" } }' rtt --dest=localhost
+
+curl -s http://localhost/esmond/perfsonar/archive/ | grep rtt
