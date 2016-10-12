@@ -1,4 +1,3 @@
-Tests: diags
+Depends: @, pscheduler-bundle-full
+Tests: internal-nothing, internal-list, schedule, diags
 Restrictions: needs-root
-
-Tests: internal-nothing, internal-list, schedule
