@@ -1,0 +1,2 @@
+Depends: @, pscheduler-bundle-full, esmond
+Tests: archiver
