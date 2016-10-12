@@ -69,7 +69,6 @@ override_dh_auto_install:
 	rm $(ROOT)/usr/share/pscheduler/api-server/pschedulerapiserver/*.py?
 	mv $(ROOT)/etc/apache2/conf.d/pscheduler-api-server.conf \
 	   $(ROOT)/etc/apache2/conf.d/pscheduler-server.conf
-	chmod -x $(ROOT)/etc/pscheduler/limits.conf
 
 	mkdir -p $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/install
 	mkdir -p $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/install-dbadmin
