@@ -425,8 +425,8 @@ BEGIN
 
     -- TODO: These should ignore background tests
 
-    -- Runs that are still pending after their start times were
-    -- missed.
+    -- Runs that are still pending or on deckafter their end times
+    -- were missed.
 
     UPDATE run
     SET state = run_state_missed()
@@ -434,9 +434,8 @@ BEGIN
         SELECT id FROM run_straggler_info
         WHERE
             scheduling_class <> scheduling_class_background()
-            AND state = run_state_pending()
-            -- TODO: This interval should probably be a tunable.
-            AND lower(times) < normalized_now() - 'PT5S'::interval
+            AND state IN ( run_state_pending(), run_state_on_deck() )
+            AND normalized_now() > upper(times)
     );
 
     -- Runs that started and didn't report back in a timely manner
