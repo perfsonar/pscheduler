@@ -1,4 +1,6 @@
-#!/bin/sh -e
+#!/bin/sh
 
-curl --silent http://localhost/pscheduler/hostname | \
+set -e
+
+curl -k -s http://localhost/pscheduler/hostname | \
 grep -C 20 '^".*"$'
