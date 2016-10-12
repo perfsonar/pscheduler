@@ -3,7 +3,9 @@
 set -e
 
 curl -s http://localhost/esmond/perfsonar/
+echo
 
+esmond_manage add_api_key_user pscheduler 2>&1
 KEY=$( esmond_manage add_api_key_user pscheduler 2>&1 | sed -n 's/^Key: //p' )
 echo "Key: $KEY"
 

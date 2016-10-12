@@ -1,2 +1,3 @@
 Depends: @, pscheduler-bundle-full, esmond, curl
 Tests: archiver
+Restrictions: needs-root
