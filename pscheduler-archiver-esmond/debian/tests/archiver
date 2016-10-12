@@ -5,9 +5,8 @@ set -e
 curl -s http://localhost/esmond/perfsonar/
 echo
 
-esmond_manage add_api_key_user pscheduler 2>&1
 KEY=$( esmond_manage add_api_key_user pscheduler 2>&1 | sed -n 's/^Key: //p' )
-echo "Key: $KEY"
+echo "Esmond API key: $KEY"
 
 pscheduler task --archive '{ "archiver": "esmond", "data": { "url": "http://localhost/esmond/perfsonar/archive/", "_auth-token": "'${KEY}'" } }' rtt --dest=localhost
 
