@@ -2,5 +2,5 @@
 
 set -e
 
-curl -k -s http://localhost/pscheduler/hostname | \
+curl -k -s https://localhost/pscheduler/hostname | \
 grep -C 20 '^".*"$'
