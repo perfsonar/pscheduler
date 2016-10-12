@@ -1,2 +1,2 @@
-Depends: @, pscheduler-bundle-full, esmond
+Depends: @, pscheduler-bundle-full, esmond, curl
 Tests: archiver
