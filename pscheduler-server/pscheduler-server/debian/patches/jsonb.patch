@@ -1,0 +1,29 @@
+--- a/daemons/archiver.m4
++++ b/daemons/archiver.m4
+@@ -337,7 +337,7 @@
+                                        attempts = attempts + 1,
+                                        last_attempt = now(),
+                                        next_attempt = NULL,
+-                                       diags = diags || (%s::JSONB)
++                                       diags = %s
+                                      WHERE id = %s""",
+                                       [ attempt, run_id ])
+                 pass  # TODO: Update with diags
+@@ -359,7 +359,7 @@
+                                              attempts = attempts + 1,
+                                              last_attempt = now(),
+                                              next_attempt = NULL,
+-                                             diags = diags || (%s::JSONB)
++                                             diags = %s
+                                          WHERE id = %s""",
+                                           [ attempt, run_id ])
+ 
+@@ -384,7 +384,7 @@
+                                                  attempts = attempts + 1,
+                                                  last_attempt = now(),
+                                                  next_attempt = %s,
+-                                                 diags = diags || (%s::JSONB)
++                                                 diags = %s
+                                              WHERE id = %s""",
+                                               [ next, attempt, run_id ])
+ 
