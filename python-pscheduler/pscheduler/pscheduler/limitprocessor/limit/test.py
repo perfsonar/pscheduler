@@ -55,10 +55,12 @@ class LimitTest():
             raise ValueError("Invalid limit: %s" % result['message'])
 
 
+    def checks_schedule(self):
+        return False
+
 
     def evaluate(self,
-                 run,            # The proposed run
-                 check_schedule  # Keep/disregard time-related limits
+                 run             # The proposed run
                  ):
 
         # Dissent if the test isn't our type
