@@ -2,4 +2,4 @@
 
 set -e
 
-pscheduler task --archive '{ "archiver": "bitbucket", "data": { "url": "http://localhost/esmond/perfsonar/archive/", "_auth-token": "${KEY}" } }' rtt --dest=localhost
+pscheduler task --archive '{ "archiver": "esmond", "data": { "url": "http://localhost/esmond/perfsonar/archive/", "_auth-token": "${KEY}" } }' rtt --dest=localhost
