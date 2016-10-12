@@ -25,7 +25,7 @@
  if [ -d "${PG_LOG}" ]
  then
 -    ls -rtd ${PG_DATA}/pg_log/* | xargs cat
-+    ls -rtd ${PG_DATA}/*.log | xargs cat
++    ls -rtd ${PG_LOG}/*.log | xargs cat
  else
      echo "PostgreSQL logs not found in ${PG_LOG}"
  fi
