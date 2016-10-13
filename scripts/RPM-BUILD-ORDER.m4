@@ -104,6 +104,7 @@ pscheduler-tool-owping
 pscheduler-tool-powstream
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
+pscheduler-tool-nuttcp
 pscheduler-tool-bwctliperf2
 pscheduler-tool-bwctliperf3
 pscheduler-tool-bwctlping
