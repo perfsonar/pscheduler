@@ -1,20 +1,14 @@
-pscheduler-bundle-full (1.0~8.rc1-1~bpo70+1) perfsonar-wheezy-staging; urgency=low
+pscheduler-bundle-full (1.0~10.rc1-1~bpo70+1) perfsonar-wheezy-staging; urgency=low
 
   * Backport to Wheezy.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 04 Oct 2016 19:06:46 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Oct 2016 18:10:19 +0000
 
-pscheduler-bundle-full (1.0~8.rc1-1) perfsonar-jessie-staging; urgency=low
-
-  * New upstream version
-
- -- Antoine Delvaux <antoine.delvaux@man.pozna.pl>  Tue, 04 Oct 2016 18:55:14 +0000
-
-pscheduler-bundle-full (1.0~7.1.rc1-1) perfsonar-jessie-staging; urgency=low
+pscheduler-bundle-full (1.0~10.rc1-1) perfsonar-jessie-staging; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 27 Sep 2016 20:27:40 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Oct 2016 17:48:46 +0000
 
 pscheduler-bundle-full (0.0-1) unstable; urgency=low
 
