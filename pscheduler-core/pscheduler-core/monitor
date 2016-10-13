@@ -181,7 +181,10 @@ def update_tasks(screen):
     for run in show_schedule:
 
         cli = [ run["task"]["test"]["type"] ]
-        cli.extend(run["cli"])
+        try:
+            cli.extend(run["cli"])
+        except KeyError:
+            cli.append("(CLI not available)")
 
         # Pad the string out to the width so inverse shows properly.
         line = "%s %-12s %s" % (run["start-time"],
