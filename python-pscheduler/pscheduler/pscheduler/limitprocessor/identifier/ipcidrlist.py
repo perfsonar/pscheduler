@@ -4,19 +4,13 @@ Identifier Class for ip-cidr-list
 
 import ipaddr
 import pscheduler
-import netifaces
 
 data_validator = {
     "type": "object",
     "properties": {
         "cidrs": {
             "type": "array",
-            "items": { 
-                "anyOf": [ 
-                    {"$ref": "#/pScheduler/IPCIDR"}, 
-                    {"type": "string", "enum": ["local"]}
-                ] 
-            }
+            "items": { "$ref": "#/pScheduler/IPCIDR" }
         },
     },
     "required": [ "cidrs" ]
@@ -48,20 +42,7 @@ class IdentifierIPCIDRList():
 
         self.cidrs = []
         for cidr in data['cidrs']:
-            if cidr == 'local':
-                for iface in netifaces.interfaces():
-                    ifaddrs = netifaces.ifaddresses(iface)
-                    if netifaces.AF_INET in ifaddrs:
-                        for ifaddr in ifaddrs[netifaces.AF_INET]:
-                            if 'addr' in ifaddr:
-                                self.cidrs.append(ipaddr.IPNetwork(ifaddr['addr']))
-                    if netifaces.AF_INET6 in ifaddrs:
-                        for ifaddr in ifaddrs[netifaces.AF_INET6]:
-                            if 'addr' in ifaddr:
-                                #add v6 but remove stuff like %eth0 that gets thrown on end of some addrs
-                                self.cidrs.append(ipaddr.IPNetwork(ifaddr['addr'].split('%')[0]))
-            else:
-                self.cidrs.append(ipaddr.IPNetwork(cidr))
+            self.cidrs.append(ipaddr.IPNetwork(cidr))
 
 
 

@@ -24,7 +24,6 @@ Requires:	python-dnspython
 Requires:	python-isodate
 Requires:	python-jsonschema
 Requires:	python-netaddr
-Requires:	python-netifaces
 Requires:	python-ntplib
 Requires:	python-psycopg2 >= 2.2.0
 Requires:	python-py-radix
