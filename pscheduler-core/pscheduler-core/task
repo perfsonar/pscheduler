@@ -209,16 +209,25 @@ if options.reference is not None:
                         % (options.reference, str(ex)))
 
 
-if options.slip is not None:
+opt_slip = options.slip
+if opt_slip is None:
+    opt_slip = os.getenv('PSCHEDULER_SLIP')
+
+if opt_slip is not None:
     try:
-        slip = pscheduler.iso8601_as_timedelta(options.slip)
+        slip = pscheduler.iso8601_as_timedelta(opt_slip)
     except ValueError as ex:
         pscheduler.fail("Invalid --slip: %s" % str(ex))
 elif options.repeat is None:
     # TODO: This is a stopgap that forces slip on non-repeating tasks
     # so scheduling won't fail if there isn't an immediate slot
     # available on the schedule.  See issue #30.
-    slip = datetime.timedelta(minutes=10)
+    slip = datetime.timedelta(minutes=5)
+else:
+    # If a repeat is specified and a slip isn't, we don't do any
+    # default slip.
+    slip = None
+
     
 
 if options.start is not None:
@@ -319,8 +328,9 @@ if options.repeat is not None:
 if options.randslip is not None:
     task['schedule']['randslip'] = options.randslip
 
-if options.slip is not None:
-    task['schedule']['slip'] = options.slip
+if slip is not None:
+    task['schedule']['slip'] = pscheduler.timedelta_as_iso8601(slip)
+    log.debug("Using slip of %s", task['schedule']['slip'])
 
 if options.start is not None:
     task['schedule']['start'] = options.start
