@@ -144,9 +144,19 @@ def run_post(
 
     for task_url in task_urls:
 
+        # TODO: It would be nice if the task had a list of the
+        # runtimes URLs so we don't have to build it.
+
+        # TODO: Remove this
+        if True:
+            log.debug("TEST Fetching task")
+            stat, result = pscheduler.url_get(task_url, throw=False)
+            log.debug("Status = %s", stat)
+
+
         runtime_url = task_url + '/runtimes'
 
-        log.debug("Fetching %s", task_url)
+        log.debug("Fetching %s", runtime_url)
 
 
         # TODO: These two blocks of code are supposed to be
@@ -174,8 +184,7 @@ def run_post(
 
         if len(json_ranges) == 0:
             return (None, None, None,
-                    "Host %s cannot schedule this run: %s %d: %s"
-                    % (participant, runtime_url, status, json_ranges))
+                    "%s cannot schedule a time for this run" % participant)
 
         log and log.debug("Scheduled against %s", task_url)
         
@@ -346,6 +355,11 @@ def main_program():
     cursor = pg.cursor()
     cursor.execute("LISTEN task_change")
 
+    # This is separate because inserts of non-starters happen while
+    # fetching rows from the other cursor.
+    nonstart_cursor = pg.cursor()
+
+
     while True:
 
         wait = True
@@ -395,6 +409,14 @@ def main_program():
 
             if error is not None:
                 log.debug("Unable: %s", error)
+                # Post a non-starting run on the lead (local) system
+                try:
+                    nonstart_cursor.execute(
+                        """SELECT api_run_post(%s, normalized_now(), NULL, %s)""",
+                        [uuid, error])
+                except:
+                    log.error("Insertion of non-starter failed: %s", error)
+
             else:
                 log.debug("Scheduled for %s - %s at %s",
                           start_time, end_time, run_uri)
@@ -402,8 +424,6 @@ def main_program():
         # Wait for something to happen.
           
         if wait:
-
-            log.debug("Waiting %s for notification", refresh)
 
             try:
                 if select.select([pg],[],[],

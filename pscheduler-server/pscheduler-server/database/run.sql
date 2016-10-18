@@ -550,6 +550,7 @@ DECLARE
     task RECORD;
     time_range TSTZRANGE;
     initial_state INTEGER;
+    initial_status INTEGER;
 BEGIN
 
     SELECT INTO task * FROM task WHERE uuid = task_uuid;
@@ -566,8 +567,10 @@ BEGIN
 
     IF nonstart_reason IS NOT NULL THEN
        initial_state := run_state_nonstart();
+       initial_status := 1;  -- Nonzero means failure.
     ELSE
        initial_state := run_state_pending();
+       initial_status := NULL;
     END IF;
 
     WITH inserted_row AS (
