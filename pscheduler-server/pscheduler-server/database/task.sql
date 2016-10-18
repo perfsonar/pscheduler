@@ -422,11 +422,14 @@ BEGIN
 	   NEW.until := text_to_timestamp_with_time_zone(until);
 	END IF;
 
-	IF NEW.start IS NULL THEN
-            IF NEW.until <= now() THEN
-	        RAISE EXCEPTION 'Until must be in the future.';
-            END IF;
-        ELSIF NEW.until <= NEW.start THEN
+	IF ( (TG_OP = 'INSERT')
+             OR (TG_OP = 'UPDATE' AND NEW.until <> OLD.until) )
+           AND NEW.until IS NOT NULL
+	   AND NEW.until <= now() THEN
+	    RAISE EXCEPTION 'Until must be in the future.';
+        END IF;
+
+        IF NEW.start IS NOT NULL AND NEW.until <= NEW.start THEN
 	   RAISE EXCEPTION 'Until must be after the start.';
 	END IF;
 
