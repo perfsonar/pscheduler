@@ -11,6 +11,7 @@ from .identifier import ipcidrlist
 from .identifier import ipcidrlisturl
 from .identifier import ipcymrubogon
 from .identifier import ipreversedns
+from .identifier import localif
 
 identifier_creator = {
     'always':           lambda data: always.IdentifierAlways(data),
@@ -18,7 +19,8 @@ identifier_creator = {
     'ip-cidr-list':     lambda data: ipcidrlist.IdentifierIPCIDRList(data),
     'ip-cidr-list-url': lambda data: ipcidrlisturl.IdentifierIPCIDRListURL(data),
     'ip-cymru-bogon':   lambda data: ipcymrubogon.IdentifierIPCymruBogon(data),
-    'ip-reverse-dns':   lambda data: ipreversedns.IdentifierIPReverseDNS(data)
+    'ip-reverse-dns':   lambda data: ipreversedns.IdentifierIPReverseDNS(data),
+    'localif':          lambda data: localif.IdentifierLocalIF(data)
     }
 
 
