@@ -56,6 +56,8 @@ case "$1" in
             apache2_invoke ensite default-ssl || echo $?
             apache2_invoke enconf pscheduler-server.conf || echo $?
         else
+            ln -sf /etc/apache2/conf-available/pscheduler-server.conf /etc/apache2/conf.d/
+            [ -f /etc/apache2/mods-available/version.load ] && a2enmod -q version
             a2enmod -q ssl
             a2ensite -q default-ssl
             service apache2 restart

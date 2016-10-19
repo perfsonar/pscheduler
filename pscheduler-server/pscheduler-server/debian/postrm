@@ -33,6 +33,7 @@ case "$1" in
         rm -rf /var/log/pscheduler
 
         if ! [ -e /usr/share/apache2/apache2-maintscript-helper ]; then
+            rm -f /etc/apache2/conf.d/pscheduler-server.conf
             service apache2 reload >/dev/null || true
         fi
     ;;

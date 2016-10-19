@@ -58,7 +58,7 @@ override_dh_auto_install:
 		GROUP_NAME=pscheduler \
 		API_ROOT=/pscheduler \
 		API_DIR=/usr/share/pscheduler/api-server \
-		CONF_D=/etc/apache2/conf.d/ \
+		CONF_D=/etc/apache2/conf-available/ \
 		PREFIX=$(ROOT) \
 		DSN_FILE=/etc/pscheduler/database/database-dsn \
 		LIMITS_FILE=/etc/pscheduler/limits.conf \
@@ -67,8 +67,8 @@ override_dh_auto_install:
 	rm $(ROOT)/usr/share/pscheduler/api-server/*.py?
 	cp api-server/pschedulerapiserver/*.py $(ROOT)/usr/share/pscheduler/api-server/pschedulerapiserver/
 	rm $(ROOT)/usr/share/pscheduler/api-server/pschedulerapiserver/*.py?
-	mv $(ROOT)/etc/apache2/conf.d/pscheduler-api-server.conf \
-	   $(ROOT)/etc/apache2/conf.d/pscheduler-server.conf
+	mv $(ROOT)/etc/apache2/conf-available/pscheduler-api-server.conf \
+	   $(ROOT)/etc/apache2/conf-available/pscheduler-server.conf
 
 	mkdir -p $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/install
 	mkdir -p $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/install-dbadmin
