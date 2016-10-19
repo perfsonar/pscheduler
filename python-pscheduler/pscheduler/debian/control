@@ -11,7 +11,7 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: python-pscheduler
 Architecture: all
 Depends: ${python:Depends}, ${misc:Depends},
- python-ntplib, python-tz, python-tzlocal,
+ python-ntplib, python-tz, python-tzlocal, python-netifaces,
  python-psycopg2 (>= 2.5.4), python-jsonschema (>= 2.3.0),
  python-isodate (>= 0.5.0), python-subprocess32, python-netaddr,
  python-dnspython, python-dateutil, python-requests (>= 2.0.0)
