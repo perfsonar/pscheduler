@@ -99,9 +99,10 @@ run_timeout += ( count * interval )
 # in parallel.
 
 try:
-    source = spec['source']
-    argv.append('-I')
-    argv.append(source)
+    (source_ipversion, source_ip) = pscheduler.ip_addr_version(spec['source'])
+    if source_ipversion is not None:
+        argv.append('-I')
+        argv.append(source_ip)
 except KeyError:
     pass  # Don't care.
 
