@@ -5,7 +5,7 @@
 %define short	latency
 Name:		pscheduler-test-%{short}
 Version:	1.0
-Release:	0.10.rc1%{?dist}
+Release:	0.11.rc1%{?dist}
 
 Summary:	Latency test class for pScheduler
 BuildArch:	noarch
