@@ -81,7 +81,7 @@
  }
  
  restart()
-@@ -82,9 +80,8 @@
+@@ -82,18 +80,17 @@
      start
  }
  
@@ -92,7 +92,9 @@
          $1
          ;;
  
-@@ -93,7 +90,7 @@
+     status)
+-        status -p ${pidfile} $exec
++        status_of_proc -p ${pidfile} $exec "pscheduler-$prog"
          ;;
  
      *)
