@@ -1,4 +1,6 @@
-#!/bin/sh -e
+#!/bin/sh
 
-curl --silent http://localhost/pscheduler/hostname | \
-grep -C 20 '^".*"$'
+set -e
+
+curl --silent --insecure https://localhost/pscheduler/hostname | \
+  grep --context=20 '^".*"$'
