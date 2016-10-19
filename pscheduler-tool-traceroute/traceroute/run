@@ -43,15 +43,14 @@ argv = [
 # IP Version
 #
 
-# TODO: Determine if the destination address is IPv4 or IPv6 if it's
-# not a DNS name.
-
 try:
     ipversion = spec['ip-version']
-    # TODO: Make sure this is compatible with the destination address
-    argv.append('-' + str(ipversion))
 except KeyError:
-    pass
+    (ipversion, ip) = pscheduler.ip_addr_version(spec['dest'])
+
+if ipversion is not None:
+    argv.append('-' + str(ipversion))
+
 
 #
 # Probe Type
@@ -410,7 +409,7 @@ if do_ases:
 pscheduler.succeed_json( {
     'schema': 1,
     'succeeded': True,
-    'diags': stdout,
+    'diags': "%s\n\n%s" % (" ".join(argv), stdout),
     'error': None,
     'result': {
         'schema': 1,

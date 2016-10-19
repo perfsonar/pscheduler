@@ -119,6 +119,13 @@ __dictionary__ = {
         },
 
     "Host": {
+        "anyOf": [
+            { "$ref": "#/pScheduler/HostName" },
+            { "$ref": "#/pScheduler/IPAddress" },
+        ]
+    },
+
+    "HostName": {
         "type": "string",
         "format": "host-name"
         },
