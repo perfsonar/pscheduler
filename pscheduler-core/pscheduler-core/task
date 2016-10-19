@@ -554,12 +554,11 @@ if verbose:
 
 runs_url = task_url + '/runs/first'
 log.debug("Fetching %s", runs_url)
-status, run_json = pscheduler.url_get(runs_url,
-                                      params= { 'wait-local': True },
-                                      throw=False)
+status, run_json = pscheduler.url_get(runs_url, throw=False)
 
 if status == 404:
     pscheduler.fail("Run on server was never populated.")
+
 
 # Watch the task run.
 

@@ -112,7 +112,7 @@ def tasks_uuid_runs(task):
                 args.append(end_time)
 
             if arg_boolean('upcoming'):
-                query += " AND lower(times) > now()"
+                query += " AND (times @> normalized_now() OR lower(times) > normalized_now())"
                 query += " AND state IN (run_state_pending(), run_state_on_deck(), run_state_running(), run_state_nonstart())"
 
             query += " ORDER BY times"
@@ -221,7 +221,7 @@ def tasks_uuid_runs_run(task, run):
 
         if run == 'first':
             # 60 tries at 0.5s intervals == 30 sec.
-            tries = 60 if (wait_local or wait_merged) else 1
+            tries = 60
             while tries > 0:
                 try:
                     run = __runs_first_run(task)
@@ -235,7 +235,6 @@ def tasks_uuid_runs_run(task, run):
 
             if run is None:
                 return not_found()
-
 
 
         # 60 tries at 0.5s intervals == 30 sec.
