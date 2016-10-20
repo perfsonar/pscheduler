@@ -103,6 +103,12 @@ try:
     if source_ipversion is not None:
         argv.append('-I')
         argv.append(source_ip)
+    else:
+        pscheduler.succeed_json({
+            'succeeded': False,
+            'diags': '',
+            'error': 'Unable to resolve %s into an IP' % spec['source']
+            })
 except KeyError:
     pass  # Don't care.
 
@@ -440,5 +446,3 @@ if hostnames and len(ips) > 0:
 
 final_result['result'] = result
 pscheduler.succeed_json( final_result )
-
-
