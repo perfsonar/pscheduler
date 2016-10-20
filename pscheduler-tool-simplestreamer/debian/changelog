@@ -1,14 +1,14 @@
-pscheduler-tool-simplestreamer (1.0~10.rc1-1~bpo70+1) perfsonar-wheezy-staging; urgency=low
+pscheduler-tool-simplestreamer (1.0~12.rc1-1~bpo70+1) perfsonar-wheezy-staging; urgency=low
 
   * Backport to Wheezy.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Oct 2016 18:11:00 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 20 Oct 2016 13:41:31 +0000
 
-pscheduler-tool-simplestreamer (1.0~10.rc1-1) perfsonar-jessie-staging; urgency=low
+pscheduler-tool-simplestreamer (1.0~12.rc1-1) perfsonar-jessie-staging; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Oct 2016 17:52:13 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 20 Oct 2016 13:30:15 +0000
 
 pscheduler-tool-simplestreamer (0.0-1) unstable; urgency=low
 

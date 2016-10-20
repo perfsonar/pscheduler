@@ -1,14 +1,14 @@
-pscheduler-test-idlebg (1.0~10.rc1-1~bpo70+1) perfsonar-wheezy-staging; urgency=low
+pscheduler-test-idlebg (1.0~12.rc1-1~bpo70+1) perfsonar-wheezy-staging; urgency=low
 
   * Backport to Wheezy.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Oct 2016 18:10:21 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 20 Oct 2016 13:41:15 +0000
 
-pscheduler-test-idlebg (1.0~10.rc1-1) perfsonar-jessie-staging; urgency=low
+pscheduler-test-idlebg (1.0~12.rc1-1) perfsonar-jessie-staging; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Oct 2016 17:48:48 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 20 Oct 2016 13:29:54 +0000
 
 pscheduler-test-idlebg (0.0-1) unstable; urgency=low
 
