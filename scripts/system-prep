@@ -99,10 +99,10 @@ yum -y install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${REDH
 # Internet2
 rpm --import http://software.internet2.edu/rpms/RPM-GPG-KEY-Internet2
 
-# TODO: Use the default when the I2 repo for EL7 becomes production
+# TODO: Use the default when the I2 repo for EL6/EL7 becomes production
 case ${REDHAT_RELEASE_MAJOR} in
 
-    7)
+    6|7)
 	cat > /etc/yum.repos.d/internet2-staging.repo <<EOF
 # Name: Internet2 Staging RPM Repository
 # URL: http://software.internet2.edu
