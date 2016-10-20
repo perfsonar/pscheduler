@@ -294,8 +294,10 @@ def run_post(
     if len(runs_posted) != len(task_urls):
         log and log.debug("Removing runs: %s", runs_posted)
         pscheduler.url_delete_list(runs_posted)
-        # TODO: Better error?
-        return (None, None, None, "Failed to post/put runs to all participants.")
+        return (None, None, None,
+                "Failed to post/put runs to all participants: %s"
+                %  ("; ".join(errors))
+        )
 
     #
     # Fetch all per-participant data, merge it and distribute the
