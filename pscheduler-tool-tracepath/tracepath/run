@@ -37,13 +37,17 @@ spec = input['test']['spec']
 
 argv = []
 
-tracepath = 'tracepath'
 try:
     ipversion = spec['ip-version']
-    if ipversion == 6:
-        tracepath = 'tracepath6'
 except KeyError:
-    pass
+    (ipversion, ip) = pscheduler.ip_addr_version(spec['dest'])
+
+if ipversion is None or ipversion == 4:
+    tracepath = 'tracepath'
+else:
+    tracepath = 'tracepath6'
+
+
 argv.append(tracepath)
 
 # Always run without resolving IPs; we'll do that in parallel after it finishes.

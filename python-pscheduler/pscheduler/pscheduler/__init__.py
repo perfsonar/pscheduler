@@ -10,6 +10,7 @@ from .exitstatus import *
 from .enummatcher import *
 from .failopt import *
 from .filestring import *
+from .ipaddr import *
 from .iso8601 import *
 from .jsonval import *
 from .log import *

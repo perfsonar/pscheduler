@@ -18,6 +18,9 @@ import weakref
 
 __DEFAULT_TIMEOUT__ = 2
 
+def dns_default_timeout():
+    return __DEFAULT_TIMEOUT__
+
 
 def __check_ip_version__(ip_version):
     if not ip_version in [4, 6]:

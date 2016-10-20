@@ -37,15 +37,17 @@ argv = []
 
 # IP Version
 
-program = 'ping'  # Default, IPv4
 try:
     ipversion = spec['ip-version']
-    if ipversion == 6:
-        program = 'ping6'
 except KeyError:
-    ipversion = 4
+    (ipversion, ip) = pscheduler.ip_addr_version(spec['dest'])
 
+if ipversion is not None:
+    program = 'ping6' if ipversion == 6 else 'ping'
+else:
+    program = 'ping'
 argv.append(program)
+
 
 # Turn off DNS; we'll do that afterward.
 argv.append('-n')
@@ -97,9 +99,16 @@ run_timeout += ( count * interval )
 # in parallel.
 
 try:
-    source = spec['source']
-    argv.append('-I')
-    argv.append(source)
+    (source_ipversion, source_ip) = pscheduler.ip_addr_version(spec['source'])
+    if source_ipversion is not None:
+        argv.append('-I')
+        argv.append(source_ip)
+    else:
+        pscheduler.succeed_json({
+            'succeeded': False,
+            'diags': '',
+            'error': 'Unable to resolve %s into an IP' % spec['source']
+            })
 except KeyError:
     pass  # Don't care.
 
@@ -437,5 +446,3 @@ if hostnames and len(ips) > 0:
 
 final_result['result'] = result
 pscheduler.succeed_json( final_result )
-
-
