@@ -20,17 +20,13 @@ if source is None:
 
 dest = json.get('dest', None)
 
-#participant depends on mode
-if json.get('single-participant-mode', False):
-    #lead is whomever should be running the client. None is localhost
-    flip = json.get('flip', False)
-    if flip:
-        participants = [ dest ]
-    else:
-        participants = [ source ]
+#lead is whomever should be running the client. None is localhost
+flip = json.get('flip', False)
+if flip:
+    participants = [ dest ]
 else:
-    #source first participant, dest the second
-    participants = [ source, dest ]
+    participants = [ source ]
+
 
 
 result = { "participants": participants }
