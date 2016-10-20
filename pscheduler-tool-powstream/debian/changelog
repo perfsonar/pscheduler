@@ -1,8 +1,8 @@
-pscheduler-tool-powstream (1.0~10.rc1-1) perfsonar-jessie-staging; urgency=low
+pscheduler-tool-powstream (1.0~12.rc1-1) perfsonar-jessie-staging; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Oct 2016 17:52:12 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 20 Oct 2016 13:30:14 +0000
 
 pscheduler-tool-powstream (0.0-1) unstable; urgency=low
 
