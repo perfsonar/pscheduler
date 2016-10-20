@@ -230,7 +230,7 @@ def tasks_uuid_runs_run(task, run):
                     return error(str(ex))
                 if run is not None:
                     break
-                time.sleep(0.5)
+                time.sleep(1.0)
                 tries -= 1
 
             if run is None:
