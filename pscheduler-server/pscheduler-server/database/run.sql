@@ -291,6 +291,10 @@ BEGIN
     	        WHEN 0 THEN run_state_finished()
 	        ELSE        run_state_failed()
 	        END;
+
+	    -- This serves to shorten the run if if didn't take the full duration
+            NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
+
         END IF;
 
 	IF NOT run_state_transition_is_valid(OLD.state, NEW.state) THEN
@@ -421,8 +425,8 @@ BEGIN
 
     -- TODO: These should ignore background tests
 
-    -- Runs that are still pending after their start times were
-    -- missed.
+    -- Runs that are still pending or on deckafter their end times
+    -- were missed.
 
     UPDATE run
     SET state = run_state_missed()
@@ -430,9 +434,8 @@ BEGIN
         SELECT id FROM run_straggler_info
         WHERE
             scheduling_class <> scheduling_class_background()
-            AND state = run_state_pending()
-            -- TODO: This interval should probably be a tunable.
-            AND lower(times) < normalized_now() - 'PT5S'::interval
+            AND state IN ( run_state_pending(), run_state_on_deck() )
+            AND normalized_now() > upper(times)
     );
 
     -- Runs that started and didn't report back in a timely manner
@@ -547,6 +550,7 @@ DECLARE
     task RECORD;
     time_range TSTZRANGE;
     initial_state INTEGER;
+    initial_status INTEGER;
 BEGIN
 
     SELECT INTO task * FROM task WHERE uuid = task_uuid;
@@ -563,8 +567,10 @@ BEGIN
 
     IF nonstart_reason IS NOT NULL THEN
        initial_state := run_state_nonstart();
+       initial_status := 1;  -- Nonzero means failure.
     ELSE
        initial_state := run_state_pending();
+       initial_status := NULL;
     END IF;
 
     WITH inserted_row AS (

@@ -16,7 +16,7 @@ DEFAULT_PACKET_TIMEOUT = 0
 
 # Default extra time to add on to test to wait for control packets, etc.
 ## owping seems to add 3-3.5 seconds of fudge factor based on RTT during control session
-DEFAULT_FUDGE_FACTOR = 4
+DEFAULT_FUDGE_FACTOR = 10
 
 # Default number of seconds before client will start to allow server time to boot
 DEFAULT_CLIENT_SLEEP = 1

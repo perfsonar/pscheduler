@@ -5,7 +5,7 @@
 %define short	pscheduler
 Name:		python-%{short}
 Version:	1.0	
-Release:	0.10.rc1%{?dist}
+Release:	0.12.rc1%{?dist}
 Summary:	Utility functions for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0
@@ -24,6 +24,7 @@ Requires:	python-dnspython
 Requires:	python-isodate
 Requires:	python-jsonschema
 Requires:	python-netaddr
+Requires:	python-netifaces
 Requires:	python-ntplib
 Requires:	python-psycopg2 >= 2.2.0
 Requires:	python-py-radix

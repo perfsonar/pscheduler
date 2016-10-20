@@ -526,6 +526,7 @@ def main_program():
                        WHERE
                            times @> normalized_now()
                            AND test.scheduling_class = scheduling_class_background()
+                           AND run.state <> run_state_nonstart()
                        ) t ORDER BY start_in
                    """, [refresh]);
 

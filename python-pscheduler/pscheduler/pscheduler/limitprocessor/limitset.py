@@ -109,7 +109,29 @@ class LimitSet():
         except KeyError:
             raise ValueError("Undefined limit '%s'" % limit)
         assert evaluator is not None
-        evaluated = evaluator.evaluate(task, check_schedule)
+
+        try:
+            invert = self.limits[limit]["invert"]
+        except KeyError:
+            invert = False
+        assert type(invert) == bool
+
+        # Bypass limits that check the schedule if we've been asked to
+        # do that.
+        if not check_schedule and evaluator.checks_schedule():
+            return { "passed": True }
+
+        evaluated = evaluator.evaluate(task)
+        if invert:
+            passed = not evaluated["passed"]
+            evaluated["passed"] = passed
+            if passed:
+                try:
+                    del evaluated["reasons"]
+                except KeyError:
+                    pass
+            else:
+                evaluated["reasons"] = ["Passed but inverted"]
 
         return evaluated
 

@@ -257,10 +257,12 @@ def tasks():
             return forbidden("Task forbidden by limits:\n" + diags)
 
         # Post the lead with the local database, which also assigns
-        # its UUID.
+        # its UUID.  Make it disabled so the scheduler doesn't try to
+        # do anything with it until the task has been submitted to all
+        # of the other participants.
 
         try:
-            cursor = dbcursor_query("SELECT * FROM api_task_post(%s, %s, 0)",
+            cursor = dbcursor_query("SELECT * FROM api_task_post(%s, %s, 0, NULL, FALSE)",
                                     [task_data, hints_data], onerow=True)
         except Exception as ex:
             return error(str(ex.diag.message_primary))
@@ -306,10 +308,17 @@ def tasks():
                                        [task_uuid])
                     except Exception as ex:
                         log.exception()
-                        pass
 
                 return error("Error while tasking %d@%s: %s" % (participant, part_name, ex))
 
+
+        # Enable the task so the scheduler will schedule it.
+        try:
+            dbcursor_query("SELECT api_task_enable(%s)", [task_uuid])
+        except Exception as ex:
+            log.exception()
+            return error("Failed to enable task %s.  See system logs." % task_uuid)
+        log.debug("Task enabled for scheduling.")
 
         return ok_json("%s/%s" % (request.base_url, task_uuid))
 

@@ -42,10 +42,12 @@ class LimitPassFail():
         self.pass_ = data['pass']
 
 
+    def checks_schedule(self):
+        return False
+
 
     def evaluate(self,
-                 run,            # The proposed run (ignored here)
-                 check_schedule  # Keep/disregard time-related limits
+                 run             # The proposed run (ignored here)
                  ):
 
         """Always return the set value"""
