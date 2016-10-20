@@ -44,10 +44,12 @@ class LimitTestType():
         self.types = data['types']
 
 
+    def checks_schedule(self):
+        return False
+
 
     def evaluate(self,
-                 run,            # The proposed run
-                 check_schedule  # Keep/disregard time-related limits
+                 run             # The proposed run
                  ):
 
         """Always return the set value"""

@@ -8,7 +8,7 @@
 
 Name:		pscheduler-server
 Version:	1.0
-Release:	0.10.rc1%{?dist}
+Release:	0.11.rc1%{?dist}
 
 Summary:	pScheduler Server
 BuildArch:	noarch
@@ -535,4 +535,4 @@ systemctl start httpd
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
 %{api_dir}
 %config(noreplace) %{api_httpd_conf}
-%config(noreplace) %{limits_file}
+

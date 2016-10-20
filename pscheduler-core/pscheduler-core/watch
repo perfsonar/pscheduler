@@ -106,6 +106,17 @@ except KeyError:
 
 run_count = 0
 
+# Quietly fetch the first run.
+
+# TODO: It would be more RESTful to have this URL available as part of
+# the task instead of building it here.
+
+runs_url = task_url + '/runs/first'
+status, run_json = pscheduler.url_get(runs_url, throw=False)
+if status == 404:
+    pscheduler.fail("First run on server was never populated.")
+last_url = ""
+
 while True:
 
     status, runs = pscheduler.url_get(
@@ -120,7 +131,6 @@ while True:
     if status != 200:
         pscheduler.fail("Unable to fetch runs.")
 
-
     if len(runs) == 0:
         if run_count == 0:
             pscheduler.fail("No runs scheduled for this task.")
@@ -128,6 +138,14 @@ while True:
             pscheduler.succeed()
 
     run_url = runs[0]
+
+    if run_url == last_url:
+        # This will get us away from a just-finished run because
+        # everything is normalized out to one-second boundaries.
+        time.sleep(1.0)
+        continue
+
+    last_url = run_url
 
     if verbose:
         print
@@ -148,6 +166,12 @@ while True:
             print "Run scheduled at", run_json['start-time'], "is a non-starter:"
             print run_json['errors']
             print
+
+        # If the task wasn't a repeater, don't hang around.
+        try:
+            repeating = task['schedule']['repeat']
+        except KeyError:
+            pscheduler.succeed()
 
         end_time = run_json['end-time']
         wait_time = pscheduler.time_until_seconds(

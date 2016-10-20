@@ -51,15 +51,15 @@ class LimitRunDateRange():
         self.overlap = data['overlap'] if 'overlap' in data else False
 
 
+    def checks_schedule(self):
+        return True
+
+
     def evaluate(self,
-                 run,            # The proposed run
-                 check_schedule  # Keep/disregard time-related limits
+                 run             # The proposed run
                  ):
 
         """Check that the proposed times don't overlap with this limit"""
-
-        if not check_schedule:
-            return { "passed": "True" }
 
         start = pscheduler.iso8601_as_datetime(run['schedule']['start'])
         duration = pscheduler.iso8601_as_timedelta(run['schedule']['duration'])

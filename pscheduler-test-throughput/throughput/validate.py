@@ -32,7 +32,7 @@ SPEC_SCHEMA = {
         "dynamic-window-size":    { "$ref": "#/pScheduler/Cardinal" },
         "no-delay":    { "$ref": "#/pScheduler/Boolean" },
         "congestion":    { "enum": ["reno", "cubic", "bic", "htcp", "vegas",
-                                    "westwood", "YeAH"]
+                                    "westwood", "yeah", "bbr"]
                            },
         "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
         "flow-label":    { "$ref": "#/pScheduler/String" },

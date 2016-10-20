@@ -177,6 +177,21 @@ BEGIN
     END IF;
 
 
+    -- Version 2 to version 3
+    -- Improve indexing on json field
+    IF t_version = 2
+    THEN
+
+        DROP INDEX IF EXISTS task_json;
+
+        -- This helps the 'json' query limiter in the REST API
+        CREATE INDEX task_json
+        ON task USING GIN (json);
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -407,11 +422,14 @@ BEGIN
 	   NEW.until := text_to_timestamp_with_time_zone(until);
 	END IF;
 
-	IF NEW.start IS NULL THEN
-            IF NEW.until <= now() THEN
-	        RAISE EXCEPTION 'Until must be in the future.';
-            END IF;
-        ELSIF NEW.until <= NEW.start THEN
+	IF ( (TG_OP = 'INSERT')
+             OR (TG_OP = 'UPDATE' AND NEW.until <> OLD.until) )
+           AND NEW.until IS NOT NULL
+	   AND NEW.until <= now() THEN
+	    RAISE EXCEPTION 'Until must be in the future.';
+        END IF;
+
+        IF NEW.start IS NOT NULL AND NEW.until <= NEW.start THEN
 	   RAISE EXCEPTION 'Until must be after the start.';
 	END IF;
 
@@ -546,11 +564,17 @@ $$ LANGUAGE plpgsql;
 
 -- Put a task on the timeline and return its UUID
 
+-- This is an older version of the function.
+-- TODO: Can get rid of this after 1.0 is in production.
+DROP FUNCTION IF EXISTS api_task_post(JSONB, JSONB, INTEGER, UUID);
+
+
 CREATE OR REPLACE FUNCTION api_task_post(
     task_package JSONB,
     hints JSONB,
     participant INTEGER DEFAULT 0,
-    task_uuid UUID = NULL
+    task_uuid UUID = NULL,
+    enabled BOOLEAN = TRUE
 )
 RETURNS UUID
 AS $$
@@ -559,12 +583,45 @@ DECLARE
 BEGIN
 
    WITH inserted_row AS (
-        INSERT INTO task(json, participant, uuid, hints)
-        VALUES (task_package, participant, task_uuid, hints)
+        INSERT INTO task(json, participant, uuid, hints, enabled)
+        VALUES (task_package, participant, task_uuid, hints, enabled)
         RETURNING *
     ) SELECT INTO inserted * from inserted_row;
 
     RETURN inserted.uuid;
+
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+-- This function enables a task by its UUID.  This is used by the REST
+-- API to keep the scheduler from trying to ask the other participants
+-- for runtimes when they don't have it yet.  (Other participants'
+-- schedulers won't touch their copies because they're not leading.)
+
+CREATE OR REPLACE FUNCTION api_task_enable(
+    task_uuid UUID        -- UUID of task to enable
+)
+RETURNS VOID
+AS $$
+DECLARE
+    taskrec RECORD;
+BEGIN
+
+    SELECT INTO taskrec * FROM task WHERE uuid = task_uuid;
+    IF NOT FOUND
+    THEN
+        RAISE EXCEPTION 'Task not found.';
+    END IF;
+
+    IF taskrec.enabled
+    THEN
+        -- Don't so anything redundant redundant.
+        RETURN;
+    END IF;
+
+    UPDATE task SET enabled = TRUE WHERE id = taskrec.id;
 
 END;
 $$ LANGUAGE plpgsql;
