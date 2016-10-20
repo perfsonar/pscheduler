@@ -1,5 +1,5 @@
 #
-# Bourne Shell Configuration for C Shell
+# C Shell Configuration for pScheduler
 #
 
 alias psc pscheduler
