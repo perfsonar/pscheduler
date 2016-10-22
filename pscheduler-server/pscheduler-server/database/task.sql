@@ -166,8 +166,9 @@ BEGIN
 	        v1_2_record.json #>> '{test, type}', 'spec-to-cli'],
 		v1_2_record.json #>> '{test, spec}' );
 	    IF v1_2_run_result.status <> 0 THEN
-	        RAISE EXCEPTION 'Unable to divine CLI from spec id %: %',
-		  v1_2_run_result.id, v1_2_run_result.stderr;
+	        RAISE NOTICE 'Unable to divine CLI from spec id %: %',
+		  v1_2_run_result.status, v1_2_run_result.stderr;
+		v1_2_run_result.stdout := '[ "(CLI Unavailable)" ]';
 	    END IF;
 
 	    UPDATE TASK SET cli = v1_2_run_result.stdout::JSON
