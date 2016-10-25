@@ -155,9 +155,11 @@ BEGIN
         ALTER TABLE task ADD COLUMN
 	cli JSON;
 
-	-- This trigger needs to be turned off because the updates
-	-- below bring out a bug in the old version.
-        ALTER TABLE task DISABLE TRIGGER task_alter;
+	-- Turn off triggers because the updates below bring out a bug
+	-- in the old version.  Can't just turn off task_alter because
+	-- it may not exist yet.
+
+        ALTER TABLE task DISABLE TRIGGER ALL;
 
 	-- Calculate CLI for all existing tasks
 	FOR v1_2_record IN (SELECT * FROM task)
@@ -175,7 +177,7 @@ BEGIN
             WHERE id = v1_2_record.id;
 	END LOOP;
 
-        ALTER TABLE task ENABLE TRIGGER task_alter;
+        ALTER TABLE task ENABLE TRIGGER ALL;
 
 	ALTER TABLE task
 	ALTER COLUMN cli SET NOT NULL;
