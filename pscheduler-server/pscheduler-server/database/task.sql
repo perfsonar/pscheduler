@@ -159,7 +159,7 @@ BEGIN
 	-- in the old version.  Can't just turn off task_alter because
 	-- it may not exist yet.
 
-        ALTER TABLE task DISABLE TRIGGER ALL;
+        ALTER TABLE task DISABLE TRIGGER USER;
 
 	-- Calculate CLI for all existing tasks
 	FOR v1_2_record IN (SELECT * FROM task)
@@ -177,7 +177,7 @@ BEGIN
             WHERE id = v1_2_record.id;
 	END LOOP;
 
-        ALTER TABLE task ENABLE TRIGGER ALL;
+        ALTER TABLE task ENABLE TRIGGER USER;
 
 	ALTER TABLE task
 	ALTER COLUMN cli SET NOT NULL;
