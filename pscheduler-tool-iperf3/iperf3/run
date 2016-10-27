@@ -17,8 +17,6 @@ import ipaddr
 import iperf3_utils
 from iperf3_defaults import *
 
-
-
 # track when this run starts
 start_time = datetime.datetime.now()
 
@@ -44,7 +42,12 @@ except:
 if len(participant_data) != 2:
     pscheduler.fail("iperf3 requires exactly 2 participants, got %s" % (len(participant_data)))
 
-iperf3_cmd  = participant_data[participant]['iperf3_cmd']
+config = iperf3_utils.get_config()
+
+# look up our local iperf3 command path
+iperf3_cmd  = config["iperf3_cmd"]
+
+# grab the server port from the test spec
 server_port = participant_data[1]['server_port']
 
 def run_client():    
