@@ -9,6 +9,23 @@ import math
 from validate import result_is_valid
 
 '''
+print float
+'''
+def format_float(label, value, units="", default="Not Reported"):
+    prefix_length=22
+    output = label + " ..."
+    prefix_length -= len(output)
+    for i in range(0, prefix_length):
+        output += "."
+
+    if value:
+        output += " %.2f %s\n" % (value, units)
+    else:
+        output += " %s\n" % default
+    
+    return output
+
+'''
 Percentile: Used by histogram class to calculate percentiles using the NIST
 algorithm (http://www.itl.nist.gov/div898/handbook/prc/section2/prc252.htm)
 '''
@@ -153,17 +170,17 @@ output += "\nOne-way Latency Statistics\n"
 output += "--------------------------\n"
 owd_hist = Histogram(json.get('histogram-latency', {}))
 stats = owd_hist.get_stats()
-output += "Delay Median ......... %.2f ms\n" % stats.get('median', 'Not Reported')
-output += "Delay Minimum ........ %.2f ms\n" % stats.get('minimum', 'Not Reported')
-output += "Delay Maximum ........ %.2f ms\n" % stats.get('maximum', 'Not Reported')
-output += "Delay Mean ........... %.2f ms\n" % stats.get('mean', 'Not Reported')
+output += format_float("Delay Median", stats.get('median', None), units="ms")
+output += format_float("Delay Minimum", stats.get('minimum', None), units="ms")
+output += format_float("Delay Maximum", stats.get('maximum', None), units="ms")
+output += format_float("Delay Mean", stats.get('mean', None), units="ms")
 output += "Delay Mode ........... " 
 for mode in stats.get('mode', []):
     output += "%.2f ms " % mode 
 output +=  "\n"
-output += "Delay 25th Percentile  %.2f ms\n" % stats.get('percentile-25', 'Not Reported')
-output += "Delay 75th Percentile  %.2f ms\n" % stats.get('percentile-75', 'Not Reported')
-output += "Delay 95th Percentile  %.2f ms\n" % stats.get('percentile-95', 'Not Reported')
+output += format_float("Delay 25th Percentile", stats.get('percentile-25', None), units="ms")
+output += format_float("Delay 75th Percentile", stats.get('percentile-75', None), units="ms")
+output += format_float("Delay 95th Percentile", stats.get('percentile-95', None), units="ms")
 output += "Max Clock Error ...... %s ms\n" % json.get('max-clock-error', 'Not Reported')
 output += "Common Jitter Measurements:\n"
 
@@ -171,8 +188,8 @@ if stats.get('percentile-95', None) and stats.get('median', None):
     output += "    P95 - P50 ........ %.2f ms\n" % (stats['percentile-95'] - stats['median'])
 if stats.get('percentile-75', None) and stats.get('percentile-25', None):
     output += "    P75 - P25 ........ %.2f ms\n" % (stats['percentile-75'] - stats['percentile-25'])
-output += "    Variance ......... %.2f ms\n" % stats.get('variance', 'Not Reported')
-output += "    Std Deviation .... %.2f ms\n" % stats.get('standard-deviation', 'Not Reported')
+output += format_float("    Variance", stats.get('variance', None), units="ms")
+output += format_float("    Std Deviation", stats.get('standard-deviation', None), units="ms")
 output += "Histogram:\n"
 for owd_bucket in sorted(json.get('histogram-latency', {}).items()):
     output += "    %s ms: %d packets\n" % (owd_bucket[0], owd_bucket[1])
@@ -182,17 +199,17 @@ output += "\nTTL Statistics\n"
 output += "--------------\n"
 ttl_hist = Histogram(json.get('histogram-ttl', {}))
 ttl_stats = ttl_hist.get_stats()
-output += "TTL Median ........... %.2f\n" % ttl_stats.get('median', 'Not Reported')
-output += "TTL Minimum .......... %.2f\n" % ttl_stats.get('minimum', 'Not Reported')
-output += "TTL Maximum .......... %.2f\n" % ttl_stats.get('maximum', 'Not Reported')
-output += "TTL Mean ............. %.2f\n" % ttl_stats.get('mean', 'Not Reported')
+output += format_float("TTL Median", ttl_stats.get('median', None))
+output += format_float("TTL Minimum", ttl_stats.get('minimum', None))
+output += format_float("TTL Maximum", ttl_stats.get('maximum', None))
+output += format_float("TTL Mean", ttl_stats.get('mean', None))
 output += "TTL Mode ............. " 
 for mode in ttl_stats.get('mode', []):
     output += "%.2f " % mode 
 output +=  "\n"
-output += "TTL 25th Percentile .. %.2f\n" % ttl_stats.get('percentile-25', 'Not Reported')
-output += "TTL 75th Percentile .. %.2f\n" % ttl_stats.get('percentile-75', 'Not Reported')
-output += "TTL 95th Percentile .. %.2f\n" % ttl_stats.get('percentile-95', 'Not Reported')
+output += format_float("TTL 25th Percentile", ttl_stats.get('percentile-25', None))
+output += format_float("TTL 75th Percentile", ttl_stats.get('percentile-75', None))
+output += format_float("TTL 95th Percentile", ttl_stats.get('percentile-95', None))
 output += "Histogram:\n"
 for ttl_bucket in sorted(json.get('histogram-ttl', {}).items()):
     output += "    %s: %d packets\n" % (ttl_bucket[0], ttl_bucket[1])
