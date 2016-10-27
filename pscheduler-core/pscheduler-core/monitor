@@ -145,8 +145,8 @@ def update_tasks(screen):
     # Dole out screen real estate.
 
     # Curses uses zero-based geometry.
-    rows_left = height + 1
-    last_row = height - 1
+    rows_left = height
+    last_row = height
 
     # Things running take top priority
     if len(present) > rows_left:
@@ -211,12 +211,14 @@ def update_tasks(screen):
         else:
             line_attr = curses.A_NORMAL
 
+
         # The last row gets chopped by one character because curses
         # doesn't allow writing to the last character on the screen
         # with addstr.
-        if row == last_row:
+        if row == last_row-1:
             line = line[:-1]
 
+        print "ROW", row, len(line)
         screen.addstr(row, 0, line, line_attr)
 
         row += 1

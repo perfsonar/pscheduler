@@ -109,11 +109,14 @@ BEGIN
     END IF;
 
     -- Version 1 to version 2
-    --IF t_version = 1
-    --THEN
-    --    ALTER TABLE ...
-    --    t_version := t_version + 1;
-    --END IF;
+    -- Adds indexes for task to aid cascading deletes
+    IF t_version = 1
+    THEN
+        CREATE INDEX run_task ON run(task);
+
+        t_version := t_version + 1;
+    END IF;
+
 
 
     --
