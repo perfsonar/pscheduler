@@ -201,6 +201,18 @@ BEGIN
     END IF;
 
 
+    -- Version 3 to version 4
+    -- Adds indexes to aid cascading deletes
+    IF t_version = 3
+    THEN
+        CREATE INDEX task_test ON task(test);
+	CREATE INDEX task_tool ON task(tool);
+
+        t_version := t_version + 1;
+    END IF;
+
+
+
     --
     -- Cleanup
     --
