@@ -19,7 +19,7 @@ from .log import log
 this = sys.modules[__name__]
 
 # How often we check the file for an update, in seconds
-this.update_interval = 30
+this.update_interval = 10
 
 # The limit processor; the default being one that does nothing.
 this.processor = LimitProcessor()
