@@ -182,6 +182,65 @@ AS
 
 
 
+-- Return a schedule with bounded past and future window sizes, mostly
+-- for use by the monitor.
+CREATE OR REPLACE FUNCTION schedule_monitor(
+    window_size INTEGER
+)
+RETURNS TABLE (
+    ppf INTEGER,
+    times TSTZRANGE,
+    task UUID,
+    run UUID,
+    state_enum TEXT,
+    state_display TEXT,
+    task_json JSONB,
+    task_cli JSON
+)
+AS $$
+DECLARE
+    present_start TIMESTAMP WITH TIME ZONE;
+    present_end TIMESTAMP WITH TIME ZONE;
+    present TSTZRANGE;
+BEGIN
+
+    RETURN QUERY
+
+        SELECT * FROM (
+
+            SELECT * FROM (
+                SELECT -1 AS ppf, * FROM schedule
+                WHERE upper(schedule.times) < now()
+                ORDER BY times DESC
+                LIMIT window_size
+            ) past
+
+            UNION ALL
+
+            SELECT * FROM (
+                SELECT 0 AS ppf, * FROM schedule
+                WHERE schedule.times @> now()
+            ) present
+
+            UNION ALL
+
+            SELECT * FROM (
+                SELECT 1 AS ppf, * FROM schedule
+                WHERE lower(schedule.times) > now()
+                ORDER BY times
+                LIMIT window_size
+                ) future
+        ) monitor
+        ORDER BY ppf, times ASC
+        ;
+
+    RETURN;
+
+END;
+$$ LANGUAGE plpgsql;
+
+
+
 
 
 
