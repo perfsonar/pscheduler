@@ -201,7 +201,7 @@ def run_server():
     affinity = test_spec.get('server-cpu-affinity')
     if affinity == None:
         # look up what interface we're going to be receiving on        
-        interface = pscheduler.address_interface(destination)
+        interface = pscheduler.address_interface(test_spec['dest'])
         affinity = pscheduler.interface_affinity(interface)
 
     if affinity != None:

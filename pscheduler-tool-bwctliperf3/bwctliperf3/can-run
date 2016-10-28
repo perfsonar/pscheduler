@@ -50,7 +50,7 @@ try:
 except KeyError:
     pscheduler.fail("Missing dest argument in spec")
 
-unsupported_options = [ 'congestion', 'zero-copy', 'flow-label', 'cpu-affinity' ]
+unsupported_options = [ 'congestion', 'zero-copy', 'flow-label', 'client-cpu-affinity', 'server-cpu-affinity' ]
 for unsupported_option in unsupported_options:
     if test_spec.has_key(unsupported_option):
         pscheduler.fail("BWCTL does not support " . unsupported_option)
