@@ -159,7 +159,7 @@ def update_tasks(screen):
     if rows_left > 0:
         past_max = int(rows_left * past_fraction)
         if len(past) > past_max:
-            past = past[:past_max]
+            past = past[-past_max:]
         rows_left -= len(past)
     else:
         past = []
