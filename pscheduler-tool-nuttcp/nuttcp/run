@@ -117,9 +117,9 @@ def run_client():
         else:
             iperf3_args.append('-6')
 
-    if test_spec.has_key('cpu-affinity') and test_spec['cpu-affinity'] != None:
+    if test_spec.has_key('client-cpu-affinity') and test_spec['client-cpu-affinity'] != None:
         nuttcp_args.append('-xc')
-        nuttcp_args.append(test_spec['cpu-affinity'])
+        nuttcp_args.append(test_spec['client-cpu-affinity'])
 
     # who to connect to
     destination = test_spec['dest']
