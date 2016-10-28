@@ -152,7 +152,7 @@ def run_client():
     # or try to auto detect it
     affinity = test_spec.get('client-cpu-affinity')
     if affinity == None:
-        affinity = pscheduler.source_affinity(destination))
+        affinity = pscheduler.source_affinity(destination)
 
     if affinity != None:
         iperf3_args.append('-A')
