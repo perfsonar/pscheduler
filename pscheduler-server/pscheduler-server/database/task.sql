@@ -211,6 +211,17 @@ BEGIN
         t_version := t_version + 1;
     END IF;
 
+    -- Version 4 to version 5
+    -- Adds 'post' column
+    IF t_version = 4
+    THEN
+        -- Amount of time to wait before a result might be available
+        ALTER TABLE task ADD COLUMN
+        post INTERVAL DEFAULT 'P0';
+
+        t_version := t_version + 1;
+    END IF;
+
 
 
     --
@@ -472,6 +483,11 @@ BEGIN
 	    END IF;
 	    temp_json := run_result.stdout::JSONB;
 	    NEW.duration := interval_round_up( (temp_json #>> '{duration}')::INTERVAL );
+	    -- This will come up NULL if not provided.
+	    NEW.post := interval_round_up( (temp_json #>> '{post}')::INTERVAL );
+	    IF NEW.post IS NULL THEN
+                NEW.post = 'P0'::INTERVAL;
+            END IF;
         END IF;
 
 	--
