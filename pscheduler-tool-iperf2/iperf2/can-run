@@ -40,8 +40,8 @@ if test_spec.get('zero-copy'):
 if test_spec.get('congestion'):
     pscheduler.fail('iperf does not support the --congestion flag')
 
-if test_spec.get('cpu-affinity'):
-    pscheduler.fail('iperf does not support the --omit flag')
+if test_spec.has_key('client-cpu-affinity') or test_spec.has_key('server-cpu-affinity'):
+    pscheduler.fail('iperf does not support the --client-cpu-affinity or --server-cpu-affinity flag')
 
 if test_spec.get('no-delay'):
     pscheduler.fail('iperf does not support the --no-delay flag')

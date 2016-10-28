@@ -156,7 +156,7 @@ def run_client():
 
     if affinity != None:
         iperf3_args.append('-A')
-        iperf3_args.append(test_spec['cpu-affinity'])
+        iperf3_args.append(affinity)
 
 
     # join and run_program want these all to be string types, so
@@ -201,7 +201,7 @@ def run_server():
     affinity = test_spec.get('server-cpu-affinity')
     if affinity == None:
         # look up what interface we're going to be receiving on        
-        interface = pscheduler.address_interface(destination)
+        interface = pscheduler.address_interface(test_spec['dest'])
         affinity = pscheduler.interface_affinity(interface)
 
     if affinity != None:
