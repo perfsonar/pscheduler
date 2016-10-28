@@ -156,7 +156,7 @@ def run_client():
 
     if affinity != None:
         iperf3_args.append('-A')
-        iperf3_args.append(test_spec['cpu-affinity'])
+        iperf3_args.append(affinity)
 
 
     # join and run_program want these all to be string types, so
