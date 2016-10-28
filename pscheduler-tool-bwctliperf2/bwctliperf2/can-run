@@ -38,25 +38,25 @@ if not json.get('spec'):
 
 test_spec = json['spec']
     
-if test_spec.get('bandwidth') and not test_spec.get('udp'):
+if test_spec.has_key('bandwidth') and not test_spec.has_key('udp'):
     pscheduler.fail('iperf cannot run TCP tests with throttled bandwidth')
 
-if test_spec.get('omit'):
+if test_spec.has_key('omit'):
     pscheduler.fail('iperf does not support the --omit flag')
 
-if test_spec.get('flow-label'):
+if test_spec.has_key('flow-label'):
     pscheduler.fail('iperf does not support the --flow-label flag')
 
-if test_spec.get('zero-copy'):
+if test_spec.has_key('zero-copy'):
     pscheduler.fail('iperf does not support the --zero-copy flag')
 
-if test_spec.get('congestion'):
+if test_spec.has_key('congestion'):
     pscheduler.fail('iperf does not support the --congestion flag')
 
-if test_spec.get('server-cpu-affinity') or test_spec.get('client-cpu-affinity'):
+if test_spec.has_key('server-cpu-affinity') or test_spec.has_key('client-cpu-affinity'):
     pscheduler.fail('iperf does not support the --server-cpu-affinity or --client-cpu-affinity flag')
 
-if test_spec.get('no-delay'):
+if test_spec.has_key('no-delay'):
     pscheduler.fail('iperf does not support the --no-delay flag')
 
 try:
