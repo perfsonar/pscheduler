@@ -166,7 +166,7 @@ def run_server():
     nuttcp_args.append(server_port)
 
     if test_spec.has_key('server-cpu-affinity'):
-        nuttcp_args.append('-xcs')
+        nuttcp_args.append('-xc')
         nuttcp_args.append(test_spec['server-cpu-affinity'])
 
     nuttcp_args = map(lambda x: str(x), nuttcp_args)
