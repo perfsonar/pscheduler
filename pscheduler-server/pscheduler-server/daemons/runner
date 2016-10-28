@@ -437,11 +437,15 @@ class RunWorker:
 
             # Store the full result with each participant.
 
-            full_params = pscheduler.json_dump({ 'result-full' : full_result })
+            full_params = pscheduler.json_dump({
+                'result-full' : full_result,
+                'succeeded' : failures == 0
+            })                                             
+
 
             for run in runs:
-                self.log.debug("%d: Storing full result in %s, params=%s",
-                               self.id, run, full_params)
+                self.log.debug("%d: Storing full result in %s, params=%s, succeeded=%s",
+                               self.id, run, full_params, failures==0)
                 status, returned = pscheduler.url_put(run,
                                                       data=full_params,
                                                       throw=False,
