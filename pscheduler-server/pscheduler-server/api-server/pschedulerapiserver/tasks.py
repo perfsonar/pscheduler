@@ -343,6 +343,7 @@ def tasks_uuid(uuid):
                     task.start,
                     task.slip,
                     task.duration,
+                    task.post,
                     task.runs,
                     task.participants,
                     scheduling_class.anytime,
@@ -389,7 +390,7 @@ def tasks_uuid(uuid):
 
         if arg_boolean('detail'):
 
-            part_list = row[6];
+            part_list = row[7];
             # The database is not supposed to allow this, but spit out
             # a sane default as a last resort in case it happens.
             if part_list is None:
@@ -406,14 +407,16 @@ def tasks_uuid(uuid):
                     else pscheduler.timedelta_as_iso8601(row[3]),
                 'duration': None if row[4] is None \
                     else pscheduler.timedelta_as_iso8601(row[4]),
-                'runs': None if row[5] is None \
-                    else int(row[5]),
+                'post': None if row[5] is None \
+                    else pscheduler.timedelta_as_iso8601(row[5]),
+                'runs': None if row[6] is None \
+                    else int(row[6]),
                 'participants': part_list,
-                'anytime':  row[7],
-                'exclusive':  row[8],
-                'multi-result':  row[9],
-                'enabled':  row[11],
-                'cli':  row[12]
+                'anytime':  row[8],
+                'exclusive':  row[9],
+                'multi-result':  row[10],
+                'enabled':  row[12],
+                'cli':  row[13]
                 }
 
         return ok_json(json)
