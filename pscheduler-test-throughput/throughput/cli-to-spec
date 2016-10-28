@@ -265,10 +265,10 @@ if options.flow_label:
    result["flow-label"] = options.flow_label
    result["ip-version"] = 6 # flow label only works on ipv6
 
-if options.client_cpu_affinity:
+if options.client_cpu_affinity != None:
    result["client-cpu-affinity"] = options.client_cpu_affinity
 
-if options.server_cpu_affinity:
+if options.server_cpu_affinity != None:
    result["server-cpu-affinity"] = options.server_cpu_affinity
 
 logger.debug("cli-to-spec -> %s" % result)
