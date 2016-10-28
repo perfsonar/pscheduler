@@ -13,7 +13,6 @@ import sys
 import time
 from owping_defaults import *
 from owping_utils import CLIENT_ROLE, SERVER_ROLE, get_role, get_config
-from subprocess import Popen, PIPE
 
 #track when this run starts
 start_time = datetime.datetime.now()
@@ -132,12 +131,10 @@ if role == CLIENT_ROLE:
         owping_args.append(ADDR_FORMAT % (test_spec['dest'], control_port))
     
     #Run the process
-    time.sleep(DEFAULT_CLIENT_SLEEP) #wait for server to boot
+    #time.sleep(DEFAULT_CLIENT_SLEEP) #wait for server to boot
     log.debug("Running command: %s" % " ".join(owping_args))
     try:
-        proc = Popen(owping_args, stdout=PIPE, stderr=PIPE, shell=False)
-        #Could use communicate but could potentially have large buffer.
-        proc.wait()
+        returncode, stdout, stderr = pscheduler.run_program(owping_args)
     except OSError as e:
         log.error("owping encountered an OS error: %s" % e)
         #Note: Avoids reporting sensitive system details in error message
@@ -147,14 +144,15 @@ if role == CLIENT_ROLE:
         log.error("owping failed to complete execution: %s" % sys.exc_info()[0])
         results['error'] = "The owping command failed during execution. See server logs for more details."
         pscheduler.succeed_json(results)
-    
+        
     #see if command completed successfully
-    log.debug("owping returned status %d" % proc.returncode)
-    if proc.returncode:
-        owp_error = ''
-        for line in proc.stderr:
-            owp_error += line.rstrip().lstrip() + " "
-        results['error'] = "owping returned an error: %s" % owp_error
+    log.debug("owping returned status %d" % returncode)
+    if returncode:
+        if stderr:
+            owp_error = stderr.strip().replace("\n", ";")
+            results['error'] = "owping returned an error: %s" % owp_error
+        else:
+            results['error'] = "owping returned an error status but no message"
         pscheduler.succeed_json(results)
         
     #Parse output
@@ -169,7 +167,10 @@ if role == CLIENT_ROLE:
         results['raw-packets'] = []
     packets_seen = {}
     prev_seq_number = -1
-    for line in proc.stdout:
+    stdout_lines = []
+    if stdout:
+        stdout_lines = stdout.split("\n")
+    for line in stdout_lines:
         owping_match = owping_regex.match(line)
         if owping_match:
             seq_number               = owping_match.group(1);
