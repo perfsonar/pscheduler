@@ -48,13 +48,14 @@ config = iperf3_utils.get_config()
 iperf3_cmd  = config["iperf3_cmd"]
 
 # grab the server port from the test spec
-server_port = participant_data[1]['server_port']
+server_port = participant_data[1]['server_port']   
 
 def run_client():    
 
     logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
 
     time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
+        
 
     iperf3_args = [ iperf3_cmd ]
 
@@ -147,7 +148,13 @@ def run_client():
         iperf3_args.append('-L')
         iperf3_args.append(test_spec['flow-label'])
 
-    if test_spec.has_key('cpu-affinity') and test_spec['cpu-affinity'] != None:
+    # figure out cpu affinity, either use what was passed in
+    # or try to auto detect it
+    affinity = test_spec.get('client-cpu-affinity')
+    if affinity == None:
+        affinity = pscheduler.source_affinity(destination))
+
+    if affinity != None:
         iperf3_args.append('-A')
         iperf3_args.append(test_spec['cpu-affinity'])
 
@@ -189,6 +196,17 @@ def run_server():
 
     iperf3_args.append("-p")
     iperf3_args.append(server_port)
+
+    # try to grab our default affinity if one wasn't passed in
+    affinity = test_spec.get('server-cpu-affinity')
+    if affinity == None:
+        # look up what interface we're going to be receiving on        
+        interface = pscheduler.address_interface(destination)
+        affinity = pscheduler.interface_affinity(interface)
+
+    if affinity != None:
+        iperf3_args.append('-A')
+        iperf3_args.append(affinity)
 
     # need this to pad out the wait timeout,
     # convert to seconds

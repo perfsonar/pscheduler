@@ -6,8 +6,21 @@ import netifaces
 import os
 import socket
 
-# Return what interface is being used to get to a particular
-# address
+
+
+def source_affinity(addr):
+    """Easy to use function that returns the CPU affinity
+    given an address. Uses source_interface and interface_affinity
+    functions call to accomplish, so it's really just a shorthand
+    """
+    (address, intf) = source_interface(addr)
+
+    if intf is None:
+        return None
+
+    return interface_affinity(intf)
+
+
 def source_interface(addr, port=80):
     """Figure out what local interface is being used to 
     get an address.
@@ -22,19 +35,28 @@ def source_interface(addr, port=80):
 
     s.close()
 
-    interface_name = None
+    interface_name = address_interface(interface_address)
+    
+    if interface_name:
+        return (interface_address, interface_name)
 
+    return (None, None)
+
+
+def address_interface(addr):
+    """Given an address, returns what interface
+    has this interface, or None
+    """
     all_interfaces = netifaces.interfaces()
     for intf in all_interfaces:
         addresses = netifaces.ifaddresses(intf)
 
         for family in addresses.keys():
             for addr_info in addresses[family]:
-                if addr_info['addr'] == interface_address:
-                    return (interface_address, intf)
+                if addr_info['addr'] == addr:
+                    return intf
 
-    return (None, None)
-
+    return None
 
 def interface_affinity(interface):
     

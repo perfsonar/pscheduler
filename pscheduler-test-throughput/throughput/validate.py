@@ -36,7 +36,8 @@ SPEC_SCHEMA = {
                            },
         "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
         "flow-label":    { "$ref": "#/pScheduler/String" },
-        "cpu-affinity":    { "$ref": "#/pScheduler/String" }
+        "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
+        "server-cpu-affinity":    { "$ref": "#/pScheduler/Integer" }
         }
     }
 
