@@ -44,7 +44,10 @@ except:
 if len(participant_data) != 2:
     pscheduler.fail("nuttcp requires exactly 2 participants, got %s" % (len(participant_data)))
 
-nuttcp_cmd  = participant_data[participant]['nuttcp_cmd']
+
+config = nuttcp_utils.get_config()
+nuttcp_cmd  = config["nuttcp_cmd"]
+
 server_port = participant_data[1]['server_port']
 data_port_start = participant_data[1]['data_port_start']
 
