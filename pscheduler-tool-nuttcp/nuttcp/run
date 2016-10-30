@@ -113,16 +113,23 @@ def run_client():
 
     if test_spec.has_key('ip-version') and test_spec['ip-version'] != None:
         if test_spec['ip-version'] == 4:
-            iperf3_args.append('-4')
+            nuttcp_args.append('-4')
         else:
-            iperf3_args.append('-6')
-
-    if test_spec.has_key('client-cpu-affinity') and test_spec['client-cpu-affinity'] != None:
-        nuttcp_args.append('-xc')
-        nuttcp_args.append(test_spec['client-cpu-affinity'])
+            nuttcp_args.append('-6')
 
     # who to connect to
     destination = test_spec['dest']
+
+    affinity = test_spec.get('client-cpu-affinity')
+    if affinity == None:
+        affinity = pscheduler.source_affinity(destination)
+
+    if affinity != None:
+        nuttcp_args.insert(0, 'numactl')
+        nuttcp_args.insert(1, '-N')
+        nuttcp_args.insert(2, affinity)
+
+
     nuttcp_args.append(destination)
 
     # join and run_program want these all to be string types, so
@@ -165,9 +172,18 @@ def run_server():
     nuttcp_args.append("-P")
     nuttcp_args.append(server_port)
 
-    if test_spec.has_key('server-cpu-affinity'):
-        nuttcp_args.append('-xc')
-        nuttcp_args.append(test_spec['server-cpu-affinity'])
+
+    # try to grab our default affinity if one wasn't passed in
+    affinity = test_spec.get('server-cpu-affinity')
+    if affinity == None:
+        # look up what interface we're going to be receiving on        
+        interface = pscheduler.address_interface(test_spec['dest'])
+        affinity = pscheduler.interface_affinity(interface)
+
+    if affinity != None:
+        nuttcp_args.insert(0, 'numactl')
+        nuttcp_args.insert(1, '-N')
+        nuttcp_args.insert(2, affinity)
 
     nuttcp_args = map(lambda x: str(x), nuttcp_args)
     logger.info("Running command: %s" % " ".join(nuttcp_args))
@@ -193,7 +209,7 @@ def run_server():
 
 
 
-#determine whether we are the client or server mode for iperf
+#determine whether we are the client or server mode for nuttcp
 results = {}
 try:
     if participant == 0:

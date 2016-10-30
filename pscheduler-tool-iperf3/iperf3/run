@@ -155,9 +155,9 @@ def run_client():
         affinity = pscheduler.source_affinity(destination)
 
     if affinity != None:
-        iperf3_args.append('-A')
-        iperf3_args.append(affinity)
-
+        iperf3_args.insert(0, 'numactl')
+        iperf3_args.insert(1, '-N')
+        iperf3_args.insert(2, affinity)
 
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string
@@ -205,8 +205,9 @@ def run_server():
         affinity = pscheduler.interface_affinity(interface)
 
     if affinity != None:
-        iperf3_args.append('-A')
-        iperf3_args.append(affinity)
+        iperf3_args.insert(0, 'numactl')
+        iperf3_args.insert(1, '-N')
+        iperf3_args.insert(2, affinity)
 
     # need this to pad out the wait timeout,
     # convert to seconds

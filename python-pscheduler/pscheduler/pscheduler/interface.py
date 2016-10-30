@@ -6,6 +6,7 @@ import netifaces
 import os
 import socket
 import re
+import pscheduler
 
 
 def source_affinity(addr):
@@ -47,6 +48,13 @@ def address_interface(addr):
     """Given an address, returns what interface
     has this interface, or None
     """
+
+    # make sure we resolve any address to a specific 
+    # IP address before looking up interfaces
+    addr = pscheduler.dns_resolve(addr)
+    if addr == None:
+        addr = dns_resolve(addr, ip_version=6)
+
     all_interfaces = netifaces.interfaces()
     for intf in all_interfaces:
         addresses = netifaces.ifaddresses(intf)
