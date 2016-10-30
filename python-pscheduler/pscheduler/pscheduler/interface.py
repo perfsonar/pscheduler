@@ -5,7 +5,7 @@ Functions for figuring out common interface operations
 import netifaces
 import os
 import socket
-
+import re
 
 
 def source_affinity(addr):
@@ -70,6 +70,12 @@ def interface_affinity(interface):
     like it might not be a big deal.
     """
 
+    # if it's a sub interface, we have to look up the 'main'
+    # interface for affinity detection
+    match = re.search('(.+)\.\d+$', interface)
+    if match:
+        interface = match.groups()[0]
+
     filename = "/sys/class/net/%s/device/numa_node" % interface
 
     if not os.path.exists(filename):
@@ -96,6 +102,6 @@ if __name__ == "__main__":
         print "For dest %s, addr = %s, intf = %s" % (dest, addr, intf)
 
 
-    for interface in ["eth0", "eth1", "lo"]:
+    for interface in ["eth0", "eth1", "lo", "eth1.412", "eth0.120"]:
         affinity = interface_affinity(interface)
         print "interface affinity = %s for %s" % (affinity, interface) 
