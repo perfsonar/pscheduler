@@ -192,7 +192,7 @@ while True:
         #cleanup an previous runs - i really don't trust powstream
         try:
             #kill anything referencing our data_dir
-            call([pkill_cmd, '-9', '-f', data_dir ], stdout=PIPE, stderr=PIPE, shell=False)
+            call([pkill_cmd, '-9', '-f', data_dir ], shell=False)
         except:
             #best effort clean-up
             pass
