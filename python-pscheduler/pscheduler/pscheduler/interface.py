@@ -5,9 +5,23 @@ Functions for figuring out common interface operations
 import netifaces
 import os
 import socket
+import re
+import pscheduler
 
-# Return what interface is being used to get to a particular
-# address
+
+def source_affinity(addr):
+    """Easy to use function that returns the CPU affinity
+    given an address. Uses source_interface and interface_affinity
+    functions call to accomplish, so it's really just a shorthand
+    """
+    (address, intf) = source_interface(addr)
+
+    if intf is None:
+        return None
+
+    return interface_affinity(intf)
+
+
 def source_interface(addr, port=80):
     """Figure out what local interface is being used to 
     get an address.
@@ -22,7 +36,24 @@ def source_interface(addr, port=80):
 
     s.close()
 
-    interface_name = None
+    interface_name = address_interface(interface_address)
+    
+    if interface_name:
+        return (interface_address, interface_name)
+
+    return (None, None)
+
+
+def address_interface(addr):
+    """Given an address, returns what interface
+    has this interface, or None
+    """
+
+    # make sure we resolve any address to a specific 
+    # IP address before looking up interfaces
+    addr = pscheduler.dns_resolve(addr)
+    if addr == None:
+        addr = dns_resolve(addr, ip_version=6)
 
     all_interfaces = netifaces.interfaces()
     for intf in all_interfaces:
@@ -30,11 +61,10 @@ def source_interface(addr, port=80):
 
         for family in addresses.keys():
             for addr_info in addresses[family]:
-                if addr_info['addr'] == interface_address:
-                    return (interface_address, intf)
+                if addr_info['addr'] == addr:
+                    return intf
 
-    return (None, None)
-
+    return None
 
 def interface_affinity(interface):
     
@@ -47,6 +77,12 @@ def interface_affinity(interface):
     given the nature of high speed networking it seems
     like it might not be a big deal.
     """
+
+    # if it's a sub interface, we have to look up the 'main'
+    # interface for affinity detection
+    match = re.search('(.+)\.\d+$', interface)
+    if match:
+        interface = match.groups()[0]
 
     filename = "/sys/class/net/%s/device/numa_node" % interface
 
@@ -74,6 +110,6 @@ if __name__ == "__main__":
         print "For dest %s, addr = %s, intf = %s" % (dest, addr, intf)
 
 
-    for interface in ["eth0", "eth1", "lo"]:
+    for interface in ["eth0", "eth1", "lo", "eth1.412", "eth0.120"]:
         affinity = interface_affinity(interface)
         print "interface affinity = %s for %s" % (affinity, interface) 

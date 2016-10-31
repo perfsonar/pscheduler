@@ -20,7 +20,7 @@ except KeyError:
 config = iperf3_utils.get_config()
 
 # Nothing else interesting for sender
-if participant == 0:
+if participant == 0:    
     pass
 # Receiver has to figure out what port it's going
 # to listen on, client will need this to figure out
