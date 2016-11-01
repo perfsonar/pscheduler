@@ -125,6 +125,9 @@ pscheduler-archiver-esmond
 pscheduler-archiver-failer
 pscheduler-archiver-syslog
 
+# Misc.
+pscheduler-docs
+
 
 # Bundles
 pscheduler-bundle-full

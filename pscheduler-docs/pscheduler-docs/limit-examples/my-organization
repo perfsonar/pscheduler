@@ -1,0 +1,120 @@
+{
+
+    "#": "-------------------------------------------------------------------",
+    "#": "               pScheduler Sample Limit Configuration               ",
+    "#": "                                                                   ",
+    "#": "                                                                   "
+    "#": "Allow only IPs or hosts with DNS names within an organization to   ",
+    "#": "run any test they want and reject everything else.                 ",
+    "#": "-------------------------------------------------------------------",
+
+    "schema": 1,
+
+    "#": "-------------------------------------------------------------------",
+    "#": "IDENTIFIERS:  WHO'S ASKING?                                        ",
+    "#": "                                                                   ",
+    "#": "These identify who's asking to run the test.  One requester can    ",
+    "#": "map to zero or more identifiers.                                   ",
+    "#": "-------------------------------------------------------------------",
+
+    "identifiers": [
+	{
+	    "#": "In plain English:  IP addresses that fall into the listed  ",
+	    "#": "blocks are identified as 'our-ips'.                        ",
+
+	    "name": "our-ips",
+	    "description": "IP blocks assigned to our organization",
+	    "type": "ip-cidr-list",
+	    "data": {
+		"cidrs": [
+                    "10.10.0.0/16",
+                    "10.0.0.0/24",
+                    "10.9.8.0/24",
+                    "10.11.12.0/24"
+		]
+	    }
+	},
+	{
+	    "#": "In plain English:  IP addresses that reverse-resolve to a  ",
+	    "#": "FQDN ending in .example.org are identified as 'our-hosts'. ",
+
+	    "name": "our-hosts",
+	    "description": "Hosts that reverse-resolve to our domain",
+	    "type": "ip-reverse-dns",
+	    "data": {
+		"match": {
+		    "style": "regex",
+		    "match": "\\.example\\.org$"
+		},
+		"timeout": "PT2S",
+		"fail-result": false
+	    }
+	},
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "CLASSIFIERS:  HOW DO WE CLASSIFY THE IDENTIFIERS?                  ",
+    "#": "                                                                   ",
+    "#": "These collect identifiers into groups.                             ",
+    "#": "-------------------------------------------------------------------",
+
+    "classifiers": [
+	{
+	    "#": "In plain English:  Identifiers 'our-ips' and 'our-hosts'   ",
+	    "#": "are classified as being 'our-organization'.                ",
+
+	    "name": "our-organization",
+	    "description": "Things that are part of our organization",
+	    "identifiers": [ "our-ips", "our-hosts" ]
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "LIMITS:  WHAT ARE THE RESTRICTIONS?                                ",
+    "#": "                                                                   ",
+    "#": "These are comparisons made against the type of test being proposed,",
+    "#": "the paramaters for the run and when it is proposed to be run.      ",
+    "#": "-------------------------------------------------------------------",
+
+    "limits": [
+	{
+	    "#": "In plain English:  Any task being tested against this limit",
+	    "#": "will always meet with approval.                            ",
+
+	    "name": "always",
+	    "description": "Always passes",
+	    "type": "pass-fail",
+	    "data": {
+		"pass": true
+	    }
+	},
+    ],
+
+    "#": "-------------------------------------------------------------------",
+    "#": "APPLICATIONS:  TO WHOM DO WE APPLY THE LIMITS?                     ",
+    "#": "                                                                   ",
+    "#": "These are processed in order until one passes all of the           ",
+    "#": "requirements.  The run will be rejected if one fails with          ",
+    "#": "stop-on-failure set to true or none of them passes.                ",
+    "#": "-------------------------------------------------------------------",
+
+    "applications": [
+	{
+	    "#": "In plain English:  Any requester that falls into the       ",
+	    "#": "'my-organization' classification and passes the 'always'   ",
+	    "#": "limit will be allowed to run any test.  Because this is the",
+	    "#": "only application, any requester not classified as          ",
+            "#": "'my-organization' will reach the bottom of the list and be ",
+            "#": "have its task request rejected.                            ",
+
+	    "description": "My organization",
+	    "classification": "my-organization"
+	    "apply": [
+		{ "require": "all", "limits": [ "always" ] }
+	    ],
+	}
+    ]
+
+}
