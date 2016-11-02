@@ -29,7 +29,7 @@ Requires:	postgresql-load
 Requires:	pscheduler-account
 Requires:	pscheduler-core
 Requires:	pscheduler-database-init
-Requires:	random-string
+Requires:	random-string >= 1.1
 
 # Daemons
 BuildRequires:	m4
