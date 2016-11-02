@@ -112,6 +112,8 @@ false
 #
 make -C database \
      DATABASE=%{db_user} \
+     DATADIR=%{_pscheduler_datadir} \
+     PASSWORDFILE=%{password_file} \
      ROLE=%{db_user} \
      PGPASSFILE=$RPM_BULID_ROOT/%{pgpass_file}
 

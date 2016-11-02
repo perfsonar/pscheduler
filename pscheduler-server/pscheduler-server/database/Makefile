@@ -60,12 +60,22 @@ ifndef DATABASE
 	@echo No DATABASE specified for build
 	@false
 endif
+ifndef DATADIR
+	@echo No DATADIR specified for build
+	@false
+endif
+ifndef PASSWORDFILE
+	@echo No PASSWORDFILE specified for build
+	@false
+endif
 ifndef ROLE
 	@echo No ROLE specified for build
 	@false
 endif
 	m4 \
 	-D__DATABASE__=$(DATABASE) \
+	-D__DATADIR__=$(DATADIR) \
+	-D__PASSWORDFILE__=$(PASSWORDFILE) \
 	-D__ROLE__=$(ROLE) \
 	< $^ > $@
 TO_CLEAN += $(INTERNALS)
