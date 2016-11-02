@@ -195,16 +195,18 @@ class RunWorker:
         except ValueError:
             log.warning("Discarding bogus result %s", result)
             return
-        # TODO: Error check this.
-        self.cursor.execute("""
-            INSERT INTO run (task, uuid, times, state, status, result_merged)
-            VALUES (%s,
-                    NULL,
-                    tstzrange(normalized_now(), normalized_now(), '[]'),
-                    run_state_finished(),
-                    0,
-                    %s)
-            """, [ self.task_id, result ])
+        try:
+            self.cursor.execute("""
+                INSERT INTO run (task, uuid, times, state, status, result_merged)
+                VALUES (%s,
+                        NULL,
+                        tstzrange(normalized_now(), normalized_now(), '[]'),
+                        run_state_finished(),
+                        0,
+                        %s)
+                """, [ self.task_id, result ])
+        except Exception as ex:
+            self.log.error("%d: Failed to post run for result: %s", self.id, str(ex))
 
 
 
@@ -253,36 +255,46 @@ class RunWorker:
         self.log.debug("%d: Sleeping %s until test start", self.id, sleep_time)
         time.sleep(sleep_time)
 
-        # TODO: Error check this.
-        self.cursor.execute("""
-                       UPDATE run
-                           SET state = run_state_running()
-                           WHERE id = %s
-                       """, [self.id])
+        try:
+            self.cursor.execute("""
+                           UPDATE run
+                               SET state = run_state_running()
+                               WHERE id = %s
+                           """, [self.id])
+        except Exception as ex:
+            self.log.error("%d: Failed to set running state: %s",
+                           self.id, str(ex))
+            return
 
-        # TODO: Error check this.
-        self.cursor.execute("""
-                       SELECT
-                           tool.name,
-                           task.uuid,
-                           task.id,
-                           task.participant,
-                           task.participants,
-                           lower(run.times),
-                           upper(run.times),
-                           task.json #> '{test}',
-                           run.uuid,
-                           run.part_data_full,
-                           scheduling_class.enum
-                       FROM
-                           run
-                           JOIN task ON task.id = run.task
-                           JOIN test ON test.id = task.test
-                           JOIN scheduling_class
-                                ON scheduling_class.id = test.scheduling_class
-                           JOIN tool ON tool.id = task.tool
-                       WHERE run.id = %s
-                       """, [self.id])
+
+        try:
+            self.cursor.execute("""
+                           SELECT
+                               tool.name,
+                               task.uuid,
+                               task.id,
+                               task.participant,
+                               task.participants,
+                               lower(run.times),
+                               upper(run.times),
+                               task.json #> '{test}',
+                               run.uuid,
+                               run.part_data_full,
+                               scheduling_class.enum
+                           FROM
+                               run
+                               JOIN task ON task.id = run.task
+                               JOIN test ON test.id = task.test
+                               JOIN scheduling_class
+                                    ON scheduling_class.id = test.scheduling_class
+                               JOIN tool ON tool.id = task.tool
+                           WHERE run.id = %s
+                           """, [self.id])
+        except Exception as ex:
+            self.log.error("%d: Failed to fetch run info: %s",
+                           self.id, str(ex))
+            return
+
 
         # Should get exactly one row back.  If not, the run probably
         # vanished.
@@ -565,15 +577,17 @@ def main_program():
             # Do this here to guarantee that we don't pick up rows for
             # runs we just started in the next iteration of the loop.
             if run_ids:
-                # TODO: Error check this.
                 log.debug("Putting runs on deck: %s", run_ids)
-                cursor.execute("""
-                               UPDATE run
-                               SET state = run_state_on_deck()
-                               WHERE
-                                   id in %s
-                                   AND state <> run_state_running()
-                               """, (tuple(run_ids),))
+                try:
+                    cursor.execute("""
+                                   UPDATE run
+                                   SET state = run_state_on_deck()
+                                   WHERE
+                                       id in %s
+                                       AND state = run_state_pending()
+                                   """, (tuple(run_ids),))
+                except Exception as ex:
+                    log.error("Unable to set on-deck status: %s")
 
 
         else:
