@@ -4,7 +4,7 @@
 
 Name:		pscheduler-core
 Version:	1.0
-Release:	0.12.rc1%{?dist}
+Release:	0.15.rc2%{?dist}
 
 Summary:	pScheduler Core Programs
 BuildArch:	noarch
@@ -32,8 +32,6 @@ Core programs for pScheduler
 %prep
 %setup -q
 
-%define profile_d %{_sysconfdir}/profile.d
-
 %build
 make \
      BINDIR=$RPM_BUILD_ROOT/%{_bindir} \
@@ -43,7 +41,6 @@ make \
      CLASSESINSTALLED=%{_pscheduler_classes} \
      INTERNALSDIR=$RPM_BUILD_ROOT/%{_pscheduler_internals} \
      INTERNALSINSTALLED=%{_pscheduler_internals} \
-     PROFILEDDIR=$RPM_BUILD_ROOT/%{profile_d} \
      TOOLCONFIGDIR=%{_pscheduler_tool_confdir} \
      install
 
@@ -54,4 +51,3 @@ make \
 %{_pscheduler_commands}
 %{_pscheduler_commands}/*
 %{_pscheduler_internals}/*
-%{profile_d}/*

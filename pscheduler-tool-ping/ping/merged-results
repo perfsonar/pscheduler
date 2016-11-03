@@ -12,7 +12,7 @@ input = pscheduler.json_load(exit_on_error=True);
 
 try:
     succeeded = input["results"][0]["result"]["succeeded"]
-except:
+except Exception as ex:
     succeeded = False
 
 results = {
@@ -20,15 +20,14 @@ results = {
     "succeeded": succeeded
 }
 
+
 if succeeded:
 
-    try:
-        for field in [ "loss", "max", "mean", "min", "roundtrips", "stddev", "lost", "duplicates", "received", "reorders", "sent" ]:
+    for field in [ "loss", "max", "mean", "min", "roundtrips", "stddev", "lost", "duplicates", "received", "reorders", "sent" ]:
+        try:
             results[field] = input["results"][0]["result"][field]
-    except:
-        results = {
-            "schema": 1,
-            "succeeded": False
-            }
+        except KeyError:
+            pass
+
 
 pscheduler.succeed_json(results)

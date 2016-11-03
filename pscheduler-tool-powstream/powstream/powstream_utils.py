@@ -85,7 +85,7 @@ def handle_run_error(msg, diags=None, do_log=True):
     }
     print pscheduler.json_dump(results)
     print pscheduler.api_result_delimiter()
-    print sys.stdout.flush()
+    sys.stdout.flush()
 
 ##
 # Calculates time to sleep or returns True if end time reached

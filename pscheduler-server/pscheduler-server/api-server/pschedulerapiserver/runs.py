@@ -230,7 +230,7 @@ def tasks_uuid_runs_run(task, run):
                     return error(str(ex))
                 if run is not None:
                     break
-                time.sleep(0.5)
+                time.sleep(1.0)
                 tries -= 1
 
             if run is None:
@@ -427,21 +427,31 @@ def tasks_uuid_runs_run(task, run):
             except ValueError:
                 return bad_request("Invalid result-full")
 
+            try:
+                succeeded = bool(run_data['succeeded'])
+            except KeyError:
+                return bad_request("Missing success value")
+            except ValueError:
+                return bad_request("Invalid success value")
+
             log.debug("Updating result-full: JSON %s", result_full)
             log.debug("Updating result-full: Run  %s", run)
             log.debug("Updating result-full: Task %s", task)
-
             try:
                 cursor = dbcursor_query("""
                               UPDATE
                                   run
                               SET
-                                  result_full = %s
+                                  result_full = %s,
+                                  state = CASE %s
+                                      WHEN TRUE THEN run_state_finished()
+                                      ELSE run_state_failed()
+                                      END
                               WHERE
                                   uuid = %s
                                   AND EXISTS (SELECT * FROM task WHERE UUID = %s)
                               """,
-                               [ result_full, run, task ])
+                               [ result_full, succeeded, run, task ])
             except Exception as ex:
                 log.exception()
                 return error(str(ex))

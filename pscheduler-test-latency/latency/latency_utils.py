@@ -23,6 +23,24 @@ def load_schema(schema_file):
     return schema
 
 '''
+print float
+'''
+def format_float(label, value, units="", default="Not Reported"):
+    prefix_length=22
+    output = label + " ..."
+    prefix_length -= len(output)
+    for i in range(0, prefix_length):
+        output += "."
+
+    if value:
+        output += " %.2f %s\n" % (value, units)
+    else:
+        output += " %s\n" % default
+    
+    return output
+
+
+'''
 Percentile: Used by histogram class to calculate percentiles using the NIST
 algorithm (http://www.itl.nist.gov/div898/handbook/prc/section2/prc252.htm)
 '''

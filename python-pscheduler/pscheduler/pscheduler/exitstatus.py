@@ -42,8 +42,7 @@ def succeed_json(result = None):
     """
     Exit with success, dumping JSON to stdout.
     """
-    if result is not None:
-        json.dump(result, sys.stdout)
-        print
+    json.dump(result, sys.stdout)
+    print
     exit(0)
 

@@ -5,7 +5,7 @@
 %define short	throughput
 Name:		pscheduler-test-%{short}
 Version:	1.0
-Release:	0.12.rc1%{?dist}
+Release:	0.15.rc2%{?dist}
 
 Summary:	Throughput test class for pScheduler
 BuildArch:	noarch
@@ -19,7 +19,7 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server
 Requires:	python-pscheduler
 Requires:	python-jsontemplate
-
+Requires:       numactl
 BuildRequires:	pscheduler-rpm
 
 

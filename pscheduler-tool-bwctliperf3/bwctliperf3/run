@@ -92,8 +92,10 @@ def run_client():
         bwctl_args.append(test_spec['mss'])
 
     if test_spec.has_key('omit') and test_spec['omit'] != None:
+        # convert from iso to seconds
+        omit_sec = int(pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(test_spec['omit'])))
         bwctl_args.append('-O')
-        bwctl_args.append(test_spec['omit'])
+        bwctl_args.append(omit_sec)
 
     if test_spec.has_key('bandwidth') and test_spec['bandwidth'] != None:
         bwctl_args.append('-b')
