@@ -2,7 +2,7 @@
 
 exec cat << EOF
 {
-    "name": "idlebg",
+    "name": "idlebgm",
     "description": "Consume time in the background - NOT FOR PRODUCTION",
     "version": "1.0",
     "maintainer": {
@@ -11,6 +11,6 @@ exec cat << EOF
 	"href": "http://www.perfsonar.net"
     },
 
-    "scheduling-class": "background"
+    "scheduling-class": "background-multi"
 }
 EOF

@@ -19,8 +19,19 @@ valid, message = spec_is_valid(json)
 if not valid:
     pscheduler.fail(message)
 
+
+participant = json.get("host", None)
+
+result = {
+    "participants": [ participant ]
+}
+
+if participant is None:
+    result["reason"] = "No host specified."
+
+
 try:
-    pscheduler.succeed_json([json["host"]])
+    pscheduler.succeed_json(result)
 except KeyError:
     # Default is the local host.
     pscheduler.succeed_json([None])

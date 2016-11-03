@@ -308,7 +308,7 @@ class RunWorker:
         tool, task_uuid, task_id, participant, participants, start, end, \
             test_spec, run_uuid, partdata, scheduling_class = row
 
-        # This will be used when a background run produces a result.
+        # This will be used when a background-multi run produces a result.
         self.task_id = task_id
 
         #
@@ -379,11 +379,11 @@ class RunWorker:
 
         self.log.debug("%d: Stored local result", self.id)
 
-        # The lead participant in non-background tasks takes care of
-        # gathering and merging the finished results.  Background
+        # The lead participant in non-background-multi tasks takes care of
+        # gathering and merging the finished results.  Background-multi
         # tasks take care of inserting their own results.
 
-        if participant == 0 and scheduling_class != "background":
+        if participant == 0 and scheduling_class != "background-multi":
 
             self.log.debug("%d: Doing lead participant duties", self.id)
 
@@ -522,7 +522,7 @@ def main_program():
                        SELECT
                            run,
                            start_in,
-                           FALSE as background
+                           FALSE as background_multi
                        FROM
                            schedule_upcoming
                        WHERE
@@ -534,14 +534,14 @@ def main_program():
                        SELECT
                            run.id AS run,
                            'PT1S'::INTERVAL AS start_in,
-                           TRUE as background
+                           TRUE as background_multi
                        FROM
                            run
                            JOIN task ON task.id = run.task
                            JOIN test ON test.id = task.test
                        WHERE
                            times @> normalized_now()
-                           AND test.scheduling_class = scheduling_class_background()
+                           AND test.scheduling_class = scheduling_class_background_multi()
                            AND run.state <> run_state_nonstart()
                        ) t ORDER BY start_in
                    """, [refresh]);
@@ -556,7 +556,7 @@ def main_program():
 
             for row in cursor:
 
-                run_id, start_in, background = row
+                run_id, start_in, background_multi = row
 
                 log.debug("Run %d, starts in %s", run_id, start_in)
 
@@ -569,7 +569,7 @@ def main_program():
                 # TODO: Hold this
                 worker = RunWorker(db, log, run_id, start_in)
 
-                if not background and start_in < wait_time:
+                if not background_multi and start_in < wait_time:
                     log.debug("Dropping wait time to %s", start_in)
                     wait_time = start_in
 
