@@ -150,10 +150,15 @@ opt_parser.add_option("--flow-label",
                       action="store", type="string",
                       dest="flow_label")
 
-opt_parser.add_option("--cpu-affinity",
-                      help="Set CPU affinity",
-                      action="store", type="string",
-                      dest="cpu_affinity")
+opt_parser.add_option("--client-cpu-affinity",
+                      help="Set's the sending side's CPU affinity",
+                      action="store", type="int",
+                      dest="client_cpu_affinity")
+
+opt_parser.add_option("--server-cpu-affinity",
+                      help="Set's the receiving's side's CPU affinity",
+                      action="store", type="int",
+                      dest="server_cpu_affinity")
 
 
 
@@ -260,8 +265,11 @@ if options.flow_label:
    result["flow-label"] = options.flow_label
    result["ip-version"] = 6 # flow label only works on ipv6
 
-if options.cpu_affinity:
-   result["cpu-affinity"] = options.cpu_affinity
+if options.client_cpu_affinity != None:
+   result["client-cpu-affinity"] = options.client_cpu_affinity
+
+if options.server_cpu_affinity != None:
+   result["server-cpu-affinity"] = options.server_cpu_affinity
 
 logger.debug("cli-to-spec -> %s" % result)
 

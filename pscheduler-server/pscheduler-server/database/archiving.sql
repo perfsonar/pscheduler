@@ -74,11 +74,14 @@ BEGIN
     END IF;
 
     -- Version 1 to version 2
-    --IF t_version = 1
-    --THEN
-    --    ALTER TABLE ...
-    --    t_version := t_version + 1;
-    --END IF;
+    -- Adds indexes for run and archiver to aid cascading deletes
+    IF t_version = 1
+    THEN
+        CREATE INDEX archiving_run ON archiving(run);
+        CREATE INDEX archiving_archiver ON archiving(archiver);
+
+        t_version := t_version + 1;
+    END IF;
 
 
     --

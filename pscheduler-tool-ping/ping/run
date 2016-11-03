@@ -391,7 +391,7 @@ result['succeeded'] = True
 
 #calculate some stats
 packets_seen = {}
-sent = 0
+sent = count
 recvd = 0
 dups = 0
 reorders = 0
@@ -401,8 +401,6 @@ for rt in roundtrips:
     if rt["seq"] in packets_seen:
         dups += 1
         continue
-    #increase sent
-    sent += 1
     
     #skip lost
     if rt.get('error', None):

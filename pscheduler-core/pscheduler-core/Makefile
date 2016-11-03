@@ -37,10 +37,6 @@ INTERNALS=\
 M4INTERNALS=\
 	list
 
-PROFILE_D=\
-	pscheduler.csh \
-	pscheduler.sh
-
 
 ALLPROGRAMS=$(PROGRAMS) $(M4PROGRAMS)
 ALLCOMMANDS=$(COMMANDS) $(M4COMMANDS)
@@ -96,18 +92,12 @@ ifndef INTERNALSDIR
 	@echo No INTERNALSDIR specified for installation
 	@false
 endif
-ifndef PROFILEDDIR
-	@echo No PROFILEDDIR specified for installation
-	@false
-endif
 	mkdir -p $(BINDIR)
 	install -m 555 $(ALLPROGRAMS) $(BINDIR)
 	mkdir -p $(COMMANDSDIR)
 	install -m 555 $(ALLCOMMANDS) $(COMMANDSDIR)
 	mkdir -p $(INTERNALSDIR)
 	install -m 555 $(ALLINTERNALS) $(INTERNALSDIR)
-	mkdir -p $(PROFILEDDIR)
-	install -m 444 $(PROFILE_D) $(PROFILEDDIR)
 
 
 clean:

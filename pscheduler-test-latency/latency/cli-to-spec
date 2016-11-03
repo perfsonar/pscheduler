@@ -105,10 +105,6 @@ opt_parser.add_option("-f", "--flip",
                       help="In multi-participant mode, have the dest start the client and request a reverse test. Useful in some firewall and NAT environments.",
                       action="store_true", dest="flip", default=False)
 
-opt_parser.add_option("-S", "--single-participant-mode",
-                      help="Do not coordinate with the remote side. Useful for cases where remote side is not running pScheduler but known to have necessary daemon for test.",
-                      action="store_true", dest="single_participant_mode", default=False)
-
 opt_parser.add_option("-R", "--output-raw",
                       help="Output individual packet statistics. This will substantially increase the size of a successful result.",
                       action="store_true", dest="output_raw", default=False)
@@ -166,9 +162,6 @@ if options.bucket_width is not None:
 
 if options.flip:
    result['flip'] = options.flip
-
-if options.single_participant_mode:
-   result['single-participant-mode'] = options.single_participant_mode
 
 if options.output_raw:
    result['output-raw'] = options.output_raw

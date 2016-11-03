@@ -79,10 +79,6 @@ REQUEST_SCHEMA = {
             "flip": {
                 "description": "In multi-participant mode, have the dest start the client and request a reverse test. Useful in some firewall and NAT environments.",
                 "$ref": "#/pScheduler/Boolean"
-            },
-            "single-participant-mode": {
-                "description": "Do not coordinate with the remote side. Useful for cases where remote side is not running pScheduler but known to have necessary daemon for test.",
-                "$ref": "#/pScheduler/Boolean"
             }
     
         },

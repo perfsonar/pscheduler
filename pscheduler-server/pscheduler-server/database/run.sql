@@ -109,11 +109,14 @@ BEGIN
     END IF;
 
     -- Version 1 to version 2
-    --IF t_version = 1
-    --THEN
-    --    ALTER TABLE ...
-    --    t_version := t_version + 1;
-    --END IF;
+    -- Adds indexes for task to aid cascading deletes
+    IF t_version = 1
+    THEN
+        CREATE INDEX run_task ON run(task);
+
+        t_version := t_version + 1;
+    END IF;
+
 
 
     --
@@ -278,28 +281,25 @@ BEGIN
 
     IF (TG_OP = 'UPDATE') THEN
 
-        -- Change the state automatically if the status from the run
-	-- changes.
-
-        IF (NEW.status IS NOT NULL) THEN
-
-            IF lower(NEW.times) > normalized_now() THEN
-  	        RAISE EXCEPTION 'Cannot set state on future runs. % / %', lower(NEW.times), normalized_now();
-	    END IF;
-
-            NEW.state := CASE NEW.status
-    	        WHEN 0 THEN run_state_finished()
-	        ELSE        run_state_failed()
-	        END;
-
-	    -- This serves to shorten the run if if didn't take the full duration
-            NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
-
-        END IF;
-
 	IF NOT run_state_transition_is_valid(OLD.state, NEW.state) THEN
             RAISE EXCEPTION 'Invalid transition between states (% to %).',
                 OLD.state, NEW.state;
+        END IF;
+
+	-- If the state of the run changes to finished or failed, trim
+	-- its scheduled time.
+
+	IF NEW.state <> OLD.state
+            AND NEW.state IN ( run_state_finished(), run_state_failed() ) THEN
+            NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
+        END IF;
+
+
+        -- Complain if the status changes when it shouldn't.
+
+        IF NEW.status IS NOT NULL AND NEW.status <> OLD.status
+           AND lower(NEW.times) > normalized_now() THEN
+            RAISE EXCEPTION 'Cannot set state on future runs. % / %', lower(NEW.times), normalized_now();
         END IF;
 
 	-- If the full result changed, update the merged version.

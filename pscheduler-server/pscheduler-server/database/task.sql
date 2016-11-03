@@ -155,6 +155,12 @@ BEGIN
         ALTER TABLE task ADD COLUMN
 	cli JSON;
 
+	-- Turn off triggers because the updates below bring out a bug
+	-- in the old version.  Can't just turn off task_alter because
+	-- it may not exist yet.
+
+        ALTER TABLE task DISABLE TRIGGER USER;
+
 	-- Calculate CLI for all existing tasks
 	FOR v1_2_record IN (SELECT * FROM task)
 	LOOP
@@ -162,13 +168,16 @@ BEGIN
 	        v1_2_record.json #>> '{test, type}', 'spec-to-cli'],
 		v1_2_record.json #>> '{test, spec}' );
 	    IF v1_2_run_result.status <> 0 THEN
-	        RAISE EXCEPTION 'Unable to divine CLI from spec id %: %',
-		  v1_2_run_result.id, v1_2_run_result.stderr;
+	        RAISE NOTICE 'Unable to divine CLI from spec id %: %',
+		  v1_2_run_result.status, v1_2_run_result.stderr;
+		v1_2_run_result.stdout := '[ "(CLI Unavailable)" ]';
 	    END IF;
 
 	    UPDATE TASK SET cli = v1_2_run_result.stdout::JSON
             WHERE id = v1_2_record.id;
 	END LOOP;
+
+        ALTER TABLE task ENABLE TRIGGER USER;
 
 	ALTER TABLE task
 	ALTER COLUMN cli SET NOT NULL;
@@ -190,6 +199,29 @@ BEGIN
 
         t_version := t_version + 1;
     END IF;
+
+
+    -- Version 3 to version 4
+    -- Adds indexes to aid cascading deletes
+    IF t_version = 3
+    THEN
+        CREATE INDEX task_test ON task(test);
+	CREATE INDEX task_tool ON task(tool);
+
+        t_version := t_version + 1;
+    END IF;
+
+    -- Version 4 to version 5
+    -- Adds 'post' column
+    IF t_version = 4
+    THEN
+        -- Amount of time to wait before a result might be available
+        ALTER TABLE task ADD COLUMN
+        post INTERVAL DEFAULT 'P0';
+
+        t_version := t_version + 1;
+    END IF;
+
 
 
     --
@@ -451,6 +483,11 @@ BEGIN
 	    END IF;
 	    temp_json := run_result.stdout::JSONB;
 	    NEW.duration := interval_round_up( (temp_json #>> '{duration}')::INTERVAL );
+	    -- This will come up NULL if not provided.
+	    NEW.post := interval_round_up( (temp_json #>> '{post}')::INTERVAL );
+	    IF NEW.post IS NULL THEN
+                NEW.post = 'P0'::INTERVAL;
+            END IF;
         END IF;
 
 	--
