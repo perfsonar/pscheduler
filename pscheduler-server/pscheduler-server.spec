@@ -44,7 +44,7 @@ Requires:	python-jsontemplate
 # API Server
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
-BuildRequires:	python-pscheduler
+BuildRequires:	python-pscheduler >= 1.1
 BuildRequires:	m4
 Requires:	httpd-wsgi-socket
 Requires:	pscheduler-server
@@ -53,7 +53,7 @@ Requires:	pscheduler-server
 # mod_ssl is required here.
 Requires:	mod_ssl
 Requires:	mod_wsgi
-Requires:	python-pscheduler
+Requires:	python-pscheduler >= 1.1
 Requires:	python-requests
 Requires:	pytz
 

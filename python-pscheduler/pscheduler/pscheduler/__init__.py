@@ -28,4 +28,5 @@ from .sinumber import *
 from .stringmatcher import *
 from .speccli import *
 from .text import *
+from .threadsafe import *
 from .interface import *
