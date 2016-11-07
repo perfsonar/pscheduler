@@ -223,6 +223,20 @@ BEGIN
     END IF;
 
 
+    -- Version 5 to version 6
+    -- Add proper default to uuid column
+    IF t_version = 5
+    THEN
+        ALTER TABLE task ALTER COLUMN uuid
+        DROP NOT NULL;
+
+        ALTER TABLE task ALTER COLUMN uuid
+        DROP SET DEFAULT gen_random_uuid();
+
+        t_version := t_version + 1;
+    END IF;
+
+
 
     --
     -- Cleanup

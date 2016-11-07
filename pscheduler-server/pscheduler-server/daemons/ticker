@@ -40,6 +40,10 @@ opt_parser.add_option("-r", "--retry",
                       help="No-rows-returned retry interval (ISO8601)",
                       action="store", type="string", dest="retry",
                       default="PT15S")
+opt_parser.add_option("--vacuum",
+                      help="Database vacuum/analyze interval (ISO8601)",
+                      action="store", type="string", dest="vacuum",
+                      default="P1D")
 opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
 opt_parser.add_option("--debug", action="store_true", dest="debug")
 
@@ -54,6 +58,11 @@ if pscheduler.timedelta_as_seconds(retry) == 0:
 
 
 dsn = options.dsn
+
+try:
+    vacuum_interval = pscheduler.iso8601_as_timedelta(options.vacuum)
+except ValueError:
+    opt_parser.error("Invalid vacuum interval; must be ISO8601")
 
 
 #
@@ -73,7 +82,20 @@ def main_program():
     cursor.execute("SELECT cold_boot()")
     log.debug("Booted")
 
+
+    # Assume the last vacuum was a very long time ago.
+    last_vacuum = pscheduler.time_epoch()
+
     while True:
+
+        # This has to be done outside the database.
+        if pscheduler.time_now() - last_vacuum > vacuum_interval:
+            log.debug("Vacuuming the database")
+            try:
+                cursor.execute("VACUUM ANALYZE")
+            except Exception as ex:
+                log.error("Failed to vacuum the database: %s" % str(ex))
+            last_vacuum = pscheduler.time_now()
 
         log.debug("Tick")
         cursor.execute("SELECT ticker()")

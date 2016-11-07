@@ -10,6 +10,6 @@ exec cat << EOF
 	"email": "perfsonar-developer@internet2.edu",
 	"href": "http://www.perfsonar.net"
     },
-    "scheduling-class": "normal"
+    "scheduling-class": "background"
 }
 EOF

@@ -35,20 +35,49 @@ fi
 # TODO: When we make databases remotable, this will need to pull
 # information from the DSN file.
 
-# TODO: This should probably be a stored procedure in the database
-# that calls a xxx_reset() for every table that has one.
 
-postgresql-load --role __ROLE__ <<EOF
-\c __DATABASE__
-DO \$\$
+# Tear down the existing database
+postgresql-load '__DATADIR__/database-teardown.sql'
+
+
+# Build up a new one
+postgresql-load '__DATADIR__/database-build-super.sql'
+postgresql-load --role '__ROLE__' '__DATADIR__/database-build.sql'
+
+
+# Restore the password
+if ! [ -f '__PASSWORDFILE__' -a -r '__PASSWORDFILE__' ]
+then
+    echo "Can't read password from __PASSWORDFILE__"
+    exit 1
+fi
+
+(
+    printf "ALTER ROLE __ROLE__ WITH UNENCRYPTED PASSWORD '"
+    tr -d "\n" < '__PASSWORDFILE__'
+    printf "';\n"
+) | postgresql-load
+
+
+# If the ticker is running, it will restart and do this, but in case
+# it isn't, make sure everything is in order.
+#
+# TODO: This will have to be a separate program once the database
+# remotable.
+
+postgresql-load --role '__ROLE__' <<EOF
+\c pscheduler
+DO \$$
 BEGIN
-    DELETE FROM task;
-    DELETE FROM http_queue;
-    PERFORM warm_boot();
+    PERFORM cold_boot();
 END;
-\$\$ LANGUAGE plpgsql;
+\$$
 EOF
+
 
 
 [ -t 0 -a -t 1 -a -t 2 ] \
     && printf " Done.  Hope you meant to do that.\n\n"
+
+
+exit 0

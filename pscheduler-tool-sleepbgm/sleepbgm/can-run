@@ -14,7 +14,7 @@ json = pscheduler.json_load(exit_on_error=True);
 # TODO: Should be checking the package schema and the task spec schema.
 
 try:
-    if json['type'] != 'idlebg' :
+    if json['type'] != 'idlebgm' :
         pscheduler.fail('Unsupported test type')
 except KeyError:
     pscheduler.fail('Missing test type')

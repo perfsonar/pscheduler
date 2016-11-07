@@ -5,7 +5,7 @@
 %define short	paris-traceroute
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.14.rc1%{?dist}
+Release:	0.16.rc2%{?dist}
 
 Summary:	pScheduler Paris Traceroute Tool
 BuildArch:	noarch
