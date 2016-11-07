@@ -231,7 +231,7 @@ BEGIN
         DROP NOT NULL;
 
         ALTER TABLE task ALTER COLUMN uuid
-        DROP SET DEFAULT gen_random_uuid();
+        SET DEFAULT gen_random_uuid();
 
         t_version := t_version + 1;
     END IF;
