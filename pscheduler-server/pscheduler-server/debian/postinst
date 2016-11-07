@@ -27,6 +27,9 @@ case "$1" in
             dbc_go pscheduler-server $@
         fi
 
+        # release debconf descriptor
+        db_stop
+
         # update database passwords
         if [ -r /etc/dbconfig-common/pscheduler-server.conf ]; then
             (
@@ -45,9 +48,6 @@ case "$1" in
                                       /etc/pscheduler/database/pgpassfile
             )
         fi
-
-        # release debconf descriptor
-        db_stop
 
         # apache setup
         if [ -e /usr/share/apache2/apache2-maintscript-helper ] ; then

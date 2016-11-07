@@ -21,12 +21,6 @@ set -e
 
 case "$1" in
     purge)
-        . /usr/share/debconf/confmodule
-        if [ -f /usr/share/dbconfig-common/dpkg/postrm.pgsql ]; then
-            . /usr/share/dbconfig-common/dpkg/postrm.pgsql
-            dbc_go pscheduler-server $@
-        fi
-
         rm  -f /etc/pscheduler/database/database-password \
                /etc/pscheduler/database/database-dsn \
                /etc/pscheduler/database/pgpassfile
@@ -35,6 +29,12 @@ case "$1" in
         if ! [ -e /usr/share/apache2/apache2-maintscript-helper ]; then
             rm -f /etc/apache2/conf.d/pscheduler-server.conf
             service apache2 reload >/dev/null || true
+        fi
+
+        . /usr/share/debconf/confmodule
+        if [ -f /usr/share/dbconfig-common/dpkg/postrm.pgsql ]; then
+            . /usr/share/dbconfig-common/dpkg/postrm.pgsql
+            dbc_go pscheduler-server $@
         fi
     ;;
 
