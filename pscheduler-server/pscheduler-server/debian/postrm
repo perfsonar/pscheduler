@@ -21,16 +21,16 @@ set -e
 
 case "$1" in
     purge)
+        rm  -f /etc/pscheduler/database/database-password \
+               /etc/pscheduler/database/database-dsn \
+               /etc/pscheduler/database/pgpassfile
+        rm -rf /var/log/pscheduler
+
         . /usr/share/debconf/confmodule
         if [ -f /usr/share/dbconfig-common/dpkg/postrm.pgsql ]; then
             . /usr/share/dbconfig-common/dpkg/postrm.pgsql
             dbc_go pscheduler-server $@
         fi
-
-        rm  -f /etc/pscheduler/database/database-password \
-               /etc/pscheduler/database/database-dsn \
-               /etc/pscheduler/database/pgpassfile
-        rm -rf /var/log/pscheduler
     ;;
 
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
