@@ -57,13 +57,13 @@ then
     iptables -I INPUT $(expr ${INPUT_LENGTH} + 1 ) \
         -p udp -m state --state NEW -m udp --dport 5101 -j ACCEPT
     iptables -I INPUT $(expr ${INPUT_LENGTH} + 1 ) \
-        -p tcp -m state --state NEW -m tcp --dport 5000 -j ACCEPT
+        -p tcp -m state --state NEW -m tcp --dport 5001 -j ACCEPT
     service iptables save
 %endif
 %if 0%{?el7}
     firewall-cmd -q --add-port=5101/tcp --permanent
     firewall-cmd -q --add-port=5101/udp --permanent
-    firewall-cmd -q --add-port=5000/tcp --permanent
+    firewall-cmd -q --add-port=5001/tcp --permanent
     systemctl restart firewalld
 %endif
 fi
@@ -79,14 +79,14 @@ then
     iptables -D INPUT \
         -p udp -m state --state NEW -m udp --dport 5101 -j ACCEPT
     iptables -D INPUT \
-        -p tcp -m state --state NEW -m tcp --dport 5000 -j ACCEPT
+        -p tcp -m state --state NEW -m tcp --dport 5001 -j ACCEPT
     # TODO: Make this use systemd on CentOS 7
     service iptables save
 %endif
 %if 0%{?el7}
     firewall-cmd -q --remove-port=5101/tcp --permanent
     firewall-cmd -q --remove-port=5101/udp --permanent
-    firewall-cmd -q --remove-port=5000/tcp --permanent
+    firewall-cmd -q --remove-port=5001/tcp --permanent
     systemctl restart firewalld
 %endif
 fi
