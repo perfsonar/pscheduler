@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -e
+
+pscheduler internal nothing 2>&1

@@ -1,4 +1,5 @@
-#!/bin/sh -e
+#!/bin/sh
 
-pscheduler diags > $AUTOPKGTEST_TMP/output
-grep -C 20 INSTALLED $AUTOPKGTEST_TMP/output
+set -e
+
+pscheduler diags
