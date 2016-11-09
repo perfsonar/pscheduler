@@ -191,6 +191,7 @@ BEGIN
 
     SELECT INTO horizon schedule_horizon FROM configurables;
     IF taskrec.scheduling_class <> scheduling_class_background()
+       AND taskrec.scheduling_class <> scheduling_class_background_multi()
        AND (upper(NEW.times) - now()) > horizon THEN
         RAISE EXCEPTION 'Cannot schedule runs more than % in advance', horizon;
     END IF;
@@ -434,6 +435,7 @@ BEGIN
         SELECT id FROM run_straggler_info
         WHERE
             scheduling_class <> scheduling_class_background()
+            AND scheduling_class <> scheduling_class_background_multi()
             AND state IN ( run_state_pending(), run_state_on_deck() )
             AND normalized_now() > upper(times)
     );
@@ -446,6 +448,7 @@ BEGIN
         SELECT id FROM run_straggler_info
         WHERE
             scheduling_class <> scheduling_class_background()
+            AND scheduling_class <> scheduling_class_background_multi()
             AND state = run_state_running()
             -- TODO: This interval should probably be a tunable.
             AND upper(times) < normalized_now() - 'PT10S'::interval
@@ -460,6 +463,7 @@ BEGIN
         SELECT id FROM run_straggler_info
         WHERE
             scheduling_class <> scheduling_class_background()
+            AND scheduling_class <> scheduling_class_background_multi()
             AND state = run_state_overdue()
             -- TODO: This interval should probably be a tunable.
             AND upper(times) < normalized_now() - 'PT1M'::interval
