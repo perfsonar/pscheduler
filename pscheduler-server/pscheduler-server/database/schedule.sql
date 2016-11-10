@@ -176,6 +176,7 @@ AS
         AND (
             trynext + duration < (normalized_now() + schedule_horizon)
             OR scheduling_class = scheduling_class_background()
+            OR scheduling_class = scheduling_class_background_multi()
         )
     ORDER BY added
 ;
@@ -343,11 +344,12 @@ BEGIN
     -- runs we care about avoiding are represented by this truth
     -- table:
     --
-    -- Proposed  ||   Run on Timeline  |
-    -- Run       || Normal | Exclusive |
-    -- ----------++--------+-----------+
-    -- Normal    || Ignore |   Avoid   |
-    -- Exclusive || Avoid  |   Avoid   |
+    -- Proposed  ||         Run on Timeline         |
+    -- Run       || Background | Normal | Exclusive |
+    -- ----------++------------+--------+-----------+
+    -- Background|| Ignore     | Ignore |   Ignore  |
+    -- Normal    || Ignore     | Ignore |   Avoid   |
+    -- Exclusive || Ignore     | Avoid  |   Avoid   |
 
     FOR run_record IN
         SELECT run.*
@@ -362,6 +364,8 @@ BEGIN
 	    times && time_range
             -- Ignore non-starters
             AND state <> run_state_nonstart()
+            -- Ignore background
+            AND NOT scheduling_class.anytime
             AND (
                 -- Always avoid exclusive runs
                 (scheduling_class.exclusive)

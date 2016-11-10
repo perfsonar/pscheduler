@@ -84,7 +84,7 @@ $$ LANGUAGE plpgsql;
 -- Functions that encapsulate the numeric values for each state
 --
 
-CREATE OR REPLACE FUNCTION scheduling_class_background()
+CREATE OR REPLACE FUNCTION scheduling_class_background_multi()
 RETURNS INTEGER
 AS $$
 BEGIN
@@ -105,6 +105,15 @@ RETURNS INTEGER
 AS $$
 BEGIN
 	RETURN 3;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION scheduling_class_background()
+RETURNS INTEGER
+AS $$
+BEGIN
+	RETURN 4;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -133,9 +142,10 @@ ON scheduling_class
 ALTER TABLE scheduling_class DISABLE TRIGGER scheduling_class_alter;
 INSERT INTO scheduling_class (id, display, enum, anytime, exclusive, multi_result)
 VALUES
-    (scheduling_class_background(), 'Background', 'background', TRUE,  FALSE, TRUE),
-    (scheduling_class_exclusive(),  'Exclusive',  'exclusive',  FALSE, TRUE,  FALSE),
-    (scheduling_class_normal(),     'Normal',     'normal',     FALSE, FALSE, FALSE)
+    (scheduling_class_background_multi(), 'Background Multi', 'background-multi', TRUE,  FALSE, TRUE ),
+    (scheduling_class_background(),       'Background',       'background',       TRUE,  FALSE, FALSE),
+    (scheduling_class_exclusive(),        'Exclusive',        'exclusive',        FALSE, TRUE,  FALSE),
+    (scheduling_class_normal(),           'Normal',           'normal',           FALSE, FALSE, FALSE)
 ON CONFLICT (id) DO UPDATE
 SET
     display = EXCLUDED.display,

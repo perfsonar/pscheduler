@@ -5,6 +5,7 @@
 #
 
 import datetime
+import pytz
 
 from dateutil.tz import tzlocal
 
@@ -37,6 +38,13 @@ def timedelta_is_zero(timedelta):
 #
 # Time in General
 #
+
+def time_epoch():
+    """
+    Return the date and time of the Unix epoch
+    """
+    return datetime.datetime.fromtimestamp(0, pytz.utc)
+
 
 def time_now():
     """

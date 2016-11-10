@@ -90,7 +90,7 @@ pscheduler-server
 
 # Tests
 pscheduler-test-idle
-pscheduler-test-idlebg
+pscheduler-test-idlebgm
 pscheduler-test-idleex
 pscheduler-test-latency
 pscheduler-test-latencybg
@@ -112,7 +112,7 @@ pscheduler-tool-bwctltraceroute
 pscheduler-tool-bwctltracepath
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
-pscheduler-tool-sleepbg
+pscheduler-tool-sleepbgm
 pscheduler-tool-snooze
 pscheduler-tool-ping
 pscheduler-tool-tracepath
@@ -124,6 +124,9 @@ pscheduler-archiver-bitbucket
 pscheduler-archiver-esmond
 pscheduler-archiver-failer
 pscheduler-archiver-syslog
+
+# Misc.
+pscheduler-docs
 
 
 # Bundles

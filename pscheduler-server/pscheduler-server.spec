@@ -8,7 +8,7 @@
 
 Name:		pscheduler-server
 Version:	1.0
-Release:	0.15.rc2%{?dist}
+Release:	0.16.rc2%{?dist}
 
 Summary:	pScheduler Server
 BuildArch:	noarch
@@ -29,7 +29,7 @@ Requires:	postgresql-load
 Requires:	pscheduler-account
 Requires:	pscheduler-core
 Requires:	pscheduler-database-init
-Requires:	random-string
+Requires:	random-string >= 1.1
 
 # Daemons
 BuildRequires:	m4
@@ -44,7 +44,7 @@ Requires:	python-jsontemplate
 # API Server
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
-BuildRequires:	python-pscheduler
+BuildRequires:	python-pscheduler >= 1.1
 BuildRequires:	m4
 Requires:	httpd-wsgi-socket
 Requires:	pscheduler-server
@@ -53,7 +53,7 @@ Requires:	pscheduler-server
 # mod_ssl is required here.
 Requires:	mod_ssl
 Requires:	mod_wsgi
-Requires:	python-pscheduler
+Requires:	python-pscheduler >= 1.1
 Requires:	python-requests
 Requires:	pytz
 
@@ -112,6 +112,8 @@ false
 #
 make -C database \
      DATABASE=%{db_user} \
+     DATADIR=%{_pscheduler_datadir} \
+     PASSWORDFILE=%{password_file} \
      ROLE=%{db_user} \
      PGPASSFILE=$RPM_BULID_ROOT/%{pgpass_file}
 

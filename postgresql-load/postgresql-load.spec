@@ -12,7 +12,7 @@ BuildArch:	noarch
 License:	Apache 2.0
 Group:		Unspecified
 Vendor:		perfSONAR Development Team
-URL:		http://www.perfsonar.org
+URL:		http://www.perfsonar.net
 
 Source0:	%{name}-%{version}.tar.gz
 
