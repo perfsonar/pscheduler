@@ -56,6 +56,9 @@ case "$1" in
             apache2_invoke ensite default-ssl || echo $?
             apache2_invoke enconf pscheduler-server.conf || echo $?
         fi
+
+        # rsyslog config update
+        service rsyslog restart
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

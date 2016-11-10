@@ -26,6 +26,9 @@ case "$1" in
                /etc/pscheduler/database/pgpassfile
         rm -rf /var/log/pscheduler
 
+        # rsyslog config removed
+        service rsyslog restart
+
         . /usr/share/debconf/confmodule
         if [ -f /usr/share/dbconfig-common/dpkg/postrm.pgsql ]; then
             . /usr/share/dbconfig-common/dpkg/postrm.pgsql

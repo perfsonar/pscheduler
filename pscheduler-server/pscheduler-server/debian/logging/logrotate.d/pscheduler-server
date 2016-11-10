@@ -1,0 +1,13 @@
+/var/log/pscheduler/pscheduler.log
+{
+    weekly
+    rotate 4
+    notifempty
+    compress
+    delaycompress
+    missingok
+    sharedscripts
+    postrotate
+        invoke-rc.d rsyslog rotate > /dev/null
+    endscript
+}
