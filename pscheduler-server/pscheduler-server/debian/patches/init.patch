@@ -1,8 +1,6 @@
-Index: pscheduler-server/daemons/init.d-template.m4
-===================================================================
---- pscheduler-server.orig/daemons/init.d-template.m4
-+++ pscheduler-server/daemons/init.d-template.m4
-@@ -10,8 +10,10 @@ changecom()dnl
+--- a/daemons/init.d-template.m4
++++ b/daemons/init.d-template.m4
+@@ -10,8 +10,10 @@
  
  ### BEGIN INIT INFO
  # Provides: pscheduler-__PROG__
@@ -15,14 +13,14 @@ Index: pscheduler-server/daemons/init.d-template.m4
  # Short-Description: Run pscheduler __PROG__
  # Description: pScheduler __PROG__ daemon
  ### END INIT INFO
-@@ -25,17 +27,16 @@ config=__DSN__
+@@ -25,17 +27,16 @@
  proguser=__PSUSER__
  
  pidfile=__VAR__/run/pscheduler-$prog.pid
 -lockfile=__VAR__/lock/subsys/$proc
  
  # TODO: Should probably rotate this, but should almost always be empty.
- logfile=__LOGDIR__/$prog.log
+ logfile=__LOGDIR__/$prog.out
  
  # Source function library.
 -. /etc/rc.d/init.d/functions
@@ -35,7 +33,7 @@ Index: pscheduler-server/daemons/init.d-template.m4
  
  start() {
      if [ $UID -ne 0 ] ; then
-@@ -44,9 +45,9 @@ start() {
+@@ -44,9 +45,9 @@
      fi
      [ -x $exec ] || exit 5
      [ -f $config ] || exit 6
@@ -47,7 +45,7 @@ Index: pscheduler-server/daemons/init.d-template.m4
      if [ ! -s "$logfile" ] ; then
          echo "(This file should be empty unless there's a catastrophic failure.)" >> "$logfile"
      fi
-@@ -54,26 +55,24 @@ start() {
+@@ -54,26 +55,24 @@
         -c "$exec --daemon --pid-file '$pidfile' --dsn '@$config'" \
  	>> "$logfile" 2>&1 &
      retval=$?
@@ -83,7 +81,7 @@ Index: pscheduler-server/daemons/init.d-template.m4
  }
  
  restart()
-@@ -82,9 +81,8 @@ restart()
+@@ -82,9 +81,8 @@
      start
  }
  
@@ -94,7 +92,7 @@ Index: pscheduler-server/daemons/init.d-template.m4
          $1
          ;;
  
-@@ -93,7 +91,7 @@ case "$1" in
+@@ -93,7 +91,7 @@
          ;;
  
      *)

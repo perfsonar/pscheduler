@@ -7,8 +7,8 @@
 -                                       diags = diags || (%s::JSONB)
 +                                       diags = %s
                                       WHERE id = %s""",
-                                       [ attempt, run_id ])
-                 pass  # TODO: Update with diags
+                                   [ attempt, run_id ])
+ 
 @@ -359,7 +359,7 @@
                                               attempts = attempts + 1,
                                               last_attempt = now(),
@@ -16,14 +16,14 @@
 -                                             diags = diags || (%s::JSONB)
 +                                             diags = %s
                                           WHERE id = %s""",
-                                           [ attempt, run_id ])
+                                       [ attempt, run_id ])
  
-@@ -384,7 +384,7 @@
+@@ -385,7 +385,7 @@
                                                   attempts = attempts + 1,
                                                   last_attempt = now(),
                                                   next_attempt = %s,
 -                                                 diags = diags || (%s::JSONB)
 +                                                 diags = %s
                                               WHERE id = %s""",
-                                               [ next, attempt, run_id ])
+                                           [ next, attempt, run_id ])
  
