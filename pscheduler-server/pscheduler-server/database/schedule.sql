@@ -175,7 +175,6 @@ AS
 	-- Anything that fits the scheduling horizon or is a backgrounder
         AND (
             trynext + duration < (normalized_now() + schedule_horizon)
-            OR scheduling_class = scheduling_class_background()
             OR scheduling_class = scheduling_class_background_multi()
         )
     ORDER BY added
