@@ -20,7 +20,7 @@
 -lockfile=__VAR__/lock/subsys/$proc
  
  # TODO: Should probably rotate this, but should almost always be empty.
- logfile=__LOGDIR__/$prog.log
+ logfile=__LOGDIR__/$prog.out
  
  # Source function library.
 -. /etc/rc.d/init.d/functions
@@ -45,7 +45,7 @@
      if [ ! -s "$logfile" ] ; then
          echo "(This file should be empty unless there's a catastrophic failure.)" >> "$logfile"
      fi
-@@ -54,26 +55,23 @@
+@@ -54,26 +55,24 @@
         -c "$exec --daemon --pid-file '$pidfile' --dsn '@$config'" \
  	>> "$logfile" 2>&1 &
      retval=$?
@@ -60,16 +60,16 @@
          echo "User has insufficient privilege."
          exit 4
      fi
--    echo -n $"Stopping pScheduler $prog: "
++    log_daemon_msg "Stopping pScheduler $prog" "pscheduler-$prog"
+     echo -n $"Stopping pScheduler $prog: "
 -        if [ -s "$pidfile" ]; then
 -	    kill $(cat $pidfile) || failure "Stopping pScheduler $prog"
 -	    sleep 3
 -	    kill -9 $(cat $pidfile) 2> /dev/null || :
 -	    rm -f $pidfile
 -	fi
-+    log_daemon_msg "Stopping pScheduler $prog" "pscheduler-$prog"
 +    if [ -s "$pidfile" ]; then
-+        kill $(cat $pidfile)
++        kill $(cat $pidfile) || failure "Stopping pScheduler $prog"
 +        sleep 3
 +        kill -9 $(cat $pidfile) 2> /dev/null || :
 +        rm -f $pidfile
@@ -81,7 +81,7 @@
  }
  
  restart()
-@@ -82,18 +80,17 @@
+@@ -82,9 +81,8 @@
      start
  }
  
@@ -92,9 +92,7 @@
          $1
          ;;
  
-     status)
--        status -p ${pidfile} $exec
-+        status_of_proc -p ${pidfile} $exec "pscheduler-$prog"
+@@ -93,7 +91,7 @@
          ;;
  
      *)
