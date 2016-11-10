@@ -31,6 +31,9 @@ case "$1" in
             service apache2 reload >/dev/null || true
         fi
 
+        # rsyslog config removed
+        service rsyslog restart
+
         . /usr/share/debconf/confmodule
         if [ -f /usr/share/dbconfig-common/dpkg/postrm.pgsql ]; then
             . /usr/share/dbconfig-common/dpkg/postrm.pgsql

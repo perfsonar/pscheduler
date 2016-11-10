@@ -62,6 +62,9 @@ case "$1" in
             a2ensite -q default-ssl
             service apache2 restart
         fi
+
+        # rsyslog config update
+        service rsyslog restart
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
