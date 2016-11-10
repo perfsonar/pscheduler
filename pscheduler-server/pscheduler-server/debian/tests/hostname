@@ -2,5 +2,5 @@
 
 set -e
 
-curl --silent --insecure https://localhost/pscheduler/hostname | \
-  grep --context=20 '^".*"$'
+curl -k -s https://localhost/pscheduler/hostname | \
+grep -C 20 '^".*"$'
