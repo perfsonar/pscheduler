@@ -15,7 +15,7 @@ import time
 import pytz
 from powstream_defaults import *
 from powstream_utils import get_config, parse_raw_owamp_output, cleanup_dir, cleanup_file, handle_run_error, sleep_or_end, graceful_exit
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, call
 
 #track when this run starts - make sure it is aware that it is UTC
 start_time = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
@@ -192,7 +192,7 @@ while True:
         #cleanup an previous runs - i really don't trust powstream
         try:
             #kill anything referencing our data_dir
-            Popen([pkill_cmd, '-9', '-f', data_dir ], stdout=PIPE, stderr=PIPE, shell=False)
+            call([pkill_cmd, '-9', '-f', data_dir ], shell=False)
         except:
             #best effort clean-up
             pass

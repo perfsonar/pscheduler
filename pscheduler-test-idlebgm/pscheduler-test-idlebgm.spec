@@ -1,13 +1,13 @@
 #
-# RPM Spec for pScheduler Background Sleep Tool
+# RPM Spec for pScheduler Idle Background-Multi Test
 #
 
-%define short	sleepbg
-Name:		pscheduler-tool-%{short}
+%define short	idlebgm
+Name:		pscheduler-test-%{short}
 Version:	1.0
-Release:	0.15.rc2%{?dist}
+Release:	0.16.rc2%{?dist}
 
-Summary:	Background Sleep tool class for pScheduler
+Summary:	Idle Background-Multi test class for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0
 Group:		Unspecified
@@ -18,31 +18,32 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
 Requires:	python-pscheduler
-Requires:	pscheduler-test-idle
 
 BuildRequires:	pscheduler-rpm
 
 
 %description
-Background Sleep tool class for pScheduler
+Idle test class for pScheduler that runs in the background and
+produces multiple results.
 
 
 %prep
 %setup -q -n %{short}-%{version}
 
 
-%define dest %{_pscheduler_tool_libexec}/%{short}
+%define dest %{_pscheduler_test_libexec}/%{short}
 
 %build
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
-     DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_tool_doc} \
+     DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_test_doc} \
      install
 
 
 
 %post
 pscheduler internal warmboot
+
 
 %postun
 pscheduler internal warmboot
@@ -51,4 +52,4 @@ pscheduler internal warmboot
 %files
 %defattr(-,root,root,-)
 %{dest}
-%{_pscheduler_tool_doc}/*
+%{_pscheduler_test_doc}/*

@@ -8,7 +8,7 @@ import time
 def safe_run(function,
              name=None,
              backoff=0.25,     # Backoff time increment
-             backoff_max=900,  # Longest allowable backoff
+             backoff_max=60,   # Longest allowable backoff
              restart=True      # Call again if the function returns
              ):
 

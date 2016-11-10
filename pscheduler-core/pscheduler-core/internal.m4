@@ -54,6 +54,8 @@ case "${COMMAND}" in
 
     *)
 	INTERNAL_COMMAND="__INTERNALS__/${COMMAND}"
+	[ -f "${INTERNAL_COMMAND}" -a ! -x "${INTERNAL_COMMAND}" ] \
+	    && die "${COMMAND}: Permission denied."
 	[ -x "${INTERNAL_COMMAND}" ] && exec "${INTERNAL_COMMAND}" "$@"	   
 	die "Usage: ${WHOAMI} command [args]"
 	;;

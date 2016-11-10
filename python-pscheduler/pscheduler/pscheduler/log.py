@@ -14,11 +14,36 @@ import traceback
 
 # Logging Constants
 
+# Priorities
 DEBUG = logging.DEBUG
 INFO = logging.INFO
 WARNING = logging.WARNING
 ERROR = logging.ERROR
 CRITICAL = logging.CRITICAL
+
+
+# Facilities
+## use getattr because this list is generated from syslog.h and may differ between systems.
+auth = getattr(logging.handlers.SysLogHandler, "LOG_AUTH", None)
+authpriv = getattr(logging.handlers.SysLogHandler, "LOG_AUTHPRIV", None)
+cron = getattr(logging.handlers.SysLogHandler, "LOG_CRON", None)
+daemon = getattr(logging.handlers.SysLogHandler, "LOG_DAEMON", None)
+ftp = getattr(logging.handlers.SysLogHandler, "LOG_FTP", None)
+kern = getattr(logging.handlers.SysLogHandler, "LOG_KERN", None)
+lpr = getattr(logging.handlers.SysLogHandler, "LOG_LPR", None)
+mail = getattr(logging.handlers.SysLogHandler, "LOG_MAIL", None)
+news = getattr(logging.handlers.SysLogHandler, "LOG_NEWS", None)
+syslog = getattr(logging.handlers.SysLogHandler, "LOG_SYSLOG", None)
+user = getattr(logging.handlers.SysLogHandler, "LOG_USER", None)
+uucp = getattr(logging.handlers.SysLogHandler, "LOG_UUCP", None)
+local0 = getattr(logging.handlers.SysLogHandler, "LOG_LOCAL0", None)
+local1 = getattr(logging.handlers.SysLogHandler, "LOG_LOCAL1", None)
+local2 = getattr(logging.handlers.SysLogHandler, "LOG_LOCAL2", None)
+local3 = getattr(logging.handlers.SysLogHandler, "LOG_LOCAL3", None)
+local4 = getattr(logging.handlers.SysLogHandler, "LOG_LOCAL4", None)
+local5 = getattr(logging.handlers.SysLogHandler, "LOG_LOCAL5", None)
+local6 = getattr(logging.handlers.SysLogHandler, "LOG_LOCAL6", None)
+local7 = getattr(logging.handlers.SysLogHandler, "LOG_LOCAL7", None)
 
 
 # Internal-use name of environment variable
@@ -44,6 +69,7 @@ class Log():
                  name=None,     # Name for log entries
                  prefix=None,   # Prefix for name (e.g., prefix/progname)
                  level=INFO,    # Logging level
+                 facility=local5, # Log facility
                  debug=False,   # Force level to DEBUG
                  verbose=False, # Log to stderr, too.
                  quiet=False,   # Don't log anything on startup
@@ -77,6 +103,31 @@ class Log():
         self.forced_debug = False
 
         #
+        # Inherit state from the environment 
+        #
+
+        if STATE_VARIABLE in os.environ:
+
+            try:
+                depickled = pickle.loads(os.environ[STATE_VARIABLE])
+
+                facility = depickled['facility']
+                assert type(facility) == int
+
+                level = depickled['last_level']
+                assert type(level) == int
+
+                self.forced_debug = depickled['forced_debug']
+                assert type(self.forced_debug) == bool
+
+                self.is_quiet = depickled['is_quiet']
+                assert type(self.is_quiet) == bool
+
+            except Exception as ex:
+                self.exception("Failed to decode %s '%s'" \
+                                   % (STATE_VARIABLE, os.environ[STATE_VARIABLE]))
+
+        #
         # Set up the logger
         #
 
@@ -84,7 +135,8 @@ class Log():
         self.logger.propagate = False
 
         # Syslog
-        self.syslog_handler = logging.handlers.SysLogHandler('/dev/log')
+        self.syslog_handler = logging.handlers.SysLogHandler('/dev/log', facility=facility)
+        self.facility = facility
         self.syslog_handler.setFormatter(
             logging.Formatter(
                 fmt = '%(name)s %(levelname)-8s %(message)s'
@@ -102,29 +154,6 @@ class Log():
                 )
             )
         # Don't add this handler; verbose will cover it.
-
-        #
-        # Inherit state from the environment 
-        #
-
-        if STATE_VARIABLE in os.environ:
-
-            try:
-                depickled = pickle.loads(os.environ[STATE_VARIABLE])
-
-                level = depickled['last_level']
-                assert type(level) == int
-
-                self.forced_debug = depickled['forced_debug']
-                assert type(self.forced_debug) == bool
-
-                self.is_quiet = depickled['is_quiet']
-                assert type(self.is_quiet) == bool
-
-            except Exception as ex:
-                self.exception("Failed to decode %s '%s'" \
-                                   % (STATE_VARIABLE, os.environ[STATE_VARIABLE]))
-
 
         #
         # Get everything set to go
@@ -158,6 +187,7 @@ class Log():
         if self.is_propagating:
             to_pickle = {
                 'forced_debug': self.forced_debug,
+                'facility': self.facility,
                 'last_level': self.last_level,
                 'is_quiet': self.is_quiet
                 }
@@ -178,6 +208,14 @@ class Log():
 
         self.is_verbose = state
 
+
+    def facility(self, facility):
+        "Set the log level"
+        assert level in [ DEBUG, INFO, WARNING, ERROR, CRITICAL ]
+        self.logger.setLevel(level)
+        if save:
+            self.last_level = level
+        self.__update_env()
 
 
     def level(self, level, save=True):

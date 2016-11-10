@@ -28,7 +28,7 @@ pidfile=__VAR__/run/pscheduler-$prog.pid
 lockfile=__VAR__/lock/subsys/$proc
 
 # TODO: Should probably rotate this, but should almost always be empty.
-logfile=__LOGDIR__/$prog.log
+logfile=__LOGDIR__/$prog.out
 
 # Source function library.
 . /etc/rc.d/init.d/functions

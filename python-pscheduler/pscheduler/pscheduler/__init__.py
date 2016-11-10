@@ -6,6 +6,7 @@ from .api import *
 from .clockstate import *
 from .db import *
 from .durationrange import *
+from .exit import *
 from .exitstatus import *
 from .enummatcher import *
 from .failopt import *
@@ -28,4 +29,5 @@ from .sinumber import *
 from .stringmatcher import *
 from .speccli import *
 from .text import *
+from .threadsafe import *
 from .interface import *
