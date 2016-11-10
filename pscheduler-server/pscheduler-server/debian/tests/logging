@@ -5,6 +5,6 @@ set -e
 ls -l /var/log/pscheduler/
 test -s /var/log/pscheduler/pscheduler.log
 
-logrotate -v -f /etc/logrotate.d/pscheduler-server
+logrotate -v -f /etc/logrotate.d/pscheduler-server 2>&1
 ls -l /var/log/pscheduler/
 test -s /var/log/pscheduler/pscheduler.log.1
