@@ -107,11 +107,11 @@ BEGIN
 
     -- Start an archive if conditions are right
 
-    IF ( -- Non-Background run
+    IF ( -- Non-Background-multi run
          TG_OP = 'UPDATE'
          AND OLD.result_merged IS NULL 
          AND NEW.result_merged IS NOT NULL )
-       OR ( -- Background Run
+       OR ( -- Background-multi Run
             TG_OP = 'INSERT'
             AND NEW.state = run_state_finished()
             AND NEW.result_merged IS NOT NULL
@@ -121,7 +121,7 @@ BEGIN
                             JOIN test ON test.id = task.test
                         WHERE
                             task.id = NEW.task
-                            AND test.scheduling_class = scheduling_class_background())
+                            AND test.scheduling_class = scheduling_class_background_multi())
           )
 
        THEN
