@@ -13,6 +13,7 @@ Architecture: all
 Depends:
  pscheduler-account,
  pscheduler-core,
+ pscheduler-docs,
  pscheduler-test-idle,
  pscheduler-test-idlebg,
  pscheduler-test-idleex,
