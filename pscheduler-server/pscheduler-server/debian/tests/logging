@@ -1,0 +1,10 @@
+#!/bin/sh
+
+set -e
+
+ls -l /var/log/pscheduler/
+test -s /var/log/pscheduler/pscheduler.log
+
+logrotate -v -f /etc/logrotate.d/pscheduler-server
+ls -l /var/log/pscheduler/
+test -s /var/log/pscheduler/pscheduler.log.1
