@@ -151,20 +151,15 @@ def normalize_ip_versions(src, dest, ip_version=None):
 
 def handle_storage_error(result, attempts=0, policy=[]):
     #build object
-    retry = False
     archive_err_result = { 'succeeded': False, 'error': result }
     policy_attempt_sum = 0
     for p in policy:
         policy_attempt_sum += p['attempts']
         if policy_attempt_sum > attempts:
-            retry = True
             archive_err_result['retry'] = p['wait']
             break
-    if retry:
-        pscheduler.succeed_json(archive_err_result)
-    else:
-        pscheduler.fail("Archiver permanently abandoned registering test after %d attempt(s): %s" % (attempts+1, result))
-
+    
+    pscheduler.succeed_json(archive_err_result)
 
 ###
 # Utility classes
