@@ -177,8 +177,13 @@ def run_client():
 
     
     if status:
+        try:
+            json_stdout = pscheduler.json_load(stdout)
+            error_text = json_stdout["error"]
+        except (ValueError, KeyError):
+            error_text = stdout
         pscheduler.succeed_json({"succeeded": False,
-                                 "error": "iperf3 returned an error: %s\n%s" % (stdout, stderr)})
+                                 "error": "iperf3 returned an error: %s" % (error_text)})
 
 
     lines = stdout.split("\n")    
