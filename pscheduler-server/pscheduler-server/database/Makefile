@@ -28,6 +28,7 @@ FILES=\
 	task \
 	run_state \
 	run \
+	run_latest \
 	archiving \
 	schedule \
 	boot \

@@ -119,12 +119,12 @@ AS
             JOIN test on test.id = task.test
         WHERE
 	    repeat IS NOT NULL
-            AND NOT EXISTS (SELECT * FROM run WHERE run.task = task.id)
+            AND (until IS NULL OR until > normalized_now())
+	    AND runs = 0
 
 	UNION
     
         -- Repeating tasks with runs
-
         SELECT
             task.id AS task,
 	    task.uuid,
@@ -132,7 +132,7 @@ AS
             task.added,
             task.start,
             duration,
-            greatest(now(), task.start, max(upper(run.times))) AS after,
+            greatest(now(), task.start, run_latest.latest) AS after,
             task.repeat,
             max_runs,
 	    (SELECT COUNT(*)
@@ -152,10 +152,11 @@ AS
         FROM
             run
             JOIN task ON task.id = run.task
+            JOIN run_latest ON run_latest.task = task.id
             JOIN test ON test.id = task.test
 	WHERE
 	    task.repeat IS NOT NULL
-        GROUP BY task.id, test.scheduling_class
+        GROUP BY task.id, run_latest.latest, test.scheduling_class
 
     )
     SELECT
@@ -184,6 +185,7 @@ AS
 
 -- Return a schedule with bounded past and future window sizes, mostly
 -- for use by the monitor.
+
 CREATE OR REPLACE FUNCTION schedule_monitor(
     window_size INTEGER
 )
@@ -199,38 +201,59 @@ RETURNS TABLE (
 )
 AS $$
 DECLARE
-    present_start TIMESTAMP WITH TIME ZONE;
-    present_end TIMESTAMP WITH TIME ZONE;
-    present TSTZRANGE;
+    normalized_time TIMESTAMP WITH TIME ZONE;
 BEGIN
+
+    normalized_time := normalized_now();
 
     RETURN QUERY
 
-        SELECT * FROM (
+        SELECT
 
-            SELECT * FROM (
-                SELECT -1 AS ppf, * FROM schedule
-                WHERE upper(schedule.times) < now()
-                ORDER BY times DESC
-                LIMIT window_size
-            ) past
+            CASE  -- Past/Present/Future
+                WHEN upper(run.times) < normalized_time THEN -1
+                WHEN lower(run.times) > normalized_time THEN 1
+                ELSE 0
+            END AS ppf,
+            run.times,
+            task.uuid,
+            run.uuid,
+            run_state.enum,
+            run_state.display,
+            task.json,
+            task.cli
+        FROM
+            run
+            JOIN task on task.id = run.task
+            JOIN run_state on run_state.id = run.state
+        WHERE
+            run.id IN (
 
-            UNION ALL
+                SELECT * FROM (
+                    SELECT id FROM run
+                    WHERE upper(run.times) < normalized_time
+                    ORDER BY run.times DESC
+                    LIMIT window_size
+                ) past
 
-            SELECT * FROM (
-                SELECT 0 AS ppf, * FROM schedule
-                WHERE schedule.times @> now()
-            ) present
+                UNION ALL
 
-            UNION ALL
+                SELECT * FROM (
+                    SELECT id FROM run
+                    WHERE run.times @> normalized_time
+                    ORDER BY run.times
+                ) present
 
-            SELECT * FROM (
-                SELECT 1 AS ppf, * FROM schedule
-                WHERE lower(schedule.times) > now()
-                ORDER BY times
-                LIMIT window_size
+                UNION ALL
+
+                SELECT * FROM (
+                    SELECT id FROM run
+                    WHERE lower(run.times) > normalized_time
+                    ORDER BY run.times
+                    LIMIT window_size
                 ) future
-        ) monitor
+
+            )
         ORDER BY ppf, times ASC
         ;
 
@@ -238,9 +261,6 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
-
-
-
 
 
 
