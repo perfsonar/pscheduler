@@ -202,7 +202,7 @@ def update_tasks(screen):
         line = "%s%s" % (line, " " * (width-len(line)))
 
         if len(line) > width:
-            line = "%s%s" % (line[:width-3], "...")
+            line = "%s%s" % (line[:width-1], "+")
 
         state = run["state"]
 
