@@ -20,9 +20,9 @@
     "identifiers": [
 	{
 	    "#": "In plain English:  IP addresses that fall into the listed  ",
-	    "#": "blocks are identified as 'our-ips'.                        ",
+	    "#": "blocks are identified as 'my-ips'.                         ",
 
-	    "name": "our-ips",
+	    "name": "my-ips",
 	    "description": "IP blocks assigned to our organization",
 	    "type": "ip-cidr-list",
 	    "data": {
@@ -36,9 +36,9 @@
 	},
 	{
 	    "#": "In plain English:  IP addresses that reverse-resolve to a  ",
-	    "#": "FQDN ending in .example.org are identified as 'our-hosts'. ",
+	    "#": "FQDN ending in .example.org are identified as 'my-hosts'.  ",
 
-	    "name": "our-hosts",
+	    "name": "my-hosts",
 	    "description": "Hosts that reverse-resolve to our domain",
 	    "type": "ip-reverse-dns",
 	    "data": {
@@ -47,9 +47,8 @@
 		    "match": "\\.example\\.org$"
 		},
 		"timeout": "PT2S",
-		"fail-result": false
 	    }
-	},
+	}
     ],
 
 
@@ -61,12 +60,12 @@
 
     "classifiers": [
 	{
-	    "#": "In plain English:  Identifiers 'our-ips' and 'our-hosts'   ",
-	    "#": "are classified as being 'our-organization'.                ",
+	    "#": "In plain English:  Identifiers 'my-ips' and 'my-hosts'     ",
+	    "#": "are classified as being 'my-organization'.                 ",
 
-	    "name": "our-organization",
-	    "description": "Things that are part of our organization",
-	    "identifiers": [ "our-ips", "our-hosts" ]
+	    "name": "my-organization",
+	    "description": "Things that are part of my organization",
+	    "identifiers": [ "my-ips", "my-hosts" ]
 	}
     ],
 
@@ -89,7 +88,7 @@
 	    "data": {
 		"pass": true
 	    }
-	},
+	}
     ],
 
     "#": "-------------------------------------------------------------------",
@@ -110,10 +109,10 @@
             "#": "have its task request rejected.                            ",
 
 	    "description": "My organization",
-	    "classification": "my-organization",
+	    "classifier": "my-organization",
 	    "apply": [
 		{ "require": "all", "limits": [ "always" ] }
-	    ],
+	    ]
 	}
     ]
 
