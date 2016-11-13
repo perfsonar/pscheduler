@@ -3,7 +3,7 @@
     "#": "-------------------------------------------------------------------",
     "#": "               pScheduler Sample Limit Configuration               ",
     "#": "                                                                   ",
-    "#": "                                                                   "
+    "#": "                                                                   ",
     "#": "Allow only IPs or hosts with DNS names within an organization to   ",
     "#": "run any test they want and reject everything else.                 ",
     "#": "-------------------------------------------------------------------",
@@ -110,7 +110,7 @@
             "#": "have its task request rejected.                            ",
 
 	    "description": "My organization",
-	    "classification": "my-organization"
+	    "classification": "my-organization",
 	    "apply": [
 		{ "require": "all", "limits": [ "always" ] }
 	    ],
