@@ -2,7 +2,7 @@
 # RPM Spec for Python Jinja2
 #
 
-%define short	Jinja2
+%define short	jinja2
 Name:		python-%{short}
 Version:	2.8
 Release:	1%{?dist}
@@ -18,6 +18,10 @@ Vendor:		Armin Ronacher
 URL:		http://jinja.pocoo.org
 
 Source:		%{short}-%{version}.tar.gz
+
+# This package replaces an older version built with a capital J, a
+# convention Red Hat did not follow.
+Obsoletes:	python-Jinja2
 
 Requires:	python
 Requires:	python-markupsafe

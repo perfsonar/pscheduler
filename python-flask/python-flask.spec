@@ -1,12 +1,12 @@
 #
-# RPM Spec for Python Werkzeug
+# RPM Spec for Python Flask
 #
 
-%define short	Werkzeug
+%define short	flask
 Name:		python-%{short}
-Version:	0.11.3
+Version:	0.10.1
 Release:	1%{?dist}
-Summary:	WSGI Utilities for Python
+Summary:	The Flask microframework
 BuildArch:	noarch
 License:	BSD
 Group:		Development/Libraries
@@ -15,24 +15,28 @@ Provides:	%{name} = %{version}-%{release}
 Prefix:		%{_prefix}
 
 Vendor:		Armin Ronacher
-URL:		http://werkzeug.pocoo.org
+URL:		http://flask.pocoo.org
+
+# This package replaces an older version built with a capital F, a
+# convention Red Hat did not follow.
+Obsoletes:	python-Flask
 
 Source:		%{short}-%{version}.tar.gz
 
 Requires:	python
+Requires:	python-jinja2
+Requires:	python-werkzeug
+Requires:	python-itsdangerous
 
 BuildRequires:	python
+BuildRequires:	python-jinja2
+BuildRequires:	python-werkzeug
+BuildRequires:	python-itsdangerous
 BuildRequires:	python-setuptools
 
-
-
 %description
-Werkzeug started as simple collection of various utilities for WSGI
-applications and has become one of the most advanced WSGI utility
-modules. It includes a powerful debugger, full featured request and
-response objects, HTTP utilities to handle entity tags, cache control
-headers, HTTP dates, cookie handling, file uploads, a powerful URL
-routing system and a bunch of community contributed addon modules.
+Flask is a microframework for Python based on Werkzeug, Jinja 2 and
+good intentions.
 
 
 
@@ -42,6 +46,10 @@ routing system and a bunch of community contributed addon modules.
 
 %prep
 %setup -q -n %{short}-%{version}
+
+# The delivered tarball contains some stray Git files which causes git
+# against the source tree to misbehave.  Wipe 'em.
+find . -name '.git*' | xargs rm -rf
 
 
 %build

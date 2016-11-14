@@ -52,9 +52,10 @@ python-jsontemplate
 
 # Flask and its dependencies
 python-itsdangerous
-python-Jinja2
-python-Werkzeug
-python-Flask
+python-jinja2
+python-werkzeug
+# RH7 provides this, RH6 doesn't.
+ifelse(REDHAT_RELEASE_MAJOR,7,,python-flask)
 
 # Home-grown Python Modules
 python-icmperror

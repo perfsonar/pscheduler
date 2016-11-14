@@ -36,7 +36,7 @@ BuildRequires:	m4
 Requires:	curl
 Requires:	pscheduler-account
 Requires:	python-daemon
-Requires:	python-Flask
+Requires:	python-flask
 Requires:	python-ipaddr
 Requires:	python-requests
 Requires:	python-jsontemplate
