@@ -83,6 +83,17 @@ BEGIN
         t_version := t_version + 1;
     END IF;
 
+    -- Version 2 to version 3
+    -- Adds indexes to make archiving_eligible go faster
+    IF t_version = 2
+    THEN
+        CREATE INDEX archiving_candidates
+        ON archiving(archived, next_attempt)
+	WHERE NOT archived;
+
+        t_version := t_version + 1;
+    END IF;
+
 
     --
     -- Cleanup
