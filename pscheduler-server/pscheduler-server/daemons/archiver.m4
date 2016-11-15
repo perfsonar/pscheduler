@@ -459,7 +459,8 @@ def main_program():
         cursor.execute("""SELECT id, uuid, archiver, archiver_data, start,
                       duration, test, tool, participants, result,
                       attempts, last_attempt
-                      FROM archiving_eligible""")
+                      FROM archiving_eligible
+                      LIMIT %s""", [options.max_parallel])
 
         if cursor.rowcount == 0:
             log.debug("Nothing to archive.")
