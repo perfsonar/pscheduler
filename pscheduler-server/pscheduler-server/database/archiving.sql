@@ -228,4 +228,5 @@ AS
     WHERE
         NOT archived
         AND next_attempt < now()
+    ORDER BY next_attempt
 ;
