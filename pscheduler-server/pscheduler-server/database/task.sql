@@ -508,7 +508,10 @@ BEGIN
 	-- ARCHIVES
 	--
 
-	IF NEW.json ? 'archives' THEN
+	IF (TG_OP = 'INSERT'
+            OR (TG_OP = 'UPDATE' AND NEW.json <> OLD.json))
+	   AND NEW.json ? 'archives'
+        THEN
 	    FOR archive IN (SELECT * FROM jsonb_array_elements_text(NEW.json -> 'archives'))
 	    LOOP
 	        PERFORM archiver_validate(archive);
