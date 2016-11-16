@@ -5,7 +5,7 @@
 %define short	flask
 Name:		python-%{short}
 Version:	0.10.1
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	The Flask microframework
 BuildArch:	noarch
 License:	BSD

@@ -5,7 +5,7 @@
 %define short	jinja2
 Name:		python-%{short}
 Version:	2.8
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	The Jinja templating system
 BuildArch:	noarch
 License:	BSD

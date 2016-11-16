@@ -5,7 +5,7 @@
 %define short	werkzeug
 Name:		python-%{short}
 Version:	0.11.3
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	WSGI Utilities for Python
 BuildArch:	noarch
 License:	BSD
