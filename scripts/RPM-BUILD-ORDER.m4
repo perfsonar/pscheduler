@@ -51,11 +51,11 @@ python-jsonschema
 python-jsontemplate
 
 # Flask and its dependencies
-python-itsdangerous
-python-jinja2
-python-werkzeug
-# RH7 provides this, RH6 doesn't.
-ifelse(REDHAT_RELEASE_MAJOR,7,,python-flask)
+# These are dummies
+# TODO: Remove for GA release.  See 
+python-Jinja2
+python-Werkzeug
+python-Flask
 
 # Home-grown Python Modules
 python-icmperror
