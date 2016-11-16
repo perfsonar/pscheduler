@@ -29,18 +29,22 @@ INITS=$(DAEMONS:%=init.d-%)
 default: build
 
 
-archiver: archiver.m4
+archiver: archiver.raw
 ifndef ARCHIVERDEFAULTDIR
 	@echo No ARCHIVERDEFAULTDIR specified for build
 	@false
 endif
-	m4 \
-		-D__DEFAULT_DIR__=$(ARCHIVERDEFAULTDIR) \
+	sed \
+		-e 's|__DEFAULT_DIR__|$(ARCHIVERDEFAULTDIR)|g' \
 		< $< > $@
+	@if egrep -e '__[A-Z_]+__' $@ ; then \
+		echo "Found un-substituted values in processed file $@" ; \
+		false ; \
+	fi
 TO_CLEAN += archiver
 
 
-monitor: monitor.m4
+monitor: monitor.raw
 ifndef PGPASSFILE
 	@echo No PGPASSFILE specified for build
 	@false
@@ -53,14 +57,18 @@ ifndef PGDATABASE
 	@echo No PGDATABASE specified for build
 	@false
 endif
-	m4 \
-		-D__PGPASSFILE__=$(PGPASSFILE) \
-		-D__PGUSER__=$(PGUSER) \
-		-D__PGDATABASE__=$(PGDATABASE) \
+	sed \
+		-e 's|__PGPASSFILE__|$(PGPASSFILE)|g' \
+		-e 's|__PGUSER__|$(PGUSER)|g' \
+		-e 's|__PGDATABASE__|$(PGDATABASE)|g' \
 		< $< > $@
+	@if egrep -e '__[A-Z_]+__' $@ ; then \
+		echo "Found un-substituted values in processed file $@" ; \
+		false ; \
+	fi
 TO_CLEAN += monitor
 
-$(INITS): init.d-template.m4
+$(INITS): init.d-template.raw
 ifndef DAEMONDIR
 	@echo No DAEMONDIR specified for build
 	@false
@@ -73,7 +81,6 @@ ifndef LOGDIR
 	@echo No LOGDIR specified for build
 	@false
 endif
-
 ifndef PSUSER
 	@echo No PSUSER specified for build
 	@false
@@ -82,14 +89,18 @@ ifndef VAR
 	@echo No VAR specified for build
 	@false
 endif
-	m4 \
-		-D__DAEMONDIR__=$(DAEMONDIR) \
-		-D__DSN__=$(DSNFILE) \
-		-D__PROG__=$(@:init.d-%=%) \
-		-D__PSUSER__=$(PSUSER) \
-		-D__VAR__=$(VAR) \
-		-D__LOGDIR__=$(LOGDIR) \
+	sed \
+		-e 's|__DAEMONDIR__|$(DAEMONDIR)|g' \
+		-e 's|__DSN__|$(DSNFILE)|g' \
+		-e 's|__PROG__|$(@:init.d-%=%)|g' \
+		-e 's|__PSUSER__|$(PSUSER)|g' \
+		-e 's|__VAR__|$(VAR)|g' \
+		-e 's|__LOGDIR__|$(LOGDIR)|g' \
 		< $< > $@
+	@if egrep -e '__[A-Z_]+__' $@ ; then \
+		echo "Found un-substituted values in processed file $@" ; \
+		false ; \
+	fi
 TO_CLEAN += $(INITS)
 
 

@@ -1,5 +1,3 @@
-changequote(<!,!>)dnl
-changecom()dnl
 #!/bin/sh
 #
 # pscheduler-__PROG__  Start/Stop the pScheduler __PROG__
