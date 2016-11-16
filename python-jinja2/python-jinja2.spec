@@ -22,7 +22,7 @@ Source:		%{short}-%{version}.tar.gz
 # This package replaces an older version built with a capital J, a
 # convention Red Hat did not follow.
 Obsoletes:	python-Jinja2 <= %{version}
-Conflicts:	python-Jinja2
+Provides:	python-Jinja2
 
 Requires:	python
 Requires:	python-markupsafe

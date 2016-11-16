@@ -20,7 +20,7 @@ URL:		http://flask.pocoo.org
 # This package replaces an older version built with a capital F, a
 # convention Red Hat did not follow.
 Obsoletes:	python-Flask <= %{version}
-Conflicts:	python-Flask
+Provides:	python-Flask
 
 Source:		%{short}-%{version}.tar.gz
 
