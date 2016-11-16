@@ -21,7 +21,8 @@ Source:		%{short}-%{version}.tar.gz
 
 # This package replaces an older version built with a capital W, a
 # convention Red Hat did not follow.
-Obsoletes:	python-Werkzeug
+Obsoletes:	python-Werkzeug <= %{version}
+Conflicts:	python-Werkzeug
 
 Requires:	python
 
