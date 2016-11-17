@@ -24,6 +24,7 @@ COMMANDS=\
 	result \
 	schedule \
 	monitor \
+	ping \
 	task \
 	watch
 
