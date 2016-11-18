@@ -33,8 +33,6 @@ Requires:	python-subprocess32
 Requires:	python-tzlocal
 Requires:	pytz
 Requires:	rsyslog
-# This is because the Log class uses debugging.
-Requires:	rsyslog-debug
 Requires:	logrotate
 
 BuildRequires:	python-setuptools

@@ -25,9 +25,6 @@ make-generic-rpm
 # DEVELOPMENT, LIBRARIES AND UTILITIES
 #
 
-# System Setup
-rsyslog-debug
-
 # PostgreSQL Additions
 postgresql-init
 postgresql-load
