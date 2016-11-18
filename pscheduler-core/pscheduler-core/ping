@@ -6,6 +6,8 @@
 import optparse
 import pscheduler
 
+pscheduler.set_graceful_exit()
+
 #
 # Gargle the arguments
 #
