@@ -60,7 +60,6 @@ class Log():
     If the 'propagate' parameter is True (which it is by default), the
     logging state (level, forced debug, quiet) will be passed along to
     any child process which instantiates a Log instance.  This happens
-
     via the environment, so anything that scrubs it clean (e.g., sudo)
     will cause this feaure not to function.
     """
@@ -101,7 +100,7 @@ class Log():
                  facility=local5, # Log facility
                  debug=False,   # Force level to DEBUG
                  verbose=False, # Log to stderr, too.
-                 quiet=False,   # Don't log anything on startup
+                 quiet=None ,   # Don't log anything on startup  (See below)
                  signals=True,  # Enable debug on/off with SIGUSR1/SIGUSR2
                  propagate=True # Pass debug state on to child processes
                  ):
@@ -128,6 +127,12 @@ class Log():
 
         # This prevents verbose() from choking on this being undefined.
         self.is_verbose = False
+
+        if quiet is None:
+            quiet = False
+            forced_quiet = False
+        else:
+            forced_quiet = quiet
 
         self.is_quiet = quiet
 
@@ -196,9 +201,8 @@ class Log():
             signal.siginterrupt(signal.SIGUSR2, False)
 
 
-        if not self.is_quiet:
+        if (not self.is_quiet) and (not forced_quiet):
             self.info("Started")
-
 
 
 

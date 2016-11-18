@@ -4,7 +4,7 @@ import pprint
 import json
 import sys
 
-logger = pscheduler.Log()
+logger = pscheduler.Log(quiet=True)
 
 # A whole bunch of pattern matching against the output of the "nuttcp" tool
 # client output. Builds up an object of interesting bits from it.

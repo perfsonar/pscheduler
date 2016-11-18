@@ -3,7 +3,7 @@
 import pscheduler
 
 #Init logging
-log = pscheduler.Log(prefix="tool-owping")
+log = pscheduler.Log(prefix="tool-owping", quiet=True)
 
 input = pscheduler.json_load(exit_on_error=True)
 log.debug("input to merged results: %s" % input)

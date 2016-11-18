@@ -19,7 +19,7 @@ from iperf_defaults import *
 # track when this run starts
 start_time = datetime.datetime.now()
 
-logger = pscheduler.Log(prefix='tool-bwctl')
+logger = pscheduler.Log(prefix='tool-bwctl', quiet=True)
 
 logger.debug("starting bwctl tool")
 
@@ -119,7 +119,7 @@ def run_client():
     # just to be safe cast everything in the list to a string
     bwctl_args = map(lambda x: str(x), bwctl_args)
       
-    logger.info("Running command: %s" % " ".join(bwctl_args))
+    logger.debug("Running command: %s" % " ".join(bwctl_args))
     
     try:
         status, stdout, stderr = pscheduler.run_program(bwctl_args)
@@ -181,6 +181,6 @@ except Exception as ex:
     logger.debug(tb_lines)
     logger.error("Exception %s" % ex);
 
-logger.info("Results: %s" % results)
+logger.debug("Results: %s" % results)
 
 pscheduler.succeed_json(results)

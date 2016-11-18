@@ -19,7 +19,7 @@ from iperf_defaults import *
 # track when this run starts
 start_time = datetime.datetime.now()
 
-logger = pscheduler.Log(prefix='tool-iperf')
+logger = pscheduler.Log(prefix='tool-iperf', quiet=True)
 
 logger.debug("starting iperf tool")
 
@@ -65,7 +65,7 @@ def run_client():
     if not is_ip_address and test_spec.has_key('force-ipv4'):
         destination = pscheduler.dns_resolve(destination, ip_version=4)
         
-        logger.info("Resolved %s to %s" % (test_spec["dest"], destination))
+        logger.debug("Resolved %s to %s" % (test_spec["dest"], destination))
                     
         if destination == None:
             pscheduler.succeed_json({"succeeded": False,
@@ -75,7 +75,7 @@ def run_client():
     elif not is_ip_address and test_spec.has_key('force-ipv6'):
         destination = pscheduler.dns_resolve(destination, ip_version=6)
                     
-        logger.info("Resolved %s to %s" % (test_spec["dest"], destination))
+        logger.debug("Resolved %s to %s" % (test_spec["dest"], destination))
 
         if destination == None:
             pscheduler.succeed_json({"succeeded": False,
@@ -148,7 +148,7 @@ def run_client():
     # just to be safe cast everything in the list to a string
     iperf_args = map(lambda x: str(x), iperf_args)
       
-    logger.info("Running command: %s" % " ".join(iperf_args))
+    logger.debug("Running command: %s" % " ".join(iperf_args))
 
     try:
         status, stdout, stderr = pscheduler.run_program(iperf_args)
@@ -185,7 +185,7 @@ def run_server():
     #init command
     iperf_args = ['/usr/bin/iperf', '-s' ]
     
-    logger.info("Running command: %s" % " ".join(iperf_args))
+    logger.debug("Running command: %s" % " ".join(iperf_args))
 
     try:
         status, stdout, stderr = pscheduler.run_program(iperf_args,
@@ -231,6 +231,6 @@ except Exception as ex:
     logger.debug(tb_lines)
     logger.error("Exception %s" % ex);
 
-logger.info("Results: %s" % results)
+logger.debug("Results: %s" % results)
 
 pscheduler.succeed_json(results)

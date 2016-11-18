@@ -8,7 +8,7 @@ import sys
 
 import pscheduler
 
-logger = pscheduler.Log(prefix='tool-bwctl')
+logger = pscheduler.Log(prefix='tool-bwctl', quiet=True)
 
 
 def has_pscheduler(address):
@@ -27,7 +27,7 @@ def has_pscheduler(address):
 
 json = pscheduler.json_load(exit_on_error=True)
 
-logger.info("can-run for %s" % json)
+logger.debug("can-run for %s" % json)
 
 if not json.get('type'):
     pscheduler.fail('Missing test type')

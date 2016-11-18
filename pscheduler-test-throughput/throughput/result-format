@@ -10,7 +10,7 @@ import throughput_utils
 
 #constants
 SCHEMA_FILE = "pscheduler-schema-throughput-response.json"
-logger      = pscheduler.Log(prefix="test-throughput", debug=True)
+logger      = pscheduler.Log(prefix="test-throughput", quiet=True)
 
 try:
    format = sys.argv[1]
