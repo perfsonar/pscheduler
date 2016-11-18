@@ -65,6 +65,35 @@ class Log():
     will cause this feaure not to function.
     """
 
+
+    def __syslog_handler_deinit(self):
+        """
+        Kill off the syslog handler; called when a log event fails.
+        """
+        if self.syslog_handler is not None:
+            self.logger.removeHandler(self.syslog_handler)
+            self.syslog_handler = None
+
+
+    def __syslog_handler_init(self):
+        """
+        Initialize the syslog handler if it hasn't been
+        """
+        if self.syslog_handler is None:
+            try:
+                # TODO: /dev/log is Linux-specific.
+                self.syslog_handler = logging.handlers.SysLogHandler('/dev/log', facility=self.facility)
+                self.syslog_handler.setFormatter(
+                    logging.Formatter(
+                        fmt = '%(name)s %(levelname)-8s %(message)s'
+                    )
+                )
+                self.logger.addHandler(self.syslog_handler)
+            except:
+                self.__syslog_handler_deinit()
+
+
+
     def __init__(self,
                  name=None,     # Name for log entries
                  prefix=None,   # Prefix for name (e.g., prefix/progname)
@@ -88,6 +117,8 @@ class Log():
         if prefix is not None:
             assert type(prefix) == str
             name = prefix + "/" + name
+
+        self.facility = facility
 
         if debug:
             level = DEBUG
@@ -134,16 +165,8 @@ class Log():
         self.logger = logging.getLogger(name)
         self.logger.propagate = False
 
-        # Syslog
-        self.syslog_handler = logging.handlers.SysLogHandler('/dev/log', facility=facility)
-        self.facility = facility
-        self.syslog_handler.setFormatter(
-            logging.Formatter(
-                fmt = '%(name)s %(levelname)-8s %(message)s'
-                )
-            )
-        self.logger.addHandler(self.syslog_handler)
-
+        self.syslog_handler = None
+        self.__syslog_handler_init()
 
         # Stderr
         self.stderr_handler = logging.StreamHandler(sys.stderr)
@@ -229,8 +252,13 @@ class Log():
 
     # Logging
 
+
     def log(self, level, format, *args):
-        self.logger.log(level, format, *args)
+        self.__syslog_handler_init()
+        try:
+            self.logger.log(level, format, *args)
+        except Exception:
+            self.__syslog_handler_deinit()
 
     def debug(self, format, *args):
         self.log(DEBUG, format, *args)
