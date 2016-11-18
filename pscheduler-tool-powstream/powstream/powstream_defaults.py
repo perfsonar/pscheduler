@@ -12,7 +12,7 @@ DEFAULT_PACKET_INTERVAL = .1
 DEFAULT_PACKET_COUNT = 600
 
 # Default duration for test. Defaults to 100 years.
-DEFAULT_DURATION = "P100Y"
+DEFAULT_DURATION = "PT24H"
 
 # Default number of seconds before checking if powstream booted properly
 DEFAULT_CLIENT_SLEEP = 3
