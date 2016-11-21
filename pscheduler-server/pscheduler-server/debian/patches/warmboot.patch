@@ -1,5 +1,5 @@
---- a/database/warmboot.m4
-+++ b/database/warmboot.m4
+--- a/database/warmboot.raw
++++ b/database/warmboot.raw
 @@ -3,8 +3,7 @@
  # Warm boot the database
  #

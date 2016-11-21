@@ -1,5 +1,5 @@
---- a/daemons/archiver.m4
-+++ b/daemons/archiver.m4
+--- a/daemons/archiver.raw
++++ b/daemons/archiver.raw
 @@ -337,7 +337,7 @@
                                         attempts = attempts + 1,
                                         last_attempt = now(),

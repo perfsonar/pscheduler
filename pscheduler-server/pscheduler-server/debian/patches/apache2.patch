@@ -1,5 +1,5 @@
---- a/api-server/pscheduler-api-server.conf.m4
-+++ b/api-server/pscheduler-api-server.conf.m4
+--- a/api-server/pscheduler-api-server.conf.raw
++++ b/api-server/pscheduler-api-server.conf.raw
 @@ -16,8 +16,13 @@
      WSGIProcessGroup __USER_NAME__
      WSGIApplicationGroup __USER_NAME__

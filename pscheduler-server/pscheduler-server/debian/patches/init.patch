@@ -1,6 +1,6 @@
---- a/daemons/init.d-template.m4
-+++ b/daemons/init.d-template.m4
-@@ -10,8 +10,10 @@
+--- a/daemons/init.d-template.raw
++++ b/daemons/init.d-template.raw
+@@ -8,8 +8,10 @@
  
  ### BEGIN INIT INFO
  # Provides: pscheduler-__PROG__
@@ -13,7 +13,7 @@
  # Short-Description: Run pscheduler __PROG__
  # Description: pScheduler __PROG__ daemon
  ### END INIT INFO
-@@ -25,17 +27,16 @@
+@@ -23,17 +25,16 @@
  proguser=__PSUSER__
  
  pidfile=__VAR__/run/pscheduler-$prog.pid
@@ -33,7 +33,7 @@
  
  start() {
      if [ $UID -ne 0 ] ; then
-@@ -44,9 +45,9 @@
+@@ -42,9 +43,9 @@
      fi
      [ -x $exec ] || exit 5
      [ -f $config ] || exit 6
@@ -45,7 +45,7 @@
      if [ ! -s "$logfile" ] ; then
          echo "(This file should be empty unless there's a catastrophic failure.)" >> "$logfile"
      fi
-@@ -54,26 +55,23 @@
+@@ -52,26 +53,23 @@
         -c "$exec --daemon --pid-file '$pidfile' --dsn '@$config'" \
  	>> "$logfile" 2>&1 &
      retval=$?
@@ -81,7 +81,7 @@
  }
  
  restart()
-@@ -82,18 +80,17 @@
+@@ -80,18 +78,17 @@
      start
  }
  
