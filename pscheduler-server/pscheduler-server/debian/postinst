@@ -64,6 +64,10 @@ case "$1" in
         fi
 
         # rsyslog config update
+        if id syslog >/dev/null 2>/dev/null; then
+            chown syslog /var/log/pscheduler
+            chmod u+w /var/log/pscheduler
+        fi
         service rsyslog restart
     ;;
 
