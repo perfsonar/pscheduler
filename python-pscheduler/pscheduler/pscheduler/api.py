@@ -15,6 +15,25 @@ def api_this_host():
     return socket.getfqdn()
 
 
+def __host_per_rfc_2732(host):
+    "Format a host name or IP for a URL according to RFC 2732"
+
+    try:
+        socket.inet_pton(socket.AF_INET6, host)
+        return "[%s]" % (host)
+    except socket.error:
+        return host  # Not an IPv6 address
+
+
+def api_replace_host(url_text, replacement):
+    "Replace the host portion of a URL"
+
+    url = list(urlparse.urlparse(url_text))
+    url[1] = __host_per_rfc_2732(replacement)
+    return urlparse.urlunparse(url)
+
+
+
 def api_url(host = None,
             path = None,
             port = None,
@@ -23,13 +42,7 @@ def api_url(host = None,
     """Format a URL for use with the pScheduler API."""
 
     host = api_this_host() if host is None else str(host)
-
-    # IPv6 addresses get special treatment
-    try:
-        socket.inet_pton(socket.AF_INET6, host)
-        host = "[%s]" % host
-    except socket.error:
-        pass  # Not an IPv6 address.
+    host = __host_per_rfc_2732(host)
 
     if path is not None and path.startswith('/'):
         path = path[1:]

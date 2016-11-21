@@ -705,6 +705,8 @@ AS $$
 DECLARE
     taskrec RECORD;
     host TEXT;
+    ip INET;
+    ip_family INTEGER;
 BEGIN
 
     SELECT INTO taskrec * FROM task WHERE uuid = task_uuid;
@@ -729,11 +731,21 @@ BEGIN
         FOR host IN (SELECT jsonb_array_elements_text(taskrec.participants)
                      FROM task WHERE uuid = task_uuid OFFSET 1)
         LOOP
+
+            -- IPv6 adresses get special treatment
+            BEGIN
+		IF family(host::INET) = 6
+                THEN
+                    host := format('[%s]', host);
+                END IF;
+            EXCEPTION WHEN OTHERS THEN
+                NULL;  -- Don't care
+            END;
+
             INSERT INTO http_queue (operation, uri)
                 VALUES ('DELETE', format(task_url_format, host));
         END LOOP;
-    END IF;
-   
+    END IF;   
 
 END;
 $$ LANGUAGE plpgsql;
