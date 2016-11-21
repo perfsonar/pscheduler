@@ -370,6 +370,9 @@ def main_program():
 
         wait = True
 
+        log.debug("Fetching runs to schedule")
+
+        # TODO: The FALSE for background does nothing.  Get rid of it.
         cursor.execute("""
             SELECT uuid, runs, trynext, FALSE
             FROM schedule_runs_to_schedule
@@ -394,7 +397,6 @@ def main_program():
             log.debug("%sTASK %s, %d runs, try %s", 
                       "BACKGROUND " if background else "",
                       uuid, runs, trynext)
-
 
             url = pscheduler.api_url(path='/tasks/' + uuid)
 
@@ -427,10 +429,12 @@ def main_program():
                 log.debug("Scheduled for %s - %s at %s",
                           start_time, end_time, run_uri)
 
+
         # Wait for something to happen.
           
         if wait:
 
+            log.debug("Waiting for something to happen.")
             try:
                 if select.select([pg],[],[],
                                  pscheduler.timedelta_as_seconds(refresh)) \

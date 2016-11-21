@@ -570,6 +570,8 @@ if status == 404:
 watch_args = [ "pscheduler", "watch",
                "--format", out_format
                ]
+if options.debug:
+    watch_args.append("--debug")
 if options.quiet:
     watch_args.append("--quiet")
 # TODO: Pass --verbose and --debug once watch supports that.

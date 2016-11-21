@@ -237,6 +237,17 @@ BEGIN
     END IF;
 
 
+    -- Version 6 to version 7
+    -- Add first_start column
+    IF t_version = 6
+    THEN
+	-- When the first run of the task started
+        ALTER TABLE task ADD COLUMN
+	first_start TIMESTAMP WITH TIME ZONE;
+
+        t_version := t_version + 1;
+    END IF;
+
 
     --
     -- Cleanup
@@ -445,6 +456,11 @@ BEGIN
 	-- TODO: Should we check that the repeat interval is greater
 	-- than the duration (which we no longer have by default)?
 
+	NEW.max_runs := text_to_numeric(NEW.json #>> '{schedule, max-runs}');
+	IF (NEW.max_runs IS NOT NULL) AND (NEW.max_runs < 1) THEN
+	   RAISE EXCEPTION 'Maximum runs must be positive.';
+	END IF;
+
 	IF NEW.repeat IS NULL THEN
 	   NEW.until := NULL;
 	   NEW.max_runs := 1;
@@ -479,12 +495,6 @@ BEGIN
 	   RAISE EXCEPTION 'Until must be after the start.';
 	END IF;
 
-
-	NEW.max_runs := text_to_numeric(NEW.json #>> '{schedule, max-runs}');
-
-	IF (NEW.max_runs IS NOT NULL) AND (NEW.max_runs < 1) THEN
-	   RAISE EXCEPTION 'Maximum runs must be positive.';
-	END IF;
 
         -- See what the tool says about how long it should take.
 	

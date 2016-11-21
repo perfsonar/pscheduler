@@ -416,7 +416,10 @@ def tasks_uuid(uuid):
                 'exclusive':  row[9],
                 'multi-result':  row[10],
                 'enabled':  row[12],
-                'cli':  row[13]
+                'cli':  row[13],
+                'runs-href': "%s/runs" % (request.base_url),
+                'first-run-href': "%s/runs/first" % (request.base_url),
+                'next-run-href': "%s/runs/next" % (request.base_url)
                 }
 
         return ok_json(json)
