@@ -91,3 +91,24 @@
  CREATE OR REPLACE LANGUAGE plpythonu;
  
  -- Needed for generating UUIDs
+--- a/database/run_latest.sql
++++ b/database/run_latest.sql
+@@ -108,10 +108,14 @@
+         RETURN affected;
+     END IF;    
+ 
+-    INSERT INTO run_latest
+-    VALUES (affected.task, latest)
+-    ON CONFLICT (task) DO UPDATE
+-    SET latest = EXCLUDED.latest;
++    BEGIN
++        INSERT INTO run_latest
++        VALUES (affected.task, latest);
++    EXCEPTION WHEN unique_violation THEN
++        UPDATE run_latest
++        SET latest = latest
++        WHERE task = affected.task;
++    END;
+ 
+     RETURN NEW;
+ END;
