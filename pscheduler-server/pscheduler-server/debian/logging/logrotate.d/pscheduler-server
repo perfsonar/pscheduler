@@ -8,6 +8,6 @@
     missingok
     sharedscripts
     postrotate
-        invoke-rc.d rsyslog rotate > /dev/null
+        service rsyslog restart > /dev/null
     endscript
 }
