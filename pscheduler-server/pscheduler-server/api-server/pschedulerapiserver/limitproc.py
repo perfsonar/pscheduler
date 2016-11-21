@@ -19,7 +19,7 @@ from .log import log
 this = sys.modules[__name__]
 
 # How often we check the file for an update, in seconds
-this.update_interval = 10
+this.update_interval = 15
 
 # The limit processor; the default being one that does nothing.
 this.processor = LimitProcessor()
@@ -41,7 +41,6 @@ def __limitproc_update():
     this.last_check = now
 
     log.debug("Checking for new limit configuration")
-
     exists = os.path.isfile(this.limit_file) \
              and os.access(this.limit_file, os.R_OK)
 
@@ -59,24 +58,35 @@ def __limitproc_update():
 
     modified = os.path.getmtime(this.limit_file)
 
-    # If the file hasn't changed, maintain the status quo.
-    if this.modified is not None and modified <= this.modified:
+    # If we have a limit configuration and the file hasn't changed,
+    # maintain the status quo.
+
+    file_unchanged = this.modified is not None and modified <= this.modified
+
+    if this.processor is not None and file_unchanged:
         log.debug("Limit file has not changed.")
         return
 
-    log.debug("Loading limits from %s" % this.limit_file)
     try:
-        processor = LimitProcessor(this.limit_file)
-        log.info("New limits loaded")
+        this.processor = LimitProcessor(this.limit_file)
+        this.whynot = None
+        log.info("New limits loaded from %s" % this.limit_file)
     except Exception as ex:
-        processor = None
+        this.processor = None
         this.whynot = str(ex)
-        log.critical("Failed to load limit file %s: %s",
-                     limit_file, this.whynot)
+        # Only complain if the file changed so the logs don't get
+        # flooded.
+        if not file_unchanged:
+            log.critical("Failed to load limit file %s: %s",
+                         limit_file, this.whynot)
 
     this.file_exists = True
     this.modified = modified
-    this.processor = processor
+
+    # Make the last check time the actual time in case the check took
+    # awhile.  This will prevent continuous attempts at re-loading the
+    # file if this attempt took awhile.
+    this.last_check = time.time()
 
 
 

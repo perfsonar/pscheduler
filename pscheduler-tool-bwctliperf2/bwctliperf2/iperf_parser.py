@@ -2,7 +2,7 @@ import re
 import pscheduler
 import pprint
 
-logger = pscheduler.Log()
+logger = pscheduler.Log(quiet=True)
 
 # A whole bunch of pattern matching against the output of the "iperf" tool
 # client output. Builds up an object of interesting bits from it.

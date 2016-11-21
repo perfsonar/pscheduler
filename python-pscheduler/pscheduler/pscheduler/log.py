@@ -60,10 +60,38 @@ class Log():
     If the 'propagate' parameter is True (which it is by default), the
     logging state (level, forced debug, quiet) will be passed along to
     any child process which instantiates a Log instance.  This happens
-
     via the environment, so anything that scrubs it clean (e.g., sudo)
     will cause this feaure not to function.
     """
+
+
+    def __syslog_handler_deinit(self):
+        """
+        Kill off the syslog handler; called when a log event fails.
+        """
+        if self.syslog_handler is not None:
+            self.logger.removeHandler(self.syslog_handler)
+            self.syslog_handler = None
+
+
+    def __syslog_handler_init(self):
+        """
+        Initialize the syslog handler if it hasn't been
+        """
+        if self.syslog_handler is None:
+            try:
+                # TODO: /dev/log is Linux-specific.
+                self.syslog_handler = logging.handlers.SysLogHandler('/dev/log', facility=self.facility)
+                self.syslog_handler.setFormatter(
+                    logging.Formatter(
+                        fmt = '%(name)s %(levelname)-8s %(message)s'
+                    )
+                )
+                self.logger.addHandler(self.syslog_handler)
+            except:
+                self.__syslog_handler_deinit()
+
+
 
     def __init__(self,
                  name=None,     # Name for log entries
@@ -72,7 +100,7 @@ class Log():
                  facility=local5, # Log facility
                  debug=False,   # Force level to DEBUG
                  verbose=False, # Log to stderr, too.
-                 quiet=False,   # Don't log anything on startup
+                 quiet=None ,   # Don't log anything on startup  (See below)
                  signals=True,  # Enable debug on/off with SIGUSR1/SIGUSR2
                  propagate=True # Pass debug state on to child processes
                  ):
@@ -89,6 +117,8 @@ class Log():
             assert type(prefix) == str
             name = prefix + "/" + name
 
+        self.facility = facility
+
         if debug:
             level = DEBUG
 
@@ -97,6 +127,12 @@ class Log():
 
         # This prevents verbose() from choking on this being undefined.
         self.is_verbose = False
+
+        if quiet is None:
+            quiet = False
+            forced_quiet = False
+        else:
+            forced_quiet = quiet
 
         self.is_quiet = quiet
 
@@ -134,16 +170,8 @@ class Log():
         self.logger = logging.getLogger(name)
         self.logger.propagate = False
 
-        # Syslog
-        self.syslog_handler = logging.handlers.SysLogHandler('/dev/log', facility=facility)
-        self.facility = facility
-        self.syslog_handler.setFormatter(
-            logging.Formatter(
-                fmt = '%(name)s %(levelname)-8s %(message)s'
-                )
-            )
-        self.logger.addHandler(self.syslog_handler)
-
+        self.syslog_handler = None
+        self.__syslog_handler_init()
 
         # Stderr
         self.stderr_handler = logging.StreamHandler(sys.stderr)
@@ -173,9 +201,8 @@ class Log():
             signal.siginterrupt(signal.SIGUSR2, False)
 
 
-        if not self.is_quiet:
+        if (not self.is_quiet) and (not forced_quiet):
             self.info("Started")
-
 
 
 
@@ -229,8 +256,13 @@ class Log():
 
     # Logging
 
+
     def log(self, level, format, *args):
-        self.logger.log(level, format, *args)
+        self.__syslog_handler_init()
+        try:
+            self.logger.log(level, format, *args)
+        except Exception:
+            self.__syslog_handler_deinit()
 
     def debug(self, format, *args):
         self.log(DEBUG, format, *args)

@@ -1,10 +1,10 @@
 #
-# RPM Spec for Dummy Python Werkzeug
+# RPM Spec for Dummy Python Flask
 #
 
-%define short	Werkzeug
+%define short	Flask
 Name:		python-%{short}
-Version:	0.11.11
+Version:	0.11.1
 Release:	1%{?dist}
 Summary:	Dummy package
 BuildArch:	noarch

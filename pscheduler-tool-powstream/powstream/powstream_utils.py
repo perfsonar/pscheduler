@@ -135,7 +135,7 @@ def parse_raw_owamp_output(file, raw_output=False, bucket_width=TIME_SCALE):
         results['raw-packets'] = []
     packets_seen = {}
     prev_seq_number = -1
-    for line in file:
+    for line in file.splitlines():
         powstream_match = powstream_regex.match(line)
         if powstream_match:
             seq_number               = powstream_match.group(1);

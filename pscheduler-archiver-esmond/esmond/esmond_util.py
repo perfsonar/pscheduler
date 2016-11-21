@@ -160,10 +160,11 @@ def handle_storage_error(result, attempts=0, policy=[]):
             retry = True
             archive_err_result['retry'] = p['wait']
             break
-    if retry:
-        pscheduler.succeed_json(archive_err_result)
-    else:
-        pscheduler.fail("Archiver permanently abandoned registering test after %d attempt(s): %s" % (attempts+1, result))
+    
+    if not retry:
+        archive_err_result['error'] = "Archiver permanently abandoned registering test after %d attempt(s): %s" % (attempts+1, result)
+    
+    pscheduler.succeed_json(archive_err_result)
 
 
 ###
@@ -188,7 +189,11 @@ class EsmondClient:
         if not post_url.endswith('/'):
             post_url += '/'
         log.debug("Posting metadata to %s: %s" % (post_url, metadata))
-        r = requests.post(post_url, data=pscheduler.json_dump(metadata), headers=self.headers, verify=self.verify_ssl)
+        try:
+            r = requests.post(post_url, data=pscheduler.json_dump(metadata), headers=self.headers, verify=self.verify_ssl)
+        except:
+            return False, "Unable to connect to remote server to create metadata"
+        
         if r.status_code != 200 and r.status_code != 201:
             try:
                 return False, "%d: %s" % (r.status_code, pscheduler.json_load(r.text)['detail'])
@@ -210,7 +215,11 @@ class EsmondClient:
         put_url += ("%s/" % metadata_key)
         data = { 'data': data_points }
         log.debug("Putting data to %s: %s" % (put_url, data))
-        r = requests.put(put_url, data=pscheduler.json_dump(data), headers=self.headers, verify=self.verify_ssl)
+        try:
+            r = requests.put(put_url, data=pscheduler.json_dump(data), headers=self.headers, verify=self.verify_ssl)
+        except:
+            return False, "Unable to connect to remote server to create data"
+            
         if r.status_code== 409:
             #duplicate data
             log.debug("Attempted to add duplicate data point. Skipping")

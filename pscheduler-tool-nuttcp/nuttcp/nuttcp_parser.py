@@ -4,7 +4,7 @@ import pprint
 import json
 import sys
 
-logger = pscheduler.Log()
+logger = pscheduler.Log(quiet=True)
 
 # A whole bunch of pattern matching against the output of the "nuttcp" tool
 # client output. Builds up an object of interesting bits from it.
@@ -84,7 +84,7 @@ def parse_output(lines):
         
         # Example summary line:
         # 2197.0657 MB /  10.00 sec = 1842.3790 Mbps 8 %TX 90 %RX 90 retrans 237 KB-cwnd 0.50 msRTT
-        test = re.match('^.*(\d+)\.\d+ sec = (\d+(\.\d+)?) (\S)bps \d+ %TX \d+ %RX (\d+) retrans(\s*(\d+)\s*(\S)\S\-cwnd)?', line)
+        test = re.match('^.*(\d+)\.\d+ sec =\s*(\d+(\.\d+)?) (\S)bps \d+ %TX \d+ %RX (\d+) retrans(\s*(\d+)\s*(\S)\S\-cwnd)?', line)
         if test:
             duration = int(test.group(1))
             value    = test.group(2)
@@ -171,6 +171,13 @@ if __name__ == "__main__":
    25.5693 MB /   1.00 sec =  214.4933 Mbps    16 / 26199 ~drop/pkt 0.06107 ~%loss 2.8272 msMaxJitter
 
   252.0586 MB /  10.00 sec =  211.4462 Mbps 99 %TX 50 %RX 1485 / 259593 drop/pkt 0.57 %loss 37.2012 msMaxJitter
+"""
+    result = parse_output(test_output.split("\n"))
+    pprint.PrettyPrinter(indent=4).pprint(result)
+
+
+    test_output = """
+    68.7253 MB /  10.15 sec =   56.7987 Mbps 7 %TX 6 %RX 0 retrans 94 KB-cwnd 4.79 msRTT
 """
     result = parse_output(test_output.split("\n"))
     pprint.PrettyPrinter(indent=4).pprint(result)

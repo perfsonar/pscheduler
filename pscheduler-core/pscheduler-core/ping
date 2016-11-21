@@ -1,0 +1,53 @@
+#!/usr/bin/python
+#
+# Ping another pScheduler host to see if it responds
+#
+
+import optparse
+import pscheduler
+
+pscheduler.set_graceful_exit()
+
+#
+# Gargle the arguments
+#
+
+
+class VerbatimParser(optparse.OptionParser):
+    def format_epilog(self, formatter):
+        return self.epilog
+
+opt_parser = VerbatimParser(
+    usage="Usage: %prog host",
+    epilog=
+"""
+Example:
+
+  ping perfsonar6.example.org
+      Check on the host at perfsonar6.example.org
+"""
+    )
+opt_parser.disable_interspersed_args()
+
+(options, remaining_args) = opt_parser.parse_args()
+
+if len(remaining_args) != 1:
+    opt_parser.print_usage()
+    pscheduler.fail()
+
+host = remaining_args[0]
+
+url = pscheduler.api_url(host)
+
+status, result = pscheduler.url_get(url, throw=False)
+
+if status == 200:
+    pscheduler.succeed("pScheduler on %s is alive." % (host))
+elif status == 400:
+    pscheduler.fail("%s: %s" % (host, result))
+elif status in [ 202, 204, 205, 206, 207, 208, 226,
+                 300, 301, 302, 303, 304, 205, 306, 307, 308 ] \
+    or ( (status >= 400) and (status <=499) ):
+    pscheduler.fail("%s is not running pScheduler" %  (host))
+
+pscheduler.fail("%s returned status %d: %s" % (host, status, result))

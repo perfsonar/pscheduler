@@ -1,6 +1,5 @@
 #
-dnl The quoting forces M4 to process the line.
-`#' WSGI File for __NAME__
+# WSGI File for __NAME__
 #
 
 import logging

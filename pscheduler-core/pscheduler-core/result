@@ -10,6 +10,10 @@ import pipes
 import pscheduler
 import sys
 
+
+pscheduler.set_graceful_exit()
+
+
 #
 # Gargle the arguments
 #

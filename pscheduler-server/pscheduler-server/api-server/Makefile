@@ -10,7 +10,7 @@ MODULE=$(shell echo "$(NAME)" | tr -c -d 'A-Za-z0-9')
 default: build
 
 
-%: %.m4
+%: %.raw
 ifndef USER_NAME
 	@echo No USER_NAME specified for build
 	@false
@@ -35,15 +35,15 @@ ifndef LIMITS_FILE
 	@echo No LIMITS_FILE specified for build
 	@false
 endif
-	m4 \
-		"-D__NAME__=$(NAME)" \
-		"-D__MODULE__=$(MODULE)" \
-		"-D__USER_NAME__=$(USER_NAME)" \
-		"-D__GROUP_NAME__=$(GROUP_NAME)" \
-		"-D__API_ROOT__=$(API_ROOT)" \
-		"-D__API_DIR__=$(API_DIR)" \
-		"-D__DSN_FILE__=$(DSN_FILE)" \
-		"-D__LIMITS_FILE__=$(LIMITS_FILE)" \
+	sed \
+		-e 's|__NAME__|$(NAME)|g' \
+		-e 's|__MODULE__|$(MODULE)|g' \
+		-e 's|__USER_NAME__|$(USER_NAME)|g' \
+		-e 's|__GROUP_NAME__|$(GROUP_NAME)|g' \
+		-e 's|__API_ROOT__|$(API_ROOT)|g' \
+		-e 's|__API_DIR__|$(API_DIR)|g' \
+		-e 's|__DSN_FILE__|$(DSN_FILE)|g' \
+		-e 's|__LIMITS_FILE__|$(LIMITS_FILE)|g' \
 		< $^ > $@
 	@if egrep -e '__[A-Z_]+__' $@ ; then \
 		echo "Found un-substituted values in processed file $@" ; \
