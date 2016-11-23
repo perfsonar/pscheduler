@@ -8,19 +8,6 @@ import sys
 
 import pscheduler
 
-def has_pscheduler(address):
-    #null participant means localhost, which means has psc by definition
-    if address is None:
-        return True
-    
-    #test query for /tests...oh the irony
-    status, raw_spec = pscheduler.url_get(
-                                            pscheduler.api_url( host=address,
-                                                                path='/tests'),
-                                            throw=False
-                                        )
-    return status == 200
-
 json = pscheduler.json_load(exit_on_error=True);
 
 # TODO: Should be checking the package schema and the task spec schema.
@@ -43,8 +30,15 @@ for unsupported_option in unsupported_options:
         pscheduler.fail("BWCTL does not support " . unsupported_option)
 
 
-if has_pscheduler(spec.get("source", None)):
-    pscheduler.fail("Source has pscheduler, no need for BWCTL")
-    
+source = spec.get("source", "localhost")
 
+if pscheduler.api_has_pscheduler(source):
+    pscheduler.fail("Source has pscheduler, no need for BWCTL")
+
+if not pscheduler.api_has_bwctl(source):
+    logger.debug("No BWCTL at source")
+    pscheduler.fail("No BWCTL on %s" % source)
+
+logger.debug("can-run succeeded") 
 pscheduler.succeed()
+

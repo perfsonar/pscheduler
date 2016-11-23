@@ -391,6 +391,15 @@ then
         echo "Setting SELinux permissions (may take awhile)"
         setsebool -P httpd_can_network_connect_db 1
     fi
+
+    # TODO: Remove when BWCTL backward compatibility is removed.  See #107.
+    STATE=$(getsebool httpd_can_network_connect | awk '{ print $3 }')
+    if [ "${STATE}" != "on" ]
+    then
+        echo "Setting SELinux permissions (may take awhile)"
+        setsebool -P httpd_can_network_connect 1
+    fi
+
 fi
 
 %if 0%{?el6}

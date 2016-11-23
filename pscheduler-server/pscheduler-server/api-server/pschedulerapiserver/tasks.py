@@ -198,6 +198,23 @@ def tasks():
         for participant in participants:
 
             try:
+
+                # Make sure the other participants are running pScheduler
+
+                log.debug("Pinging %s" % (participant))
+                status, result = pscheduler.url_get(
+                    pscheduler.api_url(participant), throw=False, timeout=10)
+
+                if status == 400:
+                    raise Exception(result)
+                elif status in [ 202, 204, 205, 206, 207, 208, 226,
+                                 300, 301, 302, 303, 304, 205, 306, 307, 308 ] \
+                    or ( (status >= 400) and (status <=499) ):
+                    raise Exception("Host is not running pScheduler")
+                elif status != 200:
+                    raise Exception("returned status %d: %s"
+                                    % (status, result))
+
                 # TODO: This will fail with a very large test spec.
                 status, result = pscheduler.url_get(
                     pscheduler.api_url(participant, "tools"),
@@ -278,7 +295,12 @@ def tasks():
 
         for participant in range(1,nparticipants):
             part_name = participants[participant]
+            log.debug("Tasking participant %s", part_name)
             try:
+
+
+                # Post the task
+
                 log.debug("Tasking %d@%s: %s", participant, part_name, task_data)
                 post_url = pscheduler.api_url(part_name,
                                               'tasks/' + task_uuid)

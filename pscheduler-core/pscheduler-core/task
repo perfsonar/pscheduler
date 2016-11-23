@@ -392,6 +392,11 @@ if options.archive:
     task['archives'] = archives
 
 
+# Make sure whoever we're using for assistance is running pScheduler
+if not pscheduler.api_has_pscheduler(assist):
+    pscheduler.fail("Unable to find pScheduler on %s" % (assist))
+
+
 #
 # Convert the remaining arguments to a test spec.
 #
@@ -402,7 +407,8 @@ log.debug("Converting to spec via %s", spec_url)
 status, raw_spec = pscheduler.url_get(
     spec_url,
     params={ 'args': pscheduler.json_dump(remaining_args) },
-    throw=False
+    throw=False,
+    timeout=10
     )
 
 if status == 400:
@@ -415,7 +421,7 @@ if status == 400:
 
     # Anything else is a bona-fide bad request.
 
-    pscheduler.fail("%s: %s" % (test_type, raw_spec))
+    pscheduler.fail("%s: %s" % (assist, raw_spec))
 
 if status == 404:
     pscheduler.fail("Could not find test " + test_type + " on server")
@@ -448,13 +454,6 @@ if verbose:
     print ("Submitting with assistance from %s..." % assist) if assist != last_ditch_assist \
         else "Submitting task..."
 
-status, text =  pscheduler.url_get( pscheduler.api_url(assist, '/hostname'),
-                                    throw=False )
-if status != 200:
-    pscheduler.fail("Can't talk to the pScheduler server at %s: %s"
-                    % (assist, text))
-log.debug("Assist server says it is %s", text)
-
 
 
 # TODO: Validate the test before figuring out who's involved.
@@ -472,9 +471,9 @@ null_reason = None
 
 # Get participants
 
-log.debug("Fetching participant list from %s", assist)
-url = pscheduler.api_url(assist, '/tests/%s/participants' % task['test']['type'])
 
+url = pscheduler.api_url(assist, '/tests/%s/participants' % task['test']['type'])
+log.debug("Fetching participant list from %s", url)
 log.debug("%s", pscheduler.json_dump(task['test']['spec']))
 status, participants = pscheduler.url_get( url, params={
         'spec': pscheduler.json_dump(task['test']['spec'])
@@ -517,6 +516,25 @@ log.debug("Lead is %s, null reason is %s", lead, null_reason)
 if lead is None and assist != last_ditch_assist:
     pscheduler.fail("Cannot use an assist server with ambiguous parameters: %s"
                     % null_reason)
+
+
+#
+# Check that the lead is running pScheduler and is reasonably responsive.
+#
+
+log.debug("Pinging %s", lead)
+status, result = pscheduler.url_get(pscheduler.api_url(lead),
+                                    throw=False, timeout=10)
+
+if status == 400:
+    pscheduler.fail("%s: %s" % (lead, result))
+elif status in [ 202, 204, 205, 206, 207, 208, 226,
+                 300, 301, 302, 303, 304, 205, 306, 307, 308 ] \
+    or ( (status >= 400) and (status <=499) ):
+    pscheduler.fail("%s is not running pScheduler" %  (lead))
+elif status != 200:
+    pscheduler.fail("%s returned status %d: %s" % (lead, status, result))
+log.debug("%s is up", lead)
 
 
 #
