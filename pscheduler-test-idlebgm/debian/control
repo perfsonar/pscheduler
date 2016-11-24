@@ -1,4 +1,4 @@
-Source: pscheduler-test-idlebg
+Source: pscheduler-test-idlebgm
 Section: net
 Priority: optional
 Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
@@ -8,7 +8,7 @@ Homepage: https://github.com/perfsonar/pscheduler
 Vcs-Git: git://github.com/perfsonar/pscheduler
 Vcs-Browser: https://github.com/perfsonar/pscheduler
 
-Package: pscheduler-test-idlebg
+Package: pscheduler-test-idlebgm
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
  pscheduler-server, python-jsontemplate
