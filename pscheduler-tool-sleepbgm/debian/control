@@ -1,4 +1,4 @@
-Source: pscheduler-tool-sleepbg
+Source: pscheduler-tool-sleepbgm
 Section: net
 Priority: optional
 Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
@@ -8,7 +8,7 @@ Homepage: https://github.com/perfsonar/pscheduler
 Vcs-Git: git://github.com/perfsonar/pscheduler
 Vcs-Browser: https://github.com/perfsonar/pscheduler
 
-Package: pscheduler-tool-sleepbg
+Package: pscheduler-tool-sleepbgm
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
  pscheduler-server, pscheduler-test-idle
