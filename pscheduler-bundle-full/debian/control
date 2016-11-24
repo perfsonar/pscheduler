@@ -15,7 +15,7 @@ Depends:
  pscheduler-core,
  pscheduler-docs,
  pscheduler-test-idle,
- pscheduler-test-idlebg,
+ pscheduler-test-idlebgm,
  pscheduler-test-idleex,
  pscheduler-test-latency,
  pscheduler-test-latencybg,

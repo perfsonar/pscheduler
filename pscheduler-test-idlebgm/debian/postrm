@@ -1,5 +1,5 @@
 #!/bin/sh
-# postrm script for pscheduler-test-idlebg
+# postrm script for pscheduler-test-idlebgm
 #
 # see: dh_installdeb(1)
 
