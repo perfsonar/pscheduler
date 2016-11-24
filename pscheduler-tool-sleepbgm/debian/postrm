@@ -1,5 +1,5 @@
 #!/bin/sh
-# postrm script for pscheduler-tool-sleepbg
+# postrm script for pscheduler-tool-sleepbgm
 #
 # see: dh_installdeb(1)
 

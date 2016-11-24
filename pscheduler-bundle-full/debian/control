@@ -29,7 +29,7 @@ Depends:
  pscheduler-tool-iperf3,
  pscheduler-tool-simplestreamer,
  pscheduler-tool-sleep,
- pscheduler-tool-sleepbg,
+ pscheduler-tool-sleepbgm,
  pscheduler-tool-snooze,
  pscheduler-tool-nuttcp,
  pscheduler-tool-ping,
