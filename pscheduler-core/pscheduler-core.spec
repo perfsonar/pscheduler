@@ -17,7 +17,7 @@ Provides:	%{name} = %{version}-%{release}
 
 # This is for netstat.
 Requires:       net-tools
-Requires:       python-pscheduler
+Requires:       python-pscheduler >= 1.2
 Requires:       pytz
 Requires:	curl
 

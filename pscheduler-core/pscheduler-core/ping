@@ -29,17 +29,27 @@ Example:
     )
 opt_parser.disable_interspersed_args()
 
+opt_parser.add_option("--timeout", "-W",
+                      help="How long to wait for the server to respond, in seconds (default 5)",
+                      default=5,
+                      action="store", type="int",
+                      dest="timeout")
+
+
 (options, remaining_args) = opt_parser.parse_args()
 
 if len(remaining_args) != 1:
     opt_parser.print_usage()
     pscheduler.fail()
 
+if options.timeout <= 0:
+    pscheduler.fail("Timeout must be >= 0")
+
 host = remaining_args[0]
 
 url = pscheduler.api_url(host)
 
-status, result = pscheduler.url_get(url, throw=False)
+status, result = pscheduler.url_get(url, throw=False, timeout=options.timeout)
 
 if status == 200:
     pscheduler.succeed("pScheduler on %s is alive." % (host))

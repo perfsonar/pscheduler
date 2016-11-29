@@ -46,6 +46,18 @@ def arg_cardinal(name):
         raise ValueError("Invalid cardinal; expecting integer > 0")
     return cardinal
 
+def arg_integer(name):
+    """Fetch and validate an argument as an integer."""
+    argval = request.args.get(name)
+    if argval is None:
+        return None
+    try:
+        integer = int(argval)
+    except ValueError:
+        raise ValueError("Invalid integer.")
+    return integer
+
+
 
 def arg_json(name):
     """Fetch and validate an argument as JSON"""

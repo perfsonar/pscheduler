@@ -11,20 +11,6 @@ import pscheduler
 logger = pscheduler.Log(prefix='tool-bwctl', quiet=True)
 
 
-def has_pscheduler(address):
-    #null participant means localhost, which means has psc by definition
-    if address is None:
-        return True
-    
-    #test query for /tests...oh the irony
-    status, raw_spec = pscheduler.url_get(
-                                            pscheduler.api_url( host=address,
-                                                                path='/tests'),
-                                            throw=False
-                                        )
-    return status == 200
-    
-
 json = pscheduler.json_load(exit_on_error=True)
 
 logger.debug("can-run for %s" % json)
@@ -55,11 +41,14 @@ for unsupported_option in unsupported_options:
     if test_spec.has_key(unsupported_option):
         pscheduler.fail("BWCTL does not support " . unsupported_option)
         
-src_has_psc = has_pscheduler(source)
-dst_has_psc = has_pscheduler(destination)
+src_has_psc = pscheduler.api_has_pscheduler(source)
+dst_has_psc = pscheduler.api_has_pscheduler(destination)
 if src_has_psc and dst_has_psc:
     pscheduler.fail("Both sides have pscheduler, no need for BWCTL")
- 
-logger.debug("can-run succeeded")
 
+if not pscheduler.api_has_bwctl(destination):
+    logger.debug("No BWCTL at destination")
+    pscheduler.fail("No BWCTL on %s" % destination)
+
+logger.debug("can-run succeeded") 
 pscheduler.succeed()

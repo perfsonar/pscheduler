@@ -19,7 +19,7 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server
 Requires:	pscheduler-account
 Requires:	python-ipaddr
-Requires:	python-pscheduler
+Requires:	python-pscheduler >= 1.3
 Requires:	pscheduler-test-rtt
 Requires:	python-icmperror
 # This supplies ping.

@@ -36,16 +36,21 @@ class URLException(Exception):
 def url_get( url,          # GET URL
              params={},    # GET parameters
              json=True,    # Interpret result as JSON
-             throw=True    # Throw if status isn't 200
+             throw=True,   # Throw if status isn't 200
+             timeout=None  # Seconds before giving up
              ):
     """
     Fetch a URL using GET with parameters, returning whatever came back.
     """
 
     try:
-        request = requests.get(url, params=params, verify=verify_keys)
+        request = requests.get(url, params=params, verify=verify_keys,
+                               timeout=timeout)
         status = request.status_code
         text = request.text
+    except requests.exceptions.Timeout:
+        status = 400
+        text = "Request timed out"
     except Exception as ex:
         status = 400
         # TODO: This doesn't come out looking as nice as it should.
@@ -68,77 +73,103 @@ def url_post( url,          # GET URL
               params={},    # GET parameters
               data=None,    # Data to post
               json=True,    # Interpret result as JSON
-              throw=True    # Throw if status isn't 200
+              throw=True,   # Throw if status isn't 200
+              timeout=None  # Seconds before giving up
               ):
     """
     Post to a URL, returning whatever came back.
     """
 
-    request = requests.post(url, params=params, data=data, verify=verify_keys)
-    status = request.status_code
+    try:
+        request = requests.post(url, params=params, data=data, verify=verify_keys,
+                                timeout=timeout)
+        status = request.status_code
+        text = request.text
+    except requests.exceptions.Timeout:
+        status = 400
+        text = "Request timed out"
+
 
     if status != 200 and status != 201:
         if throw:
             raise URLException("POST " + url + " returned " + str(status)
-                               + ": " + request.text)
+                               + ": " + text)
         else:
-            return (status, request.text)
+            return (status, text)
 
     if json:
-        return (status, pscheduler.json_load(request.text))
+        return (status, pscheduler.json_load(text))
     else:
-        return (status, request.text)
+        return (status, text)
+
 
 
 def url_put( url,          # GET URL
              params={},    # GET parameters
              data=None,    # Data for body
              json=True,    # Interpret result as JSON
-             throw=True    # Throw if status isn't 200
+             throw=True,   # Throw if status isn't 200
+             timeout=None  # Seconds before giving up
              ):
     """
     PUT to a URL, returning whatever came back.
     """
 
-    request = requests.put(url, params=params, data=data, verify=verify_keys)
-    status = request.status_code
+    try:
+        request = requests.put(url, params=params, data=data, verify=verify_keys,
+                               timeout=timeout)
+        status = request.status_code
+        text = request.text
+    except requests.exceptions.Timeout:
+        status = 400
+        text = "Request timed out"
+
 
     if status != 200 and status != 201:
         if throw:
             raise URLException("PUT " + url + " returned " + str(status)
-                               + ": " + request.text)
+                               + ": " + text)
         else:
-            return (status, request.text)
+            return (status, text)
 
     if json:
-        return (status, pscheduler.json_load(request.text))
+        return (status, pscheduler.json_load(text))
     else:
-        return (status, request.text)
+        return (status, text)
 
 
 
 
 def url_delete( url,          # DELETE URL
-                throw=True    # Throw if status isn't 200
+                throw=True,   # Throw if status isn't 200
+                timeout=None  # Seconds before giving up
              ):
     """
     Delete a URL.
     """
-
-    request = requests.delete(url, verify=verify_keys)
-    status = request.status_code
+    try:
+        request = requests.delete(url, verify=verify_keys, timeout=timeout)
+        status = request.status_code
+        text = request.text
+    except requests.exceptions.Timeout:
+        status = 400
+        text = "Request timed out"
 
     if status != 200 and throw:
         raise URLException("DELETE " + url + " returned " + str(status)
-                           + ": " + request.text)
+                           + ": " + text)
 
-    return (status, request.text)
+    return (status, text)
 
 
 
-def url_delete_list( urls ):
+def url_delete_list(
+        urls,
+        timeout=None # Seconds before giving up
+        ):
     """
-    Delete a list of URLs and return tuples of the status and error
-    for each.
+    Delete a list of URLs and return tuples of the status and error for
+    each.  Note that the timeout is per delete, not for the aggregated
+    operation.
     """
-    return [ url_delete(url, throw=False) for url in urls ]
+    return [ url_delete(url, throw=False, timeout=timeout) for url in urls ]

@@ -138,13 +138,12 @@ AS
 	    (SELECT COUNT(*)
              FROM
                  run
-                 JOIN test ON test.id = task.test
              WHERE
                  run.task = task.id
                  AND upper(times) > normalized_now()) AS scheduled,
             runs,
             task.until,
- 	    task_next_run(coalesce(start, normalized_now()), 
+ 	    task_next_run(task.first_start,
                           greatest(normalized_now(), task.start, max(upper(run.times))),
                           repeat) AS trynext,
 	    task.participant,
@@ -156,8 +155,8 @@ AS
             JOIN test ON test.id = task.test
 	WHERE
 	    task.repeat IS NOT NULL
+	    AND runs > 0
         GROUP BY task.id, run_latest.latest, test.scheduling_class
-
     )
     SELECT
         task,
@@ -170,8 +169,7 @@ AS
     WHERE
         enabled
 	AND participant = 0
-        AND ( (max_runs IS NULL)
-              OR (runs + scheduled) < max_runs )
+        AND ( (max_runs IS NULL) OR (runs < max_runs) )
         AND ( (until IS NULL) OR (trynext < until) )
 	-- Anything that fits the scheduling horizon or is a backgrounder
         AND (

@@ -334,9 +334,15 @@ BEGIN
 
     ELSIF (TG_OP = 'INSERT') THEN
 
-        -- Make a note that this run was put on the schedule
+        -- Make a note that this run was put on the schedule and
+        -- update the start time if we don't have one.
 
-        UPDATE task t SET runs = runs + 1 WHERE t.id = taskrec.id;
+        UPDATE task t
+        SET
+            runs = runs + 1,
+            -- TODO: This skews future runs when the first run slips.
+            first_start = coalesce(t.first_start, t.start, lower(NEW.times))
+        WHERE t.id = taskrec.id;
 
         PERFORM pg_notify('run_new', NEW.uuid::TEXT);
 
