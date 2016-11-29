@@ -1,5 +1,5 @@
---- a/diags.m4
-+++ b/diags.m4
+--- a/diags.raw
++++ b/diags.raw
 @@ -138,7 +138,7 @@
  fi
  
