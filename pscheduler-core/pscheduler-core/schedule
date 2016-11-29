@@ -14,6 +14,9 @@ import pytz
 import sys
 
 
+pscheduler.set_graceful_exit()
+
+
 #
 # Utilities
 #

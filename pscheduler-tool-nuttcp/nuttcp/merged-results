@@ -9,7 +9,7 @@
 
 import pscheduler
 
-logger = pscheduler.Log()
+logger = pscheduler.Log(quiet=True)
 
 input = pscheduler.json_load(exit_on_error=True)
 

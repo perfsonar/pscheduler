@@ -63,8 +63,14 @@ if "data-formatting-policy" in json['data']:
 
 #setup default data summaries
 summary_map = None
-if "summaries" in json['data']:
-    summary_map = json['data']['summaries']
+if "summaries" in json['data'] and json['data']['summaries']:
+    summary_map = {}
+    for summary in json['data']['summaries']:
+        if "event-type" not in summary:
+            continue
+        if summary["event-type"] not in summary_map:
+            summary_map[summary["event-type"]] = []
+        summary_map[summary["event-type"]].append(summary)
 
 #prep retry policy
 try:

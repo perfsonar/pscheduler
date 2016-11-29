@@ -18,7 +18,7 @@ import socket
 import sys
 import time
 import traceback
-import urlparse
+
 
 # Gargle the arguments
 
@@ -72,9 +72,8 @@ first_run_offset = pscheduler.iso8601_as_timedelta('PT10S')
 # Run Poster
 #
 
-
 def run_post(
-    task_url_text, # URL for task
+    url,           # URL for task
     start_time,    # Desired start time
     log=None
     ):
@@ -86,18 +85,15 @@ def run_post(
     if there was no error).
     """
 
-    log and log.debug("Posting %s at %s", task_url_text, start_time)
-
-    # TODO: Error handling when calling url_* needs improvement.  Lots.
-
-    task_url = urlparse.urlparse(task_url_text)
     assert type(start_time) == datetime.datetime
 
+    log and log.debug("Posting %s at %s", url, start_time)
+
     try:
-        status, task = pscheduler.url_get(task_url_text, params={'detail': 1})
+        status, task = pscheduler.url_get(url, params={'detail': 1})
     except pscheduler.URLException as ex:
         return (None, None, None,
-                "Error fetching %s: %s" % (task_url_text, str(ex)))
+                "Error fetching %s: %s" % (url, str(ex)))
 
 
     # Generate a list of the task URLs
@@ -107,16 +103,10 @@ def run_post(
     log and log.debug("Participant list is %s", participants)
     assert len(participants) >= 1
 
-    parts = list(task_url)
     for participant in participants:
-        # TODO: Use the canonicalizer for generating these URLs.
-        parts[1] = re.sub( '^[^:]*',
-                           pscheduler.api_this_host()
-                           if participant is None else str(participant),
-                           parts[1])
-        url = urlparse.urlunsplit(parts[:-1])
-        task_urls.append(url)
-        log and log.debug("Participant task URL is %s", url)
+        part_url = pscheduler.api_replace_host(url, participant)
+        task_urls.append(part_url)
+        log and log.debug("Participant task URL is %s", part_url)
 
     #
     # Figure out the range of times in which the task can be run.
@@ -370,6 +360,9 @@ def main_program():
 
         wait = True
 
+        log.debug("Fetching runs to schedule")
+
+        # TODO: The FALSE for background does nothing.  Get rid of it.
         cursor.execute("""
             SELECT uuid, runs, trynext, FALSE
             FROM schedule_runs_to_schedule
@@ -394,7 +387,6 @@ def main_program():
             log.debug("%sTASK %s, %d runs, try %s", 
                       "BACKGROUND " if background else "",
                       uuid, runs, trynext)
-
 
             url = pscheduler.api_url(path='/tasks/' + uuid)
 
@@ -427,10 +419,12 @@ def main_program():
                 log.debug("Scheduled for %s - %s at %s",
                           start_time, end_time, run_uri)
 
+
         # Wait for something to happen.
           
         if wait:
 
+            log.debug("Waiting for something to happen.")
             try:
                 if select.select([pg],[],[],
                                  pscheduler.timedelta_as_seconds(refresh)) \

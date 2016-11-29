@@ -20,7 +20,7 @@ from iperf3_defaults import *
 # track when this run starts
 start_time = datetime.datetime.now()
 
-logger = pscheduler.Log(prefix='tool-iperf3')
+logger = pscheduler.Log(prefix='tool-iperf3', quiet=True)
 
 logger.debug("starting iperf3 tool")
 
@@ -163,7 +163,7 @@ def run_client():
     # just to be safe cast everything in the list to a string
     iperf3_args = map(lambda x: str(x), iperf3_args)
       
-    logger.info("Running command: %s" % " ".join(iperf3_args))
+    logger.debug("Running command: %s" % " ".join(iperf3_args))
 
     try:
         status, stdout, stderr = pscheduler.run_program(iperf3_args)
@@ -177,8 +177,13 @@ def run_client():
 
     
     if status:
+        try:
+            json_stdout = pscheduler.json_load(stdout)
+            error_text = json_stdout["error"]
+        except (ValueError, KeyError):
+            error_text = stdout
         pscheduler.succeed_json({"succeeded": False,
-                                 "error": "iperf3 returned an error: %s\n%s" % (stdout, stderr)})
+                                 "error": "iperf3 returned an error: %s" % (error_text)})
 
 
     lines = stdout.split("\n")    
@@ -216,7 +221,7 @@ def run_server():
         omit = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(omit)) 
 
     iperf3_args = map(lambda x: str(x), iperf3_args)
-    logger.info("Running command: %s" % " ".join(iperf3_args))
+    logger.debug("Running command: %s" % " ".join(iperf3_args))
 
     try:
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
@@ -257,6 +262,6 @@ except Exception as ex:
     logger.debug(tb_lines)
     logger.error("Exception %s" % ex);
 
-logger.info("Results: %s" % results)
+logger.debug("Results: %s" % results)
 
 pscheduler.succeed_json(results)

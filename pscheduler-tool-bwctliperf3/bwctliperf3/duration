@@ -9,7 +9,7 @@ import pscheduler
 
 from iperf3_defaults import *
 
-logger = pscheduler.Log(prefix='tool-bwctl')
+logger = pscheduler.Log(prefix='tool-bwctl', quiet=True)
 
 json = pscheduler.json_load(exit_on_error=True)
 
@@ -26,7 +26,7 @@ if json.get('omit'):
     logger.debug("Adding %s seconds because of omit flag" % omit_seconds)
     duration += omit_seconds
 
-logger.info("duration = %ss" % duration)
+logger.debug("duration = %ss" % duration)
 
 pscheduler.succeed_json({
         "duration": 'PT%dS' % (duration + DEFAULT_FUDGE_FACTOR + DEFAULT_WAIT_SLEEP)

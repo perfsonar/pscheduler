@@ -5,7 +5,7 @@
 %define short	nuttcp
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.16.rc2%{?dist}
+Release:	0.17.rc2%{?dist}
 
 Summary:	nuttcp tool class for pScheduler
 BuildArch:	noarch
@@ -19,7 +19,7 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server
 Requires:	python-pscheduler
 Requires:	pscheduler-test-throughput
-Requires:	nuttcp >= 8.1.3
+Requires:	nuttcp >= 8.1.4
 
 BuildRequires:	pscheduler-rpm
 

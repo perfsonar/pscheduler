@@ -6,7 +6,7 @@ import pscheduler
 import ConfigParser
 from nuttcp_defaults import *
 
-logger = pscheduler.Log()
+logger = pscheduler.Log(quiet=True)
 
 ##
 # Read and return config file (or nothing if unable to)

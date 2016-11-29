@@ -4,7 +4,7 @@
 
 Name:		pscheduler-core
 Version:	1.0
-Release:	0.16.rc2%{?dist}
+Release:	0.17.rc2%{?dist}
 
 Summary:	pScheduler Core Programs
 BuildArch:	noarch
@@ -17,7 +17,7 @@ Provides:	%{name} = %{version}-%{release}
 
 # This is for netstat.
 Requires:       net-tools
-Requires:       python-pscheduler
+Requires:       python-pscheduler >= 1.2
 Requires:       pytz
 Requires:	curl
 

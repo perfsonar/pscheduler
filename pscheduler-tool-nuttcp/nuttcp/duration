@@ -9,7 +9,7 @@ import pscheduler
 
 from nuttcp_defaults import *
 
-logger = pscheduler.Log(prefix='tool-nuttcp')
+logger = pscheduler.Log(prefix='tool-nuttcp', quiet=True)
 
 json = pscheduler.json_load(exit_on_error=True)
 
@@ -20,7 +20,7 @@ if duration:
 else:
     duration = DEFAULT_DURATION
 
-logger.info("duration = %ss" % duration)
+logger.debug("duration = %ss" % duration)
 
 pscheduler.succeed_json({
         "duration": 'PT%dS' % (duration + DEFAULT_FUDGE_FACTOR + DEFAULT_WAIT_SLEEP)

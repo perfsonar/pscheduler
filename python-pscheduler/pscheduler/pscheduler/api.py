@@ -6,6 +6,10 @@ import socket
 import urlparse
 import uuid
 
+from .psdns import *
+from .psurl import *
+
+
 def api_root():
     "Return the standard root location of the pScheduler hierarchy"
     return '/pscheduler'
@@ -13,6 +17,25 @@ def api_root():
 def api_this_host():
     "Return a fully-qualified name for this host"
     return socket.getfqdn()
+
+
+def __host_per_rfc_2732(host):
+    "Format a host name or IP for a URL according to RFC 2732"
+
+    try:
+        socket.inet_pton(socket.AF_INET6, host)
+        return "[%s]" % (host)
+    except socket.error:
+        return host  # Not an IPv6 address
+
+
+def api_replace_host(url_text, replacement):
+    "Replace the host portion of a URL"
+
+    url = list(urlparse.urlparse(url_text))
+    url[1] = __host_per_rfc_2732(replacement)
+    return urlparse.urlunparse(url)
+
 
 
 def api_url(host = None,
@@ -23,13 +46,7 @@ def api_url(host = None,
     """Format a URL for use with the pScheduler API."""
 
     host = api_this_host() if host is None else str(host)
-
-    # IPv6 addresses get special treatment
-    try:
-        socket.inet_pton(socket.AF_INET6, host)
-        host = "[%s]" % host
-    except socket.error:
-        pass  # Not an IPv6 address.
+    host = __host_per_rfc_2732(host)
 
     if path is not None and path.startswith('/'):
         path = path[1:]
@@ -88,6 +105,61 @@ def api_result_delimiter():
     return "---- pScheduler End Result ----"
 
 
+
+#
+# TODO: Remove this when the backward-compatibility code is removed
+#
+
+def api_has_pscheduler(host, timeout=5):
+    """
+    Determine if pScheduler is running on a host
+    """
+    # Null implies localhost
+    if host is None:
+        host = "localhost"
+
+    # Make sure the address resolves, otherwise url_get will return
+    # non-200.
+
+    resolved = None
+    for ip_version in [ 4, 6 ]:
+        resolved = pscheduler.dns_resolve(host,
+                                          ip_version=ip_version,
+                                          timeout=timeout)
+        if resolved:
+            break
+
+    if not resolved:
+        return False
+ 
+    status, raw_spec = pscheduler.url_get(pscheduler.api_url(resolved),
+                                          timeout=timeout, throw=False)
+
+    return status == 200
+
+
+
+from contextlib import closing
+
+def api_has_bwctl(host):
+    """
+    Determine if a host is running the BWCTL daemon
+    """
+    try:
+        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
+            sock.settimeout(3)
+            return sock.connect_ex((host, 4823)) == 0
+    except:
+        pass
+    try:
+        with closing(socket.socket(socket.AF_INET6, socket.SOCK_STREAM)) as sock:
+            sock.settimeout(3)
+            return sock.connect_ex((host, 4823)) == 0
+    except:
+        return False
+
+
+
 if __name__ == "__main__":
     print api_url()
     print api_url(protocol='https')
@@ -97,3 +169,6 @@ if __name__ == "__main__":
     print api_url(path='nohost')
     print
     print api_full_host()
+
+    print api_has_bwctl(None)
+    print api_has_pscheduler(None)

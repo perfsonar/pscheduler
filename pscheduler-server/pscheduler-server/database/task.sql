@@ -237,6 +237,17 @@ BEGIN
     END IF;
 
 
+    -- Version 6 to version 7
+    -- Add first_start column
+    IF t_version = 6
+    THEN
+	-- When the first run of the task started
+        ALTER TABLE task ADD COLUMN
+	first_start TIMESTAMP WITH TIME ZONE;
+
+        t_version := t_version + 1;
+    END IF;
+
 
     --
     -- Cleanup
@@ -445,6 +456,11 @@ BEGIN
 	-- TODO: Should we check that the repeat interval is greater
 	-- than the duration (which we no longer have by default)?
 
+	NEW.max_runs := text_to_numeric(NEW.json #>> '{schedule, max-runs}');
+	IF (NEW.max_runs IS NOT NULL) AND (NEW.max_runs < 1) THEN
+	   RAISE EXCEPTION 'Maximum runs must be positive.';
+	END IF;
+
 	IF NEW.repeat IS NULL THEN
 	   NEW.until := NULL;
 	   NEW.max_runs := 1;
@@ -480,12 +496,6 @@ BEGIN
 	END IF;
 
 
-	NEW.max_runs := text_to_numeric(NEW.json #>> '{schedule, max-runs}');
-
-	IF (NEW.max_runs IS NOT NULL) AND (NEW.max_runs < 1) THEN
-	   RAISE EXCEPTION 'Maximum runs must be positive.';
-	END IF;
-
         -- See what the tool says about how long it should take.
 	
 	IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND NEW.json <> OLD.json)
@@ -508,7 +518,10 @@ BEGIN
 	-- ARCHIVES
 	--
 
-	IF NEW.json ? 'archives' THEN
+	IF (TG_OP = 'INSERT'
+            OR (TG_OP = 'UPDATE' AND NEW.json <> OLD.json))
+	   AND NEW.json ? 'archives'
+        THEN
 	    FOR archive IN (SELECT * FROM jsonb_array_elements_text(NEW.json -> 'archives'))
 	    LOOP
 	        PERFORM archiver_validate(archive);
@@ -692,6 +705,8 @@ AS $$
 DECLARE
     taskrec RECORD;
     host TEXT;
+    ip INET;
+    ip_family INTEGER;
 BEGIN
 
     SELECT INTO taskrec * FROM task WHERE uuid = task_uuid;
@@ -716,11 +731,21 @@ BEGIN
         FOR host IN (SELECT jsonb_array_elements_text(taskrec.participants)
                      FROM task WHERE uuid = task_uuid OFFSET 1)
         LOOP
+
+            -- IPv6 adresses get special treatment
+            BEGIN
+		IF family(host::INET) = 6
+                THEN
+                    host := format('[%s]', host);
+                END IF;
+            EXCEPTION WHEN OTHERS THEN
+                NULL;  -- Don't care
+            END;
+
             INSERT INTO http_queue (operation, uri)
                 VALUES ('DELETE', format(task_url_format, host));
         END LOOP;
-    END IF;
-   
+    END IF;   
 
 END;
 $$ LANGUAGE plpgsql;

@@ -5,7 +5,7 @@
 %define short	bwctlping
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.16.rc2%{?dist}
+Release:	0.17.rc2%{?dist}
 
 Summary:	pScheduler BWCTL Ping Tool
 BuildArch:	noarch
@@ -19,7 +19,7 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server
 Requires:	pscheduler-account
 Requires:	python-ipaddr
-Requires:	python-pscheduler
+Requires:	python-pscheduler >= 1.3
 Requires:	pscheduler-test-rtt
 Requires:	python-icmperror
 # This supplies ping.

@@ -170,7 +170,8 @@ def tasks_uuid_runs(task):
 
 
 def __runs_first_run(
-    task   # UUID of task
+    task,         # UUID of task
+    future=False  # Get first future run instead of first-ever
     ):
     """
     Find the UUID of the first run of the specified task, returning
@@ -186,9 +187,10 @@ def __runs_first_run(
                   JOIN run ON run.task = task.id
                 WHERE
                   task.uuid = %s
+                  AND (%s OR lower(run.times) >= normalized_now())
                 ORDER BY run.times
                 LIMIT 1
-                """, [task])
+                """, [task, not future])
 
     if cursor.rowcount == 0:
         return None 
@@ -215,22 +217,34 @@ def tasks_uuid_runs_run(task, run):
         wait_merged = arg_boolean('wait-merged')
 
         if wait_local and wait_merged:
-            return error("Cannot wait on local and merged results")
+            return bad_request("Cannot wait on local and merged results")
+
+        # Figure out how long to wait in seconds.  Zero means don't
+        # wait.
+
+        wait_time = arg_integer('wait')
+        if wait_time is None:
+            wait_time = 30
+        if wait_time < 0:
+            return bad_request("Wait time must be >= 0")
 
         # If asked for 'first', dig up the first run and use its UUID.
 
-        if run == 'first':
-            # 60 tries at 0.5s intervals == 30 sec.
-            tries = 60
+        if run in ['next', 'first']:
+            future = run == 'next'
+            wait_interval = 0.5
+            tries = int(wait_time / wait_interval) if wait_time > 0 \
+                    else 1
             while tries > 0:
                 try:
-                    run = __runs_first_run(task)
+                    run = __runs_first_run(task, future)
                 except Exception as ex:
                     log.exception()
                     return error(str(ex))
                 if run is not None:
                     break
-                time.sleep(1.0)
+                if wait_time > 0:
+                    time.sleep(1.0)
                 tries -= 1
 
             if run is None:

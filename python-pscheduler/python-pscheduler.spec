@@ -4,8 +4,8 @@
 
 %define short	pscheduler
 Name:		python-%{short}
-Version:	1.1
-Release:	0.16.rc2%{?dist}
+Version:	1.3
+Release:	0.17.rc2%{?dist}
 Summary:	Utility functions for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0
@@ -33,8 +33,6 @@ Requires:	python-subprocess32
 Requires:	python-tzlocal
 Requires:	pytz
 Requires:	rsyslog
-# This is because the Log class uses debugging.
-Requires:	rsyslog-debug
 Requires:	logrotate
 
 BuildRequires:	python-setuptools

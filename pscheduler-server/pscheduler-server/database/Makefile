@@ -28,6 +28,7 @@ FILES=\
 	task \
 	run_state \
 	run \
+	run_latest \
 	archiving \
 	schedule \
 	boot \
@@ -55,7 +56,7 @@ INTERNALS=\
 	reset \
 	warmboot
 
-%: %.m4
+%: %.raw
 ifndef DATABASE
 	@echo No DATABASE specified for build
 	@false
@@ -72,12 +73,16 @@ ifndef ROLE
 	@echo No ROLE specified for build
 	@false
 endif
-	m4 \
-	-D__DATABASE__=$(DATABASE) \
-	-D__DATADIR__=$(DATADIR) \
-	-D__PASSWORDFILE__=$(PASSWORDFILE) \
-	-D__ROLE__=$(ROLE) \
-	< $^ > $@
+	sed \
+		-e 's|__DATABASE__|$(DATABASE)|g' \
+		-e 's|__DATADIR__|$(DATADIR)|g' \
+		-e 's|__PASSWORDFILE__|$(PASSWORDFILE)|g' \
+		-e 's|__ROLE__|$(ROLE)|g' \
+		< $^ > $@
+	@if egrep -e '__[A-Z_]+__' $@ ; then \
+		echo "Found un-substituted values in processed file $@" ; \
+		false ; \
+	fi
 TO_CLEAN += $(INTERNALS)
 
 

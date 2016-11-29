@@ -16,7 +16,7 @@
 
 PROGRAMS=
 
-M4PROGRAMS=\
+RAWPROGRAMS=\
 	pscheduler
 
 COMMANDS=\
@@ -24,33 +24,34 @@ COMMANDS=\
 	result \
 	schedule \
 	monitor \
+	ping \
 	task \
 	watch
 
-M4COMMANDS=\
+RAWCOMMANDS=\
 	diags \
 	internal
 
 INTERNALS=\
 	nothing
 
-M4INTERNALS=\
+RAWINTERNALS=\
 	list
 
 
-ALLPROGRAMS=$(PROGRAMS) $(M4PROGRAMS)
-ALLCOMMANDS=$(COMMANDS) $(M4COMMANDS)
-ALLINTERNALS=$(INTERNALS) $(M4INTERNALS)
+ALLPROGRAMS=$(PROGRAMS) $(RAWPROGRAMS)
+ALLCOMMANDS=$(COMMANDS) $(RAWCOMMANDS)
+ALLINTERNALS=$(INTERNALS) $(RAWINTERNALS)
 
-ALLM4=$(M4PROGRAMS) $(M4COMMANDS) $(M4INTERNALS)
-ALLM4=$(ALLM4:%=%.m4)
+ALLRAW=$(RAWPROGRAMS) $(RAWCOMMANDS) $(RAWINTERNALS)
+ALLRAW=$(ALLRAW:%=%.raw)
 
 ALL=$(ALLPROGRAMS) $(ALLCOMMANDS) $(ALLINTERNALS)
 
 
 default:  build
 
-%: %.m4
+%: %.raw
 ifndef COMMANDSINSTALLED
 	@echo No COMMANDSINSTALLED specified for build of $@
 	@false
@@ -67,16 +68,20 @@ ifndef TOOLCONFIGDIR
 	@echo No TOOLCONFIGDIR specified for build of $@
 	@false
 endif
-	m4 \
-		-D__COMMANDS__=$(COMMANDSINSTALLED) \
-		-D__CLASSES__=$(CLASSESINSTALLED) \
-		-D__INTERNALS__=$(INTERNALSINSTALLED) \
-		-D__TOOLCONFIGDIR__=$(TOOLCONFIGDIR) \
+	sed \
+		-e 's|__COMMANDS__|$(COMMANDSINSTALLED)|g' \
+		-e 's|__CLASSES__|$(CLASSESINSTALLED)|g' \
+		-e 's|__INTERNALS__|$(INTERNALSINSTALLED)|g' \
+		-e 's|__TOOLCONFIGDIR__|$(TOOLCONFIGDIR)|g' \
 		$< > $@
+	@if egrep -e '__[A-Z_]+__' $@ ; then \
+		echo "Found un-substituted values in processed file $@" ; \
+		false ; \
+	fi
 
 
 build: $(ALL)
-TO_CLEAN += $(M4PROGRAMS) $(M4COMMANDS) $(M4INERNALS)
+TO_CLEAN += $(RAWPROGRAMS) $(RAWCOMMANDS) $(RAWINERNALS)
 
 
 install: $(ALL)

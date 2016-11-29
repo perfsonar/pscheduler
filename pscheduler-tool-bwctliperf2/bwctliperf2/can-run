@@ -8,24 +8,9 @@ import sys
 
 import pscheduler
 
-logger = pscheduler.Log(prefix='tool-iperf')
-
-def has_pscheduler(address):
-    #null participant means localhost, which means has psc by definition
-    if address is None:
-        return True
-    
-    #test query for /tests...oh the irony
-    status, raw_spec = pscheduler.url_get(
-                                            pscheduler.api_url( host=address,
-                                                                path='/tests'),
-                                            throw=False
-                                        )
-    return status == 200
+logger = pscheduler.Log(prefix='tool-iperf', quiet=True)
     
 json = pscheduler.json_load(exit_on_error=True)
-
-logger.info("can-run for %s" % json)
 
 if not json.get('type'):
     pscheduler.fail('Missing test type')
@@ -70,15 +55,14 @@ except KeyError:
     pscheduler.fail("Missing dest argument in spec")
 
 
-src_has_psc = has_pscheduler(source)
-dst_has_psc = has_pscheduler(destination)
+src_has_psc = pscheduler.api_has_pscheduler(source)
+dst_has_psc = pscheduler.api_has_pscheduler(destination)
 if src_has_psc and dst_has_psc:
     pscheduler.fail("Both sides have pscheduler, no need for BWCTL")
- 
-logger.debug("can-run succeeded")
 
-pscheduler.succeed()
+if pscheduler.api_has_bwctl(destination):
+    logger.debug("can-run succeeded") 
+    pscheduler.succeed()
 
-logger.debug("can-run succeeded")
-
-pscheduler.succeed()
+logger.debug("No BWCTL at destination")
+pscheduler.fail("No BWCTL on %s" % destination)

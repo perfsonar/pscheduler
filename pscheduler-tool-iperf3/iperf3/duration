@@ -9,7 +9,7 @@ import pscheduler
 
 from iperf3_defaults import *
 
-logger = pscheduler.Log(prefix='tool-iperf3')
+logger = pscheduler.Log(prefix='tool-iperf3', quiet=True)
 
 json = pscheduler.json_load(exit_on_error=True)
 
@@ -28,7 +28,7 @@ if json.get('omit'):
 
 duration = duration + DEFAULT_FUDGE_FACTOR + DEFAULT_WAIT_SLEEP
 
-logger.info("final duration = %ss" % duration)
+logger.debug("final duration = %ss" % duration)
 
 pscheduler.succeed_json({
         "duration": 'PT%dS' % (duration)

@@ -5,7 +5,7 @@
 %define short	bwctltraceroute
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.16.rc2%{?dist}
+Release:	0.17.rc2%{?dist}
 
 Summary:	pScheduler BWCTL Traceroute Tool
 BuildArch:	noarch
@@ -18,7 +18,7 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
 Requires:	pscheduler-account
-Requires:	python-pscheduler
+Requires:	python-pscheduler >= 1.3
 Requires:	pscheduler-test-trace
 Requires:	python-icmperror
 Requires:	bwctl-client

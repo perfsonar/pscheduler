@@ -5,7 +5,7 @@
 %define short	rtt
 Name:		pscheduler-test-%{short}
 Version:	1.0
-Release:	0.16.rc2%{?dist}
+Release:	0.17.rc2%{?dist}
 
 Summary:	Round trip time test class for pScheduler
 BuildArch:	noarch
@@ -17,7 +17,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	python-pscheduler
+Requires:	python-pscheduler >= 1.3
 Requires:	python-jsontemplate
 
 BuildRequires:	pscheduler-rpm

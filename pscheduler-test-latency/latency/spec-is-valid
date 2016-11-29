@@ -8,7 +8,7 @@ import pscheduler
 from validate import spec_is_valid
 
 #logging
-log = pscheduler.Log(prefix="test-latency")
+log = pscheduler.Log(prefix="test-latency", quiet=True)
 
 #get json
 json = pscheduler.json_load(exit_on_error=True)

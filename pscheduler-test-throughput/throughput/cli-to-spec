@@ -8,7 +8,7 @@ import sys
 import pscheduler
 import datetime
 
-logger = pscheduler.Log(prefix='test-throughput')
+logger = pscheduler.Log(prefix='test-throughput', quiet=True)
 
 if len(sys.argv) > 1:
 

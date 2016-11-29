@@ -8,7 +8,7 @@
 
 Name:		pscheduler-server
 Version:	1.0
-Release:	0.16.rc2%{?dist}
+Release:	0.17.rc2%{?dist}
 
 Summary:	pScheduler Server
 BuildArch:	noarch
@@ -36,7 +36,7 @@ BuildRequires:	m4
 Requires:	curl
 Requires:	pscheduler-account
 Requires:	python-daemon
-Requires:	python-Flask
+Requires:	python-flask
 Requires:	python-ipaddr
 Requires:	python-requests
 Requires:	python-jsontemplate
@@ -391,6 +391,15 @@ then
         echo "Setting SELinux permissions (may take awhile)"
         setsebool -P httpd_can_network_connect_db 1
     fi
+
+    # TODO: Remove when BWCTL backward compatibility is removed.  See #107.
+    STATE=$(getsebool httpd_can_network_connect | awk '{ print $3 }')
+    if [ "${STATE}" != "on" ]
+    then
+        echo "Setting SELinux permissions (may take awhile)"
+        setsebool -P httpd_can_network_connect 1
+    fi
+
 fi
 
 %if 0%{?el6}

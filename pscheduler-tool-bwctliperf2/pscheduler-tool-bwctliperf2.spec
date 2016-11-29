@@ -5,7 +5,7 @@
 %define short	bwctliperf2
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.16.rc2%{?dist}
+Release:	0.17.rc2%{?dist}
 
 Summary:	bwctliperf2 tool class for pScheduler
 BuildArch:	noarch
@@ -17,7 +17,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	python-pscheduler
+Requires:	python-pscheduler >= 1.3
 Requires:	pscheduler-test-throughput
 Requires:	bwctl-client
 Requires:	bwctl-server

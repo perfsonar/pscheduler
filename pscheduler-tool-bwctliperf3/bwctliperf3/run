@@ -19,7 +19,7 @@ from iperf3_defaults import *
 # track when this run starts
 start_time = datetime.datetime.now()
 
-logger = pscheduler.Log(prefix='tool-bwctl')
+logger = pscheduler.Log(prefix='tool-bwctl', quiet=True)
 
 logger.debug("starting bwctl tool")
 
@@ -196,6 +196,6 @@ except Exception as ex:
     logger.debug(tb_lines)
     logger.error("Exception %s" % ex);
 
-logger.info("Results: %s" % results)
+logger.debug("Results: %s" % results)
 
 pscheduler.succeed_json(results)

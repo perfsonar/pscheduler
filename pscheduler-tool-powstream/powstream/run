@@ -237,6 +237,9 @@ while True:
         sleep_or_end(result_sleep, end_time, parent_pid)
         attempts_without_result = 0
         while True:
+            #make sure we don't get trapped in this loop forever
+            if sleep_or_end(0, end_time, parent_pid): break
+            
             #can't use proc.communicate because waits for EOF
             try:
                 line = proc.stdout.readline()
@@ -255,9 +258,7 @@ while True:
                 owstats_args = [owstats_cmd, '-R', line]
                 log.debug("Running owstats command: %s" % " ".join(owstats_args))
                 try:
-                    stats_proc = Popen(owstats_args, stdout=PIPE, stderr=PIPE, shell=False)
-                    #Could use communicate but could potentially have large buffer.
-                    stats_proc.wait()
+                    stats_returncode, stats_stdout, stats_stderr = pscheduler.run_program(owstats_args, timeout=30)
                 except OSError as e:
                     handle_run_error("owstats encountered an OS error: %s" % e)
                     cleanup_file(line, keep_data_files=keep_data_files)
@@ -268,10 +269,10 @@ while True:
                     continue
             
                 #see if command completed successfully
-                log.debug("owstats returned status %s" % proc.returncode)
-                if stats_proc.returncode:
+                log.debug("owstats returned status %s" % stats_returncode)
+                if stats_returncode:
                     stats_error = ''
-                    for err_line in stats_proc.stderr:
+                    for err_line in stats_stderr:
                         stats_error += err_line.strip() + " "
                     handle_run_error("owstats completed but returned error: %s" % stats_error)
                     cleanup_file(line, keep_data_files=keep_data_files)
@@ -281,7 +282,7 @@ while True:
                 cleanup_file(line, keep_data_files=keep_data_files)
             
                 #parse output
-                results = parse_raw_owamp_output(stats_proc.stdout, raw_output=raw_output, bucket_width=bucket_width)
+                results = parse_raw_owamp_output(stats_stdout, raw_output=raw_output, bucket_width=bucket_width)
             
                 #print
                 print pscheduler.json_dump(results)
