@@ -96,6 +96,10 @@ def main_program():
             except Exception as ex:
                 log.error("Failed to vacuum the database: %s" % str(ex))
             last_vacuum = pscheduler.time_now()
+        else:
+            log.debug("Next vacuuming in %s",
+                      (vacuum_interval - (pscheduler.time_now() - last_vacuum)))
+
 
         log.debug("Tick")
         cursor.execute("SELECT ticker()")
