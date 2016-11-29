@@ -200,8 +200,66 @@ CREATE TRIGGER archiving_alter BEFORE INSERT OR UPDATE ON archiving
 
 
 
+-- Return the first max_return items eligible for archiving
+CREATE OR REPLACE FUNCTION archiving_next(
+    max_return INTEGER
+)
+RETURNS TABLE (
+    id BIGINT,
+    run UUID,
+    archiver TEXT,
+    archiver_data JSONB,
+    start TIMESTAMP WITH TIME ZONE,
+    duration INTERVAL,
+    test JSONB,
+    tool JSONB,
+    participants JSONB,
+    result JSONB,
+    attempts INTEGER,
+    last_attempt TIMESTAMP WITH TIME ZONE
+)
+AS $$
+BEGIN
+
+    RETURN QUERY
+
+    SELECT
+        archiving.id AS id,
+        run.uuid AS uuid,
+        archiver.name AS archiver,
+        archiving.archiver_data,
+        lower(run.times) AS start,
+        task.duration AS duration,
+        task.json #> '{test}' AS test,
+        tool.json AS tool,
+        task.participants AS participants,
+        run.result_merged AS result,
+        archiving.attempts AS attempts,
+        archiving.last_attempt AS last_attempt
+    FROM
+        archiving
+        JOIN archiver ON archiver.id = archiving.archiver
+        JOIN run ON run.id = archiving.run
+        JOIN task ON task.id = run.task
+        JOIN tool ON tool.id = task.tool
+    WHERE
+        archiving.id IN (
+            SELECT archiving.id FROM archiving
+            WHERE NOT archived AND next_attempt < now()
+            ORDER BY next_attempt
+            LIMIT max_return
+        )
+    ORDER BY next_attempt;
+
+    RETURN;
+
+END;
+$$ LANGUAGE plpgsql;
+
+
 -- A handy view for the archiver to use
 
+-- TODO: Remove this after GA release
 DROP VIEW IF EXISTS archiving_eligible;
 CREATE OR REPLACE VIEW archiving_eligible
 AS

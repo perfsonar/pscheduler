@@ -117,6 +117,45 @@ BEGIN
         t_version := t_version + 1;
     END IF;
 
+    -- Version 2 to version 3
+    -- Adds index for upcoming/current runs
+    IF t_version = 2
+    THEN
+        CREATE INDEX run_current ON run(state)
+        WHERE state in (
+            run_state_pending(),
+            run_state_on_deck(),
+            run_state_running()
+        );
+
+        t_version := t_version + 1;
+    END IF;
+
+    -- Version 3 to version 4
+    -- Rebuilds index from previous version, which didn't have
+    -- IMMUTABLE versions of the run_state_* functions.
+    IF t_version = 3
+    THEN
+        DROP INDEX IF EXISTS run_current CASCADE;
+        CREATE INDEX run_current ON run(state)
+        WHERE state in (
+            run_state_pending(),
+            run_state_on_deck(),
+            run_state_running()
+        );
+
+        t_version := t_version + 1;
+    END IF;
+
+    -- Version 4 to version 5
+    -- Adds state to index of upper times
+    IF t_version = 4
+    THEN
+        DROP INDEX IF EXISTS run_times_upper;
+        CREATE INDEX run_times_upper ON run(upper(times), state);
+
+        t_version := t_version + 1;
+    END IF;
 
 
     --
@@ -431,7 +470,7 @@ BEGIN
 
     -- TODO: These should ignore background tests
 
-    -- Runs that are still pending or on deckafter their end times
+    -- Runs that are still pending or on deck after their end times
     -- were missed.
 
     UPDATE run
@@ -479,12 +518,16 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION run_purge()
 RETURNS VOID
 AS $$
+DECLARE
+    purge_before TIMESTAMP WITH TIME ZONE;
 BEGIN
 
+    SELECT INTO purge_before now() - keep_runs_tasks FROM configurables;
+
     DELETE FROM run
-        WHERE (now() - lower(times))
-            > (SELECT keep_runs_tasks FROM configurables);
-    NULL;
+    WHERE
+        upper(times) < purge_before
+        AND state <> run_state_running();
 
 END;
 $$ LANGUAGE plpgsql;

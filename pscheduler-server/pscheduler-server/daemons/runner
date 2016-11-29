@@ -515,18 +515,21 @@ def main_program():
         # Operate only on runs that are scheduled to start before the next
         # forced refresh.
 
+        # TODO: Move this to a function in the database.
         # TODO: Error check this.
         cursor.execute("""
                        SELECT * FROM (
+
                        -- Tasks that haven't started
                        SELECT
-                           run,
-                           start_in,
+                           id AS run,
+                           lower(times) - normalized_wall_clock() AS start_in,
                            FALSE as background_multi
                        FROM
-                           schedule_upcoming
+                           run
                        WHERE
-                           start_in < %s
+                           lower(run.times) < (normalized_wall_clock() + %s)
+                           AND state = run_state_pending()
 
                        UNION
 
@@ -542,8 +545,10 @@ def main_program():
                        WHERE
                            times @> normalized_now()
                            AND test.scheduling_class = scheduling_class_background_multi()
-                           AND run.state <> run_state_nonstart()
-                       ) t ORDER BY start_in
+                           AND run.state IN (run_state_pending(), run_state_running())
+                       ) t
+                       WHERE start_in > '0'::INTERVAL
+                       ORDER BY start_in
                    """, [refresh]);
 
         log.debug("Got %d upcoming rows", cursor.rowcount)
