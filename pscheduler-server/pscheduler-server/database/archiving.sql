@@ -151,7 +151,7 @@ BEGIN
                             run.id = NEW.id
 			    AND task.participant = 0
 
-                        UNION
+                        UNION ALL
 
                         -- System-wide default archivers
                         SELECT archive_default.archive FROM archive_default
@@ -203,7 +203,7 @@ CREATE TRIGGER archiving_alter BEFORE INSERT OR UPDATE ON archiving
 -- Return the first max_return items eligible for archiving
 
 -- TODO: Can remove this after GA release.
-DROP FUNCTION archiving_next(INTEGER);
+DROP FUNCTION IF EXISTS archiving_next(INTEGER);
 
 CREATE OR REPLACE FUNCTION archiving_next(
     max_return INTEGER
