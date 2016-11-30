@@ -276,7 +276,7 @@ class ArchiveWorker():
         Do the deed
         """
 
-        run_id, uuid, archiver, archiver_data, start, duration, test, \
+        archiving_id, uuid, archiver, archiver_data, start, duration, test, \
             tool, participants, result_merged, attempts, \
             last_attempt = self.row
 
@@ -341,7 +341,7 @@ class ArchiveWorker():
                                        next_attempt = NULL,
                                        diags = diags || (%s::JSONB)
                                      WHERE id = %s""",
-                                  [ attempt, run_id ])
+                                  [ attempt, archiving_id ])
 
         else:
 
@@ -363,7 +363,7 @@ class ArchiveWorker():
                                              next_attempt = NULL,
                                              diags = diags || (%s::JSONB)
                                          WHERE id = %s""",
-                                      [ attempt, run_id ])
+                                      [ attempt, archiving_id ])
 
             else:
 
@@ -389,7 +389,7 @@ class ArchiveWorker():
                                                  next_attempt = %s,
                                                  diags = diags || (%s::JSONB)
                                              WHERE id = %s""",
-                                          [ next, attempt, run_id ])
+                                          [ next, attempt, archiving_id ])
 
                 else:
 
