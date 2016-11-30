@@ -2,11 +2,13 @@
 Functions for connecting to the pScheduler database
 """
 
+import os
 import psycopg2
+import sys
 
 from filestring import string_from_file
 
-def pg_connection(dsn='', autocommit=True):
+def pg_connection(dsn='', autocommit=True, name=None):
     """
     Connect to the database, and return a handle to it
 
@@ -22,6 +24,11 @@ def pg_connection(dsn='', autocommit=True):
 
     dsn = string_from_file(dsn)
 
+    if name is None:
+        name = os.path.basename(sys.argv[0])
+
+    dsn += " application_name=%s" % (name)
+
     pg = psycopg2.connect(dsn)
     if autocommit:
         pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
@@ -29,7 +36,7 @@ def pg_connection(dsn='', autocommit=True):
     return pg
 
 
-def pg_cursor(dsn='', autocommit=True):
+def pg_cursor(dsn='', autocommit=True, name=None):
     """
     Connect to the database, and return a cursor.
 
@@ -43,7 +50,7 @@ def pg_cursor(dsn='', autocommit=True):
     quesies are issued.
     """
 
-    pg = pg_connection(dsn, autocommit)
+    pg = pg_connection(dsn, autocommit, name)
     return pg.cursor()
 
 
