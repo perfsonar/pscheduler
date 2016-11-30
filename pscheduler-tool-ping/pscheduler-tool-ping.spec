@@ -5,7 +5,7 @@
 %define short	ping
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.17.rc2%{?dist}
+Release:	0.18.rc2%{?dist}
 
 Summary:	pScheduler Ping Tool
 BuildArch:	noarch
