@@ -33,7 +33,8 @@ def api_replace_host(url_text, replacement):
     "Replace the host portion of a URL"
 
     url = list(urlparse.urlparse(url_text))
-    url[1] = __host_per_rfc_2732(replacement)
+    if replacement is not None:
+        url[1] = __host_per_rfc_2732(replacement)
     return urlparse.urlunparse(url)
 
 
