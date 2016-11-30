@@ -104,7 +104,7 @@ class DefaultArchiveMaintainer:
         self.log = log
 
         # This needs its own database connection without autocommit.
-        self.db = pscheduler.pg_connection(dsn)
+        self.db = pscheduler.pg_connection(dsn, name="archiver-default")
         self.db.autocommit = False
         self.cursor = self.db.cursor()
 
@@ -221,6 +221,8 @@ class DefaultArchiveMaintainer:
 
             if failed:
                 self.cursor.execute("ROLLBACK TO SAVEPOINT archiver_insert")
+            else:
+                self.cursor.execute("RELEASE SAVEPOINT archiver_insert")
 
         # Finish up and get out
 
