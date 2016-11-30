@@ -201,12 +201,17 @@ CREATE TRIGGER archiving_alter BEFORE INSERT OR UPDATE ON archiving
 
 
 -- Return the first max_return items eligible for archiving
+
+-- TODO: Can remove this after GA release.
+DROP FUNCTION archiving_next(INTEGER);
+
 CREATE OR REPLACE FUNCTION archiving_next(
     max_return INTEGER
 )
 RETURNS TABLE (
     id BIGINT,
-    run UUID,
+    task_uuid UUID,
+    run_uuid UUID,
     archiver TEXT,
     archiver_data JSONB,
     start TIMESTAMP WITH TIME ZONE,
@@ -225,7 +230,8 @@ BEGIN
 
     SELECT
         archiving.id AS id,
-        run.uuid AS uuid,
+        task.uuid AS task_uuid,
+        run.uuid AS run_uuid,
         archiver.name AS archiver,
         archiving.archiver_data,
         lower(run.times) AS start,

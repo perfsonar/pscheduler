@@ -276,8 +276,8 @@ class ArchiveWorker():
         Do the deed
         """
 
-        archiving_id, uuid, archiver, archiver_data, start, duration, test, \
-            tool, participants, result_merged, attempts, \
+        archiving_id, task_uuid, run_uuid, archiver, archiver_data, start, \
+            duration, test, tool, participants, result_merged, attempts, \
             last_attempt = self.row
 
         participants_merged = []
@@ -288,8 +288,11 @@ class ArchiveWorker():
 
         json = {
             'data': archiver_data,
+            'task-href': pscheduler.api_url(path="tasks/%s" % (task_uuid)),
+            'run-href': pscheduler.api_url(path="tasks/%s/runs/%s" \
+                                           % (task_uuid, run_uuid)),
             'result': {
-                'id': uuid,
+                'id': run_uuid,
                 'schedule': {
                     'start': pscheduler.datetime_as_iso8601(start),
                     'duration': pscheduler.timedelta_as_iso8601(duration)
@@ -354,7 +357,7 @@ class ArchiveWorker():
 
             if returned_json['succeeded']:
                 self.log.debug("%d: Succeeded: %s to %s",
-                               self.id, uuid, archiver)
+                               self.id, run_uuid, archiver)
                 self.cursor.execute("""UPDATE archiving
                                          SET
                                              archived = TRUE,
@@ -368,7 +371,7 @@ class ArchiveWorker():
             else:
 
                 self.log.debug("%d: Failed: %s to %s: %s",
-                               self.id, uuid, archiver, stdout)
+                               self.id, run_uuid, archiver, stdout)
 
                 # If there's a retry, schedule the next one.
 
@@ -458,7 +461,8 @@ def main_program():
         # Until we hear otherwise...
         next_refresh = long_refresh
 
-        cursor.execute("""SELECT id, run, archiver, archiver_data, start,
+        cursor.execute("""SELECT id, task_uuid, run_uuid, archiver,
+                      archiver_data, start,
                       duration, test, tool, participants, result,
                       attempts, last_attempt
                       FROM archiving_next(%s)""",
