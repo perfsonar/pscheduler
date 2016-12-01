@@ -14,7 +14,6 @@ import psycopg2
 import psycopg2.extensions
 import select
 import signal
-import socket
 import sys
 import threading
 import time
@@ -282,7 +281,7 @@ class ArchiveWorker():
 
         participants_merged = []
         for participant in participants:
-            participants_merged.append(socket.gethostname() \
+            participants_merged.append(pscheduler.api_this_host() \
                                        if participant is None \
                                        else participant)
 
@@ -460,6 +459,14 @@ def main_program():
 
         # Until we hear otherwise...
         next_refresh = long_refresh
+
+
+        # If we're already full up on workers, don't bother hitting the database
+        if len(workers) == options.max_parallel:
+            log.debug("Already have a full slate of workers.")
+            next_refresh = short_refresh
+            continue
+
 
         cursor.execute("""SELECT id, task_uuid, run_uuid, archiver,
                       archiver_data, start,

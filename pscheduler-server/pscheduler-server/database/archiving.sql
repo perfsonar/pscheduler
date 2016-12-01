@@ -134,8 +134,7 @@ BEGIN
                             task.id = NEW.task
                             AND test.scheduling_class = scheduling_class_background_multi())
           )
-
-       THEN
+   THEN
 
        inserted := FALSE;
 
@@ -182,21 +181,10 @@ CREATE TRIGGER archiving_run_after AFTER INSERT OR UPDATE ON run
 
 
 
+-- TODO: These can go away after GA.
+
 DROP TRIGGER IF EXISTS archiving_alter ON archiving CASCADE;
-
-CREATE OR REPLACE FUNCTION archiving_alter()
-RETURNS TRIGGER
-AS $$
-BEGIN
-
-    -- TODO: If there's an update to diags, append it instead of replacing it.
-
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER archiving_alter BEFORE INSERT OR UPDATE ON archiving
-       FOR EACH ROW EXECUTE PROCEDURE archiving_alter();
+DROP FUNCTION IF EXISTS archiving_alter();
 
 
 
