@@ -26,6 +26,8 @@ COMMANDS=\
 
 INITS=$(DAEMONS:%=init.d-%)
 
+CONFIGS=$(DAEMONS:%=%.conf)
+
 default: build
 
 
@@ -69,6 +71,10 @@ endif
 TO_CLEAN += monitor
 
 $(INITS): init.d-template.raw
+ifndef CONFIGDIR
+	@echo No CONFIGDIR specified for build
+	@false
+endif
 ifndef DAEMONDIR
 	@echo No DAEMONDIR specified for build
 	@false
@@ -90,6 +96,7 @@ ifndef VAR
 	@false
 endif
 	sed \
+		-e 's|__CONFIGDIR__|$(CONFIGDIR)|g' \
 		-e 's|__DAEMONDIR__|$(DAEMONDIR)|g' \
 		-e 's|__DSN__|$(DSNFILE)|g' \
 		-e 's|__PROG__|$(@:init.d-%=%)|g' \
@@ -104,7 +111,19 @@ endif
 TO_CLEAN += $(INITS)
 
 
-build: $(DAEMONS) $(INITS) $(COMMANDS)
+
+$(CONFIGS): config-template.raw
+	sed \
+		-e 's|__PROG__|$(@:%.conf=%)|g' \
+		< $< > $@
+	@if egrep -e '__[A-Z_]+__' $@ ; then \
+		echo "Found un-substituted values in processed file $@" ; \
+		false ; \
+	fi
+TO_CLEAN += $(CONFIGS)
+
+
+build: $(DAEMONS) $(INITS) $(CONFIGS) $(COMMANDS)
 	@true
 
 
@@ -113,6 +132,10 @@ build: $(DAEMONS) $(INITS) $(COMMANDS)
 # the right value in the scripts.  (See TODOs)
 
 install: build
+ifndef CONFIGDIR
+	@echo No CONFIGDIR specified for installation
+	@false
+endif
 ifndef COMMANDDIR
 	@echo No COMMANDDIR specified for installation
 	@false
@@ -125,6 +148,9 @@ ifndef INITDDIR
 	@echo No INITDDIR specified for installation
 	@false
 endif
+	mkdir -p $(CONFIGDIR)
+	cp -f $(CONFIGS) $(CONFIGDIR)
+	chmod 700 $(CONFIGS:%=$(CONFIGDIR)/%)
 	mkdir -p $(COMMANDDIR)
 	cp -f $(COMMANDS) $(COMMANDDIR)
 	chmod 555 $(COMMANDS:%=$(COMMANDDIR)/%)

@@ -67,6 +67,7 @@ The pScheduler server
 
 
 # Database
+%define daemon_config_dir %{_pscheduler_sysconfdir}/daemons
 %define db_config_dir %{_pscheduler_sysconfdir}/database
 %define db_user %{_pscheduler_user}
 %define password_file %{db_config_dir}/database-password
@@ -121,6 +122,7 @@ make -C database \
 # Daemons
 #
 make -C daemons \
+     CONFIGDIR=%{daemon_config_dir} \
      DAEMONDIR=%{_pscheduler_daemons} \
      DSNFILE=%{dsn_file} \
      LOGDIR=%{log_dir} \
@@ -186,6 +188,7 @@ EOF
 # Daemons
 #
 make -C daemons \
+     CONFIGDIR=$RPM_BUILD_ROOT/%{daemon_config_dir} \
      INITDDIR=$RPM_BUILD_ROOT/%{_initddir} \
      DAEMONDIR=$RPM_BUILD_ROOT/%{_pscheduler_daemons} \
      COMMANDDIR=$RPM_BUILD_ROOT/%{_pscheduler_commands} \
@@ -533,7 +536,10 @@ systemctl start httpd
 #
 # Daemons
 #
+
 %defattr(-,root,root,-)
+%attr(755,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %{daemon_config_dir}
+%attr(740,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %config(noreplace) %{daemon_config_dir}/*
 %{_initddir}/*
 %{_pscheduler_daemons}/*
 %{_pscheduler_commands}/*
@@ -546,4 +552,3 @@ systemctl start httpd
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
 %{api_dir}
 %config(noreplace) %{api_httpd_conf}
-
