@@ -252,10 +252,10 @@ BEGIN
         archiving.id IN (
             SELECT archiving.id FROM archiving
             WHERE NOT archived AND next_attempt < now()
-            ORDER BY next_attempt
+            ORDER BY attempts, next_attempt
             LIMIT max_return
         )
-    ORDER BY next_attempt;
+    ORDER BY attempts, next_attempt;
 
     RETURN;
 
