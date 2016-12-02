@@ -5,7 +5,7 @@
 %define short	esmond
 Name:		pscheduler-archiver-esmond
 Version:	1.0
-Release:	0.17.rc2%{?dist}
+Release:	0.18.rc2%{?dist}
 
 Summary:	Esmond archiver class for pScheduler
 BuildArch:	noarch
@@ -18,6 +18,14 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
 Requires:	python-requests
+Requires:	python-memcached
+Requires:	memcached
+Requires(post):	memcached
+%if 0%{?el7}
+%{?systemd_requires: %systemd_requires}
+%else
+Requires:		chkconfig
+%endif
 
 BuildRequires:	pscheduler-rpm
 
@@ -43,6 +51,22 @@ make \
 
 %post
 pscheduler internal warmboot
+
+#TODO: For final, only do this on new install
+#if [ "$1" = "1" ]; then
+
+%if 0%{?el7}
+    #enable memcached on new install
+    systemctl enable memcached.service
+    systemctl start memcached.service
+%else
+    /sbin/chkconfig memcached on
+    /sbin/service memcached start
+%endif
+
+#fi
+
+
 
 %postun
 pscheduler internal warmboot

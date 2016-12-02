@@ -1,0 +1,7 @@
+#
+# Configuration for the '__PROG__' pScheduler daemon
+#
+#
+# The contents of this file will be added to the command line for the
+# daemon when it is started.
+#

@@ -67,6 +67,9 @@ DROP VIEW IF EXISTS schedule_runs_to_schedule;
 CREATE OR REPLACE VIEW schedule_runs_to_schedule
 AS
 
+    -- TODO: Need to go through this and make sure the subqueries
+    -- aren't selecting columns that aren't used.
+
     WITH interim AS (
 
         -- Non-repeating tasks with no runs scheduled
@@ -76,12 +79,8 @@ AS
 	    task.uuid,
             task.enabled,
             task.added,
-            task.start,
             task.duration,
-            now() AS after,
-            task.repeat,
             task.max_runs,
-	    0 AS scheduled,
             task.runs,
             task.until,
             greatest(normalized_now(), task.start) AS trynext,
@@ -94,7 +93,7 @@ AS
 	    repeat IS NULL
 	    AND NOT EXISTS (SELECT * FROM run WHERE run.task = task.id)
 
-        UNION
+        UNION ALL
 
         -- Repeating tasks without runs
 
@@ -103,12 +102,8 @@ AS
             task.uuid,
             task.enabled,
             task.added,
-            task.start,
             task.duration,
-            greatest(task.start, now()) AS after,
-	    task.repeat,
             task.max_runs,
-	    0 AS scheduled,
             task.runs,
             task.until,
             greatest(task.start, normalized_now()) AS trynext,
@@ -122,41 +117,30 @@ AS
             AND (until IS NULL OR until > normalized_now())
 	    AND runs = 0
 
-	UNION
-    
+	UNION ALL
+
         -- Repeating tasks with runs
         SELECT
             task.id AS task,
-	    task.uuid,
+            task.uuid,
             task.enabled,
             task.added,
-            task.start,
             duration,
-            greatest(now(), task.start, run_latest.latest) AS after,
-            task.repeat,
-            max_runs,
-	    (SELECT COUNT(*)
-             FROM
-                 run
-             WHERE
-                 run.task = task.id
-                 AND upper(times) > normalized_now()) AS scheduled,
-            runs,
+            task.max_runs,
+            task.runs,
             task.until,
- 	    task_next_run(task.first_start,
-                          greatest(normalized_now(), task.start, max(upper(run.times))),
-                          repeat) AS trynext,
-	    task.participant,
-	    test.scheduling_class
-        FROM
-            run
-            JOIN task ON task.id = run.task
+            task_next_run(task.first_start,
+                         greatest(normalized_now(), task.start, run_latest.latest),
+                         repeat) AS trynext,
+            task.participant,
+            (SELECT scheduling_class FROM test WHERE test.id = task.test) AS scheduling_class
+       FROM
+            task
             JOIN run_latest ON run_latest.task = task.id
-            JOIN test ON test.id = task.test
-	WHERE
-	    task.repeat IS NOT NULL
-	    AND runs > 0
-        GROUP BY task.id, run_latest.latest, test.scheduling_class
+        WHERE
+            task.repeat IS NOT NULL
+            AND task.runs > 0
+            AND EXISTS (SELECT * FROM run WHERE run.task = task.id)
     )
     SELECT
         task,
@@ -420,6 +404,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+
 --
 -- Maintenance
 --
@@ -434,14 +419,9 @@ BEGIN
     SELECT INTO older_than normalized_now() - keep_runs_tasks
     FROM configurables;
 
-    -- Get rid of runs that finished
-    DELETE FROM run
-    WHERE upper(times) < older_than
-    ;
-
-
     -- Get rid of tasks that no longer have runs and can be considered
-    -- completed.
+    -- completed.  Note this this is done here and not task.sql
+    -- because it depends on that table and run.
 
     DELETE FROM task
     WHERE

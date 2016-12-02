@@ -597,12 +597,29 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION task_purge()
 RETURNS VOID
 AS $$
+DECLARE
+    older_than TIMESTAMP WITH TIME ZONE;
 BEGIN
 
-    -- TODO: Remove tasks which won't be scheduling any more runs and
-    -- are older than the hold time.
+    SELECT INTO older_than normalized_now() - keep_runs_tasks
+    FROM configurables;
 
-    NULL;
+    -- Get rid of tasks that no longer have runs and can be considered
+    -- completed.
+
+    DELETE FROM task
+    WHERE
+        NOT EXISTS (SELECT * FROM run where run.task = task.id)
+        -- Use time added as a proxy for start time in non-repeaters
+        AND COALESCE(start, added) < older_than
+        AND (
+            -- Complete based on runs
+            (max_runs IS NOT NULL AND runs >= max_runs)
+            -- One-shot
+            OR repeat IS NULL
+            )
+    ;
+
 
 END;
 $$ LANGUAGE plpgsql;

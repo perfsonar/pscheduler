@@ -14,7 +14,6 @@ import psycopg2
 import psycopg2.extensions
 import select
 import signal
-import socket
 import sys
 import threading
 import time
@@ -104,7 +103,7 @@ class DefaultArchiveMaintainer:
         self.log = log
 
         # This needs its own database connection without autocommit.
-        self.db = pscheduler.pg_connection(dsn)
+        self.db = pscheduler.pg_connection(dsn, name="archiver-default")
         self.db.autocommit = False
         self.cursor = self.db.cursor()
 
@@ -221,6 +220,8 @@ class DefaultArchiveMaintainer:
 
             if failed:
                 self.cursor.execute("ROLLBACK TO SAVEPOINT archiver_insert")
+            else:
+                self.cursor.execute("RELEASE SAVEPOINT archiver_insert")
 
         # Finish up and get out
 
@@ -274,20 +275,23 @@ class ArchiveWorker():
         Do the deed
         """
 
-        run_id, uuid, archiver, archiver_data, start, duration, test, \
-            tool, participants, result_merged, attempts, \
+        archiving_id, task_uuid, run_uuid, archiver, archiver_data, start, \
+            duration, test, tool, participants, result_merged, attempts, \
             last_attempt = self.row
 
         participants_merged = []
         for participant in participants:
-            participants_merged.append(socket.gethostname() \
+            participants_merged.append(pscheduler.api_this_host() \
                                        if participant is None \
                                        else participant)
 
         json = {
             'data': archiver_data,
+            'task-href': pscheduler.api_url(path="tasks/%s" % (task_uuid)),
+            'run-href': pscheduler.api_url(path="tasks/%s/runs/%s" \
+                                           % (task_uuid, run_uuid)),
             'result': {
-                'id': uuid,
+                'id': run_uuid,
                 'schedule': {
                     'start': pscheduler.datetime_as_iso8601(start),
                     'duration': pscheduler.timedelta_as_iso8601(duration)
@@ -339,7 +343,7 @@ class ArchiveWorker():
                                        next_attempt = NULL,
                                        diags = diags || (%s::JSONB)
                                      WHERE id = %s""",
-                                  [ attempt, run_id ])
+                                  [ attempt, archiving_id ])
 
         else:
 
@@ -352,7 +356,7 @@ class ArchiveWorker():
 
             if returned_json['succeeded']:
                 self.log.debug("%d: Succeeded: %s to %s",
-                               self.id, uuid, archiver)
+                               self.id, run_uuid, archiver)
                 self.cursor.execute("""UPDATE archiving
                                          SET
                                              archived = TRUE,
@@ -361,12 +365,12 @@ class ArchiveWorker():
                                              next_attempt = NULL,
                                              diags = diags || (%s::JSONB)
                                          WHERE id = %s""",
-                                      [ attempt, run_id ])
+                                      [ attempt, archiving_id ])
 
             else:
 
                 self.log.debug("%d: Failed: %s to %s: %s",
-                               self.id, uuid, archiver, stdout)
+                               self.id, run_uuid, archiver, stdout)
 
                 # If there's a retry, schedule the next one.
 
@@ -387,7 +391,7 @@ class ArchiveWorker():
                                                  next_attempt = %s,
                                                  diags = diags || (%s::JSONB)
                                              WHERE id = %s""",
-                                          [ next, attempt, run_id ])
+                                          [ next, attempt, archiving_id ])
 
                 else:
 
@@ -456,11 +460,20 @@ def main_program():
         # Until we hear otherwise...
         next_refresh = long_refresh
 
-        cursor.execute("""SELECT id, uuid, archiver, archiver_data, start,
+
+        # If we're already full up on workers, don't bother hitting the database
+        if len(workers) == options.max_parallel:
+            log.debug("Already have a full slate of workers.")
+            next_refresh = short_refresh
+            continue
+
+
+        cursor.execute("""SELECT id, task_uuid, run_uuid, archiver,
+                      archiver_data, start,
                       duration, test, tool, participants, result,
                       attempts, last_attempt
-                      FROM archiving_eligible
-                      LIMIT %s""", [options.max_parallel])
+                      FROM archiving_next(%s)""",
+                      [options.max_parallel])
 
         if cursor.rowcount == 0:
             log.debug("Nothing to archive.")

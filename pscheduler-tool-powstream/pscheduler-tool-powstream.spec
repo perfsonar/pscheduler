@@ -7,7 +7,7 @@
 
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.17.rc2%{?dist}
+Release:	0.18.rc2%{?dist}
 
 Summary:	powstream tool class for pScheduler
 BuildArch:	noarch
@@ -20,7 +20,7 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
 Requires:	python-pscheduler
-Requires:	pscheduler-test-latency
+Requires:	pscheduler-test-latencybg
 Requires:	pytz
 Requires:	owamp-client
 Requires:	owamp-server
