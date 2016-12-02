@@ -134,8 +134,7 @@ BEGIN
                             task.id = NEW.task
                             AND test.scheduling_class = scheduling_class_background_multi())
           )
-
-       THEN
+   THEN
 
        inserted := FALSE;
 
@@ -151,7 +150,7 @@ BEGIN
                             run.id = NEW.id
 			    AND task.participant = 0
 
-                        UNION
+                        UNION ALL
 
                         -- System-wide default archivers
                         SELECT archive_default.archive FROM archive_default
@@ -182,26 +181,79 @@ CREATE TRIGGER archiving_run_after AFTER INSERT OR UPDATE ON run
 
 
 
-DROP TRIGGER IF EXISTS archiving_alter ON archiving CASCADE;
+-- TODO: These can go away after GA.
 
-CREATE OR REPLACE FUNCTION archiving_alter()
-RETURNS TRIGGER
+DROP TRIGGER IF EXISTS archiving_alter ON archiving CASCADE;
+DROP FUNCTION IF EXISTS archiving_alter();
+
+
+
+-- Return the first max_return items eligible for archiving
+
+-- TODO: Can remove this after GA release.
+DROP FUNCTION IF EXISTS archiving_next(INTEGER);
+
+CREATE OR REPLACE FUNCTION archiving_next(
+    max_return INTEGER
+)
+RETURNS TABLE (
+    id BIGINT,
+    task_uuid UUID,
+    run_uuid UUID,
+    archiver TEXT,
+    archiver_data JSONB,
+    start TIMESTAMP WITH TIME ZONE,
+    duration INTERVAL,
+    test JSONB,
+    tool JSONB,
+    participants JSONB,
+    result JSONB,
+    attempts INTEGER,
+    last_attempt TIMESTAMP WITH TIME ZONE
+)
 AS $$
 BEGIN
 
-    -- TODO: If there's an update to diags, append it instead of replacing it.
+    RETURN QUERY
 
-    RETURN NEW;
+    SELECT
+        archiving.id AS id,
+        task.uuid AS task_uuid,
+        run.uuid AS run_uuid,
+        archiver.name AS archiver,
+        archiving.archiver_data,
+        lower(run.times) AS start,
+        task.duration AS duration,
+        task.json #> '{test}' AS test,
+        tool.json AS tool,
+        task.participants AS participants,
+        run.result_merged AS result,
+        archiving.attempts AS attempts,
+        archiving.last_attempt AS last_attempt
+    FROM
+        archiving
+        JOIN archiver ON archiver.id = archiving.archiver
+        JOIN run ON run.id = archiving.run
+        JOIN task ON task.id = run.task
+        JOIN tool ON tool.id = task.tool
+    WHERE
+        archiving.id IN (
+            SELECT archiving.id FROM archiving
+            WHERE NOT archived AND next_attempt < now()
+            ORDER BY archiving.attempts, next_attempt
+            LIMIT max_return
+        )
+    ORDER BY attempts, next_attempt;
+
+    RETURN;
+
 END;
 $$ LANGUAGE plpgsql;
-
-CREATE TRIGGER archiving_alter BEFORE INSERT OR UPDATE ON archiving
-       FOR EACH ROW EXECUTE PROCEDURE archiving_alter();
-
 
 
 -- A handy view for the archiver to use
 
+-- TODO: Remove this after GA release
 DROP VIEW IF EXISTS archiving_eligible;
 CREATE OR REPLACE VIEW archiving_eligible
 AS

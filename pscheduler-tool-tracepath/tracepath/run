@@ -44,9 +44,10 @@ except KeyError:
 
 if ipversion is None or ipversion == 4:
     tracepath = 'tracepath'
+    localhost = '127.0.0.1'
 else:
     tracepath = 'tracepath6'
-
+    localhost = '::1'
 
 argv.append(tracepath)
 
@@ -164,6 +165,8 @@ for line in stdout.split('\n'):
     # IP.  We forced tracepath to behave this way.
     line_parts = line.split(' ')
     ip = line_parts[1]
+    if ip == '[LOCALHOST]':
+        ip = localhost
     hop['ip'] = ip
     ips.append(ip)
     log.debug("  IP %s", ip)

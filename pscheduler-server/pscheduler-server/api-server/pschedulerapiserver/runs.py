@@ -143,6 +143,11 @@ def tasks_uuid_runs(task):
             return bad_request("Invalid JSON:" + request.data)
 
 
+
+        # TODO: __evaluate_limits() returns a response object if it
+        # fails.  Need to return appropriately, otherwise the task
+        # will just get posted.
+
         try:
             passed, diags = __evaluate_limits(task, start_time)
         except Exception as ex:

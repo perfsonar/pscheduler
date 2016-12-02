@@ -213,3 +213,25 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+
+-- ----------------------------------------------------------------------------
+
+--
+-- DEBUGGING TOOLS
+--
+
+DROP VIEW IF EXISTS queries;
+CREATE OR REPLACE VIEW queries
+AS
+    SELECT
+        application_name,
+        state,
+        CASE state
+            WHEN 'active' THEN (now() - query_start)::TEXT
+            ELSE 'FINISHED'
+            END
+            AS run_time,
+            regexp_replace(query, '[ \t]+', ' ', 'g') AS query
+FROM pg_stat_activity
+ORDER BY run_time desc
+;

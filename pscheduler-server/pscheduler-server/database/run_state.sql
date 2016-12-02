@@ -69,6 +69,9 @@ $$ LANGUAGE plpgsql;
 -- Functions that encapsulate the numeric values for each state
 --
 
+-- NOTE: These use ALTER FUNCTION to set the IMMUTABLE attribute
+-- because in some cases, replacement doesn't set it properly.
+
 -- Run is waiting to execute (not time yet)
 CREATE OR REPLACE FUNCTION run_state_pending()
 RETURNS INTEGER
@@ -77,6 +80,8 @@ BEGIN
 	RETURN 1;
 END;
 $$ LANGUAGE plpgsql;
+ALTER FUNCTION run_state_pending() IMMUTABLE;
+
 
 -- The runner is preparing to execute the run
 CREATE OR REPLACE FUNCTION run_state_on_deck()
@@ -86,6 +91,7 @@ BEGIN
 	RETURN 2;
 END;
 $$ LANGUAGE plpgsql;
+ALTER FUNCTION run_state_on_deck() IMMUTABLE;
 
 -- Run is being executed
 CREATE OR REPLACE FUNCTION run_state_running()
@@ -95,6 +101,7 @@ BEGIN
 	RETURN 3;
 END;
 $$ LANGUAGE plpgsql;
+ALTER FUNCTION run_state_running() IMMUTABLE;
 
 -- Post-run cleanup
 CREATE OR REPLACE FUNCTION run_state_cleanup()
@@ -104,6 +111,7 @@ BEGIN
 	RETURN 4;
 END;
 $$ LANGUAGE plpgsql;
+ALTER FUNCTION run_state_cleanup() IMMUTABLE;
 
 -- Run finished successfully
 CREATE OR REPLACE FUNCTION run_state_finished()
@@ -113,6 +121,8 @@ BEGIN
 	RETURN 5;
 END;
 $$ LANGUAGE plpgsql;
+ALTER FUNCTION run_state_finished() IMMUTABLE;
+
 
 -- No idea of the outcome yet
 CREATE OR REPLACE FUNCTION run_state_overdue()
@@ -122,6 +132,7 @@ BEGIN
 	RETURN 6;
 END;
 $$ LANGUAGE plpgsql;
+ALTER FUNCTION run_state_overdue() IMMUTABLE;
 
 -- Run never happened
 CREATE OR REPLACE FUNCTION run_state_missed()
@@ -131,6 +142,7 @@ BEGIN
 	RETURN 7;
 END;
 $$ LANGUAGE plpgsql;
+ALTER FUNCTION run_state_missed() IMMUTABLE;
 
 -- Run ran but was not a success
 CREATE OR REPLACE FUNCTION run_state_failed()
@@ -140,6 +152,7 @@ BEGIN
 	RETURN 8;
 END;
 $$ LANGUAGE plpgsql;
+ALTER FUNCTION run_state_failed() IMMUTABLE;
 
 -- Run lost out to something with a higher priority
 CREATE OR REPLACE FUNCTION run_state_trumped()
@@ -149,6 +162,7 @@ BEGIN
 	RETURN 9;
 END;
 $$ LANGUAGE plpgsql;
+ALTER FUNCTION run_state_trumped() IMMUTABLE;
 
 -- Run was dead on arrival
 CREATE OR REPLACE FUNCTION run_state_nonstart()
@@ -158,6 +172,8 @@ BEGIN
 	RETURN 10;
 END;
 $$ LANGUAGE plpgsql;
+ALTER FUNCTION run_state_nonstart() IMMUTABLE;
+
 
 
 DROP TRIGGER IF EXISTS run_state_alter ON run_state CASCADE;

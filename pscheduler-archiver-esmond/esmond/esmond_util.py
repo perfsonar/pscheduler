@@ -250,61 +250,63 @@ class EsmondBaseRecord:
                     dst_field="dest", 
                     ipv_field="ip-version",
                     succeeded_field="succeeded",
-                    error_field="error"
+                    error_field="error",
+                    fast_mode=False
                 ):
         #init
         self.metadata = { 'event-types': [] }
         
-        #determine source since its optional
-        input_source = lead_participant
-        if src_field and src_field in test_spec:
-            input_source = test_spec[src_field]
+        if not fast_mode:
+            #determine source since its optional
+            input_source = lead_participant
+            if src_field and src_field in test_spec:
+                input_source = test_spec[src_field]
         
-        #determine if we are forcing an ip-version
-        ip_version = None
-        if ipv_field in test_spec:
-            ip_version = test_spec[ipv_field]
+            #determine if we are forcing an ip-version
+            ip_version = None
+            if ipv_field in test_spec:
+                ip_version = test_spec[ipv_field]
             
-        #get dest if this is point-to-point
-        src_ip = None
-        dest_ip = None
-        input_dest = None
-        if dst_field:
-            self.metadata['subject-type'] = 'point-to-point'
-            input_dest = test_spec[dst_field]
-            src_ip, dest_ip = normalize_ip_versions(input_source, input_dest, ip_version=ip_version)
-        else:
-            self.metadata['subject-type'] = 'network-element'
-            src_ip, tmp_ip = normalize_ip_versions(input_source, input_source, ip_version=ip_version)
+            #get dest if this is point-to-point
+            src_ip = None
+            dest_ip = None
+            input_dest = None
+            if dst_field:
+                self.metadata['subject-type'] = 'point-to-point'
+                input_dest = test_spec[dst_field]
+                src_ip, dest_ip = normalize_ip_versions(input_source, input_dest, ip_version=ip_version)
+            else:
+                self.metadata['subject-type'] = 'network-element'
+                src_ip, tmp_ip = normalize_ip_versions(input_source, input_source, ip_version=ip_version)
     
-        #set fields
-        self.metadata['source'] = src_ip
-        if dest_ip:
-            self.metadata['destination'] = dest_ip
-        self.metadata['input-source'] = input_source
-        if input_dest:
-            self.metadata['input-destination'] = input_dest
-        self.metadata['tool-name'] = tool_name
-        self.metadata['time-duration'] = duration
-        #Make measurement-agent the created_by_address if we have it, otherwise the lead participant, with same ip type as source
-        if measurement_agent:
-            src_ip, self.metadata['measurement-agent'] = normalize_ip_versions(src_ip, measurement_agent)
-        else:
-            src_ip, self.metadata['measurement-agent'] = normalize_ip_versions(src_ip, lead_participant)
+            #set fields
+            self.metadata['source'] = src_ip
+            if dest_ip:
+                self.metadata['destination'] = dest_ip
+            self.metadata['input-source'] = input_source
+            if input_dest:
+                self.metadata['input-destination'] = input_dest
+            self.metadata['tool-name'] = tool_name
+            self.metadata['time-duration'] = duration
+            #Make measurement-agent the created_by_address if we have it, otherwise the lead participant, with same ip type as source
+            if measurement_agent:
+                src_ip, self.metadata['measurement-agent'] = normalize_ip_versions(src_ip, measurement_agent)
+            else:
+                src_ip, self.metadata['measurement-agent'] = normalize_ip_versions(src_ip, lead_participant)
         
-        #set test type to new value if provided
-        if test_type:
-            self.test_type = test_type
-        #may be overridden by subclass, so use value even if not in constructor params
-        if self.test_type:
-            self.metadata['pscheduler-test-type'] = self.test_type
+            #set test type to new value if provided
+            if test_type:
+                self.test_type = test_type
+            #may be overridden by subclass, so use value even if not in constructor params
+            if self.test_type:
+                self.metadata['pscheduler-test-type'] = self.test_type
         
-        #Handle event types
-        summary_map = DEFAULT_SUMMARIES
-        if summaries:
-            summary_map = summaries
-        for et in self.get_event_types(test_spec=test_spec):
-            self.add_event_type(et, summary_map)
+            #Handle event types
+            summary_map = DEFAULT_SUMMARIES
+            if summaries:
+                summary_map = summaries
+            for et in self.get_event_types(test_spec=test_spec):
+                self.add_event_type(et, summary_map)
         
         #add extra metadata fields
         self.add_metadata_fields(test_spec=test_spec)

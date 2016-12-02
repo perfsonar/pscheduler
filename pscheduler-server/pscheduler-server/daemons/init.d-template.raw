@@ -42,6 +42,15 @@ start() {
     fi
     [ -x $exec ] || exit 5
     [ -f $config ] || exit 6
+
+    optfile="__CONFIGDIR__/__PROG__.conf"
+    if [ -r "${optfile}" ]
+    then
+	options=$(sed -e 's/#.*$//' -e '/^$/d' "${optfile}" \
+	    | tr "\n" " ")
+
+    fi
+
     echo -n $"Starting pScheduler $prog: "
     touch "$pidfile"
     chown "$proguser.$proguser" "$pidfile"
@@ -49,7 +58,7 @@ start() {
         echo "(This file should be empty unless there's a catastrophic failure.)" >> "$logfile"
     fi
     su $proguser \
-       -c "$exec --daemon --pid-file '$pidfile' --dsn '@$config'" \
+       -c "$exec --daemon --pid-file '$pidfile' --dsn '@$config' $options" \
 	>> "$logfile" 2>&1 &
     retval=$?
     success
