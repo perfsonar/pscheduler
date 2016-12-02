@@ -240,7 +240,7 @@ BEGIN
         archiving.id IN (
             SELECT archiving.id FROM archiving
             WHERE NOT archived AND next_attempt < now()
-            ORDER BY attempts, next_attempt
+            ORDER BY archiving.attempts, next_attempt
             LIMIT max_return
         )
     ORDER BY attempts, next_attempt;
