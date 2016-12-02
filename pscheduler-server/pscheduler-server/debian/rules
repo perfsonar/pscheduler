@@ -25,6 +25,7 @@ ROOT ?= $(CURDIR)/debian/$(DEB_SOURCE_PACKAGE)
 
 override_dh_auto_build:
 	make -C daemons \
+		CONFIGDIR=/etc/pscheduler/daemons \
 		DAEMONDIR=/usr/lib/pscheduler/daemons \
 		DSNFILE=/etc/pscheduler/database/database-dsn \
 		LOGDIR=/var/log/pscheduler \
@@ -44,6 +45,7 @@ override_dh_auto_build:
 
 override_dh_auto_install:
 	make -C daemons \
+		CONFIGDIR=$(ROOT)/etc/pscheduler/daemons \
 		INITDDIR=$(ROOT)/etc/init.d \
 		DAEMONDIR=$(ROOT)/usr/lib/pscheduler/daemons \
 		COMMANDDIR=$(ROOT)/usr/lib/pscheduler/commands \

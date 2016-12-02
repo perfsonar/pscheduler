@@ -1,29 +1,29 @@
 --- a/daemons/archiver.raw
 +++ b/daemons/archiver.raw
-@@ -337,7 +337,7 @@
+@@ -341,7 +341,7 @@
                                         attempts = attempts + 1,
                                         last_attempt = now(),
                                         next_attempt = NULL,
 -                                       diags = diags || (%s::JSONB)
 +                                       diags = %s
                                       WHERE id = %s""",
-                                   [ attempt, run_id ])
+                                   [ attempt, archiving_id ])
  
-@@ -359,7 +359,7 @@
+@@ -363,7 +363,7 @@
                                               attempts = attempts + 1,
                                               last_attempt = now(),
                                               next_attempt = NULL,
 -                                             diags = diags || (%s::JSONB)
 +                                             diags = %s
                                           WHERE id = %s""",
-                                       [ attempt, run_id ])
+                                       [ attempt, archiving_id ])
  
-@@ -385,7 +385,7 @@
+@@ -389,7 +389,7 @@
                                                   attempts = attempts + 1,
                                                   last_attempt = now(),
                                                   next_attempt = %s,
 -                                                 diags = diags || (%s::JSONB)
 +                                                 diags = %s
                                               WHERE id = %s""",
-                                           [ next, attempt, run_id ])
+                                           [ next, attempt, archiving_id ])
  

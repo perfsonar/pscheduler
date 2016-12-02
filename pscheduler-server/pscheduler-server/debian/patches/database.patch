@@ -1,6 +1,6 @@
 --- a/database/run_state.sql
 +++ b/database/run_state.sql
-@@ -183,7 +183,7 @@
+@@ -199,7 +199,7 @@
  
  ALTER TABLE run_state DISABLE TRIGGER run_state_alter;
  INSERT INTO run_state (id, display, enum)
@@ -9,7 +9,7 @@
      (run_state_pending(),  'Pending',  'pending'),
      (run_state_on_deck(),  'On Deck',  'on-deck'),
      (run_state_running(),  'Running',  'running'),
-@@ -194,10 +194,9 @@
+@@ -210,10 +210,9 @@
      (run_state_failed(),   'Failed',   'failed'),
      (run_state_trumped(),  'Trumped',  'trumped'),
      (run_state_nonstart(), 'Non-Starter', 'nonstart')
