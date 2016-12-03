@@ -327,7 +327,7 @@ def tasks_uuid_runs_run(task, run):
         participant_num = row[3]
         result['participant'] = participant_num
         result['participants'] = [
-            pscheduler.api_this_host()
+            server_fqdn()
             if participant is None and participant_num == 0
             else participant
             for participant in row[5]

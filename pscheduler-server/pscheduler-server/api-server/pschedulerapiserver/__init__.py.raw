@@ -27,7 +27,7 @@ from .schedule import *
 from .tasks import *
 from .tests import *
 from .tools import *
-from .url import *
+from .util import *
 
 
 # These values are not hard-wired; they were filled in during the
