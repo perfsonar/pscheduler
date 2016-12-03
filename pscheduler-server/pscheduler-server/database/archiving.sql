@@ -239,7 +239,13 @@ BEGIN
     WHERE
         archiving.id IN (
             SELECT archiving.id FROM archiving
-            WHERE NOT archived AND next_attempt < now()
+            WHERE
+                -- TODO: This might work better if we had a separate
+                -- flag for when archiving was underway, as those that
+                -- never succeed will always have to be sifted through.
+                NOT archived
+                AND next_attempt IS NOT NULL
+                AND next_attempt < now()
             ORDER BY archiving.attempts, next_attempt
             LIMIT max_return
         )

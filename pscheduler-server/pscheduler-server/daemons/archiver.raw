@@ -396,6 +396,15 @@ class ArchiveWorker():
                 else:
 
                     self.log.debug("%d: No retry requested.  Giving up.", self.id)
+                    self.cursor.execute("""UPDATE archiving
+                                             SET
+                                                 attempts = attempts + 1,
+                                                 last_attempt = now(),
+                                                 next_attempt = NULL,
+                                                 diags = diags || (%s::JSONB)
+                                             WHERE id = %s""",
+                                          [ attempt, archiving_id ])
+
 
 
 
