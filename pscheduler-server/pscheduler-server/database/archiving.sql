@@ -94,6 +94,18 @@ BEGIN
         t_version := t_version + 1;
     END IF;
 
+    -- Version 3 to version 4
+    -- Improvement to archiving_candidates index
+    IF t_version = 3
+    THEN
+        DROP INDEX IF EXISTS archiving_candidates;
+        CREATE INDEX archiving_candidates
+        ON archiving(archived, next_attempt)
+        WHERE NOT archived AND next_attempt IS NOT NULL;
+
+        t_version := t_version + 1;
+    END IF;
+
 
     --
     -- Cleanup
