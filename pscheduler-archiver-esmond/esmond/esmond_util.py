@@ -40,6 +40,40 @@ DEFAULT_SUMMARIES = {
             "summary-type":   "aggregation",
         },
     ],
+    "packet-count-sent": [
+        {
+            "summary-window":   300,
+            "event-type":   "packet-count-sent",
+            "summary-type":   "aggregation",
+        },
+        {
+            "summary-window":   3600,
+            "event-type":   "packet-count-sent",
+            "summary-type":   "aggregation",
+        },
+        {
+            "summary-window":   86400,
+            "event-type":   "packet-count-sent",
+            "summary-type":   "aggregation",
+        },
+    ],
+    "packet-count-lost": [
+        {
+            "summary-window":   300,
+            "event-type":   "packet-count-lost",
+            "summary-type":   "aggregation",
+        },
+        {
+            "summary-window":   3600,
+            "event-type":   "packet-count-lost",
+            "summary-type":   "aggregation",
+        },
+        {
+            "summary-window":   86400,
+            "event-type":   "packet-count-lost",
+            "summary-type":   "aggregation",
+        },
+    ],
     "histogram-owdelay": [
         {
             "summary-window":   300,
