@@ -262,7 +262,7 @@ fi
 # Python can't import it as the expected jinja2.  See commentary in
 # #215.
 
-%define site_packages %{py_libdir}/site-packages
+%define site_packages /usr/lib/python2.6/site-packages
 %define jinja2_symlink %{site_packages}/jinja2
 
 %if 0%{?el6}
