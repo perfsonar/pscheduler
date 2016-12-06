@@ -12,6 +12,9 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 log = pscheduler.Log(prefix="archiver-esmond", quiet=True)
 
+#Number of seconds to wait if no bytes received on wire
+HTTP_TIMEOUT=5
+
 DEFAULT_SUMMARIES = {
     "throughput": [
         {
@@ -34,6 +37,40 @@ DEFAULT_SUMMARIES = {
         {
             "summary-window":   86400,
             "event-type":   "packet-loss-rate",
+            "summary-type":   "aggregation",
+        },
+    ],
+    "packet-count-sent": [
+        {
+            "summary-window":   300,
+            "event-type":   "packet-count-sent",
+            "summary-type":   "aggregation",
+        },
+        {
+            "summary-window":   3600,
+            "event-type":   "packet-count-sent",
+            "summary-type":   "aggregation",
+        },
+        {
+            "summary-window":   86400,
+            "event-type":   "packet-count-sent",
+            "summary-type":   "aggregation",
+        },
+    ],
+    "packet-count-lost": [
+        {
+            "summary-window":   300,
+            "event-type":   "packet-count-lost",
+            "summary-type":   "aggregation",
+        },
+        {
+            "summary-window":   3600,
+            "event-type":   "packet-count-lost",
+            "summary-type":   "aggregation",
+        },
+        {
+            "summary-window":   86400,
+            "event-type":   "packet-count-lost",
             "summary-type":   "aggregation",
         },
     ],
@@ -190,7 +227,7 @@ class EsmondClient:
             post_url += '/'
         log.debug("Posting metadata to %s: %s" % (post_url, metadata))
         try:
-            r = requests.post(post_url, data=pscheduler.json_dump(metadata), headers=self.headers, verify=self.verify_ssl)
+            r = requests.post(post_url, data=pscheduler.json_dump(metadata), headers=self.headers, verify=self.verify_ssl, timeout=HTTP_TIMEOUT)
         except:
             return False, "Unable to connect to remote server to create metadata"
         
@@ -216,7 +253,7 @@ class EsmondClient:
         data = { 'data': data_points }
         log.debug("Putting data to %s: %s" % (put_url, data))
         try:
-            r = requests.put(put_url, data=pscheduler.json_dump(data), headers=self.headers, verify=self.verify_ssl)
+            r = requests.put(put_url, data=pscheduler.json_dump(data), headers=self.headers, verify=self.verify_ssl, timeout=HTTP_TIMEOUT)
         except:
             return False, "Unable to connect to remote server to create data"
             
