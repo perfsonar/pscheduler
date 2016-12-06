@@ -325,6 +325,26 @@ BEGIN
                 OLD.state, NEW.state;
         END IF;
 
+
+        -- Handle changes in status
+
+        IF NEW.status IS NOT NULL AND NEW.status <> OLD.status
+        THEN
+            -- Future runs are fatal
+            IF lower(NEW.times) > normalized_now()
+            THEN
+                RAISE EXCEPTION 'Cannot set state on future runs. % / %', lower(NEW.times), normalized_now();
+            END IF;
+
+	    -- Adjust the state
+	    NEW.state = CASE
+                WHEN 0 run_state_finished()
+                ELSE run_state_failed()
+                END;
+
+        END IF;
+
+
 	-- If the state of the run changes to finished or failed, trim
 	-- its scheduled time.
 
@@ -333,13 +353,6 @@ BEGIN
             NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
         END IF;
 
-
-        -- Complain if the status changes when it shouldn't.
-
-        IF NEW.status IS NOT NULL AND NEW.status <> OLD.status
-           AND lower(NEW.times) > normalized_now() THEN
-            RAISE EXCEPTION 'Cannot set state on future runs. % / %', lower(NEW.times), normalized_now();
-        END IF;
 
 	-- If the full result changed, update the merged version.
 
@@ -522,12 +535,23 @@ DECLARE
     purge_before TIMESTAMP WITH TIME ZONE;
 BEGIN
 
+    -- Most runs
     SELECT INTO purge_before now() - keep_runs_tasks FROM configurables;
-
     DELETE FROM run
     WHERE
         upper(times) < purge_before
-        AND state <> run_state_running();
+        AND state NOT IN (run_state_pending(),
+                          run_state_on_deck(),
+                          run_state_running());
+
+    -- Extra margin for anything that might actually be running
+    purge_before := purge_before - 'PT1H'::INTERVAL;
+    DELETE FROM run
+    WHERE
+        upper(times) < purge_before
+        AND state IN (run_state_pending(),
+                      run_state_on_deck(),
+                      run_state_running());
 
 END;
 $$ LANGUAGE plpgsql;
