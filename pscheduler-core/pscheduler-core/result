@@ -191,13 +191,13 @@ try:
     if (not 'result-merged' in result) \
        or (result['result-merged'] is None):
         raise KeyError()
-        status = result['result-merged']['succeeded']
+        succeeded = result['result-merged']['succeeded']
 except KeyError as ex:
-    status = False
+    succeeded = False
 
 
 if out_format == "text/plain" \
-   and (options.diags or not status):
+   and (options.diags or not succeeded):
 
     print
     parts = task_json["detail"]["participants"]
