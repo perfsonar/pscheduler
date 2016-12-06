@@ -51,11 +51,14 @@ BEGIN
     END IF;
 
     -- Version 1 to version 2
-    --IF t_version = 1
-    --THEN
-    --    ALTER TABLE ...
-    --    t_version := t_version + 1;
-    --END IF;
+    IF t_version = 1
+    THEN
+        ALTER TABLE configurables ADD COLUMN
+        -- How long runs should be late before being considered stragglers
+        run_straggle INTERVAL DEFAULT 'PT10S';
+
+        t_version := t_version + 1;
+    END IF;
 
 
     --

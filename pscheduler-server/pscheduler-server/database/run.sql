@@ -305,7 +305,7 @@ BEGIN
     SELECT INTO tool_name name FROM tool WHERE id = taskrec.tool; 
 
     -- Finished runs are what get inserted for background tasks.
-    IF NEW.state <> run_state_finished() THEN
+    IF TG_OP = 'INSERT' AND NEW.state <> run_state_finished() THEN
 
         pdata_out := row_to_json(t) FROM ( SELECT taskrec.participant AS participant,
                                            cast ( taskrec.json #>> '{test, spec}' AS json ) AS test ) t;
@@ -349,7 +349,9 @@ BEGIN
 	-- its scheduled time.
 
 	IF NEW.state <> OLD.state
-            AND NEW.state IN ( run_state_finished(), run_state_failed() ) THEN
+            AND NEW.state IN ( run_state_finished(), run_state_overdue(),
+                 run_state_missed(), run_state_failed() )
+        THEN
             NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
         END IF;
 
@@ -456,72 +458,36 @@ CREATE TRIGGER run_horizon_change AFTER UPDATE ON configurables
 
 
 
--- TODO: Should do a trigger after any change to run that calls
--- run_main_minute() to update any run states.
-
-
-CREATE OR REPLACE VIEW run_straggler_info
-AS
-    SELECT
-        run.id,
-        run.state,
-        run.times,
-        test.scheduling_class
-    FROM
-        run
-        JOIN task on task.id = run.task
-        JOIN test on test.id = task.test
-;
-
-
 -- Maintenance functions
 
 CREATE OR REPLACE FUNCTION run_handle_stragglers()
 RETURNS VOID
 AS $$
+DECLARE
+    straggle_time TIMESTAMP WITH TIME ZONE;
+    straggle_time_long TIMESTAMP WITH TIME ZONE;
 BEGIN
 
-    -- TODO: These should ignore background tests
+    SELECT INTO straggle_time
+        normalized_now() - run_straggle FROM configurables;
 
-    -- Runs that are still pending or on deck after their end times
+    -- Runs that are still pending or on deck after their start times
     -- were missed.
 
     UPDATE run
     SET state = run_state_missed()
-    WHERE id IN (
-        SELECT id FROM run_straggler_info
-        WHERE
-            scheduling_class <> scheduling_class_background_multi()
-            AND state IN ( run_state_pending(), run_state_on_deck() )
-            AND normalized_now() > upper(times)
-    );
+    WHERE
+        lower(times) < straggle_time
+        AND state IN ( run_state_pending(), run_state_on_deck() );
+
 
     -- Runs that started and didn't report back in a timely manner
 
     UPDATE run
     SET state = run_state_overdue()
-    WHERE id IN (
-        SELECT id FROM run_straggler_info
-        WHERE
-            scheduling_class <> scheduling_class_background_multi()
-            AND state = run_state_running()
-            -- TODO: This interval should probably be a tunable.
-            AND upper(times) < normalized_now() - 'PT10S'::interval
-    );
-
-    -- Runs still running well after their expected completion times
-    -- are treated as having failed.
-
-    UPDATE run
-    SET state = run_state_missed()
-    WHERE id IN (
-        SELECT id FROM run_straggler_info
-        WHERE
-            scheduling_class <> scheduling_class_background_multi()
-            AND state = run_state_overdue()
-            -- TODO: This interval should probably be a tunable.
-            AND upper(times) < normalized_now() - 'PT1M'::interval
-    );
+    WHERE
+        upper(times) < straggle_time
+        AND state = run_state_running();
 
 END;
 $$ LANGUAGE plpgsql;
