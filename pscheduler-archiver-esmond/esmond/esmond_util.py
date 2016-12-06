@@ -74,6 +74,23 @@ DEFAULT_SUMMARIES = {
             "summary-type":   "aggregation",
         },
     ],
+    "packet-count-lost-bidir": [
+        {
+            "summary-window":   300,
+            "event-type":   "packet-count-lost-bidir",
+            "summary-type":   "aggregation",
+        },
+        {
+            "summary-window":   3600,
+            "event-type":   "packet-count-lost-bidir",
+            "summary-type":   "aggregation",
+        },
+        {
+            "summary-window":   86400,
+            "event-type":   "packet-count-lost-bidir",
+            "summary-type":   "aggregation",
+        },
+    ],
     "histogram-owdelay": [
         {
             "summary-window":   300,
