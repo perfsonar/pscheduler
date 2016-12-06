@@ -513,6 +513,8 @@ def tasks_uuid(uuid):
         template = urlparse.urlunsplit(parsed)
 
         try:
+            # TODO: This throws when the task isn't there.  Need a way
+            # to differentiate that and an actual error.
             cursor = dbcursor_query(
                 "SELECT api_task_disable(%s, %s)", [uuid, template])
         except Exception as ex:
