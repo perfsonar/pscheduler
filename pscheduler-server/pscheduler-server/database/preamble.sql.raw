@@ -3,10 +3,10 @@
 --
 
 
-\c pscheduler
+\c __DATABASE__
 
 -- TODO: This should be taken care of by postgresql-load but isn't.
-SET ROLE pscheduler;
+SET ROLE __ROLE__;
 
 
 BEGIN TRANSACTION;

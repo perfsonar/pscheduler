@@ -21,6 +21,8 @@ Provides:	%{name} = %{version}-%{release}
 
 
 # Database
+BuildRequires:	postgresql-init
+BuildRequires:	postgresql-load
 Requires:	drop-in
 # This is for pgcrypto
 Requires:	postgresql95-contrib
@@ -112,6 +114,7 @@ false
 # Database
 #
 make -C database \
+     CHECK_SYNTAX=1 \
      DATABASE=%{db_user} \
      DATADIR=%{_pscheduler_datadir} \
      PASSWORDFILE=%{password_file} \
