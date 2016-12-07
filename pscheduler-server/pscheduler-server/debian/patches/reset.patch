@@ -1,6 +1,6 @@
 --- a/database/reset.raw
 +++ b/database/reset.raw
-@@ -37,47 +37,44 @@
+@@ -37,47 +37,45 @@
  
  
  # Tear down the existing database
@@ -40,7 +40,8 @@
 -    printf "';\n"
 -) | postgresql-load
 -
-+dpkg-reconfigure --default-priority pscheduler-server
++echo SET pscheduler-server/dbconfig-reinstall true | debconf-communicate >/dev/null
++dpkg-reconfigure --priority=critical pscheduler-server
  
  # If the ticker is running, it will restart and do this, but in case
  # it isn't, make sure everything is in order.
