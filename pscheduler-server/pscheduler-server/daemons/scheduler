@@ -196,18 +196,19 @@ def run_post(
     # The adjustment of the duration by one second forces
     # coalesce_ranges() to behave like the ranges are closed instead
     # of half-closed.
+    adjusted_duration = task_duration - datetime.timedelta(seconds=1) 
 
     schedule_range = \
-        pscheduler.coalesce_ranges( range_set,
-                                    task_duration \
-                                        - datetime.timedelta(seconds=1) )
+        pscheduler.coalesce_ranges(range_set, adjusted_duration)
     if schedule_range is None:
         return (None, None, None, "No mutually-agreeable time to run this task."
                 + str(range_set) + ' ' + str(task_duration))
 
     (schedule_lower, schedule_upper) = schedule_range
     assert schedule_lower < schedule_upper
-    log and log.debug("Time range is %s - %s", schedule_lower, schedule_upper)
+    log and log.debug("Time range is %s - %s (%s / %s)",
+                      schedule_lower, schedule_upper,
+                      (schedule_upper - schedule_lower), adjusted_duration)
 
     # Apply random slip if one was specified
 
@@ -223,7 +224,9 @@ def run_post(
         pass  # No random slip, no problem.
 
     # Make sure we haven't slipped further than allowed.
-    assert schedule_upper - schedule_lower >= task_duration
+    log and log.debug("Check range diff %s >= %s",
+                      schedule_upper - schedule_lower, adjusted_duration)
+    assert schedule_upper - schedule_lower >= adjusted_duration
 
     schedule_upper = schedule_lower + task_duration
 

@@ -177,7 +177,7 @@ def tasks():
                 return error("Unable to determine participants: " + stderr)
 
             participants = [ host if host is not None
-                             else pscheduler.api_this_host()
+                             else server_fqdn()
                              for host in pscheduler.json_load(stdout)["participants"] ]
         except Exception as ex:
             return error("Unable to determine participants: " + str(ex))
@@ -418,7 +418,7 @@ def tasks_uuid(uuid):
             if part_list is None:
                 part_list = [None]
             if row[10] == 0 and part_list[0] is None:
-                part_list[0] = pscheduler.api_this_host()
+                part_list[0] = server_fqdn()
 
             json['detail'] = {
                 'added': None if row[1] is None \
@@ -513,6 +513,8 @@ def tasks_uuid(uuid):
         template = urlparse.urlunsplit(parsed)
 
         try:
+            # TODO: This throws when the task isn't there.  Need a way
+            # to differentiate that and an actual error.
             cursor = dbcursor_query(
                 "SELECT api_task_disable(%s, %s)", [uuid, template])
         except Exception as ex:

@@ -216,6 +216,7 @@ make -C api-server \
 mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}
 
 
+
 # ------------------------------------------------------------------------------
 
 %pre
@@ -255,6 +256,25 @@ fi
 # API Server
 #
 # (Nothing)
+
+# EL6 has an incorrectly packaged python-jinja2, which installs the
+# finished code in site-packages/Jinja2-2.6-py2.6.egg/jinja2 where
+# Python can't import it as the expected jinja2.  See commentary in
+# #215.
+
+%define site_packages /usr/lib/python2.6/site-packages
+%define jinja2_symlink %{site_packages}/jinja2
+
+%if 0%{?el6}
+if [ "$1" -ge "1" -a ! -e "%{jinja2_symlink}" ]
+then
+    EGG=$((cd %{site_packages} \
+	&& find . -type d -name "Jinja2-*-py*.egg") \
+	| head -1 | sed -e 's|^./||')
+    ln -s "${EGG}/jinja2" "%{jinja2_symlink}"
+fi
+%endif
+
 
 
 # ------------------------------------------------------------------------------
@@ -405,6 +425,7 @@ then
 
 fi
 
+
 %if 0%{?el6}
 chkconfig httpd on
 service httpd restart
@@ -510,6 +531,16 @@ else
         service "${NAME}" restart
     done
 fi
+
+
+# Correction for bad packaging in EL6; see %post for commentary.
+%if 0%{?el6}
+if [ "$1" -eq "0" -a -L "%{jinja2_symlink}" ]
+then
+    rm -f "%{jinja2_symlink}"
+fi
+%endif
+
 
 %if 0%{?el6}
 service httpd start

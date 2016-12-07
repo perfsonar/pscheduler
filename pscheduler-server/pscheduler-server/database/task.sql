@@ -610,16 +610,17 @@ BEGIN
     DELETE FROM task
     WHERE
         NOT EXISTS (SELECT * FROM run where run.task = task.id)
-        -- Use time added as a proxy for start time in non-repeaters
-        AND COALESCE(start, added) < older_than
+        -- The first of these will be the latest known time.
+        AND COALESCE(until, start, added) < older_than
         AND (
             -- Complete based on runs
             (max_runs IS NOT NULL AND runs >= max_runs)
             -- One-shot
             OR repeat IS NULL
+            -- Until time has passed
+            OR until < older_than
             )
     ;
-
 
 END;
 $$ LANGUAGE plpgsql;
