@@ -3,3 +3,4 @@ init.patch
 database.patch
 warmboot.patch
 jsonb.patch
+reset.patch
