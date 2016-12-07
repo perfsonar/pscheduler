@@ -44,6 +44,12 @@ Examples:
     )
 opt_parser.disable_interspersed_args()
 
+opt_parser.add_option("--diags",
+                      help="For text output, dump participant diagnostics",
+                      action="store_true",
+		      default=False,
+                      dest="diags")
+
 opt_parser.add_option("--format",
                       help="Format for output: text (the default), html or json",
                       action="store", type="string",
@@ -55,6 +61,7 @@ opt_parser.add_option("--quiet",
                       action="store_true",
 		      default=False,
                       dest="quiet")
+
 
 
 (options, remaining_args) = opt_parser.parse_args()
@@ -130,6 +137,7 @@ except KeyError:
 
 
 try:
+
     status, result = pscheduler.url_get(
         result_url,
         params={ "format": out_format },
@@ -139,7 +147,9 @@ try:
         "%s/cli" % task_url,
         json=True)
 
-    status, task_json = pscheduler.url_get(task_url, json=True)
+    status, task_json = pscheduler.url_get(task_url,
+                                           params={"detail": True},
+                                           json=True)
 
 except Exception as ex:
     pscheduler.fail("Problem fetching results: %s" % str(ex))
@@ -176,5 +186,32 @@ if not options.quiet and out_format == "text/plain":
 
 # The strip gets rid of any pesky newlines
 print result.rstrip()
+
+try:
+    if (not 'result-merged' in result) \
+       or (result['result-merged'] is None):
+        raise KeyError()
+        succeeded = result['result-merged']['succeeded']
+except KeyError as ex:
+    succeeded = False
+
+
+if out_format == "text/plain" \
+   and (options.diags or not succeeded):
+
+    print
+    parts = task_json["detail"]["participants"]
+    for participant in range(0, len(parts)):
+        print
+        print "Diagnostics from %s:" % (parts[participant])
+        print
+        try:
+            print "\n".join([
+                "    %s" % (string) for string in
+                run_json["result-full"][participant]["diags"].split("\n")
+            ])
+        except KeyError:
+            print "    (No diagnostics)"
+
 
 pscheduler.succeed()

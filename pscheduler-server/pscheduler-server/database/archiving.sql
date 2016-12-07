@@ -94,6 +94,18 @@ BEGIN
         t_version := t_version + 1;
     END IF;
 
+    -- Version 3 to version 4
+    -- Improvement to archiving_candidates index
+    IF t_version = 3
+    THEN
+        DROP INDEX IF EXISTS archiving_candidates;
+        CREATE INDEX archiving_candidates
+        ON archiving(archived, next_attempt)
+        WHERE NOT archived AND next_attempt IS NOT NULL;
+
+        t_version := t_version + 1;
+    END IF;
+
 
     --
     -- Cleanup
@@ -239,7 +251,13 @@ BEGIN
     WHERE
         archiving.id IN (
             SELECT archiving.id FROM archiving
-            WHERE NOT archived AND next_attempt < now()
+            WHERE
+                -- TODO: This might work better if we had a separate
+                -- flag for when archiving was underway, as those that
+                -- never succeed will always have to be sifted through.
+                NOT archived
+                AND next_attempt IS NOT NULL
+                AND next_attempt < now()
             ORDER BY archiving.attempts, next_attempt
             LIMIT max_return
         )
