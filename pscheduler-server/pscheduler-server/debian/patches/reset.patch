@@ -50,7 +50,7 @@
  # remotable.
 -
 -postgresql-load --role '__ROLE__' <<EOF
--\c pscheduler
+-\c __DATABASE__
 -DO \$$
 +PGPASSFILE=/etc/pscheduler/database/pgpassfile \
 +psql -U pscheduler pscheduler -h localhost <<EOF >/dev/null
