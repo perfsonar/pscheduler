@@ -3,7 +3,7 @@
 #
 
 Name:		postgresql-load
-Version:	1.0
+Version:	1.1
 Release:	1%{?dist}
 
 Summary:	Run a SQL file through PostgreSQL
