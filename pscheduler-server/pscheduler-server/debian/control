@@ -15,7 +15,7 @@ Depends: ${misc:Depends}, python, curl,
  python-tz, python-jsontemplate, python-detach, python-radix,
  python-pscheduler, pscheduler-core, pscheduler-account,
  apache2, libapache2-mod-wsgi, rsyslog, logrotate,
- dbconfig-common, postgresql (>= 9.4), postgresql-9.4,
- postgresql-plpython-9.4, postgresql-contrib-9.4
+ dbconfig-common, postgresql (>= 9.6), postgresql-9.6,
+ postgresql-plpython-9.6, postgresql-contrib-9.6
 Description: pScheduler server components
  The pScheduler database, daemons and API web server

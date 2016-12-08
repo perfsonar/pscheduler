@@ -1,6 +1,4 @@
 apache2.patch
 init.patch
-database.patch
 warmboot.patch
-jsonb.patch
 reset.patch
