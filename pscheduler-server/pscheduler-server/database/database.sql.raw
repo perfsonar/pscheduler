@@ -9,23 +9,21 @@ DECLARE
     db_name TEXT;
 BEGIN
 
-    db_name := 'pscheduler';
+    db_name := '__DATABASE__';
 
     IF NOT EXISTS (SELECT * FROM pg_roles WHERE rolname = db_name)
     THEN
         PERFORM dblink_exec('dbname=' || current_database(),
-                            'CREATE ROLE ' || db_name || ' WITH LOGIN');
+                            'CREATE ROLE __ROLE__ WITH LOGIN');
         RAISE NOTICE 'Created role %', db_name;
     END IF;
 
     IF NOT EXISTS (SELECT * FROM pg_database WHERE datname = db_name)
     THEN
         PERFORM dblink_exec('dbname=' || current_database(),
-                            'CREATE DATABASE ' || db_name
-                              || ' WITH OWNER=' || db_name);
+                            'CREATE DATABASE __DATABASE__ WITH OWNER=__ROLE__');
         PERFORM dblink_exec('dbname=' || current_database(),
-                            'GRANT ALL ON DATABASE ' || db_name
-			      || ' TO ' || db_name);
+                            'GRANT ALL ON DATABASE __DATABASE__ TO __ROLE__');
         RAISE NOTICE 'Created database %', db_name;
     END IF;
 
@@ -33,7 +31,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-\c pscheduler
+\c __DATABASE__
 
 CREATE OR REPLACE LANGUAGE plpythonu;
 

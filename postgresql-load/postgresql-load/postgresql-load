@@ -34,7 +34,7 @@ fi
     || die "This program must be run as root or ${PG_USER}"
 
 
-
+ROLE=
 if [ "$1" = '--role' ]
 then
     shift
@@ -48,17 +48,17 @@ then
 fi
 
 
-export PGOPTIONS="--client-min-messages=WARNING"
+PGOPTIONS="PGOPTIONS='--client-min-messages=warning'"
 PSQL="psql -q -v ON_ERROR_STOP=1"
 
 if [ "$(id -u)" = "0" ]
 then
     (echo "${ROLE}" && cat "$@") \
-	| su - "${PG_USER}" -c "${PSQL}" 2>$TMPBASE.error
+	| su - "${PG_USER}" -c "${PGOPTIONS} ${PSQL}" 2>$TMPBASE.error
     STATUS=$?
 else
     (echo "${ROLE}" && cat "$@") \
-	| ${PSQL} 2>$TMPBASE.error
+	| ${PGOPTIONS} ${PSQL} 2>$TMPBASE.error
     STATUS=$?
 fi
 

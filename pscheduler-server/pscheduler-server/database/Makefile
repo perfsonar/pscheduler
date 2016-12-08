@@ -56,6 +56,7 @@ INTERNALS=\
 	reset \
 	warmboot
 
+
 %: %.raw
 ifndef DATABASE
 	@echo No DATABASE specified for build
@@ -83,34 +84,88 @@ endif
 		echo "Found un-substituted values in processed file $@" ; \
 		false ; \
 	fi
-TO_CLEAN += $(INTERNALS)
+RAW_BUILT := $(shell find . -name "*.raw" | sed -e 's/\.raw$$//')
+TO_CLEAN += $(RAW_BUILT)
 
 
 default: build
 
 
-build: $(SQL) $(INTERNALS)
+build: check $(SQL) $(INTERNALS)
 
 
 $(BUILD_SUPER_SQL): $(SUPER)
 	cat $^ > $@
-	chmod -w $@
 TO_CLEAN += $(BUILD_SUPER_SQL)
 
 
 $(BUILD_SQL): $(UNPRIV)
 	cat $^ > $@
-	chmod -w $@
 TO_CLEAN += $(BUILD_SQL)
 
 
 $(TEARDOWN_SQL): $(TEARDOWN)
 	cat $^ > $@
-	chmod -w $@
 TO_CLEAN += $(TEARDOWN_SQL)
 
 
-install: $(SQL) $(INTERNALS)
+# Note:  This must stay in this order so a test run will build and tear down the database.
+GENERATED_SQL=$(BUILD_SUPER_SQL) $(BUILD_SQL) $(TEARDOWN_SQL)
+
+
+
+#
+# Test finished files for syntactical correctness if CHECK_SYNTAX is
+# defined.
+#
+
+ifdef CHECK_SYNTAX
+
+CHECK_PREFIX := $(shell echo build$$$$)
+FULL_CHECK_SQL=check-full.sql
+CHECK_DIR=./syntax-check
+
+$(FULL_CHECK_SQL): $(GENERATED_SQL)
+	cat $(GENERATED_SQL) > $@
+TO_CLEAN += $(FULL_CHECK_SQL)
+
+$(CHECK_DIR):
+	mkdir -p $@
+	cp Makefile *.sql *.raw $@
+	$(MAKE) -C $@ clean
+	$(MAKE) -C $@ DATABASE=$(CHECK_PREFIX) DATADIR=/dev/null ROLE=$(CHECK_PREFIX) PASSWORDFILE=/dev/null $(FULL_CHECK_SQL)
+TO_CLEAN += $(CHECK_DIR)
+
+DB_ERROR=.db_error
+
+check: $(CHECK_DIR)
+ifeq ($(shell id -u),0)
+	@postgresql-load $(CHECK_DIR)/$(FULL_CHECK_SQL) || touch $(DB_ERROR)
+	@echo "DROP DATABASE IF EXISTS $(CHECK_PREFIX);" | postgresql-load
+	@[ -e $(DB_ERROR) ] && echo "Database syntax check failed." || true
+	@[ ! -e $(DB_ERROR) ]
+	@echo Database syntax OK
+else
+	@echo
+	@echo "WARNING: Not running as root; not checking database syntax."
+	@echo
+endif
+TO_CLEAN += $(DB_ERROR)
+
+else
+
+check:
+	@echo Source syntax checking is not enabled.  Skipping.
+
+endif
+
+
+
+#
+# Installation
+#
+
+install:
 ifndef DATADIR
 	@echo No DATADIR specified for installation
 	@false
