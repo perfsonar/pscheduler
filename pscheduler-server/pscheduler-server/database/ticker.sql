@@ -30,7 +30,7 @@ CREATE OR REPLACE FUNCTION ticker_hour()
 RETURNS VOID
 AS $$
 BEGIN
-    NULL;
+    PERFORM archiving_maint_hour();
 END;
 $$ LANGUAGE plpgsql;
 

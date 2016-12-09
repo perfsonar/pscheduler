@@ -317,6 +317,7 @@ __dictionary__ = {
         "properties": {
             "archiver": { "type": "string" },
             "data": { "$ref": "#/pScheduler/AnyJSON" },
+            "ttl": { "$ref": "#/pScheduler/Duration" },
             },
         "required": [
             "archiver",
