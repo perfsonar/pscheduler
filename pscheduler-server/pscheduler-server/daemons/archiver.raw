@@ -488,7 +488,7 @@ def main_program():
             log.debug("Nothing to archive.")
             continue
 
-        # Only refresh after there's been a wait and we got rows.
+        # Only refresh the default archivers after a wait that got rows.
         if next_refresh is not None:
             default_maintainer.refresh()
 
