@@ -272,12 +272,10 @@ BEGIN
         archiving.id IN (
             SELECT archiving.id FROM archiving
             WHERE
-                -- TODO: This might work better if we had a separate
-                -- flag for when archiving was underway, as those that
-                -- never succeed will always have to be sifted through.
                 NOT archived
                 AND next_attempt IS NOT NULL
                 AND next_attempt < now()
+                AND (ttl_expires IS NULL OR ttl_expires > now())
             ORDER BY archiving.attempts, next_attempt
             LIMIT max_return
         )
