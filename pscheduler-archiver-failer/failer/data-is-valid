@@ -17,6 +17,8 @@ data_validator = {
 
     "type": "object",
     "properties": {
+        "fail": { "$ref": "#/pScheduler/Float" },
+        "retry": { "$ref": "#/pScheduler/Float" }
     },
     "additionalProperties": False
 }
