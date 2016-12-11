@@ -11,6 +11,7 @@ default: build
 # TODO: Re-add misc after figuring out where msc.sty went in CentOS 7.
 
 LATEX=\
+	archiver-rabbitmq \
 	archiver-syslog \
 	developers-guide \
 	json \

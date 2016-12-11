@@ -121,6 +121,7 @@ pscheduler-tool-paris-traceroute
 pscheduler-archiver-bitbucket
 pscheduler-archiver-esmond
 pscheduler-archiver-failer
+pscheduler-archiver-rabbitmq
 pscheduler-archiver-syslog
 
 # Misc.

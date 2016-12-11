@@ -541,6 +541,26 @@ not be counted.  This value may not be provided without a {\tt
 \end{lstlisting}
 
 
+\subsection{RetryPolicyEntry}
+A segment of a retry policy containing these items:
+
+\typeditem{attempts}{Cardinal} The number of times that an attempt
+should be made, waiting for time {\tt wait} (see below) between each
+attempt.
+
+\typeditem{wait}{Duration} The amount of time to wait between attempts.
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "attemts": 5,
+    "wait": "PT1M"
+}
+\end{lstlisting}
+
+
+
+
 \subsection{SINumber}
 An integer expressed as an {\tt Integer} or a string with SI units.
 The string will contain a {\tt number} as defined by ECMA 404 without

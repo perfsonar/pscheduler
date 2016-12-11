@@ -219,6 +219,21 @@ __dictionary__ = {
         "required": [ "lower", "upper" ]
     },
 
+    "RetryPolicy": {
+        "type": "array",
+        "items": {"$ref": "#/pScheduler/RetryPolicyEntry" }
+    },
+
+    "RetryPolicyEntry": {
+        "type": "object",
+        "properties": {
+            "attempts": {"$ref": "#/pScheduler/Cardinal" },
+            "wait": {"$ref": "#/pScheduler/Duration" },
+        },
+        "additionalProperties": False,
+        "required": [ "attempts", "wait" ]
+    },
+
 
     "SINumber":  {
         "type": "string",
