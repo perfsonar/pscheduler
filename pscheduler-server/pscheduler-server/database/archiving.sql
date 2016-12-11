@@ -213,6 +213,39 @@ CREATE TRIGGER archiving_run_after AFTER INSERT OR UPDATE ON run
 
 
 
+
+
+DROP TRIGGER IF EXISTS archiving_update ON archiving CASCADE;
+
+CREATE OR REPLACE FUNCTION archiving_update()
+RETURNS TRIGGER
+AS $$
+BEGIN
+
+    -- Notify on things the archiver will want to know about:
+
+    IF
+        -- Completions
+        (NEW.archived AND NEW.archived <> OLD.archived)
+        -- Reschedules
+        OR (NEW.next_attempt IS NOT NULL
+                AND NEW.next_attempt <> OLD.next_attempt)
+    THEN
+        NOTIFY archiving_change;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS archiving_update ON archiving;
+CREATE TRIGGER archiving_update AFTER UPDATE ON archiving
+       FOR EACH ROW EXECUTE PROCEDURE archiving_update();
+
+
+
+
+
 -- TODO: These can go away after GA.
 
 DROP TRIGGER IF EXISTS archiving_alter ON archiving CASCADE;

@@ -59,28 +59,18 @@ opt_parser.add_option("-m", "--max-parallel",
 opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
-                      default="PT1M")
-opt_parser.add_option("-s", "--short-refresh",
-                      help="Short refresh interval (ISO8601)",
-                      action="store", type="string", dest="short_refresh",
-                      default="PT10S")
+                      default="PT5M")
 opt_parser.add_option("--verbose", action="store_true", dest="verbose")
 opt_parser.add_option("--debug", action="store_true", dest="debug")
 
 
 (options, args) = opt_parser.parse_args()
 
-long_refresh = pscheduler.iso8601_as_timedelta(options.refresh)
-if long_refresh is None:
+refresh = pscheduler.iso8601_as_timedelta(options.refresh)
+if refresh is None:
     opt_parser.error('Invalid refresh interval "' + options.refresh + '"')
-if pscheduler.timedelta_as_seconds(long_refresh) == 0:
+if pscheduler.timedelta_as_seconds(refresh) == 0:
     opt_parser.error("Refresh interval must be calculable as seconds.")
-
-short_refresh = pscheduler.iso8601_as_timedelta(options.short_refresh)
-if short_refresh is None:
-    opt_parser.error('Invalid short refresh interval "' + options.short_refresh + '"')
-if pscheduler.timedelta_as_seconds(short_refresh) == 0:
-    opt_parser.error("Short refresh interval must be calculable as seconds.")
 
 if options.max_parallel < 1:
     opt_parser.error("Number of concurrent archivings must be positive.")
@@ -103,9 +93,8 @@ class DefaultArchiveMaintainer:
         self.log = log
 
         # This needs its own database connection without autocommit.
-        self.db = pscheduler.pg_connection(dsn, name="archiver-default")
-        self.db.autocommit = False
-        self.cursor = self.db.cursor()
+        self.db = pscheduler.PgConnection(dsn, name="archiver-default",
+                                          autocommit=False)
 
         # Most recent file or directory change we saw
         self.most_recent = 0
@@ -200,17 +189,17 @@ class DefaultArchiveMaintainer:
         self.log.debug("Writing the database")
 
         try:
-            self.cursor.execute("DELETE FROM archive_default")
+            self.db.query("DELETE FROM archive_default")
         except Exception as ex:
             self.log.error("Failed to delete defaults: %s", str(ex))
 
         for archive in archives:
 
-            self.cursor.execute("SAVEPOINT archiver_insert")
+            self.db.query("SAVEPOINT archiver_insert")
             failed = True
             try:
-                self.cursor.execute("INSERT INTO archive_default (archive) VALUES (%s)",
-                                    [ pscheduler.json_dump(archive["spec"]) ])
+                self.db.query("INSERT INTO archive_default (archive) VALUES (%s)",
+                              [ pscheduler.json_dump(archive["spec"]) ])
                 self.log.debug("Inserted data from %s", archive["path"])
                 failed = False
             except psycopg2.Error as ex:
@@ -219,9 +208,9 @@ class DefaultArchiveMaintainer:
                 self.log.error("%s: %s", archive["path"], str(ex))
 
             if failed:
-                self.cursor.execute("ROLLBACK TO SAVEPOINT archiver_insert")
+                self.db.query("ROLLBACK TO SAVEPOINT archiver_insert")
             else:
-                self.cursor.execute("RELEASE SAVEPOINT archiver_insert")
+                self.db.query("RELEASE SAVEPOINT archiver_insert")
 
         # Finish up and get out
 
@@ -247,7 +236,6 @@ class ArchiveWorker():
         self.row = row
 
         self.id = row[0]
-        self.cursor = db.cursor()
 
         self.worker = threading.Thread(target=lambda: self.run())
         self.worker.start()
@@ -266,7 +254,6 @@ class ArchiveWorker():
             # it might be salvageable.
             self.log.exception()
         self.log.debug("%d: Thread finished", self.id)
-        self.cursor.close()
         del workers[self.id]
 
 
@@ -335,15 +322,15 @@ class ArchiveWorker():
         if returncode != 0:
 
             self.log.debug("%d: Permanent Failure: %s", self.id, stderr)
-            self.cursor.execute("""UPDATE archiving
-                                     SET
-                                       archived = TRUE,
-                                       attempts = attempts + 1,
-                                       last_attempt = now(),
-                                       next_attempt = NULL,
-                                       diags = diags || (%s::JSONB)
-                                     WHERE id = %s""",
-                                  [ attempt, archiving_id ])
+            self.db.query("""UPDATE archiving
+                             SET
+                                 archived = TRUE,
+                                 attempts = attempts + 1,
+                                 last_attempt = now(),
+                                 next_attempt = NULL,
+                                 diags = diags || (%s::JSONB)
+                             WHERE id = %s""",
+                          [ attempt, archiving_id ])
 
         else:
 
@@ -357,15 +344,15 @@ class ArchiveWorker():
             if returned_json['succeeded']:
                 self.log.debug("%d: Succeeded: %s to %s",
                                self.id, run_uuid, archiver)
-                self.cursor.execute("""UPDATE archiving
-                                         SET
-                                             archived = TRUE,
-                                             attempts = attempts + 1,
-                                             last_attempt = now(),
-                                             next_attempt = NULL,
-                                             diags = diags || (%s::JSONB)
-                                         WHERE id = %s""",
-                                      [ attempt, archiving_id ])
+                self.db.query("""UPDATE archiving
+                                 SET
+                                     archived = TRUE,
+                                     attempts = attempts + 1,
+                                     last_attempt = now(),
+                                     next_attempt = NULL,
+                                     diags = diags || (%s::JSONB)
+                                 WHERE id = %s""",
+                              [ attempt, archiving_id ])
 
             else:
 
@@ -384,26 +371,26 @@ class ArchiveWorker():
 
                     self.log.debug("%d: Rescheduling for %s", self.id, next)
 
-                    self.cursor.execute("""UPDATE archiving
-                                             SET
-                                                 attempts = attempts + 1,
-                                                 last_attempt = now(),
-                                                 next_attempt = %s,
-                                                 diags = diags || (%s::JSONB)
-                                             WHERE id = %s""",
-                                          [ next, attempt, archiving_id ])
+                    self.db.query("""UPDATE archiving
+                                     SET
+                                         attempts = attempts + 1,
+                                         last_attempt = now(),
+                                         next_attempt = %s,
+                                         diags = diags || (%s::JSONB)
+                                     WHERE id = %s""",
+                                  [ next, attempt, archiving_id ])
 
                 else:
 
                     self.log.debug("%d: No retry requested.  Giving up.", self.id)
-                    self.cursor.execute("""UPDATE archiving
-                                             SET
-                                                 attempts = attempts + 1,
-                                                 last_attempt = now(),
-                                                 next_attempt = NULL,
-                                                 diags = diags || (%s::JSONB)
-                                             WHERE id = %s""",
-                                          [ attempt, archiving_id ])
+                    self.db.query("""UPDATE archiving
+                                     SET
+                                         attempts = attempts + 1,
+                                         last_attempt = now(),
+                                         next_attempt = NULL,
+                                         diags = diags || (%s::JSONB)
+                                     WHERE id = %s""",
+                                  [ attempt, archiving_id ])
 
 
 
@@ -426,10 +413,9 @@ def main_program():
     for sig in [ signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM ]:
         signal.signal(sig, exit_handler)
 
-    pg = pscheduler.pg_connection(dsn)
+    db = pscheduler.PgConnection(dsn)
 
-    cursor = pg.cursor()
-    cursor.execute("LISTEN " + options.channel)
+    db.listen(options.channel)
     
 
     # Something to maintain the default archiver list
@@ -450,56 +436,50 @@ def main_program():
 
             log.debug("Waiting %s for change or notification", next_refresh)
 
-            try:
-                if select.select([pg],[],[],
-                                 pscheduler.timedelta_as_seconds(next_refresh)) \
-                                 != ([],[],[]):
-                    pg.poll()
-                    del pg.notifies[:]
-                    log.debug("Notified.")
-
-            except select.error as ex:
-
-                err_no, message = ex
-                if err_no != errno.EINTR:
-                    log.exception()
-                    raise ex
-
+            if not db.wait(pscheduler.timedelta_as_seconds(next_refresh)):
+                log.debug("Nothing happened.")
 
         # Until we hear otherwise...
-        next_refresh = long_refresh
-
+        next_refresh = refresh
 
         # If we're already full up on workers, don't bother hitting the database
         if len(workers) == options.max_parallel:
             log.debug("Already have a full slate of workers.")
-            next_refresh = short_refresh
             continue
 
+        result = db.query("""SELECT id, task_uuid, run_uuid, archiver,
+                             archiver_data, start,
+                             duration, test, tool, participants, result,
+                             attempts, last_attempt
+                             FROM archiving_next(%s)""",
+                          [options.max_parallel])
 
-        cursor.execute("""SELECT id, task_uuid, run_uuid, archiver,
-                      archiver_data, start,
-                      duration, test, tool, participants, result,
-                      attempts, last_attempt
-                      FROM archiving_next(%s)""",
-                      [options.max_parallel])
+        if len(result) == 0:
+            log.debug("Nothing to archive; finding time until next archiving.")
+            result = db.query("""SELECT next_attempt - now() FROM archiving
+                                 WHERE NOT archived AND next_attempt > now()
+                                 ORDER BY next_attempt LIMIT 1""")
 
-        if cursor.rowcount == 0:
-            log.debug("Nothing to archive.")
+            assert len(result) < 2
+            if len(result) == 0:
+                log.debug("Nothing in the future.")
+            else:
+                next_refresh = result.next()[0]
+                log.debug("Next archiving in %s", next_refresh)
+
             continue
 
         # Only refresh the default archivers after a wait that got rows.
         if next_refresh is not None:
             default_maintainer.refresh()
 
-        log.debug("Got %d rows", cursor.rowcount)
+        log.debug("Got %d rows", len(result))
 
-        for row in cursor.fetchall():
+        for row in result:
 
             # Don't bother if there are already too many archivers running.
             if len(workers) >= options.max_parallel:
                 log.debug("Already running %d archivers.", len(workers))
-                next_refresh = short_refresh
                 break
 
             id = row[0]
@@ -509,7 +489,7 @@ def main_program():
                 continue
 
             log.debug("%d: Starting worker", id)
-            workers[id] = ArchiveWorker(pg, log, row)
+            workers[id] = ArchiveWorker(db, log, row)
 
 
 
