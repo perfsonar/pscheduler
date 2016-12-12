@@ -23,16 +23,12 @@ if not valid:
     pscheduler.fail(message)
 
 
-try:
-    source = json['source']
-except KeyError:
-    source = None
+source = json.get('source-node', json.get('source', None))
+if source is None:
     null_reason = "No source specified"
 
-
-try:
-    dest = json['dest']
-except KeyError:
+dest = json.get('dest-node', json.get('dest', None))
+if dest is None:
     pscheduler.fail('No dest in test specification')
 
 

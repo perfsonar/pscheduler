@@ -18,15 +18,12 @@ json = pscheduler.json_load(exit_on_error=True)
 null_reason = None
 
 #sender first participant, receiver the second
-try:
-    source = json['source']
-except KeyError:
-    source = None
+source = json.get('source-node', json.get('source', None))
+if source is None:
     null_reason = "No source specified"
 
-try: 
-    destination = json['dest']
-except KeyError:
+destination = json.get('dest-node', json.get('dest', None))
+if destination is None:
     pscheduler.fail("Missing destination argument in spec")
 
 

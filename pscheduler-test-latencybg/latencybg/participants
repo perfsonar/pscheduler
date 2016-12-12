@@ -17,10 +17,10 @@ null_reason = None
 #participant depends on whether we flipped the test or not
 
 #source first participant, dest the second
-source = json.get('source', None)
+source = json.get('source-node', json.get('source', None))
 if source is None:
     null_reason = "No source specified"
-dest = json.get('dest', None)
+dest = json.get('dest-node', json.get('dest', None))
 flip = json.get('flip', False)
 
 if flip:

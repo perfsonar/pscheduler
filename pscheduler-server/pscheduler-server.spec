@@ -23,6 +23,7 @@ Provides:	%{name} = %{version}-%{release}
 # Database
 BuildRequires:	postgresql-init
 BuildRequires:	postgresql-load
+BuildRequires:	postgresql-server
 Requires:	drop-in
 # This is for pgcrypto
 Requires:	postgresql95-contrib

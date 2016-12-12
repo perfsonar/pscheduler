@@ -94,6 +94,22 @@ except KeyError:
     pass  # Don't care if not there.
 
 
+try:
+    match = pscheduler.StringMatcher(limit["dest-node"]["match"])
+    try:
+        invert = limit["dest-node"]["invert"]
+    except KeyError:
+        invert = False
+    in_limit = match.matches(spec["dest-node"])
+    if not in_limit or (invert and in_limit):
+        try:
+            errors.append(limit["dest-node"]["fail-message"])
+        except KeyError:
+            errors.append("Dest-Nodeination does not match limit")
+except KeyError:
+    pass  # Don't care if not there.
+
+
 
 #
 # Test Material

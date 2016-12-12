@@ -51,11 +51,20 @@ opt_parser.add_option("-s", "--source",
                       action="store", type="string",
                       dest="source")
 
+opt_parser.add_option("--source-node",
+                      help="The address of the source pScheduler node, if different",
+                      action="store", type="string",
+                      dest="source_node")
 
 opt_parser.add_option("-d", "--dest",
                       help="The address of the entity receiving packets in this test",
                       action="store", type="string",
                       dest="dest")
+
+opt_parser.add_option("--dest-node",
+                      help="The address of the destination pScheduler node, if different",
+                      action="store", type="string",
+                      dest="dest_node")
 
 opt_parser.add_option("-c", "--packet-count",
                       help="The number of packets to send",
@@ -119,9 +128,15 @@ result = { 'schema': 1 }
 
 if options.source is not None:
    result['source'] = options.source
+
+if options.source_node is not None:
+   result['source-node'] = options.source_node
   
 if options.dest is not None:
    result['dest'] = options.dest
+
+if options.dest_node is not None:
+   result['dest-node'] = options.dest_node
 
 if options.packet_count is not None:
    result['packet-count'] = options.packet_count
