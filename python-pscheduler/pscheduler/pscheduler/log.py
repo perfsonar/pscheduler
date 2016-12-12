@@ -206,6 +206,11 @@ class Log():
 
 
 
+    def __del__(self):
+        self.__syslog_handler_deinit()
+
+
+
     def __update_env(self):
         """
         (INTERNAL USE ONLY) Update the environment variable passed to
