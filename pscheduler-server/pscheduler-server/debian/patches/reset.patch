@@ -7,7 +7,7 @@
 -postgresql-load '__DATADIR__/database-teardown.sql'
 +cd /
 +echo
-+sudo -u postgres psql -U postgres <<EOF >/dev/null
++su -l -c psql postgres <<EOF >/dev/null
 +DO \$\$
 +BEGIN
 +    PERFORM pg_terminate_backend(pg_stat_activity.pid)
