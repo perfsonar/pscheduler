@@ -17,11 +17,61 @@ set -e
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
+pg_upgrade() {
+    if pg_lsclusters -h 2>/dev/null | grep -q '^9.6 \+main \+5432 \+online'; then
+        echo Found postgresql 9.6 running, skipping automatic upgrade
+        return
+    fi
+
+    echo Trying automatic postgresql upgrade...
+
+    if ! pg_lsclusters; then
+        echo Could not list postgresql clusters
+        return
+    fi
+
+    CNT=$(pg_lsclusters -h | grep -w -c online)
+    if [ "$CNT" -ne 2 ]; then
+        echo Did not find 2 online clusters: $CNT
+        return
+    fi
+
+    if ! pg_lsclusters -h | grep -q '^9.6 \+main \+5433 \+online'; then
+        echo Did not find postgresql 9.6 running on port 5433
+        return
+    fi
+
+    OLD=$(pg_lsclusters -h | grep '5432 \+online')
+    OLD=${OLD%% *}
+
+    if su -c '/usr/lib/postgresql/9.6/bin/pg_dumpall -s -p 5433' postgres \
+        | grep -q '^CREATE DATABASE'
+    then
+        echo Database 9.6 main already contains data
+        return
+    fi
+
+    if ! pg_ctlcluster 9.6 main stop; then
+        echo Could not stop 9.6 main cluster
+        return
+    fi
+
+    if ! pg_renamecluster 9.6 main main_dist; then
+        echo Could not rename 9.6 main cluster
+        return
+    fi
+
+    if ! pg_upgradecluster $OLD main; then
+        echo Cluster upgrade failed
+        return
+    fi
+}
 
 case "$1" in
     configure)
         # database setup
         . /usr/share/debconf/confmodule
+        pg_upgrade
         if [ -f /usr/share/dbconfig-common/dpkg/postinst.pgsql ]; then
             . /usr/share/dbconfig-common/dpkg/postinst.pgsql
             dbc_go pscheduler-server $@
