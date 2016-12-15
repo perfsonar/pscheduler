@@ -272,11 +272,17 @@ class ArchiveWorker():
                                        if participant is None \
                                        else participant)
 
+        task_href = pscheduler.api_url(path="tasks/%s" % (task_uuid))
+        run_href = pscheduler.api_url(path="tasks/%s/runs/%s" \
+                                      % (task_uuid, run_uuid))
+
+        self.log.debug("%d: Task is %s", self.id, task_href)
+        self.log.debug("%d: Run is %s", self.id, run_href)
+
         json = {
             'data': archiver_data,
-            'task-href': pscheduler.api_url(path="tasks/%s" % (task_uuid)),
-            'run-href': pscheduler.api_url(path="tasks/%s/runs/%s" \
-                                           % (task_uuid, run_uuid)),
+            'task-href': task_href,
+            'run-href': run_href,
             'result': {
                 'id': run_uuid,
                 'schedule': {
