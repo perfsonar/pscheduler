@@ -2,6 +2,7 @@
 Functions for connecting to the pScheduler database
 """
 
+import errno
 import os
 import psycopg2
 import select
