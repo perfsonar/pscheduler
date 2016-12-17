@@ -31,10 +31,11 @@ def limits():
     if processor is None:
         return no_can_do("Limit processor is not initialized.")
 
-    passed, diags = processor.process(proposal, hints)
+    passed, limits_passed, diags = processor.process(proposal, hints)
 
     return json_response({
-            "passed": passed,
-            "diags": diags
-            })
+        "passed": passed,
+        "limits_passed": limits_passed,
+        "diags": diags
+    })
 

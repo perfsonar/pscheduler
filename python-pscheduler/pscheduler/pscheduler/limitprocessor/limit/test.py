@@ -85,7 +85,10 @@ class LimitTest():
         check_result = pscheduler.json_load(stdout)
         passed = check_result["passes"]
 
-        result = { "passed": passed }
+        result = {
+            "passed": passed,
+            "limit": self.limit
+        }
         if not passed:
             result["reasons"] = check_result["errors"]
 
@@ -129,12 +132,15 @@ if __name__ == "__main__":
     })
 
 
-    print limit.evaluate({
-        "schema": 1,
-        "duration": "PT45M",
-        "#duration": "PT45S",
-        "starting-comment": "Perry the PLATYPUS",
-        "#starting-comment": "Ferb",
-        "parting-comment": "Vwl!",
-        "#parting-comment": "Vowel!"
-    })
+    print pscheduler.json_dump(limit.evaluate({
+        "type": "idle",
+        "spec": {
+            "schema": 1,
+            "#duration": "PT45M",
+            "duration": "PT45S",
+            "starting-comment": "Perry the PLATYPUS",
+            "#starting-comment": "Ferb",
+            "#parting-comment": "Vwl!",
+            "parting-comment": "Vowel!"
+        }
+    }), pretty=True)

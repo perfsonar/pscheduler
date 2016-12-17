@@ -471,9 +471,9 @@ null_reason = None
 
 # Get participants
 
-
 url = pscheduler.api_url(assist, '/tests/%s/participants' % task['test']['type'])
 log.debug("Fetching participant list from %s", url)
+
 log.debug("%s", pscheduler.json_dump(task['test']['spec']))
 status, participants = pscheduler.url_get( url, params={
         'spec': pscheduler.json_dump(task['test']['spec'])
