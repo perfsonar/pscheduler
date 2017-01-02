@@ -10,4 +10,4 @@
 -
  log = pscheduler.Log(prefix="archiver-esmond", quiet=True)
  
- DEFAULT_SUMMARIES = {
+ #Number of seconds to wait if no bytes received on wire
