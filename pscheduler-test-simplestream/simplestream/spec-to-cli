@@ -17,8 +17,10 @@ if not valid:
 result = pscheduler.speccli_build_args(spec, 
                                        strings=[
         ( 'dest', 'dest' ),
+        ( 'dest-node', 'dest-node' ),
         ( 'dawdle', 'dawdle' ),
         ( 'source', 'source' ),
+        ( 'source-node', 'source-node' ),
         ( 'test-material', 'test-material' ),
         ( 'timeout', 'timeout' ),
         ( 'fail', 'fail' ),

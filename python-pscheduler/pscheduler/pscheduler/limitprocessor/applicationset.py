@@ -28,11 +28,11 @@ def __test_all(data):     # All passed (nothing failed)
     return fails == 0
 
 
-group_conditions = {
-    "none": { "stop-on": True,  "check": lambda data: __test_none(data) },
-    "one":  { "stop-on": None,  "check": lambda data: __test_one(data)  },
-    "any":  { "stop-on": True,  "check": lambda data: __test_any(data)  },
-    "all":  { "stop-on": False, "check": lambda data: __test_all(data)  }
+group_condition_tests = {
+    "none": lambda data: __test_none(data),
+    "one":  lambda data: __test_one(data),
+    "any":  lambda data: __test_any(data),
+    "all":  lambda data: __test_all(data)
 }
 
 
@@ -90,25 +90,22 @@ class ApplicationSet():
 
     def __check_group(self, task, group, check_schedule):
         """
-        Check a group of limits and return pass/fail and an array of diags
+        Check a group of limits and return a tuple:
+            pass - True if the group passed
+            limits_passed - List of the limits that passed
+            diags - Array of diagnostic messages
         """
 
         diags = []
+        limits_passed = []
 
         requirement = group['require']
  
-        conditions = group_conditions[requirement]
         total = len(group['limits'])
-
-        stop_on = conditions['stop-on']
-
-        # These will come up False if stop_on is None
-        stop_on_fail = stop_on == False
-        stop_on_pass = stop_on == True
 
         fails = 0
         passes = 0
-        stopped = False
+
 
         for limit in group['limits']:
 
@@ -121,23 +118,19 @@ class ApplicationSet():
             limit_passed = evaluated['passed']
 
             if limit_passed:
-                passes += 1
                 diags.append("Limit '%s' passed" % limit)
-                if stop_on_pass:
-                    stopped = True
-                    diags.append("Stopped on pass")
-                    break
+                passes += 1
+                try:
+                    limits_passed.append(evaluated['limit'])                    
+                except KeyError:
+                    pass
             else:
                 fails += 1
                 diags.append("Limit '%s' failed: %s" % (
                     limit,
                     '; '.join(evaluated['reasons'])))
-                if stop_on_fail:
-                    stopped = True
-                    diags.append("Stopped on fail")
-                    break
 
-        passed = conditions['check']((passes, fails))
+        passed = group_condition_tests[requirement]((passes, fails))
 
         diags.append("Want %s, %d/%d passed, %d/%d failed: %s" %
                      ( requirement,
@@ -145,32 +138,34 @@ class ApplicationSet():
                        fails, total,
                        "PASS" if passed else "FAIL" ))
 
-        return passed, diags
+        return passed, limits_passed, diags
 
 
     def __check_application(self, application, task, classifiers, check_schedule):
 
-        """Evaluate the groups of limits in an application, stopping when one fails."""
+        """Evaluate the groups of limits in an application, stopping when one
+        fails.
+        """
 
         diags = []
+        limits_passed = []
 
         group_no = 0
         groups_failed = len(application['apply'])
 
         for group in application['apply']:
             group_no += 1
-            group_passed, group_diags = self.__check_group(task, group, check_schedule)
+            group_passed, group_limits_passed, group_diags \
+                = self.__check_group(task, group, check_schedule)
             diags.extend([ "Group %d: %s" % (group_no, diag) for diag in group_diags ])
             if group_passed:
                 groups_failed -= 1
+                limits_passed.extend(group_limits_passed)
             else:
                 diags.append("Group %d: Failed; stopping here." % group_no)
                 break
 
-        try:
-            stop_on_failure = application['stop-on-failure']
-        except KeyError:
-            stop_on_failure = False
+        stop_on_failure = application.get('stop-on-failure', False)
 
         pass_ = groups_failed == 0
         invert = application['invert'] if 'invert' in application else False
@@ -181,7 +176,7 @@ class ApplicationSet():
                      ( "PASSES" if pass_ else "FAILS",
                        " (Inverted)" if invert else "" ))
 
-        return pass_, stop_on_failure, diags
+        return pass_, stop_on_failure, limits_passed, diags
 
 
 
@@ -191,10 +186,18 @@ class ApplicationSet():
               check_schedule=True  # Keep/disregard time-related limits
               ):
 
-        """Determine if a task can be run, return true/false and a string of
-        diagnostics"""
+        """Determine if a task can be run, return true/false, a list of lists
+        (see below) and a string of diagnostics.
+
+        The list of lists contains one list per application passed,
+        with that list containing descriptions of the limits passed
+        for that application.  (See the code in the top-level limit
+        processor to see how this is used.)
+        """
 
         diags = []
+        pass_count = 0
+        limits_passed = []
 
         # Run through each application, stopping when one passes or a
         # failed one has stop-on-failure
@@ -212,22 +215,26 @@ class ApplicationSet():
                 pass
 
             # Description
+            diags.append("Application: %s" % 
+                         application.get('description', "(No description)"))
 
-            try:
-                diags.append("Application: " + application['description'])
-            except KeyError:
-                diags.append("Application: (No description)")
-
-
-            passed, forced_stop, app_diags \
+            passed, forced_stop, check_limits_passed, app_diags \
                 = self.__check_application(application, task, classifiers,
                                            check_schedule)
-
+           
             diags.extend(["    " + diag for diag in app_diags])
-            if passed or forced_stop:
-                if not passed and forced_stop:
-                    diags.append("    Failed - Stop Forced")
-                return passed, '\n'.join(diags)
 
-        # If we got here, nothing passed.
-        return False, '\n'.join(diags)
+            if not passed and forced_stop:
+                diags.append("    Failed - Stop Forced")
+                return False, [], '\n'.join(diags)
+
+
+            if passed:
+                limits_passed.append(check_limits_passed)
+                pass_count += 1
+
+
+        if pass_count > 0:
+            return True, limits_passed, '\n'.join(diags)
+        else:
+            return False, [], '\n'.join(diags)

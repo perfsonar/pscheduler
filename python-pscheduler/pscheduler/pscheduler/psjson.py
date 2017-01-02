@@ -36,6 +36,30 @@ def json_decomment(json, prefix='#', null=False):
 
 
 
+def json_substitute(json, value, replacement):
+    """
+    Substitute any pair whose value is 'value' with the replacement
+    JSON 'replacement'.  Based on pscheduler.json_decomment().
+    """
+    if type(json) is dict:
+        result = {}
+        for item in json.keys():
+            if json[item] == value:
+                result[item] = replacement
+            else:
+                result[item] = json_substitute(json[item], value, replacement)
+        return result
+
+    elif type(json) is list:
+        result = []
+        for item in json:
+            result.append(json_substitute(item, value, replacement))
+        return result
+
+    else:
+        return json
+
+
 
 def json_load(source=None, exit_on_error=False, strip=True):
     """

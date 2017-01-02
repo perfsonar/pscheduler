@@ -135,6 +135,13 @@ archiver data.
 \end{lstlisting}
 
 
+\typeditem{ttl}{Duration} An optional amount of time after which the
+result should be discarded if no attempts have been made to archive
+it.  If not specified, the default behavior will be to keep it in the
+queue as long as the result is still in the system.
+
+
+
 
 \subsection{Array}
 An valid JSON array as defined by ECMA 404.
@@ -532,6 +539,26 @@ not be counted.  This value may not be provided without a {\tt
     "max-runs": 100
 }
 \end{lstlisting}
+
+
+\subsection{RetryPolicyEntry}
+A segment of a retry policy containing these items:
+
+\typeditem{attempts}{Cardinal} The number of times that an attempt
+should be made, waiting for time {\tt wait} (see below) between each
+attempt.
+
+\typeditem{wait}{Duration} The amount of time to wait between attempts.
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "attemts": 5,
+    "wait": "PT1M"
+}
+\end{lstlisting}
+
+
 
 
 \subsection{SINumber}

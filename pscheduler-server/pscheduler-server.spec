@@ -8,7 +8,7 @@
 
 Name:		pscheduler-server
 Version:	1.0
-Release:	0.18.rc2%{?dist}
+Release:	0.19.rc2%{?dist}
 
 Summary:	pScheduler Server
 BuildArch:	noarch
@@ -23,6 +23,7 @@ Provides:	%{name} = %{version}-%{release}
 # Database
 BuildRequires:	postgresql-init
 BuildRequires:	postgresql-load
+BuildRequires:	postgresql-server
 Requires:	drop-in
 # This is for pgcrypto
 Requires:	postgresql95-contrib

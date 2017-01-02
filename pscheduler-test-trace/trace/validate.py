@@ -33,6 +33,7 @@ def spec_is_valid(json):
             "schema":      { "$ref": "#/pScheduler/Cardinal" },
             "sendwait":    { "$ref": "#/pScheduler/Duration" },
             "source":      { "$ref": "#/pScheduler/Host" },
+            "source-node": { "$ref": "#/pScheduler/Host" },
             "tos":         { "$ref": "#/pScheduler/Cardinal" },
             "wait":        { "$ref": "#/pScheduler/Duration" },
             },

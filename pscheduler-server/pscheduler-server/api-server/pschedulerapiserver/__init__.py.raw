@@ -24,6 +24,7 @@ from .limits import *
 from .archivers import *
 from .runs import *
 from .schedule import *
+from .stat import *
 from .tasks import *
 from .tests import *
 from .tools import *

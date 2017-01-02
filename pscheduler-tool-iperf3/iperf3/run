@@ -34,9 +34,10 @@ try:
     participant_data = input['participant-data']
     test_spec = input['test']['spec']
     duration = pscheduler.iso8601_as_timedelta(input['schedule']['duration'])
+    limits_passed = input.get('limits-passed', [])
 except KeyError as e:
     pscheduler.fail("Missing required key in run input: %s" % e)
-except:
+except Exception:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 
 if len(participant_data) != 2:
@@ -111,6 +112,28 @@ def run_client():
     if test_spec.has_key('bandwidth') and test_spec['bandwidth'] != None:
         iperf3_args.append('-b')
         iperf3_args.append(test_spec['bandwidth'])
+    else:
+        # Find the largest bandwidth in passed limits and use that
+
+        # TODO: This needs to find the max allowed by each participant
+        # and then take the minimum of those values.
+
+        logger.debug("Finding maximum bandwidth")
+        max_bandwidth = -1
+        for passed_set in limits_passed:
+            for passed in passed_set:
+                try:
+                    new_max = pscheduler.si_as_number(passed['bandwidth']['range']['upper'])
+                    logger.debug("Limit says %d", new_max)
+                    max_bandwidth = max(max_bandwidth, new_max)
+                except KeyError:
+                    logger.debug("No upper bandwidth limit specified")
+                    pass
+
+        if max_bandwidth > -1:
+            logger.debug("Limiting bandwidth to %d", max_bandwidth)
+            iperf3_args.append('-b')
+            iperf3_args.append(max_bandwidth)
 
     if test_spec.has_key('udp'):
         iperf3_args.append('-u')
@@ -162,8 +185,9 @@ def run_client():
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string
     iperf3_args = map(lambda x: str(x), iperf3_args)
-      
-    logger.debug("Running command: %s" % " ".join(iperf3_args))
+
+    command_line = " ".join(iperf3_args)
+    logger.debug("Running command: %s" % command_line)
 
     try:
         status, stdout, stderr = pscheduler.run_program(iperf3_args)
@@ -190,7 +214,7 @@ def run_client():
     logger.debug("Lines are %s " % lines)
 
     results = iperf3_parser.parse_output(lines)
-    results['diag'] = stdout
+    results['diag'] = "%s\n\n%s" % (command_line, stdout)
 
     return results
 

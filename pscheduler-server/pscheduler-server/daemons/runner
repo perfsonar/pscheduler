@@ -295,6 +295,30 @@ class RunWorker:
                            self.id, str(ex))
             return
 
+        # TODO: Error check this.
+        self.cursor.execute("""
+                       SELECT
+                           tool.name,
+                           task.uuid,
+                           task.id,
+                           task.participant,
+                           task.participants,
+                           task.limits_passed,
+                           lower(run.times),
+                           upper(run.times),
+                           task.json #> '{test}',
+                           run.uuid,
+                           run.part_data_full,
+                           scheduling_class.enum
+                       FROM
+                           run
+                           JOIN task ON task.id = run.task
+                           JOIN test ON test.id = task.test
+                           JOIN scheduling_class
+                                ON scheduling_class.id = test.scheduling_class
+                           JOIN tool ON tool.id = task.tool
+                       WHERE run.id = %s
+                       """, [self.id])
 
         # Should get exactly one row back.  If not, the run probably
         # vanished.
@@ -305,8 +329,8 @@ class RunWorker:
 
         row = self.cursor.fetchone()
 
-        tool, task_uuid, task_id, participant, participants, start, end, \
-            test_spec, run_uuid, partdata, scheduling_class = row
+        tool, task_uuid, task_id, participant, participants, limits_passed, \
+            start, end, test_spec, run_uuid, partdata, scheduling_class = row
 
         # This will be used when a background-multi run produces a result.
         self.task_id = task_id
@@ -327,7 +351,8 @@ class RunWorker:
                 },
             'test': test_spec,
             'participant': participant,
-            'participant-data': partdata
+            'participant-data': partdata,
+            'limits-passed': limits_passed
             })
 
         self.log.debug("%d: Testing with %s: %s", self.id, tool, tool_input)

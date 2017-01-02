@@ -97,7 +97,7 @@ class Log():
                  name=None,     # Name for log entries
                  prefix=None,   # Prefix for name (e.g., prefix/progname)
                  level=INFO,    # Logging level
-                 facility=local5, # Log facility
+                 facility=local4, # Log facility
                  debug=False,   # Force level to DEBUG
                  verbose=False, # Log to stderr, too.
                  quiet=None ,   # Don't log anything on startup  (See below)
@@ -203,6 +203,11 @@ class Log():
 
         if (not self.is_quiet) and (not forced_quiet):
             self.info("Started")
+
+
+
+    def __del__(self):
+        self.__syslog_handler_deinit()
 
 
 

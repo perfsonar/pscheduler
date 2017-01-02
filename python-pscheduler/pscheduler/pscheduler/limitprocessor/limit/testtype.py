@@ -17,6 +17,7 @@ testtype_data_validator = {
     "required": [ "types" ]
 }
 
+
 def testtype_data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
@@ -56,7 +57,7 @@ class LimitTestType():
 
         try:
             if run['type'] in self.types:
-                return { "passed": True }
+                return { "passed": True, "reasons": [] }
         except KeyError:
             return { "passed": False, "reasons": [ "No type in task" ] }
 

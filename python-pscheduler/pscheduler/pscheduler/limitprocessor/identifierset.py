@@ -99,7 +99,7 @@ class IdentifierSet():
 if __name__ == "__main__":
 
     hints = {
-        "ip": "192.168.1.56",
+        "ip": "10.0.0.7",
         "protocol": "https"
     }
 
@@ -116,6 +116,12 @@ if __name__ == "__main__":
 	    "type": "always",
 	    "data": { },
             "invert": True
+	},
+        {
+	    "name": "local-interface",
+	    "description": "Requests from local interfaces",
+	    "type": "localif",
+	    "data": { }
 	},
 	{
 	    "name": "private-ip",

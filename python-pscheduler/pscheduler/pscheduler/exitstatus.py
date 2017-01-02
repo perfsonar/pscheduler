@@ -13,7 +13,8 @@ def fail(*args):
     message = ''
     for arg in args:
         message += arg
-    sys.stderr.write(message.strip() + '\n')
+    if message != '':
+        sys.stderr.write(message.strip() + '\n')
     exit(1)
 
 
@@ -25,7 +26,8 @@ def fail_other(status, *args):
     message = ''
     for arg in args:
         message += arg
-    sys.stderr.write(message.strip() + '\n')
+    if message != '':
+        sys.stderr.write(message.strip() + '\n')
     exit(status)
 
 

@@ -222,7 +222,6 @@ BEGIN
         t_version := t_version + 1;
     END IF;
 
-
     -- Version 5 to version 6
     -- Add proper default to uuid column
     IF t_version = 5
@@ -236,7 +235,6 @@ BEGIN
         t_version := t_version + 1;
     END IF;
 
-
     -- Version 6 to version 7
     -- Add first_start column
     IF t_version = 6
@@ -247,6 +245,18 @@ BEGIN
 
         t_version := t_version + 1;
     END IF;
+
+    -- Version 7 to version 8
+    -- Add field to hold passed limits
+    IF t_version = 7
+    THEN
+	ALTER TABLE task ADD COLUMN limits_passed JSON DEFAULT '[]'::JSON;
+
+	UPDATE task SET limits_passed = DEFAULT WHERE limits_passed IS NULL;
+
+        t_version := t_version + 1;
+    END IF;
+
 
 
     --
@@ -649,11 +659,13 @@ $$ LANGUAGE plpgsql;
 -- This is an older version of the function.
 -- TODO: Can get rid of this after 1.0 is in production.
 DROP FUNCTION IF EXISTS api_task_post(JSONB, JSONB, INTEGER, UUID);
+DROP FUNCTION IF EXISTS api_task_post(JSONB, JSONB, JSON, INTEGER, UUID);
 
 
 CREATE OR REPLACE FUNCTION api_task_post(
     task_package JSONB,
     hints JSONB,
+    limits_passed JSON = '[]',
     participant INTEGER DEFAULT 0,
     task_uuid UUID = NULL,
     enabled BOOLEAN = TRUE
@@ -665,8 +677,8 @@ DECLARE
 BEGIN
 
    WITH inserted_row AS (
-        INSERT INTO task(json, participant, uuid, hints, enabled)
-        VALUES (task_package, participant, task_uuid, hints, enabled)
+        INSERT INTO task(json, limits_passed, participant, uuid, hints, enabled)
+        VALUES (task_package, limits_passed, participant, task_uuid, hints, enabled)
         RETURNING *
     ) SELECT INTO inserted * from inserted_row;
 

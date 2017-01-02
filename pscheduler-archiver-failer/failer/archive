@@ -9,21 +9,24 @@ import sys
 
 random.seed()
 
-if random.random() > 0.8:
-    json = {
+json = pscheduler.json_load(exit_on_error=True)
+
+
+if random.random() > json["data"].get("fail", 0.5):
+    result = {
         "succeeded": True
         }
 else:
-    if random.random() > 0.5:
-        json = {
+    if random.random() < json["data"].get("retry", 0.5):
+        result = {
             "succeeded": False,
             "error": "Induced random failure with retry",
             "retry": "PT10S"
             }
     else:
-        json = {
+        result = {
             "succeeded": False,
             "error": "Induced random failure, not retrying",
             }
 
-pscheduler.succeed_json(json)
+pscheduler.succeed_json(result)

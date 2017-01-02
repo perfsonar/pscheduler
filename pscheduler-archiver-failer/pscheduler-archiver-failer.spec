@@ -5,7 +5,7 @@
 %define short	failer
 Name:		pscheduler-archiver-%{short}
 Version:	1.0
-Release:	0.18.rc2%{?dist}
+Release:	0.19.rc2%{?dist}
 
 Summary:	Sometimes-failing archiver class for pScheduler
 BuildArch:	noarch

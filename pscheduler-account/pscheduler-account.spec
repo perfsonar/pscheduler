@@ -4,7 +4,7 @@
 
 Name:		pscheduler-account
 Version:	1.0
-Release:	0.18.rc2%{?dist}
+Release:	0.19.rc2%{?dist}
 
 Summary:	Account for pScheduler
 BuildArch:	noarch

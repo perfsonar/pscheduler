@@ -5,7 +5,7 @@
 %define short	pscheduler
 Name:		python-%{short}
 Version:	1.3
-Release:	0.18.rc2%{?dist}
+Release:	0.19.rc2%{?dist}
 Summary:	Utility functions for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0
@@ -80,7 +80,7 @@ mkdir -p $RPM_BUILD_ROOT/%{syslog_d}
 cat > $RPM_BUILD_ROOT/%{syslog_d}/%{name}.conf <<EOF
 # Syslog configuration for pScheduler
 
-local5.*  %{logdir}/pscheduler.log
+local4.*  %{logdir}/pscheduler.log
 EOF
 
 
