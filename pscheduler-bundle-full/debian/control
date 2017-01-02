@@ -39,6 +39,7 @@ Depends:
  pscheduler-archiver-bitbucket,
  pscheduler-archiver-esmond,
  pscheduler-archiver-failer,
+ pscheduler-archiver-rabbitmq,
  pscheduler-archiver-syslog,
  pscheduler-server,
 Description: Full pScheduler Bundle
