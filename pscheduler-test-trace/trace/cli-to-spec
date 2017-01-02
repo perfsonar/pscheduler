@@ -99,6 +99,11 @@ opt_parser.add_option("--source",
                       action="store", type="string",
                       dest="source")
 
+opt_parser.add_option("--source-node",
+                      help="Source address",
+                      action="store", type="string",
+                      dest="source_node")
+
 opt_parser.add_option("--hops",
                       help="Maximum number of hops",
                       action="store", type="int",
@@ -172,6 +177,9 @@ if options.firstttl is not None:
 
 if options.source is not None:
    result['source'] = options.source
+
+if options.source_node is not None:
+   result['source-node'] = options.source_node
 
 if options.hops is not None:
    result['hops'] = options.hops

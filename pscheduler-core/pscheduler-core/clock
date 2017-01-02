@@ -1,0 +1,111 @@
+#!/usr/bin/python
+#
+# Compare the clocks on two hoss
+#
+
+import datetime
+import optparse
+import pscheduler
+
+pscheduler.set_graceful_exit()
+
+#
+# Gargle the arguments
+#
+
+
+class VerbatimParser(optparse.OptionParser):
+    def format_epilog(self, formatter):
+        return self.epilog
+
+opt_parser = VerbatimParser(
+    usage="Usage: %prog [ host [ host ] ]",
+    epilog=
+"""
+Examples:
+
+  clock
+      Show the clock on the local host
+
+  clock perfsonar6.example.org
+      Compare the clock at perfsonar6.example.org the local host
+
+  clock perfsonar6.example.org perfsonar7.example.org
+      Compare the clocks at perfsonar6.example.org to perfsonar7.example.org
+"""
+    )
+opt_parser.disable_interspersed_args()
+
+opt_parser.add_option("--timeout", "-W",
+                      help="How long to wait for the server to respond, in seconds (default 5)",
+                      default=5,
+                      action="store", type="int",
+                      dest="timeout")
+
+
+(options, remaining_args) = opt_parser.parse_args()
+
+if options.timeout <= 0:
+    pscheduler.fail("Timeout must be >= 0")
+
+if len(remaining_args) > 2:
+    opt_parser.print_usage()
+    pscheduler.fail()
+
+num_args = len(remaining_args)
+
+hosts = []
+
+if num_args < 2:
+    hosts.append("localhost")
+
+hosts.extend(remaining_args)
+
+results = []
+
+for host in hosts:
+    url = pscheduler.api_url(host, "clock")
+    status, result = pscheduler.url_get(url, throw=False,
+                                        timeout=options.timeout)
+
+    if status == 400:
+        pscheduler.fail("%s: %s" % (host, result))
+    elif status in [ 202, 204, 205, 206, 207, 208, 226,
+                     300, 301, 302, 303, 304, 205, 306, 307, 308 ] \
+        or ( (status >= 400) and (status <=499) ):
+        pscheduler.fail("%s is not running pScheduler" %  (host))
+    elif status != 200:
+        pscheduler.fail("%s returned status %d: %s" % (host, status, result))
+
+    result["host"] = host
+
+    results.append(result)
+
+
+times = []
+
+for result in results:
+    try:
+        times.append(pscheduler.iso8601_as_datetime(result["time"]))
+        print "clock     ", result["time"], \
+            "synchronized  " if result["synchronized"] else "unsynchronized", \
+            result["host"]
+
+    except (KeyError, ValueError):
+        pscheduler.fail("%s returned invalid data" % (host))
+
+if len(results) < 2:
+    pscheduler.succeed()
+
+# Compare the two clocks
+
+offset = times[1] - times[0]
+safe = offset < datetime.timedelta(seconds=2.0)
+print "difference", offset, "safe" if safe else "unsafe"
+
+if not safe:
+    pscheduler.fail()
+
+pscheduler.succeed()
+
+    

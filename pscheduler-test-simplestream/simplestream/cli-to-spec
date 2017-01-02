@@ -51,6 +51,11 @@ opt_parser.add_option("-e", "--dest",
                       action="store", type="string",
                       dest="dest")
 
+opt_parser.add_option("--dest-node",
+                      help="Destination pScheduler node",
+                      action="store", type="string",
+                      dest="dest_node")
+
 opt_parser.add_option("-d", "--dawdle",
                       help="Time to dawdle (ISO8601 Duration)",
                       action="store", type="string",
@@ -65,6 +70,11 @@ opt_parser.add_option("-s", "--source",
                       help="Source host",
                       action="store", type="string",
                       dest="source")
+
+opt_parser.add_option("--source-node",
+                      help="Source pScheduler node",
+                      action="store", type="string",
+                      dest="source_node")
 
 opt_parser.add_option("-t", "--timeout",
                       help="Time for receiver to wait (ISO8601 Duration)",
@@ -88,11 +98,17 @@ result = { 'schema': 1 }
 if options.dest is not None:
    result['dest'] = options.dest
 
+if options.dest_node is not None:
+   result['dest-node'] = options.dest_node
+
 if options.dawdle is not None:
    result['dawdle'] = options.dawdle
 
 if options.source is not None:
    result['source'] = options.source
+
+if options.source_node is not None:
+   result['source-node'] = options.source_node
 
 if options.test_material is not None:
    result['test-material'] = options.test_material

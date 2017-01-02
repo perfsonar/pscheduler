@@ -27,19 +27,18 @@ if not valid:
 
 
 participants = []
-if "source" in json:
-    source = json["source"]
-else:
-    source = None
+source = json.get("source-node", json.get("source", None))
+if source is None:
     null_reason = "No source specified"
 
-
+# Note that because this is a one-participant test, there is no node
+# we talk to at the destination end.
 if "dest" in json:
     destination = json["dest"]
 else:
      pscheduler.fail("Missing required field dest")
     
-if pscheduler.api_has_pscheduler(json.get("source", None)):
+if pscheduler.api_has_pscheduler(source):
     participants = [ source ]
 elif pscheduler.api_has_pscheduler(destination):
     participants = [ destination ]

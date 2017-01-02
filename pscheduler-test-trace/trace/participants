@@ -17,10 +17,8 @@ valid, message = spec_is_valid(json)
 if not valid:
     pscheduler.fail(message)
 
-if "source" in json:
-    source = json["source"]
-else:
-    source = None
+source = json.get("source-node", json.get("source", None))
+if source is None:
     null_reason = "No source specified"
 
 

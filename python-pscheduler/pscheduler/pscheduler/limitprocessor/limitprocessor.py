@@ -98,15 +98,12 @@ class LimitProcessor():
 
         Returns a tuple containing:
             passed - True if the proposed task passed the limits applied
+            limits - A list of the limits that passed
             diags - A textual summary of how the conclusion was reached
         """
 
         if self.inert:
-            return True, "No limits were applied"
-
-
-        # TODO: Consider checking to see if the source file has
-        # changed and reloading it if it has.
+            return True, [], "No limits were applied"
 
         # TODO: Should this be JSON, or is text sufficient?
         diags = []
@@ -114,26 +111,33 @@ class LimitProcessor():
         identifications = self.identifiers.identities(hints)
         if not identifications:
             diags.append("Made no identifications.")
-            return False, '\n'.join(diags)
+            return False, [], '\n'.join(diags)
         diags.append("Identified as %s" % (', '.join(identifications)))
 
         classifications = self.classifiers.classifications(identifications)
         if not classifications:
             diags.append("Made no classifications.")
-            return False, '\n'.join(diags)
+            return False, [], '\n'.join(diags)
         diags.append("Classified as %s" % (', '.join(classifications)))
 
         check_schedule='schedule' in task
 
-        passed, app_diags = self.applications.check(task,
-                                                    classifications,
-                                                    check_schedule)
+        passed, app_limits_passed, app_diags \
+            = self.applications.check(task, classifications, check_schedule)
 
         diags.append(app_diags)
-
         diags.append("Proposal %s limits" % ("meets" if passed else "does not meet"))
 
-        return passed, '\n'.join(diags)
+        # If any of the passed applications had no task limits, there
+        # should be no limits placed on the run.
+
+        unlimited = len(app_limits_passed) == 0 \
+                    or min([ len(item) for item in app_limits_passed ]) == 0
+
+
+        return passed, \
+            [] if (unlimited or not passed) else app_limits_passed, \
+            '\n'.join(diags)
 
 
 
@@ -144,9 +148,9 @@ class LimitProcessor():
 if __name__ == "__main__":
 
     # TODO: This should refer to a sample file in the distribution
-    processor = LimitProcessor('pscheduler-limits.json')
+    processor = LimitProcessor('/home/mfeit/tmp/pscheduler-limits')
 
-    passed, diags = processor.process(
+    passed, limits_passed, diags = processor.process(
         {
             "type": "rtt",
             "spec": {
@@ -169,5 +173,6 @@ if __name__ == "__main__":
         })
 
     print passed
+    print limits_passed
     print diags
 

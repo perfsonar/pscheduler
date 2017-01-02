@@ -106,6 +106,17 @@ BEGIN
         t_version := t_version + 1;
     END IF;
 
+    -- Version 4 to version 5
+    -- Adds expiration time
+    IF t_version = 4
+    THEN
+        -- Calculated by archiving_run_afer from the 'ttl' value in the JSON
+        ALTER TABLE archiving ADD COLUMN
+        ttl_expires TIMESTAMP WITH TIME ZONE;
+
+        t_version := t_version + 1;
+    END IF;
+
 
     --
     -- Cleanup
@@ -126,6 +137,7 @@ AS $$
 DECLARE
     inserted BOOLEAN;
     archive JSONB;
+    expires TIMESTAMP WITH TIME ZONE;
 BEGIN
 
     -- Start an archive if conditions are right
@@ -168,11 +180,19 @@ BEGIN
                         SELECT archive_default.archive FROM archive_default
                        )
         LOOP
-	    INSERT INTO archiving (run, archiver, archiver_data)
+            IF archive ? 'ttl'
+            THEN
+                expires := now() + text_to_interval(archive #>> '{ttl}');
+            ELSE
+                expires := NULL;
+	    END IF;
+
+	    INSERT INTO archiving (run, archiver, archiver_data, ttl_expires)
     	    VALUES (
     	        NEW.id,
     	        (SELECT id from archiver WHERE name = archive #>> '{archiver}'),
-	        (archive #> '{data}')::JSONB
+	        (archive #> '{data}')::JSONB,
+	        expires
     	    );
             inserted := TRUE;
         END LOOP;
@@ -190,6 +210,39 @@ $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS archiving_run_after ON run;
 CREATE TRIGGER archiving_run_after AFTER INSERT OR UPDATE ON run
        FOR EACH ROW EXECUTE PROCEDURE archiving_run_after();
+
+
+
+
+
+DROP TRIGGER IF EXISTS archiving_update ON archiving CASCADE;
+
+CREATE OR REPLACE FUNCTION archiving_update()
+RETURNS TRIGGER
+AS $$
+BEGIN
+
+    -- Notify on things the archiver will want to know about:
+
+    IF
+        -- Completions
+        (NEW.archived AND NEW.archived <> OLD.archived)
+        -- Reschedules
+        OR (NEW.next_attempt IS NOT NULL
+                AND NEW.next_attempt <> OLD.next_attempt)
+    THEN
+        NOTIFY archiving_change;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS archiving_update ON archiving;
+CREATE TRIGGER archiving_update AFTER UPDATE ON archiving
+       FOR EACH ROW EXECUTE PROCEDURE archiving_update();
+
+
 
 
 
@@ -252,12 +305,10 @@ BEGIN
         archiving.id IN (
             SELECT archiving.id FROM archiving
             WHERE
-                -- TODO: This might work better if we had a separate
-                -- flag for when archiving was underway, as those that
-                -- never succeed will always have to be sifted through.
                 NOT archived
                 AND next_attempt IS NOT NULL
                 AND next_attempt < now()
+                AND (ttl_expires IS NULL OR ttl_expires > now())
             ORDER BY archiving.attempts, next_attempt
             LIMIT max_return
         )
@@ -299,4 +350,77 @@ AS
         NOT archived
         AND next_attempt < now()
     ORDER BY next_attempt
+;
+
+
+--
+-- Maintenance
+--
+
+-- Maintenance functions
+
+
+CREATE OR REPLACE FUNCTION archiving_maint_hour()
+RETURNS VOID
+AS $$
+DECLARE
+    diag JSONB;
+    default_next_attempt TIMESTAMP WITH TIME ZONE;
+BEGIN
+
+    -- Force archivings that have seen no attempts by their TTL into a
+    -- failed state.
+
+    diag := '{ "return-code": 1,
+               "stdout": "",
+               "stderr": "Time to live expired before first attempt"}';
+    diag := jsonb_set(diag, '{"time"}',
+        to_jsonb(timestamp_with_time_zone_to_iso8601(normalized_now())), TRUE);
+
+    UPDATE archiving
+    SET
+        next_attempt = NULL,
+        diags = diags || diag::JSONB
+    WHERE
+        NOT archived
+	-- Note that this must be the same as the default in the table.
+        AND next_attempt = '-infinity'
+        AND attempts = 0
+        AND ttl_expires < now();
+
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+-- Convenient ways to see the goings on
+
+CREATE OR REPLACE VIEW run_status
+AS
+    SELECT
+        run.id AS run,
+	run.uuid AS run_uuid,
+	task.id AS task,
+	task.uuid AS task_uuid,
+	test.name AS test,
+	tool.name AS tool,
+	run.times,
+	run_state.display AS state
+    FROM
+        run
+	JOIN run_state ON run_state.id = run.state
+	JOIN task ON task.id = task
+	JOIN test ON test.id = task.test
+	JOIN tool ON tool.id = task.tool
+    WHERE
+        run.state <> run_state_pending()
+	OR (run.state = run_state_pending()
+            AND lower(run.times) < (now() + 'PT2M'::interval))
+    ORDER BY run.times;
+
+
+CREATE OR REPLACE VIEW run_status_short
+AS
+    SELECT run, task, times, state
+    FROM  run_status
 ;

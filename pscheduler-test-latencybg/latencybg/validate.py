@@ -31,8 +31,16 @@ REQUEST_SCHEMA = {
                 "description": "The address of the entity sending packets in this test",
                 "$ref": "#/pScheduler/Host"
             },
+            "source-node": {
+                "description": "The address of the source pScheduler node, if different",
+                "$ref": "#/pScheduler/Host"
+            },
             "dest": {
                 "description": "The address of the entity receiving packets in this test",
+                "$ref": "#/pScheduler/Host"
+            },
+            "dest-node": {
+                "description": "The address of the destination pScheduler node, if different",
                 "$ref": "#/pScheduler/Host"
             },
             "duration": {

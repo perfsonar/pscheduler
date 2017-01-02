@@ -1,0 +1,83 @@
+%
+% pScheduler Archiver Guide for RabbitMQ
+%
+
+\def\archivername{rabbitmq}
+
+
+% TODO: Add titlepage to the options.
+\documentclass[10pt]{article}
+
+\input pscheduler-tex.tex
+
+\DRAFT
+
+\title{pScheduler Archiver Guide: {\it \archivername}}
+\author{The perfSONAR Development Team}
+
+
+\begin{document}
+\maketitle
+
+
+%
+% INTRODUCTION
+%
+
+\section{Introduction}
+
+The {\tt \archivername} archiver sends a raw JSON result to RabbitMQ.
+
+This document describes schema version {\tt 1}.
+
+
+%
+% ARCHIVER DATA
+%
+
+\section{Archiver Data}
+
+The {\tt data} object in the archiver specification may contain any of
+the following:
+
+\typeditem{_url}{URL} A URL to use in connecting to RabbitMQ.  The
+format for the URL is described in the Pika documentation at {\tt
+  https://pika.readthedocs.io/en/0.10.0/modules/parameters.html\#urlparameters},
+but the general format is {\tt
+  amqp://username:password@host:port/virtualhost[?query-string]}.
+
+\typeditem{exchange}{String} The exchange to use in posting the
+result.  If not provided, the empty string will be used.
+
+\typeditem{routing-key}{String} The routing key to be used in
+publishing the result to the queue.  If not provided, the empty string
+will be used.
+
+\typeditem{template}{AnyJSON} An optional JSON template used to
+construct the JSON which will be sent to the queue.  Any pair having a
+string value of {\tt __RESULT__} will have the result replaced with
+the JSON object provided to the archiver.  If not provided, the
+standard JSON format for the result will be sent to the queue.
+
+\typeditem{retry-policy}{RetryPolicy} The policy for additional
+attempts to archive the run after failures.
+
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "_url": "amqp://netmonitor:mumblemumble@mq.example.com/",
+    "routing-key": "perfsonar",
+    "template": {
+        "network": "backbone",
+        "region": "central",
+        "measurement": "__RESULT__"
+    },
+    "retry-policy": [
+        { "attempts": 4,  "wait": "PT15S" },
+        { "attempts": 5,  "wait": "PT1M" }
+    ]
+}
+\end{lstlisting}
+
+\end{document}

@@ -11,12 +11,14 @@ def spec_is_valid(json):
             "schema":            { "$ref": "#/pScheduler/Cardinal" },
             "count":             { "$ref": "#/pScheduler/Cardinal" },
             "dest":              { "$ref": "#/pScheduler/Host" },
+            # There is no dest-node because this is a one-participant test.
             # TODO: This is supposed to be a 20-bit number.  Validate that.
             "flowlabel":         { "$ref": "#/pScheduler/CardinalZero" },
             "hostnames":         { "$ref": "#/pScheduler/Boolean" },
             "interval":          { "$ref": "#/pScheduler/Duration" },
             "ip-version":        { "$ref": "#/pScheduler/ip-version" },
             "source":            { "$ref": "#/pScheduler/Host" },
+            "source-node":       { "$ref": "#/pScheduler/Host" },
             "suppress-loopback": { "$ref": "#/pScheduler/Boolean" },
             "tos":               { "$ref": "#/pScheduler/Cardinal" },
             "length":            { "$ref": "#/pScheduler/Cardinal" },

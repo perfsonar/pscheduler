@@ -1,0 +1,98 @@
+#
+# Statistics-Related Pages
+#
+
+import pscheduler
+
+from pschedulerapiserver import application
+
+from flask import request
+
+from .dbcursor import dbcursor_query
+from .json import *
+from .response import *
+
+
+def single_numeric_query(query, query_args = []):
+    try:
+        cursor = dbcursor_query(query, query_args)
+    except Exception as ex:
+        return error(str(ex))
+
+    if cursor.rowcount == 0:
+        return not_found()
+
+    row = cursor.fetchone()
+
+    return ok(str(row[0]))
+
+
+#
+# Archiving
+#
+
+@application.route("/stat/archiving/backlog", methods=['GET'])
+def stat_archive_backlog():
+    return single_numeric_query("""SELECT COUNT(*) FROM archiving
+                                   WHERE NOT archived AND next_attempt < now()""")
+
+@application.route("/stat/archiving/upcoming", methods=['GET'])
+def stat_archive_upcoming():
+    return single_numeric_query("""SELECT COUNT(*) FROM archiving
+                                   WHERE NOT archived AND next_attempt >= now()""")
+
+
+#
+# Runs
+#
+
+
+@application.route("/stat/runs/pending", methods=['GET'])
+def stat_runs_pending():
+    return single_numeric_query("""SELECT COUNT(*) FROM run 
+                                   WHERE STATE = run_state_pending()""")
+
+@application.route("/stat/runs/on-deck", methods=['GET'])
+def stat_runs_on_deck():
+    return single_numeric_query("""SELECT COUNT(*) FROM run 
+                                   WHERE STATE = run_state_on_deck()""")
+
+@application.route("/stat/runs/running", methods=['GET'])
+def stat_runs_running():
+    return single_numeric_query("""SELECT COUNT(*) FROM run 
+                                   WHERE STATE = run_state_running()""")
+
+@application.route("/stat/runs/cleanup", methods=['GET'])
+def stat_runs_cleanup():
+    return single_numeric_query("""SELECT COUNT(*) FROM run 
+                                   WHERE STATE = run_state_cleanup()""")
+
+@application.route("/stat/runs/finished", methods=['GET'])
+def stat_runs_finished():
+    return single_numeric_query("""SELECT COUNT(*) FROM run 
+                                   WHERE STATE = run_state_finished()""")
+
+@application.route("/stat/runs/overdue", methods=['GET'])
+def stat_runs_overdue():
+    return single_numeric_query("""SELECT COUNT(*) FROM run 
+                                   WHERE STATE = run_state_overdue()""")
+
+@application.route("/stat/runs/missed", methods=['GET'])
+def stat_runs_missed():
+    return single_numeric_query("""SELECT COUNT(*) FROM run 
+                                   WHERE STATE = run_state_missed()""")
+
+@application.route("/stat/runs/failed", methods=['GET'])
+def stat_runs_failed():
+    return single_numeric_query("""SELECT COUNT(*) FROM run 
+                                   WHERE STATE = run_state_failed()""")
+
+@application.route("/stat/runs/trumped", methods=['GET'])
+def stat_runs_trumped():
+    return single_numeric_query("""SELECT COUNT(*) FROM run 
+                                   WHERE STATE = run_state_trumped()""")
+
+@application.route("/stat/runs/nonstart", methods=['GET'])
+def stat_runs_nonstart():
+    return single_numeric_query("""SELECT COUNT(*) FROM run 
+                                   WHERE STATE = run_state_nonstart()""")

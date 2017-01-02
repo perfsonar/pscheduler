@@ -86,6 +86,11 @@ opt_parser.add_option("--source",
                       action="store", type="string",
                       dest="source")
 
+opt_parser.add_option("--source-node",
+                      help="Source pScheduler node, if different",
+                      action="store", type="string",
+                      dest="source_node")
+
 opt_parser.add_option("--suppress-loopback",
                       help="Suppress multicast loopback",
                       action="store_true",
@@ -151,6 +156,9 @@ if options.ip_version is not None:
 
 if options.source is not None:
    result['source'] = options.source
+
+if options.source_node is not None:
+   result['source-node'] = options.source_node
 
 if options.suppress_loopback is not None:
    result['suppress-loopback'] = options.suppress_loopback

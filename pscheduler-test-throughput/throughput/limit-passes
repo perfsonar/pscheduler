@@ -47,7 +47,7 @@ def check_limit(input_json):
         # doesn't really make sense to invert bandwidth I think?
         contains, message = nrange.contains(spec["bandwidth"])
         if not contains:
-            errors.append("Bandwidth not in limit: %s" % message)
+            errors.append("Bandwidth %s" % message)
 
     except KeyError:
         pass  # Don't care if not there.
@@ -63,7 +63,7 @@ def check_limit(input_json):
     # doesn't really make sense to invert duration I think?
         contains, message = nrange.contains(spec["duration"])
         if not contains:
-            errors.append("Duration not in limit: %s" % message)
+            errors.append("Duration %s" % message)
 
     except KeyError:
         pass  # Don't care if not there.
@@ -77,7 +77,7 @@ def check_limit(input_json):
         limit_udp = limit['udp']['match']
         
         if spec['udp'] and not limit_udp:
-            errors.append("UDP testing not allowed.")
+            errors.append("UDP testing not allowed")
 
     except KeyError:
         pass  # Not there?  Don't care.
@@ -99,7 +99,7 @@ def check_limit(input_json):
             try:
                 errors.append(limit["ip-version"]["fail-message"])
             except KeyError:
-                errors.append("ip-version does not match limit")
+                errors.append("IPv%d is not allowed" % spec["ip-version"])
 
 
     except KeyError:

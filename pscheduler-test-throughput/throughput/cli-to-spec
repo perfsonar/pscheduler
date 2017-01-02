@@ -54,11 +54,20 @@ opt_parser.add_option("-s", "--source",
                       action="store", type="string",
                       dest="source")
 
+opt_parser.add_option("--source-node",
+                      help="pScheduler node on sending host, if different",
+                      action="store", type="string",
+                      dest="source_node")
 
 opt_parser.add_option("-d", "--dest", "--destination",
                       help="Receiving host",
                       action="store", type="string",
                       dest="destination")
+
+opt_parser.add_option("--dest-node",
+                      help="pScheduler node on receiving host, if different",
+                      action="store", type="string",
+                      dest="dest_node")
 
 opt_parser.add_option("-t", "--duration",
                       help="Total runtime of test",
@@ -174,9 +183,15 @@ result = { 'schema': 1 }
 
 if options.source is not None:
    result['source'] = options.source
+
+if options.source_node is not None:
+   result['source-node'] = options.source_node
    
 if options.destination is not None:
    result['dest'] = options.destination
+
+if options.dest_node is not None:
+   result['dest-node'] = options.dest_node
 
 if options.duration is not None:
    duration = options.duration

@@ -1,0 +1,60 @@
+#!/usr/bin/python
+#
+# Send a result to syslog.
+#
+
+import pika
+import pscheduler
+
+
+json = pscheduler.json_load(exit_on_error=True)
+
+data = json["data"]
+
+if "template" in data:
+    body = pscheduler.json_substitute(
+        data["template"], "__RESULT__", json["result"]
+    )
+else:
+    body = json["result"]
+
+
+try:
+
+    connection = pika.BlockingConnection(
+        pika.URLParameters(data["_url"])
+        )
+
+    connection.channel().basic_publish(
+        exchange=data.get("exchange", ""),
+        routing_key=data.get("routing-key", ""),
+        body=pscheduler.json_dump(body)
+    )
+
+    connection.close()
+
+    result = {'succeeded': True}
+
+except Exception as ex:
+
+    try:
+        if ex.__module__ == "pika.exceptions":
+            error = "Pika error: %s" % (ex.__class__.__name__)
+        else:
+            error = str(ex)
+    except AttributeError:
+        error = str(ex)
+
+
+    result = {
+        "succeeded": False,
+        "error": error
+    }
+
+    if "retry-policy" in data:
+        policy = pscheduler.RetryPolicy(data["retry-policy"], iso8601=True)
+        retry_time = policy.retry(json["attempts"])
+        if retry_time is not None:
+            result["retry"] = retry_time
+
+pscheduler.succeed_json(result)

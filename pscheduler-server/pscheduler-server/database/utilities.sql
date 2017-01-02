@@ -9,7 +9,7 @@
 -- CONVERSIONS
 --
 
--- All of these functions take a TEXT value and attempt to convert it
+-- Most of these functions take a TEXT value and attempt to convert it
 -- into the return type.  If the 'picky' argument is TRUE, the
 -- function will raise an exception if the conversion fails, otherwise
 -- it will return NULL.
@@ -46,6 +46,41 @@ BEGIN
 RETURN converted;
 END;
 $$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION 
+timestamp_with_time_zone_to_iso8601(
+	value TIMESTAMP WITH TIME ZONE
+)
+RETURNS TEXT
+AS $$
+DECLARE
+        hours INTEGER;
+        minutes INTEGER;
+	converted TEXT;
+BEGIN
+
+    converted := to_char(value, 'YYYY-MM-DD"T"HH24:MI:SS');
+
+    hours := extract(timezone_hour from value);
+    IF hours <> 0
+    THEN
+        converted := converted || trim(to_char(hours, 'MIPL'));
+        converted := converted || trim(to_char(abs(hours), '00'));
+        minutes := extract(timezone_minutes from value);
+        IF MINUTES <> 0
+        THEN
+            converted := converted || ':' || trim(to_char(minutes, '00'));
+        END IF;
+    ELSE
+        converted := converted || 'Z';
+    END IF;
+
+    RETURN converted;
+END;
+$$ LANGUAGE plpgsql;
+
 
 
 CREATE OR REPLACE FUNCTION 

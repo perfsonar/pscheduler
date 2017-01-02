@@ -9,11 +9,19 @@ import copy
 # TODO: It would be nice if we could paw through the directory, import
 # all of the modules and set this up automagically.
 
-from .limit import passfail
-from .limit import rundaterange
-from .limit import runschedule
-from .limit import test
-from .limit import testtype
+if __name__ == "__main__":
+    from limit import passfail
+    from limit import rundaterange
+    from limit import runschedule
+    from limit import test
+    from limit import testtype
+else:
+    from .limit import passfail
+    from .limit import rundaterange
+    from .limit import runschedule
+    from .limit import test
+    from .limit import testtype
+
 
 limit_creator = {
     'pass-fail':     lambda data: passfail.LimitPassFail(data),
@@ -95,12 +103,15 @@ class LimitSet():
               task,           # Task to use as limit fodder
               limit,          # The limit to check against
               check_schedule  # Keep/disregard time-related limits
-
               ):
         """Evaluate a single limit and return a hash:
         {
-          "passed": <Boolean>       # True if passed
-          "reasons": [ <String> ]   # Optional array of failure reasons
+          "passed": <Boolean>,       # True if passed
+          "reasons": [ <String> ],   # Optional array of failure reasons
+          "keep": {                  # Limit info to be passed along to run
+              "limit": <AnyJSON>,    # Limit evaluated and passed
+              "inverted": <Boolean>  # True if passed because of inversion
+          }
         }
         """
 
@@ -122,18 +133,22 @@ class LimitSet():
             return { "passed": True }
 
         evaluated = evaluator.evaluate(task)
-        if invert:
-            passed = not evaluated["passed"]
-            evaluated["passed"] = passed
-            if passed:
-                try:
-                    del evaluated["reasons"]
-                except KeyError:
-                    pass
-            else:
-                evaluated["reasons"] = ["Passed but inverted"]
 
-        return evaluated
+        result = {}
+
+        for key in [ "passed", "limit", "reasons" ]:
+            try:
+                result[key] = evaluated[key]
+            except KeyError:
+                pass
+
+        result["inverted"] = invert
+        if invert:
+            result["passed"] = not result["passed"]
+            if result["passed"]:
+                result["reasons"] = ["Passed but inverted"]
+
+        return result
 
 
 
@@ -192,21 +207,69 @@ if __name__ == "__main__":
 	    "data": {
 		"types": [ "rtt", "latency", "trace" ]
             }
-	}
-    ]
+	},
+        {
+            "name": "innocuous-tests-inv",
+	    "description": "Tests that are harmful",
+	    "type": "test-type",
+	    "data": {
+		"types": [ "rtt", "latency", "trace" ]
+            },
+            "invert": True
+	},
+        ]
+
+
+    # This only works on a fully-installed system with
+    # pscheduler-test-idle installed.
+
+    if False:
+        thelimits.append({
+            "name": "idle-default",
+            "description": "Idle for most visitors",
+            "type": "test",
+            "data": {
+                "test": "idle",
+                "limit": {
+                    "duration": {
+                        "range": {
+                            "lower": "PT2S",
+                            "upper": "PT10S"
+                        }
+                    },
+                    "starting-comment" : {
+                        "description": "Starting comment can't contain the word 'platypus'.",
+                        "match": {
+                            "style": "regex",
+                            "match": "platypus",
+                            "invert": True
+                        }
+                    },
+                    "parting-comment" : {
+                        "description": "Parting comment must contain a vowel if not empty", 
+                        "match": {
+                            "style": "regex",
+                            "match": "(^$|[aeiou])"
+                        }
+                    }
+                }
+            }
+        })
 
 
     theset = LimitSet(thelimits)
 
     task = {
-        "type": "bogus",
-        "test": { },
+        "type": "idle",
+        "spec": {
+            "schema": 1,
+            "duration": "PT10S"
+        },
         "schedule": {
             "start": "2016-01-01T11:50:00",
-            "duration": "PT1H"
-        },
-        "invert": True
+            "duration": "PT10S"
         }
+    }
 
     for limit in thelimits:
-        print limit['name'], theset.check(task, limit['name'])
+        print limit['name'], theset.check(task, limit['name'], True)

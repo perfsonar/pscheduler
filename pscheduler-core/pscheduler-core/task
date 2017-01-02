@@ -416,7 +416,7 @@ if status == 400:
     # Anything with --help or -h in it is a plea for help.
     if "--help" in remaining_args or "-h" in remaining_args:
         pscheduler.succeed(
-            "Usage: psc task [task-options] %s [test-options]\n\n%s"
+            "Usage: task [task-options] %s [test-options]\n\n%s"
             % (test_type, raw_spec))
 
     # Anything else is a bona-fide bad request.
@@ -471,9 +471,9 @@ null_reason = None
 
 # Get participants
 
-
 url = pscheduler.api_url(assist, '/tests/%s/participants' % task['test']['type'])
 log.debug("Fetching participant list from %s", url)
+
 log.debug("%s", pscheduler.json_dump(task['test']['spec']))
 status, participants = pscheduler.url_get( url, params={
         'spec': pscheduler.json_dump(task['test']['spec'])
