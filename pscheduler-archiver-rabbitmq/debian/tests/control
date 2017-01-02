@@ -1,0 +1,3 @@
+Depends: @, pscheduler-bundle-full, curl, rabbitmq-server, amqp-tools
+Tests: archiver
+Restrictions: needs-root
