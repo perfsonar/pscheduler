@@ -4,6 +4,6 @@ set -e
 
 amqp-declare-queue -q test
 
-pscheduler task --archive '{ "archiver": "rabbitmq", "data": { "_url": "amqp://localhost:5672", "routing-key": "test", "exchange": "" } }' rtt --dest=localhost
+pscheduler task --archive '{ "archiver": "rabbitmq", "data": { "_url": "amqp://localhost", "routing-key": "test" } }' rtt --dest=localhost
 
 amqp-get -q test
