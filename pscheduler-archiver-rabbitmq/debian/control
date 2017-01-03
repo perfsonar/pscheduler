@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-archiver-rabbitmq
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
- pscheduler-server, python-pika
+ pscheduler-server, python-pika (>= 0.9.14)
 Description: RabbitMQ archiver class for pScheduler
  Archiver sends JSON test results to RabbitMQ AMQP server.
