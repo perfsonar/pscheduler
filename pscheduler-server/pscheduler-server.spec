@@ -24,6 +24,9 @@ Provides:	%{name} = %{version}-%{release}
 BuildRequires:	postgresql-init
 BuildRequires:	postgresql-load
 BuildRequires:	postgresql-server
+BuildRequires:	postgresql95-contrib
+BuildRequires:	postgresql95-plpython
+
 Requires:	drop-in
 # This is for pgcrypto
 Requires:	postgresql95-contrib
