@@ -279,7 +279,7 @@ if assist is None:
     assist = os.getenv('PSCHEDULER_ASSIST')
 
 # Last-ditch default
-last_ditch_assist = '127.0.0.1'
+last_ditch_assist = 'localhost'
 if assist is None:
     assist = last_ditch_assist
 log.debug("Assistance is from %s", assist)
