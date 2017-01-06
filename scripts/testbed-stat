@@ -1,0 +1,39 @@
+#!/bin/sh -e
+#
+# Survey all pSchedulers in the testbed for a statistic.  If none is
+# provided on the command line, the default is archiving/backlog.  The
+# full list can be found in the sources in
+# pscheduler-server/pscheduler-server/api-server/pschedulerapiserver/stat.py
+#
+
+TB_CONF=https://raw.githubusercontent.com/perfsonar/perfsonar-dev-mesh/master/conf/testbed.conf
+
+TMPBASE="${TMP:-/tmp}/$(basename $0).$$"
+
+cleanup()
+{
+    rm -rf ${TMPBASE}*
+}
+trap cleanup EXIT
+
+STAT="$1"
+[ -z "${STAT}" ] && STAT=archiving/backlog
+
+
+curl -s -o "${TMPBASE}.conf" "${TB_CONF}" 
+
+awk '$1 == "member" { print $2 }' "${TMPBASE}.conf" \
+    | sort \
+    | uniq \
+    > "${TMPBASE}.hosts"
+
+while read -r TBHOST
+do
+    if pscheduler ping -q "${TBHOST}" > /dev/null
+    then
+	RESULT=$(curl -s -k "https://${TBHOST}/pscheduler/stat/${STAT}" 2>/dev/null)
+	printf "%8d %s\n" "${RESULT}" "${TBHOST}"
+    else
+	printf "%8s %s\n" "Error" "${TBHOST}"
+    fi
+done < "${TMPBASE}.hosts"
