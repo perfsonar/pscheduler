@@ -273,12 +273,24 @@ fi
 %define jinja2_symlink %{site_packages}/jinja2
 
 %if 0%{?el6}
-if [ "$1" -ge "1" -a ! -e "%{jinja2_symlink}" ]
+if [ "$1" -ge "1" ]
 then
-    EGG=$((cd %{site_packages} \
-	&& find . -type d -name "Jinja2-*-py*.egg") \
-	| head -1 | sed -e 's|^./||')
-    ln -s "${EGG}/jinja2" "%{jinja2_symlink}"
+
+    # If RPM left an empty directory, get rid of it.  If the rmdir
+    # fails, go quietly because it's not empty.
+    [ -d "%{jinja2_symlink}" ] \
+	&& rmdir "%{jinja2_symlink}" > /dev/null 2>&1 \
+	|| true
+
+    # If there's nothing where the link should be, make it.
+    if [ ! -e "%{jinja2_symlink}" ]
+    then
+	EGG=$((cd %{site_packages} \
+	    && find . -type d -name "Jinja2-*-py*.egg") \
+	    | head -1 | sed -e 's|^./||')
+	ln -s "${EGG}/jinja2" "%{jinja2_symlink}"
+    fi
+
 fi
 %endif
 
