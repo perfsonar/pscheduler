@@ -20,6 +20,7 @@ include /usr/share/dpkg/default.mk
 %:
 	dh $@
 
+DEB_VERSION := $(shell dpkg-parsechangelog | egrep '^Version:' | cut -f 2 -d ' ')
 DEB_SOURCE_PACKAGE ?= $(strip $(shell egrep '^Source: ' debian/control | cut -f 2 -d ':'))
 ROOT ?= $(CURDIR)/debian/$(DEB_SOURCE_PACKAGE)
 
@@ -74,10 +75,15 @@ override_dh_auto_install:
 	mv $(ROOT)/etc/apache2/conf-available/pscheduler-api-server.conf \
 	   $(ROOT)/etc/apache2/conf-available/pscheduler-server.conf
 
-	mkdir -p $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/install
 	mkdir -p $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/install-dbadmin
-	cp database/database-build.sql $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/install/pgsql
 	cp database/database-build-super.sql $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/install-dbadmin/pgsql
+	mkdir -p $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/install
+	cp database/database-build.sql $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/install/pgsql
+
+	mkdir -p $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/upgrade-dbadmin/pgsql
+	ln -s ../../install-dbadmin/pgsql $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/upgrade-dbadmin/pgsql/$(DEB_VERSION)
+	mkdir -p $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/upgrade/pgsql
+	ln -s ../../install/pgsql $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/upgrade/pgsql/$(DEB_VERSION)
 
 override_dh_installinit:
 	dh_installinit --onlyscripts --name=pscheduler-archiver
