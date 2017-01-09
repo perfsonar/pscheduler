@@ -1,4 +1,4 @@
-pscheduler-server (1.0~19.rc2-1~bpo70+1) perfsonar-wheezy-staging; urgency=low
+pscheduler-server (1.0~19.rc2-1~bpo70+2) perfsonar-wheezy-staging; urgency=low
 
   * Backport to Wheezy.
 
