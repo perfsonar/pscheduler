@@ -5,7 +5,7 @@
 %define short	bwctlping
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.19.rc2%{?dist}
+Release:	0.20.rc2%{?dist}
 
 Summary:	pScheduler BWCTL Ping Tool
 BuildArch:	noarch
