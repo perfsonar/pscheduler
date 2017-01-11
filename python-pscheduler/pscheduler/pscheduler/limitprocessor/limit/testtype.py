@@ -69,7 +69,7 @@ class LimitTestType():
 
 if __name__ == "__main__":
 
-    limit = LimitPassFail({
+    limit = LimitTestType({
         "types": [ "rtt", "trace", "latency" ]
     })
 
