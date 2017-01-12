@@ -11,6 +11,7 @@ from flask import request
 from .args import *
 from .limitproc import *
 from .response import *
+from .util import *
 
 @application.route("/limits", methods=['GET'])
 def limits():
@@ -23,15 +24,11 @@ def limits():
     if proposal is None:
         return bad_request("No proposal provided")
 
-    hints = {
-        "ip": request.remote_addr
-        }
-
     processor = limitprocessor()
     if processor is None:
         return no_can_do("Limit processor is not initialized.")
 
-    passed, limits_passed, diags = processor.process(proposal, hints)
+    passed, limits_passed, diags = processor.process(proposal, request_hints())
 
     return json_response({
         "passed": passed,

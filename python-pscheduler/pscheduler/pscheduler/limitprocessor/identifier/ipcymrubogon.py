@@ -71,7 +71,7 @@ class IdentifierIPCymruBogon():
         """
 
         try:
-            ip = hints['ip']
+            ip = hints['requester']
         except KeyError:
             return False
 
@@ -133,5 +133,5 @@ if __name__ == "__main__":
             "128.82.4.1",
             "2001:48a8:68fe::248"  # www.perfsonar.net
     ]:
-        result = ident.evaluate({ "ip": ip })
+        result = ident.evaluate({ "requester": ip })
         print ip, result

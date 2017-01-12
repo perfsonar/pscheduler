@@ -99,7 +99,8 @@ class IdentifierSet():
 if __name__ == "__main__":
 
     hints = {
-        "ip": "10.0.0.7",
+        "requester": "10.0.0.7",
+        "server": "10.0.0.7"
         "protocol": "https"
     }
 

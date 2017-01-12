@@ -14,6 +14,7 @@ from .json import *
 from .limitproc import *
 from .log import log
 from .response import *
+from .util import *
 
 def task_exists(task):
     """Determine if a task exists by its UUID"""
@@ -261,10 +262,7 @@ def tasks():
             log.debug("Limit processor is not initialized. %s", whynot)
             return no_can_do("Limit processor is not initialized: %s" % whynot)
 
-        # TODO: This is cooked up in two places.  Make a function of it.
-        hints = {
-            "ip": request.remote_addr
-            }
+        hints = request_hints();
         hints_data = pscheduler.json_dump(hints)
 
         log.debug("Processor = %s" % processor)
@@ -510,10 +508,7 @@ def tasks_uuid(uuid):
             log.debug(message)
             return no_can_do(message)
 
-        # TODO: This is cooked up in two places.  Make a function of it.
-        hints = {
-            "ip": request.remote_addr
-            }
+        hints = request_hints()
         hints_data = pscheduler.json_dump(hints)
 
         passed, limits_passed, diags = processor.process(json_in["test"], hints)
