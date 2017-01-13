@@ -41,6 +41,7 @@ make \
      CLASSESINSTALLED=%{_pscheduler_classes} \
      INTERNALSDIR=$RPM_BUILD_ROOT/%{_pscheduler_internals} \
      INTERNALSINSTALLED=%{_pscheduler_internals} \
+     LIMITSFILE=%{_pscheduler_limit_config} \
      TOOLCONFIGDIR=%{_pscheduler_tool_confdir} \
      install
 

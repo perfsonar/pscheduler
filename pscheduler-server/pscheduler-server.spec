@@ -91,7 +91,6 @@ The pScheduler server
 %define api_httpd_conf %{httpd_conf_d}/pscheduler-api-server.conf
 
 %define server_conf_dir %{_pscheduler_sysconfdir}
-%define limits_file     %{server_conf_dir}/limits.conf
 
 # Note that we want this here because it seems to work well without
 # assistance on systems where selinux is enabled.  Anywhere else and
@@ -217,7 +216,7 @@ make -C api-server \
      "CONF_D=%{httpd_conf_d}" \
      "PREFIX=${RPM_BUILD_ROOT}" \
      "DSN_FILE=%{dsn_file}" \
-     "LIMITS_FILE=%{limits_file}" \
+     "LIMITS_FILE=%{_pscheduler_limit_config}" \
      install
 
 mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}

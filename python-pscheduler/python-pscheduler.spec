@@ -38,9 +38,12 @@ Requires:	logrotate
 BuildRequires:	python-setuptools
 
 
+%define limit_config %{_pscheduler_sysconfdir}/limits.conf
 %define logdir %{_var}/log/pscheduler
 %define logrotate_d %{_sysconfdir}/logrotate.d
 %define syslog_d %{_sysconfdir}/rsyslog.d
+
+%define macros %{_pscheduler_rpmmacroprefix}%{name}
 
 
 %description
@@ -83,6 +86,16 @@ cat > $RPM_BUILD_ROOT/%{syslog_d}/%{name}.conf <<EOF
 local4.*  %{logdir}/pscheduler.log
 EOF
 
+mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_rpmmacrodir}
+cat > $RPM_BUILD_ROOT/%{macros} <<EOF
+#
+# RPM Macros for %{name} Version %{version}
+#
+
+%%_pscheduler_limit_config %{limit_config}
+EOF
+
+
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -109,3 +122,4 @@ systemctl restart rsyslog
 %defattr(-,root,root)
 %{logrotate_d}/*
 %{syslog_d}/*
+%attr(444,root,root) %{_pscheduler_rpmmacroprefix}*
