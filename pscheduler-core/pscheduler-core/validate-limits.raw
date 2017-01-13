@@ -32,14 +32,14 @@ opt_parser = VerbatimParser(
 """
 Examples:
 
-  check-limit-file /foo/bar/limits.conf
+  validate-limits /foo/bar/limits.conf
       Validate /foo/bar/limits.conf
 
-  check-limit-file -
+  validate-limits -
       Validate limit configuration from the standard input
 
-  check-limit-file
-      Validate the system default limits file, if readable.
+  validate-limits
+      Validate __LIMITS_FILE__ if readable.
 """
     )
 opt_parser.disable_interspersed_args()
