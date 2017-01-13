@@ -100,7 +100,7 @@ if __name__ == "__main__":
 
     hints = {
         "requester": "10.0.0.7",
-        "server": "10.0.0.7"
+        "server": "10.0.0.7",
         "protocol": "https"
     }
 
