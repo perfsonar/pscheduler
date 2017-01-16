@@ -379,6 +379,7 @@ BEGIN
 
     UPDATE archiving
     SET
+        archived = TRUE,     -- Not really, but gets the attempt off the table.
         next_attempt = NULL,
         diags = diags || diag::JSONB
     WHERE
