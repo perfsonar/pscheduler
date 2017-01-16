@@ -227,6 +227,11 @@ def run_post(
                               data=pscheduler.json_dump(run_params),
                               throw=False,
                               json=True)
+    if status != 200:
+        log and log.debug("Failed: %d %s", status, run_lead_url)
+        return (None, None, None,
+                "Failed to post lead run: %s" % run_lead_url)
+
     log and log.debug("Lead URL is %s", run_lead_url)
     assert type(run_lead_url) in [str, unicode]
     runs_posted.append(run_lead_url)
