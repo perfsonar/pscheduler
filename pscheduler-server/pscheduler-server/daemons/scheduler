@@ -141,13 +141,6 @@ def run_post(
         # TODO: It would be nice if the task had a list of the
         # runtimes URLs so we don't have to build it.
 
-        # TODO: Remove this
-        if True:
-            log.debug("TEST Fetching task")
-            stat, result = pscheduler.url_get(task_url, throw=False)
-            log.debug("Status = %s", stat)
-
-
         runtime_url = task_url + '/runtimes'
 
         log.debug("Fetching %s", runtime_url)
