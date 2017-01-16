@@ -360,7 +360,7 @@ AS
 -- Maintenance functions
 
 
-CREATE OR REPLACE FUNCTION archiving_maint_hour()
+CREATE OR REPLACE FUNCTION archiving_maint_minute()
 RETURNS VOID
 AS $$
 DECLARE

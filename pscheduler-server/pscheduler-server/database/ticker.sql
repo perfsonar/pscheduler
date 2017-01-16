@@ -21,6 +21,7 @@ AS $$
 BEGIN
     PERFORM schedule_maint_minute();
     PERFORM http_queue_maint_minute();
+    PERFORM archiving_maint_minute();
 END;
 $$ LANGUAGE plpgsql;
 
@@ -30,7 +31,7 @@ CREATE OR REPLACE FUNCTION ticker_hour()
 RETURNS VOID
 AS $$
 BEGIN
-    PERFORM archiving_maint_hour();
+    NULL;
 END;
 $$ LANGUAGE plpgsql;
 
