@@ -153,28 +153,14 @@ def run_post(
         log.debug("Fetching %s", runtime_url)
 
 
-        # TODO: These two blocks of code are supposed to be
-        # equivalent, but the call to url_get() causes this call to
-        # just return for no apparent reason.  The version that uses
-        # requests is added below as a temporary fix until fixed.  See
-        # issue #116
-
-        #status, json_ranges = pscheduler.url_get(runtime_url,
-        #                                         params=range_params,
-        #                                         Throw=False)
-
-        r = requests.get(runtime_url, params=range_params, verify=False)
-        status = r.status_code
-
-        # TODO: In either of these cases, should probably delete any
-        # runs that were scheduled before returning.
+        status, json_ranges = pscheduler.url_get(runtime_url,
+                                                 params=range_params,
+                                                 throw=False)
 
         if status != 200:
             return (None, None, None,
                     "Error trying to schedule with %s: %s %d"
                     % (participant, runtime_url, status))
-
-        json_ranges = pscheduler.json_load(r.text)
 
         if len(json_ranges) == 0:
             return (None, None, None,
