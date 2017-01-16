@@ -391,37 +391,3 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
-
-
-
--- Convenient ways to see the goings on
-
-CREATE OR REPLACE VIEW run_status
-AS
-    SELECT
-        run.id AS run,
-	run.uuid AS run_uuid,
-	task.id AS task,
-	task.uuid AS task_uuid,
-	test.name AS test,
-	tool.name AS tool,
-	run.times,
-	run_state.display AS state
-    FROM
-        run
-	JOIN run_state ON run_state.id = run.state
-	JOIN task ON task.id = task
-	JOIN test ON test.id = task.test
-	JOIN tool ON tool.id = task.tool
-    WHERE
-        run.state <> run_state_pending()
-	OR (run.state = run_state_pending()
-            AND lower(run.times) < (now() + 'PT2M'::interval))
-    ORDER BY run.times;
-
-
-CREATE OR REPLACE VIEW run_status_short
-AS
-    SELECT run, task, times, state
-    FROM  run_status
-;
