@@ -676,6 +676,11 @@ DECLARE
     inserted RECORD;
 BEGIN
 
+   IF EXISTS (SELECT * FROM task WHERE uuid = task_uuid)
+   THEN
+       RAISE EXCEPTION 'Task already exists.  All participants must be on separate systems.';
+   END IF;
+
    WITH inserted_row AS (
         INSERT INTO task(json, limits_passed, participant, uuid, hints, enabled)
         VALUES (task_package, limits_passed, participant, task_uuid, hints, enabled)
