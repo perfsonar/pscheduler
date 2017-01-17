@@ -8,7 +8,7 @@
 
 Name:		pscheduler-server
 Version:	1.0
-Release:	0.19.rc2%{?dist}
+Release:	0.21.rc2%{?dist}
 
 Summary:	pScheduler Server
 BuildArch:	noarch
@@ -24,6 +24,9 @@ Provides:	%{name} = %{version}-%{release}
 BuildRequires:	postgresql-init
 BuildRequires:	postgresql-load
 BuildRequires:	postgresql-server
+BuildRequires:	postgresql95-contrib
+BuildRequires:	postgresql95-plpython
+
 Requires:	drop-in
 # This is for pgcrypto
 Requires:	postgresql95-contrib
@@ -88,7 +91,6 @@ The pScheduler server
 %define api_httpd_conf %{httpd_conf_d}/pscheduler-api-server.conf
 
 %define server_conf_dir %{_pscheduler_sysconfdir}
-%define limits_file     %{server_conf_dir}/limits.conf
 
 # Note that we want this here because it seems to work well without
 # assistance on systems where selinux is enabled.  Anywhere else and
@@ -214,7 +216,7 @@ make -C api-server \
      "CONF_D=%{httpd_conf_d}" \
      "PREFIX=${RPM_BUILD_ROOT}" \
      "DSN_FILE=%{dsn_file}" \
-     "LIMITS_FILE=%{limits_file}" \
+     "LIMITS_FILE=%{_pscheduler_limit_config}" \
      install
 
 mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}
@@ -270,12 +272,24 @@ fi
 %define jinja2_symlink %{site_packages}/jinja2
 
 %if 0%{?el6}
-if [ "$1" -ge "1" -a ! -e "%{jinja2_symlink}" ]
+if [ "$1" -ge "1" ]
 then
-    EGG=$((cd %{site_packages} \
-	&& find . -type d -name "Jinja2-*-py*.egg") \
-	| head -1 | sed -e 's|^./||')
-    ln -s "${EGG}/jinja2" "%{jinja2_symlink}"
+
+    # If RPM left an empty directory, get rid of it.  If the rmdir
+    # fails, go quietly because it's not empty.
+    [ -d "%{jinja2_symlink}" ] \
+	&& rmdir "%{jinja2_symlink}" > /dev/null 2>&1 \
+	|| true
+
+    # If there's nothing where the link should be, make it.
+    if [ ! -e "%{jinja2_symlink}" ]
+    then
+	EGG=$((cd %{site_packages} \
+	    && find . -type d -name "Jinja2-*-py*.egg") \
+	    | head -1 | sed -e 's|^./||')
+	ln -s "${EGG}/jinja2" "%{jinja2_symlink}"
+    fi
+
 fi
 %endif
 

@@ -32,11 +32,38 @@ limit_creator = {
     }
 
 
+
+def merge_dicts(a, b, path=None):
+    """
+    Merge two dictionaries.
+    Source: http://stackoverflow.com/a/7205107/180674
+    """
+    if path is None: path = []
+    for key in b:
+        if key in a:
+            if isinstance(a[key], dict) and isinstance(b[key], dict):
+                merge_dicts(a[key], b[key], path + [str(key)])
+            elif a[key] == b[key]:
+                pass # same leaf value
+            else:
+                a[key] = b[key]  # Overlay conflicting values
+                # raise ValueError('Conflict at %s' % '.'.join(path + [str(key)]))
+        else:
+            a[key] = b[key]
+    return a
+
+
+
 class LimitSet():
 
     """
     Class that holds and processes limits
     """
+
+
+
+
+
 
     def __init__(self,
                  fodder,      # Set of limits as read from a limit file
@@ -61,22 +88,20 @@ class LimitSet():
                 except KeyError:
                     raise ValueError("Limit '%s': "
                                      "Unable to clone undefined limit '%s'"
-                                     % (clone_name, clone_source))
+                                     % (limit['name'], limit['clone']))
 
                 new_limit = {
-                    "name": name,
+                    "name": limit['name'],
                     "description": limit['description'],
                     "type": source_limit['type'],
-                    "data": copy.deepcopy(source_limit['data'])
-                }                   
-
-                # Overlay any data provided by the new limit.  No need
-                # to deep copy this since it isn't going to change.
-
-                for overlay in limit['data']:
-                    new_limit['data'][overlay] = limit['data'][overlay]
+                    "data": merge_dicts(
+                        copy.deepcopy(source_limit['data']),
+                        copy.deepcopy(limit['data']))
+                }
 
                 limit = new_limit
+
+
 
             # Process the limit, cloned or not, as normal.
 

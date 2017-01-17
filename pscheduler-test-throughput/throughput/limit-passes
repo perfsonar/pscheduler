@@ -72,15 +72,18 @@ def check_limit(input_json):
     #
     # Allow UDP or not
     #
-    
+   
     try:
         limit_udp = limit['udp']['match']
-        
-        if spec['udp'] and not limit_udp:
-            errors.append("UDP testing not allowed")
 
+        spec_udp = spec.get('udp', False)
+
+        if spec_udp != limit_udp:
+            errors.append("%s testing not allowed"
+                          % ("UDP" if spec_udp else "TCP"))
     except KeyError:
         pass  # Not there?  Don't care.
+        
 
 
     #

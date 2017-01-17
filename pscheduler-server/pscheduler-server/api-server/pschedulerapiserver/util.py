@@ -7,6 +7,27 @@ import urlparse
 
 from flask import request
 
+
+#
+# Hints
+#
+
+def request_hints():
+    result = {
+        "requester": request.remote_addr
+    }
+
+    # This handles things cross-platform with Apache first.
+    for var in [ "SERVER_ADDR", "LOCAL_ADDR" ]:
+        value = request.environ.get(var, None)
+        if value is not None:
+            result["server"] = value
+            break
+
+    return result
+
+
+
 #
 # Hostnames
 #
@@ -29,7 +50,8 @@ def server_fqdn():
 
     return my_fqdn
 
-        
+
+       
 
 #
 # URLs

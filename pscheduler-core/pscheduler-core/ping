@@ -29,6 +29,10 @@ Example:
     )
 opt_parser.disable_interspersed_args()
 
+opt_parser.add_option("--quiet", "-q",
+                      help="Run without any output",
+                      action="store_true", default=False,
+                      dest="quiet")
 opt_parser.add_option("--timeout", "-W",
                       help="How long to wait for the server to respond, in seconds (default 5)",
                       default=5,
@@ -52,12 +56,15 @@ url = pscheduler.api_url(host)
 status, result = pscheduler.url_get(url, throw=False, timeout=options.timeout)
 
 if status == 200:
-    pscheduler.succeed("pScheduler on %s is alive." % (host))
+    pscheduler.succeed('' if options.quiet
+                       else "pScheduler on %s is alive." % (host))
 elif status == 400:
-    pscheduler.fail("%s: %s" % (host, result))
+    pscheduler.fail('' if options.quiet else "%s: %s" % (host, result))
 elif status in [ 202, 204, 205, 206, 207, 208, 226,
                  300, 301, 302, 303, 304, 205, 306, 307, 308 ] \
     or ( (status >= 400) and (status <=499) ):
-    pscheduler.fail("%s is not running pScheduler" %  (host))
+    pscheduler.fail('' if options.quiet
+                    else "%s is not running pScheduler" % (host))
 
-pscheduler.fail("%s returned status %d: %s" % (host, status, result))
+pscheduler.fail("" if options.quiet
+                else "%s returned status %d: %s" % (host, status, result))

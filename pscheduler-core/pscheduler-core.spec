@@ -4,7 +4,7 @@
 
 Name:		pscheduler-core
 Version:	1.0
-Release:	0.19.rc2%{?dist}
+Release:	0.21.rc2%{?dist}
 
 Summary:	pScheduler Core Programs
 BuildArch:	noarch
@@ -41,6 +41,7 @@ make \
      CLASSESINSTALLED=%{_pscheduler_classes} \
      INTERNALSDIR=$RPM_BUILD_ROOT/%{_pscheduler_internals} \
      INTERNALSINSTALLED=%{_pscheduler_internals} \
+     LIMITSFILE=%{_pscheduler_limit_config} \
      TOOLCONFIGDIR=%{_pscheduler_tool_confdir} \
      install
 

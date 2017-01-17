@@ -164,12 +164,12 @@ if __name__ == "__main__":
             }
         },
         {
-            "#ip": "10.0.0.7",        "#": "Dev VM",
-            "#ip": "128.82.4.1",      "#": "Nobody in particular",
-            "#ip": "198.51.100.3",    "#": "Hacker",
-            "#ip": "62.40.106.13",    "#": "GEANT",
-            "#ip": "140.182.44.164",  "#": "IU",
-            "ip": "192.52.179.242",   "#": "Internet2",
+            "#requester": "10.0.0.7",        "#": "Dev VM",
+            "#requester": "128.82.4.1",      "#": "Nobody in particular",
+            "#requester": "198.51.100.3",    "#": "Hacker",
+            "#requester": "62.40.106.13",    "#": "GEANT",
+            "#requester": "140.182.44.164",  "#": "IU",
+            "requester": "192.52.179.242",   "#": "Internet2",
         })
 
     print passed
