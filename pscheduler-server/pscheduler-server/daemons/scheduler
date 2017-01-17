@@ -141,40 +141,19 @@ def run_post(
         # TODO: It would be nice if the task had a list of the
         # runtimes URLs so we don't have to build it.
 
-        # TODO: Remove this
-        if True:
-            log.debug("TEST Fetching task")
-            stat, result = pscheduler.url_get(task_url, throw=False)
-            log.debug("Status = %s", stat)
-
-
         runtime_url = task_url + '/runtimes'
 
         log.debug("Fetching %s", runtime_url)
 
 
-        # TODO: These two blocks of code are supposed to be
-        # equivalent, but the call to url_get() causes this call to
-        # just return for no apparent reason.  The version that uses
-        # requests is added below as a temporary fix until fixed.  See
-        # issue #116
-
-        #status, json_ranges = pscheduler.url_get(runtime_url,
-        #                                         params=range_params,
-        #                                         Throw=False)
-
-        r = requests.get(runtime_url, params=range_params, verify=False)
-        status = r.status_code
-
-        # TODO: In either of these cases, should probably delete any
-        # runs that were scheduled before returning.
+        status, json_ranges = pscheduler.url_get(runtime_url,
+                                                 params=range_params,
+                                                 throw=False)
 
         if status != 200:
             return (None, None, None,
                     "Error trying to schedule with %s: %s %d"
                     % (participant, runtime_url, status))
-
-        json_ranges = pscheduler.json_load(r.text)
 
         if len(json_ranges) == 0:
             return (None, None, None,
@@ -248,6 +227,11 @@ def run_post(
                               data=pscheduler.json_dump(run_params),
                               throw=False,
                               json=True)
+    if status != 200:
+        log and log.debug("Failed: %d %s", status, run_lead_url)
+        return (None, None, None,
+                "Failed to post lead run: %s" % run_lead_url)
+
     log and log.debug("Lead URL is %s", run_lead_url)
     assert type(run_lead_url) in [str, unicode]
     runs_posted.append(run_lead_url)

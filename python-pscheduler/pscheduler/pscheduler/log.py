@@ -207,8 +207,8 @@ class Log():
 
 
     def __del__(self):
-        self.__syslog_handler_deinit()
-
+        if self is not None:
+            self.__syslog_handler_deinit()
 
 
     def __update_env(self):

@@ -242,14 +242,19 @@ def run_server():
     # convert to seconds
     omit = test_spec.get('omit', 0)
     if omit:
-        omit = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(omit)) 
+        omit = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(omit))         
 
     iperf3_args = map(lambda x: str(x), iperf3_args)
     logger.debug("Running command: %s" % " ".join(iperf3_args))
 
     try:
+
+        iperf_timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)) 
+        iperf_timeout += omit
+        iperf_timeout += DEFAULT_FUDGE_FACTOR
+
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
-                                                        timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)) + omit,
+                                                        timeout = iperf_timeout,
                                                         timeout_ok = True)
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e);

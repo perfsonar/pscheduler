@@ -214,7 +214,7 @@ BEGIN
                 SELECT * FROM (
                     SELECT id FROM run
                     WHERE upper(run.times) < normalized_time
-                    ORDER BY run.times DESC
+                    ORDER BY upper(run.times) DESC
                     LIMIT window_size
                 ) past
 
@@ -230,8 +230,10 @@ BEGIN
 
                 SELECT * FROM (
                     SELECT id FROM run
-                    WHERE lower(run.times) > normalized_time
-                    ORDER BY run.times
+                    WHERE
+                        lower(run.times) > normalized_now()
+                        AND run.state IN (run_state_pending(),  run_state_nonstart())
+                    ORDER BY lower(run.times)
                     LIMIT window_size
                 ) future
 

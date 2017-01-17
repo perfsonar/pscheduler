@@ -31,7 +31,8 @@ COMMANDS=\
 
 RAWCOMMANDS=\
 	diags \
-	internal
+	internal \
+	validate-limits
 
 INTERNALS=\
 	nothing
@@ -65,6 +66,10 @@ ifndef INTERNALSINSTALLED
 	@echo No INTERNALSSINSTALLED specified for build of $@
 	@false
 endif
+ifndef LIMITSFILE
+	@echo No LIMITSFILE specified for build of $@
+	@false
+endif
 ifndef TOOLCONFIGDIR
 	@echo No TOOLCONFIGDIR specified for build of $@
 	@false
@@ -73,6 +78,7 @@ endif
 		-e 's|__COMMANDS__|$(COMMANDSINSTALLED)|g' \
 		-e 's|__CLASSES__|$(CLASSESINSTALLED)|g' \
 		-e 's|__INTERNALS__|$(INTERNALSINSTALLED)|g' \
+		-e 's|__LIMITS_FILE__|$(LIMITSFILE)|g' \
 		-e 's|__TOOLCONFIGDIR__|$(TOOLCONFIGDIR)|g' \
 		$< > $@
 	@if egrep -e '__[A-Z_]+__' $@ ; then \

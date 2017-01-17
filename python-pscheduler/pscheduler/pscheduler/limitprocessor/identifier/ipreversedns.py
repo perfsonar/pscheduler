@@ -64,7 +64,7 @@ class IdentifierIPReverseDNS():
         """
 
         try:
-            ip = hints['ip']
+            ip = hints['requester']
         except KeyError:
             return False
 
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     })
 
     for ip in ips:
-        result = ident.evaluate({ "ip": ip })
+        result = ident.evaluate({ "requester": ip })
         print ip, result
 
     print "\nSecond:"
@@ -149,5 +149,5 @@ if __name__ == "__main__":
     })
 
     for ip in ips:
-        result = ident.evaluate({ "ip": ip })
+        result = ident.evaluate({ "requester": ip })
         print ip, result

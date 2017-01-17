@@ -38,11 +38,12 @@ def task_uuid_runtimes(task):
 
 
 
-# Evaluate the limits for a run.
 def __evaluate_limits(
     task,       # Task UUID
     start_time  # When the task should start
     ):
+
+    """Evaluate the limits for a run."""
 
     log.debug("Applying limits")
     # Let this throw what it may; callers have to catch it.
@@ -50,7 +51,7 @@ def __evaluate_limits(
         "SELECT json, duration, hints FROM task where uuid = %s", [task])
     if cursor.rowcount == 0:
         # TODO: This or bad_request when the task isn't there?
-        return not_found()
+        return false, None, not_found()
     task_spec, duration, hints = cursor.fetchone()
     log.debug("Task is %s, duration is %s" % (task_spec, duration))
 
@@ -68,7 +69,7 @@ def __evaluate_limits(
     processor, whynot = limitprocessor()
     if processor is None:
         log.debug("Limit processor is not initialized. %s", whynot)
-        return no_can_do("Limit processor is not initialized: %s" % whynot)
+        return false, None, no_can_do("Limit processor is not initialized: %s" % whynot)
 
     # Don't pass hints since that would have been covered when the
     # task was submitted and only the scheduler will be submitting
@@ -81,7 +82,7 @@ def __evaluate_limits(
     if passed:
         diags = None
 
-    return passed, diags
+    return passed, diags, None
 
 
 
@@ -143,16 +144,13 @@ def tasks_uuid_runs(task):
             return bad_request("Invalid JSON:" + request.data)
 
 
-
-        # TODO: __evaluate_limits() returns a response object if it
-        # fails.  Need to return appropriately, otherwise the task
-        # will just get posted.
-
         try:
-            passed, diags = __evaluate_limits(task, start_time)
+            passed, diags, response = __evaluate_limits(task, start_time)
         except Exception as ex:
             log.exception()
             return error(str(ex))
+        if response is not None:
+            return response
 
         try:
             log.debug("Posting run for task %s starting %s"
@@ -432,9 +430,12 @@ def tasks_uuid_runs_run(task, run):
             except ValueError:
                 return bad_request("Invalid start time")
 
-            passed, diags = __evaluate_limits(task, start_time)
-
             try:
+
+                passed, diags, response = __evaluate_limits(task, start_time)
+                if response is not None:
+                    return response
+
                 cursor = dbcursor_query("SELECT api_run_post(%s, %s, %s)",
                                [task, start_time, run], onerow=True)
                 log.debug("Full put of %s, got back %s", run, cursor.fetchone()[0])

@@ -58,7 +58,7 @@ class IdentifierLocalIF():
         """
 
         try:
-            ip = ipaddr.IPNetwork(hints['ip'])
+            ip = ipaddr.IPNetwork(hints['requester'])
         except KeyError:
             return False
 
@@ -79,4 +79,4 @@ if __name__ == "__main__":
     ident = IdentifierLocalIF({})
 
     for ip in [ "127.0.0.1", "::1", "10.1.1.1", "198.129.254.30" ]:
-        print ip, ident.evaluate({ "ip": ip })
+        print ip, ident.evaluate({ "requester": ip })

@@ -68,5 +68,5 @@ if __name__ == "__main__":
 
     for ip in [ "10.9.8.6", "198.6.1.1", "fd00:dead:beef::1" ]:
         for limit in [ passer, failer ]:
-            print ip, limit.evaluate({ "ip": ip })
+            print ip, limit.evaluate({ "requester": ip })
 

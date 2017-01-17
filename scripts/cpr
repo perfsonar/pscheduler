@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# Run CURL to get a URL, and make it pretty.
+#
+# If the URL isn't a full URL (e.g., bar instead of https://foo/bar),
+# prepend https://localhost/pscheduler/.
+#
+
+ARG="$1"
+
+if echo "${ARG}" | egrep -qve '^https?://'
+then
+    ARG="https://localhost/pscheduler/${ARG}"
+fi
+
+if echo "${ARG}" | fgrep -qve '?'
+then
+    ARG="${ARG}?pretty"
+else
+    ARG="${ARG}&pretty"
+fi
+
+
+if [ -t 0 -a -t 1 -a -t 2 ]
+then
+    PROC="less -F"
+else
+    PROC="cat"
+fi
+
+exec curl -s -k "${ARG}" | ${PROC}

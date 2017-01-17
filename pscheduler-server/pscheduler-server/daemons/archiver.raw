@@ -391,6 +391,7 @@ class ArchiveWorker():
                     self.log.debug("%d: No retry requested.  Giving up.", self.id)
                     self.db.query("""UPDATE archiving
                                      SET
+                                         archived = TRUE,
                                          attempts = attempts + 1,
                                          last_attempt = now(),
                                          next_attempt = NULL,

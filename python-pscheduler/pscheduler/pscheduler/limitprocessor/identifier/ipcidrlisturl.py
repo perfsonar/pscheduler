@@ -129,7 +129,7 @@ class IdentifierIPCIDRListURL():
             return self.fail_state
 
         try:
-            ip = hints['ip']
+            ip = hints['requester']
         except KeyError:
             return False
 
@@ -176,4 +176,4 @@ if __name__ == "__main__":
             "198.6.1.1",
             "128.82.4.1"
     ]:
-        print ip, ident.evaluate({ "ip": ip })
+        print ip, ident.evaluate({ "requester": ip })
