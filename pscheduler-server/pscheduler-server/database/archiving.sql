@@ -56,7 +56,8 @@ BEGIN
         	-- How many times we've tried to archive
         	last_attempt   	TIMESTAMP WITH TIME ZONE,
 
-        	-- Whether or not this archiving has been completed
+        	-- Whether or not this archiving has been completed,
+        	-- successfully or not.
         	archived   	BOOLEAN
         			DEFAULT FALSE,
 
