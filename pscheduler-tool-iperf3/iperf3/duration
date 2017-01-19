@@ -26,7 +26,7 @@ if json.get('omit'):
     logger.debug("Adding %s seconds because of omit flag" % omit_seconds)
     duration += omit_seconds
 
-duration = duration + DEFAULT_FUDGE_FACTOR + DEFAULT_WAIT_SLEEP
+duration = duration + DEFAULT_FUDGE_FACTOR + DEFAULT_WAIT_SLEEP + DEFAULT_SERVER_SHUTDOWN
 
 logger.debug("final duration = %ss" % duration)
 
