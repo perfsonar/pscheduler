@@ -19,6 +19,7 @@ FILES=\
 	table_version \
 	\
 	configurables \
+	control \
 	http_queue \
 	scheduling_class \
 	test \

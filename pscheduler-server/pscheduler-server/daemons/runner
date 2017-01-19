@@ -255,6 +255,32 @@ class RunWorker:
         self.log.debug("%d: Sleeping %s until test start", self.id, sleep_time)
         time.sleep(sleep_time)
 
+
+        # If the system is paused, set the run as missed and bail out.
+
+        self.cursor.execute("SELECT control_is_paused()")
+        assert(self.cursor.rowcount == 1)
+        if self.cursor.fetchone()[0]:
+            self.log.debug("%d: System is paused.  Aborting.", self.id)
+            try:
+                self.cursor.execute("""
+                UPDATE run
+                SET
+                    state = run_state_missed(),
+                    status = 1,
+                    result = '{ "succeeded": false, "diags": "pScheduler was paused at run time." }'
+                WHERE id = %s
+                """, [self.id])
+            except Exception as ex:
+                self.log.error("%d: Failed to set missed state: %s",
+                               self.id, str(ex))
+            return
+
+
+        # Get cracking.
+
+        self.log.debug("%d: Preparing to run", self.id)
+
         try:
             self.cursor.execute("""
                            UPDATE run
@@ -296,6 +322,7 @@ class RunWorker:
             return
 
         # TODO: Error check this.
+        # TODO: Is this a duplicate of the query above?
         self.cursor.execute("""
                        SELECT
                            tool.name,
