@@ -43,8 +43,14 @@ except KeyError as e:
     pscheduler.fail("Missing required key in run input: %s" % e)
 except:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
+
+#check if given start time
+if ('schedule' in input) and ('start' in input['schedule']):
+    start_time = pscheduler.iso8601_as_datetime(input['schedule']['start'])
     
 #set end time - use lesser of now + duration and until time
+#NOTE: I don't think we are given until time anymore, leaving this here anyways in case it gets added back
+#      Assuming it doesn't we are always given a start and duration, so should be sufficient
 end_time = start_time + duration
 if ('schedule' in input) and ('until' in input['schedule']):
     until_time = pscheduler.iso8601_as_datetime(input['schedule']['until'])
