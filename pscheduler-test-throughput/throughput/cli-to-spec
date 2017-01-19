@@ -99,11 +99,6 @@ opt_parser.add_option("-w", "--window-size",
                       action="store", type="string",
                       dest="window_size")
 
-opt_parser.add_option("-W", "--dynamic-window-size",
-                      help="Dynamic TCP window fallback size, supports SI notation such as 64M",
-                      action="store", type="string",
-                      dest="dynamic_window_size")
-
 opt_parser.add_option("-m", "--mss",
                       help="TCP maximum segment size",
                       action="store", type="int",
@@ -231,12 +226,6 @@ if options.window_size is not None:
       result["window-size"] = pscheduler.si_as_number(options.window_size)
    except ValueError as e:
       pscheduler.fail("Invalid value \"%s\" for window size: %s" % (options.window_size, e))
-
-if options.dynamic_window_size is not None:
-   try:
-      result["dynamic-window-size"] = pscheduler.si_as_number(options.dynamic_window_size)
-   except ValueError as e:
-      pscheduler.fail("Invalid value \"%s\" for dynamic window size: %s" % (options.dynamic_window_size, e))
 
 if options.mss is not None:
    result["mss"] = options.mss
