@@ -26,6 +26,7 @@ def spec_is_valid(json):
             "fragment":    { "$ref": "#/pScheduler/Boolean" },
             "hops":        { "$ref": "#/pScheduler/Cardinal" },
             "hostnames":   { "$ref": "#/pScheduler/Boolean" },
+            "ip-tos":      { "$ref": "#/pScheduler/Cardinal" },
             "ip-version":  { "$ref": "#/pScheduler/ip-version" },
             "length":      { "$ref": "#/pScheduler/Cardinal" },
             "probe-type":  { "$ref": "#/local/probe-type" },
@@ -34,7 +35,6 @@ def spec_is_valid(json):
             "sendwait":    { "$ref": "#/pScheduler/Duration" },
             "source":      { "$ref": "#/pScheduler/Host" },
             "source-node": { "$ref": "#/pScheduler/Host" },
-            "tos":         { "$ref": "#/pScheduler/Cardinal" },
             "wait":        { "$ref": "#/pScheduler/Duration" },
             },
         "required": [

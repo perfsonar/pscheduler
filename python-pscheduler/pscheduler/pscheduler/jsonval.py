@@ -181,7 +181,7 @@ __dictionary__ = {
     "IPTOS": {
         "type": "integer",
         "minimum": 0,
-        "maximum": 63
+        "maximum": 255
         },
     
     "Number": { "type": "number" },

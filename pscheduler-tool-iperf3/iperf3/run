@@ -142,13 +142,9 @@ def run_client():
         iperf3_args.append('-l')
         iperf3_args.append(test_spec['buffer-length'])
 
-    if test_spec.has_key('dscp') and test_spec['dscp'] != None:
+    if test_spec.has_key('ip-tos') and test_spec['ip-tos'] != None:
         iperf3_args.append('-S')
-        iperf3_args.append(test_spec['dscp'])
-
-    if test_spec.has_key('tos') and test_spec['tos'] != None:
-        iperf3_args.append('-S')
-        iperf3_args.append(test_spec['tos'])
+        iperf3_args.append(test_spec['ip-tos'])
 
     if test_spec.has_key('local-address') and test_spec['local-address'] != None:
         iperf3_args.append('-B')

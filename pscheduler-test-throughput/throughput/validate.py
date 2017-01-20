@@ -26,11 +26,10 @@ SPEC_SCHEMA = {
         "window-size": { "$ref": "#/pScheduler/Cardinal" },
         "mss":         { "$ref": "#/pScheduler/Cardinal" },
         "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
+        "ip-tos":        { "$ref": "#/pScheduler/IPTOS" },
         "ip-version":    { "$ref": "#/pScheduler/ip-version" },
         "local-address": { "$ref": "#/pScheduler/Host" },
-        "dscp":          { "$ref": "#/pScheduler/Cardinal" },
         "omit":          { "$ref": "#/pScheduler/Duration" },
-        "tos":           { "$ref": "#/pScheduler/Cardinal" },
         "no-delay":    { "$ref": "#/pScheduler/Boolean" },
         "congestion":    { "enum": ["reno", "cubic", "bic", "htcp", "vegas",
                                     "westwood", "yeah", "bbr"]

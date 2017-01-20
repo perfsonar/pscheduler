@@ -132,9 +132,11 @@ def run_client():
         nuttcp_args.append('-l')
         nuttcp_args.append(test_spec['buffer-length'])
 
-    if test_spec.has_key('dscp') and test_spec['dscp'] != None:
+    if test_spec.has_key('ip-tos') and test_spec['ip-tos'] != None:
         nuttcp_args.append('-c')
-        nuttcp_args.append(test_spec['dscp'])
+        # The 'T' suffix treats the TOS value as the whoe octet
+        # instead of just the DSCP.
+        nuttcp_args.append("%sT" % (str(test_spec['ip-tos'])))
 
     if test_spec.has_key('ip-version') and test_spec['ip-version'] != None:
         if test_spec['ip-version'] == 4:
@@ -182,7 +184,7 @@ def run_client():
     logger.debug("Lines are %s " % lines)
 
     results = nuttcp_parser.parse_output(lines)
-    results['diag'] = stdout
+    results['diag'] = "%s\n\n%s" % (" ".join(nuttcp_args), stdout)
 
     return results
 

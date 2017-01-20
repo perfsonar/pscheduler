@@ -211,9 +211,9 @@ except KeyError:
 #
 
 try:
-    if spec["tos"] not in limit["tos"]["match"]:
+    if spec["ip-tos"] not in limit["ip-tos"]["match"]:
         try:
-            errors.append(limit["tos"]["fail-message"])
+            errors.append(limit["ip-tos"]["fail-message"])
         except KeyError:
             errors.append("Type of service not within limit")
 except KeyError:

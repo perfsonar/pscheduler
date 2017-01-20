@@ -139,10 +139,10 @@ opt_parser.add_option("--sendwait",
                       dest="sendwait")
 
 
-opt_parser.add_option("--tos",
-                      help="Packet length",
+opt_parser.add_option("--ip-tos",
+                      help="IP type-of-service octet (integer)",
                       action="store", type="int",
-                      dest="tos")
+                      dest="ip_tos")
 
 
 (options, remaining_args) = opt_parser.parse_args(args)
@@ -199,8 +199,8 @@ if options.wait is not None:
 if options.sendwait is not None:
    result['send-wait'] = options.sendwait
 
-if options.tos is not None:
-   result['tos'] = options.tos
+if options.ip_tos is not None:
+   result['ip-tos'] = options.ip_tos
 
 if options.as_ is not None:
    result['as'] = options.as_ if \

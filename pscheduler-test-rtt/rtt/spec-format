@@ -34,7 +34,7 @@ Source ........................ {.section source}{source}{.or}Not Specified{.end
 Flow Label .................... {.section flow-label}{flow-label}{.or}Not Specified{.end}
 Interval ...................... {.section interval}{interval}{.or}Not Specified{.end}
 Suppress Multicast Loopback ... {.section suppress-loopback}{suppress-loopback}{.or}Not Specified{.end}
-Type of Service ............... {.section tos}{tos}{.or}Not Specified{.end}
+Type of Service ............... {.section ip-tos}{ip-tos}{.or}Not Specified{.end}
 Packet Length ................. {.section length}{length}{.or}Not Specified{.end}
 Time to Live .................. {.section ttl}{ttl}{.or}Not Specified{.end}
 Deadline ...................... {.section deadline}{deadline}{.or}Not Specified{.end}
@@ -52,7 +52,7 @@ elif format == 'text/html':
 <tr><td>Flow Label</td><td>{.section flow-label}{flow-label}{.or}Not Specified{.end}</td></tr>
 <tr><td>Interval</td><td>{.section interval}{interval}{.or}Not Specified{.end}</td></tr>
 <tr><td>Suppress Multicast Loopback</td><td>{.section suppress-loopback}{suppress-loopback}{.or}Not Specified{.end}</td></tr>
-<tr><td>Type of Service</td><td>{.section tos}{tos}{.or}Not Specified{.end}</td></tr>
+<tr><td>Type of Service</td><td>{.section ip-tos}{ip-tos}{.or}Not Specified{.end}</td></tr>
 <tr><td>Packet Length</td><td>{.section length}{length}{.or}Not Specified{.end}</td></tr>
 <tr><td>Time to Live</td><td>{.section ttl}{ttl}{.or}Not Specified{.end}</td></tr>
 <tr><td>Deadline</td><td>{.section deadline}{deadline}{.or}Not Specified{.end}</td></tr>
