@@ -252,6 +252,7 @@ def run_server():
         iperf_timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)) 
         iperf_timeout += omit
         iperf_timeout += DEFAULT_FUDGE_FACTOR
+        iperf_timeout += DEFAULT_WAIT_SLEEP
 
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
                                                         timeout = iperf_timeout,

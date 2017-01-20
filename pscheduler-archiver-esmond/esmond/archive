@@ -87,7 +87,7 @@ if 'retry-policy' in json['data']:
     retry_policy = json['data']['retry-policy']
 
 #lookup metadata key in cache
-cache_key = "%s@%s" % (task_href, url)
+cache_key = ("%s@%s" % (task_href, url)).encode("utf-8") #encode to utf-8 so memcache can handle it
 mc = memcache.Client(memcache_servers, debug=0)
 metadata_key = mc.get(cache_key)
 if metadata_key:

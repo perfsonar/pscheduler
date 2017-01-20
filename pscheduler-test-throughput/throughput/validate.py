@@ -31,7 +31,6 @@ SPEC_SCHEMA = {
         "dscp":          { "$ref": "#/pScheduler/Cardinal" },
         "omit":          { "$ref": "#/pScheduler/Duration" },
         "tos":           { "$ref": "#/pScheduler/Cardinal" },
-        "dynamic-window-size":    { "$ref": "#/pScheduler/Cardinal" },
         "no-delay":    { "$ref": "#/pScheduler/Boolean" },
         "congestion":    { "enum": ["reno", "cubic", "bic", "htcp", "vegas",
                                     "westwood", "yeah", "bbr"]
