@@ -94,10 +94,7 @@ REQUEST_SCHEMA = {
             }
     
         },
-        "anyOf": [
-            { "required": ["schema", "source", "dest"] },
-            { "required": ["schema", "dest"] }
-        ]
+        "required": ["schema", "dest"]
 }
 
 RESPONSE_SCHEMA = {
