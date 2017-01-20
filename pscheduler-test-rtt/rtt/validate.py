@@ -13,7 +13,7 @@ def spec_is_valid(json):
             "dest":              { "$ref": "#/pScheduler/Host" },
             # There is no dest-node because this is a one-participant test.
             # TODO: This is supposed to be a 20-bit number.  Validate that.
-            "flowlabel":         { "$ref": "#/pScheduler/CardinalZero" },
+            "flow-label":        { "$ref": "#/pScheduler/CardinalZero" },
             "hostnames":         { "$ref": "#/pScheduler/Boolean" },
             "interval":          { "$ref": "#/pScheduler/Duration" },
             "ip-version":        { "$ref": "#/pScheduler/ip-version" },
@@ -88,7 +88,7 @@ def limit_is_valid(json):
         "properties": {
             "count":             { "$ref": "#/pScheduler/Limit/Cardinal" },
             "dest":              { "$ref": "#/pScheduler/Limit/String" },
-            "flowlabel":         { "$ref": "#/pScheduler/Limit/CardinalZeroList" },
+            "flow-label":        { "$ref": "#/pScheduler/Limit/CardinalZeroList" },
             "hostnames":         { "$ref": "#/pScheduler/Limit/Boolean" },
             "interval":          { "$ref": "#/pScheduler/Limit/Duration" },
             "ip-version":        { "$ref": "#/pScheduler/Limit/CardinalList" },

@@ -76,18 +76,18 @@ except KeyError:
 
 
 #
-# Flowlabel
+# Flow label
 #
 
 try:
     try:
-        invert = limit["flowlabel"]["invert"]
+        invert = limit["flow-label"]["invert"]
     except KeyError:
         invert = False
-    in_limit = spec["flowlabel"] not in limit["flowlabel"]["match"]
+    in_limit = spec["flow-label"] not in limit["flow-label"]["match"]
     if in_limit or (invert and not in_limit):
         try:
-            errors.append(limit["flowlabel"]["fail-message"])
+            errors.append(limit["flow-label"]["fail-message"])
         except KeyError:
             errors.append("Flow label not within limit")
 except KeyError:

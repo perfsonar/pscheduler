@@ -19,7 +19,7 @@ result = pscheduler.speccli_build_args(spec,
         # Strings
         ( 'count', 'count' ),
         ( 'dest', 'dest' ),
-        ( 'flowlabel', 'flowlabel' ),
+        ( 'flow-label', 'flow-label' ),
         ( 'interval', 'interval' ),
         ( 'ip-version', 'ip-version' ),
         ( 'source', 'source' ),
