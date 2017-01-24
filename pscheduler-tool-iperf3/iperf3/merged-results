@@ -25,6 +25,12 @@ except KeyError as e:
 client_results = result_list[0]
 server_results = result_list[1]
 
-client_results['diag'] = "CLIENT:\n%s\nSERVER:\n%s" % (client_results.get('diag'), server_results.get('diag'))
+final_diag = ""
+
+if client_results and client_results.get('diag'):
+    final_diag += "CLIENT:\n%s\n" % client_results.get('diag')
+
+if server_results and server_results.get('diag'):
+    final_diag += "SERVER:\n%s\n" % server_results.get('diag')
 
 pscheduler.succeed_json(client_results)

@@ -243,6 +243,10 @@ def run_server():
     iperf3_args = map(lambda x: str(x), iperf3_args)
     logger.debug("Running command: %s" % " ".join(iperf3_args))
 
+    stdout = ""
+    stderr = ""
+    status = 0
+
     try:
 
         iperf_timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)) 
@@ -257,19 +261,22 @@ def run_server():
 
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e);
-        pscheduler.succeed_json({"succeeded": False,
-                                 "error": "The iperf3 command failed during execution. See server logs for more details.\n%s" % e})
+        results["succeeded"] = False
+        results["error"]     = "The iperf3 command failed during execution. See server logs for more details.\n%s" % e,
+        return results
 
-    if status:
-        pscheduler.succeed_json({"succeeded": False,
-                                 "error": "iperf3 returned an error: %s\n%s" % (stdout, stderr)})
-    
+    if status:        
+        results["succeeded"] = False
+        results["error"]     = "iperf3 returned an error: %s\n%s" % (stdout, stderr)
+        return results
+
     #log stdout in debug mode
     for line in stdout:
         logger.debug(line)
-          
-    return {"succeeded": True}
+    
 
+    results["succeeded"] = True
+    return results
 
 
 #determine whether we are the client or server mode for iperf
