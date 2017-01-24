@@ -251,12 +251,14 @@ def run_server():
         iperf_timeout += DEFAULT_WAIT_SLEEP
 
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
-                                                        timeout = iperf_timeout,
-                                                        timeout_ok = True)
+                                                        timeout = iperf_timeout)
+
+        results['diag'] = "%s\n%s" % (stdout, stderr)
+
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e);
         pscheduler.succeed_json({"succeeded": False,
-                                 "error": "The iperf3 command failed during execution. See server logs for more details."})
+                                 "error": "The iperf3 command failed during execution. See server logs for more details.\n%s" % e})
 
     if status:
         pscheduler.succeed_json({"succeeded": False,
