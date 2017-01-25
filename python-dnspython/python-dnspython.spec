@@ -12,6 +12,7 @@ License:	BSD-derived
 Group:		Development/Libraries
 
 Provides:	%{name} = %{version}-%{release}
+Provides:	python-dns
 Prefix:		%{_prefix}
 
 Vendor:		Nominum, Inc.
