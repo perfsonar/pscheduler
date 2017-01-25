@@ -50,4 +50,7 @@ fi
 
 < $TMPBASE.missing xargs -r yum -y --color=never install 
 
+# Do this manually because exec doesn't count as an exit.
+cleanup
+
 exec "${PROGRAM}" "${RPM_ARGS[@]}"
