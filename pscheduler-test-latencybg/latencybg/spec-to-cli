@@ -27,6 +27,10 @@ for prop in schema_props:
     if prop in spec:
         if prop == "schema":
             continue
+        elif prop == 'data-ports':
+            result.append("--%s" % prop)
+            result.append("%d-%d" %
+                          (spec[prop]['lower'], spec[prop]['upper']))
         elif schema_props[prop].get('type', '') == "boolean":
             result.append("--%s" % prop)
         else:
