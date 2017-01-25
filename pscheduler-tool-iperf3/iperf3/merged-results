@@ -22,5 +22,15 @@ except KeyError as e:
     pscheduler.fail("Missing required key in merged-result input: %s" % e)
 
 
-results = result_list[0]
-pscheduler.succeed_json(results)
+client_results = result_list[0]
+server_results = result_list[1]
+
+final_diag = ""
+
+if client_results and client_results.get('diag'):
+    final_diag += "CLIENT:\n%s\n" % client_results.get('diag')
+
+if server_results and server_results.get('diag'):
+    final_diag += "SERVER:\n%s\n" % server_results.get('diag')
+
+pscheduler.succeed_json(client_results)
