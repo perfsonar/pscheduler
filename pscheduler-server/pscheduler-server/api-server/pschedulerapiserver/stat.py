@@ -115,10 +115,10 @@ def stat_runs_failed():
     return single_numeric_query("""SELECT COUNT(*) FROM run 
                                    WHERE STATE = run_state_failed()""")
 
-@application.route("/stat/runs/trumped", methods=['GET'])
-def stat_runs_trumped():
+@application.route("/stat/runs/preempted", methods=['GET'])
+def stat_runs_preempted():
     return single_numeric_query("""SELECT COUNT(*) FROM run 
-                                   WHERE STATE = run_state_trumped()""")
+                                   WHERE STATE = run_state_preempted()""")
 
 @application.route("/stat/runs/nonstart", methods=['GET'])
 def stat_runs_nonstart():
