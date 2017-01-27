@@ -32,8 +32,7 @@ logger.debug("Input is %s" % input)
 try:
     participant = input['participant']
     participant_data = input['participant-data']
-    test_spec = input['test']['spec']
-    duration = pscheduler.iso8601_as_timedelta(input['schedule']['duration'])
+    test_spec = input['test']['spec']    
     limits_passed = input.get('limits-passed', [])
 except KeyError as e:
     pscheduler.fail("Missing required key in run input: %s" % e)
@@ -50,6 +49,20 @@ iperf3_cmd  = config["iperf3_cmd"]
 
 # grab the server port from the test spec
 server_port = participant_data[1]['server_port']   
+
+# need this to pad out the wait timeout,
+# convert to seconds
+omit_secs = test_spec.get('omit', 0)
+if omit_secs:
+    omit_secs = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(omit_secs))         
+
+# convert from ISO to seconds for test duration
+test_duration = test_spec.get('duration')
+if test_duration:
+    delta = pscheduler.iso8601_as_timedelta(test_duration)
+    test_duration = int(pscheduler.timedelta_as_seconds(delta))
+else:
+    test_duration = DEFAULT_DURATION
 
 def run_client():    
 
@@ -68,14 +81,6 @@ def run_client():
 
     iperf3_args.append('-c')
     iperf3_args.append(destination)
-
-    # duration
-    test_duration = test_spec.get('duration')
-    if test_duration:
-        delta = pscheduler.iso8601_as_timedelta(test_duration)
-        test_duration = int(pscheduler.timedelta_as_seconds(delta))
-    else:
-        test_duration = DEFAULT_DURATION
 
     iperf3_args.append('-t')
     iperf3_args.append(test_duration)
@@ -101,13 +106,9 @@ def run_client():
         iperf3_args.append('-M')
         iperf3_args.append(test_spec['mss'])
 
-    if test_spec.has_key('omit') and test_spec['omit'] != None:
-
-        # convert from iso to seconds
-        omit_sec = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(test_spec['omit'])) 
-
+    if omit_secs:
         iperf3_args.append('-O')
-        iperf3_args.append(omit_sec)
+        iperf3_args.append(omit_secs)
 
     if test_spec.has_key('bandwidth') and test_spec['bandwidth'] != None:
         iperf3_args.append('-b')
@@ -185,15 +186,23 @@ def run_client():
     command_line = " ".join(iperf3_args)
     logger.debug("Running command: %s" % command_line)
 
+    iperf_timeout = test_duration
+    iperf_timeout += omit_secs
+    iperf_timeout += DEFAULT_FUDGE_FACTOR
+    # no need for the sleep, we already did that above
+
+    logger.debug("timeout for client is %d" % iperf_timeout)
+
     try:
-        status, stdout, stderr = pscheduler.run_program(iperf3_args)
+        status, stdout, stderr = pscheduler.run_program(iperf3_args,
+                                                        timeout = iperf_timeout)
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e)
         pscheduler.succeed_json({"succeeded": False,
                                  "error": "The iperf3 command failed during execution. See server logs for more details."})
 
-    logger.debug("Stdout = %s" % stdout)
-    logger.debug("Stderr = %s" % stderr)
+    logger.debug("client stdout = %s" % stdout)
+    logger.debug("client stderr = %s" % stderr)
 
     
     if status:
@@ -234,11 +243,6 @@ def run_server():
         iperf3_args.insert(1, '-N')
         iperf3_args.insert(2, affinity)
 
-    # need this to pad out the wait timeout,
-    # convert to seconds
-    omit = test_spec.get('omit', 0)
-    if omit:
-        omit = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(omit))         
 
     iperf3_args = map(lambda x: str(x), iperf3_args)
     logger.debug("Running command: %s" % " ".join(iperf3_args))
@@ -249,15 +253,20 @@ def run_server():
 
     try:
 
-        iperf_timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)) 
-        iperf_timeout += omit
+        iperf_timeout = test_duration
+        iperf_timeout += omit_secs
         iperf_timeout += DEFAULT_FUDGE_FACTOR
         iperf_timeout += DEFAULT_WAIT_SLEEP
+
+        logger.debug("timeout for server is %d" % iperf_timeout)
 
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
                                                         timeout = iperf_timeout)
 
         results['diag'] = "%s\n%s" % (stdout, stderr)
+
+        logger.debug("client stdout = %s" % stdout)
+        logger.debug("client stderr = %s" % stderr)
 
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e);
@@ -269,11 +278,7 @@ def run_server():
         results["succeeded"] = False
         results["error"]     = "iperf3 returned an error: %s\n%s" % (stdout, stderr)
         return results
-
-    #log stdout in debug mode
-    for line in stdout:
-        logger.debug(line)
-    
+  
 
     results["succeeded"] = True
     return results
