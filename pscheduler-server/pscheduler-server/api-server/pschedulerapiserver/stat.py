@@ -71,6 +71,21 @@ def stat_archive_upcoming():
 
 
 #
+# HTTP Queue
+#
+
+@application.route("/stat/http-queue/backlog", methods=['GET'])
+def stat_http_queue_backlog():
+    return single_numeric_query("""SELECT COUNT(*) FROM http_queue
+                                   WHERE attempts = 0""")
+
+@application.route("/stat/http-queue/length", methods=['GET'])
+def stat_http_queue_length():
+    return single_numeric_query("""SELECT COUNT(*) FROM http_queue""")
+
+
+
+#
 # Runs
 #
 
