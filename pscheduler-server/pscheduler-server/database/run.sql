@@ -292,6 +292,10 @@ BEGIN
             RAISE EXCEPTION 'UUID cannot be changed';
         END IF;
 
+        IF NEW.state <> OLD.state AND NEW.state = run_state_canceled() THEN
+	    PERFORM pg_notify('run_canceled', NEW.id::TEXT);
+        END IF;
+
 	-- TODO: Make sure part_data_full, result_ful and
 	-- result_merged happen in the right order.
 
@@ -420,10 +424,18 @@ RETURNS TRIGGER
 AS $$
 BEGIN
     IF NEW.enabled <> OLD.enabled AND NOT NEW.enabled THEN
+
+        -- Chuck future runs
         DELETE FROM run
         WHERE
             task = NEW.id
             AND lower(times) > normalized_now();
+
+        -- Mark anything current as canceled.
+	UPDATE run SET state = run_state_canceled()
+	WHERE
+	    run.task = NEW.id
+	    AND times @> normalized_now();
     END IF;
 
     RETURN NEW;

@@ -596,6 +596,7 @@ def main_program():
                            JOIN test ON test.id = task.test
                        WHERE
                            times @> normalized_now()
+                           AND task.enabled
                            AND test.scheduling_class = scheduling_class_background_multi()
                            AND run.state IN (run_state_pending(), run_state_running())
                        ) t

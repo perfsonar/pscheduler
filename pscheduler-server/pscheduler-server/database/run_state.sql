@@ -175,6 +175,17 @@ $$ LANGUAGE plpgsql;
 ALTER FUNCTION run_state_nonstart() IMMUTABLE;
 
 
+-- Run was canceled
+CREATE OR REPLACE FUNCTION run_state_canceled()
+RETURNS INTEGER
+AS $$
+BEGIN
+	RETURN 11;
+END;
+$$ LANGUAGE plpgsql;
+ALTER FUNCTION run_state_canceled() IMMUTABLE;
+
+
 
 DROP TRIGGER IF EXISTS run_state_alter ON run_state CASCADE;
 
@@ -209,7 +220,8 @@ VALUES
     (run_state_missed(),   'Missed',   'missed'),
     (run_state_failed(),   'Failed',   'failed'),
     (run_state_trumped(),  'Trumped',  'trumped'),
-    (run_state_nonstart(), 'Non-Starter', 'nonstart')
+    (run_state_nonstart(), 'Non-Starter', 'nonstart'),
+    (run_state_canceled(),  'Canceled', 'canceled')
 ON CONFLICT (id) DO UPDATE
 SET
     display = EXCLUDED.display,
@@ -243,7 +255,8 @@ BEGIN
 		            run_state_overdue(),
 			    run_state_missed(),
 			    run_state_failed(),
-			    run_state_trumped()) )
+			    run_state_trumped(),
+			    run_state_canceled()) )
 	   OR ( old = run_state_cleanup()
                 AND new IN (run_state_finished(),
 			    run_state_failed()) )
