@@ -55,6 +55,7 @@ server_port = participant_data[1]['server_port']
 omit_secs = test_spec.get('omit', 0)
 if omit_secs:
     omit_secs = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(omit_secs))         
+omit_secs = int(omit_secs)
 
 # convert from ISO to seconds for test duration
 test_duration = test_spec.get('duration')
