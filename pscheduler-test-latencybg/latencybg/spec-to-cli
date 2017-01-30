@@ -31,7 +31,7 @@ for prop in schema_props:
             result.append("--%s" % prop)
             result.append("%d-%d" %
                           (spec[prop]['lower'], spec[prop]['upper']))
-        elif schema_props[prop].get('type', '') == "boolean":
+        elif schema_props[prop].get('type', '') == "boolean" or schema_props[prop].get('$ref', '') == '#/pScheduler/Boolean':
             result.append("--%s" % prop)
         else:
             result.append("--%s" % prop)
