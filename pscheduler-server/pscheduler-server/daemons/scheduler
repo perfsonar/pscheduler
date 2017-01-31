@@ -389,8 +389,11 @@ def main_program():
             log.debug("Trying to schedule %s for %s at %s",
                       uuid, trynext, url)
             log.debug("URL is %s", url)
-            run_uri, start_time, end_time, error = \
-                run_post(url, trynext, log)
+
+            try:
+                run_uri, start_time, end_time, error = run_post(url, trynext, log)
+            except Exception as ex:
+                error = str(ex)
 
             if error is not None:
                 log.debug("Unable: %s", error)
