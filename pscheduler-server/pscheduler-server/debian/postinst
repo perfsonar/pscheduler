@@ -99,6 +99,10 @@ case "$1" in
             )
         fi
 
+        # cleanup database backups (leaves last 3 backups)
+        ls --sort=time /var/cache/dbconfig-common/backups/pscheduler-server_* 2>/dev/null \
+            | tail -n +4 | xargs --no-run-if-empty -- rm -f
+
         # apache setup
         if [ -e /usr/share/apache2/apache2-maintscript-helper ] ; then
             . /usr/share/apache2/apache2-maintscript-helper
