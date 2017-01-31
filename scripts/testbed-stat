@@ -32,8 +32,13 @@ do
     if pscheduler ping -q "${TBHOST}" > /dev/null
     then
 	RESULT=$(curl -s -k "https://${TBHOST}/pscheduler/stat/${STAT}" 2>/dev/null)
-	printf "%8d %s\n" "${RESULT}" "${TBHOST}"
+	if echo "${RESULT}" | egrep -e '^[0-9]\+$'
+	then
+	    printf "%8s %s\n" "Bad" "${TBHOST}"
+	else
+	    printf "%8s %s\n" "${RESULT}" "${TBHOST}"
+	fi
     else
-	printf "%8s %s\n" "Error" "${TBHOST}"
+	printf "%8s %s\n" "Down" "${TBHOST}"
     fi
 done < "${TMPBASE}.hosts"
