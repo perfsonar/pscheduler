@@ -113,14 +113,16 @@ if run_json["state"] == "nonstart":
     pscheduler.fail("Run never started: %s" % reason)
 
 if run_json["state"] in ["pending", "on-deck", "running", "cleanup"]:
-    pscheduler.fail("Run has not completed.")
+    pscheduler.suceed("Run has not completed.")
+
+
+# TODO: Should dump diags for anything but trumped.
 
 if run_json["state"] in ["overdue", "missed", "trumped"]:
-    pscheduler.fail("Run did not complete: %s" % run_json["state-display"])
+    pscheduler.succeed("Run did not complete: %s" % run_json["state-display"])
 
 if run_json["state"] == "failed":
-    # TODO: Find reason?
-    pscheduler.fail("Run failed")
+    pscheduler.succeed("Run failed")
 
 
 try:

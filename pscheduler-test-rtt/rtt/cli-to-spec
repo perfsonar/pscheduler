@@ -57,10 +57,10 @@ opt_parser.add_option("--dest",
                       action="store", type="string",
                       dest="dest")
 
-opt_parser.add_option("--flowlabel",
+opt_parser.add_option("--flow-label",
                       help="Flow label",
                       action="store", type="int",
-                      dest="flowlabel")
+                      dest="flow_label")
 
 opt_parser.add_option("--hostnames",
                       help="Look up hostnames from IPs",
@@ -142,8 +142,8 @@ if options.count is not None:
 if options.dest is not None:
    result['dest'] = options.dest
 
-if options.flowlabel is not None:
-   result['flowlabel'] = options.flowlabel
+if options.flow_label is not None:
+   result['flow-label'] = options.flow_label
 
 if options.hostnames is not None:
    result['hostnames'] = options.hostnames

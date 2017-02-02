@@ -22,6 +22,8 @@ DAEMONS=\
 
 COMMANDS=\
 	debug \
+	pause \
+	resume
 
 
 INITS=$(DAEMONS:%=init.d-%)
@@ -69,6 +71,37 @@ endif
 		false ; \
 	fi
 TO_CLEAN += monitor
+
+
+pause: pause.raw
+ifndef DSNFILE
+	@echo No DSNFILE specified for build
+	@false
+endif
+	sed \
+		-e 's|__DSNFILE__|$(DSNFILE)|g' \
+		< $< > $@
+	@if egrep -e '__[A-Z_]+__' $@ ; then \
+		echo "Found un-substituted values in processed file $@" ; \
+		false ; \
+	fi
+TO_CLEAN += pause
+
+
+resume: resume.raw
+ifndef DSNFILE
+	@echo No DSNFILE specified for build
+	@false
+endif
+	sed \
+		-e 's|__DSNFILE__|$(DSNFILE)|g' \
+		< $< > $@
+	@if egrep -e '__[A-Z_]+__' $@ ; then \
+		echo "Found un-substituted values in processed file $@" ; \
+		false ; \
+	fi
+TO_CLEAN += resume
+
 
 $(INITS): init.d-template.raw
 ifndef CONFIGDIR

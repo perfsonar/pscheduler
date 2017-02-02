@@ -1,0 +1,56 @@
+#!/usr/bin/python
+#
+# Resume pScheduler testing
+#
+
+import optparse
+import pscheduler
+import sys
+
+#
+# Gargle the arguments
+#
+
+class VerbatimParser(optparse.OptionParser):
+    def format_epilog(self, formatter):
+        return self.epilog
+
+opt_parser = VerbatimParser(
+    usage="Usage: %prog",
+    epilog=
+"""
+Examples:
+
+  resume
+      Resume running of tasks
+"""
+)
+opt_parser.disable_interspersed_args()
+
+# Program options
+
+opt_parser.add_option("-d", "--dsn",
+                      help="Database connection string, prefix with @ to read from file",
+                      action="store", type="string", dest="dsn",
+                      default="@__DSNFILE__")
+
+(options, args) = opt_parser.parse_args()
+
+dsn = options.dsn
+
+# TODO: Bulletproof the SQL queries
+try:
+    db = pscheduler.pg_connection(dsn)
+    cursor = db.cursor()
+except Exception as ex:
+    pscheduler.fail("Unable to connect to the database: %s" % str(ex))
+
+
+#
+# Force resumption
+#
+
+try:
+    cursor.execute("SELECT control_resume()")
+except Exception as ex:
+    pscheduler.fail("Failed to resume: %s" % str(ex))

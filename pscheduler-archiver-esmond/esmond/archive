@@ -87,14 +87,15 @@ if 'retry-policy' in json['data']:
     retry_policy = json['data']['retry-policy']
 
 #lookup metadata key in cache
+cache_key = ("%s@%s" % (task_href, url)).encode("utf-8") #encode to utf-8 so memcache can handle it
 mc = memcache.Client(memcache_servers, debug=0)
-metadata_key = mc.get(task_href)
+metadata_key = mc.get(cache_key)
 if metadata_key:
     fast_mode = True
-    log.debug("Found metadata key %s in cache for %s, so running in fast mode" % (metadata_key, task_href))
+    log.debug("Found metadata key %s in cache for %s, so running in fast mode" % (metadata_key, cache_key))
 else:
     fast_mode = False
-    log.debug("No metadata key found for %s" % task_href)
+    log.debug("No metadata key found for %s" % cache_key)
 log.debug("fast_mode is %s" % fast_mode)
 
 #init client
@@ -214,16 +215,16 @@ if record and record.metadata and record.data:
     
         metadata_key = result['metadata-key']
         #add to memcache
-        if mc.set(task_href, metadata_key, time=cache_ttl):
-            log.debug("Added metadata key %s for task %s to memcache" % (metadata_key, task_href))
+        if mc.set(cache_key, metadata_key, time=cache_ttl):
+            log.debug("Added metadata key %s for task %s to memcache" % (metadata_key, cache_key))
         else:
-            log.debug("Unable to add metadata key %s for task %s to memcache." % (metadata_key, task_href))
+            log.debug("Unable to add metadata key %s for task %s to memcache." % (metadata_key, cache_key))
 
     #PUT data
     success, result = client.create_data(metadata_key, record.data)
     if not success:
         #if we fail, clear out cache value in case that's the problem
-        mc.delete(task_href)
+        mc.delete(cache_key)
         esmond_util.handle_storage_error(result, attempts=attempts, policy=retry_policy)
 
 #exit

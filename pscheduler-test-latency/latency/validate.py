@@ -87,14 +87,15 @@ REQUEST_SCHEMA = {
             "flip": {
                 "description": "In multi-participant mode, have the dest start the client and request a reverse test. Useful in some firewall and NAT environments.",
                 "$ref": "#/pScheduler/Boolean"
-            }
-    
+            },
+
         },
-        "anyOf": [
-            { "required": ["schema", "source", "dest"] },
-            { "required": ["schema", "dest"] }
-        ]
+
+    "required": ["schema", "dest"]
+    
 }
+
+
 
 RESPONSE_SCHEMA = {
         "title": "pScheduler One-way Latency Response Schema",
