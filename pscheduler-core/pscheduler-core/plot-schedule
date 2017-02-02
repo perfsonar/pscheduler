@@ -1,0 +1,224 @@
+#!/usr/bin/python
+#
+# Dump the contents of the schedule in a plottable form
+#
+
+# General syntax:
+#     pscheduler plot-schedule [options]
+
+import datetime
+import os
+import pipes
+import pscheduler
+import pytz
+import sys
+
+
+pscheduler.set_graceful_exit()
+
+
+#
+# Utilities
+#
+
+usage = "Usage: %s [ --host h ] [ delta | start end ]" \
+                    % os.path.basename(sys.argv[0])
+
+def get_time_with_delta(string):
+    """
+    TODO: Fill this in.
+    """
+
+    # If it looks like a time, return that.
+    try:
+        absolute = pscheduler.iso8601_as_datetime(string)
+        # Default behavior is to localize naive times.
+        if absolute.tzinfo is None:
+            absolute = pytz.utc.localize(absolute)
+        return absolute
+    except ValueError:
+        pass
+
+    try:
+        if string[0] == "+":
+            delta = pscheduler.iso8601_as_timedelta(string[1:])
+        else:
+            delta = pscheduler.iso8601_as_timedelta(string)
+    except ValueError:
+        pscheduler.fail("Invalid duration %s" % string)
+
+    return pscheduler.time_now() + delta
+
+
+#
+# Gargle the arguments
+#
+
+whoami = os.path.basename(sys.argv[0])
+args = sys.argv[1:]
+
+# Do this manually because the arg parser will have difficulties with hyphens used for negative offsets.
+
+host = "localhost"
+full_host = pscheduler.api_this_host()
+try:
+    if args[0] in [ '--help', '-h' ]:
+        pscheduler.succeed(usage)
+    if args[0] in [ '--host', '-H' ]:
+        host = args[1]
+        full_host = host
+        args = args[2:]
+except IndexError:
+    pass
+
+
+# This outputs PNG, which isn't suitable for TTYs.
+
+if sys.stdout.isatty():
+    pscheduler.fail("Not sending PNG output to a tty.  Consider redirecting.")
+
+
+
+now = pscheduler.time_now()
+
+if len(args) == 0:
+
+    # Default; show an hour's worth.
+    start = now
+    end = start + datetime.timedelta(hours=1)
+
+elif len(args) == 1:
+
+    # One argument is an absolute time or a timedelta.
+
+    arg = get_time_with_delta(args[0])
+    if arg < now:
+        start = arg
+        end = now
+    else:
+        start = now
+        end = arg
+
+elif len(args) == 2:
+
+    start = get_time_with_delta(args[0])
+    end = get_time_with_delta(args[1])
+
+    if end < start:
+        start, end = end, start
+
+else:
+    pscheduler.fail(usage)
+
+
+#
+# Fetch the schedule
+#
+
+status, schedule = pscheduler.url_get(
+    pscheduler.api_url(host=host, path="schedule"),
+    params={
+        "start": pscheduler.datetime_as_iso8601(start),
+        "end": pscheduler.datetime_as_iso8601(end)
+        },
+    throw = False
+    )
+
+if status != 200:
+    pscheduler.fail("Server returned status %d: %s" % (status, schedule))
+
+
+script_lines = [
+"""
+reset
+
+set terminal png transparent truecolor size 800,1200
+
+set timefmt "%Y-%m-%dT%H:%M:%S"
+
+set xlabel "Scheduling"
+set xrange [0.5:4.5]
+set xtics ( \\
+    "" 0, \\
+    "Exclusive" 1, \\
+    "Normal" 2, \\
+    "Background" 3, \\
+    "Non-Start" 4 \\
+    )
+
+set ylabel "Run Time"
+set ydata time
+set format y "%Y-%m-%d %H:%M:%S"
+""",
+    """set yrange ["%s":"%s"] reverse""" \
+    % (pscheduler.datetime_as_iso8601(start),
+       pscheduler.datetime_as_iso8601(end)),
+    """set title "pScheduler Schedule for %s""" % (full_host),
+"""
+set key off
+set grid noxtics ytics
+
+set boxwidth 1.0
+
+plot "-" using 1:2:3:2:3 \\
+  with candlesticks \\
+  linewidth 0 \\
+  lc rgb "#0000ff" \\
+  fs solid 1.0"""
+]
+
+
+#
+# Dump it out
+#
+
+class_levels = {
+    "exclusive": 1,
+    "normal": 2,
+    "background-multi": 3,
+    "background": 3,
+    "nonstart": 4,
+}
+
+
+if len(schedule) == 0:
+    pscheduler.fail("Nothing scheduled %s to %s" % (
+        pscheduler.datetime_as_iso8601(start),
+        pscheduler.datetime_as_iso8601(end)
+        ))
+
+
+for run in schedule:
+
+    run_state = run["state"]
+    sched_class = run_state if run_state in [ "nonstart" ] \
+                  else run["test"]["scheduling-class"]
+
+    script_lines.append(
+        "%s %s %s" % (
+            class_levels[sched_class],
+            run["start-time"],
+            run["end-time"]
+            )
+    )
+
+script_lines.append("eof")
+
+
+#
+# Push it through GNUPlot to make a PNG
+#
+
+status, out, err = pscheduler.run_program(
+    "gnuplot",
+    stdin="\n".join(script_lines)
+    )
+
+if status != 0:
+    pscheduler.fail(err)
+
+if sys.stderr.isatty():
+    sys.stderr.write("Plotted %d runs\n" % (len(schedule)))
+
+
+pscheduler.succeed(out)
