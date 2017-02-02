@@ -62,7 +62,7 @@ def coalesce_ranges(ranges, duration):
 
                 #  Non-overlapping
                 if ((upper < earliest) or (lower > latest)) \
-                        or ((upper - lower) <= duration):
+                        or ((upper - lower) < duration):
                     continue
 
                 # Trim the candidate range to just the overlap and add
@@ -150,11 +150,18 @@ if __name__ == "__main__":
         3
         )
 
-    # Should return (6, 8), BUT DOESN'T.  THIS IS A BUG.
+    # Should return (6, 8).
     print coalesce_ranges(       # 123456789-123456789-123456789-123456789-
-        [ [ (6, 8) ],            #      ==================================
-          [ (6, 8) ]             #      ==================================
+        [ [ (6, 8) ],            #      ===
+          [ (6, 8) ]             #      ===
+          ],
+        2
+        )
+
+    # Should return None
+    print coalesce_ranges(       # 123456789-123456789-123456789-123456789-
+        [ [ (6, 8) ],            #      ===
+          [ (6, 8) ]             #      ===
           ],
         3
         )
-
