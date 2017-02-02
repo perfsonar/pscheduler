@@ -28,6 +28,34 @@ def single_numeric_query(query, query_args = []):
 
 
 #
+# System Controls
+#
+@application.route("/stat/control/pause", methods=['GET'])
+def stat_control_pause():
+    try:
+        cursor = dbcursor_query("""
+            SELECT
+                control_is_paused(),
+                date_trunc('second', pause_runs_until - now()),
+                pause_runs_until = tstz_infinity()
+            FROM control""")
+        if cursor.rowcount != 1:
+            pscheduler.fail("Got back more data than expected.")
+        (is_paused, left, infinite) = cursor.fetchone()
+    except Exception as ex:
+        return error(str(ex))
+
+    result = { "is_paused": is_paused }
+    if is_paused:
+        result["infinite"] = infinite
+        if not infinite:
+            result["remaining"] = pscheduler.timedelta_as_iso8601(left)
+
+    return ok_json(result)
+
+
+
+#
 # Archiving
 #
 

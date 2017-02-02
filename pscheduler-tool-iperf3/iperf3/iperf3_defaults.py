@@ -12,6 +12,9 @@ DEFAULT_FUDGE_FACTOR = 4
 # Default number of seconds before client will start to allow server time to boot
 DEFAULT_WAIT_SLEEP = 3
 
+# Default number of seconds to let the server spin down
+DEFAULT_SERVER_SHUTDOWN = 2
+
 # The default iperf3 control port
 DEFAULT_SERVER_PORT = 5201
 

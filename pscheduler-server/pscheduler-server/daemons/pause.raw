@@ -1,0 +1,122 @@
+#!/usr/bin/python
+#
+# Pause pScheduler or query its paused state
+#
+
+import optparse
+import pscheduler
+import sys
+
+#
+# Gargle the arguments
+#
+
+class VerbatimParser(optparse.OptionParser):
+    def format_epilog(self, formatter):
+        return self.epilog
+
+opt_parser = VerbatimParser(
+    usage="Usage: %prog [ --query | duration ]",
+    epilog=
+"""
+Examples:
+
+  pause
+      Pause indefinitely
+
+  pause PT2H
+      Pause for two hours
+
+  pause --query
+      Determine if the system is paused, exiting 0 if it is or 1 if
+      not, displaying a message if the standard output is a TTY.
+"""
+)
+opt_parser.disable_interspersed_args()
+
+# Program options
+
+opt_parser.add_option("-d", "--dsn",
+                      help="Database connection string, prefix with @ to read from file",
+                      action="store", type="string", dest="dsn",
+                      default="@__DSNFILE__")
+opt_parser.add_option("-q", "--query",
+                      help="Query if runs are paused",
+                      action="store_true", dest="query")
+opt_parser.add_option("-v", "--verbose",
+                      help="Print messages even if stdout is not a tty",
+                      action="store_true", dest="verbose")
+
+(options, args) = opt_parser.parse_args()
+
+if len(args) > (0 if options.query else 1):
+    opt_parser.print_usage()
+    pscheduler.fail()
+
+if len(args) == 1:
+    try:
+        duration = pscheduler.iso8601_as_timedelta(args[0])
+    except ValueError as ex:
+        pscheduler.fail("%s: %s" % (args[0], str(ex)))
+else:
+    duration = None
+
+
+dsn = options.dsn
+
+verbose = options.verbose or sys.stdout.isatty()
+
+
+# TODO: Bulletproof the SQL queries
+try:
+    db = pscheduler.pg_connection(dsn)
+    cursor = db.cursor()
+except Exception as ex:
+    pscheduler.fail("Unable to connect to the database: %s" % str(ex))
+
+
+#
+# Query the current state
+#
+
+if options.query:
+    cursor.execute("""
+        SELECT
+            control_is_paused(),
+            pause_runs_until,
+            date_trunc('second', pause_runs_until - now()),
+            pause_runs_until = tstz_infinity()
+        FROM control
+    """)
+    if cursor.rowcount != 1:
+        pscheduler.fail("Got back more data than expected.")
+    (is_paused, until, left, infinite) = cursor.fetchone()
+
+    if is_paused:
+        if verbose:
+            if infinite:
+                print "pScheduler is paused indefinitely."
+            else:
+                print "pScheduler is paused until %s (%s from now)." \
+                    % ( pscheduler.datetime_as_iso8601(until),
+                        pscheduler.timedelta_as_iso8601(left) )
+        pscheduler.succeed()
+    else:
+        if verbose:
+            print "pScheduler is running."
+        pscheduler.fail()
+
+    assert(False)  # Shouldn't get here.
+
+
+#
+# Force a pause
+#
+
+if verbose and duration is None:
+        print "Pausing indefinitely."
+
+try:
+    cursor.execute("SELECT control_pause(%s)", [duration])
+except Exception as ex:
+    pscheduler.fail("Failed to pause: %s" % str(ex))
