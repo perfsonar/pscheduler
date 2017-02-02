@@ -506,7 +506,9 @@ if status == 404:
 if null_reason is None:
     null_reason = "No reason provided.  (Server is running old software.)"
 
-log.debug("Lead is %s, null reason is %s", lead, null_reason)
+log.debug("Lead is %s", lead)
+if lead is None:
+    log.debug("Null reason is %s", null_reason)
 
 # If the lead is None, the usual behavior would be to task the server
 # on the local host.  If an assist server is being used, that's
