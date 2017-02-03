@@ -158,15 +158,17 @@ set format y "%Y-%m-%d %H:%M:%S"
 set key off
 set grid noxtics ytics
 
+
 set boxwidth 1.0
 
 plot "-" using 1:2:3:2:3 \\
   with candlesticks \\
   linewidth 0 \\
   lc rgb "#0000ff" \\
-  fs solid 1.0"""
+  fs solid 0.30"""
 ]
 
+# fs solid 1.0 lc rgb "forest-green"
 
 #
 # Dump it out
