@@ -136,9 +136,10 @@ set terminal png transparent truecolor size 800,1200
 
 set timefmt "%Y-%m-%dT%H:%M:%S"
 
-set xlabel "Scheduling"
-set xrange [0.5:4.5]
-set xtics ( \\
+unset xtics 
+set x2label "Scheduling"
+set x2range [0.5:4.5]
+set x2tics out ( \\
     "" 0, \\
     "Exclusive" 1, \\
     "Normal" 2, \\
@@ -146,8 +147,11 @@ set xtics ( \\
     "Non-Start" 4 \\
     )
 
+
 set ylabel "Run Time"
 set ydata time
+set ytics out
+unset y2tics
 set format y "%Y-%m-%d %H:%M:%S"
 """,
     """set yrange ["%s":"%s"] reverse""" \
@@ -165,10 +169,9 @@ plot "-" using 1:2:3:2:3 \\
   with candlesticks \\
   linewidth 0 \\
   lc rgb "#0000ff" \\
-  fs solid 0.30"""
+  fs solid 0.30 \\
+  axes x2y1"""
 ]
-
-# fs solid 1.0 lc rgb "forest-green"
 
 #
 # Dump it out
