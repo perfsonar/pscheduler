@@ -286,8 +286,7 @@ def run_post(
     # pick a random time within it.  Otherwise, take the earliest time
     # we can get.
 
-    # TODO: #287 - Remove randslip.
-
+    # TODO: Remove randslip.  #287
     if ('sliprand' in task['schedule'] and task['schedule']['sliprand']) \
        or 'randslip' in task['schedule']:
 
