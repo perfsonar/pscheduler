@@ -128,18 +128,19 @@ if status != 200:
     pscheduler.fail("Server returned status %d: %s" % (status, schedule))
 
 
+
 script_lines = [
 """
 reset
 
-set terminal png transparent truecolor size 800,1200
+set terminal png notransparent truecolor size 800,1200 background rgb "white"
 
 set timefmt "%Y-%m-%dT%H:%M:%S"
 
-unset xtics 
+unset xtics
 set x2label "Scheduling"
 set x2range [0.5:4.5]
-set x2tics out ( \\
+set x2tics out scale 0 ( \\
     "" 0, \\
     "Exclusive" 1, \\
     "Normal" 2, \\
@@ -150,9 +151,8 @@ set x2tics out ( \\
 
 set ylabel "Run Time"
 set ydata time
-set ytics out
-unset y2tics
-set format y "%Y-%m-%d %H:%M:%S"
+set ytics out nomirror
+set format y "%Y-%m-%d\\n%H:%M:%S"
 """,
     """set yrange ["%s":"%s"] reverse""" \
     % (pscheduler.datetime_as_iso8601(start),
@@ -160,16 +160,15 @@ set format y "%Y-%m-%d %H:%M:%S"
     """set title "pScheduler Schedule for %s""" % (full_host),
 """
 set key off
-set grid noxtics ytics
+set grid front noxtics ytics mytics linetype 0
+set boxwidth 0.9
 
-
-set boxwidth 1.0
+set style fill solid border lc rgb "#000000"
 
 plot "-" using 1:2:3:2:3 \\
   with candlesticks \\
-  linewidth 0 \\
-  lc rgb "#0000ff" \\
-  fs solid 0.30 \\
+  linewidth 1 \\
+  lc rgb "#00e000" \\
   axes x2y1"""
 ]
 
