@@ -100,7 +100,7 @@ if len(results) < 2:
 # Compare the two clocks
 
 offset = times[1] - times[0]
-safe = offset < datetime.timedelta(seconds=2.0)
+safe = offset < datetime.timedelta(seconds=1.0)
 print "difference", pscheduler.timedelta_as_iso8601(offset), \
     "safe" if safe else "unsafe"
 
