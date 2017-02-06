@@ -172,6 +172,11 @@ done
 mkdir -p $(dirname $RPM_BUILD_ROOT/%{rpm_macros})
 cat > $RPM_BUILD_ROOT/%{rpm_macros} <<EOF
 # %{name} %{version}
+
+# Archiver
+%%_pscheduler_archiver_default_dir %{archiver_default_dir}
+
+# Database
 %%_pscheduler_database_user %{db_user}
 %%_pscheduler_database_name %{db_user}
 %%_pscheduler_database_dsn_file %{dsn_file}
