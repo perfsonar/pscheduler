@@ -17,11 +17,13 @@ import ipaddr
 import iperf3_utils
 from iperf3_defaults import *
 
+RUN_START = time.time()
+
 # track when this run starts
 start_time = datetime.datetime.now()
 
 logger = pscheduler.Log(prefix='tool-iperf3', quiet=True)
-
+logger.debug("run called at %s" % RUN_START)
 logger.debug("starting iperf3 tool")
 
 # parse JSON input
@@ -71,7 +73,6 @@ def run_client():
 
     time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
         
-
     iperf3_args = [ iperf3_cmd ]
 
     iperf3_args.append('-p')
@@ -200,7 +201,7 @@ def run_client():
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e)
         pscheduler.succeed_json({"succeeded": False,
-                                 "error": "The iperf3 command failed during execution. See server logs for more details."})
+                                 "error": "The iperf3 command failed during execution. See server logs for more details. Run start = %s" % RUN_START})
 
     logger.debug("client stdout = %s" % stdout)
     logger.debug("client stderr = %s" % stderr)
@@ -213,14 +214,14 @@ def run_client():
         except (ValueError, KeyError):
             error_text = stdout
         pscheduler.succeed_json({"succeeded": False,
-                                 "error": "iperf3 returned an error: %s" % (error_text)})
+                                 "error": "iperf3 returned an error: %s\nRun start = %s" % (error_text, RUN_START)})
 
 
     lines = stdout.split("\n")    
     logger.debug("Lines are %s " % lines)
 
     results = iperf3_parser.parse_output(lines)
-    results['diag'] = "%s\n\n%s" % (command_line, stdout)
+    results['diag'] = "%s\n\n%s\n\nRun start = %s" % (command_line, stdout, RUN_START)
 
     return results
 
@@ -264,7 +265,7 @@ def run_server():
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
                                                         timeout = iperf_timeout)
 
-        results['diag'] = "%s\n%s" % (stdout, stderr)
+        results['diag'] = "%s\n%s\nRun start = %s" % (stdout, stderr, RUN_START)
 
         logger.debug("client stdout = %s" % stdout)
         logger.debug("client stderr = %s" % stderr)
@@ -277,7 +278,7 @@ def run_server():
 
     if status:        
         results["succeeded"] = False
-        results["error"]     = "iperf3 returned an error: %s\n%s" % (stdout, stderr)
+        results["error"]     = "iperf3 returned an error: %s\n%s\n\nRun start = %s" % (stdout, stderr, RUN_START)
         return results
   
 
