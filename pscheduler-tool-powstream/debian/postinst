@@ -20,7 +20,9 @@ set -e
 
 case "$1" in
     configure)
-        install -o pscheduler -g pscheduler -m 755 -d /var/lib/pscheduler/tool/powstream
+        mkdir -p /var/lib/pscheduler/tool/powstream
+        chown pscheduler:pscheduler /var/lib/pscheduler/tool/powstream
+        chmod 755 /var/lib/pscheduler/tool/powstream
 
         pscheduler internal warmboot || true
     ;;

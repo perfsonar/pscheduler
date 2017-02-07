@@ -20,10 +20,12 @@ set -e
 
 
 case "$1" in
-    purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
-        rm -rf /var/lib/pscheduler/tool/powstream
-
+    remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
         pscheduler internal warmboot || true
+    ;;
+
+    purge)
+        rm -rf /var/lib/pscheduler/tool/powstream
     ;;
 
     *)
