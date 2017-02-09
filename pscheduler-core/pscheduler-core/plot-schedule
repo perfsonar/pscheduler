@@ -194,9 +194,13 @@ if len(schedule) == 0:
 
 for run in schedule:
 
-    run_state = run["state"]
-    sched_class = run_state if run_state in [ "nonstart" ] \
-                  else run["test"]["scheduling-class"]
+    try:
+        run_state = run["state"]
+        sched_class = run_state if run_state in [ "nonstart" ] \
+                      else run["test"]["scheduling-class"]
+    except KeyError:
+        pscheduler.fail("%s: Software too old to support this feature" \
+                        % (host))
 
     script_lines.append(
         "%s %s %s" % (
