@@ -230,8 +230,9 @@ BEGIN
 
     SELECT INTO horizon schedule_horizon FROM configurables;
     IF taskrec.scheduling_class <> scheduling_class_background_multi()
-       AND (upper(NEW.times) - now()) > horizon THEN
-        RAISE EXCEPTION 'Cannot schedule runs more than % in advance', horizon;
+       AND (upper(NEW.times) - normalized_now()) > horizon THEN
+        RAISE EXCEPTION 'Cannot schedule runs more than % in advance (% outside the range)',
+            horizon, (upper(NEW.times) - normalized_now());
     END IF;
 
 
