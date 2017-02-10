@@ -27,12 +27,12 @@ server_results = result_list[1]
 
 final_diag = ""
 
-if client_results and client_results.get('diag'):
-    final_diag += "Participant 0:\n%s\n" % client_results.get('diag')
+if client_results and client_results.get('diags'):
+    final_diag += "Participant 0:\n%s\n" % client_results.get('diags')
 
-if server_results and server_results.get('diag'):
-    final_diag += "Participant 1:\n%s\n" % server_results.get('diag')
+if server_results and server_results.get('diags'):
+    final_diag += "Participant 1:\n%s\n" % server_results.get('diags')
 
-client_results['diag'] = final_diag
+client_results['diags'] = final_diag
 
 pscheduler.succeed_json(client_results)
