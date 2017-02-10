@@ -169,7 +169,7 @@ def clock_survey(hosts):
 
 class RunWorker:
 
-    def __init__(self, db, log, id, start_in):
+    def __init__(self, db, log, id, start_at):
 
         # Per http://initd.org/psycopg/docs/usage.html#thread-safety,
         # Psycopg is thread-safe when you use multiple cursors against the
@@ -177,7 +177,7 @@ class RunWorker:
         self.cursor = db.cursor()
         self.log = log
         self.id = id
-        self.start_in = start_in
+        self.start_at = start_at
         self.finished = False
         self.output = []
 
@@ -250,11 +250,87 @@ class RunWorker:
 
         failures = 0
 
-        # Don't try to do anyting until the start time.
-        sleep_time = pscheduler.timedelta_as_seconds(self.start_in)
-        self.log.debug("%d: Sleeping %s until test start", self.id, sleep_time)
+
+        # Pull everything we can about the run before going to sleep
+
+        try:
+            self.cursor.execute("""
+                           SELECT
+                               tool.name,
+                               task.uuid,
+                               task.id,
+                               task.participant,
+                               task.participants,
+                               task.limits_passed,
+                               lower(run.times),
+                               upper(run.times),
+                               task.json #> '{test}',
+                               run.uuid,
+                               run.part_data_full,
+                               scheduling_class.enum
+                           FROM
+                               run
+                               JOIN task ON task.id = run.task
+                               JOIN test ON test.id = task.test
+                               JOIN scheduling_class
+                                    ON scheduling_class.id = test.scheduling_class
+                               JOIN tool ON tool.id = task.tool
+                           WHERE run.id = %s
+                           """, [self.id])
+        except Exception as ex:
+            self.log.error("%d: Failed to fetch run info: %s",
+                           self.id, str(ex))
+            return
+
+        # Should get exactly one row back.  If not, the run probably
+        # vanished.
+
+        if self.cursor.rowcount != 1:
+            self.log.info("%d: Can no longer find run.  Stopping.", self.id)
+            return
+
+        row = self.cursor.fetchone()
+
+        tool, task_uuid, task_id, participant, participants, limits_passed, \
+            start, end, test_spec, run_uuid, partdata, scheduling_class = row
+
+        # This will be used when a background-multi run produces a result.
+        self.task_id = task_id
+
+        if partdata is None:
+            # TODO: Should simply bail out here.
+            self.log.error("%d: Got NULL part_data_full", self.id)
+
+        tool_input = pscheduler.json_dump({
+            'schema': 1,
+            'task-uuid': task_uuid,
+            'schedule': {
+                'start': pscheduler.datetime_as_iso8601(start),
+                'duration': pscheduler.timedelta_as_iso8601(end - start)
+                },
+            'test': test_spec,
+            'participant': participant,
+            'participant-data': partdata,
+            'limits-passed': limits_passed
+            })
+
+
+        #
+        # Wait for the start time to roll around
+        #
+
+        self.log.debug("Start at %s", self.start_at)
+        time_until_start = pscheduler.time_until(self.start_at)
+        sleep_time = pscheduler.timedelta_as_seconds(time_until_start)
+        self.log.debug("%d: Sleeping %s until test start", self.id,
+                       time_until_start)
         time.sleep(sleep_time)
 
+        #
+        # Get cracking
+        #
+
+        self.log.debug("%d: Preparing to run", self.id)
 
         # If the system is paused, set the run as missed and bail out.
 
@@ -276,10 +352,7 @@ class RunWorker:
                                self.id, str(ex))
             return
 
-
-        # Get cracking.
-
-        self.log.debug("%d: Preparing to run", self.id)
+        # Mark the run as underway
 
         try:
             self.cursor.execute("""
@@ -293,96 +366,19 @@ class RunWorker:
             return
 
 
-        try:
-            self.cursor.execute("""
-                           SELECT
-                               tool.name,
-                               task.uuid,
-                               task.id,
-                               task.participant,
-                               task.participants,
-                               lower(run.times),
-                               upper(run.times),
-                               task.json #> '{test}',
-                               run.uuid,
-                               run.part_data_full,
-                               scheduling_class.enum
-                           FROM
-                               run
-                               JOIN task ON task.id = run.task
-                               JOIN test ON test.id = task.test
-                               JOIN scheduling_class
-                                    ON scheduling_class.id = test.scheduling_class
-                               JOIN tool ON tool.id = task.tool
-                           WHERE run.id = %s
-                           """, [self.id])
-        except Exception as ex:
-            self.log.error("%d: Failed to fetch run info: %s",
-                           self.id, str(ex))
-            return
-
-        # TODO: Error check this.
-        # TODO: Is this a duplicate of the query above?
-        self.cursor.execute("""
-                       SELECT
-                           tool.name,
-                           task.uuid,
-                           task.id,
-                           task.participant,
-                           task.participants,
-                           task.limits_passed,
-                           lower(run.times),
-                           upper(run.times),
-                           task.json #> '{test}',
-                           run.uuid,
-                           run.part_data_full,
-                           scheduling_class.enum
-                       FROM
-                           run
-                           JOIN task ON task.id = run.task
-                           JOIN test ON test.id = task.test
-                           JOIN scheduling_class
-                                ON scheduling_class.id = test.scheduling_class
-                           JOIN tool ON tool.id = task.tool
-                       WHERE run.id = %s
-                       """, [self.id])
-
-        # Should get exactly one row back.  If not, the run probably
-        # vanished.
-
-        if self.cursor.rowcount != 1:
-            self.log.info("%d: Can no longer find run.  Stopping.", self.id)
-            return
-
-        row = self.cursor.fetchone()
-
-        tool, task_uuid, task_id, participant, participants, limits_passed, \
-            start, end, test_spec, run_uuid, partdata, scheduling_class = row
-
-        # This will be used when a background-multi run produces a result.
-        self.task_id = task_id
-
         #
         # Do the local tool run
         #
 
-        if partdata is None:
-            self.log.error("%d: Got NULL part_data_full", self.id)
-
-        tool_input = pscheduler.json_dump({
-            'schema': 1,
-            'task-uuid': task_uuid,
-            'schedule': {
-                'start': pscheduler.datetime_as_iso8601(start),
-                'duration': pscheduler.timedelta_as_iso8601(end - start)
-                },
-            'test': test_spec,
-            'participant': participant,
-            'participant-data': partdata,
-            'limits-passed': limits_passed
-            })
-
         self.log.debug("%d: Testing with %s: %s", self.id, tool, tool_input)
+
+        how_late = pscheduler.time_now() - self.start_at
+        self.log.debug("%d: Start time difference is %s",
+                             self.id, how_late)
+
+        if how_late > datetime.timedelta(seconds=0.0):
+            self.log.warning("%d: Starting %s later than scheduled",
+                             self.id, how_late)
 
         returncode, stdout, stderr = pscheduler.run_program(
             [ "pscheduler", "internal", "invoke", "tool", tool, "run" ],
@@ -545,6 +541,7 @@ class RunWorker:
 
 def main_program():
 
+    log.debug("Begin main")
 
     # Exit nicely when certain signals arrive so running processes are
     # cleaned up.
@@ -560,7 +557,11 @@ def main_program():
     db = pscheduler.pg_connection(dsn)
     cursor = db.cursor()
 
-    cursor.execute("LISTEN run_new")
+    log.debug("Connected to DB")
+
+    cursor.execute("LISTEN run_change")
+
+    log.debug("Listening for notifications")
 
     while True:
 
@@ -576,12 +577,14 @@ def main_program():
                        SELECT
                            id AS run,
                            lower(times) - normalized_wall_clock() AS start_in,
+                           lower(times) AS start_at,
                            FALSE as background_multi
                        FROM
                            run
                        WHERE
                            lower(run.times) < (normalized_wall_clock() + %s)
                            AND state = run_state_pending()
+                           AND part_data_full IS NOT NULL
 
                        UNION
 
@@ -589,6 +592,7 @@ def main_program():
                        SELECT
                            run.id AS run,
                            'PT1S'::INTERVAL AS start_in,
+                           normalized_wall_clock() + 'PT1S'::INTERVAL AS start_at,
                            TRUE as background_multi
                        FROM
                            run
@@ -610,26 +614,31 @@ def main_program():
 
         if cursor.rowcount:
 
+            already_running = 0
+
             run_ids = []
 
             for row in cursor:
 
-                run_id, start_in, background_multi = row
-
-                log.debug("Run %d, starts in %s", run_id, start_in)
+                run_id, start_in, start_at, background_multi = row
 
                 if run_dict.is_running(run_id):
-                    log.debug("Run %d is already running", run_id)
+                    already_running += 1
                     continue
+
+                log.debug("Run %d, starts at %s", run_id, start_at)
 
                 run_ids.append(run_id)
 
                 # TODO: Hold this
-                worker = RunWorker(db, log, run_id, start_in)
+                worker = RunWorker(db, log, run_id, start_at)
 
                 if not background_multi and start_in < wait_time:
                     log.debug("Dropping wait time to %s", start_in)
                     wait_time = start_in
+
+            if already_running > 0:
+                log.debug("Skipped %d already-running runs", already_running)
 
 
             # Do this here to guarantee that we don't pick up rows for
