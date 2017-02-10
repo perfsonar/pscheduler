@@ -113,7 +113,7 @@ if run_json["state"] == "nonstart":
     pscheduler.fail("Run never started: %s" % reason)
 
 if run_json["state"] in ["pending", "on-deck", "running", "cleanup"]:
-    pscheduler.suceed("Run has not completed.")
+    pscheduler.succeed("Run has not completed.")
 
 
 # TODO: Should dump diags for anything but trumped.
@@ -122,7 +122,9 @@ if run_json["state"] in ["overdue", "missed", "trumped"]:
     pscheduler.succeed("Run did not complete: %s" % run_json["state-display"])
 
 if run_json["state"] == "failed":
-    pscheduler.succeed("Run failed")
+    print "Run failed"
+    succeeded = False
+
 
 
 try:
@@ -206,14 +208,29 @@ if out_format == "text/plain" \
     for participant in range(0, len(parts)):
         print
         print "Diagnostics from %s:" % (parts[participant])
-        print
         try:
             print "\n".join([
                 "    %s" % (string) for string in
                 run_json["result-full"][participant]["diags"].split("\n")
             ])
-        except KeyError:
+        except (KeyError, TypeError):
             print "    (No diagnostics)"
+
+        try:
+            err = run_json["result-full"][participant].get("error", None)
+        except AttributeError:
+            err = None
+
+        if err is not None:
+            print
+            print "Error from %s:" % (parts[participant])
+            try:
+                print "\n".join([
+                    "    %s" % (string) for string in
+                    err.split("\n")
+                ])
+            except (KeyError, TypeError):
+                print "    (No error)"
 
 
 pscheduler.succeed()
