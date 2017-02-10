@@ -152,6 +152,11 @@ def run_client():
     if test_spec.has_key('local-address') and test_spec['local-address'] != None:
         iperf3_args.append('-B')
         iperf3_args.append(test_spec['local-address'])
+    # if no specific local-address was specified, assume that we're binding
+    # to the source interface if specified
+    elif test_spec.has_key('source'):
+        iperf3_args.append('-B')
+        iperf3_args.append(test_spec['source'])
 
     if test_spec.has_key('ip-version') and test_spec['ip-version'] != None:
         if test_spec['ip-version'] == 4:
