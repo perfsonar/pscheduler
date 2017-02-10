@@ -7,6 +7,7 @@
 #     pscheduler schedule [options]
 
 import datetime
+import optparse
 import os
 import pipes
 import pscheduler
@@ -21,33 +22,31 @@ pscheduler.set_graceful_exit()
 # Utilities
 #
 
-usage = "Usage: %s [ --host h ] [ delta | start end ]" \
-                    % os.path.basename(sys.argv[0])
-
 def get_time_with_delta(string):
     """
-    TODO: Fill this in.
+    Get an absolute time or delta and return an ISO8601 string with
+    the absolute time.
     """
 
-    # If it looks like a time, return that.
+    # If it looks like an ISO time, return that.
     try:
         absolute = pscheduler.iso8601_as_datetime(string)
         # Default behavior is to localize naive times.
         if absolute.tzinfo is None:
             absolute = pytz.utc.localize(absolute)
-        return absolute
+            return pscheduler.datetime_as_iso8601(absolute)
     except ValueError:
         pass
 
-    try:
-        if string[0] == "+":
-            delta = pscheduler.iso8601_as_timedelta(string[1:])
-        else:
-            delta = pscheduler.iso8601_as_timedelta(string)
-    except ValueError:
-        pscheduler.fail("Invalid duration %s" % string)
+    if string[0] == "+":
+        delta = pscheduler.iso8601_as_timedelta(string[1:])
+    elif string[0] == "-":
+        delta = -1 * pscheduler.iso8601_as_timedelta(string[1:])
+    else:
+        delta = pscheduler.iso8601_as_timedelta(string)
 
-    return pscheduler.time_now() + delta
+    return pscheduler.datetime_as_iso8601(
+        pscheduler.time_now() + delta)
 
 
 #
@@ -57,34 +56,101 @@ def get_time_with_delta(string):
 whoami = os.path.basename(sys.argv[0])
 args = sys.argv[1:]
 
-# Do this manually because the arg parser will have difficulties with hyphens used for negative offsets.
 
-host = "localhost"
-try:
-    if args[0] in [ '--help', '-h' ]:
-        pscheduler.succeed(usage)
-    if args[0] in [ '--host', '-H' ]:
-        host = args[1]
-        args = args[2:]
-except IndexError:
-    pass
+# Pre-convert any trailing arguments that look like times or deltas
+# into raw times so the option parser doesn't choke on negative
+# deltas.
+
+if len(args) > 0:
+    arg = -1
+    while True:
+        try:
+            args[arg] = (get_time_with_delta(str(args[arg])))
+        except ValueError:
+            break
+            arg -= 1
 
 
+
+class VerbatimParser(optparse.OptionParser):
+    def format_epilog(self, formatter):
+        return self.epilog
+
+opt_parser = VerbatimParser(
+    usage="Usage: %prog [ OPTIONS ] [ delta | start end ] ",
+    epilog=
+"""
+Example:
+
+  schedule
+      Show the schedule on the local host for the next hour
+
+  schedule --host ps3.example.net
+      Show the schedule on ps3.example.net for the next hour
+
+  schedule -PT1H
+      Show the schedule on the local host for an hour in the
+      the past
+
+  schedule +PT25M
+      Show the schedule on the local host for 25 minutes in
+      the future
+
+  schedule -PT1H +PT30M
+      Show the schedule on the local host for an hour in the
+      the past and 30 minutes into the future
+
+  schedule 2016-05-01T12:40:00 2016-05-01T12:55:00
+      Show the schedule on the local host between the times
+      specified.
+"""
+    )
+opt_parser.disable_interspersed_args()
+
+opt_parser.add_option("--filter-test",
+                      help="Include the named type of test (May be repeated for multiple)",
+                      default=[],
+                      action="append", type="string",
+                      dest="filter_test")
+
+opt_parser.add_option("--host",
+                      help="Request schedule from named host",
+                      default=None,
+                      action="store", type="string",
+                      dest="host")
+
+opt_parser.add_option("--invert",
+                      help="If filtering, invert the result",
+                      default=False,
+                      action="store_true",
+                      dest="invert")
+
+(options, remaining_args) = opt_parser.parse_args(args)
+
+
+
+
+if len(options.filter_test) > 0:
+    filter_test = dict( (value, 1) for value in options.filter_test )
+else:
+    filter_test = None
+
+filter_invert = options.invert
 
 
 now = pscheduler.time_now()
 
-if len(args) == 0:
+if len(remaining_args) == 0:
 
     # Default; show an hour's worth.
     start = now
     end = start + datetime.timedelta(hours=1)
 
-elif len(args) == 1:
+elif len(remaining_args) == 1:
 
     # One argument is an absolute time or a timedelta.
 
-    arg = get_time_with_delta(args[0])
+    arg = pscheduler.iso8601_as_datetime(remaining_args[0])
     if arg < now:
         start = arg
         end = now
@@ -92,10 +158,10 @@ elif len(args) == 1:
         start = now
         end = arg
 
-elif len(args) == 2:
+elif len(remaining_args) == 2:
 
-    start = get_time_with_delta(args[0])
-    end = get_time_with_delta(args[1])
+    start = pscheduler.iso8601_as_datetime(remaining_args[0])
+    end = pscheduler.iso8601_as_datetime(remaining_args[1])
 
     if end < start:
         start, end = end, start
@@ -109,7 +175,7 @@ else:
 #
 
 status, schedule = pscheduler.url_get(
-    pscheduler.api_url(host=host, path="schedule"),
+    pscheduler.api_url(host=options.host, path="schedule"),
     params={
         "start": pscheduler.datetime_as_iso8601(start),
         "end": pscheduler.datetime_as_iso8601(end)
@@ -136,7 +202,16 @@ first = True
 
 for run in schedule:
 
-    task_cli = [ run["task"]["test"]["type"] ]
+    test = run["task"]["test"]["type"]
+
+    if filter_test is not None:
+        in_list = test in filter_test
+        if (in_list ^ (not filter_invert)):
+            continue
+
+        
+
+    task_cli = [ test ]
     task_cli.extend([ pipes.quote(arg) for arg in run["cli"] ])
 
     if not first:
