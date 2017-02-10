@@ -184,7 +184,7 @@ def run_client():
     logger.debug("Lines are %s " % lines)
 
     results = nuttcp_parser.parse_output(lines)
-    results['diag'] = "%s\n\n%s" % (" ".join(nuttcp_args), stdout)
+    results['diags'] = "%s\n\n%s" % (" ".join(nuttcp_args), stdout)
 
     return results
 

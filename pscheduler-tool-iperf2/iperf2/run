@@ -193,7 +193,7 @@ def run_client():
     logger.debug("Lines are %s " % lines)
 
     results = iperf_parser.parse_output(lines)
-    results['diag'] = "%s\n\n%s" % (command_line, stdout)
+    results['diags'] = "%s\n\n%s" % (command_line, stdout)
 
     return results
 

@@ -221,7 +221,7 @@ def run_client():
     logger.debug("Lines are %s " % lines)
 
     results = iperf3_parser.parse_output(lines)
-    results['diag'] = "%s\n\n%s\n\nRun start = %s" % (command_line, stdout, RUN_START)
+    results['diags'] = "%s\n\n%s\n\nRun start = %s" % (command_line, stdout, RUN_START)
 
     return results
 
@@ -265,7 +265,7 @@ def run_server():
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
                                                         timeout = iperf_timeout)
 
-        results['diag'] = "%s\n%s\nRun start = %s" % (stdout, stderr, RUN_START)
+        results['diags'] = "%s\n%s\nRun start = %s" % (stdout, stderr, RUN_START)
 
         logger.debug("client stdout = %s" % stdout)
         logger.debug("client stderr = %s" % stderr)
