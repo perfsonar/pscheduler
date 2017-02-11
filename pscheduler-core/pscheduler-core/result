@@ -118,7 +118,7 @@ if run_json["state"] in ["pending", "on-deck", "running", "cleanup"]:
 
 # TODO: Should dump diags for anything but trumped.
 
-if run_json["state"] in ["overdue", "missed", "trumped"]:
+if run_json["state"] in ["overdue", "missed", "preempted"]:
     pscheduler.succeed("Run did not complete: %s" % run_json["state-display"])
 
 if run_json["state"] == "failed":
@@ -191,11 +191,12 @@ if not options.quiet and out_format == "text/plain":
 # The strip gets rid of any pesky newlines
 print result.rstrip()
 
+
 try:
-    if (not 'result-merged' in result) \
-       or (result['result-merged'] is None):
+    succeeded = run_json['result-merged']['succeeded']
+    if succeeded is None:
         raise KeyError()
-        succeeded = result['result-merged']['succeeded']
+
 except KeyError as ex:
     succeeded = False
 
