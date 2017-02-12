@@ -376,7 +376,7 @@ class RunWorker:
         self.log.debug("%d: Start time difference is %s",
                              self.id, how_late)
 
-        if how_late > datetime.timedelta(seconds=0.0):
+        if how_late > datetime.timedelta(seconds=0.5):
             self.log.warning("%d: Starting %s later than scheduled",
                              self.id, how_late)
 
