@@ -115,7 +115,6 @@ pscheduler-tool-sleepbgm
 pscheduler-tool-snooze
 pscheduler-tool-ping
 pscheduler-tool-psclock
-pscheduler-tool-rtime
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
 pscheduler-tool-paris-traceroute
