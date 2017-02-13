@@ -107,8 +107,14 @@ if len(errors) > 0:
 # Produce results
 #
 
-diff = pscheduler.iso8601_as_datetime(results[1]['clock']['time']) \
-       - pscheduler.iso8601_as_datetime(results[0]['clock']['time'])
+time_local = pscheduler.iso8601_as_datetime(results[0]['clock']['time'])
+time_remote = pscheduler.iso8601_as_datetime(results[1]['clock']['time'])
+
+diff = max(time_local, time_remote) - min(time_local, time_remote)
+
+
+if diff < datetime.timedelta():
+
 
 results = {
     'schema': 1,
