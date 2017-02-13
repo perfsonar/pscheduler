@@ -1,0 +1,134 @@
+%
+% pScheduler Test Guide for Clock
+%
+
+\def\testname{clock}
+
+
+% TODO: Add titlepage to the options.
+\documentclass[10pt]{article}
+
+\input pscheduler-tex.tex
+
+\DRAFT
+
+\title{pScheduler Test Guide: {\it \testname}}
+\author{The perfSONAR Development Team}
+
+
+\begin{document}
+\maketitle
+
+
+%
+% INTRODUCTION
+%
+
+\section{Introduction}
+
+The {\tt \testname} test measures the difference in time between the
+clock on the local host and that on a remote host.
+
+This document describes schema version {\tt 1}.
+
+
+\subsection{Participants}
+
+This test includes the following participants:
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+{\bf Number} & {\bf Role} \\
+\hline
+{\tt 0} & Originator \\
+\hline
+\end{tabular}
+\end{center}
+
+
+
+%
+% TEST SPECIFICATION
+%
+
+\section{Test Specification Format}
+
+\subsection{Description}
+
+The test specification consists of a single JSON object containing the
+pairs below.  \seejson
+
+\typeditem{schema}{Cardinal} The schema version of this specification.
+
+\typeditem{dest}{Host} The network address or hostname of the receiver.
+
+\typeditem{source}{Host} The network address or hostname of the
+interface to use.
+
+\typeditem{source-node}{Host} The network address or hostname of the
+pScheduler instance which will serve as the originator.
+
+\typeditem{timeout}{Duration} Amount of time to wait for a response
+from each host.
+
+
+
+\subsection{Example}
+\begin{lstlisting}[language=json]
+{
+    "schema": 1,
+    "dest": "somehost.example.org",
+    "timeout": "PT5S"
+}
+\end{lstlisting}
+
+
+
+%
+% RESULT FORMAT
+%
+
+\section{Result Format}
+
+\subsection{Description}
+The result consists of a single JSON object containing the pairs
+below.  \seejson
+
+\typeditem{succeeded}{Boolean} Whether or not the test was a success.
+
+\typeditem{local}{ClockState} The state of the originating system's
+clock.
+
+\typeditem{remote}{ClockState} The state of the remote (destination)
+system's clock.
+
+\typeditem{difference}{Duration} The difference in time between the
+two clocks.
+
+\subsection{Example}
+\begin{lstlisting}[language=json]
+{
+    "schema": 1,
+
+    "succeeded": true,
+    "local": {
+        "time": "2017-02-05T16:41:10.119931+00:00",
+        "synchronized": true,
+        "source": "ntp",
+        "reference": "secondary reference (2) from 10.19.54.6",
+        "offset": 6.6041946411132812e-05
+    },
+    "remote": {
+        "time": "2017-02-05T08:41:50.424743-08:00",
+        "synchronized": true,
+        "source": "ntp",
+        "reference": "secondary reference (2) from 10.62.7.91",
+        "offset": 3.3817936411132812e-05
+    },
+    "difference": "PT0.422658S"
+}
+\end{lstlisting}
+
+
+\end{document}

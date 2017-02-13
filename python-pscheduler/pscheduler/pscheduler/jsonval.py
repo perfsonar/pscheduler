@@ -87,6 +87,18 @@ __dictionary__ = {
         "required": [ "lower", "upper" ]
     },
 
+    "ClockState": {
+        "type": "object",
+        "properties": {
+            "time":         { "$ref": "#/pScheduler/Timestamp" },
+            "synchronized": { "$ref": "#/pScheduler/Boolean" },
+            "source":       { "$ref": "#/pScheduler/String" },
+            "reference":    { "$ref": "#/pScheduler/String" },
+            "offset":       { "$ref": "#/pScheduler/Number" },
+        },
+        "additionalProperties": False,
+        "required": [ "time", "synchronized" ]
+    },
 
     "Duration": {
         "type": "string",

@@ -1,0 +1,28 @@
+#!/usr/bin/python
+#
+# Participant list generator for 'rtt' test spec
+#
+
+import pscheduler
+import sys
+
+from validate import spec_is_valid
+
+json = pscheduler.json_load(exit_on_error=True)
+
+null_reason = None
+
+valid, message = spec_is_valid(json)
+
+if not valid:
+    pscheduler.fail(message)
+
+source = json.get("source-node", json.get("source", None))
+if source is None:
+    null_reason = "No source specified"
+
+result = { "participants": [ source ] }
+if null_reason is not None:
+    result["null-reason"] = null_reason
+
+pscheduler.succeed_json(result)

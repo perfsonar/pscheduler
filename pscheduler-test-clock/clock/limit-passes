@@ -1,0 +1,114 @@
+#!/usr/bin/python
+#
+# Checker for 'clock' task limits
+#
+
+import pscheduler
+
+from validate import spec_is_valid
+from validate import limit_is_valid
+
+#
+# Load and validate everything
+#
+
+try:
+    json = pscheduler.json_load()
+except ValueError as ex:
+    pscheduler.fail("Invalid JSON %s" % str(ex))
+
+spec = json["spec"]
+valid, message = spec_is_valid(spec)
+if not valid:
+    raise ValueError("Invalid test spec: %s" % message)
+
+limit = json["limit"]
+valid, message = limit_is_valid(limit)
+if not valid:
+    raise ValueError("Invalid limit: %s" % message)
+
+
+#
+# Evaluate everything
+#
+
+errors = []
+
+#
+# Dest
+#
+
+try:
+    match = pscheduler.StringMatcher(limit["dest"]["match"])
+    try:
+        invert = limit["dest"]["invert"]
+    except KeyError:
+        invert = False
+    in_limit = match.matches(spec["dest"])
+    if not in_limit or (invert and in_limit):
+        try:
+            errors.append(limit["dest"]["fail-message"])
+        except KeyError:
+            errors.append("Destination does not match limit")
+except KeyError:
+    pass  # Don't care if not there.
+
+
+#
+# Source
+#
+
+try:
+    match = pscheduler.StringMatcher(limit["source"]["match"])
+    if not match.matches(spec["source"]):
+        try:
+            errors.append(limit["source"]["fail-message"])
+        except KeyError:
+            errors.append("Source does not match limit")
+except KeyError:
+    pass  # Don't care if not there.
+
+
+
+#
+# Source Node
+#
+
+try:
+    match = pscheduler.StringMatcher(limit["source-node"]["match"])
+    if not match.matches(spec["source-node"]):
+        try:
+            errors.append(limit["source-node"]["fail-message"])
+        except KeyError:
+            errors.append("Source node does not match limit")
+except KeyError:
+    pass  # Don't care if not there.
+
+
+
+#
+# Timeout
+#
+try:
+    match = pscheduler.DurationRange(limit["timeout"]["range"])
+    if spec["timeout"] not in match:
+        try:
+            errors.append(limit["timeout"]["fail-message"])
+        except KeyError:
+            errors.append("Timeout not within limit")
+
+except KeyError:
+    pass  # Don't care if not there.
+
+
+
+#
+# Finish up
+#
+
+result = { "passes": not errors }
+
+if errors:
+    result["errors"] = errors
+
+pscheduler.succeed_json(result)
