@@ -5,7 +5,7 @@ Functions for resolving hostnames and IPs
 import dns.reversename
 import dns.resolver 
 import multiprocessing
-import multiprocessing.pool
+import multiprocessing.dummy
 import os
 import Queue
 import socket
@@ -184,7 +184,7 @@ def dns_bulk_resolve(candidates, reverse=False, ip_version=None, threads=50):
     if not hasattr(threading.current_thread(), "_children"):
         threading.current_thread()._children = weakref.WeakKeyDictionary()
 
-    pool = multiprocessing.pool.ThreadPool(
+    pool = multiprocessing.dummy.Pool(
         processes=min(len(candidates), threads) )
 
     candidate_args = [ (candidate, ip_version) for candidate in candidates ]
