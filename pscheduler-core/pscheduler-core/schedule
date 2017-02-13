@@ -63,12 +63,12 @@ args = sys.argv[1:]
 
 if len(args) > 0:
     arg = -1
-    while True:
+    while True and abs(arg) <= len(args):
         try:
             args[arg] = (get_time_with_delta(str(args[arg])))
         except ValueError:
             break
-            arg -= 1
+        arg -= 1
 
 
 
