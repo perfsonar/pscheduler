@@ -312,6 +312,7 @@ class RunWorker:
 
         # This gets used by __post_result, above.
         self.task_url = pscheduler.api_url(
+            host=participants[0],
             path="/tasks/%s" % (task_uuid) )
 
         run_url = pscheduler.api_url(
