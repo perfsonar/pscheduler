@@ -60,6 +60,16 @@ BEGIN
         t_version := t_version + 1;
     END IF;
 
+    -- Version 2 to version 3
+    IF t_version = 2
+    THEN
+        -- Do this update only if the old default is in place.
+        UPDATE configurables SET run_straggle = 'PT30S'
+        WHERE run_straggle = 'PT10S';
+
+        t_version := t_version + 1;
+    END IF;
+
 
     --
     -- Cleanup
