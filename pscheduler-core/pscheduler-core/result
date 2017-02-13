@@ -208,7 +208,8 @@ if out_format == "text/plain" \
     parts = task_json["detail"]["participants"]
     for participant in range(0, len(parts)):
         print
-        print "Diagnostics from %s:" % (parts[participant])
+        print "Diagnostics from %s:" % (run_json["participants"][participant])
+
         try:
             print "\n".join([
                 "    %s" % (string) for string in
@@ -219,7 +220,7 @@ if out_format == "text/plain" \
 
         try:
             err = run_json["result-full"][participant].get("error", None)
-        except AttributeError:
+        except (AttributeError, TypeError):
             err = None
 
         if err is not None:
