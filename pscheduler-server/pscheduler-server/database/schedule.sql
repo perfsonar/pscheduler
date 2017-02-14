@@ -16,11 +16,15 @@ AS
         run_state.display AS state_display,
         -- TODO: Pull full JSON with details when that's available.  See #95.
         task.json AS task_json,
-	task.cli AS task_cli
+	task.cli AS task_cli,
+	tool.json AS tool_json,
+	test.json as test_json
     FROM
         run
         JOIN run_state ON run_state.id = run.state
         JOIN task ON task.id = run.task
+	JOIN tool ON tool.id = task.tool
+	JOIN test ON test.id = task.test
     ORDER BY run.times
 ;
 

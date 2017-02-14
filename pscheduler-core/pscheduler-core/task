@@ -91,11 +91,16 @@ schedule_group.add_option("--max-runs",
                       action="store", type="int", default=1,
                       dest="max_runs")
 
-# TODO: Find a way to get rid of the rounding error in this.
+# TODO: Remove this.  #287
 schedule_group.add_option("--randslip",
-                      help="Random slip fractiom (float in [0.0..1.0])",
+                      help="Random slip fractiom (float in [0.0..1.0])  DEPRECATED",
                       action="store", type="float",
                       dest="randslip")
+
+opt_parser.add_option("--sliprand",
+                      help="Slip randomly",
+                      action="store_true",
+                      dest="sliprand")
 
 schedule_group.add_option("--repeat",
                       help="Repeat interval (ISO 8601 Duration)",
@@ -197,6 +202,7 @@ if options.repeat is not None:
         pscheduler.fail("Invalid --repeat: %s" % str(ex))
 
 
+# TODO: Remove this  #287
 if options.randslip is not None:
     randslip = options.randslip
     if randslip < 0.0 or randslip > 1.0:
@@ -231,6 +237,8 @@ else:
     # If a repeat is specified and a slip isn't, we don't do any
     # default slip.
     slip = None
+
+
 
     
 
@@ -329,12 +337,16 @@ if options.max_runs > 1:
 if options.repeat is not None:
     task['schedule']['repeat'] = options.repeat
 
+# TODO: Remove this  #287
 if options.randslip is not None:
     task['schedule']['randslip'] = options.randslip
 
 if slip is not None:
     task['schedule']['slip'] = pscheduler.timedelta_as_iso8601(slip)
     log.debug("Using slip of %s", task['schedule']['slip'])
+
+if options.sliprand is not None:
+    task['schedule']['sliprand'] = options.sliprand
 
 if options.start is not None:
     task['schedule']['start'] = options.start
@@ -506,7 +518,9 @@ if status == 404:
 if null_reason is None:
     null_reason = "No reason provided.  (Server is running old software.)"
 
-log.debug("Lead is %s, null reason is %s", lead, null_reason)
+log.debug("Lead is %s", lead)
+if lead is None:
+    log.debug("Null reason is %s", null_reason)
 
 # If the lead is None, the usual behavior would be to task the server
 # on the local host.  If an assist server is being used, that's

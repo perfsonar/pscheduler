@@ -26,6 +26,7 @@ COMMANDS=\
 	schedule \
 	monitor \
 	ping \
+	plot-schedule \
 	task \
 	watch
 

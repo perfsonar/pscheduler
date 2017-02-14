@@ -15,6 +15,8 @@ Source0:	%{name}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
+# This is for plot-schedule
+Requires:       gnuplot
 # This is for netstat.
 Requires:       net-tools
 Requires:       python-pscheduler >= 1.2

@@ -29,6 +29,9 @@ if test_spec.has_key('bandwidth') and not test_spec.has_key('udp'):
 if test_spec.has_key('omit'):
     pscheduler.fail('iperf does not support the --omit flag')
 
+if test_spec.has_key('ip-tos'):
+    pscheduler.fail('iperf does not support the --ip-tos flag')
+
 if test_spec.has_key('flow-label'):
     pscheduler.fail('iperf does not support the --flow-label flag')
 

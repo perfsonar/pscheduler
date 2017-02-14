@@ -100,10 +100,10 @@ opt_parser.add_option("--no-suppress-loopback",
                       action="store_false",
                       dest="suppress_loopback")
 
-opt_parser.add_option("--tos",
-                      help="IP TOS",
+opt_parser.add_option("--ip-tos",
+                      help="IP type-of-service octet (integer)",
                       action="store", type="int",
-                      dest="tos")
+                      dest="ip_tos")
 
 opt_parser.add_option("--length",
                       help="Packet length",
@@ -163,8 +163,8 @@ if options.source_node is not None:
 if options.suppress_loopback is not None:
    result['suppress-loopback'] = options.suppress_loopback
 
-if options.tos is not None:
-   result['tos'] = options.tos
+if options.ip_tos is not None:
+   result['ip-tos'] = options.ip_tos
 
 if options.length is not None:
    result['length'] = options.length

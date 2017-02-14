@@ -155,9 +155,9 @@ except KeyError:
 #
 
 try:
-    tos = spec['tos']
+    ip_tos = spec['ip-tos']
     argv.append('-t')
-    argv.append(str(tos))
+    argv.append(str(ip_tos))
     need_root = True
 except KeyError:
     pass

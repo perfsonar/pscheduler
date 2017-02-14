@@ -71,6 +71,21 @@ def stat_archive_upcoming():
 
 
 #
+# HTTP Queue
+#
+
+@application.route("/stat/http-queue/backlog", methods=['GET'])
+def stat_http_queue_backlog():
+    return single_numeric_query("""SELECT COUNT(*) FROM http_queue
+                                   WHERE attempts = 0""")
+
+@application.route("/stat/http-queue/length", methods=['GET'])
+def stat_http_queue_length():
+    return single_numeric_query("""SELECT COUNT(*) FROM http_queue""")
+
+
+
+#
 # Runs
 #
 
@@ -115,10 +130,10 @@ def stat_runs_failed():
     return single_numeric_query("""SELECT COUNT(*) FROM run 
                                    WHERE STATE = run_state_failed()""")
 
-@application.route("/stat/runs/trumped", methods=['GET'])
-def stat_runs_trumped():
+@application.route("/stat/runs/preempted", methods=['GET'])
+def stat_runs_preempted():
     return single_numeric_query("""SELECT COUNT(*) FROM run 
-                                   WHERE STATE = run_state_trumped()""")
+                                   WHERE STATE = run_state_preempted()""")
 
 @application.route("/stat/runs/nonstart", methods=['GET'])
 def stat_runs_nonstart():

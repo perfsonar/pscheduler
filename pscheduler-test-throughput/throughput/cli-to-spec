@@ -109,6 +109,11 @@ opt_parser.add_option("-l", "--buffer-length",
                       action="store", type="int",
                       dest="buffer_length")
 
+opt_parser.add_option("--ip-tos",
+                      help="IP type-of-service octet (integer)",
+                      action="store", type="int",
+                      dest="ip_tos")
+
 opt_parser.add_option("--ip-version",
                       help="Specificy which IP version to use, 4 or 6",
                       action="store", type="int",
@@ -119,20 +124,10 @@ opt_parser.add_option("-B", "--local-address",
                       action="store", type="string",
                       dest="local_address")
 
-opt_parser.add_option("--dscp",
-                      help="DSCP value for ToS byte",
-                      action="store", type="int",
-                      dest="dscp")
-
 opt_parser.add_option("-O", "--omit",
                       help="Number of seconds to omit from the start of the test",
                       action="store", type="string",
                       dest="omit")
-
-opt_parser.add_option("--tos",
-                      help="Type of service for outgoing packets",
-                      action="store", type="int",
-                      dest="tos")
 
 opt_parser.add_option("--no-delay",
                       help="Set TCP no-delay flag, disables Nagle's algorithm",
@@ -239,9 +234,6 @@ if options.ip_version is not None:
 if options.local_address:
    result["local-address"] = options.local_address
 
-if options.dscp:
-   result["dscp"] = options.dscp
-
 if options.omit:
    omit = options.omit
 
@@ -253,8 +245,8 @@ if options.omit:
    result["omit"] = omit
    
 
-if options.tos:
-   result["tos"] = options.tos
+if options.ip_tos:
+   result["ip-tos"] = options.ip_tos
 
 if options.no_delay:
    result["no-delay"] = True

@@ -1,0 +1,94 @@
+#!/usr/bin/python
+#
+# Convert comamnd-line options to a test specification
+#
+
+import optparse
+import pscheduler
+import sys
+
+if len(sys.argv) > 1:
+
+   # Args are on the command line
+   args = sys.argv[1:]
+
+else:
+
+   # Args are in a JSON array on stdin
+   json_args = pscheduler.json_load(exit_on_error=True)
+   args = []
+
+   if type(json_args) != list:
+      pscheduler.fail("Invalid JSON for this operation")
+   for arg in json_args:
+      if type(arg) not in (unicode, str, int, float):
+         pscheduler.fail("Invalid JSON for this operation")
+   args = [ str(arg) for arg in json_args ]
+
+
+
+# Gargle the arguments
+
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""Examples:
+
+  task clock --dest ps.example.com
+      Measure the difference between the local host and ps.example.com.
+
+  task clock --dest ps.example.com --timeout PT5S
+      Measure the difference between the local host and ps.example.com
+      with a timeout of five seconds for each host.
+
+  task clock --source ps2.example.org --dest ps.example.com
+      Measure the time difference between ps2.example.org and
+      ps.example.com.
+"""
+)
+
+
+
+opt_parser.add_option("--dest",
+                      help="Destination host",
+                      action="store", type="string",
+                      dest="dest")
+
+opt_parser.add_option("--source",
+                      help="Source address or interface",
+                      action="store", type="string",
+                      dest="source")
+
+opt_parser.add_option("--source-node",
+                      help="Source pScheduler node, if different",
+                      action="store", type="string",
+                      dest="source_node")
+
+opt_parser.add_option("--timeout",
+                      help="Timeout for each round trip",
+                      action="store", type="string",
+                      dest="timeout")
+
+
+
+(options, remaining_args) = opt_parser.parse_args(args)
+
+if len(remaining_args) != 0:
+   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
+
+
+result = { 'schema': 1 }
+
+
+if options.dest is not None:
+   result['dest'] = options.dest
+
+if options.source is not None:
+   result['source'] = options.source
+
+if options.source_node is not None:
+   result['source-node'] = options.source_node
+
+if options.timeout is not None:
+   result['timeout'] = options.timeout
+
+
+pscheduler.succeed_json(result)

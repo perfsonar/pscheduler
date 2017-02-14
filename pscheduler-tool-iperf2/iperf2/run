@@ -63,25 +63,26 @@ def run_client():
     # iperf has no inherent ability to force v4 or v6, so we do it here but
     # don't bother doing lookups on just a straight IP address, seems like
     # a silly combination of flags but whatever
-    if not is_ip_address and test_spec.has_key('force-ipv4'):
-        destination = pscheduler.dns_resolve(destination, ip_version=4)
+    if test_spec.has_key('ip-version') and test_spec['ip-version'] != None:     
+        if not is_ip_address and test_spec['ip-version'] == 4:
+            destination = pscheduler.dns_resolve(destination, ip_version=4)
         
-        logger.debug("Resolved %s to %s" % (test_spec["dest"], destination))
+            logger.debug("Resolved %s to %s" % (test_spec["dest"], destination))
                     
-        if destination == None:
-            pscheduler.succeed_json({"succeeded": False,
-                                     "error": "Unable to resolve %s to an IPv4 address" % test_spec["dest"]
-                                     })
+            if destination == None:
+                pscheduler.succeed_json({"succeeded": False,
+                                         "error": "Unable to resolve %s to an IPv4 address" % test_spec["dest"]
+                                         })
 
-    elif not is_ip_address and test_spec.has_key('force-ipv6'):
-        destination = pscheduler.dns_resolve(destination, ip_version=6)
+        elif not is_ip_address and test_spec['ip-version'] == 6:
+            destination = pscheduler.dns_resolve(destination, ip_version=6)
                     
-        logger.debug("Resolved %s to %s" % (test_spec["dest"], destination))
+            logger.debug("Resolved %s to %s" % (test_spec["dest"], destination))
 
-        if destination == None:
-            pscheduler.succeed_json({"succeeded": False,
-                                     "error": "Unable to resolve %s to an IPv6 address" % test_spec["dest"]
-                                     })
+            if destination == None:
+                pscheduler.succeed_json({"succeeded": False,
+                                         "error": "Unable to resolve %s to an IPv6 address" % test_spec["dest"]
+                                         })
 
 
 
@@ -150,14 +151,6 @@ def run_client():
         iperf_args.append('-l')
         iperf_args.append(test_spec['buffer-length'])
 
-    if test_spec.has_key('dscp') and test_spec['dscp'] != None:
-        iperf_args.append('-S')
-        iperf_args.append(test_spec['dscp'])
-
-    if test_spec.has_key('tos') and test_spec['tos'] != None:
-        iperf_args.append('-S')
-        iperf_args.append(test_spec['tos'])
-
     if test_spec.has_key('local-address') and test_spec['local-address'] != None:
         iperf_args.append('-B')
         iperf_args.append(test_spec['local-address'])
@@ -200,7 +193,7 @@ def run_client():
     logger.debug("Lines are %s " % lines)
 
     results = iperf_parser.parse_output(lines)
-    results['diag'] = "%s\n\n%s" % (command_line, stdout)
+    results['diags'] = "%s\n\n%s" % (command_line, stdout)
 
     return results
 

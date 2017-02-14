@@ -1,0 +1,132 @@
+#!/usr/bin/python
+#
+# Run a test.  Just the test spec is provided on stdin.
+#
+
+import datetime
+import json
+import multiprocessing
+import sys
+import threading
+import time
+
+import pscheduler
+
+input = pscheduler.json_load(exit_on_error=True);
+
+
+#
+# Find the Important Parameters
+#
+
+try:
+    source = input['test']['spec']['source']
+except KeyError:
+    source = None
+
+try:
+    dest = input['test']['spec']['dest']
+except KeyError:
+    pscheduler.fail('Unable to find destination in input')
+
+try:
+    timeout_iso = input['test']['spec']['timeout']
+except KeyError:
+    timeout_iso = 'PT5S'
+
+timeout = pscheduler.iso8601_as_timedelta(timeout_iso)
+
+timeout_secs = pscheduler.timedelta_as_seconds(timeout)
+
+
+
+#
+# Take the measurements
+#
+
+output = ''
+succeeded = False
+
+def time_check(arg):
+    (url) = arg
+
+    # TODO: Bind locally when we can do that.
+    status, result = pscheduler.url_get(
+        url,
+        timeout=timeout_secs,
+        throw=False
+    )
+
+    if status != 200:
+        return {
+            "succeeded": False,
+            "error": "%d: %s" % (status, result)
+        }
+
+    return {
+        "succeeded": True,
+        "clock": result
+    }
+
+
+    
+
+hosts = [
+    pscheduler.api_url(host=host, path="/clock")
+    for host in [ source, dest ]
+    ]
+
+# Work around a bug in 2.6
+# TODO: Get rid of this when 2.6 is no longer in the picture.
+if not hasattr(threading.current_thread(), "_children"):
+    threading.current_thread()._children = weakref.WeakKeyDictionary()
+
+pool = multiprocessing.dummy.Pool(processes=len(hosts))
+results = pool.map(time_check, hosts)
+pool.close()
+
+#
+# Find errors and bail out if any existed.
+#
+
+errors = list(filter(
+    lambda value: value is not None,
+    [ result.get("error", None) for result in results ]
+    ))
+
+if len(errors) > 0:
+    pscheduler.succeed_json({
+        'schema': 1,
+        'succeeded': False,
+        'error': "; ".join(errors),
+        'diags': '',
+        'result': None
+        })
+
+#
+# Produce results
+#
+
+time_local = pscheduler.iso8601_as_datetime(results[0]['clock']['time'])
+time_remote = pscheduler.iso8601_as_datetime(results[1]['clock']['time'])
+
+diff = max(time_local, time_remote) - min(time_local, time_remote)
+
+
+if diff < datetime.timedelta():
+
+
+results = {
+    'schema': 1,
+    'succeeded': True,
+    'diags': '',
+    'error': '',
+    'result': {
+        'succeeded': True,
+        'local': results[0]['clock'],
+        'remote': results[1]['clock'],
+        'difference': pscheduler.timedelta_as_iso8601(diff)
+    }
+}
+
+pscheduler.succeed_json(results)

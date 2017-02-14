@@ -155,14 +155,14 @@ $$ LANGUAGE plpgsql;
 ALTER FUNCTION run_state_failed() IMMUTABLE;
 
 -- Run lost out to something with a higher priority
-CREATE OR REPLACE FUNCTION run_state_trumped()
+CREATE OR REPLACE FUNCTION run_state_preempted()
 RETURNS INTEGER
 AS $$
 BEGIN
 	RETURN 9;
 END;
 $$ LANGUAGE plpgsql;
-ALTER FUNCTION run_state_trumped() IMMUTABLE;
+ALTER FUNCTION run_state_preempted() IMMUTABLE;
 
 -- Run was dead on arrival
 CREATE OR REPLACE FUNCTION run_state_nonstart()
@@ -173,6 +173,17 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 ALTER FUNCTION run_state_nonstart() IMMUTABLE;
+
+
+-- Run was canceled
+CREATE OR REPLACE FUNCTION run_state_canceled()
+RETURNS INTEGER
+AS $$
+BEGIN
+	RETURN 11;
+END;
+$$ LANGUAGE plpgsql;
+ALTER FUNCTION run_state_canceled() IMMUTABLE;
 
 
 
@@ -208,8 +219,9 @@ VALUES
     (run_state_overdue(),  'Overdue',  'overdue'),
     (run_state_missed(),   'Missed',   'missed'),
     (run_state_failed(),   'Failed',   'failed'),
-    (run_state_trumped(),  'Trumped',  'trumped'),
-    (run_state_nonstart(), 'Non-Starter', 'nonstart')
+    (run_state_preempted(),'Preempted', 'preempted'),
+    (run_state_nonstart(), 'Non-Starter', 'nonstart'),
+    (run_state_canceled(),  'Canceled', 'canceled')
 ON CONFLICT (id) DO UPDATE
 SET
     display = EXCLUDED.display,
@@ -230,20 +242,22 @@ BEGIN
            OR   ( old = run_state_pending()
 	          AND new IN (run_state_on_deck(),
 			      run_state_missed(),
-			      run_state_trumped(),
+			      run_state_failed(),
+			      run_state_preempted(),
 			      run_state_nonstart()) )
            OR   ( old = run_state_on_deck()
 	          AND new IN (run_state_running(),
 		              run_state_overdue(),
 			      run_state_missed(),
-			      run_state_trumped()) )
+			      run_state_preempted()) )
            OR ( old = run_state_running()
 	        AND new IN (run_state_cleanup(),
 		            run_state_finished(),
 		            run_state_overdue(),
 			    run_state_missed(),
 			    run_state_failed(),
-			    run_state_trumped()) )
+			    run_state_preempted(),
+			    run_state_canceled()) )
 	   OR ( old = run_state_cleanup()
                 AND new IN (run_state_finished(),
 			    run_state_failed()) )
@@ -252,7 +266,7 @@ BEGIN
 		            run_state_finished(),
 		            run_state_missed(),
 		            run_state_failed(),
-		            run_state_trumped()) )
+		            run_state_preempted()) )
            ;
 END;
 $$ LANGUAGE plpgsql;
