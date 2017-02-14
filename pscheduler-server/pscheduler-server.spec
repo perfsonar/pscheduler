@@ -404,7 +404,7 @@ HBA_FILE=$( (echo "\t on" ; echo "show hba_file;") \
 	    | head -1 \
 	    | sed -e 's/^\s*//' )
 
-drop-in -n %{name} - "${HBA_FILE}" <<EOF
+drop-in -n -t %{name} - "${HBA_FILE}" <<EOF
 #
 # pScheduler
 #
