@@ -238,6 +238,12 @@ def run_server():
     iperf3_args.append("-p")
     iperf3_args.append(server_port)
 
+    # apparently iperf3 at least in UDP mode bound to all interfaces
+    # in a NAT environment does not work, so we're going to specify the
+    # server interface bind as well
+    iperf3_args.append('-B')
+    iperf3_args.append(test_spec['dest'])
+
     # try to grab our default affinity if one wasn't passed in
     affinity = test_spec.get('server-cpu-affinity')
     if affinity == None:

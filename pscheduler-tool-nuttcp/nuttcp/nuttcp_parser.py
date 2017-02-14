@@ -20,7 +20,7 @@ def parse_output(lines):
 
         # Example line:
         # 216.8125 MB /   1.00 sec = 1817.8571 Mbps    45 retrans    206 KB-cwnd
-        test = re.match('^.*(\d+)\.\d+ sec \=\s*(\d+(\.\d+)?) (\S)bps\s*(\d+) retrans(\s*(\d+)\s*(\S)\S\-cwnd)?', line)
+        test = re.match('^.* (\d+)\.\d+ sec \=\s*(\d+(\.\d+)?) (\S)bps\s*(\d+) retrans(\s*(\d+)\s*(\S)\S\-cwnd)?', line)
         if test:
             spacing = int(test.group(1))
             value   = test.group(2)
@@ -52,7 +52,7 @@ def parse_output(lines):
 
         # Example UDP line
         # 25.1572 MB /   1.00 sec =  211.0065 Mbps    62 / 25823 ~drop/pkt  0.24 ~%loss 4.8672 msMaxJitter
-        test = re.match('^.*(\d+)\.\d+ sec \=\s*(\d+(\.\d+)?) (\S)bps\s*(\d+) / (\d+) ~drop/pkt\s*(\d+\.\d+) ~%loss\s*(\d+\.\d+) msMaxJitter', line)
+        test = re.match('^.* (\d+)\.\d+ sec \=\s*(\d+(\.\d+)?) (\S)bps\s*(\d+) / (\d+) ~drop/pkt\s*(\d+\.\d+) ~%loss\s*(\d+\.\d+) msMaxJitter', line)
         if test:
             spacing = int(test.group(1))
             value   = test.group(2)
@@ -84,7 +84,7 @@ def parse_output(lines):
         
         # Example summary line:
         # 2197.0657 MB /  10.00 sec = 1842.3790 Mbps 8 %TX 90 %RX 90 retrans 237 KB-cwnd 0.50 msRTT
-        test = re.match('^.*(\d+)\.\d+ sec =\s*(\d+(\.\d+)?) (\S)bps \d+ %TX \d+ %RX (\d+) retrans(\s*(\d+)\s*(\S)\S\-cwnd)?', line)
+        test = re.match('^.* (\d+)\.\d+ sec =\s*(\d+(\.\d+)?) (\S)bps \d+ %TX \d+ %RX (\d+) retrans(\s*(\d+)\s*(\S)\S\-cwnd)?', line)
         if test:
             duration = int(test.group(1))
             value    = test.group(2)
@@ -108,15 +108,15 @@ def parse_output(lines):
 
         # Example UDP summary line
         #   252.0586 MB /  10.00 sec =  211.4462 Mbps 99 %TX 50 %RX 1485 / 259593 drop/pkt 0.57 %loss 37.2012 msMaxJitter
-        test = re.match('^.*(\d+)\.\d+ sec \=\s*(\d+(\.\d+)?) (\S)bps\s*(\d+) %TX (\d+) %RX (\d+) / (\d+) drop/pkt\s*(\d+\.\d+) %loss\s*(\d+\.\d+) msMaxJitter', line)
+        test = re.match('^.* (\d+)\.\d+ sec \=\s*(\d+(\.\d+)?) (\S)bps\s*(\d+) %TX (\d+) %RX (\d+) / (\d+) drop/pkt\s*(\d+\.\d+) %loss\s*(\d+\.\d+) msMaxJitter', line)
         if test:
             duration = int(test.group(1))
             value    = test.group(2)
             si       = test.group(4)
-            lost     = int(test.group(5))
-            sent     = int(test.group(6))
-            loss     = test.group(7)
-            jitter   = float(test.group(8))
+            lost     = int(test.group(7))
+            sent     = int(test.group(8))
+            loss     = test.group(9)
+            jitter   = float(test.group(10))
 
             value = pscheduler.si_as_number("%s%s" % (value, si))
 
