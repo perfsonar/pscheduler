@@ -333,7 +333,8 @@ BEGIN
 
         -- Handle changes in status
 
-        IF NEW.status IS NOT NULL AND NEW.status <> OLD.status
+        IF NEW.status IS NOT NULL
+           AND ( (OLD.status IS NULL) OR (NEW.status <> OLD.status) )
         THEN
             -- Future runs are fatal
             IF lower(NEW.times) > normalized_now()
@@ -343,7 +344,7 @@ BEGIN
 
 	    -- Adjust the state
 	    NEW.state = CASE
-                WHEN 0 THEN run_state_finished()
+                WHEN NEW.state = 0 THEN run_state_finished()
                 ELSE run_state_failed()
                 END;
 

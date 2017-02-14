@@ -73,6 +73,11 @@ The pScheduler server
 
 
 # Database
+
+%define pgsql_version 9.5
+%define pgsql_service postgresql-%{pgsql_version}
+%define pg_data %{_sharedstatedir}/pgsql/%{pgsql_version}/data
+
 %define daemon_config_dir %{_pscheduler_sysconfdir}/daemons
 %define db_config_dir %{_pscheduler_sysconfdir}/database
 %define db_user %{_pscheduler_user}
@@ -239,7 +244,7 @@ mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}
 
 # TODO: Remove this before 4.0 ships.  See #135
 # This undoes something caused by a bug in a RC1 build.
-PG_HBA=/var/lib/pgsql/9.5/data/pg_hba.conf
+PG_HBA=%{pg_data}/pg_hba.conf
 if [ -e "${PG_HBA}" ]
 then
     # Remove #BEGIN-xxx that got jammed up onto previous lines
@@ -308,6 +313,28 @@ fi
 # Database
 #
 
+# Increase the number of connections to something substantial
+
+# Note that this must be dropped in at the end so it overrides
+# anything else in the file.
+drop-in -n %{name} - "%{pg_data}/postgresql.conf" <<EOF
+#
+# pScheduler
+#
+max_connections = 500
+EOF
+
+%if 0%{?el6}
+chkconfig "%{pgsql_service}" on
+service "%{pgsql_service}" restart
+%endif
+%if 0%{?el7}
+systemctl enable "%{pgsql_service}"
+systemctl restart "%{pgsql_service}"
+%endif
+
+
+
 # Generate a password if the file is empty, which is the case after
 # the first install.
 #
@@ -339,6 +366,8 @@ awk -v "ROLE=${ROLE}" '{ printf "*:*:pscheduler:%s:%s\n", ROLE, $1 }' \
     "%{password_file}" \
     > "${RPM_BUILD_ROOT}/%{pgpass_file}"
 chmod 400 "${RPM_BUILD_ROOT}/%{pgpass_file}"
+
+
 
 # Load the database
 
@@ -375,7 +404,7 @@ HBA_FILE=$( (echo "\t on" ; echo "show hba_file;") \
 	    | head -1 \
 	    | sed -e 's/^\s*//' )
 
-drop-in -n -t %{name} - "${HBA_FILE}" <<EOF
+drop-in -n %{name} - "${HBA_FILE}" <<EOF
 #
 # pScheduler
 #
@@ -513,20 +542,17 @@ if [ "$1" = "0" ]; then
 
     drop-in -r %{name} /dev/null $HBA_FILE
 
-    # Make Pg reload what we just changed.
-    postgresql-load <<EOF
-    DO \$\$
-    DECLARE
-        status BOOLEAN;
-    BEGIN
-        SELECT INTO status pg_reload_conf();
-        IF NOT status
-        THEN
-            RAISE EXCEPTION 'Failed to reload the server configuration';
-        END IF;
-    END;
-    \$\$ LANGUAGE plpgsql;
-EOF
+    drop-in -r %{name} /dev/null "%{pg_data}/postgresql.conf"
+
+    # Removing the max_connections change requires a restart, which
+    # will also catch the HBA changes.
+%if 0%{?el6}
+    service "%{pgsql_service}" restart
+%endif
+%if 0%{?el7}
+    systemctl restart "%{pgsql_service}"
+%endif
+
 
 
     #
