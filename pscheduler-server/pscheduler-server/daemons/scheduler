@@ -164,9 +164,9 @@ def find_overlaps(range_lists):
     # Anything more than two is recursive goodness to reduce the last
     # two sets into one and keep doing so until we get down to two.
 
-    return find_overlaps(
+    return sorted(find_overlaps(
         range_lists[0:-2] + [ find_overlaps(range_lists[-2:]) ]
-    )
+    ))
 
 
 
