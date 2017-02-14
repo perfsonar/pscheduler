@@ -214,6 +214,40 @@ introductory material.
 
 
 
+\subsection{ClockState}
+A JSON object containing information about the state of a host's
+clock.
+
+\typeditem{time}{Timestamp} The current time as reported by the clock.
+
+\typeditem{synchronized}{Boolean} Whether or not the clock is
+synchronized to another source.
+
+\typeditem{source}{String} An arbitrary string indicating the source
+of time synchronization.  The recommended values are {\tt cdma}, {\tt
+  gps}, {\tt ntp} and {\tt ptp}
+
+\typeditem{reference}{String} An arbitrary string describing the
+reference being used to derive the time.
+
+\typeditem{offset}{Duration} The amount of error the timekeeping
+system believes may be present in the provided time.
+
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "time": "2017-02-05T08:41:50.424743-08:00",
+    "synchronized": true,
+    "source": "ntp",
+    "reference": "secondary reference (2) from 10.19.54.6",
+    "offset": 6.6041946411132812e-05
+}
+\end{lstlisting}
+
+
+
+
 \subsection{Duration}
 A length of time as defined by a subset the ISO 8601 standard.  All
 types of intervals in the standard are supported except years (e.g.,
@@ -332,6 +366,14 @@ A valid IPv4 or IPv6 address.  See {\tt IPv4} and {\tt IPv6}.
 
 \subsection{IPCIDR}
 A valid IPv4 or IPv6 CIDR block.  See {\tt IPv4CIDR} and {\tt IPv6CIDR}.
+
+
+\subsection{IPTOS}
+An IP type-of-service octet per RFC 2474, section 3, represented as a
+decimal number.
+
+
+\example\ {\tt 63} and {\tt 205}.
 
 
 \subsection{IPv4}

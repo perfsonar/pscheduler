@@ -323,7 +323,7 @@ while True:
             handle_run_error("powstream exited with error, will attempt restart: %s" % owp_error)
         elif not sleep_or_end(0, end_time, parent_pid):
             #if powstream exited before end time, report that fact
-            handle_run_error("powstream exited with no errors but should have kept running, will attempt restart")
+            log.debug("powstream exited with no errors but should have kept running, will attempt restart")
     except OSError as e:
         log.error("powstream encountered an OS error: %s" % e)
         try:

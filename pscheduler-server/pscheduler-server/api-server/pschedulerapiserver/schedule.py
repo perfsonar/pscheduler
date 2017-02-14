@@ -37,7 +37,9 @@ def schedule():
                 state_enum,
                 state_display,
                 task_json,
-                task_cli
+                task_cli,
+                test_json,
+                tool_json
             FROM schedule
             WHERE times && tstzrange(%s, %s, '[)');
             """, [range_start, range_end])
@@ -60,7 +62,9 @@ def schedule():
             "state": row[4],
             "state-display": row[5],
             "task": row[6],
-            "cli": row[7]
+            "cli": row[7],
+            "test": row[8],
+            "tool": row[9]
             }
 
         run["task"]["href"] = task_href

@@ -16,6 +16,12 @@ from .log import log
 from .response import *
 from .util import *
 
+
+class TaskPostingException(Exception):
+    """This is used internally when some phase of task posting fails."""
+    pass
+
+
 def task_exists(task):
     """Determine if a task exists by its UUID"""
     try:
@@ -207,14 +213,14 @@ def tasks():
                     pscheduler.api_url(participant), throw=False, timeout=10)
 
                 if status == 400:
-                    raise Exception(result)
+                    raise TaskPostingException(result)
                 elif status in [ 202, 204, 205, 206, 207, 208, 226,
                                  300, 301, 302, 303, 304, 205, 306, 307, 308 ] \
                     or ( (status >= 400) and (status <=499) ):
-                    raise Exception("Host is not running pScheduler")
+                    raise TaskPostingException("Host is not running pScheduler")
                 elif status != 200:
-                    raise Exception("returned status %d: %s"
-                                    % (status, result))
+                    raise TaskPostingException("returned status %d: %s"
+                                               % (status, result))
 
                 # TODO: This will fail with a very large test spec.
                 status, result = pscheduler.url_get(
@@ -222,9 +228,9 @@ def tasks():
                     params={ 'test': pscheduler.json_dump(task['test']) }
                     )
                 if status != 200:
-                    raise Exception("%d: %s" % (status, result))
+                    raise TaskPostingException("%d: %s" % (status, result))
                 tools.append(result)
-            except Exception as ex:
+            except TaskPostingException as ex:
                 return error("Error getting tools from %s: %s" \
                                      % (participant, str(ex)))
             log.debug("Participant %s offers tools %s", participant, tools)
@@ -313,8 +319,8 @@ def tasks():
                     throw=False)
                 log.debug("Remote returned %d: %s", status, result)
                 if status != 200:
-                    raise Exception("Unable to post task to %s: %s"
-                                    % (part_name, result))
+                    raise TaskPostingException("Unable to post task to %s: %s"
+                                               % (part_name, result))
                 tasks_posted.append(result)
 
                 # Fetch the task's details and add the list of limits
@@ -324,8 +330,9 @@ def tasks():
                                                     params={ "detail": True },
                                                     throw=False)
                 if status != 200:
-                    raise Exception("Unable to fetch posted task from %s: %s"
-                                    % (part_name, result))
+                    raise TaskPostingException(
+                        "Unable to fetch posted task from %s: %s"
+                        % (part_name, result))
                 log.debug("Fetched %s", result)
                 try:
                     details = result["detail"]["spec-limits-passed"]
@@ -334,9 +341,7 @@ def tasks():
                 except KeyError:
                     pass
 
-            except Exception as ex:
-
-                log.exception()
+            except TaskPostingException as ex:
 
                 for url in tasks_posted:
                     # TODO: Handle failure?

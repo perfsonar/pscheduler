@@ -130,9 +130,10 @@ except KeyError:
 # TOS
 
 try:
-    tos = spec['tos']
+    ip_tos = spec['ip-tos']
     argv.append('-Q')
-    argv.append(str(tos))
+    # Ping takes the full byte.
+    argv.append(str(ip_tos))
 except KeyError:
     pass  # Whatever.
 

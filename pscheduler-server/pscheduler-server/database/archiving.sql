@@ -385,9 +385,6 @@ BEGIN
         diags = diags || diag::JSONB
     WHERE
         NOT archived
-	-- Note that this must be the same as the default in the table.
-        AND next_attempt = '-infinity'
-        AND attempts = 0
         AND ttl_expires < now();
 
 END;

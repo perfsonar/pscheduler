@@ -23,7 +23,6 @@ from .psdns import *
 from .psjson import *
 from .pstime import *
 from .psurl import *
-from .ranges import *
 from .retry import *
 from .saferun import *
 from .sinumber import *

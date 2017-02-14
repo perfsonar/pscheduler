@@ -98,12 +98,14 @@ if participant == 0:
     except KeyError:
         material = "Data sent at " + str(datetime.datetime.now())
 
-    tries = 10
-    sleep_time = pscheduler.timedelta_as_seconds(timeout) / tries
+    max_tries = 10
+    sleep_time = pscheduler.timedelta_as_seconds(timeout) / max_tries
+    try_num = 1
 
     succeeded = False
+    diags = []
 
-    while tries:
+    while try_num <= max_tries:
 
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -120,20 +122,20 @@ if participant == 0:
             log.debug("Sent")
             succeeded = True
             error = None
+            diags.append("Try %d succeeded." % (try_num))
             break
         except Exception as ex:
-            error = "Sender exception: " + str(ex) \
-                + " " + traceback.format_exc()
+            error = "Failed to connect: %s" % ( str(ex) )
+            diags.append("Try %d failed: %s" % (try_num, str(ex)))
             log.debug(error)
             log.debug("Sleeping %s", sleep_time)
             time.sleep(sleep_time)
 
-        tries -= 1
-        log.debug("%d tries left", tries)
+        try_num += 1
 
     results = {
         'succeeded': succeeded,
-        'diags': 'Nothing to see at the sending end.',
+        'diags': "\n".join(diags),
         'error': error,
         'result': {
             'dawdled': pscheduler.timedelta_as_iso8601(

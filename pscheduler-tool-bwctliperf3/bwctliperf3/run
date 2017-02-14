@@ -120,11 +120,11 @@ def run_client():
         bwctl_args.append('-B')
         bwctl_args.append(test_spec['local-address'])
 
-    if test_spec.has_key('force-ipv4'):
-        bwctl_args.append('-4')
-
-    if test_spec.has_key('force-ipv6'):
-        bwctl_args.append('-6')
+    if test_spec.has_key('ip-version') and test_spec['ip-version'] != None:
+        if test_spec['ip-version'] == 4:
+            bwctl_args.append('-4')
+        else:
+            bwctl_args.append('-6')
 
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string

@@ -16,7 +16,7 @@ TMPBASE=${TMP:=/tmp}/$(basename $0).$$
 
 cleanup()
 {
-    rm -rf $TMPBASE/*
+    rm -rf $TMPBASE.*
 }
 trap cleanup EXIT
 

@@ -711,7 +711,7 @@ BEGIN
     SELECT INTO taskrec * FROM task WHERE uuid = task_uuid;
     IF NOT FOUND
     THEN
-        RAISE EXCEPTION 'Task not found.';
+        RAISE EXCEPTION 'Task not found while enabling task %', task_uuid;
     END IF;
 
     IF taskrec.enabled
@@ -747,7 +747,7 @@ BEGIN
     SELECT INTO taskrec * FROM task WHERE uuid = task_uuid;
     IF NOT FOUND
     THEN
-        RAISE EXCEPTION 'Task not found.';
+        RAISE EXCEPTION 'Task not found while disabling task %', task_uuid;
     END IF;
 
     IF NOT taskrec.enabled

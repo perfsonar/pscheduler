@@ -1,0 +1,18 @@
+#!/usr/bin/python
+#
+# Determine if this tool can run a test based on a test spec.
+#
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True);
+
+try:
+    if json['type'] not in [ 'clock' ]:
+        pscheduler.fail('Unsupported test type')
+except KeyError:
+    pscheduler.fail('Missing test type')
+
+
+# This tool can run any test spec
+pscheduler.succeed()

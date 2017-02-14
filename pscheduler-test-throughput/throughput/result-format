@@ -104,6 +104,6 @@ if json.get('tcp-window-size'):
 
 
 #output += "\n\nDiag....\n"
-#output += json['diag']
+#output += json['diags']
 
 print output

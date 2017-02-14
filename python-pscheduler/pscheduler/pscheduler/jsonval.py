@@ -87,6 +87,18 @@ __dictionary__ = {
         "required": [ "lower", "upper" ]
     },
 
+    "ClockState": {
+        "type": "object",
+        "properties": {
+            "time":         { "$ref": "#/pScheduler/Timestamp" },
+            "synchronized": { "$ref": "#/pScheduler/Boolean" },
+            "source":       { "$ref": "#/pScheduler/String" },
+            "reference":    { "$ref": "#/pScheduler/String" },
+            "offset":       { "$ref": "#/pScheduler/Number" },
+        },
+        "additionalProperties": False,
+        "required": [ "time", "synchronized" ]
+    },
 
     "Duration": {
         "type": "string",
@@ -181,7 +193,7 @@ __dictionary__ = {
     "IPTOS": {
         "type": "integer",
         "minimum": 0,
-        "maximum": 63
+        "maximum": 255
         },
     
     "Number": { "type": "number" },
@@ -404,7 +416,9 @@ __dictionary__ = {
         "properties": {
             "start":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
             "slip":     { "$ref": "#/pScheduler/Duration" },
+            # TODO: Remove this.  #287
             "randslip": { "$ref": "#/pScheduler/Probability" },
+            "sliprand": { "$ref": "#/pScheduler/Boolean" },
             "repeat":   { "$ref": "#/pScheduler/Duration" },
             "until":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
             "max-runs": { "$ref": "#/pScheduler/Cardinal" },

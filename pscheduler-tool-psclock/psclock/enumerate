@@ -1,0 +1,15 @@
+#!/bin/sed -e 1d
+{
+    "name": "psclock",
+    "description": "Compare the clocks on two pScheduler nodes",
+    "version": "1.0",
+    "tests": [ "clock" ],
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    }
+}
