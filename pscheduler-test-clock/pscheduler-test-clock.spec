@@ -24,7 +24,7 @@ BuildRequires:	pscheduler-rpm
 
 
 %description
-Round trip time test class for pScheduler
+Clock test class for pScheduler
 
 
 %prep
