@@ -112,10 +112,6 @@ time_remote = pscheduler.iso8601_as_datetime(results[1]['clock']['time'])
 
 diff = max(time_local, time_remote) - min(time_local, time_remote)
 
-
-if diff < datetime.timedelta():
-
-
 results = {
     'schema': 1,
     'succeeded': True,
