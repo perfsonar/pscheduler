@@ -103,6 +103,12 @@ case "$1" in
         ls --sort=time /var/cache/dbconfig-common/backups/pscheduler-server_* 2>/dev/null \
             | tail -n +4 | xargs --no-run-if-empty -- rm -f
 
+        # handle large number of pscheduler connections
+        if grep -q '^max_connections = 100[^0-9]' /etc/postgresql/9.6/main/postgresql.conf; then
+            sed -i 's/^max_connections = 100/max_connections = 500/' /etc/postgresql/9.6/main/postgresql.conf
+            service postgresql restart
+        fi
+
         # apache setup
         if [ -e /usr/share/apache2/apache2-maintscript-helper ] ; then
             . /usr/share/apache2/apache2-maintscript-helper
