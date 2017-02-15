@@ -56,7 +56,7 @@ def graceful_exit(tmpdir, keep_data_files=False, proc=None):
     
     #clean directory
     try:
-        cleanup_dir(tmpdir, keep_data_files=False)
+        cleanup_dir(tmpdir, keep_data_files=keep_data_files)
     except:
         pass
     finally:
@@ -90,28 +90,39 @@ def handle_run_error(msg, diags=None, do_log=True):
 ##
 # Calculates time to sleep or returns True if end time reached
 def sleep_or_end(seconds, end_time, parent_pid):
-    #check if we are at or beyond endtime
+    #determine if we need to exit
     now = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
     if now >= end_time:
+        #check if we are at or beyond endtime
         return True
+    elif (parent_pid is not None) and (not os.path.exists("/proc/%d" % parent_pid)):
+         #check parent still running
+         return True
     elif seconds == 0:
         #if we don't care about sleeping, don't mess with the rest
         return False
     
-    #check parent still running
-    if (parent_pid is not None) and (not os.path.exists("/proc/%d" % parent_pid)):
-         return True
-        
     #Determine how long to sleep
+    #Never sleep more than max_sleep_interval so we can check if process is still running
+    max_sleep_interval=5
+    remaining_sleep_time=seconds
     time_left = end_time - now
-    if time_left > datetime.timedelta(seconds=seconds) :
-        #sleep for given time if it will be less than end time when we wake-up
-        time.sleep(seconds)
-    else:
+    if time_left < datetime.timedelta(seconds=seconds) :
         #sleep until end time
         # don't convert until here because could be a real big value otherwise
         # also once 2.6 is out of the picture, can just call time_left.total_seconds()
-        time.sleep((time_left.microseconds + (time_left.seconds + time_left.days * 24 * 3600) * 10.0**6) / 10.0**6)
+        remaining_sleep_time = (time_left.microseconds + (time_left.seconds + time_left.days * 24 * 3600) * 10.0**6) / 10.0**6
+    
+    while remaining_sleep_time > 0:
+        if(max_sleep_interval < remaining_sleep_time):
+            remaining_sleep_time -= max_sleep_interval
+            time.sleep(max_sleep_interval)
+        else:
+            time.sleep(remaining_sleep_time)
+            remaining_sleep_time=0
+        #after sleeping, check the parent is still running
+        if (parent_pid is not None) and (not os.path.exists("/proc/%d" % parent_pid)):
+            return True
     
     return False
 
