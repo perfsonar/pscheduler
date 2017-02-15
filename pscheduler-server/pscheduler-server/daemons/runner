@@ -220,18 +220,21 @@ class RunWorker:
                         RETURNING *
                     ) SELECT uuid FROM inserted_row
                     """, [ self.task_id, result ])
+
+                    # Should get exactly one row back with the UUID of
+                    # the new result.
+
+                    if cursor.rowcount != 1:
+                        self.log.error("%d: Failed to get UUID of posted run.",
+                                       self.id)
+                        return
+
+                    self.log.info("%d: Posted result to %s/runs/%s",
+                                  self.id, self.task_url, cursor.fetchone()[0])
+
+
         except Exception as ex:
             self.log.error("%d: Failed to post run for result: %s", self.id, str(ex))
-
-        # Should get exactly one row back with the UUID of the new result.
-
-        if cursor.rowcount != 1:
-            self.log.error("%d: Failed to get UUID of posted run.", self.id)
-            return
-
-        row = cursor.fetchone()
-        self.log.info("%d: Posted result to %s/runs/%s",
-                      self.id, self.task_url, row[0])
 
 
 
