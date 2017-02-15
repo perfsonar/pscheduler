@@ -26,6 +26,12 @@ case "$1" in
                /etc/pscheduler/database/pgpassfile
         rm -rf /var/log/pscheduler
 
+        # handle large number of pscheduler connections
+        if grep -q '^max_connections = 500[^0-9]' /etc/postgresql/9.6/main/postgresql.conf; then
+            sed -i 's/^max_connections = 500/max_connections = 100/' /etc/postgresql/9.6/main/postgresql.conf
+            service postgresql restart
+        fi
+
         # rsyslog config removed
         service rsyslog restart
 
