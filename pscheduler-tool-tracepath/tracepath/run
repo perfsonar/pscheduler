@@ -111,7 +111,8 @@ argv.append(dest)
 #
 
 
-status, stdout, stderr = pscheduler.run_program( argv, timeout = 62 )
+# 94 seconds is the worst case plus a second of slop.
+status, stdout, stderr = pscheduler.run_program( argv, timeout = 94 )
 
 if status != 0:
     pscheduler.succeed_json( {
