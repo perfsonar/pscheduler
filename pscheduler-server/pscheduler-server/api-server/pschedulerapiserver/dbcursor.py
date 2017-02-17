@@ -104,7 +104,6 @@ def dbcursor_query(query,
             continue
         except Exception as ex:
             log.debug("EX: %s", ex)
-            log.exception()
             raise ex;
 
         break
