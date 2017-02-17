@@ -455,8 +455,6 @@ def main_program():
 
         wait = True
 
-        log.debug("Fetching runs to schedule")
-
         # TODO: The FALSE for background does nothing.  Get rid of it.
         cursor.execute("""
             SELECT uuid, runs, trynext, FALSE
@@ -467,13 +465,10 @@ def main_program():
         if pg.notifies:
             wait = False
             del pg.notifies[:]
-            log.debug("Received notifications.")
 
         # Any rows returned means we query again.
         if cursor.rowcount > 0:
-            log.debug("Got %d rows", cursor.rowcount)
             wait = False
-
 
         for row in cursor:
 
@@ -494,8 +489,7 @@ def main_program():
                 if trynext < later_start:
                     trynext = later_start                   
 
-            log.debug("Trying to schedule %s for %s at %s",
-                      uuid, trynext, url)
+            log.debug("Trying to schedule %s for %s", uuid, trynext)
             log.debug("URL is %s", url)
 
             try:
@@ -522,14 +516,12 @@ def main_program():
           
         if wait:
 
-            log.debug("Waiting for something to happen.")
             try:
                 if select.select([pg],[],[],
                                  pscheduler.timedelta_as_seconds(refresh)) \
                                  != ([],[],[]):
                     # Notified
                     pg.poll()
-                    log.debug("Notified: %s", pg.notifies)
                     del pg.notifies[:]
 
             except select.error as ex:
@@ -538,7 +530,7 @@ def main_program():
                     log.exception()
                     raise ex
                 else:
-                    log.debug("Interrupted")
+                    log.debug("Interrupted during select")
 
 
 
