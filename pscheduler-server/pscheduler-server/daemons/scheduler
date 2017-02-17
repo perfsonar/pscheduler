@@ -217,9 +217,23 @@ def run_post(
 
     task_duration = pscheduler.iso8601_as_timedelta(task['detail']['duration'])
     try:
-        task_slip = pscheduler.iso8601_as_timedelta(task['detail']['slip'])
+        task_slip = pscheduler.iso8601_as_timedelta(task['schedule']['slip'])
     except KeyError:
         task_slip = datetime.timedelta()
+
+
+    # If the task is a repeater, the run can't be slipped so far that
+    # it would overlap with the next interval.  Adjust it accordingly.
+    #
+    # TODO: This should probably be enforced by the database when the
+    # task is inserted.
+    try:
+        repeat_interval = pscheduler.iso8601_as_timedelta(task['schedule']['repeat'])
+        if task_slip + task_duration >= repeat_interval:
+            task_slip = repeat_interval - task_duration
+            log.debug("Chopped slip to %s", task_slip)
+    except KeyError:
+        pass
 
     run_range_end = start_time + task_duration + task_slip
 
@@ -227,14 +241,13 @@ def run_post(
         'start': pscheduler.datetime_as_iso8601(start_time),
         'end': pscheduler.datetime_as_iso8601(run_range_end)
         }
-    log and log.debug("Range parameters are %s", str(range_params))
 
+    log and log.debug("Possible run range %s", str(range_params))
 
     #
     # Get a list of the time ranges each participant has available to
     # run the task that overlap with the range we want.
     #
-
 
     log and log.debug("%s participants in this task", len(task_urls))
 
@@ -248,8 +261,7 @@ def run_post(
         # runtimes URLs so we don't have to build it.
         runtime_url = task_url + '/runtimes'
 
-        log.debug("Fetching %s", runtime_url)
-
+        log.debug("Fetching proposals from %s", runtime_url)
 
         status, json_ranges = pscheduler.url_get(runtime_url,
                                                  params=range_params,
@@ -264,11 +276,14 @@ def run_post(
             return (None, None, None,
                     "%s has no time available for this run" % (participant))
 
-        log and log.debug("Got schedule from %s", task_url)
+        ranges = [ Range( pscheduler.iso8601_as_datetime(item['lower']),
+                          pscheduler.iso8601_as_datetime(item['upper']) )
+                   for item in json_ranges ]
+
+        if log:
+            log.debug("Ranges: %s", ranges)
         
-        range_set.append( [ Range( pscheduler.iso8601_as_datetime(item['lower']),
-                                   pscheduler.iso8601_as_datetime(item['upper']) )
-                            for item in json_ranges ] )
+        range_set.append(ranges)
 
     log and log.debug("Done fetching time ranges")
 
@@ -290,15 +305,16 @@ def run_post(
     if ('sliprand' in task['schedule'] and task['schedule']['sliprand']) \
        or 'randslip' in task['schedule']:
 
-        log and log.debug("Slipping randomly")
         selected_range = random.choice(common_ranges)
         max_slip_offset = selected_range.length() - task_duration
+        log and log.debug("Slipping randomly up to %s", max_slip_offset)
 
         if max_slip_offset:
             def us(td):
                 return td.microseconds + 1000000 * (td.seconds + 86400 * td.days)
             increments = us(max_slip_offset) / 1000000
             picked_increment = random.randrange(0, increments)
+            log and log.debug("%d increments, picked %d", increments, picked_increment)
         else:
             picked_increment = 0
 
@@ -315,6 +331,13 @@ def run_post(
         log.debug("Using a slip offset of %s", slip_offset)
     schedule_lower = selected_range.lower + slip_offset
     schedule_upper = schedule_lower + task_duration
+
+    if log:
+        now = pscheduler.time_now()
+        log.debug("Horizon range: %s - %s",
+                  pscheduler.timedelta_as_iso8601(schedule_lower - now),
+                  pscheduler.timedelta_as_iso8601(schedule_upper - now))
+
 
 
     #
@@ -504,6 +527,7 @@ def main_program():
                     nonstart_cursor.execute(
                         """SELECT api_run_post(%s, normalized_now(), NULL, %s)""",
                         [uuid, error])
+                    log.debug("Posted non-starter")
                 except:
                     log.error("Insertion of non-starter failed: %s", error)
 

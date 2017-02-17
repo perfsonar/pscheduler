@@ -306,24 +306,20 @@ BEGIN
     END IF;
 
 
-    -- If the scheduling class for the task is background, the entire
-    -- range is fair game.
-    IF taskrec.anytime THEN
-        RETURN QUERY
-            SELECT range_start AS lower, range_end AS upper;
-    END IF;
-
-
     -- Figure out the actual boundaries of where we can schedule and
     -- trim accordingly.
 
     time_now := normalized_now();
     SELECT INTO horizon_end time_now + schedule_horizon FROM configurables;
 
-    IF range_end < time_now THEN
-        -- Completely in the past means nothing schedulable at all.
+    -- Pass on ranges for which nothing can be scheduled
+    IF 
+        range_end <= time_now         -- Completely in the past
+        OR range_start > horizon_end  -- Too far in the future
+    THEN
         RETURN;
     END IF;
+
 
     -- This is partially correctable
     range_start := greatest(range_start, time_now);
@@ -334,16 +330,17 @@ BEGIN
     range_end := normalized_time(range_end);
 
 
-    -- Can't propose anything for ranges in the past or beyond the
-    -- scheduling horizon.
-    IF range_start > horizon_end OR range_end <= normalized_now() THEN
-	RETURN;
+    -- If the scheduling class for the task is background, the entire
+    -- range is fair game and that's our final answer.
+    IF taskrec.anytime THEN
+        RETURN QUERY
+            SELECT range_start AS lower, range_end AS upper;
+        RETURN;
     END IF;
 
     time_range := tstzrange(range_start, range_end, '[)');
 
     last_end := range_start;
-
 
 
     -- Sift through everything on the timeline that overlaps with the
@@ -381,6 +378,13 @@ BEGIN
             )
         ORDER BY times
     LOOP
+
+        -- Clamp the end time to the horizon
+        IF upper(run_record.times) > horizon_end
+        THEN
+            run_record.times = tstzrange( lower(run_record.times), horizon_end,
+                '[)' );
+        END IF;
 
         -- A run that starts beyond the last end implies a gap, but
         -- the gap must be longer than the duration of the task for it
