@@ -215,7 +215,7 @@ if out_format == "text/plain" \
                 "    %s" % (string) for string in
                 run_json["result-full"][participant]["diags"].split("\n")
             ])
-        except (KeyError, TypeError):
+        except (KeyError, TypeError, AttributeError):
             print "    (No diagnostics)"
 
         try:
