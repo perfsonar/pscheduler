@@ -267,6 +267,14 @@ def run_post(
                                                  params=range_params,
                                                  throw=False)
 
+        if status in [ 404, 410 ]:
+            log.debug("Task is no longer there.  Canceling %s.", url)
+            del_status, del_result = pscheduler.url_delete(url, throw=False)
+            if del_status not in [ 200, 404, 410 ]:
+                log.warning("Error while canceling %s: %s", url, del_result)
+            return (None, None, None,
+                    "Task is gone from %s" % (participant))
+
         if status != 200:
             return (None, None, None,
                     "Error trying to schedule with %s: %s %d"

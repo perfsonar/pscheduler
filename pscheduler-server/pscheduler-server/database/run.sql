@@ -438,7 +438,8 @@ BEGIN
 	UPDATE run SET state = run_state_canceled()
 	WHERE
 	    run.task = NEW.id
-	    AND times @> normalized_now();
+	    AND times @> normalized_now()
+	    AND state <> run_state_nonstart();
     END IF;
 
     RETURN NEW;
