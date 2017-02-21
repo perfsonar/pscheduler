@@ -306,6 +306,15 @@ BEGIN
     END IF;
 
 
+    -- If the scheduling class for the task is background, the entire
+    -- range is fair game and that's our final answer.
+    IF taskrec.anytime THEN
+        RETURN QUERY
+            SELECT range_start AS lower, range_end AS upper;
+        RETURN;
+    END IF;
+
+
     -- Figure out the actual boundaries of where we can schedule and
     -- trim accordingly.
 
@@ -329,14 +338,6 @@ BEGIN
     range_end := LEAST(range_end, horizon_end);
     range_end := normalized_time(range_end);
 
-
-    -- If the scheduling class for the task is background, the entire
-    -- range is fair game and that's our final answer.
-    IF taskrec.anytime THEN
-        RETURN QUERY
-            SELECT range_start AS lower, range_end AS upper;
-        RETURN;
-    END IF;
 
     time_range := tstzrange(range_start, range_end, '[)');
 
