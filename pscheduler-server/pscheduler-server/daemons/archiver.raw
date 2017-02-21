@@ -322,6 +322,7 @@ class ArchiveWorker():
             stdout_attempt = stdout
 
         attempt = pscheduler.json_dump( [ {
+            # TODO: Figure out to format this with -xx:xx for the timezone offset.
             "time": pscheduler.datetime_as_iso8601(datetime.datetime.now(tzlocal())),
             "return-code": returncode,
             "stdout": stdout_attempt,

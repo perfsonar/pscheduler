@@ -44,6 +44,12 @@ Examples:
     )
 opt_parser.disable_interspersed_args()
 
+opt_parser.add_option("--archivings",
+                      help="For text output, dump archiving statis",
+                      action="store_true",
+		      default=False,
+                      dest="archivings")
+
 opt_parser.add_option("--diags",
                       help="For text output, dump participant diagnostics",
                       action="store_true",
@@ -233,6 +239,36 @@ if out_format == "text/plain" \
                 ])
             except (KeyError, TypeError):
                 print "    (No error)"
+
+
+# Dump the archiving information
+
+if out_format == "text/plain" and succeeded and options.archivings:
+    print
+    print "Archivings:"
+    if run_json.get('archivings', None) is not None:
+        for archiving in run_json['archivings']:
+            print
+            print "  To %s, %s" % (
+                archiving['archiver']['name'],
+                "Finished" if archiving['archived'] else "Unfinished"
+                )
+            for attempt in archiving['diags']:
+                try:
+                    if attempt['return-code'] <> 0:
+                        raise TypeError  # Treat this as a failure.
+                    succeeded = attempt['stdout']['succeeded']
+                    diags = "" if succeeded else attempt['stdout']['error']
+                except (KeyError, TypeError) as ex:
+                    succeeded = False
+                    diags = attempt['stderr']
+                print "    %-25s %s" % (
+                    attempt['time'],
+                    "Succeeded" if succeeded else diags
+                    )
+    else:
+        print
+        print "    This task had no archivings."
 
 
 pscheduler.succeed()
