@@ -406,7 +406,7 @@ BEGIN
 
     diag := '{ "return-code": 1,
                "stdout": "",
-               "stderr": "Time to live expired before first attempt"}';
+               "stderr": "Time to live expired"}';
     diag := jsonb_set(diag, '{"time"}',
         to_jsonb(timestamp_with_time_zone_to_iso8601(normalized_now())), TRUE);
 
