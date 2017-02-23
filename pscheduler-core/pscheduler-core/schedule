@@ -39,14 +39,17 @@ def get_time_with_delta(string):
         pass
 
     try:
-        if string[0] == "+P":
+        if string[0:1] == "+P":
             delta = pscheduler.iso8601_as_timedelta(string[1:])
-        elif string[0] == "-P":
+        elif string[0:1] == "-P":
             delta = -1 * pscheduler.iso8601_as_timedelta(string[1:])
         else:
-            delta = pscheduler.iso8601_as_timedelta(string)
+            pass
     except ValueError:
         pscheduler.fail("Invalid time delta '%s'" % (string))
+
+    # Let this throw what it's going to throw.
+    delta = pscheduler.iso8601_as_timedelta(string)
 
     return pscheduler.datetime_as_iso8601(
         pscheduler.time_now() + delta)

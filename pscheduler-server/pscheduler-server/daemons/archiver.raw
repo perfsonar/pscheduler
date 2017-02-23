@@ -316,10 +316,16 @@ class ArchiveWorker():
         self.log.debug("%d: Returned JSON from archiver: %s", self.id, stdout)
         self.log.debug("%d: Returned errors from archiver: %s", self.id, stderr)
 
+        try:
+            stdout_attempt = pscheduler.json_load(stdout)
+        except ValueError:
+            stdout_attempt = stdout
+
         attempt = pscheduler.json_dump( [ {
+            # TODO: Figure out to format this with -xx:xx for the timezone offset.
             "time": pscheduler.datetime_as_iso8601(datetime.datetime.now(tzlocal())),
             "return-code": returncode,
-            "stdout": stdout,
+            "stdout": stdout_attempt,
             "stderr": stderr
         } ] )
 
@@ -362,8 +368,11 @@ class ArchiveWorker():
 
             else:
 
-                self.log.debug("%d: Failed: %s to %s: %s",
-                               self.id, run_uuid, archiver, stdout)
+                self.log.warning("%d: Failed to archive %s to %s: %s",
+                                 self.id, run_href, archiver,
+                                 returned_json.get("error",
+                                                   "Unspecified problem"))
+
 
                 # If there's a retry, schedule the next one.
 
@@ -388,7 +397,12 @@ class ArchiveWorker():
 
                 else:
 
-                    self.log.debug("%d: No retry requested.  Giving up.", self.id)
+                    self.log.debug("%d: No retry requested.  Giving up.",
+                                   self.id)
+                    self.log.warning("%d: Gave up archiving %s to %s",
+                                     self.id, run_href, archiver)
+
+
                     self.db.query("""UPDATE archiving
                                      SET
                                          archived = TRUE,
@@ -398,6 +412,8 @@ class ArchiveWorker():
                                          diags = diags || (%s::JSONB)
                                      WHERE id = %s""",
                                   [ attempt, archiving_id ])
+
+
 
 
 

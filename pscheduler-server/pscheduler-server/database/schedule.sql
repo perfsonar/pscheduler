@@ -84,6 +84,7 @@ AS
             task.enabled,
             task.added,
             task.duration,
+            task.slip,
             task.max_runs,
             task.runs,
             task.until,
@@ -107,6 +108,7 @@ AS
             task.enabled,
             task.added,
             task.duration,
+            task.slip,
             task.max_runs,
             task.runs,
             task.until,
@@ -130,6 +132,7 @@ AS
             task.enabled,
             task.added,
             duration,
+            task.slip,
             task.max_runs,
             task.runs,
             task.until,
@@ -161,7 +164,7 @@ AS
         AND ( (until IS NULL) OR (trynext < until) )
 	-- Anything that fits the scheduling horizon or is a backgrounder
         AND (
-            trynext + duration < (normalized_now() + schedule_horizon)
+            trynext + duration + slip < (normalized_now() + schedule_horizon)
             OR scheduling_class = scheduling_class_background_multi()
         )
     ORDER BY added
@@ -307,10 +310,11 @@ BEGIN
 
 
     -- If the scheduling class for the task is background, the entire
-    -- range is fair game.
+    -- range is fair game and that's our final answer.
     IF taskrec.anytime THEN
         RETURN QUERY
             SELECT range_start AS lower, range_end AS upper;
+        RETURN;
     END IF;
 
 
@@ -320,10 +324,14 @@ BEGIN
     time_now := normalized_now();
     SELECT INTO horizon_end time_now + schedule_horizon FROM configurables;
 
-    IF range_end < time_now THEN
-        -- Completely in the past means nothing schedulable at all.
+    -- Pass on ranges for which nothing can be scheduled
+    IF 
+        range_end <= time_now         -- Completely in the past
+        OR range_start > horizon_end  -- Too far in the future
+    THEN
         RETURN;
     END IF;
+
 
     -- This is partially correctable
     range_start := greatest(range_start, time_now);
@@ -334,16 +342,9 @@ BEGIN
     range_end := normalized_time(range_end);
 
 
-    -- Can't propose anything for ranges in the past or beyond the
-    -- scheduling horizon.
-    IF range_start > horizon_end OR range_end <= normalized_now() THEN
-	RETURN;
-    END IF;
-
     time_range := tstzrange(range_start, range_end, '[)');
 
     last_end := range_start;
-
 
 
     -- Sift through everything on the timeline that overlaps with the
@@ -381,6 +382,13 @@ BEGIN
             )
         ORDER BY times
     LOOP
+
+        -- Clamp the end time to the horizon
+        IF upper(run_record.times) > horizon_end
+        THEN
+            run_record.times = tstzrange( lower(run_record.times), horizon_end,
+                '[)' );
+        END IF;
 
         -- A run that starts beyond the last end implies a gap, but
         -- the gap must be longer than the duration of the task for it

@@ -52,7 +52,11 @@ opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
                       default="PT1M")
-
+opt_parser.add_option("--terse-logging",
+                      help="Don't log run details",
+                      action="store_true",
+                      dest="terse",
+                      default=False)
 
 
 
@@ -71,6 +75,8 @@ if pscheduler.timedelta_as_seconds(refresh) == 0:
 log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
 
 dsn = options.dsn
+
+log_details = not options.terse
 
 # Get this once so we don't have to do a function call every time.
 delimiter = pscheduler.api_result_delimiter()
@@ -229,8 +235,10 @@ class RunWorker:
                                        self.id)
                         return
 
-                    self.log.info("%d: Posted result to %s/runs/%s",
-                                  self.id, self.task_url, cursor.fetchone()[0])
+                    if log_details:
+                        self.log.info("%d: Posted result to %s/runs/%s",
+                                      self.id, self.task_url,
+                                      cursor.fetchone()[0])
 
 
         except Exception as ex:
@@ -316,7 +324,8 @@ class RunWorker:
                     # vanished.
 
                     if cursor.rowcount != 1:
-                        self.log.info("%d: Can no longer find run.  Stopping.", self.id)
+                        if log_details:
+                            self.log.info("%d: Run is gone.  Stopping.", self.id)
                         return
 
                     row = cursor.fetchone()
@@ -376,8 +385,9 @@ class RunWorker:
         # Get cracking
         #
 
-        self.log.info("%d: Running %s", self.id, run_url)
-        self.log.info("%d: With %s: %s %s", self.id, tool, test, " ".join(cli))
+        if log_details:
+            self.log.info("%d: Running %s", self.id, run_url)
+            self.log.info("%d: With %s: %s %s", self.id, tool, test, " ".join(cli))
 
         # If the system is paused, set the run as missed and bail out.
 
@@ -386,7 +396,9 @@ class RunWorker:
                 cursor.execute("SELECT control_is_paused()")
                 assert(cursor.rowcount == 1)
                 if cursor.fetchone()[0]:
-                    self.log.info("%d: System is paused.  Aborting.", self.id)
+                    if log_details:
+                        self.log.info("%d: System is paused.  Aborting.",
+                                      self.id)
                     try:
                         cursor.execute("""
                             UPDATE run
@@ -458,10 +470,13 @@ class RunWorker:
             stderr = None
 
         if returncode == 0:
-            self.log.info("%d: Run succeeded.", self.id)
+            if log_details:
+                self.log.info("%d: Run succeeded.", self.id)
             self.log.debug("%d: Run returned %s", self.id, stdout)
         else:
-            self.log.info("%d: Run failed %d: %s", self.id, returncode, stderr)
+            if log_details:
+                self.log.info("%d: Run failed %d: %s", self.id,
+                              returncode, stderr)
             if stderr is None:
                 stderr = "Tool exited with status %d" % (returncode)
             try:

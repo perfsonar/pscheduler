@@ -258,6 +258,10 @@ BEGIN
     END IF;
 
 
+    -- TODO: Do a new version that drops this column when randslip
+    -- goes away.  #287
+
+
 
     --
     -- Cleanup
@@ -284,6 +288,7 @@ DECLARE
 	test_type TEXT;
 	tool_type TEXT;
 	start TEXT;
+	-- TODO: Get rid of this when randslip goes away  #287
 	randslip TEXT;
 	until TEXT;
 	run_result external_program_result;
@@ -452,6 +457,7 @@ BEGIN
 	   NEW.slip := 'P0';
 	END IF;
 
+	-- TODO: Get rid of this when randslip goes away  #287
 	randslip := NEW.json #>> '{schedule, randslip}';
 	IF randslip IS NOT NULL THEN
 	    NEW.randslip := text_to_numeric(randslip);

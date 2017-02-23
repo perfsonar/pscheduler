@@ -278,7 +278,8 @@ def tasks_uuid_runs_run(task, run):
                         run_state.display,
                         run.errors,
                         run.clock_survey,
-                        run.id
+                        run.id,
+                        archiving_json(run.id)
                     FROM
                         run
                         JOIN task ON task.id = run.task
@@ -341,57 +342,10 @@ def tasks_uuid_runs_run(task, run):
         result['errors'] = row[13]
         if row[14] is not None:
             result['clock-survey'] = row[14]
+        if row[16] is not None:
+            result['archivings'] = row[16]
         result['task-href'] = root_url('tasks/' + task)
         result['result-href'] = href + '/result'
-
-        # If we're the lead participant, return any archivings
-
-        if participant_num == 0:
-            run_id = row[15]
-            try:
-                cursor = dbcursor_query(
-                    """
-                    SELECT
-                        archiver.name,
-                        archiver_data,
-                        attempts,
-                        last_attempt,
-                        archived,
-                        next_attempt,
-                        diags,
-                        ttl_expires
-                    FROM
-                        archiving
-                        JOIN archiver ON archiver.id = archiving.archiver
-                    WHERE archiving.run =  %s""", [run_id])
-
-            except Exception as ex:
-                log.exception()
-                return error(str(ex))
-
-            if cursor.rowcount > 0:
-                archivings = []
-                for row in cursor:
-                    last_attempt = pscheduler.datetime_as_iso8601(row[3]) \
-                                   if row[3] is not None else None
-                    next_attempt = pscheduler.datetime_as_iso8601(row[5]) \
-                                   if row[5] is not None else None
-                    ttl_expires = pscheduler.datetime_as_iso8601(row[7]) \
-                                   if row[7] is not None else None
-                    archivings.append({
-                        "archiver": row[0],
-                        "archiver-data": pscheduler.json_decomment(
-                            row[1], prefix="_", null=True),
-                        "attempts": row[2],
-                        "last-attempt": last_attempt,
-                        "archived": row[4],
-                        "next-attempt": next_attempt,
-                        "diags": row[6],
-                        "ttl-expires": ttl_expires
-                    })
-                result['archivings'] = archivings
-
-
 
         return json_response(result)
 

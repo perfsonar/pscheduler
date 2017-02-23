@@ -427,22 +427,6 @@ def tasks_uuid(uuid):
             return not_found()
         json = row[0]
 
-        # Redact anything in the test spec or archivers that's marked
-        # private as well as _key at the top level if there is one.
-
-        if "_key" in json:
-            json["_key"] = None 
-
-        json["test"]["spec"] = pscheduler.json_decomment(
-            json["test"]["spec"], prefix="_", null=True)
-
-        try:
-            for archive in range(0,len(json["archives"])):
-                json["archives"][archive]["data"] = pscheduler.json_decomment(
-                    json["archives"][archive]["data"], prefix="_", null=True)
-        except KeyError:
-            pass  # Don't care if not there.
-
         # Add details if we were asked for them.
 
         if arg_boolean('detail'):

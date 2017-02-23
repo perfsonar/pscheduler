@@ -577,6 +577,16 @@ if verbose:
     print task_url
 log.debug("Posted %s", task_url)
 
+#
+# Spit out the tool being used
+#
+
+status, result = pscheduler.url_get(task_url, json=True)
+if status != 200:
+    pscheduler.fail("Failed to fetch the task.")
+
+print "Running with tool '%s'" % (result['tool'])
+
 
 #
 # Get the first future run.

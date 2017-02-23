@@ -111,16 +111,19 @@ argv.append(dest)
 #
 
 
-status, stdout, stderr = pscheduler.run_program( argv, timeout = 62 )
+
+# 94 seconds is the worst case plus a second of slop.
+status, stdout, stderr = pscheduler.run_program( argv, timeout = 94 )
+
+diags = "\n".join([ " ".join(argv), "", stdout, "", stderr ])
 
 if status != 0:
     pscheduler.succeed_json( {
             'succeeded': False,
-            'diags': None,
+            'diags': diags,
             'error': stderr,
             'result': None
             } )
-
 
 
 #
@@ -244,7 +247,7 @@ if do_ases:
 
 pscheduler.succeed_json( {
     'succeeded': True,
-    'diags': stdout,
+    'diags': diags,
     'error': None,
     'result': {
         'schema': 1,
