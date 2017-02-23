@@ -316,10 +316,16 @@ class ArchiveWorker():
         self.log.debug("%d: Returned JSON from archiver: %s", self.id, stdout)
         self.log.debug("%d: Returned errors from archiver: %s", self.id, stderr)
 
+        try:
+            stdout_attempt = pscheduler.json_load(stdout)
+        except ValueError:
+            stdout_attempt = stdout
+
         attempt = pscheduler.json_dump( [ {
+            # TODO: Figure out to format this with -xx:xx for the timezone offset.
             "time": pscheduler.datetime_as_iso8601(datetime.datetime.now(tzlocal())),
             "return-code": returncode,
-            "stdout": stdout,
+            "stdout": stdout_attempt,
             "stderr": stderr
         } ] )
 

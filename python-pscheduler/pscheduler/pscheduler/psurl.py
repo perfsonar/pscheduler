@@ -88,6 +88,9 @@ def url_post( url,          # GET URL
     except requests.exceptions.Timeout:
         status = 400
         text = "Request timed out"
+    except Exception as ex:
+        status = 500
+        text = str(ex)
 
 
     if status != 200 and status != 201:
@@ -123,6 +126,9 @@ def url_put( url,          # GET URL
     except requests.exceptions.Timeout:
         status = 400
         text = "Request timed out"
+    except Exception as ex:
+        status = 500
+        text = str(ex)
 
 
     if status != 200 and status != 201:
@@ -154,6 +160,10 @@ def url_delete( url,          # DELETE URL
     except requests.exceptions.Timeout:
         status = 400
         text = "Request timed out"
+    except Exception as ex:
+        status = 500
+        text = str(ex)
+
 
     if status != 200 and throw:
         raise URLException("DELETE " + url + " returned " + str(status)
