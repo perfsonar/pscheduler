@@ -97,6 +97,7 @@ pscheduler-test-throughput
 pscheduler-test-rtt
 pscheduler-test-simplestream
 pscheduler-test-trace
+pscheduler-test-dns
 
 # Tools
 pscheduler-tool-owping
@@ -118,6 +119,7 @@ pscheduler-tool-psclock
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
 pscheduler-tool-paris-traceroute
+pscheduler-tool-dnspy
 
 # Archivers
 pscheduler-archiver-bitbucket

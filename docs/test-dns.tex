@@ -1,0 +1,187 @@
+%
+% pScheduler Test Guide for DNS
+%
+
+\def\testname{DNS}
+
+
+% TODO: Add titlepage to the options.
+\documentclass[10pt]{article}
+
+\input pscheduler-tex.tex
+
+\DRAFT
+
+\title{pScheduler Test Guide: {\it \testname}}
+\author{The perfSONAR Development Team}
+
+
+\begin{document}
+\maketitle
+
+
+%
+% INTRODUCTION
+%
+
+\section{Introduction}
+
+The {\tt \testname} test that benchmarks DNS queries.
+
+This document describes schema version {\tt 1}.
+
+\subsection{Participants}
+
+This test includes the following participants:
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+{\bf Number} & {\bf Role} \\
+\hline
+{\tt 0} & DNS inquirer \\
+\hline
+\end{tabular}
+\end{center}
+
+
+
+%
+% TEST SPECIFICATION
+%
+
+\section{Test Specification Format}
+
+\subsection{Description}
+
+The test specification consists of a single JSON object containing the
+pairs below.  \seejson
+
+
+\typeditem{nameserver}{Host} Specific nameserver to query.  Defaults to
+system default.
+
+\typeditem{record}{String} Whick type of record to request from the
+nameserver: a, aaaa, cname, mx, ns, ptr, soa, txt.  Defaults to "a".
+
+\typeditem{schema}{SchemaVersion} Version of the specification format.
+
+\typeditem{source}{Host} The IP to use for the source interface.  Defaults
+to the localhost.
+
+\typeditem{query}{Host} The hostname whose record you are querying the
+nameserver for.  If this is an IP address, it will be converted to the
+in-ddr.arpa format where applicable.
+
+\typeditem{timeout}{Duration} Amount of time to wait for a response
+for each packet sent.  Defaults to "PT5S"
+
+
+\subsection{Example}
+\begin{lstlisting}[language=json]
+{
+    "schema": 1,
+    "nameserver": "nameserver.example.com",
+    "record": "a",
+    "query": "findme.example.com",
+    "timeout": "PT10S",
+}
+\end{lstlisting}
+
+
+%
+% RESULT FORMAT
+%
+
+\section{Result Format}
+
+\subsection{Description}
+The result consists of a single JSON object containing the pairs
+below.  \seejson
+
+\typeditem{schema}{SchemaVersion} Version of the result format.
+
+\typeditem{succeeded}{Boolean} Whether or not the test was a success.
+
+\typeditem{records}{Array} An array of record objects as
+described below.
+
+\typeditem{time}{Duration} Length of time resolving the request.
+
+\subsection{record}
+
+Each item in the {\tt records} array of the result consists of a single
+JSON object containing the pairs below.  \seejson
+
+\typditem{name}{String} name of record
+
+\typditem{rr_type}{String} type of record ( DNSResultA, DNSResultAAAA,
+DNSResultCNAME, DNSResultMX, DNSResultNS, DNSResultPTR, DNSResultSOA,
+DNSResultTXT )
+
+\typditem{ttl}{Duration} name of record
+
+\typditem{class}{String} name of record
+
+\subsection{Example}
+\begin{lstlisting}[language=json]
+{
+    "schema": 1,
+    "time": "PT1S"
+}
+\end{lstlisting}
+
+
+
+%
+% LIMIT FORMAT
+%
+
+\section{Limit Format}
+
+\subsection{Description}
+Limits for this test consist of a single JSON object containing the
+pairs below.  \seelimit
+
+\typeditem{duration}{Limit/Duration} Range of allowed idle times.
+
+\typeditem{starting-comment}{Limit/String} String allowed for the starting comment.
+
+\typeditem{starting-comment}{Limit/String} String allowed for the parting comment.
+
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "duration": {
+        "description": "Short periods",
+        "range": {
+            "lower": "PT15S",
+            "upper": "PT1M"
+        },
+        "invert": false
+    },
+    "starting-comment" : {
+	"description": "No platypi",
+	"match": {
+	    "style": "regex",
+	    "match": "platypus",
+	    "invert": true
+	},
+	"fail-message": "Starting comment cannot contain 'platypus'",
+    },
+    "parting-comment" : {
+     
+	"description": "Require a vowel if not empty''
+	"match": {
+	    "style": "regex",
+	    "match": "(^\$|[aeiou])"
+	}
+	"fail-message": "Parting comment must contain a vowel if not empty", 
+    }
+}
+
+\end{lstlisting}
+
+
+\end{document}

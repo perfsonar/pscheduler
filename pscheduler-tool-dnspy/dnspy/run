@@ -1,0 +1,95 @@
+#!/usr/bin/python
+#
+# Run a test.  Just the test spec is provided on stdin.
+#
+
+import datetime
+import json
+import sys
+import time
+
+import pscheduler
+import dns.reversename
+import dns.resolver
+
+#import pscheduler.dnspy
+
+input = pscheduler.json_load(exit_on_error=True);
+resolver = dns.resolver.Resolver()
+
+
+try:
+    query = input['test']['spec']['query']
+    record = input['test']['spec']['record']
+except KeyError:
+    pscheduler.fail('missing data in input')
+
+timeout_iso = input['test']['spec'].get("timeout", "PT5S" )
+timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+resolver.timeout = timeout
+resolver.lifetime = timeout
+start_time = datetime.datetime.now()
+
+# Perform the test
+
+try:
+    answers = resolver.query( query, record )
+    succeeded = True
+    error = None
+except (dns.exception.Timeout):
+    error = 'Timeout'
+    succeeded = False
+    answers = None
+except (dns.resolver.NoAnswer ):
+    error = 'NoAnswer'
+    succeeded = False
+    answers = None
+except ( dns.resolver.NXDOMAIN ):
+    succeeded = True,
+    answers = None
+
+end_time = datetime.datetime.now()
+
+if answers is None:
+    result_rec = None
+elif record in [ "a", "aaaa", "ns", "txt" ]:
+    result_rec = [ str( ip ) for ip in answers ]
+elif record in [ "cname", "ptr" ]:
+    result_rec = str( answers[ 0 ])
+elif record in [ "mx" ]:
+    result_rec = [ {
+	"pref" : mx.preference,
+	"mx" : str( mx.exchange )
+    } for mx in answers ]
+elif record in [ "soa" ]:
+    soa = answers[ 0 ]
+    result_rec = {
+	"nameserver" : str( soa.mname ),
+	"owner" : str( soa.rname ),
+	"serial" : soa.serial,
+	"refresh" : soa.refresh,
+	"retry" : soa.retry,
+	"expire" : soa.expire,
+	"minimum" : soa.minimum
+    }
+
+#
+# Produce results
+#
+
+results = {
+    'succeeded': succeeded,
+    'diags': '',
+    'error': error,
+    'result': {
+	'schema': 1,
+	'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
+	'succeeded' : succeeded
+    }
+}
+
+
+if result_rec is not None:
+    results [ 'result' ][ 'record' ] = result_rec
+
+pscheduler.succeed_json(results)

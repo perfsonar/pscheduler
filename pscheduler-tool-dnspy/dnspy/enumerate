@@ -1,0 +1,15 @@
+#!/bin/sed -e 1d
+{
+    "name": "dnspy",
+    "description": "Time DNS transactions",
+    "version": "1.0",
+    "tests": [ "dns" ],
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    }
+}
