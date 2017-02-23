@@ -5,7 +5,7 @@
 %define short	bwctliperf2
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.22.rc2%{?dist}
+Release:	0.23.rc3%{?dist}
 
 Summary:	bwctliperf2 tool class for pScheduler
 BuildArch:	noarch

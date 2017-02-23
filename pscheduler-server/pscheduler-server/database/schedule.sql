@@ -84,6 +84,7 @@ AS
             task.enabled,
             task.added,
             task.duration,
+            task.slip,
             task.max_runs,
             task.runs,
             task.until,
@@ -107,6 +108,7 @@ AS
             task.enabled,
             task.added,
             task.duration,
+            task.slip,
             task.max_runs,
             task.runs,
             task.until,
@@ -130,6 +132,7 @@ AS
             task.enabled,
             task.added,
             duration,
+            task.slip,
             task.max_runs,
             task.runs,
             task.until,
@@ -161,7 +164,7 @@ AS
         AND ( (until IS NULL) OR (trynext < until) )
 	-- Anything that fits the scheduling horizon or is a backgrounder
         AND (
-            trynext + duration < (normalized_now() + schedule_horizon)
+            trynext + duration + slip < (normalized_now() + schedule_horizon)
             OR scheduling_class = scheduling_class_background_multi()
         )
     ORDER BY added
