@@ -32,9 +32,7 @@ source = spec.get("source", "localhost")
 if pscheduler.api_has_pscheduler(source):
     pscheduler.fail("Source has pscheduler, no need for BWCTL")
 
-if not pschdeuler.api_has_bwctl(source):
-    logger.debug("No BWCTL at source")
+if not pscheduler.api_has_bwctl(source):
     pscheduler.fail("No BWCTL on %s" % source)
 
-logger.debug("can-run succeeded") 
 pscheduler.succeed()
