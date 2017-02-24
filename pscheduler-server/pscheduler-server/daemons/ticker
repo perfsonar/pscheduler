@@ -4,13 +4,11 @@
 #
 
 import daemon
-import datetime
 import errno
 import optparse
 import pscheduler
-import psycopg2
-import psycopg2.extensions
-import sys
+import select
+import threading
 import time
 
 #
@@ -57,12 +55,68 @@ dsn = options.dsn
 
 
 #
+# Maintainer for http_queue.  This has to be run separately because it
+# does things that take time.
+#
+
+def http_queue_maintainer(log):
+    """Maintain the http_queue table in the database"""
+
+    log.debug("QM: Started")
+
+    conn = pscheduler.pg_connection(dsn)
+
+    # Start listenig
+
+    with conn as db:
+        with db.cursor() as cursor:
+            # Don't catch anything here so safe_run can catch it.
+            cursor.execute("LISTEN run_change")
+            log.debug("QM: Listening")
+
+    # Work forever
+
+    while True:
+
+        # Process what needs processing
+
+        log.debug("QM: Processing")
+        with conn as db:
+            with db.cursor() as cursor:
+                try:
+                    cursor.execute("""SELECT http_queue_process_all()""")
+                except Exception as ex:
+                    log.warning("Queue maintainer got exception %s", str(ex))
+
+        # Wait for the next notification or our usual delay.
+
+        try:
+            if select.select([db], [], [], 15) != ([], [], []):
+                # Notified
+                db.poll()
+                del db.notifies[:]
+                log.debug("QM: Queue change.")
+        except select.error as ex:
+            err_no, message = ex
+            if err_no != errno.EINTR:
+                log.exception()
+                raise ex
+
+
+
+
+
+#
 # Main Program
 #
 
 def main_program():
 
     log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
+
+    http_queue_worker = threading.Thread(
+        target=lambda: http_queue_maintainer(log))
+    http_queue_worker.start()
 
     # TODO: Bulletproof the SQL queries
 
@@ -72,7 +126,6 @@ def main_program():
     log.debug("Booting")
     cursor.execute("SELECT cold_boot()")
     log.debug("Booted")
-
 
     while True:
 
@@ -99,4 +152,7 @@ if options.daemon:
     with daemon.DaemonContext(pidfile=pidfile):
         pscheduler.safe_run(lambda: main_program())
 else:
-    pscheduler.safe_run(lambda: main_program())
+    if not options.verbose:
+        pscheduler.safe_run(lambda: main_program())
+    else:
+        main_program()

@@ -88,12 +88,16 @@ BEGIN
     END IF;
 
     -- Version 1 to version 2
-    --IF t_version = 1
-    --THEN
-    --    ALTER TABLE ...
-    --    t_version := t_version + 1;
-    --END IF;
+    -- Adds 'timeout' column
+    IF t_version = 1
+    THEN
+        ALTER TABLE http_queue ADD COLUMN
+        timeout INTERVAL DEFAULT 'PT5S';
 
+        UPDATE http_queue SET timeout = DEFAULT;
+
+        t_version := t_version + 1;
+    END IF;
 
     --
     -- Cleanup
@@ -103,7 +107,6 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
-
 
 
 -- Process one item in the table by its row ID
@@ -117,6 +120,7 @@ DECLARE
     entry RECORD;
     status http_result;
     status_family INTEGER;
+    timeout_seconds FLOAT;
 BEGIN
 
     SELECT INTO entry * from http_queue WHERE id = row_id;
@@ -125,20 +129,20 @@ BEGIN
         RETURN;
     END IF;
 
-    -- TODO: Try the fetch/post/whatever
+    timeout_seconds := extract('epoch' FROM entry.timeout);
 
     IF entry.operation = 'DELETE'
     THEN
-	status := http_delete(entry.uri);
+ 	status := http_delete(entry.uri, timeout_seconds);
     ELSEIF entry.operation = 'GET'
     THEN
-	status := http_get(entry.uri);
+        status := http_get(entry.uri, timeout_seconds);
     ELSEIF entry.operation = 'POST'
     THEN
-	status := http_post(entry.uri, entry.payload);
+ 	status := http_post(entry.uri, entry.payload, timeout_seconds);
     ELSEIF entry.operation = 'PUT'
     THEN
-	status := http_put(entry.uri, entry.payload);
+ 	status := http_put(entry.uri, entry.payload, timeout_seconds);
     ELSE
         RAISE EXCEPTION 'Unsupported operation %', entry.operation;
     END IF;
@@ -147,7 +151,7 @@ BEGIN
 
     IF status_family IN (1, 2, 3) -- Successful results
         OR now() + entry.try_interval > entry.expires
-    THEN
+   THEN
         -- No need to keep succeeded or expired records around
         DELETE FROM http_queue WHERE id = entry.id;
     ELSE
@@ -155,13 +159,23 @@ BEGIN
         UPDATE http_queue
         SET
             attempts = attempts + 1,
-	    last_status = status.status,
-	    last_returned = status.returned,
+ 	    last_status = status.status,
+ 	    last_returned = status.returned,
             last_attempt = now(),
             next_attempt = now() + entry.try_interval
         WHERE id = row_id;
     END IF;
+ 
+END;
+$$ LANGUAGE plpgsql;
 
+
+CREATE OR REPLACE FUNCTION http_queue_process_all()
+RETURNS VOID
+AS $$
+BEGIN
+    PERFORM http_queue_process(id) FROM http_queue
+    WHERE next_attempt < now() OR attempts = 0;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -173,7 +187,6 @@ CREATE OR REPLACE FUNCTION http_queue_insert()
 RETURNS TRIGGER
 AS $$
 BEGIN
-
     IF NEW.try_for IS NULL
     THEN
         SELECT INTO NEW.try_for keep_runs_tasks FROM configurables;
@@ -196,7 +209,7 @@ CREATE OR REPLACE FUNCTION http_queue_insert_after()
 RETURNS TRIGGER
 AS $$
 BEGIN
-    PERFORM http_queue_process(NEW.id);
+    NOTIFY http_queue_new;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -204,17 +217,3 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER http_queue_insert_after
 AFTER INSERT ON http_queue
 FOR EACH ROW EXECUTE PROCEDURE http_queue_insert_after();
-
-
-
--- Maintenance functions
-
--- Maintenance that happens once per minute
-
-CREATE OR REPLACE FUNCTION http_queue_maint_minute()
-RETURNS VOID
-AS $$
-BEGIN
-    PERFORM http_queue_process(id) FROM http_queue WHERE next_attempt < now();
-END;
-$$ LANGUAGE plpgsql;
