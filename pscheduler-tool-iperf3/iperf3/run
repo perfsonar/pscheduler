@@ -238,6 +238,19 @@ def run_server():
     iperf3_args.append("-p")
     iperf3_args.append(server_port)
 
+    # apparently iperf3 at least in UDP mode bound to all interfaces
+    # in a NAT environment does not work, so we're going to specify the
+    # server interface bind as well
+    iperf3_args.append('-B')
+    iperf3_args.append(test_spec['dest'])
+
+    # if we're forcing v4 or v6, let iperf3 know
+    if test_spec.has_key('ip-version') and test_spec['ip-version'] != None:
+        if test_spec['ip-version'] == 4:
+            iperf3_args.append('-4')
+        else:
+            iperf3_args.append('-6')
+
     # try to grab our default affinity if one wasn't passed in
     affinity = test_spec.get('server-cpu-affinity')
     if affinity == None:
@@ -271,6 +284,7 @@ def run_server():
                                                         timeout = iperf_timeout)
 
         results['diags'] = "%s\n%s\nRun start = %s" % (stdout, stderr, RUN_START)
+
 
         logger.debug("client stdout = %s" % stdout)
         logger.debug("client stderr = %s" % stderr)

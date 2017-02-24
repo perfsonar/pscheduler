@@ -52,5 +52,7 @@ status, result = pscheduler.url_delete(task_url, throw=False)
 
 if status == 200:
     pscheduler.succeed()
+elif status == 404:
+    pscheduler.fail("Task not found.")
 else:
     pscheduler.fail(result)

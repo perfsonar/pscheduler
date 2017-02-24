@@ -21,6 +21,11 @@ def root():
               % (server_fqdn(), pscheduler.api_this_host()))
 
 
+@application.route("/api", methods=['GET'])
+def api():
+    return ok_json(1)
+
+
 @application.before_request
 def before_req():
     log.debug("REQUEST: %s %s", request.method, request.url)

@@ -354,6 +354,38 @@ AS
 ;
 
 
+
+-- Pull a run's archiving information as JSON
+
+CREATE OR REPLACE FUNCTION archiving_json(run_id BIGINT)
+RETURNS JSON
+AS $$
+DECLARE
+    json_result JSON;
+BEGIN
+
+    SELECT INTO json_result
+        array_to_json(array_agg(row_to_json(t)))
+    FROM (
+        SELECT
+            archiver.json AS archiver,
+            archiving.archiver_data AS archiver_data,
+            archiving.archived AS archived,
+            archiving.last_attempt AS last_attempt,
+            archiving.diags AS diags
+        FROM
+            archiving
+            JOIN archiver ON archiver.id = archiving.archiver
+        WHERE run = run_id
+    ) t;
+
+    RETURN json_result;
+END;
+$$ LANGUAGE plpgsql;
+;
+
+
+
 --
 -- Maintenance
 --
@@ -374,7 +406,7 @@ BEGIN
 
     diag := '{ "return-code": 1,
                "stdout": "",
-               "stderr": "Time to live expired before first attempt"}';
+               "stderr": "Time to live expired"}';
     diag := jsonb_set(diag, '{"time"}',
         to_jsonb(timestamp_with_time_zone_to_iso8601(normalized_now())), TRUE);
 

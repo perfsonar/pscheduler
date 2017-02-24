@@ -5,9 +5,9 @@
 %define short	psclock
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.22.rc2%{?dist}
+Release:	0.24.rc3%{?dist}
 
-Summary:	Sleep tool class for pScheduler
+Summary:	Clock tester tool class for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0
 Group:		Unspecified
@@ -24,7 +24,7 @@ BuildRequires:	pscheduler-rpm
 
 
 %description
-Sleep tool class for pScheduler
+Clock tester tool class for pScheduler
 
 
 %prep

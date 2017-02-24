@@ -19,6 +19,9 @@ from subprocess import Popen, PIPE, call
 
 #track when this run starts - make sure it is aware that it is UTC
 start_time = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
+#create tag to include in data directory based on current time
+#prevents old processes from stomping on new during restart
+time_tag = start_time.strftime("%Y%b%dT%H%M%S%f")
 
 #Init logging
 log = pscheduler.Log(prefix="tool-powstream", quiet=True)
@@ -113,7 +116,7 @@ if config and config.has_option(CONFIG_SECTION, CONFIG_OPT_DATA_DIR):
     parent_data_dir = config.get(CONFIG_SECTION, CONFIG_OPT_DATA_DIR)
 if not parent_data_dir.endswith("/"):
     parent_data_dir += "/" 
-data_dir = parent_data_dir + task_uuid
+data_dir = parent_data_dir + task_uuid + '-' + time_tag
 
 #Always print files (-p)
 powstream_args = [powstream_cmd, '-p', '-d', data_dir]
