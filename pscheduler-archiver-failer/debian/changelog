@@ -1,8 +1,8 @@
-pscheduler-archiver-failer (1.0~19.rc2-1) perfsonar-jessie-staging; urgency=low
+pscheduler-archiver-failer (1.0~24.rc3-1) perfsonar-jessie-staging; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 03 Nov 2016 18:16:46 +0100
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 24 Feb 2017 16:56:25 +0100
 
 pscheduler-archiver-failer (0.0-1) unstable; urgency=low
 
