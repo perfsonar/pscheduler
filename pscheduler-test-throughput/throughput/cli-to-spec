@@ -146,7 +146,7 @@ opt_parser.add_option("--zero-copy",
 
 opt_parser.add_option("--flow-label",
                       help="Set the IPv6 flow label, implies --ip-version 6",
-                      action="store", type="string",
+                      action="store", type="int",
                       dest="flow_label")
 
 opt_parser.add_option("--client-cpu-affinity",
@@ -258,7 +258,7 @@ if options.zero_copy:
    result["zero-copy"] = True
 
 if options.flow_label:
-   result["flow-label"] = options.flow_label
+   result["flow-label"] = int(options.flow_label)
    result["ip-version"] = 6 # flow label only works on ipv6
 
 if options.client_cpu_affinity != None:
