@@ -32,10 +32,10 @@ start_time = datetime.datetime.now()
 
 # Perform the test
 
+error = None
 try:
     answers = resolver.query( query, record )
     succeeded = True
-    error = None
 except (dns.exception.Timeout):
     error = 'Timeout'
     succeeded = False
