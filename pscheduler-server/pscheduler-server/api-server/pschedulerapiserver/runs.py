@@ -347,8 +347,8 @@ def tasks_uuid_runs_run(task, run):
         result['task-href'] = root_url('tasks/' + task)
         result['result-href'] = href + '/result'
 
-
-        return json_response(result)
+        return json_response(
+            pscheduler.json_decomment(result, prefix="_", null=True))
 
     elif request.method == 'PUT':
 
