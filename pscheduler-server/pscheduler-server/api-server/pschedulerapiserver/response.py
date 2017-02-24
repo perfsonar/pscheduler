@@ -14,10 +14,8 @@ from .log import log
 
 # TODO: Duplicative, but easier than the cross-module imports. :-@
 def response_json_dump(dump):
-    return pscheduler.json_dump(dump,
-                                pretty=arg_boolean('pretty')
-                                )
-
+    sanitized = pscheduler.json_decomment(dump, prefix="_", null=True)
+    return pscheduler.json_dump(sanitized, pretty=arg_boolean('pretty'))
 
 # Responses
 
