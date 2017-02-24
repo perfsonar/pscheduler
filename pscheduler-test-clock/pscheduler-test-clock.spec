@@ -5,7 +5,7 @@
 %define short	clock
 Name:		pscheduler-test-%{short}
 Version:	1.0
-Release:	0.22.rc2%{?dist}
+Release:	0.24.rc3%{?dist}
 
 Summary:	Clock test class for pScheduler
 BuildArch:	noarch
@@ -24,7 +24,7 @@ BuildRequires:	pscheduler-rpm
 
 
 %description
-Round trip time test class for pScheduler
+Clock test class for pScheduler
 
 
 %prep

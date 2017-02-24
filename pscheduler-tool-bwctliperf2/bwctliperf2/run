@@ -161,7 +161,7 @@ def run_client():
     logger.debug("iperf lines are %s " % iperf_lines)
     
     results = iperf_parser.parse_output(iperf_lines)
-    results['diag'] = stdout
+    results['diags'] = stdout
 
     return results
 

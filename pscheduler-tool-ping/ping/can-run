@@ -26,6 +26,12 @@ spec = json['spec']
 
 errors = []
 
+#prevent reverse tests where remote side does not have pscheduler from being allowed
+#can probably remove if we ever drop bwctlping support
+source = spec.get("source", None)
+if source and not pscheduler.api_has_pscheduler(source):
+    errors.append("Source must have pscheduler")
+    
 try:
     ip_version = spec['ip-version']
 except KeyError:

@@ -546,10 +546,18 @@ def tasks_uuid(uuid):
         template = urlparse.urlunsplit(parsed)
 
         try:
-            # TODO: This throws when the task isn't there.  Need a way
-            # to differentiate that and an actual error.
+            cursor = dbcursor_query(
+                "SELECT COUNT(*) FROM task WHERE uuid = %s", [uuid] )
+            if cursor.rowcount != 1:
+                raise Exception("Didn't get expected row")
+            count = cursor.fetchone()[0]
+            cursor.close()
+            if  count == 0:
+                return not_found()
+
             cursor = dbcursor_query(
                 "SELECT api_task_disable(%s, %s)", [uuid, template])
+            cursor.close()
         except Exception as ex:
             return error(str(ex))
 

@@ -244,11 +244,13 @@ BEGIN
 			      run_state_missed(),
 			      run_state_failed(),
 			      run_state_preempted(),
+			      run_state_canceled(),
 			      run_state_nonstart()) )
            OR   ( old = run_state_on_deck()
 	          AND new IN (run_state_running(),
 		              run_state_overdue(),
 			      run_state_missed(),
+			      run_state_canceled(),
 			      run_state_preempted()) )
            OR ( old = run_state_running()
 	        AND new IN (run_state_cleanup(),
@@ -260,13 +262,17 @@ BEGIN
 			    run_state_canceled()) )
 	   OR ( old = run_state_cleanup()
                 AND new IN (run_state_finished(),
+			    run_state_canceled(),
 			    run_state_failed()) )
 	   OR ( old = run_state_overdue()
                 AND new IN (run_state_cleanup(),
 		            run_state_finished(),
 		            run_state_missed(),
 		            run_state_failed(),
+			    run_state_canceled(),
 		            run_state_preempted()) )
+           OR   ( old = run_state_nonstart()
+	          AND new IN (run_state_canceled()) )
            ;
 END;
 $$ LANGUAGE plpgsql;

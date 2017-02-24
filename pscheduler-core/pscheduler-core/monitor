@@ -74,15 +74,14 @@ def draw_static(screen):
     height, width = screen.getmaxyx()
     screen.clear()
     center_on_line(screen, 0, "pScheduler Monitor")
-    screen.addstr(0, 0, options.host)
+    screen.addstr(0, width-len(options.host), options.host)
     hline(screen, 1)
     screen.refresh()
 
 
 def update_time(screen):
-    time_str = pscheduler.time_now().strftime("%F T %T %z")
-    height, width = screen.getmaxyx()
-    screen.addstr(0, width-len(time_str), time_str)
+    time_str = pscheduler.datetime_as_iso8601(pscheduler.time_now())
+    screen.addstr(0, 0, time_str)
     screen.refresh()
 
 

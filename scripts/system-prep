@@ -153,6 +153,7 @@ yum -y install \
 yum -y install \
     emacs-nox \
     ntp \
+    pylint \
     screen \
     tcsh \
     tree \

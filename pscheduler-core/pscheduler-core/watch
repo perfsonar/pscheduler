@@ -183,7 +183,7 @@ while True:
 
     if verbose:
         print
-        print "Next run:"
+        print "Next scheduled run:"
         print run_url
 
     try:
