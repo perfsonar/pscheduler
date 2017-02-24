@@ -5,7 +5,7 @@
 %define short	dnspython
 Name:		python-%{short}
 Version:	1.12.0
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	DNS resolver library
 BuildArch:	noarch
 License:	BSD-derived
