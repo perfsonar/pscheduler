@@ -479,26 +479,27 @@ class RunWorker:
                               returncode, stderr)
             if stderr is None:
                 stderr = "Tool exited with status %d" % (returncode)
-            try:
-                with self.db as db:
-                    with db.cursor() as cursor:
-                        cursor.execute("""
-                            UPDATE run
-                            SET
-                                status = %s,
-                                result = %s,
-                                errors = %s
-                            WHERE id = %s
-                            """,
-                            [returncode,
-                             stdout,
-                             stderr,
-                             self.id])
-            except:
-                self.log.error("%d: Failed to store local result: %s",
-                               self.id, str(ex))
-            return
 
+        try:
+            with self.db as db:
+                with db.cursor() as cursor:
+                    cursor.execute("""
+                    UPDATE run
+                    SET
+                    status = %s,
+                    result = %s,
+                    errors = %s
+                    WHERE id = %s
+                    """,
+                    [returncode,
+                     stdout,
+                     stderr,
+                     self.id])
+        except:
+            self.log.error("%d: Failed to store local result: %s",
+                           self.id, str(ex))
+
+            return
 
         self.log.debug("%d: Stored local result", self.id)
 
