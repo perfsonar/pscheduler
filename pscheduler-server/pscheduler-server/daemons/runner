@@ -15,7 +15,6 @@ import psycopg2.pool
 import select
 import signal
 import socket
-import sys
 import threading
 import time
 
@@ -548,40 +547,66 @@ class RunWorker:
                 local_result = None
                 failures += 1
 
-            full_result = [ local_result ]
+
+            # Try several times to get the results from the other
+            # participants.
+
+            full_result = [None for run in runs]
+            # We have this on hand.
+            full_result[0] = local_result
             self.log.debug("%d: Accumulated local result", self.id)
 
-            for run in runs[1:]:
+            end_time = pscheduler.time_now() + datetime.timedelta(seconds=5)
 
-                self.log.debug("%d: Fetching run %s", self.id, run)
+            to_get = dict([(runs[index], index)
+                           for index in range(1, len(runs))])
 
-                status, result = pscheduler.url_get( run,
-                                                     params={ 'wait-local': True },
-                                                     throw=False )
+            while len(to_get) and pscheduler.time_now() < end_time:
 
-                if status == 200:
-                    self.log.debug("%d: Retrieved %s", self.id, result)
-                    full_result.append(result['result'])
-                else:
-                    self.log.warning("%d: Unable to retrieve run %s", self.id, run)
-                    full_result.append(None)
-                    failures += 1
+                for get in list(to_get):
+                    self.log.debug("%d: Fetching run %s", self.id, get)
+
+                    status, run_result = pscheduler.url_get(
+                        run, params={'wait-local': True}, throw=False)
+
+                    if status == 200:
+                        self.log.debug("%d: Retrieved %s", self.id, run_result)
+                        index = to_get[get]
+                        got = run_result.get("result", None)
+                        full_result[index] = got
+                        if got is not None:
+                            del to_get[get]
+                    else:
+                        self.log.warning("%d: Unable to retrieve run %s",
+                                         self.id, get)
+
+                # Snooze a bit before the next iteration if
+                # there's anythig left to do.
+                if len(to_get):
+                    time.sleep(0.5)
+
 
             self.log.debug("%d: Full result: %s",
                            self.id,
                            pscheduler.json_dump(full_result))
+
+            failures = len(list(
+                filter(lambda result: result is None, full_result)))
 
             # Store the full result with each participant.
 
             full_params = pscheduler.json_dump({
                 'result-full' : full_result,
                 'succeeded' : failures == 0
-            })                                             
+            })
 
+
+            # Store the full result with all of the participants
 
             for run in runs:
-                self.log.debug("%d: Storing full result in %s, params=%s, succeeded=%s",
-                               self.id, run, full_params, failures==0)
+                self.log.debug(
+                    "%d: Storing full in %s, params=%s, succeeded=%s",
+                    self.id, run, full_params, failures == 0)
                 status, returned = pscheduler.url_put(run,
                                                       data=full_params,
                                                       throw=False,
