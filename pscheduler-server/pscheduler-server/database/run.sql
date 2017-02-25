@@ -345,7 +345,7 @@ BEGIN
 
 	    -- Adjust the state
 	    NEW.state = CASE
-                WHEN NEW.state = 0 THEN run_state_finished()
+                WHEN NEW.status = 0 THEN run_state_finished()
                 ELSE run_state_failed()
                 END;
 
