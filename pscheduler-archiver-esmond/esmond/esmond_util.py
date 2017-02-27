@@ -172,37 +172,6 @@ def iso8601_to_seconds(val):
     td = pscheduler.iso8601_as_timedelta(val)
     return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10.0**6) / 10.0**6
 
-def get_ips(addr):
-    ip_v4 = None
-    ip_v6 = None
-    try:
-        addrinfo = socket.getaddrinfo(addr, None)
-        for ai in addrinfo:
-            if ai[0] == socket.AF_INET:
-                ip_v4 = ai[4][0]
-            elif ai[0] == socket.AF_INET6:
-                ip_v6 = ai[4][0]
-    except:
-        pass
-    return ip_v4, ip_v6
-    
-def normalize_ip_versions(src, dest, ip_version=None):
-    src_ip = None
-    dest_ip = None
-    src_ip_v4, src_ip_v6 = get_ips(src)
-    dest_ip_v4, dest_ip_v6 = get_ips(dest)
-    #prefer v6 if not specified
-    if not ip_version or ip_version == 6:
-       if src_ip_v6 and dest_ip_v6:
-            src_ip = src_ip_v6
-            dest_ip = dest_ip_v6
-    if not src_ip or not dest_ip or ip_version == 4:
-        if src_ip_v4 and dest_ip_v4:
-            src_ip = src_ip_v4
-            dest_ip = dest_ip_v4
-
-    return src_ip, dest_ip
-
 def handle_storage_error(result, attempts=0, policy=[]):
     #build object
     retry = False
@@ -328,10 +297,10 @@ class EsmondBaseRecord:
             if dst_field:
                 self.metadata['subject-type'] = 'point-to-point'
                 input_dest = test_spec[dst_field]
-                src_ip, dest_ip = normalize_ip_versions(input_source, input_dest, ip_version=ip_version)
+                src_ip, dest_ip = pscheduler.ip_normalize_version(input_source, input_dest, ip_version=ip_version)
             else:
                 self.metadata['subject-type'] = 'network-element'
-                src_ip, tmp_ip = normalize_ip_versions(input_source, input_source, ip_version=ip_version)
+                src_ip, tmp_ip = pscheduler.ip_normalize_version(input_source, input_source, ip_version=ip_version)
     
             #set fields
             self.metadata['source'] = src_ip
@@ -344,9 +313,9 @@ class EsmondBaseRecord:
             self.metadata['time-duration'] = duration
             #Make measurement-agent the created_by_address if we have it, otherwise the lead participant, with same ip type as source
             if measurement_agent:
-                src_ip, self.metadata['measurement-agent'] = normalize_ip_versions(src_ip, measurement_agent)
+                src_ip, self.metadata['measurement-agent'] = pscheduler.ip_normalize_version(src_ip, measurement_agent)
             else:
-                src_ip, self.metadata['measurement-agent'] = normalize_ip_versions(src_ip, lead_participant)
+                src_ip, self.metadata['measurement-agent'] = pscheduler.ip_normalize_version(src_ip, lead_participant)
         
             #set test type to new value if provided
             if test_type:
