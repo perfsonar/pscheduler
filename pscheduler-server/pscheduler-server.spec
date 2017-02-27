@@ -315,24 +315,42 @@ fi
 
 # Increase the number of connections to something substantial
 
+%define pgsql_max_connections 500
+
 # Note that this must be dropped in at the end so it overrides
 # anything else in the file.
 drop-in -n %{name} - "%{pg_data}/postgresql.conf" <<EOF
 #
 # pScheduler
 #
-max_connections = 500
+max_connections = %{pgsql_max_connections}
 EOF
+
 
 %if 0%{?el6}
 chkconfig "%{pgsql_service}" on
-service "%{pgsql_service}" restart
 %endif
 %if 0%{?el7}
 systemctl enable "%{pgsql_service}"
-systemctl restart "%{pgsql_service}"
 %endif
 
+# Restart the server only if the current maximum connections is less
+# than what we just installed.  This is more for development
+# convenience than anything else since regular releases don't happen
+# often.
+
+SERVER_MAX=$( (echo "\\t" && echo "\\a" && echo "show max_connections") \
+    | postgresql-load)
+
+if [ "${SERVER_MAX}" -lt "%{pgsql_max_connections}" ]
+then
+%if 0%{?el6}
+    service "%{pgsql_service}" restart
+%endif
+%if 0%{?el7}
+    systemctl restart "%{pgsql_service}"
+%endif
+fi
 
 
 # Generate a password if the file is empty, which is the case after
