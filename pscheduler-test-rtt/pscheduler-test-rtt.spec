@@ -36,7 +36,6 @@ Round trip time test class for pScheduler
 %build
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
-     DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_test_doc} \
      install
 
 

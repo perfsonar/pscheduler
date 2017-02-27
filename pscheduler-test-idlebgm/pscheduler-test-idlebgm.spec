@@ -36,7 +36,6 @@ produces multiple results.
 %build
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
-     DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_test_doc} \
      install
 
 
@@ -52,4 +51,3 @@ pscheduler internal warmboot
 %files
 %defattr(-,root,root,-)
 %{dest}
-%{_pscheduler_test_doc}/*

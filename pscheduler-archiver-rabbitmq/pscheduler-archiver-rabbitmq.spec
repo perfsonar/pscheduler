@@ -37,7 +37,6 @@ This archiver sends JSON test results to RabbitMQ
 %build
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
-     DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_archiver_doc} \
      install
 
 %post
@@ -49,4 +48,3 @@ pscheduler internal warmboot
 %files
 %defattr(-,root,root,-)
 %{dest}
-%{_pscheduler_archiver_doc}/*

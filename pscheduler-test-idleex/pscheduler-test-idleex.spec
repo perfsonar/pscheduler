@@ -35,7 +35,6 @@ Idle test class for pScheduler that runs exclusively.
 %build
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
-     DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_test_doc} \
      install
 
 
@@ -51,4 +50,3 @@ pscheduler internal warmboot
 %files
 %defattr(-,root,root,-)
 %{dest}
-%{_pscheduler_test_doc}/*

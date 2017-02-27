@@ -36,7 +36,6 @@ This archiver disposes of measurements by dropping them on the floor.
 %build
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
-     DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_archiver_doc} \
      install
 
 
@@ -50,4 +49,3 @@ pscheduler internal warmboot
 %files
 %defattr(-,root,root,-)
 %{dest}
-%{_pscheduler_archiver_doc}/*

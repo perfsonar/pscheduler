@@ -45,7 +45,6 @@ pScheduler Ping Tool
 %install
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
-     DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_tool_doc} \
      install
 
 
