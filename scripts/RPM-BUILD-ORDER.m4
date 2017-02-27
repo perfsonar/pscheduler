@@ -47,13 +47,6 @@ python-vcversioner
 python-jsonschema
 python-jsontemplate
 
-# Flask and its dependencies
-# These are dummies
-# TODO: Remove for GA release.  See #215
-python-Jinja2
-python-Werkzeug
-python-Flask
-
 # Home-grown Python Modules
 python-icmperror
 
