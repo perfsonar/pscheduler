@@ -484,14 +484,13 @@ null_reason = None
 # Get participants
 
 url = pscheduler.api_url(assist, '/tests/%s/participants' % task['test']['type'])
-log.debug("Fetching participant list from %s", url)
+log.debug("Fetching participant list")
 
 log.debug("%s", pscheduler.json_dump(task['test']['spec']))
 status, participants = pscheduler.url_get( url, params={
         'spec': pscheduler.json_dump(task['test']['spec'])
         }, throw=False )
 
-log.debug("%s, status %d", url, status)
 if status not in [ 200, 404 ]:
     pscheduler.fail("Unable to determine the lead participant: %s" % participants)
 if status == 200:
@@ -501,19 +500,6 @@ if status == 200:
         null_reason = participants["null-reason"]
     except KeyError:
         null_reason = None
-
-# Fallback
-
-if status == 404:
-    log.debug("Falling back to lead method")
-    url = pscheduler.api_url(assist, '/tests/%s/lead' % task['test']['type'])
-    try:
-        status, lead = pscheduler.url_get( url, params={
-                'spec': pscheduler.json_dump(task['test']['spec'])
-                } )
-    except Exception as ex:
-        pscheduler.fail("Unable to determine the lead participant: " + str(ex))
-
 
 if null_reason is None:
     null_reason = "No reason provided.  (Server is running old software.)"

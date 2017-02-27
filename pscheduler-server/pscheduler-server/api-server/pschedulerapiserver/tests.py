@@ -99,36 +99,6 @@ def tests_name_tools(name):
 
 
 
-# TODO: This can be taken out once once 4.0 is released.  See #53.
-# Lead participant in a test spec
-@application.route("/tests/<name>/lead", methods=['GET'])
-def tests_name_lead(name):
-
-    spec = request.args.get('spec')
-    if spec is None:
-        return bad_request("No test spec provided")
-
-    try:
-        returncode, stdout, stderr = pscheduler.run_program(
-            [ "pscheduler", "internal", "invoke", "test", name,
-              "participants"],
-            stdin = spec
-            )
-    except KeyError:
-        return bad_request("Invalid spec")
-    except Exception as ex:
-        return bad_request(ex)
-
-    if returncode != 0:
-        return bad_request(stderr)
-
-    part_list = pscheduler.json_load(stdout)
-    lead = part_list['participants'][0]
-
-    return json_response(lead)
-
-
-
 # Participants in a test spec
 @application.route("/tests/<name>/participants", methods=['GET'])
 def tests_name_participants(name):
