@@ -31,7 +31,6 @@ postgresql-load
 
 # Python Modules
 python-argparse
-python-dnspython
 ifelse(REDHAT_RELEASE_MAJOR,7,
     python-functools32,)
 python-isodate
