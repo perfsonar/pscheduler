@@ -240,21 +240,9 @@ mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}
 #
 # Database
 #
+
 # (Nothing)
 
-# TODO: Remove this before 4.0 ships.  See #135
-# This undoes something caused by a bug in a RC1 build.
-PG_HBA=%{pg_data}/pg_hba.conf
-if [ -e "${PG_HBA}" ]
-then
-    # Remove #BEGIN-xxx that got jammed up onto previous lines
-    sed -i -e 's/\(.\)\(#BEGIN-\)/\1\n\2/' "${PG_HBA}"
-    # Remove stock pg_hba line that got jammed up on an #END
-    sed -i -e 's/#END-pscheduler-serverlocal/#END-pscheduler-server\nlocal/g' \
-     "${PG_HBA}"
-    # Remove old pscheduler-database segment on hosts that had that package
-    drop-in -r pscheduler-database /dev/null "${PG_HBA}"
-fi
 
 #
 # Daemons
