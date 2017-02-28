@@ -533,7 +533,8 @@ def main_program():
                     nonstart_cursor.execute(
                         """SELECT api_run_post(%s, normalized_now(), NULL, %s)""",
                         [uuid, error])
-                    log.debug("Posted non-starter")
+                    log.info("Posted non-starting run at %s for %s: %s",
+                             pscheduler.datetime_as_iso8601(trynext), url, error)
                 except:
                     log.error("Insertion of non-starter failed: %s", error)
 
