@@ -27,24 +27,61 @@ REDHAT_RELEASE_MAJOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 }')
 REDHAT_RELEASE_MAJOR_MINOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 "." $2 }')
 
 #
+# Gargle the argument
+#
+
+WHOAMI=$(basename "$0")
+
+case "$1" in
+    stable|"")
+	REPO="stable"
+	STABLE=true
+	;;
+
+    staging|nightly)
+	REPO="$1"
+	STABLE=false
+	;;
+
+    *)
+	echo "Usage: $WHOAMI [ nightly | staging | stable ]" 1>&2
+	exit 1
+	;;
+esac
+
+
+#
 # Warning about stability
 #
 
-cat <<EOF
+if ! $STABLE && [ -t 0 -a -t 1 -a -t 2 ]
+then
+    cat <<EOF
 WARNING:
 
-Untill pScheduler has been formally released, this program will
-install from the nightly build.  This version may contain unstable
-code.
+The build you have asked to install is not considered stable or
+suitable for use in production production.
+
+USE OF THIS CODE IS AT YOUR OWN RISK.
 
 Break to abort or press Enter to continue.
 EOF
-read DUMMY
+    read DUMMY
+fi
 
 
 #
-# Install Repos
+# Scrub old repos and install the ones we want.
 #
+
+
+yum -y erase \
+    pgdg-redhat95 \
+    epel-release
+
+find /etc/yum.repos.d -name "Internet2*.repo" \
+    | xargs -r rm -f
+
 
 # PostgreSQL
 yum -y install "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-${REDHAT_RELEASE_MAJOR_MINOR}-$(uname -m)/pgdg-redhat95-9.5-2.noarch.rpm"
@@ -54,20 +91,50 @@ yum -y install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${REDH
 
 # Internet2
 rpm --import http://software.internet2.edu/rpms/RPM-GPG-KEY-Internet2
-# TODO: Need to add the switch statement that pulls the right one here.
 
 
-# Internet2 Nightly 
-cat > /etc/yum.repos.d/internet2-nightly.repo <<EOF
-# Name: Internet2 Nightly RPM Repository
+# Internet2 stable is always installed.
+cat > /etc/yum.repos.d/Internet2.repo <<EOF
+# Name: Internet2 RPM Repository
+# URL: http://software.internet2.edu
+[Internet2]
+name = Internet2 RPM Repository - software.internet2.edu - main
+mirrorlist = http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/mirrors-Toolkit-Internet2
+enabled = 1
+protect = 0
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-Internet2
+gpgcheck = 1
+EOF
+
+if [ "${REPO}" = "staging" -o "${REPO}" = "nightly" ]
+then
+	cat > "/etc/yum.repos.d/internet2-staging.repo" <<EOF
+# Name: Internet2 staging RPM Repository
+# URL: http://software.internet2.edu
+[Internet2-staging]
+name = Internet2 staging RPM Repository
+baseurl = http://software.internet2.edu/branches/staging/rpms/el${REDHAT_RELEASE_MAJOR}/\$basearch/main/
+enabled = 1
+protect = 0
+gpgcheck = 0
+EOF
+fi
+
+if [ "${REPO}" = "nightly" ]
+then
+	cat > "/etc/yum.repos.d/internet2-nightly.repo" <<EOF
+# Name: Internet2 nightly RPM Repository
 # URL: http://software.internet2.edu
 [Internet2-nightly]
-name = Internet2 Nightly RPM Repository
+name = Internet2 nightly RPM Repository
 baseurl = http://software.internet2.edu/branches/nightly/rpms/el${REDHAT_RELEASE_MAJOR}/\$basearch/main/
 enabled = 1
 protect = 0
 gpgcheck = 0
 EOF
+fi
+
+yum makecache
 
 
 #
