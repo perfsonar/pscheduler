@@ -45,6 +45,7 @@ except (dns.resolver.NoAnswer ):
     succeeded = False
     answers = None
 except ( dns.resolver.NXDOMAIN ):
+    error = 'DNS error'
     succeeded = True
     answers = None
 

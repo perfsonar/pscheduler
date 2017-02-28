@@ -25,13 +25,6 @@ if not valid:
 json = input["result"]
 i = input['spec']['record']
 
-if json['succeeded']
-   print 'True that'
-else
-   print 'Falsehood'
-   exit
-
-
 if format == 'text/plain':
    print 'Time ......... %s' % json['time']
    if i == 'a':
