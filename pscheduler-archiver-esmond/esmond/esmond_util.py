@@ -214,8 +214,8 @@ class EsmondClient:
         log.debug("Posting metadata to %s: %s" % (post_url, metadata))
         try:
             r = requests.post(post_url, data=pscheduler.json_dump(metadata), headers=self.headers, verify=self.verify_ssl, timeout=HTTP_TIMEOUT)
-        except:
-            return False, "Unable to connect to remote server to create metadata"
+        except Exception as ex:
+            return False, "Unable to post metadata to %s: %s" % (post_url, str(ex))
         
         if r.status_code != 200 and r.status_code != 201:
             try:
@@ -240,8 +240,8 @@ class EsmondClient:
         log.debug("Putting data to %s: %s" % (put_url, data))
         try:
             r = requests.put(put_url, data=pscheduler.json_dump(data), headers=self.headers, verify=self.verify_ssl, timeout=HTTP_TIMEOUT)
-        except:
-            return False, "Unable to connect to remote server to create data"
+        except Exception as ex:
+            return False, "Unable to connect to post data to %s: %s" % (put_url, str(ex))
             
         if r.status_code== 409:
             #duplicate data
