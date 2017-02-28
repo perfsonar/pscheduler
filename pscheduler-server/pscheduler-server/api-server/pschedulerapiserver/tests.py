@@ -40,6 +40,7 @@ def tests_name_spec(name):
         return error(str(ex))
 
     exists = cursor.fetchone()[0]
+    cursor.close()
     if not exists:
         return not_found()
 
@@ -95,6 +96,7 @@ def tests_name_tools(name):
             continue
         row[1]['href'] = url
         result.append(row[1])
+    cursor.close()
     return json_response(result)
 
 

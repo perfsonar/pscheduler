@@ -23,6 +23,7 @@ def single_numeric_query(query, query_args = []):
         return not_found()
 
     row = cursor.fetchone()
+    cursor.close()
 
     return ok(str(row[0]))
 
@@ -42,6 +43,7 @@ def stat_control_pause():
         if cursor.rowcount != 1:
             pscheduler.fail("Got back more data than expected.")
         (is_paused, left, infinite) = cursor.fetchone()
+        cursor.close()
     except Exception as ex:
         return error(str(ex))
 

@@ -55,6 +55,7 @@ def __evaluate_limits(
         # TODO: This or bad_request when the task isn't there?
         return false, None, not_found()
     task_spec, duration, hints = cursor.fetchone()
+    cursor.close()
     log.debug("Task is %s, duration is %s" % (task_spec, duration))
 
     limit_input = {
@@ -172,6 +173,7 @@ def tasks_uuid_runs(task):
             cursor = dbcursor_query("SELECT api_run_post(%s, %s, NULL, %s)",
                                [task, start_time, diags], onerow=True)
             uuid = cursor.fetchone()[0]
+            cursor.close()
         except Exception as ex:
             log.exception()
             return error(str(ex))
@@ -210,9 +212,12 @@ def __runs_first_run(
                 """, [task, not future])
 
     if cursor.rowcount == 0:
-        return None 
+        cursor.close()
+        return None
     else:
-        return cursor.fetchone()[0]
+        value = cursor.fetchone()[0]
+        cursor.close()
+        return value
 
 
 
@@ -306,9 +311,11 @@ def tasks_uuid_runs_run(task, run):
                 return error(str(ex))
 
             if cursor.rowcount == 0:
+                cursor.close()
                 return not_found()
 
             row = cursor.fetchone()
+            cursor.close()
 
             if not (wait_local or wait_merged):
                 break
@@ -386,7 +393,9 @@ def tasks_uuid_runs_run(task, run):
             log.exception()
             return error(str(ex))
 
-        if not cursor.fetchone()[0]:
+        fetched = cursor.fetchone()[0]
+        cursor.close()
+        if not fetched:
 
             log.debug("Record does not exist; full PUT.")
 
@@ -407,6 +416,7 @@ def tasks_uuid_runs_run(task, run):
                 cursor = dbcursor_query("SELECT api_run_post(%s, %s, %s)",
                                [task, start_time, run], onerow=True)
                 log.debug("Full put of %s, got back %s", run, cursor.fetchone()[0])
+                cursor.close()
             except Exception as ex:
                 log.exception()
                 return error(str(ex))
@@ -446,7 +456,10 @@ def tasks_uuid_runs_run(task, run):
             except Exception as ex:
                 log.exception()
                 return error(str(ex))
-            if cursor.rowcount != 1:
+
+            rowcount = cursor.rowcount
+            cursor.close()
+            if rowcount != 1:
                 return not_found()
 
             log.debug("Full data updated")
@@ -494,7 +507,9 @@ def tasks_uuid_runs_run(task, run):
                 log.exception()
                 return error(str(ex))
 
-            if cursor.rowcount != 1:
+            rowcount = cursor.rowcount
+            cursor.close()
+            if rowcount != 1:
                 return not_found()
 
             return ok()
@@ -529,7 +544,10 @@ def tasks_uuid_runs_run(task, run):
             log.exception()
             return error(str(ex))
 
-        return ok() if cursor.rowcount == 1 else not_found()
+        rowcount = cursor.rowcount
+        cursor.close()
+
+        return ok() if rowcount == 1 else not_found()
 
     else:
 
@@ -603,10 +621,12 @@ def tasks_uuid_runs_run_result(task, run):
             return error(str(ex))
 
         if cursor.rowcount == 0:
+            cursor.close()
             return not_found()
 
         # TODO: Make sure we got back one row with two columns.
         row = cursor.fetchone()
+        cursor.close()
 
         if not wait and row[1] is None:
             time.sleep(0.25)
