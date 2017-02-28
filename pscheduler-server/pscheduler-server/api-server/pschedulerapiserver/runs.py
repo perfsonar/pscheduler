@@ -9,12 +9,14 @@ from pschedulerapiserver import application
 
 from flask import request
 
+from .access import *
 from .dbcursor import dbcursor_query
 from .json import *
 from .limitproc import *
 from .log import log
 from .response import *
 from .tasks import task_exists
+from .util import *
 
 
 # Proposed times for a task
@@ -134,6 +136,18 @@ def tasks_uuid_runs(task):
     elif request.method == 'POST':
 
         log.debug("Run POST: %s --> %s", request.url, request.data)
+
+        try:
+            requester = task_requester(task)
+            if requester is None:
+                return not_found()
+
+            if not access_write_ok(requester):
+                return forbidden()
+
+        except Exception as ex:
+            return error(str(ex))
+
 
         try:
             data = pscheduler.json_load(request.data)
@@ -491,6 +505,18 @@ def tasks_uuid_runs_run(task, run):
 
         # TODO: If this is the lead, the run's counterparts on the
         # other participating nodes need to be removed as well.
+
+        try:
+            requester = task_requester(task)
+            if requester is None:
+                return not_found()
+
+            if not access_write_ok(requester):
+                return forbidden()
+
+        except Exception as ex:
+            return error(str(ex))
+
 
         try:
             cursor = dbcursor_query("""

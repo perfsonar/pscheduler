@@ -9,6 +9,7 @@ from pschedulerapiserver import application
 
 from flask import request
 
+from .access import *
 from .dbcursor import dbcursor_query
 from .json import *
 from .limitproc import *
@@ -530,18 +531,17 @@ def tasks_uuid(uuid):
         template = urlparse.urlunsplit(parsed)
 
         try:
-            cursor = dbcursor_query(
-                "SELECT COUNT(*) FROM task WHERE uuid = %s", [uuid] )
-            if cursor.rowcount != 1:
-                raise Exception("Didn't get expected row")
-            count = cursor.fetchone()[0]
-            cursor.close()
-            if  count == 0:
+            requester = task_requester(uuid)
+            if requester is None:
                 return not_found()
+
+            if not access_write_ok(requester):
+                return forbidden()
 
             cursor = dbcursor_query(
                 "SELECT api_task_disable(%s, %s)", [uuid, template])
             cursor.close()
+
         except Exception as ex:
             return error(str(ex))
 

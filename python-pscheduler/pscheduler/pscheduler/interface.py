@@ -2,11 +2,14 @@
 Functions for figuring out common interface operations
 """
 
+import datetime
+import netaddr
 import netifaces
 import os
-import socket
-import re
 import pscheduler
+import re
+import socket
+
 
 
 def source_affinity(addr):
@@ -102,6 +105,64 @@ def interface_affinity(interface):
     return None
 
 
+
+
+
+class LocalIPList:
+    """
+    Self-refrshing list of local IP addresses
+    """
+
+    def __init__(
+            self,
+            refresh=30  # Maximum age in seconds before refresh
+    ):
+        self.refresh = refresh
+        self.addresses = None
+        self.expires = None
+
+
+    def __refresh(self):
+        """
+        Update the list of local interfaces if needed
+        """
+        if self.addresses is None \
+           or datetime.datetime.now() > self.expires:
+
+            self.addresses = {}
+
+            if_regex = r'%.*$'
+
+            # Netifaces returns a very deep structure.
+            for ifhash in [netifaces.ifaddresses(iface)
+                           for iface in netifaces.interfaces()]:
+                for afamily in ifhash:
+                    for iface in ifhash[afamily]:
+                        addr = re.sub(if_regex, '', iface["addr"])
+                        try:
+                            addr_object = netaddr.IPAddress(addr)
+                            self.addresses[addr_object] = 1
+                        except netaddr.core.AddrFormatError:
+                            # Don't care about things that don't look like IPS.
+                            pass
+
+            self.expires = datetime.datetime.now() \
+                           + datetime.timedelta(seconds=self.refresh)
+
+
+    def __contains__(self, item):
+        """
+        Determine if item is in the address list
+        """
+
+        self.__refresh()
+        item_ip = netaddr.IPAddress(item)
+        return item_ip in self.addresses
+
+
+
+
+
 if __name__ == "__main__":
 
     for dest in ["www.perfsonar.net",
@@ -113,3 +174,11 @@ if __name__ == "__main__":
     for interface in ["eth0", "eth1", "lo", "eth1.412", "eth0.120"]:
         affinity = interface_affinity(interface)
         print "interface affinity = %s for %s" % (affinity, interface) 
+
+
+
+    localips = LocalIPList(refresh=5)
+
+    for addr in ["1.2.3.4", "5.6.7.8", "10.0.0.1", "127.0.0.1"]:
+        print addr, addr in localips
+
