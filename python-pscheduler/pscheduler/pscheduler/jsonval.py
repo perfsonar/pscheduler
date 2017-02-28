@@ -465,8 +465,6 @@ __dictionary__ = {
         "properties": {
             "start":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
             "slip":     { "$ref": "#/pScheduler/Duration" },
-            # TODO: Remove this.  #287
-            "randslip": { "$ref": "#/pScheduler/Probability" },
             "sliprand": { "$ref": "#/pScheduler/Boolean" },
             "repeat":   { "$ref": "#/pScheduler/Duration" },
             "until":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },

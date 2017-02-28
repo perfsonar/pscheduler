@@ -309,9 +309,7 @@ def run_post(
     # pick a random time within it.  Otherwise, take the earliest time
     # we can get.
 
-    # TODO: Remove randslip.  #287
-    if ('sliprand' in task['schedule'] and task['schedule']['sliprand']) \
-       or 'randslip' in task['schedule']:
+    if ('sliprand' in task['schedule'] and task['schedule']['sliprand']):
 
         selected_range = random.choice(common_ranges)
         max_slip_offset = selected_range.length() - task_duration

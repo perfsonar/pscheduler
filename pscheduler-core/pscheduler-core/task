@@ -91,12 +91,6 @@ schedule_group.add_option("--max-runs",
                       action="store", type="int", default=1,
                       dest="max_runs")
 
-# TODO: Remove this.  #287
-schedule_group.add_option("--randslip",
-                      help="Random slip fractiom (float in [0.0..1.0])  DEPRECATED",
-                      action="store", type="float",
-                      dest="randslip")
-
 opt_parser.add_option("--sliprand",
                       help="Slip randomly",
                       action="store_true",
@@ -201,12 +195,6 @@ if options.repeat is not None:
     except ValueError as ex:
         pscheduler.fail("Invalid --repeat: %s" % str(ex))
 
-
-# TODO: Remove this  #287
-if options.randslip is not None:
-    randslip = options.randslip
-    if randslip < 0.0 or randslip > 1.0:
-        pscheduler.fail("Invalid --randslip; must be in [0.0..1.0]")
 
 if options.reference is not None:
     try:
@@ -336,10 +324,6 @@ if options.max_runs > 1:
 
 if options.repeat is not None:
     task['schedule']['repeat'] = options.repeat
-
-# TODO: Remove this  #287
-if options.randslip is not None:
-    task['schedule']['randslip'] = options.randslip
 
 if slip is not None:
     task['schedule']['slip'] = pscheduler.timedelta_as_iso8601(slip)

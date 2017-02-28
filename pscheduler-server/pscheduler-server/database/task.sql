@@ -74,6 +74,7 @@ BEGIN
         	slip		INTERVAL,
 
         	-- How much of the slip is randomly applied to the start time.
+		-- NOTE: This column was remove in version 9.
         	randslip	NUMERIC
         			DEFAULT 0.0
         			CHECK (randslip BETWEEN 0.0 AND 1.0),
@@ -258,9 +259,14 @@ BEGIN
     END IF;
 
 
-    -- TODO: Do a new version that drops this column when randslip
-    -- goes away.  #287
+    -- Version 8 to version 9
+    -- Remove deprecated randslip column
+    IF t_version = 8
+    THEN
+	ALTER TABLE task DROP COLUMN randslip;
 
+        t_version := t_version + 1;
+    END IF;
 
 
     --
@@ -288,8 +294,6 @@ DECLARE
 	test_type TEXT;
 	tool_type TEXT;
 	start TEXT;
-	-- TODO: Get rid of this when randslip goes away  #287
-	randslip TEXT;
 	until TEXT;
 	run_result external_program_result;
 	temp_json JSONB;
@@ -456,16 +460,6 @@ BEGIN
 	IF NEW.slip IS NULL THEN
 	   NEW.slip := 'P0';
 	END IF;
-
-	-- TODO: Get rid of this when randslip goes away  #287
-	randslip := NEW.json #>> '{schedule, randslip}';
-	IF randslip IS NOT NULL THEN
-	    NEW.randslip := text_to_numeric(randslip);
-	    IF (NEW.randslip < 0.0) OR (NEW.randslip > 1.0) THEN
-	        RAISE EXCEPTION 'Slip fraction must be in [0.0 .. 1.0]';
-	    END IF;
-	END IF;
-
 
 	NEW.repeat := text_to_interval(NEW.json #>> '{schedule, repeat}');
 
