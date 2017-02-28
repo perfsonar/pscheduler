@@ -23,51 +23,44 @@ if not valid:
     pscheduler.fail(message)
 
 json = input["result"]
-speca = input["spec"]
 i = input['spec']['record']
+
+if json['succeeded']
+   print 'True that'
+else
+   print 'Falsehood'
+   exit
 
 
 if format == 'text/plain':
-
-   template = """
-   """
-
-   fail_template = "Test failed."
-
-   print 'Time ... %s' % json['time']
+   print 'Time ......... %s' % json['time']
    if i == 'a':
       for r in input['result']['record']:
-	 print 'A ... %s' % r
+	 print 'A ............ %s' % r
    if i == 'aaaa':
       for r in input['result']['record']:
-	 print 'AAAA ... %s' % r
+	 print 'AAAA ......... %s' % r
    elif i == 'cname':
-      print 'CNAME ... %s' % input['result']['record']
+      print 'CNAME ........ %s' % input['result']['record']
    elif i == 'mx':
       for r in input['result']['record']:
-	 print 'Pref ... %d' % r['pref']
-	 print 'MX ... %s' % r['mx']
+	 print 'Pref ......... %d' % r['pref']
+	 print 'MX ........... %s' % r['mx']
    elif i == 'ns':
       for r in input['result']['record']:
-	 print 'NS ... %s' % r
+	 print 'NS ........... %s' % r
    elif i == 'ptr':
-      print 'PTR ... %s' % input['result']['record']
+      print 'PTR .......... %s' % input['result']['record']
    elif i == 'txt':
       for r in input['result']['record']:
-	 print 'TXT ... %s' % r
+	 print 'TXT .......... %s' % r
    elif i == 'soa':
-      print 'Retry ... %d' % input['result']['record']['retry']
-      print 'Refresh ... %d' % input['result']['record']['refresh']
-      print 'Minimum ... %d' % input['result']['record']['minimum']
-      print 'Expire ... %d' % input['result']['record']['expire']
-      print 'Owner ... %s' % input['result']['record']['owner']
+      print 'Retry ........ %d' % input['result']['record']['retry']
+      print 'Refresh ...... %d' % input['result']['record']['refresh']
+      print 'Minimum ...... %d' % input['result']['record']['minimum']
+      print 'Expire ....... %d' % input['result']['record']['expire']
+      print 'Owner ........ %s' % input['result']['record']['owner']
       print 'Nameserver ... %s' % input['result']['record']['nameserver']
-
-   error_template = """
-"""
-
-   end_template = """
-"""
 
 elif format == 'text/html':
    print '<table>'
@@ -77,7 +70,6 @@ elif format == 'text/html':
    print '  <tr>'
    print '    <td>%s</td>' % json['time']
    print '  </tr>'
-
    if i == 'a':
       print '  <tr>'
       print '    <th>A Records</th>'
@@ -86,7 +78,6 @@ elif format == 'text/html':
 	 print '  <tr>'
 	 print '    <td>%s</td>' % r
 	 print '  </tr>'
-
    if i == 'aaaa':
       print '  <tr>'
       print '    <th>AAAA Records</th>'
@@ -95,7 +86,6 @@ elif format == 'text/html':
 	 print '  <tr>'
 	 print '    <td>%s</td>' % r
 	 print '  </tr>'
-
    elif i == 'cname':
       print '  <tr>'
       print '    <th>CNAME</th>'
@@ -103,7 +93,6 @@ elif format == 'text/html':
       print '  <tr>'
       print '    <td>%s</td>' % input['result']['record']
       print '  </tr>'
-
    elif i == 'mx':
       print '  <tr>'
       print '    <th>Pref</th>'
@@ -114,7 +103,6 @@ elif format == 'text/html':
 	 print '    <td>%s</td>' % r['pref']
 	 print '    <td>%s</td>' % r['mx']
 	 print '  </tr>'
-
    elif i == 'ns':
       print '  <tr>'
       print '    <th>NS Records</th>'
@@ -123,7 +111,6 @@ elif format == 'text/html':
 	 print '  <tr>'
 	 print '    <td>%s</td>' % r
 	 print '  </tr>'
-
    elif i == 'ptr':
       print '  <tr>'
       print '    <th>PTR</th>'
@@ -131,7 +118,6 @@ elif format == 'text/html':
       print '  <tr>'
       print '    <td>%s</td>' % input['result']['record']
       print '  </tr>'
-
    elif i == 'txt':
       print '  <tr>'
       print '    <th>TXT Records</th>'
@@ -140,7 +126,6 @@ elif format == 'text/html':
 	 print '  <tr>'
 	 print '    <td>%s</td>' % r
 	 print '  </tr>'
-
    elif i == 'soa':
       print '  <tr>'
       print '    <th>Retry</th>'
@@ -158,33 +143,7 @@ elif format == 'text/html':
       print '    <td>%s</td>' % input['result']['record']['owner']
       print '    <td>%s</td>' % input['result']['record']['nameserver']
       print '  </tr>'
-
    print '</table>'
 
-   fail_template = "<p>Test failed.</p>"
-
-   template = """
-   """
-
-   rt_template = """
-"""
-
-   error_template = """
-"""
-
-   end_template = """
-"""
-
-
 else:
-
    pscheduler.fail("Unsupported format '%s'" % format)
-
-
-# TODO: Should probably handle exceptions in a nicer way.
-
-if not json['succeeded']:
-   print jsontemplate.expand(fail_template, json).strip()
-
-if template is not None:
-   print jsontemplate.expand(template, json).strip()
