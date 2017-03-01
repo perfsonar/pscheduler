@@ -165,7 +165,7 @@ def tasks():
                 )
 
             if returncode != 0:
-                return error("Invalid test specification: " + stderr)
+                return bad_request("Invalid test specification: " + stderr)
         except Exception as ex:
             return error("Unable to validate test spec: " + str(ex))
 
