@@ -1,2 +1,4 @@
+# extra python packages for testing/etc.
 nose
 coverage
+-e .

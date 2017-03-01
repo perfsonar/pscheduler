@@ -9,6 +9,7 @@
 REPO/
 */.rpmmacros
 */BUILD-ROOT/
+*.egg-info
 
 #ignore tarballs from build process
 make-generic-rpm/*.tar.gz
