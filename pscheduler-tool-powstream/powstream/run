@@ -280,10 +280,7 @@ while True:
                 #see if command completed successfully
                 log.debug("owstats returned status %s" % stats_returncode)
                 if stats_returncode:
-                    stats_error = ''
-                    for err_line in stats_stderr:
-                        stats_error += err_line.strip() + " "
-                    handle_run_error("owstats completed but returned error: %s" % stats_error)
+                    handle_run_error("owstats completed but returned error: %s" % stats_stderr)
                     cleanup_file(line, keep_data_files=keep_data_files)
                     continue
             
