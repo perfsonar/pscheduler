@@ -3,7 +3,7 @@ Functions for resolving hostnames and IPs
 """
 
 import dns.reversename
-import dns.resolver 
+import dns.resolver
 import multiprocessing
 import multiprocessing.dummy
 import os
