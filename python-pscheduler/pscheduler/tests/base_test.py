@@ -12,11 +12,8 @@ class PschedTestBase(unittest.TestCase):
 
     def setUp(self):
         """"""
-        print "in setup"
-
-    def test_working(self):
-        # print 'tests invoked'
-        self.assertEqual(True, True)
+        # print "in setup"
+        pass
 
 
 if __name__ == '__main__':
