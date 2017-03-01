@@ -4,6 +4,7 @@
 
 import threading
 
+
 class ThreadSafeDictionary(dict):
 
     """
@@ -11,7 +12,7 @@ class ThreadSafeDictionary(dict):
     """
 
     def __init__(self):
-        vars(self).update( lock=threading.Lock() )
+        vars(self).update(lock=threading.Lock())
 
     def __repr__(self):
         with self.lock:
@@ -82,4 +83,3 @@ class ThreadSafeDictionary(dict):
     def __set__(self, name, value):
         with self.lock:
             return super(ThreadSafeDictionary, self).__set__(name, value)
-

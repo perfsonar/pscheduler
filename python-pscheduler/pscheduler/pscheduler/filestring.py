@@ -2,7 +2,6 @@
 Functions for retrieving strings from files
 """
 
-import os
 
 def string_from_file(string, strip=True):
     """
@@ -23,7 +22,6 @@ def string_from_file(string, strip=True):
             value = content.read()
 
     return value.strip() if strip else value
-
 
 
 if __name__ == "__main__":

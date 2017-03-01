@@ -27,18 +27,16 @@ if not verify_keys:
         requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
 
-
 class URLException(Exception):
     pass
 
 
-
-def url_get( url,          # GET URL
-             params={},    # GET parameters
-             json=True,    # Interpret result as JSON
-             throw=True,   # Throw if status isn't 200
-             timeout=None  # Seconds before giving up
-             ):
+def url_get(url,          # GET URL
+            params={},    # GET parameters
+            json=True,    # Interpret result as JSON
+            throw=True,   # Throw if status isn't 200
+            timeout=None  # Seconds before giving up
+            ):
     """
     Fetch a URL using GET with parameters, returning whatever came back.
     """
@@ -58,8 +56,8 @@ def url_get( url,          # GET URL
 
     if status != 200:
         if throw:
-            raise URLException(url + ": " + str(status)
-                               + ": " + text)
+            raise URLException(url + ": " + str(status) +
+                               ": " + text)
         else:
             return (status, text)
 
@@ -69,13 +67,13 @@ def url_get( url,          # GET URL
         return (status, text)
 
 
-def url_post( url,          # GET URL
-              params={},    # GET parameters
-              data=None,    # Data to post
-              json=True,    # Interpret result as JSON
-              throw=True,   # Throw if status isn't 200
-              timeout=None  # Seconds before giving up
-              ):
+def url_post(url,          # GET URL
+             params={},    # GET parameters
+             data=None,    # Data to post
+             json=True,    # Interpret result as JSON
+             throw=True,   # Throw if status isn't 200
+             timeout=None  # Seconds before giving up
+             ):
     """
     Post to a URL, returning whatever came back.
     """
@@ -92,11 +90,10 @@ def url_post( url,          # GET URL
         status = 500
         text = str(ex)
 
-
     if status != 200 and status != 201:
         if throw:
-            raise URLException("POST " + url + " returned " + str(status)
-                               + ": " + text)
+            raise URLException("POST " + url + " returned " + str(status) +
+                               ": " + text)
         else:
             return (status, text)
 
@@ -106,14 +103,13 @@ def url_post( url,          # GET URL
         return (status, text)
 
 
-
-def url_put( url,          # GET URL
-             params={},    # GET parameters
-             data=None,    # Data for body
-             json=True,    # Interpret result as JSON
-             throw=True,   # Throw if status isn't 200
-             timeout=None  # Seconds before giving up
-             ):
+def url_put(url,          # GET URL
+            params={},    # GET parameters
+            data=None,    # Data for body
+            json=True,    # Interpret result as JSON
+            throw=True,   # Throw if status isn't 200
+            timeout=None  # Seconds before giving up
+            ):
     """
     PUT to a URL, returning whatever came back.
     """
@@ -130,11 +126,10 @@ def url_put( url,          # GET URL
         status = 500
         text = str(ex)
 
-
     if status != 200 and status != 201:
         if throw:
-            raise URLException("PUT " + url + " returned " + str(status)
-                               + ": " + text)
+            raise URLException("PUT " + url + " returned " + str(status) +
+                               ": " + text)
         else:
             return (status, text)
 
@@ -144,12 +139,10 @@ def url_put( url,          # GET URL
         return (status, text)
 
 
-
-
-def url_delete( url,          # DELETE URL
-                throw=True,   # Throw if status isn't 200
-                timeout=None  # Seconds before giving up
-             ):
+def url_delete(url,          # DELETE URL
+               throw=True,   # Throw if status isn't 200
+               timeout=None  # Seconds before giving up
+               ):
     """
     Delete a URL.
     """
@@ -164,22 +157,20 @@ def url_delete( url,          # DELETE URL
         status = 500
         text = str(ex)
 
-
     if status != 200 and throw:
-        raise URLException("DELETE " + url + " returned " + str(status)
-                           + ": " + text)
+        raise URLException("DELETE " + url + " returned " + str(status) +
+                           ": " + text)
 
     return (status, text)
 
 
-
 def url_delete_list(
         urls,
-        timeout=None # Seconds before giving up
-        ):
+        timeout=None  # Seconds before giving up
+):
     """
     Delete a list of URLs and return tuples of the status and error for
     each.  Note that the timeout is per delete, not for the aggregated
     operation.
     """
-    return [ url_delete(url, throw=False, timeout=timeout) for url in urls ]
+    return [url_delete(url, throw=False, timeout=timeout) for url in urls]

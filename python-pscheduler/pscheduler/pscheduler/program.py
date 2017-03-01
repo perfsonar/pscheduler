@@ -20,6 +20,7 @@ import traceback
 initialized = False
 __running = {}
 
+
 def __terminate_running():
     for process in __running:
         try:
@@ -33,6 +34,7 @@ def __terminate_running():
 def __running_add(process):
     if not initialized:
         atexit.register(__terminate_running)
+        # XXX(mmg) should this just be initialized?
         __initialized = True
     __running[process] = 1
 
@@ -44,9 +46,6 @@ def __running_drop(process):
         pass
 
 
-
-
-
 def run_program(argv,              # Program name and args
                 stdin=None,        # What to send to stdin
                 line_call=None,    # Lambda to call when a line arrives
@@ -54,7 +53,7 @@ def run_program(argv,              # Program name and args
                 timeout_ok=False,  # Treat timeouts as not being an error
                 short=False,       # True to force timeout to 2 seconds
                 fail_message=None  # Exit with this failure message
-    ):
+                ):
     """
     Run a program and return the results.
 
@@ -118,7 +117,7 @@ def run_program(argv,              # Program name and args
 
             # Read one line at a time, passing each to the line_call lambda
 
-            if not isinstance(line_call, type(lambda:0)):
+            if not isinstance(line_call, type(lambda: 0)):
                 raise ValueError("Function provided is not a lambda.")
 
             if stdin is not None:
@@ -130,7 +129,7 @@ def run_program(argv,              # Program name and args
             stdout_fileno = process.stdout.fileno()
             stderr_fileno = process.stderr.fileno()
 
-            fds = [ stdout_fileno, stderr_fileno ]
+            fds = [stdout_fileno, stderr_fileno]
 
             end_time = pscheduler.time_now() \
                 + pscheduler.seconds_as_timedelta(timeout)
@@ -138,7 +137,7 @@ def run_program(argv,              # Program name and args
             while True:
 
                 time_left = pscheduler.timedelta_as_seconds(
-                    end_time - pscheduler.time_now() )
+                    end_time - pscheduler.time_now())
 
                 reads, writes, specials = select.select(fds, [], [], time_left)
 
@@ -156,7 +155,7 @@ def run_program(argv,              # Program name and args
                         if line != '':
                             stderr += line
 
-                if process.poll() != None:
+                if process.poll() is not None:
                     break
 
             process.wait()
@@ -171,7 +170,6 @@ def run_program(argv,              # Program name and args
         stderr = ''.join(traceback.format_exception_only(extype, ex)) \
             + ''.join(traceback.format_exception(extype, ex, tb)).strip()
 
-
     if process is not None:
         __running_drop(process)
 
@@ -179,7 +177,6 @@ def run_program(argv,              # Program name and args
         pscheduler.fail("%s: %s" % (fail_message, stderr))
 
     return status, stdout, stderr
-
 
 
 if __name__ == "__main__":
@@ -190,7 +187,7 @@ if __name__ == "__main__":
         print "Exiting on signal %d" % signum
         exit(0)
 
-    for sig in [ signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM ]:
+    for sig in [signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM]:
         signal.signal(sig, exit_handler)
 
     status, out, err = run_program(["cat", "/etc/issue", "-"],
@@ -201,11 +198,9 @@ if __name__ == "__main__":
     print "Out:   ", out
     print "Err:   ", err
 
-
     # Use this when testing termination
     if False:
         status, out, err = run_program(["sleep", "15"])
         print "Status:", status
         print "Out:   ", out
         print "Err:   ", err
-

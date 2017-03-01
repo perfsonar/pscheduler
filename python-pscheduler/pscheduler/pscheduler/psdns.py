@@ -6,7 +6,6 @@ import dns.reversename
 import dns.resolver
 import multiprocessing
 import multiprocessing.dummy
-import os
 import Queue
 import socket
 import threading
@@ -18,12 +17,13 @@ import weakref
 
 __DEFAULT_TIMEOUT__ = 2
 
+
 def dns_default_timeout():
     return __DEFAULT_TIMEOUT__
 
 
 def __check_ip_version__(ip_version):
-    if not ip_version in [4, 6]:
+    if ip_version not in [4, 6]:
         raise ValueError("Invalid IP version; must be 4 or 6")
 
 
@@ -69,7 +69,6 @@ def __dns_resolve_host(host, ip_version, timeout):
     return str(ip[0])
 
 
-
 def dns_resolve(host,
                 query=None,
                 ip_version=4,
@@ -107,10 +106,6 @@ def dns_resolve(host,
         return str(answers[0])
 
 
-
-
-
-
 def dns_resolve_reverse(ip,
                         timeout=__DEFAULT_TIMEOUT__):
     """
@@ -132,7 +127,6 @@ def dns_resolve_reverse(ip,
             dns.exception.SyntaxError,
             dns.resolver.NoNameservers):
         return None
-
 
 
 #
@@ -185,18 +179,17 @@ def dns_bulk_resolve(candidates, reverse=False, ip_version=None, threads=50):
         threading.current_thread()._children = weakref.WeakKeyDictionary()
 
     pool = multiprocessing.dummy.Pool(
-        processes=min(len(candidates), threads) )
+        processes=min(len(candidates), threads))
 
-    candidate_args = [ (candidate, ip_version) for candidate in candidates ]
+    candidate_args = [(candidate, ip_version) for candidate in candidates]
 
     for ip, name in pool.imap(
-        __reverser__ if reverse else __forwarder__,
-        candidate_args,
-        chunksize=1):
+            __reverser__ if reverse else __forwarder__,
+            candidate_args,
+            chunksize=1):
         result[ip] = name
     pool.close()
     return result
-
 
 
 if __name__ == "__main__":
@@ -213,13 +206,11 @@ if __name__ == "__main__":
         'does-not-exist.internet2.edu',
     ], ip_version=4)
 
-
     print "IPv6:"
     print dns_resolve('www.perfsonar.net', ip_version=6)
     print dns_bulk_resolve([
         'www.perfsonar.net',
     ], ip_version=6)
-
 
     print "Bulk reverse:"
     print dns_bulk_resolve([
@@ -233,4 +224,4 @@ if __name__ == "__main__":
 
     print "Bulk none:"
     print dns_bulk_resolve([
-            ])
+    ])

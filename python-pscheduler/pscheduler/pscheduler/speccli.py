@@ -4,6 +4,7 @@ Functions for use in spec-to-cli methods
 
 import pscheduler
 
+
 def speccli_build_args(json, strings=[], bools=[]):
     """
     Build an array of command-line switches from a flat JSON object
@@ -44,6 +45,6 @@ def speccli_build_args(json, strings=[], bools=[]):
             else:
                 result.append('--no-' + option)
         except KeyError:
-            pass  # Missing key is okay.     
+            pass  # Missing key is okay.
 
     return result
