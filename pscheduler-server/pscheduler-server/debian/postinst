@@ -65,6 +65,25 @@ pg_upgrade() {
         echo Cluster upgrade failed
         return
     fi
+
+    if ! service postgresql stop; then
+        echo Could not stop postgresql service
+        return
+    fi
+
+    if ! sed -i 's/^auto/manual/' /etc/postgresql/9.6/main_dist/start.conf; then
+        echo Could not disable 9.6 main_dist cluster
+        return
+    fi
+
+    if [ -d /run/systemd/system ]; then
+        systemctl daemon-reload
+    fi
+
+    if ! service postgresql start; then
+        echo Could not start postgresql service
+        return
+    fi
 }
 
 case "$1" in
