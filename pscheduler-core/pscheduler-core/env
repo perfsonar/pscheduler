@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+# Dump environment variables that might be interesting to pScheduler.
+#
+
+if [ "$1" = "--help" ]
+then
+    echo "Usage: env"
+    echo
+    echo "Dump environment variables interesting to pScheduler"
+    exit 0
+fi
+
+env | egrep -e '^PSCHEDULER_' | sort
+
+exit 0

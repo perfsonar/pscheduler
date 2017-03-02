@@ -248,7 +248,7 @@ __dictionary__ = {
     "Number": { "type": "number" },
 
     "Numeric": {
-        "oneOf": [
+        "anyOf": [
             { "$ref": "#/pScheduler/Number" },
             { "$ref": "#/pScheduler/SINumber" },
             ]
@@ -297,9 +297,16 @@ __dictionary__ = {
 
 
     "SINumber":  {
-        "type": "string",
-        "pattern": "^[0-9]+(\\.[0-9]+)?(\\s*[KkMmGgTtPpEeZzYy][Ii]?)?$"
-        },
+        "oneOf": [
+            {
+                "type": "string",
+                "pattern": "^[0-9]+(\\.[0-9]+)?(\\s*[KkMmGgTtPpEeZzYy][Ii]?)?$"
+            },
+            {
+                "type": "integer"
+            }
+        ]
+    },
 
     # TODO: This should be subsumed by NumericRange,
     "SINumberRange": {

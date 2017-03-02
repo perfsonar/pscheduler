@@ -90,7 +90,7 @@ elif role == SERVER_ROLE:
     #Select port
     if user_ctrl_port and user_ctrl_port in ctrl_ports:
         #prefer user port if in range of known existing servers
-        result['ctrl-port'] = ctrl_port
+        result['ctrl-port'] = user_ctrl_port
     elif user_ctrl_port:
         #specified control-port with no known server
         pscheduler.fail("The specified ctrl-port has no known running owamp-server " +

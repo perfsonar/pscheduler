@@ -56,7 +56,7 @@ def address_interface(addr):
     # IP address before looking up interfaces
     addr = pscheduler.dns_resolve(addr)
     if addr == None:
-        addr = dns_resolve(addr, ip_version=6)
+        addr = pscheduler.dns_resolve(addr, ip_version=6)
 
     all_interfaces = netifaces.interfaces()
     for intf in all_interfaces:

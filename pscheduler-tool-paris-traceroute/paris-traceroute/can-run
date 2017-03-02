@@ -80,9 +80,9 @@ except KeyError:
 # hostnames - All are supported
 
 try:
-    dest_port = spec['dest-port']
+    protocol = spec['probe-type']
     if not protocol in ['udp', 'tcp']:
-        errors.append("Cannot support destination port on " . protocol)
+        errors.append("Cannot support probe type %s" % protocol)
 except KeyError:
     pass  # None is okay.
 

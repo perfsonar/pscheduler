@@ -129,6 +129,7 @@ def dns_resolve_reverse(ip,
         return str(answers[0])
     except (dns.exception.Timeout,
             dns.resolver.NXDOMAIN,
+            dns.resolver.NoAnswer,
             dns.exception.SyntaxError,
             dns.resolver.NoNameservers):
         return None

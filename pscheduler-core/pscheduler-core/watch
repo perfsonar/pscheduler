@@ -273,17 +273,39 @@ while True:
             if "state" not in result:
                 pscheduler.fail("Data returned from the server doesn't look like a run result.")
 
-            if result["state"] == "nonstart":
+            if result["state"] in ["nonstart", "failed"]:
                 try:
                     reason = result["errors"] 
                 except KeyError:
                     reason = "No reason provided."
-                pscheduler.fail("Run never started: %s" % reason)
+
+                text = "Run never started"
+                if result["state"] == "failed":
+                    text = "Run failed"
+            
+                # super awesome 3.5 backwards compatibility hack check
+                # TODO: remove this in 4.1 or whenever support for 4->3.5 testing is removed
+                # HACK: BWCTLBC
+                # change back to just this ----v 
+                # pscheduler.fail("%s: %s" % (text, reason))
+                message = "%s: %s" % (text, reason)
+
+                try:
+                    dest = task["test"]["spec"].get("dest")
+                    source = task["test"]["spec"].get("source")
+                    
+                    if (dest and pscheduler.api_has_bwctl(dest)) or (source and pscheduler.api_has_bwctl(source)):
+                        message += "\nPlease note that if you are testing with a mixture of pScheduler enabled hosts and legacy BWCTL hosts, certain options such as --tool may result in this error message. To ensure backwards compatibility mode is used, do not specify --tool if either end is a BWCTL based host. If possible, the perfSONAR team strongly recommends upgrading as backwards compatibility support will be dropped in a future release."
+                except KeyError:
+                    pass
+
+                pscheduler.fail(message)
+                # end super awesome 3.5 hack
 
             if result["state"] in ["pending", "on-deck", "running", "cleanup"]:
                 pscheduler.fail("Run has not completed.")
 
-            if result["state"] in ["overdue", "missed", "trumped"]:
+            if result["state"] in ["overdue", "missed", "preempted"]:
                 pscheduler.fail("Run did not complete: %s" % result["state-display"])
 
 
@@ -300,6 +322,7 @@ while True:
                     # punish the user if there isn't.
                     print "  (No error reported)"
                 print
+
 
         continue
 

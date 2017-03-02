@@ -313,16 +313,6 @@ BEGIN
 	    RAISE EXCEPTION 'Insertion time cannot be updated.';
 	END IF;
 
-	-- TODO: We don't really need to do this since the JSON is validated.
-	FOR key IN (SELECT jsonb_object_keys(NEW.json))
-	LOOP
-	   -- Ignore comments
-	   IF (left(key, 1) <> '#')
-	      AND (key NOT IN ('schema', 'test', 'tool', 'tools', 'schedule', 'archives', 'reference')) THEN
-	      RAISE EXCEPTION 'Unrecognized section "%" in task package.', key;
-	   END IF;
-	END LOOP;
-
 
 	--
 	-- TEST
