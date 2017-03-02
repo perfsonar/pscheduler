@@ -12,8 +12,12 @@ class TestDb(PschedTestBase):
     Db tests.
     """
 
-    def test_one(self):
-        """"""
+    def test_db(self):
+        """Test db"""
+
+        # XXX(mmg): probably not a reliable way to test this
+        # since there is no one size fits all to connect to
+        # a db.
         pass
 
 
