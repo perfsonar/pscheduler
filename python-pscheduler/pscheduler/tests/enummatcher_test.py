@@ -20,11 +20,15 @@ class TestEnummatcher(PschedTestBase):
         # XXX(mmg): This code from the module just throws an exception.
         # revisit.
 
+        # XXX(mmg): There is a new version of this but not sure how it
+        # should work.
+
         # matcher = EnumMatcher({
         #     "enumeration": ["foo", "bar", "biz"],
-        #     "invert": False
         # })
         # print matcher
+
+        # print matcher.contains(['foo'])
 
         pass
 

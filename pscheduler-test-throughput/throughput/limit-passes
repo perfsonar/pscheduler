@@ -109,6 +109,26 @@ def check_limit(input_json):
         pass  # Not there?  Don't care.
 
 
+    #
+    # Restrict number of parallel streams
+    #
+
+    try:
+        match = pscheduler.NumericRange(limit["parallel"]['range'])
+
+        # no sense to invert this
+        contains, message = match.contains(spec["parallel"])
+
+        if not contains:
+            try:
+                errors.append(limit["parallel"]["fail-message"])
+            except KeyError:
+                errors.append("Parallel setting of %s is not allowed" % spec["parallel"])
+
+    except KeyError:
+        pass  # Not there?  Don't care.
+
+
     return errors
 
 
@@ -146,6 +166,11 @@ if __name__ == "__main__":
             },
         'ip-version': {
             'enumeration': [6]
+            },
+        'parallel': {
+            'range': {
+                'upper': 5, 'lower': 1
+                }
             }
         }
 
@@ -153,14 +178,22 @@ if __name__ == "__main__":
         "dest": "10.0.2.4",
         "source": "10.0.2.15",
         "ip-version": 6,
-        "schema": 1
+        "schema": 1,
+        "parallel": 3
     }
 
     result = check_limit({"spec": spec, "limit": limit})
-    print "Should pass:", (result == [])
+    print "Should be true:", (result == [])
 
 
     spec['bandwidth'] = 10 * (1000 * 1000 * 1000)
     result = check_limit({"spec": spec, "limit": limit})
-    print "Should not pass:", (result == [])
+    print "Should be false:", (result == [])
+    print result
+
+    del spec['bandwidth']
+    spec['parallel'] = 100
+    print spec
+    result = check_limit({"spec": spec, "limit": limit})
+    print "Should be false:", (result == [])
     print result

@@ -15,13 +15,13 @@ class EnumMatcher():
         an EnumMatch as described in the pScheduler JSON Style Guide
         and Type Dictionary.
         """
-        valid, message = json_validate({"enumeration": enum},
-                                       {"type": "object",
-                                        "properties": {
-                                            "enumeration": {"$ref": "#/pScheduler/EnumMatch"}
-                                        },
-                                        "additionalProperties": False
-                                        })
+        valid, message = json_validate(enum,
+                                       { "type": "object",
+                                         "properties": {
+                                             "enumeration": { "$ref": "#/pScheduler/EnumMatch" }
+                                         },
+                                         "additionalProperties": False
+                                         })
 
         if not valid:
             raise ValueError("Invalid match: " + message)
