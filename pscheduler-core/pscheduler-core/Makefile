@@ -22,6 +22,7 @@ RAWPROGRAMS=\
 COMMANDS=\
 	cancel \
 	clock \
+	env \
 	result \
 	schedule \
 	monitor \
