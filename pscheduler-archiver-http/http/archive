@@ -1,0 +1,47 @@
+#!/usr/bin/python
+#
+# Send a result to http.
+#
+
+import pscheduler
+import pscheduler.psurl
+
+json = pscheduler.json_load(exit_on_error=True)
+
+errors = ()
+
+try:
+    url = json['data']['_url']
+except KeyError:
+    raise RuntimeError("Reached code that wasn't supposed to be reached.")
+
+try:
+    op = json['data']['op']
+except KeyError:
+    op = 'post'
+
+if op == 'post':
+    try:
+	pscheduler.psurl.url_post( url, data=pscheduler.json_dump(json['result']), json=False )
+    except Exception as ex:
+	pscheduler.succeed_json({
+	    "succeeded": False,
+	    "error": "Failed to log result: %s" % str(ex)
+	})
+
+elif op == 'put':
+    try:
+	pscheduler.psurl.url_put( url, data=pscheduler.json_dump(json['result']), json=False )
+    except Exception as ex:
+	pscheduler.succeed_json({
+	    "succeeded": False,
+	    "error": "Failed to log result: %s" % str(ex)
+	})
+
+else:
+    pscheduler.succeed_json({
+	"succeeded": False,
+	"error": "Invalid op arg: %s" % op
+    })
+
+pscheduler.succeed_json({'succeeded': True})
