@@ -21,7 +21,7 @@ def get_config():
         config = ConfigParser.ConfigParser()
         config.read(CONFIG_FILE)
     except:
-        logger.warn("Unable to read configuration file %s. Proceeding with defaults." % CONFIG_FILE)
+        logger.warning("Unable to read configuration file %s. Proceeding with defaults." % CONFIG_FILE)
         return obj
 
     if config.has_option("nuttcp", "nuttcp_cmd"):

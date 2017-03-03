@@ -70,7 +70,7 @@ def cleanup_file(tmpfile, keep_data_files=False):
     try:
         os.remove(tmpfile)
     except:
-        log.warning("Unable to remove powstream temporary directory %s: %s" % (tmpdir, sys.exc_info()[0]))
+        log.warning("Unable to remove powstream temporary file %s: %s" % (tmpfile, sys.exc_info()[0]))
 
 ##
 # Handles reporting errors in pscheduler format
