@@ -37,8 +37,7 @@ if format == 'text/plain':
       print 'CNAME ........ %s' % input['result']['record']
    elif i == 'mx':
       for r in input['result']['record']:
-	 print 'Pref ......... %d' % r['pref']
-	 print 'MX ........... %s' % r['mx']
+	 print 'Pref ......... %3d %s' % (r['pref'], r['mx'])
    elif i == 'ns':
       for r in input['result']['record']:
 	 print 'NS ........... %s' % r
