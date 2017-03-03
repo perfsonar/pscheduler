@@ -283,7 +283,7 @@ while True:
             if result["state"] in ["pending", "on-deck", "running", "cleanup"]:
                 pscheduler.fail("Run has not completed.")
 
-            if result["state"] in ["overdue", "missed", "trumped"]:
+            if result["state"] in ["overdue", "missed", "preempted"]:
                 pscheduler.fail("Run did not complete: %s" % result["state-display"])
 
 
