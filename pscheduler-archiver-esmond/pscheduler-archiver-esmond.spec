@@ -51,8 +51,8 @@ make \
 %post
 pscheduler internal warmboot
 
-#TODO: For final, only do this on new install
-#if [ "$1" = "1" ]; then
+#Only start memcached on new install so people have ability to disable if they so desire
+if [ "$1" = "1" ]; then
 
 %if 0%{?el7}
     #enable memcached on new install
@@ -63,7 +63,7 @@ pscheduler internal warmboot
     /sbin/service memcached start
 %endif
 
-#fi
+fi
 
 
 

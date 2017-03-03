@@ -163,7 +163,8 @@ LIMIT_SCHEMA = {
         "bandwidth":  { "$ref": "#/pScheduler/Limit/SINumber" },
         "duration":   { "$ref": "#/pScheduler/Limit/Duration" },
         "udp":        { "$ref": "#/pScheduler/Limit/Boolean" },
-        "ip-version": { "$ref": "#/pScheduler/Limit/IPVersionList" }
+        "ip-version": { "$ref": "#/pScheduler/Limit/IPVersionList" },
+        "parallel":   { "$ref": "#/pScheduler/Limit/Cardinal"}
         },
     "additionalProperties": False
     }

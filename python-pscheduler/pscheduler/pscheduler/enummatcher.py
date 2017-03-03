@@ -15,7 +15,7 @@ class EnumMatcher():
         an EnumMatch as described in the pScheduler JSON Style Guide
         and Type Dictionary.
         """
-        valid, message = json_validate({"enumeration": enum },
+        valid, message = json_validate(enum,
                                        { "type": "object",
                                          "properties": {
                                              "enumeration": { "$ref": "#/pScheduler/EnumMatch" }
