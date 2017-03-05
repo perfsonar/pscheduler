@@ -17,29 +17,38 @@ import traceback
 # when the program exits.  Note that it would behoove any callers to
 # make sure they exit cleanly on most signals so this gets called.
 
-initialized = False
-__running = {}
+this = sys.modules[__name__]
+this.running = None
 
 def __terminate_running():
-    for process in __running:
+    """Internal use:  Terminate a running process."""
+    __init_running()
+    for process in this.running:
         try:
             process.terminate()
         except Exception:
             pass  # This is a best-effort effort.
     # Sometimes this gets called twice, so clean the list.
-    __running.clear()
+    this.running.clear()
 
+
+def __init_running():
+    """Internal use:  Initialize the running hash if it isn't."""
+    if this.running is None:
+        this.running = {}
+        atexit.register(__terminate_running)
 
 def __running_add(process):
-    if not initialized:
-        atexit.register(__terminate_running)
-        __initialized = True
-    __running[process] = 1
+    """Internal use:  Add a running process."""
+    __init_running()
+    this.running[process] = 1
 
 
 def __running_drop(process):
+    """Internal use:  Drop a running process."""
+    __init_running()
     try:
-        del __running[process]
+        del this.running[process]
     except KeyError:
         pass
 
@@ -151,10 +160,10 @@ def run_program(argv,              # Program name and args
                 stdin=None,        # What to send to stdin
                 line_call=None,    # Lambda to call when a line arrives
                 timeout=None,      # Seconds
+                short=False,       # Force timeout to two seconds
                 timeout_ok=False,  # Treat timeouts as not being an error
-                short=False,       # True to force timeout to 2 seconds
                 fail_message=None  # Exit with this failure message
-    ):
+                ):
     """
     Run a program and return the results.
 
@@ -177,17 +186,20 @@ def run_program(argv,              # Program name and args
     stderr - Contents of standard erroras a single string
     """
 
+    if short:
+        timeout = 2
+
     process = None
 
-    if filter(lambda v: v is None, argv):
+    if [arg for arg in argv if arg is None]:
         raise Exception("Can't run with null arguments.")
 
     try:
         process = _Popen(argv,
                          stdin=subprocess32.PIPE,
                          stdout=subprocess32.PIPE,
-                         stderr=subprocess32.PIPE
-                     )
+                         stderr=subprocess32.PIPE)
+
 
         __running_add(process)
 
@@ -208,9 +220,6 @@ def run_program(argv,              # Program name and args
                 process.communicate()
 
                 status = 0 if timeout_ok else 2
-
-                # TODO: See if the exception has the contents of stdout and
-                # stderr available.
                 stdout = ''
                 stderr = "Process took too long to run."
 
@@ -218,7 +227,7 @@ def run_program(argv,              # Program name and args
 
             # Read one line at a time, passing each to the line_call lambda
 
-            if not isinstance(line_call, type(lambda:0)):
+            if not isinstance(line_call, type(lambda: 0)):
                 raise ValueError("Function provided is not a lambda.")
 
             if stdin is not None:
@@ -230,7 +239,7 @@ def run_program(argv,              # Program name and args
             stdout_fileno = process.stdout.fileno()
             stderr_fileno = process.stderr.fileno()
 
-            fds = [ stdout_fileno, stderr_fileno ]
+            fds = [stdout_fileno, stderr_fileno]
 
             if timeout is not None:
                 end_time = pscheduler.time_now() \
@@ -242,33 +251,33 @@ def run_program(argv,              # Program name and args
 
                 if timeout is not None:
                     time_left = pscheduler.timedelta_as_seconds(
-                        end_time - pscheduler.time_now() )
+                        end_time - pscheduler.time_now())
 
-                reads, writes, specials = select.select(fds, [], [], time_left)
+                reads, _, _ = select.select(fds, [], [], time_left)
 
                 if len(reads) == 0:
                     __running_drop(process)
                     return 2, None, "Process took too long to run."
 
-                for fd in reads:
-                    if fd == stdout_fileno:
-                        line = process.stdout.readline()
-                        if line != '':
-                            line_call(line[:-1])
-                    elif fd == stderr_fileno:
-                        line = process.stderr.readline()
-                        if line != '':
-                            stderr += line
+                for readfd in reads:
+                    if readfd == stdout_fileno:
+                        got_line = process.stdout.readline()
+                        if got_line != '':
+                            line_call(got_line[:-1])
+                    elif readfd == stderr_fileno:
+                        got_line = process.stderr.readline()
+                        if got_line != '':
+                            stderr += got_line
 
                 if process.poll() != None:
                     break
 
             # Siphon off anything left on stdout
             while True:
-                line = process.stdout.readline()
-                if line == '':
+                got_line = process.stdout.readline()
+                if got_line == '':
                     break
-                line_call(line[:-1])
+                line_call(got_line[:-1])
 
             process.wait()
 
@@ -276,11 +285,11 @@ def run_program(argv,              # Program name and args
             stdout = None
 
     except Exception as ex:
-        extype, ex_dummy, tb = sys.exc_info()
+        extype, _, trace = sys.exc_info()
         status = 2
         stdout = ''
         stderr = ''.join(traceback.format_exception_only(extype, ex)) \
-            + ''.join(traceback.format_exception(extype, ex, tb)).strip()
+            + ''.join(traceback.format_exception(extype, ex, trace)).strip()
 
 
     if process is not None:
@@ -295,18 +304,8 @@ def run_program(argv,              # Program name and args
 
 if __name__ == "__main__":
 
-    import signal
-
-    def exit_handler(signum, frame):
-        print "Exiting on signal %d" % signum
-        exit(0)
-
-    for sig in [ signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM ]:
-        signal.signal(sig, exit_handler)
-
-
-
     def dump_result(title, tup):
+        """Spit out a run result"""
         print
         print "#\n# %s\n#" % (title)
         (status, stdout, stderr) = tup
@@ -343,8 +342,9 @@ if __name__ == "__main__":
 
     if do_all or False:
         lines = []
-        def line_writer(line):
-            lines.append(line)
+        def line_writer(add_line):
+            """Add a line to the list of those received."""
+            lines.append(add_line)
 
         dump_result(
             "Line-at-a-time",
