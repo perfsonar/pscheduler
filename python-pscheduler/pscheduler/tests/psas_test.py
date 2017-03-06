@@ -6,15 +6,36 @@ import unittest
 
 from base_test import PschedTestBase
 
+from pscheduler.psas import as_bulk_resolve
+
 
 class TestPsas(PschedTestBase):
     """
     Psas tests.
     """
 
-    def test_one(self):
-        """"""
-        pass
+    def test_bulk_resolve(self):
+        """Bulk resolve test"""
+        ips = [
+            '8.8.8.8',
+            '2607:f8b0:4002:c06::67',
+            '198.6.1.1',
+            'this-is-not-valid',
+        ]
+
+        res = as_bulk_resolve(ips)
+
+        self.assertIsNone(res.get('this-is-not-valid'))
+        # XXX(mmg): are these tests stable? 8.8.8.8 should be.
+        self.assertEqual(
+            res.get('8.8.8.8'),
+            (15169, 'GOOGLE - Google Inc., US'))
+        self.assertEqual(
+            res.get('2607:f8b0:4002:c06::67'),
+            (15169, 'GOOGLE - Google Inc., US'))
+        self.assertEqual(
+            res.get('198.6.1.1'),
+            (701, 'UUNET - MCI Communications Services, Inc. d/b/a Verizon Business, US'))
 
 
 if __name__ == '__main__':
