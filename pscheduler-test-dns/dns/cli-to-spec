@@ -32,7 +32,7 @@ else:
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """Examples:
 
-  task dns --query umich.edu --record SOA 
+  task dns --query example.net --record soa
     text
 
 """

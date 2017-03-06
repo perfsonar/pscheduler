@@ -214,7 +214,7 @@ def update_tasks(screen):
         elif state in [ "overdue", "missed", "failed" ]:
             # TODO: Color red
             line_attr = curses.A_BOLD
-        elif state in [ "trumped" ]:
+        elif state in [ "preempted" ]:
             # TODO: Color yellow
             line_attr = curses.A_NORMAL
         else:
