@@ -12,8 +12,9 @@ class TestProgram(PschedTestBase):
     Program tests.
     """
 
-    def test_one(self):
+    def test_program(self):
         """"""
+        # XXX(mmg) - not sure what to test yet.
         pass
 
 
