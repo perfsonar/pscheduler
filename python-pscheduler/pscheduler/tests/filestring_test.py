@@ -15,7 +15,7 @@ class TestFilestring(PschedTestBase):
     """
 
     def test_filestring(self):
-        """"""
+        """Filestring tests"""
         self.assertEqual(string_from_file("Plain string"), 'Plain string')
 
         fstab = string_from_file("@/etc/fstab")
