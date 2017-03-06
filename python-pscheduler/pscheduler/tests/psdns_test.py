@@ -26,7 +26,7 @@ class TestPsdns(PschedTestBase):
     def test_bulk_resolve(self):
         """Bulk resolve test."""
 
-        res = dns_bulk_resolve([
+        ret = dns_bulk_resolve([
             'www.perfsonar.net',
             'www.es.net',
             'www.geant.org',
@@ -37,18 +37,18 @@ class TestPsdns(PschedTestBase):
         ], ip_version=4)
 
         # these should be stable
-        self.assertIsNone(res.get('does-not-exist.internet2.edu'))
-        self.assertEqual(res.get('google-public-dns-a.google.com'), '8.8.8.8')
+        self.assertIsNone(ret.get('does-not-exist.internet2.edu'))
+        self.assertEqual(ret.get('google-public-dns-a.google.com'), '8.8.8.8')
 
         # ipv6
-        res = dns_bulk_resolve([
+        ret = dns_bulk_resolve([
             'www.perfsonar.net',
         ], ip_version=6)
 
-        self.assertEqual(res.get('www.perfsonar.net'), '2001:48a8:68fe::248')
+        self.assertEqual(ret.get('www.perfsonar.net'), '2001:48a8:68fe::248')
 
         # reverse
-        res = dns_bulk_resolve([
+        ret = dns_bulk_resolve([
             '192.168.12.34',
             '8.8.8.8',
             '198.6.1.1',
@@ -57,8 +57,8 @@ class TestPsdns(PschedTestBase):
             'this-is-not-valid'
         ], reverse=True)
 
-        self.assertIsNone(res.get('this-is-not-valid'))
-        self.assertEqual(res.get('8.8.8.8'), 'google-public-dns-a.google.com.')
+        self.assertIsNone(ret.get('this-is-not-valid'))
+        self.assertEqual(ret.get('8.8.8.8'), 'google-public-dns-a.google.com.')
 
         # bulk none - empty dict
         self.assertEqual(dns_bulk_resolve([]), dict())

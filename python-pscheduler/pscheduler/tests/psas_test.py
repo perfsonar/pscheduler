@@ -23,18 +23,18 @@ class TestPsas(PschedTestBase):
             'this-is-not-valid',
         ]
 
-        res = as_bulk_resolve(ips)
+        ret = as_bulk_resolve(ips)
 
-        self.assertIsNone(res.get('this-is-not-valid'))
+        self.assertIsNone(ret.get('this-is-not-valid'))
         # XXX(mmg): are these tests stable? 8.8.8.8 should be.
         self.assertEqual(
-            res.get('8.8.8.8'),
+            ret.get('8.8.8.8'),
             (15169, 'GOOGLE - Google Inc., US'))
         self.assertEqual(
-            res.get('2607:f8b0:4002:c06::67'),
+            ret.get('2607:f8b0:4002:c06::67'),
             (15169, 'GOOGLE - Google Inc., US'))
         self.assertEqual(
-            res.get('198.6.1.1'),
+            ret.get('198.6.1.1'),
             (701, 'UUNET - MCI Communications Services, Inc. d/b/a Verizon Business, US'))
 
 
