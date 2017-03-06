@@ -16,12 +16,12 @@ class EnumMatcher():
         and Type Dictionary.
         """
         valid, message = json_validate(enum,
-                                       { "type": "object",
-                                         "properties": {
-                                             "enumeration": { "$ref": "#/pScheduler/EnumMatch" }
-                                         },
-                                         "additionalProperties": False
-                                         })
+                                       {"type": "object",
+                                        "properties": {
+                                            "enumeration": {"$ref": "#/pScheduler/EnumMatch"}
+                                        },
+                                        "additionalProperties": False
+                                        })
 
         if not valid:
             raise ValueError("Invalid match: " + message)
