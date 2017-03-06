@@ -203,7 +203,7 @@ try:
         send_wait_secs *= 1000.0
 
     argv.append('-z')
-    argv.append(str(send_wait_value))
+    argv.append(str(send_wait_secs))
 except KeyError:
     # This will be used in a calculation later.
     send_wait = datetime.timedelta()
