@@ -6,15 +6,62 @@ import unittest
 
 from base_test import PschedTestBase
 
+from pscheduler.psdns import dns_resolve, dns_bulk_resolve
+
 
 class TestPsdns(PschedTestBase):
     """
     Psdns tests.
     """
 
-    def test_one(self):
-        """"""
-        pass
+    def test_resolve(self):
+        """Resolve test"""
+
+        self.assertEqual(dns_resolve('localhost'), '127.0.0.1')
+        self.assertEqual(dns_resolve('google-public-dns-a.google.com'), '8.8.8.8')
+        # XXX(mmg): are the following checks stable?
+        self.assertEqual(
+            dns_resolve('www.perfsonar.net', ip_version=6), '2001:48a8:68fe::248')
+
+    def test_bulk_resolve(self):
+        """Bulk resolve test."""
+
+        res = dns_bulk_resolve([
+            'www.perfsonar.net',
+            'www.es.net',
+            'www.geant.org',
+            'www.iu.edu',
+            'www.internet2.edu',
+            'does-not-exist.internet2.edu',
+            'google-public-dns-a.google.com',
+        ], ip_version=4)
+
+        # these should be stable
+        self.assertIsNone(res.get('does-not-exist.internet2.edu'))
+        self.assertEqual(res.get('google-public-dns-a.google.com'), '8.8.8.8')
+
+        # ipv6
+        res = dns_bulk_resolve([
+            'www.perfsonar.net',
+        ], ip_version=6)
+
+        self.assertEqual(res.get('www.perfsonar.net'), '2001:48a8:68fe::248')
+
+        # reverse
+        res = dns_bulk_resolve([
+            '192.168.12.34',
+            '8.8.8.8',
+            '198.6.1.1',
+            '8.8.8.0',
+            '2607:f8b0:4002:c06::67',
+            'this-is-not-valid'
+        ], reverse=True)
+
+        self.assertIsNone(res.get('this-is-not-valid'))
+        self.assertEqual(res.get('8.8.8.8'), 'google-public-dns-a.google.com.')
+
+        # bulk none - empty dict
+        self.assertEqual(dns_bulk_resolve([]), dict())
 
 
 if __name__ == '__main__':
