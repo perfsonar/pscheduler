@@ -17,35 +17,35 @@ import jsonschema
 # Types from the dictionary
 #
 __dictionary__ = {
-    
+
     #
     # JSON Types
     #
 
     "AnyJSON": {
         "oneOf": [
-            { "type": "array" },
-            { "type": "boolean" },
-            { "type": "integer" },
-            { "type": "null" },
-            { "type": "number" },
-            { "type": "object" },
-            { "type": "string" }
-            ]
-        },
+            {"type": "array"},
+            {"type": "boolean"},
+            {"type": "integer"},
+            {"type": "null"},
+            {"type": "number"},
+            {"type": "object"},
+            {"type": "string"}
+        ]
+    },
 
-    "Array": { "type": "array" },
+    "Array": {"type": "array"},
 
     "AS": {
         "type": "object",
-        "properties": {            
-            "number": { "$ref": "#/pScheduler/Cardinal" },
-            "owner": { "type": "string" },
-            },
-        "required": [ "number" ]
+        "properties": {
+            "number": {"$ref": "#/pScheduler/Cardinal"},
+            "owner": {"type": "string"},
         },
+        "required": ["number"]
+    },
 
-    "Boolean": { "type": "boolean" },
+    "Boolean": {"type": "boolean"},
 
     "Cardinal": {
         "type": "integer",
@@ -54,50 +54,50 @@ __dictionary__ = {
 
     "CardinalList": {
         "type": "array",
-        "items": { "$ref": "#/pScheduler/Cardinal" },
+        "items": {"$ref": "#/pScheduler/Cardinal"},
     },
 
     "CardinalRange": {
         "type": "object",
         "properties": {
-            "lower": { "$ref": "#/pScheduler/Cardinal" },
-            "upper": { "$ref": "#/pScheduler/Cardinal" }
+            "lower": {"$ref": "#/pScheduler/Cardinal"},
+            "upper": {"$ref": "#/pScheduler/Cardinal"}
         },
         "additionalProperties": False,
-        "required": [ "lower", "upper" ]
+        "required": ["lower", "upper"]
     },
 
     "CardinalZero": {
         "type": "integer",
         "minimum": 0,
-        },
+    },
 
     "CardinalZeroList": {
         "type": "array",
-        "items": { "$ref": "#/pScheduler/CardinalZero" },
+        "items": {"$ref": "#/pScheduler/CardinalZero"},
     },
 
     "CardinalZeroRange": {
         "type": "object",
         "properties": {
-            "lower": { "$ref": "#/pScheduler/CardinalZero" },
-            "upper": { "$ref": "#/pScheduler/CardinalZero" }
+            "lower": {"$ref": "#/pScheduler/CardinalZero"},
+            "upper": {"$ref": "#/pScheduler/CardinalZero"}
         },
         "additionalProperties": False,
-        "required": [ "lower", "upper" ]
+        "required": ["lower", "upper"]
     },
 
     "ClockState": {
         "type": "object",
         "properties": {
-            "time":         { "$ref": "#/pScheduler/Timestamp" },
-            "synchronized": { "$ref": "#/pScheduler/Boolean" },
-            "source":       { "$ref": "#/pScheduler/String" },
-            "reference":    { "$ref": "#/pScheduler/String" },
-            "offset":       { "$ref": "#/pScheduler/Number" },
+            "time":         {"$ref": "#/pScheduler/Timestamp"},
+            "synchronized": {"$ref": "#/pScheduler/Boolean"},
+            "source":       {"$ref": "#/pScheduler/String"},
+            "reference":    {"$ref": "#/pScheduler/String"},
+            "offset":       {"$ref": "#/pScheduler/Number"},
         },
         "additionalProperties": False,
-        "required": [ "time", "synchronized" ]
+        "required": ["time", "synchronized"]
     },
 
     "Duration": {
@@ -105,19 +105,19 @@ __dictionary__ = {
         # ISO 8601.  Source: https://gist.github.com/philipashlock/8830168
         # Modified not to accept months or years, which are inexact.
         "pattern": r'^(R\d*\/)?P(?:\d+(?:\.\d+)?W)?(?:\d+(?:\.\d+)?D)?(?:T(?:\d+(?:\.\d+)?H)?(?:\d+(?:\.\d+)?M)?(?:\d+(?:\.\d+)?S)?)?$'
-        },
+    },
 
     "DurationRange": {
         "type": "object",
         "properties": {
-            "lower": { "$ref": "#/pScheduler/Duration" },
-            "upper": { "$ref": "#/pScheduler/Duration" }
+            "lower": {"$ref": "#/pScheduler/Duration"},
+            "upper": {"$ref": "#/pScheduler/Duration"}
         },
         "additionalProperties": False,
-        "required": [ "lower", "upper" ]
+        "required": ["lower", "upper"]
     },
 
-    "Email": { "type": "string", "format": "email" },
+    "Email": {"type": "string", "format": "email"},
 
     "Float": {
         "type": "number"
@@ -126,40 +126,42 @@ __dictionary__ = {
     "GeographicPosition": {
         "type": "string",
         # ISO 6709
-        # Source:  https://svn.apache.org/repos/asf/abdera/abdera2/common/src/main/java/org/apache/abdera2/common/geo/IsoPosition.java
+        # Source:
+        # https://svn.apache.org/repos/asf/abdera/abdera2/common/src/main/java/org/apache/abdera2/common/geo/IsoPosition.java
         "pattern": r'^(([+-]\d{2})(\d{2})?(\d{2})?(\.\d+)?)(([+-]\d{3})(\d{2})?(\d{2})?(\.\d+)?)([+-]\d+(\.\d+)?)?$'
-        },
+    },
 
     "Host": {
         "anyOf": [
-            { "$ref": "#/pScheduler/HostName" },
-            { "$ref": "#/pScheduler/IPAddress" },
+            {"$ref": "#/pScheduler/HostName"},
+            {"$ref": "#/pScheduler/IPAddress"},
         ]
     },
 
     "HostName": {
         "type": "string",
         "format": "host-name"
-        },
+    },
 
-    "Integer": { "type": "integer" },
+    "Integer": {"type": "integer"},
 
     "IPAddress": {
         "oneOf": [
-            { "type": "string", "format": "ipv4" },
-            { "type": "string", "format": "ipv6" },
-            ]
-        },
+            {"type": "string", "format": "ipv4"},
+            {"type": "string", "format": "ipv6"},
+        ]
+    },
 
-    "IPv4": { "type": "string", "format": "ipv4" },
+    "IPv4": {"type": "string", "format": "ipv4"},
 
-    "IPv6": { "type": "string", "format": "ipv6" },
+    "IPv6": {"type": "string", "format": "ipv6"},
 
     "IPv4CIDR": {
         "type": "string",
-        # Source: http://blog.markhatton.co.uk/2011/03/15/regular-expressions-for-ip-addresses-cidr-ranges-and-hostnames
-        "pattern":r'^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$'
-        },
+        # Source:
+        # http://blog.markhatton.co.uk/2011/03/15/regular-expressions-for-ip-addresses-cidr-ranges-and-hostnames
+        "pattern": r'^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$'
+    },
 
     "IPv6CIDR": {
         "type": "string",
@@ -169,8 +171,8 @@ __dictionary__ = {
 
     "IPCIDR": {
         "oneOf": [
-            { "$ref": "#/pScheduler/IPv4CIDR" },
-            { "$ref": "#/pScheduler/IPv6CIDR" },
+            {"$ref": "#/pScheduler/IPv4CIDR"},
+            {"$ref": "#/pScheduler/IPv6CIDR"},
         ]
     },
 
@@ -220,79 +222,79 @@ __dictionary__ = {
         "type": "integer",
         "minimum": 0,
         "maximum": 184446744073709551615
-        },
+    },
 
 
     "IPPort": {
         "type": "integer",
         "minimum": 0,
         "maximum": 65535
-        },
-    
+    },
+
     "IPPortRange": {
         "type": "object",
         "properties": {
-            "lower": { "$ref": "#/pScheduler/IPPort" },
-            "upper": { "$ref": "#/pScheduler/IPPort" }
+            "lower": {"$ref": "#/pScheduler/IPPort"},
+            "upper": {"$ref": "#/pScheduler/IPPort"}
         },
         "additionalProperties": False,
-        "required": [ "lower", "upper" ]
+        "required": ["lower", "upper"]
     },
-    
+
     "IPTOS": {
         "type": "integer",
         "minimum": 0,
         "maximum": 255
-        },
-    
-    "Number": { "type": "number" },
+    },
+
+    "Number": {"type": "number"},
 
     "Numeric": {
         "anyOf": [
-            { "$ref": "#/pScheduler/Number" },
-            { "$ref": "#/pScheduler/SINumber" },
-            ]
+            {"$ref": "#/pScheduler/Number"},
+            {"$ref": "#/pScheduler/SINumber"},
+        ]
     },
 
     "NumericRange": {
         "type": "object",
         "properties": {
-            "lower": { "$ref": "#/pScheduler/Numeric" },
-            "upper": { "$ref": "#/pScheduler/Numeric" }
+            "lower": {"$ref": "#/pScheduler/Numeric"},
+            "upper": {"$ref": "#/pScheduler/Numeric"}
         },
         "additionalProperties": False,
-        "required": [ "lower", "upper" ]
+        "required": ["lower", "upper"]
     },
 
     "Probability": {
         "type": "number",
         "minimum": 0.0,
         "maximum": 1.0
-        },
+    },
 
     "ProbabilityRange": {
         "type": "object",
         "properties": {
-            "lower": { "$ref": "#/pScheduler/Probability" },
-            "upper": { "$ref": "#/pScheduler/Probability" }
+            "lower": {"$ref": "#/pScheduler/Probability"},
+            "upper": {"$ref": "#/pScheduler/Probability"}
         },
         "additionalProperties": False,
-        "required": [ "lower", "upper" ]
+        "required": ["lower", "upper"]
     },
 
     "RetryPolicy": {
         "type": "array",
-        "items": {"$ref": "#/pScheduler/RetryPolicyEntry" }
+        "items": {"$ref": "#/pScheduler/RetryPolicyEntry"}
     },
 
     "RetryPolicyEntry": {
         "type": "object",
         "properties": {
-            "attempts": {"$ref": "#/pScheduler/Cardinal" },
-            "wait": {"$ref": "#/pScheduler/Duration" },
+            "attempts": {"$ref": "#/pScheduler/Cardinal"},
+            "wait": {"$ref": "#/pScheduler/Duration"},
         },
         "additionalProperties": False,
-        "required": [ "attempts", "wait" ]
+        "required": ["attempts", "wait"]
     },
 
 
@@ -312,19 +314,19 @@ __dictionary__ = {
     "SINumberRange": {
         "type": "object",
         "properties": {
-            "lower": { "$ref": "#/pScheduler/SINumber" },
-            "upper": { "$ref": "#/pScheduler/SINumber" }
+            "lower": {"$ref": "#/pScheduler/SINumber"},
+            "upper": {"$ref": "#/pScheduler/SINumber"}
         },
         "additionalProperties": False,
-        "required": [ "lower", "upper" ]
+        "required": ["lower", "upper"]
     },
 
-    "String": { "type": "string" },
+    "String": {"type": "string"},
 
     "StringList": {
         "type": "array",
-        "items": { "$ref": "#/pScheduler/String" }
-        },
+        "items": {"$ref": "#/pScheduler/String"}
+    },
 
     "StringMatch": {
         "type": "object",
@@ -335,60 +337,60 @@ __dictionary__ = {
                     "exact",
                     "contains",
                     "regex"
-                    ],
+                ],
             },
-            "match": { "$ref": "#/pScheduler/String" },
-            "case-insensitive": { "$ref": "#/pScheduler/Boolean" },
-            "invert": { "$ref": "#/pScheduler/Boolean" },
+            "match": {"$ref": "#/pScheduler/String"},
+            "case-insensitive": {"$ref": "#/pScheduler/Boolean"},
+            "invert": {"$ref": "#/pScheduler/Boolean"},
         },
         "additionalProperties": False,
-        "required": [ "style", "match" ]
+        "required": ["style", "match"]
     },
 
     "EnumMatch": {
         "type": "array",
         "properties": {
-            "enumeration": { "type": "array",
-                             "items": {
-                                 "anyOf": [{ "type": "string" },
-                                           { "$ref": "#/pScheduler/Number" }]
-                              }
-                           },
-            "invert": { "$ref": "#/pScheduler/Boolean" },
+            "enumeration": {"type": "array",
+                            "items": {
+                                "anyOf": [{"type": "string"},
+                                          {"$ref": "#/pScheduler/Number"}]
+                            }
+                            },
+            "invert": {"$ref": "#/pScheduler/Boolean"},
         },
         "additionalProperties": False,
-        "required": [ "enumeration" ]
+        "required": ["enumeration"]
     },
 
     "Timestamp": {
         "type": "string",
         # ISO 8601.  Source: https://gist.github.com/philipashlock/8830168
         "pattern": r'^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?$'
-        },
+    },
 
     "TimestampAbsoluteRelative": {
-        "oneOf" : [
-            { "$ref": "#/pScheduler/Timestamp" },
-            { "$ref": "#/pScheduler/Duration" },
+        "oneOf": [
+            {"$ref": "#/pScheduler/Timestamp"},
+            {"$ref": "#/pScheduler/Duration"},
             {
                 "type": "string",
                 # Same pattern as iso8601-duration, with '@' prepended
                 "pattern": r'^@(R\d*/)?P(?:\d+(?:\.\d+)?Y)?(?:\d+(?:\.\d+)?M)?(?:\d+(?:\.\d+)?W)?(?:\d+(?:\.\d+)?D)?(?:T(?:\d+(?:\.\d+)?H)?(?:\d+(?:\.\d+)?M)?(?:\d+(?:\.\d+)?S)?)?$'
-                }
-            ]
-        },
+            }
+        ]
+    },
 
-    "URL": { "type": "string", "format": "uri" },
+    "URL": {"type": "string", "format": "uri"},
 
     "UUID": {
         "type": "string",
         "pattern": r'^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$'
-        },
+    },
 
     "Version": {
         "type": "string",
         "pattern": r'^[0-9]+(\.[0-9]+(\.[0-9]+)?)$'
-        },
+    },
 
 
     #
@@ -398,65 +400,65 @@ __dictionary__ = {
     "ArchiveSpecification": {
         "type": "object",
         "properties": {
-            "archiver": { "type": "string" },
-            "data": { "$ref": "#/pScheduler/AnyJSON" },
-            "ttl": { "$ref": "#/pScheduler/Duration" },
-            },
+            "archiver": {"type": "string"},
+            "data": {"$ref": "#/pScheduler/AnyJSON"},
+            "ttl": {"$ref": "#/pScheduler/Duration"},
+        },
         "required": [
             "archiver",
             "data",
-            ]
-        },
+        ]
+    },
 
     "Maintainer": {
         "type": "object",
         "properties": {
-            "name":  { "type": "string" },
-            "email": { "$ref": "#/pScheduler/Email" },
-            "href":  { "$ref": "#/pScheduler/URL" },
-            },
+            "name":  {"type": "string"},
+            "email": {"$ref": "#/pScheduler/Email"},
+            "href":  {"$ref": "#/pScheduler/URL"},
+        },
         "required": [
             "name",
-            ]
-        },
+        ]
+    },
 
     "NameVersion": {
         "type": "object",
         "properties": {
-            "name":    { "type": "string" },
-            "version": { "$ref": "#/pScheduler/Version" },
-            },
+            "name":    {"type": "string"},
+            "version": {"$ref": "#/pScheduler/Version"},
+        },
         "required": [
             "name",
             "version",
-            ]
-        },
+        ]
+    },
 
     "ParticipantResult": {
         "type": "object",
         "properties": {
-            "participant": { "$ref": "#/pScheduler/Host" },
-            "result":      { "$ref": "#/pScheduler/AnyJSON" },
-            },
+            "participant": {"$ref": "#/pScheduler/Host"},
+            "result":      {"$ref": "#/pScheduler/AnyJSON"},
+        },
         "required": [
             "participant",
             "result",
-            ]
-        },
+        ]
+    },
 
     "RunResult": {
         "type": "object",
         "properties": {
-            "id":           { "$ref": "#/pScheduler/UUID" },
-            "schedule":     { "$ref": "#/pScheduler/TimeRange" },
-            "test":         { "$ref": "#/pScheduler/TestSpecification" },
-            "tool":         { "$ref": "#/pScheduler/NameVersion" },
+            "id":           {"$ref": "#/pScheduler/UUID"},
+            "schedule":     {"$ref": "#/pScheduler/TimeRange"},
+            "test":         {"$ref": "#/pScheduler/TestSpecification"},
+            "tool":         {"$ref": "#/pScheduler/NameVersion"},
             "participants": {
                 "type": "array",
-                "items": { "$ref": "#/pScheduler/ParticipantResult" },
-                },
-            "result":       { "$ref": "#/pScheduler/AnyJSON" }
+                "items": {"$ref": "#/pScheduler/ParticipantResult"},
             },
+            "result":       {"$ref": "#/pScheduler/AnyJSON"}
+        },
         "required": [
             "id",
             "schedule",
@@ -464,61 +466,61 @@ __dictionary__ = {
             "tool",
             "participants",
             "result",
-            ]
-        },
+        ]
+    },
 
     "ScheduleSpecification": {
         "type": "object",
         "properties": {
-            "start":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
-            "slip":     { "$ref": "#/pScheduler/Duration" },
-            "sliprand": { "$ref": "#/pScheduler/Boolean" },
-            "repeat":   { "$ref": "#/pScheduler/Duration" },
-            "until":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
-            "max-runs": { "$ref": "#/pScheduler/Cardinal" },
-            },
+            "start":    {"$ref": "#/pScheduler/TimestampAbsoluteRelative"},
+            "slip":     {"$ref": "#/pScheduler/Duration"},
+            "sliprand": {"$ref": "#/pScheduler/Boolean"},
+            "repeat":   {"$ref": "#/pScheduler/Duration"},
+            "until":    {"$ref": "#/pScheduler/TimestampAbsoluteRelative"},
+            "max-runs": {"$ref": "#/pScheduler/Cardinal"},
         },
+    },
 
     "TaskSpecification": {
         "type": "object",
         "properties": {
-            "schema":   { "$ref": "#/pScheduler/Cardinal" },
-            "test":     { "$ref": "#/pScheduler/TestSpecification" },
-            "tool":     {" $ref": "#/pScheduler/String" },
-            "tools":    {"$ref": "#/pScheduler/StringList" },
-            "schedule": { "$ref": "#/pScheduler/ScheduleSpecification" },
+            "schema":   {"$ref": "#/pScheduler/Cardinal"},
+            "test":     {"$ref": "#/pScheduler/TestSpecification"},
+            "tool":     {" $ref": "#/pScheduler/String"},
+            "tools":    {"$ref": "#/pScheduler/StringList"},
+            "schedule": {"$ref": "#/pScheduler/ScheduleSpecification"},
             "archives": {
                 "type": "array",
-                "items": { "$ref": "#/pScheduler/ArchiveSpecification" },
-                },
-            "reference": { "$ref": "#/pScheduler/AnyJSON" },
-            "_key": { "$ref": "#/pScheduler/String" },
+                "items": {"$ref": "#/pScheduler/ArchiveSpecification"},
             },
+            "reference": {"$ref": "#/pScheduler/AnyJSON"},
+            "_key": {"$ref": "#/pScheduler/String"},
+        },
         "required": [
             "schema",
             "test",
-            ]
-        },
+        ]
+    },
 
     "TestSpecification": {
         "type": "object",
         "properties": {
-            "test": { "type": "String" },
-            "spec": { "$ref": "#/pScheduler/AnyJSON" },
-            },
+            "test": {"type": "String"},
+            "spec": {"$ref": "#/pScheduler/AnyJSON"},
+        },
         "required": [
             "test",
             "spec",
-            ],
-        },
+        ],
+    },
 
     "TimeRange": {
         "type": "object",
         "properties": {
-            "start": { "$ref": "#/pScheduler/Timestamp" },
-            "end":   { "$ref": "#/pScheduler/Timestamp" },
-            },
+            "start": {"$ref": "#/pScheduler/Timestamp"},
+            "end":   {"$ref": "#/pScheduler/Timestamp"},
         },
+    },
 
 
 
@@ -550,18 +552,18 @@ __dictionary__ = {
             'communication-administratively-prohibited',
             'host-precedence-violation',
             'precedence-cutoff-in-effect',
-            ]
-        },
+        ]
+    },
 
     "ip-version": {
         "type": "integer",
-        "enum": [ 4, 6 ]
-        },
+        "enum": [4, 6]
+    },
 
     "ip-version-list": {
         "type": "array",
-        "items": { "$ref": "#/pScheduler/ip-version" },
-        },
+        "items": {"$ref": "#/pScheduler/ip-version"},
+    },
 
 
     #
@@ -573,126 +575,125 @@ __dictionary__ = {
         "Boolean": {
             "type": "object",
             "properties": {
-                "description":  { "$ref": "#/pScheduler/String" },
-                "match":        { "$ref": "#/pScheduler/Boolean" },
-                "fail-message": { "$ref": "#/pScheduler/String" }
+                "description":  {"$ref": "#/pScheduler/String"},
+                "match":        {"$ref": "#/pScheduler/Boolean"},
+                "fail-message": {"$ref": "#/pScheduler/String"}
             },
             "additionalProperties": False,
-            "required": [ "match" ]
+            "required": ["match"]
         },
 
         "Cardinal": {
             "type": "object",
             "properties": {
-                "description":  { "$ref": "#/pScheduler/String" },
-                "range":        { "$ref": "#/pScheduler/CardinalRange" },
-                "invert":       { "$ref": "#/pScheduler/Boolean" }
+                "description":  {"$ref": "#/pScheduler/String"},
+                "range":        {"$ref": "#/pScheduler/CardinalRange"},
+                "invert":       {"$ref": "#/pScheduler/Boolean"}
             },
             "additionalProperties": False,
-            "required": [ "range" ]
+            "required": ["range"]
         },
 
         "CardinalList": {
             "type": "object",
             "properties": {
-                "description":  { "$ref": "#/pScheduler/String" },
-                "match":        { "$ref": "#/pScheduler/CardinalList" },
-                "invert":       { "$ref": "#/pScheduler/Boolean" }
+                "description":  {"$ref": "#/pScheduler/String"},
+                "match":        {"$ref": "#/pScheduler/CardinalList"},
+                "invert":       {"$ref": "#/pScheduler/Boolean"}
             },
             "additionalProperties": False,
-            "required": [ "match" ]
+            "required": ["match"]
 
         },
 
         "CardinalZero": {
             "type": "object",
             "properties": {
-                "description":  { "$ref": "#/pScheduler/String" },
-                "range":        { "$ref": "#/pScheduler/CardinalZeroRange" },
-                "invert":       { "$ref": "#/pScheduler/Boolean" }
+                "description":  {"$ref": "#/pScheduler/String"},
+                "range":        {"$ref": "#/pScheduler/CardinalZeroRange"},
+                "invert":       {"$ref": "#/pScheduler/Boolean"}
             },
             "additionalProperties": False,
-            "required": [ "range" ]
+            "required": ["range"]
         },
 
         "CardinalZeroList": {
             "type": "object",
             "properties": {
-                "description":  { "$ref": "#/pScheduler/String" },
-                "match":        { "$ref": "#/pScheduler/CardinalZeroList" },
-                "invert":       { "$ref": "#/pScheduler/Boolean" }
+                "description":  {"$ref": "#/pScheduler/String"},
+                "match":        {"$ref": "#/pScheduler/CardinalZeroList"},
+                "invert":       {"$ref": "#/pScheduler/Boolean"}
             },
             "additionalProperties": False,
-            "required": [ "match" ]
+            "required": ["match"]
 
         },
 
         "Duration": {
             "type": "object",
             "properties": {
-                "description":  { "$ref": "#/pScheduler/String" },
-                "range":        { "$ref": "#/pScheduler/DurationRange" },
-                "invert":       { "$ref": "#/pScheduler/Boolean" }
+                "description":  {"$ref": "#/pScheduler/String"},
+                "range":        {"$ref": "#/pScheduler/DurationRange"},
+                "invert":       {"$ref": "#/pScheduler/Boolean"}
             },
             "additionalProperties": False,
-            "required": [ "range" ]
+            "required": ["range"]
         },
 
         "SINumber": {
             "properties": {
-                "description":  { "$ref": "#/pScheduler/String" },
-                "range":        { "$ref": "#/pScheduler/SINumberRange" },
-                "invert":       { "$ref": "#/pScheduler/Boolean" }
+                "description":  {"$ref": "#/pScheduler/String"},
+                "range":        {"$ref": "#/pScheduler/SINumberRange"},
+                "invert":       {"$ref": "#/pScheduler/Boolean"}
             },
             "additionalProperties": False,
-            "required": [ "range" ]
+            "required": ["range"]
         },
 
         "IPVersion": {
             "properties": {
-                "description": { "$ref": "#/pScheduler/String" },
-                "match":       { "$ref": "#/pScheduler/ip-version" },
-                "invert":      { "$ref": "#/pScheduler/Boolean" }
+                "description": {"$ref": "#/pScheduler/String"},
+                "match":       {"$ref": "#/pScheduler/ip-version"},
+                "invert":      {"$ref": "#/pScheduler/Boolean"}
             },
             "additionalProperties": False,
-            "required": ["version"]  
+            "required": ["version"]
         },
 
 
         "IPVersionList": {
             "properties": {
-                "description": { "$ref": "#/pScheduler/String" },
-                "enumeration": { "$ref": "#/pScheduler/ip-version-list"},
-                "invert":      { "$ref": "#/pScheduler/Boolean" }
+                "description": {"$ref": "#/pScheduler/String"},
+                "enumeration": {"$ref": "#/pScheduler/ip-version-list"},
+                "invert":      {"$ref": "#/pScheduler/Boolean"}
             },
             "additionalProperties": False,
-            "required": ["enumeration"]  
+            "required": ["enumeration"]
         },
 
         "Probability": {
             "properties": {
-                "description": { "$ref": "#/pScheduler/String" },
-                "range":       { "$ref": "#/pScheduler/ProbabilityRange" },
-                "invert":      { "$ref": "#/pScheduler/Boolean" }
+                "description": {"$ref": "#/pScheduler/String"},
+                "range":       {"$ref": "#/pScheduler/ProbabilityRange"},
+                "invert":      {"$ref": "#/pScheduler/Boolean"}
             },
             "additionalProperties": False,
-            "required": [ "range" ]
+            "required": ["range"]
         },
 
         "String": {
             "type": "object",
             "properties": {
-                "description":  { "$ref": "#/pScheduler/String" },
-                "match":        { "$ref": "#/pScheduler/StringMatch" },
-                "fail-message": { "$ref": "#/pScheduler/String" }
+                "description":  {"$ref": "#/pScheduler/String"},
+                "match":        {"$ref": "#/pScheduler/StringMatch"},
+                "fail-message": {"$ref": "#/pScheduler/String"}
             },
             "additionalProperties": False,
-            "required": [ "match" ]
+            "required": ["match"]
         }
 
     }
 }
-
 
 
 __default_schema__ = {
@@ -707,8 +708,6 @@ __default_schema__ = {
 
     "pScheduler": __dictionary__
 }
-
-
 
 
 def json_validate(json, skeleton):
@@ -748,15 +747,14 @@ def json_validate(json, skeleton):
     if type(skeleton) != dict:
         raise ValueError("Skeleton provided must be a dictionary.")
 
-
     # Build up the schema from the dictionaries and user input.
 
     # A shallow copy is sufficient for this since we don't clobber the
     # innards.
     schema = copy.copy(__default_schema__)
 
-    for element in [ 'type', 'items', 'properties', 'additionalProperties',
-                     'required', 'local' ]:
+    for element in ['type', 'items', 'properties', 'additionalProperties',
+                    'required', 'local']:
         if element in skeleton:
             schema[element] = skeleton[element]
 
@@ -766,7 +764,6 @@ def json_validate(json, skeleton):
     # TODO: This doesn't seem to validate references.
     jsonschema.Draft4Validator.check_schema(schema)
 
-
     try:
         jsonschema.validate(json, schema,
                             format_checker=jsonschema.FormatChecker())
@@ -774,8 +771,7 @@ def json_validate(json, skeleton):
         return (False, "At %s: %s" % (
             '/' + ('/'.join([str(x) for x in ex.absolute_path])),
             ex.message
-            ))
-
+        ))
 
     return (True, 'OK')
 
@@ -793,33 +789,32 @@ if __name__ == "__main__":
         "protocol": "udp",
         "ipv": 6,
         "ip": "fc80:dead:beef::",
-        "archspec": { "name": "foo", "data": None },
-        }
+        "archspec": {"name": "foo", "data": None},
+    }
 
     schema = {
         "local": {
             "protocol": {
                 "type": "string",
                 "enum": ['icmp', 'udp', 'tcp']
-                }
-            },
+            }
+        },
         "type": "object",
         "properties": {
-            "schema":   { "$ref": "#/pScheduler/Cardinal" },
-            "when":     { "$ref": "#/pScheduler/Timestamp" },
-            "howlong":  { "$ref": "#/pScheduler/Duration" },
-            "sendto":   { "$ref": "#/pScheduler/Email" },
-            "ipv":      { "$ref": "#/pScheduler/ip-version" },
-            "ip":       { "$ref": "#/pScheduler/IPAddress" },
-            "protocol": { "$ref": "#/local/protocol" },
-            "x-factor": { "type": "number" },
-            "archspec": { "$ref": "#/pScheduler/ArchiveSpecification" },
+            "schema":   {"$ref": "#/pScheduler/Cardinal"},
+            "when":     {"$ref": "#/pScheduler/Timestamp"},
+            "howlong":  {"$ref": "#/pScheduler/Duration"},
+            "sendto":   {"$ref": "#/pScheduler/Email"},
+            "ipv":      {"$ref": "#/pScheduler/ip-version"},
+            "ip":       {"$ref": "#/pScheduler/IPAddress"},
+            "protocol": {"$ref": "#/local/protocol"},
+            "x-factor": {"type": "number"},
+            "archspec": {"$ref": "#/pScheduler/ArchiveSpecification"},
 
-            },
-        "required": [ "sendto", "x-factor" ]
-        }
+        },
+        "required": ["sendto", "x-factor"]
+    }
 
     valid, message = json_validate(sample, schema)
 
     print valid, message
-
