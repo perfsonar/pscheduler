@@ -8,6 +8,8 @@ import sys
 
 import pscheduler
 
+logger = pscheduler.Log(prefix='tool-bwctltraceroute', quiet=True)
+
 json = pscheduler.json_load(exit_on_error=True);
 
 # TODO: Should be checking the package schema and the task spec schema.
@@ -27,7 +29,7 @@ errors = []
 unsupported_options = [ 'algorithm', 'as', 'dest-port', 'fragment', 'probe-type', 'queries', 'sendwait', 'wait', 'sendwait' ]
 for unsupported_option in unsupported_options:
     if spec.has_key(unsupported_option):
-        pscheduler.fail("BWCTL does not support " . unsupported_option)
+        pscheduler.fail("BWCTL does not support %s" % unsupported_option)
 
 
 source = spec.get("source", "localhost")

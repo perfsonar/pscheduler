@@ -123,7 +123,7 @@ powstream_args = [powstream_cmd, '-p', '-d', data_dir]
 
 #register various handlers that make sure data dir is removed on exit
 atexit.register(cleanup_dir, data_dir, keep_data_files=keep_data_files)
-cleanup_handler = lambda signum, frame: graceful_exit(data_dir, keep_data_files=keep_data_files)
+cleanup_handler = lambda signum, frame: graceful_exit(data_dir, keep_data_files=keep_data_files, pkill_cmd=pkill_cmd)
 signal.signal(signal.SIGTERM, cleanup_handler)
 
 # set log level if needed
@@ -201,12 +201,12 @@ while True:
         #cleanup an previous runs - i really don't trust powstream
         try:
             #kill anything referencing our data_dir
-            call([pkill_cmd, '-9', '-f', data_dir ], shell=False)
+            call([pkill_cmd, '-9', '-f', parent_data_dir + task_uuid ], shell=False)
         except:
             #best effort clean-up
             pass
         if os.path.exists(data_dir):
-            cleanup_dir(data_dir, keep_data_files=keep_data_files)
+            cleanup_dir(data_dir, keep_data_files=keep_data_files, ignore_errors=True)
         if not os.path.exists(data_dir):
             os.makedirs(data_dir)
         
@@ -214,7 +214,7 @@ while True:
         log.debug("Running command: %s" % " ".join(powstream_args))
         proc = Popen(powstream_args, stdout=PIPE, stderr=PIPE, shell=False)
         #update signal handler to make sure process is killed when terminated
-        cleanup_handler = lambda signum, frame: graceful_exit(data_dir, keep_data_files=keep_data_files, proc=proc)
+        cleanup_handler = lambda signum, frame: graceful_exit(data_dir, keep_data_files=keep_data_files, proc=proc, pkill_cmd=pkill_cmd)
         signal.signal(signal.SIGTERM, cleanup_handler)
         #give it a minute to fire-up
         if sleep_or_end(DEFAULT_CLIENT_SLEEP, end_time, parent_pid):

@@ -12,6 +12,7 @@ import shutil
 import sys
 import time
 import pytz
+from subprocess import call
 
 #output contants
 DELAY_BUCKET_DIGITS = 2 #number of digits to round delay buckets
@@ -35,17 +36,23 @@ def get_config():
 
 ##
 # Remove data directory
-def cleanup_dir(tmpdir, keep_data_files=False):
+def cleanup_dir(tmpdir, keep_data_files=False, ignore_errors=False):
     if keep_data_files: return
     #Remove our tmpdir, but don't fail the test if it doesn't remove
     try:
-        shutil.rmtree(tmpdir, ignore_errors=False)
+        shutil.rmtree(tmpdir, ignore_errors=ignore_errors)
+    except OSError as oe:
+        error = ""
+        if oe.errno: error = "%s: " % oe.errno
+        if oe.strerror: error += oe.strerror
+        if oe.filename: error += " (filename: %s)" % oe.filename
+        log.warning("Unable to remove powstream temporary directory %s due to error reported by OS: %s" % (tmpdir, error))
     except:
         log.warning("Unable to remove powstream temporary directory %s: %s" % (tmpdir, sys.exc_info()[0]))
 
 ##
 # Called by signal handlers to clean-up then exit
-def graceful_exit(tmpdir, keep_data_files=False, proc=None):
+def graceful_exit(tmpdir, keep_data_files=False, proc=None, pkill_cmd=None):
     #kill process if any, but keep in on try so doesn't prevent directory clean-up
     try:
         if proc: 
@@ -53,14 +60,20 @@ def graceful_exit(tmpdir, keep_data_files=False, proc=None):
             log.debug("Sent terminate to powstream process %s" % proc.pid)
     except: 
         pass
-    
+        
+    #if they are still not down, force them down
+    try:
+        if pkill_cmd:
+            time.sleep("2")
+            call([pkill_cmd, '-9', '-f', tmpdir ], shell=False)
+    except:
+        pass
+
     #clean directory
     try:
         cleanup_dir(tmpdir, keep_data_files=keep_data_files)
     except:
         pass
-    finally:
-        sys.exit(1)
     
 ##
 # Removes a data file
@@ -69,6 +82,12 @@ def cleanup_file(tmpfile, keep_data_files=False):
     #Remove our tmpfile, but don't fail the test if it doesn't remove
     try:
         os.remove(tmpfile)
+    except OSError as oe:
+        error = ""
+        if oe.errno: error = "%s: " % oe.errno
+        if oe.strerror: error += oe.strerror
+        if oe.filename: error += " (filename: %s)" % oe.filename
+        log.warning("Unable to remove powstream temporary file %s due to error reported by OS: %s" % (tmpfile, error))
     except:
         log.warning("Unable to remove powstream temporary file %s: %s" % (tmpfile, sys.exc_info()[0]))
 

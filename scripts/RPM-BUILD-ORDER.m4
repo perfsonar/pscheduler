@@ -117,6 +117,7 @@ pscheduler-tool-dnspy
 pscheduler-archiver-bitbucket
 pscheduler-archiver-esmond
 pscheduler-archiver-failer
+pscheduler-archiver-http
 pscheduler-archiver-rabbitmq
 pscheduler-archiver-syslog
 

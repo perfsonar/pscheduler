@@ -1,0 +1,40 @@
+#!/usr/bin/python
+#
+# Validate data for the httparchiver
+#
+
+import pscheduler
+
+try:
+    json = pscheduler.json_load()
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+        })
+
+data_validator = {
+    "type": "object",
+    "properties": {
+        "_url": { "$ref": "#/pScheduler/URL" },
+        "op": {
+            "type": "string",
+            "enum": [
+                "put",
+                "post",
+            ]
+        },
+    },
+    "required": [ "_url" ],
+    "additionalProperties": False
+}
+
+valid, error = pscheduler.json_validate(json, data_validator)
+
+if not valid:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": error
+        })
+
+pscheduler.succeed_json({ "valid": True })

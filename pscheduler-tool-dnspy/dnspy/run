@@ -46,7 +46,7 @@ except (dns.resolver.NoAnswer ):
     answers = None
 except ( dns.resolver.NXDOMAIN ):
     error = 'DNS error'
-    succeeded = True
+    succeeded = False
     answers = None
 
 end_time = datetime.datetime.now()
