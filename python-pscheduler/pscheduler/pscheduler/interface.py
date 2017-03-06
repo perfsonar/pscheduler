@@ -11,7 +11,6 @@ import re
 import socket
 
 
-
 def source_affinity(addr):
     """Easy to use function that returns the CPU affinity
     given an address. Uses source_interface and interface_affinity
@@ -33,7 +32,7 @@ def source_interface(addr, port=80):
     """
 
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect((addr,port))
+    s.connect((addr, port))
 
     interface_address = s.getsockname()[0]
 
@@ -69,8 +68,8 @@ def address_interface(addr):
 
     return None
 
-def interface_affinity(interface):
 
+def interface_affinity(interface):
     """Given an interface name, returns the CPU affinity
     for that interface if available, otherwise
     returns None.
@@ -92,7 +91,7 @@ def interface_affinity(interface):
     if not os.path.exists(filename):
         return None
 
-    with open(filename,'r') as f:
+    with open(filename, 'r') as f:
         affinity = f.read().rstrip()
 
         # This is the same as no affinity, so make calling
@@ -103,9 +102,6 @@ def interface_affinity(interface):
         return affinity
 
     return None
-
-
-
 
 
 class LocalIPList:
@@ -120,7 +116,6 @@ class LocalIPList:
         self.refresh = refresh
         self.addresses = None
         self.expires = None
-
 
     def __refresh(self):
         """
@@ -147,8 +142,7 @@ class LocalIPList:
                             pass
 
             self.expires = datetime.datetime.now() \
-                           + datetime.timedelta(seconds=self.refresh)
-
+                + datetime.timedelta(seconds=self.refresh)
 
     def __contains__(self, item):
         """
@@ -160,9 +154,6 @@ class LocalIPList:
         return item_ip in self.addresses
 
 
-
-
-
 if __name__ == "__main__":
 
     for dest in ["www.perfsonar.net",
@@ -170,15 +161,11 @@ if __name__ == "__main__":
         (addr, intf) = source_interface(dest)
         print "For dest %s, addr = %s, intf = %s" % (dest, addr, intf)
 
-
     for interface in ["eth0", "eth1", "lo", "eth1.412", "eth0.120"]:
         affinity = interface_affinity(interface)
         print "interface affinity = %s for %s" % (affinity, interface)
-
-
 
     localips = LocalIPList(refresh=5)
 
     for addr in ["1.2.3.4", "5.6.7.8", "10.0.0.1", "127.0.0.1"]:
         print addr, addr in localips
-
