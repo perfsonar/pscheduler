@@ -23,12 +23,14 @@ class TestEnummatcher(PschedTestBase):
         # XXX(mmg): There is a new version of this but not sure how it
         # should work.
 
-        # matcher = EnumMatcher({
-        #     "enumeration": ["foo", "bar", "biz"],
-        # })
-        # print matcher
+        matcher = EnumMatcher({
+            "enumeration": ["foo", "bar", "biz"],
+        })
 
-        # print matcher.contains(['foo'])
+        self.assertTrue(matcher.contains(['foo']))
+        self.assertTrue(matcher.contains('foo'))
+        self.assertTrue(matcher.contains(['foo', 'bar']))
+        self.assertFalse(matcher.contains(["foo", "notallowed", "biz"]))
 
         pass
 
