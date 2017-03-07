@@ -1,4 +1,5 @@
 # extra python packages for testing/etc.
 nose
 coverage
+pylint
 -e .
