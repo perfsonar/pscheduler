@@ -15,7 +15,7 @@ class TestSpeccli(PschedTestBase):
     """
 
     def test_speccli(self):
-        """"""
+        """Speccli test"""
         args = dict(foo='bar', baz=False)
 
         ret = speccli_build_args(args, strings=[('foo', 'foo')], bools=[('baz', 'baz')])
