@@ -483,6 +483,7 @@ __dictionary__ = {
         "type": "object",
         "properties": {
             "schema":   { "$ref": "#/pScheduler/Cardinal" },
+            "lead-bind":{ "$ref": "#/pScheduler/Host" },
             "test":     { "$ref": "#/pScheduler/TestSpecification" },
             "tool":     {" $ref": "#/pScheduler/String" },
             "tools":    {"$ref": "#/pScheduler/StringList" },

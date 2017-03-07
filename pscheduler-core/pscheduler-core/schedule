@@ -113,6 +113,12 @@ Example:
     )
 opt_parser.disable_interspersed_args()
 
+opt_parser.add_option("--bind",
+                      help="Make the request from the provided address",
+                      default=None,
+                      action="store", type="string",
+                      dest="bind")
+
 opt_parser.add_option("--filter-test",
                       help="Include the named type of test (May be repeated for multiple)",
                       default=[],
@@ -194,6 +200,7 @@ status, schedule = pscheduler.url_get(
         "start": pscheduler.datetime_as_iso8601(start),
         "end": pscheduler.datetime_as_iso8601(end)
         },
+    bind=options.bind,
     throw = False
     )
 

@@ -20,6 +20,12 @@ opt_parser.disable_interspersed_args()
 
 # GENERAL OPTIONS
 
+opt_parser.add_option("--bind",
+                      help="Make the request from the provided address",
+                      default=None,
+                      action="store", type="string",
+                      dest="bind")
+
 opt_parser.add_option("--past",
                       help="Percentage of available screen lines to occupy with past runs (0..100)",
                       action="store", type="int",
@@ -98,6 +104,7 @@ def update_tasks(screen):
     status, schedule = pscheduler.url_get(
         pscheduler.api_url(host=options.host, path="/monitor"),
         params={ "window": height },
+        bind=options.bind,
         throw=False)
 
     # Easy outs

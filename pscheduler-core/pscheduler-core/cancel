@@ -32,6 +32,12 @@ Example:
     )
 opt_parser.disable_interspersed_args()
 
+opt_parser.add_option("--bind",
+                      help="Make the request from the provided address",
+                      default=None,
+                      action="store", type="string",
+                      dest="bind")
+
 (options, remaining_args) = opt_parser.parse_args()
 
 if len(remaining_args) != 1:
@@ -48,7 +54,8 @@ if (len(path_parts) != 4) \
         or (path_parts[0:3] != ["", "pscheduler", "tasks"]):
     pscheduler.fail("%s: Not a task URL" % task_url)
 
-status, result = pscheduler.url_delete(task_url, throw=False)
+status, result = pscheduler.url_delete(task_url, bind=options.bind,
+                                       throw=False)
 
 if status == 200:
     pscheduler.succeed()

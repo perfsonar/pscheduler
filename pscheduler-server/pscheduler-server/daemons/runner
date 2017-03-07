@@ -129,14 +129,14 @@ def is_ip(addr):
 
 
 def get_clock(arg):
-    slot, url = arg
-    status, result = pscheduler.url_get(url, throw=False)
+    slot, url, bind = arg
+    status, result = pscheduler.url_get(url, throw=False, bind=bind)
     if status != 200:
         result = { "error": status }
     return (slot, result)
 
 
-def clock_survey(hosts):
+def clock_survey(hosts, bind=None):
 
     if len(hosts) == 0:
         return []
@@ -154,7 +154,7 @@ def clock_survey(hosts):
         host = hosts[slot]
         if host is None:
             continue
-        host_args.append((slot, pscheduler.api_url(host, "/clock")))
+        host_args.append((slot, pscheduler.api_url(host, "/clock"), bind))
 
     # Prime the result with empties for anything that didn't get
     # tested.
@@ -308,7 +308,8 @@ class RunWorker:
                                    task.cli,
                                    run.uuid,
                                    run.part_data_full,
-                                   scheduling_class.enum
+                                   scheduling_class.enum,
+                                   task.json ->> 'lead-bind'
                                FROM
                                    run
                                    JOIN task ON task.id = run.task
@@ -331,7 +332,7 @@ class RunWorker:
 
                     test, tool, task_uuid, task_id, participant, participants, \
                         limits_passed, start, end, test_spec, cli, run_uuid, \
-                        partdata, scheduling_class = row
+                        partdata, scheduling_class, lead_bind = row
 
         except Exception as ex:
             self.log.error("%d: Failed to fetch run info: %s",
@@ -567,7 +568,8 @@ class RunWorker:
                     self.log.debug("%d: Fetching run %s", self.id, get)
 
                     status, run_result = pscheduler.url_get(
-                        run, params={'wait-local': True}, throw=False)
+                        run, params={'wait-local': True}, bind=lead_bind,
+                        throw=False)
 
                     if status == 200:
                         self.log.debug("%d: Retrieved %s", self.id, run_result)
@@ -609,6 +611,7 @@ class RunWorker:
                     self.id, run, full_params, failures == 0)
                 status, returned = pscheduler.url_put(run,
                                                       data=full_params,
+                                                      bind=lead_bind,
                                                       throw=False,
                                                       json=False)
                 if status != 200:
@@ -629,7 +632,7 @@ class RunWorker:
                                         UPDATE run SET clock_survey = %s
                                         WHERE id = %s
                                         """,
-                                [clock_survey(participants), self.id])
+                                        [clock_survey(participants, lead_bind), self.id])
 
         self.log.debug("%d: Run complete", self.id)
         self.finished = True

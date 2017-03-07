@@ -36,6 +36,12 @@ Examples:
     )
 opt_parser.disable_interspersed_args()
 
+
+opt_parser.add_option("--bind",
+                      help="Make the request from the provided address",
+                      default=None,
+                      action="store", type="string",
+                      dest="bind")
 opt_parser.add_option("--timeout", "-W",
                       help="How long to wait for the server to respond, in seconds (default 5)",
                       default=5,
@@ -66,6 +72,7 @@ results = []
 for host in hosts:
     url = pscheduler.api_url(host, "clock")
     status, result = pscheduler.url_get(url, throw=False,
+                                        bind=options.bind,
                                         timeout=options.timeout)
 
     if status == 400:

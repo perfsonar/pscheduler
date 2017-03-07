@@ -26,6 +26,12 @@ opt_parser.disable_interspersed_args()
 
 # GENERAL OPTIONS
 
+opt_parser.add_option("--bind",
+                      help="Make the request from the provided address",
+                      default=None,
+                      action="store", type="string",
+                      dest="bind")
+
 opt_parser.add_option("--format",
                       help="Result format (text, html, json, none)",
                       action="store", type="string", default="text",
@@ -97,10 +103,11 @@ log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True)
 # Get the task with details and find out its class.
 
 log.debug("Fetching %s", task_url)
-status, task = pscheduler.url_get(task_url, params={"detail":True}, throw=False)
+status, task = pscheduler.url_get(task_url, params={"detail":True},
+                                  bind=options.bind, throw=False)
 
 if status != 200:
-    pscheduler.fail("Unable to fetch task: Error " + str(status))
+    pscheduler.fail("Unable to fetch task: " + task)
 
 # TODO: This is in anticipation of multi-result.
 try:
@@ -141,6 +148,7 @@ while True:
                 'upcoming': True,
                 'limit' : 1
             },
+            bind=options.bind,
             throw=False
         )
 
@@ -160,6 +168,7 @@ while True:
 
         status, run_data = pscheduler.url_get(next_run_url,
                                               params={ "wait": 0 },
+                                              bind=options.bind,
                                               throw=False)
         if status == 404:
             if run_count == 0:
@@ -187,7 +196,7 @@ while True:
         print run_url
 
     try:
-        status, run_json = pscheduler.url_get(run_url)
+        status, run_json = pscheduler.url_get(run_url, bind=options.bind)
     except pscheduler.psurl.URLException as ex:
         pscheduler.fail(str(ex))
 
@@ -240,6 +249,7 @@ while True:
 
     status, result = pscheduler.url_get( run_url,
                                          params={ 'wait-merged': True },
+                                         bind=options.bind,
                                          throw=False )
 
     if status == 404:
@@ -335,6 +345,7 @@ while True:
         result['result-href'],
         params={ 'wait': True,
                  'format': out_format },
+        bind=options.bind,
         json=False,
         throw=False)
 

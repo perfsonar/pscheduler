@@ -99,6 +99,18 @@ BEGIN
         t_version := t_version + 1;
     END IF;
 
+
+    -- Version 2 to version 3
+    -- Adds 'bind' column
+    IF t_version = 2
+    THEN
+        ALTER TABLE http_queue ADD COLUMN
+        bind TEXT NULL;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -133,16 +145,16 @@ BEGIN
 
     IF entry.operation = 'DELETE'
     THEN
- 	status := http_delete(entry.uri, timeout_seconds);
+ 	status := http_delete(entry.uri, timeout_seconds, entry.bind);
     ELSEIF entry.operation = 'GET'
     THEN
-        status := http_get(entry.uri, timeout_seconds);
+        status := http_get(entry.uri, timeout_seconds, entry.bind);
     ELSEIF entry.operation = 'POST'
     THEN
- 	status := http_post(entry.uri, entry.payload, timeout_seconds);
+ 	status := http_post(entry.uri, entry.payload, timeout_seconds, entry.bind);
     ELSEIF entry.operation = 'PUT'
     THEN
- 	status := http_put(entry.uri, entry.payload, timeout_seconds);
+ 	status := http_put(entry.uri, entry.payload, timeout_seconds, entry.bind);
     ELSE
         RAISE EXCEPTION 'Unsupported operation %', entry.operation;
     END IF;
