@@ -20,9 +20,14 @@ try:
 except KeyError:
     op = 'post'
 
+try:
+    bind = json['data']['bind']
+except KeyError:
+    bind = None
+
 if op == 'post':
     try:
-	pscheduler.psurl.url_post( url, data=pscheduler.json_dump(json['result']), json=False )
+	pscheduler.psurl.url_post( url, data=pscheduler.json_dump(json['result']), json=False, bind=bind )
     except Exception as ex:
 	pscheduler.succeed_json({
 	    "succeeded": False,
@@ -31,7 +36,7 @@ if op == 'post':
 
 elif op == 'put':
     try:
-	pscheduler.psurl.url_put( url, data=pscheduler.json_dump(json['result']), json=False )
+	pscheduler.psurl.url_put( url, data=pscheduler.json_dump(json['result']), json=False, bind=bind )
     except Exception as ex:
 	pscheduler.succeed_json({
 	    "succeeded": False,

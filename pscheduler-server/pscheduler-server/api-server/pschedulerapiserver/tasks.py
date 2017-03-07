@@ -5,6 +5,9 @@
 import pscheduler
 import urlparse
 
+# HACK: BWCTLBC
+import os
+
 from pschedulerapiserver import application
 
 from flask import request
@@ -171,15 +174,22 @@ def tasks():
 
         log.debug("Validated test: %s", pscheduler.json_dump(task['test']))
 
-
         # Find the participants
 
         try:
+            # HACK: BWCTLBC
+            if "lead-bind" in task:
+                os.environ["PSCHEDULER_LEAD_BIND_HACK"] = task["lead-bind"]
+
             returncode, stdout, stderr = pscheduler.run_program(
                 [ "pscheduler", "internal", "invoke", "test",
                   task['test']['type'], "participants" ],
                 stdin = pscheduler.json_dump(task['test']['spec'])
                 )
+
+            # HACK: BWCTLBC
+            if "lead-bind" in task:
+                del os.environ["PSCHEDULER_LEAD_BIND_HACK"]
 
             if returncode != 0:
                 return error("Unable to determine participants: " + stderr)
@@ -198,6 +208,8 @@ def tasks():
         # TOOL SELECTION
         #
 
+        lead_bind = task.get("lead-bind", None)
+
         # TODO: Need to provide for tool being specified by the task
         # package.
 
@@ -211,7 +223,8 @@ def tasks():
 
                 log.debug("Pinging %s" % (participant))
                 status, result = pscheduler.url_get(
-                    pscheduler.api_url(participant), throw=False, timeout=10)
+                    pscheduler.api_url(participant), throw=False, timeout=10,
+                    bind=lead_bind)
 
                 if status == 400:
                     raise TaskPostingException(result)
@@ -226,7 +239,8 @@ def tasks():
                 # TODO: This will fail with a very large test spec.
                 status, result = pscheduler.url_get(
                     pscheduler.api_url(participant, "tools"),
-                    params={ 'test': pscheduler.json_dump(task['test']) }
+                    params={ 'test': pscheduler.json_dump(task['test']) },
+                    bind=lead_bind
                     )
                 if status != 200:
                     raise TaskPostingException("%d: %s" % (status, result))
@@ -253,9 +267,6 @@ def tasks():
         #
         # TASK CREATION
         #
-
-        task_data = pscheduler.json_dump(task)
-        log.debug("Task data: %s", task_data)
 
         tasks_posted = []
 
@@ -285,8 +296,9 @@ def tasks():
 
         try:
             cursor = dbcursor_query(
-                "SELECT * FROM api_task_post(%s, %s, %s, 0, NULL, FALSE)",
-                [task_data, hints_data, pscheduler.json_dump(limits_passed)], onerow=True)
+                "SELECT * FROM api_task_post(%s, %s, %s, %s, 0, NULL, FALSE)",
+                [pscheduler.json_dump(task), participants, hints_data,
+                 pscheduler.json_dump(limits_passed)], onerow=True)
         except Exception as ex:
             return error(str(ex.diag.message_primary))
 
@@ -297,14 +309,16 @@ def tasks():
 
         log.debug("Tasked lead, UUID %s", task_uuid)
 
-        # Other participants get the UUID forced upon them.
+        # Other participants get the UUID and participant list forced upon them.
+
+        task["participants"] = participants
+        task_data = pscheduler.json_dump(task)
 
         for participant in range(1,nparticipants):
 
             part_name = participants[participant]
             log.debug("Tasking participant %s", part_name)
             try:
-
 
                 # Post the task
 
@@ -316,6 +330,7 @@ def tasks():
                     post_url,
                     params={ 'participant': participant },
                     data=task_data,
+                    bind=lead_bind,
                     json=False,
                     throw=False)
                 log.debug("Remote returned %d: %s", status, result)
@@ -329,6 +344,7 @@ def tasks():
 
                 status, result = pscheduler.url_get(post_url,
                                                     params={ "detail": True },
+                                                    bind=lead_bind,
                                                     throw=False)
                 if status != 200:
                     raise TaskPostingException(
@@ -513,9 +529,13 @@ def tasks_uuid(uuid):
         log.debug("Posting task %s", uuid)
 
         try:
+            try:
+                participants = pscheduler.json_load(request.data)["participants"]
+            except:
+                return bad_request("No participants provided")
             cursor = dbcursor_query(
-                "SELECT * FROM api_task_post(%s, %s, %s, %s, %s)",
-                [request.data, hints_data, pscheduler.json_dump(limits_passed), participant, uuid])
+                "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, TRUE)",
+                [request.data, participants, hints_data, pscheduler.json_dump(limits_passed), participant, uuid])
         except Exception as ex:
             return error(str(ex))
         if cursor.rowcount == 0:

@@ -127,6 +127,12 @@ other_group.add_option("--assist",
                       action="store", type="string",
                       dest="assist")  # Conflict with reserved word
 
+other_group.add_option("--bind",
+                       help="Bind to the supplied address when submitting the task",
+                       action="store", type="string",
+                       default=None,
+                       dest="bind")
+
 other_group.add_option("--export",
                       help="Export task JSON to stdout and exit",
                       action="store_true", default=False,
@@ -147,6 +153,12 @@ other_group.add_option("--quiet",
                       help="Operate quietly",
                       action="store_true", default=False,
                       dest="quiet")
+
+other_group.add_option("--lead-bind",
+                       help="Have the lead participant Bind to the supplied address for administrative communications",
+                       action="store", type="string",
+                       default=None,
+                       dest="lead_bind")
 
 other_group.add_option("--url",
                       help="Dump a URL that points to the task after posting and exit",
@@ -308,6 +320,10 @@ else:
     task_read = True
 
 
+# Overlay the lead bind if specified
+if options.lead_bind is not None:
+    task["lead-bind"] = options.lead_bind
+
 # Overlay the reference if specified
 if options.reference is not None:
     task["reference"] = reference
@@ -337,6 +353,11 @@ if options.start is not None:
 
 if options.until is not None:
     task['schedule']['until'] = options.until
+
+
+
+bind = options.bind
+lead_bind = options.lead_bind
 
 
 #
@@ -389,7 +410,7 @@ if options.archive:
 
 
 # Make sure whoever we're using for assistance is running pScheduler
-if not pscheduler.api_has_pscheduler(assist):
+if not pscheduler.api_has_pscheduler(assist, bind=bind):
     pscheduler.fail("Unable to find pScheduler on %s" % (assist))
 
 
@@ -403,6 +424,7 @@ log.debug("Converting to spec via %s", spec_url)
 status, raw_spec = pscheduler.url_get(
     spec_url,
     params={ 'args': pscheduler.json_dump(remaining_args) },
+    bind=bind,
     throw=False,
     timeout=10
     )
@@ -471,9 +493,11 @@ url = pscheduler.api_url(assist, '/tests/%s/participants' % task['test']['type']
 log.debug("Fetching participant list")
 
 log.debug("%s", pscheduler.json_dump(task['test']['spec']))
-status, participants = pscheduler.url_get( url, params={
-        'spec': pscheduler.json_dump(task['test']['spec'])
-        }, throw=False )
+status, participants = pscheduler.url_get(
+    url,
+    params={'spec': pscheduler.json_dump(task['test']['spec'])},
+    bind=bind,
+    throw=False )
 
 if status not in [ 200, 404 ]:
     pscheduler.fail("Unable to determine the lead participant: %s" % participants)
@@ -507,8 +531,11 @@ if lead is None and assist != last_ditch_assist:
 #
 
 log.debug("Pinging %s", lead)
-status, result = pscheduler.url_get(pscheduler.api_url(lead),
-                                    throw=False, timeout=10)
+status, result = pscheduler.url_get(
+    pscheduler.api_url(lead),
+    throw=False,
+    bind=bind,
+    timeout=10)
 
 if status == 400:
     pscheduler.fail("%s: %s" % (lead, result))
@@ -529,9 +556,11 @@ tasks_url = pscheduler.api_url(lead, '/tasks')
 log.debug("Posting task to %s", tasks_url)
 log.debug("Data is %s", task_json_text)
 try:
-    status, task_url = pscheduler.url_post( tasks_url,
-                                            data=task_json_text,
-                                            throw=True)
+    status, task_url = pscheduler.url_post(
+        tasks_url,
+        data=task_json_text,
+        bind=bind,
+        throw=True)
 except Exception as ex:
     pscheduler.fail("Unable to post task: " + str(ex))
 
@@ -551,7 +580,10 @@ log.debug("Posted %s", task_url)
 # Spit out the tool being used
 #
 
-status, result = pscheduler.url_get(task_url, json=True)
+status, result = pscheduler.url_get(
+    task_url,
+    bind=bind,
+    json=True)
 if status != 200:
     pscheduler.fail("Failed to fetch the task.")
 
@@ -570,7 +602,7 @@ if verbose:
 
 runs_url = task_url + '/runs/first'
 log.debug("Fetching %s", runs_url)
-status, run_json = pscheduler.url_get(runs_url, throw=False)
+status, run_json = pscheduler.url_get(runs_url, bind=bind, throw=False)
 
 if status == 404:
     pscheduler.fail("Run on server was never populated.")
@@ -586,7 +618,10 @@ if options.debug:
     watch_args.append("--debug")
 if options.quiet:
     watch_args.append("--quiet")
-# TODO: Pass --verbose and --debug once watch supports that.
+if options.bind is not None:
+    watch_args.append("--bind")
+    watch_args.append(options.bind)
+# TODO: Pass --verbose once watch supports that.
 watch_args.append(task_url)
 
 watch_args = " ".join([ pipes.quote(arg) for arg in watch_args ])

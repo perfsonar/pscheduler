@@ -6,7 +6,8 @@ import socket
 import urlparse
 import uuid
 
-from contextlib import closing
+# HACK: BWCTLBC
+import os
 
 from .psdns import *
 from .psurl import *
@@ -15,7 +16,6 @@ from .psurl import *
 def api_root():
     "Return the standard root location of the pScheduler hierarchy"
     return '/pscheduler'
-
 
 def api_this_host():
     "Return a fully-qualified name for this host"
@@ -41,10 +41,11 @@ def api_replace_host(url_text, replacement):
     return urlparse.urlunparse(url)
 
 
-def api_url(host=None,
-            path=None,
-            port=None,
-            protocol='https'
+
+def api_url(host = None,
+            path = None,
+            port = None,
+            protocol = 'https'
             ):
     """Format a URL for use with the pScheduler API."""
 
@@ -60,6 +61,8 @@ def api_url(host=None,
         + ('' if path is None else str(path))
 
 
+
+
 def api_is_task(url):
     """Determine if a URL looks like a valid task URL"""
     # Note that this generates an extra array element because of the
@@ -67,7 +70,7 @@ def api_is_task(url):
     url_parts = urlparse.urlparse(url).path.split('/')
 
     if len(url_parts) != 4 \
-            or (url_parts[:3] != ['', 'pscheduler', 'tasks']):
+            or (url_parts[:3] != ['', 'pscheduler', 'tasks' ]):
         return False
 
     try:
@@ -78,13 +81,14 @@ def api_is_task(url):
     return True
 
 
+
 def api_is_run(url):
     """Determine if a URL looks like a valid run URL"""
     # Note that this generates an extra array element because of the
     # leading slash.
     url_parts = urlparse.urlparse(url).path.split('/')
     if len(url_parts) != 6 \
-            or (url_parts[:3] != ['', 'pscheduler', 'tasks']) \
+            or (url_parts[:3] != ['', 'pscheduler', 'tasks' ]) \
             or (url_parts[4] != 'runs'):
         return False
 
@@ -105,11 +109,12 @@ def api_result_delimiter():
     return "---- pScheduler End Result ----"
 
 
+
 #
 # TODO: Remove this when the backward-compatibility code is removed
 #
 
-def api_has_pscheduler(host, timeout=5):
+def api_has_pscheduler(host, timeout=5, bind=None):
     """
     Determine if pScheduler is running on a host
     """
@@ -117,11 +122,12 @@ def api_has_pscheduler(host, timeout=5):
     if host is None:
         host = "localhost"
 
+
     # Make sure the address resolves, otherwise url_get will return
     # non-200.
 
     resolved = None
-    for ip_version in [4, 6]:
+    for ip_version in [ 4, 6 ]:
         resolved = pscheduler.dns_resolve(host,
                                           ip_version=ip_version,
                                           timeout=timeout)
@@ -131,28 +137,47 @@ def api_has_pscheduler(host, timeout=5):
     if not resolved:
         return False
 
+
+    # HACK: BWTCLBC
+    # If the environment says to bind to a certain address, do it.
+    if bind is None:
+        bind = os.environ.get('PSCHEDULER_LEAD_BIND_HACK', None)
+
     status, raw_spec = pscheduler.url_get(pscheduler.api_url(resolved),
-                                          timeout=timeout, throw=False)
+                                          timeout=timeout,
+                                          throw=False,
+                                          bind=bind # HACK: BWTCLBC
+                                          )
 
     return status == 200
+
+
+
+from contextlib import closing
 
 
 def api_has_bwctl(host):
     """
     Determine if a host is running the BWCTL daemon
     """
-    try:
-        with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
-            sock.settimeout(3)
-            return sock.connect_ex((host, 4823)) == 0
-    except:
-        pass
-    try:
-        with closing(socket.socket(socket.AF_INET6, socket.SOCK_STREAM)) as sock:
-            sock.settimeout(3)
-            return sock.connect_ex((host, 4823)) == 0
-    except:
-        return False
+
+    # HACK: BWCTLBC
+    #
+    # Note that we don't do any binding in this function because BWCTL
+    # does its control and test traffic from the same interface no
+    # matter what.
+
+    for family in [socket.AF_INET, socket.AF_INET6]:
+        try:
+            with closing(socket.socket(family, socket.SOCK_STREAM)) as sock:
+                sock.settimeout(3)
+                return sock.connect_ex((host, 4823)) == 0
+        except socket.error:
+            pass
+
+    return False
+
+
 
 
 if __name__ == "__main__":

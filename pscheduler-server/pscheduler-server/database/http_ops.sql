@@ -18,7 +18,8 @@ CREATE TYPE http_result AS (
 
 CREATE OR REPLACE FUNCTION http_get(
     url TEXT DEFAULT NULL,
-    timeout FLOAT default NULL
+    timeout FLOAT default NULL,
+    bind TEXT default NULL
 )
 RETURNS http_result
 AS $$
@@ -27,7 +28,7 @@ import pscheduler
 
 try:
     status, returned = pscheduler.url_get(url, json=False, throw=False,
-        timeout=timeout)
+        timeout=timeout, bind=bind)
 except Exception as ex:
     plpy.error("Failed to GET %s: %s" % (url, str(ex)))
 
@@ -40,7 +41,9 @@ $$ LANGUAGE plpythonu;
 CREATE OR REPLACE FUNCTION http_put(
     url TEXT DEFAULT NULL,
     payload TEXT DEFAULT NULL,
-    timeout FLOAT default NULL)
+    timeout FLOAT default NULL,
+    bind TEXT default NULL
+)
 RETURNS http_result
 AS $$
 
@@ -49,7 +52,7 @@ import pscheduler
 try:
     status, returned = pscheduler.url_put(url, data=payload,
                                           json=False, throw=False,
-                                          timeout=timeout)
+                                          timeout=timeout, bind=bind)
 except Exception as ex:
     plpy.error("Failed to PUT %s: %s" % (url, str(ex)))
 
@@ -62,7 +65,8 @@ $$ LANGUAGE plpythonu;
 CREATE OR REPLACE FUNCTION http_post(
     url TEXT DEFAULT NULL,
     payload TEXT DEFAULT NULL,
-    timeout FLOAT default NULL
+    timeout FLOAT default NULL,
+    bind TEXT default NULL
 )
 RETURNS http_result
 AS $$
@@ -72,7 +76,7 @@ import pscheduler
 try:
     status, returned = pscheduler.url_post(url, data=payload,
                                            json=False, throw=False,
-                                           timeout=timeout)
+                                           timeout=timeout, bind=bind)
 except Exception as ex:
     plpy.error("Failed to POST %s: %s" % (url, str(ex)))
 
@@ -84,7 +88,8 @@ $$ LANGUAGE plpythonu;
 
 CREATE OR REPLACE FUNCTION http_delete(
     url TEXT DEFAULT NULL,
-    timeout FLOAT default NULL
+    timeout FLOAT default NULL,
+    bind TEXT default NULL
 )
 RETURNS http_result
 AS $$
@@ -92,7 +97,8 @@ AS $$
 import pscheduler
 
 try:
-    status, returned = pscheduler.url_delete(url, throw=False, timeout=timeout)
+    status, returned = pscheduler.url_delete(url, throw=False,
+    	    timeout=timeout, bind=bind)
 except Exception as ex:
     plpy.error("Failed to DELETE %s: %s" % (url, str(ex)))
 

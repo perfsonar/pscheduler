@@ -2,6 +2,8 @@
 Functions for retrieving strings from files
 """
 
+import os
+
 
 def string_from_file(string, strip=True):
     """
