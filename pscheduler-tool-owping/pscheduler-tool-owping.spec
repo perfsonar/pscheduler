@@ -5,7 +5,7 @@
 %define short	owping
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.24.rc3%{?dist}
+Release:	0.25.rc3%{?dist}
 
 Summary:	owping tool class for pScheduler
 BuildArch:	noarch
