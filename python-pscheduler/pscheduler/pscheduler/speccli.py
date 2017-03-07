@@ -2,8 +2,6 @@
 Functions for use in spec-to-cli methods
 """
 
-import pscheduler
-
 
 def speccli_build_args(json, strings=[], bools=[]):
     """
