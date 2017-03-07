@@ -18,7 +18,8 @@ def string_from_file(string, strip=True):
 
     else:
 
-        with open(string[1:], 'r') as content:
+        path = os.path.expanduser(string[1:])
+        with open(path, 'r') as content:
             value = content.read()
 
     return value.strip() if strip else value
@@ -27,6 +28,7 @@ def string_from_file(string, strip=True):
 if __name__ == "__main__":
     print string_from_file("Plain string")
     print string_from_file("@/etc/fstab")
+    print string_from_file("@~/.bashrc")
     try:
         print string_from_file("@/invalid/path")
     except Exception as ex:

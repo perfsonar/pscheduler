@@ -58,7 +58,7 @@ class TestPsdns(PschedTestBase):
         ], reverse=True)
 
         self.assertIsNone(ret.get('this-is-not-valid'))
-        self.assertEqual(ret.get('8.8.8.8'), 'google-public-dns-a.google.com.')
+        self.assertEqual(ret.get('8.8.8.8'), 'google-public-dns-a.google.com')
 
         # bulk none - empty dict
         self.assertEqual(dns_bulk_resolve([]), dict())

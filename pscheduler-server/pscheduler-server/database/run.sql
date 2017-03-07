@@ -481,24 +481,47 @@ RETURNS VOID
 AS $$
 DECLARE
     straggle_time TIMESTAMP WITH TIME ZONE;
-    straggle_time_long TIMESTAMP WITH TIME ZONE;
+    straggle_time_bg_multi TIMESTAMP WITH TIME ZONE;
 BEGIN
 
+    -- When non-background-multi tasks are considered tardy
     SELECT INTO straggle_time
         normalized_now() - run_straggle FROM configurables;
 
-    -- Runs that are still pending or on deck after their start times
-    -- were missed.
+    -- When non-background-multi tasks are considered tardy
+    SELECT INTO straggle_time_bg_multi
+        normalized_now() - run_straggle FROM configurables;
 
+    -- Runs that failed to start
     UPDATE run
     SET state = run_state_missed()
-    WHERE
-        lower(times) < straggle_time
-        AND state IN ( run_state_pending(), run_state_on_deck() );
+    WHERE id IN (
+        SELECT
+            run.id
+        FROM
+            run
+            JOIN task ON task.id = run.task
+            JOIN test ON test.id = task.test
+        WHERE
+
+            -- Non-background-multi runs pending on deck after start times
+            -- were missed
+            ( test.scheduling_class <> scheduling_class_background_multi()
+              AND lower(times) < straggle_time
+              AND run.state IN ( run_state_pending(), run_state_on_deck() )
+            )
+
+            OR
+
+            -- Background-multi runs that passed their end time
+            ( test.scheduling_class = scheduling_class_background_multi()
+              AND upper(times) < straggle_time_bg_multi
+              AND run.state IN ( run_state_pending(), run_state_on_deck() )
+            )
+    );
 
 
     -- Runs that started and didn't report back in a timely manner
-
     UPDATE run
     SET state = run_state_overdue()
     WHERE
