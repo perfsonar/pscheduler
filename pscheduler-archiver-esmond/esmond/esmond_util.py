@@ -3,12 +3,6 @@
 
 
 import pscheduler
-import requests
-import socket
-
-#disable SSL warnings
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 log = pscheduler.Log(prefix="archiver-esmond", quiet=True)
 
@@ -199,9 +193,11 @@ class EsmondClient:
     
     def __init__(self, url="http://127.0.0.1/esmond/perfsonar/archive", 
                         auth_token=None, 
-                        verify_ssl=False):
+                        verify_ssl=False,
+                        bind=None):
         self.url = url
         self.verify_ssl = verify_ssl
+        self.bind = bind
         self.headers = { 'Content-Type': 'application/json' }
         if auth_token:
             self.headers['Authorization'] = "Token %s" % auth_token
@@ -211,25 +207,30 @@ class EsmondClient:
         post_url = self.url
         if not post_url.endswith('/'):
             post_url += '/'
+
         log.debug("Posting metadata to %s: %s" % (post_url, metadata))
-        try:
-            r = requests.post(post_url, data=pscheduler.json_dump(metadata), headers=self.headers, verify=self.verify_ssl, timeout=HTTP_TIMEOUT)
-        except Exception as ex:
-            return False, "Unable to post metadata to %s: %s" % (post_url, str(ex))
-        
-        if r.status_code != 200 and r.status_code != 201:
+        status_code, result = pscheduler.url_post(
+            post_url,
+            data=pscheduler.json_dump(metadata),
+            headers=self.headers,
+            throw=False,
+            json=True,
+            verify_keys=self.verify_ssl,
+            bind=self.bind,
+            timeout=HTTP_TIMEOUT)
+
+        if status_code not in [200, 201]:
             try:
-                return False, "%d: %s" % (r.status_code, pscheduler.json_load(r.text)['detail'])
+                result_json = pscheduler.json_load(result)
             except:
-                return False, "%d: %s" % (r.status_code, r.text)
-        try:
-            rjson = pscheduler.json_load(r.text)
-            log.debug("Metadata POST result: %s" % rjson)
-        except:
-            return False, "Invalid JSON returned from server: %s" % r.text 
-        
-        return True, rjson
-    
+                result_json = {"detail": "Invalid JSON returned"}
+            return False, "%d: %s" % (
+                status_code,
+                result_json.get("detail", pscheduler.json_dump(result_json)))
+
+        return True, result
+
+
     def create_data(self, metadata_key, data_points):
         result = {}
         put_url = self.url
@@ -237,21 +238,30 @@ class EsmondClient:
             put_url += '/'
         put_url += ("%s/" % metadata_key)
         data = { 'data': data_points }
+
         log.debug("Putting data to %s: %s" % (put_url, data))
-        try:
-            r = requests.put(put_url, data=pscheduler.json_dump(data), headers=self.headers, verify=self.verify_ssl, timeout=HTTP_TIMEOUT)
-        except Exception as ex:
-            return False, "Unable to connect to post data to %s: %s" % (put_url, str(ex))
-            
-        if r.status_code== 409:
+        status_code, result = pscheduler.url_put(
+            put_url,
+            data=pscheduler.json_dump(data),
+            headers=self.headers,
+            json=True,
+            throw=False,
+            verify_keys=self.verify_ssl,
+            bind=self.bind,
+            timeout=HTTP_TIMEOUT)
+
+        if status_code == 409:
             #duplicate data
             log.debug("Attempted to add duplicate data point. Skipping")
-        elif r.status_code != 200 and r.status_code != 201:
+        elif status_coe not in [200, 201]:
             try:
-                return False, "%d: %s" % (r.status_code, pscheduler.json_load(r.text)['detail'])
+                result_json = pscheduler.json_load(result)
             except:
-                return False, "%d: %s" % (r.status_code, r.text)
-        
+                result_json = {"detail": "Invalid JSON returned"}
+            return False, "%d: %s" % (
+                status_code,
+                result_json.get("detail", pscheduler.json_dump(result_json)))
+
         return True, ""
 
 class EsmondBaseRecord:
