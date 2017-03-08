@@ -3,7 +3,7 @@ import pscheduler
 import pprint
 import json
 
-logger = pscheduler.Log(quiet=True)
+logger = pscheduler.Log(prefix='tool-bwctliperf3', quiet=True)
 
 # A whole bunch of pattern matching against the output of the "iperf3" tool
 # client output. Builds up an object of interesting bits from it.
