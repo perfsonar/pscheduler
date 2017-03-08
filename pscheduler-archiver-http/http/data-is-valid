@@ -24,7 +24,8 @@ data_validator = {
                 "post",
             ]
         },
-        "bind": { "$ref": "#/pScheduler/Host" }
+        "bind": { "$ref": "#/pScheduler/Host" },
+        "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
     },
     "required": [ "_url" ],
     "additionalProperties": False

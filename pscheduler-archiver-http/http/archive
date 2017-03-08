@@ -49,4 +49,10 @@ else:
 	"error": "Invalid op arg: %s" % op
     })
 
+    if "retry-policy" in data:
+        policy = pscheduler.RetryPolicy(data["retry-policy"], iso8601=True)
+        retry_time = policy.retry(json["attempts"])
+        if retry_time is not None:
+            result["retry"] = retry_time
+
 pscheduler.succeed_json({'succeeded': True})
