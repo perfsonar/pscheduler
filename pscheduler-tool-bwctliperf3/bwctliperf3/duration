@@ -9,7 +9,7 @@ import pscheduler
 
 from iperf3_defaults import *
 
-logger = pscheduler.Log(prefix='tool-bwctl', quiet=True)
+logger = pscheduler.Log(prefix='tool-bwctliperf3', quiet=True)
 
 json = pscheduler.json_load(exit_on_error=True)
 
