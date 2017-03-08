@@ -171,7 +171,7 @@ AS
             trynext + duration + slip < (normalized_now() + schedule_horizon)
             OR scheduling_class = scheduling_class_background_multi()
         )
-    ORDER BY added
+    ORDER BY trynext, added
 ;
 
 

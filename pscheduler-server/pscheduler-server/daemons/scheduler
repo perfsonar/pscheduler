@@ -493,7 +493,7 @@ def main_program():
         # TODO: The FALSE for background does nothing.  Get rid of it.
         cursor.execute("""
             SELECT uuid, runs, trynext, FALSE, json
-            FROM schedule_runs_to_schedule
+            FROM schedule_runs_to_schedule LIMIT 1
             """)
 
         # Check if any notifications arrived while this query executed.
