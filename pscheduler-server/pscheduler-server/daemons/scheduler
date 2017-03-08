@@ -540,8 +540,8 @@ def main_program():
                 # Post a non-starting run on the lead (local) system
                 try:
                     nonstart_cursor.execute(
-                        """SELECT api_run_post(%s, normalized_now(), NULL, %s)""",
-                        [uuid, error])
+                        """SELECT api_run_post(%s, %s, NULL, %s)""",
+                        [uuid, trynext, error])
                     log.info("Posted non-starting run at %s for %s: %s",
                              pscheduler.datetime_as_iso8601(trynext), url, error)
                 except:
