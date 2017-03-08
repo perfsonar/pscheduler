@@ -605,8 +605,8 @@ log.debug("Fetching %s", runs_url)
 status, run_json = pscheduler.url_get(runs_url, bind=bind, throw=False)
 
 if status == 404:
-    pscheduler.fail("Run on server was never populated.")
-
+    pscheduler.fail("%s never scheduled a run for the task." % (
+        "The local host" if lead is None else lead))
 
 # Watch the task run.
 
