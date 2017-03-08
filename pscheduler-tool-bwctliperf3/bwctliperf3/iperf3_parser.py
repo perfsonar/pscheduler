@@ -17,16 +17,23 @@ def parse_output(lines):
         results['succeeded'] = False
         results['error'] = "Unable to parse iperf3 output as JSON: %s" % e  
         return results
-
-    intervals = content['intervals']
-
+    
+    intervals = []
+    if content.has_key('intervals'):
+        intervals = content['intervals']
+    else:
+        results['succeeded'] = False
+        results['error'] = "iperf3 output is missing required field 'intervals'" 
+        return results
+    
     final_streams = []
 
     # Go through the JSON and convert to what we're expecting in throughput tests
     # This is mostly a renaming since it's so similar
     for interval in intervals:
-        streams = interval['streams']
-        summary = interval['sum']        
+        #these don't appear to be required by json schema, so ignoring if missing
+        streams = interval.get('streams', [])
+        summary = interval.get('sum', {})
 
         renamed_streams = []
 
@@ -42,19 +49,30 @@ def parse_output(lines):
                 })
 
 
-    sum_end = content['end']
-
+    sum_end = {}
+    if content.has_key('end'):
+       sum_end =  content['end']
+    else:
+        results['succeeded'] = False
+        results['error'] = "iperf3 output is missing required field 'end'" 
+        return results
+    
     # the "summary" keys are different for UDP/TCP here
     if sum_end.has_key("sum_sent"):
         summary = sum_end["sum_sent"]
-    else:
+    elif sum_end.has_key("sum"):
         summary = sum_end['sum']
+    else:
+        results['succeeded'] = False
+        results['error'] = "iperf3 output has neither 'sum_sent' nor 'sum' field, and one of them is required" 
+        return results
 
     renamed_summary = rename_json(summary)
 
 
     # kind of like above, the streams summary is in a different key
-    sum_streams = sum_end['streams']
+    # json schema does not require, so ignore if not provided
+    sum_streams = sum_end.get('streams', [])
 
     renamed_sum_streams = []
     for sum_stream in sum_streams:
