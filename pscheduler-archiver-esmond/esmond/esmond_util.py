@@ -3,12 +3,6 @@
 
 
 import pscheduler
-import requests
-import socket
-
-#disable SSL warnings
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 log = pscheduler.Log(prefix="archiver-esmond", quiet=True)
 
@@ -172,37 +166,6 @@ def iso8601_to_seconds(val):
     td = pscheduler.iso8601_as_timedelta(val)
     return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10.0**6) / 10.0**6
 
-def get_ips(addr):
-    ip_v4 = None
-    ip_v6 = None
-    try:
-        addrinfo = socket.getaddrinfo(addr, None)
-        for ai in addrinfo:
-            if ai[0] == socket.AF_INET:
-                ip_v4 = ai[4][0]
-            elif ai[0] == socket.AF_INET6:
-                ip_v6 = ai[4][0]
-    except:
-        pass
-    return ip_v4, ip_v6
-    
-def normalize_ip_versions(src, dest, ip_version=None):
-    src_ip = None
-    dest_ip = None
-    src_ip_v4, src_ip_v6 = get_ips(src)
-    dest_ip_v4, dest_ip_v6 = get_ips(dest)
-    #prefer v6 if not specified
-    if not ip_version or ip_version == 6:
-       if src_ip_v6 and dest_ip_v6:
-            src_ip = src_ip_v6
-            dest_ip = dest_ip_v6
-    if not src_ip or not dest_ip or ip_version == 4:
-        if src_ip_v4 and dest_ip_v4:
-            src_ip = src_ip_v4
-            dest_ip = dest_ip_v4
-
-    return src_ip, dest_ip
-
 def handle_storage_error(result, attempts=0, policy=[]):
     #build object
     retry = False
@@ -230,9 +193,11 @@ class EsmondClient:
     
     def __init__(self, url="http://127.0.0.1/esmond/perfsonar/archive", 
                         auth_token=None, 
-                        verify_ssl=False):
+                        verify_ssl=False,
+                        bind=None):
         self.url = url
         self.verify_ssl = verify_ssl
+        self.bind = bind
         self.headers = { 'Content-Type': 'application/json' }
         if auth_token:
             self.headers['Authorization'] = "Token %s" % auth_token
@@ -242,25 +207,30 @@ class EsmondClient:
         post_url = self.url
         if not post_url.endswith('/'):
             post_url += '/'
+
         log.debug("Posting metadata to %s: %s" % (post_url, metadata))
-        try:
-            r = requests.post(post_url, data=pscheduler.json_dump(metadata), headers=self.headers, verify=self.verify_ssl, timeout=HTTP_TIMEOUT)
-        except:
-            return False, "Unable to connect to remote server to create metadata"
-        
-        if r.status_code != 200 and r.status_code != 201:
+        status_code, result = pscheduler.url_post(
+            post_url,
+            data=pscheduler.json_dump(metadata),
+            headers=self.headers,
+            throw=False,
+            json=True,
+            verify_keys=self.verify_ssl,
+            bind=self.bind,
+            timeout=HTTP_TIMEOUT)
+
+        if status_code not in [200, 201]:
             try:
-                return False, "%d: %s" % (r.status_code, pscheduler.json_load(r.text)['detail'])
+                result_json = pscheduler.json_load(result)
             except:
-                return False, "%d: %s" % (r.status_code, r.text)
-        try:
-            rjson = pscheduler.json_load(r.text)
-            log.debug("Metadata POST result: %s" % rjson)
-        except:
-            return False, "Invalid JSON returned from server: %s" % r.text 
-        
-        return True, rjson
-    
+                result_json = {"detail": "Invalid JSON returned"}
+            return False, "%d: %s" % (
+                status_code,
+                result_json.get("detail", pscheduler.json_dump(result_json)))
+
+        return True, result
+
+
     def create_data(self, metadata_key, data_points):
         result = {}
         put_url = self.url
@@ -268,21 +238,30 @@ class EsmondClient:
             put_url += '/'
         put_url += ("%s/" % metadata_key)
         data = { 'data': data_points }
+
         log.debug("Putting data to %s: %s" % (put_url, data))
-        try:
-            r = requests.put(put_url, data=pscheduler.json_dump(data), headers=self.headers, verify=self.verify_ssl, timeout=HTTP_TIMEOUT)
-        except:
-            return False, "Unable to connect to remote server to create data"
-            
-        if r.status_code== 409:
+        status_code, result = pscheduler.url_put(
+            put_url,
+            data=pscheduler.json_dump(data),
+            headers=self.headers,
+            json=True,
+            throw=False,
+            verify_keys=self.verify_ssl,
+            bind=self.bind,
+            timeout=HTTP_TIMEOUT)
+
+        if status_code == 409:
             #duplicate data
             log.debug("Attempted to add duplicate data point. Skipping")
-        elif r.status_code != 200 and r.status_code != 201:
+        elif status_coe not in [200, 201]:
             try:
-                return False, "%d: %s" % (r.status_code, pscheduler.json_load(r.text)['detail'])
+                result_json = pscheduler.json_load(result)
             except:
-                return False, "%d: %s" % (r.status_code, r.text)
-        
+                result_json = {"detail": "Invalid JSON returned"}
+            return False, "%d: %s" % (
+                status_code,
+                result_json.get("detail", pscheduler.json_dump(result_json)))
+
         return True, ""
 
 class EsmondBaseRecord:
@@ -328,10 +307,10 @@ class EsmondBaseRecord:
             if dst_field:
                 self.metadata['subject-type'] = 'point-to-point'
                 input_dest = test_spec[dst_field]
-                src_ip, dest_ip = normalize_ip_versions(input_source, input_dest, ip_version=ip_version)
+                src_ip, dest_ip = pscheduler.ip_normalize_version(input_source, input_dest, ip_version=ip_version)
             else:
                 self.metadata['subject-type'] = 'network-element'
-                src_ip, tmp_ip = normalize_ip_versions(input_source, input_source, ip_version=ip_version)
+                src_ip, tmp_ip = pscheduler.ip_normalize_version(input_source, input_source, ip_version=ip_version)
     
             #set fields
             self.metadata['source'] = src_ip
@@ -344,9 +323,9 @@ class EsmondBaseRecord:
             self.metadata['time-duration'] = duration
             #Make measurement-agent the created_by_address if we have it, otherwise the lead participant, with same ip type as source
             if measurement_agent:
-                src_ip, self.metadata['measurement-agent'] = normalize_ip_versions(src_ip, measurement_agent)
+                src_ip, self.metadata['measurement-agent'] = pscheduler.ip_normalize_version(src_ip, measurement_agent)
             else:
-                src_ip, self.metadata['measurement-agent'] = normalize_ip_versions(src_ip, lead_participant)
+                src_ip, self.metadata['measurement-agent'] = pscheduler.ip_normalize_version(src_ip, lead_participant)
         
             #set test type to new value if provided
             if test_type:

@@ -50,6 +50,12 @@ opt_parser.add_option("--archivings",
 		      default=False,
                       dest="archivings")
 
+opt_parser.add_option("--bind",
+                      help="Make the request from the provided address",
+                      default=None,
+                      action="store", type="string",
+                      dest="bind")
+
 opt_parser.add_option("--diags",
                       help="For text output, dump participant diagnostics",
                       action="store_true",
@@ -102,7 +108,7 @@ run_url = remaining_args[0]
 # Fetch the run so we can pluck out the result URL.
 
 try:
-    status, run_json = pscheduler.url_get(run_url, json=True)
+    status, run_json = pscheduler.url_get(run_url, bind=options.bind, json=True)
 except Exception as ex:
     pscheduler.fail(str(ex))
 
@@ -122,7 +128,7 @@ if run_json["state"] in ["pending", "on-deck", "running", "cleanup"]:
     pscheduler.succeed("Run has not completed.")
 
 
-# TODO: Should dump diags for anything but trumped.
+# TODO: Should dump diags for anything but preempted.
 
 if run_json["state"] in ["overdue", "missed", "preempted"]:
     pscheduler.succeed("Run did not complete: %s" % run_json["state-display"])
@@ -151,14 +157,17 @@ try:
     status, result = pscheduler.url_get(
         result_url,
         params={ "format": out_format },
+        bind=options.bind,
         json=False)
 
     status, task_cli = pscheduler.url_get(
         "%s/cli" % task_url,
+        bind=options.bind,
         json=True)
 
     status, task_json = pscheduler.url_get(task_url,
                                            params={"detail": True},
+                                           bind=options.bind,
                                            json=True)
 
 except Exception as ex:

@@ -73,7 +73,7 @@ def __dns_resolve_host(host, ip_version, timeout):
 def dns_resolve(host,
                 query=None,
                 ip_version=4,
-                timeout=__DEFAULT_TIMEOUT__,
+                timeout=__DEFAULT_TIMEOUT__
                 ):
     """
     Resolve a hostname to its A record, returning None if not found or
@@ -118,20 +118,37 @@ def dns_resolve_reverse(ip,
     found or there was a timeout.
     """
 
-    # TODO: Need to also try resolution by local means (/etc/hosts)
+    """
+    Reverse-resolve a host using the system's facilities
+    """
 
+    # TODO: It would be nice of the queue/timeout code wasn't duplicated
+    # TODO: Validate 'ip' as an IP and raise a ValueError
+
+    def proc(ip_addr, queue):
+        """Process the query"""
+        try:
+            queue.put(socket.gethostbyaddr(ip_addr)[0])
+        except socket.herror:
+            queue.put(None)
+        except socket.gaierror as ex:
+            if ex.errno != -2:
+                raise ex
+            queue.put(None)
+
+    queue = Queue.Queue()
+    thread = threading.Thread(target=proc, args=(ip, queue))
+    # Don't make Python wait for this thread to exit.
+    thread.daemon = True
+    thread.start()
     try:
-        resolver = dns.resolver.Resolver()
-        resolver.timeout = timeout
-        resolver.lifetime = timeout
-        revname = dns.reversename.from_address(ip)
-        answers = resolver.query(revname, 'PTR')
-        return str(answers[0])
-    except (dns.exception.Timeout,
-            dns.resolver.NXDOMAIN,
-            dns.exception.SyntaxError,
-            dns.resolver.NoNameservers):
+        return queue.get(True, timeout)
+    except Queue.Empty:
         return None
+
+    # NOTE: Don't make any attempt to kill the thread, as it will get
+    # Python all confused if it holds the GIL.
+
 
 
 
@@ -213,16 +230,19 @@ if __name__ == "__main__":
         'does-not-exist.internet2.edu',
     ], ip_version=4)
 
-
+    print
     print "IPv6:"
     print dns_resolve('www.perfsonar.net', ip_version=6)
     print dns_bulk_resolve([
-        'www.perfsonar.net',
+        'www.perfsonar.net', 'www.google.com'
     ], ip_version=6)
 
-
+    print
     print "Bulk reverse:"
     print dns_bulk_resolve([
+        '127.0.0.1',
+        '::1',
+        '10.0.0.7',
         '192.168.12.34',
         '8.8.8.8',
         '198.6.1.1',
@@ -231,6 +251,6 @@ if __name__ == "__main__":
         'this-is-not-valid'
     ], reverse=True)
 
+    print
     print "Bulk none:"
-    print dns_bulk_resolve([
-            ])
+    print dns_bulk_resolve([])

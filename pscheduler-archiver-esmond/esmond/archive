@@ -46,6 +46,10 @@ if "_auth-token" in json['data']:
 verify_ssl=False
 if "verify-ssl" in json['data']:
     verify_ssl = json['data']['verify-ssl']
+try:
+    bind = json['data']['bind']
+except KeyError:
+    bind = None
 
 #get explicit measurement-agent if set
 measurement_agent = None
@@ -99,7 +103,7 @@ else:
 log.debug("fast_mode is %s" % fast_mode)
 
 #init client
-client = esmond_util.EsmondClient(url=url, auth_token=auth_token, verify_ssl=verify_ssl)
+client = esmond_util.EsmondClient(url=url, auth_token=auth_token, verify_ssl=verify_ssl, bind=bind)
 
 #determine test type and format metadata and data
 record = None

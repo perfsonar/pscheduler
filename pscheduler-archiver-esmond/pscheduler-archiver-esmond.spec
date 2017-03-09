@@ -5,7 +5,7 @@
 %define short	esmond
 Name:		pscheduler-archiver-esmond
 Version:	1.0
-Release:	0.24.rc3%{?dist}
+Release:	0.25.rc3%{?dist}
 
 Summary:	Esmond archiver class for pScheduler
 BuildArch:	noarch
@@ -45,15 +45,14 @@ This archiver sends JSON test results to Esmond Measurement Archive
 %build
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
-     DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_archiver_doc} \
      install
 
 
 %post
 pscheduler internal warmboot
 
-#TODO: For final, only do this on new install
-#if [ "$1" = "1" ]; then
+#Only start memcached on new install so people have ability to disable if they so desire
+if [ "$1" = "1" ]; then
 
 %if 0%{?el7}
     #enable memcached on new install
@@ -64,7 +63,7 @@ pscheduler internal warmboot
     /sbin/service memcached start
 %endif
 
-#fi
+fi
 
 
 
@@ -75,4 +74,3 @@ pscheduler internal warmboot
 %files
 %defattr(-,root,root,-)
 %{dest}
-%{_pscheduler_archiver_doc}/*

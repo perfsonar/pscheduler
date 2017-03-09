@@ -178,6 +178,7 @@ def find_overlaps(range_lists):
 def run_post(
     url,           # URL for task
     start_time,    # Desired start time
+    bind_addr,     # Bind address for HTTP or None
     log=None
     ):
 
@@ -194,7 +195,7 @@ def run_post(
     log and log.debug("Posting %s at %s", url, start_time)
 
     try:
-        status, task = pscheduler.url_get(url, params={'detail': 1})
+        status, task = pscheduler.url_get(url, params={'detail': 1}, bind=bind_addr)
     except pscheduler.URLException as ex:
         return (None, None, None,
                 "Error fetching %s: %s" % (url, str(ex)))
@@ -265,11 +266,13 @@ def run_post(
 
         status, json_ranges = pscheduler.url_get(runtime_url,
                                                  params=range_params,
+                                                 bind=bind_addr,
                                                  throw=False)
 
         if status in [ 404, 410 ]:
             log.debug("Task is no longer there.  Canceling %s.", url)
-            del_status, del_result = pscheduler.url_delete(url, throw=False)
+            del_status, del_result = pscheduler.url_delete(
+                url, throw=False, bind=bind_addr)
             if del_status not in [ 200, 404, 410 ]:
                 log.warning("Error while canceling %s: %s", url, del_result)
             return (None, None, None,
@@ -309,9 +312,7 @@ def run_post(
     # pick a random time within it.  Otherwise, take the earliest time
     # we can get.
 
-    # TODO: Remove randslip.  #287
-    if ('sliprand' in task['schedule'] and task['schedule']['sliprand']) \
-       or 'randslip' in task['schedule']:
+    if ('sliprand' in task['schedule'] and task['schedule']['sliprand']):
 
         selected_range = random.choice(common_ranges)
         max_slip_offset = selected_range.length() - task_duration
@@ -364,6 +365,7 @@ def run_post(
     status, run_lead_url \
         = pscheduler.url_post(task_urls[0] + '/runs',
                               data=pscheduler.json_dump(run_params),
+                              bind=bind_addr,
                               throw=False,
                               json=True)
     if status != 200:
@@ -397,6 +399,7 @@ def run_post(
 
         status, output = pscheduler.url_put(put_url,
                                             data=run_data,
+                                            bind=bind_addr,
                                             throw=False,
                                             json=False  # No output.
                                             )
@@ -413,7 +416,7 @@ def run_post(
 
     if len(runs_posted) != len(task_urls):
         log and log.debug("Removing runs: %s", runs_posted)
-        pscheduler.url_delete_list(runs_posted)
+        pscheduler.url_delete_list(runs_posted, bind=bind_addr)
         return (None, None, None,
                 "Failed to post/put runs to all participants: %s"
                 %  ("; ".join(errors))
@@ -432,10 +435,10 @@ def run_post(
 
         # TODO: Should this be multiple attempts to avoid a race condition?
         log and log.debug("Getting part data from %s", run)
-        status, result = pscheduler.url_get(run, throw=False)
+        status, result = pscheduler.url_get(run, bind=bind_addr, throw=False)
         if status != 200 or not 'participant-data' in result:
             log.debug("Deleting runs: %s", runs_posted)
-            pscheduler.url_delete_list(runs_posted)
+            pscheduler.url_delete_list(runs_posted, bind=bind_addr)
             # TODO: Better error?
             return (None, None, None, "Failed to get run data from all participants")
         part_data.append(result['participant-data'])
@@ -451,10 +454,11 @@ def run_post(
         log and log.debug("Putting full part data to %s", run)
         status, result = pscheduler.url_put(run,
                                             data=full_data,
+                                            bind=bind_addr,
                                             json=False,
                                             throw=False)
         if status != 200:
-            pscheduler.url_delete_list(runs_posted)
+            pscheduler.url_delete_list(runs_posted, bind=bind_addr)
             # TODO: Better error?
             log and log.debug("Failed: %s", result)
             return (None, None, None, "Failed to post run data to all participants")
@@ -488,8 +492,8 @@ def main_program():
 
         # TODO: The FALSE for background does nothing.  Get rid of it.
         cursor.execute("""
-            SELECT uuid, runs, trynext, FALSE
-            FROM schedule_runs_to_schedule
+            SELECT uuid, runs, trynext, FALSE, json
+            FROM schedule_runs_to_schedule LIMIT 1
             """)
 
         # Check if any notifications arrived while this query executed.
@@ -503,7 +507,7 @@ def main_program():
 
         for row in cursor:
 
-            uuid, runs, trynext, background = row
+            uuid, runs, trynext, background, json = row
 
             log.debug("%sTASK %s, %d runs, try %s", 
                       "BACKGROUND " if background else "",
@@ -523,8 +527,11 @@ def main_program():
             log.debug("Trying to schedule %s for %s", uuid, trynext)
             log.debug("URL is %s", url)
 
+            lead_bind = json.get("lead-bind", None)
+
             try:
-                run_uri, start_time, end_time, error = run_post(url, trynext, log)
+                run_uri, start_time, end_time, error = run_post(
+                    url, trynext, lead_bind, log=log)
             except Exception as ex:
                 error = str(ex)
 
@@ -533,9 +540,10 @@ def main_program():
                 # Post a non-starting run on the lead (local) system
                 try:
                     nonstart_cursor.execute(
-                        """SELECT api_run_post(%s, normalized_now(), NULL, %s)""",
-                        [uuid, error])
-                    log.debug("Posted non-starter")
+                        """SELECT api_run_post(%s, %s, NULL, %s)""",
+                        [uuid, trynext, error])
+                    log.info("Posted non-starting run at %s for %s: %s",
+                             pscheduler.datetime_as_iso8601(trynext), url, error)
                 except:
                     log.error("Insertion of non-starter failed: %s", error)
 

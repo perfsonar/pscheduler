@@ -15,7 +15,7 @@ class EnumMatcher():
         an EnumMatch as described in the pScheduler JSON Style Guide
         and Type Dictionary.
         """
-        valid, message = json_validate({"enumeration": enum },
+        valid, message = json_validate(enum,
                                        { "type": "object",
                                          "properties": {
                                              "enumeration": { "$ref": "#/pScheduler/EnumMatch" }
@@ -48,11 +48,10 @@ class EnumMatcher():
 
 
     def contains(self, enum):
-
         "Try to match a candidate enum and return a Boolean"
 
         # allow matching a single item or a list
-        if type(enum) != "list":
+        if not isinstance(enum, list):
             enum = [enum]
 
         result = self.__contains(enum)

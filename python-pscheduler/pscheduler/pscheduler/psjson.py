@@ -22,13 +22,14 @@ def json_decomment(json, prefix='#', null=False):
                 else:
                     next
             else:
-                result[item] = json_decomment(json[item], prefix=prefix)
+                result[item] = json_decomment(json[item], prefix=prefix,
+                                              null=null)
         return result
 
     elif type(json) is list:
         result = []
         for item in json:
-            result.append(json_decomment(item,prefix=prefix))
+            result.append(json_decomment(item, prefix=prefix, null=null))
         return result
 
     else:

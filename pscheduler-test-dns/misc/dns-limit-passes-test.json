@@ -1,0 +1,93 @@
+{
+    "spec": {
+        "schema": 1,
+	"dest": "www.perfsonar.net",
+	"count": 5,
+	"flowlabel": 86,
+	"hostnames": true,
+	"interval": "PT45M",
+	"ip-version": 6,
+	"length": 5000,
+	"source": "www.example.com",
+	"suppress-loopback": true,
+	"timeout": "P1D",
+	"tos": 86,
+	"ttl": 86
+    },
+
+    "limit": {
+        "count": {
+            "range": {
+                "lower": 1,
+                "upper": 10
+            }
+        },
+        "deadline": {
+            "range": {
+                "lower": "PT0.1S",
+                "upper": "PT1S"
+            }
+        },
+        "dest": {
+            "fail-message": "EDU hosts only for dest",
+            "match": {
+                "match": "\\.edu$",
+                "style": "regex"
+            }
+        },
+        "flowlabel": {
+            "match": [
+                5,
+                6,
+                7
+            ]
+        },
+        "hostnames": {
+            "match": false
+        },
+        "interval": {
+            "range": {
+                "lower": "PT0.1S",
+                "upper": "PT3S"
+            }
+        },
+        "ip-version": {
+            "match": [ 4 ]
+        },
+        "length": {
+            "range": {
+                "lower": 1,
+                "upper": 128
+            }
+        },
+        "source": {
+            "fail-message": "EDU hosts only for source",
+            "match": {
+                "match": "\\.edu$",
+                "style": "regex"
+            }
+        },
+        "suppress-loopback": {
+            "match": false
+        },
+        "timeout": {
+            "range": {
+                "lower": "PT0.1S",
+                "upper": "PT4S"
+            }
+        },
+        "tos": {
+            "match": [
+                12,
+                34,
+                56
+            ]
+        },
+        "ttl": {
+            "range": {
+                "lower": 1,
+                "upper": 40
+            }
+        }
+    }
+}

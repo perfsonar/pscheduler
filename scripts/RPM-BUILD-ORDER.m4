@@ -31,7 +31,6 @@ postgresql-load
 
 # Python Modules
 python-argparse
-python-dnspython
 ifelse(REDHAT_RELEASE_MAJOR,7,
     python-functools32,)
 python-isodate
@@ -46,13 +45,6 @@ python-vcversioner
 # JSON Tools
 python-jsonschema
 python-jsontemplate
-
-# Flask and its dependencies
-# These are dummies
-# TODO: Remove for GA release.  See #215
-python-Jinja2
-python-Werkzeug
-python-Flask
 
 # Home-grown Python Modules
 python-icmperror
@@ -97,6 +89,7 @@ pscheduler-test-throughput
 pscheduler-test-rtt
 pscheduler-test-simplestream
 pscheduler-test-trace
+pscheduler-test-dns
 
 # Tools
 pscheduler-tool-owping
@@ -118,11 +111,13 @@ pscheduler-tool-psclock
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
 pscheduler-tool-paris-traceroute
+pscheduler-tool-dnspy
 
 # Archivers
 pscheduler-archiver-bitbucket
 pscheduler-archiver-esmond
 pscheduler-archiver-failer
+pscheduler-archiver-http
 pscheduler-archiver-rabbitmq
 pscheduler-archiver-syslog
 

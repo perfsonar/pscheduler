@@ -26,6 +26,12 @@ opt_parser.disable_interspersed_args()
 
 # GENERAL OPTIONS
 
+opt_parser.add_option("--bind",
+                      help="Make the request from the provided address",
+                      default=None,
+                      action="store", type="string",
+                      dest="bind")
+
 opt_parser.add_option("--format",
                       help="Result format (text, html, json, none)",
                       action="store", type="string", default="text",
@@ -97,10 +103,11 @@ log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True)
 # Get the task with details and find out its class.
 
 log.debug("Fetching %s", task_url)
-status, task = pscheduler.url_get(task_url, params={"detail":True}, throw=False)
+status, task = pscheduler.url_get(task_url, params={"detail":True},
+                                  bind=options.bind, throw=False)
 
 if status != 200:
-    pscheduler.fail("Unable to fetch task: Error " + str(status))
+    pscheduler.fail("Unable to fetch task: " + task)
 
 # TODO: This is in anticipation of multi-result.
 try:
@@ -141,6 +148,7 @@ while True:
                 'upcoming': True,
                 'limit' : 1
             },
+            bind=options.bind,
             throw=False
         )
 
@@ -160,6 +168,7 @@ while True:
 
         status, run_data = pscheduler.url_get(next_run_url,
                                               params={ "wait": 0 },
+                                              bind=options.bind,
                                               throw=False)
         if status == 404:
             if run_count == 0:
@@ -187,7 +196,7 @@ while True:
         print run_url
 
     try:
-        status, run_json = pscheduler.url_get(run_url)
+        status, run_json = pscheduler.url_get(run_url, bind=options.bind)
     except pscheduler.psurl.URLException as ex:
         pscheduler.fail(str(ex))
 
@@ -240,6 +249,7 @@ while True:
 
     status, result = pscheduler.url_get( run_url,
                                          params={ 'wait-merged': True },
+                                         bind=options.bind,
                                          throw=False )
 
     if status == 404:
@@ -273,17 +283,39 @@ while True:
             if "state" not in result:
                 pscheduler.fail("Data returned from the server doesn't look like a run result.")
 
-            if result["state"] == "nonstart":
+            if result["state"] in ["nonstart", "failed"]:
                 try:
                     reason = result["errors"] 
                 except KeyError:
                     reason = "No reason provided."
-                pscheduler.fail("Run never started: %s" % reason)
+
+                text = "Run never started"
+                if result["state"] == "failed":
+                    text = "Run failed"
+            
+                # super awesome 3.5 backwards compatibility hack check
+                # TODO: remove this in 4.1 or whenever support for 4->3.5 testing is removed
+                # HACK: BWCTLBC
+                # change back to just this ----v 
+                # pscheduler.fail("%s: %s" % (text, reason))
+                message = "%s: %s" % (text, reason)
+
+                try:
+                    dest = task["test"]["spec"].get("dest")
+                    source = task["test"]["spec"].get("source")
+                    
+                    if (dest and pscheduler.api_has_bwctl(dest)) or (source and pscheduler.api_has_bwctl(source)):
+                        message += "\nPlease note that if you are testing with a mixture of pScheduler enabled hosts and legacy BWCTL hosts, certain options such as --tool may result in this error message. To ensure backwards compatibility mode is used, do not specify --tool if either end is a BWCTL based host. If possible, the perfSONAR team strongly recommends upgrading as backwards compatibility support will be dropped in a future release."
+                except KeyError:
+                    pass
+
+                pscheduler.fail(message)
+                # end super awesome 3.5 hack
 
             if result["state"] in ["pending", "on-deck", "running", "cleanup"]:
                 pscheduler.fail("Run has not completed.")
 
-            if result["state"] in ["overdue", "missed", "trumped"]:
+            if result["state"] in ["overdue", "missed", "preempted"]:
                 pscheduler.fail("Run did not complete: %s" % result["state-display"])
 
 
@@ -301,6 +333,7 @@ while True:
                     print "  (No error reported)"
                 print
 
+
         continue
 
 
@@ -312,6 +345,7 @@ while True:
         result['result-href'],
         params={ 'wait': True,
                  'format': out_format },
+        bind=options.bind,
         json=False,
         throw=False)
 

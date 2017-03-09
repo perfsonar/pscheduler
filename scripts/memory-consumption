@@ -1,0 +1,47 @@
+#!/bin/sh -e
+#
+# Report the amount of memory being used by a given user.
+#
+# Usage:  memory-consumption [ USERNAME ]
+#
+# The number produced is based on the proportional set size (PSS) of
+# all PIDs owned by the specified user.
+#
+#
+# Based on the script in this article:
+# https://www.depesz.com/2012/06/09/how-much-ram-is-postgresql-using/
+#
+
+die()
+{
+    echo "$@" 1>&2
+    exit 1
+}
+
+if [ "$1" ]
+then
+    TEST_USER="$1"
+else
+    TEST_USER="$(id -un)"
+fi
+
+egrep -qe "^${TEST_USER}:" /etc/passwd \
+    || die "${TEST_USER}: No such user"
+
+[ "$(uname -s)" = "Linux" ] \
+    || die "This script works only on Linux"
+
+[ "$(id -u)" -eq 0 ] \
+    || die "This program must be run as root."
+
+
+# TODO: If this is run against root, a couple of the processes in the
+# pipeline will be gone before the xargs runs.  Find a nice way to
+# filter that out.
+
+ps -u "${TEST_USER}" o pid= \
+    | awk '{ printf "/proc/%s/smaps\n", $1 }' \
+    | xargs -r cat \
+    | awk 'BEGIN        { k = 0 }
+           $1 == "Pss:" { k += $2 }
+           END          { printf "%.2f MiB\n", k/1024 }'

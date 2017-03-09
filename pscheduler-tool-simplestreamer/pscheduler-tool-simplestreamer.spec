@@ -5,7 +5,7 @@
 %define short	simplestreamer
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.24.rc3%{?dist}
+Release:	0.25.rc3%{?dist}
 
 Summary:	Simple Streamer tool class for pScheduler
 BuildArch:	noarch
@@ -42,7 +42,6 @@ false
 %build
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
-     DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_tool_doc} \
      install
 
 %post
@@ -63,4 +62,4 @@ pscheduler internal warmboot
 %files
 %defattr(-,root,root,-)
 %{dest}
-%{_pscheduler_tool_doc}/*
+

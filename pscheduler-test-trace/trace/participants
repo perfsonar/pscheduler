@@ -23,6 +23,7 @@ if source is None:
 
 
 ######################################################################
+# HACK: BWCTLBC
 #Backward Compatibility Code: We can remove this once we drop BWCTL
 #
 # Check that both sides have pScheduler and do the following:

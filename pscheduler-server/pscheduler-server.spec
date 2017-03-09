@@ -8,7 +8,7 @@
 
 Name:		pscheduler-server
 Version:	1.0
-Release:	0.24.rc3%{?dist}
+Release:	0.25.rc3%{?dist}
 
 Summary:	pScheduler Server
 BuildArch:	noarch
@@ -240,21 +240,9 @@ mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}
 #
 # Database
 #
+
 # (Nothing)
 
-# TODO: Remove this before 4.0 ships.  See #135
-# This undoes something caused by a bug in a RC1 build.
-PG_HBA=%{pg_data}/pg_hba.conf
-if [ -e "${PG_HBA}" ]
-then
-    # Remove #BEGIN-xxx that got jammed up onto previous lines
-    sed -i -e 's/\(.\)\(#BEGIN-\)/\1\n\2/' "${PG_HBA}"
-    # Remove stock pg_hba line that got jammed up on an #END
-    sed -i -e 's/#END-pscheduler-serverlocal/#END-pscheduler-server\nlocal/g' \
-     "${PG_HBA}"
-    # Remove old pscheduler-database segment on hosts that had that package
-    drop-in -r pscheduler-database /dev/null "${PG_HBA}"
-fi
 
 #
 # Daemons
@@ -315,24 +303,42 @@ fi
 
 # Increase the number of connections to something substantial
 
+%define pgsql_max_connections 500
+
 # Note that this must be dropped in at the end so it overrides
 # anything else in the file.
 drop-in -n %{name} - "%{pg_data}/postgresql.conf" <<EOF
 #
 # pScheduler
 #
-max_connections = 500
+max_connections = %{pgsql_max_connections}
 EOF
+
 
 %if 0%{?el6}
 chkconfig "%{pgsql_service}" on
-service "%{pgsql_service}" restart
 %endif
 %if 0%{?el7}
 systemctl enable "%{pgsql_service}"
-systemctl restart "%{pgsql_service}"
 %endif
 
+# Restart the server only if the current maximum connections is less
+# than what we just installed.  This is more for development
+# convenience than anything else since regular releases don't happen
+# often.
+
+SERVER_MAX=$( (echo "\\t" && echo "\\a" && echo "show max_connections") \
+    | postgresql-load)
+
+if [ "${SERVER_MAX}" -lt "%{pgsql_max_connections}" ]
+then
+%if 0%{?el6}
+    service "%{pgsql_service}" restart
+%endif
+%if 0%{?el7}
+    systemctl restart "%{pgsql_service}"
+%endif
+fi
 
 
 # Generate a password if the file is empty, which is the case after

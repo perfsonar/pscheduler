@@ -1,0 +1,6 @@
+{
+    "query": "umich.edu",
+    "record": "mx",
+    "schema": 1,
+    "#timeout": "PT0.03S"
+}
