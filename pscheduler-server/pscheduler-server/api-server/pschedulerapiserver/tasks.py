@@ -221,9 +221,11 @@ def tasks():
 
                 # Make sure the other participants are running pScheduler
 
+                participant_api = pscheduler.api_url(participant)
+
                 log.debug("Pinging %s" % (participant))
                 status, result = pscheduler.url_get(
-                    pscheduler.api_url(participant), throw=False, timeout=10,
+                    participant_api, throw=False, timeout=10,
                     bind=lead_bind)
 
                 if status == 400:
@@ -238,7 +240,7 @@ def tasks():
 
                 # TODO: This will fail with a very large test spec.
                 status, result = pscheduler.url_get(
-                    pscheduler.api_url(participant, "tools"),
+                    "%s/tools" % (participant_api),
                     params={ 'test': pscheduler.json_dump(task['test']) },
                     bind=lead_bind
                     )
