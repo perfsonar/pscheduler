@@ -49,9 +49,10 @@ def schedule():
 
     result = []
 
+    base_url = pscheduler.api_url(path="tasks/")
     for row in cursor:
 
-        task_href = pscheduler.api_url(path="tasks/%s" % row[2])
+        task_href = base_url +  row[2]
         run_href = "%s/runs/%s" % (task_href, row[3])
 
         run = {
