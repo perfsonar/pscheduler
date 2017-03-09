@@ -15,6 +15,7 @@ Depends:
  pscheduler-archiver-bitbucket,
  pscheduler-archiver-esmond,
  pscheduler-archiver-failer,
+ pscheduler-archiver-http,
  pscheduler-archiver-rabbitmq,
  pscheduler-archiver-syslog,
  pscheduler-core,
