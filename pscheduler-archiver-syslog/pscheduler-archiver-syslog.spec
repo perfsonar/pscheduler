@@ -5,7 +5,7 @@
 %define short	syslog
 Name:		pscheduler-archiver-%{short}
 Version:	1.0
-Release:	0.24.rc3%{?dist}
+Release:	0.25.rc3%{?dist}
 
 Summary:	Syslog archiver class for pScheduler
 BuildArch:	noarch
@@ -36,7 +36,6 @@ This archiver sends JSON test results to syslog
 %build
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
-     DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_archiver_doc} \
      install
 
 %post
@@ -48,4 +47,3 @@ pscheduler internal warmboot
 %files
 %defattr(-,root,root,-)
 %{dest}
-%{_pscheduler_archiver_doc}/*

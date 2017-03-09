@@ -3,16 +3,51 @@
 # Build pScheduler as a Docker container and push it
 #
 
-[ "$1" = "--nopush" ] && PUSH=false || NOPUSH=true
+OPT_PUSH=true
+OPT_BUILD=stable
+
+while echo "$1" | egrep -qe '^--.'
+do
+  OPTION="$1"
+  shift
+
+  case "$OPTION" in
+
+      --push)
+          OPT_PUSH=true
+          ;;
+      --no-push)
+          OPT_PUSH=false
+          ;;
+
+      --build)
+	  OPT_BUILD="$1"
+	  shift
+	  ;;
+
+      *)
+          echo "Unknown option $OPTION" 1>&2
+	  exit 1
+          ;;
 
 
-$PUSH && docker login
+  esac
+done
+
+
+
+$OPT_PUSH && docker login
+
 curl -s -O https://raw.githubusercontent.com/perfsonar/pscheduler/master/scripts/docker/Dockerfile
 TIMESTAMP=$(date +%Y%m%d%H%M%S)
-docker build --no-cache -t "perfsonar/pscheduler-demo:${TIMESTAMP}" .
+docker build \
+    --no-cache \
+    --build-arg "BUILD_NAME=${OPT_BUILD}" \
+    -t "perfsonar/pscheduler-demo:${TIMESTAMP}" \
+    .
 
-$PUSH && docker tag "perfsonar/pscheduler-demo:${TIMESTAMP}" perfsonar/pscheduler-demo:latest
-$PUSH && docker push "perfsonar/pscheduler-demo:${TIMESTAMP}"
-$PUSH && docker push perfsonar/pscheduler-demo:latest
+$OPT_PUSH && docker tag "perfsonar/pscheduler-demo:${TIMESTAMP}" perfsonar/pscheduler-demo:latest
+$OPT_PUSH && docker push "perfsonar/pscheduler-demo:${TIMESTAMP}"
+$OPT_PUSH && docker push perfsonar/pscheduler-demo:latest
 
 rm -f Dockerfile

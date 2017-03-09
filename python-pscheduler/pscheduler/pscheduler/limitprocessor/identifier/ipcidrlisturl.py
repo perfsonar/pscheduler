@@ -11,6 +11,7 @@ data_validator = {
     "type": "object",
     "properties": {
         "source": { "$ref": "#/pScheduler/URL" },
+        "bind": { "$ref": "#/pScheduler/Host" },
         "exclude": {
             "type": "array",
             "items": { "$ref": "#/pScheduler/IPCIDR" }
@@ -49,7 +50,8 @@ class IdentifierIPCIDRListURL():
             # Not time yet.
             return
 
-        status, text = pscheduler.url_get(self.source, json=False, throw=False)
+        status, text = pscheduler.url_get(self.source, bind=self.bind,
+                                          json=False, throw=False)
 
         if status != 200:
             # TODO: Would be nice if we could log the failure
@@ -90,6 +92,7 @@ class IdentifierIPCIDRListURL():
             raise ValueError("Invalid data: %s" % message)
 
         self.source = data['source']
+        self.bind = data.get('bind', None)
         self.update = pscheduler.iso8601_as_timedelta(data['update'])
         self.retry = pscheduler.iso8601_as_timedelta(data['retry'])
         self.fail_state = data['fail-state']

@@ -25,7 +25,7 @@ spec = json['spec']
 unsupported_options = [ 'flowlabel', 'hostnames', 'suppress-loopback', 'deadline' ]
 for unsupported_option in unsupported_options:
     if spec.has_key(unsupported_option):
-        pscheduler.fail("BWCTL does not support " . unsupported_option)
+        pscheduler.fail("BWCTL does not support %s" % unsupported_option)
 
 source = spec.get("source", "localhost")
 

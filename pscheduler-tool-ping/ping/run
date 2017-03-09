@@ -69,7 +69,7 @@ argv.append(str(count))
 
 try:
     flowlabel = spec['flow-label']
-    if ip_version == 6:
+    if ipversion == 6:
         argv.append('-F')
         argv.append(str(flowlabel))
     # TODO: Raise an exception if V4?  Can-run should have vetoed running this.

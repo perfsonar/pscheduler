@@ -1,0 +1,15 @@
+#!/bin/sh
+
+exec cat << EOF
+{
+    "name": "dns",
+    "description": "Measure the time it takes to resolve DNS records",
+    "version": "1.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+    "scheduling-class": "background"
+}
+EOF

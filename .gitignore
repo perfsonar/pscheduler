@@ -1,6 +1,10 @@
 # Ignore mac hidden file
 .DS_Store
 
+# Editor Droppings
+.*.swp
+*~
+
 # Ignore rpms, logs and other build artifacts
 *.rpm
 *.pyc

@@ -29,6 +29,11 @@ Example:
     )
 opt_parser.disable_interspersed_args()
 
+opt_parser.add_option("--bind",
+                      help="Make the request from the provided address",
+                      default=None,
+                      action="store", type="string",
+                      dest="bind")
 opt_parser.add_option("--quiet", "-q",
                       help="Run without any output",
                       action="store_true", default=False,
@@ -53,7 +58,8 @@ host = remaining_args[0]
 
 url = pscheduler.api_url(host)
 
-status, result = pscheduler.url_get(url, throw=False, timeout=options.timeout)
+status, result = pscheduler.url_get(url, bind=options.bind, 
+                                    throw=False, timeout=options.timeout)
 
 if status == 200:
     pscheduler.succeed('' if options.quiet

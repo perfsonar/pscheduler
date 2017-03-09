@@ -1,0 +1,141 @@
+#!/usr/bin/python
+#
+# Format a result
+#
+
+import jsontemplate
+import pscheduler
+import sys
+
+from validate import result_is_valid
+
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
+
+input = pscheduler.json_load(exit_on_error=True)
+
+valid, message = result_is_valid(input["result"])
+
+if not valid:
+    pscheduler.fail(message)
+
+json = input["result"]
+i = input['spec']['record']
+
+if format == 'text/plain':
+   print 'Time ......... %s' % json['time']
+   if i == 'a':
+      for r in input['result']['record']:
+	 print 'A ............ %s' % r
+   if i == 'aaaa':
+      for r in input['result']['record']:
+	 print 'AAAA ......... %s' % r
+   elif i == 'cname':
+      print 'CNAME ........ %s' % input['result']['record']
+   elif i == 'mx':
+      for r in input['result']['record']:
+	 print 'Pref ......... %3d %s' % (r['pref'], r['mx'])
+   elif i == 'ns':
+      for r in input['result']['record']:
+	 print 'NS ........... %s' % r
+   elif i == 'ptr':
+      print 'PTR .......... %s' % input['result']['record']
+   elif i == 'txt':
+      for r in input['result']['record']:
+	 print 'TXT .......... %s' % r
+   elif i == 'soa':
+      print 'Retry ........ %d' % input['result']['record']['retry']
+      print 'Refresh ...... %d' % input['result']['record']['refresh']
+      print 'Minimum ...... %d' % input['result']['record']['minimum']
+      print 'Expire ....... %d' % input['result']['record']['expire']
+      print 'Owner ........ %s' % input['result']['record']['owner']
+      print 'Nameserver ... %s' % input['result']['record']['nameserver']
+
+elif format == 'text/html':
+   print '<table>'
+   print '  <tr>'
+   print '    <th>Time</th>'
+   print '  </tr>'
+   print '  <tr>'
+   print '    <td>%s</td>' % json['time']
+   print '  </tr>'
+   if i == 'a':
+      print '  <tr>'
+      print '    <th>A Records</th>'
+      print '  </tr>'
+      for r in input['result']['record']:
+	 print '  <tr>'
+	 print '    <td>%s</td>' % r
+	 print '  </tr>'
+   if i == 'aaaa':
+      print '  <tr>'
+      print '    <th>AAAA Records</th>'
+      print '  </tr>'
+      for r in input['result']['record']:
+	 print '  <tr>'
+	 print '    <td>%s</td>' % r
+	 print '  </tr>'
+   elif i == 'cname':
+      print '  <tr>'
+      print '    <th>CNAME</th>'
+      print '  </tr>'
+      print '  <tr>'
+      print '    <td>%s</td>' % input['result']['record']
+      print '  </tr>'
+   elif i == 'mx':
+      print '  <tr>'
+      print '    <th>Pref</th>'
+      print '    <th>MX</th>'
+      print '  </tr>'
+      for r in input['result']['record']:
+	 print '  <tr>'
+	 print '    <td>%s</td>' % r['pref']
+	 print '    <td>%s</td>' % r['mx']
+	 print '  </tr>'
+   elif i == 'ns':
+      print '  <tr>'
+      print '    <th>NS Records</th>'
+      print '  </tr>'
+      for r in input['result']['record']:
+	 print '  <tr>'
+	 print '    <td>%s</td>' % r
+	 print '  </tr>'
+   elif i == 'ptr':
+      print '  <tr>'
+      print '    <th>PTR</th>'
+      print '  </tr>'
+      print '  <tr>'
+      print '    <td>%s</td>' % input['result']['record']
+      print '  </tr>'
+   elif i == 'txt':
+      print '  <tr>'
+      print '    <th>TXT Records</th>'
+      print '  </tr>'
+      for r in input['result']['record']:
+	 print '  <tr>'
+	 print '    <td>%s</td>' % r
+	 print '  </tr>'
+   elif i == 'soa':
+      print '  <tr>'
+      print '    <th>Retry</th>'
+      print '    <th>Refresh</th>'
+      print '    <th>Minimum</th>'
+      print '    <th>Expire</th>'
+      print '    <th>Owner</th>'
+      print '    <th>Nameserver</th>'
+      print '  </tr>'
+      print '  <tr>'
+      print '    <td>%d</td>' % input['result']['record']['retry']
+      print '    <td>%d</td>' % input['result']['record']['refresh']
+      print '    <td>%d</td>' % input['result']['record']['minimum']
+      print '    <td>%d</td>' % input['result']['record']['expire']
+      print '    <td>%s</td>' % input['result']['record']['owner']
+      print '    <td>%s</td>' % input['result']['record']['nameserver']
+      print '  </tr>'
+   print '</table>'
+
+else:
+   pscheduler.fail("Unsupported format '%s'" % format)

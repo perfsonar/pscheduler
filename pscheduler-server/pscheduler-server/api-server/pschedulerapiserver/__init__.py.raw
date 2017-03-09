@@ -15,6 +15,7 @@ application.config["DEBUG"] = False
 from .log import *
 from .response import *
 
+from .access import *
 from .admin import *
 from .args import *
 from .dbcursor import *

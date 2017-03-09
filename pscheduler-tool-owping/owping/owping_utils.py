@@ -4,10 +4,13 @@
 
 from owping_defaults import *
 import ConfigParser
+import pscheduler 
 
 #Role constants
 CLIENT_ROLE = 0
 SERVER_ROLE = 1
+
+log = pscheduler.Log(prefix="tool-owping", quiet=True)
 
 ##
 # Determine whether particpant will act as client or server
@@ -41,6 +44,6 @@ def get_config():
         config = ConfigParser.ConfigParser()
         config.read(CONFIG_FILE)
     except:
-        log.warn("Unable to read configuration file %s. Proceeding with defaults.")
+        log.warning("Unable to read configuration file %s. Proceeding with defaults.")
     
     return config

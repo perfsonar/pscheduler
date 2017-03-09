@@ -138,7 +138,7 @@ def run_client():
             iperf3_args.append('-b')
             iperf3_args.append(max_bandwidth)
 
-    if test_spec.has_key('udp'):
+    if test_spec.get('udp', False):
         iperf3_args.append('-u')
 
     if test_spec.has_key('buffer-length') and test_spec['buffer-length'] != None:
@@ -238,19 +238,45 @@ def run_server():
     iperf3_args.append("-p")
     iperf3_args.append(server_port)
 
-    # apparently iperf3 at least in UDP mode bound to all interfaces
-    # in a NAT environment does not work, so we're going to specify the
-    # server interface bind as well
-    iperf3_args.append('-B')
-    iperf3_args.append(test_spec['dest'])
-
-    # if we're forcing v4 or v6, let iperf3 know
-    if test_spec.has_key('ip-version') and test_spec['ip-version'] != None:
+    #Determine if we need to bind to an address and have enough info to do so intelligently
+    ip_version = test_spec.get('ip-version', None)
+    source = test_spec.get('source', None)
+    if ip_version is not None:
+        #if the ip version is given we just use the dest as the bind address and have 
+        #iperf3 force ipv4 or ipv6
+        iperf3_args.append('-B')
+        iperf3_args.append(test_spec['dest'])
         if test_spec['ip-version'] == 4:
             iperf3_args.append('-4')
         else:
             iperf3_args.append('-6')
-
+    elif source is not None:
+        # if we have the source and dest, we can determine what ip version they have in common
+        # we prefer IPv6 but fallback to IPv4 if they don't both have IPv6. If one end only 
+        # has IPv4 and the other only has IPv6 we don't bind at all but don't throw error in 
+        # case there is some external factor we don't know about (maybe should change this?)
+        source_ip, bind_address = pscheduler.ip_normalize_version(source, test_spec['dest'])
+        if bind_address is not None:
+            iperf3_args.append('-B')
+            iperf3_args.append(bind_address)
+        else:
+            logger.debug("Skipping bind. Source %s and destination %s don't have any common IPs of the same version as far as tool can tell." % (source, test_spec['dest']))
+    elif test_spec.get('udp', False):
+        # We really shouldn't do this but I think we have to because of iperf3 issue #505. 
+        # Basically not doing this causes UDP to bind to the first interface instead of all 
+        # interfaces which is probably more likely to break things than not specifying. This
+        # is imperfect though and we should really advise people to specify the source and/or 
+        # ip-version when doing a UDP test.
+        iperf3_args.append('-B')
+        iperf3_args.append(test_spec['dest'])
+        logger.debug("Binding UDP test to %s. If %s is a hostname with both AAAA and A records, it is highly recommended you modify this test to specify ip-version and/or the source address" % (test_spec['dest'], test_spec['dest']))
+    else:
+        #If we are here its because we have a TCP test where only the dest was specified 
+        # and no ip-version provided. In this case we can't determine what we're supposed 
+        # to bind to, so don't specify and iperf3 will bind to all interfaces
+        logger.debug("Skipping bind. No source or ip-version given so can't make an intelligent decision about where to bind. iperf3 will listen on all interfaces")
+        pass
+    
     # try to grab our default affinity if one wasn't passed in
     affinity = test_spec.get('server-cpu-affinity')
     if affinity == None:

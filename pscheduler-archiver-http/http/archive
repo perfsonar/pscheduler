@@ -1,0 +1,58 @@
+#!/usr/bin/python
+#
+# Send a result to http.
+#
+
+import pscheduler
+import pscheduler.psurl
+
+json = pscheduler.json_load(exit_on_error=True)
+
+errors = ()
+
+try:
+    url = json['data']['_url']
+except KeyError:
+    raise RuntimeError("Reached code that wasn't supposed to be reached.")
+
+try:
+    op = json['data']['op']
+except KeyError:
+    op = 'post'
+
+try:
+    bind = json['data']['bind']
+except KeyError:
+    bind = None
+
+if op == 'post':
+    try:
+	pscheduler.psurl.url_post( url, data=pscheduler.json_dump(json['result']), json=False, bind=bind )
+    except Exception as ex:
+	pscheduler.succeed_json({
+	    "succeeded": False,
+	    "error": "Failed to log result: %s" % str(ex)
+	})
+
+elif op == 'put':
+    try:
+	pscheduler.psurl.url_put( url, data=pscheduler.json_dump(json['result']), json=False, bind=bind )
+    except Exception as ex:
+	pscheduler.succeed_json({
+	    "succeeded": False,
+	    "error": "Failed to log result: %s" % str(ex)
+	})
+
+else:
+    pscheduler.succeed_json({
+	"succeeded": False,
+	"error": "Invalid op arg: %s" % op
+    })
+
+    if "retry-policy" in data:
+        policy = pscheduler.RetryPolicy(data["retry-policy"], iso8601=True)
+        retry_time = policy.retry(json["attempts"])
+        if retry_time is not None:
+            result["retry"] = retry_time
+
+pscheduler.succeed_json({'succeeded': True})

@@ -5,7 +5,7 @@
 %define short	simplestream
 Name:		pscheduler-test-%{short}
 Version:	1.0
-Release:	0.24.rc3%{?dist}
+Release:	0.25.rc3%{?dist}
 
 Summary:	Simplestream test class for pScheduler
 BuildArch:	noarch
@@ -36,7 +36,6 @@ Simplestream test class for pScheduler
 %build
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
-     DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_test_doc} \
      install
 
 
@@ -52,4 +51,3 @@ pscheduler internal warmboot
 %files
 %defattr(-,root,root,-)
 %{dest}
-%{_pscheduler_test_doc}/*

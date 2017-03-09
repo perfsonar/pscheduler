@@ -174,6 +174,55 @@ __dictionary__ = {
         ]
     },
 
+    "Int8": {
+        "type": "integer",
+        "minimum": -128,
+        "maximum": 127
+    },
+
+    "UInt8": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+    },
+
+    "Int16": {
+        "type": "integer",
+        "minimum": -32768,
+        "maximum": 32767
+    },
+
+    "UInt16": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65535
+    },
+
+    "Int32": {
+        "type": "integer",
+        "minimum": -2147483648,
+        "maximum": 2147483647
+    },
+
+    "UInt32": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 4294967295
+    },
+
+    "Int64": {
+        "type": "integer",
+        "minimum": -9223372036854775808,
+        "maximum": 9223372036854775807
+    },
+
+    "UInt64": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 184446744073709551615
+        },
+
+
     "IPPort": {
         "type": "integer",
         "minimum": 0,
@@ -199,7 +248,7 @@ __dictionary__ = {
     "Number": { "type": "number" },
 
     "Numeric": {
-        "oneOf": [
+        "anyOf": [
             { "$ref": "#/pScheduler/Number" },
             { "$ref": "#/pScheduler/SINumber" },
             ]
@@ -248,9 +297,16 @@ __dictionary__ = {
 
 
     "SINumber":  {
-        "type": "string",
-        "pattern": "^[0-9]+(\\.[0-9]+)?(\\s*[KkMmGgTtPpEeZzYy][Ii]?)?$"
-        },
+        "oneOf": [
+            {
+                "type": "string",
+                "pattern": "^[0-9]+(\\.[0-9]+)?(\\s*[KkMmGgTtPpEeZzYy][Ii]?)?$"
+            },
+            {
+                "type": "integer"
+            }
+        ]
+    },
 
     # TODO: This should be subsumed by NumericRange,
     "SINumberRange": {
@@ -416,8 +472,6 @@ __dictionary__ = {
         "properties": {
             "start":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
             "slip":     { "$ref": "#/pScheduler/Duration" },
-            # TODO: Remove this.  #287
-            "randslip": { "$ref": "#/pScheduler/Probability" },
             "sliprand": { "$ref": "#/pScheduler/Boolean" },
             "repeat":   { "$ref": "#/pScheduler/Duration" },
             "until":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
@@ -429,6 +483,7 @@ __dictionary__ = {
         "type": "object",
         "properties": {
             "schema":   { "$ref": "#/pScheduler/Cardinal" },
+            "lead-bind":{ "$ref": "#/pScheduler/Host" },
             "test":     { "$ref": "#/pScheduler/TestSpecification" },
             "tool":     {" $ref": "#/pScheduler/String" },
             "tools":    {"$ref": "#/pScheduler/StringList" },

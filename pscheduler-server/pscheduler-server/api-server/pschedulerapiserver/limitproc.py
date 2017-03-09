@@ -70,7 +70,9 @@ def __limitproc_update():
     try:
         this.processor = LimitProcessor(this.limit_file)
         this.whynot = None
-        log.info("New limits loaded from %s" % this.limit_file)
+        log.info("Limits %s from %s" % (
+            "reloaded" if this.file_exists else "loaded",
+            this.limit_file))
     except Exception as ex:
         this.processor = None
         this.whynot = str(ex)

@@ -74,6 +74,7 @@ BEGIN
         	slip		INTERVAL,
 
         	-- How much of the slip is randomly applied to the start time.
+		-- NOTE: This column was remove in version 9.
         	randslip	NUMERIC
         			DEFAULT 0.0
         			CHECK (randslip BETWEEN 0.0 AND 1.0),
@@ -258,9 +259,14 @@ BEGIN
     END IF;
 
 
-    -- TODO: Do a new version that drops this column when randslip
-    -- goes away.  #287
+    -- Version 8 to version 9
+    -- Remove deprecated randslip column
+    IF t_version = 8
+    THEN
+	ALTER TABLE task DROP COLUMN randslip;
 
+        t_version := t_version + 1;
+    END IF;
 
 
     --
@@ -288,8 +294,6 @@ DECLARE
 	test_type TEXT;
 	tool_type TEXT;
 	start TEXT;
-	-- TODO: Get rid of this when randslip goes away  #287
-	randslip TEXT;
 	until TEXT;
 	run_result external_program_result;
 	temp_json JSONB;
@@ -308,16 +312,6 @@ BEGIN
 	ELSIF NEW.added <> OLD.added THEN
 	    RAISE EXCEPTION 'Insertion time cannot be updated.';
 	END IF;
-
-	-- TODO: We don't really need to do this since the JSON is validated.
-	FOR key IN (SELECT jsonb_object_keys(NEW.json))
-	LOOP
-	   -- Ignore comments
-	   IF (left(key, 1) <> '#')
-	      AND (key NOT IN ('schema', 'test', 'tool', 'tools', 'schedule', 'archives', 'reference')) THEN
-	      RAISE EXCEPTION 'Unrecognized section "%" in task package.', key;
-	   END IF;
-	END LOOP;
 
 
 	--
@@ -359,18 +353,7 @@ BEGIN
 	    END IF;
 	    NEW.cli = run_result.stdout::JSON;
 
-	    -- Extract participant list
-	    run_result := pscheduler_internal(ARRAY['invoke', 'test', test_type, 'participants'],
-		          NEW.json #>> '{test, spec}' );
-	    IF run_result.status <> 0 THEN
-	        RAISE EXCEPTION 'Unable to determine participants: %', run_result.stderr;
-	    END IF;
-            NEW.participants := run_result.stdout::JSONB -> 'participants';
-	    IF NEW.participants IS NULL
-            THEN
-                RAISE EXCEPTION 'INTERNAL ERROR: Test produced no list of participants from task.';
-            END IF;
-
+	    -- Count the participants
 	    NEW.nparticipants := jsonb_array_length(NEW.participants);
 	    IF NEW.nparticipants IS NULL OR NEW.nparticipants = 0
             THEN
@@ -456,16 +439,6 @@ BEGIN
 	IF NEW.slip IS NULL THEN
 	   NEW.slip := 'P0';
 	END IF;
-
-	-- TODO: Get rid of this when randslip goes away  #287
-	randslip := NEW.json #>> '{schedule, randslip}';
-	IF randslip IS NOT NULL THEN
-	    NEW.randslip := text_to_numeric(randslip);
-	    IF (NEW.randslip < 0.0) OR (NEW.randslip > 1.0) THEN
-	        RAISE EXCEPTION 'Slip fraction must be in [0.0 .. 1.0]';
-	    END IF;
-	END IF;
-
 
 	NEW.repeat := text_to_interval(NEW.json #>> '{schedule, repeat}');
 
@@ -666,10 +639,12 @@ $$ LANGUAGE plpgsql;
 -- TODO: Can get rid of this after 1.0 is in production.
 DROP FUNCTION IF EXISTS api_task_post(JSONB, JSONB, INTEGER, UUID);
 DROP FUNCTION IF EXISTS api_task_post(JSONB, JSONB, JSON, INTEGER, UUID);
+DROP FUNCTION IF EXISTS api_task_post(JSONB, JSONB, JSONB, JSON, INTEGER, UUID);
 
 
 CREATE OR REPLACE FUNCTION api_task_post(
     task_package JSONB,
+    participant_list TEXT[],
     hints JSONB,
     limits_passed JSON = '[]',
     participant INTEGER DEFAULT 0,
@@ -688,8 +663,8 @@ BEGIN
    END IF;
 
    WITH inserted_row AS (
-        INSERT INTO task(json, limits_passed, participant, uuid, hints, enabled)
-        VALUES (task_package, limits_passed, participant, task_uuid, hints, enabled)
+        INSERT INTO task(json, participants, limits_passed, participant, uuid, hints, enabled)
+        VALUES (task_package, array_to_json(participant_list), limits_passed, participant, task_uuid, hints, enabled)
         RETURNING *
     ) SELECT INTO inserted * from inserted_row;
 
@@ -748,6 +723,7 @@ DECLARE
     host TEXT;
     ip INET;
     ip_family INTEGER;
+    bind TEXT;
 BEGIN
 
     SELECT INTO taskrec * FROM task WHERE uuid = task_uuid;
@@ -769,6 +745,15 @@ BEGIN
 
     IF taskrec.participant = 0
     THEN
+
+        -- If the task has a lead-bind, use it.
+	IF taskrec.json ? 'lead-bind'
+	THEN
+	    bind := taskrec.json #>> '{"lead-bind"}';
+	ELSE
+	    bind := NULL;
+	END IF;
+
         FOR host IN (SELECT jsonb_array_elements_text(taskrec.participants)
                      FROM task WHERE uuid = task_uuid OFFSET 1)
         LOOP
@@ -783,8 +768,8 @@ BEGIN
                 NULL;  -- Don't care
             END;
 
-            INSERT INTO http_queue (operation, uri)
-                VALUES ('DELETE', format(task_url_format, host));
+            INSERT INTO http_queue (operation, uri, bind)
+                VALUES ('DELETE', format(task_url_format, host), bind);
         END LOOP;
     END IF;   
 
