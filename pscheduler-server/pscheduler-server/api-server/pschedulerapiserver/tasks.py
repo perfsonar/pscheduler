@@ -447,6 +447,15 @@ def tasks_uuid(uuid):
             return not_found()
         json = row[0]
 
+        # The lead participant passes the participant list to the
+        # others within the JSON, but that shouldn't come out when
+        # querying it.
+
+        try:
+            del json["participants"]
+        except KeyError:
+            pass
+
         # Add details if we were asked for them.
 
         if arg_boolean('detail'):
