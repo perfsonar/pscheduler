@@ -2,7 +2,7 @@
 
 set -e
 
-python -u debian/tests/server.py 8080 > $AUTOPKGTEST_TMP/server.out &
+python -u debian/tests/server.py 8080 > $AUTOPKGTEST_TMP/server.out 2>&1 &
 PID=$!
 
 pscheduler task --archive '{ "archiver": "http", "data": { "_url": "http://localhost:8080" } }' rtt --dest=localhost
