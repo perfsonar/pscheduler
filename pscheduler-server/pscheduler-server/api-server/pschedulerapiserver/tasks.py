@@ -427,7 +427,8 @@ def tasks_uuid(uuid):
                     task.participant,
                     task.enabled,
                     task.cli,
-                    task.limits_passed
+                    task.limits_passed,
+                    task.participant
                 FROM
                     task
                     JOIN test ON test.id = task.test
@@ -478,6 +479,7 @@ def tasks_uuid(uuid):
                 'enabled':  row[12],
                 'cli':  row[13],
                 'spec-limits-passed': row[14],
+                'participant': row[15],
                 'runs-href': "%s/runs" % (request.base_url),
                 'first-run-href': "%s/runs/first" % (request.base_url),
                 'next-run-href': "%s/runs/next" % (request.base_url)
