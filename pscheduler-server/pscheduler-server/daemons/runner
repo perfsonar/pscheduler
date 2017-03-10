@@ -656,7 +656,7 @@ class RunWorker:
                     db = None
                     try:
                         db = self.dbpool.getconn()
-                        self.log.info("Get conn 6")
+                        self.log.debug("Get conn 6")
                         with db.cursor() as cursor:
                             cursor.execute("""
                                         UPDATE run SET clock_survey = %s
