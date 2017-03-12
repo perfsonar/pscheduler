@@ -211,7 +211,25 @@ class RunWorker:
             self.log.warning("Error committing DB transaction: %s" % e)
         finally:
             self.dbpool.putconn(db)
-            
+    
+    def _get_db_conn(self, attempts=60, wait=1):
+        """
+        Get connection from pool. If cannot get connection retry a few times before giving-up
+        """
+        db = None
+        for attempt in range(0, attempts):
+            try:
+                db = self.dbpool.getconn()
+                break
+            except psycopg2.pool.PoolError:
+                time.sleep(wait)
+        
+        #Unable to get connection, throw exception
+        if db is None:
+            raise Exception("Database connection pool exhausted. Unable to get connection after %d attempts." % attempts)
+        
+        return db
+    
     def __post_new_result(self, result):
         """
         Post a finished run for this task using the result provided.
@@ -225,7 +243,7 @@ class RunWorker:
         
         db = None
         try:
-            db = self.dbpool.getconn()
+            db = self._get_db_conn()
             with db.cursor() as cursor:
                 cursor.execute("""
                 WITH inserted_row AS (
@@ -304,7 +322,7 @@ class RunWorker:
         
         db = None
         try:
-            db = self.dbpool.getconn()
+            db = self._get_db_conn()
             with db.cursor() as cursor:
                 cursor.execute("""
                            SELECT            
@@ -407,7 +425,7 @@ class RunWorker:
         
         db = None
         try:
-            db = self.dbpool.getconn()
+            db = self._get_db_conn()
             with db.cursor() as cursor:
                 cursor.execute("SELECT control_is_paused()")
                 assert(cursor.rowcount == 1)
@@ -437,7 +455,7 @@ class RunWorker:
         # Mark the run as underway
         db = None
         try:
-            db = self.dbpool.getconn()
+            db = self._get_db_conn()
             with db.cursor() as cursor:
                 cursor.execute("""
                                UPDATE run
@@ -505,7 +523,7 @@ class RunWorker:
         
         db = None
         try:
-            db = self.dbpool.getconn()
+            db = self._get_db_conn()
             with db.cursor() as cursor:
                 cursor.execute("""
                 UPDATE run
@@ -655,8 +673,7 @@ class RunWorker:
                     # TODO: Error check this.
                     db = None
                     try:
-                        db = self.dbpool.getconn()
-                        self.log.debug("Get conn 6")
+                        db = self._get_db_conn()
                         with db.cursor() as cursor:
                             cursor.execute("""
                                         UPDATE run SET clock_survey = %s
