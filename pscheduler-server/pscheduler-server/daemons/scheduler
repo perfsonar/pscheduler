@@ -185,9 +185,12 @@ def run_post(
     """
     Schedule a run of a task on all participating nodes.
 
-    Returns a tuple containing a list of the posted run URLs (which
-    will be None in the event of an error) and an error message (None
-    if there was no error).
+    Returns a tuple containing:
+        Run URI
+        Scheduled start time
+        Scheduled end time
+        Error
+        True if the run should be skipped and tried again later
     """
 
     assert type(start_time) == datetime.datetime
@@ -197,7 +200,7 @@ def run_post(
     try:
         status, task = pscheduler.url_get(url, params={'detail': 1}, bind=bind_addr)
     except pscheduler.URLException as ex:
-        return (None, None, None,
+        return (None, None, None, False,
                 "Error fetching %s: %s" % (url, str(ex)))
 
 
@@ -206,6 +209,24 @@ def run_post(
     participants = task['detail']['participants']
     log and log.debug("Participant list is %s", participants)
     assert len(participants) >= 1
+
+    # Make sure all of the participants' APIs answer before trying to
+    # do anything with them.
+
+    if not pscheduler.api_ping_all_up(participants):
+
+        # If the start time is after the next time we'd loop around,
+        # we can try it again later.  Otherwise, tell the caller to
+        # post a non-starter.
+
+        skip = pscheduler.time_now() + refresh < start_time
+
+        log and log.debug("Some participants down or slow. %s",
+                          "Skipping." if skip else "Non-starter.") 
+        return (None, None, None, skip,
+                "One or more participants down or slow to respond.")
+    else:
+        log and log.debug("All participants are up.")
 
     task_urls = [ pscheduler.api_replace_host(url, participant)
                   for participant in participants ]
@@ -275,16 +296,16 @@ def run_post(
                 url, throw=False, bind=bind_addr)
             if del_status not in [ 200, 404, 410 ]:
                 log.warning("Error while canceling %s: %s", url, del_result)
-            return (None, None, None,
+            return (None, None, None, False,
                     "Task is gone from %s" % (participant))
 
         if status != 200:
-            return (None, None, None,
+            return (None, None, None, False,
                     "Error trying to schedule with %s: %s %d"
                     % (participant, runtime_url, status))
 
         if len(json_ranges) == 0:
-            return (None, None, None,
+            return (None, None, None, False,
                     "%s has no time available for this run" % (participant))
 
         ranges = [ Range( pscheduler.iso8601_as_datetime(item['lower']),
@@ -305,7 +326,7 @@ def run_post(
                       if trange.length() >= task_duration ]
     log and log.debug("Ranges in common: %s", common_ranges)
     if len(common_ranges) == 0:
-        return (None, None, None, "No common times for this run.")
+        return (None, None, None, False, "No common times for this run.")
 
 
     # If we're randomizing the start time, pick a range at random and
@@ -370,7 +391,7 @@ def run_post(
                               json=True)
     if status != 200:
         log and log.debug("Failed: %d %s", status, run_lead_url)
-        return (None, None, None,
+        return (None, None, None, False,
                 "Failed to post lead run: %s" % run_lead_url)
 
     log and log.debug("Lead URL is %s", run_lead_url)
@@ -417,7 +438,7 @@ def run_post(
     if len(runs_posted) != len(task_urls):
         log and log.debug("Removing runs: %s", runs_posted)
         pscheduler.url_delete_list(runs_posted, bind=bind_addr)
-        return (None, None, None,
+        return (None, None, None, False,
                 "Failed to post/put runs to all participants: %s"
                 %  ("; ".join(errors))
         )
@@ -440,7 +461,8 @@ def run_post(
             log.debug("Deleting runs: %s", runs_posted)
             pscheduler.url_delete_list(runs_posted, bind=bind_addr)
             # TODO: Better error?
-            return (None, None, None, "Failed to get run data from all participants")
+            return (None, None, None, False,
+                    "Failed to get run data from all participants")
         part_data.append(result['participant-data'])
         log and log.debug("Got %s", result['participant-data'])
 
@@ -461,12 +483,13 @@ def run_post(
             pscheduler.url_delete_list(runs_posted, bind=bind_addr)
             # TODO: Better error?
             log and log.debug("Failed: %s", result)
-            return (None, None, None, "Failed to post run data to all participants")
+            return (None, None, None, False,
+                    "Failed to post run data to all participants")
 
 
     # TODO: Probably also want to return the start and end times?
     log and log.debug("Run posting finished")
-    return (runs_posted[0], schedule_lower, schedule_upper, None)
+    return (runs_posted[0], schedule_lower, schedule_upper, None, False)
 
 
 #
@@ -530,10 +553,15 @@ def main_program():
             lead_bind = json.get("lead-bind", None)
 
             try:
-                run_uri, start_time, end_time, error = run_post(
+                run_uri, start_time, end_time, error, skip = run_post(
                     url, trynext, lead_bind, log=log)
             except Exception as ex:
                 error = str(ex)
+
+            if skip:
+                log.debug("Skipping: %s", error)
+                continue
+                
 
             if error is not None:
                 log.debug("Unable: %s", error)
