@@ -213,7 +213,9 @@ def run_post(
     # Make sure all of the participants' APIs answer before trying to
     # do anything with them.
 
-    if not pscheduler.api_ping_all_up(participants):
+    lead_bind = task.get("lead-bind", None)
+    log and log.debug("Binding from %s", lead_bind)
+    if not pscheduler.api_ping_all_up(participants, bind=lead_bind):
 
         # If the start time is after the next time we'd loop around,
         # we can try it again later.  Otherwise, tell the caller to

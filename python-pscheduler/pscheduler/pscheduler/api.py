@@ -113,7 +113,7 @@ def api_result_delimiter():
 
 
 
-def api_ping(host, timeout=3):
+def api_ping(host, bind=None, timeout=3):
     """
     See if an API server is alive within a given timeout.  If 'host'
     is None, ping the local server.
@@ -121,12 +121,13 @@ def api_ping(host, timeout=3):
     if host is None:
         host = api_this_host()
     status, result = url_get("https://%s/pscheduler/api" % (host),
-                             timeout=timeout, json=False, throw=False)
+                             timeout=timeout, bind=bind,
+                             json=False, throw=False)
     return status == 200
 
 
 
-def api_ping_list(hosts, timeout=None, threads=10):
+def api_ping_list(hosts, bind=None, timeout=None, threads=10):
     """
     Ping a list of hosts and return a list of their statuses.
     """
@@ -146,7 +147,7 @@ def api_ping_list(hosts, timeout=None, threads=10):
 
     def ping_one(arg):
         host, timeout = arg
-        return (host, api_ping(host, timeout=timeout))
+        return (host, api_ping(host, bind=bind, timeout=timeout))
 
     for host, state in pool.imap(
             ping_one,
@@ -158,11 +159,11 @@ def api_ping_list(hosts, timeout=None, threads=10):
 
 
 
-def api_ping_all_up(hosts, timeout=None):
+def api_ping_all_up(hosts, bind=None, timeout=None):
     """
     Determine if all hosts in a list are up.
     """
-    results = api_ping_list(hosts, timeout)
+    results = api_ping_list(hosts, bind=bind, timeout=timeout)
 
     for host in results:
         if not results[host]:
