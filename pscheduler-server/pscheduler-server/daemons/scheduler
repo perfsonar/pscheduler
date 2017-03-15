@@ -189,8 +189,8 @@ def run_post(
         Run URI
         Scheduled start time
         Scheduled end time
-        Error
         True if the run should be skipped and tried again later
+        Error
     """
 
     assert type(start_time) == datetime.datetime
@@ -255,7 +255,7 @@ def run_post(
         repeat_interval = pscheduler.iso8601_as_timedelta(task['schedule']['repeat'])
         if task_slip + task_duration >= repeat_interval:
             task_slip = repeat_interval - task_duration
-            log.debug("Chopped slip to %s", task_slip)
+            log and log.debug("Chopped slip to %s", task_slip)
     except KeyError:
         pass
 
@@ -285,7 +285,7 @@ def run_post(
         # runtimes URLs so we don't have to build it.
         runtime_url = task_url + '/runtimes'
 
-        log.debug("Fetching proposals from %s", runtime_url)
+        log and log.debug("Fetching proposals from %s", runtime_url)
 
         status, json_ranges = pscheduler.url_get(runtime_url,
                                                  params=range_params,
@@ -293,20 +293,22 @@ def run_post(
                                                  throw=False)
 
         if status in [ 404, 410 ]:
-            log.debug("Task is no longer there.  Canceling %s.", url)
+            log and log.debug("Task is no longer there.  Canceling %s.", url)
             del_status, del_result = pscheduler.url_delete(
                 url, throw=False, bind=bind_addr)
             if del_status not in [ 200, 404, 410 ]:
-                log.warning("Error while canceling %s: %s", url, del_result)
+                log and log.warning("Error while canceling %s: %s", url, del_result)
             return (None, None, None, False,
                     "Task is gone from %s" % (participant))
 
         if status != 200:
+            log and log.debug("Got back %d: %s", status, json_ranges)
             return (None, None, None, False,
                     "Error trying to schedule with %s: %s %d"
                     % (participant, runtime_url, status))
 
         if len(json_ranges) == 0:
+            log and log.debug("No time available.")
             return (None, None, None, False,
                     "%s has no time available for this run" % (participant))
 
@@ -314,8 +316,7 @@ def run_post(
                           pscheduler.iso8601_as_datetime(item['upper']) )
                    for item in json_ranges ]
 
-        if log:
-            log.debug("Ranges: %s", ranges)
+        log and log.debug("Ranges: %s", ranges)
         
         range_set.append(ranges)
 
@@ -491,7 +492,7 @@ def run_post(
 
     # TODO: Probably also want to return the start and end times?
     log and log.debug("Run posting finished")
-    return (runs_posted[0], schedule_lower, schedule_upper, None, False)
+    return (runs_posted[0], schedule_lower, schedule_upper, False, None)
 
 
 #
@@ -555,7 +556,7 @@ def main_program():
             lead_bind = json.get("lead-bind", None)
 
             try:
-                run_uri, start_time, end_time, error, skip = run_post(
+                run_uri, start_time, end_time, skip, error = run_post(
                     url, trynext, lead_bind, log=log)
             except Exception as ex:
                 error = str(ex)
