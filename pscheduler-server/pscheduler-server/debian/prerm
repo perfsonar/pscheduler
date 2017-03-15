@@ -22,6 +22,9 @@ case "$1" in
         if [ -e /usr/share/apache2/apache2-maintscript-helper ]; then
             . /usr/share/apache2/apache2-maintscript-helper
             apache2_invoke disconf pscheduler-server.conf restart || exit $?
+        else
+            rm -f /etc/apache2/conf.d/pscheduler-server.conf
+            service apache2 restart >/dev/null || true
         fi
     ;;
 
