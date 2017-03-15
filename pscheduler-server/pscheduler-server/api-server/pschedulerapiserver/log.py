@@ -30,7 +30,7 @@ def debug():
         except ValueError:
             return Response("Invalid state", status=500)
 
-        # TODO: Allow only from localhost
+        # Allow only from localhost
         if not request.remote_addr in ['127.0.0.1', '::1']:
             return Response("Not allowed", status=403)
 
