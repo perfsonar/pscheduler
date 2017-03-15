@@ -184,7 +184,8 @@ def tasks():
             returncode, stdout, stderr = pscheduler.run_program(
                 [ "pscheduler", "internal", "invoke", "test",
                   task['test']['type'], "participants" ],
-                stdin = pscheduler.json_dump(task['test']['spec'])
+                stdin = pscheduler.json_dump(task['test']['spec']),
+                timeout=5
                 )
 
             # HACK: BWCTLBC

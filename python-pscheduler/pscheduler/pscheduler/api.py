@@ -218,7 +218,7 @@ def api_has_pscheduler(host, timeout=5, bind=None):
 from contextlib import closing
 
 
-def api_has_bwctl(host):
+def api_has_bwctl(host, timeout=5, bind=None):
     """
     Determine if a host is running the BWCTL daemon
     """
@@ -229,16 +229,59 @@ def api_has_bwctl(host):
     # does its control and test traffic from the same interface no
     # matter what.
 
+    # Null implies localhost
+    if host is None:
+        host = "localhost"
+
     for family in [socket.AF_INET, socket.AF_INET6]:
         try:
             with closing(socket.socket(family, socket.SOCK_STREAM)) as sock:
-                sock.settimeout(3)
+                if bind is not None:
+                    sock.bind((bind, 0))
+                sock.settimeout(timeout)
                 return sock.connect_ex((host, 4823)) == 0
         except socket.error:
             pass
 
     return False
 
+
+
+def api_has_services(hosts, timeout=5, bind=None, threads=10):
+    """
+    Do a parallel rendition of the two functions above.
+
+    Returns a hash of host names and results
+    """
+
+    # Work around a bug in 2.6
+    # TODO: Get rid of this when 2.6 is no longer in the picture.
+    if not hasattr(threading.current_thread(), "_children"):
+        threading.current_thread()._children = weakref.WeakKeyDictionary()
+
+    pool = multiprocessing.dummy.Pool(processes=min(len(hosts), threads))
+
+    def check_one(arg):
+        host, service, function = arg
+        return (host, service, function(host, timeout=timeout, bind=bind))
+
+    args = []
+    result = {}
+    for host in hosts:
+        args.extend([
+            (host, "bwctl", api_has_bwctl),
+            (host, "pscheduler", api_has_pscheduler)
+            ])
+        result[host] = {
+            "bwctl": None,
+            "pscheduler": None
+        }
+
+
+    for host, service, state in pool.imap(check_one, args, chunksize=1):
+        result[host][service] = state
+    pool.close()
+    return result
 
 
 
@@ -254,3 +297,5 @@ if __name__ == "__main__":
 
     print api_has_bwctl(None)
     print api_has_pscheduler(None)
+
+    print api_has_bwctl_pscheduler("perfsonardev0.internet2.edu")
