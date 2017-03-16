@@ -697,23 +697,20 @@ BEGIN
         RETURN;
     END IF;
 
-    IF run_has_conflicts(task.id, start_time)
-    THEN
-        RETURN QUERY SELECT FALSE, NULL::UUID, TRUE,
-            'Posting this run would cause a schedule conflict'::TEXT;
-        RETURN;
-    END IF;
-
-    start_time := normalized_time(start_time);
-    time_range := tstzrange(start_time, start_time + task.duration, '[)');
-
     IF nonstart_reason IS NOT NULL THEN
        initial_state := run_state_nonstart();
        initial_status := 1;  -- Nonzero means failure.
+    ELSIF run_has_conflicts(task.id, start_time) THEN
+        RETURN QUERY SELECT FALSE, NULL::UUID, TRUE,
+            'Posting this run would cause a schedule conflict'::TEXT;
+        RETURN;
     ELSE
        initial_state := run_state_pending();
        initial_status := NULL;
     END IF;
+    
+    start_time := normalized_time(start_time);
+    time_range := tstzrange(start_time, start_time + task.duration, '[)');
 
     WITH inserted_row AS (
         INSERT INTO run (uuid, task, times, state, errors)

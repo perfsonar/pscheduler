@@ -34,10 +34,14 @@ for unsupported_option in unsupported_options:
 
 source = spec.get("source", "localhost")
 
-if pscheduler.api_has_pscheduler(source):
+# This digs up everything we can on the hosts involved in a
+# time-predictable way.
+has = pscheduler.api_has_services([source], timeout=3)
+
+if has[source]["pscheduler"]:
     pscheduler.fail("Source has pscheduler, no need for BWCTL")
 
-if not pscheduler.api_has_bwctl(source):
+if not has[source]["bwctl"]:
     logger.debug("No BWCTL at source")
     pscheduler.fail("No BWCTL on %s" % source)
 
