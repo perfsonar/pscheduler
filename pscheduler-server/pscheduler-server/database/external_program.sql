@@ -25,7 +25,8 @@ CREATE TYPE external_program_result AS (
 --
 CREATE OR REPLACE FUNCTION pscheduler_internal(
     argv TEXT[] DEFAULT '{}',  -- Arguments to pass to 'pscheduler internal'
-    input TEXT DEFAULT NULL    -- What goes to the standard input
+    input TEXT DEFAULT NULL,   -- What goes to the standard input
+    timeout INTEGER default 5  -- How long to wait in seconds
 )
 RETURNS external_program_result
 AS $$
@@ -38,6 +39,7 @@ try:
         [ 'pscheduler', 'internal' ] + argv,
 	stdin = input,
 	short = True,
+	timeout = timeout
 	)
 
 except Exception as ex:
