@@ -755,6 +755,7 @@ def main_program():
 
     # Listen for notifications.
 
+    cursor.execute("LISTEN run_new")
     cursor.execute("LISTEN run_change")
     log.debug("Listening for notifications")
     cursor.close()

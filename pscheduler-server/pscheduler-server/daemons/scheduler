@@ -190,7 +190,8 @@ def run_post(
         Scheduled start time
         Scheduled end time
         True if the run should be skipped and tried again later
-        Error
+        True if the above was because a scheduling conflict cropped up
+        Error message
     """
 
     assert type(start_time) == datetime.datetime
@@ -200,7 +201,7 @@ def run_post(
     try:
         status, task = pscheduler.url_get(url, params={'detail': 1}, bind=bind_addr)
     except pscheduler.URLException as ex:
-        return (None, None, None, False,
+        return (None, None, None, False, False,
                 "Error fetching %s: %s" % (url, str(ex)))
 
 
@@ -225,7 +226,7 @@ def run_post(
 
         log and log.debug("Some participants down or slow. %s",
                           "Skipping." if skip else "Non-starter.") 
-        return (None, None, None, skip,
+        return (None, None, None, skip, False,
                 "One or more participants down or slow to respond.")
     else:
         log and log.debug("All participants are up.")
@@ -298,18 +299,18 @@ def run_post(
                 url, throw=False, bind=bind_addr)
             if del_status not in [ 200, 404, 410 ]:
                 log and log.warning("Error while canceling %s: %s", url, del_result)
-            return (None, None, None, False,
+            return (None, None, None, False, False,
                     "Task is gone from %s" % (participant))
 
         if status != 200:
             log and log.debug("Got back %d: %s", status, json_ranges)
-            return (None, None, None, False,
+            return (None, None, None, False, False,
                     "Error trying to schedule with %s: %s %d"
                     % (participant, runtime_url, status))
 
         if len(json_ranges) == 0:
             log and log.debug("No time available.")
-            return (None, None, None, False,
+            return (None, None, None, False, False,
                     "%s has no time available for this run" % (participant))
 
         ranges = [ Range( pscheduler.iso8601_as_datetime(item['lower']),
@@ -329,7 +330,8 @@ def run_post(
                       if trange.length() >= task_duration ]
     log and log.debug("Ranges in common: %s", common_ranges)
     if len(common_ranges) == 0:
-        return (None, None, None, False, "No common times for this run.")
+        return (None, None, None, False, False,
+                "No common times for this run.")
 
 
     # If we're randomizing the start time, pick a range at random and
@@ -392,9 +394,15 @@ def run_post(
                               bind=bind_addr,
                               throw=False,
                               json=True)
+
+    if status == 409:
+        log and log.debug("Lead developed a schedule conflict.")
+        return (None, None, None, True, True,
+                "Lead developed a schedule conflict.")
+
     if status != 200:
         log and log.debug("Failed: %d %s", status, run_lead_url)
-        return (None, None, None, False,
+        return (None, None, None, False, False,
                 "Failed to post lead run: %s" % run_lead_url)
 
     log and log.debug("Lead URL is %s", run_lead_url)
@@ -410,6 +418,7 @@ def run_post(
     # Cover the rest of the participants if there are any.
 
     errors = []
+    conflict = False
 
     run_data = pscheduler.json_dump(run_params)
 
@@ -430,6 +439,15 @@ def run_post(
 
         log and log.debug("PUT %d: %s", status, output)
 
+        if status == 409:
+            message = "%s developed a schedule conflict." % (
+                urlparse.urlparse(request.url_root).netloc.split(':')[0])                
+            log and log.debug(message)
+            errors.append(message)
+            conflict = True
+            # No sense in continuing.
+            break
+
         if status != 200:
             log and log.debug("Failed: %s", output)
             errors.append(output)
@@ -441,7 +459,7 @@ def run_post(
     if len(runs_posted) != len(task_urls):
         log and log.debug("Removing runs: %s", runs_posted)
         pscheduler.url_delete_list(runs_posted, bind=bind_addr)
-        return (None, None, None, False,
+        return (None, None, None, False, conflict,
                 "Failed to post/put runs to all participants: %s"
                 %  ("; ".join(errors))
         )
@@ -464,7 +482,7 @@ def run_post(
             log.debug("Deleting runs: %s", runs_posted)
             pscheduler.url_delete_list(runs_posted, bind=bind_addr)
             # TODO: Better error?
-            return (None, None, None, False,
+            return (None, None, None, False, False,
                     "Failed to get run data from all participants")
         part_data.append(result['participant-data'])
         log and log.debug("Got %s", result['participant-data'])
@@ -486,13 +504,13 @@ def run_post(
             pscheduler.url_delete_list(runs_posted, bind=bind_addr)
             # TODO: Better error?
             log and log.debug("Failed: %s", result)
-            return (None, None, None, False,
+            return (None, None, None, False, False,
                     "Failed to post run data to all participants")
 
 
     # TODO: Probably also want to return the start and end times?
     log and log.debug("Run posting finished")
-    return (runs_posted[0], schedule_lower, schedule_upper, False, None)
+    return (runs_posted[0], schedule_lower, schedule_upper, False, False, None)
 
 
 #
@@ -555,16 +573,33 @@ def main_program():
 
             lead_bind = json.get("lead-bind", None)
 
-            try:
-                run_uri, start_time, end_time, skip, error = run_post(
-                    url, trynext, lead_bind, log=log)
-            except Exception as ex:
-                error = str(ex)
+            # Try a few times to schedule the run.  Sometimes,
+            # something else may schedule a time we're working on, so
+            # when that happens, try again.
+
+            tries_left = 3
+            while tries_left > 0:
+                tries_left -= 1
+                try:
+                    run_uri, start_time, end_time, skip, conflict, error \
+                        = run_post(url, trynext, lead_bind, log=log)
+                except Exception as ex:
+                    error = str(ex)
+                    skip = False
+                    break
+
+                if not conflict:
+                    break
+
+                log.debug("Developed a scheduling conflict.  Trying again.")
+
+            if tries_left == 0:
+                skip = False
+                error = "Gave up after too many scheduling conflicts."
 
             if skip:
                 log.debug("Skipping: %s", error)
                 continue
-                
 
             if error is not None:
                 log.debug("Unable: %s", error)

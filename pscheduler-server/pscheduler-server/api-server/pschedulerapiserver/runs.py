@@ -170,10 +170,15 @@ def tasks_uuid_runs(task):
         try:
             log.debug("Posting run for task %s starting %s"
                       % (task, start_time))
-            cursor = dbcursor_query("SELECT api_run_post(%s, %s, NULL, %s)",
-                               [task, start_time, diags], onerow=True)
-            uuid = cursor.fetchone()[0]
+            cursor = dbcursor_query(
+                "SELECT * FROM api_run_post(%s, %s, NULL, %s)",
+                [task, start_time, diags], onerow=True)
+            succeeded, uuid, conflicts, error_message = cursor.fetchone()
             cursor.close()
+            if conflicts:
+                return conflict(error_message)
+            if error_message:
+                return error(error_message)
         except Exception as ex:
             log.exception()
             return error(str(ex))
@@ -413,10 +418,16 @@ def tasks_uuid_runs_run(task, run):
                 if response is not None:
                     return response
 
-                cursor = dbcursor_query("SELECT api_run_post(%s, %s, %s)",
-                               [task, start_time, run], onerow=True)
-                log.debug("Full put of %s, got back %s", run, cursor.fetchone()[0])
+                cursor = dbcursor_query(
+                    "SELECT * FROM api_run_post(%s, %s, %s)",
+                    [task, start_time, run], onerow=True)
+                succeeded, uuid, conflicts, error_message = cursor.fetchone()
                 cursor.close()
+                if conflicts:
+                    return conflict(error_message)
+                if not succeeded:
+                    return error(error_message)
+                log.debug("Full put of %s, got back %s", run, uuid)
             except Exception as ex:
                 log.exception()
                 return error(str(ex))
