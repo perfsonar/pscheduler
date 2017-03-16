@@ -133,7 +133,7 @@ case "$1" in
             . /usr/share/apache2/apache2-maintscript-helper
             apache2_invoke enmod ssl || echo $?
             apache2_invoke ensite default-ssl || echo $?
-            apache2_invoke enconf pscheduler-server.conf || echo $?
+            apache2_invoke enconf pscheduler-server.conf restart || echo $?
         fi
 
         # rsyslog config update
