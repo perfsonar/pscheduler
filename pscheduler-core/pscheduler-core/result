@@ -223,7 +223,7 @@ if out_format == "text/plain" \
     parts = task_json["detail"]["participants"]
     for participant in range(0, len(parts)):
         print
-        print "Diagnostics from %s:" % (run_json["participants"][participant])
+        print "Diagnostics from %s:" % (parts[participant])
 
         try:
             print "\n".join([
