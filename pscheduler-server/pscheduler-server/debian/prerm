@@ -27,6 +27,7 @@ case "$1" in
         # stop pscheduler queries via web api for package removal
         service apache2 stop
 
+        . /usr/share/debconf/confmodule
         if [ -f /usr/share/dbconfig-common/dpkg/prerm.pgsql ]; then
             . /usr/share/dbconfig-common/dpkg/prerm.pgsql
             dbc_go pscheduler-server $@
