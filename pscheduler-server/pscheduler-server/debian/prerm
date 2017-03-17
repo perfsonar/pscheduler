@@ -27,6 +27,9 @@ case "$1" in
         # stop pscheduler queries via web api for package removal
         service apache2 stop >/dev/null
 
+        # stop all running requests
+        service postgresql restart >/dev/null
+
         . /usr/share/debconf/confmodule
         if [ -f /usr/share/dbconfig-common/dpkg/prerm.pgsql ]; then
             . /usr/share/dbconfig-common/dpkg/prerm.pgsql
