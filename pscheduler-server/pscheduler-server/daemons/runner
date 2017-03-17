@@ -372,6 +372,10 @@ class RunWorker:
         finally:
             self._put_db_conn(db)
 
+        if lead_bind is not None:
+            self.log.debug("%d: Lead bind for this run is %s",
+                           self.id, lead_bind)
+
         # This gets used by __post_result, above.
         self.task_url = pscheduler.api_url(
             host=participants[0],
