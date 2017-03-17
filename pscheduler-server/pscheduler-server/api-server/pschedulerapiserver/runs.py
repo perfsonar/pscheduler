@@ -303,7 +303,8 @@ def tasks_uuid_runs_run(task, run):
                         run.errors,
                         run.clock_survey,
                         run.id,
-                        archiving_json(run.id)
+                        archiving_json(run.id),
+                        run.added
                     FROM
                         run
                         JOIN task ON task.id = run.task
@@ -370,6 +371,8 @@ def tasks_uuid_runs_run(task, run):
             result['clock-survey'] = row[14]
         if row[16] is not None:
             result['archivings'] = row[16]
+        if row[17] is not None:
+            result['added'] = pscheduler.datetime_as_iso8601(row[17])
         result['task-href'] = root_url('tasks/' + task)
         result['result-href'] = href + '/result'
 

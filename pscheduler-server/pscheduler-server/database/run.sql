@@ -158,6 +158,17 @@ BEGIN
     END IF;
 
 
+    -- Version 5 to version 6
+    -- Adds 'added' column
+    IF t_version = 5
+    THEN
+        ALTER TABLE run ADD COLUMN
+        added TIMESTAMP WITH TIME ZONE;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -279,6 +290,14 @@ BEGIN
     IF NOT FOUND THEN
         RAISE EXCEPTION 'No task % exists.', NEW.task;
     END IF;
+
+
+    IF TG_OP = 'INSERT' THEN
+        NEW.added := now();
+    ELSIF TG_OP = 'UPDATE' AND NEW.added <> OLD.added THEN
+        RAISE EXCEPTION 'Insertion time cannot be updated.';
+    END IF;
+
 
 
     -- Non-background gets bounced if trying to schedule beyond the
