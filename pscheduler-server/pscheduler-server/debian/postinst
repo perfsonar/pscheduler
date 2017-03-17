@@ -88,6 +88,9 @@ pg_upgrade() {
 
 case "$1" in
     configure)
+        # stop pscheduler queries via web api for package upgrade
+        service apache2 stop
+
         # database setup
         . /usr/share/debconf/confmodule
         pg_upgrade
