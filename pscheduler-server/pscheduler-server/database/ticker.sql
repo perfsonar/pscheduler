@@ -2,6 +2,18 @@
 -- Ticker Stored Procedure
 --
 
+-- Force the termination of the ticker processes.
+
+DO $$
+BEGIN
+    PERFORM pg_terminate_backend(pg_stat_activity.pid)
+    FROM pg_stat_activity
+    WHERE
+        pg_stat_activity.datname = '__DATABASE__'
+        AND pg_stat_activity.application_name = 'ticker';
+END;
+$$ LANGUAGE plpgsql;
+
 
 -- Things that get done a fifteen-second intervals
 CREATE OR REPLACE FUNCTION ticker_fifteen()
