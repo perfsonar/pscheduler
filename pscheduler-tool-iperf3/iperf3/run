@@ -17,13 +17,10 @@ import ipaddr
 import iperf3_utils
 from iperf3_defaults import *
 
-RUN_START = time.time()
-
 # track when this run starts
 start_time = datetime.datetime.now()
 
 logger = pscheduler.Log(prefix='tool-iperf3', quiet=True)
-logger.debug("run called at %s" % RUN_START)
 logger.debug("starting iperf3 tool")
 
 # parse JSON input
@@ -66,6 +63,9 @@ if test_duration:
     test_duration = int(pscheduler.timedelta_as_seconds(delta))
 else:
     test_duration = DEFAULT_DURATION
+
+# if we're doing a reverse test, have to change a few things
+reverse = test_spec.get('reverse', False)
 
 def run_client():    
 
@@ -174,6 +174,9 @@ def run_client():
     if test_spec.has_key('flow-label') and test_spec['flow-label'] != None:
         iperf3_args.append('-L')
         iperf3_args.append(test_spec['flow-label'])
+    
+    if reverse:
+        iperf3_args.append('-R')
 
     # figure out cpu affinity, either use what was passed in
     # or try to auto detect it
@@ -206,34 +209,18 @@ def run_client():
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e)
         pscheduler.succeed_json({"succeeded": False,
-                                 "error": "The iperf3 command failed during execution. See server logs for more details. Run start = %s" % RUN_START})
+                                 "error": "The iperf3 command failed during execution. See server logs for more details."})
 
-    logger.debug("client stdout = %s" % stdout)
-    logger.debug("client stderr = %s" % stderr)
+
+
+    return _make_result(command_line, status, stdout, stderr)
 
     
-    if status:
-        try:
-            json_stdout = pscheduler.json_load(stdout)
-            error_text = json_stdout["error"]
-        except (ValueError, KeyError):
-            error_text = stdout
-        pscheduler.succeed_json({"succeeded": False,
-                                 "error": "iperf3 returned an error: %s\nRun start = %s" % (error_text, RUN_START)})
-
-
-    lines = stdout.split("\n")    
-    logger.debug("Lines are %s " % lines)
-
-    results = iperf3_parser.parse_output(lines)
-    results['diags'] = "%s\n\n%s\n\nRun start = %s" % (command_line, stdout, RUN_START)
-
-    return results
 
 def run_server():
 
     #init command
-    iperf3_args = [ iperf3_cmd, '-s', '-1']
+    iperf3_args = [ iperf3_cmd, '-s', '-1', '--json']
 
     iperf3_args.append("-p")
     iperf3_args.append(server_port)
@@ -309,25 +296,32 @@ def run_server():
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
                                                         timeout = iperf_timeout)
 
-        results['diags'] = "%s\n%s\nRun start = %s" % (stdout, stderr, RUN_START)
-
-
-        logger.debug("client stdout = %s" % stdout)
-        logger.debug("client stderr = %s" % stderr)
-
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e);
-        results["succeeded"] = False
-        results["error"]     = "The iperf3 command failed during execution. See server logs for more details.\n%s" % e,
-        return results
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "The iperf3 command failed during execution. See server logs for more details."})
 
-    if status:        
-        results["succeeded"] = False
-        results["error"]     = "iperf3 returned an error: %s\n%s\n\nRun start = %s" % (stdout, stderr, RUN_START)
-        return results
-  
 
-    results["succeeded"] = True
+    return _make_result(" ".join(iperf3_args), status, stdout, stderr)
+
+    
+
+def _make_result(command, status, stdout, stderr):
+    if status:
+        try:
+            json_stdout = pscheduler.json_load(stdout)
+            error_text = json_stdout["error"]
+        except (ValueError, KeyError):
+            error_text = stdout
+        pscheduler.succeed_json({"succeeded": False,
+                                 "error": "iperf3 returned an error: %s" % (error_text)})
+
+    lines = stdout.split("\n")    
+    logger.debug("Lines are %s " % lines)
+
+    results = iperf3_parser.parse_output(lines)
+    results['diags'] = "%s\n\n%s" % (command, stdout)
+
     return results
 
 

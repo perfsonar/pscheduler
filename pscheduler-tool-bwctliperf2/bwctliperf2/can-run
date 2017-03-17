@@ -44,6 +44,9 @@ if test_spec.has_key('server-cpu-affinity') or test_spec.has_key('client-cpu-aff
 if test_spec.has_key('no-delay'):
     pscheduler.fail('iperf does not support the --no-delay flag')
 
+if test_spec.has_key('reverse'):
+    pscheduler.fail('iperf does not support the --reverse flag')
+
 try:
     source = test_spec['source']
 except KeyError:

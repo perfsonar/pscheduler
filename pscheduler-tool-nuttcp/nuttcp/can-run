@@ -23,26 +23,18 @@ if not json.get('spec'):
 
 test_spec = json['spec']
 
-if test_spec.has_key('local-address'):
-    pscheduler.fail('nuttcp does not support the --local-address flag')
+supported_options = ["schema", "source", "dest", "duration",
+                     "interval", "parallel", "window-size",
+                     "mss", "bandwidth", "udp", "buffer-length",
+                     "ip-tos", "ip-version", "client-cpu-affinity",
+                     "server-cpu-affinity", "reverse"
+                     ]
 
-if test_spec.has_key('omit'):
-    pscheduler.fail('nuttcp does not support the --omit flag')
 
-if test_spec.has_key('tos'):
-    pscheduler.fail('nuttcp does not support the --tos flag')
-
-if test_spec.has_key('dynamic-window-size'):
-    pscheduler.fail('nuttcp does not support the --dynamic-window-size flag')
-
-if test_spec.has_key('congestion'):
-    pscheduler.fail('nuttcp does not support the --congestion flag')
-
-if test_spec.has_key('zero-copy'):
-    pscheduler.fail('nuttcp does not support the --zero-copy flag')
-
-if test_spec.has_key('flow-label'):
-    pscheduler.fail('nuttcp does not support the --flow-label flag')
+for option in test_spec.keys():
+    if option not in supported_options:
+        logger.debug("nuttcp unsupported option %s" % option)
+        pscheduler.fail('nuttcp does not support %s option' % option)    
 
 logger.debug("can-run succeeded")
 
