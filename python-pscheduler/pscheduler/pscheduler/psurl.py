@@ -64,6 +64,16 @@ class URLException(Exception):
     pass
 
 
+def __formatted_connection_error(ex):
+    """
+    Format a requests.exceptions.ConnectionError into a nice string
+    """
+    assert type(ex) == requests.exceptions.ConnectionError
+    fate = tuple(ex.args[0])[0]
+    message = tuple(ex.args[0])[1][1]
+    return "Error: %s %s." % (fate, message)
+
+
 
 def url_get( url,          # GET URL
              params={},    # GET parameters
@@ -89,10 +99,12 @@ def url_get( url,          # GET URL
         except requests.exceptions.Timeout:
             status = 400
             text = "Request timed out"
+        except requests.exceptions.ConnectionError as ex:
+            status = 400
+            text = __formatted_connection_error(ex)
         except Exception as ex:
             status = 400
-            # TODO: This doesn't come out looking as nice as it should.
-            text = "Error: " + str(ex)
+            text = "Error: %s" % (str(ex))
 
     if status != 200:
         if throw:
@@ -133,6 +145,9 @@ def url_post( url,          # GET URL
         except requests.exceptions.Timeout:
             status = 400
             text = "Request timed out"
+        except requests.exceptions.ConnectionError as ex:
+            status = 400
+            text = __formatted_connection_error(ex)
         except Exception as ex:
             status = 500
             text = str(ex)
@@ -178,6 +193,9 @@ def url_put( url,          # GET URL
         except requests.exceptions.Timeout:
             status = 400
             text = "Request timed out"
+        except requests.exceptions.ConnectionError as ex:
+            status = 400
+            text = __formatted_connection_error(ex)
         except Exception as ex:
             status = 500
             text = str(ex)
@@ -219,6 +237,9 @@ def url_delete( url,          # DELETE URL
         except requests.exceptions.Timeout:
             status = 400
             text = "Request timed out"
+        except requests.exceptions.ConnectionError as ex:
+            status = 400
+            text = __formatted_connection_error(ex)
         except Exception as ex:
             status = 500
             text = str(ex)
