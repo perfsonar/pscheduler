@@ -52,7 +52,7 @@ def tests_name_spec(name):
     status, stdout, stderr = pscheduler.run_program(
         [ 'pscheduler', 'internal', 'invoke', 'test', name, 'cli-to-spec' ],
         stdin = pscheduler.json_dump(args),
-        short = True,
+        timeout=5
         )
 
     if status != 0:

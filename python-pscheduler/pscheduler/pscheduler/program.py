@@ -160,7 +160,6 @@ def run_program(argv,              # Program name and args
                 stdin=None,        # What to send to stdin
                 line_call=None,    # Lambda to call when a line arrives
                 timeout=None,      # Seconds
-                short=False,       # Force timeout to two seconds
                 timeout_ok=False,  # Treat timeouts as not being an error
                 fail_message=None  # Exit with this failure message
                 ):
@@ -176,7 +175,6 @@ def run_program(argv,              # Program name and args
         'stdout' return value will be None.
     timeout=n - Wait n seconds for the program to finish, otherwise kill it.
     timeout_ok - True to prevent timeouts from being treated as errors.
-    short - True to force timeout to two seconds
     fail_message=s - Exit program and include string s if program fails.
 
     Return Values:
@@ -185,9 +183,6 @@ def run_program(argv,              # Program name and args
     stdout - Contents of standard output as a single string
     stderr - Contents of standard erroras a single string
     """
-
-    if short:
-        timeout = 2
 
     process = None
 

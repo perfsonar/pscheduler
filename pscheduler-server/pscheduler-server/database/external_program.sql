@@ -38,7 +38,6 @@ try:
     status, stdout, stderr = pscheduler.run_program(
         [ 'pscheduler', 'internal' ] + argv,
 	stdin = input,
-	short = True,
 	timeout = timeout
 	)
 
