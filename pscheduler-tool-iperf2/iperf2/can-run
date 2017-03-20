@@ -23,7 +23,9 @@ if not json.get('spec'):
 
 test_spec = json['spec']
 
-supported_options = ["schema", "dest", "source",
+supported_options = ["schema",
+                     "source", "source-node",
+                     "dest", "dest-node",
                      "ip-version", "duration", "interval",
                      "parallel", "window-size", "mss", "bandwidth",
                      "buffer-length", "local-address", "congestion"
