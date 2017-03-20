@@ -177,20 +177,23 @@ def tasks():
         # Find the participants
 
         try:
+
             # HACK: BWCTLBC
             if "lead-bind" in task:
-                os.environ["PSCHEDULER_LEAD_BIND_HACK"] = task["lead-bind"]
+                lead_bind_env = {
+                    "PSCHEDULER_LEAD_BIND_HACK": task["lead-bind"]
+                }
+            else:
+                lead_bind_env = None
+
 
             returncode, stdout, stderr = pscheduler.run_program(
                 [ "pscheduler", "internal", "invoke", "test",
                   task['test']['type'], "participants" ],
                 stdin = pscheduler.json_dump(task['test']['spec']),
-                timeout=5
+                timeout=5,
+                env_add=lead_bind_env
                 )
-
-            # HACK: BWCTLBC
-            if "lead-bind" in task:
-                del os.environ["PSCHEDULER_LEAD_BIND_HACK"]
 
             if returncode != 0:
                 return error("Unable to determine participants: " + stderr)
@@ -199,7 +202,7 @@ def tasks():
                              else server_fqdn()
                              for host in pscheduler.json_load(stdout)["participants"] ]
         except Exception as ex:
-            return error("Unable to determine participants: " + str(ex))
+            return error("Exception while determining participants: " + str(ex))
         nparticipants = len(participants)
 
         # TODO: The participants must be unique.  This should be
@@ -216,7 +219,15 @@ def tasks():
 
         tools = []
 
-        for participant in participants:
+        tool_params={ "test": pscheduler.json_dump(task["test"]) }
+        # HACK: BWCTLBC
+        if lead_bind is not None:
+            log.debug("Using lead bind of %s" % str(lead_bind))
+            tool_params["lead-bind"] = lead_bind
+
+        for participant_no in range(0, len(participants)):
+
+            participant = participants[participant_no]
 
             try:
 
@@ -239,11 +250,13 @@ def tasks():
                     raise TaskPostingException("returned status %d: %s"
                                                % (status, result))
 
+
                 # TODO: This will fail with a very large test spec.
                 status, result = pscheduler.url_get(
                     "%s/tools" % (participant_api),
-                    params={ 'test': pscheduler.json_dump(task['test']) },
-                    bind=lead_bind
+                    params=tool_params,
+                    # HACK: BWCTLBC
+                    bind=lead_bind if participant_no == 0 else None
                     )
                 if status != 200:
                     raise TaskPostingException("%d: %s" % (status, result))
