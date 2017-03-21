@@ -21,25 +21,28 @@ set -e
 
 case "$1" in
     purge)
+        # open debconf descriptors
+        . /usr/share/debconf/confmodule
+
+        # removes database config
+        if [ -f /usr/share/dbconfig-common/dpkg/postrm.pgsql ]; then
+            . /usr/share/dbconfig-common/dpkg/postrm.pgsql
+            dbc_go pscheduler-server $@
+        fi
+
         rm  -f /etc/pscheduler/database/database-password \
                /etc/pscheduler/database/database-dsn \
                /etc/pscheduler/database/pgpassfile
         rm -rf /var/log/pscheduler
 
         # handle large number of pscheduler connections
-        if grep -q '^max_connections = 500[^0-9]' /etc/postgresql/9.6/main/postgresql.conf; then
+        if grep -sq '^max_connections = 500[^0-9]' /etc/postgresql/9.6/main/postgresql.conf; then
             sed -i 's/^max_connections = 500/max_connections = 100/' /etc/postgresql/9.6/main/postgresql.conf
-            service postgresql restart
+            service postgresql restart 3>/dev/null
         fi
 
         # rsyslog config removed
         service rsyslog restart
-
-        . /usr/share/debconf/confmodule
-        if [ -f /usr/share/dbconfig-common/dpkg/postrm.pgsql ]; then
-            . /usr/share/dbconfig-common/dpkg/postrm.pgsql
-            dbc_go pscheduler-server $@
-        fi
     ;;
 
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
