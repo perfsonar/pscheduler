@@ -91,7 +91,7 @@ schedule_group.add_option("--max-runs",
                       action="store", type="int", default=1,
                       dest="max_runs")
 
-opt_parser.add_option("--sliprand",
+schedule_group.add_option("--sliprand",
                       help="Slip randomly",
                       action="store_true",
                       dest="sliprand")
