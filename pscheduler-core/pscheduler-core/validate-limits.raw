@@ -44,6 +44,10 @@ Examples:
     )
 opt_parser.disable_interspersed_args()
 
+opt_parser.add_option("--quiet",
+                      help="Print nothing if successful",
+                      action="store_true",
+                      dest="quiet")
 
 (options, remaining_args) = opt_parser.parse_args()
 
@@ -66,7 +70,7 @@ try:
 except Exception as ex:
     pscheduler.fail(str(ex))
 
-if sys.stdout.isatty():
+if sys.stdout.isatty() and not options.quiet:
     print "Limit configuration is valid."
 
 pscheduler.succeed()
