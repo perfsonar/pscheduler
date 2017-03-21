@@ -88,15 +88,19 @@ pg_upgrade() {
 
 case "$1" in
     configure)
+        # open debconf descriptors
+        . /usr/share/debconf/confmodule
+
         # stop pscheduler queries via web api for package upgrade
-        service apache2 stop >/dev/null
+        service apache2 stop
 
         # stop all running requests
-        service postgresql restart >/dev/null
+        service postgresql restart 3>/dev/null
 
-        # database setup
-        . /usr/share/debconf/confmodule
-        pg_upgrade
+        # try to upgrade postgresql to required version
+        ( pg_upgrade ) 3>/dev/null
+
+        # database init/upgrade
         if [ -f /usr/share/dbconfig-common/dpkg/postinst.pgsql ]; then
             . /usr/share/dbconfig-common/dpkg/postinst.pgsql
             dbc_go pscheduler-server $@
