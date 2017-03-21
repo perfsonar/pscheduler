@@ -587,7 +587,8 @@ status, result = pscheduler.url_get(
 if status != 200:
     pscheduler.fail("Failed to fetch the task.")
 
-print "Running with tool '%s'" % (result['tool'])
+if verbose:
+    print "Running with tool '%s'" % (result['tool'])
 
 
 #
