@@ -378,7 +378,10 @@ def tasks():
 
                 for url in tasks_posted:
                     # TODO: Handle failure?
-                    status, result = requests.delete(url)
+                    status, result = pscheduler.url_delete(url,
+                                                           throw=False, 
+                                                           timeout=5,
+                                                           bind=lead_bind)
 
                     try:
                         dbcursor_query("SELECT api_task_delete(%s)",
