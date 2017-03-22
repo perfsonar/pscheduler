@@ -5,7 +5,7 @@
 %define short	psclock
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.25.rc3%{?dist}
+Release:	0.26.rc3%{?dist}
 
 Summary:	Clock tester tool class for pScheduler
 BuildArch:	noarch
