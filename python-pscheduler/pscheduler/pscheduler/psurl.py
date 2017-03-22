@@ -68,7 +68,7 @@ def __formatted_connection_error(ex):
     """
     Format a requests.exceptions.ConnectionError into a nice string
     """
-    assert type(ex) == requests.exceptions.ConnectionError
+    assert isinstance(ex, requests.exceptions.ConnectionError)
     fate = "Unspecified connection error occurred" #this should not happen
     message = ""
     if len(ex.args) > 0:
