@@ -69,8 +69,13 @@ def __formatted_connection_error(ex):
     Format a requests.exceptions.ConnectionError into a nice string
     """
     assert type(ex) == requests.exceptions.ConnectionError
-    fate = tuple(ex.args[0])[0]
-    message = tuple(ex.args[0])[1][1]
+    fate = "Unspecified connection error occurred" #this should not happen
+    message = ""
+    if len(ex.args) > 0:
+        exargs_tuple = tuple(ex.args[0])
+        fate = exargs_tuple[0]
+        if len(exargs_tuple) > 1 and hasattr(exargs_tuple[1], '__len__') and len(exargs_tuple[1]) > 1:
+            message = exargs_tuple[1][1]
     return "Error: %s %s." % (fate, message)
 
 
