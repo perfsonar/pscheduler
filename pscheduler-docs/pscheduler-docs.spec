@@ -4,7 +4,7 @@
 
 Name:		pscheduler-docs
 Version:	1.0
-Release:	0.26.rc3%{?dist}
+Release:	0.27.rc3%{?dist}
 
 Summary:	pScheduler documentation and samples
 
