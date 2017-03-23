@@ -1,8 +1,8 @@
-pscheduler-test-throughput (1.0~24.rc3-1) perfsonar-jessie-staging; urgency=low
+pscheduler-test-throughput (1.0~28.rc3-1) perfsonar-jessie-staging; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 24 Feb 2017 16:56:48 +0100
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 23 Mar 2017 14:55:14 +0000
 
 pscheduler-test-throughput (0.0-1) unstable; urgency=low
 

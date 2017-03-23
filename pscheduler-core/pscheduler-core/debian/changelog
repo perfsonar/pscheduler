@@ -1,9 +1,9 @@
-pscheduler-core (1.0~24.rc3-1) perfsonar-jessie-staging; urgency=low
+pscheduler-core (1.0~28.rc3-1) perfsonar-jessie-staging; urgency=low
 
   * New upstream release.
   * Adding python-tz dependency.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 24 Feb 2017 16:57:11 +0100
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 23 Mar 2017 14:52:10 +0000
 
 pscheduler-core (0.0-1) unstable; urgency=low
 
