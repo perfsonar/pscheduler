@@ -36,17 +36,23 @@ try:
 except KeyError:
     pscheduler.fail("Missing dest argument in spec")
 
-unsupported_options = [ 'congestion', 'zero-copy', 'flow-label', 'client-cpu-affinity', 'server-cpu-affinity' ]
+unsupported_options = [ 'congestion', 'zero-copy', 'flow-label', 'client-cpu-affinity', 'server-cpu-affinity', 'reverse' ]
 for unsupported_option in unsupported_options:
     if test_spec.has_key(unsupported_option):
         pscheduler.fail("BWCTL does not support %s" % unsupported_option)
-        
-src_has_psc = pscheduler.api_has_pscheduler(source)
-dst_has_psc = pscheduler.api_has_pscheduler(destination)
+
+
+# This digs up everything we can on the hosts involved in a
+# time-predictable way.
+has = pscheduler.api_has_services([source, destination], timeout=3)
+
+src_has_psc = has[source]["pscheduler"]
+dst_has_psc = has[destination]["pscheduler"]
+
 if src_has_psc and dst_has_psc:
     pscheduler.fail("Both sides have pscheduler, no need for BWCTL")
 
-if not pscheduler.api_has_bwctl(destination):
+if not has[destination]["bwctl"]:
     logger.debug("No BWCTL at destination")
     pscheduler.fail("No BWCTL on %s" % destination)
 

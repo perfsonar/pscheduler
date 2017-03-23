@@ -108,7 +108,8 @@ for err_line in err_lines:
         pscheduler.succeed_json({"succeeded": False, "error": err_line.strip()})
     elif err_line.strip().startswith("bwctl: Unable to connect"):
         pscheduler.succeed_json({"succeeded": False, "error": err_line.strip()})
-        
+    elif err_line.strip().startswith("bwctl: local tool did not complete in allocated time frame and was killed"):
+            pscheduler.succeed_json({"succeeded": False, "error": err_line.strip()})
 traced_hops = []
 ips = []
 last_hop = 0

@@ -91,11 +91,6 @@ schedule_group.add_option("--max-runs",
                       action="store", type="int", default=1,
                       dest="max_runs")
 
-opt_parser.add_option("--sliprand",
-                      help="Slip randomly",
-                      action="store_true",
-                      dest="sliprand")
-
 schedule_group.add_option("--repeat",
                       help="Repeat interval (ISO 8601 Duration)",
                       action="store", type="string",
@@ -105,6 +100,11 @@ schedule_group.add_option("--slip",
                       help="Allowed start slip (ISO8601 Duration)",
                       action="store", type="string",
                       dest="slip")
+
+schedule_group.add_option("--sliprand",
+                      help="Slip randomly",
+                      action="store_true",
+                      dest="sliprand")
 
 schedule_group.add_option("--start",
                       help="Start time",
@@ -587,7 +587,8 @@ status, result = pscheduler.url_get(
 if status != 200:
     pscheduler.fail("Failed to fetch the task.")
 
-print "Running with tool '%s'" % (result['tool'])
+if verbose:
+    print "Running with tool '%s'" % (result['tool'])
 
 
 #

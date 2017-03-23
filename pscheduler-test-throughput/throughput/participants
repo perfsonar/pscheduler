@@ -36,19 +36,24 @@ if destination is None:
 # * if only one has pscheduler, return just that one
 # * if neither side does, fail the test
 
-src_has_psc = pscheduler.api_has_pscheduler(source)
-dst_has_psc = pscheduler.api_has_pscheduler(destination)
+# This digs up everything we can on the hosts involved in a
+# time-predictable way.
+has = pscheduler.api_has_services([source, destination], timeout=3)
+
+src_has_psc = has[source]["pscheduler"]
+dst_has_psc = has[destination]["pscheduler"]
+
 
 logger.debug("src_has_psc = %s, dst_has_psc = %s" % (src_has_psc, dst_has_psc))
 
 if src_has_psc and dst_has_psc:
     participants = [ source, destination ]
 elif src_has_psc:
-    if not pscheduler.api_has_bwctl(destination):
+    if not has[destination]["bwctl"]:
         pscheduler.fail("Can't find pScheduler or BWCTL on %s" % destination)
     participants = [ source ]
 elif dst_has_psc:
-    if not pscheduler.api_has_bwctl(source):
+    if not has[source]["bwctl"]:
         pscheduler.fail("Can't find pScheduler or BWCTL on %s " % source)
     participants = [ destination ]
 else: 

@@ -9,4 +9,23 @@
 SET ROLE __ROLE__;
 
 
+-- Drop connected applications to prevent getting stuck behind
+-- long-running queries started by applications that were killed
+-- without the server noticing.
+
+DO $$
+BEGIN
+    PERFORM pg_terminate_backend(pg_stat_activity.pid)
+    FROM pg_stat_activity
+    WHERE
+        pg_stat_activity.datname = '__DATABASE__'
+        AND usename = '__ROLE__'
+        AND pid <> pg_backend_pid()     -- Not this connection
+        AND application_name <> 'psql'  -- Not interactive sessions
+        ;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
 BEGIN TRANSACTION;

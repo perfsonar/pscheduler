@@ -253,7 +253,7 @@ class EsmondClient:
         if status_code == 409:
             #duplicate data
             log.debug("Attempted to add duplicate data point. Skipping")
-        elif status_coe not in [200, 201]:
+        elif status_code not in [200, 201]:
             try:
                 result_json = pscheduler.json_load(result)
             except:

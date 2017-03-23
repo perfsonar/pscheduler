@@ -153,6 +153,9 @@ def run_client():
             pscheduler.succeed_json({"succeeded": False, "error": err_line.strip()})
         elif err_line.strip().startswith("bwctl: Unable to connect"):
             pscheduler.succeed_json({"succeeded": False, "error": err_line.strip()})
+        elif err_line.strip().startswith("bwctl: local tool did not complete in allocated time frame and was killed"):
+            pscheduler.succeed_json({"succeeded": False, "error": err_line.strip()})
+            
             
     lines = stdout.split("\n")
     logger.debug("Lines are %s " % lines)
@@ -170,6 +173,8 @@ def run_client():
         elif line.strip().startswith("bwctl: Unable to initiate peer handshake"):
             pscheduler.succeed_json({"succeeded": False, "error": line.strip()})
         elif line.strip().startswith("bwctl: Unable to connect"):
+            pscheduler.succeed_json({"succeeded": False, "error": line.strip()})
+        elif line.strip().startswith("bwctl: local tool did not complete in allocated time frame and was killed"):
             pscheduler.succeed_json({"succeeded": False, "error": line.strip()})
     
     results = iperf3_parser.parse_output(iperf3_lines)

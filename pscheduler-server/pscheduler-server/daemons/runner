@@ -198,7 +198,38 @@ class RunWorker:
         self.worker = threading.Thread(target=lambda: self.run())
         self.worker.start()
 
-
+    def _put_db_conn(self, db):
+        """
+        Commits any changes made with a database connection and restores to the pool
+        """
+        if not db:
+            return
+    
+        try:
+            db.commit()
+        except Exception as e:
+            self.log.warning("Error committing DB transaction: %s" % e)
+        finally:
+            self.dbpool.putconn(db)
+    
+    def _get_db_conn(self, attempts=60, wait=1):
+        """
+        Get connection from pool. If cannot get connection retry a few times before giving-up
+        """
+        db = None
+        for attempt in range(0, attempts):
+            try:
+                db = self.dbpool.getconn()
+                break
+            except psycopg2.pool.PoolError:
+                time.sleep(wait)
+        
+        #Unable to get connection, throw exception
+        if db is None:
+            raise Exception("Database connection pool exhausted. Unable to get connection after %d attempts." % attempts)
+        
+        return db
+    
     def __post_new_result(self, result):
         """
         Post a finished run for this task using the result provided.
@@ -209,40 +240,42 @@ class RunWorker:
         except ValueError:
             log.warning("%d: Discarding bogus result %s", self.id, result)
             return
-
+        
+        db = None
         try:
-            with self.db as db:
-                with db.cursor() as cursor:
-                    cursor.execute("""
-                    WITH inserted_row AS (
-                        INSERT INTO run (task, uuid, times, state, status, result_merged)
-                        VALUES (%s,
-                                NULL,
-                                tstzrange(normalized_now(), normalized_now(), '[]'),
-                                run_state_finished(),
-                                0,
-                                %s)
-                        RETURNING *
-                    ) SELECT uuid FROM inserted_row
-                    """, [ self.task_id, result ])
+            db = self._get_db_conn()
+            with db.cursor() as cursor:
+                cursor.execute("""
+                WITH inserted_row AS (
+                    INSERT INTO run (task, uuid, times, state, status, result_merged)
+                    VALUES (%s,
+                            NULL,
+                            tstzrange(normalized_now(), normalized_now(), '[]'),
+                            run_state_finished(),
+                            0,
+                            %s)
+                    RETURNING *
+                ) SELECT uuid FROM inserted_row
+                """, [ self.task_id, result ])
 
-                    # Should get exactly one row back with the UUID of
-                    # the new result.
+                # Should get exactly one row back with the UUID of
+                # the new result.
 
-                    if cursor.rowcount != 1:
-                        self.log.error("%d: Failed to get UUID of posted run.",
-                                       self.id)
-                        return
+                if cursor.rowcount != 1:
+                    self.log.error("%d: Failed to get UUID of posted run.",
+                                   self.id)
+                    return
 
-                    if log_details:
-                        self.log.info("%d: Posted result to %s/runs/%s",
-                                      self.id, self.task_url,
-                                      cursor.fetchone()[0])
+                if log_details:
+                    self.log.info("%d: Posted result to %s/runs/%s",
+                                  self.id, self.task_url,
+                                  cursor.fetchone()[0])
 
 
         except Exception as ex:
             self.log.error("%d: Failed to post run for result: %s", self.id, str(ex))
-
+        finally:
+            self._put_db_conn(db)
 
 
     def __accumulate_output(self, line):
@@ -257,15 +290,13 @@ class RunWorker:
             self.output = []
         else:
             self.output.append(line)
-
-
+        
     def run(self):
         """
         Run the tool in an exception-safe way
         """
         self.log.debug("%d: Thread running", self.id)
         run_dict.start(self.id, self)
-        self.db = self.dbpool.getconn()
         try:
             self.__run()
         except Exception as ex:
@@ -275,7 +306,6 @@ class RunWorker:
             self.log.debug("%d: Exception: %s", self.id, ex)
             log.exception()
         self.log.debug("%d: Thread finished", self.id)
-        self.dbpool.putconn(self.db)
         run_dict.finish(self.id)
 
 
@@ -289,56 +319,62 @@ class RunWorker:
 
 
         # Pull everything we can about the run before going to sleep
-
+        
+        db = None
         try:
-            with self.db as db:
-                with db.cursor() as cursor:
-                    cursor.execute("""
-                               SELECT            
-                                   test.name,
-                                   tool.name,
-                                   task.uuid,
-                                   task.id,
-                                   task.participant,
-                                   task.participants,
-                                   task.limits_passed,
-                                   lower(run.times),
-                                   upper(run.times),
-                                   task.json #> '{test}',
-                                   task.cli,
-                                   run.uuid,
-                                   run.part_data_full,
-                                   scheduling_class.enum,
-                                   task.json ->> 'lead-bind'
-                               FROM
-                                   run
-                                   JOIN task ON task.id = run.task
-                                   JOIN test ON test.id = task.test
-                                   JOIN scheduling_class
-                                        ON scheduling_class.id = test.scheduling_class
-                                   JOIN tool ON tool.id = task.tool
-                               WHERE run.id = %s
-                               """, [self.id])
+            db = self._get_db_conn()
+            with db.cursor() as cursor:
+                cursor.execute("""
+                           SELECT            
+                               test.name,
+                               tool.name,
+                               task.uuid,
+                               task.id,
+                               task.participant,
+                               task.participants,
+                               task.limits_passed,
+                               lower(run.times),
+                               upper(run.times),
+                               task.json #> '{test}',
+                               task.cli,
+                               run.uuid,
+                               run.part_data_full,
+                               scheduling_class.enum,
+                               task.json ->> 'lead-bind'
+                           FROM
+                               run
+                               JOIN task ON task.id = run.task
+                               JOIN test ON test.id = task.test
+                               JOIN scheduling_class
+                                    ON scheduling_class.id = test.scheduling_class
+                               JOIN tool ON tool.id = task.tool
+                           WHERE run.id = %s
+                           """, [self.id])
 
-                    # Should get exactly one row back.  If not, the run probably
-                    # vanished.
+                # Should get exactly one row back.  If not, the run probably
+                # vanished.
 
-                    if cursor.rowcount != 1:
-                        if log_details:
-                            self.log.info("%d: Run is gone.  Stopping.", self.id)
-                        return
+                if cursor.rowcount != 1:
+                    if log_details:
+                        self.log.info("%d: Run is gone.  Stopping.", self.id)
+                    return
 
-                    row = cursor.fetchone()
+                row = cursor.fetchone()
 
-                    test, tool, task_uuid, task_id, participant, participants, \
-                        limits_passed, start, end, test_spec, cli, run_uuid, \
-                        partdata, scheduling_class, lead_bind = row
+                test, tool, task_uuid, task_id, participant, participants, \
+                    limits_passed, start, end, test_spec, cli, run_uuid, \
+                    partdata, scheduling_class, lead_bind = row
 
         except Exception as ex:
             self.log.error("%d: Failed to fetch run info: %s",
                            self.id, str(ex))
             return
+        finally:
+            self._put_db_conn(db)
 
+        if lead_bind is not None:
+            self.log.debug("%d: Lead bind for this run is %s",
+                           self.id, lead_bind)
 
         # This gets used by __post_result, above.
         self.task_url = pscheduler.api_url(
@@ -390,8 +426,10 @@ class RunWorker:
             self.log.info("%d: With %s: %s %s", self.id, tool, test, " ".join(cli))
 
         # If the system is paused, set the run as missed and bail out.
-
-        with self.db as db:
+        
+        db = None
+        try:
+            db = self._get_db_conn()
             with db.cursor() as cursor:
                 cursor.execute("SELECT control_is_paused()")
                 assert(cursor.rowcount == 1)
@@ -399,35 +437,42 @@ class RunWorker:
                     if log_details:
                         self.log.info("%d: System is paused.  Aborting.",
                                       self.id)
-                    try:
-                        cursor.execute("""
-                            UPDATE run
-                            SET
-                                state = run_state_missed(),
-                                status = 1,
-                                result = '{ "succeeded": false, "diags": "pScheduler was paused at run time." }'
-                            WHERE id = %s
-                            """, [self.id])
-                    except Exception as ex:
-                        self.log.error("%d: Failed to set missed state: %s",
-                                       self.id, str(ex))
-                    return
+                    cursor.execute("""
+                        UPDATE run
+                        SET
+                            state = run_state_missed(),
+                            status = 1,
+                            result = '{ "succeeded": false, "diags": "pScheduler was paused at run time." }'
+                        WHERE id = %s
+                        """, [self.id])
+        except AssertionError as ae:
+            self.log.error("%d: Unable to read control_is_paused(). Must be exactly one row.",
+                           self.id)
+            raise ae
+        except Exception as ex:
+            self.log.error("%d: Failed to detect if system is paused and/or set missed state: %s",
+                           self.id, str(ex))
+        finally:
+            self._put_db_conn(db)
+                    
 
         # Mark the run as underway
-
+        db = None
         try:
-            with self.db as db:
-                with db.cursor() as cursor:
-                    cursor.execute("""
-                                   UPDATE run
-                                       SET state = run_state_running()
-                                       WHERE id = %s
-                                   """, [self.id])
+            db = self._get_db_conn()
+            with db.cursor() as cursor:
+                cursor.execute("""
+                               UPDATE run
+                                   SET state = run_state_running()
+                                   WHERE id = %s
+                               """, [self.id])
         except Exception as ex:
             self.log.error("%d: Failed to set running state: %s",
                            self.id, str(ex))
             return
-
+        finally:
+            #finally should ensure this is executed  even if return is an exception
+            self._put_db_conn(db)
 
         #
         # Do the local tool run
@@ -442,7 +487,7 @@ class RunWorker:
         if how_late > datetime.timedelta(seconds=0.5):
             self.log.warning("%d: Starting %s later than scheduled",
                              self.id, how_late)
-
+        
         returncode, stdout, stderr = pscheduler.run_program(
             [ "pscheduler", "internal", "invoke", "tool", tool, "run" ],
             stdin = tool_input,
@@ -479,28 +524,32 @@ class RunWorker:
                               returncode, stderr)
             if stderr is None:
                 stderr = "Tool exited with status %d" % (returncode)
-
+        
+        db = None
         try:
-            with self.db as db:
-                with db.cursor() as cursor:
-                    cursor.execute("""
-                    UPDATE run
-                    SET
-                    status = %s,
-                    result = %s,
-                    errors = %s
-                    WHERE id = %s
-                    """,
-                    [returncode,
-                     stdout,
-                     stderr,
-                     self.id])
-        except:
+            db = self._get_db_conn()
+            with db.cursor() as cursor:
+                cursor.execute("""
+                UPDATE run
+                SET
+                status = %s,
+                result = %s,
+                errors = %s
+                WHERE id = %s
+                """,
+                [returncode,
+                 stdout,
+                 stderr,
+                 self.id])
+        except Exception as ex:
             self.log.error("%d: Failed to store local result: %s",
                            self.id, str(ex))
 
             return
-
+        finally:
+            #finally should ensure this is executed  even if return is an exception
+            self._put_db_conn(db)
+        
         self.log.debug("%d: Stored local result", self.id)
 
         # The lead participant in non-background-multi tasks takes care of
@@ -626,13 +675,21 @@ class RunWorker:
                 if failures > 0:
                     self.log.debug("Saw failures; surveying clocks")
                     # TODO: Error check this.
-                    with self.db as db:
+                    db = None
+                    try:
+                        db = self._get_db_conn()
                         with db.cursor() as cursor:
                             cursor.execute("""
                                         UPDATE run SET clock_survey = %s
                                         WHERE id = %s
                                         """,
                                         [clock_survey(participants, lead_bind), self.id])
+                    except Exception as ex:
+                        self.log.error("%d: Failed to update clock survey: %s",
+                                   self.id, str(ex))
+                    finally:
+                        #finally should ensure this is executed  even if return is an exception
+                        self._put_db_conn(db)
 
         self.log.debug("%d: Run complete", self.id)
         self.finished = True
@@ -702,6 +759,7 @@ def main_program():
 
     # Listen for notifications.
 
+    cursor.execute("LISTEN run_new")
     cursor.execute("LISTEN run_change")
     log.debug("Listening for notifications")
     cursor.close()

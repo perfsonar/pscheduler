@@ -51,7 +51,7 @@ class DBCursor:
 
             while tries:
                 try:
-                    self.db = pscheduler.pg_connection(module.dsn)
+                    self.db = pscheduler.pg_connection(module.dsn, name="api")
                     break
                 except psycopg2.OperationalError as ex:
                     reason = ex

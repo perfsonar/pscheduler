@@ -2,7 +2,10 @@
 Functions related to the pScheduler REST and Plugin APIs
 """
 
+import multiprocessing
+import multiprocessing.dummy
 import socket
+import threading
 import urlparse
 import uuid
 
@@ -110,6 +113,65 @@ def api_result_delimiter():
 
 
 
+def api_ping(host, bind=None, timeout=3):
+    """
+    See if an API server is alive within a given timeout.  If 'host'
+    is None, ping the local server.
+    """
+    if host is None:
+        host = api_this_host()
+    status, result = url_get("https://%s/pscheduler/api" % (host),
+                             timeout=timeout, bind=bind,
+                             json=False, throw=False)
+    return status == 200
+
+
+
+def api_ping_list(hosts, bind=None, timeout=None, threads=10):
+    """
+    Ping a list of hosts and return a list of their statuses.
+    """
+
+    if len(hosts) == 0:
+        return {}
+
+    # Work around a bug in 2.6
+    # TODO: Get rid of this when 2.6 is no longer in the picture.
+    if not hasattr(threading.current_thread(), "_children"):
+        threading.current_thread()._children = weakref.WeakKeyDictionary()
+
+    pool = multiprocessing.dummy.Pool(processes=min(len(hosts), threads))
+
+    pool_args = [(host, timeout) for host in hosts]
+    result = {}
+
+    def ping_one(arg):
+        host, timeout = arg
+        return (host, api_ping(host, bind=bind, timeout=timeout))
+
+    for host, state in pool.imap(
+            ping_one,
+            pool_args,
+            chunksize=1):
+        result[host] = state
+    pool.close()
+    return result
+
+
+
+def api_ping_all_up(hosts, bind=None, timeout=None):
+    """
+    Determine if all hosts in a list are up.
+    """
+    results = api_ping_list(hosts, bind=bind, timeout=timeout)
+
+    for host in results:
+        if not results[host]:
+            return False
+    return True
+
+
+
 #
 # TODO: Remove this when the backward-compatibility code is removed
 #
@@ -156,7 +218,7 @@ def api_has_pscheduler(host, timeout=5, bind=None):
 from contextlib import closing
 
 
-def api_has_bwctl(host):
+def api_has_bwctl(host, timeout=5, bind=None):
     """
     Determine if a host is running the BWCTL daemon
     """
@@ -167,16 +229,59 @@ def api_has_bwctl(host):
     # does its control and test traffic from the same interface no
     # matter what.
 
+    # Null implies localhost
+    if host is None:
+        host = "localhost"
+
     for family in [socket.AF_INET, socket.AF_INET6]:
         try:
             with closing(socket.socket(family, socket.SOCK_STREAM)) as sock:
-                sock.settimeout(3)
+                if bind is not None:
+                    sock.bind((bind, 0))
+                sock.settimeout(timeout)
                 return sock.connect_ex((host, 4823)) == 0
         except socket.error:
             pass
 
     return False
 
+
+
+def api_has_services(hosts, timeout=5, bind=None, threads=10):
+    """
+    Do a parallel rendition of the two functions above.
+
+    Returns a hash of host names and results
+    """
+
+    # Work around a bug in 2.6
+    # TODO: Get rid of this when 2.6 is no longer in the picture.
+    if not hasattr(threading.current_thread(), "_children"):
+        threading.current_thread()._children = weakref.WeakKeyDictionary()
+
+    pool = multiprocessing.dummy.Pool(processes=min(len(hosts), threads))
+
+    def check_one(arg):
+        host, service, function = arg
+        return (host, service, function(host, timeout=timeout, bind=bind))
+
+    args = []
+    result = {}
+    for host in hosts:
+        args.extend([
+            (host, "bwctl", api_has_bwctl),
+            (host, "pscheduler", api_has_pscheduler)
+            ])
+        result[host] = {
+            "bwctl": None,
+            "pscheduler": None
+        }
+
+
+    for host, service, state in pool.imap(check_one, args, chunksize=1):
+        result[host][service] = state
+    pool.close()
+    return result
 
 
 
@@ -192,3 +297,5 @@ if __name__ == "__main__":
 
     print api_has_bwctl(None)
     print api_has_pscheduler(None)
+
+    print api_has_bwctl_pscheduler("perfsonardev0.internet2.edu")
