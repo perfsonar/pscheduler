@@ -24,7 +24,23 @@ if not json.get('spec'):
     pscheduler.fail('Missing test spec')
 
 test_spec = json['spec']
-    
+
+supported_options = ["schema",
+                     "source", "source-node",
+                     "dest", "dest-node",
+                     "reverse", "omit",
+                     "duration", "interval", "parallel", "window-size",
+                     "mss", "bandwidth", "udp", "buffer-length",
+                     "ip-tos", "local-address", "ip-version", "congestion",
+                     "zero-copy", "flow-label", "client-cpu-affinity",
+                     "server-cpu-affinity"
+                     ]
+
+for option in test_spec.keys():
+    if option not in supported_options:
+        logger.debug("iperf3 unsupported option %s" % option)
+        pscheduler.fail('iperf3 does not support %s option' % option)    
+
 logger.debug("can-run succeeded")
 
 pscheduler.succeed()

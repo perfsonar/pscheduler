@@ -75,7 +75,7 @@ except KeyError:
 
 # TODO: Investigate whether we care about the -b switch.
 
-status, stdout, stderr = pscheduler.run_program( [tracepath], short=True)
+status, stdout, stderr = pscheduler.run_program( [tracepath], timeout=2)
 if status != 255 or '<destination>' not in stderr:
     pscheduler.succeed_json( {
             'succeeded': False,

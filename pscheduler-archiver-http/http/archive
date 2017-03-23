@@ -27,32 +27,38 @@ except KeyError:
 
 if op == 'post':
     try:
-	pscheduler.psurl.url_post( url, data=pscheduler.json_dump(json['result']), json=False, bind=bind )
+	pscheduler.url_post( url, data=pscheduler.json_dump(json['result']), json=False, bind=bind )
     except Exception as ex:
-	pscheduler.succeed_json({
+	result = {
 	    "succeeded": False,
 	    "error": "Failed to log result: %s" % str(ex)
-	})
+	}
+	if "retry-policy" in json['data']:
+	    policy = pscheduler.RetryPolicy(json['data']['retry-policy'], iso8601=True)
+	    retry_time = policy.retry(json["attempts"])
+	    if retry_time is not None:
+		result["retry"] = retry_time
+	pscheduler.succeed_json( result )
 
 elif op == 'put':
     try:
-	pscheduler.psurl.url_put( url, data=pscheduler.json_dump(json['result']), json=False, bind=bind )
+	pscheduler.url_put( url, data=pscheduler.json_dump(json['result']), json=False, bind=bind )
     except Exception as ex:
-	pscheduler.succeed_json({
+	result = {
 	    "succeeded": False,
 	    "error": "Failed to log result: %s" % str(ex)
-	})
+	}
+	if "retry-policy" in json['data']:
+	    policy = pscheduler.RetryPolicy(json['data']['retry-policy'], iso8601=True)
+	    retry_time = policy.retry(json["attempts"])
+	    if retry_time is not None:
+		result["retry"] = retry_time
+	pscheduler.succeed_json( result )
 
 else:
     pscheduler.succeed_json({
 	"succeeded": False,
 	"error": "Invalid op arg: %s" % op
     })
-
-    if "retry-policy" in data:
-        policy = pscheduler.RetryPolicy(data["retry-policy"], iso8601=True)
-        retry_time = policy.retry(json["attempts"])
-        if retry_time is not None:
-            result["retry"] = retry_time
 
 pscheduler.succeed_json({'succeeded': True})

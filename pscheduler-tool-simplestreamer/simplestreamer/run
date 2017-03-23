@@ -109,6 +109,12 @@ if participant == 0:
 
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try:
+                source = input['test']['spec']['source']
+                log.debug("Binding to %s", source)
+                sock.bind((source, 0))
+            except KeyError:
+                pass
 
             server_address = (input['test']['spec']['dest'],
                               input['participant-data'][1]['listen-port'])

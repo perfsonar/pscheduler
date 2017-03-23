@@ -159,6 +159,11 @@ opt_parser.add_option("--server-cpu-affinity",
                       action="store", type="int",
                       dest="server_cpu_affinity")
 
+opt_parser.add_option("--reverse",
+                      help="Reverses the direction of the test.",
+                      action="store_true",
+                      dest="reverse")
+
 
 
 
@@ -266,6 +271,9 @@ if options.client_cpu_affinity != None:
 
 if options.server_cpu_affinity != None:
    result["server-cpu-affinity"] = options.server_cpu_affinity
+
+if options.reverse:
+   result["reverse"] = True
 
 logger.debug("cli-to-spec -> %s" % result)
 

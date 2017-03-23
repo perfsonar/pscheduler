@@ -177,19 +177,23 @@ def tasks():
         # Find the participants
 
         try:
+
             # HACK: BWCTLBC
             if "lead-bind" in task:
-                os.environ["PSCHEDULER_LEAD_BIND_HACK"] = task["lead-bind"]
+                lead_bind_env = {
+                    "PSCHEDULER_LEAD_BIND_HACK": task["lead-bind"]
+                }
+            else:
+                lead_bind_env = None
+
 
             returncode, stdout, stderr = pscheduler.run_program(
                 [ "pscheduler", "internal", "invoke", "test",
                   task['test']['type'], "participants" ],
-                stdin = pscheduler.json_dump(task['test']['spec'])
+                stdin = pscheduler.json_dump(task['test']['spec']),
+                timeout=5,
+                env_add=lead_bind_env
                 )
-
-            # HACK: BWCTLBC
-            if "lead-bind" in task:
-                del os.environ["PSCHEDULER_LEAD_BIND_HACK"]
 
             if returncode != 0:
                 return error("Unable to determine participants: " + stderr)
@@ -198,7 +202,7 @@ def tasks():
                              else server_fqdn()
                              for host in pscheduler.json_load(stdout)["participants"] ]
         except Exception as ex:
-            return error("Unable to determine participants: " + str(ex))
+            return error("Exception while determining participants: " + str(ex))
         nparticipants = len(participants)
 
         # TODO: The participants must be unique.  This should be
@@ -215,15 +219,25 @@ def tasks():
 
         tools = []
 
-        for participant in participants:
+        tool_params={ "test": pscheduler.json_dump(task["test"]) }
+        # HACK: BWCTLBC
+        if lead_bind is not None:
+            log.debug("Using lead bind of %s" % str(lead_bind))
+            tool_params["lead-bind"] = lead_bind
+
+        for participant_no in range(0, len(participants)):
+
+            participant = participants[participant_no]
 
             try:
 
                 # Make sure the other participants are running pScheduler
 
+                participant_api = pscheduler.api_url(participant)
+
                 log.debug("Pinging %s" % (participant))
                 status, result = pscheduler.url_get(
-                    pscheduler.api_url(participant), throw=False, timeout=10,
+                    participant_api, throw=False, timeout=10,
                     bind=lead_bind)
 
                 if status == 400:
@@ -236,11 +250,13 @@ def tasks():
                     raise TaskPostingException("returned status %d: %s"
                                                % (status, result))
 
+
                 # TODO: This will fail with a very large test spec.
                 status, result = pscheduler.url_get(
-                    pscheduler.api_url(participant, "tools"),
-                    params={ 'test': pscheduler.json_dump(task['test']) },
-                    bind=lead_bind
+                    "%s/tools" % (participant_api),
+                    params=tool_params,
+                    # HACK: BWCTLBC
+                    bind=lead_bind if participant_no == 0 else None
                     )
                 if status != 200:
                     raise TaskPostingException("%d: %s" % (status, result))
@@ -362,7 +378,10 @@ def tasks():
 
                 for url in tasks_posted:
                     # TODO: Handle failure?
-                    status, result = requests.delete(url)
+                    status, result = pscheduler.url_delete(url,
+                                                           throw=False, 
+                                                           timeout=5,
+                                                           bind=lead_bind)
 
                     try:
                         dbcursor_query("SELECT api_task_delete(%s)",
@@ -425,7 +444,8 @@ def tasks_uuid(uuid):
                     task.participant,
                     task.enabled,
                     task.cli,
-                    task.limits_passed
+                    task.limits_passed,
+                    task.participant
                 FROM
                     task
                     JOIN test ON test.id = task.test
@@ -443,6 +463,15 @@ def tasks_uuid(uuid):
         if row is None:
             return not_found()
         json = row[0]
+
+        # The lead participant passes the participant list to the
+        # others within the JSON, but that shouldn't come out when
+        # querying it.
+
+        try:
+            del json["participants"]
+        except KeyError:
+            pass
 
         # Add details if we were asked for them.
 
@@ -476,6 +505,7 @@ def tasks_uuid(uuid):
                 'enabled':  row[12],
                 'cli':  row[13],
                 'spec-limits-passed': row[14],
+                'participant': row[15],
                 'runs-href': "%s/runs" % (request.base_url),
                 'first-run-href': "%s/runs/first" % (request.base_url),
                 'next-run-href': "%s/runs/next" % (request.base_url)

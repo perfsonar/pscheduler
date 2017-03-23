@@ -158,6 +158,17 @@ BEGIN
     END IF;
 
 
+    -- Version 5 to version 6
+    -- Adds 'added' column
+    IF t_version = 5
+    THEN
+        ALTER TABLE run ADD COLUMN
+        added TIMESTAMP WITH TIME ZONE;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -173,10 +184,12 @@ $$ LANGUAGE plpgsql;
 
 -- Runs which could cause conflicts
 
+DROP VIEW IF EXISTS run_conflictable;
 CREATE OR REPLACE VIEW run_conflictable
 AS
     SELECT
         run.*,
+        task.duration,
         scheduling_class.anytime,
         scheduling_class.exclusive
     FROM
@@ -188,6 +201,60 @@ AS
         run.state <> run_state_nonstart()
         AND NOT scheduling_class.anytime
 ;
+
+
+
+-- Determine if a proposed run would have conflicts
+CREATE OR REPLACE FUNCTION run_has_conflicts(
+    task_id BIGINT,
+    proposed_start TIMESTAMP WITH TIME ZONE
+)
+RETURNS BOOLEAN
+AS $$
+DECLARE
+    taskrec RECORD;
+    proposed_times TSTZRANGE;
+BEGIN
+
+    SELECT INTO taskrec
+        task.*,
+        test.scheduling_class,
+        scheduling_class.anytime,
+        scheduling_class.exclusive
+    FROM
+        task
+        JOIN test ON test.id = task.test
+        JOIN scheduling_class ON scheduling_class.id = test.scheduling_class
+    WHERE
+        task.id = task_id;
+
+    IF NOT FOUND
+    THEN
+        RAISE EXCEPTION 'No such task.';
+    END IF;
+
+    -- Anytime tasks don't ever count
+    IF taskrec.anytime
+    THEN
+        RETURN FALSE;
+    END IF;
+
+    proposed_times := tstzrange(proposed_start,
+        proposed_start + taskrec.duration, '[)');
+
+    RETURN ( 
+        -- Exclusive can't collide with anything
+        ( taskrec.exclusive
+          AND EXISTS (SELECT * FROM run_conflictable
+                      WHERE times && proposed_times) )
+        -- Non-exclusive can't collide with exclusive
+          OR ( NOT taskrec.exclusive
+               AND EXISTS (SELECT * FROM run_conflictable
+                           WHERE exclusive AND times && proposed_times) )
+        );
+
+END;
+$$ LANGUAGE plpgsql;
 
 
 
@@ -225,6 +292,14 @@ BEGIN
     END IF;
 
 
+    IF TG_OP = 'INSERT' THEN
+        NEW.added := now();
+    ELSIF TG_OP = 'UPDATE' AND NEW.added <> OLD.added THEN
+        RAISE EXCEPTION 'Insertion time cannot be updated.';
+    END IF;
+
+
+
     -- Non-background gets bounced if trying to schedule beyond the
     -- scheduling horizon.
 
@@ -244,19 +319,8 @@ BEGIN
     IF ( (TG_OP = 'INSERT')
         -- Don't care about non-starters
         AND NEW.state <> run_state_nonstart()
-        -- These don't count, either.
-        AND NOT taskrec.anytime
-        AND ( 
-            -- Exclusive can't collide with anything
-            ( taskrec.exclusive
-              AND EXISTS (SELECT * FROM run_conflictable
-                          WHERE times && new.times) )
-            -- Non-exclusive can't collide with exclusive
-              OR ( NOT taskrec.exclusive
-                   AND EXISTS (SELECT * FROM run_conflictable
-                               WHERE exclusive AND times && new.times) )
-            )
-       )
+        AND run_has_conflicts(taskrec.id, lower(NEW.times))
+        )
     THEN
        RAISE EXCEPTION 'Run would result in a scheduling conflict.';
     END IF;
@@ -616,13 +680,21 @@ AS
 
 -- Put a run of a task on the schedule.
 
+-- TODO: Remove this after the first producion release.
+DROP FUNCTION IF EXISTS api_run_post(UUID, TIMESTAMP WITH TIME ZONE, UUID, TEXT);
+
 CREATE OR REPLACE FUNCTION api_run_post(
     task_uuid UUID,
     start_time TIMESTAMP WITH TIME ZONE,
     run_uuid UUID,  -- NULL to assign one
     nonstart_reason TEXT = NULL
 )
-RETURNS UUID
+RETURNS TABLE (
+    succeeded BOOLEAN,  -- True if the post was successful
+    new_uuid UUID,      -- UUID of run, NULL if post failed
+    conflict BOOLEAN,   -- True of failed because of a conflict
+    error TEXT          -- Error text if post failed
+)
 AS $$
 DECLARE
     task RECORD;
@@ -633,23 +705,31 @@ BEGIN
 
     SELECT INTO task * FROM task WHERE uuid = task_uuid;
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'No task % exists.', task_uuid;
+        RETURN QUERY SELECT FALSE, NULL::UUID, FALSE,
+            'Task does not exist'::TEXT;
+        RETURN;
     END IF;
 
     IF run_uuid IS NULL AND task.participant <> 0 THEN
-        RAISE EXCEPTION 'Cannot set run UUID as non-lead participant';
+        RETURN QUERY SELECT FALSE, NULL::UUID, FALSE,
+            'Cannot set run UUID as non-lead participant'::TEXT;
+        RETURN;
     END IF;
-
-    start_time := normalized_time(start_time);
-    time_range := tstzrange(start_time, start_time + task.duration, '[)');
 
     IF nonstart_reason IS NOT NULL THEN
        initial_state := run_state_nonstart();
        initial_status := 1;  -- Nonzero means failure.
+    ELSIF run_has_conflicts(task.id, start_time) THEN
+        RETURN QUERY SELECT FALSE, NULL::UUID, TRUE,
+            'Posting this run would cause a schedule conflict'::TEXT;
+        RETURN;
     ELSE
        initial_state := run_state_pending();
        initial_status := NULL;
     END IF;
+    
+    start_time := normalized_time(start_time);
+    time_range := tstzrange(start_time, start_time + task.duration, '[)');
 
     WITH inserted_row AS (
         INSERT INTO run (uuid, task, times, state, errors)
@@ -657,7 +737,8 @@ BEGIN
         RETURNING *
     ) SELECT INTO run_uuid uuid FROM inserted_row;
 
-    RETURN run_uuid;
+    RETURN QUERY SELECT TRUE, run_uuid, FALSE, ''::TEXT;
+    RETURN;
 
 END;
 $$ LANGUAGE plpgsql;

@@ -8,7 +8,7 @@ import sys
 
 import pscheduler
 
-logger = pscheduler.Log(prefix='tool-iperf', quiet=True)
+logger = pscheduler.Log(prefix='tool-iperf2', quiet=True)
 
 json = pscheduler.json_load(exit_on_error=True)
 
@@ -22,30 +22,24 @@ if not json.get('spec'):
     pscheduler.fail('Missing test spec')
 
 test_spec = json['spec']
-    
-if test_spec.has_key('bandwidth') and not test_spec.has_key('udp'):
-    pscheduler.fail('iperf cannot run TCP tests with throttled bandwidth')
 
-if test_spec.has_key('omit'):
-    pscheduler.fail('iperf does not support the --omit flag')
+supported_options = ["schema",
+                     "source", "source-node",
+                     "dest", "dest-node",
+                     "ip-version", "duration", "interval",
+                     "parallel", "window-size", "mss", "bandwidth",
+                     "buffer-length", "local-address", "congestion"
+                     ]
 
-if test_spec.has_key('ip-tos'):
-    pscheduler.fail('iperf does not support the --ip-tos flag')
+for option in test_spec.keys():
+    if option not in supported_options:
+        logger.debug("iperf2 unsupported option %s" % option)
+        pscheduler.fail('iperf2 does not support %s option' % option)    
 
-if test_spec.has_key('flow-label'):
-    pscheduler.fail('iperf does not support the --flow-label flag')
 
-if test_spec.has_key('zero-copy'):
-    pscheduler.fail('iperf does not support the --zero-copy flag')
-
-if test_spec.has_key('congestion'):
-    pscheduler.fail('iperf does not support the --congestion flag')
-
-if test_spec.has_key('client-cpu-affinity') or test_spec.has_key('server-cpu-affinity'):
-    pscheduler.fail('iperf does not support the --client-cpu-affinity or --server-cpu-affinity flag')
-
-if test_spec.has_key('no-delay'):
-    pscheduler.fail('iperf does not support the --no-delay flag')
+# bandwidth only supported in udp mode
+if test_spec.has_key("bandwidth") and not test_spec.has_key("udp"):
+    pscheduler.fail('iperf2 does not support specifying bandwidth on non-udp tests')
 
 logger.debug("can-run succeeded")
 

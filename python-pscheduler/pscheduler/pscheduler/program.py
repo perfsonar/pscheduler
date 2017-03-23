@@ -3,6 +3,8 @@ Functions for running external programs neatly
 """
 
 import atexit
+import copy
+import os
 import pscheduler
 import select
 import subprocess32
@@ -160,9 +162,10 @@ def run_program(argv,              # Program name and args
                 stdin=None,        # What to send to stdin
                 line_call=None,    # Lambda to call when a line arrives
                 timeout=None,      # Seconds
-                short=False,       # Force timeout to two seconds
                 timeout_ok=False,  # Treat timeouts as not being an error
-                fail_message=None  # Exit with this failure message
+                fail_message=None, # Exit with this failure message
+                env=None,          # Environment for new process, None=existing
+                env_add=None       # Add hash to existing environment
                 ):
     """
     Run a program and return the results.
@@ -176,8 +179,11 @@ def run_program(argv,              # Program name and args
         'stdout' return value will be None.
     timeout=n - Wait n seconds for the program to finish, otherwise kill it.
     timeout_ok - True to prevent timeouts from being treated as errors.
-    short - True to force timeout to two seconds
     fail_message=s - Exit program and include string s if program fails.
+    env=h - Pass environment hash 'h' to the child process, using the
+        existing environment if the value is None.
+    env_add=h - Add contents of hash 'h' to environment.
+
 
     Return Values:
 
@@ -186,19 +192,31 @@ def run_program(argv,              # Program name and args
     stderr - Contents of standard erroras a single string
     """
 
-    if short:
-        timeout = 2
-
     process = None
 
     if [arg for arg in argv if arg is None]:
         raise Exception("Can't run with null arguments.")
 
+
+    # Build up a new, incorruptable copy of the environment for the
+    # child process to use.
+
+    if env_add is None:
+        env_add = {}
+
+    if env is None and len(env_add) == 0:
+        new_env = None
+    else:
+        new_env = (os.environ if env is None else env).copy()
+        new_env.update(env_add)
+
+
     try:
         process = _Popen(argv,
                          stdin=subprocess32.PIPE,
                          stdout=subprocess32.PIPE,
-                         stderr=subprocess32.PIPE)
+                         stderr=subprocess32.PIPE,
+                         env=new_env)
 
 
         __running_add(process)

@@ -4,7 +4,8 @@
 
 \c postgres
 
--- Force disconnection of any clients using the database.
+-- Force disconnection of any clients other than us using this
+-- database.
 
 DO $$
 BEGIN

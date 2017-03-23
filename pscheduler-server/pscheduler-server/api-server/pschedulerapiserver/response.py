@@ -53,6 +53,10 @@ def not_allowed():
     log.debug("Response 405: %s not allowed.", request.method)
     return Response("%s not allowed on this resource\n" % request.method, status=405)
 
+def conflict(message="Request would create a conflict."):
+    log.debug("Response 409: Conflict")
+    return Response(message + '\n', status=409)
+
 def no_can_do(message=None):
     log.debug("Response 422: %s", message)
     return Response("Unable to complete request" \
