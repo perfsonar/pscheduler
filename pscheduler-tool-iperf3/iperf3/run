@@ -77,13 +77,60 @@ def run_client():
 
     iperf3_args.append('-p')
     iperf3_args.append(server_port)
+    
+    #Determine if we need to bind to an address and have enough info to do so intelligently
+    ip_version = test_spec.get('ip-version', None)
+    source = test_spec.get('source', None)
+    destination = test_spec['dest'] #required
+    local_address = test_spec.get('local-address', None)
+    if ip_version is not None:
+        #Set ip version if provided
+        if ip_version == 4:
+            iperf3_args.append('-4')
+        else:
+            iperf3_args.append('-6')
+        #use whatever was provided as the bind
+        if local_address is not None:
+            iperf3_args.append('-B')
+            iperf3_args.append(local_address)
+        elif source is not None:
+            iperf3_args.append('-B')
+            iperf3_args.append(source)
+        iperf3_args.append('-c')
+        iperf3_args.append(destination) 
+    elif local_address is not None:
+        # if we have the local-address and dest, we can determine what ip version they have in common
+        # we prefer IPv6 but fallback to IPv4 if they don't both have IPv6. If one end only 
+        # has IPv4 and the other only has IPv6 we don't bind at all but don't throw error in 
+        # case there is some external factor we don't know about (maybe should change this?)
+        local_ip, dest_ip = pscheduler.ip_normalize_version(local_address, destination)
+        if local_ip is not None:
+            iperf3_args.append('-B')
+            iperf3_args.append(local_ip)
+        if dest_ip is not None:
+            iperf3_args.append('-c')
+            iperf3_args.append(dest_ip)
+        else:
+            pscheduler.succeed_json({"succeeded": False,
+                                     "error": "Unable to find common IP version between local-address %s and dest %s" % (local_address, destination)})
+    elif source is not None:
+        #see comment for local-address, but s/local-address/source/g
+        source_ip, dest_ip = pscheduler.ip_normalize_version(source, destination)
+        if source_ip is not None:
+            iperf3_args.append('-B')
+            iperf3_args.append(source_ip)
+        if dest_ip is not None:
+            iperf3_args.append('-c')
+            iperf3_args.append(dest_ip)
+        else:
+            pscheduler.succeed_json({"succeeded": False,
+                                     "error": "Unable to find common IP version between source %s and dest %s" % (source, destination)})
+    else:
+        #set destination
+        iperf3_args.append('-c')
+        iperf3_args.append(destination)       
 
-    # who to connect to
-    destination = test_spec['dest']          
-
-    iperf3_args.append('-c')
-    iperf3_args.append(destination)
-
+    #set duration
     iperf3_args.append('-t')
     iperf3_args.append(test_duration)
 
@@ -148,21 +195,6 @@ def run_client():
     if test_spec.has_key('ip-tos') and test_spec['ip-tos'] != None:
         iperf3_args.append('-S')
         iperf3_args.append(test_spec['ip-tos'])
-
-    if test_spec.has_key('local-address') and test_spec['local-address'] != None:
-        iperf3_args.append('-B')
-        iperf3_args.append(test_spec['local-address'])
-    # if no specific local-address was specified, assume that we're binding
-    # to the source interface if specified
-    elif test_spec.has_key('source'):
-        iperf3_args.append('-B')
-        iperf3_args.append(test_spec['source'])
-
-    if test_spec.has_key('ip-version') and test_spec['ip-version'] != None:
-        if test_spec['ip-version'] == 4:
-            iperf3_args.append('-4')
-        else:
-            iperf3_args.append('-6')
 
     if test_spec.has_key('congestion') and test_spec['congestion'] != None:
         iperf3_args.append('-C')
