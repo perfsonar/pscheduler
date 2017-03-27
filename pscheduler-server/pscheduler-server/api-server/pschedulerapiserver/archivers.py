@@ -19,7 +19,7 @@ from .response import *
 # All archivers
 @application.route("/archivers", methods=['GET'])
 def archivers():
-    return json_query("SELECT json FROM archiver", [])
+    return json_query("SELECT json FROM archiver ORDER BY NAME")
 
 
 # Archiver <name>
