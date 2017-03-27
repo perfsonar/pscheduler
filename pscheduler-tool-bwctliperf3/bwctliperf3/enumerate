@@ -1,7 +1,7 @@
 #!/bin/sed -e 1d
 {
     "name": "bwctliperf3",
-    "description": "Run the BWCTL command for measuring network throughput. Only for backward compatibility.",
+    "description": "Measure network throughput with BWCTL - FOR BACKWARD COMPATIBILITY ONLY"
     "version": "1.0",
     "tests": [ "throughput" ],
 

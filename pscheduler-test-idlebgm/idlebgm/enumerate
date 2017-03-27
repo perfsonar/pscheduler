@@ -1,6 +1,4 @@
-#!/bin/sh
-
-exec cat << EOF
+#!/bin/sed -e 1d
 {
     "name": "idlebgm",
     "description": "Consume time in the background - NOT FOR PRODUCTION",
@@ -13,4 +11,3 @@ exec cat << EOF
 
     "scheduling-class": "background-multi"
 }
-EOF
