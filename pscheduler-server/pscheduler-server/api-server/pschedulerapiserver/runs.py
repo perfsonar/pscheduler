@@ -22,6 +22,10 @@ from .util import *
 # Proposed times for a task
 @application.route("/tasks/<task>/runtimes", methods=['GET'])
 def task_uuid_runtimes(task):
+
+    if not uuid_is_valid(task):
+        return not_found()
+
     try:
         range_start = arg_datetime('start')
         range_end   = arg_datetime('end')
@@ -92,6 +96,9 @@ def __evaluate_limits(
 # Established runs for a task
 @application.route("/tasks/<task>/runs", methods=['GET', 'POST'])
 def tasks_uuid_runs(task):
+
+    if not uuid_is_valid(task):
+        return not_found()
 
     if request.method == 'GET':
 
@@ -229,11 +236,18 @@ def __runs_first_run(
 @application.route("/tasks/<task>/runs/<run>", methods=['GET', 'PUT', 'DELETE'])
 def tasks_uuid_runs_run(task, run):
 
-    if task is None:
-        return bad_request("Missing or invalid task")
+    if not uuid_is_valid(task):
+        return not_found()
 
-    if run is None:
-        return bad_request("Missing or invalid run")
+    if (
+            (request.method in ['PUT', 'DELETE']
+             and not uuid_is_valid(run))
+            or
+            (run not in ['first', 'next']
+             and not uuid_is_valid(run))
+    ):
+        return not_found()
+
 
     if request.method == 'GET':
 
@@ -578,11 +592,8 @@ def tasks_uuid_runs_run(task, run):
 @application.route("/tasks/<task>/runs/<run>/result", methods=['GET'])
 def tasks_uuid_runs_run_result(task, run):
 
-    if task is None:
-        return bad_request("Missing or invalid task")
-
-    if run is None:
-        return bad_request("Missing or invalid run")
+    if not uuid_is_valid(task) or not uuid_is_valid(run):
+        return not_found()
 
     wait = arg_boolean('wait')
 
