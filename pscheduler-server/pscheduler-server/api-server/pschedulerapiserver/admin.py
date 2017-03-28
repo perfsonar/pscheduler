@@ -22,14 +22,31 @@ def root():
               % (server_fqdn(), pscheduler.api_this_host()))
 
 
+
+max_api = 1
+
+
 @application.route("/api", methods=['GET'])
 def api():
-    return ok_json(1)
+    return ok_json(max_api)
 
 
 @application.before_request
 def before_req():
     log.debug("REQUEST: %s %s", request.method, request.url)
+
+    try:
+        version = arg_integer("api")
+        if version is None:
+            version = 1
+        if version > max_api:
+            return not_implemented(
+                "No API above %s is supported" % (max_api))
+    except ValueError:
+        return bad_request("Invalid API value.")
+
+    # All went well.
+    return None
 
 
 @application.errorhandler(Exception)
