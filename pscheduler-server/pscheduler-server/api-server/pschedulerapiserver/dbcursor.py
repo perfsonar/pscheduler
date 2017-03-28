@@ -103,8 +103,13 @@ def dbcursor_query(query,
                 raise psycopg2.Error("Too many tries to run the query; giving up")
             continue
         except Exception as ex:
-            log.debug("EX: %s", ex)
-            raise ex;
+            if ex.args:
+                text = str(ex)
+                location = text.find("\nCONTEXT: ")
+                if location > -1:
+                    ex.args = (text[0:location],)
+            log.debug("EX: %s %s", type(ex), ex)
+            raise ex
 
         break
 
