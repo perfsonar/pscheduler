@@ -72,6 +72,6 @@ def error(message=None):
         message = "Unknown internal error"
     return Response(message + '\n', 500)
 
-def not_implemented(message="Not implemented.\n"):
+def not_implemented(message="Not implemented."):
     log.debug("Response 501: %s", message)
-    return Response(message, 501)
+    return Response(message + "\n", 501)
