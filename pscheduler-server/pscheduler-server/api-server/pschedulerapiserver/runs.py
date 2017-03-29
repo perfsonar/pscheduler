@@ -10,6 +10,7 @@ from pschedulerapiserver import application
 from flask import request
 
 from .access import *
+from .args import arg_integer
 from .dbcursor import dbcursor_query
 from .json import *
 from .limitproc import *
