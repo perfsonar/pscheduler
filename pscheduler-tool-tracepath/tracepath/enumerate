@@ -1,7 +1,7 @@
 #!/bin/sed -e 1d
 {
     "name": "tracepath",
-    "description": "Map the route between hosts using tracepath",
+    "description": "Map the route between hosts with tracepath",
     "version": "1.0",
     "tests": [ "trace" ],
 

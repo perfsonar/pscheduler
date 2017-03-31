@@ -1,6 +1,4 @@
-#!/bin/sh
-
-exec cat << EOF
+#!/bin/sed -e 1d
 {
     "name": "rtt",
     "description": "Measure the round trip time between hosts",
@@ -12,4 +10,3 @@ exec cat << EOF
     },
     "scheduling-class": "background"
 }
-EOF

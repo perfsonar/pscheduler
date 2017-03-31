@@ -20,8 +20,8 @@ except KeyError:
     pscheduler.fail('Missing test type')
 
 
-# This tool has a (forced) quirk that makes it not sleep for less than
-# 30 seconds.
+# This tool has a (forced) quirk that makes it not sleep for anything
+# more than 60 seconds.
 
 duration = pscheduler.iso8601_as_timedelta(json['spec']['duration'])
 if duration is not None:

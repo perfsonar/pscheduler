@@ -1,7 +1,7 @@
 #!/bin/sed -e 1d
 {
     "name": "snooze",
-    "description": "Take very short sleeps",
+    "description": "Sleep for periods of 60 seconds or less",
     "version": "1.0",
     "tests": [ "idle", "idleex" ],
 

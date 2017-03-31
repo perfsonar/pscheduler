@@ -67,6 +67,13 @@ Requires:	pytz
 # General
 BuildRequires:	pscheduler-rpm
 
+%if 0%{?el6}
+Requires:	chkconfig
+%endif
+%if 0%{?el7}
+BuildRequires:	systemd
+%{?systemd_requires: %systemd_requires}
+%endif
 
 %description
 The pScheduler server
@@ -205,7 +212,12 @@ EOF
 #
 make -C daemons \
      CONFIGDIR=$RPM_BUILD_ROOT/%{daemon_config_dir} \
+%if 0%{?el6}
      INITDDIR=$RPM_BUILD_ROOT/%{_initddir} \
+%endif
+%if 0%{?el7}
+     UNITDIR=$RPM_BUILD_ROOT/%{_unitdir} \
+%endif
      DAEMONDIR=$RPM_BUILD_ROOT/%{_pscheduler_daemons} \
      COMMANDDIR=$RPM_BUILD_ROOT/%{_pscheduler_commands} \
      install
@@ -252,7 +264,12 @@ then
     for SERVICE in ticker runner archiver scheduler
     do
         NAME="pscheduler-${SERVICE}"
+%if 0%{?el6}
         service "${NAME}" stop
+%endif
+%if 0%{?el7}
+        systemctl stop "${NAME}"
+%endif
     done
 fi
 
@@ -455,8 +472,14 @@ EOF
 for SERVICE in ticker runner archiver scheduler
 do
     NAME="pscheduler-${SERVICE}"
+%if 0%{?el6}
     chkconfig "${NAME}" on
     service "${NAME}" start
+%endif
+%if 0%{?el7}
+    systemctl enable "${NAME}"
+    systemctl start "${NAME}"
+%endif
 done
 
 
@@ -503,7 +526,12 @@ systemctl restart httpd
 for SERVICE in ticker runner archiver scheduler
 do
     NAME="pscheduler-${SERVICE}"
+%if 0%{?el6}
     service "${NAME}" stop
+%endif
+%if 0%{?el7}
+    systemctl stop "${NAME}"
+%endif
 done
 
 # Have to stop this while we're uninstalling so connections to the
@@ -583,7 +611,12 @@ else
     for SERVICE in ticker runner archiver scheduler
     do
         NAME="pscheduler-${SERVICE}"
+%if 0%{?el6}
         service "${NAME}" restart
+%endif
+%if 0%{?el7}
+        systemctl restart "${NAME}"
+%endif
     done
 fi
 
@@ -626,7 +659,12 @@ systemctl start httpd
 %defattr(-,root,root,-)
 %attr(755,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %{daemon_config_dir}
 %attr(740,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %config(noreplace) %{daemon_config_dir}/*
+%if 0%{?el6}
 %{_initddir}/*
+%endif
+%if 0%{?el7}
+%{_unitdir}/*
+%endif
 %{_pscheduler_daemons}/*
 %{_pscheduler_commands}/*
 %attr(750,%{_pscheduler_user},%{_pscheduler_group}) %{archiver_default_dir}

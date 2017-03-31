@@ -3,6 +3,7 @@
 #
 
 import pscheduler
+import uuid
 
 from flask import request
 
@@ -66,6 +67,15 @@ def arg_json(name):
         return None
     # This will throw a ValueError if something's wrong.
     return pscheduler.json_load(argval)
+
+
+def arg_uuid(name):
+    """Fetch and validate an argument as a UUID"""
+    argval = request.args.get(name)
+    if argval is None:
+        return None
+    # This will throw a ValueError if something's wrong.
+    return str(uuid.UUID(argval))
 
 
 def is_expanded():

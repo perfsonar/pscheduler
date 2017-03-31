@@ -3,8 +3,8 @@
 # List instances of a pScheduler class
 #
 
-# TODO: This is probably not used anywhere but was brought along just
-# in case.
+# This is used internally by the database during warm boot.  Nothing
+# else should need it.
 
 WHOAMI=$(basename $0)
 
