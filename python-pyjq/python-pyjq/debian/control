@@ -1,0 +1,33 @@
+Source: python-pyjq
+Maintainer: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
+Section: python
+Priority: optional
+Build-Depends: debhelper (>= 9), dh-python,
+               autoconf, automake, libtool,
+               python-dev, python-six, python-mock,
+               python-all, python-setuptools,
+               python3-all, python3-setuptools,
+               python3-dev, python3-six, python3-mock,
+Standards-Version: 3.9.8
+Homepage: https://github.com/doloopwhile/pyjq
+Vcs-Browser: https://github.com/doloopwhile/pyjq.git
+Vcs-Git: https://github.com/doloopwhile/pyjq.git
+
+
+Package: python-pyjq
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}
+Description: bindings to the jq JSON Processor
+ This Python module contains the bindings for the jq JSON Processor.
+ jq is like sed for JSON data.
+ .
+ This package contains pyjq for Python 2.
+
+Package: python3-pyjq
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}
+Description: bindings to the jq JSON Processor
+ This Python module contains the bindings for the jq JSON Processor.
+ jq is like sed for JSON data.
+ .
+ This package contains pyjq for Python 3.
