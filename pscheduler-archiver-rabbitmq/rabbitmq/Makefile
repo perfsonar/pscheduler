@@ -43,7 +43,6 @@ ifndef DESTDIR
 endif
 	mkdir -p $(DESTDIR)
 	cp -r $< $(DESTDIR)
-	chmod -R ugo-w $(DESTDIR)
 
 #
 # End of pika
