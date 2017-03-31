@@ -23,11 +23,12 @@ COMMANDS=\
 	cancel \
 	clock \
 	env \
-	result \
-	schedule \
 	monitor \
 	ping \
 	plot-schedule \
+	plugins \
+	result \
+	schedule \
 	task \
 	watch
 

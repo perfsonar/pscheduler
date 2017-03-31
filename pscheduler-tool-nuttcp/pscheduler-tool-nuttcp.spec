@@ -5,7 +5,7 @@
 %define short	nuttcp
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.25.rc3%{?dist}
+Release:	0.28.rc3%{?dist}
 
 Summary:	nuttcp tool class for pScheduler
 BuildArch:	noarch

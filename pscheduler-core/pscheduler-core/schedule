@@ -13,6 +13,7 @@ import pipes
 import pscheduler
 import pytz
 import sys
+import urlparse
 
 
 pscheduler.set_graceful_exit()
@@ -137,6 +138,12 @@ opt_parser.add_option("--invert",
                       action="store_true",
                       dest="invert")
 
+opt_parser.add_option("--task",
+                      help="Show only runs for the specified task URL",
+                      default=None,
+                      action="store", type="string",
+                      dest="task")
+
 (options, remaining_args) = opt_parser.parse_args(args)
 
 
@@ -149,14 +156,35 @@ else:
 
 filter_invert = options.invert
 
+host = options.host
+
+if options.task is not None:
+
+    if not pscheduler.api_is_task(options.task):
+        pscheduler.fail("Task does not look like a valid task URL")
+
+    parsed = list(urlparse.urlsplit(options.task))
+    new_host = parsed[1]
+    if host is not None and new_host != host:
+        pscheduler.fail("Hosts in --host and --task must be the same.")
+    host = new_host
+    task_uuid = parsed[2].split("/")[-1]
+else:
+    task_uuid = None
+
 
 now = pscheduler.time_now()
 
 if len(remaining_args) == 0:
 
-    # Default; show an hour's worth.
-    start = now
-    end = start + datetime.timedelta(hours=1)
+    # Default; show an hour's worth if no task, otherwise show everything.
+    if task_uuid is not None:
+        start = None
+        end = None
+    else:
+        start = now
+        end = start + datetime.timedelta(hours=1)
+
 
 elif len(remaining_args) == 1:
 
@@ -194,15 +222,21 @@ else:
 # Fetch the schedule
 #
 
+params={}
+
+if start is not None:
+    params["start"] = pscheduler.datetime_as_iso8601(start)
+
+if end is not None:
+    params["end"] = pscheduler.datetime_as_iso8601(end)
+
+if task_uuid is not None:
+    params["task"] = task_uuid
+
+
 status, schedule = pscheduler.url_get(
-    pscheduler.api_url(host=options.host, path="schedule"),
-    params={
-        "start": pscheduler.datetime_as_iso8601(start),
-        "end": pscheduler.datetime_as_iso8601(end)
-        },
-    bind=options.bind,
-    throw = False
-    )
+    pscheduler.api_url(host=host, path="schedule"),
+    bind=options.bind, params=params, throw=False)
 
 if status != 200:
     pscheduler.fail("Server returned status %d: %s" % (status, schedule))

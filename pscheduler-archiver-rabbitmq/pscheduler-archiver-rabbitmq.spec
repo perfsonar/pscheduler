@@ -5,7 +5,7 @@
 %define short	rabbitmq
 Name:		pscheduler-archiver-%{short}
 Version:	1.0
-Release:	0.25.rc3%{?dist}
+Release:	0.28.rc3%{?dist}
 
 Summary:	RabbitMQ archiver class for pScheduler
 BuildArch:	noarch
@@ -17,7 +17,11 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	python-pika
+
+# Note that this doesn't get used since we're supplying our own 0.10.0
+# as a stopgap.
+# TODO: Make this require >= 0.9.8 once EL6 goes away.
+#Requires:	python-pika
 
 BuildRequires:	pscheduler-rpm
 

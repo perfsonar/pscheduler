@@ -1,6 +1,4 @@
-#!/bin/sh
-
-exec cat << EOF
+#!/bin/sed -e 1d
 {
     "name": "rabbitmq",
     "description": "Send a JSON result to RabbitMQ",
@@ -12,4 +10,3 @@ exec cat << EOF
 	"href": "http://www.perfsonar.net"
     }
 }
-EOF

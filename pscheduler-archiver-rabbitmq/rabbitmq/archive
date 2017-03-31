@@ -3,7 +3,10 @@
 # Send a result to syslog.
 #
 
+# Note that this imports the local copy, not what's installed on the
+# system.
 import pika
+
 import pscheduler
 
 
