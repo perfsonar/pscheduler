@@ -28,7 +28,11 @@ def schedule():
         return bad_request('Invalid start or end time')
 
     try:
-        cursor = dbcursor_query("""
+        task = arg_uuid("task")
+    except ValueError:
+        return bad_request('Invalid task UUID')
+
+    query = ["""
             SELECT
                 lower(times),
                 upper(times),
@@ -41,8 +45,16 @@ def schedule():
                 test_json,
                 tool_json
             FROM schedule
-            WHERE times && tstzrange(%s, %s, '[)');
-            """, [range_start, range_end])
+            WHERE times && tstzrange(%s, %s, '[)')
+    """]
+    args = [range_start, range_end]
+
+    if task is not None:
+        query.append("AND task = %s")
+        args.append(task)
+
+    try:
+        cursor = dbcursor_query(" ".join(query), args)
     except Exception as ex:
         log.exception()
         return error(str(ex))

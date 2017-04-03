@@ -26,7 +26,7 @@ def tools():
     lead_bind = request.args.get('lead-bind', None)
 
     if test_filter is None:
-        return json_query("SELECT json FROM tool WHERE available", [])
+        return json_query("SELECT json FROM tool WHERE available ORDER BY NAME")
     else:
         log.debug("Looking for tools against filter %s", test_filter)
         try:

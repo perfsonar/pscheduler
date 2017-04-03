@@ -1,6 +1,4 @@
-#!/bin/sh
-
-exec cat << EOF
+#!/bin/sed -e 1d
 {
     "name": "syslog",
     "description": "Send a raw JSON result to Syslog",
@@ -12,4 +10,3 @@ exec cat << EOF
 	"href": "http://www.perfsonar.net"
     }
 }
-EOF

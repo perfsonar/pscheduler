@@ -28,7 +28,8 @@ supported_options = ["schema",
                      "dest", "dest-node",
                      "ip-version", "duration", "interval",
                      "parallel", "window-size", "mss", "bandwidth",
-                     "buffer-length", "local-address", "congestion"
+                     "buffer-length", "local-address", "congestion",
+                     "udp"
                      ]
 
 for option in test_spec.keys():

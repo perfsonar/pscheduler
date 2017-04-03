@@ -1,7 +1,7 @@
 #!/bin/sed -e 1d
 {
     "name": "bwctltracepath",
-    "description": "Run the BWCTL tracepath command for measuring network paths. Only for backward compatibility.",
+    "description": "Determine the path to another host with BWCTL tracepath - FOR BACKWARD COMPATIBILITY ONLY",
     "version": "1.0",
     "tests": [ "trace" ],
 
@@ -9,7 +9,7 @@
 
     "maintainer": {
         "name": "perfSONAR Development Team",
-	"email": "info@perfsonar.net",
+	"email": "perfsonar-developer@internet2.edu",
 	"href": "http://www.perfsonar.net"
     }
 }

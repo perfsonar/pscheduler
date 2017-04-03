@@ -1,6 +1,4 @@
-#!/bin/sh
-
-exec cat << EOF
+#!/bin/sed -e 1d
 {
     "name": "clock",
     "description": "Measure the clock difference between hosts",
@@ -12,4 +10,3 @@ exec cat << EOF
     },
     "scheduling-class": "background"
 }
-EOF
