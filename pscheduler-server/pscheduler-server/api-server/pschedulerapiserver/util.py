@@ -62,20 +62,8 @@ def server_fqdn():
     the local host or not available.
     """
 
-    request_netloc = urlparse.urlparse(request.url_root).netloc.split(':')[0]
+    return urlparse.urlparse(request.url_root).netloc.split(':')[0]
 
-    my_addr = request.environ.get("SERVER_ADDR", None)
-    if my_addr is None:
-        return request_netloc
-    my_fqdn = socket.getfqdn(my_addr)
-
-    if my_fqdn == request_netloc:
-        return request_netloc
-
-    return my_fqdn
-
-
-       
 
 #
 # URLs

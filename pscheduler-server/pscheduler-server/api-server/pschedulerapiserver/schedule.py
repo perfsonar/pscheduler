@@ -15,6 +15,7 @@ from .limitproc import *
 from .log import log
 from .response import *
 from .tasks import task_exists
+from .util import server_fqdn
 
 
 # Schedule
@@ -61,7 +62,7 @@ def schedule():
 
     result = []
 
-    base_url = pscheduler.api_url(path="tasks/")
+    base_url = pscheduler.api_url(server_fqdn(), "tasks/")
     for row in cursor:
 
         task_href = base_url +  row[2]
@@ -108,7 +109,7 @@ def monitor():
 
     result = []
 
-    base_url = pscheduler.api_url()
+    base_url = pscheduler.api_url(server_fqdn())
     for row in cursor:
 
         task_href = "%s/tasks/%s" % (base_url, row[2])
