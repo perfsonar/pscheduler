@@ -1,9 +1,7 @@
-#!/bin/sh
-
-exec cat << EOF
+#!/bin/sed -e 1d
 {
     "name": "latencybg",
-    "description": "Run one-way latency tests that can run at same time as other tests",
+    "description": "Run one-way latency tests in the background",
     "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",
@@ -13,4 +11,3 @@ exec cat << EOF
 
     "scheduling-class": "background-multi"
 }
-EOF

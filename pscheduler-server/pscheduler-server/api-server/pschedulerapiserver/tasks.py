@@ -422,6 +422,10 @@ def tasks():
 
 @application.route("/tasks/<uuid>", methods=['GET', 'POST', 'DELETE'])
 def tasks_uuid(uuid):
+
+    if not uuid_is_valid(uuid):
+        return not_found()
+
     if request.method == 'GET':
 
         # Get a task, adding server-derived details if a 'detail'
@@ -607,6 +611,9 @@ def tasks_uuid(uuid):
 
 @application.route("/tasks/<uuid>/cli", methods=['GET'])
 def tasks_uuid_cli(uuid):
+
+    if not uuid_is_valid(uuid):
+        return not_found()
 
     # Get a task, adding server-derived details if a 'detail'
     # argument is present.

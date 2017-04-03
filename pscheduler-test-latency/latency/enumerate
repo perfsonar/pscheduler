@@ -1,9 +1,7 @@
-#!/bin/sh
-
-exec cat << EOF
+#!/bin/sed -e 1d
 {
     "name": "latency",
-    "description": "Tests designed primarily to measure one-way network latency and associated metrics",
+    "description": "Measure network latency between hosts",
     "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",
@@ -12,4 +10,3 @@ exec cat << EOF
     },
     "scheduling-class": "normal"
 }
-EOF

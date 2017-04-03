@@ -4,6 +4,7 @@
 
 import socket
 import urlparse
+import uuid
 
 from flask import request
 
@@ -92,3 +93,18 @@ def base_url(path = None):
 def url_last_in_path(url):
     result = urlparse.urlparse(url)
     return result.path.split('/')[-1]
+
+
+#
+# UUIDs
+#
+
+def uuid_is_valid(test_uuid):
+    """
+    Determine if a UUID is valid
+    """
+    try:
+        uuid_object = uuid.UUID(test_uuid)
+    except ValueError:
+        return False
+    return True

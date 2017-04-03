@@ -1,9 +1,7 @@
-#!/bin/sh
-
-exec cat << EOF
+#!/bin/sed -e 1d
 {
     "name": "esmond",
-    "description": "Archive test results in an Esmond measurement archive",
+    "description": "Send results to Esmond",
     "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",
@@ -11,4 +9,3 @@ exec cat << EOF
 	"href": "http://www.perfsonar.net"
     }
 }
-EOF

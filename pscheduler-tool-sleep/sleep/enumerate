@@ -1,7 +1,7 @@
 #!/bin/sed -e 1d
 {
     "name": "sleep",
-    "description": "Do nothing by sleeping",
+    "description": "Sleep for periods longer than 15 seconds",
     "version": "1.0",
     "tests": [ "idle", "idleex" ],
 

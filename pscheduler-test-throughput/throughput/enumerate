@@ -1,11 +1,10 @@
-#!/bin/sh
-
-
-exec cat << EOF
+#!/bin/sed -e 1d
 {
     "name": "throughput",
-    "description": "Tests designed primarily to active measure network throughput between a set of hosts",
-    "version": "1.0",
+    "description": "Measure network throughput between hosts",
+
+    "version": 1.0,
+
     "maintainer": {
         "name": "perfSONAR Development Team",
 	"email": "perfsonar-developer@internet2.edu",
@@ -13,4 +12,3 @@ exec cat << EOF
     },
     "scheduling-class": "exclusive"
 }
-EOF

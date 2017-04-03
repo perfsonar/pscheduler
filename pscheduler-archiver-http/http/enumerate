@@ -1,9 +1,7 @@
-#!/bin/sh
-
-exec cat << EOF
+#!/bin/sed -e 1d
 {
     "name": "http",
-    "description": "Send a raw JSON result to HTTP",
+    "description": "Send a raw JSON result to a HTTP server",
     "version": "1.0",
 
     "maintainer": {
@@ -12,4 +10,3 @@ exec cat << EOF
 	"href": "http://www.perfsonar.net"
     }
 }
-EOF

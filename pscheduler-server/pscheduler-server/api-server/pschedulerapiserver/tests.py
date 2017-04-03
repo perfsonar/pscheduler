@@ -19,7 +19,7 @@ from .response import *
 # All tests
 @application.route("/tests", methods=['GET'])
 def tests():
-    return json_query("SELECT json FROM test", [])
+    return json_query("SELECT json FROM test ORDER BY name", [])
 
 
 # Test <name>

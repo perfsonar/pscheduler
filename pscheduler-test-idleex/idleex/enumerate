@@ -1,6 +1,4 @@
-#!/bin/sh
-
-exec cat << EOF
+#!/bin/sed -e 1d
 {
     "name": "idleex",
     "description": "Consume time exclusively - NOT FOR PRODUCTION",
@@ -13,4 +11,3 @@ exec cat << EOF
 
     "scheduling-class": "exclusive"
 }
-EOF

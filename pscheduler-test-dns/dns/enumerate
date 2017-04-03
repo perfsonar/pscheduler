@@ -1,9 +1,7 @@
-#!/bin/sh
-
-exec cat << EOF
+#!/bin/sed -e 1d
 {
     "name": "dns",
-    "description": "Measure the time it takes to resolve DNS records",
+    "description": "Measure DNS transaction time",
     "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",
@@ -12,4 +10,3 @@ exec cat << EOF
     },
     "scheduling-class": "background"
 }
-EOF

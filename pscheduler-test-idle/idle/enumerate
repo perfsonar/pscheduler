@@ -1,9 +1,7 @@
-#!/bin/sh
-
-exec cat << EOF
+#!/bin/sed -e 1d
 {
     "name": "idle",
-    "description": "Consume time - NOT FOR PRODUCTION",
+    "description": "Consume time in the background",
     "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",
@@ -13,4 +11,3 @@ exec cat << EOF
 
     "scheduling-class": "background"
 }
-EOF

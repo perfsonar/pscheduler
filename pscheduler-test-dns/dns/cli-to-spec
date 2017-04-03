@@ -55,7 +55,7 @@ opt_parser.add_option("--nameserver",
                       dest="nameserver")
 
 opt_parser.add_option("--record",
-                      help="Record type to query",
+                      help="Record type to query  (One of a, aaaa, ns, cname, soa, ptr, mx and txt)",
                       action="store", type="string",
                       dest="record")
 

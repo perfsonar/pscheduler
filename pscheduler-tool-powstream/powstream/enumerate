@@ -1,7 +1,7 @@
 #!/bin/sed -e 1d
 {
     "name": "powstream",
-    "description": "Run the OWAMP powstream command for one-way network latency and associated metrics",
+    "description": "Repeatedly measure latency with OWAMP's powstream",
     "version": "1.0",
     "tests": [ "latencybg" ],
 
