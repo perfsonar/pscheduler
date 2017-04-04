@@ -26,7 +26,9 @@ log.debug("Archiver received: %s" % json)
 task_href = json['task-href'].encode("utf-8") #encode to utf-8 so memcache can handle it
 test_type = json['result']['test']['type']
 test_spec = json['result']['test']['spec']
-test_result = json['result']['result']
+test_result = {}
+if json['result']['result'] is not None:
+    test_result = json['result']['result']
 tool_name = 'pscheduler/%s' % json['result']['tool']['name']
 test_start_time = calendar.timegm(pscheduler.iso8601_as_datetime(json['result']['schedule']['start']).utctimetuple())
 lead_participant = json['result']['participants'][0]

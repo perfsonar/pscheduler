@@ -347,7 +347,7 @@ class EsmondBaseRecord:
         
         #handle data 
         data_point = { 'ts': ts, 'val': [] }
-        if test_result[succeeded_field]:
+        if succeeded_field in test_result and test_result[succeeded_field]:
             data_field_map = self.get_data_field_map()
             for field in data_field_map:
                 if field in test_result:
