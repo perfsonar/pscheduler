@@ -255,6 +255,7 @@ def tasks():
                 status, result = pscheduler.url_get(
                     "%s/tools" % (participant_api),
                     params=tool_params,
+                    throw=False,
                     # HACK: BWCTLBC
                     bind=lead_bind if participant_no == 0 else None
                     )
