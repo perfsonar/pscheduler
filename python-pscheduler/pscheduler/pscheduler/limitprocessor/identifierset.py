@@ -50,11 +50,11 @@ class IdentifierSet():
             id_type = identifier['type']
             data = identifier['data']
             try:
-                id_object = identifier_creator[id_type](data)
-            except KeyError:
+                creator = identifier_creator[id_type]
+            except KeyError as ex:
                 raise ValueError("Identifier '%s' has unsupported type '%s'" \
                                  % (identifier['name'], id_type))
-
+            id_object = creator(data)
             identifier['evaluator'] = id_object
             self.identifiers.append(identifier)
 
