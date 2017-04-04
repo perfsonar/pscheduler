@@ -1,0 +1,93 @@
+{
+
+    "#": "-------------------------------------------------------------------",
+    "#": "               pScheduler Sample Limit Configuration               ",
+    "#": "                                                                   ",
+    "#": "                                                                   ",
+    "#": "Shows how to use the 'localif' identifier.                         ",
+    "#": "-------------------------------------------------------------------",
+
+    "schema": 1,
+
+    "#": "-------------------------------------------------------------------",
+    "#": "IDENTIFIERS:  WHO'S ASKING?                                        ",
+    "#": "                                                                   ",
+    "#": "These identify who's asking to run the test.  One requester can    ",
+    "#": "map to zero or more identifiers.                                   ",
+    "#": "-------------------------------------------------------------------",
+
+    "identifiers": [
+	{
+	    "#": "In plain English:  Identify any requests arriving from an  ",
+	    "#": "address bound to an interface on the local system.         ",
+
+	    "name": "local-requester",
+	    "description": "Requests arriving from local interfaces",
+	    "type": "localif",
+	    "data": { }
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "CLASSIFIERS:  HOW DO WE CLASSIFY THE IDENTIFIERS?                  ",
+    "#": "                                                                   ",
+    "#": "These collect identifiers into groups.                             ",
+    "#": "-------------------------------------------------------------------",
+
+    "classifiers": [
+	{
+	    "#": "In plain English:  Groups the 'local-requester' identifier ",
+	    "#": "into a group called 'trusted-requesters'.                  ",
+
+	    "name": "allowed-requesters",
+	    "description": "Requesters we allow to submit tasks",
+	    "identifiers": [ "local-requester" ]
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "LIMITS:  WHAT ARE THE RESTRICTIONS?                                ",
+    "#": "                                                                   ",
+    "#": "These are comparisons made against the type of test being proposed,",
+    "#": "the paramaters for the run and when it is proposed to be run.      ",
+    "#": "-------------------------------------------------------------------",
+
+    "limits": [
+	{
+	    "#": "In plain English:  Any task being tested against this limit",
+	    "#": "will always meet with approval.                            ",
+
+	    "name": "always",
+	    "description": "Always passes",
+	    "type": "pass-fail",
+	    "data": {
+		"pass": true
+	    }
+	}
+    ],
+
+    "#": "-------------------------------------------------------------------",
+    "#": "APPLICATIONS:  TO WHOM DO WE APPLY THE LIMITS?                     ",
+    "#": "                                                                   ",
+    "#": "These are processed in order until one passes all of the           ",
+    "#": "requirements.  The run will be rejected if one fails with          ",
+    "#": "stop-on-failure set to true or none of them passes.                ",
+    "#": "-------------------------------------------------------------------",
+
+    "applications": [
+	{
+	    "#": "In plain English:  Allow requests from trusted requesters. ",
+	    "#": "Any other requests will fall off the bottom of the list and",
+	    "#": "be denied.                                                 ",
+
+	    "description": "Requests from those we allow to use the system",
+	    "classifier": "allowed-requesters",
+	    "apply": [
+		{ "require": "all", "limits": [ "always" ] }
+	    ]
+	}
+    ]
+
+}

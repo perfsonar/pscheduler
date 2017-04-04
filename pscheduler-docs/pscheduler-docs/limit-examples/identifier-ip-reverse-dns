@@ -1,0 +1,135 @@
+{
+
+    "#": "-------------------------------------------------------------------",
+    "#": "               pScheduler Sample Limit Configuration               ",
+    "#": "                                                                   ",
+    "#": "                                                                   ",
+    "#": "Shows how to use the 'ip-reverse-dns' identifier.                  ",
+    "#": "-------------------------------------------------------------------",
+
+    "schema": 1,
+
+    "#": "-------------------------------------------------------------------",
+    "#": "IDENTIFIERS:  WHO'S ASKING?                                        ",
+    "#": "                                                                   ",
+    "#": "These identify who's asking to run the test.  One requester can    ",
+    "#": "map to zero or more identifiers.                                   ",
+    "#": "-------------------------------------------------------------------",
+
+    "identifiers": [
+	{
+	    "#": "In plain English:  Identify any requests arriving from an  ",
+	    "#": "address which reverse-resolves to a FQDN that ends in      ",
+	    "#": "example.org.  Note that this identifier verifies that the  ",
+	    "#": "reverse-resolved hostname forward resolves to the same IP  ",
+	    "#": "to prevent spoofing and other shenanigans.                 ",
+
+	    "name": "example-dot-org",
+	    "description": "Requests arriving from example.org IPs",
+	    "type": "ip-reverse-dns",
+	    "data": {
+		"#": "What to match",
+		"match": {
+		    "style": "regex",
+		    "match": "\\.example\\.org$"
+		},
+
+		"#": "How long to wait for a DNS response before giving up",
+		"timeout": "PT2S"
+	    }
+	},
+
+	{
+	    "#": "In plain English:  Identifies all requesters.  This is     ",
+	    "#": "usually used as a match for applying defaults.             ",
+
+	    "name": "all",
+	    "description": "All requesters",
+	    "type": "always",
+	    "data": {
+		"#": "This type of identifier takes no data."
+	    }
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "CLASSIFIERS:  HOW DO WE CLASSIFY THE IDENTIFIERS?                  ",
+    "#": "                                                                   ",
+    "#": "These collect identifiers into groups.                             ",
+    "#": "-------------------------------------------------------------------",
+
+    "classifiers": [
+	{
+	    "#": "In plain English:  Groups the 'example-dot-org' identifier ",
+	    "#": "into group called 'liked-requesters'.                      ",
+
+	    "name": "trusted-requesters",
+	    "description": "Requesters we trust",
+	    "identifiers": [ "example-dot-org" ]
+	},
+
+	{
+	    "#": "In plain English:  Everybody.                              ",
+	    "name": "everyone",
+	    "description": "All requesters",
+	    "identifiers": [ "all" ]
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "LIMITS:  WHAT ARE THE RESTRICTIONS?                                ",
+    "#": "                                                                   ",
+    "#": "These are comparisons made against the type of test being proposed,",
+    "#": "the paramaters for the run and when it is proposed to be run.      ",
+    "#": "-------------------------------------------------------------------",
+
+    "limits": [
+	{
+	    "#": "In plain English:  Any task being tested against this limit",
+	    "#": "will always meet with approval.                            ",
+
+	    "name": "always",
+	    "description": "Always passes",
+	    "type": "pass-fail",
+	    "data": {
+		"pass": true
+	    }
+	},
+
+	{
+	    "#": "In plain English:  Any task being tested against this limit",
+	    "#": "will always meet with disapproval.                         ",
+
+	    "name": "never",
+	    "description": "Always fails",
+	    "type": "pass-fail",
+	    "data": {
+		"pass": false
+	    }
+	}
+
+    ],
+
+    "#": "-------------------------------------------------------------------",
+    "#": "APPLICATIONS:  TO WHOM DO WE APPLY THE LIMITS?                     ",
+    "#": "                                                                   ",
+    "#": "These are processed in order until one passes all of the           ",
+    "#": "requirements.  The run will be rejected if one fails with          ",
+    "#": "stop-on-failure set to true or none of them passes.                ",
+    "#": "-------------------------------------------------------------------",
+
+    "applications": [
+	{
+	    "#": "In plain English:  Allow requests from trusted requesters  ",
+
+	    "description": "Requests from requesters we trust",
+	    "classifier": "trusted-requesters",
+	    "apply": [
+		{ "require": "all", "limits": [ "never" ] }
+	    ]
+	}
+    ]
+
+}

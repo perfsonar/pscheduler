@@ -1,0 +1,117 @@
+{
+
+    "#": "-------------------------------------------------------------------",
+    "#": "               pScheduler Sample Limit Configuration               ",
+    "#": "                                                                   ",
+    "#": "                                                                   ",
+    "#": "Shows how to use the 'ip-cidr-list-url' identifier.                ",
+    "#": "-------------------------------------------------------------------",
+
+    "schema": 1,
+
+    "#": "-------------------------------------------------------------------",
+    "#": "IDENTIFIERS:  WHO'S ASKING?                                        ",
+    "#": "                                                                   ",
+    "#": "These identify who's asking to run the test.  One requester can    ",
+    "#": "map to zero or more identifiers.                                   ",
+    "#": "-------------------------------------------------------------------",
+
+    "identifiers": [
+	{
+	    "#": "In plain English:  Identify all requests originating from  ",
+	    "#": "one of the addresses in a list of R&E networks downloaded  ",
+	    "#": "from ESNet.                                                ",
+
+	    "name": "r-and-e",
+	    "description": "Requests from research and education networks",
+	    "type": "ip-cidr-list-url",
+	    "data": {
+
+		"#": "Where to download the list.  Note that this URL may    ",
+		"#": "change in the future.                                  ",
+		"source": "http://stats.es.net/sample_configs/pscheduler/ren",
+
+		"#": "How often to download a fresh copy of the list.        ",
+		"update": "P1D",
+
+		"#": "How often to attempt to get the list if the last try to",
+		"#": "download one failed.  Note that if a download fails,   ",
+                "#": "the last-downloaded version will continue to be used.  ",
+		"retry": "PT4H",
+
+		"#": "Filter anything within these CIDRs from the list.      ",
+		"exclude": [
+		    "10.0.0.0/8",
+		    "172.16.0.0/12",
+		    "192.168.0.0/16"
+		],
+
+		"#": "If there is no usable downloaded list, don't identify.",
+		"fail-state": false
+	    }
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "CLASSIFIERS:  HOW DO WE CLASSIFY THE IDENTIFIERS?                  ",
+    "#": "                                                                   ",
+    "#": "These collect identifiers into groups.                             ",
+    "#": "-------------------------------------------------------------------",
+
+    "classifiers": [
+	{
+	    "#": "In plain English:  Groups the 'r-and-e' identifier into a  ",
+	    "#": "a 'trusted-requesters' classification.                     ", 
+
+	    "name": "trusted-requesters",
+	    "description": "Requesters we trust",
+	    "identifiers": [ "r-and-e" ]
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "LIMITS:  WHAT ARE THE RESTRICTIONS?                                ",
+    "#": "                                                                   ",
+    "#": "These are comparisons made against the type of test being proposed,",
+    "#": "the paramaters for the run and when it is proposed to be run.      ",
+    "#": "-------------------------------------------------------------------",
+
+    "limits": [
+	{
+	    "#": "In plain English:  Any task being tested against this limit",
+	    "#": "will always meet with approval.                            ",
+
+	    "name": "always",
+	    "description": "Always passes",
+	    "type": "pass-fail",
+	    "data": {
+		"pass": true
+	    }
+	}
+    ],
+
+    "#": "-------------------------------------------------------------------",
+    "#": "APPLICATIONS:  TO WHOM DO WE APPLY THE LIMITS?                     ",
+    "#": "                                                                   ",
+    "#": "These are processed in order until one passes all of the           ",
+    "#": "requirements.  The run will be rejected if one fails with          ",
+    "#": "stop-on-failure set to true or none of them passes.                ",
+    "#": "-------------------------------------------------------------------",
+
+    "applications": [
+	{
+	    "#": "In plain English:  Allow any trusted requester to run      ",
+	    "#": "anything they want.  This is the only application, so any  ",
+	    "#": "untrusted requester will fall off the bottom and be denied.",
+
+	    "description": "Requests from trusted requesters",
+	    "classifier": "trusted-requesters",
+	    "apply": [
+		{ "require": "all", "limits": [ "always" ] }
+	    ]
+	}
+    ]
+
+}

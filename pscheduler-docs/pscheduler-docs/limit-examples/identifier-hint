@@ -1,0 +1,102 @@
+{
+
+    "#": "-------------------------------------------------------------------",
+    "#": "               pScheduler Sample Limit Configuration               ",
+    "#": "                                                                   ",
+    "#": "                                                                   ",
+    "#": "Shows how to use the 'hint' identifier.                            ",
+    "#": "-------------------------------------------------------------------",
+
+    "schema": 1,
+
+    "#": "-------------------------------------------------------------------",
+    "#": "IDENTIFIERS:  WHO'S ASKING?                                        ",
+    "#": "                                                                   ",
+    "#": "These identify who's asking to run the test.  One requester can    ",
+    "#": "map to zero or more identifiers.                                   ",
+    "#": "-------------------------------------------------------------------",
+
+    "identifiers": [
+	{
+	    "#": "In plain English:  Identify all requests arriving on the   ",
+	    "#": "server interface having IP address 198.51.100.23.          ",
+
+	    "name": "trusted-interface",
+	    "description": "Requests on trusted interface",
+	    "type": "hint",
+	    "data": {
+		"#": "Name of server-provided hint to be used.               ",
+		"hint": "server",
+
+		"#": "What to match",
+		"match": {
+		    "style": "exact",
+		    "match": "198.51.100.23"
+		}
+	    }
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "CLASSIFIERS:  HOW DO WE CLASSIFY THE IDENTIFIERS?                  ",
+    "#": "                                                                   ",
+    "#": "These collect identifiers into groups.                             ",
+    "#": "-------------------------------------------------------------------",
+
+    "classifiers": [
+	{
+	    "#": "In plain English:  Groups the 'trusted-interface'          ",
+	    "#": "identifier into a 'trusted-requesters' classification.     ", 
+
+	    "name": "trusted-requesters",
+	    "description": "Requesters we trust",
+	    "identifiers": [ "trusted-interface" ]
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "LIMITS:  WHAT ARE THE RESTRICTIONS?                                ",
+    "#": "                                                                   ",
+    "#": "These are comparisons made against the type of test being proposed,",
+    "#": "the paramaters for the run and when it is proposed to be run.      ",
+    "#": "-------------------------------------------------------------------",
+
+    "limits": [
+	{
+	    "#": "In plain English:  Any task being tested against this limit",
+	    "#": "will always meet with approval.                            ",
+
+	    "name": "always",
+	    "description": "Always passes",
+	    "type": "pass-fail",
+	    "data": {
+		"pass": true
+	    }
+	}
+    ],
+
+    "#": "-------------------------------------------------------------------",
+    "#": "APPLICATIONS:  TO WHOM DO WE APPLY THE LIMITS?                     ",
+    "#": "                                                                   ",
+    "#": "These are processed in order until one passes all of the           ",
+    "#": "requirements.  The run will be rejected if one fails with          ",
+    "#": "stop-on-failure set to true or none of them passes.                ",
+    "#": "-------------------------------------------------------------------",
+
+    "applications": [
+	{
+	    "#": "In plain English:  Allow any trusted requester to run      ",
+	    "#": "anything they want.  This is the only application, so any  ",
+	    "#": "untrusted requester will fall off the bottom and be denied.",
+
+	    "description": "Requests from trusted requesters",
+	    "classifier": "trusted-requesters",
+	    "apply": [
+		{ "require": "all", "limits": [ "always" ] }
+	    ]
+	}
+    ]
+
+}
