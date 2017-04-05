@@ -198,13 +198,14 @@ def run_post(
     assert type(start_time) == datetime.datetime
 
     log and log.debug("Posting %s at %s", url, start_time)
+    log and log.debug("Bind is %s", bind_addr)
 
     try:
         status, task = pscheduler.url_get(url, params={'detail': 1}, bind=bind_addr)
     except pscheduler.URLException as ex:
+        log and log.debug("Failed to fetch %s: %s", url, str(ex))
         return (None, None, None, False, False,
                 "Error fetching %s: %s" % (url, str(ex)))
-
 
     # Generate a list of the task URLs
 
@@ -558,7 +559,14 @@ def main_program():
                       "BACKGROUND " if background else "",
                       uuid, runs, trynext)
 
-            url = pscheduler.api_url(path='/tasks/' + uuid)
+            # Note that we could punt the lead-bind value to
+            # "localhost" and everything would work nicely, but it
+            # would make URLs harder to share.  This means that the
+            # system's hostname should be configured to its FQDN.
+
+            url = pscheduler.api_url(
+                host=json.get("lead-bind", None),
+                path="/tasks/%s" % (uuid))
 
             # For the first run only, push the start time out.
             # See comment above near the declaration of
