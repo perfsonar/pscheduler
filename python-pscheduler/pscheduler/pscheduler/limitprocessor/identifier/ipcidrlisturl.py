@@ -14,8 +14,13 @@ data_validator = {
         "bind": { "$ref": "#/pScheduler/Host" },
         "exclude": {
             "type": "array",
-            "items": { "$ref": "#/pScheduler/IPCIDR" }
-            },
+            "items": { 
+                "anyOf": [
+                    { "$ref": "#/pScheduler/IPCIDR" },
+                    { "$ref": "#/pScheduler/IPAddress" }
+                ]
+            }
+        },
         "update": { "$ref": "#/pScheduler/Duration" },
         "retry": { "$ref": "#/pScheduler/Duration" },
         "fail-state": { "$ref": "#/pScheduler/Boolean" }
@@ -95,7 +100,7 @@ class IdentifierIPCIDRListURL():
         self.bind = data.get('bind', None)
         self.update = pscheduler.iso8601_as_timedelta(data['update'])
         self.retry = pscheduler.iso8601_as_timedelta(data['retry'])
-        self.fail_state = data['fail-state']
+        self.fail_state = data.get('fail-state', False)
 
         self.exclusions = radix.Radix()
         if 'exclude' in data:
@@ -155,8 +160,7 @@ if __name__ == "__main__":
 
 
     ident = IdentifierIPCIDRListURL({
-        # "source": "http://www.notonthe.net/flotsam/bogon-bn-nonagg.txt",
-        "source": "http://www.notonthe.net/flotsam/fullbogons-ipv4.txt",
+        "source": "http://software.internet2.edu/data/pscheduler/limit-cidrs/ren",
         "exclude": [
             "10.0.0.0/8",
             "172.16.0.0/12",
@@ -171,12 +175,12 @@ if __name__ == "__main__":
 
     for ip in [ 
             # Trues
-            "0.0.0.0",
-            "224.223.222.221",
-            "240.239.238.237",
+            "35.132.6.7",
+            "128.82.4.1",
+            "64.185.56.0",
             # Falses
             "10.9.8.6",
             "198.6.1.1",
-            "128.82.4.1"
+            "192.168.4.3",
     ]:
         print ip, ident.evaluate({ "requester": ip })

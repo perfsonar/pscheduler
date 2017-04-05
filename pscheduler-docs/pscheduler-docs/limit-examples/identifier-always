@@ -1,0 +1,111 @@
+{
+
+    "#": "-------------------------------------------------------------------",
+    "#": "               pScheduler Sample Limit Configuration               ",
+    "#": "                                                                   ",
+    "#": "                                                                   ",
+    "#": "Shows how to use the 'always' identifier to create identifiers that",
+    "#": "match every requester.                                             ",
+    "#": "-------------------------------------------------------------------",
+
+    "schema": 1,
+
+    "#": "-------------------------------------------------------------------",
+    "#": "IDENTIFIERS:  WHO'S ASKING?                                        ",
+    "#": "                                                                   ",
+    "#": "These identify who's asking to run the test.  One requester can    ",
+    "#": "map to zero or more identifiers.                                   ",
+    "#": "-------------------------------------------------------------------",
+
+    "identifiers": [
+	{
+	    "#": "In plain English:  Identifies all requesters.  This is     ",
+	    "#": "usually used as a match for applying defaults.             ",
+
+	    "name": "all",
+	    "description": "All requesters",
+	    "type": "always",
+	    "data": {
+		"#": "This type of identifier takes no data."
+	    }
+	},
+
+	{
+	    "#": "In plain English:  Doesn't identify any requester.  No     ",
+	    "#": "request will ever match this because it takes 'always' and ",
+	    "#": "uses 'invert' to effectively make it 'never'.  There is no ",
+	    "#": "real-world reason to use this; it just demonstrates how to ",
+	    "#": "use the 'invert' property.                                 ",
+
+	    "name": "none",
+	    "description": "No requesters",
+	    "type": "always",
+	    "data": {
+		"#": "This type of identifier takes no data."
+	    },
+	    "invert": true
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "CLASSIFIERS:  HOW DO WE CLASSIFY THE IDENTIFIERS?                  ",
+    "#": "                                                                   ",
+    "#": "These collect identifiers into groups.                             ",
+    "#": "-------------------------------------------------------------------",
+
+    "classifiers": [
+	{
+	    "#": "In plain English:  Identifiers 'my-ips' and 'my-hosts'     ",
+	    "#": "are classified as being 'my-organization'.                 ",
+
+	    "name": "everybody",
+	    "description": "Things that are part of my organization",
+	    "identifiers": [ "all" ]
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "LIMITS:  WHAT ARE THE RESTRICTIONS?                                ",
+    "#": "                                                                   ",
+    "#": "These are comparisons made against the type of test being proposed,",
+    "#": "the paramaters for the run and when it is proposed to be run.      ",
+    "#": "-------------------------------------------------------------------",
+
+    "limits": [
+	{
+	    "#": "In plain English:  Any task being tested against this limit",
+	    "#": "will always meet with approval.                            ",
+
+	    "name": "always",
+	    "description": "Always passes",
+	    "type": "pass-fail",
+	    "data": {
+		"pass": true
+	    }
+	}
+    ],
+
+    "#": "-------------------------------------------------------------------",
+    "#": "APPLICATIONS:  TO WHOM DO WE APPLY THE LIMITS?                     ",
+    "#": "                                                                   ",
+    "#": "These are processed in order until one passes all of the           ",
+    "#": "requirements.  The run will be rejected if one fails with          ",
+    "#": "stop-on-failure set to true or none of them passes.                ",
+    "#": "-------------------------------------------------------------------",
+
+    "applications": [
+	{
+	    "#": "In plain English:  Any requester that falls into the       ",
+	    "#": "'everybody' classification can do anything they want.      ",
+
+	    "description": "Free-for-all",
+	    "classifier": "everybody",
+	    "apply": [
+		{ "require": "all", "limits": [ "always" ] }
+	    ]
+	}
+    ]
+
+}

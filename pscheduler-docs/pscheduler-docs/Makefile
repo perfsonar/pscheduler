@@ -8,7 +8,7 @@ SUBDIRS=\
 	limit-examples
 
 default:
-	@echo Nothing to do.
+	for SUBDIR in $(SUBDIRS) ; do $(MAKE) -C $$SUBDIR ; done
 
 
 install: $(FILES) $(SUBDIRS)

@@ -492,10 +492,15 @@ null_reason = None
 url = pscheduler.api_url(assist, '/tests/%s/participants' % task['test']['type'])
 log.debug("Fetching participant list")
 
-log.debug("%s", pscheduler.json_dump(task['test']['spec']))
+spec_text = pscheduler.json_dump(task['test']['spec'])
+participants_params = {'spec': spec_text}
+if options.lead_bind is not None:
+    participants_params["lead-bind"] = options.lead_bind
+
+log.debug("Spec is: %s", spec_text)
 status, participants = pscheduler.url_get(
     url,
-    params={'spec': pscheduler.json_dump(task['test']['spec'])},
+    params=participants_params,
     bind=bind,
     throw=False )
 
@@ -530,21 +535,27 @@ if lead is None and assist != last_ditch_assist:
 # Check that the lead is running pScheduler and is reasonably responsive.
 #
 
-log.debug("Pinging %s", lead)
-status, result = pscheduler.url_get(
-    pscheduler.api_url(lead),
-    throw=False,
-    bind=bind,
-    timeout=10)
 
-if status == 400:
-    pscheduler.fail("%s: %s" % (lead, result))
-elif status in [ 202, 204, 205, 206, 207, 208, 226,
-                 300, 301, 302, 303, 304, 205, 306, 307, 308 ] \
-    or ( (status >= 400) and (status <=499) ):
-    pscheduler.fail("%s is not running pScheduler" %  (lead))
-elif status != 200:
-    pscheduler.fail("%s returned status %d: %s" % (lead, status, result))
+lead_list = [lead] if lead is not None else [pscheduler.api_this_host()]
+lead_list.append("localhost")
+
+lead = None
+for lead_candidate in lead_list:
+    ping_url = pscheduler.api_url(lead_candidate)
+    log.debug("Pinging %s", ping_url)
+    status, result = pscheduler.url_get(
+        ping_url,
+        throw=False,
+        bind=bind,
+        timeout=4)
+    if status == 200:
+        lead = lead_candidate
+        break
+
+if lead is None:
+    pscheduler.fail("Unable to find pScheduler on any of %s." %
+                    (", ".join(lead_list)))
+
 log.debug("%s is up", lead)
 
 

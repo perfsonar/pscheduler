@@ -1,0 +1,156 @@
+{
+
+    "#": "-------------------------------------------------------------------",
+    "#": "               pScheduler Sample Limit Configuration               ",
+    "#": "                                                                   ",
+    "#": "                                                                   ",
+    "#": "Shows how to use the 'ip-cymru-bogon' identifier.                  ",
+    "#": "                                                                   ",
+    "#": "If you wonder about the correct pronunciation of 'Cymru', see      ",
+    "#": "https://www.youtube.com/watch?v=HGg6RWsl2YI for the answer.        ",
+    "#": "-------------------------------------------------------------------",
+
+    "schema": 1,
+
+    "#": "-------------------------------------------------------------------",
+    "#": "IDENTIFIERS:  WHO'S ASKING?                                        ",
+    "#": "                                                                   ",
+    "#": "These identify who's asking to run the test.  One requester can    ",
+    "#": "map to zero or more identifiers.                                   ",
+    "#": "-------------------------------------------------------------------",
+
+    "identifiers": [
+	{
+	    "#": "In plain English:  Identify any requests arriving from an  ",
+	    "#": "address on Team Cymru's list of bogon and martain list.    ",
+	    "#": "See http://www.team-cymru.org/bogon-reference.html for more",
+	    "#": "information.                                               ",
+
+	    "name": "bogons",
+	    "description": "Requests arriving from bogon/martion addresses",
+	    "type": "ip-cymru-bogon",
+	    "data": {
+		"#": "Don't consider anything in this list a bogon even if   ",
+		"#": "Team Cymru says it is.                                 ",
+		"exclude": [
+		    "10.10.0.0/16",
+		    "192.168.86.0/24",
+		    "192.168.99.0/24"
+		],
+
+		"#": "How long to wait for a response before giving up",
+		"timeout": "PT1S",
+
+		"#": "Don't consider the requester a bogon if we can't find  ",
+		"#": "out for sure.                                          ",
+		"fail-result": false
+	    }
+	},
+
+	{
+	    "#": "In plain English:  Identifies all requesters.  This is     ",
+	    "#": "usually used as a match for applying defaults.             ",
+
+	    "name": "all",
+	    "description": "All requesters",
+	    "type": "always",
+	    "data": {
+		"#": "This type of identifier takes no data."
+	    }
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "CLASSIFIERS:  HOW DO WE CLASSIFY THE IDENTIFIERS?                  ",
+    "#": "                                                                   ",
+    "#": "These collect identifiers into groups.                             ",
+    "#": "-------------------------------------------------------------------",
+
+    "classifiers": [
+	{
+	    "#": "In plain English:  Groups the 'bogons' identifier into a   ",
+	    "#": "group called 'unliked-requesters'.                         ",
+
+	    "name": "unliked-requesters",
+	    "description": "Requesters we don't like",
+	    "identifiers": [ "bogons" ]
+	},
+
+	{
+	    "#": "In plain English:  Everybody.                              ",
+	    "name": "everyone",
+	    "description": "All requesters",
+	    "identifiers": [ "all" ]
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "LIMITS:  WHAT ARE THE RESTRICTIONS?                                ",
+    "#": "                                                                   ",
+    "#": "These are comparisons made against the type of test being proposed,",
+    "#": "the paramaters for the run and when it is proposed to be run.      ",
+    "#": "-------------------------------------------------------------------",
+
+    "limits": [
+	{
+	    "#": "In plain English:  Any task being tested against this limit",
+	    "#": "will always meet with approval.                            ",
+
+	    "name": "always",
+	    "description": "Always passes",
+	    "type": "pass-fail",
+	    "data": {
+		"pass": true
+	    }
+	},
+
+	{
+	    "#": "In plain English:  Any task being tested against this limit",
+	    "#": "will always meet with disapproval.                         ",
+
+	    "name": "never",
+	    "description": "Always fails",
+	    "type": "pass-fail",
+	    "data": {
+		"pass": false
+	    }
+	}
+
+    ],
+
+    "#": "-------------------------------------------------------------------",
+    "#": "APPLICATIONS:  TO WHOM DO WE APPLY THE LIMITS?                     ",
+    "#": "                                                                   ",
+    "#": "These are processed in order until one passes all of the           ",
+    "#": "requirements.  The run will be rejected if one fails with          ",
+    "#": "stop-on-failure set to true or none of them passes.                ",
+    "#": "-------------------------------------------------------------------",
+
+    "applications": [
+	{
+	    "#": "In plain English:  Deny requesters we don't like.          ",
+
+	    "description": "Requests from requesters we dislike",
+	    "classifier": "unliked-requesters",
+	    "apply": [
+		{ "require": "all", "limits": [ "never" ] }
+	    ],
+
+	    "#": "If this application fails, the request will be denied.     ",
+	    "stop-on-failure": true
+	},
+	{
+	    "#": "In plain English:  Allow all requests that weren't         ",
+	    "#": "rejected by the application above.                         ",
+
+	    "description": "Everyone else",
+	    "classifier": "everyone",
+	    "apply": [
+		{ "require": "all", "limits": [ "always" ] }
+	    ]
+	}
+    ]
+
+}

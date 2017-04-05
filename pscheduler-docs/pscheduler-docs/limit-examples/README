@@ -1,0 +1,12 @@
+		       pSchduler Limit Examples
+
+This directory contains a number of examples that highlights how to
+use one of the identifier or limit types provided by the pScheduler limit
+system.
+
+These files are examples only and should not be deployed used on
+production systems.
+
+Pairs in these files having names beginning with a pound sign ('#')
+are treated as comments.  This behavior is not part of ECMA-404, the
+JSON standard, and is peculiar to all JSON read by pScheduler.

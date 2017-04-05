@@ -223,15 +223,14 @@ def api_has_bwctl(host, timeout=5, bind=None):
     Determine if a host is running the BWCTL daemon
     """
 
-    # HACK: BWCTLBC
-    #
-    # Note that we don't do any binding in this function because BWCTL
-    # does its control and test traffic from the same interface no
-    # matter what.
-
     # Null implies localhost
     if host is None:
         host = "localhost"
+
+    # HACK: BWTCLBC
+    # If the environment says to bind to a certain address, do it.
+    if bind is None:
+        bind = os.environ.get('PSCHEDULER_LEAD_BIND_HACK', None)
 
     for family in [socket.AF_INET, socket.AF_INET6]:
         try:
