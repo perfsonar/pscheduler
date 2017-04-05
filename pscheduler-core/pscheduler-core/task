@@ -492,10 +492,15 @@ null_reason = None
 url = pscheduler.api_url(assist, '/tests/%s/participants' % task['test']['type'])
 log.debug("Fetching participant list")
 
-log.debug("%s", pscheduler.json_dump(task['test']['spec']))
+spec_text = pscheduler.json_dump(task['test']['spec'])
+participants_params = {'spec': spec_text}
+if options.lead_bind is not None:
+    participants_params["lead-bind"] = options.lead_bind
+
+log.debug("Spec is: %s", spec_text)
 status, participants = pscheduler.url_get(
     url,
-    params={'spec': pscheduler.json_dump(task['test']['spec'])},
+    params=participants_params,
     bind=bind,
     throw=False )
 

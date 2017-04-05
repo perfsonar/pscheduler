@@ -109,11 +109,20 @@ def tests_name_participants(name):
     if spec is None:
         return bad_request("No test spec provided")
 
+    # HACK: BWCTLBC
+    lead_bind = request.args.get("lead-bind")
+    if lead_bind is not None:
+        env_add = {"PSCHEDULER_LEAD_BIND_HACK": lead_bind}
+    else:
+        env_add = None
+    
+
     try:
         returncode, stdout, stderr = pscheduler.run_program(
             [ "pscheduler", "internal", "invoke", "test", name,
               "participants"],
-            stdin = spec
+            stdin = spec,
+            env_add=env_add   # HACK: BWCTLBC
             )
     except KeyError:
         return bad_request("Invalid spec")
