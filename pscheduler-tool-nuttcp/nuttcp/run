@@ -80,11 +80,12 @@ def run_client():
     # If we have an explicit source and DIDN'T specify an ip-version, we can see if they share an IP address
     # set together and use that to choose -4 or -6 (prefer -6)
     elif source is not None:
-        for ip_version in [6, 4]:
-            source_ip, dest_ip = pscheduler.ip_normalize_version(source, test_spec['dest'], ip_version=ip_version)
-            if dest_ip is not None:
+        source_ip, dest_ip = pscheduler.ip_normalize_version(source, test_spec['dest'])          
+        
+        if source_ip is not None and dest_ip is not None:
+            ip_version = pscheduler.ip_addr_version(source)[0]
+            if ip_version:
                 nuttcp_args.append('-%s' % ip_version)
-                break
 
     # duration
     test_duration = test_spec.get('duration')
@@ -219,11 +220,12 @@ def run_server():
         # we prefer IPv6 but fallback to IPv4 if they don't both have IPv6. If one end only 
         # has IPv4 and the other only has IPv6 we don't bind at all but don't throw error in 
         # case there is some external factor we don't know about (maybe should change this?)
-        for ip_version in [6, 4]:
-            source_ip, dest_ip = pscheduler.ip_normalize_version(source, test_spec['dest'], ip_version=ip_version)
-            if dest_ip is not None:
+        source_ip, dest_ip = pscheduler.ip_normalize_version(source, test_spec['dest'])          
+        
+        if source_ip is not None and dest_ip is not None:
+            ip_version = pscheduler.ip_addr_version(source)[0]
+            if ip_version:
                 nuttcp_args.append('-%s' % ip_version)
-                break
 
     # try to grab our default affinity if one wasn't passed in
     affinity = test_spec.get('server-cpu-affinity')
