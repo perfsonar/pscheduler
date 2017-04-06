@@ -70,6 +70,15 @@ BEGIN
         t_version := t_version + 1;
     END IF;
 
+    -- Version 3 to version 4
+    -- Drops unused max_parallel_runs column
+    IF t_version = 3
+    THEN
+        ALTER TABLE configurables DROP COLUMN max_parallel_runs;
+
+        t_version := t_version + 1;
+    END IF;
+
 
     --
     -- Cleanup
