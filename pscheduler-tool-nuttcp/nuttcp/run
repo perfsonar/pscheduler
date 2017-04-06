@@ -66,6 +66,26 @@ def run_client():
     nuttcp_args.append('-P')
     nuttcp_args.append(server_port)
 
+
+    # Determine if we need to specify a specific ip-version if we have enough info to do so intelligently
+    ip_version = test_spec.get('ip-version', None)
+    source = test_spec.get('source', None)
+    destination = test_spec['dest'] #required
+    if ip_version is not None:
+        # Set ip version if provided
+        if ip_version == 4:
+            nuttcp_args.append('-4')
+        else:
+            nuttcp_args.append('-6')
+    # If we have an explicit source and DIDN'T specify an ip-version, we can see if they share an IP address
+    # set together and use that to choose -4 or -6 (prefer -6)
+    elif source is not None:
+        for ip_version in [6, 4]:
+            source_ip, dest_ip = pscheduler.ip_normalize_version(source, test_spec['dest'], ip_version=ip_version)
+            if dest_ip is not None:
+                nuttcp_args.append('-%s' % ip_version)
+                break
+
     # duration
     test_duration = test_spec.get('duration')
     if test_duration:
@@ -138,12 +158,6 @@ def run_client():
         # instead of just the DSCP.
         nuttcp_args.append("%sT" % (str(test_spec['ip-tos'])))
 
-    if test_spec.has_key('ip-version') and test_spec['ip-version'] != None:
-        if test_spec['ip-version'] == 4:
-            nuttcp_args.append('-4')
-        else:
-            nuttcp_args.append('-6')
-
     if test_spec.get('reverse'):
         nuttcp_args.append('-F')
 
@@ -190,6 +204,26 @@ def run_server():
     nuttcp_args.append("-P")
     nuttcp_args.append(server_port)
 
+    # Determine if we need to specify a specific ip-version if we have enough info to do so intelligently
+    ip_version = test_spec.get('ip-version', None)
+    source = test_spec.get('source', None)
+    if ip_version is not None:
+        # if the ip version is given we just use the dest as the bind address and have 
+        # nuttcp force ipv4 or ipv6
+        if test_spec['ip-version'] == 4:
+            nuttcp_args.append('-4')
+        else:
+            nuttcp_args.append('-6')
+    elif source is not None:
+        # if we have the source and dest, we can determine what ip version they have in common
+        # we prefer IPv6 but fallback to IPv4 if they don't both have IPv6. If one end only 
+        # has IPv4 and the other only has IPv6 we don't bind at all but don't throw error in 
+        # case there is some external factor we don't know about (maybe should change this?)
+        for ip_version in [6, 4]:
+            source_ip, dest_ip = pscheduler.ip_normalize_version(source, test_spec['dest'], ip_version=ip_version)
+            if dest_ip is not None:
+                nuttcp_args.append('-%s' % ip_version)
+                break
 
     # try to grab our default affinity if one wasn't passed in
     affinity = test_spec.get('server-cpu-affinity')
