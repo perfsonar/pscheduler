@@ -66,6 +66,20 @@ def run_client():
     nuttcp_args.append('-P')
     nuttcp_args.append(server_port)
 
+
+    # Determine if we need to specify a specific ip-version if we have enough info to do so intelligently
+    ip_version = test_spec.get('ip-version', None)
+    source = test_spec.get('source', None)
+
+    if ip_version is None and source is not None:
+        source_ip, dest_ip = pscheduler.ip_normalize_version(source, test_spec['dest'])         
+        if source_ip is not None and dest_ip is not None:
+            ip_version = pscheduler.ip_addr_version(source)[0]
+            
+    if ip_version:
+        nuttcp_args.append('-%s' % ip_version)
+
+
     # duration
     test_duration = test_spec.get('duration')
     if test_duration:
@@ -138,12 +152,6 @@ def run_client():
         # instead of just the DSCP.
         nuttcp_args.append("%sT" % (str(test_spec['ip-tos'])))
 
-    if test_spec.has_key('ip-version') and test_spec['ip-version'] != None:
-        if test_spec['ip-version'] == 4:
-            nuttcp_args.append('-4')
-        else:
-            nuttcp_args.append('-6')
-
     if test_spec.get('reverse'):
         nuttcp_args.append('-F')
 
@@ -190,6 +198,16 @@ def run_server():
     nuttcp_args.append("-P")
     nuttcp_args.append(server_port)
 
+    # Determine if we need to specify a specific ip-version if we have enough info to do so intelligently
+    ip_version = test_spec.get('ip-version', None)
+    source = test_spec.get('source', None)
+    if ip_version is None and source is not None:
+        source_ip, dest_ip = pscheduler.ip_normalize_version(source, test_spec['dest'])         
+        if source_ip is not None and dest_ip is not None:
+            ip_version = pscheduler.ip_addr_version(source)[0]
+            
+    if ip_version:
+        nuttcp_args.append('-%s' % ip_version)
 
     # try to grab our default affinity if one wasn't passed in
     affinity = test_spec.get('server-cpu-affinity')
