@@ -256,8 +256,7 @@ def tasks():
                     "%s/tools" % (participant_api),
                     params=tool_params,
                     throw=False,
-                    # HACK: BWCTLBC
-                    bind=lead_bind if participant_no == 0 else None
+                    bind=lead_bind
                     )
                 if status != 200:
                     raise TaskPostingException("%d: %s" % (status, result))
