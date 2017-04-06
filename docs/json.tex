@@ -413,6 +413,35 @@ Valid values are of type {\tt Integer} in the range {\tt 0} to {\tt
 \example\ {\tt 23}, {\tt 80} and {\tt 23842}.
 
 
+
+\subsection{JQTransformSpecification}
+
+An object containing the specification of a {\tt jq} filter for JSON
+input.
+
+\typeditem{script}{String} The script to be used in transforming the
+input.  The syntax of the script is described at the web site listed
+below.
+
+\typeditem{output-raw}{Boolean} {\tt true} if the items produced by
+the script should be converted into strings and joined with newlines.
+
+\example
+\begin{lstlisting}[language=json]
+{
+    "script": "\"The Foo value is \\(.foo)\""
+}
+\end{lstlisting}
+
+Note that because the script is being encoded as a JSON string, all
+characters special to JSON must be properly escaped.  These characters
+are quotes and the backslash.
+
+\source{JQ}{https://stedolan.github.io/jq}
+
+
+
+
 \subsection{Maintainer}
 
 An object containing identifying and contact information about the

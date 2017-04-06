@@ -244,6 +244,16 @@ __dictionary__ = {
         "minimum": 0,
         "maximum": 255
         },
+
+    "JQTransformSpecification": {
+        "type": "object",
+        "properties": {
+            "script":    { "$ref": "#/pScheduler/String" },
+            "output-raw": { "$ref": "#/pScheduler/Boolean" }
+        },
+        "additionalProperties": False,
+        "required": [ "script" ]
+    },
     
     "Number": { "type": "number" },
 
@@ -400,6 +410,7 @@ __dictionary__ = {
         "properties": {
             "archiver": { "type": "string" },
             "data": { "$ref": "#/pScheduler/AnyJSON" },
+            "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
             "ttl": { "$ref": "#/pScheduler/Duration" },
             },
         "required": [
@@ -485,8 +496,8 @@ __dictionary__ = {
             "schema":   { "$ref": "#/pScheduler/Cardinal" },
             "lead-bind":{ "$ref": "#/pScheduler/Host" },
             "test":     { "$ref": "#/pScheduler/TestSpecification" },
-            "tool":     {" $ref": "#/pScheduler/String" },
-            "tools":    {"$ref": "#/pScheduler/StringList" },
+            "tool":     { "$ref": "#/pScheduler/String" },
+            "tools":    { "$ref": "#/pScheduler/StringList" },
             "schedule": { "$ref": "#/pScheduler/ScheduleSpecification" },
             "archives": {
                 "type": "array",
@@ -504,11 +515,11 @@ __dictionary__ = {
     "TestSpecification": {
         "type": "object",
         "properties": {
-            "test": { "type": "String" },
+            "type": { "$ref": "#/pScheduler/String" },
             "spec": { "$ref": "#/pScheduler/AnyJSON" },
             },
         "required": [
-            "test",
+            "type",
             "spec",
             ],
         },
@@ -824,3 +835,24 @@ if __name__ == "__main__":
 
     print valid, message
 
+
+
+    text = {
+        "schema": 2,
+        "test": {
+            "test": "rtt",
+            "spec": {
+                "dest": "www.notonthe.net"
+            }
+        },
+        "archives": [
+        ]
+    }
+
+    print json_validate({"text": text}, {
+        "type": "object",
+        "properties": {
+            "text": { "$ref": "#/pScheduler/TaskSpecification" }
+        },
+        "required": [ "text" ]
+    })
