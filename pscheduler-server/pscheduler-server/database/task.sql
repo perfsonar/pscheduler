@@ -339,12 +339,6 @@ BEGIN
 	IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND NEW.json <> OLD.json)
         THEN
 
-	    run_result := pscheduler_internal(ARRAY['invoke', 'test', test_type, 'spec-is-valid'],
-		          NEW.json #>> '{test, spec}' );
-	    IF run_result.status <> 0 THEN
-	        RAISE EXCEPTION 'Task package contains unusable test: %', run_result.stderr;
-	    END IF;
-
 	    -- Calculate CLI equivalent
 	    run_result := pscheduler_internal(ARRAY['invoke', 'test', test_type, 'spec-to-cli'],
 		          NEW.json #>> '{test, spec}' );
