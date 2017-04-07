@@ -47,7 +47,7 @@ def tests_name_spec(name):
     try:
         args = arg_json('args')
     except ValueError:
-        return error("Invalid JSON passed to 'args'")
+        return bad_request("Invalid JSON passed to 'args'")
     
     status, stdout, stderr = pscheduler.run_program(
         [ 'pscheduler', 'internal', 'invoke', 'test', name, 'cli-to-spec' ],

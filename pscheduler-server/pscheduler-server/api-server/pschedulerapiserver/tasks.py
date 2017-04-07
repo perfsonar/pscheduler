@@ -167,7 +167,7 @@ def tasks():
         })
 
         if not valid:
-            return error("Invalid task specification: %s" % (message))
+            return bad_request("Invalid task specification: %s" % (message))
 
 
         # See if the test spec is valid

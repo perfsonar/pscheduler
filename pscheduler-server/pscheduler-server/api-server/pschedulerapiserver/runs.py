@@ -403,7 +403,7 @@ def tasks_uuid_runs_run(task, run):
         except ValueError:
             log.exception()
             log.debug("Run data was %s", request.data)
-            return error("Invalid or missing run data")
+            return bad_request("Invalid or missing run data")
 
         # If the run doesn't exist, take the whole thing as if it were
         # a POST.
@@ -676,7 +676,7 @@ def tasks_uuid_runs_run_result(task, run):
             return ok("Test failed.", mimetype=format)
         elif format == 'text/html':
             return ok("<p>Test failed.</p>", mimetype=format)
-        return error("Unsupported format " + format)
+        return bad_request("Unsupported format " + format)
 
     formatter_input = {
         "spec": test_spec,
