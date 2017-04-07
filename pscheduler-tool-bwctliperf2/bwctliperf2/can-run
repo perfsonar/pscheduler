@@ -12,40 +12,52 @@ logger = pscheduler.Log(prefix='tool-iperf', quiet=True)
     
 json = pscheduler.json_load(exit_on_error=True)
 
-if not json.get('type'):
-    pscheduler.fail('Missing test type')
-
-if json['type'] != 'throughput':
-    pscheduler.fail('Unsupported test type')
+try:
+    if json['type'] != 'throughput':
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Unsupported test type" ]
+        })
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test type" ]
+    })
 
 if not json.get('spec'):
-    pscheduler.fail('Missing test spec')
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test type" ]
+    })
+
+
+errors = []
 
 test_spec = json['spec']
     
 if test_spec.has_key('bandwidth') and not test_spec.has_key('udp'):
-    pscheduler.fail('iperf cannot run TCP tests with throttled bandwidth')
+    errors.append('iperf cannot run TCP tests with throttled bandwidth')
 
 if test_spec.has_key('omit'):
-    pscheduler.fail('iperf does not support the --omit flag')
+    errors.append('iperf does not support the --omit flag')
 
 if test_spec.has_key('flow-label'):
-    pscheduler.fail('iperf does not support the --flow-label flag')
+    errors.append('iperf does not support the --flow-label flag')
 
 if test_spec.has_key('zero-copy'):
-    pscheduler.fail('iperf does not support the --zero-copy flag')
+    errors.append('iperf does not support the --zero-copy flag')
 
 if test_spec.has_key('congestion'):
-    pscheduler.fail('iperf does not support the --congestion flag')
+    errors.append('iperf does not support the --congestion flag')
 
 if test_spec.has_key('server-cpu-affinity') or test_spec.has_key('client-cpu-affinity'):
-    pscheduler.fail('iperf does not support the --server-cpu-affinity or --client-cpu-affinity flag')
+    errors.append('iperf does not support the --server-cpu-affinity or --client-cpu-affinity flag')
 
 if test_spec.has_key('no-delay'):
-    pscheduler.fail('iperf does not support the --no-delay flag')
+    errors.append('iperf does not support the --no-delay flag')
 
 if test_spec.has_key('reverse'):
-    pscheduler.fail('iperf does not support the --reverse flag')
+    errors.append('iperf does not support the --reverse flag')
 
 try:
     source = test_spec['source']
@@ -55,7 +67,7 @@ except KeyError:
 try: 
     destination = test_spec['dest']
 except KeyError:
-    pscheduler.fail("Missing dest argument in spec")
+    errors.append("Missing dest argument in spec")
 
 
 # This digs up everything we can on the hosts involved in a
@@ -66,11 +78,21 @@ src_has_psc = has[source]["pscheduler"]
 dst_has_psc = has[destination]["pscheduler"]
 
 if src_has_psc and dst_has_psc:
-    pscheduler.fail("Both sides have pscheduler, no need for BWCTL")
+    errors.append("Both sides have pscheduler, no need for BWCTL")
 
-if has[destination]["bwctl"]:
-    logger.debug("can-run succeeded") 
-    pscheduler.succeed()
+if not has[destination]["bwctl"]:
+    logger.debug("No BWCTL at destination")
+    errors.append("No BWCTL on %s" % destination)
 
-logger.debug("No BWCTL at destination")
-pscheduler.fail("No BWCTL on %s" % destination)
+
+result = {
+    "can-run": len(errors) == 0
+}
+
+if len(errors) > 0:
+    result["reasons"] = errors
+
+pscheduler.succeed_json(result)
+
+
+

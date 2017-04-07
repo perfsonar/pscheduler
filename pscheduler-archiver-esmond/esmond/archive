@@ -87,7 +87,10 @@ if "summaries" in json['data'] and json['data']['summaries']:
 try:
     attempts = int(json['attempts'])
 except:
-    pscheduler.fail("Archiver must be given 'attempts' as a valid integer")
+    pscheduler.succeed_json({
+        "succeeded": False,
+        "error": "Archiver must be given 'attempts' as a valid integer"
+    })
 retry_policy= []
 if 'retry-policy' in json['data']:
     retry_policy = json['data']['retry-policy']
@@ -188,7 +191,10 @@ if format_mapping:
         #we already added raw type, so don't add it again
         add_raw_event_type = False
     else:
-        pscheduler.fail("Unable to store result because 'mapped-only' policy is being used and the test is of an unrecognized type %s" % test_type)
+        pscheduler.succeed_json({
+            "succeeded": False,
+            "error": "Unable to store result because 'mapped-only' policy is being used and the test is of an unrecognized type %s" % (test_type)
+        })
 else:
     record = esmond_util.EsmondRawRecord(
             test_type=test_type,

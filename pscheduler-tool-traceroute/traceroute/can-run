@@ -15,9 +15,15 @@ json = pscheduler.json_load(exit_on_error=True);
 
 try:
     if json['type'] != 'trace':
-        pscheduler.fail('Unsupported test type')
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Unsupported test type" ]
+        })
 except KeyError:
-    pscheduler.fail('Missing test type')
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test type" ]
+    })
 
 
 spec = json['spec']
@@ -47,8 +53,11 @@ except KeyError:
     pass
 
 
+result = {
+    "can-run": len(errors) == 0
+}
 
 if len(errors) > 0:
-    pscheduler.fail('\n'.join(errors))
+    result["reasons"] = errors
 
-pscheduler.succeed()
+pscheduler.succeed_json(result)

@@ -15,14 +15,25 @@ json = pscheduler.json_load(exit_on_error=True)
 
 logger.debug("can-run for %s" % json)
 
-if not json.get('type'):
-    pscheduler.fail('Missing test type')
-
-if json['type'] != 'throughput':
-    pscheduler.fail('Unsupported test type')
+try:
+    if json['type'] != 'throughput':
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Unsupported test type" ]
+        })
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test type" ]
+    })
 
 if not json.get('spec'):
-    pscheduler.fail('Missing test spec')
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test spec" ]
+    })
+
+errors = []
 
 test_spec = json['spec']
 
@@ -34,12 +45,12 @@ except KeyError:
 try: 
     destination = test_spec['dest']
 except KeyError:
-    pscheduler.fail("Missing dest argument in spec")
+    errors.append("Missing dest argument in spec")
 
 unsupported_options = [ 'congestion', 'zero-copy', 'flow-label', 'client-cpu-affinity', 'server-cpu-affinity', 'reverse' ]
 for unsupported_option in unsupported_options:
     if test_spec.has_key(unsupported_option):
-        pscheduler.fail("BWCTL does not support %s" % unsupported_option)
+        errors.append("BWCTL does not support %s" % unsupported_option)
 
 
 # This digs up everything we can on the hosts involved in a
@@ -50,11 +61,20 @@ src_has_psc = has[source]["pscheduler"]
 dst_has_psc = has[destination]["pscheduler"]
 
 if src_has_psc and dst_has_psc:
-    pscheduler.fail("Both sides have pscheduler, no need for BWCTL")
+    errors.append("Both sides have pscheduler, no need for BWCTL")
 
 if not has[destination]["bwctl"]:
     logger.debug("No BWCTL at destination")
-    pscheduler.fail("No BWCTL on %s" % destination)
+    errors.append("No BWCTL on %s" % destination)
 
 logger.debug("can-run succeeded") 
-pscheduler.succeed()
+
+result = {
+    "can-run": len(errors) == 0
+}
+
+if len(errors) > 0:
+    result["reasons"] = errors
+
+pscheduler.succeed_json(result)
+

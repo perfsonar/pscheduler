@@ -180,7 +180,11 @@ def tasks():
                 )
 
             if returncode != 0:
-                return bad_request("Invalid test specification: " + stderr)
+                return error("Unable to validate test spec: %s" % (stderr))
+            validate_json = pscheduler.json_load(stdout)
+            if not validate_json["valid"]:
+                return bad_request("Invalid test specification: %s" %
+                                   (validate_json.get("error", "Unspecified error")))
         except Exception as ex:
             return error("Unable to validate test spec: " + str(ex))
 
@@ -289,7 +293,7 @@ def tasks():
             except TaskPostingException as ex:
                 return error("Error getting tools from %s: %s" \
                                      % (participant, str(ex)))
-            log.debug("Participant %s offers tools %s", participant, tools)
+            log.debug("Participant %s offers tools %s", participant, result)
 
         if len(tools) != nparticipants:
             return error("Didn't get a full set of tool responses")

@@ -12,14 +12,27 @@ logger = pscheduler.Log(prefix='tool-nuttcp', quiet=True)
 
 json = pscheduler.json_load(exit_on_error=True)
 
-if not json.get('type'):
-    pscheduler.fail('Missing test type')
+try:
+    if json['type'] != 'throughput':
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Unsupported test type" ]
+        })
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test type" ]
+    })
 
-if json['type'] != 'throughput':
-    pscheduler.fail('Unsupported test type')
 
 if not json.get('spec'):
-    pscheduler.fail('Missing test spec')
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test spec" ]
+    })
+
+
+errors = []
 
 test_spec = json['spec']
 
@@ -37,8 +50,15 @@ supported_options = ["schema",
 for option in test_spec.keys():
     if option not in supported_options:
         logger.debug("nuttcp unsupported option %s" % option)
-        pscheduler.fail('nuttcp does not support %s option' % option)    
+        errors.append('nuttcp does not support %s option' % option)
 
 logger.debug("can-run succeeded")
 
-pscheduler.succeed()
+result = {
+    "can-run": len(errors) == 0
+}
+
+if len(errors) > 0:
+    result["reasons"] = errors
+
+pscheduler.succeed_json(result)
