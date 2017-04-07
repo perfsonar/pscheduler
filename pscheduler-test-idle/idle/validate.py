@@ -14,6 +14,7 @@ def spec_is_valid(json):
             "schema":           { "$ref": "#/pScheduler/Cardinal" },
             "starting-comment": { "$ref": "#/pScheduler/String" },
             },
+        "additionalProperties": False,
         "required": [
             "duration",
             "schema",
@@ -30,6 +31,7 @@ def result_is_valid(json):
             "schema":           { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":        { "$ref": "#/pScheduler/Boolean" },
             },
+        "additionalProperties": False,
         "required": [
             "duration",
             "schema",
