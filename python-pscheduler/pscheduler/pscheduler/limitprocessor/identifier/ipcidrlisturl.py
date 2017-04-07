@@ -11,6 +11,7 @@ data_validator = {
     "type": "object",
     "properties": {
         "source": { "$ref": "#/pScheduler/URL" },
+        "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
         "bind": { "$ref": "#/pScheduler/Host" },
         "exclude": {
             "type": "array",
@@ -33,7 +34,12 @@ def data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
-    return pscheduler.json_validate(data, data_validator)
+    valid, error = pscheduler.json_validate(data, data_validator)
+    if not valid:
+        return valid, error
+    if "transform" in data:
+        return False, "Transforms are not yet supported."
+    return valid, error
 
 
 
@@ -158,9 +164,9 @@ class IdentifierIPCIDRListURL():
 
 if __name__ == "__main__":
 
-
-    ident = IdentifierIPCIDRListURL({
+    data = {
         "source": "http://software.internet2.edu/data/pscheduler/limit-cidrs/ren",
+#        "transform": { "script": "foo" },
         "exclude": [
             "10.0.0.0/8",
             "172.16.0.0/12",
@@ -169,7 +175,11 @@ if __name__ == "__main__":
         "update": "P1D",
         "retry": "PT1H",
         "fail-state": True
-    })
+    }
+
+    print data_is_valid(data)
+
+    ident = IdentifierIPCIDRListURL(data)
 
     print "LEN", len(ident)
 

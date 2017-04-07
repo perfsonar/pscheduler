@@ -174,6 +174,19 @@ def tasks():
 
         log.debug("Validated test: %s", pscheduler.json_dump(task['test']))
 
+
+        # Reject tasks that have archive specs that use transforms.
+        # See ticket #330.
+
+        try:
+            for archive in task['archives']:
+                if "transform" in archive:
+                    return bad_request("Use of transforms in archives is not yet supported.")
+        except KeyError:
+            pass  # Not there
+
+
+
         # Find the participants
 
         try:
