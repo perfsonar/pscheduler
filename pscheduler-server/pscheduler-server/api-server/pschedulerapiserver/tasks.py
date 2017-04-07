@@ -155,10 +155,22 @@ def tasks():
         except ValueError:
             return bad_request("Invalid JSON:" + request.data)
 
-        # TODO: Validate the JSON against a TaskSpecification
+        # Validate the JSON against a TaskSpecification
+        # TODO: Figure out how to do this without the intermediate object
+
+        valid, message = pscheduler.json_validate({"": task}, {
+            "type": "object",
+            "properties": {
+                "": {"$ref": "#/pScheduler/TaskSpecification"}
+            },
+            "required": [""]
+        })
+
+        if not valid:
+            return error("Invalid task specification: %s" % (message))
 
 
-        # See if the task spec is valid
+        # See if the test spec is valid
 
         try:
             returncode, stdout, stderr = pscheduler.run_program(

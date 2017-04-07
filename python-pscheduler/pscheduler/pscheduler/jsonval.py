@@ -6,12 +6,8 @@ values dictionaries
 import copy
 import jsonschema
 
-
 # TODO: Consider adding tile/description and maybe "example" (not
 # officially supported) as a way to generate the JSON dictionary.
-
-# TODO: Need to go through and add "additionalProperties": False to
-# all object entries.
 
 #
 # Types from the dictionary
@@ -42,6 +38,7 @@ __dictionary__ = {
             "number": { "$ref": "#/pScheduler/Cardinal" },
             "owner": { "type": "string" },
             },
+        "additionalProperties": False,
         "required": [ "number" ]
         },
 
@@ -413,6 +410,7 @@ __dictionary__ = {
             "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
             "ttl": { "$ref": "#/pScheduler/Duration" },
             },
+        "additionalProperties": False,
         "required": [
             "archiver",
             "data",
@@ -426,6 +424,7 @@ __dictionary__ = {
             "email": { "$ref": "#/pScheduler/Email" },
             "href":  { "$ref": "#/pScheduler/URL" },
             },
+        "additionalProperties": False,
         "required": [
             "name",
             ]
@@ -437,6 +436,7 @@ __dictionary__ = {
             "name":    { "type": "string" },
             "version": { "$ref": "#/pScheduler/Version" },
             },
+        "additionalProperties": False,
         "required": [
             "name",
             "version",
@@ -449,6 +449,7 @@ __dictionary__ = {
             "participant": { "$ref": "#/pScheduler/Host" },
             "result":      { "$ref": "#/pScheduler/AnyJSON" },
             },
+        "additionalProperties": False,
         "required": [
             "participant",
             "result",
@@ -468,6 +469,7 @@ __dictionary__ = {
                 },
             "result":       { "$ref": "#/pScheduler/AnyJSON" }
             },
+        "additionalProperties": False,
         "required": [
             "id",
             "schedule",
@@ -488,6 +490,7 @@ __dictionary__ = {
             "until":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
             "max-runs": { "$ref": "#/pScheduler/Cardinal" },
             },
+        "additionalProperties": False
         },
 
     "TaskSpecification": {
@@ -505,7 +508,8 @@ __dictionary__ = {
                 },
             "reference": { "$ref": "#/pScheduler/AnyJSON" },
             "_key": { "$ref": "#/pScheduler/String" },
-            },
+        },
+        "additionalProperties": False,
         "required": [
             "schema",
             "test",
@@ -518,6 +522,7 @@ __dictionary__ = {
             "type": { "$ref": "#/pScheduler/String" },
             "spec": { "$ref": "#/pScheduler/AnyJSON" },
             },
+        "additionalProperties": False,
         "required": [
             "type",
             "spec",
@@ -530,6 +535,7 @@ __dictionary__ = {
             "start": { "$ref": "#/pScheduler/Timestamp" },
             "end":   { "$ref": "#/pScheduler/Timestamp" },
             },
+        "additionalProperties": False
         },
 
 
