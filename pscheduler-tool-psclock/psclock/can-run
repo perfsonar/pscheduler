@@ -19,6 +19,20 @@ except KeyError:
         "reasons": [ "Missing test type" ]
     })
 
+try:
+    spec = json["spec"]
+    pscheduler.json_check_schema(spec, 1)
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test specification"]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
+
 
 # This tool can run any test spec
 pscheduler.succeed_json({ "can-run": True })

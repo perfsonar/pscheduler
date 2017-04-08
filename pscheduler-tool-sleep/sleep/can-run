@@ -26,13 +26,28 @@ except KeyError:
     })
 
 
+try:
+    spec = json["spec"]
+    pscheduler.json_check_schema(spec, 1)
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test specification"]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
+
+
 errors = []
 
 
 # This tool has a (forced) quirk that makes it not sleep for less than
 # 30 seconds.
 
-duration = pscheduler.iso8601_as_timedelta(json['spec']['duration'])
+duration = pscheduler.iso8601_as_timedelta(spec['duration'])
 if duration is not None:
     if duration < datetime.timedelta(seconds=15):
         errors.append("Won't sleep for less than 15 seconds.")

@@ -91,7 +91,7 @@ REQUEST_SCHEMA = {
 
         },
 
-    "required": ["schema", "dest"]
+    "required": ["dest"]
     
 }
 
@@ -205,7 +205,7 @@ RESPONSE_SCHEMA = {
                 }
             }
         },
-        "required": [ "schema", "succeeded"]
+        "required": ["succeeded"]
     }
     
 def spec_is_valid(json):

@@ -33,23 +33,37 @@ if not json.get('spec'):
         "reasons": [ "Missing test spec" ]
     })
 
+try:
+    spec = json["spec"]
+    pscheduler.json_check_schema(spec, 1)
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test specification"]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
+
+
 errors = []
 
-test_spec = json['spec']
 
 try:
-    source = test_spec['source']
+    source = spec['source']
 except KeyError:
     source = None
 
 try: 
-    destination = test_spec['dest']
+    destination = spec['dest']
 except KeyError:
     errors.append("Missing dest argument in spec")
 
 unsupported_options = [ 'congestion', 'zero-copy', 'flow-label', 'client-cpu-affinity', 'server-cpu-affinity', 'reverse' ]
 for unsupported_option in unsupported_options:
-    if test_spec.has_key(unsupported_option):
+    if spec.has_key(unsupported_option):
         errors.append("BWCTL does not support %s" % unsupported_option)
 
 

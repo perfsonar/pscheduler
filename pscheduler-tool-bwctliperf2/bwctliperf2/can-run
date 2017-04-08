@@ -24,48 +24,55 @@ except KeyError:
         "reasons": [ "Missing test type" ]
     })
 
-if not json.get('spec'):
+
+try:
+    spec = json["spec"]
+    pscheduler.json_check_schema(spec, 1)
+except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
-        "reasons": [ "Missing test type" ]
+        "reasons": ["Missing test specification"]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
     })
 
 
 errors = []
 
-test_spec = json['spec']
-    
-if test_spec.has_key('bandwidth') and not test_spec.has_key('udp'):
+if spec.has_key('bandwidth') and not spec.has_key('udp'):
     errors.append('iperf cannot run TCP tests with throttled bandwidth')
 
-if test_spec.has_key('omit'):
+if spec.has_key('omit'):
     errors.append('iperf does not support the --omit flag')
 
-if test_spec.has_key('flow-label'):
+if spec.has_key('flow-label'):
     errors.append('iperf does not support the --flow-label flag')
 
-if test_spec.has_key('zero-copy'):
+if spec.has_key('zero-copy'):
     errors.append('iperf does not support the --zero-copy flag')
 
-if test_spec.has_key('congestion'):
+if spec.has_key('congestion'):
     errors.append('iperf does not support the --congestion flag')
 
-if test_spec.has_key('server-cpu-affinity') or test_spec.has_key('client-cpu-affinity'):
+if spec.has_key('server-cpu-affinity') or spec.has_key('client-cpu-affinity'):
     errors.append('iperf does not support the --server-cpu-affinity or --client-cpu-affinity flag')
 
-if test_spec.has_key('no-delay'):
+if spec.has_key('no-delay'):
     errors.append('iperf does not support the --no-delay flag')
 
-if test_spec.has_key('reverse'):
+if spec.has_key('reverse'):
     errors.append('iperf does not support the --reverse flag')
 
 try:
-    source = test_spec['source']
+    source = spec['source']
 except KeyError:
     source = None
 
 try: 
-    destination = test_spec['dest']
+    destination = spec['dest']
 except KeyError:
     errors.append("Missing dest argument in spec")
 

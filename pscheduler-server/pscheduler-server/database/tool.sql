@@ -297,6 +297,7 @@ DECLARE
     tool_list JSONB;
     tool_name TEXT;
     tool_enumeration JSONB;
+    sschema NUMERIC;  -- Name dodges a reserved word
 BEGIN
     run_result := pscheduler_internal(ARRAY['list', 'tool']);
     IF run_result.status <> 0 THEN
@@ -316,6 +317,13 @@ BEGIN
         END IF;
 
 	tool_enumeration := run_result.stdout::JSONB;
+
+        sschema := text_to_numeric(tool_enumeration ->> 'schema');
+        IF sschema IS NOT NULL AND sschema > 1 THEN
+            RAISE WARNING 'Tool "%": schema % is not supported',
+                tool_name, sschema;
+            CONTINUE;
+        END IF;
 
 	IF NOT tool_json_is_valid(tool_enumeration) THEN
 	    RAISE WARNING 'Tool "%" enumeration is invalid', tool_name;

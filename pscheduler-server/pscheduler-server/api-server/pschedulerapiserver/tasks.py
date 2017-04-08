@@ -151,9 +151,9 @@ def tasks():
     elif request.method == 'POST':
 
         try:
-            task = pscheduler.json_load(request.data)
-        except ValueError:
-            return bad_request("Invalid JSON:" + request.data)
+            task = pscheduler.json_load(request.data, max_schema=1)
+        except ValueError as ex:
+            return bad_request("Invalid task specification: %s" % (str(ex)))
 
         # Validate the JSON against a TaskSpecification
         # TODO: Figure out how to do this without the intermediate object
@@ -181,6 +181,7 @@ def tasks():
 
             if returncode != 0:
                 return error("Unable to validate test spec: %s" % (stderr))
+            # TODO:  #74 Figure out how to schemafy this.
             validate_json = pscheduler.json_load(stdout)
             if not validate_json["valid"]:
                 return bad_request("Invalid test specification: %s" %
@@ -227,6 +228,7 @@ def tasks():
             if returncode != 0:
                 return error("Unable to determine participants: " + stderr)
 
+            # TODO:  #74 Figure out how to schemafy this.
             participants = [ host if host is not None
                              else server_fqdn()
                              for host in pscheduler.json_load(stdout)["participants"] ]
@@ -555,6 +557,7 @@ def tasks_uuid(uuid):
         # TODO: This should probably a PUT and not a POST.
 
         try:
+            # TODO:  #74 Figure out how to schemafy this.
             json_in = pscheduler.json_load(request.data)
         except ValueError:
             return bad_request("Invalid JSON")
@@ -593,6 +596,7 @@ def tasks_uuid(uuid):
 
         try:
             try:
+                # TODO:  #74 Figure out how to schemafy this.
                 participants = pscheduler.json_load(request.data)["participants"]
             except:
                 return bad_request("No participants provided")

@@ -23,7 +23,6 @@ def spec_is_valid(json):
             "nameserver":        { "$ref": "#/pScheduler/Host" },
             },
         "required": [
-            "schema",
             "query",
             "record"
             ]
@@ -124,7 +123,7 @@ def result_is_valid(json):
             "time": { "$ref": "#/pScheduler/Duration" },
 	    "record": { "$ref": "#/local/DNSRecord" }
             },
-        "required": [ "schema", "succeeded" ]
+        "required": [ "succeeded" ]
         }
     return json_validate(json, schema)
 
@@ -133,6 +132,7 @@ def limit_is_valid(json):
     schema = {
         "type": "object",
         "properties": {
+            "schema":            { "$ref": "#/pScheduler/Cardinal" },
             "host":              { "$ref": "#/pScheduler/Limit/String" },
             "host-node":         { "$ref": "#/pScheduler/Limit/String" },
             "query":             { "$ref": "#/pScheduler/Limit/String" },

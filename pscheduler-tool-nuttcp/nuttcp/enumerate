@@ -1,5 +1,6 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
     "name": "nuttcp",
     "description": "Measure network throughput with nuttcp",
     "version": "1.0",

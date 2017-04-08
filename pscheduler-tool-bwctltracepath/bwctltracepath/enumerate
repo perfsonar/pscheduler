@@ -1,5 +1,7 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
+
     "name": "bwctltracepath",
     "description": "Determine the path to another host with BWCTL tracepath - FOR BACKWARD COMPATIBILITY ONLY",
     "version": "1.0",

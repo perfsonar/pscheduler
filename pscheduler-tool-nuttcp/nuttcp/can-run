@@ -25,16 +25,23 @@ except KeyError:
     })
 
 
-if not json.get('spec'):
-    pscheduler.succeed_json({
-        "can-run": False,
-        "reasons": [ "Missing test spec" ]
-    })
-
 
 errors = []
 
-test_spec = json['spec']
+try:
+    spec = json["spec"]
+    pscheduler.json_check_schema(spec, 1)
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test specification"]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
+
 
 supported_options = ["schema",
                      "source", "source-node",
@@ -47,7 +54,7 @@ supported_options = ["schema",
                      ]
 
 
-for option in test_spec.keys():
+for option in spec.keys():
     if option not in supported_options:
         logger.debug("nuttcp unsupported option %s" % option)
         errors.append('nuttcp does not support %s option' % option)

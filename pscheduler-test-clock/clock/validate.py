@@ -15,7 +15,6 @@ def spec_is_valid(json):
             "timeout":           { "$ref": "#/pScheduler/Duration" },
             },
         "required": [
-            "schema",
             "dest",
             ]
         }
@@ -33,7 +32,6 @@ def result_is_valid(json):
             "difference": { "$ref": "#/pScheduler/Duration" },
             },
         "required": [
-            "schema",
             "succeeded",
             "local",
             "remote",
@@ -47,6 +45,7 @@ def limit_is_valid(json):
     schema = {
         "type": "object",
         "properties": {
+            "schema": { "$ref": "#/pScheduler/Cardinal" },
             "dest":              { "$ref": "#/pScheduler/Limit/String" },
             "source":            { "$ref": "#/pScheduler/Limit/String" },
             "source-node":       { "$ref": "#/pScheduler/Limit/String" },

@@ -466,7 +466,11 @@ elif status != 200:
 
 json_to_merge = raw_spec
 assert 'spec' in task['test']
+final_schema = max(task['test']['spec'].get('schema', 1),
+                   json_to_merge.get("schema", 1))
 task['test']['spec'].update(json_to_merge)
+task['test']['spec']['schema'] = final_schema
+
 
 task_json_text = pscheduler.json_dump(task)
 

@@ -26,19 +26,34 @@ except KeyError:
     })
 
 
+try:
+    spec = json["spec"]
+    pscheduler.json_check_schema(spec, 1)
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test specification"]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
+
+
 errors = []
 
 # Require that the timeout be at least twice the dawdle interval.
 
 try:
-    timeout = pscheduler.iso8601_as_timedelta(json['spec']['timeout'])
+    timeout = pscheduler.iso8601_as_timedelta(spec['timeout'])
 except KeyError:
     timeout = None
 except ValueError:
     errors.append("Invalid timeout.")
 
 try:
-    dawdle = pscheduler.iso8601_as_timedelta(json['spec']['dawdle'])
+    dawdle = pscheduler.iso8601_as_timedelta(spec['dawdle'])
     if timeout is not None and dawdle * 2 > timeout:
         errors.append("Dawdle duration must be less than half the timeout.")
 except KeyError:

@@ -62,7 +62,33 @@ def json_substitute(json, value, replacement):
 
 
 
-def json_load(source=None, exit_on_error=False, strip=True):
+def json_check_schema(json, max_schema=None):
+    """
+    Check that the 'schema' value for a blob of JSON is no more than
+    max_schema and throw a ValueError if not.  JSON having no 'schema'
+    will be treated as schema version 1.
+    """
+
+    if not isinstance(json, dict):
+        raise ValueError("JSON must be an object")
+    if not isinstance(max_schema, int):
+        raise ValueError("Maximum schema value must be an integer")
+
+    if max_schema is None:
+        max_schema = 1
+
+    schema = json.get("schema", 1)
+    if not isinstance(schema, int):
+        raise ValueError("Schema value must be an integer")
+
+    if schema > max_schema:
+        raise ValueError("Schema version %d is not supported (highest is %d)" %
+                         (schema, max_schema))
+
+
+
+
+def json_load(source=None, exit_on_error=False, strip=True, max_schema=None):
     """
     Load a blob of JSON and exit with failure if it didn't read.
 
@@ -77,6 +103,8 @@ def json_load(source=None, exit_on_error=False, strip=True):
     strip - Remove all pairs whose names begin with '#'.  This is a
     low-budget way to support comments wthout requiring a parser that
     understands them.  (Default True)
+
+    max_schema - Check for a "schema" of no more than this integer value.
     """
     if source is None:
         source = sys.stdin
@@ -94,6 +122,9 @@ def json_load(source=None, exit_on_error=False, strip=True):
             raise ValueError("Invalid JSON: " + str(ex))
         else:
             pscheduler.fail("Invalid JSON: " + str(ex))
+
+    if max_schema is not None:
+        json_check_schema(json_in, max_schema)
 
     return json_decomment(json_in) if strip else json_in
 

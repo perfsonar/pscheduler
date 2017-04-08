@@ -1,5 +1,6 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
     "name": "bwctlping",
     "description": "Measure the round-trip time to another host with BWCTL - FOR BACKWARD COMPATIBILITY ONLY",
     "version": "1.0",

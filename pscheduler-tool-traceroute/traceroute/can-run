@@ -10,6 +10,7 @@ import pscheduler
 
 json = pscheduler.json_load(exit_on_error=True);
 
+
 # TODO: Should be checking the package schema and the task spec schema.
 # TODO: Should be validating.
 
@@ -26,7 +27,20 @@ except KeyError:
     })
 
 
-spec = json['spec']
+try:
+    spec = json["spec"]
+    pscheduler.json_check_schema(spec, 1)
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test specification"]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
+
 
 errors = []
 

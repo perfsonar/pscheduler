@@ -511,7 +511,6 @@ __dictionary__ = {
         },
         "additionalProperties": False,
         "required": [
-            "schema",
             "test",
             ]
         },
