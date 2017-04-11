@@ -5,7 +5,7 @@
 %define short	bwctltraceroute
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.28.rc3%{?dist}
+Release:	1%{?dist}
 
 Summary:	pScheduler BWCTL Traceroute Tool
 BuildArch:	noarch
