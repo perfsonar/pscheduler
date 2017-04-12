@@ -1,0 +1,22 @@
+Source: python-functools32
+Section: python
+Priority: optional
+Maintainer: PKG OpenStack <openstack-devel@lists.alioth.debian.org>
+Uploaders: Thomas Goirand <zigo@debian.org>
+Build-Depends: debhelper (>= 9),
+               dh-python,
+               python-setuptools,
+               python-all,
+Standards-Version: 3.9.6
+X-Python-Version: >= 2.7
+Vcs-Browser: http://anonscm.debian.org/gitweb/?p=openstack/python-functools32.git
+Vcs-Git: git://anonscm.debian.org/openstack/python-functools32.git
+Homepage: https://github.com/MiCHiLU/python-functools32
+
+Package: python-functools32
+Architecture: all
+Depends: ${python:Depends}, ${misc:Depends}
+Description: Backport of the functools module from Python 3.2.3 to Python 2.7
+ This is a backport of the functools standard library module from Python 3.2.3
+ for use on Python 2.7 and PyPy. It includes new features lru_cache
+ (Least-recently-used cache decorator).

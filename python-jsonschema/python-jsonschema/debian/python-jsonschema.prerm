@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+if [ "$1" = "remove" ] ; then
+	update-alternatives --remove jsonschema /usr/bin/python2-jsonschema
+fi
+
+#DEBHELPER#
+
+exit 0

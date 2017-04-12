@@ -1,6 +1,9 @@
 #!/usr/bin/make -f
 
-#export DH_VERBOSE=1
+PYTHONS:=$(shell pyversions -vr)
+PYTHON3S:=$(shell py3versions -vr)
+
+export PACKAGE_VERSION=$(shell dpkg-parsechangelog | grep Version: | cut -d' ' -f2 | sed -e 's/^[[:digit:]]*://' -e 's/[-].*//' -e 's/~/.0/' | head -n 1)
 
 PYTHON3:=$(shell py3versions -r)
 py3sdo=set -ex; $(foreach py, $(PYTHON3), $(py) $(1);)
@@ -13,19 +16,33 @@ UPSTREAM_GIT = git://github.com/Julian/jsonschema.git
 
 override_dh_auto_test:
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
-	nosetests
-	nosetests3
+	nosetests -v
+	nosetests3 -v
 endif
 
 override_dh_auto_build:
+	echo $$PACKAGE_VERSION  | sed s/\\./-/g >version.txt
 	dh_auto_build
 	$(call py3sdo, setup.py build)
 
 override_dh_auto_install:
-	dh_auto_install
-	$(call py3sdo, setup.py install --root=$(CURDIR)/debian/tmp --install-layout=deb)
+	set -e ; for pyvers in $(PYTHONS); do \
+		python$$pyvers setup.py install --install-layout=deb \
+			--root $(CURDIR)/debian/python-jsonschema; \
+	done
+	set -e ; for pyvers in $(PYTHON3S); do \
+		python$$pyvers setup.py install --install-layout=deb \
+			--root $(CURDIR)/debian/python3-jsonschema; \
+	done
+	rm -f $(CURDIR)/debian/python*/usr/lib/python*/dist-packages/*.pth
+	mv $(CURDIR)/debian/python-jsonschema/usr/bin/jsonschema $(CURDIR)/debian/python-jsonschema/usr/bin/python2-jsonschema
+	mv $(CURDIR)/debian/python3-jsonschema/usr/bin/jsonschema $(CURDIR)/debian/python3-jsonschema/usr/bin/python3-jsonschema
+
+override_dh_python3:
+	dh_python3 --shebang=/usr/bin/python3
 
 override_dh_auto_clean:
-	dh_auto_clean
-	rm -rf build
-	rm -rf *.egg-info __pycache__
+	echo $$PACKAGE_VERSION  | sed s/\\./-/g >version.txt
+	#http_proxy=127.0.0.1:9 https_proxy=127.0.0.1:9 dh_auto_clean
+	rm -rf build version.txt
+	rm -rf __pycache__

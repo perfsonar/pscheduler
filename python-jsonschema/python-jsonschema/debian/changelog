@@ -1,8 +1,48 @@
-python-jsonschema (2.3.0-1~bpo70+1) perfsonar-wheezy-staging; urgency=medium
+python-jsonschema (2.5.1-4~bpo70+1) perfsonar-wheezy-staging; urgency=low
 
-  * Backport for wheezy.
+  * Backport to Wheezy.
 
- -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Wed, 28 Sep 2016 13:31:58 +0200
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 12 Apr 2017 17:46:23 +0000
+
+python-jsonschema (2.5.1-4) unstable; urgency=medium
+
+  * override_dh_python3 to fix Py3 shebang.
+
+ -- Thomas Goirand <zigo@debian.org>  Fri, 23 Oct 2015 22:40:58 +0000
+
+python-jsonschema (2.5.1-3) unstable; urgency=medium
+
+  * Uploading to unstable.
+
+ -- Thomas Goirand <zigo@debian.org>  Fri, 16 Oct 2015 10:02:14 +0000
+
+python-jsonschema (2.5.1-2) experimental; urgency=medium
+
+  * Fixed pacakge version parsing to be compatible with Ubuntu Trusty.
+  * Fixed http{s,}_proxy during dh_auto_clean to avoid PyPi downloads.
+  * Added python{3,}-vcversioner as build-depends-indep.
+  * Using update-alternatives to provide /usr/bin/jsonschema.
+  * Fixed missing ${python3:Depends}.
+
+ -- Thomas Goirand <zigo@debian.org>  Thu, 17 Sep 2015 09:25:38 +0200
+
+python-jsonschema (2.5.1-1) experimental; urgency=medium
+
+  * New upstream release.
+  * Usual debian/control clean-up.
+  * Added python{3,}-vcversioner as build-depends.
+  * Creates version.txt on build, clean it on clean.
+  * Do not delete *egg-info on clean, use debian/source/options instead.
+  * Removed XS-Test-Suite in debian/control.
+  * Added python-functools32 as build-depends.
+
+ -- Thomas Goirand <zigo@debian.org>  Wed, 29 Jul 2015 23:18:54 +0200
+
+python-jsonschema (2.4.0-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Thomas Goirand <zigo@debian.org>  Wed, 15 Apr 2015 09:44:16 +0200
 
 python-jsonschema (2.3.0-1) unstable; urgency=low
 
