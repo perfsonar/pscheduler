@@ -1,5 +1,5 @@
-pscheduler-archiver-rabbitmq (1.0~28.rc3-1) perfsonar-jessie-staging; urgency=low
+pscheduler-archiver-rabbitmq (1.0-1) perfsonar-jessie-release; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 23 Mar 2017 14:54:59 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Apr 2017 11:48:58 +0000
