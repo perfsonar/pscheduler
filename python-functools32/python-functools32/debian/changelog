@@ -1,4 +1,4 @@
-python-functools32 (3.2.3.2-2~bpo8+1) jessie-backports; urgency=medium
+python-functools32 (3.2.3.2-2~bpo8+1) perfsonar-jessie-staging; urgency=medium
 
   * Rebuild for jessie-backports.
 
