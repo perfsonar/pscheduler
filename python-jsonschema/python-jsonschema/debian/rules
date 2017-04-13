@@ -15,10 +15,6 @@ UPSTREAM_GIT = git://github.com/Julian/jsonschema.git
 	dh $@ --with python2,python3
 
 override_dh_auto_test:
-ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
-	nosetests -v
-	nosetests3 -v
-endif
 
 override_dh_auto_build:
 	echo $$PACKAGE_VERSION  | sed s/\\./-/g >version.txt
