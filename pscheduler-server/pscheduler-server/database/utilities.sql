@@ -131,6 +131,30 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+CREATE OR REPLACE FUNCTION 
+text_to_jsonb(
+	value TEXT,
+	picky BOOL DEFAULT TRUE
+)
+RETURNS JSONB
+AS $$
+DECLARE
+	converted JSONB DEFAULT NULL;
+BEGIN
+    BEGIN
+	converted := value::JSONB;
+    EXCEPTION WHEN OTHERS THEN
+        IF picky THEN
+	    RAISE EXCEPTION 'Invalid JSON "%"', value;
+	ELSE
+	    RETURN NULL;
+	END IF;	
+    END;
+RETURN converted;
+END;
+$$ LANGUAGE plpgsql;
+
+
 -- ----------------------------------------------------------------------------
 
 --

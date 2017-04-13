@@ -10,13 +10,33 @@ import pscheduler
 
 json = pscheduler.json_load(exit_on_error=True);
 
-
 # TODO: Should be checking the package schema and the task spec schema.
 
 try:
     if json['type'] != 'idlebgm' :
-        pscheduler.fail('Unsupported test type')
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Unsupported test type" ]
+        })
 except KeyError:
-    pscheduler.fail('Missing test type')
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test type" ]
+    })
 
-pscheduler.succeed()
+try:
+    spec = json["spec"]
+    pscheduler.json_check_schema(spec, 1)
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test specification"]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
+
+
+pscheduler.succeed_json({ "can-run": True })

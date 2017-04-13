@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Validator for 'idlebg' task spec
+# Validator for 'idlebgm' task spec
 #
 
 import pscheduler
@@ -8,11 +8,22 @@ import pscheduler
 from validate import spec_is_valid
 
 
-json = pscheduler.json_load(exit_on_error=True)
+try:
+    json = pscheduler.json_load()
+    pscheduler.json_check_schema(json, 1)
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+    })
 
 valid, message = spec_is_valid(json)
 
-if not valid:
-    pscheduler.fail(message)
+result = {
+    "valid": valid
+}
 
-pscheduler.succeed()
+if not valid:
+    result["error"] = message
+
+pscheduler.succeed_json(result)

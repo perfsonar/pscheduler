@@ -297,6 +297,7 @@ DECLARE
     tool_list JSONB;
     tool_name TEXT;
     tool_enumeration JSONB;
+    sschema NUMERIC;  -- Name dodges a reserved word
 BEGIN
     run_result := pscheduler_internal(ARRAY['list', 'tool']);
     IF run_result.status <> 0 THEN
@@ -316,6 +317,13 @@ BEGIN
         END IF;
 
 	tool_enumeration := run_result.stdout::JSONB;
+
+        sschema := text_to_numeric(tool_enumeration ->> 'schema');
+        IF sschema IS NOT NULL AND sschema > 1 THEN
+            RAISE WARNING 'Tool "%": schema % is not supported',
+                tool_name, sschema;
+            CONTINUE;
+        END IF;
 
 	IF NOT tool_json_is_valid(tool_enumeration) THEN
 	    RAISE WARNING 'Tool "%" enumeration is invalid', tool_name;
@@ -350,6 +358,7 @@ AS $$
 DECLARE
     tool_name TEXT;
     run_result external_program_result;
+    result_json JSONB;
     lead_bind_array TEXT[];  -- HACK: BWTCLBC
 BEGIN
 
@@ -370,19 +379,21 @@ BEGIN
         lead_bind_array  -- HACK: BWCTLBC
         );
 
-    IF run_result.status = 0 THEN
-        RETURN TRUE;
-    END IF;
-
     -- Any result other than 1 indicates a problem that shouldn't be
     -- allowed to gum up the works.  Log it and assume the tool said
     -- no dice.
-
-    IF run_result.status <> 1 THEN
-        NULL; -- TODO: Log something.
+    IF run_result.status <> 0 THEN
+        RAISE WARNING 'Tool "%" failed can-run: %', tool_name, run_result.stderr;
+        RETURN FALSE;
     END IF;
 
-    RETURN FALSE;
+    result_json = text_to_jsonb(run_result.stdout);
+    IF result_json IS NULL THEN
+        RAISE WARNING 'Tool "%" returned invalid JSON "%"', tool_name, run_result.stdout;
+        RETURN FALSE;
+    END IF;
+
+    RETURN result_json #> '{can-run}';
 
 END;
 $$ LANGUAGE plpgsql;

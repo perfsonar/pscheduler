@@ -1,5 +1,6 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
     "name": "iperf2",
     "description": "Measure network throughput with iperf2",
     "version": "1.0",

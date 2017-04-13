@@ -8,19 +8,18 @@ def spec_is_valid(json):
     schema = {
         "type": "object",
         "properties": {
+            "schema":         { "$ref": "#/pScheduler/Cardinal" },
             "dawdle":         { "$ref": "#/pScheduler/Duration" },
             "fail":           { "$ref": "#/pScheduler/Probability" },
             "dest":           { "$ref": "#/pScheduler/Host" },
             "dest-node":      { "$ref": "#/pScheduler/Host" },
-            "schema":         { "$ref": "#/pScheduler/Cardinal" },
             "source":         { "$ref": "#/pScheduler/Host" },
             "source-node":    { "$ref": "#/pScheduler/Host" },
             "test-material":  { "$ref": "#/pScheduler/String" },
             "timeout":        { "$ref": "#/pScheduler/Duration" },
             },
         "required": [
-            "dest",
-            "schema",
+            "dest"
             ]
         }
     return json_validate(json, schema)
@@ -30,10 +29,10 @@ def result_is_valid(json):
     schema = {
         "type": "object",
         "properties": {
+            "schema":         { "$ref": "#/pScheduler/Cardinal" },
             "dawdled":       { "$ref": "#/pScheduler/Duration" },
             "elapsed-time":  { "$ref": "#/pScheduler/Duration" },
             "received":      { "$ref": "#/pScheduler/String" },
-            "schema":        { "$ref": "#/pScheduler/Cardinal" },
             "sent":          { "$ref": "#/pScheduler/String" },
             "succeeded":     { "$ref": "#/pScheduler/Boolean" },
             },
@@ -41,7 +40,6 @@ def result_is_valid(json):
             "dawdled",
             "elapsed-time",
             "received",
-            "schema",
             "sent",
             "succeeded",
             ]
@@ -53,6 +51,7 @@ def limit_is_valid(json):
     schema = {
         "type": "object",
         "properties": {
+            "schema": { "$ref": "#/pScheduler/Cardinal" },
             "dawdle":        { "$ref": "#/pScheduler/Limit/Duration" },
             "fail":          { "$ref": "#/pScheduler/Limit/Probability" },
             "dest":          { "$ref": "#/pScheduler/Limit/String" },

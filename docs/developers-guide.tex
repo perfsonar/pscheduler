@@ -383,14 +383,21 @@ accept or decline individual tests based on their own restrictions.
 
 \calloutitem{Standard Input} A JSON test specification.
 
-\calloutitem{Standard Output} None.
+\calloutitem{Standard Output} A JSON object containing the following
+items:
+
+\begin{itemize}
+\item{\tt valid} - A {\tt Boolean} indicating whether or not the input
+  was valid.
+\item{\tt error} - If {\tt valid} is {\tt false}, a {\tt String}
+  describing the problem(s).
+\end{itemize}
 
 \calloutitem{Standard Error} Empty if successful, plain text error
-messages on error.
+messages on errors unrelated to the input.
 
-\calloutitem{Exit Status} {\tt 0} if the test specification was valid,
-            {\tt 1} if not, {\tt 2} if there was some other problem
-            unrelated to the input.
+\calloutitem{Exit Status} {\tt 0} on success, nonzero on failure
+unrelated to the input.
 
 
 
@@ -646,18 +653,28 @@ messages on error.
 
 
 \subsubsection{can-run}
-This method determines whether or not the tool can run a specified test.  The test must be 
+This method determines whether or not the tool can run a specified
+test.  The test must be in the list of those which the {\tt enumerate}
+method lists as being
 
 \calloutitem{Standard Input} A \jsontype{TestSpecification}
 
-\calloutitem{Standard Output} None.
+\calloutitem{Standard Output} A single JSON object containing the
+following:
+
+\begin{itemize}
+\item{\tt can-run} - A \jsontype{Boolean} indicating whether or not
+  the tool is willing to run the specified test.
+\item{\tt reasons} - If {\tt can-run} is {\tt false}, an array of
+  \jsontype{String}, each giving one reason why the test cannot be run
+  by this tool.
+\end{itemize}
 
 \calloutitem{Standard Error} Empty if successful, plain text error
 messages on error.
 
 \calloutitem{Exit Status} {\tt 0} if the tool is willing to run the
-specified test, {\tt 1} if not, {\tt 2} if there was an error related
-to the input and {\tt 3} for an error unrelated to the input.
+specified test, nonzero for an error unrelated to the input.
 
 
 

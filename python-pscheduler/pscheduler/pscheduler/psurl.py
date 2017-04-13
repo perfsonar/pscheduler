@@ -4,6 +4,7 @@ Functions for interacting with HTTP servers
 
 from psjson import *
 
+import httplib
 import requests
 import urlparse
 
@@ -64,6 +65,19 @@ class URLException(Exception):
     pass
 
 
+def __raise_urlexception(status, text, request):
+    """
+    Raise a nicely-formatted exception.
+    """
+    mime_type = request.headers["content-type"].split(";")[0]
+    if mime_type is not None and mime_type.startswith("text/plain"):
+        message = text.strip()
+    else:
+        message = httplib.responses[status]
+    raise URLException(message)
+
+
+
 def __formatted_connection_error(ex):
     """
     Format a requests.exceptions.ConnectionError into a nice string
@@ -113,8 +127,7 @@ def url_get( url,          # GET URL
 
     if status != 200:
         if throw:
-            raise URLException(url + ": " + str(status)
-                               + ": " + text)
+            __raise_urlexception(status, text)
         else:
             return (status, text)
 
@@ -160,8 +173,7 @@ def url_post( url,          # GET URL
 
     if status != 200 and status != 201:
         if throw:
-            raise URLException("POST " + url + " returned " + str(status)
-                               + ": " + text)
+            __raise_urlexception(status, text, request)
         else:
             return (status, text)
 
@@ -207,8 +219,7 @@ def url_put( url,          # GET URL
 
     if status != 200 and status != 201:
         if throw:
-            raise URLException("PUT " + url + " returned " + str(status)
-                               + ": " + text)
+            __raise_urlexception(status, text, request)
         else:
             return (status, text)
 
@@ -251,8 +262,7 @@ def url_delete( url,          # DELETE URL
 
 
     if status != 200 and throw:
-        raise URLException("DELETE " + url + " returned " + str(status)
-                           + ": " + text)
+        __raise_urlexception(status, text, request)
 
     return (status, text)
 

@@ -1,5 +1,7 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
+
     "name": "traceroute",
     "description": "Map the route between hosts with traceroute",
     "version": "1.0",

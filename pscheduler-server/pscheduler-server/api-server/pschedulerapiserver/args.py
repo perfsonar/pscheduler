@@ -60,13 +60,16 @@ def arg_integer(name):
 
 
 
-def arg_json(name):
+def arg_json(name, max_schema=None):
     """Fetch and validate an argument as JSON"""
     argval = request.args.get(name)
     if argval is None:
         return None
-    # This will throw a ValueError if something's wrong.
-    return pscheduler.json_load(argval)
+    # These will throw a ValueError if something's wrong.
+    json = pscheduler.json_load(argval)
+    if max_schema is not None:
+        pscheduler.json_check_schema(json, max_schema)
+    return json
 
 
 def arg_uuid(name):
@@ -80,3 +83,10 @@ def arg_uuid(name):
 
 def is_expanded():
     return arg_boolean('expanded')
+
+
+def arg_api():
+    """
+    Determine the API level in the request.
+    """
+    return arg_integer('api')

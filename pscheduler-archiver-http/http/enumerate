@@ -1,5 +1,6 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
     "name": "http",
     "description": "Send a raw JSON result to a HTTP server",
     "version": "1.0",

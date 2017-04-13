@@ -1,5 +1,7 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
+
     "name": "snooze",
     "description": "Sleep for periods of 60 seconds or less",
     "version": "1.0",

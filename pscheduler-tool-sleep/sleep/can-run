@@ -15,17 +15,49 @@ json = pscheduler.json_load(exit_on_error=True);
 
 try:
     if json['type'] not in [ 'idle', 'idleex' ]:
-        pscheduler.fail('Unsupported test type')
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Unsupported test type" ]
+        })
 except KeyError:
-    pscheduler.fail('Missing test type')
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test type" ]
+    })
+
+
+try:
+    spec = json["spec"]
+    pscheduler.json_check_schema(spec, 1)
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test specification"]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
+
+
+errors = []
 
 
 # This tool has a (forced) quirk that makes it not sleep for less than
 # 30 seconds.
 
-duration = pscheduler.iso8601_as_timedelta(json['spec']['duration'])
+duration = pscheduler.iso8601_as_timedelta(spec['duration'])
 if duration is not None:
     if duration < datetime.timedelta(seconds=15):
-        pscheduler.fail("Won't sleep for such a short time.")
+        errors.append("Won't sleep for less than 15 seconds.")
 
-pscheduler.succeed()
+
+result = {
+    "can-run": len(errors) == 0
+}
+
+if len(errors) > 0:
+    result["reasons"] = errors
+
+pscheduler.succeed_json(result)

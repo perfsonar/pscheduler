@@ -1,5 +1,7 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
+
     "name": "rabbitmq",
     "description": "Send a JSON result to RabbitMQ",
     "version": "1.0",

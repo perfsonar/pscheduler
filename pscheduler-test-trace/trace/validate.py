@@ -18,6 +18,7 @@ def spec_is_valid(json):
             },
         "type": "object",
         "properties": {
+            "schema":      { "$ref": "#/pScheduler/Cardinal" },
             "algorithm":   { "$ref": "#/local/algorithm" },
             "as":          { "$ref": "#/pScheduler/Boolean" },
             "dest-port":   { "$ref": "#/pScheduler/IPPort" },
@@ -31,15 +32,13 @@ def spec_is_valid(json):
             "length":      { "$ref": "#/pScheduler/Cardinal" },
             "probe-type":  { "$ref": "#/local/probe-type" },
             "queries":     { "$ref": "#/pScheduler/Cardinal" },
-            "schema":      { "$ref": "#/pScheduler/Cardinal" },
             "sendwait":    { "$ref": "#/pScheduler/Duration" },
             "source":      { "$ref": "#/pScheduler/Host" },
             "source-node": { "$ref": "#/pScheduler/Host" },
             "wait":        { "$ref": "#/pScheduler/Duration" },
             },
         "required": [
-            "schema",
-            "dest",
+            "dest"
             ]
         }
     return json_validate(json, schema)
@@ -71,16 +70,15 @@ def result_is_valid(json):
 
         "type": "object",
         "properties": {
+            "schema": { "$ref": "#/pScheduler/Cardinal" },
             "paths": {
                 "type": "array",
                 "items": { "$ref": "#/local/hoparray" },
                 },
-            "schema": { "$ref": "#/pScheduler/Cardinal" },
             "succeeded": { "$ref": "#/pScheduler/Boolean" },
             },
         "required": [
             "paths",
-            "schema",
             "succeeded",
             ]
         }
@@ -92,6 +90,7 @@ def limit_is_valid(json):
     schema = {
         "type": "object",
         "properties": {
+            "schema": { "$ref": "#/pScheduler/Cardinal" },
             "algorithm":  { "$ref": "#/pScheduler/Limit/String" },
             "as":         { "$ref": "#/pScheduler/Limit/Boolean" },
             "dest-port":  { "$ref": "#/pScheduler/Limit/Cardinal" },

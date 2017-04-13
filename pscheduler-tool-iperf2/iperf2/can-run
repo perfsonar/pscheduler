@@ -12,16 +12,42 @@ logger = pscheduler.Log(prefix='tool-iperf2', quiet=True)
 
 json = pscheduler.json_load(exit_on_error=True)
 
-if not json.get('type'):
-    pscheduler.fail('Missing test type')
-
-if json['type'] != 'throughput':
-    pscheduler.fail('Unsupported test type')
+try:
+    if json['type'] != 'throughput':
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Unsupported test type" ]
+        })
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test type" ]
+    })
 
 if not json.get('spec'):
-    pscheduler.fail('Missing test spec')
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test spec" ]
+    })
 
-test_spec = json['spec']
+try:
+    spec = json["spec"]
+    pscheduler.json_check_schema(spec, 1)
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test specification"]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
+
+
+errors = []
+
+
 
 supported_options = ["schema",
                      "source", "source-node",
@@ -32,16 +58,23 @@ supported_options = ["schema",
                      "udp"
                      ]
 
-for option in test_spec.keys():
+for option in spec.keys():
     if option not in supported_options:
         logger.debug("iperf2 unsupported option %s" % option)
-        pscheduler.fail('iperf2 does not support %s option' % option)    
+        errors.append('iperf2 does not support %s option' % option)    
 
 
 # bandwidth only supported in udp mode
-if test_spec.has_key("bandwidth") and not test_spec.has_key("udp"):
-    pscheduler.fail('iperf2 does not support specifying bandwidth on non-udp tests')
+if spec.has_key("bandwidth") and not spec.has_key("udp"):
+    errors.append('iperf2 does not support specifying bandwidth on non-udp tests')
 
 logger.debug("can-run succeeded")
 
-pscheduler.succeed()
+result = {
+    "can-run": len(errors) == 0
+}
+
+if len(errors) > 0:
+    result["reasons"] = errors
+
+pscheduler.succeed_json(result)

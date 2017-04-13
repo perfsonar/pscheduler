@@ -79,7 +79,15 @@ if errors:
 try:
     # Ident often comes in unicode and this requires a string.
     syslog.openlog(str(ident), 0, facility)
-    syslog.syslog(priority, pscheduler.json_dump(json['result']))
+
+    result = json['result']
+    if isinstance(result, basestring):
+        # Post strings cleanly
+        output = result
+    else:
+        # Anything else is JSON
+        output = pscheduler.json_dump(json['result'])
+    syslog.syslog(priority, output)
     syslog.closelog()
 except Exception as ex:
     pscheduler.succeed_json({
