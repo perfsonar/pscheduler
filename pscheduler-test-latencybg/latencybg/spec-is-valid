@@ -1,26 +1,38 @@
 #!/usr/bin/python
 #
-# Validator for 'latency' test spec
+# Validator for 'latencybg' test spec
 #
 
 import pscheduler
 
 from validate import spec_is_valid
 
-#logging
-log = pscheduler.Log(prefix="test-latencybg", quiet=True)
 
-#get json
-json = pscheduler.json_load(exit_on_error=True)
+try:
+    json = pscheduler.json_load()
+    pscheduler.json_check_schema(json, 1)
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+    })
 
-#validate
 valid, message = spec_is_valid(json)
+
+result = {
+    "valid": valid
+}
+
 if not valid:
-    pscheduler.fail(message)
+    result["error"] = message
+    pscheduler.succeed_json(result)
 
-#Verify flip is not set if source not included.
+# Verify flip is not set if source not included.
+# TODO:  It would be nice if this could be done in the jsonschema.
 if 'source' not in json and json.get('flip', False):
-    pscheduler.fail("You must specify both source and dest when using the flip option")
-    
-pscheduler.succeed()
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": "Flipped testing requires source and dest"
+    })
 
+pscheduler.succeed_json(result)

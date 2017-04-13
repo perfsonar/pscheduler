@@ -39,23 +39,24 @@ def ok_json(data=None):
 
 def bad_request(message="Bad request"):
     log.debug("Response 400: %s", message)
-    return Response(message + '\n', status=400)
+    return Response(message + '\n', status=400, mimetype="text/plain")
 
 def forbidden(message="Not allowed."):
     log.debug("Response 403: %s", message)
-    return Response(message, status=403)
+    return Response(message, status=403, mimetype="text/plain")
 
-def not_found(message="Resource Not found."):
+def not_found(message="Resource Not found.", mimetype="text/plain"):
     log.debug("Response 404: %s", message)
-    return Response(message + "\n", status=404)
+    return Response(message + "\n", status=404, mimetype="text/plain")
 
 def not_allowed():
     log.debug("Response 405: %s not allowed.", request.method)
-    return Response("%s not allowed on this resource\n" % request.method, status=405)
+    return Response("%s not allowed on this resource\n" % (request.method),
+                    status=405, mimetype="text/plain")
 
 def conflict(message="Request would create a conflict."):
     log.debug("Response 409: Conflict")
-    return Response(message + '\n', status=409)
+    return Response(message + '\n', status=409, mimetype="text/plain")
 
 def no_can_do(message=None):
     log.debug("Response 422: %s", message)
@@ -64,14 +65,14 @@ def no_can_do(message=None):
                         if message is not None \
                         else ".") \
                         + '\n',
-                    status=422)
+                    status=422, mimetype="text/plain")
 
 def error(message=None):
     log.debug("Response 500: %s", message)
     if message is None:
         message = "Unknown internal error"
-    return Response(message + '\n', 500)
+    return Response(message + '\n', status=500, mimetype="text/plain")
 
 def not_implemented(message="Not implemented."):
     log.debug("Response 501: %s", message)
-    return Response(message + "\n", 501)
+    return Response(message + "\n", status=501, mimetype="text/plain")

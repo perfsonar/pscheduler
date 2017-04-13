@@ -151,14 +151,26 @@ def tasks():
     elif request.method == 'POST':
 
         try:
-            task = pscheduler.json_load(request.data)
-        except ValueError:
-            return bad_request("Invalid JSON:" + request.data)
+            task = pscheduler.json_load(request.data, max_schema=1)
+        except ValueError as ex:
+            return bad_request("Invalid task specification: %s" % (str(ex)))
 
-        # TODO: Validate the JSON against a TaskSpecification
+        # Validate the JSON against a TaskSpecification
+        # TODO: Figure out how to do this without the intermediate object
+
+        valid, message = pscheduler.json_validate({"": task}, {
+            "type": "object",
+            "properties": {
+                "": {"$ref": "#/pScheduler/TaskSpecification"}
+            },
+            "required": [""]
+        })
+
+        if not valid:
+            return bad_request("Invalid task specification: %s" % (message))
 
 
-        # See if the task spec is valid
+        # See if the test spec is valid
 
         try:
             returncode, stdout, stderr = pscheduler.run_program(
@@ -168,11 +180,29 @@ def tasks():
                 )
 
             if returncode != 0:
-                return bad_request("Invalid test specification: " + stderr)
+                return error("Unable to validate test spec: %s" % (stderr))
+            # TODO:  #74 Figure out how to schemafy this.
+            validate_json = pscheduler.json_load(stdout)
+            if not validate_json["valid"]:
+                return bad_request("Invalid test specification: %s" %
+                                   (validate_json.get("error", "Unspecified error")))
         except Exception as ex:
             return error("Unable to validate test spec: " + str(ex))
 
         log.debug("Validated test: %s", pscheduler.json_dump(task['test']))
+
+
+        # Reject tasks that have archive specs that use transforms.
+        # See ticket #330.
+
+        try:
+            for archive in task['archives']:
+                if "transform" in archive:
+                    return bad_request("Use of transforms in archives is not yet supported.")
+        except KeyError:
+            pass  # Not there
+
+
 
         # Find the participants
 
@@ -198,6 +228,7 @@ def tasks():
             if returncode != 0:
                 return error("Unable to determine participants: " + stderr)
 
+            # TODO:  #74 Figure out how to schemafy this.
             participants = [ host if host is not None
                              else server_fqdn()
                              for host in pscheduler.json_load(stdout)["participants"] ]
@@ -256,8 +287,7 @@ def tasks():
                     "%s/tools" % (participant_api),
                     params=tool_params,
                     throw=False,
-                    # HACK: BWCTLBC
-                    bind=lead_bind if participant_no == 0 else None
+                    bind=lead_bind
                     )
                 if status != 200:
                     raise TaskPostingException("%d: %s" % (status, result))
@@ -265,7 +295,7 @@ def tasks():
             except TaskPostingException as ex:
                 return error("Error getting tools from %s: %s" \
                                      % (participant, str(ex)))
-            log.debug("Participant %s offers tools %s", participant, tools)
+            log.debug("Participant %s offers tools %s", participant, result)
 
         if len(tools) != nparticipants:
             return error("Didn't get a full set of tool responses")
@@ -527,6 +557,7 @@ def tasks_uuid(uuid):
         # TODO: This should probably a PUT and not a POST.
 
         try:
+            # TODO:  #74 Figure out how to schemafy this.
             json_in = pscheduler.json_load(request.data)
         except ValueError:
             return bad_request("Invalid JSON")
@@ -565,6 +596,7 @@ def tasks_uuid(uuid):
 
         try:
             try:
+                # TODO:  #74 Figure out how to schemafy this.
                 participants = pscheduler.json_load(request.data)["participants"]
             except:
                 return bad_request("No participants provided")

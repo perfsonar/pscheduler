@@ -1,5 +1,6 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
     "name": "esmond",
     "description": "Send results to Esmond",
     "version": "1.0",

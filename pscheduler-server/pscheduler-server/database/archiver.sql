@@ -168,6 +168,7 @@ DROP TRIGGER IF EXISTS archiver_alter ON archiver CASCADE;
 CREATE OR REPLACE FUNCTION archiver_alter()
 RETURNS TRIGGER
 AS $$
+DECLARE
 BEGIN
     IF NOT archiver_json_is_valid(NEW.json) THEN
         RAISE EXCEPTION 'Archiver JSON is invalid.';
@@ -292,6 +293,7 @@ DECLARE
     archiver_list JSONB;
     archiver_name TEXT;
     archiver_enumeration JSONB;
+    sschema NUMERIC;  -- Name dodges a reserved word
 BEGIN
     run_result := pscheduler_internal(ARRAY['list', 'archiver']);
     IF run_result.status <> 0 THEN
@@ -311,6 +313,13 @@ BEGIN
         END IF;
 
 	archiver_enumeration := run_result.stdout::JSONB;
+
+        sschema := text_to_numeric(archiver_enumeration ->> 'schema');
+        IF sschema IS NOT NULL AND sschema > 1 THEN
+            RAISE WARNING 'Archiver "%": schema % is not supported',
+                archiver_name, sschema;
+            CONTINUE;
+        END IF;
 
 	IF NOT archiver_json_is_valid(archiver_enumeration) THEN
 	    RAISE WARNING 'Archiver "%" enumeration is invalid', archiver_name;

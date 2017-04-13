@@ -1,5 +1,6 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
     "name": "rtt",
     "description": "Measure the round trip time between hosts",
     "version": "1.0",

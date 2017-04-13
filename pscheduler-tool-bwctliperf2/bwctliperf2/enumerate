@@ -1,5 +1,6 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
     "name": "bwctliperf2",
     "description": "Measure network throughput between hosts with BWCTL and iperf2 - FOR BACKWARD COMPATIBILITY ONLY",
     "version": "1.0",

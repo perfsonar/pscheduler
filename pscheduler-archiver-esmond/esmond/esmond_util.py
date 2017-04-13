@@ -753,7 +753,11 @@ class EsmondRawRecord(EsmondBaseRecord):
     def add_additional_metadata(self, test_spec={}):
         #this should not happen
         if not self.test_type:
-            pscheduler.fail("Developer error. The test type must be set if storing a raw record.")
+            pscheduler.succeed_json({
+                "succeeded": False,
+                "error": "Developer error. The test type must be set if storing a raw record."
+            })
+
             
         for field in test_spec:
             key = "pscheduler-%s-%s" % (self.test_type, field)

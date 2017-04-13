@@ -1,5 +1,7 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
+
     "name": "sleepbgm",
     "description": "Consume time in the background multiple times",
     "version": "1.0",

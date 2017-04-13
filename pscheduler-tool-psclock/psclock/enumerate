@@ -1,5 +1,7 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
+
     "name": "psclock",
     "description": "Compare the clocks on two pScheduler nodes",
     "version": "1.0",

@@ -1,5 +1,7 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
+
     "name": "bitbucket",
     "description": "Discard results - NOT FOR PRODUCTION",
     "version": "1.0",

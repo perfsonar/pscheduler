@@ -1,0 +1,27 @@
+#!/bin/sh -e
+#
+# A quick attempt at running all of the tests
+#
+
+REMOTE=dev6
+
+run_test()
+{
+    echo
+    echo
+    echo $1 | tr a-z A-Z
+    echo
+    pscheduler task "$@"
+}
+
+run_test clock --dest "${REMOTE}"
+run_test dns --query perfsonar.net --record a
+run_test idle --duration PT2S
+run_test idlebgm --duration PT2S
+run_test idleex --duration PT2S
+run_test latency --dest "${REMOTE}"
+# TODO: Figure out latencybg
+run_test rtt --dest "${REMOTE}"
+run_test simplestream --dest "${REMOTE}"
+run_test throughput --dest "${REMOTE}"
+run_test trace --dest "${REMOTE}"

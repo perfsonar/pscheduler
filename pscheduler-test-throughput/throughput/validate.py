@@ -11,7 +11,7 @@ SPEC_SCHEMA = {
     "additionalProperties": False,
     "local": {
         },
-    "required": ["schema", "dest"],
+    "required": ["dest"],
     "properties": {           
         "schema":      { "$ref": "#/pScheduler/Cardinal" },
         "source":      { "$ref": "#/pScheduler/Host" },
@@ -104,6 +104,7 @@ RESULT_SCHEMA = {
         },
     "required": ["succeeded", "diags", "intervals", "summary"],
     "properties": {           
+        "schema": { "$ref": "#/pScheduler/Cardinal" },
         "succeeded": {
             "description": "Indicates if the test ran successfully",
             "type": "boolean"
@@ -161,6 +162,7 @@ RESULT_SCHEMA = {
 LIMIT_SCHEMA = {
     "type": "object",
     "properties": {
+        "schema":     { "$ref": "#/pScheduler/Cardinal" },
         "bandwidth":  { "$ref": "#/pScheduler/Limit/SINumber" },
         "duration":   { "$ref": "#/pScheduler/Limit/Duration" },
         "udp":        { "$ref": "#/pScheduler/Limit/Boolean" },

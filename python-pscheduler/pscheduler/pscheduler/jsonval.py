@@ -6,12 +6,8 @@ values dictionaries
 import copy
 import jsonschema
 
-
 # TODO: Consider adding tile/description and maybe "example" (not
 # officially supported) as a way to generate the JSON dictionary.
-
-# TODO: Need to go through and add "additionalProperties": False to
-# all object entries.
 
 #
 # Types from the dictionary
@@ -42,6 +38,7 @@ __dictionary__ = {
             "number": { "$ref": "#/pScheduler/Cardinal" },
             "owner": { "type": "string" },
             },
+        "additionalProperties": False,
         "required": [ "number" ]
         },
 
@@ -244,6 +241,16 @@ __dictionary__ = {
         "minimum": 0,
         "maximum": 255
         },
+
+    "JQTransformSpecification": {
+        "type": "object",
+        "properties": {
+            "script":    { "$ref": "#/pScheduler/String" },
+            "output-raw": { "$ref": "#/pScheduler/Boolean" }
+        },
+        "additionalProperties": False,
+        "required": [ "script" ]
+    },
     
     "Number": { "type": "number" },
 
@@ -400,8 +407,10 @@ __dictionary__ = {
         "properties": {
             "archiver": { "type": "string" },
             "data": { "$ref": "#/pScheduler/AnyJSON" },
+            "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
             "ttl": { "$ref": "#/pScheduler/Duration" },
             },
+        "additionalProperties": False,
         "required": [
             "archiver",
             "data",
@@ -415,6 +424,7 @@ __dictionary__ = {
             "email": { "$ref": "#/pScheduler/Email" },
             "href":  { "$ref": "#/pScheduler/URL" },
             },
+        "additionalProperties": False,
         "required": [
             "name",
             ]
@@ -426,6 +436,7 @@ __dictionary__ = {
             "name":    { "type": "string" },
             "version": { "$ref": "#/pScheduler/Version" },
             },
+        "additionalProperties": False,
         "required": [
             "name",
             "version",
@@ -438,6 +449,7 @@ __dictionary__ = {
             "participant": { "$ref": "#/pScheduler/Host" },
             "result":      { "$ref": "#/pScheduler/AnyJSON" },
             },
+        "additionalProperties": False,
         "required": [
             "participant",
             "result",
@@ -457,6 +469,7 @@ __dictionary__ = {
                 },
             "result":       { "$ref": "#/pScheduler/AnyJSON" }
             },
+        "additionalProperties": False,
         "required": [
             "id",
             "schedule",
@@ -477,6 +490,7 @@ __dictionary__ = {
             "until":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
             "max-runs": { "$ref": "#/pScheduler/Cardinal" },
             },
+        "additionalProperties": False
         },
 
     "TaskSpecification": {
@@ -485,8 +499,8 @@ __dictionary__ = {
             "schema":   { "$ref": "#/pScheduler/Cardinal" },
             "lead-bind":{ "$ref": "#/pScheduler/Host" },
             "test":     { "$ref": "#/pScheduler/TestSpecification" },
-            "tool":     {" $ref": "#/pScheduler/String" },
-            "tools":    {"$ref": "#/pScheduler/StringList" },
+            "tool":     { "$ref": "#/pScheduler/String" },
+            "tools":    { "$ref": "#/pScheduler/StringList" },
             "schedule": { "$ref": "#/pScheduler/ScheduleSpecification" },
             "archives": {
                 "type": "array",
@@ -494,9 +508,9 @@ __dictionary__ = {
                 },
             "reference": { "$ref": "#/pScheduler/AnyJSON" },
             "_key": { "$ref": "#/pScheduler/String" },
-            },
+        },
+        "additionalProperties": False,
         "required": [
-            "schema",
             "test",
             ]
         },
@@ -504,11 +518,12 @@ __dictionary__ = {
     "TestSpecification": {
         "type": "object",
         "properties": {
-            "test": { "type": "String" },
+            "type": { "$ref": "#/pScheduler/String" },
             "spec": { "$ref": "#/pScheduler/AnyJSON" },
             },
+        "additionalProperties": False,
         "required": [
-            "test",
+            "type",
             "spec",
             ],
         },
@@ -519,6 +534,7 @@ __dictionary__ = {
             "start": { "$ref": "#/pScheduler/Timestamp" },
             "end":   { "$ref": "#/pScheduler/Timestamp" },
             },
+        "additionalProperties": False
         },
 
 
@@ -824,3 +840,24 @@ if __name__ == "__main__":
 
     print valid, message
 
+
+
+    text = {
+        "schema": 2,
+        "test": {
+            "test": "rtt",
+            "spec": {
+                "dest": "www.notonthe.net"
+            }
+        },
+        "archives": [
+        ]
+    }
+
+    print json_validate({"text": text}, {
+        "type": "object",
+        "properties": {
+            "text": { "$ref": "#/pScheduler/TaskSpecification" }
+        },
+        "required": [ "text" ]
+    })

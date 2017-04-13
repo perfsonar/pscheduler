@@ -70,6 +70,33 @@ BEGIN
         t_version := t_version + 1;
     END IF;
 
+    -- Version 3 to version 4
+    -- Drops unused max_parallel_runs column
+    IF t_version = 3
+    THEN
+        ALTER TABLE configurables DROP COLUMN max_parallel_runs;
+
+        t_version := t_version + 1;
+    END IF;
+
+    -- Version 4 to version 5
+    -- Changes default keep time to two days.
+    IF t_version = 4
+    THEN
+        -- Make sure pre-version-4 triggers don't fire.
+        ALTER TABLE configurables DISABLE TRIGGER USER;
+
+        ALTER TABLE configurables
+        ALTER COLUMN keep_runs_tasks
+        SET DEFAULT 'P2D';
+
+        UPDATE configurables SET keep_runs_tasks = DEFAULT;
+
+        ALTER TABLE configurables ENABLE TRIGGER USER;
+
+        t_version := t_version + 1;
+    END IF;
+
 
     --
     -- Cleanup
@@ -88,11 +115,6 @@ CREATE OR REPLACE FUNCTION configurables_update()
 RETURNS TRIGGER
 AS $$
 BEGIN
-    IF NEW.max_parallel_runs < 1
-    THEN
-        RAISE EXCEPTION 'Maximum parallel runs must be positive.';
-    END IF;
-
     NOTIFY configurables_changed;
     RETURN NEW;
 END;

@@ -316,7 +316,20 @@ else:
         except IOError as ex:
             pscheduler.fail("Unable to open task %s" % (str(ex)))
     task = pscheduler.json_load(file, exit_on_error=True)
-    # TODO: Validate what we read as a task.  Or will the server cover this?
+
+    # Validate the JSON against a TaskSpecification
+    # TODO: Figure out how to do this without the intermediate object
+    valid, message = pscheduler.json_validate({"": task}, {
+        "type": "object",
+        "properties": {
+            "": {"$ref": "#/pScheduler/TaskSpecification"}
+        },
+        "required": [""]
+    })
+
+    if not valid:
+        pscheduler.fail("Invalid imported JSON: %s" % (message))
+
     task_read = True
 
 
@@ -453,7 +466,11 @@ elif status != 200:
 
 json_to_merge = raw_spec
 assert 'spec' in task['test']
+final_schema = max(task['test']['spec'].get('schema', 1),
+                   json_to_merge.get("schema", 1))
 task['test']['spec'].update(json_to_merge)
+task['test']['spec']['schema'] = final_schema
+
 
 task_json_text = pscheduler.json_dump(task)
 

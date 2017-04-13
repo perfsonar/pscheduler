@@ -27,8 +27,7 @@ def spec_is_valid(json):
             "timeout":           { "$ref": "#/pScheduler/Duration" },
             },
         "required": [
-            "schema",
-            "dest",
+            "dest"
             ]
         }
     return json_validate(json, schema)
@@ -73,7 +72,6 @@ def result_is_valid(json):
             "stddev": { "$ref": "#/pScheduler/Duration" }
             },
         "required": [
-            "schema",
             "succeeded",
             "roundtrips",
             "loss",
@@ -86,6 +84,7 @@ def limit_is_valid(json):
     schema = {
         "type": "object",
         "properties": {
+            "schema":            { "$ref": "#/pScheduler/Cardinal" },
             "count":             { "$ref": "#/pScheduler/Limit/Cardinal" },
             "dest":              { "$ref": "#/pScheduler/Limit/String" },
             "flow-label":        { "$ref": "#/pScheduler/Limit/CardinalZeroList" },
