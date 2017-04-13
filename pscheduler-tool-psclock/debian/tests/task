@@ -2,4 +2,4 @@
 
 set -e
 
-pscheduler task --tool=psclock clock --dest=localhost
+pscheduler task --tool=psclock clock --timeout PT10S --dest=localhost
