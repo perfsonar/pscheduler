@@ -1,14 +1,14 @@
-pscheduler-test-idle (1.0~28.rc3-1~bpo70+1) perfsonar-wheezy-staging; urgency=low
+pscheduler-test-idle (1.0-1~bpo70+1) perfsonar-wheezy-release; urgency=low
 
   * Backport to Wheezy.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 23 Mar 2017 15:15:18 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Apr 2017 17:48:08 +0000
 
-pscheduler-test-idle (1.0~28.rc3-1) perfsonar-jessie-staging; urgency=low
+pscheduler-test-idle (1.0-1) perfsonar-jessie-release; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 23 Mar 2017 14:55:10 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Apr 2017 11:49:04 +0000
 
 pscheduler-test-idle (0.0-1) unstable; urgency=low
 
