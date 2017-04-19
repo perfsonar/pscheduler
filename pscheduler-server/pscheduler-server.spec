@@ -334,9 +334,11 @@ EOF
 
 %if 0%{?el6}
 chkconfig "%{pgsql_service}" on
+service "%{pgsql_service}" start
 %endif
 %if 0%{?el7}
 systemctl enable "%{pgsql_service}"
+systemctl start "%{pgsql_service}"
 %endif
 
 # Restart the server only if the current maximum connections is less
@@ -394,7 +396,7 @@ chmod 400 "${RPM_BUILD_ROOT}/%{pgpass_file}"
 
 # Load the database
 
-# TODO: Note that if these fail, the scriptlet stops but RPM doesn't
+# TODO: Note that if this fails, the scriptlet stops but RPM doesn't
 # exit zero.  This is apparently not getting fixed.
 #
 # Discussion:
@@ -402,8 +404,7 @@ chmod 400 "${RPM_BUILD_ROOT}/%{pgpass_file}"
 #   http://rpm5.org/community/rpm-users/0834.html
 #
 
-postgresql-load %{_pscheduler_datadir}/database-build-super.sql
-postgresql-load --role '%{db_user}' %{_pscheduler_datadir}/database-build.sql
+pscheduler internal db-update
 
 # Securely set the password for the role to match the one we generated.
 
