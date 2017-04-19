@@ -7,7 +7,7 @@
 
 Name:		pscheduler-tool-%{short}
 Version:	1.0
-Release:	0.28.rc3%{?dist}
+Release:	1%{?dist}
 
 Summary:	powstream tool class for pScheduler
 BuildArch:	noarch
