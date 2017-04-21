@@ -99,6 +99,7 @@ def dns_resolve(host,
                 query = 'A' if ip_version == 4 else 'AAAA'
             answers = resolver.query(host, query)
         except (dns.exception.Timeout,
+                dns.name.EmptyLabel,
                 dns.resolver.NXDOMAIN,
                 dns.resolver.NoAnswer,
                 dns.resolver.NoNameservers):
