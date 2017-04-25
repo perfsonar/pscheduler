@@ -146,6 +146,7 @@ make -C daemons \
      LOGDIR=%{log_dir} \
      PGDATABASE=%{_pscheduler_database_name} \
      PGPASSFILE=%{_pscheduler_database_pgpass_file} \
+     PGSERVICE=%{pgsql_service}.service \
      PGUSER=%{_pscheduler_database_user} \
      PSUSER=%{_pscheduler_user} \
      ARCHIVERDEFAULTDIR=%{archiver_default_dir} \
