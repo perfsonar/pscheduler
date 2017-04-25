@@ -6,13 +6,14 @@ Type=simple
 User=__PSUSER__
 Group=__PSUSER__
 PermissionsStartOnly=true
+PIDFile=__VAR__/run/pscheduler-__PROG__.pid
+ExecStartPre=/bin/touch __VAR__/run/pscheduler-__PROG__.pid
+ExecStartPre=/bin/chown __PSUSER__:__PSUSER__ __VAR__/run/pscheduler-__PROG__.pid
 # Generate options file
 ExecStartPre=-/bin/sh -c "if [ -r __CONFIGDIR__/__PROG__.conf ]; then opts=$(sed -e 's/#.*$//' __CONFIGDIR__/__PROG__.conf); echo OPTIONS=$opts > __VAR__/run/pscheduler-__PROG__.options; fi"
 EnvironmentFile=-__VAR__/run/pscheduler-__PROG__.options
 # Start service
-ExecStart=__DAEMONDIR__/__PROG__ --dsn @__DSN__ $OPTIONS
-# PID file required for pscheduler debug on/off
-ExecStartPost=/bin/sh -c "echo $MAINPID > __VAR__/run/pscheduler-__PROG__.pid"
+ExecStart=__DAEMONDIR__/__PROG__ --daemon --pid-file __VAR__/run/pscheduler-__PROG__.pid --dsn @__DSN__ $OPTIONS
 ExecStopPost=/bin/rm -f __VAR__/run/pscheduler-__PROG__.pid __VAR__/run/pscheduler-__PROG__.options
 
 [Install]
