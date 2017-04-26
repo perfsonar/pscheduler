@@ -27,7 +27,8 @@ do
       then
        LOCAL_PATH=$(dirname "$0")
        echo "FILE = $FILE"
-       PYTHONPATH="$LIB_PATH:$LOCAL_PATH" pylint $PYLINT_ARGS $FILE
+       PYLINT_FILENAME=`echo $FILE | sed -e s'/\//_/g' | sed -e s'/\./_/g'`
+       PYTHONPATH="$LIB_PATH:$LOCAL_PATH" pylint $PYLINT_ARGS $FILE | tee "pylint_$PYLINT_FILENAME.log"
    fi
 done
 
