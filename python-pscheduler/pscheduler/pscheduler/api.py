@@ -120,7 +120,8 @@ def api_ping(host, bind=None, timeout=3):
     """
     if host is None:
         host = api_this_host()
-    status, result = url_get("https://%s/pscheduler/api" % (host),
+        
+    status, result = url_get(pscheduler.api_url(host, path="api"),
                              timeout=timeout, bind=bind,
                              json=False, throw=False)
     return status == 200
