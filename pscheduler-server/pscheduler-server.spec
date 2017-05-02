@@ -659,7 +659,7 @@ systemctl start httpd
 
 %defattr(-,root,root,-)
 %attr(755,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %{daemon_config_dir}
-%attr(740,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %config(noreplace) %{daemon_config_dir}/*
+%attr(600,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %config(noreplace) %{daemon_config_dir}/*
 %if 0%{?el6}
 %{_initddir}/*
 %endif

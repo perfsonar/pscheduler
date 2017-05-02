@@ -221,7 +221,7 @@ ifndef DAEMONDIR
 endif
 	mkdir -p $(CONFIGDIR)
 	cp -f $(CONFIGS) $(CONFIGDIR)
-	chmod 700 $(CONFIGS:%=$(CONFIGDIR)/%)
+	chmod 600 $(CONFIGS:%=$(CONFIGDIR)/%)
 	mkdir -p $(COMMANDDIR)
 	cp -f $(COMMANDS) $(COMMANDDIR)
 	chmod 555 $(COMMANDS:%=$(COMMANDDIR)/%)
