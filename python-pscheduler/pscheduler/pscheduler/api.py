@@ -53,6 +53,12 @@ def api_url(host = None,
     """Format a URL for use with the pScheduler API."""
 
     host = api_this_host() if host is None else str(host)
+    # Force the host into something valid for DNS
+    # See http://stackoverflow.com/a/25103444/180674
+    try:
+        host = host.encode('idna')
+    except UnicodeError:
+        raise ValueError("Invalid host '%s'" % (host))
     host = __host_per_rfc_2732(host)
 
     if path is not None and path.startswith('/'):
