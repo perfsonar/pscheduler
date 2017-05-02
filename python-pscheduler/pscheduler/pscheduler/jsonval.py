@@ -108,8 +108,9 @@ __dictionary__ = {
     "Duration": {
         "type": "string",
         # ISO 8601.  Source: https://gist.github.com/philipashlock/8830168
+        # Modified not to accept repeats (e.g., R5PT1M), which we don't support.
         # Modified not to accept months or years, which are inexact.
-        "pattern": r'^(R\d*\/)?P(?:\d+(?:\.\d+)?W)?(?:\d+(?:\.\d+)?D)?(?:T(?:\d+(?:\.\d+)?H)?(?:\d+(?:\.\d+)?M)?(?:\d+(?:\.\d+)?S)?)?$',
+        "pattern": r'^P(?:\d+(?:\.\d+)?W)?(?:\d+(?:\.\d+)?D)?(?:T(?:\d+(?:\.\d+)?H)?(?:\d+(?:\.\d+)?M)?(?:\d+(?:\.\d+)?S)?)?$',
         "x-invalid-message": "'%s' is not a valid ISO 8601 duration."
         },
 
