@@ -11,7 +11,7 @@ try:
 except ValueError as ex:
     pscheduler.succeed_json({
         "valid": False,
-        "reason": str(ex)
+        "error": str(ex)
         })
 
 data_validator = {
@@ -25,12 +25,12 @@ data_validator = {
     "additionalProperties": False
 }
 
-valid, reason = pscheduler.json_validate(json, data_validator)
+valid, error = pscheduler.json_validate(json, data_validator)
 
 if not valid:
     pscheduler.succeed_json({
         "valid": False,
-        "reason": reason
+        "error": error
         })
     
 pscheduler.succeed_json({ "valid": True })
