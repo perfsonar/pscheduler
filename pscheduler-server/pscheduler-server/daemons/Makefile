@@ -9,6 +9,7 @@
 #   INITDDIR - Location for installed init scripts (/etc/rc.d/init.d)
 #   UNITDIR - Location for installed systemd units
 #   PGPASSFILE - Path to PostgreSQL password file
+#   PGSERVICE - Name of the PostgreSQL systemd service
 #   PGUSER - Name of pScheduler PostgreSQL account
 #   PSUSER - Name of pScheduler user account
 #   VAR - Location of /var directory
@@ -167,6 +168,10 @@ ifndef PSUSER
 	@echo No PSUSER specified for build
 	@false
 endif
+ifndef PGSERVICE
+	@echo No PGSERVICE specified for build
+	@false
+endif
 ifndef VAR
 	@echo No VAR specified for build
 	@false
@@ -179,6 +184,7 @@ endif
 		-e 's|__PSUSER__|$(PSUSER)|g' \
 		-e 's|__VAR__|$(VAR)|g' \
 		-e 's|__LOGDIR__|$(LOGDIR)|g' \
+		-e 's|__PGSERVICE__|$(PGSERVICE)|g' \
 		< $< > $@
 	@if egrep -e '__[A-Z_]+__' $@ ; then \
 		echo "Found un-substituted values in processed file $@" ; \
