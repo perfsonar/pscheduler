@@ -798,15 +798,16 @@ def json_validate(json, skeleton):
                             format_checker=jsonschema.FormatChecker())
     except jsonschema.exceptions.ValidationError as ex:
 
-        path = "/".join([str(x) for x in ex.absolute_path])
-
         try:
             message = ex.schema["x-invalid-message"].replace("%s", ex.instance)
         except KeyError:
             message = ex.message
 
-        return (False, "%s: %s" % (path, message))
-
+        if len(ex.absolute_path) > 0:
+            path = "/".join([str(x) for x in ex.absolute_path])
+            return (False, "At /%s: %s" % (path, message))
+        else:
+            return (False, "%s" % (message))
 
     return (True, 'OK')
 
