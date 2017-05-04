@@ -675,9 +675,9 @@ def tasks_uuid_runs_run_result(task, run):
 
     if not merged_result['succeeded']:
         if format == 'text/plain':
-            return ok("Test failed.", mimetype=format)
+            return ok("Run failed.", mimetype=format)
         elif format == 'text/html':
-            return ok("<p>Test failed.</p>", mimetype=format)
+            return ok("<p>Run failed.</p>", mimetype=format)
         return bad_request("Unsupported format " + format)
 
     formatter_input = {
