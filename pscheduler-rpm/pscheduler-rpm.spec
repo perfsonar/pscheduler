@@ -3,7 +3,7 @@
 #
 
 Name:		pscheduler-rpm
-Version:	1.0
+Version:	1.0.0.2
 Release:	1%{?dist}
 
 Summary:	Macros for use by pScheduler RPM specs
