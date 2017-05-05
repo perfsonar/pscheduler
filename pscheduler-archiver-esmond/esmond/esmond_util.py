@@ -516,25 +516,35 @@ class EsmondThroughputRecord(EsmondBaseRecord):
             self.metadata['ip-transport-protocol'] = 'tcp'
         
     def add_additional_data(self, data_point={}, test_spec={}, test_result={}):
+        is_udp =  test_spec.get('udp', False)
         if test_result.get("summary", None):
             if test_result["summary"].get("summary", None):
                 summary = test_result["summary"]["summary"]
                 self.add_data_if_exists(data_point=data_point, event_type="throughput", obj=summary, field="throughput-bits")
-                if 'udp' in test_spec and test_spec['udp']:
+                if is_udp:
                     self.add_data_if_exists(data_point=data_point, event_type="packet-count-sent", obj=summary, field="sent")
                     self.add_data_if_exists(data_point=data_point, event_type="packet-count-lost", obj=summary, field="lost")
                     self.add_data_rate(data_point=data_point, event_type="packet-loss-rate", test_result=summary, numerator='lost', denominator='sent')
+                else:
+                    self.add_data_if_exists(data_point=data_point, event_type="packet-retransmits", obj=summary, field="retransmits")
             if test_result["summary"].get("streams", None):
                 if 'parallel' in test_spec and test_spec['parallel'] > 1:
                     streams = test_result["summary"]["streams"]
                     streams.sort(key=lambda x: x["stream-id"])
                     streams_throughput = []
+                    streams_packet_retransmits = []
                     for stream in streams:
                         streams_throughput.append(stream.get("throughput-bits", None))
+                        if stream.get("retransmits", None):
+                            streams_packet_retransmits.append(stream["retransmits"])
                     self.add_data(data_point=data_point, event_type="streams-throughput", val=streams_throughput)
+                    if len(streams_packet_retransmits) > 0 and not is_udp:
+                        self.add_data(data_point=data_point, event_type="streams-packet-retransmits", val=streams_packet_retransmits)
         if test_result.get("intervals", None):
             throughput_intervals = []
+            retransmits_intervals = []
             throughput_stream_intervals = {}
+            retransmit_stream_intervals = {}
             for interval in test_result["intervals"]:
                 if interval.get("summary", None):
                     start = interval["summary"].get("start", None)
@@ -545,6 +555,9 @@ class EsmondThroughputRecord(EsmondBaseRecord):
                     throughput = interval["summary"].get("throughput-bits", None)
                     if throughput is not None:
                         throughput_intervals.append({ "start": start, "duration": duration, "val": throughput})
+                    retransmits = interval["summary"].get("retransmits", None)
+                    if retransmits is not None:
+                        retransmits_intervals.append({ "start": start, "duration": duration, "val": retransmits})
                 if interval.get("streams", None):
                     if 'parallel' in test_spec and test_spec['parallel'] > 1:
                         for stream in interval["streams"]:
@@ -565,14 +578,36 @@ class EsmondThroughputRecord(EsmondBaseRecord):
                                      "duration": duration, 
                                      "val": throughput
                                 })
-                        self.add_data(data_point=data_point, event_type="throughput-subintervals", val=throughput_intervals)
-                        #TODO: sort this
-                        formatted_tsi = []
-                        sorted_streams = throughput_stream_intervals.keys()
-                        sorted_streams.sort()
-                        for id in sorted_streams:
-                            formatted_tsi.append(throughput_stream_intervals[id])
-                        self.add_data(data_point=data_point, event_type="streams-throughput-subintervals", val=formatted_tsi)
+                            if stream_id not in retransmit_stream_intervals:
+                                retransmit_stream_intervals[stream_id] = []
+                            retransmits = stream.get("retransmits", None)
+                            if retransmits is not None:
+                                retransmit_stream_intervals[stream_id].append({
+                                    "start": start,
+                                     "duration": duration, 
+                                     "val": retransmits
+                                })
+            #add types               
+            if len(throughput_intervals) > 0:
+                self.add_data(data_point=data_point, event_type="throughput-subintervals", val=throughput_intervals)
+            if len(retransmits_intervals) > 0 and not is_udp:
+                self.add_data(data_point=data_point, event_type="packet-retransmits-subintervals", val=retransmits_intervals)
+            if throughput_stream_intervals > 0:
+                formatted_tsi = []
+                sorted_streams = throughput_stream_intervals.keys()
+                sorted_streams.sort()
+                for id in sorted_streams:
+                    formatted_tsi.append(throughput_stream_intervals[id])
+                self.add_data(data_point=data_point, event_type="streams-throughput-subintervals", val=formatted_tsi)
+            if retransmit_stream_intervals > 0 and not is_udp:
+                formatted_rsi = []
+                sorted_streams = retransmit_stream_intervals.keys()
+                sorted_streams.sort()
+                for id in sorted_streams:
+                    formatted_rsi.append(retransmit_stream_intervals[id])
+                self.add_data(data_point=data_point, event_type="streams-packet-retransmits-subintervals", val=formatted_rsi)
+
+                
 
 class EsmondTraceRecord(EsmondBaseRecord):   
     test_type = 'trace'
@@ -766,3 +801,4 @@ class EsmondRawRecord(EsmondBaseRecord):
     
     def add_additional_data(self, data_point={}, test_spec={}, test_result={}):
         self.add_data(data_point=data_point, event_type='pscheduler-raw', val=test_result)
+

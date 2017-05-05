@@ -4,7 +4,7 @@
 
 %define short	ping
 Name:		pscheduler-tool-%{short}
-Version:	1.0
+Version:	1.0.0.2
 Release:	1%{?dist}
 
 Summary:	pScheduler Ping Tool

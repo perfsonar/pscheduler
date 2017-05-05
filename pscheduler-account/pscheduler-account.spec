@@ -3,7 +3,7 @@
 #
 
 Name:		pscheduler-account
-Version:	1.0
+Version:	1.0.0.2
 Release:	1%{?dist}
 
 Summary:	Account for pScheduler

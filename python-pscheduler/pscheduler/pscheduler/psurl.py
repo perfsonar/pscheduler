@@ -127,7 +127,7 @@ def url_get( url,          # GET URL
 
     if status != 200:
         if throw:
-            __raise_urlexception(status, text)
+            __raise_urlexception(status, text, request)
         else:
             return (status, text)
 
