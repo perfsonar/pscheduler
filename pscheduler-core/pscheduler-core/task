@@ -219,27 +219,6 @@ if options.reference is not None:
                         % (options.reference, str(ex)))
 
 
-opt_slip = options.slip
-if opt_slip is None:
-    opt_slip = os.getenv('PSCHEDULER_SLIP')
-
-if opt_slip is not None:
-    try:
-        slip = pscheduler.iso8601_as_timedelta(opt_slip)
-    except ValueError as ex:
-        pscheduler.fail("Invalid --slip: %s" % str(ex))
-elif options.repeat is None:
-    # TODO: This is a stopgap that forces slip on non-repeating tasks
-    # so scheduling won't fail if there isn't an immediate slot
-    # available on the schedule.  See issue #30.
-    slip = datetime.timedelta(minutes=5)
-else:
-    # If a repeat is specified and a slip isn't, we don't do any
-    # default slip.
-    slip = None
-
-
-
     
 
 if options.start is not None:
@@ -316,6 +295,10 @@ else:
         except IOError as ex:
             pscheduler.fail("Unable to open task %s" % (str(ex)))
     task = pscheduler.json_load(file, exit_on_error=True)
+    try:
+        opt_slip = task['schedule']['slip']
+    except KeyError:
+        opt_slip = None
 
     # Validate the JSON against a TaskSpecification
     # TODO: Figure out how to do this without the intermediate object
@@ -333,6 +316,30 @@ else:
     task_read = True
 
 
+opt_slip = options.slip
+if opt_slip is None and 'slip' in task['schedule']:
+    opt_slip = task['schedule']['slip']
+
+if opt_slip is None:
+    opt_slip = os.getenv('PSCHEDULER_SLIP')
+
+if opt_slip is not None:
+    try:
+        slip = pscheduler.iso8601_as_timedelta(opt_slip)
+    except ValueError as ex:
+        pscheduler.fail("Invalid --slip: %s" % str(ex))
+elif options.repeat is None:
+    # TODO: This is a stopgap that forces slip on non-repeating tasks
+    # so scheduling won't fail if there isn't an immediate slot
+    # available on the schedule.  See issue #30.
+    slip = datetime.timedelta(minutes=5)
+else:
+    # If a repeat is specified and a slip isn't, we don't do any
+    # default slip.
+    slip = None
+
+
+
 # Overlay the lead bind if specified
 if options.lead_bind is not None:
     task["lead-bind"] = options.lead_bind
@@ -345,8 +352,10 @@ if options.reference is not None:
 # Overlay schedule options
 #
 
-# TODO: Remove after validation
-assert 'schedule' in task
+# Put a default empty schedule in the task which will be removed on
+# export if empty.
+if 'schedule' not in task:
+    task['schedule'] = {}
 
 if options.max_runs > 1:
     task['schedule']['max-runs'] = options.max_runs
@@ -354,7 +363,7 @@ if options.max_runs > 1:
 if options.repeat is not None:
     task['schedule']['repeat'] = options.repeat
 
-if slip is not None:
+if opt_slip is not None:
     task['schedule']['slip'] = pscheduler.timedelta_as_iso8601(slip)
     log.debug("Using slip of %s", task['schedule']['slip'])
 
@@ -476,6 +485,22 @@ task_json_text = pscheduler.json_dump(task)
 
 
 if options.export:
+
+    # If there was no slip provided and none was imported, excise it
+    # from what we export.
+    if opt_slip is None:
+        try:
+            del task['schedule']['slip']
+        except KeyError:
+            pass
+
+    # If the schedule item ended up empty, get rid of it.
+    try:
+        if len(task['schedule']) == 0:
+            del task['schedule']
+    except KeyError:
+        pass
+
     pscheduler.json_dump(obj=task, dest=sys.stdout, pretty=True)
     print
     pscheduler.succeed()

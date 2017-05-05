@@ -375,10 +375,10 @@ BEGIN
     validate_result := run_result.stdout::JSONB;
 
     IF NOT (validate_result ->> 'valid')::BOOLEAN THEN
-        IF validate_result ? 'reason' THEN
-            RAISE EXCEPTION 'Invalid data for archiver "%": %', archiver_name, validate_result ->> 'reason';
+        IF validate_result ? 'error' THEN
+            RAISE EXCEPTION 'Invalid data for archiver "%": %', archiver_name, validate_result ->> 'error';
         ELSE
-            RAISE EXCEPTION 'Invalid data for archiver "%"', archiver_name;
+            RAISE EXCEPTION 'Invalid data for archiver "%": No error provided by plugin.', archiver_name;
         END IF;
     END IF;
 

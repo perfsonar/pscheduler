@@ -4,7 +4,7 @@
 
 %define short	simplestream
 Name:		pscheduler-test-%{short}
-Version:	1.0
+Version:	1.0.0.2
 Release:	1%{?dist}
 
 Summary:	Simplestream test class for pScheduler

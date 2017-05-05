@@ -9,6 +9,14 @@ import jsonschema
 # TODO: Consider adding tile/description and maybe "example" (not
 # officially supported) as a way to generate the JSON dictionary.
 
+
+# Note that adding an "x-invalid-message" string to any type will use
+# that value for error messages instead of jsonschema's default.  The
+# sequence "%s" in that string will be replaced with the invalid value.
+#
+# See the definition of "Duration" for an example.
+
+
 #
 # Types from the dictionary
 #
@@ -100,8 +108,10 @@ __dictionary__ = {
     "Duration": {
         "type": "string",
         # ISO 8601.  Source: https://gist.github.com/philipashlock/8830168
+        # Modified not to accept repeats (e.g., R5PT1M), which we don't support.
         # Modified not to accept months or years, which are inexact.
-        "pattern": r'^(R\d*\/)?P(?:\d+(?:\.\d+)?W)?(?:\d+(?:\.\d+)?D)?(?:T(?:\d+(?:\.\d+)?H)?(?:\d+(?:\.\d+)?M)?(?:\d+(?:\.\d+)?S)?)?$'
+        "pattern": r'^P(?:\d+(?:\.\d+)?W)?(?:\d+(?:\.\d+)?D)?(?:T(?:\d+(?:\.\d+)?H)?(?:\d+(?:\.\d+)?M)?(?:\d+(?:\.\d+)?S)?)?$',
+        "x-invalid-message": "'%s' is not a valid ISO 8601 duration."
         },
 
     "DurationRange": {
@@ -783,16 +793,21 @@ def json_validate(json, skeleton):
     # TODO: This doesn't seem to validate references.
     jsonschema.Draft4Validator.check_schema(schema)
 
-
     try:
         jsonschema.validate(json, schema,
                             format_checker=jsonschema.FormatChecker())
     except jsonschema.exceptions.ValidationError as ex:
-        return (False, "At %s: %s" % (
-            '/' + ('/'.join([str(x) for x in ex.absolute_path])),
-            ex.message
-            ))
 
+        try:
+            message = ex.schema["x-invalid-message"].replace("%s", ex.instance)
+        except KeyError:
+            message = ex.message
+
+        if len(ex.absolute_path) > 0:
+            path = "/".join([str(x) for x in ex.absolute_path])
+            return (False, "At /%s: %s" % (path, message))
+        else:
+            return (False, "%s" % (message))
 
     return (True, 'OK')
 
@@ -804,13 +819,13 @@ if __name__ == "__main__":
     sample = {
         "schema": 1,
         "when": "2015-06-12T13:48:19.234",
-        "howlong": "PT10M",
+        "howlong": "PT10Mxx",
         "sendto": "bob@example.com",
         "x-factor": 3.14,
         "protocol": "udp",
         "ipv": 6,
         "ip": "fc80:dead:beef::",
-        "archspec": { "name": "foo", "data": None },
+#        "archspec": { "name": "foo", "data": None },
         }
 
     schema = {
