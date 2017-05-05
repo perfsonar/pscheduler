@@ -32,6 +32,7 @@ override_dh_auto_build:
 		LOGDIR=/var/log/pscheduler \
 		PGDATABASE=pscheduler \
 		PGPASSFILE=/etc/pscheduler/database/pgpassfile \
+		PGSERVICE=postgresql.service \
 		PGUSER=pscheduler \
 		PSUSER=pscheduler \
 		ARCHIVERDEFAULTDIR=/etc/pscheduler/default-archives \
