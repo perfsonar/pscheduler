@@ -1,3 +1,9 @@
+pscheduler-test-trace (1.0.0.2-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 05 May 2017 12:57:52 +0000
+
 pscheduler-test-trace (1.0-1) perfsonar-jessie-release; urgency=low
 
   * New upstream version
