@@ -74,7 +74,7 @@ def run_client():
     if ip_version is None and source is not None:
         source_ip, dest_ip = pscheduler.ip_normalize_version(source, test_spec['dest'])         
         if source_ip is not None and dest_ip is not None:
-            ip_version = pscheduler.ip_addr_version(source)[0]
+            ip_version = pscheduler.ip_addr_version(source_ip)[0]
             
     if ip_version:
         nuttcp_args.append('-%s' % ip_version)
@@ -160,7 +160,7 @@ def run_client():
 
     affinity = test_spec.get('client-cpu-affinity')
     if affinity == None:
-        affinity = pscheduler.source_affinity(destination)
+        affinity = pscheduler.source_affinity(destination, ip_version=ip_version)
 
     if affinity != None:
         nuttcp_args.insert(0, 'numactl')
@@ -213,7 +213,7 @@ def run_server():
     affinity = test_spec.get('server-cpu-affinity')
     if affinity == None:
         # look up what interface we're going to be receiving on        
-        interface = pscheduler.address_interface(test_spec['dest'])
+        interface = pscheduler.address_interface(test_spec['dest'], ip_version=ip_version)
         affinity = pscheduler.interface_affinity(interface)
 
     if affinity != None:
