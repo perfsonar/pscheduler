@@ -1,0 +1,16 @@
+Source: drop-in
+Section: misc
+Priority: optional
+Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9), perl
+Standards-Version: 3.9.6
+Homepage: https://github.com/markfeit/drop-in
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: drop-in
+Architecture: all
+Depends: ${misc:Depends}, perl
+Description: Adds, replaces or removes blocks of text in text files
+ Useful for maintaining configurations that are in a single file
+ instead of a .d-style directory.
