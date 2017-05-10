@@ -69,7 +69,9 @@ def __raise_urlexception(status, text, request):
     """
     Raise a nicely-formatted exception.
     """
-    mime_type = request.headers["content-type"].split(";")[0]
+    mime_type = None
+    if request is not None:
+        mime_type = request.headers["content-type"].split(";")[0]
     if mime_type is not None and mime_type.startswith("text/plain"):
         message = text.strip()
     else:
@@ -244,7 +246,7 @@ def url_delete( url,          # DELETE URL
 
     with requests.Session() as session:
         _mount_url(session, url, bind)
-
+        request = None
         try:
             request = session.delete(url, verify=verify_keys,
                                      headers=headers, timeout=timeout)

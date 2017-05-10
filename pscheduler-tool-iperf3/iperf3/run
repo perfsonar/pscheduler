@@ -82,6 +82,7 @@ def run_client():
     ip_version = test_spec.get('ip-version', None)
     source = test_spec.get('source', None)
     destination = test_spec['dest'] #required
+    normalized_dest = destination
     local_address = test_spec.get('local-address', None)
     if ip_version is not None:
         #Set ip version if provided
@@ -110,6 +111,7 @@ def run_client():
         if dest_ip is not None:
             iperf3_args.append('-c')
             iperf3_args.append(dest_ip)
+            normalized_dest = dest_ip
         else:
             pscheduler.succeed_json({"succeeded": False,
                                      "error": "Unable to find common IP version between local-address %s and dest %s" % (local_address, destination)})
@@ -122,6 +124,7 @@ def run_client():
         if dest_ip is not None:
             iperf3_args.append('-c')
             iperf3_args.append(dest_ip)
+            normalized_dest = dest_ip
         else:
             pscheduler.succeed_json({"succeeded": False,
                                      "error": "Unable to find common IP version between source %s and dest %s" % (source, destination)})
@@ -214,7 +217,7 @@ def run_client():
     # or try to auto detect it
     affinity = test_spec.get('client-cpu-affinity')
     if affinity == None:
-        affinity = pscheduler.source_affinity(destination)
+        affinity = pscheduler.source_affinity(normalized_dest, ip_version=ip_version)
 
     if affinity != None:
         iperf3_args.insert(0, 'numactl')
@@ -260,6 +263,7 @@ def run_server():
     #Determine if we need to bind to an address and have enough info to do so intelligently
     ip_version = test_spec.get('ip-version', None)
     source = test_spec.get('source', None)
+    normalized_dest = test_spec['dest']
     if ip_version is not None:
         #if the ip version is given we just use the dest as the bind address and have 
         #iperf3 force ipv4 or ipv6
@@ -278,6 +282,7 @@ def run_server():
         if bind_address is not None:
             iperf3_args.append('-B')
             iperf3_args.append(bind_address)
+            normalized_dest = bind_address
         else:
             logger.debug("Skipping bind. Source %s and destination %s don't have any common IPs of the same version as far as tool can tell." % (source, test_spec['dest']))
     elif test_spec.get('udp', False):
@@ -300,7 +305,7 @@ def run_server():
     affinity = test_spec.get('server-cpu-affinity')
     if affinity == None:
         # look up what interface we're going to be receiving on        
-        interface = pscheduler.address_interface(test_spec['dest'])
+        interface = pscheduler.address_interface(normalized_dest, ip_version=ip_version)
         affinity = pscheduler.interface_affinity(interface)
 
     if affinity != None:
