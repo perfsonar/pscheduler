@@ -285,7 +285,6 @@ if options.importfile is None:
             'spec': {}
             }
         }
-    task_read = False
 else:
     if options.importfile == '-':
         file = sys.stdin
@@ -295,10 +294,6 @@ else:
         except IOError as ex:
             pscheduler.fail("Unable to open task %s" % (str(ex)))
     task = pscheduler.json_load(file, exit_on_error=True)
-    try:
-        opt_slip = task['schedule']['slip']
-    except KeyError:
-        opt_slip = None
 
     # Validate the JSON against a TaskSpecification
     # TODO: Figure out how to do this without the intermediate object
@@ -313,30 +308,29 @@ else:
     if not valid:
         pscheduler.fail("Invalid imported JSON: %s" % (message))
 
-    task_read = True
+    # An empty schedule is needed later for handling the slip time.
+    if 'schedule' not in task:
+        task['schedule'] = {}
 
 
-opt_slip = options.slip
-if opt_slip is None and 'slip' in task['schedule']:
-    opt_slip = task['schedule']['slip']
 
-if opt_slip is None:
-    opt_slip = os.getenv('PSCHEDULER_SLIP')
+if options.slip is not None:
 
-if opt_slip is not None:
-    try:
-        slip = pscheduler.iso8601_as_timedelta(opt_slip)
-    except ValueError as ex:
-        pscheduler.fail("Invalid --slip: %s" % str(ex))
-elif options.repeat is None:
-    # TODO: This is a stopgap that forces slip on non-repeating tasks
-    # so scheduling won't fail if there isn't an immediate slot
-    # available on the schedule.  See issue #30.
-    slip = datetime.timedelta(minutes=5)
+    # The command-line argument overrides everything.
+    log.debug("Using slip from command line")
+    task['schedule']['slip'] = options.slip
+
 else:
-    # If a repeat is specified and a slip isn't, we don't do any
-    # default slip.
-    slip = None
+
+    # If there's no slip already in the schedule and we're not
+    # importing or exporting, force a default.
+
+    if ('slip' not in task['schedule']) \
+       and (not options.export) \
+       and (options.importfile is None):
+        forced_slip = os.environ.get('PSCHEDULER_SLIP', 'PT5M')
+        task['schedule']['slip'] = forced_slip
+        log.debug("Forcing default slip of %s" % (forced_slip))
 
 
 
@@ -363,10 +357,6 @@ if options.max_runs > 1:
 if options.repeat is not None:
     task['schedule']['repeat'] = options.repeat
 
-if opt_slip is not None:
-    task['schedule']['slip'] = pscheduler.timedelta_as_iso8601(slip)
-    log.debug("Using slip of %s", task['schedule']['slip'])
-
 if options.sliprand is not None:
     task['schedule']['sliprand'] = options.sliprand
 
@@ -387,7 +377,7 @@ lead_bind = options.lead_bind
 # valid, that will be checked later.
 #
 
-if task_read:
+if options.importfile is not None:
     try:
         test_type = task['test']['type']
         remaining_args.pop(0)
@@ -485,14 +475,6 @@ task_json_text = pscheduler.json_dump(task)
 
 
 if options.export:
-
-    # If there was no slip provided and none was imported, excise it
-    # from what we export.
-    if opt_slip is None:
-        try:
-            del task['schedule']['slip']
-        except KeyError:
-            pass
 
     # If the schedule item ended up empty, get rid of it.
     try:
