@@ -41,7 +41,7 @@ def source_interface(addr, port=80, ip_version=None):
 
     s.close()
 
-    interface_name = address_interface(interface_address)
+    interface_name = address_interface(interface_address, ip_version=ip_version)
     
     if interface_name:
         return (interface_address, interface_name)
@@ -57,7 +57,7 @@ def address_interface(addr, ip_version=None):
     # make sure we resolve any address to a specific 
     # IP address before looking up interfaces
     if ip_version is not None:
-        pscheduler.dns_resolve(addr, ip_version=ip_version)
+        addr = pscheduler.dns_resolve(addr, ip_version=ip_version)
     else:
         addr = pscheduler.dns_resolve(addr)
         if addr == None:

@@ -112,6 +112,7 @@ def run_client():
             iperf3_args.append('-c')
             iperf3_args.append(dest_ip)
             normalized_dest = dest_ip
+            ip_version = pscheduler.ip_addr_version(dest_ip)[0]
         else:
             pscheduler.succeed_json({"succeeded": False,
                                      "error": "Unable to find common IP version between local-address %s and dest %s" % (local_address, destination)})
@@ -125,6 +126,7 @@ def run_client():
             iperf3_args.append('-c')
             iperf3_args.append(dest_ip)
             normalized_dest = dest_ip
+            ip_version = pscheduler.ip_addr_version(dest_ip)[0]
         else:
             pscheduler.succeed_json({"succeeded": False,
                                      "error": "Unable to find common IP version between source %s and dest %s" % (source, destination)})
@@ -219,6 +221,7 @@ def run_client():
     if affinity == None:
         affinity = pscheduler.source_affinity(normalized_dest, ip_version=ip_version)
 
+    logger.debug("Selected CPU affinity %s" % affinity)
     if affinity != None:
         iperf3_args.insert(0, 'numactl')
         iperf3_args.insert(1, '-N')
@@ -283,6 +286,7 @@ def run_server():
             iperf3_args.append('-B')
             iperf3_args.append(bind_address)
             normalized_dest = bind_address
+            ip_version = pscheduler.ip_addr_version(bind_address)[0]
         else:
             logger.debug("Skipping bind. Source %s and destination %s don't have any common IPs of the same version as far as tool can tell." % (source, test_spec['dest']))
     elif test_spec.get('udp', False):
