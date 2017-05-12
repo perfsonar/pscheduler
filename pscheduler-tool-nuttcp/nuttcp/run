@@ -204,7 +204,7 @@ def run_server():
     if ip_version is None and source is not None:
         source_ip, dest_ip = pscheduler.ip_normalize_version(source, test_spec['dest'])         
         if source_ip is not None and dest_ip is not None:
-            ip_version = pscheduler.ip_addr_version(source)[0]
+            ip_version = pscheduler.ip_addr_version(source_ip)[0]
             
     if ip_version:
         nuttcp_args.append('-%s' % ip_version)
