@@ -4,7 +4,7 @@
 
 %define short	dns
 Name:		pscheduler-test-%{short}
-Version:	1.0.0.2
+Version:	1.0.0.3
 Release:	1%{?dist}
 
 Summary:	DNS test for pScheduler
