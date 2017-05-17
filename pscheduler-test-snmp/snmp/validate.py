@@ -8,14 +8,20 @@ def spec_is_valid(json):
 # QUESTION: Separate schema for each version
     if json['version'] == '2c':
         schema = {
+            "local": {
+                "VersionNumber": {
+		            "type": "string",
+		            "enum": [ "1", "2c", "3"]
+	            }
+	        },
             "type": "object",
             "properties": {
                 "schema":       { "$ref": "#/pScheduler/Cardinal" },
                 "host":         { "$ref": "#/pScheduler/Host" },
                 "host-node":    { "$ref": "#/pScheduler/Host" },
                 "dest":         { "$ref": "#/pScheduler/Host" },
-                "version":      { "$ref": "#/pScheduler/String"},
-                "community":    { "$ref": "#/pScheduler/String"},
+                "version":      { "$ref": "#/local/VersionNumber"},
+                "_community":    { "$ref": "#/pScheduler/String"},
                 "oid":          { "$ref": "#/pScheduler/String"},
                 "op":           { "$ref": "#/pScheduler/String"},
                 "timeout":      { "$ref": "#/pScheduler/Duration" },
