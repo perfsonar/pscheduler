@@ -1,0 +1,20 @@
+{ 
+  "schema": 1,
+  "schedule": None,
+  "test": {
+      "type": "object",
+        "properties": {
+            "spec": {
+                "dest": "test.net-snmp.org", 
+                "op": "walk", "version": "2c", 
+                "community": "public", 
+                "schema": 1
+                },
+            },
+        "additionalProperties": False,
+        "required": [
+            "spec",
+            ],
+        },
+}
+

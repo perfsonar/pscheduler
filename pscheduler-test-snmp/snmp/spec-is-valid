@@ -1,0 +1,28 @@
+#!/usr/bin/python
+#
+# Validator for 'snmp' task spec
+#
+
+import pscheduler
+
+from validate import spec_is_valid
+
+try:
+    json = pscheduler.json_load()
+    pscheduler.json_check_schema(json, 1)
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+    })
+
+valid, message = spec_is_valid(json)
+
+result = {
+    "valid": valid
+}
+
+if not valid:
+    result["error"] = message
+
+pscheduler.succeed_json(result)
