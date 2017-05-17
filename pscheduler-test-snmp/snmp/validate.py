@@ -27,6 +27,7 @@ def spec_is_valid(json):
                 "op",
                 ]
             }
+            
     if json['version'] == '3':
         pass
 

@@ -11,7 +11,7 @@ import time
 import pscheduler
 
 # from stdin
-input = pscheduler.json_load(exit_on_error=True);
+input = pscheduler.json_load(exit_on_error=True)
 
 try:
     version = input['test']['spec']['version']
@@ -37,9 +37,8 @@ for key in input['test']['spec'].keys():
         argv.append('-c')
         argv.append(input['test']['spec'][key])
     if key == 'dest':
-        argv.append(input['test']['spec'][key])
+        argv.append(input['test']['spec'][key].strip("/n"))
 
-print argv
 try:
     status, stdout, stderr = pscheduler.run_program(argv)
     succeeded = True

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Checker for 'dns' task limits
+# Checker for 'snmp' task limits
 #
 
 #TODO
@@ -15,7 +15,7 @@ from validate import limit_is_valid
 #
 
 try:
-    json = pscheduler.json_load()
+    json = pscheduler.json_load() # from stdin?
 except ValueError as ex:
     pscheduler.fail("Invalid JSON %s" % str(ex))
 
