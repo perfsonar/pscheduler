@@ -40,7 +40,6 @@ class TestLog(PschedTestBase):
             log.critical("Crtitical")
             os.kill(os.getpid(),
                     signal.SIGUSR1 if (num % 2) != 0 else signal.SIGUSR2)
-            time.sleep(1)
 
 
 if __name__ == '__main__':
