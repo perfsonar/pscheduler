@@ -28,7 +28,7 @@ def spec_is_valid(json):
                 },
             "required": [
                 "version",
-                "community",
+                "_community",
                 "dest",
                 "op",
                 ]
