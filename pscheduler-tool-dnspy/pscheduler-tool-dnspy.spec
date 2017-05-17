@@ -4,8 +4,8 @@
 
 %define short	dnspy
 Name:		pscheduler-tool-%{short}
-Version:	1.0
-Release:	0.21.rc2%{?dist}
+Version:	1.0.0.2
+Release:	1%{?dist}
 
 Summary:	DNS tool class for pScheduler
 BuildArch:	noarch

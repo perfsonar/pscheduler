@@ -3,8 +3,8 @@
 #
 
 Name:		pscheduler-docs
-Version:	1.0
-Release:	0.28.rc3%{?dist}
+Version:	1.0.0.2
+Release:	1%{?dist}
 
 Summary:	pScheduler documentation and samples
 
@@ -19,6 +19,8 @@ Source0:	%{name}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 BuildRequires:	pscheduler-rpm
+# This is for the 'validate-limits' command.
+BuildRequires:	pscheduler-core
 
 %description
 pScheduler documentation and sample configuration files 
@@ -29,6 +31,9 @@ pScheduler documentation and sample configuration files
 
 
 %build
+make \
+     DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_docdir}
+
 make \
      DOCDIR=$RPM_BUILD_ROOT/%{_pscheduler_docdir} \
      install

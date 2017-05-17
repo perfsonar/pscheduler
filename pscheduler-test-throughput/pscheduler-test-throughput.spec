@@ -4,8 +4,8 @@
 
 %define short	throughput
 Name:		pscheduler-test-%{short}
-Version:	1.0
-Release:	0.28.rc3%{?dist}
+Version:	1.0.0.2
+Release:	1%{?dist}
 
 Summary:	Throughput test class for pScheduler
 BuildArch:	noarch

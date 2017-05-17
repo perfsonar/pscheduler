@@ -15,12 +15,31 @@ json = pscheduler.json_load(exit_on_error=True);
 
 try:
     if json['type'] != 'trace':
-        pscheduler.fail('Unsupported test type')
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Unsupported test type" ]
+        })
 except KeyError:
-    pscheduler.fail('Missing test type')
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test type" ]
+    })
 
 
-spec = json['spec']
+try:
+    spec = json["spec"]
+    pscheduler.json_check_schema(spec, 1)
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test specification"]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
+
 
 errors = []
 
@@ -91,10 +110,11 @@ check_with_error('wait', "Cannot control response wait time")
 check_with_error('send-wait', "Cannot control delay between sends")
 
 
-# as is okay since they're done outside the program.
-
+result = {
+    "can-run": len(errors) == 0
+}
 
 if len(errors) > 0:
-    pscheduler.fail('\n'.join(errors))
+    result["reasons"] = errors
 
-pscheduler.succeed()
+pscheduler.succeed_json(result)

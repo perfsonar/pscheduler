@@ -1,5 +1,6 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
     "name": "idleex",
     "description": "Consume time exclusively - NOT FOR PRODUCTION",
     "version": "1.0",

@@ -219,27 +219,6 @@ if options.reference is not None:
                         % (options.reference, str(ex)))
 
 
-opt_slip = options.slip
-if opt_slip is None:
-    opt_slip = os.getenv('PSCHEDULER_SLIP')
-
-if opt_slip is not None:
-    try:
-        slip = pscheduler.iso8601_as_timedelta(opt_slip)
-    except ValueError as ex:
-        pscheduler.fail("Invalid --slip: %s" % str(ex))
-elif options.repeat is None:
-    # TODO: This is a stopgap that forces slip on non-repeating tasks
-    # so scheduling won't fail if there isn't an immediate slot
-    # available on the schedule.  See issue #30.
-    slip = datetime.timedelta(minutes=5)
-else:
-    # If a repeat is specified and a slip isn't, we don't do any
-    # default slip.
-    slip = None
-
-
-
     
 
 if options.start is not None:
@@ -306,7 +285,6 @@ if options.importfile is None:
             'spec': {}
             }
         }
-    task_read = False
 else:
     if options.importfile == '-':
         file = sys.stdin
@@ -316,8 +294,44 @@ else:
         except IOError as ex:
             pscheduler.fail("Unable to open task %s" % (str(ex)))
     task = pscheduler.json_load(file, exit_on_error=True)
-    # TODO: Validate what we read as a task.  Or will the server cover this?
-    task_read = True
+
+    # Validate the JSON against a TaskSpecification
+    # TODO: Figure out how to do this without the intermediate object
+    valid, message = pscheduler.json_validate({"": task}, {
+        "type": "object",
+        "properties": {
+            "": {"$ref": "#/pScheduler/TaskSpecification"}
+        },
+        "required": [""]
+    })
+
+    if not valid:
+        pscheduler.fail("Invalid imported JSON: %s" % (message))
+
+    # An empty schedule is needed later for handling the slip time.
+    if 'schedule' not in task:
+        task['schedule'] = {}
+
+
+
+if options.slip is not None:
+
+    # The command-line argument overrides everything.
+    log.debug("Using slip from command line")
+    task['schedule']['slip'] = options.slip
+
+else:
+
+    # If there's no slip already in the schedule and we're not
+    # importing or exporting, force a default.
+
+    if ('slip' not in task['schedule']) \
+       and (not options.export) \
+       and (options.importfile is None):
+        forced_slip = os.environ.get('PSCHEDULER_SLIP', 'PT5M')
+        task['schedule']['slip'] = forced_slip
+        log.debug("Forcing default slip of %s" % (forced_slip))
+
 
 
 # Overlay the lead bind if specified
@@ -332,18 +346,16 @@ if options.reference is not None:
 # Overlay schedule options
 #
 
-# TODO: Remove after validation
-assert 'schedule' in task
+# Put a default empty schedule in the task which will be removed on
+# export if empty.
+if 'schedule' not in task:
+    task['schedule'] = {}
 
 if options.max_runs > 1:
     task['schedule']['max-runs'] = options.max_runs
 
 if options.repeat is not None:
     task['schedule']['repeat'] = options.repeat
-
-if slip is not None:
-    task['schedule']['slip'] = pscheduler.timedelta_as_iso8601(slip)
-    log.debug("Using slip of %s", task['schedule']['slip'])
 
 if options.sliprand is not None:
     task['schedule']['sliprand'] = options.sliprand
@@ -365,7 +377,7 @@ lead_bind = options.lead_bind
 # valid, that will be checked later.
 #
 
-if task_read:
+if options.importfile is not None:
     try:
         test_type = task['test']['type']
         remaining_args.pop(0)
@@ -453,12 +465,24 @@ elif status != 200:
 
 json_to_merge = raw_spec
 assert 'spec' in task['test']
+final_schema = max(task['test']['spec'].get('schema', 1),
+                   json_to_merge.get("schema", 1))
 task['test']['spec'].update(json_to_merge)
+task['test']['spec']['schema'] = final_schema
+
 
 task_json_text = pscheduler.json_dump(task)
 
 
 if options.export:
+
+    # If the schedule item ended up empty, get rid of it.
+    try:
+        if len(task['schedule']) == 0:
+            del task['schedule']
+    except KeyError:
+        pass
+
     pscheduler.json_dump(obj=task, dest=sys.stdout, pretty=True)
     print
     pscheduler.succeed()
@@ -492,10 +516,15 @@ null_reason = None
 url = pscheduler.api_url(assist, '/tests/%s/participants' % task['test']['type'])
 log.debug("Fetching participant list")
 
-log.debug("%s", pscheduler.json_dump(task['test']['spec']))
+spec_text = pscheduler.json_dump(task['test']['spec'])
+participants_params = {'spec': spec_text}
+if options.lead_bind is not None:
+    participants_params["lead-bind"] = options.lead_bind
+
+log.debug("Spec is: %s", spec_text)
 status, participants = pscheduler.url_get(
     url,
-    params={'spec': pscheduler.json_dump(task['test']['spec'])},
+    params=participants_params,
     bind=bind,
     throw=False )
 
@@ -530,21 +559,27 @@ if lead is None and assist != last_ditch_assist:
 # Check that the lead is running pScheduler and is reasonably responsive.
 #
 
-log.debug("Pinging %s", lead)
-status, result = pscheduler.url_get(
-    pscheduler.api_url(lead),
-    throw=False,
-    bind=bind,
-    timeout=10)
 
-if status == 400:
-    pscheduler.fail("%s: %s" % (lead, result))
-elif status in [ 202, 204, 205, 206, 207, 208, 226,
-                 300, 301, 302, 303, 304, 205, 306, 307, 308 ] \
-    or ( (status >= 400) and (status <=499) ):
-    pscheduler.fail("%s is not running pScheduler" %  (lead))
-elif status != 200:
-    pscheduler.fail("%s returned status %d: %s" % (lead, status, result))
+lead_list = [lead] if lead is not None else [pscheduler.api_this_host()]
+lead_list.append("localhost")
+
+lead = None
+for lead_candidate in lead_list:
+    ping_url = pscheduler.api_url(lead_candidate)
+    log.debug("Pinging %s", ping_url)
+    status, result = pscheduler.url_get(
+        ping_url,
+        throw=False,
+        bind=bind,
+        timeout=4)
+    if status == 200:
+        lead = lead_candidate
+        break
+
+if lead is None:
+    pscheduler.fail("Unable to find pScheduler on any of %s." %
+                    (", ".join(lead_list)))
+
 log.debug("%s is up", lead)
 
 

@@ -1,5 +1,7 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
+
     "name": "simplestreamer",
     "description": "Stream data from one node to another with TCP",
     "version": "1.0",

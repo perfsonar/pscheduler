@@ -3,8 +3,8 @@
 #
 
 Name:		pscheduler-rpm
-Version:	1.0
-Release:	0.28.rc3%{?dist}
+Version:	1.0.0.2
+Release:	1%{?dist}
 
 Summary:	Macros for use by pScheduler RPM specs
 BuildArch:	noarch

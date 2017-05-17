@@ -7,8 +7,8 @@
 # init scripts function just fine.
 
 Name:		pscheduler-server
-Version:	1.0
-Release:	0.28.rc3%{?dist}
+Version:	1.0.0.2
+Release:	1%{?dist}
 
 Summary:	pScheduler Server
 BuildArch:	noarch
@@ -146,6 +146,7 @@ make -C daemons \
      LOGDIR=%{log_dir} \
      PGDATABASE=%{_pscheduler_database_name} \
      PGPASSFILE=%{_pscheduler_database_pgpass_file} \
+     PGSERVICE=%{pgsql_service}.service \
      PGUSER=%{_pscheduler_database_user} \
      PSUSER=%{_pscheduler_user} \
      ARCHIVERDEFAULTDIR=%{archiver_default_dir} \
@@ -334,9 +335,11 @@ EOF
 
 %if 0%{?el6}
 chkconfig "%{pgsql_service}" on
+service "%{pgsql_service}" start
 %endif
 %if 0%{?el7}
 systemctl enable "%{pgsql_service}"
+systemctl start "%{pgsql_service}"
 %endif
 
 # Restart the server only if the current maximum connections is less
@@ -394,7 +397,7 @@ chmod 400 "${RPM_BUILD_ROOT}/%{pgpass_file}"
 
 # Load the database
 
-# TODO: Note that if these fail, the scriptlet stops but RPM doesn't
+# TODO: Note that if this fails, the scriptlet stops but RPM doesn't
 # exit zero.  This is apparently not getting fixed.
 #
 # Discussion:
@@ -402,8 +405,7 @@ chmod 400 "${RPM_BUILD_ROOT}/%{pgpass_file}"
 #   http://rpm5.org/community/rpm-users/0834.html
 #
 
-postgresql-load %{_pscheduler_datadir}/database-build-super.sql
-postgresql-load --role '%{db_user}' %{_pscheduler_datadir}/database-build.sql
+pscheduler internal db-update
 
 # Securely set the password for the role to match the one we generated.
 
@@ -658,7 +660,7 @@ systemctl start httpd
 
 %defattr(-,root,root,-)
 %attr(755,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %{daemon_config_dir}
-%attr(740,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %config(noreplace) %{daemon_config_dir}/*
+%attr(600,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %config(noreplace) %{daemon_config_dir}/*
 %if 0%{?el6}
 %{_initddir}/*
 %endif

@@ -26,7 +26,9 @@ log.debug("Archiver received: %s" % json)
 task_href = json['task-href'].encode("utf-8") #encode to utf-8 so memcache can handle it
 test_type = json['result']['test']['type']
 test_spec = json['result']['test']['spec']
-test_result = json['result']['result']
+test_result = {}
+if json['result']['result'] is not None:
+    test_result = json['result']['result']
 tool_name = 'pscheduler/%s' % json['result']['tool']['name']
 test_start_time = calendar.timegm(pscheduler.iso8601_as_datetime(json['result']['schedule']['start']).utctimetuple())
 lead_participant = json['result']['participants'][0]
@@ -85,7 +87,10 @@ if "summaries" in json['data'] and json['data']['summaries']:
 try:
     attempts = int(json['attempts'])
 except:
-    pscheduler.fail("Archiver must be given 'attempts' as a valid integer")
+    pscheduler.succeed_json({
+        "succeeded": False,
+        "error": "Archiver must be given 'attempts' as a valid integer"
+    })
 retry_policy= []
 if 'retry-policy' in json['data']:
     retry_policy = json['data']['retry-policy']
@@ -186,7 +191,10 @@ if format_mapping:
         #we already added raw type, so don't add it again
         add_raw_event_type = False
     else:
-        pscheduler.fail("Unable to store result because 'mapped-only' policy is being used and the test is of an unrecognized type %s" % test_type)
+        pscheduler.succeed_json({
+            "succeeded": False,
+            "error": "Unable to store result because 'mapped-only' policy is being used and the test is of an unrecognized type %s" % (test_type)
+        })
 else:
     record = esmond_util.EsmondRawRecord(
             test_type=test_type,

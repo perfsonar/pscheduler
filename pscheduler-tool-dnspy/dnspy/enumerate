@@ -1,5 +1,7 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
+
     "name": "dnspy",
     "description": "Measure DNS transaction time",
     "version": "1.0",

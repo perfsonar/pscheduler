@@ -11,11 +11,17 @@ data_validator = {
     "type": "object",
     "properties": {
         "source": { "$ref": "#/pScheduler/URL" },
+        "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
         "bind": { "$ref": "#/pScheduler/Host" },
         "exclude": {
             "type": "array",
-            "items": { "$ref": "#/pScheduler/IPCIDR" }
-            },
+            "items": { 
+                "anyOf": [
+                    { "$ref": "#/pScheduler/IPCIDR" },
+                    { "$ref": "#/pScheduler/IPAddress" }
+                ]
+            }
+        },
         "update": { "$ref": "#/pScheduler/Duration" },
         "retry": { "$ref": "#/pScheduler/Duration" },
         "fail-state": { "$ref": "#/pScheduler/Boolean" }
@@ -28,7 +34,12 @@ def data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
-    return pscheduler.json_validate(data, data_validator)
+    valid, error = pscheduler.json_validate(data, data_validator)
+    if not valid:
+        return valid, error
+    if "transform" in data:
+        return False, "Transforms are not yet supported."
+    return valid, error
 
 
 
@@ -95,7 +106,7 @@ class IdentifierIPCIDRListURL():
         self.bind = data.get('bind', None)
         self.update = pscheduler.iso8601_as_timedelta(data['update'])
         self.retry = pscheduler.iso8601_as_timedelta(data['retry'])
-        self.fail_state = data['fail-state']
+        self.fail_state = data.get('fail-state', False)
 
         self.exclusions = radix.Radix()
         if 'exclude' in data:
@@ -153,10 +164,9 @@ class IdentifierIPCIDRListURL():
 
 if __name__ == "__main__":
 
-
-    ident = IdentifierIPCIDRListURL({
-        # "source": "http://www.notonthe.net/flotsam/bogon-bn-nonagg.txt",
-        "source": "http://www.notonthe.net/flotsam/fullbogons-ipv4.txt",
+    data = {
+        "source": "http://software.internet2.edu/data/pscheduler/limit-cidrs/ren",
+#        "transform": { "script": "foo" },
         "exclude": [
             "10.0.0.0/8",
             "172.16.0.0/12",
@@ -165,18 +175,22 @@ if __name__ == "__main__":
         "update": "P1D",
         "retry": "PT1H",
         "fail-state": True
-    })
+    }
+
+    print data_is_valid(data)
+
+    ident = IdentifierIPCIDRListURL(data)
 
     print "LEN", len(ident)
 
     for ip in [ 
             # Trues
-            "0.0.0.0",
-            "224.223.222.221",
-            "240.239.238.237",
+            "35.132.6.7",
+            "128.82.4.1",
+            "64.185.56.0",
             # Falses
             "10.9.8.6",
             "198.6.1.1",
-            "128.82.4.1"
+            "192.168.4.3",
     ]:
         print ip, ident.evaluate({ "requester": ip })

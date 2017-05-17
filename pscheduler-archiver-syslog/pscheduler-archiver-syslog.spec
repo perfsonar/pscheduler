@@ -4,8 +4,8 @@
 
 %define short	syslog
 Name:		pscheduler-archiver-%{short}
-Version:	1.0
-Release:	0.28.rc3%{?dist}
+Version:	1.0.0.2
+Release:	1%{?dist}
 
 Summary:	Syslog archiver class for pScheduler
 BuildArch:	noarch

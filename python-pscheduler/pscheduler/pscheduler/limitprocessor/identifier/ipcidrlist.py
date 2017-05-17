@@ -10,8 +10,13 @@ data_validator = {
     "properties": {
         "cidrs": {
             "type": "array",
-            "items": { "$ref": "#/pScheduler/IPCIDR" }
-        },
+            "items": { 
+                "anyOf": [
+                    { "$ref": "#/pScheduler/IPCIDR" },
+                    { "$ref": "#/pScheduler/IPAddress" }
+                ]
+            }
+        }
     },
     "required": [ "cidrs" ]
 }

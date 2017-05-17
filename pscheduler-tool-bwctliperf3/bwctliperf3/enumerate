@@ -1,5 +1,7 @@
 #!/bin/sed -e 1d
 {
+    "schema": 1,
+
     "name": "bwctliperf3",
     "description": "Measure network throughput with BWCTL - FOR BACKWARD COMPATIBILITY ONLY",
     "version": "1.0",

@@ -7,6 +7,7 @@ import pscheduler
 
 try:
     json = pscheduler.json_load()
+    pscheduler.json_check_schema(json, 1)
 except ValueError as ex:
     pscheduler.succeed_json({
         "valid": False,
@@ -16,6 +17,7 @@ except ValueError as ex:
 data_validator = {
     "type": "object",
     "properties": {
+        "schema": { "$ref": "#/pScheduler/Cardinal" },
         "url": { "$ref": "#/pScheduler/URL" },
         "bind": { "$ref": "#/pScheduler/Host" },
         "_auth-token": { "$ref": "#/pScheduler/String" },

@@ -1,0 +1,38 @@
+#!/bin/sh -e
+
+# 
+# Runs pylint against everything and dumps
+# the output to stdout
+#
+# This is ultimately intended to be used for
+# the jenkins builds but can be used by hand
+# as well
+#
+
+WHEREAMI=$(dirname "$0")
+
+PYLINT_ARGS="--rcfile=$WHEREAMI/pylint.cfg"
+
+# make sure we grab the pscheduler path
+LIB_PATH="$WHEREAMI/../python-pscheduler/pscheduler/"
+
+which pylint >/dev/null || (echo "pylint doesn't appear to be installed" && exit 1);
+
+ALL_FILES=$(find $WHEREAMI/.. -type f)
+
+for FILE in $ALL_FILES
+do
+   FILE_TYPE=`file $FILE 2>/dev/null`
+   echo TYPE $FILE $FILE_TYPE
+   if [[ $FILE_TYPE =~ "python script" ]]
+      then
+       LOCAL_PATH=$(dirname "$0")
+       echo "FILE = $FILE"
+       PYLINT_FILENAME=`echo $FILE | sed -e s'/\//_/g' | sed -e s'/\./_/g'`
+       PYTHONPATH="$LIB_PATH:$LOCAL_PATH" pylint $PYLINT_ARGS $FILE | tee "pylint_$PYLINT_FILENAME.log"
+   fi
+done
+
+
+
+

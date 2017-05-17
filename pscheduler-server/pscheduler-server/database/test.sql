@@ -177,6 +177,7 @@ DECLARE
     test_list JSONB;
     test_name TEXT;
     test_enumeration JSONB;
+    sschema NUMERIC;  -- Name dodges a reserved word
 BEGIN
     run_result := pscheduler_internal(ARRAY['list', 'test']);
     IF run_result.status <> 0 THEN
@@ -195,6 +196,14 @@ BEGIN
         END IF;
 
 	test_enumeration := run_result.stdout::JSONB;
+
+        sschema := text_to_numeric(test_enumeration ->> 'schema');
+        IF sschema IS NOT NULL AND sschema > 1 THEN
+            RAISE WARNING 'Test "%": schema % is not supported',
+                test_name, sschema;
+            CONTINUE;
+        END IF;
+
 
 	IF NOT test_json_is_valid(test_enumeration) THEN
 	    RAISE WARNING 'Test "%" enumeration is invalid', test_name;

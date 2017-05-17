@@ -15,17 +15,39 @@ json = pscheduler.json_load(exit_on_error=True);
 
 try:
     if json['type'] != 'rtt':
-        pscheduler.fail('Unsupported test type')
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Unsupported test type" ]
+        })
 except KeyError:
-    pscheduler.fail('Missing test type')
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test type" ]
+    })
+
+try:
+    spec = json["spec"]
+    pscheduler.json_check_schema(spec, 1)
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test specification"]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
 
 
-spec = json['spec']
+
+errors = []
+
 
 unsupported_options = [ 'flowlabel', 'hostnames', 'suppress-loopback', 'deadline' ]
 for unsupported_option in unsupported_options:
     if spec.has_key(unsupported_option):
-        pscheduler.fail("BWCTL does not support %s" % unsupported_option)
+        errors.append("BWCTL does not support %s" % unsupported_option)
 
 source = spec.get("source", "localhost")
 
@@ -34,9 +56,17 @@ source = spec.get("source", "localhost")
 has = pscheduler.api_has_services([source], timeout=3)
 
 if has[source]["pscheduler"]:
-    pscheduler.fail("Source has pscheduler, no need for BWCTL")
+    errors.append("Source has pscheduler, no need for BWCTL")
 
 if not has[source]["bwctl"]:
-    pscheduler.fail("No BWCTL on %s" % source)
+    errors.append("No BWCTL on %s" % source)
 
-pscheduler.succeed()
+result = {
+    "can-run": len(errors) == 0
+}
+
+if len(errors) > 0:
+    result["reasons"] = errors
+
+pscheduler.succeed_json(result)
+

@@ -6,12 +6,16 @@ values dictionaries
 import copy
 import jsonschema
 
-
 # TODO: Consider adding tile/description and maybe "example" (not
 # officially supported) as a way to generate the JSON dictionary.
 
-# TODO: Need to go through and add "additionalProperties": False to
-# all object entries.
+
+# Note that adding an "x-invalid-message" string to any type will use
+# that value for error messages instead of jsonschema's default.  The
+# sequence "%s" in that string will be replaced with the invalid value.
+#
+# See the definition of "Duration" for an example.
+
 
 #
 # Types from the dictionary
@@ -42,6 +46,7 @@ __dictionary__ = {
             "number": { "$ref": "#/pScheduler/Cardinal" },
             "owner": { "type": "string" },
             },
+        "additionalProperties": False,
         "required": [ "number" ]
         },
 
@@ -103,8 +108,10 @@ __dictionary__ = {
     "Duration": {
         "type": "string",
         # ISO 8601.  Source: https://gist.github.com/philipashlock/8830168
+        # Modified not to accept repeats (e.g., R5PT1M), which we don't support.
         # Modified not to accept months or years, which are inexact.
-        "pattern": r'^(R\d*\/)?P(?:\d+(?:\.\d+)?W)?(?:\d+(?:\.\d+)?D)?(?:T(?:\d+(?:\.\d+)?H)?(?:\d+(?:\.\d+)?M)?(?:\d+(?:\.\d+)?S)?)?$'
+        "pattern": r'^P(?:\d+(?:\.\d+)?W)?(?:\d+(?:\.\d+)?D)?(?:T(?:\d+(?:\.\d+)?H)?(?:\d+(?:\.\d+)?M)?(?:\d+(?:\.\d+)?S)?)?$',
+        "x-invalid-message": "'%s' is not a valid ISO 8601 duration."
         },
 
     "DurationRange": {
@@ -244,6 +251,16 @@ __dictionary__ = {
         "minimum": 0,
         "maximum": 255
         },
+
+    "JQTransformSpecification": {
+        "type": "object",
+        "properties": {
+            "script":    { "$ref": "#/pScheduler/String" },
+            "output-raw": { "$ref": "#/pScheduler/Boolean" }
+        },
+        "additionalProperties": False,
+        "required": [ "script" ]
+    },
     
     "Number": { "type": "number" },
 
@@ -400,8 +417,10 @@ __dictionary__ = {
         "properties": {
             "archiver": { "type": "string" },
             "data": { "$ref": "#/pScheduler/AnyJSON" },
+            "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
             "ttl": { "$ref": "#/pScheduler/Duration" },
             },
+        "additionalProperties": False,
         "required": [
             "archiver",
             "data",
@@ -415,6 +434,7 @@ __dictionary__ = {
             "email": { "$ref": "#/pScheduler/Email" },
             "href":  { "$ref": "#/pScheduler/URL" },
             },
+        "additionalProperties": False,
         "required": [
             "name",
             ]
@@ -426,6 +446,7 @@ __dictionary__ = {
             "name":    { "type": "string" },
             "version": { "$ref": "#/pScheduler/Version" },
             },
+        "additionalProperties": False,
         "required": [
             "name",
             "version",
@@ -438,6 +459,7 @@ __dictionary__ = {
             "participant": { "$ref": "#/pScheduler/Host" },
             "result":      { "$ref": "#/pScheduler/AnyJSON" },
             },
+        "additionalProperties": False,
         "required": [
             "participant",
             "result",
@@ -457,6 +479,7 @@ __dictionary__ = {
                 },
             "result":       { "$ref": "#/pScheduler/AnyJSON" }
             },
+        "additionalProperties": False,
         "required": [
             "id",
             "schedule",
@@ -477,6 +500,7 @@ __dictionary__ = {
             "until":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
             "max-runs": { "$ref": "#/pScheduler/Cardinal" },
             },
+        "additionalProperties": False
         },
 
     "TaskSpecification": {
@@ -485,8 +509,8 @@ __dictionary__ = {
             "schema":   { "$ref": "#/pScheduler/Cardinal" },
             "lead-bind":{ "$ref": "#/pScheduler/Host" },
             "test":     { "$ref": "#/pScheduler/TestSpecification" },
-            "tool":     {" $ref": "#/pScheduler/String" },
-            "tools":    {"$ref": "#/pScheduler/StringList" },
+            "tool":     { "$ref": "#/pScheduler/String" },
+            "tools":    { "$ref": "#/pScheduler/StringList" },
             "schedule": { "$ref": "#/pScheduler/ScheduleSpecification" },
             "archives": {
                 "type": "array",
@@ -494,9 +518,9 @@ __dictionary__ = {
                 },
             "reference": { "$ref": "#/pScheduler/AnyJSON" },
             "_key": { "$ref": "#/pScheduler/String" },
-            },
+        },
+        "additionalProperties": False,
         "required": [
-            "schema",
             "test",
             ]
         },
@@ -504,11 +528,12 @@ __dictionary__ = {
     "TestSpecification": {
         "type": "object",
         "properties": {
-            "test": { "type": "String" },
+            "type": { "$ref": "#/pScheduler/String" },
             "spec": { "$ref": "#/pScheduler/AnyJSON" },
             },
+        "additionalProperties": False,
         "required": [
-            "test",
+            "type",
             "spec",
             ],
         },
@@ -519,6 +544,7 @@ __dictionary__ = {
             "start": { "$ref": "#/pScheduler/Timestamp" },
             "end":   { "$ref": "#/pScheduler/Timestamp" },
             },
+        "additionalProperties": False
         },
 
 
@@ -767,16 +793,21 @@ def json_validate(json, skeleton):
     # TODO: This doesn't seem to validate references.
     jsonschema.Draft4Validator.check_schema(schema)
 
-
     try:
         jsonschema.validate(json, schema,
                             format_checker=jsonschema.FormatChecker())
     except jsonschema.exceptions.ValidationError as ex:
-        return (False, "At %s: %s" % (
-            '/' + ('/'.join([str(x) for x in ex.absolute_path])),
-            ex.message
-            ))
 
+        try:
+            message = ex.schema["x-invalid-message"].replace("%s", ex.instance)
+        except KeyError:
+            message = ex.message
+
+        if len(ex.absolute_path) > 0:
+            path = "/".join([str(x) for x in ex.absolute_path])
+            return (False, "At /%s: %s" % (path, message))
+        else:
+            return (False, "%s" % (message))
 
     return (True, 'OK')
 
@@ -788,13 +819,13 @@ if __name__ == "__main__":
     sample = {
         "schema": 1,
         "when": "2015-06-12T13:48:19.234",
-        "howlong": "PT10M",
+        "howlong": "PT10Mxx",
         "sendto": "bob@example.com",
         "x-factor": 3.14,
         "protocol": "udp",
         "ipv": 6,
         "ip": "fc80:dead:beef::",
-        "archspec": { "name": "foo", "data": None },
+#        "archspec": { "name": "foo", "data": None },
         }
 
     schema = {
@@ -824,3 +855,24 @@ if __name__ == "__main__":
 
     print valid, message
 
+
+
+    text = {
+        "schema": 2,
+        "test": {
+            "test": "rtt",
+            "spec": {
+                "dest": "www.notonthe.net"
+            }
+        },
+        "archives": [
+        ]
+    }
+
+    print json_validate({"text": text}, {
+        "type": "object",
+        "properties": {
+            "text": { "$ref": "#/pScheduler/TaskSpecification" }
+        },
+        "required": [ "text" ]
+    })

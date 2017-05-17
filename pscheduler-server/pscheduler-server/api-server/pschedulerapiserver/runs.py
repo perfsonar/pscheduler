@@ -159,12 +159,13 @@ def tasks_uuid_runs(task):
 
 
         try:
-            data = pscheduler.json_load(request.data)
+            # TODO:  #74 Figure out how to schemafy this.
+            data = pscheduler.json_load(request.data, max_schema=1)
             start_time = pscheduler.iso8601_as_datetime(data['start-time'])
         except KeyError:
             return bad_request("Missing start time")
         except ValueError:
-            return bad_request("Invalid JSON:" + request.data)
+            return bad_request("Invalid JSON: %s" % (str(ex)))
 
 
         try:
@@ -399,11 +400,12 @@ def tasks_uuid_runs_run(task, run):
 
         # Get the JSON from the body
         try:
+            # TODO:  #74 Figure out how to schemafy this.
             run_data = pscheduler.json_load(request.data)
         except ValueError:
             log.exception()
             log.debug("Run data was %s", request.data)
-            return error("Invalid or missing run data")
+            return bad_request("Invalid or missing run data")
 
         # If the run doesn't exist, take the whole thing as if it were
         # a POST.
@@ -673,10 +675,10 @@ def tasks_uuid_runs_run_result(task, run):
 
     if not merged_result['succeeded']:
         if format == 'text/plain':
-            return ok("Test failed.", mimetype=format)
+            return ok("Run failed.", mimetype=format)
         elif format == 'text/html':
-            return ok("<p>Test failed.</p>", mimetype=format)
-        return error("Unsupported format " + format)
+            return ok("<p>Run failed.</p>", mimetype=format)
+        return bad_request("Unsupported format " + format)
 
     formatter_input = {
         "spec": test_spec,
