@@ -25,28 +25,28 @@ si_multipliers = {
     'ei': 1024 ** 6,
     'zi': 1024 ** 7,
     'yi': 1024 ** 8
-    }
+}
 
 si_regex = re.compile('^(-?[0-9]+(\.[0-9]+)?)\s*([kmgtpezy][i]?)?$')
 
-def si_as_number(text):
 
+def si_as_number(text):
     """Convert a string containing an SI value to an integer or return an
     integer if that is what was passed in."""
 
     if type(text) == int:
         return text
 
-    if type(text) not in [ str, unicode ]:
+    if type(text) not in [str, unicode]:
         raise ValueError("Source value must be string or integer")
 
-    matches = si_regex.search(text.lower(),0)
+    matches = si_regex.search(text.lower(), 0)
 
     if matches is None:
         raise ValueError("Invalid SI value '" + text + "'")
 
     number = int(matches.group(1)) if matches.group(2) is None \
-             else float(matches.group(1))
+        else float(matches.group(1))
 
     unit = matches.group(3)
 
@@ -58,7 +58,7 @@ def si_as_number(text):
 def number_as_si(number, places=2, base=10):
     """Convert a number to the largest possible SI
     representation of that number"""
-  
+
     # Try to cast any input to a float to make
     # division able to get some deci places
     number = float(number)
@@ -67,7 +67,8 @@ def number_as_si(number, places=2, base=10):
         raise ValueError("base must be either 2 or 10")
 
     # Ensure we get all the things in the correct order
-    sorted_si = sorted(si_multipliers.items(), key=lambda x: x[1], reverse=True)
+    sorted_si = sorted(si_multipliers.items(),
+                       key=lambda x: x[1], reverse=True)
 
     number_format = "{0:.%sf}" % places
 
@@ -85,10 +86,10 @@ def number_as_si(number, places=2, base=10):
             continue
 
         if number > value:
-            return number_format.format(number/value) + unit.title()
+            return number_format.format(number / value) + unit.title()
 
     # no matches, must be less than anything so just return number
-    return number_format.format(number/value)
+    return number_format.format(number / value)
 
 
 def si_range(value, default_lower=0):
@@ -108,9 +109,9 @@ def si_range(value, default_lower=0):
 
     """
 
-    if type(value) in [ int, str, unicode ]:
+    if type(value) in [int, str, unicode]:
         result = si_as_number(value)
-        return { "lower": result, "upper": result }
+        return {"lower": result, "upper": result}
 
     if type(default_lower) != int:
         raise ValueError("Default lower value must be integer")
@@ -125,7 +126,7 @@ def si_range(value, default_lower=0):
         vrange["lower"] = default_lower
         value = vrange
 
-    for member in [ "lower", "upper" ]:
+    for member in ["lower", "upper"]:
         try:
             result[member] = si_as_number(value[member])
         except KeyError:
@@ -135,8 +136,6 @@ def si_range(value, default_lower=0):
         raise ValueError("Lower value must be less than upper value")
 
     return result
-
-
 
 
 #
@@ -158,7 +157,7 @@ if __name__ == "__main__":
             "123.4K",
             "106.9m",
             "3.1415P"
-            ]:
+    ]:
         integer = si_as_number(value)
         print value, integer
 
@@ -172,13 +171,12 @@ if __name__ == "__main__":
             "Steak",
             "123e1",
             3.1415
-            ]:
+    ]:
         try:
             integer = si_as_number(value)
             print value, integer
         except ValueError:
             print value, "-> ValueError"
-
 
     print
     print "Ranges:"
@@ -186,19 +184,18 @@ if __name__ == "__main__":
     for value in [
             15,
             "16ki",
-            { "upper": 1000 },
-            { "lower": 1000, "upper": 2000 },
-            { "lower": 1000, "upper": "2k" },
-            { "lower": "1k", "upper": 2000 },
-            { "lower": "1k", "upper": "2k" },
-            { "lower": "2k", "upper": "1k" }
-            ]:
+            {"upper": 1000},
+            {"lower": 1000, "upper": 2000},
+            {"lower": 1000, "upper": "2k"},
+            {"lower": "1k", "upper": 2000},
+            {"lower": "1k", "upper": "2k"},
+            {"lower": "2k", "upper": "1k"}
+    ]:
         try:
             returned = si_range(value, default_lower=0)
             print value, "->", returned
         except Exception as ex:
             print value, "-> Exception:", ex
-
 
     # Convert to SI
     print
@@ -209,7 +206,7 @@ if __name__ == "__main__":
         1234567890,
         "9.8",
         0
-        ]:
+    ]:
         result = number_as_si(value)
         print "%s -> %s (base 10)" % (value, result)
 
@@ -218,6 +215,3 @@ if __name__ == "__main__":
 
         result = number_as_si(value, places=3)
         print "%s -> %s (3 places)" % (value, result)
-
-
-        
