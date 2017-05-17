@@ -6,7 +6,7 @@
          "dest": "test.net-snmp.org",
          "op": "walk",
          "version": "2c",
-         "community": "demopublic",
+         "_community": "demopublic",
          "schema": 1
       },
       "required": [
