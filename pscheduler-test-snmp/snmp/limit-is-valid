@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Validator for 'dns' task limit spec
+# Validator for 'snmp' task limit spec
 #
 
 import pscheduler

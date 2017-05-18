@@ -21,14 +21,14 @@ def spec_is_valid(json):
                 "host-node":    { "$ref": "#/pScheduler/Host" },
                 "dest":         { "$ref": "#/pScheduler/Host" },
                 "version":      { "$ref": "#/local/VersionNumber"},
-                "_community":    { "$ref": "#/pScheduler/String"},
+                "community":    { "$ref": "#/pScheduler/String"},
                 "oid":          { "$ref": "#/pScheduler/String"},
                 "op":           { "$ref": "#/pScheduler/String"},
                 "timeout":      { "$ref": "#/pScheduler/Duration" },
                 },
             "required": [
                 "version",
-                "_community",
+                "community",
                 "dest",
                 "op",
                 ]

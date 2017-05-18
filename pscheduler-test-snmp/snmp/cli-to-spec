@@ -32,7 +32,7 @@ else:
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """Examples:
 
-  task dns --query example.net --record soa
+  task snmp --version 2c --community public example.net
     text
 
 """
@@ -62,7 +62,7 @@ opt_parser.add_option("--version",
 opt_parser.add_option("--community",
                       help="Community string",
                       action="store", type="string",
-                      dest="_community")
+                      dest="community")
 
 opt_parser.add_option("--oid",
                       help="OID",
@@ -100,8 +100,8 @@ if options.op is not None:
 if options.dest is not None:
    result['dest'] = options.dest
 
-if options._community is not None:
-   result['_community'] = options._community
+if options.community is not None:
+   result['community'] = options.community
 
 if options.version is not None:
    result['version'] = options.version

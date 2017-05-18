@@ -38,7 +38,7 @@ elif format == 'text/html':
    print '  </tr>'
    print '  <tr>'
    print '    <th>SNMP Data</th>'
-   print '    <td>%s</td>' % json['data']'
+   print '    <td>%s</td>' % json['data']
    print '  </tr>'
 
 

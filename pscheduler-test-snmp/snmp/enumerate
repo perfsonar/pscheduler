@@ -1,8 +1,8 @@
 #!/bin/sed -e 1d
 {
     "schema": 1,
-    "name": "dns",
-    "description": "Measure DNS transaction time",
+    "name": "snmp",
+    "description": "Measure SNMP transaction time",
     "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",
