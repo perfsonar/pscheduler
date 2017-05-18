@@ -53,7 +53,7 @@ def result_is_valid(json):
             "schema",
             "succeeded",
             "data",
-            "duration",
+            "time",
             ]
         }
     return json_validate(json, schema)

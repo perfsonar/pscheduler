@@ -18,6 +18,10 @@ try:
     community = input['test']['spec']['community']
     dest = input['test']['spec']['dest']
     op = input['test']['spec']['op']
+
+    if op == 'get':
+        oid = input['test']['spec']['oid']
+
 except KeyError:
     pscheduler.fail('Missing data in input')
 
@@ -37,6 +41,8 @@ for key in input['test']['spec'].keys():
         argv.append('-c')
         argv.append(input['test']['spec'][key])
     if key == 'dest':
+        argv.append(input['test']['spec'][key])
+    if key == 'oid':
         argv.append(input['test']['spec'][key])
 
 try:
