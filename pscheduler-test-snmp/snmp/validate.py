@@ -12,12 +12,7 @@ def spec_is_valid(json):
                 "VersionNumber": {
                     "type": "string",
                     "enum": [ "1", "2c", "3"]
-	            }
-                "OptionType": {
-                    "type": "string",
-                    "enum": [ "get", "walk"]
-                    }
-	        },
+	            },
             "type": "object",
             "properties": {
                 "schema":       { "$ref": "#/pScheduler/Cardinal" },
