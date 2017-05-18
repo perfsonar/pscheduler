@@ -2,7 +2,7 @@
 # Makefile for any tool class
 #
 
-NAME=dnspy
+NAME=net-snmp
 
 FILES=\
 	can-run \
@@ -12,16 +12,14 @@ FILES=\
 	participant-data \
 	run \
 
-
 install: $(FILES)
 ifndef DESTDIR
 	@echo No DESTDIR specified for installation
 	@false
+
 endif
 	mkdir -p $(DESTDIR)
 	install -m 555 $(FILES) $(DESTDIR)
-
-
 
 clean:
 	rm -f $(TO_CLEAN) *~

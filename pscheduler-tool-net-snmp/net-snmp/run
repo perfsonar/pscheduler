@@ -62,7 +62,7 @@ results = {
     'succeeded': succeeded,
     'result': {
 	    'schema': 1,
-	    'duration': pscheduler.timedelta_as_iso8601( end_time - start_time ),
+	    'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
 	    'succeeded' : succeeded,
         'data': stdout
     }
