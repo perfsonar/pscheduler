@@ -10,9 +10,13 @@ def spec_is_valid(json):
         schema = {
             "local": {
                 "VersionNumber": {
-		            "type": "string",
-		            "enum": [ "1", "2c", "3"]
+                    "type": "string",
+                    "enum": [ "1", "2c", "3"]
 	            }
+                "OptionType": {
+                    "type": "string",
+                    "enum": [ "get", "walk"]
+                    }
 	        },
             "type": "object",
             "properties": {
@@ -23,7 +27,7 @@ def spec_is_valid(json):
                 "version":      { "$ref": "#/local/VersionNumber"},
                 "community":    { "$ref": "#/pScheduler/String"},
                 "oid":          { "$ref": "#/pScheduler/String"},
-                "op":           { "$ref": "#/pScheduler/String"},
+                "op":           { "$ref": "#/local/OptionType"},
                 "timeout":      { "$ref": "#/pScheduler/Duration" },
                 },
             "required": [
