@@ -59,25 +59,59 @@ opt_parser.add_option("--version",
                       action="store", type="string",
                       dest="version")
 
-opt_parser.add_option("--community",
-                      help="Community string",
-                      action="store", type="string",
-                      dest="community")
-
 opt_parser.add_option("--oid",
                       help="OID",
                       action="store", type="string",
                       dest="oid")
 
-opt_parser.add_option("--op",
-                      help="Option for SNMP",
-                      action="store", type="string",
-                      dest="op")
-
 opt_parser.add_option("--timeout",
                       help="Timeout for each query attempt",
                       action="store", type="string",
                       dest="timeout")
+
+if '3' in args:
+   version = 3
+   opt_parser.add_option("--sn",
+                      help="Security Name",
+                      action="store", type="string",
+                      dest="sn")
+                    
+   opt_parser.add_option("--ap",
+                      help="Auth Protocol",
+                      action="store", type="string",
+                      dest="ap")
+
+   opt_parser.add_option("--pp",
+                      help="Priv Protocol",
+                      action="store", type="string",
+                      dest="pp")
+
+   opt_parser.add_option("--ak",
+                      help="Auth Key",
+                      action="store", type="string",
+                      dest="ak")
+
+   opt_parser.add_option("--pk",
+                      help="Priv Key",
+                      action="store", type="string",
+                      dest="pk")
+
+   opt_parser.add_option("--sl",
+                      help="Security Level",
+                      action="store", type="string",
+                      dest="sl")
+
+   opt_parser.add_option("--context",
+                      help="Context Name",
+                      action="store", type="string",
+                      dest="context")
+
+else:
+   version = 1
+   opt_parser.add_option("--community",
+                          help="Community string",
+                          action="store", type="string",
+                          dest="community")
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
@@ -94,14 +128,8 @@ if options.host is not None:
 if options.host_node is not None:
    result['host-node'] = options.host_node
 
-if options.op is not None:
-   result['op'] = options.op
-
 if options.dest is not None:
    result['dest'] = options.dest
-
-if options.community is not None:
-   result['community'] = options.community
 
 if options.version is not None:
    result['version'] = options.version
@@ -111,6 +139,32 @@ if options.oid is not None:
 
 if options.timeout is not None:
    result['timeout'] = options.timeout
+
+if version == 1:
+  if options.community is not None:
+    result['community'] = options.community
+
+else:
+    if options.sn is not None:
+      result['sn'] = options.sn
+
+    if options.ap is not None:
+      result['ap'] = options.ap
+
+    if options.pp is not None:
+      result['pp'] = options.pp
+
+    if options.ak is not None:
+      result['ak'] = options.ak
+
+    if options.pk is not None:
+      result['pk'] = options.pk
+
+    if options.sl is not None:
+      result['sl'] = options.sl
+
+    if options.context is not None:
+      result['context'] = options.context
 
 
 pscheduler.succeed_json(result)
