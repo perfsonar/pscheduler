@@ -69,6 +69,7 @@ opt_parser.add_option("--timeout",
                       action="store", type="string",
                       dest="timeout")
 
+# snmp v3 specific options
 if '3' in args:
    version = 3
    opt_parser.add_option("--sn",
@@ -106,6 +107,7 @@ if '3' in args:
                       action="store", type="string",
                       dest="context")
 
+# snmp v1 and v2c specific options
 else:
    version = 1
    opt_parser.add_option("--community",

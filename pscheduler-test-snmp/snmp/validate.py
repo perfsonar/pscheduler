@@ -6,6 +6,7 @@ from pscheduler import json_validate
 
 def spec_is_valid(json):
 
+    # SNMPv1Spec is valid for both snmp v1 and v2c 
     schema = {
         "local": {
             "VersionNumber": {

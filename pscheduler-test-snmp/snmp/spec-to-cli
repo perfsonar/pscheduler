@@ -19,12 +19,18 @@ result = pscheduler.speccli_build_args(spec,
         # Strings
         ( 'host', 'host' ),
         ( 'host-node', 'host-node' ),
-        ( 'op', 'op'),
         ( 'dest', 'dest' ),
         ('oid', 'oid'),
         ('community', 'community'),
         ('version', 'version'),
         ( 'timeout', 'timeout' ),
+        ( 'ap', 'ap'),
+        ( 'sn', 'sn'),
+        ( 'pp', 'pp'),
+        ( 'ak', 'ak'),
+        ( 'pk', 'pk'),
+        ( 'sl', 'sl'),
+        ( 'context', 'context')
         ])
 
 
