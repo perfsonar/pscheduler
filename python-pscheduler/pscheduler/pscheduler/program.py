@@ -11,6 +11,10 @@ import subprocess32
 import sys
 import traceback
 
+# Only used in _Popen
+import errno
+import os
+
 # Note: Docs for the 3.x version of subprocess, the backport of which
 # is used here, is at https://docs.python.org/3/library/subprocess.html
 
@@ -21,6 +25,7 @@ import traceback
 
 this = sys.modules[__name__]
 this.running = None
+
 
 def __terminate_running():
     """Internal use:  Terminate a running process."""
@@ -40,6 +45,7 @@ def __init_running():
         this.running = {}
         atexit.register(__terminate_running)
 
+
 def __running_add(process):
     """Internal use:  Add a running process."""
     __init_running()
@@ -55,13 +61,6 @@ def __running_drop(process):
         pass
 
 
-
-
-
-# Only used in _Popen
-import errno
-import os
-
 class _Popen(subprocess32.Popen):
     """
     Improved version of subprocess32's Popen that handles SIGPIPE
@@ -73,13 +72,14 @@ class _Popen(subprocess32.Popen):
         # This is just to maintain the indentation of the original.
         if True:
 
-            stdout = None # Return
-            stderr = None # Return
+            stdout = None  # Return
+            stderr = None  # Return
 
             if not self._communication_started:
                 self._fd2file = {}
 
             poller = select.poll()
+
             def register_and_append(file_obj, eventmask):
                 poller.register(file_obj.fileno(), eventmask)
                 self._fd2file[file_obj.fileno()] = file_obj
@@ -115,7 +115,7 @@ class _Popen(subprocess32.Popen):
                 self._input = input
                 if self.universal_newlines and isinstance(self._input, unicode):
                     self._input = self._input.encode(
-                            self.stdin.encoding or sys.getdefaultencoding())
+                        self.stdin.encoding or sys.getdefaultencoding())
 
             while self._fd2file:
                 try:
@@ -128,7 +128,7 @@ class _Popen(subprocess32.Popen):
 
                 for fd, mode in ready:
                     if mode & select.POLLOUT:
-                        chunk = self._input[self._input_offset :
+                        chunk = self._input[self._input_offset:
                                             self._input_offset
                                             + subprocess32._PIPE_BUF]
 
@@ -154,8 +154,6 @@ class _Popen(subprocess32.Popen):
                         close_unregister_and_remove(fd)
 
             return (stdout, stderr)
-
-
 
 
 def run_program(argv,              # Program name and args
@@ -218,7 +216,6 @@ def run_program(argv,              # Program name and args
                          stderr=subprocess32.PIPE,
                          env=new_env)
 
-
         __running_add(process)
 
         if line_call is None:
@@ -261,7 +258,7 @@ def run_program(argv,              # Program name and args
 
             if timeout is not None:
                 end_time = pscheduler.time_now() \
-                           + pscheduler.seconds_as_timedelta(timeout)
+                    + pscheduler.seconds_as_timedelta(timeout)
             else:
                 time_left = None
 
@@ -309,7 +306,6 @@ def run_program(argv,              # Program name and args
         stderr = ''.join(traceback.format_exception_only(extype, ex)) \
             + ''.join(traceback.format_exception(extype, ex, trace)).strip()
 
-
     if process is not None:
         __running_drop(process)
 
@@ -317,7 +313,6 @@ def run_program(argv,              # Program name and args
         pscheduler.fail("%s: %s" % (fail_message, stderr))
 
     return status, stdout, stderr
-
 
 
 if __name__ == "__main__":
@@ -340,14 +335,12 @@ if __name__ == "__main__":
                 ['id']
             ))
 
-
     if do_all or False:
         dump_result(
             "Failure with stderr",
             run_program(
                 ['ls', '/bad/path']
             ))
-
 
     if do_all or False:
         dump_result(
@@ -357,9 +350,9 @@ if __name__ == "__main__":
                 timeout=1
             ))
 
-
     if do_all or False:
         lines = []
+
         def line_writer(add_line):
             """Add a line to the list of those received."""
             lines.append(add_line)
@@ -373,7 +366,6 @@ if __name__ == "__main__":
 
         print "Lines:"
         print "\n".join(["  %s" % (line) for line in lines])
-
 
     if do_all or False:
         inp = "\n".join([str(number) for number in range(1, 1000000)])

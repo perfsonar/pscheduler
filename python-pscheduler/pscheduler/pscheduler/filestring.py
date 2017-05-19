@@ -4,6 +4,7 @@ Functions for retrieving strings from files
 
 import os
 
+
 def string_from_file(string, strip=True):
     """
     Return an unaltered string or the contents of a file if the string

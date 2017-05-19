@@ -32,7 +32,7 @@ class LimitTest():
     def __init__(self,
                  data   # Data suitable for this class
                  ):
-       
+
         valid, message = test_data_is_valid(data)
         if not valid:
             raise ValueError("Invalid data: %s" % message)
@@ -121,7 +121,7 @@ if __name__ == "__main__":
                 }
             },
             "parting-comment" : {
-                "description": "Parting comment must contain a vowel if not empty", 
+                "description": "Parting comment must contain a vowel if not empty",
                 "match": {
                     "style": "regex",
                     "match": "(^$|[aeiou])",
