@@ -11,7 +11,6 @@ import re
 import socket
 
 
-
 def source_affinity(addr, ip_version=None):
     """Easy to use function that returns the CPU affinity
     given an address. Uses source_interface and interface_affinity
@@ -42,7 +41,7 @@ def source_interface(addr, port=80, ip_version=None):
     s.close()
 
     interface_name = address_interface(interface_address, ip_version=ip_version)
-    
+
     if interface_name:
         return (interface_address, interface_name)
 
@@ -54,7 +53,7 @@ def address_interface(addr, ip_version=None):
     has this interface, or None
     """
 
-    # make sure we resolve any address to a specific 
+    # make sure we resolve any address to a specific
     # IP address before looking up interfaces
     if ip_version is not None:
         addr = pscheduler.dns_resolve(addr, ip_version=ip_version)
@@ -74,8 +73,8 @@ def address_interface(addr, ip_version=None):
 
     return None
 
+
 def interface_affinity(interface):
-    
     """Given an interface name, returns the CPU affinity
     for that interface if available, otherwise
     returns None.
@@ -97,7 +96,7 @@ def interface_affinity(interface):
     if not os.path.exists(filename):
         return None
 
-    with open(filename,'r') as f:
+    with open(filename, 'r') as f:
         affinity = f.read().rstrip()
 
         # This is the same as no affinity, so make calling
@@ -108,9 +107,6 @@ def interface_affinity(interface):
         return affinity
 
     return None
-
-
-
 
 
 class LocalIPList:
@@ -125,7 +121,6 @@ class LocalIPList:
         self.refresh = refresh
         self.addresses = None
         self.expires = None
-
 
     def __refresh(self):
         """
@@ -152,8 +147,7 @@ class LocalIPList:
                             pass
 
             self.expires = datetime.datetime.now() \
-                           + datetime.timedelta(seconds=self.refresh)
-
+                + datetime.timedelta(seconds=self.refresh)
 
     def __contains__(self, item):
         """
@@ -165,9 +159,6 @@ class LocalIPList:
         return item_ip in self.addresses
 
 
-
-
-
 if __name__ == "__main__":
 
     for dest in ["www.perfsonar.net",
@@ -175,15 +166,11 @@ if __name__ == "__main__":
         (addr, intf) = source_interface(dest)
         print "For dest %s, addr = %s, intf = %s" % (dest, addr, intf)
 
-
     for interface in ["eth0", "eth1", "lo", "eth1.412", "eth0.120"]:
         affinity = interface_affinity(interface)
-        print "interface affinity = %s for %s" % (affinity, interface) 
-
-
+        print "interface affinity = %s for %s" % (affinity, interface)
 
     localips = LocalIPList(refresh=5)
 
     for addr in ["1.2.3.4", "5.6.7.8", "10.0.0.1", "127.0.0.1"]:
         print addr, addr in localips
-

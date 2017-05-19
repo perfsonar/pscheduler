@@ -24,7 +24,6 @@ def timedelta_as_iso8601(timedelta):
     return isodate.duration_isoformat(timedelta)
 
 
-
 def iso8601_as_datetime(iso,
                         localize=False  # Default into local time zone
                         ):
@@ -37,5 +36,7 @@ def iso8601_as_datetime(iso,
         raise ValueError("Invalid ISO8601 date")
 
 # TODO: This function exists in datetime as .isoformat()
+
+
 def datetime_as_iso8601(datetime):
     return isodate.datetime_isoformat(datetime)

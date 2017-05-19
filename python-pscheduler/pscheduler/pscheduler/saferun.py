@@ -5,13 +5,13 @@
 import pscheduler
 import time
 
+
 def safe_run(function,
              name=None,
              backoff=0.25,     # Backoff time increment
              backoff_max=60,   # Longest allowable backoff
              restart=True      # Call again if the function returns
              ):
-
     """
     Safely call a long-running lambda (usually a main program),
     catching and logging exceptions.  The lambda will be re-called
@@ -21,7 +21,7 @@ def safe_run(function,
     the lambda runs any longer than the last backoff delay.
     """
 
-    if not isinstance(function, type(lambda:0)):
+    if not isinstance(function, type(lambda: 0)):
         raise ValueError("Function provided is not a lambda.")
 
     log = pscheduler.Log(name=name,
@@ -59,18 +59,17 @@ def safe_run(function,
                 currrent_backoff = initial_backoff
                 log.error("Restarting immediately.")
             else:
-                log.error("Waiting %s seconds before restarting", current_backoff)
+                log.error("Waiting %s seconds before restarting",
+                          current_backoff)
                 time.sleep(current_backoff)
                 if current_backoff < backoff_max:
                     current_backoff += initial_backoff
                 log.error("Restarting")
 
 
-
 # Test program
 
 if __name__ == "__main__":
-
 
     def foo():
         print "FOO"
