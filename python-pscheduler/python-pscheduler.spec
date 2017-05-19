@@ -35,8 +35,9 @@ Requires:	pytz
 Requires:	rsyslog
 Requires:	logrotate
 
+BuildRequires:	python-coverage
+BuildRequires:	python-nose
 BuildRequires:	python-setuptools
-
 
 %define limit_config %{_pscheduler_sysconfdir}/limits.conf
 %define logdir %{_var}/log/pscheduler
@@ -59,7 +60,7 @@ Utility functions for pScheduler
 
 
 %build
-python setup.py build
+make
 
 
 %install

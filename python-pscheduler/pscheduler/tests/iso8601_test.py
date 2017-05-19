@@ -20,12 +20,13 @@ class TestIso8601(PschedTestBase):
     Iso8601 tests. Verify round trip.
     """
 
-    # XXX(mmg): is the loss of ms accuracy the desired effect?
-
     def test_iso(self):
         """iso dt conversion"""
         now = datetime.datetime.utcnow()
-        # the conversion loses ms accuracy so set to 0
+
+        # TODO: The conversion in the library uses another library
+        # that chops out the fractional seconds.  If that's ever
+        # fixed, adjust the tests accordingly.
         now = now.replace(microsecond=0)
 
         # round trip - microsecond accuracy is lost

@@ -14,7 +14,7 @@ class TestProgram(PschedTestBase):
 
     def test_program(self):
         """"""
-        # XXX(mmg) - not sure what to test yet.
+        # TODO: - not sure what to test yet.
         pass
 
 

@@ -14,14 +14,16 @@ class TestInterface(PschedTestBase):
     Interface tests.
     """
 
-    # XXX(mmg) - need to get clarity on how we can standardize this
+    # TODO: - need to get clarity on how we can standardize this
     # because it looks like these things will vary depending on the network
     # configuration of the machine run the test on.
 
+    # These are wrappers around another library, so a lot of testing
+    # is probably not necessary.
+
     def test_source_interface(self):
         """Interface test"""
-        for dest in ["www.perfsonar.net",
-                     "10.0.2.4"]:
+        for dest in ["198.6.1.1", "127.0.0.1"]:
             (addr, intf) = source_interface(dest)
             # print "For dest %s, addr = %s, intf = %s" % (dest, addr, intf)
 

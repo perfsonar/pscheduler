@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(
     name='pscheduler',
@@ -17,15 +17,18 @@ setup(
         'pscheduler.limitprocessor.limit',
     ],
     install_requires=[
-        'dnspython==1.15.0',
-        'requests==2.13.0',
-        'pytz==2016.10',
-        'psycopg2==2.7',
-        'jsonschema==2.6.0',
-        'python-dateutil==2.6.0',
-        'netifaces==0.10.5',
-        'ipaddr==2.1.11',
+        'dnspython >= 1.12.0',
+        'requests >= 2.6.0',
+        'pytz >= 2016.6',
+        'psycopg2 >= 2.6.2',
+        'jsonschema >= 2.5.1',
+        'python-dateutil >= 2.5.3',
+        'netifaces >= 0.5',
+        'ipaddr >= 2.1.9',
     ],
     include_package_data=True,
     package_data={'pscheduler.limitprocessor': ['*.json']},
+
+    tests_require=['nose'],
+    test_suite='nose.collector',
 )

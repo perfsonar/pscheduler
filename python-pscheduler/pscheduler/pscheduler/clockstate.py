@@ -181,6 +181,7 @@ def clock_state():
                 ntplib.ref_id_to_text(ntp.ref_id)
             )
         except Exception as ex:
+            result["synchronized"] = False
             result["error"] = str(ex)
 
     return result

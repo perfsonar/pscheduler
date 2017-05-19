@@ -31,7 +31,7 @@ class TestApi(PschedTestBase):
             api_url(host='host.example.com', path='both-noslash'),
             'https://host.example.com/pscheduler/both-noslash')
 
-        # XXX(mmg) not sure if this is the best test - are there hosts
+        # TODO: not sure if this is the best test - are there hosts
         # where we know it will be true?
 
         # self.assertFalse(api_has_bwctl('localhost'))

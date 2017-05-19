@@ -15,7 +15,7 @@ class TestJsonval(PschedTestBase):
     """
 
     def test_jsonval(self):
-        """"""
+        """Test jsonval"""
         sample = {
             "schema": 1,
             "when": "2015-06-12T13:48:19.234",
@@ -25,7 +25,7 @@ class TestJsonval(PschedTestBase):
             "protocol": "udp",
             "ipv": 6,
             "ip": "fc80:dead:beef::",
-            "archspec": {"name": "foo", "data": None},
+            "archspec": { "data": { "bar": "baz" } },
         }
 
         schema = {
@@ -55,7 +55,8 @@ class TestJsonval(PschedTestBase):
         valid, message = json_validate(sample, schema)
 
         self.assertFalse(valid)
-        self.assertEqual(message, "At /archspec: 'archiver' is a required property")
+        self.assertEqual(message,
+                         "At /archspec: 'archiver' is a required property")
 
         # add it in now
         sample['archspec']['archiver'] = 'tar'

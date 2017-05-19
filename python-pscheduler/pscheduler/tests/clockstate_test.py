@@ -17,11 +17,25 @@ class TestClockstate(PschedTestBase):
     def test_clockstate(self):
         """Test clockstate"""
 
-        # XXX(mmg): not sure how to properly test this other
-        # than simple a simple regression/coverage check.
         cstate = clock_state()
+
         self.assertTrue(isinstance(cstate, dict))
-        self.assertEqual(set(cstate.keys()), set(['synchronized', 'time']))
+        self.assertTrue("time" in cstate)
+        self.assertTrue("synchronized" in cstate)
+
+        if cstate["synchronized"]:
+
+            self.assertTrue("source" in cstate)
+            # Offset is optional.
+            self.assertTrue("reference" in cstate)
+            self.assertFalse("error" in cstate)
+
+        else:
+
+            self.assertFalse("source" in cstate)
+            self.assertFalse("offset" in cstate)
+            self.assertFalse("reference" in cstate)
+
 
 
 if __name__ == '__main__':

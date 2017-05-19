@@ -232,15 +232,6 @@ class Log():
 
         self.is_verbose = state
 
-    def facility(self, facility):
-        "Set the log level"
-        # XXX(mmg): level is undefined, is this used?
-        assert level in [DEBUG, INFO, WARNING, ERROR, CRITICAL]
-        self.logger.setLevel(level)
-        if save:
-            self.last_level = level
-        self.__update_env()
-
     def level(self, level, save=True):
         "Set the log level"
         assert level in [DEBUG, INFO, WARNING, ERROR, CRITICAL]

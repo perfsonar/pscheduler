@@ -35,10 +35,10 @@ class TestIpaddr(PschedTestBase):
         self.assertEqual(ip_addr_version('::1/quack'), (None, None))
         self.assertEqual(ip_addr_version('::1/quack', resolve=False), (None, None))
 
-        # XXX(mmg): are the following resolved tests subject to breakage due
+        # TODO: are the following resolved tests subject to breakage due
         # to changing IP addresses? If so, do what?
 
-        # XXX(mmg): these appear to be unstable, get clarity.
+        # TODO: these appear to be unstable, get clarity.
 
         # self.assertEqual(ip_addr_version('www.perfsonar.net'), (4, '207.75.164.248'))
         # self.assertEqual(ip_addr_version('www.perfsonar.net', resolve=False), (None, None))
