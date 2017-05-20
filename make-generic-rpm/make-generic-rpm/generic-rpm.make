@@ -141,7 +141,7 @@ endif
 # Useful Targets
 #
 
-build: $(BUILD_DEPS) $(BUILD_DIR) $(BUILD_ROOT)
+build:: $(BUILD_DEPS) $(BUILD_DIR) $(BUILD_ROOT)
 	set -o pipefail \
                 && HOME=$(shell pwd) \
                    $(RPMBUILD) -ba \
@@ -154,14 +154,14 @@ TO_CLEAN += *.rpm
 
 
 
-srpm: $(BUILD_DEPS) $(BUILD_DIR)
+srpm:: $(BUILD_DEPS) $(BUILD_DIR)
 	HOME=$(shell pwd) rpmbuild -v -bs $(RPMBUILD_OPTS) $(SPEC)
 	find $(BUILD_DIR) -name '*.src.rpm' | xargs -I{} cp {} .
 TO_CLEAN += *.src.rpm
 
 
 
-rpmdump:
+rpmdump::
 	@if [ -d "$(BUILD_RPMS)" ] ; then \
 	    for RPM in `find $(BUILD_RPMS) -name '*.rpm'` ; do \
 	    	echo `basename $${RPM}`: ; \
@@ -174,17 +174,22 @@ rpmdump:
 	fi
 
 
-install:
+install::
 	find $(BUILD_RPMS) -name '*.rpm' | xargs $(RPM) -Uvh --force
 
 
 
-clean:
+clean::
 	rm -rf $(TO_CLEAN)
 	find . -name '*~' | xargs rm -rf
 	find . -depth -name Makefile \
 	    -exec /bin/sh -c \
 	    '[ "{}" != "./Makefile" ] && make -C `dirname {}` clean' \;
+
+
+# Placeholder for running unit tests.
+test::
+	@true
 
 
 #

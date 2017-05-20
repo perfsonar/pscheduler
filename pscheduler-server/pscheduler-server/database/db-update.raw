@@ -15,12 +15,12 @@ fi
 
 [ -t 0 -a -t 1 -a -t 2 ] && INTERACTIVE=true || INTERACTIVE=false
 
-$INTERACTIVE && printf "Loading database:\n"
+$INTERACTIVE && printf "Loading database:\n" || true
 
-$INTERACTIVE && printf '    Administrative...'
+$INTERACTIVE && printf '    Administrative...' || true
 postgresql-load '__DATADIR__/database-build-super.sql'
-$INTERACTIVE && printf ' Done.\n'
+$INTERACTIVE && printf ' Done.\n' || true
 
-$INTERACTIVE && printf '    User __ROLE__...'
+$INTERACTIVE && printf '    User __ROLE__...' || true
 postgresql-load --role '__ROLE__' '__DATADIR__/database-build.sql'
-$INTERACTIVE && printf ' Done.\n'
+$INTERACTIVE && printf ' Done.\n' || true

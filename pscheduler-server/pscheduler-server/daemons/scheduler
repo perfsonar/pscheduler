@@ -8,16 +8,8 @@ import datetime
 import errno
 import optparse
 import pscheduler
-import psycopg2
-import psycopg2.extensions
-import random
-import re
-import requests
 import select
-import socket
-import sys
-import time
-import traceback
+import threading
 import urlparse
 
 
@@ -38,36 +30,63 @@ opt_parser.add_option("--pid-file",
 
 # Program options
 
-# TODO: Do we want pscheduler as the default here?
 opt_parser.add_option("-d", "--dsn",
                       help="Database connection string",
                       action="store", type="string", dest="dsn",
                       default="dbname=pscheduler")
+opt_parser.add_option("-f", "--first-run-offset",
+                      help="Time offset for first runs (ISO8601)",
+                      action="store", type="string", dest="firstoffset",
+                      default="PT10S")
 opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
+                      default="PT10S")
+opt_parser.add_option("-R", "--retries",
+                      help="Number of times to retry after a conflict",
+                      action="store", type="int", dest="retries",
+                      default=3)
+opt_parser.add_option("-t", "--timeout",
+                      help="Communication timeout (ISO8601)",
+                      action="store", type="string", dest="timeout",
                       default="PT10S")
 opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
 opt_parser.add_option("--debug", action="store_true", dest="debug")
 
 (options, args) = opt_parser.parse_args()
 
-refresh = pscheduler.iso8601_as_timedelta(options.refresh)
-if refresh is None:
-    opt_parser.error('Invalid refresh interval "' + options.refresh + '"')
-if pscheduler.timedelta_as_seconds(refresh) == 0:
-    opt_parser.error("Refresh interval must be calculable as seconds.")
-
-log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
-
-dsn = options.dsn
 
 # Minimum amount of time from now when the first run of a task can be
 # scheduled.  This prevents "start now" tasks from being scheduled for
 # a time before the participants can prepare for them.
 # TODO: Potential race condition?  Yep.
-first_run_offset = pscheduler.iso8601_as_timedelta('PT10S')
+try:
+    first_run_offset = pscheduler.iso8601_as_timedelta(options.firstoffset)
+except ValueError:
+    opt_parser.error('Invalid first offset "' + options.firstoffset + '"')
 
+try:
+    refresh = pscheduler.iso8601_as_timedelta(options.refresh)
+except ValueError:
+    opt_parser.error('Invalid refresh interval "' + options.refresh + '"')
+if pscheduler.timedelta_as_seconds(refresh) == 0:
+    opt_parser.error("Refresh interval must be calculable as seconds.")
+
+conflict_retries = options.retries
+if conflict_retries < 0:
+    opt_parser.error("Retries cannot be negative.")
+
+try:
+    timeout_td = pscheduler.iso8601_as_timedelta(options.timeout)
+except ValueError:
+    opt_parser.error('Invalid timeout "' + options.timeout + '"')
+timeout = pscheduler.timedelta_as_seconds(timeout_td)
+
+
+
+log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
+
+dsn = options.dsn
 
 
 #
@@ -177,11 +196,12 @@ def find_overlaps(range_lists):
 #
 
 def run_post(
-    url,           # URL for task
-    start_time,    # Desired start time
-    bind_addr,     # Bind address for HTTP or None
-    log=None
-    ):
+        number,        # Logging tag
+        url,           # URL for task
+        start_time,    # Desired start time
+        bind_addr,     # Bind address for HTTP or None
+        log=None
+):
 
     """
     Schedule a run of a task on all participating nodes.
@@ -197,28 +217,28 @@ def run_post(
 
     assert type(start_time) == datetime.datetime
 
-    log and log.debug("Posting %s at %s", url, start_time)
-    log and log.debug("Bind is %s", bind_addr)
+    log and log.debug("%d: Posting %s at %s", number, url, start_time)
+    log and log.debug("%d: Bind is %s", number, bind_addr)
 
     try:
         status, task = pscheduler.url_get(url, params={'detail': 1},
-                                          bind=bind_addr, timeout=5)
+                                          bind=bind_addr, timeout=timeout)
     except pscheduler.URLException as ex:
-        log and log.debug("Failed to fetch %s: %s", url, str(ex))
+        log and log.debug("%d: Failed to fetch %s: %s", number, url, str(ex))
         return (None, None, None, False, False,
                 "Error fetching task: %s" % (str(ex)))
 
     # Generate a list of the task URLs
 
     participants = task['detail']['participants']
-    log and log.debug("Participant list is %s", participants)
+    log and log.debug("%d: Participant list is %s", number, participants)
     assert len(participants) >= 1
 
     # Make sure all of the participants' APIs answer before trying to
     # do anything with them.
 
     lead_bind = task.get("lead-bind", None)
-    log and log.debug("Binding from %s", lead_bind)
+    log and log.debug("%d: Binding from %s", number, lead_bind)
     if not pscheduler.api_ping_all_up(participants, bind=lead_bind):
 
         # If the start time is after the next time we'd loop around,
@@ -227,16 +247,17 @@ def run_post(
 
         skip = pscheduler.time_now() + refresh < start_time
 
-        log and log.debug("Some participants down or slow. %s",
+        log and log.debug("%d: Some participants down or slow. %s",
+                          number,
                           "Skipping." if skip else "Non-starter.") 
         return (None, None, None, skip, False,
                 "One or more participants down or slow to respond.")
     else:
-        log and log.debug("All participants are up.")
+        log and log.debug("%d: All participants are up.", number)
 
     task_urls = [ pscheduler.api_replace_host(url, participant)
                   for participant in participants ]
-    log and log.debug("Task URLs are %s", task_urls)
+    log and log.debug("%d: Task URLs are %s", number, task_urls)
 
 
     #
@@ -259,7 +280,7 @@ def run_post(
         repeat_interval = pscheduler.iso8601_as_timedelta(task['schedule']['repeat'])
         if task_slip + task_duration >= repeat_interval:
             task_slip = repeat_interval - task_duration
-            log and log.debug("Chopped slip to %s", task_slip)
+            log and log.debug("%d: Chopped slip to %s", number, task_slip)
     except KeyError:
         pass
 
@@ -270,14 +291,15 @@ def run_post(
         'end': pscheduler.datetime_as_iso8601(run_range_end)
         }
 
-    log and log.debug("Possible run range %s", str(range_params))
+    log and log.debug("%d: Possible run range %s", number, str(range_params))
 
     #
     # Get a list of the time ranges each participant has available to
     # run the task that overlap with the range we want.
     #
 
-    log and log.debug("%s participants in this task", len(task_urls))
+    log and log.debug("%d: %s participants in this task", number,
+                      len(task_urls))
 
     # TODO: This would be good parallelized.
     # See http://stackoverflow.com/questions/5236364 for some ideas.
@@ -289,30 +311,35 @@ def run_post(
         # runtimes URLs so we don't have to build it.
         runtime_url = task_url + '/runtimes'
 
-        log and log.debug("Fetching proposals from %s", runtime_url)
+        log and log.debug("%d: Fetching proposals from %s", number,
+                          runtime_url)
 
         status, json_ranges = pscheduler.url_get(runtime_url,
                                                  params=range_params,
                                                  bind=bind_addr,
+                                                 timeout=timeout,
                                                  throw=False)
 
         if status in [ 404, 410 ]:
-            log and log.debug("Task is no longer there.  Canceling %s.", url)
+            log and log.debug("%d: Task is no longer there.  Canceling %s.",
+                              number, url)
             del_status, del_result = pscheduler.url_delete(
-                url, throw=False, bind=bind_addr)
+                url, timeout=timeout, throw=False, bind=bind_addr)
             if del_status not in [ 200, 404, 410 ]:
-                log and log.warning("Error while canceling %s: %s", url, del_result)
+                log and log.warning("%d: Error while canceling %s: %s",
+                                    number, url, del_result)
             return (None, None, None, False, False,
                     "Task is gone from %s" % (participant))
 
         if status != 200:
-            log and log.debug("Got back %d: %s", status, json_ranges)
+            log and log.debug("%d: Got back %d: %s", number, status,
+                              json_ranges)
             return (None, None, None, False, False,
                     "Error trying to schedule with %s: %s %d"
                     % (participant, runtime_url, status))
 
         if len(json_ranges) == 0:
-            log and log.debug("No time available.")
+            log and log.debug("%d: No time available.", number)
             return (None, None, None, False, False,
                     "%s has no time available for this run" % (participant))
 
@@ -320,18 +347,18 @@ def run_post(
                           pscheduler.iso8601_as_datetime(item['upper']) )
                    for item in json_ranges ]
 
-        log and log.debug("Ranges: %s", ranges)
+        log and log.debug("%d: Ranges: %s", number, ranges)
         
         range_set.append(ranges)
 
-    log and log.debug("Done fetching time ranges")
+    log and log.debug("%d: Done fetching time ranges", number)
 
 
     # Find the ranges all participants have in common
 
     common_ranges = [ trange for trange in find_overlaps(range_set)
                       if trange.length() >= task_duration ]
-    log and log.debug("Ranges in common: %s", common_ranges)
+    log and log.debug("%d: Ranges in common: %s", number, common_ranges)
     if len(common_ranges) == 0:
         return (None, None, None, False, False,
                 "No common times for this run.")
@@ -345,14 +372,16 @@ def run_post(
 
         selected_range = random.choice(common_ranges)
         max_slip_offset = selected_range.length() - task_duration
-        log and log.debug("Slipping randomly up to %s", max_slip_offset)
+        log and log.debug("%d: Slipping randomly up to %s", number,
+                          max_slip_offset)
 
         if max_slip_offset:
             def us(td):
                 return td.microseconds + 1000000 * (td.seconds + 86400 * td.days)
             increments = us(max_slip_offset) / 1000000
             picked_increment = random.randrange(0, increments)
-            log and log.debug("%d increments, picked %d", increments, picked_increment)
+            log and log.debug("%d: %d increments, picked %d", number,
+                              increments, picked_increment)
         else:
             picked_increment = 0
 
@@ -360,19 +389,19 @@ def run_post(
 
     else:
 
-        log and log.debug("Taking earliest available time")
+        log and log.debug("%d: Taking earliest available time", number)
         selected_range = common_ranges[0]
         slip_offset = datetime.timedelta()
 
     if log:
-        log.debug("Selected range %s", selected_range)
-        log.debug("Using a slip offset of %s", slip_offset)
+        log.debug("%d: Selected range %s", number, selected_range)
+        log.debug("%d: Using a slip offset of %s", number, slip_offset)
     schedule_lower = selected_range.lower + slip_offset
     schedule_upper = schedule_lower + task_duration
 
     if log:
         now = pscheduler.time_now()
-        log.debug("Horizon range: %s - %s",
+        log.debug("%d: Horizon range: %s - %s", number,
                   pscheduler.timedelta_as_iso8601(schedule_lower - now),
                   pscheduler.timedelta_as_iso8601(schedule_upper - now))
 
@@ -389,26 +418,29 @@ def run_post(
     # First one is the lead.  Post it and get the UUID.
 
     if log:
-        log.debug("Posting lead run to %s", task_urls[0])
-        log.debug("Data %s", run_params)
+        log.debug("%d: Posting lead run to %s", number, task_urls[0])
+        log.debug("%d: Data %s", number, run_params)
     status, run_lead_url \
         = pscheduler.url_post(task_urls[0] + '/runs',
                               data=pscheduler.json_dump(run_params),
                               bind=bind_addr,
+                              timeout=30,
                               throw=False,
                               json=True)
 
     if status == 409:
-        log and log.debug("Lead developed a schedule conflict.")
+        log and log.debug("%d: Lead developed a schedule conflict.",
+                          number)
         return (None, None, None, True, True,
                 "Lead developed a schedule conflict.")
 
     if status != 200:
-        log and log.debug("Failed: %d %s", status, run_lead_url)
+        log and log.debug("%d: Failed: %d %s", number, status,
+                          run_lead_url)
         return (None, None, None, False, False,
                 "Failed to post lead run: %s" % run_lead_url)
 
-    log and log.debug("Lead URL is %s", run_lead_url)
+    log and log.debug("%d: Lead URL is %s", number, run_lead_url)
     assert type(run_lead_url) in [str, unicode]
     runs_posted.append(run_lead_url)
 
@@ -430,38 +462,39 @@ def run_post(
         put_url = task_url + run_suffix
 
         if log:
-            log.debug("Putting run to participant %s", put_url)
-            log.debug("Parameters: %s", run_params)
+            log.debug("%d: Putting run to participant %s", number, put_url)
+            log.debug("%d: Parameters: %s", number, run_params)
 
         status, output = pscheduler.url_put(put_url,
                                             data=run_data,
                                             bind=bind_addr,
+                                            timeout=30,
                                             throw=False,
                                             json=False  # No output.
                                             )
 
-        log and log.debug("PUT %d: %s", status, output)
+        log and log.debug("%d: PUT %d: %s", number, status, output)
 
         if status == 409:
             message = "%s developed a schedule conflict." % (
                 urlparse.urlparse(request.url_root).netloc.split(':')[0])                
-            log and log.debug(message)
+            log and log.debug("%d: %s", message)
             errors.append(message)
             conflict = True
             # No sense in continuing.
             break
 
         if status != 200:
-            log and log.debug("Failed: %s", output)
+            log and log.debug("%d: Failed: %s", number, output)
             errors.append(output)
             continue
 
         runs_posted.append(put_url)
-        log and log.debug("Succeeded.")
+        log and log.debug("%d: Succeeded.", number)
 
     if len(runs_posted) != len(task_urls):
-        log and log.debug("Removing runs: %s", runs_posted)
-        pscheduler.url_delete_list(runs_posted, bind=bind_addr)
+        log and log.debug("%d: Removing runs: %s", number, runs_posted)
+        pscheduler.url_delete_list(runs_posted, bind=bind_addr, timeout=timeout)
         return (None, None, None, False, conflict,
                 "Failed to post/put runs to all participants: %s"
                 %  ("; ".join(errors))
@@ -472,48 +505,202 @@ def run_post(
     # result to all participants.
     #
 
-    log and log.debug("Fetching per-participant data")
+    log and log.debug("%d: Fetching per-participant data", number)
 
     part_data = []
 
     for run in runs_posted:
 
         # TODO: Should this be multiple attempts to avoid a race condition?
-        log and log.debug("Getting part data from %s", run)
-        status, result = pscheduler.url_get(run, bind=bind_addr, throw=False)
+        log and log.debug("%d: Getting part data from %s", number, run)
+        status, result = pscheduler.url_get(run, bind=bind_addr,
+                                            throw=False, timeout=timeout)
         if status != 200 or not 'participant-data' in result:
-            log.debug("Deleting runs: %s", runs_posted)
-            pscheduler.url_delete_list(runs_posted, bind=bind_addr)
+            log.debug("%d: Deleting runs: %s", number, runs_posted)
+            pscheduler.url_delete_list(runs_posted, bind=bind_addr,
+                                       timeout=timeout)
             # TODO: Better error?
             return (None, None, None, False, False,
                     "Failed to get run data from all participants")
         part_data.append(result['participant-data'])
-        log and log.debug("Got %s", result['participant-data'])
+        log and log.debug("%d: Got %s", number,
+                          result['participant-data'])
 
     full_data = pscheduler.json_dump ({
         'part-data-full': part_data
         })
 
-    log and log.debug("Full part data: %s", full_data)
+    log and log.debug("%d: Full part data: %s", number, full_data)
 
     for run in runs_posted:
-        log and log.debug("Putting full part data to %s", run)
+        log and log.debug("%d: Putting full part data to %s", number, run)
         status, result = pscheduler.url_put(run,
                                             data=full_data,
                                             bind=bind_addr,
                                             json=False,
-                                            throw=False)
+                                            throw=False,
+                                            timeout=30)
         if status != 200:
-            pscheduler.url_delete_list(runs_posted, bind=bind_addr)
+            pscheduler.url_delete_list(runs_posted, bind=bind_addr,
+                                       timeout=timeout)
             # TODO: Better error?
-            log and log.debug("Failed: %s", result)
+            log and log.debug("%d: Failed: %s", number, result)
             return (None, None, None, False, False,
                     "Failed to post run data to all participants")
 
 
     # TODO: Probably also want to return the start and end times?
-    log and log.debug("Run posting finished")
+    log and log.debug("%d: Run posting finished", number)
     return (runs_posted[0], schedule_lower, schedule_upper, False, False, None)
+
+
+# ------------------------------------------------------------------------------
+
+
+class NonStarterException(Exception):
+    """Exception thrown when a scheduling attempt results in a
+    non-starter.  The exception's message is the reason."""
+    pass
+
+
+def schedule_task(number, log, task, runs, trynext, background, json):
+    """Do the actual work of scheduling a run."""
+    # TODO: This could probably be part of the SchedulerWorker class.
+
+    log.debug("%d: %sTASK %s, %d runs, try %s", number,
+              "BACKGROUND " if background else "",
+              task, runs, trynext)
+
+    # Punt the lead-bind value to "localhost" and make
+    # everything would work nicely.  This is largely to avoid
+    # the situation where the hostname points at an interface
+    # that isn't up and is reasonably safe because we're only
+    # talking to the lead, which is local.
+
+    url = pscheduler.api_url(
+        host=json.get("lead-bind", "localhost"),
+        path="/tasks/%s" % (task))
+
+    # For the first run only, push the start time out.  See comment
+    # above near the declaration of first_run_offset.
+
+    if runs == 0:
+        later_start = pscheduler.time_now() + first_run_offset
+        if trynext < later_start:
+            trynext = later_start
+
+    log.debug("%d: Trying to schedule %s for %s", number, task, trynext)
+    log.debug("%d: URL is %s", number, url)
+
+    lead_bind = json.get("lead-bind", None)
+
+    # Try a few times to schedule the run.  Sometimes,
+    # something else may schedule a time we're working on, so
+    # when that happens, try again.
+
+    tries_left = conflict_retries
+    while tries_left > 0:
+        tries_left -= 1
+        try:
+            run_uri, start_time, end_time, skip, conflict, error \
+                = run_post(number, url, trynext, lead_bind, log=log)
+        except Exception as ex:
+            error = str(ex)
+            skip = False
+            break
+
+        if not conflict:
+            break
+
+        log.debug("%d: Developed a scheduling conflict.", number)
+
+    if tries_left == 0:
+        skip = False
+        error = "Gave up after too many scheduling conflicts."
+
+    if skip:
+        log.debug("%d: Skipping: %s", number, error)
+        return
+
+    if error is not None:
+        log.debug("%d: Unable: %s", number, error)
+        raise NonStarterException(error)
+    else:
+        log.debug("%d: Scheduled for %s - %s at %s", number, start_time,
+                  end_time, run_uri)
+
+
+
+
+
+
+# ------------------------------------------------------------------------------
+
+class SchedulerWorker(object):
+
+    """Handles scheduling for a single run."""
+
+    def __init__(self, number, pg, log, working_set, task, runs,
+                 trynext, background, json):
+        """Initialize"""
+
+        self.number = number
+        self.pg = pg
+        self.log = log
+        self.working_set = working_set
+
+        self.task = task
+        self.runs = runs
+        self.trynext = trynext
+        self.background = background
+        self.json = json
+
+        self.worker = threading.Thread(target=lambda: self.run())
+        self.log.debug("%d: New thread for task %s at %s", number,
+                       self.task, self.trynext)
+
+
+    def start(self):
+        """Start running."""
+        self.worker.start()
+
+
+
+    def run(self):
+        """Do the scheduling"""
+
+        try:
+
+            schedule_task(self.number, self.log, self.task, self.runs,
+                          self.trynext, self.background, self.json)
+
+        except NonStarterException as ex:
+
+            # Run isn't going to happen.  Post a non-starting run on
+            # the local (lead) system.
+
+            log.info("%d: Posting non-starting run at %s for task %s: %s",
+                     self.number,
+                     pscheduler.datetime_as_iso8601(self.trynext),
+                     self.task, str(ex))
+
+            try:
+                with self.pg.cursor() as cursor:
+                    cursor.execute(
+                        """SELECT api_run_post(%s, %s, NULL, %s)""",
+                        [self.task, self.trynext, str(ex)])
+            except Exception as nsex:
+                log.error("%d: Insertion of non-starter failed: %s",
+                          self.number, str(nsex))
+
+        finally:
+
+            # However it went, we're no longer working on this task.
+            del self.working_set[self.number]
+            log.debug("%d: Thread finished", self.number)
+
+
+
 
 
 #
@@ -528,9 +715,15 @@ def main_program():
     cursor = pg.cursor()
     cursor.execute("LISTEN task_change")
 
-    # This is separate because inserts of non-starters happen while
-    # fetching rows from the other cursor.
-    nonstart_cursor = pg.cursor()
+    # This is separate so non-start activity doesn't get queued up
+    # behind the connection that's doing the work in this function's
+    # loop.  Having the non-starers queue up isn't a big deal because
+    # they're quick.
+
+    nonstart_pg = pscheduler.pg_connection(dsn)
+
+    # What workers are running
+    workers = pscheduler.ThreadSafeDictionary()
 
 
     while True:
@@ -538,106 +731,43 @@ def main_program():
         wait = True
 
         # TODO: The FALSE for background does nothing.  Get rid of it.
-        cursor.execute("""
-            SELECT uuid, runs, trynext, FALSE, json
-            FROM schedule_runs_to_schedule LIMIT 1
-            """)
+        query = """SELECT task, uuid, runs, trynext, FALSE, json
+            FROM schedule_runs_to_schedule"""
+        args = []
+
+        if len(workers) > 0:
+            query += " WHERE task in %s"
+            args.append(tuple(workers.keys()))
+
+        query += " LIMIT 50"
+
+        cursor.execute(query, args)
 
         # Check if any notifications arrived while this query executed.
         if pg.notifies:
             wait = False
             del pg.notifies[:]
 
-        # Any rows returned means we query again.
-        if cursor.rowcount > 0:
-            wait = False
-
         for row in cursor:
 
-            uuid, runs, trynext, background, json = row
+            number, task, runs, trynext, background, json = row
 
-            log.debug("%sTASK %s, %d runs, try %s", 
-                      "BACKGROUND " if background else "",
-                      uuid, runs, trynext)
-
-            # Punt the lead-bind value to "localhost" and make
-            # everything would work nicely.  This is largely to avoid
-            # the situation where the hostname points at an interface
-            # that isn't up and is reasonably safe because we're only
-            # talking to the lead, which is local.
-
-            url = pscheduler.api_url(
-                host=json.get("lead-bind", "localhost"),
-                path="/tasks/%s" % (uuid))
+            if number not in workers:
+                worker = SchedulerWorker(number, nonstart_pg, log,
+                                         workers, task, runs, trynext,
+                                         background, json)
+                log.debug("Starting thread for ID %d", number)
+                workers[number] = worker
+                worker.start()
+                wait = False
 
 
-            # For the first run only, push the start time out.
-            # See comment above near the declaration of
-            # first_run_offset.
-
-            if runs == 0:
-                later_start = pscheduler.time_now() + first_run_offset
-                if trynext < later_start:
-                    trynext = later_start                   
-
-            log.debug("Trying to schedule %s for %s", uuid, trynext)
-            log.debug("URL is %s", url)
-
-            lead_bind = json.get("lead-bind", None)
-
-            # Try a few times to schedule the run.  Sometimes,
-            # something else may schedule a time we're working on, so
-            # when that happens, try again.
-
-            tries_left = 3
-            while tries_left > 0:
-                tries_left -= 1
-                try:
-                    run_uri, start_time, end_time, skip, conflict, error \
-                        = run_post(url, trynext, lead_bind, log=log)
-                except Exception as ex:
-                    error = str(ex)
-                    skip = False
-                    break
-
-                if not conflict:
-                    break
-
-                log.debug("Developed a scheduling conflict.  Trying again.")
-
-            if tries_left == 0:
-                skip = False
-                error = "Gave up after too many scheduling conflicts."
-
-            if skip:
-                log.debug("Skipping: %s", error)
-                continue
-
-            if error is not None:
-                log.debug("Unable: %s", error)
-                # Post a non-starting run on the lead (local) system
-                try:
-                    nonstart_cursor.execute(
-                        """SELECT api_run_post(%s, %s, NULL, %s)""",
-                        [uuid, trynext, error])
-                    log.info("Posted non-starting run at %s for %s: %s",
-                             pscheduler.datetime_as_iso8601(trynext), url, error)
-                except:
-                    log.error("Insertion of non-starter failed: %s", error)
-
-            else:
-                log.debug("Scheduled for %s - %s at %s",
-                          start_time, end_time, run_uri)
-
-
-        # Wait for something to happen.
-          
         if wait:
 
             try:
-                if select.select([pg],[],[],
+                if select.select([pg], [], [],
                                  pscheduler.timedelta_as_seconds(refresh)) \
-                                 != ([],[],[]):
+                                 != ([], [], []):
                     # Notified
                     pg.poll()
                     del pg.notifies[:]

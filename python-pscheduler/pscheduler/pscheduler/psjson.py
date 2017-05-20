@@ -36,7 +36,6 @@ def json_decomment(json, prefix='#', null=False):
         return json
 
 
-
 def json_substitute(json, value, replacement):
     """
     Substitute any pair whose value is 'value' with the replacement
@@ -59,7 +58,6 @@ def json_substitute(json, value, replacement):
 
     else:
         return json
-
 
 
 def json_check_schema(json, max_schema=None):
@@ -129,7 +127,6 @@ def json_load(source=None, exit_on_error=False, strip=True, max_schema=None):
     return json_decomment(json_in) if strip else json_in
 
 
-
 def json_dump(obj, dest=None, pretty=False):
     """
     Write a blob of JSON contained in a hash to a file destination.
@@ -142,7 +139,7 @@ def json_dump(obj, dest=None, pretty=False):
     # Return a string
     if dest is None:
         if pretty:
-            return dumps(obj, 
+            return dumps(obj,
                          sort_keys=True,
                          indent=4,
                          separators=(',', ': ')

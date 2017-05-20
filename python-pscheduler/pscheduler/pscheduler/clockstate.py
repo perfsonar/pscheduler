@@ -64,14 +64,16 @@ struct timeval {
 };
 """
 
-STA_NANO=0x2000
-STA_UNSYNC=0x0040
+STA_NANO = 0x2000
+STA_UNSYNC = 0x0040
+
 
 class TimevalStruct(Structure):
     _fields_ = [
         ("tv_sec", c_long),
         ("tv_usec", c_long),
     ]
+
 
 class TimexStruct(Structure):
     _fields_ = [
@@ -101,6 +103,7 @@ class TimexStruct(Structure):
     def synchronized(self):
         return (self.status & STA_UNSYNC) == 0
 
+
 def ntp_adjtime():
     retval = None
     try:
@@ -121,7 +124,6 @@ def ntp_adjtime():
 
 
 def clock_state():
-
     """
     Determine the state of the system clock and return a hash of
     information conforming to the definition of a SystemClockStatus
@@ -141,7 +143,7 @@ def clock_state():
     offset - A float indicating the estimated clock offset.  Not
     provided if not synchronized.
 
-    error - 
+    error -
 
     """
 
@@ -164,7 +166,7 @@ def clock_state():
     result = {
         "time": time_here.strftime("%Y-%m-%dT%H:%M:%S.%f") + offset,
         "synchronized": system_synchronized
-        }
+    }
 
     if system_synchronized:
 
@@ -177,8 +179,9 @@ def clock_state():
             result["reference"] = "%s from %s" % (
                 ntplib.stratum_to_text(ntp.stratum),
                 ntplib.ref_id_to_text(ntp.ref_id)
-                )
+            )
         except Exception as ex:
+            result["synchronized"] = False
             result["error"] = str(ex)
 
     return result
