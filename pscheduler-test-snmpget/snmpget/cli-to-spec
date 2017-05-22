@@ -40,22 +40,22 @@ opt_parser = pscheduler.FailingOptionParser(epilog=
 
 
 opt_parser.add_option("--host",
-                      help="Host to run the test",
+                      help="Host to run the test.",
                       action="store", type="string",
                       dest="host")
 
 opt_parser.add_option("--host-node",
-                      help="Host to run the test",
+                      help="Host to run the test.",
                       action="store", type="string",
                       dest="host_node")
 
 opt_parser.add_option("--dest",
-                      help="Destination that will be queried",
+                      help="Destination that will be queried.",
                       action="store", type="string",
                       dest="dest")
                     
-opt_parser.add_option("--version (1|2c|3)",
-                      help="Version of SNMP to be used",
+opt_parser.add_option("--version",
+                      help="Version of SNMP to be used. (1|2c|3)",
                       action="store", type="string",
                       dest="version")
 
@@ -80,13 +80,13 @@ if '3' in args:
                       action="store", type="string",
                       dest="sn")
                     
-   opt_parser.add_option("--ap (md5|sha)",
-                      help="Authentication Protocol",
+   opt_parser.add_option("--ap",
+                      help="Authentication Protocol (md5|sha)",
                       action="store", type="string",
                       dest="ap")
 
-   opt_parser.add_option("--pp (des|aes)",
-                      help="Privacy Protocol",
+   opt_parser.add_option("--pp",
+                      help="Privacy Protocol (des|aes)",
                       action="store", type="string",
                       dest="pp")
 
