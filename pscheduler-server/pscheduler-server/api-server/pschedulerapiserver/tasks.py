@@ -181,8 +181,7 @@ def tasks():
 
             if returncode != 0:
                 return error("Unable to validate test spec: %s" % (stderr))
-            # TODO:  #74 Figure out how to schemafy this.
-            validate_json = pscheduler.json_load(stdout)
+            validate_json = pscheduler.json_load(stdout, max_schema=1)
             if not validate_json["valid"]:
                 return bad_request("Invalid test specification: %s" %
                                    (validate_json.get("error", "Unspecified error")))
@@ -228,10 +227,10 @@ def tasks():
             if returncode != 0:
                 return error("Unable to determine participants: " + stderr)
 
-            # TODO:  #74 Figure out how to schemafy this.
-            participants = [ host if host is not None
-                             else server_fqdn()
-                             for host in pscheduler.json_load(stdout)["participants"] ]
+            participants = [ host if host is not None else
+                             server_fqdn() for host in
+                             pscheduler.json_load(stdout,
+                                                  max_schema=1)["participants"] ]
         except Exception as ex:
             return error("Exception while determining participants: " + str(ex))
         nparticipants = len(participants)
@@ -557,8 +556,7 @@ def tasks_uuid(uuid):
         # TODO: This should probably a PUT and not a POST.
 
         try:
-            # TODO:  #74 Figure out how to schemafy this.
-            json_in = pscheduler.json_load(request.data)
+            json_in = pscheduler.json_load(request.data, max_schema=1)
         except ValueError:
             return bad_request("Invalid JSON")
         log.debug("JSON is %s", json_in)
@@ -596,8 +594,8 @@ def tasks_uuid(uuid):
 
         try:
             try:
-                # TODO:  #74 Figure out how to schemafy this.
-                participants = pscheduler.json_load(request.data)["participants"]
+                participants = pscheduler.json_load(request.data,
+                                                    max_schema=1)["participants"]
             except:
                 return bad_request("No participants provided")
             cursor = dbcursor_query(

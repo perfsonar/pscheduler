@@ -236,7 +236,7 @@ class RunWorker:
         """
         self.log.debug("%d: Got result: %s", self.id, result)
         try:
-            json = pscheduler.json_load(result)
+            json = pscheduler.json_load(result, max_schema=1)
         except ValueError:
             log.warning("%d: Discarding bogus result %s", self.id, result)
             return
@@ -502,7 +502,7 @@ class RunWorker:
         else:
             # See if the test claimed failure
             try:
-                result_json = pscheduler.json_load(stdout)
+                result_json = pscheduler.json_load(stdout, max_schema=1)
                 if "succeeded" in result_json \
                         and type(result_json["succeeded"]) == bool \
                         and result_json["succeeded"] == False:

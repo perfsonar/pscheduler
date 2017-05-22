@@ -147,7 +147,7 @@ if format != 'text/plain':
     pscheduler.fail("Unsupported format '%s'" % format)
 
 #parse JSON input
-input = pscheduler.json_load(exit_on_error=True)
+input = pscheduler.json_load(exit_on_error=True, max_schema=1)
 
 #validate against JSON schema file
 valid, message = result_is_valid(input["result"])

@@ -13,7 +13,7 @@ import sys
 
 logger = pscheduler.Log(prefix='test-throughput', quiet=True)
 
-json = pscheduler.json_load(exit_on_error=True)
+json = pscheduler.json_load(exit_on_error=True, max_schema=1)
 
 null_reason = None
 

@@ -134,4 +134,4 @@ def tests_name_participants(name):
 
     # If this fails because of bad JSON, an exception will be thrown,
     # caught and logged.
-    return json_response(pscheduler.json_load(stdout))
+    return json_response(pscheduler.json_load(stdout, max_schema=1))
