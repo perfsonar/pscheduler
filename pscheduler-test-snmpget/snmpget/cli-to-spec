@@ -54,13 +54,16 @@ opt_parser.add_option("--dest",
                       action="store", type="string",
                       dest="dest")
                     
-opt_parser.add_option("--version",
+opt_parser.add_option("--version (1|2c|3)",
                       help="Version of SNMP to be used",
                       action="store", type="string",
                       dest="version")
 
 opt_parser.add_option("--oid",
-                      help="OID",
+                      help="""List of OIDs to be queried, separated by commas without spaces. 
+                              Example:
+                              --oid sysUpTime.0,ucdDemoUserList.0
+                              """,
                       action="store", type="string",
                       dest="oid")
 
@@ -77,28 +80,28 @@ if '3' in args:
                       action="store", type="string",
                       dest="sn")
                     
-   opt_parser.add_option("--ap",
-                      help="Auth Protocol",
+   opt_parser.add_option("--ap (md5|sha)",
+                      help="Authentication Protocol",
                       action="store", type="string",
                       dest="ap")
 
-   opt_parser.add_option("--pp",
-                      help="Priv Protocol",
+   opt_parser.add_option("--pp (des|aes)",
+                      help="Privacy Protocol",
                       action="store", type="string",
                       dest="pp")
 
    opt_parser.add_option("--ak",
-                      help="Auth Key",
+                      help="Authentication Passphrase",
                       action="store", type="string",
                       dest="ak")
 
    opt_parser.add_option("--pk",
-                      help="Priv Key",
+                      help="Privacy Passphrase",
                       action="store", type="string",
                       dest="pk")
 
    opt_parser.add_option("--sl",
-                      help="Security Level",
+                      help="Security Level (noAuthNoPriv|authNoPriv|authPriv)",
                       action="store", type="string",
                       dest="sl")
 

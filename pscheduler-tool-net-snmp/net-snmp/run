@@ -46,14 +46,22 @@ else:
                'context': '-n'
                }
 
+# loop through spec to get command line args
 for key in input['test']['spec'].keys():
     try:
         argv.append(op_dict[key])
     except KeyError:
+        # if key does not exist in dictionary, no switch is needed
         pass
+        # do not append schema
         if type(input['test']['spec'][key]) == int:
             continue
-    argv.append(input['test']['spec'][key])
+    if key == 'oid':
+        # loop through list of oids, appending one at a time
+        for item in input['test']['spec'][key].split(","):
+            argv.append(item)
+    else:
+        argv.append(input['test']['spec'][key])
     
 try:
     status, stdout, stderr = pscheduler.run_program(argv)
