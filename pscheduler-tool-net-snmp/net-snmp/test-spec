@@ -4,7 +4,7 @@
    "test": {
       "spec": {
          "dest": "test.net-snmp.org",
-         "op": "walk",
+         "oid": "system.sysUpTime.0",
          "version": "2c",
          "community": "demopublic",
          "schema": 1

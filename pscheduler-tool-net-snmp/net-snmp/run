@@ -51,6 +51,8 @@ for key in input['test']['spec'].keys():
         argv.append(op_dict[key])
     except KeyError:
         pass
+        if type(input['test']['spec'][key]) == int:
+            continue
     argv.append(input['test']['spec'][key])
     
 try:
