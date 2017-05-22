@@ -15,12 +15,10 @@ input = pscheduler.json_load(exit_on_error=True)
 
 try:
     version = input['test']['spec']['version']
-    community = input['test']['spec']['community']
     dest = input['test']['spec']['dest']
-    op = input['test']['spec']['op']
-
-    if op == 'get':
-        oid = input['test']['spec']['oid']
+    oid = input['test']['spec']['oid']
+    if version == '1' or version == '2c':
+        community = input['test']['spec']['community']
 
 except KeyError:
     pscheduler.fail('Missing data in input')
@@ -32,19 +30,29 @@ start_time = datetime.datetime.now()
 # Perform the test
 
 error = None
-argv = ['snmp' + str(op)]
-for key in input['test']['spec'].keys():
-    if key == 'version':
-        argv.append('-v')
-        argv.append(input['test']['spec'][key])
-    if key == 'community':
-        argv.append('-c')
-        argv.append(input['test']['spec'][key])
-    if key == 'dest':
-        argv.append(input['test']['spec'][key])
-    if key == 'oid':
-        argv.append(input['test']['spec'][key])
+argv = ['snmpget']
+if version == '1' or version == '2c':
+    op_dict = {'version': '-v',
+               'community': '-c',
+               }
+else:
+    op_dict = {'version': '-v',
+               'sn': '-u',
+               'sp': '-a',
+               'pp': '-x',
+               'ak': '-A',
+               'pk': '-X',
+               'sl': '-l',
+               'context': '-n'
+               }
 
+for key in input['test']['spec'].keys():
+    try:
+        argv.append(op_dict[key])
+    except KeyError:
+        pass
+    argv.append(input['test']['spec'][key])
+    
 try:
     status, stdout, stderr = pscheduler.run_program(argv)
     succeeded = True
