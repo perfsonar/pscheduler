@@ -1,0 +1,37 @@
+#!/usr/bin/python
+#
+# Convert a test specification to command-line options
+
+import pscheduler
+
+from validate import spec_is_valid
+
+spec = pscheduler.json_load(exit_on_error=True)
+
+valid, message = spec_is_valid(spec)
+
+if not valid:
+    pscheduler.fail(message)
+
+
+result = pscheduler.speccli_build_args(spec, 
+                                       strings=[
+        # Strings
+        ( 'host', 'host' ),
+        ( 'host-node', 'host-node' ),
+        ( 'dest', 'dest' ),
+        ('oid', 'oid'),
+        ('community', 'community'),
+        ('version', 'version'),
+        ( 'timeout', 'timeout' ),
+        ( 'ap', 'ap'),
+        ( 'sn', 'sn'),
+        ( 'pp', 'pp'),
+        ( 'ak', 'ak'),
+        ( 'pk', 'pk'),
+        ( 'sl', 'sl'),
+        ( 'context', 'context')
+        ])
+
+
+pscheduler.succeed_json(result)

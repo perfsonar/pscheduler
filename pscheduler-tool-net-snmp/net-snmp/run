@@ -1,0 +1,96 @@
+#!/usr/bin/python
+#
+# Run a test.  Just the test spec is provided on stdin.
+#
+
+import datetime
+import json
+import sys
+import time
+
+import pscheduler
+
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+
+try:
+    version = input['test']['spec']['version']
+    dest = input['test']['spec']['dest']
+    oid = input['test']['spec']['oid']
+    if version == '1' or version == '2c':
+        community = input['test']['spec']['community']
+
+except KeyError:
+    pscheduler.fail('Missing data in input')
+
+timeout_iso = input['test']['spec'].get("timeout", "PT5S" )
+timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+start_time = datetime.datetime.now()
+
+# Perform the test
+
+error = None
+argv = ['snmpget']
+if version == '1' or version == '2c':
+    op_dict = {'version': '-v',
+               'community': '-c',
+               }
+else:
+    op_dict = {'version': '-v',
+               'sn': '-u',
+               'sp': '-a',
+               'pp': '-x',
+               'ak': '-A',
+               'pk': '-X',
+               'sl': '-l',
+               'context': '-n'
+               }
+
+# loop through spec to get command line args
+for key in input['test']['spec'].keys():
+    try:
+        argv.append(op_dict[key])
+    except KeyError:
+        # if key does not exist in dictionary, no switch is needed
+        pass
+        # do not append schema
+        if type(input['test']['spec'][key]) == int:
+            continue
+    if key == 'oid':
+        # loop through list of oids, appending one at a time
+        for item in input['test']['spec'][key].split(","):
+            argv.append(item)
+    else:
+        argv.append(input['test']['spec'][key])
+    
+try:
+    status, stdout, stderr = pscheduler.run_program(argv)
+    succeeded = True
+except Exception as e:
+    pscheduler.succeed_json({"succeeded": False,
+                             "error": "The snmpget command failed during execution."
+                            })
+
+if status:
+    pscheduler.succeed_json({"succeeded": False,
+                                 "error": "snmpget returned an error: %s" % stderr.strip('\n')
+                                 })
+
+end_time = datetime.datetime.now()
+
+#
+# Produce results
+#
+
+results = {
+    'succeeded': succeeded,
+    'result': {
+	    'schema': 1,
+	    'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
+	    'succeeded' : succeeded,
+        'data': stdout
+    }
+}
+
+pscheduler.succeed_json(results)
+

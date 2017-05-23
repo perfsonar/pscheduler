@@ -1,0 +1,175 @@
+#!/usr/bin/python
+#
+# Convert command-line options to a test specification
+#
+
+import optparse
+import pscheduler
+import sys
+
+if len(sys.argv) > 1:
+
+   # Args are on the command line
+   args = sys.argv[1:]
+
+else:
+
+   # Args are in a JSON array on stdin
+   json_args = pscheduler.json_load(exit_on_error=True)
+   args = []
+
+   if type(json_args) != list:
+      pscheduler.fail("Invalid JSON for this operation")
+   for arg in json_args:
+      if type(arg) not in (unicode, str, int, float):
+         pscheduler.fail("Invalid JSON for this operation")
+   args = [ str(arg) for arg in json_args ]
+
+
+
+# Gargle the arguments
+
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""Examples:
+
+  task snmpget --version 2c --community public example.net
+    text
+
+"""
+)
+
+
+opt_parser.add_option("--host",
+                      help="Host to run the test.",
+                      action="store", type="string",
+                      dest="host")
+
+opt_parser.add_option("--host-node",
+                      help="Host to run the test.",
+                      action="store", type="string",
+                      dest="host_node")
+
+opt_parser.add_option("--dest",
+                      help="Destination that will be queried.",
+                      action="store", type="string",
+                      dest="dest")
+                    
+opt_parser.add_option("--version",
+                      help="Version of SNMP to be used. (1|2c|3)",
+                      action="store", type="string",
+                      dest="version")
+
+opt_parser.add_option("--oid",
+                      help="""List of OIDs to be queried, separated by commas without spaces. 
+                              Example:
+                              --oid sysUpTime.0,ucdDemoUserList.0
+                              """,
+                      action="store", type="string",
+                      dest="oid")
+
+opt_parser.add_option("--timeout",
+                      help="Timeout for each query attempt",
+                      action="store", type="string",
+                      dest="timeout")
+
+# snmp v3 specific options
+if '3' in args:
+   version = 3
+   opt_parser.add_option("--sn",
+                      help="Security Name",
+                      action="store", type="string",
+                      dest="sn")
+                    
+   opt_parser.add_option("--ap",
+                      help="Authentication Protocol (md5|sha)",
+                      action="store", type="string",
+                      dest="ap")
+
+   opt_parser.add_option("--pp",
+                      help="Privacy Protocol (des|aes)",
+                      action="store", type="string",
+                      dest="pp")
+
+   opt_parser.add_option("--ak",
+                      help="Authentication Passphrase",
+                      action="store", type="string",
+                      dest="ak")
+
+   opt_parser.add_option("--pk",
+                      help="Privacy Passphrase",
+                      action="store", type="string",
+                      dest="pk")
+
+   opt_parser.add_option("--sl",
+                      help="Security Level (noAuthNoPriv|authNoPriv|authPriv)",
+                      action="store", type="string",
+                      dest="sl")
+
+   opt_parser.add_option("--context",
+                      help="Context Name",
+                      action="store", type="string",
+                      dest="context")
+
+# snmp v1 and v2c specific options
+else:
+   version = 1
+   opt_parser.add_option("--community",
+                          help="Community string",
+                          action="store", type="string",
+                          dest="community")
+
+(options, remaining_args) = opt_parser.parse_args(args)
+
+if len(remaining_args) != 0:
+   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
+
+
+result = { 'schema': 1 }
+
+
+if options.host is not None:
+   result['host'] = options.host
+
+if options.host_node is not None:
+   result['host-node'] = options.host_node
+
+if options.dest is not None:
+   result['dest'] = options.dest
+
+if options.version is not None:
+   result['version'] = options.version
+
+if options.oid is not None:
+   result['oid'] = options.oid
+
+if options.timeout is not None:
+   result['timeout'] = options.timeout
+
+if version == 1:
+  if options.community is not None:
+    result['community'] = options.community
+
+else:
+    if options.sn is not None:
+      result['sn'] = options.sn
+
+    if options.ap is not None:
+      result['ap'] = options.ap
+
+    if options.pp is not None:
+      result['pp'] = options.pp
+
+    if options.ak is not None:
+      result['ak'] = options.ak
+
+    if options.pk is not None:
+      result['pk'] = options.pk
+
+    if options.sl is not None:
+      result['sl'] = options.sl
+
+    if options.context is not None:
+      result['context'] = options.context
+
+
+pscheduler.succeed_json(result)
