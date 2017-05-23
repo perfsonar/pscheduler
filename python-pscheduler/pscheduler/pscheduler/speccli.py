@@ -2,7 +2,6 @@
 Functions for use in spec-to-cli methods
 """
 
-import pscheduler
 
 def speccli_build_args(json, strings=[], bools=[]):
     """
@@ -44,6 +43,6 @@ def speccli_build_args(json, strings=[], bools=[]):
             else:
                 result.append('--no-' + option)
         except KeyError:
-            pass  # Missing key is okay.     
+            pass  # Missing key is okay.
 
     return result

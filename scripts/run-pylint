@@ -11,27 +11,26 @@
 
 WHEREAMI=$(dirname "$0")
 
-PYLINT_ARGS="--rcfile=$WHEREAMI/pylint.cfg"
+PYLINT_ARGS="--rcfile=${WHEREAMI}/pylint.cfg"
 
 # make sure we grab the pscheduler path
-LIB_PATH="$WHEREAMI/../python-pscheduler/pscheduler/"
+LIB_PATH="${WHEREAMI}/../python-pscheduler/pscheduler/"
 
 which pylint >/dev/null || (echo "pylint doesn't appear to be installed" && exit 1);
 
-ALL_FILES=$(find $WHEREAMI/.. -type f)
-
-for FILE in $ALL_FILES
+for FILE in $( \
+    find "${WHEREAMI}/.." -type f \
+    | xargs file -i -F';' \
+    | awk -F';' '$2 == "text/x-python" || $1 ~ /\.py$/ { print $1 }' \
+    )
 do
-   FILE_TYPE=`file $FILE 2>/dev/null`
-   if [[ $FILE_TYPE =~ "python script" ]]
-      then
-       LOCAL_PATH=$(dirname "$0")
-       echo "FILE = $FILE"
-       PYLINT_FILENAME=`echo $FILE | sed -e s'/\//_/g' | sed -e s'/\./_/g'`
-       PYTHONPATH="$LIB_PATH:$LOCAL_PATH" pylint $PYLINT_ARGS $FILE | tee "pylint_$PYLINT_FILENAME.log"
-   fi
+
+    echo "FILE = $FILE"
+    PYLINT_FILENAME="pylint_$( \
+	echo ${FILE} \
+	| sed -e "s|^${WHEREAMI}/\.\./||g" \
+	| tr '/.' '__'
+	)"
+    PYTHONPATH="${LIB_PATH}:${WHEREAMI}" pylint ${PYLINT_ARGS} "${FILE}" \
+	| tee "pylint_${PYLINT_FILENAME}.log"
 done
-
-
-
-

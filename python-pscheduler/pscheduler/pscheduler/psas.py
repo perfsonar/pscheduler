@@ -26,7 +26,7 @@ def __asresolve__(arg):
     if not ip.is_unicast() or ip.is_private():
         return (arg, None)
 
-    revoctets =  ip.reverse_dns.split('.')
+    revoctets = ip.reverse_dns.split('.')
     reverse_type = revoctets[-3]
     revoctets = revoctets[:-3]
 
@@ -55,10 +55,7 @@ def __asresolve__(arg):
     else:
         owner = None
 
-
-
     return (arg, (int(asn), owner))
-
 
 
 def as_bulk_resolve(candidates, threads=50):
@@ -76,16 +73,15 @@ def as_bulk_resolve(candidates, threads=50):
     result = {}
 
     pool = multiprocessing.pool.ThreadPool(
-        processes=min(len(candidates), threads) )
+        processes=min(len(candidates), threads))
 
     for ip, as_ in pool.imap(
-        __asresolve__,
-        candidates,
-        chunksize=1):
+            __asresolve__,
+            candidates,
+            chunksize=1):
         result[ip] = as_
     pool.close()
     return result
-
 
 
 if __name__ == "__main__":

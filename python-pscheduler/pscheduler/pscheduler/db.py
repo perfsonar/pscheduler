@@ -61,7 +61,6 @@ def pg_cursor(dsn='', autocommit=True, name=None):
 # rubberstamped into the services to do timed waits for notifications.
 
 
-
 #
 # Full-featured database connection
 #
@@ -97,8 +96,6 @@ class PgQueryResult:
             self.rows = 0
 
 
-
-
 class PgConnection:
 
     def __init__(self, dsn, autocommit=True, name=None):
@@ -106,7 +103,6 @@ class PgConnection:
         self.pg = pg_connection(dsn, autocommit=autocommit, name=name)
         self.pending_notifications = {}
 
-    
     #
     # Notifications
     #
@@ -117,14 +113,12 @@ class PgConnection:
         """
         self.pg.cursor().execute("LISTEN %s" % (channel))
 
-
     def unlisten(self, channel="*"):
         """
         Cancel listening for notifications on channel 'channel' or all
         channels if none is specified.
         """
         self.pg.cursor().execute("UNLISTEN %s" % (channel))
-
 
     def notifications(self):
         """
@@ -138,7 +132,6 @@ class PgConnection:
                            self.pending_notifications[notification]))
         self.pending_notifications = {}
         return result
-
 
     def __capture_notifications(self):
         """
@@ -160,8 +153,6 @@ class PgConnection:
 
         del self.pg.notifies[:]
 
-    
-
     def wait(self, timeout=None):
         """
         Wait through 'timeout' (in seconds) for a notification, or forever
@@ -174,7 +165,7 @@ class PgConnection:
 
         while True:
             try:
-                selected = select.select([self.pg],[],[], timeout)
+                selected = select.select([self.pg], [], [], timeout)
                 break
             except select.error as ex:
                 err_no, message = ex
@@ -183,8 +174,7 @@ class PgConnection:
                     continue
                 raise ex
 
-
-        if selected == ([],[],[]):
+        if selected == ([], [], []):
             return False
 
         self.pg.poll()
@@ -207,14 +197,11 @@ class PgConnection:
         self.pg.rowback()
 
 
-
 #
 # Test Program
 #
 
 if __name__ == "__main__":
-
-    import datetime
 
     dsn = 'host=127.0.0.1 dbname=pscheduler user=pscheduler password=6ibeARUyecg6YyJpkRnrt1GIugFUoOK3Hb9SEaJD0BJAhxTBgM3XX'
 
@@ -237,7 +224,7 @@ if __name__ == "__main__":
                     result = db.query("""
                          SELECT table_name
                          FROM information_schema.tables WHERE table_schema = %s
-                         LIMIT 5""", ["public"]);
+                         LIMIT 5""", ["public"])
                     print len(result), "rows"
                     for row in result:
                         print row[0]
@@ -250,4 +237,3 @@ if __name__ == "__main__":
             print "No notifications"
 
     db.unlisten()
-
