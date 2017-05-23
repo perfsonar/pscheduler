@@ -46,6 +46,12 @@ else:
                'context': '-n'
                }
 
+# if no protocol specified, default is udp
+try:
+    protocol = input['test']['spec']['protocol']
+except KeyError:
+    protocol = 'udp'
+
 # loop through spec to get command line args
 for key in input['test']['spec'].keys():
     try:
@@ -53,9 +59,12 @@ for key in input['test']['spec'].keys():
     except KeyError:
         # if key does not exist in dictionary, no switch is needed
         # do not append schema
-        if type(input['test']['spec'][key]) == int:
+        if key == 'schema' or key == 'protocol':
             continue
-    argv.append(input['test']['spec'][key])
+    if key == 'dest':
+        argv.append(str(protocol) + ':' + input['test']['spec'][key])
+    else:
+        argv.append(input['test']['spec'][key])
     
 try:
     status, stdout, stderr = pscheduler.run_program(argv)

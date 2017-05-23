@@ -60,12 +60,14 @@ opt_parser.add_option("--version",
                       dest="version")
 
 opt_parser.add_option("--oid",
-                      help="""List of OIDs to be queried, separated by commas without spaces. 
-                              Example:
-                              --oid sysUpTime.0,ucdDemoUserList.0
-                              """,
+                      help="OID to be queried",
                       action="store", type="string",
                       dest="oid")
+
+opt_parser.add_option("--protocol",
+                      help="Transport specifier (tcp|udp)",
+                      action="store", type="string",
+                      dest="protocol")
 
 opt_parser.add_option("--timeout",
                       help="Timeout for each query attempt",
@@ -141,6 +143,9 @@ if options.version is not None:
 
 if options.oid is not None:
    result['oid'] = options.oid
+
+if options.protocol is not None:
+   result['protocol'] = options.protocol
 
 if options.timeout is not None:
    result['timeout'] = options.timeout
