@@ -1,5 +1,5 @@
 #
-# Validator for "snmp" Test
+# Validator for "snmpget" Test
 #
 
 from pscheduler import json_validate

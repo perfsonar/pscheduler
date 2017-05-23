@@ -32,7 +32,7 @@ else:
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """Examples:
 
-  task snmp --version 2c --community public example.net
+  task snmpget --version 2c --community public example.net
     text
 
 """

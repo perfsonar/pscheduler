@@ -1,7 +1,7 @@
 #!/bin/sed -e 1d
 {
     "schema": 1,
-    "name": "snmp",
+    "name": "snmpget",
     "description": "Measure SNMP transaction time",
     "version": "1.0",
     "maintainer": {

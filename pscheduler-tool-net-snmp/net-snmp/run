@@ -68,12 +68,12 @@ try:
     succeeded = True
 except Exception as e:
     pscheduler.succeed_json({"succeeded": False,
-                             "error": "The snmp command failed during execution."
+                             "error": "The snmpget command failed during execution."
                             })
 
 if status:
     pscheduler.succeed_json({"succeeded": False,
-                                 "error": "snmp returned an error: %s" % stderr.strip('\n')
+                                 "error": "snmpget returned an error: %s" % stderr.strip('\n')
                                  })
 
 end_time = datetime.datetime.now()

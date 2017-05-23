@@ -2,12 +2,12 @@
 # RPM Spec for pScheduler SNMP Test
 #
 
-%define short	snmp
+%define short	snmpget
 Name:		pscheduler-test-%{short}
 Version:	1.0.0.2
 Release:	1%{?dist}
 
-Summary:	snmp test for pScheduler
+Summary:	snmpget test for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0
 Group:		Unspecified
