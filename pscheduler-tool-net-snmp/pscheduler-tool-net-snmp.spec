@@ -19,7 +19,7 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server
 Requires:	net-snmp
 Requires:	python-pscheduler
-Requires:	pscheduler-test-snmp
+Requires:	pscheduler-test-snmpget
 
 BuildRequires:	pscheduler-rpm
 
