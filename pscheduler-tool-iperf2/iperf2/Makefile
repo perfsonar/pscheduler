@@ -11,8 +11,10 @@ FILES=\
 	merged-results \
 	participant-data \
 	run \
-	iperf_parser.py \
-	iperf_defaults.py\
+	iperf2_parser.py \
+        iperf2_utils.py \
+        iperf2.conf \
+	iperf2_defaults.py\
 
 
 install: $(FILES)
