@@ -60,7 +60,7 @@ def tests_name_spec(name):
 
     # The extra parse here makes 'pretty' work.
     returned_json = pscheduler.json_load(stdout)
-    return ok_json(returned_json)
+    return ok_json(returned_json, sanitize=False)
 
 
 
