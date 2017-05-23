@@ -25,6 +25,10 @@ def spec_is_valid(json):
                 "type": "string",
                 "enum": [ "noauthnopriv", "authnopriv", "authpriv"]
             },
+            "TransportProtocol": {
+                "type": "string",
+                "enum": ["tcp", "udp"]
+            },
             "SNMPv1Spec": {
                 "type": "object",
                 "properties": {
@@ -35,6 +39,7 @@ def spec_is_valid(json):
                     "version":      { "$ref": "#/local/VersionNumber"},
                     "community":    { "$ref": "#/pScheduler/String"},
                     "oid":          { "$ref": "#/pScheduler/String"},
+                    "protocol":     { "$ref": "#/pScheduler/TransportProtocol" },
                     "timeout":      { "$ref": "#/pScheduler/Duration" },
                 },
                 "required": [
@@ -53,6 +58,7 @@ def spec_is_valid(json):
                     "dest":         { "$ref": "#/pScheduler/Host" },
                     "version":      { "$ref": "#/local/VersionNumber"},
                     "oid":          { "$ref": "#/pScheduler/String"},
+                    "protocol":     { "$ref": "#/pScheduler/TransportProtocol" },
                     "sn":           { "$ref": "#/pScheduler/String" },
                     "ap":           { "$ref": "#/local/AuthProtocol" },
                     "pp":           { "$ref": "#/local/PrivProtocol" },

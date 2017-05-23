@@ -46,20 +46,23 @@ else:
                'context': '-n'
                }
 
+# if no protocol specified, default is udp
+try:
+    protocol = input['test']['spec']['protocol']
+except KeyError:
+    protocol = 'udp'
+
 # loop through spec to get command line args
 for key in input['test']['spec'].keys():
     try:
         argv.append(op_dict[key])
     except KeyError:
         # if key does not exist in dictionary, no switch is needed
-        pass
         # do not append schema
-        if type(input['test']['spec'][key]) == int:
+        if key == 'schema' or key == 'protocol':
             continue
-    if key == 'oid':
-        # loop through list of oids, appending one at a time
-        for item in input['test']['spec'][key].split(","):
-            argv.append(item)
+    if key == 'dest':
+        argv.append(str(protocol) + ':' + input['test']['spec'][key])
     else:
         argv.append(input['test']['spec'][key])
     
