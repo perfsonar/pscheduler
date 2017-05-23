@@ -5,14 +5,12 @@ Range of durations
 import datetime
 import pscheduler
 
-from jsonval import json_validate
 
 class DurationRange():
 
     "Range of durations"
 
     def __init__(self, drange):
-
         """Construct a range from a JSON DurationRange."""
 
         # TODO: Would be nice if this class could treat missing
@@ -23,11 +21,11 @@ class DurationRange():
         valid, message = pscheduler.json_validate(drange, {
             "type": "object",
             "properties": {
-                "lower": { "$ref": "#/pScheduler/Duration" },
-                "upper": { "$ref": "#/pScheduler/Duration" }
+                "lower": {"$ref": "#/pScheduler/Duration"},
+                "upper": {"$ref": "#/pScheduler/Duration"}
             },
             "additionalProperties": False,
-            "required": [ "lower", "upper" ]
+            "required": ["lower", "upper"]
         })
 
         if not valid:
@@ -38,26 +36,23 @@ class DurationRange():
         self.upper_str = drange['upper']
         self.upper = pscheduler.iso8601_as_timedelta(self.upper_str)
 
-
-
     def __contains__(self, duration):
-
         """See if the range contains the specified duration, which can be a
         timedelta or ISO8601 string."""
 
         if type(duration) == datetime.timedelta:
             test_value = duration
-        elif type(duration) in [ str, unicode ]:
+        elif type(duration) in [str, unicode]:
             test_value = pscheduler.iso8601_as_timedelta(duration)
         else:
-            raise ValueError("Invalid duration; must be ISO8601 string or timedelta.")
+            raise ValueError(
+                "Invalid duration; must be ISO8601 string or timedelta.")
 
         return self.lower <= test_value <= self.upper
 
-
     def contains(self, duration, invert=False):
         """Like __contains__, but can do inversion and returns a message stub
-        
+
         Return value is (contains, stub), where 'contains' is a boolean
         and 'stub' describes why the check failed (e.g., "is not in PT1M..PT1H")
         """
@@ -66,16 +61,10 @@ class DurationRange():
 
         if (in_range and invert) or (not in_range and not invert):
             return False, ("not %s %s..%s" %
-                      ( "outside" if invert else "in",
-                        self.lower_str, self.upper_str ))
+                           ("outside" if invert else "in",
+                            self.lower_str, self.upper_str))
 
         return True, None
-
-        
-
-
-
-
 
 
 # Test program
@@ -85,19 +74,19 @@ if __name__ == "__main__":
     drange = DurationRange({
         "lower": "PT10S",
         "upper": "PT1M"
-        })
+    })
 
-    for value in [ "PT1S",
-                   datetime.timedelta(seconds=3),
-                   "PT30S",
-                   datetime.timedelta(seconds=45),
-                   "PT1M",
-                   "PT5M",
-                   datetime.timedelta(minutes=10)
-                   ]:
+    for value in ["PT1S",
+                  datetime.timedelta(seconds=3),
+                  "PT30S",
+                  datetime.timedelta(seconds=45),
+                  "PT1M",
+                  "PT5M",
+                  datetime.timedelta(minutes=10)
+                  ]:
         result = value in drange
         print value, result
-        for invert in [ False, True ]:
+        for invert in [False, True]:
             print "%s Invert=%s %s" % (value, invert,
                                        drange.contains(value, invert=invert))
         print

@@ -8,6 +8,7 @@ License: Dual licensed under the MIT and GPL licenses  (perfSONAR elects MIT.)
 import fcntl
 import os
 
+
 class PidFile(object):
     """Context manager that locks a pid file.  Implemented as class
     not generator because daemon.py is calling .__exit__() with no parameters

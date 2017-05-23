@@ -4,7 +4,7 @@
 
 %define short	failer
 Name:		pscheduler-archiver-%{short}
-Version:	1.0.0.2
+Version:	1.0.0.3
 Release:	1%{?dist}
 
 Summary:	Sometimes-failing archiver class for pScheduler
