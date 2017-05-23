@@ -71,6 +71,9 @@ try:
 except KeyError:
     probe_type = 'udp'
 
+if probe_type == 'icmp':
+    need_root = True
+
 
 
 
