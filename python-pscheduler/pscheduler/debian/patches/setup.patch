@@ -1,0 +1,11 @@
+--- a/setup.py
++++ b/setup.py
+@@ -22,7 +22,7 @@
+         'pytz >= 2016.6',
+         'psycopg2 >= 2.6.2',
+         'jsonschema >= 2.5.1',
+-        'python-dateutil >= 2.5.3',
++        'python-dateutil >= 1.5',
+         'netifaces >= 0.5',
+         'ipaddr >= 2.1.9',
+     ],
