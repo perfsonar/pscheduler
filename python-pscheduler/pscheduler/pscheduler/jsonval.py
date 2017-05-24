@@ -338,6 +338,12 @@ __dictionary__ = {
 
     "String": { "type": "string" },
 
+    "StringOctet": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 255
+    },
+
     "StringList": {
         "type": "array",
         "items": { "$ref": "#/pScheduler/String" }
@@ -511,6 +517,31 @@ __dictionary__ = {
     "SNMPOIDList": {
         "type": "array",
         "items": { "$ref": "#/pScheduler/SNMPNumericOID" }
+    },
+
+    "SNMPInteger": {
+        "type": { "$ref": "#/pScheduler/Int32"}
+    },
+
+    "SNMPInt32": {
+        "type": { "$ref": "#/pScheduler/Int32"}
+    },
+
+    "SNMPUInt32": {
+        "type": { "$ref": "#/pScheduler/UInt32"}
+    },
+
+    "SNMPStringOctet": {
+        "type": { "$ref": "#/pScheduler/StringOctet"}
+    },
+
+    "SNMPStringBit": {
+        "type": "string",
+        "pattern": r'^[0-1]*$'
+    },
+
+    "SNMPIPAddr": {
+        "type": { "$ref": "#/pScheduler/IPAddress"}
     },
 
     "TaskSpecification": {
