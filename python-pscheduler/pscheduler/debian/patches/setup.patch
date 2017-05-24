@@ -1,10 +1,12 @@
 --- a/setup.py
 +++ b/setup.py
-@@ -20,9 +20,9 @@
+@@ -19,10 +19,10 @@
+     install_requires=[
          'dnspython >= 1.12.0',
          'requests >= 2.6.0',
-         'pytz >= 2016.6',
+-        'pytz >= 2016.6',
 -        'psycopg2 >= 2.6.2',
++        'pytz >= 2012',
 +        'psycopg2 >= 2.5.4',
          'jsonschema >= 2.5.1',
 -        'python-dateutil >= 2.5.3',
