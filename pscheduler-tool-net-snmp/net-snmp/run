@@ -63,6 +63,9 @@ for key in input['test']['spec'].keys():
             continue
     if key == 'dest':
         argv.append(str(protocol) + ':' + input['test']['spec'][key])
+    elif key == 'oid':
+        for item in input['test']['spec'][key]:
+            argv.append(item)
     else:
         argv.append(input['test']['spec'][key])
     
@@ -84,6 +87,8 @@ end_time = datetime.datetime.now()
 #
 # Produce results
 #
+
+stdout = stdout.split('\n')
 
 results = {
     'succeeded': succeeded,

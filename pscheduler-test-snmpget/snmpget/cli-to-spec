@@ -142,7 +142,7 @@ if options.version is not None:
    result['version'] = options.version
 
 if options.oid is not None:
-   result['oid'] = options.oid
+   result['oid'] = options.oid.split(',')
 
 if options.protocol is not None:
    result['protocol'] = options.protocol
