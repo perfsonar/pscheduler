@@ -93,7 +93,7 @@ def result_is_valid(json):
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
             "time":   { "$ref": "#/pScheduler/Duration" },
-            "data":       { "$ref": "#/pScheduler/StringList"},
+            "data":       { "$ref": "#/pScheduler/SNMPResultList"},
             },
         "required": [
             "schema",

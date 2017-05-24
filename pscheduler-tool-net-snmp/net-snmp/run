@@ -30,7 +30,7 @@ start_time = datetime.datetime.now()
 # Perform the test
 
 error = None
-argv = ['snmpget']
+argv = ['snmpget', '-On']
 if version == '1' or version == '2c':
     op_dict = {'version': '-v',
                'community': '-c',
@@ -50,7 +50,7 @@ else:
 try:
     protocol = input['test']['spec']['protocol']
 except KeyError:
-    protocol = 'udp'
+    protocol = None
 
 # loop through spec to get command line args
 for key in input['test']['spec'].keys():
@@ -61,7 +61,7 @@ for key in input['test']['spec'].keys():
         # do not append schema
         if key == 'schema' or key == 'protocol':
             continue
-    if key == 'dest':
+    if key == 'dest' and protocol != None:
         argv.append(str(protocol) + ':' + input['test']['spec'][key])
     elif key == 'oid':
         for item in input['test']['spec'][key]:
@@ -88,7 +88,16 @@ end_time = datetime.datetime.now()
 # Produce results
 #
 
-stdout = stdout.split('\n')
+stdout = stdout.strip('\n').split('\n')
+data = []
+for item in stdout:
+    obj_dict = {}
+    data_list = item.split('=')
+    obj_dict["oid"] = data_list[0].strip()
+    data_list = data_list[1].split(":")
+    obj_dict["type"] = data_list[0].strip()
+    obj_dict["value"] = data_list[1].strip()
+    data.append(obj_dict)
 
 results = {
     'succeeded': succeeded,
@@ -96,7 +105,7 @@ results = {
 	    'schema': 1,
 	    'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
 	    'succeeded' : succeeded,
-        'data': stdout
+        'data': data
     }
 }
 

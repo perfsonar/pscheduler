@@ -513,6 +513,30 @@ __dictionary__ = {
         "items": { "$ref": "#/pScheduler/SNMPNumericOID" }
     },
 
+    "SNMPGetResult": {
+        "type": "object",
+        "properties": {
+            "oid": { "$ref": "#/pScheduler/SNMPNumericOID" },
+            "type": { "$ref": "#/pScheduler/String"},
+            "value": { 
+                "oneOf": [
+                    { "$ref": "#/pScheduler/String" },
+                    { "$ref": "#/pScheduler/Integer"},
+                    { "$ref": "#/pScheduler/Int32" },
+                    { "$ref": "#/pScheduler/UInt32" }
+                    # TODO: Add more
+                ]
+            } 
+        },
+        "additionalProperties": True,
+        "required": ["oid", "type", "value"]
+    },
+
+    "SNMPResultList": {
+        "type": "array",
+        "items": { "$ref": "#/pScheduler/SNMPGetResult" }
+    },
+
     # TODO: not sure if defining these are actually necessary since they already exist
     # "SNMPInteger": {
     #     "type": { "$ref": "#/pScheduler/Int32"}
