@@ -503,6 +503,16 @@ __dictionary__ = {
         "additionalProperties": False
         },
 
+    "SNMPNumericOID": {
+        "type": "string",
+        "pattern": r'^((\.\d)|\d)+(\.\d+)*$'
+    },
+
+    "SNMPOIDList": {
+        "type": "array",
+        "items": { "$ref": "#/pScheduler/SNMPNumericOID" }
+    },
+
     "TaskSpecification": {
         "type": "object",
         "properties": {
