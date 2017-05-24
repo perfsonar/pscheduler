@@ -16,6 +16,9 @@ include /usr/share/dpkg/default.mk
 # package maintainers to append LDFLAGS
 #export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
+export PYBUILD_NAME = pscheduler
 # main packaging script based on dh7 syntax
 %:
-	dh $@ --with=python2
+	dh $@ --with=python2 --buildsystem=pybuild
+
+override_dh_auto_test:
