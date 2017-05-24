@@ -513,25 +513,27 @@ __dictionary__ = {
         "items": { "$ref": "#/pScheduler/SNMPNumericOID" }
     },
 
-    "SNMPInteger": {
-        "type": { "$ref": "#/pScheduler/Int32"}
-    },
+    # TODO: not sure if defining these are actually necessary since they already exist
+    # "SNMPInteger": {
+    #     "type": { "$ref": "#/pScheduler/Int32"}
+    # },
 
-    "SNMPInt32": {
-        "type": { "$ref": "#/pScheduler/Int32"}
-    },
+    # "SNMPInt32": {
+    #     "type": { "$ref": "#/pScheduler/Int32"}
+    # },
 
-    "SNMPUInt32": {
-        "type": { "$ref": "#/pScheduler/UInt32"}
-    },
+    # "SNMPUInt32": {
+    #     "type": { "$ref": "#/pScheduler/UInt32"}
+    # },
 
-    "SNMPString": {
-        "type": "string"
-    },
+    # # can be one of bit, dec, hex, string
+    # "SNMPString": {
+    #     "type": "string"
+    # },
 
-    "SNMPIPAddr": {
-        "type": { "$ref": "#/pScheduler/IPAddress"}
-    },
+    # "SNMPIPAddr": {
+    #     "type": { "$ref": "#/pScheduler/IPAddress"}
+    # },
 
     "TaskSpecification": {
         "type": "object",
