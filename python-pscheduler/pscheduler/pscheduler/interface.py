@@ -34,7 +34,10 @@ def source_interface(address, port=80, ip_version=None):
     sock = socket.socket(
         socket.AF_INET6 if ip_version == 6 else socket.AF_INET,
         socket.SOCK_DGRAM)
-    sock.connect((address, port))
+    try:
+        sock.connect((address, port))
+    except socket.gaierror:
+        return (None, None)
 
     interface_address = sock.getsockname()[0]
 
@@ -162,7 +165,8 @@ class LocalIPList(object):
 if __name__ == "__main__":
 
     for dest in ["www.perfsonar.net",
-                 "10.0.2.4"]:
+                 "10.0.2.4",
+                 "obvouslynotavalidhost.perfsonar.net"]:
         (addr, intf) = source_interface(dest)
         print "For dest %s, addr = %s, intf = %s" % (dest, addr, intf)
 
