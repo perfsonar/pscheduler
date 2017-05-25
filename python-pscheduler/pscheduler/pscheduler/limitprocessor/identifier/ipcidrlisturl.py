@@ -13,6 +13,7 @@ data_validator = {
         "source": { "$ref": "#/pScheduler/URL" },
         "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
         "bind": { "$ref": "#/pScheduler/Host" },
+        "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
         "exclude": {
             "type": "array",
             "items": { 
@@ -66,15 +67,13 @@ class IdentifierIPCIDRListURL():
 
         possible_next_attempt = datetime.datetime.now() + self.retry
 
-        possible_next_attempt = datetime.datetime.now() + self.retry
-
         if status != 200:
             # TODO: Would be nice if we could log the failure
             self.next_attempt = possible_next_attempt
             return
 
-        # If there's a filter, apply it.
-        if self.jqfilter is not None:
+        # If there's a transform, apply it.
+        if self.transform is not None:
             try:
                 json = pscheduler.json_load(text)
             except ValueError:
@@ -82,7 +81,7 @@ class IdentifierIPCIDRListURL():
                 self.next_attempt = possible_next_attempt
                 return
 
-            text = self.jqfilter(json)
+            text = self.transform(json)
 
 
         # TODO: Consider caching this on disk someplace so that it can
@@ -123,6 +122,12 @@ class IdentifierIPCIDRListURL():
         self.update = pscheduler.iso8601_as_timedelta(data['update'])
         self.retry = pscheduler.iso8601_as_timedelta(data['retry'])
         self.fail_state = data.get('fail-state', False)
+        try:
+            # This will raise a ValueError if it's wrong.
+            self.transform = pscheduler.JQFilter(data['transform'],
+                                                 output_raw=True)
+        except KeyError:
+            self.transform = None
 
         try:
             # This will raise a ValueError if it's wrong.
@@ -222,8 +227,8 @@ if __name__ == "__main__":
     # List from Amazon
 
     ident2 = IdentifierIPCIDRListURL({
-        "source": "https://ip-ranges.amazonaws.com/ip-ranges.json,"
-        "filter": {
+        "source": "https://ip-ranges.amazonaws.com/ip-ranges.json",
+        "transform": {
             "script": '.prefixes[].ip_prefix, .ipv6_prefixes[].ipv6_prefix',
             },
         "exclude": [

@@ -169,7 +169,6 @@ def tasks():
         if not valid:
             return bad_request("Invalid task specification: %s" % (message))
 
-
         # See if the test spec is valid
 
         try:
@@ -192,16 +191,38 @@ def tasks():
         log.debug("Validated test: %s", pscheduler.json_dump(task['test']))
 
 
-        # Reject tasks that have archive specs that use transforms.
-        # See ticket #330.
+        # Validate the archives
 
-        try:
-            for archive in task['archives']:
-                if "transform" in archive:
-                    return bad_request("Use of transforms in archives is not yet supported.")
-        except KeyError:
-            pass  # Not there
+        for archive in task.get("archives", []):
 
+            # Data
+
+            try:
+                returncode, stdout, stderr = pscheduler.run_program(
+                    [ "pscheduler", "internal", "invoke", "archiver",
+                      archive["archiver"], "data-is-valid" ],
+                    stdin=pscheduler.json_dump(archive["data"]),
+                )
+                if returncode != 0:
+                    return error("Unable to validate archive spec: %s" % (stderr))
+            except Exception as ex:
+                return error("Unable to validate test spec: " + str(ex))
+
+            try:
+                returned_json = pscheduler.json_load(stdout)
+                if not returned_json["valid"]:
+                    return bad_request("Invalid archiver data: %s" % (returned_json["error"]))
+            except Exception as ex:
+                return error("Internal probelm validating archiver data: %s" % (str(ex)))
+
+            # Transform, if there was one.
+
+            if "transform" in archive:
+                try:
+                    _ = pscheduler.JQFilter(
+                        filter_spec=archive["transform"])
+                except ValueError as ex:
+                    return error("Invalid transform: %s" % (str(ex)))
 
 
         # Find the participants

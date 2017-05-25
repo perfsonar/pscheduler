@@ -262,9 +262,11 @@ class ArchiveWorker():
         Do the deed
         """
 
+        failed = False
+
         archiving_id, task_uuid, run_uuid, archiver, archiver_data, start, \
             duration, test, tool, participants, result_merged, attempts, \
-            last_attempt = self.row
+            last_attempt, transform = self.row
 
         participants_merged = []
         for participant in participants:
@@ -299,27 +301,62 @@ class ArchiveWorker():
             },
             'attempts': attempts,
             'last-attempt': None if last_attempt is None \
-            else pscheduler.datetime_as_iso8601(last_attempt) 
+            else pscheduler.datetime_as_iso8601(last_attempt)
         }
 
+        # If there's a transform (already validated), do it.
 
-        archiver_in = pscheduler.json_dump(json)
-        self.log.debug("%d: Running archiver %s with input %s",
-                       self.id, archiver, archiver_in)
+        if transform is not None:
+            self.log.debug("%d Transforming input %s", self.id, json)
+            self.log.debug("%d Script is %s", self.id, transform["script"])
+            try:
+                raw = transform.get("output-raw", False)
+                transformer = pscheduler.JQFilter(
+                    filter_spec=transform.get("script", "."),
+                    output_raw=raw
+                )
+                if raw:
+                    json["result"] = transformer(json["result"])
+                else:
+                    # Result is always a single object when doing JSON.
+                    json["result"] = transformer(json["result"])[0]
+                self.log.debug("%d: Transformed to %s", self.id, json)
+            except Exception as ex:
+                self.log.error("%d: Error during transformation: %s", str(ex))
+                failed = True
+                returncode = 1
+                stdout_attempt = ""
+                stderr = "Error during transformation: %s", str(ex)
 
-        returncode, stdout, stderr = pscheduler.run_program(
-            [ "pscheduler", "internal", "invoke", "archiver", archiver, "archive" ],
-            stdin = archiver_in
-        )
+        if json["result"] is None:
+            self.log.debug("%d: Null transform result; not archiving", self.id)
+            returncode = 0
+            stdout = """{ "succeeded": true }"""
+            stdout_attempt = "Transform result forced not archiving."
+            stderr = ""
+            skip = True
+        else:
+            skip = False
 
-        self.log.debug("%d: Archiver exited %d", self.id, returncode)
-        self.log.debug("%d: Returned JSON from archiver: %s", self.id, stdout)
-        self.log.debug("%d: Returned errors from archiver: %s", self.id, stderr)
 
-        try:
-            stdout_attempt = pscheduler.json_load(stdout)
-        except ValueError:
-            stdout_attempt = stdout
+        if (not failed) and (not skip):
+            archiver_in = pscheduler.json_dump(json)
+            self.log.debug("%d: Running archiver %s with input %s",
+                           self.id, archiver, archiver_in)
+
+            returncode, stdout, stderr = pscheduler.run_program(
+                [ "pscheduler", "internal", "invoke", "archiver", archiver, "archive" ],
+                stdin=archiver_in
+            )
+
+            self.log.debug("%d: Archiver exited %d", self.id, returncode)
+            self.log.debug("%d: Returned JSON from archiver: %s", self.id, stdout)
+            self.log.debug("%d: Returned errors from archiver: %s", self.id, stderr)
+
+            try:
+                stdout_attempt = pscheduler.json_load(stdout)
+            except ValueError:
+                stdout_attempt = stdout
 
         attempt = pscheduler.json_dump( [ {
             # TODO: Figure out to format this with -xx:xx for the timezone offset.
@@ -473,7 +510,7 @@ def main_program():
         result = db.query("""SELECT id, task_uuid, run_uuid, archiver,
                              archiver_data, start,
                              duration, test, tool, participants, result,
-                             attempts, last_attempt
+                             attempts, last_attempt, transform
                              FROM archiving_next(%s)""",
                           [options.max_parallel])
 

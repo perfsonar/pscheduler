@@ -1,5 +1,5 @@
 #
-# Makefile for Python ISO Date Module
+# Makefile for any RPM
 #
 
 include make/generic-rpm.make
