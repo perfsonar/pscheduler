@@ -73,14 +73,14 @@ try:
     status, stdout, stderr = pscheduler.run_program(argv)
     succeeded = True
 except Exception as e:
-    pscheduler.succeed_json({"succeeded": False,
-                             "error": "The snmpget command failed during execution."
-                            })
+    succeeded = False
+    data = None
+    error = "The snmpget command failed during execution." 
 
 if status:
-    pscheduler.succeed_json({"succeeded": False,
-                                 "error": "snmpget returned an error: %s" % stderr.strip('\n')
-                                 })
+    data = None
+    succeeded = False
+    error = "snmpget returned an error: \n%s" % stderr.strip('\n')
 
 end_time = datetime.datetime.now()
 
@@ -88,16 +88,22 @@ end_time = datetime.datetime.now()
 # Produce results
 #
 
-stdout = stdout.strip('\n').split('\n')
-data = []
-for item in stdout:
-    obj_dict = {}
-    data_list = item.split('=')
-    obj_dict["oid"] = data_list[0].strip()
-    data_list = data_list[1].split(":")
-    obj_dict["type"] = data_list[0].strip()
-    obj_dict["value"] = data_list[1].strip()
-    data.append(obj_dict)
+if succeeded:
+    error = None
+    stdout = stdout.strip('\n').split('\n')
+    data = []
+    for item in stdout:
+        obj_dict = {}
+        data_list = item.split('=')
+        obj_dict["oid"] = data_list[0].strip()
+        data_list = data_list[1].split(":")
+        try:
+            obj_dict["value"] = data_list[1].strip()
+            obj_dict["type"] = data_list[0].strip()
+        except IndexError:
+            obj_dict["value"] = data_list[0].strip()
+        
+        data.append(obj_dict)
 
 results = {
     'succeeded': succeeded,
@@ -106,7 +112,8 @@ results = {
 	    'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
 	    'succeeded' : succeeded,
         'data': data
-    }
+    },
+    'error': error
 }
 
 pscheduler.succeed_json(results)

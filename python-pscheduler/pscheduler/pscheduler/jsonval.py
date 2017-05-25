@@ -529,7 +529,7 @@ __dictionary__ = {
             } 
         },
         "additionalProperties": True,
-        "required": ["oid", "type", "value"]
+        "required": ["oid", "value"]
     },
 
     "SNMPResultList": {
