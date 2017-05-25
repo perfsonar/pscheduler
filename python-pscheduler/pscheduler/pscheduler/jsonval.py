@@ -252,7 +252,11 @@ __dictionary__ = {
         "maximum": 255
         },
 
+<<<<<<< Updated upstream
     "JQTransformSpecification": {
+=======
+    "JQFilterSpecification": {
+>>>>>>> Stashed changes
         "type": "object",
         "properties": {
             "script":    { "$ref": "#/pScheduler/String" },

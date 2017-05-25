@@ -66,6 +66,8 @@ class IdentifierIPCIDRListURL():
 
         possible_next_attempt = datetime.datetime.now() + self.retry
 
+        possible_next_attempt = datetime.datetime.now() + self.retry
+
         if status != 200:
             # TODO: Would be nice if we could log the failure
             self.next_attempt = possible_next_attempt
@@ -120,8 +122,8 @@ class IdentifierIPCIDRListURL():
         self.bind = data.get('bind', None)
         self.update = pscheduler.iso8601_as_timedelta(data['update'])
         self.retry = pscheduler.iso8601_as_timedelta(data['retry'])
-
         self.fail_state = data.get('fail-state', False)
+
         try:
             # This will raise a ValueError if it's wrong.
             self.jqfilter = pscheduler.JQFilter(data['filter'],
