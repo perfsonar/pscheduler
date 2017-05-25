@@ -11,34 +11,34 @@ import re
 import socket
 
 
-def source_affinity(addr, ip_version=None):
+def source_affinity(address, ip_version=None):
     """Easy to use function that returns the CPU affinity
     given an address. Uses source_interface and interface_affinity
     functions call to accomplish, so it's really just a shorthand
     """
-    (address, intf) = source_interface(addr, ip_version=ip_version)
+    (_, interface) = source_interface(address, ip_version=ip_version)
 
-    if intf is None:
+    if interface is None:
         return None
 
-    return interface_affinity(intf)
+    return interface_affinity(interface)
 
 
-def source_interface(addr, port=80, ip_version=None):
-    """Figure out what local interface is being used to 
-    get an address.
+def source_interface(address, port=80, ip_version=None):
+    """Figure out what local interface is being used to
+    reach an address.
 
     Returns a tuple of (address, interface_name)
     """
-    if ip_version == 6:
-        s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
-    else:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect((addr,port))
 
-    interface_address = s.getsockname()[0]
+    sock = socket.socket(
+        socket.AF_INET6 if ip_version == 6 else socket.AF_INET,
+        socket.SOCK_DGRAM)
+    sock.connect((address, port))
 
-    s.close()
+    interface_address = sock.getsockname()[0]
+
+    sock.close()
 
     interface_name = address_interface(interface_address, ip_version=ip_version)
 
@@ -48,7 +48,7 @@ def source_interface(addr, port=80, ip_version=None):
     return (None, None)
 
 
-def address_interface(addr, ip_version=None):
+def address_interface(address, ip_version=None):
     """Given an address, returns what interface
     has this interface, or None
     """
@@ -56,20 +56,20 @@ def address_interface(addr, ip_version=None):
     # make sure we resolve any address to a specific
     # IP address before looking up interfaces
     if ip_version is not None:
-        addr = pscheduler.dns_resolve(addr, ip_version=ip_version)
+        address = pscheduler.dns_resolve(address, ip_version=ip_version)
     else:
-        addr = pscheduler.dns_resolve(addr)
-        if addr == None:
-            addr = pscheduler.dns_resolve(addr, ip_version=6)
+        address = pscheduler.dns_resolve(address)
+        if address == None:
+            address = pscheduler.dns_resolve(address, ip_version=6)
 
     all_interfaces = netifaces.interfaces()
-    for intf in all_interfaces:
-        addresses = netifaces.ifaddresses(intf)
+    for interface in all_interfaces:
+        addresses = netifaces.ifaddresses(interface)
 
         for family in addresses.keys():
             for addr_info in addresses[family]:
-                if addr_info['addr'] == addr:
-                    return intf
+                if addr_info['addr'] == address:
+                    return interface
 
     return None
 
@@ -87,7 +87,7 @@ def interface_affinity(interface):
 
     # if it's a sub interface, we have to look up the 'main'
     # interface for affinity detection
-    match = re.search('(.+)\.\d+$', interface)
+    match = re.search(r'(.+)\.\d+$', interface)
     if match:
         interface = match.groups()[0]
 
@@ -96,8 +96,8 @@ def interface_affinity(interface):
     if not os.path.exists(filename):
         return None
 
-    with open(filename, 'r') as f:
-        affinity = f.read().rstrip()
+    with open(filename, 'r') as numa_file:
+        affinity = numa_file.read().rstrip()
 
         # This is the same as no affinity, so make calling
         # functions not care
@@ -109,7 +109,7 @@ def interface_affinity(interface):
     return None
 
 
-class LocalIPList:
+class LocalIPList(object):
     """
     Self-refrshing list of local IP addresses
     """
@@ -138,9 +138,9 @@ class LocalIPList:
                            for iface in netifaces.interfaces()]:
                 for afamily in ifhash:
                     for iface in ifhash[afamily]:
-                        addr = re.sub(if_regex, '', iface["addr"])
+                        address = re.sub(if_regex, '', iface["addr"])
                         try:
-                            addr_object = netaddr.IPAddress(addr)
+                            addr_object = netaddr.IPAddress(address)
                             self.addresses[addr_object] = 1
                         except netaddr.core.AddrFormatError:
                             # Don't care about things that don't look like IPS.
@@ -166,9 +166,9 @@ if __name__ == "__main__":
         (addr, intf) = source_interface(dest)
         print "For dest %s, addr = %s, intf = %s" % (dest, addr, intf)
 
-    for interface in ["eth0", "eth1", "lo", "eth1.412", "eth0.120"]:
-        affinity = interface_affinity(interface)
-        print "interface affinity = %s for %s" % (affinity, interface)
+    for intf in ["eth0", "eth1", "lo", "eth1.412", "eth0.120"]:
+        aff = interface_affinity(intf)
+        print "interface affinity = %s for %s" % (aff, intf)
 
     localips = LocalIPList(refresh=5)
 
