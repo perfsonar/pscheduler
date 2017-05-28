@@ -1,0 +1,1 @@
+{"dest": "test.net-snmp.org", "version": "2c", "community": "demopublic", "oid": "system.sysUpTime.0", "schema": 1}

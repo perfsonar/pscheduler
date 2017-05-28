@@ -1,0 +1,16 @@
+{
+   "schema": 1,
+   "schedule": "",
+   "test": {
+      "spec": {
+         "dest": "test.net-snmp.org",
+         "oid": "system.sysUpTime.0",
+         "version": "2c",
+         "community": "demopublic",
+         "schema": 1
+      },
+      "required": [
+         "spec"
+      ]
+   }
+}
