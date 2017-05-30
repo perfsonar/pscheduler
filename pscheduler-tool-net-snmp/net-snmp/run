@@ -30,7 +30,7 @@ start_time = datetime.datetime.now()
 # Perform the test
 
 error = None
-argv = ['snmpget', '-On']
+argv = ['snmpget']
 if version == '1' or version == '2c':
     op_dict = {'version': '-v',
                'community': '-c',
@@ -89,7 +89,6 @@ end_time = datetime.datetime.now()
 #
 
 if succeeded:
-    error = None
     stdout = stdout.strip('\n').split('\n')
     data = []
     for item in stdout:
