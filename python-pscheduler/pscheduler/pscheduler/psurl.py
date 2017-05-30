@@ -107,6 +107,7 @@ def url_get( url,          # GET URL
              json=True,    # Interpret result as JSON
              throw=True,   # Throw if status isn't 200
              timeout=None, # Seconds before giving up
+             allow_redirects=True, #Allows URL to be redirected
              headers=None, # Hash of HTTP headers
              verify_keys=verify_keys_default  # Verify SSL keys
              ):
@@ -119,7 +120,8 @@ def url_get( url,          # GET URL
 
         try:
             request = session.get(url, params=params, verify=verify_keys,
-                                  headers=headers, timeout=timeout)
+                                  headers=headers, allow_redirects=allow_redirects,
+                                  timeout=timeout)
             status = request.status_code
             text = request.text
         except requests.exceptions.Timeout:
@@ -151,6 +153,7 @@ def url_post( url,          # GET URL
               json=True,    # Interpret result as JSON
               throw=True,   # Throw if status isn't 200
               timeout=None,  # Seconds before giving up
+              allow_redirects=True, #Allows URL to be redirected
               headers=None, # Hash of HTTP headers
               verify_keys=verify_keys_default  # Verify SSL keys
               ):
@@ -164,7 +167,7 @@ def url_post( url,          # GET URL
         try:
             request = session.post(url, params=params, data=data,
                                    verify=verify_keys, headers=headers,
-                                   timeout=timeout)
+                                   allow_redirects=allow_redirects, timeout=timeout)
             status = request.status_code
             text = request.text
         except requests.exceptions.Timeout:
@@ -198,6 +201,7 @@ def url_put( url,          # GET URL
              json=True,    # Interpret result as JSON
              throw=True,   # Throw if status isn't 200
              timeout=None, # Seconds before giving up
+             allow_redirects=True, #Allows URL to be redirected
              headers=None, # Hash of HTTP headers
              verify_keys=verify_keys_default  # Verify SSL keys
              ):
@@ -211,7 +215,7 @@ def url_put( url,          # GET URL
         try:
             request = session.put(url, params=params, data=data,
                                   verify=verify_keys, headers=headers,
-                                  timeout=timeout)
+                                  allow_redirects=allow_redirects, timeout=timeout)
             status = request.status_code
             text = request.text
         except requests.exceptions.Timeout:
@@ -242,6 +246,7 @@ def url_delete( url,          # DELETE URL
                 bind=None,    # Bind request to specified address
                 throw=True,   # Throw if status isn't 200
                 timeout=None, # Seconds before giving up
+                allow_redirects=True, #Allows URL to be redirected
                 headers=None, # Hash of HTTP headers
                 verify_keys=verify_keys_default  # Verify SSL keys
              ):
@@ -254,7 +259,8 @@ def url_delete( url,          # DELETE URL
         request = None
         try:
             request = session.delete(url, verify=verify_keys,
-                                     headers=headers, timeout=timeout)
+                                     headers=headers, allow_redirects=allow_redirects,
+                                     timeout=timeout)
             status = request.status_code
             text = request.text
         except requests.exceptions.Timeout:
@@ -279,6 +285,7 @@ def url_delete_list(
         urls,
         bind=None,
         timeout=None, # Seconds before giving up
+        allow_redirects=True, #Allows URL to be redirected
         headers=None, # Hash of HTTP headers
         verify_keys=verify_keys_default  # Verify SSL keys
         ):
@@ -288,5 +295,6 @@ def url_delete_list(
     operation.
     """
     return [ url_delete(url, throw=False, timeout=timeout, bind=bind,
-                        headers=headers, verify_keys=verify_keys)
+                        headers=headers, verify_keys=verify_keys, 
+                        allow_redirects=allow_redirects)
              for url in urls ]
