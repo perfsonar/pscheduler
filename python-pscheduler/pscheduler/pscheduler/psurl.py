@@ -117,6 +117,10 @@ def url_get( url,          # GET URL
     with requests.Session() as session:
         _mount_url(session, url, bind)
 
+        # Make sure there's always something here to prevent
+        # UnboundLocal exceptions later in the event of a failure.
+        request = None
+
         try:
             request = session.get(url, params=params, verify=verify_keys,
                                   headers=headers, timeout=timeout)
