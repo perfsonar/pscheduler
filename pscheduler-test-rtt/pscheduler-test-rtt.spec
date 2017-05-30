@@ -4,7 +4,7 @@
 
 %define short	rtt
 Name:		pscheduler-test-%{short}
-Version:	1.0.0.3
+Version:	1.0.0.4
 Release:	1%{?dist}
 
 Summary:	Round trip time test class for pScheduler

@@ -4,7 +4,7 @@
 
 %define short	tracepath
 Name:		pscheduler-tool-%{short}
-Version:	1.0.0.3
+Version:	1.0.0.4
 Release:	1%{?dist}
 
 Summary:	pScheduler Tracepath Tool

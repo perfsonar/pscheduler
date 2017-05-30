@@ -4,7 +4,7 @@
 
 %define short	esmond
 Name:		pscheduler-archiver-esmond
-Version:	1.0.0.3
+Version:	1.0.0.4
 Release:	1%{?dist}
 
 Summary:	Esmond archiver class for pScheduler

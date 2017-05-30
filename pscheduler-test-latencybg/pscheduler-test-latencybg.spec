@@ -4,7 +4,7 @@
 
 %define short	latencybg
 Name:		pscheduler-test-%{short}
-Version:	1.0.0.3
+Version:	1.0.0.4
 Release:	1%{?dist}
 
 Summary:	Latency Background test class for pScheduler
