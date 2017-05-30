@@ -508,15 +508,29 @@ __dictionary__ = {
         "pattern": r'^((\.\d)|\d)+(\.\d+)*$'
     },
 
+    "SNMPAlphaNumOID": {
+        "type": { "$ref": "#/pScheduler/String"}
+    },
+
     "SNMPOIDList": {
         "type": "array",
-        "items": { "$ref": "#/pScheduler/SNMPNumericOID" }
+        "items": {
+            "oneOf": [
+                { "$ref": "#/pScheduler/SNMPNumericOID" },
+                { "$ref": "#/pScheduler/SNMPAlphaNumOID" }
+            ]
+        }
     },
 
     "SNMPGetResult": {
         "type": "object",
         "properties": {
-            "oid": { "$ref": "#/pScheduler/SNMPNumericOID" },
+            "oid": {
+                "oneOf": [
+                    { "$ref": "#/pScheduler/SNMPNumericOID" },
+                    { "$ref": "#/pScheduler/SNMPAlphaNumOID" }
+                ]
+            },
             "type": { "$ref": "#/pScheduler/String"},
             "value": { 
                 "oneOf": [

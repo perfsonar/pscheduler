@@ -60,7 +60,15 @@ opt_parser.add_option("--version",
                       dest="version")
 
 opt_parser.add_option("--oid",
-                      help="OID to be queried",
+                      help="""
+                        List of OIDs to be queried, separated by a comma in a single string.
+
+                        Example:
+
+                        --oid sysORUpTime.1,sysORUpTime.2
+                        --oid "sysORUpTime.1, sysORUpTime.2"
+
+                        """,
                       action="store", type="string",
                       dest="oid")
 
