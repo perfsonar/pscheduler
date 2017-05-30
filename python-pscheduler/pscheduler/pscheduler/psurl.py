@@ -167,7 +167,11 @@ def url_post( url,          # GET URL
 
     with requests.Session() as session:
         _mount_url(session, url, bind)
-
+        
+        # Make sure there's always something here to prevent
+        # UnboundLocal exceptions later in the event of a failure.
+        request = None
+        
         try:
             request = session.post(url, params=params, data=data,
                                    verify=verify_keys, headers=headers,
@@ -215,7 +219,11 @@ def url_put( url,          # GET URL
 
     with requests.Session() as session:
         _mount_url(session, url, bind)
-
+        
+        # Make sure there's always something here to prevent
+        # UnboundLocal exceptions later in the event of a failure.
+        request = None
+        
         try:
             request = session.put(url, params=params, data=data,
                                   verify=verify_keys, headers=headers,
@@ -260,7 +268,11 @@ def url_delete( url,          # DELETE URL
 
     with requests.Session() as session:
         _mount_url(session, url, bind)
+        
+        # Make sure there's always something here to prevent
+        # UnboundLocal exceptions later in the event of a failure.
         request = None
+        
         try:
             request = session.delete(url, verify=verify_keys,
                                      headers=headers, allow_redirects=allow_redirects,
