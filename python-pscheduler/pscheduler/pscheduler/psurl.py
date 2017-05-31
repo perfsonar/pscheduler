@@ -69,14 +69,18 @@ def __raise_urlexception(status, text, request):
     """
     Raise a nicely-formatted exception.
     """
-    mime_type = None
-    if request is not None:
-        mime_type = request.headers["content-type"].split(";")[0]
-    if mime_type is not None and mime_type.startswith("text/plain"):
-        message = text.strip()
-    else:
-        message = httplib.responses[status]
-    raise URLException(message)
+
+    if text is None:
+        text = httplib.responses.get(status, str(status))
+    elif request is not None:
+        try:
+            mime_type = request.headers["content-type"].split(";")[0]
+            if mime_type is not None and mime_type.startswith("text/plain"):
+                text = text.strip()
+        except (KeyError, AttributeError):
+            pass  # We tried our best.
+
+    raise URLException(text)
 
 
 
@@ -134,7 +138,7 @@ def url_get( url,          # GET URL
             text = __formatted_connection_error(ex)
         except Exception as ex:
             status = 400
-            text = "Error: %s" % (str(ex))
+            text = str(ex)
 
     if status != 200:
         if throw:
