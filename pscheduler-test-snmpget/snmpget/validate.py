@@ -2,6 +2,8 @@
 # Validator for "snmpget" Test
 #
 
+# TODO: _ for sensitive values
+
 from pscheduler import json_validate
 
 def spec_is_valid(json):

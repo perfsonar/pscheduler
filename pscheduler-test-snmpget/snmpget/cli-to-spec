@@ -3,6 +3,8 @@
 # Convert command-line options to a test specification
 #
 
+# TODO: _ for sensitive values
+
 import re
 import string
 import optparse
