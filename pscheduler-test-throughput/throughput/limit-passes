@@ -133,9 +133,9 @@ def check_limit(input_json):
 
 
 try:
-    json = pscheduler.json_load()
+    json = pscheduler.json_load(max_schema=1)
 except ValueError as ex:
-    pscheduler.fail("Invalid JSON %s" % str(ex))
+    pscheduler.fail("Invalid JSON: %s" % str(ex))
 
 errors = check_limit(json)
 

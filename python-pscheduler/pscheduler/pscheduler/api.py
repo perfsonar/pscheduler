@@ -215,6 +215,7 @@ def api_has_pscheduler(host, timeout=5, bind=None):
     status, raw_spec = pscheduler.url_get(pscheduler.api_url(resolved),
                                           timeout=timeout,
                                           throw=False,
+                                          json=False,
                                           bind=bind # HACK: BWTCLBC
                                           )
 

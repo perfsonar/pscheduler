@@ -15,7 +15,7 @@ try:
 except IndexError:
    format = 'text/plain'
 
-json = pscheduler.json_load(exit_on_error=True)
+json = pscheduler.json_load(exit_on_error=True, max_schema=1)
 
 valid, message = spec_is_valid(json)
 
