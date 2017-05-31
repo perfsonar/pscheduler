@@ -18,7 +18,7 @@ except IndexError:
    format = 'text/plain'
 
 #load JSON
-input = pscheduler.json_load(exit_on_error=True)
+input = pscheduler.json_load(exit_on_error=True, max_schema=1)
 logger.debug("Input %s", input)
 
 # Validate output against schema

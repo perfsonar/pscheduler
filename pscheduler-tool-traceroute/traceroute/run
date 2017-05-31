@@ -75,7 +75,6 @@ if probe_type == 'icmp':
     need_root = True
 
 
-
 #
 # Fragmentation
 #

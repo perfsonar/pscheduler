@@ -159,7 +159,6 @@ def tasks_uuid_runs(task):
 
 
         try:
-            # TODO:  #74 Figure out how to schemafy this.
             data = pscheduler.json_load(request.data, max_schema=1)
             start_time = pscheduler.iso8601_as_datetime(data['start-time'])
         except KeyError:
@@ -400,8 +399,7 @@ def tasks_uuid_runs_run(task, run):
 
         # Get the JSON from the body
         try:
-            # TODO:  #74 Figure out how to schemafy this.
-            run_data = pscheduler.json_load(request.data)
+            run_data = pscheduler.json_load(request.data, max_schema=1)
         except ValueError:
             log.exception()
             log.debug("Run data was %s", request.data)

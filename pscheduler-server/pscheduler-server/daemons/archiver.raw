@@ -167,7 +167,7 @@ class DefaultArchiveMaintainer:
 
             try:
                 with open(path, 'r') as content:
-                    spec = pscheduler.json_load(content)
+                    spec = pscheduler.json_load(content, max_schema=1)
             except Exception as ex:
                 warnings.append("Ignoring %s: %s" % (path, str(ex)))
                 continue
@@ -317,7 +317,7 @@ class ArchiveWorker():
         self.log.debug("%d: Returned errors from archiver: %s", self.id, stderr)
 
         try:
-            stdout_attempt = pscheduler.json_load(stdout)
+            stdout_attempt = pscheduler.json_load(stdout, max_schema=1)
         except ValueError:
             stdout_attempt = stdout
 
@@ -347,7 +347,7 @@ class ArchiveWorker():
         else:
 
             try:
-                returned_json = pscheduler.json_load(stdout)
+                returned_json = pscheduler.json_load(stdout, max_schema=1)
             except ValueError:
                 self.log.error("%d: Archiver %s returned invalid JSON: %s",
                                self.id, archiver, stdout)
