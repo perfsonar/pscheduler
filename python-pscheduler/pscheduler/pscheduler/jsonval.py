@@ -534,12 +534,10 @@ __dictionary__ = {
     },
 
     "SNMPOID": {
-        "type": {
-            "oneOf": [
-                { "$ref": "#/pScheduler/SNMPNumericOID" },
-                { "$ref": "#/pScheduler/SNMPAlphaNumOID"}
-            ]
-        }
+        "oneOf": [
+            { "$ref": "#/pScheduler/SNMPNumericOID" },
+            { "$ref": "#/pScheduler/SNMPAlphaNumOID"}
+        ]
     },
 
     "SNMPOIDList": {
