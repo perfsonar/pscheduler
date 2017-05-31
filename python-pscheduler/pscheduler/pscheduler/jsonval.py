@@ -542,9 +542,9 @@ __dictionary__ = {
         ]
     },
 
-    "SNMPOIDList": {
+    "SNMPNumericOIDList": {
         "type": "array",
-        "items": { "$ref": "#/pScheduler/SNMPOID" }
+        "items": { "$ref": "#/pScheduler/SNMPNumericOID" }
     },
 
     "SNMPGetResult": {
