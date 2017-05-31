@@ -504,24 +504,24 @@ __dictionary__ = {
         },
 
     "SNMPInteger": {
-        "type": { "$ref": "#/pScheduler/Int32"}
+        "$ref": "#/pScheduler/Int32"
     },
 
     "SNMPInt32": {
-        "type": { "$ref": "#/pScheduler/Int32"}
+        "$ref": "#/pScheduler/Int32"
     },
 
     "SNMPUInt32": {
-        "type": { "$ref": "#/pScheduler/UInt32"}
+        "$ref": "#/pScheduler/UInt32"
     },
 
     # can be one of bit, dec, hex, string
     "SNMPString": {
-        "type": "string"
+        "$ref": "#/pScheduler/String"
     },
 
     "SNMPIPAddr": {
-        "type": { "$ref": "#/pScheduler/IPAddress"}
+        "$ref": "#/pScheduler/IPAddress"
     },
 
     "SNMPNumericOID": {
@@ -529,8 +529,10 @@ __dictionary__ = {
         "pattern": r'^((\.\d)|\d)+(\.\d+)*$'
     },
 
+    # must contain at least one letter to be considered alphanumeric
     "SNMPAlphaNumOID": {
-        "type": { "$ref": "#/pScheduler/SNMPString"}
+        "type": "string",
+        "pattern": r'[a-z][A-Z]*'
     },
 
     "SNMPOID": {
@@ -551,7 +553,7 @@ __dictionary__ = {
             "oid": { "$ref": "#/pScheduler/SNMPOID" },
             "type": { "$ref": "#/pScheduler/String"},
             "value": { 
-                "oneOf": [
+                "anyOf": [
                     { "$ref": "#/pScheduler/SNMPString" },
                     { "$ref": "#/pScheduler/SNMPInteger"},
                     { "$ref": "#/pScheduler/SNMPInt32" },

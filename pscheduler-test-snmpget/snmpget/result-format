@@ -25,15 +25,15 @@ if not valid:
 json = input["result"]
 
 if format == 'text/plain':
-   print 'Time: %s' % json['time']
-   print 'Data:\n'
+   print 'Time: %s\n' % json['time']
+   print 'Data:'
    for item in json['data']:
-       print 'OID: %s\t' % json['data']['oid']
+       print 'OID: %s\t' % item['oid']
        try:
-           print 'Type: %s\t' % json['data']['type']
-           print 'Value: %s\n' % json['data']['value']
+           print 'Type: %s\t' % item['type']
+           print 'Value: %s\n' % item['value']
        except KeyError:
-           print 'Error: %s\n' % json['data']['value']
+           print 'Error: %s\n' % item['value']
    
 elif format == 'text/html':
     print '<table>'
@@ -48,12 +48,12 @@ elif format == 'text/html':
     print '    </tr>'
     print '    <tr>'
     for item in json['data']:
-        print '    <td>OID: %s\t' % json['data']['oid']
+        print '    <td>OID: %s\t' % item['oid']
         try:
-            print 'Type: %s\t' % json['data']['type']
-            print 'Value: %s\n</td>' % json['data']['value']
+            print 'Type: %s\t' % item['type']
+            print 'Value: %s\n</td>' % item['value']
         except KeyError:
-            print 'Error: %s\n</td>' % json['data']['value']       
+            print 'Error: %s\n</td>' % item['value']       
     print '    </tr>'
     print '</table>'
 
