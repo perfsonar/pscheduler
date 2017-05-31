@@ -3,6 +3,8 @@
 # Convert command-line options to a test specification
 #
 
+import re
+import string
 import optparse
 import pscheduler
 import sys
@@ -183,5 +185,22 @@ else:
     if options.context is not None:
       result['context'] = options.context
 
+#convert OIDs to numeric form
+argv = ["snmptranslate", "-On", "-IR"]
+for oid in result['oid']:
+    match = re.match("^((\.\d)|\d)+(\.\d+)*$", oid)
+    if match is None: 
+        argv.append(oid) 
+
+if len(argv) > 3:
+    status, stdout, stderror = pscheduler.run_program(argv)
+    if status:
+        pscheduler.fail('Translation Error: Try using only numeric OIDs')
+
+    result['oid'] = []
+    stdout = stdout.split("\n")
+    for oid in stdout:
+        if len(oid) > 0:
+            result['oid'].append(oid)
 
 pscheduler.succeed_json(result)
