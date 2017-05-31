@@ -503,75 +503,74 @@ __dictionary__ = {
         "additionalProperties": False
         },
 
+    "SNMPInteger": {
+        "type": { "$ref": "#/pScheduler/Int32"}
+    },
+
+    "SNMPInt32": {
+        "type": { "$ref": "#/pScheduler/Int32"}
+    },
+
+    "SNMPUInt32": {
+        "type": { "$ref": "#/pScheduler/UInt32"}
+    },
+
+    # can be one of bit, dec, hex, string
+    "SNMPString": {
+        "type": "string"
+    },
+
+    "SNMPIPAddr": {
+        "type": { "$ref": "#/pScheduler/IPAddress"}
+    },
+
     "SNMPNumericOID": {
         "type": "string",
         "pattern": r'^((\.\d)|\d)+(\.\d+)*$'
     },
 
     "SNMPAlphaNumOID": {
-        "type": { "$ref": "#/pScheduler/String"}
+        "type": { "$ref": "#/pScheduler/SNMPString"}
+    },
+
+    "SNMPOID": {
+        "type": {
+            "oneOf": [
+                { "$ref": "#/pScheduler/SNMPNumericOID" },
+                { "$ref": "#/pScheduler/SNMPAlphaNumOID"}
+            ]
+        }
     },
 
     "SNMPOIDList": {
         "type": "array",
-        "items": {
-            "oneOf": [
-                { "$ref": "#/pScheduler/SNMPNumericOID" },
-                { "$ref": "#/pScheduler/SNMPAlphaNumOID" }
-            ]
-        }
+        "items": { "$ref": "#/pScheduler/SNMPOID" }
     },
 
     "SNMPGetResult": {
         "type": "object",
         "properties": {
-            "oid": {
-                "oneOf": [
-                    { "$ref": "#/pScheduler/SNMPNumericOID" },
-                    { "$ref": "#/pScheduler/SNMPAlphaNumOID" }
-                ]
-            },
+            "oid": { "$ref": "#/pScheduler/SNMPOID" },
             "type": { "$ref": "#/pScheduler/String"},
             "value": { 
                 "oneOf": [
-                    { "$ref": "#/pScheduler/String" },
-                    { "$ref": "#/pScheduler/Integer"},
-                    { "$ref": "#/pScheduler/Int32" },
-                    { "$ref": "#/pScheduler/UInt32" }
+                    { "$ref": "#/pScheduler/SNMPString" },
+                    { "$ref": "#/pScheduler/SNMPInteger"},
+                    { "$ref": "#/pScheduler/SNMPInt32" },
+                    { "$ref": "#/pScheduler/SNMPUInt32" },
+                    { "$ref": "#/pScheduler/SNMPOID" },
                     # TODO: Add more
                 ]
             } 
         },
         "additionalProperties": True,
-        "required": ["oid", "value"]
+        "required": ["oid", "value", "type"]
     },
 
     "SNMPResultList": {
         "type": "array",
         "items": { "$ref": "#/pScheduler/SNMPGetResult" }
     },
-
-    # TODO: not sure if defining these are actually necessary since they already exist
-    # "SNMPInteger": {
-    #     "type": { "$ref": "#/pScheduler/Int32"}
-    # },
-
-    # "SNMPInt32": {
-    #     "type": { "$ref": "#/pScheduler/Int32"}
-    # },
-
-    # "SNMPUInt32": {
-    #     "type": { "$ref": "#/pScheduler/UInt32"}
-    # },
-
-    # # can be one of bit, dec, hex, string
-    # "SNMPString": {
-    #     "type": "string"
-    # },
-
-    # "SNMPIPAddr": {
-    #     "type": { "$ref": "#/pScheduler/IPAddress"}
-    # },
 
     "TaskSpecification": {
         "type": "object",

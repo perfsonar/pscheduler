@@ -100,6 +100,7 @@ if succeeded:
             obj_dict["value"] = data_list[1].strip()
             obj_dict["type"] = data_list[0].strip()
         except IndexError:
+            obj_dict["type"] = "None"
             obj_dict["value"] = data_list[0].strip()
         
         data.append(obj_dict)
