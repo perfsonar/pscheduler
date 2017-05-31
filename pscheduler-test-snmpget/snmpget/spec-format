@@ -26,32 +26,55 @@ if not valid:
 
 if format == 'text/plain':
 
-   template = """
+    template = """
 
-Host ...................... {.section host}{host}{.or}Not Specified{.end}
-Host Node ................. {.section host-node}{host-node}{.or}Not Specified{.end}
-Option ................ {.section op}{op}{.or}Not Specified{.end}
-Destination .................... {.section dest}{dest}{.or}Not Specified{.end}
-Community ..................... {.section community}{community}{.or}Not Specified{.end}
-Version ..................... {.section version}{version}Not Specified{.end}
-OID ........................ {.section oid}{oid}Not Specified{.end}
-Timeout ................... {.section timeout}{timeout}{.or}Not Specified{.end}
-"""
+        Host ...................... {.section host}{host}{.or}Not Specified{.end}
+        Host Node ................. {.section host-node}{host-node}{.or}Not Specified{.end}
+        Destination .................... {.section dest}{dest}{.or}Not Specified{.end}
+        Version ..................... {.section version}{version}{.or}Not Specified{.end}
+        OID ........................ {.section oid}{oid}{.or}Not Specified{.end}
+        Protocol ................... {.section protocol}{protocol}{.or}UDP{.end}
+        Timeout ................... {.section timeout}{timeout}{.or}Not Specified{.end}
+        """
+
+    if json['version'] == '3': 
+        template = template + """
+
+            Security Name .............. {.section sn}{sn}{.or}Not Specified{.end}
+            Authentication Protocol ...... {.section ap}{ap}{.or}Not Specified{.end}
+            Privacy Protocol ............ {.section pp}{pp}{.or}Not Specified{.end}
+            Security Level ............. {.section sl}{sl}{.or}Not Specified{.end}
+            Context .................... {.section context}{context}{.or}Not Specified{.end}
+            """
 
 elif format == 'text/html':
 
    template = """
-<table>
-<tr><td>Host</td><td>{.section host}{host}{.or}Not Specified{.end}</td></tr>
-<tr><td>Host Node</td><td>{.section host node}{host node}{.or}Not Specified{.end}</td></tr>
-<tr><td>Option</td><td>{.section option}{option}{.or}Not Specified{.end}</td></tr>
-<tr><td>Destination</td><td>{.section dest}{dest}{.or}Not Specified{.end}</td></tr>
-<tr><td>Community</td><td>{.section community}{community}{.or}Not Specified{.end}</td></tr>
-<tr><td>Version</td><td>{.section version}{version}{.or}Not Specified{.end}</td></tr>
-<tr><td>OID</td><td>{.section oid}{oid}{.or}Not Specified{.end}</td></tr>
-<tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
-</table>
-   """
+    <table>
+    <tr><td>Host</td><td>{.section host}{host}{.or}Not Specified{.end}</td></tr>
+    <tr><td>Host Node</td><td>{.section host-node}{host-node}{.or}Not Specified{.end}</td></tr>
+    <tr><td>Destination</td><td>{.section dest}{dest}{.or}Not Specified{.end}</td></tr>
+    <tr><td>Version</td><td>{.section version}{version}{.or}Not Specified{.end}</td></tr>
+    <tr><td>OID</td><td>{.section oid}{oid}{.or}Not Specified{.end}</td></tr>
+    <tr><td>Protocol</td><td>{.section protocol}{protocol}{.or}Not Specified{.end}</td></tr>
+    <tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
+    </table>
+    """
+
+   if json['version'] == '3':
+
+      template = template + """
+            <tr><td>Security Name</td><td>{.section sn}{sn}{.or}Not Specified{.end}</td></tr>
+            <tr><td>Authentication Protocol</td><td>{.section ap}{ap}{.or}Not Specified{.end}</td></tr>
+            <tr><td>Privacy Protocol</td><td>{.section pp}{pp}{.or}Not Specified{.end}</td></tr>
+            <tr><td>Security Level</td><td>{.section sl}{sl}{.or}Not Specified{.end}</td></tr>
+            <tr><td>Context</td><td>{.section context}{context}{.or}Not Specified{.end}</td></tr>
+            </table>
+            """
+   else:
+        template = template + """
+            </table>
+            """
 
 else:
 
