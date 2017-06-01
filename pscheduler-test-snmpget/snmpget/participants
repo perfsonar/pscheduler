@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Participant list generator for 'snmp' task spec
+# Participant list generator for 'snmpget' task spec
 #
 # Input is a test spec, assumed to have been validated by spec-is-valid.
 #

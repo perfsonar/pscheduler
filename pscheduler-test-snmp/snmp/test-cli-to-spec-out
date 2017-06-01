@@ -1,1 +1,0 @@
-{"dest": "test.net-snmp.org", "_community": "demopublic", "op": "walk", "version": "2c", "schema": 1}

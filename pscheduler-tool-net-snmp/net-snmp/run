@@ -15,9 +15,11 @@ input = pscheduler.json_load(exit_on_error=True)
 
 try:
     version = input['test']['spec']['version']
-    community = input['test']['spec']['community']
     dest = input['test']['spec']['dest']
-    op = input['test']['spec']['op']
+    oid = input['test']['spec']['oid']
+    if version == '1' or version == '2c':
+        community = input['test']['spec']['community']
+
 except KeyError:
     pscheduler.fail('Missing data in input')
 
@@ -28,29 +30,57 @@ start_time = datetime.datetime.now()
 # Perform the test
 
 error = None
-argv = ['snmp' + str(op)]
-for key in input['test']['spec'].keys():
-    if key == 'version':
-        argv.append('-v')
-        argv.append(input['test']['spec'][key])
-    if key == 'community':
-        argv.append('-c')
-        argv.append(input['test']['spec'][key])
-    if key == 'dest':
-        argv.append(input['test']['spec'][key].strip("/n"))
+argv = ['snmpget']
+if version == '1' or version == '2c':
+    op_dict = {'version': '-v',
+               'community': '-c',
+               }
+else:
+    op_dict = {'version': '-v',
+               'sn': '-u',
+               'sp': '-a',
+               'pp': '-x',
+               'ak': '-A',
+               'pk': '-X',
+               'sl': '-l',
+               'context': '-n'
+               }
 
+# if no protocol specified, default is udp
+try:
+    protocol = input['test']['spec']['protocol']
+except KeyError:
+    protocol = None
+
+# loop through spec to get command line args
+for key in input['test']['spec'].keys():
+    try:
+        argv.append(op_dict[key])
+    except KeyError:
+        # if key does not exist in dictionary, no switch is needed
+        # do not append schema
+        if key == 'schema' or key == 'protocol':
+            continue
+    if key == 'dest' and protocol != None:
+        argv.append(str(protocol) + ':' + input['test']['spec'][key])
+    elif key == 'oid':
+        for item in input['test']['spec'][key]:
+            argv.append(item)
+    else:
+        argv.append(input['test']['spec'][key])
+    
 try:
     status, stdout, stderr = pscheduler.run_program(argv)
     succeeded = True
 except Exception as e:
-    pscheduler.succeed_json({"succeeded": False,
-                             "error": "The snmp command failed during execution."
-                            })
+    succeeded = False
+    data = None
+    error = "The snmpget command failed during execution." 
 
 if status:
-    pscheduler.succeed_json({"succeeded": False,
-                                 "error": "snmp returned an error: %s" % stderr
-                                 })
+    data = None
+    succeeded = False
+    error = "snmpget returned an error: \n%s" % stderr.strip('\n')
 
 end_time = datetime.datetime.now()
 
@@ -58,14 +88,32 @@ end_time = datetime.datetime.now()
 # Produce results
 #
 
+if succeeded:
+    stdout = stdout.strip('\n').split('\n')
+    data = []
+    for item in stdout:
+        obj_dict = {}
+        data_list = item.split('=')
+        obj_dict["oid"] = data_list[0].strip()
+        data_list = data_list[1].split(":")
+        try:
+            obj_dict["value"] = data_list[1].strip()
+            obj_dict["type"] = data_list[0].strip()
+        except IndexError:
+            obj_dict["type"] = "None"
+            obj_dict["value"] = data_list[0].strip()
+        
+        data.append(obj_dict)
+
 results = {
     'succeeded': succeeded,
     'result': {
 	    'schema': 1,
-	    'duration': pscheduler.timedelta_as_iso8601( end_time - start_time ),
+	    'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
 	    'succeeded' : succeeded,
-        'data': stdout
-    }
+        'data': data
+    },
+    'error': error
 }
 
 pscheduler.succeed_json(results)
