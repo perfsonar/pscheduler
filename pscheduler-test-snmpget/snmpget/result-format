@@ -1,0 +1,62 @@
+#!/usr/bin/python
+#
+# Format a result
+#
+
+import jsontemplate
+import pscheduler
+import sys
+
+from validate import result_is_valid
+
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
+
+input = pscheduler.json_load(exit_on_error=True)
+
+valid, message = result_is_valid(input["result"])
+
+if not valid:
+    pscheduler.fail(message)
+
+json = input["result"]
+
+if format == 'text/plain':
+   print 'Time: %s\n' % json['time']
+   print 'Data:'
+   for item in json['data']:
+       print 'OID: %s\t' % item['oid']
+       try:
+           print 'Type: %s\t' % item['type']
+           print 'Value: %s\n' % item['value']
+       except KeyError:
+           print 'Error: %s\n' % item['value']
+   
+elif format == 'text/html':
+    print '<table>'
+    print '    <tr>'
+    print '        <th>Time</th>'
+    print '    </tr>'
+    print '    <tr>'
+    print '        <td>%s</td>' % json['time']
+    print '    </tr>'
+    print '    <tr>'
+    print '        <th>SNMP Data</th>'
+    print '    </tr>'
+    print '    <tr>'
+    for item in json['data']:
+        print '    <td>OID: %s\t' % item['oid']
+        try:
+            print 'Type: %s\t' % item['type']
+            print 'Value: %s\n</td>' % item['value']
+        except KeyError:
+            print 'Error: %s\n</td>' % item['value']       
+    print '    </tr>'
+    print '</table>'
+
+
+else:
+   pscheduler.fail("Unsupported format '%s'" % format)
