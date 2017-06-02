@@ -37,14 +37,17 @@ python-isodate
 python-netaddr
 python-ntplib
 python-py-radix
+# TODO: This can be dropped in 1.2
 python-repoze.lru
 python-subprocess32
 python-tzlocal
 python-vcversioner
 
 # JSON Tools
-python-jsonschema
-python-jsontemplate
+# Available as python2-jsonschema in EPEL for EL7
+ifelse(REDHAT_RELEASE_MAJOR,6,python-jsonschema,)
+ifelse(REDHAT_RELEASE_MAJOR,6,python-jsontemplate,)
+
 
 # Home-grown Python Modules
 python-icmperror
