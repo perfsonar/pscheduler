@@ -11,16 +11,25 @@ FILES=\
 	merged-results \
 	participant-data \
 	run \
-	iperf2_parser.py \
-        iperf2_utils.py \
-        iperf2.conf \
-	iperf2_defaults.py\
+
+MODULES=\
+	iperf2_parser \
+        iperf2_utils \
+	iperf2_defaults \
+
+PYS=$(MODULES:%=%.py)
+PYCS=$(MODULES:%=%.pyc)
+
+$(PYCS):
+	python -m compileall .
+TO_CLEAN += $(PYCS)
+
 
 CONFS=\
 	$(NAME).conf
 
 
-install: $(FILES) $(CONFS)
+install: $(FILES) $(CONFS) $(PYS) $(PYCS)
 ifndef DESTDIR
 	@echo No DESTDIR specified for installation
 	@false
@@ -33,6 +42,7 @@ endif
 endif
 	mkdir -p $(DESTDIR)
 	install -m 555 $(FILES) $(DESTDIR)
+	install -m 444 $(PYS) $(PYCS) $(DESTDIR)
 ifdef CONFS
 	mkdir -p $(CONFDIR)
 	install -m 644 $(CONFS) $(CONFDIR)
