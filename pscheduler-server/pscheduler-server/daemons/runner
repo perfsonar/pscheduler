@@ -623,6 +623,9 @@ class RunWorker:
                     if status == 200:
                         self.log.debug("%d: Retrieved %s", self.id, run_result)
                         index = to_get[get]
+                        # Pylint infers that run_result is a string
+                        # when it isn't.
+                        # pylint: disable=maybe-no-member
                         got = run_result.get("result", None)
                         full_result[index] = got
                         if got is not None:

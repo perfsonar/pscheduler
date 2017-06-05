@@ -238,7 +238,9 @@ def run_post(
     # Make sure all of the participants' APIs answer before trying to
     # do anything with them.
 
-    lead_bind = task.get("lead-bind", None)
+    # Pylint infers task to be a string when it's actually a dictionary.
+    lead_bind = task.get("lead-bind", None)  # pylint: disable=maybe-no-member
+
     log and log.debug("%d: Binding from %s", number, lead_bind)
     if not pscheduler.api_ping_all_up(participants, bind=lead_bind):
 
@@ -477,8 +479,7 @@ def run_post(
         log and log.debug("%d: PUT %d: %s", number, status, output)
 
         if status == 409:
-            message = "%s developed a schedule conflict." % (
-                urlparse.urlparse(request.url_root).netloc.split(':')[0])                
+            message = "%s developed a schedule conflict." % (put_url)
             log and log.debug("%d: %s", message)
             errors.append(message)
             conflict = True
