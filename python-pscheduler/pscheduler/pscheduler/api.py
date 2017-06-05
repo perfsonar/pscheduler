@@ -300,9 +300,9 @@ if __name__ == "__main__":
     print api_url(host='host.example.com', path='both-noslash')
     print api_url(path='nohost')
     print
-    print api_full_host()
 
     print api_has_bwctl(None)
     print api_has_pscheduler(None)
 
-    print api_has_bwctl_pscheduler("perfsonardev0.internet2.edu")
+
+    print api_has_services(["perfsonardev0.internet2.edu"])

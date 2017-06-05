@@ -8,6 +8,8 @@ import httplib
 import requests
 import urlparse
 
+# This does actually exist.
+# pylint: disable=no-name-in-module
 from requests.packages.urllib3.poolmanager import PoolManager
 
 
@@ -27,6 +29,7 @@ if not verify_keys_default:
     # NOTE: This used to do a separate import of
     # InsercureRequestWarning but can't because of the way Debian
     # de-vendorizes the requests package.
+    # pylint: disable=no-member
     requests.packages.urllib3.disable_warnings(
         requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
