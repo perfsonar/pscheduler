@@ -800,7 +800,7 @@ def json_validate(json, skeleton):
 
         try:
             message = ex.schema["x-invalid-message"].replace("%s", ex.instance)
-        except KeyError:
+        except (KeyError, TypeError):
             message = ex.message
 
         if len(ex.absolute_path) > 0:
