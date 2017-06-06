@@ -4,7 +4,7 @@
 
 %define short	idlebgm
 Name:		pscheduler-test-%{short}
-Version:	1.0.0.4
+Version:	1.0.0.5
 Release:	1%{?dist}
 
 Summary:	Idle Background-Multi test class for pScheduler

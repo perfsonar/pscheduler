@@ -3,7 +3,7 @@
 #
 
 Name:		pscheduler-core
-Version:	1.0.0.4
+Version:	1.0.0.5
 Release:	1%{?dist}
 
 Summary:	pScheduler Core Programs
