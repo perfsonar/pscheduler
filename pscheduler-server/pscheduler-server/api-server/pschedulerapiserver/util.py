@@ -62,7 +62,7 @@ def server_fqdn():
     the local host or not available.
     """
 
-    return urlparse.urlparse(request.url_root).netloc.split(':')[0]
+    return urlparse.urlparse(request.url_root).hostname
 
 
 #
