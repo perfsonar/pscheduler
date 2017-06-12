@@ -14,8 +14,8 @@ Group:		Development/Libraries
 Provides:	%{name} = %{version}-%{release}
 Prefix:		%{_prefix}
 
-#Vendor:		TODO: Fill this in
-#URL:		TODO: Fill this in
+Vendor:		Michael Williamson
+URL:		https://github.com/mwilliamson/jq.py
 
 Source:		%{short}-%{version}.tar.gz
 
@@ -23,13 +23,13 @@ Patch0:		%{name}-%{version}-00-nodownloads.patch
 
 Requires:	python
 Requires:	jq >= 1.5
-Requires:	oniguruma >= 5.9.5
+Requires:	oniguruma >= 5.9
 
 BuildRequires:	python
 BuildRequires:	python-setuptools
-BuildRequires:	Cython
+BuildRequires:	Cython >= 0.19
 BuildRequires:	jq-devel >= 1.5
-BuildRequires:	oniguruma-devel >= 5.9.5
+BuildRequires:	oniguruma-devel >= 5.9
 
 %description
 Python bindings for JQ
@@ -46,11 +46,12 @@ Python bindings for JQ
 
 
 %build
-python setup.py build
+#python setup.py build
+python setup.py build_ext --inplace
 
 
 %install
-python setup.py install --root=$RPM_BUILD_ROOT --single-version-externally-managed -O1  --record=INSTALLED_FILES
+python setup.py install --root=$RPM_BUILD_ROOT -O1  --record=INSTALLED_FILES
 
 
 %clean

@@ -29,7 +29,12 @@ make-generic-rpm
 postgresql-init
 postgresql-load
 
+# This is only required on EL6
+ifelse(REDHAT_RELEASE_MAJOR,6,jq,)
+
+
 # Python Modules
+ifelse(REDHAT_RELEASE_MAJOR,6,python-Cython,)
 python-argparse
 ifelse(REDHAT_RELEASE_MAJOR,7,
     python-functools32,)
