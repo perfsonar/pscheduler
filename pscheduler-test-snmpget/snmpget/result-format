@@ -22,18 +22,19 @@ valid, message = result_is_valid(input["result"])
 if not valid:
     pscheduler.fail(message)
 
-json = input["result"]
+result = input["result"]
+spec = input["spec"]
 
 if format == 'text/plain':
-   print 'Time: %s\n' % json['time']
+   print 'Time: %s\n' % result['time']
    print 'Data:'
-   for item in json['data']:
-       print 'OID: %s\t' % item['oid']
+   for i in range(len(result['data'])):
+       print 'OID: %s\t' % spec['oid'][i]
        try:
-           print 'Type: %s\t' % item['type']
-           print 'Value: %s\n' % item['value']
+           print 'Type: %s\t' % result['data'][i]['type']
+           print 'Value: %s\n' % result['data'][i]['value']
        except KeyError:
-           print 'Error: %s\n' % item['value']
+           print 'Error: %s\n' % result['data'][i]['value']
    
 elif format == 'text/html':
     print '<table>'
@@ -41,20 +42,21 @@ elif format == 'text/html':
     print '        <th>Time</th>'
     print '    </tr>'
     print '    <tr>'
-    print '        <td>%s</td>' % json['time']
+    print '        <td>%s</td>' % result['time']
     print '    </tr>'
     print '    <tr>'
     print '        <th>SNMP Data</th>'
     print '    </tr>'
-    print '    <tr>'
-    for item in json['data']:
-        print '    <td>OID: %s\t' % item['oid']
+    for index, item in enumerate(result['data']):
+        print '<tr>'
+        print '    <td>OID: %s\t </td>' % spec['oid'][index]
         try:
-            print 'Type: %s\t' % item['type']
-            print 'Value: %s\n</td>' % item['value']
+            print '<td>Type: %s\t </td>' % item['type']
+            print '<td>Value: %s\n</td>' % item['value']
         except KeyError:
-            print 'Error: %s\n</td>' % item['value']       
-    print '    </tr>'
+            print '<td>Error: %s\n</td>' % item['value']       
+        print '</tr>'
+
     print '</table>'
 
 

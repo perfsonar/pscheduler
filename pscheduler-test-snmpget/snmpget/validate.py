@@ -40,7 +40,9 @@ def spec_is_valid(json):
                     "dest":         { "$ref": "#/pScheduler/Host" },
                     "version":      { "$ref": "#/local/VersionNumber"},
                     "community":    { "$ref": "#/pScheduler/String"},
-                    "oid":          { "$ref": "#/pScheduler/SNMPNumericOIDList"},
+                    "oid":          { "type": "array", 
+                                      "items": { "$ref": "#/pScheduler/SNMPOID" } 
+                                    },
                     "protocol":     { "$ref": "#/local/TransportProtocol" },
                     "timeout":      { "$ref": "#/pScheduler/Duration" },
                 },
@@ -59,7 +61,9 @@ def spec_is_valid(json):
                     "host-node":    { "$ref": "#/pScheduler/Host" },
                     "dest":         { "$ref": "#/pScheduler/Host" },
                     "version":      { "$ref": "#/local/VersionNumber"},
-                    "oid":          { "$ref": "#/pScheduler/SNMPNumericOIDList"},
+                    "oid":          { "type": "array", 
+                                      "items": { "$ref": "#/pScheduler/SNMPNumericOID" } 
+                                    },
                     "protocol":     { "$ref": "#/local/TransportProtocol" },
                     "sn":           { "$ref": "#/pScheduler/String" },
                     "ap":           { "$ref": "#/local/AuthProtocol" },
@@ -94,8 +98,10 @@ def result_is_valid(json):
         "properties": {
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
-            "time":   { "$ref": "#/pScheduler/Duration" },
-            "data":       { "$ref": "#/pScheduler/SNMPResultList"},
+            "time":       { "$ref": "#/pScheduler/Duration" },
+            "data":       { "type": "array",
+                            "items": { "$ref": "#/pScheduler/SNMPResult" } 
+                          },
             },
         "required": [
             "schema",

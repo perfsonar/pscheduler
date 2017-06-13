@@ -503,25 +503,70 @@ __dictionary__ = {
         "additionalProperties": False
         },
 
-    "SNMPInteger": {
-        "$ref": "#/pScheduler/Int32"
+    # TODO: There are still some data types undefined, mainly because we cannot
+    # find agents that will return such data types yet
+    "SNMPResultInteger": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^[I|i][N|n][T|t][E|e][G|g][E|e][R|r]$'
+            },
+            "value": { "$ref": "#/pScheduler/Integer" }
+        },
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
     },
 
-    "SNMPInt32": {
-        "$ref": "#/pScheduler/Int32"
+    "SNMPResultString": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^[S|s][T|t][R|r][I|i][N|n][G|g]$'
+            },
+            "value": { "$ref": "#/pScheduler/String"}
+        },
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
     },
 
-    "SNMPUInt32": {
-        "$ref": "#/pScheduler/UInt32"
+    "SNMPResultHexString": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^[H|h][E|e][X|x]-*[S|s][T|t][R|r][I|i][N|n][G|g]$'
+            },
+            "value": { "$ref": "#/pScheduler/String"}
+        },
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
     },
 
-    # can be one of bit, dec, hex, string
-    "SNMPString": {
-        "$ref": "#/pScheduler/String"
-    },
-
-    "SNMPIPAddr": {
-        "$ref": "#/pScheduler/IPAddress"
+    "SNMPResultIPAddress": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^[I|i][P|p][A|a][D|d]{2}[R|r][E|e][S|s]{2}$'
+            },
+            "value": { "$ref": "#/pScheduler/IPAddress"}
+        },
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
     },
 
     "SNMPNumericOID": {
@@ -542,34 +587,119 @@ __dictionary__ = {
         ]
     },
 
-    "SNMPNumericOIDList": {
-        "type": "array",
-        "items": { "$ref": "#/pScheduler/SNMPNumericOID" }
-    },
-
-    "SNMPGetResult": {
+    "SNMPResultOID": {
         "type": "object",
         "properties": {
-            "oid": { "$ref": "#/pScheduler/SNMPOID" },
-            "type": { "$ref": "#/pScheduler/String"},
-            "value": { 
-                "anyOf": [
-                    { "$ref": "#/pScheduler/SNMPString" },
-                    { "$ref": "#/pScheduler/SNMPInteger"},
-                    { "$ref": "#/pScheduler/SNMPInt32" },
-                    { "$ref": "#/pScheduler/SNMPUInt32" },
-                    { "$ref": "#/pScheduler/SNMPOID" },
-                    # TODO: Add more
-                ]
-            } 
+            "type": {
+                "type": "string",
+                "pattern": r'^[O|o][I|i][D|d]$'
+            },
+            "value": { "$ref": "#/pScheduler/SNMPOID"}
         },
-        "additionalProperties": True,
-        "required": ["oid", "value", "type"]
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
     },
 
-    "SNMPResultList": {
-        "type": "array",
-        "items": { "$ref": "#/pScheduler/SNMPGetResult" }
+    # TODO: other data types
+
+    "SNMPResultCounter32": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^[C|c][O|o][U|u][N|n][T|t][E|e][R|r]32$'
+            },
+            "value": { "$ref": "#/pScheduler/UInt32"}
+        },
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPResultCounter64": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^[C|c][O|o][U|u][N|n][T|t][E|e][R|r]64$'
+            },
+            "value": { "$ref": "#/pScheduler/UInt64"}
+        },
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPResultGauge32": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^[G|g][A|a][U|u][G|g][E|e]32$'
+            },
+            "value": { "$ref": "#/pScheduler/UInt32"}
+        },
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPTimeticks": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 4294967296 
+    },
+
+    "SNMPResultTimeticks": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^[T|t][I|i][M|m][E|e][T|t][I|i][C|c][K|k][S|s]$'
+            },
+            "value": { "$ref": "#/pScheduler/SNMPTimeticks"}
+        },
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPResultInvalidOID": {
+        "type": "object",
+        "properties": {
+            "type": { "type": "null" },
+            "value": { "$ref": "#/pScheduler/String" }
+        },
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPResult": {
+        "anyOf": [
+            { "$ref": "#/pScheduler/SNMPResultInteger" },
+            { "$ref": "#/pScheduler/SNMPResultString" },
+            { "$ref": "#/pScheduler/SNMPResultIPAddress" },
+            { "$ref": "#/pScheduler/SNMPResultOID" },
+            { "$ref": "#/pScheduler/SNMPResultCounter32" },
+            { "$ref": "#/pScheduler/SNMPResultCounter64" },
+            { "$ref": "#/pScheduler/SNMPResultGauge32" },
+            { "$ref": "#/pScheduler/SNMPResultTimeticks" },
+            { "$ref": "#/pScheduler/SNMPResultInvalidOID" }
+        ]
     },
 
     "TaskSpecification": {

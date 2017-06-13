@@ -88,35 +88,35 @@ opt_parser.add_option("--timeout",
 # snmp v3 specific options
 if '3' in args:
    version = 3
-   opt_parser.add_option("--sn",
+   opt_parser.add_option("--security-name",
                       help="Security Name",
                       action="store", type="string",
-                      dest="sn")
+                      dest="security_name")
                     
-   opt_parser.add_option("--ap",
+   opt_parser.add_option("--auth-protocol",
                       help="Authentication Protocol (md5|sha)",
                       action="store", type="string",
-                      dest="ap")
+                      dest="auth_protocol")
 
-   opt_parser.add_option("--pp",
+   opt_parser.add_option("--priv-protocol",
                       help="Privacy Protocol (des|aes)",
                       action="store", type="string",
-                      dest="pp")
+                      dest="priv_protocol")
 
-   opt_parser.add_option("--ak",
+   opt_parser.add_option("--auth-key",
                       help="Authentication Passphrase",
                       action="store", type="string",
-                      dest="ak")
+                      dest="auth_key")
 
-   opt_parser.add_option("--pk",
+   opt_parser.add_option("--priv-key",
                       help="Privacy Passphrase",
                       action="store", type="string",
-                      dest="pk")
+                      dest="priv_key")
 
-   opt_parser.add_option("--sl",
+   opt_parser.add_option("--security-level",
                       help="Security Level (noAuthNoPriv|authNoPriv|authPriv)",
                       action="store", type="string",
-                      dest="sl")
+                      dest="security_level")
 
    opt_parser.add_option("--context",
                       help="Context Name",
@@ -166,28 +166,28 @@ if version == 1:
     result['community'] = options.community
 
 else:
-    if options.sn is not None:
-      result['sn'] = options.sn
+    if options.security_name is not None:
+      result['security-name'] = options.security_name
 
-    if options.ap is not None:
-      result['ap'] = options.ap
+    if options.auth_protocol is not None:
+      result['auth-protocol'] = options.auth_protocol
 
-    if options.pp is not None:
-      result['pp'] = options.pp
+    if options.priv_protocol is not None:
+      result['priv-protocol'] = options.priv_protocol
 
-    if options.ak is not None:
-      result['ak'] = options.ak
+    if options.auth_key is not None:
+      result['auth-key'] = options.auth_key
 
-    if options.pk is not None:
-      result['pk'] = options.pk
+    if options.priv_key is not None:
+      result['priv-key'] = options.priv_key
 
-    if options.sl is not None:
-      result['sl'] = options.sl
+    if options.security_level is not None:
+      result['security-level'] = options.security_level
 
     if options.context is not None:
       result['context'] = options.context
 
-#convert OIDs to numeric form
+# convert OIDs to numeric form
 argv = ["snmptranslate", "-On", "-IR"]
 for oid in result['oid']:
     match = re.match("^((\.\d)|\d)+(\.\d+)*$", oid)
