@@ -62,7 +62,7 @@ elif format == 'text/html':
 <tr><td>Protocol</td><td>{.section protocol}{protocol}{.or}Not Specified{.end}</td></tr>
 <tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>"""
 
-   if json['version'] == '3' or 1:
+   if json['version'] == '3':
 
       template = template + """
 <tr><td>Security Name</td><td>{.section security_name}{security_name}{.or}Not Specified{.end}</td></tr>
