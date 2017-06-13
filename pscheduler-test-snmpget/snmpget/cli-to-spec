@@ -3,7 +3,7 @@
 # Convert command-line options to a test specification
 #
 
-# TODO: _ for sensitive values
+# TODO: _ for sensitive data - still erroring out?
 
 import re
 import string
@@ -188,21 +188,21 @@ else:
       result['context'] = options.context
 
 # convert OIDs to numeric form
-argv = ["snmptranslate", "-On", "-IR"]
-for oid in result['oid']:
-    match = re.match("^((\.\d)|\d)+(\.\d+)*$", oid)
-    if match is None: 
-        argv.append(oid) 
+# argv = ["snmptranslate", "-On", "-IR"]
+# for oid in result['oid']:
+#     match = re.match("^((\.\d)|\d)+(\.\d+)*$", oid)
+#     if match is None: 
+#         argv.append(oid) 
 
-if len(argv) > 3:
-    status, stdout, stderror = pscheduler.run_program(argv)
-    if status:
-        pscheduler.fail('Translation Error: Try using only numeric OIDs')
+# if len(argv) > 3:
+#     status, stdout, stderror = pscheduler.run_program(argv)
+#     if status:
+#         pscheduler.fail('Translation Error: Try using only numeric OIDs')
 
-    result['oid'] = []
-    stdout = stdout.split("\n")
-    for oid in stdout:
-        if len(oid) > 0:
-            result['oid'].append(oid)
+#     result['oid'] = []
+#     stdout = stdout.split("\n")
+#     for oid in stdout:
+#         if len(oid) > 0:
+#             result['oid'].append(oid)
 
 pscheduler.succeed_json(result)
