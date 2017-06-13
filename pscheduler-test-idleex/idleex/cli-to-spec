@@ -59,6 +59,11 @@ opt_parser.add_option("-H", "--host",
                       action="store", type="string",
                       dest="host")
 
+opt_parser.add_option("--host-node",
+                      help="pScheduler node",
+                      action="store", type="string",
+                      dest="host_node")
+
 opt_parser.add_option("-s", "--starting-comment",
                       help="Starting comment",
                       action="store", type="string",
@@ -82,6 +87,9 @@ if options.duration is not None:
 
 if options.host is not None:
    result['host'] = options.host
+
+if options.host_node is not None:
+   result['host_node'] = options.host_node
 
 if options.starting_comment is not None:
    result['starting-comment'] = options.starting_comment

@@ -11,7 +11,7 @@ def spec_is_valid(json):
             "schema":            { "$ref": "#/pScheduler/Cardinal" },
             "dest":              { "$ref": "#/pScheduler/Host" },
             "source":            { "$ref": "#/pScheduler/Host" },
-            "source-node":       { "$ref": "#/pScheduler/Host" },
+            "source-node":       { "$ref": "#/pScheduler/URLHostPort" },
             "timeout":           { "$ref": "#/pScheduler/Duration" },
             },
         "required": [

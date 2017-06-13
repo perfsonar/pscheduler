@@ -45,14 +45,15 @@ def api_replace_host(url_text, replacement):
 
 
 
+
 def api_url(host = None,
             path = None,
             port = None,
-            protocol = 'https'
+            protocol = None
             ):
     """Format a URL for use with the pScheduler API."""
 
-    host = api_this_host() if host is None else str(host)
+    host = 'localhost' if host is None else str(host)
     # Force the host into something valid for DNS
     # See http://stackoverflow.com/a/25103444/180674
     try:
@@ -63,12 +64,33 @@ def api_url(host = None,
 
     if path is not None and path.startswith('/'):
         path = path[1:]
+
+    if protocol is None:
+        protocol = 'https'
+
     return protocol + '://' \
         + host \
         + ('' if port is None else (':' + str(port))) \
         + api_root() + '/'\
         + ('' if path is None else str(path))
 
+
+
+def api_host_port(hostport):
+    """Return the host and port parts of a host/port pair"""
+    parsed=urlparse.urlparse("bogus://%s" % (hostport))
+    return (None if parsed.hostname == "none" else parsed.hostname,
+            parsed.port)
+
+
+def api_url_hostport(hostport=None,
+            path=None,
+            protocol=None
+            ):
+    """Format a URL for use with the pScheduler API where the host name
+    may include a port."""
+    (host, port) = api_host_port(hostport)
+    return api_url(host=host, port=port, path=path, protocol=protocol)
 
 
 
@@ -183,13 +205,15 @@ def api_ping_all_up(hosts, bind=None, timeout=None):
 # TODO: Remove this when the backward-compatibility code is removed
 #
 
-def api_has_pscheduler(host, timeout=5, bind=None):
+def api_has_pscheduler(hostport, timeout=5, bind=None):
     """
     Determine if pScheduler is running on a host
     """
     # Null implies localhost
-    if host is None:
-        host = "localhost"
+    if hostport is None:
+        hostport = "localhost"
+
+    host, port = api_host_port(hostport)
 
 
     # Make sure the address resolves, otherwise url_get will return
@@ -212,7 +236,7 @@ def api_has_pscheduler(host, timeout=5, bind=None):
     if bind is None:
         bind = os.environ.get('PSCHEDULER_LEAD_BIND_HACK', None)
 
-    status, raw_spec = pscheduler.url_get(pscheduler.api_url(resolved),
+    status, raw_spec = pscheduler.url_get(api_url_hostport(hostport),
                                           timeout=timeout,
                                           throw=False,
                                           json=False,
