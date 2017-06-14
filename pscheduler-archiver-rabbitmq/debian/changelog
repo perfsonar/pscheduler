@@ -1,8 +1,14 @@
-pscheduler-archiver-rabbitmq (1.0.0.2-1~bpo70+1) perfsonar-wheezy-release; urgency=low
+pscheduler-archiver-rabbitmq (1.0.0.5-1~bpo70+1) perfsonar-wheezy-release; urgency=low
 
   * Backport to Wheezy
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 05 May 2017 13:06:59 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 14 Jun 2017 19:56:16 +0000
+
+pscheduler-archiver-rabbitmq (1.0.0.5-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 14 Jun 2017 19:03:48 +0000
 
 pscheduler-archiver-rabbitmq (1.0.0.2-1) perfsonar-jessie-release; urgency=low
 
