@@ -14,16 +14,16 @@ class JQFilter(object):
     def __init__(
             self,
             filter_spec=".",
-            vars={},
+            args={},
             output_raw=False
             ):
 
         if isinstance(filter_spec, basestring):
-            self.script = pyjq.compile(filter_spec, vars)
+            self.script = pyjq.compile(filter_spec, args)
             self.output_raw = output_raw
 
         elif type(filter_spec) == dict:
-            self.script = pyjq.compile(filter_spec.get("script", "."), vars)
+            self.script = pyjq.compile(filter_spec.get("script", "."), args)
             self.output_raw = filter_spec.get("output-raw", output_raw)
 
         else:
