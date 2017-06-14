@@ -23,6 +23,7 @@ ALL_FILES=$(find $WHEREAMI/.. -type f)
 for FILE in $ALL_FILES
 do
    FILE_TYPE=`file $FILE 2>/dev/null`
+   echo TYPE $FILE $FILE_TYPE
    if [[ $FILE_TYPE =~ "python script" ]]
       then
        LOCAL_PATH=$(dirname "$0")

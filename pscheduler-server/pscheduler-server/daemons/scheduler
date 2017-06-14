@@ -294,12 +294,13 @@ def run_post(
         status, json_ranges = pscheduler.url_get(runtime_url,
                                                  params=range_params,
                                                  bind=bind_addr,
+                                                 timeout=5,
                                                  throw=False)
 
         if status in [ 404, 410 ]:
             log and log.debug("Task is no longer there.  Canceling %s.", url)
             del_status, del_result = pscheduler.url_delete(
-                url, throw=False, bind=bind_addr)
+                url, timeout=5, throw=False, bind=bind_addr)
             if del_status not in [ 200, 404, 410 ]:
                 log and log.warning("Error while canceling %s: %s", url, del_result)
             return (None, None, None, False, False,
@@ -395,6 +396,7 @@ def run_post(
         = pscheduler.url_post(task_urls[0] + '/runs',
                               data=pscheduler.json_dump(run_params),
                               bind=bind_addr,
+                              timeout=30,
                               throw=False,
                               json=True)
 
@@ -436,6 +438,7 @@ def run_post(
         status, output = pscheduler.url_put(put_url,
                                             data=run_data,
                                             bind=bind_addr,
+                                            timeout=30,
                                             throw=False,
                                             json=False  # No output.
                                             )
@@ -461,7 +464,7 @@ def run_post(
 
     if len(runs_posted) != len(task_urls):
         log and log.debug("Removing runs: %s", runs_posted)
-        pscheduler.url_delete_list(runs_posted, bind=bind_addr)
+        pscheduler.url_delete_list(runs_posted, bind=bind_addr, timeout=5)
         return (None, None, None, False, conflict,
                 "Failed to post/put runs to all participants: %s"
                 %  ("; ".join(errors))
@@ -480,10 +483,10 @@ def run_post(
 
         # TODO: Should this be multiple attempts to avoid a race condition?
         log and log.debug("Getting part data from %s", run)
-        status, result = pscheduler.url_get(run, bind=bind_addr, throw=False)
+        status, result = pscheduler.url_get(run, bind=bind_addr, throw=False, timeout=5)
         if status != 200 or not 'participant-data' in result:
             log.debug("Deleting runs: %s", runs_posted)
-            pscheduler.url_delete_list(runs_posted, bind=bind_addr)
+            pscheduler.url_delete_list(runs_posted, bind=bind_addr, timeout=5)
             # TODO: Better error?
             return (None, None, None, False, False,
                     "Failed to get run data from all participants")
@@ -502,9 +505,10 @@ def run_post(
                                             data=full_data,
                                             bind=bind_addr,
                                             json=False,
-                                            throw=False)
+                                            throw=False,
+                                            timeout=30)
         if status != 200:
-            pscheduler.url_delete_list(runs_posted, bind=bind_addr)
+            pscheduler.url_delete_list(runs_posted, bind=bind_addr, timeout=5)
             # TODO: Better error?
             log and log.debug("Failed: %s", result)
             return (None, None, None, False, False,
