@@ -18,7 +18,7 @@ try:
     dest = input['test']['spec']['dest']
     oid = input['test']['spec']['oid']
     if version == '1' or version == '2c':
-        community = input['test']['spec']['community']
+        community = input['test']['spec']['_community']
 
 except KeyError:
     pscheduler.fail('Missing data in input')
@@ -33,7 +33,7 @@ error = None
 argv = ['snmpget', '-Oe', '-OE']
 if version == '1' or version == '2c':
     op_dict = {'version': '-v',
-               'community': '-c',
+               '_community': '-c',
                }
 else:
     op_dict = {'version': '-v',

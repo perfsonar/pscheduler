@@ -39,7 +39,7 @@ def spec_is_valid(json):
                     "host-node":    { "$ref": "#/pScheduler/Host" },
                     "dest":         { "$ref": "#/pScheduler/Host" },
                     "version":      { "$ref": "#/local/VersionNumber"},
-                    "community":    { "$ref": "#/pScheduler/String"},
+                    "_community":    { "$ref": "#/pScheduler/String"},
                     "oid":          { "type": "array", 
                                       "items": { "$ref": "#/pScheduler/SNMPOID" } 
                                     },
@@ -48,7 +48,7 @@ def spec_is_valid(json):
                 },
                 "required": [
                     "version",
-                    "community",
+                    "_community",
                     "dest",
                     "oid"
                     ]

@@ -3,8 +3,6 @@
 # Convert command-line options to a test specification
 #
 
-# TODO: _ for sensitive data - still erroring out?
-
 import re
 import string
 import optparse
@@ -163,7 +161,7 @@ if options.timeout is not None:
 
 if version == 1:
   if options.community is not None:
-    result['community'] = options.community
+    result['_community'] = options.community
 
 else:
     if options.security_name is not None:
