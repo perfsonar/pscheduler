@@ -116,12 +116,11 @@ def limit_is_valid(json):
     schema = {
         "type": "object",
         "properties": {
-            "schema": { "$ref": "#/pScheduler/Cardinal" },
-            "dest":         { "$ref": "#/pScheduler/Limit/String" },
-            "version":      { "$ref": "#/pScheduler/String"},
-            "community":    { "$ref": "#/pScheduler/String"},
-            "oid":          { "$ref": "#/pScheduler/String"},
-            "op":           { "$ref": "#/pScheduler/String"},
+			"host":			{ "$ref": "#/pScheduler/Limit/String" },
+			"host-node": 	{ "$ref": "#/pScheduler/Limit/String" },
+			"oid": 			{ "$ref": "#/pScheduler/Limit/String" },
+			"dest": 		{ "$ref": "#/pScheduler/Limit/String" },
+			"community": 	{ "$ref": "#/pScheduler/Limit/String" },
         },
         "additionalProperties": False
         }

@@ -38,7 +38,7 @@ errors = []
 #
 # Query, record, nameserver, host, host-node
 #
-for value in [ "query", "record", "nameserver", "host", "host-node" ]:
+for value in [ "host", "host-node", "oid", "dest", "community" ]:
     try:
 	match = pscheduler.StringMatcher(limit[value]["match"])
 	try:
@@ -46,27 +46,13 @@ for value in [ "query", "record", "nameserver", "host", "host-node" ]:
 	except KeyError:
 	    invert = False
 	in_limit = match.matches(spec[value])
-	if not in_limit or (invert and in_limit):
+	if in_limit or (invert and in_limit):
 	    try:
 		errors.append(limit[value]["fail-message"])
 	    except KeyError:
 		errors.append("%s does not match limit" % (value.capitalize()))
     except KeyError:
 	pass  # Don't care if not there.
-
-#
-# Timeout
-#
-try:
-    match = pscheduler.DurationRange(limit["timeout"]["range"])
-    if spec["timeout"] not in match:
-        try:
-            errors.append(limit["timeout"]["fail-message"])
-        except KeyError:
-            errors.append("Timeout not within limit")
-
-except KeyError:
-    pass  # Don't care if not there.
 
 
 #

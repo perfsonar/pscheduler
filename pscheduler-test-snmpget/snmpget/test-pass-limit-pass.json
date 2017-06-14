@@ -1,0 +1,26 @@
+{
+    "limit": {
+        "oid" : {
+            "fail-message" : "Restricted OID",
+            "match" : {
+                "style" : "exact",
+                "match" : "test" 
+			},
+			"match":  {
+				"style" : "exact",
+				"match" : "ood!"
+			}
+        },
+	
+        "timeout" : {
+            "range" : {
+                "lower" : "P0D",
+                "upper" : "PT20S"
+            }
+        }
+    },
+    
+    "spec": 
+	{"version": "2c", "server": "192.168.0.1", "oid": "good!", "schema": 1}
+
+}

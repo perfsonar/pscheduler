@@ -1,0 +1,15 @@
+{
+    "oid" : {
+        "fail-message" : "Restricted OID",
+        "match" : {
+	    "style" : "exact",
+            "match" : "test"
+        }
+    },
+    "timeout" : {
+        "range" : {
+            "lower" : "P0D",
+            "upper" : "PT20S"
+        }
+    }
+}
