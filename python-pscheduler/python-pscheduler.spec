@@ -40,6 +40,7 @@ Requires:	pytz
 Requires:	rsyslog
 Requires:	logrotate
 
+BuildRequires:	pscheduler-rpm
 BuildRequires:	python-coverage
 BuildRequires:	python-nose
 BuildRequires:	python-setuptools
