@@ -4,7 +4,7 @@
 
 %define short	pscheduler
 Name:		python-%{short}
-Version:	1.3.0.1
+Version:	1.3.0.4
 Release:	1%{?dist}
 Summary:	Utility functions for pScheduler
 BuildArch:	noarch
@@ -22,7 +22,12 @@ Source0:	%{short}-%{version}.tar.gz
 Requires:	python-dateutil
 Requires:	python-dns
 Requires:	python-isodate
+%if 0%{?el6}
 Requires:	python-jsonschema
+%endif
+%if 0%{?el7}
+Requires:	python2-jsonschema
+%endif
 Requires:	python-netaddr
 Requires:	python-netifaces
 Requires:	python-ntplib

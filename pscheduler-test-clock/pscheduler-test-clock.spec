@@ -4,7 +4,7 @@
 
 %define short	clock
 Name:		pscheduler-test-%{short}
-Version:	1.0.0.2
+Version:	1.0.0.5
 Release:	1%{?dist}
 
 Summary:	Clock test class for pScheduler

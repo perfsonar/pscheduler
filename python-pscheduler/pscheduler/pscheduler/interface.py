@@ -12,12 +12,12 @@ import socket
 
 
 
-def source_affinity(addr):
+def source_affinity(addr, ip_version=None):
     """Easy to use function that returns the CPU affinity
     given an address. Uses source_interface and interface_affinity
     functions call to accomplish, so it's really just a shorthand
     """
-    (address, intf) = source_interface(addr)
+    (address, intf) = source_interface(addr, ip_version=ip_version)
 
     if intf is None:
         return None
@@ -25,21 +25,23 @@ def source_affinity(addr):
     return interface_affinity(intf)
 
 
-def source_interface(addr, port=80):
+def source_interface(addr, port=80, ip_version=None):
     """Figure out what local interface is being used to 
     get an address.
 
     Returns a tuple of (address, interface_name)
     """
-
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    if ip_version == 6:
+        s = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM)
+    else:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect((addr,port))
 
     interface_address = s.getsockname()[0]
 
     s.close()
 
-    interface_name = address_interface(interface_address)
+    interface_name = address_interface(interface_address, ip_version=ip_version)
     
     if interface_name:
         return (interface_address, interface_name)
@@ -47,16 +49,19 @@ def source_interface(addr, port=80):
     return (None, None)
 
 
-def address_interface(addr):
+def address_interface(addr, ip_version=None):
     """Given an address, returns what interface
     has this interface, or None
     """
 
     # make sure we resolve any address to a specific 
     # IP address before looking up interfaces
-    addr = pscheduler.dns_resolve(addr)
-    if addr == None:
-        addr = pscheduler.dns_resolve(addr, ip_version=6)
+    if ip_version is not None:
+        addr = pscheduler.dns_resolve(addr, ip_version=ip_version)
+    else:
+        addr = pscheduler.dns_resolve(addr)
+        if addr == None:
+            addr = pscheduler.dns_resolve(addr, ip_version=6)
 
     all_interfaces = netifaces.interfaces()
     for intf in all_interfaces:

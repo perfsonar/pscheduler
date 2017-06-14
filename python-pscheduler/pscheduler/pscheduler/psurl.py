@@ -69,7 +69,9 @@ def __raise_urlexception(status, text, request):
     """
     Raise a nicely-formatted exception.
     """
-    mime_type = request.headers["content-type"].split(";")[0]
+    mime_type = None
+    if request is not None:
+        mime_type = request.headers["content-type"].split(";")[0]
     if mime_type is not None and mime_type.startswith("text/plain"):
         message = text.strip()
     else:
@@ -83,14 +85,19 @@ def __formatted_connection_error(ex):
     Format a requests.exceptions.ConnectionError into a nice string
     """
     assert isinstance(ex, requests.exceptions.ConnectionError)
-    fate = "Unspecified connection error occurred" #this should not happen
-    message = ""
-    if len(ex.args) > 0:
-        exargs_tuple = tuple(ex.args[0])
-        fate = exargs_tuple[0]
-        if len(exargs_tuple) > 1 and hasattr(exargs_tuple[1], '__len__') and len(exargs_tuple[1]) > 1:
-            message = exargs_tuple[1][1]
-    return "Error: %s %s." % (fate, message)
+
+    if isinstance(ex, requests.exceptions.SSLError):
+        return "SSL not available."
+
+    try:
+        fate = ex.args[0][0]
+        if fate[-1] == '.':
+            fate = fate[:-1]
+        message = "%s: %s" % (fate, ex.args[0][1].args[1])
+    except (AttributeError, IndexError):
+        message = "Connection error: %s" % (ex)
+
+    return message
 
 
 
@@ -244,7 +251,7 @@ def url_delete( url,          # DELETE URL
 
     with requests.Session() as session:
         _mount_url(session, url, bind)
-
+        request = None
         try:
             request = session.delete(url, verify=verify_keys,
                                      headers=headers, timeout=timeout)
