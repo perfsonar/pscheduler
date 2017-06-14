@@ -31,12 +31,12 @@ result = pscheduler.speccli_build_args(spec,
         ('community', 'community'),
         ('version', 'version'),
         ( 'timeout', 'timeout' ),
-        ( 'ap', 'ap'),
-        ( 'sn', 'sn'),
-        ( 'pp', 'pp'),
-        ( 'ak', 'ak'),
-        ( 'pk', 'pk'),
-        ( 'sl', 'sl'),
+        ( 'auth-protocol', 'auth-protocol'),
+        ( 'security-name', 'security-name'),
+        ( 'priv-protocol', 'priv-protocol'),
+        ( 'auth-key', 'auth-key'),
+        ( 'priv-key', 'priv-key'),
+        ( 'security-level', 'security-level'),
         ( 'context', 'context')
         ])
 
