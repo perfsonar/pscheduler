@@ -33,7 +33,7 @@ REQUEST_SCHEMA = {
             },
             "source-node": {
                 "description": "The address of the source pScheduler node, if different",
-                "$ref": "#/pScheduler/Host"
+                "$ref": "#/pScheduler/URLHostPort"
             },
             "dest": {
                 "description": "The address of the entity receiving packets in this test",
@@ -41,7 +41,7 @@ REQUEST_SCHEMA = {
             },
             "dest-node": {
                 "description": "The address of the destination pScheduler node, if different",
-                "$ref": "#/pScheduler/Host"
+                "$ref": "#/pScheduler/URLHostPort"
             },
             "packet-count": {
                 "description": "The number of packets to send",

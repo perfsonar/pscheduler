@@ -34,7 +34,7 @@ def spec_is_valid(json):
             "queries":     { "$ref": "#/pScheduler/Cardinal" },
             "sendwait":    { "$ref": "#/pScheduler/Duration" },
             "source":      { "$ref": "#/pScheduler/Host" },
-            "source-node": { "$ref": "#/pScheduler/Host" },
+            "source-node": { "$ref": "#/pScheduler/URLHostPort" },
             "wait":        { "$ref": "#/pScheduler/Duration" },
             },
         "required": [

@@ -16,7 +16,7 @@ def spec_is_valid(json):
         "properties": {
             "schema":            { "$ref": "#/pScheduler/Cardinal" },
             "host":              { "$ref": "#/pScheduler/Host" },
-            "host-node":         { "$ref": "#/pScheduler/Host" },
+            "host-node":         { "$ref": "#/pScheduler/URLHostPort" },
             "query":             { "$ref": "#/pScheduler/Host" },
             "record":            { "$ref": "#/local/RecordType" },
             "timeout":           { "$ref": "#/pScheduler/Duration" },

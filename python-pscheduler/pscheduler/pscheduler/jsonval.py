@@ -149,6 +149,12 @@ __dictionary__ = {
         "format": "host-name"
         },
 
+    "HostNamePort": {
+        # Note that this will cover valid IPv4 addresses, too.
+        "type": "string",
+        "pattern": r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])(:[0-9]+)?$'
+    },
+
     "Integer": { "type": "integer" },
 
     "IPAddress": {
@@ -161,6 +167,13 @@ __dictionary__ = {
     "IPv4": { "type": "string", "format": "ipv4" },
 
     "IPv6": { "type": "string", "format": "ipv6" },
+
+    "IPv6RFC2732": {
+        # IPv6 address with optional port, formatted per RFC 2732
+        # Source: https://stackoverflow.com/a/17871737/180674
+        "type": "string",
+        "pattern": r'^\[(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\](:[0-9]+)?$'
+    },
 
     "IPv4CIDR": {
         "type": "string",
@@ -396,6 +409,15 @@ __dictionary__ = {
         },
 
     "URL": { "type": "string", "format": "uri" },
+
+    "URLHostPort": {
+        # Any valid host/port pair as you'd find in a URI per RFC 2396
+        "anyOf": [
+            { "$ref": "#/pScheduler/HostNamePort" },
+            { "$ref": "#/pScheduler/IPv6RFC2732" },
+        ]
+
+    },
 
     "UUID": {
         "type": "string",
