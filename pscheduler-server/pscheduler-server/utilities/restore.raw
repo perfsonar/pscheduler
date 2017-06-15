@@ -1,0 +1,218 @@
+#!/bin/sh -e
+#
+# Restore pScheduler from a file
+#
+# Usage:  restore FILE
+#
+
+
+WORK_DIR="__TMPDIR__.$$"
+
+[ -t 0 -a -t 1 ] && INTERACTIVE=true || INTERACTIVE=false
+
+
+if [ "$1" = "--help" ]
+then
+    echo Usage: $(basename $0) FILE
+    exit 0
+fi
+
+
+#
+# Sanity Check
+#
+
+if [ $(id -u) -ne 0 ]
+then
+    echo "This must be done as root." 1>&2
+    exit 1
+fi
+
+if [ "$#" -ne 1 -o ! -f "$1" ]
+then
+    echo "Usage: $(basename $0) BACKUP-FILE" 1>&2
+    exit 1
+fi
+
+FILE="$1"
+
+
+#
+# Give interactive users some warning
+#
+
+if $INTERACTIVE
+then
+    cat <<EOF
+
+WARNING
+
+You are about to obliterate the contents of the pScheduler
+configuration and database on this host.  Please confirm this by
+typing today's date in YYYY-MM-DD format at the prompt below.
+
+EOF
+    printf "Confirm (YYYY-MM-DD): "
+    read DATE
+    if [ "${DATE}" != "$(date +%F)" ]
+    then
+	printf "\nDate does not match today's date.  Doing nothing.\n\n"
+	exit 1
+    fi
+
+    echo
+fi
+
+
+
+#
+# Restore the backup
+#
+
+ERROR=false
+
+cleanup()
+{
+    rm -rf "${WORK_DIR}"
+
+    if ${ERROR}
+    then
+	echo
+	echo "WARNING:  Because of errors," \
+	    "pScheduler may be in an inoperable state." 1>&2
+    fi
+	
+}
+trap cleanup EXIT
+
+rm -rf "${WORK_DIR}"
+mkdir -p "${WORK_DIR}"
+
+
+$INTERACTIVE && printf 'Restoring pScheduler from backup:\n' 1>&2 || true
+
+$INTERACTIVE && printf '  Unpacking backup...' 1>&2 || true
+zcat "${FILE}" \
+    | (cd "${WORK_DIR}" && tar xf -)
+$INTERACTIVE && printf ' Done.\n' 1>&2 || true
+
+
+for FILE in package-version config-dir.tar database-dump
+do
+    if [ ! -f "${WORK_DIR}/${FILE}" ]
+    then
+	echo "ERROR: Backup file is missing data." 1>&2
+	exit 1
+    fi
+done
+
+# Make sure the local version of pscheduler-server is >= what's in the
+# backup.  We can't restore from future versions because what the
+# database is set up for may not match what the server expects.
+
+BACKUP_VERSION=$(cat "${WORK_DIR}/package-version")
+INSTALLED_VERSION="__VERSION__"
+
+
+# PORT: This requires GNU sort for its -V switch
+LESSER_VERSION=$( \
+    printf "%s\n%s\n" "${BACKUP_VERSION}" "${INSTALLED_VERSION}" \
+    | sort -V \
+    | head -1 \
+    )
+
+if [ \
+    "${BACKUP_VERSION}" != "${INSTALLED_VERSION}" \
+    -a "${LESSER_VERSION}" != "${BACKUP_VERSION}" \
+    ]
+then
+    cat 1>&2 <<EOF
+
+This system has a version of the pScheduler server package that is
+older than the one used to make this backup.  To restore it, please
+upgrade to at least version ${BACKUP_VERSION}.
+
+EOF
+    exit 1
+fi
+
+
+# Any error beyond this point could leave the system in an unstable
+# state.
+ERROR=true
+
+#
+# Configuration
+#
+
+CONFIG_DIR="__CONFIGDIR__"
+$INTERACTIVE && printf '  Restoring configuration...' 1>&2 || true
+mv "${CONFIG_DIR}" "${WORK_DIR}/old-config"
+mkdir -p "${CONFIG_DIR}"
+(cd "${CONFIG_DIR}" && tar xpf "${WORK_DIR}/config-dir.tar")
+$INTERACTIVE && printf ' Done.\n' 1>&2 || true
+
+
+#
+# Database
+#
+
+DATABASE="__PGDATABASE__"
+DATABASE_SAVE="${DATABASE}_save"
+$INTERACTIVE && printf '  Restoring database...' 1>&2 || true
+SQL_WORK="${WORK_DIR}/restore.sql"
+cat >> "${SQL_WORK}" <<EOF
+DO \$\$
+BEGIN
+
+    -- Disconnect all users of either database
+    PERFORM pg_terminate_backend(pg_stat_activity.pid)
+    FROM pg_stat_activity
+    WHERE
+        pg_stat_activity.datname IN ('${DATABASE}', '${DATABASE_SAVE}')
+        AND pid <> pg_backend_pid()     -- Not this connection
+        ;
+
+END;
+\$\$ LANGUAGE plpgsql;
+
+-- Remove the saved database if it exists
+DROP DATABASE IF EXISTS ${DATABASE_SAVE};
+
+-- Hold what's current as saved
+DO \$\$
+BEGIN
+    IF EXISTS (SELECT * FROM pg_catalog.pg_database
+               WHERE datname = '${DATABASE}')
+    THEN
+        ALTER DATABASE ${DATABASE} RENAME TO ${DATABASE_SAVE};
+    END IF;
+END;
+\$\$ LANGUAGE plpgsql;
+
+-- Remove the saved database if there was one.
+DROP DATABASE IF EXISTS ${DATABASE_SAVE};
+
+EOF
+
+cat "${WORK_DIR}/database-dump" >> "${SQL_WORK}"
+
+DB_OUTPUT="${WORK_DIR}/db-output"
+postgresql-load "${SQL_WORK}" > "${DB_OUTPUT}" 2>&1
+if [ $? -ne 0 ]
+then
+    printf "\n\nDatabase restore failed:\n"
+    cat "${DB_OUTPUT}"
+    exit 1
+fi
+$INTERACTIVE && printf ' Done.\n' 1>&2 || true
+
+$INTERACTIVE && printf '  Updating database...' 1>&2 || true
+# The redirect makes this run quietly.
+pscheduler internal db-update < /dev/null
+$INTERACTIVE && printf ' Done.\n' 1>&2 || true
+
+# If we got here, all was good.
+ERROR=false
+
+exit 0
