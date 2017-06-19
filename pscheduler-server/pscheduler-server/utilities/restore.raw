@@ -6,7 +6,7 @@
 #
 
 
-WORK_DIR="__TMPDIR__.$$"
+WORK_DIR="__TMPDIR__/$(basename $0).$$"
 
 [ -t 0 -a -t 1 ] && INTERACTIVE=true || INTERACTIVE=false
 

@@ -4,7 +4,7 @@
 #
 
 
-WORK_DIR="__TMPDIR__.$$"
+WORK_DIR="__TMPDIR__/$(basename $0).$$"
 
 
 if [ "$1" = "--help" ]
