@@ -42,6 +42,7 @@ false
 %build
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
+     CONFDIR=$RPM_BUILD_ROOT/%{_pscheduler_tool_confdir}\
      install
 
 %post
@@ -54,4 +55,5 @@ pscheduler internal warmboot
 
 %files
 %defattr(-,root,root,-)
+%config(noreplace) %{_pscheduler_tool_confdir}/*
 %{dest}

@@ -35,15 +35,32 @@ need_root = False
 
 argv = []
 
-# IP Version
 
-try:
-    ipversion = spec['ip-version']
-except KeyError:
-    (ipversion, ip) = pscheduler.ip_addr_version(spec['dest'])
+#
+# Get address related parameters
+#
+## Source
+source = spec.get('source', None)
+## Destination (required)
+dest = spec.get('dest', None)
+if dest is None:
+    pscheduler.fail("Dest is a required parameter")
+## IP Version
+ipversion = spec.get('ip-version', None)
+#Lookup ip address so ping does not have to and determine ip version
+source_ip = None
+if source is not None:
+    (source_ip, dest_ip) = pscheduler.ip_normalize_version(source, dest, ip_version=ipversion)
+    (ipversion, dest_ip) = pscheduler.ip_addr_version(dest_ip)
+elif ipversion is None:
+    (ipversion, dest_ip) = pscheduler.ip_addr_version(dest)
+else:
+    dest_ip_map = pscheduler.dns_bulk_resolve([dest], ip_version=ipversion)
+    dest_ip = dest_ip_map[dest]
 
-if ipversion is not None:
-    program = 'ping6' if ipversion == 6 else 'ping'
+#Determine ping program
+if (ipversion is not None) and (ipversion == 6):
+    program = 'ping6'
 else:
     program = 'ping'
 argv.append(program)
@@ -94,23 +111,10 @@ run_timeout += ( count * interval )
 
 
 # Interface/Source Address
+if source_ip is not None:
+    argv.append('-I')
+    argv.append(source_ip)
 
-# TODO: This needs to be forward-resolved like dest.  Should do both
-# in parallel.
-
-try:
-    (source_ipversion, source_ip) = pscheduler.ip_addr_version(spec['source'])
-    if source_ipversion is not None:
-        argv.append('-I')
-        argv.append(source_ip)
-    else:
-        pscheduler.succeed_json({
-            'succeeded': False,
-            'diags': '',
-            'error': 'Unable to resolve %s into an IP' % spec['source']
-            })
-except KeyError:
-    pass  # Don't care.
 
 
 # TODO: Add preload to the spec?  This will require adjustments to the
@@ -182,29 +186,7 @@ argv.append(str(timeout))
 
 
 # Destination (must be last since it's an argument, not a switch)).
-# If it doesn't look like an IP, resolve it down to one so ping
-# doesn't get bogged down doing it.
-
-dest = spec['dest']
-
-try:
-    dest_ip_addr = ipaddr.IPAddress(dest)
-except ValueError:
-    dest_ip_addr = None
-
-if dest_ip_addr is None:
-    dest_ip_map = pscheduler.dns_bulk_resolve([dest])
-    dest_ip_addr = dest_ip_map[dest]
-
-if dest_ip_addr is None:
-    pscheduler.succeed_json( {
-            'succeeded': False,
-            'diags': None,
-            'error': "Unable to resolve destination '%s'" % dest,
-            'result': None
-            } )
-
-argv.append(str(dest_ip_addr))
+argv.append(str(dest_ip))
 
 
 

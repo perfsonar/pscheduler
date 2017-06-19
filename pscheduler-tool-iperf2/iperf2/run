@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Run an iperf test
+# Run an iperf2 test
 #
 
 import datetime
@@ -11,17 +11,18 @@ import re
 import shutil
 import sys
 import time
-import iperf_parser
+import iperf2_parser
 import traceback
 import ipaddr
-from iperf_defaults import *
+import iperf2_utils
+from iperf2_defaults import *
 
 # track when this run starts
 start_time = datetime.datetime.now()
 
-logger = pscheduler.Log(prefix='tool-iperf', quiet=True)
+logger = pscheduler.Log(prefix='tool-iperf2', quiet=True)
 
-logger.debug("starting iperf tool")
+logger.debug("starting iperf2 tool")
 
 # parse JSON input
 input = pscheduler.json_load(exit_on_error=True)
@@ -43,13 +44,25 @@ if len(participant_data) != 2:
     pscheduler.fail("iperf2 requires exactly 2 participants, got %s" % (len(participant_data)))
 
 
+config = iperf2_utils.get_config()
+
+# look up our local iperf2 command path
+iperf2_cmd  = config["iperf2_cmd"]
+
+# grab the server port from the test spec if there, otherwise use default
+server_port = participant_data[1].get('server_port', DEFAULT_SERVER_PORT)
+
+
 def run_client():    
 
     logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
 
     time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
 
-    iperf_args = ['/usr/bin/iperf']
+    iperf2_args = [ iperf2_cmd ]
+
+    iperf2_args.append('-p')
+    iperf2_args.append(server_port)
 
     # who to connect to
     destination = test_spec['dest']
@@ -60,7 +73,7 @@ def run_client():
     except ValueError:
         is_ip_address = False
     
-    # iperf has no inherent ability to force v4 or v6, so we do it here but
+    # iperf2 has no inherent ability to force v4 or v6, so we do it here but
     # don't bother doing lookups on just a straight IP address, seems like
     # a silly combination of flags but whatever
     if test_spec.has_key('ip-version') and test_spec['ip-version'] != None:     
@@ -86,8 +99,8 @@ def run_client():
 
 
 
-    iperf_args.append('-c')
-    iperf_args.append(destination)
+    iperf2_args.append('-c')
+    iperf2_args.append(destination)
 
     # duration
     test_duration = test_spec.get('duration')
@@ -97,33 +110,33 @@ def run_client():
     else:
         test_duration = DEFAULT_DURATION
 
-    iperf_args.append('-t')
-    iperf_args.append(test_duration)
+    iperf2_args.append('-t')
+    iperf2_args.append(test_duration)
 
     # always show mss because why not
-    iperf_args.append('-m')
+    iperf2_args.append('-m')
 
     if test_spec.has_key('interval') and test_spec['interval'] != None:
-        iperf_args.append('-i')
+        iperf2_args.append('-i')
         delta = pscheduler.iso8601_as_timedelta(test_spec['interval'])
-        iperf_args.append(int(pscheduler.timedelta_as_seconds(delta)))
+        iperf2_args.append(int(pscheduler.timedelta_as_seconds(delta)))
 
     if test_spec.has_key('parallel') and test_spec['parallel'] != None:
-        iperf_args.append('-P')
-        iperf_args.append(test_spec['parallel'])
+        iperf2_args.append('-P')
+        iperf2_args.append(test_spec['parallel'])
 
     if test_spec.has_key('window-size') and test_spec['window-size'] != None:
-        iperf_args.append('-w')
-        iperf_args.append(test_spec['window-size'])
+        iperf2_args.append('-w')
+        iperf2_args.append(test_spec['window-size'])
 
     if test_spec.has_key('mss') and test_spec['mss'] != None:
-        iperf_args.append('-M')
-        iperf_args.append(test_spec['mss'])
+        iperf2_args.append('-M')
+        iperf2_args.append(test_spec['mss'])
 
     if test_spec.has_key('bandwidth') and test_spec['bandwidth'] != None:
-        iperf_args.append('-u') # iperf only support UDP bandwidth throttling, this is checked for earlier too
-        iperf_args.append('-b')
-        iperf_args.append(test_spec['bandwidth'])
+        iperf2_args.append('-u') # iperf only support UDP bandwidth throttling, this is checked for earlier too
+        iperf2_args.append('-b')
+        iperf2_args.append(test_spec['bandwidth'])
     else:
         # Find the largest bandwidth in passed limits and use that
 
@@ -144,45 +157,45 @@ def run_client():
 
         if max_bandwidth > -1:
             logger.debug("Limiting bandwidth to %d", max_bandwidth)
-            iperf_args.append('-b')
-            iperf_args.append(max_bandwidth)
+            iperf2_args.append('-b')
+            iperf2_args.append(max_bandwidth)
 
     if test_spec.has_key('buffer-length') and test_spec['buffer-length'] != None:
-        iperf_args.append('-l')
-        iperf_args.append(test_spec['buffer-length'])
+        iperf2_args.append('-l')
+        iperf2_args.append(test_spec['buffer-length'])
 
     if test_spec.has_key('local-address') and test_spec['local-address'] != None:
-        iperf_args.append('-B')
-        iperf_args.append(test_spec['local-address'])
+        iperf2_args.append('-B')
+        iperf2_args.append(test_spec['local-address'])
 
     if test_spec.has_key('congestion') and test_spec['congestion'] != None:
-        iperf_args.append('-Z')
-        iperf_args.append(test_spec['congestion'])
+        iperf2_args.append('-Z')
+        iperf2_args.append(test_spec['congestion'])
 
     
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string
-    iperf_args = map(lambda x: str(x), iperf_args)
+    iperf2_args = map(lambda x: str(x), iperf2_args)
 
-    command_line = " ".join(iperf_args)
+    command_line = " ".join(iperf2_args)
     logger.debug("Running command: %s" % command_line)      
 
     try:
-        status, stdout, stderr = pscheduler.run_program(iperf_args)
+        status, stdout, stderr = pscheduler.run_program(iperf2_args)
     except Exception as e:
         pscheduler.succeed_json({"succeeded": False,
-                                 "error": "The iperf command failed during execution. See server logs for more details."
+                                 "error": "The iperf2 command failed during execution. See server logs for more details."
                                  })
     
     #see if command completed successfully
-    logger.debug("iperf returned status %d" % status)
+    logger.debug("iperf2 returned status %d" % status)
 
-    # For whatever reason, iperf doesn't always exit with the right code
+    # For whatever reason, iperf2 doesn't always exit with the right code
     # in the event of failures so we can also look to see if anything
     # showed up in stderr
     if status or stderr:
         pscheduler.succeed_json({"succeeded": False,
-                                 "error": "iperf returned an error: %s" % stderr
+                                 "error": "iperf2 returned an error: %s" % stderr
                                  })
 
     logger.debug("Stdout = %s" % stdout)
@@ -192,7 +205,7 @@ def run_client():
 
     logger.debug("Lines are %s " % lines)
 
-    results = iperf_parser.parse_output(lines)
+    results = iperf2_parser.parse_output(lines)
     results['diags'] = "%s\n\n%s" % (command_line, stdout)
 
     return results
@@ -200,26 +213,33 @@ def run_client():
 def run_server():
 
     #init command
-    iperf_args = ['/usr/bin/iperf', '-s' ]
-    
-    logger.debug("Running command: %s" % " ".join(iperf_args))
+    iperf2_args = [ iperf2_cmd, '-s' ]
+
+    iperf2_args.append('-p')
+    iperf2_args.append(server_port)
+
+    # join and run_program want these all to be string types, so
+    # just to be safe cast everything in the list to a string
+    iperf2_args = map(lambda x: str(x), iperf2_args)
+
+    logger.debug("Running command: %s" % " ".join(iperf2_args))
 
     try:
-        status, stdout, stderr = pscheduler.run_program(iperf_args,
+        status, stdout, stderr = pscheduler.run_program(iperf2_args,
                                                         timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)),
                                                         timeout_ok = True)
     except Exception as e:
-        logger.error("iperf failed to complete execution: %s" % e);
+        logger.error("iperf2 failed to complete execution: %s" % e);
         pscheduler.succeed_json({"succeeded": False,
-                                 "error": "The iperf command failed during execution. See server logs for more details."
+                                 "error": "The iperf2 command failed during execution. See server logs for more details."
                                  })
 
-    # For whatever reason, iperf doesn't always exit with the right code
+    # For whatever reason, iperf2 doesn't always exit with the right code
     # in the event of failures so we can also look to see if anything
     # showed up in stderr
     if status or stderr:
         pscheduler.succeed_json({"succeeded": False,
-                                 "error": "iperf returned an error: %s" % stderr
+                                 "error": "iperf2 returned an error: %s" % stderr
                                  })
     
     #log stdout in debug mode
@@ -230,7 +250,7 @@ def run_server():
 
 
 
-#determine whether we are the client or server mode for iperf
+#determine whether we are the client or server mode for iperf2
 results = {}
 try:
     if participant == 0:

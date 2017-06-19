@@ -91,7 +91,8 @@ AS
             greatest(normalized_now(), task.start) AS trynext,
 	    task.participant,
             test.scheduling_class,
-	    task.json
+	    task.json,
+	    task.participants
         FROM
             task
             JOIN test ON test.id = task.test
@@ -116,7 +117,8 @@ AS
             greatest(task.start, normalized_now()) AS trynext,
             task.participant,
             test.scheduling_class,
-	    task.json
+	    task.json,
+	    task.participants
         FROM
             task
             JOIN test on test.id = task.test
@@ -143,7 +145,8 @@ AS
                          repeat) AS trynext,
             task.participant,
             (SELECT scheduling_class FROM test WHERE test.id = task.test) AS scheduling_class,
-	    task.json
+	    task.json,
+	    task.participants
        FROM
             task
             JOIN run_latest ON run_latest.task = task.id
@@ -157,7 +160,8 @@ AS
 	uuid,
 	runs,
         trynext,
-	json
+	json,
+	participants
     FROM
         interim, 
         configurables

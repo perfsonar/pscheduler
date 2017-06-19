@@ -293,7 +293,7 @@ else:
             file = open(options.importfile)
         except IOError as ex:
             pscheduler.fail("Unable to open task %s" % (str(ex)))
-    task = pscheduler.json_load(file, exit_on_error=True)
+    task = pscheduler.json_load(file, exit_on_error=True, max_schema=1)
 
     # Validate the JSON against a TaskSpecification
     # TODO: Figure out how to do this without the intermediate object
@@ -412,7 +412,7 @@ if options.archive:
     for archive in options.archive:
         try:
             archive_text = pscheduler.string_from_file(archive)
-            archive_json = pscheduler.json_load(archive_text)
+            archive_json = pscheduler.json_load(archive_text, max_schema=1)
             # TODO:  Do we need to validate the JSON or will the server catch it?
             archives.append(archive_json)
         except (IOError, ValueError) as ex:
@@ -430,7 +430,7 @@ if not pscheduler.api_has_pscheduler(assist, bind=bind):
 # Convert the remaining arguments to a test spec.
 #
 
-spec_url = pscheduler.api_url(host=assist,
+spec_url = pscheduler.api_url_hostport(assist,
                               path='/tests/' + test_type + '/spec')
 log.debug("Converting to spec via %s", spec_url)
 status, raw_spec = pscheduler.url_get(
@@ -513,7 +513,8 @@ null_reason = None
 
 # Get participants
 
-url = pscheduler.api_url(assist, '/tests/%s/participants' % task['test']['type'])
+url = pscheduler.api_url_hostport(
+    assist, '/tests/%s/participants' % task['test']['type'])
 log.debug("Fetching participant list")
 
 spec_text = pscheduler.json_dump(task['test']['spec'])

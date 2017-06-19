@@ -50,7 +50,7 @@ class LimitTest():
         if returncode != 0:
             raise RuntimeError("Failed to validate limit: %s" % stderr)
 
-        result = pscheduler.json_load(stdout)
+        result = pscheduler.json_load(stdout, max_schema=1)
         if not result['valid']:
             raise ValueError("Invalid limit: %s" % result['message'])
 
@@ -82,7 +82,7 @@ class LimitTest():
         if returncode != 0:
             raise RuntimeError("Failed to validate limit: %s" % stderr)
 
-        check_result = pscheduler.json_load(stdout)
+        check_result = pscheduler.json_load(stdout, max_schema=1)
         passed = check_result["passes"]
 
         result = {

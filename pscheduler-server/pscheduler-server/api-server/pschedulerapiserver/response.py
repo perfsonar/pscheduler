@@ -13,9 +13,12 @@ from .log import log
 
 
 # TODO: Duplicative, but easier than the cross-module imports. :-@
-def response_json_dump(dump):
-    sanitized = pscheduler.json_decomment(dump, prefix="_", null=True)
-    return pscheduler.json_dump(sanitized, pretty=arg_boolean('pretty'))
+def response_json_dump(dump, sanitize=True):
+    if sanitize:
+        sanitized = pscheduler.json_decomment(dump, prefix="_", null=True)
+        return pscheduler.json_dump(sanitized, pretty=arg_boolean('pretty'))
+    else:
+        return pscheduler.json_dump(dump, pretty=arg_boolean('pretty'))
 
 # Responses
 
@@ -31,8 +34,8 @@ def ok(message="OK", mimetype=None):
                     status=200,
                     mimetype=mimetype)
 
-def ok_json(data=None):
-    text = response_json_dump(data)
+def ok_json(data=None, sanitize=True):
+    text = response_json_dump(data, sanitize=sanitize)
     log.debug("Response 200+JSON: %s", text)
     return Response(text + '\n',
                     mimetype='application/json')

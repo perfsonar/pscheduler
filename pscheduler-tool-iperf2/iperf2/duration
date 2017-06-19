@@ -7,7 +7,7 @@ import sys
 
 import pscheduler
 
-from iperf_defaults import *
+from iperf2_defaults import *
 
 json = pscheduler.json_load(exit_on_error=True)
 
