@@ -406,18 +406,19 @@ def tasks():
 
             except TaskPostingException as ex:
 
-                for url in tasks_posted:
-                    # TODO: Handle failure?
-                    status, result = pscheduler.url_delete(url,
-                                                           throw=False, 
-                                                           timeout=5,
-                                                           bind=lead_bind)
+                # Disable the task locally and let it get rid of the
+                # other participants.
 
-                    try:
-                        dbcursor_query("SELECT api_task_delete(%s)",
-                                       [task_uuid])
-                    except Exception as ex:
-                        log.exception()
+                posted_to = "%s/%s" % (request.url, task_uuid)
+                parsed = list(urlparse.urlsplit(posted_to))
+                parsed[1] = "%s"
+                template = urlparse.urlunsplit(parsed)
+
+                try:
+                    dbcursor_query("SELECT api_task_disable(%s, %s)",
+                                   [task_uuid, template])
+                except Exception:
+                    log.exception()
 
                 return error("Error while tasking %s: %s" % (part_name, ex))
 
