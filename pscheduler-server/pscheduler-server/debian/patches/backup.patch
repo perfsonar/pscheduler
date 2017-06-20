@@ -1,0 +1,21 @@
+--- a/utilities/backup.raw
++++ b/utilities/backup.raw
+@@ -69,6 +69,7 @@
+     --format plain \
+     --serializable-deferrable \
+     --user pscheduler \
++    --host localhost \
+     pscheduler \
+     > "${WORK_DIR}/database-dump"
+ $INTERACTIVE && printf ' Done.\n' 1>&2 || true
+--- a/utilities/restore.raw
++++ b/utilities/restore.raw
+@@ -198,7 +198,7 @@
+ cat "${WORK_DIR}/database-dump" >> "${SQL_WORK}"
+ 
+ DB_OUTPUT="${WORK_DIR}/db-output"
+-postgresql-load "${SQL_WORK}" > "${DB_OUTPUT}" 2>&1
++su -l -c psql postgres < "${SQL_WORK}" > "${DB_OUTPUT}" 2>&1
+ if [ $? -ne 0 ]
+ then
+     printf "\n\nDatabase restore failed:\n"
