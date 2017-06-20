@@ -106,4 +106,5 @@ override_dh_installinit:
 override_dh_auto_clean:
 	make -C api-server clean
 	make -C daemons clean
+	make -C utilities clean
 	make -C database clean
