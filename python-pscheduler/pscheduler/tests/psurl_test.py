@@ -1,0 +1,68 @@
+"""
+test for the psurl module.
+"""
+
+import unittest
+
+from base_test import PschedTestBase
+
+from pscheduler.psurl import *
+
+class TestPsurl(PschedTestBase):
+    """
+    URL tests.
+    """
+
+    def test_url_get(self):
+        """IP addr tests"""
+
+        # Missing scheme
+
+        no_scheme = "no-scheme"
+
+        (status, _) = url_get(no_scheme, json=False, throw=False)
+        self.assertEqual(status, 400)
+
+        with self.assertRaises(pscheduler.URLException):
+            url_get(no_scheme, json=False, throw=True)
+
+
+        # Bad IPv6 address
+
+        bad6 = "http://dead:beef::1bad:cafe/"
+
+        (status, _) = url_get(bad6, json=False, throw=False)
+        self.assertEqual(status, 400)
+
+        with self.assertRaises(pscheduler.URLException):
+            url_get(bad6, json=False, throw=True)
+
+
+        # This address is in the blocks reserved for RFC6666 discards.
+        discard = "https://[0100::0010]/"
+
+        self.assertEqual(
+            url_get(discard, json=False, throw=False),
+            (400, 'Connection aborted: Network is unreachable'))
+        with self.assertRaises(pscheduler.URLException):
+            url_get(discard, json=False, throw=True)
+
+
+
+
+
+    def test_url_put(self):
+        # TODO: Would need a web server to test this
+        pass
+
+    def test_url_post(self):
+        # TODO: Would need a web server to test this
+        pass
+
+    def test_url_delete(self):
+        # TODO: Would need a web server to test this
+        pass
+
+
+if __name__ == '__main__':
+    unittest.main()

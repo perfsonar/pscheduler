@@ -4,6 +4,7 @@ Functions for running external programs neatly
 
 import atexit
 import copy
+import errno
 import os
 import pscheduler
 import select
@@ -163,8 +164,8 @@ def run_program(argv,              # Program name and args
                 timeout_ok=False,  # Treat timeouts as not being an error
                 fail_message=None, # Exit with this failure message
                 env=None,          # Environment for new process, None=existing
-                env_add=None       # Add hash to existing environment
-                ):
+                env_add=None,      # Add hash to existing environment
+                attempts=10):      # Max attempts to start the process
     """
     Run a program and return the results.
 
@@ -209,12 +210,28 @@ def run_program(argv,              # Program name and args
         new_env.update(env_add)
 
 
+    def __get_process(argv, new_env, attempts):
+        """Try to start a process, handling EAGAINs."""
+        while attempts > 0:
+            attempts -= 1
+            try:
+                return _Popen(argv,
+                              stdin=subprocess32.PIPE,
+                              stdout=subprocess32.PIPE,
+                              stderr=subprocess32.PIPE,
+                              env=new_env)
+            except OSError as ex:
+                # Non-EAGAIN or last attempt gets re-raised.
+                if ex.errno != errno.EAGAIN or attempts == 0:
+                    raise ex
+                # TODO: Should we sleep a bit here?
+
+
+        assert False, "This code should not be reached."
+
+
     try:
-        process = _Popen(argv,
-                         stdin=subprocess32.PIPE,
-                         stdout=subprocess32.PIPE,
-                         stderr=subprocess32.PIPE,
-                         env=new_env)
+        process = __get_process(argv, new_env, attempts)
 
         __running_add(process)
 

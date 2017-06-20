@@ -3,7 +3,6 @@ Identifier Class for localif
 """
 
 import ipaddr
-import pscheduler
 import netifaces
 
 def data_is_valid(data):

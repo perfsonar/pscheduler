@@ -22,7 +22,12 @@ Source0:	%{short}-%{version}.tar.gz
 Requires:	python-dateutil
 Requires:	python-dns
 Requires:	python-isodate
+%if 0%{?el6}
 Requires:	python-jsonschema
+%endif
+%if 0%{?el7}
+Requires:	python2-jsonschema
+%endif
 Requires:	python-netaddr
 Requires:	python-netifaces
 Requires:	python-ntplib
@@ -35,6 +40,7 @@ Requires:	pytz
 Requires:	rsyslog
 Requires:	logrotate
 
+BuildRequires:	pscheduler-rpm
 BuildRequires:	python-coverage
 BuildRequires:	python-nose
 BuildRequires:	python-setuptools

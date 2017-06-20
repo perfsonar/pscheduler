@@ -18,7 +18,7 @@ def spec_is_valid(json):
             "interval":          { "$ref": "#/pScheduler/Duration" },
             "ip-version":        { "$ref": "#/pScheduler/ip-version" },
             "source":            { "$ref": "#/pScheduler/Host" },
-            "source-node":       { "$ref": "#/pScheduler/Host" },
+            "source-node":       { "$ref": "#/pScheduler/URLHostPort" },
             "suppress-loopback": { "$ref": "#/pScheduler/Boolean" },
             "ip-tos":            { "$ref": "#/pScheduler/IPTOS" },
             "length":            { "$ref": "#/pScheduler/Cardinal" },

@@ -9,17 +9,26 @@ FILES=\
 	duration \
 	enumerate \
 	merged-results \
-	powstream_defaults.py\
-	powstream_utils.py\
 	participant-data \
 	run \
+
+MODULES=\
+	powstream_defaults \
+	powstream_utils \
+
+PYS=$(MODULES:%=%.py)
+PYCS=$(MODULES:%=%.pyc)
+
+$(PYCS):
+	python -m compileall .
+TO_CLEAN += $(PYCS)
 
 
 CONFS=\
 	$(NAME).conf
 
 
-install: $(FILES) $(CONFS)
+install: $(FILES) $(CONFS) $(PYS) $(PYCS)
 ifndef DESTDIR
 	@echo No DESTDIR specified for installation
 	@false
@@ -32,6 +41,7 @@ endif
 endif
 	mkdir -p $(DESTDIR)
 	install -m 555 $(FILES) $(DESTDIR)
+	install -m 444 $(PYS) $(PYCS) $(DESTDIR)
 ifdef CONFS
 	mkdir -p $(CONFDIR)
 	install -m 644 $(CONFS) $(CONFDIR)

@@ -22,7 +22,7 @@ MODULES=\
 	validate \
 
 
-FILES += $(MODULES:%=%.py)
+PYS=$(MODULES:%=%.py)
 PYCS=$(MODULES:%=%.pyc)
 
 $(PYCS):
@@ -30,13 +30,14 @@ $(PYCS):
 TO_CLEAN += $(PYCS)
 
 
-install: $(FILES) $(PYCS)
+install: $(FILES) $(PYS) $(PYCS)
 ifndef DESTDIR
 	@echo No DESTDIR specified for installation
 	@false
 endif
 	mkdir -p $(DESTDIR)
-	install -m 555 $(FILES) $(PYCS) $(DESTDIR)
+	install -m 555 $(FILES) $(DESTDIR)
+	install -m 444 $(PYS) $(PYCS) $(DESTDIR)
 
 
 clean:

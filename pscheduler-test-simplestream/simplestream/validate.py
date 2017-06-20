@@ -12,9 +12,9 @@ def spec_is_valid(json):
             "dawdle":         { "$ref": "#/pScheduler/Duration" },
             "fail":           { "$ref": "#/pScheduler/Probability" },
             "dest":           { "$ref": "#/pScheduler/Host" },
-            "dest-node":      { "$ref": "#/pScheduler/Host" },
+            "dest-node":      { "$ref": "#/pScheduler/URLHostPort" },
             "source":         { "$ref": "#/pScheduler/Host" },
-            "source-node":    { "$ref": "#/pScheduler/Host" },
+            "source-node":    { "$ref": "#/pScheduler/URLHostPort" },
             "test-material":  { "$ref": "#/pScheduler/String" },
             "timeout":        { "$ref": "#/pScheduler/Duration" },
             },
@@ -51,7 +51,7 @@ def limit_is_valid(json):
     schema = {
         "type": "object",
         "properties": {
-            "schema": { "$ref": "#/pScheduler/Cardinal" },
+        "schema": { "$ref": "#/pScheduler/Cardinal" },
             "dawdle":        { "$ref": "#/pScheduler/Limit/Duration" },
             "fail":          { "$ref": "#/pScheduler/Limit/Probability" },
             "dest":          { "$ref": "#/pScheduler/Limit/String" },

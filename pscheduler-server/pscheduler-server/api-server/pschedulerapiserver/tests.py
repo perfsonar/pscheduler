@@ -60,7 +60,7 @@ def tests_name_spec(name):
 
     # The extra parse here makes 'pretty' work.
     returned_json = pscheduler.json_load(stdout)
-    return ok_json(returned_json)
+    return ok_json(returned_json, sanitize=False)
 
 
 
@@ -134,4 +134,4 @@ def tests_name_participants(name):
 
     # If this fails because of bad JSON, an exception will be thrown,
     # caught and logged.
-    return json_response(pscheduler.json_load(stdout))
+    return json_response(pscheduler.json_load(stdout, max_schema=1))

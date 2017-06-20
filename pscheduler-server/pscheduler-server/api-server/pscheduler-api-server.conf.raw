@@ -21,5 +21,9 @@ WSGIRestrictEmbedded On
 
 </Directory>
 
+<Location __API_ROOT__>
+    ServerSignature Off
+</Location>
+
 # Not something we need.
 KeepAlive Off

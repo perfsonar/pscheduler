@@ -217,9 +217,13 @@ class EsmondClient:
             json=True,
             verify_keys=self.verify_ssl,
             bind=self.bind,
+            allow_redirects=False,
             timeout=HTTP_TIMEOUT)
-
-        if status_code not in [200, 201]:
+        
+        if status_code == 301:
+            #redirects
+            return False, "Server is attempting to redirect archive URL %s. If redirecting to https, please change archive URL to https instead of relying on redirection." % post_url
+        elif status_code not in [200, 201]:
             try:
                 result_json = pscheduler.json_load(result)
             except:
@@ -248,11 +252,15 @@ class EsmondClient:
             throw=False,
             verify_keys=self.verify_ssl,
             bind=self.bind,
+            allow_redirects=False,
             timeout=HTTP_TIMEOUT)
 
         if status_code == 409:
             #duplicate data
             log.debug("Attempted to add duplicate data point. Skipping")
+        elif status_code == 301:
+            #redirects
+            return False, "Server is attempting to redirect archive URL %s. If redirecting to https, please change archive URL to https instead of relying on redirection." % put_url
         elif status_code not in [200, 201]:
             try:
                 result_json = pscheduler.json_load(result)

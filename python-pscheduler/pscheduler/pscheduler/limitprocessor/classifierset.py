@@ -70,9 +70,6 @@ class ClassifierSet():
 
 if __name__ == "__main__":
 
-    iset = IdentifierSet(
-        )
-
     cset = ClassifierSet([
         {
             "name": "neither",

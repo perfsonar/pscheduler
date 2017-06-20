@@ -72,10 +72,10 @@ def time_check(arg):
     
 
 # TODO: Resolve the hostnames into IPs to remove any time spent
-# resolving them from the measurement.
+# resolving them from the measurement.  Take host:port into account.
 
 hosts = [
-    pscheduler.api_url(host=host, path="/clock")
+    pscheduler.api_url_hostport(host, path="/clock")
     for host in [ source, dest ]
     ]
 
