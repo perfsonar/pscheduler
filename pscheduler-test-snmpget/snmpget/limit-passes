@@ -36,23 +36,27 @@ errors = []
 
 
 #
-# Query, record, nameserver, host, host-node
+# Query host, host-node, oid, dest, community
 #
+
 for value in [ "host", "host-node", "oid", "dest", "community" ]:
     try:
-	match = pscheduler.StringMatcher(limit[value]["match"])
-	try:
-	    invert = limit[value]["invert"]
-	except KeyError:
-	    invert = False
-	in_limit = match.matches(spec[value])
-	if in_limit or (invert and in_limit):
-	    try:
-		errors.append(limit[value]["fail-message"])
-	    except KeyError:
-		errors.append("%s does not match limit" % (value.capitalize()))
+        test = limit[value]
+        match = pscheduler.StringMatcher(test["match"])
     except KeyError:
-	pass  # Don't care if not there.
+        continue
+    try:
+        invert = test["invert"]
+    except KeyError:
+        invert = False
+    in_limit = match.matches(spec[value])
+    if in_limit or (invert and in_limit):
+        try:
+            errors.append(test["fail-message"])
+        except KeyError:
+            errors.append("%s does not match limit" % (value.capitalize()))
+        except KeyError:
+            pass  # Don't care if not there.
 
 
 #
