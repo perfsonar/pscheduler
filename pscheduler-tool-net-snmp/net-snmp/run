@@ -17,7 +17,7 @@ try:
     version = input['test']['spec']['version']
     dest = input['test']['spec']['dest']
     oid = input['test']['spec']['oid']
-    if version == '1' or version == '2c':
+    if version in ['1', '2c']:
         community = input['test']['spec']['_community']
 
 except KeyError:
@@ -31,20 +31,20 @@ start_time = datetime.datetime.now()
 
 error = None
 argv = ['snmpget', '-Oe', '-OE']
-if version == '1' or version == '2c':
-    op_dict = {'version': '-v',
-               '_community': '-c',
-               }
+if version in ['1', '2c']:
+    cli_switches = {'version': '-v',
+                    '_community': '-c',
+                    }
 else:
-    op_dict = {'version': '-v',
-               'security-name': '-u',
-               'auth-protocol': '-a',
-               'priv-protocol': '-x',
-               'auth-key': '-A',
-               'priv-key': '-X',
-               'security-level': '-l',
-               'context': '-n'
-               }
+    cli_switches = {'version': '-v',
+                   'security-name': '-u',
+                   'auth-protocol': '-a',
+                   'priv-protocol': '-x',
+                   '_auth-key': '-A',
+                   '_priv-key': '-X',
+                   'security-level': '-l',
+                   'context': '-n'
+                   }
 
 # if no protocol specified, default is udp
 try:
@@ -55,11 +55,11 @@ except KeyError:
 # loop through spec to get command line args
 for key in input['test']['spec'].keys():
     try:
-        argv.append(op_dict[key])
+        argv.append(cli_switches[key])
     except KeyError:
         # if key does not exist in dictionary, no switch is needed
         # do not append schema
-        if key == 'schema' or key == 'protocol':
+        if key in ['schema', 'protocol']:
             continue
     if key == 'dest' and protocol != None:
         argv.append(str(protocol) + ':' + input['test']['spec'][key])
@@ -69,18 +69,16 @@ for key in input['test']['spec'].keys():
     else:
         argv.append(input['test']['spec'][key])
     
-try:
-    status, stdout, stderr = pscheduler.run_program(argv)
-    succeeded = True
-except Exception as e:
-    succeeded = False
-    data = None
-    error = "The snmpget command failed during execution." 
+status, stdout, stderr = pscheduler.run_program(argv, timeout=10)
 
 if status:
     data = None
     succeeded = False
     error = "snmpget returned an error: \n%s" % stderr.strip('\n')
+    diags = stderr
+else:
+    succeeded = True
+    diags = stdout
 
 end_time = datetime.datetime.now()
 
@@ -88,7 +86,6 @@ end_time = datetime.datetime.now()
 # Produce results
 #
 
-# TODO: change this according to data type changes
 if succeeded:
     stdout = stdout.strip('\n').split('\n')
     data = []
@@ -120,7 +117,8 @@ results = {
 	    'succeeded' : succeeded,
         'data': data
     },
-    'error': error
+    'error': error,
+    'diags': diags
 }
 
 pscheduler.succeed_json(results)

@@ -84,50 +84,46 @@ opt_parser.add_option("--timeout",
                       dest="timeout")
 
 # snmp v3 specific options
-if '3' in args:
-   version = 3
-   opt_parser.add_option("--security-name",
-                      help="Security Name",
-                      action="store", type="string",
-                      dest="security_name")
-                    
-   opt_parser.add_option("--auth-protocol",
-                      help="Authentication Protocol (md5|sha)",
-                      action="store", type="string",
-                      dest="auth_protocol")
+opt_parser.add_option("--security-name",
+                  help="Security Name",
+                  action="store", type="string",
+                  dest="security_name")
+                
+opt_parser.add_option("--auth-protocol",
+                  help="Authentication Protocol (md5|sha)",
+                  action="store", type="string",
+                  dest="auth_protocol")
 
-   opt_parser.add_option("--priv-protocol",
-                      help="Privacy Protocol (des|aes)",
-                      action="store", type="string",
-                      dest="priv_protocol")
+opt_parser.add_option("--priv-protocol",
+                  help="Privacy Protocol (des|aes)",
+                  action="store", type="string",
+                  dest="priv_protocol")
 
-   opt_parser.add_option("--auth-key",
-                      help="Authentication Passphrase",
-                      action="store", type="string",
-                      dest="auth_key")
+opt_parser.add_option("--auth-key",
+                  help="Authentication Passphrase",
+                  action="store", type="string",
+                  dest="auth_key")
 
-   opt_parser.add_option("--priv-key",
-                      help="Privacy Passphrase",
-                      action="store", type="string",
-                      dest="priv_key")
+opt_parser.add_option("--priv-key",
+                  help="Privacy Passphrase",
+                  action="store", type="string",
+                  dest="priv_key")
 
-   opt_parser.add_option("--security-level",
-                      help="Security Level (noAuthNoPriv|authNoPriv|authPriv)",
-                      action="store", type="string",
-                      dest="security_level")
+opt_parser.add_option("--security-level",
+                  help="Security Level (noAuthNoPriv|authNoPriv|authPriv)",
+                  action="store", type="string",
+                  dest="security_level")
 
-   opt_parser.add_option("--context",
-                      help="Context Name",
-                      action="store", type="string",
-                      dest="context")
+opt_parser.add_option("--context",
+                  help="Context Name",
+                  action="store", type="string",
+                  dest="context")
 
 # snmp v1 and v2c specific options
-else:
-   version = 1
-   opt_parser.add_option("--community",
-                          help="Community string",
-                          action="store", type="string",
-                          dest="community")
+opt_parser.add_option("--community",
+                      help="Community string",
+                      action="store", type="string",
+                      dest="community")
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
@@ -159,7 +155,7 @@ if options.protocol is not None:
 if options.timeout is not None:
    result['timeout'] = options.timeout
 
-if version == 1:
+if options.version in ['1', '2c']:
   if options.community is not None:
     result['_community'] = options.community
 
@@ -174,33 +170,15 @@ else:
       result['priv-protocol'] = options.priv_protocol
 
     if options.auth_key is not None:
-      result['auth-key'] = options.auth_key
+      result['_auth-key'] = options.auth_key
 
     if options.priv_key is not None:
-      result['priv-key'] = options.priv_key
+      result['_priv-key'] = options.priv_key
 
     if options.security_level is not None:
       result['security-level'] = options.security_level
 
     if options.context is not None:
       result['context'] = options.context
-
-# convert OIDs to numeric form
-# argv = ["snmptranslate", "-On", "-IR"]
-# for oid in result['oid']:
-#     match = re.match("^((\.\d)|\d)+(\.\d+)*$", oid)
-#     if match is None: 
-#         argv.append(oid) 
-
-# if len(argv) > 3:
-#     status, stdout, stderror = pscheduler.run_program(argv)
-#     if status:
-#         pscheduler.fail('Translation Error: Try using only numeric OIDs')
-
-#     result['oid'] = []
-#     stdout = stdout.split("\n")
-#     for oid in stdout:
-#         if len(oid) > 0:
-#             result['oid'].append(oid)
 
 pscheduler.succeed_json(result)

@@ -2,8 +2,6 @@
 # Validator for "snmpget" Test
 #
 
-# TODO: _ for sensitive values
-
 from pscheduler import json_validate
 
 def spec_is_valid(json):
@@ -68,8 +66,8 @@ def spec_is_valid(json):
                     "security-name":           { "$ref": "#/pScheduler/String" },
                     "auth-protocol":           { "$ref": "#/local/AuthProtocol" },
                     "priv-protocol":           { "$ref": "#/local/PrivProtocol" },
-                    "auth-key":           { "$ref": "#/pScheduler/String" },
-                    "priv-key":           { "$ref": "#/pScheduler/String" },
+                    "_auth-key":           { "$ref": "#/pScheduler/String" },
+                    "_priv-key":           { "$ref": "#/pScheduler/String" },
                     "security-level":           { "$ref": "#/local/SecurityLevel" },
                     "context":      { "$ref": "#/pScheduler/String" },
                     "timeout":      { "$ref": "#/pScheduler/Duration" },
