@@ -36,10 +36,10 @@ errors = []
 
 
 #
-# Query host, host-node, oid, dest, community
+# Query host, host-node, oid, dest, community, version, protocol, timeout, security-name, auth-protocol, priv-protocol, auth-key, priv-key, security-level, context
 #
 
-for value in [ "host", "host-node", "oid", "dest", "community" ]:
+for value in [ "host", "host-node", "oid", "dest", "community", "version", "protocol", "timeout", "security-name", "auth-protocol", "priv-protocol", "auth-key", "priv-key", "security-level", "context" ]:
     try:
         test = limit[value]
         match = pscheduler.StringMatcher(test["match"])
