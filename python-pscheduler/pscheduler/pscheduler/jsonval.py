@@ -27,7 +27,7 @@ __dictionary__ = {
     #
 
     "AnyJSON": {
-        "oneOf": [
+        "anyOf": [
             { "type": "array" },
             { "type": "boolean" },
             { "type": "integer" },
