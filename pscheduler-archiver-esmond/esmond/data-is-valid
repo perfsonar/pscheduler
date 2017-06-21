@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Validate data for the syslogarchiver
+# Validate data for the esmond archiver
 #
 
 import pscheduler
@@ -29,7 +29,8 @@ data_validator = {
                 "properties": {
                     "attempts": {"$ref": "#/pScheduler/Cardinal" },
                     "wait": {"$ref": "#/pScheduler/Duration" },
-                }
+                },
+                "required": [ "attempts", "wait"]
             }
         },
         "data-formatting-policy": {
@@ -49,7 +50,8 @@ data_validator = {
                     "event-type": { "$ref": "#/pScheduler/String" },
                     "summary-type": { "$ref": "#/pScheduler/String" },
                     "summary-window": { "$ref": "#/pScheduler/CardinalZero" },
-                }
+                },
+                "required": [ "event-type", "summary-type", "summary-window"]
             }
         }
     },
