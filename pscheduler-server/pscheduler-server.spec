@@ -692,6 +692,21 @@ systemctl start httpd
 
 # ------------------------------------------------------------------------------
 
+# Triggers
+
+# Any upgrade of python-pscheduler needs to force a database restart
+# because Pg doesn't see module upgrades.
+
+%triggerin -- python-pscheduler
+%if 0%{?el6}
+service "%{pgsql_service}" restart
+%endif
+%if 0%{?el7}
+systemctl restart "%{pgsql_service}"
+%endif
+
+
+# ------------------------------------------------------------------------------
 %files
 
 #
