@@ -426,7 +426,7 @@ __dictionary__ = {
 
     "Version": {
         "type": "string",
-        "pattern": r'^[0-9]+(\.[0-9]+(\.[0-9]+)?)$'
+        "pattern": r'^[0-9]+(\.[0-9]+)*[A-Za-z0-9-+]*$'
         },
 
 
@@ -738,6 +738,92 @@ __dictionary__ = {
             "additionalProperties": False,
             "required": [ "match" ]
         }
+
+    },
+
+    #
+    # Standard Plugin Enumeration Types
+    #
+
+    "PluginEnumeration": {
+
+        "Test": {
+            "type": "object",
+            "properties": {
+                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "name":         { "$ref": "#/pScheduler/String" },
+                "description":  { "$ref": "#/pScheduler/String" },
+                "version":      { "$ref": "#/pScheduler/Version" },
+                "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+                "scheduling-class": { 
+                    "type": "string",
+                    "enum": [
+                        "background",
+                        "background-multi",
+                        "exclusive",
+                        "normal"
+                    ]
+                }
+            },
+            "additionalProperties": False,
+            "required": [
+                "name",
+                "description",
+                "version",
+                "maintainer",
+                "scheduling-class"
+            ]
+        },
+
+        "Tool": {
+            "type": "object",
+            "properties": {
+                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "name":         { "$ref": "#/pScheduler/String" },
+                "description":  { "$ref": "#/pScheduler/String" },
+                "version":      { "$ref": "#/pScheduler/Version" },
+                "tests":        { "$ref": "#/pScheduler/StringList" },
+                "preference":        { "$ref": "#/pScheduler/Integer" },
+                "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+                "scheduling-class": { 
+                    "type": "string",
+                    "enum": [
+                        "background",
+                        "background-multi",
+                        "exclusive",
+                        "normal"
+                    ]
+                }
+            },
+            "additionalProperties": False,
+            "required": [
+                "name",
+                "description",
+                "version",
+                "tests",
+                "preference",
+                "maintainer"
+            ]
+        },
+
+        "Archiver": {
+            "type": "object",
+            "properties": {
+                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "name":         { "$ref": "#/pScheduler/String" },
+                "description":  { "$ref": "#/pScheduler/String" },
+                "version":      { "$ref": "#/pScheduler/Version" },
+                "maintainer":   { "$ref": "#/pScheduler/Maintainer" }
+            },
+            "additionalProperties": False,
+            "required": [
+                "name",
+                "description",
+                "version",
+                "maintainer"
+            ]
+        },
+
 
     }
 }
