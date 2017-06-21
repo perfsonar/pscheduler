@@ -4,7 +4,7 @@
 
 %define short	net-snmp
 Name:		pscheduler-tool-%{short}
-Version:	1.0.0.2
+Version:	1.0.0.3
 Release:	1%{?dist}
 
 Summary:	NET SNMP tool class for pScheduler
