@@ -1,0 +1,41 @@
+#!/usr/bin/python
+#
+# Validate data for the snmptrap archiver
+#
+
+import pscheduler
+
+try:
+    json = pscheduler.json_load(max_schema=1)
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+        })
+
+# TODO: v1, v2c, v3 specific
+data_validator = {
+    "type": "object",
+    "properties": {
+        "schema": { "$ref": "#/pScheduler/Cardinal" },
+        "version": { "type": "string", 
+                     "enum": ["1", "2c", "3"]
+                   },
+        "dest": { "$ref": "#/pScheduler/String" },
+        "_community": { "$ref": "#/pScheduler/String" },
+        "mib": { "$ref": "#/pScheduler/String" },
+        "uptime": { "$ref": "#/pScheduler/Integer" }
+    },
+    "required": ["dest", "_community", "version", "mib"],
+    "additionalProperties": False
+}
+
+valid, error = pscheduler.json_validate(json, data_validator)
+
+if not valid:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": error
+        })
+
+pscheduler.succeed_json({ "valid": True })
