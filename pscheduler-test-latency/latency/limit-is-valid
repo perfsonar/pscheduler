@@ -1,0 +1,30 @@
+#!/usr/bin/python
+#
+# Validator for 'latency' task limit spec
+#
+
+import pscheduler
+import validate
+
+logger = pscheduler.Log(quiet=True)
+
+try:
+    json = pscheduler.json_load(max_schema=1)
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+        })
+
+valid, message = validate.limit_is_valid(json)
+
+result = {
+    "valid": valid
+}
+
+logger.debug("limit valid = %s" % valid)
+
+if not valid:
+    result["message"] = message
+
+pscheduler.succeed_json(result)
