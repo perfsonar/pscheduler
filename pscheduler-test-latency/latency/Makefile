@@ -7,6 +7,8 @@ NAME=latency
 FILES=\
 	cli-to-spec \
 	enumerate \
+	limit-is-valid \
+	limit-passes \
 	participants \
 	pscheduler-schema-latency-request.json \
 	pscheduler-schema-latency-response.json \
