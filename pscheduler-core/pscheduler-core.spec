@@ -19,7 +19,7 @@ Provides:	%{name} = %{version}-%{release}
 Requires:       gnuplot-minimal
 # This is for netstat.
 Requires:       net-tools
-Requires:       python-pscheduler >= 1.2
+Requires:       python-pscheduler >= 1.3.0.3
 Requires:       pytz
 Requires:	curl
 

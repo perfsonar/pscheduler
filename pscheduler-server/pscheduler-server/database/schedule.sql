@@ -14,6 +14,7 @@ AS
         run.uuid AS run,
         run_state.enum AS state_enum,
         run_state.display AS state_display,
+	run.errors AS errors,
         -- TODO: Pull full JSON with details when that's available.  See #95.
         task.json AS task_json,
 	task.cli AS task_cli,

@@ -42,3 +42,16 @@ def prefixed_wrap(prefix, text, width=None, indent=0):
                   for line in wrapped])
 
     return "%s%s" % (prefix, "\n".join(lines))
+
+
+
+def indent(
+        text,      # Text to indent
+        char=' ',  # Character to use in indenting
+        indent=2   # Repeats of char
+):
+    """
+    Indent single- or multi-lined text.
+    """
+    prefix = char * indent
+    return "\n".join(map(lambda s: prefix + s, text.split("\n")))

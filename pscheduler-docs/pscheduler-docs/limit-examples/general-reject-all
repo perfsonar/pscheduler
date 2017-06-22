@@ -1,0 +1,79 @@
+{
+    "#": "-------------------------------------------------------------------",
+    "#": "                         REJECT ALL TASKS                          ",
+    "#": "-------------------------------------------------------------------",
+
+    "schema": 1,
+
+    "#": "-------------------------------------------------------------------",
+    "#": "IDENTIFIERS:  WHO'S ASKING?                                        ",
+    "#": "                                                                   ",
+    "#": "These identify who's asking to run the test.  One requester can    ",
+    "#": "map to zero or more identifiers.                                   ",
+    "#": "-------------------------------------------------------------------",
+
+    "identifiers": [
+	{
+	    "name": "everybody",
+	    "description": "An identifier that always identifies",
+	    "type": "always",
+	    "data": { }
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "CLASSIFIERS:  HOW DO WE CLASSIFY THE IDENTIFIERS?                  ",
+    "#": "                                                                   ",
+    "#": "These collect identifiers into groups.                             ",
+    "#": "-------------------------------------------------------------------",
+
+    "classifiers": [
+	{
+	    "name": "default",
+	    "description": "Everybody",
+	    "identifiers": [ "everybody" ]
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "LIMITS:  WHAT ARE THE RESTRICTIONS?                                ",
+    "#": "                                                                   ",
+    "#": "These are comparisons made against the type of test being proposed,",
+    "#": "the paramaters for the run and when it is proposed to be run.      ",
+    "#": "-------------------------------------------------------------------",
+
+    "limits": [
+	{
+	    "name": "never",
+	    "description": "Always fails",
+	    "type": "pass-fail",
+	    "data": {
+		"pass": false
+	    }
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "APPLICATIONS:  TO WHOM DO WE APPLY THE LIMITS?                     ",
+    "#": "                                                                   ",
+    "#": "These are processed in order until one passes all of the           ",
+    "#": "requirements.  The run will be rejected if one fails with          ",
+    "#": "stop-on-failure set to true or none of them passes.                ",
+    "#": "-------------------------------------------------------------------",
+
+    "applications": [
+	{
+	    "description": "Defaults",
+	    "classifier": "default",
+	    "apply": [
+		{
+		    "require": "all",
+		    "limits": [ "never" ]
+		}
+	    ]
+	}
+	]
+}
