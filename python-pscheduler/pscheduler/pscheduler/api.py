@@ -12,6 +12,7 @@ import uuid
 # HACK: BWCTLBC
 import os
 
+
 from .psdns import *
 from .psurl import *
 
@@ -145,14 +146,29 @@ def api_ping(host, bind=None, timeout=3):
     """
     See if an API server is alive within a given timeout.  If 'host'
     is None, ping the local server.
+
+    Returns a tuple of (up, reason), where reason is a string
+    explaining why 'up' is what is is.
     """
     if host is None:
         host = api_this_host()
-        
-    status, result = url_get(pscheduler.api_url(host, path="api"),
-                             timeout=timeout, bind=bind,
-                             json=False, throw=False)
-    return status == 200
+
+    url = pscheduler.api_url(host)
+
+    status, result = url_get(url, bind=bind,
+                             throw=False, timeout=timeout)
+
+    if status == 200:
+        return (True, "pScheduler is alive")
+    elif status == 400:
+        return (False, result)
+    elif status in [202, 204, 205, 206, 207, 208, 226,
+                    300, 301, 302, 303, 304, 205, 306, 307, 308] \
+        or ((status >= 400) and (status <=499)):
+        return (False, "Not running pScheduler")
+
+    return (False, "Returned status %d: %s" % (status, result))
+
 
 
 
@@ -176,7 +192,8 @@ def api_ping_list(hosts, bind=None, timeout=None, threads=10):
 
     def ping_one(arg):
         host, timeout = arg
-        return (host, api_ping(host, bind=bind, timeout=timeout))
+        up, _ = api_ping(host, bind=bind, timeout=timeout)
+        return (host, up)
 
     for host, state in pool.imap(
             ping_one,

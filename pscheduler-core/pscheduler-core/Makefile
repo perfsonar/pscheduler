@@ -30,6 +30,7 @@ COMMANDS=\
 	result \
 	schedule \
 	task \
+	troubleshoot \
 	watch
 
 RAWCOMMANDS=\
