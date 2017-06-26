@@ -27,7 +27,7 @@ __dictionary__ = {
     #
 
     "AnyJSON": {
-        "oneOf": [
+        "anyOf": [
             { "type": "array" },
             { "type": "boolean" },
             { "type": "integer" },
@@ -149,6 +149,12 @@ __dictionary__ = {
         "format": "host-name"
         },
 
+    "HostNamePort": {
+        # Note that this will cover valid IPv4 addresses, too.
+        "type": "string",
+        "pattern": r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])(:[0-9]+)?$'
+    },
+
     "Integer": { "type": "integer" },
 
     "IPAddress": {
@@ -161,6 +167,13 @@ __dictionary__ = {
     "IPv4": { "type": "string", "format": "ipv4" },
 
     "IPv6": { "type": "string", "format": "ipv6" },
+
+    "IPv6RFC2732": {
+        # IPv6 address with optional port, formatted per RFC 2732
+        # Source: https://stackoverflow.com/a/17871737/180674
+        "type": "string",
+        "pattern": r'^\[(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\](:[0-9]+)?$'
+    },
 
     "IPv4CIDR": {
         "type": "string",
@@ -397,6 +410,15 @@ __dictionary__ = {
 
     "URL": { "type": "string", "format": "uri" },
 
+    "URLHostPort": {
+        # Any valid host/port pair as you'd find in a URI per RFC 2396
+        "anyOf": [
+            { "$ref": "#/pScheduler/HostNamePort" },
+            { "$ref": "#/pScheduler/IPv6RFC2732" },
+        ]
+
+    },
+
     "UUID": {
         "type": "string",
         "pattern": r'^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$'
@@ -404,7 +426,7 @@ __dictionary__ = {
 
     "Version": {
         "type": "string",
-        "pattern": r'^[0-9]+(\.[0-9]+(\.[0-9]+)?)$'
+        "pattern": r'^[0-9]+(\.[0-9]+)*[A-Za-z0-9-+]*$'
         },
 
 
@@ -916,6 +938,92 @@ __dictionary__ = {
             "required": [ "match" ]
         }
 
+    },
+
+    #
+    # Standard Plugin Enumeration Types
+    #
+
+    "PluginEnumeration": {
+
+        "Test": {
+            "type": "object",
+            "properties": {
+                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "name":         { "$ref": "#/pScheduler/String" },
+                "description":  { "$ref": "#/pScheduler/String" },
+                "version":      { "$ref": "#/pScheduler/Version" },
+                "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+                "scheduling-class": { 
+                    "type": "string",
+                    "enum": [
+                        "background",
+                        "background-multi",
+                        "exclusive",
+                        "normal"
+                    ]
+                }
+            },
+            "additionalProperties": False,
+            "required": [
+                "name",
+                "description",
+                "version",
+                "maintainer",
+                "scheduling-class"
+            ]
+        },
+
+        "Tool": {
+            "type": "object",
+            "properties": {
+                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "name":         { "$ref": "#/pScheduler/String" },
+                "description":  { "$ref": "#/pScheduler/String" },
+                "version":      { "$ref": "#/pScheduler/Version" },
+                "tests":        { "$ref": "#/pScheduler/StringList" },
+                "preference":        { "$ref": "#/pScheduler/Integer" },
+                "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+                "scheduling-class": { 
+                    "type": "string",
+                    "enum": [
+                        "background",
+                        "background-multi",
+                        "exclusive",
+                        "normal"
+                    ]
+                }
+            },
+            "additionalProperties": False,
+            "required": [
+                "name",
+                "description",
+                "version",
+                "tests",
+                "preference",
+                "maintainer"
+            ]
+        },
+
+        "Archiver": {
+            "type": "object",
+            "properties": {
+                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "name":         { "$ref": "#/pScheduler/String" },
+                "description":  { "$ref": "#/pScheduler/String" },
+                "version":      { "$ref": "#/pScheduler/Version" },
+                "maintainer":   { "$ref": "#/pScheduler/Maintainer" }
+            },
+            "additionalProperties": False,
+            "required": [
+                "name",
+                "description",
+                "version",
+                "maintainer"
+            ]
+        },
+
+
     }
 }
 
@@ -999,7 +1107,7 @@ def json_validate(json, skeleton):
 
         try:
             message = ex.schema["x-invalid-message"].replace("%s", ex.instance)
-        except KeyError:
+        except (KeyError, TypeError):
             message = ex.message
 
         if len(ex.absolute_path) > 0:

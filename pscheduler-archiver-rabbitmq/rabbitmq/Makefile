@@ -33,6 +33,7 @@ pika: $(PIKA_TARBALL)
 	rm -rf $@
 	zcat $< | tar xf -
 	cd $(PIKA_DIR) && python setup.py build
+	cd $(PIKA_DIR) && python -m compileall .
 	cp -r $(PIKA_DIR)/pika $@
 TO_CLEAN += $(PIKA_DIR) pika
 
@@ -43,6 +44,7 @@ ifndef DESTDIR
 endif
 	mkdir -p $(DESTDIR)
 	cp -r $< $(DESTDIR)
+	find $(DESTDIR) -name "*.py*" | xargs chmod 444
 
 #
 # End of pika

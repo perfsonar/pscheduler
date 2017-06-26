@@ -8,6 +8,7 @@ import datetime
 import errno
 import optparse
 import pscheduler
+import random
 import select
 import threading
 import urlparse
@@ -237,7 +238,9 @@ def run_post(
     # Make sure all of the participants' APIs answer before trying to
     # do anything with them.
 
-    lead_bind = task.get("lead-bind", None)
+    # Pylint infers task to be a string when it's actually a dictionary.
+    lead_bind = task.get("lead-bind", None)  # pylint: disable=maybe-no-member
+
     log and log.debug("%d: Binding from %s", number, lead_bind)
     if not pscheduler.api_ping_all_up(participants, bind=lead_bind):
 
@@ -476,8 +479,7 @@ def run_post(
         log and log.debug("%d: PUT %d: %s", number, status, output)
 
         if status == 409:
-            message = "%s developed a schedule conflict." % (
-                urlparse.urlparse(request.url_root).netloc.split(':')[0])                
+            message = "%s developed a schedule conflict." % (put_url)
             log and log.debug("%d: %s", message)
             errors.append(message)
             conflict = True
@@ -563,7 +565,8 @@ class NonStarterException(Exception):
     pass
 
 
-def schedule_task(number, log, task, runs, trynext, background, json):
+def schedule_task(number, log, task, runs, trynext, background, json,
+                  participants):
     """Do the actual work of scheduling a run."""
     # TODO: This could probably be part of the SchedulerWorker class.
 
@@ -578,7 +581,7 @@ def schedule_task(number, log, task, runs, trynext, background, json):
     # talking to the lead, which is local.
 
     url = pscheduler.api_url(
-        host=json.get("lead-bind", "localhost"),
+        host=json.get("lead-bind", participants[0]),
         path="/tasks/%s" % (task))
 
     # For the first run only, push the start time out.  See comment
@@ -641,7 +644,7 @@ class SchedulerWorker(object):
     """Handles scheduling for a single run."""
 
     def __init__(self, number, pg, log, working_set, task, runs,
-                 trynext, background, json):
+                 trynext, background, json, participants):
         """Initialize"""
 
         self.number = number
@@ -654,6 +657,7 @@ class SchedulerWorker(object):
         self.trynext = trynext
         self.background = background
         self.json = json
+        self.participants = participants
 
         self.worker = threading.Thread(target=lambda: self.run())
         self.log.debug("%d: New thread for task %s at %s", number,
@@ -672,7 +676,8 @@ class SchedulerWorker(object):
         try:
 
             schedule_task(self.number, self.log, self.task, self.runs,
-                          self.trynext, self.background, self.json)
+                          self.trynext, self.background, self.json,
+                          self.participants)
 
         except NonStarterException as ex:
 
@@ -731,7 +736,7 @@ def main_program():
         wait = True
 
         # TODO: The FALSE for background does nothing.  Get rid of it.
-        query = """SELECT task, uuid, runs, trynext, FALSE, json
+        query = """SELECT task, uuid, runs, trynext, FALSE, json, participants
             FROM schedule_runs_to_schedule"""
         args = []
 
@@ -750,12 +755,12 @@ def main_program():
 
         for row in cursor:
 
-            number, task, runs, trynext, background, json = row
+            number, task, runs, trynext, background, json, participants = row
 
             if number not in workers:
                 worker = SchedulerWorker(number, nonstart_pg, log,
                                          workers, task, runs, trynext,
-                                         background, json)
+                                         background, json, participants)
                 log.debug("Starting thread for ID %d", number)
                 workers[number] = worker
                 worker.start()

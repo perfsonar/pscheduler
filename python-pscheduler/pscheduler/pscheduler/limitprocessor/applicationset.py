@@ -5,6 +5,8 @@ Set of Limit Applications
 from classifierset import ClassifierSet
 from limitset import LimitSet
 
+from pscheduler import indent
+
 
 # These functions and table are used in __check_group() to evaluate
 # whether or not the group of limits tested results in a pass or fail
@@ -222,7 +224,7 @@ class ApplicationSet():
                 = self.__check_application(application, task, classifiers,
                                            check_schedule)
            
-            diags.extend(["    " + diag for diag in app_diags])
+            diags.extend([ indent(diag) for diag in app_diags])
 
             if not passed and forced_stop:
                 diags.append("    Failed - Stop Forced")

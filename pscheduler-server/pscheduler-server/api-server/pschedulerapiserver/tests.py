@@ -64,6 +64,43 @@ def tests_name_spec(name):
 
 
 
+# Test spec validation
+@application.route("/tests/<name>/spec/is-valid", methods=['GET'])
+def tests_name_spec_is_valid(name):
+
+    try:
+        cursor = dbcursor_query(
+            "SELECT EXISTS (SELECT * FROM test WHERE NAME = %s)",
+            [name])
+    except Exception as ex:
+        return error(str(ex))
+
+    exists = cursor.fetchone()[0]
+    cursor.close()
+    if not exists:
+        return not_found()
+
+    spec = request.args.get('spec')
+    if spec is None:
+        return bad_request("No test spec provided")
+
+    try:
+        returncode, stdout, stderr = pscheduler.run_program(
+            ["pscheduler", "internal", "invoke", "test",
+             name, "spec-is-valid"],
+            stdin=spec)
+
+        if returncode != 0:
+            return error("Unable to validate test spec: %s" % (stderr))
+
+        validate_json = pscheduler.json_load(stdout, max_schema=1)
+        return ok_json(validate_json)
+
+    except Exception as ex:
+        return error("Unable to validate test spec: %s" % (str(ex)))
+
+
+
 
 # Tools that can carry out test <name>
 @application.route("/tests/<name>/tools", methods=['GET'])

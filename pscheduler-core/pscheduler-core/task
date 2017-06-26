@@ -430,7 +430,7 @@ if not pscheduler.api_has_pscheduler(assist, bind=bind):
 # Convert the remaining arguments to a test spec.
 #
 
-spec_url = pscheduler.api_url(host=assist,
+spec_url = pscheduler.api_url_hostport(assist,
                               path='/tests/' + test_type + '/spec')
 log.debug("Converting to spec via %s", spec_url)
 status, raw_spec = pscheduler.url_get(
@@ -513,7 +513,8 @@ null_reason = None
 
 # Get participants
 
-url = pscheduler.api_url(assist, '/tests/%s/participants' % task['test']['type'])
+url = pscheduler.api_url_hostport(
+    assist, '/tests/%s/participants' % task['test']['type'])
 log.debug("Fetching participant list")
 
 spec_text = pscheduler.json_dump(task['test']['spec'])

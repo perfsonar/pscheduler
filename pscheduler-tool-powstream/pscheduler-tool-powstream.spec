@@ -61,7 +61,6 @@ pscheduler internal warmboot
 
 
 %files
-%defattr(-,pscheduler,pscheduler,-)
+%defattr(-,root,root,-)
 %config(noreplace) %{_pscheduler_tool_confdir}/*
 %{dest}
-

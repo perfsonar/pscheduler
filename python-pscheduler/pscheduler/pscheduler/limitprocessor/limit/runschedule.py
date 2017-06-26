@@ -358,5 +358,5 @@ if __name__ == "__main__":
     })
 
 
-    ev = limit.evaluate(test, True)
+    ev = limit.evaluate(test)
     print test, ev

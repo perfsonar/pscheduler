@@ -9,9 +9,8 @@ def spec_is_valid(json):
         "type": "object",
         "properties": {
             "schema":            { "$ref": "#/pScheduler/Cardinal" },
-            "dest":              { "$ref": "#/pScheduler/Host" },
-            "source":            { "$ref": "#/pScheduler/Host" },
-            "source-node":       { "$ref": "#/pScheduler/Host" },
+            "dest":              { "$ref": "#/pScheduler/URLHostPort" },
+            "source":            { "$ref": "#/pScheduler/URLHostPort" },
             "timeout":           { "$ref": "#/pScheduler/Duration" },
             },
         "required": [

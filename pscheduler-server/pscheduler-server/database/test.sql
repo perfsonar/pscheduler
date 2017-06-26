@@ -73,11 +73,13 @@ BEGIN
     END IF;
 
     -- Version 1 to version 2
-    --IF t_version = 1
-    --THEN
-    --    ALTER TABLE ...
-    --    t_version := t_version + 1;
-    --END IF;
+    -- Remove unused and trouble-causing version column
+    IF t_version = 1
+    THEN
+        ALTER TABLE test DROP COLUMN version;
+
+        t_version := t_version + 1;
+    END IF;
 
 
     --
@@ -90,18 +92,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-
-CREATE OR REPLACE FUNCTION test_json_is_valid(json JSONB)
-RETURNS BOOLEAN
-AS $$
-BEGIN
-    RETURN (json ->> 'name') IS NOT NULL
-      AND text_to_numeric(json ->> 'version', false) IS NOT NULL
-      AND scheduling_class_find(json ->> 'scheduling-class') IS NOT NULL
-      ;
-END;
-$$ LANGUAGE plpgsql;
-
+-- Old function
+DROP FUNCTION IF EXISTS test_json_is_valid(json JSONB);
 
 
 DROP TRIGGER IF EXISTS test_alter ON test CASCADE;
@@ -109,14 +101,18 @@ DROP TRIGGER IF EXISTS test_alter ON test CASCADE;
 CREATE OR REPLACE FUNCTION test_alter()
 RETURNS TRIGGER
 AS $$
+DECLARE
+    json_result TEXT;
 BEGIN
-    IF NOT test_json_is_valid(NEW.json) THEN
-        RAISE EXCEPTION 'Test JSON is invalid.';
+
+    json_result := json_validate(NEW.json, '#/pScheduler/PluginEnumeration/Test');
+    IF json_result IS NOT NULL
+    THEN
+        RAISE EXCEPTION 'Invalid enumeration: %', json_result;
     END IF;
 
     NEW.name := NEW.json ->> 'name';
     NEW.description := NEW.json ->> 'description';
-    NEW.version := text_to_numeric(NEW.json ->> 'version');
     NEW.scheduling_class := scheduling_class_find(NEW.json ->> 'scheduling-class');
 
     RETURN NEW;
@@ -177,6 +173,7 @@ DECLARE
     test_list JSONB;
     test_name TEXT;
     test_enumeration JSONB;
+    json_result TEXT;
     sschema NUMERIC;  -- Name dodges a reserved word
 BEGIN
     run_result := pscheduler_internal(ARRAY['list', 'test']);
@@ -204,11 +201,13 @@ BEGIN
             CONTINUE;
         END IF;
 
-
-	IF NOT test_json_is_valid(test_enumeration) THEN
-	    RAISE WARNING 'Test "%" enumeration is invalid', test_name;
+        json_result := json_validate(test_enumeration,
+	    '#/pScheduler/PluginEnumeration/Test');
+        IF json_result IS NOT NULL
+        THEN
+            RAISE WARNING 'Invalid enumeration for test "%": %', test_name, json_result;
 	    CONTINUE;
-	END IF;
+        END IF;
 
 	PERFORM test_upsert(test_enumeration);
 

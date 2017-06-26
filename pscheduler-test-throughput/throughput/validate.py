@@ -15,9 +15,9 @@ SPEC_SCHEMA = {
     "properties": {           
         "schema":      { "$ref": "#/pScheduler/Cardinal" },
         "source":      { "$ref": "#/pScheduler/Host" },
-        "source-node": { "$ref": "#/pScheduler/Host" },
+        "source-node": { "$ref": "#/pScheduler/URLHostPort" },
         "dest":        { "$ref": "#/pScheduler/Host" },
-        "dest-node":   { "$ref": "#/pScheduler/Host" },
+        "dest-node":   { "$ref": "#/pScheduler/URLHostPort" },
         "duration":    { "$ref": "#/pScheduler/Duration" },
         "interval":    { "$ref": "#/pScheduler/Duration" },
         "parallel":    { "$ref": "#/pScheduler/Cardinal" },

@@ -159,9 +159,12 @@ class LimitSet():
 
         evaluated = evaluator.evaluate(task)
 
-        result = {}
+        passed = evaluated["passed"]
+        result = {
+            "passed": passed,
+        }
 
-        for key in [ "passed", "limit", "reasons" ]:
+        for key in [ "limit", "reasons" ]:
             try:
                 result[key] = evaluated[key]
             except KeyError:
@@ -169,8 +172,9 @@ class LimitSet():
 
         result["inverted"] = invert
         if invert:
-            result["passed"] = not result["passed"]
-            if result["passed"]:
+            passed = not passed
+            result["passed"] = passed
+            if not passed:
                 result["reasons"] = ["Passed but inverted"]
 
         return result

@@ -228,7 +228,7 @@ def tasks():
                 return error("Unable to determine participants: " + stderr)
 
             participants = [ host if host is not None else
-                             server_fqdn() for host in
+                             server_netloc() for host in
                              pscheduler.json_load(stdout,
                                                   max_schema=1)["participants"] ]
         except Exception as ex:
@@ -263,7 +263,7 @@ def tasks():
 
                 # Make sure the other participants are running pScheduler
 
-                participant_api = pscheduler.api_url(participant)
+                participant_api = pscheduler.api_url_hostport(participant)
 
                 log.debug("Pinging %s" % (participant))
                 status, result = pscheduler.url_get(
@@ -369,8 +369,8 @@ def tasks():
                 # Post the task
 
                 log.debug("Tasking %d@%s: %s", participant, part_name, task_data)
-                post_url = pscheduler.api_url(part_name,
-                                              'tasks/' + task_uuid)
+                post_url = pscheduler.api_url_hostport(part_name,
+                                                       'tasks/' + task_uuid)
                 log.debug("Posting task to %s", post_url)
                 status, result = pscheduler.url_post(
                     post_url,
@@ -406,18 +406,19 @@ def tasks():
 
             except TaskPostingException as ex:
 
-                for url in tasks_posted:
-                    # TODO: Handle failure?
-                    status, result = pscheduler.url_delete(url,
-                                                           throw=False, 
-                                                           timeout=5,
-                                                           bind=lead_bind)
+                # Disable the task locally and let it get rid of the
+                # other participants.
 
-                    try:
-                        dbcursor_query("SELECT api_task_delete(%s)",
-                                       [task_uuid])
-                    except Exception as ex:
-                        log.exception()
+                posted_to = "%s/%s" % (request.url, task_uuid)
+                parsed = list(urlparse.urlsplit(posted_to))
+                parsed[1] = "%s"
+                template = urlparse.urlunsplit(parsed)
+
+                try:
+                    dbcursor_query("SELECT api_task_disable(%s, %s)",
+                                   [task_uuid, template])
+                except Exception:
+                    log.exception()
 
                 return error("Error while tasking %s: %s" % (part_name, ex))
 
@@ -517,7 +518,7 @@ def tasks_uuid(uuid):
             if part_list is None:
                 part_list = [None]
             if row[10] == 0 and part_list[0] is None:
-                part_list[0] = server_fqdn()
+                part_list[0] = server_netloc()
 
             json['detail'] = {
                 'added': None if row[1] is None \

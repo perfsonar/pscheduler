@@ -28,6 +28,7 @@ BuildRequires:	postgresql95-contrib
 BuildRequires:	postgresql95-plpython
 
 Requires:	drop-in
+Requires:	gzip
 # This is for pgcrypto
 Requires:	postgresql95-contrib
 Requires:	postgresql95-plpython
@@ -109,6 +110,10 @@ The pScheduler server
 # there'd have to be a 'chcon -R -t httpd_user_content_t'.
 %define api_dir	     %{_var}/www/%{name}
 
+# Utilities
+
+# (Nothing here.)
+
 
 # ------------------------------------------------------------------------------
 
@@ -156,6 +161,19 @@ make -C daemons \
 # API Server
 #
 # (Nothing)
+
+
+#
+# Utilities
+#
+
+make -C utilities \
+    "CONFIGDIR=%{_pscheduler_sysconfdir}" \
+    "PGDATABASE=%{_pscheduler_database_name}" \
+    "PGPASSFILE=%{pgpass_file}" \
+    "TMPDIR=%{_tmppath}" \
+    "VERSION=%{version}"
+
 
 
 # ------------------------------------------------------------------------------
@@ -244,6 +262,13 @@ make -C api-server \
 
 mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}
 
+#
+# Utilities
+#
+make -C utilities \
+    "DESTDIR=${RPM_BUILD_ROOT}/%{_pscheduler_commands}" \
+    install
+
 
 
 # ------------------------------------------------------------------------------
@@ -308,6 +333,13 @@ then
 
 fi
 %endif
+
+
+#
+# Utilities
+#
+# (Nothing)
+
 
 
 
@@ -519,6 +551,13 @@ systemctl restart httpd
 %endif
 
 
+#
+# Utilities
+#
+# (Nothing)
+
+
+
 # ------------------------------------------------------------------------------
 
 %preun
@@ -560,6 +599,11 @@ then
     postgresql-load %{_pscheduler_datadir}/database-teardown.sql
 fi
 
+
+#
+# Utilities
+#
+# (Nothing)
 
 
 # ------------------------------------------------------------------------------
@@ -640,8 +684,29 @@ systemctl start httpd
 %endif
 
 
+#
+# Utilities
+#
+# (Nothing)
+
+
 # ------------------------------------------------------------------------------
 
+# Triggers
+
+# Any upgrade of python-pscheduler needs to force a database restart
+# because Pg doesn't see module upgrades.
+
+%triggerin -- python-pscheduler
+%if 0%{?el6}
+service "%{pgsql_service}" restart
+%endif
+%if 0%{?el7}
+systemctl restart "%{pgsql_service}"
+%endif
+
+
+# ------------------------------------------------------------------------------
 %files
 
 #
@@ -678,3 +743,8 @@ systemctl start httpd
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
 %{api_dir}
 %config(noreplace) %{api_httpd_conf}
+
+#
+# Utilities
+#
+# (Nothing)

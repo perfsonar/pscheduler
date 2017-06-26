@@ -47,12 +47,12 @@ opt_parser = pscheduler.FailingOptionParser(epilog=
                                             )
 
 
-opt_parser.add_option("--count",
+opt_parser.add_option("-c","--count",
                       help="Test count",
                       action="store", type="int",
                       dest="count")
 
-opt_parser.add_option("--dest",
+opt_parser.add_option("-d","--dest",
                       help="Destination host",
                       action="store", type="string",
                       dest="dest")
@@ -71,7 +71,7 @@ opt_parser.add_option("--no-hostnames",
                       action="store_false",
                       dest="hostnames")
 
-opt_parser.add_option("--interval",
+opt_parser.add_option("-i","--interval",
                       help="Time to wait between packets sent",
                       action="store", type="string",
                       dest="interval")
@@ -81,7 +81,7 @@ opt_parser.add_option("--ip-version",
                       action="store", type="int",
                       dest="ip_version")
 
-opt_parser.add_option("--source",
+opt_parser.add_option("-s","--source",
                       help="Source address or interface",
                       action="store", type="string",
                       dest="source")

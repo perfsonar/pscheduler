@@ -143,11 +143,7 @@ def clock_survey(hosts, bind=None):
 
     # Any null hosts become the local host
     # TODO: Should this call api_this_host()?
-    hosts = [ "127.0.0.1" if host is None else host for host in hosts ]
-
-    # Pre-Resolve the hosts to IPs so there's no test time spent on it
-    resolved = pscheduler.dns_bulk_resolve(hosts)
-    hosts = [ host if is_ip(host) else resolved[host] for host in hosts ]
+    hosts = [ "localhost" if host is None else host for host in hosts ]
 
     host_args = []
     for slot in range(0,len(hosts)):
@@ -377,12 +373,12 @@ class RunWorker:
                            self.id, lead_bind)
 
         # This gets used by __post_result, above.
-        self.task_url = pscheduler.api_url(
-            host=participants[0],
+        self.task_url = pscheduler.api_url_hostport(
+            hostport=participants[0],
             path="/tasks/%s" % (task_uuid) )
 
-        run_url = pscheduler.api_url(
-            path="/tasks/%s/runs/%s" % (task_uuid, run_uuid) )
+        # This is only used for debut messages.
+        run_url = "%s/runs/%s" % (self.task_url, run_uuid)
 
         # This will be used when a background-multi run produces a result.
         self.task_id = task_id
@@ -574,9 +570,10 @@ class RunWorker:
 
             # Fetch and combine the results.
 
-            runs = [ pscheduler.api_url(host = host,
-                                        path = '/tasks/%s/runs/%s'
-                                        % (task_uuid, run_uuid) )
+            runs = [ pscheduler.api_url_hostport(
+                hostport = host,
+                path = '/tasks/%s/runs/%s'
+                % (task_uuid, run_uuid) )
                      for host in participants ]
 
             self.log.debug("%d: Runs are %s", self.id, runs)
@@ -623,6 +620,9 @@ class RunWorker:
                     if status == 200:
                         self.log.debug("%d: Retrieved %s", self.id, run_result)
                         index = to_get[get]
+                        # Pylint infers that run_result is a string
+                        # when it isn't.
+                        # pylint: disable=maybe-no-member
                         got = run_result.get("result", None)
                         full_result[index] = got
                         if got is not None:

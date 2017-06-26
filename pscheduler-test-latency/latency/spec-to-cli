@@ -3,7 +3,6 @@
 # Convert a test specification to command-line options
 
 import pscheduler
-import jsonschema
 from validate import spec_is_valid, REQUEST_SCHEMA
 
 #load spec JSON

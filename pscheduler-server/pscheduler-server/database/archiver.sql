@@ -69,11 +69,13 @@ BEGIN
     END IF;
 
     -- Version 1 to version 2
-    --IF t_version = 1
-    --THEN
-    --    ALTER TABLE ...
-    --    t_version := t_version + 1;
-    --END IF;
+    -- Remove unused and trouble-causing version column
+    IF t_version = 1
+    THEN
+        ALTER TABLE archiver DROP COLUMN version;
+
+        t_version := t_version + 1;
+    END IF;
 
 
     --
@@ -151,15 +153,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 
-
-CREATE OR REPLACE FUNCTION archiver_json_is_valid(json JSONB)
-RETURNS BOOLEAN
-AS $$
-BEGIN
-    RETURN (json ->> 'name') IS NOT NULL
-      AND (text_to_numeric(json ->> 'version', false) IS NOT NULL);
-END;
-$$ LANGUAGE plpgsql;
+-- Old function
+DROP FUNCTION IF EXISTS archiver_json_is_valid(json JSONB);
 
 
 
@@ -169,14 +164,16 @@ CREATE OR REPLACE FUNCTION archiver_alter()
 RETURNS TRIGGER
 AS $$
 DECLARE
+    json_result TEXT;
 BEGIN
-    IF NOT archiver_json_is_valid(NEW.json) THEN
-        RAISE EXCEPTION 'Archiver JSON is invalid.';
+    json_result := json_validate(NEW.json, '#/pScheduler/PluginEnumeration/Archiver');
+    IF json_result IS NOT NULL
+    THEN
+        RAISE EXCEPTION 'Invalid enumeration: %', json_result;
     END IF;
 
     NEW.name := NEW.json ->> 'name';
     NEW.description := NEW.json ->> 'description';
-    NEW.version := text_to_numeric(NEW.json ->> 'version');
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -293,6 +290,7 @@ DECLARE
     archiver_list JSONB;
     archiver_name TEXT;
     archiver_enumeration JSONB;
+    json_result TEXT;
     sschema NUMERIC;  -- Name dodges a reserved word
 BEGIN
     run_result := pscheduler_internal(ARRAY['list', 'archiver']);
@@ -321,10 +319,14 @@ BEGIN
             CONTINUE;
         END IF;
 
-	IF NOT archiver_json_is_valid(archiver_enumeration) THEN
-	    RAISE WARNING 'Archiver "%" enumeration is invalid', archiver_name;
+        json_result := json_validate(archiver_enumeration,
+	    '#/pScheduler/PluginEnumeration/Archiver');
+        IF json_result IS NOT NULL
+        THEN
+            RAISE WARNING 'Invalid enumeration for archiver "%": %', archiver_name, json_result;
 	    CONTINUE;
-	END IF;
+        END IF;
+
 
 	PERFORM archiver_upsert(archiver_enumeration);
 

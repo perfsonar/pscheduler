@@ -15,7 +15,7 @@ from .limitproc import *
 from .log import log
 from .response import *
 from .tasks import task_exists
-from .util import server_fqdn
+from .util import server_netloc
 
 
 # Schedule
@@ -44,7 +44,8 @@ def schedule():
                 task_json,
                 task_cli,
                 test_json,
-                tool_json
+                tool_json,
+                errors
             FROM schedule
             WHERE times && tstzrange(%s, %s, '[)')
     """]
@@ -62,7 +63,7 @@ def schedule():
 
     result = []
 
-    base_url = pscheduler.api_url(server_fqdn(), "tasks/")
+    base_url = pscheduler.api_url_hostport(server_netloc(), "tasks/")
     for row in cursor:
 
         task_href = base_url +  row[2]
@@ -78,7 +79,8 @@ def schedule():
             "task": row[6],
             "cli": row[7],
             "test": row[8],
-            "tool": row[9]
+            "tool": row[9],
+            "errors": row[10]
             }
 
         run["task"]["href"] = task_href
@@ -109,7 +111,7 @@ def monitor():
 
     result = []
 
-    base_url = pscheduler.api_url(server_fqdn())
+    base_url = pscheduler.api_url_hostport(server_netloc())
     for row in cursor:
 
         task_href = "%s/tasks/%s" % (base_url, row[2])
