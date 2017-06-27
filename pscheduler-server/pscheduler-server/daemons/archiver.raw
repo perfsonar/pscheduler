@@ -313,6 +313,7 @@ class ArchiveWorker():
                 raw = transform.get("output-raw", False)
                 transformer = pscheduler.JQFilter(
                     filter_spec=transform.get("script", "."),
+					args=transform.get("args",""),
                     output_raw=raw
                 )
                 if raw:

@@ -125,6 +125,7 @@ class IdentifierIPCIDRListURL():
         try:
             # This will raise a ValueError if it's wrong.
             self.transform = pscheduler.JQFilter(data['transform'],
+							                     data['args'],
                                                  output_raw=True)
         except KeyError:
             self.transform = None
@@ -132,6 +133,7 @@ class IdentifierIPCIDRListURL():
         try:
             # This will raise a ValueError if it's wrong.
             self.jqfilter = pscheduler.JQFilter(data['filter'],
+							                    data['args'],
                                                 output_raw=True)
         except KeyError:
             self.jqfilter = None

@@ -220,7 +220,8 @@ def tasks():
             if "transform" in archive:
                 try:
                     _ = pscheduler.JQFilter(
-                        filter_spec=archive["transform"])
+                        filter_spec=archive["transform"],
+						args=archive["args"] })
                 except ValueError as ex:
                     return error("Invalid transform: %s" % (str(ex)))
 
