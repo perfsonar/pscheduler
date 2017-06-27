@@ -27,7 +27,6 @@ def check_limit(input_json):
         ("packet-timeout", "Packet Timeout"),
         ("packet-padding", "Packet Padding"),
         ("ctrl-port", "Control Ports"),
-        ("data-ports", "Data Ports"),
         ("ip-tos", "IP TOS"),
         ("bucket-width", "Bucket Width"),
     ]
@@ -44,7 +43,22 @@ def check_limit(input_json):
                     errors.append("{0} {1}".format(nr[1], message))
         except KeyError:
             pass  # Don't care if not there.
-
+    #
+    # Handle data ports since both limit and spec value are ranges
+    #
+    try:
+        nrange = pscheduler.NumericRange(limit['data-ports']["range"])
+        invert = limit['data-ports'].get("invert", False)
+        for bound in ['lower', 'upper']:
+            contains, message = nrange.contains(spec['data-ports'][bound])
+            if invert:
+                if contains:
+                    errors.append("Data port ({0} bound) {1}".format(bound, message))
+            else:
+                if not contains:
+                    errors.append("Data port ({0} bound) {1}".format(bound, message))
+    except KeyError:
+        pass  # Don't care if not there.
 
     #
     # Handle duration
@@ -58,7 +72,7 @@ def check_limit(input_json):
         elif "range" in limit["duration"]:
             nrange = pscheduler.DurationRange(limit["duration"]["range"])
             invert = limit["duration"].get("invert", False)
-            contains, message = nrange.contains(spec["packet-interval"] * spec["packet-count"])
+            contains, message = nrange.contains("PT{0}S".format(spec["packet-interval"] * spec["packet-count"]))
             if invert:
                 if contains:
                     errors.append("Duration {1}".format(nr[1], message))
@@ -77,8 +91,9 @@ def check_limit(input_json):
         try:
             limit_bool = limit[b[0]]['match']
             spec_bool = spec.get(b[0], False)
+            fail_msg = limit[b[0]].get("fail-message", "{0} testing not allowed".format(b[1]))
             if spec_bool != limit_bool:
-                errors.append("{0} testing not allowed".format(b[1]))
+                errors.append(fail_msg)
         except KeyError:
             pass  # Not there?  Don't care.
         
@@ -87,17 +102,15 @@ def check_limit(input_json):
     # Restrict ip-version
     #
     try:
-        match = pscheduler.EnumMatcher(limit["ip-version"])
-        invert = limit["ip-version"].get("invert", False)
+        enum = {
+            "enumeration": limit["ip-version"]["enumeration"],
+            "invert": limit["ip-version"].get("invert", False),
+        }
+        match = pscheduler.EnumMatcher(enum)
         fail_msg = limit["ip-version"].get("fail-message","IPv{0} is not allowed".format(spec["ip-version"]))
         contains = match.contains(spec["ip-version"])
-        
-        if invert:
-            if contains:
-                errors.append("{0} {1}".format(nr[1], fail_msg))
-        else:
-            if not contains:
-                errors.append("{0} {1}".format(nr[1], fail_msg))
+        if not contains:
+            errors.append("IP Version {0}".format(fail_msg))
     except KeyError:
         pass  # Not there?  Don't care.
 

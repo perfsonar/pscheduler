@@ -21,7 +21,7 @@ Requires:	python-pscheduler
 Requires:	python-jsontemplate
 
 BuildRequires:	pscheduler-rpm
-
+BuildRequires:  python-nose
 
 %description
 Latency test class for pScheduler
