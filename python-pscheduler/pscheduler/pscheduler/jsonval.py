@@ -376,7 +376,7 @@ __dictionary__ = {
     },
 
     "EnumMatch": {
-        "type": "array",
+        "type": "object",
         "properties": {
             "enumeration": { "type": "array",
                              "items": {

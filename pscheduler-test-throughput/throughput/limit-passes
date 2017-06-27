@@ -91,20 +91,15 @@ def check_limit(input_json):
     #
     
     try:
-        match = pscheduler.EnumMatcher(limit["ip-version"])
-        try:
-            invert = limit["ip-version"]["invert"]
-        except KeyError:
-            invert = False
-
-        in_limit = match.contains(spec["ip-version"])
-        if not in_limit or (invert and in_limit):
-            try:
-                errors.append(limit["ip-version"]["fail-message"])
-            except KeyError:
-                errors.append("IPv%d is not allowed" % spec["ip-version"])
-
-
+        enum = {
+            "enumeration": limit["ip-version"]["enumeration"],
+            "invert": limit["ip-version"].get("invert", False),
+        }
+        match = pscheduler.EnumMatcher(enum)
+        fail_msg = limit["ip-version"].get("fail-message","IPv{0} is not allowed".format(spec["ip-version"]))
+        contains = match.contains(spec["ip-version"])
+        if not contains:
+            errors.append("IP Version {0}".format(fail_msg))
     except KeyError:
         pass  # Not there?  Don't care.
 
