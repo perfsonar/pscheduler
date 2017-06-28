@@ -167,7 +167,9 @@ LIMIT_SCHEMA = {
         "duration":   { "$ref": "#/pScheduler/Limit/Duration" },
         "udp":        { "$ref": "#/pScheduler/Limit/Boolean" },
         "ip-version": { "$ref": "#/pScheduler/Limit/IPVersionList" },
-        "parallel":   { "$ref": "#/pScheduler/Limit/Cardinal"}
+        "parallel":   { "$ref": "#/pScheduler/Limit/Cardinal"},
+        "source":     { "$ref": "#/pScheduler/Limit/IPCIDRList"},
+        "dest":       { "$ref": "#/pScheduler/Limit/IPCIDRList"}
         },
     "additionalProperties": False
     }
