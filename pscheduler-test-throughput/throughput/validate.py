@@ -169,7 +169,8 @@ LIMIT_SCHEMA = {
         "ip-version": { "$ref": "#/pScheduler/Limit/IPVersionList" },
         "parallel":   { "$ref": "#/pScheduler/Limit/Cardinal"},
         "source":     { "$ref": "#/pScheduler/Limit/IPCIDRList"},
-        "dest":       { "$ref": "#/pScheduler/Limit/IPCIDRList"}
+        "dest":       { "$ref": "#/pScheduler/Limit/IPCIDRList"},
+        "endpoint":   { "$ref": "#/pScheduler/Limit/IPCIDRList"}
         },
     "additionalProperties": False
     }

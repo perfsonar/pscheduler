@@ -127,6 +127,7 @@ def check_limit(input_json):
 
     #
     # Source / Dest limits
+    # also generic Endpoint limit
     #
 
     # figure out what ip_version this test
@@ -138,6 +139,34 @@ def check_limit(input_json):
 
     # dest only needs to care about its interface to limit on
     is_dest = pscheduler.address_interface(dest)
+
+    if limit.has_key('endpoint'):
+        matcher = pscheduler.IPCIDRMatcher(limit['endpoint'])
+        all_addresses = []
+        for addr in [source, dest]:
+            possible_versions = [4, 6]
+            if ip_version is not None:
+                possible_versions = [ip_version]
+            for version in possible_versions:
+                if addr is None and not is_dest: # source is optional, need to self discovery
+                    (addr, source_if) = pscheduler.source_interface(dest, ip_version=version)
+                    if not addr:
+                        continue
+                resolved = pscheduler.dns_resolve(addr, ip_version=version)
+                if resolved:
+                    all_addresses.append(resolved)
+
+        success = False
+        for address in all_addresses:
+            if matcher.contains(address):
+                success = True
+                break
+
+        if not success:
+            errors.append("neither source nor dest addresses allowed in endpoint limit, addresses tested = %s" % all_addresses)
+            # bail out early, no point evaluating later src/dst limits
+            return errors
+    
 
     if is_dest:
         if limit.has_key('dest'):
@@ -197,7 +226,8 @@ def check_limit(input_json):
             matcher = pscheduler.IPCIDRMatcher(source_limit)
             if not matcher.contains(source):
                 errors.append("address %s not allowed in source limit" % (source))
-        
+
+    
 
     return errors
 
