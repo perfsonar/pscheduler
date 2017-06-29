@@ -1,0 +1,13 @@
+#!/bin/sed -e 1d
+{
+    "schema": 1,
+    "name": "snmpdelta",
+    "description": "Monitor delta differences in SNMP Counter values.",
+    "version": "1.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+    "scheduling-class": "background"
+}
