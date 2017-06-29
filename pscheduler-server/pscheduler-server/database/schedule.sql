@@ -248,7 +248,11 @@ BEGIN
                     SELECT id FROM run
                     WHERE
                         lower(run.times) > normalized_now()
-                        AND run.state IN (run_state_pending(),  run_state_nonstart())
+                        AND run.state IN (
+			    run_state_pending(),
+			    run_state_on_deck(),
+			    run_state_nonstart()
+			    )
                     ORDER BY lower(run.times)
                     LIMIT window_size
                 ) future
