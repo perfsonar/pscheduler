@@ -194,6 +194,11 @@ __dictionary__ = {
         ]
     },
 
+    "IPCIDRList": {
+        "type": "array",
+        "items": { "$ref": "#/pScheduler/IPCIDR" }
+    },
+
     "Int8": {
         "type": "integer",
         "minimum": -128,
@@ -707,6 +712,13 @@ __dictionary__ = {
             "required": ["version"]  
         },
 
+        "IPCIDRList": {
+            "properties": {
+                "description": { "$ref": "#/pScheduler/String" },
+                "cidr":        { "$ref": "#/pScheduler/IPCIDRList" },
+                "invert":      { "$ref": "#/pScheduler/Boolean" }
+                }
+        },
 
         "IPVersionList": {
             "properties": {

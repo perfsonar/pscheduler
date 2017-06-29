@@ -231,6 +231,8 @@ LIMIT_SCHEMA = {
                 "lower": { "$ref": "#/local/packet-interval" },
                 "upper": { "$ref": "#/local/packet-interval" }
             },
+            "required": ["lower", "upper"],
+            "additionalProperties": False
         },
         "BucketWidthRange": {
             "type": "object",
@@ -238,6 +240,8 @@ LIMIT_SCHEMA = {
                 "lower": { "$ref": "#/local/bucket-width" },
                 "upper": { "$ref": "#/local/bucket-width" }
             },
+            "required": ["lower", "upper"],
+            "additionalProperties": False
         },
         "packet-interval-limit": {
             "type": "object",
