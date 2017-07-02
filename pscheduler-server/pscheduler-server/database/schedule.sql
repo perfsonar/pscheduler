@@ -258,7 +258,7 @@ BEGIN
                 ) future
 
             )
-        ORDER BY ppf, times ASC
+        ORDER BY ppf, times, task.added ASC
         ;
 
     RETURN;
