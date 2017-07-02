@@ -214,7 +214,8 @@ def run_server():
     if affinity == None:
         # look up what interface we're going to be receiving on        
         interface = pscheduler.address_interface(test_spec['dest'], ip_version=ip_version)
-        affinity = pscheduler.interface_affinity(interface)
+        if interface:
+            affinity = pscheduler.interface_affinity(interface)
 
     if affinity != None:
         nuttcp_args.insert(0, 'numactl')
