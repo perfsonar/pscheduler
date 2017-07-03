@@ -7,17 +7,111 @@ import pscheduler
 
 logger = pscheduler.Log(quiet=True)
 
+
+#
+# Check if an an individual ip param matches limit
+#
+def check_ip_limit(addr, ip, possible_ip_versions, limit):
+    errors = []
+    if addr is None:
+        #if no addr given then quietly exit
+        return errors
+        
+    # resolve to IP
+    all_ips = []
+    if ip is None:
+        #still need to resolve, because source was not specified
+        for possible_ip_version in possible_ip_versions:
+            resolved = pscheduler.dns_resolve(addr, ip_version=possible_ip_version)
+            if resolved:
+                all_ips.append(resolved)
+        if len(all_ips) == 0:
+            errors.append("{1} cannot be resolved to IP address".format(addr))
+            return errors
+    else:
+        #already resolved, so just look at that
+        all_ips = [ ip ]
+    
+    #do match
+    matcher = pscheduler.IPCIDRMatcher(limit)
+    for candidate_ip in all_ips:
+        if not matcher.contains(candidate_ip):
+            errors.append("{0} is not in the allowed address range".format(candidate_ip))
+    
+    return errors
+
+#
+# Check source, dest, endpoint limits
+#
+
+def check_ip_limits(spec, limit):
+    errors = []
+    
+    #if no source, dest or endpoint limit then exit immediately
+    has_endpoint_limit = False
+    for ep_limit in ["source", "dest", "endpoint"]:
+        if limit.has_key(ep_limit): 
+            has_endpoint_limit = True
+            break
+    if not has_endpoint_limit:
+        return errors
+        
+    #init source, dest and ip version
+    ip_version = spec.get('ip-version', None)
+    possible_ip_versions = [4, 6]
+    source  = spec.get('source', None)
+    dest    = spec['dest'] #required
+    source_ip = None
+    dest_ip = None
+    if source is not None:
+        source_ip, dest_ip = pscheduler.ip_normalize_version(source, dest, ip_version=ip_version)
+        if source_ip is None or dest_ip is None:
+            #no use in proceeding if can't be resolved
+            errors.append("source {0} and dest {1} cannot be resolved to IP addresses of the same type".format(source, dest))
+            return errors
+        if ip_version is None:
+            ip_version = pscheduler.ip_addr_version(dest_ip)[0]
+    if ip_version is not None:
+        possible_ip_versions = [ip_version]
+        
+    #check source limit if any
+    if limit.has_key("source"):
+        if source_ip is None:
+            errors.append("This test has a limit on the source field but the source " +
+                            "was not specifed. You must specify a source to run this test")
+        else:
+            errors += check_ip_limit(source, source_ip, possible_ip_versions, limit['source'])
+    
+    #check dest limit if any
+    if limit.has_key("dest"):
+        errors += check_ip_limit(dest, dest_ip, possible_ip_versions, limit['dest'])
+                
+    #check endpoint limit if any
+    if limit.has_key("endpoint"):
+        if source is None or check_ip_limit(source, source_ip, possible_ip_versions, limit['endpoint']):
+            #source does not match
+            if check_ip_limit(dest, dest_ip, possible_ip_versions, limit['endpoint']):
+                #dest does not match
+                    errors.append("source nor dest matches the IP range set by endpoint limit")
+    
+    return errors
+
+
 #
 # Load and validate everything
 #
 
 def check_limit(input_json):
 
-    errors = []
     spec = input_json["spec"]
     limit = input_json["limit"]
     logger.debug("limit = {0}".format(limit))
-
+    
+    #
+    # Handle source, dest and endpoint limits
+    #
+    errors = check_ip_limits(spec, limit)
+              
     #
     # Handle numeric ranges
     #
