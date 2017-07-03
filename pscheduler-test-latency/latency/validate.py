@@ -261,10 +261,9 @@ LIMIT_SCHEMA = {
         },
     },
     "properties": {
-        #source
-        #dest
-        #source-node
-        #dest-node
+        "source":     { "$ref": "#/pScheduler/Limit/IPCIDRList"},
+        "dest":       { "$ref": "#/pScheduler/Limit/IPCIDRList"},
+        "endpoint":   { "$ref": "#/pScheduler/Limit/IPCIDRList"},
         "schema":           { "$ref": "#/pScheduler/Cardinal" },
         "packet-count":     { "$ref": "#/pScheduler/Limit/Cardinal" },
         "packet-interval":  { "$ref": "#/local/packet-interval-limit" },

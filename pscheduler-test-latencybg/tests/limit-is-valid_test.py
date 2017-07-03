@@ -10,7 +10,7 @@ from pscheduler import run_program
 import traceback
 
 class LimitIsValidTest(unittest.TestCase):
-    name = 'latency'
+    name = 'latencybg'
     result_valid_field = "valid"
     error_field = "message"
     

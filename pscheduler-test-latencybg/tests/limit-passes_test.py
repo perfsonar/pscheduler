@@ -10,7 +10,7 @@ from pscheduler import run_program
 import traceback
 
 class LimitPassesTest(unittest.TestCase):
-    name = 'latency'
+    name = 'latencybg'
     vaildate_cmd = ""
     
     """
