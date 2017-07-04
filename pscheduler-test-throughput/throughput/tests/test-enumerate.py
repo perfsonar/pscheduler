@@ -36,7 +36,7 @@ class TestEnumerate(unittest.TestCase):
                 'email': 'perfsonar-developer@internet2.edu',
                 },
             'description': 'Measure network throughput between hosts', 
-            'version': 1.0, 
+            'version': '1.0', 
             'scheduling-class': 'exclusive', 
             'schema': 1, 
             'name': 'throughput'

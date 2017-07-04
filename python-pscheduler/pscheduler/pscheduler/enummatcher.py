@@ -16,11 +16,19 @@ class EnumMatcher():
         and Type Dictionary.
         """
         valid, message = json_validate(enum,
-                                       {"type": "object",
-                                        "properties": {
-                                            "enumeration": {"$ref": "#/pScheduler/EnumMatch"}
-                                        },
-                                        "additionalProperties": False
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "enumeration": { "type": "array",
+                                                                 "items": {
+                                                                     "anyOf": [{ "type": "string" },
+                                                                               { "$ref": "#/pScheduler/Number" }]
+                                                                  }
+                                                               },
+                                                "invert": { "$ref": "#/pScheduler/Boolean" },
+                                            },
+                                            "additionalProperties": False,
+                                            "required": [ "enumeration" ]
                                         })
 
         if not valid:

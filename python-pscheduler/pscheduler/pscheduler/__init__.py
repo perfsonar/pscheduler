@@ -27,6 +27,7 @@ from .retry import *
 from .saferun import *
 from .sinumber import *
 from .stringmatcher import *
+from .ipcidrmatcher import *
 from .speccli import *
 from .text import *
 from .threadsafe import *

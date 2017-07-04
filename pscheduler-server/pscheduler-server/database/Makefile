@@ -11,7 +11,8 @@ DBNAME=pscheduler
 FILES_SUPERUSER=\
 	database \
 	external_program \
-	http_ops
+	http_ops \
+	json_validate
 
 FILES=\
 	preamble \

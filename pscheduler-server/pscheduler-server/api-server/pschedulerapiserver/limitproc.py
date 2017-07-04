@@ -41,8 +41,7 @@ def __limitproc_update():
     this.last_check = now
 
     log.debug("Checking for new limit configuration")
-    exists = os.path.isfile(this.limit_file) \
-             and os.access(this.limit_file, os.R_OK)
+    exists = os.path.isfile(this.limit_file)
 
     # No file means no limits
     if not exists:
@@ -79,8 +78,7 @@ def __limitproc_update():
         # Only complain if the file changed so the logs don't get
         # flooded.
         if not file_unchanged:
-            log.critical("Failed to load limit file %s: %s",
-                         limit_file, this.whynot)
+            log.critical("Failed to load limit file: %s", this.whynot)
 
     this.file_exists = True
     this.modified = modified

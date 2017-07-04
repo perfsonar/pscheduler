@@ -22,19 +22,18 @@ ERROR = logging.ERROR
 CRITICAL = logging.CRITICAL
 
 
-# Facilities
-# use getattr because this list is generated from syslog.h and may differ
+# POSIX log Facilities
+#
+# These use getattr because this list is generated from syslog.h and may differ
 # between systems.
+
 auth = getattr(logging.handlers.SysLogHandler, "LOG_AUTH", None)
-authpriv = getattr(logging.handlers.SysLogHandler, "LOG_AUTHPRIV", None)
 cron = getattr(logging.handlers.SysLogHandler, "LOG_CRON", None)
 daemon = getattr(logging.handlers.SysLogHandler, "LOG_DAEMON", None)
-ftp = getattr(logging.handlers.SysLogHandler, "LOG_FTP", None)
 kern = getattr(logging.handlers.SysLogHandler, "LOG_KERN", None)
 lpr = getattr(logging.handlers.SysLogHandler, "LOG_LPR", None)
 mail = getattr(logging.handlers.SysLogHandler, "LOG_MAIL", None)
 news = getattr(logging.handlers.SysLogHandler, "LOG_NEWS", None)
-syslog = getattr(logging.handlers.SysLogHandler, "LOG_SYSLOG", None)
 user = getattr(logging.handlers.SysLogHandler, "LOG_USER", None)
 uucp = getattr(logging.handlers.SysLogHandler, "LOG_UUCP", None)
 local0 = getattr(logging.handlers.SysLogHandler, "LOG_LOCAL0", None)

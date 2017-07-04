@@ -265,11 +265,8 @@ while True:
     # member needs to be populated whether the test succeeded or not.
 
     try:
-        if (not 'result-merged' in result) \
-                or (result['result-merged'] is None):
-            raise KeyError()
         status = result['result-merged']['succeeded']
-    except KeyError as ex:
+    except (KeyError, TypeError):
         status = False
         run_count += 1
 
@@ -318,6 +315,8 @@ while True:
             if result["state"] in ["overdue", "missed", "preempted"]:
                 pscheduler.fail("Run did not complete: %s" % result["state-display"])
 
+            if result["state"] == "finished" and "result-merged" not in result:
+                pscheduler.fail("Run completed but is missing merged result.")
 
             print
             print "Run failed.  The following errors were reported:"

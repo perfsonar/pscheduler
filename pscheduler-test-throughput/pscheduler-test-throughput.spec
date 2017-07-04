@@ -4,7 +4,7 @@
 
 %define short	throughput
 Name:		pscheduler-test-%{short}
-Version:	1.0.0.3
+Version:	1.0.0.5
 Release:	1%{?dist}
 
 Summary:	Throughput test class for pScheduler
@@ -34,6 +34,7 @@ Throughput test class for pScheduler
 %define dest %{_pscheduler_test_libexec}/%{short}
 
 %build
+make test
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install

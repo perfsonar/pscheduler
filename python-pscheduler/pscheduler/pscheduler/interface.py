@@ -36,7 +36,7 @@ def source_interface(address, port=80, ip_version=None):
         socket.SOCK_DGRAM)
     try:
         sock.connect((address, port))
-    except socket.gaierror:
+    except socket.error:
         return (None, None)
 
     interface_address = sock.getsockname()[0]

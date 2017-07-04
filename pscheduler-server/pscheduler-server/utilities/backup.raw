@@ -4,29 +4,16 @@
 #
 
 
-WORK_DIR="__TMPDIR__/$(basename $0).$$"
-
-
-if [ "$1" = "--help" ]
-then
-    echo Usage: $(basename $0) '>' FILE
-    exit 0
-fi
-
-
-
-cleanup()
-{
-    rm -rf "${WORK_DIR}"
-}
-trap cleanup EXIT
-
-rm -rf "${WORK_DIR}"
-mkdir -p "${WORK_DIR}"
 
 #
 # Sanity Check
 #
+
+if [ "$1" = "--help" -o "$#" -ne 0 ]
+then
+    echo Usage: $(basename $0) '>' FILE
+    exit 0
+fi
 
 if [ $(id -u) -ne 0 ]
 then
@@ -40,6 +27,23 @@ then
 	" Consider redirecting instead." 1>&2
     exit 1
 fi
+
+
+#
+# Working Directory
+#
+
+WORK_DIR="__TMPDIR__/$(basename $0).$$"
+
+cleanup()
+{
+    rm -rf "${WORK_DIR}"
+}
+trap cleanup EXIT
+
+rm -rf "${WORK_DIR}"
+mkdir -p "${WORK_DIR}"
+
 
 
 #

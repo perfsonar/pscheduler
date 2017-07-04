@@ -6,7 +6,7 @@
 import pscheduler
 import validate
 
-logger = pscheduler.Log(quiet=True)
+logger = pscheduler.Log()
 
 #
 # Load and validate everything
@@ -91,20 +91,15 @@ def check_limit(input_json):
     #
     
     try:
-        match = pscheduler.EnumMatcher(limit["ip-version"])
-        try:
-            invert = limit["ip-version"]["invert"]
-        except KeyError:
-            invert = False
-
-        in_limit = match.contains(spec["ip-version"])
-        if not in_limit or (invert and in_limit):
-            try:
-                errors.append(limit["ip-version"]["fail-message"])
-            except KeyError:
-                errors.append("IPv%d is not allowed" % spec["ip-version"])
-
-
+        enum = {
+            "enumeration": limit["ip-version"]["enumeration"],
+            "invert": limit["ip-version"].get("invert", False),
+        }
+        match = pscheduler.EnumMatcher(enum)
+        fail_msg = limit["ip-version"].get("fail-message","IPv{0} is not allowed".format(spec["ip-version"]))
+        contains = match.contains(spec["ip-version"])
+        if not contains:
+            errors.append("IP Version {0}".format(fail_msg))
     except KeyError:
         pass  # Not there?  Don't care.
 
@@ -129,8 +124,112 @@ def check_limit(input_json):
         pass  # Not there?  Don't care.
 
 
-    return errors
 
+    #
+    # Source / Dest limits
+    # also generic Endpoint limit
+    #
+
+    # figure out what ip_version this test
+    # is going to be, if hard coded great
+    ip_version = spec.get('ip-version', None)
+
+    source  = spec.get('source', None)
+    dest    = spec['dest']
+
+    # dest only needs to care about its interface to limit on
+    is_dest = pscheduler.address_interface(dest)
+
+    if limit.has_key('endpoint'):
+        matcher = pscheduler.IPCIDRMatcher(limit['endpoint'])
+        all_addresses = []
+        for addr in [source, dest]:
+            possible_versions = [4, 6]
+            if ip_version is not None:
+                possible_versions = [ip_version]
+            for version in possible_versions:
+                if addr is None and not is_dest: # source is optional, need to self discovery
+                    (addr, source_if) = pscheduler.source_interface(dest, ip_version=version)
+                    if not addr:
+                        continue
+                resolved = pscheduler.dns_resolve(addr, ip_version=version)
+                if resolved:
+                    all_addresses.append(resolved)
+
+        success = False
+        for address in all_addresses:
+            if matcher.contains(address):
+                success = True
+                break
+
+        if not success:
+            errors.append("neither source nor dest addresses allowed in endpoint limit, addresses tested = %s" % all_addresses)
+            # bail out early, no point evaluating later src/dst limits
+            return errors
+    
+
+    if is_dest:
+        if limit.has_key('dest'):
+            dest_limit = limit['dest']
+
+            if not source and not ip_version:
+
+                # See if we've been specified in IP notation, can infer from that
+                dest_version = pscheduler.ip_addr_version(dest, resolve = False)[0]
+
+                # If we're a hostname and no ipversion was given and no source was given
+                # we abort
+                # TODO - should this try to lookup AAAA and A and if only one exists just assume that?
+                if not dest_version:
+                    pscheduler.fail("Attempt to limit 'dest' but no ip-version given and no explicit source given, unable to determine what address will be used")
+                else:
+                    ip_version = dest_version
+                
+            if source and not ip_version:
+                source, dest = pscheduler.ip_normalize_version(source, dest)
+
+                if not source or not dest:
+                    pscheduler.fail("Unable ot normalize %s and %s to the same IP version" % (source, dest))
+                ip_version = pscheduler.ip_addr_version(source)[0]
+
+            
+            final_dest_resolved = pscheduler.dns_resolve(dest, ip_version=ip_version)
+
+            if not final_dest_resolved:
+                pscheduler.fail("Unable to resolve %s to ip version %s" % (dest, ip_version))
+            
+            matcher = pscheduler.IPCIDRMatcher(dest_limit)
+            if not matcher.contains(final_dest_resolved):
+                errors.append("address %s not allowed in dest limit" % (final_dest_resolved))
+
+    # we're not the dest, we're the source
+    else:
+        if limit.has_key("source"):
+            source_limit = limit['source']
+
+            # if we don't have an explicit ip_version, figure it out from the dest if we can
+            if not ip_version:
+                ip_version = pscheduler.ip_addr_version(dest)[0]
+                
+                # TODO: same as above with single AAAA / A? 
+                if not ip_version:
+                    pscheduler.fail("Attempt to limit 'source' but no ip-version given and dest is not given as v4 or v6 address, unable to determine what address will be used")
+
+            # if we haven't specified a source and are doing it implicitly, look it up here
+            # we know ip_version at this point
+            if not source:
+                (source_addr, source_if) = pscheduler.source_interface(dest, ip_version=ip_version)
+                if not source_addr:
+                    pscheduler.fail("Unable to determine source interface to get to %s ip version=%s" % (dest, ip_version))
+                source = source_addr
+
+            matcher = pscheduler.IPCIDRMatcher(source_limit)
+            if not matcher.contains(source):
+                errors.append("address %s not allowed in source limit" % (source))
+
+    
+
+    return errors
 
 try:
     json = pscheduler.json_load(max_schema=1)
@@ -147,53 +246,3 @@ if errors:
 pscheduler.succeed_json(result)
 
 
-
-# have to comment out the above block to make this work, TODO fix this
-if __name__ == "__main__":
-    limit = {
-        'duration': {
-            'range': {
-                'upper': 'PT60S', 'lower': 'PT10S'
-                }
-            },
-        'bandwidth': {
-            'range': {
-                'upper': '900M', 'lower': '10M'
-                }
-            },
-        'udp': {
-            'match': False
-            },
-        'ip-version': {
-            'enumeration': [6]
-            },
-        'parallel': {
-            'range': {
-                'upper': 5, 'lower': 1
-                }
-            }
-        }
-
-    spec = {
-        "dest": "10.0.2.4",
-        "source": "10.0.2.15",
-        "ip-version": 6,
-        "schema": 1,
-        "parallel": 3
-    }
-
-    result = check_limit({"spec": spec, "limit": limit})
-    print "Should be true:", (result == [])
-
-
-    spec['bandwidth'] = 10 * (1000 * 1000 * 1000)
-    result = check_limit({"spec": spec, "limit": limit})
-    print "Should be false:", (result == [])
-    print result
-
-    del spec['bandwidth']
-    spec['parallel'] = 100
-    print spec
-    result = check_limit({"spec": spec, "limit": limit})
-    print "Should be false:", (result == [])
-    print result

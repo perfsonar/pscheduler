@@ -144,6 +144,13 @@ opt_parser.add_option("--task",
                       action="store", type="string",
                       dest="task")
 
+opt_parser.add_option("--verbose",
+                      help="Add additional information where appropriate",
+                      default=False,
+                      action="store_true",
+                      dest="verbose")
+
+
 (options, remaining_args) = opt_parser.parse_args(args)
 
 
@@ -280,6 +287,12 @@ for run in schedule:
         run["end-time"],
         run["state-display"]
         )
+
+    if options.verbose and run["state"] == "nonstart":
+        print "Non-Start Reason:"
+        print pscheduler.indent(
+            run.get("errors", "Unspecified error").strip(),
+            )
 
     task_cli.append("(Run with tool '%s')" % run["task"]["tool"])
 

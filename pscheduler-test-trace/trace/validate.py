@@ -51,7 +51,7 @@ def result_is_valid(json):
                 "type": "object",
                 "properties": {
                     "ip": { "$ref": "#/pScheduler/IPAddress" },
-                    "host": { "$ref": "#/pScheduler/Host" },
+                    "hostname": { "$ref": "#/pScheduler/Host" },
                     "rtt": { "$ref": "#/pScheduler/Duration" },
                     "as": { "$ref": "#/pScheduler/AS" },
                     "error": { "$ref": "#/pScheduler/icmp-error" },
