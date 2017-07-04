@@ -14,6 +14,7 @@ AS
         run.uuid AS run,
         run_state.enum AS state_enum,
         run_state.display AS state_display,
+	run.errors AS errors,
         -- TODO: Pull full JSON with details when that's available.  See #95.
         task.json AS task_json,
 	task.cli AS task_cli,
@@ -247,13 +248,17 @@ BEGIN
                     SELECT id FROM run
                     WHERE
                         lower(run.times) > normalized_now()
-                        AND run.state IN (run_state_pending(),  run_state_nonstart())
+                        AND run.state IN (
+			    run_state_pending(),
+			    run_state_on_deck(),
+			    run_state_nonstart()
+			    )
                     ORDER BY lower(run.times)
                     LIMIT window_size
                 ) future
 
             )
-        ORDER BY ppf, times ASC
+        ORDER BY ppf, times, task.added ASC
         ;
 
     RETURN;

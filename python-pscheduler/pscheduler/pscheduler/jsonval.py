@@ -27,7 +27,7 @@ __dictionary__ = {
     #
 
     "AnyJSON": {
-        "oneOf": [
+        "anyOf": [
             { "type": "array" },
             { "type": "boolean" },
             { "type": "integer" },
@@ -184,7 +184,7 @@ __dictionary__ = {
     "IPv6CIDR": {
         "type": "string",
         # Source: http://www.regexpal.com/93988
-        "pattern": r'^s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:)))(%.+)?s*(\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))?$'
+        "pattern": r'^s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:)))(%.+)?s*(\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))$'
     },
 
     "IPCIDR": {
@@ -192,6 +192,11 @@ __dictionary__ = {
             { "$ref": "#/pScheduler/IPv4CIDR" },
             { "$ref": "#/pScheduler/IPv6CIDR" },
         ]
+    },
+
+    "IPCIDRList": {
+        "type": "array",
+        "items": { "$ref": "#/pScheduler/IPCIDR" }
     },
 
     "Int8": {
@@ -376,7 +381,7 @@ __dictionary__ = {
     },
 
     "EnumMatch": {
-        "type": "array",
+        "type": "object",
         "properties": {
             "enumeration": { "type": "array",
                              "items": {
@@ -426,7 +431,7 @@ __dictionary__ = {
 
     "Version": {
         "type": "string",
-        "pattern": r'^[0-9]+(\.[0-9]+(\.[0-9]+)?)$'
+        "pattern": r'^[0-9]+(\.[0-9]+)*[A-Za-z0-9-+]*$'
         },
 
 
@@ -707,6 +712,13 @@ __dictionary__ = {
             "required": ["version"]  
         },
 
+        "IPCIDRList": {
+            "properties": {
+                "description": { "$ref": "#/pScheduler/String" },
+                "cidr":        { "$ref": "#/pScheduler/IPCIDRList" },
+                "invert":      { "$ref": "#/pScheduler/Boolean" }
+                }
+        },
 
         "IPVersionList": {
             "properties": {
@@ -738,6 +750,92 @@ __dictionary__ = {
             "additionalProperties": False,
             "required": [ "match" ]
         }
+
+    },
+
+    #
+    # Standard Plugin Enumeration Types
+    #
+
+    "PluginEnumeration": {
+
+        "Test": {
+            "type": "object",
+            "properties": {
+                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "name":         { "$ref": "#/pScheduler/String" },
+                "description":  { "$ref": "#/pScheduler/String" },
+                "version":      { "$ref": "#/pScheduler/Version" },
+                "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+                "scheduling-class": { 
+                    "type": "string",
+                    "enum": [
+                        "background",
+                        "background-multi",
+                        "exclusive",
+                        "normal"
+                    ]
+                }
+            },
+            "additionalProperties": False,
+            "required": [
+                "name",
+                "description",
+                "version",
+                "maintainer",
+                "scheduling-class"
+            ]
+        },
+
+        "Tool": {
+            "type": "object",
+            "properties": {
+                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "name":         { "$ref": "#/pScheduler/String" },
+                "description":  { "$ref": "#/pScheduler/String" },
+                "version":      { "$ref": "#/pScheduler/Version" },
+                "tests":        { "$ref": "#/pScheduler/StringList" },
+                "preference":        { "$ref": "#/pScheduler/Integer" },
+                "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+                "scheduling-class": { 
+                    "type": "string",
+                    "enum": [
+                        "background",
+                        "background-multi",
+                        "exclusive",
+                        "normal"
+                    ]
+                }
+            },
+            "additionalProperties": False,
+            "required": [
+                "name",
+                "description",
+                "version",
+                "tests",
+                "preference",
+                "maintainer"
+            ]
+        },
+
+        "Archiver": {
+            "type": "object",
+            "properties": {
+                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "name":         { "$ref": "#/pScheduler/String" },
+                "description":  { "$ref": "#/pScheduler/String" },
+                "version":      { "$ref": "#/pScheduler/Version" },
+                "maintainer":   { "$ref": "#/pScheduler/Maintainer" }
+            },
+            "additionalProperties": False,
+            "required": [
+                "name",
+                "description",
+                "version",
+                "maintainer"
+            ]
+        },
+
 
     }
 }

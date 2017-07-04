@@ -166,7 +166,9 @@ def iso8601_to_seconds(val):
     td = pscheduler.iso8601_as_timedelta(val)
     return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10.0**6) / 10.0**6
 
-def handle_storage_error(result, attempts=0, policy=[]):
+###
+# Private and unit testable  version of handle_storage
+def _handle_storage_error(result, attempts=0, policy=[]):
     #build object
     retry = False
     archive_err_result = { 'succeeded': False, 'error': result }
@@ -181,15 +183,16 @@ def handle_storage_error(result, attempts=0, policy=[]):
     if not retry:
         archive_err_result['error'] = "Archiver permanently abandoned registering test after %d attempt(s): %s" % (attempts+1, result)
     
-    pscheduler.succeed_json(archive_err_result)
+    return archive_err_result
 
+###
+# Version of handle_storage_error that should be called
+def handle_storage_error(result, attempts=0, policy=[]): # pragma: no cover
+    pscheduler.succeed_json(_handle_storage_error(result, attempts=attempts, policy=policy))
 
 ###
 # Utility classes
-class EsmondClient:
-    url = ""
-    verify_ssl = False
-    headers = {}
+class EsmondClient: # pragma: no cover
     
     def __init__(self, url="http://127.0.0.1/esmond/perfsonar/archive", 
                         auth_token=None, 
@@ -274,8 +277,6 @@ class EsmondClient:
 
 class EsmondBaseRecord:
     test_type = None
-    metadata ={}
-    data = []
     
     def __init__(self,
                     test_type=None,
@@ -296,6 +297,7 @@ class EsmondBaseRecord:
                 ):
         #init
         self.metadata = { 'event-types': [] }
+        self.data = []
         
         if not fast_mode:
             #determine source since its optional
@@ -572,11 +574,11 @@ class EsmondThroughputRecord(EsmondBaseRecord):
                             start = stream.get("start", None)
                             end = stream.get("end", None)
                             if start is None or end is None:
-                                continue
+                                continue # pragma: no cover
                             duration = end - start
                             stream_id = stream.get("stream-id", None)
                             if stream_id is None:
-                                continue
+                                continue # pragma: no cover
                             if stream_id not in throughput_stream_intervals:
                                 throughput_stream_intervals[stream_id] = []
                             throughput = stream.get("throughput-bits", None)
@@ -672,8 +674,8 @@ class EsmondTraceRecord(EsmondBaseRecord):
                 #figure out what other info we have
                 if hop.get("ip", None): 
                     formatted_hop['ip'] = hop['ip']
-                if hop.get("host", None): 
-                    formatted_hop['host'] = hop['host']
+                if hop.get("hostname", None): 
+                    formatted_hop['hostname'] = hop['hostname']
                 if hop.get("as", None): 
                     formatted_hop['as'] = hop['as']
                 if ("rtt" in hop) and (hop["rtt"] is not None): 

@@ -4,7 +4,7 @@
 
 %define short	esmond
 Name:		pscheduler-archiver-esmond
-Version:	1.0.0.3
+Version:	1.0.0.5
 Release:	1%{?dist}
 
 Summary:	Esmond archiver class for pScheduler
@@ -28,7 +28,7 @@ Requires:		chkconfig
 %endif
 
 BuildRequires:	pscheduler-rpm
-
+BuildRequires:  python-nose
 
 %define directory %{_includedir}/make
 

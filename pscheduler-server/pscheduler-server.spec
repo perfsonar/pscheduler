@@ -7,7 +7,7 @@
 # init scripts function just fine.
 
 Name:		pscheduler-server
-Version:	1.0.0.3
+Version:	1.0.0.5
 Release:	1%{?dist}
 
 Summary:	pScheduler Server
@@ -170,7 +170,7 @@ make -C daemons \
 make -C utilities \
     "CONFIGDIR=%{_pscheduler_sysconfdir}" \
     "PGDATABASE=%{_pscheduler_database_name}" \
-    "PGPASSFILE=%{_pscheduler_database_pgpass_file}" \
+    "PGPASSFILE=%{pgpass_file}" \
     "TMPDIR=%{_tmppath}" \
     "VERSION=%{version}"
 
@@ -692,6 +692,21 @@ systemctl start httpd
 
 # ------------------------------------------------------------------------------
 
+# Triggers
+
+# Any upgrade of python-pscheduler needs to force a database restart
+# because Pg doesn't see module upgrades.
+
+%triggerin -- python-pscheduler
+%if 0%{?el6}
+service "%{pgsql_service}" restart
+%endif
+%if 0%{?el7}
+systemctl restart "%{pgsql_service}"
+%endif
+
+
+# ------------------------------------------------------------------------------
 %files
 
 #

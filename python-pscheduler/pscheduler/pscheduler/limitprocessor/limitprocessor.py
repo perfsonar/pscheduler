@@ -112,8 +112,10 @@ class LimitProcessor():
 
         if hints is not None and len(hints) > 0:
             diags.append("Hints:")
-            diags.extend(["  %s: %s" % (item, str(hints[item]))
-                          for item in sorted(hints)])
+            diags.extend([
+                pscheduler.indent("%s: %s" % (item, str(hints[item])))
+                for item in sorted(hints)
+            ])
 
         identifications = self.identifiers.identities(hints)
         if not identifications:

@@ -44,7 +44,8 @@ def schedule():
                 task_json,
                 task_cli,
                 test_json,
-                tool_json
+                tool_json,
+                errors
             FROM schedule
             WHERE times && tstzrange(%s, %s, '[)')
     """]
@@ -78,7 +79,8 @@ def schedule():
             "task": row[6],
             "cli": row[7],
             "test": row[8],
-            "tool": row[9]
+            "tool": row[9],
+            "errors": row[10]
             }
 
         run["task"]["href"] = task_href

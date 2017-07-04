@@ -60,7 +60,7 @@ opt_parser.add_option("--no-as",
                       action="store_false",
                       dest="as_")
 
-opt_parser.add_option("--dest",
+opt_parser.add_option("-d","--dest",
                       help="Destination host",
                       action="store", type="string",
                       dest="dest")
@@ -94,7 +94,7 @@ opt_parser.add_option("--first-ttl",
                       action="store", type="int",
                       dest="firstttl")
 
-opt_parser.add_option("--source",
+opt_parser.add_option("-s","--source",
                       help="Source address",
                       action="store", type="string",
                       dest="source")

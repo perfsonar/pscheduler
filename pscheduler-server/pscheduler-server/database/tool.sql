@@ -71,11 +71,13 @@ BEGIN
     END IF;
 
     -- Version 1 to version 2
-    --IF t_version = 1
-    --THEN
-    --    ALTER TABLE ...
-    --    t_version := t_version + 1;
-    --END IF;
+    -- Remove unused and trouble-causing version column
+    IF t_version = 1
+    THEN
+        ALTER TABLE tool DROP COLUMN version;
+
+        t_version := t_version + 1;
+    END IF;
 
 
     --
@@ -154,16 +156,8 @@ $$ LANGUAGE plpgsql;
 
 
 
-CREATE OR REPLACE FUNCTION tool_json_is_valid(json JSONB)
-RETURNS BOOLEAN
-AS $$
-BEGIN
-    RETURN (json ->> 'name') IS NOT NULL
-      AND (text_to_numeric(json ->> 'version', false) IS NOT NULL)
-      AND (text_to_numeric(json ->> 'preference', false) IS NOT NULL);
-END;
-$$ LANGUAGE plpgsql;
-
+-- Old function
+DROP FUNCTION IF EXISTS tool_json_is_valid(json JSONB);
 
 
 DROP TRIGGER IF EXISTS tool_alter ON tool CASCADE;
@@ -171,14 +165,18 @@ DROP TRIGGER IF EXISTS tool_alter ON tool CASCADE;
 CREATE OR REPLACE FUNCTION tool_alter()
 RETURNS TRIGGER
 AS $$
+DECLARE
+    json_result TEXT;
 BEGIN
-    IF NOT tool_json_is_valid(NEW.json) THEN
-        RAISE EXCEPTION 'Tool JSON is invalid.';
+
+    json_result := json_validate(NEW.json, '#/pScheduler/PluginEnumeration/Tool');
+    IF json_result IS NOT NULL
+    THEN
+        RAISE EXCEPTION 'Invalid enumeration: %', json_result;
     END IF;
 
     NEW.name := NEW.json ->> 'name';
     NEW.description := NEW.json ->> 'description';
-    NEW.version := text_to_numeric(NEW.json ->> 'version');
     NEW.preference := text_to_numeric(NEW.json ->> 'preference');
     RETURN NEW;
 END;
@@ -297,6 +295,7 @@ DECLARE
     tool_list JSONB;
     tool_name TEXT;
     tool_enumeration JSONB;
+    json_result TEXT;
     sschema NUMERIC;  -- Name dodges a reserved word
 BEGIN
     run_result := pscheduler_internal(ARRAY['list', 'tool']);
@@ -325,10 +324,13 @@ BEGIN
             CONTINUE;
         END IF;
 
-	IF NOT tool_json_is_valid(tool_enumeration) THEN
-	    RAISE WARNING 'Tool "%" enumeration is invalid', tool_name;
+        json_result := json_validate(tool_enumeration,
+	    '#/pScheduler/PluginEnumeration/Tool');
+        IF json_result IS NOT NULL
+        THEN
+            RAISE WARNING 'Invalid enumeration for tool "%": %', tool_name, json_result;
 	    CONTINUE;
-	END IF;
+        END IF;
 
 	PERFORM tool_upsert(tool_enumeration);
 

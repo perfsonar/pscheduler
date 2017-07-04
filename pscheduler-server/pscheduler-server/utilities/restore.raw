@@ -6,21 +6,15 @@
 #
 
 
-WORK_DIR="__TMPDIR__/$(basename $0).$$"
+#
+# Sanity Check
+#
 
-[ -t 0 -a -t 1 ] && INTERACTIVE=true || INTERACTIVE=false
-
-
-if [ "$1" = "--help" ]
+if [ "$1" = "--help" -o "$#" -ne 1 ]
 then
     echo Usage: $(basename $0) FILE
     exit 0
 fi
-
-
-#
-# Sanity Check
-#
 
 if [ $(id -u) -ne 0 ]
 then
@@ -28,20 +22,17 @@ then
     exit 1
 fi
 
-if [ "$#" -ne 1 -o ! -f "$1" ]
-then
-    echo "Usage: $(basename $0) BACKUP-FILE" 1>&2
-    exit 1
-fi
-
 FILE="$1"
 
+
+[ -t 0 -a "${FILE}" != "-" ] && INTERACTIVE=true || INTERACTIVE=false
+[ -t 1 ] && OUT_INTERACTIVE=true || OUT_INTERACTIVE=false
 
 #
 # Give interactive users some warning
 #
 
-if $INTERACTIVE
+if $INTERACTIVE && $OUT_INTERACTIVE
 then
     cat <<EOF
 
@@ -63,13 +54,11 @@ EOF
     echo
 fi
 
-
-
 #
-# Restore the backup
+# Working Directory
 #
 
-ERROR=false
+WORK_DIR="__TMPDIR__/$(basename $0).$$"
 
 cleanup()
 {
@@ -89,12 +78,18 @@ rm -rf "${WORK_DIR}"
 mkdir -p "${WORK_DIR}"
 
 
-$INTERACTIVE && printf 'Restoring pScheduler from backup:\n' 1>&2 || true
+#
+# Restore the backup
+#
 
-$INTERACTIVE && printf '  Unpacking backup...' 1>&2 || true
-zcat "${FILE}" \
+ERROR=false
+
+$OUT_INTERACTIVE && printf 'Restoring pScheduler from backup:\n' 1>&2 || true
+
+$OUT_INTERACTIVE && printf '  Unpacking backup...' 1>&2 || true
+zcat -f "${FILE}" \
     | (cd "${WORK_DIR}" && tar xf -)
-$INTERACTIVE && printf ' Done.\n' 1>&2 || true
+$OUT_INTERACTIVE && printf ' Done.\n' 1>&2 || true
 
 
 for FILE in package-version config-dir.tar database-dump
@@ -146,11 +141,11 @@ ERROR=true
 #
 
 CONFIG_DIR="__CONFIGDIR__"
-$INTERACTIVE && printf '  Restoring configuration...' 1>&2 || true
+$OUT_INTERACTIVE && printf '  Restoring configuration...' 1>&2 || true
 mv "${CONFIG_DIR}" "${WORK_DIR}/old-config"
 mkdir -p "${CONFIG_DIR}"
 (cd "${CONFIG_DIR}" && tar xpf "${WORK_DIR}/config-dir.tar")
-$INTERACTIVE && printf ' Done.\n' 1>&2 || true
+$OUT_INTERACTIVE && printf ' Done.\n' 1>&2 || true
 
 
 #
@@ -159,7 +154,7 @@ $INTERACTIVE && printf ' Done.\n' 1>&2 || true
 
 DATABASE="__PGDATABASE__"
 DATABASE_SAVE="${DATABASE}_save"
-$INTERACTIVE && printf '  Restoring database...' 1>&2 || true
+$OUT_INTERACTIVE && printf '  Restoring database...' 1>&2 || true
 SQL_WORK="${WORK_DIR}/restore.sql"
 cat >> "${SQL_WORK}" <<EOF
 DO \$\$
@@ -205,12 +200,12 @@ then
     cat "${DB_OUTPUT}"
     exit 1
 fi
-$INTERACTIVE && printf ' Done.\n' 1>&2 || true
+$OUT_INTERACTIVE && printf ' Done.\n' 1>&2 || true
 
-$INTERACTIVE && printf '  Updating database...' 1>&2 || true
+$OUT_INTERACTIVE && printf '  Updating database...' 1>&2 || true
 # The redirect makes this run quietly.
 pscheduler internal db-update < /dev/null
-$INTERACTIVE && printf ' Done.\n' 1>&2 || true
+$OUT_INTERACTIVE && printf ' Done.\n' 1>&2 || true
 
 # If we got here, all was good.
 ERROR=false
