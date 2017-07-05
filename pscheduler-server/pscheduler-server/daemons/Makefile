@@ -51,6 +51,21 @@ endif
 TO_CLEAN += archiver
 
 
+debug: debug.raw
+ifndef PSUSER
+	@echo No PSUSER specified for build
+	@false
+endif
+	sed \
+		-e 's|__PSUSER__|$(PSUSER)|g' \
+		< $< > $@
+	@if egrep -e '__[A-Z_]+__' $@ ; then \
+		echo "Found un-substituted values in processed file $@" ; \
+		false ; \
+	fi
+TO_CLEAN += debug
+
+
 monitor: monitor.raw
 ifndef PGPASSFILE
 	@echo No PGPASSFILE specified for build
