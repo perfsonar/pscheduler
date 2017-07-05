@@ -36,7 +36,7 @@ class ExecUnitTest(unittest.TestCase):
     """
     Run and verify results
     """
-    def assert_cmd(self, input, expected_status=0, expected_valid=True, expected_errors=[], match_all_errors=True):
+    def run_cmd(self, input, expected_status=0):
         #Run command
         try:
             status, stdout, stderr = run_program([self.cmd], stdin=input)
@@ -57,6 +57,13 @@ class ExecUnitTest(unittest.TestCase):
         except:
             traceback.print_exc()
             self.fail("Invalid JSON returned by {0}: {1}".format(self.progname,stdout))
+        
+        return result_json
+    
+    def assert_cmd(self, input, expected_status=0, expected_valid=True, expected_errors=[], match_all_errors=True):
+        #run command
+        result_json = self.run_cmd(input, expected_status=expected_status)
+        
         #check fields
         assert(self.result_valid_field in result_json) 
         self.assertEqual(result_json[self.result_valid_field], expected_valid)
@@ -78,7 +85,7 @@ class ExecUnitTest(unittest.TestCase):
                     assert(expected_error in result_json[self.error_field])
 
 """
-Class for writing "limit-passes" unit tests
+Class for writing limit-passes unit tests
 """
 class LimitPassesUnitTest(ExecUnitTest):
     progname = "limit-passes"
@@ -87,10 +94,43 @@ class LimitPassesUnitTest(ExecUnitTest):
     has_single_error = False
 
 """
-Class for writing "limit-passes" unit tests
+Class for writing limit-is-valid unit tests
 """
 class LimitIsValidUnitTest(ExecUnitTest):
     progname = "limit-is-valid"
     result_valid_field = "valid"
     error_field = "message"
+
+"""
+Class for writing archiver data-is-valid unit tests
+"""
+class ArchiverDataIsValidUnitTest(ExecUnitTest):
+    progname = "data-is-valid"
+    result_valid_field = "valid"
     
+    """
+Class for writing archiver enumerate unit tests
+"""
+class ArchiverEnumerateTest(ExecUnitTest):
+    progname = "enumerate"
+    result_valid_field = "valid"
+    
+    """
+    Run enumerate command and verify output contain required fields
+    """
+    def test_enumerate_fields(self):
+        #Run command
+        result_json = self.run_cmd("")
+        
+        #should switch to assertIn for python 2.7
+        assert('schema' in result_json) 
+        assert('name' in result_json)
+        assert('description' in result_json)
+        assert('version' in result_json)
+        assert('maintainer' in result_json)
+        assert('name' in result_json['maintainer'])
+        assert('email' in result_json['maintainer'])
+        assert('href' in result_json['maintainer'])
+        #verify name is as expected
+        self.assertEqual(result_json['name'], self.name)
+        
