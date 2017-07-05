@@ -28,6 +28,7 @@ Requires:		chkconfig
 %endif
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:  python-pscheduler
 BuildRequires:  python-nose
 
 %define directory %{_includedir}/make

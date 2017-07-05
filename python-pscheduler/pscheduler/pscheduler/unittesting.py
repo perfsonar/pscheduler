@@ -111,7 +111,7 @@ class ArchiverDataIsValidUnitTest(ExecUnitTest):
     """
 Class for writing archiver enumerate unit tests
 """
-class ArchiverEnumerateTest(ExecUnitTest):
+class ArchiverEnumerateUnitTest(ExecUnitTest):
     progname = "enumerate"
     result_valid_field = "valid"
     
