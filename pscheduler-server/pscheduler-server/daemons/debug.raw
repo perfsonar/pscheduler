@@ -35,6 +35,16 @@ esac
 shift
 
 
+# Make sure the user can kill the processes in question
+
+USERNAME=$(id -nu)
+if [ "${USERNAME}" != "root" -a "${USERNAME}" != "__PSUSER__" ]
+then
+    echo "This program must be run as root or __PSUSER__" 1>&2
+    exit 1
+fi
+
+
 if [ $# -eq 0 ]
 then
     SERVICE_LIST="ticker scheduler runner archiver api"
