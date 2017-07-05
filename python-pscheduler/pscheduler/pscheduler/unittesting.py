@@ -36,10 +36,11 @@ class ExecUnitTest(unittest.TestCase):
     """
     Run and verify results
     """
-    def run_cmd(self, input, expected_status=0):
+    def run_cmd(self, input, args=[], expected_status=0, json_out=True, expected_stderr=""):
         #Run command
+        full_cmd = [self.cmd] + args
         try:
-            status, stdout, stderr = run_program([self.cmd], stdin=input)
+            status, stdout, stderr = run_program(full_cmd, stdin=input)
             print self.cmd
         except:
             #print stacktrace for any errors
@@ -50,7 +51,14 @@ class ExecUnitTest(unittest.TestCase):
         print stdout
         print stderr
         self.assertEqual(status, expected_status) #status should be 0
-        self.assertFalse(stderr) #stderr should be empty
+        if expected_status == 0:
+            self.assertFalse(stderr) #stderr should be empty
+        elif expected_stderr:
+            self.assertEquals(stderr, expected_stderr)  
+            
+        if not json_out:
+            return stdout
+            
         #check for valid JSON
         try:
             result_json = json.loads(stdout)
@@ -60,9 +68,9 @@ class ExecUnitTest(unittest.TestCase):
         
         return result_json
     
-    def assert_cmd(self, input, expected_status=0, expected_valid=True, expected_errors=[], match_all_errors=True):
+    def assert_cmd(self, input, args=[], expected_status=0, expected_valid=True, expected_errors=[], match_all_errors=True):
         #run command
-        result_json = self.run_cmd(input, expected_status=expected_status)
+        result_json = self.run_cmd(input, args=args, expected_status=expected_status)
         
         #check fields
         assert(self.result_valid_field in result_json) 
@@ -85,21 +93,14 @@ class ExecUnitTest(unittest.TestCase):
                     assert(expected_error in result_json[self.error_field])
 
 """
-Class for writing limit-passes unit tests
+Class for writing tests that spit out formatted non-json output
 """
-class LimitPassesUnitTest(ExecUnitTest):
-    progname = "limit-passes"
-    result_valid_field = "passes"
-    error_field = "errors"
-    has_single_error = False
-
-"""
-Class for writing limit-is-valid unit tests
-"""
-class LimitIsValidUnitTest(ExecUnitTest):
-    progname = "limit-is-valid"
-    result_valid_field = "valid"
-    error_field = "message"
+class FormattedOutputUnitTest(ExecUnitTest):
+    
+    def assert_formatted_output(self, format, input, expected_status=0, expected_stdout=None, expected_stderr=None):
+        output = self.run_cmd(input, args=[format], expected_status=expected_status, json_out=False, expected_stderr=expected_stderr)
+        if expected_stdout:
+            self.assertEquals(output.strip(), expected_stdout.strip())
 
 """
 Class for writing archiver data-is-valid unit tests
@@ -108,7 +109,7 @@ class ArchiverDataIsValidUnitTest(ExecUnitTest):
     progname = "data-is-valid"
     result_valid_field = "valid"
     
-    """
+"""
 Class for writing archiver enumerate unit tests
 """
 class ArchiverEnumerateUnitTest(ExecUnitTest):
@@ -133,4 +134,155 @@ class ArchiverEnumerateUnitTest(ExecUnitTest):
         assert('href' in result_json['maintainer'])
         #verify name is as expected
         self.assertEqual(result_json['name'], self.name)
+
+"""
+Class for writing cli-to-spec unit tests
+"""
+class TestCliToSpecUnitTest(ExecUnitTest):
+    progname = "cli-to-spec"
+    
+    """
+    Given a map of CLI parameters and their values, check JSON. Assumes long names match
+    JSON names if no option given. Entries can take a mix of the following forms:
+    {
+        "longname": {}, #boolean switch where longname is JSON key
+        "longname": {"val": VALUE}, #switch with given value where longname is JSON key
+        "longname": {"val": VALUE, "alt": "OPTIONAL_ALT_NAME"}, #use alternative command-line switch
+        "longname": {"val": VALUE, "json_key": "JSON_KEY_NAME"}, # use different json name.
+         "longname": {"val": VALUE, "json_key": None}, # skip checking in JSON
+        "longname": {"val": VALUE, "json_val": "JSON_VAL"},# use different json val, if None, val will not be checked
+    }
+    """
+    def assert_arg_map(self, arg_map):
+        #build list of arguments
+        args = []
+        for arg in arg_map:
+            #skip None 
+            if arg_map[arg] is None:
+                continue
+            
+            #determine if should use short or long form
+            if "short" in arg_map[arg]:
+                args.append("-{0}".format(arg_map[arg]["short"]))
+            else:
+                args.append("--{0}".format(arg))
+            if "val" in arg_map[arg]:
+                args.append(str(arg_map[arg]["val"]))
+        
+        #Run command
+        result_json = self.run_cmd("", args=args)
+
+        #should switch to assertIn for python 2.7
+        for arg in arg_map:
+            #look for json key
+            json_key = arg
+            if "json_key" in arg_map[arg]:
+                json_key = arg_map[arg]["json_key"]
+            if json_key is None:
+                #allows you to skip result by setting to json_key = None
+                continue
+            else:
+                assert(json_key in result_json)
+            
+            #look for value
+            json_val = None
+            if "json_val" in arg_map[arg]:
+                json_val = arg_map[arg]["json_val"]
+            elif "val" in arg_map[arg]:
+                json_val = arg_map[arg]["val"]
+            else:
+                #assume boolean
+                self.assertEquals(result_json[json_key], True)
+                continue
+            
+            #If here, check value
+            if json_val is None:
+                #allows us to skip value checking by explicitly setting None
+                continue
+            else:
+                self.assertEquals(str(result_json[json_key]), str(json_val))
+
+"""
+Class for writing test enumerate unit tests
+"""
+class TestEnumerateUnitTest(ExecUnitTest):
+    progname = "enumerate"
+    result_valid_field = "valid"
+    scheduling_class = None #override this
+    
+    """
+    Run enumerate command and verify output contain required fields
+    """
+    def test_enumerate_fields(self):
+        #Run command
+        result_json = self.run_cmd("")
+
+        #should switch to assertIn for python 2.7
+        assert('schema' in result_json) 
+        assert('name' in result_json)
+        assert('description' in result_json)
+        assert('version' in result_json)
+        assert('maintainer' in result_json)
+        assert('name' in result_json['maintainer'])
+        assert('email' in result_json['maintainer'])
+        assert('href' in result_json['maintainer'])
+        assert('scheduling-class' in result_json)
+        #verify name is as expected
+        self.assertEqual(result_json['name'], self.name)
+        #scheduling class is as expected
+        self.assertEqual(result_json['scheduling-class'], self.scheduling_class)
+
+"""
+Class for writing limit-is-valid unit tests
+"""
+class TestLimitIsValidUnitTest(ExecUnitTest):
+    progname = "limit-is-valid"
+    result_valid_field = "valid"
+    error_field = "message"
+
+     
+"""
+Class for writing limit-passes unit tests
+"""
+class TestLimitPassesUnitTest(ExecUnitTest):
+    progname = "limit-passes"
+    result_valid_field = "passes"
+    error_field = "errors"
+    has_single_error = False
+
+"""
+Class for writing test participants unit tests
+"""
+class TestParticipantsUnitTest(ExecUnitTest):
+    progname = "participants"
+    
+    def assert_participants(self, input, expected_participants, null_reason=""):
+        result_json = self.run_cmd(input)
+        assert("participants" in result_json)
+        assert(len(result_json["participants"]), len(expected_participants))
+        for i in range(0,len(expected_participants)):
+            self.assertEquals(expected_participants[i], result_json["participants"][i])
+
+        if null_reason:
+            assert("null-reason" in result_json)
+            self.assertEquals(null_reason, result_json["null-reason"])
+
+"""
+Class for writing test result-format unit tests
+"""
+class TestResultFormatUnitTest(FormattedOutputUnitTest):
+    progname = "result-format"
+
+"""
+Class for writing test spec-format unit tests
+"""
+class TestSpecFormatUnitTest(FormattedOutputUnitTest):
+    progname = "spec-format"
+    
+"""
+Class for writing test spec-is-valid unit tests
+"""
+class TestSpecIsValidUnitTest(ExecUnitTest):
+    progname = "spec-is-valid"
+    result_valid_field = "valid"
         

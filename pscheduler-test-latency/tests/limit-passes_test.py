@@ -5,7 +5,7 @@ tests for the limit-passes command
 import pscheduler
 
 
-class LatencyLimitPassesTest(pscheduler.LimitPassesUnitTest):
+class LatencyLimitPassesTest(pscheduler.TestLimitPassesUnitTest):
     name = 'latency'
         
     """

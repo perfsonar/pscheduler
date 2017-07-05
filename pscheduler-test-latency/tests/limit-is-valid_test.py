@@ -4,7 +4,7 @@ tests for the limit-is-valid command
 
 import pscheduler
 
-class LimitIsValidTest(pscheduler.LimitIsValidUnitTest):
+class LimitIsValidTest(pscheduler.TestLimitIsValidUnitTest):
     name = 'latency'
         
     """
@@ -111,7 +111,7 @@ class LimitIsValidTest(pscheduler.LimitIsValidUnitTest):
         self.assert_cmd('{"packet-padding": {"range": {"upper": 1000}}}', expected_valid=False)
         self.assert_cmd('{"packet-padding": {"range": {"upper": 1000, "lower": 0, "garbage": "stuff"}}}', expected_valid=False)
     
-    def test_packet_ctrl_port(self):
+    def test_ctrl_port(self):
         #test ctrl port
         ##in range
         self.assert_cmd('{"ctrl-port": {"range": {"upper": 861, "lower": 0}}}')
