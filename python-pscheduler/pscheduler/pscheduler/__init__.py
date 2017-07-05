@@ -31,4 +31,5 @@ from .ipcidrmatcher import *
 from .speccli import *
 from .text import *
 from .threadsafe import *
+from .unittesting import *
 from .interface import *
