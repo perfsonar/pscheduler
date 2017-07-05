@@ -212,21 +212,6 @@ def __tasks_get_filtered(uri_base,
     return tasks_returned
 
 
-# TODO: Remove this.
-@application.route("/junk", methods=["GET"])
-def junk():
-    try:
-        return ok_json(__tasks_get_filtered(
-            request.base_url,
-            where_clause='task.uuid = %s',
-            args=["112ffb46-567d-4ecd-b286-276566a97619"],
-            expanded=False,
-            detail=True))
-    except Exception as ex:
-        return error(str(ex))
-
-
-
 
 @application.route("/tasks", methods=['GET', 'POST'])
 def tasks():
