@@ -21,7 +21,8 @@ Requires:	python-pscheduler
 Requires:	python-jsontemplate
 Requires:       numactl
 BuildRequires:	pscheduler-rpm
-
+BuildRequires:	python-pscheduler
+BuildRequires:  python-nose
 
 %description
 Throughput test class for pScheduler
