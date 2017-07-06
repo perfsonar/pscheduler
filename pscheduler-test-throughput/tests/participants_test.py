@@ -1,9 +1,7 @@
 #!/usr/bin/python
 
-import unittest
 import pscheduler
-import json
-import os
+from json import dumps
 
 
 # SKIPPING THIS TEST FOR NOW BECAUSE
@@ -13,28 +11,8 @@ import os
 # whether to use pscheduler or bwctl
 
 
-class TestParticipants(unittest.TestCase):
-
-    path = os.path.dirname(os.path.realpath(__file__))
-
-    def get_output(self, args, check_success=True):
-
-        args = json.dumps(args)
-
-        # actually run cli-to-spec with the input
-        code, stdout, stderr = pscheduler.run_program("%s/../participants" % self.path,
-                                                      stdin = args)
-
-
-        if check_success:
-            # make sure it succeeded
-            self.assertEqual(code, 0)
-
-        # get json out
-        if code != 0:
-            return stderr
-        return json.loads(stdout)
-        
+class TestParticipants(pscheduler.TestParticipantsUnitTest):
+    name="throughput"
 
     def test_basic(self):
         # HACK
@@ -46,12 +24,8 @@ class TestParticipants(unittest.TestCase):
             "source": "localhost",
             "dest": "localhost"
             }
-
-        data = self.get_output(test_input)
-
-        self.assertTrue(len(data['participants']) == 2)
-        self.assertEqual(data["participants"][0], test_input["source"])
-        self.assertEqual(data["participants"][1], test_input["dest"])
+        expected = [test_input["source"], test_input["dest"]] 
+        self.assert_participants(test_input, expected)
 
     def test_null_input(self):
         # HACK
@@ -61,9 +35,8 @@ class TestParticipants(unittest.TestCase):
         test_input = {
             "dest": "127.0.0.1"
             }
-
-        data = self.get_output(test_input)
-        self.assertEqual(data["null-reason"], "No source specified")
+        expected = [None, test_input["dest"]] 
+        self.assert_participants(test_input, expected, null_reason="No source specified")
 
 
     def test_bad_input(self):
@@ -74,9 +47,12 @@ class TestParticipants(unittest.TestCase):
         test_input = {
             "source": "127.0.0.1"
             }
-
-        data = self.get_output(test_input, check_success=False)
-        self.assertEqual(data, "Missing destination argument in spec\n")
+        self.run_cmd(
+            dumps(test_input), 
+            expected_status=1, 
+            json_out=False,
+            expected_stderr="Missing destination argument in spec\n"
+        )
 
 
 if __name__ == "__main__":

@@ -199,7 +199,7 @@ class TestCliToSpecUnitTest(ExecUnitTest):
                 {
                     "longname": {}, #boolean switch where longname is JSON key
                     "longname": {"val": VALUE}, #switch with given value where longname is JSON key
-                    "longname": {"val": VALUE, "alt": "OPTIONAL_ALT_NAME"}, #use alternative command-line switch
+                    "longname": {"val": VALUE, "short": "OPTIONAL_ALT_NAME"}, #use alternative command-line switch
                     "longname": {"val": VALUE, "json_key": "JSON_KEY_NAME"}, # use different json name.
                     "longname": {"val": VALUE, "json_key": None}, # skip checking in JSON
                     "longname": {"val": VALUE, "json_val": "JSON_VAL"},# use different json val, if None, val will not be checked

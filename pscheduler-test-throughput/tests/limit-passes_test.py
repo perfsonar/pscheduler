@@ -1,13 +1,10 @@
-#!/usr/bin/python
-
-import unittest
 import pscheduler
-import json
+
 import os
-import sys
+from json import dumps
 
-
-class TestLimitPasses(unittest.TestCase):
+class TestLimitPasses(pscheduler.TestLimitPassesUnitTest):
+    name = 'throughput'
 
     path = os.path.dirname(os.path.realpath(__file__))
     (local_addr, local_intf) = pscheduler.source_interface("www.perfsonar.net")
@@ -17,30 +14,8 @@ class TestLimitPasses(unittest.TestCase):
         print "Unable to find routable address to reach www.perfsonar.net, skipping test"
         sys.exit(1)
 
-    
-    def get_output(self, limit, spec, check_success=True):
-
-        args = {"limit": limit, "spec": spec}
-
-       
-        # actually run cli-to-spec with the input
-        code, stdout, stderr = pscheduler.run_program("%s/../limit-passes" % self.path,
-                                                      stdin = json.dumps(args))
-
-        
-        if check_success:
-            # make sure it succeeded
-            self.assertEqual(code, 0)
-
-        # get json out
-        if code != 0:
-            return stderr
-        return json.loads(stdout)
-        
-
     def test_limit_duration(self):
 
-        # unknown field
         limit = {
             'duration': {
                 'range': {
@@ -54,17 +29,10 @@ class TestLimitPasses(unittest.TestCase):
             "schema": 1,
             "duration": "PT20S"
         }
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}))
         
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], True, "passed")
-
-        # bad duration
-        spec["duration"] = "PT5M"
-        args = ["--bandwidth", "butterfly"]
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], False, "failed")
-        self.assertEqual(len(data["errors"]), 1, "got 1 error back")
-
+        spec["duration"] = "PT05M"
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}), expected_valid=False)
 
     def test_limit_source(self):
 
@@ -81,23 +49,23 @@ class TestLimitPasses(unittest.TestCase):
             "dest": "10.0.0.1",
             "schema": 1
             }
-
-                
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], False, "failed, not allowed source")
+        self.assert_cmd(
+            dumps({"limit": limit, "spec": spec}), 
+            expected_valid=False, 
+            expected_errors=["address 192.168.1.23 not allowed in source limit"]
+        )
 
 
         # manually set source, should work now
         spec['source'] = "192.168.254.10"
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], True, "allowed source")
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}))
 
 
     def test_limit_dest(self):
 
         limit = {
             "dest": {
-                "cidr": ["%s/32" % self.local_addr]
+                "cidr": ["{0}/32".format(self.local_addr)]
             }
         }
 
@@ -105,18 +73,14 @@ class TestLimitPasses(unittest.TestCase):
             "dest": self.local_addr,
             "schema": 1
         }
-
-
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], True, "allowed dest")
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}))
 
 
         # pretend this is another interface on the computer
         # and we're trying to limit throughput to only that
         limit['dest']['cidr'][0] = "1.2.3.4/32"
 
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], False, "not allowed dest")
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}), expected_valid=False)
 
 
         # modify the spec so that we're no longer the dest, shouldn't care anymore
@@ -125,16 +89,13 @@ class TestLimitPasses(unittest.TestCase):
         spec = {
             "dest": "1.2.3.4"
         }
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}))
 
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], True, "not allowed dest")
-
-        
     def test_limit_dest_hostname(self):
 
         limit = {
             "source": {
-                "cidr": ["%s/32" % self.local_addr]
+                "cidr": ["{0}/32".format(self.local_addr)]
             }
         }
 
@@ -144,20 +105,14 @@ class TestLimitPasses(unittest.TestCase):
         }
 
 
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], True, "succeeds because only source is limited")
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}))
 
         spec['source'] = self.local_addr
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], True, "succeeds because is source in the limit")
-
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}))
 
         # pretend other interface on the same host
         spec['source'] = "1.2.3.4"
-        data = self.get_output(limit, spec, check_success=False)
-        self.assertEqual(data["passes"], False, "fails because source is limited and wrong")
-        self.assertEqual(len(data["errors"]), 1, "got 1 error")
-
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}), expected_valid=False)
 
     def test_limit_ip_version_source(self):
 
@@ -174,19 +129,14 @@ class TestLimitPasses(unittest.TestCase):
         }
 
 
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], True, "succeeds because ip-version is manually set")
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}))
 
         spec['ip-version'] = 6
-        data = self.get_output(limit, spec, check_success=False)
-        self.assertEqual("Unable to determine source interface to get to 192.168.254.254" in data,
-                         True,
-                         "fails forced ip-version is incompatible when trying to find source address")
+        self.run_cmd(dumps({"limit": limit, "spec": spec}), expected_status=1, json_out=False)
 
         spec['ip-version'] = 4
         spec['source'] = self.local_addr
-        data = self.get_output(limit, spec, check_success=False)
-        self.assertEqual(data["passes"], True, "passes source and ip-version spec")
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}))
 
 
     def test_limit_ip_version_dest(self):
@@ -195,7 +145,7 @@ class TestLimitPasses(unittest.TestCase):
             "dest": {
                 # TODO - this is the ipv4 address of www.perfsonar.net
                 # a better system might be to look this up dynamically
-                "cidr": ["%s/32" % self.local_addr]
+                "cidr": ["{0}/32".format(self.local_addr)]
             }
         }
 
@@ -204,19 +154,15 @@ class TestLimitPasses(unittest.TestCase):
             "ip-version": 6,
             "schema": 1
         }
-
-
-        data = self.get_output(limit, spec, check_success=False)
-        self.assertEqual("Unable to resolve" in data, True, "fails because unable to resolve IP address")
+        
+        self.run_cmd(dumps({"limit": limit, "spec": spec}), expected_status=1, json_out=False)
 
         spec['ip-version'] = 4
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], True, "succeeds because dest is v4")
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}))
 
         spec['source'] = "www.perfsonar.net"
         del spec['ip-version']
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], True, "succeeds because dest is v4")
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}))
 
     def test_limit_endpoint(self):
 
@@ -232,20 +178,17 @@ class TestLimitPasses(unittest.TestCase):
         }
 
 
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], False, "fails because no local address allowed in endpoint")
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}), expected_valid=False)
 
         # add allowed address as source
         spec['source'] = "1.2.3.4"
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], True, "passes now because source is allowed in endpoint even though dest isn't")
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}))
 
 
         # do the same but with dest
         spec = {"dest": "1.2.3.4",
                 "source": self.local_addr}
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], True, "passes now because dest is allowed in endpoint even though source isn't")
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}))
 
 
         # do the check with hostname
@@ -256,25 +199,20 @@ class TestLimitPasses(unittest.TestCase):
             }
         spec = {"dest": "www.perfsonar.net",
                 "source": self.local_addr}
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], True, "passes now because dest is allowed via a hostname")
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}))
 
         # should fail if we force v6 since only the v4 is in the endpoint list
         spec['ip-version'] = 6
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], False, "doesn't pass because v6 isn't in allowed endpoint list and ip-version specified")
-
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}), expected_valid=False)
 
         # check when only endpoint is local addr that a test going out still works
         limit = {
             "endpoint": {
-                "cidr": ["%s/32" % self.local_addr]
+                "cidr": ["{0}/32".format(self.local_addr)]
                 }
             }
         spec = {"dest": "www.perfsonar.net"}
-        data = self.get_output(limit, spec)
-        self.assertEqual(data["passes"], True, "passes because source discovered to be in allowed endpoint despite missing from spec")
-
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}))
         
         
 if __name__ == "__main__":

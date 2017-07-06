@@ -1,33 +1,8 @@
-#!/usr/bin/python
-
-import unittest
 import pscheduler
-import json
-import os
+from json import dumps
 
-
-class TestSpecIsValid(unittest.TestCase):
-
-    path = os.path.dirname(os.path.realpath(__file__))
-
-    def get_output(self, args, check_success=True):
-
-        args = json.dumps(args)
-
-        # actually run cli-to-spec with the input
-        code, stdout, stderr = pscheduler.run_program("%s/../spec-is-valid" % self.path,
-                                                      stdin = args)
-
-
-        if check_success:
-            # make sure it succeeded
-            self.assertEqual(code, 0)
-
-        # get json out
-        if code != 0:
-            return stderr
-        return json.loads(stdout)
-        
+class TestSpecIsValid(pscheduler.TestSpecIsValidUnitTest):
+    name="throughput"        
 
     def test_basic(self):
 
@@ -36,8 +11,7 @@ class TestSpecIsValid(unittest.TestCase):
             "dest": "127.0.1.1"
             }
 
-        data = self.get_output(test_input)
-        self.assertTrue(data["valid"])
+        self.assert_cmd(dumps(test_input))
 
 
         # all items
@@ -68,32 +42,26 @@ class TestSpecIsValid(unittest.TestCase):
             "reverse": True
             }
 
-        data = self.get_output(test_input)
-        self.assertTrue(data["valid"])
+        self.assert_cmd(dumps(test_input))
 
 
     def test_bad_input(self):
         return
         # blank
         test_input = {}
-
-        data = self.get_output(test_input)
-        self.assertFalse(data["valid"])
+        self.assert_cmd(dumps(test_input), expected_valid=False)
 
         # bad IP address
         test_input = {"dest": "http://not.supposed.to.be.a.url"}
-        data = self.get_output(test_input)
-        self.assertFalse(data["valid"])
+        self.assert_cmd(dumps(test_input), expected_valid=False)
 
         # unknown elements
         test_input = {"not_an_option": "kittycat"}
-        data = self.get_output(test_input)
-        self.assertFalse(data["valid"])
+        self.assert_cmd(dumps(test_input), expected_valid=False)
 
         # wrong type, bandwidth is integer
         test_input = {"bandwidth": "100", "dest": "127.0.0.1"}
-        data = self.get_output(test_input)
-        self.assertFalse(data["valid"])
+        self.assert_cmd(dumps(test_input), expected_valid=False)
         
 
 
