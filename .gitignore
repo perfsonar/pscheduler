@@ -14,6 +14,7 @@ REPO/
 */.rpmmacros
 */BUILD-ROOT/
 *.egg-info
+*.coverage
 
 #ignore tarballs from build process
 make-generic-rpm/*.tar.gz
