@@ -288,4 +288,39 @@ Class for writing test spec-is-valid unit tests
 class TestSpecIsValidUnitTest(ExecUnitTest):
     progname = "spec-is-valid"
     result_valid_field = "valid"
+
+"""
+Class for writing test spec-to-cli unit tests
+"""
+class TestSpecToCliUnitTest(ExecUnitTest):
+    progname = "spec-to-cli"
+    
+    """
+    Run spec-to-cli and verify list of options matches provided map. Map takes form:
+    {
+        "cli-opt": "value" #if value none then assumed to be switch
+    }
+    """
+    def assert_spec_to_cli(self, input, expected_cli_args):
+        #run command
+        cli_args = self.run_cmd(input)
         
+        #Track that we have all the expected cli args
+        unused_cli_args = {}
+        for expected_cli_arg in expected_cli_args.keys():
+            unused_cli_args[expected_cli_arg] = True
+        
+        #go through what we got
+        value_to_check = None
+        for cli_arg in cli_args:
+            if value_to_check is not None:
+                self.assertEquals(str(cli_arg), str(value_to_check))
+                value_to_check = None
+            else:
+                assert(cli_arg in expected_cli_args)
+                unused_cli_args.pop(cli_arg, None)
+                value_to_check = expected_cli_args[cli_arg]
+        
+        #make sure nothing is left
+        assert (not unused_cli_args), "Expected additional CLI options: {0}".format(str(unused_cli_args))
+    
