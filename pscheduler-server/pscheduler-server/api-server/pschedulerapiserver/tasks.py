@@ -114,7 +114,8 @@ def __tasks_get_filtered(uri_base,
                          where_clause='TRUE',
                          args=[],
                          expanded=False,
-                         detail=False):
+                         detail=False,
+                         single=True):
 
     """Get one or more tasks from a table using a WHERE clause."""
 
@@ -151,7 +152,7 @@ def __tasks_get_filtered(uri_base,
 
     for row in cursor:
 
-        uri = "%s/%s" % (uri_base, row[16])
+        uri = uri_base if single else "%s/%s" % (uri_base, row[16])
 
         if not expanded:
             tasks_returned.append(uri)
@@ -239,12 +240,14 @@ def tasks():
                 where_clause=where_clause,
                 args=args,
                 expanded=is_expanded(),
-                detail=arg_boolean("detail"))
+                detail=arg_boolean("detail"),
+                single=False
+            )
         except Exception as ex:
             return error(str(ex))
 
 
-        return ok_json(tasks) if tasks else not_found()
+        return ok_json(tasks)
 
     elif request.method == 'POST':
 
@@ -565,7 +568,8 @@ def tasks_uuid(uuid):
                 where_clause="task.uuid = %s",
                 args=[uuid],
                 expanded=True,
-                detail=arg_boolean("detail"))
+                detail=arg_boolean("detail"),
+                single=True)
         except Exception as ex:
             return error(str(ex))
 
