@@ -79,6 +79,8 @@ def api_url(host = None,
 
 def api_host_port(hostport):
     """Return the host and port parts of a host/port pair"""
+    if hostport is None:
+        return (None, None)
     parsed=urlparse.urlparse("bogus://%s" % (__host_per_rfc_2732(hostport)))
     return (None if parsed.hostname == "none" else parsed.hostname,
             parsed.port)
