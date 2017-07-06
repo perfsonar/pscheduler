@@ -7,7 +7,7 @@ import unittest
 import json
 import os
 import sys
-from pscheduler import run_program
+from pscheduler import run_program, json_validate
 import traceback
 
 
@@ -123,15 +123,17 @@ class ArchiverEnumerateUnitTest(ExecUnitTest):
         #Run command
         result_json = self.run_cmd("")
         
-        #should switch to assertIn for python 2.7
-        assert('schema' in result_json) 
-        assert('name' in result_json)
-        assert('description' in result_json)
-        assert('version' in result_json)
-        assert('maintainer' in result_json)
-        assert('name' in result_json['maintainer'])
-        assert('email' in result_json['maintainer'])
-        assert('href' in result_json['maintainer'])
+        #validate JSON returned
+        data_validator ={
+            "type": "object",
+            "properties": {
+                "enum": { "$ref": "#/pScheduler/PluginEnumeration/Archiver" }
+            },
+            "additionalProperties": False,
+            "required": ["enum"]
+        }
+        valid, error = json_validate({"enum": result_json}, data_validator)
+        assert valid, error
         #verify name is as expected
         self.assertEqual(result_json['name'], self.name)
 
@@ -217,16 +219,17 @@ class TestEnumerateUnitTest(ExecUnitTest):
         #Run command
         result_json = self.run_cmd("")
 
-        #should switch to assertIn for python 2.7
-        assert('schema' in result_json) 
-        assert('name' in result_json)
-        assert('description' in result_json)
-        assert('version' in result_json)
-        assert('maintainer' in result_json)
-        assert('name' in result_json['maintainer'])
-        assert('email' in result_json['maintainer'])
-        assert('href' in result_json['maintainer'])
-        assert('scheduling-class' in result_json)
+        #validate JSON returned
+        data_validator ={
+            "type": "object",
+            "properties": {
+                "enum": { "$ref": "#/pScheduler/PluginEnumeration/Test" }
+            },
+            "additionalProperties": False,
+            "required": ["enum"]
+        }
+        valid, error = json_validate({"enum": result_json}, data_validator)
+        assert valid, error
         #verify name is as expected
         self.assertEqual(result_json['name'], self.name)
         #scheduling class is as expected
