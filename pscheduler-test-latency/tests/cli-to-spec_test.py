@@ -164,7 +164,7 @@ class CliToSpecTest(pscheduler.TestCliToSpecUnitTest):
         self.assertEquals(result_json['data-ports']['upper'], 3000)
     
     def test_failure(self):
-        result_json=self.run_cmd("", args=["--garbage"], expected_status=1, json_out=False)
+        self.run_cmd("", args=["--garbage"], expected_status=1, json_out=False)
 
         
 if __name__ == '__main__':
