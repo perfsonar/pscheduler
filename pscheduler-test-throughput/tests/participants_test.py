@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 import pscheduler
 from json import dumps
 

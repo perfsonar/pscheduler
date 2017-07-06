@@ -150,6 +150,8 @@ if format != 'text/plain':
 input = pscheduler.json_load(exit_on_error=True, max_schema=1)
 
 #validate against JSON schema file
+if "result" not in input:
+    pscheduler.fail("Missing 'result' key in input passed to result-format")
 valid, message = result_is_valid(input["result"])
 if not valid:
     pscheduler.fail(message)
