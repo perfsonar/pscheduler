@@ -1,5 +1,10 @@
 """
-Helper classes for building unit tests
+Helper classes for building unit tests.
+
+In general you will create subclasses of the classes included in this packages and
+override the 'name' property with the name of your plug-in. Your unittest will then have
+access to assert_* convenience methods and in some cases have default test cases run
+automatically. See the individual classes for more details on options available.
 """
 
 import unittest
@@ -11,20 +16,26 @@ from pscheduler import run_program, json_validate
 import traceback
 
 
-"""
-Base unit test class where a command is exec'd
-"""
+#
+# Base classes
+#
+
 class ExecUnitTest(unittest.TestCase):
+    """
+    Base unit test class where a command is exec'd. In general you will not instantiate this
+    directly in your code and instead use one of its subclasses.
+    """
     name = None #this must be overriden
     progname = None #this must be overriden
     result_valid_field = "success"
     error_field = "error"
     has_single_error = True
     
-    """
-    Init command location
-    """
+    
     def __init__(self, *args, **kwargs):
+        """
+        Init command location to ../$name/$progname relative to directory where test lives
+        """
         super(ExecUnitTest, self).__init__(*args, **kwargs)
         #find command
         cmd = "../{0}/{1}".format(self.name, self.progname)
@@ -33,10 +44,20 @@ class ExecUnitTest(unittest.TestCase):
             cmd = os.path.dirname(os.path.realpath(path)) + '/' + cmd
         self.cmd = cmd
 
-    """
-    Run and verify results
-    """
     def run_cmd(self, input, args=[], expected_status=0, json_out=True, expected_stderr=""):
+        """
+        Run and verify results. Takes following params:
+
+        Args:
+            input: a string to be fed via stdin to the program being executed
+            args: optional command-line arguments to be given to the command-run.
+            expected_status: the expected return code of the program. default is 0.
+            json_out: indicates whether output should be expected to be valid JSON
+            expected_stderr: string to match against stderr
+    
+        Returns:
+            stdout as json dict if json_out is True (default), otehrwise a string
+        """
         #Run command
         full_cmd = [self.cmd] + args
         try:
@@ -69,6 +90,17 @@ class ExecUnitTest(unittest.TestCase):
         return result_json
     
     def assert_cmd(self, input, args=[], expected_status=0, expected_valid=True, expected_errors=[], match_all_errors=True):
+        """
+        Assert command that executes the command located at ../$name/$progname. It assumes 
+        JSON output. It has the following options:
+    
+        Args:
+            input: a string to be fed via stdin to the program being executed
+            args: optional command-line arguments to be given to the command-run.
+            expected_status: the expected return code of the program. default is 0.
+            expected_errors: array of strings containing error messages expected to be seen in error_field
+            match_all_errors: boolean indicating that expected_errors must be the only errors returned
+        """
         #run command
         result_json = self.run_cmd(input, args=args, expected_status=expected_status)
         
@@ -92,34 +124,43 @@ class ExecUnitTest(unittest.TestCase):
                 else:
                     assert(expected_error in result_json[self.error_field])
 
-"""
-Class for writing tests that spit out formatted non-json output
-"""
+
 class FormattedOutputUnitTest(ExecUnitTest):
+    """
+    Class for writing tests that spit out formatted non-json output. In general you will not 
+    instantiate this directly in your code and instead use one of its subclasses.
+    """
     
     def assert_formatted_output(self, format, input, expected_status=0, expected_stdout=None, expected_stderr=None):
         output = self.run_cmd(input, args=[format], expected_status=expected_status, json_out=False, expected_stderr=expected_stderr)
         if expected_stdout:
             self.assertEquals(output.strip(), expected_stdout.strip())
 
-"""
-Class for writing archiver data-is-valid unit tests
-"""
+#
+# Archiver plugin classes
+#
+
 class ArchiverDataIsValidUnitTest(ExecUnitTest):
+    """
+    Class for writing archiver data-is-valid unit tests
+    """
     progname = "data-is-valid"
     result_valid_field = "valid"
     
-"""
-Class for writing archiver enumerate unit tests
-"""
+
 class ArchiverEnumerateUnitTest(ExecUnitTest):
+    """
+    Class for writing archiver enumerate unit tests. The most common case will be to
+    create a subclass and override the "name" property with the name of the archiver plug-in.
+    """
     progname = "enumerate"
     result_valid_field = "valid"
     
-    """
-    Run enumerate command and verify output contain required fields
-    """
     def test_enumerate_fields(self):
+        """
+        Unit test to verify enumumerate execures, returns valid JSON with required fields, and
+        verifies the 'name' field in the JSON matches the 'name' property of this class
+        """
         #Run command
         result_json = self.run_cmd("")
         
@@ -137,25 +178,33 @@ class ArchiverEnumerateUnitTest(ExecUnitTest):
         #verify name is as expected
         self.assertEqual(result_json['name'], self.name)
 
-"""
-Class for writing cli-to-spec unit tests
-"""
+#
+# Test plugin classes
+#
+
 class TestCliToSpecUnitTest(ExecUnitTest):
+    """
+    Class for writing test plug-in cli-to-spec unit tests. Doe snot include additional tests 
+    by default, but does provide helper assert method for writing your own test cases. 
+    """
     progname = "cli-to-spec"
     
-    """
-    Given a map of CLI parameters and their values, check JSON. Assumes long names match
-    JSON names if no option given. Entries can take a mix of the following forms:
-    {
-        "longname": {}, #boolean switch where longname is JSON key
-        "longname": {"val": VALUE}, #switch with given value where longname is JSON key
-        "longname": {"val": VALUE, "alt": "OPTIONAL_ALT_NAME"}, #use alternative command-line switch
-        "longname": {"val": VALUE, "json_key": "JSON_KEY_NAME"}, # use different json name.
-         "longname": {"val": VALUE, "json_key": None}, # skip checking in JSON
-        "longname": {"val": VALUE, "json_val": "JSON_VAL"},# use different json val, if None, val will not be checked
-    }
-    """
     def assert_arg_map(self, arg_map):
+        """
+        check JSON given arg_map, a dict of CLI parameters and their values. 
+        
+        Args:
+            argmap: dict assuming long names (the dict key) match JSON names if no option 
+            given. arg_map can take a mix of the following forms:
+                {
+                    "longname": {}, #boolean switch where longname is JSON key
+                    "longname": {"val": VALUE}, #switch with given value where longname is JSON key
+                    "longname": {"val": VALUE, "alt": "OPTIONAL_ALT_NAME"}, #use alternative command-line switch
+                    "longname": {"val": VALUE, "json_key": "JSON_KEY_NAME"}, # use different json name.
+                    "longname": {"val": VALUE, "json_key": None}, # skip checking in JSON
+                    "longname": {"val": VALUE, "json_val": "JSON_VAL"},# use different json val, if None, val will not be checked
+                }
+        """
         #build list of arguments
         args = []
         for arg in arg_map:
@@ -204,18 +253,20 @@ class TestCliToSpecUnitTest(ExecUnitTest):
             else:
                 self.assertEquals(str(result_json[json_key]), str(json_val))
 
-"""
-Class for writing test enumerate unit tests
-"""
 class TestEnumerateUnitTest(ExecUnitTest):
+    """
+    Class for writing test enumerate unit tests. Need to override name and scheduling_class
+    """
     progname = "enumerate"
     result_valid_field = "valid"
     scheduling_class = None #override this
     
-    """
-    Run enumerate command and verify output contain required fields
-    """
+
     def test_enumerate_fields(self):
+        """
+        Run enumerate command, verify is valid JSON, output contain required fields and
+        the JSON "name" and "scheduling-class" fields match this classes properties
+        """
         #Run command
         result_json = self.run_cmd("")
 
@@ -235,31 +286,42 @@ class TestEnumerateUnitTest(ExecUnitTest):
         #scheduling class is as expected
         self.assertEqual(result_json['scheduling-class'], self.scheduling_class)
 
-"""
-Class for writing limit-is-valid unit tests
-"""
+
 class TestLimitIsValidUnitTest(ExecUnitTest):
+    """
+    Class for writing test plug-in limit-is-valid unit tests
+    """
     progname = "limit-is-valid"
     result_valid_field = "valid"
     error_field = "message"
 
      
-"""
-Class for writing limit-passes unit tests
-"""
+
 class TestLimitPassesUnitTest(ExecUnitTest):
+    """
+    Class for writing test plug-in limit-passes unit tests
+    """
     progname = "limit-passes"
     result_valid_field = "passes"
     error_field = "errors"
     has_single_error = False
 
-"""
-Class for writing test participants unit tests
-"""
+
 class TestParticipantsUnitTest(ExecUnitTest):
+    """
+    Class for writing test plug-in participants unit tests
+    """
     progname = "participants"
     
     def assert_participants(self, input, expected_participants, null_reason=""):
+        """
+        Asserts the participants returned by command match expected list. params are:
+        
+        Args:
+            input: valid JSON string
+            expected_participants: array of strings of expected participants
+            null_reason: optional string that must match against the null-reason field
+        """
         result_json = self.run_cmd(input)
         assert("participants" in result_json)
         assert(len(result_json["participants"]), len(expected_participants))
@@ -270,36 +332,40 @@ class TestParticipantsUnitTest(ExecUnitTest):
             assert("null-reason" in result_json)
             self.assertEquals(null_reason, result_json["null-reason"])
 
-"""
-Class for writing test result-format unit tests
-"""
 class TestResultFormatUnitTest(FormattedOutputUnitTest):
+    """
+    Class for writing test plug-in result-format unit tests
+    """
     progname = "result-format"
 
-"""
-Class for writing test spec-format unit tests
-"""
 class TestSpecFormatUnitTest(FormattedOutputUnitTest):
+    """
+    Class for writing test plug-in spec-format unit tests
+    """
     progname = "spec-format"
     
-"""
-Class for writing test spec-is-valid unit tests
-"""
+
 class TestSpecIsValidUnitTest(ExecUnitTest):
+    """
+    Class for writing test plug-in spec-is-valid unit tests
+    """
     progname = "spec-is-valid"
     result_valid_field = "valid"
 
-"""
-Class for writing test spec-to-cli unit tests
-"""
 class TestSpecToCliUnitTest(ExecUnitTest):
+    """
+    Class for writing test plug-in spec-to-cli unit tests
+    """
     progname = "spec-to-cli"
     
     """
-    Run spec-to-cli and verify list of options matches provided map. Map takes form:
-    {
-        "cli-opt": "value" #if value none then assumed to be switch
-    }
+    Run spec-to-cli and verify list of options matches provided map. params:
+        input: JSON string of test-spec
+        
+        expected_cli_args: A dict of the form:
+            {
+                "cli-opt": "value" #if value none then assumed to be switch
+            }
     """
     def assert_spec_to_cli(self, input, expected_cli_args):
         #run command
