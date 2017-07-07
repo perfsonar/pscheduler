@@ -358,16 +358,17 @@ class TestSpecToCliUnitTest(ExecUnitTest):
     """
     progname = "spec-to-cli"
     
-    """
-    Run spec-to-cli and verify list of options matches provided map. params:
-        input: JSON string of test-spec
-        
-        expected_cli_args: A dict of the form:
-            {
-                "cli-opt": "value" #if value none then assumed to be switch
-            }
-    """
     def assert_spec_to_cli(self, input, expected_cli_args):
+        """
+        Run spec-to-cli and verify list of options matches provided map
+        
+        Args:
+            input: JSON string of test-spec
+            expected_cli_args: A dict of the form:
+                {
+                    "cli-opt": "value" #if value none then assumed to be switch
+                }
+        """
         #run command
         cli_args = self.run_cmd(input)
         
@@ -389,4 +390,115 @@ class TestSpecToCliUnitTest(ExecUnitTest):
         
         #make sure nothing is left
         assert (not unused_cli_args), "Expected additional CLI options: {0}".format(str(unused_cli_args))
+
+#
+# Tool plugin classes
+#
+
+class ToolCanRunUnitTest(ExecUnitTest):
+    """
+    Class for writing tool plug-in can-run unit tests
+    """
+    progname = "can-run"
+    result_valid_field = "can-run"
+    error_field = "reasons"
+    has_single_error = False
+
+class ToolDurationUnitTest(ExecUnitTest):
+    """
+    Class for writing tool plug-in duration unit tests
+    """
+    progname = "duration"
     
+    def assert_duration(self, input, expected_duration):
+        """
+        Run duration and verify value is what is expected
+        
+        Args:
+            input: JSON string of test-spec
+            expected_duration: A string with the expected ISO8601 duration returned
+        """
+        #run command
+        result_json = self.run_cmd(input)
+
+        #check duration
+        assert ('duration' in result_json)
+        self.assertEquals(result_json['duration'], expected_duration)
+        
+class ToolEnumerateUnitTest(ExecUnitTest):
+    """
+    Class for writing tool enumerate unit tests. Need to override name, tests and 
+    preference
+    """
+    progname = "enumerate"
+    result_valid_field = "valid"
+    tests = None #override this
+    preference = None #override this
+
+    def test_enumerate_fields(self):
+        """
+        Run enumerate command, verify is valid JSON, output contain required fields and
+        the JSON "name" and "scheduling-class" fields match this classes properties
+        """
+        #Run command
+        result_json = self.run_cmd("")
+
+        #validate JSON returned
+        data_validator ={
+            "type": "object",
+            "properties": {
+                "enum": { "$ref": "#/pScheduler/PluginEnumeration/Tool" }
+            },
+            "additionalProperties": False,
+            "required": ["enum"]
+        }
+        valid, error = json_validate({"enum": result_json}, data_validator)
+        assert valid, error
+        #verify name is as expected
+        self.assertEqual(result_json['name'], self.name)
+        #verify tests is as expected
+        self.assertEqual(result_json['tests'], self.tests)
+        #verify preference is as expected
+        self.assertEqual(result_json['preference'], self.preference)
+
+class ToolMergedResultsUnitTest(ExecUnitTest):
+    """
+    Class for writing tool merged-results unit tests
+    """
+    progname = "merged-results"
+    
+    def assert_result_at_index(self, results, expected_result_index, test_spec={}):
+        """
+        Given list of results, check if returned JSON matches the returned result
+        
+        Args:
+            results: array of results objects
+            expected_result_index: int indicating which of provide results is expected
+            test_spec: optional. a test_spec object. 
+        """
+        #run command
+        input = json.dumps({"test":{"spec": test_spec}, "results": results})
+        result_json = self.run_cmd(input)
+
+        #check results
+        self.assertEquals(result_json, results[expected_result_index])
+
+class ToolParticipantDataUnitTest(ExecUnitTest):
+    """
+    Class for writing tool plug-in participant-data unit tests
+    """
+    progname = "participant-data"
+    
+    def assert_participant_data(self, participant, expected_data, test_spec={}):
+        """
+        Given list of participant, check if returned JSON matches expected data
+        
+        Args:
+            participant: int indicating participant number
+            expected_data: object with expected data
+            test_spec: optional. a test_spec object. 
+        """
+        #doesn't really do much so simple test to make sure it runs and returns empt object
+        input = json.dumps({"participant": participant, "test": {"spec":test_spec}})
+        self.assertEquals(self.run_cmd(input), expected_data)
+
