@@ -160,6 +160,20 @@ case "$1" in
         service rsyslog restart
     ;;
 
+    triggered)
+        for trigger in $2; do
+            case $trigger in
+                pscheduler-warmboot)
+                    pscheduler internal warmboot || true
+                ;;
+
+                *)
+                    echo "Unknown trigger activated: $trigger" >&2
+                ;;
+            esac
+        done
+    ;;
+
     abort-upgrade|abort-remove|abort-deconfigure)
     ;;
 
