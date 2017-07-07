@@ -23,8 +23,6 @@ case "$1" in
         mkdir -p /var/lib/pscheduler/tool/powstream
         chown pscheduler:pscheduler /var/lib/pscheduler/tool/powstream
         chmod 755 /var/lib/pscheduler/tool/powstream
-
-        pscheduler internal warmboot || true
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
