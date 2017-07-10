@@ -26,7 +26,8 @@ Requires:	owamp-client
 Requires:	owamp-server
 
 BuildRequires:	pscheduler-rpm
-
+BuildRequires:	python-pscheduler
+BuildRequires:  python-nose
 
 %description
 powstream tool class for pScheduler
