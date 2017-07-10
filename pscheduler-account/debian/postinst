@@ -25,6 +25,7 @@ case "$1" in
             adduser --force-badname --system --group --gecos "pscheduler user" \
                     --no-create-home --home /usr/lib/pscheduler --shell /bin/sh \
                     pscheduler >/dev/null
+            chage --expiredate -1 --inactive -1 --maxdays 99999 pscheduler
         fi
     ;;
 
