@@ -321,9 +321,11 @@ def tasks():
                 try:
                     _ = pscheduler.JQFilter(
                         filter_spec=archive["transform"],
-						args=archive["args"] })
+                        args=archive.get("args", None)
+						)
                 except ValueError as ex:
                     return error("Invalid transform: %s" % (str(ex)))
+
 
 
         # Find the participants
