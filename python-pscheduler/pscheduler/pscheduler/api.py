@@ -81,7 +81,24 @@ def api_host_port(hostport):
     """Return the host and port parts of a host/port pair"""
     if hostport is None:
         return (None, None)
-    parsed=urlparse.urlparse("bogus://%s" % (__host_per_rfc_2732(hostport)))
+    formatted_host = __host_per_rfc_2732(hostport)
+    try:
+        parsed=urlparse.urlparse("bogus://%s" % (formatted_host))
+        if parsed.port is None: pass #simple test to trigger an error from urlparse on CentOS 6
+    except ValueError as ve:
+        #TODO: can remove this once we drop CentOS 6
+        #python 2.6 urlparse does not properly handle bracketed IPv6, so we do that here
+        if "]:" in formatted_host:
+            formatted_host = formatted_host.replace("[", "")
+            parts = formatted_host.split(']:')
+            if len(parts) != 2:
+                raise ve
+            return parts
+        elif formatted_host.endswith(']'):
+            return formatted_host.replace('[',"").replace(']',""), None
+        else:
+            raise ve
+        
     return (None if parsed.hostname == "none" else parsed.hostname,
             parsed.port)
 
