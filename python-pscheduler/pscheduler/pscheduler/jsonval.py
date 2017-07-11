@@ -274,7 +274,8 @@ __dictionary__ = {
         "type": "object",
         "properties": {
             "script":    { "$ref": "#/pScheduler/String" },
-            "output-raw": { "$ref": "#/pScheduler/Boolean" }
+            "output-raw": { "$ref": "#/pScheduler/Boolean" },
+			"args": { "$ref": "#/pScheduler/AnyJSON" }
         },
         "additionalProperties": False,
         "required": [ "script" ]
