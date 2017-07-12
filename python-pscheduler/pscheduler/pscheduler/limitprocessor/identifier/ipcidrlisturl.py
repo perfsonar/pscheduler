@@ -124,19 +124,13 @@ class IdentifierIPCIDRListURL():
         self.fail_state = data.get('fail-state', False)
         try:
             # This will raise a ValueError if it's wrong.
-            self.transform = pscheduler.JQFilter(data['transform'],
-                                                 data.get("args", None),
+            transform = data["transform"]
+            self.transform = pscheduler.JQFilter(transform["script"],
+                                                 transform.get("args", {} ),
                                                  output_raw=True)
         except KeyError:
             self.transform = None
 
-        try:
-            # This will raise a ValueError if it's wrong.
-            self.jqfilter = pscheduler.JQFilter(data['filter'],
-                                                data.get("args", None),
-                                                output_raw=True)
-        except KeyError:
-            self.jqfilter = None
 
         self.exclusions = radix.Radix()
         if 'exclude' in data:
