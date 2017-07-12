@@ -1,0 +1,134 @@
+#!/usr/bin/python
+#
+# Run a test.  Just the test spec is provided on stdin.
+#
+
+from pysnmp.hlapi import *
+import pysnmp
+import datetime
+import json
+import re
+import sys
+import time
+import pscheduler
+
+# check for missing required fields
+def missing_input(spec):
+
+    try:
+        version = spec['version']
+        dest = spec['dest']
+        oid = spec['oid']
+        if version in ['1', '2c']:
+            community = spec['_community']
+        return False
+
+    except KeyError:
+        return True
+
+def build_object(oid):
+
+    if re.match(r'^((\.\d)|\d)+(\.\d+)*$', oid) is None:
+        try:
+            temp = oid.split('::')
+            args = [temp[0]]
+            temp = temp[1].split('.')
+            args.extend(temp)
+            try:
+                obj_id = ObjectIdentity(args[0], args[1], args[2])
+            except IndexError:
+                obj_id = ObjectIdentity(args[0], args[1])
+        except IndexError:
+            pscheduler.fail('Incomplete/Invalid OID')
+
+    else:
+        obj_id = ObjectIdentity(item)
+
+    return obj_id
+
+# 
+# Preliminaries
+#
+
+
+# Load input from stream
+input = pscheduler.json_load(exit_on_error=True)
+spec = input['test']['spec']
+
+if missing_input(spec):
+    pscheduler.fail('Missing data in input')
+
+# Set timeout and start time
+timeout_iso = input['test']['spec'].get("timeout", "PT5S" )
+timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+start_time = datetime.datetime.now()
+
+
+#
+# Perform the test
+#
+
+results = []
+
+for item in spec['oid']:
+
+    obj_id = build_object(item)
+
+    try:
+        g = getCmd(SnmpEngine(),
+                   CommunityData(spec['_community']),
+                   UdpTransportTarget((spec['dest'], 161)),
+                   ContextData(),
+                   ObjectType(obj_id))
+
+    except pysnmp.error.PySnmpError as e:
+        succeeded = False
+        error = "snmpget returned an error: \n%s" % str(e).strip('\n')
+        diags = ''
+        results = None
+        break
+
+    try:
+        result = next(g)
+        result_type = result[3][0][1].__class__.__name__
+        try:
+            value = int(result[3][0][1])
+        except TypeError:
+            value = result[3][0][1]
+        result = { "type": result_type, "value": value }
+        results.append(result)
+
+    except pysnmp.smi.error.MibNotFoundError:
+        result = { "type": None, "value": "No such OID fouond in MIB" }
+        results.append(result)
+
+    succeeded = True
+
+
+
+end_time = datetime.datetime.now()
+
+if succeeded:
+    error = None
+    diags = ''
+
+
+#
+# Produce results
+#
+
+
+results = {
+    'succeeded': succeeded,
+    'result': {
+	    'schema': 1,
+	    'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
+	    'succeeded' : succeeded,
+        'data': results
+    },
+    'error': error,
+    'diags': diags
+}
+
+pscheduler.succeed_json(results)
+

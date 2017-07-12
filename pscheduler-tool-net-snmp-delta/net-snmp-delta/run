@@ -1,0 +1,189 @@
+#!/usr/bin/python
+#
+# Run a test.  Just the test spec is provided on stdin.
+#
+
+import datetime
+import time
+import json
+import time
+import os
+import threading
+import pscheduler
+import subprocess
+import signal
+
+
+# lambda for line call, appends lines one by one
+def line_writer(output):
+    lines.append(output)
+
+# callback function for snmpdelta program thread
+def run_program_target(argv, timeout, line_call):
+    status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout, timeout_ok=True, line_call=line_writer)
+
+# argument vector builder
+def build_argv(spec):
+
+    argv = ['snmpdelta', '-CT']
+
+    if spec['version'] in ['1', '2c']:
+        cli_switches = {'version': '-v',
+                        '_community': '-c',
+                        }
+    else:
+        cli_switches = {'version': '-v',
+                       'security-name': '-u',
+                       'auth-protocol': '-a',
+                       'priv-protocol': '-x',
+                       '_auth-key': '-A',
+                       '_priv-key': '-X',
+                       'security-level': '-l',
+                       'context': '-n'
+                       }
+
+    # if no protocol specified, default is udp
+    try:
+        protocol = spec['protocol']
+    except KeyError:
+        protocol = None
+
+    try:
+        period = spec['period']
+        argv.extend(['-Cp', period])
+    except KeyError:
+        pass
+
+    try:
+        timeout = int(spec['timeout'].strip('PTS'))
+    except KeyError:
+        timeout = 300 # TODO: some default value?
+
+    # loop through spec to get command line args
+    for key in spec.keys():
+        try:
+            argv.append(cli_switches[key])
+        except KeyError:
+            # if key does not exist in dictionary, no switch is needed
+            # do not append schema
+            if key in ['schema', 'protocol', 'period', 'timeout']:
+                continue
+        if key == 'dest' and protocol != None:
+            argv.append(str(protocol) + ':' + spec[key])
+        elif key == 'oid':
+            for item in spec[key]:
+                argv.append(item)
+        else:
+            argv.append(spec[key])
+
+    return argv
+
+# check for missing required fields
+def missing_input(spec):
+
+    try:
+        version = spec['version']
+        dest = spec['dest']
+        oid = spec['oid']
+        if version in ['1', '2c']:
+            community = spec['_community']
+        return False
+
+    except KeyError:
+        return True
+
+# parse and format returned results
+def package_data(run_result):
+    # TODO: discuss what to do with data
+    # average the deltas??
+    data = []
+    del run_result[0]
+    num_entries = len(run_result)
+    for line in run_result:
+        entry = line.split('\t')
+        del entry[0]
+        for enum, item in enumerate(entry):
+            try:
+                data[enum] += float(item)
+            except IndexError:
+                data.append(float(item))
+    for i in range(len(data)):
+        data[i] /= num_entries
+
+    return data
+
+
+# 
+# Preliminaries
+#
+
+
+# Load input from stream
+input = pscheduler.json_load(exit_on_error=True)
+spec = input['test']['spec']
+
+if missing_input(spec):
+    pscheduler.fail('Missing data in input')
+
+# Set timeout and start time
+# TODO: set default timeout/ try catch
+timeout_iso = input['test']['spec'].get("timeout", "PT300S" )
+timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+start_time = datetime.datetime.now()
+
+
+#
+# Perform the test
+#
+
+
+argv = build_argv(spec)
+
+# spin new snmpdelta utility thread
+lines = []
+delta_thread = threading.Thread(target=run_program_target, args=(argv, timeout + 10, line_writer))
+delta_thread.start()
+thread_start = time.time()
+
+# spin until timeout, do not wait for program to exit
+while (time.time() - thread_start) < timeout:
+    pass
+
+# get data and kill process
+run_result = lines
+pid = int(subprocess.check_output(["pidof", "snmpdelta"]).strip('\n'))
+os.kill(pid, signal.SIGTERM) # temporary fix
+
+
+#
+# Produce results
+#
+
+
+if len(lines) == 0:
+    data = None
+    succeeded = False
+    error = "snmpdelta produced 0 results."
+    diags = ''
+
+else:
+    succeeded = True
+    diags = ''
+    error = None
+    data = package_data(run_result)
+
+end_time = datetime.datetime.now()
+
+results = {
+    'succeeded': succeeded,
+    'result': {
+	    'schema': 1,
+	    'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
+	    'succeeded' : succeeded,
+        'data': data
+    },
+    'error': error,
+    'diags': diags
+}
+
+pscheduler.succeed_json(results)
