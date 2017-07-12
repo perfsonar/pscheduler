@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Checker for 'snmpget' task limits
+# Checker for 'snmpset' task limits
 #
 
 import pscheduler

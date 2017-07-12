@@ -1,5 +1,5 @@
 #
-# RPM Spec for pScheduler SNMP Tool
+# RPM Spec for pScheduler SNMP Set Tool
 #
 
 %define short	net-snmp-set
