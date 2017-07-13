@@ -300,13 +300,15 @@ used when pScheduler needs to determine what tests are installed.
 \item{\tt scheduling-class} - A string indicating how runs of this
   kind of test should be scheduled.  Valid values are as follows:
   \begin{itemize}
-  \item {\tt background} - These tests are always run, even if the run
-    start time has passed and produce multiple results.  (See
-    \autoref{toolrun}, {\it \nameref{toolrun}} for details on how this
-    is accomplished.)
+  \item {\tt background} - These tests are run without regard to
+    whether anything else is happening.
+  \item {\tt background-multi} - These tests are scheduled by the same
+    rules as {\tt background}, will run even if the start time has
+    passed, and produce multiple results.  (See \autoref{toolrun},
+    {\it \nameref{toolrun}} for details on how this is accomplished.)
   \item {\tt exclusive} - Runs are given time on the schedule
     that is not shared with any scheduling class other than {\tt
-      background}.
+      background} and {\tt background-multi}.
   \item {\tt normal} - These runs share schedule time with {\tt
     background} and other {\tt normal} runs but not {\tt exclusive}.
   \end{itemize}
