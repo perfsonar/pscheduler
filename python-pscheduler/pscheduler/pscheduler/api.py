@@ -93,7 +93,9 @@ def api_host_port(hostport):
             parts = formatted_host.split(']:')
             if len(parts) != 2:
                 raise ve
-            return parts
+            #convert to int, will raise exception if invalid
+            parts[1] = int(parts[1])
+            return tuple(parts)
         elif formatted_host.endswith(']'):
             return formatted_host.replace('[',"").replace(']',""), None
         else:
