@@ -6,14 +6,6 @@ from json import dumps
 class TestLimitPasses(pscheduler.TestLimitPassesUnitTest):
     name = 'throughput'
 
-    path = os.path.dirname(os.path.realpath(__file__))
-    (local_addr, local_intf) = pscheduler.source_interface("www.perfsonar.net")
-
-    # TODO: change this to unittest.skip once EL6 has gone away
-    if not local_addr:
-        print "Unable to find routable address to reach www.perfsonar.net, skipping test"
-        sys.exit(1)
-
     def test_limit_duration(self):
 
         limit = {
@@ -36,9 +28,6 @@ class TestLimitPasses(pscheduler.TestLimitPassesUnitTest):
 
     def test_limit_source(self):
 
-        # test auto source discovery
-        # TODO: it's possible this will work on a machine
-        # where its address is in the subnet below
         limit = {
             "source": {
                 "cidr": ["192.168.254.0/24"]
@@ -52,7 +41,7 @@ class TestLimitPasses(pscheduler.TestLimitPassesUnitTest):
         self.assert_cmd(
             dumps({"limit": limit, "spec": spec}), 
             expected_valid=False, 
-            expected_errors=["address 192.168.1.23 not allowed in source limit"]
+            expected_errors=["This test has a limit on the source field but the source was not specifed. You must specify a source to run this test"]
         )
 
 
@@ -65,12 +54,12 @@ class TestLimitPasses(pscheduler.TestLimitPassesUnitTest):
 
         limit = {
             "dest": {
-                "cidr": ["{0}/32".format(self.local_addr)]
+                "cidr": ["10.1.1.1/32"]
             }
         }
 
         spec = {
-            "dest": self.local_addr,
+            "dest": "10.1.1.1",
             "schema": 1
         }
         self.assert_cmd(dumps({"limit": limit, "spec": spec}))
@@ -95,7 +84,7 @@ class TestLimitPasses(pscheduler.TestLimitPassesUnitTest):
 
         limit = {
             "source": {
-                "cidr": ["{0}/32".format(self.local_addr)]
+                "cidr": ["10.1.1.1/32"]
             }
         }
 
@@ -104,10 +93,7 @@ class TestLimitPasses(pscheduler.TestLimitPassesUnitTest):
             "schema": 1
         }
 
-
-        self.assert_cmd(dumps({"limit": limit, "spec": spec}))
-
-        spec['source'] = self.local_addr
+        spec['source'] = "10.1.1.1"
         self.assert_cmd(dumps({"limit": limit, "spec": spec}))
 
         # pretend other interface on the same host
@@ -118,7 +104,7 @@ class TestLimitPasses(pscheduler.TestLimitPassesUnitTest):
 
         limit = {
             "source": {
-                "cidr": ["%s/32" % self.local_addr]
+                "cidr": ["10.1.1.1/32"]
             }
         }
 
@@ -127,16 +113,11 @@ class TestLimitPasses(pscheduler.TestLimitPassesUnitTest):
             "ip-version": 4,
             "schema": 1
         }
-
-
+        spec['source'] = "10.1.1.1"
         self.assert_cmd(dumps({"limit": limit, "spec": spec}))
-
+        
         spec['ip-version'] = 6
-        self.run_cmd(dumps({"limit": limit, "spec": spec}), expected_status=1, json_out=False)
-
-        spec['ip-version'] = 4
-        spec['source'] = self.local_addr
-        self.assert_cmd(dumps({"limit": limit, "spec": spec}))
+        self.assert_cmd(dumps({"limit": limit, "spec": spec}), expected_valid=False)
 
 
     def test_limit_ip_version_dest(self):
@@ -145,12 +126,12 @@ class TestLimitPasses(pscheduler.TestLimitPassesUnitTest):
             "dest": {
                 # TODO - this is the ipv4 address of www.perfsonar.net
                 # a better system might be to look this up dynamically
-                "cidr": ["{0}/32".format(self.local_addr)]
+                "cidr": ["10.1.1.1/32"]
             }
         }
 
         spec = {
-            "dest": self.local_addr,            
+            "dest": "10.1.1.1",            
             "ip-version": 6,
             "schema": 1
         }
@@ -173,7 +154,7 @@ class TestLimitPasses(pscheduler.TestLimitPassesUnitTest):
         }
 
         spec = {
-            "dest": self.local_addr,            
+            "dest": "10.1.1.1",            
             "schema": 1
         }
 
@@ -187,7 +168,7 @@ class TestLimitPasses(pscheduler.TestLimitPassesUnitTest):
 
         # do the same but with dest
         spec = {"dest": "1.2.3.4",
-                "source": self.local_addr}
+                "source": "10.1.1.1"}
         self.assert_cmd(dumps({"limit": limit, "spec": spec}))
 
 
@@ -198,21 +179,12 @@ class TestLimitPasses(pscheduler.TestLimitPassesUnitTest):
                 }
             }
         spec = {"dest": "www.perfsonar.net",
-                "source": self.local_addr}
+                "source": "10.1.1.1"}
         self.assert_cmd(dumps({"limit": limit, "spec": spec}))
 
         # should fail if we force v6 since only the v4 is in the endpoint list
         spec['ip-version'] = 6
         self.assert_cmd(dumps({"limit": limit, "spec": spec}), expected_valid=False)
-
-        # check when only endpoint is local addr that a test going out still works
-        limit = {
-            "endpoint": {
-                "cidr": ["{0}/32".format(self.local_addr)]
-                }
-            }
-        spec = {"dest": "www.perfsonar.net"}
-        self.assert_cmd(dumps({"limit": limit, "spec": spec}))
         
         
 if __name__ == "__main__":
