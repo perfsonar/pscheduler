@@ -32,6 +32,10 @@ final_results = source_results
 if input['test']['spec'].get('reverse'):
     final_results = dest_results
 
+# it's possible one could come back as null, ensure we have the right type
+if not final_results:
+    final_results = {"succeeded": False}
+
 final_diag = ""
 
 if source_results and source_results.get('diags'):
