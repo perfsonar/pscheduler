@@ -350,11 +350,16 @@ def run_server():
 
 def _make_result(command, status, stdout, stderr):
     if status:
+        error_text = ""
         try:
             json_stdout = pscheduler.json_load(stdout)
-            error_text = json_stdout["error"]
+            error_text = json_stdout["error"]            
         except (ValueError, KeyError):
-            error_text = stdout
+            pass
+
+        if not error_text:
+            error_text = "%s\n%s" % (stdout, stderr)
+
         pscheduler.succeed_json({"succeeded": False,
                                  "error": "iperf3 returned an error: %s" % (error_text)})
 
