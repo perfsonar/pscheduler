@@ -20,7 +20,8 @@ Requires:	pscheduler-server
 Requires:	python-pscheduler
 
 BuildRequires:	pscheduler-rpm
-
+BuildRequires:	python-pscheduler
+BuildRequires:  python-nose
 
 %description
 Latency test class for pScheduler that runs in the background.

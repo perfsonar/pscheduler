@@ -31,35 +31,44 @@ def check_limit(input_json):
         ("packet-timeout", "Packet Timeout"),
         ("packet-padding", "Packet Padding"),
         ("ctrl-port", "Control Ports"),
-        ("ip-tos", "IP TOS"),
         ("bucket-width", "Bucket Width"),
     ]
     for nr in numeric_ranges:
         errors += pscheduler.check_numeric_limit(limit, spec, nr[0], description=nr[1])
     #
+    # Handle numeric lists
+    #
+    errors += pscheduler.check_numeric_list_limit(limit, spec, 'ip-tos', description="IP TOS")
+    
+    #
     # Handle data ports since both limit and spec value are ranges
     #
     errors += pscheduler.check_numeric_range_limit(limit, spec, 'data-ports', description='Data port')
-
+    
     #
     # Handle duration
     #
+    errors += pscheduler.check_duration_limit(limit, spec, 'duration', description='Duration')
+    
+    #
+    # Handle report-interval
+    #
     #special conditions if present, so have to check if its there
-    if "duration" in limit:
+    if "report-interval" in limit:
         #We can't trust tools to have same defaults, which means no way we can guarantee
-        #duration is not exceeded unless both parameters are specified.
+        #report-interval is not exceeded unless both parameters are specified.
         if ("packet-interval" not in spec) or ("packet-count" not in spec):
-            errors.append("There is a duration limit on this test which requires you to explicitly set the packet-interval and packet-count options in the test specification. Please set both these options and resubmit.")
-        elif "range" in limit["duration"]:
-            nrange = pscheduler.DurationRange(limit["duration"]["range"])
-            invert = limit["duration"].get("invert", False)
+            errors.append("There is a report-interval limit on this test which requires you to explicitly set the packet-interval and packet-count options in the test specification. Please set both these options and resubmit.")
+        elif "range" in limit["report-interval"]:
+            nrange = pscheduler.DurationRange(limit["report-interval"]["range"])
+            invert = limit["report-interval"].get("invert", False)
             contains, message = nrange.contains("PT{0}S".format(spec["packet-interval"] * spec["packet-count"]))
             if invert:
                 if contains:
-                    errors.append("Duration {1}".format(nr[1], message))
+                    errors.append("Report Interval {1}".format(nr[1], message))
             else:
                 if not contains:
-                    errors.append("Duration {1}".format(nr[1], message))
+                    errors.append("Report Interval {1}".format(nr[1], message))
 
 
     #

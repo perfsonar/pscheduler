@@ -1,10 +1,9 @@
 #!/usr/bin/python
 #
-# Checker for 'thrughput' task limits
+# Checker for 'throughput' task limits
 #
 
 import pscheduler
-import validate
 
 logger = pscheduler.Log(quiet=True)
 

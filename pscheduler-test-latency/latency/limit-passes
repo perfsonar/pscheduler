@@ -32,7 +32,6 @@ def check_limit(input_json):
         ("packet-timeout", "Packet Timeout"),
         ("packet-padding", "Packet Padding"),
         ("ctrl-port", "Control Ports"),
-        ("ip-tos", "IP TOS"),
         ("bucket-width", "Bucket Width"),
     ]
     for nr in numeric_ranges:
@@ -41,6 +40,11 @@ def check_limit(input_json):
     # Handle data ports since both limit and spec value are ranges
     #
     errors += pscheduler.check_numeric_range_limit(limit, spec, 'data-ports', description='Data port')
+
+    #
+    # Handle numeric lists
+    #
+    errors += pscheduler.check_numeric_list_limit(limit, spec, 'ip-tos', description="IP TOS")
 
     #
     # Handle duration

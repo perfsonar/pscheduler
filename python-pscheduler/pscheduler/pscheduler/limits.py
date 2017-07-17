@@ -141,6 +141,27 @@ def check_numeric_range_limit(limit, spec, limit_field, description=None, spec_f
     
     return errors
 
+def check_numeric_list_limit(limit, spec, limit_field, description=None, spec_field=None):
+    errors = []
+    if description is None:
+        description = limit_field
+    if spec_field is None:
+        spec_field = limit_field
+    try:
+        contains = spec[spec_field] in limit[limit_field]["match"]
+        invert = limit[limit_field].get("invert", False)
+        message = limit[limit_field].get("fail-message", "{0} not within limit".format(description))
+        if invert:
+           if contains:
+               errors.append(message)
+        else:
+           if not contains:
+               errors.append(message)
+    except KeyError:
+        pass  # Don't care if not there.
+    
+    return errors
+
 def check_duration_limit(limit, spec, limit_field, description=None, spec_field=None, convert_iso=False):
     errors = []
     if description is None:
@@ -198,6 +219,24 @@ def check_enum_limit(limit, spec, limit_field, description=None, spec_field=None
         contains = match.contains(spec[limit_field])
         if not contains:
             errors.append("{0} {1}".format(description, fail_msg))
+    except KeyError:
+        pass  # Don't care if not there.
+    
+    return errors
+
+def check_string_limit(limit, spec, limit_field, description=None, spec_field=None):
+    errors = []
+    if description is None:
+        description = limit_field
+    if spec_field is None:
+        spec_field = limit_field
+    try:
+        match = pscheduler.StringMatcher(limit[limit_field]["match"])
+        invert = limit[limit_field].get("invert", False)
+        contains = match.matches(spec[spec_field])
+        message = limit[limit_field].get("fail-message", "{0} does not match limit".format(description))
+        if not contains or (invert and contains):
+            errors.append(message)
     except KeyError:
         pass  # Don't care if not there.
     

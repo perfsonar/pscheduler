@@ -86,7 +86,18 @@ class LimitIsValidTest(pscheduler.TestLimitIsValidUnitTest):
         self.assert_cmd('{"duration": {"range": {"lower": "PT10S"}}}', expected_valid=False)
         self.assert_cmd('{"duration": {"range": {"upper": "PT60S"}}}', expected_valid=False)
         self.assert_cmd('{"duration": {"range": {"upper": "PT60S", "lower": "PT10S", "garbage": "stuff"}}}', expected_valid=False)
-
+    
+    def test_report_interval(self):
+        #test report-interval
+        ##in range
+        self.assert_cmd('{"report-interval": {"range": {"upper": "PT60S", "lower": "PT10S"}}}')
+        self.assert_cmd('{"report-interval": {"range": {"upper": "PT60S", "lower": "PT10S"}, "invert":true}}')
+        ##out of range
+        self.assert_cmd('{"report-interval": {"range": {"upper": "PT10S", "lower": "PT60S"}}}', expected_valid=False, expected_errors=["Report Interval must have range where upper is greater than lower"])
+        self.assert_cmd('{"report-interval": {"range": {"lower": "PT10S"}}}', expected_valid=False)
+        self.assert_cmd('{"report-interval": {"range": {"upper": "PT60S"}}}', expected_valid=False)
+        self.assert_cmd('{"report-interval": {"range": {"upper": "PT60S", "lower": "PT10S", "garbage": "stuff"}}}', expected_valid=False)
+        
     def test_packet_timeout(self):
         #test packet timeout
         ##in range
@@ -138,14 +149,10 @@ class LimitIsValidTest(pscheduler.TestLimitIsValidUnitTest):
     def test_ip_tos(self):
         #test ip tos
         ##in range
-        self.assert_cmd('{"ip-tos": {"range": {"upper": 255, "lower": 0}}}')
-        self.assert_cmd('{"ip-tos": {"range": {"upper": 255, "lower": 0}, "invert":true}}')
+        self.assert_cmd('{"ip-tos": {"match": [1, 2, 3]}}')
+        self.assert_cmd('{"ip-tos": {"match": [1, 2, 3], "invert":true}}')
         ##out of range
-        self.assert_cmd('{"ip-tos": {"range": {"upper": 0, "lower": 255}}}', expected_valid=False, expected_errors=["IP TOS must have range where upper is greater than lower"])
-        self.assert_cmd('{"ip-tos": {"range": {"upper": 0, "lower": -1}}}', expected_valid=False)
-        self.assert_cmd('{"ip-tos": {"range": {"lower": 0}}}', expected_valid=False)
-        self.assert_cmd('{"ip-tos": {"range": {"upper": 255}}}', expected_valid=False)
-        self.assert_cmd('{"ip-tos": {"range": {"upper": 255, "lower": 0, "garbage": "stuff"}}}', expected_valid=False)
+        self.assert_cmd('{"ip-tos": {"range": {"lower": 0, "upper": 255}}}', expected_valid=False)
     
     def test_bucket_width(self):
         #test bucket-width

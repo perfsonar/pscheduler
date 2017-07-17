@@ -272,7 +272,7 @@ LIMIT_SCHEMA = {
         "packet-padding":   { "$ref": "#/pScheduler/Limit/CardinalZero" },
         "ctrl-port":        { "$ref": "#/pScheduler/Limit/CardinalZero" },
         "data-ports":       { "$ref": "#/pScheduler/Limit/CardinalZero" },
-        "ip-tos":           { "$ref": "#/pScheduler/Limit/CardinalZero" },
+        "ip-tos":           { "$ref": "#/pScheduler/Limit/CardinalList" },
         "ip-version":       { "$ref": "#/pScheduler/Limit/IPVersionList" },
         "bucket-width":     { "$ref": "#/local/bucket-width-limit" },
         "output-raw":       { "$ref": "#/pScheduler/Limit/Boolean" },
