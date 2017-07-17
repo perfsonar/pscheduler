@@ -8,13 +8,25 @@ import errno
 import os
 import pscheduler
 import select
+import stat
 import subprocess32
 import sys
+import tempfile
 import traceback
 
 # Only used in _Popen
 import errno
 import os
+
+
+try:
+    # Python3
+    from shlex import quote
+except ImportError:
+    # Python 2
+    from pipes import quote
+
+
 
 # Note: Docs for the 3.x version of subprocess, the backport of which
 # is used here, is at https://docs.python.org/3/library/subprocess.html
@@ -332,6 +344,162 @@ def run_program(argv,              # Program name and args
     return status, stdout, stderr
 
 
+
+
+
+class ChainedExecRunner(object):
+
+    """Run a series of programs that maintain the same PID and context by
+    using exec to call each other.
+    """
+
+
+    def __init__(self, calls, argv=[], stdin=None):
+
+        """The 'calls' argument is an array of dictionaries.  Each dictionary
+        contains an entry called "call," a string that names the program
+        to be run, and another called "input" which is an arbitrary blob
+        of data (usually a dictionary) that can be converted into JSON and
+        passed through to the program's standard input.
+
+        The format for the program's input is that for a pScheduler
+        context plugin's "change" method.  It consists of two items:
+        "data", which is an arbitrary blob of (JSON) data for the
+        program to use and "exec," a string indicating the path to the
+        program that should be exec'd when the program completes
+        successfully.
+
+        For example:
+
+        {
+            "program": "/run/this/program",
+            "input": {
+                "data": { "foo": "bar", "baz": 31415 },
+                "exec": "/run/that/program"
+            }
+        }
+
+        The "argv" and "stdin" are program parameters and standard
+        input with the same semantics as the same arguments to
+        pscheduler.run_program().
+        """
+
+        if not isinstance(calls, list):
+            raise ValueError("Calls must be a list.")
+
+        self.stages = []
+
+        if not calls:
+            return
+
+
+        # Create the temporary files that will hold the scripts.
+
+
+        try:
+
+            # Create a list of temporary files ahead of time so the
+            # stage n script can refer to the one for stage n+1.  The
+            # extra added on is the "final" stage where the program to
+            # be run is actually run.
+
+            for _ in range(0, len(calls)+1):
+
+                (fileno, path) = tempfile.mkstemp(prefix="ContextedRunner-")
+                os.close(fileno)
+                os.chmod(path, stat.S_IRWXU)
+                self.stages.append(path)
+
+            # Write the scripts
+
+            for stage in range(0, len(calls)):
+
+                stage_script = "#!/bin/sh -e\n" \
+                               "exec %s <<'EOF'\n" \
+                               "%s\n" \
+                               "EOF\n" % (
+                                   " ".join([quote(arg) for arg in calls[stage]["program"]]),
+                                   pscheduler.json_dump({
+                                       "data": calls[stage]["input"],
+                                       "exec": self.stages[stage+1]
+                                   }))
+
+                with open(self.stages[stage], "w") as output:
+                    output.write(stage_script)
+
+            # Write the "final" stage
+
+            with open(self.stages[-1], "w") as output:
+                output.write(
+                    "#!/bin/sh -e\n"
+                    "exec %s" % (
+                        " ".join([quote(arg) for arg in argv])
+                        )
+                    )
+
+                if stdin is not None:
+                    output.write(
+                        " <<'EOF'\n"
+                        "%s%s"
+                        "EOF\n" % (
+                            stdin,
+                            "" if stdin[-1] == "\n" else "\n"
+                        )
+                    )
+                else:
+                    # PORT: This is Unix-specific.
+                    output.write(" < /dev/null\n")
+
+
+        except Exception as ex:
+
+            for remove in self.stages:
+                try:
+                    os.unlink(remove)
+                except IOError:
+                    pass  # This is best effort only.
+
+            raise ex
+
+
+    def run(self,
+            # These are lifted straight from run_program.
+            line_call=None,    # Lambda to call when a line arrives
+            timeout=None,      # Seconds
+            timeout_ok=False,  # Treat timeouts as not being an error
+            fail_message=None, # Exit with this failure message
+            env=None,          # Environment for new process, None=existing
+            env_add=None,      # Add hash to existing environment
+            attempts=10):      # Max attempts to start the process
+        """
+        Run the chain.  Return semantics are the same as for
+        pscheduler.run_program(): a tuple of status, stdout, stderr.
+        """
+
+        # TODO: Is there a more-pythonic way to do this than pasting
+        # in all of the args?
+        result = pscheduler.run_program([self.stages[0]],
+                                        line_call=line_call,
+                                        timeout=timeout,
+                                        timeout_ok=timeout_ok,
+                                        fail_message=fail_message,
+                                        env=env,
+                                        env_add=env_add,
+                                        attempts=attempts
+                                    )
+
+        for remove in self.stages:
+            try:
+                pass # os.unlink(remove)
+            except IOError:
+                pass  # This is best effort only.
+
+        return result
+
+
+
+
+
 if __name__ == "__main__":
 
     def dump_result(title, tup):
@@ -392,3 +560,4 @@ if __name__ == "__main__":
                 ['head', '-10'],
                 stdin=inp
             ))
+
