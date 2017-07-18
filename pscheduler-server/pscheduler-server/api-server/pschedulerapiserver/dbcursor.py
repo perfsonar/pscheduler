@@ -74,7 +74,7 @@ class DBCursor:
 
 def dbcursor():
     """Get this thread's database cursor"""
-    return getattr(threadlocal, "cursor", DBCursor()).cursor()
+    return getattr(module.threadlocal, "cursor", DBCursor()).cursor()
 
 
 def dbcursor_query(query,
