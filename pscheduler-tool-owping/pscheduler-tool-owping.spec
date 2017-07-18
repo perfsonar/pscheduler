@@ -4,7 +4,7 @@
 
 %define short	owping
 Name:		pscheduler-tool-%{short}
-Version:	1.0.0.3
+Version:	1.0.0.5
 Release:	1%{?dist}
 
 Summary:	owping tool class for pScheduler
@@ -23,7 +23,8 @@ Requires:	owamp-client
 Requires:	owamp-server
 
 BuildRequires:	pscheduler-rpm
-
+BuildRequires:	python-pscheduler
+BuildRequires:  python-nose
 
 %description
 owping tool class for pScheduler

@@ -4,7 +4,7 @@
 
 %define short	latencybg
 Name:		pscheduler-test-%{short}
-Version:	1.0.0.3
+Version:	1.0.0.5
 Release:	1%{?dist}
 
 Summary:	Latency Background test class for pScheduler
@@ -20,7 +20,8 @@ Requires:	pscheduler-server
 Requires:	python-pscheduler
 
 BuildRequires:	pscheduler-rpm
-
+BuildRequires:	python-pscheduler
+BuildRequires:  python-nose
 
 %description
 Latency test class for pScheduler that runs in the background.

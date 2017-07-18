@@ -308,6 +308,11 @@ for line in stdout.split('\n'):
         if seq > count:
             log.warning("Discarding sequence %s; greater than count %s", seq, count)
             continue
+
+        # Under some conditions, ping6 returns the interface with the
+        # IP.  Remove that.
+        ip = ip.split("%")[0]
+
         #append as we may get multiple of same seq (duplicates) or seq out of order (reorders)
         roundtrips.append({
             'seq': seq,

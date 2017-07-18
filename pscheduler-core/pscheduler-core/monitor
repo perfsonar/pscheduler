@@ -26,10 +26,26 @@ opt_parser.add_option("--bind",
                       action="store", type="string",
                       dest="bind")
 
+opt_parser.add_option("--color",
+                      help="Use colors if the terminal supports it.",
+                      default=True,
+                      action="store_true",
+                      dest="color")
+opt_parser.add_option("--no-color",
+                      help="Don't use colors even if the terminal supports it.",
+                      action="store_false",
+                      dest="color")
+
+opt_parser.add_option("--delta",
+                      help="Show times as deltas from now",
+                      default=False,
+                      action="store_true",
+                      dest="delta")
+
 opt_parser.add_option("--past",
                       help="Percentage of available screen lines to occupy with past runs (0..100)",
                       action="store", type="int",
-                      default=25,
+                      default=50,
                       dest="past")
 
 opt_parser.add_option("--host",
@@ -55,9 +71,7 @@ if options.past < 0 or options.past > 100:
     pscheduler.fail("Invalid --past; must be in 0..100")
 past_fraction = float(options.past) / 100.0
 
-
-# TODO: Make these options
-if options.refresh < 0:
+if options.refresh <= 0:
     pscheduler.fail("Invalid --refresh; must be > 0")
 update_interval = datetime.timedelta(seconds=options.refresh)
 
@@ -68,42 +82,152 @@ update_interval = datetime.timedelta(seconds=options.refresh)
 #
 
 
-def hline(screen, line):
-    height, width = screen.getmaxyx()
-    screen.hline(line, 0, curses.ACS_HLINE, width)
-
 def center_on_line(screen, line, string):
+    """Center text on a specified line on the screen."""
     height, width = screen.getmaxyx()
     screen.addstr(line, (width - len(string))/2, string)
 
+
+
+#
+# Color Handling
+#
+
+COLOR_PAIRS = {
+    "default": {
+        "background": curses.COLOR_BLACK,
+        "foreground": curses.COLOR_WHITE,
+        "attrs": curses.A_NORMAL
+    },
+    "run": {
+        "background": curses.COLOR_BLACK,
+        "foreground": curses.COLOR_GREEN,
+        "attrs": curses.A_NORMAL
+    },
+    "error": {
+        "background": curses.COLOR_RED,
+        "foreground": curses.COLOR_WHITE,
+        "attrs": curses.A_BOLD
+    },
+    "soft-error": {
+        "background": curses.COLOR_YELLOW,
+        "foreground": curses.COLOR_BLACK,
+        "attrs": curses.A_BOLD
+    },
+}
+
+
+def init_color_pairs():
+    curses.start_color()
+    number = 0
+    for key in COLOR_PAIRS.keys():
+        pair = COLOR_PAIRS[key]
+        if curses.has_colors() and options.color:
+            number += 1
+            curses.init_pair(number,
+                             pair["foreground"], pair["background"])
+            COLOR_PAIRS[key]["final"] \
+                = curses.color_pair(number) | pair["attrs"]
+        else:
+            COLOR_PAIRS[key]["final"] = pair["attrs"]
+
+def color_pair(name):
+    if name not in COLOR_PAIRS:
+        name = "default"
+
+    return COLOR_PAIRS[name]["final"]
+
+
+#
+# Screen Construction
+#
+
 def draw_static(screen):
+    """Draw all of the static content on the screen."""
+
+    def place_text(width):
+        """Place all of the text"""
+
+        columns_left = width
+
+        # Put whatever will fit on the screen
+
+        # Time (will be filled in by update_time)
+
+        time_string = pscheduler.datetime_as_iso8601(pscheduler.time_now())
+        time_len = len(time_string)
+        columns_left -= time_len + 2
+        if columns_left < 0:
+            return
+
+
+        # Host
+
+        host_len = len(options.host)
+        columns_left -= host_len + 2
+        if columns_left < 0:
+            return
+        screen.addstr(0, width-host_len, options.host, color_pair("default"))
+
+
+        # Title
+
+        title_string = "pScheduler Monitor"
+        title_len = len(title_string)
+
+        # Not enough room for the title at all.
+        if columns_left < title_len:
+            return
+
+        larger_side = max(time_len, host_len)
+        if columns_left > title_len * 1.5:
+            # Enough room to center
+            center_on_line(screen, 0, title_string)
+        else:
+            # Squeeze it in between the two strings.
+            screen.addstr(0,
+                          time_len + 2 + ((columns_left - title_len) / 2),
+                          title_string)
+
+
+
     height, width = screen.getmaxyx()
     screen.clear()
-    center_on_line(screen, 0, "pScheduler Monitor")
-    screen.addstr(0, width-len(options.host), options.host)
-    hline(screen, 1)
+    place_text(width)
+    if height > 1:
+        screen.hline(1, 0, curses.ACS_HLINE, width)
+
     screen.refresh()
+
 
 
 def update_time(screen):
+    """Update the time in the status bar."""
+    _, width = screen.getmaxyx()
     time_str = pscheduler.datetime_as_iso8601(pscheduler.time_now())
-    screen.addstr(0, 0, time_str)
-    screen.refresh()
+    if len(time_str) > width:
+        time_str = "%s%s" % (time_str[:width-1], "+")
+    if width > 2:
+        screen.addstr(0, 0, time_str, color_pair("default"))
+        screen.refresh()
 
 
 
 def update_tasks(screen):
+    """Update the list of displayed tasks."""
 
     height, width = screen.getmaxyx()
 
     # Put something in the corner to show we're busy
-    loading_str = "   [LOADING]"
+    loading_str = "  [ LOADING ]"
     screen.addstr(0, width-len(loading_str), loading_str)
     screen.refresh()
 
+    # Ping it first.
+
     status, schedule = pscheduler.url_get(
         pscheduler.api_url(host=options.host, path="/monitor"),
-        params={ "window": height },
+        params={"window": height},
         bind=options.bind,
         throw=False)
 
@@ -112,14 +236,13 @@ def update_tasks(screen):
     error_lines = []
 
     if status != 200:
-        error_lines = [ "Unable to read schedule from server.",
-                        "",
-                        "Error code %d" % status,
-                        "",
-                        schedule.replace("\n", "  ")
-                        ]
+        error_lines = ["Unable to read schedule from server.",
+                       "",
+                       "Error code %d" % status,
+                       "",
+                       schedule.replace("\n", "  ")]
     elif len(schedule) == 0:
-        error_lines = [ "Schedule is empty." ]
+        error_lines = ["Schedule is empty."]
 
     if error_lines:
         screen.clear()
@@ -162,14 +285,13 @@ def update_tasks(screen):
     assert rows_left >= 0, "Left = %d" % rows_left
 
     # Past things take up to some fraction of what's left.
-    if rows_left > 0:
-        past_max = int(rows_left * past_fraction)
-        if len(past) > past_max:
-            past = past[-past_max:]
+    if rows_left > 0 and past_fraction > 0:
+        past_max = int(round(rows_left * past_fraction))
+        past_len = min(past_max, rows_left)
+        past = past[-past_len:]
         rows_left -= len(past)
     else:
         past = []
-    assert rows_left >= 0, "Left = %d" % rows_left
 
     # Things in the future get whatever's left.
     if rows_left > 0:
@@ -178,15 +300,20 @@ def update_tasks(screen):
         rows_left -= len(future)
     else:
         future = []
-    assert rows_left >= 0, "Left = %d" % rows_left
 
+    assert rows_left >= 0, "Consumed %d rows too many (PPF=%d/%d/%d)" % (
+        -rows_left, len(past), len(present), len(future))
 
+    # Assemble the three arrays into what will be displayed
+
+    if past:
+        past[-1]["delimit"] = True
     show_schedule = past
-    if len(past) > 0:
-        show_schedule[-1]["delimit"] = True
+
+    if present and future:
+        present[-1]["delimit"] = True
     show_schedule.extend(present)
-    if len(present) > 0:
-        show_schedule[-1]["delimit"] = True
+
     show_schedule.extend(future)
 
     assert len(show_schedule) <= height
@@ -194,6 +321,7 @@ def update_tasks(screen):
     screen.clear()
 
     row = 0
+    time_now = pscheduler.time_now()
     for run in show_schedule:
 
         cli = [ run["task"]["test"]["type"] ]
@@ -202,8 +330,19 @@ def update_tasks(screen):
         except KeyError:
             cli.append("(CLI not available)")
 
+        run_time = run["end-time"] if run["ppf"] == -1 else run["start-time"]
+
+        if options.delta:
+            run_time_dt = pscheduler.iso8601_as_datetime(run_time)
+            time_delta = abs(run_time_dt - time_now)
+            sign = "+" if run_time_dt >= time_now else "-"
+            display_time = "%s%s" \
+                           % (sign, pscheduler.timedelta_format(time_delta))
+        else:
+            display_time = run_time
+
         # Pad the string out to the width so inverse shows properly.
-        line = "%s %-12s %s" % (run["start-time"],
+        line = "%s  %-12s %s" % (display_time,
                                 run["state-display"], " ".join(cli))
         line = "%s%s" % (line, " " * (width-len(line)))
 
@@ -212,27 +351,22 @@ def update_tasks(screen):
 
         state = run["state"]
 
-        if state in [ "pending", "on-deck" ]:
-            # TODO: Color default
-            line_attr = curses.A_NORMAL
-        elif state in [ "running", "cleanup" ]:
-            # TODO: Color default
-            line_attr = curses.A_REVERSE
-        elif state in [ "overdue", "missed", "failed" ]:
-            # TODO: Color red
-            line_attr = curses.A_BOLD
-        elif state in [ "preempted" ]:
-            # TODO: Color yellow
-            line_attr = curses.A_NORMAL
+        if state in ["pending", "on-deck"]:
+            line_attr = color_pair("default")
+        elif state in ["running", "cleanup"]:
+            line_attr = color_pair("run")
+        elif state in ["overdue", "missed", "failed"]:
+            line_attr = color_pair("error")
+        elif state in ["preempted", "nonstart"]:
+            line_attr = color_pair("soft-error")
         else:
-            line_attr = curses.A_NORMAL
+            line_attr = color_pair("default")
 
         try:
             if run["delimit"]:
                 line_attr = line_attr | curses.A_UNDERLINE
         except KeyError:
             pass
-
 
         # The last row gets chopped by one character because curses
         # doesn't allow writing to the last character on the screen
@@ -255,15 +389,28 @@ def update_tasks(screen):
 # Main Program
 #
 
+
+# Make sure the destination is up and speaks pScheduler.
+
+up, reason = pscheduler.api_ping(options.host, bind=options.bind)
+
+if not up:
+    pscheduler.fail("Cannot reach pScheduler on %s: %s"
+                    % (options.host, reason))
+
+
+
 try:
 
     stdscr = curses.initscr()
+
+    init_color_pairs()
+
     stdscr.nodelay(1)
     curses.curs_set(0)
     curses.cbreak()
     curses.noecho()
-    task_window = stdscr.subwin(2,0)
-  
+    task_window = stdscr.subwin(2, 0)
 
     draw_static(stdscr)
     update_tasks(task_window)
@@ -278,15 +425,15 @@ try:
             pass
         elif input == curses.KEY_RESIZE:
             stdscr.clear()
-            task_window = stdscr.subwin(2,0)
+            task_window = stdscr.subwin(2, 0)
             draw_static(stdscr)
             # TODO: This causes lots of fetches during resizes.
             update_tasks(task_window)
             continue
         elif chr(input) == " ":
             update_tasks(task_window)
-        elif chr(input) in [ "Q", "q", "\033"]:
-                break
+        elif chr(input) in ["Q", "q", "\033"]:
+            break
 
         update_time(stdscr)
         if pscheduler.time_now() > last_update + update_interval:

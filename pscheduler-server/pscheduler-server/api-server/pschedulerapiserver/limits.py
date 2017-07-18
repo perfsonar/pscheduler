@@ -24,9 +24,9 @@ def limits():
     if proposal is None:
         return bad_request("No proposal provided")
 
-    processor = limitprocessor()
+    (processor, whynot) = limitprocessor()
     if processor is None:
-        return no_can_do("Limit processor is not initialized.")
+        return no_can_do("Limit processor is not initialized: {0}".format(whynot))
 
     passed, limits_passed, diags = processor.process(proposal, request_hints())
 

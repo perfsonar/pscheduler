@@ -23,8 +23,7 @@ class TestPsurl(PschedTestBase):
         (status, _) = url_get(no_scheme, json=False, throw=False)
         self.assertEqual(status, 400)
 
-        with self.assertRaises(pscheduler.URLException):
-            url_get(no_scheme, json=False, throw=True)
+        self.assertRaises(pscheduler.URLException, url_get, no_scheme, json=False, throw=True)
 
 
         # Bad IPv6 address
@@ -34,18 +33,15 @@ class TestPsurl(PschedTestBase):
         (status, _) = url_get(bad6, json=False, throw=False)
         self.assertEqual(status, 400)
 
-        with self.assertRaises(pscheduler.URLException):
-            url_get(bad6, json=False, throw=True)
+        self.assertRaises(pscheduler.URLException, url_get, bad6, json=False, throw=True)
 
 
         # This address is in the blocks reserved for RFC6666 discards.
         discard = "https://[0100::0010]/"
 
         self.assertEqual(
-            url_get(discard, json=False, throw=False),
-            (400, 'Connection aborted: Network is unreachable'))
-        with self.assertRaises(pscheduler.URLException):
-            url_get(discard, json=False, throw=True)
+            url_get(discard, timeout=1, json=False, throw=False)[0], 400)
+        self.assertRaises(pscheduler.URLException, url_get, discard, json=False, timeout=1, throw=True)
 
 
 
