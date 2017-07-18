@@ -10,7 +10,7 @@ build:
 # This is disabled because the test suite works differently on CentOS
 # 6 and 7.
 test:
-	true nosetests ./tests
+	nosetests ./tests
 
 
 clean:
