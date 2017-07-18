@@ -25,11 +25,10 @@ result = input["result"]
 spec = input["spec"]
 
 if format == 'text/plain':
-    print 'Time: %s' % result['time']
-    print 'Data:'
+    print 'Time: %s\n\n' % result['time']
+    print 'Data:\n'
     for i in range(len(result['data'])):
-        print ''
-        print 'OID: %s\t' % spec['oid'][i]
+        print 'OID: %s\n' % spec['oid'][i]
         for item in result['data'][i]:
             try:
                 print 'Sequence number: %s\t' % item['seq_num']
@@ -40,14 +39,14 @@ if format == 'text/plain':
                 print 'Type: %s\t' % item['type']
                 print 'Value: %s\t' % item['value']
             except KeyError:
-                print 'Error: %s\t' % item['value']
+                print 'Error: %s\n' % item['value']
 
             # deltas
             try:
                 print 'Time delta: %s\t' % item['timedelta']
-                print 'Delta: %s\t' % item['delta']
+                print 'Delta: %s\n' % item['delta']
             except KeyError:
-                pass
+                print ''
 
 elif format == 'text/html':
     print '<table>'
@@ -60,17 +59,27 @@ elif format == 'text/html':
     print '    <tr>'
     print '        <th>SNMP Data</th>'
     print '    </tr>'
-    for index, item in enumerate(result['data']):
+    for i in range(len(result['data'])):
         print '<tr>'
-        print '    <td>OID: %s\t </td>' % spec['oid'][index]
-    try:
-        print '<td>Type: %s\t </td>' % item['type']
-        print '<td>Value: %s\n</td>' % item['value']
-    except KeyError:
-        print '<td>Error: %s\n</td>' % item['value']       
+        print '    <td>OID: %s\t </td>' % spec['oid'][i]
+        for item in result['data'][i]:
+            try:
+                print '<td>Sequence number: %s\t </td>' % item['seq_num']
+            except KeyError:
+                pass
+            try:
+                print '<td>Type: %s\t </td>' % item['type']
+                print '<td>Value: %s\n</td>' % item['value']
+            except KeyError:
+                print '<td>Error: %s\n</td>' % item['value']
+            try:
+                print '<td>Time delta: %s\t </td>' % item['timedelta']
+                print '<td>Delta: %s\n</td>' % item['delta']   
+            except KeyError:
+                pass
         print '</tr>'
 
-        print '</table>'
+    print '</table>'
 
 
 else:

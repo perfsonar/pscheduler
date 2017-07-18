@@ -145,7 +145,7 @@ start_time = datetime.datetime.now()
 #
 
 
-results = []       # array of dictionaries, each corresponding to an oid in the spec
+data = []       # array of dictionaries, each corresponding to an oid in the spec
 oid_tuple = ()     # method for specifying multiple oids to the engine
 num_polls = 0      # tracker for number of polls
 this_poll = None   # latest poll time
@@ -170,7 +170,7 @@ while num_polls < (spec['polls'] + 1):
             succeeded = False
             error = "snmpget returned an error: %s" % str(errorIndication).strip('\n')
             diags = ''
-            results = None
+            data = None
             break
 
         for enum, result in enumerate(varBinds):
@@ -193,24 +193,43 @@ while num_polls < (spec['polls'] + 1):
                 # no delta values for first pull
                 if num_polls != 0:
                     try:
-                        entry['delta'] = value - results[enum][num_polls - 1]['value']
+                        entry['delta'] = value - data[enum][num_polls - 1]['value']
                         entry['timedelta'] = this_poll - last_poll
                     # string types will raise this exception, only integer values have delta values
                     except (TypeError, IndexError, NameError):
                         pass
-            try:
-                results[enum].append(entry)
-            except IndexError:
-                results.append([entry])
+                
+            else:
+                try:
+                    data[enum].append(entry)
+                except IndexError:
+                    data.append([entry])
 
     except pysnmp.smi.error.MibNotFoundError as e:
         succeeded = False
         error = "pysnmp.smi.error.MibNotFoundError: %s" % str(e).strip('\n')
         diags = ''
-        results = None
+        data = None
         break
 
     num_polls += 1
+
+    if test_type == 'snmpgetbgm':
+        delimiter = pscheduler.api_result_delimiter()
+        results = {
+            'succeeded': True,
+            'result': {
+                'schema': 1,
+                'succeeded' : succeeded,
+                'data': data
+            },
+            'error': '',
+            'diags': 'Run #%d' % (num_polls+1)
+        }
+        print pscheduler.json_dump(results)
+        print delimiter
+        sys.stdout.flush()
+        data = []
 
     if spec['polls'] == 1:
         break
@@ -237,7 +256,7 @@ results = {
 	    'schema': 1,
 	    'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
 	    'succeeded' : succeeded,
-        'data': results
+        'data': data
     },
     'error': error,
     'diags': diags

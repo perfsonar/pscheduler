@@ -4,8 +4,8 @@
 
     "name": "pysnmp",
     "description": "Make an SNMP get query to a destination",
-    "version": "1.0",
-    "tests": [ "snmpget" ],
+    "version": "1.0.0.3",
+    "tests": [ "snmpget", "snmpgetbgm" ],
 
     "preference": 0,
 
