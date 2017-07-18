@@ -6,7 +6,7 @@
 import pscheduler
 import validate
 
-logger = pscheduler.Log()
+logger = pscheduler.Log(quiet=True)
 
 try:
     json = pscheduler.json_load(max_schema=1)

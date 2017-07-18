@@ -14,6 +14,7 @@ from .filestring import *
 from .ipaddr import *
 from .iso8601 import *
 from .jsonval import *
+from .limits import *
 from .log import *
 from .numericrange import *
 from .program import *
@@ -31,4 +32,5 @@ from .ipcidrmatcher import *
 from .speccli import *
 from .text import *
 from .threadsafe import *
+from .unittesting import *
 from .interface import *

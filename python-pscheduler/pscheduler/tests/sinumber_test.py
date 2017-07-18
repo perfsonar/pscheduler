@@ -34,8 +34,7 @@ class TestSinumber(PschedTestBase):
             self.assertEqual(conversion_map.get(i), si_as_number(i))
 
         for i in ["ki", "Steak", "123e1", 3.1415]:
-            with self.assertRaises(ValueError):
-                si_as_number(i)
+            self.assertRaises(ValueError, si_as_number, i)
 
     def test_number_to_si(self):
         """Number to SI test"""
@@ -76,8 +75,7 @@ class TestSinumber(PschedTestBase):
             si_range({'upper': '2k', 'lower': '1k'}, default_lower=0),
             {'upper': 2000, 'lower': 1000})
 
-        with self.assertRaises(ValueError):
-            si_range({"lower": "2k", "upper": "1k"}, default_lower=0)
+        self.assertRaises(ValueError, si_range, {"lower": "2k", "upper": "1k"}, default_lower=0)
 
 
 if __name__ == '__main__':
