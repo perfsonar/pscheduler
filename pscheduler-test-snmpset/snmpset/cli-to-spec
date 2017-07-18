@@ -84,30 +84,30 @@ opt_parser.add_option("--timeout",
                       dest="timeout")
 
 opt_parser.add_option("--vartype",
-					  help="""
+                      help="""
                         List of variable types to be set, in the same order as the specified
-						oids themselves. Separated by a comma without spaces.
+                        oids themselves. Separated by a comma without spaces.
 
                         Example:
 
                         --vartype s,i 
 
                         """,
-					  action="store", type="string",
-				      dest="vartype")
+                      action="store", type="string",
+                      dest="vartype")
 
 opt_parser.add_option("--varvalue",
-					  help="""
+                      help="""
                         List of values to set the oids to, in the same order as the specified
-						oids themselves. Separated by a comma without spaces.
+                        oids themselves. Separated by a comma without spaces.
 
                         Example:
 
                         --varvalue Michigan,3 
 
                         """,
-					  action="store", type="string",
-				      dest="varvalue")
+                      action="store", type="string",
+                      dest="varvalue")
 
 
 # snmp v3 specific options

@@ -24,14 +24,14 @@ spec['oid'] = oid_str
 vartype_list = spec['vartype']
 vartype_str = ""
 for item in vartype_list:
-	vartype_str = "%s,%s" % (vartype_str, item)
+    vartype_str = "%s,%s" % (vartype_str, item)
 spec['vartype'] = vartype_str
 
 # concatenate varvalues
 varvalue_list = spec['varvalue']
 varvalue_str = ""
 for item in varvalue_list:
-	varvalue_str = "%s,%s" % (varvalue_str, item)
+    varvalue_str = "%s,%s" % (varvalue_str, item)
 spec['varvalue'] = varvalue_str
 
 result = pscheduler.speccli_build_args(spec, 
@@ -52,8 +52,8 @@ result = pscheduler.speccli_build_args(spec,
         ( 'priv-key', 'priv-key'),
         ( 'security-level', 'security-level'),
         ( 'context', 'context'),
-		( 'vartype', 'vartype'),
-		( 'varvalue', 'varvalue')
+        ( 'vartype', 'vartype'),
+        ( 'varvalue', 'varvalue')
         ])
 
 
