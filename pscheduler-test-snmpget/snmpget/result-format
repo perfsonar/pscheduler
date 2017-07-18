@@ -6,14 +6,13 @@
 import jsontemplate
 import pscheduler
 import sys
-
 from validate import result_is_valid
 
 
 try:
-   format = sys.argv[1]
+    format = sys.argv[1]
 except IndexError:
-   format = 'text/plain'
+    format = 'text/plain'
 
 input = pscheduler.json_load(exit_on_error=True)
 
@@ -26,16 +25,30 @@ result = input["result"]
 spec = input["spec"]
 
 if format == 'text/plain':
-   print 'Time: %s\n' % result['time']
-   print 'Data:'
-   for i in range(len(result['data'])):
-       print 'OID: %s\t' % spec['oid'][i]
-       try:
-           print 'Type: %s\t' % result['data'][i]['type']
-           print 'Value: %s\n' % result['data'][i]['value']
-       except KeyError:
-           print 'Error: %s\n' % result['data'][i]['value']
-   
+    print 'Time: %s' % result['time']
+    print 'Data:'
+    for i in range(len(result['data'])):
+        print ''
+        print 'OID: %s\t' % spec['oid'][i]
+        for item in result['data'][i]:
+            try:
+                print 'Sequence number: %s\t' % item['seq_num']
+            except KeyError:
+                pass
+            print 'Timestamp: %s\t' % item['timestamp']
+            try:
+                print 'Type: %s\t' % item['type']
+                print 'Value: %s\t' % item['value']
+            except KeyError:
+                print 'Error: %s\t' % item['value']
+
+            # deltas
+            try:
+                print 'Time delta: %s\t' % item['timedelta']
+                print 'Delta: %s\t' % item['delta']
+            except KeyError:
+                pass
+
 elif format == 'text/html':
     print '<table>'
     print '    <tr>'
@@ -50,15 +63,15 @@ elif format == 'text/html':
     for index, item in enumerate(result['data']):
         print '<tr>'
         print '    <td>OID: %s\t </td>' % spec['oid'][index]
-        try:
-            print '<td>Type: %s\t </td>' % item['type']
-            print '<td>Value: %s\n</td>' % item['value']
-        except KeyError:
-            print '<td>Error: %s\n</td>' % item['value']       
+    try:
+        print '<td>Type: %s\t </td>' % item['type']
+        print '<td>Value: %s\n</td>' % item['value']
+    except KeyError:
+        print '<td>Error: %s\n</td>' % item['value']       
         print '</tr>'
 
-    print '</table>'
+        print '</table>'
 
 
 else:
-   pscheduler.fail("Unsupported format '%s'" % format)
+    pscheduler.fail("Unsupported format '%s'" % format)

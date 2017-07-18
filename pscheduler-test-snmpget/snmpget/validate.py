@@ -15,15 +15,15 @@ def spec_is_valid(json):
             },
             "AuthProtocol": {
                 "type": "string",
-                "enum": [ "md5", "sha"]
+                "enum": [ "MD5", "SHA"]
             },
             "PrivProtocol": {
                 "type": "string",
-                "enum": [ "aes", "des"]
+                "enum": [ "AES", "AES128", "AES192", "AES256", "DES", "3DES" ]
             },
             "SecurityLevel": {
                 "type": "string",
-                "enum": [ "noauthnopriv", "authnopriv", "authpriv"]
+                "enum": [ "noAuthNoPriv", "authNoPriv", "authPriv"]
             },
             "TransportProtocol": {
                 "type": "string",
@@ -38,6 +38,8 @@ def spec_is_valid(json):
                     "dest":         { "$ref": "#/pScheduler/Host" },
                     "version":      { "$ref": "#/local/VersionNumber"},
                     "_community":    { "$ref": "#/pScheduler/String"},
+                    "period":       { "$ref": "#/pScheduler/UInt64" }, # TODO: change this maybe
+                    "polls":        { "$ref": "#/pScheduler/UInt64" },
                     "oid":          { "type": "array", 
                                       "items": { "$ref": "#/pScheduler/SNMPOID" } 
                                     },
@@ -48,7 +50,8 @@ def spec_is_valid(json):
                     "version",
                     "_community",
                     "dest",
-                    "oid"
+                    "oid",
+                    "polls"
                     ]
             },
             "SNMPv3Spec": {
@@ -59,6 +62,8 @@ def spec_is_valid(json):
                     "host-node":    { "$ref": "#/pScheduler/Host" },
                     "dest":         { "$ref": "#/pScheduler/Host" },
                     "version":      { "$ref": "#/local/VersionNumber"},
+                    "period":       { "$ref": "#/pScheduler/UInt64" }, # TODO: change this maybe
+                    "polls":        { "$ref": "#/pScheduler/UInt64" },
                     "oid":          { "type": "array", 
                                       "items": { "$ref": "#/pScheduler/SNMPNumericOID" } 
                                     },
@@ -75,7 +80,8 @@ def spec_is_valid(json):
                 "required": [
                     "version",
                     "dest",
-                    "oid"
+                    "oid",
+                    "polls"
                     ]
             }
         
@@ -98,7 +104,7 @@ def result_is_valid(json):
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
             "time":       { "$ref": "#/pScheduler/Duration" },
             "data":       { "type": "array",
-                            "items": { "$ref": "#/pScheduler/SNMPResult" } 
+                            "items": { "$ref": "#/pScheduler/AnyJSON" } # temporary 
                           },
             },
         "required": [

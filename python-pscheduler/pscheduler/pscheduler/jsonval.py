@@ -534,7 +534,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[I|i][N|n][T|t][E|e][G|g][E|e][R|r]$'
             },
-            "value": { "$ref": "#/pScheduler/Integer" }
+            "value": { "$ref": "#/pScheduler/Integer" },
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -550,7 +551,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[S|s][T|t][R|r][I|i][N|n][G|g]$'
             },
-            "value": { "$ref": "#/pScheduler/String"}
+            "value": { "$ref": "#/pScheduler/String"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -566,7 +568,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[H|h][E|e][X|x]-*[S|s][T|t][R|r][I|i][N|n][G|g]$'
             },
-            "value": { "$ref": "#/pScheduler/String"}
+            "value": { "$ref": "#/pScheduler/String"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -582,7 +585,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[I|i][P|p][A|a][D|d]{2}[R|r][E|e][S|s]{2}$'
             },
-            "value": { "$ref": "#/pScheduler/IPAddress"}
+            "value": { "$ref": "#/pScheduler/IPAddress"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -616,7 +620,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[O|o][I|i][D|d]$'
             },
-            "value": { "$ref": "#/pScheduler/SNMPOID"}
+            "value": { "$ref": "#/pScheduler/SNMPOID"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -634,7 +639,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[C|c][O|o][U|u][N|n][T|t][E|e][R|r]32$'
             },
-            "value": { "$ref": "#/pScheduler/UInt32"}
+            "value": { "$ref": "#/pScheduler/UInt32"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -650,7 +656,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[C|c][O|o][U|u][N|n][T|t][E|e][R|r]64$'
             },
-            "value": { "$ref": "#/pScheduler/UInt64"}
+            "value": { "$ref": "#/pScheduler/UInt64"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -666,7 +673,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[G|g][A|a][U|u][G|g][E|e]32$'
             },
-            "value": { "$ref": "#/pScheduler/UInt32"}
+            "value": { "$ref": "#/pScheduler/UInt32"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -688,7 +696,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[T|t][I|i][M|m][E|e][T|t][I|i][C|c][K|k][S|s]$'
             },
-            "value": { "$ref": "#/pScheduler/SNMPTimeticks"}
+            "value": { "$ref": "#/pScheduler/SNMPTimeticks"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -701,11 +710,11 @@ __dictionary__ = {
         "type": "object",
         "properties": {
             "type": { "type": "null" },
-            "value": { "$ref": "#/pScheduler/String" }
+            "value": { "$ref": "#/pScheduler/String" },
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
-            "type",
             "value"
         ]
     },

@@ -61,6 +61,16 @@ opt_parser.add_option("--version",
                       action="store", type="string",
                       dest="version")
 
+opt_parser.add_option("--period",
+                        help="Seconds between polling periods.",
+                        action="store", type="int",
+                        dest="period")
+
+opt_parser.add_option("--polls",
+                        help="Number of delta values desired.",
+                        action="store", type="int",
+                        dest="polls", default=1)
+
 opt_parser.add_option("--oid",
                       help="""
                         List of OIDs to be queried, separated by a comma without spaces.
@@ -154,6 +164,15 @@ if options.protocol is not None:
 
 if options.timeout is not None:
    result['timeout'] = options.timeout
+
+if options.polls is not None:
+    result['polls'] = options.polls
+
+if (options.period is not None) or (options.polls > 1):
+    if options.period is None:
+      result['period'] = 1
+    else:
+      result['period'] = options.period
 
 if options.version in ['1', '2c']:
   if options.community is not None:

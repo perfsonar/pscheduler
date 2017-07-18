@@ -2,8 +2,8 @@
 {
     "schema": 1,
     "name": "snmpget",
-    "description": "Measure SNMP transaction time",
-    "version": "1.0",
+    "description": "Make an/multiple SNMP get query(ies) to a destination.",
+    "version": "1.0.0.3",
     "maintainer": {
         "name": "perfSONAR Development Team",
 	"email": "perfsonar-developer@internet2.edu",
