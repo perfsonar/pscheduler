@@ -412,7 +412,7 @@ class TestLimitPassesUnitTest(ExecUnitTest):
         ##not specified
         self.assert_cmd('{{"limit": {{"{0}": {{"range": {{"upper": {1}, "lower": {2}}}}}}}, "spec": {{}}}}'.format(field, upper, lower))
         ##invert
-        self.assert_cmd('{{"limit": {{"{0}": {{"invert": true,"range": {{"upper": {1}, "lower": {2}}}}}}}, "spec": {{"{0}": {{"upper": 9001, "lower": 9000}}}}}}'.format(field, upper, lower, upper-1, lower+1), expected_valid=False)
+        self.assert_cmd('{{"limit": {{"{0}": {{"invert": true,"range": {{"upper": {1}, "lower": {2}}}}}}}, "spec": {{"{0}": {{"upper": {3}, "lower": {4}}}}}}}'.format(field, upper, lower, upper-1, lower+1), expected_valid=False)
         self.assert_cmd('{{"limit": {{"{0}": {{"invert": true,"range": {{"upper": {1}, "lower": {2}}}}}}}, "spec": {{"{0}": {{"upper": {2}, "lower": {3}}}}}}}'.format(field, upper, lower, lower-1), expected_valid=False)
         self.assert_cmd('{{"limit": {{"{0}": {{"invert": true,"range": {{"upper": {1}, "lower": {2}}}}}}}, "spec": {{"{0}": {{"upper": {3}, "lower": {1}}}}}}}'.format(field, upper, lower, upper+1), expected_valid=False)
         self.assert_cmd('{{"limit": {{"{0}": {{"invert": true,"range": {{"upper": {1}, "lower": {2}}}}}}}, "spec": {{"{0}": {{"upper": {3}, "lower": {4}}}}}}}'.format(field, upper, lower, upper+2, upper+1))
