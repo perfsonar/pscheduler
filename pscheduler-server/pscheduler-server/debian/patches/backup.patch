@@ -1,6 +1,6 @@
 --- a/utilities/backup.raw
 +++ b/utilities/backup.raw
-@@ -69,6 +69,7 @@
+@@ -73,6 +73,7 @@
      --format plain \
      --serializable-deferrable \
      --user pscheduler \
@@ -10,7 +10,7 @@
  $INTERACTIVE && printf ' Done.\n' 1>&2 || true
 --- a/utilities/restore.raw
 +++ b/utilities/restore.raw
-@@ -198,7 +198,7 @@
+@@ -193,7 +193,7 @@
  cat "${WORK_DIR}/database-dump" >> "${SQL_WORK}"
  
  DB_OUTPUT="${WORK_DIR}/db-output"
