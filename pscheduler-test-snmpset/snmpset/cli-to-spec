@@ -34,10 +34,8 @@ else:
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """Examples:
 
-  task snmpset --version 2c --community public --dest localhost --oid sysLocation.0 --vartype s --varvalue "Ann Arbor"
-
-  task snmpset --version 2c --community public --dest 192.168.0.1 --oid sysLocation.0,sysContact.0, --vartype s,s
-  --varvalue "Ann Arbor","John Smith" 
+  task snmpget --version 2c --community public example.net
+    text
 
 """
 )

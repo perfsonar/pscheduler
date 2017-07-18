@@ -2,7 +2,7 @@
 {
     "schema": 1,
     "name": "snmpset",
-    "description": "Set variables via SNMP Set",
+    "description": "Set SNMP Variables",
     "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",
