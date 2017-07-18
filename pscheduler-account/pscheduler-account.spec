@@ -53,6 +53,17 @@ then
     useradd -c '%{gecos}' -g '%{group}' '%{user}'
 fi
 
+# Make sure the account is never never disabled or requires a password
+# change.  Do this under all conditions to bring older versions into
+# line.
+
+chage \
+    --expiredate -1 \
+    --inactive -1 \
+    --maxdays 99999 \
+    '%{user}'
+
+
 
 %postun
 if [ $1 -eq 0 ]  # No more instances left.

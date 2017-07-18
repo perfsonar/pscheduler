@@ -21,7 +21,8 @@ Requires:	python-pscheduler >= 1.3
 Requires:	python-jsontemplate
 
 BuildRequires:	pscheduler-rpm
-
+BuildRequires:	python-pscheduler
+BuildRequires:  python-nose
 
 %description
 Round trip time test class for pScheduler

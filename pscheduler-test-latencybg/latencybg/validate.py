@@ -267,12 +267,13 @@ LIMIT_SCHEMA = {
         "schema":           { "$ref": "#/pScheduler/Cardinal" },
         "packet-count":     { "$ref": "#/pScheduler/Limit/Cardinal" },
         "packet-interval":  { "$ref": "#/local/packet-interval-limit" },
-        "duration":  { "$ref": "#/pScheduler/Limit/Duration" }, # packet-count * packet-interval
+        "duration":  { "$ref": "#/pScheduler/Limit/Duration" },
+        "report-interval":  { "$ref": "#/pScheduler/Limit/Duration" }, # packet-count * packet-interval
         "packet-timeout":   { "$ref": "#/pScheduler/Limit/CardinalZero" },
         "packet-padding":   { "$ref": "#/pScheduler/Limit/CardinalZero" },
         "ctrl-port":        { "$ref": "#/pScheduler/Limit/CardinalZero" },
         "data-ports":       { "$ref": "#/pScheduler/Limit/CardinalZero" },
-        "ip-tos":           { "$ref": "#/pScheduler/Limit/CardinalZero" },
+        "ip-tos":           { "$ref": "#/pScheduler/Limit/CardinalList" },
         "ip-version":       { "$ref": "#/pScheduler/Limit/IPVersionList" },
         "bucket-width":     { "$ref": "#/local/bucket-width-limit" },
         "output-raw":       { "$ref": "#/pScheduler/Limit/Boolean" },

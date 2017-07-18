@@ -20,10 +20,9 @@ class TestFilestring(PschedTestBase):
 
         fstab = string_from_file("@/etc/fstab")
 
-        self.assertGreaterEqual(fstab.find('/etc/fstab'), 0)
+        assert(fstab.find('/etc/fstab') >= 0)
 
-        with self.assertRaises(Exception):
-            string_from_file("@/invalid/path")
+        self.assertRaises(Exception, string_from_file, "@/invalid/path")
 
 
 if __name__ == '__main__':

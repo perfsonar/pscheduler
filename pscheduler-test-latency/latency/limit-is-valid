@@ -27,7 +27,6 @@ if valid:
         ("packet-padding", "Packet Padding"),
         ("ctrl-port", "Control Ports"),
         ("data-ports", "Data Ports"),
-        ("ip-tos", "IP TOS"),
         ("bucket-width", "Bucket Width"),
     ]
     for nr in numeric_ranges:

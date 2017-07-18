@@ -21,6 +21,7 @@ Requires:	python-pscheduler
 Requires:	python-jsontemplate
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:	python-pscheduler
 BuildRequires:  python-nose
 
 %description
