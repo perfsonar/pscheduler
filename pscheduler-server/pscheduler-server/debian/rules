@@ -49,6 +49,8 @@ override_dh_auto_build:
 		DATABASE=pscheduler \
 		DATADIR=/usr/share/pscheduler \
 		PASSWORDFILE=/etc/pscheduler/database/database-password \
+		DSNFILE=/etc/pscheduler/database/database-dsn \
+		PGPASSFILE=/etc/pscheduler/database/pgpassfile \
 		ROLE=pscheduler \
 		PGPASSFILE=$(ROOT)/etc/pscheduler/database/pgpassfile
 
