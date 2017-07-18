@@ -19,13 +19,14 @@ from .response import *
 # All contexts
 @application.route("/contexts", methods=['GET'])
 def contexts():
-    return json_query("SELECT json FROM context ORDER BY NAME")
+    return json_query("SELECT json FROM context WHERE available ORDER BY NAME")
 
 
 # Context <name>
 @application.route("/contexts/<name>", methods=['GET'])
 def contexts_name(name):
-    return json_query("SELECT json FROM context WHERE name = %s",
+    return json_query("SELECT json FROM context"
+                      " WHERE available AND name = %s",
                       [name], single=True)
 
 
@@ -35,7 +36,8 @@ def contexts_name_data_is_valid(name):
 
     try:
         cursor = dbcursor_query(
-            "SELECT EXISTS (SELECT * FROM context WHERE NAME = %s)",
+            "SELECT EXISTS"
+            " (SELECT * FROM context WHERE available AND NAME = %s)",
             [name])
     except Exception as ex:
         return error(str(ex))
