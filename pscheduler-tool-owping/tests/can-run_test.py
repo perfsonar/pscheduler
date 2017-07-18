@@ -3,6 +3,7 @@ tests for the can-run command
 """
 
 import pscheduler
+import unittest
 
 class CanRunTest(pscheduler.ToolCanRunUnitTest):
     name = 'owping'
