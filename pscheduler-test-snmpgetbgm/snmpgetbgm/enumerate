@@ -1,0 +1,13 @@
+#!/bin/sed -e 1d
+{
+    "schema": 1,
+    "name": "snmpgetbgm",
+    "description": "Make an/multiple SNMP get query(ies) to a destination and (optionally) calculate the delta between each poll.",
+    "version": "1.0.0.3",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+    "scheduling-class": "background-multi"
+}
