@@ -103,6 +103,7 @@ case "$1" in
         # database init/upgrade
         if [ -f /usr/share/dbconfig-common/dpkg/postinst.pgsql ]; then
             . /usr/share/dbconfig-common/dpkg/postinst.pgsql
+            db_set pscheduler-server/upgrade-backup false
             dbc_go pscheduler-server $@
         fi
 
@@ -127,10 +128,6 @@ case "$1" in
                                       /etc/pscheduler/database/pgpassfile
             )
         fi
-
-        # cleanup database backups (leaves last 3 backups)
-        ls --sort=time /var/cache/dbconfig-common/backups/pscheduler-server_* 2>/dev/null \
-            | tail -n +4 | xargs --no-run-if-empty -- rm -f
 
         # handle large number of pscheduler connections
         if grep -q '^max_connections = 100[^0-9]' /etc/postgresql/9.6/main/postgresql.conf; then
