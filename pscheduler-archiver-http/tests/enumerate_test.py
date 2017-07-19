@@ -6,7 +6,7 @@ import pscheduler
 import unittest
 
 class EnumerateTest(pscheduler.ArchiverEnumerateUnitTest):
-    name = 'esmond'
+    name = 'http'
         
 if __name__ == '__main__':
     unittest.main()

@@ -3,6 +3,7 @@ tests for the enumerate command
 """
 
 import pscheduler
+import unittest
 
 class EnumerateTest(pscheduler.TestEnumerateUnitTest):
     name = 'throughput'

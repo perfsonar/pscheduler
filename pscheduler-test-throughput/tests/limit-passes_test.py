@@ -2,6 +2,7 @@ import pscheduler
 
 import os
 from json import dumps
+import unittest
 
 class TestLimitPasses(pscheduler.TestLimitPassesUnitTest):
     name = 'throughput'

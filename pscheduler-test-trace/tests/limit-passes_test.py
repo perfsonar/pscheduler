@@ -3,7 +3,7 @@ tests for the limit-passes command
 """
 
 import pscheduler
-
+import unittest
 
 class TraceLimitPassesTest(pscheduler.TestLimitPassesUnitTest):
     name = 'trace'
@@ -44,9 +44,6 @@ class TraceLimitPassesTest(pscheduler.TestLimitPassesUnitTest):
         
     def test_length(self):
         self.assert_numeric_limit('length', 'Length', 100, 1000)
-        
-    def test_hostnames(self):
-        self.assert_boolean_limit("hostnames", "Hostname resolution")
     
     def test_probe_type(self):
         self.assert_string_limit('probe-type', 'Probe type')

@@ -3,6 +3,7 @@ tests for the participants command
 """
 
 import pscheduler
+import unittest
 
 class ParticipantsTest(pscheduler.TestParticipantsUnitTest):
     name = 'latency'
