@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Convert a test specification to command-line options
+# Convert an snmpget test specification to command-line options
 
 import pscheduler
 

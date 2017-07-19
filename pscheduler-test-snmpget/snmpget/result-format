@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Format a result
+# Format an snmpget result
 #
 
 import jsontemplate

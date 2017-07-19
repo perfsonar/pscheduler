@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Format a spec
+# Format an snmpget test spec
 #
 
 import jsontemplate

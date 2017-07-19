@@ -2,7 +2,7 @@
 {
     "schema": 1,
     "name": "snmpget",
-    "description": "Make an/multiple SNMP get query(ies) to a destination.",
+    "description": "Make an/multiple SNMP get query(ies) to a destination and (optionally) calculate delta values between polls.",
     "version": "1.0.0.3",
     "maintainer": {
         "name": "perfSONAR Development Team",

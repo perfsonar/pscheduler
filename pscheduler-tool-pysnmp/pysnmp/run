@@ -74,7 +74,7 @@ def build_object(oid):
 
 def get_generator(spec, oid_tuple, level): 
 
-    if level is None:
+    if level == None:
         credentials = CommunityData(spec['_community'])
 
     else:
@@ -91,10 +91,10 @@ def get_generator(spec, oid_tuple, level):
                          }
 
         # completely unauthenticated request
-        if level is 'noauthnopriv':
+        if level == 'noauthnopriv':
             credentials = UsmUserData(spec['security-name'])
         # authenticated and encrypted request
-        elif level is 'authpriv':
+        elif level == 'authpriv':
             try:
                 credentials = UsmUserData(spec['security-name'], spec['_auth-key'], spec['_priv-key'],
                               authProtocol=auth_protocols[spec['auth-protocol'].lower()],
@@ -102,12 +102,15 @@ def get_generator(spec, oid_tuple, level):
             except KeyError:
                 pscheduler.fail("Unrecognized authentication/privacy protocol: %s" % spec['auth-protocol']) # TODO
 
-        elif level is 'authnopriv':
+        elif level == 'authnopriv':
             try:
                 credentials = UsmUserData(spec['security-name'], spec['_auth-key'],
                               authProtocol=auth_protocols[spec['auth-protocol'].lower()])
             except KeyError:
                 pscheduler.fail("Unrecognized authentication protocol: %s" % spec['auth-protocol']) # TODO
+
+        else:
+            pscheduler.fail("Unrecognized security level: %s" % spec['security-level'])
 
     return getCmd(SnmpEngine(),
                   credentials,
@@ -127,7 +130,7 @@ spec = input['test']['spec']
 test_type = input['test']['type']
 
 try:
-    level = spec['securiy-level'].lower()
+    level = spec['security-level'].lower()
 except KeyError:
     level = None
 
@@ -135,8 +138,6 @@ if missing_input(spec, test_type, level):
     pscheduler.fail('Missing data in input')
 
 # Set timeout and start time
-timeout_iso = input['test']['spec'].get("timeout", "PT300S" )
-timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 start_time = datetime.datetime.now()
 
 
@@ -198,12 +199,11 @@ while num_polls < (spec['polls'] + 1):
                     # string types will raise this exception, only integer values have delta values
                     except (TypeError, IndexError, NameError):
                         pass
-                
-            else:
-                try:
-                    data[enum].append(entry)
-                except IndexError:
-                    data.append([entry])
+            
+            try:
+                data[enum].append(entry)
+            except IndexError:
+                data.append([entry])
 
     except pysnmp.smi.error.MibNotFoundError as e:
         succeeded = False
@@ -224,7 +224,7 @@ while num_polls < (spec['polls'] + 1):
                 'data': data
             },
             'error': '',
-            'diags': 'Run #%d' % (num_polls+1)
+            'diags': 'Run #%d' % num_polls
         }
         print pscheduler.json_dump(results)
         print delimiter
