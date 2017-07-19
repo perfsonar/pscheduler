@@ -103,6 +103,7 @@ case "$1" in
         # database init/upgrade
         if [ -f /usr/share/dbconfig-common/dpkg/postinst.pgsql ]; then
             . /usr/share/dbconfig-common/dpkg/postinst.pgsql
+            rm -f /var/cache/dbconfig-common/backups/pscheduler-server_*
             db_set pscheduler-server/upgrade-backup false
             dbc_go pscheduler-server $@
         fi
