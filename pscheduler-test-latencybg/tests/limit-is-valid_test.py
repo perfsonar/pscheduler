@@ -3,6 +3,7 @@ tests for the limit-is-valid command
 """
 
 import pscheduler
+import unittest
 
 class LimitIsValidTest(pscheduler.TestLimitIsValidUnitTest):
     name = 'latencybg'

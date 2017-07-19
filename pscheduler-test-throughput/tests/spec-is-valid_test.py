@@ -1,5 +1,6 @@
 import pscheduler
 from json import dumps
+import unittest
 
 class TestSpecIsValid(pscheduler.TestSpecIsValidUnitTest):
     name="throughput"        

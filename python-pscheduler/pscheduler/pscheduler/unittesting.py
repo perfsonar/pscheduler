@@ -308,6 +308,17 @@ class TestLimitPassesUnitTest(ExecUnitTest):
     has_single_error = False
     
     def assert_numeric_limit(self, field, label, lower, upper):
+        """
+        Assert command that performs basic checks on a numeric limit. It checks value
+        within the provided bounds, above and below the provided bounds, the unspecified 
+        case and the invert option.
+    
+        Args:
+            field: the name of the limit to test
+            label: the human-readable name used in error messages
+            lower: the lower bound of the limit to check as number
+            upper: the upper bound of the limit to check as number
+        """
         ##in range
         self.assert_cmd('{{"limit": {{"{0}": {{"range": {{"upper": {1}, "lower": {2}}}}}}}, "spec": {{"{0}": {1}}}}}'.format(field, upper, lower))
         ##out of range
@@ -322,6 +333,17 @@ class TestLimitPassesUnitTest(ExecUnitTest):
         self.assert_cmd('{{"limit": {{"{0}": {{"invert": true,"range": {{"upper": {1}, "lower": {2}}}}}}}, "spec": {{"{0}": {3}}}}}'.format(field, upper, lower, lower-1))
     
     def assert_sinumber_limit(self, field, label, lower, upper):
+        """
+        Assert command that performs basic checks on a limit defined with SI numbers. 
+        It checks value within the provided bounds, above/below the provided bounds, 
+        the unspecified case and the invert option.
+    
+        Args:
+            field: the name of the limit to test
+            label: the human-readable name used in error messages
+            lower: the lower bound of the limit to check as SI number string
+            upper: the upper bound of the limit to check as SI number string
+        """
         above_range = number_as_si(si_as_number(upper) * 2)
         below_range = number_as_si(si_as_number(lower) / 2)
         ##in range
@@ -338,6 +360,15 @@ class TestLimitPassesUnitTest(ExecUnitTest):
         self.assert_cmd('{{"limit": {{"{0}": {{"invert": true,"range": {{"upper": "{1}", "lower": "{2}"}}}}}}, "spec": {{"{0}": "{3}"}}}}'.format(field, upper, lower, below_range))
         
     def assert_numeric_list_limit(self, field, label): 
+        """
+        Assert command that performs basic checks on a limit defined as a list of numbers. 
+        It uses a static set of bounds and tests cases in range, out of range, using the 
+        invert option and the fail-message option.
+    
+        Args:
+            field: the name of the limit to test
+            label: the human-readable name used in error messages
+        """
         ##in range
         self.assert_cmd('{{"limit": {{"{0}": {{"match": [1, 2, 3]}}}}, "spec": {{"{0}": 1}}}}'.format(field)) #first
         self.assert_cmd('{{"limit": {{"{0}": {{"match": [1, 2, 3]}}}}, "spec": {{"{0}": 2}}}}'.format(field)) #middle
@@ -356,6 +387,18 @@ class TestLimitPassesUnitTest(ExecUnitTest):
         self.assert_cmd('{{"limit": {{"{0}": {{"match": [1, 2, 5], "fail-message": "Test message"}}}}, "spec": {{"{0}": 4}}}}'.format(field), expected_valid=False, expected_errors=expected_errors)
     
     def assert_numeric_range_limit(self, field, label, lower, upper):
+        """
+        Assert command that performs basic checks on a numeric limit where the spec field 
+        is a range (as opposed to a single number). It checks value within the provided 
+        bounds, above/below the provided bounds, the unspecified case and the invert 
+        option.
+    
+        Args:
+            field: the name of the limit to test
+            label: the human-readable name used in error messages
+            lower: the lower bound of the limit to check as number
+            upper: the upper bound of the limit to check as number
+        """
         ##in range
         self.assert_cmd('{{"limit": {{"{0}": {{"range": {{"upper": {1}, "lower": {2}}}}}}}, "spec": {{"{0}": {{"upper": {1}, "lower": {2}}}}}}}'.format(field, upper, lower))
         self.assert_cmd('{{"limit": {{"{0}": {{"range": {{"upper": {1}, "lower": {2}}}}}}}, "spec": {{"{0}": {{"upper": {3}, "lower": {4}}}}}}}'.format(field, upper, lower, upper-1, lower+1))
@@ -369,13 +412,22 @@ class TestLimitPassesUnitTest(ExecUnitTest):
         ##not specified
         self.assert_cmd('{{"limit": {{"{0}": {{"range": {{"upper": {1}, "lower": {2}}}}}}}, "spec": {{}}}}'.format(field, upper, lower))
         ##invert
-        self.assert_cmd('{{"limit": {{"{0}": {{"invert": true,"range": {{"upper": {1}, "lower": {2}}}}}}}, "spec": {{"{0}": {{"upper": 9001, "lower": 9000}}}}}}'.format(field, upper, lower, upper-1, lower+1), expected_valid=False)
+        self.assert_cmd('{{"limit": {{"{0}": {{"invert": true,"range": {{"upper": {1}, "lower": {2}}}}}}}, "spec": {{"{0}": {{"upper": {3}, "lower": {4}}}}}}}'.format(field, upper, lower, upper-1, lower+1), expected_valid=False)
         self.assert_cmd('{{"limit": {{"{0}": {{"invert": true,"range": {{"upper": {1}, "lower": {2}}}}}}}, "spec": {{"{0}": {{"upper": {2}, "lower": {3}}}}}}}'.format(field, upper, lower, lower-1), expected_valid=False)
         self.assert_cmd('{{"limit": {{"{0}": {{"invert": true,"range": {{"upper": {1}, "lower": {2}}}}}}}, "spec": {{"{0}": {{"upper": {3}, "lower": {1}}}}}}}'.format(field, upper, lower, upper+1), expected_valid=False)
         self.assert_cmd('{{"limit": {{"{0}": {{"invert": true,"range": {{"upper": {1}, "lower": {2}}}}}}}, "spec": {{"{0}": {{"upper": {3}, "lower": {4}}}}}}}'.format(field, upper, lower, upper+2, upper+1))
         self.assert_cmd('{{"limit": {{"{0}": {{"invert": true,"range": {{"upper": {1}, "lower": {2}}}}}}}, "spec": {{"{0}": {{"upper": {3}, "lower": {4}}}}}}}'.format(field, upper, lower, lower-1, lower-2))
         
     def assert_boolean_limit(self, field, label): 
+        """
+        Assert command that performs basic checks on boolean limits. Tests all combinations
+        of true and false and also checks cases where value is not specified or a 
+        fail-message is provided.
+    
+        Args:
+            field: the name of the limit to test
+            label: the human-readable name used in error messages
+        """
         ##in range
         self.assert_cmd('{{"limit": {{"{0}": {{"match": true}}}}, "spec": {{"{0}": true}}}}'.format(field))
         self.assert_cmd('{{"limit": {{"{0}": {{"match": false}}}}, "spec": {{"{0}": false}}}}'.format(field))
@@ -394,6 +446,17 @@ class TestLimitPassesUnitTest(ExecUnitTest):
         self.assert_cmd('{{"limit": {{"{0}": {{"match": true, "fail-message": "Test message"}}}}, "spec": {{}}}}'.format(field), expected_valid=False, expected_errors=expected_errors)
 
     def assert_duration_limit(self, field, label, lower, upper):
+        """
+        Assert command that performs basic checks on a duration limit specified as ISO8601
+        durations. Test combinations of in range, out of range, unspecified and use of 
+        invert.
+        
+        Args:
+            field: the name of the limit to test
+            label: the human-readable name used in error messages
+            lower: the lower bound of the limit to check as ISO8601
+            upper: the upper bound of the limit to check as ISO8601
+        """
         below_range = timedelta_as_iso8601(iso8601_as_timedelta(lower) - datetime.timedelta(seconds=1))
         above_range = timedelta_as_iso8601(iso8601_as_timedelta(upper) + datetime.timedelta(seconds=1))
         ##in range
@@ -410,6 +473,14 @@ class TestLimitPassesUnitTest(ExecUnitTest):
         self.assert_cmd('{{"limit": {{"{0}": {{"invert": true,"range": {{"upper": "{1}", "lower": "{2}"}}}}}}, "spec": {{"{0}": "{3}"}}}}'.format(field, upper, lower, below_range))
 
     def assert_string_limit(self, field, label):
+        """
+        Assert command that performs basic checks on a string limit. Uses default strings 
+        to test in range, out of range, unspecified, invert and fail-message. 
+        
+        Args:
+            field: the name of the limit to test
+            label: the human-readable name used in error messages
+        """
         ##in range
         self.assert_cmd('{{"limit": {{"{0}": {{"match": {{"style":"exact", "match": "foo"}} }}}}, "spec": {{"{0}": "foo"}}}}'.format(field))
         self.assert_cmd('{{"limit": {{"{0}": {{"match": {{"style":"regex", "match": "fo.*"}} }}}}, "spec": {{"{0}": "foo"}}}}'.format(field))
@@ -425,6 +496,10 @@ class TestLimitPassesUnitTest(ExecUnitTest):
         self.assert_cmd('{{"limit": {{"{0}": {{"match": {{"style":"exact", "match": "foo"}}, "fail-message": "Test message"}}}}, "spec": {{"{0}": "bar"}}}}'.format(field), expected_valid=False, expected_errors=expected_errors)
         
     def assert_ip_version_limit(self): 
+        """
+        Assert command that performs basic checks on the ip-version field. Test lots of
+        combinations of 4 and 6, in range, out of range, unspecified and inverted.
+        """
         ##in range
         self.assert_cmd('{"limit": {"ip-version": {"enumeration": [4, 6]}}, "spec": {"dest": "psched-dev1", "ip-version": 4, "schema": 1}}')
         self.assert_cmd('{"limit": {"ip-version": {"enumeration": [4, 6]}}, "spec": {"dest": "psched-dev1", "ip-version": 6, "schema": 1}}')
@@ -449,6 +524,15 @@ class TestLimitPassesUnitTest(ExecUnitTest):
         self.assert_cmd('{"limit": {"ip-version": {"invert": true, "enumeration": [6]}}, "spec": {"dest": "psched-dev1", "ip-version": 4, "schema": 1}}')
 
     def assert_endpoint_limits(self):
+        """
+        Assert command that performs basic checks the source, dest and endpoint limits
+        present in many point-topoint tests. In particular it checks numerous combinations
+        of IPv4 and IPv6 including hostnames with different combinations of A and AAAA
+        records. NOTE: This functioning requires DNS to be functioning properly. It also 
+        relies on static DNS names that if they go away or the underlying IPs change will 
+        need to be updated. Not ideal but is the easiest way to test some really common 
+        cases that are common sources of bugs. 
+        """
         #########################
         #check source
         #########################

@@ -19,13 +19,15 @@ from .response import *
 # All tests
 @application.route("/tests", methods=['GET'])
 def tests():
-    return json_query("SELECT json FROM test ORDER BY name", [])
+    return json_query("SELECT json FROM test"
+                      " WHERE available ORDER BY name", [])
 
 
 # Test <name>
 @application.route("/tests/<name>", methods=['GET'])
 def tests_name(name):
-    return json_query("SELECT json FROM test WHERE name = %s",
+    return json_query("SELECT json FROM test"
+                      " WHERE available AND name = %s",
                       [name], single=True)
 
 
@@ -34,7 +36,8 @@ def tests_name(name):
 def tests_name_spec(name):
 
     try:
-        cursor = dbcursor_query("SELECT EXISTS (SELECT * FROM test WHERE NAME = %s)",
+        cursor = dbcursor_query("SELECT EXISTS (SELECT * FROM test"
+                                "  WHERE available AND name = %s)",
                                 [ name ])
     except Exception as ex:
         return error(str(ex))
@@ -70,7 +73,8 @@ def tests_name_spec_is_valid(name):
 
     try:
         cursor = dbcursor_query(
-            "SELECT EXISTS (SELECT * FROM test WHERE NAME = %s)",
+            "SELECT EXISTS"
+            " (SELECT * FROM test WHERE available AND name = %s)",
             [name])
     except Exception as ex:
         return error(str(ex))
@@ -120,7 +124,8 @@ def tests_name_tools(name):
             JOIN tool_test ON tool_test.tool = tool.id
             JOIN test ON test.id = tool_test.test
         WHERE
-            test.name = %s
+            tool.available
+            AND test.name = %s
         """, [name])
     except Exception as ex:
         return error(str(ex))

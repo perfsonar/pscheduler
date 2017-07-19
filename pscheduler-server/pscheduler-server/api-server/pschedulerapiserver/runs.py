@@ -58,7 +58,7 @@ def __evaluate_limits(
         "SELECT json, duration, hints FROM task where uuid = %s", [task])
     if cursor.rowcount == 0:
         # TODO: This or bad_request when the task isn't there?
-        return false, None, not_found()
+        return False, None, not_found()
     task_spec, duration, hints = cursor.fetchone()
     cursor.close()
     log.debug("Task is %s, duration is %s" % (task_spec, duration))
@@ -77,7 +77,7 @@ def __evaluate_limits(
     processor, whynot = limitprocessor()
     if processor is None:
         log.debug("Limit processor is not initialized. %s", whynot)
-        return false, None, no_can_do("Limit processor is not initialized: %s" % whynot)
+        return False, None, no_can_do("Limit processor is not initialized: %s" % whynot)
 
     # Don't pass hints since that would have been covered when the
     # task was submitted and only the scheduler will be submitting

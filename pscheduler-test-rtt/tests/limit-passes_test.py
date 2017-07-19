@@ -3,7 +3,7 @@ tests for the limit-passes command
 """
 
 import pscheduler
-
+import unittest
 
 class RTTLimitPassesTest(pscheduler.TestLimitPassesUnitTest):
     name = 'rtt'

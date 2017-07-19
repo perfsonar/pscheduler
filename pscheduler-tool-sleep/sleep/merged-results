@@ -10,7 +10,11 @@ input = pscheduler.json_load(exit_on_error=True);
 
 # TODO: Validate the input
 
-succeeded = input['results'][0]['succeeded']
+try:
+    succeeded = input['results'][0]['succeeded']
+except (KeyError, TypeError):
+    succeeded = False
+
 
 results = { 'succeeded' : succeeded }
 

@@ -1,15 +1,28 @@
 """
-Helper functions for evaluating limits in test plug-in
+Helper functions for checking limits in the limit-passes module of test plug-ins.
+
+The functions provided are generally organized by the expected data type of the limit 
+to be checked. In many cases they make assumptions about field names and other values, but
+provide options for overriding those values if so desired. 
 """
 
 import pscheduler
 
-#
-# Check if an an individual ip param matches limit
-#
 def check_ip_limit(limit, spec_addr,
                     ip=None, 
                     possible_ip_versions=[4,6]):
+    """
+    Check an individual IP limit given the hostname and/or IP from the spec.
+
+    Args:
+        limit: The limit definition to uses as the evaluation criteria
+        spec_addr: The hostname, IPv4 or IPv6 address from the spec to be checked
+        ip: optional. If already resolved, the IPv4 or IPv6 address to check
+        possible_ip_versions: optional. list of allowed ip versions for spec
+
+    Returns:
+        List of error strings if limit is not passed. Empty list otherwise.
+    """
     errors = []
     if spec_addr is None:
         #if no addr given then quietly exit
@@ -48,6 +61,22 @@ def check_endpoint_limits(limit, spec,
                             limit_source="source", 
                             limit_dest="dest",
                             limit_endpoint="endpoint"):
+    """
+    Checks source, dest and endpoint limits given a spec.
+
+    Args:
+        limit: The limit definition to uses as the evaluation criteria
+        spec: The spec to be evaulated
+        spec_source: optional. The name of the source field in the spec. Defaults to "source".
+        spec_dest: optional. The name of the dest field in the spec. Defaults to "dest".
+        spec_ip_version: optional. The name of the ip-version field in the spec. Defaults to "ip-version".
+        limit_source: optional. The name of the source field in the limit. Defaults to "source".
+        limit_dest: optional. The name of the dest field in the limit. Defaults to "dest".
+        limit_endpoint: optional. The name of the endpoint field in the limit. Defaults to "endpoint".
+    Returns:
+        List of error strings if limit is not passed. Empty list otherwise.
+    """
+    
     errors = []
     
     #if no source, dest or endpoint limit then exit immediately
@@ -99,6 +128,19 @@ def check_endpoint_limits(limit, spec,
     return errors
 
 def check_numeric_limit(limit, spec, limit_field, description=None, spec_field=None):
+    """
+    Checks a numeric limit given a spec and field name where the value in the spec is a 
+    single number.
+
+    Args:
+        limit: The limit definition to uses as the evaluation criteria
+        spec: The spec to be evaulated
+        limit_field: The name of the field in teh limit to be checked.
+        description: optional. A human-readble name of the limit to be used in error messages. Defaults to value of limit_field.
+        spec_field: optional. The name of the field in the spec to check. Defaults to value of limit_field.
+    Returns:
+        List of error strings if limit is not passed. Empty list otherwise.
+    """
     errors = []
     if description is None:
         description = limit_field
@@ -120,6 +162,19 @@ def check_numeric_limit(limit, spec, limit_field, description=None, spec_field=N
     return errors
 
 def check_numeric_range_limit(limit, spec, limit_field, description=None, spec_field=None):
+    """
+    Checks a numeric limit given a spec and field name where the value in the spec is a 
+    numeric range.
+
+    Args:
+        limit: The limit definition to uses as the evaluation criteria
+        spec: The spec to be evaulated
+        limit_field: The name of the field in teh limit to be checked.
+        description: optional. A human-readble name of the limit to be used in error messages. Defaults to value of limit_field.
+        spec_field: optional. The name of the field in the spec to check. Defaults to value of limit_field.
+    Returns:
+        List of error strings if limit is not passed. Empty list otherwise.
+    """
     errors = []
     if description is None:
         description = limit_field
@@ -142,6 +197,19 @@ def check_numeric_range_limit(limit, spec, limit_field, description=None, spec_f
     return errors
 
 def check_numeric_list_limit(limit, spec, limit_field, description=None, spec_field=None):
+    """
+    Checks a numeric limit given a spec and field name where the value in the spec is a 
+    list of numbers.
+
+    Args:
+        limit: The limit definition to uses as the evaluation criteria
+        spec: The spec to be evaulated
+        limit_field: The name of the field in teh limit to be checked.
+        description: optional. A human-readble name of the limit to be used in error messages. Defaults to value of limit_field.
+        spec_field: optional. The name of the field in the spec to check. Defaults to value of limit_field.
+    Returns:
+        List of error strings if limit is not passed. Empty list otherwise.
+    """
     errors = []
     if description is None:
         description = limit_field
@@ -163,6 +231,20 @@ def check_numeric_list_limit(limit, spec, limit_field, description=None, spec_fi
     return errors
 
 def check_duration_limit(limit, spec, limit_field, description=None, spec_field=None, convert_iso=False):
+    """
+    Checks a duration limit given a spec and field name where the value in the spec is an 
+    ISO8601 duration.
+
+    Args:
+        limit: The limit definition to uses as the evaluation criteria
+        spec: The spec to be evaulated
+        limit_field: The name of the field in teh limit to be checked.
+        description: optional. A human-readble name of the limit to be used in error messages. Defaults to value of limit_field.
+        spec_field: optional. The name of the field in the spec to check. Defaults to value of limit_field.
+        convert_iso: optional. Boolean that if true will assume spec is in seconds and convert to ISO8601. Default is False.
+    Returns:
+        List of error strings if limit is not passed. Empty list otherwise.
+    """
     errors = []
     if description is None:
         description = limit_field
@@ -187,6 +269,18 @@ def check_duration_limit(limit, spec, limit_field, description=None, spec_field=
     return errors
 
 def check_boolean_limit(limit, spec, limit_field, description=None, spec_field=None):
+    """
+    Checks a boolean limit given a spec.
+
+    Args:
+        limit: The limit definition to use as the evaluation criteria
+        spec: The spec to be evaulated
+        limit_field: The name of the field in teh limit to be checked.
+        description: optional. A human-readble name of the limit to be used in error messages. Defaults to value of limit_field.
+        spec_field: optional. The name of the field in the spec to check. Defaults to value of limit_field.
+    Returns:
+        List of error strings if limit is not passed. Empty list otherwise.
+    """
     errors = []
     if description is None:
         description = limit_field
@@ -204,6 +298,18 @@ def check_boolean_limit(limit, spec, limit_field, description=None, spec_field=N
     return errors
 
 def check_enum_limit(limit, spec, limit_field, description=None, spec_field=None):
+    """
+    Checks an enumerated list limit given a spec.
+
+    Args:
+        limit: The limit definition to use as the evaluation criteria
+        spec: The spec to be evaulated
+        limit_field: The name of the field in teh limit to be checked.
+        description: optional. A human-readble name of the limit to be used in error messages. Defaults to value of limit_field.
+        spec_field: optional. The name of the field in the spec to check. Defaults to value of limit_field.
+    Returns:
+        List of error strings if limit is not passed. Empty list otherwise.
+    """
     errors = []
     if description is None:
         description = limit_field
@@ -225,6 +331,18 @@ def check_enum_limit(limit, spec, limit_field, description=None, spec_field=None
     return errors
 
 def check_string_limit(limit, spec, limit_field, description=None, spec_field=None):
+    """
+    Checks a string limit given a spec.
+
+    Args:
+        limit: The limit definition to use as the evaluation criteria
+        spec: The spec to be evaulated
+        limit_field: The name of the field in teh limit to be checked.
+        description: optional. A human-readble name of the limit to be used in error messages. Defaults to value of limit_field.
+        spec_field: optional. The name of the field in the spec to check. Defaults to value of limit_field.
+    Returns:
+        List of error strings if limit is not passed. Empty list otherwise.
+    """
     errors = []
     if description is None:
         description = limit_field
