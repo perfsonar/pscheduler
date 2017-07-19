@@ -20,5 +20,3 @@ export PYBUILD_NAME = pscheduler
 # main packaging script based on dh7 syntax
 %:
 	dh $@ --with=python2 --buildsystem=pybuild
-
-override_dh_auto_test:
