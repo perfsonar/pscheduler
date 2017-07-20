@@ -1,0 +1,102 @@
+#!/usr/bin/python
+#
+# Checker for 'latency' task limits
+#
+
+import pscheduler
+
+logger = pscheduler.Log(quiet=True)
+
+
+#
+# Load and validate everything
+#
+
+def check_limit(input_json):
+
+    spec = input_json["spec"]
+    limit = input_json["limit"]
+    logger.debug("limit = {0}".format(limit))
+    
+    #
+    # Handle source, dest and endpoint limits
+    #
+    errors = pscheduler.check_endpoint_limits(limit, spec)
+              
+    #
+    # Handle numeric ranges
+    #
+    numeric_ranges = [
+        ("packet-count", "Packet Count"),
+        ("packet-interval", "Packet Interval"),
+        ("packet-timeout", "Packet Timeout"),
+        ("packet-padding", "Packet Padding"),
+        ("ctrl-port", "Control Ports"),
+        ("bucket-width", "Bucket Width"),
+    ]
+    for nr in numeric_ranges:
+        errors += pscheduler.check_numeric_limit(limit, spec, nr[0], description=nr[1])
+    #
+    # Handle data ports since both limit and spec value are ranges
+    #
+    errors += pscheduler.check_numeric_range_limit(limit, spec, 'data-ports', description='Data port')
+
+    #
+    # Handle numeric lists
+    #
+    errors += pscheduler.check_numeric_list_limit(limit, spec, 'ip-tos', description="IP TOS")
+
+    #
+    # Handle duration
+    #
+    #special conditions if present, so have to check if its there
+    if "duration" in limit:
+        #We can't trust tools to have same defaults, which means no way we can guarantee
+        #duration is not exceeded unless both parameters are specified.
+        if ("packet-interval" not in spec) or ("packet-count" not in spec):
+            errors.append("There is a duration limit on this test which requires you to explicitly set the packet-interval and packet-count options in the test specification. Please set both these options and resubmit.")
+        elif "range" in limit["duration"]:
+            nrange = pscheduler.DurationRange(limit["duration"]["range"])
+            invert = limit["duration"].get("invert", False)
+            contains, message = nrange.contains("PT{0}S".format(spec["packet-interval"] * spec["packet-count"]))
+            if invert:
+                if contains:
+                    errors.append("Duration {1}".format(nr[1], message))
+            else:
+                if not contains:
+                    errors.append("Duration {1}".format(nr[1], message))
+
+
+    #
+    # Handle boolean fields
+    booleans = [
+        ("output-raw", "Output Raw"),
+        ("flip", "Flip")
+    ]
+    for b in booleans:
+        errors += pscheduler.check_boolean_limit(limit, spec, b[0], description=b[1])
+        
+
+    #
+    # Restrict ip-version
+    #
+    errors += pscheduler.check_enum_limit(limit, spec, 'ip-version', description='IP Version')
+
+    #return errors
+    return errors
+
+
+try:
+    json = pscheduler.json_load(max_schema=1)
+    logger.info(json)
+except ValueError as ex:
+    pscheduler.fail("Invalid JSON: %s" % str(ex))
+
+errors = check_limit(json)
+
+result = { "passes": not errors }
+
+if errors:
+    result["errors"] = errors
+
+pscheduler.succeed_json(result)

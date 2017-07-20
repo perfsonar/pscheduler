@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Participant list generator for 'idlebg' task spec
+# Participant list generator for 'idlebgm' task spec
 #
 # Input is a test spec, assumed to have been validated by spec-is-valid.
 #
@@ -12,7 +12,9 @@ import pscheduler
 from validate import spec_is_valid
 
 
-json = pscheduler.json_load(exit_on_error=True)
+json = pscheduler.json_load(exit_on_error=True, max_schema=1)
+
+null_reason = None
 
 valid, message = spec_is_valid(json)
 
@@ -20,18 +22,18 @@ if not valid:
     pscheduler.fail(message)
 
 
-participant = json.get("host", None)
+host = json.get("host-node", json.get("host", None))
+if host is None:
+    null_reason = "No source specified"
+
+participants = [ host ]
 
 result = {
-    "participants": [ participant ]
+    "participants": participants
 }
 
-if participant is None:
-    result["reason"] = "No host specified."
+if null_reason is not None:
+    result["reason"] = null_reason
 
 
-try:
-    pscheduler.succeed_json(result)
-except KeyError:
-    # Default is the local host.
-    pscheduler.succeed_json([None])
+pscheduler.succeed_json(result)

@@ -39,5 +39,6 @@ def tools():
 
 @application.route("/tools/<name>", methods=['GET'])
 def tools_name(name):
-    return json_query("SELECT json FROM tool WHERE name = %s", [name], single=True)
-
+    return json_query("SELECT json FROM tool"
+                      " WHERE available AND name = %s",
+                      [name], single=True)

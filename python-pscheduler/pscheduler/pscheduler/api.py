@@ -12,6 +12,7 @@ import uuid
 # HACK: BWCTLBC
 import os
 
+
 from .psdns import *
 from .psurl import *
 
@@ -45,14 +46,15 @@ def api_replace_host(url_text, replacement):
 
 
 
+
 def api_url(host = None,
             path = None,
             port = None,
-            protocol = 'https'
+            protocol = None
             ):
     """Format a URL for use with the pScheduler API."""
 
-    host = api_this_host() if host is None else str(host)
+    host = 'localhost' if host is None else str(host)
     # Force the host into something valid for DNS
     # See http://stackoverflow.com/a/25103444/180674
     try:
@@ -63,12 +65,54 @@ def api_url(host = None,
 
     if path is not None and path.startswith('/'):
         path = path[1:]
+
+    if protocol is None:
+        protocol = 'https'
+
     return protocol + '://' \
         + host \
         + ('' if port is None else (':' + str(port))) \
         + api_root() + '/'\
         + ('' if path is None else str(path))
 
+
+
+def api_host_port(hostport):
+    """Return the host and port parts of a host/port pair"""
+    if hostport is None:
+        return (None, None)
+    formatted_host = __host_per_rfc_2732(hostport)
+    try:
+        parsed=urlparse.urlparse("bogus://%s" % (formatted_host))
+        if parsed.port is None: pass #simple test to trigger an error from urlparse on CentOS 6
+    except ValueError as ve:
+        #TODO: can remove this once we drop CentOS 6
+        #python 2.6 urlparse does not properly handle bracketed IPv6, so we do that here
+        if "]:" in formatted_host:
+            formatted_host = formatted_host.replace("[", "")
+            parts = formatted_host.split(']:')
+            if len(parts) != 2:
+                raise ve
+            #convert to int, will raise exception if invalid
+            parts[1] = int(parts[1])
+            return tuple(parts)
+        elif formatted_host.endswith(']'):
+            return formatted_host.replace('[',"").replace(']',""), None
+        else:
+            raise ve
+        
+    return (None if parsed.hostname == "none" else parsed.hostname,
+            parsed.port)
+
+
+def api_url_hostport(hostport=None,
+            path=None,
+            protocol=None
+            ):
+    """Format a URL for use with the pScheduler API where the host name
+    may include a port."""
+    (host, port) = api_host_port(hostport)
+    return api_url(host=host, port=port, path=path, protocol=protocol)
 
 
 
@@ -123,14 +167,29 @@ def api_ping(host, bind=None, timeout=3):
     """
     See if an API server is alive within a given timeout.  If 'host'
     is None, ping the local server.
+
+    Returns a tuple of (up, reason), where reason is a string
+    explaining why 'up' is what is is.
     """
     if host is None:
         host = api_this_host()
-        
-    status, result = url_get(pscheduler.api_url(host, path="api"),
-                             timeout=timeout, bind=bind,
-                             json=False, throw=False)
-    return status == 200
+
+    url = pscheduler.api_url(host)
+
+    status, result = url_get(url, bind=bind,
+                             throw=False, timeout=timeout)
+
+    if status == 200:
+        return (True, "pScheduler is alive")
+    elif status == 400:
+        return (False, result)
+    elif status in [202, 204, 205, 206, 207, 208, 226,
+                    300, 301, 302, 303, 304, 205, 306, 307, 308] \
+        or ((status >= 400) and (status <=499)):
+        return (False, "Not running pScheduler")
+
+    return (False, "Returned status %d: %s" % (status, result))
+
 
 
 
@@ -154,7 +213,8 @@ def api_ping_list(hosts, bind=None, timeout=None, threads=10):
 
     def ping_one(arg):
         host, timeout = arg
-        return (host, api_ping(host, bind=bind, timeout=timeout))
+        up, _ = api_ping(host, bind=bind, timeout=timeout)
+        return (host, up)
 
     for host, state in pool.imap(
             ping_one,
@@ -183,13 +243,15 @@ def api_ping_all_up(hosts, bind=None, timeout=None):
 # TODO: Remove this when the backward-compatibility code is removed
 #
 
-def api_has_pscheduler(host, timeout=5, bind=None):
+def api_has_pscheduler(hostport, timeout=5, bind=None):
     """
     Determine if pScheduler is running on a host
     """
     # Null implies localhost
-    if host is None:
-        host = "localhost"
+    if hostport is None:
+        hostport = "localhost"
+
+    host, port = api_host_port(hostport)
 
 
     # Make sure the address resolves, otherwise url_get will return
@@ -212,9 +274,10 @@ def api_has_pscheduler(host, timeout=5, bind=None):
     if bind is None:
         bind = os.environ.get('PSCHEDULER_LEAD_BIND_HACK', None)
 
-    status, raw_spec = pscheduler.url_get(pscheduler.api_url(resolved),
+    status, raw_spec = pscheduler.url_get(api_url_hostport(hostport),
                                           timeout=timeout,
                                           throw=False,
+                                          json=False,
                                           bind=bind # HACK: BWTCLBC
                                           )
 
@@ -299,9 +362,9 @@ if __name__ == "__main__":
     print api_url(host='host.example.com', path='both-noslash')
     print api_url(path='nohost')
     print
-    print api_full_host()
 
     print api_has_bwctl(None)
     print api_has_pscheduler(None)
 
-    print api_has_bwctl_pscheduler("perfsonardev0.internet2.edu")
+
+    print api_has_services(["perfsonardev0.internet2.edu"])

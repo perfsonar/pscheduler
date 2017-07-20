@@ -32,7 +32,7 @@ class LimitTest():
     def __init__(self,
                  data   # Data suitable for this class
                  ):
-       
+
         valid, message = test_data_is_valid(data)
         if not valid:
             raise ValueError("Invalid data: %s" % message)
@@ -50,7 +50,7 @@ class LimitTest():
         if returncode != 0:
             raise RuntimeError("Failed to validate limit: %s" % stderr)
 
-        result = pscheduler.json_load(stdout)
+        result = pscheduler.json_load(stdout, max_schema=1)
         if not result['valid']:
             raise ValueError("Invalid limit: %s" % result['message'])
 
@@ -82,7 +82,7 @@ class LimitTest():
         if returncode != 0:
             raise RuntimeError("Failed to validate limit: %s" % stderr)
 
-        check_result = pscheduler.json_load(stdout)
+        check_result = pscheduler.json_load(stdout, max_schema=1)
         passed = check_result["passes"]
 
         result = {
@@ -121,7 +121,7 @@ if __name__ == "__main__":
                 }
             },
             "parting-comment" : {
-                "description": "Parting comment must contain a vowel if not empty", 
+                "description": "Parting comment must contain a vowel if not empty",
                 "match": {
                     "style": "regex",
                     "match": "(^$|[aeiou])",

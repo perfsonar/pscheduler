@@ -2,7 +2,7 @@
 # Makefile for any tool class
 #
 
-NAME=iperf
+NAME=iperf2
 
 FILES=\
 	can-run \
@@ -11,18 +11,42 @@ FILES=\
 	merged-results \
 	participant-data \
 	run \
-	iperf_parser.py \
-	iperf_defaults.py\
+
+MODULES=\
+	iperf2_parser \
+        iperf2_utils \
+	iperf2_defaults \
+
+PYS=$(MODULES:%=%.py)
+PYCS=$(MODULES:%=%.pyc)
+
+$(PYCS):
+	python -m compileall .
+TO_CLEAN += $(PYCS)
 
 
-install: $(FILES)
+CONFS=\
+	$(NAME).conf
+
+
+install: $(FILES) $(CONFS) $(PYS) $(PYCS)
 ifndef DESTDIR
 	@echo No DESTDIR specified for installation
 	@false
 endif
+ifdef CONFS
+ifndef CONFDIR
+	@echo No CONFDIR specified for installation
+	@false
+endif
+endif
 	mkdir -p $(DESTDIR)
 	install -m 555 $(FILES) $(DESTDIR)
-
+	install -m 444 $(PYS) $(PYCS) $(DESTDIR)
+ifdef CONFS
+	mkdir -p $(CONFDIR)
+	install -m 644 $(CONFS) $(CONFDIR)
+endif
 
 
 clean:

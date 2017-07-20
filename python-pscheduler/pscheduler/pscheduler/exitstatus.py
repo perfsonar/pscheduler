@@ -31,7 +31,7 @@ def fail_other(status, *args):
     exit(status)
 
 
-def succeed(text = None):
+def succeed(text=None):
     """
     Exit with success and an optional messsage to stdout.
     """
@@ -40,11 +40,10 @@ def succeed(text = None):
     exit(0)
 
 
-def succeed_json(result = None):
+def succeed_json(result=None):
     """
     Exit with success, dumping JSON to stdout.
     """
     json.dump(result, sys.stdout)
     print
     exit(0)
-

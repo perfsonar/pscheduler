@@ -1,0 +1,83 @@
+#!/bin/sh -e
+#
+# Back all of pScheduler up to a single file
+#
+
+
+
+#
+# Sanity Check
+#
+
+if [ "$1" = "--help" -o "$#" -ne 0 ]
+then
+    echo Usage: $(basename $0) '>' FILE
+    exit 0
+fi
+
+if [ $(id -u) -ne 0 ]
+then
+    echo "This must be done as root." 1>&2
+    exit 1
+fi
+
+if [ -t 1 ]
+then
+    echo "Not dumping backup to a terminal." \
+	" Consider redirecting instead." 1>&2
+    exit 1
+fi
+
+
+#
+# Working Directory
+#
+
+WORK_DIR="__TMPDIR__/$(basename $0).$$"
+
+cleanup()
+{
+    rm -rf "${WORK_DIR}"
+}
+trap cleanup EXIT
+
+rm -rf "${WORK_DIR}"
+mkdir -p "${WORK_DIR}"
+
+
+
+#
+# Back Everything Up
+#
+
+[ -t 2 ] && INTERACTIVE=true || INTERACTIVE=false
+
+$INTERACTIVE && printf 'Creating pScheduler backup:\n' 1>&2 || true
+
+
+$INTERACTIVE && printf '    Version Information...' 1>&2 || true
+echo "__VERSION__" > "${WORK_DIR}/package-version"
+$INTERACTIVE && printf ' Done.\n' 1>&2 || true
+
+
+$INTERACTIVE && printf '    System Configuration...' 1>&2 || true
+(cd "__CONFIGDIR__" && tar cf - .) \
+    > "${WORK_DIR}/config-dir.tar"
+$INTERACTIVE && printf ' Done.\n' 1>&2 || true
+
+
+$INTERACTIVE && printf '    Database...' 1>&2 || true
+export PGPASSFILE="__PGPASSFILE__"
+pg_dump \
+    --create \
+    --format plain \
+    --serializable-deferrable \
+    --user pscheduler \
+    pscheduler \
+    > "${WORK_DIR}/database-dump"
+$INTERACTIVE && printf ' Done.\n' 1>&2 || true
+
+
+
+(cd "${WORK_DIR}" && tar cf - . ) \
+    | gzip

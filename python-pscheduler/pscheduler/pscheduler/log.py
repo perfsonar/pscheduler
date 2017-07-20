@@ -22,18 +22,18 @@ ERROR = logging.ERROR
 CRITICAL = logging.CRITICAL
 
 
-# Facilities
-## use getattr because this list is generated from syslog.h and may differ between systems.
+# POSIX log Facilities
+#
+# These use getattr because this list is generated from syslog.h and may differ
+# between systems.
+
 auth = getattr(logging.handlers.SysLogHandler, "LOG_AUTH", None)
-authpriv = getattr(logging.handlers.SysLogHandler, "LOG_AUTHPRIV", None)
 cron = getattr(logging.handlers.SysLogHandler, "LOG_CRON", None)
 daemon = getattr(logging.handlers.SysLogHandler, "LOG_DAEMON", None)
-ftp = getattr(logging.handlers.SysLogHandler, "LOG_FTP", None)
 kern = getattr(logging.handlers.SysLogHandler, "LOG_KERN", None)
 lpr = getattr(logging.handlers.SysLogHandler, "LOG_LPR", None)
 mail = getattr(logging.handlers.SysLogHandler, "LOG_MAIL", None)
 news = getattr(logging.handlers.SysLogHandler, "LOG_NEWS", None)
-syslog = getattr(logging.handlers.SysLogHandler, "LOG_SYSLOG", None)
 user = getattr(logging.handlers.SysLogHandler, "LOG_USER", None)
 uucp = getattr(logging.handlers.SysLogHandler, "LOG_UUCP", None)
 local0 = getattr(logging.handlers.SysLogHandler, "LOG_LOCAL0", None)
@@ -48,6 +48,7 @@ local7 = getattr(logging.handlers.SysLogHandler, "LOG_LOCAL7", None)
 
 # Internal-use name of environment variable
 STATE_VARIABLE = 'PSCHEDULER_LOG_STATE'
+
 
 class Log():
 
@@ -64,7 +65,6 @@ class Log():
     will cause this feaure not to function.
     """
 
-
     def __syslog_handler_deinit(self):
         """
         Kill off the syslog handler; called when a log event fails.
@@ -73,7 +73,6 @@ class Log():
             self.logger.removeHandler(self.syslog_handler)
             self.syslog_handler = None
 
-
     def __syslog_handler_init(self):
         """
         Initialize the syslog handler if it hasn't been
@@ -81,28 +80,27 @@ class Log():
         if self.syslog_handler is None:
             try:
                 # TODO: /dev/log is Linux-specific.
-                self.syslog_handler = logging.handlers.SysLogHandler('/dev/log', facility=self.facility)
+                self.syslog_handler = logging.handlers.SysLogHandler(
+                    '/dev/log', facility=self.facility)
                 self.syslog_handler.setFormatter(
                     logging.Formatter(
-                        fmt = '%(name)s %(levelname)-8s %(message)s'
+                        fmt='%(name)s %(levelname)-8s %(message)s'
                     )
                 )
                 self.logger.addHandler(self.syslog_handler)
             except:
                 self.__syslog_handler_deinit()
 
-
-
     def __init__(self,
                  name=None,     # Name for log entries
                  prefix=None,   # Prefix for name (e.g., prefix/progname)
                  level=INFO,    # Logging level
-                 facility=local4, # Log facility
+                 facility=local4,  # Log facility
                  debug=False,   # Force level to DEBUG
-                 verbose=False, # Log to stderr, too.
-                 quiet=None ,   # Don't log anything on startup  (See below)
+                 verbose=False,  # Log to stderr, too.
+                 quiet=None,   # Don't log anything on startup  (See below)
                  signals=True,  # Enable debug on/off with SIGUSR1/SIGUSR2
-                 propagate=True # Pass debug state on to child processes
+                 propagate=True  # Pass debug state on to child processes
                  ):
 
         #
@@ -139,7 +137,7 @@ class Log():
         self.forced_debug = False
 
         #
-        # Inherit state from the environment 
+        # Inherit state from the environment
         #
 
         if STATE_VARIABLE in os.environ:
@@ -160,8 +158,8 @@ class Log():
                 assert type(self.is_quiet) == bool
 
             except Exception as ex:
-                self.exception("Failed to decode %s '%s'" \
-                                   % (STATE_VARIABLE, os.environ[STATE_VARIABLE]))
+                self.exception("Failed to decode %s '%s'"
+                               % (STATE_VARIABLE, os.environ[STATE_VARIABLE]))
 
         #
         # Set up the logger
@@ -177,10 +175,10 @@ class Log():
         self.stderr_handler = logging.StreamHandler(sys.stderr)
         self.stderr_handler.setFormatter(
             logging.Formatter(
-                fmt     = '%(asctime)s %(message)s',
-                datefmt = '%Y-%m-%dT%H:%M:%S'
-                )
+                fmt='%(asctime)s %(message)s',
+                datefmt='%Y-%m-%dT%H:%M:%S'
             )
+        )
         # Don't add this handler; verbose will cover it.
 
         #
@@ -200,16 +198,12 @@ class Log():
             signal.siginterrupt(signal.SIGUSR1, False)
             signal.siginterrupt(signal.SIGUSR2, False)
 
-
         if (not self.is_quiet) and (not forced_quiet):
             self.info("Started")
-
-
 
     def __del__(self):
         if self is not None:
             self.__syslog_handler_deinit()
-
 
     def __update_env(self):
         """
@@ -222,11 +216,8 @@ class Log():
                 'facility': self.facility,
                 'last_level': self.last_level,
                 'is_quiet': self.is_quiet
-                }
+            }
             os.environ[STATE_VARIABLE] = pickle.dumps(to_pickle)
-
-
-
 
     def verbose(self, state):
         "Toggle verbosity (logging to stderr)"
@@ -240,27 +231,15 @@ class Log():
 
         self.is_verbose = state
 
-
-    def facility(self, facility):
-        "Set the log level"
-        assert level in [ DEBUG, INFO, WARNING, ERROR, CRITICAL ]
-        self.logger.setLevel(level)
-        if save:
-            self.last_level = level
-        self.__update_env()
-
-
     def level(self, level, save=True):
         "Set the log level"
-        assert level in [ DEBUG, INFO, WARNING, ERROR, CRITICAL ]
+        assert level in [DEBUG, INFO, WARNING, ERROR, CRITICAL]
         self.logger.setLevel(level)
         if save:
             self.last_level = level
         self.__update_env()
 
-
     # Logging
-
 
     def log(self, level, format, *args):
         self.__syslog_handler_init()
@@ -288,16 +267,14 @@ class Log():
         "Log an exception as an error and debug if we're doing that."
         extype, ex, tb = sys.exc_info()
         message = "Exception: %s%s%s" % (
-            message+': ' if message is not None else '',
+            message + ': ' if message is not None else '',
             ''.join(traceback.format_exception_only(extype, ex)),
             ''.join(traceback.format_exception(extype, ex, tb)).strip()
-            )
+        )
         if self.forced_debug:
             self.debug(message)
         else:
             self.error(message)
-
-
 
     # Forced setting of debug level
 
@@ -325,7 +302,6 @@ class Log():
         self.__update_env()
 
 
-
 # Test program
 
 if __name__ == "__main__":
@@ -339,12 +315,12 @@ if __name__ == "__main__":
     except Exception as ex:
         log.exception("Test exception with message")
 
-    for num in range(1,5):
+    for num in range(1, 5):
         log.debug("Debug")
         log.info("Info")
         log.warning("Warning")
         log.error("Error")
         log.critical("Crtitical")
-        os.kill( os.getpid(),
-                 signal.SIGUSR1 if (num % 2) != 0 else signal.SIGUSR2 )
+        os.kill(os.getpid(),
+                signal.SIGUSR1 if (num % 2) != 0 else signal.SIGUSR2)
         time.sleep(1)

@@ -4,7 +4,7 @@
 
 %define short	trace
 Name:		pscheduler-test-%{short}
-Version:	1.0.0.2
+Version:	1.0.0.5
 Release:	1%{?dist}
 
 Summary:	Simplestream test class for pScheduler
@@ -16,12 +16,13 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server
+Requires:	pscheduler-server >= 1.0.0.5
 Requires:	python-pscheduler >= 1.3
 Requires:	python-jsontemplate
 
 BuildRequires:	pscheduler-rpm
-
+BuildRequires:	python-pscheduler
+BuildRequires:  python-nose
 
 %description
 Simplestream test class for pScheduler

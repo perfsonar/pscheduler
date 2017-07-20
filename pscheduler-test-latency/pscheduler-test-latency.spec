@@ -4,7 +4,7 @@
 
 %define short	latency
 Name:		pscheduler-test-%{short}
-Version:	1.0.0.2
+Version:	1.0.0.5
 Release:	1%{?dist}
 
 Summary:	Latency test class for pScheduler
@@ -16,13 +16,13 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server
+Requires:	pscheduler-server >= 1.0.0.5
 Requires:	python-pscheduler
-Requires:   python-jsonschema
 Requires:	python-jsontemplate
 
 BuildRequires:	pscheduler-rpm
-
+BuildRequires:	python-pscheduler
+BuildRequires:  python-nose
 
 %description
 Latency test class for pScheduler

@@ -34,7 +34,7 @@ def spec_is_valid(json):
             "queries":     { "$ref": "#/pScheduler/Cardinal" },
             "sendwait":    { "$ref": "#/pScheduler/Duration" },
             "source":      { "$ref": "#/pScheduler/Host" },
-            "source-node": { "$ref": "#/pScheduler/Host" },
+            "source-node": { "$ref": "#/pScheduler/URLHostPort" },
             "wait":        { "$ref": "#/pScheduler/Duration" },
             },
         "required": [
@@ -51,7 +51,7 @@ def result_is_valid(json):
                 "type": "object",
                 "properties": {
                     "ip": { "$ref": "#/pScheduler/IPAddress" },
-                    "host": { "$ref": "#/pScheduler/Host" },
+                    "hostname": { "$ref": "#/pScheduler/Host" },
                     "rtt": { "$ref": "#/pScheduler/Duration" },
                     "as": { "$ref": "#/pScheduler/AS" },
                     "error": { "$ref": "#/pScheduler/icmp-error" },
@@ -90,11 +90,13 @@ def limit_is_valid(json):
     schema = {
         "type": "object",
         "properties": {
-            "schema": { "$ref": "#/pScheduler/Cardinal" },
+            "schema":     { "$ref": "#/pScheduler/Cardinal" },
+            "source":     { "$ref": "#/pScheduler/Limit/IPCIDRList"},
+            "dest":       { "$ref": "#/pScheduler/Limit/IPCIDRList"},
+            "endpoint":   { "$ref": "#/pScheduler/Limit/IPCIDRList"},
             "algorithm":  { "$ref": "#/pScheduler/Limit/String" },
             "as":         { "$ref": "#/pScheduler/Limit/Boolean" },
             "dest-port":  { "$ref": "#/pScheduler/Limit/Cardinal" },
-            "dest":       { "$ref": "#/pScheduler/Limit/String" },
             "first-ttl":  { "$ref": "#/pScheduler/Limit/Cardinal" },
             "fragment":   { "$ref": "#/pScheduler/Limit/Boolean" },
             "hops":       { "$ref": "#/pScheduler/Limit/Cardinal" },
@@ -104,8 +106,7 @@ def limit_is_valid(json):
             "probe-type": { "$ref": "#/pScheduler/Limit/String" },
             "queries":    { "$ref": "#/pScheduler/Limit/Cardinal" },
             "sendwait":   { "$ref": "#/pScheduler/Limit/Duration" },
-            "source":     { "$ref": "#/pScheduler/Limit/String" },
-            "tos":        { "$ref": "#/pScheduler/Limit/CardinalZeroList" },
+            "ip-tos":     { "$ref": "#/pScheduler/Limit/CardinalZeroList" },
             "wait":       { "$ref": "#/pScheduler/Limit/Duration" }
         },
         "additionalProperties": False

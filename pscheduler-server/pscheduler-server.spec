@@ -7,7 +7,7 @@
 # init scripts function just fine.
 
 Name:		pscheduler-server
-Version:	1.0.0.2
+Version:	1.0.0.5
 Release:	1%{?dist}
 
 Summary:	pScheduler Server
@@ -28,6 +28,7 @@ BuildRequires:	postgresql95-contrib
 BuildRequires:	postgresql95-plpython
 
 Requires:	drop-in
+Requires:	gzip
 # This is for pgcrypto
 Requires:	postgresql95-contrib
 Requires:	postgresql95-plpython
@@ -59,7 +60,7 @@ Requires:	pscheduler-server
 # mod_ssl is required here.
 Requires:	mod_ssl
 Requires:	mod_wsgi
-Requires:	python-pscheduler >= 1.1
+Requires:	python-pscheduler >= 1.3.0.4.1
 Requires:	python-requests
 Requires:	pytz
 
@@ -109,6 +110,10 @@ The pScheduler server
 # there'd have to be a 'chcon -R -t httpd_user_content_t'.
 %define api_dir	     %{_var}/www/%{name}
 
+# Utilities
+
+# (Nothing here.)
+
 
 # ------------------------------------------------------------------------------
 
@@ -133,6 +138,8 @@ make -C database \
      DATABASE=%{db_user} \
      DATADIR=%{_pscheduler_datadir} \
      PASSWORDFILE=%{password_file} \
+     DSNFILE=%{dsn_file} \
+     PGPASSFILE=%{pgpass_file} \
      ROLE=%{db_user} \
      PGPASSFILE=$RPM_BULID_ROOT/%{pgpass_file}
 
@@ -156,6 +163,19 @@ make -C daemons \
 # API Server
 #
 # (Nothing)
+
+
+#
+# Utilities
+#
+
+make -C utilities \
+    "CONFIGDIR=%{_pscheduler_sysconfdir}" \
+    "PGDATABASE=%{_pscheduler_database_name}" \
+    "PGPASSFILE=%{pgpass_file}" \
+    "TMPDIR=%{_tmppath}" \
+    "VERSION=%{version}"
+
 
 
 # ------------------------------------------------------------------------------
@@ -244,6 +264,13 @@ make -C api-server \
 
 mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}
 
+#
+# Utilities
+#
+make -C utilities \
+    "DESTDIR=${RPM_BUILD_ROOT}/%{_pscheduler_commands}" \
+    install
+
 
 
 # ------------------------------------------------------------------------------
@@ -310,6 +337,13 @@ fi
 %endif
 
 
+#
+# Utilities
+#
+# (Nothing)
+
+
+
 
 # ------------------------------------------------------------------------------
 
@@ -361,38 +395,6 @@ then
 fi
 
 
-# Generate a password if the file is empty, which is the case after
-# the first install.
-#
-# TODO: This might be annoying if someone intentionally sets the
-# password up as empty.
-if [ ! -s '%{password_file}' ]
-then
-    random-string --safe --length 60 --randlength > '%{password_file}'
-fi
-
-# Check our assumptions
-if [ "$(wc -l < '%{password_file}')" -ne 1 ]
-then
-    echo "INTERNAL ERROR: " \
-        "Password file %{password_file} must contain exactly one line." 1>&2
-    exit 1
-fi
-
-ROLE="%{_pscheduler_user}"
-
-# Generate the DSN file
-awk -v "ROLE=${ROLE}" '{ printf "host=127.0.0.1 dbname=pscheduler user=%s password=%s\n", ROLE, $1 }' \
-    "%{password_file}" \
-    > "${RPM_BUILD_ROOT}/%{dsn_file}"
-
-# Generate a PostgreSQL password file
-# Format is hostname:port:database:username:password
-awk -v "ROLE=${ROLE}" '{ printf "*:*:pscheduler:%s:%s\n", ROLE, $1 }' \
-    "%{password_file}" \
-    > "${RPM_BUILD_ROOT}/%{pgpass_file}"
-chmod 400 "${RPM_BUILD_ROOT}/%{pgpass_file}"
-
 
 
 # Load the database
@@ -407,18 +409,11 @@ chmod 400 "${RPM_BUILD_ROOT}/%{pgpass_file}"
 
 pscheduler internal db-update
 
-# Securely set the password for the role to match the one we generated.
+# Note that this is safe to do because all of the daemons are stopped
+# at this point and they, along with the web server, will be
+# retstarted later.
+pscheduler internal db-change-password
 
-ROLESQL="${TMP:-/tmp}/%{name}.$$"
-touch "${ROLESQL}"
-chmod 400 "${ROLESQL}"
-
-printf "ALTER ROLE ${ROLE} WITH UNENCRYPTED PASSWORD '" > "${ROLESQL}"
-tr -d "\n" < "%{password_file}" >> "${ROLESQL}"
-printf "';\n"  >> "${ROLESQL}"
-
-postgresql-load "${ROLESQL}"
-rm -f "${ROLESQL}"
 
 #
 # Allow the account we created to authenticate locally.
@@ -519,6 +514,13 @@ systemctl restart httpd
 %endif
 
 
+#
+# Utilities
+#
+# (Nothing)
+
+
+
 # ------------------------------------------------------------------------------
 
 %preun
@@ -560,6 +562,11 @@ then
     postgresql-load %{_pscheduler_datadir}/database-teardown.sql
 fi
 
+
+#
+# Utilities
+#
+# (Nothing)
 
 
 # ------------------------------------------------------------------------------
@@ -640,8 +647,29 @@ systemctl start httpd
 %endif
 
 
+#
+# Utilities
+#
+# (Nothing)
+
+
 # ------------------------------------------------------------------------------
 
+# Triggers
+
+# Any upgrade of python-pscheduler needs to force a database restart
+# because Pg doesn't see module upgrades.
+
+%triggerin -- python-pscheduler
+%if 0%{?el6}
+service "%{pgsql_service}" restart
+%endif
+%if 0%{?el7}
+systemctl restart "%{pgsql_service}"
+%endif
+
+
+# ------------------------------------------------------------------------------
 %files
 
 #
@@ -678,3 +706,8 @@ systemctl start httpd
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
 %{api_dir}
 %config(noreplace) %{api_httpd_conf}
+
+#
+# Utilities
+#
+# (Nothing)

@@ -15,9 +15,9 @@ SPEC_SCHEMA = {
     "properties": {           
         "schema":      { "$ref": "#/pScheduler/Cardinal" },
         "source":      { "$ref": "#/pScheduler/Host" },
-        "source-node": { "$ref": "#/pScheduler/Host" },
+        "source-node": { "$ref": "#/pScheduler/URLHostPort" },
         "dest":        { "$ref": "#/pScheduler/Host" },
-        "dest-node":   { "$ref": "#/pScheduler/Host" },
+        "dest-node":   { "$ref": "#/pScheduler/URLHostPort" },
         "duration":    { "$ref": "#/pScheduler/Duration" },
         "interval":    { "$ref": "#/pScheduler/Duration" },
         "parallel":    { "$ref": "#/pScheduler/Cardinal" },
@@ -167,7 +167,10 @@ LIMIT_SCHEMA = {
         "duration":   { "$ref": "#/pScheduler/Limit/Duration" },
         "udp":        { "$ref": "#/pScheduler/Limit/Boolean" },
         "ip-version": { "$ref": "#/pScheduler/Limit/IPVersionList" },
-        "parallel":   { "$ref": "#/pScheduler/Limit/Cardinal"}
+        "parallel":   { "$ref": "#/pScheduler/Limit/Cardinal"},
+        "source":     { "$ref": "#/pScheduler/Limit/IPCIDRList"},
+        "dest":       { "$ref": "#/pScheduler/Limit/IPCIDRList"},
+        "endpoint":   { "$ref": "#/pScheduler/Limit/IPCIDRList"}
         },
     "additionalProperties": False
     }

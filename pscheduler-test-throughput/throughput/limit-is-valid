@@ -9,13 +9,15 @@ import validate
 logger = pscheduler.Log(quiet=True)
 
 try:
-    json = pscheduler.json_load()
+    json = pscheduler.json_load(max_schema=1)
 except ValueError as ex:
     pscheduler.succeed_json({
         "valid": False,
         "error": str(ex)
         })
 
+    
+    
 valid, message = validate.limit_is_valid(json)
 
 result = {

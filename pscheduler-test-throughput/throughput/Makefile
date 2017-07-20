@@ -11,22 +11,32 @@ FILES=\
 	result-format \
 	spec-format \
 	spec-is-valid \
-        validate.py \
         spec-to-cli \
         limit-is-valid \
         limit-passes \
-        throughput_utils.py
+
+MODULES=\
+        throughput_utils \
+	validate \
 
 
 
-install: $(FILES)
+PYS=$(MODULES:%=%.py)
+PYCS=$(MODULES:%=%.pyc)
+
+$(PYCS):
+	python -m compileall .
+TO_CLEAN += $(PYCS)
+
+
+install: $(FILES) $(PYS) $(PYCS)
 ifndef DESTDIR
 	@echo No DESTDIR specified for installation
 	@false
 endif
 	mkdir -p $(DESTDIR)
 	install -m 555 $(FILES) $(DESTDIR)
-
+	install -m 444 $(PYS) $(PYCS) $(DESTDIR)
 
 
 clean:

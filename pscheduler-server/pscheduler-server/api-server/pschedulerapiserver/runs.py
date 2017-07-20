@@ -58,7 +58,7 @@ def __evaluate_limits(
         "SELECT json, duration, hints FROM task where uuid = %s", [task])
     if cursor.rowcount == 0:
         # TODO: This or bad_request when the task isn't there?
-        return false, None, not_found()
+        return False, None, not_found()
     task_spec, duration, hints = cursor.fetchone()
     cursor.close()
     log.debug("Task is %s, duration is %s" % (task_spec, duration))
@@ -77,7 +77,7 @@ def __evaluate_limits(
     processor, whynot = limitprocessor()
     if processor is None:
         log.debug("Limit processor is not initialized. %s", whynot)
-        return false, None, no_can_do("Limit processor is not initialized: %s" % whynot)
+        return False, None, no_can_do("Limit processor is not initialized: %s" % whynot)
 
     # Don't pass hints since that would have been covered when the
     # task was submitted and only the scheduler will be submitting
@@ -159,7 +159,6 @@ def tasks_uuid_runs(task):
 
 
         try:
-            # TODO:  #74 Figure out how to schemafy this.
             data = pscheduler.json_load(request.data, max_schema=1)
             start_time = pscheduler.iso8601_as_datetime(data['start-time'])
         except KeyError:
@@ -370,7 +369,7 @@ def tasks_uuid_runs_run(task, run):
         participant_num = row[3]
         result['participant'] = participant_num
         result['participants'] = [
-            server_fqdn()
+            server_netloc()
             if participant is None and participant_num == 0
             else participant
             for participant in row[5]
@@ -400,8 +399,7 @@ def tasks_uuid_runs_run(task, run):
 
         # Get the JSON from the body
         try:
-            # TODO:  #74 Figure out how to schemafy this.
-            run_data = pscheduler.json_load(request.data)
+            run_data = pscheduler.json_load(request.data, max_schema=1)
         except ValueError:
             log.exception()
             log.debug("Run data was %s", request.data)

@@ -12,5 +12,11 @@ DEFAULT_FUDGE_FACTOR = 4
 # Default number of seconds before client will start to allow server time to boot
 DEFAULT_WAIT_SLEEP = 1
 
-# The default OWAMPD control port
+# The default iperf2 control port
 DEFAULT_SERVER_PORT = 5001
+
+# The default location of the config file
+CONFIG_FILE = '/etc/pscheduler/tool/iperf2.conf'
+
+# Default install location of iperf2
+DEFAULT_IPERF3_PATH = '/usr/bin/iperf'

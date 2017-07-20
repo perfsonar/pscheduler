@@ -4,7 +4,7 @@
 
 %define short	rtt
 Name:		pscheduler-test-%{short}
-Version:	1.0.0.2
+Version:	1.0.0.5
 Release:	1%{?dist}
 
 Summary:	Round trip time test class for pScheduler
@@ -21,7 +21,8 @@ Requires:	python-pscheduler >= 1.3
 Requires:	python-jsontemplate
 
 BuildRequires:	pscheduler-rpm
-
+BuildRequires:	python-pscheduler
+BuildRequires:  python-nose
 
 %description
 Round trip time test class for pScheduler

@@ -135,7 +135,7 @@ def main_program():
         if cursor.rowcount == 0:
             log.debug("Got no rows back from the database, retrying in"
                       + str(options.retry) + "\n")
-            sleep(pscheduler.timedelta_as_seconds(options.retry))
+            time.sleep(pscheduler.timedelta_as_seconds(options.retry))
             continue
 
         sleep_time = cursor.fetchone()[0]
@@ -144,7 +144,7 @@ def main_program():
         time.sleep(seconds)
 
     # Not that this will ever be reached...
-    pg.close()
+    db.close()
 
 
 if options.daemon:

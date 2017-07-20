@@ -4,7 +4,7 @@
     "name": "throughput",
     "description": "Measure network throughput between hosts",
 
-    "version": 1.0,
+    "version": "1.0",
 
     "maintainer": {
         "name": "perfSONAR Development Team",

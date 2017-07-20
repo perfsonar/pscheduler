@@ -1,0 +1,68 @@
+#!/usr/bin/python
+#
+# Send an SNMP trap to a destination.
+#
+
+# this works with raw pscheduler output, no transforms
+
+import pscheduler
+import syslog
+
+json = pscheduler.json_load(exit_on_error=True, max_schema=1)
+
+try:
+	uptime = json['data']['uptime']
+except KeyError:
+    uptime = '\'\''
+
+type_dict = { 'integer': 'i',
+			  'counter32': 'c',
+			  'string': 's',
+			  'hex-string': 'x',
+			  'oid': 'o',
+			  'timeticks': 't',
+			  'ipaddress': 'a' }
+
+# without sudo, must be run as root
+argv = ['snmptrap',
+		'-v', json['data']['version'],
+		'-c', json['data']['_community'],
+		json['data']['dest'],
+		uptime,
+		json['data']['mib']
+		]
+
+# change this once transforms are ready
+# for enum, item in enumerate(json['result']['data']):
+for enum, item in enumerate(json['result']['result']['data']):
+	try:
+		obj_type = type_dict[item["type"].lower()]
+		# this should be used once transforms are supported
+		# argv.extend((json['result']['oid'][enum], obj_type, str(item['value'])))
+		argv.extend((json['result']['test']['spec']['oid'][enum], obj_type, str(item['value'])))
+		
+	except KeyError:
+		pscheduler.succeed_json({
+			"succeeded": False,
+			"error": "Invalid data type: %s" % item['type']
+    	})
+
+try:
+	status, stdout, stderr = pscheduler.run_program(argv)
+	succeeded = True
+	data = None
+	error = None
+except Exception as e:
+    succeeded = False
+    data = None
+    error = "The snmptrap command failed during execution." 
+
+if status:
+    data = None
+    succeeded = False
+    error = "snmpget returned an error: \n%s" % stderr.strip('\n')
+
+
+pscheduler.succeed_json({'succeeded': succeeded,
+						 'data': data,
+						 'error': error})

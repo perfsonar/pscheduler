@@ -27,7 +27,7 @@ __dictionary__ = {
     #
 
     "AnyJSON": {
-        "oneOf": [
+        "anyOf": [
             { "type": "array" },
             { "type": "boolean" },
             { "type": "integer" },
@@ -149,6 +149,12 @@ __dictionary__ = {
         "format": "host-name"
         },
 
+    "HostNamePort": {
+        # Note that this will cover valid IPv4 addresses, too.
+        "type": "string",
+        "pattern": r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])(:[0-9]+)?$'
+    },
+
     "Integer": { "type": "integer" },
 
     "IPAddress": {
@@ -162,6 +168,13 @@ __dictionary__ = {
 
     "IPv6": { "type": "string", "format": "ipv6" },
 
+    "IPv6RFC2732": {
+        # IPv6 address with optional port, formatted per RFC 2732
+        # Source: https://stackoverflow.com/a/17871737/180674
+        "type": "string",
+        "pattern": r'^\[(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\](:[0-9]+)?$'
+    },
+
     "IPv4CIDR": {
         "type": "string",
         # Source: http://blog.markhatton.co.uk/2011/03/15/regular-expressions-for-ip-addresses-cidr-ranges-and-hostnames
@@ -171,7 +184,7 @@ __dictionary__ = {
     "IPv6CIDR": {
         "type": "string",
         # Source: http://www.regexpal.com/93988
-        "pattern": r'^s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:)))(%.+)?s*(\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))?$'
+        "pattern": r'^s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:)))(%.+)?s*(\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))$'
     },
 
     "IPCIDR": {
@@ -179,6 +192,11 @@ __dictionary__ = {
             { "$ref": "#/pScheduler/IPv4CIDR" },
             { "$ref": "#/pScheduler/IPv6CIDR" },
         ]
+    },
+
+    "IPCIDRList": {
+        "type": "array",
+        "items": { "$ref": "#/pScheduler/IPCIDR" }
     },
 
     "Int8": {
@@ -363,7 +381,7 @@ __dictionary__ = {
     },
 
     "EnumMatch": {
-        "type": "array",
+        "type": "object",
         "properties": {
             "enumeration": { "type": "array",
                              "items": {
@@ -397,6 +415,15 @@ __dictionary__ = {
 
     "URL": { "type": "string", "format": "uri" },
 
+    "URLHostPort": {
+        # Any valid host/port pair as you'd find in a URI per RFC 2396
+        "anyOf": [
+            { "$ref": "#/pScheduler/HostNamePort" },
+            { "$ref": "#/pScheduler/IPv6RFC2732" },
+        ]
+
+    },
+
     "UUID": {
         "type": "string",
         "pattern": r'^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$'
@@ -404,7 +431,7 @@ __dictionary__ = {
 
     "Version": {
         "type": "string",
-        "pattern": r'^[0-9]+(\.[0-9]+(\.[0-9]+)?)$'
+        "pattern": r'^[0-9]+(\.[0-9]+)*[A-Za-z0-9-+]*$'
         },
 
 
@@ -503,25 +530,74 @@ __dictionary__ = {
         "additionalProperties": False
         },
 
-    "SNMPInteger": {
-        "$ref": "#/pScheduler/Int32"
+    # TODO: There are still some data types undefined, mainly because we cannot
+    # find agents that will return such data types yet
+    "SNMPResultInteger": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^[I|i][N|n][T|t][E|e][G|g][E|e][R|r]$'
+            },
+            "value": { "$ref": "#/pScheduler/Integer" },
+            "timestamp": { "$ref": "#/pScheduler/String" }
+        },
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
     },
 
-    "SNMPInt32": {
-        "$ref": "#/pScheduler/Int32"
+    "SNMPResultString": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^[S|s][T|t][R|r][I|i][N|n][G|g]$'
+            },
+            "value": { "$ref": "#/pScheduler/String"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
+        },
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
     },
 
-    "SNMPUInt32": {
-        "$ref": "#/pScheduler/UInt32"
+    "SNMPResultHexString": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^[H|h][E|e][X|x]-*[S|s][T|t][R|r][I|i][N|n][G|g]$'
+            },
+            "value": { "$ref": "#/pScheduler/String"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
+        },
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
     },
 
-    # can be one of bit, dec, hex, string
-    "SNMPString": {
-        "$ref": "#/pScheduler/String"
-    },
-
-    "SNMPIPAddr": {
-        "$ref": "#/pScheduler/IPAddress"
+    "SNMPResultIPAddress": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^[I|i][P|p][A|a][D|d]{2}[R|r][E|e][S|s]{2}$'
+            },
+            "value": { "$ref": "#/pScheduler/IPAddress"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
+        },
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
     },
 
     "SNMPNumericOID": {
@@ -542,34 +618,124 @@ __dictionary__ = {
         ]
     },
 
-    "SNMPNumericOIDList": {
-        "type": "array",
-        "items": { "$ref": "#/pScheduler/SNMPNumericOID" }
-    },
-
-    "SNMPGetResult": {
+    "SNMPResultOID": {
         "type": "object",
         "properties": {
-            "oid": { "$ref": "#/pScheduler/SNMPOID" },
-            "type": { "$ref": "#/pScheduler/String"},
-            "value": { 
-                "anyOf": [
-                    { "$ref": "#/pScheduler/SNMPString" },
-                    { "$ref": "#/pScheduler/SNMPInteger"},
-                    { "$ref": "#/pScheduler/SNMPInt32" },
-                    { "$ref": "#/pScheduler/SNMPUInt32" },
-                    { "$ref": "#/pScheduler/SNMPOID" },
-                    # TODO: Add more
-                ]
-            } 
+            "type": {
+                "type": "string",
+                "pattern": r'^[O|o][I|i][D|d]$'
+            },
+            "value": { "$ref": "#/pScheduler/SNMPOID"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
-        "additionalProperties": True,
-        "required": ["oid", "value", "type"]
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
     },
 
-    "SNMPResultList": {
-        "type": "array",
-        "items": { "$ref": "#/pScheduler/SNMPGetResult" }
+    # TODO: other data types
+
+    "SNMPResultCounter32": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^[C|c][O|o][U|u][N|n][T|t][E|e][R|r]32$'
+            },
+            "value": { "$ref": "#/pScheduler/UInt32"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
+        },
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPResultCounter64": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^[C|c][O|o][U|u][N|n][T|t][E|e][R|r]64$'
+            },
+            "value": { "$ref": "#/pScheduler/UInt64"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
+        },
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPResultGauge32": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^[G|g][A|a][U|u][G|g][E|e]32$'
+            },
+            "value": { "$ref": "#/pScheduler/UInt32"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
+        },
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPTimeticks": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 4294967296 
+    },
+
+    "SNMPResultTimeticks": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^[T|t][I|i][M|m][E|e][T|t][I|i][C|c][K|k][S|s]$'
+            },
+            "value": { "$ref": "#/pScheduler/SNMPTimeticks"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
+        },
+        "additionalProperties": False,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPResultInvalidOID": {
+        "type": "object",
+        "properties": {
+            "type": { "type": "null" },
+            "value": { "$ref": "#/pScheduler/String" },
+            "timestamp": { "$ref": "#/pScheduler/String" }
+        },
+        "additionalProperties": False,
+        "required": [
+            "value"
+        ]
+    },
+
+    "SNMPResult": {
+        "anyOf": [
+            { "$ref": "#/pScheduler/SNMPResultInteger" },
+            { "$ref": "#/pScheduler/SNMPResultString" },
+            { "$ref": "#/pScheduler/SNMPResultIPAddress" },
+            { "$ref": "#/pScheduler/SNMPResultOID" },
+            { "$ref": "#/pScheduler/SNMPResultCounter32" },
+            { "$ref": "#/pScheduler/SNMPResultCounter64" },
+            { "$ref": "#/pScheduler/SNMPResultGauge32" },
+            { "$ref": "#/pScheduler/SNMPResultTimeticks" },
+            { "$ref": "#/pScheduler/SNMPResultInvalidOID" }
+        ]
     },
 
     "TaskSpecification": {
@@ -754,6 +920,13 @@ __dictionary__ = {
             "required": ["version"]  
         },
 
+        "IPCIDRList": {
+            "properties": {
+                "description": { "$ref": "#/pScheduler/String" },
+                "cidr":        { "$ref": "#/pScheduler/IPCIDRList" },
+                "invert":      { "$ref": "#/pScheduler/Boolean" }
+                }
+        },
 
         "IPVersionList": {
             "properties": {
@@ -785,6 +958,92 @@ __dictionary__ = {
             "additionalProperties": False,
             "required": [ "match" ]
         }
+
+    },
+
+    #
+    # Standard Plugin Enumeration Types
+    #
+
+    "PluginEnumeration": {
+
+        "Test": {
+            "type": "object",
+            "properties": {
+                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "name":         { "$ref": "#/pScheduler/String" },
+                "description":  { "$ref": "#/pScheduler/String" },
+                "version":      { "$ref": "#/pScheduler/Version" },
+                "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+                "scheduling-class": { 
+                    "type": "string",
+                    "enum": [
+                        "background",
+                        "background-multi",
+                        "exclusive",
+                        "normal"
+                    ]
+                }
+            },
+            "additionalProperties": False,
+            "required": [
+                "name",
+                "description",
+                "version",
+                "maintainer",
+                "scheduling-class"
+            ]
+        },
+
+        "Tool": {
+            "type": "object",
+            "properties": {
+                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "name":         { "$ref": "#/pScheduler/String" },
+                "description":  { "$ref": "#/pScheduler/String" },
+                "version":      { "$ref": "#/pScheduler/Version" },
+                "tests":        { "$ref": "#/pScheduler/StringList" },
+                "preference":        { "$ref": "#/pScheduler/Integer" },
+                "maintainer":   { "$ref": "#/pScheduler/Maintainer" },
+                "scheduling-class": { 
+                    "type": "string",
+                    "enum": [
+                        "background",
+                        "background-multi",
+                        "exclusive",
+                        "normal"
+                    ]
+                }
+            },
+            "additionalProperties": False,
+            "required": [
+                "name",
+                "description",
+                "version",
+                "tests",
+                "preference",
+                "maintainer"
+            ]
+        },
+
+        "Archiver": {
+            "type": "object",
+            "properties": {
+                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "name":         { "$ref": "#/pScheduler/String" },
+                "description":  { "$ref": "#/pScheduler/String" },
+                "version":      { "$ref": "#/pScheduler/Version" },
+                "maintainer":   { "$ref": "#/pScheduler/Maintainer" }
+            },
+            "additionalProperties": False,
+            "required": [
+                "name",
+                "description",
+                "version",
+                "maintainer"
+            ]
+        },
+
 
     }
 }
@@ -869,7 +1128,7 @@ def json_validate(json, skeleton):
 
         try:
             message = ex.schema["x-invalid-message"].replace("%s", ex.instance)
-        except KeyError:
+        except (KeyError, TypeError):
             message = ex.message
 
         if len(ex.absolute_path) > 0:
