@@ -171,6 +171,7 @@ make -C daemons \
 
 make -C utilities \
     "CONFIGDIR=%{_pscheduler_sysconfdir}" \
+    "LIMITSFILE=%{_pscheduler_limit_config}" \
     "PGDATABASE=%{_pscheduler_database_name}" \
     "PGPASSFILE=%{pgpass_file}" \
     "TMPDIR=%{_tmppath}" \
