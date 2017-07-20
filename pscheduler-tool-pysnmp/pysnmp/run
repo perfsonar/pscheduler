@@ -188,7 +188,7 @@ while num_polls < (spec['polls'] + 1):
         try:
             value = int(result[1])
             entry = { "timestamp": str(timestamp), "type": result_type, "value": value }
-        except ValueError:
+        except (ValueError, TypeError):
             if result_type in ['NoSuchInstance', 'NoSuchObject']:
                 entry = { "timestamp": str(timestamp), "value": result_type }
             else:
