@@ -34,6 +34,17 @@ def timedelta_is_zero(timedelta):
         and (timedelta.microseconds == 0)
 
 
+def timedelta_format(delta, pad=True):
+    """Format a timedelta, optionally padding the days"""
+
+    total_seconds = timedelta_as_seconds(delta)
+    days, remainder = divmod(total_seconds, 24 * 60 * 60)
+    hours, remainder = divmod(remainder, 60 * 60)
+    minutes, seconds = divmod(remainder, 60)
+    return "%2dd %02d:%02d:%02d" % (days, hours, minutes, seconds)
+
+
+
 #
 # Time in General
 #

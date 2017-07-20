@@ -3,7 +3,7 @@
 #
 
 Name:		pscheduler-account
-Version:	1.0.0.3
+Version:	1.0.0.5
 Release:	1%{?dist}
 
 Summary:	Account for pScheduler
@@ -52,6 +52,17 @@ then
     # disabled.  That makes it su-able but not login-able.
     useradd -c '%{gecos}' -g '%{group}' '%{user}'
 fi
+
+# Make sure the account is never never disabled or requires a password
+# change.  Do this under all conditions to bring older versions into
+# line.
+
+chage \
+    --expiredate -1 \
+    --inactive -1 \
+    --maxdays 99999 \
+    '%{user}'
+
 
 
 %postun

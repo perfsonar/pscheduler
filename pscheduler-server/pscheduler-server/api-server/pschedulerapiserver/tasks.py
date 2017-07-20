@@ -109,18 +109,118 @@ def pick_tool(lists, pick_from=None):
 
 
 
+
+def __tasks_get_filtered(uri_base,
+                         where_clause='TRUE',
+                         args=[],
+                         expanded=False,
+                         detail=False,
+                         single=True):
+
+    """Get one or more tasks from a table using a WHERE clause."""
+
+    # Let this throw; callers are responsible for catching.
+
+    cursor = dbcursor_query("""
+        SELECT
+            task.json,
+            task.added,
+            task.start,
+            task.slip,
+            task.duration,
+            task.post,
+            task.runs,
+            task.participants,
+            scheduling_class.anytime,
+            scheduling_class.exclusive,
+            scheduling_class.multi_result,
+            task.participant,
+            task.enabled,
+            task.cli,
+            task.limits_passed,
+            task.participant,
+            task.uuid
+        FROM
+            task
+            JOIN test ON test.id = task.test
+            JOIN scheduling_class
+                ON scheduling_class.id = test.scheduling_class
+        WHERE %s
+    """ % (where_clause), args)
+
+    tasks_returned = []
+
+    for row in cursor:
+
+        uri = uri_base if single else "%s/%s" % (uri_base, row[16])
+
+        if not expanded:
+            tasks_returned.append(uri)
+            continue
+
+        json = row[0]
+
+        # The lead participant passes the participant list to the
+        # others within the JSON, but that shouldn't come out when
+        # querying it.
+
+        try:
+            del json["participants"]
+        except KeyError:
+            pass
+
+        # Add details if we were asked for them.
+
+        if detail:
+
+            part_list = row[7]
+            # The database is not supposed to allow this, but spit out
+            # a sane default as a last resort in case it happens.
+            if part_list is None:
+                part_list = [None]
+            if row[10] == 0 and part_list[0] is None:
+                part_list[0] = server_netloc()
+
+            json['detail'] = {
+                'added': None if row[1] is None \
+                    else pscheduler.datetime_as_iso8601(row[1]),
+                'start': None if row[2] is None \
+                    else pscheduler.datetime_as_iso8601(row[2]),
+                'slip': None if row[3] is None \
+                    else pscheduler.timedelta_as_iso8601(row[3]),
+                'duration': None if row[4] is None \
+                    else pscheduler.timedelta_as_iso8601(row[4]),
+                'post': None if row[5] is None \
+                    else pscheduler.timedelta_as_iso8601(row[5]),
+                'runs': None if row[6] is None \
+                    else int(row[6]),
+                'participants': part_list,
+                'anytime':  row[8],
+                'exclusive':  row[9],
+                'multi-result':  row[10],
+                'enabled':  row[12],
+                'cli':  row[13],
+                'spec-limits-passed': row[14],
+                'participant': row[15],
+                'href': uri,
+                'runs-href': "%s/runs" % (uri),
+                'first-run-href': "%s/runs/first" % (uri),
+                'next-run-href': "%s/runs/next" % (uri)
+                }
+
+        tasks_returned.append(json)
+
+    return tasks_returned
+
+
+
 @application.route("/tasks", methods=['GET', 'POST'])
 def tasks():
 
     if request.method == 'GET':
 
-        expanded = is_expanded()
-
-        query = """
-            SELECT json, uuid
-            FROM task
-            """
-        args = []
+        where_clause = "TRUE"
+        args=[]
 
         try:
             json_query = arg_json("json")
@@ -128,25 +228,26 @@ def tasks():
             return bad_request(str(ex))
 
         if json_query is not None:
-            query += "WHERE json @> %s"
+            where_clause += " AND task.json @> %s"
             args.append(request.args.get("json"))
 
-        query += " ORDER BY added"
+        where_clause += " ORDER BY added"
+
 
         try:
-            cursor = dbcursor_query(query, args)
+            tasks = __tasks_get_filtered(
+                request.base_url,
+                where_clause=where_clause,
+                args=args,
+                expanded=is_expanded(),
+                detail=arg_boolean("detail"),
+                single=False
+            )
         except Exception as ex:
             return error(str(ex))
 
-        result = []
-        for row in cursor:
-            url = base_url(row[1])
-            if not expanded:
-                result.append(url)
-                continue
-            row[0]['href'] = url
-            result.append(row[0])
-        return json_response(result)
+
+        return ok_json(tasks)
 
     elif request.method == 'POST':
 
@@ -451,6 +552,8 @@ def tasks():
 
 
 
+
+
 @application.route("/tasks/<uuid>", methods=['GET', 'POST', 'DELETE'])
 def tasks_uuid(uuid):
 
@@ -459,94 +562,21 @@ def tasks_uuid(uuid):
 
     if request.method == 'GET':
 
-        # Get a task, adding server-derived details if a 'detail'
-        # argument is present.
-
         try:
-            cursor = dbcursor_query("""
-                SELECT
-                    task.json,
-                    task.added,
-                    task.start,
-                    task.slip,
-                    task.duration,
-                    task.post,
-                    task.runs,
-                    task.participants,
-                    scheduling_class.anytime,
-                    scheduling_class.exclusive,
-                    scheduling_class.multi_result,
-                    task.participant,
-                    task.enabled,
-                    task.cli,
-                    task.limits_passed,
-                    task.participant
-                FROM
-                    task
-                    JOIN test ON test.id = task.test
-                    JOIN scheduling_class
-                        ON scheduling_class.id = test.scheduling_class
-                WHERE uuid = %s
-            """, [uuid])
+            tasks = __tasks_get_filtered(
+                request.base_url,
+                where_clause="task.uuid = %s",
+                args=[uuid],
+                expanded=True,
+                detail=arg_boolean("detail"),
+                single=True)
         except Exception as ex:
             return error(str(ex))
 
-        if cursor.rowcount == 0:
+        if not tasks:
             return not_found()
 
-        row = cursor.fetchone()
-        if row is None:
-            return not_found()
-        json = row[0]
-
-        # The lead participant passes the participant list to the
-        # others within the JSON, but that shouldn't come out when
-        # querying it.
-
-        try:
-            del json["participants"]
-        except KeyError:
-            pass
-
-        # Add details if we were asked for them.
-
-        if arg_boolean('detail'):
-
-            part_list = row[7];
-            # The database is not supposed to allow this, but spit out
-            # a sane default as a last resort in case it happens.
-            if part_list is None:
-                part_list = [None]
-            if row[10] == 0 and part_list[0] is None:
-                part_list[0] = server_netloc()
-
-            json['detail'] = {
-                'added': None if row[1] is None \
-                    else pscheduler.datetime_as_iso8601(row[1]),
-                'start': None if row[2] is None \
-                    else pscheduler.datetime_as_iso8601(row[2]),
-                'slip': None if row[3] is None \
-                    else pscheduler.timedelta_as_iso8601(row[3]),
-                'duration': None if row[4] is None \
-                    else pscheduler.timedelta_as_iso8601(row[4]),
-                'post': None if row[5] is None \
-                    else pscheduler.timedelta_as_iso8601(row[5]),
-                'runs': None if row[6] is None \
-                    else int(row[6]),
-                'participants': part_list,
-                'anytime':  row[8],
-                'exclusive':  row[9],
-                'multi-result':  row[10],
-                'enabled':  row[12],
-                'cli':  row[13],
-                'spec-limits-passed': row[14],
-                'participant': row[15],
-                'runs-href': "%s/runs" % (request.base_url),
-                'first-run-href': "%s/runs/first" % (request.base_url),
-                'next-run-href': "%s/runs/next" % (request.base_url)
-                }
-
-        return ok_json(json)
+        return ok_json(tasks[0])
 
     elif request.method == 'POST':
 

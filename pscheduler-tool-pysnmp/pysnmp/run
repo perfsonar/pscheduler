@@ -13,19 +13,45 @@ import time
 import pscheduler
 
 # check for missing required fields
-def missing_input(spec):
+def missing_input(spec, test_type, level):
 
     try:
+        # general fields
         version = spec['version']
         dest = spec['dest']
         oid = spec['oid']
+        polls = spec['polls']
         if version in ['1', '2c']:
             community = spec['_community']
+        else:
+            security_name = spec['security-name']
+            security_level = spec['security-level'].lower()
+
+            # authentication and encryption
+            if security_level == 'authpriv':
+                auth_protocol = spec['auth-protocol']
+                auth_key = spec['_auth-key']
+                priv_protocol = spec['priv-protocol']
+                priv_key = spec['_priv-key']
+
+            # encryption
+            if security_level == 'authnopriv':
+                auth_protocol = spec['auth-protocol']
+                auth_key = spec['_auth-key']
+
+            if security_level == 'noauthnopriv':
+                pass
+
+        # snmpdelta fields
+        if polls > 1:
+            period = spec['period']
+
         return False
 
     except KeyError:
         return True
 
+# build object for snmp engine
 def build_object(oid):
 
     if re.match(r'^((\.\d)|\d)+(\.\d+)*$', oid) is None:
@@ -46,6 +72,53 @@ def build_object(oid):
 
     return obj_id
 
+def get_generator(spec, oid_tuple, level): 
+
+    if level == None:
+        credentials = CommunityData(spec['_community'])
+
+    else:
+        auth_protocols = { 'sha': usmHMACSHAAuthProtocol,
+                           'md5': usmHMACMD5AuthProtocol
+                         }
+
+        priv_protocols = { 'des': usmDESPrivProtocol,
+                           '3des': usm3DESEDEPrivProtocol,
+                           'aes': usmAesCfb128Protocol,
+                           'aes128': usmAesCfb128Protocol,
+                           'aes192': usmAesCfb192Protocol,
+                           'aes256': usmAesCfb256Protocol
+                         }
+
+        # completely unauthenticated request
+        if level == 'noauthnopriv':
+            credentials = UsmUserData(spec['security-name'])
+        # authenticated and encrypted request
+        elif level == 'authpriv':
+            try:
+                credentials = UsmUserData(spec['security-name'], spec['_auth-key'], spec['_priv-key'],
+                              authProtocol=auth_protocols[spec['auth-protocol'].lower()],
+                              privProtocol=priv_protocols[spec['priv-protocol'].lower()])
+            except KeyError:
+                pscheduler.fail("Unrecognized authentication/privacy protocol: %s" % spec['auth-protocol']) # TODO
+
+        elif level == 'authnopriv':
+            try:
+                credentials = UsmUserData(spec['security-name'], spec['_auth-key'],
+                              authProtocol=auth_protocols[spec['auth-protocol'].lower()])
+            except KeyError:
+                pscheduler.fail("Unrecognized authentication protocol: %s" % spec['auth-protocol']) # TODO
+
+        else:
+            pscheduler.fail("Unrecognized security level: %s" % spec['security-level'])
+
+    return getCmd(SnmpEngine(),
+                  credentials,
+                  UdpTransportTarget((spec['dest'], 161)),
+                  ContextData(),
+                  *oid_tuple)
+
+
 # 
 # Preliminaries
 #
@@ -54,13 +127,17 @@ def build_object(oid):
 # Load input from stream
 input = pscheduler.json_load(exit_on_error=True)
 spec = input['test']['spec']
+test_type = input['test']['type']
 
-if missing_input(spec):
+try:
+    level = spec['security-level'].lower()
+except KeyError:
+    level = None
+
+if missing_input(spec, test_type, level):
     pscheduler.fail('Missing data in input')
 
 # Set timeout and start time
-timeout_iso = input['test']['spec'].get("timeout", "PT5S" )
-timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 start_time = datetime.datetime.now()
 
 
@@ -68,47 +145,101 @@ start_time = datetime.datetime.now()
 # Perform the test
 #
 
-results = []
 
+data = []       # array of dictionaries, each corresponding to an oid in the spec
+oid_tuple = ()     # method for specifying multiple oids to the engine
+num_polls = 0      # tracker for number of polls
+this_poll = None   # latest poll time
+succeeded = None   
+
+# add oids to tuple
 for item in spec['oid']:
+    oid_tuple += (ObjectType(build_object(item)),)
 
-    obj_id = build_object(item)
+# n comparisons require n+1 get requests
+while num_polls < (spec['polls'] + 1):
 
     try:
-        g = getCmd(SnmpEngine(),
-                   CommunityData(spec['_community']),
-                   UdpTransportTarget((spec['dest'], 161)),
-                   ContextData(),
-                   ObjectType(obj_id))
+        g = get_generator(spec, oid_tuple, level)
+        errorIndication, errorStatus, errorIndex, varBinds = next(g)
+        timestamp = str(datetime.datetime.now())
+        last_poll = this_poll
+        this_poll = time.time()
 
-    except pysnmp.error.PySnmpError as e:
+    except (pysnmp.smi.error.MibNotFoundError, pysnmp.smi.error.SmiError, pysnmp.error.PySnmpError) as e:
         succeeded = False
-        error = "snmpget returned an error: \n%s" % str(e).strip('\n')
+        error = "snmpget returned an error: %s" % str(e).strip('\n')
         diags = ''
-        results = None
+        data = None
         break
 
-    try:
-        result = next(g)
-        result_type = result[3][0][1].__class__.__name__
+    if errorIndication:
+        succeeded = False
+        error = "snmpget returned an error: %s" % str(errorIndication).strip('\n')
+        diags = ''
+        data = None
+        break
+
+    for enum, result in enumerate(varBinds):
+        # result[0] == object name
+        # result[1] == value
+        result_type = result[1].__class__.__name__
+        # store as appropriate type
         try:
-            value = int(result[3][0][1])
-        except TypeError:
-            value = result[3][0][1]
-        result = { "type": result_type, "value": value }
-        results.append(result)
+            value = int(result[1])
+            entry = { "timestamp": str(timestamp), "type": result_type, "value": value }
+        except ValueError:
+            if result_type in ['NoSuchInstance', 'NoSuchObject']:
+                entry = { "timestamp": str(timestamp), "value": result_type }
+            else:
+                value = str(result[1])
+                entry = { "timestamp": str(timestamp), "type": result_type, "value": value }
 
-    except pysnmp.smi.error.MibNotFoundError:
-        result = { "type": None, "value": "No such OID fouond in MIB" }
-        results.append(result)
+        if spec['polls'] > 1:
+            entry['seq_num'] = num_polls
+            # no delta values for first pull
+            if num_polls != 0:
+                try:
+                    entry['delta'] = value - data[enum][num_polls - 1]['value']
+                    entry['timedelta'] = this_poll - last_poll
+                # string types will raise this exception, only integer values have delta values
+                except (TypeError, IndexError, NameError):
+                    pass
+        
+        try:
+            data[enum].append(entry)
+        except IndexError:
+            data.append([entry])
 
-    succeeded = True
+    num_polls += 1
 
+    if test_type == 'snmpgetbgm':
+        delimiter = pscheduler.api_result_delimiter()
+        results = {
+            'succeeded': True,
+            'result': {
+                'schema': 1,
+                'succeeded' : succeeded,
+                'data': data
+            },
+            'error': '',
+            'diags': 'Run #%d' % num_polls
+        }
+        print pscheduler.json_dump(results)
+        print delimiter
+        sys.stdout.flush()
+        data = []
 
+    if spec['polls'] == 1:
+        break
 
+    while (time.time() - this_poll < spec['period']):
+        pass
+    
 end_time = datetime.datetime.now()
 
-if succeeded:
+if succeeded == None:
+    succeeded = True
     error = None
     diags = ''
 
@@ -124,7 +255,7 @@ results = {
 	    'schema': 1,
 	    'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
 	    'succeeded' : succeeded,
-        'data': results
+        'data': data
     },
     'error': error,
     'diags': diags

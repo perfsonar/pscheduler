@@ -30,7 +30,7 @@ class TestPsas(PschedTestBase):
 
         if filter(lambda key: ret[key] is not None, ret):
 
-            self.assertIsNone(ret.get('this-is-not-valid'))
+            assert(ret.get('this-is-not-valid') is None)
             self.assertEqual(
                 ret.get('8.8.8.8'),
                 (15169, 'GOOGLE - Google Inc., US'))

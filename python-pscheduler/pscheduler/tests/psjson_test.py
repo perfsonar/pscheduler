@@ -48,8 +48,7 @@ class TestPsjson(PschedTestBase):
         dstring += 'xxxx'
 
         # bad value
-        with self.assertRaises(ValueError):
-            json_load(dstring)
+        self.assertRaises(ValueError, json_load, dstring)
 
     def test_dump(self):
         doc = dict(foo='foo')

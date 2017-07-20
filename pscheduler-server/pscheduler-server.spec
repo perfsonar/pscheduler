@@ -7,7 +7,7 @@
 # init scripts function just fine.
 
 Name:		pscheduler-server
-Version:	1.0.0.3
+Version:	1.0.0.5
 Release:	1%{?dist}
 
 Summary:	pScheduler Server
@@ -60,7 +60,7 @@ Requires:	pscheduler-server
 # mod_ssl is required here.
 Requires:	mod_ssl
 Requires:	mod_wsgi
-Requires:	python-pscheduler >= 1.1
+Requires:	python-pscheduler >= 1.3.0.4.1
 Requires:	python-requests
 Requires:	pytz
 
@@ -138,6 +138,8 @@ make -C database \
      DATABASE=%{db_user} \
      DATADIR=%{_pscheduler_datadir} \
      PASSWORDFILE=%{password_file} \
+     DSNFILE=%{dsn_file} \
+     PGPASSFILE=%{pgpass_file} \
      ROLE=%{db_user} \
      PGPASSFILE=$RPM_BULID_ROOT/%{pgpass_file}
 
@@ -393,38 +395,6 @@ then
 fi
 
 
-# Generate a password if the file is empty, which is the case after
-# the first install.
-#
-# TODO: This might be annoying if someone intentionally sets the
-# password up as empty.
-if [ ! -s '%{password_file}' ]
-then
-    random-string --safe --length 60 --randlength > '%{password_file}'
-fi
-
-# Check our assumptions
-if [ "$(wc -l < '%{password_file}')" -ne 1 ]
-then
-    echo "INTERNAL ERROR: " \
-        "Password file %{password_file} must contain exactly one line." 1>&2
-    exit 1
-fi
-
-ROLE="%{_pscheduler_user}"
-
-# Generate the DSN file
-awk -v "ROLE=${ROLE}" '{ printf "host=127.0.0.1 dbname=pscheduler user=%s password=%s\n", ROLE, $1 }' \
-    "%{password_file}" \
-    > "${RPM_BUILD_ROOT}/%{dsn_file}"
-
-# Generate a PostgreSQL password file
-# Format is hostname:port:database:username:password
-awk -v "ROLE=${ROLE}" '{ printf "*:*:pscheduler:%s:%s\n", ROLE, $1 }' \
-    "%{password_file}" \
-    > "${RPM_BUILD_ROOT}/%{pgpass_file}"
-chmod 400 "${RPM_BUILD_ROOT}/%{pgpass_file}"
-
 
 
 # Load the database
@@ -439,18 +409,11 @@ chmod 400 "${RPM_BUILD_ROOT}/%{pgpass_file}"
 
 pscheduler internal db-update
 
-# Securely set the password for the role to match the one we generated.
+# Note that this is safe to do because all of the daemons are stopped
+# at this point and they, along with the web server, will be
+# retstarted later.
+pscheduler internal db-change-password
 
-ROLESQL="${TMP:-/tmp}/%{name}.$$"
-touch "${ROLESQL}"
-chmod 400 "${ROLESQL}"
-
-printf "ALTER ROLE ${ROLE} WITH UNENCRYPTED PASSWORD '" > "${ROLESQL}"
-tr -d "\n" < "%{password_file}" >> "${ROLESQL}"
-printf "';\n"  >> "${ROLESQL}"
-
-postgresql-load "${ROLESQL}"
-rm -f "${ROLESQL}"
 
 #
 # Allow the account we created to authenticate locally.

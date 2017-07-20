@@ -4,7 +4,7 @@
 
 %define short	throughput
 Name:		pscheduler-test-%{short}
-Version:	1.0.0.3
+Version:	1.0.0.5
 Release:	1%{?dist}
 
 Summary:	Throughput test class for pScheduler
@@ -21,7 +21,8 @@ Requires:	python-pscheduler
 Requires:	python-jsontemplate
 Requires:       numactl
 BuildRequires:	pscheduler-rpm
-
+BuildRequires:	python-pscheduler
+BuildRequires:  python-nose
 
 %description
 Throughput test class for pScheduler

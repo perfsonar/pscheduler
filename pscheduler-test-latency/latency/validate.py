@@ -231,6 +231,8 @@ LIMIT_SCHEMA = {
                 "lower": { "$ref": "#/local/packet-interval" },
                 "upper": { "$ref": "#/local/packet-interval" }
             },
+            "required": ["lower", "upper"],
+            "additionalProperties": False
         },
         "BucketWidthRange": {
             "type": "object",
@@ -238,6 +240,8 @@ LIMIT_SCHEMA = {
                 "lower": { "$ref": "#/local/bucket-width" },
                 "upper": { "$ref": "#/local/bucket-width" }
             },
+            "required": ["lower", "upper"],
+            "additionalProperties": False
         },
         "packet-interval-limit": {
             "type": "object",
@@ -257,10 +261,9 @@ LIMIT_SCHEMA = {
         },
     },
     "properties": {
-        #source
-        #dest
-        #source-node
-        #dest-node
+        "source":     { "$ref": "#/pScheduler/Limit/IPCIDRList"},
+        "dest":       { "$ref": "#/pScheduler/Limit/IPCIDRList"},
+        "endpoint":   { "$ref": "#/pScheduler/Limit/IPCIDRList"},
         "schema":           { "$ref": "#/pScheduler/Cardinal" },
         "packet-count":     { "$ref": "#/pScheduler/Limit/Cardinal" },
         "packet-interval":  { "$ref": "#/local/packet-interval-limit" },
@@ -269,7 +272,7 @@ LIMIT_SCHEMA = {
         "packet-padding":   { "$ref": "#/pScheduler/Limit/CardinalZero" },
         "ctrl-port":        { "$ref": "#/pScheduler/Limit/CardinalZero" },
         "data-ports":       { "$ref": "#/pScheduler/Limit/CardinalZero" },
-        "ip-tos":           { "$ref": "#/pScheduler/Limit/CardinalZero" },
+        "ip-tos":           { "$ref": "#/pScheduler/Limit/CardinalList" },
         "ip-version":       { "$ref": "#/pScheduler/Limit/IPVersionList" },
         "bucket-width":     { "$ref": "#/local/bucket-width-limit" },
         "output-raw":       { "$ref": "#/pScheduler/Limit/Boolean" },

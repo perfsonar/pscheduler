@@ -184,7 +184,7 @@ __dictionary__ = {
     "IPv6CIDR": {
         "type": "string",
         # Source: http://www.regexpal.com/93988
-        "pattern": r'^s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:)))(%.+)?s*(\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))?$'
+        "pattern": r'^s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]d|1dd|[1-9]?d)(.(25[0-5]|2[0-4]d|1dd|[1-9]?d)){3}))|:)))(%.+)?s*(\/([0-9]|[1-9][0-9]|1[0-1][0-9]|12[0-8]))$'
     },
 
     "IPCIDR": {
@@ -192,6 +192,11 @@ __dictionary__ = {
             { "$ref": "#/pScheduler/IPv4CIDR" },
             { "$ref": "#/pScheduler/IPv6CIDR" },
         ]
+    },
+
+    "IPCIDRList": {
+        "type": "array",
+        "items": { "$ref": "#/pScheduler/IPCIDR" }
     },
 
     "Int8": {
@@ -376,7 +381,7 @@ __dictionary__ = {
     },
 
     "EnumMatch": {
-        "type": "array",
+        "type": "object",
         "properties": {
             "enumeration": { "type": "array",
                              "items": {
@@ -534,7 +539,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[I|i][N|n][T|t][E|e][G|g][E|e][R|r]$'
             },
-            "value": { "$ref": "#/pScheduler/Integer" }
+            "value": { "$ref": "#/pScheduler/Integer" },
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -550,7 +556,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[S|s][T|t][R|r][I|i][N|n][G|g]$'
             },
-            "value": { "$ref": "#/pScheduler/String"}
+            "value": { "$ref": "#/pScheduler/String"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -566,7 +573,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[H|h][E|e][X|x]-*[S|s][T|t][R|r][I|i][N|n][G|g]$'
             },
-            "value": { "$ref": "#/pScheduler/String"}
+            "value": { "$ref": "#/pScheduler/String"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -582,7 +590,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[I|i][P|p][A|a][D|d]{2}[R|r][E|e][S|s]{2}$'
             },
-            "value": { "$ref": "#/pScheduler/IPAddress"}
+            "value": { "$ref": "#/pScheduler/IPAddress"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -616,7 +625,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[O|o][I|i][D|d]$'
             },
-            "value": { "$ref": "#/pScheduler/SNMPOID"}
+            "value": { "$ref": "#/pScheduler/SNMPOID"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -634,7 +644,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[C|c][O|o][U|u][N|n][T|t][E|e][R|r]32$'
             },
-            "value": { "$ref": "#/pScheduler/UInt32"}
+            "value": { "$ref": "#/pScheduler/UInt32"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -650,7 +661,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[C|c][O|o][U|u][N|n][T|t][E|e][R|r]64$'
             },
-            "value": { "$ref": "#/pScheduler/UInt64"}
+            "value": { "$ref": "#/pScheduler/UInt64"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -666,7 +678,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[G|g][A|a][U|u][G|g][E|e]32$'
             },
-            "value": { "$ref": "#/pScheduler/UInt32"}
+            "value": { "$ref": "#/pScheduler/UInt32"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -688,7 +701,8 @@ __dictionary__ = {
                 "type": "string",
                 "pattern": r'^[T|t][I|i][M|m][E|e][T|t][I|i][C|c][K|k][S|s]$'
             },
-            "value": { "$ref": "#/pScheduler/SNMPTimeticks"}
+            "value": { "$ref": "#/pScheduler/SNMPTimeticks"},
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
@@ -701,11 +715,11 @@ __dictionary__ = {
         "type": "object",
         "properties": {
             "type": { "type": "null" },
-            "value": { "$ref": "#/pScheduler/String" }
+            "value": { "$ref": "#/pScheduler/String" },
+            "timestamp": { "$ref": "#/pScheduler/String" }
         },
         "additionalProperties": False,
         "required": [
-            "type",
             "value"
         ]
     },
@@ -906,6 +920,13 @@ __dictionary__ = {
             "required": ["version"]  
         },
 
+        "IPCIDRList": {
+            "properties": {
+                "description": { "$ref": "#/pScheduler/String" },
+                "cidr":        { "$ref": "#/pScheduler/IPCIDRList" },
+                "invert":      { "$ref": "#/pScheduler/Boolean" }
+                }
+        },
 
         "IPVersionList": {
             "properties": {

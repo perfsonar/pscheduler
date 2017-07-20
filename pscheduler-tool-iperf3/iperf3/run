@@ -310,7 +310,8 @@ def run_server():
     if affinity == None:
         # look up what interface we're going to be receiving on        
         interface = pscheduler.address_interface(normalized_dest, ip_version=ip_version)
-        affinity = pscheduler.interface_affinity(interface)
+        if interface:
+            affinity = pscheduler.interface_affinity(interface)
 
     if affinity != None:
         iperf3_args.insert(0, 'numactl')
@@ -349,11 +350,16 @@ def run_server():
 
 def _make_result(command, status, stdout, stderr):
     if status:
+        error_text = ""
         try:
             json_stdout = pscheduler.json_load(stdout)
-            error_text = json_stdout["error"]
+            error_text = json_stdout["error"]            
         except (ValueError, KeyError):
-            error_text = stdout
+            pass
+
+        if not error_text:
+            error_text = "%s\n%s" % (stdout, stderr)
+
         pscheduler.succeed_json({"succeeded": False,
                                  "error": "iperf3 returned an error: %s" % (error_text)})
 
