@@ -159,58 +159,57 @@ for item in spec['oid']:
 # n comparisons require n+1 get requests
 while num_polls < (spec['polls'] + 1):
 
-    g = get_generator(spec, oid_tuple, level)
-
     try:
+        g = get_generator(spec, oid_tuple, level)
         errorIndication, errorStatus, errorIndex, varBinds = next(g)
         timestamp = str(datetime.datetime.now())
         last_poll = this_poll
         this_poll = time.time()
 
-        if errorIndication:
-            succeeded = False
-            error = "snmpget returned an error: %s" % str(errorIndication).strip('\n')
-            diags = ''
-            data = None
-            break
-
-        for enum, result in enumerate(varBinds):
-            # result[0] == object name
-            # result[1] == value
-            result_type = result[1].__class__.__name__
-            # store as appropriate type
-            try:
-                value = int(result[1])
-                entry = { "timestamp": str(timestamp), "type": result_type, "value": value }
-            except ValueError:
-                if result_type in ['NoSuchInstance', 'NoSuchObject']:
-                    entry = { "timestamp": str(timestamp), "value": result_type }
-                else:
-                    value = str(result[1])
-                    entry = { "timestamp": str(timestamp), "type": result_type, "value": value }
-
-            if spec['polls'] > 1:
-                entry['seq_num'] = num_polls
-                # no delta values for first pull
-                if num_polls != 0:
-                    try:
-                        entry['delta'] = value - data[enum][num_polls - 1]['value']
-                        entry['timedelta'] = this_poll - last_poll
-                    # string types will raise this exception, only integer values have delta values
-                    except (TypeError, IndexError, NameError):
-                        pass
-            
-            try:
-                data[enum].append(entry)
-            except IndexError:
-                data.append([entry])
-
-    except pysnmp.smi.error.MibNotFoundError as e:
+    except (pysnmp.smi.error.MibNotFoundError, pysnmp.smi.error.SmiError, pysnmp.error.PySnmpError) as e:
         succeeded = False
-        error = "pysnmp.smi.error.MibNotFoundError: %s" % str(e).strip('\n')
+        error = "snmpget returned an error: %s" % str(e).strip('\n')
         diags = ''
         data = None
         break
+
+    if errorIndication:
+        succeeded = False
+        error = "snmpget returned an error: %s" % str(errorIndication).strip('\n')
+        diags = ''
+        data = None
+        break
+
+    for enum, result in enumerate(varBinds):
+        # result[0] == object name
+        # result[1] == value
+        result_type = result[1].__class__.__name__
+        # store as appropriate type
+        try:
+            value = int(result[1])
+            entry = { "timestamp": str(timestamp), "type": result_type, "value": value }
+        except ValueError:
+            if result_type in ['NoSuchInstance', 'NoSuchObject']:
+                entry = { "timestamp": str(timestamp), "value": result_type }
+            else:
+                value = str(result[1])
+                entry = { "timestamp": str(timestamp), "type": result_type, "value": value }
+
+        if spec['polls'] > 1:
+            entry['seq_num'] = num_polls
+            # no delta values for first pull
+            if num_polls != 0:
+                try:
+                    entry['delta'] = value - data[enum][num_polls - 1]['value']
+                    entry['timedelta'] = this_poll - last_poll
+                # string types will raise this exception, only integer values have delta values
+                except (TypeError, IndexError, NameError):
+                    pass
+        
+        try:
+            data[enum].append(entry)
+        except IndexError:
+            data.append([entry])
 
     num_polls += 1
 
