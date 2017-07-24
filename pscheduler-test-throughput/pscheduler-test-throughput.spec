@@ -21,7 +21,8 @@ Requires:	python-pscheduler
 Requires:	python-jsontemplate
 Requires:       numactl
 BuildRequires:	pscheduler-rpm
-
+BuildRequires:	python-pscheduler
+BuildRequires:  python-nose
 
 %description
 Throughput test class for pScheduler
@@ -34,7 +35,6 @@ Throughput test class for pScheduler
 %define dest %{_pscheduler_test_libexec}/%{short}
 
 %build
-make test
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install

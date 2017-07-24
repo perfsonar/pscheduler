@@ -57,6 +57,7 @@ SQL=$(BUILD_SUPER_SQL) $(BUILD_SQL) $(TEARDOWN_SQL)
 
 INTERNALS=\
 	db-update \
+	db-change-password \
 	reset \
 	warmboot
 
@@ -74,6 +75,14 @@ ifndef PASSWORDFILE
 	@echo No PASSWORDFILE specified for build
 	@false
 endif
+ifndef DSNFILE
+	@echo No DSNFILE specified for build
+	@false
+endif
+ifndef PGPASSFILE
+	@echo No PGPASSFILE specified for build
+	@false
+endif
 ifndef ROLE
 	@echo No ROLE specified for build
 	@false
@@ -82,6 +91,8 @@ endif
 		-e 's|__DATABASE__|$(DATABASE)|g' \
 		-e 's|__DATADIR__|$(DATADIR)|g' \
 		-e 's|__PASSWORDFILE__|$(PASSWORDFILE)|g' \
+		-e 's|__DSNFILE__|$(DSNFILE)|g' \
+		-e 's|__PGPASSFILE__|$(PGPASSFILE)|g' \
 		-e 's|__ROLE__|$(ROLE)|g' \
 		< $^ > $@
 	@if egrep -e '__[A-Z_]+__' $@ ; then \

@@ -41,6 +41,3 @@ endif
 
 clean:
 	rm -f $(TO_CLEAN) *~
-
-test:
-	python tests/runner.py

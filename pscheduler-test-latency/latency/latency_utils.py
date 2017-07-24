@@ -7,20 +7,6 @@ import sys
 import os
 import pscheduler
 import math
-'''
-Load a JSON schema file from the current working directory
-'''
-def load_schema(schema_file):
-    #find schema file
-    schema_path = os.path.dirname(sys.argv[0])  
-    if schema_path and not schema_path.endswith(os.sep):
-        schema_path += os.sep
-    try:
-        schema = json.loads(open(schema_path + schema_file).read())
-    except Exception, e:
-        pscheduler.fail("Problem loading schema file: %s" % e)
-    
-    return schema
 
 '''
 print float
