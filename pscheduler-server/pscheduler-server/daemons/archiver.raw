@@ -313,7 +313,7 @@ class ArchiveWorker():
                 raw = transform.get("output-raw", False)
                 transformer = pscheduler.JQFilter(
                     filter_spec=transform.get("script", "."),
-					args=transform.get("args", {} ),
+                    args=transform.get("args", {}),
                     output_raw=raw
                 )
                 if raw:
@@ -326,6 +326,7 @@ class ArchiveWorker():
                 self.log.error("%d: Error during transformation: %s", str(ex))
                 failed = True
                 returncode = 1
+                stdout = ""
                 stdout_attempt = ""
                 stderr = "Error during transformation: %s", str(ex)
 
@@ -339,7 +340,6 @@ class ArchiveWorker():
         else:
             skip = False
 
-        stdout = ""
         if (not failed) and (not skip):
             archiver_in = pscheduler.json_dump(json)
             self.log.debug("%d: Running archiver %s with input %s",
