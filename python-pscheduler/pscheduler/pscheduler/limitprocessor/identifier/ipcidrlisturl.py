@@ -38,8 +38,6 @@ def data_is_valid(data):
     valid, error = pscheduler.json_validate(data, data_validator)
     if not valid:
         return valid, error
-    if "transform" in data:
-        return False, "Transforms are not yet supported."
     return valid, error
 
 
