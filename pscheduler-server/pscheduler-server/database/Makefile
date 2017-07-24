@@ -27,6 +27,7 @@ FILES=\
 	tool \
 	archive_default \
 	archiver \
+	context \
 	task \
 	run_state \
 	run \

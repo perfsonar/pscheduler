@@ -1,0 +1,33 @@
+#!/usr/bin/python
+#
+# Validate data for the bitbucket archiver
+#
+
+import pscheduler
+
+try:
+    json = pscheduler.json_load(max_schema=1)
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+        })
+
+data_validator = {
+
+    "type": "object",
+    "properties": {
+        "schema": { "$ref": "#/pScheduler/Cardinal" }
+    },
+    "additionalProperties": False
+}
+
+valid, error = pscheduler.json_validate(json, data_validator)
+
+if not valid:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": error
+        })
+    
+pscheduler.succeed_json({ "valid": True })

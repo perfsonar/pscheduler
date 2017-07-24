@@ -16,6 +16,7 @@ from .iso8601 import *
 from .jsonval import *
 from .limits import *
 from .log import *
+from .numeric import *
 from .numericrange import *
 from .program import *
 from .pidfile import *

@@ -15,8 +15,6 @@ try:
 except (KeyError, TypeError):
     succeeded = False
 
-
-
 results = { 'succeeded' : succeeded }
 
 if succeeded:
