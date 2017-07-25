@@ -20,23 +20,28 @@ def parse_output(lines):
 
         # Example line:
         # 216.8125 MB /   1.00 sec = 1817.8571 Mbps    45 retrans    206 KB-cwnd
-        test = re.match('^.* (\d+)\.\d+ sec \=\s*(\d+(\.\d+)?) (\S)bps\s*(\d+) retrans(\s*(\d+)\s*(\S)\S\-cwnd)?', line)
+        test = re.match('^\s*(\d+(\.\d+)?) MB\s*\/\s*(\d+)\.\d+ sec \=\s*(\d+(\.\d+)?) (\S)bps\s*(\d+) retrans(\s*(\d+)\s*(\S)\S\-cwnd)?', line)
         if test:
-            spacing = int(test.group(1))
-            value   = test.group(2)
-            si      = test.group(4)
-            retrans = int(test.group(5))
-            cwnd    = test.group(7)
-            cwnd_si = test.group(8)
+            volume  = float(test.group(1))
+            spacing = int(test.group(3))
+            value   = test.group(4)
+            si      = test.group(6)
+            retrans = int(test.group(7))
+            cwnd    = test.group(9)
+            cwnd_si = test.group(10)
 
             value = pscheduler.si_as_number("%s%s" % (value, si))
             cwnd  = pscheduler.si_as_number("%s%s" % (cwnd, cwnd_si))
 
+            # volume always seems to be reported in MB, need to standardize to just B
+            volume *= 10**6;
+            
             data = {
                 "start": current_interval_start,
                 "end": current_interval_start + spacing,
                 "stream-id": 1, # nuttcp won't report separate streams as best as I can tell, so just fudge it
                 "throughput-bits": value,
+                "throughput-bytes": volume,
                 "tcp-window-size": cwnd,
                 "retransmits": retrans
                 }
@@ -52,23 +57,28 @@ def parse_output(lines):
 
         # Example UDP line
         # 25.1572 MB /   1.00 sec =  211.0065 Mbps    62 / 25823 ~drop/pkt  0.24 ~%loss 4.8672 msMaxJitter
-        test = re.match('^.* (\d+)\.\d+ sec \=\s*(\d+(\.\d+)?) (\S)bps\s*(\d+) / (\d+) ~drop/pkt\s*(\d+\.\d+) ~%loss\s*(\d+\.\d+) msMaxJitter', line)
+        test = re.match('^\s*(\d+(\.\d+)?) MB\s*\/\s*(\d+)\.\d+ sec \=\s*(\d+(\.\d+)?) (\S)bps\s*(\d+) / (\d+) ~drop/pkt\s*(\d+\.\d+) ~%loss\s*(\d+\.\d+) msMaxJitter', line)
         if test:
-            spacing = int(test.group(1))
-            value   = test.group(2)
-            si      = test.group(4)
-            lost    = int(test.group(5))
-            sent    = int(test.group(6))
-            loss    = test.group(7)
-            jitter  = float(test.group(8))
+            volume  = float(test.group(1))
+            spacing = int(test.group(3))
+            value   = test.group(4)
+            si      = test.group(6)
+            lost    = int(test.group(7))
+            sent    = int(test.group(8))
+            loss    = test.group(9)
+            jitter  = float(test.group(10))
 
             value = pscheduler.si_as_number("%s%s" % (value, si))
 
+            # volume always seems to be reported in MB, need to standardize to just B
+            volume *= 10**6
+            
             data = {
                 "start": current_interval_start,
                 "end": current_interval_start + spacing,
                 "stream-id": 1, # nuttcp won't report separate streams as best as I can tell, so just fudge it
                 "throughput-bits": value,
+                "throughput-bytes": volume,
                 "sent": sent,
                 "lost": lost,
                 "jitter": jitter
@@ -84,23 +94,28 @@ def parse_output(lines):
         
         # Example summary line:
         # 2197.0657 MB /  10.00 sec = 1842.3790 Mbps 8 %TX 90 %RX 90 retrans 237 KB-cwnd 0.50 msRTT
-        test = re.match('^.* (\d+)\.\d+ sec =\s*(\d+(\.\d+)?) (\S)bps \d+ %TX \d+ %RX (\d+) retrans(\s*(\d+)\s*(\S)\S\-cwnd)?', line)
+        test = re.match('^\s*(\d+(\.\d+)?) MB\s*\/\s*(\d+)\.\d+ sec =\s*(\d+(\.\d+)?) (\S)bps \d+ %TX \d+ %RX (\d+) retrans(\s*(\d+)\s*(\S)\S\-cwnd)?', line)
         if test:
-            duration = int(test.group(1))
-            value    = test.group(2)
-            si       = test.group(4)
-            retrans  = int(test.group(5))
-            cwnd     = test.group(7)
-            cwnd_si  = test.group(8)
+            volume   = float(test.group(1))
+            duration = int(test.group(3))
+            value    = test.group(4)
+            si       = test.group(6)
+            retrans  = int(test.group(7))
+            cwnd     = test.group(9)
+            cwnd_si  = test.group(10)
            
             value = pscheduler.si_as_number("%s%s" % (value, si))
             cwnd  = pscheduler.si_as_number("%s%s" % (cwnd, cwnd_si))
+
+            # volume always seems to be reported in MB, need to standardize to just B
+            volume *= 10**6
 
             summary_view = {
                 "start": 0,
                 "end": duration,
                 "stream-id": 1, # nuttcp won't report separate streams as best as I can tell, so just fudge it
                 "throughput-bits": value,
+                "throughput-bytes": volume,
                 "tcp-window-size": cwnd,
                 "retransmits": retrans
                 }
@@ -108,23 +123,28 @@ def parse_output(lines):
 
         # Example UDP summary line
         #   252.0586 MB /  10.00 sec =  211.4462 Mbps 99 %TX 50 %RX 1485 / 259593 drop/pkt 0.57 %loss 37.2012 msMaxJitter
-        test = re.match('^.* (\d+)\.\d+ sec \=\s*(\d+(\.\d+)?) (\S)bps\s*(\d+) %TX (\d+) %RX (\d+) / (\d+) drop/pkt\s*(\d+\.\d+) %loss\s*(\d+\.\d+) msMaxJitter', line)
+        test = re.match('^\s*(\d+(\.\d+)?) MB\s*\/\s*(\d+)\.\d+ sec \=\s*(\d+(\.\d+)?) (\S)bps\s*(\d+) %TX (\d+) %RX (\d+) / (\d+) drop/pkt\s*(\d+\.\d+) %loss\s*(\d+\.\d+) msMaxJitter', line)
         if test:
-            duration = int(test.group(1))
-            value    = test.group(2)
-            si       = test.group(4)
-            lost     = int(test.group(7))
-            sent     = int(test.group(8))
-            loss     = test.group(9)
-            jitter   = float(test.group(10))
+            volume   = float(test.group(1))
+            duration = int(test.group(3))
+            value    = test.group(4)
+            si       = test.group(6)
+            lost     = int(test.group(9))
+            sent     = int(test.group(10))
+            loss     = test.group(11)
+            jitter   = float(test.group(12))
 
             value = pscheduler.si_as_number("%s%s" % (value, si))
 
+            # volume always seems to be reported in MB, need to standardize to just B
+            volume *= 10**6
+            
             summary_view = {
                 "start": 0,
                 "end": duration,
                 "stream-id": 1, # nuttcp won't report separate streams as best as I can tell, so just fudge it
                 "throughput-bits": value,
+                "throughput-bytes": volume,
                 "sent": sent,
                 "lost": lost,
                 "jitter": jitter
