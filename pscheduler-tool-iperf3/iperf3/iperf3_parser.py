@@ -36,6 +36,10 @@ def parse_output(lines):
         streams = interval.get('streams', [])
         summary = interval.get('sum', {})
 
+        # iperf3 doesn't report the "socket" field for the summary, but we need
+        # it to fit the validation for throughput
+        summary['socket'] = "SUM"
+        
         renamed_streams = []
 
         for stream in streams:
@@ -52,7 +56,7 @@ def parse_output(lines):
 
     sum_end = {}
     if content.has_key('end'):
-       sum_end =  content['end']
+        sum_end =  content['end']
     else:
         results['succeeded'] = False
         results['error'] = "iperf3 output is missing required field 'end'" 
@@ -68,6 +72,9 @@ def parse_output(lines):
         results['error'] = "iperf3 output has neither 'sum_sent' nor 'sum' field, and one of them is required" 
         return results
 
+    # same as above manual socket setting
+    summary["socket"] = "SUM"
+    
     renamed_summary = rename_json(summary)
 
 
