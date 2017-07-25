@@ -1,0 +1,8 @@
+#!/bin/sh -e
+#
+# Change the context and do the next thing.
+#
+
+echo "Failed intentionally." 1>&2
+
+exit 1

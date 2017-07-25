@@ -1,0 +1,14 @@
+#!/bin/sh -e
+#
+# Change the context and do the next thing.
+#
+
+EXEC=$(jq -r 'if .exec != null then .exec else empty end')
+
+if [ ! -x "$EXEC" ]
+then
+    echo "Cannot execute '${EXEC}'." 1>&2
+    exit 1
+fi
+
+exec "${EXEC}"
