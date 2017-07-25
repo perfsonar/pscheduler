@@ -95,10 +95,10 @@ if json.get('mss-size'):
 if json.get('mtu'):
    output += "MTU: %s bytes\n" % (json['mtu'])
 if json.get('tcp-window-size'):
-   output += "TCP Window Size: %sbytes" % (throughput_utils.format_si(json['tcp-window-size']))
+   output += "TCP Window Size: %sbytes" % (pscheduler.number_as_si(json['tcp-window-size']))
 
    if json.get('requested-tcp-window-size'):
-      output += "  Requested: %sbytes" % (throughput_utils.format_si(json['requested-tcp-window-size']))
+      output += "  Requested: %sbytes" % (pscheduler.number_as_si(json['requested-tcp-window-size']))
    output += "\n"
 
 
