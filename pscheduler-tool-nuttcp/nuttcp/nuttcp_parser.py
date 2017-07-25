@@ -56,8 +56,9 @@ def parse_output(lines):
             
 
         # Example UDP line
+        #     5.9609 MB /   1.00 sec =   49.9993 Mbps     0 /  6104 ~drop/pkt  0.00 ~%loss 0.8362 msMaxJitter
         # 25.1572 MB /   1.00 sec =  211.0065 Mbps    62 / 25823 ~drop/pkt  0.24 ~%loss 4.8672 msMaxJitter
-        test = re.match('^\s*(\d+(\.\d+)?) MB\s*\/\s*(\d+)\.\d+ sec \=\s*(\d+(\.\d+)?) (\S)bps\s*(\d+) / (\d+) ~drop/pkt\s*(\d+\.\d+) ~%loss\s*(\d+\.\d+) msMaxJitter', line)
+        test = re.match('^\s*(\d+(\.\d+)?) MB\s*\/\s*(\d+)\.\d+ sec \=\s*(\d+(\.\d+)?) (\S)bps\s*(\d+)\s*/\s*(\d+) ~drop/pkt\s*(\d+\.\d+) ~%loss\s*(\d+\.\d+) msMaxJitter', line)
         if test:
             volume  = float(test.group(1))
             spacing = int(test.group(3))
