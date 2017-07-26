@@ -1,8 +1,15 @@
-pscheduler-test-idlebgm (1.0.0.5-1~bpo70+1) perfsonar-wheezy-release; urgency=low
+pscheduler-test-idlebgm (1.0.1~1.rc1-1~bpo70+1) perfsonar-wheezy-staging; urgency=low
 
   * Backport to Wheezy
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 14 Jun 2017 19:56:19 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 27 Jul 2017 01:33:01 +0200
+
+pscheduler-test-idlebgm (1.0.1~1.rc1-1) perfsonar-jessie-staging; urgency=low
+
+  * New upstream version
+  * Moving pscheduler-warmboot call to trigger.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 27 Jul 2017 00:51:50 +0200
 
 pscheduler-test-idlebgm (1.0.0.5-1) perfsonar-jessie-release; urgency=low
 

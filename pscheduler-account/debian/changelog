@@ -1,8 +1,14 @@
-pscheduler-account (1.0.0.5-1~bpo70+1) perfsonar-wheezy-release; urgency=low
+pscheduler-account (1.0.1~1.rc1-1~bpo70+1) perfsonar-wheezy-staging; urgency=low
 
   * Backport to Wheezy
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 14 Jun 2017 19:54:14 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 27 Jul 2017 01:31:52 +0200
+
+pscheduler-account (1.0.1~1.rc1-1) perfsonar-jessie-staging; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 27 Jul 2017 00:49:55 +0200
 
 pscheduler-account (1.0.0.5-1) perfsonar-jessie-release; urgency=low
 
