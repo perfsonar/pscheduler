@@ -1,4 +1,5 @@
 import pscheduler
+import unittest
 
 class CliToSpecTest(pscheduler.TestCliToSpecUnitTest):
     name = 'throughput'

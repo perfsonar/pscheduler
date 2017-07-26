@@ -27,7 +27,6 @@ if valid:
         ("packet-padding", "Packet Padding"),
         ("ctrl-port", "Control Ports"),
         ("data-ports", "Data Ports"),
-        ("ip-tos", "IP TOS"),
         ("bucket-width", "Bucket Width"),
     ]
     for nr in numeric_ranges:
@@ -39,13 +38,18 @@ if valid:
             message = "{0} must have range where upper is greater than lower".format(nr[1])
             break
 
-#make sure duration ranges have upper that is greater than lower
-if valid and "duration" in json:
-    lower_dur = pscheduler.iso8601_as_timedelta(json["duration"]["range"]["lower"])
-    upper_dur = pscheduler.iso8601_as_timedelta(json["duration"]["range"]["upper"])
-    if upper_dur < lower_dur:
-        valid = False
-        message = "Duration must have range where upper is greater than lower"
+    durations = [
+        ("duration", "Duration"),
+        ("report-interval", "Report Interval"),
+    ]
+    for d in durations:
+        if d[0] not in json:
+            continue
+        lower_dur = pscheduler.iso8601_as_timedelta(json[d[0]]["range"]["lower"])
+        upper_dur = pscheduler.iso8601_as_timedelta(json[d[0]]["range"]["upper"])
+        if upper_dur < lower_dur:
+            valid = False
+            message = "{0} must have range where upper is greater than lower".format(d[1])
     
 
 result = {

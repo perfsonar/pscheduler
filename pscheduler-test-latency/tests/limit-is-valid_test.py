@@ -3,6 +3,7 @@ tests for the limit-is-valid command
 """
 
 import pscheduler
+import unittest
 
 class LimitIsValidTest(pscheduler.TestLimitIsValidUnitTest):
     name = 'latency'
@@ -138,14 +139,10 @@ class LimitIsValidTest(pscheduler.TestLimitIsValidUnitTest):
     def test_ip_tos(self):
         #test ip tos
         ##in range
-        self.assert_cmd('{"ip-tos": {"range": {"upper": 255, "lower": 0}}}')
-        self.assert_cmd('{"ip-tos": {"range": {"upper": 255, "lower": 0}, "invert":true}}')
+        self.assert_cmd('{"ip-tos": {"match": [1, 2, 3]}}')
+        self.assert_cmd('{"ip-tos": {"match": [1, 2, 3], "invert":true}}')
         ##out of range
-        self.assert_cmd('{"ip-tos": {"range": {"upper": 0, "lower": 255}}}', expected_valid=False, expected_errors=["IP TOS must have range where upper is greater than lower"])
-        self.assert_cmd('{"ip-tos": {"range": {"upper": 0, "lower": -1}}}', expected_valid=False)
-        self.assert_cmd('{"ip-tos": {"range": {"lower": 0}}}', expected_valid=False)
-        self.assert_cmd('{"ip-tos": {"range": {"upper": 255}}}', expected_valid=False)
-        self.assert_cmd('{"ip-tos": {"range": {"upper": 255, "lower": 0, "garbage": "stuff"}}}', expected_valid=False)
+        self.assert_cmd('{"ip-tos": {"range": {"lower": 0, "upper": 255}}}', expected_valid=False)
     
     def test_bucket_width(self):
         #test bucket-width

@@ -19,13 +19,15 @@ from .response import *
 # All archivers
 @application.route("/archivers", methods=['GET'])
 def archivers():
-    return json_query("SELECT json FROM archiver ORDER BY NAME")
+    return json_query("SELECT json FROM archiver"
+                      " WHERE available ORDER BY NAME")
 
 
 # Archiver <name>
 @application.route("/archivers/<name>", methods=['GET'])
 def archivers_name(name):
-    return json_query("SELECT json FROM archiver WHERE name = %s",
+    return json_query("SELECT json FROM archiver"
+                      " WHERE available AND name = %s",
                       [name], single=True)
 
 
@@ -34,9 +36,9 @@ def archivers_name(name):
 def archivers_name_data_is_valid(name):
 
     try:
-        cursor = dbcursor_query(
-            "SELECT EXISTS (SELECT * FROM archiver WHERE NAME = %s)",
-            [name])
+        cursor = dbcursor_query("SELECT EXISTS"
+                                " (SELECT * FROM archiver WHERE NAME = %s)",
+                                [name])
     except Exception as ex:
         return error(str(ex))
 

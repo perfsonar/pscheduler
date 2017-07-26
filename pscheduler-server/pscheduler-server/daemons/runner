@@ -171,7 +171,6 @@ def clock_survey(hosts, bind=None):
 
 
 
-
 #
 # Class that does the test runs
 #
@@ -314,8 +313,8 @@ class RunWorker:
         failures = 0
 
 
-        # Pull everything we can about the run before going to sleep
-        
+        # Do as much preparation as possible before going to sleep.
+
         db = None
         try:
             db = self._get_db_conn()
@@ -336,7 +335,8 @@ class RunWorker:
                                run.uuid,
                                run.part_data_full,
                                scheduling_class.enum,
-                               task.json ->> 'lead-bind'
+                               task.json ->> 'lead-bind',
+                               task.json #> '{contexts,contexts}'
                            FROM
                                run
                                JOIN task ON task.id = run.task
@@ -359,7 +359,7 @@ class RunWorker:
 
                 test, tool, task_uuid, task_id, participant, participants, \
                     limits_passed, start, end, test_spec, cli, run_uuid, \
-                    partdata, scheduling_class, lead_bind = row
+                    partdata, scheduling_class, lead_bind, contexts = row
 
         except Exception as ex:
             self.log.error("%d: Failed to fetch run info: %s",
@@ -400,6 +400,37 @@ class RunWorker:
             'participant-data': partdata,
             'limits-passed': limits_passed
             })
+
+
+        run_args = ["pscheduler", "internal", "invoke", "tool", tool, "run"]
+
+        # If there are contexts, do the advance work for that.
+
+        # TODO: Might be good to see if we can just do all of te
+        # running with the ChainedExecRunner.
+
+        if contexts is not None and len(contexts[participant]):
+            context_args = [
+                {
+                    "program": [
+                        "pscheduler",
+                        "internal",
+                        "invoke",
+                        "context",
+                        context["context"],
+                        "change"
+                        ],
+                    "input": context.get("data", {})
+                }
+                for context in contexts[participant]
+                ]
+
+            context_runner = pscheduler.ChainedExecRunner(
+                context_args, argv=run_args, stdin=tool_input)
+
+        else:
+
+            context_runner = None
 
 
         #
@@ -484,12 +515,22 @@ class RunWorker:
             self.log.warning("%d: Starting %s later than scheduled",
                              self.id, how_late)
         
-        returncode, stdout, stderr = pscheduler.run_program(
-            [ "pscheduler", "internal", "invoke", "tool", tool, "run" ],
-            stdin = tool_input,
-            timeout = pscheduler.timedelta_as_seconds(end - start) + 1,
-            line_call = lambda l: self.__accumulate_output(l)
+
+        if context_runner is None:
+
+            returncode, stdout, stderr = pscheduler.run_program(
+                run_args,
+                stdin=tool_input,
+                timeout=pscheduler.timedelta_as_seconds(end - start) + 1,
+                line_call=lambda l: self.__accumulate_output(l))
+
+        else:
+
+            returncode, stdout, stderr = context_runner.run(
+                timeout=pscheduler.timedelta_as_seconds(end - start) + 1,
+                line_call=lambda l: self.__accumulate_output(l)
             )
+
 
         stdout = "\n".join(self.output)
 
@@ -505,7 +546,7 @@ class RunWorker:
                     failures += 1
             except ValueError:
                 self.log.error("%d: Test returned invalid JSON: %s", self.id, stdout)
-                
+
 
         if len(stderr) == 0:
             stderr = None
@@ -515,6 +556,7 @@ class RunWorker:
                 self.log.info("%d: Run succeeded.", self.id)
             self.log.debug("%d: Run returned %s", self.id, stdout)
         else:
+            failures += 1
             if log_details:
                 self.log.info("%d: Run failed %d: %s", self.id,
                               returncode, stderr)

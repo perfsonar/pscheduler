@@ -45,7 +45,7 @@ class TestPsdns(PschedTestBase):
 
         if have_network:
             # these should be stable
-            self.assertIsNone(ret.get('does-not-exist.internet2.edu'))
+            assert(ret.get('does-not-exist.internet2.edu') is None)
             self.assertEqual(ret.get('google-public-dns-a.google.com'), '8.8.8.8')
 
         # ipv6
@@ -69,7 +69,7 @@ class TestPsdns(PschedTestBase):
                 'this-is-not-valid'
             ], reverse=True)
 
-            self.assertIsNone(ret.get('this-is-not-valid'))
+            assert(ret.get('this-is-not-valid') is None)
             self.assertEqual(ret.get('8.8.8.8'), 'google-public-dns-a.google.com')
 
         # bulk none - empty dict

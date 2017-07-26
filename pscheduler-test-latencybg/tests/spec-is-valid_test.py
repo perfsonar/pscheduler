@@ -3,6 +3,7 @@ tests for the spec-is-valid command
 """
 
 import pscheduler
+import unittest
 
 class SpecIsValidTest(pscheduler.TestSpecIsValidUnitTest):
     name = 'latencybg'

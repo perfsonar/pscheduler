@@ -36,7 +36,7 @@ def __limitproc_update():
 
     # If we're within the update time, don't bother.
     if this.last_check is not None \
-       and now - last_check < this.update_interval:
+       and now - this.last_check < this.update_interval:
         return
     this.last_check = now
 

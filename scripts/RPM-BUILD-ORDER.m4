@@ -132,6 +132,12 @@ pscheduler-archiver-http
 pscheduler-archiver-rabbitmq
 pscheduler-archiver-syslog
 
+# Context Changers
+pscheduler-context-changefail
+pscheduler-context-changenothing
+pscheduler-context-linuxnns
+
+
 # Misc.
 pscheduler-docs
 

@@ -3,6 +3,7 @@ tests for the participant-data command
 """
 
 import pscheduler
+import unittest
 
 class ParticipantDataTest(pscheduler.ToolParticipantDataUnitTest):
     name = 'owping'

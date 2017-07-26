@@ -3,6 +3,7 @@ tests for the spec-to-cli command
 """
 
 import pscheduler
+import unittest
 
 class CliToSpecTest(pscheduler.TestSpecToCliUnitTest):
     name = 'latency'

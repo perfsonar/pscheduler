@@ -3,6 +3,7 @@ tests for the merged-results command
 """
 
 import pscheduler
+import unittest
 
 class MergedResultsTest(pscheduler.ToolMergedResultsUnitTest):
     name = 'powstream'

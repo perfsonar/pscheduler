@@ -252,7 +252,7 @@ def tasks():
     elif request.method == 'POST':
 
         try:
-            task = pscheduler.json_load(request.data, max_schema=1)
+            task = pscheduler.json_load(request.data, max_schema=2)
         except ValueError as ex:
             return bad_request("Invalid task specification: %s" % (str(ex)))
 

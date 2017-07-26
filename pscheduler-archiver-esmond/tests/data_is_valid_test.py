@@ -3,6 +3,7 @@ tests for the data-is-valid command
 """
 
 import pscheduler
+import unittest
 
 class DataIsValidTest(pscheduler.ArchiverDataIsValidUnitTest):
     name = 'esmond'

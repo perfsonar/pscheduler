@@ -3,6 +3,7 @@ tests for the spec-format command
 """
 
 import pscheduler
+import unittest
 
 class SpecFormatTest(pscheduler.TestSpecFormatUnitTest):
     name = 'latency'

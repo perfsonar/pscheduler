@@ -298,6 +298,9 @@ DECLARE
 	run_result external_program_result;
 	temp_json JSONB;
 	archive JSONB;
+	json_result TEXT;
+	context_participant JSONB;
+	context JSONB;
 BEGIN
 
 	--
@@ -496,6 +499,54 @@ BEGIN
                 NEW.post = 'P0'::INTERVAL;
             END IF;
         END IF;
+
+	--
+	-- ARCHIVES
+	--
+
+	IF (TG_OP = 'INSERT'
+            OR (TG_OP = 'UPDATE' AND NEW.json <> OLD.json))
+	   AND NEW.json ? 'archives'
+        THEN
+	    FOR archive IN (SELECT * FROM jsonb_array_elements_text(NEW.json -> 'archives'))
+	    LOOP
+	        PERFORM archiver_validate(archive);
+	    END LOOP;
+	END IF;
+
+
+	--
+	-- CONTEXTS
+	--
+
+	IF (TG_OP = 'INSERT'
+            OR (TG_OP = 'UPDATE' AND NEW.json <> OLD.json))
+	   AND NEW.json ? 'contexts'
+        THEN
+
+	    -- Make sure it looks sane
+	    json_result := json_validate(NEW.json #> '{contexts}', '#/pScheduler/ContextSpecification');
+            IF json_result IS NOT NULL
+            THEN
+		RAISE EXCEPTION 'Invalid context specification: %', json_result;
+	    END IF;
+
+	    -- Make sure there aren't more contexts than the task has participants.
+	    IF jsonb_array_length(NEW.json #> '{contexts,contexts}') <> NEW.nparticipants
+            THEN
+		RAISE EXCEPTION 'Number of contexts for this task must be exactly %',
+		    NEW.nparticipants;
+	    END IF;
+
+	    -- Check with all of the plugins to make sure the data is valid.
+	    FOR context_participant IN ( SELECT * FROM jsonb_array_elements(NEW.json #> '{contexts, contexts}') )
+	    LOOP
+	        FOR context IN (SELECT * FROM jsonb_array_elements_text(context_participant))
+		LOOP
+		    PERFORM context_validate(context);
+	        END LOOP;
+	    END LOOP;
+	END IF;
 
 	RETURN NEW;
 END;
