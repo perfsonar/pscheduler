@@ -4,7 +4,7 @@
 
 %define short	nuttcp
 Name:		pscheduler-tool-%{short}
-Version:	1.0.0.5
+Version:	1.0.1
 Release:	1%{?dist}
 
 Summary:	nuttcp tool class for pScheduler
