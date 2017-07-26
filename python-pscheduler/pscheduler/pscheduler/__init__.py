@@ -13,6 +13,7 @@ from .failopt import *
 from .filestring import *
 from .ipaddr import *
 from .iso8601 import *
+from .jqfilter import *
 from .jsonval import *
 from .limits import *
 from .log import *

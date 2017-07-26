@@ -29,14 +29,22 @@ make-generic-rpm
 postgresql-init
 postgresql-load
 
+# This is only required on EL6, which supplies an older version.
+ifelse(REDHAT_RELEASE_MAJOR,6,jq,)
+
+
 # Python Modules
 python-argparse
 ifelse(REDHAT_RELEASE_MAJOR,7,
     python-functools32,)
 python-isodate
+# TODO: Only needed if we keep python-jq
+ifelse(REDHAT_RELEASE_MAJOR,6,python-Cython,)
+python-jq
 python-netaddr
 python-ntplib
 python-py-radix
+python-pyjq
 # TODO: This can be dropped in 1.2
 python-repoze.lru
 python-subprocess32

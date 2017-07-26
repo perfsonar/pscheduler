@@ -14,13 +14,6 @@ json = pscheduler.json_load(exit_on_error=True, max_schema=1)
 
 data = json["data"]
 
-if "template" in data:
-    body = pscheduler.json_substitute(
-        data["template"], "__RESULT__", json["result"]
-    )
-else:
-    body = json["result"]
-
 
 try:
 
@@ -31,7 +24,7 @@ try:
     connection.channel().basic_publish(
         exchange=data.get("exchange", ""),
         routing_key=data.get("routing-key", ""),
-        body=pscheduler.json_dump(body)
+        body=pscheduler.json_dump(json["result"])
     )
 
     connection.close()
