@@ -23,7 +23,10 @@ data_validator = {
                    },
         "dest": { "$ref": "#/pScheduler/String" },
         "_community": { "$ref": "#/pScheduler/String" },
-        "mib": { "$ref": "#/pScheduler/String" },
+        "enterprise-oid": { "$ref": "#/pScheduler/String" },
+        "agent": { "$ref": "#/pScheduler/String" },
+        "trap-type": { "$ref": "#/pScheduler/String" },
+        "specific-type": { "$ref": "#/pScheduler/String" },
         "uptime": { "$ref": "#/pScheduler/Integer" }
     },
     "required": ["dest", "_community", "version", "mib"],

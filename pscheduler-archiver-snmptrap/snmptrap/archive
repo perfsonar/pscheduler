@@ -4,64 +4,90 @@
 #
 
 # this works with raw pscheduler output, no transforms
+# NEEDS: error handling
 
 import pscheduler
 import syslog
+from pysnmp.hlapi import *
+import re
+
+# build object for snmp engine
+def build_object(oid):
+
+    if re.match(r'^((\.\d)|\d)+(\.\d+)*$', oid) is None:
+        try:
+            temp = oid.split('::')
+            args = [temp[0]]
+            temp = temp[1].split('.')
+            args.extend(temp)
+            try:
+                obj_id = ObjectIdentity(args[0], args[1], args[2])
+            except IndexError:
+                obj_id = ObjectIdentity(args[0], args[1])
+        except IndexError:
+            pscheduler.fail('Incomplete/Invalid OID')
+
+    else:
+        obj_id = ObjectIdentity(item)
+
+    return obj_id
+
+# only dealing with enterpprise specific OIDs
+def get_generator(data, metrics, oids):
+
+    # trap type: 6 with specific type
+    trap_type = '.'.join((data['enterprise-oid'], str(data['specific-type'])))
+    notification = NotificationType(ObjectIdentity(trap_type))
+
+    # uptime override
+    try:
+        uptime = data['uptime']
+        notification.addVarBinds(('1.3.6.1.2.1.1.3.0', int(data['uptime'])))
+    except KeyError:
+        pass
+
+    # agent override
+    try:
+        agent = data['agent']
+        notification.addVarBinds(('1.3.6.1.6.3.18.1.3.0', agent))
+    except KeyError:
+        pass
+
+    # enterprise OID override
+    try:
+        ent_oid = data['enterprise-oid']
+        notification.addVarBinds(('1.3.6.1.6.3.1.1.4.3.0', ent_oid))
+    except KeyError:
+        pass
+
+    # add managed object information
+    for enum, item in enumerate(metrics):
+        notification.addVarBinds((build_object(oids[enum]), item['value']))
+
+	return sendNotification(SnmpEngine(),
+        					CommunityData(data['_community']),
+        					UdpTransportTarget((data['dest'], 162)),
+        					ContextData(),
+        					'trap',
+        					notification
+    						)
+
 
 json = pscheduler.json_load(exit_on_error=True, max_schema=1)
 
-try:
-	uptime = json['data']['uptime']
-except KeyError:
-    uptime = '\'\''
 
-type_dict = { 'integer': 'i',
-			  'counter32': 'c',
-			  'string': 's',
-			  'hex-string': 'x',
-			  'oid': 'o',
-			  'timeticks': 't',
-			  'ipaddress': 'a' }
+g = get_generator(json['data'], json['result']['data'], json['result']['oid'])
+errorIndication, errorStatus, errorIndex, varBinds = next(g)
 
-# without sudo, must be run as root
-argv = ['snmptrap',
-		'-v', json['data']['version'],
-		'-c', json['data']['_community'],
-		json['data']['dest'],
-		uptime,
-		json['data']['mib']
-		]
 
-# change this once transforms are ready
-# for enum, item in enumerate(json['result']['data']):
-for enum, item in enumerate(json['result']['result']['data']):
-	try:
-		obj_type = type_dict[item["type"].lower()]
-		# this should be used once transforms are supported
-		# argv.extend((json['result']['oid'][enum], obj_type, str(item['value'])))
-		argv.extend((json['result']['test']['spec']['oid'][enum], obj_type, str(item['value'])))
-		
-	except KeyError:
-		pscheduler.succeed_json({
-			"succeeded": False,
-			"error": "Invalid data type: %s" % item['type']
-    	})
-
-try:
-	status, stdout, stderr = pscheduler.run_program(argv)
-	succeeded = True
-	data = None
-	error = None
-except Exception as e:
+if errorIndication:
     succeeded = False
     data = None
-    error = "The snmptrap command failed during execution." 
-
-if status:
+    error = "snmptrap returned an error: %s" % errorIndication
+else:
+    succeeded = True
     data = None
-    succeeded = False
-    error = "snmpget returned an error: \n%s" % stderr.strip('\n')
-
+    error = None
 
 pscheduler.succeed_json({'succeeded': succeeded,
 						 'data': data,
