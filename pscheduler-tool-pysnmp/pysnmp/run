@@ -100,14 +100,14 @@ def get_generator(spec, oid_tuple, level):
                               authProtocol=auth_protocols[spec['auth-protocol'].lower()],
                               privProtocol=priv_protocols[spec['priv-protocol'].lower()])
             except KeyError:
-                pscheduler.fail("Unrecognized authentication/privacy protocol: %s" % spec['auth-protocol']) # TODO
+                pscheduler.fail("Unrecognized authentication/privacy protocol.")
 
         elif level == 'authnopriv':
             try:
                 credentials = UsmUserData(spec['security-name'], spec['_auth-key'],
                               authProtocol=auth_protocols[spec['auth-protocol'].lower()])
             except KeyError:
-                pscheduler.fail("Unrecognized authentication protocol: %s" % spec['auth-protocol']) # TODO
+                pscheduler.fail("Unrecognized authentication protocol: %s" % spec['auth-protocol'])
 
         else:
             pscheduler.fail("Unrecognized security level: %s" % spec['security-level'])
@@ -137,7 +137,7 @@ except KeyError:
 if missing_input(spec, test_type, level):
     pscheduler.fail('Missing data in input')
 
-# Set timeout and start time
+# Set start time
 start_time = datetime.datetime.now()
 
 
@@ -146,7 +146,7 @@ start_time = datetime.datetime.now()
 #
 
 
-data = []       # array of dictionaries, each corresponding to an oid in the spec
+data = []          # array of dictionaries, each corresponding to an oid in the spec
 oid_tuple = ()     # method for specifying multiple oids to the engine
 num_polls = 0      # tracker for number of polls
 this_poll = None   # latest poll time
