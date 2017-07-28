@@ -29,10 +29,6 @@ make-generic-rpm
 postgresql-init
 postgresql-load
 
-# This is only required on EL6, which supplies an older version.
-ifelse(REDHAT_RELEASE_MAJOR,6,jq,)
-
-
 # Python Modules
 python-argparse
 ifelse(REDHAT_RELEASE_MAJOR,7,
@@ -69,8 +65,8 @@ httpd-wsgi-socket
 # Utility and Tool programs
 #
 drop-in
-# JQ was used in development but isn't needed for production.
-#jq
+# This is only required on EL6, which supplies an older version.
+ifelse(REDHAT_RELEASE_MAJOR,6,jq,)
 paris-traceroute
 random-string
 
