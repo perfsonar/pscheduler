@@ -3,6 +3,7 @@ Functions for inhaling JSON in a pScheduler-normalized way
 """
 
 from json import load, loads, dump, dumps
+import string
 import sys
 import pscheduler
 
@@ -157,3 +158,67 @@ def json_dump(obj, dest=None, pretty=False):
     else:
         dump(obj, dest)
         print >> dest
+
+
+
+#
+# Classes for reading and writing streaming JSON per RFC 7464
+#
+
+class RFC7464Emitter(object):
+    """Emit JSON documents to a file handle in RFC 7464 format"""
+
+    def __init__(self, handle):
+
+        if type(handle) != file:
+            raise TypeError("Handle must be a file.")
+
+        self.handle = handle
+
+
+    def emit_text(self, text):
+        """Emit straight text to the file"""
+        self.handle.write(
+            "\x1e%s\n" % (text.translate(string.maketrans('', ''), "\n"))
+        )
+        self.handle.flush()
+
+
+    def __call__(self, json):
+        """Emit serialized JSON to the file"""
+        self.emit_text(pscheduler.json_dump(json, pretty=False))
+
+
+
+
+class RFC7464Parser(object):
+    """Iterable parser for reading streaming JSON from a file handle"""
+
+    def __init__(self, handle):
+        if type(handle) != file:
+            raise TypeError("Handle must be a file.")
+        self.handle = handle
+
+    # PYTHON3: def __next__(self)
+    def next(self):
+        """Read and parse one item from the file"""
+        data = self.handle.readline()
+
+        if len(data) == 0:
+            raise StopIteration
+
+        if data[0] != b'\x1e':
+            raise ValueError("Line did not start with record separator")
+
+        # json_load() will raise a ValueError if something's not right.
+        return pscheduler.json_load(data[1:])
+
+
+    def __iter__(self):
+        return self
+
+
+    def __call__(self):
+        """Single-shot read of next item"""
+        return self.next()
+

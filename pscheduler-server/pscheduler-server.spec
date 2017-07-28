@@ -60,11 +60,7 @@ Requires:	pscheduler-server
 # mod_ssl is required here.
 Requires:	mod_ssl
 Requires:	mod_wsgi
-<<<<<<< HEAD
-Requires:	python-pscheduler >= 1.3.1
-=======
 Requires:	python-pscheduler >= 1.3.0.4.2
->>>>>>> 35ccb4946a00d88c8bd49893d66854179d3b9bed
 Requires:	python-requests
 Requires:	pytz
 

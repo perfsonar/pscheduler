@@ -12,6 +12,7 @@ import stat
 import subprocess32
 import sys
 import tempfile
+import threading
 import traceback
 
 # Only used in _Popen
@@ -560,4 +561,133 @@ if __name__ == "__main__":
                 ['head', '-10'],
                 stdin=inp
             ))
+
+
+
+
+
+class ExternalProgram(object):
+    """Long-running external program."""
+
+    def __init__(self, args):
+        self.args = args
+        self.process = subprocess32.Popen(
+            args,
+            stdin=subprocess32.PIPE,
+            stdout=subprocess32.PIPE,
+            stderr=subprocess32.PIPE
+        )
+        self.err = None
+
+    def stdin(self):
+        return self.process.stdin
+
+    def stdout(self):
+        return self.process.stdout
+
+    def stderr(self):
+        return self.process.stderr
+
+    def returncode(self):
+        self.process.poll()
+        return self.process.returncode
+
+    def running(self):
+        self.process.poll()
+        return self.process.returncode is None
+
+    def done(self):
+        self.process.stdin.close()
+        self.process.wait()
+
+    def kill(self):
+        self.done()
+        self.process.kill()
+
+
+
+class StreamingJSONProgramFailure(Exception):
+    pass
+
+
+class StreamingJSONProgram(object):
+
+    """Interface to a program that repeatedly takes a single blob of
+    delimited JSON and returns the same.  Should the program fail, a
+    StreamingJSONProgramFailure exception (with explanation) will be
+    thrown and an attempt to re-establish it will be made during the
+    next call.
+
+    This class is fully thread-safe.
+    """
+
+    def __init__(self, args, retries=3):
+        """Construct an instance.
+
+        Arguments:
+
+        args - Array of program arguments
+        retries - Number of times to try restarting the program before
+            giving up.
+        """
+
+        self.args = args
+        self.retries = retries
+
+        self.lock = threading.Lock()
+        self.program = None
+        self.emitter = None
+        self.parser = None
+
+        self.__establish()
+
+
+    def __establish(self):
+        """Start the program"""
+
+        if self.program is not None:
+            return
+
+        self.program = ExternalProgram(self.args)
+        self.emitter = pscheduler.RFC7464Emitter(self.program.stdin())
+        self.parser = pscheduler.RFC7464Parser(self.program.stdout())
+
+
+    def __call__(self, json):
+        """Send the program a blob of JSON and get one back.
+        Throws StopIteration if the program exits with EOF.
+        """
+
+        tries = self.retries
+
+        with self.lock:
+
+            while tries:
+
+                tries -= 1
+
+                self.__establish()
+
+                try:
+                    self.emitter(json)
+                    # TODO: This does nothing to protect against the
+                    # program not returning anything if it's locked
+                    # up.  The queue trick in the DNS resolver would
+                    # be a good way to deal with this.  There may not
+                    # be a good way to do this since each plugin would
+                    # have to estimate how long it should run.
+                    return self.parser()
+                except (IOError, StopIteration):
+                    rc = self.program.returncode()
+                    # TODO: We seem to hit this a lot.
+                    if rc is None:
+                        rc = 1
+                    err = self.program.stderr().read().strip()
+                    self.program = None
+                    if tries > 0:
+                        continue
+                    raise StreamingJSONProgramFailure(
+                        "Program exited %d: %s" % (rc, err))
+
+                assert False, "Should not be reached."
 
