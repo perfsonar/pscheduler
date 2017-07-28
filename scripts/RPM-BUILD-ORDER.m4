@@ -34,9 +34,6 @@ python-argparse
 ifelse(REDHAT_RELEASE_MAJOR,7,
     python-functools32,)
 python-isodate
-# TODO: Only needed if we keep python-jq
-ifelse(REDHAT_RELEASE_MAJOR,6,python-Cython,)
-python-jq
 python-netaddr
 python-ntplib
 python-py-radix
