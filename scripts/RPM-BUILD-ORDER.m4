@@ -74,6 +74,7 @@ random-string
 
 pscheduler-rpm
 pscheduler-account
+pscheduler-jq-library
 python-pscheduler
 pscheduler-core
 pscheduler-server
