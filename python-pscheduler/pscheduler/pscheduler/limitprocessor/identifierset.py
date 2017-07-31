@@ -7,6 +7,7 @@ Set of Identifiers
 
 from .identifier import always
 from .identifier import hint
+from .identifier import jq
 from .identifier import ipcidrlist
 from .identifier import ipcidrlisturl
 from .identifier import ipcymrubogon
@@ -16,6 +17,7 @@ from .identifier import localif
 identifier_creator = {
     'always':           lambda data: always.IdentifierAlways(data),
     'hint':             lambda data: hint.IdentifierHint(data),
+    'jq':               lambda data: jq.IdentifierJQ(data),
     'ip-cidr-list':     lambda data: ipcidrlist.IdentifierIPCIDRList(data),
     'ip-cidr-list-url': lambda data: ipcidrlisturl.IdentifierIPCIDRListURL(data),
     'ip-cymru-bogon':   lambda data: ipcymrubogon.IdentifierIPCymruBogon(data),
