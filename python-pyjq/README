@@ -1,0 +1,9 @@
+IMPORTANT NOTE:
+
+This package builds a patched version of pyjq 2.0.1 numbered 2.0.1.1.
+A pull request[1] has been put in with the author; once it's part of
+the package, build from that instead.
+
+--Mark Feit
+
+[1] https://github.com/doloopwhile/pyjq/pull/11

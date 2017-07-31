@@ -4,7 +4,7 @@
 
 %define short	pyjq
 Name:		python-%{short}
-Version:	2.0.1
+Version:	2.0.1.1
 Release:	1%{?dist}
 Summary:	Python bindings to JQ
 BuildArch:	%(uname -m)
@@ -45,6 +45,10 @@ Python bindings to JQ
 
 
 %build
+
+# This is per the author's instructions.
+cython _pyjq.pyx
+
 python setup.py build
 
 
