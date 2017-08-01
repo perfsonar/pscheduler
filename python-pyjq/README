@@ -1,9 +1,18 @@
 IMPORTANT NOTE:
 
-This package builds a patched version of pyjq 2.0.1 numbered 2.0.1.1.
-A pull request[1] has been put in with the author; once it's part of
-the package, build from that instead.
+This package is forked from the author's original version on GitHub[1]
+and will remain forked while I do some development on it.
 
---Mark Feit
+Key changes so far:
 
-[1] https://github.com/doloopwhile/pyjq/pull/11
+ - Build extension with Cython from inside setup.py
+ - Add/correct library search path behavior
+
+Planned additions:
+
+ - Throw an exception if the script raises an error.
+
+
+--Mark Feit, August 1, 2017
+
+[1]https://github.com/doloopwhile/pyjq

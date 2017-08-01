@@ -45,10 +45,7 @@ Python bindings to JQ
 
 
 %build
-
-# This is per the author's instructions.
 cython _pyjq.pyx
-
 python setup.py build
 
 
