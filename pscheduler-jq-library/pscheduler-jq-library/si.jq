@@ -21,25 +21,34 @@ def multiplier(prefix):
   "ei": 1152921504606846976,
   "zi": 1180591620717411303424,
   "yi": 1208925819614629174706176
-}[prefix];
+}[prefix]
+;
+
+
+def invalid(value):
+  error("Invalid SI Number '\(value)'")
+;
 
 
 def as_integer(value):
-if (value | type) == "string"
-then
-  # TODO: This should barf if the capture doesn't work.
-  value
-    | ascii_downcase
-    | capture("^(?<number>[0-9]+([.][0-9]+)?)(?<unit>([kmgtpezy]i?)?)$")
-    | (.number|tonumber) * multiplier(.unit)
-    | floor
-else
-  if (value | type) == "number"
+  if (value | type) == "string"
   then
     value
+    | ascii_downcase
+    | # Match a valid SI number into its parts or anything else into 'invalid'
+      capture("^(((?<number>[0-9]+([.][0-9]+)?)(?<unit>([kmgtpezy]i?)?))|(?<invalid>(.*)))$") as $captured
+    | if ($captured.invalid == null)
+      then
+        ( ($captured.number|tonumber) * multiplier($captured.unit) | floor )
+      else
+        invalid(value)
+      end
   else
-    # This should be an error.
-    null
+    if (value | type) == "number"
+    then
+      value
+    else
+      invalid(value)
+    end
   end
-end
-;
+  ;
