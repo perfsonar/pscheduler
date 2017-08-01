@@ -16,18 +16,51 @@ except ValueError as ex:
 # TODO: v1, v2c, v3 specific
 data_validator = {
     "type": "object",
+    "enum_types": {
+        "VersionNumber": {
+                "type": "string",
+                "enum": [ "1", "2c", "3"]
+        },
+        "AuthProtocol": {
+            "type": "string",
+            "enum": [ "MD5", "SHA"]
+        },
+        "PrivProtocol": {
+            "type": "string",
+            "enum": [ "AES", "AES128", "AES192", "AES256", "DES", "3DES" ]
+        },
+        "SecurityLevel": {
+            "type": "string",
+            "enum": [ "noAuthNoPriv", "authNoPriv", "authPriv"]
+        }
+    },
     "properties": {
         "schema": { "$ref": "#/pScheduler/Cardinal" },
-        "version": { "type": "string", 
-                     "enum": ["1", "2c", "3"]
-                   },
+        "version": { "$ref": "#/enum_types/Version" },
         "dest": { "$ref": "#/pScheduler/String" },
         "_community": { "$ref": "#/pScheduler/String" },
         "enterprise-oid": { "$ref": "#/pScheduler/String" },
         "agent": { "$ref": "#/pScheduler/String" },
-        "trap-type": { "$ref": "#/pScheduler/String" },
-        "specific-type": { "$ref": "#/pScheduler/String" },
-        "uptime": { "$ref": "#/pScheduler/Integer" }
+        "trap-oid": { "$ref": "#/pScheduler/String" },
+        "specific-trap": { "$ref": "#/pScheduler/String" },
+        "uptime": { "$ref": "#/pScheduler/Integer" },
+        "trap-varbinds": { "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "oid": { "$ref": "#/pScheduler/String" },
+                                    "value": { "$ref": "#/pScheduler/String" }
+                                },
+                                "additionalProperties": False
+                            }
+                          },
+        "instance-index": { "$ref": "#/pScheduler/Integer" },
+        "security-name":   { "$ref": "#/pScheduler/String" },
+        "auth-protocol":   { "$ref": "#/local/AuthProtocol" },
+        "priv-protocol":   { "$ref": "#/local/PrivProtocol" },
+        "_auth-key":       { "$ref": "#/pScheduler/String" },
+        "_priv-key":       { "$ref": "#/pScheduler/String" },
+        "security-level":  { "$ref": "#/local/SecurityLevel" },
     },
     "required": ["dest", "_community", "version", "mib"],
     "additionalProperties": False

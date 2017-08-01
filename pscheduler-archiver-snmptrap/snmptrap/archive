@@ -3,16 +3,46 @@
 # Send an SNMP trap to a destination.
 #
 
-# this works with raw pscheduler output, no transforms
-# NEEDS: error handling
+# TODO: error handling
 
 import pscheduler
-import syslog
 from pysnmp.hlapi import *
 import re
 
-# build object for snmp engine
-def build_object(oid):
+# check for missing required fields
+def missing_input(data_json, test_type, level):
+
+    try:
+        # general fields
+        version = data_json['version']
+        dest = data_json['dest']
+        oid = data_json['oid']
+        polls = data_json['polls']
+        if version in ['1', '2c']:
+            community = data_json['_community']
+        else:
+            security_name = data_json['security-name']
+            security_level = data_json['security-level'].lower()
+
+            # authentication and encryption
+            if security_level == 'authpriv':
+                auth_protocol = data_json['auth-protocol']
+                auth_key = data_json['_auth-key']
+                priv_protocol = data_json['priv-protocol']
+                priv_key = data_json['_priv-key']
+
+            # encryption
+            if security_level == 'authnopriv':
+                auth_protocol = data_json['auth-protocol']
+                auth_key = data_json['_auth-key']
+
+        return False
+
+    except KeyError:
+        return True
+
+
+def build_tuple(oid):
 
     if re.match(r'^((\.\d)|\d)+(\.\d+)*$', oid) is None:
         try:
@@ -21,35 +51,95 @@ def build_object(oid):
             temp = temp[1].split('.')
             args.extend(temp)
             try:
-                obj_id = ObjectIdentity(args[0], args[1], args[2])
+                obj_id = (args[0], args[1], args[2])
             except IndexError:
-                obj_id = ObjectIdentity(args[0], args[1])
+                obj_id = (args[0], args[1])
         except IndexError:
             pscheduler.fail('Incomplete/Invalid OID')
 
     else:
-        obj_id = ObjectIdentity(item)
+        obj_id = (oid,)
 
     return obj_id
 
-# only dealing with enterpprise specific OIDs
+def get_credentials(data_json):
+
+    if data_json['version'] in [ "1", "2c" ]:
+        return CommunityData(data_json['_community'])
+    else:
+        auth_protocols = { 'sha': usmHMACSHAAuthProtocol,
+                           'md5': usmHMACMD5AuthProtocol
+                         }
+
+        priv_protocols = { 'des': usmDESPrivProtocol,
+                           '3des': usm3DESEDEPrivProtocol,
+                           'aes': usmAesCfb128Protocol,
+                           'aes128': usmAesCfb128Protocol,
+                           'aes192': usmAesCfb192Protocol,
+                           'aes256': usmAesCfb256Protocol
+                         }
+
+        if data_json['security-level'].lower() == 'noauthnopriv':
+            return UsmUserData(data_json['security-name'])
+
+        elif data_json['security-level'].lower() == 'authpriv':
+            return UsmUserData(data_json['security-name'], data_json['_auth-key'], data_json['_priv-key'],
+                                authProtocol=auth_protocols[data_json['auth-protocol'].lower()],
+                                privProtocol=priv_protocols[data_json['priv-protocol'].lower()])
+
+        elif data_json['security-level'].lower() == 'authnopriv':
+            return UsmUserData(data_json['security-name'], data_json['_auth-key'],
+                              authProtocol=auth_protocols[data_json['auth-protocol'].lower()])
+
+        else:
+            pscheduler.fail("Failed to archive: unrecognized security level: %s" % data_json['security-level'])
+
+
 def get_generator(data, metrics, oids):
 
-    # trap type: 6 with specific type
-    trap_type = '.'.join((data['enterprise-oid'], str(data['specific-type'])))
-    notification = NotificationType(ObjectIdentity(trap_type))
+    # Version 1 requires: trap oid (generic or enterprise), specific trap
+    # Version 2 only requires trap oid
+    try:
+        trap = '.'.join((data['trap-oid'], str(data['specific-type'])))
+    except KeyError:
+        trap = data['trap-oid']
+
+    notification = NotificationType(ObjectIdentity(*(build_tuple(trap))))
+    credentials = get_credentials(data)
 
     # uptime override
     try:
         uptime = data['uptime']
-        notification.addVarBinds(('1.3.6.1.2.1.1.3.0', int(data['uptime'])))
+    except KeyError:
+        # if no uptime specified, grab current local uptime
+        obj = build_tuple('DISMAN-EVENT-MIB::sysUpTimeInstance')
+        g = getCmd(SnmpEngine(),
+                  credentials,
+                  UdpTransportTarget(('localhost', 161)),
+                  ContextData(),
+                  ObjectType(ObjectIdentity(*obj)))
+        errorIndication, errorStatus, errorIndex, varBinds = next(g)
+        uptime = int(varBinds[0][1])
+    notification.addVarBinds(('1.3.6.1.2.1.1.3.0', int(uptime)))
+
+    try:
+        instance_index = data['instance-index']
+        notification._NotificationType__instanceIndex += (instance_index,)
+    except KeyError:
+        pass
+
+    try: 
+        varbinds = data['trap-varbinds']
+        for varbind in varbinds:
+            obj = build_tuple(varbind['oid'])
+            notification._NotificationType__objects[obj] = varbind['value']
     except KeyError:
         pass
 
     # agent override
     try:
         agent = data['agent']
-        notification.addVarBinds(('1.3.6.1.6.3.18.1.3.0', agent))
+        notification.addVarBinds(('1.3.6.1.6.3.18.1.3.0', str(agent)))
     except KeyError:
         pass
 
@@ -62,10 +152,11 @@ def get_generator(data, metrics, oids):
 
     # add managed object information
     for enum, item in enumerate(metrics):
-        notification.addVarBinds((build_object(oids[enum]), item['value']))
+        obj = build_tuple(oids[enum])
+        notification.addVarBinds((ObjectIdentity(*obj), item['value']))
 
 	return sendNotification(SnmpEngine(),
-        					CommunityData(data['_community']),
+        					credentials,
         					UdpTransportTarget((data['dest'], 162)),
         					ContextData(),
         					'trap',
@@ -83,7 +174,7 @@ errorIndication, errorStatus, errorIndex, varBinds = next(g)
 if errorIndication:
     succeeded = False
     data = None
-    error = "snmptrap returned an error: %s" % errorIndication
+    error = "Failed to archive: %s" % errorIndication
 else:
     succeeded = True
     data = None
