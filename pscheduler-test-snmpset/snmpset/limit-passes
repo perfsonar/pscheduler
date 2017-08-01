@@ -39,7 +39,7 @@ errors = []
 # Query host, host-node, oid, dest, community, version, protocol, timeout, security-name, auth-protocol, priv-protocol, auth-key, priv-key, security-level, context
 #
 
-for value in [ "host", "host-node", "oid", "dest", "community", "version", "protocol", "timeout", "security-name", "auth-protocol", "priv-protocol", "auth-key", "priv-key", "security-level", "context", "vartype", "varvalue" ]:
+for value in [ "host", "host-node", "dest", "community", "version", "protocol", "timeout", "security-name", "auth-protocol", "priv-protocol", "auth-key", "priv-key", "security-level", "context", "oid", "type", "value" ]:
     try:
         test = limit[value]
         match = pscheduler.StringMatcher(test["match"])
@@ -49,14 +49,26 @@ for value in [ "host", "host-node", "oid", "dest", "community", "version", "prot
         invert = test["invert"]
     except KeyError:
         invert = False
-    in_limit = match.matches(spec[value])
-    if in_limit or (invert and in_limit):
-        try:
-            errors.append(test["fail-message"])
-        except KeyError:
-            errors.append("%s does not match limit" % (value.capitalize()))
-        except KeyError:
-            pass  # Don't care if not there.
+
+    if value in [ "oid", "type", "value" ]:
+        for var in range(len(spec["oidargs"])):
+            in_limit = match.matches(spec["oidargs"][var][value])
+            if in_limit or (invert and in_limit):
+                try:
+                    errors.append(test["fail-message"])
+                except KeyError:
+                    errors.append("%s does not match limit" % (value.capitalize()))
+                except KeyError:
+                    pass  # Don't care if not there.
+    else:
+        in_limit = match.matches(spec[value])
+        if in_limit or (invert and in_limit):
+            try:
+                errors.append(test["fail-message"])
+            except KeyError:
+                errors.append("%s does not match limit" % (value.capitalize()))
+            except KeyError:
+                pass  # Don't care if not there.
 
 #
 # Finish up
