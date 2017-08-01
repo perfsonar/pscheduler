@@ -36,8 +36,7 @@ class TestIso8601(PschedTestBase):
         self.assertEqual(now, isodt)
 
         iso = 'bogusness'
-        with self.assertRaises(ValueError):
-            iso8601_as_datetime(iso)
+        self.assertRaises(ValueError, iso8601_as_datetime, iso)
 
     def test_delta(self):
         """iso delta conversion"""

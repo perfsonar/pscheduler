@@ -10,8 +10,6 @@ FILES=\
 	limit-is-valid \
 	limit-passes \
 	participants \
-	pscheduler-schema-latency-request.json \
-	pscheduler-schema-latency-response.json \
 	result-format \
 	spec-format \
 	spec-is-valid \

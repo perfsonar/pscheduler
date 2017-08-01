@@ -208,7 +208,7 @@ if hostnames and len(ips) > 0:
     for hop in traced_hops:
         try:
             ip = hop['ip']
-            if ip in revmap:
+            if ip in revmap and revmap[ip] is not None:
                 hop.update({ 'hostname': revmap[ip] })
         except KeyError:
             # No IP is fine.

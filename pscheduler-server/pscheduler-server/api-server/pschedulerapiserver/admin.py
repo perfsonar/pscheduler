@@ -87,7 +87,7 @@ def schedule_horizon():
 
 
 @application.route("/clock", methods=['GET'])
-def time():
+def clock():
     """Return clock-related information"""
 
     try:

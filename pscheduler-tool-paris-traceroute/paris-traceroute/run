@@ -289,7 +289,9 @@ if hostnames:
     hosts = pscheduler.dns_bulk_resolve(ips, reverse=True, threads=len(ips))
     for index, hop in enumerate(traced_hops):
         try:
-            traced_hops[index]['hostname'] = hosts[hop['ip']]
+            ip = hop['ip']
+            if ip in hosts and hosts[ip] is not None:
+                traced_hops[index]['hostname'] = hosts[ip]
         except KeyError:
             pass
 

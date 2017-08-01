@@ -1,10 +1,9 @@
 #!/usr/bin/python
 #
-# Checker for 'thrughput' task limits
+# Checker for 'throughput' task limits
 #
 
 import pscheduler
-import validate
 
 logger = pscheduler.Log(quiet=True)
 
@@ -14,123 +13,42 @@ logger = pscheduler.Log(quiet=True)
 
 def check_limit(input_json):
 
-    errors = []
-
     spec = input_json["spec"]
-    valid, message = validate.spec_is_valid(spec)
-    if not valid:
-        raise ValueError("Invalid test spec: %s" % message)
-
     limit = input_json["limit"]
-    valid, message = validate.limit_is_valid(limit)
-    if not valid:
-        raise ValueError("Invalid limit: %s" % message)
-
-
-    #
-    # Evaluate everything
-    #
-
-
-
     logger.debug("limit = %s" % limit)
 
+    #
+    # Handle source, dest and endpoint limits
+    #
+    errors = pscheduler.check_endpoint_limits(limit, spec)
     
     #
-    # Bandwidth
+    # Handle numeric ranges
     #
-    
-    
-    try:
-        nrange = pscheduler.NumericRange(limit["bandwidth"]["range"])
+    numeric_ranges = [
+        ("bandwidth", "Bandwidth"),
+        ("parallel", "Parallel"),
+    ]
+    for nr in numeric_ranges:
+        errors += pscheduler.check_numeric_limit(limit, spec, nr[0], description=nr[1])
         
-        # doesn't really make sense to invert bandwidth I think?
-        contains, message = nrange.contains(spec["bandwidth"])
-        if not contains:
-            errors.append("Bandwidth %s" % message)
-
-    except KeyError:
-        pass  # Don't care if not there.
-
-
     #
     # Duration
     #
-    
-    try:
-        nrange = pscheduler.DurationRange(limit["duration"]["range"])
-        
-    # doesn't really make sense to invert duration I think?
-        contains, message = nrange.contains(spec["duration"])
-        if not contains:
-            errors.append("Duration %s" % message)
-
-    except KeyError:
-        pass  # Don't care if not there.
-
+    errors += pscheduler.check_duration_limit(limit, spec, 'duration', description='Duration')
 
     #
     # Allow UDP or not
     #
-   
-    try:
-        limit_udp = limit['udp']['match']
-
-        spec_udp = spec.get('udp', False)
-
-        if spec_udp != limit_udp:
-            errors.append("%s testing not allowed"
-                          % ("UDP" if spec_udp else "TCP"))
-    except KeyError:
-        pass  # Not there?  Don't care.
+    errors += pscheduler.check_boolean_limit(limit, spec, 'udp', description='UDP')
         
-
-
     #
     # Restrict ip-version
     #
+    errors += pscheduler.check_enum_limit(limit, spec, 'ip-version', description='IP Version')
     
-    try:
-        match = pscheduler.EnumMatcher(limit["ip-version"])
-        try:
-            invert = limit["ip-version"]["invert"]
-        except KeyError:
-            invert = False
-
-        in_limit = match.contains(spec["ip-version"])
-        if not in_limit or (invert and in_limit):
-            try:
-                errors.append(limit["ip-version"]["fail-message"])
-            except KeyError:
-                errors.append("IPv%d is not allowed" % spec["ip-version"])
-
-
-    except KeyError:
-        pass  # Not there?  Don't care.
-
-
-    #
-    # Restrict number of parallel streams
-    #
-
-    try:
-        match = pscheduler.NumericRange(limit["parallel"]['range'])
-
-        # no sense to invert this
-        contains, message = match.contains(spec["parallel"])
-
-        if not contains:
-            try:
-                errors.append(limit["parallel"]["fail-message"])
-            except KeyError:
-                errors.append("Parallel setting of %s is not allowed" % spec["parallel"])
-
-    except KeyError:
-        pass  # Not there?  Don't care.
-
 
     return errors
-
 
 try:
     json = pscheduler.json_load(max_schema=1)
@@ -147,53 +65,3 @@ if errors:
 pscheduler.succeed_json(result)
 
 
-
-# have to comment out the above block to make this work, TODO fix this
-if __name__ == "__main__":
-    limit = {
-        'duration': {
-            'range': {
-                'upper': 'PT60S', 'lower': 'PT10S'
-                }
-            },
-        'bandwidth': {
-            'range': {
-                'upper': '900M', 'lower': '10M'
-                }
-            },
-        'udp': {
-            'match': False
-            },
-        'ip-version': {
-            'enumeration': [6]
-            },
-        'parallel': {
-            'range': {
-                'upper': 5, 'lower': 1
-                }
-            }
-        }
-
-    spec = {
-        "dest": "10.0.2.4",
-        "source": "10.0.2.15",
-        "ip-version": 6,
-        "schema": 1,
-        "parallel": 3
-    }
-
-    result = check_limit({"spec": spec, "limit": limit})
-    print "Should be true:", (result == [])
-
-
-    spec['bandwidth'] = 10 * (1000 * 1000 * 1000)
-    result = check_limit({"spec": spec, "limit": limit})
-    print "Should be false:", (result == [])
-    print result
-
-    del spec['bandwidth']
-    spec['parallel'] = 100
-    print spec
-    result = check_limit({"spec": spec, "limit": limit})
-    print "Should be false:", (result == [])
-    print result
