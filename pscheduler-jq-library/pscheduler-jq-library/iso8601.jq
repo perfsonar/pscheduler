@@ -26,3 +26,33 @@ def duration_as_seconds(value):
     invalid_duration(value)
   end
   ;
+
+
+
+# Return an object with a timestamp's disassembled components
+def timestamp_parsed(timestamp):
+  timestamp
+  | capture("^(
+             (?<year>([0-9]{4,}))
+             -(?<month>([0-9]{1,2}))
+             -(?<day>([0-9]{1,2}))
+             (T
+               (?<hour>([0-9]{1,2}))
+               :(?<minute>([0-9]{1,2}))
+               (:(?<second>([0-9]{1,2})))?
+               (
+                (?<z>(Z))
+                |((?<offset_hr>[-+][0-9]{2})(:(?<offset_min>[0-9]{2}))?)
+               )?
+             )?
+            )|(?<invalid>.*)$"; "x")
+  | if .invalid != null
+    then error("Invalid timestamp '\(.invalid)'")
+    else .
+    end
+  | if .z != null then .offset_hr = "0" else . end
+  | if .z != null then .offset_min = "0" else . end
+  | del(.z)
+  | with_entries(select(.value != null ))
+  | .
+  ;
