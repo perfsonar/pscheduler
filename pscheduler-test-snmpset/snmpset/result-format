@@ -29,7 +29,7 @@ if format == 'text/plain':
    print 'Time: %s\n' % result['time']
    print 'Data:'
    for i in range(len(result['data'])):
-       print 'OID: %s\t' % spec['oid'][i]
+       print 'OID: %s\t' % spec['oidargs'][i]['oid']
        try:
            print 'Type: %s\t' % result['data'][i]['type']
            print 'Value: %s\n' % result['data'][i]['value']
@@ -49,7 +49,7 @@ elif format == 'text/html':
     print '    </tr>'
     for index, item in enumerate(result['data']):
         print '<tr>'
-        print '    <td>OID: %s\t </td>' % spec['oid'][index]
+        print '    <td>OID: %s\t </td>' % spec['oidargs'][index]['oid']
         try:
             print '<td>Type: %s\t </td>' % item['type']
             print '<td>Value: %s\n</td>' % item['value']

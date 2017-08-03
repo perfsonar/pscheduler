@@ -14,25 +14,11 @@ if not valid:
     pscheduler.fail(message)
 
 # concatenate oids
-oid_list = spec['oid']
+oid_list = spec['oidargs']
 oid_str = ""
 for item in oid_list:
     oid_str = "%s,%s" % (oid_str, item)
-spec['oid'] = oid_str
-
-# concatenate vartypes
-vartype_list = spec['vartype']
-vartype_str = ""
-for item in vartype_list:
-    vartype_str = "%s,%s" % (vartype_str, item)
-spec['vartype'] = vartype_str
-
-# concatenate varvalues
-varvalue_list = spec['varvalue']
-varvalue_str = ""
-for item in varvalue_list:
-    varvalue_str = "%s,%s" % (varvalue_str, item)
-spec['varvalue'] = varvalue_str
+spec['oidargs'] = oid_str
 
 result = pscheduler.speccli_build_args(spec, 
                                        strings=[
@@ -40,7 +26,7 @@ result = pscheduler.speccli_build_args(spec,
         ( 'host', 'host' ),
         ( 'host-node', 'host-node' ),
         ( 'dest', 'dest' ),
-        ('oid', 'oid'),
+        ('oidargs', 'oidargs'),
         ( 'protocol', 'protocol'),
         ('community', 'community'),
         ('version', 'version'),
@@ -52,8 +38,6 @@ result = pscheduler.speccli_build_args(spec,
         ( 'priv-key', 'priv-key'),
         ( 'security-level', 'security-level'),
         ( 'context', 'context'),
-        ( 'vartype', 'vartype'),
-        ( 'varvalue', 'varvalue')
         ])
 
 

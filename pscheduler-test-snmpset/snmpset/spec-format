@@ -24,23 +24,11 @@ if not valid:
     pscheduler.fail(message)
 
 oid_str = ""
-for i, oid in enumerate(json['oid']):
+for i, oid in enumerate(json['oidargs']):
     oid_str += oid
-    if i != len(json['oid']) - 1:
+    if i != len(json['oidargs']) - 1:
         oid_str += ', '
-json['oid'] = oid_str
-
-for i, vartype in enumerate(json['vartype']):
-    vartype_str += vartype
-    if i != len(json['vartype']) - 1:
-        vartype_str += ', '
-json['vartype'] = vartype_str
-
-for i, varvalue in enumerate(json['varvalue']):
-    varvalue_str += varvalue
-    if i != len(json['varvalue']) - 1:
-        varvalue_str += ', '
-json['varvalue'] = varvalue_str
+json['oidargs'] = oid_str
 
 if format == 'text/plain':
 

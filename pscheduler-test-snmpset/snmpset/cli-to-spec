@@ -1,4 +1,5 @@
 #!/usr/bin/python
+
 #
 # Convert command-line options to a test specification
 #
@@ -34,12 +35,15 @@ else:
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """Examples:
 
-  task snmpget --version 2c --community public example.net
-    text
+  task snmpset --version 2c --community public --dest example.net
+  --oidargs "sysLocation.0:s:'Ann Arbor'","sysContact.0:s:'John Smith'"
 
 """
 )
 
+v1args = [ '--community' ]
+v3args = [ '--security-name', '--auth-protocol', '--priv-protocol', '--auth-key',
+'--priv-key', '--security-level', '--context', ]
 
 opt_parser.add_option("--host",
                       help="Host to run the test.",
@@ -61,17 +65,10 @@ opt_parser.add_option("--version",
                       action="store", type="string",
                       dest="version")
 
-opt_parser.add_option("--oid",
-                      help="""
-                        List of OIDs to be set, separated by a comma without spaces.
-
-                        Example:
-
-                        --oid sysLocation.0,ipForwarding.1
-
-                        """,
+opt_parser.add_option("--oidargs",
+                      help="OID, type, and value",
                       action="store", type="string",
-                      dest="oid")
+                      dest="oidargs")
 
 opt_parser.add_option("--protocol",
                       help="Transport specifier (tcp|udp)",
@@ -83,86 +80,88 @@ opt_parser.add_option("--timeout",
                       action="store", type="string",
                       dest="timeout")
 
-opt_parser.add_option("--vartype",
-                      help="""
-                        List of variable types to be set, in the same order as the specified
-                        oids themselves. Separated by a comma without spaces.
-
-                        Example:
-
-                        --vartype s,i 
-
-                        """,
-                      action="store", type="string",
-                      dest="vartype")
-
-opt_parser.add_option("--varvalue",
-                      help="""
-                        List of values to set the oids to, in the same order as the specified
-                        oids themselves. Separated by a comma without spaces.
-
-                        Example:
-
-                        --varvalue Michigan,3 
-
-                        """,
-                      action="store", type="string",
-                      dest="varvalue")
-
-
 # snmp v3 specific options
-if '3' in args:
-   version = 3
-   opt_parser.add_option("--security-name",
+
+opt_parser.add_option("--security-name",
                       help="Security Name",
                       action="store", type="string",
                       dest="security_name") 
-   opt_parser.add_option("--auth-protocol",
+opt_parser.add_option("--auth-protocol",
                       help="Authentication Protocol (md5|sha)",
                       action="store", type="string",
                       dest="auth_protocol")
 
-   opt_parser.add_option("--priv-protocol",
+opt_parser.add_option("--priv-protocol",
                       help="Privacy Protocol (des|aes)",
                       action="store", type="string",
                       dest="priv_protocol")
 
-   opt_parser.add_option("--auth-key",
+opt_parser.add_option("--auth-key",
                       help="Authentication Passphrase",
                       action="store", type="string",
                       dest="auth_key")
 
-   opt_parser.add_option("--priv-key",
+opt_parser.add_option("--priv-key",
                       help="Privacy Passphrase",
                       action="store", type="string",
                       dest="priv_key")
 
-   opt_parser.add_option("--security-level",
+opt_parser.add_option("--security-level",
                       help="Security Level (noAuthNoPriv|authNoPriv|authPriv)",
                       action="store", type="string",
                       dest="security_level")
 
-   opt_parser.add_option("--context",
+opt_parser.add_option("--context",
                       help="Context Name",
                       action="store", type="string",
                       dest="context")
 
-# snmp v1 and v2c specific options
-else:
-   version = 1
-   opt_parser.add_option("--community",
+#Not v3
+
+opt_parser.add_option("--community",
                           help="Community string",
                           action="store", type="string",
                           dest="community")
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
+if '3' in args:
+    version = 3
+    for item in v1args:
+        if item in args:
+            pscheduler.fail("Args do not apply to this SNMP version.")
+
+if '2c' in args:
+    version = 1
+    for item in v3args:
+        if item in args:
+            pscheduler.fail("Args do not apply to this SNMP version.")
+
+if '1' in args:
+    version = 1
+    for item in v3args:
+        if item in args:
+            pscheduler.fail("Args do not apply to this SNMP version.")
+
 if len(remaining_args) != 0:
    pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
-
 result = { 'schema': 1 }
 
+#oidargs manipulation
+
+s = options.oidargs.split(',')
+sortedargs = []
+for item in s:
+    sortedargs.append(item.split(':'))
+
+dictargs = []
+for item in sortedargs:
+    d={}
+    d['oid'] = item[0]
+    d['type'] = item[1]
+    d['value'] = item[2]
+    dictargs.append(d)
 
 if options.host is not None:
    result['host'] = options.host
@@ -176,20 +175,14 @@ if options.dest is not None:
 if options.version is not None:
    result['version'] = options.version
 
-if options.oid is not None:
-   result['oid'] = options.oid.split(',')
+if options.oidargs is not None:
+   result['oidargs'] = dictargs
 
 if options.protocol is not None:
    result['protocol'] = options.protocol
 
 if options.timeout is not None:
    result['timeout'] = options.timeout
-
-if options.vartype is not None:
-   result['vartype'] = options.vartype.split(',')
-
-if options.varvalue is not None:
-   result['varvalue'] = options.varvalue.split(',')
 
 if version == 1:
   if options.community is not None:
@@ -216,23 +209,5 @@ else:
 
     if options.context is not None:
       result['context'] = options.context
-
-# convert OIDs to numeric form
-# argv = ["snmptranslate", "-On", "-IR"]
-# for oid in result['oid']:
-#     match = re.match("^((\.\d)|\d)+(\.\d+)*$", oid)
-#     if match is None: 
-#         argv.append(oid) 
-
-# if len(argv) > 3:
-#     status, stdout, stderror = pscheduler.run_program(argv)
-#     if status:
-#         pscheduler.fail('Translation Error: Try using only numeric OIDs')
-
-#     result['oid'] = []
-#     stdout = stdout.split("\n")
-#     for oid in stdout:
-#         if len(oid) > 0:
-#             result['oid'].append(oid)
 
 pscheduler.succeed_json(result)

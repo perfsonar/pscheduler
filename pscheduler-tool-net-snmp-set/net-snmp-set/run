@@ -16,7 +16,7 @@ input = pscheduler.json_load(exit_on_error=True)
 try:
     version = input['test']['spec']['version']
     dest = input['test']['spec']['dest']
-    oid = input['test']['spec']['oid']
+    oid = input['test']['spec']['oidargs']
     if version in ['1', '2c']:
         community = input['test']['spec']['_community']
 
@@ -68,21 +68,34 @@ if protocol != None:
     argv.append(str(protocol) + ':' + input['test']['spec'][key])
 else:
     argv.append(input['test']['spec']['dest'])
-     
+
+
 #add set args in order
 counter = 0
-for item in range(len(input['test']['spec']['oid'])):
-   try:
-       argv.append(input['test']['spec']['oid'][counter])
-       argv.append(input['test']['spec']['vartype'][counter])
-       argv.append(input['test']['spec']['varvalue'][counter])
-       counter += 1
-   except KeyError:
-       pscheduler.fail('Missing or inconsistent number of oid(s), vartype(s), or varvalue(s)')
-   except IndexError:
-       pscheduler.fail('Missing or inconsistent number of oid(s), vartype(s), or varvalue(s)')
+for item in input['test']['spec']['oidargs']:
+    try:
+        argv.append(item['oid'])
+        argv.append(item['type'])
+        argv.append(item['value'])
+    except KeyError:
+        pscheduler.fail('Missing or incorrectly formatted input.')
+    except IndexError:
+        pscheduler.fail('Missing or incorrectly formatted input.')
 
-#print argv
+"""
+for item in range(len(input['test']['spec']['oidargs'])):
+   try:
+       arg = input['test']['spec']['oidargs'][counter].split(" ")
+       for item in arg:
+           argv.append(item)
+       counter += 1
+
+   except KeyError:
+       pscheduler.fail('Missing input.')
+   except IndexError:
+       pscheduler.fail('Missing input.')
+       """
+
 status, stdout, stderr = pscheduler.run_program(argv, timeout=10)
 
 if status:
