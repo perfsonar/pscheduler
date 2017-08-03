@@ -3,7 +3,7 @@
     "schema": 1,
     "name": "snmptrap",
     "description": "Send an SNMP trap to a destination.",
-    "version": "1.0",
+    "version": "1.0.0.3",
 
     "maintainer": {
         "name": "perfSONAR Development Team",

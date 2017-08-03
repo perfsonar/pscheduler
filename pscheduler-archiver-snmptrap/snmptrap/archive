@@ -3,65 +3,172 @@
 # Send an SNMP trap to a destination.
 #
 
-# this works with raw pscheduler output, no transforms
-
 import pscheduler
-import syslog
+import pysnmp
+from pysnmp.hlapi import *
+import re
+
+# check for missing required fields
+def missing_input(data_json, test_type, level):
+
+    try:
+        # general fields
+        dest = data_json['dest']
+        trap_oid = data_json['trap-oid']
+    except KeyError:
+        return True
+
+    try:
+        community = data_json['_community']
+    except KeyError:
+        try:
+            security_name = data_json['security-name']
+            security_level = data_json['security-level'].lower()
+
+            # authentication and encryption
+            if security_level == 'authpriv':
+                auth_protocol = data_json['auth-protocol']
+                auth_key = data_json['_auth-key']
+                priv_protocol = data_json['priv-protocol']
+                priv_key = data_json['_priv-key']
+
+            # encryption
+            if security_level == 'authnopriv':
+                auth_protocol = data_json['auth-protocol']
+                auth_key = data_json['_auth-key']
+        except KeyError:
+            return True
+
+    except KeyError:
+        return True
+
+    return False
+
+
+def build_tuple(oid):
+
+    if re.match(r'^((\.\d)|\d)+(\.\d+)*$', oid) is None:
+        try:
+            temp = oid.split('::') # change this
+            args = [temp[0]]
+            temp = temp[1].split('.')
+            args.extend(temp)
+            try:
+                obj_id = (args[0], args[1], args[2])
+            except IndexError:
+                obj_id = (args[0], args[1])
+        except IndexError:
+            pscheduler.fail('Incomplete/Invalid OID')
+
+    else:
+        obj_id = (oid,)
+
+    return obj_id
+
+def get_credentials(data_json):
+
+    try:
+        return CommunityData(data_json['_community'])
+    except KeyError:
+        auth_protocols = { 'sha': usmHMACSHAAuthProtocol,
+                           'md5': usmHMACMD5AuthProtocol
+                         }
+
+        priv_protocols = { 'des': usmDESPrivProtocol,
+                           '3des': usm3DESEDEPrivProtocol,
+                           'aes': usmAesCfb128Protocol,
+                           'aes128': usmAesCfb128Protocol,
+                           'aes192': usmAesCfb192Protocol,
+                           'aes256': usmAesCfb256Protocol
+                         }
+
+        if data_json['security-level'].lower() == 'noauthnopriv':
+            return UsmUserData(data_json['security-name'])
+
+        elif data_json['security-level'].lower() == 'authpriv':
+            return UsmUserData(data_json['security-name'], data_json['_auth-key'], data_json['_priv-key'],
+                                authProtocol=auth_protocols[data_json['auth-protocol'].lower()],
+                                privProtocol=priv_protocols[data_json['priv-protocol'].lower()])
+
+        elif data_json['security-level'].lower() == 'authnopriv':
+            return UsmUserData(data_json['security-name'], data_json['_auth-key'],
+                              authProtocol=auth_protocols[data_json['auth-protocol'].lower()])
+
+        else:
+            pscheduler.fail("Failed to archive: unrecognized security level: %s" % data_json['security-level'])
+
+
+def get_generator(data, metrics, oids):
+
+    trap_object = build_tuple(data['trap-oid'])
+
+    notification = NotificationType(ObjectIdentity(*trap_object))
+    credentials = get_credentials(data)
+
+    try:
+        instance_index = data['instance-index']
+        notification._NotificationType__instanceIndex += (instance_index,)
+    except KeyError:
+        pass
+
+    try: 
+        varbinds = data['trap-varbinds']
+        for varbind in varbinds:
+            obj = build_tuple(varbind['oid'])
+            notification._NotificationType__objects[obj] = varbind['value']
+    except KeyError:
+        pass
+
+    return sendNotification(SnmpEngine(),
+        					credentials,
+        					UdpTransportTarget((data['dest'], 162)),
+        					ContextData(),
+        					'trap',
+        					notification
+    						)
+
+def archive(input_json):
+
+    try:
+        g = get_generator(json['data'], json['result']['data'], json['result']['oid'])
+        errorIndication, errorStatus, errorIndex, varBinds = next(g)
+        if errorIndication:
+            succeeded = False
+            data = None
+            error = "Failed to archive: %s" % str(errorIndication).strip('\n')
+        else:
+            succeeded = True
+            data = None
+            error = None
+
+    except (pysnmp.error.PySnmpError, pysnmp.smi.error.NoSuchObjectError) as e:
+        succeeded = False
+        data = None
+        error = "Failed to archive: %s" % str(e).strip('\n')
+
+    output_json = {'succeeded': succeeded,
+                    'data': data,
+                    'error': error}
+
 
 json = pscheduler.json_load(exit_on_error=True, max_schema=1)
 
 try:
-	uptime = json['data']['uptime']
-except KeyError:
-    uptime = '\'\''
+    g = get_generator(json['data'], json['result']['data'], json['result']['oid'])
+    errorIndication, errorStatus, errorIndex, varBinds = next(g)
+    if errorIndication:
+        succeeded = False
+        data = None
+        error = "Failed to archive: %s" % str(errorIndication).strip('\n')
+    else:
+        succeeded = True
+        data = None
+        error = None
 
-type_dict = { 'integer': 'i',
-			  'counter32': 'c',
-			  'string': 's',
-			  'hex-string': 'x',
-			  'oid': 'o',
-			  'timeticks': 't',
-			  'ipaddress': 'a' }
-
-# without sudo, must be run as root
-argv = ['snmptrap',
-		'-v', json['data']['version'],
-		'-c', json['data']['_community'],
-		json['data']['dest'],
-		uptime,
-		json['data']['mib']
-		]
-
-# change this once transforms are ready
-# for enum, item in enumerate(json['result']['data']):
-for enum, item in enumerate(json['result']['result']['data']):
-	try:
-		obj_type = type_dict[item["type"].lower()]
-		# this should be used once transforms are supported
-		# argv.extend((json['result']['oid'][enum], obj_type, str(item['value'])))
-		argv.extend((json['result']['test']['spec']['oid'][enum], obj_type, str(item['value'])))
-		
-	except KeyError:
-		pscheduler.succeed_json({
-			"succeeded": False,
-			"error": "Invalid data type: %s" % item['type']
-    	})
-
-try:
-	status, stdout, stderr = pscheduler.run_program(argv)
-	succeeded = True
-	data = None
-	error = None
-except Exception as e:
+except (pysnmp.error.PySnmpError, pysnmp.smi.error.NoSuchObjectError) as e:
     succeeded = False
     data = None
-    error = "The snmptrap command failed during execution." 
-
-if status:
-    data = None
-    succeeded = False
-    error = "snmpget returned an error: \n%s" % stderr.strip('\n')
-
+    error = "Failed to archive: %s" % str(e).strip('\n')
 
 pscheduler.succeed_json({'succeeded': succeeded,
 						 'data': data,
