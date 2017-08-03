@@ -157,7 +157,7 @@ for item in spec['oid']:
     oid_tuple += (ObjectType(build_object(item)),)
 
 # n comparisons require n+1 get requests
-while num_polls < (spec['polls'] + 1):
+while num_polls < spec['polls']:
 
     try:
         g = get_generator(spec, oid_tuple, level)
@@ -203,8 +203,11 @@ while num_polls < (spec['polls'] + 1):
                     entry['delta'] = value - data[enum][num_polls - 1]['value']
                     entry['timedelta'] = this_poll - last_poll
                 # string types will raise this exception, only integer values have delta values
-                except (TypeError, IndexError, NameError):
+                except (TypeError, NameError):
                     pass
+                except IndexError:
+                    entry['delta'] = value - data[enum][0]['value']
+                    entry['timedelta'] = this_poll - last_poll
         
         try:
             data[enum].append(entry)
@@ -215,6 +218,9 @@ while num_polls < (spec['polls'] + 1):
 
     if test_type == 'snmpgetbgm':
         delimiter = pscheduler.api_result_delimiter()
+        if len(data) > 1:
+            del data[0]
+
         results = {
             'succeeded': True,
             'result': {
@@ -228,7 +234,6 @@ while num_polls < (spec['polls'] + 1):
         print pscheduler.json_dump(results)
         print delimiter
         sys.stdout.flush()
-        data = []
 
     if spec['polls'] == 1:
         break

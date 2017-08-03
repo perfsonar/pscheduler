@@ -63,7 +63,7 @@ opt_parser.add_option("--period",
                         dest="period", default=1)
 
 opt_parser.add_option("--polls",
-                        help="Number of delta values desired.",
+                        help="Number of polls.",
                         action="store", type="int",
                         dest="polls", default=1)
 
@@ -101,7 +101,7 @@ opt_parser.add_option("--auth-protocol",
                   dest="auth_protocol")
 
 opt_parser.add_option("--priv-protocol",
-                  help="Privacy Protocol (des|aes)",
+                  help="Privacy Protocol (des|3des|aes|aes128|aes192|aes256)",
                   action="store", type="string",
                   dest="priv_protocol")
 
