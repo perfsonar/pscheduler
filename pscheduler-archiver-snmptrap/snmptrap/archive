@@ -3,9 +3,8 @@
 # Send an SNMP trap to a destination.
 #
 
-# TODO: error handling
-
 import pscheduler
+import pysnmp
 from pysnmp.hlapi import *
 import re
 
@@ -14,13 +13,15 @@ def missing_input(data_json, test_type, level):
 
     try:
         # general fields
-        version = data_json['version']
         dest = data_json['dest']
-        oid = data_json['oid']
-        polls = data_json['polls']
-        if version in ['1', '2c']:
-            community = data_json['_community']
-        else:
+        trap_oid = data_json['trap-oid']
+    except KeyError:
+        return True
+
+    try:
+        community = data_json['_community']
+    except KeyError:
+        try:
             security_name = data_json['security-name']
             security_level = data_json['security-level'].lower()
 
@@ -35,18 +36,20 @@ def missing_input(data_json, test_type, level):
             if security_level == 'authnopriv':
                 auth_protocol = data_json['auth-protocol']
                 auth_key = data_json['_auth-key']
-
-        return False
+        except KeyError:
+            return True
 
     except KeyError:
         return True
+
+    return False
 
 
 def build_tuple(oid):
 
     if re.match(r'^((\.\d)|\d)+(\.\d+)*$', oid) is None:
         try:
-            temp = oid.split('::')
+            temp = oid.split('::') # change this
             args = [temp[0]]
             temp = temp[1].split('.')
             args.extend(temp)
@@ -64,9 +67,9 @@ def build_tuple(oid):
 
 def get_credentials(data_json):
 
-    if data_json['version'] in [ "1", "2c" ]:
+    try:
         return CommunityData(data_json['_community'])
-    else:
+    except KeyError:
         auth_protocols = { 'sha': usmHMACSHAAuthProtocol,
                            'md5': usmHMACMD5AuthProtocol
                          }
@@ -97,30 +100,10 @@ def get_credentials(data_json):
 
 def get_generator(data, metrics, oids):
 
-    # Version 1 requires: trap oid (generic or enterprise), specific trap
-    # Version 2 only requires trap oid
-    try:
-        trap = '.'.join((data['trap-oid'], str(data['specific-type'])))
-    except KeyError:
-        trap = data['trap-oid']
+    trap_object = build_tuple(data['trap-oid'])
 
-    notification = NotificationType(ObjectIdentity(*(build_tuple(trap))))
+    notification = NotificationType(ObjectIdentity(*trap_object))
     credentials = get_credentials(data)
-
-    # uptime override
-    try:
-        uptime = data['uptime']
-    except KeyError:
-        # if no uptime specified, grab current local uptime
-        obj = build_tuple('DISMAN-EVENT-MIB::sysUpTimeInstance')
-        g = getCmd(SnmpEngine(),
-                  credentials,
-                  UdpTransportTarget(('localhost', 161)),
-                  ContextData(),
-                  ObjectType(ObjectIdentity(*obj)))
-        errorIndication, errorStatus, errorIndex, varBinds = next(g)
-        uptime = int(varBinds[0][1])
-    notification.addVarBinds(('1.3.6.1.2.1.1.3.0', int(uptime)))
 
     try:
         instance_index = data['instance-index']
@@ -136,26 +119,7 @@ def get_generator(data, metrics, oids):
     except KeyError:
         pass
 
-    # agent override
-    try:
-        agent = data['agent']
-        notification.addVarBinds(('1.3.6.1.6.3.18.1.3.0', str(agent)))
-    except KeyError:
-        pass
-
-    # enterprise OID override
-    try:
-        ent_oid = data['enterprise-oid']
-        notification.addVarBinds(('1.3.6.1.6.3.1.1.4.3.0', ent_oid))
-    except KeyError:
-        pass
-
-    # add managed object information
-    for enum, item in enumerate(metrics):
-        obj = build_tuple(oids[enum])
-        notification.addVarBinds((ObjectIdentity(*obj), item['value']))
-
-	return sendNotification(SnmpEngine(),
+    return sendNotification(SnmpEngine(),
         					credentials,
         					UdpTransportTarget((data['dest'], 162)),
         					ContextData(),
@@ -163,22 +127,48 @@ def get_generator(data, metrics, oids):
         					notification
     						)
 
+def archive(input_json):
+
+    try:
+        g = get_generator(json['data'], json['result']['data'], json['result']['oid'])
+        errorIndication, errorStatus, errorIndex, varBinds = next(g)
+        if errorIndication:
+            succeeded = False
+            data = None
+            error = "Failed to archive: %s" % str(errorIndication).strip('\n')
+        else:
+            succeeded = True
+            data = None
+            error = None
+
+    except (pysnmp.error.PySnmpError, pysnmp.smi.error.NoSuchObjectError) as e:
+        succeeded = False
+        data = None
+        error = "Failed to archive: %s" % str(e).strip('\n')
+
+    output_json = {'succeeded': succeeded,
+                    'data': data,
+                    'error': error}
+
 
 json = pscheduler.json_load(exit_on_error=True, max_schema=1)
 
+try:
+    g = get_generator(json['data'], json['result']['data'], json['result']['oid'])
+    errorIndication, errorStatus, errorIndex, varBinds = next(g)
+    if errorIndication:
+        succeeded = False
+        data = None
+        error = "Failed to archive: %s" % str(errorIndication).strip('\n')
+    else:
+        succeeded = True
+        data = None
+        error = None
 
-g = get_generator(json['data'], json['result']['data'], json['result']['oid'])
-errorIndication, errorStatus, errorIndex, varBinds = next(g)
-
-
-if errorIndication:
+except (pysnmp.error.PySnmpError, pysnmp.smi.error.NoSuchObjectError) as e:
     succeeded = False
     data = None
-    error = "Failed to archive: %s" % errorIndication
-else:
-    succeeded = True
-    data = None
-    error = None
+    error = "Failed to archive: %s" % str(e).strip('\n')
 
 pscheduler.succeed_json({'succeeded': succeeded,
 						 'data': data,
