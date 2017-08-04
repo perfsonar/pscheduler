@@ -3,21 +3,19 @@
 # pScheduler Archiver Daemon
 #
 
-import daemon
+
 import datetime
-import errno
-import json
 import optparse
 import os
+import Queue
+import signal
+import threading
+import time
+
+import daemon
 import pscheduler
 import psycopg2
 import psycopg2.extensions
-import select
-import signal
-import sys
-import threading
-import time
-import traceback
 
 from dateutil.tz import tzlocal
 
@@ -56,9 +54,17 @@ opt_parser.add_option("-m", "--max-parallel",
                       help="Maximum concurrent archivings",
                       action="store", type="int", dest="max_parallel",
                       default=15)
+opt_parser.add_option("-p", "--pool-size",
+                      help="Size of pool per archive type",
+                      action="store", type="int", dest="pool_size",
+                      default=15)
 opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
+                      default="PT1M")
+opt_parser.add_option("-s", "--skim-interval",
+                      help="How often to skim archiver pools (ISO8601)",
+                      action="store", type="string", dest="skim_interval",
                       default="PT5M")
 opt_parser.add_option("--verbose", action="store_true", dest="verbose")
 opt_parser.add_option("--debug", action="store_true", dest="debug")
@@ -66,14 +72,26 @@ opt_parser.add_option("--debug", action="store_true", dest="debug")
 
 (options, args) = opt_parser.parse_args()
 
+if options.max_parallel < 1:
+    opt_parser.error("Number of concurrent archivings must be positive.")
+
+if options.pool_size < 1:
+    opt_parser.error("Pool size must b be positive.")
+
 refresh = pscheduler.iso8601_as_timedelta(options.refresh)
 if refresh is None:
     opt_parser.error('Invalid refresh interval "' + options.refresh + '"')
 if pscheduler.timedelta_as_seconds(refresh) == 0:
     opt_parser.error("Refresh interval must be calculable as seconds.")
 
-if options.max_parallel < 1:
-    opt_parser.error("Number of concurrent archivings must be positive.")
+
+skim_interval = pscheduler.iso8601_as_timedelta(options.skim_interval)
+if refresh is None:
+    opt_parser.error('Invalid skim interval "' + options.skim_interval + '"')
+if pscheduler.timedelta_as_seconds(refresh) == 0:
+    opt_parser.error("Skim interval must be calculable as seconds.")
+
+
 
 log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
 
@@ -219,6 +237,245 @@ class DefaultArchiveMaintainer:
 
 
 
+#
+# Archive Processs, ProcessPools and Pool Collections
+#
+
+
+class ArchiveProcess(object):
+    """
+    Maintain an archive process that streams JSON in and out.
+    """
+
+    def __init__(self, archiver):
+        self.archiver = archiver
+        self.program = None
+        self.__establish()
+
+    def __establish(self):
+        """
+        Start the archiver process
+        """
+        if self.program is None:
+            self.program = pscheduler.StreamingJSONProgram([
+                "pscheduler", "internal", "invoke",
+                "archiver", self.archiver, "archive"
+            ])
+
+    def __call__(self, json):
+        """
+        Do a round trip with the program.
+        """
+        self.__establish()
+        try:
+            return self.program(json)
+        except pscheduler.StreamingJSONProgramFailure as ex:
+            self.done()
+            return {
+                "succeeded": False,
+                "error": "Failed to send to archiver: %s" % (str(ex))
+                }
+
+
+    def done(self):
+        """Stop the archive process"""
+        if self.program is not None:
+            self.program.done()
+
+
+    def __del__(self):
+        self.done()
+
+
+
+
+class ArchiverProcessPool(object):
+    """
+    A pool of archivers of a single type
+    """
+
+    def __init__(self, archiver, log, max_size, skim_age=60):
+        self.archiver = archiver
+        self.log = log
+        self.max_size = max_size
+        self.skim_age = skim_age
+
+        self.queue = Queue.Queue()
+        self.lock = threading.Lock()
+        self.size = 0
+        self.reset_cycle = 0
+        self.skim_count = 0
+        self.next_skim = time.time() + skim_age
+        self.max_utilization = 0
+
+
+    def __len__(self):
+        return self.size
+
+
+    def __call__(self, json):
+        """
+        Pull a process from the queue (or create one) and run a result
+        through it.
+        """
+        if self.queue.empty() and self.size < self.max_size:
+            process = ArchiveProcess(self.archiver)
+            with self.lock:
+                self.size += 1
+                self.log.debug("Pool %s: New process %d",
+                               self.archiver, self.size)
+        else:
+            with self.lock:
+                process = self.queue.get()
+
+        with self.lock:
+            cycle_at_start = self.reset_cycle
+
+        self.max_utilization = max(self.max_utilization,
+                                   self.size - self.queue.qsize())
+
+        try:
+            result = process(json)
+        finally:
+            # Dispose of the process no matter what happened.
+            with self.lock:
+                same_cycle = self.reset_cycle == cycle_at_start
+                if same_cycle \
+                   and self.skim_count == 0 \
+                   and self.size <= self.max_size:
+                    self.queue.put(process)
+                else:
+                    process.done()
+                    self.size -= 1
+                    if same_cycle and self.skim_count > 0:
+                        self.skim_count -= 1
+                    self.log.debug("Pool %s: Dropped a process", self.archiver)
+
+        return result
+
+
+    def fill(self):
+        """
+        Artificially add processes up to the maximum.  (Intended for test
+        and debug only.)
+        """
+        with self.lock:
+            while self.size < self.max_size:
+                self.queue.put(ArchiveProcess(self.archiver))
+                self.size += 1
+            self.log.debug("Pool %s: Filled to %d", self.archiver, self.size)
+
+
+    def drain(self):
+        """
+        Force all running processes to stop.
+        """
+        with self.lock:
+            # The queued ones are already idle.
+            while self.queue.qsize():
+                self.queue.get().done()
+                self.size -= 1
+            self.reset_cycle += 1
+        self.log.debug("Pool %s: Drained", self.archiver)
+
+
+
+    def skim(self):
+        """
+        Clean out anything beyond peak utilization since the last skim.
+        """
+        now = time.time()
+        if now < self.next_skim:
+            return
+
+        self.log.debug("Pool %s: Skimming", self.archiver)
+
+        with self.lock:
+
+            to_remove = self.size - self.max_utilization
+            if to_remove:
+                self.log.debug("Pool %s: Removing %d/%d processes for %d",
+                               self.archiver, to_remove, self.size,
+                               self.max_utilization)
+
+            # Idle processes get removed first
+            while to_remove and self.queue.qsize() >= to_remove:
+                self.queue.get().done()
+                self.size -= 1
+                to_remove -= 1
+
+            # Anything left comes out of whats in circulation
+            self.skim_count = to_remove
+
+            # Reset for next time.
+            self.max_utilization = 0
+            self.next_skim = now + self.skim_age
+
+    def done(self):
+        self.drain()
+
+    def __del__(self):
+        self.done()
+
+
+
+
+class ArchiverPoolCollection(object):
+    """
+    A collection of ArchiverProcessPools for each archiver type.
+    """
+
+    def __init__(self, log, max_size=10, skim_age=60):
+        self.log = log
+        self.max_size = max_size
+        self.skim_age = skim_age
+
+        self.pool = {}
+        self.lock = threading.Lock()
+
+
+    def __call__(self, archiver, json):
+        """
+        Archive a result to the correct pool.
+        """
+
+        with self.lock:
+            if archiver not in self.pool:
+                self.pool[archiver] = ArchiverProcessPool(
+                    archiver, self.log,
+                    max_size=self.max_size, skim_age=self.skim_age)
+
+        assert archiver in self.pool
+        return self.pool[archiver](json)
+
+
+    def skim(self):
+        """
+        Skim all pools
+        """
+        with self.lock:
+            del_list = []
+            for archiver_name in self.pool:
+                archiver = self.pool[archiver_name]
+                archiver.skim()
+
+
+    def drain(self):
+        """
+        Drain all pools
+        """
+        with self.lock:
+            for archiver in self.pool:
+                self.pool[archiver].drain()
+
+
+    def done(self):
+        self.drain()
+
+
+
+
+
 # Dictionary of archivings in progress
 
 workers = pscheduler.ThreadSafeDictionary()
@@ -230,10 +487,11 @@ workers = pscheduler.ThreadSafeDictionary()
 
 class ArchiveWorker():
 
-    def __init__(self, db, log, row):
+    def __init__(self, db, log, row, collection):
         self.db = db
         self.log = log
         self.row = row
+        self.collection = collection
 
         self.id = row[0]
 
@@ -302,38 +560,34 @@ class ArchiveWorker():
             else pscheduler.datetime_as_iso8601(last_attempt) 
         }
 
-
-        archiver_in = pscheduler.json_dump(json)
-        self.log.debug("%d: Running archiver %s with input %s",
-                       self.id, archiver, archiver_in)
-
-        returncode, stdout, stderr = pscheduler.run_program(
-            [ "pscheduler", "internal", "invoke", "archiver", archiver, "archive" ],
-            stdin = archiver_in
-        )
-
-        self.log.debug("%d: Archiver exited %d", self.id, returncode)
-        self.log.debug("%d: Returned JSON from archiver: %s", self.id, stdout)
-        self.log.debug("%d: Returned errors from archiver: %s", self.id, stderr)
+        # TODO: Dump this out as JSON?
+        self.log.debug("%d: Archiving to %s: %s",
+                       self.id, archiver, json)
 
         try:
-            stdout_attempt = pscheduler.json_load(stdout, max_schema=1)
-        except ValueError:
-            stdout_attempt = stdout
+            result = self.collection(archiver, json)
+            self.log.debug("%d: Returned JSON from archiver: %s", self.id, result)
+            returncode = 0
+        except Exception as ex:
+            result = {
+                "succeeded": False,
+                "error": "Exception during archiving: %s" % (str(ex))
+                }
+            self.log.debug("%d: Exception: %s", self.id, str(ex))
+            returncode = 1
 
-        attempt = pscheduler.json_dump( [ {
+        attempt = {
             # TODO: Figure out to format this with -xx:xx for the timezone offset.
             "time": pscheduler.datetime_as_iso8601(datetime.datetime.now(tzlocal())),
             "return-code": returncode,
-            "stdout": stdout_attempt,
-            "stderr": stderr
-        } ] )
-
-
+            "stdout": result,
+            "stderr": result.get("error", "")
+        }
 
         if returncode != 0:
 
-            self.log.debug("%d: Permanent Failure: %s", self.id, stderr)
+            self.log.debug("%d: Permanent Failure: %s", self.id,
+                           result.get("error", "Unspecified error"))
             self.db.query("""UPDATE archiving
                              SET
                                  archived = TRUE,
@@ -342,18 +596,11 @@ class ArchiveWorker():
                                  next_attempt = NULL,
                                  diags = diags || (%s::JSONB)
                              WHERE id = %s""",
-                          [ attempt, archiving_id ])
+                          [ pscheduler.json_dump(attempt), archiving_id ])
 
         else:
 
-            try:
-                returned_json = pscheduler.json_load(stdout, max_schema=1)
-            except ValueError:
-                self.log.error("%d: Archiver %s returned invalid JSON: %s",
-                               self.id, archiver, stdout)
-                return
-
-            if returned_json['succeeded']:
+            if result['succeeded']:
                 self.log.debug("%d: Succeeded: %s to %s",
                                self.id, run_uuid, archiver)
                 self.db.query("""UPDATE archiving
@@ -364,22 +611,20 @@ class ArchiveWorker():
                                      next_attempt = NULL,
                                      diags = diags || (%s::JSONB)
                                  WHERE id = %s""",
-                              [ attempt, archiving_id ])
+                              [ pscheduler.json_dump(attempt), archiving_id ])
 
             else:
 
                 self.log.warning("%d: Failed to archive %s to %s: %s",
                                  self.id, run_href, archiver,
-                                 returned_json.get("error",
-                                                   "Unspecified problem"))
-
+                                 result.get("error", "Unspecified problem"))
 
                 # If there's a retry, schedule the next one.
 
-                if "retry" in returned_json:
+                if "retry" in result:
 
                     next_delta = pscheduler.iso8601_as_timedelta(
-                        returned_json['retry'])
+                        result['retry'])
 
                     next = datetime.datetime.now(tzlocal()) \
                            + next_delta
@@ -437,9 +682,14 @@ def main_program():
         signal.signal(sig, exit_handler)
 
     db = pscheduler.PgConnection(dsn)
-
     db.listen(options.channel)
-    
+    db.listen("warmboot")
+
+    archiver_collection = ArchiverPoolCollection(
+        max_size=options.pool_size,
+        skim_age=pscheduler.timedelta_as_seconds(skim_interval),
+        log=log)
+
 
     # Something to maintain the default archiver list
     default_maintainer = DefaultArchiveMaintainer(options.archive_defaults, dsn, log)
@@ -448,6 +698,9 @@ def main_program():
     next_refresh = None
 
     while True:
+
+        # Do some housekeeping
+        archiver_collection.skim()
 
         # Wait for something to happen.
 
@@ -461,6 +714,9 @@ def main_program():
 
             if not db.wait(pscheduler.timedelta_as_seconds(next_refresh)):
                 log.debug("Nothing happened.")
+
+            # TODO: Need to respond to a warmboot notification by
+            # draining the pools.
 
         # Until we hear otherwise...
         next_refresh = refresh
@@ -512,7 +768,7 @@ def main_program():
                 continue
 
             log.debug("%d: Starting worker", id)
-            workers[id] = ArchiveWorker(db, log, row)
+            workers[id] = ArchiveWorker(db, log, row, archiver_collection)
 
 
 

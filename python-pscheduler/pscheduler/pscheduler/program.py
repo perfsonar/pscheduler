@@ -691,3 +691,7 @@ class StreamingJSONProgram(object):
 
                 assert False, "Should not be reached."
 
+
+    def done(self):
+        if self.program is not None:
+            self.program.done()

@@ -1,12 +1,15 @@
-#!/bin/sh
-#
-# Send a result to the bit bucket
-#
+#!/usr/bin/python
+"""
+Send results to the bit bucket
+"""
 
-cat > /dev/null
+import sys
+import pscheduler
 
-cat <<EOF
-{ "succeeded": true }
-EOF
+PARSER = pscheduler.RFC7464Parser(sys.stdin)
+EMITTER = pscheduler.RFC7464Emitter(sys.stdout)
 
-exit 0
+for parsed in PARSER:
+    EMITTER({"succeeded": True})
+
+pscheduler.succeed()
