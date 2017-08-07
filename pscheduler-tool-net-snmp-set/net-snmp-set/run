@@ -26,7 +26,6 @@ except KeyError:
 timeout_iso = input['test']['spec'].get("timeout", "PT2S")
 timeout = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(timeout_iso))
 timeout = timeout * len(input['test']['spec']['oidargs']) + 2
-#timeout = pscheduler.timedelta_as_iso8601(timeout)
 start_time = datetime.datetime.now()
 
 # Perform the test
