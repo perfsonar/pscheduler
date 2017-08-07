@@ -157,19 +157,7 @@ dictargs=[]
 for item in options.oidargs:
     s = item.split(':') 
     d = { "oid": s[0], "type": s[1], "value": s[2] }
-    dictargs.append(d)
-#s = options.oidargs.split(',')
-#sortedargs = []
-#for item in s:
-    #sortedargs.append(item.split(':'))
-
-#dictargs = []
-#for item in sortedargs:
-    #d={} #d['oid'] = item[0]
-    #d['type'] = item[1]
-    #d['value'] = item[2]
-    #dictargs.append(d)
-
+    dictargs.append(d) 
 if options.host is not None:
    result['host'] = options.host
 
