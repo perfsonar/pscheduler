@@ -23,7 +23,9 @@ try:
 except KeyError:
     pscheduler.fail('Missing data in input')
 
-timeout_iso = input['test']['spec'].get("timeout", "PT5S" )
+timeout = (2 * len(input['test']['spec']['oidargs']) + 2)
+timeout = "PT%sS" % (timeout)
+timeout_iso = input['test']['spec'].get("timeout", timeout )
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 start_time = datetime.datetime.now()
 
@@ -82,21 +84,8 @@ for item in input['test']['spec']['oidargs']:
     except IndexError:
         pscheduler.fail('Missing or incorrectly formatted input.')
 
-"""
-for item in range(len(input['test']['spec']['oidargs'])):
-   try:
-       arg = input['test']['spec']['oidargs'][counter].split(" ")
-       for item in arg:
-           argv.append(item)
-       counter += 1
 
-   except KeyError:
-       pscheduler.fail('Missing input.')
-   except IndexError:
-       pscheduler.fail('Missing input.')
-       """
-
-status, stdout, stderr = pscheduler.run_program(argv, timeout=10)
+status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
 
 if status:
     data = None
