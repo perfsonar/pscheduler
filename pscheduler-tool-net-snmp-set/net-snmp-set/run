@@ -23,10 +23,10 @@ try:
 except KeyError:
     pscheduler.fail('Missing data in input')
 
-timeout = (2 * len(input['test']['spec']['oidargs']) + 2)
-timeout = "PT%sS" % (timeout)
-timeout_iso = input['test']['spec'].get("timeout", timeout )
-timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+timeout_iso = input['test']['spec'].get("timeout", "PT2S")
+timeout = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(timeout_iso))
+timeout = timeout * len(input['test']['spec']['oidargs']) + 2
+#timeout = pscheduler.timedelta_as_iso8601(timeout)
 start_time = datetime.datetime.now()
 
 # Perform the test
