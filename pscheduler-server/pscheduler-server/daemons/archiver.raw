@@ -61,11 +61,11 @@ opt_parser.add_option("-p", "--pool-size",
 opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
-                      default="PT1M")
+                      default="PT15S")
 opt_parser.add_option("-s", "--skim-interval",
                       help="How often to skim archiver pools (ISO8601)",
                       action="store", type="string", dest="skim_interval",
-                      default="PT5M")
+                      default="PT30S")
 opt_parser.add_option("--verbose", action="store_true", dest="verbose")
 opt_parser.add_option("--debug", action="store_true", dest="debug")
 
@@ -81,16 +81,14 @@ if options.pool_size < 1:
 refresh = pscheduler.iso8601_as_timedelta(options.refresh)
 if refresh is None:
     opt_parser.error('Invalid refresh interval "' + options.refresh + '"')
-if pscheduler.timedelta_as_seconds(refresh) == 0:
-    opt_parser.error("Refresh interval must be calculable as seconds.")
+refresh = pscheduler.timedelta_as_seconds(refresh)
+
 
 
 skim_interval = pscheduler.iso8601_as_timedelta(options.skim_interval)
-if refresh is None:
+if skim_interval is None:
     opt_parser.error('Invalid skim interval "' + options.skim_interval + '"')
-if pscheduler.timedelta_as_seconds(refresh) == 0:
-    opt_parser.error("Skim interval must be calculable as seconds.")
-
+skim_interval = pscheduler.timedelta_as_seconds(skim_interval)
 
 
 log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
@@ -191,9 +189,9 @@ class DefaultArchiveMaintainer:
                 continue
 
             archives.append({
-                    "path": path,
-                    "spec": spec
-                    })
+                "path": path,
+                "spec": spec
+            })
 
         # Spit out any warnings that were accumulated
 
@@ -687,7 +685,7 @@ def main_program():
 
     archiver_collection = ArchiverPoolCollection(
         max_size=options.pool_size,
-        skim_age=pscheduler.timedelta_as_seconds(skim_interval),
+        skim_age=skim_interval,
         log=log)
 
 
@@ -702,6 +700,9 @@ def main_program():
         # Do some housekeeping
         archiver_collection.skim()
 
+        archiving_change = False
+        warmboot = False
+
         # Wait for something to happen.
 
         if next_refresh is None:
@@ -712,14 +713,27 @@ def main_program():
 
             log.debug("Waiting %s for change or notification", next_refresh)
 
-            if not db.wait(pscheduler.timedelta_as_seconds(next_refresh)):
-                log.debug("Nothing happened.")
+            warmboot = False
+            archiving_change = False
 
-            # TODO: Need to respond to a warmboot notification by
-            # draining the pools.
+            if db.wait(next_refresh):
+                notifications = [ tup[0] for tup in db.notifications() ]
+                warmboot = "warmboot" in notifications
+                archiving_change = options.channel in notifications
+                log.debug("Notifications: %s" % (" ".join(notifications)))
+            else:
+                log.debug("Nothing happened.")
 
         # Until we hear otherwise...
         next_refresh = refresh
+
+        if warmboot:
+            log.debug("Warm boot; draining archiver pools")
+            archiver_collection.drain()
+            continue
+
+        if not archiving_change:
+            continue
 
         # If we're already full up on workers, don't bother hitting the database
         if len(workers) == options.max_parallel:
