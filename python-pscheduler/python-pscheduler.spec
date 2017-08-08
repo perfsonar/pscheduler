@@ -4,8 +4,8 @@
 
 %define short	pscheduler
 Name:		python-%{short}
-Version:	1.3.0.4.3
-Release:	1%{?dist}
+Version:	1.3.1.1
+Release:	0.1.rc1%{?dist}
 Summary:	Utility functions for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0

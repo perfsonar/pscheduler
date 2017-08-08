@@ -114,24 +114,32 @@ def run_client():
         # nuttcp specifies bandwidth in Kbps, so need to convert here
         nuttcp_args.append(test_spec['bandwidth'] / 1000)
     else:
-        # Find the largest bandwidth in passed limits and use that
 
-        # TODO: This needs to find the max allowed by each participant
-        # and then take the minimum of those values.
+        # Find the largest bandwidth in each participant's passed
+        # limits and take the minimum of those values.  This will be
+        # the maximum bandwidth allowed by any participant.
 
         logger.debug("Finding maximum bandwidth")
-        max_bandwidth = -1
+
+        max_bandwidths = []
+
         for passed_set in limits_passed:
+            set_max = -1
+            logger.debug("Limit set:")
             for passed in passed_set:
                 try:
                     new_max = pscheduler.si_as_number(passed['bandwidth']['range']['upper'])
-                    logger.debug("Limit says %d", new_max)
-                    max_bandwidth = max(max_bandwidth, new_max)
+                    logger.debug("  Limit says %d", new_max)
+                    set_max = max(set_max, new_max)
                 except KeyError:
-                    logger.debug("No upper bandwidth limit specified")
-                    pass
+                    logger.debug("  No upper bandwidth limit specified")
+                    continue
 
-        if max_bandwidth > -1:
+            if set_max > -1:
+                max_bandwidths.append(set_max)
+
+        if max_bandwidths:
+            max_bandwidth = sorted(max_bandwidths)[0]
             logger.debug("Limiting bandwidth to %d", max_bandwidth)
             nuttcp_args.append('-R')
             # nuttcp specifies bandwidth in Kbps, so need to convert here
