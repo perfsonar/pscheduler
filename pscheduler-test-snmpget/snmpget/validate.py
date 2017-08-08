@@ -104,11 +104,10 @@ def result_is_valid(json):
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
             "time":       { "$ref": "#/pScheduler/Duration" },
             "data":       { "type": "array",
-                            "items": { "$ref": "#/pScheduler/SNMPResult" } 
+                            "items": { "$ref": "#/pScheduler/SNMPResultList" } 
                           },
             },
         "required": [
-            "schema",
             "succeeded",
             "data",
             "time",
