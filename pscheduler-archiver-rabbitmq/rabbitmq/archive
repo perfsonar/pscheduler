@@ -33,6 +33,11 @@ def archive(json):
     else:
         body = json["result"]
 
+    connection.channel().basic_publish(
+        exchange=data.get("exchange", ""),
+        routing_key=data.get("routing-key", ""),
+        body=pscheduler.json_dump(json["result"])
+    )
 
     try:
 

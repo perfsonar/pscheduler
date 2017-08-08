@@ -33,6 +33,9 @@ Requires:	python-netifaces
 Requires:	python-ntplib
 Requires:	python-psycopg2 >= 2.2.0
 Requires:	python-py-radix
+# The limit system uses this.
+Requires:	pscheduler-jq-library
+Requires:	python-pyjq >= 2.0.1
 Requires:	python-requests
 Requires:	python-subprocess32
 Requires:	python-tzlocal
