@@ -229,7 +229,8 @@ def archive(json):
             success, result = client.create_metadata(record.metadata)
             #print resul
             if not success:
-                esmond_util.handle_storage_error(result, attempts=attempts, policy=retry_policy)
+                return esmond_util.handle_storage_error(
+                    result, attempts=attempts, policy=retry_policy)
 
             metadata_key = result['metadata-key']
             #add to memcache
