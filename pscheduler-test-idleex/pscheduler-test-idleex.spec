@@ -4,7 +4,7 @@
 
 %define short	idleex
 Name:		pscheduler-test-%{short}
-Version:	1.0.0.5
+Version:	1.0.1
 Release:	1%{?dist}
 
 Summary:	Idle Exclusive test class for pScheduler
