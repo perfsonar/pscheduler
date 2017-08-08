@@ -98,7 +98,7 @@ def get_credentials(data_json):
             pscheduler.fail("Failed to archive: unrecognized security level: %s" % data_json['security-level'])
 
 
-def get_generator(data, metrics, oids):
+def get_generator(data):
 
     trap_object = build_tuple(data['trap-oid'])
 
@@ -154,7 +154,7 @@ def archive(input_json):
 json = pscheduler.json_load(exit_on_error=True, max_schema=1)
 
 try:
-    g = get_generator(json['data'], json['result']['data'], json['result']['oid'])
+    g = get_generator(json['data'])
     errorIndication, errorStatus, errorIndex, varBinds = next(g)
     if errorIndication:
         succeeded = False

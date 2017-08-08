@@ -38,8 +38,8 @@ def spec_is_valid(json):
                     "dest":         { "$ref": "#/pScheduler/Host" },
                     "version":      { "$ref": "#/local/VersionNumber"},
                     "_community":   { "$ref": "#/pScheduler/String"},
-                    "period":       { "$ref": "#/pScheduler/UInt64" }, # TODO: change this maybe
-                    "polls":        { "$ref": "#/pScheduler/UInt64" },
+                    "period":       { "$ref": "#/pScheduler/Integer" },
+                    "polls":        { "$ref": "#/pScheduler/Integer" },
                     "oid":          { "type": "array", 
                                       "items": { "$ref": "#/pScheduler/SNMPOID" } 
                                     },
@@ -62,12 +62,11 @@ def spec_is_valid(json):
                     "host-node":    { "$ref": "#/pScheduler/Host" },
                     "dest":         { "$ref": "#/pScheduler/Host" },
                     "version":      { "$ref": "#/local/VersionNumber"},
-                    "period":       { "$ref": "#/pScheduler/UInt64" }, # TODO: change this maybe
-                    "polls":        { "$ref": "#/pScheduler/UInt64" },
+                    "period":       { "$ref": "#/pScheduler/Integer" },
+                    "polls":        { "$ref": "#/pScheduler/Integer" },
                     "oid":          { "type": "array", 
-                                      "items": { "$ref": "#/pScheduler/SNMPNumericOID" } 
+                                      "items": { "$ref": "#/pScheduler/SNMPOID" } 
                                     },
-                    "protocol":     { "$ref": "#/local/TransportProtocol" },
                     "security-name":   { "$ref": "#/pScheduler/String" },
                     "auth-protocol":   { "$ref": "#/local/AuthProtocol" },
                     "priv-protocol":   { "$ref": "#/local/PrivProtocol" },
@@ -104,7 +103,7 @@ def result_is_valid(json):
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
             "time":       { "$ref": "#/pScheduler/Duration" },
             "data":       { "type": "array",
-                            "items": { "$ref": "#/pScheduler/AnyJSON" } # temporary 
+                            "items": { "$ref": "#/pScheduler/SNMPResult" } 
                           },
             },
         "required": [
