@@ -136,6 +136,11 @@ DEFAULT_SUMMARIES = {
     ],
     "histogram-rtt": [
         {
+            "summary-window":   0,
+            "event-type":   "histogram-rtt",
+            "summary-type": "statistics",
+        },
+        {
             "summary-window":   3600,
             "event-type":   "histogram-rtt",
             "summary-type":   "aggregation",
