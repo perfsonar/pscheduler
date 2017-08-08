@@ -208,7 +208,7 @@ class RFC7464Parser(object):
             raise StopIteration
 
         if data[0] != b'\x1e':
-            raise ValueError("Line did not start with record separator")
+            raise ValueError("Line '%s' did not start with record separator" % (data))
 
         # json_load() will raise a ValueError if something's not right.
         return pscheduler.json_load(data[1:])
