@@ -17,7 +17,8 @@ if not valid:
 oid_list = spec['oidargs']
 oid_str = ""
 for item in oid_list:
-    oid_str = "%s,%s" % (oid_str, item)
+    oid_str = "%s,%s,%s,%s" % (oid_str, item['oid'], item['type'],
+              item['value'])
 spec['oidargs'] = oid_str
 
 result = pscheduler.speccli_build_args(spec, 
@@ -26,7 +27,6 @@ result = pscheduler.speccli_build_args(spec,
         ( 'host', 'host' ),
         ( 'host-node', 'host-node' ),
         ( 'dest', 'dest' ),
-        ('oidargs', 'oidargs'),
         ( 'protocol', 'protocol'),
         ('community', 'community'),
         ('version', 'version'),
@@ -40,5 +40,11 @@ result = pscheduler.speccli_build_args(spec,
         ( 'context', 'context'),
         ])
 
+                                       
+for item in oid_list:
+    oid_str = ""
+    result.append('--oidargs')
+    oid_str = "%s:%s:%s" % (item['oid'], item['type'], item['value'])
+    result.append(oid_str)
 
 pscheduler.succeed_json(result)
