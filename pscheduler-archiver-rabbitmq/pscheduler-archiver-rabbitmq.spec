@@ -16,7 +16,7 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server
+Requires:	pscheduler-server >= 1.0.1.1
 
 # Note that this doesn't get used since we're supplying our own 0.10.0
 # as a stopgap.
