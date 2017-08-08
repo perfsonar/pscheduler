@@ -636,7 +636,9 @@ class ArchiveWorker():
                                          next_attempt = %s,
                                          diags = diags || (%s::JSONB)
                                      WHERE id = %s""",
-                                  [ next, attempt, archiving_id ])
+                                  [next,
+                                   pscheduler.json_dump(attempt),
+                                   archiving_id])
 
                 else:
 
@@ -654,7 +656,7 @@ class ArchiveWorker():
                                          next_attempt = NULL,
                                          diags = diags || (%s::JSONB)
                                      WHERE id = %s""",
-                                  [ attempt, archiving_id ])
+                                  [pscheduler.json_dump(attempt), archiving_id])
 
 
 
@@ -700,7 +702,6 @@ def main_program():
         # Do some housekeeping
         archiver_collection.skim()
 
-        archiving_change = False
         warmboot = False
 
         # Wait for something to happen.
@@ -711,16 +712,16 @@ def main_program():
 
         else:
 
+            next_refresh = min(next_refresh, refresh)
+
             log.debug("Waiting %s for change or notification", next_refresh)
 
             warmboot = False
-            archiving_change = False
 
             if db.wait(next_refresh):
                 notifications = [ tup[0] for tup in db.notifications() ]
-                warmboot = "warmboot" in notifications
-                archiving_change = options.channel in notifications
                 log.debug("Notifications: %s" % (" ".join(notifications)))
+                warmboot = "warmboot" in notifications
             else:
                 log.debug("Nothing happened.")
 
@@ -730,10 +731,6 @@ def main_program():
         if warmboot:
             log.debug("Warm boot; draining archiver pools")
             archiver_collection.drain()
-            continue
-
-        if not archiving_change:
-            continue
 
         # If we're already full up on workers, don't bother hitting the database
         if len(workers) == options.max_parallel:
@@ -757,7 +754,7 @@ def main_program():
             if len(result) == 0:
                 log.debug("Nothing in the future.")
             else:
-                next_refresh = result.next()[0]
+                next_refresh = pscheduler.timedelta_as_seconds(result.next()[0])
                 log.debug("Next archiving in %s", next_refresh)
 
             continue
