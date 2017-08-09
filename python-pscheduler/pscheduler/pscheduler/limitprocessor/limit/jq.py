@@ -8,12 +8,7 @@ import pscheduler
 # Note that this is done with a string because we don't support args
 # or raw output here.
 JQ_DATA_VALIDATOR = {
-    "type": "object",
-    "properties": {
-        "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
-    },
-    "additionalProperties": False,
-    "required": [ "transform" ]
+    "$ref": "#/pScheduler/JQTransformSpecification"
 }
 
 
@@ -40,8 +35,8 @@ class LimitJQ():
             raise ValueError("Invalid data: %s" % message)
 
         self.jqfilter = pscheduler.JQFilter(
-            data["transform"]["script"],
-            args=data["transform"].get("args", {})
+            data["script"],
+            args=data.get("args", {})
             # Don't bother with raw output.  We don't care.
         )
 
@@ -101,13 +96,21 @@ if __name__ == "__main__":
         }
     }
 
-    limit = LimitJQ({
-        "transform": {
-#            "script": "\"Script-provided failure reason\""
-#            "script": "if .type == \"foo\" then true else \"Wrong test type\" end"
-            "script": "if .type == \"trace\" and .spec.hops > 20 then \"Too many hops\" else true end"
-        }
-    })
+    for script in [
+            "\"Script-provided failure reason\"",
+            "if .type == \"foo\" then true else \"Wrong test type\" end",
+            "if .type == \"trace\" and .spec.hops > 20 then \"Too many hops\" else true end"
+    ]:
 
-    print test
-    print limit.evaluate(test)
+        data = {
+            "script": script,
+            "args": {}
+        }
+
+        print jq_data_is_valid(data)
+
+        limit = LimitJQ(data)
+
+        print test
+        print limit.evaluate(test)
+        print

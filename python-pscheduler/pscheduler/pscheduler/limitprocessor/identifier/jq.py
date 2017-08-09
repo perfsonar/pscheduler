@@ -4,15 +4,8 @@ Identifier Class for jq
 
 import pscheduler
 
-# Note that this is done with a string because we don't support args
-# or raw output here.
-jq_data_validator = {
-    "type": "object",
-    "properties": {
-        "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
-    },
-    "additionalProperties": False,
-    "required": [ "transform" ]
+JQ_DATA_VALIDATOR = {
+    "$ref": "#/pScheduler/JQTransformSpecification"
 }
 
 
@@ -21,7 +14,7 @@ def data_is_valid(data):
     (bool, string) indicating valididty and any error message.
     """
 
-    return pscheduler.json_validate(data, jq_data_validator)
+    return pscheduler.json_validate(data, JQ_DATA_VALIDATOR)
 
 
 
@@ -42,9 +35,9 @@ class IdentifierJQ():
             raise ValueError("Invalid data: %s" % message)
 
         self.jqfilter = pscheduler.JQFilter(
-            data["transform"]["script"],
-            args=data["transform"].get("args", {}),
-            output_raw=data["transform"].get("output-raw", False)
+            data["script"],
+            args=data.get("args", {}),
+            output_raw=data.get("output-raw", False)
         )
 
 
@@ -73,11 +66,9 @@ class IdentifierJQ():
 if __name__ == "__main__":
 
     data = {
-        "transform": {
-            "script": ".server == $address",
-            "args": {
-                "address": "10.0.0.7"
-            }
+        "script": ".server == $address",
+        "args": {
+            "address": "10.0.0.7"
         }
     }
 
