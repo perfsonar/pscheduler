@@ -996,7 +996,7 @@ def json_validate(json, skeleton):
     schema = copy.copy(__default_schema__)
 
     for element in [ 'type', 'items', 'properties', 'additionalProperties',
-                     'required', 'local' ]:
+                     'required', 'local', '$ref' ]:
         if element in skeleton:
             schema[element] = skeleton[element]
 
