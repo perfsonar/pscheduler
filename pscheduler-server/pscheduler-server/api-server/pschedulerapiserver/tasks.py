@@ -121,38 +121,15 @@ def __tasks_get_filtered(uri_base,
 
     # Let this throw; callers are responsible for catching.
 
-    cursor = dbcursor_query("""
-        SELECT
-            task.json,
-            task.added,
-            task.start,
-            task.slip,
-            task.duration,
-            task.post,
-            task.runs,
-            task.participants,
-            scheduling_class.anytime,
-            scheduling_class.exclusive,
-            scheduling_class.multi_result,
-            task.participant,
-            task.enabled,
-            task.cli,
-            task.limits_passed,
-            task.participant,
-            task.uuid
-        FROM
-            task
-            JOIN test ON test.id = task.test
-            JOIN scheduling_class
-                ON scheduling_class.id = test.scheduling_class
-        WHERE %s
-    """ % (where_clause), args)
+    cursor = dbcursor_query(
+        """SELECT json_detail, uuid FROM task WHERE %s""" % (where_clause),
+        args)
 
     tasks_returned = []
 
     for row in cursor:
 
-        uri = uri_base if single else "%s/%s" % (uri_base, row[16])
+        uri = uri_base if single else "%s/%s" % (uri_base, row[1])
 
         if not expanded:
             tasks_returned.append(uri)
@@ -169,44 +146,24 @@ def __tasks_get_filtered(uri_base,
         except KeyError:
             pass
 
-        # Add details if we were asked for them.
+
+        # Add URI-specific details if we were asked for them,
+        # otherwise ditch the details entirely.
 
         if detail:
 
-            part_list = row[7]
-            # The database is not supposed to allow this, but spit out
-            # a sane default as a last resort in case it happens.
-            if part_list is None:
-                part_list = [None]
-            if row[10] == 0 and part_list[0] is None:
-                part_list[0] = server_netloc()
+            json['detail']['href'] = uri
+            json['detail']['runs-href'] = "%s/runs" % (uri)
+            json['detail']['first-run-href'] = "%s/runs/first" % (uri)
+            json['detail']['next-run-href'] = "%s/runs/next" % (uri)
 
-            json['detail'] = {
-                'added': None if row[1] is None \
-                    else pscheduler.datetime_as_iso8601(row[1]),
-                'start': None if row[2] is None \
-                    else pscheduler.datetime_as_iso8601(row[2]),
-                'slip': None if row[3] is None \
-                    else pscheduler.timedelta_as_iso8601(row[3]),
-                'duration': None if row[4] is None \
-                    else pscheduler.timedelta_as_iso8601(row[4]),
-                'post': None if row[5] is None \
-                    else pscheduler.timedelta_as_iso8601(row[5]),
-                'runs': None if row[6] is None \
-                    else int(row[6]),
-                'participants': part_list,
-                'anytime':  row[8],
-                'exclusive':  row[9],
-                'multi-result':  row[10],
-                'enabled':  row[12],
-                'cli':  row[13],
-                'spec-limits-passed': row[14],
-                'participant': row[15],
-                'href': uri,
-                'runs-href': "%s/runs" % (uri),
-                'first-run-href': "%s/runs/first" % (uri),
-                'next-run-href': "%s/runs/next" % (uri)
-                }
+        else:
+
+            try:
+                del json['detail']
+            except KeyError:
+                pass
+
 
         tasks_returned.append(json)
 
@@ -228,7 +185,7 @@ def tasks():
             return bad_request(str(ex))
 
         if json_query is not None:
-            where_clause += " AND task.json @> %s"
+            where_clause += " AND task.json_detail @> %s"
             args.append(request.args.get("json"))
 
         where_clause += " ORDER BY added"
