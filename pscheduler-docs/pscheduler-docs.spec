@@ -3,7 +3,7 @@
 #
 
 Name:		pscheduler-docs
-Version:	1.0.1
+Version:	1.0.1.1
 Release:	1%{?dist}
 
 Summary:	pScheduler documentation and samples
