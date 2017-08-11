@@ -542,24 +542,42 @@ class EsmondThroughputRecord(EsmondBaseRecord):
                     self.add_data_rate(data_point=data_point, event_type="packet-loss-rate", test_result=summary, numerator='lost', denominator='sent')
                 else:
                     self.add_data_if_exists(data_point=data_point, event_type="packet-retransmits", obj=summary, field="retransmits")
+                    self.add_data_if_exists(data_point=data_point, event_type="packet-rtt", obj=summary, field="rtt")
+                    self.add_data_if_exists(data_point=data_point, event_type="tcp-windowsize", obj=summary, field="tcp-window-size")
             if test_result["summary"].get("streams", None):
                 if 'parallel' in test_spec and test_spec['parallel'] > 1:
                     streams = test_result["summary"]["streams"]
                     streams.sort(key=lambda x: x["stream-id"])
                     streams_throughput = []
                     streams_packet_retransmits = []
+                    streams_packet_rtt = []
+                    streams_packet_tcp_windowsize = []
                     for stream in streams:
                         streams_throughput.append(stream.get("throughput-bits", None))
                         if stream.get("retransmits", None):
                             streams_packet_retransmits.append(stream["retransmits"])
+                        if stream.get("rtt", None):
+                            streams_packet_rtt.append(stream["rtt"])
+                        if stream.get("tcp-window-size", None):
+                            streams_packet_tcp_windowsize.append(stream["tcp-window-size"])
                     self.add_data(data_point=data_point, event_type="streams-throughput", val=streams_throughput)
-                    if len(streams_packet_retransmits) > 0 and not is_udp:
-                        self.add_data(data_point=data_point, event_type="streams-packet-retransmits", val=streams_packet_retransmits)
+                    if not is_udp:
+                        if len(streams_packet_retransmits) > 0:
+                            self.add_data(data_point=data_point, event_type="streams-packet-retransmits", val=streams_packet_retransmits)
+                        if len(streams_packet_rtt) > 0:
+                            self.add_data(data_point=data_point, event_type="streams-packet-rtt", val=streams_packet_rtt)
+                        if len(streams_packet_tcp_windowsize) > 0:
+                            self.add_data(data_point=data_point, event_type="streams-tcp-windowsize", val=streams_packet_tcp_windowsize)
+                            
         if test_result.get("intervals", None):
             throughput_intervals = []
             retransmits_intervals = []
+            rtt_intervals = []
+            tcp_windowsize_intervals = []
             throughput_stream_intervals = {}
             retransmit_stream_intervals = {}
+            rtt_stream_intervals = {}
+            tcp_windowsize_stream_intervals = {}
             for interval in test_result["intervals"]:
                 if interval.get("summary", None):
                     start = interval["summary"].get("start", None)
@@ -573,6 +591,12 @@ class EsmondThroughputRecord(EsmondBaseRecord):
                     retransmits = interval["summary"].get("retransmits", None)
                     if retransmits is not None:
                         retransmits_intervals.append({ "start": start, "duration": duration, "val": retransmits})
+                    rtt = interval["summary"].get("rtt", None)
+                    if rtt is not None:
+                        rtt_intervals.append({ "start": start, "duration": duration, "val": rtt})
+                    tcp_windowsize = interval["summary"].get("tcp-window-size", None)
+                    if tcp_windowsize is not None:
+                        tcp_windowsize_intervals.append({ "start": start, "duration": duration, "val": tcp_windowsize})
                 if interval.get("streams", None):
                     if 'parallel' in test_spec and test_spec['parallel'] > 1:
                         for stream in interval["streams"]:
@@ -584,6 +608,7 @@ class EsmondThroughputRecord(EsmondBaseRecord):
                             stream_id = stream.get("stream-id", None)
                             if stream_id is None:
                                 continue # pragma: no cover
+                            #throughput
                             if stream_id not in throughput_stream_intervals:
                                 throughput_stream_intervals[stream_id] = []
                             throughput = stream.get("throughput-bits", None)
@@ -593,6 +618,7 @@ class EsmondThroughputRecord(EsmondBaseRecord):
                                      "duration": duration, 
                                      "val": throughput
                                 })
+                            #retransmits
                             if stream_id not in retransmit_stream_intervals:
                                 retransmit_stream_intervals[stream_id] = []
                             retransmits = stream.get("retransmits", None)
@@ -602,11 +628,29 @@ class EsmondThroughputRecord(EsmondBaseRecord):
                                      "duration": duration, 
                                      "val": retransmits
                                 })
+                            #rtt
+                            if stream_id not in rtt_stream_intervals:
+                                rtt_stream_intervals[stream_id] = []
+                            rtt = stream.get("rtt", None)
+                            if rtt is not None:
+                                rtt_stream_intervals[stream_id].append({
+                                    "start": start,
+                                     "duration": duration, 
+                                     "val": rtt
+                                })
+                            #tcp windowsize
+                            if stream_id not in tcp_windowsize_stream_intervals:
+                                tcp_windowsize_stream_intervals[stream_id] = []
+                            tcp_window_size = stream.get("tcp-window-size", None)
+                            if tcp_window_size is not None:
+                                tcp_windowsize_stream_intervals[stream_id].append({
+                                    "start": start,
+                                     "duration": duration, 
+                                     "val": tcp_window_size
+                                })
             #add types               
             if len(throughput_intervals) > 0:
                 self.add_data(data_point=data_point, event_type="throughput-subintervals", val=throughput_intervals)
-            if len(retransmits_intervals) > 0 and not is_udp:
-                self.add_data(data_point=data_point, event_type="packet-retransmits-subintervals", val=retransmits_intervals)
             if throughput_stream_intervals > 0:
                 formatted_tsi = []
                 sorted_streams = throughput_stream_intervals.keys()
@@ -614,13 +658,34 @@ class EsmondThroughputRecord(EsmondBaseRecord):
                 for id in sorted_streams:
                     formatted_tsi.append(throughput_stream_intervals[id])
                 self.add_data(data_point=data_point, event_type="streams-throughput-subintervals", val=formatted_tsi)
-            if retransmit_stream_intervals > 0 and not is_udp:
-                formatted_rsi = []
-                sorted_streams = retransmit_stream_intervals.keys()
-                sorted_streams.sort()
-                for id in sorted_streams:
-                    formatted_rsi.append(retransmit_stream_intervals[id])
-                self.add_data(data_point=data_point, event_type="streams-packet-retransmits-subintervals", val=formatted_rsi)
+            if not is_udp:
+                if len(retransmits_intervals) > 0:
+                    self.add_data(data_point=data_point, event_type="packet-retransmits-subintervals", val=retransmits_intervals)
+                if len(rtt_intervals) > 0:
+                    self.add_data(data_point=data_point, event_type="packet-rtt-subintervals", val=rtt_intervals)
+                if len(tcp_windowsize_intervals) > 0:
+                    self.add_data(data_point=data_point, event_type="tcp-windowsize-subintervals", val=tcp_windowsize_intervals)
+                if retransmit_stream_intervals > 0:
+                    formatted_rsi = []
+                    sorted_streams = retransmit_stream_intervals.keys()
+                    sorted_streams.sort()
+                    for id in sorted_streams:
+                        formatted_rsi.append(retransmit_stream_intervals[id])
+                    self.add_data(data_point=data_point, event_type="streams-packet-retransmits-subintervals", val=formatted_rsi)
+                if rtt_stream_intervals > 0:
+                    formatted_rttsi = []
+                    sorted_streams = rtt_stream_intervals.keys()
+                    sorted_streams.sort()
+                    for id in sorted_streams:
+                        formatted_rttsi.append(rtt_stream_intervals[id])
+                    self.add_data(data_point=data_point, event_type="streams-packet-rtt-subintervals", val=formatted_rttsi)
+                if tcp_windowsize_stream_intervals > 0:
+                    formatted_twssi = []
+                    sorted_streams = tcp_windowsize_stream_intervals.keys()
+                    sorted_streams.sort()
+                    for id in sorted_streams:
+                        formatted_twssi.append(tcp_windowsize_stream_intervals[id])
+                    self.add_data(data_point=data_point, event_type="streams-tcp-windowsize-subintervals", val=formatted_twssi)
 
                 
 
