@@ -4,7 +4,7 @@
 
 %define short	syslog
 Name:		pscheduler-archiver-%{short}
-Version:	1.0.1
+Version:	1.0.1.1
 Release:	1%{?dist}
 
 Summary:	Syslog archiver class for pScheduler

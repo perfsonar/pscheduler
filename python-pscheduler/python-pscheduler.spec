@@ -5,7 +5,7 @@
 %define short	pscheduler
 Name:		python-%{short}
 Version:	1.3.1.1
-Release:	0.1.rc1%{?dist}
+Release:  1%{?dist}
 Summary:	Utility functions for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0
@@ -130,6 +130,6 @@ systemctl restart rsyslog
 
 %files -f INSTALLED_FILES
 %defattr(-,root,root)
-%{logrotate_d}/*
-%{syslog_d}/*
+%config(noreplace) %{logrotate_d}/*
+%config(noreplace) %{syslog_d}/*
 %attr(444,root,root) %{_pscheduler_rpmmacroprefix}*
