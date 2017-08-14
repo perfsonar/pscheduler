@@ -4,8 +4,8 @@
 
 %define short	pscheduler
 Name:		python-%{short}
-Version:	1.3.1
-Release:	1%{?dist}
+Version:	1.3.1.1
+Release:  1%{?dist}
 Summary:	Utility functions for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0
@@ -33,6 +33,9 @@ Requires:	python-netifaces
 Requires:	python-ntplib
 Requires:	python-psycopg2 >= 2.2.0
 Requires:	python-py-radix
+# The limit system uses this.
+Requires:	pscheduler-jq-library
+Requires:	python-pyjq >= 2.0.1
 Requires:	python-requests
 Requires:	python-subprocess32
 Requires:	python-tzlocal

@@ -1,32 +1,53 @@
 #!/usr/bin/python
-#
-# Fail at archiving most of the time.
-#
+"""
+Fail at archiving most of the time.
+"""
 
-import pscheduler
 import random
 import sys
+import pscheduler
+
+MAX_SCHEMA = 1
 
 random.seed()
 
-json = pscheduler.json_load(exit_on_error=True, max_schema=1)
+def archive(json):
+    """Archive a single result."""
 
-
-if random.random() > json["data"].get("fail", 0.5):
-    result = {
-        "succeeded": True
+    schema = json["data"].get("schema", 1)
+    if schema > MAX_SCHEMA:
+        return {
+            "succeeded": False,
+            "error": "Unsupported schema version %d; max is %d" % (
+                schema, MAX_SCHEMA)
         }
-else:
-    if random.random() < json["data"].get("retry", 0.5):
+
+
+    if random.random() > json["data"].get("fail", 0.5):
         result = {
-            "succeeded": False,
-            "error": "Induced random failure with retry",
-            "retry": "PT10S"
-            }
+            "succeeded": True
+        }
     else:
-        result = {
-            "succeeded": False,
-            "error": "Induced random failure, not retrying",
+        if random.random() < json["data"].get("retry", 0.5):
+            result = {
+                "succeeded": False,
+                "error": "Induced random failure with retry",
+                "retry": "PT10S"
+            }
+        else:
+            result = {
+                "succeeded": False,
+                "error": "Induced random failure, not retrying",
             }
 
-pscheduler.succeed_json(result)
+    return result
+
+
+
+PARSER = pscheduler.RFC7464Parser(sys.stdin)
+EMITTER = pscheduler.RFC7464Emitter(sys.stdout)
+
+for parsed in PARSER:
+    EMITTER(archive(parsed))
+
+pscheduler.succeed()

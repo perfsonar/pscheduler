@@ -1,0 +1,125 @@
+#!/usr/bin/python
+#
+# Run a test.  Just the test spec is provided on stdin.
+#
+
+import datetime
+import json
+import sys
+import time
+
+import pscheduler
+
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+
+try:
+    version = input['test']['spec']['version']
+    dest = input['test']['spec']['dest']
+    oid = input['test']['spec']['oid']
+    if version in ['1', '2c']:
+        community = input['test']['spec']['_community']
+
+except KeyError:
+    pscheduler.fail('Missing data in input')
+
+timeout_iso = input['test']['spec'].get("timeout", "PT5S" )
+timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+start_time = datetime.datetime.now()
+
+# Perform the test
+
+error = None
+argv = ['snmpget', '-Oe', '-OE']
+if version in ['1', '2c']:
+    cli_switches = {'version': '-v',
+                    '_community': '-c',
+                    }
+else:
+    cli_switches = {'version': '-v',
+                   'security-name': '-u',
+                   'auth-protocol': '-a',
+                   'priv-protocol': '-x',
+                   '_auth-key': '-A',
+                   '_priv-key': '-X',
+                   'security-level': '-l',
+                   'context': '-n'
+                   }
+
+# if no protocol specified, default is udp
+try:
+    protocol = input['test']['spec']['protocol']
+except KeyError:
+    protocol = None
+
+# loop through spec to get command line args
+for key in input['test']['spec'].keys():
+    try:
+        argv.append(cli_switches[key])
+    except KeyError:
+        # if key does not exist in dictionary, no switch is needed
+        # do not append schema
+        if key in ['schema', 'protocol']:
+            continue
+    if key == 'dest' and protocol != None:
+        argv.append(str(protocol) + ':' + input['test']['spec'][key])
+    elif key == 'oid':
+        for item in input['test']['spec'][key]:
+            argv.append(item)
+    else:
+        argv.append(input['test']['spec'][key])
+    
+status, stdout, stderr = pscheduler.run_program(argv, timeout=10)
+
+if status:
+    data = None
+    succeeded = False
+    error = "snmpget returned an error: \n%s" % stderr.strip('\n')
+    diags = stderr
+else:
+    succeeded = True
+    diags = stdout
+
+end_time = datetime.datetime.now()
+
+#
+# Produce results
+#
+
+if succeeded:
+    stdout = stdout.strip('\n').split('\n')
+    data = []
+    for item in stdout:
+        obj_dict = {}
+        data_list = item.split('=')
+        data_list = data_list[1].split(":", 1)
+        try:
+            obj_dict["value"] = data_list[1].strip()
+            obj_dict["type"] = data_list[0].strip()
+            if obj_dict["type"] == "Timeticks":
+                obj_dict["value"] = obj_dict["value"].split("(")[1].split(")")[0]
+            # convert string to int
+            try:
+                obj_dict["value"] = int( obj_dict["value"])
+            except ValueError:
+                pass
+        except IndexError:
+            obj_dict["type"] = None
+            obj_dict["value"] = data_list[0].strip()
+        
+        data.append(obj_dict)
+
+results = {
+    'succeeded': succeeded,
+    'result': {
+	    'schema': 1,
+	    'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
+	    'succeeded' : succeeded,
+        'data': data
+    },
+    'error': error,
+    'diags': diags
+}
+
+pscheduler.succeed_json(results)
+

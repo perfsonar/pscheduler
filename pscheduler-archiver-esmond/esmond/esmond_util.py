@@ -193,7 +193,7 @@ def _handle_storage_error(result, attempts=0, policy=[]):
 ###
 # Version of handle_storage_error that should be called
 def handle_storage_error(result, attempts=0, policy=[]): # pragma: no cover
-    pscheduler.succeed_json(_handle_storage_error(result, attempts=attempts, policy=policy))
+    return _handle_storage_error(result, attempts=attempts, policy=policy)
 
 ###
 # Utility classes
@@ -868,11 +868,7 @@ class EsmondRawRecord(EsmondBaseRecord):
     def add_additional_metadata(self, test_spec={}):
         #this should not happen
         if not self.test_type:
-            pscheduler.succeed_json({
-                "succeeded": False,
-                "error": "Developer error. The test type must be set if storing a raw record."
-            })
-
+            raise RuntimeError("No type set for raw record.")
             
         for field in test_spec:
             key = "pscheduler-%s-%s" % (self.test_type, field)

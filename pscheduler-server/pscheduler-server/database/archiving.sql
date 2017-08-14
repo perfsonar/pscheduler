@@ -119,6 +119,17 @@ BEGIN
     END IF;
 
 
+    -- Version 5 to version 6
+    -- Adds JQ transformation script
+    IF t_version = 5
+    THEN
+        ALTER TABLE archiving ADD COLUMN
+        transform JSON;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -188,12 +199,13 @@ BEGIN
                 expires := NULL;
 	    END IF;
 
-	    INSERT INTO archiving (run, archiver, archiver_data, ttl_expires)
+	    INSERT INTO archiving (run, archiver, archiver_data, ttl_expires, transform)
     	    VALUES (
     	        NEW.id,
     	        (SELECT id from archiver WHERE name = archive #>> '{archiver}'),
 	        (archive #> '{data}')::JSONB,
-	        expires
+	        expires,
+		(archive #> '{transform}')
     	    );
             inserted := TRUE;
         END LOOP;
@@ -275,7 +287,8 @@ RETURNS TABLE (
     participants JSONB,
     result JSONB,
     attempts INTEGER,
-    last_attempt TIMESTAMP WITH TIME ZONE
+    last_attempt TIMESTAMP WITH TIME ZONE,
+    transform JSON
 )
 AS $$
 BEGIN
@@ -295,7 +308,8 @@ BEGIN
         task.participants AS participants,
         run.result_merged AS result,
         archiving.attempts AS attempts,
-        archiving.last_attempt AS last_attempt
+        archiving.last_attempt AS last_attempt,
+	archiving.transform AS transform
     FROM
         archiving
         JOIN archiver ON archiver.id = archiving.archiver

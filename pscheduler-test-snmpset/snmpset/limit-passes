@@ -1,0 +1,82 @@
+#!/usr/bin/python
+#
+# Checker for 'snmpget' task limits
+#
+
+import pscheduler
+
+from validate import spec_is_valid
+from validate import limit_is_valid
+
+#
+# Load and validate everything
+#
+
+try:
+    json = pscheduler.json_load() # from stdin?
+except ValueError as ex:
+    pscheduler.fail("Invalid JSON %s" % str(ex))
+
+spec = json["spec"]
+valid, message = spec_is_valid(spec)
+if not valid:
+    raise ValueError("Invalid test spec: %s" % message)
+
+limit = json["limit"]
+valid, message = limit_is_valid(limit)
+if not valid:
+    raise ValueError("Invalid limit: %s" % message)
+
+
+#
+# Evaluate everything
+#
+
+errors = []
+
+
+#
+# Query host, host-node, oid, dest, community, version, protocol, timeout, security-name, auth-protocol, priv-protocol, auth-key, priv-key, security-level, context
+#
+
+for value in [ "host", "host-node", "dest", "community", "version", "protocol", "timeout", "security-name", "auth-protocol", "priv-protocol", "auth-key", "priv-key", "security-level", "context", "oid", "type", "value" ]:
+    try:
+        test = limit[value]
+        match = pscheduler.StringMatcher(test["match"])
+    except KeyError:
+        continue
+    try:
+        invert = test["invert"]
+    except KeyError:
+        invert = False
+
+    if value in [ "oid", "type", "value" ]:
+        for var in range(len(spec["oidargs"])):
+            in_limit = match.matches(spec["oidargs"][var][value])
+            if in_limit or (invert and in_limit):
+                try:
+                    errors.append(test["fail-message"])
+                except KeyError:
+                    errors.append("%s does not match limit" % (value.capitalize()))
+                except KeyError:
+                    pass  # Don't care if not there.
+    else:
+        in_limit = match.matches(spec[value])
+        if in_limit or (invert and in_limit):
+            try:
+                errors.append(test["fail-message"])
+            except KeyError:
+                errors.append("%s does not match limit" % (value.capitalize()))
+            except KeyError:
+                pass  # Don't care if not there.
+
+#
+# Finish up
+#
+
+result = { "passes": not errors }
+
+if errors:
+    result["errors"] = errors
+
+pscheduler.succeed_json(result)

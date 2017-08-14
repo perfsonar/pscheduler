@@ -1,0 +1,21 @@
+#!/usr/bin/python
+#
+# Determine the duration of a specified test.
+#
+#
+# TODO: This is a bare-bones, unreliable implementation that should be
+# used only for testing.
+#
+
+import datetime
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True);
+default_timeout = 'PT' + str(json['polls'] * json['period']) + 'S'
+timeout_iso = json.get("timeout", default_timeout )
+timeout = pscheduler.iso8601_as_timedelta(timeout_iso) + datetime.timedelta( seconds=10 )
+
+pscheduler.succeed_json({
+	"duration": pscheduler.timedelta_as_iso8601( timeout )
+	})

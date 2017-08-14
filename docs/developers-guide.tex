@@ -65,6 +65,8 @@ things with which it can interface:
   be made and the results.
 \item {\it Tools}, which are programs which, in single or multiple
   instances working together, make a measurement specified by a test.
+\item {\it Contexts}, which alter the execution context of tools
+  before they are run.
 \item {\it Archivers}, which send test results produced by tools
   elsewhere for long-term storage.
 \end{itemize}
@@ -99,8 +101,9 @@ This is the lifecycle of a measurement:
   participant-specific data for that run, such as ports to be used.
 \item The participant-specific data is collected, merged and
   distributed to all participants.
-\item At the scheduled time, the measurement is performed, producing a
-  result which is stored locally by each participant.
+\item At the scheduled time, the measurement is performed, optionally
+  with any specified context changes.  This produces a result which is
+  stored locally by each participant.
 \item The lead participant retrieves and stores the other
   participants' results.
 \item The set of participant results are merged into a full result,
@@ -580,21 +583,6 @@ problem unrelated to the input.
 
 
 %
-% FEATURE
-%
-\subsection{Feature}
-
-\todo{This feature will not be present in early releases.}
-
-\todo{Write this.  Features will be what take care of altering the
-  environment using chains of exec'd programs prior to running a tool
-  and tearing down afterward.  This is to solve the MDVPN problem.}
-
-\todo{Consider a different name for these.  Modifiers?  Preparers?}
-
-
-
-%
 % TOOL
 %
 \subsection{Tool}
@@ -869,6 +857,116 @@ messages on error.
 \calloutitem{Exit Status} {\tt 0} if generation of the merged result
 was successful, {\tt 1} if there was an error related to the input or
 {\tt 2} if there was an error unrelated to the input.
+
+
+
+%
+% CONTEXT
+%
+\subsection{Context}
+
+Context plugins alter the execution context of tools before they are
+run.  This is accomplished using {\it exec chaining}, where the
+plugins replace themselves with other programs via the system's {\tt
+  exec*(3)} family of calls instead of exiting.
+
+At this writing, the only known application for this type of
+plugin is changing network namespaces on Linux systems.
+
+\subsubsection{enumerate}
+
+This method produces a description of the context changer in a
+standard format used when pScheduler needs to determine what tools are
+installed.
+
+\calloutitem{Standard Input} Ignored.
+
+\calloutitem{Standard Output} JSON containing the following items:
+\begin{itemize}
+\item{\tt name} - A string serving as a short name for the plugin.
+  This value should be lowercase and match the name of the directory
+  where the tool class is installed.  The name should reflect its
+  function, such as {\tt linuxnns} or {\tt null}.
+\item{\tt description} - A short, textual description of what the
+  context changer does.
+\item{\tt version} - A \jsontype{Version}.
+\item{\tt maintainer} - A \jsontype{Maintainer}.
+\end{itemize}
+
+\example
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "name": "kafooble",
+    "description": "Change the kafoobling factor",
+    "version": "1.0",
+    "maintainer": {
+        "name": "Example Development Team",
+        "email": "plug-ins@example.org",
+        "href": "http://www.example.org/plug-ins"
+    }
+}
+\end{lstlisting}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if successful, nonzero on error.
+
+
+\subsubsection{data-is-valid}
+
+This method determines whether or not provided data is valid for use
+by the context changer.  Note that this checks the data for validity
+only and not for whether or not the data will result in the context
+being successfully changed.  It should not do anything that could be
+long-running or may be intermittent such as performing DNS lookups or
+determining if a web server answers.
+
+\calloutitem{Standard Input} JSON containing the {\tt data} element of
+an \jsontype{ContextSpecificationSingle}.
+
+\calloutitem{Standard Output} A JSON object containing the following pairs:
+
+\todo{This gets used in multiple places and should be brought into the
+  JSON dictionary.}
+\begin{itemize}
+\item \typeditem{valid}{Boolean} An indication of whether or not the
+  input was valid.
+
+\item \typeditem{error}{String} if {\tt valid} was \false, a plain
+  text message indicating the reason.
+\end{itemize}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages describing any errors other than the data being invald.
+
+\calloutitem{Exit Status} {\tt 0} if successful, {\tt 1} if there was
+any error unrelated to the input.
+
+
+\subsubsection{change}
+
+This method effects the context change and then executes another
+program specified by the input.
+
+\calloutitem{Standard Input} JSON containing the following pairs:
+\begin{itemize}
+\item{\tt data} - The data to be used by the plug-in.  This is assumed
+  to have been validated by the {\tt data-is-valid} method.
+\item{\tt exec} - A \jsontype{String} naming the path of the program
+  to be executed when this one finishes successfully.  This program
+  {\em must} be invoked using one of the {\tt exec*(3)} family of
+  calls.
+\end{itemize}
+
+\calloutitem{Standard Output} None.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages describing any errors other than the data being invald.
+
+\calloutitem{Exit Status} If successful, the method should not exit
+(see {\tt exec}, above).  The method should exit {\tt 1} if there was
+any error.
 
 
 
