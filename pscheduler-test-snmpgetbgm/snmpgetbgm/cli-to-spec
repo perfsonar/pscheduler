@@ -1,0 +1,196 @@
+#!/usr/bin/python
+#
+# Convert command-line options to an snmpget test specification
+#
+
+import re
+import string
+import optparse
+import pscheduler
+import sys
+
+if len(sys.argv) > 1:
+   # Args are on the command line
+   args = sys.argv[1:]
+
+else:
+   # Args are in a JSON array on stdin
+   json_args = pscheduler.json_load(exit_on_error=True)
+   args = []
+
+   if type(json_args) != list:
+      pscheduler.fail("Invalid JSON for this operation")
+   for arg in json_args:
+      if type(arg) not in (unicode, str, int, float):
+         pscheduler.fail("Invalid JSON for this operation")
+   args = [ str(arg) for arg in json_args ]
+
+
+# Gargle the arguments
+
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""Examples:
+
+  task snmpget --version 2c --community public example.net
+    text
+
+"""
+)
+
+opt_parser.add_option("--host",
+                      help="Host to run the test.",
+                      action="store", type="string",
+                      dest="host")
+
+opt_parser.add_option("--host-node",
+                      help="Host to run the test.",
+                      action="store", type="string",
+                      dest="host_node")
+
+opt_parser.add_option("--dest",
+                      help="Destination that will be queried.",
+                      action="store", type="string",
+                      dest="dest")
+                    
+opt_parser.add_option("--version",
+                      help="Version of SNMP to be used. (1|2c|3)",
+                      action="store", type="string",
+                      dest="version")
+
+opt_parser.add_option("--period",
+                        help="Seconds between polling periods.",
+                        action="store", type="int",
+                        dest="period", default=1)
+
+opt_parser.add_option("--polls",
+                        help="Number of polls.",
+                        action="store", type="int",
+                        dest="polls", default=1)
+
+opt_parser.add_option("--oid",
+                      help="""
+                        List of OIDs to be queried, separated by a comma without spaces.
+
+                        Example:
+
+                        --oid sysORUpTime.1,sysORUpTime.2
+
+                        """,
+                      action="store", type="string",
+                      dest="oid")
+
+opt_parser.add_option("--protocol",
+                      help="Transport specifier (tcp|udp)",
+                      action="store", type="string",
+                      dest="protocol")
+
+opt_parser.add_option("--timeout",
+                      help="Timeout for each query attempt",
+                      action="store", type="string",
+                      dest="timeout")
+
+# snmp v3 specific options
+opt_parser.add_option("--security-name",
+                  help="Security Name",
+                  action="store", type="string",
+                  dest="security_name")
+                
+opt_parser.add_option("--auth-protocol",
+                  help="Authentication Protocol (md5|sha)",
+                  action="store", type="string",
+                  dest="auth_protocol")
+
+opt_parser.add_option("--priv-protocol",
+                  help="Privacy Protocol (des|3des|aes|aes128|aes192|aes256)",
+                  action="store", type="string",
+                  dest="priv_protocol")
+
+opt_parser.add_option("--auth-key",
+                  help="Authentication Passphrase",
+                  action="store", type="string",
+                  dest="auth_key")
+
+opt_parser.add_option("--priv-key",
+                  help="Privacy Passphrase",
+                  action="store", type="string",
+                  dest="priv_key")
+
+opt_parser.add_option("--security-level",
+                  help="Security Level (noAuthNoPriv|authNoPriv|authPriv)",
+                  action="store", type="string",
+                  dest="security_level")
+
+opt_parser.add_option("--context",
+                  help="Context Name",
+                  action="store", type="string",
+                  dest="context")
+
+# snmp v1 and v2c specific option
+opt_parser.add_option("--community",
+                      help="Community string",
+                      action="store", type="string",
+                      dest="community")
+
+(options, remaining_args) = opt_parser.parse_args(args)
+
+if len(remaining_args) != 0:
+   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
+
+result = { 'schema': 1 }
+
+
+if options.host is not None:
+   result['host'] = options.host
+
+if options.host_node is not None:
+   result['host-node'] = options.host_node
+
+if options.dest is not None:
+   result['dest'] = options.dest
+
+if options.version is not None:
+   result['version'] = options.version
+
+if options.oid is not None:
+   result['oid'] = options.oid.split(',')
+
+if options.protocol is not None:
+   result['protocol'] = options.protocol
+
+if options.timeout is not None:
+   result['timeout'] = options.timeout
+
+# If no # polls specified, it is an snmpget test and defaults to 1
+if options.polls is not None:
+    result['polls'] = options.polls
+
+if options.period is not None:
+    result['period'] = options.period
+
+if options.version in ['1', '2c']:
+  if options.community is not None:
+    result['_community'] = options.community
+
+else:
+    if options.security_name is not None:
+      result['security-name'] = options.security_name
+
+    if options.auth_protocol is not None:
+      result['auth-protocol'] = options.auth_protocol
+
+    if options.priv_protocol is not None:
+      result['priv-protocol'] = options.priv_protocol
+
+    if options.auth_key is not None:
+      result['_auth-key'] = options.auth_key
+
+    if options.priv_key is not None:
+      result['_priv-key'] = options.priv_key
+
+    if options.security_level is not None:
+      result['security-level'] = options.security_level
+
+    if options.context is not None:
+      result['context'] = options.context
+
+pscheduler.succeed_json(result)

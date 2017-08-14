@@ -1,0 +1,107 @@
+#!/usr/bin/python
+#
+# Validate data for the snmptrap archiver
+#
+
+import pscheduler
+
+try:
+    json = pscheduler.json_load(max_schema=1)
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+        })
+
+data_validator = {
+    "enum_types": {
+        "VersionNumber": {
+                "type": "string",
+                "enum": [ "1", "2c", "3"]
+        },
+        "AuthProtocol": {
+            "type": "string",
+            "enum": [ "MD5", "SHA"]
+        },
+        "PrivProtocol": {
+            "type": "string",
+            "enum": [ "AES", "AES128", "AES192", "AES256", "DES", "3DES" ]
+        },
+        "SecurityLevel": {
+            "type": "string",
+            "enum": [ "noAuthNoPriv", "authNoPriv", "authPriv"]
+        }
+    },
+    "local": {
+        "v2c": {
+            "type": "object",
+            "properties": {
+                "schema": { "$ref": "#/pScheduler/Cardinal" },
+                "dest": { "$ref": "#/pScheduler/String" },
+                "_community": { "$ref": "#/pScheduler/String" },
+                "trap-oid": { "$ref": "#/pScheduler/SNMPOID" },
+                "trap-varbinds": { "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "oid": { "$ref": "#/pScheduler/SNMPOID" },
+                                    "value": { "$ref": "#/pScheduler/AnyJSON" }
+                                },
+                                "additionalProperties": False
+                            }
+                },
+            "instance-index": { "$ref": "#/pScheduler/Integer" }
+            },
+            "required": [
+                "dest",
+                "_community",
+                "trap-oid"
+            ]
+        },
+        "v3": {
+            "type": "object",
+            "properties": {
+                "schema": { "$ref": "#/pScheduler/Cardinal" },
+                "dest": { "$ref": "#/pScheduler/String" },
+                "security-name":   { "$ref": "#/pScheduler/String" },
+                "auth-protocol":   { "$ref": "#/local/AuthProtocol" },
+                "priv-protocol":   { "$ref": "#/local/PrivProtocol" },
+                "_auth-key":       { "$ref": "#/pScheduler/String" },
+                "_priv-key":       { "$ref": "#/pScheduler/String" },
+                "security-level":  { "$ref": "#/local/SecurityLevel" },
+                "trap-oid": { "$ref": "#/pScheduler/SNMPOID" },
+                "trap-varbinds": { "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "oid": { "$ref": "#/pScheduler/SNMPOID" },
+                                    "value": { "$ref": "#/pScheduler/AnyJSON" }
+                                },
+                                "additionalProperties": False
+                            }
+                },
+            "instance-index": { "$ref": "#/pScheduler/Integer" }
+            },
+            "required": [
+                "dest",
+                "security-name",
+                "trap-oid"
+            ]
+        }
+    },
+    "oneOf": [
+        { "$ref": "#/local/v2c" },
+        { "$ref": "#/local/v3" }
+    ],
+    "additionalProperties": True
+}
+
+valid, error = pscheduler.json_validate(json, data_validator)
+
+if not valid:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": error
+        })
+
+pscheduler.succeed_json({ "valid": True })

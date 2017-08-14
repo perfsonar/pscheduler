@@ -567,7 +567,239 @@ __dictionary__ = {
         "additionalProperties": False
         },
 
+    # TODO: There are still some data types undefined, mainly because we cannot
+    # find agents that will return such data types yet
+    "SNMPNumericOID": {
+        "type": "string",
+        "pattern": r'^((\.\d)|\d)+(\.\d+)*$'
+    },
+
+    # must contain at least one letter to be considered alphanumeric
+    "SNMPAlphaNumOID": {
+        "type": "string",
+        "pattern": r'[a-z][A-Z]*'
+    },
+
+    "SNMPResultOID": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^ObjectIdentity$'
+            },
+            "value": { "$ref": "#/pScheduler/String" }
+        },
+        "additionalProperties": True,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPOID": {
+        "anyOf": [
+            { "$ref": "#/pScheduler/SNMPNumericOID" },
+            { "$ref": "#/pScheduler/SNMPAlphaNumOID"},
+            { "$ref": "#/pScheduler/SNMPResultOID"}
+        ]
+    },
+
+    "SNMPInteger": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^Integer$'
+            },
+            "value": { "$ref": "#/pScheduler/Integer" }
+        },
+        "additionalProperties": True,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPUnsigned32": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^Unsigned32$'
+            },
+            "value": { "$ref": "#/pScheduler/UInt32"}
+        },
+        "additionalProperties": True,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPString": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'String$'
+            },
+            "value": { "$ref": "#/pScheduler/String"}
+        },
+        "additionalProperties": True,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPOpaque": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^Opaque$'
+            },
+            "value": { "$ref": "#/pScheduler/String"}
+        },
+        "additionalProperties": True,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPIPAddress": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^IpAddress$'
+            },
+            "value": { "$ref": "#/pScheduler/IPAddress"}
+        },
+        "additionalProperties": True,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPCounter32": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^Counter32$'
+            },
+            "value": { "$ref": "#/pScheduler/UInt32"}
+        },
+        "additionalProperties": True,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPCounter64": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^Counter64$'
+            },
+            "value": { "$ref": "#/pScheduler/UInt64"}
+        },
+        "additionalProperties": True,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPGauge32": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^Gauge32$'
+            },
+            "value": { "$ref": "#/pScheduler/UInt32"}
+        },
+        "additionalProperties": True,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPTimeticks": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^TimeTicks$'
+            },
+            "value": { "$ref": "#/pScheduler/Integer" }
+        },
+        "additionalProperties": True,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPBits": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "pattern": r'^Bits$'
+            },
+            "value": { "$ref": "#/pScheduler/String"},
+        },
+        "additionalProperties": True,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
+
+    "SNMPOther": {
+        "type": "object",
+        "properties": {
+            "type": { "$ref": "#/pScheduler/AnyJSON" },
+            "value": { "$ref": "#/pScheduler/AnyJSON" }
+        },
+        "additionalProperties": True,
+        "required": [
+            "value"
+        ]
+    },
+
+    "SNMPResult": {
+        "anyOf": [
+            { "$ref": "#/pScheduler/SNMPOID" },
+            { "$ref": "#/pScheduler/SNMPInteger" },
+            { "$ref": "#/pScheduler/SNMPUnsigned32" },
+            { "$ref": "#/pScheduler/SNMPString" },
+            { "$ref": "#/pScheduler/SNMPOpaque" },
+            { "$ref": "#/pScheduler/SNMPIPAddress" },
+            { "$ref": "#/pScheduler/SNMPCounter32" },
+            { "$ref": "#/pScheduler/SNMPCounter64" },
+            { "$ref": "#/pScheduler/SNMPGauge32" },
+            { "$ref": "#/pScheduler/SNMPTimeticks" },
+            { "$ref": "#/pScheduler/SNMPBits" },
+            { "$ref": "#/pScheduler/SNMPOther" }
+        ]
+    },
+
+    "SNMPResultList": {
+        "type": "array",
+        "items": { "$ref": "#/pScheduler/SNMPResult" }
+    },
+
     "TaskSpecification_V1": {
+
         "type": "object",
         "properties": {
             "schema":   {
