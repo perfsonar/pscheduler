@@ -61,6 +61,11 @@ DECLARE
 	converted TEXT;
 BEGIN
 
+    IF value IS NULL
+    THEN
+        RETURN NULL;
+    END IF;
+
     converted := to_char(value, 'YYYY-MM-DD"T"HH24:MI:SS');
 
     hours := extract(timezone_hour from value);
@@ -80,6 +85,75 @@ BEGIN
     RETURN converted;
 END;
 $$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION interval_to_iso8601(period INTERVAL)
+RETURNS TEXT
+AS $$
+DECLARE
+    extracted NUMERIC;
+    days NUMERIC;
+    weeks NUMERIC;
+    use_t BOOLEAN;
+    iso TEXT;
+BEGIN
+
+    iso = '';
+    use_t = FALSE;
+
+    extracted = EXTRACT('SECONDS' FROM period);
+    IF extracted > 0
+    THEN
+        iso := to_char(extracted, 'FM999999999') || 'S' || iso;
+        use_t := TRUE;
+    END IF;
+
+    extracted = EXTRACT('MINUTES' FROM period);
+    IF extracted > 0
+    THEN
+        iso := to_char(extracted, 'FM999999999') || 'M' || iso;
+        use_t := TRUE;
+    END IF;
+
+    extracted = EXTRACT('HOURS' FROM period);
+    IF extracted > 0
+    THEN
+        iso := to_char(extracted, 'FM999999999') || 'H' || iso;
+        use_t := TRUE;
+    END IF;
+
+    IF use_t
+    THEN
+        iso := 'T' || iso;
+    END IF;
+
+    extracted = EXTRACT('DAYS' FROM period);
+    IF extracted > 0
+    THEN
+
+        days := extracted % 7;
+	IF days > 0
+        THEN
+            iso := to_char(days, 'FM999999999') || 'D' || iso;
+        END IF;
+
+        extracted := extracted - days;
+        IF extracted > 0
+        THEN
+            iso := to_char(extracted / 7, 'FM999999999') || 'W' || iso;
+        END IF;
+
+    END IF;
+
+    IF ISO = ''
+    THEN
+        RETURN 'P0D';
+    END IF;
+
+    RETURN 'P' || iso;
+END;
+$$ LANGUAGE plpgsql;
+
 
 
 

@@ -274,7 +274,8 @@ __dictionary__ = {
         "type": "object",
         "properties": {
             "script":    { "$ref": "#/pScheduler/String" },
-            "output-raw": { "$ref": "#/pScheduler/Boolean" }
+            "output-raw": { "$ref": "#/pScheduler/Boolean" },
+			"args": { "$ref": "#/pScheduler/AnyJSON" }
         },
         "additionalProperties": False,
         "required": [ "script" ]
@@ -453,6 +454,42 @@ __dictionary__ = {
             "data",
             ]
         },
+
+    "ContextSpecificationSingle": {
+        "type": "object",
+        "properties": {
+            "context": { "type": "string" },
+            "data": { "$ref": "#/pScheduler/AnyJSON" }
+            },
+        "additionalProperties": False,
+        "required": [
+            "context",
+            "data"
+            ]
+        },
+
+    "ContextSpecificationList": {
+        "type": "array",
+        "items": { "$ref": "#/pScheduler/ContextSpecificationSingle" },
+    },
+
+    "ContextSpecificationListList": {
+        "type": "array",
+        "items": { "$ref": "#/pScheduler/ContextSpecificationList" },
+    },
+
+    "ContextSpecification": {
+        "type": "object",
+        "properties": {
+            "schema":   { "$ref": "#/pScheduler/Cardinal" },
+            "contexts": { "$ref": "#/pScheduler/ContextSpecificationListList" }
+            },
+        "additionalProperties": False,
+        "required": [
+            "contexts"
+            ]
+        },
+
 
     "Maintainer": {
         "type": "object",
@@ -761,10 +798,14 @@ __dictionary__ = {
         "items": { "$ref": "#/pScheduler/SNMPResult" }
     },
 
-    "TaskSpecification": {
+    "TaskSpecification_V1": {
+
         "type": "object",
         "properties": {
-            "schema":   { "$ref": "#/pScheduler/Cardinal" },
+            "schema":   {
+                "type": "integer",
+                "enum": [ 1 ]
+                },
             "lead-bind":{ "$ref": "#/pScheduler/Host" },
             "test":     { "$ref": "#/pScheduler/TestSpecification" },
             "tool":     { "$ref": "#/pScheduler/String" },
@@ -782,6 +823,41 @@ __dictionary__ = {
             "test",
             ]
         },
+
+    "TaskSpecification_V2": {
+        "type": "object",
+        "properties": {
+            "schema":   {
+                "type": "integer",
+                "enum": [ 2 ]
+                },
+            "lead-bind":{ "$ref": "#/pScheduler/Host" },
+            "test":     { "$ref": "#/pScheduler/TestSpecification" },
+            "tool":     { "$ref": "#/pScheduler/String" },
+            "tools":    { "$ref": "#/pScheduler/StringList" },
+            "schedule": { "$ref": "#/pScheduler/ScheduleSpecification" },
+            "archives": {
+                "type": "array",
+                "items": { "$ref": "#/pScheduler/ArchiveSpecification" },
+                },
+            "contexts": { "$ref": "#/pScheduler/ContextSpecification" },
+            "reference": { "$ref": "#/pScheduler/AnyJSON" },
+            "_key": { "$ref": "#/pScheduler/String" },
+        },
+        "additionalProperties": False,
+        "required": [
+            "schema",
+            "test",
+            ]
+        },
+
+    "TaskSpecification": {
+        "anyOf": [
+            { "$ref": "#/pScheduler/TaskSpecification_V1" },
+            { "$ref": "#/pScheduler/TaskSpecification_V2" }
+            ]
+        },
+
 
     "TestSpecification": {
         "type": "object",
@@ -1067,6 +1143,24 @@ __dictionary__ = {
             ]
         },
 
+        "Context": {
+            "type": "object",
+            "properties": {
+                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "name":         { "$ref": "#/pScheduler/String" },
+                "description":  { "$ref": "#/pScheduler/String" },
+                "version":      { "$ref": "#/pScheduler/Version" },
+                "maintainer":   { "$ref": "#/pScheduler/Maintainer" }
+            },
+            "additionalProperties": False,
+            "required": [
+                "name",
+                "description",
+                "version",
+                "maintainer"
+            ]
+        },
+
 
     }
 }
@@ -1134,7 +1228,7 @@ def json_validate(json, skeleton):
     schema = copy.copy(__default_schema__)
 
     for element in [ 'type', 'items', 'properties', 'additionalProperties',
-                     'required', 'local' ]:
+                     'required', 'local', '$ref' ]:
         if element in skeleton:
             schema[element] = skeleton[element]
 

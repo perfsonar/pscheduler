@@ -269,6 +269,19 @@ BEGIN
     END IF;
 
 
+    -- Version 9 to version 10
+    -- Separate, queryable JSON column with details
+    IF t_version = 9
+    THEN
+	ALTER TABLE task ADD COLUMN json_detail JSONB;
+
+	-- Populate existing tasks
+	UPDATE task SET json_detail = NULL;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -298,6 +311,10 @@ DECLARE
 	run_result external_program_result;
 	temp_json JSONB;
 	archive JSONB;
+	json_result TEXT;
+	context_participant JSONB;
+	context JSONB;
+        scheduling RECORD;
 BEGIN
 
 	--
@@ -510,6 +527,111 @@ BEGIN
 	        PERFORM archiver_validate(archive);
 	    END LOOP;
 	END IF;
+
+
+	--
+	-- CONTEXTS
+	--
+
+	IF (TG_OP = 'INSERT'
+            OR (TG_OP = 'UPDATE' AND NEW.json <> OLD.json))
+	   AND NEW.json ? 'contexts'
+        THEN
+
+	    -- Make sure it looks sane
+	    json_result := json_validate(NEW.json #> '{contexts}', '#/pScheduler/ContextSpecification');
+            IF json_result IS NOT NULL
+            THEN
+		RAISE EXCEPTION 'Invalid context specification: %', json_result;
+	    END IF;
+
+	    -- Make sure there aren't more contexts than the task has participants.
+	    IF jsonb_array_length(NEW.json #> '{contexts,contexts}') <> NEW.nparticipants
+            THEN
+		RAISE EXCEPTION 'Number of contexts for this task must be exactly %',
+		    NEW.nparticipants;
+	    END IF;
+
+	    -- Check with all of the plugins to make sure the data is valid.
+	    FOR context_participant IN ( SELECT * FROM jsonb_array_elements(NEW.json #> '{contexts, contexts}') )
+	    LOOP
+	        FOR context IN (SELECT * FROM jsonb_array_elements_text(context_participant))
+		LOOP
+		    PERFORM context_validate(context);
+	        END LOOP;
+	    END LOOP;
+	END IF;
+
+	--
+	-- SEARCHABLE JSON WITH DETAILS
+	--
+
+	SELECT INTO scheduling
+            scheduling_class.*
+        FROM
+            task
+            JOIN test ON test.id = task.test
+            JOIN scheduling_class ON scheduling_class.id = test.scheduling_class
+        ;
+
+
+	NEW.json_detail := jsonb_set(NEW.json, '{detail}', '{}'::JSONB);
+
+	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,added}',
+            to_jsonb(timestamp_with_time_zone_to_iso8601(NEW.added)));
+
+	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,anytime}',
+            to_jsonb(scheduling.anytime));
+
+	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,cli}',
+            to_jsonb(NEW.cli));
+
+	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,duration}',
+            to_jsonb(interval_to_iso8601(NEW.duration)));
+
+	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,enabled}',
+	    to_jsonb(NEW.enabled));
+
+	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,exclusive}',
+            to_jsonb(scheduling.exclusive));
+
+	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,multi-result}',
+            to_jsonb(scheduling.multi_result));
+
+	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,participant}',
+	    to_jsonb(NEW.participant));
+
+	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,participants}',
+	    to_jsonb(NEW.participants));
+
+	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,post}',
+            to_jsonb(interval_to_iso8601(NEW.post)));
+
+	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,runs}',
+	    to_jsonb(NEW.runs));
+
+        IF NEW.slip IS NOT NULL
+        THEN
+	    NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,slip}',
+                to_jsonb(interval_to_iso8601(NEW.slip)));
+        ELSE
+            NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,slip}',
+                'null'::JSONB);
+        END IF;
+
+	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,spec-limits-passed}',
+	    to_jsonb(NEW.limits_passed));
+
+        IF NEW.start IS NOT NULL
+        THEN
+	    NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,start}',
+                to_jsonb(timestamp_with_time_zone_to_iso8601(NEW.start)));
+        ELSE
+            NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,start}',
+                'null'::JSONB);
+        END IF;
+
+
 
 
 	RETURN NEW;

@@ -3,7 +3,7 @@
 #
 
 Name:		pscheduler-rpm
-Version:	1.0.0.5
+Version:	1.0.1
 Release:	1%{?dist}
 
 Summary:	Macros for use by pScheduler RPM specs
@@ -63,6 +63,10 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 # Archivers
 %%_pscheduler_archiver_libexec %{_pscheduler_classes}/archiver
 %%_pscheduler_archiver_doc %{_pscheduler_docdir}/archiver
+
+# Context Changers
+%%_pscheduler_context_libexec %{_pscheduler_classes}/context
+%%_pscheduler_context_doc %{_pscheduler_docdir}/context
 
 # pScheduler front-end comands
 %%_pscheduler_commands %{_pscheduler_libexecdir}/commands

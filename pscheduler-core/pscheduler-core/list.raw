@@ -18,7 +18,7 @@ TYPE=$1
 shift
 
 case "${TYPE}" in
-    test|tool|archiver)
+    test|tool|archiver|context)
 	true
 	;;
     *)

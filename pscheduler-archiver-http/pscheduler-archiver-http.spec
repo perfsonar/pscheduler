@@ -4,7 +4,7 @@
 
 %define short	http
 Name:		pscheduler-archiver-%{short}
-Version:	1.0.0.5
+Version:	1.0.1
 Release:	1%{?dist}
 
 Summary:	HTTP archiver class for pScheduler
@@ -16,7 +16,7 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server
+Requires:	pscheduler-server >= 1.0.1.1
 
 BuildRequires:	pscheduler-rpm
 

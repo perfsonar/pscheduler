@@ -10,12 +10,14 @@ import copy
 # all of the modules and set this up automagically.
 
 if __name__ == "__main__":
+    from limit import jq
     from limit import passfail
     from limit import rundaterange
     from limit import runschedule
     from limit import test
     from limit import testtype
 else:
+    from .limit import jq
     from .limit import passfail
     from .limit import rundaterange
     from .limit import runschedule
@@ -24,6 +26,7 @@ else:
 
 
 limit_creator = {
+    'jq':            lambda data: jq.LimitJQ(data),
     'pass-fail':     lambda data: passfail.LimitPassFail(data),
     'run-daterange': lambda data: rundaterange.LimitRunDateRange(data),
     'run-schedule':  lambda data: runschedule.LimitRunSchedule(data),

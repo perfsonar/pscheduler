@@ -37,6 +37,7 @@ python-isodate
 python-netaddr
 python-ntplib
 python-py-radix
+python-pyjq
 # TODO: This can be dropped in 1.2
 python-repoze.lru
 python-subprocess32
@@ -61,8 +62,8 @@ httpd-wsgi-socket
 # Utility and Tool programs
 #
 drop-in
-# JQ was used in development but isn't needed for production.
-#jq
+# This is only required on EL6, which supplies an older version.
+ifelse(REDHAT_RELEASE_MAJOR,6,jq,)
 paris-traceroute
 random-string
 
@@ -73,6 +74,7 @@ random-string
 
 pscheduler-rpm
 pscheduler-account
+pscheduler-jq-library
 python-pscheduler
 pscheduler-core
 pscheduler-server
@@ -123,6 +125,12 @@ pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-rabbitmq
 pscheduler-archiver-syslog
+
+# Context Changers
+pscheduler-context-changefail
+pscheduler-context-changenothing
+pscheduler-context-linuxnns
+
 
 # Misc.
 pscheduler-docs

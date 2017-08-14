@@ -1,23 +1,15 @@
 #!/usr/bin/python
-#
-# Send a result to syslog.
-#
+"""
+Send a result to syslog.
+"""
 
 import pscheduler
+import sys
 import syslog
 
-json = pscheduler.json_load(exit_on_error=True, max_schema=1)
+MAX_SCHEMA = 1
 
-errors = ()
-
-try:
-    ident = json['data']['ident']
-except KeyError:
-    ident = 'pScheduler'
-
-
-
-facilities = {
+FACILITIES = {
     'kern': syslog.LOG_KERN,
     'user': syslog.LOG_USER,
     'mail': syslog.LOG_MAIL,
@@ -38,18 +30,8 @@ facilities = {
     'local7': syslog.LOG_LOCAL7
     }
 
-try:
-    facility_str = json['data']['facility']
-except KeyError:
-    facility_str = 'user'
-try:
-    facility = facilities[facility_str]
-except KeyError:
-    errors.append("Invalid facility")
 
-
-
-priorities = {
+PRIORITIES = {
     'emerg': syslog.LOG_EMERG,
     'alert': syslog.LOG_ALERT,
     'crit': syslog.LOG_CRIT,
@@ -60,40 +42,86 @@ priorities = {
     'debug': syslog.LOG_DEBUG
     }
 
-try:
-    priority_str = json['data']['priority']
-except KeyError:
-    priority_str = 'info'
-try:
-    priority = priorities[priority_str]
-except KeyError:
-    errors.append("Invalid priority '%s'" % priority_str)
-
-if errors:
-    pscheduler.succeed_json({
-        "succeeded": False,
-        "error": '; '.join(errors)
-    })
 
 
-try:
-    # Ident often comes in unicode and this requires a string.
-    syslog.openlog(str(ident), 0, facility)
+def archive(json):
 
-    result = json['result']
-    if isinstance(result, basestring):
-        # Post strings cleanly
-        output = result
-    else:
-        # Anything else is JSON
-        output = pscheduler.json_dump(json['result'])
-    syslog.syslog(priority, output)
-    syslog.closelog()
-except Exception as ex:
-    pscheduler.succeed_json({
-        "succeeded": False,
-        "error": "Failed to log result: %s" % str(ex)
-    })
+    errors = ()
+
+    schema = json["data"].get("schema", 1)
+    if schema > MAX_SCHEMA:
+        return {
+            "succeeded": False,
+            "error": "Unsupported schema version %d; max is %d" % (
+                schema, MAX_SCHEMA)
+        }
+
+    # Ident
+
+    try:
+        ident = json['data']['ident']
+    except KeyError:
+        ident = 'pScheduler'
+
+    # Facility
+
+    try:
+        facility_str = json['data']['facility']
+    except KeyError:
+        facility_str = 'user'
+    try:
+        facility = FACILITIES[facility_str]
+    except KeyError:
+        errors.append("Invalid facility")
+
+    # Priority
+
+    try:
+        priority_str = json['data']['priority']
+    except KeyError:
+        priority_str = 'info'
+    try:
+        priority = PRIORITIES[priority_str]
+    except KeyError:
+        errors.append("Invalid priority '%s'" % priority_str)
+
+    if errors:
+        return {
+            "succeeded": False,
+            "error": '; '.join(errors)
+        }
+
+    # Log the run
+
+    try:
+        # Ident often comes in unicode and this requires a string.
+        syslog.openlog(str(ident), 0, facility)
+
+        result = json['result']
+        if isinstance(result, basestring):
+            # Post strings cleanly
+            output = result
+        else:
+            # Anything else is JSON
+            output = pscheduler.json_dump(json['result'])
+        syslog.syslog(priority, output)
+        syslog.closelog()
+    except Exception as ex:
+        return {
+            "succeeded": False,
+            "error": "Failed to log result: %s" % str(ex)
+        }
 
 
-pscheduler.succeed_json({'succeeded': True})
+    return {'succeeded': True}
+
+
+
+
+PARSER = pscheduler.RFC7464Parser(sys.stdin)
+EMITTER = pscheduler.RFC7464Emitter(sys.stdout)
+
+for parsed in PARSER:
+    EMITTER(archive(parsed))
+
+pscheduler.succeed()
