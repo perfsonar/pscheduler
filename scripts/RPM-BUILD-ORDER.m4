@@ -93,6 +93,9 @@ pscheduler-test-latencybg
 pscheduler-test-throughput
 pscheduler-test-rtt
 pscheduler-test-simplestream
+pscheduler-test-snmpget
+pscheduler-test-snmpgetbgm
+pscheduler-test-snmpset
 pscheduler-test-trace
 pscheduler-test-dns
 
@@ -107,6 +110,9 @@ pscheduler-tool-bwctliperf3
 pscheduler-tool-bwctlping
 pscheduler-tool-bwctltraceroute
 pscheduler-tool-bwctltracepath
+pscheduler-tool-net-snmp
+pscheduler-tool-net-snmp-set
+pscheduler-tool-pysnmp
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
@@ -124,6 +130,7 @@ pscheduler-archiver-esmond
 pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-rabbitmq
+pscheduler-archiver-snmptrap
 pscheduler-archiver-syslog
 
 # Context Changers
