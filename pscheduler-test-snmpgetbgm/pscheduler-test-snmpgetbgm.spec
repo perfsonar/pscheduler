@@ -4,7 +4,7 @@
 
 %define short	snmpgetbgm
 Name:		pscheduler-test-%{short}
-Version:	1.0.0.3
+Version:	1.0.1
 Release:	1%{?dist}
 
 Summary:	snmpgetbgm test for pScheduler

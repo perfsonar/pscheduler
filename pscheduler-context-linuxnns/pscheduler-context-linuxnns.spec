@@ -8,7 +8,7 @@
 
 %define short	linuxnns
 Name:		pscheduler-context-%{short}
-Version:	1.0.0.5
+Version:	1.0.1
 Release:	1%{?dist}
 
 Summary:	Linux network namespace context changer for pScheduler
