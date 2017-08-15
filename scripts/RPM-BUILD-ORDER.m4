@@ -32,7 +32,7 @@ postgresql-load
 # Python Modules
 python-argparse
 # TODO: Drop this when we drop support for EL6.
-ifelse(REDHAT_RELEASE_MAJOR,6,python-cython,)
+ifelse(REDHAT_RELEASE_MAJOR,6,python-Cython,)
 ifelse(REDHAT_RELEASE_MAJOR,7,
     python-functools32,)
 python-isodate
