@@ -1,16 +1,16 @@
-pscheduler-server (1.0.1~1.rc1-1~bpo70+2) perfsonar-wheezy-staging; urgency=low
+pscheduler-server (1.0.1.1-1~bpo70+1) perfsonar-wheezy-release; urgency=low
 
-  * Backport to Wheezy
-  * Lowering requirement on python-pscheduler version a tiny bit.
+  * Backport to Wheezy.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 27 Jul 2017 01:33:18 +0200
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 12:15:55 +0100
 
-pscheduler-server (1.0.1~1.rc1-1) perfsonar-jessie-staging; urgency=low
+pscheduler-server (1.0.1.1-1) perfsonar-jessie-release; urgency=low
 
   * New upstream version
   * Moving pscheduler-warmboot calls to trigger.
+  * Lowering requirement on python-pscheduler version a tiny bit.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 27 Jul 2017 00:52:34 +0200
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 28 Jul 2017 14:08:27 +0200
 
 pscheduler-server (1.0.0.5-1) perfsonar-jessie-release; urgency=low
 
@@ -28,7 +28,7 @@ pscheduler-server (1.0-1) perfsonar-jessie-release; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Apr 2017 11:49:29 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 11:50:45 +0100
 
 pscheduler-server (0.0-1) unstable; urgency=low
 
