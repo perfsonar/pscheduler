@@ -4,7 +4,7 @@
 
 %define short	rabbitmq
 Name:		pscheduler-archiver-%{short}
-Version:	1.0.1
+Version:	1.0.1.1
 Release:	1%{?dist}
 
 Summary:	RabbitMQ archiver class for pScheduler
