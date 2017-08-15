@@ -39,6 +39,8 @@ python-isodate
 python-netaddr
 python-ntplib
 python-py-radix
+# TODO: Drop this when we drop support for EL6.
+ifelse(REDHAT_RELEASE_MAJOR,6,jq,)
 python-pyjq
 # TODO: This can be dropped in 1.2
 python-repoze.lru
@@ -64,8 +66,6 @@ httpd-wsgi-socket
 # Utility and Tool programs
 #
 drop-in
-# This is only required on EL6, which supplies an older version.
-ifelse(REDHAT_RELEASE_MAJOR,6,jq,)
 paris-traceroute
 random-string
 
