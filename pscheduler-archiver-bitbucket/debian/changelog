@@ -1,9 +1,9 @@
-pscheduler-archiver-bitbucket (1.0.1~1.rc1-1) perfsonar-jessie-staging; urgency=low
+pscheduler-archiver-bitbucket (1.0.1.1-1) perfsonar-jessie-release; urgency=low
 
   * New upstream version
   * Moving pscheduler-warmboot call to trigger.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 27 Jul 2017 00:51:14 +0200
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 11:49:12 +0100
 
 pscheduler-archiver-bitbucket (1.0.0.5-1) perfsonar-jessie-release; urgency=low
 

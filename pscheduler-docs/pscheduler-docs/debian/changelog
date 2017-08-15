@@ -1,8 +1,8 @@
-pscheduler-docs (1.0.1~1.rc1-1) perfsonar-jessie-staging; urgency=low
+pscheduler-docs (1.0.1.1-1) perfsonar-jessie-release; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 27 Jul 2017 00:52:32 +0200
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 11:50:45 +0100
 
 pscheduler-docs (1.0.0.5-1) perfsonar-jessie-release; urgency=low
 

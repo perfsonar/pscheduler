@@ -1,4 +1,4 @@
-pscheduler-server (1.0.1~1.rc1-2) perfsonar-jessie-staging; urgency=low
+pscheduler-server (1.0.1.1-1) perfsonar-jessie-release; urgency=low
 
   * New upstream version
   * Moving pscheduler-warmboot calls to trigger.
@@ -22,7 +22,7 @@ pscheduler-server (1.0-1) perfsonar-jessie-release; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Apr 2017 11:49:29 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 11:50:45 +0100
 
 pscheduler-server (0.0-1) unstable; urgency=low
 
