@@ -74,12 +74,14 @@ class IdentifierIPCIDRListURL():
         if self.transform is not None:
             try:
                 json = pscheduler.json_load(text)
-            except ValueError:
+                text = self.transform(json)
+            except (ValueError,
+                    pscheduler.jqfilter.JQRuntimeError):
                 # TODO: Would be nice if we could log the failure
                 self.next_attempt = possible_next_attempt
                 return
 
-            text = self.transform(json)
+
 
 
         # TODO: Consider caching this on disk someplace so that it can
