@@ -1,7 +1,7 @@
 Binary files pyjq-2.1.0-orig/pyjq.pyc and pyjq-2.1.0/pyjq.pyc differ
 diff -rupN pyjq-2.1.0-orig/_pyjq.pyx pyjq-2.1.0/_pyjq.pyx
 --- pyjq-2.1.0-orig/_pyjq.pyx	2017-08-16 13:29:05.000000000 -0400
-+++ pyjq-2.1.0/_pyjq.pyx	2017-08-16 15:39:46.000000000 -0400
++++ pyjq-2.1.0/_pyjq.pyx	2017-08-16 15:54:38.000000000 -0400
 @@ -8,6 +8,12 @@ import os
  from collections import OrderedDict
  import six
@@ -61,7 +61,7 @@ diff -rupN pyjq-2.1.0-orig/_pyjq.pyx pyjq-2.1.0/_pyjq.pyx
 +                        message = jv_string_value(jv_dump_string(jv_message,0))
 +                    jv_free(jv_message)
 +                    jv_free(result)
-+                    raise ScriptRuntimeError("Error: %s" % (message))
++                    raise ScriptRuntimeError(message)
 +
                  jv_free(result)
                  break
