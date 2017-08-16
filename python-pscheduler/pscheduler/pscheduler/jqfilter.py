@@ -3,8 +3,14 @@ JQ JSON Filter Class
 """
 
 import pyjq
+from  _pyjq import ScriptRuntimeError
 
 from .psjson import *
+
+
+class JQRuntimeError(Exception):
+    pass
+
 
 class JQFilter(object):
     """
@@ -40,16 +46,21 @@ class JQFilter(object):
         string and return that.
         """
 
-        result = self.script.all(json)
+        try:
 
-        if isinstance(result, list) and self.output_raw:
-            return "\n".join([str(item) for item in result])
+            result = self.script.all(json)
 
-        elif isinstance(result, dict) or isinstance(result, list):
-            return result
+            if isinstance(result, list) and self.output_raw:
+                return "\n".join([str(item) for item in result])
 
-        else:
-            raise ValueError("No idea what to do with %s result", type(result))
+            elif isinstance(result, dict) or isinstance(result, list):
+                return result
+
+            else:
+                raise ValueError("No idea what to do with %s result", type(result))
+
+        except ScriptRuntimeError as ex:
+            raise JQRuntimeError(str(ex))
 
 
 
