@@ -20,6 +20,7 @@ URL:		https://github.com/doloopwhile/pyjq
 Source:		%{short}-%{version}.tar.gz
 Patch0:		%{name}-%{version}-00-nodownloads.patch
 Patch1:		%{name}-%{version}-01-librarypath.patch
+Patch2:		%{name}-%{version}-02-exception.patch
 
 Requires:       python
 Requires:       jq >= 1.5
@@ -44,6 +45,7 @@ Python bindings to JQ
 %setup -q -n %{short}-%{version}
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 
 
 %build
