@@ -11,6 +11,8 @@ BEGIN
     PERFORM test_boot();
     PERFORM tool_boot();
     PERFORM archiver_boot();
+    PERFORM context_boot();
+    NOTIFY warmboot;
 END;
 $$ LANGUAGE plpgsql;
 

@@ -1,0 +1,172 @@
+#!/usr/bin/python
+"""Diagnostic program for the limit system
+
+troubleshoot-limits [ OPTIONS ] TASK-FILE
+
+TASK-FILE is the path to a file containing the task you wish to test.
+The easy ways to obtain one of these is to use the 'task' command's
+--export switch or use cURL to export an existing task from the server
+using its URL.
+
+Options:
+
+--config CONFIG-FILE - Location of the limit configuration file.
+  Defaults to the limit configuration file on the local system.
+
+--hints HINTS - JSON hints (or @/path to read from a file).  If not
+  provided, hints of 127.0.0.1 will be used for the requester and
+  server.
+
+--start START-TIME - Proposed start time as an ISO 8601 timestamp.  If
+  not provided, time-related limits will be ignored.  If not provided
+  but --duration is, the current date and time will be used.
+
+--duration DURATION - How long the proposed task is supposed to take
+  on the timeline in ISO8601 format.  If not provided but --start is,
+  a default of PT10S will be used.
+
+"""
+
+
+import optparse
+import pscheduler
+
+from pscheduler.limitprocessor import LimitProcessor
+
+pscheduler.set_graceful_exit()
+
+#
+# Gargle the arguments
+#
+
+
+class VerbatimParser(optparse.OptionParser):
+    def format_epilog(self, formatter):
+        return self.epilog
+
+opt_parser = VerbatimParser(
+    usage="Usage: %prog [ OPTIONS ] task",
+    epilog=
+"""
+Example:
+
+  limit-diags taskfile
+      Test the task described in taskfile against the system's limits.
+
+  limit-diags --start 2017-08-14T12:34:56 --duration PT10S taskfile
+      Test the task described in taskfile against the system's limits for
+      a specified time and duration.
+"""
+    )
+
+
+# TODO: This needs to be filled in during build
+default_limit_file = "__LIMITSFILE__"
+
+opt_parser.disable_interspersed_args()
+
+opt_parser.add_option("--duration",
+                      help="Proposed duration (ISO 8601)",
+                      default=None,
+                      action="store", type="string",
+                      dest="duration")
+
+opt_parser.add_option("--hints",
+                      help="Hints as JSON (@/path to read from file;"
+                      " defaults 127.0.0.1 for all values)",
+                      default=None,
+                      action="store", type="string",
+                      dest="hints")
+
+opt_parser.add_option("--config",
+                      help="Location of limit configuration file (default %s)" \
+                      % (default_limit_file),
+                      default=default_limit_file,
+                      action="store", type="string",
+                      dest="config")
+
+opt_parser.add_option("--start",
+                      help="Proposed start time (ISO 8601)",
+                      default=None,
+                      action="store", type="string",
+                      dest="start")
+
+
+(options, remaining_args) = opt_parser.parse_args()
+
+
+#
+# Validate everything
+#
+
+try:
+    if options.start is not None:
+        _ = pscheduler.iso8601_as_datetime(options.start)
+except ValueError as ex:
+    pscheduler.fail("Start time: %s" % (str(ex)))
+
+try:
+    if options.duration is not None:
+        _ = pscheduler.iso8601_as_timedelta(options.duration)
+except ValueError as ex:
+    pscheduler.fail("Duration: %s" % (str(ex)))
+
+if options.hints is not None:
+    try:
+        hints = pscheduler.json_load(
+            pscheduler.string_from_file(options.hints))
+    except (IOError, ValueError) as ex:
+        pscheduler.fail("Hints: %s" % (str(ex)))
+else:
+    hints = {
+        "requester": "127.0.0.1",
+        "server": "127.0.0.1"
+    }
+
+if len(remaining_args) != 1:
+    opt_parser.print_usage()
+    pscheduler.fail()
+
+
+
+try:
+    processor = LimitProcessor(options.config)
+except Exception as ex:
+    pscheduler.fail("Unable to read limit configuration: %s" % (str(ex)))
+
+
+
+
+task_file = remaining_args[0]
+try:
+    task_text = pscheduler.string_from_file("@%s" % (task_file))
+    task = pscheduler.json_load(task_text)
+except Exception as ex:
+    pscheduler.fail("Unable to read task: %s" % (str(ex)))
+
+
+if options.start is not None:
+    task["schedule"] = {
+        "start": options.start
+    }
+    task["schedule"]["duration"] = options.duration \
+                                   if options.duration is not None else "PT10S"
+        
+elif options.duration is not None:
+    task["schedule"] = {
+        "duration": options.duration
+    }
+    task["schedule"]["start"] = pscheduler.datetime_as_iso8601(
+        pscheduler.time_now())
+
+if "schedule" in task:
+    print "For task starting at %s lasting %s:\n" % (
+        task["schedule"]["start"], task["schedule"]["duration"])
+
+_passed, _limits_passed, diags = processor.process(task["test"], hints)
+
+print diags
+
+pscheduler.succeed()
+
+exit(99)

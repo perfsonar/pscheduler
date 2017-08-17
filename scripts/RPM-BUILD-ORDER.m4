@@ -31,12 +31,17 @@ postgresql-load
 
 # Python Modules
 python-argparse
+# TODO: Drop this when we drop support for EL6.
+ifelse(REDHAT_RELEASE_MAJOR,6,Cython,)
 ifelse(REDHAT_RELEASE_MAJOR,7,
     python-functools32,)
 python-isodate
 python-netaddr
 python-ntplib
 python-py-radix
+# TODO: Drop this when we drop support for EL6.
+ifelse(REDHAT_RELEASE_MAJOR,6,jq,)
+python-pyjq
 # TODO: This can be dropped in 1.2
 python-repoze.lru
 python-subprocess32
@@ -61,8 +66,6 @@ httpd-wsgi-socket
 # Utility and Tool programs
 #
 drop-in
-# JQ was used in development but isn't needed for production.
-#jq
 paris-traceroute
 random-string
 
@@ -73,6 +76,7 @@ random-string
 
 pscheduler-rpm
 pscheduler-account
+pscheduler-jq-library
 python-pscheduler
 pscheduler-core
 pscheduler-server
@@ -91,6 +95,9 @@ pscheduler-test-latencybg
 pscheduler-test-throughput
 pscheduler-test-rtt
 pscheduler-test-simplestream
+pscheduler-test-snmpget
+pscheduler-test-snmpgetbgm
+pscheduler-test-snmpset
 pscheduler-test-trace
 pscheduler-test-dns
 
@@ -105,6 +112,9 @@ pscheduler-tool-bwctliperf3
 pscheduler-tool-bwctlping
 pscheduler-tool-bwctltraceroute
 pscheduler-tool-bwctltracepath
+pscheduler-tool-net-snmp
+pscheduler-tool-net-snmp-set
+pscheduler-tool-pysnmp
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
@@ -122,7 +132,14 @@ pscheduler-archiver-esmond
 pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-rabbitmq
+pscheduler-archiver-snmptrap
 pscheduler-archiver-syslog
+
+# Context Changers
+pscheduler-context-changefail
+pscheduler-context-changenothing
+pscheduler-context-linuxnns
+
 
 # Misc.
 pscheduler-docs
