@@ -1,4 +1,4 @@
-python-pyjq (2.1.0-1) perfsonar-jessie-staging; urgency=low
+python-pyjq (2.1.0-1~bpo70+1) perfsonar-wheezy-staging; urgency=low
 
   * Initial release
 
