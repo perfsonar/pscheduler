@@ -1,8 +1,7 @@
 Binary files pyjq-2.1.0-orig/pyjq.pyc and pyjq-2.1.0/pyjq.pyc differ
-diff -rupN pyjq-2.1.0-orig/_pyjq.pyx pyjq-2.1.0/_pyjq.pyx
---- pyjq-2.1.0-orig/_pyjq.pyx	2017-08-16 13:29:05.000000000 -0400
-+++ pyjq-2.1.0/_pyjq.pyx	2017-08-16 15:54:38.000000000 -0400
-@@ -8,6 +8,12 @@ import os
+--- a/_pyjq.pyx
++++ b/_pyjq.pyx
+@@ -8,6 +8,12 @@
  from collections import OrderedDict
  import six
  
@@ -15,7 +14,7 @@ diff -rupN pyjq-2.1.0-orig/_pyjq.pyx pyjq-2.1.0/_pyjq.pyx
  
  cdef extern from "jv.h":
      ctypedef struct jv:
-@@ -26,9 +32,15 @@ cdef extern from "jv.h":
+@@ -26,9 +32,15 @@
  
  
      jv jv_copy(jv)
@@ -31,7 +30,7 @@ diff -rupN pyjq-2.1.0-orig/_pyjq.pyx pyjq-2.1.0/_pyjq.pyx
      void jv_free(jv)
  
      jv jv_null()
-@@ -46,6 +58,7 @@ cdef extern from "jv.h":
+@@ -46,6 +58,7 @@
      jv jv_array_append(jv, jv)
  
      jv jv_string_sized(const char*, int)
@@ -39,7 +38,7 @@ diff -rupN pyjq-2.1.0-orig/_pyjq.pyx pyjq-2.1.0/_pyjq.pyx
  
      jv jv_object()
      jv jv_object_get(jv object, jv key)
-@@ -68,6 +81,7 @@ cdef extern from "jv.h":
+@@ -68,6 +81,7 @@
      void jv_parser_set_buf(jv_parser*, const char*, int, int)
      jv jv_parser_next(jv_parser*)
  
@@ -47,7 +46,7 @@ diff -rupN pyjq-2.1.0-orig/_pyjq.pyx pyjq-2.1.0/_pyjq.pyx
  cdef extern from "jq.h":
      ctypedef struct jq_state:
          pass
-@@ -213,10 +227,23 @@ cdef class Script:
+@@ -213,10 +227,23 @@
          while True:
              result = jq_next(self._jq)
              if not jv_is_valid(result):
