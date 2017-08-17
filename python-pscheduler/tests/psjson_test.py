@@ -57,5 +57,9 @@ class TestPsjson(PschedTestBase):
         self.assertEqual(ret, '{"foo": "foo"}')
 
 
+    # TODO: Need tests for streaming JSON classes.  These will involve
+    # more code than the actual classes.
+
+
 if __name__ == '__main__':
     unittest.main()

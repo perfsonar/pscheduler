@@ -1,0 +1,86 @@
+#!/usr/bin/python
+#
+# Format an snmpget result
+#
+
+import jsontemplate
+import pscheduler
+import sys
+from validate import result_is_valid
+
+
+try:
+    format = sys.argv[1]
+except IndexError:
+    format = 'text/plain'
+
+input = pscheduler.json_load(exit_on_error=True)
+
+valid, message = result_is_valid(input["result"])
+
+if not valid:
+    pscheduler.fail(message)
+
+result = input["result"]
+spec = input["spec"]
+
+if format == 'text/plain':
+    print 'Time: %s\n\n' % result['time']
+    print 'Data:\n'
+    for i in range(len(result['data'])):
+        print 'OID: %s\n' % spec['oid'][i]
+        for item in result['data'][i]:
+            try:
+                print 'Sequence number: %s\t' % item['seq_num']
+            except KeyError:
+                pass
+            print 'Timestamp: %s\t' % item['timestamp']
+            try:
+                print 'Type: %s\t' % item['type']
+                print 'Value: %s\t' % item['value']
+            except KeyError:
+                print 'Error: %s\n' % item['value']
+
+            # deltas
+            try:
+                print 'Time delta: %s\t' % item['timedelta']
+                print 'Delta: %s\n' % item['delta']
+            except KeyError:
+                print ''
+
+elif format == 'text/html':
+    print '<table>'
+    print '    <tr>'
+    print '        <th>Time</th>'
+    print '    </tr>'
+    print '    <tr>'
+    print '        <td>%s</td>' % result['time']
+    print '    </tr>'
+    print '    <tr>'
+    print '        <th>SNMP Data</th>'
+    print '    </tr>'
+    for i in range(len(result['data'])):
+        print '<tr>'
+        print '    <td>OID: %s\t </td>' % spec['oid'][i]
+        for item in result['data'][i]:
+            try:
+                print '<td>Sequence number: %s\t </td>' % item['seq_num']
+            except KeyError:
+                pass
+            try:
+                print '<td>Type: %s\t </td>' % item['type']
+                print '<td>Value: %s\n</td>' % item['value']
+            except KeyError:
+                print '<td>Error: %s\n</td>' % item['value']
+            try:
+                print '<td>Time delta: %s\t </td>' % item['timedelta']
+                print '<td>Delta: %s\n</td>' % item['delta']   
+            except KeyError:
+                pass
+        print '</tr>'
+
+    print '</table>'
+
+
+else:
+    pscheduler.fail("Unsupported format '%s'" % format)

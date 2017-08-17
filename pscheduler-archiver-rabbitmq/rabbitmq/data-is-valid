@@ -20,7 +20,6 @@ data_validator = {
         "_url":         { "$ref": "#/pScheduler/String" },
         "exchange":     { "$ref": "#/pScheduler/String" },
         "routing-key":  { "$ref": "#/pScheduler/String" },
-        "template":     { "$ref": "#/pScheduler/AnyJSON" },
         "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
     },
     "additionalProperties": False,

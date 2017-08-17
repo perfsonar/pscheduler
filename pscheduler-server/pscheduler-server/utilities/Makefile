@@ -7,6 +7,7 @@
 
 COMMANDS=\
 	backup \
+	limit-diags \
 	restore
 
 default: build
@@ -15,6 +16,10 @@ default: build
 %: %.raw
 ifndef CONFIGDIR
 	@echo CONFIGDIR not defined for $@
+	false
+endif
+ifndef LIMITSFILE
+	@echo LIMITSFILE not defined for $@
 	false
 endif
 ifndef PGDATABASE
@@ -35,6 +40,7 @@ ifndef VERSION
 endif
 	sed \
 		-e 's|__CONFIGDIR__|$(CONFIGDIR)|g' \
+		-e 's|__LIMITSFILE__|$(LIMITSFILE)|g' \
 		-e 's|__PGDATABASE__|$(PGDATABASE)|g' \
 		-e 's|__PGPASSFILE__|$(PGPASSFILE)|g' \
 		-e 's|__TMPDIR__|$(TMPDIR)|g' \
