@@ -1,4 +1,4 @@
-jq (1.5+dfsg-1.3~bpo7+1) wheezy-backports; urgency=medium
+jq (1.5+dfsg-1.3~bpo7+1) perfsonar-wheezy-staging; urgency=medium
 
   * Rebuild for wheezy-backports.
   * Change Maintainer to ChangZhuo Chen.
