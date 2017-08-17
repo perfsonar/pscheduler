@@ -3,7 +3,7 @@ Section: net
 Priority: optional
 Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
 Build-Depends: debhelper (>= 9), dh-python, python-setuptools,
- python, cython, libjq-dev, libonig-dev
+ python, cython, libjq-dev, libonig-dev, libpython2.7-dev
 Standards-Version: 3.9.6
 Homepage: https://pypi.python.org/pypi/pyjq
 
