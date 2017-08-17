@@ -22,4 +22,4 @@ include /usr/share/dpkg/default.mk
 
 override_dh_auto_install:
 	make install \
-		DESTDIR=$(CURDIR)/debian/drop-in/usr/lib/jq/pscheduler
+		DESTDIR=$(CURDIR)/debian/pscheduler-jq-library/usr/lib/jq/pscheduler
