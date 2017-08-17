@@ -1,7 +1,6 @@
-diff -rupN pyjq-2.1.0/pyjq.py pyjq-2.1.0-patched/pyjq.py
---- pyjq-2.1.0/pyjq.py	2017-06-28 00:39:47.000000000 -0400
-+++ pyjq-2.1.0-patched/pyjq.py	2017-08-16 12:49:17.000000000 -0400
-@@ -8,11 +8,19 @@ import _pyjq
+--- a/pyjq.py
++++ b/pyjq.py
+@@ -8,11 +8,19 @@
  __all__ = []
  
  
@@ -23,7 +22,7 @@ diff -rupN pyjq-2.1.0/pyjq.py pyjq-2.1.0-patched/pyjq.py
  
  
  def default_opener(url):
-@@ -40,33 +48,33 @@ def _get_value(value, url, opener):
+@@ -40,33 +48,33 @@
      return value
  
  
@@ -65,9 +64,8 @@ diff -rupN pyjq-2.1.0/pyjq.py pyjq-2.1.0-patched/pyjq.py
      """
 -    return compile(script, vars).one(_get_value(value, url, opener))
 +    return compile(script, vars, library_paths).one(_get_value(value, url, opener))
-diff -rupN pyjq-2.1.0/_pyjq.pyx pyjq-2.1.0-patched/_pyjq.pyx
---- pyjq-2.1.0/_pyjq.pyx	2017-06-28 00:39:47.000000000 -0400
-+++ pyjq-2.1.0-patched/_pyjq.pyx	2017-08-16 12:49:17.000000000 -0400
+--- a/_pyjq.pyx
++++ b/_pyjq.pyx
 @@ -3,6 +3,8 @@
  Python binding for jq
  """
@@ -77,7 +75,7 @@ diff -rupN pyjq-2.1.0/_pyjq.pyx pyjq-2.1.0-patched/_pyjq.pyx
  from collections import OrderedDict
  import six
  
-@@ -73,6 +75,7 @@ cdef extern from "jq.h":
+@@ -73,6 +75,7 @@
      ctypedef void (*jq_err_cb)(void *, jv)
  
      jq_state *jq_init()
@@ -85,7 +83,7 @@ diff -rupN pyjq-2.1.0/_pyjq.pyx pyjq-2.1.0-patched/_pyjq.pyx
      void jq_teardown(jq_state **)
      bint jq_compile_args(jq_state *, const char* str, jv args)
      void jq_start(jq_state *, jv value, int flags)
-@@ -144,12 +147,15 @@ cdef void Script_error_cb(void* x, jv er
+@@ -144,12 +147,15 @@
      Script._error_cb(<object>x, err)
  
  
@@ -102,7 +100,7 @@ diff -rupN pyjq-2.1.0/_pyjq.pyx pyjq-2.1.0-patched/_pyjq.pyx
          self._errors = []
          self._jq = jq_init()
          if not self._jq:
-@@ -161,6 +167,34 @@ cdef class Script:
+@@ -161,6 +167,34 @@
              for k, v in vars.items()
          ])
  
