@@ -1,0 +1,19 @@
+Source: python-pyjq
+Section: net
+Priority: optional
+Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9), dh-python, python-setuptools,
+ python, cython, libjq-dev, libonig-dev
+Standards-Version: 3.9.6
+Homepage: https://pypi.python.org/pypi/pyjq
+
+Package: python-pyjq
+Architecture: all
+Depends: ${misc:Depends}, ${shlibs:Depends}, python
+Description: Python bindings for jq
+ jq is like sed for JSON data – you can use it to slice and filter and map and
+ transform structured data with the same ease that sed, awk, grep and friends
+ let you play with text.
+ .
+ You can seamlessly call jq script (like regular expression) and process plain
+ python data structure.
