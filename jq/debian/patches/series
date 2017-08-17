@@ -1,0 +1,7 @@
+enable-manpages.patch
+remove-unecessary-rakefile-deps.patch
+patch-version-into-build.patch
+dont-distribute-duplicate-docs.patch
+stack-exhaustion.patch
+heap-buffer-overflow.patch
+disable-static-libtool.patch
