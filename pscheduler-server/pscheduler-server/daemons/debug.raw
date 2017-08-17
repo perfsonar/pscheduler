@@ -37,8 +37,7 @@ shift
 
 # Make sure the user can kill the processes in question
 
-USERNAME=$(id -nu)
-if [ "${USERNAME}" != "root" -a "${USERNAME}" != "__PSUSER__" ]
+if [ "$(id -u)" != "0" -a "$(id -nu)" != "__PSUSER__" ]
 then
     echo "This program must be run as root or __PSUSER__" 1>&2
     exit 1

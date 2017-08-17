@@ -7,7 +7,7 @@ WHEREAMI="$(dirname $0)"
 
 if ! which m4 > /dev/null 2>&1
 then
-    if [ $(id -u) = 0 ]
+    if [ "$(id -u)" = "0" ]
     then
 	yum -y install m4
     else
