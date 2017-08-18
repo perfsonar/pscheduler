@@ -1,9 +1,3 @@
-pscheduler-tool-powstream (1.0.1.2-1) UNRELEASED; urgency=low
-
-  * New upstream version.
-
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 18 Aug 2017 11:04:27 +0100
-
 pscheduler-tool-powstream (1.0.1.1-1) perfsonar-jessie-release; urgency=low
 
   * New upstream version
