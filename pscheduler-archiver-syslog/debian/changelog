@@ -1,14 +1,8 @@
-pscheduler-archiver-syslog (1.0.1.2-1~bpo70+1) UNRELEASED; urgency=low
+pscheduler-archiver-syslog (1.0.1.1-1~bpo70+1) perfsonar-wheezy-release; urgency=low
 
   * Backport to Wheezy.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 18 Aug 2017 11:22:25 +0100
-
-pscheduler-archiver-syslog (1.0.1.2-1) UNRELEASED; urgency=low
-
-  * New upstream version.
-
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 18 Aug 2017 11:04:01 +0100
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 12:15:35 +0100
 
 pscheduler-archiver-syslog (1.0.1.1-1) perfsonar-jessie-release; urgency=low
 
