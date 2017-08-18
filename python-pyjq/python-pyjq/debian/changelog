@@ -1,5 +1,5 @@
-python-pyjq (2.1.0-1) UNRELEASED; urgency=low
+python-pyjq (2.1.0-1) perfsonar-jessie-staging; urgency=low
 
   * Initial release
 
- -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Thu, 17 Aug 2017 10:11:42 +0200
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Fri, 18 Aug 2017 12:43:23 +0100
