@@ -1,8 +1,14 @@
-pscheduler-archiver-bitbucket (1.0.1.1-1~bpo70+1) perfsonar-wheezy-release; urgency=low
+pscheduler-archiver-bitbucket (1.0.1.2-1~bpo70+1) UNRELEASED; urgency=low
 
   * Backport to Wheezy.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 12:15:23 +0100
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 18 Aug 2017 11:22:14 +0100
+
+pscheduler-archiver-bitbucket (1.0.1.2-1) UNRELEASED; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 18 Aug 2017 11:03:41 +0100
 
 pscheduler-archiver-bitbucket (1.0.1.1-1) perfsonar-jessie-release; urgency=low
 

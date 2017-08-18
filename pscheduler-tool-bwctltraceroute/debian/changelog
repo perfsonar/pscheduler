@@ -1,8 +1,14 @@
-pscheduler-tool-bwctltraceroute (1.0.1.1-1~bpo70+1) perfsonar-wheezy-release; urgency=low
+pscheduler-tool-bwctltraceroute (1.0.1.2-1~bpo70+1) UNRELEASED; urgency=low
 
   * Backport to Wheezy.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 12:15:44 +0100
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 18 Aug 2017 11:22:34 +0100
+
+pscheduler-tool-bwctltraceroute (1.0.1.2-1) UNRELEASED; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 18 Aug 2017 11:04:17 +0100
 
 pscheduler-tool-bwctltraceroute (1.0.1.1-1) perfsonar-jessie-release; urgency=low
 
