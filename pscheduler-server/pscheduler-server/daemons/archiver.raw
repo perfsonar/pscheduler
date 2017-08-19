@@ -696,11 +696,20 @@ def main_program():
     default_maintainer.refresh()
 
     next_refresh = None
+    last_debug = log.is_forced_debugging()
 
     while True:
 
-        # Do some housekeeping
-        archiver_collection.skim()
+        # Drain the pools if the debug level changes.  This is done
+        # since persisting archivers won't register the change in state.
+
+        current_debug = log.is_forced_debugging()
+        if current_debug != last_debug:
+            archiver_collection.drain()
+            last_debug = current_debug
+        else:
+            archiver_collection.skim()
+
 
         warmboot = False
 

@@ -302,6 +302,11 @@ class Log():
         self.__update_env()
 
 
+    def is_forced_debugging(self):
+        """Return whether or not forced debug is on"""
+        return self.forced_debug
+
+
 # Test program
 
 if __name__ == "__main__":
