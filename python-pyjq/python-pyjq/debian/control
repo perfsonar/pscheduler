@@ -4,9 +4,10 @@ Priority: optional
 Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
 Build-Depends: debhelper (>= 9), dh-python, python-setuptools,
  python-all, python-six, python-mock, cython (>= 0.19.1),
- libjq-dev, libonig-dev, python-all-dev
+ libjq-dev, libonig-dev, python2.7-dev
 Standards-Version: 3.9.6
 Homepage: https://pypi.python.org/pypi/pyjq
+X-Python-Version: >= 2.7
 
 Package: python-pyjq
 Architecture: any
