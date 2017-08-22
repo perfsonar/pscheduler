@@ -11,7 +11,7 @@ X-Python-Version: >= 2.7
 
 Package: python-pyjq
 Architecture: any
-Depends: ${python:Depends}, ${misc:Depends}, ${shlibs:Depends}
+Depends: ${python:Depends}, ${misc:Depends}, ${shlibs:Depends}, python-six (>= 1.8.0)
 Description: Python bindings for jq
  jq is like sed for JSON data – you can use it to slice and filter and map and
  transform structured data with the same ease that sed, awk, grep and friends
