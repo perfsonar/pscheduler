@@ -53,7 +53,7 @@ opt_parser.add_option("-d", "--dsn",
 opt_parser.add_option("-m", "--max-parallel",
                       help="Maximum concurrent archivings",
                       action="store", type="int", dest="max_parallel",
-                      default=15)
+                      default=50)
 opt_parser.add_option("-p", "--pool-size",
                       help="Size of pool per archive type",
                       action="store", type="int", dest="pool_size",
@@ -317,19 +317,37 @@ class ArchiverProcessPool(object):
         through it.
         """
 
-        with self.lock:
-            if len(self.pool) == 0 and self.size < self.max_size:
-                process = ArchiveProcess(self.archiver)
-                self.size += 1
-                self.log.debug("Pool %s: New process %d",
-                               self.archiver, self.size)
-            else:
-                process = self.pool.pop()
+        process = None
 
-            cycle_at_start = self.reset_cycle
+        while process is None:
+            with self.lock:
+                if len(self.pool) > 0:
+                    # Take a process from the pool.
+                    process = self.pool.pop()
+                else:
+                    # Pool is empty
+                    if self.size < self.max_size:
+                        # Room for new processes; create one.
+                        process = ArchiveProcess(self.archiver)
+                        self.size += 1
+                        self.log.debug("Pool %s: New process %d",
+                                       self.archiver, self.size)
+                    else:
+                        # Pool is full and all processes are busy.
+                        pass
 
-            self.max_utilization = max(self.max_utilization,
-                                       self.size - len(self.pool))
+                if process is not None:
+                    self.log.debug("Pool %s: Got a process", self.archiver)
+                    cycle_at_start = self.reset_cycle
+                    self.max_utilization = max(self.max_utilization,
+                                               self.size - len(self.pool))
+
+            # TODO: Need to do something better than this, but it has
+            # to be deadlock-proof.
+            if process is None:
+                self.log.debug("Pool %s: Waiting for a process", self.archiver)
+                time.sleep(0.25)
+
 
         try:
             result = process(json)
@@ -617,6 +635,7 @@ class ArchiveWorker():
                 }
                 self.log.debug("%d: Exception: %s", self.id, str(ex))
                 returncode = 1
+
 
         attempt = {
             # TODO: Figure out to format this with -xx:xx for the timezone offset.
