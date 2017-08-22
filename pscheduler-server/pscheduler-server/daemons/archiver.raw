@@ -316,21 +316,20 @@ class ArchiverProcessPool(object):
         Pull a process from the queue (or create one) and run a result
         through it.
         """
-        if self.queue.empty() and self.size < self.max_size:
-            process = ArchiveProcess(self.archiver)
-            with self.lock:
+
+        with self.lock:
+            if self.queue.empty() and self.size < self.max_size:
+                process = ArchiveProcess(self.archiver)
                 self.size += 1
                 self.log.debug("Pool %s: New process %d",
                                self.archiver, self.size)
-        else:
-            with self.lock:
+            else:
                 process = self.queue.get()
 
-        with self.lock:
             cycle_at_start = self.reset_cycle
 
-        self.max_utilization = max(self.max_utilization,
-                                   self.size - self.queue.qsize())
+            self.max_utilization = max(self.max_utilization,
+                                       self.size - self.queue.qsize())
 
         try:
             result = process(json)
@@ -402,7 +401,7 @@ class ArchiverProcessPool(object):
                 self.size -= 1
                 to_remove -= 1
 
-            # Anything left comes out of whats in circulation
+            # Anything left comes out of what's in circulation
             self.skim_count = to_remove
 
             # Reset for next time.
@@ -597,31 +596,21 @@ class ArchiveWorker():
             skip = False
 
         if (not failed) and (not skip):
-            archiver_in = pscheduler.json_dump(json)
-            self.log.debug("%d: Running archiver %s with input %s",
-                           self.id, archiver, archiver_in)
 
-            returncode, stdout, stderr = pscheduler.run_program(
-                [ "pscheduler", "internal", "invoke", "archiver", archiver, "archive" ],
-                stdin=archiver_in
-            )
+            self.log.debug("%d: Archiving to %s: %s",
+                           self.id, archiver, json)
 
-            self.log.debug("%d: Archiver exited %d", self.id, returncode)
-            self.log.debug("%d: Returned JSON from archiver: %s", self.id, stdout)
-            self.log.debug("%d: Returned errors from archiver: %s", self.id, stderr)
-
-
-        try:
-            result = self.collection(archiver, json)
-            self.log.debug("%d: Returned JSON from archiver: %s", self.id, result)
-            returncode = 0
-        except Exception as ex:
-            result = {
-                "succeeded": False,
-                "error": "Exception during archiving: %s" % (str(ex))
+            try:
+                result = self.collection(archiver, json)
+                self.log.debug("%d: Returned JSON from archiver: %s", self.id, result)
+                returncode = 0
+            except Exception as ex:
+                result = {
+                    "succeeded": False,
+                    "error": "Exception during archiving: %s" % (str(ex))
                 }
-            self.log.debug("%d: Exception: %s", self.id, str(ex))
-            returncode = 1
+                self.log.debug("%d: Exception: %s", self.id, str(ex))
+                returncode = 1
 
         attempt = {
             # TODO: Figure out to format this with -xx:xx for the timezone offset.
@@ -745,11 +734,20 @@ def main_program():
     default_maintainer.refresh()
 
     next_refresh = None
+    last_debug = log.is_forced_debugging()
 
     while True:
 
-        # Do some housekeeping
-        archiver_collection.skim()
+        # Drain the pools if the debug level changes.  This is done
+        # since persisting archivers won't register the change in state.
+
+        current_debug = log.is_forced_debugging()
+        if current_debug != last_debug:
+            archiver_collection.drain()
+            last_debug = current_debug
+        else:
+            archiver_collection.skim()
+
 
         warmboot = False
 

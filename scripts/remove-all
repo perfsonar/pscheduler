@@ -7,7 +7,7 @@
 
 WHEREAMI=$(dirname "$0")
 
-if [ $(id -u) != 0 ]
+if [ "$(id -u)" != "0" ]
 then
     echo "Must be root." 1>&2
     exit 1

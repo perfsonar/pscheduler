@@ -44,7 +44,7 @@ build: $(REPO)
 uninstall:
 	scripts/remove-all
 
-fresh: uninstall clean build
+fresh: uninstall build
 
 clean:
 	scripts/clean-all
