@@ -336,7 +336,8 @@ class RunWorker:
                                run.part_data_full,
                                scheduling_class.enum,
                                task.json ->> 'lead-bind',
-                               task.json #> '{contexts,contexts}'
+                               task.json #> '{contexts,contexts}',
+                               task.json ->> '_key'
                            FROM
                                run
                                JOIN task ON task.id = run.task
@@ -359,7 +360,7 @@ class RunWorker:
 
                 test, tool, task_uuid, task_id, participant, participants, \
                     limits_passed, start, end, test_spec, cli, run_uuid, \
-                    partdata, scheduling_class, lead_bind, contexts = row
+                    partdata, scheduling_class, lead_bind, contexts, key = row
 
         except Exception as ex:
             self.log.error("%d: Failed to fetch run info: %s",
@@ -696,12 +697,16 @@ class RunWorker:
 
             # Store the full result with all of the participants
 
+            put_params = {} if key is None else { "key": key }
+
             for run in runs:
                 self.log.debug(
                     "%d: Storing full in %s, params=%s, succeeded=%s",
                     self.id, run, full_params, failures == 0)
+
                 status, returned = pscheduler.url_put(run,
                                                       data=full_params,
+                                                      params=put_params,
                                                       bind=lead_bind,
                                                       throw=False,
                                                       json=False)

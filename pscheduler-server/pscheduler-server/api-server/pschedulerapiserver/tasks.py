@@ -624,17 +624,19 @@ def tasks_uuid(uuid):
 
     elif request.method == 'DELETE':
 
-        parsed = list(urlparse.urlsplit(request.url))
-        parsed[1] = "%s"
-        template = urlparse.urlunsplit(parsed)
-
         try:
-            requester = task_requester(uuid)
+            requester, key = task_requester_key(uuid)
             if requester is None:
                 return not_found()
 
-            if not access_write_ok(requester):
+            if not access_write_task(requester, key):
                 return forbidden()
+
+            parsed = list(urlparse.urlsplit(request.url))
+            parsed[1] = "%s"
+            template = urlparse.urlunsplit(parsed)
+
+            log.debug("Disabling")
 
             cursor = dbcursor_query(
                 "SELECT api_task_disable(%s, %s)", [uuid, template])

@@ -32,23 +32,23 @@ def request_hints():
 
 
 
-def task_requester(task_uuid):
+def task_requester_key(task_uuid):
     """
-    Get the requester for a task from its hints.
+    Get the requester and key for a task from its hints.
 
     Return None if the task doesn't exist or has no requester hint.
     """
 
-    cursor = dbcursor_query(
-        "SELECT hints FROM task WHERE uuid = %s", [task_uuid])
-    if cursor.rowcount == 0:
-        return None
-    elif cursor.rowcount > 1:
-        raise Exception("Didn't get expected single row")
-    hints = cursor.fetchone()[0]
-    cursor.close()
+    with dbcursor_query(
+        "SELECT hints, json ->> '_key' FROM task WHERE uuid = %s", [task_uuid]
+    ) as cursor:
+        if cursor.rowcount == 0:
+            return (None, None)
+        elif cursor.rowcount > 1:
+            raise Exception("Didn't get expected single row")
+        (hints, key) = cursor.fetchone()
 
-    return hints.get("requester", None)
+    return (hints.get("requester", None), key)
 
 
 
