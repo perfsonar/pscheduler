@@ -596,35 +596,21 @@ class ArchiveWorker():
             skip = False
 
         if (not failed) and (not skip):
-            archiver_in = pscheduler.json_dump(json)
-            self.log.debug("%d: Running archiver %s with input %s",
-                           self.id, archiver, archiver_in)
 
-            returncode, stdout, stderr = pscheduler.run_program(
-                [ "pscheduler", "internal", "invoke", "archiver", archiver, "archive" ],
-                stdin=archiver_in
-            )
+            self.log.debug("%d: Archiving to %s: %s",
+                           self.id, archiver, json)
 
-            self.log.debug("%d: Archiver exited %d", self.id, returncode)
-            self.log.debug("%d: Returned JSON from archiver: %s", self.id, stdout)
-            self.log.debug("%d: Returned errors from archiver: %s", self.id, stderr)
-
-
-        # TODO: Dump this out as JSON?
-        self.log.debug("%d: Archiving to %s: %s",
-                       self.id, archiver, json)
-
-        try:
-            result = self.collection(archiver, json)
-            self.log.debug("%d: Returned JSON from archiver: %s", self.id, result)
-            returncode = 0
-        except Exception as ex:
-            result = {
-                "succeeded": False,
-                "error": "Exception during archiving: %s" % (str(ex))
+            try:
+                result = self.collection(archiver, json)
+                self.log.debug("%d: Returned JSON from archiver: %s", self.id, result)
+                returncode = 0
+            except Exception as ex:
+                result = {
+                    "succeeded": False,
+                    "error": "Exception during archiving: %s" % (str(ex))
                 }
-            self.log.debug("%d: Exception: %s", self.id, str(ex))
-            returncode = 1
+                self.log.debug("%d: Exception: %s", self.id, str(ex))
+                returncode = 1
 
         attempt = {
             # TODO: Figure out to format this with -xx:xx for the timezone offset.
