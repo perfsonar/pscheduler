@@ -13,7 +13,7 @@ from flask import request
 from .args import *
 
 # Enable this for global debugging
-FORCE_DEBUG = True
+FORCE_DEBUG = False
 
 # This is thread-safe, so no need to do anything special with it.
 log = pscheduler.Log(name='pscheduler-api', debug=FORCE_DEBUG,
