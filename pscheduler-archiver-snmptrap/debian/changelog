@@ -1,0 +1,5 @@
+pscheduler-archiver-snmptrap (1.0.1.1-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 11:50:22 +0100
