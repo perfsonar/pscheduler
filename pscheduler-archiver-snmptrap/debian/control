@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-archiver-snmptrap
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
- pscheduler-server, python-pysnmp4
+ pscheduler-server, python-pysnmp4 (>= 4.3.2)
 Description: SNMP trap archiver class for pScheduler
  Archiver sends SNMP traps to a specified destination/agent.
