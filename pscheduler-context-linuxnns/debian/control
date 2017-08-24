@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-context-linuxnns
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
- pscheduler-server, python-jsontemplate, sudo, iproute2
+ pscheduler-server, python-jsontemplate, sudo, iproute
 Description: Linux network namespace context changer class for pScheduler
  This context changer changes the Linux network namespace.
