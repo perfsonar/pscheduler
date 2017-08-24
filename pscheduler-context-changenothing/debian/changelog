@@ -1,3 +1,9 @@
+pscheduler-context-changenothing (1.0.1-1~bpo70+1) perfsonar-wheezy-release; urgency=low
+
+  * Backport to wheezy
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 11:50:28 +0100
+
 pscheduler-context-changenothing (1.0.1-1) perfsonar-jessie-release; urgency=low
 
   * New upstream version
