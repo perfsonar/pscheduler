@@ -11,8 +11,13 @@ MAX_SCHEMA = 1
 
 random.seed()
 
+log = pscheduler.Log(quiet=True)
+
+
 def archive(json):
     """Archive a single result."""
+
+    log.debug("Archiving something.")
 
     schema = json["data"].get("schema", 1)
     if schema > MAX_SCHEMA:

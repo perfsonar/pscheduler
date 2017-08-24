@@ -1,0 +1,201 @@
+#!/usr/bin/python -u
+
+"""
+This program goes through all of the steps needed to do a single
+run of a pScheduler task through its REST API.
+
+Several functions in the 'pscheduler' Python module are used to
+simplify the code, so it must be run on a system with pScheduler
+installed.  Most of it is self-explanatory, either from context or in
+text produced in the output.
+"""
+
+import time
+
+import pscheduler
+
+
+# This was exported from the command-line interface with "pscheduler
+# task --export trace --dest www.perfsonar.net" with the schedule
+# section added.
+
+TASK = {
+    "schema": 1,
+    "test": {
+        "type": "trace",
+        "spec": {
+            "dest": "www.perfsonar.net",
+            "schema": 1
+        }
+    },
+    # This is required; empty is fine.
+    "schedule": { }
+}
+
+
+# This is the name of the host where the task should be posted.  This
+# host is called the "lead participant" in pScheduler's terms.  Note
+# that if the task defined in TASK above contains anything specifying
+# the address or host name for a source interface, the lead must be a
+# system where that interface exists.
+
+LEAD = "localhost"
+
+
+
+#
+# Utilities
+#
+
+def fail(messsage):
+    print message
+    exit(1)
+
+
+
+# -----------------------------------------------------------------------------
+
+#
+# Post the task to the server.
+# (Nominally https://localhost/pscheduler/tasks.)
+#
+
+tasks_url = pscheduler.api_url(LEAD, '/tasks')
+print "Posting to %s" % (tasks_url)
+
+try:
+    status, task_url = pscheduler.url_post(
+        tasks_url,
+        data=pscheduler.json_dump(TASK),
+        throw=True)
+except Exception as ex:
+    fail("Unable to post task: %s" % (str(ex)))
+
+
+print "New task is %s" % (task_url)
+
+
+# -----------------------------------------------------------------------------
+
+#
+# Fetch the posted task with extra details.
+#
+
+status, task_data = pscheduler.url_get(task_url,
+                                       params={"detail": 1})
+if status != 200:
+    failed("Failed to post task: " + task_data)
+try:
+    first_run_url = task_data["detail"]["first-run-href"]
+except KeyError:
+    fail("Server returned incomplete data.")
+
+print "First run is %s" % (first_run_url)
+
+print
+print
+print "Task with server-added detail:"
+print
+print pscheduler.json_dump(task_data, pretty=True)
+
+
+
+# -----------------------------------------------------------------------------
+
+#
+# Get first run and make sure we have what we need to function.  The
+# server will wait until the first run has been scheduled before
+# returning a result.
+#
+
+status, run_data = pscheduler.url_get(first_run_url, throw=False)
+
+if status == 404:
+    fail("The server never scheduled a run for the task.")
+if status != 200:
+    fail("Error %d: %s" % (status, run_data))
+
+for key in ["start-time", "end-time", "result-href"]:
+    if key not in run_data:
+        fail("Server did not return %s with run data" % (key))
+
+
+
+# -----------------------------------------------------------------------------
+
+#
+# Wait for the end time to pass
+#
+
+try:
+    end_time = pscheduler.iso8601_as_datetime(run_data["end-time"])
+except ValueError as ex:
+    fail("Server did not return a valid end time for the task: %s" % (str(ex)))
+
+sleep_time = pscheduler.time_until_seconds(end_time)
+
+print
+print ("Waiting %d seconds for run to finish..." % (sleep_time))
+time.sleep(sleep_time)
+print
+
+
+
+
+# -----------------------------------------------------------------------------
+
+#
+# Wait for the result to be produced and fetch it.
+#
+
+status, result_data = pscheduler.url_get(run_data["result-href"],
+                                         params={"wait-merged": True},
+                                         throw=False)
+if status != 200:
+    fail("Did not get a result: %s" % (result_data))
+
+print
+print
+print "JSON Result:"
+print
+print pscheduler.json_dump(result_data, pretty=True)
+
+
+
+# -----------------------------------------------------------------------------
+
+#
+# If the run succeeded, fetch a plain-text version of the result.
+#
+# This fetches the same endpoint as above but doesn't wait for the
+# merged (finished) result and asks for it in text format.  Supported
+# formats are application/json, text/plain and text/html.  Note that
+# not all tests generate proper text/html.
+#
+
+if not result_data["succeeded"]:
+    fail("Test failed to run properly.")
+
+
+status, result_text = pscheduler.url_get(run_data["result-href"],
+                                         params={"format": "text/plain"},
+                                         json=False,
+                                         throw=False)
+
+if status != 200:
+    fail("Did not get a result: %s" % (result_text))
+
+print
+print
+print "Text Result:"
+print
+print result_text
+
+
+# -----------------------------------------------------------------------------
+
+#
+# The End
+#
+
+exit(0)

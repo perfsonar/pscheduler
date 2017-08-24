@@ -14,7 +14,7 @@ cleanup()
 trap cleanup EXIT
 
 
-if [ $(id -u) = 0 ]
+if [ "$(id -u)" = "0" ]
 then
     INSTALL=install
 fi

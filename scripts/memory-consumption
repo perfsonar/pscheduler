@@ -31,7 +31,7 @@ egrep -qe "^${TEST_USER}:" /etc/passwd \
 [ "$(uname -s)" = "Linux" ] \
     || die "This script works only on Linux"
 
-[ "$(id -u)" -eq 0 ] \
+[ "$(id -u)" = "0" ] \
     || die "This program must be run as root."
 
 

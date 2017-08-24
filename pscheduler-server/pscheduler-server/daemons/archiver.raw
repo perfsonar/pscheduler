@@ -4,10 +4,10 @@
 #
 
 
+import collections
 import datetime
 import optparse
 import os
-import Queue
 import signal
 import threading
 import time
@@ -53,7 +53,7 @@ opt_parser.add_option("-d", "--dsn",
 opt_parser.add_option("-m", "--max-parallel",
                       help="Maximum concurrent archivings",
                       action="store", type="int", dest="max_parallel",
-                      default=15)
+                      default=50)
 opt_parser.add_option("-p", "--pool-size",
                       help="Size of pool per archive type",
                       action="store", type="int", dest="pool_size",
@@ -298,7 +298,7 @@ class ArchiverProcessPool(object):
         self.max_size = max_size
         self.skim_age = skim_age
 
-        self.queue = Queue.Queue()
+        self.pool = collections.deque()
         self.lock = threading.Lock()
         self.size = 0
         self.reset_cycle = 0
@@ -313,24 +313,41 @@ class ArchiverProcessPool(object):
 
     def __call__(self, json):
         """
-        Pull a process from the queue (or create one) and run a result
+        Pull a process from the pool (or create one) and run a result
         through it.
         """
-        if self.queue.empty() and self.size < self.max_size:
-            process = ArchiveProcess(self.archiver)
-            with self.lock:
-                self.size += 1
-                self.log.debug("Pool %s: New process %d",
-                               self.archiver, self.size)
-        else:
-            with self.lock:
-                process = self.queue.get()
 
-        with self.lock:
-            cycle_at_start = self.reset_cycle
+        process = None
 
-        self.max_utilization = max(self.max_utilization,
-                                   self.size - self.queue.qsize())
+        while process is None:
+            with self.lock:
+                if len(self.pool) > 0:
+                    # Take a process from the pool.
+                    process = self.pool.pop()
+                else:
+                    # Pool is empty
+                    if self.size < self.max_size:
+                        # Room for new processes; create one.
+                        process = ArchiveProcess(self.archiver)
+                        self.size += 1
+                        self.log.debug("Pool %s: New process %d",
+                                       self.archiver, self.size)
+                    else:
+                        # Pool is full and all processes are busy.
+                        pass
+
+                if process is not None:
+                    self.log.debug("Pool %s: Got a process", self.archiver)
+                    cycle_at_start = self.reset_cycle
+                    self.max_utilization = max(self.max_utilization,
+                                               self.size - len(self.pool))
+
+            # TODO: Need to do something better than this, but it has
+            # to be deadlock-proof.
+            if process is None:
+                self.log.debug("Pool %s: Waiting for a process", self.archiver)
+                time.sleep(0.25)
+
 
         try:
             result = process(json)
@@ -341,7 +358,7 @@ class ArchiverProcessPool(object):
                 if same_cycle \
                    and self.skim_count == 0 \
                    and self.size <= self.max_size:
-                    self.queue.put(process)
+                    self.pool.append(process)
                 else:
                     process.done()
                     self.size -= 1
@@ -359,7 +376,7 @@ class ArchiverProcessPool(object):
         """
         with self.lock:
             while self.size < self.max_size:
-                self.queue.put(ArchiveProcess(self.archiver))
+                self.pool.append(ArchiveProcess(self.archiver))
                 self.size += 1
             self.log.debug("Pool %s: Filled to %d", self.archiver, self.size)
 
@@ -369,11 +386,15 @@ class ArchiverProcessPool(object):
         Force all running processes to stop.
         """
         with self.lock:
-            # The queued ones are already idle.
-            while self.queue.qsize():
-                self.queue.get().done()
-                self.size -= 1
+            # Anything in the pool is idle
+            self.size -= len(self.pool)
+            for proc in self.pool:
+                proc.done()
+            self.pool.clear()
+
+            # Changing reset cycles makes runners not re-pool themselves
             self.reset_cycle += 1
+
         self.log.debug("Pool %s: Drained", self.archiver)
 
 
@@ -390,27 +411,29 @@ class ArchiverProcessPool(object):
 
         with self.lock:
 
-            to_remove = self.size - self.max_utilization
-            if to_remove:
+            if self.max_utilization < self.size:
+                to_remove = self.size - self.max_utilization 
                 self.log.debug("Pool %s: Removing %d/%d processes for %d",
                                self.archiver, to_remove, self.size,
                                self.max_utilization)
 
-            # Idle processes get removed first
-            while to_remove and self.queue.qsize() >= to_remove:
-                self.queue.get().done()
-                self.size -= 1
-                to_remove -= 1
+                # Idle processes get removed first
+                while to_remove > 0 and len(self.pool) >= to_remove:
+                    self.pool.pop().done()
+                    self.size -= 1
+                    to_remove -= 1
 
-            # Anything left comes out of whats in circulation
-            self.skim_count = to_remove
+                    # Anything left comes out of what's in circulation
+                    self.skim_count = to_remove
 
             # Reset for next time.
             self.max_utilization = 0
             self.next_skim = now + self.skim_age
 
+
     def done(self):
         self.drain()
+
 
     def __del__(self):
         self.done()
@@ -597,31 +620,22 @@ class ArchiveWorker():
             skip = False
 
         if (not failed) and (not skip):
-            archiver_in = pscheduler.json_dump(json)
-            self.log.debug("%d: Running archiver %s with input %s",
-                           self.id, archiver, archiver_in)
 
-            returncode, stdout, stderr = pscheduler.run_program(
-                [ "pscheduler", "internal", "invoke", "archiver", archiver, "archive" ],
-                stdin=archiver_in
-            )
+            self.log.debug("%d: Archiving to %s: %s",
+                           self.id, archiver, json)
 
-            self.log.debug("%d: Archiver exited %d", self.id, returncode)
-            self.log.debug("%d: Returned JSON from archiver: %s", self.id, stdout)
-            self.log.debug("%d: Returned errors from archiver: %s", self.id, stderr)
-
-
-        try:
-            result = self.collection(archiver, json)
-            self.log.debug("%d: Returned JSON from archiver: %s", self.id, result)
-            returncode = 0
-        except Exception as ex:
-            result = {
-                "succeeded": False,
-                "error": "Exception during archiving: %s" % (str(ex))
+            try:
+                result = self.collection(archiver, json)
+                self.log.debug("%d: Returned JSON from archiver: %s", self.id, result)
+                returncode = 0
+            except Exception as ex:
+                result = {
+                    "succeeded": False,
+                    "error": "Exception during archiving: %s" % (str(ex))
                 }
-            self.log.debug("%d: Exception: %s", self.id, str(ex))
-            returncode = 1
+                self.log.debug("%d: Exception: %s", self.id, str(ex))
+                returncode = 1
+
 
         attempt = {
             # TODO: Figure out to format this with -xx:xx for the timezone offset.
@@ -745,11 +759,20 @@ def main_program():
     default_maintainer.refresh()
 
     next_refresh = None
+    last_debug = log.is_forced_debugging()
 
     while True:
 
-        # Do some housekeeping
-        archiver_collection.skim()
+        # Drain the pools if the debug level changes.  This is done
+        # since persisting archivers won't register the change in state.
+
+        current_debug = log.is_forced_debugging()
+        if current_debug != last_debug:
+            archiver_collection.drain()
+            last_debug = current_debug
+        else:
+            archiver_collection.skim()
+
 
         warmboot = False
 
