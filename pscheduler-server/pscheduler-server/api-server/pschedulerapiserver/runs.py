@@ -147,11 +147,11 @@ def tasks_uuid_runs(task):
         log.debug("Run POST: %s --> %s", request.url, request.data)
 
         try:
-            requester = task_requester(task)
+            requester, key = task_requester_key(task)
             if requester is None:
                 return not_found()
 
-            if not access_write_ok(requester):
+            if not access_write_task(requester, key):
                 return forbidden()
 
         except Exception as ex:
@@ -163,7 +163,7 @@ def tasks_uuid_runs(task):
             start_time = pscheduler.iso8601_as_datetime(data['start-time'])
         except KeyError:
             return bad_request("Missing start time")
-        except ValueError:
+        except ValueError as ex:
             return bad_request("Invalid JSON: %s" % (str(ex)))
 
 
@@ -397,6 +397,17 @@ def tasks_uuid_runs_run(task, run):
 
         log.debug("Run PUT %s", request.url)
 
+        try:
+            requester, key = task_requester_key(task)
+            if requester is None:
+                return not_found()
+
+            if not access_write_task(requester, key):
+                return forbidden()
+
+        except Exception as ex:
+            return error(str(ex))
+
         # Get the JSON from the body
         try:
             run_data = pscheduler.json_load(request.data, max_schema=1)
@@ -551,11 +562,11 @@ def tasks_uuid_runs_run(task, run):
         # other participating nodes need to be removed as well.
 
         try:
-            requester = task_requester(task)
+            requester, key = task_requester_key(task)
             if requester is None:
                 return not_found()
 
-            if not access_write_ok(requester):
+            if not access_write_task(requester, key):
                 return forbidden()
 
         except Exception as ex:
