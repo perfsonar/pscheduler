@@ -33,9 +33,9 @@ Depends:
  pscheduler-test-latencybg,
  pscheduler-test-rtt,
  pscheduler-test-simplestream,
- pscheduler-test-snmpget
- pscheduler-test-snmpgetbgm
- pscheduler-test-snmpset
+ pscheduler-test-snmpget,
+ pscheduler-test-snmpgetbgm,
+ pscheduler-test-snmpset,
  pscheduler-test-throughput,
  pscheduler-test-trace,
  pscheduler-tool-bwctliperf2,
