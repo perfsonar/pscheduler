@@ -239,7 +239,7 @@ sleep_seconds = (sleep_time.days * 86400) \
                 + (sleep_time.microseconds / (10.0**6))
 
 print
-print "Waiting", sleep_seconds, "for run to finish..."
+print "Waiting", sleep_seconds, "seconds for run to finish..."
 time.sleep(sleep_seconds)
 
 
