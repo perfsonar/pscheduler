@@ -443,6 +443,8 @@ def tasks():
         task["participants"] = participants
         task_data = pscheduler.json_dump(task)
 
+        task_params = { "key": task["_key"] } if "_key" in task else {}
+
         for participant in range(1,nparticipants):
 
             part_name = participants[participant]
@@ -454,10 +456,13 @@ def tasks():
                 log.debug("Tasking %d@%s: %s", participant, part_name, task_data)
                 post_url = pscheduler.api_url_hostport(part_name,
                                                        'tasks/' + task_uuid)
+
+                task_params["participant"] = participant
+
                 log.debug("Posting task to %s", post_url)
                 status, result = pscheduler.url_post(
                     post_url,
-                    params={ 'participant': participant },
+                    params=task_params,
                     data=task_data,
                     bind=lead_bind,
                     json=False,
