@@ -840,6 +840,7 @@ DECLARE
     ip INET;
     ip_family INTEGER;
     bind TEXT;
+    task_url_append TEXT;
 BEGIN
 
     SELECT INTO taskrec * FROM task WHERE uuid = task_uuid;
@@ -870,6 +871,14 @@ BEGIN
 	    bind := NULL;
 	END IF;
 
+	-- If this task has a key, append that to the URL.
+        IF taskrec.json ? '_key'
+	THEN
+            task_url_append := '?key=' || uri_encode(taskrec.json ->> '_key');
+	ELSE
+	    task_url_append := '';
+	END IF;
+
         FOR host IN (SELECT jsonb_array_elements_text(taskrec.participants)
                      FROM task WHERE uuid = task_uuid OFFSET 1)
         LOOP
@@ -885,7 +894,9 @@ BEGIN
             END;
 
             INSERT INTO http_queue (operation, uri, bind)
-                VALUES ('DELETE', format(task_url_format, host), bind);
+                VALUES ('DELETE',
+		    format(task_url_format, host) || task_url_append,
+		    bind);
         END LOOP;
     END IF;   
 
