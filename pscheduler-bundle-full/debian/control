@@ -17,6 +17,7 @@ Depends:
  pscheduler-archiver-failer,
  pscheduler-archiver-http,
  pscheduler-archiver-rabbitmq,
+ pscheduler-archiver-snmptrap,
  pscheduler-archiver-syslog,
  pscheduler-context-changefail,
  pscheduler-context-changenothing,
