@@ -1,10 +1,10 @@
-python-pscheduler (1.3.1.1-1~bpo70+1) UNSTABLE; urgency=low
+python-pscheduler (1.3.1.3-1~bpo70+1) UNSTABLE; urgency=low
 
   * Backport to Wheezy.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 18 Aug 2017 11:20:10 +0100
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 29 Aug 2017 10:35:51 +0000
 
-python-pscheduler (1.3.1.1-1) UNSTABLE; urgency=low
+python-pscheduler (1.3.1.3-1) UNSTABLE; urgency=low
 
   * New upstream version
 
