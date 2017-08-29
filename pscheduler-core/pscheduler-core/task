@@ -75,6 +75,11 @@ task_group.add_option("--context",
                       action="store", type="string",
                       dest="context")
 
+task_group.add_option("--key",
+                      help="Key required for write access to the task (Optional @/path/to/file)",
+                      action="store", type="string",
+                      dest="key")
+
 task_group.add_option("--reference",
                       help="Save arbitrary JSON with task for reference (Optional @/path/to/file)",
                       action="store", type="string",
@@ -214,6 +219,13 @@ if options.repeat is not None:
         pscheduler.fail("Invalid --repeat: %s" % str(ex))
 
 
+if options.key is not None:
+    try:
+        key = pscheduler.string_from_file(options.key)
+    except IOError as ex:
+        pscheduler.fail("Unable to read key file: " + str(ex))
+
+
 if options.reference is not None:
     try:
         reference = pscheduler.string_from_file(options.reference)
@@ -344,6 +356,10 @@ else:
 # Overlay the lead bind if specified
 if options.lead_bind is not None:
     task["lead-bind"] = options.lead_bind
+
+# Overlay the key if specified
+if options.key is not None:
+    task["_key"] = key
 
 # Overlay the reference if specified
 if options.reference is not None:

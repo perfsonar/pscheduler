@@ -163,9 +163,9 @@ BEGIN
 
     IF status_family IN (1, 2, 3) -- Successful results
         OR now() + entry.try_interval > entry.expires
-   THEN
+    THEN
         -- No need to keep succeeded or expired records around
-        DELETE FROM http_queue WHERE id = entry.id;
+	DELETE FROM http_queue WHERE id = entry.id;
     ELSE
         -- Set up the next attempt
         UPDATE http_queue

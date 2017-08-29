@@ -262,6 +262,7 @@ def url_put( url,          # GET URL
 
 
 def url_delete( url,          # DELETE URL
+                params={},    # DELETE parameters
                 bind=None,    # Bind request to specified address
                 throw=True,   # Throw if status isn't 200
                 timeout=None, # Seconds before giving up
@@ -275,14 +276,17 @@ def url_delete( url,          # DELETE URL
 
     with requests.Session() as session:
         _mount_url(session, url, bind)
-        
+       
         # Make sure there's always something here to prevent
         # UnboundLocal exceptions later in the event of a failure.
         request = None
-        
+
         try:
-            request = session.delete(url, verify=verify_keys,
-                                     headers=headers, allow_redirects=allow_redirects,
+            request = session.delete(url,
+                                     params=params,
+                                     verify=verify_keys,
+                                     headers=headers,
+                                     allow_redirects=allow_redirects,
                                      timeout=timeout)
             status = request.status_code
             text = request.text
@@ -306,6 +310,7 @@ def url_delete( url,          # DELETE URL
 
 def url_delete_list(
         urls,
+        params=None,
         bind=None,
         timeout=None, # Seconds before giving up
         allow_redirects=True, #Allows URL to be redirected
@@ -317,7 +322,7 @@ def url_delete_list(
     each.  Note that the timeout is per delete, not for the aggregated
     operation.
     """
-    return [ url_delete(url, throw=False, timeout=timeout, bind=bind,
-                        headers=headers, verify_keys=verify_keys, 
+    return [ url_delete(url, throw=False, timeout=timeout, params=params,
+                        bind=bind, headers=headers, verify_keys=verify_keys, 
                         allow_redirects=allow_redirects)
              for url in urls ]

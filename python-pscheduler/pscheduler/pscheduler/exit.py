@@ -6,8 +6,6 @@ import signal
 
 
 def __exit_handler(signum, frame):
-    # TODO: Remove this.
-    print "Exiting on signal", signum
     exit(0)
 
 

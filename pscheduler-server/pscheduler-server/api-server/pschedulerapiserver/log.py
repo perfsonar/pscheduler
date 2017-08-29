@@ -12,8 +12,11 @@ from flask import request
 
 from .args import *
 
+# Enable this for global debugging
+FORCE_DEBUG = False
+
 # This is thread-safe, so no need to do anything special with it.
-log = pscheduler.Log(name='pscheduler-api',
+log = pscheduler.Log(name='pscheduler-api', debug=FORCE_DEBUG,
                      signals=False)
 
 
@@ -26,7 +29,7 @@ def debug():
     if request.method == 'PUT':
 
         try:
-            new_state = arg_boolean('state')
+            new_state = FORCE_DEBUG or arg_boolean('state')
         except ValueError:
             return Response("Invalid state", status=500)
 

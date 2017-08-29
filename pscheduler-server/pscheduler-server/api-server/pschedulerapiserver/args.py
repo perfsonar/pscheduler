@@ -72,6 +72,11 @@ def arg_json(name, max_schema=None):
     return json
 
 
+def arg_string(name):
+    """Fetch an argument as a string"""
+    return request.args.get(name)
+
+
 def arg_uuid(name):
     """Fetch and validate an argument as a UUID"""
     argval = request.args.get(name)
