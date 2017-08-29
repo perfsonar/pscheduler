@@ -350,6 +350,48 @@ $$ LANGUAGE plpgsql;
 -- ----------------------------------------------------------------------------
 
 --
+-- STRING AND URL
+--
+
+-- Source: https://stackoverflow.com/a/33616365/180674
+CREATE OR REPLACE FUNCTION uri_encode(input text)
+  RETURNS text
+  LANGUAGE plpgsql
+  IMMUTABLE STRICT
+AS $$
+DECLARE
+  parsed text;
+  safePattern text;
+BEGIN
+  safePattern = 'a-zA-Z0-9_~/\-\.';
+  IF input ~ ('[^' || safePattern || ']') THEN
+    SELECT STRING_AGG(fragment, '')
+    INTO parsed
+    FROM (
+      SELECT prefix || encoded AS fragment
+      FROM (
+        SELECT COALESCE(match[1], '') AS prefix,
+               COALESCE('%' || encode(match[2]::bytea, 'hex'), '') AS encoded
+        FROM (
+          SELECT regexp_matches(
+            input,
+            '([' || safePattern || ']*)([^' || safePattern || '])?',
+            'g') AS match
+        ) matches
+      ) parsed
+    ) fragments;
+    RETURN parsed;
+  ELSE
+    RETURN input;
+  END IF;
+END;
+$$
+;
+
+
+-- ----------------------------------------------------------------------------
+
+--
 -- DEBUGGING TOOLS
 --
 

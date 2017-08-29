@@ -201,6 +201,7 @@ def run_post(
         url,           # URL for task
         start_time,    # Desired start time
         bind_addr,     # Bind address for HTTP or None
+        key=None,      # Access key
         log=None
 ):
 
@@ -220,6 +221,8 @@ def run_post(
 
     log and log.debug("%d: Posting %s at %s", number, url, start_time)
     log and log.debug("%d: Bind is %s", number, bind_addr)
+
+    key_params = {} if key is None else {"key": key}
 
     try:
         status, task = pscheduler.url_get(url, params={'detail': 1},
@@ -327,7 +330,8 @@ def run_post(
             log and log.debug("%d: Task is no longer there.  Canceling %s.",
                               number, url)
             del_status, del_result = pscheduler.url_delete(
-                url, timeout=timeout, throw=False, bind=bind_addr)
+                url, timeout=timeout, throw=False, params=key_params,
+                bind=bind_addr)
             if del_status not in [ 200, 404, 410 ]:
                 log and log.warning("%d: Error while canceling %s: %s",
                                     number, url, del_result)
@@ -426,6 +430,7 @@ def run_post(
     status, run_lead_url \
         = pscheduler.url_post(task_urls[0] + '/runs',
                               data=pscheduler.json_dump(run_params),
+                              params=key_params,
                               bind=bind_addr,
                               timeout=30,
                               throw=False,
@@ -470,6 +475,7 @@ def run_post(
 
         status, output = pscheduler.url_put(put_url,
                                             data=run_data,
+                                            params=key_params,
                                             bind=bind_addr,
                                             timeout=30,
                                             throw=False,
@@ -496,7 +502,10 @@ def run_post(
 
     if len(runs_posted) != len(task_urls):
         log and log.debug("%d: Removing runs: %s", number, runs_posted)
-        pscheduler.url_delete_list(runs_posted, bind=bind_addr, timeout=timeout)
+        pscheduler.url_delete_list(runs_posted,
+                                   params=key_params,
+                                   bind=bind_addr,
+                                   timeout=timeout)
         return (None, None, None, False, conflict,
                 "Failed to post/put runs to all participants: %s"
                 %  ("; ".join(errors))
@@ -519,8 +528,8 @@ def run_post(
                                             throw=False, timeout=timeout)
         if status != 200 or not 'participant-data' in result:
             log.debug("%d: Deleting runs: %s", number, runs_posted)
-            pscheduler.url_delete_list(runs_posted, bind=bind_addr,
-                                       timeout=timeout)
+            pscheduler.url_delete_list(runs_posted, params=key_params,
+                                       bind=bind_addr, timeout=timeout)
             # TODO: Better error?
             return (None, None, None, False, False,
                     "Failed to get run data from all participants")
@@ -538,13 +547,14 @@ def run_post(
         log and log.debug("%d: Putting full part data to %s", number, run)
         status, result = pscheduler.url_put(run,
                                             data=full_data,
+                                            params=key_params,
                                             bind=bind_addr,
                                             json=False,
                                             throw=False,
                                             timeout=30)
         if status != 200:
-            pscheduler.url_delete_list(runs_posted, bind=bind_addr,
-                                       timeout=timeout)
+            pscheduler.url_delete_list(runs_posted, params=key_params,
+                                       bind=bind_addr, timeout=timeout)
             # TODO: Better error?
             log and log.debug("%d: Failed: %s", number, result)
             return (None, None, None, False, False,
@@ -565,7 +575,7 @@ class NonStarterException(Exception):
     pass
 
 
-def schedule_task(number, log, task, runs, trynext, background, json,
+def schedule_task(number, log, task, key, runs, trynext, background, json,
                   participants):
     """Do the actual work of scheduling a run."""
     # TODO: This could probably be part of the SchedulerWorker class.
@@ -606,7 +616,7 @@ def schedule_task(number, log, task, runs, trynext, background, json,
         tries_left -= 1
         try:
             run_uri, start_time, end_time, skip, conflict, error \
-                = run_post(number, url, trynext, lead_bind, log=log)
+                = run_post(number, url, trynext, lead_bind, log=log, key=key)
         except Exception as ex:
             error = str(ex)
             skip = False
@@ -643,7 +653,7 @@ class SchedulerWorker(object):
 
     """Handles scheduling for a single run."""
 
-    def __init__(self, number, pg, log, working_set, task, runs,
+    def __init__(self, number, pg, log, working_set, task, key, runs,
                  trynext, background, json, participants):
         """Initialize"""
 
@@ -653,6 +663,7 @@ class SchedulerWorker(object):
         self.working_set = working_set
 
         self.task = task
+        self.key = key
         self.runs = runs
         self.trynext = trynext
         self.background = background
@@ -675,8 +686,8 @@ class SchedulerWorker(object):
 
         try:
 
-            schedule_task(self.number, self.log, self.task, self.runs,
-                          self.trynext, self.background, self.json,
+            schedule_task(self.number, self.log, self.task, self.key,
+                          self.runs, self.trynext, self.background, self.json,
                           self.participants)
 
         except NonStarterException as ex:
@@ -736,7 +747,7 @@ def main_program():
         wait = True
 
         # TODO: The FALSE for background does nothing.  Get rid of it.
-        query = """SELECT task, uuid, runs, trynext, FALSE, json, participants
+        query = """SELECT task, uuid, key, runs, trynext, FALSE, json, participants
             FROM schedule_runs_to_schedule"""
         args = []
 
@@ -755,11 +766,11 @@ def main_program():
 
         for row in cursor:
 
-            number, task, runs, trynext, background, json, participants = row
+            number, task, key, runs, trynext, background, json, participants = row
 
             if number not in workers:
                 worker = SchedulerWorker(number, nonstart_pg, log,
-                                         workers, task, runs, trynext,
+                                         workers, task, key, runs, trynext,
                                          background, json, participants)
                 log.debug("Starting thread for ID %d", number)
                 workers[number] = worker

@@ -44,9 +44,10 @@ def bad_request(message="Bad request"):
     log.debug("Response 400: %s", message)
     return Response(message + '\n', status=400, mimetype="text/plain")
 
-def forbidden(message="Not allowed."):
+def forbidden(message="Forbidden."):
     log.debug("Response 403: %s", message)
-    return Response(message, status=403, mimetype="text/plain")
+    log.info("Denied %s %s %s", request.remote_addr, request.method, request.base_url)
+    return Response(message + "\n", status=403, mimetype="text/plain")
 
 def not_found(message="Resource Not found.", mimetype="text/plain"):
     log.debug("Response 404: %s", message)

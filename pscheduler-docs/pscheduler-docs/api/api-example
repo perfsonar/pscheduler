@@ -1,31 +1,47 @@
 #!/usr/bin/python -u
-
 """
+
 This program goes through all of the steps needed to do a single
 run of a pScheduler task through its REST API.
 
-Several functions in the 'pscheduler' Python module are used to
-simplify the code, so it must be run on a system with pScheduler
-installed.  Most of it is self-explanatory, either from context or in
-text produced in the output.
+To install non-standard modules used by this script (available from
+the standard CentOS repository):
+
+    yum -y install python-dateutil python-requests
+
 """
 
+import datetime
+import dateutil.parser
+import json
+import requests
 import time
 
-import pscheduler
+from dateutil.tz import tzlocal
 
 
-# This was exported from the command-line interface with "pscheduler
-# task --export trace --dest www.perfsonar.net" with the schedule
+# -----------------------------------------------------------------------------
+
+#
+# Configurables
+#
+
+
+# Turn this on to dump the JSON fetched during intermediate steps.
+VERBOSE = True
+
+
+# This was exported from the command-line interface with the schedule
 # section added.
 
 TASK = {
     "schema": 1,
     "test": {
-        "type": "trace",
+        "type": "rtt",
         "spec": {
+            "schema": 1,
             "dest": "www.perfsonar.net",
-            "schema": 1
+            "count": 3
         }
     },
     # This is required; empty is fine.
@@ -42,37 +58,115 @@ TASK = {
 LEAD = "localhost"
 
 
+# -----------------------------------------------------------------------------
 
 #
 # Utilities
 #
 
-def fail(messsage):
+def fail(message):
+    """Complain about a problem and exit."""
     print message
     exit(1)
 
+
+def json_load(source):
+    """Load a blob of JSON into Python objects"""
+
+    try:
+        json_in = json.loads(str(source))
+    except ValueError as ex:
+        raise ValueError("Invalid JSON: " + str(ex))
+
+    return json_in
+
+
+def json_dump(obj):
+    """Convert a blob of Python objects to a string"""
+    return json.dumps(obj, sort_keys=True, indent=4, separators=(',', ': '))
+
+
+# This disables warnings about unverifiable keys when fetching HTTPS
+# URLs.  pScheduler rolls its own key by default.
+requests.packages.urllib3.disable_warnings(
+    requests.packages.urllib3.exceptions.InsecureRequestWarning)
+
+
+def url_post(url,          # GET URL
+             data=None,    # Data to post
+):
+    """Post to a URL, returning whatever came back as JSON"""
+
+    try:
+        request = requests.post(url, data=data, verify=False,
+                                allow_redirects=True, timeout=10)
+        status = request.status_code
+        text = request.text
+    except requests.exceptions.Timeout:
+        status = 400
+        text = "Request timed out"
+    except requests.exceptions.ConnectionError as ex:
+        status = 400
+        text = str(ex)
+    except Exception as ex:
+        status = 500
+        text = str(ex)
+
+    if status not in [ 200, 201 ]:
+        return (status, text)
+
+    return (status, json_load(text))
+
+
+def url_get(url,          # GET URL
+            params={},    # GET parameters
+            json=True     # Evaluate returned data as JSON
+):
+    """Fetch a URL using GET with parameters"""
+
+    try:
+        request = requests.get(url, params=params, verify=False, allow_redirects=True, timeout=10)
+        status = request.status_code
+        text = request.text
+    except requests.exceptions.Timeout:
+        status = 400
+        text = "Request timed out"
+    except requests.exceptions.ConnectionError as ex:
+        status = 400
+        text = str(ex)
+    except Exception as ex:
+        status = 400
+        text = str(ex)
+
+    if json:
+        return (status, json_load(text))
+    else:
+        return (status, text)
 
 
 # -----------------------------------------------------------------------------
 
 #
-# Post the task to the server.
-# (Nominally https://localhost/pscheduler/tasks.)
+# MAIN PROGRAM BEGINS HERE
 #
 
-tasks_url = pscheduler.api_url(LEAD, '/tasks')
-print "Posting to %s" % (tasks_url)
+# -----------------------------------------------------------------------------
+
+#
+# Post the task to the server's "tasks" endpoint
+#
+
+tasks_url = "https://%s/pscheduler/tasks" % (LEAD)
+print "Posting to", tasks_url
 
 try:
-    status, task_url = pscheduler.url_post(
-        tasks_url,
-        data=pscheduler.json_dump(TASK),
-        throw=True)
+    status, task_url = url_post(tasks_url, data=json_dump(TASK))
 except Exception as ex:
     fail("Unable to post task: %s" % (str(ex)))
 
 
-print "New task is %s" % (task_url)
+print
+print "New task is", task_url
 
 
 # -----------------------------------------------------------------------------
@@ -81,23 +175,20 @@ print "New task is %s" % (task_url)
 # Fetch the posted task with extra details.
 #
 
-status, task_data = pscheduler.url_get(task_url,
-                                       params={"detail": 1})
+status, task_data = url_get(task_url, params={"detail": 1})
 if status != 200:
-    failed("Failed to post task: " + task_data)
+    fail("Failed to post task: " + task_data)
 try:
     first_run_url = task_data["detail"]["first-run-href"]
 except KeyError:
     fail("Server returned incomplete data.")
 
-print "First run is %s" % (first_run_url)
-
-print
-print
-print "Task with server-added detail:"
-print
-print pscheduler.json_dump(task_data, pretty=True)
-
+if VERBOSE:
+    print
+    print
+    print "Task with server-added detail:"
+    print
+    print json_dump(task_data)
 
 
 # -----------------------------------------------------------------------------
@@ -108,7 +199,7 @@ print pscheduler.json_dump(task_data, pretty=True)
 # returning a result.
 #
 
-status, run_data = pscheduler.url_get(first_run_url, throw=False)
+status, run_data = url_get(first_run_url)
 
 if status == 404:
     fail("The server never scheduled a run for the task.")
@@ -119,6 +210,14 @@ for key in ["start-time", "end-time", "result-href"]:
     if key not in run_data:
         fail("Server did not return %s with run data" % (key))
 
+print
+print "First run is", run_data["href"]
+
+if VERBOSE:
+    print
+    print "Data about first run:"
+    print
+    print json_dump(run_data)
 
 
 # -----------------------------------------------------------------------------
@@ -128,29 +227,47 @@ for key in ["start-time", "end-time", "result-href"]:
 #
 
 try:
-    end_time = pscheduler.iso8601_as_datetime(run_data["end-time"])
+    # The end time comes back as ISO 8601.  Parse it.
+    end_time = dateutil.parser.parse(run_data["end-time"])
 except ValueError as ex:
     fail("Server did not return a valid end time for the task: %s" % (str(ex)))
 
-sleep_time = pscheduler.time_until_seconds(end_time)
+now = datetime.datetime.now(tzlocal())
+sleep_time = end_time - now if end_time > now else datetime.timedelta()
+sleep_seconds = (sleep_time.days * 86400) \
+                + (sleep_time.seconds) \
+                + (sleep_time.microseconds / (10.0**6))
 
 print
-print ("Waiting %d seconds for run to finish..." % (sleep_time))
-time.sleep(sleep_time)
-print
-
-
+print "Waiting", sleep_seconds, "seconds for run to finish..."
+time.sleep(sleep_seconds)
 
 
 # -----------------------------------------------------------------------------
 
 #
-# Wait for the result to be produced and fetch it.
+# Wait for the result to be produced
 #
 
-status, result_data = pscheduler.url_get(run_data["result-href"],
-                                         params={"wait-merged": True},
-                                         throw=False)
+print
+print "Waiting for result..."
+
+status, result_data = url_get(first_run_url, params={"wait-merged": True})
+
+if status != 200:
+    fail("Failure while waiting for result: %s" % (result_data))
+
+
+# -----------------------------------------------------------------------------
+
+#
+# Fetch it.
+#
+
+print
+print "Result is at", run_data["result-href"]
+status, result_data = url_get(run_data["result-href"],
+                              params={"wait-merged": True})
 if status != 200:
     fail("Did not get a result: %s" % (result_data))
 
@@ -158,8 +275,7 @@ print
 print
 print "JSON Result:"
 print
-print pscheduler.json_dump(result_data, pretty=True)
-
+print json_dump(result_data)
 
 
 # -----------------------------------------------------------------------------
@@ -177,17 +293,16 @@ if not result_data["succeeded"]:
     fail("Test failed to run properly.")
 
 
-status, result_text = pscheduler.url_get(run_data["result-href"],
-                                         params={"format": "text/plain"},
-                                         json=False,
-                                         throw=False)
+status, result_text = url_get(run_data["result-href"],
+                              params={"format": "text/plain"},
+                              json=False)
 
 if status != 200:
     fail("Did not get a result: %s" % (result_text))
 
 print
 print
-print "Text Result:"
+print "Text-formatted result:"
 print
 print result_text
 
