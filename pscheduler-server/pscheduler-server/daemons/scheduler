@@ -14,6 +14,9 @@ import threading
 import urlparse
 
 
+pscheduler.set_graceful_exit()
+
+
 # Gargle the arguments
 
 opt_parser = optparse.OptionParser()
@@ -671,6 +674,7 @@ class SchedulerWorker(object):
         self.participants = participants
 
         self.worker = threading.Thread(target=lambda: self.run())
+        self.worker.setDaemon(True)
         self.log.debug("%d: New thread for task %s at %s", number,
                        self.task, self.trynext)
 

@@ -27,6 +27,8 @@ except ImportError:
     # Python 2
     from pipes import quote
 
+from exit import on_graceful_exit
+
 
 
 # Note: Docs for the 3.x version of subprocess, the backport of which
@@ -47,6 +49,7 @@ def __terminate_running():
     for process in this.running:
         try:
             process.terminate()
+            process.wait()
         except Exception:
             pass  # This is a best-effort effort.
     # Sometimes this gets called twice, so clean the list.
@@ -57,7 +60,7 @@ def __init_running():
     """Internal use:  Initialize the running hash if it isn't."""
     if this.running is None:
         this.running = {}
-        atexit.register(__terminate_running)
+        on_graceful_exit(__terminate_running)
 
 
 def __running_add(process):
