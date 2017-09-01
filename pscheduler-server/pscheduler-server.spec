@@ -467,6 +467,9 @@ EOF
 #
 # Daemons
 #
+%if 0%{?el7}
+systemctl daemon-reload
+%endif
 for SERVICE in ticker runner archiver scheduler
 do
     NAME="pscheduler-${SERVICE}"
@@ -479,6 +482,7 @@ do
     systemctl start "${NAME}"
 %endif
 done
+
 
 
 #
@@ -603,6 +607,9 @@ if [ "$1" = "0" ]; then
     # Daemons
     #
     # (Nothing)
+%if 0%{?el7}
+    systemctl daemon-reload
+%endif
 
 
 

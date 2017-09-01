@@ -22,6 +22,8 @@ import time
 import weakref
 
 
+pscheduler.set_graceful_exit()
+
 # Gargle the arguments
 
 opt_parser = optparse.OptionParser()
@@ -191,6 +193,7 @@ class RunWorker:
         self.output = []
 
         self.worker = threading.Thread(target=lambda: self.run())
+        self.worker.setDaemon(True)
         self.worker.start()
 
     def _put_db_conn(self, db):
@@ -750,17 +753,6 @@ class RunWorker:
 def main_program():
 
     log.debug("Begin main")
-
-    # Exit nicely when certain signals arrive so running processes are
-    # cleaned up.
-
-    def exit_handler(signum, frame):
-        log.info("Exiting on signal %d", signum)
-        exit(0)
-
-    for sig in [ signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM ]:
-        signal.signal(sig, exit_handler)
-
 
     # These are for local use.
     db = pscheduler.pg_connection(dsn)

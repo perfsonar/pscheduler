@@ -20,10 +20,14 @@ class PidFile(object):
         self.pidfile = None
 
     def __enter__(self):
+        if self.path is None:
+            return self.pidfile
+
         self.pidfile = open(self.path, "a+")
         try:
             fcntl.flock(self.pidfile.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError:
+            self.pidfile = None
             raise SystemExit("Already running according to " + self.path)
         self.pidfile.seek(0)
         self.pidfile.truncate()
@@ -33,13 +37,18 @@ class PidFile(object):
         return self.pidfile
 
     def __exit__(self, exc_type=None, exc_value=None, exc_tb=None):
-        try:
-            self.pidfile.close()
-        except IOError as err:
-            # ok if file was just closed elsewhere
-            if err.errno != 9:
-                raise
-        os.remove(self.path)
+        if self.pidfile is not None:
+            try:
+                self.pidfile.close()
+            except IOError as err:
+                # ok if file was just closed elsewhere
+                if err.errno != 9:
+                    raise
+            try:
+                os.remove(self.path)
+            except IOError:
+                pass
+
 
 # Example usage:
 # import daemon
