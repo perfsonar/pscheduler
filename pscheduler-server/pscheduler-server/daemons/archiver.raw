@@ -20,6 +20,9 @@ import psycopg2.extensions
 from dateutil.tz import tzlocal
 
 
+pscheduler.set_graceful_exit()
+
+
 
 # Gargle the arguments
 
@@ -517,6 +520,7 @@ class ArchiveWorker():
         self.id = row[0]
 
         self.worker = threading.Thread(target=lambda: self.run())
+        self.worker.setDaemon(True)
         self.worker.start()
 
 
@@ -733,16 +737,6 @@ class ArchiveWorker():
 #
 
 def main_program():
-
-    # Exit nicely when certain signals arrive so running processes are
-    # cleaned up.
-
-    def exit_handler(signum, frame):
-        log.info("Exiting on signal %d", signum)
-        exit(0)
-
-    for sig in [ signal.SIGHUP, signal.SIGINT, signal.SIGQUIT, signal.SIGTERM ]:
-        signal.signal(sig, exit_handler)
 
     db = pscheduler.PgConnection(dsn)
     db.listen(options.channel)
