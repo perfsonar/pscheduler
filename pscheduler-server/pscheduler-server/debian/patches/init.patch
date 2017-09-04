@@ -45,7 +45,7 @@
      if [ ! -s "$logfile" ] ; then
          echo "(This file should be empty unless there's a catastrophic failure.)" >> "$logfile"
      fi
-@@ -61,26 +62,23 @@
+@@ -61,24 +62,21 @@
         -c "$exec --daemon --pid-file '$pidfile' --dsn '@$config' $options" \
  	>> "$logfile" 2>&1 &
      retval=$?
@@ -63,15 +63,11 @@
 -    echo -n $"Stopping pScheduler $prog: "
 -        if [ -s "$pidfile" ]; then
 -	    kill $(cat $pidfile) || failure "Stopping pScheduler $prog"
--	    sleep 3
--	    kill -9 $(cat $pidfile) 2> /dev/null || :
 -	    rm -f $pidfile
 -	fi
 +    log_daemon_msg "Stopping pScheduler $prog" "pscheduler-$prog"
 +    if [ -s "$pidfile" ]; then
 +        kill $(cat $pidfile)
-+        sleep 3
-+        kill -9 $(cat $pidfile) 2> /dev/null || :
 +        rm -f $pidfile
 +    fi
      retval=$?
@@ -81,7 +77,7 @@
  }
  
  restart()
-@@ -89,18 +87,17 @@
+@@ -87,18 +85,17 @@
      start
  }
  
