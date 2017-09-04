@@ -51,8 +51,7 @@ def __dns_resolve_host(host, ip_version, timeout):
 
     queue = Queue.Queue()
     thread = threading.Thread(target=proc, args=(host, family, queue))
-    # Don't make Python wait for this thread to exit.
-    thread.daemon = True
+    thread.setDaemon(True)
     thread.start()
     try:
         results = queue.get(True, timeout)
@@ -139,8 +138,7 @@ def dns_resolve_reverse(ip,
 
     queue = Queue.Queue()
     thread = threading.Thread(target=proc, args=(ip, queue))
-    # Don't make Python wait for this thread to exit.
-    thread.daemon = True
+    thread.setDaemon(True)
     thread.start()
     try:
         return queue.get(True, timeout)
