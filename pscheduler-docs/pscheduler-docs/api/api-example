@@ -175,7 +175,7 @@ print "New task is", task_url
 # Fetch the posted task with extra details.
 #
 
-status, task_data = url_get(task_url, params={"detail": 1})
+status, task_data = url_get(task_url, params={"detail": True})
 if status != 200:
     fail("Failed to post task: " + task_data)
 try:
@@ -246,26 +246,12 @@ time.sleep(sleep_seconds)
 # -----------------------------------------------------------------------------
 
 #
-# Wait for the result to be produced
+# Wait for the result to be produced and fetch it.
 #
 
 print
-print "Waiting for result..."
+print "Waiting for result at", run_data["result-href"]
 
-status, result_data = url_get(first_run_url, params={"wait-merged": True})
-
-if status != 200:
-    fail("Failure while waiting for result: %s" % (result_data))
-
-
-# -----------------------------------------------------------------------------
-
-#
-# Fetch it.
-#
-
-print
-print "Result is at", run_data["result-href"]
 status, result_data = url_get(run_data["result-href"],
                               params={"wait-merged": True})
 if status != 200:
