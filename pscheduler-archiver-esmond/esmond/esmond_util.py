@@ -358,7 +358,9 @@ class EsmondBaseRecord:
                 summary_map = summaries
             for et in self.get_event_types(test_spec=test_spec):
                 self.add_event_type(et, summary_map)
-        
+            if run_href:
+                self.add_event_type('pscheduler-run-href', summary_map)
+    
         #add extra metadata fields
         self.add_metadata_fields(test_spec=test_spec)
         self.add_additional_metadata(test_spec=test_spec)
@@ -385,7 +387,6 @@ class EsmondBaseRecord:
             data_point['val'].append({ 'event-type': 'failures', 'val': { 'error': msg }})
         #add run-href
         if run_href:
-            self.add_event_type('pscheduler-run-href', summary_map)
             data_point['val'].append({ 'event-type': 'pscheduler-run-href', 'val': { 'href': run_href }})
         
         self.data.append(data_point)
