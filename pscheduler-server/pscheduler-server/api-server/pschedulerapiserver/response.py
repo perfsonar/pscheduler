@@ -5,6 +5,7 @@
 import pscheduler
 import requests
 
+from werkzeug.datastructures import Headers
 from flask import Response
 from flask import request
 
@@ -80,3 +81,8 @@ def error(message=None):
 def not_implemented(message="Not implemented."):
     log.debug("Response 501: %s", message)
     return Response(message + "\n", status=501, mimetype="text/plain")
+
+def see_other(url):
+    log.debug("Response 303: Redirect to %s", url)
+    return Response(url + "\n", status=303,
+                    headers=Headers([("Location", url)]))
