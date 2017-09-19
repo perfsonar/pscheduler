@@ -20,6 +20,11 @@ def parse_output(lines):
 
     for line in lines:
 
+        # In UDP tests it's going to show what the server thought too
+        # but we don't care about that
+        if re.match("^.*Server Report:", line):
+            break
+        
         # ignore bogus sessions
         if re.match('\(nan%\)', line):
             results["succeeded"] = False
@@ -94,6 +99,13 @@ def parse_output(lines):
             lost   = test.group(12)
             send   = test.group(13)
 
+            if jitter is not None:
+                jitter = float(jitter)
+            if lost is not None:
+                lost = int(lost)
+            if send is not None:
+                send = int(send)
+                
             # If the output was in say GBytes convert back to regular Bytes for ease
             # of things later
             if si_bytes:
@@ -263,3 +275,21 @@ TCP window size:  244 KByte (WARNING: requested 7.63 MByte)
     pprint.PrettyPrinter(indent=4).pprint(result)
 
     
+    test_output = """
+------------------------------------------------------------
+Client connecting to 10.0.2.4, UDP port 5001
+Sending 1470 byte datagrams
+UDP buffer size:  122 KByte (default)
+------------------------------------------------------------
+[  3] local 10.0.2.15 port 60085 connected with 10.0.2.4 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec   120 MBytes   100 Mbits/sec
+[  3] Sent 85458 datagrams
+[  3] Server Report:
+[  3]  0.0-10.0 sec   120 MBytes   101 Mbits/sec   0.026 ms    0/85457 (0%)
+[  3]  0.0-10.0 sec  1 datagrams received out-of-order
+"""
+
+    print "TEST 3"
+    result = parse_output(test_output.split("\n"))
+    pprint.PrettyPrinter(indent=4).pprint(result)
