@@ -68,15 +68,9 @@ opt_parser.add_option("--polls",
                         dest="polls", default=1)
 
 opt_parser.add_option("--oid",
-                      help="""
-                        List of OIDs to be queried, separated by a comma without spaces.
-
-                        Example:
-
-                        --oid sysORUpTime.1,sysORUpTime.2
-
-                        """,
-                      action="store", type="string",
+                      help="OID to be queried, can be repeated for multiple.",
+                      default=[],
+                      action="append", type="string",
                       dest="oid")
 
 opt_parser.add_option("--protocol",
@@ -152,7 +146,7 @@ if options.version is not None:
    result['version'] = options.version
 
 if options.oid is not None:
-   result['oid'] = options.oid.split(',')
+   result['oid'] = options.oid
 
 if options.protocol is not None:
    result['protocol'] = options.protocol
