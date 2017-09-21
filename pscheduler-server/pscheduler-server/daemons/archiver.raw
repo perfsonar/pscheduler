@@ -569,6 +569,8 @@ class ArchiveWorker():
             'task-href': task_href,
             'run-href': run_href,
             'result': {
+                'task-href': task_href,
+                'run-href': run_href,
                 'id': run_uuid,
                 'schedule': {
                     'start': pscheduler.datetime_as_iso8601(start),
