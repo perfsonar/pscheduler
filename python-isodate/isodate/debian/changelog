@@ -1,8 +1,8 @@
-isodate (0.5.0-1~bpo70+1) perfsonar-wheezy-staging; urgency=medium
+isodate (0.5.0-1~bpo80+1) perfsonar-jessie-staging; urgency=medium
 
-  * Backport for wheezy.
+  * Backport for Jessie.
 
- -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Thu, 29 Sep 2016 09:48:14 +0200
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Tue, 26 Sep 2017 09:50:44 +0000
 
 isodate (0.5.0-1) unstable; urgency=medium
 
