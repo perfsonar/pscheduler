@@ -1,8 +1,34 @@
-isodate (0.5.0-1~bpo80+1) perfsonar-jessie-staging; urgency=medium
+isodate (0.5.4-1~bpo80+1) perfsonar-jessie-staging; urgency=medium
 
-  * Backport for Jessie.
+  * Backport for jessie.
 
- -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Tue, 26 Sep 2017 09:50:44 +0000
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Tue, 26 Sep 2017 13:40:23 +0200
+
+isodate (0.5.4-1) unstable; urgency=medium
+
+  * New upstream release (0.5.4).
+
+ -- Maximiliano Curia <maxy@debian.org>  Thu, 01 Oct 2015 14:41:23 +0200
+
+isodate (0.5.1-2) unstable; urgency=medium
+
+  * Update watch file.
+  * Release to unstable.
+
+ -- Maximiliano Curia <maxy@debian.org>  Tue, 28 Apr 2015 18:10:13 +0200
+
+isodate (0.5.1-1) experimental; urgency=medium
+
+  [ Hugo Lefeuvre ]
+  * Team upload.
+  * New upstream release (0.5.1).
+  * debian/control:
+    - Bump Standards-Version to 3.9.6.
+
+  [ Maximiliano Curia ]
+  * Bump compat to 9.
+
+ -- Maximiliano Curia <maxy@debian.org>  Mon, 19 Jan 2015 15:17:06 +0100
 
 isodate (0.5.0-1) unstable; urgency=medium
 
