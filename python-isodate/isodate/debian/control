@@ -1,0 +1,25 @@
+Source: isodate
+Section: python
+Maintainer: Debian Python Modules Team <python-modules-team@lists.alioth.debian.org>
+Uploaders: Maximiliano Curia <maxy@debian.org>
+Priority: optional
+Build-Depends: debhelper (>= 9),
+               python-all (>= 2.6.6-3~),
+               python3-all (>= 3.1.2-6~)
+Standards-Version: 3.9.5
+Homepage: https://pypi.python.org/pypi/isodate
+Vcs-Git: git://anonscm.debian.org/python-modules/packages/isodate.git
+Vcs-Browser: http://anonscm.debian.org/gitweb/?p=python-modules/packages/isodate.git
+XS-Testsuite: autopkgtest
+
+Package: python-isodate
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}
+Description: ISO 8601 date/time/duration parser and formatter (Python module)
+ This Python module implements ISO 8601 date, time and duration parsing.
+
+Package: python3-isodate
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}
+Description: ISO 8601 date/time/duration parser and formatter (Python 3 module)
+ This Python 3 module implements ISO 8601 date, time and duration parsing.
