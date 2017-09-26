@@ -1,16 +1,16 @@
 Source: isodate
 Section: python
+Priority: optional
 Maintainer: Debian Python Modules Team <python-modules-team@lists.alioth.debian.org>
 Uploaders: Maximiliano Curia <maxy@debian.org>
-Priority: optional
 Build-Depends: debhelper (>= 9),
+               dh-python,
                python-all (>= 2.6.6-3~),
                python3-all (>= 3.1.2-6~)
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 Homepage: https://pypi.python.org/pypi/isodate
 Vcs-Git: git://anonscm.debian.org/python-modules/packages/isodate.git
-Vcs-Browser: http://anonscm.debian.org/gitweb/?p=python-modules/packages/isodate.git
-XS-Testsuite: autopkgtest
+Vcs-Browser: http://anonscm.debian.org/cgit/python-modules/packages/isodate.git
 
 Package: python-isodate
 Architecture: all
