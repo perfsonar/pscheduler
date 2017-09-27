@@ -94,6 +94,13 @@ def parse_output(lines):
             lost   = test.group(12)
             send   = test.group(13)
 
+            if jitter is not None:
+                jitter = float(jitter)
+            if lost is not None:
+                lost = int(lost)
+            if send is not None:
+                send = int(send)
+            
             # If the output was in say GBytes convert back to regular Bytes for ease
             # of things later
             if si_bytes:

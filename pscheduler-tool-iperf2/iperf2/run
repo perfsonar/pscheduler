@@ -226,6 +226,11 @@ def run_server():
     iperf2_args.append('-p')
     iperf2_args.append(server_port)
 
+    # see comment in run_client about UDP, the server has to be started
+    # in UDP mode as well
+    if test_spec.has_key('bandwidth') and test_spec['bandwidth'] != None:
+        iperf2_args.append('-u')
+    
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string
     iperf2_args = map(lambda x: str(x), iperf2_args)

@@ -10,7 +10,7 @@ DEFAULT_DURATION = 10
 DEFAULT_FUDGE_FACTOR = 4
 
 # Default number of seconds before client will start to allow server time to boot
-DEFAULT_WAIT_SLEEP = 1
+DEFAULT_WAIT_SLEEP = 3
 
 # The default iperf2 control port
 DEFAULT_SERVER_PORT = 5001

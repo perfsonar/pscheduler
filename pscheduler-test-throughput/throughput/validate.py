@@ -50,6 +50,7 @@ RESULT_SCHEMA = {
         "throughput-data": {
             "type": "object",
             "additionalProperties": False,
+            "required": ["throughput-bits", "throughput-bytes", "stream-id", "start", "end"],
             "properties": {
                 "throughput-bits": {
                     "description": "Summarized view of the overall throughput rate in bits/second",

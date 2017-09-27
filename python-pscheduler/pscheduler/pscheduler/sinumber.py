@@ -55,7 +55,7 @@ def si_as_number(text):
     return number * multiplier
 
 
-def number_as_si(number, places=2, base=10):
+def number_as_si(number, places=2, base=10, spaces=0):
     """Convert a number to the largest possible SI
     representation of that number"""
 
@@ -86,7 +86,7 @@ def number_as_si(number, places=2, base=10):
             continue
 
         if number > value:
-            return number_format.format(number / value) + unit.title()
+            return number_format.format(number / value) + (" " * spaces) + unit.title()
 
     # no matches, must be less than anything so just return number
     return number_format.format(number / value)
