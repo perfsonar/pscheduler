@@ -54,6 +54,8 @@ python-repoze.lru
 python-subprocess32
 python-tzlocal
 python-vcversioner
+# This doesn't get a python- prefix.  Ask CentOS why.
+pysnmp
 
 # JSON Tools
 # Available as python2-jsonschema in EPEL for EL7
