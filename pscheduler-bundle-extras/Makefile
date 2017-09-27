@@ -1,5 +1,5 @@
 #
-# Makefile for pScheduler full bundle
+# Makefile for pScheduler extras bundle
 #
 
 # This makefile auto-generates a spec based on the build list and then
@@ -9,7 +9,7 @@
 # repos-preinstalled into YUM.  Should maybe write a package that does
 # that.
 
-NAME=pscheduler-bundle-full
+NAME=pscheduler-bundle-extras
 
 RPM_MAKEFILE=Makefile-RPM
 
@@ -18,7 +18,7 @@ default: build
 SPEC=$(NAME).spec
 $(SPEC): $(SPEC)-top $(SPEC)-bottom
 	cat $(SPEC)-top > $@
-	../scripts/build-order --bundle none \
+	../scripts/build-order --bundle extras \
 		| egrep -e '^pscheduler-' \
 		| egrep -ve '^pscheduler-bundle-' \
 		| sed -e 's/^/Requires: /g' \
