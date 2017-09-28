@@ -25,28 +25,36 @@ result = input["result"]
 spec = input["spec"]
 
 if format == 'text/plain':
-    print 'Time: %s\n\n' % result['time']
-    print 'Data:\n'
-    for i in range(len(result['data'])):
-        print 'OID: %s\n' % spec['oid'][i]
-        for item in result['data'][i]:
-            try:
-                print 'Sequence number: %s\t' % item['seq_num']
-            except KeyError:
-                pass
-            print 'Timestamp: %s\t' % item['timestamp']
-            try:
-                print 'Type: %s\t' % item['type']
-                print 'Value: %s\t' % item['value']
-            except KeyError:
-                print 'Error: %s\n' % item['value']
 
-            # deltas
-            try:
-                print 'Time delta: %s\t' % item['timedelta']
-                print 'Delta: %s\n' % item['delta']
-            except KeyError:
-                print ''
+    for i in range(len(result['data'])):
+
+        if i > 0:
+            print
+
+        item = result['data'][i]
+
+        print 'OID: %s (%s)' % (spec['oid'][i], item['type'])
+        print '    %s' % (item['value'])
+
+        try:
+            print '    Sequence number: %s' % item['seq_num']
+        except KeyError:
+            pass
+
+        try:
+            print '    Timestamp: %s' % item['timestamp']
+        except KeyError:
+            pass
+
+        # deltas
+        try:
+            print '    Time delta: %s' % item['timedelta']
+            print '    Delta: %s' % item['delta']
+        except KeyError:
+            pass
+
+    print
+    print 'Elapsed Time: %s' % result['time']
 
 elif format == 'text/html':
     print '<table>'

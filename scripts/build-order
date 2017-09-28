@@ -2,6 +2,10 @@
 #
 # Preprocess the build order into something machine-usable
 #
+# Options:
+#   --bundle b  Show packages in bundle b.  If b is "none," the output
+#               will include only packages with no bundle specified.
+#
 
 WHEREAMI="$(dirname $0)"
 
@@ -16,6 +20,48 @@ then
     fi
 fi
 
+
+# Gargle the arguments
+
+BUNDLE=""
+
+while echo "$1" | egrep -qe '^--.'
+do
+  OPTION="$1"
+  shift
+
+  case "$OPTION" in
+
+      --bundle)
+          BUNDLE="$1"
+          shift
+          ;;
+
+      *)
+          echo "Unknown option $OPTION" 1>&2
+          exit 1
+          ;;
+
+
+  esac
+done
+
+bundle_filter()
+{
+    case "${BUNDLE}" in
+	"")
+	    cat
+	    ;;
+	none)
+	    egrep -v -e '--bundle\s*[^\s]+'
+	    ;;
+	*)
+	    fgrep -- "--bundle ${BUNDLE}"
+	    ;;
+    esac
+}
+
+
 # Determine the RHEL version without depending on lsb_release.
 REDHAT_RELEASE=$(sed -e 's/^.* \([0-9.]\+\) .*$/\1/' /etc/redhat-release)
 REDHAT_RELEASE_MAJOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 }')
@@ -26,4 +72,6 @@ m4 \
     "-DREDHAT_RELEASE_MAJOR_MINOR=${REDHAT_RELEASE_MAJORMINOR}" \
     $WHEREAMI/RPM-BUILD-ORDER.m4 \
     | sed -e 's/#.*$//' \
-    | egrep -ve '^\s*$'
+    | egrep -ve '^\s*$' \
+    | bundle_filter \
+    | awk '{ print $1 }'

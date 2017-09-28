@@ -12,6 +12,13 @@ dnl
 # Packages must be listed in an order where dependent packages are
 # built after their dependencies.
 #
+#
+# Options that can be added to a package line:
+#
+#  --bundle b   Include the package in bundle b and not the default
+#               full bundle.
+#
+
 
 #
 # RPM BUILD UTILITIES
@@ -47,6 +54,8 @@ python-repoze.lru
 python-subprocess32
 python-tzlocal
 python-vcversioner
+# This doesn't get a python- prefix.  Ask CentOS why.
+pysnmp
 
 # JSON Tools
 # Available as python2-jsonschema in EPEL for EL7
@@ -97,7 +106,7 @@ pscheduler-test-rtt
 pscheduler-test-simplestream
 pscheduler-test-snmpget
 pscheduler-test-snmpgetbgm
-pscheduler-test-snmpset
+pscheduler-test-snmpset			--bundle extras
 pscheduler-test-trace
 pscheduler-test-dns
 
@@ -113,7 +122,7 @@ pscheduler-tool-bwctlping
 pscheduler-tool-bwctltraceroute
 pscheduler-tool-bwctltracepath
 pscheduler-tool-net-snmp
-pscheduler-tool-net-snmp-set
+pscheduler-tool-net-snmp-set		--bundle extras
 pscheduler-tool-pysnmp
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
@@ -147,3 +156,4 @@ pscheduler-docs
 
 # Bundles
 pscheduler-bundle-full
+pscheduler-bundle-extras

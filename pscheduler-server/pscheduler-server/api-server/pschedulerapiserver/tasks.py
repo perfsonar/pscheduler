@@ -531,7 +531,23 @@ def tasks():
             return error("Failed to enable task %s.  See system logs." % task_uuid)
         log.debug("Task enabled for scheduling.")
 
-        return ok_json("%s/%s" % (request.base_url, task_uuid))
+        task_url = "%s/%s" % (request.base_url, task_uuid)
+
+        # Non-expanded gets just the URL
+        if not arg_boolean("expanded"):
+            return ok_json(task_url)
+
+        # Expanded gets a redirect to GET+expanded
+
+        params = []
+        for arg in [ "detail", "pretty" ]:
+            if arg_boolean(arg):
+                params.append(arg)
+
+        if params:
+            task_url += "?%s" % ("&".join(params))
+
+        return see_other(task_url)
 
     else:
 
