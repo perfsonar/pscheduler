@@ -138,6 +138,9 @@ def url_get(url,          # GET URL
         status = 400
         text = str(ex)
 
+    if status not in [ 200, 201 ]:
+        return (status, text)
+
     if json:
         return (status, json_load(text))
     else:
@@ -175,9 +178,14 @@ print "New task is", task_url
 # Fetch the posted task with extra details.
 #
 
-status, task_data = url_get(task_url, params={"detail": 1})
-if status != 200:
-    fail("Failed to post task: " + task_data)
+try:
+    status, task_data = url_get(task_url, params={"detail": True})
+    if status != 200:
+        raise Exception(task_data)
+except Exception as ex:
+    fail("Failed to post task: %s" % (str(ex)))
+
+
 try:
     first_run_url = task_data["detail"]["first-run-href"]
 except KeyError:
@@ -246,26 +254,12 @@ time.sleep(sleep_seconds)
 # -----------------------------------------------------------------------------
 
 #
-# Wait for the result to be produced
+# Wait for the result to be produced and fetch it.
 #
 
 print
-print "Waiting for result..."
+print "Waiting for result at", run_data["result-href"]
 
-status, result_data = url_get(first_run_url, params={"wait-merged": True})
-
-if status != 200:
-    fail("Failure while waiting for result: %s" % (result_data))
-
-
-# -----------------------------------------------------------------------------
-
-#
-# Fetch it.
-#
-
-print
-print "Result is at", run_data["result-href"]
 status, result_data = url_get(run_data["result-href"],
                               params={"wait-merged": True})
 if status != 200:

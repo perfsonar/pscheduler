@@ -228,6 +228,8 @@ class EsmondClient: # pragma: no cover
             allow_redirects=False,
             timeout=HTTP_TIMEOUT)
         
+        log.debug("Esmond returned HTTP {0}: {1}".format(status_code, result))
+        
         if status_code == 301:
             #redirects
             return False, "Server is attempting to redirect archive URL %s. If redirecting to https, please change archive URL to https instead of relying on redirection." % post_url
@@ -289,6 +291,7 @@ class EsmondBaseRecord:
                     lead_participant=None, 
                     measurement_agent=None, 
                     tool_name=None,
+                    run_href=None,
                     summaries=None,
                     duration=None,
                     ts=None, 
@@ -355,7 +358,9 @@ class EsmondBaseRecord:
                 summary_map = summaries
             for et in self.get_event_types(test_spec=test_spec):
                 self.add_event_type(et, summary_map)
-        
+            if run_href:
+                self.add_event_type('pscheduler-run-href', summary_map)
+    
         #add extra metadata fields
         self.add_metadata_fields(test_spec=test_spec)
         self.add_additional_metadata(test_spec=test_spec)
@@ -380,6 +385,9 @@ class EsmondBaseRecord:
             else:
                 msg = "The test failed for an unspecified reason. See the server logs of the testing host(s)."
             data_point['val'].append({ 'event-type': 'failures', 'val': { 'error': msg }})
+        #add run-href
+        if run_href:
+            data_point['val'].append({ 'event-type': 'pscheduler-run-href', 'val': { 'href': run_href }})
         
         self.data.append(data_point)
     

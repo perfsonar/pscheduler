@@ -1,6 +1,8 @@
 #
 # RPM Spec for pScheduler SNMP Test
 #
+# TEST
+#
 
 %define short	snmpget
 Name:		pscheduler-test-%{short}
