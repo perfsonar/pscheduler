@@ -1,0 +1,17 @@
+Source: pscheduler-bundle-extras
+Section: net
+Priority: optional
+Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.6
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-bundle-extras
+Architecture: all
+Depends:
+ pscheduler-test-snmpset,
+ pscheduler-tool-net-snmp-set
+Description: Extra pScheduler Bundle
+ Bundle of extra pScheduler packages
