@@ -5,7 +5,7 @@
 %define short	changenothing
 Name:		pscheduler-context-%{short}
 Version:	1.0.1
-Release:	1%{?dist}
+Release:	0.1.b1%{?dist}
 
 Summary:	Null context changer class for pScheduler
 BuildArch:	noarch
