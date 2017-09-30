@@ -1,8 +1,14 @@
-pscheduler-tool-net-snmp (1.0.1-1~bpo70+1) perfsonar-wheezy-release; urgency=low
+pscheduler-tool-net-snmp (1.0.2~1.b1-1~bpo70+1) perfsonar-wheezy-staging; urgency=low
 
-  * Backport to wheezy
+  * Backport to Wheezy
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 11:50:43 +0100
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sat, 30 Sep 2017 16:10:45 +0000
+
+pscheduler-tool-net-snmp (1.0.2~1.b1-1) perfsonar-jessie-staging; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sat, 30 Sep 2017 15:30:51 +0000
 
 pscheduler-tool-net-snmp (1.0.1-1) perfsonar-jessie-release; urgency=low
 

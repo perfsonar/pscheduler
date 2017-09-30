@@ -1,5 +1,17 @@
-pscheduler-bundle-extras (1.0.1.1-1~bpo70+1) perfsonar-wheezy-release; urgency=low
+pscheduler-bundle-extras (1.0.2~1.b1-1~bpo70+1) perfsonar-wheezy-staging; urgency=low
+
+  * Backport to Wheezy
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sat, 30 Sep 2017 16:10:39 +0000
+
+pscheduler-bundle-extras (1.0.2~1.b1-1) perfsonar-jessie-staging; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sat, 30 Sep 2017 15:30:45 +0000
+
+pscheduler-bundle-extras (1.0.1.1-1) perfsonar-jessie-release; urgency=low
 
   * Initial release
 
- -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Thu, 28 Sep 2017 11:03:22 +0200
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Thu, 28 Sep 2017 10:52:07 +0200
