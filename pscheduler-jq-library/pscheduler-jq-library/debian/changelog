@@ -1,5 +1,5 @@
-pscheduler-jq-library (1.0.2-1) perfsonar-jessie-staging; urgency=low
+pscheduler-jq-library (1.0.2~1.b1-1) perfsonar-jessie-staging; urgency=low
 
   * Initial release
 
- -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Thu, 17 Aug 2017 11:58:38 +0200
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sat, 30 Sep 2017 15:30:46 +0000

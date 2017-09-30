@@ -1,6 +1,6 @@
 --- a/rabbitmq/Makefile
 +++ b/rabbitmq/Makefile
-@@ -57,7 +57,6 @@
+@@ -59,7 +59,6 @@
  endif
  	mkdir -p $(DESTDIR)
  	install -m 555 $(FILES) $(DESTDIR)
