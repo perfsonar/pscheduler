@@ -4,8 +4,8 @@
 
 %define short	esmond
 Name:		pscheduler-archiver-esmond
-Version:	1.0.1.1
-Release:	1%{?dist}
+Version:	1.0.2
+Release:	0.1.b1%{?dist}
 
 Summary:	Esmond archiver class for pScheduler
 BuildArch:	noarch
@@ -16,7 +16,7 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server >= 1.0.1.1
+Requires:	pscheduler-server >= 1.0.2
 Requires:	python-requests
 Requires:	python-memcached
 Requires:	memcached

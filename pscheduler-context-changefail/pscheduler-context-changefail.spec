@@ -4,8 +4,8 @@
 
 %define short	changefail
 Name:		pscheduler-context-%{short}
-Version:	1.0.1
-Release:	1%{?dist}
+Version:	1.0.2
+Release:	0.1.b1%{?dist}
 
 Summary:	Always-failing context changer class for pScheduler
 BuildArch:	noarch

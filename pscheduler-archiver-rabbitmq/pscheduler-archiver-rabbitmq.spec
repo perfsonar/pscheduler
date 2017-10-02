@@ -4,8 +4,8 @@
 
 %define short	rabbitmq
 Name:		pscheduler-archiver-%{short}
-Version:	1.0.1.1
-Release:	1%{?dist}
+Version:	1.0.2
+Release:	0.1.b1%{?dist}
 
 Summary:	RabbitMQ archiver class for pScheduler
 BuildArch:	noarch
@@ -16,7 +16,7 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server >= 1.0.1.1
+Requires:	pscheduler-server >= 1.0.2
 
 # Note that this doesn't get used since we're supplying our own 0.10.0
 # as a stopgap.
