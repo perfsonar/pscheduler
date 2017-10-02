@@ -2,7 +2,7 @@ pscheduler-archiver-syslog (1.0.2~1.b1-1~bpo70+1) perfsonar-wheezy-staging; urge
 
   * Backport to Wheezy
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sat, 30 Sep 2017 16:10:39 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 02 Oct 2017 17:19:52 +0200
 
 pscheduler-archiver-syslog (1.0.2~1.b1-1) perfsonar-jessie-staging; urgency=low
 

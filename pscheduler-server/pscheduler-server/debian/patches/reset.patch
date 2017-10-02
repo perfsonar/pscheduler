@@ -1,5 +1,7 @@
---- a/database/reset.raw
-+++ b/database/reset.raw
+Index: pscheduler-server/database/reset.raw
+===================================================================
+--- pscheduler-server.orig/database/reset.raw	2017-10-02 17:18:19.000000000 +0200
++++ pscheduler-server/database/reset.raw	2017-10-02 17:19:54.000000000 +0200
 @@ -37,47 +37,45 @@
  
  
