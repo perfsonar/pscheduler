@@ -1,5 +1,7 @@
---- a/database/db-update.raw
-+++ b/database/db-update.raw
+Index: pscheduler-server/database/db-update.raw
+===================================================================
+--- pscheduler-server.orig/database/db-update.raw	2017-10-02 17:13:03.000000000 +0200
++++ pscheduler-server/database/db-update.raw	2017-10-02 17:15:39.000000000 +0200
 @@ -18,9 +18,11 @@
  $INTERACTIVE && printf "Loading database:\n" || true
  

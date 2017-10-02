@@ -1,5 +1,7 @@
---- a/database/warmboot.raw
-+++ b/database/warmboot.raw
+Index: pscheduler-server/database/warmboot.raw
+===================================================================
+--- pscheduler-server.orig/database/warmboot.raw	2017-01-25 01:33:38.000000000 +0100
++++ pscheduler-server/database/warmboot.raw	2017-10-02 17:15:38.000000000 +0200
 @@ -3,8 +3,7 @@
  # Warm boot the database
  #

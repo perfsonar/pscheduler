@@ -2,7 +2,7 @@ pscheduler-tool-net-snmp-set (1.0.2~1.b1-1) perfsonar-jessie-staging; urgency=lo
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sat, 30 Sep 2017 15:30:51 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 02 Oct 2017 17:15:44 +0200
 
 pscheduler-tool-net-snmp-set (1.0.1-1) perfsonar-jessie-release; urgency=low
 
