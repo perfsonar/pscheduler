@@ -6,7 +6,7 @@
 
 %define short	snmpget
 Name:		pscheduler-test-%{short}
-Version:	1.0.1
+Version:	1.0.2
 Release:	0.1.b1%{?dist}
 
 Summary:	snmpget test for pScheduler
