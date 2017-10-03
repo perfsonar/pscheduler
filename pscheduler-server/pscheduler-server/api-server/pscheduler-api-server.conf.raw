@@ -23,6 +23,14 @@ WSGIRestrictEmbedded On
 
 <Location __API_ROOT__>
     ServerSignature Off
+
+    # Work around fix for CVE-2017-9798.  We take care of permissions
+    # internally.
+    <Limit GET POST PUT DELETE>
+        Order allow,deny
+        Allow from all
+    </Limit>
+
 </Location>
 
 # Not something we need.
