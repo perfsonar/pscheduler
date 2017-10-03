@@ -4,7 +4,7 @@
 
 %define short	idle
 Name:		pscheduler-test-%{short}
-Version:	1.0.1.1
+Version:	1.0.1.2
 Release:	1%{?dist}
 
 Summary:	Idle test class for pScheduler
@@ -16,7 +16,7 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server >= 1.0.1.1
+Requires:	pscheduler-server >= 1.0.1.2
 Requires:	python-pscheduler
 
 BuildRequires:	pscheduler-rpm

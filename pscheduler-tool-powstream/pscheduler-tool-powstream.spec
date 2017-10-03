@@ -6,7 +6,7 @@
 %define resultdir	%{_pscheduler_tool_vardir}/%{short}
 
 Name:		pscheduler-tool-%{short}
-Version:	1.0.1.1
+Version:	1.0.1.2
 Release:	1%{?dist}
 
 Summary:	powstream tool class for pScheduler

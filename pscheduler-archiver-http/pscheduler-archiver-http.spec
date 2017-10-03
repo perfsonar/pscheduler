@@ -4,7 +4,7 @@
 
 %define short	http
 Name:		pscheduler-archiver-%{short}
-Version:	1.0.1.1
+Version:	1.0.1.2
 Release:	1%{?dist}
 
 Summary:	HTTP archiver class for pScheduler
