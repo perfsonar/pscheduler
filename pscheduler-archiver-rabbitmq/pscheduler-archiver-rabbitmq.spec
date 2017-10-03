@@ -5,7 +5,7 @@
 %define short	rabbitmq
 Name:		pscheduler-archiver-%{short}
 Version:	1.0.2
-Release:	0.1.b1%{?dist}
+Release:	0.2.b1%{?dist}
 
 Summary:	RabbitMQ archiver class for pScheduler
 BuildArch:	noarch
