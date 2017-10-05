@@ -2,7 +2,7 @@
 #
 # Script to prep a system for pScheduler build/test
 #
-# System should be CentOS 6.x in the "Basic Server" configuration.
+# System should be CentOS 7.x in the "Minimal" configuration.
 #
 # NOTE: You'll need to bring eth0 up manually and adjust its ifcfg
 # script so ONBOOT is yes before running this so you'll have a way to
@@ -13,12 +13,15 @@
 # you're using one.
 #ADD_BACKPLANE_HOSTS=1
 
-# Un-comment these and configure to taste.
+
+# Un-comment these and configure to taste for VBox shared user directory.
 #NEW_USER=mfeit
 #NEW_NAME="Mark Feit"
 #NEW_UID=1838
 #NEW_PASS="${NEW_USER}"
 
+# Current version number of perfSONAR repos
+PS_REPO_VERSION=0.8-1
 
 
 # No user-serviceable parts beyond this point.
@@ -91,38 +94,19 @@ fi
 #
 
 # PostgreSQL
-yum -y install "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-${REDHAT_RELEASE_MAJOR_MINOR}-$(uname -m)/pgdg-redhat95-9.5-2.noarch.rpm"
+yum -y install "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-${REDHAT_RELEASE_MAJOR}Server-$(uname -m)/pgdg-centos95-9.5-3.noarch.rpm"
 
 # EPEL
 yum -y install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${REDHAT_RELEASE_MAJOR}.noarch.rpm"
 
-# Internet2
-rpm --import http://software.internet2.edu/rpms/RPM-GPG-KEY-Internet2
+# perfSONAR
 
-# TODO: Use the default when the I2 repo for EL6/EL7 becomes production
-case ${REDHAT_RELEASE_MAJOR} in
-
-    6|7)
-	cat > /etc/yum.repos.d/internet2-staging.repo <<EOF
-# Name: Internet2 Staging RPM Repository
-# URL: http://software.internet2.edu
-[Internet2-staging]
-name = Internet2 Staging RPM Repository
-baseurl = http://software.internet2.edu/branches/staging/rpms/el${REDHAT_RELEASE_MAJOR}/\$basearch/main/
-enabled = 1
-protect = 0
-gpgcheck = 0
-EOF
-	break
-	;;
-
-    *)
-	# TODO: We should have a symlink to the latest that stays constant.
-	yum -y install "http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/$(uname -m)/RPMS.main/Internet2-repo-0.${REDHAT_RELEASE_MAJOR}-1.noarch.rpm"
-	break
-	;;
-
-esac
+REPO_PREFIX="http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/$(uname -m)/main/RPMS/perfSONAR-repo"
+for REPO in "" extras staging
+do
+    [ "$REPO" != "" ] && REPO="${REPO}-"
+    yum -y install "${REPO_PREFIX}-${REPO}${PS_REPO_VERSION}.noarch.rpm"
+done
 
 
 # Things we need to build:
@@ -131,22 +115,6 @@ yum -y install \
     m4 \
     make \
     which
-
-
-
-# Needed for documentation, which isn't RPM-ified yet and can't load
-# this automatically.
-
-# TODO: CentOS 6 installed enough of TeXLive to build the
-# documentation.  Installing texlive-* is very heavy; see if it can be
-# trimmed down.
-
-# GhostScript is for dvipdf
-
-yum -y install \
-    texlive-\* \
-    ghostscript
-
 
 
 # Conveniences
