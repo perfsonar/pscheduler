@@ -5,7 +5,7 @@
 %define short	esmond
 Name:		pscheduler-archiver-esmond
 Version:	1.0.2
-Release:	0.1.b1%{?dist}
+Release:	0.2.b1%{?dist}
 
 Summary:	Esmond archiver class for pScheduler
 BuildArch:	noarch
