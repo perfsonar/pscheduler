@@ -54,6 +54,8 @@ python-repoze.lru
 python-subprocess32
 python-tzlocal
 python-vcversioner
+# This is how EL prefixes it.
+python2-pyasn1
 # This doesn't get a python- prefix.  Ask CentOS why.
 pysnmp
 
