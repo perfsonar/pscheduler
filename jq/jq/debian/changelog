@@ -1,3 +1,9 @@
+jq (1.5+dfsg-1.3~bpo8+2) perfsonar-jessie-staging; urgency=medium
+
+  * Update distribution to staging.
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Mon, 09 Oct 2017 14:13:00 +0200
+
 jq (1.5+dfsg-1.3~bpo8+1) jessie-backports; urgency=medium
 
   * Rebuild for jessie-backports.
