@@ -145,7 +145,7 @@ if options.dest is not None:
 if options.version is not None:
    result['version'] = options.version
 
-if options.oid is not None:
+if options.oid is not None and len(options.oid):
    result['oid'] = options.oid
 
 if options.protocol is not None:
