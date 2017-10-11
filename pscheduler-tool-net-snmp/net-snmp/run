@@ -30,45 +30,44 @@ start_time = datetime.datetime.now()
 # Perform the test
 
 error = None
-argv = ['snmpget', '-Oe', '-OE']
+argv = ['snmpget', '-Oe', '-OE', '-v', version]
+
+spec = input['test']['spec']
+
+# Security differs in v3.
+
 if version in ['1', '2c']:
-    cli_switches = {'version': '-v',
-                    '_community': '-c',
-                    }
+    argv.extend(['-c', spec['_community']])
 else:
-    cli_switches = {'version': '-v',
-                   'security-name': '-u',
-                   'auth-protocol': '-a',
-                   'priv-protocol': '-x',
-                   '_auth-key': '-A',
-                   '_priv-key': '-X',
-                   'security-level': '-l',
-                   'context': '-n'
-                   }
+    for pair in [
+            ('security-name', '-u')
+            ('auth-protocol', '-a')
+            ('priv-protocol', '-x')
+            ('_auth-key', '-A')
+            ('_priv-key', '-X')
+            ('security-level', '-l')
+            ('context', '-n')
+    ]:
+        param, switch = pair
+        if param in spec:
+            argv.extend([switch, spec[param]])
+
 
 # if no protocol specified, default is udp
-try:
-    protocol = input['test']['spec']['protocol']
-except KeyError:
-    protocol = None
+protocol = spec.get('protocol', 'udp')
 
-# loop through spec to get command line args
-for key in input['test']['spec'].keys():
-    try:
-        argv.append(cli_switches[key])
-    except KeyError:
-        # if key does not exist in dictionary, no switch is needed
-        # do not append schema
-        if key in ['schema', 'protocol']:
-            continue
+    else:
+        argv.append(str(input['test']['spec'][key]))
+
     if key == 'dest' and protocol != None:
         argv.append(str(protocol) + ':' + input['test']['spec'][key])
-    elif key == 'oid':
-        for item in input['test']['spec'][key]:
-            argv.append(item)
-    else:
-        argv.append(input['test']['spec'][key])
-    
+
+# Destination host name
+argv.append(spec['dest'])
+
+# Finally, the OIDs
+argv.extend(spec['oid'])
+
 status, stdout, stderr = pscheduler.run_program(argv, timeout=10)
 
 if status:

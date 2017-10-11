@@ -41,7 +41,8 @@ def spec_is_valid(json):
                     "period":       { "$ref": "#/pScheduler/Integer" },
                     "polls":        { "$ref": "#/pScheduler/Integer" },
                     "oid":          { "type": "array", 
-                                      "items": { "$ref": "#/pScheduler/SNMPOID" } 
+                                      "items": { "$ref": "#/pScheduler/SNMPOID" },
+                                      "minItems": 1,
                                     },
                     "protocol":     { "$ref": "#/local/TransportProtocol" },
                     "timeout":      { "$ref": "#/pScheduler/Duration" },
@@ -65,7 +66,8 @@ def spec_is_valid(json):
                     "period":       { "$ref": "#/pScheduler/Integer" },
                     "polls":        { "$ref": "#/pScheduler/Integer" },
                     "oid":          { "type": "array", 
-                                      "items": { "$ref": "#/pScheduler/SNMPOID" } 
+                                      "items": { "$ref": "#/pScheduler/SNMPOID" },
+                                      "minItems": 1,
                                     },
                     "security-name":   { "$ref": "#/pScheduler/String" },
                     "auth-protocol":   { "$ref": "#/local/AuthProtocol" },

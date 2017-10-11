@@ -7,7 +7,7 @@
     "version": "1.0",
     "tests": [ "snmpget" ],
 
-    "preference": 0,
+    "preference": -10,
 
     "maintainer": {
         "name": "perfSONAR Development Team",

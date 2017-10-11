@@ -17,7 +17,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	net-snmp
+Requires:	net-snmp-utils
 Requires:	python-pscheduler
 Requires:	pscheduler-test-snmpget
 
