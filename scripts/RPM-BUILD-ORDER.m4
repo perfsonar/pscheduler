@@ -123,7 +123,6 @@ pscheduler-tool-bwctliperf3
 pscheduler-tool-bwctlping
 pscheduler-tool-bwctltraceroute
 pscheduler-tool-bwctltracepath
-pscheduler-tool-net-snmp
 pscheduler-tool-net-snmp-set		--bundle extras
 pscheduler-tool-pysnmp
 pscheduler-tool-simplestreamer
