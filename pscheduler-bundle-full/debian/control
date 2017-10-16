@@ -46,7 +46,6 @@ Depends:
  pscheduler-tool-dnspy,
  pscheduler-tool-iperf2,
  pscheduler-tool-iperf3,
- pscheduler-tool-net-snmp,
  pscheduler-tool-nuttcp,
  pscheduler-tool-owping,
  pscheduler-tool-paris-traceroute,
