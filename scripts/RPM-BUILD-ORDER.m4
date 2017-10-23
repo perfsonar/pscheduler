@@ -106,8 +106,8 @@ pscheduler-test-latencybg
 pscheduler-test-throughput
 pscheduler-test-rtt
 pscheduler-test-simplestream
-pscheduler-test-snmpget
-pscheduler-test-snmpgetbgm
+pscheduler-test-snmpget			--bundle extras
+pscheduler-test-snmpgetbgm		--bundle extras
 pscheduler-test-snmpset			--bundle extras
 pscheduler-test-trace
 pscheduler-test-dns
@@ -142,7 +142,7 @@ pscheduler-archiver-esmond
 pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-rabbitmq
-pscheduler-archiver-snmptrap
+pscheduler-archiver-snmptrap		--bundle extras
 pscheduler-archiver-syslog
 
 # Context Changers
