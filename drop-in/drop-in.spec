@@ -3,7 +3,7 @@
 #
 
 Name:		drop-in
-Version:	1.5
+Version:	1.6
 Release:	1%{?dist}
 
 Summary:	Drop and add blocks of text in files
