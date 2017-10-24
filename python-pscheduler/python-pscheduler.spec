@@ -69,7 +69,6 @@ Utility functions for pScheduler
 
 
 %build
-make test
 make
 
 

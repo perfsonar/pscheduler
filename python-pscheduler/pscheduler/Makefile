@@ -12,7 +12,7 @@ test-coverage:
 	nosetests --with-coverage --cover-package rabbitmq
 
 
-build:
+build: test
 	python setup.py build
 
 clean:
