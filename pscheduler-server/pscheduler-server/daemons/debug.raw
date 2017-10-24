@@ -77,8 +77,9 @@ do
 	curl \
 	    --silent --show-error \
 	    --interface localhost \
+	    --insecure \
 	    -o /dev/null \
-	    -X PUT "http://localhost/pscheduler/debug?state=${STATE}" \
+	    -X PUT "https://localhost/pscheduler/debug?state=${STATE}" \
 	    || true
 	continue
     fi
