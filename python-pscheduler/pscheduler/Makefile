@@ -17,3 +17,4 @@ build: test
 
 clean:
 	make -C tests $@
+	find . -name "*.pyc" | xargs rm -f
