@@ -19,6 +19,9 @@ Url:		http://www.perfsonar.net
 
 Source0:	%{short}-%{version}.tar.gz
 
+# NOTE: The runtime Python module requirements must be duplicated in
+# BuildRequires because they're required to run the tests.
+
 Requires:	python-dateutil
 Requires:	python-dns
 Requires:	python-isodate
@@ -47,6 +50,30 @@ BuildRequires:	pscheduler-rpm
 BuildRequires:	python-coverage
 BuildRequires:	python-nose
 BuildRequires:	python-setuptools
+
+# NOTE:  Cloned from above.
+BuildRequires:	python-dateutil
+BuildRequires:	python-dns
+BuildRequires:	python-isodate
+%if 0%{?el6}
+BuildRequires:	python-jsonschema
+%endif
+%if 0%{?el7}
+BuildRequires:	python2-jsonschema
+%endif
+BuildRequires:	python-netaddr
+BuildRequires:	python-netifaces
+BuildRequires:	python-ntplib
+BuildRequires:	python-psycopg2 >= 2.2.0
+BuildRequires:	python-py-radix
+# The limit system uses this.
+BuildRequires:	pscheduler-jq-library
+BuildRequires:	python-pyjq >= 2.0.1
+BuildRequires:	python-requests
+BuildRequires:	python-subprocess32
+BuildRequires:	python-tzlocal
+BuildRequires:	pytz
+
 
 %define limit_config %{_pscheduler_sysconfdir}/limits.conf
 %define logdir %{_var}/log/pscheduler
