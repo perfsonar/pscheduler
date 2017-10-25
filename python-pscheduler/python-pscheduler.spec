@@ -25,6 +25,7 @@ Source0:	%{short}-%{version}.tar.gz
 Requires:	python-dateutil
 Requires:	python-dns
 Requires:	python-isodate
+Requires:	python-ipaddr
 %if 0%{?el6}
 Requires:	python-jsonschema
 %endif
@@ -55,6 +56,7 @@ BuildRequires:	python-setuptools
 BuildRequires:	python-dateutil
 BuildRequires:	python-dns
 BuildRequires:	python-isodate
+BuildRequires:	python-ipaddr
 %if 0%{?el6}
 BuildRequires:	python-jsonschema
 %endif
