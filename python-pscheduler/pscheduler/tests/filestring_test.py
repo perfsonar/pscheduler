@@ -18,9 +18,7 @@ class TestFilestring(PschedTestBase):
         """Filestring tests"""
         self.assertEqual(string_from_file("Plain string"), 'Plain string')
 
-        fstab = string_from_file("@/etc/fstab")
-
-        assert(fstab.find('/etc/fstab') >= 0)
+        assert(string_from_file("@/dev/null") == "")
 
         self.assertRaises(Exception, string_from_file, "@/invalid/path")
 
