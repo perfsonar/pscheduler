@@ -593,9 +593,9 @@ def tasks_uuid(uuid):
         # TODO: This should probably a PUT and not a POST.
 
         try:
-            json_in = pscheduler.json_load(request.data, max_schema=1)
-        except ValueError:
-            return bad_request("Invalid JSON")
+            json_in = pscheduler.json_load(request.data, max_schema=2)
+        except ValueError as ex:
+            return bad_request("Invalid JSON: %s" % str(ex))
         log.debug("JSON is %s", json_in)
 
         try:
@@ -632,9 +632,9 @@ def tasks_uuid(uuid):
         try:
             try:
                 participants = pscheduler.json_load(request.data,
-                                                    max_schema=1)["participants"]
-            except:
-                return bad_request("No participants provided")
+                                                    max_schema=2)["participants"]
+            except Exception as ex:
+                return bad_request("Task error: %s" % str(ex))
             cursor = dbcursor_query(
                 "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, TRUE)",
                 [request.data, participants, hints_data, pscheduler.json_dump(limits_passed), participant, uuid])

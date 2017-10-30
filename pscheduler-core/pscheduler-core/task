@@ -312,7 +312,7 @@ else:
             file = open(options.importfile)
         except IOError as ex:
             pscheduler.fail("Unable to open task %s" % (str(ex)))
-    task = pscheduler.json_load(file, exit_on_error=True, max_schema=1)
+    task = pscheduler.json_load(file, exit_on_error=True, max_schema=2)
 
     # Validate the JSON against a TaskSpecification
     # TODO: Figure out how to do this without the intermediate object
