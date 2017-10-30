@@ -457,6 +457,10 @@ if options.context:
         pscheduler.fail("Context '%s': %s" % (context_text, str(ex)))
 
     task['contexts'] = context_json
+
+# If there's anything context-related (explicit or imported), bump the
+# schema to a version that supports it.
+if 'contexts' in task:
     task_schema.set(2)
 
 
