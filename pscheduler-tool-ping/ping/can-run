@@ -41,7 +41,7 @@ except ValueError as ex:
     })
 
 
-# This tool runs thre entire version 1 schema.
+# This tool runs the entire version 1 schema.
 
 errors = []
 
