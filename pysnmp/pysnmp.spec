@@ -20,15 +20,13 @@ Prefix:		%{_prefix}
 Source:		%{short}-%{version}.tar.gz
 
 Requires:	python
+Requires:	python2-pyasn1 >= 0.3.7
 
 BuildRequires:	python-setuptools
 
 
-
 %description 
 Python library for SNMP
-
-
 
 
 # Don't do automagic post-build things.

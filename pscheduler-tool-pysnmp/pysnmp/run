@@ -212,7 +212,7 @@ while num_polls < spec['polls']:
         try:
             data[enum].append(entry)
         except IndexError:
-            data.append([entry])
+            data.append(entry)
 
     num_polls += 1
 

@@ -312,7 +312,7 @@ else:
             file = open(options.importfile)
         except IOError as ex:
             pscheduler.fail("Unable to open task %s" % (str(ex)))
-    task = pscheduler.json_load(file, exit_on_error=True, max_schema=1)
+    task = pscheduler.json_load(file, exit_on_error=True, max_schema=2)
 
     # Validate the JSON against a TaskSpecification
     # TODO: Figure out how to do this without the intermediate object
@@ -457,6 +457,10 @@ if options.context:
         pscheduler.fail("Context '%s': %s" % (context_text, str(ex)))
 
     task['contexts'] = context_json
+
+# If there's anything context-related (explicit or imported), bump the
+# schema to a version that supports it.
+if 'contexts' in task:
     task_schema.set(2)
 
 

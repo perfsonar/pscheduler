@@ -41,7 +41,8 @@ def spec_is_valid(json):
                     "period":       { "$ref": "#/pScheduler/Integer" },
                     "polls":        { "$ref": "#/pScheduler/Integer" },
                     "oid":          { "type": "array", 
-                                      "items": { "$ref": "#/pScheduler/SNMPOID" } 
+                                      "items": { "$ref": "#/pScheduler/SNMPOID" },
+                                      "minItems": 1,
                                     },
                     "protocol":     { "$ref": "#/local/TransportProtocol" },
                     "timeout":      { "$ref": "#/pScheduler/Duration" },
@@ -52,8 +53,10 @@ def spec_is_valid(json):
                     "dest",
                     "oid",
                     "polls"
-                    ]
+                ],
+                "additionalProperties": False
             },
+
             "SNMPv3Spec": {
                 "type": "object",
                 "properties": {
@@ -65,7 +68,8 @@ def spec_is_valid(json):
                     "period":       { "$ref": "#/pScheduler/Integer" },
                     "polls":        { "$ref": "#/pScheduler/Integer" },
                     "oid":          { "type": "array", 
-                                      "items": { "$ref": "#/pScheduler/SNMPOID" } 
+                                      "items": { "$ref": "#/pScheduler/SNMPOID" },
+                                      "minItems": 1,
                                     },
                     "protocol":     { "$ref": "#/local/TransportProtocol" },
                     "security-name":   { "$ref": "#/pScheduler/String" },
@@ -82,15 +86,20 @@ def spec_is_valid(json):
                     "dest",
                     "oid",
                     "polls"
-                    ]
+                ],
+                "additionalProperties": False
+            },
+
+            "SNMPSpec": {
+                "oneOf": [
+                    { "$ref": "#/local/SNMPv1Spec" },
+                    { "$ref": "#/local/SNMPv3Spec" }
+                ],
             }
         
         },
-        "oneOf": [
-            { "$ref": "#/local/SNMPv1Spec" },
-            { "$ref": "#/local/SNMPv3Spec" }
-        ],
-        "additionalProperties": True
+
+        "$ref": "#/local/SNMPSpec"
     }
 
     return json_validate(json, schema)

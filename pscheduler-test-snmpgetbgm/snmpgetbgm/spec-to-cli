@@ -14,7 +14,10 @@ if not valid:
     pscheduler.fail(message)
 
 # concatenate oids
-oid_list = spec['oid']
+try:
+    oid_list = spec['oid']
+except KeyError:
+    pscheduler.fail("Must query at least one OID.")
 oid_str = ""
 for item in oid_list:
     oid_str = "%s,%s" % (oid_str, item)
