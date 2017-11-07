@@ -1,8 +1,8 @@
-pscheduler-tool-tracepath (1.0.2~1.b1-1) perfsonar-jessie-staging; urgency=low
+pscheduler-tool-tracepath (1.0.2~2.b1-1) perfsonar-jessie-staging; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 02 Oct 2017 17:15:45 +0200
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 07 Nov 2017 16:04:37 +0000
 
 pscheduler-tool-tracepath (1.0.1.1-1) perfsonar-jessie-release; urgency=low
 
