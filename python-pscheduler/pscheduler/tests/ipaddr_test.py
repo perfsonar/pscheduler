@@ -6,7 +6,7 @@ import unittest
 
 from base_test import PschedTestBase
 
-from pscheduler.ipaddr import ip_addr_version
+from pscheduler.ipaddr import is_ip, ip_addr_version
 
 
 class TestIpaddr(PschedTestBase):
@@ -14,6 +14,13 @@ class TestIpaddr(PschedTestBase):
     Ipaddr tests.
     """
 
+    def test_is_ip(self):
+        """Is-IP Tester"""
+        for ip in [ "12.34.56.78", "1234:567::8" ]:
+            self.assertTrue(is_ip(ip))
+        for ip in [ "foo.bar.org", "perfsonar" ]:
+            self.assertFalse(is_ip(ip))
+        
     def test_ipaddr(self):
         """IP addr tests"""
 

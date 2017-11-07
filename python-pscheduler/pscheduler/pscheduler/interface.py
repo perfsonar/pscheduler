@@ -51,19 +51,25 @@ def source_interface(address, port=80, ip_version=None):
     return (None, None)
 
 
+
 def address_interface(address, ip_version=None):
     """Given an address, returns what interface
     has this interface, or None
     """
 
+    # See if the address looks like an address and not a hostname.
+
     # make sure we resolve any address to a specific
     # IP address before looking up interfaces
-    if ip_version is not None:
-        address = pscheduler.dns_resolve(address, ip_version=ip_version)
-    else:
-        address = pscheduler.dns_resolve(address)
-        if address == None:
-            address = pscheduler.dns_resolve(address, ip_version=6)
+    if not pscheduler.is_ip(address):
+        if ip_version is not None:
+            resolved = pscheduler.dns_resolve(address, ip_version=ip_version)
+        else:
+            for version in [ 4, 6 ]:
+                resolved = pscheduler.dns_resolve(address, ip_version=version)
+                if resolved is not None:
+                    break
+        address = resolved
 
     all_interfaces = netifaces.interfaces()
     for interface in all_interfaces:
@@ -75,6 +81,7 @@ def address_interface(address, ip_version=None):
                     return interface
 
     return None
+
 
 
 def interface_affinity(interface):

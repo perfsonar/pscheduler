@@ -288,15 +288,22 @@ def tasks():
                     return error("Invalid transform: %s" % (str(ex)))
 
 
+        # Validate the lead binding if there was one.
+
+        lead_bind = task.get("lead-bind", None)
+        if lead_bind is not None \
+           and (pscheduler.address_interface(lead_bind) is None):
+            return bad_request("Lead bind '%s' is not  on this host"
+                              % (lead_bind))
 
         # Find the participants
 
         try:
 
             # HACK: BWCTLBC
-            if "lead-bind" in task:
+            if lead_bind is not None:
                 lead_bind_env = {
-                    "PSCHEDULER_LEAD_BIND_HACK": task["lead-bind"]
+                    "PSCHEDULER_LEAD_BIND_HACK": lead_bind
                 }
             else:
                 lead_bind_env = None
@@ -327,8 +334,6 @@ def tasks():
         #
         # TOOL SELECTION
         #
-
-        lead_bind = task.get("lead-bind", None)
 
         # TODO: Need to provide for tool being specified by the task
         # package.
