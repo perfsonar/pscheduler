@@ -13,16 +13,19 @@ NAMESPACE=altns
 # where this script was developed and tested are named dev1 through
 # dev9, so we just pluck that number out of it and use that.
 HOST_NUMBER=$(hostname | sed -e 's/^.*\([0-9]\+\)$/\1/')
+HOST_NUMBER_HEX=$(printf '%04x' "${HOST_NUMBER}")
 
 # Physical interface that will be used to create a subinterface
 PHYS_IF=enp0s8
 
 # VLAN ID.  This should be the same everywhere.
 VLAN=100
+VLAN_HEX=$(printf '%04x' "${VLAN}")
 
 # Virtual interface and IP, to be placed in the namespace.
 VIRTUAL_IF="${PHYS_IF}.${VLAN}"
 VIRTUAL_ADDR="10.10.10.${HOST_NUMBER}/24"
+VIRTUAL_ADDR6="fc00:${VLAN_HEX}::${HOST_NUMBER_HEX}/64"
 
 # End Configurables
 
@@ -41,7 +44,10 @@ ip link add link "${PHYS_IF}" name "${VIRTUAL_IF}" type vlan id "${VLAN}"
 ip link set "${VIRTUAL_IF}" netns "${NAMESPACE}"
 
 # Set the address
-ip netns exec "${NAMESPACE}" ifconfig "${VIRTUAL_IF}" "${VIRTUAL_ADDR}" up
+ip netns exec "${NAMESPACE}" ip -4 addr add "${VIRTUAL_ADDR}"  dev "${VIRTUAL_IF}"
+ip netns exec "${NAMESPACE}" ip -6 addr add "${VIRTUAL_ADDR6}" dev "${VIRTUAL_IF}"
+ip netns exec "${NAMESPACE}" ip link set dev "${VIRTUAL_IF}" up
+
 
 # Show how things fell out.
 echo "Root namespace:"
