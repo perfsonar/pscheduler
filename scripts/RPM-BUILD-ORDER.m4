@@ -54,6 +54,8 @@ python-repoze.lru
 python-subprocess32
 python-tzlocal
 python-vcversioner
+# This is how EL prefixes it.
+python2-pyasn1
 # This doesn't get a python- prefix.  Ask CentOS why.
 pysnmp
 
@@ -104,8 +106,8 @@ pscheduler-test-latencybg
 pscheduler-test-throughput
 pscheduler-test-rtt
 pscheduler-test-simplestream
-pscheduler-test-snmpget
-pscheduler-test-snmpgetbgm
+pscheduler-test-snmpget			--bundle extras
+pscheduler-test-snmpgetbgm		--bundle extras
 pscheduler-test-snmpset			--bundle extras
 pscheduler-test-trace
 pscheduler-test-dns
@@ -121,7 +123,6 @@ pscheduler-tool-bwctliperf3
 pscheduler-tool-bwctlping
 pscheduler-tool-bwctltraceroute
 pscheduler-tool-bwctltracepath
-pscheduler-tool-net-snmp
 pscheduler-tool-net-snmp-set		--bundle extras
 pscheduler-tool-pysnmp
 pscheduler-tool-simplestreamer
@@ -141,7 +142,7 @@ pscheduler-archiver-esmond
 pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-rabbitmq
-pscheduler-archiver-snmptrap
+pscheduler-archiver-snmptrap		--bundle extras
 pscheduler-archiver-syslog
 
 # Context Changers

@@ -15,7 +15,7 @@ test_data_validator = {
     "required": [ "test", "limit" ]
 }
 
-def test_data_is_valid(data):
+def data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
@@ -33,7 +33,7 @@ class LimitTest():
                  data   # Data suitable for this class
                  ):
 
-        valid, message = test_data_is_valid(data)
+        valid, message = data_is_valid(data)
         if not valid:
             raise ValueError("Invalid data: %s" % message)
 

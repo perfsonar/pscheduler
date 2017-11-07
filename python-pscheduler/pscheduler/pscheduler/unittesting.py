@@ -781,7 +781,7 @@ class TestParticipantsUnitTest(ExecUnitTest):
         """
         result_json = self.run_cmd(input)
         assert("participants" in result_json)
-        assert(len(result_json["participants"]), len(expected_participants))
+        assert len(result_json["participants"]), len(expected_participants)
         for i in range(0,len(expected_participants)):
             self.assertEquals(expected_participants[i], result_json["participants"][i])
 

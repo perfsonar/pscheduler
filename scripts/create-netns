@@ -1,0 +1,51 @@
+#!/bin/sh -e
+
+# This program configures a network namespace containing a virtual
+# interface bound to a physical interface in the root namespace.
+
+# -----------------------------------------------------------------------------
+
+# Configure the following to taste:
+
+NAMESPACE=altns
+
+# Pick a number for this host that will fit in an octet.  The systems
+# where this script was developed and tested are named dev1 through
+# dev9, so we just pluck that number out of it and use that.
+HOST_NUMBER=$(hostname | sed -e 's/^.*\([0-9]\+\)$/\1/')
+
+# Physical interface that will be used to create a subinterface
+PHYS_IF=enp0s8
+
+# VLAN ID.  This should be the same everywhere.
+VLAN=100
+
+# Virtual interface and IP, to be placed in the namespace.
+VIRTUAL_IF="${PHYS_IF}.${VLAN}"
+VIRTUAL_ADDR="10.10.10.${HOST_NUMBER}/24"
+
+# End Configurables
+
+# -----------------------------------------------------------------------------
+
+# Start with a clean slate
+ip netns del "${NAMESPACE}" || true
+
+# Create the namespace
+ip netns add "${NAMESPACE}"
+
+# Create the virual interface
+ip link add link "${PHYS_IF}" name "${VIRTUAL_IF}" type vlan id "${VLAN}"
+
+# Move the virtual interface into the other namespace
+ip link set "${VIRTUAL_IF}" netns "${NAMESPACE}"
+
+# Set the address
+ip netns exec "${NAMESPACE}" ifconfig "${VIRTUAL_IF}" "${VIRTUAL_ADDR}" up
+
+# Show how things fell out.
+echo "Root namespace:"
+ip addr
+echo
+echo "Namespace ${NAMESPACE}:"
+ip netns exec "${NAMESPACE}" ip addr

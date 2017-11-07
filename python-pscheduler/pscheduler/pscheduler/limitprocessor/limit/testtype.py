@@ -18,7 +18,7 @@ testtype_data_validator = {
 }
 
 
-def testtype_data_is_valid(data):
+def data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
@@ -37,7 +37,7 @@ class LimitTestType():
                  ):
 
         
-        valid, message = testtype_data_is_valid(data)
+        valid, message = data_is_valid(data)
         if not valid:
             raise ValueError("Invalid data: %s" % message)
 
