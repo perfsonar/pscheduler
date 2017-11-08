@@ -137,9 +137,6 @@ def __tasks_get_filtered(uri_base,
 
         json = row[0]
 
-        # This is always added.
-        json['href'] = uri
-
         # The lead participant passes the participant list to the
         # others within the JSON, but that shouldn't come out when
         # querying it.
