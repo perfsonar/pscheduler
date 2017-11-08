@@ -30,7 +30,7 @@ pg_upgrade() {
         return
     fi
 
-    CNT=$(pg_lsclusters -h | grep -w -c online)
+    CNT=$(pg_lsclusters -h | grep -w -c online) || true
     if [ "$CNT" -ne 2 ]; then
         echo Did not find 2 online clusters: $CNT
         return
