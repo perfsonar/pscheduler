@@ -40,27 +40,38 @@ from exit import on_graceful_exit
 # make sure they exit cleanly on most signals so this gets called.
 
 this = sys.modules[__name__]
+this.lock = threading.Lock()
+this.terminating = False
 this.running = None
+
+
+def __init_running():
+    """Internal use:  Initialize the running hash if it isn't."""
+    with this.lock:
+        if this.running is None:
+            this.running = {}
+            on_graceful_exit(__terminate_running)
 
 
 def __terminate_running():
     """Internal use:  Terminate a running process."""
     __init_running()
-    for process in this.running:
+    while len(this.running) > 0:
+        with this.lock:
+            process = this.running.keys()[0]
         try:
             process.terminate()
             process.wait()
         except Exception:
             pass  # This is a best-effort effort.
+        with this.lock:
+            try:
+                del this.running[process]
+            except KeyError:
+                pass  # Best effort.
+
     # Sometimes this gets called twice, so clean the list.
     this.running.clear()
-
-
-def __init_running():
-    """Internal use:  Initialize the running hash if it isn't."""
-    if this.running is None:
-        this.running = {}
-        on_graceful_exit(__terminate_running)
 
 
 def __running_add(process):
