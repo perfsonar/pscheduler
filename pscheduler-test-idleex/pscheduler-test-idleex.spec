@@ -5,7 +5,7 @@
 %define short	idleex
 Name:		pscheduler-test-%{short}
 Version:	1.0.2
-Release:	0.2.b1%{?dist}
+Release:	0.3.b1%{?dist}
 
 Summary:	Idle Exclusive test class for pScheduler
 BuildArch:	noarch

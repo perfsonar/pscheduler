@@ -9,7 +9,7 @@
 %define short	linuxnns
 Name:		pscheduler-context-%{short}
 Version:	1.0.2
-Release:	0.2.b1%{?dist}
+Release:	0.3.b1%{?dist}
 
 Summary:	Linux network namespace context changer for pScheduler
 BuildArch:	noarch
