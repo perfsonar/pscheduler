@@ -5,7 +5,7 @@
 %define short	snmpgetbgm
 Name:		pscheduler-test-%{short}
 Version:	1.0.2
-Release:	0.4.b1%{?dist}
+Release:	0.5.b1%{?dist}
 
 Summary:	snmpgetbgm test for pScheduler
 BuildArch:	noarch
