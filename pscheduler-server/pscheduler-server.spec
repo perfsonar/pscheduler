@@ -8,7 +8,7 @@
 
 Name:		pscheduler-server
 Version:	1.0.2
-Release:	0.3.b1%{?dist}
+Release:	0.4.b1%{?dist}
 
 Summary:	pScheduler Server
 BuildArch:	noarch
