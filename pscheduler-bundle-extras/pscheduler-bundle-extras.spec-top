@@ -4,7 +4,7 @@
 
 Name:		pscheduler-bundle-extras
 Version:	1.0.2
-Release:	0.1.b1%{?dist}
+Release:	0.5.b1%{?dist}
 
 Summary:	Extras pScheduler Bundle
 BuildArch:	noarch

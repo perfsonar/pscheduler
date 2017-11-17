@@ -6,10 +6,37 @@ import threading
 import signal
 import sys
 
-__LOCK = threading.Lock()
-__EXIT_WORKER = None
-__EXIT_LOCK = None
-__EXIT_LIST = []
+from threading import Thread,Semaphore
+
+
+class Barrier:
+    """
+    Simple barrier, since Python 2.7 doesn't have one.
+    Code from https://stackoverflow.com/a/26703365/180674
+    """
+    def __init__(self, n):
+        self.n = n
+        self.count = 0
+        self.mutex = Semaphore(1)
+        self.barrier = Semaphore(0)
+
+    def wait(self):
+        self.mutex.acquire()
+        self.count = self.count + 1
+        self.mutex.release()
+        if self.count == self.n:
+            self.barrier.release()
+        self.barrier.acquire()
+        self.barrier.release()
+
+
+
+this = sys.modules[__name__]
+this.lock = threading.Lock()
+this.exit_worker = None
+this.exit_barrier = None
+this.exit_list = []
+this.finish_barrier = None
 
 
 def __graceful_exit_worker():
@@ -17,16 +44,18 @@ def __graceful_exit_worker():
     Wait for the exit lock to become available, then call all of the
     exit calls.
     """
-    global __EXIT_LOCK
-    global __EXIT_LIST
-
     #print "GEW START"
-    assert __EXIT_LOCK is not None
-    __EXIT_LOCK.acquire()
-    #print "GEW ACQUIRED"
-    for call in __EXIT_LIST:
-        #print "GEW calling", call
-        call()
+    assert this.exit_barrier is not None
+    # Wait for the handler to tell us we're exting
+    this.exit_barrier.wait()
+    #print "GEW PAST BARRIER"
+    with this.lock:
+        #print "GEW DOING EXIT WORK"
+        for call in this.exit_list:
+            #print "GEW calling", call
+            call()
+    # Let on_graceful_exit know it can exit
+    this.finish_barrier.wait()
     #print "GEW DONE"
 
 
@@ -41,21 +70,21 @@ def on_graceful_exit(call):
     if not callable(call):
         raise ValueError("%s is not callable", call)
 
-    global __LOCK
-    global __EXIT_WORKER
-    global __EXIT_LOCK
+    with this.lock:
 
-    with __LOCK:
-
-        if __EXIT_WORKER is None and __EXIT_LOCK is None:
-            __EXIT_LOCK = threading.Lock()
-            __EXIT_LOCK.acquire()
-            __EXIT_WORKER = threading.Thread(
+        if this.exit_worker is None and this.exit_barrier is None:
+            #print "OGE INITIALIZING"
+            this.finish_barrier = Barrier(2)
+            this.exit_barrier = Barrier(2)
+            this.exit_worker = threading.Thread(
                 target=lambda: __graceful_exit_worker())
-            __EXIT_WORKER.setDaemon(True)
-            __EXIT_WORKER.start()
+            this.exit_worker.setDaemon(True)
+            this.exit_worker.start()
 
-        __EXIT_LIST.append(call)
+        #print "OGE APPENDING", call
+        this.exit_list.append(call)
+
+    #print "OGE DONE"
 
 
 def __exit_handler(signum, frame):
@@ -63,14 +92,17 @@ def __exit_handler(signum, frame):
     Let the worker go.  This doesn't do much of anything because it's
     called from inside a signal handler.
     """
-    global __LOCK
-    global __EXIT_LOCK
-
     #print "EH START"
-    with __LOCK:
-        if __EXIT_LOCK is not None:
-            __EXIT_LOCK.release()
-            #print "EH RELEASE"
+    with this.lock:
+        exit_barrier = this.exit_barrier
+
+    if exit_barrier is not None:
+        # Meet up with the worker
+        this.exit_barrier.wait()
+        #print "EH FIRST BARRIER"
+        # Wait for the worker to be done
+        this.finish_barrier.wait()
+        #print "EH HANDLER FINISHED"
     #print "EH DONE"
     sys.exit(0)
 
@@ -79,10 +111,6 @@ def set_graceful_exit():
     """
     Set up a graceful exit when certain signals arrive.
     """
-
-    global __LOCK
-    global __EXIT_WORKER
-    global __EXIT_LOCK
 
     for sig in [signal.SIGHUP,
                 signal.SIGINT,

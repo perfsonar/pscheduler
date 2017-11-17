@@ -7,6 +7,21 @@ import netaddr
 from psdns import *
 
 
+def is_ip(addr):
+    """
+    Determine if an address looks like IPv4 or IPv6
+    """
+    for family in [socket.AF_INET, socket.AF_INET6]:
+        try:
+            socket.inet_pton(family, addr)
+            return True
+        except socket.error:
+            pass
+
+    return False
+
+
+
 def ip_addr_version(addr, resolve=True, timeout=dns_default_timeout()):
     """Determine what IP version an address, CIDR block or hostname
     represents.  When resolving hostnames to an IP, the search order
