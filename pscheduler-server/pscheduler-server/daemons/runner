@@ -116,20 +116,6 @@ run_dict = RunDictionary()
 # Clock Survey
 #
 
-def is_ip(addr):
-    """
-    Determine if an address looks like IPv4 or IPv6
-    """
-    for family in [socket.AF_INET, socket.AF_INET6]:
-        try:
-            socket.inet_pton(family, addr)
-            return True
-        except socket.error:
-            pass
-
-    return False
-
-
 def get_clock(arg):
     slot, url, bind = arg
     status, result = pscheduler.url_get(url, throw=False, bind=bind)
