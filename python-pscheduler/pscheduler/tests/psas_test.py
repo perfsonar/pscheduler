@@ -33,10 +33,10 @@ class TestPsas(PschedTestBase):
             assert(ret.get('this-is-not-valid') is None)
             self.assertEqual(
                 ret.get('8.8.8.8'),
-                (15169, 'GOOGLE - Google Inc., US'))
+                (15169, 'GOOGLE - Google LLC, US'))
             self.assertEqual(
                 ret.get('2607:f8b0:4002:c06::67'),
-                (15169, 'GOOGLE - Google Inc., US'))
+                (15169, 'GOOGLE - Google LLC, US'))
             self.assertEqual(
                 ret.get('198.6.1.1'),
                 (701, 'UUNET - MCI Communications Services, Inc. d/b/a Verizon Business, US'))

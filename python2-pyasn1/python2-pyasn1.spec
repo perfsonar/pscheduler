@@ -12,6 +12,7 @@ License:	BSD
 Group:		Development/Libraries
 
 Provides:	%{name} = %{version}-%{release}
+Provides:	python-%{short} = %{version}-%{release}
 Prefix:		%{_prefix}
 
 Vendor:		Ilya Etingof <etingof@gmail.com>
