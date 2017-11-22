@@ -655,7 +655,7 @@ class ArchiveWorker():
                            result.get("error", "Unspecified error"))
             self.db.query("""UPDATE archiving
                              SET
-                                 archived = TRUE,
+                                 completed = TRUE,
                                  attempts = attempts + 1,
                                  last_attempt = now(),
                                  next_attempt = NULL,
@@ -670,6 +670,7 @@ class ArchiveWorker():
                                self.id, run_uuid, archiver)
                 self.db.query("""UPDATE archiving
                                  SET
+                                     completed = TRUE,
                                      archived = TRUE,
                                      attempts = attempts + 1,
                                      last_attempt = now(),
@@ -717,7 +718,7 @@ class ArchiveWorker():
 
                     self.db.query("""UPDATE archiving
                                      SET
-                                         archived = TRUE,
+                                         completed = TRUE,
                                          attempts = attempts + 1,
                                          last_attempt = now(),
                                          next_attempt = NULL,
@@ -813,7 +814,7 @@ def main_program():
         if len(result) == 0:
             log.debug("Nothing to archive; finding time until next archiving.")
             result = db.query("""SELECT next_attempt - now() FROM archiving
-                                 WHERE NOT archived AND next_attempt > now()
+                                 WHERE NOT completed AND next_attempt > now()
                                  ORDER BY next_attempt LIMIT 1""")
 
             assert len(result) < 2

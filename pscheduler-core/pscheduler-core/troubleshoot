@@ -87,10 +87,21 @@ def ok():
 
 def failed(why, fail=True):
     sys.stdout.write(" Failed.\n")
-    print pscheduler.indent(why)
+    print why
     if fail:
         pscheduler.fail()
 
+
+
+def failed_diags(run, why="Task failed to run properly."):
+    """
+    Fail and write diagnostic data for a run
+    """
+    failed(why, fail=False)
+    print
+    result_args = ["pscheduler", "result", "--diags", "--archivings", run]
+    os.execl("/bin/sh", "/bin/sh", "-c",
+             " ".join([pipes.quote(arg) for arg in result_args]))
 
 
 
@@ -170,18 +181,52 @@ def run_task(message, lead, task, bind=None):
                                              params={"wait-merged": True},
                                              throw=False)
     if status != 200:
-        print status, result_data
         failed("Did not get a result: %s" % (result_data))
     progress()
 
     try:
         if not result_data["succeeded"]:
-            failed("Test failed to run properly.", fail=False)
-            result_args = ["pscheduler", "result", first_run_url]
-            os.execl("/bin/sh", "/bin/sh", "-c",
-                     " ".join([pipes.quote(arg) for arg in result_args]))
+            failed_diags(first_run_url)
     except KeyError:
         failed("Server didn't return the expected result.")
+
+    # If there were archivings, see if they worked.
+
+    if "archives" in task and len(task["archives"]):
+
+        progress("Checking archiving")
+
+        end_time = time.time() + 5
+        while time.time() < end_time:
+            status, archive_data = pscheduler.url_get(first_run_url,
+                                                      throw=False)
+            if status != 200:
+                failed("Unable to fetch archive status: %s" % (archive_data))
+
+            archived = [ True
+                         for ar in archive_data["archivings"]
+                         # This is a fallback for older systems
+                         if ar.get("completed", ar.get("archived", False))
+            ]
+
+            if len(archived) == len(task["archives"]):
+                break
+
+            time.sleep(1)
+
+        if time.time() >= end_time:
+            failed("Archiving never completed.")
+
+        # At this point, archive_data will be the last one pulled from
+        # the server.
+
+        completed = [ True
+                     for ar in archive_data["archivings"]
+                     if ar.get("archived", False)
+                 ]
+
+        if len(completed) < len(task["archives"]):
+            failed_diags(first_run_url, why="One or more archivings failed.")
 
     ok()
     return result_data
@@ -218,7 +263,22 @@ for host in hosts:
                      },
                      "type": "idle"
                  },
-                 "schedule": {}
+                 "schedule": {},
+                 "archives": [
+                     {
+                         "archiver": "bitbucket",
+                         "data": {},
+                         "ttl": "PT1M"
+                     },
+                     {
+                         "archiver": "failer",
+                         "data": {
+                             "fail": 0.0,  # Don't fail, ever.
+                             "retry": 0.0
+                         },
+                         "ttl": "PT1M"
+                     }
+                 ],
              }
             )
 
