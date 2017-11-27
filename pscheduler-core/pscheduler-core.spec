@@ -4,7 +4,7 @@
 
 Name:		pscheduler-core
 Version:	1.0.2
-Release:	0.5.b1%{?dist}
+Release:	1%{?dist}
 
 Summary:	pScheduler Core Programs
 BuildArch:	noarch
