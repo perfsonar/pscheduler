@@ -1,11 +1,11 @@
-pscheduler-jq-library (1.0.2~5.b1-1~bpo70+1) perfsonar-wheezy-staging; urgency=low
+pscheduler-jq-library (1.0.2-1~bpo70+1) perfsonar-wheezy-release; urgency=low
 
   * Backport to Wheezy.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 17 Nov 2017 14:43:16 -0700
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 27 Nov 2017 14:51:44 +0000
 
-pscheduler-jq-library (1.0.2~5.b1-1) perfsonar-jessie-staging; urgency=low
+pscheduler-jq-library (1.0.2-1) perfsonar-jessie-release; urgency=low
 
   * Initial release
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 17 Nov 2017 14:38:52 -0700
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 27 Nov 2017 14:44:51 +0000

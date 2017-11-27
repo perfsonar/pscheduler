@@ -1,5 +1,7 @@
---- a/setup.py
-+++ b/setup.py
+Index: pscheduler/setup.py
+===================================================================
+--- pscheduler.orig/setup.py	2017-11-27 14:44:56.000000000 +0000
++++ pscheduler/setup.py	2017-11-27 14:51:48.000000000 +0000
 @@ -16,16 +16,6 @@
          'pscheduler.limitprocessor.identifier',
          'pscheduler.limitprocessor.limit',
