@@ -1,8 +1,8 @@
-pscheduler-tool-iperf2 (1.0.2~5.b1-1) perfsonar-jessie-staging; urgency=low
+pscheduler-tool-iperf2 (1.0.2-1) perfsonar-jessie-release; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 17 Nov 2017 14:38:59 -0700
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 27 Nov 2017 14:44:55 +0000
 
 pscheduler-tool-iperf2 (1.0.1.1-1) perfsonar-jessie-release; urgency=low
 

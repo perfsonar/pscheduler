@@ -1,7 +1,7 @@
 Index: pscheduler-server/utilities/backup.raw
 ===================================================================
---- pscheduler-server.orig/utilities/backup.raw	2017-10-02 09:19:57.000000000 -0600
-+++ pscheduler-server/utilities/backup.raw	2017-11-17 14:38:54.000000000 -0700
+--- pscheduler-server.orig/utilities/backup.raw	2017-11-07 16:09:11.000000000 +0000
++++ pscheduler-server/utilities/backup.raw	2017-11-27 14:44:52.000000000 +0000
 @@ -73,6 +73,7 @@
      --format plain \
      --serializable-deferrable \
@@ -12,8 +12,8 @@ Index: pscheduler-server/utilities/backup.raw
  $INTERACTIVE && printf ' Done.\n' 1>&2 || true
 Index: pscheduler-server/utilities/restore.raw
 ===================================================================
---- pscheduler-server.orig/utilities/restore.raw	2017-10-02 09:19:57.000000000 -0600
-+++ pscheduler-server/utilities/restore.raw	2017-11-17 14:38:54.000000000 -0700
+--- pscheduler-server.orig/utilities/restore.raw	2017-11-07 16:09:11.000000000 +0000
++++ pscheduler-server/utilities/restore.raw	2017-11-27 14:44:52.000000000 +0000
 @@ -193,7 +193,7 @@
  cat "${WORK_DIR}/database-dump" >> "${SQL_WORK}"
  
