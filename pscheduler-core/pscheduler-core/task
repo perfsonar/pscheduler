@@ -659,9 +659,12 @@ log.debug("Posted %s", task_url)
 status, result = pscheduler.url_get(
     task_url,
     bind=bind,
+    params={ "detail": 1 },
     json=True)
 if status != 200:
     pscheduler.fail("Failed to fetch the task.")
+
+log.debug("Submission diagnostics:\n%s" % (pscheduler.indent(result['detail']['diags'])))
 
 if verbose:
     print "Running with tool '%s'" % (result['tool'])
