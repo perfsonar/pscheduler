@@ -293,6 +293,48 @@ def tasks():
             return bad_request("Lead bind '%s' is not  on this host"
                               % (lead_bind))
 
+
+        # Evaluate the task against the limits and reject the request
+        # if it doesn't pass.  We do this early so anything else in
+        # the process gets any rewrites.
+
+        log.debug("Checking limits on %s", task["test"])
+
+        (processor, whynot) = limitprocessor()
+        if processor is None:
+            log.debug("Limit processor is not initialized. %s", whynot)
+            return no_can_do("Limit processor is not initialized: %s" % whynot)
+
+        hints = request_hints();
+        hints_data = pscheduler.json_dump(hints)
+
+        log.debug("Processor = %s" % processor)
+        passed, limits_passed, diags, new_test \
+            = processor.process(task["test"], hints)
+
+        if not passed:
+            return forbidden("Task forbidden by limits:\n" + diags)
+
+        if new_test is not None:
+            try:
+                task["test"] = new_test
+                returncode, stdout, stderr = pscheduler.run_program(
+                    [ "pscheduler", "internal", "invoke", "test",
+                      task['test']['type'], "spec-is-valid" ],
+                    stdin = pscheduler.json_dump(task["test"]["spec"])
+                )
+
+                if returncode != 0:
+                    return error("Failed to validate rewritten test specification: %s" % (stderr))
+                validate_json = pscheduler.json_load(stdout, max_schema=1)
+                if not validate_json["valid"]:
+                    return bad_request("Rewritten test specification is invalid: %s" %
+                                   (validate_json.get("error", "Unspecified error")))
+            except Exception as ex:
+                return error("Unable to validate rewritten test specification: " + str(ex))
+
+
+
         # Find the participants
 
         try:
@@ -404,43 +446,6 @@ def tasks():
 
         tasks_posted = []
 
-        # Evaluate the task against the limits and reject the request
-        # if it doesn't pass.
-
-        log.debug("Checking limits on %s", task["test"])
-
-        (processor, whynot) = limitprocessor()
-        if processor is None:
-            log.debug("Limit processor is not initialized. %s", whynot)
-            return no_can_do("Limit processor is not initialized: %s" % whynot)
-
-        hints = request_hints();
-        hints_data = pscheduler.json_dump(hints)
-
-        log.debug("Processor = %s" % processor)
-        passed, limits_passed, diags, new_test \
-            = processor.process(task["test"], hints)
-
-        if not passed:
-            return forbidden("Task forbidden by limits:\n" + diags)
-
-        if new_test is not None:
-            try:
-                task["test"] = new_test
-                returncode, stdout, stderr = pscheduler.run_program(
-                    [ "pscheduler", "internal", "invoke", "test",
-                      task['test']['type'], "spec-is-valid" ],
-                    stdin = pscheduler.json_dump(task["test"]["spec"])
-                )
-
-                if returncode != 0:
-                    return error("Failed to validate rewritten test specification: %s" % (stderr))
-                validate_json = pscheduler.json_load(stdout, max_schema=1)
-                if not validate_json["valid"]:
-                    return bad_request("Rewritten test specification is invalid: %s" %
-                                   (validate_json.get("error", "Unspecified error")))
-            except Exception as ex:
-                return error("Unable to validate rewritten test specification: " + str(ex))
 
 
         # Post the lead with the local database, which also assigns
