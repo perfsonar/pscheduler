@@ -219,6 +219,11 @@ except KeyError as ex:
 if out_format == "text/plain" \
    and (options.diags or not succeeded):
 
+    if "diags" in task_json["detail"]:
+        print
+        print "Limit system diagnostics:"
+        print pscheduler.indent(task_json["detail"]["diags"])
+
     print
     parts = task_json["detail"]["participants"]
     for participant in range(0, len(parts)):

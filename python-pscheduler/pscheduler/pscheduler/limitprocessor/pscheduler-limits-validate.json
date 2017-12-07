@@ -89,39 +89,87 @@
 	    },
 	    "additionalProperties": false,
 	    "required": [ "require", "limits" ]
+	},
+
+
+	"LimitConfiguration_V1": {
+	    "type": "object",
+	    "properties": {
+		"schema": {
+		    "type": "integer",
+		    "minimum": 1,
+		    "maximum": 1
+		},
+		"identifiers": { 
+		    "type": "array",
+		    "items": { "$ref": "#/local/Identifier" }
+		},
+		"classifiers": { 
+		    "type": "array",
+		    "items": { "$ref": "#/local/Classifier" }
+		},
+		"limits": { 
+		    "type": "array",
+		    "items": { "$ref": "#/local/Limit" }
+		},
+		"applications": { 
+		    "type": "array",
+		    "items": { "$ref": "#/local/Application" }
+		}
+	    },
+	    "additionalProperties": false,
+	    "required": [
+		"schema",
+		"identifiers",
+		"classifiers",
+		"limits",
+		"applications"
+	    ]
+	},
+
+	"LimitConfiguration_V2": {
+	    "type": "object",
+	    "properties": {
+		"schema": {
+		    "type": "integer",
+		    "minimum": 2,
+		    "maximum": 2
+		},
+		"identifiers": { 
+		    "type": "array",
+		    "items": { "$ref": "#/local/Identifier" }
+		},
+		"classifiers": { 
+		    "type": "array",
+		    "items": { "$ref": "#/local/Classifier" }
+		},
+		"rewrite": { "$ref": "#/pScheduler/JQTransformSpecification" },
+		"limits": { 
+		    "type": "array",
+		    "items": { "$ref": "#/local/Limit" }
+		},
+		"applications": { 
+		    "type": "array",
+		    "items": { "$ref": "#/local/Application" }
+		}
+	    },
+	    "additionalProperties": false,
+	    "required": [
+		"schema",
+		"identifiers",
+		"classifiers",
+		"limits",
+		"applications"
+	    ]
+	},
+
+	"LimitConfiguration": {
+	    "oneOf": [
+		{ "$ref": "#/local/LimitConfiguration_V1" },
+		{ "$ref": "#/local/LimitConfiguration_V2" }
+	    ]
 	}
     },
 
-    "type": "object",
-    "properties": {
-        "schema": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 1
-	},
-        "identifiers": { 
-	    "type": "array",
-	    "items": { "$ref": "#/local/Identifier" }
-	},
-        "classifiers": { 
-	    "type": "array",
-	    "items": { "$ref": "#/local/Classifier" }
-	},
-        "limits": { 
-	    "type": "array",
-	    "items": { "$ref": "#/local/Limit" }
-	},
-        "applications": { 
-	    "type": "array",
-	    "items": { "$ref": "#/local/Application" }
-	}
-    },
-    "additionalProperties": false,
-    "required": [
-        "schema",
-        "identifiers",
-        "classifiers",
-        "limits",
-        "applications"
-    ]
+    "$ref": "#/local/LimitConfiguration"
 }

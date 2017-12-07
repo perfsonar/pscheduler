@@ -418,10 +418,30 @@ def tasks():
         hints_data = pscheduler.json_dump(hints)
 
         log.debug("Processor = %s" % processor)
-        passed, limits_passed, diags = processor.process(task["test"], hints)
+        passed, limits_passed, diags, new_test \
+            = processor.process(task["test"], hints)
 
         if not passed:
             return forbidden("Task forbidden by limits:\n" + diags)
+
+        if new_test is not None:
+            try:
+                task["test"] = new_test
+                returncode, stdout, stderr = pscheduler.run_program(
+                    [ "pscheduler", "internal", "invoke", "test",
+                      task['test']['type'], "spec-is-valid" ],
+                    stdin = pscheduler.json_dump(task["test"]["spec"])
+                )
+
+                if returncode != 0:
+                    return error("Failed to validate rewritten test specification: %s" % (stderr))
+                validate_json = pscheduler.json_load(stdout, max_schema=1)
+                if not validate_json["valid"]:
+                    return bad_request("Rewritten test specification is invalid: %s" %
+                                   (validate_json.get("error", "Unspecified error")))
+            except Exception as ex:
+                return error("Unable to validate rewritten test specification: " + str(ex))
+
 
         # Post the lead with the local database, which also assigns
         # its UUID.  Make it disabled so the scheduler doesn't try to
@@ -430,9 +450,9 @@ def tasks():
 
         try:
             cursor = dbcursor_query(
-                "SELECT * FROM api_task_post(%s, %s, %s, %s, 0, NULL, FALSE)",
+                "SELECT * FROM api_task_post(%s, %s, %s, %s, 0, NULL, FALSE, %s)",
                 [pscheduler.json_dump(task), participants, hints_data,
-                 pscheduler.json_dump(limits_passed)], onerow=True)
+                 pscheduler.json_dump(limits_passed), diags], onerow=True)
         except Exception as ex:
             return error(str(ex.diag.message_primary))
 
@@ -620,7 +640,10 @@ def tasks_uuid(uuid):
         hints = request_hints()
         hints_data = pscheduler.json_dump(hints)
 
-        passed, limits_passed, diags = processor.process(json_in["test"], hints)
+        # Only the lead rewrites tasks; everyone else just applies
+        # limits.
+        passed, limits_passed, diags, _new_task \
+            = processor.process(json_in["test"], hints, rewrite=False)
 
         if not passed:
             return forbidden("Task forbidden by limits:\n" + diags)
@@ -638,8 +661,10 @@ def tasks_uuid(uuid):
             except Exception as ex:
                 return bad_request("Task error: %s" % str(ex))
             cursor = dbcursor_query(
-                "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, TRUE)",
-                [request.data, participants, hints_data, pscheduler.json_dump(limits_passed), participant, uuid])
+                "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, TRUE, %s)",
+                [request.data, participants, hints_data,
+                 pscheduler.json_dump(limits_passed), participant, uuid,
+                 "\n".join(diags)])
         except Exception as ex:
             return error(str(ex))
         if cursor.rowcount == 0:
