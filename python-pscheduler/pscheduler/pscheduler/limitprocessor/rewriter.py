@@ -13,6 +13,8 @@ class Rewriter():
     Class that handles rewriting tasks
     """
 
+    PRIVATE_KEY = "__REWRITER_PRIVATE__"
+
     def __init__(self,
                  transform  # JSON JQTransformSpecification, assumed validated
                  ):
@@ -41,15 +43,25 @@ class Rewriter():
 
         # Insert our function definition(s)
         lines.extend([
+
+            "def classifiers:",
+            "  ." + self.PRIVATE_KEY + ".classifiers",
+            ";",
+
             "def change($message):",
-            "  .[\"_changed\"] = true",
+            "  ." + self.PRIVATE_KEY + ".changed = true",
             "  | if $message != null",
             "    then",
-            "      .[\"_diags\"] += [ $message | tostring ]",
-            "    else",
+            "      ." + self.PRIVATE_KEY + ".diags += [ $message | tostring ]",
+           "    else",
             "      .",
             "    end",
             ";",
+
+            "def reject($message):",
+            "  error(\"Task rejected: \" + ($message | tostring))",
+            ";",
+
             ])
 
         # Add the rest of the script without the imports and includes
@@ -77,21 +89,32 @@ class Rewriter():
         JQRuntimeError that is thrown.
         """
 
-        result = self.transform({
-            "task": task,
-            "classifiers": classifiers,
-            "_changed": False,
-            "_diags": []
-        })[0]
+        task_in = copy.deepcopy(task)
 
-        if ("task" not in result) \
-           or ("type" not in result["task"]) \
-           or (not isinstance(result["task"]["type"], basestring)) \
-           or ("spec" not in result["task"]) \
-           or (result["task"]["type"] != task["type"]):
+        # Rewriter-private data
+        task_in[self.PRIVATE_KEY] = {
+            "classifiers": classifiers,
+            "changed": False,
+            "diags": []
+        }
+
+
+        result = self.transform(task_in)[0]
+
+#        print "RES", pscheduler.json_dump(result, pretty=True)
+
+        if ("test" not in result) \
+           or ("type" not in result["test"]) \
+           or (not isinstance(result["test"]["type"], basestring)) \
+           or ("spec" not in result["test"]) \
+           or (result["test"]["type"] != task["test"]["type"]):
             raise ValueError("Rewriter made an invalid modification.")
 
-        return result["_changed"], result["task"], result["_diags"]
+        changed = result[self.PRIVATE_KEY]["changed"]
+        diags = result[self.PRIVATE_KEY]["diags"]
+        del result[self.PRIVATE_KEY]
+
+        return changed, result, diags
 
 
 
@@ -101,37 +124,77 @@ if __name__ == "__main__":
     rewriter = Rewriter({
         "script": [
 
-            "import \"pscheduler/si\" as si;",
+            "import \"pscheduler/iso8601\" as iso;",
 
             ".",
 
-            "| if .task.spec.bandwidth > 99999",
+            "| if .test.spec.bandwidth > 99999",
             "  then",
-            "    .task.spec.bandwidth = 99999",
+            "    .test.spec.bandwidth = 99999",
             "    | change(\"Throttled bandwidth to 99999\")",
             "  else",
             "    .",
             "  end",
 
+            "| if .schedule.repeat != null"
+            "    and iso::duration_as_seconds(.schedule.repeat) < 60",
+            "  then",
+            "    .schedule.repeat = \"PT1M\"",
+            "    | change(\"Bumped repeat to one-minute minimum\")",
+            "  else",
+            "    .",
+            "  end",
+
+            "| if classifiers | contains([\"c2\"])",
+            "  then",
+            "    change(\"Found a c2 in the classifiers (No real change)\")",
+            "  else",
+            "    .",
+            "  end",
+
+            "| if .test.type == \"trace\"",
+            "    and .tools != null",
+            "    and (.tools | [ .[] | select(startswith(\"trace\") | not) ] | length) > 0",
+            "  then"
+            "    .tools = [ .tools[] | select(startswith(\"trace\")) ]",
+            "    | change(\"Removed tool selections that don't begin with 'trace'\")",
+            "  else"
+            "    ."
+            "  end"
+
             # Invalid modifications
-            "# | .task.type = \"bogus\"",
-            "# | .task.type = 8686",
+            "# | .test.type = \"bogus\"",
+            "# | .test.type = 8686",
 
             # Other oddities
-            "| error(\"Yuck.\")",
+            "# | reject(classifiers)",
+            "# | reject(\"Yuck.\")",
             "# | change(null)",
             "# | change(\"This task is brought to you by perfSONAR\")",
             "#END"
             ]
     })
 
+
     task = {
-        "type": "throughput",
-        "spec": {
-            "dest": "somehost",
-            "bandwidth": 100000
-        }
+        "schema": 1,
+
+        "lead-bind": "127.0.0.1",
+        "schedule": {
+            "max-runs": 3,
+            "repeat": "PT10S",
+            "slip": "PT5M"
+        },
+        "test": {
+            "spec": {
+                "dest": "www.notonthe.net",
+                "schema": 1
+            },
+            "type": "trace"
+        },
+        "tools": [ "traceroute", "paris-traceroute" ]
     }
+
 
     try:
         (changed, new_task, diags)  = rewriter(
@@ -148,4 +211,4 @@ if __name__ == "__main__":
         else:
             print "No changes."
     except Exception as ex:
-        print "Failed: ", str(ex)
+        print "Failed:", ex
