@@ -273,9 +273,14 @@ __dictionary__ = {
     "JQTransformSpecification": {
         "type": "object",
         "properties": {
-            "script":    { "$ref": "#/pScheduler/String" },
+            "script": { 
+                "anyOf": [
+                    { "$ref": "#/pScheduler/String" },
+                    { "$ref": "#/pScheduler/StringList" },
+                ]
+            },
             "output-raw": { "$ref": "#/pScheduler/Boolean" },
-			"args": { "$ref": "#/pScheduler/AnyJSON" }
+            "args": { "$ref": "#/pScheduler/AnyJSON" }
         },
         "additionalProperties": False,
         "required": [ "script" ]

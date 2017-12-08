@@ -7,6 +7,7 @@ import pscheduler
 
 from identifierset  import IdentifierSet
 from classifierset  import ClassifierSet
+from rewriter       import Rewriter
 from limitset       import LimitSet
 from applicationset import ApplicationSet
 
@@ -66,7 +67,7 @@ class LimitProcessor():
         # At this point, source is a file.
 
         assert type(source) is file
-        limit_config = pscheduler.json_load(source, max_schema=1)
+        limit_config = pscheduler.json_load(source)
 
         valid, message = pscheduler.json_validate(limit_config, validation)
 
@@ -80,13 +81,15 @@ class LimitProcessor():
         self.identifiers  = IdentifierSet(limit_config['identifiers'])
         self.classifiers  = ClassifierSet(limit_config['classifiers'],
                                           self.identifiers)
+        self.rewriter     = Rewriter(limit_config['rewrite']) \
+                            if 'rewrite' in limit_config else None
         self.limits       = LimitSet(limit_config['limits'])
         self.applications = ApplicationSet(limit_config['applications'],
                                            self.classifiers, self.limits)
 
 
 
-    def process(self, task, hints):
+    def process(self, task, hints, rewrite=True):
         """Evaluate a proposed task against the full limit set.
 
         If the task has no 'schedule' section it will be assumed that
@@ -97,15 +100,17 @@ class LimitProcessor():
         Arguments:
             task - The proposed task
             hints - A hash of the hints to be used in identification
+            rewrite - True if the rewriter should be applied
 
         Returns a tuple containing:
             passed - True if the proposed task passed the limits applied
             limits - A list of the limits that passed
             diags - A textual summary of how the conclusion was reached
+            task - The task, after rewriting or None if unchanged
         """
 
         if self.inert:
-            return True, [], "No limits were applied"
+            return True, [], "No limits were applied", None
 
         # TODO: Should this be JSON, or is text sufficient?
         diags = []
@@ -120,16 +125,34 @@ class LimitProcessor():
         identifications = self.identifiers.identities(hints)
         if not identifications:
             diags.append("Made no identifications.")
-            return False, [], '\n'.join(diags)
+            return False, [], '\n'.join(diags), None
         diags.append("Identified as %s" % (', '.join(identifications)))
 
         classifications = self.classifiers.classifications(identifications)
         if not classifications:
             diags.append("Made no classifications.")
-            return False, [], '\n'.join(diags)
+            return False, [], '\n'.join(diags), None
         diags.append("Classified as %s" % (', '.join(classifications)))
 
         check_schedule='schedule' in task
+
+        re_new_task = None
+
+        if self.rewriter is not None and rewrite:
+
+            try:
+                re_changed, re_new_task, re_diags \
+                    = self.rewriter(task, classifications)
+            except pscheduler.JQRuntimeError as ex:
+                return False, [], "Error while rewriting: %s" % (str(ex)), None
+
+            if re_changed:
+                diags.append("Rewriter made changes:")
+                if len(re_diags):
+                    diags += map(lambda s: "  " + s, re_diags)
+                else:
+                    diags.append("  (Not enumerated)")
+                task = re_new_task
 
         passed, app_limits_passed, app_diags \
             = self.applications.check(task, classifications, check_schedule)
@@ -146,7 +169,8 @@ class LimitProcessor():
 
         return passed, \
             [] if (unlimited or not passed) else app_limits_passed, \
-            '\n'.join(diags)
+            '\n'.join(diags), \
+            re_new_task
 
 
 

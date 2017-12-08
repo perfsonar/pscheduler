@@ -163,9 +163,13 @@ if "schedule" in task:
     print "For task starting at %s lasting %s:\n" % (
         task["schedule"]["start"], task["schedule"]["duration"])
 
-_passed, _limits_passed, diags = processor.process(task["test"], hints)
+_passed, _limits_passed, diags, new_task = processor.process(task["test"], hints)
 
 print diags
+if new_task is not None:
+    print
+    print "Rewritten task:"
+    print pscheduler.json_dump(new_task, pretty=True)
 
 pscheduler.succeed()
 
