@@ -49,20 +49,24 @@ class TestJQFilter(PschedTestBase):
         self.assertEqual(f({"abc": 123})[0], {"abc": 123 })
 
 
+
+    # TODO: These tests don't work on 2.6.  Remove the conditions when
+    # we no longer support it.
+
     def test_wrong_type(self):
         """Test a wrongly-typed filter"""
 
-        with self.assertRaises(ValueError):
-            f = JQFilter(1234)
+        if sys.hexversion > 0x2060000:
+            with self.assertRaises(ValueError):
+                f = JQFilter(1234)
 
 
     def test_bad_syntax(self):
         """Text a filter with the wrong syntax"""
 
-        with self.assertRaises(ValueError):
-            f = JQFilter("this is bad")
-
-
+        if sys.hexversion > 0x2060000:
+            with self.assertRaises(ValueError):
+                f = JQFilter("this is bad")
 
 if __name__ == '__main__':
     unittest.main()
