@@ -69,6 +69,14 @@ opt_parser.add_option("-s", "--skim-interval",
                       help="How often to skim archiver pools (ISO8601)",
                       action="store", type="string", dest="skim_interval",
                       default="PT30S")
+opt_parser.add_option("--timeout",
+                      help="Timeout for archiver I/O (ISO8601)",
+                      action="store", type="string", dest="timeout",
+                      default="PT2M")
+opt_parser.add_option("--retry",
+                      help="Retry interval after I/O timeout (ISO8601)",
+                      action="store", type="string", dest="retry",
+                      default="PT30S")
 opt_parser.add_option("--verbose", action="store_true", dest="verbose")
 opt_parser.add_option("--debug", action="store_true", dest="debug")
 
@@ -92,6 +100,17 @@ skim_interval = pscheduler.iso8601_as_timedelta(options.skim_interval)
 if skim_interval is None:
     opt_parser.error('Invalid skim interval "' + options.skim_interval + '"')
 skim_interval = pscheduler.timedelta_as_seconds(skim_interval)
+
+
+timeout = pscheduler.iso8601_as_timedelta(options.timeout)
+if timeout is None:
+    opt_parser.error('Invalid timeout "' + options.timeout + '"')
+timeout = pscheduler.timedelta_as_seconds(timeout)
+
+retry = pscheduler.iso8601_as_timedelta(options.retry)
+if retry is None:
+    opt_parser.error('Invalid retry "' + options.retry + '"')
+retry = pscheduler.timedelta_as_seconds(retry)
 
 
 log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
@@ -261,7 +280,7 @@ class ArchiveProcess(object):
             self.program = pscheduler.StreamingJSONProgram([
                 "pscheduler", "internal", "invoke",
                 "archiver", self.archiver, "archive"
-            ])
+            ], timeout=timeout)
 
     def __call__(self, json):
         """
@@ -270,11 +289,12 @@ class ArchiveProcess(object):
         self.__establish()
         try:
             return self.program(json)
-        except pscheduler.StreamingJSONProgramFailure as ex:
+        except (IOError, pscheduler.StreamingJSONProgramFailure) as ex:
             self.done()
             return {
                 "succeeded": False,
-                "error": "Failed to send to archiver: %s" % (str(ex))
+                "error": "Archiver error: %s" % (str(ex)),
+                "retry": retry
                 }
 
 
