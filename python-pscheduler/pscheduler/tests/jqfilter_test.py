@@ -2,6 +2,7 @@
 test for the JQFilter module.
 """
 
+import sys
 import unittest
 
 from base_test import PschedTestBase
