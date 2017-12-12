@@ -155,7 +155,7 @@ class LimitProcessor():
                 task = re_new_task
 
         passed, app_limits_passed, app_diags \
-            = self.applications.check(task, classifications, check_schedule)
+            = self.applications.check(task["test"], classifications, check_schedule)
 
         diags.append(app_diags)
         diags.append("Proposal %s limits" % ("meets" if passed else "does not meet"))

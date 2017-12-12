@@ -2,6 +2,7 @@
 # Run-Related Pages
 #
 
+import copy
 import pscheduler
 import time
 
@@ -63,14 +64,11 @@ def __evaluate_limits(
     cursor.close()
     log.debug("Task is %s, duration is %s" % (task_spec, duration))
 
-    limit_input = {
-        'type': task_spec['test']['type'],
-        'spec': task_spec['test']['spec'],
-        'schedule': {
-            'start': pscheduler.datetime_as_iso8601(start_time),
-            'duration': pscheduler.timedelta_as_iso8601(duration)
-            }
-        }
+    limit_input = copy.copy(task_spec)
+    limit_input['schedule'] = {
+        'start': pscheduler.datetime_as_iso8601(start_time),
+        'duration': pscheduler.timedelta_as_iso8601(duration)
+    }
 
     log.debug("Checking limits against %s" % str(limit_input))
 

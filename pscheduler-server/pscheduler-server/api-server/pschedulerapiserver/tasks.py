@@ -298,7 +298,7 @@ def tasks():
         # if it doesn't pass.  We do this early so anything else in
         # the process gets any rewrites.
 
-        log.debug("Checking limits on %s", task["test"])
+        log.debug("Checking limits on %s", task)
 
         (processor, whynot) = limitprocessor()
         if processor is None:
@@ -309,15 +309,15 @@ def tasks():
         hints_data = pscheduler.json_dump(hints)
 
         log.debug("Processor = %s" % processor)
-        passed, limits_passed, diags, new_test \
-            = processor.process(task["test"], hints)
+        passed, limits_passed, diags, new_task \
+            = processor.process(task, hints)
 
         if not passed:
             return forbidden("Task forbidden by limits:\n" + diags)
 
-        if new_test is not None:
+        if new_task is not None:
             try:
-                task["test"] = new_test
+                task = new_task
                 returncode, stdout, stderr = pscheduler.run_program(
                     [ "pscheduler", "internal", "invoke", "test",
                       task['test']['type'], "spec-is-valid" ],
@@ -648,7 +648,7 @@ def tasks_uuid(uuid):
         # Only the lead rewrites tasks; everyone else just applies
         # limits.
         passed, limits_passed, diags, _new_task \
-            = processor.process(json_in["test"], hints, rewrite=False)
+            = processor.process(json_in, hints, rewrite=False)
 
         if not passed:
             return forbidden("Task forbidden by limits:\n" + diags)

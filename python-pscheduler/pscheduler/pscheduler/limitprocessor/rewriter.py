@@ -108,7 +108,8 @@ class Rewriter():
            or (not isinstance(result["test"]["type"], basestring)) \
            or ("spec" not in result["test"]) \
            or (result["test"]["type"] != task["test"]["type"]):
-            raise ValueError("Rewriter made an invalid modification.")
+            raise ValueError("Invalid rewriter result:\n%s" \
+                             % pscheduler.json_dump(result))
 
         changed = result[self.PRIVATE_KEY]["changed"]
         diags = result[self.PRIVATE_KEY]["diags"]
