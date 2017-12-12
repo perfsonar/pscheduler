@@ -5,6 +5,7 @@ values dictionaries
 
 import copy
 import jsonschema
+import sys
 
 # TODO: Consider adding tile/description and maybe "example" (not
 # officially supported) as a way to generate the JSON dictionary.
@@ -1253,7 +1254,8 @@ def json_validate(json, skeleton):
         except (KeyError, TypeError):
             message = ex.message
 
-        if len(ex.absolute_path) > 0:
+        # TODO: Remove version check once 2.6 support is gone
+        if sys.hexversion >= 0x2070000 and len(ex.absolute_path) > 0:
             path = "/".join([str(x) for x in ex.absolute_path])
             return (False, "At /%s: %s" % (path, message))
         else:
