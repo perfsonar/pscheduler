@@ -344,8 +344,6 @@ for host in hosts:
     if status != 200:
         failed(result)
     if result["synchronized"]:
-        # Hold this for later two-host comparison
-        clocks[host] = result
         ok()
     else:
         if host_z is None:
@@ -353,9 +351,13 @@ for host in hosts:
         else:
             ok("Unsynchronized  (See check against %s)" % (host_z))
 
+    # Hold this for later two-host comparison
+    clocks[host] = result
+
 
     if options.stats:
         dump_stats(host)
+
 
     if not options.quick:
         run_task("  Idle test", host,
