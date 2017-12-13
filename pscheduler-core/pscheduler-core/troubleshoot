@@ -54,6 +54,19 @@ opt_parser.add_option("--host",
                       action="store", type="string",
                       dest="host")
 
+opt_parser.add_option("--quick",
+                      help="Don't do anything time-consuming",
+                      default=False,
+                      action="store_true",
+                      dest="quick")
+
+
+opt_parser.add_option("--stats",
+                      help="Dump server statistics",
+                      default=False,
+                      action="store_true",
+                      dest="stats")
+
 (options, remaining_args) = opt_parser.parse_args()
 
 if len(remaining_args) > 1:
@@ -82,8 +95,8 @@ def progress(text=None):
     else:
         start(" %s" % (text))
 
-def ok():
-    sys.stdout.write(" OK.\n")
+def ok(message="OK."):
+    sys.stdout.write(" %s\n" % (message))
 
 def failed(why, fail=True):
     sys.stdout.write(" Failed.\n")
@@ -103,6 +116,73 @@ def failed_diags(run, why="Task failed to run properly."):
     os.execl("/bin/sh", "/bin/sh", "-c",
              " ".join([pipes.quote(arg) for arg in result_args]))
 
+
+
+# Tuples containing the statistics to fetch with a label and URL
+# relative to /stat.  A URL of None means the entry is a section
+# header.
+statistics = [
+    ("Archiving", None),
+    ("Backlog", "archiving/backlog"),
+    ("Upcoming", "archiving/upcoming"),
+
+    ("HTTP Queue", None),
+    ("Backlog", "http-queue/backlog"),
+    ("Length", "http-queue/length"),
+
+    ("Runs", None),
+    ("Pending", "runs/pending"),
+    ("On Deck", "runs/on-deck"),
+    ("Running", "runs/running"),
+    ("Cleanup", "runs/cleanup"),
+    ("Finished", "runs/finished"),
+    ("Overdue", "runs/overdue"),
+    ("Missed", "runs/missed"),
+    ("Failed", "runs/failed"),
+    ("Preempted", "runs/preempted"),
+    ("Non-Starting", "runs/nonstart"),
+]
+
+def dump_stats(host):
+    """
+    Acquire and dump statistics for a host
+    """
+    print "  Server Statistics:"
+
+    # Figure out how much padding to add
+    longest_label =  sorted(
+        map(lambda p: len(p[0]),
+            filter(lambda p: p[1] is not None, statistics)
+        )
+    )[-1]
+
+    last_header = ""
+
+    for stat in statistics:
+        label, fetch = stat
+
+        # Handle section headers
+        if fetch is None:
+            print "    %s" % (label)
+            last_header = label
+            continue
+
+        print "      %s %s..." % (
+            label, "." * (longest_label - len(label)) ),
+
+        url = pscheduler.api_url(host, "/stat/%s" % (fetch))
+
+        status, result = pscheduler.url_get(url, throw=False, json=False)
+
+        if status == 404:
+            status = 200
+            result = "N/A"
+        elif status != 200:
+            print "FAILED"
+            pscheduler.fail("Unable to retrieve %s %s: %s: %s" \
+                            % (last_header, label, status, result))
+
+        print "%6s" % (result.strip())
 
 
 def run_task(message, lead, task, bind=None):
@@ -235,109 +315,125 @@ def run_task(message, lead, task, bind=None):
 
 print "Performing basic troubleshooting of %s." \
     % (" and ".join(hosts))
-print
 
 
 #
 # The Basics
 #
 
+clocks = {}
+
 for host in hosts:
-    start("Checking for pScheduler on %s" % (host))
+    print
+    print "%s:" % (host)
+    print
+
+    start("  Checking for pScheduler")
     up, reason = pscheduler.api_ping(host)
     if up:
         ok()
+    else:        
+        failed(reason.strip())
+
+
+    start("  Checking clock")
+    status, result = pscheduler.url_get(
+        pscheduler.api_url(host, "clock"),
+        throw=False)
+
+    if status != 200:
+        failed(result)
+    if result["synchronized"]:
+        # Hold this for later two-host comparison
+        clocks[host] = result
+        ok()
     else:
-        failed(reason)
+        if host_z is None:
+            ok("Unsynchronized (Not considered fatal)")
+        else:
+            ok("Unsynchronized  (See check against %s)" % (host_z))
 
 
+    if options.stats:
+        dump_stats(host)
 
-for host in hosts:
-    run_task("Idle test on %s" % (host), host,
-             {
-                 "schema": 1,
-                 "test": {
-                     "spec": {
-                         "duration": "PT1S",
-                         "schema": 1
-                     },
-                     "type": "idle"
-                 },
-                 "schedule": {},
-                 "archives": [
-                     {
-                         "archiver": "bitbucket",
-                         "data": {},
-                         "ttl": "PT1M"
-                     },
-                     {
-                         "archiver": "failer",
-                         "data": {
-                             "fail": 0.0,  # Don't fail, ever.
-                             "retry": 0.0
+    if not options.quick:
+        run_task("  Idle test", host,
+                 {
+                     "schema": 1,
+                     "test": {
+                         "spec": {
+                             "duration": "PT1S",
+                             "schema": 1
                          },
-                         "ttl": "PT1M"
-                     }
-                 ],
-             }
-            )
+                         "type": "idle"
+                     },
+                     "schedule": {},
+                     "archives": [
+                         {
+                             "archiver": "bitbucket",
+                             "data": {},
+                             "ttl": "PT1M"
+                         },
+                         {
+                             "archiver": "failer",
+                             "data": {
+                                 "fail": 0.0,  # Don't fail, ever.
+                                 "retry": 0.0
+                             },
+                             "ttl": "PT1M"
+                         }
+                     ],
+                 }
+             )
 
 
-
-#
-# Remote pScheduler
-#
 
 if host_z is None:
     print
     pscheduler.succeed("pScheduler appears to be functioning normally.")
 
 
-# Check clocks
+#
+# Remote pScheduler
+#
 
-clock_result = run_task(
-    "Getting host clocks", host_a,
-    {
-        "schema": 1,
-        "test": {
-            "spec": {
-                "dest": "perfsonardev0.internet2.edu",
-                "schema": 1
-            },
-            "type": "clock"
-        },
-        "schedule": {}
-    }
-    )
+print
+print "%s and %s:" % (host_a, host_z)
+print
 
-start("Comparing clocks")
+# Compare clocks
+
+start("  Checking timekeeping")
 try:
-    clock_difference = pscheduler.timedelta_as_seconds(
-        pscheduler.iso8601_as_timedelta(clock_result["difference"])
-    )
-except (KeyError, ValueError):
-    failed("Clock test did not yield a valid result.")
+    time_diff = pscheduler.iso8601_as_datetime(clocks[host_a]["time"]) \
+                - pscheduler.iso8601_as_datetime(clocks[host_z]["time"])
+
+    clock_difference = pscheduler.timedelta_as_seconds(time_diff)
+except (KeyError):
+    failed("Clock tests did not yield a valid result.")
 
 if clock_difference > 1.0:
-    failed("Clocks differ between hosts by %f seconds" % (clock_difference))
+    failed("Clocks differ between hosts by %f seconds" % (abs(clock_difference)))
 ok()
 
 
 # Simplestream
 
-simplestream_result = run_task(
-    "Simple stream test", host_a,
-    {
-        "schema": 1,
-        "test": {
-            "spec": {
-                "dest": host_z,
-                "schema": 1
+if not options.quick:
+    simplestream_result = run_task(
+        "  Simple stream test", host_a,
+        {
+            "schema": 1,
+            "test": {
+                "spec": {
+                    "dest": host_z,
+                    "schema": 1
+                },
+                "type": "simplestream"
             },
-            "type": "simplestream"
-        },
-        "schedule": {}
-    }
+            "schedule": {}
+        }
     )
 
 
