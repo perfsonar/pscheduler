@@ -664,7 +664,11 @@ status, result = pscheduler.url_get(
 if status != 200:
     pscheduler.fail("Failed to fetch the task.")
 
-log.debug("Submission diagnostics:\n%s" % (pscheduler.indent(result['detail']['diags'])))
+try:
+    log.debug("Submission diagnostics:\n%s" \
+              % (pscheduler.indent(result['detail']['diags'])))
+except KeyError:
+    log.debug("No submission diagnostics available.")
 
 if verbose:
     print "Running with tool '%s'" % (result['tool'])
