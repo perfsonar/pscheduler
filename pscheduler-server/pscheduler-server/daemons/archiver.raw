@@ -585,6 +585,7 @@ class ArchiveWorker():
         self.log.debug("%d: Run is %s", self.id, run_href)
 
         json = {
+            # This may contain private data that the archiver needs to see.
             'data': archiver_data,
             'task-href': task_href,
             'run-href': run_href,
@@ -594,7 +595,8 @@ class ArchiveWorker():
                     'start': pscheduler.datetime_as_iso8601(start),
                     'duration': pscheduler.timedelta_as_iso8601(duration)
                 },
-                'test': test,
+                # This may contain data that isn't to be leaked.
+                'test': pscheduler.json_decomment(test, prefix="_", null=True),
                 'tool': {
                     'name': tool['name'],
                     'version': tool['version'],
