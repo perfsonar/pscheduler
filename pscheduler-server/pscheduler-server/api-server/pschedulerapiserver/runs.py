@@ -318,7 +318,8 @@ def tasks_uuid_runs_run(task, run):
                         run.clock_survey,
                         run.id,
                         archiving_json(run.id),
-                        run.added
+                        run.added,
+                        run_state.finished
                     FROM
                         run
                         JOIN task ON task.id = run.task
@@ -340,8 +341,10 @@ def tasks_uuid_runs_run(task, run):
             if not (wait_local or wait_merged):
                 break
             else:
-                if (wait_local and row[7] is None) \
-                        or (wait_merged and row[9] is None):
+                if (wait_local and row[8] is None) \
+                   or (wait_merged \
+                       and ( (row[9] is None) or (not row[18]) ) ):
+                    log.debug("Waiting for merged: %s %s", row[9], row[18])
                     time.sleep(0.5)
                     tries -= 1
                 else:
