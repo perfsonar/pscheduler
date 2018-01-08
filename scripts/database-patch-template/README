@@ -1,0 +1,16 @@
+This directory contains a Makefile for building and installing
+temporary patches to the pScheduler database.
+
+To build a patch:
+
+1.  Place whatever SQL files are involved in the patch in this directory.
+
+2.  Edit the Makefile and adjust the configurable items as required.
+    In almost all case, only NAME and SQL_FILES should be changed.
+
+3.  Install the patch by doing a 'make install' on a system
+    (prefereably one that's expendable) with pScheduler installed.
+
+4.  Test.
+
+5.  Build a distributable tarball by doing a 'make tar'.
