@@ -4,7 +4,7 @@
 
 %define short	iperf2
 Name:		pscheduler-tool-%{short}
-Version:	1.0.2
+Version:	1.0.2.1
 Release:	1%{?dist}
 
 Summary:	iperf2 tool class for pScheduler

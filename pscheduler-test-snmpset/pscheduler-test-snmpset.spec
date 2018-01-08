@@ -4,7 +4,7 @@
 
 %define short	snmpset
 Name:		pscheduler-test-%{short}
-Version:	1.0.2
+Version:	1.0.2.1
 Release:	1%{?dist}
 
 Summary:	snmpset test for pScheduler
