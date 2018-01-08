@@ -184,7 +184,7 @@ $$ LANGUAGE plpgsql;
 
 -- Runs which could cause conflicts
 
-DROP VIEW IF EXISTS run_conflictable;
+DROP VIEW IF EXISTS run_conflictable CASCADE;
 CREATE OR REPLACE VIEW run_conflictable
 AS
     SELECT
