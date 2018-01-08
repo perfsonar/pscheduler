@@ -185,6 +185,33 @@ AS
 
 
 
+
+-- Runs that overlap but shouldn't (for diagnostic use)
+DROP VIEW IF EXISTS schedule_overlap;
+CREATE OR REPLACE VIEW schedule_overlap
+AS
+    SELECT
+        r1.id AS r1_id,
+        r1.task AS r1_task,
+        r2.id AS r2_id,
+        r2.task AS r2_task,
+        r1.times AS r1_times,
+        r2.times AS r2_times
+    FROM
+        run_conflictable r1
+        JOIN run_conflictable r2
+            ON r2.id <> r1.id
+            AND r1.times && r2.times
+            AND r1.state <> run_state_nonstart()
+            AND r2.state <> run_state_nonstart()
+            AND r1.added < r2.added
+        ORDER BY
+          r1.times,
+          r2.times
+;
+
+
+
 -- Return a schedule with bounded past and future window sizes, mostly
 -- for use by the monitor.
 
