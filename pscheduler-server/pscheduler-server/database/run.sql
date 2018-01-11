@@ -313,10 +313,12 @@ BEGIN
 
 
     -- Reject new runs that overlap with anything that isn't a
-    -- non-starter or where this insert would cause a normal/exclusive
-    -- conflict
+    -- finished run or where this insert would cause a conflict.
 
-    IF (TG_OP = 'INSERT') AND (NEW.state <> run_state_nonstart())
+    -- TODO: Post 4.1, the state check can be done against
+    -- run_state.finished.
+    IF (TG_OP = 'INSERT')
+        AND (NEW.state IN (run_state_pending(), run_state_on_deck(), run_state_running()))
     THEN
 
         -- Once we start the process of deciding whether or not there
@@ -689,6 +691,8 @@ AS
 --
 
 -- Put a run of a task on the schedule.
+
+-- NOTE: This is for scheduled runs only, not background-multi results.
 
 -- TODO: Remove this after the first producion release.
 DROP FUNCTION IF EXISTS api_run_post(UUID, TIMESTAMP WITH TIME ZONE, UUID, TEXT);
