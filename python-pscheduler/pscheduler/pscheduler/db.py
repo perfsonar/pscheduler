@@ -7,6 +7,7 @@ import os
 import psycopg2
 import select
 import sys
+import threading
 
 from filestring import string_from_file
 
@@ -102,6 +103,7 @@ class PgConnection:
 
         self.pg = pg_connection(dsn, autocommit=autocommit, name=name)
         self.pending_notifications = {}
+        self.lock = threading.Lock()
 
     #
     # Notifications
@@ -126,11 +128,12 @@ class PgConnection:
         tuple of (channel, payload, count)
         """
         result = []
-        for notification in self.pending_notifications:
-            result.append((notification[0],
-                           notification[1],
-                           self.pending_notifications[notification]))
-        self.pending_notifications = {}
+        with self.lock:
+            for notification in self.pending_notifications:
+                result.append((notification[0],
+                               notification[1],
+                               self.pending_notifications[notification]))
+            self.pending_notifications = {}
         return result
 
     def __capture_notifications(self):
@@ -139,19 +142,21 @@ class PgConnection:
         of those that have happened.
         """
 
-        for notification in self.pg.notifies:
+        with self.lock:
+            for notification in self.pg.notifies:
 
-            channel = notification.channel
-            payload = notification.payload
+                channel = notification.channel
+                payload = notification.payload
 
-            key = (channel, payload)
+                key = (channel, payload)
 
-            if key in self.pending_notifications:
-                self.pending_notifications[key] += 1
-            else:
-                self.pending_notifications[key] = 1
+                if key in self.pending_notifications:
+                    self.pending_notifications[key] += 1
+                else:
+                    self.pending_notifications[key] = 1
 
-        del self.pg.notifies[:]
+            del self.pg.notifies[:]
+
 
     def wait(self, timeout=None):
         """
