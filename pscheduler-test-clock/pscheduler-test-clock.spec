@@ -4,7 +4,7 @@
 
 %define short	clock
 Name:		pscheduler-test-%{short}
-Version:	1.0.2
+Version:	1.0.2.2
 Release:	1%{?dist}
 
 Summary:	Clock test class for pScheduler
@@ -16,7 +16,7 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server >= 1.0.2
+Requires:	pscheduler-server >= 1.0.2.2
 Requires:	python-pscheduler >= 1.3
 Requires:	python-jsontemplate
 
