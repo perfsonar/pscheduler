@@ -47,12 +47,14 @@ Examples:
   task --export rtt --count 10 --length 128 --dest ps.example.com > mytask
       Export JSON describing task to file "mytask"
 
-  task --import mytest rtt 
+  task --import mytest
       Import and run the task described in the file "mytask"
 
-  task --import mytask rtt --dest ps.example.net
+  task --import mytask - --dest ps.example.net
       Import the task described in the file "mytask", change the destination
-      to ps.example.net and run it.
+      to ps.example.net and run it.  Note that the single-hyphen test type
+      is required if any parameter changes are to be added on the command
+      line.  Specifying a test type here will override the imported value.
 """
     )
 opt_parser.disable_interspersed_args()
@@ -183,7 +185,7 @@ other_group.add_option("--debug", action="store_true", dest="debug")
 
 (options, remaining_args) = opt_parser.parse_args()
 
-if len(remaining_args) < 1:
+if len(remaining_args) < 1 and options.importfile is None:
     opt_parser.print_usage()
     pscheduler.fail()
 
@@ -400,25 +402,15 @@ lead_bind = options.lead_bind
 # valid, that will be checked later.
 #
 
-if options.importfile is not None:
-    try:
-        test_type = task['test']['type']
-        remaining_args.pop(0)
-    except KeyError:
-        pscheduler.fail("Template has no type defined.")
-    except IndexError:
-        pscheduler.fail("No placeholder task type specified.",
-                        "  (Should be '-'.)")
-else:
-    try:
-        test_type = remaining_args.pop(0)
-    except IndexError:
-        pscheduler.fail("No test type specified.")
+if len(remaining_args) > 0:
+    test_arg = remaining_args.pop(0)
+    if test_arg != '-':
+        task['test']['type'] = test_arg
 
-assert test_type is not None
+test_type = task['test'].get('type', '-')
 
-task['test']['type'] = test_type
-
+if test_type == '-':
+    pscheduler.fail("No test type specified.")
 
 
 # Add desired tools, if any.
@@ -667,9 +659,16 @@ log.debug("Posted %s", task_url)
 status, result = pscheduler.url_get(
     task_url,
     bind=bind,
+    params={ "detail": 1 },
     json=True)
 if status != 200:
     pscheduler.fail("Failed to fetch the task.")
+
+try:
+    log.debug("Submission diagnostics:\n%s" \
+              % (pscheduler.indent(result['detail']['diags'])))
+except KeyError:
+    log.debug("No submission diagnostics available.")
 
 if verbose:
     print "Running with tool '%s'" % (result['tool'])

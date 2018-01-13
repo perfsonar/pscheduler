@@ -12,8 +12,11 @@ application.config["APPLICATION_ROOT"] = pscheduler.api_root()
 
 application.config["DEBUG"] = False
 
-from .log import *
+# These get done in this order to satisfy dependencies.
+
 from .response import *
+from .debug import *
+from .log import *
 
 from .access import *
 from .admin import *

@@ -3,6 +3,7 @@ Functions for inhaling JSON in a pScheduler-normalized way
 """
 
 from json import load, loads, dump, dumps
+import select
 import string
 import sys
 import pscheduler
@@ -168,16 +169,22 @@ def json_dump(obj, dest=None, pretty=False):
 class RFC7464Emitter(object):
     """Emit JSON documents to a file handle in RFC 7464 format"""
 
-    def __init__(self, handle):
+    def __init__(self, handle, timeout=None):
 
         if type(handle) != file:
             raise TypeError("Handle must be a file.")
 
         self.handle = handle
+        self.timeout = timeout
 
 
     def emit_text(self, text):
         """Emit straight text to the file"""
+
+        if self.timeout is not None:
+            if select.select([],[self.handle],[], self.timeout) == ([],[],[]):
+                raise IOError("Timed out waiting for write")
+
         self.handle.write(
             "\x1e%s\n" % (text.translate(string.maketrans('', ''), "\n"))
         )
@@ -194,14 +201,18 @@ class RFC7464Emitter(object):
 class RFC7464Parser(object):
     """Iterable parser for reading streaming JSON from a file handle"""
 
-    def __init__(self, handle):
+    def __init__(self, handle, timeout=None):
         if type(handle) != file:
             raise TypeError("Handle must be a file.")
         self.handle = handle
+        self.timeout = timeout
 
     # PYTHON3: def __next__(self)
     def next(self):
         """Read and parse one item from the file"""
+        if self.timeout is not None:
+            if select.select([self.handle],[],[], self.timeout) == ([],[],[]):
+                raise IOError("Timed out waiting for read")
         data = self.handle.readline()
 
         if len(data) == 0:

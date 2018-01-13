@@ -635,7 +635,7 @@ class StreamingJSONProgram(object):
     This class is fully thread-safe.
     """
 
-    def __init__(self, args, retries=3):
+    def __init__(self, args, retries=3, timeout=None):
         """Construct an instance.
 
         Arguments:
@@ -647,6 +647,7 @@ class StreamingJSONProgram(object):
 
         self.args = args
         self.retries = retries
+        self.timeout = timeout
 
         self.lock = threading.Lock()
         self.program = None
@@ -663,8 +664,10 @@ class StreamingJSONProgram(object):
             return
 
         self.program = ExternalProgram(self.args)
-        self.emitter = pscheduler.RFC7464Emitter(self.program.stdin())
-        self.parser = pscheduler.RFC7464Parser(self.program.stdout())
+        self.emitter = pscheduler.RFC7464Emitter(self.program.stdin(),
+                                                 timeout=self.timeout)
+        self.parser = pscheduler.RFC7464Parser(self.program.stdout(),
+                                               timeout=self.timeout)
 
 
     def __call__(self, json):
@@ -683,15 +686,14 @@ class StreamingJSONProgram(object):
                 self.__establish()
 
                 try:
+                    # These will throw an I/O error if they times out.
                     self.emitter(json)
-                    # TODO: This does nothing to protect against the
-                    # program not returning anything if it's locked
-                    # up.  The queue trick in the DNS resolver would
-                    # be a good way to deal with this.  There may not
-                    # be a good way to do this since each plugin would
-                    # have to estimate how long it should run.
                     return self.parser()
-                except (IOError, StopIteration):
+                except IOError as ex:
+                    self.program.kill()
+                    self.program = None
+                    raise StreamingJSONProgramFailure(ex)
+                except (StopIteration) as ex:
                     rc = self.program.returncode()
                     # TODO: We seem to hit this a lot.
                     if rc is None:

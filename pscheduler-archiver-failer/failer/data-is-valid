@@ -18,6 +18,7 @@ data_validator = {
     "type": "object",
     "properties": {
         "schema": { "$ref": "#/pScheduler/Cardinal" },
+        "delay": { "$ref": "#/pScheduler/Duration" },
         "fail": { "$ref": "#/pScheduler/Float" },
         "retry": { "$ref": "#/pScheduler/Float" }
     },

@@ -244,7 +244,14 @@ class Log():
     def log(self, level, format, *args):
         self.__syslog_handler_init()
         try:
-            self.logger.log(level, format, *args)
+            message = format % args
+            lines = message.split("\n")
+            while lines[0] == "":
+                del lines[0]
+            while lines[-1] == "":
+                del lines[-1]
+            for line in lines:
+                self.logger.log(level, line)
         except Exception:
             self.__syslog_handler_deinit()
 
@@ -329,3 +336,5 @@ if __name__ == "__main__":
         os.kill(os.getpid(),
                 signal.SIGUSR1 if (num % 2) != 0 else signal.SIGUSR2)
         time.sleep(1)
+
+    log.info("\n\nThis\n\nis\na\nmulti-line\nentry.\n\n\n")

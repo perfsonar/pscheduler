@@ -69,6 +69,14 @@ opt_parser.add_option("-s", "--skim-interval",
                       help="How often to skim archiver pools (ISO8601)",
                       action="store", type="string", dest="skim_interval",
                       default="PT30S")
+opt_parser.add_option("--timeout",
+                      help="Timeout for archiver I/O (ISO8601)",
+                      action="store", type="string", dest="timeout",
+                      default="PT2M")
+opt_parser.add_option("--retry",
+                      help="Retry interval after I/O timeout (ISO8601)",
+                      action="store", type="string", dest="retry",
+                      default="PT30S")
 opt_parser.add_option("--verbose", action="store_true", dest="verbose")
 opt_parser.add_option("--debug", action="store_true", dest="debug")
 
@@ -92,6 +100,17 @@ skim_interval = pscheduler.iso8601_as_timedelta(options.skim_interval)
 if skim_interval is None:
     opt_parser.error('Invalid skim interval "' + options.skim_interval + '"')
 skim_interval = pscheduler.timedelta_as_seconds(skim_interval)
+
+
+timeout = pscheduler.iso8601_as_timedelta(options.timeout)
+if timeout is None:
+    opt_parser.error('Invalid timeout "' + options.timeout + '"')
+timeout = pscheduler.timedelta_as_seconds(timeout)
+
+retry = pscheduler.iso8601_as_timedelta(options.retry)
+if retry is None:
+    opt_parser.error('Invalid retry "' + options.retry + '"')
+retry = pscheduler.timedelta_as_seconds(retry)
 
 
 log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
@@ -261,7 +280,7 @@ class ArchiveProcess(object):
             self.program = pscheduler.StreamingJSONProgram([
                 "pscheduler", "internal", "invoke",
                 "archiver", self.archiver, "archive"
-            ])
+            ], timeout=timeout)
 
     def __call__(self, json):
         """
@@ -270,11 +289,12 @@ class ArchiveProcess(object):
         self.__establish()
         try:
             return self.program(json)
-        except pscheduler.StreamingJSONProgramFailure as ex:
+        except (IOError, pscheduler.StreamingJSONProgramFailure) as ex:
             self.done()
             return {
                 "succeeded": False,
-                "error": "Failed to send to archiver: %s" % (str(ex))
+                "error": "Archiver error: %s" % (str(ex)),
+                "retry": retry
                 }
 
 
@@ -565,6 +585,7 @@ class ArchiveWorker():
         self.log.debug("%d: Run is %s", self.id, run_href)
 
         json = {
+            # This may contain private data that the archiver needs to see.
             'data': archiver_data,
             'task-href': task_href,
             'run-href': run_href,
@@ -574,7 +595,8 @@ class ArchiveWorker():
                     'start': pscheduler.datetime_as_iso8601(start),
                     'duration': pscheduler.timedelta_as_iso8601(duration)
                 },
-                'test': test,
+                # This may contain data that isn't to be leaked.
+                'test': pscheduler.json_decomment(test, prefix="_", null=True),
                 'tool': {
                     'name': tool['name'],
                     'version': tool['version'],
@@ -655,7 +677,7 @@ class ArchiveWorker():
                            result.get("error", "Unspecified error"))
             self.db.query("""UPDATE archiving
                              SET
-                                 archived = TRUE,
+                                 completed = TRUE,
                                  attempts = attempts + 1,
                                  last_attempt = now(),
                                  next_attempt = NULL,
@@ -670,6 +692,7 @@ class ArchiveWorker():
                                self.id, run_uuid, archiver)
                 self.db.query("""UPDATE archiving
                                  SET
+                                     completed = TRUE,
                                      archived = TRUE,
                                      attempts = attempts + 1,
                                      last_attempt = now(),
@@ -717,7 +740,7 @@ class ArchiveWorker():
 
                     self.db.query("""UPDATE archiving
                                      SET
-                                         archived = TRUE,
+                                         completed = TRUE,
                                          attempts = attempts + 1,
                                          last_attempt = now(),
                                          next_attempt = NULL,
@@ -813,7 +836,7 @@ def main_program():
         if len(result) == 0:
             log.debug("Nothing to archive; finding time until next archiving.")
             result = db.query("""SELECT next_attempt - now() FROM archiving
-                                 WHERE NOT archived AND next_attempt > now()
+                                 WHERE NOT completed AND next_attempt > now()
                                  ORDER BY next_attempt LIMIT 1""")
 
             assert len(result) < 2

@@ -3,6 +3,7 @@ test for the Jsonval module.
 """
 
 import unittest
+import sys
 
 from base_test import PschedTestBase
 
@@ -55,8 +56,12 @@ class TestJsonval(PschedTestBase):
         valid, message = json_validate(sample, schema)
 
         self.assertFalse(valid)
-        self.assertEqual(message,
-                         "At /archspec: 'archiver' is a required property")
+
+        # TODO: Remove version check when 2.6 is out of the picture
+        if sys.hexversion >= 0x2070000:
+            self.assertEqual(message,
+                             "At /archspec: 'archiver' is a required property")
+
 
         # add it in now
         sample['archspec']['archiver'] = 'tar'

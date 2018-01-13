@@ -3,7 +3,7 @@
     "schema": 1,
 
     "name": "failer",
-    "description": "Dummy archiver that some of the time - NOT FOR PRODUCTION",
+    "description": "Dummy archiver that fails some of the time",
     "version": "1.0",
 
     "maintainer": {

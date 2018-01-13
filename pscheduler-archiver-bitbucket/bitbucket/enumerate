@@ -3,7 +3,7 @@
     "schema": 1,
 
     "name": "bitbucket",
-    "description": "Discard results - NOT FOR PRODUCTION",
+    "description": "Discard results",
     "version": "1.0",
 
     "maintainer": {

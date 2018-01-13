@@ -58,6 +58,7 @@ BEGIN
 
         	-- Whether or not this archiving has been completed,
         	-- successfully or not.
+		-- Note:  This is renamed in a later version.
         	archived   	BOOLEAN
         			DEFAULT FALSE,
 
@@ -125,6 +126,27 @@ BEGIN
     THEN
         ALTER TABLE archiving ADD COLUMN
         transform JSON;
+
+        t_version := t_version + 1;
+    END IF;
+
+
+    -- Version 6 to version 7
+    -- Make the 'archived' column more sane and add success/failure flag
+    IF t_version = 6
+    THEN
+
+        ALTER TABLE task DISABLE TRIGGER USER;
+
+        ALTER TABLE archiving RENAME COLUMN
+	archived to completed;
+
+	ALTER TABLE archiving ADD COLUMN
+	archived BOOLEAN DEFAULT FALSE;
+
+	UPDATE archiving SET archived = completed;
+
+        ALTER TABLE task ENABLE TRIGGER USER;
 
         t_version := t_version + 1;
     END IF;
@@ -239,7 +261,7 @@ BEGIN
 
     IF
         -- Completions
-        (NEW.archived AND NEW.archived <> OLD.archived)
+        (NEW.completed AND NEW.completed <> OLD.completed)
         -- Reschedules
         OR (NEW.next_attempt IS NOT NULL
                 AND NEW.next_attempt <> OLD.next_attempt)
@@ -320,7 +342,7 @@ BEGIN
         archiving.id IN (
             SELECT archiving.id FROM archiving
             WHERE
-                NOT archived
+                NOT completed
                 AND next_attempt IS NOT NULL
                 AND next_attempt < now()
                 AND (ttl_expires IS NULL OR ttl_expires > now())
@@ -362,7 +384,7 @@ AS
 	JOIN task ON task.id = run.task
 	JOIN tool ON tool.id = task.tool
     WHERE
-        NOT archived
+        NOT completed
         AND next_attempt < now()
     ORDER BY next_attempt
 ;
@@ -384,6 +406,7 @@ BEGIN
         SELECT
             archiver.json AS archiver,
             archiving.archiver_data AS archiver_data,
+            archiving.completed AS completed,
             archiving.archived AS archived,
             archiving.last_attempt AS last_attempt,
             archiving.diags AS diags
@@ -426,11 +449,11 @@ BEGIN
 
     UPDATE archiving
     SET
-        archived = TRUE,     -- Not really, but gets the attempt off the table.
+        completed = TRUE,     -- Not really, but gets the attempt off the table.
         next_attempt = NULL,
         diags = diags || diag::JSONB
     WHERE
-        NOT archived
+        NOT completed
         AND ttl_expires < now();
 
 END;

@@ -282,6 +282,20 @@ BEGIN
     END IF;
 
 
+    -- Version 10 to version 11
+    -- Add diagnostics column
+    IF t_version = 10
+    THEN
+	ALTER TABLE task ADD COLUMN diags TEXT
+	DEFAULT NULL;
+
+	-- Add a placeholder for older tasks
+	UPDATE task SET diags = '(None available)';
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -586,6 +600,9 @@ BEGIN
 	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,cli}',
             to_jsonb(NEW.cli));
 
+	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,diags}',
+            to_jsonb(NEW.diags));
+
 	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,duration}',
             to_jsonb(interval_to_iso8601(NEW.duration)));
 
@@ -756,6 +773,7 @@ $$ LANGUAGE plpgsql;
 DROP FUNCTION IF EXISTS api_task_post(JSONB, JSONB, INTEGER, UUID);
 DROP FUNCTION IF EXISTS api_task_post(JSONB, JSONB, JSON, INTEGER, UUID);
 DROP FUNCTION IF EXISTS api_task_post(JSONB, JSONB, JSONB, JSON, INTEGER, UUID);
+DROP FUNCTION IF EXISTS api_task_post(JSONB, JSONB, JSONB, JSON, INTEGER, UUID, BOOLEAN);
 
 
 CREATE OR REPLACE FUNCTION api_task_post(
@@ -765,7 +783,8 @@ CREATE OR REPLACE FUNCTION api_task_post(
     limits_passed JSON = '[]',
     participant INTEGER DEFAULT 0,
     task_uuid UUID = NULL,
-    enabled BOOLEAN = TRUE
+    enabled BOOLEAN = TRUE,
+    diags TEXT = '(None)'
 )
 RETURNS UUID
 AS $$
@@ -779,8 +798,8 @@ BEGIN
    END IF;
 
    WITH inserted_row AS (
-        INSERT INTO task(json, participants, limits_passed, participant, uuid, hints, enabled)
-        VALUES (task_package, array_to_json(participant_list), limits_passed, participant, task_uuid, hints, enabled)
+        INSERT INTO task(json, participants, limits_passed, participant, uuid, hints, enabled, diags)
+        VALUES (task_package, array_to_json(participant_list), limits_passed, participant, task_uuid, hints, enabled, diags)
         RETURNING *
     ) SELECT INTO inserted * from inserted_row;
 
