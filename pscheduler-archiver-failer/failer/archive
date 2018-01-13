@@ -5,9 +5,11 @@ Fail at archiving most of the time.
 
 import random
 import sys
+import time
+
 import pscheduler
 
-MAX_SCHEMA = 1
+MAX_SCHEMA = 2
 
 random.seed()
 
@@ -26,6 +28,17 @@ def archive(json):
             "error": "Unsupported schema version %d; max is %d" % (
                 schema, MAX_SCHEMA)
         }
+
+
+    # Dawdle if requested
+
+    try:
+        delay_iso = json["data"]["delay"]
+        duration = pscheduler.iso8601_as_timedelta(delay_iso)
+        log.debug("Sleeping %s" % delay_iso)
+        time.sleep(pscheduler.timedelta_as_seconds(duration))
+    except KeyError:
+        pass  # No time to pass
 
 
     if random.random() > json["data"].get("fail", 0.5):

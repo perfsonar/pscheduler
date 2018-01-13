@@ -47,11 +47,16 @@ BEGIN
     END IF;
 
     -- Version 1 to version 2
-    --IF t_version = 1
-    --THEN
-    --    ALTER TABLE ...
-    --    t_version := t_version + 1;
-    --END IF;
+    IF t_version = 1
+    THEN
+
+        -- This column indicates if there's nothing more to be done
+        -- with this run, successful or not.
+        ALTER TABLE run_state ADD COLUMN
+        finished BOOLEAN DEFAULT FALSE;
+
+        t_version := t_version + 1;
+    END IF;
 
 
     --
@@ -209,23 +214,24 @@ ON run_state
 -- the table was previously populated.
 
 ALTER TABLE run_state DISABLE TRIGGER run_state_alter;
-INSERT INTO run_state (id, display, enum)
+INSERT INTO run_state (id, display, enum, finished)
 VALUES
-    (run_state_pending(),  'Pending',  'pending'),
-    (run_state_on_deck(),  'On Deck',  'on-deck'),
-    (run_state_running(),  'Running',  'running'),
-    (run_state_cleanup(),  'Cleanup',  'cleanup'),
-    (run_state_finished(), 'Finished', 'finished'),
-    (run_state_overdue(),  'Overdue',  'overdue'),
-    (run_state_missed(),   'Missed',   'missed'),
-    (run_state_failed(),   'Failed',   'failed'),
-    (run_state_preempted(),'Preempted', 'preempted'),
-    (run_state_nonstart(), 'Non-Starter', 'nonstart'),
-    (run_state_canceled(),  'Canceled', 'canceled')
+    (run_state_pending(),   'Pending',     'pending',   FALSE),
+    (run_state_on_deck(),   'On Deck',     'on-deck',   FALSE),
+    (run_state_running(),   'Running',     'running',   FALSE),
+    (run_state_cleanup(),   'Cleanup',     'cleanup',   TRUE),
+    (run_state_finished(),  'Finished',    'finished',  TRUE),
+    (run_state_overdue(),   'Overdue',     'overdue',   TRUE),
+    (run_state_missed(),    'Missed',      'missed',    TRUE),
+    (run_state_failed(),    'Failed',      'failed',    TRUE),
+    (run_state_preempted(), 'Preempted',   'preempted', TRUE),
+    (run_state_nonstart(),  'Non-Starter', 'nonstart',  TRUE),
+    (run_state_canceled(),  'Canceled',    'canceled',  TRUE)
 ON CONFLICT (id) DO UPDATE
 SET
     display = EXCLUDED.display,
-    enum = EXCLUDED.enum;
+    enum = EXCLUDED.enum,
+    finished = EXCLUDED.finished;
 ALTER TABLE run_state ENABLE TRIGGER run_state_alter;
 
 

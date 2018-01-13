@@ -23,17 +23,34 @@ class JQFilter(object):
             args={},
             output_raw=False
             ):
+        """
+        Construct a filter.  Arguments:
 
-        if isinstance(filter_spec, basestring):
-            self.script = pyjq.compile(filter_spec, args)
-            self.output_raw = output_raw
+        filter_spec - The JQ script to be used for this filter.  This
+        may be any subclass of basestring, a list or a dict.  Strings
+        are interpreted directly, lists are stringified and joined
+        with newlines (to make multi-line scripts readable in JSON)
+        and dicts give their "script" and "output-raw" elements
+        extracted and used as if they were either of the other types.
 
-        elif type(filter_spec) == dict:
-            self.script = pyjq.compile(filter_spec.get("script", "."), args)
+        args - A dictionary of variables to be pre-set in the script.
+
+        output_raw - True to produce raw output instead of JSON.
+        """
+
+        self.output_raw = output_raw
+
+        if type(filter_spec) == dict:
             self.output_raw = filter_spec.get("output-raw", output_raw)
+            filter_spec = filter_spec.get("script", ".")
 
-        else:
-            raise ValueError("Filter spec must be plain text or dict")
+        if isinstance(filter_spec, list):
+            filter_spec = "\n".join([str(line) for line in filter_spec])
+
+        if not isinstance(filter_spec, basestring):
+            raise ValueError("Filter spec must be plain text, list or dict")
+
+        self.script = pyjq.compile(filter_spec, args)
 
 
     def __call__(

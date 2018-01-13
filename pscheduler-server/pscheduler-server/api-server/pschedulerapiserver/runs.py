@@ -2,6 +2,7 @@
 # Run-Related Pages
 #
 
+import copy
 import pscheduler
 import time
 
@@ -63,14 +64,11 @@ def __evaluate_limits(
     cursor.close()
     log.debug("Task is %s, duration is %s" % (task_spec, duration))
 
-    limit_input = {
-        'type': task_spec['test']['type'],
-        'spec': task_spec['test']['spec'],
-        'schedule': {
-            'start': pscheduler.datetime_as_iso8601(start_time),
-            'duration': pscheduler.timedelta_as_iso8601(duration)
-            }
-        }
+    limit_input = copy.copy(task_spec)
+    limit_input['schedule'] = {
+        'start': pscheduler.datetime_as_iso8601(start_time),
+        'duration': pscheduler.timedelta_as_iso8601(duration)
+    }
 
     log.debug("Checking limits against %s" % str(limit_input))
 
@@ -82,7 +80,8 @@ def __evaluate_limits(
     # Don't pass hints since that would have been covered when the
     # task was submitted and only the scheduler will be submitting
     # runs.
-    passed, limits_passed, diags = processor.process(limit_input, hints)
+    passed, limits_passed, diags, _new_task \
+        = processor.process(limit_input, hints, rewrite=False)
 
     log.debug("Passed: %s.  Diags: %s" % (passed, diags))
 
@@ -319,7 +318,8 @@ def tasks_uuid_runs_run(task, run):
                         run.clock_survey,
                         run.id,
                         archiving_json(run.id),
-                        run.added
+                        run.added,
+                        run_state.finished
                     FROM
                         run
                         JOIN task ON task.id = run.task
@@ -341,8 +341,10 @@ def tasks_uuid_runs_run(task, run):
             if not (wait_local or wait_merged):
                 break
             else:
-                if (wait_local and row[7] is None) \
-                        or (wait_merged and row[9] is None):
+                if (wait_local and row[8] is None) \
+                   or (wait_merged \
+                       and ( (row[9] is None) or (not row[18]) ) ):
+                    log.debug("Waiting for merged: %s %s", row[9], row[18])
                     time.sleep(0.5)
                     tries -= 1
                 else:
