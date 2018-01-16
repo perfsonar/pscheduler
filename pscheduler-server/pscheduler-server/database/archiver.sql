@@ -245,6 +245,9 @@ FOR EACH ROW
 
 
 -- Insert a new archiver or update an existing one by name
+
+DO $$ BEGIN PERFORM drop_function_all('archiver_upsert'); END $$;
+
 CREATE OR REPLACE FUNCTION archiver_upsert(new_json JSONB)
 RETURNS VOID
 AS $$
@@ -341,6 +344,9 @@ $$ LANGUAGE plpgsql;
 
 
 -- Validate an archiver entry and raise an error if invalid.
+
+DO $$ BEGIN PERFORM drop_function_all('archiver_validate'); END $$;
+
 CREATE OR REPLACE FUNCTION archiver_validate(
     candidate JSONB
 )

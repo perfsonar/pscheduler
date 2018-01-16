@@ -205,6 +205,9 @@ AS
 
 
 -- Determine if a proposed run would have conflicts
+
+DO $$ BEGIN PERFORM drop_function_all('run_has_conflicts'); END $$;
+
 CREATE OR REPLACE FUNCTION run_has_conflicts(
     task_id BIGINT,
     proposed_start TIMESTAMP WITH TIME ZONE
@@ -694,8 +697,7 @@ AS
 
 -- NOTE: This is for scheduled runs only, not background-multi results.
 
--- TODO: Remove this after the first producion release.
-DROP FUNCTION IF EXISTS api_run_post(UUID, TIMESTAMP WITH TIME ZONE, UUID, TEXT);
+DO $$ BEGIN PERFORM drop_function_all('api_run_post'); END $$;
 
 CREATE OR REPLACE FUNCTION api_run_post(
     task_uuid UUID,

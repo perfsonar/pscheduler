@@ -32,6 +32,9 @@ CREATE TYPE external_program_result AS (
 -- program runs.  [ 'FOO', 'bar', 'BAZ', 'quux' ] would be turned into
 -- the Python equivalent of {"FOO": "bar", "BAZ": "quux"}.
 --
+
+DO $$ BEGIN PERFORM drop_function_all('pscheduler_internal'); END $$;
+
 CREATE OR REPLACE FUNCTION pscheduler_internal(
     argv TEXT[] DEFAULT '{}',  -- Arguments to pass to 'pscheduler internal'
     input TEXT DEFAULT NULL,   -- What goes to the standard input

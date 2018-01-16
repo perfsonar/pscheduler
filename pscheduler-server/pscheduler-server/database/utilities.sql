@@ -3,6 +3,7 @@
 -- 
 --
 
+
 -- ----------------------------------------------------------------------------
 
 --
@@ -16,6 +17,8 @@
 
 -- TODO: In all of these, need to look at whether we should narrow the
 -- exception down to something more specific than 'OTHERS'.
+
+DO $$ BEGIN PERFORM drop_function_all('text_to_timestamp_with_time_zone'); END $$;
 
 CREATE OR REPLACE FUNCTION 
 text_to_timestamp_with_time_zone(
@@ -48,6 +51,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+
+DO $$ BEGIN PERFORM drop_function_all('timestamp_with_time_zone_to_iso8601'); END $$;
 
 CREATE OR REPLACE FUNCTION 
 timestamp_with_time_zone_to_iso8601(
@@ -86,6 +91,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+DO $$ BEGIN PERFORM drop_function_all('interval_to_iso8601'); END $$;
 
 CREATE OR REPLACE FUNCTION interval_to_iso8601(period INTERVAL)
 RETURNS TEXT
@@ -157,6 +164,8 @@ $$ LANGUAGE plpgsql;
 
 
 
+DO $$ BEGIN PERFORM drop_function_all('text_to_interval'); END $$;
+
 CREATE OR REPLACE FUNCTION 
 text_to_interval(
 	value TEXT,
@@ -181,6 +190,9 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+
+DO $$ BEGIN PERFORM drop_function_all('text_to_numeric'); END $$;
+
 CREATE OR REPLACE FUNCTION 
 text_to_numeric(
 	value TEXT,
@@ -204,6 +216,8 @@ RETURN converted;
 END;
 $$ LANGUAGE plpgsql;
 
+
+DO $$ BEGIN PERFORM drop_function_all('text_to_jsonb'); END $$;
 
 CREATE OR REPLACE FUNCTION 
 text_to_jsonb(
@@ -236,6 +250,10 @@ $$ LANGUAGE plpgsql;
 --
 
 -- Truncate a timestamp to our scheduling increment (seconds)
+
+DO $$ BEGIN PERFORM drop_function_all('normalized_time'); END $$;
+
+
 CREATE OR REPLACE FUNCTION normalized_time(value TIMESTAMP WITH TIME ZONE)
 RETURNS TIMESTAMP WITH TIME ZONE
 AS $$
@@ -303,6 +321,8 @@ $$LANGUAGE plpgsql;
 -- fractional seconds from both.  For example, '2016-02-02
 -- 11:27:36-05' and 'PT1H' would yield '2016-02-02 12:00:00-05'
 
+DO $$ BEGIN PERFORM drop_function_all('time_next_interval'); END $$;
+
 CREATE OR REPLACE FUNCTION time_next_interval(
     start TIMESTAMP WITH TIME ZONE,
     round_to INTERVAL
@@ -329,6 +349,8 @@ $$ LANGUAGE plpgsql;
 -- Round an interval up to the next whole second if there are any
 -- fractional seconds.
 
+DO $$ BEGIN PERFORM drop_function_all('interval_round_up'); END $$;
+
 CREATE OR REPLACE function interval_round_up(candidate INTERVAL)
 RETURNS INTERVAL
 AS $$
@@ -354,6 +376,9 @@ $$ LANGUAGE plpgsql;
 --
 
 -- Source: https://stackoverflow.com/a/33616365/180674
+
+DO $$ BEGIN PERFORM drop_function_all('url_encode'); END $$;
+
 CREATE OR REPLACE FUNCTION uri_encode(input text)
   RETURNS text
   LANGUAGE plpgsql

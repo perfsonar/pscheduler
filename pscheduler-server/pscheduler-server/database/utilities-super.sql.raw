@@ -1,0 +1,55 @@
+--
+-- Utilities required for the superuser and others
+--
+
+-- ----------------------------------------------------------------------------
+
+--
+-- Database Manipulation
+--
+
+-- Drop all variations of a function
+-- Adapted from https://stackoverflow.com/a/7622951/180674
+
+CREATE OR REPLACE FUNCTION drop_function_all(functionname text)
+RETURNS VOID AS
+$$
+DECLARE
+    funcrow RECORD;
+    numparameters INTEGER;
+    param INTEGER;
+    paramtext TEXT;
+BEGIN
+    FOR funcrow IN
+        SELECT proargtypes FROM pg_proc WHERE proname = functionname
+    LOOP
+    
+        -- For some reason array_upper is off by one for the oidvector
+        -- type, hence the +1
+        numparameters = array_upper(funcrow.proargtypes, 1) + 1;
+    
+        param := 0;
+        paramtext := '';
+    
+        LOOP
+            IF param < numparameters THEN
+                IF param > 0 THEN
+                    paramtext = paramtext || ', ';
+                END IF;
+                paramtext := paramtext || (
+		    SELECT typname FROM pg_type
+		    WHERE oid = funcrow.proargtypes[param]
+		);
+                param := param + 1;
+            ELSE
+                EXIT;
+            END IF;
+        END LOOP;
+	    
+        EXECUTE 'DROP FUNCTION ' || functionname || '(' || paramtext || ');';
+    
+    END LOOP;
+
+END;
+$$
+LANGUAGE plpgsql VOLATILE;

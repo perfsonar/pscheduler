@@ -128,6 +128,9 @@ FOR EACH ROW
 
 
 -- Insert a new test or update an existing one by name
+
+DO $$ BEGIN PERFORM drop_function_all('test_upsert'); END $$;
+
 CREATE OR REPLACE FUNCTION test_upsert(new_json JSONB)
 RETURNS VOID
 AS $$

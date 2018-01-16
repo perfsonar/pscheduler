@@ -290,8 +290,7 @@ DROP FUNCTION IF EXISTS archiving_alter();
 
 -- Return the first max_return items eligible for archiving
 
--- TODO: Can remove this after GA release.
-DROP FUNCTION IF EXISTS archiving_next(INTEGER);
+DO $$ BEGIN PERFORM drop_function_all('archiving_next'); END $$;
 
 CREATE OR REPLACE FUNCTION archiving_next(
     max_return INTEGER
@@ -392,6 +391,8 @@ AS
 
 
 -- Pull a run's archiving information as JSON
+
+DO $$ BEGIN PERFORM drop_function_all('archiving_json'); END $$;
 
 CREATE OR REPLACE FUNCTION archiving_json(run_id BIGINT)
 RETURNS JSON
