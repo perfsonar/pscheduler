@@ -92,10 +92,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- Old function
-DROP FUNCTION IF EXISTS test_json_is_valid(json JSONB);
-
-
 DROP TRIGGER IF EXISTS test_alter ON test CASCADE;
 
 CREATE OR REPLACE FUNCTION test_alter()

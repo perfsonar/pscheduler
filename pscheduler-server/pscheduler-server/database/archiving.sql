@@ -279,15 +279,6 @@ CREATE TRIGGER archiving_update AFTER UPDATE ON archiving
 
 
 
-
-
--- TODO: These can go away after GA.
-
-DROP TRIGGER IF EXISTS archiving_alter ON archiving CASCADE;
-DROP FUNCTION IF EXISTS archiving_alter();
-
-
-
 -- Return the first max_return items eligible for archiving
 
 DO $$ BEGIN PERFORM drop_function_all('archiving_next'); END $$;

@@ -156,10 +156,6 @@ $$ LANGUAGE plpgsql;
 
 
 
--- Old function
-DROP FUNCTION IF EXISTS tool_json_is_valid(json JSONB);
-
-
 DROP TRIGGER IF EXISTS tool_alter ON tool CASCADE;
 
 CREATE OR REPLACE FUNCTION tool_alter()
