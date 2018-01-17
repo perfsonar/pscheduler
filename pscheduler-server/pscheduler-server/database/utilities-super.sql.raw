@@ -8,7 +8,7 @@
 -- Database Manipulation
 --
 
--- Drop all variations of a function
+-- Drop all variations of a function with cascading.
 -- Adapted from https://stackoverflow.com/a/7622951/180674
 
 CREATE OR REPLACE FUNCTION drop_function_all(functionname text)
@@ -46,7 +46,8 @@ BEGIN
             END IF;
         END LOOP;
 	    
-        EXECUTE 'DROP FUNCTION ' || functionname || '(' || paramtext || ');';
+        EXECUTE 'DROP FUNCTION ' || functionname || '(' || paramtext 
+	    || ') CASCADE;';
     
     END LOOP;
 
