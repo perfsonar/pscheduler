@@ -169,6 +169,17 @@ BEGIN
     END IF;
 
 
+    -- Version 6 to version 7
+    -- Adds 'times_actual' column
+    IF t_version = 6
+    THEN
+        ALTER TABLE run ADD COLUMN
+        times_actual TSTZRANGE NULL;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -431,14 +442,22 @@ BEGIN
         END IF;
 
 
-	-- If the state of the run changes to finished or failed, trim
-	-- its scheduled time.
+	-- Handle times for runs reaching a state where they may have
+	-- been running to one where they've stopped.
 
 	IF NEW.state <> OLD.state
             AND NEW.state IN ( run_state_finished(), run_state_overdue(),
                  run_state_missed(), run_state_failed() )
         THEN
-            NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
+	    -- Record the actual times the run ran
+	    NEW.times_actual = tstzrange(lower(OLD.times), normalized_now(), '[]');
+
+	    -- If the run took less than the scheduled time, return
+	    -- the remainder to the timeline.
+	    IF upper(OLD.times) > normalized_now() THEN
+	        NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
+	    END IF;
+
         END IF;
 
 
