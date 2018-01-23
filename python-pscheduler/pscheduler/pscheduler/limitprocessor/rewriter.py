@@ -48,6 +48,11 @@ class Rewriter():
             "  ." + self.PRIVATE_KEY + ".classifiers",
             ";",
 
+            "def classifiers_has($value):",
+            "  ." + self.PRIVATE_KEY + ".classifiers",
+            "  | contains([$value])",
+            ";",
+
             "def change($message):",
             "  ." + self.PRIVATE_KEY + ".changed = true",
             "  | if $message != null",
