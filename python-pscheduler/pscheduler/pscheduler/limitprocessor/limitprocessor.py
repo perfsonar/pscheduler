@@ -50,8 +50,12 @@ class LimitProcessor():
         validation_file = open(validation_path, 'r')
         # NOTE: Don't max_schema this.  The limit validation file is
         # tied to this module.
-        validation = pscheduler.json_load(validation_file)
-        validation_file.close()
+        try:
+            validation = pscheduler.json_load(validation_file)
+        except Exception as ex:
+            raise ValueError("Invalid validation file: %s" % (str(ex)))
+        finally:
+            validation_file.close()
 
         #
         # Inhale the source and validate it
