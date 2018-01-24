@@ -80,7 +80,7 @@ class Rewriter():
         )
 
 
-    def __call__(self, task, classifiers, validate_callback=None):
+    def __call__(self, task, classifiers):
         """
         Rewrite the task given the classifiers.  Returns a tuple
         containing the rewritten task and an array of diagnostic
@@ -105,8 +105,6 @@ class Rewriter():
 
 
         result = self.transform(task_in)[0]
-
-#        print "RES", pscheduler.json_dump(result, pretty=True)
 
         if ("test" not in result) \
            or ("type" not in result["test"]) \
