@@ -1,7 +1,7 @@
 Index: pscheduler-core/diags.raw
 ===================================================================
---- pscheduler-core.orig/diags.raw	2017-11-27 14:44:51.000000000 +0000
-+++ pscheduler-core/diags.raw	2017-11-27 14:51:43.000000000 +0000
+--- pscheduler-core.orig/diags.raw	2018-01-25 16:10:59.000000000 +0000
++++ pscheduler-core/diags.raw	2018-01-25 17:56:58.000000000 +0000
 @@ -138,7 +138,7 @@
  fi
  
