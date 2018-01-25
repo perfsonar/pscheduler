@@ -169,6 +169,17 @@ BEGIN
     END IF;
 
 
+    -- Version 6 to version 7
+    -- Adds 'times_actual' column
+    IF t_version = 6
+    THEN
+        ALTER TABLE run ADD COLUMN
+        times_actual TSTZRANGE NULL;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -184,7 +195,7 @@ $$ LANGUAGE plpgsql;
 
 -- Runs which could cause conflicts
 
-DROP VIEW IF EXISTS run_conflictable;
+DROP VIEW IF EXISTS run_conflictable CASCADE;
 CREATE OR REPLACE VIEW run_conflictable
 AS
     SELECT
@@ -313,16 +324,29 @@ BEGIN
 
 
     -- Reject new runs that overlap with anything that isn't a
-    -- non-starter or where this insert would cause a normal/exclusive
-    -- conflict
+    -- finished run or where this insert would cause a conflict.
 
-    IF ( (TG_OP = 'INSERT')
-        -- Don't care about non-starters
-        AND NEW.state <> run_state_nonstart()
-        AND run_has_conflicts(taskrec.id, lower(NEW.times))
-        )
+    -- TODO: Post 4.1, the state check can be done against
+    -- run_state.finished.
+    IF (TG_OP = 'INSERT')
+        AND (NEW.state IN (run_state_pending(), run_state_on_deck(), run_state_running()))
     THEN
-       RAISE EXCEPTION 'Run would result in a scheduling conflict.';
+
+        -- Once we start the process of deciding whether or not there
+        -- would be any scheduling conflicts, no other transactions
+        -- can make the same decisions based on what would be the old
+        -- data.  Nonstarters don't matter because they don't result
+        -- in any action by the runner.
+
+	-- TODO: This could probably happen a lot further down after
+	-- all of the other sanity checks have passed.
+
+        LOCK TABLE run IN ACCESS EXCLUSIVE MODE;
+
+        IF run_has_conflicts(taskrec.id, lower(NEW.times))
+        THEN
+           RAISE EXCEPTION 'Run would result in a scheduling conflict.';
+        END IF;
     END IF;
 
 
@@ -335,7 +359,6 @@ BEGIN
     END IF;
 
     -- Make sure UUID assignment follows a sane pattern.
-
 
     IF (TG_OP = 'INSERT') THEN
 
@@ -416,14 +439,22 @@ BEGIN
         END IF;
 
 
-	-- If the state of the run changes to finished or failed, trim
-	-- its scheduled time.
+	-- Handle times for runs reaching a state where they may have
+	-- been running to one where they've stopped.
 
 	IF NEW.state <> OLD.state
             AND NEW.state IN ( run_state_finished(), run_state_overdue(),
                  run_state_missed(), run_state_failed() )
         THEN
-            NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
+	    -- Record the actual times the run ran
+	    NEW.times_actual = tstzrange(lower(OLD.times), normalized_now(), '[]');
+
+	    -- If the run took less than the scheduled time, return
+	    -- the remainder to the timeline.
+	    IF upper(OLD.times) > normalized_now() THEN
+	        NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
+	    END IF;
+
         END IF;
 
 
@@ -680,6 +711,8 @@ AS
 
 -- Put a run of a task on the schedule.
 
+-- NOTE: This is for scheduled runs only, not background-multi results.
+
 -- TODO: Remove this after the first producion release.
 DROP FUNCTION IF EXISTS api_run_post(UUID, TIMESTAMP WITH TIME ZONE, UUID, TEXT);
 
@@ -716,16 +749,31 @@ BEGIN
         RETURN;
     END IF;
 
-    IF nonstart_reason IS NOT NULL THEN
-       initial_state := run_state_nonstart();
-       initial_status := 1;  -- Nonzero means failure.
-    ELSIF run_has_conflicts(task.id, start_time) THEN
-        RETURN QUERY SELECT FALSE, NULL::UUID, TRUE,
-            'Posting this run would cause a schedule conflict'::TEXT;
-        RETURN;
+    IF nonstart_reason IS NULL THEN
+
+        -- This is a "live" run, so we lock the table down early (see
+        -- run_alter() for commentary) and check early for conflicts.
+
+        -- TODO: It would be nicer if we could catch the exception
+        -- that the INSERT below would throw and bail out based on
+        -- that.
+        LOCK TABLE run IN ACCESS EXCLUSIVE MODE;
+
+        IF run_has_conflicts(task.id, start_time) THEN
+            RETURN QUERY SELECT FALSE, NULL::UUID, TRUE,
+                'Posting this run would cause a schedule conflict'::TEXT;
+            RETURN;
+        END IF;
+
+        initial_state := run_state_pending();
+        initial_status := NULL;
+
     ELSE
-       initial_state := run_state_pending();
-       initial_status := NULL;
+
+        -- Nonstarters don't require conflict checks or table locks.
+        initial_state := run_state_nonstart();
+        initial_status := 1;  -- Nonzero means failure.
+
     END IF;
     
     start_time := normalized_time(start_time);
