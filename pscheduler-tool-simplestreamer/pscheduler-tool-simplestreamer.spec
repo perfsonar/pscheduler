@@ -4,7 +4,7 @@
 
 %define short	simplestreamer
 Name:		pscheduler-tool-%{short}
-Version:	1.0.2
+Version:	1.0.2.3
 Release:	1%{?dist}
 
 Summary:	Simple Streamer tool class for pScheduler
