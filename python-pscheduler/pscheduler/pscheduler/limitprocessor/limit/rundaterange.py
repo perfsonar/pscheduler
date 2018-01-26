@@ -61,8 +61,8 @@ class LimitRunDateRange():
 
         """Check that the proposed times don't overlap with this limit"""
 
-        start = pscheduler.iso8601_as_datetime(run['schedule']['start'])
-        duration = pscheduler.iso8601_as_timedelta(run['schedule']['duration'])
+        start = pscheduler.iso8601_as_datetime(run['run_schedule']['start'])
+        duration = pscheduler.iso8601_as_timedelta(run['run_schedule']['duration'])
         end = start + duration
 
         subset = start >= self.start and end < self.end
@@ -88,7 +88,7 @@ class LimitRunDateRange():
 if __name__ == "__main__":
 
     test = {
-        "schedule": {
+        "run_schedule": {
             "start": "2015-12-31T23:59:50-04",
             "duration": "PT20S"
             }

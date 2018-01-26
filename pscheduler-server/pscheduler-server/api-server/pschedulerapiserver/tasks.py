@@ -212,7 +212,7 @@ def tasks():
     elif request.method == 'POST':
 
         try:
-            task = pscheduler.json_load(request.data, max_schema=2)
+            task = pscheduler.json_load(request.data, max_schema=3)
         except ValueError as ex:
             return bad_request("Invalid task specification: %s" % (str(ex)))
 
@@ -312,7 +312,7 @@ def tasks():
         hints_data = pscheduler.json_dump(hints)
 
         log.debug("Processor = %s" % processor)
-        passed, limits_passed, diags, new_task \
+        passed, limits_passed, diags, new_task, _priority \
             = processor.process(task, hints)
 
         if not passed:
@@ -650,7 +650,7 @@ def tasks_uuid(uuid):
 
         # Only the lead rewrites tasks; everyone else just applies
         # limits.
-        passed, limits_passed, diags, _new_task \
+        passed, limits_passed, diags, _new_task, _priority \
             = processor.process(json_in, hints, rewrite=False)
 
         if not passed:

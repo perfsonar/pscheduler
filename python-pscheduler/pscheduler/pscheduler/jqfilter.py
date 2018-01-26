@@ -2,14 +2,33 @@
 JQ JSON Filter Class
 """
 
+import re
+
 import pyjq
 from  _pyjq import ScriptRuntimeError
-
-from .psjson import *
 
 
 class JQRuntimeError(Exception):
     pass
+
+
+_import_include = r"((import|include) [^;]+;)"
+
+def _groom(script):
+    """
+    Groom a filter by moving all imports and includes to the top.  
+    """
+
+    # Pull and hold all imports
+    lines = map(
+        lambda x: x[0],
+        re.findall(_import_include, script)
+    )
+    # Add the rest of the script without the imports and includes
+    lines.append(re.sub(_import_include, "", script))
+    return "\n".join(lines)
+
+
 
 
 class JQFilter(object):
@@ -21,7 +40,8 @@ class JQFilter(object):
             self,
             filter_spec=".",
             args={},
-            output_raw=False
+            output_raw=False,
+            groom=False,
             ):
         """
         Construct a filter.  Arguments:
@@ -36,6 +56,11 @@ class JQFilter(object):
         args - A dictionary of variables to be pre-set in the script.
 
         output_raw - True to produce raw output instead of JSON.
+
+        groom - Move all 'import' and 'include' statements to the
+        top of the script before compiling.  This allows filters
+        prepending functions to user-provided scripts that do
+        imports to compile properly.
         """
 
         self.output_raw = output_raw
@@ -49,6 +74,9 @@ class JQFilter(object):
 
         if not isinstance(filter_spec, basestring):
             raise ValueError("Filter spec must be plain text, list or dict")
+
+        if groom:
+            filter_spec = _groom(filter_spec)
 
         self.script = pyjq.compile(filter_spec, args)
 
@@ -84,9 +112,24 @@ class JQFilter(object):
 
 if __name__ == "__main__":
 
-    # TODO:  Write a few examples.
+    # Check out grooming
 
+    print "Groom Check:"
+    print _groom("def xyz: 123 end; import x/y/z; xyz")
+    print
+
+    print "Filter:"
     filter = JQFilter(".")
     print filter('{ "foo": 123, "bar": 456 }')
+    print
 
-    pass
+    # Note that this only works if pscheduler-jq-library is installed.
+    print "Groomed Filter:"
+    filter = JQFilter([
+        'def x: 123;',
+        'import "pscheduler/si" as si;',
+        'si::as_integer("12ki"), x'
+        ], groom=True)
+
+    print filter('{ "foo": 123, "bar": 456 }')
+    print

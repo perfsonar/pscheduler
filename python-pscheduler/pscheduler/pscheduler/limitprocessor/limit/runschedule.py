@@ -293,8 +293,8 @@ class LimitRunSchedule():
 
         """Check that the proposed times don't overlap with this limit"""
 
-        start = pscheduler.iso8601_as_datetime(run['schedule']['start'])
-        duration = pscheduler.iso8601_as_timedelta(run['schedule']['duration'])
+        start = pscheduler.iso8601_as_datetime(run['run_schedule']['start'])
+        duration = pscheduler.iso8601_as_timedelta(run['run_schedule']['duration'])
         end = start + duration
 
         # Python's datetime doesn't have methods to get this.  Bravo.

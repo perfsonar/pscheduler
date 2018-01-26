@@ -65,7 +65,7 @@ def __evaluate_limits(
     log.debug("Task is %s, duration is %s" % (task_spec, duration))
 
     limit_input = copy.copy(task_spec)
-    limit_input['schedule'] = {
+    limit_input['run_schedule'] = {
         'start': pscheduler.datetime_as_iso8601(start_time),
         'duration': pscheduler.timedelta_as_iso8601(duration)
     }
@@ -80,16 +80,12 @@ def __evaluate_limits(
     # Don't pass hints since that would have been covered when the
     # task was submitted and only the scheduler will be submitting
     # runs.
-    passed, limits_passed, diags, _new_task \
-        = processor.process(limit_input, hints, rewrite=False)
+    passed, limits_passed, diags, _new_task, priority \
+        = processor.process(limit_input, hints, rewrite=False, prioritize=True)
 
     log.debug("Passed: %s.  Diags: %s" % (passed, diags))
 
-    # This prevents the run from being put in a non-starter state
-    if passed:
-        diags = None
-
-    return passed, diags, None
+    return passed, diags, None, priority
 
 
 
@@ -167,7 +163,8 @@ def tasks_uuid_runs(task):
 
 
         try:
-            passed, diags, response = __evaluate_limits(task, start_time)
+            passed, diags, response, priority \
+                = __evaluate_limits(task, start_time)
         except Exception as ex:
             log.exception()
             return error(str(ex))
@@ -178,8 +175,10 @@ def tasks_uuid_runs(task):
             log.debug("Posting run for task %s starting %s"
                       % (task, start_time))
             cursor = dbcursor_query(
-                "SELECT * FROM api_run_post(%s, %s, NULL, %s)",
-                [task, start_time, diags], onerow=True)
+                "SELECT * FROM api_run_post(%s, %s, NULL, %s, %s, %s)",
+                [task, start_time, 
+                 None if passed else "Run forbidden by limits",
+                 priority, diags], onerow=True)
             succeeded, uuid, conflicts, error_message = cursor.fetchone()
             cursor.close()
             if conflicts:
@@ -319,7 +318,9 @@ def tasks_uuid_runs_run(task, run):
                         run.id,
                         archiving_json(run.id),
                         run.added,
-                        run_state.finished
+                        run_state.finished,
+                        run.priority,
+                        run.limit_diags
                     FROM
                         run
                         JOIN task ON task.id = run.task
@@ -390,6 +391,8 @@ def tasks_uuid_runs_run(task, run):
             result['archivings'] = row[16]
         if row[17] is not None:
             result['added'] = pscheduler.datetime_as_iso8601(row[17])
+        result['priority'] = row[19]
+        result['limit-diags'] = row[20]
         result['task-href'] = root_url('tasks/' + task)
         result['result-href'] = href + '/result'
 
@@ -445,13 +448,16 @@ def tasks_uuid_runs_run(task, run):
 
             try:
 
-                passed, diags, response = __evaluate_limits(task, start_time)
+                passed, diags, response, priority \
+                    = __evaluate_limits(task, start_time)
                 if response is not None:
                     return response
 
                 cursor = dbcursor_query(
-                    "SELECT * FROM api_run_post(%s, %s, %s)",
-                    [task, start_time, run], onerow=True)
+                    "SELECT * FROM api_run_post(%s, %s, %s, %s, %s, %s)",
+                    [task, start_time, run,
+                     None if passed else "Run forbidden by limits",
+                     priority, diags], onerow=True)
                 succeeded, uuid, conflicts, error_message = cursor.fetchone()
                 cursor.close()
                 if conflicts:

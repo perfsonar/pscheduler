@@ -56,7 +56,7 @@ class LimitTestType():
         """Always return the set value"""
 
         try:
-            if run['type'] in self.types:
+            if run['test']['type'] in self.types:
                 return { "passed": True, "reasons": [] }
         except KeyError:
             return { "passed": False, "reasons": [ "No type in task" ] }
@@ -75,5 +75,4 @@ if __name__ == "__main__":
 
 
     for test in [ "rtt", "trace", "throughput", "bogus" ]:
-        print test, limit.evaluate({ "type": test })
-
+        print test, limit.evaluate({ "test": { "type": test }})

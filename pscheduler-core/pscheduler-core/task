@@ -104,6 +104,11 @@ schedule_group.add_option("--max-runs",
                       action="store", type="int", default=1,
                       dest="max_runs")
 
+task_group.add_option("--priority",
+                      help="Scheduling priority to request (default 0 or $PSCHEDULER_PRIORTY)",
+                      action="store", type="int",
+                      dest="priority")
+
 schedule_group.add_option("--repeat",
                       help="Repeat interval (ISO 8601 Duration)",
                       action="store", type="string",
@@ -378,6 +383,21 @@ if 'schedule' not in task:
 
 if options.max_runs > 1:
     task['schedule']['max-runs'] = options.max_runs
+
+if options.priority is not None:
+    task['priority'] = options.priority
+else:
+    try:
+        task['priority'] = int(os.environ['PSCHEDULER_PRIORITY'])
+    except ValueError:
+        pscheduler.fail("PSCHEDULER_PRIORITY does not contain an integer.")
+    except KeyError:
+        pass
+
+
+if 'priority' in task:
+    task_schema.set(3)
+
 
 if options.repeat is not None:
     task['schedule']['repeat'] = options.repeat

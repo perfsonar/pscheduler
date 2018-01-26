@@ -28,7 +28,8 @@ def limits():
     if processor is None:
         return no_can_do("Limit processor is not initialized: {0}".format(whynot))
 
-    passed, limits_passed, diags = processor.process(proposal, request_hints())
+    passed, limits_passed, diags, _new_task, _priority \
+        = processor.process(proposal, request_hints())
 
     return json_response({
         "passed": passed,

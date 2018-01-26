@@ -296,6 +296,17 @@ BEGIN
     END IF;
 
 
+    -- Version 11 to version 12
+    -- Add priority column.  Note that this is only a requested priority.
+    IF t_version = 11
+    THEN
+	ALTER TABLE task ADD COLUMN
+	priority INTEGER DEFAULT 0;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -384,6 +395,13 @@ BEGIN
             THEN
                 RAISE EXCEPTION 'INTERNAL ERROR: Test produced empty participant list from task.';
             END IF;
+
+	    -- Set the priority
+	    IF (NEW.json #> '{priority}') IS NOT NULL THEN
+	        NEW.priority := NEW.json #>> '{priority}';
+	    ELSE
+	        NEW.priority := 0;
+	    END IF;
 
         END IF;
 

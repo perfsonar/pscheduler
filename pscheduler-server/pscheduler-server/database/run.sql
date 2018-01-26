@@ -180,6 +180,20 @@ BEGIN
     END IF;
 
 
+    -- Version 7 to version 8
+    -- Adds 'priority' and 'limit_diags' columns
+    IF t_version = 7
+    THEN
+        ALTER TABLE run ADD COLUMN
+        priority INTEGER DEFAULT 0;
+
+        ALTER TABLE run ADD COLUMN
+        limit_diags TEXT;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -325,7 +339,6 @@ BEGIN
 	    tstzrange(normalized_now(), normalized_now()+horizon);
     END IF;
 
-
     -- Reject new runs that overlap with anything that isn't a
     -- finished run or where this insert would cause a conflict.
 
@@ -415,6 +428,10 @@ BEGIN
     END IF;
 
     IF (TG_OP = 'UPDATE') THEN
+               
+	IF NEW.priority <> OLD.priority THEN
+	    RAISE EXCEPTION 'Priority cannot be changed after scheduling.';
+	END IF;
 
 	IF NOT run_state_transition_is_valid(OLD.state, NEW.state) THEN
             RAISE EXCEPTION 'Invalid transition between states (% to %).',
@@ -722,7 +739,9 @@ CREATE OR REPLACE FUNCTION api_run_post(
     task_uuid UUID,
     start_time TIMESTAMP WITH TIME ZONE,
     run_uuid UUID,  -- NULL to assign one
-    nonstart_reason TEXT = NULL
+    nonstart_reason TEXT = NULL,
+    priority INTEGER = NULL,
+    limit_diags TEXT = NULL
 )
 RETURNS TABLE (
     succeeded BOOLEAN,  -- True if the post was successful
@@ -782,8 +801,10 @@ BEGIN
     time_range := tstzrange(start_time, start_time + task.duration, '[)');
 
     WITH inserted_row AS (
-        INSERT INTO run (uuid, task, times, state, errors)
-        VALUES (run_uuid, task.id, time_range, initial_state, nonstart_reason)
+        INSERT INTO run (uuid, task, times, state,
+	    errors, priority, limit_diags)
+        VALUES (run_uuid, task.id, time_range, initial_state,
+	    nonstart_reason, priority, limit_diags)
         RETURNING *
     ) SELECT INTO run_uuid uuid FROM inserted_row;
 
