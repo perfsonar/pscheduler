@@ -1,0 +1,137 @@
+#!/usr/bin/python
+
+#
+# Convert command-line options to a test specification
+#
+
+import re
+import string
+import optparse
+import pscheduler
+import sys
+
+if len(sys.argv) > 1:
+
+    # Args are on the command line
+    args = sys.argv[1:]
+
+else:
+
+    # Args are in a JSON array on stdin
+    json_args = pscheduler.json_load(exit_on_error=True)
+    args = []
+
+    if type(json_args) != list:
+        pscheduler.fail("Invalid JSON for this operation")
+    for arg in json_args:
+        if type(arg) not in (unicode, str, int, float):
+            pscheduler.fail("Invalid JSON for this operation")
+    args = [str(arg) for arg in json_args]
+
+
+# Gargle the arguments
+
+opt_parser = pscheduler.FailingOptionParser(epilog=
+    """
+      Example:
+      task http --url http://umich.edu
+    """
+)
+
+
+opt_parser.add_option("--url",
+                      help="URL to query.",
+                      action="store", type="string",
+                      dest="url")
+
+opt_parser.add_option("--host",
+                      help="Host to run the test.",
+                      action="store", type="string",
+                      dest="host")
+
+opt_parser.add_option("--host-node",
+                      help="Host to run the test.",
+                      action="store", type="string",
+                      dest="host_node")
+
+"""
+opt_parser.add_option("--dest",
+                      help="Destination that will be queried.",
+                      action="store", type="string",
+                      dest="dest")
+
+opt_parser.add_option("--version",
+                      help="Version of SNMP to be used. (1|2c|3)",
+                      action="store", type="string",
+                      dest="version")
+
+opt_parser.add_option("--oidargs",
+                      help="OID, type, and value",
+                      action="append", type="string",
+                      dest="oidargs")
+
+opt_parser.add_option("--protocol",
+                      help="Transport specifier (tcp|udp)",
+                      action="store", type="string",
+                      dest="protocol")
+
+"""
+opt_parser.add_option("--timeout",
+                      help="Timeout for each query attempt",
+                      action="store", type="string",
+                      dest="timeout")
+
+"""
+# snmp v3 specific options
+
+opt_parser.add_option("--security-name",
+                      help="Security Name",
+                      action="store", type="string",
+                      dest="security_name")
+opt_parser.add_option("--auth-protocol",
+                      help="Authentication Protocol (md5|sha)",
+                      action="store", type="string",
+                      dest="auth_protocol")
+
+opt_parser.add_option("--priv-protocol",
+                      help="Privacy Protocol (des|aes)",
+                      action="store", type="string",
+                      dest="priv_protocol")
+
+opt_parser.add_option("--auth-key",
+                      help="Authentication Passphrase",
+                      action="store", type="string",
+                      dest="auth_key")
+
+opt_parser.add_option("--priv-key",
+                      help="Privacy Passphrase",
+                      action="store", type="string",
+                      dest="priv_key")
+
+opt_parser.add_option("--security-level",
+                      help="Security Level (noAuthNoPriv|authNoPriv|authPriv)",
+                      action="store", type="string",
+                      dest="security_level")
+
+opt_parser.add_option("--context",
+                      help="Context Name",
+                      action="store", type="string",
+                      dest="context")
+
+opt_parser.add_option("--community",
+                          help="Community string",
+                          action="store", type="string",
+                          dest="community")
+"""
+
+(options, remaining_args) = opt_parser.parse_args(args)
+
+if len(remaining_args) != 0:
+    pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
+
+result = {'schema': 1}
+
+if options.url is not None:
+    result['url'] = options.url
+
+pscheduler.succeed_json(result)

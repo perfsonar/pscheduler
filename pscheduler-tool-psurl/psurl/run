@@ -1,0 +1,74 @@
+#!/usr/bin/python
+#
+# Run a test.  Just the test spec is provided on stdin.
+#
+
+from pscheduler import psurl
+import datetime
+import json
+import sys
+import time
+
+import pscheduler
+
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+
+try:
+    url = input['test']['spec']['url']
+
+except KeyError:
+    pscheduler.fail('Missing data in input')
+
+timeout_iso = input['test']['spec'].get("timeout", "PT2S")
+timeout = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(timeout_iso))
+# timeout = timeout * len(input['test']['spec']['oidargs']) + 2
+start_time = datetime.datetime.now()
+
+# Perform the test
+
+error = None
+argv = [psurl.url_get(url, json=False)]
+
+op_start_time = time.time()
+
+status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
+
+print stdout
+
+op_end_time = (op_start_time - time.time())
+
+if status:
+    data = None
+    succeeded = False
+    error = "http returned an error: \n%s" % stderr.strip('\n')
+    diags = stderr
+else:
+    succeeded = True
+    diags = stdout
+
+end_time = datetime.datetime.now()
+
+#
+# Produce results
+#
+
+if succeeded:
+    stdout = stdout.strip('\n').split('\n')
+
+    data = pscheduler.timedelta_as_iso8601(op_end_time)
+
+results = {
+    'succeeded': succeeded,
+    'result': {
+        'schema': 1,
+        'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
+        'succeeded' : succeeded,
+        'data': data
+    },
+    'error': error,
+    'diags': diags
+}
+
+pscheduler.succeed_json(results)
+

@@ -1,0 +1,33 @@
+#!/usr/bin/python
+#
+# Convert a test specification to command-line options
+
+import pscheduler
+
+from validate import spec_is_valid
+
+spec = pscheduler.json_load(exit_on_error=True)
+
+valid, message = spec_is_valid(spec)
+
+if not valid:
+    pscheduler.fail(message)
+
+# concatenate oids
+url = spec['url']
+
+result = pscheduler.speccli_build_args(spec, 
+                                       strings=[
+        # Strings
+        ( 'host', 'host' ),
+        ( 'host-node', 'host-node' ),
+        ( 'dest', 'dest' ),
+        ( 'timeout', 'timeout' ),
+        ( 'url', 'url' ),
+        ])
+
+url_str = "%s" % (url)
+result.append('--url')
+result.append(url_str)
+
+pscheduler.succeed_json(result)
