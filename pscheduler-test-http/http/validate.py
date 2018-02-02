@@ -38,12 +38,12 @@ def result_is_valid(json):
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
             "time":       { "$ref": "#/pScheduler/Duration" },
-            "data":       { "$ref": "#/pScheduler/Float" },
+            "data":       { "$ref": "#/pScheduler/String" },
+            "error":      { "$ref": "#/pScheduler/String" },
 
         "required": [
             "schema",
             "succeeded",
-            "data",
             "time",
             ]
         }

@@ -13,7 +13,6 @@ valid, message = spec_is_valid(spec)
 if not valid:
     pscheduler.fail(message)
 
-# concatenate oids
 url = spec['url']
 
 result = pscheduler.speccli_build_args(spec, 
