@@ -51,8 +51,8 @@ results = {
         'schema': 1,
         'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
         'succeeded' : succeeded,
+        'error': statusCode,
     },
-    'error': statusCode,
 }
 
 pscheduler.succeed_json(results)
