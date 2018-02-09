@@ -20,6 +20,16 @@ try:
 except KeyError:
     pscheduler.fail('Missing data in input')
 
+found = False
+parse = False
+try:
+    string = input['test']['spec']['parse']
+    parse = True
+
+except KeyError:
+    pass
+
+
 timeout_iso = input['test']['spec'].get("timeout", "PT2S")
 timeout = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(timeout_iso))
 # timeout = timeout * len(input['test']['spec']['oidargs']) + 2
@@ -28,19 +38,24 @@ timeout = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(timeou
 
 
 start_time = datetime.datetime.now()
+error = ""
+
 try:
     result = psurl.url_get(url, json=False)
     succeeded = True
     statusCode = result[0]
     htmlOutput = result[1]
-except pscheduler.psurl.URLException:
+    if parse:
+        if (htmlOutput.find(string) == -1):
+            found = False
+        else:
+            found = True
+except pscheduler.psurl.URLException as e:
+    error += str(e)
     succeeded = False
     statusCode = "" 
 
-end_time = datetime.datetime.now()
-
-
-
+end_time = datetime.datetime.now() 
 #
 # Produce results
 #
@@ -50,9 +65,11 @@ results = {
     'result': {
         'schema': 1,
         'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
-        'succeeded' : succeeded,
-        'error': statusCode,
+        'succeeded': succeeded,
+        'status': statusCode,
+        'found': found,
     },
+    'error': error
 }
 
 pscheduler.succeed_json(results)

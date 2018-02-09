@@ -44,6 +44,11 @@ opt_parser.add_option("--url",
                       action="store", type="string",
                       dest="url")
 
+opt_parser.add_option("--parse",
+                      help="String to parse for.",
+                      action="store", type="string",
+                      dest="parse")
+
 opt_parser.add_option("--host",
                       help="Host to run the test.",
                       action="store", type="string",
@@ -54,75 +59,10 @@ opt_parser.add_option("--host-node",
                       action="store", type="string",
                       dest="host_node")
 
-"""
-opt_parser.add_option("--dest",
-                      help="Destination that will be queried.",
-                      action="store", type="string",
-                      dest="dest")
-
-opt_parser.add_option("--version",
-                      help="Version of SNMP to be used. (1|2c|3)",
-                      action="store", type="string",
-                      dest="version")
-
-opt_parser.add_option("--oidargs",
-                      help="OID, type, and value",
-                      action="append", type="string",
-                      dest="oidargs")
-
-opt_parser.add_option("--protocol",
-                      help="Transport specifier (tcp|udp)",
-                      action="store", type="string",
-                      dest="protocol")
-
-"""
 opt_parser.add_option("--timeout",
                       help="Timeout for each query attempt",
                       action="store", type="string",
                       dest="timeout")
-
-"""
-# snmp v3 specific options
-
-opt_parser.add_option("--security-name",
-                      help="Security Name",
-                      action="store", type="string",
-                      dest="security_name")
-opt_parser.add_option("--auth-protocol",
-                      help="Authentication Protocol (md5|sha)",
-                      action="store", type="string",
-                      dest="auth_protocol")
-
-opt_parser.add_option("--priv-protocol",
-                      help="Privacy Protocol (des|aes)",
-                      action="store", type="string",
-                      dest="priv_protocol")
-
-opt_parser.add_option("--auth-key",
-                      help="Authentication Passphrase",
-                      action="store", type="string",
-                      dest="auth_key")
-
-opt_parser.add_option("--priv-key",
-                      help="Privacy Passphrase",
-                      action="store", type="string",
-                      dest="priv_key")
-
-opt_parser.add_option("--security-level",
-                      help="Security Level (noAuthNoPriv|authNoPriv|authPriv)",
-                      action="store", type="string",
-                      dest="security_level")
-
-opt_parser.add_option("--context",
-                      help="Context Name",
-                      action="store", type="string",
-                      dest="context")
-
-opt_parser.add_option("--community",
-                          help="Community string",
-                          action="store", type="string",
-                          dest="community")
-"""
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
@@ -133,5 +73,7 @@ result = {'schema': 1}
 
 if options.url is not None:
     result['url'] = options.url
+if options.parse is not None:
+    result['parse'] = options.parse
 
 pscheduler.succeed_json(result)

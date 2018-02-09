@@ -1,5 +1,5 @@
 #
-# Validator for "snmpset" Test
+# Validator for "http" Test
 #
 
 # TODO: _ for sensitive values
@@ -8,7 +8,6 @@ from pscheduler import json_validate
 
 def spec_is_valid(json):
 
-    # SNMPv1Spec is valid for both snmp v1 and v2c 
     schema = {
         "local": {
             "URLSpec": {
@@ -18,6 +17,7 @@ def spec_is_valid(json):
                     "host":         { "$ref": "#/pScheduler/Host" },
                     "host-node":    { "$ref": "#/pScheduler/Host" },
                     "url":          { "$ref": "#/pScheduler/String" },
+                    "parse":        { "$ref": "#/pScheduler/String" },
                     "timeout":      { "$ref": "#/pScheduler/Duration" },
                 },
                 "required": [
@@ -38,15 +38,13 @@ def result_is_valid(json):
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
             "time":       { "$ref": "#/pScheduler/Duration" },
-            "data":       { "$ref": "#/pScheduler/String" },
-            "error":      { "$ref": "#/pScheduler/String" },
-
+        },
         "required": [
             "schema",
             "succeeded",
             "time",
-            ]
-        }
+            ],
+        "additionalProperties": True
     }
     return json_validate(json, schema)
 
@@ -58,10 +56,9 @@ def limit_is_valid(json):
             "host":            { "$ref": "#/pScheduler/Limit/String" },
             "host-node":     { "$ref": "#/pScheduler/Limit/String" },
             "timeout":         { "$ref": "#/pScheduler/Limit/Duration" },
-            "type":           { "$ref": "#/pScheduler/Limit/String" },
-            "value":           { "$ref": "#/pScheduler/Limit/String" },
+            "parse":           { "$ref": "#/pScheduler/Limit/String" },
         },
         "additionalProperties": False
-        }
+    }
 
     return json_validate(json, schema)

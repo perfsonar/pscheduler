@@ -17,21 +17,26 @@ except IndexError:
 
 input = pscheduler.json_load(exit_on_error=True)
 
-#valid, message = result_is_valid(input["result"])
+valid, message = result_is_valid(input["result"])
 
-#if not valid:
-    #pscheduler.fail(message)
+if not valid:
+    pscheduler.fail(message)
 
 result = input["result"]
-#spec = input["spec"]
+spec = input["spec"]
 
 if format == 'text/plain':
-   print 'Response Time: %s\n' % result['time']
-   print 'Status Code: %s\n' % result['error'] 
+    print 'Response Time: %s\n' % result['time']
+    print 'Status Code: %s\n' % result['status'] 
+    try:
+        str = spec['parse']
+        print 'String found: %s\n' % result['found']
+    except KeyError:
+        pass
 
 elif format == 'text/html':
     print '<table>'
-    print '    <tr>'
+    print '    <tr>' 
     print '        <th>Response Time</th>'
     print '    </tr>'
     print '    <tr>'
@@ -41,7 +46,7 @@ elif format == 'text/html':
     print '        <th>Status Code</th>'
     print '    </tr>'
     print '    <tr>'
-    print '        <td>%s</td>' % input['error']
+    print '        <td>%s</td>' % result['status']
     print '    </tr>'
     print '</table>'
 

@@ -20,13 +20,10 @@ result = pscheduler.speccli_build_args(spec,
         # Strings
         ( 'host', 'host' ),
         ( 'host-node', 'host-node' ),
-        ( 'dest', 'dest' ),
         ( 'timeout', 'timeout' ),
         ( 'url', 'url' ),
+        ( 'parse', 'parse' ),
         ])
 
-url_str = "%s" % (url)
-result.append('--url')
-result.append(url_str)
 
 pscheduler.succeed_json(result)
