@@ -245,8 +245,8 @@ CREATE OR REPLACE FUNCTION run_state_transition_is_valid(
 RETURNS BOOLEAN
 AS $$
 BEGIN
-   -- TODO: This might be worth putting into a table.
-   RETURN  new = old
+    -- TODO: This might be worth putting into a table.
+    RETURN new = old
            OR   ( old = run_state_pending()
 	          AND new IN (run_state_on_deck(),
 			      run_state_missed(),
