@@ -462,6 +462,7 @@ class RunWorker:
                             result = '{ "succeeded": false, "diags": "pScheduler was paused at run time." }'
                         WHERE id = %s
                         """, [self.id])
+                    return
         except AssertionError as ae:
             self.log.error("%d: Unable to read control_is_paused(). Must be exactly one row.",
                            self.id)
