@@ -52,11 +52,15 @@ RESULT_SCHEMA = {
             "additionalProperties": False,
             "properties": {
                 "throughput-bits": {
-                    "description": "Summarized view of the overall throughput rate in bits/second",
+                    "description": "Summarized view of the overall sender throughput rate in bits/second",
                     "type": "number"
                     },
                 "throughput-bytes": {
-                    "description": "Summarized view of the overall throughput rate in bytes/second",
+                    "description": "Summarized view of the overall sender throughput rate in bytes/second",
+                    "type": "number"
+                    },
+                "receiver-throughput-bits": {
+                    "description": "Summarized view of the overall receiver throughput rate in bits/second",
                     "type": "number"
                     },
                 "sent": {
