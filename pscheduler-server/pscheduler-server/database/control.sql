@@ -111,6 +111,8 @@ EXECUTE PROCEDURE control_noalter();
 -- pause_runs_until
 --
 
+DO $$ BEGIN PERFORM drop_function_all('control_pause'); END $$;
+
 CREATE OR REPLACE FUNCTION control_pause(
     duration INTERVAL DEFAULT NULL
 )
@@ -131,6 +133,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+DO $$ BEGIN PERFORM drop_function_all('control_is_paused'); END $$;
+
 CREATE OR REPLACE FUNCTION control_is_paused()
 RETURNS BOOLEAN
 AS $$
@@ -145,6 +149,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+DO $$ BEGIN PERFORM drop_function_all('control_resume'); END $$;
 
 CREATE OR REPLACE FUNCTION control_resume()
 RETURNS VOID

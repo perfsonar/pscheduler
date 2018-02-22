@@ -92,10 +92,6 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- Old function
-DROP FUNCTION IF EXISTS test_json_is_valid(json JSONB);
-
-
 DROP TRIGGER IF EXISTS test_alter ON test CASCADE;
 
 CREATE OR REPLACE FUNCTION test_alter()
@@ -128,6 +124,9 @@ FOR EACH ROW
 
 
 -- Insert a new test or update an existing one by name
+
+DO $$ BEGIN PERFORM drop_function_all('test_upsert'); END $$;
+
 CREATE OR REPLACE FUNCTION test_upsert(new_json JSONB)
 RETURNS VOID
 AS $$

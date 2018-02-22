@@ -123,6 +123,8 @@ $$ LANGUAGE plpgsql;
 
 -- Process one item in the table by its row ID
 
+DO $$ BEGIN PERFORM drop_function_all('http_queue_process'); END $$;
+
 CREATE OR REPLACE FUNCTION http_queue_process(
     row_id BIGINT
 )
@@ -181,6 +183,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DO $$ BEGIN PERFORM drop_function_all('http_queue_process_all'); END $$;
 
 CREATE OR REPLACE FUNCTION http_queue_process_all()
 RETURNS VOID

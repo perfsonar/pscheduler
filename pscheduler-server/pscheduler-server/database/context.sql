@@ -164,6 +164,9 @@ $$ LANGUAGE plpgsql;
 
 
 -- Validate a context entry and raise an error if invalid.
+
+DO $$ BEGIN PERFORM drop_function_all('context_validate'); END $$;
+
 CREATE OR REPLACE FUNCTION context_validate(
     candidate JSONB
 )

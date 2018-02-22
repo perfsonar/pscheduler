@@ -72,6 +72,9 @@ def as_bulk_resolve(candidates, threads=50):
 
     result = {}
 
+    if not candidates:
+        return result
+
     pool = multiprocessing.pool.ThreadPool(
         processes=min(len(candidates), threads))
 

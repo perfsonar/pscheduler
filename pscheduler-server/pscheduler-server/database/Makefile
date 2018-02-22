@@ -10,6 +10,7 @@ DBNAME=pscheduler
 
 FILES_SUPERUSER=\
 	database \
+	utilities-super \
 	external_program \
 	http_ops \
 	json_validate

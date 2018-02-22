@@ -684,6 +684,8 @@ CREATE TRIGGER task_alter_notify AFTER INSERT OR UPDATE ON task
 -- a given time.  This isn't actually a task-specific function, but
 -- tasks are the only context where it will be used.
 
+DO $$ BEGIN PERFORM drop_function_all('task_next_run'); END $$;
+
 CREATE OR REPLACE FUNCTION task_next_run(
        start TIMESTAMP WITH TIME ZONE,   -- Task's start (first run) time
        after TIMESTAMP WITH TIME ZONE,  -- 
@@ -768,13 +770,7 @@ $$ LANGUAGE plpgsql;
 
 -- Put a task on the timeline and return its UUID
 
--- This is an older version of the function.
--- TODO: Can get rid of this after 1.0 is in production.
-DROP FUNCTION IF EXISTS api_task_post(JSONB, JSONB, INTEGER, UUID);
-DROP FUNCTION IF EXISTS api_task_post(JSONB, JSONB, JSON, INTEGER, UUID);
-DROP FUNCTION IF EXISTS api_task_post(JSONB, JSONB, JSONB, JSON, INTEGER, UUID);
-DROP FUNCTION IF EXISTS api_task_post(JSONB, JSONB, JSONB, JSON, INTEGER, UUID, BOOLEAN);
-
+DO $$ BEGIN PERFORM drop_function_all('api_task_post'); END $$;
 
 CREATE OR REPLACE FUNCTION api_task_post(
     task_package JSONB,
@@ -815,6 +811,8 @@ $$ LANGUAGE plpgsql;
 -- for runtimes when they don't have it yet.  (Other participants'
 -- schedulers won't touch their copies because they're not leading.)
 
+DO $$ BEGIN PERFORM drop_function_all('api_task_enable'); END $$;
+
 CREATE OR REPLACE FUNCTION api_task_enable(
     task_uuid UUID        -- UUID of task to enable
 )
@@ -846,6 +844,8 @@ $$ LANGUAGE plpgsql;
 -- the other participants.  The task_url_format argument is the URL of
 -- the task with the hostname replaced with %s, which will be filled
 -- in with the hostname of each participant.
+
+DO $$ BEGIN PERFORM drop_function_all('api_task_disable'); END $$;
 
 CREATE OR REPLACE FUNCTION api_task_disable(
     task_uuid UUID,       -- UUID of task to disable

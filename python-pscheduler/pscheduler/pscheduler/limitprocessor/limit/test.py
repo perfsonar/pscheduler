@@ -132,15 +132,17 @@ if __name__ == "__main__":
     })
 
 
-    print pscheduler.json_dump(limit.evaluate({
-        "type": "idle",
-        "spec": {
-            "schema": 1,
-            "#duration": "PT45M",
-            "duration": "PT45S",
-            "starting-comment": "Perry the PLATYPUS",
-            "#starting-comment": "Ferb",
-            "#parting-comment": "Vwl!",
-            "parting-comment": "Vowel!"
+    print pscheduler.json_dump(limit.evaluate(
+        {
+            "type": "idle",
+            "spec": {
+                "schema": 1,
+                "#duration": "PT45M",
+                "duration": "PT45S",
+                "starting-comment": "Perry the PLATYPUS",
+                "#starting-comment": "Ferb",
+                "#parting-comment": "Vwl!",
+                "parting-comment": "Vowel!"
+            }
         }
-    }), pretty=True)
+    ), pretty=True)

@@ -156,10 +156,6 @@ $$ LANGUAGE plpgsql;
 
 
 
--- Old function
-DROP FUNCTION IF EXISTS tool_json_is_valid(json JSONB);
-
-
 DROP TRIGGER IF EXISTS tool_alter ON tool CASCADE;
 
 CREATE OR REPLACE FUNCTION tool_alter()
@@ -250,6 +246,9 @@ FOR EACH ROW
 
 
 -- Insert a new tool or update an existing one by name
+
+DO $$ BEGIN PERFORM drop_function_all('tool_upsert'); END $$;
+
 CREATE OR REPLACE FUNCTION tool_upsert(new_json JSONB)
 RETURNS VOID
 AS $$
