@@ -236,6 +236,8 @@ ALTER TABLE run_state ENABLE TRIGGER run_state_alter;
 
 
 -- Determine if a transition between states is valid
+DO $$ BEGIN PERFORM drop_function_all('run_state_transition_is_valid'); END $$;
+
 CREATE OR REPLACE FUNCTION run_state_transition_is_valid(
     old INTEGER,
     new INTEGER
@@ -243,8 +245,8 @@ CREATE OR REPLACE FUNCTION run_state_transition_is_valid(
 RETURNS BOOLEAN
 AS $$
 BEGIN
-   -- TODO: This might be worth putting into a table.
-   RETURN  new = old
+    -- TODO: This might be worth putting into a table.
+    RETURN new = old
            OR   ( old = run_state_pending()
 	          AND new IN (run_state_on_deck(),
 			      run_state_missed(),

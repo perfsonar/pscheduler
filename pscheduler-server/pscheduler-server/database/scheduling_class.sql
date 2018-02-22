@@ -157,6 +157,9 @@ ALTER TABLE scheduling_class ENABLE TRIGGER scheduling_class_alter;
 
 
 -- Find the ID for a class by its enumeration
+
+DO $$ BEGIN PERFORM drop_function_all('scheduling_class_find'); END $$;
+
 CREATE OR REPLACE FUNCTION scheduling_class_find(
     candidate TEXT
 )

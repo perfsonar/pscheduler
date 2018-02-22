@@ -9,6 +9,9 @@
 -- Validate JSON
 --
 --
+
+DO $$ BEGIN PERFORM drop_function_all('json_validate'); END $$;
+
 CREATE OR REPLACE FUNCTION json_validate(
     candidate JSONB,                               -- JSON to be validated
     json_ref TEXT DEFAULT '#/pScheduler/AnyJSON'   -- What object to validate

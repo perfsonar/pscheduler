@@ -215,6 +215,8 @@ AS
 -- Return a schedule with bounded past and future window sizes, mostly
 -- for use by the monitor.
 
+DO $$ BEGIN PERFORM drop_function_all('schedule_monitor'); END $$;
+
 CREATE OR REPLACE FUNCTION schedule_monitor(
     window_size INTEGER
 )
@@ -310,6 +312,8 @@ $$ LANGUAGE plpgsql;
 -- length of the configured schedule time horizon will be used.  Under
 -- no circumstances will any times in the past or beyond the time
 -- horizon be proposed.
+
+DO $$ BEGIN PERFORM drop_function_all('api_proposed_times'); END $$;
 
 CREATE OR REPLACE FUNCTION api_proposed_times(
     task_uuid UUID,

@@ -16,6 +16,8 @@ CREATE TYPE http_result AS (
 );
 
 
+DO $$ BEGIN PERFORM drop_function_all('http_get'); END $$;
+
 CREATE OR REPLACE FUNCTION http_get(
     url TEXT DEFAULT NULL,
     timeout FLOAT default NULL,
@@ -37,6 +39,7 @@ return { "status": status, "returned": returned }
 $$ LANGUAGE plpythonu;
 
 
+DO $$ BEGIN PERFORM drop_function_all('http_put'); END $$;
 
 CREATE OR REPLACE FUNCTION http_put(
     url TEXT DEFAULT NULL,
@@ -61,6 +64,7 @@ return { "status": status, "returned": returned }
 $$ LANGUAGE plpythonu;
 
 
+DO $$ BEGIN PERFORM drop_function_all('http_post'); END $$;
 
 CREATE OR REPLACE FUNCTION http_post(
     url TEXT DEFAULT NULL,
@@ -85,6 +89,7 @@ return { "status": status, "returned": returned }
 $$ LANGUAGE plpythonu;
 
 
+DO $$ BEGIN PERFORM drop_function_all('http_delete'); END $$;
 
 CREATE OR REPLACE FUNCTION http_delete(
     url TEXT DEFAULT NULL,

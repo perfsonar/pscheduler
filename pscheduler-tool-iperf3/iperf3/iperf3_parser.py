@@ -70,6 +70,9 @@ def parse_output(lines):
 
     renamed_summary = rename_json(summary)
 
+    if sum_end.has_key("sum_received"):
+        received_summary = rename_json(sum_end["sum_received"])
+        renamed_summary["receiver-throughput-bits"] = received_summary["throughput-bits"]
 
     # kind of like above, the streams summary is in a different key
     # json schema does not require, so ignore if not provided

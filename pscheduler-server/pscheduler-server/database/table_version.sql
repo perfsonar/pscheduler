@@ -11,6 +11,8 @@
 --
 -- Returns 0 if the table does not exist.
 
+DO $$ BEGIN PERFORM drop_function_all('table_version_find'); END $$;
+
 CREATE OR REPLACE FUNCTION table_version_find(
     table_name   TEXT,
     table_schema TEXT DEFAULT 'public'
@@ -63,6 +65,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+DO $$ BEGIN PERFORM drop_function_all('table_version_set'); END $$;
 
 CREATE OR REPLACE FUNCTION table_version_set(
     t_name TEXT,
