@@ -352,6 +352,7 @@ def run_program(argv,              # Program name and args
 
     if process is not None:
         __running_drop(process)
+        process.terminate()
 
     if fail_message is not None and status != 0:
         pscheduler.fail("%s: %s" % (fail_message, stderr))
