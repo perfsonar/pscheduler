@@ -113,6 +113,9 @@ argv.append('-c')
 argv.append(spec['dest'])
 
 
+# Stringify the arguments        
+argv = map(lambda x: str(x), argv)
+
 log.debug("Running %s" % ' '.join(argv))
 
 run_timeout_secs = 60

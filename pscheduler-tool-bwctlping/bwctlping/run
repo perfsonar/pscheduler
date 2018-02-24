@@ -103,6 +103,10 @@ dest = spec['dest']
 argv.append('-c')
 argv.append(str(dest))
 
+# Stringify the arguments        
+argv = map(lambda x: str(x), argv)
+
+
 #
 # Run the test
 #
