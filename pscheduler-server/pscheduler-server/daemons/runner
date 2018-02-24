@@ -908,9 +908,10 @@ def main_program():
             # Better, make it a function in db.py.
 
             try:
-                if select.select([db],[],[],
-                                 pscheduler.timedelta_as_seconds(wait_time)) \
-                                 != ([],[],[]):
+                if pscheduler.polled_select(
+                        [db],[],[],
+                        pscheduler.timedelta_as_seconds(wait_time)) \
+                    != ([],[],[]):
                     # Notified
                     db.poll()
                     del db.notifies[:]

@@ -28,6 +28,7 @@ except ImportError:
     from pipes import quote
 
 from exit import on_graceful_exit
+from psselect import polled_select
 
 
 
@@ -312,7 +313,7 @@ def run_program(argv,              # Program name and args
                     time_left = pscheduler.timedelta_as_seconds(
                         end_time - pscheduler.time_now())
 
-                reads, _, _ = select.select(fds, [], [], time_left)
+                reads, _, _ = polled_select(fds, [], [], time_left)
 
                 if len(reads) == 0:
                     __running_drop(process)

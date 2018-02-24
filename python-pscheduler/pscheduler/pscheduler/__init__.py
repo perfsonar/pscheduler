@@ -24,6 +24,7 @@ from .pidfile import *
 from .psas import *
 from .psdns import *
 from .psjson import *
+from .psselect import *
 from .pstime import *
 from .psurl import *
 from .retry import *

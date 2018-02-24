@@ -94,7 +94,7 @@ def http_queue_maintainer(log):
         # Wait for the next notification or our usual delay.
 
         try:
-            if select.select([db], [], [], 15) != ([], [], []):
+            if pscheduler.polled_select([db], [], [], 15) != ([], [], []):
                 # Notified
                 db.poll()
                 del db.notifies[:]
