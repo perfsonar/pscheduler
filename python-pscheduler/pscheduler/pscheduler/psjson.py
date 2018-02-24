@@ -7,6 +7,8 @@ import string
 import sys
 import pscheduler
 
+from psselect import polled_select
+
 
 def json_decomment(json, prefix='#', null=False):
     """
@@ -178,6 +180,11 @@ class RFC7464Emitter(object):
 
     def emit_text(self, text):
         """Emit straight text to the file"""
+
+        if self.timeout is not None:
+            if polled_select([],[self.handle],[], self.timeout) == ([],[],[]):
+                raise IOError("Timed out waiting for write")
+
         self.handle.write(
             "\x1e%s\n" % (text.translate(string.maketrans('', ''), "\n"))
         )
@@ -202,6 +209,9 @@ class RFC7464Parser(object):
     # PYTHON3: def __next__(self)
     def next(self):
         """Read and parse one item from the file"""
+        if self.timeout is not None:
+            if polled_select([self.handle],[],[], self.timeout) == ([],[],[]):
+                raise IOError("Timed out waiting for read")
         data = self.handle.readline()
 
         if len(data) == 0:
