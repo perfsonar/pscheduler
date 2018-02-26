@@ -10,7 +10,7 @@ import pscheduler
 json = pscheduler.json_load(exit_on_error=True);
 
 try:
-    if json['type'] != 'snmpset':
+    if json['type'] != 'TEMPLATE':
         pscheduler.succeed_json({
             "can-run": False,
             "reasons": [ "Unsupported test type" ]

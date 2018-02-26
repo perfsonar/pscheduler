@@ -1,4 +1,7 @@
 #!/bin/sed -e 1d
+
+# This will show in the list when 'pscheduler plugins tools' is called.
+
 {
     "schema": 1,
 

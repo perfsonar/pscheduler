@@ -13,124 +13,21 @@ import pscheduler
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
 
-try:
-    version = input['test']['spec']['version']
-    dest = input['test']['spec']['dest']
-    oid = input['test']['spec']['oidargs']
-    if version in ['1', '2c']:
-        community = input['test']['spec']['_community']
+# Take input from test spec
+example = input['test']['spec']['example']
 
-except KeyError:
-    pscheduler.fail('Missing data in input')
-
-timeout_iso = input['test']['spec'].get("timeout", "PT2S")
-timeout = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(timeout_iso))
-timeout = timeout * len(input['test']['spec']['oidargs']) + 2
-start_time = datetime.datetime.now()
-
-# Perform the test
-
-error = None
-argv = ['snmpset','-Oe','-OE']
-if version in ['1', '2c']:
-    cli_switches = {'version': '-v',
-                    '_community': '-c',
-                    }
-else:
-    cli_switches = {'version': '-v',
-                   'security-name': '-u',
-                   'auth-protocol': '-a',
-                   'priv-protocol': '-x',
-                   '_auth-key': '-A',
-                   '_priv-key': '-X',
-                   'security-level': '-l',
-                   'context': '-n'
-                   }
-
-# if no protocol specified, default is udp
-try:
-    protocol = input['test']['spec']['protocol']
-except KeyError:
-    protocol = None
-
-# loop through spec to get cli switches 
-for key in input['test']['spec'].keys():
-    try:
-        argv.append(cli_switches[key])
-        argv.append(input['test']['spec'][key])
-    except KeyError:
-        # if key does not exist in dictionary, no switch is needed
-        # do not append schema
-        if key in ['schema', 'protocol']:
-            continue
-
-#add dest
-if protocol != None:
-    argv.append(str(protocol) + ':' + input['test']['spec'][key])
-else:
-    argv.append(input['test']['spec']['dest'])
-
-
-#add set args in order
-counter = 0
-for item in input['test']['spec']['oidargs']:
-    try:
-        argv.append(item['oid'])
-        argv.append(item['type'])
-        argv.append(item['value'])
-    except KeyError:
-        pscheduler.fail('Missing or incorrectly formatted input.')
-    except IndexError:
-        pscheduler.fail('Missing or incorrectly formatted input.')
-
-
-status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
-
-if status:
-    data = None
-    succeeded = False
-    error = "snmpset returned an error: \n%s" % stderr.strip('\n')
-    diags = stderr
-else:
-    succeeded = True
-    diags = stdout
-
-end_time = datetime.datetime.now()
-
-#
-# Produce results
-#
+# Run the actual task here
 
 if succeeded:
-    stdout = stdout.strip('\n').split('\n')
-    data = []
-    for item in stdout:
-        obj_dict = {}
-        data_list = item.split('=')
-        data_list = data_list[1].split(":", 1)
-        try:
-            obj_dict["value"] = data_list[1].strip()
-            obj_dict["type"] = data_list[0].strip()
-            if obj_dict["type"] == "Timeticks":
-                obj_dict["value"] = obj_dict["value"].split("(")[1].split(")")[0]
-            # convert string to int
-            try:
-                obj_dict["value"] = int( obj_dict["value"])
-            except ValueError:
-                pass
-        except IndexError:
-            obj_dict["type"] = None
-            obj_dict["value"] = data_list[0].strip()
-        
-        data.append(obj_dict)
+    # Gather results
 
+
+# Organize results into json data
 results = {
     'succeeded': succeeded,
     'result': {
         'schema': 1,
-        'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
-        'succeeded' : succeeded,
-        'data': data
+        'example': example
     },
     'error': error,
     'diags': diags
