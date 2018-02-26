@@ -1,0 +1,50 @@
+#!/usr/bin/python
+#
+# Convert a test specification to command-line options
+
+import pscheduler
+
+from validate import spec_is_valid
+
+spec = pscheduler.json_load(exit_on_error=True)
+
+valid, message = spec_is_valid(spec)
+
+if not valid:
+    pscheduler.fail(message)
+
+# concatenate oids
+oid_list = spec['oidargs']
+oid_str = ""
+for item in oid_list:
+    oid_str = "%s,%s,%s,%s" % (oid_str, item['oid'], item['type'],
+              item['value'])
+spec['oidargs'] = oid_str
+
+result = pscheduler.speccli_build_args(spec, 
+                                       strings=[
+        # Strings
+        ( 'host', 'host' ),
+        ( 'host-node', 'host-node' ),
+        ( 'dest', 'dest' ),
+        ( 'protocol', 'protocol'),
+        ('community', 'community'),
+        ('version', 'version'),
+        ( 'timeout', 'timeout' ),
+        ( 'auth-protocol', 'auth-protocol'),
+        ( 'security-name', 'security-name'),
+        ( 'priv-protocol', 'priv-protocol'),
+        ( 'auth-key', 'auth-key'),
+        ( 'priv-key', 'priv-key'),
+        ( 'security-level', 'security-level'),
+        ( 'context', 'context'),
+        ])
+
+                                       
+for item in oid_list:
+    oid_str = ""
+    result.append('--oidargs')
+    oid_str = "%s:%s:%s" % (item['oid'], item['type'], item['value'])
+    result.append(oid_str)
+
+pscheduler.succeed_json(result)
