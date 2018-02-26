@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 #
-# Convert command-line options to a test specification
+# Convert command-line options to a test specification for test TEMPLATE
 #
 
 import re
@@ -34,175 +34,29 @@ else:
 
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """
-  Can be used with multiple oids by calling --oidargs multiple times.
-
-  Example:
-  task snmpset --version 2c --community public --dest example.net
-  --oidargs sysLocation.0:s:'Ann Arbor' --oidargs sysContact.0:s:'John'
-
+    This text will be printed out at the bottom of the
+    "help" message. Change this to whatever you like,
+    or don't include it at all. This could be a good place
+    for example usage cases, etc.
 """
 )
 
-v1args = [ '--community' ]
-v3args = [ '--security-name', '--auth-protocol', '--priv-protocol', '--auth-key',
-'--priv-key', '--security-level', '--context', ]
+# Add all potential command line options here
+# Check https://docs.python.org/2/library/optparse.html for more
+# documentation on the opt parser
 
-opt_parser.add_option("--host",
-                      help="Host to run the test.",
+opt_parser.add_option("--example",
+                      help="Description of what 'example' does.",
                       action="store", type="string",
-                      dest="host")
-
-opt_parser.add_option("--host-node",
-                      help="Host to run the test.",
-                      action="store", type="string",
-                      dest="host_node")
-
-opt_parser.add_option("--dest",
-                      help="Destination that will be queried.",
-                      action="store", type="string",
-                      dest="dest")
-                    
-opt_parser.add_option("--version",
-                      help="Version of SNMP to be used. (1|2c|3)",
-                      action="store", type="string",
-                      dest="version")
-
-opt_parser.add_option("--oidargs",
-                      help="OID, type, and value",
-                      action="append", type="string",
-                      dest="oidargs")
-
-opt_parser.add_option("--protocol",
-                      help="Transport specifier (tcp|udp)",
-                      action="store", type="string",
-                      dest="protocol")
-
-opt_parser.add_option("--timeout",
-                      help="Timeout for each query attempt",
-                      action="store", type="string",
-                      dest="timeout")
-
-# snmp v3 specific options
-
-opt_parser.add_option("--security-name",
-                      help="Security Name",
-                      action="store", type="string",
-                      dest="security_name") 
-opt_parser.add_option("--auth-protocol",
-                      help="Authentication Protocol (md5|sha)",
-                      action="store", type="string",
-                      dest="auth_protocol")
-
-opt_parser.add_option("--priv-protocol",
-                      help="Privacy Protocol (des|aes)",
-                      action="store", type="string",
-                      dest="priv_protocol")
-
-opt_parser.add_option("--auth-key",
-                      help="Authentication Passphrase",
-                      action="store", type="string",
-                      dest="auth_key")
-
-opt_parser.add_option("--priv-key",
-                      help="Privacy Passphrase",
-                      action="store", type="string",
-                      dest="priv_key")
-
-opt_parser.add_option("--security-level",
-                      help="Security Level (noAuthNoPriv|authNoPriv|authPriv)",
-                      action="store", type="string",
-                      dest="security_level")
-
-opt_parser.add_option("--context",
-                      help="Context Name",
-                      action="store", type="string",
-                      dest="context")
-
-#Not v3
-
-opt_parser.add_option("--community",
-                          help="Community string",
-                          action="store", type="string",
-                          dest="community")
+                      dest="example")
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
-for i in range(len(args)):
-    if args[i] == '--version':
-        if args[i + 1] == '3':
-            version = 3
-            for item in v1args:
-                if item in args:
-                    pscheduler.fail("Args do not apply to this SNMP version.")
-
-        if args[i + 1] == '2c':
-            version = 1
-            for item in v3args:
-                if item in args:
-                    pscheduler.fail("Args do not apply to this SNMP version.")
-
-        if args[i + 1] == '1':
-            version = 1
-            for item in v3args:
-                if item in args:
-                    pscheduler.fail("Args do not apply to this SNMP version.")
-
-if len(remaining_args) != 0:
-   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
-
 result = { 'schema': 1 }
 
-#oidargs manipulation
-dictargs=[]
-for item in options.oidargs:
-    s = item.split(':') 
-    d = { "oid": s[0], "type": s[1], "value": s[2] }
-    dictargs.append(d) 
-if options.host is not None:
-   result['host'] = options.host
-
-if options.host_node is not None:
-   result['host-node'] = options.host_node
-
-if options.dest is not None:
-   result['dest'] = options.dest
-
-if options.version is not None:
-   result['version'] = options.version
-
-if options.oidargs is not None:
-   result['oidargs'] = dictargs
-
-if options.protocol is not None:
-   result['protocol'] = options.protocol
-
-if options.timeout is not None:
-   result['timeout'] = options.timeout
-
-if version == 1:
-  if options.community is not None:
-    result['_community'] = options.community
-
+if options.example is not None:
+   result['options'] = options.example
 else:
-    if options.security_name is not None:
-      result['security-name'] = options.security_name
-
-    if options.auth_protocol is not None:
-      result['auth-protocol'] = options.auth_protocol
-
-    if options.priv_protocol is not None:
-      result['priv-protocol'] = options.priv_protocol
-
-    if options.auth_key is not None:
-      result['auth-key'] = options.auth_key
-
-    if options.priv_key is not None:
-      result['priv-key'] = options.priv_key
-
-    if options.security_level is not None:
-      result['security-level'] = options.security_level
-
-    if options.context is not None:
-      result['context'] = options.context
+    # Do something if the option is not included
 
 pscheduler.succeed_json(result)

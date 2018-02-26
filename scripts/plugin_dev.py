@@ -30,13 +30,11 @@ if options.directory is not None:
     dirName = options.directory
 else:
     parser.error("Directory name not given.")
-    exit(1)
 
 if options.testname is not None:
     testName = options.testname
 else:
     parser.error("Test naem not given.")
-    exit(1)
 
 # Copy everything to a new directory
 newDir = dirName.replace("TEMPLATE", testName)
@@ -44,10 +42,12 @@ newDir = "../" + newDir
 try:
     shutil.copytree(dirName, newDir)
 except shutil.Error as e:
-    print "Directory not copied. Error: %s" % e
+    print """Directory not copied. Please choose one of pscheduler-test|tool|archiver-TEMPLATE. 
+    Error: %s""" % e
     sys.exit(1)
 except OSError as e:
-    print "Directory not copied. Error %s" % e
+    print """Directory not copied. Please choose one of pscheduler-test|tool|archiver-TEMPLATE.
+    Error %s""" % e
     sys.exit(1)
 
 os.chdir(newDir)
@@ -68,6 +68,5 @@ for (path, dirs, files) in os.walk("."):
         s = s.replace("TEMPLATE", testName)
         with open(localPath, "w") as f:
             f.write(s)
-
         # Rename all files as necessary
         os.rename(localPath, localPath.replace("TEMPLATE", testName))
