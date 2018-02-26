@@ -785,9 +785,10 @@ def main_program():
         if wait:
 
             try:
-                if select.select([pg], [], [],
-                                 pscheduler.timedelta_as_seconds(refresh)) \
-                                 != ([], [], []):
+                if pscheduler.polled_select(
+                        [pg], [], [],
+                        pscheduler.timedelta_as_seconds(refresh)) \
+                    != ([], [], []):
                     # Notified
                     pg.poll()
                     del pg.notifies[:]

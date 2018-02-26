@@ -3,10 +3,11 @@ Functions for inhaling JSON in a pScheduler-normalized way
 """
 
 from json import load, loads, dump, dumps
-import select
 import string
 import sys
 import pscheduler
+
+from psselect import polled_select
 
 
 def json_decomment(json, prefix='#', null=False):
@@ -182,7 +183,7 @@ class RFC7464Emitter(object):
         """Emit straight text to the file"""
 
         if self.timeout is not None:
-            if select.select([],[self.handle],[], self.timeout) == ([],[],[]):
+            if polled_select([],[self.handle],[], self.timeout) == ([],[],[]):
                 raise IOError("Timed out waiting for write")
 
         self.handle.write(
@@ -211,7 +212,7 @@ class RFC7464Parser(object):
     def next(self):
         """Read and parse one item from the file"""
         if self.timeout is not None:
-            if select.select([self.handle],[],[], self.timeout) == ([],[],[]):
+            if polled_select([self.handle],[],[], self.timeout) == ([],[],[]):
                 raise IOError("Timed out waiting for read")
         data = self.handle.readline()
 

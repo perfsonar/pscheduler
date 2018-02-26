@@ -114,6 +114,9 @@ if role == CLIENT_ROLE:
 	twping_args.append('-S')
 	twping_args.append(test_spec['source'])
     twping_args.append(ADDR_FORMAT % (test_spec['dest'], control_port))
+
+    # Force all args to be strings
+    twping_args = map(lambda x: str(x), twping_args)
     
     #Run the process
     #time.sleep(DEFAULT_CLIENT_SLEEP) #wait for server to boot

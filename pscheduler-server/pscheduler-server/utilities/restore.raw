@@ -184,27 +184,68 @@ BEGIN
     END IF;
 END;
 \$\$ LANGUAGE plpgsql;
-
--- Remove the saved database if there was one.
-DROP DATABASE IF EXISTS ${DATABASE_SAVE};
-
 EOF
 
 cat "${WORK_DIR}/database-dump" >> "${SQL_WORK}"
 
+cat >> "${SQL_WORK}" <<EOF
+-- Remove the saved database if there was one.
+DROP DATABASE IF EXISTS ${DATABASE_SAVE};
+EOF
+
+
 DB_OUTPUT="${WORK_DIR}/db-output"
-postgresql-load "${SQL_WORK}" > "${DB_OUTPUT}" 2>&1
-if [ $? -ne 0 ]
+LOAD_EXIT=0
+
+postgresql-load "${SQL_WORK}" > "${DB_OUTPUT}" 2>&1 \
+    || LOAD_EXIT=$?
+
+if [ "${LOAD_EXIT}" -ne 0 ]
 then
-    printf "\n\nDatabase restore failed:\n"
-    cat "${DB_OUTPUT}"
+    printf "\n\nDatabase restore failed:\n" 1>&2
+    cat "${DB_OUTPUT}" 1>&2
+
+    printf "\nRestoring prior database..." 1>&2
+    cat > "${SQL_WORK}" <<EOF
+DROP DATABASE IF EXISTS ${DATABASE};
+
+DO \$\$
+BEGIN
+    IF EXISTS (SELECT * FROM pg_catalog.pg_database
+               WHERE datname = '${DATABASE_SAVE}')
+    THEN
+        ALTER DATABASE ${DATABASE_SAVE} RENAME TO ${DATABASE};
+    END IF;
+END;
+\$\$ LANGUAGE plpgsql;
+EOF
+
+    LOAD_EXIT=0
+    postgresql-load "${SQL_WORK}" > "${DB_OUTPUT}" 2>&1 \
+	|| LOAD_EXIT=$?
+
+    if [ "${LOAD_EXIT}" -eq 0 ]
+    then
+	printf " Done.\n" 1>&2
+	ERROR=false
+    else
+	printf " FAILED." 1>&2
+	cat "${DB_OUTPUT}" 1>&2
+    fi
+
     exit 1
 fi
+
 $OUT_INTERACTIVE && printf ' Done.\n' 1>&2 || true
 
 $OUT_INTERACTIVE && printf '  Updating database...' 1>&2 || true
 # The redirect makes this run quietly.
 pscheduler internal db-update < /dev/null
+$OUT_INTERACTIVE && printf ' Done.\n' 1>&2 || true
+
+$OUT_INTERACTIVE && printf '  Resetting password...' 1>&2 || true
+# The redirect makes this run quietly.
+pscheduler internal db-change-password < /dev/null
 $OUT_INTERACTIVE && printf ' Done.\n' 1>&2 || true
 
 # If we got here, all was good.
