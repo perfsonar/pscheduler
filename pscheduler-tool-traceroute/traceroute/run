@@ -252,6 +252,8 @@ except KeyError:
 if need_root:
     argv.insert(0, 'sudo')
 
+# Force all args to be strings
+argv = map(lambda x: str(x), argv)
 
 log.debug("Running %s", ' '.join(argv))
 

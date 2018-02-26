@@ -190,7 +190,6 @@ argv.append(str(dest_ip))
 
 
 
-
 #
 # Run the test
 #
@@ -198,6 +197,8 @@ argv.append(str(dest_ip))
 if need_root:
     argv.insert(0, 'sudo')
 
+# Stringify the arguments        
+argv = map(lambda x: str(x), argv)
 
 argv_string =  ' '.join(argv)
 log.debug("Running %s", argv_string)

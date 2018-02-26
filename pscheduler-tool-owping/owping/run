@@ -129,6 +129,9 @@ if role == CLIENT_ROLE:
             owping_args.append('-S')
             owping_args.append(test_spec['source'])
         owping_args.append(ADDR_FORMAT % (test_spec['dest'], control_port))
+
+    # Stringify the arguments        
+    owping_args = map(lambda x: str(x), owping_args)
     
     #Run the process
     #time.sleep(DEFAULT_CLIENT_SLEEP) #wait for server to boot
