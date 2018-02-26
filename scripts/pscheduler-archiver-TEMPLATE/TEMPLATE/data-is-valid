@@ -1,0 +1,43 @@
+#!/usr/bin/python
+#
+# Validate data for TEMPLATE
+#
+
+import pscheduler
+
+try:
+    json = pscheduler.json_load(max_schema=1)
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+        })
+
+data_validator = {
+    "type": "object",
+    "properties": {
+        "schema": { "$ref": "#/pScheduler/Cardinal" },
+        "_url": { "$ref": "#/pScheduler/URL" },
+        "op": {
+            "type": "string",
+            "enum": [
+                "put",
+                "post",
+            ]
+        },
+        "bind": { "$ref": "#/pScheduler/Host" },
+        "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+    },
+    "required": [ "_url" ],
+    "additionalProperties": False
+}
+
+valid, error = pscheduler.json_validate(json, data_validator)
+
+if not valid:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": error
+        })
+
+pscheduler.succeed_json({ "valid": True })
