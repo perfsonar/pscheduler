@@ -1,3 +1,9 @@
+pscheduler-test-idleex (1.0.2.3-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 25 Jan 2018 16:11:03 +0000
+
 pscheduler-test-idleex (1.0.2-1) perfsonar-jessie-release; urgency=low
 
   * New upstream version
