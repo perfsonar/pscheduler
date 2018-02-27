@@ -1,6 +1,9 @@
 #!/usr/bin/python
+
 #
-# Format a spec
+# Development Order #9:
+#
+# This will format a test spec into something that is human readable.
 #
 
 import jsontemplate
@@ -24,11 +27,13 @@ if not valid:
     pscheduler.fail(message)
 
 # Format a test spec into plain text
-# Replace 'Example' with ecah part of the spec
 if format == 'text/plain':
 
     template = """
-Example ................... {.section example}{example}{.or}Not Specified{.end}
+Host ................... {.section host}{host}{.or}Not Specified{.end}
+Host Node ................... {.section host_ndoe}{host_node}{.or}Not Specified{.end}
+Timeout ................... {.section example}{example}{.or}Not Specified{.end}
+Test Type ................... {.section testtype}{testtype}{.or}Not Specified{.end}
 """
 
 # Format with html
@@ -36,7 +41,10 @@ elif format == 'text/html':
 
    template = """
 <table>
-<tr><td>Example</td><td>{.section example}{example}{.or}Not Specified{.end}</td></tr>
+<tr><td>Host</td><td>{.section host}{host}{.or}Not Specified{.end}</td></tr>
+<tr><td>Host Node</td><td>{.section host_node}{host_node}{.or}Not Specified{.end}</td></tr>
+<tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
+<tr><td>Test Type</td><td>{.section testtype}{testtype}{.or}Not Specified{.end}</td></tr>
 </table>
 """
 

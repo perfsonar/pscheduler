@@ -1,7 +1,13 @@
 #!/usr/bin/python
+
 #
-# Validator for 'TEMPLATE' task spec
+# Development Order #6:
 #
+# This file accepts a test spec through stdin and outputs whether
+# or not it was validated through stdout.
+#
+# This can be tested directly using the following syntax:
+# ./cli-to-spec --option argument | ./spec-is-valid
 
 import pscheduler
 

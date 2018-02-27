@@ -1,43 +1,67 @@
 #
-# Validator for 'TEMPLATE' Test
+# Validator for "snmpset" Test
 #
 
-# TODO: _ for sensitive values
+#
+# Development Order #3:
+#
+# This file determines the required and optional data types which are 
+# allowed to be in the test spec, result, and limit. This is used
+# for validation of these structures.
+#
+# Several existing datatypes are available for use at:
+# pscheduler/python-pscheduler/pscheduler/pscheduler/jsonval.py
+# 
 
 from pscheduler import json_validate
 
 def spec_is_valid(json):
 
-    # SNMPv1Spec is valid for both snmp v1 and v2c 
     schema = {
-            "Example Spec": {
+        "local": {
+            # Local data types such as this can be defined within this file,
+            # but are not necessary
+            "Type": {
+                "type": "string",
+                "enum": [ "system", "api" ]
+            },
+            "Spec": {
                 "type": "object",
+                # schema, host, host-node, and timeout are standard,
+                # and should be included
                 "properties": {
-                    # Check datatype of the argument.
-                    # Custom datatypes can be defined within this file.
-                    "example":       { "$ref": "#/pScheduler/String" }
+                    "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                    "host":         { "$ref": "#/pScheduler/Host" },
+                    "host-node":    { "$ref": "#/pScheduler/Host" },
+                    "timeout":      { "$ref": "#/pScheduler/Duration" },
+                    # Here is the datatype we defined on lines 24-27
+                    "testtype":     { "$ref": "#/local/Type" },
                 },
-                # Required arguments
+                # If listed here, data of this type MUST be in the test spec
                 "required": [
-                    "example"
-                    ]
+                    "testtype",
+                    ],
             }
         },
+        # Set to false if ONLY required options should be used
         "additionalProperties": True
     }
 
     return json_validate(json, schema)
 
+
 def result_is_valid(json):
     schema = {
         "type": "object",
         "properties": {
-            # Verify that each part of the result has its expected datatype.
-            # For example:
+            "schema":     { "$ref": "#/pScheduler/Cardinal" },
+            "succeeded":  { "$ref": "#/pScheduler/Boolean" },
             "time":       { "$ref": "#/pScheduler/Duration" },
             },
         "required": [
-            "time"
+            "schema",
+            "succeeded",
+            "time",
             ]
         }
     return json_validate(json, schema)
@@ -46,8 +70,9 @@ def limit_is_valid(json):
     schema = {
         "type": "object",
         "properties": {
-            # Verify that the set limits have their expected datatype.
-            "type":           { "$ref": "#/pScheduler/Limit/String" },
+            "host":            { "$ref": "#/pScheduler/Limit/String" },
+            "host-node":     { "$ref": "#/pScheduler/Limit/String" },
+            "timeout":         { "$ref": "#/pScheduler/Limit/Duration" },
         },
         "additionalProperties": False
         }

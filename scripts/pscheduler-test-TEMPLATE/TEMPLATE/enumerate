@@ -1,6 +1,11 @@
 #!/bin/sed -e 1d
 
-# This will show in the list when 'pscheduler plugins tests' is called.
+#
+# Development Order #2:
+# 
+# This JSON data describes the test, and will be shown when 'pscheduler 
+# plugins tests' is run. This is the first file which should be edited.
+#
 
 {
     "schema": 1,

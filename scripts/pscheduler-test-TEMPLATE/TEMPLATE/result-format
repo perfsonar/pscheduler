@@ -1,6 +1,15 @@
 #!/usr/bin/python
+
 #
-# Format a result
+# Development Order #8:
+#
+# This file is called when perfSonar goes to print the result, which
+# has been returned from the tool.
+#
+# To test this file, a result is needed. A sample one has been provided
+# in this directory. Use the following syntax:
+# cat example-result.json | ./result-format text/plain
+# cat example-result.json | ./result-format text/html
 #
 
 import jsontemplate
@@ -23,16 +32,13 @@ if not valid:
     pscheduler.fail(message)
 
 result = input["result"]
-spec = input["spec"]
 
 if format == 'text/plain':
     # Print results of the test here, in plaintext
-    # Example:
     print 'Time: %s\n' % result['time']
    
 elif format == 'text/html':
     # Print results of the test here, in html
-    # Example:
     print '<table>'
     print '    <tr>'
     print '        <th>Time</th>'

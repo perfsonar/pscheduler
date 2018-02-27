@@ -1,7 +1,13 @@
 #!/usr/bin/python
 
 #
-# Convert command-line options to a test specification for test TEMPLATE
+# Development Order #4:
+# 
+# This file encodes CLI arguments as JSON data in a test spec,
+# as defined by the datatypes in validate.py
+# 
+# This can be tested directly using the following syntax:
+# ./cli-to-spec --option argument
 #
 
 import re
@@ -45,18 +51,44 @@ opt_parser = pscheduler.FailingOptionParser(epilog=
 # Check https://docs.python.org/2/library/optparse.html for more
 # documentation on the opt parser
 
-opt_parser.add_option("--example",
-                      help="Description of what 'example' does.",
+
+opt_parser.add_option("--host",
+                      help="Host to run the test.",
                       action="store", type="string",
-                      dest="example")
+                      dest="host")
+
+opt_parser.add_option("--host-node",
+                      help="Host to run the test.",
+                      action="store", type="string",
+                      dest="host_node")
+
+opt_parser.add_option("--timeout",
+                      help="Timeout for each query attempt",
+                      action="store", type="string",
+                      dest="timeout")
+
+opt_parser.add_option("--test-type",
+                      help="Type of test to be used. (api|system)",
+                      action="store", type="string",
+                      dest="testtype")
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
 result = { 'schema': 1 }
 
-if options.example is not None:
-   result['options'] = options.example
+if options.host is not None:
+   result['host'] = options.host
+
+if options.host_node is not None:
+   result['host-node'] = options.host_node
+
+if options.timeout is not None:
+   result['timeout'] = options.timeout
+
+if options.testtype is not None:
+   result['testtype'] = options.testtype
 else:
     # Do something if the option is not included
+    pass
 
 pscheduler.succeed_json(result)
