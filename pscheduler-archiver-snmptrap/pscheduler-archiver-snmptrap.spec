@@ -4,7 +4,7 @@
 
 %define short	snmptrap
 Name:		pscheduler-archiver-%{short}
-Version:	1.0.2.3
+Version:	1.0.2.4
 Release:	1%{?dist}
 
 Summary:	snmptrap archiver class for pScheduler
