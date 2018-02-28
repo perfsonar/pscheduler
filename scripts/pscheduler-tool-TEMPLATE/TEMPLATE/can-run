@@ -1,6 +1,9 @@
 #!/usr/bin/python
+
 #
-# Determine if this tool can run a test based on a test spec.
+# Development Order #3:
+# 
+# This file will determine if this tool can run a test based on a test spec.
 #
 
 # exit statuses should be different based on error
