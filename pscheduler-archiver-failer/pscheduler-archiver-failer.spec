@@ -4,7 +4,7 @@
 
 %define short	failer
 Name:		pscheduler-archiver-%{short}
-Version:	1.0.2.4
+Version:	1.0.2.5
 Release:	1%{?dist}
 
 Summary:	Sometimes-failing archiver class for pScheduler
@@ -16,7 +16,7 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server >= 1.0.2.4
+Requires:	pscheduler-server >= 1.0.2.5
 
 BuildRequires:	pscheduler-rpm
 

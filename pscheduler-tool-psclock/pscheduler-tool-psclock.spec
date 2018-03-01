@@ -4,7 +4,7 @@
 
 %define short	psclock
 Name:		pscheduler-tool-%{short}
-Version:	1.0.2.4
+Version:	1.0.2.5
 Release:	1%{?dist}
 
 Summary:	Clock tester tool class for pScheduler
