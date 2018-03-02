@@ -9,45 +9,36 @@ import shutil
 import optparse
 import sys
 
+def usage():
+    print """
+    Usage: plugin_dev [test|tool|archiver] [name]
+
+    Examples:
+    plugin_dev test ftp
+    plugin_dev tool dns
+    """
+
 # Gather Args
 args = sys.argv[1:]
 
-parser = optparse.OptionParser()
+if args[0] not in [ "test", "tool", "archiver" ]:
+    usage()
+    exit(1)
 
-# Add Options
-parser.add_option("-d", "--dir", dest="directory",
-                  help="Source directory to be copied from.",
-                  action="store", type="string")
+type = args[0]
+testName = args[1]
 
-parser.add_option("-t", "--test-name", dest="testname",
-                  help="Name of new test type.",
-                  action="store", type="string")
-
-# Parse Options
-(options, args) = parser.parse_args(args)
-
-if options.directory is not None:
-    dirName = options.directory
-else:
-    parser.error("Directory name not given.")
-
-if options.testname is not None:
-    testName = options.testname
-else:
-    parser.error("Test naem not given.")
-
+dirName = "pscheduler-" + type + "-TEMPLATE"
 # Copy everything to a new directory
 newDir = dirName.replace("TEMPLATE", testName)
 newDir = "../" + newDir
 try:
     shutil.copytree(dirName, newDir)
 except shutil.Error as e:
-    print """Directory not copied. Please choose one of pscheduler-test|tool|archiver-TEMPLATE. 
-    Error: %s""" % e
+    print "Error copying directory: %s" % e
     sys.exit(1)
 except OSError as e:
-    print """Directory not copied. Please choose one of pscheduler-test|tool|archiver-TEMPLATE.
-    Error %s""" % e
+    print "Error copying directory: %s" % e
     sys.exit(1)
 
 os.chdir(newDir)
@@ -70,3 +61,9 @@ for (path, dirs, files) in os.walk("."):
             f.write(s)
         # Rename all files as necessary
         os.rename(localPath, localPath.replace("TEMPLATE", testName))
+
+print """
+    New dir '%s' has been created.
+
+    Please read plugin_dev.README for further instructions.
+    """ % newDir
