@@ -1,19 +1,12 @@
 #!/bin/sed -e 1d
 
-#
-# Development Order #2:
-#
-# This JSON data describes the tool, and will be shown when 'pscheduler
-# plugins tools' is run. This is the first file which should be edited.
-#
-
 {
     "schema": 1,
 
     "name": "TEMPLATE",
     "description": "EDIT ME",
     "version": "1.0",
-    "tests": [ "TEMPLATE" ],
+    "tests": [ "EDIT ME" ],
 
     "preference": 0,
 

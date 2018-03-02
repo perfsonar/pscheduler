@@ -18,10 +18,8 @@ import pscheduler
 json = pscheduler.json_load(exit_on_error=True);
 
         
-timeout_iso = json.get("timeout", "PT2S")
-timeout = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(timeout_iso))
-timeout = timeout * len(json['oidargs']) + 2
-timeout = pscheduler.seconds_as_timedelta(timeout)
+timeout_iso = json.get("timeout", "PT6S")
+timeout = pscheduler.iso8601_as_timedelta(timeout_iso)
 
 pscheduler.succeed_json({
     "duration": pscheduler.timedelta_as_iso8601( timeout )

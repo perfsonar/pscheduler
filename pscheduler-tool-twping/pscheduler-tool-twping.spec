@@ -19,8 +19,8 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server
 Requires:	python-pscheduler
 Requires:	pscheduler-test-latency
-Requires:	twamp-client
-Requires:	twamp-server
+#Requires:	twamp-client
+#Requires:	twamp-server
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:	python-pscheduler

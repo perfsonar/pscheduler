@@ -10,6 +10,7 @@
 #
 
 import datetime
+import subprocess
 import json
 import sys
 import time
@@ -20,24 +21,53 @@ import pscheduler
 input = pscheduler.json_load(exit_on_error=True)
 
 # Take input from test spec
-example = input['test']['spec']['example']
+try:
+    testtype = input['test']['spec']['testtype']
 
-# Run the actual task here
+except KeyError:
+    pscheduler.fail('Missing data in input')
 
-if succeeded:
-    # Gather results
+if testtype not in [ 'api', 'system' ]:
+    pscheduler.fail('Invalid test type. Choose api or system.')
 
+timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
+timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+start_time = datetime.datetime.now()
+succeeded = False
+error = ''
+diags = ''
+
+# Run the actual task here:
+
+# API Call:
+if testtype == 'api':
+    argv = [ 'sleep', '5' ]
+    status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
+
+    if status:
+        succeeded = False
+        error = "Error returned: \n%s" % stderr.strip('\n')
+    else:
+        succeeded = True
+        diags = stdout
+
+# System Call:
+elif testtype == 'system':
+    subprocess.check_call( ['sleep', '5'])
+    succeeded = True
+
+end_time = datetime.datetime.now()
 
 # Organize results into json data
 results = {
     'succeeded': succeeded,
     'result': {
         'schema': 1,
-        'example': example
+        'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
+        'succeeded': succeeded
     },
     'error': error,
-    'diags': diags
-}
+    'diags': diags }
 
 pscheduler.succeed_json(results)
 

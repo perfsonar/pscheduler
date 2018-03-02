@@ -1,0 +1,6 @@
+{
+    "type": "sleep",
+    "test": {
+        "spec": { "testtype": "system", "schema": 1}
+    }
+}

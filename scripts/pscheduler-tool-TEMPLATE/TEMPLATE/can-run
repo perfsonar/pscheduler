@@ -13,7 +13,7 @@ import pscheduler
 json = pscheduler.json_load(exit_on_error=True);
 
 try:
-    if json['type'] != 'TEMPLATE':
+    if json['type'] != 'EDIT ME':
         pscheduler.succeed_json({
             "can-run": False,
             "reasons": [ "Unsupported test type" ]
