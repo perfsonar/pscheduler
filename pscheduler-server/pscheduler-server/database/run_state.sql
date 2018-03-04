@@ -268,6 +268,8 @@ BEGIN
 		            run_state_failed(),
 			    run_state_canceled(),
 		            run_state_preempted()) )
+           OR ( old = run_state_missed()
+	        AND new IN (run_state_failed()) )
            OR   ( old = run_state_nonstart()
 	          AND new IN (run_state_canceled()) )
            ;

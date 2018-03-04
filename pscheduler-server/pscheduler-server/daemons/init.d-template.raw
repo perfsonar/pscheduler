@@ -31,6 +31,9 @@ logfile=__LOGDIR__/$prog.out
 # Source function library.
 . /etc/rc.d/init.d/functions
 
+ulimit -n 4096
+ulimit -u 4096
+
 retval=0
 
 [ $UID -eq 0 ]

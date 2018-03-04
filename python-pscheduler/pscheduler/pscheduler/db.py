@@ -9,6 +9,7 @@ import select
 import sys
 
 from filestring import string_from_file
+from psselect import polled_select
 
 
 def pg_connection(dsn='', autocommit=True, name=None):
@@ -165,7 +166,7 @@ class PgConnection:
 
         while True:
             try:
-                selected = select.select([self.pg], [], [], timeout)
+                selected = polled_select([self.pg], [], [], timeout)
                 break
             except select.error as ex:
                 err_no, message = ex
