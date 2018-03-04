@@ -8,6 +8,8 @@ User=__PSUSER__
 Group=__PSUSER__
 PermissionsStartOnly=true
 PIDFile=__VAR__/run/pscheduler-__PROG__.pid
+LimitNOFILE=4096
+LimitNPROC=4096
 
 # Generate the PID file in an atomic way
 ExecStartPre=-/bin/rm -f __VAR__/run/pscheduler-__PROG__.pid.build

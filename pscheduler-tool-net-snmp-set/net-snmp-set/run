@@ -84,6 +84,9 @@ for item in input['test']['spec']['oidargs']:
         pscheduler.fail('Missing or incorrectly formatted input.')
 
 
+# Stringify the arguments        
+argv = map(lambda x: str(x), argv)
+
 status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
 
 if status:
