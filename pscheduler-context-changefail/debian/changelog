@@ -1,3 +1,9 @@
+pscheduler-context-changefail (1.0.2.6-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sun, 04 Mar 2018 23:17:11 +0000
+
 pscheduler-context-changefail (1.0.2.3-1) perfsonar-jessie-release; urgency=low
 
   * New upstream version
