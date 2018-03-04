@@ -1,7 +1,5 @@
-Index: pscheduler-server/daemons/init.d-template.raw
-===================================================================
---- pscheduler-server.orig/daemons/init.d-template.raw	2018-01-13 13:23:52.000000000 +0000
-+++ pscheduler-server/daemons/init.d-template.raw	2018-01-25 16:11:00.000000000 +0000
+--- pscheduler-server.orig/daemons/init.d-template.raw	2018-03-04 22:38:01.000000000 +0000
++++ pscheduler-server/daemons/init.d-template.raw	2018-03-04 22:40:47.000000000 +0000
 @@ -8,8 +8,10 @@
  
  ### BEGIN INIT INFO
@@ -15,7 +13,7 @@ Index: pscheduler-server/daemons/init.d-template.raw
  # Short-Description: Run pscheduler __PROG__
  # Description: pScheduler __PROG__ daemon
  ### END INIT INFO
-@@ -23,17 +25,16 @@
+@@ -23,20 +25,19 @@
  proguser=__PSUSER__
  
  pidfile=__VAR__/run/pscheduler-$prog.pid
@@ -28,6 +26,9 @@ Index: pscheduler-server/daemons/init.d-template.raw
 -. /etc/rc.d/init.d/functions
 +. /lib/lsb/init-functions
  
+ ulimit -n 4096
+ ulimit -u 4096
+ 
  retval=0
  
 -[ $UID -eq 0 ]
@@ -35,7 +36,7 @@ Index: pscheduler-server/daemons/init.d-template.raw
  
  start() {
      if [ $UID -ne 0 ] ; then
-@@ -51,9 +52,9 @@
+@@ -54,9 +55,9 @@
  
      fi
  
@@ -47,7 +48,7 @@ Index: pscheduler-server/daemons/init.d-template.raw
      if [ ! -s "$logfile" ] ; then
          echo "(This file should be empty unless there's a catastrophic failure.)" >> "$logfile"
      fi
-@@ -61,24 +62,21 @@
+@@ -64,24 +65,21 @@
         -c "$exec --daemon --pid-file '$pidfile' --dsn '@$config' $options" \
  	>> "$logfile" 2>&1 &
      retval=$?
@@ -79,7 +80,7 @@ Index: pscheduler-server/daemons/init.d-template.raw
  }
  
  restart()
-@@ -87,18 +85,17 @@
+@@ -90,18 +88,17 @@
      start
  }
  
