@@ -1,5 +1,11 @@
---- pscheduler-server.orig/daemons/init.d-template.raw	2018-02-22 10:30:39.000000000 +0000
-+++ pscheduler-server/daemons/init.d-template.raw	2018-02-22 10:33:19.000000000 +0000
+--- pscheduler-server.orig/daemons/init.d-template.raw	2018-03-07 08:53:33.930096026 +0100
++++ pscheduler-server/daemons/init.d-template.raw	2018-03-07 08:53:33.922096030 +0100
+@@ -1,4 +1,4 @@
+-#!/bin/sh
++#!/bin/bash
+ #
+ # pscheduler-__PROG__  Start/Stop the pScheduler __PROG__
+ #
 @@ -8,8 +8,10 @@
  
  ### BEGIN INIT INFO
