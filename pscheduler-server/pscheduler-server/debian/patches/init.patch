@@ -1,5 +1,5 @@
---- pscheduler-server.orig/daemons/init.d-template.raw	2018-03-07 08:53:33.930096026 +0100
-+++ pscheduler-server/daemons/init.d-template.raw	2018-03-07 08:53:33.922096030 +0100
+--- pscheduler-server.orig/daemons/init.d-template.raw	2018-03-07 09:18:49.769344903 +0100
++++ pscheduler-server/daemons/init.d-template.raw	2018-03-07 09:19:02.345338406 +0100
 @@ -1,4 +1,4 @@
 -#!/bin/sh
 +#!/bin/bash
@@ -19,7 +19,7 @@
  # Short-Description: Run pscheduler __PROG__
  # Description: pScheduler __PROG__ daemon
  ### END INIT INFO
-@@ -23,20 +25,19 @@
+@@ -23,21 +25,18 @@
  proguser=__PSUSER__
  
  pidfile=__VAR__/run/pscheduler-$prog.pid
@@ -38,11 +38,11 @@
  retval=0
  
 -[ $UID -eq 0 ]
-+UID=$(id -u)
- 
+-
  start() {
      if [ $UID -ne 0 ] ; then
-@@ -54,9 +55,9 @@
+         echo "User has insufficient privilege."
+@@ -54,9 +53,9 @@
  
      fi
  
@@ -54,7 +54,7 @@
      if [ ! -s "$logfile" ] ; then
          echo "(This file should be empty unless there's a catastrophic failure.)" >> "$logfile"
      fi
-@@ -64,24 +65,21 @@
+@@ -64,24 +63,21 @@
         -c "$exec --daemon --pid-file '$pidfile' --dsn '@$config' $options" \
  	>> "$logfile" 2>&1 &
      retval=$?
@@ -86,7 +86,7 @@
  }
  
  restart()
-@@ -90,18 +88,17 @@
+@@ -90,18 +86,17 @@
      start
  }
  
