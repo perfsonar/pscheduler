@@ -99,12 +99,14 @@ class CliToSpecTest(pscheduler.TestSpecToCliUnitTest):
             '--source': '10.0.0.1',
             '--dest': '10.0.0.2',
             '--flip': None,
+            '--reverse': None,
             '--output-raw': None,
         }
         self.assert_spec_to_cli("""
             { "source": "10.0.0.1", 
               "dest": "10.0.0.2", 
               "flip": true,
+              "reverse": true,
               "output-raw": true}""", expected_args)
 
     def test_failure(self):

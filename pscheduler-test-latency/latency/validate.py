@@ -88,6 +88,10 @@ REQUEST_SCHEMA = {
                 "description": "In multi-participant mode, have the dest start the client and request a reverse test. Useful in some firewall and NAT environments.",
                 "$ref": "#/pScheduler/Boolean"
             },
+            "reverse": {
+                "description": "Report results in the reverse direction (destination to source) if possible.",
+                "$ref": "#/pScheduler/Boolean"
+            },
 
         },
 
@@ -277,6 +281,7 @@ LIMIT_SCHEMA = {
         "bucket-width":     { "$ref": "#/local/bucket-width-limit" },
         "output-raw":       { "$ref": "#/pScheduler/Limit/Boolean" },
         "flip":             { "$ref": "#/pScheduler/Limit/Boolean" },
+        "reverse":          { "$ref": "#/pScheduler/Limit/Boolean" },
     },
     "additionalProperties": False
 }
