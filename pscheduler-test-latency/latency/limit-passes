@@ -72,6 +72,7 @@ def check_limit(input_json):
     booleans = [
         ("output-raw", "Output Raw"),
         ("flip", "Flip")
+        ("reverse", "Reverse")
     ]
     for b in booleans:
         errors += pscheduler.check_boolean_limit(limit, spec, b[0], description=b[1])

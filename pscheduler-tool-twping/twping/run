@@ -37,7 +37,7 @@ except KeyError as e:
     pscheduler.fail("Missing required key in run input: %s" % e)
 except:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
-flip = test_spec.get('flip', False)
+reverse = test_spec.get('reverse', False)
 
 #constants
 TIME_SCALE = .001 #use for millisecond conversions
@@ -179,7 +179,7 @@ if role == CLIENT_ROLE:
     for line in stdout_lines:
         twping_match = twping_regex.match(line)
         if twping_match:
-            if flip:
+            if reverse:
                 seq_number               = twping_match.group(9);
                 source_timestamp         = twping_match.group(10);
                 source_synchronized      = twping_match.group(11);
