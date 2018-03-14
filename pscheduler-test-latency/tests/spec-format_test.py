@@ -28,6 +28,7 @@ IP Version .......... IPv6
 Bucket Width ........ Not Specified
 Output Raw Packets .. Not Specified
 Flip Mode ........... True
+Reverse Mode ........ False
         """
         self.assert_formatted_output("text/plain", input, expected_stdout=expected_stdout)
         

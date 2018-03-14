@@ -29,6 +29,7 @@ IP Version .......... {.section ip-version}IPv{@}{.or}Not Specified{.end}
 Bucket Width ........ {.section bucket-width}{@}{.or}Not Specified{.end}
 Output Raw Packets .. {.section output-raw}{@}{.or}Not Specified{.end}
 Flip Mode ........... {.section flip}{@}{.or}Not Specified{.end}
+Reverse Mode ........ {.section reverse}{@}{.or}Not Specified{.end}
    """
 else:
 
