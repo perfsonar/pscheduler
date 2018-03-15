@@ -38,6 +38,7 @@ SPEC_SCHEMA = {
         "flow-label":    { "$ref": "#/pScheduler/Cardinal" },
         "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
         "server-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
+        "single-ended": { "$ref": "#/pScheduler/Boolean" },
         "reverse": { "$ref": "#/pScheduler/Boolean" }
         }
     }

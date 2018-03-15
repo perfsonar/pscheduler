@@ -40,6 +40,7 @@ class TestSpecIsValid(pscheduler.TestSpecIsValidUnitTest):
             "flow-label": 1,
             "client-cpu-affinity": 1,
             "server-cpu-affinity": 1,
+            "single-ended": True,
             "reverse": True
             }
 

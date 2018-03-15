@@ -42,6 +42,7 @@ has = pscheduler.api_has_services([source, destination], timeout=3)
 
 src_has_psc = has[source]["pscheduler"]
 dst_has_psc = has[destination]["pscheduler"]
+single_ended = json.get('single-ended', False)
 
 
 logger.debug("src_has_psc = %s, dst_has_psc = %s" % (src_has_psc, dst_has_psc))
@@ -49,7 +50,7 @@ logger.debug("src_has_psc = %s, dst_has_psc = %s" % (src_has_psc, dst_has_psc))
 if src_has_psc and dst_has_psc:
     participants = [ source, destination ]
 elif src_has_psc:
-    if not has[destination]["bwctl"]:
+    if not has[destination]["bwctl"] and not single_ended:
         pscheduler.fail("Can't find pScheduler or BWCTL on %s" % destination)
     participants = [ source ]
 elif dst_has_psc:
