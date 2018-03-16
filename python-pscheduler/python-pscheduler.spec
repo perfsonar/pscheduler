@@ -22,6 +22,7 @@ Source0:	%{short}-%{version}.tar.gz
 # NOTE: The runtime Python module requirements must be duplicated in
 # BuildRequires because they're required to run the tests.
 
+Requires:	iputils
 Requires:	python-dateutil
 Requires:	python-dns
 Requires:	python-isodate
@@ -53,6 +54,7 @@ BuildRequires:	python-nose
 BuildRequires:	python-setuptools
 
 # NOTE:  Cloned from above.
+BuildRequires:	iputils
 BuildRequires:	python-dateutil
 BuildRequires:	python-dns
 BuildRequires:	python-isodate

@@ -24,7 +24,7 @@ def root():
 
 
 
-max_api = 3
+max_api = 4
 
 
 @application.route("/api", methods=['GET'])
@@ -94,3 +94,20 @@ def clock():
         return ok_json(pscheduler.clock_state())
     except Exception as ex:
         return error("Unable to fetch clock state: " + str(ex))
+
+
+@application.route("/mtu-safe", methods=['GET'])
+def mtu_safe():
+    """Return JSON indicating whether MTU to destination is safe"""
+    dest = arg_string("dest")
+    if dest is None:
+        return bad_request("Missing destination")
+    try:
+        (status, message) = pscheduler.mtu_path_is_safe(dest)
+        return ok_json({
+            "safe": status,
+            "message": message
+            })
+    except Exception as ex:
+        log.exception()
+        return error(str(ex))
