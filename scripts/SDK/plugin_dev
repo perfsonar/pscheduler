@@ -11,35 +11,49 @@ import sys
 
 def usage():
     print """
-    Usage: plugin_dev [test|tool|archiver] [name]
+    Usage: plugin_dev [test|archiver] [name]
+           plugin_dev [tool] [test-associated] [name]
 
     Examples:
     plugin_dev test ftp
-    plugin_dev tool dns
+    plugin_dev tool ftp dns 
+    plugin_dev archiver ftp
     """
 
 # Gather Args
 args = sys.argv[1:]
 
-if args[0] not in [ "test", "tool", "archiver" ]:
+try:
+    if args[0] not in [ "test", "tool", "archiver" ]:
+        usage()
+        exit(1)
+except IndexError:
     usage()
     exit(1)
 
-type = args[0]
-testName = args[1]
+try:
+    type = args[0]
+    if (type == "tool"):
+        testName = args[2]
+        testAssociated = args[1]
+    else:
+        testName = args[1]
+except IndexError:
+    usage()
+    exit(1)
 
 dirName = "pscheduler-" + type + "-TEMPLATE"
 # Copy everything to a new directory
 newDir = dirName.replace("TEMPLATE", testName)
-newDir = "../" + newDir
+newDir = "../../" + newDir
 try:
     shutil.copytree(dirName, newDir)
 except shutil.Error as e:
     print "Error copying directory: %s" % e
-    sys.exit(1)
+    exit(1)
 except OSError as e:
     print "Error copying directory: %s" % e
-    sys.exit(1)
+    exit(1)
 
 os.chdir(newDir)
 
@@ -57,6 +71,9 @@ for (path, dirs, files) in os.walk("."):
         with open(localPath) as f:
             s = f.read()
         s = s.replace("TEMPLATE", testName)
+        # Replace additional parameters if it's a tool
+        if (type == "tool"):
+            s = s.replace("TEST-REPLACE", testAssociated)
         with open(localPath, "w") as f:
             f.write(s)
         # Rename all files as necessary

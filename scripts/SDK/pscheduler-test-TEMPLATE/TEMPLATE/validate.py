@@ -33,6 +33,7 @@ def spec_is_valid(json):
                     "schema":       { "$ref": "#/pScheduler/Cardinal" },
                     "host":         { "$ref": "#/pScheduler/Host" },
                     "host-node":    { "$ref": "#/pScheduler/Host" },
+                    "duration":     { "$ref": "#/pScheduler/Duration" },
                     "timeout":      { "$ref": "#/pScheduler/Duration" },
                     # Here is the datatype we defined on lines 24-27
                     "testtype":     { "$ref": "#/local/Type" },

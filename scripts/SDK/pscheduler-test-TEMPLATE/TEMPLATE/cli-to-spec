@@ -62,6 +62,11 @@ opt_parser.add_option("--host-node",
                       action="store", type="string",
                       dest="host_node")
 
+opt_parser.add_option("--duration",
+                      help="Duration of idle test.",
+                      action="store", type="string",
+                      dest="duration")
+
 opt_parser.add_option("--timeout",
                       help="Timeout for each query attempt",
                       action="store", type="string",
@@ -84,6 +89,9 @@ if options.host_node is not None:
 
 if options.timeout is not None:
    result['timeout'] = options.timeout
+
+if options.duration is not None:
+   result['duration'] = options.duration
 
 if options.testtype is not None:
    result['testtype'] = options.testtype

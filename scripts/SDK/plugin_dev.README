@@ -3,7 +3,8 @@
 # 1. Create desired test/tool/archiver directories using the plugin_dev.py
 script.
 
-Usage: plugin_dev [test|tool|archiver] [name]
+Usage: plugin_dev [test|archiver] [name]
+       plugin_dev [tool] [test-associated] [name]
 
 # 2. First, go to the tool directory and open the files 'can-run' and
 'enumerate'. There are fields in each file marked 'EDIT ME', which should

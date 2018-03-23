@@ -16,7 +16,7 @@
     "name": "TEMPLATE",
     "description": "EDIT ME",
     "version": "1.0",
-    "tests": [ "EDIT ME" ],
+    "tests": [ "TEST-REPLACE" ],
 
     "preference": 0,
 
