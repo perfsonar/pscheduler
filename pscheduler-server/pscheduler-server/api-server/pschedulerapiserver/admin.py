@@ -20,7 +20,7 @@ from .log import log
 @application.route("/", methods=['GET'])
 def root():
     return ok_json("This is the pScheduler API server on %s (%s)."
-              % (server_netloc(), pscheduler.api_this_host()))
+              % (server_hostname(), pscheduler.api_this_host()))
 
 
 

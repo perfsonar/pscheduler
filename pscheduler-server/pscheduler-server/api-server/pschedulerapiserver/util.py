@@ -56,9 +56,18 @@ def task_requester_key(task_uuid):
 # Hostnames
 #
 
-def server_netloc():
+def server_hostname():
     """
     Figure out the name of the server end of the request, punting if it's
+    the local host or not available.
+    """
+
+    return urlparse.urlparse(request.url_root).hostname
+
+
+def server_netloc():
+    """
+    Figure out the netloc of the server end of the request, punting if it's
     the local host or not available.
     """
 
