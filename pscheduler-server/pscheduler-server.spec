@@ -90,6 +90,7 @@ The pScheduler server
 %define db_config_dir %{_pscheduler_sysconfdir}/database
 %define db_user %{_pscheduler_user}
 %define password_file %{db_config_dir}/database-password
+%define database_name %{db_user}
 %define dsn_file %{db_config_dir}/database-dsn
 %define pgpass_file %{db_config_dir}/pgpassfile
 %define default_archives %{_pscheduler_sysconfdir}/archives
@@ -151,7 +152,7 @@ make -C daemons \
      DAEMONDIR=%{_pscheduler_daemons} \
      DSNFILE=%{dsn_file} \
      LOGDIR=%{log_dir} \
-     PGDATABASE=%{_pscheduler_database_name} \
+     PGDATABASE=%{database_name} \
      PGPASSFILE=%{_pscheduler_database_pgpass_file} \
      PGSERVICE=%{pgsql_service}.service \
      PGUSER=%{_pscheduler_database_user} \
@@ -172,7 +173,7 @@ make -C daemons \
 make -C utilities \
     "CONFIGDIR=%{_pscheduler_sysconfdir}" \
     "LIMITSFILE=%{_pscheduler_limit_config}" \
-    "PGDATABASE=%{_pscheduler_database_name}" \
+    "PGDATABASE=%{database_name}" \
     "PGPASSFILE=%{pgpass_file}" \
     "TMPDIR=%{_tmppath}" \
     "VERSION=%{version}"
