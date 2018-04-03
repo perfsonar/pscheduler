@@ -39,6 +39,7 @@ SPEC_SCHEMA = {
         "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
         "server-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
         "single-ended": { "$ref": "#/pScheduler/Boolean" },
+        "single-ended-port": { "$ref": "#/pScheduler/Integer" },
         "reverse": { "$ref": "#/pScheduler/Boolean" }
         }
     }

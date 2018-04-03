@@ -41,6 +41,7 @@ class TestSpecIsValid(pscheduler.TestSpecIsValidUnitTest):
             "client-cpu-affinity": 1,
             "server-cpu-affinity": 1,
             "single-ended": True,
+            "single-ended-port": 5000,
             "reverse": True
             }
 

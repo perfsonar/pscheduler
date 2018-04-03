@@ -55,7 +55,7 @@ supported_options = ["schema",
                      "ip-version", "duration", "interval",
                      "parallel", "window-size", "mss", "bandwidth",
                      "buffer-length", "local-address", "congestion",
-                     "udp", "single-ended"
+                     "udp", "single-ended", "single-ended-port"
                      ]
 
 for option in spec.keys():

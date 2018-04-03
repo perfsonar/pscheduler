@@ -53,7 +53,7 @@ iperf2_cmd  = config["iperf2_cmd"]
 
 # grab the server port from the test spec if there, otherwise use default
 if single_ended:
-    server_port = DEFAULT_SERVER_PORT
+    server_port = test_spec.get('single-ended-port', DEFAULT_SERVER_PORT)
 else:
     server_port = participant_data[1].get('server_port', DEFAULT_SERVER_PORT)
 

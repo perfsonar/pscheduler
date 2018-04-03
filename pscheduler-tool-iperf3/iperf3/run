@@ -50,7 +50,7 @@ iperf3_cmd  = config["iperf3_cmd"]
 
 # grab the server port from the test spec
 if single_ended:
-    server_port = DEFAULT_SERVER_PORT
+    server_port = test_spec.get('single-ended-port', DEFAULT_SERVER_PORT)
 else:
     server_port = participant_data[1]['server_port']
 

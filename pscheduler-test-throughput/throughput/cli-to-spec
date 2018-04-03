@@ -164,6 +164,11 @@ opt_parser.add_option("--single-ended",
                       action="store_true",
                       dest="single_ended")
 
+opt_parser.add_option("--single-ended-port",
+                      help="Run a test directly to a given port.",
+                      action="store", type="int",
+                      dest="single_ended_port")
+
 opt_parser.add_option("--reverse",
                       help="Reverses the direction of the test.",
                       action="store_true",
@@ -279,6 +284,9 @@ if options.server_cpu_affinity != None:
 
 if options.single_ended:
    result["single-ended"] = True
+
+if options.single_ended_port:
+   result["single-ended-port"] = options.single_ended_port
 
 if options.reverse:
    result["reverse"] = True

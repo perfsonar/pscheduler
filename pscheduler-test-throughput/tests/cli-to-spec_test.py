@@ -28,6 +28,7 @@ class CliToSpecTest(pscheduler.TestCliToSpecUnitTest):
             "client-cpu-affinity": {"val": "1" },
             "server-cpu-affinity": {"val": "0" },
             "single-ended": {},
+            "single-ended-port": { "val": "5000" },
             "reverse": {}
         })
     
