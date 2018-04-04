@@ -184,7 +184,8 @@ if len(remaining_args) != 0:
    pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
 
-result = { 'schema': 1 }
+result = { }
+schema = pscheduler.HighInteger(1)
 
 if options.source is not None:
    result['source'] = options.source
@@ -284,12 +285,16 @@ if options.server_cpu_affinity != None:
 
 if options.single_ended:
    result["single-ended"] = True
+   schema.set(2)
 
 if options.single_ended_port:
    result["single-ended-port"] = options.single_ended_port
+   schema.set(2)
 
 if options.reverse:
    result["reverse"] = True
+
+result["schema"] = schema.value()
 
 logger.debug("cli-to-spec -> %s" % result)
 

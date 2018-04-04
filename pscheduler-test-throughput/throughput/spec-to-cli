@@ -5,7 +5,7 @@
 import pscheduler
 import validate
 
-spec = pscheduler.json_load(exit_on_error=True, max_schema=1)
+spec = pscheduler.json_load(exit_on_error=True, max_schema=2)
 
 if type(spec) != dict:
     pscheduler.fail("Invalid JSON for this operation")
@@ -17,7 +17,10 @@ if not valid:
 strings = []
 bools = []
 
-spec_properties = validate.SPEC_SCHEMA['properties']
+if spec['schema'] == 2:
+    spec_properties = validate.SPEC_SCHEMA['local']['throughput_v2']['properties']
+else:
+    spec_properties = validate.SPEC_SCHEMA['local']['throughput_v1']['properties']
 
 for item in spec_properties.keys():
     if item == 'schema': continue
