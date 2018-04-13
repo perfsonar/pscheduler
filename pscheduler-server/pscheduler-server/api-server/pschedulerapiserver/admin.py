@@ -132,7 +132,7 @@ def get_status():
             items.remove(pinfo["name"])
     try:
         # query database, calculate server run time
-        cursor = dbcursor_query("select extract(epoch from current_timestamp - pg_postmaster_start_time())", onerow=True)
+        cursor = dbcursor_query("SELECT extract(epoch from current_timestamp - pg_postmaster_start_time())", onerow=True)
     	time_val = pscheduler.seconds_as_timedelta(cursor.fetchone()[0])
 	services["database"] = { "running": True, "time": str(pscheduler.timedelta_as_iso8601(time_val))  }
 	items.remove("database")
