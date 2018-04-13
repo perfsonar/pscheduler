@@ -117,8 +117,8 @@ def mtu_safe():
 @application.route("/status", methods=['GET'])
 def get_status():
     response = {}
-    # TODO: timestamp
-    response["time"] = str(datetime.datetime.now())
+
+    response["time"] = str(pscheduler.datetime_as_iso8601(datetime.datetime.now()))
 
     # query process table
     services = {}
@@ -127,13 +127,14 @@ def get_status():
 	pinfo = proc.as_dict(attrs=['name', 'create_time'])
         if (pinfo["name"] in items):
             # calculate elapsed running time
-            running_time = time.time() - pinfo["create_time"]
-            services[pinfo["name"]] = { "running": True, "time": running_time } #TODO: time formatting
+            running_time = pscheduler.seconds_as_timedelta(time.time() - pinfo["create_time"])
+            services[pinfo["name"]] = { "running": True, "time": str(pscheduler.timedelta_as_iso8601(running_time)) }
             items.remove(pinfo["name"])
     try:
         # query database, calculate server run time
         cursor = dbcursor_query("select extract(epoch from current_timestamp - pg_postmaster_start_time())", onerow=True)
-    	services["database"] = { "running": True, "time": cursor.fetchone()[0] }
+    	time_val = pscheduler.seconds_as_timedelta(cursor.fetchone()[0])
+	services["database"] = { "running": True, "time": str(pscheduler.timedelta_as_iso8601(time_val))  }
 	items.remove("database")
     except Exception as ex:
 	pass
@@ -145,19 +146,24 @@ def get_status():
 
     response["services"] = services    
     
+    # query database for last run information
     runs = {}
     cursor = dbcursor_query("SELECT times_actual FROM run WHERE state=5")
     times = cursor.fetchall() 
     formatted = []
     for val in times:
-        formatted.append(str(val[0].upper))
-    runs["last-finished"] = max(formatted)
-    
+        formatted.append(val[0].upper)
+    runs["last-finished"] = str(pscheduler.datetime_as_iso8601(max(formatted)))
+   
+    # query database for last scheduled information
     cursor = dbcursor_query("SELECT added FROM run")
     times = cursor.fetchall()
+    formatted = []
     for val in times:
-        formatted.append(str(val[0]))
-    runs["last-scheduled"] = max(formatted)
+        formatted.append(val[0])
+    runs["last-scheduled"] = str(pscheduler.datetime_as_iso8601(max(formatted)))
 
     response["runs"] = runs
+
     return ok_json(response)
+
