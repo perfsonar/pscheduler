@@ -4,8 +4,10 @@
 
 import datetime
 import pscheduler
+import psutil
 import pytz
 import socket
+import time
 import tzlocal
 
 from pschedulerapiserver import application
@@ -111,3 +113,51 @@ def mtu_safe():
     except Exception as ex:
         log.exception()
         return error(str(ex))
+
+@application.route("/status", methods=['GET'])
+def get_status():
+    response = {}
+    # TODO: timestamp
+    response["time"] = str(datetime.datetime.now())
+
+    # query process table
+    services = {}
+    items = ["scheduler", "archiver", "ticker", "runner", "database"]
+    for proc in psutil.process_iter():
+	pinfo = proc.as_dict(attrs=['name', 'create_time'])
+        if (pinfo["name"] in items):
+            # calculate elapsed running time
+            running_time = time.time() - pinfo["create_time"]
+            services[pinfo["name"]] = { "running": True, "time": running_time } #TODO: time formatting
+            items.remove(pinfo["name"])
+    try:
+        # query database, calculate server run time
+        cursor = dbcursor_query("select extract(epoch from current_timestamp - pg_postmaster_start_time())", onerow=True)
+    	services["database"] = { "running": True, "time": cursor.fetchone()[0] }
+	items.remove("database")
+    except Exception as ex:
+	pass
+    
+    if len(items) > 0:
+        # there are daemons that aren't running
+        for item in items:
+            services[item] = { "running": False }
+
+    response["services"] = services    
+    
+    runs = {}
+    cursor = dbcursor_query("SELECT times_actual FROM run WHERE state=5")
+    times = cursor.fetchall() 
+    formatted = []
+    for val in times:
+        formatted.append(str(val[0].upper))
+    runs["last-finished"] = max(formatted)
+    
+    cursor = dbcursor_query("SELECT added FROM run")
+    times = cursor.fetchall()
+    for val in times:
+        formatted.append(str(val[0]))
+    runs["last-scheduled"] = max(formatted)
+
+    response["runs"] = runs
+    return ok_json(response)

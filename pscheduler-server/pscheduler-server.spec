@@ -62,8 +62,8 @@ Requires:	mod_ssl
 Requires:	mod_wsgi
 Requires:	python-pscheduler >= 1.3.1.3
 Requires:	python-requests
+Requires:	python2-psutil
 Requires:	pytz
-
 
 # General
 BuildRequires:	pscheduler-rpm
