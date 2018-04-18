@@ -119,6 +119,31 @@ def failed_diags(run, why="Task failed to run properly."):
 
 
 
+
+def check_mtu(host_a, host_z=None):
+    """Report on the MTU between hosts"""
+
+    if host_z is None:
+        host_z = host_a
+        host_a = None
+
+    start("  Checking path MTU")
+    status, result = pscheduler.url_get(
+        pscheduler.api_url(host_a, "/mtu-safe"),
+        params={ "dest": host_z },
+        throw=False)
+    if status == 200:
+        if result["safe"]:
+            ok(result["message"])
+        else:
+            ok("Unsafe or unknown: %s" % (result["message"]))
+    elif status == 404:
+        ok("Not supported")
+    else:
+        failed(result)
+
+
+
 # Tuples containing the statistics to fetch with a label and URL
 # relative to /stat.  A URL of None means the entry is a section
 # header.
@@ -332,13 +357,10 @@ for host in hosts:
     print "%s:" % (host)
     print
 
+
     if not options.quick:
-        start("  Checking path MTU")
-        (safe, message) = pscheduler.mtu_path_is_safe(host)
-        if safe:
-            ok(message)
-        else:
-            failed(message)
+        check_mtu(host)
+
 
 
     start("  Checking for pScheduler")
@@ -420,22 +442,7 @@ print
 # MTU Between hosts
 
 if not options.quick:
-
-    start("  Checking path MTU")
-    status, result = pscheduler.url_get(
-        pscheduler.api_url(host_a, "/mtu-safe"),
-        params={ "dest": host_z },
-        throw=False)
-    if status == 200:
-        if result["safe"]:
-            ok(result["message"])
-        else:
-            failed(result["message"])
-    elif status == 404:
-        ok("Not supported")
-    else:
-        failed(result)
-
+    check_mtu(host_a, host_z)
 
 
 # Compare clocks
