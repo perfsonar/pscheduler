@@ -83,8 +83,10 @@ class VerbatimParser(optparse.OptionParser):
     def format_epilog(self, formatter):
         return self.epilog
 
+usage="Usage: %prog [ OPTIONS ] [ delta | start end ] "
+
 opt_parser = VerbatimParser(
-    usage="Usage: %prog [ OPTIONS ] [ delta | start end ] ",
+    usage=usage,
     epilog=
 """
 Example:
