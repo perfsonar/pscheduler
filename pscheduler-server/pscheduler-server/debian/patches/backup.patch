@@ -15,7 +15,7 @@
  LOAD_EXIT=0
  
 -postgresql-load "${SQL_WORK}" > "${DB_OUTPUT}" 2>&1 \
-++su -l -c psql postgres < "${SQL_WORK}" > "${DB_OUTPUT}" 2>&1 \
++su -l -c psql postgres < "${SQL_WORK}" > "${DB_OUTPUT}" 2>&1 \
      || LOAD_EXIT=$?
  
  if [ "${LOAD_EXIT}" -ne 0 ]
