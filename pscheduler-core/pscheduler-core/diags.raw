@@ -112,7 +112,7 @@ ip route
 
 
 section Sockets
-netstat -n -a
+ss -n -a
 
 
 #
