@@ -23,6 +23,11 @@ pg_upgrade() {
         return
     fi
 
+    if pg_lsclusters -h 2>/dev/null | grep -q '^1[0-9] \+main \+5432 \+online'; then
+        echo Found postgresql 10+ running, skipping automatic upgrade
+        return
+    fi
+
     echo Trying automatic postgresql upgrade...
 
     if ! pg_lsclusters; then
@@ -131,8 +136,8 @@ case "$1" in
         fi
 
         # handle large number of pscheduler connections
-        if grep -q '^max_connections = 100[^0-9]' /etc/postgresql/9.6/main/postgresql.conf; then
-            sed -i 's/^max_connections = 100/max_connections = 500/' /etc/postgresql/9.6/main/postgresql.conf
+        if grep -q '^max_connections = 100[^0-9]' /etc/postgresql/*/main/postgresql.conf; then
+            sed -i 's/^max_connections = 100/max_connections = 500/' /etc/postgresql/*/main/postgresql.conf
             service postgresql restart
         fi
 
