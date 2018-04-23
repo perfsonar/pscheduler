@@ -19,12 +19,10 @@ set -e
 
 pg_upgrade() {
     if pg_lsclusters -h 2>/dev/null | grep -q '^9.6 \+main \+5432 \+online'; then
-        echo Found postgresql 9.6 running, skipping automatic upgrade
         return
     fi
 
     if pg_lsclusters -h 2>/dev/null | grep -q '^1[0-9] \+main \+5432 \+online'; then
-        echo Found postgresql 10+ running, skipping automatic upgrade
         return
     fi
 
