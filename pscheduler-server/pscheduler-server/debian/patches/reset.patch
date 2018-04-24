@@ -1,7 +1,5 @@
-Index: pscheduler-server/database/reset.raw
-===================================================================
---- pscheduler-server.orig/database/reset.raw	2017-11-07 16:09:11.000000000 +0000
-+++ pscheduler-server/database/reset.raw	2017-11-27 14:44:52.000000000 +0000
+--- pscheduler-server.orig/database/reset.raw	2018-04-24 13:01:28.216117632 +0200
++++ pscheduler-server/database/reset.raw	2018-04-24 13:01:45.072105756 +0200
 @@ -37,47 +37,45 @@
  
  
@@ -43,7 +41,7 @@ Index: pscheduler-server/database/reset.raw
 -) | postgresql-load
 -
 +echo SET pscheduler-server/dbconfig-reinstall true | debconf-communicate >/dev/null
-+dpkg-reconfigure --priority=critical pscheduler-server
++dpkg-reconfigure --priority=critical pscheduler-server 2>/dev/null
  
  # If the ticker is running, it will restart and do this, but in case
  # it isn't, make sure everything is in order.
