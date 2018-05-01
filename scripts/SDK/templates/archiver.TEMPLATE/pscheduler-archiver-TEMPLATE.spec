@@ -1,13 +1,13 @@
 #
-# RPM Spec for pScheduler Syslog http
+# RPM Spec for pScheduler TEMPLATE Archiver
 #
 
-%define short	http
+%define short	TEMPLATE
 Name:		pscheduler-archiver-%{short}
 Version:	1.0.2
 Release:	1%{?dist}
 
-Summary:	HTTP archiver class for pScheduler
+Summary:	TEMPLATE archiver class for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0
 Group:		Unspecified
@@ -24,7 +24,7 @@ BuildRequires:	pscheduler-rpm
 %define directory %{_includedir}/make
 
 %description
-This archiver sends JSON test results to http
+TEMPLATE archiver class for pScheduler
 
 
 %prep

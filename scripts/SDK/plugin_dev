@@ -43,11 +43,12 @@ except IndexError:
     exit(1)
 
 dirName = "pscheduler-" + type + "-TEMPLATE"
-# Copy everything to a new directory
+toCopy = "templates/" + type + ".TEMPLATE"
+# Copy everything to main directory
 newDir = dirName.replace("TEMPLATE", testName)
 newDir = "../../" + newDir
 try:
-    shutil.copytree(dirName, newDir)
+    shutil.copytree(toCopy, newDir)
 except shutil.Error as e:
     print "Error copying directory: %s" % e
     exit(1)
