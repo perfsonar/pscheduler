@@ -3,8 +3,10 @@
 1. Create desired test/tool/archiver directories using the plugin_dev.py
 script.
 
+```
 Usage: plugin_dev [test|archiver] [name]                                       
        plugin_dev [tool] [test-associated] [name]
+```
 
 2. First, go to the tool directory and open the files 'can-run' and
 'enumerate'. There are fields in each file marked 'EDIT ME', which should
@@ -17,13 +19,19 @@ Run 'pscheduler task [name] --help' to see its usage case. Running
 'pscheduler plugins [tests|tools]' should show the new plugin in the list
 of tests/tools.
 
-4. Now, start in the root of the test directory and run 'grep -R Order *'.
+4. Now, start in the root of the test directory and run the following:
+```
+grep -R Order *
+```
 According to the order number of the files, each one should then be
 visited and changed, if deemed necessary. Each one will be commented
 at the top, as well as throughout.
 
-5. Do the same with the tool, running 'grep -R Order *' in its root
-directory to start.
+5. Do the same with the tool, running 
+```
+grep -R Order *
+```
+in its root directory to start.
 
 ### Notes
 
@@ -35,8 +43,14 @@ helpful.
 - It is recommened that you first test several of the files by directly
 piping json into them. It's much more convenient than rebuilding into
 pScheduler, and will be easier to immediately diagnose.
-For example, ./cli-to-spec --arg options | ./spec-format
+For example, 
+```
+./cli-to-spec --arg options | ./spec-format
+```
 
-- To see the run results of a pScheduler run, run 'curl -s -k'
+- To see the run results of a pScheduler run, run
+```
+curl -s -k
+```
 on the Task URL. This will be output in JSON, which can be piped into
 a file or into something like JQ for readability
