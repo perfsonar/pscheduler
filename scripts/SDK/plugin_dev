@@ -69,7 +69,7 @@ toCopy = "templates/" + type + ".TEMPLATE"
 # Copy everything to main directory
 newDir = dirName.replace("TEMPLATE", testName)
 if dest:
-    if (destDir[len(newDir) - 1] != '/'):
+    if (destDir[len(destDir) - 1] != '/'):
         destDir += "/"
     newDir = destDir + newDir
 else:
