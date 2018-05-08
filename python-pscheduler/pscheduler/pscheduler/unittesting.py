@@ -597,24 +597,24 @@ class TestLimitPassesUnitTest(ExecUnitTest):
 
         ### A+AAAA source, v4 dest
         expected_errors = [error_unallowed_range.format('198.128.151.25')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "antg-staging.es.net", "dest": "198.129.254.38", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "antg-staging.es.net", "dest": "198.129.254.38", "schema": 1}}')
+        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "ps-dev-el7-1.es.net", "dest": "198.129.254.38", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "ps-dev-el7-1.es.net", "dest": "198.129.254.38", "schema": 1}}')
         ### A+AAAA source, v6 dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "antg-staging.es.net", "dest": "2001:400:501:1150::3", "schema": 1}}')
+        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "ps-dev-el7-1.es.net", "dest": "2001:400:501:1150::3", "schema": 1}}')
         expected_errors = [error_unallowed_range.format('2001:400:210:151::25')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "antg-staging.es.net", "dest": "2001:400:501:1150::3", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "ps-dev-el7-1.es.net", "dest": "2001:400:501:1150::3", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
         ### A+AAAA source, A only dest
         expected_errors = [error_unallowed_range.format('198.128.151.25')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "antg-staging.es.net", "dest": "sacr-pt1-v4.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "antg-staging.es.net", "dest": "sacr-pt1-v4.es.net", "schema": 1}}')
+        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "ps-dev-el7-1.es.net", "dest": "sacr-pt1-v4.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "ps-dev-el7-1.es.net", "dest": "sacr-pt1-v4.es.net", "schema": 1}}')
         ### A+AAAA source, AAAA only dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "antg-staging.es.net", "dest": "sacr-pt1-v6.es.net", "schema": 1}}')
+        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "ps-dev-el7-1.es.net", "dest": "sacr-pt1-v6.es.net", "schema": 1}}')
         expected_errors = [error_unallowed_range.format('2001:400:210:151::25')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "antg-staging.es.net", "dest": "sacr-pt1-v6.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "ps-dev-el7-1.es.net", "dest": "sacr-pt1-v6.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
         ### A+AAAA source, A and AAAA only dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "antg-staging.es.net", "dest": "sacr-pt1.es.net", "schema": 1}}')
+        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "ps-dev-el7-1.es.net", "dest": "sacr-pt1.es.net", "schema": 1}}')
         expected_errors = [error_unallowed_range.format('2001:400:210:151::25')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "antg-staging.es.net", "dest": "sacr-pt1.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "ps-dev-el7-1.es.net", "dest": "sacr-pt1.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
         
         ##test invert
         self.assert_cmd('{"limit": {"source": {"invert": true, "cidr": ["198.128.151.25/32"]}}, "spec": {"source": "198.128.151.26", "dest": "198.129.254.38", "schema": 1}}')
@@ -679,24 +679,24 @@ class TestLimitPassesUnitTest(ExecUnitTest):
 
         ### A+AAAA dest, v4 source
         expected_errors = [error_unallowed_range.format('198.128.151.25')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "antg-staging.es.net", "source": "198.129.254.38", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "antg-staging.es.net", "source": "198.129.254.38", "schema": 1}}')
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "ps-dev-el7-1.es.net", "source": "198.129.254.38", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "ps-dev-el7-1.es.net", "source": "198.129.254.38", "schema": 1}}')
         ### A+AAAA dest, v6 source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "antg-staging.es.net", "source": "2001:400:501:1150::3", "schema": 1}}')
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "ps-dev-el7-1.es.net", "source": "2001:400:501:1150::3", "schema": 1}}')
         expected_errors = [error_unallowed_range.format('2001:400:210:151::25')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "antg-staging.es.net", "source": "2001:400:501:1150::3", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "ps-dev-el7-1.es.net", "source": "2001:400:501:1150::3", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
         ### A+AAAA dest, A only source
         expected_errors = [error_unallowed_range.format('198.128.151.25')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "antg-staging.es.net", "source": "sacr-pt1-v4.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "antg-staging.es.net", "source": "sacr-pt1-v4.es.net", "schema": 1}}')
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "ps-dev-el7-1.es.net", "source": "sacr-pt1-v4.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "ps-dev-el7-1.es.net", "source": "sacr-pt1-v4.es.net", "schema": 1}}')
         ### A+AAAA dest, AAAA only source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "antg-staging.es.net", "source": "sacr-pt1-v6.es.net", "schema": 1}}')
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "ps-dev-el7-1.es.net", "source": "sacr-pt1-v6.es.net", "schema": 1}}')
         expected_errors = [error_unallowed_range.format('2001:400:210:151::25')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "antg-staging.es.net", "source": "sacr-pt1-v6.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "ps-dev-el7-1.es.net", "source": "sacr-pt1-v6.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
         ### A+AAAA dest, A and AAAA only source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "antg-staging.es.net", "source": "sacr-pt1.es.net", "schema": 1}}')
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "ps-dev-el7-1.es.net", "source": "sacr-pt1.es.net", "schema": 1}}')
         expected_errors = [error_unallowed_range.format('2001:400:210:151::25')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "antg-staging.es.net", "source": "sacr-pt1.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "ps-dev-el7-1.es.net", "source": "sacr-pt1.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
         
         ##test invert
         self.assert_cmd('{"limit": {"dest": {"invert": true, "cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "198.128.151.26", "source": "198.129.254.38", "schema": 1}}')
