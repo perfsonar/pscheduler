@@ -1218,10 +1218,12 @@ def json_validate(json, skeleton):
     "#/path/to/definition" instead of type, items and properties as
     they would when defining a regular object.
 
+    Tip:  If your schema needs to be allOf/anyOf/oneOf/not at the top,
+    build it in local and use a $ref to refer to it.
+
     The values returned are a tuple containing a boolean indicating
     whether or not the JSON was valid and a string containing any
     error messages if not.
-
     """
 
     # Validate what came in
