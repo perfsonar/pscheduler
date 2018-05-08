@@ -71,7 +71,7 @@ def check_limit(input_json):
     # Handle boolean fields
     booleans = [
         ("output-raw", "Output Raw"),
-        ("flip", "Flip")
+        ("flip", "Flip"),
         ("reverse", "Reverse")
     ]
     for b in booleans:
