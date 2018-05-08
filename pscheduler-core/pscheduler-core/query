@@ -1,0 +1,86 @@
+#!/usr/bin/python
+#
+# Query pScheduler tasks
+#
+
+import optparse
+import pscheduler
+
+#
+# Gargle the arguments
+#
+
+usage = "Usage: %prog test-type [options]"
+opt_parser = optparse.OptionParser(usage = usage)
+
+# GENERAL OPTIONS
+opt_parser.add_option("--host",
+                      help="pScheduler host to query",
+                      default="localhost",
+                      action="store", type="string",
+                      dest="host")
+
+opt_parser.add_option("--source",
+                      help="Task source address",
+                      default=None,
+                      action="store", type="string",
+                      dest="source")
+
+opt_parser.add_option("--dest",
+                      help="Task destination address",
+                      default=None,
+                      action="store", type="string",
+                      dest="dest")
+
+opt_parser.add_option("--tool",
+                      help="Task using tool",
+                      default=None,
+                      action="store", type="string",
+                      dest="tool")
+
+opt_parser.add_option("--uuid",
+                      help="Task uuid reference",
+                      default=None,
+                      action="store", type="string",
+                      dest="uuid")
+
+(options, remaining_args) = opt_parser.parse_args()
+
+if len(remaining_args) != 1:
+    opt_parser.print_usage()
+    pscheduler.fail()
+
+[task_type] = remaining_args
+
+#
+# Construct json query
+#
+
+json = { "test": { "type": task_type, "spec": {} } }
+if options.dest:
+    json["test"]["spec"]["dest"] = options.dest
+if options.source:
+    json["test"]["spec"]["source"] = options.source
+if options.tool:
+    json["tool"] = options.tool
+if options.uuid:
+    json["reference"] = {"psconfig": {"created-by": {"uuid": options.uuid}}}
+
+#
+# Send request
+#
+
+params = { "json": pscheduler.json_dump(json) }
+tasks_url = pscheduler.api_url(host=options.host, path="/tasks")
+status, data = pscheduler.url_get(tasks_url, params=params, throw=False)
+
+if status != 200:
+    print("Error %d: %s" % (status, data))
+    pscheduler.fail()
+
+#
+# Print results
+#
+
+for url in data:
+    print url
