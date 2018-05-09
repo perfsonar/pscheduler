@@ -124,7 +124,7 @@ def get_status():
     services = {}
     items = ["scheduler", "archiver", "ticker", "runner", "database"]
     for proc in psutil.process_iter():
-    pinfo = proc.as_dict(attrs=['name', 'create_time'])
+        pinfo = proc.as_dict(attrs=['name', 'create_time'])
         if (pinfo["name"] in items):
             # calculate elapsed running time
             running_time = pscheduler.seconds_as_timedelta(time.time() - pinfo["create_time"])
@@ -149,7 +149,7 @@ def get_status():
     runs = {}
     # query database for last run information
     try:
-        cursor = dbcursor_query("SELECT times_actual FROM run WHERE state=5")
+        cursor = dbcursor_query("SELECT times_actual FROM run WHERE state=run_state_finished()")
         times = cursor.fetchall()
         formatted = []
         for val in times:
