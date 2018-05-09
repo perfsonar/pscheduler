@@ -124,7 +124,7 @@ def get_status():
     services = {}
     items = ["scheduler", "archiver", "ticker", "runner", "database"]
     for proc in psutil.process_iter():
-	pinfo = proc.as_dict(attrs=['name', 'create_time'])
+    pinfo = proc.as_dict(attrs=['name', 'create_time'])
         if (pinfo["name"] in items):
             # calculate elapsed running time
             running_time = pscheduler.seconds_as_timedelta(time.time() - pinfo["create_time"])
@@ -133,11 +133,11 @@ def get_status():
     try:
         # query database, calculate server run time
         cursor = dbcursor_query("SELECT extract(epoch from current_timestamp - pg_postmaster_start_time())", onerow=True)
-    	time_val = pscheduler.seconds_as_timedelta(cursor.fetchone()[0])
-	services["database"] = { "running": True, "time": str(pscheduler.timedelta_as_iso8601(time_val))  }
-	items.remove("database")
+        time_val = pscheduler.seconds_as_timedelta(cursor.fetchone()[0])
+        services["database"] = { "running": True, "time": str(pscheduler.timedelta_as_iso8601(time_val))  }
+        items.remove("database")
     except Exception as ex:
-	pass
+        pass
     
     if len(items) > 0:
         # there are daemons that aren't running
