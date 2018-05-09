@@ -3,12 +3,12 @@
 # Format a result
 #
 
+import json
 import jsontemplate
 import pscheduler
 import sys
 
 from validate import result_is_valid
-
 
 try:
    format = sys.argv[1]
@@ -48,6 +48,16 @@ elif format == 'text/html':
     print '    <tr>'
     print '        <td>%s</td>' % result['status']
     print '    </tr>'
+    try:
+        str = spec['parse']
+        print '    <tr>'
+        print '        <th>String found:</th>'
+        print '    </tr>'
+        print '    <tr>'
+        print '         <td>%s</td>' % result['found']
+        print '    </tr>' 
+    except KeyError:
+        pass
     print '</table>'
 
 else:

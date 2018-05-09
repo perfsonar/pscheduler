@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Validator for 'snmpset' task limit spec
+# Validator for 'http' task limit spec
 #
 
 import pscheduler

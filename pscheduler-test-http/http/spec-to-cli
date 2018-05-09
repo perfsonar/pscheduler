@@ -13,8 +13,6 @@ valid, message = spec_is_valid(spec)
 if not valid:
     pscheduler.fail(message)
 
-url = spec['url']
-
 result = pscheduler.speccli_build_args(spec, 
                                        strings=[
         # Strings

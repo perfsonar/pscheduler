@@ -1,5 +1,0 @@
-{ "participant" :0, "test" : {
-    "type" : "http", "spec" : {
-        "url" : "http://umich.edu", "string": "State", "schema": 1}
-                             }
-}

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Checker for 'snmpget' task limits
+# Checker for 'http' task limits
 #
 
 import pscheduler
@@ -36,7 +36,7 @@ errors = []
 
 
 #
-# Query host, host-node, oid, dest, community, version, protocol, timeout, security-name, auth-protocol, priv-protocol, auth-key, priv-key, security-level, context
+# Query host, host-node, timeout, url, strings to parse
 #
 
 for value in [ "host", "host-node", "timeout", "url", "parse" ]:

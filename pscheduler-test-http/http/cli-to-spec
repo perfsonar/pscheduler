@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 #
-# Convert command-line options to a test specification
+# Convert command-line options to a test specification for http test
 #
 
 import re
@@ -34,28 +34,29 @@ else:
 opt_parser = pscheduler.FailingOptionParser(epilog=
     """
       Example:
-      task http --url http://umich.edu
-    """
+      task http --url http://umich.edu --timeout PT10S
+      task http --url http://google.com --parse search
+      """
 )
 
 
 opt_parser.add_option("--url",
-                      help="URL to query.",
+                      help="URL to query",
                       action="store", type="string",
                       dest="url")
 
 opt_parser.add_option("--parse",
-                      help="String to parse for.",
+                      help="String to parse for",
                       action="store", type="string",
                       dest="parse")
 
 opt_parser.add_option("--host",
-                      help="Host to run the test.",
+                      help="Host to run the test",
                       action="store", type="string",
                       dest="host")
 
 opt_parser.add_option("--host-node",
-                      help="Host to run the test.",
+                      help="Host to run the test",
                       action="store", type="string",
                       dest="host_node")
 
@@ -71,9 +72,13 @@ if len(remaining_args) != 0:
 
 result = {'schema': 1}
 
-if options.url is not None:
+if not options.url:
+    pscheduler.fail("URL must be given")
+else: 
     result['url'] = options.url
 if options.parse is not None:
     result['parse'] = options.parse
+if options.timeout is not None:
+    result['timeout'] = options.timeout
 
 pscheduler.succeed_json(result)

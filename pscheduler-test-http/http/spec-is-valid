@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Validator for 'snmpget' task spec
+# Validator for 'http' task spec
 #
 
 import pscheduler

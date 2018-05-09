@@ -29,10 +29,8 @@ try:
 except KeyError:
     pass
 
-
-timeout_iso = input['test']['spec'].get("timeout", "PT2S")
+timeout_iso = input['test']['spec'].get("timeout", "PT5S")
 timeout = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(timeout_iso))
-# timeout = timeout * len(input['test']['spec']['oidargs']) + 2
 
 # Perform the test
 
@@ -41,7 +39,7 @@ start_time = datetime.datetime.now()
 error = ""
 
 try:
-    result = psurl.url_get(url, json=False)
+    result = psurl.url_get(url, json=False, timeout=timeout)
     succeeded = True
     statusCode = result[0]
     htmlOutput = result[1]
@@ -56,6 +54,7 @@ except pscheduler.psurl.URLException as e:
     statusCode = "" 
 
 end_time = datetime.datetime.now() 
+
 #
 # Produce results
 #
