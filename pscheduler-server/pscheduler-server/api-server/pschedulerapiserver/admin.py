@@ -118,7 +118,7 @@ def mtu_safe():
 def get_status():
     response = {}
 
-    response["time"] = str(pscheduler.datetime_as_iso8601(datetime.datetime.now()))
+    response["time"] = pscheduler.datetime_as_iso8601(pscheduler.time_now())
 
     # query process table
     services = {}
