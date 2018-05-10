@@ -23,11 +23,11 @@ input = pscheduler.json_load(exit_on_error=True)
 # Take input from test spec
 try:
     testtype = input['test']['spec']['testtype']
-    duration = input['test']['spec'].get('duration', 'PT5S')
 
 except KeyError:
     pscheduler.fail('Missing data in input')
 
+duration = input['test']['spec'].get('duration', 'PT5S')
 duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
