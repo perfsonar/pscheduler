@@ -1,6 +1,0 @@
-
-Next scheduled run:
-https://localhost.localdomain/pscheduler/tasks/80182aaa-4356-42a7-9642-e6945afdb8e6/runs/6b639591-dda5-4499-9018-67fd51cb7499
-Starts 2018-02-02T03:05:43Z (~8 seconds)
-Ends   2018-02-02T03:05:48Z (~4 seconds)
-Waiting for result...
