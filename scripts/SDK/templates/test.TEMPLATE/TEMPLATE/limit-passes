@@ -38,14 +38,16 @@ errors = []
 # Has anything which conflicts with the 'spec'. All errors found should be
 # appended to the 'errors' array.
 
-# For Example:
-for value in [ "example1", "example2" ]:
+"""
+For Example:
+for value in [ "host", "host-node", "testtype", "timeout" ]:
     try:
         test = limit[value]
     except KeyError:
         continue
     if test == "something I want to limit!":
         errors.append("Limit was matched.")
+        """
 
 
 #

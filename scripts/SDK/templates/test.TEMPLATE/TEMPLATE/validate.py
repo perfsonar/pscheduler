@@ -72,7 +72,8 @@ def limit_is_valid(json):
         "type": "object",
         "properties": {
             "host":            { "$ref": "#/pScheduler/Limit/String" },
-            "host-node":     { "$ref": "#/pScheduler/Limit/String" },
+            "host-node":       { "$ref": "#/pScheduler/Limit/String" },
+            "testtype":        { "$ref": "#/local/Type" },
             "timeout":         { "$ref": "#/pScheduler/Limit/Duration" },
         },
         "additionalProperties": False

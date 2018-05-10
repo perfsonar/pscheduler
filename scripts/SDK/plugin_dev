@@ -18,7 +18,7 @@ Usage:
   plugin_dev (options) [test|archiver] [name]
   plugin_dev (options) [tool] [test-associated] [name]
 
-plugin_dev --help for more information.
+plugin_dev --help for more information
 """
 
 usage = """
@@ -35,7 +35,7 @@ parser = optparse.OptionParser(usage=usage)
 
 # Add Options
 parser.add_option("-d", "--dir", dest="directory",
-            help="Directory to which folder will be copied.",
+            help="Directory to which folder will be copied",
             action="store", type="string")
 
 (options, args) = parser.parse_args(args)

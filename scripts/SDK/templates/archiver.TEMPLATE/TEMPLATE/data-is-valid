@@ -14,22 +14,9 @@ except ValueError as ex:
         })
 
 data_validator = {
-    "type": "object",
-    "properties": {
-        "schema": { "$ref": "#/pScheduler/Cardinal" },
-        "_url": { "$ref": "#/pScheduler/URL" },
-        "op": {
-            "type": "string",
-            "enum": [
-                "put",
-                "post",
-            ]
-        },
-        "bind": { "$ref": "#/pScheduler/Host" },
-        "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
-    },
-    "required": [ "_url" ],
-    "additionalProperties": False
+    #Data validation json object
+
+    #TODO: Add more descriptive comments
 }
 
 valid, error = pscheduler.json_validate(json, data_validator)

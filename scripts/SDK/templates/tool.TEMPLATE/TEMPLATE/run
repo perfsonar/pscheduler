@@ -27,13 +27,6 @@ try:
 except KeyError:
     pscheduler.fail('Missing data in input')
 
-duration = 'PT5S'
-try:
-    duration = input['test']['spec']['duration']
-
-except KeyError:
-    pass
-
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 start_time = datetime.datetime.now()
@@ -41,13 +34,11 @@ succeeded = False
 error = ''
 diags = ''
 
-duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
-#print duration
 # Run the actual task here:
 
 # API Call:
 if testtype == 'api':
-    argv = [ 'sleep', str(duration) ]
+    argv = [ 'sleep', '5' ]
     status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
 
     if status:
@@ -59,7 +50,7 @@ if testtype == 'api':
 
 # System Call:
 elif testtype == 'system':
-    subprocess.check_call( ['sleep', str(duration)])
+    subprocess.check_call( ['sleep', '5'])
     succeeded = True
 
 end_time = datetime.datetime.now()

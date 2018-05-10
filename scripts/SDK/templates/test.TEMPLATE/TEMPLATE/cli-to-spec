@@ -96,7 +96,7 @@ if options.duration is not None:
 if options.testtype is not None:
    result['testtype'] = options.testtype
 else:
-    pscheduler.fail('Please specify a test type. (api|system)')
+    pscheduler.fail('Please specify a test type. \'--test-type (api|system)\'')
 
 if result['testtype'] not in [ 'api', 'system' ]:
     pscheduler.fail('Invalid test type. Choose api or system.')
