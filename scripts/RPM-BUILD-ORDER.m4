@@ -98,6 +98,7 @@ pscheduler-server
 
 # Tests
 pscheduler-test-clock
+pscheduler-test-http
 pscheduler-test-idle
 pscheduler-test-idlebgm
 pscheduler-test-idleex
@@ -124,6 +125,7 @@ pscheduler-tool-bwctlping
 pscheduler-tool-bwctltraceroute
 pscheduler-tool-bwctltracepath
 pscheduler-tool-net-snmp-set		--bundle extras
+pscheduler-tool-psurl
 pscheduler-tool-pysnmp			    --bundle extras
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
