@@ -1,0 +1,30 @@
+#!/usr/bin/python
+#
+# Validate data for TEMPLATE
+#
+
+import pscheduler
+
+try:
+    json = pscheduler.json_load(max_schema=1)
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+        })
+
+data_validator = {
+    #Data validation json object
+
+    #TODO: Add more descriptive comments
+}
+
+valid, error = pscheduler.json_validate(json, data_validator)
+
+if not valid:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": error
+        })
+
+pscheduler.succeed_json({ "valid": True })
