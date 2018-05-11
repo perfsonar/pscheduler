@@ -6,7 +6,7 @@ import pscheduler
 from validate import spec_is_valid, REQUEST_SCHEMA
 
 #load spec JSON
-spec = pscheduler.json_load(exit_on_error=True, max_schema=1)
+spec = pscheduler.json_load(exit_on_error=True, max_schema=2)
 if type(spec) != dict:
     pscheduler.fail("Invalid JSON for this operation")
 
@@ -15,27 +15,34 @@ valid, message = spec_is_valid(spec)
 if not valid:
     pscheduler.fail(message)
 
-#get properties from schema
-schema_props = REQUEST_SCHEMA.get('properties', {})
-if not schema_props:
-    pscheduler.fail("Error retrieving schema properties")
 
-#build command-line from schema
+# With a valid spec in hand, we can simply spit out the values one at
+# a time.
+
 result = []
-for prop in schema_props:
-    if prop in spec:
-        if prop == "schema":
+
+# PYTHON3: This would be spec.items()
+for key, value in spec.iteritems():
+
+    # Things that get special handling
+
+    if key == "schema":
+        continue
+
+    option = "--%s" % key
+
+    if isinstance(value, bool):
+        if value:
+            result.append(option)
             continue
-        elif prop == 'data-ports':
-            result.append("--%s" % prop)
-            result.append("%d-%d" %
-                          (spec[prop]['lower'], spec[prop]['upper']))
-        elif schema_props[prop].get('type', '') == "boolean" or schema_props[prop].get('$ref', '') == '#/pScheduler/Boolean':
-            result.append("--%s" % prop)
-        else:
-            result.append("--%s" % prop)
-            result.append("%s" % spec[prop])
+        continue
+
+    result.append(option)
+
+    if key == "data-ports":
+        result.append("%d-%d" % (value['lower'], value['upper']))
+        continue
+
+    result.append(str(value))
 
 pscheduler.succeed_json(result)
-
-

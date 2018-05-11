@@ -10,12 +10,15 @@ class SpecIsValidTest(pscheduler.TestSpecIsValidUnitTest):
     
     def test_failures(self):
         #test missing dest
-        expected_errors = ["'dest' is a required property"]
+        expected_errors = [ "{} is not valid under any of the given schemas" ]
         self.assert_cmd('{}', expected_valid=False, expected_errors=expected_errors)
+
+
+        expected_errors = [ "{u'source': u'10.0.0.1'} is not valid under any of the given schemas" ]
         self.assert_cmd('{"source": "10.0.0.1"}', expected_valid=False , expected_errors=expected_errors)
         
         #test garbage parameter
-        expected_errors = ["Additional properties are not allowed (u'foo' was unexpected)"]
+        expected_errors = ["{u'dest': u'10.0.0.1', u'foo': u'bar'} is not valid under any of the given schemas" ]
         self.assert_cmd('{"dest": "10.0.0.1", "foo": "bar"}', expected_valid=False , expected_errors=expected_errors)
     
     def test_endpoints(self):
