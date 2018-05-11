@@ -583,9 +583,10 @@ BEGIN
 	SELECT INTO scheduling
             scheduling_class.*
         FROM
-            task
-            JOIN test ON test.id = task.test
+	    test
             JOIN scheduling_class ON scheduling_class.id = test.scheduling_class
+        WHERE
+            test.id = NEW.test
         ;
 
 
