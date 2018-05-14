@@ -165,9 +165,8 @@ print "Posting to", tasks_url
 try:
     status, task_url = url_post(tasks_url, data=json_dump(TASK))
 except Exception as ex:
-    fail("Unable to post task: %s" % (str(ex)) + "\nThe 'pscheduler 
-            troubleshoot' command may be of use in problem diagnosis. 
-            'pscheduler troubleshoot --help' for more information.")
+    fail("Unable to post task: %s" % (str(ex)))
+
 
 print
 print "New task is", task_url

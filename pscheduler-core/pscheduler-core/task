@@ -638,14 +638,10 @@ try:
         bind=bind,
         throw=True)
 except Exception as ex:
-    pscheduler.fail("Unable to post task: " + str(ex) + "\nThe 'pscheduler 
-            troubleshoot' command may be of use in problem diagnosis. 
-            'pscheduler troubleshoot --help' for more information.")
+    pscheduler.fail("Unable to post task: " + str(ex))
 
 if status != 200:
-    pscheduler.fail("Failed to post task: " + task_url + "\nThe 'pscheduler 
-            troubleshoot' command may be of use in problem diagnosis. 
-            'pscheduler troubleshoot --help' for more information.")
+    pscheduler.fail("Failed to post task: " + task_url)
 
 # If asked to just dump the URL, do that and exit.
 if options.url:

@@ -503,10 +503,7 @@ def tasks():
                 log.debug("Remote returned %d: %s", status, result)
                 if status != 200:
                     raise TaskPostingException("Unable to post task to %s: %s"
-                                               % (part_name, result) + "\nThe 'pscheduler 
-            troubleshoot' command may be of use in problem diagnosis. 
-            'pscheduler troubleshoot --help' for more information.")
-
+                                               % (part_name, result))
                 tasks_posted.append(result)
 
                 # Fetch the task's details and add the list of limits
