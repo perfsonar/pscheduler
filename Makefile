@@ -30,7 +30,7 @@ TO_CLEAN += $(BUILD_LOG)
 
 REPO=./REPO
 $(REPO): packages
-	which createrepo 2>&1 > /dev/null || yum -y install createrepo
+	which createrepo > /dev/null 2>&1 || yum -y install createrepo
 	rm -rf $(REPO)
 	./scripts/build-repo . $(REPO)
 TO_CLEAN += $(REPO)
