@@ -44,6 +44,8 @@ INTERNALS=\
 RAWINTERNALS=\
 	list
 
+BASHCOMPLETION=\
+	bash_completion
 
 ALLPROGRAMS=$(PROGRAMS) $(RAWPROGRAMS)
 ALLCOMMANDS=$(COMMANDS) $(RAWCOMMANDS)
@@ -96,6 +98,10 @@ TO_CLEAN += $(RAWPROGRAMS) $(RAWCOMMANDS) $(RAWINERNALS)
 
 
 install: $(ALL)
+ifndef BASHCOMPDIR
+	@echo No BASHCOMPDIR specified for installation
+	@false
+endif
 ifndef BINDIR
 	@echo No BINDIR specified for installation
 	@false
@@ -114,6 +120,8 @@ endif
 	install -m 555 $(ALLCOMMANDS) $(COMMANDSDIR)
 	mkdir -p $(INTERNALSDIR)
 	install -m 555 $(ALLINTERNALS) $(INTERNALSDIR)
+	mkdir -p $(BASHCOMPDIR)
+	install -m 644 -T $(BASHCOMPLETION) $(BASHCOMPDIR)/pscheduler
 
 
 clean:

@@ -1,0 +1,158 @@
+# pscheduler(1) completion                                 -*- shell-script -*-
+
+_pscheduler_base()
+{
+    local base
+
+    if [ -d /usr/libexec/pscheduler ]; then
+        base=/usr/libexec/pscheduler
+    else
+        base=/usr/lib/pscheduler
+    fi
+
+    echo $base
+}
+
+_pscheduler_classes()
+{
+    ls "$(_pscheduler_base)/classes" | sed 's/$/s/'
+}
+
+_pscheduler_tools()
+{
+    ls "$(_pscheduler_base)/classes/tool"
+}
+
+_pscheduler_tests()
+{
+    ls "$(_pscheduler_base)/classes/test"
+}
+
+_pscheduler_tasks()
+{
+    if type curl &>/dev/null; then
+        curl -s -k https://localhost/pscheduler/tasks | tr -d ',"[]'
+    fi
+}
+
+_pscheduler()
+{
+    local cur prev words cword
+    _init_completion -s || return
+
+    # handle specific options
+    case $prev in
+        -h|--help)
+            return
+            ;;
+        --bind)
+            _ip_addresses
+            return
+            ;;
+        --format)
+            COMPREPLY=( $( compgen -W 'text html json none' -- "$cur" ) )
+            return
+            ;;
+        --ip-version)
+            COMPREPLY=( $( compgen -W '4 6' -- "$cur" ) )
+            return
+            ;;
+        --tool)
+            COMPREPLY=( $( compgen -W '$( _pscheduler_tools )' -- "$cur" ) )
+            return
+            ;;
+    esac
+
+    # waiting for parameter value
+    if [[ "${COMP_WORDS[$COMP_CWORD]}" == "=" ]]; then
+        return
+    fi
+
+    # handle first parameter
+    if [[ "$cword" -eq 1 ]]; then
+        COMPREPLY=( $( compgen -W '$( $1 2>&1 | sed "0,/^Commands/d" )' -- "$cur" ) )
+        return
+    fi
+
+    # handle plugins command
+    if [[ "${COMP_WORDS[1]}" == "plugins" ]]; then
+        if [[ "$prev" == "plugins" ]]; then
+            COMPREPLY=( $( compgen -W '$( _pscheduler_classes )' -- "$cur" ) )
+        fi
+        return
+    fi
+
+    # handle debug command
+    if [[ "${COMP_WORDS[1]}" == "debug" ]]; then
+        if [[ "$prev" == "debug" ]]; then
+            COMPREPLY=( $( compgen -W 'on off' -- "$cur" ) )
+        else
+            COMPREPLY=( $( compgen -W 'ticker scheduler runner archiver api' -- "$cur" ) )
+        fi
+        return
+    fi
+
+    # handle task command
+    if [[ "${COMP_WORDS[1]}" == "task" ]]; then
+        local TESTS
+        TESTS=$( _pscheduler_tests )
+
+        # check if test was set
+        local i j TEST
+        for i in "${COMP_WORDS[@]}"; do
+            for j in $TESTS; do
+                if [[ "$i" == "$j" ]]; then
+                    TEST=$i
+                    break 2
+                fi
+            done
+        done
+
+        if [[ "$TEST" ]]; then
+            local TEST_PARAM
+            TEST_PARAM=$( $1 task $TEST --help | _parse_help - )
+            COMPREPLY=( $( compgen -W "$TEST_PARAM" -- "$cur" ) )
+        else
+            COMPREPLY=( $( compgen -W "$TESTS" -- "$cur" ) )
+            COMPREPLY+=( $( compgen -W '$( $1 task --help | _parse_help - )' -- "$cur" ) )
+        fi
+
+        [[ $COMPREPLY == *= ]] && compopt -o nospace
+        return
+    fi
+
+    # diags --help gives an error
+    if [[ "$prev" == "diags" ]]; then
+        return
+    fi
+
+    # use command help output
+    if [[ "$cur" == -* ]] || [[ "$cword" -ge 2 ]]; then
+        COMPREPLY=( $( compgen -W '$( $1 ${COMP_WORDS[1]} --help | _parse_help - )' -- "$cur" ) )
+        [[ $COMPREPLY == *= ]] && compopt -o nospace
+    fi
+
+    # commands that take file parameter
+    if [[ "${COMP_WORDS[1]}" == "limit-diags" ]] ||
+       [[ "${COMP_WORDS[1]}" == "restore" ]] ||
+       [[ "${COMP_WORDS[1]}" == "validate-limits" ]]
+    then
+        COMPREPLY+=( $( compgen -A file -- "$cur" ) )
+        return
+    fi
+
+    # commands that take task parameter
+    if [[ "${COMP_WORDS[1]}" == "cancel" ]] ||
+       [[ "${COMP_WORDS[1]}" == "watch" ]]
+    then
+        if [[ "$prev" == ":" ]]; then
+            COMPREPLY+=( $( compgen -W '$( _pscheduler_tasks | sed "s/https://g" )' -- "$cur" ) )
+        else
+            COMPREPLY+=( $( compgen -W '$( _pscheduler_tasks )' -- "$cur" ) )
+        fi
+        return
+    fi
+} &&
+complete -F _pscheduler pscheduler
+
+# ex: filetype=sh
