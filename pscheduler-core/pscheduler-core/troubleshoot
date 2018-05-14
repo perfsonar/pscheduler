@@ -227,22 +227,22 @@ def run_task(message, lead, task, bind=None):
             bind=bind,
             throw=True)
     except Exception as ex:
-        failed("Unable to post task: %s" % (str(ex)) + "\nThe 'pscheduler 
-            troubleshoot' command may be of use in problem diagnosis. 
-            'pscheduler troubleshoot --help' for more information.")
+        failed("Unable to post task: %s" % (str(ex)) +
+        "\nThe 'pscheduler troubleshoot' command may be of use in problem" + 
+        "\ndiagnosis. 'pscheduler troubleshoot --help' for more information.")
 
     if status != 200:
-        failed("Failed to post task: " + task_url + "\nThe 'pscheduler 
-            troubleshoot' command may be of use in problem diagnosis. 
-            'pscheduler troubleshoot --help' for more information.")
+        failed("Failed to post task: " + task_url +
+        "\nThe 'pscheduler troubleshoot' command may be of use in problem" + 
+        "\ndiagnosis. 'pscheduler troubleshoot --help' for more information.")
 
     # Fetch posted task
 
     status, task_data = pscheduler.url_get("%s?detail" % (task_url))
     if status != 200:
-        failed("Failed to post task: " + task_data + "\nThe 'pscheduler 
-            troubleshoot' command may be of use in problem diagnosis. 
-            'pscheduler troubleshoot --help' for more information.")
+        failed("Failed to post task: " + task_data +
+        "\nThe 'pscheduler troubleshoot' command may be of use in problem" + 
+        "\ndiagnosis. 'pscheduler troubleshoot --help' for more information.")
 
     try:
         first_run_url = task_data["detail"]["first-run-href"]

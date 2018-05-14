@@ -503,9 +503,9 @@ def tasks():
                 log.debug("Remote returned %d: %s", status, result)
                 if status != 200:
                     raise TaskPostingException("Unable to post task to %s: %s"
-                                               % (part_name, result) + "\nThe 'pscheduler 
-            troubleshoot' command may be of use in problem diagnosis. 
-            'pscheduler troubleshoot --help' for more information.")
+                                               % (part_name, result) +
+                "\nThe 'pscheduler troubleshoot' command may be of use in problem" + 
+                "\ndiagnosis. 'pscheduler troubleshoot --help' for more information.")
 
                 tasks_posted.append(result)
 
