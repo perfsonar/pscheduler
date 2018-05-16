@@ -499,7 +499,7 @@ then
         setsebool -P httpd_can_network_connect_db 1
     fi
 
-    # TODO: Remove when BWCTL backward compatibility is removed.  See #107.
+    # HACK: BWCTLBC  Remove when BWCTL backward compatibility is removed.  See #107.
     STATE=$(getsebool httpd_can_network_connect | awk '{ print $3 }')
     if [ "${STATE}" != "on" ]
     then
