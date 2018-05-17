@@ -38,7 +38,9 @@ except KeyError as e:
 except Exception:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 
-if len(participant_data) != 2:
+single_ended = test_spec.get('single-ended', False)
+participants = len(participant_data)
+if not(participants == 2 or (participants == 1 and single_ended)):
     pscheduler.fail("iperf3 requires exactly 2 participants, got %s" % (len(participant_data)))
 
 config = iperf3_utils.get_config()
@@ -47,7 +49,10 @@ config = iperf3_utils.get_config()
 iperf3_cmd  = config["iperf3_cmd"]
 
 # grab the server port from the test spec
-server_port = participant_data[1]['server_port']   
+if single_ended:
+    server_port = test_spec.get('single-ended-port', DEFAULT_SERVER_PORT)
+else:
+    server_port = participant_data[1]['server_port']
 
 # need this to pad out the wait timeout,
 # convert to seconds
