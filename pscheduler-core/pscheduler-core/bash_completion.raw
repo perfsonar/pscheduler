@@ -18,7 +18,7 @@ _pscheduler_tests()
 _pscheduler_tasks()
 {
     if type curl &>/dev/null; then
-        curl -s -k https://localhost/pscheduler/tasks | tr -d ',"[]'
+        curl -s -k https://${PSCHEDULER_ASSIST:-localhost}/pscheduler/tasks | tr -d ',"[]'
     fi
 }
 
