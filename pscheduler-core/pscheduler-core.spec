@@ -15,6 +15,7 @@ Source0:	%{name}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
+Requires:       bash-completion
 # This is for plot-schedule
 Requires:       gnuplot-minimal
 # This is for netstat.
