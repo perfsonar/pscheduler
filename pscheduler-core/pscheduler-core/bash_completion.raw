@@ -1,31 +1,18 @@
 # pscheduler(1) completion                                 -*- shell-script -*-
 
-_pscheduler_base()
-{
-    local base
-
-    if [ -d /usr/libexec/pscheduler ]; then
-        base=/usr/libexec/pscheduler
-    else
-        base=/usr/lib/pscheduler
-    fi
-
-    echo $base
-}
-
 _pscheduler_classes()
 {
-    ls "$(_pscheduler_base)/classes" | sed 's/$/s/'
+    ls __CLASSES__ | sed 's/$/s/'
 }
 
 _pscheduler_tools()
 {
-    ls "$(_pscheduler_base)/classes/tool"
+    ls __CLASSES__/tool
 }
 
 _pscheduler_tests()
 {
-    ls "$(_pscheduler_base)/classes/test"
+    ls __CLASSES__/test
 }
 
 _pscheduler_tasks()
