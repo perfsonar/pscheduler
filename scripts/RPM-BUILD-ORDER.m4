@@ -28,6 +28,11 @@ dnl
 rpm-with-deps
 make-generic-rpm
 
+# Build this early.  Some of the packages using PostgreSQL depend on
+# knowing what version is required to avoid the "Requires: postgresql"
+# trap we fell into with RH6.
+pscheduler-rpm
+
 #
 # DEVELOPMENT, LIBRARIES AND UTILITIES
 #
@@ -85,7 +90,6 @@ random-string
 # PSCHEDULER CORE PARTS
 #
 
-pscheduler-rpm
 pscheduler-account
 pscheduler-jq-library
 python-pscheduler
