@@ -23,15 +23,16 @@ Provides:	%{name} = %{version}-%{release}
 # Database
 BuildRequires:	postgresql-init
 BuildRequires:	postgresql-load
-BuildRequires:	postgresql-server
-BuildRequires:	postgresql95-contrib
-BuildRequires:	postgresql95-plpython
+BuildRequires:	%{_pscheduler_postgresql_package}-server
+BuildRequires:	%{_pscheduler_postgresql_package}-contrib
+BuildRequires:	%{_pscheduler_postgresql_package}-plpython
 
 Requires:	drop-in
 Requires:	gzip
+Requires:	%{_pscheduler_postgresql_package}-server
 # This is for pgcrypto
-Requires:	postgresql95-contrib
-Requires:	postgresql95-plpython
+Requires:	%{_pscheduler_postgresql_package}-contrib
+Requires:	%{_pscheduler_postgresql_package}-plpython
 Requires:	postgresql-load
 Requires:	pscheduler-account
 Requires:	pscheduler-core
@@ -82,9 +83,8 @@ The pScheduler server
 
 # Database
 
-%define pgsql_version 9.5
-%define pgsql_service postgresql-%{pgsql_version}
-%define pg_data %{_sharedstatedir}/pgsql/%{pgsql_version}/data
+%define pgsql_service postgresql-%{_pscheduler_postgresql_version}
+%define pg_data %{_sharedstatedir}/pgsql/%{_pscheduler_postgresql_version}/data
 
 %define daemon_config_dir %{_pscheduler_sysconfdir}/daemons
 %define db_config_dir %{_pscheduler_sysconfdir}/database
