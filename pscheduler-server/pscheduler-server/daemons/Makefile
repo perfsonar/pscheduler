@@ -12,6 +12,7 @@
 #   PGSERVICE - Name of the PostgreSQL systemd service
 #   PGUSER - Name of pScheduler PostgreSQL account
 #   PSUSER - Name of pScheduler user account
+#   RUNDIR - Location of run directory (nominally /run)
 #   VAR - Location of /var directory
 #
 
@@ -58,6 +59,7 @@ ifndef PSUSER
 endif
 	sed \
 		-e 's|__PSUSER__|$(PSUSER)|g' \
+		-e 's|__RUNDIR__|$(RUNDIR)|g' \
 		< $< > $@
 	@if egrep -e '__[A-Z_]+__' $@ ; then \
 		echo "Found un-substituted values in processed file $@" ; \
@@ -142,6 +144,10 @@ ifndef PSUSER
 	@echo No PSUSER specified for build
 	@false
 endif
+ifndef RUNDIR
+	@echo No RUNDIR specified for build
+	@false
+endif
 ifndef VAR
 	@echo No VAR specified for build
 	@false
@@ -152,6 +158,7 @@ endif
 		-e 's|__DSN__|$(DSNFILE)|g' \
 		-e 's|__PROG__|$(@:init.d-%=%)|g' \
 		-e 's|__PSUSER__|$(PSUSER)|g' \
+		-e 's|__RUNDIR__|$(RUNDIR)|g' \
 		-e 's|__VAR__|$(VAR)|g' \
 		-e 's|__LOGDIR__|$(LOGDIR)|g' \
 		< $< > $@
@@ -187,6 +194,10 @@ ifndef PGSERVICE
 	@echo No PGSERVICE specified for build
 	@false
 endif
+ifndef RUNDIR
+	@echo No RUNDIR specified for build
+	@false
+endif
 ifndef VAR
 	@echo No VAR specified for build
 	@false
@@ -197,6 +208,7 @@ endif
 		-e 's|__DSN__|$(DSNFILE)|g' \
 		-e 's|__PROG__|$(@:service-%=%)|g' \
 		-e 's|__PSUSER__|$(PSUSER)|g' \
+		-e 's|__RUNDIR__|$(RUNDIR)|g' \
 		-e 's|__VAR__|$(VAR)|g' \
 		-e 's|__LOGDIR__|$(LOGDIR)|g' \
 		-e 's|__PGSERVICE__|$(PGSERVICE)|g' \

@@ -115,7 +115,7 @@ cat > $RPM_BUILD_ROOT/%{logrotate_d}/%{name} <<EOF
     missingok
     sharedscripts
     postrotate
-        /bin/kill -HUP \`cat /var/run/syslogd.pid 2> /dev/null\` 2> /dev/null || true
+        /bin/kill -HUP \`cat %{_rundir}/syslogd.pid 2> /dev/null\` 2> /dev/null || true
     endscript
 }
 EOF

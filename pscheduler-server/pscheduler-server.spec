@@ -158,6 +158,7 @@ make -C daemons \
      PGUSER=%{_pscheduler_database_user} \
      PSUSER=%{_pscheduler_user} \
      ARCHIVERDEFAULTDIR=%{archiver_default_dir} \
+     RUNDIR=%{_rundir} \
      VAR=%{_var}
 
 #
@@ -483,6 +484,13 @@ do
     systemctl start "${NAME}"
 %endif
 done
+
+
+# Some old installations ended up with root-owned files in the run
+# directory.  Make their ownership correct.
+# Note that this uses options specific to GNU Findutils.
+find %{_rundir} -name "pscheduler-*" ! -user "%{_pscheduler_user}" -print0 \
+    | xargs -0 -r chown "%{_pscheduler_user}.%{_pscheduler_group}"
 
 
 

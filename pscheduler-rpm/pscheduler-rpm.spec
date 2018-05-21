@@ -26,10 +26,14 @@ Macros for use by pScheduler RPM specs
 %install
 %{__mkdir_p} $RPM_BUILD_ROOT/%{macro_dir}
 cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
-
 #
 # Macros used in building pScheduler RPMs  (Version %{version})
 #
+
+%if %{?_rundir:0}%{!?_rundir:1}
+# This didn't appear until EL7
+%%_rundir %{_localstatedir}/run
+%endif
 
 # Minimum-required PostgreSQL version
 %%_pscheduler_postgresql_version_major 9
