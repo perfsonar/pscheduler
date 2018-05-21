@@ -35,7 +35,8 @@ override_dh_auto_build:
 		INTERNALSINSTALLED=/usr/lib/pscheduler/internals \
 		LIMITSFILE=/etc/pscheduler/limits.conf \
 		TOOLCONFIGDIR=/etc/pscheduler/tool \
-		PROFILEDDIR=$(ROOT)/etc/profile.d
+		PROFILEDDIR=$(ROOT)/etc/profile.d \
+		BASHCOMPDIR=$(ROOT)/usr/share/bash-completion/completions
 
 override_dh_auto_install:
 	make	\
@@ -48,4 +49,5 @@ override_dh_auto_install:
 		INTERNALSINSTALLED=/usr/lib/pscheduler/internals \
 		TOOLCONFIGDIR=/etc/pscheduler/tool \
 		PROFILEDDIR=$(ROOT)/etc/profile.d \
+		BASHCOMPDIR=$(ROOT)/usr/share/bash-completion/completions \
 		install
