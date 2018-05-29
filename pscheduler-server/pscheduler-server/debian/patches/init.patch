@@ -22,7 +22,7 @@
 @@ -23,21 +25,18 @@
  proguser=__PSUSER__
  
- pidfile=__VAR__/run/pscheduler-$prog.pid
+ pidfile=__RUNDIR__/pscheduler-$prog.pid
 -lockfile=__VAR__/lock/subsys/$proc
  
  # TODO: Should probably rotate this, but should almost always be empty.
