@@ -5,42 +5,89 @@
 from pscheduler import json_validate
 import json
 
-SPEC_SCHEMA = {        
-    "title": "pScheduler Throughput Specification Schema",
-    "type": "object",
-    "additionalProperties": False,
+SPEC_SCHEMA = {
     "local": {
+        "congestion": {
+            "type": "string",
+            "enum": ["reno", "cubic", "bic", "htcp", "vegas", "westwood",
+                     "yeah", "bbr"]
         },
-    "required": ["dest"],
-    "properties": {           
-        "schema":      { "$ref": "#/pScheduler/Cardinal" },
-        "source":      { "$ref": "#/pScheduler/Host" },
-        "source-node": { "$ref": "#/pScheduler/URLHostPort" },
-        "dest":        { "$ref": "#/pScheduler/Host" },
-        "dest-node":   { "$ref": "#/pScheduler/URLHostPort" },
-        "duration":    { "$ref": "#/pScheduler/Duration" },
-        "interval":    { "$ref": "#/pScheduler/Duration" },
-        "parallel":    { "$ref": "#/pScheduler/Cardinal" },
-        "udp":         { "$ref": "#/pScheduler/Boolean" },
-        "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },           
-        "window-size": { "$ref": "#/pScheduler/Cardinal" },
-        "mss":         { "$ref": "#/pScheduler/Cardinal" },
-        "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
-        "ip-tos":        { "$ref": "#/pScheduler/IPTOS" },
-        "ip-version":    { "$ref": "#/pScheduler/ip-version" },
-        "local-address": { "$ref": "#/pScheduler/Host" },
-        "omit":          { "$ref": "#/pScheduler/Duration" },
-        "no-delay":    { "$ref": "#/pScheduler/Boolean" },
-        "congestion":    { "enum": ["reno", "cubic", "bic", "htcp", "vegas",
-                                    "westwood", "yeah", "bbr"]
-                           },
-        "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
-        "flow-label":    { "$ref": "#/pScheduler/Cardinal" },
-        "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
-        "server-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
-        "reverse": { "$ref": "#/pScheduler/Boolean" }
+        "throughput_v1" : {
+            "title": "pScheduler Throughput Specification Schema",
+            "type": "object",
+            "properties": {
+                "schema":      { "type": "integer", "enum": [ 1 ] },
+                "source":      { "$ref": "#/pScheduler/Host" },
+                "source-node": { "$ref": "#/pScheduler/URLHostPort" },
+                "dest":        { "$ref": "#/pScheduler/Host" },
+                "dest-node":   { "$ref": "#/pScheduler/URLHostPort" },
+                "duration":    { "$ref": "#/pScheduler/Duration" },
+                "interval":    { "$ref": "#/pScheduler/Duration" },
+                "parallel":    { "$ref": "#/pScheduler/Cardinal" },
+                "udp":         { "$ref": "#/pScheduler/Boolean" },
+                "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },
+                "window-size": { "$ref": "#/pScheduler/Cardinal" },
+                "mss":         { "$ref": "#/pScheduler/Cardinal" },
+                "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
+                "ip-tos":        { "$ref": "#/pScheduler/IPTOS" },
+                "ip-version":    { "$ref": "#/pScheduler/ip-version" },
+                "local-address": { "$ref": "#/pScheduler/Host" },
+                "omit":          { "$ref": "#/pScheduler/Duration" },
+                "no-delay":    { "$ref": "#/pScheduler/Boolean" },
+                "congestion":    { "$ref": "#/local/congestion" },
+                "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
+                "flow-label":    { "$ref": "#/pScheduler/Cardinal" },
+                "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
+                "server-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
+                "reverse": { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": False,
+            "required": [ "dest" ]
+        },
+        "throughput_v2" : {
+            "title": "pScheduler Throughput Specification Schema",
+            "type": "object",
+            "properties": {
+                "schema":      { "type": "integer", "enum": [ 2 ] },
+                "source":      { "$ref": "#/pScheduler/Host" },
+                "source-node": { "$ref": "#/pScheduler/URLHostPort" },
+                "dest":        { "$ref": "#/pScheduler/Host" },
+                "dest-node":   { "$ref": "#/pScheduler/URLHostPort" },
+                "duration":    { "$ref": "#/pScheduler/Duration" },
+                "interval":    { "$ref": "#/pScheduler/Duration" },
+                "parallel":    { "$ref": "#/pScheduler/Cardinal" },
+                "udp":         { "$ref": "#/pScheduler/Boolean" },
+                "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },
+                "window-size": { "$ref": "#/pScheduler/Cardinal" },
+                "mss":         { "$ref": "#/pScheduler/Cardinal" },
+                "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
+                "ip-tos":        { "$ref": "#/pScheduler/IPTOS" },
+                "ip-version":    { "$ref": "#/pScheduler/ip-version" },
+                "local-address": { "$ref": "#/pScheduler/Host" },
+                "omit":          { "$ref": "#/pScheduler/Duration" },
+                "no-delay":    { "$ref": "#/pScheduler/Boolean" },
+                "congestion":    { "$ref": "#/local/congestion" },
+                "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
+                "flow-label":    { "$ref": "#/pScheduler/Cardinal" },
+                "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
+                "server-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
+                "single-ended": { "$ref": "#/pScheduler/Boolean" },
+                "single-ended-port": { "$ref": "#/pScheduler/Integer" },
+                "reverse": { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": False,
+            "required": [ "dest" ]
+        },
+        "throughput": {
+            "anyOf" : [
+                { "$ref": "#/local/throughput_v1" },
+                { "$ref": "#/local/throughput_v2" }
+            ]
         }
-    }
+    },
+
+    "$ref": "#/local/throughput"
+}
 
 RESULT_SCHEMA = {        
     "title": "pScheduler Throughput Response Schema",

@@ -13,7 +13,7 @@ import sys
 
 logger = pscheduler.Log(prefix='test-throughput', quiet=True)
 
-json = pscheduler.json_load(exit_on_error=True, max_schema=1)
+json = pscheduler.json_load(exit_on_error=True, max_schema=2)
 
 null_reason = None
 
@@ -42,11 +42,14 @@ has = pscheduler.api_has_services([source, destination], timeout=3)
 
 src_has_psc = has[source]["pscheduler"]
 dst_has_psc = has[destination]["pscheduler"]
+single_ended = json.get('single-ended', False)
 
 
 logger.debug("src_has_psc = %s, dst_has_psc = %s" % (src_has_psc, dst_has_psc))
 
-if src_has_psc and dst_has_psc:
+if src_has_psc and single_ended:
+    participants = [ source ]
+elif src_has_psc and dst_has_psc:
     participants = [ source, destination ]
 elif src_has_psc:
     if not has[destination]["bwctl"]:

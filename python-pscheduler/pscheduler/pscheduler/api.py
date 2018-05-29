@@ -226,7 +226,7 @@ def api_ping_list(hosts, bind=None, timeout=None, threads=10):
 
 
 
-def api_ping_all_up(hosts, bind=None, timeout=None):
+def api_ping_all_up(hosts, bind=None, timeout=10):
     """
     Determine if all hosts in a list are up.
     """

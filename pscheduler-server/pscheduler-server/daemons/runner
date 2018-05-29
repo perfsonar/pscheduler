@@ -75,7 +75,7 @@ if pscheduler.timedelta_as_seconds(refresh) == 0:
 
 log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
 
-dsn = options.dsn
+dsn = pscheduler.string_from_file(options.dsn)
 
 log_details = not options.terse
 
@@ -180,7 +180,11 @@ class RunWorker:
 
         self.worker = threading.Thread(target=lambda: self.run())
         self.worker.setDaemon(True)
+
+
+    def start(self):
         self.worker.start()
+
 
     def _put_db_conn(self, db):
         """
@@ -741,70 +745,90 @@ def main_program():
 
     log.debug("Begin main")
 
-    # These are for local use.
+    # This is for local use.
     db = pscheduler.pg_connection(dsn)
-
     log.debug("Connected to DB")
 
-    cursor = db.cursor()
+    with db.cursor() as cursor:
 
-    # Get the maximum number of connections available and limit use of
-    # them to half.
+        # Get the maximum number of connections available and limit use of
+        # them to half.
 
-    try:
-        cursor.execute("SHOW max_connections")
+        try:
+            cursor.execute("SHOW max_connections")
 
-        # Should get exactly one row back.  If not, the run probably
-        # vanished.
+            # Should get exactly one row back.  If not, the run probably
+            # vanished.
 
-        if cursor.rowcount != 1:
-            raise Exception("Got %d rows back when expecting one"
-                            % (cursor.rowcount))
+            if cursor.rowcount != 1:
+                raise Exception("Got %d rows back when expecting one"
+                                % (cursor.rowcount))
 
-        max_connections = int(cursor.fetchone()[0])
-    except Exception as ex:
-        log.error("Failed to fetch maximum connections: %s", str(ex))
-        # This is the PgSQL default
-        max_connections = 100
-        log.error("Using default of %d", max_connections)
+            max_connections = int(cursor.fetchone()[0])
+        except Exception as ex:
+            log.error("Failed to fetch maximum connections: %s", str(ex))
+            # This is the PgSQL default
+            max_connections = 100
+            log.error("Using default of %d", max_connections)
 
     pool_size = int(max_connections / 2)
     log.debug("Using a pool size of %d", pool_size)
-
 
     # Pool of connections for use by the threads.  Note that these
     # connections do not have autocommit, so anything using them will
     # need to do its own commits.
 
-    dbpool_dsn = "%s application_name=runner-pool" % (pscheduler.string_from_file(dsn))
     dbpool = psycopg2.pool.ThreadedConnectionPool(
         int(pool_size/100),   # Minimum connections
         pool_size,            # Maximum connections
-        dsn=dbpool_dsn)
+        dsn="%s application_name=runner-pool" % (dsn))
 
 
     # Listen for notifications.
 
-    cursor.execute("LISTEN run_new")
-    cursor.execute("LISTEN run_change")
-    log.debug("Listening for notifications")
-    cursor.close()
-    cursor = None
+    for listen in ["run_new", "run_change"]:
+        log.debug("Listening for notification %s" % (listen))
+        with db.cursor() as cursor:
+            cursor.execute("LISTEN %s" % (listen))
+
+    # Prime this for the first run
+    wait_time = datetime.timedelta()
 
     while True:
 
-        # Cursors are lightweight and cheap.  Use a new one each time
-        # to prevent consuming memory.
-        if cursor is not None:
-            cursor.close()
-        cursor = db.cursor()
+        log.debug("Next run or check in %s", wait_time)
+        if not pscheduler.timedelta_is_zero(wait_time):
 
-        # Operate only on runs that are scheduled to start before the next
-        # forced refresh.
+            # Wait for a notification or the wait time to elapse.  Eat all
+            # notifications as a group; we only care that we were notified.
 
-        # TODO: Move this to a function in the database.
-        # TODO: Error check this.
-        cursor.execute("""
+            # TODO: This try needs to be brought to the other programs.
+            # Better, make it a function in db.py.
+
+            try:
+                if pscheduler.polled_select(
+                        [db],[],[],
+                        pscheduler.timedelta_as_seconds(wait_time)) \
+                    != ([],[],[]):
+                    # Notified
+                    db.poll()
+                    del db.notifies[:]
+                    log.debug("Schedule change.")
+
+            except select.error as ex:
+
+                err_no, message = ex
+                if err_no != errno.EINTR:
+                    log.exception()
+                    raise ex
+
+
+        with db.cursor() as cursor:
+
+            # Operate only on runs that are scheduled to start before the next
+            # forced refresh.
+            # TODO: Error check this.
+            cursor.execute("""
                        SELECT * FROM (
 
                        -- Tasks that haven't started
@@ -842,21 +866,18 @@ def main_program():
                        ORDER BY start_in
                    """, [refresh]);
 
-        log.debug("Got %d upcoming rows", cursor.rowcount)
 
-        wait_time = refresh
-
-        if cursor.rowcount:
+            wait_time = refresh
 
             already_running = 0
-
             run_ids = []
-
+            run_workers = []
             for row in cursor:
 
                 run_id, start_in, start_at, background_multi = row
 
                 if run_dict.is_running(run_id):
+                    log.debug("%d is already running" % (run_id))
                     already_running += 1
                     continue
 
@@ -864,17 +885,23 @@ def main_program():
 
                 run_ids.append(run_id)
 
-                # TODO: Hold this
                 worker = RunWorker(dbpool, log, run_id, start_at)
+                run_workers.append(worker)
+                log.debug("%d: Created worker", run_id)
 
                 if not background_multi and start_in < wait_time:
                     log.debug("Dropping wait time to %s", start_in)
                     wait_time = start_in
 
-            if already_running > 0:
-                log.debug("Skipped %d already-running runs", already_running)
+        if already_running > 0:
+            log.debug("Skipped %d already-running runs", already_running)
 
+        if not run_workers:
+            log.debug("No workers to run.")
+            wait_time = refresh
+            continue
 
+        with db.cursor() as cursor:
             # Do this here to guarantee that we don't pick up rows for
             # runs we just started in the next iteration of the loop.
             if run_ids:
@@ -890,42 +917,13 @@ def main_program():
                 except Exception as ex:
                     log.error("Unable to set on-deck status: %s")
 
+        for worker in run_workers:
+            worker.start()
 
-        else:
-
-            log.debug("Nothing to do.")
-            wait_time = refresh
-
-
-        log.debug("Next run or check in %s", wait_time)
-        if not pscheduler.timedelta_is_zero(wait_time):
-
-            # Wait for a notification or the wait time to elapse.  Eat all
-            # notifications as a group; we only care that we were notified.
-
-
-            # TODO: This try needs to be brought to the other programs.
-            # Better, make it a function in db.py.
-
-            try:
-                if pscheduler.polled_select(
-                        [db],[],[],
-                        pscheduler.timedelta_as_seconds(wait_time)) \
-                    != ([],[],[]):
-                    # Notified
-                    db.poll()
-                    del db.notifies[:]
-                    log.debug("Schedule change.")
-
-            except select.error as ex:
-
-                err_no, message = ex
-                if err_no != errno.EINTR:
-                    log.exception()
-                    raise ex
 
     # Not that this will ever be reached...
     db.close()
+
 
 
 if options.daemon:
@@ -934,4 +932,3 @@ if options.daemon:
         pscheduler.safe_run(lambda: main_program())
 else:
     pscheduler.safe_run(lambda: main_program())
-

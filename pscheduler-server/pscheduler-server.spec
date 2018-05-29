@@ -7,7 +7,7 @@
 # init scripts function just fine.
 
 Name:		pscheduler-server
-Version:	1.0.2.3
+Version:	1.0.2.6
 Release:	1%{?dist}
 
 Summary:	pScheduler Server
@@ -23,15 +23,16 @@ Provides:	%{name} = %{version}-%{release}
 # Database
 BuildRequires:	postgresql-init
 BuildRequires:	postgresql-load
-BuildRequires:	postgresql-server
-BuildRequires:	postgresql95-contrib
-BuildRequires:	postgresql95-plpython
+BuildRequires:	%{_pscheduler_postgresql_package}-server
+BuildRequires:	%{_pscheduler_postgresql_package}-contrib
+BuildRequires:	%{_pscheduler_postgresql_package}-plpython
 
 Requires:	drop-in
 Requires:	gzip
+Requires:	%{_pscheduler_postgresql_package}-server
 # This is for pgcrypto
-Requires:	postgresql95-contrib
-Requires:	postgresql95-plpython
+Requires:	%{_pscheduler_postgresql_package}-contrib
+Requires:	%{_pscheduler_postgresql_package}-plpython
 Requires:	postgresql-load
 Requires:	pscheduler-account
 Requires:	pscheduler-core
@@ -82,14 +83,14 @@ The pScheduler server
 
 # Database
 
-%define pgsql_version 9.5
-%define pgsql_service postgresql-%{pgsql_version}
-%define pg_data %{_sharedstatedir}/pgsql/%{pgsql_version}/data
+%define pgsql_service postgresql-%{_pscheduler_postgresql_version}
+%define pg_data %{_sharedstatedir}/pgsql/%{_pscheduler_postgresql_version}/data
 
 %define daemon_config_dir %{_pscheduler_sysconfdir}/daemons
 %define db_config_dir %{_pscheduler_sysconfdir}/database
 %define db_user %{_pscheduler_user}
 %define password_file %{db_config_dir}/database-password
+%define database_name %{db_user}
 %define dsn_file %{db_config_dir}/database-dsn
 %define pgpass_file %{db_config_dir}/pgpassfile
 %define default_archives %{_pscheduler_sysconfdir}/archives
@@ -151,12 +152,13 @@ make -C daemons \
      DAEMONDIR=%{_pscheduler_daemons} \
      DSNFILE=%{dsn_file} \
      LOGDIR=%{log_dir} \
-     PGDATABASE=%{_pscheduler_database_name} \
+     PGDATABASE=%{database_name} \
      PGPASSFILE=%{_pscheduler_database_pgpass_file} \
      PGSERVICE=%{pgsql_service}.service \
      PGUSER=%{_pscheduler_database_user} \
      PSUSER=%{_pscheduler_user} \
      ARCHIVERDEFAULTDIR=%{archiver_default_dir} \
+     RUNDIR=%{_rundir} \
      VAR=%{_var}
 
 #
@@ -172,7 +174,7 @@ make -C daemons \
 make -C utilities \
     "CONFIGDIR=%{_pscheduler_sysconfdir}" \
     "LIMITSFILE=%{_pscheduler_limit_config}" \
-    "PGDATABASE=%{_pscheduler_database_name}" \
+    "PGDATABASE=%{database_name}" \
     "PGPASSFILE=%{pgpass_file}" \
     "TMPDIR=%{_tmppath}" \
     "VERSION=%{version}"
@@ -484,6 +486,13 @@ do
 done
 
 
+# Some old installations ended up with root-owned files in the run
+# directory.  Make their ownership correct.
+# Note that this uses options specific to GNU Findutils.
+find %{_rundir} -name "pscheduler-*" ! -user "%{_pscheduler_user}" -print0 \
+    | xargs -0 -r chown "%{_pscheduler_user}.%{_pscheduler_group}"
+
+
 
 #
 # API Server
@@ -498,7 +507,7 @@ then
         setsebool -P httpd_can_network_connect_db 1
     fi
 
-    # TODO: Remove when BWCTL backward compatibility is removed.  See #107.
+    # HACK: BWCTLBC  Remove when BWCTL backward compatibility is removed.  See #107.
     STATE=$(getsebool httpd_can_network_connect | awk '{ print $3 }')
     if [ "${STATE}" != "on" ]
     then

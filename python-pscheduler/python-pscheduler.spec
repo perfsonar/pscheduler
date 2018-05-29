@@ -4,7 +4,7 @@
 
 %define short	pscheduler
 Name:		python-%{short}
-Version:	1.3.2.3
+Version:	1.3.2.6
 Release:	1%{?dist}
 Summary:	Utility functions for pScheduler
 BuildArch:	noarch
@@ -22,6 +22,7 @@ Source0:	%{short}-%{version}.tar.gz
 # NOTE: The runtime Python module requirements must be duplicated in
 # BuildRequires because they're required to run the tests.
 
+Requires:	iputils
 Requires:	python-dateutil
 Requires:	python-dns
 Requires:	python-isodate
@@ -53,6 +54,7 @@ BuildRequires:	python-nose
 BuildRequires:	python-setuptools
 
 # NOTE:  Cloned from above.
+BuildRequires:	iputils
 BuildRequires:	python-dateutil
 BuildRequires:	python-dns
 BuildRequires:	python-isodate
@@ -113,7 +115,7 @@ cat > $RPM_BUILD_ROOT/%{logrotate_d}/%{name} <<EOF
     missingok
     sharedscripts
     postrotate
-        /bin/kill -HUP \`cat /var/run/syslogd.pid 2> /dev/null\` 2> /dev/null || true
+        /bin/kill -HUP \`cat %{_rundir}/syslogd.pid 2> /dev/null\` 2> /dev/null || true
     endscript
 }
 EOF

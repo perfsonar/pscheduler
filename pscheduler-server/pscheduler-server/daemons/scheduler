@@ -656,14 +656,15 @@ class SchedulerWorker(object):
 
     """Handles scheduling for a single run."""
 
-    def __init__(self, number, pg, log, working_set, task, key, runs,
-                 trynext, background, json, participants):
+    def __init__(self, number, pg, log, working_set, working_set_lock,
+                 task, key, runs, trynext, background, json, participants):
         """Initialize"""
 
         self.number = number
         self.pg = pg
         self.log = log
         self.working_set = working_set
+        self.working_set_lock = working_set_lock
 
         self.task = task
         self.key = key
@@ -716,7 +717,8 @@ class SchedulerWorker(object):
         finally:
 
             # However it went, we're no longer working on this task.
-            del self.working_set[self.number]
+            with self.working_set_lock:
+                del self.working_set[self.number]
             log.debug("%d: Thread finished", self.number)
 
 
@@ -743,8 +745,8 @@ def main_program():
     nonstart_pg = pscheduler.pg_connection(dsn)
 
     # What workers are running
-    workers = pscheduler.ThreadSafeDictionary()
-
+    workers = {}
+    workers_lock = threading.Lock()
 
     while True:
 
@@ -755,9 +757,10 @@ def main_program():
             FROM schedule_runs_to_schedule"""
         args = []
 
-        if len(workers) > 0:
-            query += " WHERE task in %s"
-            args.append(tuple(workers.keys()))
+        with workers_lock:
+            if len(workers) > 0:
+                query += " WHERE task in %s"
+                args.append(tuple(workers.keys()))
 
         query += " LIMIT 50"
 
@@ -772,14 +775,16 @@ def main_program():
 
             number, task, key, runs, trynext, background, json, participants = row
 
-            if number not in workers:
-                worker = SchedulerWorker(number, nonstart_pg, log,
-                                         workers, task, key, runs, trynext,
-                                         background, json, participants)
-                log.debug("Starting thread for ID %d", number)
-                workers[number] = worker
-                worker.start()
-                wait = False
+            with workers_lock:
+                if number not in workers:
+                    worker = SchedulerWorker(number, nonstart_pg, log,
+                                             workers, workers_lock, task, key,
+                                             runs, trynext, background, json,
+                                             participants)
+                    log.debug("Starting thread for ID %d", number)
+                    workers[number] = worker
+                    worker.start()
+                    wait = False
 
 
         if wait:

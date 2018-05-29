@@ -4,7 +4,7 @@
 
 %define short	twping
 Name:		pscheduler-tool-%{short}
-Version:	1.0.2.3
+Version:	1.0.2.6
 Release:	1%{?dist}
 
 Summary:	twping tool class for pScheduler
@@ -19,8 +19,8 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server
 Requires:	python-pscheduler
 Requires:	pscheduler-test-latency
-Requires:	twamp-client
-Requires:	twamp-server
+#Requires:	twamp-client
+#Requires:	twamp-server
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:	python-pscheduler

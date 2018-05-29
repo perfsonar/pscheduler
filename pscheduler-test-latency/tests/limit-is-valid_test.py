@@ -186,6 +186,14 @@ class LimitIsValidTest(pscheduler.TestLimitIsValidUnitTest):
         ##out of range
         self.assert_cmd('{"flip": {"match": 1}}', expected_valid=False)
         
+    def test_reverse(self):
+        #test reverse
+        ##in range
+        self.assert_cmd('{"reverse": {"match": true}}')
+        self.assert_cmd('{"reverse": {"match": false}}')
+        ##out of range
+        self.assert_cmd('{"reverse": {"match": 1}}', expected_valid=False)
+
 if __name__ == '__main__':
     unittest.main()
 

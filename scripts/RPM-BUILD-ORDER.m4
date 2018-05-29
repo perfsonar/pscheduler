@@ -28,6 +28,11 @@ dnl
 rpm-with-deps
 make-generic-rpm
 
+# Build this early.  Some of the packages using PostgreSQL depend on
+# knowing what version is required to avoid the "Requires: postgresql"
+# trap we fell into with RH6.
+pscheduler-rpm
+
 #
 # DEVELOPMENT, LIBRARIES AND UTILITIES
 #
@@ -85,7 +90,6 @@ random-string
 # PSCHEDULER CORE PARTS
 #
 
-pscheduler-rpm
 pscheduler-account
 pscheduler-jq-library
 python-pscheduler
@@ -98,6 +102,7 @@ pscheduler-server
 
 # Tests
 pscheduler-test-clock
+pscheduler-test-http
 pscheduler-test-idle
 pscheduler-test-idlebgm
 pscheduler-test-idleex
@@ -118,13 +123,14 @@ pscheduler-tool-powstream
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-nuttcp
-pscheduler-tool-bwctliperf2
-pscheduler-tool-bwctliperf3
-pscheduler-tool-bwctlping
-pscheduler-tool-bwctltraceroute
-pscheduler-tool-bwctltracepath
+pscheduler-tool-bwctliperf2			--bundle extras
+pscheduler-tool-bwctliperf3			--bundle extras
+pscheduler-tool-bwctlping			--bundle extras
+pscheduler-tool-bwctltraceroute		--bundle extras
+pscheduler-tool-bwctltracepath		--bundle extras
 pscheduler-tool-net-snmp-set		--bundle extras
-pscheduler-tool-pysnmp			    --bundle extras
+pscheduler-tool-psurl
+pscheduler-tool-pysnmp				--bundle extras
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm

@@ -1,0 +1,115 @@
+#!/usr/bin/python
+
+#
+# Create new test directory from a provided TEMPLATE dir
+#
+
+import os
+import shutil
+import optparse
+import sys
+
+# Gather Args
+args = sys.argv[1:]
+
+def print_usage():
+    print """
+Usage:
+  plugin_dev (options) [test|archiver] [name]
+  plugin_dev (options) [tool] [test-associated] [name]
+
+plugin_dev --help for more information
+"""
+
+usage = """
+  plugin_dev (options) [test|archiver] [name]
+  plugin_dev (options) [tool] [test-associated] [name]
+
+Example usage:
+  plugin_dev test ftp
+  plugin_dev tool ftp dns
+  plugin_dev archiver ftp
+  plugin-dev -d /home/user/pscheduler test ftp"""
+
+parser = optparse.OptionParser(usage=usage)
+
+# Add Options
+parser.add_option("-d", "--dir", dest="directory",
+            help="Directory to which folder will be copied",
+            action="store", type="string")
+
+(options, args) = parser.parse_args(args)
+
+dest = False
+if options.directory is not None:
+    destDir = options.directory
+    dest = True
+
+try:
+    if args[0] not in [ "test", "tool", "archiver" ]:
+        print_usage()
+        exit(1)
+except IndexError:
+    print_usage()
+    exit(1)
+
+try:
+    type = args[0]
+    if (type == "tool"):
+        testName = args[2]
+        testAssociated = args[1]
+    else:
+        testName = args[1]
+except IndexError:
+    print_usage()
+    exit(1)
+
+dirName = "pscheduler-" + type + "-TEMPLATE"
+toCopy = "templates/" + type + ".TEMPLATE"
+# Copy everything to main directory
+newDir = dirName.replace("TEMPLATE", testName)
+if dest:
+    if (destDir[len(destDir) - 1] != '/'):
+        destDir += "/"
+    newDir = destDir + newDir
+else:
+    newDir = "../../" + newDir
+
+try:
+    shutil.copytree(toCopy, newDir)
+except shutil.Error as e:
+    print "Error copying directory: %s" % e
+    exit(1)
+except OSError as e:
+    print "Error copying directory: %s" % e
+    exit(1)
+
+os.chdir(newDir)
+
+# Rename directories
+for (path, dirs, files) in os.walk("."):
+    for dirName in dirs:
+        localPath = path + "/" + dirName
+        newName = dirName.replace("TEMPLATE", testName)
+        os.rename(dirName, newName)
+
+for (path, dirs, files) in os.walk("."):
+    for filename in files:
+        localPath = path + "/" + filename
+        # Find and replace within files
+        with open(localPath) as f:
+            s = f.read()
+        s = s.replace("TEMPLATE", testName)
+        # Replace additional parameters if it's a tool
+        if (type == "tool"):
+            s = s.replace("TEST-REPLACE", testAssociated)
+        with open(localPath, "w") as f:
+            f.write(s)
+        # Rename all files as necessary
+        os.rename(localPath, localPath.replace("TEMPLATE", testName))
+
+print """
+    New dir '%s' has been created.
+
+    Please read README.md for further instructions.
+    """ % newDir

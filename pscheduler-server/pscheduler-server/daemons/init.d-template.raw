@@ -22,7 +22,7 @@ exec=__DAEMONDIR__/$prog
 config=__DSN__
 proguser=__PSUSER__
 
-pidfile=__VAR__/run/pscheduler-$prog.pid
+pidfile=__RUNDIR__/pscheduler-$prog.pid
 lockfile=__VAR__/lock/subsys/$proc
 
 # TODO: Should probably rotate this, but should almost always be empty.
