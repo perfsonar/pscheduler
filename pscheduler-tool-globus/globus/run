@@ -1,0 +1,71 @@
+#!/usr/bin/python
+
+#
+# Development Order #5:
+#
+# This is the meat and bones of the tool, where the actual desired
+# commands or operation will be run. The results are then recorded
+# and added to the 'results' JSON data, which will then be sent
+# back to the test. Both system and api are able to be used here.
+#
+
+import datetime
+import subprocess
+import json
+import sys
+import time
+
+import pscheduler
+
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+
+# Take input from test spec
+try:
+    testtype = input['test']['spec']['testtype']
+
+except KeyError:
+    pscheduler.fail('Missing data in input')
+
+duration = input['test']['spec'].get('duration', 'PT5S')
+duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
+timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
+timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+start_time = datetime.datetime.now()
+succeeded = False
+error = ''
+diags = ''
+
+# Run the actual task here:
+# TODO: Add conditional for type of test in arg parser
+
+if True:
+  argv = ['globus-url-copy', # Implimentation of GridFTP
+          '-vb', '-p 4',     # Verbose output with 4 parrallel connections
+          'sshftp://localhost/home/nateshep/tmp/test.txt', # Source URL
+          'sshftp://localhost/home/nateshep/'] # Destination URL 
+
+  status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
+
+  if status:
+    succeeded = False
+    error = "Error running program:\n%s"% stderr.strip('\n')
+  else:
+    succeeded = True
+    diags = stdout
+
+end_time = datetime.datetime.now()
+
+# Organize results into json data
+results = {
+    'succeeded': succeeded,
+    'result': {
+        'schema': 1,
+        'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
+        'succeeded': succeeded
+    },
+    'error': error,
+    'diags': diags }
+
+pscheduler.succeed_json(results)
+
