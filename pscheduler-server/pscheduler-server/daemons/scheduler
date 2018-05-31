@@ -42,6 +42,10 @@ opt_parser.add_option("-f", "--first-run-offset",
                       help="Time offset for first runs (ISO8601)",
                       action="store", type="string", dest="firstoffset",
                       default="PT10S")
+opt_parser.add_option("-m", "--max-parallel",
+                      help="Maximum concurrent archivings",
+                      action="store", type="int", dest="max_parallel",
+                      default=50)
 opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
@@ -58,6 +62,9 @@ opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
 opt_parser.add_option("--debug", action="store_true", dest="debug")
 
 (options, args) = opt_parser.parse_args()
+
+if options.max_parallel < 1:
+    opt_parser.error("Number of concurrent archivings must be positive.")
 
 
 # Minimum amount of time from now when the first run of a task can be
@@ -745,6 +752,7 @@ def main_program():
     nonstart_pg = pscheduler.pg_connection(dsn)
 
     # What workers are running
+    max_workers = options.max_parallel
     workers = {}
     workers_lock = threading.Lock()
 
@@ -758,11 +766,25 @@ def main_program():
         args = []
 
         with workers_lock:
-            if len(workers) > 0:
-                query += " WHERE task in %s"
-                args.append(tuple(workers.keys()))
+            num_workers = len(workers)
 
-        query += " LIMIT 50"
+            # Weed out any tasks that have a worker scheduling a run.
+
+            if num_workers > 0:
+                query += " WHERE task NOT IN %s"
+                args.append(tuple(workers.keys()))
+                log.debug("Already have workers for %s", tuple(workers.keys()))
+
+            # Don't ask for more rows than we're going to be able to consume
+
+            limit = max_workers - num_workers
+            if limit == 0:
+                log.debug("Already have a full slate of workers, skipping query.")
+                continue
+
+            if limit < max_workers:
+                log.debug("Limiting query to %d tasks", limit)
+            query += " LIMIT %d" % (limit)
 
         cursor.execute(query, args)
 
