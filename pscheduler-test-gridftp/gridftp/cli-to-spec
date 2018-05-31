@@ -52,16 +52,6 @@ opt_parser = pscheduler.FailingOptionParser(epilog=
 # documentation on the opt parser
 
 
-opt_parser.add_option("--host",
-                      help="Host to run the test.",
-                      action="store", type="string",
-                      dest="host")
-
-opt_parser.add_option("--host-node",
-                      help="Host to run the test.",
-                      action="store", type="string",
-                      dest="host_node")
-
 opt_parser.add_option("--duration",
                       help="Duration of idle test.",
                       action="store", type="string",
@@ -72,7 +62,6 @@ opt_parser.add_option("--timeout",
                       action="store", type="string",
                       dest="timeout")
 
-#########################################
 
 opt_parser.add_option("--source",
                       help="Source URL",
@@ -84,7 +73,6 @@ opt_parser.add_option("--dest",
                       action="store", type="string",
                       dest="dest")
 
-#########################################
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
@@ -99,14 +87,10 @@ else:
 
 if options.dest is not None:
   result['dest'] = options.dest
+else:
+  pscheduler.fail('A destination URL is required, \'--dest sshftp://localhost/\'')
 
 ####
-
-if options.host is not None:
-   result['host'] = options.host
-
-if options.host_node is not None:
-   result['host-node'] = options.host_node
 
 if options.timeout is not None:
    result['timeout'] = options.timeout

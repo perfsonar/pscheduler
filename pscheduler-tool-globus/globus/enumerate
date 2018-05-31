@@ -16,7 +16,7 @@
     "name": "globus",
     "description": "Globus tool for testing network over GridFTP",
     "version": "1.0",
-    "tests": [ "pscheduler-test-gridftp" ],
+    "tests": [ "gridftp" ],
 
     "preference": 0,
 

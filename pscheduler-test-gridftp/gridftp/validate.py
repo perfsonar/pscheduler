@@ -16,36 +16,26 @@
 from pscheduler import json_validate
 
 def spec_is_valid(json):
-
-    schema = {
-        "local": {
-            # Local data types such as this can be defined within this file,
-            # but are not necessary
-            "Type": {
-                "type": "string",
-                "enum": [ "system", "api" ]
-            },
-            "Spec": {
-                "type": "object",
+    schema = {"type": "object",
                 # schema, host, host-node, and timeout are standard,
                 # and should be included
                 "properties": {
                     "schema":       { "$ref": "#/pScheduler/Cardinal" },
-                    "host":         { "$ref": "#/pScheduler/Host" },
-                    "host-node":    { "$ref": "#/pScheduler/Host" },
-                    "duration":     { "$ref": "#/pScheduler/Duration" },
-                    "timeout":      { "$ref": "#/pScheduler/Duration" },
-                    # Here is the datatype we defined on lines 24-27
-                    "testtype":     { "$ref": "#/local/Type" },
+                    "source":       { "$ref": "#/pScheduler/Host"     },
+                    "source-node":  { "$ref": "#/pScheduler/Host"     },
+
+                    "dest":         { "$ref": "#/pScheduler/Host"     },
+                    "dest-path":    { "$ref": "#/pScheduler/String"   },
+
+                    "min-bandwith": { "$ref": "#/pScheduler/Cardinal" },
+                    "max-size":     { "$ref": "#/pScheduler/Cardinal" },
                 },
                 # If listed here, data of this type MUST be in the test spec
-                "required": [
-                    "testtype",
+                "required":  [
+                    "dest", "dest-path"
                     ],
-            }
-        },
-        # Set to false if ONLY required options should be used
-        "additionalProperties": True
+
+        "additionalProperties": False
     }
 
     return json_validate(json, schema)
@@ -56,8 +46,10 @@ def result_is_valid(json):
         "type": "object",
         "properties": {
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
-            "succeeded":  { "$ref": "#/pScheduler/Boolean" },
             "time":       { "$ref": "#/pScheduler/Duration" },
+            "succeeded":  { "$ref": "#/pScheduler/Boolean"  },
+            "bytes-sent": { "$ref": "#/pScheduler/Cardinal" },
+            "throughput": { "$ref": "#/pScheduler/Cardinal" },
             },
         "required": [
             "schema",

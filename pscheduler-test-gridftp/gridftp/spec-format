@@ -30,12 +30,10 @@ if not valid:
 if format == 'text/plain':
 
     template = """
-Host ................... {.section host}{host}{.or}Not Specified{.end}
-Source URL ................. {.section source}{source}{.or}Not Specified{.end}
-Host Node ................... {.section host_ndoe}{host_node}{.or}Not Specified{.end}
-Timeout ................... {.section timeout}{timeout}{.or}Not Specified{.end}
-Duration ................... {.section duration}{duration}{.or}Not Specified{.end}
-Test Type ................... {.section testtype}{testtype}{.or}Not Specified{.end}
+Destination ....... {.section dest}{dest}{.or}Not Specified{.end}
+Source URL  ....... {.section source}{source}{.or}Not Specified{.end}
+Timeout     ....... {.section timeout}{timeout}{.or}Not Specified{.end}
+Duration    ....... {.section duration}{duration}{.or}Not Specified{.end}
 """
 
 # Format with html
