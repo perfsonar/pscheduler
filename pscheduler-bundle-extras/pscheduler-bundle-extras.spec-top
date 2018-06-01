@@ -9,7 +9,8 @@ Release:	1%{?dist}
 Summary:	Extras pScheduler Bundle
 BuildArch:	noarch
 
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 

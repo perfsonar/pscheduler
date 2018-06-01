@@ -9,9 +9,9 @@ Release:	1%{?dist}
 Summary:	pScheduler documentation and samples
 
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
 Group:		Unspecified
-Vendor:		perfSONAR Development Team
+Vendor:		perfSONAR
 URL:		http://www.perfsonar.net
 
 Source0:	%{name}-%{version}.tar.gz
@@ -45,5 +45,6 @@ make clean
 
 %files
 %defattr(-,root,root)
+%license LICENSE
 %{_pscheduler_docdir}/*
 

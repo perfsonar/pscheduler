@@ -8,7 +8,8 @@ Release:	1%{?dist}
 
 Summary:	Macros for use by pScheduler RPM specs
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Provides:	%{name} = %{version}-%{release}
