@@ -11,7 +11,8 @@ Release:	1%{?dist}
 
 Summary:	powstream tool class for pScheduler
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Source0:	%{short}-%{version}.tar.gz
@@ -63,5 +64,6 @@ pscheduler internal warmboot
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %config(noreplace) %{_pscheduler_tool_confdir}/*
 %{dest}
