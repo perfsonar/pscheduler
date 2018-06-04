@@ -22,10 +22,14 @@ input = pscheduler.json_load(exit_on_error=True)
 
 # Take input from test spec
 try:
-    testtype = input['test']['spec']['testtype']
+    dest = input['test']['spec']['dest']
+    source = input['test']['spec']['source']
+    
+    #Depreciate dest_path?
+    dest_path = input['test']['spec']['dest-path']
 
-except KeyError:
-    pscheduler.fail('Missing data in input')
+except KeyError as e:
+    print(e);	pscheduler.fail('Missing data in input')
 
 duration = input['test']['spec'].get('duration', 'PT5S')
 duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
@@ -37,13 +41,15 @@ error = ''
 diags = ''
 
 # Run the actual task here:
-# TODO: Add conditional for type of test in arg parser
 
 if True:
   argv = ['globus-url-copy', # Implimentation of GridFTP
-          '-vb', '-p 4',     # Verbose output with 4 parrallel connections
-          'sshftp://localhost/home/nateshep/tmp/test.txt', # Source URL
-          'sshftp://localhost/home/nateshep/'] # Destination URL 
+          #'-vb', # verbose output for test
+	  #'-p 4', # num of parrallel TCP connections
+	  source, #Source URL
+	  dest] #Destination URL + path
+          #'sshftp://localhost/home/nateshep/tmp/test.txt', # Source URL
+          #'sshftp://localhost/home/nateshep/'] # Destination URL 
 
   status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
 

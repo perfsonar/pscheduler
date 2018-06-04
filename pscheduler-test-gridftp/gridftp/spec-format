@@ -38,17 +38,14 @@ Duration    ....... {.section duration}{duration}{.or}Not Specified{.end}
 
 # Format with html
 elif format == 'text/html':
-
+'''
    template = """
 <table>
-<tr><td>Host</td><td>{.section host}{host}{.or}Not Specified{.end}</td></tr>
-<tr><td>Host Node</td><td>{.section host_node}{host_node}{.or}Not Specified{.end}</td></tr>
 <tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
 <tr><td>Duration</td><td>{.section duration}{duration}{.or}Not Specified{.end}</td></tr>
-<tr><td>Test Type</td><td>{.section testtype}{testtype}{.or}Not Specified{.end}</td></tr>
 </table>
 """
-
+'''pass
 else:
 
    pscheduler.fail("Unsupported format '%s'" % format)

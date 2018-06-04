@@ -25,6 +25,8 @@ result = pscheduler.speccli_build_args(spec,
 
         # Add all argument strings here, as tuples
         ( 'dest', 'dest' ),
+        ( 'dest-path','dest-path'),
+
         ( 'source', 'source'),
         ( 'timeout', 'timeout' ),
         ( 'duration', 'duration'),

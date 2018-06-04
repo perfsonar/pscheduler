@@ -21,10 +21,10 @@ def spec_is_valid(json):
                 # and should be included
                 "properties": {
                     "schema":       { "$ref": "#/pScheduler/Cardinal" },
-                    "source":       { "$ref": "#/pScheduler/Host"     },
+                    "source":       { "$ref": "#/pScheduler/String"     },
                     "source-node":  { "$ref": "#/pScheduler/Host"     },
 
-                    "dest":         { "$ref": "#/pScheduler/Host"     },
+                    "dest":         { "$ref": "#/pScheduler/String"     },
                     "dest-path":    { "$ref": "#/pScheduler/String"   },
 
                     "min-bandwith": { "$ref": "#/pScheduler/Cardinal" },

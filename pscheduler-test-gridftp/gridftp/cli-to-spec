@@ -73,12 +73,15 @@ opt_parser.add_option("--dest",
                       action="store", type="string",
                       dest="dest")
 
+opt_parser.add_option("--dest-path",
+                      help="Destination path",
+                      action="store", type="string",
+                      dest="dest_path")
+
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
 result = { 'schema': 1 }
-
-####
 
 if options.source is not None:
   result['source'] = options.source
@@ -90,7 +93,8 @@ if options.dest is not None:
 else:
   pscheduler.fail('A destination URL is required, \'--dest sshftp://localhost/\'')
 
-####
+if options.dest_path is not None:
+  result['dest-path'] = options.dest_path
 
 if options.timeout is not None:
    result['timeout'] = options.timeout
