@@ -18,8 +18,7 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
 Requires:	python-pscheduler
-Requires:	pscheduler-test-simplestream
-requires:	nc
+Requires:	pscheduler-test-simplestream >= 1.0.2.6.1
 
 BuildRequires:	pscheduler-rpm
 

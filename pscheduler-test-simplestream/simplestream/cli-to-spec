@@ -61,6 +61,11 @@ opt_parser.add_option("-d", "--dawdle",
                       action="store", type="string",
                       dest="dawdle")
 
+opt_parser.add_option("-i", "--ip-version",
+                      help="Force IP version (4 or 6)",
+                      action="store", type="int",
+                      dest="ip_version")
+
 opt_parser.add_option("-m", "--test-material",
                       help="Test material to be sent",
                       action="store", type="string",
@@ -93,7 +98,8 @@ if len(remaining_args) != 0:
    pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
 
-result = { 'schema': 1 }
+spec_schema = pscheduler.HighInteger(1)
+result = {}
 
 if options.dest is not None:
    result['dest'] = options.dest
@@ -103,6 +109,10 @@ if options.dest_node is not None:
 
 if options.dawdle is not None:
    result['dawdle'] = options.dawdle
+
+if options.ip_version is not None:
+   result['ip-version'] = options.ip_version
+   spec_schema.set(2)
 
 if options.source is not None:
    result['source'] = options.source
@@ -119,5 +129,6 @@ if options.timeout is not None:
 if options.fail is not None:
    result['fail'] = options.fail
 
+result['schema'] = spec_schema.value()
 
 pscheduler.succeed_json(result)
