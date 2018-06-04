@@ -69,6 +69,22 @@ except KeyError:
     pass  # Skip it if not in the input
 
 
+# Both participants need this.
+
+try:
+    ip_version = input['test']['spec']['ip-version']
+except KeyError:
+    (ip_version, err) = pscheduler.ip_addr_version(
+        input['test']['spec']['dest'])
+    if ip_version is None:
+        pscheduler.succeed_json({
+            'succeeded': False,
+            'error': err
+        })
+
+socket_family = socket.AF_INET if ip_version == 4 else socket.AF_INET6
+
+
 participant = input['participant']
 
 if participant == 0:
@@ -108,7 +124,7 @@ if participant == 0:
     while try_num <= max_tries:
 
         try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock = socket.socket(socket_family, socket.SOCK_STREAM)
             try:
                 source = input['test']['spec']['source']
                 log.debug("Binding to %s", source)
@@ -131,8 +147,9 @@ if participant == 0:
             diags.append("Try %d succeeded." % (try_num))
             break
         except Exception as ex:
-            error = "Failed to connect: %s" % ( str(ex) )
-            diags.append("Try %d failed: %s" % (try_num, str(ex)))
+            error = ex[1] if isinstance(ex, socket.gaierror) else str(ex)
+            error = "Failed to connect: %s" % (error)
+            diags.append("Try %d failed: %s" % (try_num, error))
             log.debug(error)
             log.debug("Sleeping %s", sleep_time)
             time.sleep(sleep_time)
@@ -162,7 +179,7 @@ elif participant == 1:
 
     try:
         # TODO: Need to handle exceptions gracefully.
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock = socket.socket(socket_family, socket.SOCK_STREAM)
         sock.settimeout(time_left())
         server_address = (input['test']['spec']['dest'],
                           input['participant-data'][1]['listen-port'])
@@ -183,6 +200,10 @@ elif participant == 1:
 
     except socket.timeout as ex:
         error = "Timed out"
+
+    except socket.gaierror as ex:
+        (err_no, err_str) = ex
+        error = "Unable to set up listener: %s" % (err_str)
 
     except Exception as ex:
         error = "Receiver exception: " + str(ex) \

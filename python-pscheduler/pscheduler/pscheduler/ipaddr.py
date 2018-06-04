@@ -3,6 +3,7 @@ Functions for handling IP addresses
 """
 
 import netaddr
+import socket
 
 from psdns import *
 
@@ -22,7 +23,24 @@ def is_ip(addr):
 
 
 
-def ip_addr_version(addr, resolve=True, timeout=dns_default_timeout()):
+
+# Map of IP versions to socket address families
+__ip_families = {
+    4: socket.AF_INET,
+    6: socket.AF_INET6
+}
+
+# Map of socket address families to IP versions
+__ip_versions = {
+    socket.AF_INET: 4,
+    socket.AF_INET6: 6
+}
+
+
+def ip_addr_version(addr,
+                    resolve=True,
+                    family=False,
+                    timeout=dns_default_timeout()):
     """Determine what IP version an address, CIDR block or hostname
     represents.  When resolving hostnames to an IP, the search order
     will be A followed by AAAA.
@@ -30,21 +48,29 @@ def ip_addr_version(addr, resolve=True, timeout=dns_default_timeout()):
     The returned tuple is (version, ip), where version is 4, 6 or None
     of nothing can be determined and ip is the ip address supplied or
     resolved.
+
+    If 'family' is True, the returned version will be the address
+    family as defined by the socket module.
     """
 
     # Chop out any CIDR suffix.
 
-    slash_index = addr.rfind('/')
+    slash_index = addr.find('/')
     if slash_index > 0:
         try:
             int(addr[slash_index + 1:])
             addr = addr[:slash_index]
         except ValueError:
-            # Do nothing; will try to resolve if doing that.
+            # DNS resolution will torpedo this.
             pass
 
+    # If it looks like an IP address, act on it.
+
     try:
-        return (netaddr.IPAddress(addr).version, addr)
+        ipversion = netaddr.IPAddress(addr).version
+        if family:
+            ipversion = __ip_families[ipversion]
+        return (ipversion, addr)
     except (netaddr.core.AddrFormatError, ValueError):
         # Don't care, will resolve.
         pass
@@ -52,10 +78,35 @@ def ip_addr_version(addr, resolve=True, timeout=dns_default_timeout()):
     if not resolve:
         return (None, None)
 
+    # Try to figure it out by resolution.
+
+    ipversion = None
+
+    try:
+
+        # This will return the preferred address family first.
+        # Use that.
+        addrinfo = socket.getaddrinfo(addr, None)
+        for info in addrinfo:
+            try:
+                ipversion = info[0]
+                break
+            except KeyError:
+                continue
+
+    except socket.gaierror as ex:
+        (err, string) = ex
+        return (None, string)
+
+    if ipversion is None:
+        return (None, "Unable to resolve '%s' or find a supported IP version" % (host))
+
+
     for ip_version in [4, 6]:
         resolved = dns_resolve(addr, ip_version=ip_version, timeout=timeout)
         if resolved is not None:
-            return (ip_addr_version(resolved, resolve=False)[0], resolved)
+            return (ip_addr_version(resolved, resolve=False,
+                                    family=family)[0], resolved)
 
     return (None, None)
 

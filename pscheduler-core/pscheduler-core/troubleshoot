@@ -55,12 +55,17 @@ opt_parser.add_option("--host",
                       action="store", type="string",
                       dest="host")
 
+opt_parser.add_option("--ip-version",
+                      help="IP version to use (4 or 6)",
+                      default=None,
+                      action="store", type="int",
+                      dest="ip_version")
+
 opt_parser.add_option("--quick",
                       help="Don't do anything time-consuming",
                       default=False,
                       action="store_true",
                       dest="quick")
-
 
 opt_parser.add_option("--stats",
                       help="Dump server statistics",
@@ -73,6 +78,10 @@ opt_parser.add_option("--stats",
 if len(remaining_args) > 1:
     opt_parser.print_usage()
     pscheduler.fail()
+
+
+if options.ip_version is not None and options.ip_version not in [4, 6]:
+    pscheduler.fail("IP version must be 4 or 6.")
 
 
 host_a = options.host
@@ -465,19 +474,23 @@ ok()
 # Simplestream
 
 if not options.quick:
-    simplestream_result = run_task(
-        "  Simple stream test", host_a,
-        {
-            "schema": 1,
-            "test": {
-                "spec": {
-                    "dest": host_z,
-                    "schema": 1
-                },
-                "type": "simplestream"
+    simplestream_task =  {
+        "schema": 1,
+        "test": {
+            "spec": {
+                "dest": host_z,
+                "schema": 1
             },
-            "schedule": {}
-        }
+            "type": "simplestream"
+        },
+        "schedule": {}
+    }
+
+    if options.ip_version is not None:
+        simplestream_task["test"]["spec"]["ip-version"] = options.ip_version
+
+    simplestream_result = run_task(
+        "  Simple stream test", host_a, simplestream_task
     )
 
 
