@@ -9,7 +9,8 @@ Release:	1%{?dist}
 
 Summary:	pScheduler BWCTL Traceroute Tool
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Source0:	%{short}-%{version}.tar.gz
@@ -55,4 +56,5 @@ pscheduler internal warmboot
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %{dest}

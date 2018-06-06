@@ -12,7 +12,8 @@ Release:	1%{?dist}
 
 Summary:	pScheduler Server
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Source0:	%{name}-%{version}.tar.gz
@@ -693,6 +694,7 @@ systemctl restart "%{pgsql_service}"
 # Database
 #
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
+%license LICENSE
 %{_pscheduler_datadir}/*
 %attr(400,-,-)%verify(user group mode) %{db_config_dir}/*
 %{_pscheduler_internals}/*
@@ -704,6 +706,7 @@ systemctl restart "%{pgsql_service}"
 #
 
 %defattr(-,root,root,-)
+%license LICENSE
 %attr(755,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %{daemon_config_dir}
 %attr(600,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %config(noreplace) %{daemon_config_dir}/*
 %if 0%{?el6}
@@ -721,6 +724,7 @@ systemctl restart "%{pgsql_service}"
 # API Server
 #
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
+%license LICENSE
 %{api_dir}
 %config(noreplace) %{api_httpd_conf}
 

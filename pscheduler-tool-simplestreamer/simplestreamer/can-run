@@ -8,10 +8,8 @@ import sys
 
 import pscheduler
 
-json = pscheduler.json_load(exit_on_error=True);
+json = pscheduler.json_load(exit_on_error=True, max_schema=2);
 
-# TODO: Should be checking the package schema and the task spec schema.
-# TODO: Should be validating.
 
 try:
     if json['type'] != 'simplestream':
@@ -28,7 +26,7 @@ except KeyError:
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 1)
+    pscheduler.json_check_schema(spec, 2)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,

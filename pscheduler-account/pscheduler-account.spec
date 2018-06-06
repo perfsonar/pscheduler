@@ -9,7 +9,8 @@ Release:	1%{?dist}
 Summary:	Account for pScheduler
 BuildArch:	noarch
 
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 # No Source:

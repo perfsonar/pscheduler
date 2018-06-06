@@ -15,7 +15,7 @@ try:
 except IndexError:
    format = 'text/plain'
 
-json = pscheduler.json_load(exit_on_error=True, max_schema=1)
+json = pscheduler.json_load(exit_on_error=True, max_schema=2)
 
 valid, message = spec_is_valid(json)
 
@@ -28,6 +28,7 @@ if format == 'text/plain':
    template = """
 Destination ...... {.section dest}{dest}{.or}Not Specified{.end}
 Max. Dawdle  ..... {.section dawdle}{dawdle}{.or}Not Specified{.end}
+IP Version ....... {.section ip-version}{ip-version}{.or}Not Specified{.end}
 Test Material .... {.section test-material}{test-material}{.or}Not Specified{.end}
 Timeout .......... {.section timeout}{timeout}{.or}Not Specified{.end}
 Chance of Fail ... {.section fail}{fail}{.or}Not Specified{.end}
@@ -43,6 +44,9 @@ elif format == 'text/html':
 </td></tr>
 <tr><td><b>Max. Dawdle</b></td><td>
 {.section dawdle}{dawdle}{.or}<i>Not Specified</i>{.end}
+</td></tr>
+<tr><td><b>Max. Dawdle</b></td><td>
+{.section ip-version}{ip-version}{.or}<i>Not Specified</i>{.end}
 </td></tr>
 <tr><td><b>Test Material</b></td><td>
 {.section test-material}<tt>{test-material}</tt>{.or}<i>Not Specified</i>{.end}

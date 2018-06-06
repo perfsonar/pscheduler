@@ -9,7 +9,8 @@ Release:	1%{?dist}
 
 Summary:	Simple Streamer tool class for pScheduler
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Source0:	%{short}-%{version}.tar.gz
@@ -18,8 +19,7 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
 Requires:	python-pscheduler
-Requires:	pscheduler-test-simplestream
-requires:	nc
+Requires:	pscheduler-test-simplestream >= 1.0.2.6.1
 
 BuildRequires:	pscheduler-rpm
 
@@ -61,5 +61,6 @@ pscheduler internal warmboot
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %{dest}
 

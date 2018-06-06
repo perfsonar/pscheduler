@@ -13,7 +13,7 @@ from validate import limit_is_valid
 #
 
 try:
-    json = pscheduler.json_load(max_schema=1)
+    json = pscheduler.json_load(max_schema=2)
 except ValueError as ex:
     pscheduler.fail("Invalid JSON %s" % str(ex))
 

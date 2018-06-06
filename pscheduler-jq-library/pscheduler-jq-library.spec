@@ -8,7 +8,8 @@ Release:	1%{?dist}
 
 Summary:	Library of JQ functions for pScheduler
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Source0:	%{name}-%{version}.tar.gz
@@ -39,4 +40,5 @@ make \
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %{jq_lib}/*
