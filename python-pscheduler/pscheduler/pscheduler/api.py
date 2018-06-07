@@ -25,8 +25,8 @@ def api_local_host():
     "Return a name that should point to the server on this host."
     return 'localhost'
 
-def api_this_host():
-    "Return a fully-qualified name for this host"
+def api_local_host_fqdn():
+    "Return as close to a fully-qualified name for this host as possible."
     return socket.getfqdn()
 
 
