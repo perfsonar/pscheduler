@@ -130,8 +130,8 @@ def clock_survey(hosts, bind=None):
         return []
 
     # Any null hosts become the local host
-    # TODO: Should this call api_this_host()?
-    hosts = [ "localhost" if host is None else host for host in hosts ]
+    hosts = [ pscheduler.api_local_host() if host is None else host
+              for host in hosts ]
 
     host_args = []
     for slot in range(0,len(hosts)):

@@ -601,11 +601,12 @@ if lead is None and assist != last_ditch_assist:
 #
 
 
-lead_list = [lead] if lead is not None else [pscheduler.api_this_host()]
-lead_list.append("localhost")
+lead_list = [lead] if lead is not None else []
+lead_list.append(pscheduler.api_local_host())
 
 lead = None
 for lead_candidate in lead_list:
+    # TODO: Use api_ping here instead of doing it manually.
     ping_url = pscheduler.api_url(lead_candidate)
     log.debug("Pinging %s", ping_url)
     status, result = pscheduler.url_get(

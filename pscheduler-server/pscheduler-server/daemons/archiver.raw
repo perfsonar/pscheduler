@@ -573,7 +573,7 @@ class ArchiveWorker():
 
         participants_merged = []
         for participant in participants:
-            participants_merged.append(pscheduler.api_this_host() \
+            participants_merged.append(pscheduler.api_local_host() \
                                        if participant is None \
                                        else participant)
 

@@ -51,7 +51,7 @@ opt_parser.add_option("--past",
 opt_parser.add_option("--host",
                       help="pScheduler host",
                       action="store", type="string",
-                      default=pscheduler.api_this_host(),
+                      default=pscheduler.api_local_host(),
                       dest="host")
 
 opt_parser.add_option("--refresh",
@@ -76,6 +76,8 @@ if options.refresh <= 0:
 update_interval = datetime.timedelta(seconds=options.refresh)
 
 
+# What the server thinks its hostname is
+server_hostname = "Unknown Host"
 
 #
 # Some utilities
@@ -163,11 +165,11 @@ def draw_static(screen):
 
         # Host
 
-        host_len = len(options.host)
+        host_len = len(server_hostname)
         columns_left -= host_len + 2
         if columns_left < 0:
             return
-        screen.addstr(0, width-host_len, options.host, color_pair("default"))
+        screen.addstr(0, width-host_len, server_hostname, color_pair("default"))
 
 
         # Title
@@ -398,6 +400,18 @@ if not up:
     pscheduler.fail("Cannot reach pScheduler on %s: %s"
                     % (options.host, reason))
 
+
+# Get the server's idea of its name for use in the display.
+
+hostname_url = pscheduler.api_url(options.host, path="/hostname")
+status, result = pscheduler.url_get(hostname_url,
+                                             bind=options.bind,
+                                             throw=False,
+                                             timeout=5)
+if status != 200:
+    pscheduler.fail("Unable to contact pScheduler on %s: %s"
+                    % (options.host, result))
+server_hostname = result
 
 
 try:
