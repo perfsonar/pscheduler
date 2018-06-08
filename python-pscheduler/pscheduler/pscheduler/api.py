@@ -21,8 +21,12 @@ def api_root():
     "Return the standard root location of the pScheduler hierarchy"
     return '/pscheduler'
 
-def api_this_host():
-    "Return a fully-qualified name for this host"
+def api_local_host():
+    "Return a name that should point to the server on this host."
+    return 'localhost'
+
+def api_local_host_fqdn():
+    "Return as close to a fully-qualified name for this host as possible."
     return socket.getfqdn()
 
 
@@ -163,7 +167,7 @@ def api_result_delimiter():
 
 
 
-def api_ping(host, bind=None, timeout=3):
+def api_ping(host=None, bind=None, timeout=3):
     """
     See if an API server is alive within a given timeout.  If 'host'
     is None, ping the local server.
@@ -171,9 +175,6 @@ def api_ping(host, bind=None, timeout=3):
     Returns a tuple of (up, reason), where reason is a string
     explaining why 'up' is what is is.
     """
-    if host is None:
-        host = api_this_host()
-
     url = pscheduler.api_url(host)
 
     status, result = url_get(url, bind=bind,
@@ -363,8 +364,9 @@ if __name__ == "__main__":
     print api_url(path='nohost')
     print
 
+    print api_ping()
+
     print api_has_bwctl(None)
     print api_has_pscheduler(None)
-
 
     print api_has_services(["perfsonardev0.internet2.edu"])
