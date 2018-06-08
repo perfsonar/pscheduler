@@ -16,7 +16,7 @@ except IndexError:
    format = 'text/plain'
 
 
-json = pscheduler.json_load(exit_on_error=True, max_schema=1)
+json = pscheduler.json_load(exit_on_error=True, max_schema=2)
 
 valid, message = spec_is_valid(json)
 
@@ -39,6 +39,7 @@ Packet Length ................. {.section length}{length}{.or}Not Specified{.end
 Time to Live .................. {.section ttl}{ttl}{.or}Not Specified{.end}
 Deadline ...................... {.section deadline}{deadline}{.or}Not Specified{.end}
 Timeout .,..................... {.section timeout}{timeout}{.or}Not Specified{.end}
+Protocol .,.................... {.section protocol}{protocol}{.or}Not Specified{.end}
 """
 
 elif format == 'text/html':
@@ -57,6 +58,7 @@ elif format == 'text/html':
 <tr><td>Time to Live</td><td>{.section ttl}{ttl}{.or}Not Specified{.end}</td></tr>
 <tr><td>Deadline</td><td>{.section deadline}{deadline}{.or}Not Specified{.end}</td></tr>
 <tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
+<tr><td>Protocol</td><td>{.section protocol}{protocol}{.or}Not Specified{.end}</td></tr>
 </table>
    """
 
