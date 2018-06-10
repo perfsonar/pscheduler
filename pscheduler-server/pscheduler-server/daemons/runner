@@ -670,9 +670,6 @@ class RunWorker:
                 if status == 200:
                     self.log.debug("%d: Retrieved %s", self.id, run_result)
                     index = to_get[get]
-                    # Pylint infers that run_result is a string
-                    # when it isn't.
-                    # pylint: disable=maybe-no-membe
                     got = run_result["result"]
                     if got is not None:
                         full_result[index] = got
