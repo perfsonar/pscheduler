@@ -449,14 +449,23 @@ BEGIN
             AND NEW.state IN ( run_state_finished(), run_state_overdue(),
                  run_state_missed(), run_state_failed() )
         THEN
-	    -- Record the actual times the run ran
-	    NEW.times_actual = tstzrange(lower(OLD.times), normalized_now(), '[]');
 
-	    -- If the run took less than the scheduled time, return
-	    -- the remainder to the timeline.
-	    IF upper(OLD.times) > normalized_now() THEN
-	        NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
-	    END IF;
+	    -- Adjust the end times only if there's a sane case for
+	    -- doing so.  If the clock is out of whack, the current
+	    -- time could be less than the start time, which would
+	    -- make for an invalid range.
+
+	    IF normalized_now() >= lower(OLD.times)
+            THEN
+	        -- Record the actual times the run ran
+	    	NEW.times_actual = tstzrange(lower(OLD.times), normalized_now(), '[]');
+
+	    	-- If the run took less than the scheduled time, return
+	    	-- the remainder to the timeline.
+	    	IF upper(OLD.times) > normalized_now() THEN
+	           NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
+	    	END IF;
+            END IF;
 
         END IF;
 

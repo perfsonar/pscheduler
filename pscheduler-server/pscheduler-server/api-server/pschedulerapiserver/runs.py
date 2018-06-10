@@ -292,8 +292,8 @@ def tasks_uuid_runs_run(task, run):
                 return not_found()
 
 
-        # 60 tries at 0.5s intervals == 30 sec.
-        tries = 60 if (wait_local or wait_merged) else 1
+        # Obey the wait time with tries at 0.5s intervals
+        tries = wait_time * 2 if (wait_local or wait_merged) else 1
 
         while tries:
 
