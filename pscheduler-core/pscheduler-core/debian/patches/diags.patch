@@ -1,8 +1,33 @@
-Index: pscheduler-core/diags.raw
-===================================================================
---- pscheduler-core.orig/diags.raw	2017-11-07 16:08:52.000000000 +0000
-+++ pscheduler-core/diags.raw	2017-11-27 14:44:51.000000000 +0000
-@@ -138,7 +138,7 @@
+--- pscheduler-core.orig/diags.raw	2018-06-11 14:45:29.114216934 +0200
++++ pscheduler-core/diags.raw	2018-06-11 14:48:06.040183771 +0200
+@@ -98,7 +98,7 @@
+ 
+ section "New Tasks by Hour Added"
+ 
+-postgresql-load <<EOF
++su -l -c psql postgres <<EOF
+ \c pscheduler
+ SELECT
+     date_trunc('hour', added) AS hour,
+@@ -113,7 +113,7 @@
+ 
+ section "New Runs by Hour Added"
+ 
+-postgresql-load <<EOF
++su -l -c psql postgres <<EOF
+ \c pscheduler
+ SELECT
+     date_trunc('hour', added) AS hour,
+@@ -128,7 +128,7 @@
+ 
+ section "Run States by Hour"
+ 
+-postgresql-load <<EOF
++su -l -c psql postgres <<EOF
+ \c pscheduler
+ SELECT
+     run_state.enum AS state,
+@@ -185,7 +185,7 @@
  fi
  
  section HTTPD Error Log
@@ -11,7 +36,7 @@ Index: pscheduler-core/diags.raw
  if [ -r "${LOG}" ]
  then
      cat "${LOG}"
-@@ -149,17 +149,11 @@
+@@ -196,17 +196,11 @@
  
  section PostgreSQL Log
  
