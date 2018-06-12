@@ -388,6 +388,8 @@ def tasks():
             log.debug("Using lead bind of %s" % str(lead_bind))
             tool_params["lead-bind"] = lead_bind
 
+        tool_offers = {}
+
         for participant_no in range(0, len(participants)):
 
             participant = participants[participant_no]
@@ -428,6 +430,7 @@ def tasks():
                 return error("Error getting tools from %s: %s" \
                                      % (participant, str(ex)))
             log.debug("Participant %s offers tools %s", participant, result)
+            tool_offers[participant] = result
 
         if len(tools) != nparticipants:
             return error("Didn't get a full set of tool responses")
@@ -437,11 +440,29 @@ def tasks():
         else:
             tool = pick_tool(tools)
 
+        # Complain if no usable tool was found
+
         if tool is None:
-            # TODO: This could stand some additional diagnostics.
-            return no_can_do("Couldn't find a tool in common among the participants.")
+
+            offers = []
+            for participant in participants:
+                offer_set = [
+                    offer["name"]
+                    for offer in tool_offers.get(participant, [{"name": "nothing"}])
+                ]
+                offers.append("%s offered %s" % (
+                    participant,
+                    ", ".join(offer_set)
+                ))
+
+            return no_can_do(
+                "No tool in common among the participants:  %s." % (
+                    ";  ".join(offers)) )
+
 
         task['tool'] = tool
+
+
 
         #
         # TASK CREATION
