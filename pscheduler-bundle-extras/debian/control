@@ -12,6 +12,11 @@ Package: pscheduler-bundle-extras
 Architecture: all
 Depends:
  pscheduler-test-snmpset,
+ pscheduler-tool-bwctliperf2,
+ pscheduler-tool-bwctliperf3,
+ pscheduler-tool-bwctlping,
+ pscheduler-tool-bwctltracepath,
+ pscheduler-tool-bwctltraceroute,
  pscheduler-tool-net-snmp-set
 Description: Extra pScheduler Bundle
  Bundle of extra pScheduler packages
