@@ -36,7 +36,7 @@ except ValueError as ex:
         "reasons": [str(ex)]
     })
 
-if 'protocol' not in spec or spec['protocol'] != 'twamp':
+if json['type'] == 'rtt' and ('protocol' not in spec or spec['protocol'] != 'twamp'):
     pscheduler.succeed_json({
         "can-run": False,
         "reasons": ["Only twamp protocol is supported"]
