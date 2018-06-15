@@ -136,6 +136,7 @@ def __tasks_get_filtered(uri_base,
             continue
 
         json = row[0]
+        assert json is not None, "Database did not return details."
 
         # This is always added.
         json['href'] = uri
@@ -193,19 +194,14 @@ def tasks():
 
         where_clause += " ORDER BY added"
 
-
-        try:
-            tasks = __tasks_get_filtered(
-                request.base_url,
-                where_clause=where_clause,
-                args=args,
-                expanded=is_expanded(),
-                detail=arg_boolean("detail"),
-                single=False
-            )
-        except Exception as ex:
-            return error(str(ex))
-
+        tasks = __tasks_get_filtered(
+            request.base_url,
+            where_clause=where_clause,
+            args=args,
+            expanded=is_expanded(),
+            detail=arg_boolean("detail"),
+            single=False
+        )
 
         return ok_json(tasks)
 
@@ -619,16 +615,13 @@ def tasks_uuid(uuid):
 
     if request.method == 'GET':
 
-        try:
-            tasks = __tasks_get_filtered(
-                request.base_url,
-                where_clause="task.uuid = %s",
-                args=[uuid],
-                expanded=True,
-                detail=arg_boolean("detail"),
-                single=True)
-        except Exception as ex:
-            return error(str(ex))
+        tasks = __tasks_get_filtered(
+            request.base_url,
+            where_clause="task.uuid = %s",
+            args=[uuid],
+            expanded=True,
+            detail=arg_boolean("detail"),
+            single=True)
 
         if not tasks:
             return not_found()
