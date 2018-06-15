@@ -14,10 +14,8 @@ from .response import *
 
 
 def single_numeric_query(query, query_args = []):
-    try:
-        cursor = dbcursor_query(query, query_args)
-    except Exception as ex:
-        return error(str(ex))
+
+    cursor = dbcursor_query(query, query_args)
 
     if cursor.rowcount == 0:
         return not_found()
@@ -33,19 +31,16 @@ def single_numeric_query(query, query_args = []):
 #
 @application.route("/stat/control/pause", methods=['GET'])
 def stat_control_pause():
-    try:
-        cursor = dbcursor_query("""
-            SELECT
-                control_is_paused(),
-                date_trunc('second', pause_runs_until - now()),
-                pause_runs_until = tstz_infinity()
-            FROM control""")
-        if cursor.rowcount != 1:
-            pscheduler.fail("Got back more data than expected.")
-        (is_paused, left, infinite) = cursor.fetchone()
-        cursor.close()
-    except Exception as ex:
-        return error(str(ex))
+    cursor = dbcursor_query("""
+        SELECT
+            control_is_paused(),
+            date_trunc('second', pause_runs_until - now()),
+            pause_runs_until = tstz_infinity()
+        FROM control""")
+    if cursor.rowcount != 1:
+        pscheduler.fail("Got back more data than expected.")
+    (is_paused, left, infinite) = cursor.fetchone()
+    cursor.close()
 
     result = { "is_paused": is_paused }
     if is_paused:

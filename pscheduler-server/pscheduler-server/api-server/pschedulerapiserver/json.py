@@ -24,10 +24,7 @@ def json_query_simple(query, query_args=[], empty_ok=False):
     if request.method != 'GET':
         return not_allowed()
 
-    try:
-        cursor = dbcursor_query(query, query_args)
-    except Exception as ex:
-        return error(str(ex))
+    cursor = dbcursor_query(query, query_args)
 
     if cursor.rowcount == 0:
         cursor.close()
@@ -53,10 +50,7 @@ def json_query(query, query_args=[], name = 'name', single = False):
     if request.method != 'GET':
         return not_allowed()
 
-    try:
-        cursor = dbcursor_query(query, query_args)
-    except Exception as ex:
-        return error(str(ex))
+    cursor = dbcursor_query(query, query_args)
 
     if single and cursor.rowcount == 0:
         cursor.close()

@@ -28,11 +28,9 @@ class TaskPostingException(Exception):
 
 def task_exists(task):
     """Determine if a task exists by its UUID"""
-    try:
-        cursor = dbcursor_query("SELECT EXISTS (SELECT * FROM task WHERE uuid = %s)",
-                                [task], onerow=True)
-    except Exception as ex:
-        return error(str(ex))
+
+    cursor = dbcursor_query("SELECT EXISTS (SELECT * FROM task WHERE uuid = %s)",
+                            [task], onerow=True)
 
     return cursor.fetchone()[0]
     
@@ -473,13 +471,10 @@ def tasks():
         # do anything with it until the task has been submitted to all
         # of the other participants.
 
-        try:
-            cursor = dbcursor_query(
-                "SELECT * FROM api_task_post(%s, %s, %s, %s, 0, NULL, FALSE, %s)",
-                [pscheduler.json_dump(task), participants, hints_data,
-                 pscheduler.json_dump(limits_passed), diags], onerow=True)
-        except Exception as ex:
-            return error(str(ex.diag.message_primary))
+        cursor = dbcursor_query(
+            "SELECT * FROM api_task_post(%s, %s, %s, %s, 0, NULL, FALSE, %s)",
+            [pscheduler.json_dump(task), participants, hints_data,
+             pscheduler.json_dump(limits_passed), diags], onerow=True)
 
         if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
@@ -564,14 +559,9 @@ def tasks():
         # Update the list of limits passed in the local database
         # TODO: How do the other participants know about this?
         log.debug("Limits passed: %s", limits_passed)
-        try:
-            cursor = dbcursor_query(
-                "UPDATE task SET limits_passed = %s::JSON WHERE uuid = %s",
-                [pscheduler.json_dump(limits_passed), task_uuid])
-        except Exception as ex:
-            return error(str(ex.diag.message_primary))
-
-
+        cursor = dbcursor_query(
+            "UPDATE task SET limits_passed = %s::JSON WHERE uuid = %s",
+            [pscheduler.json_dump(limits_passed), task_uuid])
 
         # Enable the task so the scheduler will schedule it.
         try:
@@ -677,18 +667,16 @@ def tasks_uuid(uuid):
         log.debug("Posting task %s", uuid)
 
         try:
-            try:
-                participants = pscheduler.json_load(request.data,
-                                                    max_schema=2)["participants"]
-            except Exception as ex:
-                return bad_request("Task error: %s" % str(ex))
-            cursor = dbcursor_query(
-                "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, TRUE, %s)",
-                [request.data, participants, hints_data,
-                 pscheduler.json_dump(limits_passed), participant, uuid,
-                 "\n".join(diags)])
+            participants = pscheduler.json_load(request.data,
+                                                max_schema=2)["participants"]
         except Exception as ex:
-            return error(str(ex))
+            return bad_request("Task error: %s" % str(ex))
+        cursor = dbcursor_query(
+            "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, TRUE, %s)",
+            [request.data, participants, hints_data,
+             pscheduler.json_dump(limits_passed), participant, uuid,
+             "\n".join(diags)])
+
         if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
         # TODO: Assert that rowcount is 1
@@ -697,26 +685,22 @@ def tasks_uuid(uuid):
 
     elif request.method == 'DELETE':
 
-        try:
-            requester, key = task_requester_key(uuid)
-            if requester is None:
-                return not_found()
+        requester, key = task_requester_key(uuid)
+        if requester is None:
+            return not_found()
 
-            if not access_write_task(requester, key):
-                return forbidden()
+        if not access_write_task(requester, key):
+            return forbidden()
 
-            parsed = list(urlparse.urlsplit(request.url))
-            parsed[1] = "%s"
-            template = urlparse.urlunsplit(parsed)
+        parsed = list(urlparse.urlsplit(request.url))
+        parsed[1] = "%s"
+        template = urlparse.urlunsplit(parsed)
 
-            log.debug("Disabling")
+        log.debug("Disabling")
 
-            cursor = dbcursor_query(
-                "SELECT api_task_disable(%s, %s)", [uuid, template])
-            cursor.close()
-
-        except Exception as ex:
-            return error(str(ex))
+        cursor = dbcursor_query(
+            "SELECT api_task_disable(%s, %s)", [uuid, template])
+        cursor.close()
 
         return ok()
 
@@ -737,17 +721,14 @@ def tasks_uuid_cli(uuid):
     # Get a task, adding server-derived details if a 'detail'
     # argument is present.
 
-    try:
-        cursor = dbcursor_query(
-            """SELECT
-                   task.json #>> '{test, spec}',
-                   test.name
-               FROM
-                   task
-                   JOIN test on test.id = task.test
-               WHERE task.uuid = %s""", [uuid])
-    except Exception as ex:
-        return error(str(ex))
+    cursor = dbcursor_query(
+        """SELECT
+               task.json #>> '{test, spec}',
+               test.name
+           FROM
+               task
+               JOIN test on test.id = task.test
+           WHERE task.uuid = %s""", [uuid])
 
     if cursor.rowcount == 0:
         return not_found()
