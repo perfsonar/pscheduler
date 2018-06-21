@@ -34,7 +34,8 @@ def spec_is_valid(json):
                     },
                 "required": [
                     "dest"
-                    ]
+                    ],
+                "additionalProperties": False
             },
             "rtt_v2": {
                 "type": "object",
@@ -60,7 +61,8 @@ def spec_is_valid(json):
                     },
                 "required": [
                     "dest"
-                    ]
+                    ],
+                "additionalProperties": False
             },
             "rtt": {
                 "anyOf": [
