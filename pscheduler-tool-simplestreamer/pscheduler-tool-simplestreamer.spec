@@ -4,8 +4,8 @@
 
 %define short	simplestreamer
 Name:		pscheduler-tool-%{short}
-Version:	1.0.2.6
-Release:	1%{?dist}
+Version:	1.1
+Release:	0.1.b1%{?dist}
 
 Summary:	Simple Streamer tool class for pScheduler
 BuildArch:	noarch
@@ -19,7 +19,7 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
 Requires:	python-pscheduler
-Requires:	pscheduler-test-simplestream >= 1.0.2.6.1
+Requires:	pscheduler-test-simplestream >= 1.1.1
 
 BuildRequires:	pscheduler-rpm
 

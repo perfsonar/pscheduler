@@ -4,8 +4,8 @@
 
 %define short	traceroute
 Name:		pscheduler-tool-%{short}
-Version:	1.0.2.6
-Release:	1%{?dist}
+Version:	1.1
+Release:	0.1.b1%{?dist}
 
 Summary:	pScheduler Traceroute Tool
 BuildArch:	noarch

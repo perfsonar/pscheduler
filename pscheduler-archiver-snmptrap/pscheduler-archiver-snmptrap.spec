@@ -4,8 +4,8 @@
 
 %define short	snmptrap
 Name:		pscheduler-archiver-%{short}
-Version:	1.0.2.6
-Release:	1%{?dist}
+Version:	1.1
+Release:	0.1.b1%{?dist}
 
 Summary:	snmptrap archiver class for pScheduler
 BuildArch:	noarch
