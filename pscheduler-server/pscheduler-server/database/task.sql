@@ -95,7 +95,9 @@ BEGIN
         	-- Number of times successfully executed before scheduling stops
         	max_runs	NUMERIC,
 
-        	-- Number of times the task has been run
+        	-- Number of times the task has been scheduled for a
+        	-- run.  Note that this only ever increases, even if
+        	-- runs are deleted because of cancellation.
         	runs	  	NUMERIC
         			DEFAULT 0,
 
@@ -291,6 +293,19 @@ BEGIN
 
 	-- Add a placeholder for older tasks
 	UPDATE task SET diags = '(None available)';
+
+        t_version := t_version + 1;
+    END IF;
+
+
+    -- Version 11 to version 12
+    -- Add runs_started column
+    IF t_version = 11
+    THEN
+
+        -- Number of times a run has gone into the running state
+	ALTER TABLE task ADD COLUMN runs_started NUMERIC
+	DEFAULT 0;
 
         t_version := t_version + 1;
     END IF;
@@ -625,8 +640,14 @@ BEGIN
 	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,post}',
             to_jsonb(interval_to_iso8601(NEW.post)));
 
+	-- TODO: runs and runs_started change often enough that it
+	-- might be worth hitting those in separate triggers.
+
 	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,runs}',
 	    to_jsonb(NEW.runs));
+
+	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,runs-started}',
+	    to_jsonb(NEW.runs_started));
 
         IF NEW.slip IS NOT NULL
         THEN

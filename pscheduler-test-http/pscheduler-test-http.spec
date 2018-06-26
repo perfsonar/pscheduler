@@ -4,8 +4,8 @@
 
 %define short	http
 Name:		pscheduler-test-%{short}
-Version:	1.0.2
-Release:	1%{?dist}
+Version:	1.1
+Release:	0.1.b1%{?dist}
 
 Summary:	http test for pScheduler
 BuildArch:	noarch

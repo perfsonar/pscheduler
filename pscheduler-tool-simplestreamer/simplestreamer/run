@@ -48,8 +48,7 @@ end_time = datetime.datetime.now() + timeout
 
 def time_left():
     return pscheduler.timedelta_as_seconds(end_time - datetime.datetime.now())
-    
-    
+
 
 random.seed()
 
@@ -136,7 +135,12 @@ if participant == 0:
                               input['participant-data'][1]['listen-port'])
             log.debug("Connecting to %s", str(server_address))
             log.debug("Timeout is %s", str(time_left()))
-            sock.settimeout(time_left())
+            time_remaining = time_left()
+            if time_remaining <= 0:
+                log.debug("Timed out")
+                diags.append("Ran out of time trying to connect.")
+                break
+            sock.settimeout(time_remaining)
             sock.connect(server_address)
             log.debug("Connected")
             # TODO: How do we check for success?
