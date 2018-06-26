@@ -1,0 +1,6 @@
+pscheduler-test-http (1.1~1.b1-1) perfsonar-jessie-staging; urgency=low
+
+  * Initial release
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 26 Jun 2018 18:51:55 +0000
+
