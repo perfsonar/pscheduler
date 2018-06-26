@@ -26,6 +26,7 @@ Depends:
  pscheduler-server,
  pscheduler-test-clock,
  pscheduler-test-dns,
+ pscheduler-test-http,
  pscheduler-test-idle,
  pscheduler-test-idlebgm,
  pscheduler-test-idleex,
@@ -33,8 +34,6 @@ Depends:
  pscheduler-test-latencybg,
  pscheduler-test-rtt,
  pscheduler-test-simplestream,
- pscheduler-test-snmpget,
- pscheduler-test-snmpgetbgm,
  pscheduler-test-throughput,
  pscheduler-test-trace,
  pscheduler-tool-dnspy,
@@ -46,11 +45,13 @@ Depends:
  pscheduler-tool-ping,
  pscheduler-tool-powstream,
  pscheduler-tool-psclock,
+ pscheduler-tool-psurl,
  pscheduler-tool-simplestreamer,
  pscheduler-tool-sleep,
  pscheduler-tool-sleepbgm,
  pscheduler-tool-snooze,
  pscheduler-tool-tracepath,
- pscheduler-tool-traceroute
+ pscheduler-tool-traceroute,
+ pscheduler-tool-twping
 Description: Full pScheduler Bundle
  Bundle of all pScheduler packages
