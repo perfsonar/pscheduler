@@ -1,7 +1,7 @@
 Index: pscheduler/setup.py
 ===================================================================
---- pscheduler.orig/setup.py	2017-11-07 16:09:44.000000000 +0000
-+++ pscheduler/setup.py	2017-11-27 14:44:56.000000000 +0000
+--- pscheduler.orig/setup.py	2018-03-04 23:38:27.000000000 +0000
++++ pscheduler/setup.py	2018-06-26 19:23:22.000000000 +0000
 @@ -16,16 +16,6 @@
          'pscheduler.limitprocessor.identifier',
          'pscheduler.limitprocessor.limit',

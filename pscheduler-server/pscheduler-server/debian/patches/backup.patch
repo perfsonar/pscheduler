@@ -1,5 +1,7 @@
---- pscheduler-server.orig/utilities/backup.raw	2018-02-22 10:36:23.000000000 +0000
-+++ pscheduler-server/utilities/backup.raw	2018-02-26 15:28:05.000000000 +0000
+Index: pscheduler-server/utilities/backup.raw
+===================================================================
+--- pscheduler-server.orig/utilities/backup.raw	2018-03-04 23:38:22.000000000 +0000
++++ pscheduler-server/utilities/backup.raw	2018-06-26 19:23:15.000000000 +0000
 @@ -73,6 +73,7 @@
      --format plain \
      --serializable-deferrable \
@@ -8,8 +10,10 @@
      pscheduler \
      > "${WORK_DIR}/database-dump"
  $INTERACTIVE && printf ' Done.\n' 1>&2 || true
---- pscheduler-server.orig/utilities/restore.raw	2018-02-26 15:27:42.000000000 +0000
-+++ pscheduler-server/utilities/restore.raw	2018-02-26 15:30:11.000000000 +0000
+Index: pscheduler-server/utilities/restore.raw
+===================================================================
+--- pscheduler-server.orig/utilities/restore.raw	2018-03-04 23:38:22.000000000 +0000
++++ pscheduler-server/utilities/restore.raw	2018-06-26 19:23:15.000000000 +0000
 @@ -197,7 +197,7 @@
  DB_OUTPUT="${WORK_DIR}/db-output"
  LOAD_EXIT=0

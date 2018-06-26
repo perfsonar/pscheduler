@@ -1,5 +1,7 @@
---- pscheduler-server.orig/daemons/init.d-template.raw	2018-03-07 09:18:49.769344903 +0100
-+++ pscheduler-server/daemons/init.d-template.raw	2018-03-07 09:19:02.345338406 +0100
+Index: pscheduler-server/daemons/init.d-template.raw
+===================================================================
+--- pscheduler-server.orig/daemons/init.d-template.raw	2018-06-26 18:15:12.000000000 +0000
++++ pscheduler-server/daemons/init.d-template.raw	2018-06-26 19:23:14.000000000 +0000
 @@ -1,4 +1,4 @@
 -#!/bin/sh
 +#!/bin/bash
