@@ -5,7 +5,7 @@
 %define short	snmpset
 Name:		pscheduler-test-%{short}
 Version:	1.1
-Release:	0.1.b1%{?dist}
+Release:	0.2.b1%{?dist}
 
 Summary:	snmpset test for pScheduler
 BuildArch:	noarch
