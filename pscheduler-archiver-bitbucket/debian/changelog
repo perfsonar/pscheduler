@@ -1,8 +1,8 @@
-pscheduler-archiver-bitbucket (1.1~1.b1-1) perfsonar-jessie-staging; urgency=low
+pscheduler-archiver-bitbucket (1.1~2.b1-1) perfsonar-jessie-staging; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 26 Jun 2018 19:23:11 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 28 Jun 2018 14:39:22 +0000
 
 pscheduler-archiver-bitbucket (1.0.2.6-1) perfsonar-jessie-release; urgency=low
 
