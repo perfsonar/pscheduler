@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-tool-psurl
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
- pscheduler-server
+ pscheduler-server, pscheduler-test-http
 Description: pScheduler psurl tool
  psurl tool class for pScheduler
