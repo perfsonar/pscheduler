@@ -1,3 +1,9 @@
+psycopg2 (2.5.4+dfsg-1~bpo70+2) perfsonar-jessie-staging; urgency=medium
+
+  * Backport for Trusty.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 29 Jun 2018 12:16:17 +0000
+
 psycopg2 (2.5.4+dfsg-1~bpo70+1) perfsonar-wheezy-staging; urgency=medium
 
   * Backport for wheezy.
