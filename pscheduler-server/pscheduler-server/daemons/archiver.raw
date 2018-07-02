@@ -569,7 +569,7 @@ class ArchiveWorker():
 
         archiving_id, task_uuid, run_uuid, archiver, archiver_data, start, \
             duration, test, tool, participants, result_merged, attempts, \
-            last_attempt, transform = self.row
+            last_attempt, transform, task_detail = self.row
 
         participants_merged = []
         for participant in participants:
@@ -602,7 +602,8 @@ class ArchiveWorker():
                     'version': tool['version'],
                 },
                 'participants': participants_merged,
-                'result': result_merged
+                'result': result_merged,
+                'reference': task_detail.get('reference', None)
             },
             'attempts': attempts,
             'last-attempt': None if last_attempt is None \
@@ -829,7 +830,7 @@ def main_program():
         result = db.query("""SELECT id, task_uuid, run_uuid, archiver,
                              archiver_data, start,
                              duration, test, tool, participants, result,
-                             attempts, last_attempt, transform
+                             attempts, last_attempt, transform, task_detail
                              FROM archiving_next(%s)""",
                           [options.max_parallel])
 
