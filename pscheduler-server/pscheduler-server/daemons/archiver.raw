@@ -878,4 +878,4 @@ if options.daemon:
     with daemon.DaemonContext(pidfile=pidfile):
         pscheduler.safe_run(lambda: main_program())
 else:
-    main_program()
+    pscheduler.safe_run(lambda: main_program())
