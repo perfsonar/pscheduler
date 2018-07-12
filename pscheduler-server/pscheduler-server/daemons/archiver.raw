@@ -113,7 +113,7 @@ if retry is None:
 retry = pscheduler.timedelta_as_seconds(retry)
 
 
-log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
+log = pscheduler.Log(verbose=options.verbose, debug=options.debug, propagate=True)
 
 dsn = options.dsn
 
