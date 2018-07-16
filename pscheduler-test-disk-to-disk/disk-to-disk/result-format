@@ -1,0 +1,62 @@
+#!/usr/bin/python
+
+#
+# Development Order #8:
+#
+# This file is called when perfSonar goes to print the result, which
+# has been returned from the tool.
+#
+# To test this file, a result is needed. A sample one has been provided
+# in this directory. Use the following syntax:
+# cat example-result.json | ./result-format text/plain
+# cat example-result.json | ./result-format text/html
+#
+
+import jsontemplate
+import pscheduler
+import sys
+
+from validate import result_is_valid
+
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
+
+input = pscheduler.json_load(exit_on_error=True)
+
+valid, message = result_is_valid(input["result"])
+
+if not valid:
+    pscheduler.fail(message)
+
+result = input["result"]
+
+#TODO: Get stdout from run and pipe through json result var
+
+if format == 'text/plain':
+    # Print results of the test here, in plaintext
+    print 'Time: %s\n' % result['time']
+
+    if 'bytes-sent' in result:
+        print 'Bytes-sent: %s\n' % result['bytes-sent']
+
+    if 'throughput' in result:
+	print 'Throughput: %s\n' % result['throughput']
+   
+elif format == 'text/html':
+    # Print results of the test here, in html
+    print '<table>'
+    print '    <tr>'
+    print '        <th>Time</th>'
+    print '    </tr>'
+    print '    <tr>'
+    print '        <td>%s</td>' % result['time']
+    print '    </tr>'
+    print '</table>'
+    print '</table>'
+
+
+else:
+   pscheduler.fail("Unsupported format '%s'" % format)

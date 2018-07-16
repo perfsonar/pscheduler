@@ -26,10 +26,12 @@ def spec_is_valid(json):
 
                     "dest":         { "$ref": "#/pScheduler/String"   },
                     "dest-path":    { "$ref": "#/pScheduler/String"   },
-
-		    "timeout":      { "$ref": "#/pScheduler/Limit/Duration" },
+                    
+		    "timeout":      { "$ref": "#/pScheduler/Duration" }, 
                     "min-bandwith": { "$ref": "#/pScheduler/Cardinal" },
+                    
                     "max-size":     { "$ref": "#/pScheduler/Cardinal" },
+                    "cleanup":      { "$ref": "#/pScheduler/Boolean"  },
                 },
                 # If listed here, data of this type MUST be in the test spec
                 "required":  [
@@ -49,9 +51,8 @@ def result_is_valid(json):
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
             "time":       { "$ref": "#/pScheduler/Duration" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean"  },
-            "bytes-sent": { "$ref": "#/pScheduler/Cardinal" },
-            "throughput": { "$ref": "#/pScheduler/Cardinal" },
-            "timeout":    { "$ref": "#/pScheduler/Limit/Duration" },
+            "bytes-sent": { "$ref": "#/pScheduler/String" },
+            "throughput": { "$ref": "#/pScheduler/String" },
             },
         "required": [
             "schema",

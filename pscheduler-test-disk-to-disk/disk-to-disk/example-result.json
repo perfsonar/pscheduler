@@ -1,0 +1,48 @@
+{
+  "result-href": "https://localhost.localdomain/pscheduler/tasks/d0035107-6ef0-4cc7-83b4-19367b502bfc/runs/a0ec7004-4c40-4d77-874d-07784ac2d6ab/result",
+  "end-time": "2018-05-10T13:11:32Z",
+  "participant": 0,
+  "participant-data": {},
+  "result-merged": {
+    "time": "PT5.002407S",
+    "succeeded": true,
+    "schema": 1
+  },
+  "participant-data-full": [
+    {}
+  ],
+  "participants": [
+    "localhost.localdomain"
+  ],
+  "state-display": "Finished",
+  "result-full": [
+    {
+      "diags": "",
+      "result": {
+        "time": "PT5.002407S",
+        "succeeded": true,
+        "schema": 1
+      },
+      "succeeded": true,
+      "error": ""
+    }
+  ],
+  "state": "finished",
+  "errors": null,
+  "href": "https://localhost.localdomain/pscheduler/tasks/d0035107-6ef0-4cc7-83b4-19367b502bfc/runs/a0ec7004-4c40-4d77-874d-07784ac2d6ab",
+  "task-href": "https://localhost.localdomain/pscheduler/tasks/d0035107-6ef0-4cc7-83b4-19367b502bfc",
+  "duration": "PT5S",
+  "start-time": "2018-05-10T13:11:27Z",
+  "added": "2018-05-10T13:11:17Z",
+  "result": {
+    "diags": "",
+    "result": {
+      "time": "PT5.002407S",
+      "succeeded": true,
+      "schema": 1
+    },
+    "succeeded": true,
+    "error": ""
+  }
+}
+
