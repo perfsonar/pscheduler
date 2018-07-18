@@ -60,6 +60,7 @@ override_dh_auto_install:
 	make -C daemons \
 		CONFIGDIR=$(ROOT)/etc/pscheduler/daemons \
 		INITDDIR=$(ROOT)/etc/init.d \
+		UNITDIR=$(ROOT)/lib/systemd/system \
 		DAEMONDIR=$(ROOT)/usr/lib/pscheduler/daemons \
 		COMMANDDIR=$(ROOT)/usr/lib/pscheduler/commands \
 		install

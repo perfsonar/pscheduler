@@ -1,0 +1,13 @@
+--- pscheduler-server.orig/daemons/service-template.raw	2018-06-08 13:10:03.530583149 +0200
++++ pscheduler-server/daemons/service-template.raw	2018-07-18 09:31:37.252420169 +0200
+@@ -14,8 +14,8 @@
+ # Generate the PID file in an atomic way
+ ExecStartPre=-/bin/rm -f __RUNDIR__/pscheduler-__PROG__.pid.build
+ ExecStartPre=-/usr/bin/touch -f __RUNDIR__/pscheduler-__PROG__.pid.build
+-ExecStartPre=-/usr/bin/chown __PSUSER__:__PSUSER__ __RUNDIR__/pscheduler-__PROG__.pid.build
+-ExecStartPre=-/usr/bin/mv __RUNDIR__/pscheduler-__PROG__.pid.build __RUNDIR__/pscheduler-__PROG__.pid
++ExecStartPre=-/bin/chown __PSUSER__:__PSUSER__ __RUNDIR__/pscheduler-__PROG__.pid.build
++ExecStartPre=-/bin/mv __RUNDIR__/pscheduler-__PROG__.pid.build __RUNDIR__/pscheduler-__PROG__.pid
+ 
+ # Generate options file
+ ExecStartPre=-/bin/sh -c "if [ -r __CONFIGDIR__/__PROG__.conf ]; then opts=$(sed -e 's/#.*$//' __CONFIGDIR__/__PROG__.conf); echo OPTIONS=$opts > __RUNDIR__/pscheduler-__PROG__.options; chown __PSUSER__:__PSUSER__ __RUNDIR__/pscheduler-__PROG__.options; fi"
