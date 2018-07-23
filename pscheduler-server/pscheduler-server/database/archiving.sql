@@ -300,7 +300,8 @@ RETURNS TABLE (
     result JSONB,
     attempts INTEGER,
     last_attempt TIMESTAMP WITH TIME ZONE,
-    transform JSON
+    transform JSON,
+    task_detail JSONB
 )
 AS $$
 BEGIN
@@ -321,7 +322,10 @@ BEGIN
         run.result_merged AS result,
         archiving.attempts AS attempts,
         archiving.last_attempt AS last_attempt,
-	archiving.transform AS transform
+	archiving.transform AS transform,
+	-- TODO: This covers a number of things above.  Remove the
+	-- redundancies here and in the archiver.
+	task.json_detail as task_detail
     FROM
         archiving
         JOIN archiver ON archiver.id = archiving.archiver

@@ -5,7 +5,7 @@
 %define short	net-snmp-set
 Name:		pscheduler-tool-%{short}
 Version:	1.1
-Release:	0.2.b1%{?dist}
+Release:	0.3.b1%{?dist}
 
 Summary:	snmpset tool class for pScheduler
 BuildArch:	noarch

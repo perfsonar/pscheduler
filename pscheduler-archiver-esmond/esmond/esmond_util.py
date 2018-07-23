@@ -288,6 +288,7 @@ class EsmondBaseRecord:
     def __init__(self,
                     test_type=None,
                     test_spec=None,
+                    reference={},
                     lead_participant=None, 
                     measurement_agent=None, 
                     tool_name=None,
@@ -364,6 +365,7 @@ class EsmondBaseRecord:
         #add extra metadata fields
         self.add_metadata_fields(test_spec=test_spec)
         self.add_additional_metadata(test_spec=test_spec)
+        self.add_reference_metadata(reference=reference)
         
         #handle data 
         data_point = { 'ts': ts, 'val': [] }
@@ -425,7 +427,29 @@ class EsmondBaseRecord:
     def enable_data_raw(self, test_result={}, data_index=0):
         self.add_event_type('pscheduler-raw', {})
         self.add_data(data_point=self.data[data_index], event_type='pscheduler-raw', val=test_result)
-        
+    
+    def parse_metadata_field(self, key, val):
+        if type(val) is list:
+            for (i, v) in enumerate(val):
+                k = "%s-%d" % (key, i)
+                self.metadata[k] = v
+        elif type(val) is dict:
+            for sub_key in val:
+                if sub_key.startswith('_'):
+                    continue
+                k = "%s-%s" % (key, sub_key)
+                self.parse_metadata_field(k, val[sub_key])
+        else:
+            self.metadata[key] = val
+            
+    def add_reference_metadata(self, reference={}):
+        for field in reference:
+            if field.startswith('_'):
+                continue
+            key = "pscheduler-reference-%s" % (field)
+            val = reference[field]
+            self.parse_metadata_field(key, val)
+            
     ## Override
     def set_test(self, test_spec={}):
         return []
@@ -860,18 +884,6 @@ class EsmondRawRecord(EsmondBaseRecord):
             'pscheduler-raw'
         ]
         return event_types
-    
-    def _parse_test_spec_field(self, key, val):
-        if type(val) is list:
-            for (i, v) in enumerate(val):
-                k = "%s-%d" % (key, i)
-                self.metadata[k] = v
-        elif type(val) is dict:
-            for sub_key in val:
-                k = "%s-%s" % (key, sub_key)
-                self._parse_test_spec_field(k, val[sub_key])
-        else:
-            self.metadata[key] = val
             
     def add_additional_metadata(self, test_spec={}):
         #this should not happen
@@ -881,8 +893,8 @@ class EsmondRawRecord(EsmondBaseRecord):
         for field in test_spec:
             key = "pscheduler-%s-%s" % (self.test_type, field)
             val = test_spec[field]
-            self._parse_test_spec_field(key, val)
-    
+            self.parse_metadata_field(key, val)
+            
     def add_additional_data(self, data_point={}, test_spec={}, test_result={}):
         self.add_data(data_point=data_point, event_type='pscheduler-raw', val=test_result)
 
