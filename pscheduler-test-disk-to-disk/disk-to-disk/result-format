@@ -37,13 +37,15 @@ result = input["result"]
 
 if format == 'text/plain':
     # Print results of the test here, in plaintext
-    print 'Time: %s\n' % result['time']
+    print 'Total duration of transfer: %s\n' % result['time']
 
     if 'bytes-sent' in result:
         print 'Bytes-sent: %s\n' % result['bytes-sent']
 
     if 'throughput' in result:
 	print 'Throughput: %s\n' % result['throughput']
+
+    print 'Test completed succesfully'
    
 elif format == 'text/html':
     # Print results of the test here, in html

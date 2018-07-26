@@ -35,7 +35,7 @@ def spec_is_valid(json):
                 },
                 # If listed here, data of this type MUST be in the test spec
                 "required":  [
-                    "dest", "dest-path"
+                    "dest", "source"
                     ],
 
         "additionalProperties": False

@@ -27,7 +27,7 @@ try:
     source = input['test']['spec']['source']
     
     #Depreciate dest_path?
-    dest_path = input['test']['spec']['dest-path']
+    #dest_path = input['test']['spec']['dest-path']
 
 except KeyError as e:
     print(e);	pscheduler.fail('Missing data in input')
@@ -49,9 +49,7 @@ if True:
           #'-nlb', # network logging on output (must use gsiftp)
 	  #'-p 4', # num of parrallel TCP connections
 	  source, #Source URL
-	  dest] #Destination URL + path
-          #'sshftp://localhost/home/nateshep/tmp/test.txt', # Source URL
-          #'sshftp://localhost/home/nateshep/'] # Destination URL 
+	  dest] #Destination URL
 
   status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
 
