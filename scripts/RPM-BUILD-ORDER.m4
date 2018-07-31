@@ -139,7 +139,7 @@ pscheduler-tool-ping
 pscheduler-tool-psclock
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
-pscheduler-tool-twping			--bundle extras
+#pscheduler-tool-twping			--bundle extras
 pscheduler-tool-paris-traceroute
 pscheduler-tool-dnspy
 
