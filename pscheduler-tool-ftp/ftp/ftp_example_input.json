@@ -1,2 +1,2 @@
-{"task-uuid": "d2e4ea9a-d466-4581-a2af-ab2b80f64d50", "participant": 0, "schedule": {"duration": "PT10S", "start": "2018-06-26T13:30:15-04:00"}, "participant-data": [{}], "test": {"type": "disk-to-disk", "spec": {"dest": "/tmp/test.out", "source": "ftp://sunn-dtn.es.net:2811/data1/1M.dat", "dest-path": "/nill", "schema": 1}}, "limits-passed": [], "schema": 1}
+{"task-uuid": "d2e4ea9a-d466-4581-a2af-ab2b80f64d50", "participant": 0, "schedule": {"duration": "PT10S", "start": "2018-06-26T13:30:15-04:00"}, "participant-data": [{}], "test": {"type": "disk-to-disk", "spec": {"dest": "/tmp/test.out", "source": "ftp://speedtest.tele2.net/1KB.zip", "timeout": "PT3S", "dest-path":"/nill", "cleanup":"True", "schema": 1}}, "limits-passed": [], "schema": 1}
 

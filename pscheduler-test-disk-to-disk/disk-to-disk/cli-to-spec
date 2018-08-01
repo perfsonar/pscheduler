@@ -105,6 +105,8 @@ else:
 
 if options.dest_path is not None:
   result['dest-path'] = options.dest_path
+else:
+  result['dest-path'] = "/nill"
 
 if options.timeout is not None:
    result['timeout'] = options.timeout

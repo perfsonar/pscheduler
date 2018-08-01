@@ -57,18 +57,6 @@ if True:
     succeeded = False
     error = "Error running program:\n%s"% stderr.strip('\n')
 
-    # Determine how much (if any) of the file was transferred
-    if os.path.isfile(dest):
-      bytes_sent = os.stat(dest).st_size
-      
-      # Convert bytes to human readable format 
-      scalar = ['B', 'KB', 'MB', 'GB', 'TB']
-      while bytes_sent > 1024 and len(scalar) > 1:
-	bytes_sent /= 1024; scalar = scalar[1:]
-      
-      error += '\n\nBytes Transfered: %s %s'% (int(bytes_sent), scalar[0])
-      error += '\n\nActual Timeout: %s seconds' % timeout
-
   else:
     succeeded = True
     diags = stdout
