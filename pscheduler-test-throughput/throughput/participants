@@ -60,7 +60,8 @@ elif dst_has_psc:
         pscheduler.fail("Can't find pScheduler or BWCTL on %s " % source)
     participants = [ destination ]
 else: 
-    pscheduler.fail("Neither the source nor destination is running pScheduler.")
+    #if backward compatibility hacks failed, proceed normally
+    participants = [ source, destination ]
 
 
 ######################################################################
