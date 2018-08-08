@@ -4,12 +4,13 @@
 
 %define short	http
 Name:		pscheduler-test-%{short}
-Version:	1.0.2
-Release:	1%{?dist}
+Version:	1.1
+Release:	0.3.b1%{?dist}
 
 Summary:	http test for pScheduler
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Source0:	%{short}-%{version}.tar.gz
@@ -50,4 +51,5 @@ pscheduler internal warmboot
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %{dest}

@@ -17,7 +17,8 @@ if not valid:
 strings = []
 bools = []
 
-if spec['schema'] == 2:
+
+if spec.get('schema', 1) == 2:
     spec_properties = validate.SPEC_SCHEMA['local']['throughput_v2']['properties']
 else:
     spec_properties = validate.SPEC_SCHEMA['local']['throughput_v1']['properties']

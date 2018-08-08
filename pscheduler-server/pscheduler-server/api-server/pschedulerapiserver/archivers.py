@@ -35,12 +35,9 @@ def archivers_name(name):
 @application.route("/archivers/<name>/data-is-valid", methods=['GET'])
 def archivers_name_data_is_valid(name):
 
-    try:
-        cursor = dbcursor_query("SELECT EXISTS"
-                                " (SELECT * FROM archiver WHERE NAME = %s)",
-                                [name])
-    except Exception as ex:
-        return error(str(ex))
+    cursor = dbcursor_query("SELECT EXISTS"
+                            " (SELECT * FROM archiver WHERE NAME = %s)",
+                            [name])
 
     exists = cursor.fetchone()[0]
     cursor.close()

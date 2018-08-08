@@ -125,6 +125,10 @@ opt_parser.add_option("--timeout",
                       action="store", type="string",
                       dest="timeout")
 
+opt_parser.add_option("--protocol",
+                      help="Protocol used to measure round trip time",
+                      action="store", type="string",
+                      dest="protocol")
 
 
 (options, remaining_args) = opt_parser.parse_args(args)
@@ -133,7 +137,8 @@ if len(remaining_args) != 0:
    pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
 
-result = { 'schema': 1 }
+result = { }
+schema = pscheduler.HighInteger(1)
 
 
 if options.count is not None:
@@ -178,5 +183,10 @@ if options.deadline is not None:
 if options.timeout is not None:
    result['timeout'] = options.timeout
 
+if options.protocol is not None:
+   result['protocol'] = options.protocol
+   schema.set(2)
+
+result["schema"] = schema.value()
 
 pscheduler.succeed_json(result)

@@ -20,7 +20,7 @@ from .log import log
 @application.route("/", methods=['GET'])
 def root():
     return ok_json("This is the pScheduler API server on %s (%s)."
-              % (server_hostname(), pscheduler.api_this_host()))
+              % (server_hostname(), pscheduler.api_local_host_fqdn()))
 
 
 
@@ -69,19 +69,15 @@ def exception():
 @application.route("/hostname", methods=['GET'])
 def hostname():
     """Return the hosts's name"""
-    return ok_json(pscheduler.api_this_host())
+    return ok_json(pscheduler.api_local_host_fqdn())
 
 
 @application.route("/schedule-horizon", methods=['GET'])
 def schedule_horizon():
     """Get the length of the server's scheduling horizon"""
 
-    try:
-        cursor = dbcursor_query(
-            "SELECT schedule_horizon FROM configurables", onerow=True)
-    except Exception as ex:
-        log.exception()
-        return error(str(ex))
+    cursor = dbcursor_query(
+        "SELECT schedule_horizon FROM configurables", onerow=True)
 
     return ok_json(pscheduler.timedelta_as_iso8601(cursor.fetchone()[0]))
 
@@ -102,12 +98,9 @@ def mtu_safe():
     dest = arg_string("dest")
     if dest is None:
         return bad_request("Missing destination")
-    try:
-        (status, message) = pscheduler.mtu_path_is_safe(dest)
-        return ok_json({
-            "safe": status,
-            "message": message
-            })
-    except Exception as ex:
-        log.exception()
-        return error(str(ex))
+
+    (status, message) = pscheduler.mtu_path_is_safe(dest)
+    return ok_json({
+        "safe": status,
+        "message": message
+    })

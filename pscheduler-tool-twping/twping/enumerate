@@ -3,9 +3,9 @@
     "schema": 1,
 
     "name": "twping",
-    "description": "Determine one-way latency with TWAMP",
+    "description": "Determine latency with TWAMP",
     "version": "1.0",
-    "tests": [ "latency" ],
+    "tests": [ "latency", "rtt" ],
 
     "preference": 0,
 

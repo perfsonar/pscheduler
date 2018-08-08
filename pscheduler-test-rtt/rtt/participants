@@ -8,7 +8,7 @@ import sys
 
 from validate import spec_is_valid
 
-json = pscheduler.json_load(exit_on_error=True, max_schema=1)
+json = pscheduler.json_load(exit_on_error=True, max_schema=2)
 
 null_reason = None
 
@@ -49,7 +49,8 @@ if has[source]["pscheduler"]:
 elif has[destination]["pscheduler"]:
     participants = [ destination ]
 else:
-    pscheduler.fail("Neither the source nor destination is running pScheduler.")
+    #if backward compatibility hacks failed, proceed normally
+    participants = [ source ]
 ######################################################################
 
 result = { "participants": participants }

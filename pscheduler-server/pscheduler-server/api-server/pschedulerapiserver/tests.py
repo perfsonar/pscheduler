@@ -35,12 +35,9 @@ def tests_name(name):
 @application.route("/tests/<name>/spec", methods=['GET'])
 def tests_name_spec(name):
 
-    try:
-        cursor = dbcursor_query("SELECT EXISTS (SELECT * FROM test"
-                                "  WHERE available AND name = %s)",
-                                [ name ])
-    except Exception as ex:
-        return error(str(ex))
+    cursor = dbcursor_query("SELECT EXISTS (SELECT * FROM test"
+                            "  WHERE available AND name = %s)",
+                            [ name ])
 
     exists = cursor.fetchone()[0]
     cursor.close()
@@ -71,13 +68,10 @@ def tests_name_spec(name):
 @application.route("/tests/<name>/spec/is-valid", methods=['GET'])
 def tests_name_spec_is_valid(name):
 
-    try:
-        cursor = dbcursor_query(
-            "SELECT EXISTS"
-            " (SELECT * FROM test WHERE available AND name = %s)",
-            [name])
-    except Exception as ex:
-        return error(str(ex))
+    cursor = dbcursor_query(
+        "SELECT EXISTS"
+        " (SELECT * FROM test WHERE available AND name = %s)",
+        [name])
 
     exists = cursor.fetchone()[0]
     cursor.close()
@@ -114,21 +108,18 @@ def tests_name_tools(name):
     # TODO: Is this used anywhere?
 
     expanded = is_expanded()
-    try:
-        cursor = dbcursor_query("""
-        SELECT
-            tool.name,
-            tool.json
-        FROM
-            tool
-            JOIN tool_test ON tool_test.tool = tool.id
-            JOIN test ON test.id = tool_test.test
-        WHERE
-            tool.available
-            AND test.name = %s
-        """, [name])
-    except Exception as ex:
-        return error(str(ex))
+    cursor = dbcursor_query("""
+    SELECT
+        tool.name,
+        tool.json
+    FROM
+        tool
+        JOIN tool_test ON tool_test.tool = tool.id
+        JOIN test ON test.id = tool_test.test
+    WHERE
+        tool.available
+        AND test.name = %s
+    """, [name])
 
     result = []
     for row in cursor:
@@ -154,12 +145,6 @@ def tests_name_participants(name):
     # HACK: BWCTLBC -- BEGIN
 
     lead_bind = request.args.get("lead-bind")
-
-    # Validate the lead binding if there is one.
-    if lead_bind is not None \
-       and (pscheduler.address_interface(lead_bind) is None):
-        return bad_request("Lead bind '%s' is not on this host"
-                           % (lead_bind))
 
     if lead_bind is not None:
         env_add = {"PSCHEDULER_LEAD_BIND_HACK": lead_bind}

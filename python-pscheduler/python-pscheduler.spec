@@ -4,17 +4,17 @@
 
 %define short	pscheduler
 Name:		python-%{short}
-Version:	1.3.2.6
-Release:	1%{?dist}
+Version:	1.3.3
+Release:	0.3.b1%{?dist}
 Summary:	Utility functions for pScheduler
 BuildArch:	noarch
-License:	Apache 2.0
+License:        ASL 2.0	
 Group:		Development/Libraries
 
 Provides:	%{name} = %{version}-%{release}
 Prefix:		%{_prefix}
 
-Vendor:		The perfSONAR Development Team
+Vendor:		perfSONAR
 Url:		http://www.perfsonar.net
 
 Source0:	%{short}-%{version}.tar.gz
@@ -161,6 +161,7 @@ systemctl restart rsyslog
 
 %files -f INSTALLED_FILES
 %defattr(-,root,root)
+%license LICENSE
 %config(noreplace) %{logrotate_d}/*
 %config(noreplace) %{syslog_d}/*
 %attr(444,root,root) %{_pscheduler_rpmmacroprefix}*

@@ -3,12 +3,13 @@
 #
 
 Name:		pscheduler-core
-Version:	1.0.2.6
-Release:	1%{?dist}
+Version:	1.1
+Release:	0.3.b1%{?dist}
 
 Summary:	pScheduler Core Programs
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Source0:	%{name}-%{version}.tar.gz
@@ -52,6 +53,7 @@ make \
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %{_bindir}/*
 %{_datarootdir}/*
 %{_pscheduler_commands}

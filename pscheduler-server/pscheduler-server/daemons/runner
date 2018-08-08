@@ -130,8 +130,8 @@ def clock_survey(hosts, bind=None):
         return []
 
     # Any null hosts become the local host
-    # TODO: Should this call api_this_host()?
-    hosts = [ "localhost" if host is None else host for host in hosts ]
+    hosts = [ pscheduler.api_local_host() if host is None else host
+              for host in hosts ]
 
     host_args = []
     for slot in range(0,len(hosts)):
@@ -632,46 +632,56 @@ class RunWorker:
                 failures += 1
 
 
-            # Try several times to get the results from the other
-            # participants.
+            # Assemble the results from each participant into an
+            # array.
 
-            full_result = [None for run in runs]
+            full_result = [ {
+                "succeeded": False,
+                "error": "No result was produced",
+                "diags": "No result was produced"
+            } for run in runs]
+
             # We have this on hand.
             full_result[0] = local_result
             self.log.debug("%d: Accumulated local result", self.id)
 
-            end_time = pscheduler.time_now() + datetime.timedelta(seconds=5)
+            # Wait up to 15 seconds for all of the participants to
+            # produce results.
 
             to_get = dict([(runs[index], index)
                            for index in range(1, len(runs))])
 
-            while len(to_get) and pscheduler.time_now() < end_time:
+            deadline = pscheduler.time_now() + datetime.timedelta(seconds=15)
 
-                for get in list(to_get):
-                    self.log.debug("%d: Fetching run %s", self.id, get)
+            for get in list(to_get):
+                self.log.debug("%d: Fetching run %s", self.id, get)
 
-                    status, run_result = pscheduler.url_get(
-                        run, params={'wait-local': True}, bind=lead_bind,
-                        throw=False)
+                timeout = int(pscheduler.timedelta_as_seconds(
+                    deadline - pscheduler.time_now()))
 
-                    if status == 200:
-                        self.log.debug("%d: Retrieved %s", self.id, run_result)
-                        index = to_get[get]
-                        # Pylint infers that run_result is a string
-                        # when it isn't.
-                        # pylint: disable=maybe-no-member
-                        got = run_result.get("result", None)
+                status, run_result = pscheduler.url_get(
+                    run,
+                    params={ 'wait-local': True, 'wait': timeout },
+                    bind=lead_bind,
+                    throw=False,
+                    timeout=timeout + 0.5
+                )
+
+                if status == 200:
+                    self.log.debug("%d: Retrieved %s", self.id, run_result)
+                    index = to_get[get]
+                    got = run_result["result"]
+                    if got is not None:
                         full_result[index] = got
-                        if got is not None:
-                            del to_get[get]
-                    else:
-                        self.log.warning("%d: Unable to retrieve run %s",
+                else:
+                    self.log.warning("%d: Unable to retrieve run %s",
                                          self.id, get)
+                    got = { "succeeded": False,
+                            "error": run_result,
+                            "diags": run_result
+                        }
 
-                # Snooze a bit before the next iteration if
-                # there's anythig left to do.
-                if len(to_get):
-                    time.sleep(0.5)
+                del to_get[get]
 
 
             self.log.debug("%d: Full result: %s",
@@ -681,6 +691,30 @@ class RunWorker:
             failures = len(list(
                 filter(lambda result: result is None, full_result)))
 
+            # If there were any failures, survey all of the
+            # particpants' clocks and stash it in the local run
+            # record.
+
+            if failures > 0:
+                self.log.debug("Saw failures; surveying clocks")
+                # TODO: Error check this.
+                db = None
+                try:
+                    db = self._get_db_conn()
+                    with db.cursor() as cursor:
+                        cursor.execute("""
+                                    UPDATE run SET clock_survey = %s
+                                    WHERE id = %s
+                                    """,
+                                    [clock_survey(participants, lead_bind), self.id])
+                except Exception as ex:
+                    self.log.error("%d: Failed to update clock survey: %s",
+                               self.id, str(ex))
+                finally:
+                    #finally should ensure this is executed  even if return is an exception
+                    self._put_db_conn(db)
+
+
             # Store the full result with each participant.
 
             full_params = pscheduler.json_dump({
@@ -688,8 +722,6 @@ class RunWorker:
                 'succeeded' : failures == 0
             })
 
-
-            # Store the full result with all of the participants
 
             put_params = {} if key is None else { "key": key }
 
@@ -707,31 +739,7 @@ class RunWorker:
                 if status != 200:
                     self.log.warning("%d: Unable to update run %s: %d %s",
                                      self.id, run, status, returned)
-
-
-                # If there were any failures, survey all of the
-                # particpants' clocks and stash it in the local run
-                # record.
-
-                if failures > 0:
-                    self.log.debug("Saw failures; surveying clocks")
-                    # TODO: Error check this.
-                    db = None
-                    try:
-                        db = self._get_db_conn()
-                        with db.cursor() as cursor:
-                            cursor.execute("""
-                                        UPDATE run SET clock_survey = %s
-                                        WHERE id = %s
-                                        """,
-                                        [clock_survey(participants, lead_bind), self.id])
-                    except Exception as ex:
-                        self.log.error("%d: Failed to update clock survey: %s",
-                                   self.id, str(ex))
-                    finally:
-                        #finally should ensure this is executed  even if return is an exception
-                        self._put_db_conn(db)
-
+            
         self.log.debug("%d: Run complete", self.id)
         self.finished = True
 

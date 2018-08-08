@@ -134,7 +134,6 @@ if run_json["state"] in ["overdue", "missed", "preempted"]:
     pscheduler.succeed("Run did not complete: %s" % run_json["state-display"])
 
 if run_json["state"] == "failed":
-    print "Run failed"
     succeeded = False
 
 
@@ -218,6 +217,27 @@ except KeyError as ex:
 
 if out_format == "text/plain" \
    and (options.diags or not succeeded):
+
+    if "clock-survey" in run_json and len(run_json["clock-survey"]) > 1:
+
+        survey_max = len(run_json["clock-survey"]) - 1
+
+        survey = [ pscheduler.iso8601_as_datetime(entry["time"])
+                   for entry in run_json["clock-survey"] ]
+
+        max_diff = datetime.timedelta()
+        for index_a in range(0, survey_max+1):
+            time_a = survey[index_a]
+            for time_b in survey[index_a+1:]:
+                max_diff = max(max_diff, abs(time_b - time_a))
+
+        if max_diff > datetime.timedelta(seconds=1.0):
+            print
+            print pscheduler.prefixed_wrap("", 
+                                           "This run likely failed because"
+                                           " the clocks on participants differed"
+                                           " by %s." % (max_diff)
+                                       )
 
     if "diags" in task_json["detail"]:
         print

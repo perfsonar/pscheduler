@@ -129,7 +129,7 @@ opt_parser.add_option("--host",
 
 
 full_host = options.host if options.host is not None \
-            else pscheduler.api_this_host()
+            else pscheduler.api_local_host()
 
 
 # This outputs PNG, which isn't suitable for TTYs.
