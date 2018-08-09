@@ -1,9 +1,8 @@
-# 
+#
 # Makefile for dirtree Package
 #
-#
 
-NAME=dirtreei
+NAME=dirtree
 
 default: build
 
