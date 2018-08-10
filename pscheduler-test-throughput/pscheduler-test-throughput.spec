@@ -20,7 +20,6 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server
 Requires:	python-pscheduler
 Requires:	python-jsontemplate
-Requires:       numactl
 BuildRequires:	pscheduler-rpm
 BuildRequires:	python-pscheduler
 BuildRequires:  python-nose

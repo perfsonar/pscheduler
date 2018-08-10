@@ -21,6 +21,7 @@ Requires:	pscheduler-server
 Requires:	python-pscheduler
 Requires:	pscheduler-test-throughput
 requires:	iperf3
+Requires:	numactl
 
 BuildRequires:	pscheduler-rpm
 
