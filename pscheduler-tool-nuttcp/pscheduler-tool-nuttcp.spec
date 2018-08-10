@@ -20,6 +20,7 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server
 Requires:	python-pscheduler
 Requires:	pscheduler-test-throughput
+Requires:	numactl
 Requires:	nuttcp >= 8.1.4
 
 BuildRequires:	pscheduler-rpm
