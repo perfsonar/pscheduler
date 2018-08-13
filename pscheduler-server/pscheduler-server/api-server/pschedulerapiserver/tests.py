@@ -146,12 +146,6 @@ def tests_name_participants(name):
 
     lead_bind = request.args.get("lead-bind")
 
-    # Validate the lead binding if there is one.
-    if lead_bind is not None \
-       and (pscheduler.address_interface(lead_bind) is None):
-        return bad_request("Lead bind '%s' is not on this host"
-                           % (lead_bind))
-
     if lead_bind is not None:
         env_add = {"PSCHEDULER_LEAD_BIND_HACK": lead_bind}
     else:

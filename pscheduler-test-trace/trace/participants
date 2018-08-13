@@ -46,7 +46,8 @@ if source is None or has[source]["pscheduler"]:
 elif has[destination]["pscheduler"]:
     participants = [ destination ]
 else:
-    pscheduler.fail("Neither the source nor destination is running pScheduler.")
+    #if backward compatibility hacks failed, proceed normally
+    participants = [ source ]
 ######################################################################
 
 result = { "participants": participants }

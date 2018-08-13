@@ -5,7 +5,7 @@
 %define short	dns
 Name:		pscheduler-test-%{short}
 Version:	1.1
-Release:	0.3.b1%{?dist}
+Release:	1%{?dist}
 
 Summary:	DNS test for pScheduler
 BuildArch:	noarch

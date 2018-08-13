@@ -5,7 +5,7 @@
 %define short	http
 Name:		pscheduler-archiver-%{short}
 Version:	1.1
-Release:	0.3.b1%{?dist}
+Release:	1%{?dist}
 
 Summary:	HTTP archiver class for pScheduler
 BuildArch:	noarch
