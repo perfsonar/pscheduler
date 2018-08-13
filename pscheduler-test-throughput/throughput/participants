@@ -51,13 +51,9 @@ if src_has_psc and single_ended:
     participants = [ source ]
 elif src_has_psc and dst_has_psc:
     participants = [ source, destination ]
-elif src_has_psc:
-    if not has[destination]["bwctl"]:
-        pscheduler.fail("Can't find pScheduler or BWCTL on %s" % destination)
+elif src_has_psc and has[destination]["bwctl"]:
     participants = [ source ]
-elif dst_has_psc:
-    if not has[source]["bwctl"]:
-        pscheduler.fail("Can't find pScheduler or BWCTL on %s " % source)
+elif dst_has_psc and has[source]["bwctl"]:
     participants = [ destination ]
 else: 
     #if backward compatibility hacks failed, proceed normally
