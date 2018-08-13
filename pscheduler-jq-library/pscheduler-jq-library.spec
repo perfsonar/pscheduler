@@ -4,7 +4,7 @@
 
 Name:		pscheduler-jq-library
 Version:	1.1
-Release:	0.3.b1%{?dist}
+Release:	1%{?dist}
 
 Summary:	Library of JQ functions for pScheduler
 BuildArch:	noarch
