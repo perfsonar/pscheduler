@@ -75,6 +75,7 @@ python-icmperror
 
 # Apache add-ons
 httpd-firewall
+mod_wsgi
 httpd-wsgi-socket
 
 
