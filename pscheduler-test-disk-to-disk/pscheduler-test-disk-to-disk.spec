@@ -1,31 +1,39 @@
 #
-# RPM Spec for pScheduler Throughput Test
+# RPM Spec for pScheduler disk-to-disk Test
 #
 
-%define short	throughput
+#
+# Development Order #1:
+#
+# This file is significant for building the test into pScheduler.
+# If additional libraries or parts of pScheduler are required,
+# they should be added here after line 25.
+#
+
+%define short	disk-to-disk
 Name:		pscheduler-test-%{short}
-Version:	1.1
+Version:	1.0.2
 Release:	1%{?dist}
 
-Summary:	Throughput test class for pScheduler
+Summary:	disk-to-disk test for pScheduler
 BuildArch:	noarch
-License:	ASL 2.0
-Vendor:	perfSONAR
+License:	Apache 2.0
 Group:		Unspecified
 
 Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
+# Include all required libraries here
 Requires:	pscheduler-server
-Requires:	python-pscheduler
+Requires:	python-pscheduler >= 1.3
 Requires:	python-jsontemplate
+
 BuildRequires:	pscheduler-rpm
-BuildRequires:	python-pscheduler
-BuildRequires:  python-nose
+
 
 %description
-Throughput test class for pScheduler
+disk-to-disk test class for pScheduler
 
 
 %prep
@@ -51,5 +59,4 @@ pscheduler internal warmboot
 
 %files
 %defattr(-,root,root,-)
-%license LICENSE
 %{dest}
