@@ -2,6 +2,6 @@
 
 set -e
 
-pscheduler task --tool ftp disk-to-disk --source ftp://speedtest.tele2.net/1KB.zip --dest $PWD/test.out
+pscheduler task --tool ftp disk-to-disk --source ftp://speedtest.tele2.net/1KB.zip --dest $AUTOPKGTEST_TMP/test.out
 
-ls -l test.out
+ls -l $AUTOPKGTEST_TMP/test.out
