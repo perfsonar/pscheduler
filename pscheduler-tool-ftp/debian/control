@@ -11,7 +11,7 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-tool-ftp
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
- pscheduler-server, pscheduler-test-dist-to-disk,
+ pscheduler-server, pscheduler-test-disk-to-disk,
  curl
 Description: pScheduler ftp tool
  ftp tool class for pScheduler
