@@ -2,6 +2,6 @@
 
 set -e
 
-pscheduler task --tool globus disk-to-disk --source ftp://speedtest.tele2.net/1KB.zip --dest file://$AUTOPKGTEST_TMP/test.out
+pscheduler task --tool globus disk-to-disk --source ftp://speedtest.tele2.net/1KB.zip --dest file://tmp/test.out
 
-ls -l $AUTOPKGTEST_TMP/test.out
+ls -l /tmp/test.out
