@@ -30,7 +30,7 @@ opt_parser.add_option("--daemon",
 opt_parser.add_option("--pid-file",
                       help="Location of PID file",
                       action="store", type="string", dest="pidfile",
-                      default=None)
+                      default="/dev/null")
 
 # Program options
 
@@ -95,7 +95,7 @@ timeout = pscheduler.timedelta_as_seconds(timeout_td)
 
 
 
-log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
+log = pscheduler.Log(verbose=options.verbose, debug=options.debug, propagate=True)
 
 dsn = options.dsn
 
