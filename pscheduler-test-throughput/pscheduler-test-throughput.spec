@@ -4,7 +4,7 @@
 
 %define short	throughput
 Name:		pscheduler-test-%{short}
-Version:	1.1
+Version:	1.1.1
 Release:	1%{?dist}
 
 Summary:	Throughput test class for pScheduler

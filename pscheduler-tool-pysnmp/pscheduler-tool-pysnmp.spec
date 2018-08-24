@@ -4,7 +4,7 @@
 
 %define short	pysnmp
 Name:		pscheduler-tool-%{short}
-Version:	1.1
+Version:	1.1.1
 Release:	1%{?dist}
 
 Summary:	NET SNMP tool class for pScheduler
