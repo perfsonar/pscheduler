@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-test-latency
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
- pscheduler-server, python-jsontemplate, python-jsonschema (>= 2.5.1)
+ pscheduler-server (>= 1.1.1), python-jsontemplate, python-jsonschema (>= 2.5.1)
 Description: pScheduler latency test
  Latency test class for pScheduler

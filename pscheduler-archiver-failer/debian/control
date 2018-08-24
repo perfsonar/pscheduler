@@ -11,7 +11,7 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-archiver-failer
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
- pscheduler-server
+ pscheduler-server (>= 1.1.1)
 Description: Sometimes-failing archiver class for pScheduler
  Archiver just like the bitbucket archiver but fails randomly about
  10% of the time.

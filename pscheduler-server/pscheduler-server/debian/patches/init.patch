@@ -1,7 +1,7 @@
 Index: pscheduler-server/daemons/init.d-template.raw
 ===================================================================
---- pscheduler-server.orig/daemons/init.d-template.raw	2018-08-10 20:12:47.000000000 +0000
-+++ pscheduler-server/daemons/init.d-template.raw	2018-08-13 19:37:54.000000000 +0000
+--- pscheduler-server.orig/daemons/init.d-template.raw	2018-08-13 19:37:57.000000000 +0000
++++ pscheduler-server/daemons/init.d-template.raw	2018-08-24 18:25:46.000000000 +0000
 @@ -1,4 +1,4 @@
 -#!/bin/sh
 +#!/bin/bash
