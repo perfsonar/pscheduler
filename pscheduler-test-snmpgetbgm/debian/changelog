@@ -1,3 +1,9 @@
+pscheduler-test-snmpgetbgm (1.1.1-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 24 Aug 2018 18:25:50 +0000
+
 pscheduler-test-snmpgetbgm (1.1-1) perfsonar-release; urgency=low
 
   * New upstream version

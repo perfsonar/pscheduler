@@ -1,3 +1,9 @@
+pscheduler-core (1.1.1-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 24 Aug 2018 18:25:44 +0000
+
 pscheduler-core (1.1-1) perfsonar-release; urgency=low
 
   * New upstream version
