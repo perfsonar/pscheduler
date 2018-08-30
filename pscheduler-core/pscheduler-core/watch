@@ -97,7 +97,7 @@ if not pscheduler.api_is_task(task_url):
 verbose = (not options.quiet) and (out_format == "text/plain")
 
 
-log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True)
+log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True, propagate=True)
 
 
 # Get the task with details and find out its class.

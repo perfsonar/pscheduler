@@ -3,7 +3,7 @@
 #
 
 Name:		pscheduler-jq-library
-Version:	1.1
+Version:	1.1.1
 Release:	1%{?dist}
 
 Summary:	Library of JQ functions for pScheduler
