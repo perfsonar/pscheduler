@@ -104,10 +104,3 @@ def mtu_safe():
         "safe": status,
         "message": message
     })
-
-
-# TODO: REMOVE THIS.
-@application.route("/hints", methods=['GET'])
-def hints():
-    """Return the hosts's name"""
-    return ok_json(request_hints())
