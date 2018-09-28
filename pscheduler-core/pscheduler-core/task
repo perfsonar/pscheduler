@@ -277,7 +277,7 @@ verbose = (not options.quiet) \
     and (out_format == "text/plain") 
 
 # TODO: Tie this to the options.
-log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True)
+log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True, propagate=True)
 
 # Decide who assists us.
 

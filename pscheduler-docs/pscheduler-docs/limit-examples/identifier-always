@@ -6,6 +6,8 @@
     "#": "                                                                   ",
     "#": "Shows how to use the 'always' identifier to create identifiers that",
     "#": "match every requester.                                             ",
+    "#": "                                                                   ",
+    "#": "THIS FILE IS FOR EXAMPLE ONLY AND SHOULD NOT BE USED IN PRODUCTION.",
     "#": "-------------------------------------------------------------------",
 
     "schema": 1,

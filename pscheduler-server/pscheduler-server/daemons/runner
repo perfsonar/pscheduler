@@ -73,7 +73,7 @@ if pscheduler.timedelta_as_seconds(refresh) == 0:
     opt_parser.error("Refresh interval must be calculable as seconds.")
 
 
-log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
+log = pscheduler.Log(verbose=options.verbose, debug=options.debug, propagate=True)
 
 dsn = pscheduler.string_from_file(options.dsn)
 

@@ -58,25 +58,36 @@ class Log():
     Sendig SIGUSR1 will force the log level to DEBUG.  Sending SIGUSR2
     will set it to whatever level was previously set.
 
-    If the 'propagate' parameter is True (which it is by default), the
-    logging state (level, forced debug, quiet) will be passed along to
-    any child process which instantiates a Log instance.  This happens
-    via the environment, so anything that scrubs it clean (e.g., sudo)
-    will cause this feaure not to function.
+    If the 'propagate' parameter is True, the logging state (level,
+    forced debug, quiet) will be passed along to any child process
+    which instantiates a Log instance.  This happens via the
+    environment, so anything that scrubs it clean (e.g., sudo) will
+    cause this feaure not to function.  Also note that if there is
+    more than one propagating logger present in a process, the
+    last-set group of parameters will be put into the environment.
     """
 
     def __syslog_handler_deinit(self):
         """
         Kill off the syslog handler; called when a log event fails.
         """
-        if self.syslog_handler is not None:
-            self.logger.removeHandler(self.syslog_handler)
-            self.syslog_handler = None
+
+        try:
+            if self.syslog_handler is not None:
+                self.logger.removeHandler(self.syslog_handler)
+                self.syslog_handler = None
+        except AttributeError:
+            # Don't care if it's not there.
+            pass
 
     def __syslog_handler_init(self):
         """
         Initialize the syslog handler if it hasn't been
         """
+
+        if not hasattr(self, "syslog_handler"):
+            self.syslog_handler = None
+
         if self.syslog_handler is None:
             try:
                 # TODO: /dev/log is Linux-specific.
@@ -100,7 +111,7 @@ class Log():
                  verbose=False,  # Log to stderr, too.
                  quiet=None,   # Don't log anything on startup  (See below)
                  signals=True,  # Enable debug on/off with SIGUSR1/SIGUSR2
-                 propagate=True  # Pass debug state on to child processes
+                 propagate=False  # Pass debug state on to child processes
                  ):
 
         #
@@ -121,7 +132,6 @@ class Log():
             level = DEBUG
 
         self.is_propagating = propagate
-        self.is_propagating = True
 
         # This prevents verbose() from choking on this being undefined.
         self.is_verbose = False
@@ -134,7 +144,7 @@ class Log():
 
         self.is_quiet = quiet
 
-        self.forced_debug = False
+        self.forced_debug = debug
 
         #
         # Inherit state from the environment
@@ -186,7 +196,7 @@ class Log():
         #
 
         self.verbose(verbose)
-        self.level(level)
+        self.level(level, save=True)
         self.set_debug(self.forced_debug)
         self.__update_env()
 
@@ -290,10 +300,6 @@ class Log():
 
     def set_debug(self, state):
         "Turn debugging on or off, remembering the last-set level"
-
-        if state == self.forced_debug:
-            self.debug("Debug signal ignored; already %sdebugging",
-                       "" if state else "not ")
 
         if state:
             self.level(DEBUG, save=False)

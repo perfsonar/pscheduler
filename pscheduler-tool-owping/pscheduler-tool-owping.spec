@@ -4,7 +4,7 @@
 
 %define short	owping
 Name:		pscheduler-tool-%{short}
-Version:	1.1
+Version:	1.1.1
 Release:	1%{?dist}
 
 Summary:	owping tool class for pScheduler

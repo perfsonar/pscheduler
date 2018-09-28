@@ -5,6 +5,8 @@
     "#": "                                                                   ",
     "#": "                                                                   ",
     "#": "Shows how to group identifiers into a classification.              ",
+    "#": "                                                                   ",
+    "#": "THIS FILE IS FOR EXAMPLE ONLY AND SHOULD NOT BE USED IN PRODUCTION.",
     "#": "-------------------------------------------------------------------",
 
     "schema": 1,
