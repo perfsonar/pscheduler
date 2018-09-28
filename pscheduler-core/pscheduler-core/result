@@ -245,6 +245,24 @@ if out_format == "text/plain" \
         print pscheduler.indent(task_json["detail"]["diags"])
 
     print
+
+    try:
+        err = run_json.get("errors", None)
+    except (AttributeError, TypeError):
+        err = None
+
+    if err is not None:
+        print
+        print "Error:"
+        try:
+            print "\n".join([
+                "    %s" % (string) for string in
+                err.split("\n")
+            ])
+        except (KeyError, TypeError):
+            print "    (No error)"
+
+
     parts = task_json["detail"]["participants"]
     for participant in range(0, len(parts)):
         print
