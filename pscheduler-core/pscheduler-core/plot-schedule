@@ -197,6 +197,26 @@ if status != 200:
     pscheduler.fail("Server returned status %d: %s" % (status, schedule))
 
 
+# Where we place each class and The list of columns depends on whether
+# or not the background classes are combined.
+
+class_levels = {
+    "exclusive": 1,
+    "normal": 2,
+    "background": 3,
+    "background-multi": 4,
+    "nonstart": 5
+}
+
+columns = [
+    "",
+    "Exclusive",
+    "Normal",
+    "Background",
+    "Background-Multi",
+    "Non-Start"
+    ]
+
 
 script_lines = [
 """
@@ -208,13 +228,14 @@ set timefmt "%Y-%m-%dT%H:%M:%S"
 
 unset xtics
 set x2label "Scheduling"
-set x2range [0.5:4.5]
-set x2tics out scale 0 ( \\
-    "" 0, \\
-    "Exclusive" 1, \\
-    "Normal" 2, \\
-    "Background" 3, \\
-    "Non-Start" 4 \\
+""",
+"set x2range [0.5:{0}.5]".format(len(columns) - 1),
+"""
+set x2tics out scale 0 ( \\\\
+""",
+", ".join([ '"{0}" {1}'.format(pair[1], pair[0])
+        for pair in enumerate(columns, start=0) ]) + "\\\\",
+"""
     )
 
 
@@ -244,15 +265,6 @@ plot "-" using 1:2:3:2:3 \\
 #
 # Dump it out
 #
-
-class_levels = {
-    "exclusive": 1,
-    "normal": 2,
-    "background-multi": 3,
-    "background": 3,
-    "nonstart": 4,
-}
-
 
 if len(schedule) == 0:
     pscheduler.fail("Nothing scheduled %s to %s" % (
