@@ -634,7 +634,12 @@ class ArchiveWorker():
                 returncode = 1
                 stdout = ""
                 stdout_attempt = ""
-                stderr = "Error during transformation: %s", str(ex)
+                stderr = "Error during transformation: %s" % (str(ex))
+                result = {
+                    "succeeded": False,
+                    "error": stderr
+                }
+
 
         if json["result"] is None:
             self.log.debug("%d: Null transform result; not archiving", self.id)
