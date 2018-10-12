@@ -6,6 +6,8 @@
     "#": "                                                                   ",
     "#": "Allow only IPs or hosts with DNS names within an organization to   ",
     "#": "run any test they want and reject everything else.                 ",
+    "#": "                                                                   ",
+    "#": "THIS FILE IS FOR EXAMPLE ONLY AND SHOULD NOT BE USED IN PRODUCTION.",
     "#": "-------------------------------------------------------------------",
 
     "schema": 1,
