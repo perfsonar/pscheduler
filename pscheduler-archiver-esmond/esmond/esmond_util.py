@@ -443,6 +443,9 @@ class EsmondBaseRecord:
             self.metadata[key] = val
             
     def add_reference_metadata(self, reference={}):
+        if reference is None:
+            return
+        
         for field in reference:
             if field.startswith('_'):
                 continue
