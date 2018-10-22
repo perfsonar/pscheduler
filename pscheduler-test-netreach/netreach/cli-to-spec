@@ -1,0 +1,85 @@
+#!/usr/bin/python
+#
+# Convert command-line options to a test specification
+#
+
+import optparse
+import pscheduler
+import sys
+
+if len(sys.argv) > 1:
+
+   # Args are on the command line
+   args = sys.argv[1:]
+
+else:
+
+   # Args are in a JSON array on stdin
+   json_args = pscheduler.json_load(exit_on_error=True)
+   args = []
+
+   if type(json_args) != list:
+      pscheduler.fail("Invalid JSON for this operation")
+   for arg in json_args:
+      if type(arg) not in (unicode, str, int, float):
+         pscheduler.fail("Invalid JSON for this operation")
+   args = [ str(arg) for arg in json_args ]
+
+
+
+# Gargle the arguments
+
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""Examples:
+
+  task dns --query example.net --record soa
+    text
+
+"""
+)
+
+
+opt_parser.add_option("--network",
+                      help="Network to check",
+                      action="store", type="string",
+                      dest="network")
+
+opt_parser.add_option("--gateway",
+                      help="Network's gateway address",
+                      action="store", type="string",
+                      dest="gateway")
+
+opt_parser.add_option("--scan",
+                      help="Scan type (up, down, random)",
+                      action="store", type="string",
+                      dest="scan")
+
+opt_parser.add_option("--timeout",
+                      help="Maximum time to wait for responses.",
+                      action="store", type="string",
+                      dest="timeout")
+
+
+(options, remaining_args) = opt_parser.parse_args(args)
+
+if len(remaining_args) != 0:
+   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
+
+
+result = { 'schema': 1 }
+
+
+if options.network is not None:
+   result['network'] = options.network
+
+if options.gateway is not None:
+   result['gateway'] = options.gateway
+
+if options.scan is not None:
+   result['scan'] = options.scan
+
+if options.timeout is not None:
+   result['timeout'] = options.timeout
+
+
+pscheduler.succeed_json(result)

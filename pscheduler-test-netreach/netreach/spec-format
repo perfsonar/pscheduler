@@ -1,0 +1,58 @@
+#!/usr/bin/python
+#
+# Format a spec
+#
+
+import jsontemplate
+import pscheduler
+import sys
+
+from validate import spec_is_valid
+
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
+
+
+json = pscheduler.json_load(exit_on_error=True, max_schema=1)
+
+valid, message = spec_is_valid(json)
+
+if not valid:
+    pscheduler.fail(message)
+
+
+if format == 'text/plain':
+
+   template = """
+
+Host ...................... {.section host}{host}{.or}Not Specified{.end}
+Host Node ................. {.section host-node}{host-node}{.or}Not Specified{.end}
+Nameserver ................ {.section nameserver}{nameserver}{.or}Not Specified{.end}
+Record .................... {.section record}{record}{.or}Not Specified{.end}
+Query ..................... {.section query}{query}{.or}Not Specified{.end}
+Timeout ................... {.section timeout}{timeout}{.or}Not Specified{.end}
+"""
+
+elif format == 'text/html':
+
+   template = """
+<table>
+<tr><td>Host</td><td>{.section host}{host}{.or}Not Specified{.end}</td></tr>
+<tr><td>Host Node</td><td>{.section host node}{host node}{.or}Not Specified{.end}</td></tr>
+<tr><td>Nameserver</td><td>{.section nameserver}{nameserver}{.or}Not Specified{.end}</td></tr>
+<tr><td>Record</td><td>{.section record}{record}{.or}Not Specified{.end}</td></tr>
+<tr><td>Query</td><td>{.section query}{query}{.or}Not Specified{.end}</td></tr>
+<tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
+</table>
+   """
+
+else:
+
+   pscheduler.fail("Unsupported format '%s'" % format)
+
+
+# TODO: Should probably handle exceptions in a nicer way.
+print jsontemplate.expand(template, json).strip()
