@@ -701,7 +701,7 @@ class StreamingJSONProgram(object):
                     if rc is None:
                         rc = 1
                     err = self.program.stderr().read().strip()
-                    self.program = None
+                    self.done()
                     if tries > 0:
                         continue
                     raise StreamingJSONProgramFailure(
@@ -713,3 +713,4 @@ class StreamingJSONProgram(object):
     def done(self):
         if self.program is not None:
             self.program.done()
+            self.program = None
