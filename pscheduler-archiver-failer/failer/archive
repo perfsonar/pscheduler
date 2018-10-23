@@ -66,6 +66,11 @@ PARSER = pscheduler.RFC7464Parser(sys.stdin)
 EMITTER = pscheduler.RFC7464Emitter(sys.stdout)
 
 for parsed in PARSER:
+
+    # Failing badly means catastrophe.
+    if parsed["data"].get("badly", False):
+        pscheduler.fail("Forced to fail badly.")
+
     EMITTER(archive(parsed))
 
 pscheduler.succeed()
