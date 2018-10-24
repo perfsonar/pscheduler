@@ -293,8 +293,8 @@ class ArchiveProcess(object):
             self.done()
             return {
                 "succeeded": False,
-                "error": "Archiver error: %s" % (str(ex)),
-                "retry": retry
+                "error": "Possibly-permanent archiver error: %s" % (str(ex))
+                # Don't retry.  The StreamingJSONProgram will have retried.
                 }
 
 
@@ -302,6 +302,7 @@ class ArchiveProcess(object):
         """Stop the archive process"""
         if self.program is not None:
             self.program.done()
+            self.program = None
 
 
     def __del__(self):
@@ -634,7 +635,12 @@ class ArchiveWorker():
                 returncode = 1
                 stdout = ""
                 stdout_attempt = ""
-                stderr = "Error during transformation: %s", str(ex)
+                stderr = "Error during transformation: %s" % (str(ex))
+                result = {
+                    "succeeded": False,
+                    "error": stderr
+                }
+
 
         if json["result"] is None:
             self.log.debug("%d: Null transform result; not archiving", self.id)

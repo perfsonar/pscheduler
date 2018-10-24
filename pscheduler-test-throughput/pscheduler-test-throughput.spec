@@ -4,7 +4,7 @@
 
 %define short	throughput
 Name:		pscheduler-test-%{short}
-Version:	1.1.1
+Version:	1.1.2
 Release:	1%{?dist}
 
 Summary:	Throughput test class for pScheduler
@@ -20,7 +20,6 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server
 Requires:	python-pscheduler
 Requires:	python-jsontemplate
-Requires:       numactl
 BuildRequires:	pscheduler-rpm
 BuildRequires:	python-pscheduler
 BuildRequires:  python-nose

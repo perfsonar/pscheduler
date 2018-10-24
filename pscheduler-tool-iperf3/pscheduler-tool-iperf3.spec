@@ -4,7 +4,7 @@
 
 %define short	iperf3
 Name:		pscheduler-tool-%{short}
-Version:	1.1.1
+Version:	1.1.2
 Release:	1%{?dist}
 
 Summary:	iperf3 tool class for pScheduler
@@ -21,6 +21,7 @@ Requires:	pscheduler-server
 Requires:	python-pscheduler
 Requires:	pscheduler-test-throughput
 requires:	iperf3
+Requires:	numactl
 
 BuildRequires:	pscheduler-rpm
 
