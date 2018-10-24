@@ -5,6 +5,7 @@
 import os
 import pickle
 import pscheduler
+import resource
 import sys
 import time
 
@@ -112,6 +113,12 @@ def safe_run(function,
         'runs': runs
     }
     os.environ[STATE_VARIABLE] = pickle.dumps(to_pickle)
+
+    # Close all open FDs other than stdin/stdout/stderr so they don't
+    # get inherited by the exec'd process.
+    # PORT: Make sure this is portable to OS X and elsewhere
+    (file_max_soft, file_max_hard) = resource.getrlimit(resource.RLIMIT_NOFILE)
+    os.closerange(sys.stderr.fileno() + 1, file_max_soft)
 
     os.execvp(sys.argv[0], sys.argv)
 

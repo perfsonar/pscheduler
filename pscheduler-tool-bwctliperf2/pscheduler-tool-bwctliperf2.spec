@@ -4,7 +4,7 @@
 
 %define short	bwctliperf2
 Name:		pscheduler-tool-%{short}
-Version:	1.1
+Version:	1.1.2
 Release:	1%{?dist}
 
 Summary:	bwctliperf2 tool class for pScheduler
