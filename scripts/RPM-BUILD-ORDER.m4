@@ -103,6 +103,7 @@ pscheduler-server
 
 # Tests
 pscheduler-test-clock
+pscheduler-test-disk-to-disk	--bundle extras
 pscheduler-test-http
 pscheduler-test-idle
 pscheduler-test-idlebgm
@@ -119,6 +120,8 @@ pscheduler-test-trace
 pscheduler-test-dns
 
 # Tools
+pscheduler-tool-ftp		            --bundle extras
+pscheduler-tool-globus		        --bundle extras
 pscheduler-tool-owping
 pscheduler-tool-powstream
 pscheduler-tool-iperf2
