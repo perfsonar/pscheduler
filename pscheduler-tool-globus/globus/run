@@ -43,14 +43,36 @@ diags = ''
 
 # Run the actual task here:
 
-if True:
-  argv = ['globus-url-copy', # Implimentation of GridFTP
-          '-vb', # verbose output for test
-          #'-nlb', # network logging on output (must use gsiftp)
-	  #'-p 4', # num of parrallel TCP connections
-	  source, #Source URL
-	  dest] #Destination URL
+#debug = open("debug.txt", "w")
+#debug.close()
 
+if True:
+
+  argv = ['globus-url-copy', # Implimentation of GridFTP
+          '-vb'] # verbose output for test
+
+  #options handling
+  options = input['test']['spec']['options']
+  
+  
+
+  if options != " ":
+    options = options.split(" ")
+    for opt in options:
+      argv.append(opt)
+
+  with open("/tmp/debug.out", "wb") as f:
+    [f.write(opt + "\n") for opt in argv]
+
+  argv.append(source) # Source URL
+  argv.append(dest) # Destination URL
+  
+ 
+ 
+
+  #[debug.write(opt) for opt in argv]
+  #debug.close()
+  
   status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
 
   if status:
@@ -75,4 +97,4 @@ results = {
     'diags': diags }
 
 pscheduler.succeed_json(results)
-
+#?

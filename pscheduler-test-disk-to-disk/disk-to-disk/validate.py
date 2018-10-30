@@ -21,6 +21,8 @@ def spec_is_valid(json):
                 # and should be included
                 "properties": {
                     "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                    "options":      { "$ref": "#/pScheduler/String"   },
+
                     "source":       { "$ref": "#/pScheduler/String"   },
                     "source-node":  { "$ref": "#/pScheduler/Host"     },
 

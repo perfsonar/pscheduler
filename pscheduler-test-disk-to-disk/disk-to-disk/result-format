@@ -45,7 +45,7 @@ if format == 'text/plain':
     if 'throughput' in result:
 	print 'Throughput: %s\n' % result['throughput']
 
-    print 'Test completed succesfully'
+    print 'Test completed successfully'
    
 elif format == 'text/html':
     # Print results of the test here, in html
