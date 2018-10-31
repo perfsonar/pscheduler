@@ -52,6 +52,15 @@ STDERR = ""
 
 # Run the actual task here:
 if True:
+  # Normalize input with Globus tool
+  if (len(source) > 6 and source[:7] != "file://"):
+    # If source is local file, use file:// protocol
+    if (source[0] == "/" and source[1] != "/"):
+      source = "file://" + source
+
+  if (len(dest) > 6 and  dest[:7] == "file://"):
+    dest = dest.split("file://")[-1]
+
   # Execute curl command
   argv = ['curl',
           '-o',   # Flag to output file
