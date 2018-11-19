@@ -68,7 +68,9 @@ $INTERACTIVE && printf ' Done.\n' 1>&2 || true
 
 $INTERACTIVE && printf '    Database...' 1>&2 || true
 export PGPASSFILE="__PGPASSFILE__"
-pg_dump \
+PG_DUMP=pg_dump
+[ -x /usr/pgsql-9.5/bin/pg_dump ] && PG_DUMP=/usr/pgsql-9.5/bin/pg_dump
+$PG_DUMP \
     --create \
     --format plain \
     --serializable-deferrable \
