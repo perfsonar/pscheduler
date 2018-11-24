@@ -1,8 +1,8 @@
 #!/bin/sed -e 1d
 {
     "schema": 1,
-    "name": "dns",
-    "description": "Measure DNS transaction time",
+    "name": "netreach",
+    "description": "Determine if any host on a network is reachable",
     "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",

@@ -13,7 +13,7 @@ from validate import spec_is_valid
 try:
    format = sys.argv[1]
 except IndexError:
-   format = 'text/plain'
+   format = "text/plain"
 
 
 json = pscheduler.json_load(exit_on_error=True, max_schema=1)
@@ -24,30 +24,34 @@ if not valid:
     pscheduler.fail(message)
 
 
-if format == 'text/plain':
+if format == "text/plain":
 
    template = """
 
-Host ...................... {.section host}{host}{.or}Not Specified{.end}
-Host Node ................. {.section host-node}{host-node}{.or}Not Specified{.end}
-Nameserver ................ {.section nameserver}{nameserver}{.or}Not Specified{.end}
-Record .................... {.section record}{record}{.or}Not Specified{.end}
-Query ..................... {.section query}{query}{.or}Not Specified{.end}
-Timeout ................... {.section timeout}{timeout}{.or}Not Specified{.end}
+Host ........ {.section host}{host}{.or}Not Specified{.end}
+Host Node ... {.section host-node}{host-node}{.or}Not Specified{.end}
+Network .,,,. {.section network}{network}{.or}Not Specified{.end}
+Gateway ..... {.section gateway}{gateway}{.or}Not Specified{.end}
+Limit ....... {.section limit}{limit}{.or}Not Specified{.end}
+Parallel .... {.section parallel}{parallel}{.or}Not Specified{.end}
+Scan Type ... {.section scan}{scan}{.or}Not Specified{.end}
+Timeout ..... {.section timeout}{timeout}{.or}Not Specified{.end}
 """
 
-elif format == 'text/html':
+elif format == "text/html":
 
    template = """
 <table>
 <tr><td>Host</td><td>{.section host}{host}{.or}Not Specified{.end}</td></tr>
 <tr><td>Host Node</td><td>{.section host node}{host node}{.or}Not Specified{.end}</td></tr>
-<tr><td>Nameserver</td><td>{.section nameserver}{nameserver}{.or}Not Specified{.end}</td></tr>
-<tr><td>Record</td><td>{.section record}{record}{.or}Not Specified{.end}</td></tr>
-<tr><td>Query</td><td>{.section query}{query}{.or}Not Specified{.end}</td></tr>
+<tr><td>Network</td><td>{.section network}{network}{.or}Not Specified{.end}</td></tr>
+<tr><td>Gateway</td><td>{.section gateway}{gateway}{.or}Not Specified{.end}</td></tr>
+<tr><td>Limit</td><td>{.section limit}{limit}{.or}Not Specified{.end}</td></tr>
+<tr><td>Parallel</td><td>{.section parallel}{parallel}{.or}Not Specified{.end}</td></tr>
+<tr><td>Scan Type</td><td>{.section scan}{scan}{.or}Not Specified{.end}</td></tr>
 <tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
 </table>
-   """
+"""
 
 else:
 

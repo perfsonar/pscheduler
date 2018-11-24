@@ -2,25 +2,109 @@
 # Validator for "netreach" Test
 #
 
+import ipaddress
+
 from pscheduler import json_validate
 
-# TODO: Need host, host-node, possibly binding...
+
+def gateway_ip(network, gateway):
+
+    """Calculate the gateway's IP address if it's an integer or
+    return what was passed in if it isn't.  Raises ValueError if
+    there's a problem."""
+
+    if isinstance(gateway, int):
+
+        if abs(gateway) > (network.num_addresses - 2):
+            raise ValueError("Gateway host number is outside the network")
+
+        if gateway < 0:
+            gateway -= 1
+
+        return network[gateway]
+
+    elif isinstance(gateway, basestring):
+
+        return ipaddress.ip_address(unicode(gateway))
+
+    else:
+
+        raise ValueError("Unknown gateway type.  Check JSON validation.")
+
+
+
 
 def spec_is_valid(json):
     schema = {
+        "local" : {
+
+            "NegativeInteger": {
+                "type": "integer",
+                "maximum": -1
+            },
+
+            "NonzeroInteger": {
+                "oneOf": [
+                    { "$ref": "#/pScheduler/Cardinal" },
+                    { "$ref": "#/local/NegativeInteger" }
+                ]
+            },
+
+            "GatewayHost": {
+                "oneOf": [
+                    { "$ref": "#/pScheduler/IPAddress" },
+                    { "$ref": "#/local/NonzeroInteger" }
+                ]
+            },
+
+    "ScanScheme": {
+                "type": "string",
+                "enum": [ "up", "down", "ends", "random"]
+            }
+        },
+
         "type": "object",
         "properties": {
             "schema":            { "$ref": "#/pScheduler/Cardinal" },
-            "gateway":           { "$ref": "#/pScheduler/Host" },
+            "host":              { "$ref": "#/pScheduler/Host" },
+            "host-node":         { "$ref": "#/pScheduler/Host" },
             "network":           { "$ref": "#/pScheduler/IPCIDR" },
+            "gateway":           { "$ref": "#/local/GatewayHost" },
+            "limit":             { "$ref": "#/pScheduler/Cardinal" },
             "parallel":          { "$ref": "#/pScheduler/Cardinal" },
+            "scan":              { "$ref": "#/local/ScanScheme" },
             "timeout":           { "$ref": "#/pScheduler/Duration" }
             },
         "required": [
             "network"
             ]
         }
-    return json_validate(json, schema)
+
+    (json_valid, message) = json_validate(json, schema)
+
+    if not json_valid and "gateway" not in json:
+        return (json_valid, message)
+
+    try:
+        network = ipaddress.ip_network(unicode(json["network"]))
+        gateway = gateway_ip(network, json["gateway"])
+    except ValueError as ex:
+        return (False, str(ex))
+            
+    # The network and gateway must be in the same family (version)
+    if network.version != gateway.version:
+        return (False, "Network and gateway are not in the same family.")
+
+    # The gateway must fall within the network
+    if gateway not in network:
+        return (False, "Gateway is outside of the network")
+
+    # The gateway can't be the network or broadcast address.
+    if gateway in [ network[0], network[-1] ]:
+        return (False, "Gateway cannot be the network or broadcast address.")
+
+    return (True, "OK")
+
 
 
 def result_is_valid(json):

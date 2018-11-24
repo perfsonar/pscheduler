@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Participant list generator for 'dns' task spec
+# Participant list generator for 'netreach' task spec
 #
 # Input is a test spec, assumed to have been validated by spec-is-valid.
 #
@@ -15,7 +15,7 @@ json = pscheduler.json_load(exit_on_error=True, max_schema=1)
 
 null_reason = None
 
-#host only participant
+# Only one participant
 host = json.get('host-node', json.get('host', None))
 if host is None:
     null_reason = "No host specified"
@@ -28,5 +28,3 @@ if null_reason is not None:
     result["null-reason"] = null_reason
 
 pscheduler.succeed_json(result)
-
-

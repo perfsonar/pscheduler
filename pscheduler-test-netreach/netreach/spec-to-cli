@@ -16,14 +16,16 @@ if not valid:
 
 result = pscheduler.speccli_build_args(spec, 
                                        strings=[
-        # Strings
-        ( 'host', 'host' ),
-        ( 'host-node', 'host-node' ),
-        ( 'nameserver', 'nameserver' ),
-        ( 'record', 'record' ),
-        ( 'query', 'query' ),
-        ( 'timeout', 'timeout' ),
-        ])
+                                           # Strings
+                                           ( 'host', 'host' ),
+                                           ( 'host-node', 'host-node' ),
+                                           ( 'network', 'network' ),
+                                           ( 'gateway', 'gateway' ),
+                                           ( 'limit', 'limit' ),
+                                           ( 'parallel', 'parallel' ),
+                                           ( 'scan', 'scan' ),
+                                           ( 'timeout', 'timeout' ),
+                                       ])
 
 
 pscheduler.succeed_json(result)

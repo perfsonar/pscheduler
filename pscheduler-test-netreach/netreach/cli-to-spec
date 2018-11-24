@@ -32,8 +32,14 @@ else:
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """Examples:
 
-  task dns --query example.net --record soa
-    text
+  task netreach --network 192.0.2.0/24 --gateway 192.0.2.1
+    Test 192.0.2.0/24 reached via 192.0.2.1.
+
+  task netreach --network 192.0.2.0/24 --gateway 1
+    Test 192.0.2.0/24 reached via the first host in the block.
+
+  task netreach --network 192.0.2.0/24 --gateway -1
+    Test 192.0.2.0/24 reached via the last host in the block.
 
 """
 )
@@ -49,8 +55,28 @@ opt_parser.add_option("--gateway",
                       action="store", type="string",
                       dest="gateway")
 
+opt_parser.add_option("--host",
+                      help="Host where the test should be run",
+                      action="store", type="string",
+                      dest="host")
+
+opt_parser.add_option("--host-node",
+                      help="pScheduler to contact for setup",
+                      action="store", type="string",
+                      dest="host_node")
+
+opt_parser.add_option("--limit",
+                      help="Maximum number of addresses to scan",
+                      action="store", type="int",
+                      dest="limit")
+
+opt_parser.add_option("--parallel",
+                      help="Number of parallel tests (default 1)",
+                      action="store", type="int",
+                      dest="parallel")
+
 opt_parser.add_option("--scan",
-                      help="Scan type (up, down, random)",
+                      help="Scan type (up, down, ends, random)",
                       action="store", type="string",
                       dest="scan")
 
@@ -73,7 +99,23 @@ if options.network is not None:
    result['network'] = options.network
 
 if options.gateway is not None:
-   result['gateway'] = options.gateway
+   # This can be an integer or a string.
+   try:
+      result['gateway'] = int(options.gateway)
+   except ValueError:
+      result['gateway'] = options.gateway
+
+if options.host is not None:
+   result['host'] = options.host
+
+if options.host_node is not None:
+   result['host-node'] = options.host_node
+
+if options.limit is not None:
+   result['limit'] = options.limit
+
+if options.parallel is not None:
+   result['parallel'] = options.parallel
 
 if options.scan is not None:
    result['scan'] = options.scan
