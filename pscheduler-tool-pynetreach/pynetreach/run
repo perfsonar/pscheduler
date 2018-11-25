@@ -1,0 +1,212 @@
+#!/usr/bin/python
+#
+# Run a test.  Just the test spec is provided on stdin.
+#
+
+import ipaddress
+import pscheduler
+import random
+import re
+
+input = pscheduler.json_load(exit_on_error=True);
+
+spec = input["test"]["spec"]
+
+timeout_iso = spec.get("timeout", "PT3S" )
+timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+
+
+# ------------------------------------------------------------------------------
+
+# Generator functions for the scan modes
+
+def net_up(network, limit=None, exclude=None):
+    # TODO: Pull the next two lines into a function.
+    addresses = network.num_addresses-2
+    yields = limit or addresses
+    address = 1
+    while addresses and yields:
+        addresses -= 1
+        address += 1
+
+        to_yield = network[address]
+        if to_yield == exclude:
+            continue
+
+        yield str(to_yield)
+        yields -= 1
+
+
+def net_down(network, limit=None, exclude=None):
+    addresses = network.num_addresses-2
+    yields = limit or addresses
+    address = network.num_addresses-2
+    while addresses and yields:
+        addresses -= 1
+        to_yield = network[address]
+        address -= 1
+
+        if to_yield == exclude:
+            continue
+
+        yield str(to_yield)
+        yields -= 1
+
+
+def net_edges(network, limit=None, exclude=None):
+    addresses = network.num_addresses-2
+    yields = limit or addresses
+    lower_address = 1
+    upper_address = -2
+    use_lower = True
+
+    while addresses and yields:
+        addresses -= 1
+        if use_lower:
+            to_yield = network[lower_address]
+            lower_address += 1
+        else:
+            to_yield = network[upper_address]
+            upper_address -= 1
+
+        if to_yield == exclude:
+            continue
+
+        yield str(to_yield)
+        yields -= 1
+        use_lower = not use_lower
+
+
+def net_random(network, limit=None, exclude=None):
+    addresses = network.num_addresses-2
+    yields = limit or addresses
+
+    random.seed()
+    net_upper = addresses
+
+    while yields:
+        address = random.randrange(1, net_upper)
+        to_yield = network[address]
+
+        if to_yield == exclude:
+            continue
+
+        addresses -= 1
+        yield str(to_yield)
+        yields -= 1
+
+
+generators = {
+    "up": net_up,
+    "down": net_down,
+    "edges": net_edges,
+    "random": net_random
+};
+
+# ------------------------------------------------------------------------------
+
+# Perform the test
+
+runs = 0
+run_max_ips = spec["limit"]
+parallel = spec.get("parallel", 100)
+
+
+ip_list = []
+generator = generators[spec.get("scan", "edges")]
+
+network = ipaddress.ip_network(spec["network"])
+try:
+    gateway = str(ipaddress.ip_address(spec["gateway"]))
+    ip_list.append(gateway)
+except KeyError:
+    gateway = None
+
+
+nmap_first_args = [ 'nmap', '-n', '-sP', '-oG', '-', '--host-timeout', str(timeout) ]
+
+# The lines we want look like this:
+# Host: 192.168.1.1 ()       Status: Up
+nmap_output_matcher = re.compile("^Host:\s*([^\s]+)\s.*Status:\s*Up")
+
+def run_nmap(ips, run_number, gateway):
+    # TODO: Consider a timeout for this?
+    (status, out, err) = pscheduler.run_program(nmap_first_args + ips)
+
+    if status != 0:
+        pscheduler.succeed_json({
+            "succeeded": False,
+            "diags": '',
+            "error": "Nmap failed: %s" % (err)
+        })
+
+    ips_up = map(    # First match
+        lambda m: m.group(1),
+        filter(      # Only lines that matched
+            lambda m: m is not None, 
+            map(     # All lines put through the matcher
+                lambda l: nmap_output_matcher.match(l),
+                out.split("\n")
+            )
+        )
+    )
+
+    # In the first run, we check to see if the
+    if run_number == 0 and ips_up and ips_up[0] == gateway:
+        gateway_up = True
+        del ips_up[0]
+    else:
+        gateway_up = False
+
+    return (gateway_up, bool(ips_up))
+
+
+
+gateway_up = False
+run_number = 0
+
+for next_ip in generator(network, exclude=gateway, limit=run_max_ips):
+
+    if len(ip_list) >= parallel:
+        # TODO: Run nmap
+        (gateway_up, network_up) = run_nmap(ip_list, run_number, gateway)
+        if network_up:
+            pscheduler.succeed_json({
+                "succeeded": True,
+                "diags": "No diagnostics.",
+                "result": {
+                    "gateway-up": gateway_up,
+                    "network-up": True
+                }
+            })
+        run_number += 1
+        ip_list = []
+
+    ip_list.append(next_ip)
+
+# Do another nmap if there's anything left in the array
+if ip_list:
+    # TODO: This is duplicated from above.  Make it a function.
+    (gateway_up, network_up) = run_nmap(ip_list, run_number, gateway)
+    if network_up:
+        pscheduler.succeed_json({
+            "succeeded": True,
+            "diags": "No diagnostics.",
+            "result": {
+                "gateway-up": gateway_up,
+                "network-up": True
+            }
+        })
+
+
+# If nothing else happened, nothing on the network is up.
+
+pscheduler.succeed_json({
+    "succeeded": True,
+    "diags": "No diagnostics.",
+    "result": {
+        "gateway-up": gateway_up,
+        "network-up": False
+    }
+})
+

@@ -76,7 +76,7 @@ opt_parser.add_option("--parallel",
                       dest="parallel")
 
 opt_parser.add_option("--scan",
-                      help="Scan type (up, down, ends, random)",
+                      help="Scan type (up, down, edges, random)",
                       action="store", type="string",
                       dest="scan")
 

@@ -59,7 +59,7 @@ def spec_is_valid(json):
 
     "ScanScheme": {
                 "type": "string",
-                "enum": [ "up", "down", "ends", "random"]
+                "enum": [ "up", "down", "edges", "random"]
             }
         },
 
@@ -90,18 +90,19 @@ def spec_is_valid(json):
         gateway = gateway_ip(network, json["gateway"])
     except ValueError as ex:
         return (False, str(ex))
+
+    if network.num_addresses < 2:
+        return (False, "Network must have at least two addresses.")
             
-    # The network and gateway must be in the same family (version)
     if network.version != gateway.version:
         return (False, "Network and gateway are not in the same family.")
 
-    # The gateway must fall within the network
     if gateway not in network:
         return (False, "Gateway is outside of the network")
 
-    # The gateway can't be the network or broadcast address.
     if gateway in [ network[0], network[-1] ]:
         return (False, "Gateway cannot be the network or broadcast address.")
+
 
     return (True, "OK")
 

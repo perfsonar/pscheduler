@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Validator for 'dns' task spec
+# Validator for 'netreach' task spec
 #
 
 import pscheduler

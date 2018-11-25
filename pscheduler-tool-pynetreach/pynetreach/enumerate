@@ -1,0 +1,17 @@
+#!/bin/sed -e 1d
+{
+    "schema": 1,
+
+    "name": "pynetreach",
+    "description": "Determine network reachability",
+    "version": "1.0",
+    "tests": [ "netreach" ],
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    }
+}

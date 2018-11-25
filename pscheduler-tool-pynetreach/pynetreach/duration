@@ -1,0 +1,44 @@
+#!/usr/bin/python
+#
+# Determine the duration of a specified test.
+#
+#
+# TODO: This is a bare-bones, unreliable implementation that should be
+# used only for testing.
+#
+
+import datetime
+import ipaddress
+import math
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True);
+
+network = ipaddress.ip_network(json["network"])
+
+try:
+    gateway = ipaddress.ip_network(json["gateway"])
+    hosts_to_scan = 1
+except KeyError:
+    gateway = None
+    hosts_to_scan = 0
+
+limit = json.get("limit", 64)
+parallel = json.get("parallel", limit);
+
+# Add this to whatever the gateway did.
+hosts_to_scan += min(limit, network.num_addresses-2)
+
+timeout_iso = json.get("timeout", "PT3S" )
+timeout = pscheduler.iso8601_as_timedelta(timeout_iso) + datetime.timedelta( seconds=0.5 )
+
+# Any fraction means an additional run, so round up.
+nmap_runs = int( math.ceil(float(hosts_to_scan) / float(parallel)) )
+
+duration = timeout * nmap_runs
+duration += datetime.timedelta(seconds=1)  # Internal slop
+
+pscheduler.succeed_json({
+	"duration": pscheduler.timedelta_as_iso8601( duration )
+})
