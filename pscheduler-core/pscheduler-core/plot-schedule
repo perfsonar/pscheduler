@@ -301,6 +301,15 @@ plot "-" using 1:2:3:2:3 \\
 # Dump it out
 #
 
+class_levels = {
+    "exclusive": 1,
+    "normal": 2,
+    "background-multi": 3,
+    "background": 3,
+    "nonstart": 4,
+}
+
+
 if len(schedule) == 0:
     pscheduler.fail("Nothing scheduled %s to %s" % (
         pscheduler.datetime_as_iso8601(start),
