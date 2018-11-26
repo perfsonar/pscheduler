@@ -87,7 +87,10 @@ def spec_is_valid(json):
 
     try:
         network = ipaddress.ip_network(unicode(json["network"]))
-        gateway = gateway_ip(network, json["gateway"])
+        try:
+            gateway = gateway_ip(network, json["gateway"])
+        except KeyError:
+            gateway = network[1]  # A dummy to make the other tests pass.
     except ValueError as ex:
         return (False, str(ex))
 

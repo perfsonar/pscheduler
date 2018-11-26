@@ -8,8 +8,6 @@ import pscheduler
 
 input = pscheduler.json_load(exit_on_error=True);
 
-# TODO: Validate the input
-
 try:
     pscheduler.succeed_json(input['results'][0]['result'])
 except (KeyError, TypeError):

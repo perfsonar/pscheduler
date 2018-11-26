@@ -2,10 +2,6 @@
 #
 # Determine the duration of a specified test.
 #
-#
-# TODO: This is a bare-bones, unreliable implementation that should be
-# used only for testing.
-#
 
 import datetime
 import ipaddress
@@ -17,12 +13,7 @@ json = pscheduler.json_load(exit_on_error=True);
 
 network = ipaddress.ip_network(json["network"])
 
-try:
-    gateway = ipaddress.ip_network(json["gateway"])
-    hosts_to_scan = 1
-except KeyError:
-    gateway = None
-    hosts_to_scan = 0
+hosts_to_scan = 1 if "gateway" in json else 0
 
 limit = json.get("limit", 64)
 parallel = json.get("parallel", limit);

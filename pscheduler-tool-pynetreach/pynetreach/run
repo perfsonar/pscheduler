@@ -18,12 +18,14 @@ timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeo
 
 # ------------------------------------------------------------------------------
 
+def __addr_yields(network, limit):
+    addresses = network.num_addresses - 2
+    yields = limit or addresses
+
 # Generator functions for the scan modes
 
 def net_up(network, limit=None, exclude=None):
-    # TODO: Pull the next two lines into a function.
-    addresses = network.num_addresses-2
-    yields = limit or addresses
+    (addresses, yields) = __addr_yields(network, limit)
     address = 1
     while addresses and yields:
         addresses -= 1
@@ -38,8 +40,7 @@ def net_up(network, limit=None, exclude=None):
 
 
 def net_down(network, limit=None, exclude=None):
-    addresses = network.num_addresses-2
-    yields = limit or addresses
+    (addresses, yields) = __addr_yields(network, limit)
     address = network.num_addresses-2
     while addresses and yields:
         addresses -= 1
@@ -54,8 +55,7 @@ def net_down(network, limit=None, exclude=None):
 
 
 def net_edges(network, limit=None, exclude=None):
-    addresses = network.num_addresses-2
-    yields = limit or addresses
+    (addresses, yields) = __addr_yields(network, limit)
     lower_address = 1
     upper_address = -2
     use_lower = True
@@ -78,8 +78,7 @@ def net_edges(network, limit=None, exclude=None):
 
 
 def net_random(network, limit=None, exclude=None):
-    addresses = network.num_addresses-2
-    yields = limit or addresses
+    (addresses, yields) = __addr_yields(network, limit)
 
     random.seed()
     net_upper = addresses
@@ -116,10 +115,13 @@ ip_list = []
 generator = generators[spec.get("scan", "edges")]
 
 network = ipaddress.ip_network(spec["network"])
-try:
-    gateway = str(ipaddress.ip_address(spec["gateway"]))
+spec_gateway = spec.get("Gateway", None)
+if isinstance(spec_gateway, int):
+    gateway = network[spec_gateway]
+elif isinstance(spec_gateway, basestring):
+    gateway = str(ipaddress.ip_address(spec_gateway))
     ip_list.append(gateway)
-except KeyError:
+else:
     gateway = None
 
 
@@ -129,9 +131,11 @@ nmap_first_args = [ 'nmap', '-n', '-sP', '-oG', '-', '--host-timeout', str(timeo
 # Host: 192.168.1.1 ()       Status: Up
 nmap_output_matcher = re.compile("^Host:\s*([^\s]+)\s.*Status:\s*Up")
 
+nmap_timeout = timeout * 1.5
+
 def run_nmap(ips, run_number, gateway):
-    # TODO: Consider a timeout for this?
-    (status, out, err) = pscheduler.run_program(nmap_first_args + ips)
+    (status, out, err) = pscheduler.run_program(nmap_first_args + ips,
+                                                timeout=nmap_timeout)
 
     if status != 0:
         pscheduler.succeed_json({
@@ -151,7 +155,8 @@ def run_nmap(ips, run_number, gateway):
         )
     )
 
-    # In the first run, we check to see if the
+    # In the first run, we check to see if the first thing we get back
+    # is the gateway.
     if run_number == 0 and ips_up and ips_up[0] == gateway:
         gateway_up = True
         del ips_up[0]
@@ -165,16 +170,19 @@ def run_nmap(ips, run_number, gateway):
 gateway_up = False
 run_number = 0
 
+# TODO: Need to eliminate gateway-up in the result if there isn't one
+# in the spec.
+
 for next_ip in generator(network, exclude=gateway, limit=run_max_ips):
 
     if len(ip_list) >= parallel:
-        # TODO: Run nmap
         (gateway_up, network_up) = run_nmap(ip_list, run_number, gateway)
         if network_up:
             pscheduler.succeed_json({
                 "succeeded": True,
                 "diags": "No diagnostics.",
                 "result": {
+                    "succeeded": True,
                     "gateway-up": gateway_up,
                     "network-up": True
                 }
@@ -186,13 +194,13 @@ for next_ip in generator(network, exclude=gateway, limit=run_max_ips):
 
 # Do another nmap if there's anything left in the array
 if ip_list:
-    # TODO: This is duplicated from above.  Make it a function.
     (gateway_up, network_up) = run_nmap(ip_list, run_number, gateway)
     if network_up:
         pscheduler.succeed_json({
             "succeeded": True,
             "diags": "No diagnostics.",
             "result": {
+                "succeeded": True,
                 "gateway-up": gateway_up,
                 "network-up": True
             }
@@ -205,6 +213,7 @@ pscheduler.succeed_json({
     "succeeded": True,
     "diags": "No diagnostics.",
     "result": {
+        "succeeded": True,
         "gateway-up": gateway_up,
         "network-up": False
     }

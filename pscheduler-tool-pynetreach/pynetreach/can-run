@@ -7,13 +7,6 @@ import pscheduler
 
 json = pscheduler.json_load(exit_on_error=True);
 
-if json["schema"] > 1:
-        pscheduler.succeed_json({
-            "can-run": False,
-            "reasons": [ "Unsupported schema version" ]
-        })
-    
-
 try:
     if json['type'] != 'netreach':
         pscheduler.succeed_json({
