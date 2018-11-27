@@ -33,6 +33,18 @@ case "${COMMAND}" in
 	;;
 esac
 
+
+if [ "$1" = "--hard" ]
+then
+    [ "${COMMAND}" = "stop" ] \
+	|| die "The --hard switch only applies to the stop command."
+    HARD=true
+    shift
+else
+    HARD=false
+fi
+
+
 for SERVICE in "$@"
 do
     case "${SERVICE}" in
@@ -66,13 +78,17 @@ do
 	    systemctl "${COMMAND}" "pscheduler-${SERVICE}"
 	    ;;
 	api)
-	    # This is a special case; HTTPD is never taken down.
+	    # This is a special case; HTTPD is never taken down unless
+	    # being stopped hard.
 	    case "${COMMAND}" in
 		start|restart)
 		    systemctl "${COMMAND}" httpd
 		    ;;
+		stop)
+		    $HARD && systemctl stop httpd
+		    ;;
 		*)
-		    true
+		    die "Internal error: unknown command '${COMMAND}'"
 		    ;;
 	    esac
 	    ;;
