@@ -64,13 +64,15 @@ cleanup()
 {
     rm -rf "${WORK_DIR}"
 
+    # The cat prevents output from reaching the screen
+    pscheduler internal service restart | cat
+
     if ${ERROR}
     then
 	echo
 	echo "WARNING:  Because of errors," \
 	    "pScheduler may be in an inoperable state." 1>&2
     fi
-	
 }
 trap cleanup EXIT
 
@@ -135,6 +137,10 @@ fi
 # Any error beyond this point could leave the system in an unstable
 # state.
 ERROR=true
+
+# Hard stopping makes sure the API server is fully disconnected from
+# the database.
+pscheduler internal service stop --hard | cat
 
 #
 # Configuration
