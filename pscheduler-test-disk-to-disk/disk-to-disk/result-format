@@ -40,10 +40,10 @@ if format == 'text/plain':
     print 'Total duration of transfer: %s\n' % result['time']
 
     if 'bytes-sent' in result:
-        print 'Bytes-sent: %s\n' % result['bytes-sent']
+        print 'Bytes Sent: %s\n' % str(result['bytes-sent']) 
 
     if 'throughput' in result:
-	print 'Throughput: %s\n' % result['throughput']
+	print 'Throughput: %s MB/sec avg\n' % str(result['throughput'])
 
     print 'Test completed successfully'
    

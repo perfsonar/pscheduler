@@ -53,8 +53,8 @@ def result_is_valid(json):
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
             "time":       { "$ref": "#/pScheduler/Duration" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean"  },
-            "bytes-sent": { "$ref": "#/pScheduler/String" },
-            "throughput": { "$ref": "#/pScheduler/String" },
+            "bytes-sent": { "$ref": "#/pScheduler/Float" },
+            "throughput": { "$ref": "#/pScheduler/Float" },
             },
         "required": [
             "schema",

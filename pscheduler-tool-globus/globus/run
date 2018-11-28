@@ -42,8 +42,8 @@ error = ''
 diags = ''
 
 # Run the actual task here:
-thru_put = ""
-bits_sent = ""
+bits_sent = 0.0
+thru_put = 0.0
 
 if True:
 
@@ -70,19 +70,13 @@ if True:
 
 
   # Parsing stdout for throughput and bytes-sent 
-
-  stdout = str(stdout.split("\n")[4]) # testing 1MB
-
+  orig_stdout = stdout
+  stdout = stdout.split("\n")[4]
   stdout = stdout.split(" ")
 
-
-
-
-
   if len(stdout) > 2: 
-    bits_sent = stdout[12] +" "+ stdout[13]
-
-    thru_put = stdout[22] +" "+ stdout[23]
+    bits_sent = float(stdout[12])
+    thru_put = float(stdout[22])
   
   if status:
     succeeded = False
@@ -90,9 +84,21 @@ if True:
 
   else:
     succeeded = True
-    diags = stdout
+    diags = orig_stdout
 
 end_time = datetime.datetime.now()
+
+#bits_sent = 0.0
+#thru_put = 0.0
+# Determine how much (if any) of the file was transferred
+#if succeeded and os.path.isfile(dest):
+#  bits_sent = os.stat(dest).st_size
+  # Convert bytes to Megabytes
+  #scalar = ['B', 'KB', 'MB']
+  #while len(scalar) > 1:
+  #  scalar = scalar[1:]
+  #  bits_sent = bits_sent / 1024.0
+#  thru_put = bits_sent / (end_time - start_time)
 
 # Organize results into json data
 final_results = {
