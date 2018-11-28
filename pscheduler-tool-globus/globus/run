@@ -42,9 +42,8 @@ error = ''
 diags = ''
 
 # Run the actual task here:
-
-#debug = open("debug.txt", "w")
-#debug.close()
+thru_put = ""
+bits_sent = ""
 
 if True:
 
@@ -52,29 +51,39 @@ if True:
           '-vb'] # verbose output for test
 
   #options handling
-  options = input['test']['spec']['options']
-  
-  
+  #options = input['test']['spec']['options']
+ 
+  #if options != " ":
+  #  options = options.split(" ")
+  #  for opt in options:
+  #    argv.append(opt)
 
-  if options != " ":
-    options = options.split(" ")
-    for opt in options:
-      argv.append(opt)
-
-  with open("/tmp/debug.out", "wb") as f:
-    [f.write(opt + "\n") for opt in argv]
 
   argv.append(source) # Source URL
   argv.append(dest) # Destination URL
   
- 
- 
-
-  #[debug.write(opt) for opt in argv]
-  #debug.close()
-  
   status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
+ 
+  #with open("/tmp/debug.out", "wb") as f: 
+    #[ f.write(s + "\n") for s in stdout]  
+  #  f.write(stdout)                      
 
+
+  # Parsing stdout for throughput and bytes-sent 
+
+  stdout = str(stdout.split("\n")[4]) # testing 1MB
+
+  stdout = stdout.split(" ")
+
+
+
+
+
+  if len(stdout) > 2: 
+    bits_sent = stdout[12] +" "+ stdout[13]
+
+    thru_put = stdout[22] +" "+ stdout[23]
+  
   if status:
     succeeded = False
     error = "Error running program:\n%s"% stderr.strip('\n')
@@ -86,15 +95,19 @@ if True:
 end_time = datetime.datetime.now()
 
 # Organize results into json data
-results = {
+final_results = {
     'succeeded': succeeded,
-    'result': {
-        'schema': 1,
-        'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
-        'succeeded': succeeded
-    },
     'error': error,
     'diags': diags }
 
-pscheduler.succeed_json(results)
+results = {"schema": 1}
+results['time'] = pscheduler.timedelta_as_iso8601( end_time - start_time)
+results['succeeded'] = succeeded
+#if bits_sent != "": 
+results["bytes-sent"] = bits_sent
+#if thru_put != "":
+results["throughput"] = thru_put
+
+final_results['result'] = results
+pscheduler.succeed_json(final_results)
 #?
