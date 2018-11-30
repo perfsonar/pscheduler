@@ -10,10 +10,18 @@
 import pscheduler
 import sys
 
+from validate import spec_is_valid
+
 
 logger = pscheduler.Log(prefix='test-throughput', quiet=True)
 
 json = pscheduler.json_load(exit_on_error=True, max_schema=2)
+
+valid, message = spec_is_valid(json)
+
+if not valid:
+    pscheduler.fail(message)
+
 
 null_reason = None
 
