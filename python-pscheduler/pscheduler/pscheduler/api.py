@@ -14,6 +14,7 @@ import os
 
 
 from .psdns import *
+from .psjson import *
 from .psurl import *
 
 
@@ -177,11 +178,22 @@ def api_ping(host=None, bind=None, timeout=3):
     """
     url = pscheduler.api_url(host)
 
-    status, result = url_get(url, bind=bind,
+    status, result = url_get(url, bind=bind, json=False,
                              throw=False, timeout=timeout)
 
     if status == 200:
+
+        # What came back needs to look like a JSON string or it isn't
+        # pScheduler.
+        try:
+            returned_json = json_load(result)
+            if not isinstance(returned_json, basestring):
+                raise ValueError
+        except ValueError:
+            return (False, "Not running pScheduler")
+
         return (True, "pScheduler is alive")
+
     elif status == 400:
         return (False, result)
     elif status in [202, 204, 205, 206, 207, 208, 226,
