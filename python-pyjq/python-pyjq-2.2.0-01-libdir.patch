@@ -1,0 +1,50 @@
+diff -rupN pyjq-2.2.0-orig/pyjq.py pyjq-2.2.0/pyjq.py
+--- pyjq-2.2.0-orig/pyjq.py	2018-12-03 16:04:42.000000000 -0500
++++ pyjq-2.2.0/pyjq.py	2018-12-03 16:09:27.000000000 -0500
+@@ -7,8 +7,10 @@ import _pyjq
+ 
+ __all__ = []
+ 
++# This will be filled in at build time.
++LIBRARY_PATHS = [ "__DEFAULT_LIBRARY_PATH__" ]
+ 
+-def compile(script, vars={}, library_paths=[]):
++def compile(script, vars={}, library_paths=LIBRARY_PATHS):
+     """
+     Compile a jq script, retuning a script object.
+ 
+@@ -42,14 +44,14 @@ def _get_value(value, url, opener):
+     return value
+ 
+ 
+-def all(script, value=None, vars={}, url=None, opener=default_opener, library_paths=[]):
++def all(script, value=None, vars={}, url=None, opener=default_opener, library_paths=LIBRARY_PATHS):
+     """
+     Transform value by script, returning all results as list.
+     """
+     return compile(script, vars, library_paths).all(_get_value(value, url, opener))
+ 
+ 
+-def apply(script, value=None, vars={}, url=None, opener=default_opener, library_paths=[]):
++def apply(script, value=None, vars={}, url=None, opener=default_opener, library_paths=LIBRARY_PATHS):
+     """
+     Transform value by script, returning all results as list.
+     """
+@@ -58,7 +60,7 @@ def apply(script, value=None, vars={}, u
+ apply.__doc__ = all.__doc__
+ 
+ 
+-def first(script, value=None, default=None, vars={}, url=None, opener=default_opener, library_paths=[]):
++def first(script, value=None, default=None, vars={}, url=None, opener=default_opener, library_paths=LIBRARY_PATHS):
+     """
+     Transform object by jq script, returning the first result.
+     Return default if result is empty.
+@@ -66,7 +68,7 @@ def first(script, value=None, default=No
+     return compile(script, vars, library_paths).first(_get_value(value, url, opener), default)
+ 
+ 
+-def one(script, value=None, vars={}, url=None, opener=default_opener, library_paths=[]):
++def one(script, value=None, vars={}, url=None, opener=default_opener, library_paths=LIBRARY_PATHS):
+     """
+     Transform object by jq script, returning the first result.
+     Raise ValueError unless results does not include exactly one element.
