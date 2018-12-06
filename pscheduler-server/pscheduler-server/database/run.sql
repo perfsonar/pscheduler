@@ -475,35 +475,12 @@ BEGIN
 
         END IF;
 
+	-- If there's now a merged result, notify anyone watching for those.
 
-	-- If the full result changed, update the merged version.
-
-       IF NEW.result_full IS NOT NULL
-          AND COALESCE(NEW.result_full::TEXT, '')
-	      <> COALESCE(OLD.result_full::TEXT, '') THEN
-
-	       result_merge_input := row_to_json(t) FROM (
-	           SELECT 
-		       taskrec.json -> 'test' AS test,
-                       NEW.result_full AS results
-                   ) t;
-
- 	       run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_name,
-	           'merged-results'], result_merge_input::TEXT );
-   	       IF run_result.status <> 0 THEN
-                   -- TODO: This leaves the result empty.  Maybe post some sort of failure?
-	           RAISE EXCEPTION 'Unable to get merged result on %: %',
-		       result_merge_input::TEXT, run_result.stderr;
-	       END IF;
-  	      NEW.result_merged := regexp_replace(run_result.stdout, '\s+$', '')::JSONB;
-
-	      NOTIFY result_available;
-
-        ELSIF NEW.result_full IS NULL THEN
-
-            NEW.result_merged := NULL;
-
-        END IF;
+       IF OLD.result_merged IS NULL AND NEW.result_merged IS NOT NULL
+       THEN
+	      PERFORM pg_notify('result_available', NEW.id::TEXT);
+       END IF;
 
 
     ELSIF (TG_OP = 'INSERT') THEN
