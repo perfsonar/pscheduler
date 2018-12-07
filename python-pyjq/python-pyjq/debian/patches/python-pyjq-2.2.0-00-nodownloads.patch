@@ -1,6 +1,7 @@
---- a/setup.py
-+++ b/setup.py
-@@ -6,61 +6,23 @@
+diff -rupN pyjq-2.2.0/setup.py pyjq-2.2.0-patched/setup.py
+--- pyjq-2.2.0/setup.py	2017-08-01 15:06:36.000000000 -0400
++++ pyjq-2.2.0-patched/setup.py	2017-08-01 15:16:39.000000000 -0400
+@@ -6,7 +6,12 @@ import tarfile
  import shutil
  from os.path import join, dirname, abspath
  
@@ -14,6 +15,7 @@
  from setuptools import setup
  from setuptools.extension import Extension
  from setuptools.command.build_ext import _build_ext
+@@ -15,54 +20,11 @@ from Cython.Build import cythonize
  
  long_description = io.open('README.rst', encoding='utf-8').read()
  
@@ -68,7 +70,7 @@
      def _build_lib(self, lib_dir, commands):
          macosx_deployment_target = sysconfig.get_config_var("MACOSX_DEPLOYMENT_TARGET")
          if macosx_deployment_target:
-@@ -69,22 +31,11 @@
+@@ -71,22 +33,11 @@ class build_ext(_build_ext):
          for command in commands:
              subprocess.check_call(command, cwd=lib_dir)
  
@@ -92,7 +94,7 @@
  )
  
  setup(
-@@ -100,7 +51,6 @@
+@@ -102,7 +53,6 @@ setup(
      author='OMOTO Kenji',
      url='http://github.com/doloopwhile/pyjq',
      license='MIT License',
