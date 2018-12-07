@@ -211,9 +211,6 @@ class Log():
         if (not self.is_quiet) and (not forced_quiet):
             self.info("Started")
 
-    def __del__(self):
-        if self is not None:
-            self.__syslog_handler_deinit()
 
     def __update_env(self):
         """

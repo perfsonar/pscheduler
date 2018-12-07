@@ -1,0 +1,8 @@
+#!/bin/bash -e
+#
+# Dump the names and version numbers of installed pScheduler packages
+#
+
+rpm -qa --queryformat '%-40{NAME}%{VERSION}\n' \
+    | egrep -e '^pscheduler-' \
+    | sort
