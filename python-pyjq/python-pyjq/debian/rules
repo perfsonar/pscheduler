@@ -25,3 +25,5 @@ export PYBUILD_NAME = pyjq
 override_dh_auto_build:
 	cython _pyjq.pyx
 	dh_auto_build
+	# set library path for pscheduler
+	sed -i -e 's|__DEFAULT_LIBRARY_PATH__|/usr/lib/jq/pscheduler|g' pyjq.py
