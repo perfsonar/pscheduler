@@ -90,6 +90,17 @@ def __running_drop(process):
         pass
 
 
+def __end_process(process):
+    """End a process gently or, if necessary, forcibly."""
+    try:
+        process.terminate()
+        process.wait(timeout=0.5)
+    except OSError:
+        pass  # Can't kill things that have changed UID.
+    except subprocess.TimeoutExpired:
+        process.kill()
+
+
 class _Popen(subprocess32.Popen):
     """
     Improved version of subprocess32's Popen that handles SIGPIPE
@@ -272,13 +283,7 @@ def run_program(argv,              # Program name and args
                 status = process.returncode
 
             except subprocess32.TimeoutExpired:
-                # Clean up after a timeout
-                try:
-                    process.kill()
-                except OSError:
-                    pass  # Can't kill things that change UID
-                process.communicate()
-
+                __end_process(process)
                 status = 0 if timeout_ok else 2
                 stdout = ''
                 stderr = "Process took too long to run."
@@ -317,6 +322,7 @@ def run_program(argv,              # Program name and args
 
                 if len(reads) == 0:
                     __running_drop(process)
+                    __end_process(process)
                     return 2, None, "Process took too long to run."
 
                 for readfd in reads:
@@ -353,7 +359,8 @@ def run_program(argv,              # Program name and args
 
     if process is not None:
         __running_drop(process)
-        process.terminate()
+        __end_process(process)
+
 
     if fail_message is not None and status != 0:
         pscheduler.fail("%s: %s" % (fail_message, stderr))
@@ -614,7 +621,7 @@ class ExternalProgram(object):
 
     def done(self):
         self.process.stdin.close()
-        self.process.wait()
+        __end_process(self.process)
 
     def kill(self):
         self.done()
