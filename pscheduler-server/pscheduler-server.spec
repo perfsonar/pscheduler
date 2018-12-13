@@ -7,7 +7,7 @@
 # init scripts function just fine.
 
 Name:		pscheduler-server
-Version:	1.1.2
+Version:	1.1.5
 Release:	1%{?dist}
 
 Summary:	pScheduler Server
