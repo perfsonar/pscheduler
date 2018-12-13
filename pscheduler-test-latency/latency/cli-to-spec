@@ -97,7 +97,7 @@ opt_parser.add_option("-P", "--data-ports",
                       dest="data_ports")
 
 opt_parser.add_option("-T", "--ip-tos",
-                      help="The port range to use on the side of the test running the client. At least two ports required.",
+                      help="The IP type-of-service value.",
                       action="store", type="int",
                       dest="ip_tos")
 
