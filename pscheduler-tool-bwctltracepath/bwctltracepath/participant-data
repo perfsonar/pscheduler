@@ -1,8 +1,5 @@
-#!/bin/sh
-#
-# Return participant-specific data for a run
-#
-
-# Nothing in this case.
-echo '{}'
-exit 0
+#!/bin/sed -e 1d
+{
+  "succeeded": false,
+  "error": "Support for this tool has been discontinued."
+}

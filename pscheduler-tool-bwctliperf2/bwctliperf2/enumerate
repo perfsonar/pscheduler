@@ -2,11 +2,11 @@
 {
     "schema": 1,
     "name": "bwctliperf2",
-    "description": "Measure network throughput between hosts with BWCTL and iperf2 - FOR BACKWARD COMPATIBILITY ONLY",
+    "description": "Measure network throughput between hosts with BWCTL and iperf2 - NON-FUNCTIONING",
     "version": "1.0",
-    "tests": [ "throughput" ],
+    "tests": [ ],
 
-    "preference": -10,
+    "preference": 0,
 
     "maintainer": {
         "name": "perfSONAR Development Team",
