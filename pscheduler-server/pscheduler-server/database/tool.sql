@@ -345,14 +345,11 @@ $$ LANGUAGE plpgsql;
 
 -- Determine whether or not a tool is willing to run a specific test.
 
-
--- TODO: Drop this after the first release
-DROP FUNCTION IF EXISTS tool_can_run_test(tool_id BIGINT, test JSONB);
+DO $$ BEGIN PERFORM drop_function_all('tool_can_run_test'); END $$;
 
 CREATE OR REPLACE FUNCTION tool_can_run_test(
     tool_id BIGINT,
-    test JSONB,
-    lead_bind TEXT DEFAULT NULL  -- HACK: BWCTLBC
+    test JSONB
 )
 RETURNS BOOLEAN
 AS $$
@@ -360,7 +357,6 @@ DECLARE
     tool_name TEXT;
     run_result external_program_result;
     result_json JSONB;
-    lead_bind_array TEXT[];  -- HACK: BWTCLBC
 BEGIN
 
     SELECT INTO tool_name name FROM tool WHERE id = tool_id;
@@ -368,16 +364,8 @@ BEGIN
         RAISE EXCEPTION 'Tool ID % is invalid', tool_id;
     END IF;
 
-    -- HACK: BWCTLBC
-    IF lead_bind IS NOT NULL THEN
-        lead_bind_array := ARRAY['PSCHEDULER_LEAD_BIND_HACK', lead_bind];
-    ELSE
-        lead_bind_array := ARRAY[]::TEXT[];
-    END IF;
-
     run_result := pscheduler_internal(
-        ARRAY['invoke', 'tool', tool_name, 'can-run'], test::TEXT, 5,
-        lead_bind_array  -- HACK: BWCTLBC
+        ARRAY['invoke', 'tool', tool_name, 'can-run'], test::TEXT, 5
         );
 
     -- Any result other than 1 indicates a problem that shouldn't be
@@ -408,12 +396,11 @@ $$ LANGUAGE plpgsql;
 -- Get a JSON array of the enumerations of all tools that can run a
 -- test, returned in order of highest to lowest preference.
 
--- TODO: Remove this after release
-DROP FUNCTION IF EXISTS api_tools_for_test(JSONB);
+
+DO $$ BEGIN PERFORM drop_function_all('api_tools_for_test'); END $$;
 
 CREATE OR REPLACE FUNCTION api_tools_for_test(
-    test_json JSONB,
-    lead_bind TEXT DEFAULT NULL  -- HACK: BWCTLBC
+    test_json JSONB
 )
 RETURNS JSON
 AS $$
@@ -440,7 +427,7 @@ BEGIN
 	    test.name = test_type
             AND test.available
             AND tool.available
-            AND tool_can_run_test( tool.id, test_json, lead_bind ) -- HACK: BWCTLBC
+            AND tool_can_run_test( tool.id, test_json )
         ORDER BY
             tool.preference DESC,
             tool.name ASC

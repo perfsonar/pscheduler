@@ -69,14 +69,9 @@ Requires:	pytz
 
 # General
 BuildRequires:	pscheduler-rpm
-
-%if 0%{?el6}
-Requires:	chkconfig
-%endif
-%if 0%{?el7}
 BuildRequires:	systemd
 %{?systemd_requires: %systemd_requires}
-%endif
+
 
 %description
 The pScheduler server
@@ -121,7 +116,7 @@ The pScheduler server
 
 %prep
 
-%if 0%{?el6}%{?el7} == 0
+%if 0%{?el7} == 0
 echo "This package cannot be built for %{dist}."
 false
 %endif
@@ -237,12 +232,7 @@ EOF
 #
 make -C daemons \
      CONFIGDIR=$RPM_BUILD_ROOT/%{daemon_config_dir} \
-%if 0%{?el6}
-     INITDDIR=$RPM_BUILD_ROOT/%{_initddir} \
-%endif
-%if 0%{?el7}
      UNITDIR=$RPM_BUILD_ROOT/%{_unitdir} \
-%endif
      DAEMONDIR=$RPM_BUILD_ROOT/%{_pscheduler_daemons} \
      COMMANDDIR=$RPM_BUILD_ROOT/%{_pscheduler_commands} \
      install
@@ -273,6 +263,7 @@ mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}
 #
 make -C utilities \
     "DESTDIR=${RPM_BUILD_ROOT}/%{_pscheduler_commands}" \
+    "INTERNALSDIR=$RPM_BUILD_ROOT/%{_pscheduler_internals}" \
     install
 
 
@@ -293,52 +284,13 @@ make -C utilities \
 #
 if [ "$1" -eq 2 ]
 then
-    for SERVICE in ticker runner archiver scheduler
-    do
-        NAME="pscheduler-${SERVICE}"
-%if 0%{?el6}
-        service "${NAME}" stop
-%endif
-%if 0%{?el7}
-        systemctl stop "${NAME}"
-%endif
-    done
+    pscheduler internal service stop
 fi
 
 #
 # API Server
 #
 # (Nothing)
-
-# EL6 has an incorrectly packaged python-jinja2, which installs the
-# finished code in site-packages/Jinja2-2.6-py2.6.egg/jinja2 where
-# Python can't import it as the expected jinja2.  See commentary in
-# #215.
-
-%define site_packages /usr/lib/python2.6/site-packages
-%define jinja2_symlink %{site_packages}/jinja2
-
-%if 0%{?el6}
-if [ "$1" -ge "1" ]
-then
-
-    # If RPM left an empty directory, get rid of it.  If the rmdir
-    # fails, go quietly because it's not empty.
-    [ -d "%{jinja2_symlink}" ] \
-	&& rmdir "%{jinja2_symlink}" > /dev/null 2>&1 \
-	|| true
-
-    # If there's nothing where the link should be, make it.
-    if [ ! -e "%{jinja2_symlink}" ]
-    then
-	EGG=$((cd %{site_packages} \
-	    && find . -type d -name "Jinja2-*-py*.egg") \
-	    | head -1 | sed -e 's|^./||')
-	ln -s "${EGG}/jinja2" "%{jinja2_symlink}"
-    fi
-
-fi
-%endif
 
 
 #
@@ -371,14 +323,9 @@ max_connections = %{pgsql_max_connections}
 EOF
 
 
-%if 0%{?el6}
-chkconfig "%{pgsql_service}" on
-service "%{pgsql_service}" start
-%endif
-%if 0%{?el7}
 systemctl enable "%{pgsql_service}"
 systemctl start "%{pgsql_service}"
-%endif
+
 
 # Restart the server only if the current maximum connections is less
 # than what we just installed.  This is more for development
@@ -390,12 +337,7 @@ SERVER_MAX=$( (echo "\\t" && echo "\\a" && echo "show max_connections") \
 
 if [ "${SERVER_MAX}" -lt "%{pgsql_max_connections}" ]
 then
-%if 0%{?el6}
-    service "%{pgsql_service}" restart
-%endif
-%if 0%{?el7}
     systemctl restart "%{pgsql_service}"
-%endif
 fi
 
 
@@ -435,20 +377,9 @@ drop-in -n -t %{name} - "${HBA_FILE}" <<EOF
 # This user should never need to access the database from anywhere
 # other than locally.
 #
-%if 0%{?el6}
-# TODO: SECURITY: The password method doesn't seem to work on pg 9.5
-# when installed on el6.  Find out why and how to fix that.
-# Followup: The md5 method does seem to work on the pS toolkit.  Check
-# to see if it works on 6.8.
-local     pscheduler      pscheduler                            trust
-host      pscheduler      pscheduler     127.0.0.1/32           trust
-host      pscheduler      pscheduler     ::1/128                trust
-%endif
-%if 0%{?el7}
 local     pscheduler      pscheduler                            md5
 host      pscheduler      pscheduler     127.0.0.1/32           md5
 host      pscheduler      pscheduler     ::1/128                md5
-%endif
 EOF
 
 # Make Pg reload what we just changed.
@@ -470,22 +401,12 @@ EOF
 #
 # Daemons
 #
-%if 0%{?el7}
 systemctl daemon-reload
-%endif
 for SERVICE in ticker runner archiver scheduler
 do
     NAME="pscheduler-${SERVICE}"
-%if 0%{?el6}
-    chkconfig "${NAME}" on
-    service "${NAME}" start
-%endif
-%if 0%{?el7}
     systemctl enable "${NAME}"
-    systemctl start "${NAME}"
-%endif
 done
-
 
 # Some old installations ended up with root-owned files in the run
 # directory.  Make their ownership correct.
@@ -508,32 +429,16 @@ then
         setsebool -P httpd_can_network_connect_db 1
     fi
 
-    # HACK: BWCTLBC  Remove when BWCTL backward compatibility is removed.  See #107.
-    STATE=$(getsebool httpd_can_network_connect | awk '{ print $3 }')
-    if [ "${STATE}" != "on" ]
-    then
-        echo "Setting SELinux permissions (may take awhile)"
-        setsebool -P httpd_can_network_connect 1
-    fi
-
 fi
 
-
-%if 0%{?el6}
-chkconfig httpd on
-service httpd restart
-%endif
-%if 0%{?el7}
 systemctl enable httpd
-systemctl restart httpd
-%endif
 
 
 #
 # Utilities
 #
-# (Nothing)
 
+pscheduler internal service restart
 
 
 # ------------------------------------------------------------------------------
@@ -542,25 +447,13 @@ systemctl restart httpd
 #
 # Daemons
 #
-for SERVICE in ticker runner archiver scheduler
-do
-    NAME="pscheduler-${SERVICE}"
-%if 0%{?el6}
-    service "${NAME}" stop
-%endif
-%if 0%{?el7}
-    systemctl stop "${NAME}"
-%endif
-done
+
+# This must happen first
+pscheduler internal service stop
 
 # Have to stop this while we're uninstalling so connections to the
 # database go away.
-%if 0%{?el6}
-service httpd stop
-%endif
-%if 0%{?el7}
 systemctl stop httpd
-%endif
 
 
 #
@@ -604,12 +497,7 @@ if [ "$1" = "0" ]; then
 
     # Removing the max_connections change requires a restart, which
     # will also catch the HBA changes.
-%if 0%{?el6}
-    service "%{pgsql_service}" restart
-%endif
-%if 0%{?el7}
     systemctl restart "%{pgsql_service}"
-%endif
 
 
 
@@ -617,10 +505,7 @@ if [ "$1" = "0" ]; then
     # Daemons
     #
     # (Nothing)
-%if 0%{?el7}
     systemctl daemon-reload
-%endif
-
 
 
     #
@@ -633,36 +518,15 @@ if [ "$1" = "0" ]; then
     #     echo "Setting SELinux permissions (may take awhile)"
     #     setsebool -P httpd_can_network_connect_db 1
     # fi
+    # Assume this stays on.
+    systemctl start httpd
 else
-    #we're doing an update so restart services
-    for SERVICE in ticker runner archiver scheduler
-    do
-        NAME="pscheduler-${SERVICE}"
-%if 0%{?el6}
-        service "${NAME}" restart
-%endif
-%if 0%{?el7}
-        systemctl restart "${NAME}"
-%endif
-    done
+    # We're doing an update so restart services
+    pscheduler internal service restart
 fi
 
 
-# Correction for bad packaging in EL6; see %post for commentary.
-%if 0%{?el6}
-if [ "$1" -eq "0" -a -L "%{jinja2_symlink}" ]
-then
-    rm -f "%{jinja2_symlink}"
-fi
-%endif
 
-
-%if 0%{?el6}
-service httpd start
-%endif
-%if 0%{?el7}
-systemctl start httpd
-%endif
 
 
 #
@@ -679,12 +543,7 @@ systemctl start httpd
 # because Pg doesn't see module upgrades.
 
 %triggerin -- python-pscheduler
-%if 0%{?el6}
-service "%{pgsql_service}" restart
-%endif
-%if 0%{?el7}
 systemctl restart "%{pgsql_service}"
-%endif
 
 
 # ------------------------------------------------------------------------------
@@ -709,12 +568,7 @@ systemctl restart "%{pgsql_service}"
 %license LICENSE
 %attr(755,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %{daemon_config_dir}
 %attr(600,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %config(noreplace) %{daemon_config_dir}/*
-%if 0%{?el6}
-%{_initddir}/*
-%endif
-%if 0%{?el7}
 %{_unitdir}/*
-%endif
 %{_pscheduler_daemons}/*
 %{_pscheduler_commands}/*
 %attr(750,%{_pscheduler_user},%{_pscheduler_group}) %{archiver_default_dir}

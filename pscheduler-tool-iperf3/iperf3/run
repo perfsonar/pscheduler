@@ -13,7 +13,6 @@ import sys
 import time
 import iperf3_parser
 import traceback
-import ipaddr
 import iperf3_utils
 from iperf3_defaults import *
 

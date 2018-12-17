@@ -11,6 +11,9 @@ PIDFile=__RUNDIR__/pscheduler-__PROG__.pid
 LimitNOFILE=4096
 LimitNPROC=4096
 
+Restart=on-failure
+RestartSec=3
+
 # Generate the PID file in an atomic way
 ExecStartPre=-/bin/rm -f __RUNDIR__/pscheduler-__PROG__.pid.build
 ExecStartPre=-/usr/bin/touch -f __RUNDIR__/pscheduler-__PROG__.pid.build

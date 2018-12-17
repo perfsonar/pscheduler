@@ -72,7 +72,7 @@ BuildRequires:	python-psycopg2 >= 2.2.0
 BuildRequires:	python-py-radix
 # The limit system uses this.
 BuildRequires:	pscheduler-jq-library
-BuildRequires:	python-pyjq >= 2.0.1
+BuildRequires:	python-pyjq >= 2.2.0
 BuildRequires:	python-requests
 BuildRequires:	python-subprocess32
 BuildRequires:	python-tzlocal

@@ -5,9 +5,6 @@
 import pscheduler
 import urlparse
 
-# HACK: BWCTLBC
-import os
-
 from pschedulerapiserver import application
 
 from flask import request
@@ -336,21 +333,11 @@ def tasks():
 
         try:
 
-            # HACK: BWCTLBC
-            if lead_bind is not None:
-                lead_bind_env = {
-                    "PSCHEDULER_LEAD_BIND_HACK": lead_bind
-                }
-            else:
-                lead_bind_env = None
-
-
             returncode, stdout, stderr = pscheduler.run_program(
                 [ "pscheduler", "internal", "invoke", "test",
                   task['test']['type'], "participants" ],
                 stdin = pscheduler.json_dump(task['test']['spec']),
-                timeout=5,
-                env_add=lead_bind_env
+                timeout=5
                 )
 
             if returncode != 0:
@@ -377,10 +364,6 @@ def tasks():
         tools = []
 
         tool_params={ "test": pscheduler.json_dump(task["test"]) }
-        # HACK: BWCTLBC
-        if lead_bind is not None:
-            log.debug("Using lead bind of %s" % str(lead_bind))
-            tool_params["lead-bind"] = lead_bind
 
         tool_offers = {}
 

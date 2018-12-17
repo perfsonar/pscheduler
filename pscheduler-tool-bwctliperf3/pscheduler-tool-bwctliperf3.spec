@@ -7,7 +7,7 @@ Name:		pscheduler-tool-%{short}
 Version:	1.1.2
 Release:	1%{?dist}
 
-Summary:	BWCTL iperf3 tool class for pScheduler
+Summary:	BWCTL iperf3 tool class for pScheduler (DISABLED)
 BuildArch:	noarch
 License:	ASL 2.0
 Vendor:	perfSONAR
@@ -18,17 +18,13 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	python-pscheduler
 Requires:	pscheduler-test-throughput
-Requires:	bwctl-client
-Requires:	bwctl-server
-Requires:	iperf3
 
 BuildRequires:	pscheduler-rpm
 
 
 %description
-BWCTL iperf3 tool class for pScheduler
+BWCTL iperf3 tool class for pScheduler (DISABLED)
 
 
 %prep
