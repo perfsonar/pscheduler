@@ -3,7 +3,7 @@ Identifier Class for ip-reverse-dns
 """
 
 import dns
-import ipaddr
+import ipaddress
 import pscheduler
 import re
 import sre_constants
@@ -68,7 +68,7 @@ class IdentifierIPReverseDNS():
         except KeyError:
             return False
 
-        addr = ipaddr.IPAddress(ip)
+        addr = ipaddress.ip_address(unicode(ip))
 
         ip_reverse = dns.reversename.from_address(ip)
 
