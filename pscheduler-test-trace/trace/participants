@@ -21,20 +21,6 @@ source = json.get("source-node", json.get("source", None))
 if source is None:
     null_reason = "No source specified"
 
-
-######################################################################
-# HACK: BWCTLBC
-#Backward Compatibility Code: We can remove this once we drop BWCTL
-
-# This was removed in #725 because there's no logical reason for the
-# participant list to be anything other than the source.  The can-run
-# method in the bwctltraceroute tool should reach out and touch the
-# source end to see if it can do the job.
-
-# Commentary left here to avert confusion when the hack is removed.
-
-######################################################################
-
 participants = [ source ]
 
 result = { "participants": participants }
