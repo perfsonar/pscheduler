@@ -4,7 +4,7 @@
 #
 
 import datetime
-import ipaddr
+import ipaddress
 import sys
 
 import pscheduler
@@ -22,7 +22,7 @@ total = datetime.timedelta()
 #
 
 try:
-    dest_ip_addr = ipaddr.IPAddress(spec['dest'])
+    dest_ip_addr = ipaddress.ip_address(unicode(spec['dest']))
 except ValueError:
     # TODO: Should probably ask the DNS module for the timeout.
     total += datetime.timedelta(seconds=2)

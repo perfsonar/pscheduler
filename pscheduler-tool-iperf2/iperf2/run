@@ -13,7 +13,7 @@ import sys
 import time
 import iperf2_parser
 import traceback
-import ipaddr
+import ipaddress
 import iperf2_utils
 from iperf2_defaults import *
 
@@ -73,7 +73,7 @@ def run_client():
     destination = test_spec['dest']
 
     try:
-        ipaddr.IPAddress(destination)
+        ipaddress.ip_address(unicode(destination))
         is_ip_address = True
     except ValueError:
         is_ip_address = False
