@@ -357,8 +357,14 @@ def run_post(
 
         if len(json_ranges) == 0:
             log and log.debug("%d: No time available.", number)
-            return (None, None, None, False, False,
-                    "%s has no time available for this run" % (participant))
+            message = "%s has no time available to run %s within %s of %s" % (
+                participant,
+                task["test"]["type"],
+                pscheduler.timedelta_as_iso8601(task_slip),
+                pscheduler.datetime_as_iso8601(start_time)
+            )
+            return (None, None, None, False, False, message)
+
 
         ranges = [ Range( pscheduler.iso8601_as_datetime(item['lower']),
                           pscheduler.iso8601_as_datetime(item['upper']) )
