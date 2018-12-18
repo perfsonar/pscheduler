@@ -134,8 +134,8 @@ pscheduler-tool-bwctlping
 pscheduler-tool-bwctltraceroute
 pscheduler-tool-bwctltracepath
 pscheduler-tool-net-snmp-set
+pscheduler-tool-nmapreach
 pscheduler-tool-psurl
-pscheduler-tool-pynetreach
 pscheduler-tool-pysnmp				--bundle extras
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep

@@ -76,7 +76,7 @@ def spec_is_valid(json):
             "timeout":           { "$ref": "#/pScheduler/Duration" }
             },
         "required": [
-            "network"
+            "network",
             ]
         }
 

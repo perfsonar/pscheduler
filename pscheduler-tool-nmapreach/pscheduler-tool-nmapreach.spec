@@ -1,8 +1,8 @@
 #
-# RPM Spec for pScheduler pynetreach Tool
+# RPM Spec for pScheduler nmapreach Tool
 #
 
-%define short	pynetreach
+%define short	nmapreach
 Name:		pscheduler-tool-%{short}
 Version:	1.1.2
 Release:	1%{?dist}
