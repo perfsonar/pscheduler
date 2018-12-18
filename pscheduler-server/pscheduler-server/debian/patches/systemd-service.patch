@@ -1,7 +1,7 @@
 Index: pscheduler-server/daemons/service-template.raw
 ===================================================================
---- pscheduler-server.orig/daemons/service-template.raw	2018-08-24 18:25:47.000000000 +0000
-+++ pscheduler-server/daemons/service-template.raw	2018-12-18 21:45:30.842596238 +0000
+--- pscheduler-server.orig/daemons/service-template.raw	2018-12-18 21:45:31.103555000 +0000
++++ pscheduler-server/daemons/service-template.raw	2018-12-18 21:55:27.154216548 +0000
 @@ -14,8 +14,8 @@
  # Generate the PID file in an atomic way
  ExecStartPre=-/bin/rm -f __RUNDIR__/pscheduler-__PROG__.pid.build
