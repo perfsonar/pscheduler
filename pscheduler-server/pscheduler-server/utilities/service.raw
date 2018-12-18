@@ -61,6 +61,7 @@ done
 # Have at it
 
 [ -t 1 ] && INTERACTIVE=true || INTERACTIVE=false
+[ -e /etc/debian_version ] && HTTPD=apache2 || HTTPD=httpd
 
 if [ "$#" -gt 0 ]
 then
@@ -82,10 +83,10 @@ do
 	    # being stopped hard.
 	    case "${COMMAND}" in
 		start|restart)
-		    systemctl "${COMMAND}" httpd
+		    systemctl "${COMMAND}" "${HTTPD}"
 		    ;;
 		stop)
-		    $HARD && systemctl stop httpd
+		    $HARD && systemctl stop "${HTTPD}"
 		    ;;
 		*)
 		    die "Internal error: unknown command '${COMMAND}'"

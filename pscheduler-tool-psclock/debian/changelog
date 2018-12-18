@@ -1,3 +1,9 @@
+pscheduler-tool-psclock (1.1.5-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 18 Dec 2018 21:45:34 +0000
+
 pscheduler-tool-psclock (1.1.2-1) perfsonar-release; urgency=low
 
   * New upstream version

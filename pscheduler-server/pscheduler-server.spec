@@ -7,8 +7,8 @@
 # init scripts function just fine.
 
 Name:		pscheduler-server
-Version:	1.1.2
-Release:	1%{?dist}
+Version:	1.1.5
+Release:	2%{?dist}
 
 Summary:	pScheduler Server
 BuildArch:	noarch
@@ -284,7 +284,11 @@ make -C utilities \
 #
 if [ "$1" -eq 2 ]
 then
-    pscheduler internal service stop
+    for SERVICE in ticker runner archiver scheduler
+    do
+        NAME="pscheduler-${SERVICE}"
+        systemctl stop "${NAME}"
+    done
 fi
 
 #
