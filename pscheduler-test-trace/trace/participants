@@ -25,30 +25,17 @@ if source is None:
 ######################################################################
 # HACK: BWCTLBC
 #Backward Compatibility Code: We can remove this once we drop BWCTL
-#
-# Check that both sides have pScheduler and do the following:
-# * if source has pscheduler, proceed as normal (i.e. use source as only participant)
-# * otherwise if dest has pscheduler use that instead
-# * otherwise fail the test if no one has pscheduler
 
-participants = []
-if "dest" in json:
-    destination = json["dest"]
-else:
-     pscheduler.fail("Missing required field dest")
+# This was removed in #725 because there's no logical reason for the
+# participant list to be anything other than the source.  The can-run
+# method in the bwctltraceroute tool should reach out and touch the
+# source end to see if it can do the job.
 
-# This digs up everything we can on the hosts involved in a
-# time-predictable way.
-has = pscheduler.api_has_services([source, destination], timeout=3)
+# Commentary left here to avert confusion when the hack is removed.
 
-if source is None or has[source]["pscheduler"]:
-    participants = [ source ]
-elif has[destination]["pscheduler"]:
-    participants = [ destination ]
-else:
-    #if backward compatibility hacks failed, proceed normally
-    participants = [ source ]
 ######################################################################
+
+participants = [ source ]
 
 result = { "participants": participants }
 if null_reason is not None:
