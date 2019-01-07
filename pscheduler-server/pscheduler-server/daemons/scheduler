@@ -194,6 +194,91 @@ def find_overlaps(range_lists):
 
 
 
+#
+# Time Proposal Fetcher
+#
+def fetch_proposals(
+        number,
+        task_urls,
+        range_params,
+        bind_addr,
+        timeout,
+        url,
+        key_params,
+        participant,
+        task_duration,
+        proposed_priority
+):
+    # TODO: This would be good parallelized.
+    # See http://stackoverflow.com/questions/5236364 for some ideas.
+
+    range_set = []
+    for task_url in task_urls:
+
+        # TODO: It would be nice if the task had a list of the
+        # runtimes URLs so we don't have to build it.
+        runtime_url = task_url + '/runtimes'
+        if proposed_priority is not None:
+            runtime_url += "?priority=%d&api=4" % proposed_priority
+
+        log and log.debug("%d: Fetching proposals from %s", number,
+                          runtime_url)
+
+        status, json_ranges = pscheduler.url_get(runtime_url,
+                                                 params=range_params,
+                                                 bind=bind_addr,
+                                                 timeout=timeout,
+                                                 throw=False)
+
+        if status in [ 404, 410 ]:
+            log and log.debug("%d: Task is no longer there.  Canceling %s.",
+                              number, url)
+            del_status, del_result = pscheduler.url_delete(
+                url, timeout=timeout, throw=False, params=key_params,
+                bind=bind_addr)
+            if del_status not in [ 200, 404, 410 ]:
+                log and log.warning("%d: Error while canceling %s: %s",
+                                    number, url, del_result)
+
+            raise Exception("Task is gone from %s" % (participant))
+
+        # If we asked for a priority and the server says not
+        # implemented, it's probably an older one.  Return as if the
+        # server proposed nothing.
+
+        if status == 501 and proposed_priority is not None:
+            log and log.debug("%d: Server says not implemented, may be old",
+                              number)
+            return []
+
+        if status != 200:
+            log and log.debug("%d: Got back %d: %s", number, status,
+                              json_ranges)
+            raise Exception("Error trying to schedule with %s: %s %d"
+                    % (participant, runtime_url, status))
+
+        if len(json_ranges) == 0:
+            log and log.debug("%d: No time available.", number)
+            return []
+
+        ranges = [ Range( pscheduler.iso8601_as_datetime(item['lower']),
+                          pscheduler.iso8601_as_datetime(item['upper']) )
+                   for item in json_ranges ]
+
+        log and log.debug("%d: Ranges: %s", number, ranges)
+        
+        range_set.append(ranges)
+
+    log and log.debug("%d: Done fetching time ranges", number)
+
+
+    # Find the ranges all participants have in common
+
+    return [ trange for trange in find_overlaps(range_set)
+             if trange.length() >= task_duration ]
+
+
+
 
 #
 # Run Poster
@@ -310,68 +395,41 @@ def run_post(
     log and log.debug("%d: %s participants in this task", number,
                       len(task_urls))
 
-    # TODO: This would be good parallelized.
-    # See http://stackoverflow.com/questions/5236364 for some ideas.
 
-    range_set = []
-    for task_url in task_urls:
+    # Try _twice_ to find common times: Once with no proposed priority
+    # to see if the run can be scheduled without having to preempt
+    # anything and, if it can't, again at the proposed priority to see
+    # if preemption helps.
 
-        # TODO: It would be nice if the task had a list of the
-        # runtimes URLs so we don't have to build it.
-        runtime_url = task_url + '/runtimes'
+    # TODO: Pass the task through the limit processor and find its
+    # priority instead of using the proposal.
 
-        log and log.debug("%d: Fetching proposals from %s", number,
-                          runtime_url)
+    priority_attempts = [ None ]
+    if "priority" in task:
+        priority_attempts.append(task["priority"])
 
-        status, json_ranges = pscheduler.url_get(runtime_url,
-                                                 params=range_params,
-                                                 bind=bind_addr,
-                                                 timeout=timeout,
-                                                 throw=False)
+    for priority_attempt in priority_attempts:
 
-        if status in [ 404, 410 ]:
-            log and log.debug("%d: Task is no longer there.  Canceling %s.",
-                              number, url)
-            del_status, del_result = pscheduler.url_delete(
-                url, timeout=timeout, throw=False, params=key_params,
-                bind=bind_addr)
-            if del_status not in [ 200, 404, 410 ]:
-                log and log.warning("%d: Error while canceling %s: %s",
-                                    number, url, del_result)
-            return (None, None, None, False, False,
-                    "Task is gone from %s" % (participant))
+        log and log.debug("%d: Trying to schedule with priority %s",
+                          priority_attempt)
 
-        if status != 200:
-            log and log.debug("%d: Got back %d: %s", number, status,
-                              json_ranges)
-            return (None, None, None, False, False,
-                    "Error trying to schedule with %s: %s %d"
-                    % (participant, runtime_url, status))
+        try:
+            common_ranges = fetch_proposals(number, task_urls,
+                                            range_params, bind_addr,
+                                            timeout, url, key_params,
+                                            participant,
+                                            task_duration,
+                                            priority_attempt)
+        except Exception as ex:
+            return (None, None, None, False, False, str(ex))
 
-        if len(json_ranges) == 0:
-            log and log.debug("%d: No time available.", number)
-            return (None, None, None, False, False,
-                    "%s has no time available for this run" % (participant))
+        log and log.debug("%d: Ranges in common: %s", number, common_ranges)
+        if common_ranges:
+            break
 
-        ranges = [ Range( pscheduler.iso8601_as_datetime(item['lower']),
-                          pscheduler.iso8601_as_datetime(item['upper']) )
-                   for item in json_ranges ]
-
-        log and log.debug("%d: Ranges: %s", number, ranges)
-        
-        range_set.append(ranges)
-
-    log and log.debug("%d: Done fetching time ranges", number)
-
-
-    # Find the ranges all participants have in common
-
-    common_ranges = [ trange for trange in find_overlaps(range_set)
-                      if trange.length() >= task_duration ]
-    log and log.debug("%d: Ranges in common: %s", number, common_ranges)
-    if len(common_ranges) == 0:
+    if not common_ranges:
         return (None, None, None, False, False,
-                "No common times for this run.")
+                "No times available for this run.")
 
 
     # If we're randomizing the start time, pick a range at random and

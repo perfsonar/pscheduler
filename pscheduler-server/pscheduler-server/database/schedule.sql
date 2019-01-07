@@ -10,6 +10,7 @@ CREATE OR REPLACE VIEW schedule
 AS
     SELECT
         run.times,
+	run.priority,
         task.uuid AS task,
         run.uuid AS run,
         run_state.enum AS state_enum,
@@ -228,7 +229,8 @@ RETURNS TABLE (
     state_enum TEXT,
     state_display TEXT,
     task_json JSONB,
-    task_cli JSON
+    task_cli JSON,
+    priority INTEGER
 )
 AS $$
 DECLARE
@@ -252,7 +254,8 @@ BEGIN
             run_state.enum,
             run_state.display,
             task.json,
-            task.cli
+            task.cli,
+            run.priority
         FROM
             run
             JOIN task on task.id = run.task
@@ -318,7 +321,8 @@ DO $$ BEGIN PERFORM drop_function_all('api_proposed_times'); END $$;
 CREATE OR REPLACE FUNCTION api_proposed_times(
     task_uuid UUID,
     range_start TIMESTAMP WITH TIME ZONE = normalized_now(),
-    range_end TIMESTAMP WITH TIME ZONE = tstz_infinity()
+    range_end TIMESTAMP WITH TIME ZONE = tstz_infinity(),
+    proposed_priority INTEGER = priority_min()
 )
 RETURNS TABLE (
     lower TIMESTAMP WITH TIME ZONE,
@@ -407,6 +411,8 @@ BEGIN
     -- Normal    || Ignore     | Ignore |   Avoid   |
     -- Exclusive || Ignore     | Avoid  |   Avoid   |
 
+    -- TODO: Can this be selected out of run_conflictable?
+
     FOR run_record IN
         SELECT run.*
         FROM
@@ -418,6 +424,9 @@ BEGIN
         WHERE
             -- Overlap
 	    times && time_range
+	    -- Higher priority than proposed or already running
+	    AND ( run.priority >= proposed_priority
+	          OR run.state = run_state_running() )
             -- Ignore non-starters
             AND state <> run_state_nonstart()
             -- Ignore background

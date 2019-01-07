@@ -39,10 +39,18 @@ def task_uuid_runtimes(task):
     # TODO: At some point, we will likely have to consider making the
     # proposals fall within the limits, which is going to be complex.
 
-    return json_query_simple("""
-        SELECT row_to_json(apt.*)
-        FROM  api_proposed_times(%s, %s, %s) apt
-        """, [task, range_start, range_end], empty_ok=True)
+    proposed_priority = arg_integer('priority')
+
+    if proposed_priority is None:
+        return json_query_simple(
+            """SELECT row_to_json(apt.*)
+            FROM  api_proposed_times(%s, %s, %s) apt""",
+            [task, range_start, range_end], empty_ok=True)
+    else:
+        return json_query_simple(
+            """SELECT row_to_json(apt.*)
+            FROM  api_proposed_times(%s, %s, %s, %s) apt""",
+            [task, range_start, range_end, proposed_priority], empty_ok=True)
 
 
 

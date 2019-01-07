@@ -45,7 +45,8 @@ def schedule():
                 task_cli,
                 test_json,
                 tool_json,
-                errors
+                errors,
+                priority
             FROM schedule
             WHERE times && tstzrange(%s, %s, '[)')
     """]
@@ -80,7 +81,8 @@ def schedule():
             "cli": row[7],
             "test": row[8],
             "tool": row[9],
-            "errors": row[10]
+            "errors": row[10],
+            "priority": row[11]
             }
 
         run["task"]["href"] = task_href
@@ -103,7 +105,7 @@ def monitor():
     try:
         cursor = dbcursor_query("""SELECT ppf, lower(times), upper(times), task, run,
                                           state_enum, state_display, task_json,
-                                          task_cli FROM schedule_monitor(%s)""",
+                                          task_cli, priority FROM schedule_monitor(%s)""",
                                 [window_size])
     except Exception as ex:
         log.exception()
@@ -126,7 +128,8 @@ def monitor():
             "state": row[5],
             "state-display": row[6],
             "task": row[7],
-            "cli": row[8]
+            "cli": row[8],
+            "priority": row[9]
             }
 
         run["task"]["href"] = task_href

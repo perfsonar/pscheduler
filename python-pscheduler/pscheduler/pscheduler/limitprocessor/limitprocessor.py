@@ -98,7 +98,6 @@ class LimitProcessor():
             self.prioritizer = None
 
 
-
     def process(self, task, hints, rewrite=True, prioritize=False):
         """Evaluate a proposed task against the full limit set.
 
