@@ -165,8 +165,6 @@ def tasks_uuid_runs(task):
         except ValueError as ex:
             return bad_request("Invalid JSON: %s" % (str(ex)))
 
-
-<<<<<<< HEAD
         try:
             passed, diags, response, priority \
                 = __evaluate_limits(task, start_time)

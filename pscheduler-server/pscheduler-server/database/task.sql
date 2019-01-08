@@ -302,10 +302,10 @@ BEGIN
     -- Add runs_started column
     IF t_version = 11
     THEN
-
         -- Number of times a run has gone into the running state
 	ALTER TABLE task ADD COLUMN runs_started NUMERIC
 	DEFAULT 0;
+    END IF;
 
     -- Version 12 to version 13
     -- Add priority column.
