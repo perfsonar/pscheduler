@@ -149,16 +149,12 @@ def tasks_uuid_runs(task):
 
         log.debug("Run POST: %s --> %s", request.url, request.data)
 
-        try:
-            requester, key = task_requester_key(task)
-            if requester is None:
-                return not_found()
+        requester, key = task_requester_key(task)
+        if requester is None:
+            return not_found()
 
-            if not access_write_task(requester, key):
-                return forbidden()
-
-        except Exception as ex:
-            return error(str(ex))
+        if not access_write_task(requester, key):
+            return forbidden()
 
 
         try:
@@ -170,6 +166,7 @@ def tasks_uuid_runs(task):
             return bad_request("Invalid JSON: %s" % (str(ex)))
 
 
+<<<<<<< HEAD
         try:
             passed, diags, response, priority \
                 = __evaluate_limits(task, start_time)
@@ -284,11 +281,7 @@ def tasks_uuid_runs_run(task, run):
             tries = int(wait_time / wait_interval) if wait_time > 0 \
                     else 1
             while tries > 0:
-                try:
-                    run = __runs_first_run(task, future)
-                except Exception as ex:
-                    log.exception()
-                    return error(str(ex))
+                run = __runs_first_run(task, future)
                 if run is not None:
                     break
                 if wait_time > 0:
@@ -299,8 +292,8 @@ def tasks_uuid_runs_run(task, run):
                 return not_found()
 
 
-        # 60 tries at 0.5s intervals == 30 sec.
-        tries = 60 if (wait_local or wait_merged) else 1
+        # Obey the wait time with tries at 0.5s intervals
+        tries = wait_time * 2 if (wait_local or wait_merged) else 1
 
         while tries:
 
@@ -410,16 +403,13 @@ def tasks_uuid_runs_run(task, run):
 
         log.debug("Run PUT %s", request.url)
 
-        try:
-            requester, key = task_requester_key(task)
-            if requester is None:
-                return not_found()
+        requester, key = task_requester_key(task)
 
-            if not access_write_task(requester, key):
-                return forbidden()
+        if requester is None:
+            return not_found()
 
-        except Exception as ex:
-            return error(str(ex))
+        if not access_write_task(requester, key):
+            return forbidden()
 
         # Get the JSON from the body
         try:
@@ -432,13 +422,9 @@ def tasks_uuid_runs_run(task, run):
         # If the run doesn't exist, take the whole thing as if it were
         # a POST.
 
-        try:
-            cursor = dbcursor_query(
-                "SELECT EXISTS (SELECT * FROM run WHERE uuid = %s)",
-                [run], onerow=True)
-        except Exception as ex:
-            log.exception()
-            return error(str(ex))
+        cursor = dbcursor_query(
+            "SELECT EXISTS (SELECT * FROM run WHERE uuid = %s)",
+            [run], onerow=True)
 
         fetched = cursor.fetchone()[0]
         cursor.close()
@@ -453,6 +439,7 @@ def tasks_uuid_runs_run(task, run):
                 return bad_request("Missing start time")
             except ValueError:
                 return bad_request("Invalid start time")
+
 
             try:
 
@@ -498,20 +485,16 @@ def tasks_uuid_runs_run(task, run):
 
             log.debug("Full data is: %s", part_data_full)
 
-            try:
-                cursor = dbcursor_query("""
-                              UPDATE
-                                  run
-                              SET
-                                  part_data_full = %s
-                              WHERE
-                                  uuid = %s
-                                  AND EXISTS (SELECT * FROM task WHERE UUID = %s)
-                              """,
-                           [ part_data_full, run, task])
-            except Exception as ex:
-                log.exception()
-                return error(str(ex))
+            cursor = dbcursor_query("""
+                          UPDATE
+                              run
+                          SET
+                              part_data_full = %s
+                          WHERE
+                              uuid = %s
+                              AND EXISTS (SELECT * FROM task WHERE UUID = %s)
+                          """,
+                       [ part_data_full, run, task])
 
             rowcount = cursor.rowcount
             cursor.close()
@@ -544,24 +527,20 @@ def tasks_uuid_runs_run(task, run):
             log.debug("Updating result-full: JSON %s", result_full)
             log.debug("Updating result-full: Run  %s", run)
             log.debug("Updating result-full: Task %s", task)
-            try:
-                cursor = dbcursor_query("""
-                              UPDATE
-                                  run
-                              SET
-                                  result_full = %s,
-                                  state = CASE %s
-                                      WHEN TRUE THEN run_state_finished()
-                                      ELSE run_state_failed()
-                                      END
-                              WHERE
-                                  uuid = %s
-                                  AND EXISTS (SELECT * FROM task WHERE UUID = %s)
-                              """,
-                               [ result_full, succeeded, run, task ])
-            except Exception as ex:
-                log.exception()
-                return error(str(ex))
+            cursor = dbcursor_query("""
+                          UPDATE
+                              run
+                          SET
+                              result_full = %s,
+                              state = CASE %s
+                                  WHEN TRUE THEN run_state_finished()
+                                  ELSE run_state_failed()
+                                  END
+                          WHERE
+                              uuid = %s
+                              AND EXISTS (SELECT * FROM task WHERE UUID = %s)
+                          """,
+                           [ result_full, succeeded, run, task ])
 
             rowcount = cursor.rowcount
             cursor.close()
@@ -577,28 +556,20 @@ def tasks_uuid_runs_run(task, run):
         # TODO: If this is the lead, the run's counterparts on the
         # other participating nodes need to be removed as well.
 
-        try:
-            requester, key = task_requester_key(task)
-            if requester is None:
-                return not_found()
+        requester, key = task_requester_key(task)
+        if requester is None:
+            return not_found()
 
-            if not access_write_task(requester, key):
-                return forbidden()
-
-        except Exception as ex:
-            return error(str(ex))
+        if not access_write_task(requester, key):
+            return forbidden()
 
 
-        try:
-            cursor = dbcursor_query("""
-            DELETE FROM run
-            WHERE
-                task in (SELECT id FROM task WHERE uuid = %s)
-                AND uuid = %s 
-            """, [task, run])
-        except Exception as ex:
-            log.exception()
-            return error(str(ex))
+        cursor = dbcursor_query("""
+        DELETE FROM run
+        WHERE
+            task in (SELECT id FROM task WHERE uuid = %s)
+            AND uuid = %s 
+        """, [task, run])
 
         rowcount = cursor.rowcount
         cursor.close()
@@ -636,11 +607,7 @@ def tasks_uuid_runs_run_result(task, run):
     # If asked for 'first', dig up the first run and use its UUID.
     # This is more for debug convenience than anything else.
     if run == 'first':
-        try:
-            run = __runs_first_run(task)
-        except Exception as ex:
-            log.exception()
-            return error(str(ex))
+        run = __runs_first_run(task)
         if run is None:
             return not_found()
 
@@ -655,23 +622,19 @@ def tasks_uuid_runs_run_result(task, run):
 
     while tries:
 
-        try:
-            cursor = dbcursor_query("""
-                SELECT
-                    test.name,
-                    run.result_merged,
-                    task.json #> '{test, spec}'
-                FROM
-                    run
-                    JOIN task ON task.id = run.task
-                    JOIN test ON test.id = task.test
-                WHERE
-                    task.uuid = %s
-                    AND run.uuid = %s
-                """, [task, run])
-        except Exception as ex:
-            log.exception()
-            return error(str(ex))
+        cursor = dbcursor_query("""
+            SELECT
+                test.name,
+                run.result_merged,
+                task.json #> '{test, spec}'
+            FROM
+                run
+                JOIN task ON task.id = run.task
+                JOIN test ON test.id = task.test
+            WHERE
+                task.uuid = %s
+                AND run.uuid = %s
+            """, [task, run])
 
         if cursor.rowcount == 0:
             cursor.close()

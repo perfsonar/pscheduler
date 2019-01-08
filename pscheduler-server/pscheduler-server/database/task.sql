@@ -95,7 +95,9 @@ BEGIN
         	-- Number of times successfully executed before scheduling stops
         	max_runs	NUMERIC,
 
-        	-- Number of times the task has been run
+        	-- Number of times the task has been scheduled for a
+        	-- run.  Note that this only ever increases, even if
+        	-- runs are deleted because of cancellation.
         	runs	  	NUMERIC
         			DEFAULT 0,
 
@@ -297,8 +299,17 @@ BEGIN
 
 
     -- Version 11 to version 12
-    -- Add priority column.  Note that this is only a requested priority.
+    -- Add runs_started column
     IF t_version = 11
+    THEN
+
+        -- Number of times a run has gone into the running state
+	ALTER TABLE task ADD COLUMN runs_started NUMERIC
+	DEFAULT 0;
+
+    -- Version 12 to version 13
+    -- Add priority column.
+    IF t_version = 12
     THEN
 	ALTER TABLE task ADD COLUMN
 	priority INTEGER DEFAULT 0;
@@ -601,9 +612,10 @@ BEGIN
 	SELECT INTO scheduling
             scheduling_class.*
         FROM
-            task
-            JOIN test ON test.id = task.test
+	    test
             JOIN scheduling_class ON scheduling_class.id = test.scheduling_class
+        WHERE
+            test.id = NEW.test
         ;
 
 
@@ -642,8 +654,14 @@ BEGIN
 	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,post}',
             to_jsonb(interval_to_iso8601(NEW.post)));
 
+	-- TODO: runs and runs_started change often enough that it
+	-- might be worth hitting those in separate triggers.
+
 	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,runs}',
 	    to_jsonb(NEW.runs));
+
+	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,runs-started}',
+	    to_jsonb(NEW.runs_started));
 
         IF NEW.slip IS NOT NULL
         THEN

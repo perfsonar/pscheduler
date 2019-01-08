@@ -407,6 +407,12 @@ BEGIN
 	    PERFORM pg_notify('run_canceled', NEW.id::TEXT);
         END IF;
 
+        IF NEW.state <> OLD.state AND NEW.state = run_state_running() THEN
+	    UPDATE task
+	    SET runs_started = runs_started + 1
+	    WHERE id = NEW.task;
+        END IF;
+
 	-- TODO: Make sure part_data_full, result_ful and
 	-- result_merged happen in the right order.
 
@@ -462,46 +468,32 @@ BEGIN
             AND NEW.state IN ( run_state_finished(), run_state_overdue(),
                  run_state_missed(), run_state_failed() )
         THEN
-	    -- Record the actual times the run ran
-	    NEW.times_actual = tstzrange(lower(OLD.times), normalized_now(), '[]');
 
-	    -- If the run took less than the scheduled time, return
-	    -- the remainder to the timeline.
-	    IF upper(OLD.times) > normalized_now() THEN
-	        NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
-	    END IF;
+	    -- Adjust the end times only if there's a sane case for
+	    -- doing so.  If the clock is out of whack, the current
+	    -- time could be less than the start time, which would
+	    -- make for an invalid range.
 
-        END IF;
+	    IF normalized_now() >= lower(OLD.times)
+            THEN
+	        -- Record the actual times the run ran
+	    	NEW.times_actual = tstzrange(lower(OLD.times), normalized_now(), '[]');
 
-
-	-- If the full result changed, update the merged version.
-
-       IF NEW.result_full IS NOT NULL
-          AND COALESCE(NEW.result_full::TEXT, '')
-	      <> COALESCE(OLD.result_full::TEXT, '') THEN
-
-	       result_merge_input := row_to_json(t) FROM (
-	           SELECT 
-		       taskrec.json -> 'test' AS test,
-                       NEW.result_full AS results
-                   ) t;
-
- 	       run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_name,
-	           'merged-results'], result_merge_input::TEXT );
-   	       IF run_result.status <> 0 THEN
-                   -- TODO: This leaves the result empty.  Maybe post some sort of failure?
-	           RAISE EXCEPTION 'Unable to get merged result on %: %',
-		       result_merge_input::TEXT, run_result.stderr;
-	       END IF;
-  	      NEW.result_merged := regexp_replace(run_result.stdout, '\s+$', '')::JSONB;
-
-	      NOTIFY result_available;
-
-        ELSIF NEW.result_full IS NULL THEN
-
-            NEW.result_merged := NULL;
+	    	-- If the run took less than the scheduled time, return
+	    	-- the remainder to the timeline.
+	    	IF upper(OLD.times) > normalized_now() THEN
+	           NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
+	    	END IF;
+            END IF;
 
         END IF;
+
+	-- If there's now a merged result, notify anyone watching for those.
+
+       IF OLD.result_merged IS NULL AND NEW.result_merged IS NOT NULL
+       THEN
+	      PERFORM pg_notify('result_available', NEW.id::TEXT);
+       END IF;
 
 
     ELSIF (TG_OP = 'INSERT') THEN

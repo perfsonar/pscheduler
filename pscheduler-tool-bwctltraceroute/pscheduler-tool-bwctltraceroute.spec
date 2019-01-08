@@ -4,12 +4,13 @@
 
 %define short	bwctltraceroute
 Name:		pscheduler-tool-%{short}
-Version:	1.0.2
+Version:	1.1.2
 Release:	1%{?dist}
 
-Summary:	pScheduler BWCTL Traceroute Tool
+Summary:	pScheduler BWCTL Traceroute Tool (DISABLED)
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Source0:	%{short}-%{version}.tar.gz
@@ -18,18 +19,13 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
 Requires:	pscheduler-account
-Requires:	python-pscheduler >= 1.3
 Requires:	pscheduler-test-trace
-Requires:	python-icmperror
-Requires:	bwctl-client
-Requires:	bwctl-server
-Requires:   traceroute
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
 
 %description
-pScheduler BWCTL Traceroute Tool
+pScheduler BWCTL Traceroute Tool (DISABLED)
 
 
 %prep
@@ -55,4 +51,5 @@ pscheduler internal warmboot
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %{dest}

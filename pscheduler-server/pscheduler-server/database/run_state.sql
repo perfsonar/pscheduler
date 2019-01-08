@@ -245,7 +245,6 @@ CREATE OR REPLACE FUNCTION run_state_transition_is_valid(
 RETURNS BOOLEAN
 AS $$
 BEGIN
-
    -- TODO: This might be worth putting into a table.
    RETURN  new = old
            OR   ( old = run_state_pending()
@@ -277,6 +276,8 @@ BEGIN
 		            run_state_failed(),
 			    run_state_canceled(),
 		            run_state_preempted()) )
+           OR ( old = run_state_missed()
+	        AND new IN (run_state_failed()) )
            OR   ( old = run_state_nonstart()
 	          AND new IN (run_state_canceled()) )
            ;

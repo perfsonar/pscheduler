@@ -65,6 +65,9 @@ class LatencyLimitPassesTest(pscheduler.TestLimitPassesUnitTest):
     def test_flip(self): 
         self.assert_boolean_limit('flip', 'Flip')
         
+    def test_reverse(self):
+        self.assert_boolean_limit('reverse', 'Reverse')
+
 if __name__ == '__main__':
     unittest.main()
 

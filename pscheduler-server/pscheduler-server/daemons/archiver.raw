@@ -113,7 +113,7 @@ if retry is None:
 retry = pscheduler.timedelta_as_seconds(retry)
 
 
-log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
+log = pscheduler.Log(verbose=options.verbose, debug=options.debug, propagate=True)
 
 dsn = options.dsn
 
@@ -293,8 +293,8 @@ class ArchiveProcess(object):
             self.done()
             return {
                 "succeeded": False,
-                "error": "Archiver error: %s" % (str(ex)),
-                "retry": retry
+                "error": "Possibly-permanent archiver error: %s" % (str(ex))
+                # Don't retry.  The StreamingJSONProgram will have retried.
                 }
 
 
@@ -302,6 +302,7 @@ class ArchiveProcess(object):
         """Stop the archive process"""
         if self.program is not None:
             self.program.done()
+            self.program = None
 
 
     def __del__(self):
@@ -569,11 +570,11 @@ class ArchiveWorker():
 
         archiving_id, task_uuid, run_uuid, archiver, archiver_data, start, \
             duration, test, tool, participants, result_merged, attempts, \
-            last_attempt, transform = self.row
+            last_attempt, transform, task_detail = self.row
 
         participants_merged = []
         for participant in participants:
-            participants_merged.append(pscheduler.api_this_host() \
+            participants_merged.append(pscheduler.api_local_host() \
                                        if participant is None \
                                        else participant)
 
@@ -602,7 +603,8 @@ class ArchiveWorker():
                     'version': tool['version'],
                 },
                 'participants': participants_merged,
-                'result': result_merged
+                'result': result_merged,
+                'reference': task_detail.get('reference', None)
             },
             'attempts': attempts,
             'last-attempt': None if last_attempt is None \
@@ -633,7 +635,12 @@ class ArchiveWorker():
                 returncode = 1
                 stdout = ""
                 stdout_attempt = ""
-                stderr = "Error during transformation: %s", str(ex)
+                stderr = "Error during transformation: %s" % (str(ex))
+                result = {
+                    "succeeded": False,
+                    "error": stderr
+                }
+
 
         if json["result"] is None:
             self.log.debug("%d: Null transform result; not archiving", self.id)
@@ -829,7 +836,7 @@ def main_program():
         result = db.query("""SELECT id, task_uuid, run_uuid, archiver,
                              archiver_data, start,
                              duration, test, tool, participants, result,
-                             attempts, last_attempt, transform
+                             attempts, last_attempt, transform, task_detail
                              FROM archiving_next(%s)""",
                           [options.max_parallel])
 
@@ -877,4 +884,4 @@ if options.daemon:
     with daemon.DaemonContext(pidfile=pidfile):
         pscheduler.safe_run(lambda: main_program())
 else:
-    main_program()
+    pscheduler.safe_run(lambda: main_program())

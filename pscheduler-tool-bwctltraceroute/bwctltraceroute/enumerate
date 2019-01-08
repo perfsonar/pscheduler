@@ -2,11 +2,11 @@
 {
     "schema": 1,
     "name": "bwctltraceroute",
-    "description": "Determine the path between hosts with BWCTL - FOR BACKWARD COMPATIBILITY ONLY",
+    "description": "Determine the path between hosts with BWCTL - NON-FUNCTIONING",
     "version": "1.0",
-    "tests": [ "trace" ],
+    "tests": [ ],
 
-    "preference": 10,
+    "preference": 0,
 
     "maintainer": {
         "name": "perfSONAR Development Team",

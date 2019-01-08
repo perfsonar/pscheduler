@@ -18,7 +18,9 @@ Source0:	%{name}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	postgresql
+Requires:	%{_pscheduler_postgresql_package}-server
+
+BuildRequires:	pscheduler-rpm
 
 %description
 This program is used to run SQL files through psql with an option to

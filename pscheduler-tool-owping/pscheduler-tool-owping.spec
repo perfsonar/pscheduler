@@ -4,12 +4,13 @@
 
 %define short	owping
 Name:		pscheduler-tool-%{short}
-Version:	1.0.2
+Version:	1.1.2
 Release:	1%{?dist}
 
 Summary:	owping tool class for pScheduler
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Source0:	%{short}-%{version}.tar.gz
@@ -58,5 +59,6 @@ pscheduler internal warmboot
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %config(noreplace) %{_pscheduler_tool_confdir}/*
 %{dest}

@@ -13,7 +13,6 @@ import sys
 import time
 import nuttcp_parser
 import traceback
-import ipaddr
 import nuttcp_utils
 from nuttcp_defaults import *
 

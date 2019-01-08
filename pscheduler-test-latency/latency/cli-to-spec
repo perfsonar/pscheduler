@@ -97,7 +97,7 @@ opt_parser.add_option("-P", "--data-ports",
                       dest="data_ports")
 
 opt_parser.add_option("-T", "--ip-tos",
-                      help="The port range to use on the side of the test running the client. At least two ports required.",
+                      help="The IP type-of-service value.",
                       action="store", type="int",
                       dest="ip_tos")
 
@@ -114,6 +114,10 @@ opt_parser.add_option("-f", "--flip",
                       help="In multi-participant mode, have the dest start the client and request a reverse test. Useful in some firewall and NAT environments.",
                       action="store_true", dest="flip", default=False)
 
+opt_parser.add_option("-r", "--reverse",
+                      help="Report results in the reverse direction (destination to source) if possible.",
+                      action="store_true", dest="reverse", default=False)
+
 opt_parser.add_option("-R", "--output-raw",
                       help="Output individual packet statistics. This will substantially increase the size of a successful result.",
                       action="store_true", dest="output_raw", default=False)
@@ -124,7 +128,9 @@ if len(remaining_args) != 0:
    pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
 
-result = { 'schema': 1 }
+spec_schema = pscheduler.HighInteger(1)
+
+result = {}
 
 if options.source is not None:
    result['source'] = options.source
@@ -178,8 +184,15 @@ if options.bucket_width is not None:
 if options.flip:
    result['flip'] = options.flip
 
+if options.reverse:
+   result['reverse'] = options.reverse
+   spec_schema.set(2)
+
 if options.output_raw:
    result['output-raw'] = options.output_raw
+
+
+result['schema'] = spec_schema.value()
 
 
 pscheduler.succeed_json(result)

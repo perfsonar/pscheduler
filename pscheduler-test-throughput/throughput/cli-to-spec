@@ -159,6 +159,16 @@ opt_parser.add_option("--server-cpu-affinity",
                       action="store", type="int",
                       dest="server_cpu_affinity")
 
+opt_parser.add_option("--single-ended",
+                      help="Run a test directly to a host without pscheduler.",
+                      action="store_true",
+                      dest="single_ended")
+
+opt_parser.add_option("--single-ended-port",
+                      help="Run a test directly to a given port.",
+                      action="store", type="int",
+                      dest="single_ended_port")
+
 opt_parser.add_option("--reverse",
                       help="Reverses the direction of the test.",
                       action="store_true",
@@ -174,7 +184,8 @@ if len(remaining_args) != 0:
    pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
 
-result = { 'schema': 1 }
+result = { }
+schema = pscheduler.HighInteger(1)
 
 if options.source is not None:
    result['source'] = options.source
@@ -272,8 +283,18 @@ if options.client_cpu_affinity != None:
 if options.server_cpu_affinity != None:
    result["server-cpu-affinity"] = options.server_cpu_affinity
 
+if options.single_ended:
+   result["single-ended"] = True
+   schema.set(2)
+
+if options.single_ended_port:
+   result["single-ended-port"] = options.single_ended_port
+   schema.set(2)
+
 if options.reverse:
    result["reverse"] = True
+
+result["schema"] = schema.value()
 
 logger.debug("cli-to-spec -> %s" % result)
 

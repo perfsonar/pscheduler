@@ -124,17 +124,24 @@ opt_parser.add_option("--host",
                       action="store", type="string",
                       dest="host")
 
+opt_parser.add_option("--plot",
+                      help="Write GNUPlot commands to standard output and exit",
+                      action="store_true",
+                      dest="plot")
+
+
+
 (options, remaining_args) = opt_parser.parse_args(args)
 
 
 
 full_host = options.host if options.host is not None \
-            else pscheduler.api_this_host()
+            else pscheduler.api_local_host()
 
 
 # This outputs PNG, which isn't suitable for TTYs.
 
-if sys.stdout.isatty():
+if sys.stdout.isatty() and not options.plot:
     pscheduler.fail("Not sending PNG output to a tty.  Consider redirecting.")
 
 
@@ -180,6 +187,35 @@ else:
 
 
 #
+# Find the server's time zone and convert all times to that.
+#
+
+status, clock = pscheduler.url_get(
+    pscheduler.api_url(host=options.host, path="clock"),
+    bind=options.bind,
+    throw = False
+    )
+
+if status != 200:
+    pscheduler.fail("Failed to get server's clock:  %d: %s" % (status, clock))
+
+try:
+    server_clock = clock["time"]
+except KeyError:
+    pscheduler.fail("Server did not return its clock.")
+
+server_time = pscheduler.iso8601_as_datetime(server_clock)
+server_timezone = server_time.tzinfo
+
+# Convert the start and end times to the server's time zone
+
+# Pylint thinks these are ints.
+# pylint: disable=maybe-no-member
+start = start.astimezone(server_timezone)
+end = end.astimezone(server_timezone)
+
+
+#
 # Fetch the schedule
 #
 
@@ -197,6 +233,26 @@ if status != 200:
     pscheduler.fail("Server returned status %d: %s" % (status, schedule))
 
 
+# Where we place each class and The list of columns depends on whether
+# or not the background classes are combined.
+
+class_levels = {
+    "exclusive": 1,
+    "normal": 2,
+    "background": 3,
+    "background-multi": 4,
+    "nonstart": 5
+}
+
+columns = [
+    "\\n",
+    "\\nExclusive",
+    "\\nNormal",
+    "Background\\nSingle-Result",
+    "Background\\nMulti-Result",
+    "Non\\nStarting"
+    ]
+
 
 script_lines = [
 """
@@ -207,37 +263,37 @@ set terminal png notransparent truecolor size 800,1200 background rgb "#ffffff"
 set timefmt "%Y-%m-%dT%H:%M:%S"
 
 unset xtics
-set x2label "Scheduling"
-set x2range [0.5:4.5]
-set x2tics out scale 0 ( \\
-    "" 0, \\
-    "Exclusive" 1, \\
-    "Normal" 2, \\
-    "Background" 3, \\
-    "Non-Start" 4 \\
+""",
+"set x2range [0.5:{0}.5]".format(len(columns) - 1),
+"""
+set x2tics out scale 0 ( \\\\
+""",
+", ".join([ '"{0}" {1}'.format(pair[1], pair[0])
+        for pair in enumerate(columns, start=0) ]) + "\\\\",
+"""
     )
 
 
-set ylabel "Run Time"
 set ydata time
 set ytics out nomirror
 set format y "%Y-%m-%d\\n%H:%M:%S"
 """,
-    """set yrange ["%s":"%s"] reverse""" \
+"""set yrange ["%s":"%s"] reverse""" \
     % (pscheduler.datetime_as_iso8601(start),
        pscheduler.datetime_as_iso8601(end)),
-    """set title "pScheduler Schedule for %s""" % (full_host),
+"""set title "pScheduler Schedule for %s\\n%s""" % (
+    full_host, server_time.strftime("%F %T%z")),
 """
 set key off
 set grid front noxtics ytics mytics linetype 0
 set boxwidth 0.9
 
-set style fill solid border lc rgb "#000000"
+set style fill solid border lc rgb "#00e000"
 
 plot "-" using 1:2:3:2:3 \\
   with candlesticks \\
   linewidth 1 \\
-  lc rgb "#00e000" \\
+  linecolor rgb "#00e000" \\
   axes x2y1"""
 ]
 
@@ -263,6 +319,13 @@ if len(schedule) == 0:
 
 for run in schedule:
 
+
+    # Force times to server's time zone
+    for field in [ "start-time", "end-time" ]:
+        in_time = pscheduler.iso8601_as_datetime(run[field])
+        converted_time = in_time.astimezone(server_timezone)
+        run[field] = pscheduler.datetime_as_iso8601(converted_time)
+
     try:
         run_state = run["state"]
         sched_class = run_state if run_state in [ "nonstart" ] \
@@ -280,6 +343,15 @@ for run in schedule:
     )
 
 script_lines.append("eof")
+
+
+#
+# Write the plot file if that's what we were asked to do.
+#
+
+if options.plot:
+    print "\n".join(script_lines)
+    pscheduler.succeed()
 
 
 #

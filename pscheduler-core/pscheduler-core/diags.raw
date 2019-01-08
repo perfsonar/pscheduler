@@ -96,6 +96,53 @@ section "Near-Term Schedule"
 pscheduler schedule -PT2H +PT2H
 
 
+section "New Tasks by Hour Added"
+
+postgresql-load <<EOF
+\c pscheduler
+SELECT
+    date_trunc('hour', added) AS hour,
+    count(*)
+FROM
+    task
+GROUP BY hour
+ORDER BY hour
+;
+EOF
+
+
+section "New Runs by Hour Added"
+
+postgresql-load <<EOF
+\c pscheduler
+SELECT
+    date_trunc('hour', added) AS hour,
+    count(*)
+FROM
+    run
+GROUP BY hour
+ORDER BY hour
+;
+EOF
+
+
+section "Run States by Hour"
+
+postgresql-load <<EOF
+\c pscheduler
+SELECT
+    run_state.enum AS state,
+    date_trunc('hour', added) AS hour,
+    count(*)
+FROM
+    run
+    JOIN run_state ON run_state.id = run.state
+GROUP BY run_state.id, hour
+ORDER BY run_state.id, hour
+;
+EOF
+
+
 #
 # Network
 #
@@ -112,7 +159,7 @@ ip route
 
 
 section Sockets
-netstat -n -a
+ss -n -a
 
 
 #

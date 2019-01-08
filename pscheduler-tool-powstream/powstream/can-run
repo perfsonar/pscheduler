@@ -34,4 +34,11 @@ except ValueError as ex:
     })
 
 
+if "ip-tos" in spec:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["IP TOS is not supported"]
+    })
+
+
 pscheduler.succeed_json({ "can-run": True })

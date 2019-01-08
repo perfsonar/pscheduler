@@ -22,7 +22,7 @@ exec=__DAEMONDIR__/$prog
 config=__DSN__
 proguser=__PSUSER__
 
-pidfile=__VAR__/run/pscheduler-$prog.pid
+pidfile=__RUNDIR__/pscheduler-$prog.pid
 lockfile=__VAR__/lock/subsys/$proc
 
 # TODO: Should probably rotate this, but should almost always be empty.
@@ -30,6 +30,9 @@ logfile=__LOGDIR__/$prog.out
 
 # Source function library.
 . /etc/rc.d/init.d/functions
+
+ulimit -n 4096
+ulimit -u 4096
 
 retval=0
 

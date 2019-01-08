@@ -20,9 +20,9 @@ LATEX=\
 	test-rtt \
 	test-simplestream \
 	test-trace \
-	values \
 
-
+# values is incomplete.
+# misc requires the 'msc' package.
 
 TEXES=$(LATEX:%=%.tex)
 DVISS=$(LATEX:%=%.dvi)
@@ -62,3 +62,23 @@ TO_CLEAN += $(LATEX_OUTS:%=*.%)
 clean:
 	make -C dirtree $@
 	rm -rf $(TO_CLEAN) *~
+
+
+#
+# Installation of packages for CentOS
+#
+
+CENTOS_DEPENDENCIES=\
+	ghostscript \
+	tex \
+	texlive-draftwatermark \
+	texlive-helvetic \
+	texlive-latex \
+	texlive-latex-bin \
+	texlive-parskip \
+	texlive-preprint \
+	texlive-ulem \
+	unzip
+
+centos-dependencies:
+	yum -y install $(CENTOS_DEPENDENCIES)

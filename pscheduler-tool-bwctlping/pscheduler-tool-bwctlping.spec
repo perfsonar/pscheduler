@@ -4,12 +4,13 @@
 
 %define short	bwctlping
 Name:		pscheduler-tool-%{short}
-Version:	1.0.2
+Version:	1.1.2
 Release:	1%{?dist}
 
-Summary:	pScheduler BWCTL Ping Tool
+Summary:	pScheduler BWCTL Ping Tool (DISABLED)
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Source0:	%{short}-%{version}.tar.gz
@@ -18,22 +19,14 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
 Requires:	pscheduler-account
-Requires:	python-ipaddr
-Requires:	python-pscheduler >= 1.3
 Requires:	pscheduler-test-rtt
-Requires:	python-icmperror
-# This supplies ping.
-Requires:	iputils
-Requires:	bwctl-client
-Requires:	bwctl-server
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
-BuildRequires:	iputils
 
 
 %description
-pScheduler Ping Tool
+pScheduler Ping Tool (DISABLED)
 
 
 %prep
@@ -58,4 +51,5 @@ pscheduler internal warmboot
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %{dest}

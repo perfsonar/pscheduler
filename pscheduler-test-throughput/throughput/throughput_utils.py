@@ -25,7 +25,6 @@ def format_stream_output(stream_list, udp=False, summary=False):
 
         if not summary:
             output += "{0:<15}".format("Current Window")
-                            
     output += "\n"
 
     for block in stream_list:

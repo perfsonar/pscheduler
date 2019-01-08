@@ -4,19 +4,20 @@
 
 %define short	latency
 Name:		pscheduler-test-%{short}
-Version:	1.0.2
+Version:	1.1.2
 Release:	1%{?dist}
 
 Summary:	Latency test class for pScheduler
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server >= 1.0.2
+Requires:	pscheduler-server >= 1.1.2
 Requires:	python-pscheduler
 Requires:	python-jsontemplate
 
@@ -51,4 +52,5 @@ pscheduler internal warmboot
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %{dest}

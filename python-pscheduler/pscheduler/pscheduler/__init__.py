@@ -17,6 +17,7 @@ from .jqfilter import *
 from .jsonval import *
 from .limits import *
 from .log import *
+from .mtu import *
 from .numeric import *
 from .numericrange import *
 from .program import *
@@ -24,6 +25,7 @@ from .pidfile import *
 from .psas import *
 from .psdns import *
 from .psjson import *
+from .psselect import *
 from .pstime import *
 from .psurl import *
 from .retry import *

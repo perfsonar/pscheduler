@@ -2,11 +2,11 @@
 {
     "schema": 1,
     "name": "bwctlping",
-    "description": "Measure the round-trip time to another host with BWCTL - FOR BACKWARD COMPATIBILITY ONLY",
+    "description": "Measure the round-trip time to another host with BWCTL - NON-FUNCTIONING",
     "version": "1.0",
-    "tests": [ "rtt" ],
+    "tests": [ ],
 
-    "preference": 10,
+    "preference": 0,
 
     "maintainer": {
         "name": "perfSONAR Development Team",

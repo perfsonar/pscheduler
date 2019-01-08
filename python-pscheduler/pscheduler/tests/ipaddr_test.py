@@ -2,6 +2,7 @@
 test for the Ipaddr module.
 """
 
+import socket
 import unittest
 
 from base_test import PschedTestBase
@@ -24,13 +25,15 @@ class TestIpaddr(PschedTestBase):
     def test_ipaddr(self):
         """IP addr tests"""
 
+        # By Version Number
+
         self.assertEqual(ip_addr_version('127.0.0.1'), (4, '127.0.0.1'))
         self.assertEqual(ip_addr_version('127.0.0.1', resolve=False), (4, '127.0.0.1'))
 
         self.assertEqual(ip_addr_version('127.0.0.1/32'), (4, '127.0.0.1'))
         self.assertEqual(ip_addr_version('127.0.0.1/32', resolve=False), (4, '127.0.0.1'))
 
-        self.assertEqual(ip_addr_version('127.0.0.1/quack'), (None, None))
+        self.assertEqual(ip_addr_version('127.0.0.1/quack'), (None, 'Name or service not known'))
         self.assertEqual(ip_addr_version('127.0.0.1/quack', resolve=False), (None, None))
 
         self.assertEqual(ip_addr_version('::1'), (6, '::1'))
@@ -39,22 +42,40 @@ class TestIpaddr(PschedTestBase):
         self.assertEqual(ip_addr_version('::1/32'), (6, '::1'))
         self.assertEqual(ip_addr_version('::1/32', resolve=False), (6, '::1'))
 
-        self.assertEqual(ip_addr_version('::1/quack'), (None, None))
+        self.assertEqual(ip_addr_version('::1/quack'), (None, 'Name or service not known'))
         self.assertEqual(ip_addr_version('::1/quack', resolve=False), (None, None))
 
-        # TODO: are the following resolved tests subject to breakage due
-        # to changing IP addresses? If so, do what?
+        # By Address Family
 
-        # TODO: these appear to be unstable, get clarity.
+        self.assertEqual(ip_addr_version('127.0.0.1', family=True), (socket.AF_INET, '127.0.0.1'))
+        self.assertEqual(ip_addr_version('127.0.0.1', resolve=False, family=True), (socket.AF_INET, '127.0.0.1'))
 
-        # self.assertEqual(ip_addr_version('www.perfsonar.net'), (4, '207.75.164.248'))
-        # self.assertEqual(ip_addr_version('www.perfsonar.net', resolve=False), (None, None))
+        self.assertEqual(ip_addr_version('127.0.0.1/32', family=True), (socket.AF_INET, '127.0.0.1'))
+        self.assertEqual(ip_addr_version('127.0.0.1/32', resolve=False, family=True), (socket.AF_INET, '127.0.0.1'))
 
-        # self.assertEqual(ip_addr_version('ipv4.test-ipv6.com'), (4, '216.218.228.125'))
-        # self.assertEqual(ip_addr_version('ipv4.test-ipv6.com', resolve=False), (None, None))
+        self.assertEqual(ip_addr_version('127.0.0.1/quack', family=True),(None, 'Name or service not known'))
+        self.assertEqual(ip_addr_version('127.0.0.1/quack', resolve=False, family=True), (None, None))
 
-        # self.assertEqual(ip_addr_version('ipv6.test-ipv6.com'), (6, '2001:470:1:18::125'))
-        # self.assertEqual(ip_addr_version('ipv6.test-ipv6.com', resolve=False), (None, None))
+        self.assertEqual(ip_addr_version('::1', family=True), (socket.AF_INET6, '::1'))
+        self.assertEqual(ip_addr_version('::1', resolve=False, family=True), (socket.AF_INET6, '::1'))
+
+        self.assertEqual(ip_addr_version('::1/32', family=True), (socket.AF_INET6, '::1'))
+        self.assertEqual(ip_addr_version('::1/32', resolve=False, family=True), (socket.AF_INET6, '::1'))
+
+        self.assertEqual(ip_addr_version('::1/quack', family=True),(None, 'Name or service not known'))
+        self.assertEqual(ip_addr_version('::1/quack', resolve=False, family=True), (None, None))
+
+        # By DNS name.  These are guaranteed to be stable as long as
+        # nobody breaks the perfsonar.net zone.
+
+        self.assertEqual(ip_addr_version('a1.nv.perfsonar.net'), (4, '127.0.0.1'))
+        self.assertEqual(ip_addr_version('a1.nv.perfsonar.net', resolve=False), (None, None))
+
+        self.assertEqual(ip_addr_version('aaaa1.nv.perfsonar.net'), (6, 'fc00::1'))
+        self.assertEqual(ip_addr_version('aaaa1.nv.perfsonar.net', resolve=False), (None, None))
+
+        # Note that we can't test a-aaaa1.nv because we don't know
+        # what the local system will prefer.
 
 
 if __name__ == '__main__':

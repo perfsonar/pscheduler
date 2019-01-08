@@ -105,6 +105,10 @@ except KeyError:
 
 argv.append(dest)
 
+# Force all args to be strings
+argv = map(lambda x: str(x), argv)
+
+
 
 #
 # Run the test

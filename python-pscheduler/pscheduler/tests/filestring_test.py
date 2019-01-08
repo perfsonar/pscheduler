@@ -16,6 +16,9 @@ class TestFilestring(PschedTestBase):
 
     def test_filestring(self):
         """Filestring tests"""
+
+        self.assertEqual(string_from_file(''), '')
+
         self.assertEqual(string_from_file("Plain string"), 'Plain string')
 
         assert(string_from_file("@/dev/null") == "")

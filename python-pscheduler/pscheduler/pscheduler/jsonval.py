@@ -1219,8 +1219,7 @@ __default_schema__ = {
 
 
 def json_validate(json, skeleton):
-    """
-    Validate JSON against a jsonschema schema.
+    """Validate JSON against a jsonschema schema.
 
     The skeleton is a dictionary containing a partial,
     draft-04-compatible jsonschema schema, containing only the
@@ -1232,6 +1231,7 @@ def json_validate(json, skeleton):
         additionalProperties  (Only when type is an object)
         required     Required items
         local        (Optional; see below.)
+        $ref         (Optional; see below.)
 
     The optional 'local' element is a dictionary which may be used for
     any local definitions to be referenced from the items or
@@ -1241,6 +1241,14 @@ def json_validate(json, skeleton):
     "#/pScheduler/TypeName", where TypeName is a standard pScheduler
     type as defined in the "pScheduler JSON Style Guide and Type
     Dictionary" document."
+
+    Schemas that want to refer to a single object in their local
+    sections or something from the pScheduler can use "$ref":
+    "#/path/to/definition" instead of type, items and properties as
+    they would when defining a regular object.
+
+    Tip:  If your schema needs to be allOf/anyOf/oneOf/not at the top,
+    build it in local and use a $ref to refer to it.
 
     The values returned are a tuple containing a boolean indicating
     whether or not the JSON was valid and a string containing any

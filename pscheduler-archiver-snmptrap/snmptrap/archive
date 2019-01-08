@@ -7,6 +7,7 @@ import pscheduler
 import pysnmp
 from pysnmp.hlapi import *
 import re
+import sys
 
 # check for missing required fields
 def missing_input(data_json, test_type, level):
@@ -151,25 +152,37 @@ def archive(input_json):
                     'error': error}
 
 
-json = pscheduler.json_load(exit_on_error=True, max_schema=1)
+def archive(json):
 
-try:
-    g = get_generator(json['data'])
-    errorIndication, errorStatus, errorIndex, varBinds = next(g)
-    if errorIndication:
+    try:
+        g = get_generator(json['data'])
+        errorIndication, errorStatus, errorIndex, varBinds = next(g)
+        if errorIndication:
+            succeeded = False
+            data = None
+            error = "Failed to archive: %s" % str(errorIndication).strip('\n')
+        else:
+            succeeded = True
+            data = None
+            error = None
+
+    except (pysnmp.error.PySnmpError, pysnmp.smi.error.NoSuchObjectError) as e:
         succeeded = False
         data = None
-        error = "Failed to archive: %s" % str(errorIndication).strip('\n')
-    else:
-        succeeded = True
-        data = None
-        error = None
+        error = "Failed to archive: %s" % str(e).strip('\n')
 
-except (pysnmp.error.PySnmpError, pysnmp.smi.error.NoSuchObjectError) as e:
-    succeeded = False
-    data = None
-    error = "Failed to archive: %s" % str(e).strip('\n')
+    return {
+        'succeeded': succeeded,
+        'data': data,
+        'error': error
+    }
 
-pscheduler.succeed_json({'succeeded': succeeded,
-						 'data': data,
-						 'error': error})
+
+
+PARSER = pscheduler.RFC7464Parser(sys.stdin)
+EMITTER = pscheduler.RFC7464Emitter(sys.stdout)
+
+for parsed in PARSER:
+    EMITTER(archive(parsed))
+
+pscheduler.succeed()

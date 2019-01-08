@@ -7,6 +7,6 @@ default: build
 
 
 %:
-	which spectool 2>&1 > /dev/null || yum -y install spectool
-	which rpmbuild 2>&1 > /dev/null || yum -y install rpm-build
+	which spectool > /dev/null 2>&1 || yum -y install spectool
+	which rpmbuild > /dev/null 2>&1 || yum -y install rpm-build
 	$(MAKE) -f Makefile-stage2 $@

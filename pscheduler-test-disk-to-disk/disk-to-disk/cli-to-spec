@@ -1,0 +1,120 @@
+#!/usr/bin/python
+
+#
+# Development Order #4:
+# 
+# This file encodes CLI arguments as JSON data in a test spec,
+# as defined by the datatypes in validate.py
+# 
+# This can be tested directly using the following syntax:
+# ./cli-to-spec --option argument
+#
+
+import re
+import string
+import optparse
+import pscheduler
+import sys
+
+if len(sys.argv) > 1:
+
+   # Args are on the command line
+   args = sys.argv[1:]
+
+else:
+
+   # Args are in a JSON array on stdin
+   json_args = pscheduler.json_load(exit_on_error=True)
+   args = []
+
+   if type(json_args) != list:
+      pscheduler.fail("Invalid JSON for this operation")
+   for arg in json_args:
+      if type(arg) not in (unicode, str, int, float):
+         pscheduler.fail("Invalid JSON for this operation")
+   args = [ str(arg) for arg in json_args ]
+
+
+
+# Gargle the arguments
+
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""
+    This text will be printed out at the bottom of the
+    "help" message. Change this to whatever you like,
+    or don't include it at all. This could be a good place
+    for example usage cases, etc.
+"""
+)
+
+# Add all potential command line options here
+# Check https://docs.python.org/2/library/optparse.html for more
+# documentation on the opt parser
+
+
+opt_parser.add_option("--duration",
+                      help="Duration of idle test.",
+                      action="store", type="string",
+                      dest="duration")
+
+opt_parser.add_option("--timeout",
+                      help="Timeout for each query attempt (in seconds)",
+                      action="store", type="string",
+                      dest="timeout")
+
+opt_parser.add_option("--source",
+                      help="Source URL",
+                      action="store", type="string",
+                      dest="source")
+
+opt_parser.add_option("--dest",
+                      help="Destination URL",
+                      action="store", type="string",
+                      dest="dest")
+
+opt_parser.add_option("--dest-path",
+                      help="Destination path",
+                      action="store", type="string",
+                      dest="dest_path")
+
+opt_parser.add_option("--cleanup",
+                      help="If true then test file is deleted after transfer",
+                      action="store", type="string",
+                      dest="cleanup")
+
+(options, remaining_args) = opt_parser.parse_args(args)
+
+result = { 'schema': 1 }
+
+if options.source is not None:
+  result['source'] = options.source
+else:
+  pscheduler.fail('A source location is required,',
+		  '\'--source localhost\'')
+
+if options.dest is not None:
+  result['dest'] = options.dest
+else:
+  pscheduler.fail('A destination URL is required,',
+                  '\'--dest localhost\'')
+
+if options.cleanup is None:
+  result['cleanup'] = True
+else:
+  result['cleanup'] = options.cleanup
+
+if options.dest_path is not None:
+  result['dest-path'] = options.dest_path
+else:
+  result['dest-path'] = "/nill"
+
+if options.timeout is not None:
+   result['timeout'] = options.timeout
+
+if options.duration is not None:
+   result['duration'] = options.duration
+
+#if result['testtype'] not in [ 'api', 'system' ]:
+#    pscheduler.fail('Invalid test type. Choose api or system.')
+
+pscheduler.succeed_json(result)

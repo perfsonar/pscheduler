@@ -5,9 +5,6 @@
 import pscheduler
 import urlparse
 
-# HACK: BWCTLBC
-import os
-
 from pschedulerapiserver import application
 
 from flask import request
@@ -28,11 +25,9 @@ class TaskPostingException(Exception):
 
 def task_exists(task):
     """Determine if a task exists by its UUID"""
-    try:
-        cursor = dbcursor_query("SELECT EXISTS (SELECT * FROM task WHERE uuid = %s)",
-                                [task], onerow=True)
-    except Exception as ex:
-        return error(str(ex))
+
+    cursor = dbcursor_query("SELECT EXISTS (SELECT * FROM task WHERE uuid = %s)",
+                            [task], onerow=True)
 
     return cursor.fetchone()[0]
     
@@ -136,6 +131,7 @@ def __tasks_get_filtered(uri_base,
             continue
 
         json = row[0]
+        assert json is not None, "Database did not return details."
 
         # This is always added.
         json['href'] = uri
@@ -193,19 +189,14 @@ def tasks():
 
         where_clause += " ORDER BY added"
 
-
-        try:
-            tasks = __tasks_get_filtered(
-                request.base_url,
-                where_clause=where_clause,
-                args=args,
-                expanded=is_expanded(),
-                detail=arg_boolean("detail"),
-                single=False
-            )
-        except Exception as ex:
-            return error(str(ex))
-
+        tasks = __tasks_get_filtered(
+            request.base_url,
+            where_clause=where_clause,
+            args=args,
+            expanded=is_expanded(),
+            detail=arg_boolean("detail"),
+            single=False
+        )
 
         return ok_json(tasks)
 
@@ -342,21 +333,11 @@ def tasks():
 
         try:
 
-            # HACK: BWCTLBC
-            if lead_bind is not None:
-                lead_bind_env = {
-                    "PSCHEDULER_LEAD_BIND_HACK": lead_bind
-                }
-            else:
-                lead_bind_env = None
-
-
             returncode, stdout, stderr = pscheduler.run_program(
                 [ "pscheduler", "internal", "invoke", "test",
                   task['test']['type'], "participants" ],
                 stdin = pscheduler.json_dump(task['test']['spec']),
-                timeout=5,
-                env_add=lead_bind_env
+                timeout=5
                 )
 
             if returncode != 0:
@@ -383,10 +364,8 @@ def tasks():
         tools = []
 
         tool_params={ "test": pscheduler.json_dump(task["test"]) }
-        # HACK: BWCTLBC
-        if lead_bind is not None:
-            log.debug("Using lead bind of %s" % str(lead_bind))
-            tool_params["lead-bind"] = lead_bind
+
+        tool_offers = {}
 
         for participant_no in range(0, len(participants)):
 
@@ -428,6 +407,7 @@ def tasks():
                 return error("Error getting tools from %s: %s" \
                                      % (participant, str(ex)))
             log.debug("Participant %s offers tools %s", participant, result)
+            tool_offers[participant] = result
 
         if len(tools) != nparticipants:
             return error("Didn't get a full set of tool responses")
@@ -437,11 +417,29 @@ def tasks():
         else:
             tool = pick_tool(tools)
 
+        # Complain if no usable tool was found
+
         if tool is None:
-            # TODO: This could stand some additional diagnostics.
-            return no_can_do("Couldn't find a tool in common among the participants.")
+
+            offers = []
+            for participant in participants:
+                offer_set = [
+                    offer["name"]
+                    for offer in tool_offers.get(participant, [{"name": "nothing"}])
+                ]
+                offers.append("%s offered %s" % (
+                    participant,
+                    ", ".join(offer_set)
+                ))
+
+            return no_can_do(
+                "No tool in common among the participants:  %s." % (
+                    ";  ".join(offers)) )
+
 
         task['tool'] = tool
+
+
 
         #
         # TASK CREATION
@@ -456,13 +454,10 @@ def tasks():
         # do anything with it until the task has been submitted to all
         # of the other participants.
 
-        try:
-            cursor = dbcursor_query(
-                "SELECT * FROM api_task_post(%s, %s, %s, %s, 0, NULL, FALSE, %s)",
-                [pscheduler.json_dump(task), participants, hints_data,
-                 pscheduler.json_dump(limits_passed), diags], onerow=True)
-        except Exception as ex:
-            return error(str(ex.diag.message_primary))
+        cursor = dbcursor_query(
+            "SELECT * FROM api_task_post(%s, %s, %s, %s, 0, NULL, FALSE, %s)",
+            [pscheduler.json_dump(task), participants, hints_data,
+             pscheduler.json_dump(limits_passed), diags], onerow=True)
 
         if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
@@ -547,14 +542,9 @@ def tasks():
         # Update the list of limits passed in the local database
         # TODO: How do the other participants know about this?
         log.debug("Limits passed: %s", limits_passed)
-        try:
-            cursor = dbcursor_query(
-                "UPDATE task SET limits_passed = %s::JSON WHERE uuid = %s",
-                [pscheduler.json_dump(limits_passed), task_uuid])
-        except Exception as ex:
-            return error(str(ex.diag.message_primary))
-
-
+        cursor = dbcursor_query(
+            "UPDATE task SET limits_passed = %s::JSON WHERE uuid = %s",
+            [pscheduler.json_dump(limits_passed), task_uuid])
 
         # Enable the task so the scheduler will schedule it.
         try:
@@ -598,16 +588,13 @@ def tasks_uuid(uuid):
 
     if request.method == 'GET':
 
-        try:
-            tasks = __tasks_get_filtered(
-                request.base_url,
-                where_clause="task.uuid = %s",
-                args=[uuid],
-                expanded=True,
-                detail=arg_boolean("detail"),
-                single=True)
-        except Exception as ex:
-            return error(str(ex))
+        tasks = __tasks_get_filtered(
+            request.base_url,
+            where_clause="task.uuid = %s",
+            args=[uuid],
+            expanded=True,
+            detail=arg_boolean("detail"),
+            single=True)
 
         if not tasks:
             return not_found()
@@ -663,6 +650,7 @@ def tasks_uuid(uuid):
         log.debug("Posting task %s", uuid)
 
         try:
+
             try:
                 participants = pscheduler.json_load(request.data,
                                                     max_schema=3)["participants"]
@@ -673,8 +661,15 @@ def tasks_uuid(uuid):
                 [request.data, participants, hints_data,
                  pscheduler.json_dump(limits_passed), participant, uuid,
                  "\n".join(diags)])
+
         except Exception as ex:
-            return error(str(ex))
+            return bad_request("Task error: %s" % str(ex))
+        cursor = dbcursor_query(
+            "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, TRUE, %s)",
+            [request.data, participants, hints_data,
+             pscheduler.json_dump(limits_passed), participant, uuid,
+             "\n".join(diags)])
+
         if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
         # TODO: Assert that rowcount is 1
@@ -683,26 +678,22 @@ def tasks_uuid(uuid):
 
     elif request.method == 'DELETE':
 
-        try:
-            requester, key = task_requester_key(uuid)
-            if requester is None:
-                return not_found()
+        requester, key = task_requester_key(uuid)
+        if requester is None:
+            return not_found()
 
-            if not access_write_task(requester, key):
-                return forbidden()
+        if not access_write_task(requester, key):
+            return forbidden()
 
-            parsed = list(urlparse.urlsplit(request.url))
-            parsed[1] = "%s"
-            template = urlparse.urlunsplit(parsed)
+        parsed = list(urlparse.urlsplit(request.url))
+        parsed[1] = "%s"
+        template = urlparse.urlunsplit(parsed)
 
-            log.debug("Disabling")
+        log.debug("Disabling")
 
-            cursor = dbcursor_query(
-                "SELECT api_task_disable(%s, %s)", [uuid, template])
-            cursor.close()
-
-        except Exception as ex:
-            return error(str(ex))
+        cursor = dbcursor_query(
+            "SELECT api_task_disable(%s, %s)", [uuid, template])
+        cursor.close()
 
         return ok()
 
@@ -723,17 +714,14 @@ def tasks_uuid_cli(uuid):
     # Get a task, adding server-derived details if a 'detail'
     # argument is present.
 
-    try:
-        cursor = dbcursor_query(
-            """SELECT
-                   task.json #>> '{test, spec}',
-                   test.name
-               FROM
-                   task
-                   JOIN test on test.id = task.test
-               WHERE task.uuid = %s""", [uuid])
-    except Exception as ex:
-        return error(str(ex))
+    cursor = dbcursor_query(
+        """SELECT
+               task.json #>> '{test, spec}',
+               test.name
+           FROM
+               task
+               JOIN test on test.id = task.test
+           WHERE task.uuid = %s""", [uuid])
 
     if cursor.rowcount == 0:
         return not_found()

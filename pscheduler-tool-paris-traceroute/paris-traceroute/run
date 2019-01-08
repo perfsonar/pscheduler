@@ -6,7 +6,7 @@
 
 import datetime
 import icmperror
-import ipaddr
+import ipaddress
 import pscheduler
 import re
 
@@ -34,7 +34,7 @@ run_timeout = datetime.timedelta()
 dest = spec['dest']
 
 try:
-    dest_ip_addr = ipaddr.IPAddress(dest)
+    dest_ip_addr = ipaddress.ip_address(unicode(dest))
 except ValueError:
     dest_ip_addr = None
 
@@ -191,6 +191,9 @@ run_timeout += datetime.timedelta(seconds=5)
 log.debug("Timeout is %s", run_timeout)
 
 run_timeout_secs = pscheduler.timedelta_as_seconds(run_timeout)
+
+# Force all args to be strings
+argv = map(lambda x: str(x), argv)
 
 status, stdout, stderr \
     = pscheduler.run_program(argv, timeout = run_timeout_secs)

@@ -1,0 +1,27 @@
+#!/usr/bin/python
+#
+# Validator for 'TEMPLATE' task limit spec
+#
+
+import pscheduler
+
+from validate import limit_is_valid
+
+try:
+    json = pscheduler.json_load()
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+        })
+
+valid, message = limit_is_valid(json)
+
+result = {
+    "valid": valid
+}
+
+if not valid:
+    result["message"] = message
+
+pscheduler.succeed_json(result)

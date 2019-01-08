@@ -1,0 +1,45 @@
+#!/usr/bin/python
+#
+# Determine if this tool can run a test based on a test spec.
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True)
+
+try:
+    if json['type'] not in [ 'latency', 'rtt' ]:
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Unsupported test type" ]
+        })
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test type" ]
+    })
+
+try:
+    spec = json["spec"]
+    pscheduler.json_check_schema(spec, 2)
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test specification"]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
+
+if json['type'] == 'rtt' and ('protocol' not in spec or spec['protocol'] != 'twamp'):
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Only twamp protocol is supported"]
+    })
+
+pscheduler.succeed_json({ "can-run": True })

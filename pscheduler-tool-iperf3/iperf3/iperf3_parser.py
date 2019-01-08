@@ -70,7 +70,6 @@ def parse_output(lines):
 
     renamed_summary = rename_json(summary)
 
-
     # kind of like above, the streams summary is in a different key
     # json schema does not require, so ignore if not provided
     sum_streams = sum_end.get('streams', [])

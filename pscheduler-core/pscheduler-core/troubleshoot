@@ -10,6 +10,7 @@ are working.
 import optparse
 import os
 import pipes
+import re
 import sys
 import time
 
@@ -54,12 +55,17 @@ opt_parser.add_option("--host",
                       action="store", type="string",
                       dest="host")
 
+opt_parser.add_option("--ip-version",
+                      help="IP version to use (4 or 6)",
+                      default=None,
+                      action="store", type="int",
+                      dest="ip_version")
+
 opt_parser.add_option("--quick",
                       help="Don't do anything time-consuming",
                       default=False,
                       action="store_true",
                       dest="quick")
-
 
 opt_parser.add_option("--stats",
                       help="Dump server statistics",
@@ -72,6 +78,10 @@ opt_parser.add_option("--stats",
 if len(remaining_args) > 1:
     opt_parser.print_usage()
     pscheduler.fail()
+
+
+if options.ip_version is not None and options.ip_version not in [4, 6]:
+    pscheduler.fail("IP version must be 4 or 6.")
 
 
 host_a = options.host
@@ -115,6 +125,31 @@ def failed_diags(run, why="Task failed to run properly."):
     result_args = ["pscheduler", "result", "--diags", "--archivings", run]
     os.execl("/bin/sh", "/bin/sh", "-c",
              " ".join([pipes.quote(arg) for arg in result_args]))
+
+
+
+
+def check_mtu(host_a, host_z=None):
+    """Report on the MTU between hosts"""
+
+    if host_z is None:
+        host_z = host_a
+        host_a = None
+
+    start("  Checking path MTU")
+    status, result = pscheduler.url_get(
+        pscheduler.api_url(host_a, "/mtu-safe"),
+        params={ "dest": host_z },
+        throw=False)
+    if status == 200:
+        if result["safe"]:
+            ok(result["message"])
+        else:
+            ok("Unsafe or unknown: %s" % (result["message"]))
+    elif status == 404:
+        ok("Not supported")
+    else:
+        failed(result)
 
 
 
@@ -316,6 +351,9 @@ def run_task(message, lead, task, bind=None):
 print "Performing basic troubleshooting of %s." \
     % (" and ".join(hosts))
 
+   
+
+
 
 #
 # The Basics
@@ -328,13 +366,18 @@ for host in hosts:
     print "%s:" % (host)
     print
 
+
+    if not options.quick:
+        check_mtu(host)
+
+
+
     start("  Checking for pScheduler")
     up, reason = pscheduler.api_ping(host)
     if up:
         ok()
     else:        
         failed(reason.strip())
-
 
     start("  Checking clock")
     status, result = pscheduler.url_get(
@@ -404,9 +447,17 @@ print
 print "%s and %s:" % (host_a, host_z)
 print
 
+
+# MTU Between hosts
+
+if not options.quick:
+    check_mtu(host_a, host_z)
+
+
 # Compare clocks
 
 start("  Checking timekeeping")
+
 try:
     time_diff = pscheduler.iso8601_as_datetime(clocks[host_a]["time"]) \
                 - pscheduler.iso8601_as_datetime(clocks[host_z]["time"])
@@ -423,19 +474,23 @@ ok()
 # Simplestream
 
 if not options.quick:
-    simplestream_result = run_task(
-        "  Simple stream test", host_a,
-        {
-            "schema": 1,
-            "test": {
-                "spec": {
-                    "dest": host_z,
-                    "schema": 1
-                },
-                "type": "simplestream"
+    simplestream_task =  {
+        "schema": 1,
+        "test": {
+            "spec": {
+                "dest": host_z,
+                "schema": 1
             },
-            "schedule": {}
-        }
+            "type": "simplestream"
+        },
+        "schedule": {}
+    }
+
+    if options.ip_version is not None:
+        simplestream_task["test"]["spec"]["ip-version"] = options.ip_version
+
+    simplestream_result = run_task(
+        "  Simple stream test", host_a, simplestream_task
     )
 
 

@@ -8,12 +8,13 @@
 
 %define short	linuxnns
 Name:		pscheduler-context-%{short}
-Version:	1.0.2
+Version:	1.1.2
 Release:	1%{?dist}
 
 Summary:	Linux network namespace context changer for pScheduler
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Source0:	%{short}-%{version}.tar.gz
@@ -67,5 +68,6 @@ pscheduler internal warmboot
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %{dest}
 %attr(440,root,root) %{_pscheduler_sudoersdir}/*

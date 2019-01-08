@@ -105,6 +105,7 @@ class CliToSpecTest(pscheduler.TestCliToSpecUnitTest):
                 "val": "10.0.0.2"
             },
             "flip": {},
+            "reverse": {},
             "output-raw": {}
         })
         
@@ -147,6 +148,7 @@ class CliToSpecTest(pscheduler.TestCliToSpecUnitTest):
                 "short": "b"
             },
             "flip": {"short": "f"},
+            "reverse": {"short": "r"},
             "output-raw": {"short": "R"}
         })
 
