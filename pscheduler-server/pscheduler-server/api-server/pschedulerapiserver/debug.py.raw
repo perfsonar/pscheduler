@@ -23,8 +23,8 @@ from .args import *
 
 module = sys.modules[__name__]
 
-module.DEBUG_FILE = "%s/pscheduler-api-debug" \
-                    % (os.environ.get("TMPDIR", "/tmp"))
+module.DEBUG_FILE = "__RUN_SPACE__/pscheduler-api-debug"
+
 module.CHECK_INTERVAL = 5
 module.state = False
 module.last_check = 0
@@ -55,22 +55,30 @@ def debug():
         except ValueError:
             return Response("Invalid state", status=400)
 
-        if os.path.isfile(module.DEBUG_FILE):
-            try:
-                os.remove(module.DEBUG_FILE)
-            except OSError as ex:
-                return Response("Unable to remove debug file: %s" % (ex),
-                                status=500)
+        if os.path.exists(module.DEBUG_FILE):
+            if os.path.isfile(module.DEBUG_FILE):
+                try:
+                    os.remove(module.DEBUG_FILE)
+                except OSError as ex:
+                    return Response("Unable to remove debug file: %s" % (ex),
+                                    status=500)
+            else:
+                return Response("Debug file %s is present but not a plain file."
+                                % (module.DEBUG_FILE), status=500)
 
         if new_state:
             try:
-                with open(module.DEBUG_FILE, 'w'):
-                    pass
+                with open(module.DEBUG_FILE, 'w') as debug_file:
+                    debug_file.write("Nothing to see here.\n")
                 os.chmod(module.DEBUG_FILE, 000)
             except OSError as ex:
                 return Response("Unable to create debug file: %s" % (ex),
                                 status=500)
 
+            # TODO: Remove this.
+            status, out, err = pscheduler.run_program(['ls', '-al', module.DEBUG_FILE])
+            return Response(out, status=500)
+            assert(os.path.isfile(module.DEBUG_FILE))
 
         # Spare a refresh.
         module.state = new_state
