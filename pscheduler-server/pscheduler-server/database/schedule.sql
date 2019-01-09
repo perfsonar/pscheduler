@@ -283,7 +283,7 @@ BEGIN
                 SELECT * FROM (
                     SELECT id FROM run
                     WHERE
-                        lower(run.times) > normalized_now()
+                        lower(run.times) > normalized_time
                         AND run.state IN (
 			    run_state_pending(),
 			    run_state_on_deck(),

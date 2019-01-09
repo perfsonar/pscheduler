@@ -101,7 +101,7 @@ def monitor():
     try:
         cursor = dbcursor_query("""SELECT ppf, lower(times), upper(times), task, run,
                                           state_enum, state_display, task_json,
-                                          task_cli FROM schedule_monitor(%s)""",
+                                          task_cli, priority FROM schedule_monitor(%s)""",
                                 [window_size])
 
     except Exception as ex:
