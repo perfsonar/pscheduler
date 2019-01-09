@@ -99,6 +99,10 @@ The pScheduler server
 # API Server
 %define httpd_conf_d   %{_sysconfdir}/httpd/conf.d
 %define api_httpd_conf %{httpd_conf_d}/pscheduler-api-server.conf
+%define api_run_space  %{_rundir}/%{name}
+# TODO: It would be nice if we had a way to automatically find this.
+%define apache_user    apache
+%define apache_group   apache
 
 %define server_conf_dir %{_pscheduler_sysconfdir}
 
@@ -254,9 +258,12 @@ make -C api-server \
      "PREFIX=${RPM_BUILD_ROOT}" \
      "DSN_FILE=%{dsn_file}" \
      "LIMITS_FILE=%{_pscheduler_limit_config}" \
+     "RUN_SPACE=%{api_run_space}" \
      install
 
 mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}
+
+mkdir -p ${RPM_BUILD_ROOT}/%{api_run_space}
 
 #
 # Utilities
@@ -592,6 +599,7 @@ systemctl restart "%{pgsql_service}"
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
 %license LICENSE
 %{api_dir}
+%attr(700,%{_pscheduler_user},%{_pscheduler_group}) %{api_run_space}
 %config(noreplace) %{api_httpd_conf}
 
 #
