@@ -41,14 +41,20 @@ def debug_state():
     return module.state
 
 
-@application.route("/debug", methods=['PUT'])
+@application.route("/debug", methods=['GET', 'PUT'])
 def debug():
+
+    # Allow only from localhost
+    if not request.remote_addr in ['127.0.0.1', '::1']:
+        return Response("Forbidden", status=403)
+
+    if request.method == 'GET':
+        text = pscheduler.json_dump(debug_state())
+        return Response(text + '\n',
+                        mimetype='application/json')
 
     if request.method == 'PUT':
 
-        # Allow only from localhost
-        if not request.remote_addr in ['127.0.0.1', '::1']:
-            return Response("Forbidden", status=403)
 
         try:
             new_state = arg_boolean('state')
