@@ -344,10 +344,11 @@ def tasks_uuid_runs_run(task, run):
                 if (wait_local and row[8] is None) \
                    or (wait_merged \
                        and ( (row[9] is None) or (not row[18]) ) ):
-                    log.debug("Waiting for merged: %s %s", row[9], row[18])
+                    log.debug("Waiting (%d left) for merged: %s %s", tries, row[9], row[18])
                     time.sleep(0.5)
                     tries -= 1
                 else:
+                    log.debug("Got the requested result.")
                     break
 
         # Return a result Whether or not we timed out and let the

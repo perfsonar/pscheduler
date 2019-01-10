@@ -262,12 +262,16 @@ BEGIN
 			      run_state_canceled(),
 			      run_state_preempted()) )
            OR ( old = run_state_running()
-	        AND new IN (run_state_finished(),
+	        AND new IN (run_state_cleanup(),
+		            run_state_finished(),
 		            run_state_overdue(),
 			    run_state_missed(),
 			    run_state_failed(),
 			    run_state_preempted(),
 			    run_state_canceled()) )
+           OR ( old = run_state_cleanup()
+	        AND new IN (run_state_finished(),
+			    run_state_failed()) )
            OR ( old = run_state_finished()
 	        AND new IN (run_state_failed()) )
 	   OR ( old = run_state_overdue()

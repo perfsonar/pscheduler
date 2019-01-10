@@ -598,6 +598,7 @@ class RunWorker:
                 UPDATE run
                 SET
                 status = %s,
+                state = run_state_cleanup(),
                 result = %s,
                 errors = %s
                 WHERE id = %s
@@ -777,7 +778,10 @@ class RunWorker:
                     cursor.execute("""
                                     UPDATE run
                                     SET
-                                        status = %s,
+                                        state = CASE
+                                                    WHEN %s = 0 THEN run_state_finished()
+                                                    ELSE run_state_failed()
+                                                END,
                                         result_full = %s,
                                         result_merged = %s,
                                         clock_survey = %s
