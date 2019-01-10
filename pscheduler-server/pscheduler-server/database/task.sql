@@ -305,6 +305,8 @@ BEGIN
         -- Number of times a run has gone into the running state
 	ALTER TABLE task ADD COLUMN runs_started NUMERIC
 	DEFAULT 0;
+
+        t_version := t_version + 1;
     END IF;
 
     -- Version 12 to version 13
