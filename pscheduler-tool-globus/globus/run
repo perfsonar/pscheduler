@@ -25,9 +25,7 @@ input = pscheduler.json_load(exit_on_error=True)
 try:
     dest = input['test']['spec']['dest']
     source = input['test']['spec']['source']
-    
-    #Depreciate dest_path?
-    #dest_path = input['test']['spec']['dest-path']
+    parallel = input['test']['spec']['parallel']
 
 except KeyError as e:
     print(e);	pscheduler.fail('Missing data in input')
@@ -50,8 +48,12 @@ if True:
   argv = ['globus-url-copy', # Implimentation of GridFTP
           '-vb'] # verbose output for test
 
-  #options handling
-  #options = input['test']['spec']['options']
+  ## Options handling ##
+
+  # Number of parallel streams for GridFTP
+  if parallel > 1:
+    argv.append("-p")
+    argv.append(str(parallel))
  
   #if options != " ":
   #  options = options.split(" ")
@@ -71,8 +73,9 @@ if True:
 
   # Parsing stdout for throughput and bytes-sent 
   orig_stdout = stdout
-  stdout = stdout.split("\n")[4]
-  stdout = stdout.split(" ")
+  if len(stdout) > 3: 
+    stdout = stdout.split("\n")[4]
+    stdout = stdout.split(" ")
 
   if len(stdout) > 2: 
     bits_sent = float(stdout[12])

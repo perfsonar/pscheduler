@@ -82,10 +82,10 @@ opt_parser.add_option("--cleanup",
                       action="store", type="string",
                       dest="cleanup")
 
-opt_parser.add_option("--options", 
-                      help="additional flags to pass into globus-url-copy (ie. -fast, -p 16). Options are an optional parameter. -vb is enabled by default.",
-                      action="store", type="string",
-                      dest="options")
+opt_parser.add_option("--parallel", 
+                      help="Number of parallel streams to use with GridFTP transfers",
+                      action="store", type="int",
+                      dest="parallel")
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
@@ -103,10 +103,12 @@ else:
   pscheduler.fail('A destination URL is required,',
                   '\'--dest localhost\'')
 
-if options.options is None:
-  result["options"] = " "
+if options.parallel is None:
+  result["parallel"] = 1
 else:
-  result["options"] = options.options
+  if options.parallel <= 1:
+    pscheduler.fail('Error: Number of parallel streams must be greater than 1')
+  result["parallel"] = options.parallel
 
 if options.cleanup is None:
   result['cleanup'] = True
