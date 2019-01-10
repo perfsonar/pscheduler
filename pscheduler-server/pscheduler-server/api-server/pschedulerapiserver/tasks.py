@@ -423,10 +423,11 @@ def tasks():
 
             offers = []
             for participant in participants:
-                offer_set = [
-                    offer["name"]
-                    for offer in tool_offers.get(participant, [{"name": "nothing"}])
-                ]
+                participant_offers = tool_offers.get(participant, [{"name": "nothing"}])
+                if participant_offers is not None:
+                    offer_set = [ offer["name"] for offer in participant_offers ]
+                else:
+                    offer_set = [ "nothing" ]
                 offers.append("%s offered %s" % (
                     participant,
                     ", ".join(offer_set)
