@@ -166,10 +166,13 @@ AS
 	key,
 	runs,
         trynext,
+	scheduling_class.anytime,
 	json,
 	participants
     FROM
-        interim, 
+        interim
+        JOIN scheduling_class
+             ON scheduling_class.id = interim.scheduling_class,
         configurables
     WHERE
         enabled

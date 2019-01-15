@@ -175,8 +175,8 @@ def tasks_uuid_runs(task):
             return response
 
         try:
-            log.debug("Posting run for task %s starting %s"
-                      % (task, start_time))
+            log.debug("Posting run for task %s starting %s, priority %s"
+                      % (task, start_time, priority))
             cursor = dbcursor_query(
                 "SELECT * FROM api_run_post(%s, %s, NULL, %s, %s, %s)",
                 [task, start_time, 
