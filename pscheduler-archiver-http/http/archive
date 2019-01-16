@@ -59,15 +59,21 @@ def archive(json):
         result_type = 'application/json'
 
 
-    # Provide a Content-Type header if there isn't one and we haven't
-    # been explicitly told not to.
+    # Provide Content-Type and Content-Length headers if they don't
+    # exist.
 
     if 'Content-Type' not in headers:
         headers['Content-Type'] = result_type
-    elif headers['Content-Type'] is None:
-        del headers['Content-Type']
 
-    if not len(headers):
+    if 'Content-Length' not in headers:
+        headers['Content-Length'] = len(dumped_result)
+
+    if len(headers):
+        # Remove all null headers
+        headers = dict((k, v) for k, v in headers.iteritems() if v)
+        # Stringify all values
+        headers = dict((k, str(v)) for k, v in headers.iteritems())
+    else:
         headers = None
 
 
