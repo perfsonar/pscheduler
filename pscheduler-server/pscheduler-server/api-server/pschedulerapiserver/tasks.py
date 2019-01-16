@@ -665,11 +665,6 @@ def tasks_uuid(uuid):
 
         except Exception as ex:
             return bad_request("Task error: %s" % str(ex))
-        cursor = dbcursor_query(
-            "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, TRUE, %s)",
-            [request.data, participants, hints_data,
-             pscheduler.json_dump(limits_passed), participant, uuid,
-             "\n".join(diags)])
 
         if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
