@@ -72,8 +72,7 @@ class Prioritizer():
             "def adjust($value; $message):",
             "  # TODO: Must be an integer",
             "  ." + self.PRIVATE_KEY + ".priority += $value",
-            "  | note(\"\\($message)  (\\(if $value > 0 then \"Added\" else \"Subtracted\" end) \\($value | length) to \\(."
-            + self.PRIVATE_KEY + ".priority))\")",
+            "  | note(\"\\($message)  (\\(if $value > 0 then \"+\" else \"-\" end)\\($value | length))\")",
             ";",
 
             script
