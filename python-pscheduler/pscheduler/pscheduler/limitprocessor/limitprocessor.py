@@ -187,8 +187,13 @@ class LimitProcessor():
             except Exception as ex:
                 return False, [], "Error determining priority: %s" % (str(ex)), None, None
 
-            diags.append("Prioritized at priority %d%s" % (
-                priority, ":" if len(pri_diags) else "."))
+            try:
+                requested_message = " %d requested," % (task["priority"])
+            except KeyError:
+                requested_message = ""
+
+            diags.append("Priority%s set at %d%s" % (
+                requested_message, priority, ":" if len(pri_diags) else "."))
             if len(pri_diags):
                 diags += map(lambda s: "  " + s, pri_diags)
         else:

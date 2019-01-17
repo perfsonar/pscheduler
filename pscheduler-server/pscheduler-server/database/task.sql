@@ -314,7 +314,7 @@ BEGIN
     IF t_version = 12
     THEN
 	ALTER TABLE task ADD COLUMN
-	priority INTEGER DEFAULT 0;
+	priority INTEGER;
 
         t_version := t_version + 1;
     END IF;
@@ -412,8 +412,6 @@ BEGIN
 	    -- Set the priority
 	    IF (NEW.json #> '{priority}') IS NOT NULL THEN
 	        NEW.priority := NEW.json #>> '{priority}';
-	    ELSE
-	        NEW.priority := 0;
 	    END IF;
 
         END IF;
@@ -816,7 +814,7 @@ CREATE OR REPLACE FUNCTION api_task_post(
     hints JSONB,
     limits_passed JSON = '[]',
     participant INTEGER DEFAULT 0,
-    priority INTEGER DEFAULT 0,
+    priority INTEGER DEFAULT NULL,
     task_uuid UUID = NULL,
     enabled BOOLEAN = TRUE,
     diags TEXT = '(None)'

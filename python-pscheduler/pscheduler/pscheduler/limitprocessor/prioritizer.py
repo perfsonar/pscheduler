@@ -46,10 +46,10 @@ class Prioritizer():
 
             # This will be embedded in the task.
             "def requested:",
-            "  .priority // default",
+            "  .priority",
             ";",
 
-            "def __change($message):",
+            "def note($message):",
             "  if $message != null",
             "  then",
             "    ." + self.PRIVATE_KEY + ".diags += "
@@ -66,16 +66,15 @@ class Prioritizer():
             "def set($value; $message):",
             "  # TODO: Must be an integer",
             "  ." + self.PRIVATE_KEY + ".priority = $value",
-            "  | __change(\"\\($message)  (Set to \\($value))\")",
+            "  | note(\"\\($message)  (Set to \\($value))\")",
             ";",
 
             "def adjust($value; $message):",
             "  # TODO: Must be an integer",
             "  ." + self.PRIVATE_KEY + ".priority += $value",
-            "  | __change(\"\\($message)  (\\(if $value > 0 then \"Up\" else \"Down\" end) \\($value | length) to \\(."
+            "  | note(\"\\($message)  (\\(if $value > 0 then \"Added\" else \"Subtracted\" end) \\($value | length) to \\(."
             + self.PRIVATE_KEY + ".priority))\")",
             ";",
-
 
             script
             ]
@@ -143,7 +142,7 @@ if __name__ == "__main__":
 	    "# allowed to do so.  Do this last in case things done",
 	    "# above push the priority higher than was requested",
 	    "| if classifiers_has(\"priority-positive\")",
-	    "  and requested > priority"
+	    "  and requested and requested > priority"
 	    "  then set(requested; \"High requested priority\")",
             "  else . end",
 
