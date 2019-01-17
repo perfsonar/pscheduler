@@ -187,10 +187,14 @@ class LimitProcessor():
             except Exception as ex:
                 return False, [], "Error determining priority: %s" % (str(ex)), None, None
 
-            try:
-                requested_message = " %d requested," % (task["priority"])
-            except KeyError:
-                requested_message = ""
+            if priority is None:
+                return False, [], "Prioritizer produced no result", None, None
+
+            requested_priority = task.get("priority", None)
+            if requested_priority is not None:
+                requested_message = " %d requested," % (requested_priority)
+            else:
+                requested_message =""
 
             diags.append("Priority%s set at %d%s" % (
                 requested_message, priority, ":" if len(pri_diags) else "."))
