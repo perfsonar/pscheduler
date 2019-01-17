@@ -816,6 +816,7 @@ CREATE OR REPLACE FUNCTION api_task_post(
     hints JSONB,
     limits_passed JSON = '[]',
     participant INTEGER DEFAULT 0,
+    priority INTEGER DEFAULT 0,
     task_uuid UUID = NULL,
     enabled BOOLEAN = TRUE,
     diags TEXT = '(None)'
@@ -832,8 +833,10 @@ BEGIN
    END IF;
 
    WITH inserted_row AS (
-        INSERT INTO task(json, participants, limits_passed, participant, uuid, hints, enabled, diags)
-        VALUES (task_package, array_to_json(participant_list), limits_passed, participant, task_uuid, hints, enabled, diags)
+        INSERT INTO task(json, participants, limits_passed, participant,
+	                 priority, uuid, hints, enabled, diags)
+        VALUES (task_package, array_to_json(participant_list), limits_passed,
+	        participant, priority, task_uuid, hints, enabled, diags)
         RETURNING *
     ) SELECT INTO inserted * from inserted_row;
 

@@ -456,9 +456,10 @@ def tasks():
         # of the other participants.
 
         cursor = dbcursor_query(
-            "SELECT * FROM api_task_post(%s, %s, %s, %s, 0, NULL, FALSE, %s)",
+            "SELECT * FROM api_task_post(%s, %s, %s, %s, 0, %s, NULL, FALSE, %s)",
             [pscheduler.json_dump(task), participants, hints_data,
-             pscheduler.json_dump(limits_passed), diags], onerow=True)
+             pscheduler.json_dump(limits_passed),
+             task.get("priority", None), diags], onerow=True)
 
         if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
@@ -638,7 +639,7 @@ def tasks_uuid(uuid):
 
         # Only the lead rewrites tasks; everyone else just applies
         # limits.
-        passed, limits_passed, diags, _new_task, _priority \
+        passed, limits_passed, diags, _new_task, priority \
             = processor.process(json_in, hints, rewrite=False)
 
         if not passed:
@@ -658,9 +659,11 @@ def tasks_uuid(uuid):
             except Exception as ex:
                 return bad_request("Task error: %s" % str(ex))
             cursor = dbcursor_query(
-                "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, TRUE, %s)",
+                "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, %s, TRUE, %s)",
                 [request.data, participants, hints_data,
-                 pscheduler.json_dump(limits_passed), participant, uuid,
+                 pscheduler.json_dump(limits_passed), participant,
+                 json_in.get("priority", None),
+                 uuid,
                  "\n".join(diags)])
 
         except Exception as ex:
