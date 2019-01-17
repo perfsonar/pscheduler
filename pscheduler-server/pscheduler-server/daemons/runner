@@ -593,19 +593,26 @@ class RunWorker:
         db = None
         try:
             db = self._get_db_conn()
+            state_selector = 2 if participant > 0 else returncode
             with db.cursor() as cursor:
                 cursor.execute("""
                 UPDATE run
                 SET
                 status = %s,
-                state = run_state_cleanup(),
                 result = %s,
-                errors = %s
+                errors = %s,
+                state = CASE
+                            WHEN %s = 0 THEN run_state_cleanup()
+                            WHEN %s = 1 THEN run_state_failed()
+                            ELSE run_state_finished()
+                        END
                 WHERE id = %s
                 """,
                 [returncode,
                  stdout,
                  stderr,
+                 state_selector,
+                 state_selector,
                  self.id])
         except Exception as ex:
             self.log.error("%d: Failed to store local result: %s",
@@ -796,7 +803,6 @@ class RunWorker:
                 self.log.error("%d: Failed to store run: %s", self.id, str(ex))
             finally:
                 self._put_db_conn(db)
-
 
 
         self.log.debug("%d: Run complete", self.id)
