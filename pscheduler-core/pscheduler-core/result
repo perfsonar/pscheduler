@@ -157,6 +157,15 @@ except Exception as ex:
     pscheduler.fail("Unable to fetch result: ", str(ex))
 
 
+try:
+    status, task_json = pscheduler.url_get(task_url,
+                                           params={"detail": True},
+                                           bind=options.bind,
+                                           json=True)
+except Exception as ex:
+    pscheduler.fail("Problem fetching task: %s" % str(ex))
+
+
 # Header-type stuff for text/plain if not quiet
 
 if run_ran and (not options.quiet) and out_format == "text/plain":
@@ -166,11 +175,6 @@ if run_ran and (not options.quiet) and out_format == "text/plain":
             "%s/cli" % task_url,
             bind=options.bind,
             json=True)
-
-        status, task_json = pscheduler.url_get(task_url,
-                                               params={"detail": True},
-                                               bind=options.bind,
-                                               json=True)
     except Exception as ex:
         pscheduler.fail("Problem fetching task CLI: %s" % str(ex))
 
