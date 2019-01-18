@@ -201,7 +201,8 @@ class LimitProcessor():
             if len(pri_diags):
                 diags += map(lambda s: "  " + s, pri_diags)
         else:
-            priority = None
+            priority = 0
+            diags.append("Priority set to default of %d" % (priority))
 
 
 
