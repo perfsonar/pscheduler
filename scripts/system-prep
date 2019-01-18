@@ -226,9 +226,10 @@ EOF
     
     # Grant frictionless sudo
     SUDOERS="/etc/sudoers.d/${NEW_USER}"
-    cat <<EOF > "${SUDOERS}"                                                                                                            
-${NEW_USER} ALL= (ALL) NOPASSWD:ALL                                                                                                 
-EOF                                                                                                                                 
+    cat <<EOF > "${SUDOERS}"
+${NEW_USER} ALL= (ALL) NOPASSWD:ALL
+EOF
+
     chmod 440 "${SUDOERS}"
 
 fi
