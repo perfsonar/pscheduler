@@ -74,6 +74,8 @@ opt_parser.add_option("--quiet",
 		      default=False,
                       dest="quiet")
 
+opt_parser.add_option("--debug", action="store_true", dest="debug")
+
 
 
 (options, remaining_args) = opt_parser.parse_args()
@@ -105,6 +107,8 @@ run_url = remaining_args[0]
 # Main Program
 #
 
+log = pscheduler.Log(verbose=not options.quiet, debug=options.debug, quiet=True, propagate=True)
+
 # Fetch the run so we can pluck out the result URL.
 
 try:
@@ -127,15 +131,9 @@ if run_json["state"] == "nonstart":
 if run_json["state"] in ["pending", "on-deck", "running", "cleanup"]:
     pscheduler.succeed("Run has not completed.")
 
-
-# TODO: Should dump diags for anything but preempted.
-
-if run_json["state"] in ["overdue", "missed", "preempted"]:
-    pscheduler.succeed("Run did not complete: %s" % run_json["state-display"])
-
-if run_json["state"] == "failed":
-    succeeded = False
-
+run_ran = run_json["state"] == "finished"
+if not run_ran:
+    print "Run did not complete:", run_json["state-display"]
 
 
 try:
@@ -143,36 +141,43 @@ try:
 except KeyError:
     pscheduler.fail("No result URL returned by the server.")
 
-
 try:
     task_url = run_json["task-href"]
 except KeyError:
     pscheduler.fail("No task URL returned by the server.")
 
 
-
 try:
-
     status, result = pscheduler.url_get(
         result_url,
         params={ "format": out_format },
         bind=options.bind,
         json=False)
+except Exception as ex:
+    pscheduler.fail("Unable to fetch result: ", str(ex))
 
-    status, task_cli = pscheduler.url_get(
-        "%s/cli" % task_url,
-        bind=options.bind,
-        json=True)
 
+try:
     status, task_json = pscheduler.url_get(task_url,
                                            params={"detail": True},
                                            bind=options.bind,
                                            json=True)
-
 except Exception as ex:
-    pscheduler.fail("Problem fetching results: %s" % str(ex))
+    pscheduler.fail("Problem fetching task: %s" % str(ex))
 
-if not options.quiet and out_format == "text/plain":
+
+# Header-type stuff for text/plain if not quiet
+
+if run_ran and (not options.quiet) and out_format == "text/plain":
+
+    try:
+        _status, task_cli = pscheduler.url_get(
+            "%s/cli" % task_url,
+            bind=options.bind,
+            json=True)
+    except Exception as ex:
+        pscheduler.fail("Problem fetching task CLI: %s" % str(ex))
+
 
     firstline = [ run_json["start-time"], "on" ]
 
@@ -200,19 +205,21 @@ if not options.quiet and out_format == "text/plain":
         indent=2)
 
     print
+    # The strip gets rid of any pesky newlines
+    print result.rstrip()
 
 
-# The strip gets rid of any pesky newlines
-print result.rstrip()
-
-
-try:
-    succeeded = run_json['result-merged']['succeeded']
-    if succeeded is None:
-        raise KeyError()
-
-except KeyError as ex:
+if run_ran:
+    try:
+        succeeded = run_json['result-merged']['succeeded']
+        if succeeded is None:
+            raise KeyError()
+    except KeyError as ex:
+        pscheduler.fail("Data missing from run result")
+else:
     succeeded = False
+
+print result
 
 
 if out_format == "text/plain" \
@@ -241,8 +248,9 @@ if out_format == "text/plain" \
 
     if "diags" in task_json["detail"]:
         print
-        print "Limit system diagnostics:"
-        print pscheduler.indent(task_json["detail"]["diags"])
+        print "Limit system diagnostics for this run:"
+        print
+        print pscheduler.indent(run_json["limit-diags"])
 
     print
 

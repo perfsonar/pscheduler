@@ -4,7 +4,7 @@
 
 %define short	syslog
 Name:		pscheduler-archiver-%{short}
-Version:	1.1.2
+Version:	1.1.5
 Release:	1%{?dist}
 
 Summary:	Syslog archiver class for pScheduler
@@ -17,7 +17,7 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server >= 1.1.2
+Requires:	pscheduler-server >= 1.1.5
 
 BuildRequires:	pscheduler-rpm
 

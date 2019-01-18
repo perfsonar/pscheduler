@@ -180,6 +180,20 @@ BEGIN
     END IF;
 
 
+    -- Version 7 to version 8
+    -- Adds 'priority' and 'limit_diags' columns
+    IF t_version = 7
+    THEN
+        ALTER TABLE run ADD COLUMN
+        priority INTEGER DEFAULT 0;
+
+        ALTER TABLE run ADD COLUMN
+        limit_diags TEXT;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -221,7 +235,8 @@ DO $$ BEGIN PERFORM drop_function_all('run_has_conflicts'); END $$;
 
 CREATE OR REPLACE FUNCTION run_has_conflicts(
     task_id BIGINT,
-    proposed_start TIMESTAMP WITH TIME ZONE
+    proposed_start TIMESTAMP WITH TIME ZONE,
+    proposed_priority INTEGER = NULL
 )
 RETURNS BOOLEAN
 AS $$
@@ -260,11 +275,16 @@ BEGIN
         -- Exclusive can't collide with anything
         ( taskrec.exclusive
           AND EXISTS (SELECT * FROM run_conflictable
-                      WHERE times && proposed_times) )
+                      WHERE
+		          times && proposed_times
+		          AND priority >= proposed_priority) )
         -- Non-exclusive can't collide with exclusive
           OR ( NOT taskrec.exclusive
                AND EXISTS (SELECT * FROM run_conflictable
-                           WHERE exclusive AND times && proposed_times) )
+                           WHERE
+			       exclusive
+			       AND times && proposed_times
+			       AND priority >= proposed_priority) )
         );
 
 END;
@@ -324,7 +344,6 @@ BEGIN
             horizon, NEW.times, (upper(NEW.times) - normalized_now() - horizon),
 	    tstzrange(normalized_now(), normalized_now()+horizon);
     END IF;
-
 
     -- Reject new runs that overlap with anything that isn't a
     -- finished run or where this insert would cause a conflict.
@@ -421,6 +440,10 @@ BEGIN
     END IF;
 
     IF (TG_OP = 'UPDATE') THEN
+               
+	IF NEW.priority <> OLD.priority THEN
+	    RAISE EXCEPTION 'Priority cannot be changed after scheduling.';
+	END IF;
 
 	IF NOT run_state_transition_is_valid(OLD.state, NEW.state) THEN
             RAISE EXCEPTION 'Invalid transition between states (% to %).',
@@ -432,19 +455,9 @@ BEGIN
 
         IF NEW.status IS NOT NULL
            AND ( (OLD.status IS NULL) OR (NEW.status <> OLD.status) )
+           AND lower(NEW.times) > normalized_now()
         THEN
-            -- Future runs are fatal
-            IF lower(NEW.times) > normalized_now()
-            THEN
-                RAISE EXCEPTION 'Cannot set state on future runs. % / %', lower(NEW.times), normalized_now();
-            END IF;
-
-	    -- Adjust the state
-	    NEW.state = CASE
-                WHEN NEW.status = 0 THEN run_state_finished()
-                ELSE run_state_failed()
-                END;
-
+            RAISE EXCEPTION 'Cannot set state on future runs. % / %', lower(NEW.times), normalized_now();
         END IF;
 
 
@@ -453,7 +466,7 @@ BEGIN
 
 	IF NEW.state <> OLD.state
             AND NEW.state IN ( run_state_finished(), run_state_overdue(),
-                 run_state_missed(), run_state_failed() )
+                 run_state_missed(), run_state_failed(), run_state_preempted() )
         THEN
 
 	    -- Adjust the end times only if there's a sane case for
@@ -561,6 +574,46 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER run_horizon_change AFTER UPDATE ON configurables
     FOR EACH ROW EXECUTE PROCEDURE run_horizon_change();
+
+
+
+-- Determine if a run can proceed or is pre-empted by other runs
+
+DO $$ BEGIN PERFORM drop_function_all('run_can_proceed'); END $$;
+
+CREATE OR REPLACE FUNCTION run_can_proceed(
+    run_id BIGINT
+)
+RETURNS BOOLEAN
+AS $$
+BEGIN
+
+    IF NOT EXISTS (SELECT * FROM run WHERE id = run_id)
+    THEN
+        RAISE EXCEPTION 'No such run.';
+    END IF;
+
+    RETURN NOT EXISTS (
+        SELECT *
+
+        FROM
+	  run run1
+	  JOIN task task1 ON task1.id = run1.task
+	  JOIN test test1 ON test1.id = task1.test
+	  JOIN scheduling_class scheduling_class1 ON
+              scheduling_class1.id = test1.scheduling_class
+	  JOIN run run2 ON
+              run2.times && run1.times
+	      AND run2.id <> run1.id
+	      AND run2.priority > run1.priority
+	      AND NOT run_state_is_finished(run2.state)
+	WHERE
+	    run1.id = run_id
+	    AND NOT scheduling_class1.anytime
+    );
+
+END;
+$$ LANGUAGE plpgsql;
 
 
 
@@ -714,7 +767,9 @@ CREATE OR REPLACE FUNCTION api_run_post(
     task_uuid UUID,
     start_time TIMESTAMP WITH TIME ZONE,
     run_uuid UUID,  -- NULL to assign one
-    nonstart_reason TEXT = NULL
+    nonstart_reason TEXT = NULL,
+    priority INTEGER = NULL,
+    limit_diags TEXT = NULL
 )
 RETURNS TABLE (
     succeeded BOOLEAN,  -- True if the post was successful
@@ -774,8 +829,10 @@ BEGIN
     time_range := tstzrange(start_time, start_time + task.duration, '[)');
 
     WITH inserted_row AS (
-        INSERT INTO run (uuid, task, times, state, errors)
-        VALUES (run_uuid, task.id, time_range, initial_state, nonstart_reason)
+        INSERT INTO run (uuid, task, times, state,
+	    errors, priority, limit_diags)
+        VALUES (run_uuid, task.id, time_range, initial_state,
+	    nonstart_reason, priority, limit_diags)
         RETURNING *
     ) SELECT INTO run_uuid uuid FROM inserted_row;
 

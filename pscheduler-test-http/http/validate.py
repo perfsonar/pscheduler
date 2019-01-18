@@ -9,23 +9,17 @@ from pscheduler import json_validate
 def spec_is_valid(json):
 
     schema = {
-        "local": {
-            "URLSpec": {
-                "type": "object",
-                "properties": {
-                    "schema":       { "$ref": "#/pScheduler/Cardinal" },
-                    "host":         { "$ref": "#/pScheduler/Host" },
-                    "host-node":    { "$ref": "#/pScheduler/Host" },
-                    "url":          { "$ref": "#/pScheduler/String" },
-                    "parse":        { "$ref": "#/pScheduler/String" },
-                    "timeout":      { "$ref": "#/pScheduler/Duration" },
-                },
-                "required": [
-                    "url",
-                    ]
-            },
+        "type": "object",
+        "properties": {
+            "schema":       { "$ref": "#/pScheduler/Cardinal" },
+            "host":         { "$ref": "#/pScheduler/Host" },
+            "host-node":    { "$ref": "#/pScheduler/Host" },
+            "url":          { "$ref": "#/pScheduler/URL" },
+            "parse":        { "$ref": "#/pScheduler/String" },
+            "timeout":      { "$ref": "#/pScheduler/Duration" },
         },
-        "additionalProperties": True
+        "required": [ "url" ],
+        "additionalProperties": False
     }
 
     return json_validate(json, schema)

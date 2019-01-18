@@ -64,11 +64,12 @@ class LimitTest():
                  ):
 
         # Dissent if the test isn't our type
-        if run["type"] != self.test:
+
+        if run["test"]["type"] != self.test:
             return { "passed": False, "reasons": [ "Test is not '%s'" % self.test ] }
 
         pass_input = {
-            "spec": run["spec"],
+            "spec": run["test"]["spec"],
             "limit": self.limit
             }
 

@@ -151,7 +151,8 @@
 		"applications": { 
 		    "type": "array",
 		    "items": { "$ref": "#/local/Application" }
-		}
+		},
+		"priority": { "$ref": "#/pScheduler/JQTransformSpecification" }
 	    },
 	    "additionalProperties": false,
 	    "required": [

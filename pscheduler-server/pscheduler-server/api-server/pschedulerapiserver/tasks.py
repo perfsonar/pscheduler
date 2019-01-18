@@ -203,7 +203,7 @@ def tasks():
     elif request.method == 'POST':
 
         try:
-            task = pscheduler.json_load(request.data, max_schema=2)
+            task = pscheduler.json_load(request.data, max_schema=3)
         except ValueError as ex:
             return bad_request("Invalid task specification: %s" % (str(ex)))
 
@@ -303,7 +303,7 @@ def tasks():
         hints_data = pscheduler.json_dump(hints)
 
         log.debug("Processor = %s" % processor)
-        passed, limits_passed, diags, new_task \
+        passed, limits_passed, diags, new_task, _priority \
             = processor.process(task, hints)
 
         if not passed:
@@ -423,10 +423,11 @@ def tasks():
 
             offers = []
             for participant in participants:
-                offer_set = [
-                    offer["name"]
-                    for offer in tool_offers.get(participant, [{"name": "nothing"}])
-                ]
+                participant_offers = tool_offers.get(participant, [{"name": "nothing"}])
+                if participant_offers is not None:
+                    offer_set = [ offer["name"] for offer in participant_offers ]
+                else:
+                    offer_set = [ "nothing" ]
                 offers.append("%s offered %s" % (
                     participant,
                     ", ".join(offer_set)
@@ -455,9 +456,10 @@ def tasks():
         # of the other participants.
 
         cursor = dbcursor_query(
-            "SELECT * FROM api_task_post(%s, %s, %s, %s, 0, NULL, FALSE, %s)",
+            "SELECT * FROM api_task_post(%s, %s, %s, %s, 0, %s, NULL, FALSE, %s)",
             [pscheduler.json_dump(task), participants, hints_data,
-             pscheduler.json_dump(limits_passed), diags], onerow=True)
+             pscheduler.json_dump(limits_passed),
+             task.get("priority", None), diags], onerow=True)
 
         if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
@@ -610,7 +612,7 @@ def tasks_uuid(uuid):
         # TODO: This should probably a PUT and not a POST.
 
         try:
-            json_in = pscheduler.json_load(request.data, max_schema=2)
+            json_in = pscheduler.json_load(request.data, max_schema=3)
         except ValueError as ex:
             return bad_request("Invalid JSON: %s" % str(ex))
         log.debug("JSON is %s", json_in)
@@ -637,7 +639,7 @@ def tasks_uuid(uuid):
 
         # Only the lead rewrites tasks; everyone else just applies
         # limits.
-        passed, limits_passed, diags, _new_task \
+        passed, limits_passed, diags, _new_task, priority \
             = processor.process(json_in, hints, rewrite=False)
 
         if not passed:
@@ -650,15 +652,22 @@ def tasks_uuid(uuid):
         log.debug("Posting task %s", uuid)
 
         try:
-            participants = pscheduler.json_load(request.data,
-                                                max_schema=2)["participants"]
+
+            try:
+                participants = pscheduler.json_load(request.data,
+                                                    max_schema=3)["participants"]
+            except Exception as ex:
+                return bad_request("Task error: %s" % str(ex))
+            cursor = dbcursor_query(
+                "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, %s, TRUE, %s)",
+                [request.data, participants, hints_data,
+                 pscheduler.json_dump(limits_passed), participant,
+                 json_in.get("priority", None),
+                 uuid,
+                 "\n".join(diags)])
+
         except Exception as ex:
             return bad_request("Task error: %s" % str(ex))
-        cursor = dbcursor_query(
-            "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, TRUE, %s)",
-            [request.data, participants, hints_data,
-             pscheduler.json_dump(limits_passed), participant, uuid,
-             "\n".join(diags)])
 
         if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")

@@ -245,8 +245,8 @@ CREATE OR REPLACE FUNCTION run_state_transition_is_valid(
 RETURNS BOOLEAN
 AS $$
 BEGIN
-    -- TODO: This might be worth putting into a table.
-    RETURN new = old
+   -- TODO: This might be worth putting into a table.
+   RETURN  new = old
            OR   ( old = run_state_pending()
 	          AND new IN (run_state_on_deck(),
 			      run_state_missed(),
@@ -262,12 +262,16 @@ BEGIN
 			      run_state_canceled(),
 			      run_state_preempted()) )
            OR ( old = run_state_running()
-	        AND new IN (run_state_finished(),
+	        AND new IN (run_state_cleanup(),
+		            run_state_finished(),
 		            run_state_overdue(),
 			    run_state_missed(),
 			    run_state_failed(),
 			    run_state_preempted(),
 			    run_state_canceled()) )
+           OR ( old = run_state_cleanup()
+	        AND new IN (run_state_finished(),
+			    run_state_failed()) )
            OR ( old = run_state_finished()
 	        AND new IN (run_state_failed()) )
 	   OR ( old = run_state_overdue()
@@ -283,3 +287,28 @@ BEGIN
            ;
 END;
 $$ LANGUAGE plpgsql;
+
+
+
+
+
+-- Determine if a run state is one of the finished ones.
+
+DO $$ BEGIN PERFORM drop_function_all('run_state_is_finished'); END $$;
+
+CREATE OR REPLACE FUNCTION run_state_is_finished(
+    state INTEGER
+)
+RETURNS BOOLEAN
+AS $$
+BEGIN
+    -- TODO: This might be better in a table so the control over
+    -- what's finished is all in one place.
+    RETURN state NOT IN (
+        run_state_pending(),
+	run_state_on_deck(),
+	run_state_running()
+    );
+END;
+$$ LANGUAGE plpgsql
+IMMUTABLE;

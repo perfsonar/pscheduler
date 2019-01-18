@@ -10,6 +10,7 @@ from classifierset  import ClassifierSet
 from rewriter       import Rewriter
 from limitset       import LimitSet
 from applicationset import ApplicationSet
+from prioritizer    import Prioritizer
 
 class LimitProcessor():
 
@@ -50,8 +51,12 @@ class LimitProcessor():
         validation_file = open(validation_path, 'r')
         # NOTE: Don't max_schema this.  The limit validation file is
         # tied to this module.
-        validation = pscheduler.json_load(validation_file)
-        validation_file.close()
+        try:
+            validation = pscheduler.json_load(validation_file)
+        except Exception as ex:
+            raise ValueError("Invalid validation file: %s" % (str(ex)))
+        finally:
+            validation_file.close()
 
         #
         # Inhale the source and validate it
@@ -87,30 +92,36 @@ class LimitProcessor():
         self.applications = ApplicationSet(limit_config['applications'],
                                            self.classifiers, self.limits)
 
+        try:
+            self.prioritizer = Prioritizer(limit_config["priority"])
+        except KeyError:
+            self.prioritizer = None
 
 
-    def process(self, task, hints, rewrite=True):
+    def process(self, task, hints, rewrite=True, prioritize=False):
         """Evaluate a proposed task against the full limit set.
 
-        If the task has no 'schedule' section it will be assumed that
+        If the task has no 'run_schedule' section it will be assumed that
         is being evaluated on all other parameters except when it
         runs.  (This will be used for restricting submission of new
         tasks.)
 
         Arguments:
-            task - The proposed task
+            task - The proposed task, with run_schedule if there's a run time
             hints - A hash of the hints to be used in identification
             rewrite - True if the rewriter should be applied
+            prioritize - True to prioritize the task
 
         Returns a tuple containing:
             passed - True if the proposed task passed the limits applied
             limits - A list of the limits that passed
             diags - A textual summary of how the conclusion was reached
             task - The task, after rewriting or None if unchanged
+            priority - Integer priority or None of not calculated
         """
 
         if self.inert:
-            return True, [], "No limits were applied", None
+            return True, [], "No limits were applied", None, None
 
         # TODO: Should this be JSON, or is text sufficient?
         diags = []
@@ -125,16 +136,16 @@ class LimitProcessor():
         identifications = self.identifiers.identities(hints)
         if not identifications:
             diags.append("Made no identifications.")
-            return False, [], '\n'.join(diags), None
+            return False, [], '\n'.join(diags), None, None
         diags.append("Identified as %s" % (', '.join(identifications)))
 
         classifications = self.classifiers.classifications(identifications)
         if not classifications:
             diags.append("Made no classifications.")
-            return False, [], '\n'.join(diags), None
+            return False, [], '\n'.join(diags), None, None
         diags.append("Classified as %s" % (', '.join(classifications)))
 
-        check_schedule='schedule' in task
+        check_schedule='run_schedule' in task
 
         re_new_task = None
 
@@ -143,8 +154,8 @@ class LimitProcessor():
             try:
                 re_changed, re_new_task, re_diags \
                     = self.rewriter(task, classifications)
-            except pscheduler.JQRuntimeError as ex:
-                return False, [], "Error while rewriting: %s" % (str(ex)), None
+            except Exception as ex:
+                return False, [], "Error while rewriting: %s" % (str(ex)), None, None
 
             if re_changed:
                 diags.append("Rewriter made changes:")
@@ -154,8 +165,9 @@ class LimitProcessor():
                     diags.append("  (Not enumerated)")
                 task = re_new_task
 
+
         passed, app_limits_passed, app_diags \
-            = self.applications.check(task["test"], classifications, check_schedule)
+            = self.applications.check(task, classifications, check_schedule)
 
         diags.append(app_diags)
         diags.append("Proposal %s limits" % ("meets" if passed else "does not meet"))
@@ -167,10 +179,37 @@ class LimitProcessor():
                     or min([ len(item) for item in app_limits_passed ]) == 0
 
 
+        # Run the prioritizer if there's a need to
+
+        if prioritize and passed and self.prioritizer is not None:
+            try:
+                priority, pri_diags = self.prioritizer(task, classifications)
+            except Exception as ex:
+                return False, [], "Error determining priority: %s" % (str(ex)), None, None
+
+            if priority is None:
+                return False, [], "Prioritizer produced no result", None, None
+
+            requested_priority = task.get("priority", None)
+            if requested_priority is not None:
+                requested_message = " %d requested," % (requested_priority)
+            else:
+                requested_message =""
+
+            diags.append("Priority%s set at %d%s" % (
+                requested_message, priority, ":" if len(pri_diags) else "."))
+            if len(pri_diags):
+                diags += map(lambda s: "  " + s, pri_diags)
+        else:
+            priority = None
+
+
+
         return passed, \
             [] if (unlimited or not passed) else app_limits_passed, \
             '\n'.join(diags), \
-            re_new_task
+            re_new_task, \
+            priority
 
 
 
@@ -181,9 +220,9 @@ class LimitProcessor():
 if __name__ == "__main__":
 
     # TODO: This should refer to a sample file in the distribution
-    processor = LimitProcessor('/home/mfeit/tmp/pscheduler-limits')
+    processor = LimitProcessor('/home/mfeit/tmp/limits-pri')
 
-    passed, limits_passed, diags = processor.process(
+    passed, limits_passed, diags, rewritten, priority = processor.process(
         {
             "type": "rtt",
             "spec": {
@@ -191,7 +230,7 @@ if __name__ == "__main__":
                 "count": 50,
                 "dest": "www.perfsonar.edu"
             },
-            "schedule": {
+            "run_schedule": {
                 "start": "2016-06-15T14:33:38-04",
                 "duration": "PT20S"
             }

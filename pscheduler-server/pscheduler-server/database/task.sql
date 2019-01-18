@@ -302,10 +302,19 @@ BEGIN
     -- Add runs_started column
     IF t_version = 11
     THEN
-
         -- Number of times a run has gone into the running state
 	ALTER TABLE task ADD COLUMN runs_started NUMERIC
 	DEFAULT 0;
+
+        t_version := t_version + 1;
+    END IF;
+
+    -- Version 12 to version 13
+    -- Add priority column.
+    IF t_version = 12
+    THEN
+	ALTER TABLE task ADD COLUMN
+	priority INTEGER;
 
         t_version := t_version + 1;
     END IF;
@@ -399,6 +408,11 @@ BEGIN
             THEN
                 RAISE EXCEPTION 'INTERNAL ERROR: Test produced empty participant list from task.';
             END IF;
+
+	    -- Set the priority
+	    IF (NEW.json #> '{priority}') IS NOT NULL THEN
+	        NEW.priority := NEW.json #>> '{priority}';
+	    END IF;
 
         END IF;
 
@@ -800,6 +814,7 @@ CREATE OR REPLACE FUNCTION api_task_post(
     hints JSONB,
     limits_passed JSON = '[]',
     participant INTEGER DEFAULT 0,
+    priority INTEGER DEFAULT NULL,
     task_uuid UUID = NULL,
     enabled BOOLEAN = TRUE,
     diags TEXT = '(None)'
@@ -816,8 +831,10 @@ BEGIN
    END IF;
 
    WITH inserted_row AS (
-        INSERT INTO task(json, participants, limits_passed, participant, uuid, hints, enabled, diags)
-        VALUES (task_package, array_to_json(participant_list), limits_passed, participant, task_uuid, hints, enabled, diags)
+        INSERT INTO task(json, participants, limits_passed, participant,
+	                 priority, uuid, hints, enabled, diags)
+        VALUES (task_package, array_to_json(participant_list), limits_passed,
+	        participant, priority, task_uuid, hints, enabled, diags)
         RETURNING *
     ) SELECT INTO inserted * from inserted_row;
 

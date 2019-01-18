@@ -4,7 +4,7 @@
 
 %define short	twping
 Name:		pscheduler-tool-%{short}
-Version:	1.1.2
+Version:	1.1.5
 Release:	1%{?dist}
 
 Summary:	twping tool class for pScheduler

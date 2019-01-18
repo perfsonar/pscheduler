@@ -39,10 +39,18 @@ def task_uuid_runtimes(task):
     # TODO: At some point, we will likely have to consider making the
     # proposals fall within the limits, which is going to be complex.
 
-    return json_query_simple("""
-        SELECT row_to_json(apt.*)
-        FROM  api_proposed_times(%s, %s, %s) apt
-        """, [task, range_start, range_end], empty_ok=True)
+    proposed_priority = arg_integer('priority')
+
+    if proposed_priority is None:
+        return json_query_simple(
+            """SELECT row_to_json(apt.*)
+            FROM  api_proposed_times(%s, %s, %s) apt""",
+            [task, range_start, range_end], empty_ok=True)
+    else:
+        return json_query_simple(
+            """SELECT row_to_json(apt.*)
+            FROM  api_proposed_times(%s, %s, %s, %s) apt""",
+            [task, range_start, range_end, proposed_priority], empty_ok=True)
 
 
 
@@ -65,7 +73,7 @@ def __evaluate_limits(
     log.debug("Task is %s, duration is %s" % (task_spec, duration))
 
     limit_input = copy.copy(task_spec)
-    limit_input['schedule'] = {
+    limit_input['run_schedule'] = {
         'start': pscheduler.datetime_as_iso8601(start_time),
         'duration': pscheduler.timedelta_as_iso8601(duration)
     }
@@ -80,16 +88,12 @@ def __evaluate_limits(
     # Don't pass hints since that would have been covered when the
     # task was submitted and only the scheduler will be submitting
     # runs.
-    passed, limits_passed, diags, _new_task \
-        = processor.process(limit_input, hints, rewrite=False)
+    passed, limits_passed, diags, _new_task, priority \
+        = processor.process(limit_input, hints, rewrite=False, prioritize=True)
 
     log.debug("Passed: %s.  Diags: %s" % (passed, diags))
 
-    # This prevents the run from being put in a non-starter state
-    if passed:
-        diags = None
-
-    return passed, diags, None
+    return passed, diags, None, priority
 
 
 
@@ -161,23 +165,32 @@ def tasks_uuid_runs(task):
         except ValueError as ex:
             return bad_request("Invalid JSON: %s" % (str(ex)))
 
-
-        passed, diags, response = __evaluate_limits(task, start_time)
+        try:
+            passed, diags, response, priority \
+                = __evaluate_limits(task, start_time)
+        except Exception as ex:
+            log.exception()
+            return error(str(ex))
         if response is not None:
             return response
 
-
-        log.debug("Posting run for task %s starting %s"
-                  % (task, start_time))
-        cursor = dbcursor_query(
-            "SELECT * FROM api_run_post(%s, %s, NULL, %s)",
-            [task, start_time, diags], onerow=True)
-        succeeded, uuid, conflicts, error_message = cursor.fetchone()
-        cursor.close()
-        if conflicts:
-            return conflict(error_message)
-        if error_message:
-            return error(error_message)
+        try:
+            log.debug("Posting run for task %s starting %s, priority %s"
+                      % (task, start_time, priority))
+            cursor = dbcursor_query(
+                "SELECT * FROM api_run_post(%s, %s, NULL, %s, %s, %s)",
+                [task, start_time, 
+                 None if passed else "Run forbidden by limits",
+                 priority, diags], onerow=True)
+            succeeded, uuid, conflicts, error_message = cursor.fetchone()
+            cursor.close()
+            if conflicts:
+                return conflict(error_message)
+            if error_message:
+                return error(error_message)
+        except Exception as ex:
+            log.exception()
+            return error(str(ex))
 
         url = base_url() + '/' + uuid
         log.debug("New run posted to %s", url)
@@ -282,35 +295,41 @@ def tasks_uuid_runs_run(task, run):
 
         while tries:
 
-            cursor = dbcursor_query(
-                """
-                SELECT
-                    lower(run.times),
-                    upper(run.times),
-                    upper(run.times) - lower(run.times),
-                    task.participant,
-                    task.nparticipants,
-                    task.participants,
-                    run.part_data,
-                    run.part_data_full,
-                    run.result,
-                    run.result_full,
-                    run.result_merged,
-                    run_state.enum,
-                    run_state.display,
-                    run.errors,
-                    run.clock_survey,
-                    run.id,
-                    archiving_json(run.id),
-                    run.added,
-                    run_state.finished
-                FROM
-                    run
-                    JOIN task ON task.id = run.task
-                    JOIN run_state ON run_state.id = run.state
-                WHERE
-                    task.uuid = %s
-                    AND run.uuid = %s""", [task, run])
+            try:
+                cursor = dbcursor_query(
+                    """
+                    SELECT
+                        lower(run.times),
+                        upper(run.times),
+                        upper(run.times) - lower(run.times),
+                        task.participant,
+                        task.nparticipants,
+                        task.participants,
+                        run.part_data,
+                        run.part_data_full,
+                        run.result,
+                        run.result_full,
+                        run.result_merged,
+                        run_state.enum,
+                        run_state.display,
+                        run.errors,
+                        run.clock_survey,
+                        run.id,
+                        archiving_json(run.id),
+                        run.added,
+                        run_state.finished,
+                        run.priority,
+                        run.limit_diags
+                    FROM
+                        run
+                        JOIN task ON task.id = run.task
+                        JOIN run_state ON run_state.id = run.state
+                    WHERE
+                        task.uuid = %s
+                        AND run.uuid = %s""", [task, run])
+            except Exception as ex:
+                log.exception()
+                return error(str(ex))
 
             if cursor.rowcount == 0:
                 cursor.close()
@@ -325,10 +344,11 @@ def tasks_uuid_runs_run(task, run):
                 if (wait_local and row[8] is None) \
                    or (wait_merged \
                        and ( (row[9] is None) or (not row[18]) ) ):
-                    log.debug("Waiting for merged: %s %s", row[9], row[18])
+                    log.debug("Waiting (%d left) for merged: %s %s", tries, row[9], row[18])
                     time.sleep(0.5)
                     tries -= 1
                 else:
+                    log.debug("Got the requested result.")
                     break
 
         # Return a result Whether or not we timed out and let the
@@ -371,6 +391,8 @@ def tasks_uuid_runs_run(task, run):
             result['archivings'] = row[16]
         if row[17] is not None:
             result['added'] = pscheduler.datetime_as_iso8601(row[17])
+        result['priority'] = row[19]
+        result['limit-diags'] = row[20]
         result['task-href'] = root_url('tasks/' + task)
         result['result-href'] = href + '/result'
 
@@ -417,20 +439,29 @@ def tasks_uuid_runs_run(task, run):
             except ValueError:
                 return bad_request("Invalid start time")
 
-            passed, diags, response = __evaluate_limits(task, start_time)
-            if response is not None:
-                return response
 
-            cursor = dbcursor_query(
-                "SELECT * FROM api_run_post(%s, %s, %s)",
-                [task, start_time, run], onerow=True)
-            succeeded, uuid, conflicts, error_message = cursor.fetchone()
-            cursor.close()
-            if conflicts:
-                return conflict(error_message)
-            if not succeeded:
-                return error(error_message)
-            log.debug("Full put of %s, got back %s", run, uuid)
+            try:
+
+                passed, diags, response, priority \
+                    = __evaluate_limits(task, start_time)
+                if response is not None:
+                    return response
+
+                cursor = dbcursor_query(
+                    "SELECT * FROM api_run_post(%s, %s, %s, %s, %s, %s)",
+                    [task, start_time, run,
+                     None if passed else "Run forbidden by limits",
+                     priority, diags], onerow=True)
+                succeeded, uuid, conflicts, error_message = cursor.fetchone()
+                cursor.close()
+                if conflicts:
+                    return conflict(error_message)
+                if not succeeded:
+                    return error(error_message)
+                log.debug("Full put of %s, got back %s", run, uuid)
+            except Exception as ex:
+                log.exception()
+                return error(str(ex))
 
             return ok()
 

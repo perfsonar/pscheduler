@@ -426,7 +426,6 @@ class RunWorker:
 
             context_runner = None
 
-
         #
         # Wait for the start time to roll around
         #
@@ -474,6 +473,39 @@ class RunWorker:
         except Exception as ex:
             self.log.error("%d: Failed to detect if system is paused and/or set missed state: %s",
                            self.id, str(ex))
+        finally:
+            self._put_db_conn(db)
+
+
+        # Make sure the run can proceed.
+
+        db = None
+        try:
+            db = self._get_db_conn()
+            with db.cursor() as cursor:
+                cursor.execute("SELECT run_can_proceed(%s)", [self.id])
+                assert(cursor.rowcount == 1)
+                if not cursor.fetchone()[0]:
+                    if log_details:
+                        self.log.info("%d: Run was preempted.",
+                                      self.id)
+                    cursor.execute("""
+                        UPDATE run
+                        SET
+                            state = run_state_preempted(),
+                            status = 1,
+                            result = '{ "succeeded": false, "diags": "Run was preempted." }'
+                        WHERE id = %s
+                        """, [self.id])
+                    return
+        except AssertionError as ae:
+            self.log.error("%d: Unable to read run_can_proceed(). Must be exactly one row.",
+                           self.id)
+            raise ae
+        except Exception as ex:
+            self.log.error("%d: Failed to determine if run can proceed: %s",
+                           self.id, str(ex))
+            return
         finally:
             self._put_db_conn(db)
                     
@@ -561,18 +593,26 @@ class RunWorker:
         db = None
         try:
             db = self._get_db_conn()
+            state_selector = 2 if participant > 0 else returncode
             with db.cursor() as cursor:
                 cursor.execute("""
                 UPDATE run
                 SET
                 status = %s,
                 result = %s,
-                errors = %s
+                errors = %s,
+                state = CASE
+                            WHEN %s = 0 THEN run_state_cleanup()
+                            WHEN %s = 1 THEN run_state_failed()
+                            ELSE run_state_finished()
+                        END
                 WHERE id = %s
                 """,
                 [returncode,
                  stdout,
                  stderr,
+                 state_selector,
+                 state_selector,
                  self.id])
         except Exception as ex:
             self.log.error("%d: Failed to store local result: %s",
@@ -745,7 +785,10 @@ class RunWorker:
                     cursor.execute("""
                                     UPDATE run
                                     SET
-                                        status = %s,
+                                        state = CASE
+                                                    WHEN %s = 0 THEN run_state_finished()
+                                                    ELSE run_state_failed()
+                                                END,
                                         result_full = %s,
                                         result_merged = %s,
                                         clock_survey = %s
@@ -760,7 +803,6 @@ class RunWorker:
                 self.log.error("%d: Failed to store run: %s", self.id, str(ex))
             finally:
                 self._put_db_conn(db)
-
 
 
         self.log.debug("%d: Run complete", self.id)
