@@ -259,12 +259,14 @@ while True:
         pscheduler.fail("Failed to fetch run: %d: %s" % (status, result))
 
     print
+
+    args = [ "pscheduler", "result", "--quiet", "--format", out_format ]
+    if options.debug:
+        args.append("--debug")
+    args.append(run_url)
+    log.debug("Calling %s", args)
     # PYTHON3: Drop the 32; fix the import at the top
-    subprocess32.call([
-        "pscheduler", "result", 
-        "--quiet",
-        "--format", out_format,
-        run_url])
+    subprocess32.call(args)
 
     run_count += 1
 
