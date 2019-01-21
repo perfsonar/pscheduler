@@ -19,6 +19,7 @@ class APILog(pscheduler.Log):
     def __init__(self, *args, **kwargs):
         self.__last_state = debug_state()
         pscheduler.Log.__init__(self, *args, **kwargs)
+        self.set_debug(self.__last_state)
 
     def debug(self, format, *args):
         current_state = debug_state()
