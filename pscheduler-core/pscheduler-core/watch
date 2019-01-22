@@ -121,77 +121,39 @@ try:
 except KeyError:
     pscheduler.fail("Server returned malformed test specification.")
 
-# TODO: Might be nice to dump the test parameters, but need to add a
-# 'format' parameter to the REST API like was done for runs.
-
 run_count = 0
 
 last_url = ""
 
-# TODO: This maintains backward compatibility with older versions and
-# can be backed off to just next-run-href after the 1.0 release.
-
 try:
     first_run_url = task["detail"]["first-run-href"]
     next_run_url = task["detail"]["next-run-href"]
-    next_old_style = False
 except KeyError:
-    try:
-        next_old_style = True
-    except KeyError:
-        pscheduler.fail("Server returned malformed task information.")
+    pscheduler.fail("Server returned malformed task information.")
 
 
 while True:
 
-    # TODO: Remove the old_style decision after the 1.0 release
-
-    if next_old_style:
-
-        status, runs = pscheduler.url_get(
-            "%s/runs" % (task_url),
-            params={
-                'upcoming': True,
-                'limit' : 1
-            },
-            bind=options.bind,
-            throw=False
-        )
-
-        if status != 200:
-            pscheduler.fail("Unable to fetch runs.")
-
-        if len(runs) == 0:
-            if run_count == 0:
-                log.debug("No upcoming runs scheduled")
-                pscheduler.fail("No runs scheduled for this task.")
-            else:
-                pscheduler.succeed()
-
-        run_url = runs[0]
-
+    if run_count == 0 and options.first:
+        fetch = first_run_url
     else:
+        fetch = next_run_url
 
-        if run_count == 0 and options.first:
-            fetch = first_run_url
+    log.debug("Fetching next run from %s", fetch)
+    status, run_data = pscheduler.url_get(fetch,
+                                          params={ "wait": 0 },
+                                          bind=options.bind,
+                                          throw=False)
+    if status == 404:
+        if run_count == 0:
+            pscheduler.fail("No runs scheduled for this task.")
         else:
-            fetch = next_run_url
+            print
+            pscheduler.succeed("No further runs scheduled.")
+    if status != 200:
+        pscheduler.fail("Unable to fetch runs: %s", run_data)
 
-        log.debug("Fetching next run from %s", fetch)
-        status, run_data = pscheduler.url_get(fetch,
-                                              params={ "wait": 0 },
-                                              bind=options.bind,
-                                              throw=False)
-        if status == 404:
-            if run_count == 0:
-                pscheduler.fail("No runs scheduled for this task.")
-            else:
-                print
-                pscheduler.succeed("No further runs scheduled.")
-        if status != 200:
-            pscheduler.fail("Unable to fetch runs: %s", run_data)
-
-        run_url = run_data['href']
+    run_url = run_data['href']
 
 
     if run_url == last_url:
