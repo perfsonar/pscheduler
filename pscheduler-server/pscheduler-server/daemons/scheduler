@@ -38,10 +38,14 @@ opt_parser.add_option("-d", "--dsn",
                       help="Database connection string",
                       action="store", type="string", dest="dsn",
                       default="dbname=pscheduler")
-opt_parser.add_option("-f", "--first-run-offset",
-                      help="Time offset for first runs (ISO8601)",
-                      action="store", type="string", dest="firstoffset",
+opt_parser.add_option("--first-run-offset-multi",
+                      help="Time offset for first runs in multi-participant tests (ISO8601)",
+                      action="store", type="string", dest="firstoffsetmulti",
                       default="PT10S")
+opt_parser.add_option("--first-run-offset-single",
+                      help="Time offset for first runs in single-participant tests (ISO8601)",
+                      action="store", type="string", dest="firstoffsetsingle",
+                      default="PT5S")
 opt_parser.add_option("-m", "--max-parallel",
                       help="Maximum concurrent archivings",
                       action="store", type="int", dest="max_parallel",
@@ -72,9 +76,13 @@ if options.max_parallel < 1:
 # a time before the participants can prepare for them.
 # TODO: Potential race condition?  Yep.
 try:
-    first_run_offset = pscheduler.iso8601_as_timedelta(options.firstoffset)
+    first_run_offset_multi = pscheduler.iso8601_as_timedelta(options.firstoffsetmulti)
 except ValueError:
-    opt_parser.error('Invalid first offset "' + options.firstoffset + '"')
+    opt_parser.error('Invalid first offset for multi "' + options.firstoffsetmulti + '"')
+try:
+    first_run_offset_single = pscheduler.iso8601_as_timedelta(options.firstoffsetsingle)
+except ValueError:
+    opt_parser.error('Invalid first offset for single "' + options.firstoffsetsingle + '"')
 
 try:
     refresh = pscheduler.iso8601_as_timedelta(options.refresh)
@@ -666,10 +674,13 @@ def schedule_task(number, log, task, key, runs, trynext, anytime, json,
         path="/tasks/%s" % (task))
 
     # For the first run only, push the start time out.  See comment
-    # above near the declaration of first_run_offset.
+    # above near the declaration of first_run_offset_single.
 
     if runs == 0:
-        later_start = pscheduler.time_now() + first_run_offset
+        later_start = pscheduler.time_now() \
+                      + (first_run_offset_single \
+                        if len(participants) == 1 \
+                        else first_run_offset_multi)
         if trynext < later_start:
             trynext = later_start
 
