@@ -1,0 +1,172 @@
+{
+
+    "#": "-------------------------------------------------------------------",
+    "#": "               pScheduler Sample Limit Configuration               ",
+    "#": "                                                                   ",
+    "#": "                                                                   ",
+    "#": "Gives priority to tasks originating within our (fictional) local   ",
+    "#": "organization or on the local system's interfaces.                  ",
+    "#": "                                                                   ",
+    "#": "THIS FILE IS FOR EXAMPLE ONLY AND SHOULD NOT BE USED IN PRODUCTION.",
+    "#": "-------------------------------------------------------------------",
+
+    "schema": 2,
+
+    "#": "-------------------------------------------------------------------",
+    "#": "IDENTIFIERS:  WHO'S ASKING?                                        ",
+    "#": "                                                                   ",
+    "#": "These identify who's asking to run the test.  One requester can    ",
+    "#": "map to zero or more identifiers.                                   ",
+    "#": "-------------------------------------------------------------------",
+
+    "identifiers": [
+	{
+	    "#": "In plain English:  Identifies all requesters.  This is     ",
+	    "#": "usually used as a match for applying defaults.             ",
+
+	    "name": "all",
+	    "description": "All requesters",
+	    "type": "always",
+	    "data": {
+		"#": "This type of identifier takes no data."
+	    }
+	},
+	{
+	    "#": "In plain English:  IP addresses that fall into the listed  ",
+	    "#": "blocks are identified as 'my-ips'.                         ",
+
+	    "name": "my-ips",
+	    "description": "IP blocks assigned to our organization",
+	    "type": "ip-cidr-list",
+	    "data": {
+		"cidrs": [
+                    "10.10.0.0/16",
+                    "10.0.0.0/24",
+                    "10.9.8.0/24",
+                    "10.11.12.0/24"
+		]
+	    }
+	},
+	{
+	    "#": "In plain English:  IP addresses that are bound to a network",
+	    "#": "interface on the local system.",
+
+	    "name": "local-interfaces",
+	    "description": "IPs on local interfaces",
+	    "type": "localif",
+	    "data": { }
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "CLASSIFIERS:  HOW DO WE CLASSIFY THE IDENTIFIERS?                  ",
+    "#": "                                                                   ",
+    "#": "These collect identifiers into groups.                             ",
+    "#": "-------------------------------------------------------------------",
+
+    "classifiers": [
+	{
+	    "#": "In plain English:  Identifiers 'my-ips' and 'my-hosts'     ",
+	    "#": "are classified as being 'my-organization'.                 ",
+
+	    "name": "everybody",
+	    "description": "Things that are part of my organization",
+	    "identifiers": [ "all" ]
+	},
+	{
+	    "#": "In plain English:  Identifiers 'my-ips' and               ",
+	    "#": "'local-interfaces' are classified as 'high-priority'.     ",
+
+	    "name": "high-priority",
+	    "description": "Things that are part of my organization",
+	    "identifiers": [ "my-ips", "local-interfaces" ]
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "LIMITS:  WHAT ARE THE RESTRICTIONS?                                ",
+    "#": "                                                                   ",
+    "#": "These are comparisons made against the type of test being proposed,",
+    "#": "the paramaters for the run and when it is proposed to be run.      ",
+    "#": "-------------------------------------------------------------------",
+
+    "limits": [
+	{
+	    "#": "In plain English:  Any task being tested against this limit",
+	    "#": "will always meet with approval.                            ",
+
+	    "name": "always",
+	    "description": "Always passes",
+	    "type": "pass-fail",
+	    "data": {
+		"pass": true
+	    }
+	}
+    ],
+
+    "#": "-------------------------------------------------------------------",
+    "#": "APPLICATIONS:  TO WHOM DO WE APPLY THE LIMITS?                     ",
+    "#": "                                                                   ",
+    "#": "These are processed in order until one passes all of the           ",
+    "#": "requirements.  The run will be rejected if one fails with          ",
+    "#": "stop-on-failure set to true or none of them passes.                ",
+    "#": "-------------------------------------------------------------------",
+
+    "applications": [
+	{
+	    "#": "In plain English:  Allow tasks from any requester.",
+
+	    "description": "Everybody",
+	    "classifier": "everybody",
+	    "apply": [
+		{ "require": "all", "limits": [ "always" ] }
+	    ]
+	}
+    ],
+
+    "#": "-------------------------------------------------------------------",
+    "#": "PRIORITY:  HOW DO WE PRIORITIZE RUNS OF TASKS?                     ",
+    "#": "                                                                   ",
+    "#": "This is a jq transform that examines a proposed run of a task and  ",
+    "#": "produces an integer value indicating its priority.  If this is not ",
+    "#": "present, the neutral priority value of 0 will be used.             ",
+    "#": "-------------------------------------------------------------------",
+
+    "priority": {
+	"script": [
+            ".",
+
+            "# Start with the default priority.",
+            "| set(default; \"Initial priority\")",
+
+	    "# Friendly requesters get a small bump in priority.",
+	    "| if classifiers_has(\"high-priority\")",
+            "  then adjust(20; \"High-priority requester\") else . end",
+
+	    "# Note that the two checks below are boilerplate and also",
+	    "# recommended practice.",
+
+	    "# If the requested priority was lower than what we came up",
+	    "# with, force that.",
+	    "| if requested and requested < priority",
+	    "  then set(requested; \"Lower requested priority\")",
+            "  else . end",
+
+	    "# Allow at least the requested priority for those who are",
+	    "# allowed to do so.  Do this last in case things done",
+	    "# above push the priority higher than was requested",
+	    "| if requested",
+	    "     and requested > 0",
+	    "     and requested > priority",
+	    "     and classifiers_has(\"priority-positive\")",
+	    "  then set(requested; \"Higher requested priority\")",
+            "  else . end",
+
+	    "# The end.  (This takes care of the no-comma-at-end problem)"
+        ]
+    }
+
+
+}
