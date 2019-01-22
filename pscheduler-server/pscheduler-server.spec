@@ -99,12 +99,13 @@ The pScheduler server
 # API Server
 %define httpd_conf_d   %{_sysconfdir}/httpd/conf.d
 %define api_httpd_conf %{httpd_conf_d}/pscheduler-api-server.conf
-%define api_run_space  %{_rundir}/%{name}
 # TODO: It would be nice if we had a way to automatically find this.
 %define apache_user    apache
 %define apache_group   apache
 
 %define server_conf_dir %{_pscheduler_sysconfdir}
+# Runtime space for PID files and debug flags.
+%define run_dir  %{_rundir}/%{name}
 
 # Note that we want this here because it seems to work well without
 # assistance on systems where selinux is enabled.  Anywhere else and
@@ -158,7 +159,7 @@ make -C daemons \
      PGUSER=%{_pscheduler_database_user} \
      PSUSER=%{_pscheduler_user} \
      ARCHIVERDEFAULTDIR=%{archiver_default_dir} \
-     RUNDIR=%{_rundir} \
+     RUNDIR=%{run_dir} \
      VAR=%{_var}
 
 #
@@ -258,12 +259,10 @@ make -C api-server \
      "PREFIX=${RPM_BUILD_ROOT}" \
      "DSN_FILE=%{dsn_file}" \
      "LIMITS_FILE=%{_pscheduler_limit_config}" \
-     "RUN_SPACE=%{api_run_space}" \
+     "RUN_DIR=%{run_dir}" \
      install
 
 mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}
-
-mkdir -p ${RPM_BUILD_ROOT}/%{api_run_space}
 
 #
 # Utilities
@@ -591,7 +590,6 @@ systemctl restart "%{pgsql_service}"
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
 %license LICENSE
 %{api_dir}
-%attr(700,%{_pscheduler_user},%{_pscheduler_group}) %{api_run_space}
 %config(noreplace) %{api_httpd_conf}
 
 #
