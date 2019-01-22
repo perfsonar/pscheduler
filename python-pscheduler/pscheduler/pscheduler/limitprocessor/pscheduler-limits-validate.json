@@ -151,6 +151,43 @@
 		"applications": { 
 		    "type": "array",
 		    "items": { "$ref": "#/local/Application" }
+		}
+	    },
+	    "additionalProperties": false,
+	    "required": [
+		"schema",
+		"identifiers",
+		"classifiers",
+		"limits",
+		"applications"
+	    ]
+	},
+
+
+	"LimitConfiguration_V3": {
+	    "type": "object",
+	    "properties": {
+		"schema": {
+		    "type": "integer",
+		    "minimum": 3,
+		    "maximum": 3
+		},
+		"identifiers": { 
+		    "type": "array",
+		    "items": { "$ref": "#/local/Identifier" }
+		},
+		"classifiers": { 
+		    "type": "array",
+		    "items": { "$ref": "#/local/Classifier" }
+		},
+		"rewrite": { "$ref": "#/pScheduler/JQTransformSpecification" },
+		"limits": { 
+		    "type": "array",
+		    "items": { "$ref": "#/local/Limit" }
+		},
+		"applications": { 
+		    "type": "array",
+		    "items": { "$ref": "#/local/Application" }
 		},
 		"priority": { "$ref": "#/pScheduler/JQTransformSpecification" }
 	    },
@@ -167,7 +204,8 @@
 	"LimitConfiguration": {
 	    "oneOf": [
 		{ "$ref": "#/local/LimitConfiguration_V1" },
-		{ "$ref": "#/local/LimitConfiguration_V2" }
+		{ "$ref": "#/local/LimitConfiguration_V2" },
+		{ "$ref": "#/local/LimitConfiguration_V3" }
 	    ]
 	}
     },
