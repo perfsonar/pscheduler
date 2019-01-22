@@ -7,7 +7,7 @@ import sys
 import pscheduler
 import pscheduler.psurl
 
-MAX_SCHEMA = 1
+MAX_SCHEMA = 2
 
 def archive(json):
     """Archive a single result."""
@@ -37,10 +37,51 @@ def archive(json):
     except KeyError:
         bind = None
 
+
+    # Headers get special behavior because the Content-Type may be
+    # provided explicitly, in which case it's obeyed.  Otherwise,
+    # strings will be made text/plain and anything else will be
+    # application/json.
+
+    result = json['result']
+
+    try:
+        headers = json['data']['_headers']
+    except KeyError:
+        headers = {}
+
+    if isinstance(result, basestring) \
+       and headers.get('Content-Type', None) != 'application/json':
+        dumped_result = result
+        result_type = 'text/plain'
+    else:
+        dumped_result = pscheduler.json_dump(result)
+        result_type = 'application/json'
+
+
+    # Provide Content-Type and Content-Length headers if they don't
+    # exist.
+
+    if 'Content-Type' not in headers:
+        headers['Content-Type'] = result_type
+
+    if 'Content-Length' not in headers:
+        headers['Content-Length'] = len(dumped_result)
+
+    if len(headers):
+        # Remove all null headers
+        headers = dict((k, v) for k, v in headers.iteritems() if v)
+        # Stringify all values
+        headers = dict((k, str(v)) for k, v in headers.iteritems())
+    else:
+        headers = None
+
+
     if op == 'post':
 
         try:
-            pscheduler.url_post( url, data=pscheduler.json_dump(json['result']), json=False, bind=bind )
+            pscheduler.url_post( url, data=dumped_result, json=False,
+                                 headers=headers, bind=bind )
         except Exception as ex:
             result = {
                 "succeeded": False,
@@ -56,7 +97,8 @@ def archive(json):
     elif op == 'put':
 
         try:
-            pscheduler.url_put( url, data=pscheduler.json_dump(json['result']), json=False, bind=bind )
+            pscheduler.url_put( url, data=dumped_result, json=False,
+                                headers=headers, bind=bind )
         except Exception as ex:
             result = {
                 "succeeded": False,
