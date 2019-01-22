@@ -701,6 +701,7 @@ if status == 404:
 
 
 watch_args = [ "pscheduler", "watch",
+               "--first",
                "--format", out_format
                ]
 if options.debug:

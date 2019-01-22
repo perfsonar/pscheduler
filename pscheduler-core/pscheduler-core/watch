@@ -32,6 +32,11 @@ opt_parser.add_option("--bind",
                       action="store", type="string",
                       dest="bind")
 
+opt_parser.add_option("--first",
+                      help="Start with the first run",
+                      action="store_true", default=False,
+                      dest="first")
+
 opt_parser.add_option("--format",
                       help="Result format (text, html, json, none)",
                       action="store", type="string", default="text",
@@ -127,6 +132,7 @@ last_url = ""
 # can be backed off to just next-run-href after the 1.0 release.
 
 try:
+    first_run_url = task["detail"]["first-run-href"]
     next_run_url = task["detail"]["next-run-href"]
     next_old_style = False
 except KeyError:
@@ -166,7 +172,13 @@ while True:
 
     else:
 
-        status, run_data = pscheduler.url_get(next_run_url,
+        if run_count == 0 and options.first:
+            fetch = first_run_url
+        else:
+            fetch = next_run_url
+
+        log.debug("Fetching next run from %s", fetch)
+        status, run_data = pscheduler.url_get(fetch,
                                               params={ "wait": 0 },
                                               bind=options.bind,
                                               throw=False)
@@ -207,9 +219,9 @@ while True:
     if run_json['state'] == 'nonstart':
 
         if verbose:
+            print
             print "Run scheduled at", run_json['start-time'], "is a non-starter:"
             print run_json['errors']
-            print
 
         # If the task wasn't a repeater, don't hang around.
         try:
