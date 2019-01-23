@@ -24,15 +24,15 @@ class VerbatimParser(optparse.OptionParser):
         return self.epilog
 
 opt_parser = VerbatimParser(
-    usage="Usage: %prog [options] run-url",
+    usage="Usage: %prog [OPTIONS] { RUN-URL | TASK-URL }",
     epilog=
 """
 Examples:
 
-  result https://ps.foo.org/pscheduler/task/12345...
+  result https://ps.foo.org/pscheduler/task/12345.../runs/6789...
       Fetch a result of the specified run as plain text
 
-  result --format text https://ps.foo.org/pscheduler/task/12345...
+  result --format text https://ps.foo.org/pscheduler/task/12345/runs/6789...
       Same as above, with explicit format
 
   result --format html https://ps.foo.org/pscheduler/task/12345...
@@ -40,6 +40,11 @@ Examples:
 
   result --format json html https://ps.foo.org/pscheduler/task/12345...
       Fetch a result of the specified run and format as JSON
+
+  result https://ps.foo.org/pscheduler/task/12345...
+      Fetch results for all runs for the task given by the URL.  The type
+      of data at the URL (task or run) is determined automatically.
+
 """
     )
 opt_parser.disable_interspersed_args()
@@ -98,211 +103,256 @@ except KeyError:
     pscheduler.fail("Invalid --format; must be text, html, or json")
 
 
-run_url = remaining_args[0]
+url = remaining_args[0]
+
+
+#
+# Dump a single run's result
+#
+
+def dump_run(run_json):
+
+    # Deal with the various reasons why the run might not have happened
+
+    if run_json["state"] == "nonstart":
+        try:
+            reason = run_json["errors"] 
+        except KeyError:
+            reason = "No reason provided."
+        print "Run never started: %s" % (reason)
+        return
+
+    if run_json["state"] in ["pending", "on-deck", "running", "cleanup"]:
+        print "Run has not completed."
+        return
+
+    # TODO: Should dump diags for anything but preempted.
+
+    if run_json["state"] in ["overdue", "missed", "preempted"]:
+        print "Run did not complete: %s" % (run_json["state-display"])
+        return
+
+    if run_json["state"] == "failed":
+        succeeded = False
+
+    try:
+        result_url = run_json["result-href"]
+    except KeyError:
+        print "No result URL returned by the server."
+        return
+
+    try:
+        task_url = run_json["task-href"]
+    except KeyError:
+        print "No task URL returned by the server."
+        return
+
+    try:
+
+        status, result = pscheduler.url_get(
+            result_url,
+            params={ "format": out_format },
+            bind=options.bind,
+            json=False)
+
+        status, task_cli = pscheduler.url_get(
+            "%s/cli" % task_url,
+            bind=options.bind)
+
+        status, task_json = pscheduler.url_get(task_url,
+                                               params={"detail": True},
+                                               bind=options.bind)
+
+    except Exception as ex:
+        print "Problem fetching results: %s" % (str(ex))
+        return
+
+
+    if not options.quiet and out_format == "text/plain":
+
+        firstline = [ run_json["start-time"], "on" ]
+
+        parts = run_json["participants"]
+        if len(parts) == 1:
+            firstline.append(parts[0])
+        else:
+            last = parts.pop()
+            if len(parts) == 1:
+                firstline.append(parts[0])
+            else:
+                firstline.extend([ "%s," % part for part in parts ])
+            firstline.append("and")
+            firstline.append(last)
+
+        firstline.append("with")
+        firstline.append(task_json["tool"] + ":")
+        print pscheduler.prefixed_wrap(
+            "", " ".join(firstline), indent=2)
+
+        print
+        print pscheduler.prefixed_wrap(
+            "", " ".join([ pipes.quote(arg) for arg in task_cli ]),
+            indent=2)
+        print
+
+    # The strip gets rid of any pesky newlines
+    print result.rstrip()
+
+    try:
+        succeeded = run_json['result-merged']['succeeded']
+        if succeeded is None:
+            raise KeyError()
+    except KeyError as ex:
+        succeeded = False
+
+    if out_format == "text/plain" \
+       and (options.diags or not succeeded):
+
+        if "clock-survey" in run_json and len(run_json["clock-survey"]) > 1:
+
+            survey_max = len(run_json["clock-survey"]) - 1
+
+            survey = [ pscheduler.iso8601_as_datetime(entry["time"])
+                       for entry in run_json["clock-survey"] ]
+
+            max_diff = datetime.timedelta()
+            for index_a in range(0, survey_max+1):
+                time_a = survey[index_a]
+                for time_b in survey[index_a+1:]:
+                    max_diff = max(max_diff, abs(time_b - time_a))
+
+            if max_diff > datetime.timedelta(seconds=1.0):
+                print
+                print pscheduler.prefixed_wrap("", 
+                                               "This run likely failed because"
+                                               " the clocks on participants differed"
+                                               " by %s." % (max_diff)
+                                           )
+
+        if "diags" in task_json["detail"]:
+            print
+            print "Limit system diagnostics:"
+            print pscheduler.indent(task_json["detail"]["diags"])
+
+        parts = task_json["detail"]["participants"]
+        for participant in range(0, len(parts)):
+
+            print
+            print "Diagnostics from %s:" % (parts[participant])
+            try:
+                diags_raw = run_json["result-full"][participant]["diags"]
+                if diags_raw is None or diags_raw == "":
+                    raise KeyError
+                diags = "\n".join([
+                    "    %s" % (string) for string in diags_raw])
+
+            except (KeyError, TypeError, AttributeError):
+                diags = "No diagnostics."
+            print pscheduler.indent(diags)
+
+            try:
+                err = run_json["result-full"][participant].get("error", None)
+            except (AttributeError, TypeError):
+                err = ""
+
+            if len(err):
+                print
+                print "Error from %s:" % (parts[participant])
+                try:
+                    errtext = "\n".join([
+                        "    %s" % (string) for string in
+                        err.split("\n")
+                    ])
+                except (KeyError, TypeError):
+                    errtext = "No error."
+                print pscheduler.indent(errtext)
+
+
+    # Dump the archiving information
+
+    if out_format == "text/plain" and succeeded and options.archivings:
+        print
+        print "Archivings:"
+        if run_json.get('archivings', None) is not None:
+            for archiving in run_json['archivings']:
+                print
+                print "  To %s, %s" % (
+                    archiving['archiver']['name'],
+                    "Finished" if archiving['archived'] else "Unfinished"
+                    )
+                for attempt in archiving['diags']:
+                    try:
+                        if attempt['return-code'] <> 0:
+                            raise TypeError  # Treat this as a failure.
+                        succeeded = attempt['stdout']['succeeded']
+                        diags = "" if succeeded else attempt['stdout']['error']
+                    except (KeyError, TypeError) as ex:
+                        succeeded = False
+                        diags = attempt['stderr']
+                    print "    %-25s %s" % (
+                        attempt['time'],
+                        "Succeeded" if succeeded else diags
+                        )
+        else:
+            print pscheduler.indent("This task had no archivings.")
+
 
 
 #
 # Main Program
 #
 
-# Fetch the run so we can pluck out the result URL.
+# Fetch the URL and see if we're dealing with a task or a run.
+
+def fail_not_pscheduler():
+    pscheduler.fail("URL does not point at a valid pScheduler task or run.")
+
 
 try:
-    status, run_json = pscheduler.url_get(run_url, bind=options.bind, json=True)
+    status, json = pscheduler.url_get(url,
+                                      params={ "detail": True },
+                                      bind=options.bind)
+    if not isinstance(json, dict):
+        raise ValueError
+except ValueError:
+    fail_not_pscheduler()
 except Exception as ex:
-    pscheduler.fail(str(ex))
+    pscheduler.fail("Unable to fetch URL: %s" % (str(ex)))
 
-# Deal with the various reasons why the run might not have happened
 
-if "state" not in run_json:
-    pscheduler.fail("Data returned from the server doesn't look like a run result.")
+# Run means a single result.
 
-if run_json["state"] == "nonstart":
+if "result-href" in json:
+    dump_run(json)
+    pscheduler.succeed()
+
+# Try it as a task, dumping all runs
+
+try:
+    status, runs = pscheduler.url_get(
+        json["detail"]["runs-href"],
+        bind=options.bind)
+except KeyError:
+    fail_not_pscheduler()
+    pass
+except Exception as ex:
+    pscheduler.fail("Problem fetching runs: %s" % (str(ex)))
+
+need_newline = False
+for run in runs:
+
     try:
-        reason = run_json["errors"] 
-    except KeyError:
-        reason = "No reason provided."
-    pscheduler.fail("Run never started: %s" % reason)
+        status, run_json = pscheduler.url_get(run, bind=options.bind)
+    except Exception as ex:
+        pscheduler.fail(str(ex))
 
-if run_json["state"] in ["pending", "on-deck", "running", "cleanup"]:
-    pscheduler.succeed("Run has not completed.")
-
-
-# TODO: Should dump diags for anything but preempted.
-
-if run_json["state"] in ["overdue", "missed", "preempted"]:
-    pscheduler.succeed("Run did not complete: %s" % run_json["state-display"])
-
-if run_json["state"] == "failed":
-    succeeded = False
-
-
-
-try:
-    result_url = run_json["result-href"]
-except KeyError:
-    pscheduler.fail("No result URL returned by the server.")
-
-
-try:
-    task_url = run_json["task-href"]
-except KeyError:
-    pscheduler.fail("No task URL returned by the server.")
-
-
-
-try:
-
-    status, result = pscheduler.url_get(
-        result_url,
-        params={ "format": out_format },
-        bind=options.bind,
-        json=False)
-
-    status, task_cli = pscheduler.url_get(
-        "%s/cli" % task_url,
-        bind=options.bind,
-        json=True)
-
-    status, task_json = pscheduler.url_get(task_url,
-                                           params={"detail": True},
-                                           bind=options.bind,
-                                           json=True)
-
-except Exception as ex:
-    pscheduler.fail("Problem fetching results: %s" % str(ex))
-
-if not options.quiet and out_format == "text/plain":
-
-    firstline = [ run_json["start-time"], "on" ]
-
-    parts = run_json["participants"]
-    if len(parts) == 1:
-        firstline.append(parts[0])
+    if need_newline:
+        print
+        print
     else:
-        last = parts.pop()
-        if len(parts) == 1:
-            firstline.append(parts[0])
-        else:
-            firstline.extend([ "%s," % part for part in parts ])
-        firstline.append("and")
-        firstline.append(last)
+        need_newline = True
+    dump_run(run_json)
 
-    firstline.append("with")
-    firstline.append(task_json["tool"] + ":")
-    print pscheduler.prefixed_wrap(
-        "", " ".join(firstline), indent=2)
-
-    print
-
-    print pscheduler.prefixed_wrap(
-        "", " ".join([ pipes.quote(arg) for arg in task_cli ]),
-        indent=2)
-
-    print
-
-
-# The strip gets rid of any pesky newlines
-print result.rstrip()
-
-
-try:
-    succeeded = run_json['result-merged']['succeeded']
-    if succeeded is None:
-        raise KeyError()
-
-except KeyError as ex:
-    succeeded = False
-
-
-if out_format == "text/plain" \
-   and (options.diags or not succeeded):
-
-    if "clock-survey" in run_json and len(run_json["clock-survey"]) > 1:
-
-        survey_max = len(run_json["clock-survey"]) - 1
-
-        survey = [ pscheduler.iso8601_as_datetime(entry["time"])
-                   for entry in run_json["clock-survey"] ]
-
-        max_diff = datetime.timedelta()
-        for index_a in range(0, survey_max+1):
-            time_a = survey[index_a]
-            for time_b in survey[index_a+1:]:
-                max_diff = max(max_diff, abs(time_b - time_a))
-
-        if max_diff > datetime.timedelta(seconds=1.0):
-            print
-            print pscheduler.prefixed_wrap("", 
-                                           "This run likely failed because"
-                                           " the clocks on participants differed"
-                                           " by %s." % (max_diff)
-                                       )
-
-    if "diags" in task_json["detail"]:
-        print
-        print "Limit system diagnostics:"
-        print pscheduler.indent(task_json["detail"]["diags"])
-
-    print
-    parts = task_json["detail"]["participants"]
-    for participant in range(0, len(parts)):
-        print
-        print "Diagnostics from %s:" % (parts[participant])
-
-        try:
-            print "\n".join([
-                "    %s" % (string) for string in
-                run_json["result-full"][participant]["diags"].split("\n")
-            ])
-        except (KeyError, TypeError, AttributeError):
-            print "    (No diagnostics)"
-
-        try:
-            err = run_json["result-full"][participant].get("error", None)
-        except (AttributeError, TypeError):
-            err = None
-
-        if err is not None:
-            print
-            print "Error from %s:" % (parts[participant])
-            try:
-                print "\n".join([
-                    "    %s" % (string) for string in
-                    err.split("\n")
-                ])
-            except (KeyError, TypeError):
-                print "    (No error)"
-
-
-# Dump the archiving information
-
-if out_format == "text/plain" and succeeded and options.archivings:
-    print
-    print "Archivings:"
-    if run_json.get('archivings', None) is not None:
-        for archiving in run_json['archivings']:
-            print
-            print "  To %s, %s" % (
-                archiving['archiver']['name'],
-                "Finished" if archiving['archived'] else "Unfinished"
-                )
-            for attempt in archiving['diags']:
-                try:
-                    if attempt['return-code'] <> 0:
-                        raise TypeError  # Treat this as a failure.
-                    succeeded = attempt['stdout']['succeeded']
-                    diags = "" if succeeded else attempt['stdout']['error']
-                except (KeyError, TypeError) as ex:
-                    succeeded = False
-                    diags = attempt['stderr']
-                print "    %-25s %s" % (
-                    attempt['time'],
-                    "Succeeded" if succeeded else diags
-                    )
-    else:
-        print
-        print "    This task had no archivings."
 
 
 pscheduler.succeed()
