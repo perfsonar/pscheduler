@@ -684,8 +684,10 @@ class RunWorker:
                 del to_get[get]
 
 
-            failures = len(list(
-                filter(lambda result: result is None, result_full)))
+            failures = len(list(filter(
+                lambda result:
+                    result is None or not result.get("succeeded",False),
+                    result_full)))
             self.log.debug("%d: %d failures", self.id, failures)
 
 
@@ -745,13 +747,21 @@ class RunWorker:
                     cursor.execute("""
                                     UPDATE run
                                     SET
-                                        status = %s,
+                                        status = CASE
+                                                     WHEN %s = 0 THEN 0
+                                                     ELSE 1
+                                                END,
+                                        state = CASE
+                                                    WHEN %s = 0 THEN run_state_finished()
+                                                    ELSE run_state_failed()
+                                                END,
                                         result_full = %s,
                                         result_merged = %s,
                                         clock_survey = %s
                                     WHERE id = %s
                                     """,
-                                    [1 if failures else 0,
+                                    [failures,
+                                     failures,
                                      pscheduler.json_dump(result_full),
                                      result_merged_text,
                                      survey,

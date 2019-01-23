@@ -439,12 +439,6 @@ BEGIN
                 RAISE EXCEPTION 'Cannot set state on future runs. % / %', lower(NEW.times), normalized_now();
             END IF;
 
-	    -- Adjust the state
-	    NEW.state = CASE
-                WHEN NEW.status = 0 THEN run_state_finished()
-                ELSE run_state_failed()
-                END;
-
         END IF;
 
 
