@@ -264,7 +264,7 @@ make -C api-server \
 
 mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}
 
-mkdir -p ${RPM_BUILD_ROOT}/%{api_run_space}
+mkdir -p ${RPM_BUILD_ROOT}/%{run_dir}
 
 #
 # Utilities
@@ -592,7 +592,6 @@ systemctl restart "%{pgsql_service}"
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
 %license LICENSE
 %{api_dir}
-%attr(700,%{_pscheduler_user},%{_pscheduler_group}) %{api_run_space}
 %config(noreplace) %{api_httpd_conf}
 
 #
