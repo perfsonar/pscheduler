@@ -724,8 +724,10 @@ class RunWorker:
                 del to_get[get]
 
 
-            failures = len(list(
-                filter(lambda result: result is None, result_full)))
+            failures = len(list(filter(
+                lambda result:
+                    result is None or not result.get("succeeded",False),
+                    result_full)))
             self.log.debug("%d: %d failures", self.id, failures)
 
 
@@ -794,7 +796,8 @@ class RunWorker:
                                         clock_survey = %s
                                     WHERE id = %s
                                     """,
-                                    [1 if failures else 0,
+                                    [failures,
+                                     failures,
                                      pscheduler.json_dump(result_full),
                                      result_merged_text,
                                      survey,
