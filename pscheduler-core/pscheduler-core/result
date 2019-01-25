@@ -246,7 +246,7 @@ if out_format == "text/plain" \
                                            " by %s." % (max_diff)
                                        )
 
-    if "diags" in task_json["detail"]:
+    if "limit-diags" in run_json:
         print
         print "Limit system diagnostics for this run:"
         print
