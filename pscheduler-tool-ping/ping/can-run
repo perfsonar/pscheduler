@@ -28,7 +28,7 @@ except KeyError:
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 2)
+    pscheduler.json_check_schema(spec, 3)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
@@ -41,7 +41,7 @@ except ValueError as ex:
     })
 
 
-# This tool runs the entire version 1 schema.
+# This tool runs the entire version 3 schema.
 
 errors = []
 
