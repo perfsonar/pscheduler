@@ -92,6 +92,8 @@ The pScheduler server
 %define default_archives %{_pscheduler_sysconfdir}/archives
 %define rpm_macros %{_pscheduler_rpmmacroprefix}%{name}
 
+%define configurables_file %{_pscheduler_sysconfdir}/configurables.conf
+
 # Daemons
 %define log_dir %{_var}/log/pscheduler
 %define archiver_default_dir %{_pscheduler_sysconfdir}/default-archives
@@ -174,6 +176,7 @@ make -C daemons \
 
 make -C utilities \
     "CONFIGDIR=%{_pscheduler_sysconfdir}" \
+    "CONFIGURABLESFILE=%{configurables_file}" \
     "LIMITSFILE=%{_pscheduler_limit_config}" \
     "PGDATABASE=%{database_name}" \
     "PGPASSFILE=%{pgpass_file}" \

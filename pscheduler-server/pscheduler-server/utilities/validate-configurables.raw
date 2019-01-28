@@ -1,0 +1,132 @@
+#!/usr/bin/python
+#
+# Check to see if the configurables file is valid
+#
+
+import errno
+import optparse
+import pscheduler
+import sys
+
+pscheduler.set_graceful_exit()
+
+
+CONFIGURABLES_FILE="__CONFIGURABLESFILE__"
+
+MAX_SCHEMA = 1
+SCHEMA = {
+    "local": {
+        "configurables_v1" : {
+            "title": "pScheduler Configurables, Version 1",
+            "type": "object",
+            "properties": {
+                "schema":          { "type": "integer", "enum": [ 1 ] },
+                "keep-runs-tasks": { "$ref": "#/pScheduler/Duration" },
+                "run-straggle":    { "$ref": "#/pScheduler/Duration" }
+            },
+            "additionalProperties": False
+        },
+        "configurables": {
+            "anyOf" : [
+                { "$ref": "#/local/configurables_v1" }
+            ]
+        }
+    },
+
+    "$ref": "#/local/configurables"
+}
+
+
+#
+# Gargle the arguments
+#
+
+class VerbatimParser(optparse.OptionParser):
+    def format_epilog(self, formatter):
+        return self.epilog
+
+opt_parser = VerbatimParser(
+    usage="Usage: %prog [ FILE ]",
+    epilog=
+"""
+Examples:
+
+  validate-confgurables /foo/bar/configurables.conf
+      Validate /foo/bar/configurables.conf
+
+  validate-configurables -
+      Validate configurables from the standard input
+
+  validate-limits
+      Validate __CONFIGURABLESFILE__ if readable.
+"""
+    )
+opt_parser.disable_interspersed_args()
+
+opt_parser.add_option("--dump",
+                      help="Dump the configurables if valid",
+                      action="store_true",
+                      dest="dump")
+
+opt_parser.add_option("--quiet",
+                      help="Print nothing if successful",
+                      action="store_true",
+                      dest="quiet")
+
+(options, remaining_args) = opt_parser.parse_args()
+
+
+#
+# Find the input
+#
+
+explicit_file = False
+try:
+    if len(remaining_args) == 0:
+        infile = open(CONFIGURABLES_FILE, 'r')
+    elif len(remaining_args) == 1 and remaining_args[0] == '-':
+        infile = sys.stdin
+    elif len(remaining_args) == 1:
+        explicit_file = True
+        infile = open(remaining_args[0], 'r')
+    else:
+        opt_parser.print_usage()
+        pscheduler.fail()
+except IOError as ex:
+    if explicit_file or ex.errno != errno.ENOENT:
+        pscheduler.fail("Unable to read input: %s" % (str(ex)))
+    # ENOENT means we continue with nothing.
+    infile = "null"
+
+
+#
+# Load it
+#
+
+try:
+    json = pscheduler.json_load(infile)
+except Exception as ex:
+    pscheduler.fail(str(ex))
+
+if json is None:
+    if options.dump:
+        pscheduler.succeed("null")
+    pscheduler.succeed(None if options.quiet else "No configurables file installed.")
+
+
+#
+# Validate it
+#
+
+valid, error = pscheduler.json_validate(json, SCHEMA)
+
+if not valid:
+    pscheduler.fail(error)
+
+if options.dump:
+    pscheduler.succeed(pscheduler.json_dump(json))
+
+if sys.stdout.isatty() and not options.quiet:
+    print "Configurables are valid."
+
+pscheduler.succeed()
