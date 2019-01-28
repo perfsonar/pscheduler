@@ -761,7 +761,6 @@ class RunWorker:
                                     WHERE id = %s
                                     """,
                                     [failures,
-                                     failures,
                                      pscheduler.json_dump(result_full),
                                      result_merged_text,
                                      survey,
