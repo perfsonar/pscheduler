@@ -14,7 +14,7 @@ CREATE TYPE external_program_result AS (
 
 
 --
--- Run the pscheduler frontend's "internal" command
+-- Run a pscheduler frontend command
 --
 -- TODO: Figure out what do do when DB is off-node.  Probably need an
 -- external process like the task runner.
@@ -24,10 +24,10 @@ CREATE TYPE external_program_result AS (
 -- http://stackoverflow.com/a/4825933.  (Uses threading... Ick.)
 --
 
-DO $$ BEGIN PERFORM drop_function_all('pscheduler_internal'); END $$;
+DO $$ BEGIN PERFORM drop_function_all('pscheduler_command'); END $$;
 
-CREATE OR REPLACE FUNCTION pscheduler_internal(
-    argv TEXT[] DEFAULT '{}',  -- Arguments to pass to 'pscheduler internal'
+CREATE OR REPLACE FUNCTION pscheduler_command(
+    argv TEXT[] DEFAULT '{}',  -- Arguments to pass to 'pscheduler'
     input TEXT DEFAULT NULL,   -- What goes to the standard input
     timeout INTEGER DEFAULT 5  -- How long to wait in seconds
 )
@@ -39,7 +39,7 @@ import pscheduler
 try:
 
     status, stdout, stderr = pscheduler.run_program(
-        [ 'pscheduler', 'internal' ] + argv,
+        [ 'pscheduler' ] + argv,
 	stdin = input,
 	timeout = timeout
 	)

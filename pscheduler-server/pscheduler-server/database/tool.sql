@@ -297,7 +297,7 @@ DECLARE
     json_result TEXT;
     sschema NUMERIC;  -- Name dodges a reserved word
 BEGIN
-    run_result := pscheduler_internal(ARRAY['list', 'tool']);
+    run_result := pscheduler_command(ARRAY['internal', 'list', 'tool']);
     IF run_result.status <> 0 THEN
        RAISE EXCEPTION 'Unable to list installed tools: %', run_result.stderr;
     END IF;
@@ -307,7 +307,7 @@ BEGIN
     FOR tool_name IN (select * from jsonb_array_elements_text(tool_list))
     LOOP
 
-	run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_name, 'enumerate']);
+	run_result := pscheduler_command(ARRAY['internal', 'invoke', 'tool', tool_name, 'enumerate']);
         IF run_result.status <> 0 THEN
             RAISE WARNING 'Tool "%" failed to enumerate: %',
 	        tool_name, run_result.stderr;
@@ -364,8 +364,8 @@ BEGIN
         RAISE EXCEPTION 'Tool ID % is invalid', tool_id;
     END IF;
 
-    run_result := pscheduler_internal(
-        ARRAY['invoke', 'tool', tool_name, 'can-run'], test::TEXT, 5
+    run_result := pscheduler_command(
+        ARRAY['internal', 'invoke', 'tool', tool_name, 'can-run'], test::TEXT, 5
         );
 
     -- Any result other than 1 indicates a problem that shouldn't be
