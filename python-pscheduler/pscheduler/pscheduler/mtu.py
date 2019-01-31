@@ -9,6 +9,9 @@ import socket
 from ipaddr import ip_addr_version
 from program import run_program
 
+mtu_match = re.compile("^.*pmtu ([0-9]+)")
+hop_match = re.compile("^\s*[0-9]+\??:")
+
 
 def mtu_path_is_safe(host, ipversion=None):
 
@@ -42,17 +45,24 @@ def mtu_path_is_safe(host, ipversion=None):
     if status != 0:
         return(False, "Error: %s" % (stderr.strip()))
 
-    mtu_match = re.compile("^.*pmtu ([0-9]+)")
-
     mtus = []
+    hops = 0
+
     for line in stdout.split("\n"):
         matches = mtu_match.match(line)
         if matches is not None:
             mtu = int(matches.groups()[0])
             mtus.append(mtu)
 
+        matches = hop_match.match(line)
+        if matches is not None:
+            hops += 1
+
     if not mtus:
         return (False, "Found no MTU information in trace to %s" % (host))
+
+    if hops == 1:
+        return (True, "%d (Local)" % (mtus[0]))
 
     if len(mtus) == 1:
         return (False, "Found only one MTU in trace to %s" % (host))

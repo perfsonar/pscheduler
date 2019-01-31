@@ -88,9 +88,16 @@ host_a = options.host
 hosts = [host_a]
 try:
     host_z = remaining_args[0]
-    hosts.append(host_z)
 except IndexError:
     host_z = None
+
+if host_z is not None:
+    if host_z == host_a:
+        print
+        print "Both hosts are the same; assuming you meant to troubleshoot only one."
+        print
+    else:
+        hosts.append(host_z)
 
 
 
@@ -392,7 +399,10 @@ for host in hosts:
         if host_z is None:
             ok("Unsynchronized (Not considered fatal)")
         else:
-            ok("Unsynchronized  (See check against %s)" % (host_z))
+            if host == host_a:
+                ok("Unsynchronized  (See check against %s)" % (host_z))
+            else:
+                ok("Unsynchronized")
 
     # Hold this for later two-host comparison
     clocks[host] = result
@@ -434,7 +444,7 @@ for host in hosts:
 
 
 
-if host_z is None:
+if len(hosts) == 1:
     print
     pscheduler.succeed("pScheduler appears to be functioning normally.")
 
