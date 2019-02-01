@@ -261,6 +261,7 @@ def run_client():
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e)
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": " ".join(iperf3_args),
                                  "error": "The iperf3 command failed during execution. See server logs for more details."})
 
 
@@ -355,6 +356,7 @@ def run_server():
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e);
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": " ".join(iperf3_args),
                                  "error": "The iperf3 command failed during execution. See server logs for more details."})
 
 
@@ -372,9 +374,10 @@ def _make_result(command, status, stdout, stderr):
             pass
 
         if not error_text:
-            error_text = "%s\n%s" % (stdout, stderr)
+            error_text = "%s\n\n%s\n%s" % (stdout, stderr)
 
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": command,
                                  "error": "iperf3 returned an error: %s" % (error_text)})
 
     lines = stdout.split("\n")    
