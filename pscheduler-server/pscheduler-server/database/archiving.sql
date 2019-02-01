@@ -221,15 +221,34 @@ BEGIN
                 expires := NULL;
 	    END IF;
 
-	    INSERT INTO archiving (run, archiver, archiver_data, ttl_expires, transform)
-    	    VALUES (
-    	        NEW.id,
-    	        (SELECT id from archiver WHERE name = archive #>> '{archiver}'),
-	        (archive #> '{data}')::JSONB,
-	        expires,
-		(archive #> '{transform}')
-    	    );
-            inserted := TRUE;
+	    -- If there is no "runs" value in the archive spec, treat
+	    -- it as archive only on success, otherwise, see if the
+	    -- final state of the run means we should do the
+	    -- archiving.
+
+	    IF NOT archive ? 'runs' THEN
+	        archive := archive || '{"runs": "succeeded"}'::JSONB;
+	    END IF;
+
+	    IF archive #>> '{runs}' = 'all'
+	       OR EXISTS (SELECT * FROM run_state
+	                  WHERE run_state.id = NEW.state
+	                  AND success = CASE
+	                     WHEN archive #>> '{runs}' = 'succeeded' THEN TRUE
+	                     WHEN archive #>> '{runs}' = 'failed' THEN FALSE
+	                     ELSE NULL
+	                     END)
+	    THEN
+	        INSERT INTO archiving (run, archiver, archiver_data, ttl_expires, transform)
+    	        VALUES (
+    	            NEW.id,
+    	            (SELECT id from archiver WHERE name = archive #>> '{archiver}'),
+	            (archive #> '{data}')::JSONB,
+	            expires,
+		    (archive #> '{transform}')
+    	        );
+                inserted := TRUE;
+	    END IF;
         END LOOP;
 
         IF inserted THEN
