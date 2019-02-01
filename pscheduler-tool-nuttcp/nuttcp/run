@@ -188,6 +188,7 @@ def run_client():
     except Exception as e:
         logger.error("nuttcp failed to complete execution: %s" % e)
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": " ".join(nuttcp_args),
                                  "error": "The nuttcp command failed during execution. See server logs for more details."})
 
 
@@ -239,6 +240,7 @@ def run_server():
     except Exception as e:
         logger.error("nuttcp failed to complete execution: %s" % e);
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": " ".join(nuttcp_args),
                                  "error": "The nuttcp command failed during execution. See server logs for more details."})
 
 
@@ -254,14 +256,16 @@ def _make_result(command_line, status, stdout, stderr, parse=True):
     
     if status:
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": command_line,
                                  "error": "nuttcp returned an error: %s\n%s" % (stdout, stderr)})
 
     lines = stdout.split("\n")    
     logger.debug("Lines are %s " % lines)
 
-    results = {}
     if parse:
         results = nuttcp_parser.parse_output(lines)
+    else:
+        results = { "succeeded": True }
 
     results['diags'] = "%s\n\n%s\n%s" % (command_line, stdout, stderr)
 

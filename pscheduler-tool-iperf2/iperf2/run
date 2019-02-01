@@ -197,7 +197,8 @@ def run_client():
         status, stdout, stderr = pscheduler.run_program(iperf2_args)
     except Exception as e:
         pscheduler.succeed_json({"succeeded": False,
-                                 "error": "The iperf2 command failed during execution. See server logs for more details."
+                                 "diags": " ".join(iperf2_args),
+                                 "error": "%s\n%s" % (stdout, stderr)
                                  })
     
     #see if command completed successfully
@@ -208,6 +209,7 @@ def run_client():
     # showed up in stderr
     if status or stderr:
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": " ".join(iperf2_args),
                                  "error": "iperf2 returned an error: %s" % stderr
                                  })
 
@@ -244,6 +246,7 @@ def run_server():
     except Exception as e:
         logger.error("iperf2 failed to complete execution: %s" % e);
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": " ".join(iperf2_args),
                                  "error": "The iperf2 command failed during execution. See server logs for more details."
                                  })
 
@@ -252,6 +255,7 @@ def run_server():
     # showed up in stderr
     if status or stderr:
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": " ".join(iperf2_args),
                                  "error": "iperf2 returned an error: %s" % stderr
                                  })
     
