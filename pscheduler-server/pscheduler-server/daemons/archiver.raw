@@ -582,7 +582,17 @@ class ArchiveWorker():
         run_href = pscheduler.api_url(path="tasks/%s/runs/%s" \
                                       % (task_uuid, run_uuid))
 
-        # Strip the internal-use-only parts out of the run details.
+        # Strip the internal-use-only parts from the task details.
+        for remove in [
+                'archives'
+        ]:
+            try:
+                del task_detail[remove]
+            except KeyError:
+                pass
+
+
+        # Strip the internal-use-only parts from the run details.
         for remove in [
                 'archivings',
                 'participant-data',
@@ -615,6 +625,7 @@ class ArchiveWorker():
                     'version': tool['version'],
                 },
                 'run': run_detail,
+                'task': task_detail,
                 'participants': participants_merged,
                 'result': result_merged,
                 'reference': task_detail.get('reference', None)
