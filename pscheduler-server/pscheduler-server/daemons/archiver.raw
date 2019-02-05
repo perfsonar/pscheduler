@@ -570,7 +570,7 @@ class ArchiveWorker():
 
         archiving_id, task_uuid, run_uuid, archiver, archiver_data, start, \
             duration, test, tool, participants, result_merged, attempts, \
-            last_attempt, transform, task_detail = self.row
+            last_attempt, transform, task_detail, run_detail = self.row
 
         participants_merged = []
         for participant in participants:
@@ -581,6 +581,18 @@ class ArchiveWorker():
         task_href = pscheduler.api_url(path="tasks/%s" % (task_uuid))
         run_href = pscheduler.api_url(path="tasks/%s/runs/%s" \
                                       % (task_uuid, run_uuid))
+
+        # Strip the internal-use-only parts out of the run details.
+        for remove in [
+                'archivings',
+                'participant-data',
+                'participant-data-full',
+                'result'
+        ]:
+            try:
+                del run_detail[remove]
+            except KeyError:
+                pass
 
         self.log.debug("%d: Task is %s", self.id, task_href)
         self.log.debug("%d: Run is %s", self.id, run_href)
@@ -602,6 +614,7 @@ class ArchiveWorker():
                     'name': tool['name'],
                     'version': tool['version'],
                 },
+                'run': run_detail,
                 'participants': participants_merged,
                 'result': result_merged,
                 'reference': task_detail.get('reference', None)
@@ -836,7 +849,7 @@ def main_program():
         result = db.query("""SELECT id, task_uuid, run_uuid, archiver,
                              archiver_data, start,
                              duration, test, tool, participants, result,
-                             attempts, last_attempt, transform, task_detail
+                             attempts, last_attempt, transform, task_detail, run_detail
                              FROM archiving_next(%s)""",
                           [options.max_parallel])
 

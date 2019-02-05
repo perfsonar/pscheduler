@@ -320,7 +320,8 @@ RETURNS TABLE (
     attempts INTEGER,
     last_attempt TIMESTAMP WITH TIME ZONE,
     transform JSON,
-    task_detail JSONB
+    task_detail JSONB,
+    run_detail JSONB
 )
 AS $$
 BEGIN
@@ -344,7 +345,8 @@ BEGIN
 	archiving.transform AS transform,
 	-- TODO: This covers a number of things above.  Remove the
 	-- redundancies here and in the archiver.
-	task.json_detail as task_detail
+	task.json_detail AS task_detail,
+	run_json(run.id) AS run_detail
     FROM
         archiving
         JOIN archiver ON archiver.id = archiving.archiver
