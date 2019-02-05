@@ -1,5 +1,5 @@
 #
-# Validator for "snmpset" Test
+# Validator for "disk-to-disk" Test
 #
 
 #
@@ -21,10 +21,11 @@ def spec_is_valid(json):
                 # and should be included
                 "properties": {
                     "schema":       { "$ref": "#/pScheduler/Cardinal" },
-                    "source":       { "$ref": "#/pScheduler/String"   },
-                    "source-node":  { "$ref": "#/pScheduler/Host"     },
+                    "host":         { "$ref": "#/pScheduler/Host"     },
 
+                    "source":       { "$ref": "#/pScheduler/String"   },
                     "dest":         { "$ref": "#/pScheduler/String"   },
+                    # TODO: This isn't actually used anywhere.  Why is it here?
                     "dest-path":    { "$ref": "#/pScheduler/String"   },
                     
 		    "timeout":      { "$ref": "#/pScheduler/Duration" }, 
