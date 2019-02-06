@@ -283,7 +283,7 @@ def run_program(argv,              # Program name and args
                 status = process.returncode
 
             except subprocess32.TimeoutExpired:
-                __end_process(process)
+                this.__end_process(process)
                 status = 0 if timeout_ok else 2
                 stdout = ''
                 stderr = "Process took too long to run."
@@ -322,7 +322,7 @@ def run_program(argv,              # Program name and args
 
                 if len(reads) == 0:
                     __running_drop(process)
-                    __end_process(process)
+                    this.__end_process(process)
                     return 2, None, "Process took too long to run."
 
                 for readfd in reads:
@@ -359,7 +359,7 @@ def run_program(argv,              # Program name and args
 
     if process is not None:
         __running_drop(process)
-        __end_process(process)
+        this.__end_process(process)
 
 
     if fail_message is not None and status != 0:
@@ -621,7 +621,7 @@ class ExternalProgram(object):
 
     def done(self):
         self.process.stdin.close()
-        __end_process(self.process)
+        this.__end_process(self.process)
 
     def kill(self):
         self.done()
