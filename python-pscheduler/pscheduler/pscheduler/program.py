@@ -97,7 +97,7 @@ def __end_process(process):
         process.wait(timeout=0.5)
     except OSError:
         pass  # Can't kill things that have changed UID.
-    except subprocess.TimeoutExpired:
+    except subprocess32.TimeoutExpired:
         process.kill()
 
 
