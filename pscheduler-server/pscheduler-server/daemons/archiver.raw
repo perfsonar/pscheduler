@@ -666,7 +666,7 @@ class ArchiveWorker():
                     "succeeded": False,
                     "error": "Exception during archiving: %s" % (str(ex))
                 }
-                self.log.debug("%d: Exception: %s", self.id, str(ex))
+                self.log.exeption("%d: Exception" % (self.id))
                 returncode = 1
 
 
