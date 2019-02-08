@@ -6,8 +6,13 @@
 if [ -e /etc/debian_version ]; then
     dpkg-query -W 'pscheduler-*' \
         | awk '{sub("[^0-9.].*", "", $2); printf "%-40s %s\n", $1, $2}'
-else
+
+elif [ -e /etc/redhat-release ]; then
     rpm -qa --queryformat '%-40{NAME}%{VERSION}\n' \
         | egrep -e '^pscheduler-' \
         | sort
+
+else
+    echo "Cannot list packages on this operating system." 1>&2
+    exit 1
 fi
