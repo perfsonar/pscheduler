@@ -59,6 +59,19 @@ BEGIN
     END IF;
 
 
+    -- Version 2 to version 3
+    IF t_version = 2
+    THEN
+
+        -- Indicates whether the state indicates success (TRUE),
+        -- failure (FALSE) or neither (NULL).
+        ALTER TABLE run_state ADD COLUMN
+        success BOOLEAN DEFAULT NULL;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -214,24 +227,25 @@ ON run_state
 -- the table was previously populated.
 
 ALTER TABLE run_state DISABLE TRIGGER run_state_alter;
-INSERT INTO run_state (id, display, enum, finished)
+INSERT INTO run_state (id, display, enum, finished, success)
 VALUES
-    (run_state_pending(),   'Pending',     'pending',   FALSE),
-    (run_state_on_deck(),   'On Deck',     'on-deck',   FALSE),
-    (run_state_running(),   'Running',     'running',   FALSE),
-    (run_state_cleanup(),   'Cleanup',     'cleanup',   TRUE),
-    (run_state_finished(),  'Finished',    'finished',  TRUE),
-    (run_state_overdue(),   'Overdue',     'overdue',   TRUE),
-    (run_state_missed(),    'Missed',      'missed',    TRUE),
-    (run_state_failed(),    'Failed',      'failed',    TRUE),
-    (run_state_preempted(), 'Preempted',   'preempted', TRUE),
-    (run_state_nonstart(),  'Non-Starter', 'nonstart',  TRUE),
-    (run_state_canceled(),  'Canceled',    'canceled',  TRUE)
+    (run_state_pending(),   'Pending',     'pending',   FALSE, NULL),
+    (run_state_on_deck(),   'On Deck',     'on-deck',   FALSE, NULL),
+    (run_state_running(),   'Running',     'running',   FALSE, NULL),
+    (run_state_cleanup(),   'Cleanup',     'cleanup',   TRUE,  NULL),
+    (run_state_finished(),  'Finished',    'finished',  TRUE,  TRUE),
+    (run_state_overdue(),   'Overdue',     'overdue',   TRUE,  FALSE),
+    (run_state_missed(),    'Missed',      'missed',    TRUE,  FALSE),
+    (run_state_failed(),    'Failed',      'failed',    TRUE,  FALSE),
+    (run_state_preempted(), 'Preempted',   'preempted', TRUE,  FALSE),
+    (run_state_nonstart(),  'Non-Starter', 'nonstart',  TRUE,  FALSE),
+    (run_state_canceled(),  'Canceled',    'canceled',  TRUE,  NULL)
 ON CONFLICT (id) DO UPDATE
 SET
     display = EXCLUDED.display,
     enum = EXCLUDED.enum,
-    finished = EXCLUDED.finished;
+    finished = EXCLUDED.finished,
+    success = EXCLUDED.success;
 ALTER TABLE run_state ENABLE TRIGGER run_state_alter;
 
 

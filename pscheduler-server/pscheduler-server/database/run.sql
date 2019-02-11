@@ -753,6 +753,74 @@ AS
 
 
 
+
+--
+-- JSON Representation
+--
+
+DO $$ BEGIN PERFORM drop_function_all('run_json'); END $$;
+
+-- Return a JSON record suitable for returning by the REST API
+CREATE OR REPLACE FUNCTION run_json(run_id BIGINT)
+RETURNS JSONB
+AS $$
+DECLARE
+    rec RECORD;
+    result JSONB;
+BEGIN
+    SELECT INTO rec
+        run.*,
+        run_state.*,
+	task.*,
+	archiving_json(run.id) AS archivings
+    FROM
+        run
+        JOIN run_state ON run_state.id = run.state
+        JOIN task ON task.id = run.task
+    WHERE run.id = run_id;
+    IF NOT FOUND
+    THEN
+        RAISE EXCEPTION 'No such run.';
+    END IF;
+
+    result := json_build_object(
+        'start-time', timestamp_with_time_zone_to_iso8601(lower(rec.times)),
+        'end-time', timestamp_with_time_zone_to_iso8601(upper(rec.times)),
+        'duration', interval_to_iso8601(upper(rec.times) - lower(rec.times)),
+	'participant', rec.participant,
+	'participants', rec.participants,
+	'participant-data', rec.part_data,
+	'participant-data-full', rec.part_data_full,
+	'result', rec.result,
+	'result-full', rec.result_full,
+	'result-merged', rec.result_merged,
+	'state', rec.enum,
+	'state-display', rec.display,
+	'errors', rec.errors,
+	-- clock-survey is conditional; see below.
+	-- archivings is conditional; see below.
+        'added', timestamp_with_time_zone_to_iso8601(rec.added),
+	'priority', rec.priority,
+	'limit-diags', rec.limit_diags
+	-- task-href has to be added by the caller
+	-- result-href has to be added by the caller
+    );
+
+    IF rec.clock_survey IS NOT NULL THEN
+        result := jsonb_set(result, '{clock-survey}', rec.clock_survey::JSONB, TRUE);
+    END IF;
+
+    IF rec.archivings IS NOT NULL THEN
+        result := jsonb_set(result, '{archivings}', rec.archivings::JSONB, TRUE);
+    END IF;
+
+    RETURN result;
+END
+$$ language plpgsql;
+
+
+
+
 --
 -- API
 --

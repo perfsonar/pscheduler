@@ -292,6 +292,7 @@ def tasks_uuid_runs_run(task, run):
 
         # Obey the wait time with tries at 0.5s intervals
         tries = wait_time * 2 if (wait_local or wait_merged) else 1
+        result = {}
 
         while tries:
 
@@ -299,34 +300,16 @@ def tasks_uuid_runs_run(task, run):
                 cursor = dbcursor_query(
                     """
                     SELECT
-                        lower(run.times),
-                        upper(run.times),
-                        upper(run.times) - lower(run.times),
-                        task.participant,
-                        task.nparticipants,
-                        task.participants,
-                        run.part_data,
-                        run.part_data_full,
-                        run.result,
-                        run.result_full,
-                        run.result_merged,
-                        run_state.enum,
-                        run_state.display,
-                        run.errors,
-                        run.clock_survey,
-                        run.id,
-                        archiving_json(run.id),
-                        run.added,
-                        run_state.finished,
-                        run.priority,
-                        run.limit_diags
+                        run_json(run.id),
+                        run_state.finished
                     FROM
-                        run
-                        JOIN task ON task.id = run.task
+                        task
+                        JOIN run ON task.id = run.task
                         JOIN run_state ON run_state.id = run.state
-                    WHERE
+                    WHERE 
                         task.uuid = %s
-                        AND run.uuid = %s""", [task, run])
+                        AND run.uuid = %s
+                    """, [task, run])
             except Exception as ex:
                 log.exception()
                 return error(str(ex))
@@ -335,26 +318,26 @@ def tasks_uuid_runs_run(task, run):
                 cursor.close()
                 return not_found()
 
-            row = cursor.fetchone()
+            result, finished = cursor.fetchone()
             cursor.close()
 
             if not (wait_local or wait_merged):
                 break
             else:
-                if (wait_local and row[8] is None) \
+                if (wait_local and result['result'] is None) \
                    or (wait_merged \
-                       and ( (row[9] is None) or (not row[18]) ) ):
-                    log.debug("Waiting (%d left) for merged: %s %s", tries, row[9], row[18])
+                       and ( (result['result-full'] is None) or (not finished) ) ):
+                    log.debug("Waiting (%d left) for merged: %s %s", tries, result['result-full'], finished)
                     time.sleep(0.5)
                     tries -= 1
                 else:
                     log.debug("Got the requested result.")
                     break
 
-        # Return a result Whether or not we timed out and let the
-        # client sort it out.
 
-        result = {}
+        # Even if we timed out waiting, return the last result we saw
+        # and let the client sort it out.
+
 
         # This strips any query parameters and replaces the last item
         # with the run, which might be needed if the 'first' option
@@ -366,35 +349,17 @@ def tasks_uuid_runs_run(task, run):
         href = urlparse.urljoin( request.url, href_path )
 
         result['href'] = href
-        result['start-time'] = pscheduler.datetime_as_iso8601(row[0])
-        result['end-time'] = pscheduler.datetime_as_iso8601(row[1])
-        result['duration'] = pscheduler.timedelta_as_iso8601(row[2])
-        participant_num = row[3]
-        result['participant'] = participant_num
-        result['participants'] = [
-            server_netloc()
-            if participant is None and participant_num == 0
-            else participant
-            for participant in row[5]
-            ]
-        result['participant-data'] = row[6]
-        result['participant-data-full'] = row[7]
-        result['result'] = row[8]
-        result['result-full'] = row[9]
-        result['result-merged'] = row[10]
-        result['state'] = row[11]
-        result['state-display'] = row[12]
-        result['errors'] = row[13]
-        if row[14] is not None:
-            result['clock-survey'] = row[14]
-        if row[16] is not None:
-            result['archivings'] = row[16]
-        if row[17] is not None:
-            result['added'] = pscheduler.datetime_as_iso8601(row[17])
-        result['priority'] = row[19]
-        result['limit-diags'] = row[20]
         result['task-href'] = root_url('tasks/' + task)
         result['result-href'] = href + '/result'
+
+        # For a NULL first participant, fill in the netloc.
+
+        try:
+            if result['participants'][0] is None:
+                result['participants'][0] = server_netloc()
+        except KeyError:
+            pass  # Not there?  Don't care.
+
 
         return json_response(result)
 
