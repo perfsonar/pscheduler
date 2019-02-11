@@ -484,6 +484,7 @@ __dictionary__ = {
             "data": { "$ref": "#/pScheduler/AnyJSON" },
             "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
             "ttl": { "$ref": "#/pScheduler/Duration" },
+            "uri-host": { "$ref": "#/pScheduler/URLHostPort" }
             },
         "additionalProperties": False,
         "required": [

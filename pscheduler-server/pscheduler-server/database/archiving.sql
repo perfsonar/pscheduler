@@ -152,6 +152,18 @@ BEGIN
     END IF;
 
 
+    -- Version 7 to version 8
+    -- Added full archive spec
+    IF t_version = 7
+    THEN
+
+	ALTER TABLE archiving ADD COLUMN
+	spec JSON NOT NULL;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -239,13 +251,14 @@ BEGIN
 	                     ELSE NULL
 	                     END)
 	    THEN
-	        INSERT INTO archiving (run, archiver, archiver_data, ttl_expires, transform)
+	        INSERT INTO archiving (run, archiver, archiver_data, ttl_expires, transform, spec)
     	        VALUES (
     	            NEW.id,
     	            (SELECT id from archiver WHERE name = archive #>> '{archiver}'),
 	            (archive #> '{data}')::JSONB,
 	            expires,
-		    (archive #> '{transform}')
+		    (archive #> '{transform}'),
+		    archive
     	        );
                 inserted := TRUE;
 	    END IF;
@@ -321,7 +334,8 @@ RETURNS TABLE (
     last_attempt TIMESTAMP WITH TIME ZONE,
     transform JSON,
     task_detail JSONB,
-    run_detail JSONB
+    run_detail JSONB,
+    spec JSON
 )
 AS $$
 BEGIN
@@ -346,7 +360,8 @@ BEGIN
 	-- TODO: This covers a number of things above.  Remove the
 	-- redundancies here and in the archiver.
 	task.json_detail AS task_detail,
-	run_json(run.id) AS run_detail
+	run_json(run.id) AS run_detail,
+	archiving.spec AS spec
     FROM
         archiving
         JOIN archiver ON archiver.id = archiving.archiver
