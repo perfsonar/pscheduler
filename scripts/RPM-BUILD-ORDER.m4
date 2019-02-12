@@ -43,16 +43,11 @@ postgresql-load
 
 # Python Modules
 python-argparse
-# TODO: Drop this when we drop support for EL6.
-ifelse(REDHAT_RELEASE_MAJOR,6,Cython,)
-ifelse(REDHAT_RELEASE_MAJOR,7,
-    python-functools32,)
+python-functools32
 python-isodate
 python-netaddr
 python-ntplib
 python-py-radix
-# TODO: Drop this when we drop support for EL6.
-ifelse(REDHAT_RELEASE_MAJOR,6,jq,)
 python-pyjq
 # TODO: This can be dropped in 1.2
 python-repoze.lru
@@ -65,9 +60,7 @@ python2-pyasn1
 pysnmp
 
 # JSON Tools
-# Available as python2-jsonschema in EPEL for EL7
-ifelse(REDHAT_RELEASE_MAJOR,6,python-jsonschema,)
-ifelse(REDHAT_RELEASE_MAJOR,6,python-jsontemplate,)
+python-jsontemplate
 
 
 # Home-grown Python Modules
