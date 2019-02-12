@@ -65,7 +65,7 @@ class Rewriter():
         )
 
 
-    def __call__(self, task, classifiers):
+    def __call__(self, task, limits, classifiers):
         """
         Rewrite the task given the classifiers.  Returns a tuple
         containing the rewritten task and an array of diagnostic
