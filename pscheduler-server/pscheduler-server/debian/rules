@@ -36,7 +36,7 @@ override_dh_auto_build:
 		PGUSER=pscheduler \
 		PSUSER=pscheduler \
 		ARCHIVERDEFAULTDIR=/etc/pscheduler/default-archives \
-		RUNDIR=/var/run \
+		RUNDIR=/var/run/pscheduler-server \
 		VAR=/var
 
 	make -C utilities \
@@ -84,6 +84,7 @@ override_dh_auto_install:
 		PREFIX=$(ROOT) \
 		DSN_FILE=/etc/pscheduler/database/database-dsn \
 		LIMITS_FILE=/etc/pscheduler/limits.conf \
+		RUN_DIR=/var/run/pscheduler-server \
 		install
 	cp api-server/*.py api-server/*.wsgi $(ROOT)/usr/share/pscheduler/api-server/
 	rm $(ROOT)/usr/share/pscheduler/api-server/*.py?
