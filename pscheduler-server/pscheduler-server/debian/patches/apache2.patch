@@ -1,13 +1,10 @@
-Index: pscheduler-server/api-server/pscheduler-api-server.conf.raw
-===================================================================
---- pscheduler-server.orig/api-server/pscheduler-api-server.conf.raw	2018-10-24 16:13:52.781790826 +0100
-+++ pscheduler-server/api-server/pscheduler-api-server.conf.raw	2018-10-24 16:49:38.757074601 +0100
-@@ -16,8 +16,13 @@
+--- pscheduler-server.orig/api-server/pscheduler-api-server.conf.raw	2019-02-13 15:40:32.845115164 +0100
++++ pscheduler-server/api-server/pscheduler-api-server.conf.raw	2019-02-13 15:40:32.845115164 +0100
+@@ -26,7 +26,13 @@
      WSGIProcessGroup __USER_NAME__
      WSGIApplicationGroup __USER_NAME__
  
--    Order deny,allow
--    Allow from all
+-    Require all granted
 +    <IfVersion >= 2.4>
 +        Require all granted
 +    </IfVersion>
