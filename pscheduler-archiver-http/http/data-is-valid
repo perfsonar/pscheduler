@@ -6,7 +6,7 @@
 import pscheduler
 
 try:
-    json = pscheduler.json_load(max_schema=1)
+    json = pscheduler.json_load(max_schema=2)
 except ValueError as ex:
     pscheduler.succeed_json({
         "valid": False,
@@ -14,22 +14,64 @@ except ValueError as ex:
         })
 
 data_validator = {
-    "type": "object",
-    "properties": {
-        "schema": { "$ref": "#/pScheduler/Cardinal" },
-        "_url": { "$ref": "#/pScheduler/URL" },
-        "op": {
-            "type": "string",
-            "enum": [
-                "put",
-                "post",
-            ]
+
+    "local": {
+
+        "HTTPArchiveSpecification_V1": {
+            "type": "object",
+            "properties": {
+                "schema": {" type": "integer", "enum": [ 1 ] },
+                "_url": { "$ref": "#/pScheduler/URL" },
+                "op": {
+                    "type": "string",
+                    "enum": [
+                        "put",
+                        "post",
+                    ]
+                },
+                "bind": { "$ref": "#/pScheduler/Host" },
+                "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+            },
+            "required": [ "_url" ],
+            "additionalProperties": False
         },
-        "bind": { "$ref": "#/pScheduler/Host" },
-        "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+
+        "HTTPArchiveSpecification_V2": {
+            "type": "object",
+            "properties": {
+                "schema": {" type": "integer", "enum": [ 2 ] },
+                "_url": { "$ref": "#/pScheduler/URL" },
+                "op": {
+                    "type": "string",
+                    "enum": [
+                        "put",
+                        "post",
+                    ]
+                },
+                "_headers": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^.*$": { "$ref": "#/pScheduler/String" }
+                    },
+                    "additionalProperties": False
+                },
+                "bind": { "$ref": "#/pScheduler/Host" },
+                "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+            },
+            "required": [ "schema", "_url" ],
+            "additionalProperties": False
+        },
+
+        "HTTPArchiveSpecification": {
+            "anyOf": [
+                { "$ref": "#/local/HTTPArchiveSpecification_V1" },
+                { "$ref": "#/local/HTTPArchiveSpecification_V2" }
+            ]
+        }
     },
-    "required": [ "_url" ],
-    "additionalProperties": False
+
+    "$ref": "#/local/HTTPArchiveSpecification"
+
 }
 
 valid, error = pscheduler.json_validate(json, data_validator)

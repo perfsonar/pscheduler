@@ -167,7 +167,7 @@ BEGIN
 	-- Calculate CLI for all existing tasks
 	FOR v1_2_record IN (SELECT * FROM task)
 	LOOP
-	    v1_2_run_result := pscheduler_internal(ARRAY['invoke', 'test',
+	    v1_2_run_result := pscheduler_command(ARRAY['internal', 'invoke', 'test',
 	        v1_2_record.json #>> '{test, type}', 'spec-to-cli'],
 		v1_2_record.json #>> '{test, spec}' );
 	    IF v1_2_run_result.status <> 0 THEN
@@ -302,10 +302,19 @@ BEGIN
     -- Add runs_started column
     IF t_version = 11
     THEN
-
         -- Number of times a run has gone into the running state
 	ALTER TABLE task ADD COLUMN runs_started NUMERIC
 	DEFAULT 0;
+
+        t_version := t_version + 1;
+    END IF;
+
+    -- Version 12 to version 13
+    -- Add priority column.
+    IF t_version = 12
+    THEN
+	ALTER TABLE task ADD COLUMN
+	priority INTEGER;
 
         t_version := t_version + 1;
     END IF;
@@ -386,7 +395,7 @@ BEGIN
         THEN
 
 	    -- Calculate CLI equivalent
-	    run_result := pscheduler_internal(ARRAY['invoke', 'test', test_type, 'spec-to-cli'],
+	    run_result := pscheduler_command(ARRAY['internal', 'invoke', 'test', test_type, 'spec-to-cli'],
 		          NEW.json #>> '{test, spec}' );
 	    IF run_result.status <> 0 THEN
 	        RAISE EXCEPTION 'Unable to divine CLI from spec: %', run_result.stderr;
@@ -399,6 +408,11 @@ BEGIN
             THEN
                 RAISE EXCEPTION 'INTERNAL ERROR: Test produced empty participant list from task.';
             END IF;
+
+	    -- Set the priority
+	    IF (NEW.json #> '{priority}') IS NOT NULL THEN
+	        NEW.priority := NEW.json #>> '{priority}';
+	    END IF;
 
         END IF;
 
@@ -529,7 +543,7 @@ BEGIN
 	
 	IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND NEW.json <> OLD.json)
         THEN
-	    run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_type, 'duration'],
+	    run_result := pscheduler_command(ARRAY['internal', 'invoke', 'tool', tool_type, 'duration'],
 		          NEW.json #>> '{test, spec}' );
 	    IF run_result.status <> 0 THEN
 	        RAISE EXCEPTION 'Unable to determine duration of test: %', run_result.stderr;
@@ -800,6 +814,7 @@ CREATE OR REPLACE FUNCTION api_task_post(
     hints JSONB,
     limits_passed JSON = '[]',
     participant INTEGER DEFAULT 0,
+    priority INTEGER DEFAULT NULL,
     task_uuid UUID = NULL,
     enabled BOOLEAN = TRUE,
     diags TEXT = '(None)'
@@ -816,8 +831,10 @@ BEGIN
    END IF;
 
    WITH inserted_row AS (
-        INSERT INTO task(json, participants, limits_passed, participant, uuid, hints, enabled, diags)
-        VALUES (task_package, array_to_json(participant_list), limits_passed, participant, task_uuid, hints, enabled, diags)
+        INSERT INTO task(json, participants, limits_passed, participant,
+	                 priority, uuid, hints, enabled, diags)
+        VALUES (task_package, array_to_json(participant_list), limits_passed,
+	        participant, priority, task_uuid, hints, enabled, diags)
         RETURNING *
     ) SELECT INTO inserted * from inserted_row;
 

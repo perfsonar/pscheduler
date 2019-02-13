@@ -21,6 +21,7 @@ FILES=\
 	table_version \
 	\
 	configurables \
+	priority \
 	control \
 	http_queue \
 	scheduling_class \

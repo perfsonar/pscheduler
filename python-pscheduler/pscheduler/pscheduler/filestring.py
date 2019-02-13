@@ -14,7 +14,10 @@ def string_from_file(string, strip=True):
     (default behavior).
     """
 
-    if string[0] != "@":
+    if not isinstance(string, basestring):
+        raise ValueError("Argument must be a string")
+
+    if (not string) or (string[0] != "@"):
 
         value = string
 
@@ -28,9 +31,11 @@ def string_from_file(string, strip=True):
 
 
 if __name__ == "__main__":
+    print string_from_file("")
     print string_from_file("Plain string")
     print string_from_file("@/etc/fstab")
     print string_from_file("@~/.bashrc")
+
     try:
         print string_from_file("@/invalid/path")
     except Exception as ex:

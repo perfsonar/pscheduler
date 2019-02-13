@@ -343,8 +343,15 @@ def update_tasks(screen):
         else:
             display_time = run_time
 
+        # Priority, if there is one.
+        pri_value = run.get("priority", None)
+        if pri_value is not None:
+            priority = " %+4d" % (pri_value)
+        else:
+            priority = "     "
+
         # Pad the string out to the width so inverse shows properly.
-        line = "%s  %-12s %s" % (display_time,
+        line = "%s%s %-12s %s" % (display_time, priority,
                                 run["state-display"], " ".join(cli))
         line = "%s%s" % (line, " " * (width-len(line)))
 

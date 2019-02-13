@@ -21,6 +21,7 @@ AS $$
 BEGIN
     PERFORM schedule_maint_minute();
     PERFORM archiving_maint_minute();
+    PERFORM configurables_maint_minute();
 END;
 $$ LANGUAGE plpgsql;
 

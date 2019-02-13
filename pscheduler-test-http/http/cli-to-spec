@@ -72,9 +72,11 @@ if len(remaining_args) != 0:
 
 result = {'schema': 1}
 
-if not options.url:
-    pscheduler.fail("URL must be given")
-else: 
+if options.host is not None:
+    result['host'] = options.host
+if options.host_node is not None:
+    result['host-node'] = options.host_node
+if options.url is not None:
     result['url'] = options.url
 if options.parse is not None:
     result['parse'] = options.parse

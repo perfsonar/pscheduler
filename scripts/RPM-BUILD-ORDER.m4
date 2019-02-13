@@ -110,6 +110,7 @@ pscheduler-test-idlebgm
 pscheduler-test-idleex
 pscheduler-test-latency
 pscheduler-test-latencybg
+pscheduler-test-netreach
 pscheduler-test-throughput
 pscheduler-test-rtt
 pscheduler-test-simplestream
@@ -127,12 +128,13 @@ pscheduler-tool-powstream
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-nuttcp
-pscheduler-tool-bwctliperf2			--bundle extras
-pscheduler-tool-bwctliperf3			--bundle extras
-pscheduler-tool-bwctlping			--bundle extras
-pscheduler-tool-bwctltraceroute		--bundle extras
-pscheduler-tool-bwctltracepath		--bundle extras
-pscheduler-tool-net-snmp-set		--bundle extras
+pscheduler-tool-bwctliperf2
+pscheduler-tool-bwctliperf3
+pscheduler-tool-bwctlping
+pscheduler-tool-bwctltraceroute
+pscheduler-tool-bwctltracepath
+pscheduler-tool-net-snmp-set
+pscheduler-tool-nmapreach
 pscheduler-tool-psurl
 pscheduler-tool-pysnmp				--bundle extras
 pscheduler-tool-simplestreamer

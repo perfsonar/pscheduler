@@ -26,8 +26,7 @@ WSGIRestrictEmbedded On
     WSGIProcessGroup __USER_NAME__
     WSGIApplicationGroup __USER_NAME__
 
-    Order deny,allow
-    Allow from all
+    Require all granted
 
 </Directory>
 
@@ -37,8 +36,7 @@ WSGIRestrictEmbedded On
     # Work around fix for CVE-2017-9798.  We take care of permissions
     # internally.
     <Limit GET POST PUT DELETE>
-        Order allow,deny
-        Allow from all
+        Require all granted
     </Limit>
 
 </Location>

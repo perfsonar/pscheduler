@@ -28,24 +28,15 @@ class Rewriter():
             script = transform["script"]
 
 
-        # One quirk of jq is that imports have to be at the top of the
-        # file.  Pull any in the script out and move them to the top
-        # before we define our function or any user code.
-
-        import_include = r"((import|include) [^;]+;)"
-
-
-        # Put imports and includes at the top
-        lines = map(
-            lambda x: x[0],
-            re.findall(import_include, script)
-        )
-
-        # Insert our function definition(s)
-        lines.extend([
+        script_lines = [
 
             "def classifiers:",
             "  ." + self.PRIVATE_KEY + ".classifiers",
+            ";",
+
+            "def classifiers_has($value):",
+            "  ." + self.PRIVATE_KEY + ".classifiers",
+            "  | contains([$value])",
             ";",
 
             "def change($message):",
@@ -62,20 +53,19 @@ class Rewriter():
             "  error(\"Task rejected: \" + ($message | tostring))",
             ";",
 
-            ])
+            script
+            ]
 
-        # Add the rest of the script without the imports and includes
-        lines.append(re.sub(import_include, "", script))
-
-        transform["script"] = lines
+        transform["script"] = script_lines
 
         self.transform = pscheduler.JQFilter(
             filter_spec=transform,
             args=transform.get("args", {}),
+            groom=True
         )
 
 
-    def __call__(self, task, classifiers, validate_callback=None):
+    def __call__(self, task, classifiers):
         """
         Rewrite the task given the classifiers.  Returns a tuple
         containing the rewritten task and an array of diagnostic
@@ -100,8 +90,6 @@ class Rewriter():
 
 
         result = self.transform(task_in)[0]
-
-#        print "RES", pscheduler.json_dump(result, pretty=True)
 
         if ("test" not in result) \
            or ("type" not in result["test"]) \
@@ -188,7 +176,7 @@ if __name__ == "__main__":
         },
         "test": {
             "spec": {
-                "dest": "www.notonthe.net",
+                "dest": "www.perfsonar.net",
                 "schema": 1
             },
             "type": "trace"

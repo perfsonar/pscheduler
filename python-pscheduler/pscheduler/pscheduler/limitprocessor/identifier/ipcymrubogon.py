@@ -3,7 +3,7 @@ Identifier Class for ip-cymru-bogon
 """
 
 import dns
-import ipaddr
+import ipaddress
 import pscheduler
 
 data_validator = {
@@ -41,7 +41,7 @@ class IdentifierIPCymruBogon():
         if not valid:
             raise ValueError("Invalid data: %s" % message)
 
-        self.exclude = [ ipaddr.IPNetwork(addr)
+        self.exclude = [ ipaddress.ip_network(unicode(addr))
                          for addr in data['exclude'] ]
 
         try:
@@ -100,9 +100,9 @@ class IdentifierIPCymruBogon():
 
         # At this point, we have a bogon.  Filter out exclusions.
 
-        net_ip = ipaddr.IPAddress(ip)
+        net_ip = ipaddress.ip_network(unicode(ip))
         for exclude in self.exclude:
-            if net_ip in exclude:
+            if exclude.overlaps(net_ip):
                 return False
 
         # Not excluded; must be a legit bogon.

@@ -2,7 +2,7 @@
 Identifier Class for localif
 """
 
-import ipaddr
+import ipaddress
 import netifaces
 
 def data_is_valid(data):
@@ -38,12 +38,12 @@ class IdentifierLocalIF():
             if netifaces.AF_INET in ifaddrs:
                 for ifaddr in ifaddrs[netifaces.AF_INET]:
                     if 'addr' in ifaddr:
-                        self.cidrs.append(ipaddr.IPNetwork(ifaddr['addr']))
+                        self.cidrs.append(ipaddress.ip_network(unicode(ifaddr['addr'])))
             if netifaces.AF_INET6 in ifaddrs:
                 for ifaddr in ifaddrs[netifaces.AF_INET6]:
                     if 'addr' in ifaddr:
                         #add v6 but remove stuff like %eth0 that gets thrown on end of some addrs
-                        self.cidrs.append(ipaddr.IPNetwork(ifaddr['addr'].split('%')[0]))
+                        self.cidrs.append(ipaddress.ip_network(unicode(ifaddr['addr'].split('%')[0])))
 
 
 
@@ -57,7 +57,7 @@ class IdentifierLocalIF():
         """
 
         try:
-            ip = ipaddr.IPNetwork(hints['requester'])
+            ip = ipaddress.ip_network(unicode(hints['requester']))
         except KeyError:
             return False
 
@@ -66,7 +66,7 @@ class IdentifierLocalIF():
         # weren't GPL: https://pypi.python.org/pypi/pytricia
 
         for cidr in self.cidrs:
-            if ip in cidr:
+            if cidr.overlaps(ip):
                 return True
 
         return False
@@ -77,5 +77,5 @@ if __name__ == "__main__":
 
     ident = IdentifierLocalIF({})
 
-    for ip in [ "127.0.0.1", "::1", "10.1.1.1", "198.129.254.30" ]:
+    for ip in [ "127.0.0.1", "::1", "10.1.1.1", "198.129.254.30", "10.0.0.7" ]:
         print ip, ident.evaluate({ "requester": ip })

@@ -1,0 +1,136 @@
+{
+
+    "#": "-------------------------------------------------------------------",
+    "#": "               pScheduler Sample Limit Configuration               ",
+    "#": "                                                                   ",
+    "#": "                                                                   ",
+    "#": "Does simple re-writes on some tasks.                               ",
+    "#": "                                                                   ",
+    "#": "THIS FILE IS FOR EXAMPLE ONLY AND SHOULD NOT BE USED IN PRODUCTION.",
+    "#": "-------------------------------------------------------------------",
+
+    "schema": 2,
+
+    "#": "-------------------------------------------------------------------",
+    "#": "IDENTIFIERS:  WHO'S ASKING?                                        ",
+    "#": "                                                                   ",
+    "#": "These identify who's asking to run the test.  One requester can    ",
+    "#": "map to zero or more identifiers.                                   ",
+    "#": "-------------------------------------------------------------------",
+
+    "identifiers": [
+	{
+	    "#": "In plain English:  Identifies all requesters.  This is     ",
+	    "#": "usually used as a match for applying defaults.             ",
+
+	    "name": "all",
+	    "description": "All requesters",
+	    "type": "always",
+	    "data": {
+		"#": "This type of identifier takes no data."
+	    }
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "CLASSIFIERS:  HOW DO WE CLASSIFY THE IDENTIFIERS?                  ",
+    "#": "                                                                   ",
+    "#": "These collect identifiers into groups.                             ",
+    "#": "-------------------------------------------------------------------",
+
+    "classifiers": [
+	{
+	    "#": "In plain English:  Identifiers 'my-ips' and 'my-hosts'     ",
+	    "#": "are classified as being 'my-organization'.                 ",
+
+	    "name": "everybody",
+	    "description": "Things that are part of my organization",
+	    "identifiers": [ "all" ]
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "REWRITE:  WHAT CHANGES ARE MADE TO INCOMING TASKS?                 ",
+    "#": "                                                                   ",
+    "#": "This is a jq transform that makes changes to incoming tasks prior  ",
+    "#": "to limit enforcement.                                              ",
+    "#": "-------------------------------------------------------------------",
+
+    "rewrite": { "script": [ "." ] },
+    "#rewrite": {
+	"script": [
+	    "import \"pscheduler/iso8601\" as iso;",
+
+	    "# This does nothing but is recommended so the statements below",
+	    "# all begin with |.  (This makes editing easier.)",
+            ".",
+
+	    "# Hold this for use later.",
+	    "| .test.type as $testtype",
+
+	    "# In plain English:  For any task where the test is idle,",
+	    "# idlebgm, idleex, latency, latencybg or throughput and there is",
+	    "# no duration specified or one lasting less than five seconds,",
+	    "# adjust the duration to five seconds and add a note about it to",
+	    "# the diagnostics.",
+
+            "| if ( [\"idle\", \"idlebgm\", \"idleex\", \"latency\", \"latencybg\", \"throughput\" ]",
+	    "       | contains([$testtype]) )",
+            "    and .test.spec.duration != null",
+            "    and iso::duration_as_seconds(.test.spec.duration) < 5",
+            "  then",
+            "    .test.spec.duration = \"PT5S\"",
+            "    | change(\"Bumped duration to 5-second minimum\")",
+            "  else",
+            "    .",
+            "  end",
+
+	    "# The end.  (This takes care of the no-comma-at-end problem)"
+        ]
+    },
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "LIMITS:  WHAT ARE THE RESTRICTIONS?                                ",
+    "#": "                                                                   ",
+    "#": "These are comparisons made against the type of test being proposed,",
+    "#": "the paramaters for the run and when it is proposed to be run.      ",
+    "#": "-------------------------------------------------------------------",
+
+    "limits": [
+	{
+	    "#": "In plain English:  Any task being tested against this limit",
+	    "#": "will always meet with approval.                            ",
+
+	    "name": "always",
+	    "description": "Always passes",
+	    "type": "pass-fail",
+	    "data": {
+		"pass": true
+	    }
+	}
+    ],
+
+    "#": "-------------------------------------------------------------------",
+    "#": "APPLICATIONS:  TO WHOM DO WE APPLY THE LIMITS?                     ",
+    "#": "                                                                   ",
+    "#": "These are processed in order until one passes all of the           ",
+    "#": "requirements.  The run will be rejected if one fails with          ",
+    "#": "stop-on-failure set to true or none of them passes.                ",
+    "#": "-------------------------------------------------------------------",
+
+    "applications": [
+	{
+	    "#": "In plain English:  Allow tasks from any requester.",
+
+	    "description": "Everybody",
+	    "classifier": "everybody",
+	    "apply": [
+		{ "require": "all", "limits": [ "always" ] }
+	    ]
+	}
+    ]
+
+}

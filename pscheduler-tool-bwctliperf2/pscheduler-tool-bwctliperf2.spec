@@ -4,10 +4,10 @@
 
 %define short	bwctliperf2
 Name:		pscheduler-tool-%{short}
-Version:	1.1.2
+Version:	1.1.5
 Release:	1%{?dist}
 
-Summary:	bwctliperf2 tool class for pScheduler
+Summary:	bwctliperf2 tool class for pScheduler (DISABLED)
 BuildArch:	noarch
 License:	ASL 2.0
 Vendor:	perfSONAR
@@ -18,17 +18,13 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	python-pscheduler >= 1.3
 Requires:	pscheduler-test-throughput
-Requires:	bwctl-client
-Requires:	bwctl-server
-requires:	iperf
 
 BuildRequires:	pscheduler-rpm
 
 
 %description
-bwctliperf2 tool class for pScheduler
+bwctliperf2 tool class for pScheduler (DISABLED)
 
 
 %prep

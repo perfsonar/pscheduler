@@ -1,0 +1,106 @@
+#!/bin/sh -e
+#
+# Start, stop or restart a service
+#
+# Usage service { stop | start | restart } [ SERVICE ... ]
+#
+
+die()
+{
+    echo "$@" 1>&2
+    exit 1
+}
+
+[ "$(id -u)" != "0" ] && die "This command must be run as root."
+
+
+# Validate the input
+
+if [ "$#" -eq 0 ] 
+then
+    die "Usage: $(basename $0) { stop | start | restart } [ SERVICE ... ]"
+fi
+
+COMMAND="$1"
+shift
+
+case "${COMMAND}" in
+    stop|start|restart)
+	true
+	;;
+    *)
+	die "Unknown command '${COMMAND}'"
+	;;
+esac
+
+
+if [ "$1" = "--hard" ]
+then
+    [ "${COMMAND}" = "stop" ] \
+	|| die "The --hard switch only applies to the stop command."
+    HARD=true
+    shift
+else
+    HARD=false
+fi
+
+
+for SERVICE in "$@"
+do
+    case "${SERVICE}" in
+	ticker|scheduler|runner|archiver|api)
+	    true
+	    ;;
+	*)
+	    die "Unknown service '${SERVICE}'"
+	    ;;
+    esac
+done
+
+
+# Have at it
+
+[ -t 1 ] && INTERACTIVE=true || INTERACTIVE=false
+[ -e /etc/debian_version ] && HTTPD=apache2 || HTTPD=httpd
+
+if [ "$#" -gt 0 ]
+then
+    ARGS="$*"
+else
+    ARGS="ticker scheduler runner archiver api"
+fi
+
+$INTERACTIVE &&  printf "Performing %s:" "${COMMAND}"
+for SERVICE in ${ARGS}
+do
+
+    case "${SERVICE}" in
+	ticker|scheduler|runner|archiver)
+	    systemctl "${COMMAND}" "pscheduler-${SERVICE}"
+	    ;;
+	api)
+	    # This is a special case; HTTPD is never taken down unless
+	    # being stopped hard.
+	    case "${COMMAND}" in
+		start|restart)
+		    systemctl "${COMMAND}" "${HTTPD}"
+		    ;;
+		stop)
+		    $HARD && systemctl stop "${HTTPD}"
+		    ;;
+		*)
+		    die "Internal error: unknown command '${COMMAND}'"
+		    ;;
+	    esac
+	    ;;
+
+	*)
+	    die "Internal error: Unknown service '${SERVICE}'"
+	    ;;
+    esac
+    $INTERACTIVE &&  printf " %s" "${SERVICE}"
+done
+
+$INTERACTIVE &&  printf "\n"
+
+exit 0

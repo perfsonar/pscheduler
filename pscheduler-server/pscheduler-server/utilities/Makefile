@@ -8,7 +8,11 @@
 COMMANDS=\
 	backup \
 	limit-diags \
-	restore
+	restore \
+	validate-configurables
+
+INTERNALS=\
+	service
 
 default: build
 
@@ -16,6 +20,10 @@ default: build
 %: %.raw
 ifndef CONFIGDIR
 	@echo CONFIGDIR not defined for $@
+	false
+endif
+ifndef CONFIGURABLESFILE
+	@echo CONFIGURABLESFILE not defined for $@
 	false
 endif
 ifndef LIMITSFILE
@@ -40,6 +48,7 @@ ifndef VERSION
 endif
 	sed \
 		-e 's|__CONFIGDIR__|$(CONFIGDIR)|g' \
+		-e 's|__CONFIGURABLESFILE__|$(CONFIGURABLESFILE)|g' \
 		-e 's|__LIMITSFILE__|$(LIMITSFILE)|g' \
 		-e 's|__PGDATABASE__|$(PGDATABASE)|g' \
 		-e 's|__PGPASSFILE__|$(PGPASSFILE)|g' \
@@ -50,13 +59,13 @@ endif
 		echo "Found un-substituted values in processed file $@" ; \
 		false ; \
 	fi
-TO_CLEAN += $(COMMANDS)
+TO_CLEAN += $(COMMANDS) $(INTERNALS)
 
 
 
 
 
-build: $(COMMANDS)
+build: $(COMMANDS) $(INTERNALS)
 	@true
 
 
@@ -69,8 +78,14 @@ ifndef DESTDIR
 	@echo DESTDIR not defined for $@
 	false
 endif
+ifndef INTERNALSDIR
+	@echo INTERNALSDIR not defined for $@
+	false
+endif
 	mkdir -p $(DESTDIR)
 	install -m 555 $(COMMANDS) $(DESTDIR)
+	mkdir -p $(INTERNALSDIR)
+	install -m 555 $(INTERNALS) $(INTERNALSDIR)
 
 clean:
 	rm -rf $(TO_CLEAN) *~
