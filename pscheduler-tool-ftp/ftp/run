@@ -126,11 +126,11 @@ with open('/tmp/run.log', 'wb') as f:
 #%#%#%#%#%#
 #STDERR[6] is Average Download Speed
 
-results['throughput'] = STDERR[-1].split('\n')[0]
+results['throughput'] = float(STDERR[-1].split('\n')[0])
 
 #%#%#%#%#%#
 
-results['bytes-sent'] = STDERR[1]
+results['bytes-sent'] = float(STDERR[1])
 
 final_results['result'] = results
 pscheduler.succeed_json(final_results)

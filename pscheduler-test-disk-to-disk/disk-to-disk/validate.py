@@ -23,6 +23,7 @@ def spec_is_valid(json):
                     "schema":       { "$ref": "#/pScheduler/Cardinal" },
                     "parallel":     { "$ref": "#/pScheduler/Cardinal" },
 
+                    "host-node":    { "$ref": "#/pScheduler/Host"     },
                     "source":       { "$ref": "#/pScheduler/String"   },
                     "source-node":  { "$ref": "#/pScheduler/Host"     },
 

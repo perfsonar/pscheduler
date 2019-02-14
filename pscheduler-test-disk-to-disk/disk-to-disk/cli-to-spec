@@ -67,6 +67,12 @@ opt_parser.add_option("--source",
                       action="store", type="string",
                       dest="source")
 
+
+opt_parser.add_option("--host-node",
+                      help="Third party Host",
+                      action="store", type="string",
+                      dest="host_node")
+
 opt_parser.add_option("--dest",
                       help="Destination URL",
                       action="store", type="string",
@@ -102,6 +108,9 @@ if options.dest is not None:
 else:
   pscheduler.fail('A destination URL is required,',
                   '\'--dest localhost\'')
+
+if options.host_node is not None:
+  result['host-node'] = options.host_node
 
 if options.parallel is None:
   result["parallel"] = 1
