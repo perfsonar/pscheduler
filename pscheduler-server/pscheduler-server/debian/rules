@@ -40,7 +40,8 @@ override_dh_auto_build:
 		VAR=/var
 
 	make -C utilities \
-		CONFIGDIR=/etc/pscheduler/daemons \
+		CONFIGDIR=/etc/pscheduler \
+		CONFIGURABLESFILE=/etc/pscheduler/configurables.conf \
 		LIMITSFILE=/etc/pscheduler/limits.conf \
 		PGDATABASE=pscheduler \
 		PGPASSFILE=/etc/pscheduler/database/pgpassfile \
