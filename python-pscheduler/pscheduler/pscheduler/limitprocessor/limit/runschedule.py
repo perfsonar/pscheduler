@@ -288,13 +288,13 @@ class LimitRunSchedule():
 
 
     def evaluate(self,
-                 run             # The proposed run
+                 proposal  # Task and hints
                  ):
 
         """Check that the proposed times don't overlap with this limit"""
 
-        start = pscheduler.iso8601_as_datetime(run['run_schedule']['start'])
-        duration = pscheduler.iso8601_as_timedelta(run['run_schedule']['duration'])
+        start = pscheduler.iso8601_as_datetime(proposal['task']['run_schedule']['start'])
+        duration = pscheduler.iso8601_as_timedelta(proposal['task']['run_schedule']['duration'])
         end = start + duration
 
         # Python's datetime doesn't have methods to get this.  Bravo.
@@ -339,7 +339,7 @@ class LimitRunSchedule():
 if __name__ == "__main__":
 
     test = {
-        "schedule": {
+        "run_schedule": {
             "start": "2015-12-31T23:59:50-04",
             "duration": "PT20S"
             }
@@ -358,5 +358,5 @@ if __name__ == "__main__":
     })
 
 
-    ev = limit.evaluate(test)
+    ev = limit.evaluate({ "task": test })
     print test, ev

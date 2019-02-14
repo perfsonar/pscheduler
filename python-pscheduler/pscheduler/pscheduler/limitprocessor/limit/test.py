@@ -60,16 +60,16 @@ class LimitTest():
 
 
     def evaluate(self,
-                 run             # The proposed run
+                 proposal  # Task and hints
                  ):
 
         # Dissent if the test isn't our type
 
-        if run["test"]["type"] != self.test:
+        if proposal["task"]["test"]["type"] != self.test:
             return { "passed": False, "reasons": [ "Test is not '%s'" % self.test ] }
 
         pass_input = {
-            "spec": run["test"]["spec"],
+            "spec": proposal["task"]["test"]["spec"],
             "limit": self.limit
             }
 
@@ -135,15 +135,19 @@ if __name__ == "__main__":
 
     print pscheduler.json_dump(limit.evaluate(
         {
-            "type": "idle",
-            "spec": {
-                "schema": 1,
-                "#duration": "PT45M",
-                "duration": "PT45S",
-                "starting-comment": "Perry the PLATYPUS",
-                "#starting-comment": "Ferb",
-                "#parting-comment": "Vwl!",
-                "parting-comment": "Vowel!"
+            "task": {
+                "test": {
+                    "type": "idle",
+                    "spec": {
+                        "schema": 1,
+                        "#duration": "PT45M",
+                        "duration": "PT45S",
+                        "starting-comment": "Perry the PLATYPUS",
+                        "#starting-comment": "Ferb",
+                        "#parting-comment": "Vwl!",
+                        "parting-comment": "Vowel!"
+                    }
+                }
             }
         }
     ), pretty=True)

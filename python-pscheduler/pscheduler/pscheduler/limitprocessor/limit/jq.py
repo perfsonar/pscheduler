@@ -46,7 +46,7 @@ class LimitJQ():
 
 
     def evaluate(self,
-                 run             # The proposed run
+                 proposal  # Task and hints
                 ):
 
         """Run the filter against the script.  Expect back one of:
@@ -57,7 +57,7 @@ class LimitJQ():
         """
 
         try:
-            returned = self.jqfilter(run)[0]
+            returned = self.jqfilter(proposal["task"])[0]
         except Exception as ex:
             return {
                 "passed": False,
