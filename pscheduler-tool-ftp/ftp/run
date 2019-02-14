@@ -28,9 +28,6 @@ try:
 
     source = input['test']['spec']['source']
     
-    # The directory to put the new copy of file (optional)
-    dest_path = input['test']['spec']['dest-path']
-
     # Delete transfered file after transfer if cleanup == True
     cleanup = input['test']['spec']['cleanup']
 

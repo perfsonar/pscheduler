@@ -40,10 +40,22 @@ else:
 
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """
-    This text will be printed out at the bottom of the
-    "help" message. Change this to whatever you like,
-    or don't include it at all. This could be a good place
-    for example usage cases, etc.
+    This software is a plugin for the pScheduler project that adds a
+    disk-to-disk feature to the testing suite. This test supports two
+    tools, globus and ftp.
+
+    GridFTP test:
+        pscheduler task --tool globus disk-to-disk \
+        --source ftp://sunn-dtn.es.net:2811/data1/10M.dat \
+        --dest file:///tmp/test.out --timeout PT10S
+
+    Standard FTP test:
+        pscheduler task --tool ftp disk-to-disk \
+        --source ftp://speedtest.tele2.net/1KB.zip \
+        --dest /tmp/test.out --timeout PT5S
+   
+      
+
 """
 )
 
@@ -68,10 +80,10 @@ opt_parser.add_option("--source",
                       dest="source")
 
 
-opt_parser.add_option("--host-node",
-                      help="Third party Host",
+opt_parser.add_option("--host",
+                      help="Host where the test should be run",
                       action="store", type="string",
-                      dest="host_node")
+                      dest="host")
 
 opt_parser.add_option("--dest",
                       help="Destination URL",
@@ -99,18 +111,12 @@ result = { 'schema': 1 }
 
 if options.source is not None:
   result['source'] = options.source
-else:
-  pscheduler.fail('A source location is required,',
-		  '\'--source localhost\'')
 
 if options.dest is not None:
   result['dest'] = options.dest
-else:
-  pscheduler.fail('A destination URL is required,',
-                  '\'--dest localhost\'')
 
-if options.host_node is not None:
-  result['host-node'] = options.host_node
+if options.host is not None:
+  result['host'] = options.host
 
 if options.parallel is None:
   result["parallel"] = 1
@@ -123,11 +129,6 @@ if options.cleanup is None:
   result['cleanup'] = True
 else:
   result['cleanup'] = options.cleanup
-
-if options.dest_path is not None:
-  result['dest-path'] = options.dest_path
-else:
-  result['dest-path'] = "/nill"
 
 if options.timeout is not None:
    result['timeout'] = options.timeout

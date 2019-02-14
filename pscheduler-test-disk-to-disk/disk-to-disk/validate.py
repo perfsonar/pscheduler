@@ -1,5 +1,5 @@
 #
-# Validator for "snmpset" Test
+# Validator for "disk-to-disk" Test
 #
 
 #
@@ -23,12 +23,10 @@ def spec_is_valid(json):
                     "schema":       { "$ref": "#/pScheduler/Cardinal" },
                     "parallel":     { "$ref": "#/pScheduler/Cardinal" },
 
-                    "host-node":    { "$ref": "#/pScheduler/Host"     },
-                    "source":       { "$ref": "#/pScheduler/String"   },
-                    "source-node":  { "$ref": "#/pScheduler/Host"     },
+                    "host":         { "$ref": "#/pScheduler/Host"     },
 
                     "dest":         { "$ref": "#/pScheduler/String"   },
-                    "dest-path":    { "$ref": "#/pScheduler/String"   },
+                    "source":       { "$ref": "#/pScheduler/String"   },
                     
 		    "timeout":      { "$ref": "#/pScheduler/Duration" }, 
                     "min-bandwith": { "$ref": "#/pScheduler/Cardinal" },

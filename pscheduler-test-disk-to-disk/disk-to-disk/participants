@@ -19,7 +19,7 @@ json = pscheduler.json_load(exit_on_error=True)
 null_reason = None
 
 #host only participant
-host = json.get('host-node', json.get('host', None))
+host = json.get("host", None)
 if host is None:
     null_reason = "No host specified"
 
