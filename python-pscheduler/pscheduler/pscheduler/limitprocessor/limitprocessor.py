@@ -133,11 +133,25 @@ class LimitProcessor():
                 for item in sorted(hints)
             ])
 
+        # Everything we know about what's being proposed
+        proposal = {
+            "hints": hints,
+            "task": task,
+        }
+
+        #
+        # Identification
+        #
+
         identifications = self.identifiers.identities(hints)
         if not identifications:
             diags.append("Made no identifications.")
             return False, [], '\n'.join(diags), None, None
         diags.append("Identified as %s" % (', '.join(identifications)))
+
+        #
+        # Classification
+        #
 
         classifications = self.classifiers.classifications(identifications)
         if not classifications:
@@ -149,11 +163,15 @@ class LimitProcessor():
 
         re_new_task = None
 
+        #
+        # Rewriting
+        #
+
         if self.rewriter is not None and rewrite:
 
             try:
                 re_changed, re_new_task, re_diags \
-                    = self.rewriter(task, classifications)
+                    = self.rewriter(proposal, classifications)
             except Exception as ex:
                 return False, [], "Error while rewriting: %s" % (str(ex)), None, None
 
@@ -166,8 +184,12 @@ class LimitProcessor():
                 task = re_new_task
 
 
+        #
+        # Applications
+        #
+
         passed, app_limits_passed, app_diags \
-            = self.applications.check(hints, task, classifications, check_schedule)
+            = self.applications.check(proposal, classifications, check_schedule)
 
         diags.append(app_diags)
         diags.append("Proposal %s limits" % ("meets" if passed else "does not meet"))
@@ -179,7 +201,9 @@ class LimitProcessor():
                     or min([ len(item) for item in app_limits_passed ]) == 0
 
 
-        # Run the prioritizer if there's a need to
+        #
+        # Priorities
+        #
 
         if prioritize and passed and self.prioritizer is not None:
             try:

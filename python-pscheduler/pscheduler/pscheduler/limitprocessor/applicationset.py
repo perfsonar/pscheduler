@@ -90,7 +90,7 @@ class ApplicationSet():
         self.limits = limits
 
 
-    def __check_group(self, hints, task, group, check_schedule):
+    def __check_group(self, proposal, group, check_schedule):
         """
         Check a group of limits and return a tuple:
             pass - True if the group passed
@@ -116,7 +116,7 @@ class ApplicationSet():
             # doesn't have to be processed again.  Might not actually
             # be an issue.
 
-            evaluated = self.limits.check(hints, task, limit, check_schedule)
+            evaluated = self.limits.check(proposal, limit, check_schedule)
             limit_passed = evaluated['passed']
 
             if limit_passed:
@@ -143,7 +143,7 @@ class ApplicationSet():
         return passed, limits_passed, diags
 
 
-    def __check_application(self, application, hints, task, classifiers, check_schedule):
+    def __check_application(self, application, proposal, classifiers, check_schedule):
 
         """Evaluate the groups of limits in an application, stopping when one
         fails.
@@ -158,7 +158,7 @@ class ApplicationSet():
         for group in application['apply']:
             group_no += 1
             group_passed, group_limits_passed, group_diags \
-                = self.__check_group(hints, task, group, check_schedule)
+                = self.__check_group(proposal, group, check_schedule)
             diags.extend([ "Group %d: %s" % (group_no, diag) for diag in group_diags ])
             if group_passed:
                 groups_failed -= 1
@@ -183,8 +183,7 @@ class ApplicationSet():
 
 
     def check(self,
-              hints,               # Server hints
-              task,                # Task to check
+              proposal,            # Task and hints
               classifiers,         # List of the classifiers
               check_schedule=True  # Keep/disregard time-related limits
               ):
@@ -222,7 +221,7 @@ class ApplicationSet():
                          application.get('description', "(No description)"))
 
             passed, forced_stop, check_limits_passed, app_diags \
-                = self.__check_application(application, hints, task, classifiers,
+                = self.__check_application(application, proposal, classifiers,
                                            check_schedule)
            
             diags.extend([ indent(diag) for diag in app_diags])

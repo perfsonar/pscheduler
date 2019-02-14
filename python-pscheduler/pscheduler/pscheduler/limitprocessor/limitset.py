@@ -131,8 +131,7 @@ class LimitSet():
 
 
     def check(self,
-              hints,          # Hints about who asked
-              task,           # Task to use as limit fodder
+              proposal,       # Task and hints
               limit,          # The limit to check against
               check_schedule  # Keep/disregard time-related limits
               ):
@@ -164,7 +163,7 @@ class LimitSet():
         if not check_schedule and evaluator.checks_schedule():
             return { "passed": True }
 
-        evaluated = evaluator.evaluate(hints, task)
+        evaluated = evaluator.evaluate(proposal)
 
         passed = evaluated["passed"]
         result = {
@@ -313,5 +312,10 @@ if __name__ == "__main__":
         }
     }
 
+    proposal = {
+        "hints": hints,
+        "task": task
+    }
+
     for limit in thelimits:
-        print limit['name'], theset.check(hints, task, limit['name'], True)
+        print limit['name'], theset.check(proposal, limit['name'], True)

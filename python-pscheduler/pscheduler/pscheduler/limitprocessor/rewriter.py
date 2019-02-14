@@ -49,6 +49,10 @@ class Rewriter():
             "    end",
             ";",
 
+            "def hint($name):",
+            "  ." + self.PRIVATE_KEY + ".hints[$name]",
+            ";",
+
             "def reject($message):",
             "  error(\"Task rejected: \" + ($message | tostring))",
             ";",
@@ -65,7 +69,7 @@ class Rewriter():
         )
 
 
-    def __call__(self, task, limits, classifiers):
+    def __call__(self, proposal, classifiers):
         """
         Rewrite the task given the classifiers.  Returns a tuple
         containing the rewritten task and an array of diagnostic
@@ -79,13 +83,14 @@ class Rewriter():
         JQRuntimeError that is thrown.
         """
 
-        task_in = copy.deepcopy(task)
+        task_in = copy.deepcopy(proposal["task"])
 
         # Rewriter-private data
         task_in[self.PRIVATE_KEY] = {
             "classifiers": classifiers,
             "changed": False,
-            "diags": []
+            "diags": [],
+            "hints": proposal["hints"]
         }
 
 
@@ -116,6 +121,9 @@ if __name__ == "__main__":
             "import \"pscheduler/iso8601\" as iso;",
 
             ".",
+
+            "# Exercise the hint function",
+            "| change(\"Hello there \\(hint(\"requester\"))\")",
 
             "| if .test.spec.bandwidth > 99999",
             "  then",
@@ -164,6 +172,11 @@ if __name__ == "__main__":
             ]
     })
 
+    hints = {
+        "requester": "127.0.0.1",
+        "server": "127.0.0.1",
+        "protocol": "https"
+    }
 
     task = {
         "schema": 1,
@@ -187,7 +200,7 @@ if __name__ == "__main__":
 
     try:
         (changed, new_task, diags)  = rewriter(
-            task, ["c1", "c2", "c3"])
+            { "task": task, "hints": hints }, ["c1", "c2", "c3"])
 
         if changed:
             if len(diags):

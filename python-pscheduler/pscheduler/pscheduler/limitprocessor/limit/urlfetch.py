@@ -9,19 +9,46 @@ DATA_VALIDATOR = {
     "type": "object",
     "properties": {
         "url": { "$ref": "#/pScheduler/URL" },
+        "url-transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
         "bind": { "$ref": "#/pScheduler/Host" },
+        "verify-keys": { "$ref": "#/pScheduler/Boolean" },
         "follow-redirects": { "$ref": "#/pScheduler/Boolean" },
         "timeout": { "$ref": "#/pScheduler/Duration" },
-        "verify-keys": { "$ref": "#/pScheduler/Boolean" },
         "headers": { "type": "object" },
         "headers-transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
         "params": { "type": "object" },
         "params-transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
+
+        "success-only": { "$ref": "#/pScheduler/Boolean" },
         "fail-result": { "$ref": "#/pScheduler/Boolean" }
     },
     "additionalProperties": False,
     "required": [ "url" ]
 }
+
+
+PRIVATE_KEY = "__URLFETCH_PRIVATE__"
+
+
+def _jq_filter(transform):
+
+    if transform is None:
+        return None
+
+    script = transform["script"]
+    if isinstance(script, list):
+        script = "\n".join(script)
+    full_script = "def hint($name): ." + PRIVATE_KEY + ".hints[$name];" \
+                  + script
+
+    return pscheduler.JQFilter(
+        full_script,
+        args=transform.get("args", {})
+        # Don't care about raw output.  Not doing that.
+    )
+
+
+
 
 
 def urlfetch_data_is_valid(data):
@@ -56,6 +83,7 @@ class LimitURLFetch():
             raise ValueError("Invalid data: %s" % message)
 
         self.url = data["url"]
+        self.url_transform = _jq_filter(data.get("url-transform", None))
         self.bind = data.get("bind", None)
         self.follow = data.get("follow-redirects", True)
         self.timeout = pscheduler.timedelta_as_seconds(
@@ -64,25 +92,12 @@ class LimitURLFetch():
         self.fail_result = data.get("fail-result", False)
 
         self.headers = data.get("headers", {})
-        if "headers-transform" in data:
-            self.headers_transform = pscheduler.JQFilter(
-                data["headers-transform"],
-                args=data.get("args", {})
-                # Don't bother with raw output.  We don't care.
-            )
-        else:
-            self.headers_transform = None
+        self.headers_transform = _jq_filter(data.get("headers-transform", None))
 
         self.params = data.get("params", {})
-        if "params-transform" in data:
-            self.params_transform = pscheduler.JQFilter(
-                data["params-transform"],
-                args=data.get("args", {})
-                # Don't bother with raw output.  We don't care.
-            )
-        else:
-            self.params_transform = None
+        self.params_transform = _jq_filter(data.get("params-transform", None))
 
+        self.success_only = data.get("success-only", False)
 
 
     def checks_schedule(self):
@@ -90,20 +105,41 @@ class LimitURLFetch():
 
 
     def evaluate(self,
-                 run
+                 proposal  # Task and hints
                  ):
+
+        private = { "hints": proposal["hints"] }
+
+        # Generate the URL
+        url = self.url
+        if self.url_transform is not None:
+            try:
+                url = self.url_transform({
+                    "url": self.url,
+                    "run": proposal["task"],
+                    PRIVATE_KEY: private
+                })[0]
+                if not isinstance(url, basestring):
+                    raise ValueError("Transform did not return a string")
+            except Exception as ex:
+                return {
+                    "passed": self.fail_result,
+                    "reasons": [ "URL transform failed: %s" % (str(ex)) ]
+                }
+
 
         # Generate the headers
         if self.headers_transform is not None:
             try:
                 headers = self.headers_transform({
                     "headers": self.headers,
-                    "run": run
+                    "run": proposal["task"],
+                    PRIVATE_KEY: private
                 })[0].get("headers", {})
             except Exception as ex:
                 return {
                     "passed": self.fail_result,
-                    "reasons": [ "Transform failed: %s" % (str(ex)) ]
+                    "reasons": [ "Header transform failed: %s" % (str(ex)) ]
                 }
         else:
             headers = {}
@@ -113,18 +149,19 @@ class LimitURLFetch():
             try:
                 params = self.params_transform({
                     "params": self.params,
-                    "run": run
+                    "run": proposal["task"],
+                    PRIVATE_KEY: private
                 })[0].get("params", {})
             except Exception as ex:
                 return {
                     "passed": self.fail_result,
-                    "reasons": [ "Transform failed: %s" % (str(ex)) ]
+                    "reasons": [ "Parameter transform failed: %s" % (str(ex)) ]
                 }
         else:
             params = {}
 
         # Fetch the result
-        status, text = pscheduler.url_get(self.url,
+        status, text = pscheduler.url_get(url,
                                           bind=self.bind,
                                           headers=headers,
                                           params=params,
@@ -135,12 +172,20 @@ class LimitURLFetch():
                                           verify_keys=self.verify
         )
 
+        if self.success_only:
+            if status == 200:
+                return { "passed": True }
+            elif status == 404:
+                return { "passed": False, "reasons": [ "Resource not found" ] }
+            # For anything else, fall through and let the error
+            # handler below deal with it.
+
         # Take errors at face value
         if status != 200:
             return {
                 "passed": self.fail_result,
                 "reasons": [
-                    "Fetch failed: %d: %s" % (status, text)
+                    "Fetch %s failed: %d: %s" % (url, status, text)
                 ]
             }
 
@@ -178,16 +223,51 @@ class LimitURLFetch():
 if __name__ == "__main__":
 
     for url in [
-            "#https://some-host.org/returns-true",
-            "#https://some-host.org/returns-false",
+            #"https://some-host.org/returns-true",
+            #"https://some-host.org/returns-false",
             "https://bad.example.net/not-valid",
             ]:
         limit = LimitURLFetch({
             "url": url,
+#            "url-transform": {
+#                "script": "\"https://www.notonthe.net/hole/true/\\(hint(\"requester\"))\""
+#            },
             "timeout": "PT3S",
             "params": { "foo": 123, "bar": 456 },
             "params-transform": {
-                "script": ".params.baz = 789 | .params.test = 9999"
+                "script": ".params.baz = 789 | .params.test = 9999 | .params.hinted = hint(\"requester\")"
+            },
+            "headers": { "Content-Type": "application/json" },
+            "headers-transform": {
+                "script": [
+                    "  .headers.\"X-Argument\" = $foobar",
+                    "| .headers.\"X-Hinted\" = hint(\"requester\")"
+                ],
+                "args": {
+                    "foobar": "Arg-U-Ment"
+                }
             }
         })
-        print url, "->", limit.evaluate({ "test": "xxx yyy: Z" })
+        print url, "->", limit.evaluate({
+            "task": { "test": "xxx yyy: Z" },
+            "hints": { "requester": "10.9.8.7" }
+            })
+
+
+    print
+    print "Succeed-only:"
+
+    for url in [
+            "https://www.google.com",
+            "https://www.amazon.com/bad-url",
+            "https://www.not-a-valid-domain/bad-url",
+    ]:
+
+        limit = LimitURLFetch({
+            "url": url,
+            "success-only": True
+        })
+        print url, "->", limit.evaluate({
+        "task": { "test": "xxx yyy: Z" },
+        "hints": { "requester": "10.9.8.7" }
+    })
