@@ -68,6 +68,7 @@ override_dh_auto_install:
 
 	make -C utilities \
 		DESTDIR=$(ROOT)/usr/lib/pscheduler/commands \
+		INTERNALSDIR=$(ROOT)/usr/lib/pscheduler/internals \
 		install
 
 	make -C database \
