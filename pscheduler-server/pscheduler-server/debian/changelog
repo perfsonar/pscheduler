@@ -1,3 +1,9 @@
+pscheduler-server (1.1.5-1) perfsonar-release; urgency=medium
+
+  * Non-maintainer upload.
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Thu, 14 Feb 2019 16:00:30 +0100
+
 pscheduler-server (1.1.2-1) perfsonar-release; urgency=low
 
   * New upstream version
