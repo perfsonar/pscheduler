@@ -24,7 +24,7 @@ except KeyError:
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 2)
+    pscheduler.json_check_schema(spec, 3)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
@@ -41,5 +41,13 @@ if json['type'] == 'rtt' and ('protocol' not in spec or spec['protocol'] != 'twa
         "can-run": False,
         "reasons": ["Only twamp protocol is supported"]
     })
+
+if json['type'] == 'rtt' and ('fragment' in spec):
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Fragmentation control is not supported."]
+    })
+
+
 
 pscheduler.succeed_json({ "can-run": True })
