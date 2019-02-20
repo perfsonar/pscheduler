@@ -4,7 +4,7 @@
 
 %define short	idlebgm
 Name:		pscheduler-test-%{short}
-Version:	1.1.5
+Version:	1.1.6
 Release:	1%{?dist}
 
 Summary:	Idle Background-Multi test class for pScheduler
@@ -17,7 +17,7 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server >= 1.1.5
+Requires:	pscheduler-server >= 1.1.6
 Requires:	python-pscheduler
 
 BuildRequires:	pscheduler-rpm

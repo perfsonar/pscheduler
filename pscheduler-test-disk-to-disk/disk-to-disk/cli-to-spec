@@ -38,6 +38,7 @@ else:
 
 # Gargle the arguments
 
+# TODO: Write an epilog.
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """
     This text will be printed out at the bottom of the
@@ -61,6 +62,11 @@ opt_parser.add_option("--timeout",
                       help="Timeout for each query attempt (in seconds)",
                       action="store", type="string",
                       dest="timeout")
+
+opt_parser.add_option("--host",
+                      help="Host where the test should be run",
+                      action="store", type="string",
+                      dest="host")
 
 opt_parser.add_option("--source",
                       help="Source URL",
@@ -86,23 +92,23 @@ opt_parser.add_option("--cleanup",
 
 result = { 'schema': 1 }
 
+if options.host is not None:
+   result['host'] = options.host
+
 if options.source is not None:
   result['source'] = options.source
-else:
-  pscheduler.fail('A source location is required,',
-		  '\'--source localhost\'')
 
 if options.dest is not None:
   result['dest'] = options.dest
-else:
-  pscheduler.fail('A destination URL is required,',
-                  '\'--dest localhost\'')
 
+# TODO: Default behavior should be defined by the tools.  Don't set it
+# explicitly if the switches don't provide one.
 if options.cleanup is None:
   result['cleanup'] = True
 else:
   result['cleanup'] = options.cleanup
 
+# TODO: Ibid.
 if options.dest_path is not None:
   result['dest-path'] = options.dest_path
 else:
