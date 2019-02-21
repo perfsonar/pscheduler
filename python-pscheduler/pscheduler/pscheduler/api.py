@@ -55,7 +55,7 @@ def api_url(host = None,
             ):
     """Format a URL for use with the pScheduler API."""
 
-    host = 'localhost' if host is None else str(host)
+    host = api_local_host() if host is None else str(host)
     # Force the host into something valid for DNS
     # See http://stackoverflow.com/a/25103444/180674
     try:
@@ -254,7 +254,7 @@ def api_has_pscheduler(hostport, timeout=5, bind=None):
     """
     # Null implies localhost
     if hostport is None:
-        hostport = "localhost"
+        hostport = api_local_host()
 
     host, port = api_host_port(hostport)
 
