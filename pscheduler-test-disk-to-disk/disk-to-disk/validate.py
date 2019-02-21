@@ -21,7 +21,7 @@ def spec_is_valid(json):
                 # and should be included
                 "properties": {
                     "schema":       { "$ref": "#/pScheduler/Cardinal" },
-                    "host":         { "$ref": "#/pScheduler/Host"     },
+                    "host":         { "$ref": "#/pScheduler/URLHostPort" },
 
                     "source":       { "$ref": "#/pScheduler/String"   },
                     "dest":         { "$ref": "#/pScheduler/String"   },
