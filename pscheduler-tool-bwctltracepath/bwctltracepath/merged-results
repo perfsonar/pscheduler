@@ -1,32 +1,5 @@
-#!/usr/bin/python
-#
-# Merge the participant results of a run by this tool into a
-# test-standard result.
-#
-
-import pscheduler
-
-input = pscheduler.json_load(exit_on_error=True);
-
-# TODO: Validate the input
-
-try:
-    succeeded = input["results"][0]["result"]["succeeded"]
-except (KeyError, TypeError):
-    succeeded = False
-
-results = {
-    "schema": 1,
-    "succeeded": succeeded
+#!/bin/sed -e 1d
+{
+  "succeeded": false,
+  "error": "Support for this tool has been discontinued."
 }
-
-if succeeded:
-    try:
-        results["paths"] = input["results"][0]["result"]["paths"]
-    except:
-        results = {
-            "schema": 1,
-            "succeeded": False
-            }
-
-pscheduler.succeed_json(results)

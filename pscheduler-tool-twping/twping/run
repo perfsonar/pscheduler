@@ -4,7 +4,9 @@
 #
 
 import datetime
+import ipaddress
 import json
+import math
 import pscheduler
 import re
 import tempfile
@@ -42,6 +44,7 @@ reverse = test_spec.get('reverse', False)
 #constants
 TIME_SCALE = .001 #use for millisecond conversions
 DEFAULT_TWPING_CMD = '/usr/bin/twping'
+DEFAULT_TWPING_LENGTH = 41
 DEFAULT_BUCKET_WIDTH = TIME_SCALE #convert to ms
 DELAY_BUCKET_DIGITS = 2 #number of digits to round delay buckets
 DELAY_BUCKET_FORMAT = '%.2f' #Set buckets to nearest 2 decimal places
@@ -74,7 +77,7 @@ if role == CLIENT_ROLE:
     #TODO: Get path to twping from config file
     #Always use raw output (-R)
     twping_args = [twping_cmd, '-R']
-    
+
     #build basic arguments
     for arg in TWPING_VAL_ARGS:
         if arg[0] in test_spec:
@@ -85,13 +88,20 @@ if role == CLIENT_ROLE:
             twping_args.append(rarg[1])
             twping_args.append("%d-%d" % (test_spec[rarg[0]]['lower'], test_spec[rarg[0]]['upper']))
             
+    #set packet size for rtt tests to match ping
+    rtt_length = DEFAULT_TWPING_LENGTH
+    if 'length' in test_spec and test_spec['length'] > DEFAULT_TWPING_LENGTH:
+        rtt_length = test_spec['length'] + 8
+        twping_args.append('-s')
+        twping_args.append(str(test_spec['length'] - 6))
+
     #set interval,count and timeout to ensure consistent with duration
     twping_args.append('-c')
-    twping_args.append(str(test_spec.get('packet-count', DEFAULT_PACKET_COUNT)))
+    twping_args.append(str(test_spec.get('packet-count', test_spec.get('count', DEFAULT_PACKET_COUNT))))
     twping_args.append('-i')
-    twping_args.append(str(test_spec.get('packet-interval', DEFAULT_PACKET_INTERVAL)))
+    twping_args.append(str(test_spec.get('packet-interval', test_spec.get('interval', DEFAULT_PACKET_INTERVAL))))
     twping_args.append('-L')
-    twping_args.append(str(test_spec.get('packet-timeout', DEFAULT_PACKET_TIMEOUT)))
+    twping_args.append(str(test_spec.get('packet-timeout', test_spec.get('timeout', DEFAULT_PACKET_TIMEOUT))))
     
     #set if ipv4 only or ipv6 only
     ip_version = str(test_spec.get('ip-version', ''))
@@ -99,6 +109,18 @@ if role == CLIENT_ROLE:
         twping_args.append('-4')
     elif ip_version == '6':
         twping_args.append('-6')
+
+    #calculate destination ip for rtt tests
+    try:
+            ipaddress.ip_address(unicode(test_spec['dest']))
+            dest_ip = test_spec['dest']
+            dest_hostname = pscheduler.dns_resolve_reverse(dest_ip)
+    except ValueError:
+        dest_hostname = test_spec['dest']
+        if ip_version == '6':
+            dest_ip = pscheduler.dns_resolve(test_spec['dest'], ip_version=6)
+        else:
+            dest_ip = pscheduler.dns_resolve(test_spec['dest'], ip_version=4)
     
     #bucket width is used for rounding delay values used as buckets for histogram
     bucket_width = test_spec.get('bucket-width', DEFAULT_BUCKET_WIDTH)
@@ -174,6 +196,8 @@ if role == CLIENT_ROLE:
     packets_seen = {}
     prev_seq_number = -1
     stdout_lines = []
+    roundtrips = []
+    rtts = []
     if stdout:
         stdout_lines = stdout.split("\n")
     for line in stdout_lines:
@@ -197,7 +221,25 @@ if role == CLIENT_ROLE:
                 destination_synchronized = twping_match.group(6);
                 destination_error        = twping_match.group(7);
                 ttl                      = twping_match.group(8);
-            
+
+            #collect rtt data
+            ts1 = float(twping_match.group(2))
+            ts2 = float(twping_match.group(13))
+            if ts1 != 0 and ts2 != 0:
+                rtt = (ts2 - ts1) / pow(2, 32)
+                rtts.append(rtt)
+                rt = {
+                    'seq': int(seq_number) + 1,
+                    'length': int(rtt_length),
+                    'ttl': int(ttl),
+                    'rtt': pscheduler.timedelta_as_iso8601(datetime.timedelta(seconds=rtt))
+                }
+                if dest_hostname is not None:
+                    rt['hostname'] = dest_hostname
+                if dest_ip is not None:
+                    rt['ip'] = dest_ip
+                roundtrips.append(rt)
+
             #publish raw pings
             if raw_output:
                 #init packet object
@@ -268,6 +310,37 @@ if role == CLIENT_ROLE:
     if ('max-clock-error' in results):
         results['max-clock-error'] = round(results['max-clock-error']/TIME_SCALE, CLOCK_ERROR_DIGITS)
     
+    #convert results for rtt schema
+    if input['test']['type'] == 'rtt':
+        rtt_results = {
+            'schema': 1,
+            'sent': results['packets-sent'],
+            'received': results['packets-received'],
+            'lost': results['packets-lost'],
+            'reorders': results['packets-reordered'],
+            'duplicates': results['packets-duplicated'],
+            'roundtrips': roundtrips
+        }
+        results = rtt_results
+
+        # calculate stats
+        results['loss'] = 0
+        if results['sent'] > 0:
+            results['loss'] = float(results['sent']-results['received'])/float(results['sent'])
+
+        if len(rtts) > 0:
+            rtts.sort()
+            results['min'] = pscheduler.timedelta_as_iso8601(datetime.timedelta(seconds=rtts[0]))
+            results['max'] = pscheduler.timedelta_as_iso8601(datetime.timedelta(seconds=rtts[-1]))
+
+            mean = sum(rtts) / len(rtts)
+            results['mean'] = pscheduler.timedelta_as_iso8601(datetime.timedelta(seconds=mean))
+
+            stddev = 0.0
+            if len(rtts) > 1:
+                stddev = math.sqrt(sum((rtt-mean)**2 for rtt in rtts) / (len(rtts) - 1))
+            results['stddev'] = pscheduler.timedelta_as_iso8601(datetime.timedelta(seconds=stddev))
+
     results['succeeded'] = True
 elif role == SERVER_ROLE:
 #######

@@ -4,12 +4,13 @@
 
 %define short	rtt
 Name:		pscheduler-test-%{short}
-Version:	1.0.2.6
+Version:	1.1.6
 Release:	1%{?dist}
 
 Summary:	Round trip time test class for pScheduler
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Source0:	%{short}-%{version}.tar.gz
@@ -51,4 +52,5 @@ pscheduler internal warmboot
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %{dest}

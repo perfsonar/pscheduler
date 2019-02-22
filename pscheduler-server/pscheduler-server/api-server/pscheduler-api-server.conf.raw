@@ -2,7 +2,17 @@
 # Configuration for pScheduler REST API service
 #
 
-WSGIDaemonProcess __USER_NAME__ user=__USER_NAME__ group=__GROUP_NAME__ maximum-requests=5000
+WSGIDaemonProcess __USER_NAME__ \
+		  display-name=__USER_NAME__-api \
+		  \
+		  user=__USER_NAME__ \
+		  group=__GROUP_NAME__ \
+		  \
+		  processes=10 \
+		  maximum-requests=1000000 \
+		  graceful-timeout=300
+
+
 WSGIScriptAlias __API_ROOT__ __API_DIR__/__NAME__.wsgi
 
 # Keep's python interpreter from being initialized in the apache
@@ -16,8 +26,7 @@ WSGIRestrictEmbedded On
     WSGIProcessGroup __USER_NAME__
     WSGIApplicationGroup __USER_NAME__
 
-    Order deny,allow
-    Allow from all
+    Require all granted
 
 </Directory>
 
@@ -27,8 +36,7 @@ WSGIRestrictEmbedded On
     # Work around fix for CVE-2017-9798.  We take care of permissions
     # internally.
     <Limit GET POST PUT DELETE>
-        Order allow,deny
-        Allow from all
+        Require all granted
     </Limit>
 
 </Location>

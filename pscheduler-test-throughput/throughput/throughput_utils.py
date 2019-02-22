@@ -25,10 +25,6 @@ def format_stream_output(stream_list, udp=False, summary=False):
 
         if not summary:
             output += "{0:<15}".format("Current Window")
-
-    if summary and stream_list[0].has_key("receiver-throughput-bits"):
-        output += "{0:<20}".format("Receiver Throughput")
-
     output += "\n"
 
     for block in stream_list:
@@ -85,10 +81,6 @@ def format_stream_output(stream_list, udp=False, summary=False):
 
                 output += tcp_window
 
-        if block.has_key("receiver-throughput-bits"):
-            formatted_receiver_throughput = format_si(block["receiver-throughput-bits"])
-            formatted_receiver_throughput += "bps"
-            output += "{0:<20}".format(formatted_receiver_throughput)
 
         jitter = block.get('jitter')
         if jitter != None:

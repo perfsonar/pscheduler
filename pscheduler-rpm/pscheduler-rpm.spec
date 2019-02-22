@@ -3,12 +3,13 @@
 #
 
 Name:		pscheduler-rpm
-Version:	1.0.2.6
+Version:	1.1.6
 Release:	1%{?dist}
 
 Summary:	Macros for use by pScheduler RPM specs
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Provides:	%{name} = %{version}-%{release}
@@ -26,10 +27,21 @@ Macros for use by pScheduler RPM specs
 %install
 %{__mkdir_p} $RPM_BUILD_ROOT/%{macro_dir}
 cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
-
 #
 # Macros used in building pScheduler RPMs  (Version %{version})
 #
+
+%if %{?_rundir:0}%{!?_rundir:1}
+# This didn't appear until EL7
+%%_rundir %{_localstatedir}/run
+%endif
+
+# Minimum-required PostgreSQL version
+%%_pscheduler_postgresql_version_major 9
+%%_pscheduler_postgresql_version_minor 5
+%%_pscheduler_postgresql_version %{_pscheduler_postgresql_version_major}.%{_pscheduler_postgresql_version_minor}
+%%_pscheduler_postgresql_package postgresql%{_pscheduler_postgresql_version_major}%{_pscheduler_postgresql_version_minor}
+
 
 %%_pscheduler_libexecdir %{_libexecdir}/pscheduler
 %%_pscheduler_sysconfdir %{_sysconfdir}/pscheduler

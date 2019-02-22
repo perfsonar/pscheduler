@@ -85,15 +85,15 @@ then
 10.0.0.7 dev7
 10.0.0.8 dev8
 10.0.0.9 dev9
-fe80::1  dev1v6
-fe80::2  dev2v6
-fe80::3  dev3v6
-fe80::4  dev4v6
-fe80::5  dev5v6
-fe80::6  dev6v6
-fe80::7  dev7v6
-fe80::8  dev8v6
-fe80::9  dev9v6
+fc00::1  dev1v6
+fc00::2  dev2v6
+fc00::3  dev3v6
+fc00::4  dev4v6
+fc00::5  dev5v6
+fc00::6  dev6v6
+fc00::7  dev7v6
+fc00::8  dev8v6
+fc80::9  dev9v6
 EOF
 fi
 
@@ -223,5 +223,13 @@ EOF
 
     echo "mount '${USER_HOME}'" >> /etc/rc.local
     chmod +x /etc/rc.local
+    
+    # Grant frictionless sudo
+    SUDOERS="/etc/sudoers.d/${NEW_USER}"
+    cat <<EOF > "${SUDOERS}"
+${NEW_USER} ALL= (ALL) NOPASSWD:ALL
+EOF
+
+    chmod 440 "${SUDOERS}"
 
 fi

@@ -73,7 +73,7 @@ if pscheduler.timedelta_as_seconds(refresh) == 0:
     opt_parser.error("Refresh interval must be calculable as seconds.")
 
 
-log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
+log = pscheduler.Log(verbose=options.verbose, debug=options.debug, propagate=True)
 
 dsn = pscheduler.string_from_file(options.dsn)
 
@@ -130,8 +130,8 @@ def clock_survey(hosts, bind=None):
         return []
 
     # Any null hosts become the local host
-    # TODO: Should this call api_this_host()?
-    hosts = [ "localhost" if host is None else host for host in hosts ]
+    hosts = [ pscheduler.api_local_host() if host is None else host
+              for host in hosts ]
 
     host_args = []
     for slot in range(0,len(hosts)):
@@ -426,7 +426,6 @@ class RunWorker:
 
             context_runner = None
 
-
         #
         # Wait for the start time to roll around
         #
@@ -474,6 +473,39 @@ class RunWorker:
         except Exception as ex:
             self.log.error("%d: Failed to detect if system is paused and/or set missed state: %s",
                            self.id, str(ex))
+        finally:
+            self._put_db_conn(db)
+
+
+        # Make sure the run can proceed.
+
+        db = None
+        try:
+            db = self._get_db_conn()
+            with db.cursor() as cursor:
+                cursor.execute("SELECT run_can_proceed(%s)", [self.id])
+                assert(cursor.rowcount == 1)
+                if not cursor.fetchone()[0]:
+                    if log_details:
+                        self.log.info("%d: Run was preempted.",
+                                      self.id)
+                    cursor.execute("""
+                        UPDATE run
+                        SET
+                            state = run_state_preempted(),
+                            status = 1,
+                            result = '{ "succeeded": false, "diags": "Run was preempted." }'
+                        WHERE id = %s
+                        """, [self.id])
+                    return
+        except AssertionError as ae:
+            self.log.error("%d: Unable to read run_can_proceed(). Must be exactly one row.",
+                           self.id)
+            raise ae
+        except Exception as ex:
+            self.log.error("%d: Failed to determine if run can proceed: %s",
+                           self.id, str(ex))
+            return
         finally:
             self._put_db_conn(db)
                     
@@ -561,18 +593,26 @@ class RunWorker:
         db = None
         try:
             db = self._get_db_conn()
+            state_selector = 2 if participant > 0 else returncode
             with db.cursor() as cursor:
                 cursor.execute("""
                 UPDATE run
                 SET
                 status = %s,
                 result = %s,
-                errors = %s
+                errors = %s,
+                state = CASE
+                            WHEN %s = 0 THEN run_state_cleanup()
+                            WHEN %s = 1 THEN run_state_failed()
+                            ELSE run_state_finished()
+                        END
                 WHERE id = %s
                 """,
                 [returncode,
                  stdout,
                  stderr,
+                 state_selector,
+                 state_selector,
                  self.id])
         except Exception as ex:
             self.log.error("%d: Failed to store local result: %s",
@@ -632,108 +672,144 @@ class RunWorker:
                 failures += 1
 
 
-            # Try several times to get the results from the other
-            # participants.
+            # Assemble the results from each participant into an
+            # array.
 
-            full_result = [None for run in runs]
+            result_full = [ {
+                "succeeded": False,
+                "error": "No result was produced",
+                "diags": "No result was produced"
+            } for run in runs]
+
             # We have this on hand.
-            full_result[0] = local_result
+            result_full[0] = local_result
             self.log.debug("%d: Accumulated local result", self.id)
 
-            end_time = pscheduler.time_now() + datetime.timedelta(seconds=5)
+            # Wait up to 15 seconds for all of the participants to
+            # produce results.
 
             to_get = dict([(runs[index], index)
                            for index in range(1, len(runs))])
 
-            while len(to_get) and pscheduler.time_now() < end_time:
+            deadline = pscheduler.time_now() + datetime.timedelta(seconds=15)
 
-                for get in list(to_get):
-                    self.log.debug("%d: Fetching run %s", self.id, get)
+            for get in list(to_get):
+                self.log.debug("%d: Fetching run %s", self.id, get)
 
-                    status, run_result = pscheduler.url_get(
-                        run, params={'wait-local': True}, bind=lead_bind,
-                        throw=False)
+                timeout = int(pscheduler.timedelta_as_seconds(
+                    deadline - pscheduler.time_now()))
 
-                    if status == 200:
-                        self.log.debug("%d: Retrieved %s", self.id, run_result)
-                        index = to_get[get]
-                        # Pylint infers that run_result is a string
-                        # when it isn't.
-                        # pylint: disable=maybe-no-member
-                        got = run_result.get("result", None)
-                        full_result[index] = got
-                        if got is not None:
-                            del to_get[get]
-                    else:
-                        self.log.warning("%d: Unable to retrieve run %s",
+                status, run_result = pscheduler.url_get(
+                    run,
+                    params={ 'wait-local': True, 'wait': timeout },
+                    bind=lead_bind,
+                    throw=False,
+                    timeout=timeout + 0.5
+                )
+
+                if status == 200:
+                    self.log.debug("%d: Retrieved %s", self.id, run_result)
+                    index = to_get[get]
+                    got = run_result["result"]
+                    if got is not None:
+                        result_full[index] = got
+                else:
+                    self.log.warning("%d: Unable to retrieve run %s",
                                          self.id, get)
+                    got = { "succeeded": False,
+                            "error": run_result,
+                            "diags": run_result
+                        }
 
-                # Snooze a bit before the next iteration if
-                # there's anythig left to do.
-                if len(to_get):
-                    time.sleep(0.5)
-
-
-            self.log.debug("%d: Full result: %s",
-                           self.id,
-                           pscheduler.json_dump(full_result))
-
-            failures = len(list(
-                filter(lambda result: result is None, full_result)))
-
-            # Store the full result with each participant.
-
-            full_params = pscheduler.json_dump({
-                'result-full' : full_result,
-                'succeeded' : failures == 0
-            })
+                del to_get[get]
 
 
-            # Store the full result with all of the participants
-
-            put_params = {} if key is None else { "key": key }
-
-            for run in runs:
-                self.log.debug(
-                    "%d: Storing full in %s, params=%s, succeeded=%s",
-                    self.id, run, full_params, failures == 0)
-
-                status, returned = pscheduler.url_put(run,
-                                                      data=full_params,
-                                                      params=put_params,
-                                                      bind=lead_bind,
-                                                      throw=False,
-                                                      json=False)
-                if status != 200:
-                    self.log.warning("%d: Unable to update run %s: %d %s",
-                                     self.id, run, status, returned)
+            failures = len(list(filter(
+                lambda result:
+                    result is None or not result.get("succeeded",False),
+                    result_full)))
+            self.log.debug("%d: %d failures", self.id, failures)
 
 
-                # If there were any failures, survey all of the
-                # particpants' clocks and stash it in the local run
-                # record.
+            # If there were any failures, survey all of the
+            # particpants' clocks.
 
-                if failures > 0:
-                    self.log.debug("Saw failures; surveying clocks")
-                    # TODO: Error check this.
-                    db = None
-                    try:
-                        db = self._get_db_conn()
-                        with db.cursor() as cursor:
-                            cursor.execute("""
-                                        UPDATE run SET clock_survey = %s
-                                        WHERE id = %s
-                                        """,
-                                        [clock_survey(participants, lead_bind), self.id])
-                    except Exception as ex:
-                        self.log.error("%d: Failed to update clock survey: %s",
-                                   self.id, str(ex))
-                    finally:
-                        #finally should ensure this is executed  even if return is an exception
-                        self._put_db_conn(db)
+            survey = clock_survey(participants, lead_bind) if failures > 0 else None
+
+            # Merge the results
+
+            if failures:
+                result_merged = { "succeeded": False }
+            else:
+                self.log.debug("%d: Merging results: %s", self.id, result_full)
+                try:
+                    merge_input = {
+                        "test": test_spec,
+                        "results": result_full
+                    }
+                    merge_input_text = pscheduler.json_dump(merge_input)
+                    self.log.debug("%d: Merging %s", self.id, merge_input_text)
+
+                    returncode, stdout, stderr = pscheduler.run_program(
+                        [ "pscheduler", "internal", "invoke", "tool", tool, "merged-results" ],
+                        stdin=merge_input_text, timeout=5)
+
+                    self.log.debug("%d: Merged results: %d %s %s", self.id,
+                                   returncode, stdout, stderr)
+
+                    if returncode != 0:
+                        raise Exception(stderr)
+
+                    result_merged = pscheduler.json_load(stdout)
+
+                except Exception as ex:
+                    result_merged = { "succeeded": False }
+
+                    # This overwrites the run result but is a good way to get
+                    # the error message in front of the user.
+                    result_full[0]["succeeded"] = False
+                    result_full[0]["diags"] = "Run succeeded, but failed to merge results: %s" % (str(ex))
+
+
+            result_full_text = pscheduler.json_dump(result_full)
+            self.log.debug("%d: Full result: %s ", self.id, result_full_text)
+
+            result_merged_text = pscheduler.json_dump(result_merged)
+            self.log.debug("%d: Merged result: %s ", self.id, result_merged_text)
+
+            # Store full and merged results and the clock survey in
+            # the local database.
+
+            try:
+                db = self._get_db_conn()
+                with db.cursor() as cursor:
+                    # TODO: Need to figure out succeeded.
+                    cursor.execute("""
+                                    UPDATE run
+                                    SET
+                                        state = CASE
+                                                    WHEN %s = 0 THEN run_state_finished()
+                                                    ELSE run_state_failed()
+                                                END,
+                                        result_full = %s,
+                                        result_merged = %s,
+                                        clock_survey = %s
+                                    WHERE id = %s
+                                    """,
+                                    [failures,
+                                     pscheduler.json_dump(result_full),
+                                     result_merged_text,
+                                     survey,
+                                     self.id])
+            except Exception as ex:
+                self.log.error("%d: Failed to store run: %s", self.id, str(ex))
+            finally:
+                self._put_db_conn(db)
+
 
         self.log.debug("%d: Run complete", self.id)
         self.finished = True
+
 
 
 #

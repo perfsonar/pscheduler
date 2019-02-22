@@ -28,7 +28,7 @@ except KeyError:
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 1)
+    pscheduler.json_check_schema(spec, 3)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
@@ -41,16 +41,11 @@ except ValueError as ex:
     })
 
 
-# This tool runs the entire version 1 schema.
+# This tool runs the entire version 3 schema.
 
 errors = []
 
-# HACK: BWCTLBC
-#prevent reverse tests where remote side does not have pscheduler from being allowed
-#can probably remove if we ever drop bwctlping support
 source = spec.get("source-node", spec.get("source", None))
-if source and not pscheduler.api_has_pscheduler(source):
-    errors.append("Source must have pscheduler")
     
 try:
     ip_version = spec['ip-version']
@@ -60,6 +55,9 @@ except KeyError:
 
 if 'flow-label' in spec and ip_version != 6:
     errors.append("Cannot apply flow labels except with IPv6")
+
+if 'protocol' in spec and spec['protocol'] != 'icmp':
+    errors.append("Only icmp protocol is supported")
 
 
 result = {

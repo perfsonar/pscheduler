@@ -83,8 +83,9 @@ class VerbatimParser(optparse.OptionParser):
     def format_epilog(self, formatter):
         return self.epilog
 
+
 opt_parser = VerbatimParser(
-    usage="Usage: %prog [ OPTIONS ] [ delta | start end ] ",
+    usage="Usage: %prog [ OPTIONS ] [ delta | start end ]",
     epilog=
 """
 Example:
@@ -222,7 +223,9 @@ elif len(remaining_args) == 2:
         start, end = end, start
 
 else:
-    pscheduler.fail(usage)
+    opt_parser.print_usage()
+    pscheduler.fail()
+
 
 
 #

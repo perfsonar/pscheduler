@@ -12,7 +12,7 @@
 
 
 Name:		postgresql-init
-Version:	%{pg_point}
+Version:	%{_pscheduler_postgresql_version}
 Release:	1%{?dist}
 
 Summary:	Initializes PostgreSQL
@@ -26,7 +26,10 @@ Group:		Unspecified
 Provides:	%{name} = %{version}-%{release}
 Provides:	pscheduler-database-init
 
-Requires:	postgresql%{pg_ver}-server
+Requires:	%{_pscheduler_postgresql_package}-server
+
+BuildRequires:	pscheduler-rpm
+
 
 
 %description

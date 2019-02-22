@@ -7,8 +7,6 @@
 # If no services are listed, all will be set.
 #
 
-VAR_RUN="/var/run"
-
 WHOAMI=$(basename $0)
 
 usage()
@@ -84,7 +82,7 @@ do
 	continue
     fi
 
-    PID_FILE="${VAR_RUN}/pscheduler-${SERVICE}.pid"
+    PID_FILE="__RUNDIR__/pscheduler-${SERVICE}.pid"
     if [ ! -r "${PID_FILE}" ]
     then
 	echo "Warning: ${SERVICE} does not appear to be running." 1>&2

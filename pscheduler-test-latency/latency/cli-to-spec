@@ -97,7 +97,7 @@ opt_parser.add_option("-P", "--data-ports",
                       dest="data_ports")
 
 opt_parser.add_option("-T", "--ip-tos",
-                      help="The port range to use on the side of the test running the client. At least two ports required.",
+                      help="The IP type-of-service value.",
                       action="store", type="int",
                       dest="ip_tos")
 
@@ -128,7 +128,9 @@ if len(remaining_args) != 0:
    pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
 
-result = { 'schema': 1 }
+spec_schema = pscheduler.HighInteger(1)
+
+result = {}
 
 if options.source is not None:
    result['source'] = options.source
@@ -184,9 +186,13 @@ if options.flip:
 
 if options.reverse:
    result['reverse'] = options.reverse
+   spec_schema.set(2)
 
 if options.output_raw:
    result['output-raw'] = options.output_raw
+
+
+result['schema'] = spec_schema.value()
 
 
 pscheduler.succeed_json(result)

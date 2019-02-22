@@ -1,35 +1,109 @@
 #
-# Validator for "trace" Test
+# Validator for "rtt" Test
 #
 
 from pscheduler import json_validate
 
 def spec_is_valid(json):
     schema = {
-        "type": "object",
-        "properties": {
-            "schema":            { "$ref": "#/pScheduler/Cardinal" },
-            "count":             { "$ref": "#/pScheduler/Cardinal" },
-            "dest":              { "$ref": "#/pScheduler/Host" },
-            # There is no dest-node because this is a one-participant test.
-            # TODO: This is supposed to be a 20-bit number.  Validate that.
-            "flow-label":        { "$ref": "#/pScheduler/CardinalZero" },
-            "hostnames":         { "$ref": "#/pScheduler/Boolean" },
-            "interval":          { "$ref": "#/pScheduler/Duration" },
-            "ip-version":        { "$ref": "#/pScheduler/ip-version" },
-            "source":            { "$ref": "#/pScheduler/Host" },
-            "source-node":       { "$ref": "#/pScheduler/URLHostPort" },
-            "suppress-loopback": { "$ref": "#/pScheduler/Boolean" },
-            "ip-tos":            { "$ref": "#/pScheduler/IPTOS" },
-            "length":            { "$ref": "#/pScheduler/Cardinal" },
-            "ttl":               { "$ref": "#/pScheduler/Cardinal" },
-            "deadline":          { "$ref": "#/pScheduler/Duration" },
-            "timeout":           { "$ref": "#/pScheduler/Duration" },
+        "local" : {
+            "protocol": {
+                "type": "string",
+                "enum": ["icmp", "twamp"]
             },
-        "required": [
-            "dest"
-            ]
-        }
+            "rtt_v1": {
+                "type": "object",
+                "properties": {
+                    "schema":            { "$ref": "#/pScheduler/Cardinal" },
+                    "count":             { "$ref": "#/pScheduler/Cardinal" },
+                    "dest":              { "$ref": "#/pScheduler/Host" },
+                    # There is no dest-node because this is a one-participant test.
+                    # TODO: This is supposed to be a 20-bit number.  Validate that.
+                    "flow-label":        { "$ref": "#/pScheduler/CardinalZero" },
+                    "hostnames":         { "$ref": "#/pScheduler/Boolean" },
+                    "interval":          { "$ref": "#/pScheduler/Duration" },
+                    "ip-version":        { "$ref": "#/pScheduler/ip-version" },
+                    "source":            { "$ref": "#/pScheduler/Host" },
+                    "source-node":       { "$ref": "#/pScheduler/URLHostPort" },
+                    "suppress-loopback": { "$ref": "#/pScheduler/Boolean" },
+                    "ip-tos":            { "$ref": "#/pScheduler/IPTOS" },
+                    "length":            { "$ref": "#/pScheduler/Cardinal" },
+                    "ttl":               { "$ref": "#/pScheduler/Cardinal" },
+                    "deadline":          { "$ref": "#/pScheduler/Duration" },
+                    "timeout":           { "$ref": "#/pScheduler/Duration" },
+                    },
+                "required": [
+                    "dest"
+                    ],
+                "additionalProperties": False
+            },
+            "rtt_v2": {
+                "type": "object",
+                "properties": {
+                    "schema":            { "$ref": "#/pScheduler/Cardinal" },
+                    "count":             { "$ref": "#/pScheduler/Cardinal" },
+                    "dest":              { "$ref": "#/pScheduler/Host" },
+                    # There is no dest-node because this is a one-participant test.
+                    # TODO: This is supposed to be a 20-bit number.  Validate that.
+                    "flow-label":        { "$ref": "#/pScheduler/CardinalZero" },
+                    "hostnames":         { "$ref": "#/pScheduler/Boolean" },
+                    "interval":          { "$ref": "#/pScheduler/Duration" },
+                    "ip-version":        { "$ref": "#/pScheduler/ip-version" },
+                    "source":            { "$ref": "#/pScheduler/Host" },
+                    "source-node":       { "$ref": "#/pScheduler/URLHostPort" },
+                    "suppress-loopback": { "$ref": "#/pScheduler/Boolean" },
+                    "ip-tos":            { "$ref": "#/pScheduler/IPTOS" },
+                    "length":            { "$ref": "#/pScheduler/Cardinal" },
+                    "ttl":               { "$ref": "#/pScheduler/Cardinal" },
+                    "deadline":          { "$ref": "#/pScheduler/Duration" },
+                    "timeout":           { "$ref": "#/pScheduler/Duration" },
+                    "protocol":          { "$ref": "#/local/protocol" },
+                    },
+                "required": [
+                    "dest"
+                    ],
+                "additionalProperties": False
+            },
+            "rtt_v3": {
+                "type": "object",
+                "properties": {
+                    "schema":            { "$ref": "#/pScheduler/Cardinal" },
+                    "count":             { "$ref": "#/pScheduler/Cardinal" },
+                    "dest":              { "$ref": "#/pScheduler/Host" },
+                    # There is no dest-node because this is a one-participant test.
+                    # TODO: This is supposed to be a 20-bit number.  Validate that.
+                    "flow-label":        { "$ref": "#/pScheduler/CardinalZero" },
+                    "fragment":          { "$ref": "#/pScheduler/Boolean" },
+                    "hostnames":         { "$ref": "#/pScheduler/Boolean" },
+                    "interval":          { "$ref": "#/pScheduler/Duration" },
+                    "ip-version":        { "$ref": "#/pScheduler/ip-version" },
+                    "source":            { "$ref": "#/pScheduler/Host" },
+                    "source-node":       { "$ref": "#/pScheduler/URLHostPort" },
+                    "suppress-loopback": { "$ref": "#/pScheduler/Boolean" },
+                    "ip-tos":            { "$ref": "#/pScheduler/IPTOS" },
+                    "length":            { "$ref": "#/pScheduler/Cardinal" },
+                    "ttl":               { "$ref": "#/pScheduler/Cardinal" },
+                    "deadline":          { "$ref": "#/pScheduler/Duration" },
+                    "timeout":           { "$ref": "#/pScheduler/Duration" },
+                    "protocol":          { "$ref": "#/local/protocol" },
+                    },
+                "required": [
+                    "dest"
+                    ],
+                "additionalProperties": False
+            },
+            "rtt": {
+                "anyOf": [
+                    { "$ref": "#/local/rtt_v1" },
+                    { "$ref": "#/local/rtt_v2" },
+                    { "$ref": "#/local/rtt_v3" }
+                ]
+            }
+        },
+
+        "$ref": "#/local/rtt"
+    }
+
     return json_validate(json, schema)
 
 

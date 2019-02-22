@@ -113,7 +113,7 @@ if retry is None:
 retry = pscheduler.timedelta_as_seconds(retry)
 
 
-log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
+log = pscheduler.Log(verbose=options.verbose, debug=options.debug, propagate=True)
 
 dsn = options.dsn
 
@@ -293,8 +293,8 @@ class ArchiveProcess(object):
             self.done()
             return {
                 "succeeded": False,
-                "error": "Archiver error: %s" % (str(ex)),
-                "retry": retry
+                "error": "Possibly-permanent archiver error: %s" % (str(ex))
+                # Don't retry.  The StreamingJSONProgram will have retried.
                 }
 
 
@@ -302,6 +302,7 @@ class ArchiveProcess(object):
         """Stop the archive process"""
         if self.program is not None:
             self.program.done()
+            self.program = None
 
 
     def __del__(self):
@@ -569,17 +570,40 @@ class ArchiveWorker():
 
         archiving_id, task_uuid, run_uuid, archiver, archiver_data, start, \
             duration, test, tool, participants, result_merged, attempts, \
-            last_attempt, transform = self.row
+            last_attempt, transform, task_detail, run_detail, spec = self.row
 
         participants_merged = []
         for participant in participants:
-            participants_merged.append(pscheduler.api_this_host() \
+            participants_merged.append(pscheduler.api_local_host() \
                                        if participant is None \
                                        else participant)
 
-        task_href = pscheduler.api_url(path="tasks/%s" % (task_uuid))
-        run_href = pscheduler.api_url(path="tasks/%s/runs/%s" \
+        uri_host = spec.get("uri-host", pscheduler.api_local_host_fqdn())
+        task_href = pscheduler.api_url(host=uri_host, path="tasks/%s" % (task_uuid))
+        run_href = pscheduler.api_url(host=uri_host, path="tasks/%s/runs/%s" \
                                       % (task_uuid, run_uuid))
+
+        # Strip the internal-use-only parts from the task details.
+        for remove in [
+                'archives'
+        ]:
+            try:
+                del task_detail[remove]
+            except KeyError:
+                pass
+
+
+        # Strip the internal-use-only parts from the run details.
+        for remove in [
+                'archivings',
+                'participant-data',
+                'participant-data-full',
+                'result'
+        ]:
+            try:
+                del run_detail[remove]
+            except KeyError:
+                pass
 
         self.log.debug("%d: Task is %s", self.id, task_href)
         self.log.debug("%d: Run is %s", self.id, run_href)
@@ -601,13 +625,22 @@ class ArchiveWorker():
                     'name': tool['name'],
                     'version': tool['version'],
                 },
+                'run': run_detail,
+                'task': task_detail,
                 'participants': participants_merged,
-                'result': result_merged
+                'result': result_merged,
+                'reference': task_detail.get('reference', None)
             },
             'attempts': attempts,
             'last-attempt': None if last_attempt is None \
             else pscheduler.datetime_as_iso8601(last_attempt)
         }
+
+        json_result = json["result"]
+
+        json_result["task"]["href"] = task_href
+        json_result["run"]["href"] = run_href
+        json_result["run"]["task-href"] = task_href
 
         # If there's a transform (already validated), do it.
 
@@ -633,7 +666,12 @@ class ArchiveWorker():
                 returncode = 1
                 stdout = ""
                 stdout_attempt = ""
-                stderr = "Error during transformation: %s", str(ex)
+                stderr = "Error during transformation: %s" % (str(ex))
+                result = {
+                    "succeeded": False,
+                    "error": stderr
+                }
+
 
         if json["result"] is None:
             self.log.debug("%d: Null transform result; not archiving", self.id)
@@ -659,7 +697,7 @@ class ArchiveWorker():
                     "succeeded": False,
                     "error": "Exception during archiving: %s" % (str(ex))
                 }
-                self.log.debug("%d: Exception: %s", self.id, str(ex))
+                self.log.exeption("%d: Exception" % (self.id))
                 returncode = 1
 
 
@@ -826,10 +864,13 @@ def main_program():
             log.debug("Already have a full slate of workers.")
             continue
 
+        # TODO: A lot of what's being pulled here can be pulled from
+        # the spec.  Remove anything unnecessary.
         result = db.query("""SELECT id, task_uuid, run_uuid, archiver,
                              archiver_data, start,
                              duration, test, tool, participants, result,
-                             attempts, last_attempt, transform
+                             attempts, last_attempt, transform, task_detail, run_detail,
+                             spec
                              FROM archiving_next(%s)""",
                           [options.max_parallel])
 
@@ -877,4 +918,4 @@ if options.daemon:
     with daemon.DaemonContext(pidfile=pidfile):
         pscheduler.safe_run(lambda: main_program())
 else:
-    main_program()
+    pscheduler.safe_run(lambda: main_program())

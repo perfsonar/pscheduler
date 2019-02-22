@@ -104,6 +104,11 @@ schedule_group.add_option("--max-runs",
                       action="store", type="int", default=1,
                       dest="max_runs")
 
+task_group.add_option("--priority",
+                      help="Scheduling priority to request (default 0 or $PSCHEDULER_PRIORTY)",
+                      action="store", type="int",
+                      dest="priority")
+
 schedule_group.add_option("--repeat",
                       help="Repeat interval (ISO 8601 Duration)",
                       action="store", type="string",
@@ -277,7 +282,7 @@ verbose = (not options.quiet) \
     and (out_format == "text/plain") 
 
 # TODO: Tie this to the options.
-log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True)
+log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True, propagate=True)
 
 # Decide who assists us.
 
@@ -379,6 +384,21 @@ if 'schedule' not in task:
 if options.max_runs > 1:
     task['schedule']['max-runs'] = options.max_runs
 
+if options.priority is not None:
+    task['priority'] = options.priority
+else:
+    try:
+        task['priority'] = int(os.environ['PSCHEDULER_PRIORITY'])
+    except ValueError:
+        pscheduler.fail("PSCHEDULER_PRIORITY does not contain an integer.")
+    except KeyError:
+        pass
+
+
+if 'priority' in task:
+    task_schema.set(3)
+
+
 if options.repeat is not None:
     task['schedule']['repeat'] = options.repeat
 
@@ -427,7 +447,7 @@ if options.archive:
     for archive in options.archive:
         try:
             archive_text = pscheduler.string_from_file(archive)
-            archive_json = pscheduler.json_load(archive_text, max_schema=1)
+            archive_json = pscheduler.json_load(archive_text)
             archives.append(archive_json)
         except IOError as ex:
             pscheduler.fail("Unable to read archive file: %s" % (str(ex)))
@@ -557,10 +577,6 @@ log.debug("Fetching participant list")
 
 spec_text = pscheduler.json_dump(task['test']['spec'])
 participants_params = {'spec': spec_text}
-# HACK: BWCTLBC.  Participant calculation isn't supposed to know about this.
-if options.lead_bind is not None:
-    participants_params["lead-bind"] = options.lead_bind
-
 log.debug("Spec is: %s", spec_text)
 log.debug("Params are: %s", participants_params)
 status, participants = pscheduler.url_get(
@@ -601,11 +617,12 @@ if lead is None and assist != last_ditch_assist:
 #
 
 
-lead_list = [lead] if lead is not None else [pscheduler.api_this_host()]
-lead_list.append("localhost")
+lead_list = [lead] if lead is not None else []
+lead_list.append(pscheduler.api_local_host())
 
 lead = None
 for lead_candidate in lead_list:
+    # TODO: Use api_ping here instead of doing it manually.
     ping_url = pscheduler.api_url(lead_candidate)
     log.debug("Pinging %s", ping_url)
     status, result = pscheduler.url_get(
@@ -638,10 +655,14 @@ try:
         bind=bind,
         throw=True)
 except Exception as ex:
-    pscheduler.fail("Unable to post task: " + str(ex))
+    pscheduler.fail("Unable to post task: " + str(ex) +
+        "\nThe 'pscheduler troubleshoot' command may be of use in problem" + 
+        "\ndiagnosis. 'pscheduler troubleshoot --help' for more information.")
 
 if status != 200:
-    pscheduler.fail("Failed to post task: " + task_url)
+    pscheduler.fail("Failed to post task: " + task_url +
+        "\nThe 'pscheduler troubleshoot' command may be of use in problem" + 
+        "\ndiagnosis. 'pscheduler troubleshoot --help' for more information.")
 
 # If asked to just dump the URL, do that and exit.
 if options.url:
@@ -696,6 +717,7 @@ if status == 404:
 
 
 watch_args = [ "pscheduler", "watch",
+               "--first",
                "--format", out_format
                ]
 if options.debug:

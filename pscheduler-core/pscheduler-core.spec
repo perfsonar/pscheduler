@@ -3,18 +3,20 @@
 #
 
 Name:		pscheduler-core
-Version:	1.0.2.6
+Version:	1.1.6
 Release:	1%{?dist}
 
 Summary:	pScheduler Core Programs
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Source0:	%{name}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
+Requires:       bash-completion
 # This is for plot-schedule
 Requires:       gnuplot-minimal
 # This is for netstat.
@@ -45,12 +47,15 @@ make \
      INTERNALSINSTALLED=%{_pscheduler_internals} \
      LIMITSFILE=%{_pscheduler_limit_config} \
      TOOLCONFIGDIR=%{_pscheduler_tool_confdir} \
+     BASHCOMPDIR=$RPM_BUILD_ROOT/%{_datarootdir}/bash-completion/completions \
      install
 
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %{_bindir}/*
+%{_datarootdir}/*
 %{_pscheduler_commands}
 %{_pscheduler_commands}/*
 %{_pscheduler_internals}/*

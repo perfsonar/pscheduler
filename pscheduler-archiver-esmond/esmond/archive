@@ -33,6 +33,7 @@ def archive(json):
     run_href = json['run-href'].encode("utf-8")
     test_type = json['result']['test']['type']
     test_spec = json['result']['test']['spec']
+    reference = json['result'].get('reference', {})
     test_result = {}
     if json['result']['result'] is not None:
         test_result = json['result']['result']
@@ -123,6 +124,7 @@ def archive(json):
         if test_type == 'latency':
             record = esmond_util.EsmondLatencyRecord(
                 test_spec=test_spec,
+                reference=reference,
                 lead_participant=lead_participant,
                 measurement_agent=measurement_agent,
                 tool_name=tool_name,
@@ -136,6 +138,7 @@ def archive(json):
         elif test_type == 'latencybg':
             record = esmond_util.EsmondLatencyBGRecord(
                 test_spec=test_spec,
+                reference=reference,
                 lead_participant=lead_participant,
                 measurement_agent=measurement_agent,
                 tool_name=tool_name,
@@ -149,6 +152,7 @@ def archive(json):
         elif test_type == 'throughput':
             record = esmond_util.EsmondThroughputRecord(
                 test_spec=test_spec,
+                reference=reference,
                 lead_participant=lead_participant,
                 measurement_agent=measurement_agent,
                 tool_name=tool_name,
@@ -162,6 +166,7 @@ def archive(json):
         elif test_type == 'trace':
             record = esmond_util.EsmondTraceRecord(
                 test_spec=test_spec,
+                reference=reference,
                 lead_participant=lead_participant,
                 measurement_agent=measurement_agent,
                 tool_name=tool_name,
@@ -175,6 +180,7 @@ def archive(json):
         elif test_type == 'rtt':
             record = esmond_util.EsmondRTTRecord(
                 test_spec=test_spec,
+                reference=reference,
                 lead_participant=lead_participant,
                 measurement_agent=measurement_agent,
                 tool_name=tool_name,
@@ -189,6 +195,7 @@ def archive(json):
             record = esmond_util.EsmondRawRecord(
                 test_type=test_type,
                 test_spec=test_spec,
+                reference=reference,
                 lead_participant=lead_participant,
                 measurement_agent=measurement_agent,
                 tool_name=tool_name,
@@ -212,6 +219,7 @@ def archive(json):
         record = esmond_util.EsmondRawRecord(
             test_type=test_type,
             test_spec=test_spec,
+            reference=reference,
             lead_participant=lead_participant,
             measurement_agent=measurement_agent,
             tool_name=tool_name,

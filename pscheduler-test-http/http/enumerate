@@ -1,0 +1,13 @@
+#!/bin/sed -e 1d
+{
+    "schema": 1,
+    "name": "http",
+    "description": "Measure HTTP Response Time",
+    "version": "1.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+    "scheduling-class": "background"
+}

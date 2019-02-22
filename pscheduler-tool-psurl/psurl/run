@@ -1,0 +1,75 @@
+#!/usr/bin/python
+#
+# Run a test.  Just the test spec is provided on stdin.
+#
+
+from pscheduler import psurl
+import datetime
+import json
+import sys
+import time
+
+import pscheduler
+
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+
+try:
+    url = input['test']['spec']['url']
+
+except KeyError:
+    pscheduler.fail('Missing data in input')
+
+found = False
+parse = False
+try:
+    string = input['test']['spec']['parse']
+    parse = True
+
+except KeyError:
+    pass
+
+timeout_iso = input['test']['spec'].get("timeout", "PT5S")
+timeout = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(timeout_iso))
+
+# Perform the test
+
+
+start_time = datetime.datetime.now()
+error = ""
+
+try:
+    result = psurl.url_get(url, json=False, timeout=timeout)
+    succeeded = True
+    statusCode = result[0]
+    htmlOutput = result[1]
+    if parse:
+        if (htmlOutput.find(string) == -1):
+            found = False
+        else:
+            found = True
+except pscheduler.psurl.URLException as e:
+    error += str(e)
+    succeeded = False
+    statusCode = "" 
+
+end_time = datetime.datetime.now() 
+
+#
+# Produce results
+#
+
+results = {
+    'succeeded': succeeded,
+    'result': {
+        'schema': 1,
+        'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
+        'succeeded': succeeded,
+        'status': statusCode,
+        'found': found,
+    },
+    'error': error
+}
+
+pscheduler.succeed_json(results)
+

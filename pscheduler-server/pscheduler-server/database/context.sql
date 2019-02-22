@@ -114,7 +114,7 @@ DECLARE
     json_result TEXT;
     sschema NUMERIC;  -- Name dodges a reserved word
 BEGIN
-    run_result := pscheduler_internal(ARRAY['list', 'context']);
+    run_result := pscheduler_command(ARRAY['internal', 'list', 'context']);
     IF run_result.status <> 0 THEN
        RAISE EXCEPTION 'Unable to list installed contexts: %', run_result.stderr;
     END IF;
@@ -124,7 +124,7 @@ BEGIN
     FOR context_name IN (select * from jsonb_array_elements_text(context_list))
     LOOP
 
-	run_result := pscheduler_internal(ARRAY['invoke', 'context', context_name, 'enumerate']);
+	run_result := pscheduler_command(ARRAY['internal', 'invoke', 'context', context_name, 'enumerate']);
         IF run_result.status <> 0 THEN
             RAISE WARNING 'Context "%" failed to enumerate: %',
 	        context_name, run_result.stderr;
@@ -192,7 +192,7 @@ BEGIN
         RAISE EXCEPTION 'Unknown context "%"', context_name;
     END IF;
 
-    run_result := pscheduler_internal(ARRAY['invoke', 'context',
+    run_result := pscheduler_command(ARRAY['internal', 'invoke', 'context',
     	       context_name, 'data-is-valid'], (candidate ->> 'data')::TEXT );
     IF run_result.status <> 0 THEN
         RAISE EXCEPTION 'Context %/% failed to validate: %',

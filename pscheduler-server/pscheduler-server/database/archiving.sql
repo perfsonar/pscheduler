@@ -152,6 +152,18 @@ BEGIN
     END IF;
 
 
+    -- Version 7 to version 8
+    -- Added full archive spec
+    IF t_version = 7
+    THEN
+
+	ALTER TABLE archiving ADD COLUMN
+	spec JSON NOT NULL;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -221,15 +233,35 @@ BEGIN
                 expires := NULL;
 	    END IF;
 
-	    INSERT INTO archiving (run, archiver, archiver_data, ttl_expires, transform)
-    	    VALUES (
-    	        NEW.id,
-    	        (SELECT id from archiver WHERE name = archive #>> '{archiver}'),
-	        (archive #> '{data}')::JSONB,
-	        expires,
-		(archive #> '{transform}')
-    	    );
-            inserted := TRUE;
+	    -- If there is no "runs" value in the archive spec, treat
+	    -- it as archive only on success, otherwise, see if the
+	    -- final state of the run means we should do the
+	    -- archiving.
+
+	    IF NOT archive ? 'runs' THEN
+	        archive := archive || '{"runs": "succeeded"}'::JSONB;
+	    END IF;
+
+	    IF archive #>> '{runs}' = 'all'
+	       OR EXISTS (SELECT * FROM run_state
+	                  WHERE run_state.id = NEW.state
+	                  AND success = CASE
+	                     WHEN archive #>> '{runs}' = 'succeeded' THEN TRUE
+	                     WHEN archive #>> '{runs}' = 'failed' THEN FALSE
+	                     ELSE NULL
+	                     END)
+	    THEN
+	        INSERT INTO archiving (run, archiver, archiver_data, ttl_expires, transform, spec)
+    	        VALUES (
+    	            NEW.id,
+    	            (SELECT id from archiver WHERE name = archive #>> '{archiver}'),
+	            (archive #> '{data}')::JSONB,
+	            expires,
+		    (archive #> '{transform}'),
+		    archive
+    	        );
+                inserted := TRUE;
+	    END IF;
         END LOOP;
 
         IF inserted THEN
@@ -300,7 +332,10 @@ RETURNS TABLE (
     result JSONB,
     attempts INTEGER,
     last_attempt TIMESTAMP WITH TIME ZONE,
-    transform JSON
+    transform JSON,
+    task_detail JSONB,
+    run_detail JSONB,
+    spec JSON
 )
 AS $$
 BEGIN
@@ -321,7 +356,12 @@ BEGIN
         run.result_merged AS result,
         archiving.attempts AS attempts,
         archiving.last_attempt AS last_attempt,
-	archiving.transform AS transform
+	archiving.transform AS transform,
+	-- TODO: This covers a number of things above.  Remove the
+	-- redundancies here and in the archiver.
+	task.json_detail AS task_detail,
+	run_json(run.id) AS run_detail,
+	archiving.spec AS spec
     FROM
         archiving
         JOIN archiver ON archiver.id = archiving.archiver

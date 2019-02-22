@@ -541,83 +541,83 @@ class TestLimitPassesUnitTest(ExecUnitTest):
 
         ###no source specified
         expected_errors = ["This test has a limit on the source field but the source was not specifed. You must specify a source to run this test"]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.129.254.38/32"]}}, "spec": {"dest": "lbl-pt1.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"source": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "a1.nv.perfsonar.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
 
         ### v4 source, v4 dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "198.128.151.25", "dest": "198.129.254.38", "schema": 1}}')
+        self.assert_cmd('{"limit": {"source": {"cidr": ["127.0.0.1/32"]}}, "spec": {"source": "127.0.0.1", "dest": "127.0.0.2", "schema": 1}}')
         ### v4 source, v6 dest
-        expected_errors = [error_ip_mismatch.format('198.128.151.25', '2001:400:501:1150::3')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "198.128.151.25", "dest": "2001:400:501:1150::3", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### v4 source, A only dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "198.128.151.25", "dest": "sacr-pt1-v4.es.net", "schema": 1}}')
-        ### v4 source, AAAA only dest
-        expected_errors = [error_ip_mismatch.format('198.128.151.25', 'sacr-pt1-v6.es.net')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "198.128.151.25", "dest": "sacr-pt1-v6.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### v4 source, A and AAAA only dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "198.128.151.25", "dest": "sacr-pt1.es.net", "schema": 1}}')
+        expected_errors = [error_ip_mismatch.format('127.0.0.1', 'fc00::2')]
+        self.assert_cmd('{"limit": {"source": {"cidr": ["127.0.0.1/32"]}}, "spec": {"source": "127.0.0.1", "dest": "fc00::2", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        ### v4 source, A dest
+        self.assert_cmd('{"limit": {"source": {"cidr": ["127.0.0.1/32"]}}, "spec": {"source": "127.0.0.1", "dest": "a1.nv.perfsonar.net", "schema": 1}}')
+        ### v4 source, AAAA dest
+        expected_errors = [error_ip_mismatch.format('127.0.0.1', 'aaaa1.nv.perfsonar.net')]
+        self.assert_cmd('{"limit": {"source": {"cidr": ["127.0.0.1/32"]}}, "spec": {"source": "127.0.0.1", "dest": "aaaa1.nv.perfsonar.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        ### v4 source, A and AAAA dest
+        self.assert_cmd('{"limit": {"source": {"cidr": ["127.0.0.1/32"]}}, "spec": {"source": "127.0.0.1", "dest": "a-aaaa1.nv.perfsonar.net", "schema": 1}}')
         
         ### v6 source, v4 dest
-        expected_errors = [error_ip_mismatch.format('2001:400:210:151::25', '198.129.254.38')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "2001:400:210:151::25", "dest": "198.129.254.38", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        expected_errors = [error_ip_mismatch.format('fc00::1', '127.0.0.2')]
+        self.assert_cmd('{"limit": {"source": {"cidr": ["fc00::1/128"]}}, "spec": {"source": "fc00::1", "dest": "127.0.0.2", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
         ### v6 source, v6 dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "2001:400:210:151::25", "dest": "2001:400:501:1150::3", "schema": 1}}')
-        ### v6 source, A only dest
-        expected_errors = [error_ip_mismatch.format('2001:400:210:151::25', 'sacr-pt1-v4.es.net')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "2001:400:210:151::25", "dest": "sacr-pt1-v4.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### v6 source, AAAA only dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "2001:400:210:151::25", "dest": "sacr-pt1-v6.es.net", "schema": 1}}')
-        ### v6 source, A and AAAA only dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "2001:400:210:151::25", "dest": "sacr-pt1.es.net", "schema": 1}}')
+        self.assert_cmd('{"limit": {"source": {"cidr": ["fc00::1/128"]}}, "spec": {"source": "fc00::1", "dest": "fc00::2", "schema": 1}}')
+        ### v6 source, A dest
+        expected_errors = [error_ip_mismatch.format('fc00::1', 'a2.nv.perfsonar.net')]
+        self.assert_cmd('{"limit": {"source": {"cidr": ["fc00::1/128"]}}, "spec": {"source": "fc00::1", "dest": "a2.nv.perfsonar.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        ### v6 source, AAAA dest
+        self.assert_cmd('{"limit": {"source": {"cidr": ["fc00::1/128"]}}, "spec": {"source": "fc00::1", "dest": "aaaa2.nv.perfsonar.net", "schema": 1}}')
+        ### v6 source, A+AAAA  dest
+        self.assert_cmd('{"limit": {"source": {"cidr": ["fc00::1/128"]}}, "spec": {"source": "fc00::1", "dest": "a-aaaa2.nv.perfsonar.net", "schema": 1}}')
         
-        ### A-only source, v4 dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.129.254.30/32"]}}, "spec": {"source": "lbl-pt1-v4.es.net", "dest": "198.129.254.38", "schema": 1}}')
-        ### A-only source, v6 dest
-        expected_errors = [error_ip_mismatch.format('lbl-pt1-v4.es.net', '2001:400:501:1150::3')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.129.254.30/32"]}}, "spec": {"source": "lbl-pt1-v4.es.net", "dest": "2001:400:501:1150::3", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### A-only source, A only dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.129.254.30/32"]}}, "spec": {"source": "lbl-pt1-v4.es.net", "dest": "sacr-pt1-v4.es.net", "schema": 1}}')
-        ### A-only source, AAAA only dest
-        expected_errors = [error_ip_mismatch.format('lbl-pt1-v4.es.net', 'sacr-pt1-v6.es.net')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.129.254.30/32"]}}, "spec": {"source": "lbl-pt1-v4.es.net", "dest": "sacr-pt1-v6.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### A-only source, A and AAAA only dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.129.254.30/32"]}}, "spec": {"source": "lbl-pt1-v4.es.net", "dest": "sacr-pt1.es.net", "schema": 1}}')
+        ### A source, v4 dest
+        self.assert_cmd('{"limit": {"source": {"cidr": ["127.0.0.1/32"]}}, "spec": {"source": "a1.nv.perfsonar.net", "dest": "127.0.0.2", "schema": 1}}')
+        ### A source, v6 dest
+        expected_errors = [error_ip_mismatch.format('a1.nv.perfsonar.net', 'fc00::2')]
+        self.assert_cmd('{"limit": {"source": {"cidr": ["127.0.0.1/32"]}}, "spec": {"source": "a1.nv.perfsonar.net", "dest": "fc00::2", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        ### A source, A dest
+        self.assert_cmd('{"limit": {"source": {"cidr": ["127.0.0.1/32"]}}, "spec": {"source": "a1.nv.perfsonar.net", "dest": "a2.nv.perfsonar.net", "schema": 1}}')
+        ### A source, AAAA dest
+        expected_errors = [error_ip_mismatch.format('a1.nv.perfsonar.net', 'aaaa1.nv.perfsonar.net')]
+        self.assert_cmd('{"limit": {"source": {"cidr": ["127.0.0.1/32"]}}, "spec": {"source": "a1.nv.perfsonar.net", "dest": "aaaa1.nv.perfsonar.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        ### A source, A+AAAA dest
+        self.assert_cmd('{"limit": {"source": {"cidr": ["127.0.0.1/32"]}}, "spec": {"source": "a1.nv.perfsonar.net", "dest": "a-aaaa2.nv.perfsonar.net", "schema": 1}}')
         
-        ### AAAA-only source, v4 dest
-        expected_errors = [error_ip_mismatch.format('lbl-pt1-v6.es.net', '198.129.254.38')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:201:1150::3/32"]}}, "spec": {"source": "lbl-pt1-v6.es.net", "dest": "198.129.254.38", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### AAAA-only source, v6 dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:201:1150::3/32"]}}, "spec": {"source": "lbl-pt1-v6.es.net", "dest": "2001:400:501:1150::3", "schema": 1}}')
-        ### AAAA-only source, A only dest
-        expected_errors = [error_ip_mismatch.format('lbl-pt1-v6.es.net', 'sacr-pt1-v4.es.net')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:201:1150::3/32"]}}, "spec": {"source": "lbl-pt1-v6.es.net", "dest": "sacr-pt1-v4.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### AAAA-only source, AAAA only dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:201:1150::3/32"]}}, "spec": {"source": "lbl-pt1-v6.es.net", "dest": "sacr-pt1-v6.es.net", "schema": 1}}')
-        ### AAAA-only source, A and AAAA only dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:201:1150::3/32"]}}, "spec": {"source": "lbl-pt1-v6.es.net", "dest": "sacr-pt1.es.net", "schema": 1}}')
+        ### AAAA source, v4 dest
+        expected_errors = [error_ip_mismatch.format('aaaa1.nv.perfsonar.net', '127.0.0.1')]
+        self.assert_cmd('{"limit": {"source": {"cidr": ["fc00::1/128"]}}, "spec": {"source": "aaaa1.nv.perfsonar.net", "dest": "127.0.0.1", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        ### AAAA source, v6 dest
+        self.assert_cmd('{"limit": {"source": {"cidr": ["fc00::1/128"]}}, "spec": {"source": "aaaa1.nv.perfsonar.net", "dest": "fc00::2", "schema": 1}}')
+        ### AAAA source, A dest
+        expected_errors = [error_ip_mismatch.format('aaaa1.nv.perfsonar.net', 'a2.nv.perfsonar.net')]
+        self.assert_cmd('{"limit": {"source": {"cidr": ["fc00::1/128"]}}, "spec": {"source": "aaaa1.nv.perfsonar.net", "dest": "a2.nv.perfsonar.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        ### AAAA source, AAAA dest
+        self.assert_cmd('{"limit": {"source": {"cidr": ["fc00::1/128"]}}, "spec": {"source": "aaaa1.nv.perfsonar.net", "dest": "aaaa2.nv.perfsonar.net", "schema": 1}}')
+        ### AAAA source, A+AAAA dest
+        self.assert_cmd('{"limit": {"source": {"cidr": ["fc00::1/128"]}}, "spec": {"source": "aaaa1.nv.perfsonar.net", "dest": "a-aaaa2.nv.perfsonar.net", "schema": 1}}')
 
         ### A+AAAA source, v4 dest
-        expected_errors = [error_unallowed_range.format('198.128.151.25')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "antg-staging.es.net", "dest": "198.129.254.38", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "antg-staging.es.net", "dest": "198.129.254.38", "schema": 1}}')
+        expected_errors = [error_unallowed_range.format('127.0.0.1')]
+        self.assert_cmd('{"limit": {"source": {"cidr": ["fc00::1/128"]}}, "spec": {"source": "a-aaaa1.nv.perfsonar.net", "dest": "127.0.0.1", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"source": {"cidr": ["127.0.0.1/32"]}}, "spec": {"source": "a-aaaa1.nv.perfsonar.net", "dest": "127.0.0.1", "schema": 1}}')
         ### A+AAAA source, v6 dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "antg-staging.es.net", "dest": "2001:400:501:1150::3", "schema": 1}}')
-        expected_errors = [error_unallowed_range.format('2001:400:210:151::25')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "antg-staging.es.net", "dest": "2001:400:501:1150::3", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### A+AAAA source, A only dest
-        expected_errors = [error_unallowed_range.format('198.128.151.25')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "antg-staging.es.net", "dest": "sacr-pt1-v4.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "antg-staging.es.net", "dest": "sacr-pt1-v4.es.net", "schema": 1}}')
-        ### A+AAAA source, AAAA only dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "antg-staging.es.net", "dest": "sacr-pt1-v6.es.net", "schema": 1}}')
-        expected_errors = [error_unallowed_range.format('2001:400:210:151::25')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "antg-staging.es.net", "dest": "sacr-pt1-v6.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### A+AAAA source, A and AAAA only dest
-        self.assert_cmd('{"limit": {"source": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"source": "antg-staging.es.net", "dest": "sacr-pt1.es.net", "schema": 1}}')
-        expected_errors = [error_unallowed_range.format('2001:400:210:151::25')]
-        self.assert_cmd('{"limit": {"source": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "antg-staging.es.net", "dest": "sacr-pt1.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"source": {"cidr": ["fc00::1/128"]}}, "spec": {"source": "a-aaaa1.nv.perfsonar.net", "dest": "2001:400:501:1150::3", "schema": 1}}')
+        expected_errors = [error_unallowed_range.format('fc00::1')]
+        self.assert_cmd('{"limit": {"source": {"cidr": ["127.0.0.1/32"]}}, "spec": {"source": "a-aaaa1.nv.perfsonar.net", "dest": "2001:400:501:1150::3", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        ### A+AAAA source, A dest
+        expected_errors = [error_unallowed_range.format('127.0.0.1')]
+        self.assert_cmd('{"limit": {"source": {"cidr": ["fc00::1/128"]}}, "spec": {"source": "a-aaaa1.nv.perfsonar.net", "dest": "a2.nv.perfsonar.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"source": {"cidr": ["127.0.0.1/32"]}}, "spec": {"source": "a-aaaa1.nv.perfsonar.net", "dest": "a2.nv.perfsonar.net", "schema": 1}}')
+        ### A+AAAA source, AAAA dest
+        self.assert_cmd('{"limit": {"source": {"cidr": ["fc00::1/128"]}}, "spec": {"source": "a-aaaa1.nv.perfsonar.net", "dest": "aaaa2.nv.perfsonar.net", "schema": 1}}')
+        expected_errors = [error_unallowed_range.format('fc00::1')]
+        self.assert_cmd('{"limit": {"source": {"cidr": ["127.0.0.1/32"]}}, "spec": {"source": "a-aaaa1.nv.perfsonar.net", "dest": "aaaa2.nv.perfsonar.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        ### A+AAAA source, A+AAAA dest
+        self.assert_cmd('{"limit": {"source": {"cidr": ["fc00::1/128"]}}, "spec": {"source": "a-aaaa1.nv.perfsonar.net", "dest": "a-aaaa2.nv.perfsonar.net", "schema": 1}}')
+        expected_errors = [error_unallowed_range.format('fc00::1')]
+        self.assert_cmd('{"limit": {"source": {"cidr": ["127.0.0.1/32"]}}, "spec": {"source": "a-aaaa1.nv.perfsonar.net", "dest": "a-aaaa2.nv.perfsonar.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
         
         ##test invert
-        self.assert_cmd('{"limit": {"source": {"invert": true, "cidr": ["198.128.151.25/32"]}}, "spec": {"source": "198.128.151.26", "dest": "198.129.254.38", "schema": 1}}')
+        self.assert_cmd('{"limit": {"source": {"invert": true, "cidr": ["127.0.0.1/32"]}}, "spec": {"source": "127.0.0.2", "dest": "127.0.0.3", "schema": 1}}')
         
         #########################
         #check dest w/ source
@@ -626,81 +626,75 @@ class TestLimitPassesUnitTest(ExecUnitTest):
         error_ip_mismatch = "source {1} and dest {0} cannot be resolved to IP addresses of the same type"
 
         ### v4 dest, v4 source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "198.128.151.25", "source": "198.129.254.38", "schema": 1}}')
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "127.0.0.1", "source": "127.0.0.2", "schema": 1}}')
         ### v4 dest, v6 source
-        expected_errors = [error_ip_mismatch.format('198.128.151.25', '2001:400:501:1150::3')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "198.128.151.25", "source": "2001:400:501:1150::3", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### v4 dest, A only source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "198.128.151.25", "source": "sacr-pt1-v4.es.net", "schema": 1}}')
-        ### v4 dest, AAAA only source
-        expected_errors = [error_ip_mismatch.format('198.128.151.25', 'sacr-pt1-v6.es.net')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "198.128.151.25", "source": "sacr-pt1-v6.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### v4 dest, A and AAAA only source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "198.128.151.25", "source": "sacr-pt1.es.net", "schema": 1}}')
+        expected_errors = [error_ip_mismatch.format('127.0.0.1', 'fc00::2')]
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "127.0.0.1", "source": "fc00::2", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        ### v4 dest, A source
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "127.0.0.1", "source": "a2.nv.perfsonar.net", "schema": 1}}')
+        ### v4 dest, AAAA source
+        expected_errors = [error_ip_mismatch.format('127.0.0.1', 'aaaa2.nv.perfsonar.net')]
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "127.0.0.1", "source": "aaaa2.nv.perfsonar.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        ### v4 dest, A+AAAA source
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "127.0.0.1", "source": "a-aaaa2.nv.perfsonar.net", "schema": 1}}')
         
         ### v6 dest, v4 source
-        expected_errors = [error_ip_mismatch.format('2001:400:210:151::25', '198.129.254.38')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "2001:400:210:151::25", "source": "198.129.254.38", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        expected_errors = [error_ip_mismatch.format('fc00::1', '127.0.0.2')]
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::1/128"]}}, "spec": {"dest": "fc00::1", "source": "127.0.0.2", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
         ### v6 dest, v6 source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "2001:400:210:151::25", "source": "2001:400:501:1150::3", "schema": 1}}')
-        ### v6 dest, A only source
-        expected_errors = [error_ip_mismatch.format('2001:400:210:151::25', 'sacr-pt1-v4.es.net')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "2001:400:210:151::25", "source": "sacr-pt1-v4.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### v6 dest, AAAA only source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "2001:400:210:151::25", "source": "sacr-pt1-v6.es.net", "schema": 1}}')
-        ### v6 dest, A and AAAA only source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "2001:400:210:151::25", "source": "sacr-pt1.es.net", "schema": 1}}')
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::1/128"]}}, "spec": {"dest": "fc00::1", "source": "fc00::2", "schema": 1}}')
+        ### v6 dest, A source
+        expected_errors = [error_ip_mismatch.format('fc00::1', 'a2.nv.perfsonar.net')]
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::1/128"]}}, "spec": {"dest": "fc00::1", "source": "a2.nv.perfsonar.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        ### v6 dest, AAAA source
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::1/128"]}}, "spec": {"dest": "fc00::1", "source": "aaaa2.nv.perfsonar.net", "schema": 1}}')
+        ### v6 dest, A and AAAA source
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::1/128"]}}, "spec": {"dest": "fc00::1", "source": "aaaa2.nv.perfsonar.net", "schema": 1}}')
         
-        ### A-only dest, v4 source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.129.254.30/32"]}}, "spec": {"dest": "lbl-pt1-v4.es.net", "source": "198.129.254.38", "schema": 1}}')
-        ### A-only dest, v6 source
-        expected_errors = [error_ip_mismatch.format('lbl-pt1-v4.es.net', '2001:400:501:1150::3')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.129.254.30/32"]}}, "spec": {"dest": "lbl-pt1-v4.es.net", "source": "2001:400:501:1150::3", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### A-only dest, A only source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.129.254.30/32"]}}, "spec": {"dest": "lbl-pt1-v4.es.net", "source": "sacr-pt1-v4.es.net", "schema": 1}}')
-        ### A-only dest, AAAA only source
-        expected_errors = [error_ip_mismatch.format('lbl-pt1-v4.es.net', 'sacr-pt1-v6.es.net')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.129.254.30/32"]}}, "spec": {"dest": "lbl-pt1-v4.es.net", "source": "sacr-pt1-v6.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### A-only dest, A and AAAA only source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.129.254.30/32"]}}, "spec": {"dest": "lbl-pt1-v4.es.net", "source": "sacr-pt1.es.net", "schema": 1}}')
+        ### A dest, v4 source
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "a1.nv.perfsonar.net", "source": "127.0.0.2", "schema": 1}}')
+        ### A dest, v6 source
+        expected_errors = [error_ip_mismatch.format('a1.nv.perfsonar.net', 'fc00::2')]
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "a1.nv.perfsonar.net", "source": "fc00::2", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        ### A dest, A source
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "a1.nv.perfsonar.net", "source": "a2.nv.perfsonar.net", "schema": 1}}')
+        ### A dest, AAAA source
+        expected_errors = [error_ip_mismatch.format('a1.nv.perfsonar.net', 'aaaa2.nv.perfsonar.net')]
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "a1.nv.perfsonar.net", "source": "aaaa2.nv.perfsonar.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        ### A dest, A+AAAA source
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "a1.nv.perfsonar.net", "source": "a-aaaa2.nv.perfsonar.net", "schema": 1}}')
         
-        ### AAAA-only dest, v4 source
-        expected_errors = [error_ip_mismatch.format('lbl-pt1-v6.es.net', '198.129.254.38')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:201:1150::3/32"]}}, "spec": {"dest": "lbl-pt1-v6.es.net", "source": "198.129.254.38", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### AAAA-only dest, v6 source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:201:1150::3/32"]}}, "spec": {"dest": "lbl-pt1-v6.es.net", "source": "2001:400:501:1150::3", "schema": 1}}')
-        ### AAAA-only dest, A only source
-        expected_errors = [error_ip_mismatch.format('lbl-pt1-v6.es.net', 'sacr-pt1-v4.es.net')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:201:1150::3/32"]}}, "spec": {"dest": "lbl-pt1-v6.es.net", "source": "sacr-pt1-v4.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### AAAA-only dest, AAAA only source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:201:1150::3/32"]}}, "spec": {"dest": "lbl-pt1-v6.es.net", "source": "sacr-pt1-v6.es.net", "schema": 1}}')
-        ### AAAA-only dest, A and AAAA only source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:201:1150::3/32"]}}, "spec": {"dest": "lbl-pt1-v6.es.net", "source": "sacr-pt1.es.net", "schema": 1}}')
+        ### AAAA dest, v4 source
+        expected_errors = [error_ip_mismatch.format('aaaa1.nv.perfsonar.net', '127.0.0.2')]
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::1/128"]}}, "spec": {"dest": "aaaa1.nv.perfsonar.net", "source": "127.0.0.2", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        ### AAAA dest, v6 source
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::1/128"]}}, "spec": {"dest": "aaaa1.nv.perfsonar.net", "source": "fc00::2", "schema": 1}}')
+        ### AAAA dest, A source
+        expected_errors = [error_ip_mismatch.format('aaaa1.nv.perfsonar.net', 'a2.nv.perfsonar.net')]
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::1/128"]}}, "spec": {"dest": "aaaa1.nv.perfsonar.net", "source": "a2.nv.perfsonar.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        ### AAAA dest, AAAA source
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::1/128"]}}, "spec": {"dest": "aaaa1.nv.perfsonar.net", "source": "aaaa2.nv.perfsonar.net", "schema": 1}}')
+        ### AAAA dest, A+AAAA source
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::1/128"]}}, "spec": {"dest": "aaaa1.nv.perfsonar.net", "source": "a-aaaa2.nv.perfsonar.net", "schema": 1}}')
 
         ### A+AAAA dest, v4 source
-        expected_errors = [error_unallowed_range.format('198.128.151.25')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "antg-staging.es.net", "source": "198.129.254.38", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "antg-staging.es.net", "source": "198.129.254.38", "schema": 1}}')
+        expected_errors = [error_unallowed_range.format('127.0.0.1')]
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::1/128"]}}, "spec": {"dest": "a-aaaa1.nv.perfsonar.net", "source": "127.0.0.1", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
         ### A+AAAA dest, v6 source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "antg-staging.es.net", "source": "2001:400:501:1150::3", "schema": 1}}')
-        expected_errors = [error_unallowed_range.format('2001:400:210:151::25')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "antg-staging.es.net", "source": "2001:400:501:1150::3", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### A+AAAA dest, A only source
-        expected_errors = [error_unallowed_range.format('198.128.151.25')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "antg-staging.es.net", "source": "sacr-pt1-v4.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "antg-staging.es.net", "source": "sacr-pt1-v4.es.net", "schema": 1}}')
-        ### A+AAAA dest, AAAA only source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "antg-staging.es.net", "source": "sacr-pt1-v6.es.net", "schema": 1}}')
-        expected_errors = [error_unallowed_range.format('2001:400:210:151::25')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "antg-staging.es.net", "source": "sacr-pt1-v6.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        ### A+AAAA dest, A and AAAA only source
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:210:151::25/128"]}}, "spec": {"dest": "antg-staging.es.net", "source": "sacr-pt1.es.net", "schema": 1}}')
-        expected_errors = [error_unallowed_range.format('2001:400:210:151::25')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "antg-staging.es.net", "source": "sacr-pt1.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::1/128"]}}, "spec": {"dest": "a-aaaa1.nv.perfsonar.net", "source": "fc00::2", "schema": 1}}')
+        ### A+AAAA dest, A source
+        expected_errors = [error_unallowed_range.format('127.0.0.1')]
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::dead/128"]}}, "spec": {"dest": "a-aaaa1.nv.perfsonar.net", "source": "a2.nv.perfsonar.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+
+        ### A+AAAA dest, AAAA source
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::1/128"]}}, "spec": {"dest": "a-aaaa1.nv.perfsonar.net", "source": "aaaa2.nv.perfsonar.net", "schema": 1}}')
+        ### A+AAAA dest, A+AAAA source
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::1/128"]}}, "spec": {"dest": "a-aaaa1.nv.perfsonar.net", "source": "a-aaaa2.nv.perfsonar.net", "schema": 1}}')
         
         ##test invert
-        self.assert_cmd('{"limit": {"dest": {"invert": true, "cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "198.128.151.26", "source": "198.129.254.38", "schema": 1}}')
-        
+        self.assert_cmd('{"limit": {"dest": {"invert": true, "cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "127.0.0.2", "source": "127.0.0.3", "schema": 1}}')
+
+
         #########################
         #check dest w/o source
         #########################
@@ -708,44 +702,46 @@ class TestLimitPassesUnitTest(ExecUnitTest):
         
         #v4 limit
         ##v4 dest
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.129.254.38/32"]}}, "spec": {"dest": "198.129.254.38", "schema": 1}}')
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "127.0.0.1", "schema": 1}}')
         ##v6 dest
-        expected_errors = [error_unallowed_range.format('2001:400:501:1150::3')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.129.254.38/32"]}}, "spec": {"dest": "2001:400:501:1150::3", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        expected_errors = [error_unallowed_range.format('fc00::1')]
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "fc00::1", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
         ##A-only dest
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.129.254.38/32"]}}, "spec": {"dest": "sacr-pt1-v4.es.net", "schema": 1}}')
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "a1.nv.perfsonar.net", "schema": 1}}')
         ##AAAA-only dest
-        expected_errors = [error_unallowed_range.format('2001:400:501:1150::3')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.129.254.38/32"]}}, "spec": {"dest": "sacr-pt1-v6.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        expected_errors = [error_unallowed_range.format('fc00::1')]
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "aaaa1.nv.perfsonar.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
         ##A+AAAA dest
         ### this should fail. both addresses need to be in range.
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.129.254.38/32"]}}, "spec": {"dest": "sacr-pt1.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "a-aaaa1.nv.perfsonar.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
 
         #v6 limit
         ##v4 dest
-        expected_errors = [error_unallowed_range.format('198.129.254.38')]
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:501:1150::3/128"]}}, "spec": {"dest": "198.129.254.38", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        expected_errors = [error_unallowed_range.format('127.0.0.1')]
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::dead/128"]}}, "spec": {"dest": "127.0.0.1", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
         ##v6 dest
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:501:1150::3/128"]}}, "spec": {"dest": "2001:400:501:1150::3", "schema": 1}}')
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::1/128"]}}, "spec": {"dest": "fc00::1", "schema": 1}}')
         ##A-only dest
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:501:1150::3/128"]}}, "spec": {"dest": "sacr-pt1-v4.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::1/128"]}}, "spec": {"dest": "a1.nv.perfsonar.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
         ##AAAA-only dest
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:501:1150::3/128"]}}, "spec": {"dest": "sacr-pt1-v6.es.net", "schema": 1}}')
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::1/128"]}}, "spec": {"dest": "aaaa1.nv.perfsonar.net", "schema": 1}}')
         ##A+AAAA dest
         ### this should fail. both addresses need to be in range.
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["2001:400:501:1150::3/128"]}}, "spec": {"dest": "sacr-pt1.es.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        expected_errors = [error_unallowed_range.format('127.0.0.1'), error_unallowed_range.format('fc00::1')]
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["fc00::dead/128"]}}, "spec": {"dest": "a-aaaa1.nv.perfsonar.net", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
         
         #v4+v6 limit (all should pass)
         ##v4 dest
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.129.254.38/32", "2001:400:501:1150::3/128"]}}, "spec": {"dest": "198.129.254.38", "schema": 1}}')
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32", "fc00::1/128"]}}, "spec": {"dest": "127.0.0.1", "schema": 1}}')
         ##v6 dest
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.129.254.38/32", "2001:400:501:1150::3/128"]}}, "spec": {"dest": "2001:400:501:1150::3", "schema": 1}}')
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32", "fc00::1/128"]}}, "spec": {"dest": "fc00::1", "schema": 1}}')
         ##A-only dest
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.129.254.38/32", "2001:400:501:1150::3/128"]}}, "spec": {"dest": "sacr-pt1-v4.es.net", "schema": 1}}')
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32", "fc00::1/128"]}}, "spec": {"dest": "a1.nv.perfsonar.net", "schema": 1}}')
         ##AAAA-only dest
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.129.254.38/32", "2001:400:501:1150::3/128"]}}, "spec": {"dest": "sacr-pt1-v6.es.net", "schema": 1}}')
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32", "fc00::1/128"]}}, "spec": {"dest": "aaaa1.nv.perfsonar.net", "schema": 1}}')
         ##A+AAAA dest
-        self.assert_cmd('{"limit": {"dest": {"cidr": ["198.129.254.38/32", "2001:400:501:1150::3/128"]}}, "spec": {"dest": "sacr-pt1.es.net", "schema": 1}}')
+        expected_errors = [error_unallowed_range.format('127.0.0.1'), error_unallowed_range.format('fc00::1')]
+        self.assert_cmd('{"limit": {"dest": {"cidr": ["127.0.0.1/32", "fc00::1/128"]}}, "spec": {"dest": "a-aaaa1.nv.perfsonar.net", "schema": 1}}')
 
         #########################
         # check endpoint
@@ -754,14 +750,14 @@ class TestLimitPassesUnitTest(ExecUnitTest):
         ### Just need to test OR condition
 
         ##works
-        self.assert_cmd('{"limit": {"endpoint": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "198.128.151.25", "source": "198.129.254.38", "schema": 1}}')
-        self.assert_cmd('{"limit": {"endpoint": {"cidr": ["198.128.151.25/32"]}}, "spec": {"source": "198.128.151.25", "dest": "198.129.254.38", "schema": 1}}')
-        self.assert_cmd('{"limit": {"endpoint": {"cidr": ["198.128.151.25/32"]}}, "spec": {"dest": "198.128.151.25", "schema": 1}}')
+        self.assert_cmd('{"limit": {"endpoint": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "127.0.0.1", "source": "127.0.0.1", "schema": 1}}')
+        self.assert_cmd('{"limit": {"endpoint": {"cidr": ["127.0.0.1/32"]}}, "spec": {"source": "127.0.0.1", "dest": "127.0.0.1", "schema": 1}}')
+        self.assert_cmd('{"limit": {"endpoint": {"cidr": ["127.0.0.1/32"]}}, "spec": {"dest": "127.0.0.1", "schema": 1}}')
         
         #fails 
         expected_errors = ["source nor dest matches the IP range set by endpoint limit"]
-        self.assert_cmd('{"limit": {"endpoint": {"cidr": ["198.128.151.26/32"]}}, "spec": {"dest": "198.128.151.25", "source": "198.129.254.38", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
-        self.assert_cmd('{"limit": {"endpoint": {"cidr": ["198.128.151.26/32"]}}, "spec": {"dest": "198.128.151.25", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"endpoint": {"cidr": ["127.0.0.2/32"]}}, "spec": {"dest": "127.0.0.1", "source": "127.0.0.1", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
+        self.assert_cmd('{"limit": {"endpoint": {"cidr": ["127.0.0.2/32"]}}, "spec": {"dest": "127.0.0.1", "schema": 1}}', expected_valid=False, expected_errors=expected_errors)
   
 
 class TestParticipantsUnitTest(ExecUnitTest):

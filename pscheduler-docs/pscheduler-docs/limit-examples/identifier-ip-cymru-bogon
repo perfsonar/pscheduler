@@ -8,6 +8,8 @@
     "#": "                                                                   ",
     "#": "If you wonder about the correct pronunciation of 'Cymru', see      ",
     "#": "https://www.youtube.com/watch?v=HGg6RWsl2YI for the answer.        ",
+    "#": "                                                                   ",
+    "#": "THIS FILE IS FOR EXAMPLE ONLY AND SHOULD NOT BE USED IN PRODUCTION.",
     "#": "-------------------------------------------------------------------",
 
     "schema": 1,

@@ -4,12 +4,13 @@
 
 %define short	ping
 Name:		pscheduler-tool-%{short}
-Version:	1.0.2.6
+Version:	1.1.6
 Release:	1%{?dist}
 
 Summary:	pScheduler Ping Tool
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Source0:	%{short}-%{version}.tar.gz
@@ -73,5 +74,6 @@ pscheduler internal warmboot
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %{dest}
 %attr(440,root,root) %{_pscheduler_sudoersdir}/*

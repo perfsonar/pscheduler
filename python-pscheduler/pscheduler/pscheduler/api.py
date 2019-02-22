@@ -9,11 +9,8 @@ import threading
 import urlparse
 import uuid
 
-# HACK: BWCTLBC
-import os
-
-
 from .psdns import *
+from .psjson import *
 from .psurl import *
 
 
@@ -21,8 +18,12 @@ def api_root():
     "Return the standard root location of the pScheduler hierarchy"
     return '/pscheduler'
 
-def api_this_host():
-    "Return a fully-qualified name for this host"
+def api_local_host():
+    "Return a name that should point to the server on this host."
+    return 'localhost'
+
+def api_local_host_fqdn():
+    "Return as close to a fully-qualified name for this host as possible."
     return socket.getfqdn()
 
 
@@ -54,7 +55,7 @@ def api_url(host = None,
             ):
     """Format a URL for use with the pScheduler API."""
 
-    host = 'localhost' if host is None else str(host)
+    host = api_local_host() if host is None else str(host)
     # Force the host into something valid for DNS
     # See http://stackoverflow.com/a/25103444/180674
     try:
@@ -163,7 +164,7 @@ def api_result_delimiter():
 
 
 
-def api_ping(host, bind=None, timeout=3):
+def api_ping(host=None, bind=None, timeout=3):
     """
     See if an API server is alive within a given timeout.  If 'host'
     is None, ping the local server.
@@ -171,16 +172,24 @@ def api_ping(host, bind=None, timeout=3):
     Returns a tuple of (up, reason), where reason is a string
     explaining why 'up' is what is is.
     """
-    if host is None:
-        host = api_this_host()
-
     url = pscheduler.api_url(host)
 
-    status, result = url_get(url, bind=bind,
+    status, result = url_get(url, bind=bind, json=False,
                              throw=False, timeout=timeout)
 
     if status == 200:
+
+        # What came back needs to look like a JSON string or it isn't
+        # pScheduler.
+        try:
+            returned_json = json_load(result)
+            if not isinstance(returned_json, basestring):
+                raise ValueError
+        except ValueError:
+            return (False, "Not running pScheduler")
+
         return (True, "pScheduler is alive")
+
     elif status == 400:
         return (False, result)
     elif status in [202, 204, 205, 206, 207, 208, 226,
@@ -239,17 +248,13 @@ def api_ping_all_up(hosts, bind=None, timeout=10):
 
 
 
-#
-# TODO: Remove this when the backward-compatibility code is removed
-#
-
 def api_has_pscheduler(hostport, timeout=5, bind=None):
     """
     Determine if pScheduler is running on a host
     """
     # Null implies localhost
     if hostport is None:
-        hostport = "localhost"
+        hostport = api_local_host()
 
     host, port = api_host_port(hostport)
 
@@ -268,89 +273,18 @@ def api_has_pscheduler(hostport, timeout=5, bind=None):
     if not resolved:
         return False
 
-
-    # HACK: BWTCLBC
-    # If the environment says to bind to a certain address, do it.
-    if bind is None:
-        bind = os.environ.get('PSCHEDULER_LEAD_BIND_HACK', None)
-
     status, raw_spec = pscheduler.url_get(api_url_hostport(hostport),
                                           timeout=timeout,
                                           throw=False,
                                           json=False,
-                                          bind=bind # HACK: BWTCLBC
+                                          bind=bind
                                           )
 
     return status == 200
 
 
 
-from contextlib import closing
 
-
-def api_has_bwctl(host, timeout=5, bind=None):
-    """
-    Determine if a host is running the BWCTL daemon
-    """
-
-    # Null implies localhost
-    if host is None:
-        host = "localhost"
-
-    # HACK: BWTCLBC
-    # If the environment says to bind to a certain address, do it.
-    if bind is None:
-        bind = os.environ.get('PSCHEDULER_LEAD_BIND_HACK', None)
-
-    for family in [socket.AF_INET, socket.AF_INET6]:
-        try:
-            with closing(socket.socket(family, socket.SOCK_STREAM)) as sock:
-                if bind is not None:
-                    sock.bind((bind, 0))
-                sock.settimeout(timeout)
-                return sock.connect_ex((host, 4823)) == 0
-        except socket.error:
-            pass
-
-    return False
-
-
-
-def api_has_services(hosts, timeout=5, bind=None, threads=10):
-    """
-    Do a parallel rendition of the two functions above.
-
-    Returns a hash of host names and results
-    """
-
-    # Work around a bug in 2.6
-    # TODO: Get rid of this when 2.6 is no longer in the picture.
-    if not hasattr(threading.current_thread(), "_children"):
-        threading.current_thread()._children = weakref.WeakKeyDictionary()
-
-    pool = multiprocessing.dummy.Pool(processes=min(len(hosts), threads))
-
-    def check_one(arg):
-        host, service, function = arg
-        return (host, service, function(host, timeout=timeout, bind=bind))
-
-    args = []
-    result = {}
-    for host in hosts:
-        args.extend([
-            (host, "bwctl", api_has_bwctl),
-            (host, "pscheduler", api_has_pscheduler)
-            ])
-        result[host] = {
-            "bwctl": None,
-            "pscheduler": None
-        }
-
-
-    for host, service, state in pool.imap(check_one, args, chunksize=1):
-        result[host][service] = state
-    pool.close()
-    return result
 
 
 
@@ -363,8 +297,5 @@ if __name__ == "__main__":
     print api_url(path='nohost')
     print
 
-    print api_has_bwctl(None)
-    print api_has_pscheduler(None)
+    print api_ping()
 
-
-    print api_has_services(["perfsonardev0.internet2.edu"])

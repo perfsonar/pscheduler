@@ -4,12 +4,13 @@
 
 %define short	bwctliperf3
 Name:		pscheduler-tool-%{short}
-Version:	1.0.2.6
+Version:	1.1.6
 Release:	1%{?dist}
 
-Summary:	BWCTL iperf3 tool class for pScheduler
+Summary:	BWCTL iperf3 tool class for pScheduler (DISABLED)
 BuildArch:	noarch
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 Source0:	%{short}-%{version}.tar.gz
@@ -17,17 +18,13 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	python-pscheduler
 Requires:	pscheduler-test-throughput
-Requires:	bwctl-client
-Requires:	bwctl-server
-Requires:	iperf3
 
 BuildRequires:	pscheduler-rpm
 
 
 %description
-BWCTL iperf3 tool class for pScheduler
+BWCTL iperf3 tool class for pScheduler (DISABLED)
 
 
 %prep
@@ -56,4 +53,5 @@ pscheduler internal warmboot
 
 %files
 %defattr(-,root,root,-)
+%license LICENSE
 %{dest}

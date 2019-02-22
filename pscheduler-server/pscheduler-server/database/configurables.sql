@@ -149,3 +149,46 @@ CREATE TRIGGER configurables_truncate
 BEFORE TRUNCATE
 ON configurables
 EXECUTE PROCEDURE configurables_noalter();
+
+
+--
+-- Maintenance
+--
+
+-- Maintenance functions
+
+
+CREATE OR REPLACE FUNCTION configurables_maint_minute()
+RETURNS VOID
+AS $$
+DECLARE
+    command_result external_program_result;
+    config_json JSONB;
+BEGIN
+
+    -- Re-read the configuration
+
+    command_result := pscheduler_command(ARRAY['validate-configurables', '--dump']);
+    IF command_result.status <> 0 THEN
+        -- TODO: Decide whether we want to log this once a minute.
+        -- RAISE NOTICE 'Unable to read configurables: %', command_result.stderr;
+        RETURN;
+    END IF;
+
+    config_json := command_result.stdout::JSONB;
+    IF config_json IS NULL THEN
+        RETURN;
+    END IF;
+
+    -- Update the database
+
+    IF config_json->'keep-runs-tasks' IS NOT NULL THEN
+        UPDATE configurables SET keep_runs_tasks = (config_json ->> 'keep-runs-tasks')::INTERVAL;
+    END IF;
+
+    IF config_json->'run-straggle' IS NOT NULL THEN
+        UPDATE configurables SET run_straggle = (config_json ->> 'run-straggle')::INTERVAL;
+    END IF;
+
+END;
+$$ LANGUAGE plpgsql;

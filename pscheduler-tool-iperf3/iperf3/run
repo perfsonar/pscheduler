@@ -13,7 +13,6 @@ import sys
 import time
 import iperf3_parser
 import traceback
-import ipaddr
 import iperf3_utils
 from iperf3_defaults import *
 
@@ -38,7 +37,9 @@ except KeyError as e:
 except Exception:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 
-if len(participant_data) != 2:
+single_ended = test_spec.get('single-ended', False)
+participants = len(participant_data)
+if not(participants == 2 or (participants == 1 and single_ended)):
     pscheduler.fail("iperf3 requires exactly 2 participants, got %s" % (len(participant_data)))
 
 config = iperf3_utils.get_config()
@@ -47,7 +48,10 @@ config = iperf3_utils.get_config()
 iperf3_cmd  = config["iperf3_cmd"]
 
 # grab the server port from the test spec
-server_port = participant_data[1]['server_port']   
+if single_ended:
+    server_port = test_spec.get('single-ended-port', DEFAULT_SERVER_PORT)
+else:
+    server_port = participant_data[1]['server_port']
 
 # need this to pad out the wait timeout,
 # convert to seconds
@@ -257,6 +261,7 @@ def run_client():
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e)
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": " ".join(iperf3_args),
                                  "error": "The iperf3 command failed during execution. See server logs for more details."})
 
 
@@ -351,6 +356,7 @@ def run_server():
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e);
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": " ".join(iperf3_args),
                                  "error": "The iperf3 command failed during execution. See server logs for more details."})
 
 
@@ -368,9 +374,10 @@ def _make_result(command, status, stdout, stderr):
             pass
 
         if not error_text:
-            error_text = "%s\n%s" % (stdout, stderr)
+            error_text = "%s\n\n%s\n%s" % (stdout, stderr)
 
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": command,
                                  "error": "iperf3 returned an error: %s" % (error_text)})
 
     lines = stdout.split("\n")    

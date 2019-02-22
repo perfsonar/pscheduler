@@ -62,6 +62,15 @@ opt_parser.add_option("--flow-label",
                       action="store", type="int",
                       dest="flow_label")
 
+opt_parser.add_option("--fragment",
+                      help="Allow packet fragmentation",
+                      action="store_true",
+                      dest="fragment")
+opt_parser.add_option("--no-fragment",
+                      help="Don't allow packet fragmentation",
+                      action="store_false",
+                      dest="fragment")
+
 opt_parser.add_option("--hostnames",
                       help="Look up hostnames from IPs",
                       action="store_true",
@@ -125,6 +134,10 @@ opt_parser.add_option("--timeout",
                       action="store", type="string",
                       dest="timeout")
 
+opt_parser.add_option("--protocol",
+                      help="Protocol used to measure round trip time",
+                      action="store", type="string",
+                      dest="protocol")
 
 
 (options, remaining_args) = opt_parser.parse_args(args)
@@ -133,7 +146,8 @@ if len(remaining_args) != 0:
    pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
 
-result = { 'schema': 1 }
+result = { }
+schema = pscheduler.HighInteger(1)
 
 
 if options.count is not None:
@@ -144,6 +158,10 @@ if options.dest is not None:
 
 if options.flow_label is not None:
    result['flow-label'] = options.flow_label
+
+if options.fragment is not None:
+   result['fragment'] = options.fragment
+   schema.set(3)
 
 if options.hostnames is not None:
    result['hostnames'] = options.hostnames
@@ -178,5 +196,10 @@ if options.deadline is not None:
 if options.timeout is not None:
    result['timeout'] = options.timeout
 
+if options.protocol is not None:
+   result['protocol'] = options.protocol
+   schema.set(2)
+
+result["schema"] = schema.value()
 
 pscheduler.succeed_json(result)

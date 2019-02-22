@@ -34,13 +34,10 @@ def contexts_name(name):
 @application.route("/contexts/<name>/data-is-valid", methods=['GET'])
 def contexts_name_data_is_valid(name):
 
-    try:
-        cursor = dbcursor_query(
-            "SELECT EXISTS"
-            " (SELECT * FROM context WHERE available AND NAME = %s)",
-            [name])
-    except Exception as ex:
-        return error(str(ex))
+    cursor = dbcursor_query(
+        "SELECT EXISTS"
+        " (SELECT * FROM context WHERE available AND NAME = %s)",
+        [name])
 
     exists = cursor.fetchone()[0]
     cursor.close()

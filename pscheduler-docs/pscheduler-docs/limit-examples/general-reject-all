@@ -10,6 +10,8 @@
     "#": "                                                                   ",
     "#": "These identify who's asking to run the test.  One requester can    ",
     "#": "map to zero or more identifiers.                                   ",
+    "#": "                                                                   ",
+    "#": "THIS FILE IS FOR EXAMPLE ONLY AND SHOULD NOT BE USED IN PRODUCTION.",
     "#": "-------------------------------------------------------------------",
 
     "identifiers": [

@@ -446,9 +446,13 @@ __dictionary__ = {
     # Compound Types
     #
 
-    "ArchiveSpecification": {
+    "ArchiveSpecification_V1": {
         "type": "object",
         "properties": {
+            "schema": {
+                "type": "integer",
+                "enum": [ 1 ]
+            },
             "archiver": { "type": "string" },
             "data": { "$ref": "#/pScheduler/AnyJSON" },
             "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
@@ -460,6 +464,43 @@ __dictionary__ = {
             "data",
             ]
         },
+
+    "ArchiveSpecification_V2": {
+        "type": "object",
+        "properties": {
+            "schema": {
+                "type": "integer",
+                "enum": [ 2 ]
+            },
+            "runs": {
+                "type": "string",
+                "enum": [
+                    "all",
+                    "succeeded",
+                    "failed"
+                    ]
+            },
+            "archiver": { "type": "string" },
+            "data": { "$ref": "#/pScheduler/AnyJSON" },
+            "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
+            "ttl": { "$ref": "#/pScheduler/Duration" },
+            "uri-host": { "$ref": "#/pScheduler/URLHostPort" }
+            },
+        "additionalProperties": False,
+        "required": [
+            "schema",
+            "archiver",
+            "data",
+            ]
+        },
+
+    "ArchiveSpecification": {
+        "anyOf": [
+            { "$ref": "#/pScheduler/ArchiveSpecification_V1" },
+            { "$ref": "#/pScheduler/ArchiveSpecification_V2" }
+            ]
+        },
+
 
     "ContextSpecificationSingle": {
         "type": "object",
@@ -857,10 +898,39 @@ __dictionary__ = {
             ]
         },
 
+    "TaskSpecification_V3": {
+        "type": "object",
+        "properties": {
+            "schema":   {
+                "type": "integer",
+                "enum": [ 3 ]
+                },
+            "lead-bind":{ "$ref": "#/pScheduler/Host" },
+            "test":     { "$ref": "#/pScheduler/TestSpecification" },
+            "tool":     { "$ref": "#/pScheduler/String" },
+            "tools":    { "$ref": "#/pScheduler/StringList" },
+            "schedule": { "$ref": "#/pScheduler/ScheduleSpecification" },
+            "priority": { "$ref": "#/pScheduler/Integer" },
+            "archives": {
+                "type": "array",
+                "items": { "$ref": "#/pScheduler/ArchiveSpecification" },
+                },
+            "contexts": { "$ref": "#/pScheduler/ContextSpecification" },
+            "reference": { "$ref": "#/pScheduler/AnyJSON" },
+            "_key": { "$ref": "#/pScheduler/String" },
+        },
+        "additionalProperties": False,
+        "required": [
+            "schema",
+            "test",
+            ]
+        },
+
     "TaskSpecification": {
         "anyOf": [
             { "$ref": "#/pScheduler/TaskSpecification_V1" },
-            { "$ref": "#/pScheduler/TaskSpecification_V2" }
+            { "$ref": "#/pScheduler/TaskSpecification_V2" },
+            { "$ref": "#/pScheduler/TaskSpecification_V3" }
             ]
         },
 
@@ -1218,10 +1288,12 @@ def json_validate(json, skeleton):
     "#/path/to/definition" instead of type, items and properties as
     they would when defining a regular object.
 
+    Tip:  If your schema needs to be allOf/anyOf/oneOf/not at the top,
+    build it in local and use a $ref to refer to it.
+
     The values returned are a tuple containing a boolean indicating
     whether or not the JSON was valid and a string containing any
     error messages if not.
-
     """
 
     # Validate what came in

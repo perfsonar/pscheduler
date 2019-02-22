@@ -3,13 +3,14 @@
 #
 
 Name:		pscheduler-bundle-extras
-Version:	1.0.2.6
+Version:	1.1.6
 Release:	1%{?dist}
 
 Summary:	Extras pScheduler Bundle
 BuildArch:	noarch
 
-License:	Apache 2.0
+License:	ASL 2.0
+Vendor:	perfSONAR
 Group:		Unspecified
 
 
