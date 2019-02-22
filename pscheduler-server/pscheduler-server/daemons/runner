@@ -881,6 +881,9 @@ def main_program():
             # TODO: This try needs to be brought to the other programs.
             # Better, make it a function in db.py.
 
+            with db.cursor() as cursor:
+                cursor.execute("SELECT heartbeat('runner', %s)", [wait_time])
+
             try:
                 if pscheduler.polled_select(
                         [db],[],[],
@@ -898,6 +901,9 @@ def main_program():
                     log.exception()
                     raise ex
 
+
+        with db.cursor() as cursor:
+            cursor.execute("SELECT heartbeat('runner')")
 
         with db.cursor() as cursor:
 

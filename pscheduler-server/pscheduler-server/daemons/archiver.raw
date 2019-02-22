@@ -818,6 +818,8 @@ def main_program():
 
     while True:
 
+        db.query("SELECT heartbeat('archiver')")
+
         # Drain the pools if the debug level changes.  This is done
         # since persisting archivers won't register the change in state.
 
@@ -844,6 +846,8 @@ def main_program():
             log.debug("Waiting %s for change or notification", next_refresh)
 
             warmboot = False
+
+            db.query("SELECT heartbeat('archiver', %s)", [next_refresh])
 
             if db.wait(next_refresh):
                 notifications = [ tup[0] for tup in db.notifications() ]

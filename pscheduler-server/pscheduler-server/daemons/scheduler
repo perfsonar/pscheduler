@@ -831,6 +831,10 @@ def main_program():
 
     while True:
 
+        with pg.cursor() as cursor:
+            cursor.execute("SELECT heartbeat('scheduler')")
+
+
         wait = True
 
         query = """SELECT task, uuid, key, runs, trynext, anytime, json, participants
@@ -882,6 +886,9 @@ def main_program():
 
 
         if wait:
+
+            with pg.cursor() as cursor:
+                cursor.execute("SELECT heartbeat('scheduler', %s)", [refresh])
 
             try:
                 if pscheduler.polled_select(
