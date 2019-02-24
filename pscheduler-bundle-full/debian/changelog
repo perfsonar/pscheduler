@@ -1,0 +1,67 @@
+pscheduler-bundle-full (1.1.2-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 24 Oct 2018 16:49:49 +0100
+
+pscheduler-bundle-full (1.1.1-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 24 Aug 2018 18:25:55 +0000
+
+pscheduler-bundle-full (1.1-1) perfsonar-release; urgency=low
+
+  * New upstream version
+  * Adding pscheduler-test-http, pscheduler-tool-psurl, pscheduler-tool-twamp
+  * Moving bwctl related plugins to pscheduler-bundle-extras
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 13 Aug 2018 19:38:02 +0000
+
+pscheduler-bundle-full (1.0.2.6-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sun, 04 Mar 2018 23:17:19 +0000
+
+pscheduler-bundle-full (1.0.2.3-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 25 Jan 2018 16:11:08 +0000
+
+pscheduler-bundle-full (1.0.2-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 27 Nov 2017 14:44:56 +0000
+
+pscheduler-bundle-full (1.0.1.1-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 11:50:23 +0100
+
+pscheduler-bundle-full (1.0.0.5-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 14 Jun 2017 19:03:49 +0000
+
+pscheduler-bundle-full (1.0.0.2-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 05 May 2017 12:57:44 +0000
+
+pscheduler-bundle-full (1.0-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Apr 2017 11:49:01 +0000
+
+pscheduler-bundle-full (0.0-1) unstable; urgency=low
+
+  * Initial release
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Mon, 11 Jul 2016 13:12:09 +0200

@@ -1,0 +1,194 @@
+#!/bin/sh
+# postinst script for pscheduler-server
+#
+# see: dh_installdeb(1)
+
+set -e
+
+# summary of how this script can be called:
+#        * <postinst> `configure' <most-recently-configured-version>
+#        * <old-postinst> `abort-upgrade' <new version>
+#        * <conflictor's-postinst> `abort-remove' `in-favour' <package>
+#          <new-version>
+#        * <postinst> `abort-remove'
+#        * <deconfigured's-postinst> `abort-deconfigure' `in-favour'
+#          <failed-install-package> <version> `removing'
+#          <conflicting-package> <version>
+# for details, see http://www.debian.org/doc/debian-policy/ or
+# the debian-policy package
+
+pg_upgrade() {
+    if pg_lsclusters -h 2>/dev/null | grep -q '^9.6 \+main \+5432 \+online'; then
+        echo Found postgresql 9.6 running, skipping automatic upgrade
+        return
+    fi
+
+    if pg_lsclusters -h 2>/dev/null | grep -q '^1[0-9] \+main \+5432 \+online'; then
+        echo Found postgresql 10+ running, skipping automatic upgrade
+        return
+    fi
+
+    echo Trying automatic postgresql upgrade...
+
+    if ! pg_lsclusters; then
+        echo Could not list postgresql clusters
+        return
+    fi
+
+    CNT=$(pg_lsclusters -h | grep -w -c online) || true
+    if [ "$CNT" -ne 2 ]; then
+        echo Did not find 2 online clusters: $CNT
+        return
+    fi
+
+    if ! pg_lsclusters -h | grep -q '^9.6 \+main \+5433 \+online'; then
+        echo Did not find postgresql 9.6 running on port 5433
+        return
+    fi
+
+    OLD=$(pg_lsclusters -h | grep '5432 \+online')
+    OLD=${OLD%% *}
+
+    if su -c '/usr/lib/postgresql/9.6/bin/pg_dumpall -s -p 5433' postgres \
+        | grep -q '^CREATE DATABASE'
+    then
+        echo Database 9.6 main already contains data
+        return
+    fi
+
+    if ! pg_ctlcluster 9.6 main stop; then
+        echo Could not stop 9.6 main cluster
+        return
+    fi
+
+    if ! pg_renamecluster 9.6 main main_dist; then
+        echo Could not rename 9.6 main cluster
+        return
+    fi
+
+    if ! pg_upgradecluster $OLD main; then
+        echo Cluster upgrade failed
+        return
+    fi
+
+    if ! service postgresql stop; then
+        echo Could not stop postgresql service
+        return
+    fi
+
+    if ! sed -i 's/^auto/manual/' /etc/postgresql/9.6/main_dist/start.conf; then
+        echo Could not disable 9.6 main_dist cluster
+        return
+    fi
+
+    if [ -d /run/systemd/system ]; then
+        systemctl daemon-reload
+    fi
+
+    if ! service postgresql start; then
+        echo Could not start postgresql service
+        return
+    fi
+}
+
+case "$1" in
+    configure)
+        # open debconf descriptors
+        . /usr/share/debconf/confmodule
+
+        # stop pscheduler queries via web api for package upgrade
+        service apache2 stop
+
+        # stop all running requests
+        service postgresql restart 3>/dev/null
+
+        # try to upgrade postgresql to required version
+        ( pg_upgrade ) 3>/dev/null
+
+        # database init/upgrade
+        if [ -f /usr/share/dbconfig-common/dpkg/postinst.pgsql ]; then
+            . /usr/share/dbconfig-common/dpkg/postinst.pgsql
+            rm -f /var/cache/dbconfig-common/backups/pscheduler-server_*
+            db_set pscheduler-server/upgrade-backup false
+            dbc_go pscheduler-server $@
+        fi
+
+        # release debconf descriptor
+        db_stop
+
+        # update database passwords
+        if [ -r /etc/dbconfig-common/pscheduler-server.conf ]; then
+            (
+                . /etc/dbconfig-common/pscheduler-server.conf
+
+                echo "host=127.0.0.1 dbname=$dbc_dbname user=$dbc_dbuser password=$dbc_dbpass" \
+                    > /etc/pscheduler/database/database-dsn
+                echo "$dbc_dbpass" > /etc/pscheduler/database/database-password
+                echo "*:*:$dbc_dbname:$dbc_dbuser:$dbc_dbpass" > /etc/pscheduler/database/pgpassfile
+
+                chmod 600 /etc/pscheduler/database/database-dsn \
+                          /etc/pscheduler/database/database-password \
+                          /etc/pscheduler/database/pgpassfile
+                chown pscheduler:root /etc/pscheduler/database/database-dsn \
+                                      /etc/pscheduler/database/database-password \
+                                      /etc/pscheduler/database/pgpassfile
+            )
+        fi
+
+        # handle large number of pscheduler connections
+        if grep -q '^max_connections = 100[^0-9]' /etc/postgresql/*/main/postgresql.conf; then
+            sed -i 's/^max_connections = 100/max_connections = 500/' /etc/postgresql/*/main/postgresql.conf
+            service postgresql restart
+        fi
+
+        # apache setup
+        if [ -e /usr/share/apache2/apache2-maintscript-helper ] ; then
+            . /usr/share/apache2/apache2-maintscript-helper
+            apache2_invoke enmod ssl || echo $?
+            apache2_invoke ensite default-ssl || echo $?
+            apache2_invoke enconf pscheduler-server.conf restart || echo $?
+        else
+            ln -sf /etc/apache2/conf-available/pscheduler-server.conf /etc/apache2/conf.d/
+            [ -f /etc/apache2/mods-available/version.load ] && a2enmod -q version
+            a2enmod -q ssl
+            a2ensite -q default-ssl
+            service apache2 restart
+        fi
+
+        # rsyslog config update
+        if id syslog >/dev/null 2>/dev/null; then
+            chown syslog /var/log/pscheduler
+            chmod u+w /var/log/pscheduler
+        fi
+        service rsyslog restart
+    ;;
+
+    triggered)
+        for trigger in $2; do
+            case $trigger in
+                pscheduler-warmboot)
+                    pscheduler internal warmboot || true
+                ;;
+
+                *)
+                    echo "Unknown trigger activated: $trigger" >&2
+                ;;
+            esac
+        done
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+# dh_installdeb will replace this with shell code automatically
+# generated by other debhelper scripts.
+
+#DEBHELPER#
+
+exit 0

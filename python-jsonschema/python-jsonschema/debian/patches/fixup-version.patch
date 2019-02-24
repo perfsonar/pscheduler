@@ -1,0 +1,24 @@
+Description: Fixup vcversion cruft
+ vcversion looks stupid to me. Putting a semver version in version.txt just
+ didn't work for me. So I'm being even more stupid and hardcoding the version
+ in setup.py. If someone knows a better way to fix it, let me know.
+Author: Thomas Goirand <zigo@debian.org>
+Forwarded: no
+Last-Update: 2015-10-09
+
+--- a/setup.py
++++ b/setup.py
+@@ -29,6 +29,7 @@
+ 
+ setup(
+     name="jsonschema",
++    version="2.5.1",
+     packages=["jsonschema", "jsonschema.tests"],
+     package_data={"jsonschema": ["schemas/*.json"]},
+     setup_requires=["vcversioner"],
+@@ -41,5 +42,4 @@
+     long_description=long_description,
+     url="http://github.com/Julian/jsonschema",
+     entry_points={"console_scripts": ["jsonschema = jsonschema.cli:main"]},
+-    vcversioner={"version_module_paths" : ["jsonschema/_version.py"]},
+ )

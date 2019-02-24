@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -e 
+
+py.test-3 -v -s jsonschema

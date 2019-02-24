@@ -1,0 +1,11 @@
+pscheduler-tool-globus (1.1.2-1) perfsonar-release; urgency=low
+
+  * New upstream release.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 24 Oct 2018 16:49:46 +0100
+
+pscheduler-tool-globus (1.0.2-1) perfsonar-jessie-release; urgency=low
+
+  * Initial release
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 21 Aug 2018 15:14:03 +0200

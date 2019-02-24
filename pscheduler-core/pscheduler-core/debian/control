@@ -1,0 +1,16 @@
+Source: pscheduler-core
+Section: net
+Priority: optional
+Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.6
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-core
+Architecture: all
+Depends: ${misc:Depends}, python-pscheduler (>= 1.3.0.4.2~), python-tz, curl
+Recommends: gnuplot5-nox | gnuplot5
+Description: pScheduler core programs
+ Core programs for pScheduler

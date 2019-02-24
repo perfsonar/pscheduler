@@ -1,0 +1,32 @@
+#!/usr/bin/make -f
+
+PYVERS :=  $(shell pyversions -r)
+PY3VERS := $(shell py3versions -r)
+
+%:
+	dh $@ --with python2,python3
+
+override_dh_auto_build:
+	set -ex; \
+	for py in $(PYVERS) $(PY3VERS); do \
+		$$py setup.py build; \
+	done
+
+override_dh_auto_install:
+	set -ex; \
+	for py in $(PYVERS); do \
+		$$py setup.py install --skip-build --no-compile \
+		                      --root debian/python-isodate \
+		                      --install-layout=deb; \
+	done
+	set -ex; \
+	for py in $(PY3VERS); do \
+		$$py setup.py install --skip-build --no-compile \
+		                      --root debian/python3-isodate \
+		                      --install-layout=deb; \
+	done
+
+override_dh_auto_clean:
+	rm -rf build
+	rm -rf src/isodate.egg-info
+	find . \( -name '*.pyc' -o -name __pycache__ \) -delete

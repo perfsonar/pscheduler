@@ -1,0 +1,14 @@
+Index: pscheduler-server/database/warmboot.raw
+===================================================================
+--- pscheduler-server.orig/database/warmboot.raw	2018-06-06 13:27:09.173042000 +0100
++++ pscheduler-server/database/warmboot.raw	2018-10-24 16:49:39.460592008 +0100
+@@ -3,8 +3,7 @@
+ # Warm boot the database
+ #
+ 
+-postgresql-load --role __ROLE__ <<EOF
+-\c __DATABASE__
++PGPASSFILE=/etc/pscheduler/database/pgpassfile psql -U __ROLE__ __ROLE__ -h localhost <<EOF >/dev/null
+ DO \$\$
+ BEGIN
+     PERFORM warm_boot();

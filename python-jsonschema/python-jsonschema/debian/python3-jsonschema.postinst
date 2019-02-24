@@ -1,0 +1,11 @@
+#!/bin/sh
+
+set -e
+
+if [ "$1" = "configure" ] ; then
+	update-alternatives --install /usr/bin/jsonschema jsonschema /usr/bin/python3-jsonschema 200
+fi
+
+#DEBHELPER#
+
+exit 0

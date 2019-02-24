@@ -1,0 +1,75 @@
+pscheduler-server (1.1.5-1) perfsonar-release; urgency=medium
+
+  * Non-maintainer upload.
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Thu, 14 Feb 2019 16:00:30 +0100
+
+pscheduler-server (1.1.2-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 24 Oct 2018 16:49:38 +0100
+
+pscheduler-server (1.1.1-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 24 Aug 2018 18:25:45 +0000
+
+pscheduler-server (1.1-1) perfsonar-release; urgency=low
+
+  * New upstream version
+  * Depending on postgresql-10 or postgresql-9.6
+  * Increasing maximum number of open files and running processes to 4096
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 13 Aug 2018 19:37:54 +0000
+
+pscheduler-server (1.0.2.6-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sun, 04 Mar 2018 23:17:12 +0000
+
+pscheduler-server (1.0.2.3-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 25 Jan 2018 16:10:59 +0000
+
+pscheduler-server (1.0.2-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 27 Nov 2017 14:44:51 +0000
+
+pscheduler-server (1.0.1.1-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+  * Moving pscheduler-warmboot calls to trigger.
+  * Lowering requirement on python-pscheduler version a tiny bit.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 28 Jul 2017 14:08:27 +0200
+
+pscheduler-server (1.0.0.5-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 14 Jun 2017 19:04:03 +0000
+
+pscheduler-server (1.0.0.2-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 05 May 2017 12:58:10 +0000
+
+pscheduler-server (1.0-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 11:50:45 +0100
+
+pscheduler-server (0.0-1) unstable; urgency=low
+
+  * Initial release
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Mon, 11 Jul 2016 13:12:09 +0200

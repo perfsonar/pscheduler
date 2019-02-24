@@ -1,0 +1,60 @@
+Index: pscheduler-core/diags.raw
+===================================================================
+--- pscheduler-core.orig/diags.raw	2018-08-10 20:12:47.000000000 +0000
++++ pscheduler-core/diags.raw	2018-08-13 19:37:53.000000000 +0000
+@@ -98,7 +98,7 @@
+ 
+ section "New Tasks by Hour Added"
+ 
+-postgresql-load <<EOF
++su -l -c psql postgres <<EOF
+ \c pscheduler
+ SELECT
+     date_trunc('hour', added) AS hour,
+@@ -113,7 +113,7 @@
+ 
+ section "New Runs by Hour Added"
+ 
+-postgresql-load <<EOF
++su -l -c psql postgres <<EOF
+ \c pscheduler
+ SELECT
+     date_trunc('hour', added) AS hour,
+@@ -128,7 +128,7 @@
+ 
+ section "Run States by Hour"
+ 
+-postgresql-load <<EOF
++su -l -c psql postgres <<EOF
+ \c pscheduler
+ SELECT
+     run_state.enum AS state,
+@@ -185,7 +185,7 @@
+ fi
+ 
+ section HTTPD Error Log
+-LOG="/var/log/httpd/error_log"
++LOG="/var/log/apache2/error.log"
+ if [ -r "${LOG}" ]
+ then
+     cat "${LOG}"
+@@ -196,17 +196,11 @@
+ 
+ section PostgreSQL Log
+ 
+-PG_DATA=$(postgresql-load <<EOF
+-\\t
+-\\a
+-SELECT setting FROM pg_settings WHERE name = 'data_directory';
+-EOF
+-)
+-PG_LOG="${PG_DATA}/pg_log"
++PG_LOG="/var/log/postgresql"
+ 
+ if [ -d "${PG_LOG}" ]
+ then
+-    ls -rtd ${PG_DATA}/pg_log/* | xargs cat
++    ls -rtd ${PG_LOG}/*.log | xargs cat
+ else
+     echo "PostgreSQL logs not found in ${PG_LOG}"
+ fi

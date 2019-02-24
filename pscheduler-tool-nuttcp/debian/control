@@ -1,0 +1,17 @@
+Source: pscheduler-tool-nuttcp
+Section: net
+Priority: optional
+Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9), python
+Standards-Version: 3.9.6
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-tool-nuttcp
+Architecture: all
+Depends: ${misc:Depends}, python, python-pscheduler,
+ pscheduler-server, pscheduler-test-throughput,
+ nuttcp (>= 8.1.3), numactl
+Description: pScheduler nuttcp tool
+ nuttcp tool class for pScheduler
