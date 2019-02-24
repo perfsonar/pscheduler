@@ -1,0 +1,62 @@
+isodate (0.5.4-1~bpo80+1) perfsonar-jessie-staging; urgency=medium
+
+  * Backport for jessie.
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Tue, 26 Sep 2017 13:40:23 +0200
+
+isodate (0.5.4-1) unstable; urgency=medium
+
+  * New upstream release (0.5.4).
+
+ -- Maximiliano Curia <maxy@debian.org>  Thu, 01 Oct 2015 14:41:23 +0200
+
+isodate (0.5.1-2) unstable; urgency=medium
+
+  * Update watch file.
+  * Release to unstable.
+
+ -- Maximiliano Curia <maxy@debian.org>  Tue, 28 Apr 2015 18:10:13 +0200
+
+isodate (0.5.1-1) experimental; urgency=medium
+
+  [ Hugo Lefeuvre ]
+  * Team upload.
+  * New upstream release (0.5.1).
+  * debian/control:
+    - Bump Standards-Version to 3.9.6.
+
+  [ Maximiliano Curia ]
+  * Bump compat to 9.
+
+ -- Maximiliano Curia <maxy@debian.org>  Mon, 19 Jan 2015 15:17:06 +0100
+
+isodate (0.5.0-1) unstable; urgency=medium
+
+  [ James Hunt ]
+  * debian/tests/: Basic DEP-8 test to run test suite for python 2 and python 3.
+  * debian/watch: Added missing watch file.
+  * debian/control: Add XS-Testsuite for DEP-8 tests.
+  * debian/control: Update standards version.
+  * debian/copyright: Convert to DEP-5 format.
+  * debian/control: Make python 2 and python 3 Descriptions unique to appease
+    lintian.
+  * debian/control: Add Vcs-Git: and Vcs-Browser:.
+
+  [ Maximiliano Curia ]
+  * debian/watch: Keep it simple.
+  * debian/copyright: Improve copyright information.
+  * debian/control: Correct Vcs-* fields.
+  * debian/control: Add the Homepage field.
+  * debian/control: Remove unneeded X-Python fields.
+  * Set python-modules group as maintainers.
+  * New upstream release (0.5.0). (Closes: #760979)
+  * debian/copyright: Remove block for removed file (bootstrap.py).
+
+ -- Maximiliano Curia <maxy@debian.org>  Wed, 10 Sep 2014 14:53:32 +0200
+
+isodate (0.4.6-1) unstable; urgency=low
+
+  * Initial release. (Closes: #656919)
+  * Include full bootstrap.py license (zpl 2.1) in debian/copyright
+
+ -- Maximiliano Curia <maxy@debian.org>  Sun, 22 Jan 2012 12:09:40 -0300

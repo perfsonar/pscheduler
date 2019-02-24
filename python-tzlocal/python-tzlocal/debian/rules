@@ -1,0 +1,6 @@
+#!/usr/bin/make -f
+
+export PYBUILD_NAME=tzlocal
+unexport TZ  # test suite fails if TZ is set
+%:
+	dh $@ --with python2,python3 --buildsystem=pybuild

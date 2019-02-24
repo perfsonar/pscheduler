@@ -1,0 +1,78 @@
+pscheduler-archiver-http (1.1.6-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sun, 24 Feb 2019 17:08:44 +0000
+
+pscheduler-archiver-http (1.1.5-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 18 Dec 2018 21:55:23 +0000
+
+pscheduler-archiver-http (1.1.2-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 24 Oct 2018 16:49:35 +0100
+
+pscheduler-archiver-http (1.1.1-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 24 Aug 2018 18:25:43 +0000
+
+pscheduler-archiver-http (1.1-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 13 Aug 2018 19:37:52 +0000
+
+pscheduler-archiver-http (1.0.2.6-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sun, 04 Mar 2018 23:17:10 +0000
+
+pscheduler-archiver-http (1.0.2.3-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 25 Jan 2018 16:10:57 +0000
+
+pscheduler-archiver-http (1.0.2-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 27 Nov 2017 14:44:49 +0000
+
+pscheduler-archiver-http (1.0.1.1-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+  * Moving pscheduler-warmboot call to trigger.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 11:50:22 +0100
+
+pscheduler-archiver-http (1.0.0.5-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 14 Jun 2017 19:03:47 +0000
+
+pscheduler-archiver-http (1.0.0.2-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 05 May 2017 12:57:42 +0000
+
+pscheduler-archiver-http (1.0-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Apr 2017 11:48:48 +0000
+
+pscheduler-archiver-http (0.0-1) unstable; urgency=low
+
+  * Initial release
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Mon, 11 Jul 2016 13:12:09 +0200

@@ -1,0 +1,112 @@
+Index: pscheduler-server/daemons/init.d-template.raw
+===================================================================
+--- pscheduler-server.orig/daemons/init.d-template.raw	2018-12-18 21:55:27.764410000 +0000
++++ pscheduler-server/daemons/init.d-template.raw	2019-02-24 17:08:47.178344209 +0000
+@@ -1,4 +1,4 @@
+-#!/bin/sh
++#!/bin/bash
+ #
+ # pscheduler-__PROG__  Start/Stop the pScheduler __PROG__
+ #
+@@ -8,8 +8,10 @@
+ 
+ ### BEGIN INIT INFO
+ # Provides: pscheduler-__PROG__
+-# Default-Start:  2345
+-# Default-Stop: 10
++# Default-Start: 2 3 4 5
++# Default-Stop: 0 1 6
++# Required-Start: $remote_fs $syslog
++# Required-Stop: $remote_fs $syslog
+ # Short-Description: Run pscheduler __PROG__
+ # Description: pScheduler __PROG__ daemon
+ ### END INIT INFO
+@@ -23,21 +25,18 @@
+ proguser=__PSUSER__
+ 
+ pidfile=__RUNDIR__/pscheduler-$prog.pid
+-lockfile=__VAR__/lock/subsys/$proc
+ 
+ # TODO: Should probably rotate this, but should almost always be empty.
+ logfile=__LOGDIR__/$prog.out
+ 
+ # Source function library.
+-. /etc/rc.d/init.d/functions
++. /lib/lsb/init-functions
+ 
+ ulimit -n 4096
+ ulimit -u 4096
+ 
+ retval=0
+ 
+-[ $UID -eq 0 ]
+-
+ start() {
+     if [ $UID -ne 0 ] ; then
+         echo "User has insufficient privilege."
+@@ -54,9 +53,9 @@
+ 
+     fi
+ 
+-    echo -n $"Starting pScheduler $prog: "
++    log_daemon_msg "Starting pScheduler $prog" "pscheduler-$prog"
+     touch "$pidfile"
+-    chown "$proguser.$proguser" "$pidfile"
++    chown "$proguser:$proguser" "$pidfile"
+     if [ ! -s "$logfile" ] ; then
+         echo "(This file should be empty unless there's a catastrophic failure.)" >> "$logfile"
+     fi
+@@ -64,24 +63,21 @@
+        -c "$exec --daemon --pid-file '$pidfile' --dsn '@$config' $options" \
+ 	>> "$logfile" 2>&1 &
+     retval=$?
+-    success
+-    echo
++    log_end_msg $retval
+ }
+ 
+-
+ stop() {
+     if [ $UID -ne 0 ] ; then
+         echo "User has insufficient privilege."
+         exit 4
+     fi
+-    echo -n $"Stopping pScheduler $prog: "
+-        if [ -s "$pidfile" ]; then
+-	    kill $(cat $pidfile) || failure "Stopping pScheduler $prog"
+-	    rm -f $pidfile
+-	fi
++    log_daemon_msg "Stopping pScheduler $prog" "pscheduler-$prog"
++    if [ -s "$pidfile" ]; then
++        kill $(cat $pidfile)
++        rm -f $pidfile
++    fi
+     retval=$?
+-    success
+-    echo
++    log_end_msg $retval
+ }
+ 
+ restart()
+@@ -90,18 +86,17 @@
+     start
+ }
+ 
+-
+ case "$1" in
+-    start|stop|restart)
++    start|stop|restart|force-reload)
+         $1
+         ;;
+ 
+     status)
+-        status -p ${pidfile} $exec
++        status_of_proc -p ${pidfile} $exec "pscheduler-$prog"
+         ;;
+ 
+     *)
+-        echo $"Usage: $0 {start|stop|restart|status}"
++        echo $"Usage: $0 {start|stop|restart|force-reload|status}"
+         exit 2
+ esac
+ exit $?

@@ -1,0 +1,72 @@
+Binary files pyjq-2.1.0-orig/pyjq.pyc and pyjq-2.1.0/pyjq.pyc differ
+--- a/_pyjq.pyx
++++ b/_pyjq.pyx
+@@ -8,6 +8,12 @@
+ from collections import OrderedDict
+ import six
+ 
++class ScriptRuntimeError(Exception):
++    """
++    Exception thrown when a script calls error()
++    """
++    pass
++
+ 
+ cdef extern from "jv.h":
+     ctypedef struct jv:
+@@ -26,9 +32,15 @@
+ 
+ 
+     jv jv_copy(jv)
++
+     jv_kind jv_get_kind(jv)
++
+     cdef int jv_is_valid(jv x):
+         return jv_get_kind(x) != JV_KIND_INVALID
++    jv jv_invalid_get_msg(jv)
++    cdef int jv_invalid_has_msg(jv x):
++        return jv_invalid_has_msg(x)
++
+     void jv_free(jv)
+ 
+     jv jv_null()
+@@ -46,6 +58,7 @@
+     jv jv_array_append(jv, jv)
+ 
+     jv jv_string_sized(const char*, int)
++    jv jv_dump_string(jv, int) 
+ 
+     jv jv_object()
+     jv jv_object_get(jv object, jv key)
+@@ -68,6 +81,7 @@
+     void jv_parser_set_buf(jv_parser*, const char*, int, int)
+     jv jv_parser_next(jv_parser*)
+ 
++
+ cdef extern from "jq.h":
+     ctypedef struct jq_state:
+         pass
+@@ -213,10 +227,23 @@
+         while True:
+             result = jq_next(self._jq)
+             if not jv_is_valid(result):
++
++                if jv_invalid_has_msg(jv_copy(result)):
++                    # TODO: Would be nice to add the position in the script.
++                    jv_message = jv_invalid_get_msg(jv_copy(result))
++                    if jv_get_kind(jv_message) == JV_KIND_STRING:
++                        message = jv_string_value(jv_message)
++                    else:
++                        message = jv_string_value(jv_dump_string(jv_message,0))
++                    jv_free(jv_message)
++                    jv_free(result)
++                    raise ScriptRuntimeError(message)
++
+                 jv_free(result)
+                 break
+             else:
+                 output.append(jv_to_pyobj(result))
++
+         return output
+ 
+     apply = all

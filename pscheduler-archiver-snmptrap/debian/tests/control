@@ -1,0 +1,3 @@
+Depends: @, pscheduler-bundle-full, snmptrapfmt
+Tests: archiver
+Restrictions: needs-root

@@ -1,0 +1,5 @@
+#!/bin/sh -e
+
+PGPASSFILE=/etc/pscheduler/database/pgpassfile \
+psql -U pscheduler pscheduler -h localhost -c '\d' | \
+grep -C 20 run_status

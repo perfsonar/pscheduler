@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -e
+
+pscheduler schedule | grep '^Nothing scheduled'

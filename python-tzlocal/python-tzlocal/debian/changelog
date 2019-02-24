@@ -1,0 +1,24 @@
+python-tzlocal (1.2.2-1~bpo8+1) perfsonar-jessie-staging; urgency=medium
+
+  * Rebuild for jessie-backports.
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Thu, 15 Sep 2016 09:43:05 +0200
+
+python-tzlocal (1.2.2-1) unstable; urgency=medium
+
+  * New upstream release. 
+
+ -- Edward Betts <edward@4angle.com>  Tue, 22 Mar 2016 10:06:00 +0000
+
+python-tzlocal (1.2-2) unstable; urgency=medium
+
+  * Update Vcs-* control headers.
+  * debian/rules: unset TZ, so tests don't fail (Closes: #802122)
+
+ -- Edward Betts <edward@4angle.com>  Sun, 25 Oct 2015 08:45:30 +0000
+
+python-tzlocal (1.2-1) unstable; urgency=low
+
+  * Initial release. (Closes: #797503)
+
+ -- Edward Betts <edward@4angle.com>  Thu, 03 Sep 2015 21:19:42 +0100

@@ -1,0 +1,5 @@
+drop-in (1.4-1) perfsonar-jessie-staging; urgency=low
+
+  * Initial release
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Tue, 09 May 2017 15:04:30 +0200

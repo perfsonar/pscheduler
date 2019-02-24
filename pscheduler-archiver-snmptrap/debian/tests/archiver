@@ -1,0 +1,7 @@
+#!/bin/sh
+
+set -e
+
+pscheduler task --archive '{ "archiver": "snmptrap", "data": { "_community": "public", "dest": "localhost", "trap-oid": "1.2.3" } }' rtt --dest=localhost
+
+cat /var/log/snmptrapfmt.log

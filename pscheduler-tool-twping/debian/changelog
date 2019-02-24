@@ -1,0 +1,35 @@
+pscheduler-tool-twping (1.1.6-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sun, 24 Feb 2019 17:08:53 +0000
+
+pscheduler-tool-twping (1.1.5-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 18 Dec 2018 21:55:31 +0000
+
+pscheduler-tool-twping (1.1.2-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 24 Oct 2018 16:49:49 +0100
+
+pscheduler-tool-twping (1.1.1-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 24 Aug 2018 18:25:54 +0000
+
+pscheduler-tool-twping (1.1-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 13 Aug 2018 19:38:02 +0000
+
+pscheduler-tool-twping (1.0.2.6-1) perfsonar-jessie-release; urgency=low
+
+  * Initial release
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Mon, 12 Mar 2018 23:25:13 +0000

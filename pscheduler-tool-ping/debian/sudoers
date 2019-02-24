@@ -1,0 +1,3 @@
+Cmnd_Alias PSCHEDULER_TOOL_PING = /bin/ping
+pscheduler ALL = (root) NOPASSWD: PSCHEDULER_TOOL_PING
+Defaults!PSCHEDULER_TOOL_PING !requiretty
