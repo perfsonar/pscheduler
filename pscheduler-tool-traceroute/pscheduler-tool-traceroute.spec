@@ -4,7 +4,7 @@
 
 %define short	traceroute
 Name:		pscheduler-tool-%{short}
-Version:	1.1.5
+Version:	1.1.6
 Release:	1%{?dist}
 
 Summary:	pScheduler Traceroute Tool

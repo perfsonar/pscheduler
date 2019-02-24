@@ -94,6 +94,14 @@ except KeyError:
     pass  # Nothing's just fine.
 
 
+# Fragmentation
+try:
+    fragment = spec['fragment']
+    argv.append('-M')
+    argv.append('want' if fragment else 'do')
+except KeyError:
+    pass  # Nothing's just fine.
+
 # Interval
 
 try:
