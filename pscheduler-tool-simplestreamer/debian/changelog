@@ -1,3 +1,9 @@
+pscheduler-tool-simplestreamer (1.1.6-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sun, 24 Feb 2019 17:08:52 +0000
+
 pscheduler-tool-simplestreamer (1.1.5-1) perfsonar-release; urgency=low
 
   * New upstream version

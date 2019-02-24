@@ -1,7 +1,7 @@
 Index: pscheduler-server/database/db-update.raw
 ===================================================================
---- pscheduler-server.orig/database/db-update.raw	2018-12-18 21:45:31.220769000 +0000
-+++ pscheduler-server/database/db-update.raw	2018-12-18 21:55:26.753728389 +0000
+--- pscheduler-server.orig/database/db-update.raw	2018-12-18 21:55:27.529540000 +0000
++++ pscheduler-server/database/db-update.raw	2019-02-24 17:08:48.030121808 +0000
 @@ -18,9 +18,11 @@
  $INTERACTIVE && printf "Loading database:\n" || true
  

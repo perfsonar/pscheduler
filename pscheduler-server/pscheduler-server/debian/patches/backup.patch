@@ -1,7 +1,7 @@
 Index: pscheduler-server/utilities/backup.raw
 ===================================================================
---- pscheduler-server.orig/utilities/backup.raw	2018-12-18 21:45:31.284039000 +0000
-+++ pscheduler-server/utilities/backup.raw	2018-12-18 21:55:26.519968775 +0000
+--- pscheduler-server.orig/utilities/backup.raw	2018-12-18 21:55:27.587440000 +0000
++++ pscheduler-server/utilities/backup.raw	2019-02-24 17:08:47.794082246 +0000
 @@ -73,6 +73,7 @@
      --format plain \
      --serializable-deferrable \
@@ -12,8 +12,8 @@ Index: pscheduler-server/utilities/backup.raw
  $INTERACTIVE && printf ' Done.\n' 1>&2 || true
 Index: pscheduler-server/utilities/restore.raw
 ===================================================================
---- pscheduler-server.orig/utilities/restore.raw	2018-12-18 21:45:31.284039000 +0000
-+++ pscheduler-server/utilities/restore.raw	2018-12-18 21:55:26.520632996 +0000
+--- pscheduler-server.orig/utilities/restore.raw	2018-12-18 21:55:27.587440000 +0000
++++ pscheduler-server/utilities/restore.raw	2019-02-24 17:08:47.794893065 +0000
 @@ -203,7 +203,7 @@
  DB_OUTPUT="${WORK_DIR}/db-output"
  LOAD_EXIT=0
