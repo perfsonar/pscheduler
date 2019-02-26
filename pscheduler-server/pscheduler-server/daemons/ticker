@@ -126,10 +126,15 @@ def main_program():
 
     db = pscheduler.pg_connection(dsn)
 
+
     log.debug("Booting")
     with db.cursor() as cursor:
         cursor.execute("SELECT cold_boot()")
     log.debug("Booted")
+
+    with db.cursor() as cursor:
+        cursor.execute("SELECT heartbeat_boot('ticker')")
+
 
     while True:
 

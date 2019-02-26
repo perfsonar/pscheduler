@@ -817,6 +817,9 @@ def main_program():
     with pg.cursor() as cursor:
         cursor.execute("LISTEN task_change")
 
+    with pg.cursor() as cursor:
+        cursor.execute("SELECT heartbeat_boot('scheduler')")
+
     # This is separate so non-start activity doesn't get queued up
     # behind the connection that's doing the work in this function's
     # loop.  Having the non-starers queue up isn't a big deal because

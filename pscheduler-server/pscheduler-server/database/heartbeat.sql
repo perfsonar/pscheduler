@@ -33,6 +33,10 @@ BEGIN
         	name		TEXT
         			PRIMARY KEY,
 
+        	-- Start time
+        	started		TIMESTAMP WITH TIME ZONE
+				DEFAULT now(),
+
         	-- Update count
         	updates		BIGINT DEFAULT 0,
 
@@ -93,6 +97,24 @@ FOR EACH ROW
 
 
 
+-- Start a fresh heartbeat record for a program
+
+DO $$ BEGIN PERFORM drop_function_all('heartbeat_boot'); END $$;
+
+CREATE OR REPLACE FUNCTION heartbeat_boot(new_name TEXT)
+RETURNS VOID
+AS $$
+BEGIN
+
+    DELETE FROM heartbeat WHERE name = new_name;
+
+    INSERT INTO heartbeat (name) VALUES (new_name);
+
+
+END;
+$$ LANGUAGE plpgsql;
+
+
 -- Insert a new heartbeat or update an existing one by name
 
 DO $$ BEGIN PERFORM drop_function_all('heartbeat'); END $$;
@@ -136,6 +158,7 @@ CREATE OR REPLACE VIEW heartbeat_full
 AS
     SELECT
         name,
+	interval_to_iso8601(now() - started) AS time,
 	updates,
         timestamp_with_time_zone_to_iso8601(last) AS last,
 	CASE

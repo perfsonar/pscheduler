@@ -826,6 +826,9 @@ def main_program():
     log.debug("Connected to DB")
 
     with db.cursor() as cursor:
+        cursor.execute("SELECT heartbeat_boot('runner')")
+
+    with db.cursor() as cursor:
 
         # Get the maximum number of connections available and limit use of
         # them to half.
