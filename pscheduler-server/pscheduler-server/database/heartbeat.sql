@@ -32,18 +32,14 @@ BEGIN
         	-- Row identifier
         	name		TEXT
         			PRIMARY KEY,
-
         	-- Start time
-        	started		TIMESTAMP WITH TIME ZONE
-				DEFAULT now(),
+        	started		TIMESTAMP WITH TIME ZONE,
 
         	-- Update count
         	updates		BIGINT DEFAULT 0,
 
-
         	-- When this record was last updated
-        	last		TIMESTAMP WITH TIME ZONE
-				DEFAULT now(),
+        	last		TIMESTAMP WITH TIME ZONE,
 
         	-- How long until the next heartbeat is expected, NULL if we don't know.
         	next_time	INTERVAL
@@ -83,8 +79,13 @@ AS $$
 DECLARE
     json_result TEXT;
 BEGIN
-    NEW.last = now();
-    NEW.updates = NEW.updates + 1;
+    IF TG_OP = 'UPDATE' THEN
+        IF OLD.updates = 0 THEN
+	    NEW.started = now();
+        END IF;
+        NEW.last = now();
+        NEW.updates = NEW.updates + 1;
+    END IF;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -107,8 +108,7 @@ AS $$
 BEGIN
 
     DELETE FROM heartbeat WHERE name = new_name;
-
-    INSERT INTO heartbeat (name) VALUES (new_name);
+    INSERT INTO heartbeat (name, last) VALUES (new_name, now());
 
 
 END;
@@ -145,6 +145,13 @@ RETURNS VOID
 AS $$
 BEGIN
     DELETE FROM heartbeat;
+    INSERT INTO heartbeat (name)
+    VALUES
+        ('ticker'),
+	('scheduler'),
+	('runner'),
+	('archiver')
+    ;
 END;
 $$ LANGUAGE plpgsql;
 
