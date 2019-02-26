@@ -131,6 +131,8 @@ def get_status():
         response["services"]["database"] = { "uptime": str(pscheduler.timedelta_as_iso8601(time_val))  }
     except Exception as ex:
         pass
+
+    response["services"] = services
         
     runs = {}
     # query database for last run information
