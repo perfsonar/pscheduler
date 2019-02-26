@@ -158,7 +158,7 @@ CREATE OR REPLACE VIEW heartbeat_full
 AS
     SELECT
         name,
-	interval_to_iso8601(now() - started) AS time,
+	interval_to_iso8601(now() - started) AS uptime,
 	updates,
         timestamp_with_time_zone_to_iso8601(last) AS last,
 	CASE
@@ -181,9 +181,17 @@ AS
 ;
 
 
--- JSON for the API to pass along
+-- Fully-aggregated JSON for the API to pass along to curious clients.
 
 CREATE OR REPLACE VIEW heartbeat_json
 AS
-    select json_agg(tbl) FROM (SELECT * FROM heartbeat_full) tbl;
+    SELECT json_object_agg(service, status) AS heartbeat_json
+    FROM
+        ( SELECT
+              name AS service,
+              ( SELECT (json_agg(service_tbl)->0)::JSONB - 'name'
+                FROM (SELECT * FROM heartbeat_full hf where hf.name = heartbeat_full.name) service_tbl
+              ) AS status
+          FROM heartbeat_full
+        ) status_table
 ;

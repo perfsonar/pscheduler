@@ -64,7 +64,6 @@ Requires:	mod_ssl
 Requires:	mod_wsgi > 4.0
 Requires:	python-pscheduler >= 1.3.3.1
 Requires:	python-requests
-Requires:	python2-psutil
 Requires:	pytz
 
 # General

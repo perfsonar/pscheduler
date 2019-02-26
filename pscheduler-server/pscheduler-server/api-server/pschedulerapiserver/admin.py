@@ -4,7 +4,6 @@
 
 import datetime
 import pscheduler
-import psutil
 import pytz
 import socket
 import time
@@ -118,32 +117,21 @@ def get_status():
 
     response["time"] = pscheduler.datetime_as_iso8601(pscheduler.time_now())
 
-    # query process table
-    services = {}
-    items = ["scheduler", "archiver", "ticker", "runner", "database"]
-    for proc in psutil.process_iter():
-        pinfo = proc.as_dict(attrs=['name', 'create_time'])
-        if (pinfo["name"] in items):
-            # calculate elapsed running time
-            running_time = pscheduler.seconds_as_timedelta(time.time() - pinfo["create_time"])
-            services[pinfo["name"]] = { "running": True, "time": str(pscheduler.timedelta_as_iso8601(running_time)) }
-            items.remove(pinfo["name"])
+    # Get the heartbeat status
+    try:
+        services = dbcursor_query("SELECT * FROM heartbeat_json", onerow=True).fetchone()[0]
+    except Exception:
+        services = {}
+
+    # Add the database status
     try:
         # query database, calculate server run time
         cursor = dbcursor_query("SELECT extract(epoch from current_timestamp - pg_postmaster_start_time())", onerow=True)
         time_val = pscheduler.seconds_as_timedelta(cursor.fetchone()[0])
-        services["database"] = { "running": True, "time": str(pscheduler.timedelta_as_iso8601(time_val))  }
-        items.remove("database")
+        response["services"]["database"] = { "uptime": str(pscheduler.timedelta_as_iso8601(time_val))  }
     except Exception as ex:
         pass
-    
-    if len(items) > 0:
-        # there are daemons that aren't running
-        for item in items:
-            services[item] = { "running": False }
-
-    response["services"] = services    
-    
+        
     runs = {}
     # query database for last run information
     try:
