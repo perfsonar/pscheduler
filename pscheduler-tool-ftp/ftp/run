@@ -28,11 +28,8 @@ try:
 
     source = input['test']['spec']['source']
     
-    # Delete transfered file after transfer if cleanup == True
-    if 'cleanup' in input['test']['spec']:
-      cleanup = input['test']['spec']['cleanup']
-    else:
-      cleanup = False
+    # Delete transfered file after transfer if cleanup is not specified
+    cleanup = input['test']['spec'].get('cleanup', True)
 
 except KeyError as e:
     print(e);	pscheduler.fail('Missing data in input')

@@ -30,11 +30,7 @@ try:
 except KeyError as e:
     print(e);	pscheduler.fail('Missing data in input')
 
-if 'cleanup' in input['test']['spec']:
-  cleanup = input['test']['spec']['cleanup']
-else:
-  cleanup = False
-
+cleanup = input['test']['spec'].get('cleanup', True)
 
 duration = input['test']['spec'].get('duration', 'PT5S')
 duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
