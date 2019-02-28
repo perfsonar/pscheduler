@@ -30,6 +30,12 @@ try:
 except KeyError as e:
     print(e);	pscheduler.fail('Missing data in input')
 
+if 'cleanup' in input['test']['spec']:
+  cleanup = input['test']['spec']['cleanup']
+else:
+  cleanup = False
+
+
 duration = input['test']['spec'].get('duration', 'PT5S')
 duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
@@ -90,6 +96,11 @@ if True:
     diags = orig_stdout
 
 end_time = datetime.datetime.now()
+
+if cleanup is True:
+    if os.path.isfile(dest): 
+        os.remove(dest)
+
 
 #bits_sent = 0.0
 #thru_put = 0.0

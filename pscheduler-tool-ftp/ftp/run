@@ -29,7 +29,10 @@ try:
     source = input['test']['spec']['source']
     
     # Delete transfered file after transfer if cleanup == True
-    cleanup = input['test']['spec']['cleanup']
+    if 'cleanup' in input['test']['spec']:
+      cleanup = input['test']['spec']['cleanup']
+    else:
+      cleanup = False
 
 except KeyError as e:
     print(e);	pscheduler.fail('Missing data in input')
@@ -98,10 +101,14 @@ if True:
     succeeded = True
     diags = stdout
 
-    if cleanup is True:
-      if os.path.isfile(dest): os.remove(dest)
+
+
 
 end_time = datetime.datetime.now()
+
+if cleanup is True:
+    if os.path.isfile(dest): 
+        os.remove(dest)
 
 # Organize results into json data
 final_results = {

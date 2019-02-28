@@ -96,9 +96,14 @@ opt_parser.add_option("--dest-path",
                       dest="dest_path")
 
 opt_parser.add_option("--cleanup",
-                      help="If true then test file is deleted after transfer",
-                      action="store", type="string",
+                      help="If specified then test file is deleted after transfer",
+                      action="store_true",
                       dest="cleanup")
+
+opt_parser.add_option("--no-cleanup",
+                      help="If specified then test file is not deleted after transfer",
+                      action="store_false",
+                      dest="no_cleanup")
 
 opt_parser.add_option("--parallel", 
                       help="Number of parallel streams to use with GridFTP transfers",
@@ -125,10 +130,10 @@ else:
     pscheduler.fail('Error: Number of parallel streams must be greater than 1')
   result["parallel"] = options.parallel
 
-if options.cleanup is None:
-  result['cleanup'] = True
-else:
+if options.cleanup:
   result['cleanup'] = options.cleanup
+elif options.no_cleanup is not None:
+  result['cleanup'] = options.no_cleanup
 
 if options.timeout is not None:
    result['timeout'] = options.timeout
