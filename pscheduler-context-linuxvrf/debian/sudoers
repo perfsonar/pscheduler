@@ -1,0 +1,6 @@
+#
+# pscheduler-context-linuxvrf
+#
+Cmnd_Alias PSCHEDULER_CONTEXT_LINUXVRF=/sbin/ip vrf exec *
+pscheduler ALL = (root) NOPASSWD: PSCHEDULER_CONTEXT_LINUXVRF
+Defaults!PSCHEDULER_CONTEXT_LINUXVRF !requiretty

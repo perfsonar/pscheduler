@@ -1,0 +1,52 @@
+#!/usr/bin/python
+#
+# Validate data for the linuxnns context
+#
+
+import platform
+import pscheduler
+
+if platform.system() != "Linux":
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": "This context is not supported on this platform."
+        })
+
+try:
+    json = pscheduler.json_load(max_schema=1)
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+        })
+
+data_validator = {
+
+    "type": "object",
+    "properties": {
+        "schema": {"$ref": "#/pScheduler/Cardinal"},
+        "vrf": {
+            "type": "string",
+            # These have to be valid as filenames, and Linux is pretty
+            # accommodating.
+            "pattern": r'^[^/\0]+$',
+            "x-invalid-message": "'%s' is not a valid VRF name."
+        }
+    },
+    "required": [
+        "vrf"
+    ],
+    "additionalProperties": False
+}
+
+valid, error = pscheduler.json_validate(json, data_validator)
+
+if not valid:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": error
+        })
+
+pscheduler.succeed_json({
+    "valid": True
+})

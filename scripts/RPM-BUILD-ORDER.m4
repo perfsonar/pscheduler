@@ -155,6 +155,7 @@ pscheduler-archiver-syslog
 pscheduler-context-changefail
 pscheduler-context-changenothing
 pscheduler-context-linuxnns
+pscheduler-context-linuxvrf
 
 
 # Misc.

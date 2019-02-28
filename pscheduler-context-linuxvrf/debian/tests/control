@@ -1,0 +1,3 @@
+Depends: @, pscheduler-bundle-full
+Restrictions: needs-root
+Tests: task

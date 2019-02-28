@@ -1,0 +1,52 @@
+#!/bin/sh -e
+#
+# Change the context and do the next thing.
+#
+
+# Data-is-valid should cause non-Linux use of this plugin to be
+# rejected, but an extra check doesn't hurt.
+if [ "$(uname -s)" != "Linux" ]
+then
+    echo "The linuxvrf context is not supported on this platform." 1>&2
+    exit 1
+fi
+
+
+TMPBASE=${TMPDIR:-/tmp}/$WHOAMI.$$
+cleanup()
+{
+    if [ "$TMPBASE" ]
+    then
+        rm -rf $TMPBASE*
+    fi
+}
+trap cleanup EXIT
+
+
+INPUT="${TMPBASE}.input"
+cat > "${INPUT}"
+
+
+OLD_USER=$(id -nu)
+
+
+VRF=$(jq -r '.data.vrf' "${INPUT}")
+if [ -z "${VRF}" ]
+then
+    echo "Input is missing VRF name." 1>&2
+    exit 1
+fi
+
+
+EXEC=$(jq -r '.exec' "${INPUT}") 
+if [ ! -x "${EXEC}" ]
+then
+    echo "Cannot execute '${EXEC}'." 1>&2
+    exit 1
+fi
+
+
+# This becomes root to change the VRFand then becomes the prior
+# user to exec whatever comes next.
+
+exec sudo /sbin/ip vrf exec "${VRF}" su "${OLD_USER}" "${EXEC}"
