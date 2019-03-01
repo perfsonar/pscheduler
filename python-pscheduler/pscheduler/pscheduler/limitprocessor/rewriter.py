@@ -100,7 +100,7 @@ class Rewriter():
            or ("type" not in result["test"]) \
            or (not isinstance(result["test"]["type"], basestring)) \
            or ("spec" not in result["test"]) \
-           or (result["test"]["type"] != task["test"]["type"]):
+           or (result["test"]["type"] != proposal["task"]["test"]["type"]):
             raise ValueError("Invalid rewriter result:\n%s" \
                              % pscheduler.json_dump(result))
 
