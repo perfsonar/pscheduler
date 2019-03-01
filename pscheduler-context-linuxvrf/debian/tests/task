@@ -2,11 +2,16 @@
 
 set -e
 
-ip netns add autopkgtest
-ip netns exec autopkgtest ip link set dev lo up
-ip netns exec autopkgtest ip addr add 10.10.10.10/32 dev lo
-ip netns exec autopkgtest ip addr show
+ip link add autopkgtest type vrf table 10
+ip link set dev autopkgtest up
 
-pscheduler task --context '{ "schema": 1, "contexts": [ [ { "context": "linuxnns", "data": { "namespace": "autopkgtest" } } ] ] }' rtt --dest=10.10.10.10
+ip link add name loop1 type dummy
+ip link set dev loop1 master autopkgtest up
 
-ip netns del autopkgtest
+ip addr add 10.10.10.10/32 dev loop1
+ip addr show
+
+pscheduler task --context '{ "schema": 1, "contexts": [ [ { "context": "linuxvrf", "data": { "vrf": "autopkgtest" } } ] ] }' rtt --dest=10.10.10.10
+
+ip link del loop1
+ip link del autopkgtest

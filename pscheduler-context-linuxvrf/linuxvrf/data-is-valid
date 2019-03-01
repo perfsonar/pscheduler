@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# Validate data for the linuxnns context
+# Validate data for the linuxvrf context
 #
 
 import platform
