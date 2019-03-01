@@ -55,7 +55,7 @@ BEGIN
 
     IF table_exists AND table_version = 0
     THEN
-        RAISE EXCEPTION 'Table "%s" exists but is not in the versions table.',
+        RAISE EXCEPTION 'Table "%" exists but is not in the versions table.',
 	    table_name;
     END IF;
 

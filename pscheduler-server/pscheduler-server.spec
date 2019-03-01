@@ -66,7 +66,6 @@ Requires:	python-pscheduler >= 1.3.3.1
 Requires:	python-requests
 Requires:	pytz
 
-
 # General
 BuildRequires:	pscheduler-rpm
 BuildRequires:	systemd

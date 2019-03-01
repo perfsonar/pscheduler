@@ -816,7 +816,12 @@ def main_program():
     next_refresh = None
     last_debug = log.is_forced_debugging()
 
+    db.query("SELECT heartbeat_boot('archiver')")
+
+
     while True:
+
+        db.query("SELECT heartbeat('archiver')")
 
         # Drain the pools if the debug level changes.  This is done
         # since persisting archivers won't register the change in state.
@@ -844,6 +849,8 @@ def main_program():
             log.debug("Waiting %s for change or notification", next_refresh)
 
             warmboot = False
+
+            db.query("SELECT heartbeat('archiver', %s)", [datetime.timedelta(seconds=next_refresh)])
 
             if db.wait(next_refresh):
                 notifications = [ tup[0] for tup in db.notifications() ]
@@ -912,6 +919,8 @@ def main_program():
             workers[id] = ArchiveWorker(db, log, row, archiver_collection)
 
 
+main_program()
+exit(99)
 
 if options.daemon:
     pidfile = pscheduler.PidFile(options.pidfile)

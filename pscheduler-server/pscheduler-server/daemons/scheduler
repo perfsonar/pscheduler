@@ -814,8 +814,11 @@ def main_program():
     # TODO: All DB transactions need to be error checked
 
     pg = pscheduler.pg_connection(dsn)
-    cursor = pg.cursor()
-    cursor.execute("LISTEN task_change")
+    with pg.cursor() as cursor:
+        cursor.execute("LISTEN task_change")
+
+    with pg.cursor() as cursor:
+        cursor.execute("SELECT heartbeat_boot('scheduler')")
 
     # This is separate so non-start activity doesn't get queued up
     # behind the connection that's doing the work in this function's
@@ -830,6 +833,9 @@ def main_program():
     workers_lock = threading.Lock()
 
     while True:
+
+        with pg.cursor() as cursor:
+            cursor.execute("SELECT heartbeat('scheduler')")
 
         wait = True
 
@@ -858,30 +864,34 @@ def main_program():
                 log.debug("Limiting query to %d tasks", limit)
             query += " LIMIT %d" % (limit)
 
-        cursor.execute(query, args)
 
-        # Check if any notifications arrived while this query executed.
-        if pg.notifies:
-            wait = False
-            del pg.notifies[:]
+        with pg.cursor() as cursor:
+            cursor.execute(query, args)
 
-        for row in cursor:
+            # Check if any notifications arrived while this query executed.
+            if pg.notifies:
+                wait = False
+                del pg.notifies[:]
 
-            number, task, key, runs, trynext, anytime, json, participants = row
+            for row in cursor:
 
-            with workers_lock:
-                if number not in workers:
-                    worker = SchedulerWorker(number, nonstart_pg, log,
-                                             workers, workers_lock, task, key,
-                                             runs, trynext, anytime, json,
-                                             participants)
-                    log.debug("Starting thread for ID %d", number)
-                    workers[number] = worker
-                    worker.start()
-                    wait = False
+                number, task, key, runs, trynext, anytime, json, participants = row
 
+                with workers_lock:
+                    if number not in workers:
+                        worker = SchedulerWorker(number, nonstart_pg, log,
+                                                 workers, workers_lock, task, key,
+                                                 runs, trynext, anytime, json,
+                                                 participants)
+                        log.debug("Starting thread for ID %d", number)
+                        workers[number] = worker
+                        worker.start()
+                        wait = False
 
         if wait:
+
+            with pg.cursor() as cursor:
+                cursor.execute("SELECT heartbeat('scheduler', %s)", [refresh])
 
             try:
                 if pscheduler.polled_select(

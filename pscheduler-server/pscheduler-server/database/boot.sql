@@ -22,6 +22,7 @@ CREATE OR REPLACE FUNCTION cold_boot()
 RETURNS VOID
 AS $$
 BEGIN
+    PERFORM heartbeat_cold_boot();
     PERFORM warm_boot();
 END;
 $$ LANGUAGE plpgsql;

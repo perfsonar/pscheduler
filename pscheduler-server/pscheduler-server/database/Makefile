@@ -21,6 +21,7 @@ FILES=\
 	table_version \
 	\
 	configurables \
+	heartbeat \
 	priority \
 	control \
 	http_queue \

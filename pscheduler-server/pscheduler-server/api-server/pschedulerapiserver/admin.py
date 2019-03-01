@@ -6,6 +6,7 @@ import datetime
 import pscheduler
 import pytz
 import socket
+import time
 import tzlocal
 
 from pschedulerapiserver import application
@@ -99,8 +100,65 @@ def mtu_safe():
     if dest is None:
         return bad_request("Missing destination")
 
-    (status, message) = pscheduler.mtu_path_is_safe(dest)
-    return ok_json({
-        "safe": status,
-        "message": message
-    })
+    try:
+        (status, message) = pscheduler.mtu_path_is_safe(dest)
+        return ok_json({
+            "safe": status,
+            "message": message
+            })
+    except Exception as ex:
+        log.exception()
+        return error(str(ex))
+
+
+@application.route("/status", methods=['GET'])
+def get_status():
+    response = {}
+
+    response["time"] = pscheduler.datetime_as_iso8601(pscheduler.time_now())
+
+    # Get the heartbeat status
+    try:
+        services = dbcursor_query("SELECT * FROM heartbeat_json", onerow=True).fetchone()[0]
+    except Exception:
+        services = {}
+
+    # Add the database status
+    try:
+        # query database, calculate server run time
+        cursor = dbcursor_query("SELECT extract(epoch from current_timestamp - pg_postmaster_start_time())", onerow=True)
+        time_val = pscheduler.seconds_as_timedelta(cursor.fetchone()[0])
+        response["services"]["database"] = { "uptime": str(pscheduler.timedelta_as_iso8601(time_val))  }
+    except Exception as ex:
+        pass
+
+    response["services"] = services
+        
+    runs = {}
+    # query database for last run information
+    try:
+        cursor = dbcursor_query("SELECT times_actual FROM run WHERE state=run_state_finished()")
+        times = cursor.fetchall()
+        formatted = []
+        for val in times:
+            formatted.append(val[0].upper)
+        runs["last-finished"] = str(pscheduler.datetime_as_iso8601(max(formatted)))
+    except Exception as ex:
+        # handles empty result and faulty query
+        runs["last-finished"] = None
+
+    # query database for last scheduled information
+    try:
+        cursor = dbcursor_query("SELECT added FROM run")
+        times = cursor.fetchall()
+        formatted = []
+        for val in times:
+            formatted.append(val[0])
+        runs["last-scheduled"] = str(pscheduler.datetime_as_iso8601(max(formatted)))
+    except Exception as ex:
+        # handles empty result and faulty query
+        runs["last-scheduled"] = None    
+
+    response["runs"] = runs
+
+    return ok_json(response)
