@@ -13,4 +13,5 @@ Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
  pscheduler-server, python-jsontemplate, sudo, iproute2
 Description: Linux VRF context changer class for pScheduler
- This context changer changes the Linux VRF.
+ This context changer changes the Linux virtual routing and
+ forwarding domain.

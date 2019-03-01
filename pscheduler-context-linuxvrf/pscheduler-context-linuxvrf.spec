@@ -11,7 +11,7 @@ Name:		pscheduler-context-%{short}
 Version:	1.1.6
 Release:	1%{?dist}
 
-Summary:	Linux network namespace context changer for pScheduler
+Summary:	Linux VRF context changer for pScheduler
 BuildArch:	noarch
 License:	ASL 2.0
 Vendor:	perfSONAR
@@ -30,7 +30,8 @@ BuildRequires:	pscheduler-rpm >= 1.0.0.5.1
 %define directory %{_includedir}/make
 
 %description
-This context changer changes the Linux network namespace.
+This context changer changes the Linux virtual routing and
+forwarding domain.
 
 
 %prep
