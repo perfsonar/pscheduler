@@ -40,8 +40,8 @@ Requires:	python-psycopg2 >= 2.2.0
 Requires:	python-py-radix
 # The limit system uses this.
 Requires:	pscheduler-jq-library
+Requires:	python-pycurl
 Requires:	python-pyjq >= 2.2.0
-Requires:	python-requests
 Requires:	python-subprocess32
 Requires:	python-tzlocal
 Requires:	pytz
@@ -72,8 +72,8 @@ BuildRequires:	python-psycopg2 >= 2.2.0
 BuildRequires:	python-py-radix
 # The limit system uses this.
 BuildRequires:	pscheduler-jq-library
+BuildRequires:	python-pycurl
 BuildRequires:	python-pyjq >= 2.2.0
-BuildRequires:	python-requests
 BuildRequires:	python-subprocess32
 BuildRequires:	python-tzlocal
 BuildRequires:	pytz
