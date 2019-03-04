@@ -239,7 +239,7 @@ def run_task(message, lead, task, bind=None):
     try:
         status, task_url = pscheduler.url_post(
             tasks_url,
-            data=pscheduler.json_dump(task),
+            data=task,
             bind=bind,
             throw=True)
     except Exception as ex:

@@ -7,7 +7,7 @@
 # init scripts function just fine.
 
 Name:		pscheduler-server
-Version:	1.1.6
+Version:	1.1.6.1
 Release:	2%{?dist}
 
 Summary:	pScheduler Server
@@ -53,7 +53,7 @@ Requires:	python-jsontemplate
 # API Server
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
-BuildRequires:	python-pscheduler >= 1.3.3.1
+BuildRequires:	python-pscheduler >= 1.3.7.1
 BuildRequires:	m4
 Requires:	httpd-wsgi-socket
 Requires:	pscheduler-server
@@ -62,7 +62,7 @@ Requires:	pscheduler-server
 # mod_ssl is required here.
 Requires:	mod_ssl
 Requires:	mod_wsgi > 4.0
-Requires:	python-pscheduler >= 1.3.3.1
+Requires:	python-pscheduler >= 1.3.7.1
 Requires:	python-requests
 Requires:	pytz
 
