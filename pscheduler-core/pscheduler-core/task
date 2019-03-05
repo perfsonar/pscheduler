@@ -529,9 +529,6 @@ task['test']['spec']['schema'] = final_schema
 
 task['schema'] = task_schema.value()
 
-task_json_text = pscheduler.json_dump(task)
-
-
 if options.export:
 
     # If the schedule item ended up empty, get rid of it.
@@ -647,11 +644,11 @@ log.debug("%s is up", lead)
 
 tasks_url = pscheduler.api_url(lead, '/tasks')
 log.debug("Posting task to %s", tasks_url)
-log.debug("Data is %s", task_json_text)
+log.debug("Data is %s", task)
 try:
     status, task_url = pscheduler.url_post(
         tasks_url,
-        data=task_json_text,
+        data=task,
         bind=bind,
         throw=True)
 except Exception as ex:
