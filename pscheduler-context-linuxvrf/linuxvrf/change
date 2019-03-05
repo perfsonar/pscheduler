@@ -7,7 +7,7 @@
 # rejected, but an extra check doesn't hurt.
 if [ "$(uname -s)" != "Linux" ]
 then
-    echo "The linuxnns context is not supported on this platform." 1>&2
+    echo "The linuxvrf context is not supported on this platform." 1>&2
     exit 1
 fi
 
@@ -30,10 +30,10 @@ cat > "${INPUT}"
 OLD_USER=$(id -nu)
 
 
-NAMESPACE=$(jq -r '.data.namespace' "${INPUT}")
-if [ -z "${NAMESPACE}" ]
+VRF=$(jq -r '.data.vrf' "${INPUT}")
+if [ -z "${VRF}" ]
 then
-    echo "Input is missing namespace." 1>&2
+    echo "Input is missing VRF name." 1>&2
     exit 1
 fi
 
@@ -46,7 +46,7 @@ then
 fi
 
 
-# This becomes root to change the namespace and then becomes the prior
+# This becomes root to change the VRFand then becomes the prior
 # user to exec whatever comes next.
 
-exec sudo /sbin/ip netns exec "${NAMESPACE}" sudo -u "${OLD_USER}" "${EXEC}"
+exec sudo /sbin/ip vrf exec "${VRF}" sudo -u "${OLD_USER}" "${EXEC}"
