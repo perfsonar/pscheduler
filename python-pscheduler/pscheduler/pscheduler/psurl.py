@@ -5,15 +5,12 @@ Functions for interacting with HTTP servers
 from psjson import *
 
 import httplib
-import requests
-import urlparse
-
-# This does actually exist.
-# pylint: disable=no-name-in-module
-from requests.packages.urllib3.poolmanager import PoolManager
+import pycurl
+import StringIO
+import urllib
 
 
-# TODO: Decide what to do about these.  They're necessary for the time
+# TODO: Decide what to do about this.  It's necessary for the time
 # being because perfSONAR generates a self-signed key that's used by
 # default.  Consider a global configuration item that turns this on
 # and off so sites that want to do verification can.
@@ -22,99 +19,77 @@ from requests.packages.urllib3.poolmanager import PoolManager
 verify_keys_default = False
 
 
-# SECURITY: This suppressses warnings about not verifying keys when
-# using HTTPS.
-
-if not verify_keys_default:
-    # NOTE: This used to do a separate import of
-    # InsercureRequestWarning but can't because of the way Debian
-    # de-vendorizes the requests package.
-    # pylint: disable=no-member
-    requests.packages.urllib3.disable_warnings(
-        requests.packages.urllib3.exceptions.InsecureRequestWarning)
-
-
-
-class _SourceAddressAdapter(requests.adapters.HTTPAdapter):
-    """
-    Adapter for requests that binds the requesting socket to a source
-    address
-    """
-    def __init__(self, source_address, **kwargs):
-        self.source_address = source_address
-
-        super(_SourceAddressAdapter, self).__init__(**kwargs)
-
-    def init_poolmanager(self, connections, maxsize, block=False):
-        self.poolmanager = PoolManager(num_pools=connections,
-                                       maxsize=maxsize,
-                                       block=block,
-                                       source_address=self.source_address)
-
-
-def _mount_url(session, url, bind):
-    """
-    Bind the protocol for a URL to an address
-    """
-    if bind is None:
-        return
-
-    session.mount("%s://" % (urlparse.urlparse(url).scheme),
-                  _SourceAddressAdapter((bind, 0)))
-
-
 
 class URLException(Exception):
     pass
 
 
-def __raise_urlexception(status, text, request):
-    """
-    Raise a nicely-formatted exception.
-    """
 
-    if text is None:
-        text = httplib.responses.get(status, str(status))
-    elif request is not None:
+class PycURLRunner(object):
+
+    def __init__(self, url, params, bind, timeout, allow_redirects, headers, verify_keys):
+        """Constructor"""
+
+        self.curl = pycurl.Curl()
+
+        full_url = url if params is None else "%s?%s" % (url, urllib.urlencode(params))
+        self.curl.setopt(pycurl.URL, str(full_url))
+
+        if bind is not None:
+            self.curl.setopt(pycurl.INTERFACE, bind)
+
+        self.curl.setopt(pycurl.FOLLOWLOCATION, allow_redirects)
+
+        if headers is not None:            
+            self.curl.setopt(pycurl.HTTPHEADER, [
+                "%s: %s" % (key, value)
+                for (key, value) in headers.items()
+            ])
+
+        if timeout is not None:
+            self.curl.setopt(pycurl.TIMEOUT_MS, int(timeout * 1000.0))
+
+        self.curl.setopt(pycurl.SSL_VERIFYPEER, verify_keys)
+
+        self.buf = StringIO.StringIO()
+        self.curl.setopt(pycurl.WRITEFUNCTION, self.buf.write)
+
+
+    def __call__(self, json, throw):
+        """Fetch the URL"""
         try:
-            mime_type = request.headers["content-type"].split(";")[0]
-            if mime_type is not None and mime_type.startswith("text/plain"):
-                text = text.strip()
-        except (KeyError, AttributeError):
-            pass  # We tried our best.
+            self.curl.perform()
+            status = self.curl.getinfo(pycurl.HTTP_CODE)
+            text = self.buf.getvalue()
+        except pycurl.error as ex:
+            (code, message) = ex
+            status = 400
+            text = message
+        finally:
+            self.curl.close()
+            self.buf.close()
 
-    raise URLException(text)
+        if status != 200:
+            if throw:
+                raise URLException(text.strip())
+            else:
+                return (status, text)
 
+        if json:
+            return (status, json_load(text))
+        else:
+            return (status, text)
 
-
-def __formatted_connection_error(ex):
-    """
-    Format a requests.exceptions.ConnectionError into a nice string
-    """
-    assert isinstance(ex, requests.exceptions.ConnectionError)
-
-    if isinstance(ex, requests.exceptions.SSLError):
-        return "SSL not available."
-
-    try:
-        fate = ex.args[0][0]
-        if fate[-1] == '.':
-            fate = fate[:-1]
-        message = "%s: %s" % (fate, ex.args[0][1].args[1])
-    except (AttributeError, IndexError):
-        message = "Connection error: %s" % (ex)
-
-    return message
 
 
 
 def url_get( url,          # GET URL
-             params={},    # GET parameters
+             params=None,  # GET parameters
              bind=None,    # Bind request to specified address
              json=True,    # Interpret result as JSON
              throw=True,   # Throw if status isn't 200
              timeout=None, # Seconds before giving up
-             allow_redirects=True, #Allows URL to be redirected
+             allow_redirects=True, # Allows URL to be redirected
              headers=None, # Hash of HTTP headers
              verify_keys=verify_keys_default  # Verify SSL keys
              ):
@@ -122,142 +97,90 @@ def url_get( url,          # GET URL
     Fetch a URL using GET with parameters, returning whatever came back.
     """
 
-    with requests.Session() as session:
-        _mount_url(session, url, bind)
+    curl = PycURLRunner(url, params, bind, timeout, allow_redirects, headers, verify_keys)
+    return curl(json, throw)
 
-        # Make sure there's always something here to prevent
-        # UnboundLocal exceptions later in the event of a failure.
-        request = None
 
-        try:
-            request = session.get(url, params=params, verify=verify_keys,
-                                  headers=headers, allow_redirects=allow_redirects,
-                                  timeout=timeout)
-            status = request.status_code
-            text = request.text
-        except requests.exceptions.Timeout:
-            status = 400
-            text = "Request timed out"
-        except requests.exceptions.ConnectionError as ex:
-            status = 400
-            text = __formatted_connection_error(ex)
-        except Exception as ex:
-            status = 400
-            text = str(ex)
 
-    if status != 200:
-        if throw:
-            __raise_urlexception(status, text, request)
+
+def __content_type_data(content_type, headers, data):
+
+    """Figure out the Content-Type based on an incoming type and data and
+    return that plus data in a type that PycURL can handle."""
+
+    assert(content_type is None or isinstance(content_type, basestring))
+    assert(isinstance(headers, dict))
+
+    if content_type is None or "Content-Type" not in headers:
+
+        # Dictionaries are JSON
+        if isinstance(data, dict):
+            content_type = "application/json"
+            data = json_dump(data)
+
+        # Anything else is plain text.
         else:
-            return (status, text)
+            content_type = "text/plain"
+            data = str(data)
 
-    if json:
-        return (status, pscheduler.json_load(text))
-    else:
-        return (status, text)
+    return content_type, data
+
+
+
 
 
 def url_post( url,          # GET URL
               params={},    # GET parameters
               data=None,    # Data to post
+              content_type=None,  # Content type
               bind=None,    # Bind request to specified address
               json=True,    # Interpret result as JSON
               throw=True,   # Throw if status isn't 200
-              timeout=None,  # Seconds before giving up
+              timeout=None, # Seconds before giving up
               allow_redirects=True, #Allows URL to be redirected
-              headers=None, # Hash of HTTP headers
+              headers={},   # Hash of HTTP headers
               verify_keys=verify_keys_default  # Verify SSL keys
               ):
     """
     Post to a URL, returning whatever came back.
     """
 
-    with requests.Session() as session:
-        _mount_url(session, url, bind)
-        
-        # Make sure there's always something here to prevent
-        # UnboundLocal exceptions later in the event of a failure.
-        request = None
-        
-        try:
-            request = session.post(url, params=params, data=data,
-                                   verify=verify_keys, headers=headers,
-                                   allow_redirects=allow_redirects, timeout=timeout)
-            status = request.status_code
-            text = request.text
-        except requests.exceptions.Timeout:
-            status = 400
-            text = "Request timed out"
-        except requests.exceptions.ConnectionError as ex:
-            status = 400
-            text = __formatted_connection_error(ex)
-        except Exception as ex:
-            status = 500
-            text = str(ex)
+    content_type, data = __content_type_data(content_type, headers, data)
+    headers["Content-Type"] = content_type
 
+    curl = PycURLRunner(url, params, bind, timeout, allow_redirects, headers, verify_keys)
 
-    if status != 200 and status != 201:
-        if throw:
-            __raise_urlexception(status, text, request)
-        else:
-            return (status, text)
+    curl.curl.setopt(pycurl.POSTFIELDS, data)
 
-    if json:
-        return (status, pscheduler.json_load(text))
-    else:
-        return (status, text)
+    return curl(json, throw)
 
 
 
 def url_put( url,          # GET URL
              params={},    # GET parameters
              data=None,    # Data for body
+             content_type=None,  # Content type
              bind=None,    # Bind request to specified address
              json=True,    # Interpret result as JSON
              throw=True,   # Throw if status isn't 200
              timeout=None, # Seconds before giving up
              allow_redirects=True, #Allows URL to be redirected
-             headers=None, # Hash of HTTP headers
+             headers={},   # Hash of HTTP headers
              verify_keys=verify_keys_default  # Verify SSL keys
              ):
     """
     PUT to a URL, returning whatever came back.
     """
 
-    with requests.Session() as session:
-        _mount_url(session, url, bind)
-        
-        # Make sure there's always something here to prevent
-        # UnboundLocal exceptions later in the event of a failure.
-        request = None
-        
-        try:
-            request = session.put(url, params=params, data=data,
-                                  verify=verify_keys, headers=headers,
-                                  allow_redirects=allow_redirects, timeout=timeout)
-            status = request.status_code
-            text = request.text
-        except requests.exceptions.Timeout:
-            status = 400
-            text = "Request timed out"
-        except requests.exceptions.ConnectionError as ex:
-            status = 400
-            text = __formatted_connection_error(ex)
-        except Exception as ex:
-            status = 500
-            text = str(ex)
+    content_type, data = __content_type_data(content_type, headers, data)
+    headers["Content-Type"] = content_type
 
-    if status != 200 and status != 201:
-        if throw:
-            __raise_urlexception(status, text, request)
-        else:
-            return (status, text)
+    curl = PycURLRunner(url, params, bind, timeout, allow_redirects, headers, verify_keys)
 
-    if json:
-        return (status, pscheduler.json_load(text))
-    else:
-        return (status, text)
+    curl.curl.setopt(pycurl.CUSTOMREQUEST, "PUT")
+    curl.curl.setopt(pycurl.POSTFIELDS, data)
 
+    return curl(json, throw)
 
 
 
@@ -274,37 +197,11 @@ def url_delete( url,          # DELETE URL
     Delete a URL.
     """
 
-    with requests.Session() as session:
-        _mount_url(session, url, bind)
-       
-        # Make sure there's always something here to prevent
-        # UnboundLocal exceptions later in the event of a failure.
-        request = None
+    curl = PycURLRunner(url, params, bind, timeout, allow_redirects, headers, verify_keys)
 
-        try:
-            request = session.delete(url,
-                                     params=params,
-                                     verify=verify_keys,
-                                     headers=headers,
-                                     allow_redirects=allow_redirects,
-                                     timeout=timeout)
-            status = request.status_code
-            text = request.text
-        except requests.exceptions.Timeout:
-            status = 400
-            text = "Request timed out"
-        except requests.exceptions.ConnectionError as ex:
-            status = 400
-            text = __formatted_connection_error(ex)
-        except Exception as ex:
-            status = 500
-            text = str(ex)
+    curl.curl.setopt(pycurl.CUSTOMREQUEST, "DELETE")
 
-
-    if status != 200 and throw:
-        __raise_urlexception(status, text, request)
-
-    return (status, text)
+    return curl(False, throw)
 
 
 

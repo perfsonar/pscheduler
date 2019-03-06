@@ -471,7 +471,6 @@ def tasks():
         # Other participants get the UUID and participant list forced upon them.
 
         task["participants"] = participants
-        task_data = pscheduler.json_dump(task)
 
         task_params = { "key": task["_key"] } if "_key" in task else {}
 
@@ -483,7 +482,7 @@ def tasks():
 
                 # Post the task
 
-                log.debug("Tasking %d@%s: %s", participant, part_name, task_data)
+                log.debug("Tasking %d@%s: %s", participant, part_name, task)
                 post_url = pscheduler.api_url_hostport(part_name,
                                                        'tasks/' + task_uuid)
 
@@ -493,7 +492,7 @@ def tasks():
                 status, result = pscheduler.url_post(
                     post_url,
                     params=task_params,
-                    data=task_data,
+                    data=task,
                     bind=lead_bind,
                     json=False,
                     throw=False)

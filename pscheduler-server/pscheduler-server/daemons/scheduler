@@ -508,7 +508,7 @@ def run_post(
         log.debug("%d: Data %s", number, run_params)
     status, run_lead_url \
         = pscheduler.url_post(task_urls[0] + '/runs',
-                              data=pscheduler.json_dump(run_params),
+                              data=run_params,
                               params=key_params,
                               bind=bind_addr,
                               timeout=30,
@@ -542,8 +542,6 @@ def run_post(
     errors = []
     conflict = False
 
-    run_data = pscheduler.json_dump(run_params)
-
     for task_url in task_urls[1:]:
 
         put_url = task_url + run_suffix
@@ -553,7 +551,7 @@ def run_post(
             log.debug("%d: Parameters: %s", number, run_params)
 
         status, output = pscheduler.url_put(put_url,
-                                            data=run_data,
+                                            data=run_params,
                                             params=key_params,
                                             bind=bind_addr,
                                             timeout=30,
@@ -616,9 +614,7 @@ def run_post(
         log and log.debug("%d: Got %s", number,
                           result['participant-data'])
 
-    full_data = pscheduler.json_dump ({
-        'part-data-full': part_data
-        })
+    full_data = { 'part-data-full': part_data }
 
     log and log.debug("%d: Full part data: %s", number, full_data)
 
