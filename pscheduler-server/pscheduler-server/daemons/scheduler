@@ -829,6 +829,8 @@ def main_program():
 
     # What workers are running
     max_workers = options.max_parallel
+
+    # TODO: Use the ThreadSafeSet and ThreadSafeSetHold instead
     workers = {}
     workers_lock = threading.Lock()
 

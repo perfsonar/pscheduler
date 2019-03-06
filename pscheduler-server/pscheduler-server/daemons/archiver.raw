@@ -523,6 +523,7 @@ class ArchiverPoolCollection(object):
 
 # Dictionary of archivings in progress
 
+# TODO: Use the ThreadSafeSet and ThreadSafeSetHold instead
 workers = pscheduler.ThreadSafeDictionary()
 
 

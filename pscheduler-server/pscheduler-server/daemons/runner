@@ -90,6 +90,8 @@ delimiter = pscheduler.api_result_delimiter()
 # thread-safe in case it gets smarter later.
 #
 
+# TODO: Use the ThreadSafeSet and ThreadSafeSetHold instead
+
 class RunDictionary:
 
     def __init__(self):
