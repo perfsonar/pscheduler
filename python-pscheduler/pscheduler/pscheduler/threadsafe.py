@@ -92,21 +92,24 @@ class ThreadSafeSet(object):
     """A thread-safe set of items"""
 
     def __init__(self):
-        self.workers = {}
+        self.items = {}
         self.lock = threading.Lock()
+
+    def __len__(self):
+        return len(self.items)
 
     def __contains__(self, id):
         with self.lock:
-            return id in self.workers
+            return id in self.items
 
     def add(self, id):
         with self.lock:
-            self.workers[id] = True
+            self.items[id] = True
 
     def drop(self, id):
         with self.lock:
             try:
-                del self.workers[id]
+                del self.items[id]
             except KeyError:
                 pass  # Not there?  Don't care.
 
