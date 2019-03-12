@@ -42,7 +42,7 @@ class PycURLRunner(object):
 
         if headers is not None:            
             self.curl.setopt(pycurl.HTTPHEADER, [
-                "%s: %s" % (key, value)
+                "%s: %s" % (str(key), str(value))
                 for (key, value) in headers.items()
             ])
 
