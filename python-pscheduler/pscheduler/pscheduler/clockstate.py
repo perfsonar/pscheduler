@@ -105,19 +105,14 @@ class TimexStruct(Structure):
 
 
 def ntp_adjtime():
-    retval = None
-    try:
-        libc = cdll.LoadLibrary(find_library("c"))
-        timex = TimexStruct()
-        p_timex = pointer(timex)
 
-        libc.ntp_adjtime(p_timex)
+    libc = cdll.LoadLibrary(find_library("c"))
+    timex = TimexStruct()
+    p_timex = pointer(timex)
 
-        retval = p_timex.contents
-    except Exception as e:
-        return None
+    libc.ntp_adjtime(p_timex)
 
-    return retval
+    return p_timex.contents
 
 
 # ---------------------------
