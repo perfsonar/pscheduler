@@ -42,9 +42,12 @@ postgresql-init
 postgresql-load
 
 # Python Modules
+python-setuptools
 python-argparse
 python-functools32
 python-isodate
+python-pyrsistent
+python-jsonschema
 python-netaddr
 python-ntplib
 python-py-radix
