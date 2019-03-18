@@ -64,8 +64,7 @@ class TestJsonval(PschedTestBase):
 
         valid, message = json_validate(sample, schema)
 
-        self.assertTrue(valid)
-        self.assertEqual(message, 'OK')
+        self.assertEqual((valid, message), (True, 'OK'))
 
 
 if __name__ == '__main__':
