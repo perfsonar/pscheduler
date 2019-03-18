@@ -57,10 +57,7 @@ class TestJsonval(PschedTestBase):
 
         self.assertFalse(valid)
 
-        # TODO: Remove version check when 2.6 is out of the picture
-        if sys.hexversion >= 0x2070000:
-            self.assertEqual(message,
-                             "At /archspec: {'data': {'bar': 'baz'}} is not valid under any of the given schemas")
+        self.assertEqual(message, "At /archspec: 'archiver' is a required property")
 
         # add it in now
         sample['archspec']['archiver'] = 'tar'
