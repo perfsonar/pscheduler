@@ -30,7 +30,7 @@ Depends: python-functools32,
          python-mock,
          ${misc:Depends},
          ${python:Depends},
-Description: An(other) implementation of JSON Schema (Draft 3) - Python 2.7
+Description: An(other) implementation of JSON Schema (Draft 7) - Python 2.7
  JSON Schema is a specification for a JSON-based format for defining
  the structure of JSON data. JSON Schema provides a contract for what
  JSON data is required for a given application and how it can be
@@ -45,7 +45,7 @@ Architecture: all
 Depends: python3 (>= 3.2.3),
          ${misc:Depends},
          ${python3:Depends},
-Description: An(other) implementation of JSON Schema (Draft 3) - Python 3.x
+Description: An(other) implementation of JSON Schema (Draft 7) - Python 3.x
  JSON Schema is a specification for a JSON-based format for defining
  the structure of JSON data. JSON Schema provides a contract for what
  JSON data is required for a given application and how it can be

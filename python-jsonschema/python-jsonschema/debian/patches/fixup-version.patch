@@ -12,7 +12,7 @@ Last-Update: 2015-10-09
  
  setup(
      name="jsonschema",
-+    version="2.5.1",
++    version="3.0.1",
      packages=["jsonschema", "jsonschema.tests"],
      package_data={"jsonschema": ["schemas/*.json"]},
      setup_requires=["vcversioner"],
