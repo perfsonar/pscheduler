@@ -11,11 +11,13 @@ Build-Depends:
  python-setuptools,
  python-six,
  python-pytest,
+ python-pytest-runner,
  python-hypothesis,
  python3-all-dev,
  python3-setuptools,
  python3-six,
  python3-pytest,
+ python3-pytest-runner,
  python3-hypothesis,
 Standards-Version: 4.3.0
 Testsuite: autopkgtest-pkg-python
