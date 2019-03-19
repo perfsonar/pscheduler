@@ -1,0 +1,96 @@
+Source: pyrsistent
+Maintainer: Debian Python Modules Team <python-modules-team@lists.alioth.debian.org>
+Uploaders:
+ Andrej Shadura <andrewsh@debian.org>
+Section: python
+Priority: optional
+Build-Depends:
+ debhelper-compat (= 9),
+ dh-python,
+ python-all-dev,
+ python-setuptools,
+ python-six,
+ python-pytest,
+ python-hypothesis,
+ python3-all-dev,
+ python3-setuptools,
+ python3-six,
+ python3-pytest,
+ python3-hypothesis,
+Standards-Version: 4.3.0
+Testsuite: autopkgtest-pkg-python
+Homepage: http://github.com/tobgu/pyrsistent/
+Vcs-Browser: https://salsa.debian.org/python-team/modules/pyrsistent
+Vcs-Git: https://salsa.debian.org/python-team/modules/pyrsistent.git
+
+Package: python-pyrsistent
+Architecture: any
+Multi-Arch: same
+Depends:
+ ${misc:Depends},
+ ${python:Depends},
+ ${shlibs:Depends}
+Description: persistent/functional/immutable data structures for Python
+ Pyrsistent is a number of persistent collections (sometimes referred
+ to as functional data structures). Persistent in  the sense that they
+ are immutable.
+ .
+ All methods on a data structure that would normally mutate it instead
+ return a new copy of the structure containing the requested updates.
+ The original structure is left untouched.
+ .
+ The collection types and key features currently implemented are:
+ .
+  * PVector, similar to a python list
+  * PMap, similar to dict
+  * PSet, similar to set
+  * PRecord, a PMap on steroids with fixed fields, optional type and
+    invariant checking and much more
+  * PClass, a Python class fixed fields, optional type and invariant
+    checking and much more
+  * Checked collections, PVector, PMap and PSet with optional type
+    and invariance checks and more
+  * PBag, similar to collections.Counter
+  * PList, a classic singly linked list
+  * PDeque, similar to collections.deque
+  * Immutable object type (immutable) built on the named tuple
+  * freeze and thaw functions to convert between pythons standard
+    collections and pyrsistent collections.
+  * Flexible transformations of arbitrarily complex structures built
+    from PMaps and PVectors.
+
+Package: python3-pyrsistent
+Architecture: any
+Multi-Arch: same
+Depends:
+ ${misc:Depends},
+ ${python3:Depends},
+ ${shlibs:Depends}
+Description: persistent/functional/immutable data structures for Python 3
+ Pyrsistent is a number of persistent collections (sometimes referred
+ to as functional data structures). Persistent in  the sense that they
+ are immutable.
+ .
+ All methods on a data structure that would normally mutate it instead
+ return a new copy of the structure containing the requested updates.
+ The original structure is left untouched.
+ .
+ The collection types and key features currently implemented are:
+ .
+  * PVector, similar to a python list
+  * PMap, similar to dict
+  * PSet, similar to set
+  * PRecord, a PMap on steroids with fixed fields, optional type and
+    invariant checking and much more
+  * PClass, a Python class fixed fields, optional type and invariant
+    checking and much more
+  * Checked collections, PVector, PMap and PSet with optional type
+    and invariance checks and more
+  * PBag, similar to collections.Counter
+  * PList, a classic singly linked list
+  * PDeque, similar to collections.deque
+  * Immutable object type (immutable) built on the named tuple
+  * freeze and thaw functions to convert between pythons standard
+    collections and pyrsistent collections.
+  * Flexible transformations of arbitrarily complex structures built
+    from PMaps and PVectors.
