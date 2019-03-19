@@ -12,3 +12,5 @@ override_dh_auto_install:
 
 override_dh_installchangelogs:
 	dh_installchangelogs CHANGES.txt
+
+override_dh_auto_test:
