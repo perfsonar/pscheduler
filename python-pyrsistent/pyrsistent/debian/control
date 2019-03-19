@@ -5,7 +5,7 @@ Uploaders:
 Section: python
 Priority: optional
 Build-Depends:
- debhelper-compat (= 9),
+ debhelper (>= 9),
  dh-python,
  python-all-dev,
  python-setuptools,
