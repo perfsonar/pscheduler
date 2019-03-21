@@ -2,11 +2,11 @@
 # RPM Spec for Python Module
 #
 
-%define short	pyasn1
+%define short	pyasn1-modules
 Name:		python2-%{short}
-Version:	0.4.5
+Version:	0.2.4
 Release:	1%{?dist}
-Summary:	ASN1 for Python
+Summary:	ASN1 modules for Python
 BuildArch:	%(uname -m)
 License:	BSD
 Group:		Development/Libraries
@@ -21,12 +21,13 @@ URL:		https://github.com/etingof/pyasn1
 Source:		%{short}-%{version}.tar.gz
 
 Requires:       python
+Requires:       python2-pyasn1 >= 0.4.5
 
 BuildRequires:  python
 BuildRequires:  python-setuptools
 
 %description
-ASN1 for Python
+ASN1 modules for Python
 
 
 
