@@ -1,9 +1,0 @@
-#!/bin/sh
-set -e -u
-cp -r conftest.py tests "$ADTTMP"
-cd "$ADTTMP/"
-export PYTHONWARNINGS=d
-(pyversions -i; py3versions -i) \
-| tr ' ' '\n' \
-| xargs -I {} env {} \
-  -m pytest tests 2>&1
