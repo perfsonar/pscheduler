@@ -1,0 +1,22 @@
+From fcd4bdc506999ecfc978d169c047e51a65cb723b Mon Sep 17 00:00:00 2001
+From: Tristan Seligmann <mithrandi@mithrandi.net>
+Date: Fri, 30 Jun 2017 03:58:13 +0200
+Subject: Link to local copy of logo.
+
+---
+ CHANGELOG.rst | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CHANGELOG.rst b/CHANGELOG.rst
+index ee1da54..200fd96 100644
+--- a/CHANGELOG.rst
++++ b/CHANGELOG.rst
+@@ -166,7 +166,7 @@ To encourage more participation, the project has also been moved into a `dedicat
+ 
+ ``attrs`` also has a logo now!
+ 
+-.. image:: http://www.attrs.org/en/latest/_static/attrs_logo.png
++.. image:: _static/attrs_logo.png
+    :alt: attrs logo
+ 
+ 

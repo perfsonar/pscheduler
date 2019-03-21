@@ -1,0 +1,19 @@
+#! /usr/bin/make -f
+
+export PYBUILD_NAME=attr
+export PYBUILD_DISABLE=test/pypy
+export PYBUILD_BEFORE_TEST=cp conftest.py {build_dir}
+export PYBUILD_AFTER_TEST=rm -r {build_dir}/.hypothesis {build_dir}/conftest.py
+
+%:
+	dh $@ --with python2,python3,pypy,sphinxdoc --buildsystem=pybuild
+
+override_dh_auto_build:
+	dh_auto_build
+	PYTHONPATH=$(shell pybuild --print build_dir --interpreter python3) \
+	   http_proxy='127.0.0.1:9' \
+	   https_proxy='127.0.0.1:9' \
+	   sphinx-build -N -b html docs/ $(CURDIR)/.pybuild/docs/html/
+
+override_dh_compress:
+	dh_compress -Xchangelog.html
