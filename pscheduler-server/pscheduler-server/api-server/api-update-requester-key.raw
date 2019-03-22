@@ -1,0 +1,28 @@
+#!/bin/sh -e
+#
+# Generate a new random API requester key
+#
+
+if [ "$(id -u)" != "0" ]
+then
+    echo "This command must be run as root."
+    exit 1
+fi
+
+
+TMPBASE=${TMP:=/tmp}/$(basename $0).$$
+
+cleanup()
+{
+    rm -rf $TMPBASE*
+}
+trap cleanup EXIT
+
+
+# Generate the new key
+
+random-string --safe --length 60 --randlength > '__REQUESTERKEYFILE__.build'
+
+mv -f '__REQUESTERKEYFILE__.build' '__REQUESTERKEYFILE__'
+chown __USER_NAME__.__USER_GROUP__ '__REQUESTERKEYFILE__'
+chmod 440 '__REQUESTERKEYFILE__'

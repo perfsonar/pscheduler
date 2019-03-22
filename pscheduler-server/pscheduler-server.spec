@@ -100,6 +100,8 @@ The pScheduler server
 # API Server
 %define httpd_conf_d   %{_sysconfdir}/httpd/conf.d
 %define api_httpd_conf %{httpd_conf_d}/pscheduler-api-server.conf
+%define api_requester_key %{_pscheduler_sysconfdir}/requester-key
+
 # TODO: It would be nice if we had a way to automatically find this.
 %define apache_user    apache
 %define apache_group   apache
@@ -212,6 +214,9 @@ mkdir -p $(dirname $RPM_BUILD_ROOT/%{rpm_macros})
 cat > $RPM_BUILD_ROOT/%{rpm_macros} <<EOF
 # %{name} %{version}
 
+# API
+%%_pscheduler_api_requester_key_file %{api_requester_key}
+
 # Archiver
 %%_pscheduler_archiver_default_dir %{archiver_default_dir}
 
@@ -260,6 +265,7 @@ make -C api-server \
      "CONF_D=%{httpd_conf_d}" \
      "PREFIX=${RPM_BUILD_ROOT}" \
      "DSN_FILE=%{dsn_file}" \
+     "REQUESTER_KEY_FILE=%{api_requester_key}}" \
      "LIMITS_FILE=%{_pscheduler_limit_config}" \
      "RUN_DIR=%{run_dir}" \
      install
