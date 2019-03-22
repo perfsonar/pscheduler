@@ -236,21 +236,18 @@ def run_task(message, lead, task, bind=None):
     # Post
 
     tasks_url = pscheduler.api_url(lead, '/tasks')
-    try:
-        status, task_url = pscheduler.url_post(
-            tasks_url,
-            data=task,
-            bind=bind,
-            throw=True)
-    except Exception as ex:
-        failed("Unable to post task: %s" % (str(ex)))
+    status, task_url = pscheduler.url_post(
+        tasks_url,
+        data=task,
+        bind=bind,
+        throw=False)
 
     if status != 200:
-        failed("Failed to post task: " + task_url)
+        failed("Unable to post task: %s" % (task_url))
 
     # Fetch posted task
 
-    status, task_data = pscheduler.url_get("%s?detail" % (task_url))
+    status, task_data = pscheduler.url_get("%s?detail" % (task_url), throw=False)
     if status != 200:
         failed("Failed to post task: " + task_data)
 

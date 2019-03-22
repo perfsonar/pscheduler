@@ -645,16 +645,11 @@ log.debug("%s is up", lead)
 tasks_url = pscheduler.api_url(lead, '/tasks')
 log.debug("Posting task to %s", tasks_url)
 log.debug("Data is %s", task)
-try:
-    status, task_url = pscheduler.url_post(
-        tasks_url,
-        data=task,
-        bind=bind,
-        throw=True)
-except Exception as ex:
-    pscheduler.fail("Unable to post task: " + str(ex) +
-        "\nThe 'pscheduler troubleshoot' command may be of use in problem" + 
-        "\ndiagnosis. 'pscheduler troubleshoot --help' for more information.")
+status, task_url = pscheduler.url_post(
+    tasks_url,
+    data=task,
+    bind=bind,
+    throw=False)
 
 if status != 200:
     pscheduler.fail("Failed to post task: " + task_url +
@@ -678,9 +673,11 @@ status, result = pscheduler.url_get(
     task_url,
     bind=bind,
     params={ "detail": 1 },
-    json=True)
+    json=True,
+    throw=False)
+
 if status != 200:
-    pscheduler.fail("Failed to fetch the task.")
+    pscheduler.fail("Failed to fetch the task: %s" % (result))
 
 try:
     log.debug("Submission diagnostics:\n%s" \
