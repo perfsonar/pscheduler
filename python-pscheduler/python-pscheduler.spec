@@ -36,7 +36,7 @@ Requires:	python2-jsonschema
 Requires:	python-netaddr
 Requires:	python-netifaces
 Requires:	python-ntplib
-Requires:	python-psycopg2 >= 2.2.0
+Requires:	python-psycopg2 >= 2.6.1
 Requires:	python-py-radix
 # The limit system uses this.
 Requires:	pscheduler-jq-library
