@@ -9,16 +9,11 @@ PYTHON3:=$(shell py3versions -r)
 py3sdo=set -ex; $(foreach py, $(PYTHON3), $(py) $(1);)
 
 UPSTREAM_GIT = git://github.com/Julian/jsonschema.git
--include /usr/share/openstack-pkg-tools/pkgos.make
 
 %:
 	dh $@ --with python2,python3
 
 override_dh_auto_test:
-ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
-	nosetests -v
-	nosetests3 -v
-endif
 
 override_dh_auto_build:
 	echo $$PACKAGE_VERSION  | sed s/\\./-/g >version.txt
