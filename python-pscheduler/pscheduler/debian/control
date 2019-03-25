@@ -5,7 +5,7 @@ Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
 Build-Depends: debhelper (>= 9), python-all, dh-python,
  python-setuptools, python-nose,
  python-ntplib, python-tz, python-tzlocal, python-netifaces,
- python-psycopg2 (>= 2.5.4), python-jsonschema (>= 2.5.1),
+ python-psycopg2 (>= 2.5.4), python-jsonschema (>= 3.0.1),
  python-isodate (>= 0.5.0), python-subprocess32, python-netaddr,
  python-dnspython, python-dateutil, python-pycurl,
  python-ipaddr, python-radix, python-pyjq
@@ -18,7 +18,7 @@ Package: python-pscheduler
 Architecture: all
 Depends: ${python:Depends}, ${misc:Depends},
  python-ntplib, python-tz, python-tzlocal, python-netifaces,
- python-psycopg2 (>= 2.5.4), python-jsonschema (>= 2.5.1),
+ python-psycopg2 (>= 2.5.4), python-jsonschema (>= 3.0.1),
  python-isodate (>= 0.5.0), python-subprocess32, python-netaddr,
  python-dnspython, python-dateutil, python-pycurl,
  python-ipaddr, python-radix, python-pyjq, pscheduler-jq-library
