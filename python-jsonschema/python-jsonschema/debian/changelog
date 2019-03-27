@@ -1,4 +1,4 @@
-python-jsonschema (3.0.1-1~bpo8+1~1) perfsonar-jessie-staging; urgency=medium
+python-jsonschema (3.0.1-1) perfsonar-jessie-staging; urgency=medium
 
   * New upstream version.
 

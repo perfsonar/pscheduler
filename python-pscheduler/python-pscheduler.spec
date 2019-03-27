@@ -27,16 +27,11 @@ Requires:	python-dateutil
 Requires:	python-dns
 Requires:	python-isodate
 Requires:	python-ipaddr
-%if 0%{?el6}
-Requires:	python-jsonschema
-%endif
-%if 0%{?el7}
-Requires:	python2-jsonschema
-%endif
+Requires:	python2-jsonschema >= 3.0
 Requires:	python-netaddr
 Requires:	python-netifaces
 Requires:	python-ntplib
-Requires:	python-psycopg2 >= 2.2.0
+Requires:	python-psycopg2 >= 2.6.1
 Requires:	python-py-radix
 # The limit system uses this.
 Requires:	pscheduler-jq-library
