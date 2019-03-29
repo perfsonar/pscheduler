@@ -46,7 +46,7 @@ python-setuptools
 python-argparse
 python-functools32
 python-isodate
-python-pyrsistent
+python2-pyrsistent
 python-jsonschema
 python-netaddr
 python-ntplib
