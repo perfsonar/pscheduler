@@ -375,13 +375,30 @@ for host in hosts:
         check_mtu(host)
 
 
-
     start("  Checking for pScheduler")
     up, reason = pscheduler.api_ping(host)
     if up:
         ok()
     else:        
         failed(reason.strip())
+
+
+    start("  Exercising API")
+    for test in [
+            ("status", "Status"),
+            ("tests", "Tests"),
+            ("tools", "Tools")
+    ]:
+        endpoint, title = test
+        progress(title)
+        status, result = pscheduler.url_get(
+            pscheduler.api_url(host, endpoint),
+            throw=False)
+        if status != 200:
+            failed(result)
+    ok()
+
+
 
     start("  Checking clock")
     status, result = pscheduler.url_get(
