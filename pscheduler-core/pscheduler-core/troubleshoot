@@ -143,7 +143,7 @@ def check_mtu(host_a, host_z=None):
         host_z = host_a
         host_a = None
 
-    start("  Checking path MTU")
+    start("  Measuring MTU")
     status, result = pscheduler.url_get(
         pscheduler.api_url(host_a, "/mtu-safe"),
         params={ "dest": host_z },
@@ -375,13 +375,29 @@ for host in hosts:
         check_mtu(host)
 
 
-
-    start("  Checking for pScheduler")
+    start("  Looking for pScheduler")
     up, reason = pscheduler.api_ping(host)
     if up:
         ok()
     else:        
         failed(reason.strip())
+
+
+    start("  Exercising API")
+    for test in [
+            ("status", "Status", True),
+            ("tests", "Tests", False),
+            ("tools", "Tools", False)
+    ]:
+        endpoint, title, ok_404 = test
+        progress(title)
+        status, result = pscheduler.url_get(
+            pscheduler.api_url(host, endpoint),
+            throw=False)
+        if status not in [ 200, 404 ] or (status == 404 and not ok_404):
+            failed(result)
+    ok()
+
 
     start("  Checking clock")
     status, result = pscheduler.url_get(
