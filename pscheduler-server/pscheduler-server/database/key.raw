@@ -1,0 +1,148 @@
+#!/usr/bin/python
+#
+# Manipulate authentication keys in the database
+#
+
+import getpass
+import optparse
+import pscheduler
+import psycopg2
+import sys
+
+#
+# Gargle the arguments
+#
+
+class VerbatimParser(optparse.OptionParser):
+    def format_epilog(self, formatter):
+        return self.epilog
+
+opt_parser = VerbatimParser(
+    usage="Usage: %prog [ --query | duration ]",
+    epilog=
+"""
+Examples:
+
+  key add foo fred mumble
+      Add a "foo" key for "fred" with password "mumble".
+
+"""
+)
+opt_parser.disable_interspersed_args()
+
+# Program options
+
+opt_parser.add_option("-d", "--dsn",
+                      help="Database connection string, prefix with @ to read from file",
+                      action="store", type="string", dest="dsn",
+                      default="@__DSNFILE__")
+
+(options, args) = opt_parser.parse_args()
+
+# Use of args will vary depending on the command.
+
+if len(args) < 1:
+    opt_parser.print_usage()
+    pscheduler.fail()
+
+try:
+    dsn = pscheduler.string_from_file(options.dsn)
+except IOError as ex:
+    pscheduler.fail("Unable to read DSN: %s" % (str(ex)))
+
+interactive = sys.stdout.isatty() and sys.stdin.isatty()
+
+try:
+    db = pscheduler.pg_connection(dsn)
+except Exception as ex:
+    pscheduler.fail("Unable to connect to the database: %s" % str(ex))
+
+command = args.pop(0)
+
+
+#
+# Commands
+#
+
+def command_add(db, args):
+
+    if len(args) == 3:
+        key_type, name, password_raw = args
+        password = pscheduler.string_from_file(password_raw)
+    elif len(args) == 2:
+        key_type, name = args
+        # TODO: Read a password
+        password = None
+    else:
+        pscheduler.fail("Usage: add type name [password]")
+
+    if password == "-" or (password is None and not interactive):
+            password = sys.stdin.read().strip()
+    elif password is None:
+        password1 = getpass.getpass("Password for %s: " % (name))
+        password2 = getpass.getpass("Re-enter password for %s: " % (name))
+        if password1 != password2:
+            pscheduler.fail("Passwords do not match.")
+        password = password1
+
+    try:
+        with db.cursor() as cursor:
+            cursor.execute("""
+                DO $$ BEGIN PERFORM auth_key_add_update(%s, %s, %s); END $$
+            """,
+            [key_type, name, password])
+    except psycopg2.InternalError as ex:
+        pscheduler.fail(str(ex).split("\n")[0])
+
+
+
+def command_delete(db, args):
+
+    try:
+        key_type, name = args
+    except ValueError:
+        pscheduler.fail("Usage: delete type name")
+
+    try:
+        with db.cursor() as cursor:
+            cursor.execute("""
+                DO $$ BEGIN PERFORM auth_key_delete(%s, %s); END $$
+            """,
+            [key_type, name])
+    except psycopg2.InternalError as ex:
+        pscheduler.fail(str(ex).split("\n")[0])
+
+
+
+def command_list(db, args):
+    with db.cursor() as cursor:
+        cursor.execute("""
+            SELECT
+                auth_key_type.name AS type,
+                auth_key.name as name
+            FROM
+                auth_key
+                JOIN auth_key_type ON auth_key_type.id = auth_key.type
+        """)
+        for row in cursor:
+            print "\t".join(row)
+
+
+
+#
+# Main Program
+#
+
+COMMANDS = {
+    "add": command_add,
+    "delete": command_delete,
+    "list": command_list
+}
+
+if command not in COMMANDS:
+    pscheduler.fail("Invalid command '%s'" % (command))
+
+COMMANDS[command](db, args)
+
+pscheduler.succeed()
+

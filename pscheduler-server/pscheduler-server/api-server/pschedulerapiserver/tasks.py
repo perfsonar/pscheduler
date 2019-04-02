@@ -299,7 +299,10 @@ def tasks():
             log.debug("Limit processor is not initialized. %s", whynot)
             return no_can_do("Limit processor is not initialized: %s" % whynot)
 
-        hints = request_hints();
+        hints, error_response = request_hints();
+        if hints is None:
+            return error_response
+
         hints_data = pscheduler.json_dump(hints)
 
         log.debug("Processor = %s" % processor)
@@ -633,7 +636,10 @@ def tasks_uuid(uuid):
             log.debug(message)
             return no_can_do(message)
 
-        hints = request_hints()
+        hints, error_response = request_hints();
+        if hints is None:
+            return error_response
+
         hints_data = pscheduler.json_dump(hints)
 
         # Only the lead rewrites tasks; everyone else just applies
