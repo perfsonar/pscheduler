@@ -7,13 +7,14 @@ Bug: https://github.com/stedolan/jq/issues/434
 Last-Update: 2014-06-21
 ---
 This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
-Index: jq/configure.ac
-===================================================================
---- jq.orig/configure.ac	2015-10-11 02:31:29.058722962 +0200
-+++ jq/configure.ac	2015-10-11 02:32:08.618721821 +0200
-@@ -1,4 +1,4 @@
--m4_define([jq_version], m4_esyscmd_s([git describe --tags --dirty --match 'jq-*'|sed 's/^jq-//']))
-+m4_define([jq_version], '1.5-1-a5b5cbe')
+--- jq-1.6.orig/configure.ac	2019-03-28 15:35:39.647165283 +0100
++++ jq-1.6/configure.ac	2019-03-28 15:35:54.055405757 +0100
+@@ -1,7 +1,4 @@
+-m4_define([jq_version],
+-          m4_esyscmd_s([(git rev-parse --verify -q jq-1.0 > /dev/null &&
+-                        (git describe --tags --dirty --match 'jq-*'|sed 's/^jq-//')) ||
+-                        echo `git rev-parse --abbrev-ref HEAD`-`git describe --always --dirty`])))
++m4_define([jq_version], '1.6')
  
  AC_INIT([jq], [jq_version], [https://github.com/stedolan/jq/issues],
               [jq], [https://stedolan.github.io/jq])

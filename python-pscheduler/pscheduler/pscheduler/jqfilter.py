@@ -29,59 +29,6 @@ def _groom(script):
 
 
 
-def issue_717_workaround(json):
-    """
-    As a workaround for the problem uncovered in #717, traverse
-    everything in a blob of JSON and convert all floats which are
-    larger than 31 bits and have nothing to the right of the decimal
-    point into integers.
-
-    TODO: Remove this after #717 is fixed.
-    """
-
-    if isinstance(json, dict):
-        return { key: issue_717_workaround(value)
-                 for key, value in json.iteritems() }
-
-    elif isinstance(json, list):
-        return [ issue_717_workaround(item) for item in json ]
-
-    elif isinstance(json, float) \
-         and json >= 2147483648.0 \
-         and int(json) == json:
-        return int(json)
-
-    else:
-        return json
-
-
-
-def issue_717_workaround(json):
-    """
-    As a workaround for the problem uncovered in #717, traverse
-    everything in a blob of JSON and convert all floats which are
-    larger than 31 bits and have nothing to the right of the decimal
-    point into integers.
-
-    TODO: Remove this after #717 is fixed.
-    """
-
-    if isinstance(json, dict):
-        return { key: issue_717_workaround(value)
-                 for key, value in json.iteritems() }
-
-    elif isinstance(json, list):
-        return [ issue_717_workaround(item) for item in json ]
-
-    elif isinstance(json, float) \
-         and json >= 2147483648.0 \
-         and int(json) == json:
-        return int(json)
-
-    else:
-        return json
-
-
 class JQFilter(object):
     """
     JQ JSON filter
@@ -145,9 +92,7 @@ class JQFilter(object):
 
         try:
 
-            result = issue_717_workaround(self.script.all(json))
-            # TODO: Restore this after the issue behind #717 is fixed.
-            #result = self.script.all(json)
+            result = self.script.all(json)
 
             if isinstance(result, list) and self.output_raw:
                 return "\n".join([str(item) for item in result])

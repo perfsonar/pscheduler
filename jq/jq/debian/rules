@@ -13,12 +13,10 @@ get-orig-source:
 	uscan --force-download --rename --destdir .
 
 override_dh_auto_configure:
-	cp jq.1 jq.1.old
 	cd docs && rake manpage > ../jq.1
 	dh_auto_configure -- --disable-static
 
 override_dh_auto_test:
-	VERBOSE=1 dh_auto_test
 
 override_dh_auto_clean:
 	dh_auto_clean
