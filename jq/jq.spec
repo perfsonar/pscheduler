@@ -26,12 +26,15 @@ Patch0:		%{short}-%{version}-00-jv_is_integer_large.patch
 
 
 
+Requires:	oniguruma
+
 BuildRequires:  autoconf
 BuildRequires:  bison > 3.0
 BuildRequires:  flex
 BuildRequires:  gcc
 BuildRequires:  libtool
 BuildRequires:  make
+BuildRequires:  oniguruma-devel
 
 
 %description
@@ -66,8 +69,7 @@ EOF
 
 
 %build
-autoreconf --install
-#./configure --prefix=%{_prefix} --libdir=%{_libdir}
+autoreconf -fi
 %configure --disable-static --disable-maintainer-mode
 make DESTDIR=%{buildroot}
 
