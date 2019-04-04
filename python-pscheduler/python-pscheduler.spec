@@ -27,6 +27,7 @@ Requires:	python-dateutil
 Requires:	python-dns
 Requires:	python-isodate
 Requires:	python-ipaddr
+Requires:       python-ipaddress
 Requires:	python2-jsonschema >= 3.0
 Requires:	python-netaddr
 Requires:	python-netifaces
@@ -54,6 +55,7 @@ BuildRequires:	python-dateutil
 BuildRequires:	python-dns
 BuildRequires:	python-isodate
 BuildRequires:	python-ipaddr
+BuildRequires:  python-ipaddress
 %if 0%{?el6}
 BuildRequires:	python-jsonschema
 %endif

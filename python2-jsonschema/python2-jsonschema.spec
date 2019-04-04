@@ -23,6 +23,7 @@ Source:		%{short}-%{version}.tar.gz
 Requires:       python
 Requires:       python2-attrs
 Requires:       python-pyrsistent
+Requires:       python-functools32
 
 
 BuildRequires:  python

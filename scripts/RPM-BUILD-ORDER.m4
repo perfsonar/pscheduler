@@ -41,6 +41,9 @@ pscheduler-rpm
 postgresql-init
 postgresql-load
 
+# jq version with new patches. replace when patches accepted upstream
+jq
+
 # Python Modules
 python-setuptools
 python-argparse
