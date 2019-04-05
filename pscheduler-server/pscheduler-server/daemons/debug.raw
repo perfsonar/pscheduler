@@ -91,6 +91,13 @@ do
 
     PID=$(cat "${PID_FILE}")
 
+    if ! echo "${PID}" | egrep -qe '^[0-9]+$'
+    then
+	echo "Warning: ${SERVICE} PID file does not contain valid data." 1>&2
+	continue
+    fi
+
+
     # Don't care if this fails, just keep going.
     kill -${SIGNAL} ${PID} || true
     
