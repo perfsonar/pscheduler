@@ -920,9 +920,6 @@ def main_program():
             workers[id] = ArchiveWorker(db, log, row, archiver_collection)
 
 
-main_program()
-exit(99)
-
 if options.daemon:
     pidfile = pscheduler.PidFile(options.pidfile)
     with daemon.DaemonContext(pidfile=pidfile):
