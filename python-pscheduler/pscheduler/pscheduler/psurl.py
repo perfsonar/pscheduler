@@ -68,8 +68,9 @@ class PycURLRunner(object):
         finally:
             self.curl.close()
             self.buf.close()
-
-        if status != 200:
+            
+        #If status is outside the HTTP 2XX success  range
+        if status < 200 or status > 299:
             if throw:
                 raise URLException(text.strip())
             else:
