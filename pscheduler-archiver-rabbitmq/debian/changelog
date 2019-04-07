@@ -1,10 +1,4 @@
-pscheduler-archiver-rabbitmq (1.1.7~0-1) perfsonar-patch-snapshot; urgency=low
-
-  * New upstream version
-
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sun, 24 Feb 2019 17:35:30 +0000
-
-pscheduler-archiver-rabbitmq (1.1.6-1) perfsonar-release; urgency=low
+pscheduler-archiver-rabbitmq (1.1.6-1) perfsonar-patch-snapshot; urgency=low
 
   * New upstream version
 
