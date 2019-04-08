@@ -22,7 +22,9 @@ URL:		https://github.com/tobgu/pyrsistent
 Source:		%{short}-%{version}.tar.gz
 
 Requires:       python
+Requires:       python-six
 
+BuildRequires:  python-six
 BuildRequires:  python
 BuildRequires:  python-devel
 BuildRequires:  python-setuptools
