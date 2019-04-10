@@ -1,8 +1,6 @@
-Index: pscheduler/setup.py
-===================================================================
 --- pscheduler.orig/setup.py	2018-07-23 18:55:01.000000000 +0000
 +++ pscheduler/setup.py	2018-08-13 19:38:02.000000000 +0000
-@@ -16,16 +16,6 @@
+@@ -16,17 +16,6 @@
          'pscheduler.limitprocessor.identifier',
          'pscheduler.limitprocessor.limit',
      ],
@@ -12,6 +10,7 @@ Index: pscheduler/setup.py
 -        'pytz >= 2016.6',
 -        'psycopg2 >= 2.6.2',
 -        'jsonschema >= 2.5.1',
+-        'pyjq >= 2.2.0',
 -        'python-dateutil >= 2.5.3',
 -        'netifaces >= 0.5',
 -        'ipaddr >= 2.1.9',

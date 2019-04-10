@@ -1,3 +1,9 @@
+python-pyjq (2.3.0-1) perfsonar-minor-staging; urgency=low
+
+  * New upstream release.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 10 Apr 2019 16:09:16 +0000
+
 python-pyjq (2.2.0-1) perfsonar-jessie-staging; urgency=medium
 
   * New upstream release.

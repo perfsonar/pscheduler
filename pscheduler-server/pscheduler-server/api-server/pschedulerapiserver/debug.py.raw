@@ -84,11 +84,6 @@ def debug():
                 return Response("Unable to create debug file: %s" % (ex),
                                 status=500)
 
-            # TODO: Remove this.
-            status, out, err = pscheduler.run_program(['ls', '-al', module.DEBUG_FILE])
-            return Response(out, status=500)
-            assert(os.path.isfile(module.DEBUG_FILE))
-
         # Spare a refresh.
         module.state = new_state
         module.last_check = time.time()
