@@ -43,7 +43,7 @@ if format == 'text/plain':
         print 'Bytes Sent: %s\n' % str(result['bytes-sent']) 
 
     if 'throughput' in result:
-	print 'Throughput: %s MB/sec avg\n' % str(result['throughput'])
+	    print 'Throughput: %sbits/sec\n' % pscheduler.number_as_si(result['throughput'])
 
     print 'Test completed successfully'
    

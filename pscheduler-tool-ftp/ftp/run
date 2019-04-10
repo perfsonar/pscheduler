@@ -127,12 +127,24 @@ with open('/tmp/run.log', 'wb') as f:
 
 #%#%#%#%#%#
 #STDERR[6] is Average Download Speed
-
-results['throughput'] = float(STDERR[-1].split('\n')[0])
+#Try to get download speed, if can't parse then skip
+throughput_str = None
+try:
+    throughput_str = STDERR[-1].split('\n')[0]
+except:
+    pass
+if throughput_str is not None:
+    #convert to bits per second
+    results['throughput'] = pscheduler.si_as_number(throughput_str) * 8
 
 #%#%#%#%#%#
-
-results['bytes-sent'] = float(STDERR[1])
+bytes_str = None
+try:
+    bytes_str = STDERR[1]
+except:
+    pass
+if bytes_str is not None:
+    results['bytes-sent'] = pscheduler.si_as_number(bytes_str)
 
 final_results['result'] = results
 pscheduler.succeed_json(final_results)

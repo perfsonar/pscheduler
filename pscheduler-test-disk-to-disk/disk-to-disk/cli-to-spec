@@ -86,11 +86,6 @@ opt_parser.add_option("--source",
                       dest="source")
 
 
-opt_parser.add_option("--host",
-                      help="Host where the test should be run",
-                      action="store", type="string",
-                      dest="host")
-
 opt_parser.add_option("--dest",
                       help="Destination URL",
                       action="store", type="string",
