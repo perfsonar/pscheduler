@@ -1,0 +1,74 @@
+Index: pscheduler-server/database/reset.raw
+===================================================================
+--- pscheduler-server.orig/database/reset.raw	2018-06-06 13:27:09.041924000 +0100
++++ pscheduler-server/database/reset.raw	2018-10-24 16:49:39.794850002 +0100
+@@ -37,47 +37,45 @@
+ 
+ 
+ # Tear down the existing database
+-postgresql-load '__DATADIR__/database-teardown.sql'
++cd /
++echo
++su -l -c psql postgres <<EOF >/dev/null
++DO \$\$
++BEGIN
++    PERFORM pg_terminate_backend(pg_stat_activity.pid)
++    FROM pg_stat_activity
++    WHERE
++        pg_stat_activity.datname = 'pscheduler'
++        AND pid <> pg_backend_pid();
++END;
++\$\$ LANGUAGE plpgsql;
+ 
++DROP DATABASE IF EXISTS pscheduler;
++DROP ROLE IF EXISTS pscheduler;
++EOF
+ 
+ # Build up a new one
+-postgresql-load '__DATADIR__/database-build-super.sql'
+-postgresql-load --role '__ROLE__' '__DATADIR__/database-build.sql'
+-
+-
+-# Restore the password
+-if ! [ -f '__PASSWORDFILE__' -a -r '__PASSWORDFILE__' ]
+-then
+-    echo "Can't read password from __PASSWORDFILE__"
+-    exit 1
+-fi
+-
+-(
+-    printf "ALTER ROLE __ROLE__ WITH UNENCRYPTED PASSWORD '"
+-    tr -d "\n" < '__PASSWORDFILE__'
+-    printf "';\n"
+-) | postgresql-load
+-
++echo SET pscheduler-server/dbconfig-reinstall true | debconf-communicate >/dev/null
++dpkg-reconfigure --priority=critical pscheduler-server
+ 
+ # If the ticker is running, it will restart and do this, but in case
+ # it isn't, make sure everything is in order.
+ #
+ # TODO: This will have to be a separate program once the database
+ # remotable.
+-
+-postgresql-load --role '__ROLE__' <<EOF
+-\c __DATABASE__
+-DO \$$
++PGPASSFILE=/etc/pscheduler/database/pgpassfile \
++psql -U pscheduler pscheduler -h localhost <<EOF >/dev/null
++DO \$\$
+ BEGIN
+     PERFORM cold_boot();
+ END;
+-\$$
++\$\$
+ EOF
+ 
+ 
+ 
+ [ -t 0 -a -t 1 -a -t 2 ] \
+-    && printf " Done.  Hope you meant to do that.\n\n"
++    && printf "Done.  Hope you meant to do that.\n\n"
+ 
+ 
+ exit 0

@@ -6,8 +6,8 @@
 
 %define short	snmpget
 Name:		pscheduler-test-%{short}
-Version:	1.1
-Release:	0.3.b1%{?dist}
+Version:	1.1.6
+Release:	1%{?dist}
 
 Summary:	snmpget test for pScheduler
 BuildArch:	noarch

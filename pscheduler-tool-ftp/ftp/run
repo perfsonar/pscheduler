@@ -81,6 +81,7 @@ if True:
       bytes_sent = os.stat(dest).st_size
 
       # Convert bytes to human readable format 
+      # TODO: The pscheduler module has functions for doing this.
       scalar = ['B', 'KB', 'MB', 'GB', 'TB']
       while bytes_sent > 1024 and len(scalar) > 1:
         bytes_sent /= 1024; scalar = scalar[1:]

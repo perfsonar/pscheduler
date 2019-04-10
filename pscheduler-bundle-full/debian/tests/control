@@ -1,0 +1,2 @@
+Depends: @, curl
+Tests: archivers, tools, tests

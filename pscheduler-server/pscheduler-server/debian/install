@@ -1,0 +1,2 @@
+debian/logging/rsyslog.d/pscheduler-server.conf etc/rsyslog.d/
+debian/logging/logrotate.d/pscheduler-server etc/logrotate.d/

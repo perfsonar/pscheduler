@@ -1,0 +1,17 @@
+--- pscheduler-server.orig/api-server/pscheduler-api-server.conf.raw	2019-02-13 15:40:32.845115164 +0100
++++ pscheduler-server/api-server/pscheduler-api-server.conf.raw	2019-02-13 15:40:32.845115164 +0100
+@@ -26,7 +26,13 @@
+     WSGIProcessGroup __USER_NAME__
+     WSGIApplicationGroup __USER_NAME__
+ 
+-    Require all granted
++    <IfVersion >= 2.4>
++        Require all granted
++    </IfVersion>
++    <IfVersion < 2.4>
++        Order allow,deny
++        Allow from all
++    </IfVersion>
+ 
+ </Directory>
+ 

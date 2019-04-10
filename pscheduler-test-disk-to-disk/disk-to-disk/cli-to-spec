@@ -38,6 +38,7 @@ else:
 
 # Gargle the arguments
 
+# TODO: Write an epilog.
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """
     This software is a plugin for the pScheduler project that adds a
@@ -74,6 +75,11 @@ opt_parser.add_option("--timeout",
                       action="store", type="string",
                       dest="timeout")
 
+opt_parser.add_option("--host",
+                      help="Host where the test should be run",
+                      action="store", type="string",
+                      dest="host")
+
 opt_parser.add_option("--source",
                       help="Source URL",
                       action="store", type="string",
@@ -89,11 +95,6 @@ opt_parser.add_option("--dest",
                       help="Destination URL",
                       action="store", type="string",
                       dest="dest")
-
-opt_parser.add_option("--dest-path",
-                      help="Destination path",
-                      action="store", type="string",
-                      dest="dest_path")
 
 opt_parser.add_option("--cleanup",
                       help="If specified then test file is not deleted after transfer",

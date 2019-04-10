@@ -28,7 +28,7 @@ def spec_is_valid(json):
                     "dest":         { "$ref": "#/pScheduler/String"   },
                     "source":       { "$ref": "#/pScheduler/String"   },
                     
-		    "timeout":      { "$ref": "#/pScheduler/Duration" }, 
+                    "timeout":      { "$ref": "#/pScheduler/Duration" }, 
                     "min-bandwith": { "$ref": "#/pScheduler/Cardinal" },
                     
                     "max-size":     { "$ref": "#/pScheduler/Cardinal" },

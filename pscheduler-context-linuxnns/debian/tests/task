@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+ip netns add autopkgtest
+ip netns exec autopkgtest ip link set dev lo up
+ip netns exec autopkgtest ip addr add 10.10.10.10/32 dev lo
+ip netns exec autopkgtest ip addr show
+
+pscheduler task --context '{ "schema": 1, "contexts": [ [ { "context": "linuxnns", "data": { "namespace": "autopkgtest" } } ] ] }' rtt --dest=10.10.10.10
+
+ip netns del autopkgtest

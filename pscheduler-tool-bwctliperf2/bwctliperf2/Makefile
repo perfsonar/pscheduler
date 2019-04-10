@@ -12,27 +12,15 @@ FILES=\
 	participant-data \
 	run \
 
-MODULES=\
-	iperf_parser \
-	iperf_defaults \
 
 
-PYS=$(MODULES:%=%.py)
-PYCS=$(MODULES:%=%.pyc)
-
-$(PYCS):
-	python -m compileall .
-TO_CLEAN += $(PYCS)
-
-
-install: $(FILES) $(PYS) $(PYCS)
+install: $(FILES)
 ifndef DESTDIR
 	@echo No DESTDIR specified for installation
 	@false
 endif
 	mkdir -p $(DESTDIR)
 	install -m 555 $(FILES) $(DESTDIR)
-	install -m 444 $(PYS) $(PYCS) $(DESTDIR)
 
 
 clean:

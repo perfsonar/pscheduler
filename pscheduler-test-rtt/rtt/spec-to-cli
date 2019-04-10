@@ -6,7 +6,7 @@ import pscheduler
 
 from validate import spec_is_valid
 
-spec = pscheduler.json_load(exit_on_error=True, max_schema=2)
+spec = pscheduler.json_load(exit_on_error=True, max_schema=3)
 
 valid, message = spec_is_valid(spec)
 
@@ -33,7 +33,8 @@ result = pscheduler.speccli_build_args(spec,
         ],
                                        bools=[
         ( 'suppress-loopback', 'suppress-loopback' ),
-        ( 'hostnames', 'hostnames' ),
+        ( 'fragment', 'fragment' ),
+        ( 'hostnames', 'hostnames' )
         ])
 
 

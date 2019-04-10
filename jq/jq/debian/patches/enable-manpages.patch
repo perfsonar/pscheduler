@@ -1,0 +1,16 @@
+Description: patch Makefile to always generate the manpage.
+Author: Simon Elsbrock
+Forwarded: not-needed
+Last-Update: 2014-06-21
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- jq-1.6.orig/Makefile.am	2019-03-28 14:46:45.118245270 +0100
++++ jq-1.6/Makefile.am	2019-03-28 14:46:45.114245203 +0100
+@@ -126,6 +126,7 @@
+ ### Building the manpage
+ 
+ man_MANS = jq.1
++ENABLE_DOCS=1
+ if ENABLE_DOCS
+ jq.1: $(srcdir)/docs/content/3.manual/manual.yml
+ 	$(AM_V_GEN) ( cd ${abs_srcdir}/docs; '$(BUNDLER)' exec rake manpage ) > $@ || { rm -f $@; false; }

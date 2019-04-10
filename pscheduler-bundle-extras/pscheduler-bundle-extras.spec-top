@@ -3,8 +3,8 @@
 #
 
 Name:		pscheduler-bundle-extras
-Version:	1.1
-Release:	0.3.b1%{?dist}
+Version:	1.1.6
+Release:	1%{?dist}
 
 Summary:	Extras pScheduler Bundle
 BuildArch:	noarch

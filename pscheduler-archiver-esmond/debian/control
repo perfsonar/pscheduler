@@ -1,0 +1,16 @@
+Source: pscheduler-archiver-esmond
+Section: net
+Priority: optional
+Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9), python
+Standards-Version: 3.9.6
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-archiver-esmond
+Architecture: all
+Depends: ${misc:Depends}, python, python-pscheduler (>= 1.3.7.1~),
+ pscheduler-server (>= 1.1.1), python-memcache, memcached
+Description: Esmond archiver class for pScheduler
+ Archiver sends JSON test results to Esmond Measurement Archive.

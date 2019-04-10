@@ -206,7 +206,7 @@ class EsmondClient: # pragma: no cover
         self.url = url
         self.verify_ssl = verify_ssl
         self.bind = bind
-        self.headers = { 'Content-Type': 'application/json' }
+        self.headers = {}
         if auth_token:
             self.headers['Authorization'] = "Token %s" % auth_token
     
@@ -219,7 +219,7 @@ class EsmondClient: # pragma: no cover
         log.debug("Posting metadata to %s: %s" % (post_url, metadata))
         status_code, result = pscheduler.url_post(
             post_url,
-            data=pscheduler.json_dump(metadata),
+            data=metadata,
             headers=self.headers,
             throw=False,
             json=True,
@@ -256,7 +256,7 @@ class EsmondClient: # pragma: no cover
         log.debug("Putting data to %s: %s" % (put_url, data))
         status_code, result = pscheduler.url_put(
             put_url,
-            data=pscheduler.json_dump(data),
+            data=data,
             headers=self.headers,
             json=True,
             throw=False,
@@ -443,6 +443,9 @@ class EsmondBaseRecord:
             self.metadata[key] = val
             
     def add_reference_metadata(self, reference={}):
+        if reference is None:
+            return
+        
         for field in reference:
             if field.startswith('_'):
                 continue

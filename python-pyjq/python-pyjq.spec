@@ -4,7 +4,7 @@
 
 %define short	pyjq
 Name:		python-%{short}
-Version:	2.1.0
+Version:	2.3.0
 Release:	1%{?dist}
 Summary:	Python bindings to JQ
 BuildArch:	%(uname -m)
@@ -19,11 +19,10 @@ URL:		https://github.com/doloopwhile/pyjq
 
 Source:		%{short}-%{version}.tar.gz
 Patch0:		%{name}-%{version}-00-nodownloads.patch
-Patch1:		%{name}-%{version}-01-librarypath.patch
-Patch2:		%{name}-%{version}-02-exception.patch
+Patch1:		%{name}-%{version}-01-integer.patch
 
 Requires:       python
-Requires:       jq >= 1.5
+Requires:       jq >= 1.6
 Requires:       oniguruma >= 5.9
 
 BuildRequires:  python
@@ -36,6 +35,13 @@ BuildRequires:  oniguruma-devel >= 5.9
 Python bindings to JQ
 
 
+# The jq library doesn't have a way to figure this out, and the
+# behavior is hard-wired into the command-line program.
+%define jq_prog %(which jq)
+%define jq_bin  %(dirname "%{jq_prog}")
+%define jq_lib  %(cd "%{jq_bin}/../lib" && pwd)/jq
+
+
 
 # Don't do automagic post-build things.
 %global              __os_install_post %{nil}
@@ -45,7 +51,9 @@ Python bindings to JQ
 %setup -q -n %{short}-%{version}
 %patch0 -p1
 %patch1 -p1
-%patch2 -p1
+
+# Patch1 applies this; we change it to what we found.
+sed -i -e 's|__DEFAULT_LIBRARY_PATH__|%{jq_lib}|g' pyjq.py
 
 
 %build

@@ -5,6 +5,8 @@
     "#": "                                                                   ",
     "#": "                                                                   ",
     "#": "Shows how to use the 'ipcidrlist' identifier.                      ",
+    "#": "                                                                   ",
+    "#": "THIS FILE IS FOR EXAMPLE ONLY AND SHOULD NOT BE USED IN PRODUCTION.",
     "#": "-------------------------------------------------------------------",
 
     "schema": 1,

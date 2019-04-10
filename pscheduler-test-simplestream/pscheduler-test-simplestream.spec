@@ -4,8 +4,8 @@
 
 %define short	simplestream
 Name:		pscheduler-test-%{short}
-Version:	1.1
-Release:	0.3.b1%{?dist}
+Version:	1.1.6
+Release:	1%{?dist}
 
 Summary:	Simplestream test class for pScheduler
 BuildArch:	noarch
@@ -17,7 +17,7 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server >= 1.1
+Requires:	pscheduler-server >= 1.1.6
 Requires:	python-pscheduler > 1.3.2.6.0
 Requires:	python-jsontemplate
 

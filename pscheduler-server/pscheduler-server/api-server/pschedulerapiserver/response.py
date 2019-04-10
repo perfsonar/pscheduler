@@ -30,7 +30,7 @@ def json_response(data):
                     mimetype='application/json')
 
 def ok(message="OK", mimetype=None):
-    log.debug("Response 200")
+    log.debug("Response 200: %s", message)
     return Response(message + '\n',
                     status=200,
                     mimetype=mimetype)
@@ -47,7 +47,7 @@ def bad_request(message="Bad request"):
 
 def forbidden(message="Forbidden."):
     log.debug("Response 403: %s", message)
-    log.info("Denied %s %s %s", request.remote_addr, request.method, request.base_url)
+    log.info("Forbade %s %s %s: %s", request.remote_addr, request.method, request.base_url, message)
     return Response(message + "\n", status=403, mimetype="text/plain")
 
 def not_found(message="Resource Not found.", mimetype="text/plain"):
@@ -56,6 +56,7 @@ def not_found(message="Resource Not found.", mimetype="text/plain"):
 
 def not_allowed():
     log.debug("Response 405: %s not allowed.", request.method)
+    log.info("Disallowed %s %s %s", request.remote_addr, request.method, request.base_url)
     return Response("%s not allowed on this resource\n" % (request.method),
                     status=405, mimetype="text/plain")
 
@@ -72,14 +73,14 @@ def no_can_do(message=None):
                         + '\n',
                     status=422, mimetype="text/plain")
 
-def error(message=None):
+def error(message="Unknown internal error"):
     log.debug("Response 500: %s", message)
-    if message is None:
-        message = "Unknown internal error"
+    log.error("Internal error %s %s %s: %s", request.remote_addr, request.method, request.base_url, message)
     return Response(message + '\n', status=500, mimetype="text/plain")
 
 def not_implemented(message="Not implemented."):
     log.debug("Response 501: %s", message)
+    log.warning("Not implemented %s %s %s: %s", request.remote_addr, request.method, request.base_url, message)
     return Response(message + "\n", status=501, mimetype="text/plain")
 
 def see_other(url):

@@ -1,0 +1,36 @@
+Description: Ensure jq doesn't statically link in libraries
+Author: Harlan Lieberman-Berg <hlieberman@debian.org>
+Forwarded: not-needed
+--- jq-1.6.orig/Makefile.am	2019-03-28 15:39:06.250612941 +0100
++++ jq-1.6/Makefile.am	2019-03-28 15:40:03.799573053 +0100
+@@ -106,7 +106,6 @@
+ 
+ bin_PROGRAMS = jq
+ jq_SOURCES = src/main.c src/version.h
+-jq_LDFLAGS = -static-libtool-libs
+ jq_LDADD = libjq.la -lm
+ 
+ if WIN32
+@@ -114,7 +113,7 @@
+ endif
+ 
+ if ENABLE_ALL_STATIC
+-jq_LDFLAGS += -all-static
++jq_LDFLAGS = -all-static
+ endif
+ 
+ ### Tests (make check)
+--- jq-1.6.orig/tests/setup	2019-03-28 15:39:06.250612941 +0100
++++ jq-1.6/tests/setup	2019-03-28 15:41:10.104679165 +0100
+@@ -13,8 +13,9 @@
+ JQ=$JQBASEDIR/jq
+ 
+ if [ -z "${NO_VALGRIND-}" ] && which valgrind > /dev/null; then
+-    VALGRIND="valgrind --error-exitcode=1 --leak-check=full \
+-                       --suppressions=$JQTESTDIR/onig.supp"
++    VALGRIND="libtool --mode=execute valgrind \
++                      --error-exitcode=1 --leak-check=full \
++                      --suppressions=$JQTESTDIR/onig.supp"
+     VG_EXIT0=--error-exitcode=0
+     Q=-q
+ else

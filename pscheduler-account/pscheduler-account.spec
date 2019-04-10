@@ -3,8 +3,8 @@
 #
 
 Name:		pscheduler-account
-Version:	1.1
-Release:	0.3.b1%{?dist}
+Version:	1.1.6
+Release:	1%{?dist}
 
 Summary:	Account for pScheduler
 BuildArch:	noarch
@@ -47,12 +47,29 @@ EOF
 
 if [ $1 -eq 1 ]  # One instance, new install
 then
-    groupadd '%{group}'
+    groupadd --system '%{group}'
 
     # Note: The default behavior for this is to have the password
     # disabled.  That makes it su-able but not login-able.
-    useradd -c '%{gecos}' -g '%{group}' '%{user}'
+    useradd \
+        --comment '%{gecos}' \
+        --gid '%{group}' \
+        --home-dir '%{_tmppath}' \
+        --no-create-home \
+        --system \
+        '%{user}'
+else
+
+    # Do make changes to an existing account
+
+    # Force the account home directory to be temporary space
+    usermod --home '%{_tmppath}' '%{user}'
+
+    # Don't allow logins
+    usermod --shell /sbin/nologin '%{user}'
+
 fi
+
 
 # Make sure the account is never never disabled or requires a password
 # change.  Do this under all conditions to bring older versions into

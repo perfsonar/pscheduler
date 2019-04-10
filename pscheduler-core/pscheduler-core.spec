@@ -3,8 +3,8 @@
 #
 
 Name:		pscheduler-core
-Version:	1.1
-Release:	0.3.b1%{?dist}
+Version:	1.1.6
+Release:	1%{?dist}
 
 Summary:	pScheduler Core Programs
 BuildArch:	noarch
@@ -21,7 +21,7 @@ Requires:       bash-completion
 Requires:       gnuplot-minimal
 # This is for netstat.
 Requires:       net-tools
-Requires:       python-pscheduler >= 1.3.0.4.2
+Requires:       python-pscheduler >= 1.3.7.1
 Requires:       pytz
 Requires:	curl
 

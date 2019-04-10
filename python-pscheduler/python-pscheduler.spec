@@ -4,8 +4,8 @@
 
 %define short	pscheduler
 Name:		python-%{short}
-Version:	1.3.3
-Release:	0.3.b1%{?dist}
+Version:	1.3.7.1
+Release:	1%{?dist}
 Summary:	Utility functions for pScheduler
 BuildArch:	noarch
 License:        ASL 2.0	
@@ -27,21 +27,17 @@ Requires:	python-dateutil
 Requires:	python-dns
 Requires:	python-isodate
 Requires:	python-ipaddr
-%if 0%{?el6}
-Requires:	python-jsonschema
-%endif
-%if 0%{?el7}
-Requires:	python2-jsonschema
-%endif
+Requires:       python-ipaddress
+Requires:	python2-jsonschema >= 3.0
 Requires:	python-netaddr
 Requires:	python-netifaces
 Requires:	python-ntplib
-Requires:	python-psycopg2 >= 2.2.0
+Requires:	python-psycopg2 >= 2.6.1
 Requires:	python-py-radix
 # The limit system uses this.
 Requires:	pscheduler-jq-library
-Requires:	python-pyjq >= 2.0.1
-Requires:	python-requests
+Requires:	python-pycurl
+Requires:	python-pyjq >= 2.2.0
 Requires:	python-subprocess32
 Requires:	python-tzlocal
 Requires:	pytz
@@ -59,6 +55,7 @@ BuildRequires:	python-dateutil
 BuildRequires:	python-dns
 BuildRequires:	python-isodate
 BuildRequires:	python-ipaddr
+BuildRequires:  python-ipaddress
 %if 0%{?el6}
 BuildRequires:	python-jsonschema
 %endif
@@ -72,8 +69,8 @@ BuildRequires:	python-psycopg2 >= 2.2.0
 BuildRequires:	python-py-radix
 # The limit system uses this.
 BuildRequires:	pscheduler-jq-library
-BuildRequires:	python-pyjq >= 2.0.1
-BuildRequires:	python-requests
+BuildRequires:	python-pycurl
+BuildRequires:	python-pyjq >= 2.2.0
 BuildRequires:	python-subprocess32
 BuildRequires:	python-tzlocal
 BuildRequires:	pytz

@@ -57,19 +57,14 @@ class TestJsonval(PschedTestBase):
 
         self.assertFalse(valid)
 
-        # TODO: Remove version check when 2.6 is out of the picture
-        if sys.hexversion >= 0x2070000:
-            self.assertEqual(message,
-                             "At /archspec: 'archiver' is a required property")
-
+        self.assertEqual(message, "At /archspec: 'archiver' is a required property")
 
         # add it in now
         sample['archspec']['archiver'] = 'tar'
 
         valid, message = json_validate(sample, schema)
 
-        self.assertTrue(valid)
-        self.assertEqual(message, 'OK')
+        self.assertEqual((valid, message), (True, 'OK'))
 
 
 if __name__ == '__main__':

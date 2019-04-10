@@ -1,0 +1,4 @@
+#!/bin/sh -e
+
+pscheduler backup > $AUTOPKGTEST_TMP/backup
+pscheduler restore $AUTOPKGTEST_TMP/backup

@@ -41,8 +41,8 @@ opt_parser.add_option("-r", "--retry",
                       help="No-rows-returned retry interval (ISO8601)",
                       action="store", type="string", dest="retry",
                       default="PT15S")
-opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
-opt_parser.add_option("--debug", action="store_true", dest="debug")
+opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False)
+opt_parser.add_option("--debug", action="store_true", dest="debug", default=False)
 
 
 (options, args) = opt_parser.parse_args()
@@ -125,24 +125,37 @@ def main_program():
     # TODO: Bulletproof the SQL queries
 
     db = pscheduler.pg_connection(dsn)
-    cursor = db.cursor()
+
 
     log.debug("Booting")
-    cursor.execute("SELECT cold_boot()")
+    with db.cursor() as cursor:
+        cursor.execute("SELECT cold_boot()")
     log.debug("Booted")
+
+    with db.cursor() as cursor:
+        cursor.execute("SELECT heartbeat_boot('ticker')")
+
 
     while True:
 
         log.debug("Tick")
-        cursor.execute("SELECT ticker()")
 
-        if cursor.rowcount == 0:
-            log.debug("Got no rows back from the database, retrying in"
-                      + str(options.retry) + "\n")
-            time.sleep(pscheduler.timedelta_as_seconds(options.retry))
-            continue
+        with db.cursor() as cursor:
+            cursor.execute("SELECT heartbeat('ticker')")
 
-        sleep_time = cursor.fetchone()[0]
+        with db.cursor() as cursor:
+            cursor.execute("SELECT ticker()")
+
+            if cursor.rowcount == 0:
+                log.debug("Got no rows back from the database, retrying in"
+                          + str(options.retry) + "\n")
+                time.sleep(pscheduler.timedelta_as_seconds(options.retry))
+                continue
+            sleep_time = cursor.fetchone()[0]
+
+        with db.cursor() as cursor:
+            cursor.execute("SELECT heartbeat('ticker', %s)", [ sleep_time ])
+
         seconds = pscheduler.timedelta_as_seconds(sleep_time)
         log.debug("Next check in %d seconds", seconds)
         time.sleep(seconds)
@@ -156,7 +169,4 @@ if options.daemon:
     with daemon.DaemonContext(pidfile=pidfile):
         pscheduler.safe_run(lambda: main_program())
 else:
-    if not options.verbose:
-        pscheduler.safe_run(lambda: main_program())
-    else:
-        main_program()
+    pscheduler.safe_run(lambda: main_program())

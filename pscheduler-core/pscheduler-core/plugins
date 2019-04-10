@@ -99,7 +99,8 @@ for item in result:
         print "  Scheduling: %s" % (item["scheduling-class"].title())
     if plugin == "tools":
         print
-        print "  Runs tests: %s" % (", ".join(sorted(item["tests"])))
+        runs = sorted(item["tests"])
+        print "  Runs tests: %s" % ( (", ".join(runs)) if runs else "None" )
         print "  Preference: %d" % item["preference"]
 
     print

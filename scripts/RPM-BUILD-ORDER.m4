@@ -41,18 +41,19 @@ pscheduler-rpm
 postgresql-init
 postgresql-load
 
+# jq version with new patches. replace when patches accepted upstream
+jq
+
 # Python Modules
+python-setuptools
 python-argparse
-# TODO: Drop this when we drop support for EL6.
-ifelse(REDHAT_RELEASE_MAJOR,6,Cython,)
-ifelse(REDHAT_RELEASE_MAJOR,7,
-    python-functools32,)
+python-functools32
 python-isodate
+python2-pyrsistent
+python2-jsonschema
 python-netaddr
 python-ntplib
 python-py-radix
-# TODO: Drop this when we drop support for EL6.
-ifelse(REDHAT_RELEASE_MAJOR,6,jq,)
 python-pyjq
 # TODO: This can be dropped in 1.2
 python-repoze.lru
@@ -61,13 +62,12 @@ python-tzlocal
 python-vcversioner
 # This is how EL prefixes it.
 python2-pyasn1
+python2-pyasn1-modules
 # This doesn't get a python- prefix.  Ask CentOS why.
 pysnmp
 
 # JSON Tools
-# Available as python2-jsonschema in EPEL for EL7
-ifelse(REDHAT_RELEASE_MAJOR,6,python-jsonschema,)
-ifelse(REDHAT_RELEASE_MAJOR,6,python-jsontemplate,)
+python-jsontemplate
 
 
 # Home-grown Python Modules
@@ -75,6 +75,7 @@ python-icmperror
 
 # Apache add-ons
 httpd-firewall
+mod_wsgi
 httpd-wsgi-socket
 
 
@@ -102,12 +103,14 @@ pscheduler-server
 
 # Tests
 pscheduler-test-clock
+pscheduler-test-disk-to-disk	--bundle extras
 pscheduler-test-http
 pscheduler-test-idle
 pscheduler-test-idlebgm
 pscheduler-test-idleex
 pscheduler-test-latency
 pscheduler-test-latencybg
+pscheduler-test-netreach
 pscheduler-test-throughput
 pscheduler-test-rtt
 pscheduler-test-simplestream
@@ -119,17 +122,20 @@ pscheduler-test-dns
 pscheduler-test-disk-to-disk		--bundle extras
 
 # Tools
+pscheduler-tool-ftp		            --bundle extras
+pscheduler-tool-globus		        --bundle extras
 pscheduler-tool-owping
 pscheduler-tool-powstream
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-nuttcp
-pscheduler-tool-bwctliperf2			--bundle extras
-pscheduler-tool-bwctliperf3			--bundle extras
-pscheduler-tool-bwctlping			--bundle extras
-pscheduler-tool-bwctltraceroute		--bundle extras
-pscheduler-tool-bwctltracepath		--bundle extras
-pscheduler-tool-net-snmp-set		--bundle extras
+pscheduler-tool-bwctliperf2
+pscheduler-tool-bwctliperf3
+pscheduler-tool-bwctlping
+pscheduler-tool-bwctltraceroute
+pscheduler-tool-bwctltracepath
+pscheduler-tool-net-snmp-set
+pscheduler-tool-nmapreach
 pscheduler-tool-psurl
 pscheduler-tool-pysnmp				--bundle extras
 pscheduler-tool-simplestreamer
@@ -159,6 +165,7 @@ pscheduler-archiver-syslog
 pscheduler-context-changefail
 pscheduler-context-changenothing
 pscheduler-context-linuxnns
+pscheduler-context-linuxvrf
 
 
 # Misc.

@@ -4,7 +4,7 @@
 #
 
 import datetime
-import ipaddr
+import ipaddress
 import json
 import math
 import pscheduler
@@ -112,7 +112,7 @@ if role == CLIENT_ROLE:
 
     #calculate destination ip for rtt tests
     try:
-            ipaddr.IPAddress(test_spec['dest'])
+            ipaddress.ip_address(unicode(test_spec['dest']))
             dest_ip = test_spec['dest']
             dest_hostname = pscheduler.dns_resolve_reverse(dest_ip)
     except ValueError:
@@ -223,20 +223,22 @@ if role == CLIENT_ROLE:
                 ttl                      = twping_match.group(8);
 
             #collect rtt data
-            rtt = (float(twping_match.group(13)) - float(twping_match.group(2))) / pow(2, 32)
-            rtts.append(rtt)
-
-            rt = {
-                'seq': int(seq_number) + 1,
-                'length': int(rtt_length),
-                'ttl': int(ttl),
-                'rtt': pscheduler.timedelta_as_iso8601(datetime.timedelta(seconds=rtt))
-            }
-            if dest_hostname is not None:
-                rt['hostname'] = dest_hostname
-            if dest_ip is not None:
-                rt['ip'] = dest_ip
-            roundtrips.append(rt)
+            ts1 = float(twping_match.group(2))
+            ts2 = float(twping_match.group(13))
+            if ts1 != 0 and ts2 != 0:
+                rtt = (ts2 - ts1) / pow(2, 32)
+                rtts.append(rtt)
+                rt = {
+                    'seq': int(seq_number) + 1,
+                    'length': int(rtt_length),
+                    'ttl': int(ttl),
+                    'rtt': pscheduler.timedelta_as_iso8601(datetime.timedelta(seconds=rtt))
+                }
+                if dest_hostname is not None:
+                    rt['hostname'] = dest_hostname
+                if dest_ip is not None:
+                    rt['ip'] = dest_ip
+                roundtrips.append(rt)
 
             #publish raw pings
             if raw_output:

@@ -40,6 +40,7 @@ Timeout     ....... {.section timeout}{timeout}{.or}Not Specified{.end}
 # Format with html
 elif format == 'text/html':
 
+# TODO: This is incomplete.
    template = """
 <table>
 <tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>

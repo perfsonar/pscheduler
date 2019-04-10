@@ -43,8 +43,8 @@ opt_parser.add_option("--bind",
                       action="store", type="string",
                       dest="bind")
 opt_parser.add_option("--timeout", "-W",
-                      help="How long to wait for the server to respond, in seconds (default 5)",
-                      default=5,
+                      help="How long to wait for the server to respond, in seconds (default 15)",
+                      default=15,
                       action="store", type="int",
                       dest="timeout")
 
@@ -94,9 +94,19 @@ times = []
 for result in results:
     try:
         times.append(pscheduler.iso8601_as_datetime(result["time"]))
-        print "clock     ", result["time"], \
-            "synchronized  " if result["synchronized"] else "unsynchronized", \
+        if "error" in result:
+            sync_state = "error"
+        else:
+            sync_state = "synchronized  " if result["synchronized"] else "unsynchronized"
+        print "%-10s %s %-14s %s" % (
+            "clock",
+            result["time"],
+            sync_state,
             result["host"]
+            )
+
+        if "error" in result:
+            print "%-10s %s %s" % ("error", result["host"], result["error"])
 
     except (KeyError, ValueError):
         pscheduler.fail("%s returned invalid data" % (host))
