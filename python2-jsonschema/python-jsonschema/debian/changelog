@@ -1,8 +1,8 @@
-python-jsonschema (3.0.1-1) perfsonar-jessie-staging; urgency=medium
+python-jsonschema (3.0.1-1) perfsonar-minor-staging; urgency=low
 
   * New upstream version.
 
- -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Tue, 19 Mar 2019 14:02:21 +0100
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Wed, 10 Apr 2019 15:46:37 +0000
 
 python-jsonschema (2.5.1-4~bpo8+1~1) perfsonar-jessie-staging; urgency=low
 
