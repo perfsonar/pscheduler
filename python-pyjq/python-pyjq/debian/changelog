@@ -1,8 +1,14 @@
-python-pyjq (2.2.0-1) perfsonar-minor-staging; urgency=low
+python-pyjq (2.3.0-1) perfsonar-minor-staging; urgency=low
 
   * New upstream release.
 
- -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Wed, 10 Apr 2019 15:54:44 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 10 Apr 2019 16:09:16 +0000
+
+python-pyjq (2.2.0-1) perfsonar-jessie-staging; urgency=medium
+
+  * New upstream release.
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Fri, 07 Dec 2018 14:47:11 +0100
 
 python-pyjq (2.1.0-1) perfsonar-jessie-staging; urgency=low
 
