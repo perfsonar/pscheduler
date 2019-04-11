@@ -119,11 +119,8 @@ pscheduler-test-snmpgetbgm		--bundle extras
 pscheduler-test-snmpset			--bundle extras
 pscheduler-test-trace
 pscheduler-test-dns
-pscheduler-test-disk-to-disk		--bundle extras
 
 # Tools
-pscheduler-tool-ftp		            --bundle extras
-pscheduler-tool-globus		        --bundle extras
 pscheduler-tool-owping
 pscheduler-tool-powstream
 pscheduler-tool-iperf2
