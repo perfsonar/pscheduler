@@ -28,11 +28,8 @@ try:
 
     source = input['test']['spec']['source']
     
-    # The directory to put the new copy of file (optional)
-    dest_path = input['test']['spec']['dest-path']
-
-    # Delete transfered file after transfer if cleanup == True
-    cleanup = input['test']['spec']['cleanup']
+    # Delete transfered file after transfer if cleanup is not specified
+    cleanup = input['test']['spec'].get('cleanup', True)
 
 except KeyError as e:
     print(e);	pscheduler.fail('Missing data in input')
@@ -52,6 +49,15 @@ STDERR = ""
 
 # Run the actual task here:
 if True:
+  # Normalize input with Globus tool
+  if (len(source) > 6 and source[:7] != "file://"):
+    # If source is local file, use file:// protocol
+    if (source[0] == "/" and source[1] != "/"):
+      source = "file://" + source
+
+  if (len(dest) > 6 and  dest[:7] == "file://"):
+    dest = dest.split("file://")[-1]
+
   # Execute curl command
   argv = ['curl',
           '-o',   # Flag to output file
@@ -93,10 +99,14 @@ if True:
     succeeded = True
     diags = stdout
 
-    if cleanup is True:
-      if os.path.isfile(dest): os.remove(dest)
+
+
 
 end_time = datetime.datetime.now()
+
+if cleanup is True:
+    if os.path.isfile(dest): 
+        os.remove(dest)
 
 # Organize results into json data
 final_results = {
@@ -117,12 +127,24 @@ with open('/tmp/run.log', 'wb') as f:
 
 #%#%#%#%#%#
 #STDERR[6] is Average Download Speed
-
-results['throughput'] = STDERR[-1].split('\n')[0]
+#Try to get download speed, if can't parse then skip
+throughput_str = None
+try:
+    throughput_str = STDERR[-1].split('\n')[0]
+except:
+    pass
+if throughput_str is not None:
+    #convert to bits per second
+    results['throughput'] = pscheduler.si_as_number(throughput_str) * 8
 
 #%#%#%#%#%#
-
-results['bytes-sent'] = STDERR[1]
+bytes_str = None
+try:
+    bytes_str = STDERR[1]
+except:
+    pass
+if bytes_str is not None:
+    results['bytes-sent'] = pscheduler.si_as_number(bytes_str)
 
 final_results['result'] = results
 pscheduler.succeed_json(final_results)

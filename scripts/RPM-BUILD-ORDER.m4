@@ -119,6 +119,7 @@ pscheduler-test-snmpgetbgm		--bundle extras
 pscheduler-test-snmpset			--bundle extras
 pscheduler-test-trace
 pscheduler-test-dns
+pscheduler-test-disk-to-disk		--bundle extras
 
 # Tools
 pscheduler-tool-ftp		            --bundle extras
@@ -148,6 +149,8 @@ pscheduler-tool-traceroute
 pscheduler-tool-twping
 pscheduler-tool-paris-traceroute
 pscheduler-tool-dnspy
+pscheduler-tool-ftp			--bundle extras
+pscheduler-tool-globus			--bundle extras
 
 # Archivers
 pscheduler-archiver-bitbucket

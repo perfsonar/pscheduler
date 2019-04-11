@@ -41,10 +41,22 @@ else:
 # TODO: Write an epilog.
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """
-    This text will be printed out at the bottom of the
-    "help" message. Change this to whatever you like,
-    or don't include it at all. This could be a good place
-    for example usage cases, etc.
+    This software is a plugin for the pScheduler project that adds a
+    disk-to-disk feature to the testing suite. This test supports two
+    tools, globus and ftp.
+
+    GridFTP test:
+        pscheduler task --tool globus disk-to-disk \
+        --source ftp://sunn-dtn.es.net:2811/data1/10M.dat \
+        --dest file:///tmp/test.out --timeout PT10S
+
+    Standard FTP test:
+        pscheduler task --tool ftp disk-to-disk \
+        --source ftp://speedtest.tele2.net/1KB.zip \
+        --dest /tmp/test.out --timeout PT5S
+   
+      
+
 """
 )
 
@@ -73,27 +85,25 @@ opt_parser.add_option("--source",
                       action="store", type="string",
                       dest="source")
 
+
 opt_parser.add_option("--dest",
                       help="Destination URL",
                       action="store", type="string",
                       dest="dest")
 
-opt_parser.add_option("--dest-path",
-                      help="Destination path",
-                      action="store", type="string",
-                      dest="dest_path")
-
 opt_parser.add_option("--cleanup",
-                      help="If true then test file is deleted after transfer",
-                      action="store", type="string",
+                      help="If specified then test file is not deleted after transfer",
+                      action="store_false",
                       dest="cleanup")
+
+opt_parser.add_option("--parallel", 
+                      help="Number of parallel streams to use with GridFTP transfers",
+                      action="store", type="int",
+                      dest="parallel")
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
 result = { 'schema': 1 }
-
-if options.host is not None:
-   result['host'] = options.host
 
 if options.source is not None:
   result['source'] = options.source
@@ -101,18 +111,18 @@ if options.source is not None:
 if options.dest is not None:
   result['dest'] = options.dest
 
-# TODO: Default behavior should be defined by the tools.  Don't set it
-# explicitly if the switches don't provide one.
-if options.cleanup is None:
-  result['cleanup'] = True
-else:
-  result['cleanup'] = options.cleanup
+if options.host is not None:
+  result['host'] = options.host
 
-# TODO: Ibid.
-if options.dest_path is not None:
-  result['dest-path'] = options.dest_path
+if options.parallel is None:
+  result["parallel"] = 1
 else:
-  result['dest-path'] = "/nill"
+  if options.parallel <= 1:
+    pscheduler.fail('Error: Number of parallel streams must be greater than 1')
+  result["parallel"] = options.parallel
+
+if options.cleanup is not None:
+  result['cleanup'] = options.cleanup
 
 if options.timeout is not None:
    result['timeout'] = options.timeout

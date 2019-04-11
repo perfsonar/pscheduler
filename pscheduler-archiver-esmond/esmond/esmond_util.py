@@ -3,6 +3,7 @@
 
 
 import pscheduler
+import urlparse
 
 log = pscheduler.Log(prefix="archiver-esmond", quiet=True)
 
@@ -309,43 +310,18 @@ class EsmondBaseRecord:
         self.data = []
         
         if not fast_mode:
-            #determine source since its optional
-            input_source = lead_participant
-            if src_field and src_field in test_spec:
-                input_source = test_spec[src_field]
-        
             #determine if we are forcing an ip-version
             ip_version = None
             if ipv_field in test_spec:
                 ip_version = test_spec[ipv_field]
             
-            #get dest if this is point-to-point
-            src_ip = None
-            dest_ip = None
-            input_dest = None
-            if dst_field:
-                self.metadata['subject-type'] = 'point-to-point'
-                input_dest = test_spec[dst_field]
-                src_ip, dest_ip = pscheduler.ip_normalize_version(input_source, input_dest, ip_version=ip_version)
-            else:
-                self.metadata['subject-type'] = 'network-element'
-                src_ip, tmp_ip = pscheduler.ip_normalize_version(input_source, input_source, ip_version=ip_version)
-    
-            #set fields
-            self.metadata['source'] = src_ip
-            if dest_ip:
-                self.metadata['destination'] = dest_ip
-            self.metadata['input-source'] = input_source
-            if input_dest:
-                self.metadata['input-destination'] = input_dest
+            #Figure out source, destination, and subject type    
+            self.parse_addresses(test_spec, src_field, dst_field, ip_version, lead_participant, measurement_agent)
+            
+            #set misc fields
             self.metadata['tool-name'] = tool_name
             self.metadata['time-duration'] = duration
-            #Make measurement-agent the created_by_address if we have it, otherwise the lead participant, with same ip type as source
-            if measurement_agent:
-                src_ip, self.metadata['measurement-agent'] = pscheduler.ip_normalize_version(src_ip, measurement_agent)
-            else:
-                src_ip, self.metadata['measurement-agent'] = pscheduler.ip_normalize_version(src_ip, lead_participant)
-        
+            
             #set test type to new value if provided
             if test_type:
                 self.test_type = test_type
@@ -392,6 +368,33 @@ class EsmondBaseRecord:
             data_point['val'].append({ 'event-type': 'pscheduler-run-href', 'val': { 'href': run_href }})
         
         self.data.append(data_point)
+    
+    def parse_addresses(self, test_spec, src_field, dst_field, ip_version, lead_participant, measurement_agent):
+            #determine source since its optional
+            input_source = lead_participant
+            if src_field and src_field in test_spec:
+                input_source = test_spec[src_field]
+            
+            #get dest if this is point-to-point
+            if dst_field:
+                self.metadata['subject-type'] = 'point-to-point'
+                self.metadata['input-destination'] = test_spec[dst_field]
+                src_ip, dest_ip = pscheduler.ip_normalize_version(input_source, self.metadata['input-destination'], ip_version=ip_version)
+            else:
+                self.metadata['subject-type'] = 'network-element'
+                src_ip, tmp_ip = pscheduler.ip_normalize_version(input_source, input_source, ip_version=ip_version)
+            
+            #set fields
+            self.metadata['source'] = src_ip
+            if dest_ip:
+                self.metadata['destination'] = dest_ip
+            self.metadata['input-source'] = input_source
+
+            #Make measurement-agent the created_by_address if we have it, otherwise the lead participant, with same ip type as source
+            if measurement_agent:
+                src_ip, self.metadata['measurement-agent'] = pscheduler.ip_normalize_version(src_ip, measurement_agent)
+            else:
+                src_ip, self.metadata['measurement-agent'] = pscheduler.ip_normalize_version(src_ip, lead_participant)
     
     def add_metadata_fields(self, test_spec={}):
         field_map = self.get_metadata_field_map()
@@ -467,7 +470,75 @@ class EsmondBaseRecord:
     def add_additional_data(self, data_point={}, test_spec={}, test_result={}):
         return
         
+class EsmondDiskToDiskRecord(EsmondBaseRecord):
+    test_type = 'disk-to-disk'
+    
+    def get_event_types(self, test_spec={}):
+        event_types = [
+            'failures',
+            'throughput'
+        ]
+        return event_types
+    
+    # The source and dest are URls, so need special processing
+    def parse_addresses(self, test_spec, src_field, dst_field, ip_version, lead_participant, measurement_agent):
+        src_ip=None
+        dest_ip=None
+        input_source = lead_participant
+        input_dest = lead_participant
+        self.metadata['subject-type'] = 'point-to-point'
+        
+        #get source field from URL, then try measurement agent, then fallback to lead
+        if src_field and src_field in test_spec:
+            source_url = test_spec[src_field]
+            source_url_host = urlparse.urlparse(test_spec[src_field]).hostname
+            if source_url_host:
+                input_source = source_url_host
+            elif measurement_agent:
+                input_source = measurement_agent
+        
+        #do same thingv we did for source but for dest
+        if dst_field and dst_field in test_spec:
+            dest_url = test_spec[dst_field]
+            dest_url_host = urlparse.urlparse(test_spec[dst_field]).hostname
+            if dest_url_host:
+                input_dest = dest_url_host
+            elif measurement_agent:
+                input_dest = measurement_agent
+        
+        #normalize ips
+        src_ip, dest_ip = pscheduler.ip_normalize_version(input_source, input_dest, ip_version=ip_version)
+        
+        # set fields
+        self.metadata['source'] = src_ip
+        self.metadata['destination'] = dest_ip
+        self.metadata['input-source'] = input_source
+        self.metadata['input-destination'] = input_dest
+        
+        #Normalize the measurement agent IP and fallback to lead if not set
+        if measurement_agent:
+            src_ip, self.metadata['measurement-agent'] = pscheduler.ip_normalize_version(src_ip, measurement_agent)
+        else:
+            src_ip, self.metadata['measurement-agent'] = pscheduler.ip_normalize_version(src_ip, lead_participant)
 
+
+    def add_additional_metadata(self, test_spec={}):
+        for field in test_spec:
+            key = "pscheduler-%s-%s" % (self.test_type, field)
+            val = test_spec[field]
+            self.parse_metadata_field(key, val)
+            
+    def get_metadata_field_map(self):
+        field_map = {
+            'parallel': 'bw-parallel-streams',
+        }
+        return field_map
+        
+    def add_additional_data(self, data_point={}, test_spec={}, test_result={}):
+        if 'throughput' in test_result and test_result['throughput'] is not None:
+            normalized_tput=float(test_result['throughput'])
+            data_point['val'].append({ 'event-type': 'throughput', 'val': normalized_tput})
+            
 class EsmondLatencyRecord(EsmondBaseRecord):
     test_type = 'latency'
     
