@@ -14,9 +14,12 @@ import sys
 import json
 import time
 import datetime
+import re
 import subprocess
 
 import pscheduler
+
+logger = pscheduler.Log(quiet=True)
 
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
@@ -42,8 +45,8 @@ error = ''
 diags = ''
 
 # Run the actual task here:
-bits_sent = 0.0
-thru_put = 0.0
+bytes_sent = None
+tput = None
 
 if True:
 
@@ -56,32 +59,26 @@ if True:
   if parallel > 1:
     argv.append("-p")
     argv.append(str(parallel))
- 
-  #if options != " ":
-  #  options = options.split(" ")
-  #  for opt in options:
-  #    argv.append(opt)
-
 
   argv.append(source) # Source URL
   argv.append(dest) # Destination URL
   
   status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
- 
-  #with open("/tmp/debug.out", "wb") as f: 
-    #[ f.write(s + "\n") for s in stdout]  
-  #  f.write(stdout)                      
-
-
+  
   # Parsing stdout for throughput and bytes-sent 
-  orig_stdout = stdout
-  if len(stdout) > 3: 
-    stdout = stdout.split("\n")[4]
-    stdout = stdout.split(" ")
-
-  if len(stdout) > 2: 
-    bits_sent = float(stdout[12])
-    thru_put = float(stdout[22])
+  lines = stdout.splitlines()
+  for line in lines:
+      logger.debug("searching line: {0}".format(line))
+      #make sure you grab the last one because each screen update its own line
+      test = re.search('\s*(\d+) bytes\s+(\S+) ([A-za-z])B/sec avg\s+\S+ [A-za-z]B/sec inst$', line)
+      if test:
+          logger.debug("looks like a performance metric line")
+          bytes_sent = int(test.group(1))
+          logger.debug("bytes sent: {0}".format(bytes_sent))
+          tput_str = "{0}{1}".format(test.group(2),test.group(3))
+          logger.debug("tput_str: {0}".format(tput_str))
+          tput = pscheduler.si_as_number(tput_str) * 8
+          logger.debug("tput: {0}".format(tput))
   
   if status:
     succeeded = False
@@ -89,26 +86,13 @@ if True:
 
   else:
     succeeded = True
-    diags = orig_stdout
+    diags = stdout
 
 end_time = datetime.datetime.now()
 
 if cleanup is True:
     if os.path.isfile(dest): 
         os.remove(dest)
-
-
-#bits_sent = 0.0
-#thru_put = 0.0
-# Determine how much (if any) of the file was transferred
-#if succeeded and os.path.isfile(dest):
-#  bits_sent = os.stat(dest).st_size
-  # Convert bytes to Megabytes
-  #scalar = ['B', 'KB', 'MB']
-  #while len(scalar) > 1:
-  #  scalar = scalar[1:]
-  #  bits_sent = bits_sent / 1024.0
-#  thru_put = bits_sent / (end_time - start_time)
 
 # Organize results into json data
 final_results = {
@@ -119,10 +103,10 @@ final_results = {
 results = {"schema": 1}
 results['time'] = pscheduler.timedelta_as_iso8601( end_time - start_time)
 results['succeeded'] = succeeded
-#if bits_sent != "": 
-results["bytes-sent"] = bits_sent
-#if thru_put != "":
-results["throughput"] = thru_put
+if bytes_sent is not None:
+    results["bytes-sent"] = bytes_sent
+if tput is not None:
+     results["throughput"] = tput
 
 final_results['result'] = results
 pscheduler.succeed_json(final_results)
