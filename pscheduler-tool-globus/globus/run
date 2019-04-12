@@ -28,16 +28,15 @@ input = pscheduler.json_load(exit_on_error=True)
 try:
     dest = input['test']['spec']['dest']
     source = input['test']['spec']['source']
-    parallel = input['test']['spec']['parallel']
-
 except KeyError as e:
-    print(e);	pscheduler.fail('Missing data in input')
+    pscheduler.fail('Missing required input: {0}'.format(e))
 
 cleanup = input['test']['spec'].get('cleanup', True)
 
 duration = input['test']['spec'].get('duration', 'PT5S')
 duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
+parallel = input['test']['spec'].get('parallel', 1)
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 start_time = datetime.datetime.now()
 succeeded = False
