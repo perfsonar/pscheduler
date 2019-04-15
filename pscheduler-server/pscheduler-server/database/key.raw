@@ -18,13 +18,25 @@ class VerbatimParser(optparse.OptionParser):
         return self.epilog
 
 opt_parser = VerbatimParser(
-    usage="Usage: %prog [ --query | duration ]",
+    usage="Usage: %prog COMMAND [ arg ... ]",
     epilog=
 """
+COMMAND is one of:
+
+  add     Add a new key
+  delete  Delete a key
+  list    List existing keys
+
 Examples:
 
   key add foo fred mumble
       Add a "foo" key for "fred" with password "mumble".
+
+  key delete foo fred
+      Delete the "foo" key for "fred".
+
+  key list
+      Produce a list of all keys by type and name
 
 """
 )
