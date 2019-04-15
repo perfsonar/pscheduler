@@ -9,6 +9,7 @@ import uuid
 from flask import request
 
 from .dbcursor import *
+from .log import log
 from .response import *
 
 
@@ -56,19 +57,25 @@ def request_hints():
     # Any exceptions here will bubble up and cause the request to
     # fail.
 
+    log.debug("Checking requester key for %s", name)
+
     with dbcursor_query(
             "SELECT auth_key_is_valid('requester', %s, %s)", [name, key]
     ) as cursor:
         if cursor.rowcount != 1:
             raise Exception("Didn't get expected single row from key validation")
-        (requester_ok) = cursor.fetchone()
+        requester_ok = cursor.fetchone()[0]
 
     if not requester_ok:
+        log.debug("Denied requester proxying for %s", name)
         return (None, forbidden("Requester proxying not allowed"))
-
+    else:
+        log.debug("Database says requester key is okay.")
 
     result["requester"] = ip
     result["requester-proxied-by"] = request.remote_addr
+
+    log.debug("Hints: %s", result)
 
     return (result, None)
 

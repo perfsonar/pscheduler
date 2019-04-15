@@ -301,6 +301,7 @@ def tasks():
 
         hints, error_response = request_hints();
         if hints is None:
+            log.debug("Can't come up with valid hints for lead task limits.")
             return error_response
 
         hints_data = pscheduler.json_dump(hints)
@@ -638,6 +639,7 @@ def tasks_uuid(uuid):
 
         hints, error_response = request_hints();
         if hints is None:
+            log.debug("Can't come up with valid hints for subordinate limits.")
             return error_response
 
         hints_data = pscheduler.json_dump(hints)
