@@ -22,6 +22,9 @@ FILES=\
 	\
 	configurables \
 	heartbeat \
+	auth_key_type \
+	auth_key \
+	requester \
 	priority \
 	control \
 	http_queue \
@@ -61,6 +64,7 @@ SQL=$(BUILD_SUPER_SQL) $(BUILD_SQL) $(TEARDOWN_SQL)
 INTERNALS=\
 	db-update \
 	db-change-password \
+	key \
 	reset \
 	warmboot
 
