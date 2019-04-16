@@ -1,3 +1,9 @@
+drop-in (1.6-1) perfsonar-minor-snapshot; urgency=medium
+
+  * New upstream version
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Tue, 16 Apr 2019 12:42:57 +0200
+
 drop-in (1.4-1) perfsonar-jessie-staging; urgency=low
 
   * Initial release
