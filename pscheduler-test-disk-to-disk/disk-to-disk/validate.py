@@ -21,14 +21,14 @@ def spec_is_valid(json):
                 # and should be included
                 "properties": {
                     "schema":       { "$ref": "#/pScheduler/Cardinal" },
-                    "host":         { "$ref": "#/pScheduler/URLHostPort" },
+                    "parallel":     { "$ref": "#/pScheduler/Cardinal" },
 
-                    "source":       { "$ref": "#/pScheduler/String"   },
+                    "host":         { "$ref": "#/pScheduler/Host"     },
+
                     "dest":         { "$ref": "#/pScheduler/String"   },
-                    # TODO: This isn't actually used anywhere.  Why is it here?
-                    "dest-path":    { "$ref": "#/pScheduler/String"   },
+                    "source":       { "$ref": "#/pScheduler/String"   },
                     
-		    "timeout":      { "$ref": "#/pScheduler/Duration" }, 
+                    "timeout":      { "$ref": "#/pScheduler/Duration" }, 
                     "min-bandwith": { "$ref": "#/pScheduler/Cardinal" },
                     
                     "max-size":     { "$ref": "#/pScheduler/Cardinal" },
@@ -52,8 +52,8 @@ def result_is_valid(json):
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
             "time":       { "$ref": "#/pScheduler/Duration" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean"  },
-            "bytes-sent": { "$ref": "#/pScheduler/String" },
-            "throughput": { "$ref": "#/pScheduler/String" },
+            "bytes-sent": { "$ref": "#/pScheduler/Float" },
+            "throughput": { "$ref": "#/pScheduler/Float" },
             },
         "required": [
             "schema",

@@ -40,12 +40,12 @@ if format == 'text/plain':
     print 'Total duration of transfer: %s\n' % result['time']
 
     if 'bytes-sent' in result:
-        print 'Bytes-sent: %s\n' % result['bytes-sent']
+        print 'Bytes Sent: %s\n' % str(result['bytes-sent']) 
 
     if 'throughput' in result:
-	print 'Throughput: %s\n' % result['throughput']
+	    print 'Throughput: %sbits/sec\n' % pscheduler.number_as_si(result['throughput'])
 
-    print 'Test completed succesfully'
+    print 'Test completed successfully'
    
 elif format == 'text/html':
     # Print results of the test here, in html
