@@ -3,7 +3,6 @@
 #
 
 import pscheduler
-import requests
 
 from werkzeug.datastructures import Headers
 from flask import Response

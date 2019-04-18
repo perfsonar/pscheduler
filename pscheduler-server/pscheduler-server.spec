@@ -47,7 +47,6 @@ Requires:	pscheduler-account
 Requires:	python-daemon
 Requires:	python-flask
 Requires:	python-ipaddr
-Requires:	python-requests
 Requires:	python-jsontemplate
 
 # API Server
@@ -63,7 +62,6 @@ Requires:	pscheduler-server
 Requires:	mod_ssl
 Requires:	mod_wsgi > 4.0
 Requires:	python-pscheduler >= 1.3.7.1
-Requires:	python-requests
 Requires:	pytz
 
 # General
