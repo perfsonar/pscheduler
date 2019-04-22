@@ -72,6 +72,8 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS context_alter ON context CASCADE;
 
+DO $$ BEGIN PERFORM drop_function_all('context_alter'); END $$;
+
 CREATE OR REPLACE FUNCTION context_alter()
 RETURNS TRIGGER
 AS $$
@@ -103,6 +105,9 @@ DROP TRIGGER IF EXISTS context_alter_post ON context CASCADE;
 
 
 -- Function to run at startup.
+
+DO $$ BEGIN PERFORM drop_function_all('context_boot'); END $$;
+
 CREATE OR REPLACE FUNCTION context_boot()
 RETURNS VOID
 AS $$

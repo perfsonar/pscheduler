@@ -153,12 +153,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- Old function
-DROP FUNCTION IF EXISTS archiver_json_is_valid(json JSONB);
-
-
 
 DROP TRIGGER IF EXISTS archiver_alter ON archiver CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('archiver_alter'); END $$;
 
 CREATE OR REPLACE FUNCTION archiver_alter()
 RETURNS TRIGGER
@@ -187,6 +185,8 @@ FOR EACH ROW
 
 
 DROP TRIGGER IF EXISTS archiver_alter_post ON archiver CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('archiver_alter_post'); END $$;
 
 CREATE OR REPLACE FUNCTION archiver_alter_post()
 RETURNS TRIGGER
@@ -223,6 +223,8 @@ FOR EACH ROW
 
 
 DROP TRIGGER IF EXISTS archiver_delete ON archiver CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('archiver_delete'); END $$;
 
 CREATE OR REPLACE FUNCTION archiver_delete()
 RETURNS TRIGGER
@@ -285,6 +287,9 @@ $$ LANGUAGE plpgsql;
 
 
 -- Function to run at startup.
+
+DO $$ BEGIN PERFORM drop_function_all('archiver_boot'); END $$;
+
 CREATE OR REPLACE FUNCTION archiver_boot()
 RETURNS VOID
 AS $$

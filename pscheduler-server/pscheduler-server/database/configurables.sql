@@ -111,6 +111,8 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS configurables_update ON configurables CASCADE;
 
+DO $$ BEGIN PERFORM drop_function_all('configurables_update'); END $$;
+
 CREATE OR REPLACE FUNCTION configurables_update()
 RETURNS TRIGGER
 AS $$
@@ -130,6 +132,8 @@ FOR EACH ROW
 
 DROP TRIGGER IF EXISTS configurables_alter ON configurables CASCADE;
 DROP TRIGGER IF EXISTS configurables_truncate ON configurables CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('configurables_noalter'); END $$;
 
 CREATE OR REPLACE FUNCTION configurables_noalter()
 RETURNS TRIGGER
@@ -157,6 +161,7 @@ EXECUTE PROCEDURE configurables_noalter();
 
 -- Maintenance functions
 
+DO $$ BEGIN PERFORM drop_function_all('configurables_maint_minute'); END $$;
 
 CREATE OR REPLACE FUNCTION configurables_maint_minute()
 RETURNS VOID

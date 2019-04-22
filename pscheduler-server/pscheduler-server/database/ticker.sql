@@ -4,6 +4,9 @@
 
 
 -- Things that get done a fifteen-second intervals
+
+DO $$ BEGIN PERFORM drop_function_all('ticker_fifteen'); END $$;
+
 CREATE OR REPLACE FUNCTION ticker_fifteen()
 RETURNS VOID
 AS $$
@@ -15,6 +18,9 @@ $$ LANGUAGE plpgsql;
 
 
 -- Things that get done a one-minute intervals
+
+DO $$ BEGIN PERFORM drop_function_all('ticker_minunte'); END $$;
+
 CREATE OR REPLACE FUNCTION ticker_minute()
 RETURNS VOID
 AS $$
@@ -27,6 +33,9 @@ $$ LANGUAGE plpgsql;
 
 
 -- Things that get done on the hour
+
+DO $$ BEGIN PERFORM drop_function_all('ticker_hour'); END $$;
+
 CREATE OR REPLACE FUNCTION ticker_hour()
 RETURNS VOID
 AS $$
@@ -37,6 +46,9 @@ $$ LANGUAGE plpgsql;
 
 
 -- Things that get done daily, but not necessarily at midnight
+
+DO $$ BEGIN PERFORM drop_function_all('ticker_day'); END $$;
+
 CREATE OR REPLACE FUNCTION ticker_day()
 RETURNS VOID
 AS $$
@@ -47,6 +59,9 @@ $$ LANGUAGE plpgsql;
 
 
 -- Things that get done at midnight
+
+DO $$ BEGIN PERFORM drop_function_all('ticker_midnight'); END $$;
+
 CREATE OR REPLACE FUNCTION ticker_midnight()
 RETURNS VOID
 AS $$
@@ -61,6 +76,8 @@ $$ LANGUAGE plpgsql;
 -- preferably as close to the minute boundary as possible.  This
 -- should be called repeatedly from outside to prevent having a
 -- long-running transaction.
+
+DO $$ BEGIN PERFORM drop_function_all('ticker'); END $$;
 
 CREATE OR REPLACE FUNCTION ticker()
 RETURNS INTERVAL

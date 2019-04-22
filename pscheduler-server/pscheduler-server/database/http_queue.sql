@@ -198,6 +198,8 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS http_queue_insert ON http_queue CASCADE;
 
+DO $$ BEGIN PERFORM drop_function_all('http_queue_insert'); END $$;
+
 CREATE OR REPLACE FUNCTION http_queue_insert()
 RETURNS TRIGGER
 AS $$
@@ -219,6 +221,8 @@ FOR EACH ROW EXECUTE PROCEDURE http_queue_insert();
 
 
 DROP TRIGGER IF EXISTS http_queue_insert_after ON http_queue CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('http_queue_insert_after'); END $$;
 
 CREATE OR REPLACE FUNCTION http_queue_insert_after()
 RETURNS TRIGGER

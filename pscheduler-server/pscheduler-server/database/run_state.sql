@@ -91,6 +91,9 @@ $$ LANGUAGE plpgsql;
 -- because in some cases, replacement doesn't set it properly.
 
 -- Run is waiting to execute (not time yet)
+
+DO $$ BEGIN PERFORM drop_function_all('run_state_pending'); END $$;
+
 CREATE OR REPLACE FUNCTION run_state_pending()
 RETURNS INTEGER
 AS $$
@@ -102,6 +105,9 @@ ALTER FUNCTION run_state_pending() IMMUTABLE;
 
 
 -- The runner is preparing to execute the run
+
+DO $$ BEGIN PERFORM drop_function_all('run_state_on_deck'); END $$;
+
 CREATE OR REPLACE FUNCTION run_state_on_deck()
 RETURNS INTEGER
 AS $$
@@ -111,7 +117,11 @@ END;
 $$ LANGUAGE plpgsql;
 ALTER FUNCTION run_state_on_deck() IMMUTABLE;
 
+
 -- Run is being executed
+
+DO $$ BEGIN PERFORM drop_function_all('run_state_running'); END $$;
+
 CREATE OR REPLACE FUNCTION run_state_running()
 RETURNS INTEGER
 AS $$
@@ -122,6 +132,9 @@ $$ LANGUAGE plpgsql;
 ALTER FUNCTION run_state_running() IMMUTABLE;
 
 -- Post-run cleanup
+
+DO $$ BEGIN PERFORM drop_function_all('run_state_cleanup'); END $$;
+
 CREATE OR REPLACE FUNCTION run_state_cleanup()
 RETURNS INTEGER
 AS $$
@@ -131,7 +144,11 @@ END;
 $$ LANGUAGE plpgsql;
 ALTER FUNCTION run_state_cleanup() IMMUTABLE;
 
+
 -- Run finished successfully
+
+DO $$ BEGIN PERFORM drop_function_all('run_state_finished'); END $$;
+
 CREATE OR REPLACE FUNCTION run_state_finished()
 RETURNS INTEGER
 AS $$
@@ -143,6 +160,9 @@ ALTER FUNCTION run_state_finished() IMMUTABLE;
 
 
 -- No idea of the outcome yet
+
+DO $$ BEGIN PERFORM drop_function_all('run_state_overdue'); END $$;
+
 CREATE OR REPLACE FUNCTION run_state_overdue()
 RETURNS INTEGER
 AS $$
@@ -152,7 +172,11 @@ END;
 $$ LANGUAGE plpgsql;
 ALTER FUNCTION run_state_overdue() IMMUTABLE;
 
+
 -- Run never happened
+
+DO $$ BEGIN PERFORM drop_function_all('run_state_missed'); END $$;
+
 CREATE OR REPLACE FUNCTION run_state_missed()
 RETURNS INTEGER
 AS $$
@@ -162,7 +186,11 @@ END;
 $$ LANGUAGE plpgsql;
 ALTER FUNCTION run_state_missed() IMMUTABLE;
 
+
 -- Run ran but was not a success
+
+DO $$ BEGIN PERFORM drop_function_all('run_state_failed'); END $$;
+
 CREATE OR REPLACE FUNCTION run_state_failed()
 RETURNS INTEGER
 AS $$
@@ -172,7 +200,11 @@ END;
 $$ LANGUAGE plpgsql;
 ALTER FUNCTION run_state_failed() IMMUTABLE;
 
+
 -- Run lost out to something with a higher priority
+
+DO $$ BEGIN PERFORM drop_function_all('run_state_preempted'); END $$;
+
 CREATE OR REPLACE FUNCTION run_state_preempted()
 RETURNS INTEGER
 AS $$
@@ -183,6 +215,9 @@ $$ LANGUAGE plpgsql;
 ALTER FUNCTION run_state_preempted() IMMUTABLE;
 
 -- Run was dead on arrival
+
+DO $$ BEGIN PERFORM drop_function_all('run_state_nonstart'); END $$;
+
 CREATE OR REPLACE FUNCTION run_state_nonstart()
 RETURNS INTEGER
 AS $$
@@ -194,6 +229,9 @@ ALTER FUNCTION run_state_nonstart() IMMUTABLE;
 
 
 -- Run was canceled
+
+DO $$ BEGIN PERFORM drop_function_all('run_state_canceled'); END $$;
+
 CREATE OR REPLACE FUNCTION run_state_canceled()
 RETURNS INTEGER
 AS $$
@@ -206,6 +244,8 @@ ALTER FUNCTION run_state_canceled() IMMUTABLE;
 
 
 DROP TRIGGER IF EXISTS run_state_alter ON run_state CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('run_state_alter'); END $$;
 
 CREATE OR REPLACE FUNCTION run_state_alter()
 RETURNS TRIGGER

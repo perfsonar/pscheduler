@@ -177,6 +177,8 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS archiving_run_after ON archiving CASCADE;
 
+DO $$ BEGIN PERFORM drop_function_all('archiving_run_after'); END $$;
+
 CREATE OR REPLACE FUNCTION archiving_run_after()
 RETURNS TRIGGER
 AS $$
@@ -283,6 +285,8 @@ CREATE TRIGGER archiving_run_after AFTER INSERT OR UPDATE ON run
 
 
 DROP TRIGGER IF EXISTS archiving_update ON archiving CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('archiving_update'); END $$;
 
 CREATE OR REPLACE FUNCTION archiving_update()
 RETURNS TRIGGER
@@ -461,6 +465,7 @@ $$ LANGUAGE plpgsql;
 
 -- Maintenance functions
 
+DO $$ BEGIN PERFORM drop_function_all('archiving_maint_minute'); END $$;
 
 CREATE OR REPLACE FUNCTION archiving_maint_minute()
 RETURNS VOID

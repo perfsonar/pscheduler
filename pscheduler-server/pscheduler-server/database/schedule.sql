@@ -483,6 +483,8 @@ $$ LANGUAGE plpgsql;
 -- Maintenance
 --
 
+DO $$ BEGIN PERFORM drop_function_all('schedule_maint_minute'); END $$;
+
 CREATE OR REPLACE FUNCTION schedule_maint_minute()
 RETURNS VOID
 AS $$
