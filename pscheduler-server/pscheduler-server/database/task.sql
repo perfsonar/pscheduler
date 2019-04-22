@@ -337,6 +337,8 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS task_alter ON task CASCADE;
 
+DO $$ BEGIN PERFORM drop_function_all('task_alter'); END $$;
+
 CREATE OR REPLACE FUNCTION task_alter()
 RETURNS TRIGGER
 AS $$
@@ -699,6 +701,8 @@ CREATE TRIGGER task_alter BEFORE INSERT OR UPDATE ON task
 
 DROP TRIGGER IF EXISTS task_alter_notify ON task CASCADE;
 
+DO $$ BEGIN PERFORM drop_function_all('task_alter_notify'); END $$;
+
 CREATE OR REPLACE FUNCTION task_alter_notify()
 RETURNS TRIGGER
 AS $$
@@ -754,6 +758,8 @@ $$ LANGUAGE plpgsql;
 --- Maintenance
 ---
 
+DO $$ BEGIN PERFORM drop_function_all('task_purge'); END $$;
+
 CREATE OR REPLACE FUNCTION task_purge()
 RETURNS VOID
 AS $$
@@ -788,6 +794,8 @@ $$ LANGUAGE plpgsql;
 
 
 -- Maintenance that happens four times a minute.
+
+DO $$ BEGIN PERFORM drop_function_all('task_maint_fifteen'); END $$;
 
 CREATE OR REPLACE FUNCTION task_maint_fifteen()
 RETURNS VOID

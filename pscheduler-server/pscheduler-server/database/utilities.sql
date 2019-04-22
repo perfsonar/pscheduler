@@ -253,7 +253,6 @@ $$ LANGUAGE plpgsql;
 
 DO $$ BEGIN PERFORM drop_function_all('normalized_time'); END $$;
 
-
 CREATE OR REPLACE FUNCTION normalized_time(value TIMESTAMP WITH TIME ZONE)
 RETURNS TIMESTAMP WITH TIME ZONE
 AS $$
@@ -264,6 +263,9 @@ $$LANGUAGE plpgsql;
 
 
 -- Return the normalized current (transaction start) time
+
+DO $$ BEGIN PERFORM drop_function_all('normalized_now'); END $$;
+
 CREATE OR REPLACE FUNCTION normalized_now()
 RETURNS TIMESTAMP WITH TIME ZONE
 AS $$
@@ -274,6 +276,9 @@ $$LANGUAGE plpgsql;
 
 
 -- Return the normalized wall clock time
+
+DO $$ BEGIN PERFORM drop_function_all('normalized_wall_clock'); END $$;
+
 CREATE OR REPLACE FUNCTION normalized_wall_clock()
 RETURNS TIMESTAMP WITH TIME ZONE
 AS $$
@@ -297,6 +302,8 @@ $$LANGUAGE plpgsql;
 --   http://www.postgresql.org/docs/9.5/static/datatype-datetime.html
 
 
+DO $$ BEGIN PERFORM drop_function_all('tstz_negative_infinity'); END $$;
+
 CREATE OR REPLACE FUNCTION tstz_negative_infinity()
 RETURNS TIMESTAMP WITH TIME ZONE
 AS $$
@@ -304,6 +311,9 @@ BEGIN
 	RETURN '4713-01-01 BC'::TIMESTAMP WITH TIME ZONE;
 END;
 $$LANGUAGE plpgsql;
+
+
+DO $$ BEGIN PERFORM drop_function_all('tstz_infinity'); END $$;
 
 CREATE OR REPLACE FUNCTION tstz_infinity()
 RETURNS TIMESTAMP WITH TIME ZONE

@@ -63,6 +63,8 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS control_update ON control CASCADE;
 
+DO $$ BEGIN PERFORM drop_function_all('control_update'); END $$;
+
 CREATE OR REPLACE FUNCTION control_update()
 RETURNS TRIGGER
 AS $$
@@ -82,6 +84,8 @@ FOR EACH ROW
 
 DROP TRIGGER IF EXISTS control_alter ON control CASCADE;
 DROP TRIGGER IF EXISTS control_truncate ON control CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('control_noalter'); END $$;
 
 CREATE OR REPLACE FUNCTION control_noalter()
 RETURNS TRIGGER

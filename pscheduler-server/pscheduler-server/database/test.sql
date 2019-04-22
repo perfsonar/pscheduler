@@ -94,6 +94,8 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS test_alter ON test CASCADE;
 
+DO $$ BEGIN PERFORM drop_function_all('test_alter'); END $$;
+
 CREATE OR REPLACE FUNCTION test_alter()
 RETURNS TRIGGER
 AS $$
@@ -164,6 +166,9 @@ $$ LANGUAGE plpgsql;
 
 
 -- Function to run at startup.
+
+DO $$ BEGIN PERFORM drop_function_all('test_boot'); END $$;
+
 CREATE OR REPLACE FUNCTION test_boot()
 RETURNS VOID
 AS $$

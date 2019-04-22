@@ -73,6 +73,8 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS heartbeat_alter ON heartbeat CASCADE;
 
+DO $$ BEGIN PERFORM drop_function_all('heartbeat_alter'); END $$;
+
 CREATE OR REPLACE FUNCTION heartbeat_alter()
 RETURNS TRIGGER
 AS $$

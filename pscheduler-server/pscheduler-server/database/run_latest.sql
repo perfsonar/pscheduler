@@ -76,6 +76,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+DO $$ BEGIN PERFORM drop_function_all('run_latest_update'); END $$;
+
 CREATE OR REPLACE FUNCTION run_latest_update()
 RETURNS TRIGGER
 AS $$

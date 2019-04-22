@@ -286,6 +286,9 @@ $$ LANGUAGE plpgsql;
 
 
 -- Function to run at startup.
+
+DO $$ BEGIN PERFORM drop_function_all('tool_boot'); END $$;
+
 CREATE OR REPLACE FUNCTION tool_boot()
 RETURNS VOID
 AS $$

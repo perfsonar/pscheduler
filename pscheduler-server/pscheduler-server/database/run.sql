@@ -294,6 +294,8 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS run_alter ON run CASCADE;
 
+DO $$ BEGIN PERFORM drop_function_all('run_alter'); END $$;
+
 CREATE OR REPLACE FUNCTION run_alter()
 RETURNS TRIGGER
 AS $$
@@ -525,6 +527,8 @@ CREATE TRIGGER run_alter BEFORE INSERT OR UPDATE ON run
 
 DROP TRIGGER IF EXISTS run_task_disabled ON task CASCADE;
 
+DO $$ BEGIN PERFORM drop_function_all('run_task_disabled'); END $$;
+
 CREATE OR REPLACE FUNCTION run_task_disabled()
 RETURNS TRIGGER
 AS $$
@@ -557,6 +561,8 @@ CREATE TRIGGER run_task_disabled BEFORE UPDATE ON task
 -- that go beyond it.
 
 DROP TRIGGER IF EXISTS run_horizon_change ON configurables CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('run_horizon_change'); END $$;
 
 CREATE OR REPLACE FUNCTION run_horizon_change()
 RETURNS TRIGGER
@@ -619,6 +625,8 @@ $$ LANGUAGE plpgsql;
 
 -- Maintenance functions
 
+DO $$ BEGIN PERFORM drop_function_all('run_handle_stragglers'); END $$;
+
 CREATE OR REPLACE FUNCTION run_handle_stragglers()
 RETURNS VOID
 AS $$
@@ -675,6 +683,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+DO $$ BEGIN PERFORM drop_function_all('run_purge'); END $$;
 
 CREATE OR REPLACE FUNCTION run_purge()
 RETURNS VOID
@@ -707,6 +716,8 @@ $$ LANGUAGE plpgsql;
 
 
 -- Maintenance that happens four times a minute.
+
+DO $$ BEGIN PERFORM drop_function_all('run_main_fifteen'); END $$;
 
 CREATE OR REPLACE FUNCTION run_maint_fifteen()
 RETURNS VOID
@@ -761,6 +772,7 @@ AS
 DO $$ BEGIN PERFORM drop_function_all('run_json'); END $$;
 
 -- Return a JSON record suitable for returning by the REST API
+
 CREATE OR REPLACE FUNCTION run_json(run_id BIGINT)
 RETURNS JSONB
 AS $$
