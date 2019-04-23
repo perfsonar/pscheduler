@@ -157,8 +157,18 @@ BEGIN
     IF t_version = 7
     THEN
 
-	ALTER TABLE archiving ADD COLUMN
-	spec JSON NOT NULL;
+        ALTER TABLE archiving ADD COLUMN spec JSON;
+
+        -- Make existing rows look like they should before
+        -- constraining the column.
+
+        UPDATE archiving SET spec = json_build_object(
+            'archiver', (SELECT name FROM archiver WHERE id = archiving.archiver),
+            'data', archiver_data
+            );
+
+        -- Add the constraint
+        ALTER TABLE archiving ALTER COLUMN spec SET NOT NULL;
 
         t_version := t_version + 1;
     END IF;
