@@ -16,7 +16,7 @@ import pscheduler
 json = pscheduler.json_load(exit_on_error=True);
 
 try:
-    if json['type'] != 'disk-to-disk':
+    if json['type'] != 'disk-to-disk' and json['type'] != 'http':
         pscheduler.succeed_json({
             "can-run": False,
             "reasons": [ "Unsupported test type" ]

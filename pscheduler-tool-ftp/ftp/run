@@ -24,13 +24,15 @@ log = pscheduler.Log(prefix='ftp', quiet=True)
 
 # Take input from test spec
 try:
-    dest = input['test']['spec']['dest']
-
-    source = input['test']['spec']['source']
-    
-    # Delete transfered file after transfer if cleanup is not specified
-    cleanup = input['test']['spec'].get('cleanup', True)
-
+    test_type = input['test']['type']
+    if test_type == "disk-to-disk":
+        dest = input['test']['spec']['dest']
+        source = input['test']['spec']['source']
+        cleanup = input['test']['spec'].get('cleanup', True)
+    else:
+        source = input['test']['spec']['url']
+        dest = None
+        cleanup = False #disk-to-disk option
 except KeyError as e:
     print(e);	pscheduler.fail('Missing data in input')
 
@@ -39,6 +41,9 @@ timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
 
 timeout = pscheduler.timedelta_as_seconds( \
                pscheduler.iso8601_as_timedelta(timeout_iso))
+
+#http option
+parse = input['test']['spec'].get('parse', None)
 
 start_time = datetime.datetime.now()
 succeeded = False
@@ -55,14 +60,20 @@ if True:
     if (source[0] == "/" and source[1] != "/"):
       source = "file://" + source
 
-  if (len(dest) > 6 and  dest[:7] == "file://"):
+  if dest and (len(dest) > 6 and  dest[:7] == "file://"):
     dest = dest.split("file://")[-1]
 
   # Execute curl command
-  argv = ['curl',
-          '-o',   # Flag to output file
-          dest,   # Download location
-	  source] # Source URL
+  argv = ['curl']
+  if dest:
+      argv.append('-o') # Flag to output file
+      argv.append(dest) # Download location
+  if test_type == "http":
+      #output status code for http tests
+      argv.append('-k') #make https work
+      argv.append('-w')
+      argv.append('%{http_code}')
+  argv.append(source) # Source URL
   
 
   status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
@@ -77,7 +88,7 @@ if True:
     error = "Error running program:\n%s"% stderr.strip('\n')
 
     # Determine how much (if any) of the file was transferred
-    if os.path.isfile(dest):
+    if dest and os.path.isfile(dest):
       bytes_sent = os.stat(dest).st_size
 
       # Convert bytes to human readable format 
@@ -98,9 +109,6 @@ if True:
   else:
     succeeded = True
     diags = stdout
-
-
-
 
 end_time = datetime.datetime.now()
 
@@ -125,27 +133,46 @@ with open('/tmp/run.log', 'wb') as f:
   f.write(str(STDERR))
 '''
 
-#%#%#%#%#%#
-#STDERR[6] is Average Download Speed
-#Try to get download speed, if can't parse then skip
-throughput_str = None
-try:
-    throughput_str = STDERR[-1].split('\n')[0]
-except:
-    pass
-if throughput_str is not None:
-    #convert to bits per second
-    results['throughput'] = pscheduler.si_as_number(throughput_str) * 8
+#handle test_type specific options
+if test_type == "disk-to-disk":
+    #%#%#%#%#%#
+    #STDERR[6] is Average Download Speed
+    #Try to get download speed, if can't parse then skip
+    throughput_str = None
+    try:
+        throughput_str = STDERR[-1].split('\n')[0]
+    except:
+        pass
+    if throughput_str is not None:
+        #convert to bits per second
+        results['throughput'] = pscheduler.si_as_number(throughput_str) * 8
 
-#%#%#%#%#%#
-bytes_str = None
-try:
-    bytes_str = STDERR[1]
-except:
-    pass
-if bytes_str is not None:
-    results['bytes-sent'] = pscheduler.si_as_number(bytes_str)
-
+    #%#%#%#%#%#
+    bytes_str = None
+    try:
+        bytes_str = STDERR[1]
+    except:
+        pass
+    if bytes_str is not None:
+        results['bytes-sent'] = pscheduler.si_as_number(bytes_str)
+elif test_type == "http":
+    if parse:
+        if (stdout.find(parse) == -1):
+            results['found'] = False
+        else:
+            results['found'] = True
+    stdout_lines = stdout.split("\n")
+    status_code = ""
+    if len(stdout_lines) > 0:
+        status_code = stdout_lines[-1] 
+    if status_code.isdigit():
+        status_code = int(status_code)
+        results['status'] = status_code
+        if status_code >= 200 and status_code < 300:
+            results['succeeded'] = True
+        else:
+            results['succeeded'] = False
+        
 final_results['result'] = results
 pscheduler.succeed_json(final_results)
 
