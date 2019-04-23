@@ -2,6 +2,7 @@
 JQ JSON Filter Class
 """
 
+import os
 import re
 
 import pyjq
@@ -10,6 +11,36 @@ from  _pyjq import ScriptRuntimeError
 
 class JQRuntimeError(Exception):
     pass
+
+
+
+_DEFAULT_LIBRARY_PATH = None
+
+def _library_path():
+
+    global _DEFAULT_LIBRARY_PATH
+
+    if _DEFAULT_LIBRARY_PATH is None:
+
+        _DEFAULT_LIBRARY_PATH = [os.path.expanduser("~/.jq")]
+
+        try:
+            origin = filter(
+                lambda p: os.access(os.path.join(p, "jq"), os.X_OK),
+                os.environ["PATH"].split(os.pathsep)
+            )[0]
+            _DEFAULT_LIBRARY_PATH.extend([
+                "%s/%s" % (origin, path)
+                for path in ["../lib/jq", "lib"]
+            ])
+        except IndexError:
+            # If there's no jq binary, don't do anything relative to it.
+            
+            pass
+
+    return _DEFAULT_LIBRARY_PATH
+
+
 
 _import_include = r"((import|include) [^;]+;)"
 
@@ -76,7 +107,7 @@ class JQFilter(object):
         if groom:
             filter_spec = _groom(filter_spec)
 
-        self.script = pyjq.compile(filter_spec, args)
+        self.script = pyjq.compile(filter_spec, args, library_paths=_library_path())
 
 
 
