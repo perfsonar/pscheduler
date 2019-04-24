@@ -114,12 +114,24 @@ status, task = pscheduler.url_get(task_url, params={"detail":True},
 if status != 200:
     pscheduler.fail("Unable to fetch task: " + task)
 
-# TODO: This is in anticipation of multi-result.
+
 try:
     multi_result = task["detail"]["multi-result"]
-    multi_duration = task["detail"]["duration"]
 except KeyError:
     pscheduler.fail("Server returned malformed test specification.")
+
+
+if multi_result:
+    print pscheduler.prefixed_wrap(
+        "",  # No prefix
+        "This task produces results asynchronously and"
+        " cannot be watched.  The results it has produced"
+        " since it started running and now can be retrieved"
+        " by running the following command:")
+    print
+    print "pscheduler result ", task_url
+    pscheduler.succeed()
+
 
 run_count = 0
 
