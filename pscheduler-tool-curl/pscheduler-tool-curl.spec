@@ -1,5 +1,5 @@
 #
-# RPM Spec for pScheduler ftp Tool
+# RPM Spec for pScheduler curl Tool
 #
 
 #
@@ -8,12 +8,12 @@
 # This file is significant for buildling the tool into pScheduler.
 # If additional libraries or parts of pScheduler are required,
 # they should be added here (line 25).
-%define short	ftp
+%define short	curl
 Name:		pscheduler-tool-%{short}
 Version:	1.0.2
 Release:	1%{?dist}
 
-Summary:	ftp tool class for pScheduler
+Summary:	curl tool class for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0
 Group:		Unspecified
@@ -29,7 +29,7 @@ Requires:	python-pscheduler
 BuildRequires:	pscheduler-rpm
 
 %description
-ftp tool class for pScheduler
+curl tool class for pScheduler
 
 %prep
 %setup -q -n %{short}-%{version}

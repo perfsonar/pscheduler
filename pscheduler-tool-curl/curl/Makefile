@@ -2,7 +2,7 @@
 # Makefile for any tool class
 #
 
-NAME=ftp
+NAME=curl
 
 FILES=\
 	can-run \

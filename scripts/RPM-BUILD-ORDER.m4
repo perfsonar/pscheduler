@@ -146,7 +146,7 @@ pscheduler-tool-traceroute
 pscheduler-tool-twping
 pscheduler-tool-paris-traceroute
 pscheduler-tool-dnspy
-pscheduler-tool-ftp			--bundle extras
+pscheduler-tool-curl			--bundle extras
 pscheduler-tool-globus			--bundle extras
 
 # Archivers
