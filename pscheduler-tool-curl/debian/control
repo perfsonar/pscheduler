@@ -1,4 +1,4 @@
-Source: pscheduler-tool-ftp
+Source: pscheduler-tool-curl
 Section: net
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
@@ -10,10 +10,10 @@ Homepage: https://github.com/perfsonar/pscheduler
 Vcs-Git: git://github.com/perfsonar/pscheduler
 Vcs-Browser: https://github.com/perfsonar/pscheduler
 
-Package: pscheduler-tool-ftp
+Package: pscheduler-tool-curl
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
  pscheduler-server, pscheduler-test-disk-to-disk,
  curl
-Description: pScheduler ftp tool
- ftp tool class for pScheduler
+Description: pScheduler curl tool
+ curl tool class for pScheduler

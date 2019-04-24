@@ -20,7 +20,7 @@ import pscheduler
 
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
-log = pscheduler.Log(prefix='ftp', quiet=True)
+log = pscheduler.Log(prefix='curl', quiet=True)
 
 # Take input from test spec
 try:
@@ -72,7 +72,7 @@ if True:
       #output status code for http tests
       argv.append('-k') #make https work
       argv.append('-w')
-      argv.append('%{http_code}')
+      argv.append('\\n%{http_code}')
   argv.append(source) # Source URL
   
 
@@ -126,12 +126,6 @@ results = {'schema': 1,
 	   'succeeded': succeeded}
 
 results['time'] = pscheduler.timedelta_as_iso8601( end_time - start_time)
-
-'''# Logging
-with open('/tmp/run.log', 'wb') as f:
-  f.write('LOGGING ftp/run')
-  f.write(str(STDERR))
-'''
 
 #handle test_type specific options
 if test_type == "disk-to-disk":
