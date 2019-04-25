@@ -8,6 +8,7 @@
 COMMANDS=\
 	backup \
 	limit-diags \
+	log \
 	restore \
 	validate-configurables
 
@@ -30,6 +31,14 @@ ifndef LIMITSFILE
 	@echo LIMITSFILE not defined for $@
 	false
 endif
+ifndef LOGDIR
+	@echo LOGDIR not defined for $@
+	false
+endif
+ifndef LOGFILE
+	@echo LOGFILE not defined for $@
+	false
+endif
 ifndef PGDATABASE
 	@echo PGDATABASE not defined for $@
 	false
@@ -50,6 +59,8 @@ endif
 		-e 's|__CONFIGDIR__|$(CONFIGDIR)|g' \
 		-e 's|__CONFIGURABLESFILE__|$(CONFIGURABLESFILE)|g' \
 		-e 's|__LIMITSFILE__|$(LIMITSFILE)|g' \
+		-e 's|__LOGDIR__|$(LOGDIR)|g' \
+		-e 's|__LOGFILE__|$(LOGFILE)|g' \
 		-e 's|__PGDATABASE__|$(PGDATABASE)|g' \
 		-e 's|__PGPASSFILE__|$(PGPASSFILE)|g' \
 		-e 's|__TMPDIR__|$(TMPDIR)|g' \

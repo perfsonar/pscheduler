@@ -4,7 +4,7 @@
 
 %define short	pscheduler
 Name:		python-%{short}
-Version:	1.3.7.1
+Version:	1.3.7.2
 Release:	1%{?dist}
 Summary:	Utility functions for pScheduler
 BuildArch:	noarch
@@ -78,6 +78,7 @@ BuildRequires:	pytz
 
 %define limit_config %{_pscheduler_sysconfdir}/limits.conf
 %define logdir %{_var}/log/pscheduler
+%define logfile pscheduler.log
 %define logrotate_d %{_sysconfdir}/logrotate.d
 %define syslog_d %{_sysconfdir}/rsyslog.d
 
@@ -107,7 +108,7 @@ mkdir -p $RPM_BUILD_ROOT/%{logrotate_d}
 cat > $RPM_BUILD_ROOT/%{logrotate_d}/%{name} <<EOF
 # Rotation for logs produced by pScheduler
 
-%{logdir}/pscheduler.log
+%{logdir}/%{logfile}
 {
     missingok
     sharedscripts
@@ -121,7 +122,7 @@ mkdir -p $RPM_BUILD_ROOT/%{syslog_d}
 cat > $RPM_BUILD_ROOT/%{syslog_d}/%{name}.conf <<EOF
 # Syslog configuration for pScheduler
 
-local4.*  %{logdir}/pscheduler.log
+local4.*  %{logdir}/%{logfile}
 EOF
 
 mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_rpmmacrodir}
@@ -131,6 +132,9 @@ cat > $RPM_BUILD_ROOT/%{macros} <<EOF
 #
 
 %%_pscheduler_limit_config %{limit_config}
+
+%%_pscheduler_log_dir %{logdir}
+%%_pscheduler_log_file %{logfile}
 EOF
 
 

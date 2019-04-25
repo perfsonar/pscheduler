@@ -52,7 +52,7 @@ Requires:	python-jsontemplate
 # API Server
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
-BuildRequires:	python-pscheduler >= 1.3.7.1
+BuildRequires:	python-pscheduler >= 1.3.7.2
 BuildRequires:	m4
 Requires:	httpd-wsgi-socket
 Requires:	pscheduler-server
@@ -61,7 +61,7 @@ Requires:	pscheduler-server
 # mod_ssl is required here.
 Requires:	mod_ssl
 Requires:	mod_wsgi > 4.0
-Requires:	python-pscheduler >= 1.3.7.1
+Requires:	python-pscheduler >= 1.3.7.2
 Requires:	pytz
 
 # General
@@ -92,7 +92,6 @@ The pScheduler server
 %define configurables_file %{_pscheduler_sysconfdir}/configurables.conf
 
 # Daemons
-%define log_dir %{_var}/log/pscheduler
 %define archiver_default_dir %{_pscheduler_sysconfdir}/default-archives
 
 # API Server
@@ -151,7 +150,7 @@ make -C daemons \
      CONFIGDIR=%{daemon_config_dir} \
      DAEMONDIR=%{_pscheduler_daemons} \
      DSNFILE=%{dsn_file} \
-     LOGDIR=%{log_dir} \
+     LOGDIR=%{_pscheduler_log_dir} \
      PGDATABASE=%{database_name} \
      PGPASSFILE=%{_pscheduler_database_pgpass_file} \
      PGSERVICE=%{pgsql_service}.service \
@@ -175,6 +174,8 @@ make -C utilities \
     "CONFIGDIR=%{_pscheduler_sysconfdir}" \
     "CONFIGURABLESFILE=%{configurables_file}" \
     "LIMITSFILE=%{_pscheduler_limit_config}" \
+    "LOGDIR=%{_pscheduler_log_dir}" \
+    "LOGFILE=%{_pscheduler_log_file}" \
     "PGDATABASE=%{database_name}" \
     "PGPASSFILE=%{pgpass_file}" \
     "TMPDIR=%{_tmppath}" \
@@ -243,7 +244,7 @@ make -C daemons \
      install
 
 mkdir -p $RPM_BUILD_ROOT/%{archiver_default_dir}
-mkdir -p $RPM_BUILD_ROOT/%{log_dir}
+mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_log_dir}
 
 #
 # API Server
@@ -273,6 +274,20 @@ make -C utilities \
     "DESTDIR=${RPM_BUILD_ROOT}/%{_pscheduler_commands}" \
     "INTERNALSDIR=$RPM_BUILD_ROOT/%{_pscheduler_internals}" \
     install
+
+
+mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}
+cat > $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}/%{name} <<EOF
+#
+# %{name}
+#
+Cmnd_Alias PSCHEDULER_COMMAND_LOG = %{_pscheduler_commands}/log
+%%%{_pscheduler_group} ALL = (root) NOPASSWD: PSCHEDULER_COMMAND_LOG
+Defaults!PSCHEDULER_COMMAND_LOG !requiretty
+
+
+EOF
+
 
 
 
@@ -584,7 +599,7 @@ systemctl restart "%{pgsql_service}"
 %{_pscheduler_daemons}/*
 %{_pscheduler_commands}/*
 %attr(750,%{_pscheduler_user},%{_pscheduler_group}) %{archiver_default_dir}
-%attr(750,%{_pscheduler_user},%{_pscheduler_group}) %{log_dir}
+%attr(750,%{_pscheduler_user},%{_pscheduler_group}) %{_pscheduler_log_dir}
 
 #
 # API Server
@@ -597,4 +612,6 @@ systemctl restart "%{pgsql_service}"
 #
 # Utilities
 #
-# (Nothing)
+
+%attr(440,root,root) %{_pscheduler_sudoersdir}/*
+
