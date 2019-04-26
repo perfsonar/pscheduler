@@ -67,6 +67,12 @@ opt_parser.add_option("--quick",
                       action="store_true",
                       dest="quick")
 
+opt_parser.add_option("--skip-single",
+                      help="Skip most single-participant diagnostics",
+                      default=False,
+                      action="store_true",
+                      dest="skip_single")
+
 opt_parser.add_option("--stats",
                       help="Dump server statistics",
                       default=False,
@@ -98,6 +104,11 @@ if host_z is not None:
         print
     else:
         hosts.append(host_z)
+
+
+
+if options.skip_single and host_z is None:
+    pscheduler.fail("Nothing to do on a single host with --skip-single enabled.")
 
 
 
@@ -371,7 +382,7 @@ for host in hosts:
     print
 
 
-    if not options.quick:
+    if not options.quick and not options.skip_single:
         check_mtu(host)
 
 
@@ -381,23 +392,6 @@ for host in hosts:
         ok()
     else:        
         failed(reason.strip())
-
-
-    start("  Exercising API")
-    for test in [
-            ("status", "Status", True),
-            ("tests", "Tests", False),
-            ("tools", "Tools", False)
-    ]:
-        endpoint, title, ok_404 = test
-        progress(title)
-        status, result = pscheduler.url_get(
-            pscheduler.api_url(host, endpoint),
-            throw=False)
-        if status not in [ 200, 404 ] or (status == 404 and not ok_404):
-            failed(result)
-    ok()
-
 
     start("  Checking clock")
     status, result = pscheduler.url_get(
@@ -419,6 +413,24 @@ for host in hosts:
 
     # Hold this for later two-host comparison
     clocks[host] = result
+
+    if options.skip_single:
+        continue
+
+    start("  Exercising API")
+    for test in [
+            ("status", "Status", True),
+            ("tests", "Tests", False),
+            ("tools", "Tools", False)
+    ]:
+        endpoint, title, ok_404 = test
+        progress(title)
+        status, result = pscheduler.url_get(
+            pscheduler.api_url(host, endpoint),
+            throw=False)
+        if status not in [ 200, 404 ] or (status == 404 and not ok_404):
+            failed(result)
+    ok()
 
 
     if options.stats:
