@@ -43,6 +43,8 @@ override_dh_auto_build:
 		CONFIGDIR=/etc/pscheduler \
 		CONFIGURABLESFILE=/etc/pscheduler/configurables.conf \
 		LIMITSFILE=/etc/pscheduler/limits.conf \
+		LOGDIR=/var/log/pscheduler \
+		LOGFILE=pscheduler.log \
 		PGDATABASE=pscheduler \
 		PGPASSFILE=/etc/pscheduler/database/pgpassfile \
 		TMPDIR=/var/tmp \
