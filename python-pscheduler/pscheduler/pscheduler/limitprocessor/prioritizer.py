@@ -15,6 +15,8 @@ class Prioritizer():
 
     PRIVATE_KEY = "__PRIORITIZER_PRIVATE__"
 
+    DEFAULT_PRIORITY = 0
+
     def __init__(self,
                  transform  # JSON JQTransformSpecification, assumed validated
                  ):
@@ -40,9 +42,7 @@ class Prioritizer():
             "  | contains([$value])",
             ";",
 
-            "def default:",
-            "  0"
-            ";",
+            "def default: %d;" % (self.DEFAULT_PRIORITY),
 
             # This will be embedded in the task.
             "def requested:",
@@ -102,7 +102,7 @@ class Prioritizer():
         # Rewriter-private data
         task_in[self.PRIVATE_KEY] = {
             "classifiers": classifiers,
-            "priority": 0,
+            "priority": self.DEFAULT_PRIORITY,
             "diags": []
         }
 
