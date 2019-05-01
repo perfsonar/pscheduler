@@ -177,11 +177,16 @@ def tasks_uuid_runs(task):
         try:
             log.debug("Posting run for task %s starting %s, priority %s"
                       % (task, start_time, priority))
+
+            if passed:
+                diag_message = None
+            else:
+                diag_message = "Run forbidden by limits:\n%s" % (diags)
+
             cursor = dbcursor_query(
                 "SELECT * FROM api_run_post(%s, %s, NULL, %s, %s, %s)",
-                [task, start_time, 
-                 None if passed else "Run forbidden by limits",
-                 priority, diags], onerow=True)
+                [task, start_time, diag_message, priority, diags],
+                onerow=True)
             succeeded, uuid, conflicts, error_message = cursor.fetchone()
             cursor.close()
             if conflicts:
@@ -412,11 +417,15 @@ def tasks_uuid_runs_run(task, run):
                 if response is not None:
                     return response
 
+                if passed:
+                    diag_message = None
+                else:
+                    diag_message = "Run forbidden by limits:\n%s" % (diags)
+
                 cursor = dbcursor_query(
                     "SELECT * FROM api_run_post(%s, %s, %s, %s, %s, %s)",
-                    [task, start_time, run,
-                     None if passed else "Run forbidden by limits",
-                     priority, diags], onerow=True)
+                    [task, start_time, run, diag_message, priority, diags],
+                    onerow=True)
                 succeeded, uuid, conflicts, error_message = cursor.fetchone()
                 cursor.close()
                 if conflicts:
