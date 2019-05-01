@@ -167,6 +167,12 @@ other_group.add_option("--import",
                       action="store", type="string",
                       dest="importfile")
 
+other_group.add_option("--output",
+                      help="Write result(s) to a file, substituting a run number for %n",
+                      action="store", type="string",
+                      default=None,
+                      dest="output")
+
 other_group.add_option("--quiet",
                       help="Operate quietly",
                       action="store_true", default=False,
@@ -726,6 +732,9 @@ if options.quiet:
 if options.bind is not None:
     watch_args.append("--bind")
     watch_args.append(options.bind)
+if options.output is not None:
+    watch_args.append("--output")
+    watch_args.append(options.output)
 # TODO: Pass --verbose once watch supports that.
 watch_args.append(task_url)
 
