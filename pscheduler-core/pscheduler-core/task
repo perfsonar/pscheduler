@@ -159,7 +159,7 @@ other_group.add_option("--export",
 other_group.add_option("--format",
                       help="Output format: plain (default), html, json or none",
                       action="store", type="string",
-                      default="text",
+                      default=None,
                       dest="format")
 
 other_group.add_option("--import",
@@ -214,7 +214,8 @@ formats = {
     }
 
 try:
-    out_format = formats[options.format]
+    opt_format = "text/plain" if options.format is None else options.format
+    out_format = formats[opt_format]
 except KeyError:
     pscheduler.fail("Invalid --format; must be text, html, json or none")
 
@@ -279,7 +280,7 @@ if ( options.repeat is None
 
 verbose = (not options.quiet) \
     and not (options.url) \
-    and (out_format == "text/plain") 
+    and options.format is None
 
 # TODO: Tie this to the options.
 log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True, propagate=True)
@@ -711,9 +712,13 @@ if status == 404:
 
 
 watch_args = [ "pscheduler", "watch",
-               "--first",
-               "--format", out_format
+               "--first"
                ]
+
+# Force a format only if explicitly told to do so.
+if options.format is not None:
+    watch_args.extend(["--format", out_format])
+
 if options.debug:
     watch_args.append("--debug")
 if options.quiet:

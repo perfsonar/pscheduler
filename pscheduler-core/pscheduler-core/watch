@@ -39,7 +39,8 @@ opt_parser.add_option("--first",
 
 opt_parser.add_option("--format",
                       help="Result format (text, html, json, none)",
-                      action="store", type="string", default="text",
+                      action="store", type="string",
+                      default=None,
                       dest="format")
 
 opt_parser.add_option("--quiet",
@@ -81,7 +82,8 @@ formats = {
     }
 
 try:
-    out_format = formats[options.format]
+    opt_format = options.format if options.format is not None else "text"
+    out_format = formats[opt_format]
 except KeyError:
     pscheduler.fail("Invalid --format '%s'; must be text, html, json or none"
                     % (options.format) )
@@ -99,7 +101,7 @@ if not pscheduler.api_is_task(task_url):
 
 
 
-verbose = (not options.quiet) and (out_format == "text/plain")
+verbose = (not options.quiet) and (options.format is None)
 
 
 log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True, propagate=True)
@@ -160,8 +162,10 @@ while True:
         if run_count == 0:
             pscheduler.fail("No runs scheduled for this task.")
         else:
-            print
-            pscheduler.succeed("No further runs scheduled.")
+            if options.format is None:
+                print
+                print "No further runs scheduled."
+            pscheduler.succeed()
     if status != 200:
         pscheduler.fail("Unable to fetch runs: %s", run_data)
 
@@ -244,7 +248,8 @@ while True:
     if status != 200:
         pscheduler.fail("Failed to fetch run: %d: %s" % (status, result))
 
-    print
+    if options.format is None and out_format == "text/plain":
+        print
 
     args = [ "pscheduler", "result", "--quiet", "--format", out_format ]
     if options.debug:
