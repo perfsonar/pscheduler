@@ -1,3 +1,9 @@
+jq (1.6-1~bpo8+2) perfsonar-minor-staging; urgency=medium
+
+  * Building on stretch
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 06 May 2019 18:21:09 +0000
+
 jq (1.6-1~bpo8+1) perfsonar-jessie-staging; urgency=medium
 
   * New upstream version.
