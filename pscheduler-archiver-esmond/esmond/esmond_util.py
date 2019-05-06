@@ -376,6 +376,7 @@ class EsmondBaseRecord:
                 input_source = test_spec[src_field]
             
             #get dest if this is point-to-point
+            dest_ip = None
             if dst_field:
                 self.metadata['subject-type'] = 'point-to-point'
                 self.metadata['input-destination'] = test_spec[dst_field]
