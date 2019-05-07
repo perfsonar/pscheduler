@@ -24,6 +24,10 @@ export PYBUILD_NAME = pyjq
 
 override_dh_auto_build:
 	cython _pyjq.pyx
+	# Kludge to get around the CPython FPECTL ABI difference between Debian 9 and Ubuntu 18 (Debian 10)
+	echo "#undef WANT_SIGFPE_HANDLER" > pyfpe.h
+	cat /usr/include/python2.7/pyfpe.h >> pyfpe.h
+	echo '#include "pyfpe.h"' > mypyjq.c
+	cat _pyjq.c >> mypyjq.c
+	mv mypyjq.c _pyjq.c
 	dh_auto_build
-	# set library path for pscheduler
-	sed -i -e 's|__DEFAULT_LIBRARY_PATH__|/usr/lib/jq|g' pyjq.py

@@ -1,5 +1,5 @@
---- pyjq-2.3.0.orig/setup.py	2019-04-10 16:28:01.593747653 +0000
-+++ pyjq-2.3.0/setup.py	2019-04-10 16:31:25.783693890 +0000
+--- pyjq-2.3.0.orig/setup.py	2019-05-07 20:18:33.190790000 +0000
++++ pyjq-2.3.0/setup.py	2019-05-07 20:50:03.326742000 +0000
 @@ -7,60 +7,23 @@
  from os.path import join, dirname, abspath
  import platform
@@ -67,7 +67,7 @@
      def _build_lib(self, lib_dir, commands):
          macosx_deployment_target = sysconfig.get_config_var("MACOSX_DEPLOYMENT_TARGET")
          if macosx_deployment_target:
-@@ -69,25 +32,13 @@
+@@ -69,31 +32,18 @@
          for command in commands:
              subprocess.check_call(command, cwd=lib_dir)
  
@@ -93,7 +93,13 @@
  )
  
  setup(
-@@ -103,7 +54,6 @@
+     py_modules=['pyjq'],
+     install_requires=['six'],
+-    test_suite='test_pyjq',
+     ext_modules=[pyjq],
+     cmdclass={"build_ext": build_ext},
+     name='pyjq',
+@@ -103,7 +53,6 @@
      author='OMOTO Kenji',
      url='http://github.com/doloopwhile/pyjq',
      license='MIT License',
