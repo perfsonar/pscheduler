@@ -4,7 +4,10 @@
 # Sat, 09 Feb 2019 12:28:42 +0100
 export PYBUILD_NAME=pyrsistent
 %:
-	dh $@ --with python2,python3 --buildsystem=pybuild
+	dh $@ --with python2 --buildsystem=pybuild
+# ptyhon3 package build creates a dependency to python3 << 3.6
+# and Ubuntu18 ships with python3.6 only, so no go
+#	dh $@ --with python2,python3 --buildsystem=pybuild
 
 override_dh_auto_install:
 	dh_auto_install
