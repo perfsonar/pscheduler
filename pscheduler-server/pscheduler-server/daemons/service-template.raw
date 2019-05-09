@@ -17,7 +17,7 @@ RestartSec=3
 # Make sure the run directory exists and is owned as expected.
 ExecStartPre=-/bin/mkdir -p __RUNDIR__
 ExecStartPre=-/bin/chown __PSUSER__:__PSUSER__ __RUNDIR__
-ExecStartPre=-/bin/chmod 700 __RUNDIR__
+ExecStartPre=-/bin/chmod 755 __RUNDIR__
 
 # Generate the PID file in an atomic way
 ExecStartPre=-/bin/rm -f __RUNDIR__/pscheduler-__PROG__.pid.build
