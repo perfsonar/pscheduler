@@ -14,7 +14,7 @@ get-orig-source:
 
 override_dh_auto_configure:
 	cd docs && rake manpage > ../jq.1
-	dh_auto_configure -- --disable-static
+	dh_auto_configure -- --disable-static --disable-fpectl --without-fpectl
 
 override_dh_auto_test:
 
