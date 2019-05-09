@@ -52,9 +52,6 @@ Python bindings to JQ
 %patch0 -p1
 %patch1 -p1
 
-# Patch1 applies this; we change it to what we found.
-sed -i -e 's|__DEFAULT_LIBRARY_PATH__|%{jq_lib}|g' pyjq.py
-
 
 %build
 cython _pyjq.pyx
