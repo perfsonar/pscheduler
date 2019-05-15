@@ -16,7 +16,16 @@ except ValueError as ex:
 data_validator = {
     #Data validation json object
 
-    #TODO: Add more descriptive comments
+    "type": "object",
+    "properties": {
+        #include any data properties that should be included here
+        #if you have more than one version of your archiver, you will need to
+	#include a "schema" property which describes the expected data format
+	#for the given version of your archiver
+    },
+    "additionalProperties": False,
+    #include any required properties here
+    #"required": []
 }
 
 valid, error = pscheduler.json_validate(json, data_validator)
