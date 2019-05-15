@@ -76,7 +76,10 @@ SPEC_SCHEMA = {
                 "reverse": { "$ref": "#/pScheduler/Boolean" }
             },
             "additionalProperties": False,
-            "required": [ "dest" ]
+            "required": [
+                "schema",
+                "dest"
+            ]
         },
         "throughput": {
             "anyOf" : [
