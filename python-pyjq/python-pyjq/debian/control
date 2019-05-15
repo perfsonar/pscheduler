@@ -1,11 +1,13 @@
 Source: python-pyjq
 Section: net
 Priority: optional
-Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>,
+ Valentin Vidic <Valentin.Vidic@CARNet.hr>
 Build-Depends: debhelper (>= 9), dh-python, python-setuptools,
- python-all, python-six, python-mock, cython,
- libjq-dev, libonig-dev, libpython2.7-dev
-Standards-Version: 3.9.6
+ python-all, python-six, python-mock, cython (>=0.19),
+ libjq-dev (>=1.6), libonig-dev (>=6.9.0), libpython2.7-dev
+Standards-Version: 3.9.8
 Homepage: https://pypi.python.org/pypi/pyjq
 
 Package: python-pyjq

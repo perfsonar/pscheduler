@@ -31,3 +31,4 @@ override_dh_auto_build:
 	cat _pyjq.c >> mypyjq.c
 	mv mypyjq.c _pyjq.c
 	dh_auto_build
+
