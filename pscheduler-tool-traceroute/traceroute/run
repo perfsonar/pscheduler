@@ -105,8 +105,21 @@ except KeyError:
 try:
     source = spec['source']
     # TODO: Needs to be same IP type as dest
+
+    # Traceroute's -s switch doesn't resolve, so that needs to be
+    # handled here.
+    source_resolved = pscheduler.dns_resolve(source, ip_version=ipversion)
+    if source_resolved is None:
+        message = "Unable to resolve %s to an IPv%d address" % (source, ipversion)
+        pscheduler.succeed_json( {
+            'succeeded': False,
+            'diags': None,
+            'error': message,
+            'result': None
+            } )
+
     argv.append('-s')
-    argv.append(source)
+    argv.append(source_resolved)
 except KeyError:
     pass
 
