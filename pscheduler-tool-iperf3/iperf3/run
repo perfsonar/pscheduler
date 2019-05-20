@@ -304,15 +304,6 @@ def run_server():
             ip_version = pscheduler.ip_addr_version(bind_address)[0]
         else:
             logger.debug("Skipping bind. Source %s and destination %s don't have any common IPs of the same version as far as tool can tell." % (source, test_spec['dest']))
-    elif test_spec.get('udp', False):
-        # We really shouldn't do this but I think we have to because of iperf3 issue #505. 
-        # Basically not doing this causes UDP to bind to the first interface instead of all 
-        # interfaces which is probably more likely to break things than not specifying. This
-        # is imperfect though and we should really advise people to specify the source and/or 
-        # ip-version when doing a UDP test.
-        iperf3_args.append('-B')
-        iperf3_args.append(test_spec['dest'])
-        logger.debug("Binding UDP test to %s. If %s is a hostname with both AAAA and A records, it is highly recommended you modify this test to specify ip-version and/or the source address" % (test_spec['dest'], test_spec['dest']))
     else:
         #If we are here its because we have a TCP test where only the dest was specified 
         # and no ip-version provided. In this case we can't determine what we're supposed 
