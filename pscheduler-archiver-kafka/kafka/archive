@@ -5,25 +5,24 @@ DESCRIPTION
 
 import sys
 import pscheduler
-import kafka
+from kafka import KafkaProducer
+from kafka.errors import KafkaError
 
 MAX_SCHEMA = 1
 
 def archive(json):
     #Do archiving here
 
-    data = json["data"]    
-    
+    data = json["data"]     
+    data = data["data"]
+
     try:
-	print("try block entered")
-        producer = KafkaProducer(bootstrap_servers=data["server-address"])
-	print("producer created")
-	producer.send(data["topic"], b"I am trying to archive!").get(timeout=30)
-	print("test message sent")
-        producer.send(data["topic]), pscheduler.json_dump(json["result"])).get(timeout=30)
+        producer = KafkaProducer(bootstrap_servers=[data["server-address"]])
+        producer.send(data["topic"], pscheduler.json_dump(json["result"])).get(timeout=30)
         
     except Exception as e:
-        result = {
+        print(str(e))
+	result = {
             "succeeded": False,
             "error": "Failed to send message"
         }
