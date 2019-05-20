@@ -34,8 +34,8 @@ testing method is usually more useful in terms of output and is also much faster
 #### Method 2:
 
 _This method is somewhat more involved to set up, but ultimately it will allow you to debug much easier. If you do not run 
-your archiver in this way, you will *not* be able to see any print statements you generate in your archiver code. *This 
-includes error messages!* Running your archiver in the regular scheduled test format is important to verify that it works 
+your archiver in this way, you will **not** be able to see any print statements you generate in your archiver code. **This 
+includes error messages!** Running your archiver in the regular scheduled test format is important to verify that it works 
 in that manner because that is how it will be used "in the wild", however, it will "fail silently" when run that way which won't 
 help you make progress in developing it._
 
@@ -46,4 +46,15 @@ Run a pScheduler task of your choice (a good default choice is idle) and output 
 will generate a JSON blob of output that you can then use with your archiver. To access the output from the syslog archiver 
 type in 
 ```sudo less /var/log/messages``` and use ```<``` to go to the end of the file (where your output should be if you just ran
- the task)
+ the task). Then just go ahead and copy that JSON blob at the end and save it somewhere useful.
+ 
+ 2. Create basic JSON for your archiver
+ 
+ -The JSON piped directly into the archiver has two main parts: the archiver input that is fed to every archiver and the output from the task. To create a JSON file with all the data your archiver needs, simply follow this template used by 
+ pScheduler when it generates the JSON that is actually used by an archiver when used normally: https://github.com/perfsonar/pscheduler/blob/b1e76b88c0ec712b43b01bb51e47575f40e0d49c/pscheduler-server/pscheduler-server/daemons/archiver.raw#L588
+ 
+ -Only insert the fields you actually need. ```archiver-data``` will be replaced with a JSON blob that contains the actual data fields your archiver is expecting to see as input. Everything else can be filled in from the output JSON blob generated 
+ by the syslog archiver. Delete any fields that are unnecessary based on the task you ran.
+ 
+ -Once you generate this JSON, I recommend using jq on the file to make sure it's a valid JSON file. pScheduler will generate it's own specific error messages if the JSON is formatted in ways that it cannot accept. It's much easier to debug if you can deduce that errors you are getting are pScheduler specific and not just because your JSON is formatted incorrectly. If you have never used jq, you can find more documentation on how to use it here: https://stedolan.github.io/jq/ (You should not 
+ need to install anything, your pScheduler development environment should come with jq already ready to use).
