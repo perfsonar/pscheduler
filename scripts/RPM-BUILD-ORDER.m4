@@ -116,14 +116,14 @@ pscheduler-tool-powstream
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-nuttcp
-pscheduler-tool-bwctliperf2			--bundle extras
-pscheduler-tool-bwctliperf3			--bundle extras
-pscheduler-tool-bwctlping			--bundle extras
-pscheduler-tool-bwctltraceroute		--bundle extras
-pscheduler-tool-bwctltracepath		--bundle extras
+pscheduler-tool-bwctliperf2		--bundle obsolete
+pscheduler-tool-bwctliperf3		--bundle obsolete
+pscheduler-tool-bwctlping		--bundle obsolete
+pscheduler-tool-bwctltraceroute		--bundle obsolete
+pscheduler-tool-bwctltracepath		--bundle obsolete
 pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-psurl
-pscheduler-tool-pysnmp				--bundle snmp
+pscheduler-tool-pysnmp			--bundle snmp
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
@@ -157,5 +157,5 @@ pscheduler-docs
 
 # Bundles
 pscheduler-bundle-full
-pscheduler-bundle-extras
+pscheduler-bundle-obsolete
 pscheduler-bundle-snmp

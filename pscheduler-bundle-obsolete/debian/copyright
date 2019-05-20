@@ -1,5 +1,5 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: pscheduler-bundle-extras
+Upstream-Name: pscheduler-bundle-obsolete
 Source: https://github.com/perfsonar/pscheduler
 
 Files: *

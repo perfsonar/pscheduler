@@ -2,7 +2,7 @@
 # RPM Spec for Extras pScheduler Bundle
 #
 
-Name:		pscheduler-bundle-extras
+Name:		pscheduler-bundle-obsolete
 Version:	1.1.6
 Release:	1%{?dist}
 
