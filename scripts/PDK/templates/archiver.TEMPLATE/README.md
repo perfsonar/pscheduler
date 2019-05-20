@@ -58,3 +58,18 @@ type in
  
  -Once you generate this JSON, I recommend using jq on the file to make sure it's a valid JSON file. pScheduler will generate it's own specific error messages if the JSON is formatted in ways that it cannot accept. It's much easier to debug if you can deduce that errors you are getting are pScheduler specific and not just because your JSON is formatted incorrectly. If you have never used jq, you can find more documentation on how to use it here: https://stedolan.github.io/jq/ (You should not 
  need to install anything, your pScheduler development environment should come with jq already ready to use).
+ 
+ 3. Formatting the JSON for use with pScheduler
+ 
+ -pScheduler JSON has some unique quirks specific to how it is parsed. In order to have your archiver successfully parse and use your JSON blob, you'll need to format it as follows.
+ 
+ -Due to the way the JSON is parsed, our JSON needs to be in "ugly" format. When you're writing your JSON, use ```jq . filename``` to see the beautified JSON and you can also pipe it into a file to work with. When you're done creating the JSON, 
+ you'll need to uglify it (minify it) so that it will be accepted by your archiver. Doing this with jq is easy, just use ```jq -c . < filename``` to minify your file. 
+ 
+ -JSON for pScheduler is designed to be compatible with a JSON streaming standard. For the purposes of testing with a single JSON blob, we don't need to actually stream data, but we do need to make our single JSON blob compliant with the streaming standards. In order to do so, we need to put an RS character at the beginning of our file that denotes the start of a file. Unfortunately, this character is unprintable so we can't just copy and paste it, we need to generate a new JSON file that contains the character and the contents of our JSON file. Use this command to add that character to the front of your JSON file: ```sudo sh -c '(printf "\x1e" && cat input_file) > output_file'```.
+ 
+ -As an aside, you won't see any indication of this character if you ```cat``` out the JSON file. If you want to verify that the character is in fact there, you'll want to use vim or another text editor (in vim, the character will look like this ```^^```). 
+ 
+ 4. Feeding the JSON to your archiver
+ 
+ -Now that your JSON is correctly formatted, you can go ahead and feed it directly into your archiver. To do so, go to the directory where your archive file is and use the command ```./archive < my_json_file```. This will run your archiver and it will take your JSON file and treat it as though it is the JSON output it would get from pScheduler. If you have any print statements inside your archive file for debugging purposes, you will see this printed to the command line.
