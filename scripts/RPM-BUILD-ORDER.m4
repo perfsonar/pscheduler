@@ -104,9 +104,9 @@ pscheduler-test-latencybg
 pscheduler-test-throughput
 pscheduler-test-rtt
 pscheduler-test-simplestream
-pscheduler-test-snmpget			--bundle extras
-pscheduler-test-snmpgetbgm		--bundle extras
-pscheduler-test-snmpset			--bundle extras
+pscheduler-test-snmpget			--bundle snmp
+pscheduler-test-snmpgetbgm		--bundle snmp
+pscheduler-test-snmpset			--bundle snmp
 pscheduler-test-trace
 pscheduler-test-dns
 
@@ -121,9 +121,9 @@ pscheduler-tool-bwctliperf3			--bundle extras
 pscheduler-tool-bwctlping			--bundle extras
 pscheduler-tool-bwctltraceroute		--bundle extras
 pscheduler-tool-bwctltracepath		--bundle extras
-pscheduler-tool-net-snmp-set		--bundle extras
+pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-psurl
-pscheduler-tool-pysnmp				--bundle extras
+pscheduler-tool-pysnmp				--bundle snmp
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
@@ -142,7 +142,7 @@ pscheduler-archiver-esmond
 pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-rabbitmq
-pscheduler-archiver-snmptrap		--bundle extras
+pscheduler-archiver-snmptrap		--bundle snmp
 pscheduler-archiver-syslog
 
 # Context Changers
@@ -158,3 +158,4 @@ pscheduler-docs
 # Bundles
 pscheduler-bundle-full
 pscheduler-bundle-extras
+pscheduler-bundle-snmp

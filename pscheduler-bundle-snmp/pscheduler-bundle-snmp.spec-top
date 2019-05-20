@@ -1,0 +1,14 @@
+#
+# RPM Spec for SNMP pScheduler Bundle
+#
+
+Name:		pscheduler-bundle-snmp
+Version:	1.1.6
+Release:	1%{?dist}
+
+Summary:	SNMP pScheduler Bundle
+BuildArch:	noarch
+
+License:	ASL 2.0
+Vendor:		perfSONAR
+Group:		Unspecified
