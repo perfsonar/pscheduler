@@ -1,1 +1,5 @@
-DOCUMENTATION
+DOCUMENTATION FOR THE APACHE KAFKA ARCHIVER
+
+This archiver will produce an Apache Kafka message with a topic specified in the input JSON and send it to the cluster indicated by the server addresses given in the input JSON.
+
+To use this archiver, you will need an Apache Kafka message bus that is already set up. You will also need to know the ip addresses of the servers in the Kafka cluster. To use this archiver, you will need two elements of data in your input JSON: a list of the server addresses in the cluster and the topic ofthe message you want to send. The archiver will then publish the results of the task to the servers you listed under the topic you listed. If your servers are not valid, the archiving will not succeed.
