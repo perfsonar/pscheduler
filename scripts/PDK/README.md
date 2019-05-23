@@ -71,4 +71,7 @@ a file or into something like JQ for readability
 ```
 pscheduler debug on runner
 ```
-
+#### Sometimes viewing a variable is useful in debugging. Use the following to write a variable to a file and save at /tmp
+with open('/tmp/run_log.txt', 'wb') as f:
+  f.write('LOGGING output of variable STDERR')
+  f.write(str(STDERR))
