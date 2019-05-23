@@ -67,11 +67,11 @@ curl -s -k
 on the Task URL. This will be output in JSON, which can be piped into
 a file or into something like JQ for readability
 
-#### Enable Debugging logging at /var/log/pscheduler/pscheduler.log
+- To enable Debug logging at /var/log/pscheduler/pscheduler.log
 ```
 pscheduler debug on runner
 ```
-#### Sometimes viewing a variable is useful in debugging. Use the following to write a variable to a file and save at /tmp
+- Sometimes viewing a variable is useful in debugging. Add the following script to write a variable to a file and save at /tmp
 ```
 with open('/tmp/run_log.txt', 'wb') as f:
   f.write('LOGGING output of variable STDERR')
