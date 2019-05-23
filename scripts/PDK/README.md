@@ -66,3 +66,9 @@ curl -s -k
 ```
 on the Task URL. This will be output in JSON, which can be piped into
 a file or into something like JQ for readability
+
+### Enable Debugging logging at /var/log/pscheduler/pscheduler.log
+```
+pscheduler debug on runner
+```
+
