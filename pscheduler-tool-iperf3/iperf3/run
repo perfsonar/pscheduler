@@ -232,11 +232,16 @@ def run_client():
     # figure out cpu affinity, either use what was passed in
     # or try to auto detect it
     affinity = test_spec.get('client-cpu-affinity')
-    if affinity == None:
-        affinity = pscheduler.source_affinity(normalized_dest, ip_version=ip_version)
+    if affinity is None:
+        if source:
+            interface = pscheduler.address_interface(source, ip_version=ip_version)
+            if interface is not None:
+                affinity = pscheduler.interface_affinity(interface)
+        else:
+            affinity = pscheduler.source_affinity(normalized_dest, ip_version=ip_version)
 
     logger.debug("Selected CPU affinity %s" % affinity)
-    if affinity != None:
+    if affinity is not None:
         iperf3_args.insert(0, 'numactl')
         iperf3_args.insert(1, '-N')
         iperf3_args.insert(2, affinity)
@@ -322,13 +327,13 @@ def run_server():
     
     # try to grab our default affinity if one wasn't passed in
     affinity = test_spec.get('server-cpu-affinity')
-    if affinity == None:
+    if affinity is None:
         # look up what interface we're going to be receiving on        
         interface = pscheduler.address_interface(normalized_dest, ip_version=ip_version)
         if interface:
             affinity = pscheduler.interface_affinity(interface)
 
-    if affinity != None:
+    if affinity is not None:
         iperf3_args.insert(0, 'numactl')
         iperf3_args.insert(1, '-N')
         iperf3_args.insert(2, affinity)
