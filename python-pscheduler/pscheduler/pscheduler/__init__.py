@@ -18,6 +18,7 @@ from .jsonval import *
 from .limits import *
 from .log import *
 from .mtu import *
+from .numa import *
 from .numeric import *
 from .numericrange import *
 from .program import *

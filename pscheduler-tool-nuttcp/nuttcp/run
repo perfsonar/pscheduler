@@ -51,12 +51,13 @@ nuttcp_cmd  = config["nuttcp_cmd"]
 server_port = participant_data[1]['server_port']
 data_port_start = participant_data[1]['data_port_start']
 
-def run_client():    
+def run_client():
 
     logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
 
     time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
 
+    diags = []
     nuttcp_args = [ nuttcp_cmd ]
 
     nuttcp_args.append('-p')
@@ -170,30 +171,39 @@ def run_client():
         if source:
             interface = pscheduler.address_interface(source, ip_version=ip_version)
             if interface is not None:
+                logger.debug("Affinity (if any) will be based on source")
                 affinity = pscheduler.interface_affinity(interface)
         else:
             affinity = pscheduler.source_affinity(destination, ip_version=ip_version)
+            logger.debug("Affinity (if any) will be based on destination")
 
     if affinity is not None:
-        nuttcp_args.insert(0, 'numactl')
-        nuttcp_args.insert(1, '-N')
-        nuttcp_args.insert(2, affinity)
-
+        numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
+        if numa_ok:
+            logger.debug("Selected CPU affinity %s" % affinity)
+            nuttcp_args.insert(0, 'numactl')
+            nuttcp_args.insert(1, '-N')
+            nuttcp_args.insert(2, affinity)
+        else:
+            logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
+            diags.append("Unable to use NUMA for this test.  Disabling it.")
 
     nuttcp_args.append(destination)
 
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string
     nuttcp_args = map(lambda x: str(x), nuttcp_args)
-      
-    logger.debug("Running command: %s" % " ".join(nuttcp_args))
+
+    joined_args = " ".join(nuttcp_args)
+    logger.debug("Running command: %s" % (joined_args))
+    diags.append(joined_args)
 
     try:
         status, stdout, stderr = pscheduler.run_program(nuttcp_args)
     except Exception as e:
         logger.error("nuttcp failed to complete execution: %s" % e)
         pscheduler.succeed_json({"succeeded": False,
-                                 "diags": " ".join(nuttcp_args),
+                                 "diags": "\n".join(diags),
                                  "error": "The nuttcp command failed during execution. See server logs for more details."})
 
 
@@ -204,6 +214,7 @@ def run_server():
 
     #init command
     nuttcp_args = [ nuttcp_cmd, '-S', '-1', '--nofork']
+    diags = []
 
     nuttcp_args.append("-p")
     nuttcp_args.append(data_port_start)
@@ -231,12 +242,20 @@ def run_server():
             affinity = pscheduler.interface_affinity(interface)
 
     if affinity is not None:
-        nuttcp_args.insert(0, 'numactl')
-        nuttcp_args.insert(1, '-N')
-        nuttcp_args.insert(2, affinity)
+        numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
+        if numa_ok:
+            logger.debug("Selected CPU affinity %s" % affinity)
+            nuttcp_args.insert(0, 'numactl')
+            nuttcp_args.insert(1, '-N')
+            nuttcp_args.insert(2, affinity)
+        else:
+            logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
+            diags.append("Unable to use NUMA for this test.  Disabling it.")
 
     nuttcp_args = map(lambda x: str(x), nuttcp_args)
-    logger.debug("Running command: %s" % " ".join(nuttcp_args))
+    nuttcp_args_string = " ".join(nuttcp_args)
+    logger.debug("Running command: %s" % (nuttcp_args_string))
+    diags.append(nuttcp_args_string)
 
     try:
         status, stdout, stderr = pscheduler.run_program(nuttcp_args,
@@ -245,7 +264,7 @@ def run_server():
     except Exception as e:
         logger.error("nuttcp failed to complete execution: %s" % e);
         pscheduler.succeed_json({"succeeded": False,
-                                 "diags": " ".join(nuttcp_args),
+                                 "diags": "\n".join(diags),
                                  "error": "The nuttcp command failed during execution. See server logs for more details."})
 
 

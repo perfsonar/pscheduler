@@ -71,7 +71,10 @@ else:
 # if we're doing a reverse test, have to change a few things
 reverse = test_spec.get('reverse', False)
 
-def run_client():    
+
+def run_client():
+
+    diags = []
 
     logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
 
@@ -236,15 +239,24 @@ def run_client():
         if source:
             interface = pscheduler.address_interface(source, ip_version=ip_version)
             if interface is not None:
+                logger.debug("Affinity (if any) will be based on source")
                 affinity = pscheduler.interface_affinity(interface)
         else:
             affinity = pscheduler.source_affinity(normalized_dest, ip_version=ip_version)
+            logger.debug("Affinity (if any) will be based on destination")
 
-    logger.debug("Selected CPU affinity %s" % affinity)
     if affinity is not None:
-        iperf3_args.insert(0, 'numactl')
-        iperf3_args.insert(1, '-N')
-        iperf3_args.insert(2, affinity)
+        numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
+        if numa_ok:
+            logger.debug("Selected CPU affinity %s" % affinity)
+            iperf3_args.insert(0, 'numactl')
+            iperf3_args.insert(1, '-N')
+            iperf3_args.insert(2, affinity)
+        else:
+            logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
+            diags.append("Unable to use NUMA for this test.  Disabling it.")
+
+
 
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string
@@ -259,6 +271,7 @@ def run_client():
     # no need for the sleep, we already did that above
 
     logger.debug("timeout for client is %d" % iperf_timeout)
+    diags.append(command_line)
 
     try:
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
@@ -266,17 +279,18 @@ def run_client():
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e)
         pscheduler.succeed_json({"succeeded": False,
-                                 "diags": " ".join(iperf3_args),
+                                 "diags": "\n".join(diags),
                                  "error": "The iperf3 command failed during execution. See server logs for more details."})
 
 
 
-    return _make_result(command_line, status, stdout, stderr)
+    return _make_result("\n".join(diags), status, stdout, stderr)
 
     
 
 def run_server():
 
+    diags = []
     #init command
     iperf3_args = [ iperf3_cmd, '-s', '-1', '--json']
 
@@ -323,6 +337,12 @@ def run_server():
         interface = pscheduler.address_interface(normalized_dest, ip_version=ip_version)
         if interface:
             affinity = pscheduler.interface_affinity(interface)
+            logger.debug("CPU affinity for interface is %s" % (affinity))
+        numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
+        if not numa_ok:
+            logger.debug("NUMA doesn't work for %s.  Throwing caution to the wind." % (interface))
+            diags.append("Unable to use NUMA for %s.  Disabling it." % (interface))
+            affinity = None
 
     if affinity is not None:
         iperf3_args.insert(0, 'numactl')
@@ -345,6 +365,7 @@ def run_server():
         iperf_timeout += DEFAULT_WAIT_SLEEP
 
         logger.debug("timeout for server is %d" % iperf_timeout)
+        diags.append(" ".join(iperf3_args))
 
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
                                                         timeout = iperf_timeout)
@@ -352,15 +373,15 @@ def run_server():
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e);
         pscheduler.succeed_json({"succeeded": False,
-                                 "diags": " ".join(iperf3_args),
+                                 "diags": "\n".join(diags),
                                  "error": "The iperf3 command failed during execution. See server logs for more details."})
 
 
-    return _make_result(" ".join(iperf3_args), status, stdout, stderr)
+    return _make_result("\n".join(diags), status, stdout, stderr)
 
     
 
-def _make_result(command, status, stdout, stderr):
+def _make_result(diags, status, stdout, stderr):
     if status:
         error_text = ""
         try:
@@ -373,14 +394,14 @@ def _make_result(command, status, stdout, stderr):
             error_text = "%s\n\n%s\n%s" % (stdout, stderr)
 
         pscheduler.succeed_json({"succeeded": False,
-                                 "diags": command,
+                                 "diags": diags,
                                  "error": "iperf3 returned an error: %s" % (error_text)})
 
     lines = stdout.split("\n")    
     logger.debug("Lines are %s " % lines)
 
     results = iperf3_parser.parse_output(lines)
-    results['diags'] = "%s\n\n%s" % (command, stdout)
+    results['diags'] = "%s\n\n%s" % (diags, stdout)
 
     return results
 
