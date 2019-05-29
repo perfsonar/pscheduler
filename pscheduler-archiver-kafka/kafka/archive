@@ -23,7 +23,7 @@ def archive(json):
         #print(str(e))
 	result = {
             "succeeded": False,
-            "error": "Failed to send message"
+            "error": "Failed to send message: %s" % (str(e))
         }
         return result
 
