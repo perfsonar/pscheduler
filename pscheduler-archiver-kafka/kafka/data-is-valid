@@ -18,10 +18,10 @@ data_validator = {
     "type": "object",
     "properties": {
         "topic": {"$ref": "#/pScheduler/String"},
-        "server-address": {"$ref": "#/pScheduler/String"}
+        "server": {"$ref": "#/pScheduler/String"}
     },
     "additionalProperties": False,
-    "required": ["topic", "server-address"]
+    "required": ["topic", "server"]
 }
 
 valid, error = pscheduler.json_validate(json, data_validator)

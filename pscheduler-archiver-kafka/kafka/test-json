@@ -2,6 +2,6 @@
     "archiver": "kafka",
     "data": {
         "topic": "test",
-        "server-address": "10.0.0.10:9092"
+        "server": "10.0.0.10:9092"
     }
 }

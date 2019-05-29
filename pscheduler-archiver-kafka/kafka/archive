@@ -16,7 +16,7 @@ def archive(json):
     data = json["data"]     
 
     try:
-        producer = KafkaProducer(bootstrap_servers=[data["server-address"]])
+        producer = KafkaProducer(bootstrap_servers=[data["server"]])
         producer.send(data["topic"], pscheduler.json_dump(json["result"])).get(timeout=30)
         
     except Exception as e:
