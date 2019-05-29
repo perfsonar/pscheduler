@@ -11,8 +11,24 @@ import sys
 import pscheduler
 
 
-MAX_SCHEMA = 1
+MAX_SCHEMA = 2
 
+log = pscheduler.Log(prefix="archiver-rabbitmq", quiet=True)
+
+
+class ConnectionSet(object):
+
+    def __init__(self):
+        self.connections = {}
+
+    def fetch(self, url, cache_time):
+        if cache_time is None:
+            return pika.BlockingConnection(
+                pika.URLParameters(url)
+            )
+
+connections = {}
+# TODO: Need last-purged time
 
 def archive(json):
 
