@@ -2,7 +2,7 @@
 {
     "schema": 1,
     "name": "kafka",
-    "description": "EDIT ME",
+    "description": "Archives data to an Apache Kafka message bus",
     "version": "1.0",
 
     "maintainer": {
