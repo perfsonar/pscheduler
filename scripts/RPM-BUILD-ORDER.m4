@@ -51,6 +51,7 @@ python-functools32
 python-isodate
 python2-pyrsistent
 python2-jsonschema
+python-kafka
 python-netaddr
 python-ntplib
 python-py-radix
