@@ -21,7 +21,7 @@ Requires:       bash-completion
 Requires:       gnuplot-minimal
 # This is for netstat.
 Requires:       net-tools
-Requires:       python-pscheduler >= 1.3.0.4.2
+Requires:       python-pscheduler >= 1.3.7.1
 Requires:       pytz
 Requires:	curl
 

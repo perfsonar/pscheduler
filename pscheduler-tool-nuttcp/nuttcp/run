@@ -13,7 +13,6 @@ import sys
 import time
 import nuttcp_parser
 import traceback
-import ipaddr
 import nuttcp_utils
 from nuttcp_defaults import *
 
@@ -167,10 +166,15 @@ def run_client():
     destination = test_spec['dest']
 
     affinity = test_spec.get('client-cpu-affinity')
-    if affinity == None:
-        affinity = pscheduler.source_affinity(destination, ip_version=ip_version)
+    if affinity is None:
+        if source:
+            interface = pscheduler.address_interface(source, ip_version=ip_version)
+            if interface is not None:
+                affinity = pscheduler.interface_affinity(interface)
+        else:
+            affinity = pscheduler.source_affinity(destination, ip_version=ip_version)
 
-    if affinity != None:
+    if affinity is not None:
         nuttcp_args.insert(0, 'numactl')
         nuttcp_args.insert(1, '-N')
         nuttcp_args.insert(2, affinity)
@@ -189,6 +193,7 @@ def run_client():
     except Exception as e:
         logger.error("nuttcp failed to complete execution: %s" % e)
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": " ".join(nuttcp_args),
                                  "error": "The nuttcp command failed during execution. See server logs for more details."})
 
 
@@ -219,13 +224,13 @@ def run_server():
 
     # try to grab our default affinity if one wasn't passed in
     affinity = test_spec.get('server-cpu-affinity')
-    if affinity == None:
+    if affinity is None:
         # look up what interface we're going to be receiving on        
         interface = pscheduler.address_interface(test_spec['dest'], ip_version=ip_version)
         if interface:
             affinity = pscheduler.interface_affinity(interface)
 
-    if affinity != None:
+    if affinity is not None:
         nuttcp_args.insert(0, 'numactl')
         nuttcp_args.insert(1, '-N')
         nuttcp_args.insert(2, affinity)
@@ -240,6 +245,7 @@ def run_server():
     except Exception as e:
         logger.error("nuttcp failed to complete execution: %s" % e);
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": " ".join(nuttcp_args),
                                  "error": "The nuttcp command failed during execution. See server logs for more details."})
 
 
@@ -255,14 +261,16 @@ def _make_result(command_line, status, stdout, stderr, parse=True):
     
     if status:
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": command_line,
                                  "error": "nuttcp returned an error: %s\n%s" % (stdout, stderr)})
 
     lines = stdout.split("\n")    
     logger.debug("Lines are %s " % lines)
 
-    results = {}
     if parse:
         results = nuttcp_parser.parse_output(lines)
+    else:
+        results = { "succeeded": True }
 
     results['diags'] = "%s\n\n%s\n%s" % (command_line, stdout, stderr)
 

@@ -14,9 +14,12 @@ import sys
 import json
 import time
 import datetime
+import re
 import subprocess
 
 import pscheduler
+
+logger = pscheduler.Log(quiet=True)
 
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
@@ -25,16 +28,15 @@ input = pscheduler.json_load(exit_on_error=True)
 try:
     dest = input['test']['spec']['dest']
     source = input['test']['spec']['source']
-    
-    #Depreciate dest_path?
-    #dest_path = input['test']['spec']['dest-path']
-
 except KeyError as e:
-    print(e);	pscheduler.fail('Missing data in input')
+    pscheduler.fail('Missing required input: {0}'.format(e))
+
+cleanup = input['test']['spec'].get('cleanup', True)
 
 duration = input['test']['spec'].get('duration', 'PT5S')
 duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
+parallel = input['test']['spec'].get('parallel', 1)
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 start_time = datetime.datetime.now()
 succeeded = False
@@ -42,17 +44,41 @@ error = ''
 diags = ''
 
 # Run the actual task here:
+bytes_sent = None
+tput = None
 
 if True:
+
   argv = ['globus-url-copy', # Implimentation of GridFTP
-          '-vb', # verbose output for test
-          #'-nlb', # network logging on output (must use gsiftp)
-	  #'-p 4', # num of parrallel TCP connections
-	  source, #Source URL
-	  dest] #Destination URL
+          '-vb'] # verbose output for test
 
+  ## Options handling ##
+
+  # Number of parallel streams for GridFTP
+  if parallel > 1:
+    argv.append("-p")
+    argv.append(str(parallel))
+
+  argv.append(source) # Source URL
+  argv.append(dest) # Destination URL
+  
   status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
-
+  
+  # Parsing stdout for throughput and bytes-sent 
+  lines = stdout.splitlines()
+  for line in lines:
+      logger.debug("searching line: {0}".format(line))
+      #make sure you grab the last one because each screen update its own line
+      test = re.search('\s*(\d+) bytes\s+(\S+) ([A-za-z])B/sec avg\s+\S+ [A-za-z]B/sec inst$', line)
+      if test:
+          logger.debug("looks like a performance metric line")
+          bytes_sent = int(test.group(1))
+          logger.debug("bytes sent: {0}".format(bytes_sent))
+          tput_str = "{0}{1}".format(test.group(2),test.group(3))
+          logger.debug("tput_str: {0}".format(tput_str))
+          tput = pscheduler.si_as_number(tput_str) * 8
+          logger.debug("tput: {0}".format(tput))
+  
   if status:
     succeeded = False
     error = "Error running program:\n%s"% stderr.strip('\n')
@@ -63,16 +89,24 @@ if True:
 
 end_time = datetime.datetime.now()
 
+if cleanup is True:
+    if os.path.isfile(dest): 
+        os.remove(dest)
+
 # Organize results into json data
-results = {
+final_results = {
     'succeeded': succeeded,
-    'result': {
-        'schema': 1,
-        'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
-        'succeeded': succeeded
-    },
     'error': error,
     'diags': diags }
 
-pscheduler.succeed_json(results)
+results = {"schema": 1}
+results['time'] = pscheduler.timedelta_as_iso8601( end_time - start_time)
+results['succeeded'] = succeeded
+if bytes_sent is not None:
+    results["bytes-sent"] = bytes_sent
+if tput is not None:
+     results["throughput"] = tput
 
+final_results['result'] = results
+pscheduler.succeed_json(final_results)
+#?

@@ -6,10 +6,14 @@ libjq.so.1 libjq1 #MINVER#
  jq_get_attr@Base 1.5
  jq_get_debug_cb@Base 1.5
  jq_get_error_cb@Base 1.5
+ jq_get_error_message@Base 1.6-1~bpo8+1
+ jq_get_exit_code@Base 1.6-1~bpo8+1
  jq_get_input_cb@Base 1.5
  jq_get_jq_origin@Base 1.5
  jq_get_lib_dirs@Base 1.5
  jq_get_prog_origin@Base 1.5
+ jq_halt@Base 1.6-1~bpo8+1
+ jq_halted@Base 1.6-1~bpo8+1
  jq_init@Base 1.5
  jq_next@Base 1.5
  jq_parse@Base 1.5
@@ -18,6 +22,7 @@ libjq.so.1 libjq1 #MINVER#
  jq_report_error@Base 1.5
  jq_set_attr@Base 1.5
  jq_set_attrs@Base 1.5
+ jq_set_colors@Base 1.6-1~bpo8+1
  jq_set_debug_cb@Base 1.5
  jq_set_error_cb@Base 1.5
  jq_set_input_cb@Base 1.5
@@ -85,7 +90,7 @@ libjq.so.1 libjq1 #MINVER#
  jv_contains@Base 1.5
  jv_copy@Base 1.5
  jv_delpaths@Base 1.5
- jv_dels@Base 1.5
+#MISSING: 1.6-1~bpo8+1# jv_dels@Base 1.5
  jv_dump@Base 1.5
  jv_dump_string@Base 1.5
  jv_dump_string_trunc@Base 1.5
@@ -105,6 +110,7 @@ libjq.so.1 libjq1 #MINVER#
  jv_invalid_has_msg@Base 1.5
  jv_invalid_with_msg@Base 1.5
  jv_is_integer@Base 1.5
+ jv_is_integer_large@Base 1.6-1~bpo8+1
  jv_keys@Base 1.5
  jv_keys_unsorted@Base 1.5
  jv_kind_name@Base 1.5
@@ -127,6 +133,7 @@ libjq.so.1 libjq1 #MINVER#
  jv_object_contains@Base 1.5
  jv_object_delete@Base 1.5
  jv_object_get@Base 1.5
+ jv_object_has@Base 1.6-1~bpo8+1
  jv_object_iter@Base 1.5
  jv_object_iter_key@Base 1.5
  jv_object_iter_next@Base 1.5

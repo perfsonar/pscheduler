@@ -1,0 +1,53 @@
+#!/usr/bin/python
+#
+# Format a result
+#
+
+import jsontemplate
+import pscheduler
+import sys
+
+from validate import result_is_valid
+
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = "text/plain"
+
+input = pscheduler.json_load(exit_on_error=True, max_schema=1)
+
+valid, message = result_is_valid(input["result"])
+
+if not valid:
+    pscheduler.fail(message)
+
+json = input["result"]
+
+
+if format == "text/plain":
+
+   if "gateway-up" in json:
+      print "Gateway ...", ("Up" if json["gateway-up"] else "Down")
+   print "Network ...", ("Up" if json["network-up"] else "Down")
+
+elif format == "text/html":
+
+   print "<table>"
+   if "gateway-up" in json:
+      print "  <tr>"
+      print "    <th>Gateway</th>"
+      print "    <td>%s</td>" % ("Up" if json["gateway-up"] else "Down")
+      print "  </tr>"
+
+   print "  <tr>"
+   print "    <th>Network</th>"
+   print "    <td>%s</td>" % ("Up" if json["network-up"] else "Down")
+   print "  </tr>"
+   print "</table>"
+
+else:
+
+   pscheduler.fail("Unsupported format '%s'" % format)
+
+pscheduler.succeed()

@@ -523,6 +523,7 @@ class ArchiverPoolCollection(object):
 
 # Dictionary of archivings in progress
 
+# TODO: Use the ThreadSafeSet and ThreadSafeSetHold instead
 workers = pscheduler.ThreadSafeDictionary()
 
 
@@ -570,7 +571,7 @@ class ArchiveWorker():
 
         archiving_id, task_uuid, run_uuid, archiver, archiver_data, start, \
             duration, test, tool, participants, result_merged, attempts, \
-            last_attempt, transform, task_detail = self.row
+            last_attempt, transform, task_detail, run_detail, spec = self.row
 
         participants_merged = []
         for participant in participants:
@@ -578,9 +579,32 @@ class ArchiveWorker():
                                        if participant is None \
                                        else participant)
 
-        task_href = pscheduler.api_url(path="tasks/%s" % (task_uuid))
-        run_href = pscheduler.api_url(path="tasks/%s/runs/%s" \
+        uri_host = spec.get("uri-host", pscheduler.api_local_host_fqdn())
+        task_href = pscheduler.api_url(host=uri_host, path="tasks/%s" % (task_uuid))
+        run_href = pscheduler.api_url(host=uri_host, path="tasks/%s/runs/%s" \
                                       % (task_uuid, run_uuid))
+
+        # Strip the internal-use-only parts from the task details.
+        for remove in [
+                'archives'
+        ]:
+            try:
+                del task_detail[remove]
+            except KeyError:
+                pass
+
+
+        # Strip the internal-use-only parts from the run details.
+        for remove in [
+                'archivings',
+                'participant-data',
+                'participant-data-full',
+                'result'
+        ]:
+            try:
+                del run_detail[remove]
+            except KeyError:
+                pass
 
         self.log.debug("%d: Task is %s", self.id, task_href)
         self.log.debug("%d: Run is %s", self.id, run_href)
@@ -602,6 +626,8 @@ class ArchiveWorker():
                     'name': tool['name'],
                     'version': tool['version'],
                 },
+                'run': run_detail,
+                'task': task_detail,
                 'participants': participants_merged,
                 'result': result_merged,
                 'reference': task_detail.get('reference', None)
@@ -610,6 +636,12 @@ class ArchiveWorker():
             'last-attempt': None if last_attempt is None \
             else pscheduler.datetime_as_iso8601(last_attempt)
         }
+
+        json_result = json["result"]
+
+        json_result["task"]["href"] = task_href
+        json_result["run"]["href"] = run_href
+        json_result["run"]["task-href"] = task_href
 
         # If there's a transform (already validated), do it.
 
@@ -666,7 +698,7 @@ class ArchiveWorker():
                     "succeeded": False,
                     "error": "Exception during archiving: %s" % (str(ex))
                 }
-                self.log.debug("%d: Exception: %s", self.id, str(ex))
+                self.log.exeption("%d: Exception" % (self.id))
                 returncode = 1
 
 
@@ -785,7 +817,12 @@ def main_program():
     next_refresh = None
     last_debug = log.is_forced_debugging()
 
+    db.query("SELECT heartbeat_boot('archiver')")
+
+
     while True:
+
+        db.query("SELECT heartbeat('archiver')")
 
         # Drain the pools if the debug level changes.  This is done
         # since persisting archivers won't register the change in state.
@@ -814,6 +851,8 @@ def main_program():
 
             warmboot = False
 
+            db.query("SELECT heartbeat('archiver', %s)", [datetime.timedelta(seconds=next_refresh)])
+
             if db.wait(next_refresh):
                 notifications = [ tup[0] for tup in db.notifications() ]
                 log.debug("Notifications: %s" % (" ".join(notifications)))
@@ -833,10 +872,13 @@ def main_program():
             log.debug("Already have a full slate of workers.")
             continue
 
+        # TODO: A lot of what's being pulled here can be pulled from
+        # the spec.  Remove anything unnecessary.
         result = db.query("""SELECT id, task_uuid, run_uuid, archiver,
                              archiver_data, start,
                              duration, test, tool, participants, result,
-                             attempts, last_attempt, transform, task_detail
+                             attempts, last_attempt, transform, task_detail, run_detail,
+                             spec
                              FROM archiving_next(%s)""",
                           [options.max_parallel])
 
@@ -876,7 +918,6 @@ def main_program():
 
             log.debug("%d: Starting worker", id)
             workers[id] = ArchiveWorker(db, log, row, archiver_collection)
-
 
 
 if options.daemon:

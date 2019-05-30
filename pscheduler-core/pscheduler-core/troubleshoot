@@ -67,6 +67,12 @@ opt_parser.add_option("--quick",
                       action="store_true",
                       dest="quick")
 
+opt_parser.add_option("--skip-single",
+                      help="Skip most single-participant diagnostics",
+                      default=False,
+                      action="store_true",
+                      dest="skip_single")
+
 opt_parser.add_option("--stats",
                       help="Dump server statistics",
                       default=False,
@@ -98,6 +104,11 @@ if host_z is not None:
         print
     else:
         hosts.append(host_z)
+
+
+
+if options.skip_single and host_z is None:
+    pscheduler.fail("Nothing to do on a single host with --skip-single enabled.")
 
 
 
@@ -143,7 +154,7 @@ def check_mtu(host_a, host_z=None):
         host_z = host_a
         host_a = None
 
-    start("  Checking path MTU")
+    start("  Measuring MTU")
     status, result = pscheduler.url_get(
         pscheduler.api_url(host_a, "/mtu-safe"),
         params={ "dest": host_z },
@@ -236,21 +247,18 @@ def run_task(message, lead, task, bind=None):
     # Post
 
     tasks_url = pscheduler.api_url(lead, '/tasks')
-    try:
-        status, task_url = pscheduler.url_post(
-            tasks_url,
-            data=pscheduler.json_dump(task),
-            bind=bind,
-            throw=True)
-    except Exception as ex:
-        failed("Unable to post task: %s" % (str(ex)))
+    status, task_url = pscheduler.url_post(
+        tasks_url,
+        data=task,
+        bind=bind,
+        throw=False)
 
     if status != 200:
-        failed("Failed to post task: " + task_url)
+        failed("Unable to post task: %s" % (task_url))
 
     # Fetch posted task
 
-    status, task_data = pscheduler.url_get("%s?detail" % (task_url))
+    status, task_data = pscheduler.url_get("%s?detail" % (task_url), throw=False)
     if status != 200:
         failed("Failed to post task: " + task_data)
 
@@ -374,12 +382,11 @@ for host in hosts:
     print
 
 
-    if not options.quick:
+    if not options.quick and not options.skip_single:
         check_mtu(host)
 
 
-
-    start("  Checking for pScheduler")
+    start("  Looking for pScheduler")
     up, reason = pscheduler.api_ping(host)
     if up:
         ok()
@@ -406,6 +413,24 @@ for host in hosts:
 
     # Hold this for later two-host comparison
     clocks[host] = result
+
+    if options.skip_single:
+        continue
+
+    start("  Exercising API")
+    for test in [
+            ("status", "Status", True),
+            ("tests", "Tests", False),
+            ("tools", "Tools", False)
+    ]:
+        endpoint, title, ok_404 = test
+        progress(title)
+        status, result = pscheduler.url_get(
+            pscheduler.api_url(host, endpoint),
+            throw=False)
+        if status not in [ 200, 404 ] or (status == 404 and not ok_404):
+            failed(result)
+    ok()
 
 
     if options.stats:

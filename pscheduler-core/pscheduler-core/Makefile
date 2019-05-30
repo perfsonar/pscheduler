@@ -31,6 +31,7 @@ COMMANDS=\
 	schedule \
 	task \
 	troubleshoot \
+	version \
 	watch
 
 RAWCOMMANDS=\

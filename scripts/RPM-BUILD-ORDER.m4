@@ -41,10 +41,16 @@ pscheduler-rpm
 postgresql-init
 postgresql-load
 
+# jq version with new patches. replace when patches accepted upstream
+jq
+
 # Python Modules
+python-setuptools
 python-argparse
 python-functools32
 python-isodate
+python2-pyrsistent
+python2-jsonschema
 python-netaddr
 python-ntplib
 python-py-radix
@@ -56,6 +62,7 @@ python-tzlocal
 python-vcversioner
 # This is how EL prefixes it.
 python2-pyasn1
+python2-pyasn1-modules
 # This doesn't get a python- prefix.  Ask CentOS why.
 pysnmp
 
@@ -68,6 +75,7 @@ python-icmperror
 
 # Apache add-ons
 httpd-firewall
+mod_wsgi
 httpd-wsgi-socket
 
 
@@ -95,12 +103,14 @@ pscheduler-server
 
 # Tests
 pscheduler-test-clock
+pscheduler-test-disk-to-disk		--bundle extras
 pscheduler-test-http
 pscheduler-test-idle
 pscheduler-test-idlebgm
 pscheduler-test-idleex
 pscheduler-test-latency
 pscheduler-test-latencybg
+pscheduler-test-netreach
 pscheduler-test-throughput
 pscheduler-test-rtt
 pscheduler-test-simplestream
@@ -111,30 +121,33 @@ pscheduler-test-trace
 pscheduler-test-dns
 
 # Tools
-pscheduler-tool-owping
-pscheduler-tool-powstream
-pscheduler-tool-iperf2
-pscheduler-tool-iperf3
-pscheduler-tool-nuttcp
 pscheduler-tool-bwctliperf2		--bundle obsolete
 pscheduler-tool-bwctliperf3		--bundle obsolete
 pscheduler-tool-bwctlping		--bundle obsolete
-pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-bwctltracepath		--bundle obsolete
+pscheduler-tool-bwctltraceroute		--bundle obsolete
+pscheduler-tool-curl			--bundle extras
+pscheduler-tool-dnspy
+pscheduler-tool-globus			--bundle extras
+pscheduler-tool-iperf2
+pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
+pscheduler-tool-nmapreach
+pscheduler-tool-nuttcp
+pscheduler-tool-owping
+pscheduler-tool-paris-traceroute
+pscheduler-tool-ping
+pscheduler-tool-powstream
+pscheduler-tool-psclock
 pscheduler-tool-psurl
 pscheduler-tool-pysnmp			--bundle snmp
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
 pscheduler-tool-snooze
-pscheduler-tool-ping
-pscheduler-tool-psclock
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
 pscheduler-tool-twping
-pscheduler-tool-paris-traceroute
-pscheduler-tool-dnspy
 
 # Archivers
 pscheduler-archiver-bitbucket
@@ -149,6 +162,7 @@ pscheduler-archiver-syslog
 pscheduler-context-changefail
 pscheduler-context-changenothing
 pscheduler-context-linuxnns
+pscheduler-context-linuxvrf
 
 
 # Misc.

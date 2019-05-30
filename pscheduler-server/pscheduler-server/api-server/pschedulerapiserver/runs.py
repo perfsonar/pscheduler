@@ -39,10 +39,18 @@ def task_uuid_runtimes(task):
     # TODO: At some point, we will likely have to consider making the
     # proposals fall within the limits, which is going to be complex.
 
-    return json_query_simple("""
-        SELECT row_to_json(apt.*)
-        FROM  api_proposed_times(%s, %s, %s) apt
-        """, [task, range_start, range_end], empty_ok=True)
+    proposed_priority = arg_integer('priority')
+
+    if proposed_priority is None:
+        return json_query_simple(
+            """SELECT row_to_json(apt.*)
+            FROM  api_proposed_times(%s, %s, %s) apt""",
+            [task, range_start, range_end], empty_ok=True)
+    else:
+        return json_query_simple(
+            """SELECT row_to_json(apt.*)
+            FROM  api_proposed_times(%s, %s, %s, %s) apt""",
+            [task, range_start, range_end, proposed_priority], empty_ok=True)
 
 
 
@@ -65,7 +73,7 @@ def __evaluate_limits(
     log.debug("Task is %s, duration is %s" % (task_spec, duration))
 
     limit_input = copy.copy(task_spec)
-    limit_input['schedule'] = {
+    limit_input['run_schedule'] = {
         'start': pscheduler.datetime_as_iso8601(start_time),
         'duration': pscheduler.timedelta_as_iso8601(duration)
     }
@@ -80,16 +88,12 @@ def __evaluate_limits(
     # Don't pass hints since that would have been covered when the
     # task was submitted and only the scheduler will be submitting
     # runs.
-    passed, limits_passed, diags, _new_task \
-        = processor.process(limit_input, hints, rewrite=False)
+    passed, limits_passed, diags, _new_task, priority \
+        = processor.process(limit_input, hints, rewrite=False, prioritize=True)
 
     log.debug("Passed: %s.  Diags: %s" % (passed, diags))
 
-    # This prevents the run from being put in a non-starter state
-    if passed:
-        diags = None
-
-    return passed, diags, None
+    return passed, diags, None, priority
 
 
 
@@ -161,23 +165,37 @@ def tasks_uuid_runs(task):
         except ValueError as ex:
             return bad_request("Invalid JSON: %s" % (str(ex)))
 
-
-        passed, diags, response = __evaluate_limits(task, start_time)
+        try:
+            passed, diags, response, priority \
+                = __evaluate_limits(task, start_time)
+        except Exception as ex:
+            log.exception()
+            return error(str(ex))
         if response is not None:
             return response
 
+        try:
+            log.debug("Posting run for task %s starting %s, priority %s"
+                      % (task, start_time, priority))
 
-        log.debug("Posting run for task %s starting %s"
-                  % (task, start_time))
-        cursor = dbcursor_query(
-            "SELECT * FROM api_run_post(%s, %s, NULL, %s)",
-            [task, start_time, diags], onerow=True)
-        succeeded, uuid, conflicts, error_message = cursor.fetchone()
-        cursor.close()
-        if conflicts:
-            return conflict(error_message)
-        if error_message:
-            return error(error_message)
+            if passed:
+                diag_message = None
+            else:
+                diag_message = "Run forbidden by limits:\n%s" % (diags)
+
+            cursor = dbcursor_query(
+                "SELECT * FROM api_run_post(%s, %s, NULL, %s, %s, %s)",
+                [task, start_time, diag_message, priority, diags],
+                onerow=True)
+            succeeded, uuid, conflicts, error_message = cursor.fetchone()
+            cursor.close()
+            if conflicts:
+                return conflict(error_message)
+            if error_message:
+                return error(error_message)
+        except Exception as ex:
+            log.exception()
+            return error(str(ex))
 
         url = base_url() + '/' + uuid
         log.debug("New run posted to %s", url)
@@ -279,62 +297,52 @@ def tasks_uuid_runs_run(task, run):
 
         # Obey the wait time with tries at 0.5s intervals
         tries = wait_time * 2 if (wait_local or wait_merged) else 1
+        result = {}
 
         while tries:
 
-            cursor = dbcursor_query(
-                """
-                SELECT
-                    lower(run.times),
-                    upper(run.times),
-                    upper(run.times) - lower(run.times),
-                    task.participant,
-                    task.nparticipants,
-                    task.participants,
-                    run.part_data,
-                    run.part_data_full,
-                    run.result,
-                    run.result_full,
-                    run.result_merged,
-                    run_state.enum,
-                    run_state.display,
-                    run.errors,
-                    run.clock_survey,
-                    run.id,
-                    archiving_json(run.id),
-                    run.added,
-                    run_state.finished
-                FROM
-                    run
-                    JOIN task ON task.id = run.task
-                    JOIN run_state ON run_state.id = run.state
-                WHERE
-                    task.uuid = %s
-                    AND run.uuid = %s""", [task, run])
+            try:
+                cursor = dbcursor_query(
+                    """
+                    SELECT
+                        run_json(run.id),
+                        run_state.finished
+                    FROM
+                        task
+                        JOIN run ON task.id = run.task
+                        JOIN run_state ON run_state.id = run.state
+                    WHERE 
+                        task.uuid = %s
+                        AND run.uuid = %s
+                    """, [task, run])
+            except Exception as ex:
+                log.exception()
+                return error(str(ex))
 
             if cursor.rowcount == 0:
                 cursor.close()
                 return not_found()
 
-            row = cursor.fetchone()
+            result, finished = cursor.fetchone()
             cursor.close()
 
             if not (wait_local or wait_merged):
                 break
             else:
-                if (wait_local and row[8] is None) \
+                if (wait_local and result['result'] is None) \
                    or (wait_merged \
-                       and ( (row[9] is None) or (not row[18]) ) ):
-                    log.debug("Waiting for merged: %s %s", row[9], row[18])
+                       and ( (result['result-full'] is None) or (not finished) ) ):
+                    log.debug("Waiting (%d left) for merged: %s %s", tries, result['result-full'], finished)
                     time.sleep(0.5)
                     tries -= 1
                 else:
+                    log.debug("Got the requested result.")
                     break
 
-        # Return a result Whether or not we timed out and let the
-        # client sort it out.
 
-        result = {}
+        # Even if we timed out waiting, return the last result we saw
+        # and let the client sort it out.
+
 
         # This strips any query parameters and replaces the last item
         # with the run, which might be needed if the 'first' option
@@ -346,33 +354,17 @@ def tasks_uuid_runs_run(task, run):
         href = urlparse.urljoin( request.url, href_path )
 
         result['href'] = href
-        result['start-time'] = pscheduler.datetime_as_iso8601(row[0])
-        result['end-time'] = pscheduler.datetime_as_iso8601(row[1])
-        result['duration'] = pscheduler.timedelta_as_iso8601(row[2])
-        participant_num = row[3]
-        result['participant'] = participant_num
-        result['participants'] = [
-            server_netloc()
-            if participant is None and participant_num == 0
-            else participant
-            for participant in row[5]
-            ]
-        result['participant-data'] = row[6]
-        result['participant-data-full'] = row[7]
-        result['result'] = row[8]
-        result['result-full'] = row[9]
-        result['result-merged'] = row[10]
-        result['state'] = row[11]
-        result['state-display'] = row[12]
-        result['errors'] = row[13]
-        if row[14] is not None:
-            result['clock-survey'] = row[14]
-        if row[16] is not None:
-            result['archivings'] = row[16]
-        if row[17] is not None:
-            result['added'] = pscheduler.datetime_as_iso8601(row[17])
         result['task-href'] = root_url('tasks/' + task)
         result['result-href'] = href + '/result'
+
+        # For a NULL first participant, fill in the netloc.
+
+        try:
+            if result['participants'][0] is None:
+                result['participants'][0] = server_netloc()
+        except KeyError:
+            pass  # Not there?  Don't care.
+
 
         return json_response(result)
 
@@ -417,20 +409,33 @@ def tasks_uuid_runs_run(task, run):
             except ValueError:
                 return bad_request("Invalid start time")
 
-            passed, diags, response = __evaluate_limits(task, start_time)
-            if response is not None:
-                return response
 
-            cursor = dbcursor_query(
-                "SELECT * FROM api_run_post(%s, %s, %s)",
-                [task, start_time, run], onerow=True)
-            succeeded, uuid, conflicts, error_message = cursor.fetchone()
-            cursor.close()
-            if conflicts:
-                return conflict(error_message)
-            if not succeeded:
-                return error(error_message)
-            log.debug("Full put of %s, got back %s", run, uuid)
+            try:
+
+                passed, diags, response, priority \
+                    = __evaluate_limits(task, start_time)
+                if response is not None:
+                    return response
+
+                if passed:
+                    diag_message = None
+                else:
+                    diag_message = "Run forbidden by limits:\n%s" % (diags)
+
+                cursor = dbcursor_query(
+                    "SELECT * FROM api_run_post(%s, %s, %s, %s, %s, %s)",
+                    [task, start_time, run, diag_message, priority, diags],
+                    onerow=True)
+                succeeded, uuid, conflicts, error_message = cursor.fetchone()
+                cursor.close()
+                if conflicts:
+                    return conflict(error_message)
+                if not succeeded:
+                    return error(error_message)
+                log.debug("Full put of %s, got back %s", run, uuid)
+            except Exception as ex:
+                log.exception()
+                return error(str(ex))
 
             return ok()
 

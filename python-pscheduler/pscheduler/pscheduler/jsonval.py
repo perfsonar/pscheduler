@@ -446,9 +446,13 @@ __dictionary__ = {
     # Compound Types
     #
 
-    "ArchiveSpecification": {
+    "ArchiveSpecification_V1": {
         "type": "object",
         "properties": {
+            "schema": {
+                "type": "integer",
+                "enum": [ 1 ]
+            },
             "archiver": { "type": "string" },
             "data": { "$ref": "#/pScheduler/AnyJSON" },
             "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
@@ -460,6 +464,43 @@ __dictionary__ = {
             "data",
             ]
         },
+
+    "ArchiveSpecification_V2": {
+        "type": "object",
+        "properties": {
+            "schema": {
+                "type": "integer",
+                "enum": [ 2 ]
+            },
+            "runs": {
+                "type": "string",
+                "enum": [
+                    "all",
+                    "succeeded",
+                    "failed"
+                    ]
+            },
+            "archiver": { "type": "string" },
+            "data": { "$ref": "#/pScheduler/AnyJSON" },
+            "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
+            "ttl": { "$ref": "#/pScheduler/Duration" },
+            "uri-host": { "$ref": "#/pScheduler/URLHostPort" }
+            },
+        "additionalProperties": False,
+        "required": [
+            "schema",
+            "archiver",
+            "data",
+            ]
+        },
+
+    "ArchiveSpecification": {
+        "anyOf": [
+            { "$ref": "#/pScheduler/ArchiveSpecification_V1" },
+            { "$ref": "#/pScheduler/ArchiveSpecification_V2" }
+            ]
+        },
+
 
     "ContextSpecificationSingle": {
         "type": "object",
@@ -857,10 +898,39 @@ __dictionary__ = {
             ]
         },
 
+    "TaskSpecification_V3": {
+        "type": "object",
+        "properties": {
+            "schema":   {
+                "type": "integer",
+                "enum": [ 3 ]
+                },
+            "lead-bind":{ "$ref": "#/pScheduler/Host" },
+            "test":     { "$ref": "#/pScheduler/TestSpecification" },
+            "tool":     { "$ref": "#/pScheduler/String" },
+            "tools":    { "$ref": "#/pScheduler/StringList" },
+            "schedule": { "$ref": "#/pScheduler/ScheduleSpecification" },
+            "priority": { "$ref": "#/pScheduler/Integer" },
+            "archives": {
+                "type": "array",
+                "items": { "$ref": "#/pScheduler/ArchiveSpecification" },
+                },
+            "contexts": { "$ref": "#/pScheduler/ContextSpecification" },
+            "reference": { "$ref": "#/pScheduler/AnyJSON" },
+            "_key": { "$ref": "#/pScheduler/String" },
+        },
+        "additionalProperties": False,
+        "required": [
+            "schema",
+            "test",
+            ]
+        },
+
     "TaskSpecification": {
         "anyOf": [
             { "$ref": "#/pScheduler/TaskSpecification_V1" },
-            { "$ref": "#/pScheduler/TaskSpecification_V2" }
+            { "$ref": "#/pScheduler/TaskSpecification_V2" },
+            { "$ref": "#/pScheduler/TaskSpecification_V3" }
             ]
         },
 
@@ -1176,7 +1246,7 @@ __dictionary__ = {
 __default_schema__ = {
 
     # TODO: Find out if this is downloaded or just a placeholder
-    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "id": "http://perfsonar.net/pScheduler/json_generic.json",
     "title": "pScheduler Generic Validation Schema",
 
@@ -1193,7 +1263,7 @@ def json_validate(json, skeleton):
     """Validate JSON against a jsonschema schema.
 
     The skeleton is a dictionary containing a partial,
-    draft-04-compatible jsonschema schema, containing only the
+    draft-07-compatible jsonschema schema, containing only the
     following:
 
         type         (array, boolean, integer, null, number, object, string)
@@ -1249,12 +1319,12 @@ def json_validate(json, skeleton):
     # Let this throw whatever it's going to throw, since schema errors
     # are problems wih the software, not the data.
 
-    # TODO: This doesn't seem to validate references.
-    jsonschema.Draft4Validator.check_schema(schema)
+    jsonschema.Draft7Validator.check_schema(schema)
 
     try:
         jsonschema.validate(json, schema,
-                            format_checker=jsonschema.FormatChecker())
+                            format_checker=jsonschema.draft7_format_checker
+        )
     except jsonschema.exceptions.ValidationError as ex:
 
         try:

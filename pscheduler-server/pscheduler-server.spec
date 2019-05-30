@@ -7,7 +7,7 @@
 # init scripts function just fine.
 
 Name:		pscheduler-server
-Version:	1.1.6
+Version:	1.1.6.1
 Release:	2%{?dist}
 
 Summary:	pScheduler Server
@@ -47,13 +47,12 @@ Requires:	pscheduler-account
 Requires:	python-daemon
 Requires:	python-flask
 Requires:	python-ipaddr
-Requires:	python-requests
 Requires:	python-jsontemplate
 
 # API Server
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
-BuildRequires:	python-pscheduler >= 1.3.1.3
+BuildRequires:	python-pscheduler >= 1.3.7.2
 BuildRequires:	m4
 Requires:	httpd-wsgi-socket
 Requires:	pscheduler-server
@@ -61,11 +60,9 @@ Requires:	pscheduler-server
 # python-pscheduler, but this package is what does the serving, so
 # mod_ssl is required here.
 Requires:	mod_ssl
-Requires:	mod_wsgi
-Requires:	python-pscheduler >= 1.3.1.3
-Requires:	python-requests
+Requires:	mod_wsgi > 4.0
+Requires:	python-pscheduler >= 1.3.7.2
 Requires:	pytz
-
 
 # General
 BuildRequires:	pscheduler-rpm
@@ -92,19 +89,21 @@ The pScheduler server
 %define default_archives %{_pscheduler_sysconfdir}/archives
 %define rpm_macros %{_pscheduler_rpmmacroprefix}%{name}
 
+%define configurables_file %{_pscheduler_sysconfdir}/configurables.conf
+
 # Daemons
-%define log_dir %{_var}/log/pscheduler
 %define archiver_default_dir %{_pscheduler_sysconfdir}/default-archives
 
 # API Server
 %define httpd_conf_d   %{_sysconfdir}/httpd/conf.d
 %define api_httpd_conf %{httpd_conf_d}/pscheduler-api-server.conf
-%define api_run_space  %{_rundir}/%{name}
 # TODO: It would be nice if we had a way to automatically find this.
 %define apache_user    apache
 %define apache_group   apache
 
 %define server_conf_dir %{_pscheduler_sysconfdir}
+# Runtime space for PID files and debug flags.
+%define run_dir  %{_rundir}/%{name}
 
 # Note that we want this here because it seems to work well without
 # assistance on systems where selinux is enabled.  Anywhere else and
@@ -151,14 +150,14 @@ make -C daemons \
      CONFIGDIR=%{daemon_config_dir} \
      DAEMONDIR=%{_pscheduler_daemons} \
      DSNFILE=%{dsn_file} \
-     LOGDIR=%{log_dir} \
+     LOGDIR=%{_pscheduler_log_dir} \
      PGDATABASE=%{database_name} \
      PGPASSFILE=%{_pscheduler_database_pgpass_file} \
      PGSERVICE=%{pgsql_service}.service \
      PGUSER=%{_pscheduler_database_user} \
      PSUSER=%{_pscheduler_user} \
      ARCHIVERDEFAULTDIR=%{archiver_default_dir} \
-     RUNDIR=%{_rundir} \
+     RUNDIR=%{run_dir} \
      VAR=%{_var}
 
 #
@@ -173,7 +172,10 @@ make -C daemons \
 
 make -C utilities \
     "CONFIGDIR=%{_pscheduler_sysconfdir}" \
+    "CONFIGURABLESFILE=%{configurables_file}" \
     "LIMITSFILE=%{_pscheduler_limit_config}" \
+    "LOGDIR=%{_pscheduler_log_dir}" \
+    "LOGFILE=%{_pscheduler_log_file}" \
     "PGDATABASE=%{database_name}" \
     "PGPASSFILE=%{pgpass_file}" \
     "TMPDIR=%{_tmppath}" \
@@ -242,7 +244,7 @@ make -C daemons \
      install
 
 mkdir -p $RPM_BUILD_ROOT/%{archiver_default_dir}
-mkdir -p $RPM_BUILD_ROOT/%{log_dir}
+mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_log_dir}
 
 #
 # API Server
@@ -258,12 +260,12 @@ make -C api-server \
      "PREFIX=${RPM_BUILD_ROOT}" \
      "DSN_FILE=%{dsn_file}" \
      "LIMITS_FILE=%{_pscheduler_limit_config}" \
-     "RUN_SPACE=%{api_run_space}" \
+     "RUN_DIR=%{run_dir}" \
      install
 
 mkdir -p ${RPM_BUILD_ROOT}/%{server_conf_dir}
 
-mkdir -p ${RPM_BUILD_ROOT}/%{api_run_space}
+mkdir -p ${RPM_BUILD_ROOT}/%{run_dir}
 
 #
 # Utilities
@@ -272,6 +274,20 @@ make -C utilities \
     "DESTDIR=${RPM_BUILD_ROOT}/%{_pscheduler_commands}" \
     "INTERNALSDIR=$RPM_BUILD_ROOT/%{_pscheduler_internals}" \
     install
+
+
+mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}
+cat > $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}/%{name} <<EOF
+#
+# %{name}
+#
+Cmnd_Alias PSCHEDULER_COMMAND_LOG = %{_pscheduler_commands}/log
+%%%{_pscheduler_group} ALL = (root) NOPASSWD: PSCHEDULER_COMMAND_LOG
+Defaults!PSCHEDULER_COMMAND_LOG !requiretty
+
+
+EOF
+
 
 
 
@@ -440,14 +456,6 @@ then
         setsebool -P httpd_can_network_connect_db 1
     fi
 
-    # HACK: BWCTLBC  Remove when BWCTL backward compatibility is removed.  See #107.
-    STATE=$(getsebool httpd_can_network_connect | awk '{ print $3 }')
-    if [ "${STATE}" != "on" ]
-    then
-        echo "Setting SELinux permissions (may take awhile)"
-        setsebool -P httpd_can_network_connect 1
-    fi
-
 fi
 
 systemctl enable httpd
@@ -591,7 +599,7 @@ systemctl restart "%{pgsql_service}"
 %{_pscheduler_daemons}/*
 %{_pscheduler_commands}/*
 %attr(750,%{_pscheduler_user},%{_pscheduler_group}) %{archiver_default_dir}
-%attr(750,%{_pscheduler_user},%{_pscheduler_group}) %{log_dir}
+%attr(750,%{_pscheduler_user},%{_pscheduler_group}) %{_pscheduler_log_dir}
 
 #
 # API Server
@@ -599,10 +607,11 @@ systemctl restart "%{pgsql_service}"
 %defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
 %license LICENSE
 %{api_dir}
-%attr(700,%{_pscheduler_user},%{_pscheduler_group}) %{api_run_space}
 %config(noreplace) %{api_httpd_conf}
 
 #
 # Utilities
 #
-# (Nothing)
+
+%attr(440,root,root) %{_pscheduler_sudoersdir}/*
+

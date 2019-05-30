@@ -180,6 +180,20 @@ BEGIN
     END IF;
 
 
+    -- Version 7 to version 8
+    -- Adds 'priority' and 'limit_diags' columns
+    IF t_version = 7
+    THEN
+        ALTER TABLE run ADD COLUMN
+        priority INTEGER DEFAULT 0;
+
+        ALTER TABLE run ADD COLUMN
+        limit_diags TEXT;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -221,7 +235,8 @@ DO $$ BEGIN PERFORM drop_function_all('run_has_conflicts'); END $$;
 
 CREATE OR REPLACE FUNCTION run_has_conflicts(
     task_id BIGINT,
-    proposed_start TIMESTAMP WITH TIME ZONE
+    proposed_start TIMESTAMP WITH TIME ZONE,
+    proposed_priority INTEGER = NULL
 )
 RETURNS BOOLEAN
 AS $$
@@ -260,11 +275,16 @@ BEGIN
         -- Exclusive can't collide with anything
         ( taskrec.exclusive
           AND EXISTS (SELECT * FROM run_conflictable
-                      WHERE times && proposed_times) )
+                      WHERE
+		          times && proposed_times
+		          AND priority >= proposed_priority) )
         -- Non-exclusive can't collide with exclusive
           OR ( NOT taskrec.exclusive
                AND EXISTS (SELECT * FROM run_conflictable
-                           WHERE exclusive AND times && proposed_times) )
+                           WHERE
+			       exclusive
+			       AND times && proposed_times
+			       AND priority >= proposed_priority) )
         );
 
 END;
@@ -273,6 +293,8 @@ $$ LANGUAGE plpgsql;
 
 
 DROP TRIGGER IF EXISTS run_alter ON run CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('run_alter'); END $$;
 
 CREATE OR REPLACE FUNCTION run_alter()
 RETURNS TRIGGER
@@ -324,7 +346,6 @@ BEGIN
             horizon, NEW.times, (upper(NEW.times) - normalized_now() - horizon),
 	    tstzrange(normalized_now(), normalized_now()+horizon);
     END IF;
-
 
     -- Reject new runs that overlap with anything that isn't a
     -- finished run or where this insert would cause a conflict.
@@ -412,7 +433,7 @@ BEGIN
         pdata_out := row_to_json(t) FROM ( SELECT taskrec.participant AS participant,
                                            cast ( taskrec.json #>> '{test, spec}' AS json ) AS test ) t;
 
-        run_result := pscheduler_internal(ARRAY['invoke', 'tool', tool_name, 'participant-data'], pdata_out::TEXT );
+        run_result := pscheduler_command(ARRAY['internal', 'invoke', 'tool', tool_name, 'participant-data'], pdata_out::TEXT );
         IF run_result.status <> 0 THEN
 	    RAISE EXCEPTION 'Unable to get participant data: %', run_result.stderr;
 	END IF;
@@ -421,6 +442,10 @@ BEGIN
     END IF;
 
     IF (TG_OP = 'UPDATE') THEN
+               
+	IF NEW.priority <> OLD.priority THEN
+	    RAISE EXCEPTION 'Priority cannot be changed after scheduling.';
+	END IF;
 
 	IF NOT run_state_transition_is_valid(OLD.state, NEW.state) THEN
             RAISE EXCEPTION 'Invalid transition between states (% to %).',
@@ -432,13 +457,9 @@ BEGIN
 
         IF NEW.status IS NOT NULL
            AND ( (OLD.status IS NULL) OR (NEW.status <> OLD.status) )
+           AND lower(NEW.times) > normalized_now()
         THEN
-            -- Future runs are fatal
-            IF lower(NEW.times) > normalized_now()
-            THEN
-                RAISE EXCEPTION 'Cannot set state on future runs. % / %', lower(NEW.times), normalized_now();
-            END IF;
-
+            RAISE EXCEPTION 'Cannot set state on future runs. % / %', lower(NEW.times), normalized_now();
         END IF;
 
 
@@ -447,7 +468,7 @@ BEGIN
 
 	IF NEW.state <> OLD.state
             AND NEW.state IN ( run_state_finished(), run_state_overdue(),
-                 run_state_missed(), run_state_failed() )
+                 run_state_missed(), run_state_failed(), run_state_preempted() )
         THEN
 
 	    -- Adjust the end times only if there's a sane case for
@@ -506,6 +527,8 @@ CREATE TRIGGER run_alter BEFORE INSERT OR UPDATE ON run
 
 DROP TRIGGER IF EXISTS run_task_disabled ON task CASCADE;
 
+DO $$ BEGIN PERFORM drop_function_all('run_task_disabled'); END $$;
+
 CREATE OR REPLACE FUNCTION run_task_disabled()
 RETURNS TRIGGER
 AS $$
@@ -539,6 +562,8 @@ CREATE TRIGGER run_task_disabled BEFORE UPDATE ON task
 
 DROP TRIGGER IF EXISTS run_horizon_change ON configurables CASCADE;
 
+DO $$ BEGIN PERFORM drop_function_all('run_horizon_change'); END $$;
+
 CREATE OR REPLACE FUNCTION run_horizon_change()
 RETURNS TRIGGER
 AS $$
@@ -558,7 +583,49 @@ CREATE TRIGGER run_horizon_change AFTER UPDATE ON configurables
 
 
 
+-- Determine if a run can proceed or is pre-empted by other runs
+
+DO $$ BEGIN PERFORM drop_function_all('run_can_proceed'); END $$;
+
+CREATE OR REPLACE FUNCTION run_can_proceed(
+    run_id BIGINT
+)
+RETURNS BOOLEAN
+AS $$
+BEGIN
+
+    IF NOT EXISTS (SELECT * FROM run WHERE id = run_id)
+    THEN
+        RAISE EXCEPTION 'No such run.';
+    END IF;
+
+    RETURN NOT EXISTS (
+        SELECT *
+
+        FROM
+	  run run1
+	  JOIN task task1 ON task1.id = run1.task
+	  JOIN test test1 ON test1.id = task1.test
+	  JOIN scheduling_class scheduling_class1 ON
+              scheduling_class1.id = test1.scheduling_class
+	  JOIN run run2 ON
+              run2.times && run1.times
+	      AND run2.id <> run1.id
+	      AND run2.priority > run1.priority
+	      AND NOT run_state_is_finished(run2.state)
+	WHERE
+	    run1.id = run_id
+	    AND NOT scheduling_class1.anytime
+    );
+
+END;
+$$ LANGUAGE plpgsql;
+
+
+
 -- Maintenance functions
+
+DO $$ BEGIN PERFORM drop_function_all('run_handle_stragglers'); END $$;
 
 CREATE OR REPLACE FUNCTION run_handle_stragglers()
 RETURNS VOID
@@ -616,6 +683,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+DO $$ BEGIN PERFORM drop_function_all('run_purge'); END $$;
 
 CREATE OR REPLACE FUNCTION run_purge()
 RETURNS VOID
@@ -648,6 +716,8 @@ $$ LANGUAGE plpgsql;
 
 
 -- Maintenance that happens four times a minute.
+
+DO $$ BEGIN PERFORM drop_function_all('run_main_fifteen'); END $$;
 
 CREATE OR REPLACE FUNCTION run_maint_fifteen()
 RETURNS VOID
@@ -694,6 +764,75 @@ AS
 
 
 
+
+--
+-- JSON Representation
+--
+
+DO $$ BEGIN PERFORM drop_function_all('run_json'); END $$;
+
+-- Return a JSON record suitable for returning by the REST API
+
+CREATE OR REPLACE FUNCTION run_json(run_id BIGINT)
+RETURNS JSONB
+AS $$
+DECLARE
+    rec RECORD;
+    result JSONB;
+BEGIN
+    SELECT INTO rec
+        run.*,
+        run_state.*,
+	task.*,
+	archiving_json(run.id) AS archivings
+    FROM
+        run
+        JOIN run_state ON run_state.id = run.state
+        JOIN task ON task.id = run.task
+    WHERE run.id = run_id;
+    IF NOT FOUND
+    THEN
+        RAISE EXCEPTION 'No such run.';
+    END IF;
+
+    result := json_build_object(
+        'start-time', timestamp_with_time_zone_to_iso8601(lower(rec.times)),
+        'end-time', timestamp_with_time_zone_to_iso8601(upper(rec.times)),
+        'duration', interval_to_iso8601(upper(rec.times) - lower(rec.times)),
+	'participant', rec.participant,
+	'participants', rec.participants,
+	'participant-data', rec.part_data,
+	'participant-data-full', rec.part_data_full,
+	'result', rec.result,
+	'result-full', rec.result_full,
+	'result-merged', rec.result_merged,
+	'state', rec.enum,
+	'state-display', rec.display,
+	'errors', rec.errors,
+	-- clock-survey is conditional; see below.
+	-- archivings is conditional; see below.
+        'added', timestamp_with_time_zone_to_iso8601(rec.added),
+	'priority', rec.priority,
+	'limit-diags', rec.limit_diags
+	-- task-href has to be added by the caller
+	-- result-href has to be added by the caller
+    );
+
+    IF rec.clock_survey IS NOT NULL THEN
+        result := jsonb_set(result, '{clock-survey}', rec.clock_survey::JSONB, TRUE);
+    END IF;
+
+    IF rec.archivings IS NOT NULL THEN
+        result := jsonb_set(result, '{archivings}', rec.archivings::JSONB, TRUE);
+    END IF;
+
+    RETURN result;
+END
+$$ language plpgsql;
+
+
+
+
 --
 -- API
 --
@@ -708,7 +847,9 @@ CREATE OR REPLACE FUNCTION api_run_post(
     task_uuid UUID,
     start_time TIMESTAMP WITH TIME ZONE,
     run_uuid UUID,  -- NULL to assign one
-    nonstart_reason TEXT = NULL
+    nonstart_reason TEXT = NULL,
+    priority INTEGER = NULL,
+    limit_diags TEXT = NULL
 )
 RETURNS TABLE (
     succeeded BOOLEAN,  -- True if the post was successful
@@ -768,8 +909,10 @@ BEGIN
     time_range := tstzrange(start_time, start_time + task.duration, '[)');
 
     WITH inserted_row AS (
-        INSERT INTO run (uuid, task, times, state, errors)
-        VALUES (run_uuid, task.id, time_range, initial_state, nonstart_reason)
+        INSERT INTO run (uuid, task, times, state,
+	    errors, priority, limit_diags)
+        VALUES (run_uuid, task.id, time_range, initial_state,
+	    nonstart_reason, priority, limit_diags)
         RETURNING *
     ) SELECT INTO run_uuid uuid FROM inserted_row;
 

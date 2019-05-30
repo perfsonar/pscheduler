@@ -2,7 +2,7 @@
 Identifier Class for ip-cidr-list
 """
 
-import ipaddr
+import ipaddress
 import pscheduler
 
 data_validator = {
@@ -47,7 +47,7 @@ class IdentifierIPCIDRList():
 
         self.cidrs = []
         for cidr in data['cidrs']:
-            self.cidrs.append(ipaddr.IPNetwork(cidr))
+            self.cidrs.append(ipaddress.ip_network(unicode(cidr)))
 
 
 
@@ -61,7 +61,7 @@ class IdentifierIPCIDRList():
         """
 
         try:
-            ip = ipaddr.IPNetwork(hints['requester'])
+            ip = ipaddress.ip_network(unicode(hints['requester']))
         except KeyError:
             return False
 
@@ -70,7 +70,7 @@ class IdentifierIPCIDRList():
         # weren't GPL: https://pypi.python.org/pypi/pytricia
 
         for cidr in self.cidrs:
-            if ip in cidr:
+            if cidr.overlaps(ip):
                 return True
 
         return False

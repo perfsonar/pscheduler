@@ -1,0 +1,22 @@
+--- jsonschema-3.0.1.orig/jsonschema.egg-info/requires.txt	2019-03-01 13:00:57.000000000 +0100
++++ jsonschema-3.0.1/jsonschema.egg-info/requires.txt	2019-04-11 11:41:31.568679902 +0200
+@@ -1,7 +1,7 @@
+ attrs>=17.4.0
+ pyrsistent>=0.14.0
+ setuptools
+-six>=1.11.0
++six>=1.10.0
+ 
+ [:python_version < "3"]
+ functools32
+--- jsonschema-3.0.1.orig/setup.cfg	2019-03-01 13:00:58.000000000 +0100
++++ jsonschema-3.0.1/setup.cfg	2019-04-11 11:52:42.751408242 +0200
+@@ -27,7 +27,7 @@
+ 	attrs>=17.4.0
+ 	pyrsistent>=0.14.0
+ 	setuptools
+-	six>=1.11.0
++	six>=1.10.0
+ 	functools32;python_version<'3'
+ 
+ [options.extras_require]

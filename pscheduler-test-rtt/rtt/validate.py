@@ -14,7 +14,7 @@ def spec_is_valid(json):
             "rtt_v1": {
                 "type": "object",
                 "properties": {
-                    "schema":            { "$ref": "#/pScheduler/Cardinal" },
+                    "schema":            { "$ref": "#/pScheduler/Cardinal", "enum": [ 1 ] },
                     "count":             { "$ref": "#/pScheduler/Cardinal" },
                     "dest":              { "$ref": "#/pScheduler/Host" },
                     # There is no dest-node because this is a one-participant test.
@@ -40,7 +40,7 @@ def spec_is_valid(json):
             "rtt_v2": {
                 "type": "object",
                 "properties": {
-                    "schema":            { "$ref": "#/pScheduler/Cardinal" },
+                    "schema":            { "$ref": "#/pScheduler/Cardinal", "enum": [ 2 ] },
                     "count":             { "$ref": "#/pScheduler/Cardinal" },
                     "dest":              { "$ref": "#/pScheduler/Host" },
                     # There is no dest-node because this is a one-participant test.
@@ -60,6 +60,7 @@ def spec_is_valid(json):
                     "protocol":          { "$ref": "#/local/protocol" },
                     },
                 "required": [
+                    "schema",
                     "dest"
                     ],
                 "additionalProperties": False
@@ -67,7 +68,7 @@ def spec_is_valid(json):
             "rtt_v3": {
                 "type": "object",
                 "properties": {
-                    "schema":            { "$ref": "#/pScheduler/Cardinal" },
+                    "schema":            { "$ref": "#/pScheduler/Cardinal", "enum": [ 3 ] },
                     "count":             { "$ref": "#/pScheduler/Cardinal" },
                     "dest":              { "$ref": "#/pScheduler/Host" },
                     # There is no dest-node because this is a one-participant test.
@@ -88,6 +89,7 @@ def spec_is_valid(json):
                     "protocol":          { "$ref": "#/local/protocol" },
                     },
                 "required": [
+                    "schema",
                     "dest"
                     ],
                 "additionalProperties": False

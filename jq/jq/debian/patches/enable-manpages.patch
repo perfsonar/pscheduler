@@ -4,14 +4,12 @@ Forwarded: not-needed
 Last-Update: 2014-06-21
 ---
 This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
-Index: jq/Makefile.am
-===================================================================
---- jq.orig/Makefile.am	2015-10-11 02:08:02.582763538 +0200
-+++ jq/Makefile.am	2015-10-11 02:08:02.578763538 +0200
-@@ -106,6 +106,7 @@
+--- jq-1.6.orig/Makefile.am	2019-03-28 14:46:45.118245270 +0100
++++ jq-1.6/Makefile.am	2019-03-28 14:46:45.114245203 +0100
+@@ -126,6 +126,7 @@
+ ### Building the manpage
  
  man_MANS = jq.1
- .PHONY: real_docs
 +ENABLE_DOCS=1
  if ENABLE_DOCS
  jq.1: $(srcdir)/docs/content/3.manual/manual.yml

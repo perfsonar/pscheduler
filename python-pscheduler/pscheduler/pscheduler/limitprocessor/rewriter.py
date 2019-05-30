@@ -28,24 +28,15 @@ class Rewriter():
             script = transform["script"]
 
 
-        # One quirk of jq is that imports have to be at the top of the
-        # file.  Pull any in the script out and move them to the top
-        # before we define our function or any user code.
-
-        import_include = r"((import|include) [^;]+;)"
-
-
-        # Put imports and includes at the top
-        lines = map(
-            lambda x: x[0],
-            re.findall(import_include, script)
-        )
-
-        # Insert our function definition(s)
-        lines.extend([
+        script_lines = [
 
             "def classifiers:",
             "  ." + self.PRIVATE_KEY + ".classifiers",
+            ";",
+
+            "def classifiers_has($value):",
+            "  ." + self.PRIVATE_KEY + ".classifiers",
+            "  | contains([$value])",
             ";",
 
             "def change($message):",
@@ -58,24 +49,27 @@ class Rewriter():
             "    end",
             ";",
 
+            "def hint($name):",
+            "  ." + self.PRIVATE_KEY + ".hints[$name]",
+            ";",
+
             "def reject($message):",
             "  error(\"Task rejected: \" + ($message | tostring))",
             ";",
 
-            ])
+            script
+            ]
 
-        # Add the rest of the script without the imports and includes
-        lines.append(re.sub(import_include, "", script))
-
-        transform["script"] = lines
+        transform["script"] = script_lines
 
         self.transform = pscheduler.JQFilter(
             filter_spec=transform,
             args=transform.get("args", {}),
+            groom=True
         )
 
 
-    def __call__(self, task, classifiers, validate_callback=None):
+    def __call__(self, proposal, classifiers):
         """
         Rewrite the task given the classifiers.  Returns a tuple
         containing the rewritten task and an array of diagnostic
@@ -89,25 +83,24 @@ class Rewriter():
         JQRuntimeError that is thrown.
         """
 
-        task_in = copy.deepcopy(task)
+        task_in = copy.deepcopy(proposal["task"])
 
         # Rewriter-private data
         task_in[self.PRIVATE_KEY] = {
             "classifiers": classifiers,
             "changed": False,
-            "diags": []
+            "diags": [],
+            "hints": proposal["hints"]
         }
 
 
         result = self.transform(task_in)[0]
 
-#        print "RES", pscheduler.json_dump(result, pretty=True)
-
         if ("test" not in result) \
            or ("type" not in result["test"]) \
            or (not isinstance(result["test"]["type"], basestring)) \
            or ("spec" not in result["test"]) \
-           or (result["test"]["type"] != task["test"]["type"]):
+           or (result["test"]["type"] != proposal["task"]["test"]["type"]):
             raise ValueError("Invalid rewriter result:\n%s" \
                              % pscheduler.json_dump(result))
 
@@ -128,6 +121,9 @@ if __name__ == "__main__":
             "import \"pscheduler/iso8601\" as iso;",
 
             ".",
+
+            "# Exercise the hint function",
+            "| change(\"Hello there \\(hint(\"requester\"))\")",
 
             "| if .test.spec.bandwidth > 99999",
             "  then",
@@ -176,6 +172,11 @@ if __name__ == "__main__":
             ]
     })
 
+    hints = {
+        "requester": "127.0.0.1",
+        "server": "127.0.0.1",
+        "protocol": "https"
+    }
 
     task = {
         "schema": 1,
@@ -188,7 +189,7 @@ if __name__ == "__main__":
         },
         "test": {
             "spec": {
-                "dest": "www.notonthe.net",
+                "dest": "www.perfsonar.net",
                 "schema": 1
             },
             "type": "trace"
@@ -199,7 +200,7 @@ if __name__ == "__main__":
 
     try:
         (changed, new_task, diags)  = rewriter(
-            task, ["c1", "c2", "c3"])
+            { "task": task, "hints": hints }, ["c1", "c2", "c3"])
 
         if changed:
             if len(diags):

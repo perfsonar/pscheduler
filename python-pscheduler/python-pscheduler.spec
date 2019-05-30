@@ -4,7 +4,7 @@
 
 %define short	pscheduler
 Name:		python-%{short}
-Version:	1.3.7
+Version:	1.3.7.2
 Release:	1%{?dist}
 Summary:	Utility functions for pScheduler
 BuildArch:	noarch
@@ -27,21 +27,17 @@ Requires:	python-dateutil
 Requires:	python-dns
 Requires:	python-isodate
 Requires:	python-ipaddr
-%if 0%{?el6}
-Requires:	python-jsonschema
-%endif
-%if 0%{?el7}
-Requires:	python2-jsonschema
-%endif
+Requires:       python-ipaddress
+Requires:	python2-jsonschema >= 3.0
 Requires:	python-netaddr
 Requires:	python-netifaces
 Requires:	python-ntplib
-Requires:	python-psycopg2 >= 2.2.0
+Requires:	python-psycopg2 >= 2.6.1
 Requires:	python-py-radix
 # The limit system uses this.
 Requires:	pscheduler-jq-library
-Requires:	python-pyjq >= 2.0.1
-Requires:	python-requests
+Requires:	python-pycurl
+Requires:	python-pyjq >= 2.2.0
 Requires:	python-subprocess32
 Requires:	python-tzlocal
 Requires:	pytz
@@ -59,6 +55,7 @@ BuildRequires:	python-dateutil
 BuildRequires:	python-dns
 BuildRequires:	python-isodate
 BuildRequires:	python-ipaddr
+BuildRequires:  python-ipaddress
 %if 0%{?el6}
 BuildRequires:	python-jsonschema
 %endif
@@ -72,8 +69,8 @@ BuildRequires:	python-psycopg2 >= 2.2.0
 BuildRequires:	python-py-radix
 # The limit system uses this.
 BuildRequires:	pscheduler-jq-library
-BuildRequires:	python-pyjq >= 2.0.1
-BuildRequires:	python-requests
+BuildRequires:	python-pycurl
+BuildRequires:	python-pyjq >= 2.2.0
 BuildRequires:	python-subprocess32
 BuildRequires:	python-tzlocal
 BuildRequires:	pytz
@@ -81,6 +78,7 @@ BuildRequires:	pytz
 
 %define limit_config %{_pscheduler_sysconfdir}/limits.conf
 %define logdir %{_var}/log/pscheduler
+%define logfile pscheduler.log
 %define logrotate_d %{_sysconfdir}/logrotate.d
 %define syslog_d %{_sysconfdir}/rsyslog.d
 
@@ -110,7 +108,7 @@ mkdir -p $RPM_BUILD_ROOT/%{logrotate_d}
 cat > $RPM_BUILD_ROOT/%{logrotate_d}/%{name} <<EOF
 # Rotation for logs produced by pScheduler
 
-%{logdir}/pscheduler.log
+%{logdir}/%{logfile}
 {
     missingok
     sharedscripts
@@ -124,7 +122,7 @@ mkdir -p $RPM_BUILD_ROOT/%{syslog_d}
 cat > $RPM_BUILD_ROOT/%{syslog_d}/%{name}.conf <<EOF
 # Syslog configuration for pScheduler
 
-local4.*  %{logdir}/pscheduler.log
+local4.*  %{logdir}/%{logfile}
 EOF
 
 mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_rpmmacrodir}
@@ -134,6 +132,9 @@ cat > $RPM_BUILD_ROOT/%{macros} <<EOF
 #
 
 %%_pscheduler_limit_config %{limit_config}
+
+%%_pscheduler_log_dir %{logdir}
+%%_pscheduler_log_file %{logfile}
 EOF
 
 

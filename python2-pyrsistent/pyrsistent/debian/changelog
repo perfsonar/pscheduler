@@ -1,0 +1,11 @@
+pyrsistent (0.14.11-1) perfsonar-minor-staging; urgency=low
+
+  * New upstream version.
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Wed, 10 Apr 2019 15:47:08 +0000
+
+pyrsistent (0.14.10-1) unstable; urgency=low
+
+  * Initial upload.
+
+ -- Andrej Shadura <andrewsh@debian.org>  Sat, 09 Feb 2019 12:50:44 +0100

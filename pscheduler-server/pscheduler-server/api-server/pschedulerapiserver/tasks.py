@@ -5,9 +5,6 @@
 import pscheduler
 import urlparse
 
-# HACK: BWCTLBC
-import os
-
 from pschedulerapiserver import application
 
 from flask import request
@@ -206,7 +203,7 @@ def tasks():
     elif request.method == 'POST':
 
         try:
-            task = pscheduler.json_load(request.data, max_schema=2)
+            task = pscheduler.json_load(request.data, max_schema=3)
         except ValueError as ex:
             return bad_request("Invalid task specification: %s" % (str(ex)))
 
@@ -302,11 +299,15 @@ def tasks():
             log.debug("Limit processor is not initialized. %s", whynot)
             return no_can_do("Limit processor is not initialized: %s" % whynot)
 
-        hints = request_hints();
+        hints, error_response = request_hints();
+        if hints is None:
+            log.debug("Can't come up with valid hints for lead task limits.")
+            return error_response
+
         hints_data = pscheduler.json_dump(hints)
 
         log.debug("Processor = %s" % processor)
-        passed, limits_passed, diags, new_task \
+        passed, limits_passed, diags, new_task, _priority \
             = processor.process(task, hints)
 
         if not passed:
@@ -336,21 +337,11 @@ def tasks():
 
         try:
 
-            # HACK: BWCTLBC
-            if lead_bind is not None:
-                lead_bind_env = {
-                    "PSCHEDULER_LEAD_BIND_HACK": lead_bind
-                }
-            else:
-                lead_bind_env = None
-
-
             returncode, stdout, stderr = pscheduler.run_program(
                 [ "pscheduler", "internal", "invoke", "test",
                   task['test']['type'], "participants" ],
                 stdin = pscheduler.json_dump(task['test']['spec']),
-                timeout=5,
-                env_add=lead_bind_env
+                timeout=5
                 )
 
             if returncode != 0:
@@ -377,10 +368,6 @@ def tasks():
         tools = []
 
         tool_params={ "test": pscheduler.json_dump(task["test"]) }
-        # HACK: BWCTLBC
-        if lead_bind is not None:
-            log.debug("Using lead bind of %s" % str(lead_bind))
-            tool_params["lead-bind"] = lead_bind
 
         tool_offers = {}
 
@@ -473,9 +460,10 @@ def tasks():
         # of the other participants.
 
         cursor = dbcursor_query(
-            "SELECT * FROM api_task_post(%s, %s, %s, %s, 0, NULL, FALSE, %s)",
+            "SELECT * FROM api_task_post(%s, %s, %s, %s, 0, %s, NULL, FALSE, %s)",
             [pscheduler.json_dump(task), participants, hints_data,
-             pscheduler.json_dump(limits_passed), diags], onerow=True)
+             pscheduler.json_dump(limits_passed),
+             task.get("priority", None), diags], onerow=True)
 
         if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
@@ -487,7 +475,6 @@ def tasks():
         # Other participants get the UUID and participant list forced upon them.
 
         task["participants"] = participants
-        task_data = pscheduler.json_dump(task)
 
         task_params = { "key": task["_key"] } if "_key" in task else {}
 
@@ -499,7 +486,7 @@ def tasks():
 
                 # Post the task
 
-                log.debug("Tasking %d@%s: %s", participant, part_name, task_data)
+                log.debug("Tasking %d@%s: %s", participant, part_name, task)
                 post_url = pscheduler.api_url_hostport(part_name,
                                                        'tasks/' + task_uuid)
 
@@ -509,7 +496,7 @@ def tasks():
                 status, result = pscheduler.url_post(
                     post_url,
                     params=task_params,
-                    data=task_data,
+                    data=task,
                     bind=lead_bind,
                     json=False,
                     throw=False)
@@ -628,7 +615,7 @@ def tasks_uuid(uuid):
         # TODO: This should probably a PUT and not a POST.
 
         try:
-            json_in = pscheduler.json_load(request.data, max_schema=2)
+            json_in = pscheduler.json_load(request.data, max_schema=3)
         except ValueError as ex:
             return bad_request("Invalid JSON: %s" % str(ex))
         log.debug("JSON is %s", json_in)
@@ -650,12 +637,16 @@ def tasks_uuid(uuid):
             log.debug(message)
             return no_can_do(message)
 
-        hints = request_hints()
+        hints, error_response = request_hints();
+        if hints is None:
+            log.debug("Can't come up with valid hints for subordinate limits.")
+            return error_response
+
         hints_data = pscheduler.json_dump(hints)
 
         # Only the lead rewrites tasks; everyone else just applies
         # limits.
-        passed, limits_passed, diags, _new_task \
+        passed, limits_passed, diags, _new_task, priority \
             = processor.process(json_in, hints, rewrite=False)
 
         if not passed:
@@ -668,15 +659,22 @@ def tasks_uuid(uuid):
         log.debug("Posting task %s", uuid)
 
         try:
-            participants = pscheduler.json_load(request.data,
-                                                max_schema=2)["participants"]
+
+            try:
+                participants = pscheduler.json_load(request.data,
+                                                    max_schema=3)["participants"]
+            except Exception as ex:
+                return bad_request("Task error: %s" % str(ex))
+            cursor = dbcursor_query(
+                "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, %s, TRUE, %s)",
+                [request.data, participants, hints_data,
+                 pscheduler.json_dump(limits_passed), participant,
+                 json_in.get("priority", None),
+                 uuid,
+                 "\n".join(diags)])
+
         except Exception as ex:
             return bad_request("Task error: %s" % str(ex))
-        cursor = dbcursor_query(
-            "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, TRUE, %s)",
-            [request.data, participants, hints_data,
-             pscheduler.json_dump(limits_passed), participant, uuid,
-             "\n".join(diags)])
 
         if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")

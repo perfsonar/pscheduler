@@ -83,3 +83,74 @@ class ThreadSafeDictionary(dict):
     def __set__(self, name, value):
         with self.lock:
             return super(ThreadSafeDictionary, self).__set__(name, value)
+
+
+
+
+class ThreadSafeSet(object):
+
+    """A thread-safe set of items"""
+
+    def __init__(self):
+        self.items = {}
+        self.lock = threading.Lock()
+
+    def __len__(self):
+        return len(self.items)
+
+    def __contains__(self, id):
+        with self.lock:
+            return id in self.items
+
+    def add(self, id):
+        with self.lock:
+            self.items[id] = True
+
+    def drop(self, id):
+        with self.lock:
+            try:
+                del self.items[id]
+            except KeyError:
+                pass  # Not there?  Don't care.
+
+
+class ThreadSafeSetHold(object):
+
+    """A class for maintaining a temporary hold on an item in a ThreadSafeSet"""
+
+    def __init__(self, set, id):
+
+        assert(isinstance(set, ThreadSafeSet))
+
+        if id in set:
+            raise KeyError("ID %s is already being held." % (id))
+        self.set = set
+        self.id = id
+
+    def __enter__(self):
+        self.set.add(self.id)
+
+    def __exit__(self, type, value, traceback):
+        self.set.drop(self.id)
+
+
+
+
+class Barrier:
+    """Implementation of barrier class for Python 2.7."""
+
+    # PYTHON3:  Use threading.Barrier instead
+
+    def __init__(self, participants):
+        self.participants = participants
+        self.count = 0
+        self.lock = threading.Semaphore(1)
+        self.barrier = threading.Semaphore(0)
+
+    def wait(self):
+        with self.lock:
+            self.count = self.count + 1
+        if self.count == self.participants:
+            self.barrier.release()
+        self.barrier.acquire()
+        self.barrier.release()

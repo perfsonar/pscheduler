@@ -55,7 +55,7 @@ BEGIN
 
     IF table_exists AND table_version = 0
     THEN
-        RAISE EXCEPTION 'Table "%s" exists but is not in the versions table.',
+        RAISE EXCEPTION 'Table "%" exists but is not in the versions table.',
 	    table_name;
     END IF;
 
@@ -173,6 +173,8 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS table_version_alter ON table_version CASCADE;
 
+DO $$ BEGIN PERFORM drop_function_all('table_version_alter'); END $$;
+
 CREATE OR REPLACE FUNCTION table_version_alter()
 RETURNS TRIGGER
 AS $$
@@ -222,6 +224,8 @@ FOR EACH ROW
 
 
 DROP TRIGGER IF EXISTS table_version_alter_after ON table_version CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('table_version_alter_after'); END $$;
 
 CREATE OR REPLACE FUNCTION table_version_alter_after()
 RETURNS TRIGGER

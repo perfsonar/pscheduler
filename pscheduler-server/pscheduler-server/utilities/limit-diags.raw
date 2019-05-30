@@ -146,24 +146,25 @@ except Exception as ex:
 
 
 if options.start is not None:
-    task["schedule"] = {
+    task["run_schedule"] = {
         "start": options.start
     }
-    task["schedule"]["duration"] = options.duration \
+    task["run_schedule"]["duration"] = options.duration \
                                    if options.duration is not None else "PT10S"
         
 elif options.duration is not None:
-    task["schedule"] = {
+    task["run_schedule"] = {
         "duration": options.duration
     }
-    task["schedule"]["start"] = pscheduler.datetime_as_iso8601(
+    task["run_schedule"]["start"] = pscheduler.datetime_as_iso8601(
         pscheduler.time_now())
 
-if "schedule" in task:
+if "run_schedule" in task:
     print "For task starting at %s lasting %s:\n" % (
-        task["schedule"]["start"], task["schedule"]["duration"])
+        task["run_schedule"]["start"], task["run_schedule"]["duration"])
 
-_passed, _limits_passed, diags, new_task = processor.process(task, hints)
+_passed, _limits_passed, diags, new_task, priority \
+    = processor.process(task, hints, prioritize=True)
 
 print diags
 if new_task is not None:

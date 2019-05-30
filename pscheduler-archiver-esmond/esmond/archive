@@ -163,6 +163,22 @@ def archive(json):
                 run_href=run_href,
                 fast_mode=fast_mode
             )
+        elif test_type == 'disk-to-disk':
+            record = esmond_util.EsmondDiskToDiskRecord(
+                test_spec=test_spec,
+                reference=reference,
+                lead_participant=lead_participant,
+                measurement_agent=measurement_agent,
+                tool_name=tool_name,
+                summaries=summary_map,
+                duration=duration,
+                ts=test_start_time,
+                test_result=test_result,
+                run_href=run_href,
+                fast_mode=fast_mode
+            )
+            #always store raw for this as well
+            add_raw_event_type = True
         elif test_type == 'trace':
             record = esmond_util.EsmondTraceRecord(
                 test_spec=test_spec,

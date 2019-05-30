@@ -1,0 +1,31 @@
+#!/usr/bin/python
+#
+# Convert a test specification to command-line options
+
+import pscheduler
+
+from validate import spec_is_valid
+
+spec = pscheduler.json_load(exit_on_error=True, max_schema=1)
+
+valid, message = spec_is_valid(spec)
+
+if not valid:
+    pscheduler.fail(message)
+
+
+result = pscheduler.speccli_build_args(spec, 
+                                       strings=[
+                                           # Strings
+                                           ( 'host', 'host' ),
+                                           ( 'host-node', 'host-node' ),
+                                           ( 'network', 'network' ),
+                                           ( 'gateway', 'gateway' ),
+                                           ( 'limit', 'limit' ),
+                                           ( 'parallel', 'parallel' ),
+                                           ( 'scan', 'scan' ),
+                                           ( 'timeout', 'timeout' ),
+                                       ])
+
+
+pscheduler.succeed_json(result)

@@ -68,6 +68,12 @@ opt_parser.add_option("--format",
 		      default="text",
                       dest="format")
 
+opt_parser.add_option("--output",
+                      help="Path to write output",
+                      action="store", type="string",
+		      default=None,
+                      dest="output")
+
 opt_parser.add_option("--quiet",
                       help="For text output, don't display anything but the result",
                       action="store_true",
@@ -106,6 +112,14 @@ if options.diags and out_format != "text/plain":
 if options.archivings and out_format != "text/plain":
     pscheduler.fail("Cannot produce archivings in %s format" % (options.format))
 
+if options.output:
+    try:
+        out_file = open(options.output, "w")
+    except Exception as ex:
+        pscheduler.fail(str(ex))
+else:
+    out_file = sys.stdout
+
 
 
 url = remaining_args[0]
@@ -136,7 +150,7 @@ def dump_run_result(url, out_format, exit_on_error=True):
         print_message("Problem fetching results: %s" % (str(ex)), exit_on_error)
         return
 
-    print text.strip()
+    out_file.write(text.strip() + "\n")
 
     
 

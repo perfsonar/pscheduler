@@ -153,12 +153,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- Old function
-DROP FUNCTION IF EXISTS archiver_json_is_valid(json JSONB);
-
-
 
 DROP TRIGGER IF EXISTS archiver_alter ON archiver CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('archiver_alter'); END $$;
 
 CREATE OR REPLACE FUNCTION archiver_alter()
 RETURNS TRIGGER
@@ -187,6 +185,8 @@ FOR EACH ROW
 
 
 DROP TRIGGER IF EXISTS archiver_alter_post ON archiver CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('archiver_alter_post'); END $$;
 
 CREATE OR REPLACE FUNCTION archiver_alter_post()
 RETURNS TRIGGER
@@ -223,6 +223,8 @@ FOR EACH ROW
 
 
 DROP TRIGGER IF EXISTS archiver_delete ON archiver CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('archiver_delete'); END $$;
 
 CREATE OR REPLACE FUNCTION archiver_delete()
 RETURNS TRIGGER
@@ -285,6 +287,9 @@ $$ LANGUAGE plpgsql;
 
 
 -- Function to run at startup.
+
+DO $$ BEGIN PERFORM drop_function_all('archiver_boot'); END $$;
+
 CREATE OR REPLACE FUNCTION archiver_boot()
 RETURNS VOID
 AS $$
@@ -296,7 +301,7 @@ DECLARE
     json_result TEXT;
     sschema NUMERIC;  -- Name dodges a reserved word
 BEGIN
-    run_result := pscheduler_internal(ARRAY['list', 'archiver']);
+    run_result := pscheduler_command(ARRAY['internal', 'list', 'archiver']);
     IF run_result.status <> 0 THEN
        RAISE EXCEPTION 'Unable to list installed archivers: %', run_result.stderr;
     END IF;
@@ -306,7 +311,7 @@ BEGIN
     FOR archiver_name IN (select * from jsonb_array_elements_text(archiver_list))
     LOOP
 
-	run_result := pscheduler_internal(ARRAY['invoke', 'archiver', archiver_name, 'enumerate']);
+	run_result := pscheduler_command(ARRAY['internal', 'invoke', 'archiver', archiver_name, 'enumerate']);
         IF run_result.status <> 0 THEN
             RAISE WARNING 'Archiver "%" failed to enumerate: %',
 	        archiver_name, run_result.stderr;
@@ -374,7 +379,7 @@ BEGIN
         candidate_data := 'null'::JSONB;
     END IF;
 
-    run_result := pscheduler_internal(ARRAY['invoke', 'archiver',
+    run_result := pscheduler_command(ARRAY['internal', 'invoke', 'archiver',
     	       archiver_name, 'data-is-valid'], candidate_data::TEXT );
     IF run_result.status <> 0 THEN
         RAISE EXCEPTION 'Archiver "%" failed to validate: %', archiver_name, run_result.stderr;

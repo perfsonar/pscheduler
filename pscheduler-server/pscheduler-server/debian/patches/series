@@ -5,4 +5,3 @@ reset.patch
 backup.patch
 db-udpate.patch
 db-change-password.patch
-systemd-service.patch

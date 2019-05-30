@@ -152,6 +152,28 @@ BEGIN
     END IF;
 
 
+    -- Version 7 to version 8
+    -- Added full archive spec
+    IF t_version = 7
+    THEN
+
+        ALTER TABLE archiving ADD COLUMN spec JSON;
+
+        -- Make existing rows look like they should before
+        -- constraining the column.
+
+        UPDATE archiving SET spec = json_build_object(
+            'archiver', (SELECT name FROM archiver WHERE id = archiving.archiver),
+            'data', archiver_data
+            );
+
+        -- Add the constraint
+        ALTER TABLE archiving ALTER COLUMN spec SET NOT NULL;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -164,6 +186,8 @@ $$ LANGUAGE plpgsql;
 
 
 DROP TRIGGER IF EXISTS archiving_run_after ON archiving CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('archiving_run_after'); END $$;
 
 CREATE OR REPLACE FUNCTION archiving_run_after()
 RETURNS TRIGGER
@@ -221,15 +245,35 @@ BEGIN
                 expires := NULL;
 	    END IF;
 
-	    INSERT INTO archiving (run, archiver, archiver_data, ttl_expires, transform)
-    	    VALUES (
-    	        NEW.id,
-    	        (SELECT id from archiver WHERE name = archive #>> '{archiver}'),
-	        (archive #> '{data}')::JSONB,
-	        expires,
-		(archive #> '{transform}')
-    	    );
-            inserted := TRUE;
+	    -- If there is no "runs" value in the archive spec, treat
+	    -- it as archive only on success, otherwise, see if the
+	    -- final state of the run means we should do the
+	    -- archiving.
+
+	    IF NOT archive ? 'runs' THEN
+	        archive := archive || '{"runs": "succeeded"}'::JSONB;
+	    END IF;
+
+	    IF archive #>> '{runs}' = 'all'
+	       OR EXISTS (SELECT * FROM run_state
+	                  WHERE run_state.id = NEW.state
+	                  AND success = CASE
+	                     WHEN archive #>> '{runs}' = 'succeeded' THEN TRUE
+	                     WHEN archive #>> '{runs}' = 'failed' THEN FALSE
+	                     ELSE NULL
+	                     END)
+	    THEN
+	        INSERT INTO archiving (run, archiver, archiver_data, ttl_expires, transform, spec)
+    	        VALUES (
+    	            NEW.id,
+    	            (SELECT id from archiver WHERE name = archive #>> '{archiver}'),
+	            (archive #> '{data}')::JSONB,
+	            expires,
+		    (archive #> '{transform}'),
+		    archive
+    	        );
+                inserted := TRUE;
+	    END IF;
         END LOOP;
 
         IF inserted THEN
@@ -251,6 +295,8 @@ CREATE TRIGGER archiving_run_after AFTER INSERT OR UPDATE ON run
 
 
 DROP TRIGGER IF EXISTS archiving_update ON archiving CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('archiving_update'); END $$;
 
 CREATE OR REPLACE FUNCTION archiving_update()
 RETURNS TRIGGER
@@ -301,7 +347,9 @@ RETURNS TABLE (
     attempts INTEGER,
     last_attempt TIMESTAMP WITH TIME ZONE,
     transform JSON,
-    task_detail JSONB
+    task_detail JSONB,
+    run_detail JSONB,
+    spec JSON
 )
 AS $$
 BEGIN
@@ -325,7 +373,9 @@ BEGIN
 	archiving.transform AS transform,
 	-- TODO: This covers a number of things above.  Remove the
 	-- redundancies here and in the archiver.
-	task.json_detail as task_detail
+	task.json_detail AS task_detail,
+	run_json(run.id) AS run_detail,
+	archiving.spec AS spec
     FROM
         archiving
         JOIN archiver ON archiver.id = archiving.archiver
@@ -425,6 +475,7 @@ $$ LANGUAGE plpgsql;
 
 -- Maintenance functions
 
+DO $$ BEGIN PERFORM drop_function_all('archiving_maint_minute'); END $$;
 
 CREATE OR REPLACE FUNCTION archiving_maint_minute()
 RETURNS VOID

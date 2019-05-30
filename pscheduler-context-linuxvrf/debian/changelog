@@ -1,0 +1,5 @@
+pscheduler-context-linuxvrf (1.1.6-1) perfsonar-minor-snapshot; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sun, 24 Feb 2019 17:08:45 +0000
