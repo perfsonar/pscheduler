@@ -201,7 +201,7 @@ elif participant == 1:
         succeeded = True
 
     except socket.timeout as ex:
-        error = "Timed out"
+        error = "Client never connected."
 
     except socket.gaierror as ex:
         (err_no, err_str) = ex
