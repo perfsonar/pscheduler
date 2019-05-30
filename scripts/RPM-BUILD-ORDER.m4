@@ -170,6 +170,7 @@ pscheduler-docs
 
 
 # Bundles
+pscheduler-bundle-extras
 pscheduler-bundle-full
 pscheduler-bundle-obsolete
 pscheduler-bundle-snmp
