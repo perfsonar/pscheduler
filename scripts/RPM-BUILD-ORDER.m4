@@ -51,6 +51,7 @@ python-functools32
 python-isodate
 python2-pyrsistent
 python2-jsonschema
+python-kafka
 python-netaddr
 python-ntplib
 python-py-radix
@@ -154,6 +155,7 @@ pscheduler-archiver-bitbucket
 pscheduler-archiver-esmond
 pscheduler-archiver-failer
 pscheduler-archiver-http
+pscheduler-archiver-kafka
 pscheduler-archiver-rabbitmq
 pscheduler-archiver-snmptrap		--bundle extras
 pscheduler-archiver-syslog

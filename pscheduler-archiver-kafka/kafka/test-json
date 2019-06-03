@@ -1,0 +1,7 @@
+{
+    "archiver": "kafka",
+    "data": {
+        "topic": "test",
+        "server": "10.0.0.10:9092"
+    }
+}
