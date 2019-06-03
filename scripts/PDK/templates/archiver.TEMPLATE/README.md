@@ -76,7 +76,7 @@ type in
  
  ### 5. Debugging your archiver
  
- Once your archiver is up and running with the directly piped JSON, make sure to test it directly with a pScheduler task. To see if the result was archived, you can use ```pscheduler result --archivings RUN-URL``` with RUN-URL being the URL given when you ran the task.
+ Once your archiver is up and running with the directly piped JSON, make sure to test it directly with a pScheduler task. To see if the result was archived, you can use ```pscheduler result --archivings RUN-URL``` with RUN-URL being the URL given when you ran the task. If the archiving didn't succeed, you can use ```pscheduler debug on archiver``` to get a more verbose output of error messages. You'll also want to restart the archiver before doing this so the debug setting can take effect. Don't forget to remake your archiver after making a change to fix an error, or else your change won't be reflected in the code run next time you run your archiver.
 
 ## Anatomy of an Archiver
 
