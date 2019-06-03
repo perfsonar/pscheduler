@@ -73,6 +73,10 @@ type in
  4. Feeding the JSON to your archiver
  
  -Now that your JSON is correctly formatted, you can go ahead and feed it directly into your archiver. To do so, go to the directory where your archive file is and use the command ```./archive < my_json_file```. This will run your archiver and it will take your JSON file and treat it as though it is the JSON output it would get from pScheduler. If you have any print statements inside your archive file for debugging purposes, you will see this printed to the command line.
+ 
+ ### 5. Debugging your archiver
+ 
+ Once your archiver is up and running with the directly piped JSON, make sure to test it directly with a pScheduler task. To see if the result was archived, you can use ```pscheduler result --archivings RUN-URL``` with RUN-URL being the URL given when you ran the task.
 
 ## Anatomy of an Archiver
 
