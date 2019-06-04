@@ -18,6 +18,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.1.6
+Requires:	python-pscheduler >= 1.3.7.3
 
 # Note that this doesn't get used since we're supplying our own 0.10.0
 # as a stopgap.

@@ -6,17 +6,63 @@ Send a result to RabbitMQ.
 # Note that this imports the local copy, not what's installed on the
 # system.
 import pika
+
+import datetime
+import pscheduler
 import sys
 
-import pscheduler
 
 
-MAX_SCHEMA = 1
+MAX_SCHEMA = 2
+
+log_prefix="archiver-rabbitmq"
+
+log = pscheduler.Log(prefix=log_prefix, quiet=True)
+
+
+
+class PikaConnectionChannelPair:
+    """
+    This class implements a RabbitMQ connection and channel pair
+    """
+
+    def __init__(self, data):
+
+        self.connection = pika.BlockingConnection(pika.URLParameters(data["_url"]))
+        self.channel = self.connection.channel()
+        self.exchange = data.get("exchange", "")
+        self.routing_key = data.get("routing-key", "")
+
+
+    def publish(self, message):
+
+        self.channel.basic_publish(exchange=self.exchange,
+                                   routing_key=self.routing_key,
+                                   body=message)
+
+
+    def __del__(self):
+
+        self.channel.close()
+        self.connection.close()
+
+
+
+
+channels = pscheduler.ExpiringSet(
+    creator=lambda key, data: PikaConnectionChannelPair(data),
+    # No destroyer; __del__ will take care of it.
+    purge_interval=datetime.timedelta(seconds=30),
+    log=log
+)
+
 
 
 def archive(json):
 
-    schema = json["data"].get("schema", 1)
+    data = json["data"]
+
+    schema = data.get("schema", 1)
     if schema > MAX_SCHEMA:
         return {
             "succeeded": False,
@@ -24,21 +70,18 @@ def archive(json):
                 schema, MAX_SCHEMA)
         }
 
-    data = json["data"]
 
     try:
 
-        connection = pika.BlockingConnection(
-            pika.URLParameters(data["_url"])
+        key = "%s```%s```%s" % (
+            data["_url"],
+            data.get("exchange", ""),
+            data.get("routing-key", "")
         )
 
-        connection.channel().basic_publish(
-            exchange=data.get("exchange", ""),
-            routing_key=data.get("routing-key", ""),
-            body=pscheduler.json_dump(json["result"])
-        )
+        lifetime = pscheduler.iso8601_as_timedelta(data.get("connection-lifetime","P0D"))
 
-        connection.close()
+        channels(key, data, lifetime).publish(pscheduler.json_dump(json["result"]))
 
         result = {'succeeded': True}
 
