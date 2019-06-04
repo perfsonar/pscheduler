@@ -39,7 +39,7 @@ data_validator = {
                 "_url":                { "$ref": "#/pScheduler/String" },
                 "exchange":            { "$ref": "#/pScheduler/String" },
                 "routing-key":         { "$ref": "#/pScheduler/String" },
-                "connection-lifetime": { "$ref": "#/pScheduler/Duration" },
+                "connection-expires":  { "$ref": "#/pScheduler/Duration" },
                 "retry-policy":        { "$ref": "#/pScheduler/RetryPolicy" }
             },
             "required": [

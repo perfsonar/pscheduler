@@ -79,9 +79,9 @@ def archive(json):
             data.get("routing-key", "")
         )
 
-        lifetime = pscheduler.iso8601_as_timedelta(data.get("connection-lifetime","P0D"))
+        expires = pscheduler.iso8601_as_timedelta(data.get("connection-expires","PT1H"))
 
-        channels(key, data, lifetime).publish(pscheduler.json_dump(json["result"]))
+        channels(key, data, expires).publish(pscheduler.json_dump(json["result"]))
 
         result = {'succeeded': True}
 
