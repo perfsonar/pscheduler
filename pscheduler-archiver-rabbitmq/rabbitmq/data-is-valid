@@ -6,7 +6,7 @@
 import pscheduler
 
 try:
-    json = pscheduler.json_load(max_schema=1)
+    json = pscheduler.json_load(max_schema=2)
 except ValueError as ex:
     pscheduler.succeed_json({
         "valid": False,
@@ -35,12 +35,12 @@ data_validator = {
         "RabbitMQArchiveSpecification_V2": {
             "type": "object",
             "properties": {
-                "schema": {" type": "integer", "enum": [ 2 ] },
-                "_url":         { "$ref": "#/pScheduler/String" },
-                "exchange":     { "$ref": "#/pScheduler/String" },
-                "routing-key":  { "$ref": "#/pScheduler/String" },
-                "cache-age":    { "$ref": "#/pScheduler/Duration" },
-                "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+                "schema":              {" type": "integer", "enum": [ 2 ] },
+                "_url":                { "$ref": "#/pScheduler/String" },
+                "exchange":            { "$ref": "#/pScheduler/String" },
+                "routing-key":         { "$ref": "#/pScheduler/String" },
+                "connection-lifetime": { "$ref": "#/pScheduler/Duration" },
+                "retry-policy":        { "$ref": "#/pScheduler/RetryPolicy" }
             },
             "required": [
                 "schema",
