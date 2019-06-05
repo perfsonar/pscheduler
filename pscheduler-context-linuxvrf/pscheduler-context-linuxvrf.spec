@@ -7,9 +7,12 @@
 
 
 %define short	linuxvrf
+%define perfsonar_auto_version 4.2.0
+%define perfsonar_auto_relnum 0.0.a1
+
 Name:		pscheduler-context-%{short}
-Version:	1.1.6
-Release:	1%{?dist}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
 
 Summary:	Linux VRF context changer for pScheduler
 BuildArch:	noarch

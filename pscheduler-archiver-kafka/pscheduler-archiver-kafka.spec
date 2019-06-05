@@ -3,9 +3,12 @@
 #
 
 %define short	kafka
+%define perfsonar_auto_version 4.2.0
+%define perfsonar_auto_relnum 0.0.a1
+
 Name:		pscheduler-archiver-%{short}
-Version:	1.0.2
-Release:	1%{?dist}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
 
 Summary:	kafka archiver class for pScheduler
 BuildArch:	noarch
