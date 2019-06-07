@@ -16,7 +16,7 @@
     "name": "nmap",
     "description": "A tool that utilizes nmap and its functions",
     "version": "1.0",
-    "tests": [ "port_scanner" ],
+    "tests": [ "port-scanner" ],
 
     "preference": 0,
 
