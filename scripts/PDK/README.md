@@ -71,9 +71,9 @@ a file or into something like JQ for readability
 
 Test fails when run out of box (no non-template changes) with the following error:
 
-```Submitting task...
+``Submitting task...
 Unable to post task: Unable to complete request: No tool in common among the participants:  localhost offered nothing.
 The 'pscheduler troubleshoot' command may be of use in problem
-diagnosis. 'pscheduler troubleshoot --help' for more information```
+diagnosis. 'pscheduler troubleshoot --help' for more information``
 
 This error indicates that the tool does not recognize the test/think it can run it. A common cause of this is a mismatched test/tool name. You can run ```pscheduler plugins tools``` to see if your tool recognizes that the test belongs to it (and to check for naming/spelling errors). If it doesn't recognize it or it is misnamed, you'll need to edit the ```enumerate``` and ```can-run``` files for the tool to contain the correct test name.
