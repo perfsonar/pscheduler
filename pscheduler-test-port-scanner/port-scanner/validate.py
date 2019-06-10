@@ -19,12 +19,8 @@ def spec_is_valid(json):
 
     schema = {
         "local": {
-            # Local data types such as this can be defined within this file,
-            # but are not necessary
-            "Type": {
-                "type": "string",
-                "enum": [ "system", "api" ]
-            },
+            # Local data types here
+
             "Spec": {
                 "type": "object",
                 # schema, host, host-node, and timeout are standard,
@@ -33,14 +29,12 @@ def spec_is_valid(json):
                     "schema":       { "$ref": "#/pScheduler/Cardinal" },
                     "host":         { "$ref": "#/pScheduler/Host" },
                     "host-node":    { "$ref": "#/pScheduler/Host" },
-                    "duration":     { "$ref": "#/pScheduler/Duration" },
-                    "timeout":      { "$ref": "#/pScheduler/Duration" },
-                    # Here is the datatype we defined on lines 24-27
-                    "testtype":     { "$ref": "#/local/Type" },
+		    "ips":          { "$ref": "#/pScheduler/String" },
+		    "ports":   	    { "$ref": "#/pScheduler/String" }
                 },
                 # If listed here, data of this type MUST be in the test spec
                 "required": [
-                    "testtype",
+                    "ips"
                     ],
             }
         },
@@ -58,11 +52,13 @@ def result_is_valid(json):
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
             "time":       { "$ref": "#/pScheduler/Duration" },
+	    "ports-open": { "$ref": "#/pScheduler/String" }
             },
         "required": [
             "schema",
             "succeeded",
             "time",
+	    "ports-open"
             ]
         }
     return json_validate(json, schema)
