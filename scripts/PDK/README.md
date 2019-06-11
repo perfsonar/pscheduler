@@ -81,6 +81,10 @@ Running the grep command from step 4 will result in a list of all the files that
 
 You can test this file directly in the command line by using ```./cli-to-spec --option argument```
 
+### spec-to-cli
+
+You need to have a working ```cli-to-spec``` file before you can test this file in the command line. Once you do, you can simply run the same command used to test ```cli-to-spec``` and simply pipe it into ```spec-to-cli``` : ```./cli-to-spec --option argument | ./spec-to-cli```
+
 ## Troubleshooting: Common Errors and How to Solve Them
 
 Test fails when run out of box (no non-template changes) with the following error:
