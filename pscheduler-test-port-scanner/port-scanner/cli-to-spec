@@ -62,20 +62,20 @@ opt_parser.add_option("--host-node",
                       action="store", type="string",
                       dest="host_node")
 
-opt_parser.add_option("--duration",
-                      help="Duration of idle test.",
+opt_parser.add_option("--ips",
+                      help="IP address or range of addresses to scan",
                       action="store", type="string",
-                      dest="duration")
+                      dest="ips")
 
 opt_parser.add_option("--timeout",
                       help="Timeout for each query attempt",
                       action="store", type="string",
                       dest="timeout")
 
-opt_parser.add_option("--test-type",
-                      help="Type of test to be used. (api|system)",
+opt_parser.add_option("--ports",
+                      help="Ports to scan",
                       action="store", type="string",
-                      dest="testtype")
+                      dest="ports")
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
@@ -90,15 +90,13 @@ if options.host_node is not None:
 if options.timeout is not None:
    result['timeout'] = options.timeout
 
-if options.duration is not None:
-   result['duration'] = options.duration
-
-if options.testtype is not None:
-   result['testtype'] = options.testtype
+if options.ips is not None:
+   result['ips'] = options.ips
 else:
-    pscheduler.fail('Please specify a test type. \'--test-type (api|system)\'')
+   pscheduler.fail('Please specify an ip address or range of addresses to scan with --ips')
 
-if result['testtype'] not in [ 'api', 'system' ]:
-    pscheduler.fail('Invalid test type. Choose api or system.')
+if options.ports is not None:
+   result['ports'] = options.ports
+# might need else here to handle special case
 
 pscheduler.succeed_json(result)
