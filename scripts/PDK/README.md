@@ -67,6 +67,20 @@ curl -s -k
 on the Task URL. This will be output in JSON, which can be piped into
 a file or into something like JQ for readability
 
+# Developing
+
+## Tests
+
+Running the grep command from step 4 will result in a list of all the files that need to be developed, with an order next to them. It's recommend that you develop in that order.
+
+# Testing
+
+## Testing a test
+
+### cli-to-spec
+
+You can test this file directly in the command line by using ```./cli-to-spec --option argument```
+
 ## Troubleshooting: Common Errors and How to Solve Them
 
 Test fails when run out of box (no non-template changes) with the following error:
