@@ -75,7 +75,7 @@ Running the grep command from step 4 will result in a list of all the files that
 
 # Testing
 
-## Testing a test
+## Tests
 
 ### cli-to-spec
 
