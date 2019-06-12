@@ -105,6 +105,10 @@ If you are writing a single participant test (only one perfSONAR node is involve
 
 This file formats the result JSON into plain text or html output. You can format your output how you like, making sure to follow the result spec you outlined in ```validate.py```. Examples can be found in other tests.
 
+### spec-format
+
+This is similar to ```result-format``` but for the input spec instead of the output. It formats the spec JSON into plain text or html output.
+
 # Testing
 
 ## Tests
