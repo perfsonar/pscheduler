@@ -71,15 +71,47 @@ a file or into something like JQ for readability
 
 ## Tests
 
-Running the grep command from step 4 will result in a list of all the files that need to be developed, with an order next to them. It's recommend that you develop in that order.
+Running the grep command from step 4 will result in a list of all the files that need to be developed, with an order next to them. It's recommend that you develop in that order. The files are listed below in development order, along with a short description of what goes in each file.
+
+### RPM spec file 
+
+This file governs the RPM build of your test. The template will set up everything you need, so there should be nothing you need to change in this file. You should check this file first, looking to make sure that the template filled in the name fields correctly with the name of your test. 
+
+### enumerate
+
+This file is also nearly complete, but you should check it for name accuracy as well. Also add a description of your test and what it does.
+
+### validate.py
+
+This file is where the JSON spec for your test is defined. Before writing this file, you should have a clear idea of what you want the input and output JSON of your test to look like. This file contains some code designed to make the test and tool work out of the box with idle. There are comments in the file outlining what should not be removed (i.e. what is considered important and necessary for all pScheduler tests), but everything else is simply there for the idle test and can be replaced with the options you want to include for your test.
+
+### cli-to-spec
+
+This file takes the arguments given when the test is invoked in the command line and converts them to the test's JSON spec. Make sure you have written ```validate.py``` before writing this file so that you have a clear JSON schema to use. The options used in ```cli-to-spec``` need to be the same as those in ```validate.py```.
+
+### spec-to-cli
+
+This file does the inverse of ```cli-to-spec```, it turns the JSON spec into a list of command line arguments. Make sure to continue using the same schema and to test these files as you go for typos/misalignment.
+
+### spec-is-valid
+
+This file verifies that a given spec is valid according to the test. It's a good idea to test this with the output from ```cli-to-spec```.
 
 # Testing
 
-## Testing a test
+## Tests
 
 ### cli-to-spec
 
 You can test this file directly in the command line by using ```./cli-to-spec --option argument```
+
+### spec-to-cli
+
+You need to have a working ```cli-to-spec``` file before you can test this file in the command line. Once you do, you can simply run the same command used to test ```cli-to-spec``` and simply pipe it into ```spec-to-cli``` : ```./cli-to-spec --option argument | ./spec-to-cli```
+
+### spec-is-valid
+
+You can test this in a similar manner to ```spec-to-cli``` using the following command: ```./cli-to-spec --option argument | ./spec-is-valid```
 
 ## Troubleshooting: Common Errors and How to Solve Them
 
