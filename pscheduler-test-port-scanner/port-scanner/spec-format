@@ -33,8 +33,8 @@ if format == 'text/plain':
 Host ................... {.section host}{host}{.or}Not Specified{.end}
 Host Node ................... {.section host_ndoe}{host_node}{.or}Not Specified{.end}
 Timeout ................... {.section timeout}{timeout}{.or}Not Specified{.end}
-Duration ................... {.section duration}{duration}{.or}Not Specified{.end}
-Test Type ................... {.section testtype}{testtype}{.or}Not Specified{.end}
+IPs ................... {.section ips}{ips}{.or}Not Specified{.end}
+Ports ................... {.section ports}{ports}{.or}Not Specified{.end}
 """
 
 # Format with html
@@ -45,8 +45,8 @@ elif format == 'text/html':
 <tr><td>Host</td><td>{.section host}{host}{.or}Not Specified{.end}</td></tr>
 <tr><td>Host Node</td><td>{.section host_node}{host_node}{.or}Not Specified{.end}</td></tr>
 <tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
-<tr><td>Duration</td><td>{.section duration}{duration}{.or}Not Specified{.end}</td></tr>
-<tr><td>Test Type</td><td>{.section testtype}{testtype}{.or}Not Specified{.end}</td></tr>
+<tr><td>IPs</td><td>{.section ips}{ips}{.or}Not Specified{.end}</td></tr>
+<tr><td>Ports</td><td>{.section ports}{ports}{.or}Not Specified{.end}</td></tr>
 </table>
 """
 
