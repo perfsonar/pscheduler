@@ -35,7 +35,7 @@ result = input["result"]
 
 if format == 'text/plain':
     # Print results of the test here, in plaintext
-    print 'Time: %s\n' % result['time']
+    print 'Port status %s\n' % result['ports-open']
    
 elif format == 'text/html':
     # Print results of the test here, in html
