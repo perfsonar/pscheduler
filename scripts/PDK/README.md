@@ -97,6 +97,14 @@ This file does the inverse of ```cli-to-spec```, it turns the JSON spec into a l
 
 This file verifies that a given spec is valid according to the test. It's a good idea to test this with the output from ```cli-to-spec```.
 
+### participants
+
+If you are writing a single participant test (only one perfSONAR node is involved, you probably do not need to edit this file. If you have multiple nodes participating in your test, you'll need to edit this file to reflect that. For guidance, look to tests such as thoroughput which have multiple nodes involved.
+
+### result-format
+
+This file formats the result JSON into plain text or html output. You can format your output how you like, making sure to follow the result spec you outlined in ```validate.py```. Examples can be found in other tests.
+
 # Testing
 
 ## Tests
