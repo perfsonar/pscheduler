@@ -67,6 +67,8 @@ curl -s -k
 on the Task URL. This will be output in JSON, which can be piped into
 a file or into something like JQ for readability
 
+-More extensive documentation on developing archivers can be found in the archiver template folder. Below is more extensive documentation on developing tests and tools
+
 # Developing
 
 ## Tests
@@ -124,6 +126,14 @@ You need to have a working ```cli-to-spec``` file before you can test this file 
 ### spec-is-valid
 
 You can test this in a similar manner to ```spec-to-cli``` using the following command: ```./cli-to-spec --option argument | ./spec-is-valid```
+
+### result-format
+
+In order to test this, you need to already have some result JSON generated. Once you do, you can test the formatting simply by using ```cat result_json | ./result-format text/html``` or ```cat result_json | ./result-format text/plain``` depending on if you want the result formatted as html or plain text.
+
+### spec-format
+
+To test this, you can generate a spec using ```cli-to-spec``` as shown above and then simply pipe it into ```spec-format```. ```./cli-to-spec --option argument | ./spec-format``` will give the plain text formatting while ```./cli-to-spec --option argument | ./spec-format text/html``` will give the html version.
 
 ## Troubleshooting: Common Errors and How to Solve Them
 
