@@ -121,6 +121,10 @@ Similar to this test, you likely will not need to edit this file but you should 
 
 This file will come mostly set up from running the template, but you will need to add the description of your tool. You should also check to make sure the template inserted everything correctly.
 
+### can-run
+
+This file should be set up by the template, but it's important to check that all references to your test name are correct in this file, or else your tool will not be able to run your test.
+
 # Testing
 
 ## Tests
