@@ -111,6 +111,12 @@ This file formats the result JSON into plain text or html output. You can format
 
 This is similar to ```result-format``` but for the input spec instead of the output. It formats the spec JSON into plain text or html output.
 
+## Tools
+
+### spec file
+
+Similar to this test, you likely will not need to edit this file but you should review it to make sure the template inserted everything correctly.
+
 # Testing
 
 ## Tests
