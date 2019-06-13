@@ -117,6 +117,10 @@ This is similar to ```result-format``` but for the input spec instead of the out
 
 Similar to this test, you likely will not need to edit this file but you should review it to make sure the template inserted everything correctly.
 
+### enumerate
+
+This file will come mostly set up from running the template, but you will need to add the description of your tool. You should also check to make sure the template inserted everything correctly.
+
 # Testing
 
 ## Tests
