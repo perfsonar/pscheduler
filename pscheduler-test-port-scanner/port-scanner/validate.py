@@ -57,8 +57,7 @@ def result_is_valid(json):
         "required": [
             "schema",
             "succeeded",
-            "time",
-	    "ports-open"
+            "time"
             ]
         }
     return json_validate(json, schema)

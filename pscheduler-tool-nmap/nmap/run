@@ -22,13 +22,13 @@ input = pscheduler.json_load(exit_on_error=True)
 
 # Take input from test spec
 try:
-    testtype = input['test']['spec']['testtype']
+    ips = input['test']['spec']['ips']
 
 except KeyError:
     pscheduler.fail('Missing data in input')
 
-duration = input['test']['spec'].get('duration', 'PT5S')
-duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
+ips = input['test']['spec'].get('ips')
+ports = input['test']['spec'].get('ports', None)
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 start_time = datetime.datetime.now()
@@ -38,9 +38,8 @@ diags = ''
 
 # Run the actual task here:
 
-# API Call:
-if testtype == 'api':
-    argv = [ 'sleep', str(duration) ]
+if ports  == None:
+    argv = [ 'nmap', '-F', str(ips)]
     status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
 
     if status:
@@ -50,10 +49,16 @@ if testtype == 'api':
         succeeded = True
         diags = stdout
 
-# System Call:
-elif testtype == 'system':
-    subprocess.check_call( ['sleep', str(duration) ])
-    succeeded = True
+else:
+    argv = [ 'nmap', '-p', str(ports),  str(ips)]
+    status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
+
+    if status:
+        succeeded = False
+        error = "Error returned: \n%s" % stderr.strip('\n')
+    else:
+        succeeded = True
+        diags = stdout
 
 end_time = datetime.datetime.now()
 
@@ -63,7 +68,8 @@ results = {
     'result': {
         'schema': 1,
         'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
-        'succeeded': succeeded
+        'succeeded': succeeded,
+	'ports-open': diags
     },
     'error': error,
     'diags': diags }
