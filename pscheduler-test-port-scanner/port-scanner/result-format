@@ -15,6 +15,7 @@
 import jsontemplate
 import pscheduler
 import sys
+import json
 
 from validate import result_is_valid
 
@@ -37,6 +38,13 @@ if format == 'text/plain':
     # Print results of the test here, in plaintext
     print 'Time: %s\n' % result['time']
     print 'Ports open: %s\n' % result['ports-open']
+    print(type(result['ports-open']))
+ 
+    #for port in result['ports-open']:
+	#print(port['number'])
+	#print(port['protocol'])
+	#print(port['service'])
+    
    
 elif format == 'text/html':
     # Print results of the test here, in html

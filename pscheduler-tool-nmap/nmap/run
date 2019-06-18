@@ -39,7 +39,7 @@ diags = ''
 # Run the actual task here:
 
 if ports  == None:
-    argv = [ 'nmap', '-F', str(ips)]
+    argv = [ 'nmap', '-oG', '-',  '-F', str(ips)]
     status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
 
     if status:
@@ -62,6 +62,52 @@ else:
 
 end_time = datetime.datetime.now()
 
+ports = ""
+
+for section in diags.split("\t"):
+    if "Ports" in section:
+        ports += section.strip()
+
+open_list = []
+
+for item in ports.split(" "):
+    if "open" in item:
+        open_list.append(item)
+
+port_nums = []
+protocols = []
+services = []
+
+for port in open_list:
+    #print([int(s) for s in port.split('/') if s.isdigit()])
+    for n, identifier in enumerate(port.split('/')):
+        if n == 0:
+            port_nums.append(identifier)
+        if n == 2:
+            protocols.append(identifier)
+        if n == 4:
+            services.append(identifier)
+
+port_data = "{ "
+
+for num, protocol, service in zip(port_nums, protocols, services):
+    port_data += "\""
+    port_data += service
+    port_data += "\""
+    port_data += " : {"
+    port_data += "\"number\": "
+    port_data += "\""
+    port_data += num 
+    port_data += "\""
+    port_data += ",\"protocol\": "
+    port_data += "\"" 
+    port_data += protocol 
+    port_data += "\""
+    port_data += "}, "   
+
+data = port_data[:-2]
+data += "}"
+
 # Organize results into json data
 results = {
     'succeeded': succeeded,
@@ -69,10 +115,9 @@ results = {
         'schema': 1,
         'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
         'succeeded': succeeded,
-	'ports-open': diags
-    },
-    'error': error,
-    'diags': diags }
+	'ports-open': data
+    }
+}
 
 pscheduler.succeed_json(results)
 
