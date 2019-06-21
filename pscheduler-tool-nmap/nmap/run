@@ -51,62 +51,85 @@ if ports  == None:
 
 else:
     argv = [ 'nmap', '-p', str(ports),  str(ips)]
-    status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
+    status, tdout, stderr = pscheduler.run_program(argv, timeout=timeout)
 
     if status:
         succeeded = False
-        error = "Error returned: \n%s" % stderr.strip('\n')
+        error = "Error returned: n%s" % stderr.strip('\n')
     else:
         succeeded = True
         diags = stdout
 
 end_time = datetime.datetime.now()
 
-ports = ""
+host_ports = {}
 
-for section in diags.split("\t"):
+port_lines = ""
+
+host = ""
+
+for line in diags.split("\n"):
+   if "Ports" in line:
+	port_lines += line.strip()
+	port_lines += "\t"
+
+for section in port_lines.split("\t"):
+    if "Host" in section:
+	host = section.strip()
+	for w, word in enumerate(host.split(" ")):
+	    if w == 1:
+		host = word
+	    
     if "Ports" in section:
-        ports += section.strip()
+	host_ports[host] =  section.strip()
+	host_ports[host] = host_ports[host][6:]
 
 open_list = []
+for p in host_ports.values():
+    for i in p.split(" "):
+	open_list.append(i)
+    p = open_list
+    open_list = []
 
-for item in ports.split(" "):
-    if "open" in item:
-        open_list.append(item)
+new = []
+for ports in host_ports.values():
+    new_ports = ""
+    for port in ports.split(","):
+	new_port = ""
+	for n, identifier in enumerate(port.split('/')):
+            if n == 0:
+		new_port += identifier
+                new_port += " "
+            if n == 2:
+                new_port += identifier
+                new_port += " "
+            if n == 4:
+                new_port += identifier
+                new_port += " "
+ 	new_port += ","
+	new_ports += new_port
+    new_ports = new_ports[:-1]
+    new.append(new_ports)
+   
+for new_val, key in zip(new, host_ports):
+    host_ports[key] = new_val
 
-port_nums = []
-protocols = []
-services = []
+for k in host_ports:
+    port_dict_list = []
+    for port in host_ports[k].split(","):
+	port_dict = {}
+        for i, item in enumerate(port.split(" ")):
+            if i == 1:
+                port_dict['number'] = item
+            if i == 2:
+                port_dict['protocol'] = item
+            if i == 3:
+                port_dict['service'] = item
+        port_dict_list.append(port_dict)
+        port_dict = {}
+    host_ports[k] = port_dict_list
 
-for port in open_list:
-    #print([int(s) for s in port.split('/') if s.isdigit()])
-    for n, identifier in enumerate(port.split('/')):
-        if n == 0:
-            port_nums.append(identifier)
-        if n == 2:
-            protocols.append(identifier)
-        if n == 4:
-            services.append(identifier)
-
-port_data = "{ "
-
-for num, protocol, service in zip(port_nums, protocols, services):
-    port_data += "\""
-    port_data += service
-    port_data += "\""
-    port_data += " : {"
-    port_data += "\"number\": "
-    port_data += "\""
-    port_data += num 
-    port_data += "\""
-    port_data += ",\"protocol\": "
-    port_data += "\"" 
-    port_data += protocol 
-    port_data += "\""
-    port_data += "}, "   
-
-data = port_data[:-2]
-data += "}"
+port_data = json.dumps(host_ports)
 
 # Organize results into json data
 results = {
@@ -115,7 +138,7 @@ results = {
         'schema': 1,
         'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
         'succeeded': succeeded,
-	'ports-open': data
+	'ports-open': port_data
     }
 }
 
