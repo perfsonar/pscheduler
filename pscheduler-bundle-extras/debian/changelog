@@ -1,6 +1,8 @@
 pscheduler-bundle-extras (4.2.0~0-1) perfsonar-minor-snapshot; urgency=low
 
   * New upstream version
+  * SNMP packages moved to pscheduler-bundle-snmp
+  * Obsolete packages moved to pscheduler-bundle-obsolete
 
  -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sun, 24 Feb 2019 17:08:45 +0000
 
