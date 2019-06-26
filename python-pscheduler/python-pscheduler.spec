@@ -46,6 +46,7 @@ Requires:	python-tzlocal
 Requires:	pytz
 Requires:	rsyslog
 Requires:	logrotate
+Requires:       numactl
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:	python-coverage
@@ -77,6 +78,7 @@ BuildRequires:	python-pyjq >= 2.2.0
 BuildRequires:	python-subprocess32
 BuildRequires:	python-tzlocal
 BuildRequires:	pytz
+BuildRequires:  numactl
 
 
 %define limit_config %{_pscheduler_sysconfdir}/limits.conf
