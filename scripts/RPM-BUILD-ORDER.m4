@@ -104,7 +104,7 @@ pscheduler-server
 
 # Tests
 pscheduler-test-clock
-pscheduler-test-disk-to-disk	--bundle extras
+pscheduler-test-disk-to-disk		--bundle extras
 pscheduler-test-http
 pscheduler-test-idle
 pscheduler-test-idlebgm
@@ -115,40 +115,40 @@ pscheduler-test-netreach
 pscheduler-test-throughput
 pscheduler-test-rtt
 pscheduler-test-simplestream
-pscheduler-test-snmpget			--bundle extras
-pscheduler-test-snmpgetbgm		--bundle extras
-pscheduler-test-snmpset			--bundle extras
+pscheduler-test-snmpget			--bundle snmp
+pscheduler-test-snmpgetbgm		--bundle snmp
+pscheduler-test-snmpset			--bundle snmp
 pscheduler-test-trace
 pscheduler-test-dns
 
 # Tools
-pscheduler-tool-owping
-pscheduler-tool-powstream
+pscheduler-tool-bwctliperf2		--bundle obsolete
+pscheduler-tool-bwctliperf3		--bundle obsolete
+pscheduler-tool-bwctlping		--bundle obsolete
+pscheduler-tool-bwctltracepath		--bundle obsolete
+pscheduler-tool-bwctltraceroute		--bundle obsolete
+pscheduler-tool-curl			--bundle extras
+pscheduler-tool-dnspy
+pscheduler-tool-globus			--bundle extras
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
-pscheduler-tool-nuttcp
-pscheduler-tool-bwctliperf2
-pscheduler-tool-bwctliperf3
-pscheduler-tool-bwctlping
-pscheduler-tool-bwctltraceroute
-pscheduler-tool-bwctltracepath
-pscheduler-tool-net-snmp-set
+pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-nmapreach
+pscheduler-tool-nuttcp
+pscheduler-tool-owping
+pscheduler-tool-paris-traceroute
+pscheduler-tool-ping
+pscheduler-tool-powstream
+pscheduler-tool-psclock
 pscheduler-tool-psurl
-pscheduler-tool-pysnmp				--bundle extras
+pscheduler-tool-pysnmp			--bundle snmp
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
 pscheduler-tool-snooze
-pscheduler-tool-ping
-pscheduler-tool-psclock
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
 pscheduler-tool-twping
-pscheduler-tool-paris-traceroute
-pscheduler-tool-dnspy
-pscheduler-tool-curl			--bundle extras
-pscheduler-tool-globus			--bundle extras
 
 # Archivers
 pscheduler-archiver-bitbucket
@@ -157,7 +157,7 @@ pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-kafka
 pscheduler-archiver-rabbitmq
-pscheduler-archiver-snmptrap		--bundle extras
+pscheduler-archiver-snmptrap		--bundle snmp
 pscheduler-archiver-syslog
 
 # Context Changers
@@ -172,5 +172,7 @@ pscheduler-docs
 
 
 # Bundles
-pscheduler-bundle-full
 pscheduler-bundle-extras
+pscheduler-bundle-full
+pscheduler-bundle-obsolete
+pscheduler-bundle-snmp

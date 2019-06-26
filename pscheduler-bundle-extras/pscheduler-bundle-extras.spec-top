@@ -13,7 +13,5 @@ Summary:	Extras pScheduler Bundle
 BuildArch:	noarch
 
 License:	ASL 2.0
-Vendor:	perfSONAR
+Vendor:		perfSONAR
 Group:		Unspecified
-
-
