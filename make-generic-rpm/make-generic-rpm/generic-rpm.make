@@ -52,7 +52,7 @@ ifneq "$(words $(SPEC))" "1"
 endif
 
 NAME := $(shell echo "$(SPEC)" | sed -e 's/\.spec$$//')
-VERSION := $(shell awk '$$1 == "Version:" { print $$2 }' $(SPEC))
+VERSION := $(shell rpmspec -P "$(SPEC)" | awk '$$1 == "Version:" { print $$2 }')
 SOURCE_FILES := $(shell spectool -S $(SPEC) | awk '{ print $$2 }')
 PATCH_FILES := $(shell spectool -P $(SPEC) | awk '{ print $$2 }')
 

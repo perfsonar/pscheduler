@@ -5,9 +5,12 @@
 %define short	    powstream
 %define resultdir	%{_pscheduler_tool_vardir}/%{short}
 
+%define perfsonar_auto_version 4.2.0
+%define perfsonar_auto_relnum 0.0.a1
+
 Name:		pscheduler-tool-%{short}
-Version:	1.1.6
-Release:	1%{?dist}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
 
 Summary:	powstream tool class for pScheduler
 BuildArch:	noarch

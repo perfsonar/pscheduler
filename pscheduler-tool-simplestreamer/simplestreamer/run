@@ -22,7 +22,6 @@ log.debug("Input is %s", input)
 # Validate the input
 #
 
-# TODO: Validate more than just this.
 if not 'participant-data' in input:
     pscheduler.fail("No participant data.")
 
@@ -37,8 +36,6 @@ if not 'participant-data' in input:
 # implementation is more complex than necessary for this example.
 # This makes a very rough approximation 
 
-# TODO: This should be turned into a class and put into the pscheduler
-# module.
 start_time = datetime.datetime.now()
 try:
     timeout = pscheduler.iso8601_as_timedelta(input['test']['spec']['timeout'])
@@ -143,7 +140,6 @@ if participant == 0:
             sock.settimeout(time_remaining)
             sock.connect(server_address)
             log.debug("Connected")
-            # TODO: How do we check for success?
             sock.sendall(material)
             log.debug("Sent")
             succeeded = True
@@ -177,16 +173,18 @@ elif participant == 1:
     # Dest
     #
 
+    diags = []
     succeeded = False
     full = ''
     error = None
 
     try:
-        # TODO: Need to handle exceptions gracefully.
         sock = socket.socket(socket_family, socket.SOCK_STREAM)
         sock.settimeout(time_left())
         server_address = (input['test']['spec']['dest'],
                           input['participant-data'][1]['listen-port'])
+        diags.append("Listening on %s:%s" % server_address)
+        diags.append("Protocol is IPv%d" % (ip_version))
         sock.bind(server_address)
         sock.listen(1)
         connection, client_address = sock.accept()
@@ -203,7 +201,7 @@ elif participant == 1:
         succeeded = True
 
     except socket.timeout as ex:
-        error = "Timed out"
+        error = "Client never connected."
 
     except socket.gaierror as ex:
         (err_no, err_str) = ex
@@ -213,12 +211,9 @@ elif participant == 1:
         error = "Receiver exception: " + str(ex) \
             + " " + traceback.format_exc()
 
-
-    # TODO: The elapsed time doesn't seem right.
-
     results = {
         'succeeded': succeeded,
-        'diags': 'Nothing to see at the receiving end.',
+        'diags': "\n".join(diags),
         'error': error if not succeeded else None,
         'result': {
             'received': full,
@@ -233,7 +228,3 @@ else:
 
 
 pscheduler.succeed_json(results)
-
-# TODO: This should probably have a simple wrapper that catches and
-# logs exceptions and produces valid JSON with an error.
-

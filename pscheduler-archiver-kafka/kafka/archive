@@ -1,0 +1,41 @@
+#!/usr/bin/python
+"""
+DESCRIPTION
+"""
+
+import sys
+import pscheduler
+from kafka import KafkaProducer
+from kafka.errors import KafkaError
+
+MAX_SCHEMA = 1
+
+def archive(json):
+    #Do archiving here
+
+    data = json["data"]     
+
+    try:
+        producer = KafkaProducer(bootstrap_servers=[data["server"]])
+        producer.send(data["topic"], pscheduler.json_dump(json["result"])).get(timeout=30)
+        
+    except Exception as e:
+        #print(str(e))
+	result = {
+            "succeeded": False,
+            "error": "Failed to send message: %s" % (str(e))
+        }
+        return result
+
+    return {'succeeded': True}
+
+
+
+
+PARSER = pscheduler.RFC7464Parser(sys.stdin)
+EMITTER = pscheduler.RFC7464Emitter(sys.stdout)
+
+for parsed in PARSER:
+    EMITTER(archive(parsed))
+
+pscheduler.succeed()

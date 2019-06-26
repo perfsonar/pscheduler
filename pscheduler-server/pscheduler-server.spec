@@ -6,9 +6,12 @@
 # make the scriptlets use them on CentOS 7.  For now the old-style
 # init scripts function just fine.
 
+%define perfsonar_auto_version 4.2.0
+%define perfsonar_auto_relnum 0.0.a1
+
 Name:		pscheduler-server
-Version:	1.1.6.1
-Release:	2%{?dist}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
 
 Summary:	pScheduler Server
 BuildArch:	noarch

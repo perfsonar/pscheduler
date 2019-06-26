@@ -5,7 +5,7 @@ Maintainer: perfSONAR developers <debian@perfsonar.net>
 Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>,
  Valentin Vidic <Valentin.Vidic@CARNet.hr>
 Build-Depends: debhelper (>= 9), python-all, dh-python,
- python-setuptools, python-nose,
+ python-setuptools, python-nose, numactl,
  python-ntplib, python-tz, python-tzlocal, python-netifaces,
  python-psycopg2 (>= 2.5.4), python-jsonschema (>= 3.0.1),
  python-isodate (>= 0.5.0), python-subprocess32, python-netaddr,
