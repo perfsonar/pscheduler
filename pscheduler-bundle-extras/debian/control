@@ -13,8 +13,8 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-bundle-extras
 Architecture: all
 Depends:
- pscheduler-test-disk-to-disk
- pscheduler-tool-curl
+ pscheduler-test-disk-to-disk,
+ pscheduler-tool-curl,
  pscheduler-tool-globus
 Description: Extra pScheduler Bundle
  Bundle of extra pScheduler packages
