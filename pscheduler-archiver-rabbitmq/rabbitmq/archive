@@ -71,6 +71,25 @@ def archive(json):
         }
 
 
+    # Figure out the routing key
+    routing_key_raw = data.get("routing-key", "")
+    if isinstance(routing_key_raw, basestring):
+        data["routing-key"] = routing_key_raw
+    else:
+        # JQ Transform
+        log.debug("Using transform for routing key.")
+        # This will already have been validated.
+        transform = pscheduler.JQFilter(routing_key_raw)
+        try:
+            data["routing-key"] = str(transform(json["result"])[0])
+        except pscheduler.JQRuntimeError as ex:
+            return {
+                "succeeded": False,
+                "error": "Routing key transform failed: %s" % (str(ex))
+        }
+    log.debug("Routing key is '%s'" % (data["routing-key"]))
+
+
     try:
 
         key = "%s```%s```%s" % (
