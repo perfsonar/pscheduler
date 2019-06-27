@@ -38,7 +38,10 @@ data_validator = {
                 "schema":              {" type": "integer", "enum": [ 2 ] },
                 "_url":                { "$ref": "#/pScheduler/String" },
                 "exchange":            { "$ref": "#/pScheduler/String" },
-                "routing-key":         { "$ref": "#/pScheduler/String" },
+                "routing-key":         { "anyOf": [
+                    { "$ref": "#/pScheduler/String" },
+                    { "$ref": "#/pScheduler/JQTransformSpecification" }
+                ] },
                 "connection-expires":  { "$ref": "#/pScheduler/Duration" },
                 "retry-policy":        { "$ref": "#/pScheduler/RetryPolicy" }
             },
@@ -69,5 +72,18 @@ if not valid:
         "valid": False,
         "error": error
         })
+
+
+# If the routing key is a jq script, try to compile it.
+routing_key = json.get("routing-key", "")
+if not isinstance(routing_key, basestring):
+    try:
+        filter = pscheduler.JQFilter(routing_key)
+    except ValueError as ex:
+        pscheduler.succeed_json({
+            "valid": False,
+            "error": "Error compiling routing key transform: %s" % (str(ex))
+        })
+
     
 pscheduler.succeed_json({ "valid": True })
