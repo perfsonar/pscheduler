@@ -681,6 +681,10 @@ class ArchiveWorker():
             stdout_attempt = "Transform result forced not archiving."
             stderr = ""
             skip = True
+            result = {
+                "succeeded": True,
+                "error": ""
+            }
         else:
             skip = False
 
