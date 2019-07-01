@@ -107,6 +107,11 @@ override_dh_auto_install:
 	mkdir -p $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/upgrade/pgsql
 	ln -s ../../install/pgsql $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/upgrade/pgsql/$(DEB_VERSION)
 
+	if [ -f $(CURDIR)/debian/sudoers ]; then \
+		install -D -m 0440 $(CURDIR)/debian/sudoers \
+			$(ROOT)/etc/sudoers.d/$(DEB_SOURCE_PACKAGE); \
+	fi
+
 override_dh_installinit:
 	dh_installinit --onlyscripts --name=pscheduler-archiver
 	dh_installinit --onlyscripts --name=pscheduler-runner
