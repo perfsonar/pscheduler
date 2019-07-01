@@ -2,5 +2,5 @@
 # pscheduler-server
 #
 Cmnd_Alias PSCHEDULER_COMMAND_LOG = /usr/lib/pscheduler/commands/log
-pscheduler ALL = (root) NOPASSWD: PSCHEDULER_COMMAND_LOG
+%pscheduler ALL = (root) NOPASSWD: PSCHEDULER_COMMAND_LOG
 Defaults!PSCHEDULER_COMMAND_LOG !requiretty
