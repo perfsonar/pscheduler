@@ -111,7 +111,7 @@ pscheduler-test-idlebgm
 pscheduler-test-idleex
 pscheduler-test-latency
 pscheduler-test-latencybg
-pscheduler-test-netreach
+pscheduler-test-netreach			--bundle extras
 pscheduler-test-throughput
 pscheduler-test-rtt
 pscheduler-test-simplestream
@@ -133,7 +133,7 @@ pscheduler-tool-globus			--bundle extras
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
-pscheduler-tool-nmapreach
+pscheduler-tool-nmapreach			--bundle extras
 pscheduler-tool-nuttcp
 pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
