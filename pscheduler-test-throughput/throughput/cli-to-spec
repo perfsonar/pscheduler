@@ -79,6 +79,11 @@ opt_parser.add_option("-i", "--interval",
                       action="store", type="string",
                       dest="interval")
 
+opt_parser.add_option("--link-rtt",
+                      help="Approximate link round-trip time (ISO8601 or integer ms)",
+                      action="store", type="string",
+                      dest="link_rtt")
+
 opt_parser.add_option("-P", "--parallel",
                       help="How many parallel streams to run during the test",
                       action="store", type="int",
@@ -219,6 +224,15 @@ if options.interval is not None:
       interval = pscheduler.timedelta_as_iso8601(delta)
 
    result['interval'] = interval
+
+if options.link_rtt is not None:
+   rtt_value = options.link_rtt
+   try:
+      result['link-rtt'] = "PT%sS" % (int(rtt_value) / 1000.0)
+   except ValueError:
+      result['link-rtt'] = rtt_value
+   schema.set(3)
+
 
 if options.parallel is not None:
    result['parallel'] = options.parallel

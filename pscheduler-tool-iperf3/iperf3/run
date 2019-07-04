@@ -267,7 +267,7 @@ def run_client():
 
     iperf_timeout = test_duration
     iperf_timeout += omit_secs
-    iperf_timeout += DEFAULT_FUDGE_FACTOR
+    iperf_timeout += iperf3_utils.setup_time(test_spec.get("link-rtt"))
     # no need for the sleep, we already did that above
 
     logger.debug("timeout for client is %d" % iperf_timeout)
@@ -361,7 +361,7 @@ def run_server():
 
         iperf_timeout = test_duration
         iperf_timeout += omit_secs
-        iperf_timeout += DEFAULT_FUDGE_FACTOR
+        iperf_timeout += iperf3_utils.setup_time(test_spec.get("link-rtt"))
         iperf_timeout += DEFAULT_WAIT_SLEEP
 
         logger.debug("timeout for server is %d" % iperf_timeout)
