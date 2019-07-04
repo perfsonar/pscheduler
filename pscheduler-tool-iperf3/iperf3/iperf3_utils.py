@@ -32,6 +32,31 @@ def get_config():
     return obj
 
 
+
+def setup_time(rtt):
+
+    """Setup time: How long it takes for iperf3 to set up a test.  This is
+    heavily influenced by the RTT between the hosts involved.
+    Measurements taken as part of #838 indicate that every 50 ms of
+    latency adds about one second.  Previously, this was done with a
+    static fudge factor of four seconds, which has been set as the
+    default.  RTT has no influence on how long it takes to run the
+    test; iperf3 will stop after the specified number of seconds
+    regardless of how much data was transferred.
+
+    The rtt is an ISO8601 duration as a string.  If None, the default
+    will be used.
+
+    Returned value is seconds, minimum 1.
+    """
+
+    delta = pscheduler.iso8601_as_timedelta(rtt or DEFAULT_LINK_RTT)
+    rtt = pscheduler.timedelta_as_seconds(delta)
+
+    return max(((rtt * 1000.0) / 50.0), 1.0)
+
+
+
 if __name__ == "__main__":
     
     config = get_config()

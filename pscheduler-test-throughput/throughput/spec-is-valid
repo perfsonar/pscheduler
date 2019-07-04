@@ -9,8 +9,8 @@ from validate import spec_is_valid
 
 
 try:
-    json = pscheduler.json_load(max_schema=2)
-    pscheduler.json_check_schema(json, 2)
+    json = pscheduler.json_load(max_schema=3)
+    pscheduler.json_check_schema(json, 3)
 except ValueError as ex:
     pscheduler.succeed_json({
         "valid": False,

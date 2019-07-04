@@ -81,10 +81,49 @@ SPEC_SCHEMA = {
                 "dest"
             ]
         },
+        "throughput_v3" : {
+            "title": "pScheduler Throughput Specification Schema",
+            "type": "object",
+            "properties": {
+                "schema":      { "type": "integer", "enum": [ 3 ] },
+                "source":      { "$ref": "#/pScheduler/Host" },
+                "source-node": { "$ref": "#/pScheduler/URLHostPort" },
+                "dest":        { "$ref": "#/pScheduler/Host" },
+                "dest-node":   { "$ref": "#/pScheduler/URLHostPort" },
+                "duration":    { "$ref": "#/pScheduler/Duration" },
+                "interval":    { "$ref": "#/pScheduler/Duration" },
+                "link-rtt":    { "$ref": "#/pScheduler/Duration" },
+                "parallel":    { "$ref": "#/pScheduler/Cardinal" },
+                "udp":         { "$ref": "#/pScheduler/Boolean" },
+                "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },
+                "window-size": { "$ref": "#/pScheduler/Cardinal" },
+                "mss":         { "$ref": "#/pScheduler/Cardinal" },
+                "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
+                "ip-tos":        { "$ref": "#/pScheduler/IPTOS" },
+                "ip-version":    { "$ref": "#/pScheduler/ip-version" },
+                "local-address": { "$ref": "#/pScheduler/Host" },
+                "omit":          { "$ref": "#/pScheduler/Duration" },
+                "no-delay":    { "$ref": "#/pScheduler/Boolean" },
+                "congestion":    { "$ref": "#/local/congestion" },
+                "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
+                "flow-label":    { "$ref": "#/pScheduler/Cardinal" },
+                "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
+                "server-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
+                "single-ended": { "$ref": "#/pScheduler/Boolean" },
+                "single-ended-port": { "$ref": "#/pScheduler/Integer" },
+                "reverse": { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": False,
+            "required": [
+                "schema",
+                "dest"
+            ]
+        },
         "throughput": {
             "anyOf" : [
                 { "$ref": "#/local/throughput_v1" },
-                { "$ref": "#/local/throughput_v2" }
+                { "$ref": "#/local/throughput_v2" },
+                { "$ref": "#/local/throughput_v3" }
             ]
         }
     },
