@@ -494,10 +494,41 @@ __dictionary__ = {
             ]
         },
 
+    "ArchiveSpecification_V3": {
+        "type": "object",
+        "properties": {
+            "schema": {
+                "type": "integer",
+                "enum": [ 3 ]
+            },
+            "runs": {
+                "type": "string",
+                "enum": [
+                    "all",
+                    "succeeded",
+                    "failed"
+                    ]
+            },
+            "label": { "type": "string" },
+            "archiver": { "type": "string" },
+            "data": { "$ref": "#/pScheduler/AnyJSON" },
+            "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
+            "ttl": { "$ref": "#/pScheduler/Duration" },
+            "uri-host": { "$ref": "#/pScheduler/URLHostPort" }
+            },
+        "additionalProperties": False,
+        "required": [
+            "schema",
+            "archiver",
+            "data",
+            ]
+        },
+
     "ArchiveSpecification": {
-        "anyOf": [
+        "oneOf": [
             { "$ref": "#/pScheduler/ArchiveSpecification_V1" },
-            { "$ref": "#/pScheduler/ArchiveSpecification_V2" }
+            { "$ref": "#/pScheduler/ArchiveSpecification_V2" },
+            { "$ref": "#/pScheduler/ArchiveSpecification_V3" }
             ]
         },
 

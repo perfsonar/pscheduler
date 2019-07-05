@@ -344,10 +344,17 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
         if run_json.get('archivings', None) is not None:
             for archiving in run_json['archivings']:
                 print
-                print "  To %s, %s" % (
-                    archiving['archiver']['name'],
+
+                # Servers 4.3 and later add the full archive spec with a label.
+                try:
+                    where_to = "To %s using %s" % (archiving['spec']['label'], archiving['spec']['name'])
+                except KeyError:
+                    where_to = "To %s" % (archiving['archiver']['name'])
+                print "  %s, %s" % (
+                    where_to,
                     "Finished" if archiving['archived'] else "Unfinished"
                     )
+
                 for attempt in archiving['diags']:
                     try:
                         if attempt['return-code'] <> 0:
