@@ -447,6 +447,11 @@ BEGIN
 	    RAISE EXCEPTION 'Priority cannot be changed after scheduling.';
 	END IF;
 
+	-- Runs that are canceled stay that way.
+	IF NEW.state <> OLD.state AND OLD.state = run_state_canceled() THEN
+	    NEW.state := OLD.state;
+	END IF;
+
 	IF NOT run_state_transition_is_valid(OLD.state, NEW.state) THEN
             RAISE EXCEPTION 'Invalid transition between states (% to %).',
                 OLD.state, NEW.state;
