@@ -319,6 +319,17 @@ BEGIN
         t_version := t_version + 1;
     END IF;
 
+    -- Version 13 to version 14
+    -- Adds cron_repeat column
+    IF t_version = 13
+    THEN
+	-- How often the task should repeat, cron-style
+	ALTER TABLE task ADD COLUMN
+	repeat_cron TEXT;
+
+        t_version := t_version + 1;
+    END IF;
+
 
     --
     -- Cleanup
@@ -497,6 +508,10 @@ BEGIN
 	END IF;
 
 	NEW.repeat := text_to_interval(NEW.json #>> '{schedule, repeat}');
+	NEW.repeat_cron := NEW.json #>> '{schedule, repeat-cron}';
+	IF NEW.repeatcron IS NOT NULL AND NOT cron_spec_is_valid(NEW.repeat_cron) THEN
+	    RAISE EXCEPTION 'Invalid cron repeat specification';
+	END IF;
 
 	-- TODO: Should we check that the repeat interval is greater
 	-- than the duration (which we no longer have by default)?
@@ -506,24 +521,22 @@ BEGIN
 	   RAISE EXCEPTION 'Maximum runs must be positive.';
 	END IF;
 
-	IF NEW.repeat IS NULL THEN
-	   NEW.until := NULL;
-	   NEW.max_runs := 1;
+
+	-- REPEAT
+
+	IF NEW.repeat IS NULL AND NEW.repeat_cron IS NULL THEN
+	    -- Non-repeaters run once
+	    NEW.until := NULL;
+	    NEW.max_runs := 1;
 	END IF;
 
-	IF (NEW.until IS NULL) AND (NEW.repeat IS NOT NULL) THEN
-	   -- Repeaters go forever by default
-	   NEW.until := 'infinity';
-	END IF;
 
+	-- UNTIL
 
 	until := NEW.json #>> '{schedule, until}';
 
 	-- TODO: Make this compatible with TimestampAbsoluteRelative
-	IF until LIKE 'P%' THEN
-	   NEW.until := now() + text_to_interval(until);
-	-- TODO: 'infinity' and 'doomsday' are not officially supported.
-	ELSIF until IN ('forever', 'infinity', 'doomsday') THEN
+	IF until IN ('forever', 'infinity', 'doomsday') THEN
 	   NEW.until := 'infinity';
 	ELSE
 	   NEW.until := text_to_timestamp_with_time_zone(until);
@@ -782,7 +795,7 @@ BEGIN
             -- Complete based on runs
             (max_runs IS NOT NULL AND runs >= max_runs)
             -- One-shot
-            OR repeat IS NULL
+            OR (repeat IS NULL AND repeat_cron IS NULL)
             -- Until time has passed
             OR until < older_than
             )

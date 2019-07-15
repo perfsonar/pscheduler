@@ -106,6 +106,13 @@ __dictionary__ = {
         "required": [ "time", "synchronized" ]
     },
 
+    "CronSpecification": {
+        "type": "string",
+        # Based on https://gist.github.com/andrew-templeton/ae4126a8efe219b796a3
+        "pattern": r'',
+        "x-invalid-message": "'%s' is not a valid cron specification."
+    },
+
     "Duration": {
         "type": "string",
         # ISO 8601.  Source: https://gist.github.com/philipashlock/8830168
@@ -632,9 +639,13 @@ __dictionary__ = {
             ]
         },
 
-    "ScheduleSpecification": {
+    "ScheduleSpecification_V1": {
         "type": "object",
         "properties": {
+            "schema":   {
+                "type": "integer",
+                "enum": [ 1 ]
+                },
             "start":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
             "slip":     { "$ref": "#/pScheduler/Duration" },
             "sliprand": { "$ref": "#/pScheduler/Boolean" },
@@ -644,6 +655,33 @@ __dictionary__ = {
             },
         "additionalProperties": False
         },
+
+    "ScheduleSpecification_V2": {
+        "type": "object",
+        "properties": {
+            "schema":   {
+                "type": "integer",
+                "enum": [ 2 ]
+                },
+            "start":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
+            "slip":     { "$ref": "#/pScheduler/Duration" },
+            "sliprand": { "$ref": "#/pScheduler/Boolean" },
+            "repeat":   { "$ref": "#/pScheduler/Duration" },
+            "repeat-con": { "$ref": "#/pScheduler/CronSpecification" },
+            "until":    { "$ref": "#/pScheduler/TimestampAbsoluteRelative" },
+            "max-runs": { "$ref": "#/pScheduler/Cardinal" },
+            },
+        "required": [ "schema" ],
+        "additionalProperties": False
+        },
+
+    "ScheduleSpecification": {
+        "anyOf": [
+            { "$ref": "#/pScheduler/ScheduleSpecification_V1" },
+            { "$ref": "#/pScheduler/ScheduleSpecification_V2" }
+            ]
+        },
+
 
     # TODO: There are still some data types undefined, mainly because we cannot
     # find agents that will return such data types yet
