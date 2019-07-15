@@ -36,8 +36,7 @@ result = input["result"]
 
 if format == 'text/plain':
     # Print results of the test here, in plaintext
-    print 'Time: %s\n' % result['time']
-    print 'Ports open:' 
+    print 'Time: %s\n' % result['time'] 
     
     hosts = json.loads(result['ports-open'])
  
@@ -45,9 +44,9 @@ if format == 'text/plain':
 	print("Host: " + host + "\n")
 	port_list = hosts[host]
 	for port in port_list:
-	    print("Port: " + port['number'])
-	    print("Protocol: " + port['protocol'])
-	    print("Service: " + port['service'] + "\n")
+	    print("    Port: " + port['number'])
+	    print("    Protocol: " + port['protocol'])
+	    print("    Service: " + port['service'] + "\n")
 
    
 elif format == 'text/html':
