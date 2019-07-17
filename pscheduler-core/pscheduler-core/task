@@ -114,6 +114,11 @@ schedule_group.add_option("--repeat",
                       action="store", type="string",
                       dest="repeat")
 
+schedule_group.add_option("--repeat-cron",
+                          help="Cron-style repeat specification (POSIX Cron)",
+                          action="store", type="string",
+                          dest="repeat_cron")
+
 schedule_group.add_option("--slip",
                       help="Allowed start slip (ISO8601 Duration)",
                       action="store", type="string",
@@ -200,6 +205,10 @@ if len(remaining_args) < 1 and options.importfile is None:
     opt_parser.print_usage()
     pscheduler.fail()
 
+
+task_schema = pscheduler.HighInteger(1)
+schedule_schema = pscheduler.HighInteger(1)
+
 #
 # Validate the command line
 #
@@ -232,6 +241,10 @@ if options.repeat is not None:
     except ValueError as ex:
         pscheduler.fail("Invalid --repeat: %s" % str(ex))
 
+
+if options.repeat_cron is not None:
+    schedule_schema.set(2)
+    repeat_cron = options.repeat_cron
 
 if options.key is not None:
     try:
@@ -274,15 +287,6 @@ if options.until is not None:
     if until <= pscheduler.time_now():
         pscheduler.fail("Invalid --until; must be in the future.")
 
-if ( options.repeat is None
-     and (
-        (options.max_runs is not None and options.max_runs > 1)
-        or options.until is not None
-        )
-     ):
-         pscheduler.fail("Using --repeat is required with other"
-                         " repetition-related options.")
-
 
 verbose = (not options.quiet) \
     and not (options.url) \
@@ -308,8 +312,6 @@ log.debug("Assistance is from %s", assist)
 # If we were asked to read in some JSON, do that.  Anything the
 # options add will override it.
 #
-
-task_schema = pscheduler.HighInteger(1)
 
 if options.importfile is None:
     task = {
@@ -408,6 +410,9 @@ if 'priority' in task:
 
 if options.repeat is not None:
     task['schedule']['repeat'] = options.repeat
+
+if options.repeat_cron is not None:
+    task['schedule']['repeat-cron'] = options.repeat_cron
 
 if options.sliprand is not None:
     task['schedule']['sliprand'] = options.sliprand
@@ -535,6 +540,7 @@ task['test']['spec']['schema'] = final_schema
 
 
 task['schema'] = task_schema.value()
+task['schedule']['schema'] = schedule_schema.value()
 
 if options.export:
 

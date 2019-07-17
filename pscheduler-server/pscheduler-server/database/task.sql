@@ -509,7 +509,7 @@ BEGIN
 
 	NEW.repeat := text_to_interval(NEW.json #>> '{schedule, repeat}');
 	NEW.repeat_cron := NEW.json #>> '{schedule, repeat-cron}';
-	IF NEW.repeatcron IS NOT NULL AND NOT cron_spec_is_valid(NEW.repeat_cron) THEN
+	IF NEW.repeat_cron IS NOT NULL AND NOT cron_spec_is_valid(NEW.repeat_cron) THEN
 	    RAISE EXCEPTION 'Invalid cron repeat specification';
 	END IF;
 
@@ -741,25 +741,48 @@ DO $$ BEGIN PERFORM drop_function_all('task_next_run'); END $$;
 
 CREATE OR REPLACE FUNCTION task_next_run(
        start TIMESTAMP WITH TIME ZONE,   -- Task's start (first run) time
-       after TIMESTAMP WITH TIME ZONE,  -- 
-       length INTERVAL                   -- Time between runs
+       after TIMESTAMP WITH TIME ZONE,   -- Base for "next" time
+       repeat INTERVAL,                  -- Time between runs
+       repeat_cron TEXT                  -- Cron-style repeat spec
 )
 RETURNS TIMESTAMP WITH TIME ZONE
 AS $$
 DECLARE
     intervals NUMERIC;
+    next_interval TIMESTAMP WITH TIME ZONE;
+    next_cron TIMESTAMP WITH TIME ZONE;
 BEGIN
-    IF (length IS NULL OR length = 'P0') THEN
-        RAISE EXCEPTION 'Cannot divide by a zero interval';
+
+    IF repeat IS NULL AND repeat_cron IS NULL THEN
+        RAISE EXCEPTION 'Must have either an interval or a cron spec';
     END IF;
 
-    -- Number of runs that should have happened between the task start
-    -- and the after time.
-    intervals := 
-        TRUNC( (EXTRACT(EPOCH FROM after) - EXTRACT(EPOCH FROM start))
-            / EXTRACT(EPOCH FROM length) ) + 1;
+    -- Standard, every-x repeat
 
-    RETURN start + (length * intervals);
+    IF repeat IS NULL THEN
+        next_interval := tstz_infinity();
+    ELSIF repeat = 'P0' THEN
+        RAISE EXCEPTION 'Cannot divide by a zero interval';
+    ELSE 
+        -- Number of runs that should have happened between the task
+        -- start and the after time.
+	intervals := 
+        	  TRUNC( (EXTRACT(EPOCH FROM after) - EXTRACT(EPOCH FROM start))
+		  / EXTRACT(EPOCH FROM repeat) ) + 1;
+	next_interval := start + (repeat * intervals);
+    END IF;
+
+    -- Cron-style repeat
+
+    IF repeat_cron IS NULL THEN
+        next_cron = tstz_infinity();
+    ELSE
+        next_cron = cron_next(repeat_cron, after);
+    END IF;
+
+    -- The behavior in the presence of both is to use the earlier
+    RETURN least(next_interval, next_cron);
+
 END;
 $$ LANGUAGE plpgsql;
 
