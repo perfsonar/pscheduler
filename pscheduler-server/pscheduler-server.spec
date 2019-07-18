@@ -55,6 +55,7 @@ Requires:	python-jsontemplate
 # API Server
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
+BuildRequires:	python-parse-crontab
 BuildRequires:	python-pscheduler >= 1.3.7.2
 BuildRequires:	m4
 Requires:	httpd-wsgi-socket
@@ -64,6 +65,7 @@ Requires:	pscheduler-server
 # mod_ssl is required here.
 Requires:	mod_ssl
 Requires:	mod_wsgi > 4.0
+Requires:	python-parse-crontab
 Requires:	python-pscheduler >= 1.3.7.2
 Requires:	pytz
 

@@ -2,6 +2,7 @@
 # Task-Related Pages
 #
 
+import crontab
 import pscheduler
 import urlparse
 
@@ -240,6 +241,17 @@ def tasks():
             return error("Unable to validate test spec: " + str(ex))
 
         log.debug("Validated test: %s", pscheduler.json_dump(task['test']))
+
+
+        # Validate the schedule
+
+        try:
+            cron = crontab.CronTab(task["schedule"]["repeat-cron"])
+        except (AttributeError, ValueError):
+                return error("Cron repeat specification is invalid.")
+        except KeyError:
+            pass
+
 
 
         # Validate the archives
