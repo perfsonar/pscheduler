@@ -486,7 +486,9 @@ print
 # Make sure both hosts resolve to the same address family
 
 start("  Checking IP addresses")
-normalized_a, normalized_z = pscheduler.ip_normalize_version(host_a, host_z, ip_version=options.ip_version)
+(stripped_a, stripped_a_port) = pscheduler.api_host_port(host_a)
+(stripped_z, stripped_z_port) = pscheduler.api_host_port(host_z)
+normalized_a, normalized_z = pscheduler.ip_normalize_version(stripped_a, stripped_z, ip_version=options.ip_version)
 if normalized_a is None or normalized_z is None:
     failed("Unable to find %s addresses for both hosts" % (
         "same-family" if options.ip_version is None else "IPv%d" % (options.ip_version)
@@ -503,7 +505,7 @@ else:
 # MTU Between hosts
 
 if not options.quick:
-    check_mtu(host_a, host_z)
+    check_mtu(stripped_a, stripped_z)
 
 
 # Compare clocks
