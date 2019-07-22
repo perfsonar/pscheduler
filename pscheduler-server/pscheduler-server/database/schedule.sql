@@ -101,11 +101,12 @@ AS
             JOIN test ON test.id = task.test
         WHERE
 	    repeat IS NULL
+	    AND repeat_cron IS NULL
 	    AND NOT EXISTS (SELECT * FROM run WHERE run.task = task.id)
 
         UNION ALL
 
-        -- Repeating tasks without runs
+        -- Interval-repeating tasks without runs
 
         SELECT
             task.id AS task,
@@ -127,13 +128,14 @@ AS
             task
             JOIN test on test.id = task.test
         WHERE
-	    repeat IS NOT NULL
+	    task.repeat IS NOT NULL
             AND (until IS NULL OR until > normalized_now())
 	    AND runs = 0
 
 	UNION ALL
 
-        -- Repeating tasks with runs
+        -- Interval-repeating tasks with runs
+
         SELECT
             task.id AS task,
             task.uuid,
@@ -147,18 +149,52 @@ AS
             task.until,
             task_next_run(task.first_start,
                          greatest(normalized_now(), task.start, run_latest.latest),
-                         repeat) AS trynext,
+                         task.repeat, NULL) AS trynext,
             task.participant,
             (SELECT scheduling_class FROM test WHERE test.id = task.test) AS scheduling_class,
 	    task.json,
 	    task.participants
        FROM
             task
-            JOIN run_latest ON run_latest.task = task.id
+	    JOIN run_latest ON run_latest.task = task.id
         WHERE
             task.repeat IS NOT NULL
-            AND task.runs > 0
-            AND EXISTS (SELECT * FROM run WHERE run.task = task.id)
+	    AND task.runs > 0
+	    AND EXISTS (SELECT * FROM run WHERE run.task = task.id)
+
+	UNION ALL
+
+        -- Cron-repeating tasks with or without runs
+
+        SELECT
+            task.id AS task,
+            task.uuid,
+	    task.json ->> '_key' AS key,
+            task.enabled,
+            task.added,
+            duration,
+            task.slip,
+            task.max_runs,
+            task.runs,
+            task.until,
+            task_next_run(task.first_start,
+                         greatest(
+			     normalized_now(),
+			     task.start,
+			     task.first_start,
+			     (SELECT latest FROM run_latest where task = task.id)
+			 ),
+                         NULL, task.repeat_cron) AS trynext,
+            task.participant,
+            (SELECT scheduling_class FROM test WHERE test.id = task.test) AS scheduling_class,
+	    task.json,
+	    task.participants
+       FROM
+            task
+        WHERE
+            task.repeat_cron IS NOT NULL
+	    AND task.enabled
+
     )
     SELECT
         task,

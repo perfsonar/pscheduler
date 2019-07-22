@@ -54,6 +54,7 @@ python2-jsonschema
 python-kafka
 python-netaddr
 python-ntplib
+python-parse-crontab
 python-py-radix
 python-pyjq
 # TODO: This can be dropped in 1.2

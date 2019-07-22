@@ -319,6 +319,17 @@ BEGIN
         t_version := t_version + 1;
     END IF;
 
+    -- Version 13 to version 14
+    -- Adds cron_repeat column
+    IF t_version = 13
+    THEN
+	-- How often the task should repeat, cron-style
+	ALTER TABLE task ADD COLUMN
+	repeat_cron TEXT;
+
+        t_version := t_version + 1;
+    END IF;
+
 
     --
     -- Cleanup
@@ -497,6 +508,10 @@ BEGIN
 	END IF;
 
 	NEW.repeat := text_to_interval(NEW.json #>> '{schedule, repeat}');
+	NEW.repeat_cron := NEW.json #>> '{schedule, repeat-cron}';
+	IF NEW.repeat_cron IS NOT NULL AND NOT cron_spec_is_valid(NEW.repeat_cron) THEN
+	    RAISE EXCEPTION 'Invalid cron repeat specification';
+	END IF;
 
 	-- TODO: Should we check that the repeat interval is greater
 	-- than the duration (which we no longer have by default)?
@@ -506,24 +521,22 @@ BEGIN
 	   RAISE EXCEPTION 'Maximum runs must be positive.';
 	END IF;
 
-	IF NEW.repeat IS NULL THEN
-	   NEW.until := NULL;
-	   NEW.max_runs := 1;
+
+	-- REPEAT
+
+	IF NEW.repeat IS NULL AND NEW.repeat_cron IS NULL THEN
+	    -- Non-repeaters run once
+	    NEW.until := NULL;
+	    NEW.max_runs := 1;
 	END IF;
 
-	IF (NEW.until IS NULL) AND (NEW.repeat IS NOT NULL) THEN
-	   -- Repeaters go forever by default
-	   NEW.until := 'infinity';
-	END IF;
 
+	-- UNTIL
 
 	until := NEW.json #>> '{schedule, until}';
 
 	-- TODO: Make this compatible with TimestampAbsoluteRelative
-	IF until LIKE 'P%' THEN
-	   NEW.until := now() + text_to_interval(until);
-	-- TODO: 'infinity' and 'doomsday' are not officially supported.
-	ELSIF until IN ('forever', 'infinity', 'doomsday') THEN
+	IF until IN ('forever', 'infinity', 'doomsday') THEN
 	   NEW.until := 'infinity';
 	ELSE
 	   NEW.until := text_to_timestamp_with_time_zone(until);
@@ -728,25 +741,48 @@ DO $$ BEGIN PERFORM drop_function_all('task_next_run'); END $$;
 
 CREATE OR REPLACE FUNCTION task_next_run(
        start TIMESTAMP WITH TIME ZONE,   -- Task's start (first run) time
-       after TIMESTAMP WITH TIME ZONE,  -- 
-       length INTERVAL                   -- Time between runs
+       after TIMESTAMP WITH TIME ZONE,   -- Base for "next" time
+       repeat INTERVAL,                  -- Time between runs
+       repeat_cron TEXT                  -- Cron-style repeat spec
 )
 RETURNS TIMESTAMP WITH TIME ZONE
 AS $$
 DECLARE
     intervals NUMERIC;
+    next_interval TIMESTAMP WITH TIME ZONE;
+    next_cron TIMESTAMP WITH TIME ZONE;
 BEGIN
-    IF (length IS NULL OR length = 'P0') THEN
-        RAISE EXCEPTION 'Cannot divide by a zero interval';
+
+    IF repeat IS NULL AND repeat_cron IS NULL THEN
+        RAISE EXCEPTION 'Must have either an interval or a cron spec';
     END IF;
 
-    -- Number of runs that should have happened between the task start
-    -- and the after time.
-    intervals := 
-        TRUNC( (EXTRACT(EPOCH FROM after) - EXTRACT(EPOCH FROM start))
-            / EXTRACT(EPOCH FROM length) ) + 1;
+    -- Standard, every-x repeat
 
-    RETURN start + (length * intervals);
+    IF repeat IS NULL THEN
+        next_interval := tstz_infinity();
+    ELSIF repeat = 'P0' THEN
+        RAISE EXCEPTION 'Cannot divide by a zero interval';
+    ELSE 
+        -- Number of runs that should have happened between the task
+        -- start and the after time.
+	intervals := 
+        	  TRUNC( (EXTRACT(EPOCH FROM after) - EXTRACT(EPOCH FROM start))
+		  / EXTRACT(EPOCH FROM repeat) ) + 1;
+	next_interval := start + (repeat * intervals);
+    END IF;
+
+    -- Cron-style repeat
+
+    IF repeat_cron IS NULL THEN
+        next_cron = tstz_infinity();
+    ELSE
+        next_cron = cron_next(repeat_cron, after);
+    END IF;
+
+    -- The behavior in the presence of both is to use the earlier
+    RETURN least(next_interval, next_cron);
+
 END;
 $$ LANGUAGE plpgsql;
 
@@ -782,7 +818,7 @@ BEGIN
             -- Complete based on runs
             (max_runs IS NOT NULL AND runs >= max_runs)
             -- One-shot
-            OR repeat IS NULL
+            OR (repeat IS NULL AND repeat_cron IS NULL)
             -- Until time has passed
             OR until < older_than
             )
