@@ -13,5 +13,5 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-archiver-kafka
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
- pscheduler-server (>= 1.1.2)
+ pscheduler-server (>= 1.0.2)
 Description: Apache Kafka archiver class for pScheduler
