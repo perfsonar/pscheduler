@@ -1,8 +1,8 @@
-python-pscheduler (4.2.0~0-1) perfsonar-minor-snapshot; urgency=medium
+pscheduler-account (4.2.0~2.b1-1) perfsonar-minor-staging; urgency=low
 
   * New upstream version
 
- -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Thu, 25 Apr 2019 19:59:23 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 23 Jul 2019 19:42:34 +0000
 
 python-pscheduler (1.3.7-1) perfsonar-release; urgency=low
 

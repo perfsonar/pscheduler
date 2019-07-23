@@ -1,8 +1,8 @@
-pscheduler-tool-bwctliperf3 (4.2.0~0-1) perfsonar-minor-snapshot; urgency=low
+pscheduler-account (4.2.0~2.b1-1) perfsonar-minor-staging; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sun, 24 Feb 2019 17:08:51 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 23 Jul 2019 19:42:34 +0000
 
 pscheduler-tool-bwctliperf3 (1.1.5-1) perfsonar-release; urgency=low
 

@@ -10,7 +10,7 @@
 # they should be added here (line 25).
 %define short	curl
 %define perfsonar_auto_version 4.2.0
-%define perfsonar_auto_relnum 0.1.b1
+%define perfsonar_auto_relnum 0.2.b1
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}

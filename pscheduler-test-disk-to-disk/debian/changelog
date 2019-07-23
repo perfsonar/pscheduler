@@ -1,5 +1,5 @@
-pscheduler-test-disk-to-disk (4.2.0~0-1) perfsonar-jessie-release; urgency=low
+pscheduler-account (4.2.0~2.b1-1) perfsonar-minor-staging; urgency=low
 
   * Initial release
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 21 Aug 2018 15:08:09 +0200
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 23 Jul 2019 19:42:34 +0000

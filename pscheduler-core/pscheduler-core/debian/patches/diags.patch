@@ -1,7 +1,5 @@
-Index: pscheduler-core/diags.raw
-===================================================================
---- pscheduler-core.orig/diags.raw	2018-08-10 20:12:47.000000000 +0000
-+++ pscheduler-core/diags.raw	2018-08-13 19:37:53.000000000 +0000
+--- a/diags.raw	2019-07-23 19:41:50.470457000 +0000
++++ b/diags.raw	2019-07-23 19:42:41.038504000 +0000
 @@ -98,7 +98,7 @@
  
  section "New Tasks by Hour Added"
