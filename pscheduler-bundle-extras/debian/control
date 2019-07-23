@@ -14,7 +14,9 @@ Package: pscheduler-bundle-extras
 Architecture: all
 Depends:
  pscheduler-test-disk-to-disk,
+ pscheduler-test-netreach,
  pscheduler-tool-curl,
- pscheduler-tool-globus
+ pscheduler-tool-globus,
+ pscheduler-tool-nmapreach
 Description: Extra pScheduler Bundle
  Bundle of extra pScheduler packages

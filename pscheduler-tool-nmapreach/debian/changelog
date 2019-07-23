@@ -1,0 +1,5 @@
+pscheduler-tool-nmapreach (4.2.0~0-1) perfsonar-minor-snapshot; urgency=low
+
+  * Initial release
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 23 Jul 2019 18:54:27 +0000

@@ -1,0 +1,5 @@
+pscheduler-test-netreach (4.2.0~0-1) perfsonar-minor-snapshot; urgency=low
+
+  * Initial release
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 23 Jul 2019 17:46:35 +0000

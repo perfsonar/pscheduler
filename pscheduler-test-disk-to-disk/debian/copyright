@@ -1,5 +1,5 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: pscheduler-tool-disk-to-disk
+Upstream-Name: pscheduler-test-disk-to-disk
 Source: https://github.com/perfsonar/pscheduler
 
 Files: *
