@@ -13,6 +13,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-tool-nmapreach
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
- python-dns, pscheduler-server, pscheduler-test-dns
+ nmap, pscheduler-server, pscheduler-test-netreach
 Description: pScheduler NMAP reach tool
  Network reachability tool class for pScheduler

@@ -2,8 +2,7 @@ Source: pscheduler-bundle-snmp
 Section: net
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
-Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>,
- Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
 Build-Depends: debhelper (>= 9)
 Standards-Version: 3.9.6
 Homepage: https://github.com/perfsonar/pscheduler
@@ -16,11 +15,6 @@ Depends:
  pscheduler-test-snmpget,
  pscheduler-test-snmpgetbgm,
  pscheduler-test-snmpset,
- pscheduler-tool-bwctliperf2,
- pscheduler-tool-bwctliperf3,
- pscheduler-tool-bwctlping,
- pscheduler-tool-bwctltracepath,
- pscheduler-tool-bwctltraceroute,
  pscheduler-tool-net-snmp-set,
  pscheduler-tool-pysnmp,
  pscheduler-archiver-snmptrap
