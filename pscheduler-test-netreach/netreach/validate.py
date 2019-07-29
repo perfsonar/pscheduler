@@ -85,17 +85,16 @@ def spec_is_valid(json):
     if not json_valid and "gateway" not in json:
         return (json_valid, message)
 
+    network = ipaddress.ip_network(unicode(json["network"]))
+    if network.num_addresses <= 2:
+        return (False, "Network must have at least two host addresses.")
+
     try:
-        network = ipaddress.ip_network(unicode(json["network"]))
-        try:
-            gateway = gateway_ip(network, json["gateway"])
-        except KeyError:
-            gateway = network[1]  # A dummy to make the other tests pass.
+        gateway = gateway_ip(network, json["gateway"])
+    except KeyError:
+        gateway = network[1]  # Use first host to make other tests pass
     except ValueError as ex:
         return (False, str(ex))
-
-    if network.num_addresses < 2:
-        return (False, "Network must have at least two addresses.")
             
     if network.version != gateway.version:
         return (False, "Network and gateway are not in the same family.")
@@ -105,7 +104,6 @@ def spec_is_valid(json):
 
     if gateway in [ network[0], network[-1] ]:
         return (False, "Gateway cannot be the network or broadcast address.")
-
 
     return (True, "OK")
 
