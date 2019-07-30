@@ -1,10 +1,10 @@
-pscheduler-bundle-extras (4.2.0~2.b1-2) perfsonar-minor-staging; urgency=low
+pscheduler-bundle-extras (4.2.0~3.b1-1) perfsonar-minor-staging; urgency=low
 
   * New upstream version
   * SNMP packages moved to pscheduler-bundle-snmp
   * Obsolete packages moved to pscheduler-bundle-obsolete
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 23 Jul 2019 20:06:48 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 30 Jul 2019 16:53:58 +0000
 
 pscheduler-bundle-extras (1.1.5-1) perfsonar-release; urgency=low
 

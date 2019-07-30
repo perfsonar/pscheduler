@@ -1,6 +1,6 @@
-pscheduler-bundle-snmp (4.2.0~2.b1-3) perfsonar-minor-staging; urgency=low
+pscheduler-bundle-snmp (4.2.0~3.b1-1) perfsonar-minor-staging; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 29 Jul 2019 19:22:37 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 30 Jul 2019 16:53:58 +0000
 
