@@ -29,7 +29,7 @@ testing method is usually more useful in terms of output and is also much faster
 
 #### Method 1:
 
--Follow the pScheduler documentation on how to use an archiver (https://github.com/perfsonar/pscheduler/wiki/Archivers)
+-Follow the pScheduler documentation on how to use an archiver (http://docs.perfsonar.net/release_candidates/4.1b1/pscheduler_ref_archivers.html)
 
 #### Method 2:
 
@@ -41,7 +41,7 @@ help you make progress in developing it._
 
 1. Obtain output JSON
 
--The easiest way to do this is to use the syslog archiver provided by pScheduler (https://github.com/perfsonar/pscheduler/wiki/Archivers#syslog)
+-The easiest way to do this is to use the syslog archiver provided by pScheduler
 Run a pScheduler task of your choice (a good default choice is idle) and output to the syslog archiver. The syslog archiver 
 will generate a JSON blob of output that you can then use with your archiver. To access the output from the syslog archiver 
 type in 
