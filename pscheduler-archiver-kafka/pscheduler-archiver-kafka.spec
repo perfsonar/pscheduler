@@ -4,7 +4,7 @@
 
 %define short	kafka
 %define perfsonar_auto_version 4.2.0
-%define perfsonar_auto_relnum 0.2.b1
+%define perfsonar_auto_relnum 0.3.b1
 
 Name:		pscheduler-archiver-%{short}
 Version:	%{perfsonar_auto_version}
@@ -20,6 +20,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.0.2
+Requires:       python-kafka
 
 BuildRequires:	pscheduler-rpm
 
