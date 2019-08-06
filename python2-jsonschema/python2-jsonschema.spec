@@ -24,7 +24,8 @@ Requires:       python
 Requires:       python2-attrs
 Requires:       python-pyrsistent
 Requires:       python-functools32
-
+# This is required for some reason.
+Requires:       python-setuptools
 
 BuildRequires:  python
 BuildRequires:  python-setuptools
