@@ -847,6 +847,7 @@ def main_program():
                         pscheduler.timedelta_as_seconds(refresh)) \
                     != ([], [], []):
                     # Notified
+                    log.debug("Task change")
                     pg.poll()
                     del pg.notifies[:]
 
@@ -857,6 +858,10 @@ def main_program():
                     raise ex
                 else:
                     log.debug("Interrupted during select")
+
+        else:
+
+            log.debug("Not waiting.")
 
 
         wait = True
