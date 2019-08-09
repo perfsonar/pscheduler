@@ -10,7 +10,7 @@
 # they should be added here (line 25).
 %define short	TEMPLATE
 %define perfsonar_auto_version 4.2.0
-%define perfsonar_auto_relnum 0.b2.2
+%define perfsonar_auto_relnum 0.5.b2
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
