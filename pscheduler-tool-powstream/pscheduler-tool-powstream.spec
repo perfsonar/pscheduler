@@ -6,7 +6,7 @@
 %define resultdir	%{_pscheduler_tool_vardir}/%{short}
 
 %define perfsonar_auto_version 4.2.0
-%define perfsonar_auto_relnum 0.b2.1
+%define perfsonar_auto_relnum 0.b2.2
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
