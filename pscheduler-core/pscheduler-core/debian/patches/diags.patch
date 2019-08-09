@@ -27,18 +27,18 @@
  \c pscheduler
  SELECT
      run_state.enum AS state,
-@@ -185,7 +185,7 @@
+@@ -187,7 +187,7 @@
  fi
  
- section HTTPD Error Log
+ section "HTTPD Error Log (Last ${LOG_LIMIT} Lines)"
 -LOG="/var/log/httpd/error_log"
 +LOG="/var/log/apache2/error.log"
  if [ -r "${LOG}" ]
  then
-     cat "${LOG}"
-@@ -196,17 +196,11 @@
+     tail "-${LOG_LIMIT}" "${LOG}"
+@@ -198,17 +198,11 @@
  
- section PostgreSQL Log
+ section "PostgreSQL Log (Last ${LOG_LIMIT} Lines)"
  
 -PG_DATA=$(postgresql-load <<EOF
 -\\t
@@ -51,8 +51,8 @@
  
  if [ -d "${PG_LOG}" ]
  then
--    ls -rtd ${PG_DATA}/pg_log/* | xargs cat
-+    ls -rtd ${PG_LOG}/*.log | xargs cat
+-    ls -rtd ${PG_DATA}/pg_log/* | xargs cat | tail "-${LOG_LIMIT}"
++    ls -rtd ${PG_LOG}/*.log | xargs cat | tail "-${LOG_LIMIT}"
  else
      echo "PostgreSQL logs not found in ${PG_LOG}"
  fi
