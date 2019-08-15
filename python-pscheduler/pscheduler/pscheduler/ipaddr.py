@@ -53,6 +53,9 @@ def ip_addr_version(addr,
     family as defined by the socket module.
     """
 
+    assert addr is not None
+    assert isinstance(addr, basestring)
+
     # Chop out any CIDR suffix.
 
     slash_index = addr.find('/')

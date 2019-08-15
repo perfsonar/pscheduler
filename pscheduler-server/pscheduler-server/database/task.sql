@@ -725,10 +725,17 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Note that this runs per-statement since only one notification is
--- necessary to start a round of scheduling.
-CREATE TRIGGER task_alter_notify AFTER INSERT OR UPDATE ON task
-    FOR EACH STATEMENT EXECUTE PROCEDURE task_alter_notify();
+CREATE TRIGGER task_alter_notify AFTER INSERT ON task
+    -- Doesn't matter how many inserts happened
+    FOR EACH STATEMENT
+    EXECUTE PROCEDURE task_alter_notify();
+
+CREATE TRIGGER task_alter_notify_update AFTER UPDATE ON task
+    -- One of these per row since changes may be different.
+    FOR EACH ROW
+    -- Don't trigger scheduling if it's just a run count update.
+    WHEN ( NOT ((NEW.runs = OLD.runs) AND (NEW.runs_started = OLD.runs_started)) )
+    EXECUTE PROCEDURE task_alter_notify();
 
 
 

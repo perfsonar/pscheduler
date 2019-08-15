@@ -12,7 +12,7 @@
 
 %define short	disk-to-disk
 %define perfsonar_auto_version 4.2.0
-%define perfsonar_auto_relnum 0.0.a1
+%define perfsonar_auto_relnum 0.5.b2
 
 Name:		pscheduler-test-%{short}
 Version:	%{perfsonar_auto_version}

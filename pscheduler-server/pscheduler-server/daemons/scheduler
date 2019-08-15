@@ -830,10 +830,39 @@ def main_program():
     workers = {}
     workers_lock = threading.Lock()
 
+    wait = False  # First iteration is always no-wait.
+
     while True:
 
-        with pg.cursor() as cursor:
-            cursor.execute("SELECT heartbeat('scheduler')")
+        if wait:
+
+            with pg.cursor() as cursor:
+                cursor.execute("SELECT heartbeat('scheduler', %s)", [refresh])
+
+            log.debug("Waiting.")
+
+            try:
+                if pscheduler.polled_select(
+                        [pg], [], [],
+                        pscheduler.timedelta_as_seconds(refresh)) \
+                    != ([], [], []):
+                    # Notified
+                    log.debug("Task change")
+                    pg.poll()
+                    del pg.notifies[:]
+
+            except select.error as ex:
+                err_no, message = ex
+                if err_no != errno.EINTR:
+                    log.exception()
+                    raise ex
+                else:
+                    log.debug("Interrupted during select")
+
+        else:
+
+            log.debug("Not waiting.")
+
 
         wait = True
 
@@ -886,27 +915,6 @@ def main_program():
                         worker.start()
                         wait = False
 
-        if wait:
-
-            with pg.cursor() as cursor:
-                cursor.execute("SELECT heartbeat('scheduler', %s)", [refresh])
-
-            try:
-                if pscheduler.polled_select(
-                        [pg], [], [],
-                        pscheduler.timedelta_as_seconds(refresh)) \
-                    != ([], [], []):
-                    # Notified
-                    pg.poll()
-                    del pg.notifies[:]
-
-            except select.error as ex:
-                err_no, message = ex
-                if err_no != errno.EINTR:
-                    log.exception()
-                    raise ex
-                else:
-                    log.debug("Interrupted during select")
 
 
 

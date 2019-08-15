@@ -1,7 +1,5 @@
-Index: pscheduler-server/database/reset.raw
-===================================================================
---- pscheduler-server.orig/database/reset.raw	2018-06-06 13:27:09.041924000 +0100
-+++ pscheduler-server/database/reset.raw	2018-10-24 16:49:39.794850002 +0100
+--- a/database/reset.raw	2019-08-09 00:11:57.632439747 +0000
++++ b/database/reset.raw	2019-08-09 00:12:03.821500228 +0000
 @@ -37,47 +37,45 @@
  
  

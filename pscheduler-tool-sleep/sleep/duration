@@ -20,7 +20,10 @@ json = pscheduler.json_load(exit_on_error=True);
 
 try:
     pscheduler.succeed_json({
-            "duration": json["duration"]
+            "duration": pscheduler.timedelta_as_iso8601(
+                pscheduler.iso8601_as_timedelta(json["duration"])
+                + datetime.timedelta(seconds=1)
+                )
             })
 except KeyError:
     pscheduler.fail("Missing duration in spec")

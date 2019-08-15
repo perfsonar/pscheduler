@@ -1,5 +1,5 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: pscheduler-test-idle
+Upstream-Name: pscheduler-tool-traceroute
 Source: https://github.com/perfsonar/pscheduler
 
 Files: *

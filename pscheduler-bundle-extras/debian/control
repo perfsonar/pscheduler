@@ -2,8 +2,7 @@ Source: pscheduler-bundle-extras
 Section: net
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
-Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>,
- Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
 Build-Depends: debhelper (>= 9)
 Standards-Version: 3.9.6
 Homepage: https://github.com/perfsonar/pscheduler
@@ -14,7 +13,9 @@ Package: pscheduler-bundle-extras
 Architecture: all
 Depends:
  pscheduler-test-disk-to-disk,
+ pscheduler-test-netreach,
  pscheduler-tool-curl,
- pscheduler-tool-globus
+ pscheduler-tool-globus,
+ pscheduler-tool-nmapreach
 Description: Extra pScheduler Bundle
  Bundle of extra pScheduler packages

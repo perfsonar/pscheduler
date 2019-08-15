@@ -1,5 +1,5 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: pscheduler-tool-clock
+Upstream-Name: pscheduler-test-clock
 Source: https://github.com/perfsonar/pscheduler
 
 Files: *

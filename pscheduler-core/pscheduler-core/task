@@ -536,11 +536,15 @@ assert 'spec' in task['test']
 final_schema = max(task['test']['spec'].get('schema', 1),
                    json_to_merge.get("schema", 1))
 task['test']['spec'].update(json_to_merge)
-task['test']['spec']['schema'] = final_schema
+if final_schema > 1:
+    task['test']['spec']['schema'] = final_schema
 
 
-task['schema'] = task_schema.value()
-task['schedule']['schema'] = schedule_schema.value()
+if task_schema.value() > 1:
+    task['schema'] = task_schema.value()
+
+if schedule_schema.value() > 1:
+    task['schedule']['schema'] = schedule_schema.value()
 
 if options.export:
 
