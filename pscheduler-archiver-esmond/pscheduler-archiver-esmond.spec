@@ -4,7 +4,7 @@
 
 %define short	esmond
 %define perfsonar_auto_version 4.2.0
-%define perfsonar_auto_relnum 0.5.b2
+%define perfsonar_auto_relnum 1
 
 Name:		pscheduler-archiver-esmond
 Version:	%{perfsonar_auto_version}
