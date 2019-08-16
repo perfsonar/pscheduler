@@ -39,6 +39,11 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %%_rundir %{_localstatedir}/run
 %endif
 
+# Version of Python required
+%%_pscheduler_python_version_major 3
+%%_pscheduler_python_version_minor 6
+%%_pscheduler_python python%{_pscheduler_python_version_major}%{_pscheduler_python_version_major}
+
 # Minimum-required PostgreSQL version
 %%_pscheduler_postgresql_version_major 9
 %%_pscheduler_postgresql_version_minor 5
