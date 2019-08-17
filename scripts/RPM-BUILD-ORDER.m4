@@ -58,10 +58,9 @@ python-pyjq
 ### python-repoze.lru
 python-tzlocal
 python-vcversioner
-### # This is how EL prefixes it.
-### python2-pyasn1
-### python2-pyasn1-modules
-### # This doesn't get a python- prefix.  Ask CentOS why.
+python-pyasn1
+python-pyasn1-modules
+# This doesn't get a python- prefix.  Ask CentOS why.
 ### pysnmp
 ### 
 ### # JSON Tools
