@@ -64,7 +64,7 @@ python-pyasn1-modules
 pysnmp
 
 # JSON Tools
-### python-jsontemplate
+python-jsontemplate
 ### 
 ### 
 ### # Home-grown Python Modules
