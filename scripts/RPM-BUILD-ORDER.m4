@@ -52,7 +52,7 @@ python-kafka
 python-ntplib
 python-parse-crontab
 python-py-radix
-### python-pyjq
+python-pyjq
 ### # TODO: This can be dropped in 1.2
 ### python-repoze.lru
 ### python-subprocess32
