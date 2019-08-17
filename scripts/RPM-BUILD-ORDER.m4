@@ -49,7 +49,7 @@ python-isodate
 python-pyrsistent
 python-jsonschema
 python-kafka
-### python-ntplib
+python-ntplib
 ### python-parse-crontab
 ### python-py-radix
 ### python-pyjq
