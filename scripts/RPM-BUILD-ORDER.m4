@@ -61,7 +61,7 @@ python-vcversioner
 python-pyasn1
 python-pyasn1-modules
 # This doesn't get a python- prefix.  Ask CentOS why.
-### pysnmp
+pysnmp
 ### 
 ### # JSON Tools
 ### python-jsontemplate

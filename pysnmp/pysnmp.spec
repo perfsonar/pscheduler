@@ -19,10 +19,10 @@ Prefix:		%{_prefix}
 
 Source:		%{short}-%{version}.tar.gz
 
-Requires:	python
-Requires:	python2-pyasn1 >= 0.3.7
+Requires:	%{_pscheduler_python}
+Requires:	%{_pscheduler_python}-pyasn1 >= 0.3.7
 
-BuildRequires:	python-setuptools
+BuildRequires:	%{_pscheduler_python}-setuptools
 
 
 %description 
@@ -38,11 +38,14 @@ Python library for SNMP
 
 
 %build
-python setup.py build
+%{_pscheduler_python} setup.py build
 
 
 %install
-python setup.py install --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES -O1
+%{_pscheduler_python} setup.py install \
+    --root=$RPM_BUILD_ROOT \
+    --record=INSTALLED_FILES \
+    -O1
 
 
 %clean
