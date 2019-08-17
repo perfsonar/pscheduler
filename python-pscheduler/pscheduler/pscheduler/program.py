@@ -9,7 +9,7 @@ import os
 import pscheduler
 import select
 import stat
-import subprocess32
+import subprocess
 import sys
 import tempfile
 import threading
@@ -100,13 +100,13 @@ def _end_process(process):
         process.wait(timeout=0.5)
     except OSError:
         pass  # Can't kill things that have changed UID.
-    except subprocess32.TimeoutExpired:
+    except subprocess.TimeoutExpired:
         process.kill()
 
 
-class _Popen(subprocess32.Popen):
+class _Popen(subprocess.Popen):
     """
-    Improved version of subprocess32's Popen that handles SIGPIPE
+    Improved version of subprocess's Popen that handles SIGPIPE
     without throwing an exception.
     """
 
@@ -173,7 +173,7 @@ class _Popen(subprocess32.Popen):
                     if mode & select.POLLOUT:
                         chunk = self._input[self._input_offset:
                                             self._input_offset
-                                            + subprocess32._PIPE_BUF]
+                                            + subprocess._PIPE_BUF]
 
                         # Handle EPIPE, because having this module
                         # restore the signals doesn't seem to work.
@@ -258,9 +258,9 @@ def run_program(argv,              # Program name and args
             attempts -= 1
             try:
                 return _Popen(argv,
-                              stdin=subprocess32.PIPE,
-                              stdout=subprocess32.PIPE,
-                              stderr=subprocess32.PIPE,
+                              stdin=subprocess.PIPE,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE,
                               env=new_env)
             except OSError as ex:
                 # Non-EAGAIN or last attempt gets re-raised.
@@ -285,7 +285,7 @@ def run_program(argv,              # Program name and args
                 stdout, stderr = process.communicate(stdin, timeout=timeout)
                 status = process.returncode
 
-            except subprocess32.TimeoutExpired:
+            except subprocess.TimeoutExpired:
                 _end_process(process)
                 status = 0 if timeout_ok else 2
                 stdout = ''
@@ -597,11 +597,11 @@ class ExternalProgram(object):
 
     def __init__(self, args):
         self.args = args
-        self.process = subprocess32.Popen(
+        self.process = subprocess.Popen(
             args,
-            stdin=subprocess32.PIPE,
-            stdout=subprocess32.PIPE,
-            stderr=subprocess32.PIPE
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
         )
         self.err = None
 

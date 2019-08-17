@@ -9,7 +9,7 @@
 import optparse
 import os
 import pscheduler
-import subprocess32
+import subprocess
 import sys
 import time
 
@@ -272,8 +272,7 @@ while True:
         args.append("--debug")
     args.append(run_url)
     log.debug("Calling %s", args)
-    # PYTHON3: Drop the 32; fix the import at the top
-    subprocess32.call(args)
+    subprocess.call(args)
 
     run_count += 1
 

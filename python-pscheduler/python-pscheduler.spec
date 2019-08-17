@@ -41,7 +41,7 @@ Requires:	python-py-radix
 Requires:	pscheduler-jq-library
 Requires:	python-pycurl
 Requires:	python-pyjq >= 2.2.0
-Requires:	python-subprocess32
+Requires:	python-subprocess
 Requires:	python-tzlocal
 Requires:	pytz
 Requires:	rsyslog
@@ -75,7 +75,7 @@ BuildRequires:	python-py-radix
 BuildRequires:	pscheduler-jq-library
 BuildRequires:	python-pycurl
 BuildRequires:	python-pyjq >= 2.2.0
-BuildRequires:	python-subprocess32
+BuildRequires:	python-subprocess
 BuildRequires:	python-tzlocal
 BuildRequires:	pytz
 BuildRequires:  numactl
