@@ -44,8 +44,8 @@ postgresql-load
 # jq version with new patches. replace when patches accepted upstream
 jq
 
-### # Python Modules
-### python-isodate
+# Python Modules
+python-isodate
 ### python2-pyrsistent
 ### python2-jsonschema
 ### python-kafka
