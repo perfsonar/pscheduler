@@ -56,7 +56,7 @@ python-pyjq
 ### # TODO: This can be dropped in 1.2
 ### # TODO: See if the above is actually true.  May have been for Flask?
 ### python-repoze.lru
-### python-tzlocal
+python-tzlocal
 ### python-vcversioner
 ### # This is how EL prefixes it.
 ### python2-pyasn1
