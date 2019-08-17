@@ -49,7 +49,6 @@ python-isodate
 python-pyrsistent
 python-jsonschema
 python-kafka
-### python-netaddr
 ### python-ntplib
 ### python-parse-crontab
 ### python-py-radix
