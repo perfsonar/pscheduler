@@ -3,7 +3,7 @@
 #
 
 %define short	jsonschema
-Name:		python2-%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	3.0.1
 Release:	1%{?dist}
 Summary:	JSON Schema library for Python
@@ -13,6 +13,7 @@ Group:		Development/Libraries
 
 Provides:	%{name} = %{version}-%{release}
 Provides:	python-%{short} = %{version}-%{release}
+Provides:	%{_pscheduler_python}-%{short} = %{version}-%{release}
 Prefix:		%{_prefix}
 
 Vendor:		Julian Berman
@@ -20,15 +21,14 @@ URL:		http://pypi.python.org/pypi/jsonschema
 
 Source:		%{short}-%{version}.tar.gz
 
-Requires:       python
-Requires:       python2-attrs
-Requires:       python-pyrsistent
-Requires:       python-functools32
+Requires:       %{_pscheduler_python}
+Requires:       %{_pscheduler_python}-attrs
+Requires:       %{_pscheduler_python}-pyrsistent
 # This is required for some reason.
-Requires:       python-setuptools
+Requires:       %{_pscheduler_python}-setuptools
 
-BuildRequires:  python
-BuildRequires:  python-setuptools
+BuildRequires:  %{_pscheduler_python}
+BuildRequires:  %{_pscheduler_python}-setuptools
 
 %description
 JSON Schema library for Python
@@ -45,11 +45,11 @@ JSON Schema library for Python
 
 
 %build
-python setup.py build
+%{_pscheduler_python} setup.py build
 
 
 %install
-python setup.py install --root=$RPM_BUILD_ROOT -O1  --record=INSTALLED_FILES
+%{_pscheduler_python} setup.py install --root=$RPM_BUILD_ROOT -O1  --record=INSTALLED_FILES
 
 
 %clean
