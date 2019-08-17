@@ -48,7 +48,7 @@ jq
 python-isodate
 python-pyrsistent
 python-jsonschema
-### python-kafka
+python-kafka
 ### python-netaddr
 ### python-ntplib
 ### python-parse-crontab
