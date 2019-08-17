@@ -50,7 +50,7 @@ python-pyrsistent
 python-jsonschema
 python-kafka
 python-ntplib
-### python-parse-crontab
+python-parse-crontab
 ### python-py-radix
 ### python-pyjq
 ### # TODO: This can be dropped in 1.2
