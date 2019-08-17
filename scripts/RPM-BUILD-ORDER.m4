@@ -62,8 +62,8 @@ python-pyasn1
 python-pyasn1-modules
 # This doesn't get a python- prefix.  Ask CentOS why.
 pysnmp
-### 
-### # JSON Tools
+
+# JSON Tools
 ### python-jsontemplate
 ### 
 ### 

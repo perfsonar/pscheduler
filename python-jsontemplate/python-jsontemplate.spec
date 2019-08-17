@@ -3,7 +3,7 @@
 #
 
 %define short	jsontemplate
-Name:		python-%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	0.87
 Release:	1%{?dist}
 Summary:	Template system for JSON
@@ -19,9 +19,9 @@ Url:		https://code.google.com/archive/p/json-template
 
 Source:		%{short}-%{version}.tar.gz
 
-Requires:	python
+Requires:	%{_pscheduler_python}
 
-BuildRequires:	python-setuptools
+BuildRequires:	%{_pscheduler_python}-setuptools
 
 
 %description
@@ -38,11 +38,16 @@ Template system for JSON
 
 
 %build
-python setup.py build
+# DEBIAN:  This needs to be done during Debian builds as well.
+2to3 -w %{short}/*.py
+%{_pscheduler_python} setup.py build
 
 
 %install
-python setup.py install --root=$RPM_BUILD_ROOT -O1  --record=INSTALLED_FILES
+%{_pscheduler_python} setup.py install \
+    --root=$RPM_BUILD_ROOT \
+    -O1 \
+    --record=INSTALLED_FILES
 
 
 %clean
