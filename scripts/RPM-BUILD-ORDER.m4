@@ -46,7 +46,7 @@ jq
 
 # Python Modules
 python-isodate
-### python2-pyrsistent
+python-pyrsistent
 ### python2-jsonschema
 ### python-kafka
 ### python-netaddr
