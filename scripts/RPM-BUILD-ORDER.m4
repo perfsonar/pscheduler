@@ -70,26 +70,27 @@ python-jsontemplate
 # Home-grown Python Modules
 python-icmperror
 
-### # Apache add-ons
-### httpd-firewall
-### mod_wsgi
-### httpd-wsgi-socket
-### 
-### 
-### #
-### # Utility and Tool programs
-### #
-### drop-in
-### paris-traceroute
-### random-string
-### 
-### 
-### #
-### # PSCHEDULER CORE PARTS
-### #
-### 
-### pscheduler-account
-### pscheduler-jq-library
+
+# Apache add-ons
+httpd-firewall
+mod_wsgi
+httpd-wsgi-socket
+
+
+#
+# Utility and Tool programs
+#
+drop-in
+paris-traceroute
+random-string
+
+
+#
+# PSCHEDULER CORE PARTS
+#
+
+pscheduler-account
+pscheduler-jq-library
 ### python-pscheduler
 ### pscheduler-core
 ### pscheduler-server
