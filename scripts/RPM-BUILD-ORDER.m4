@@ -49,6 +49,7 @@ python-isodate
 python-pyrsistent
 python-jsonschema
 python-kafka
+python-netifaces
 python-ntplib
 python-parse-crontab
 python-py-radix
