@@ -1,8 +1,8 @@
-pscheduler-tool-sleepbgm (4.2.0~b2.2-1) perfsonar-minor-staging; urgency=low
+pscheduler-tool-sleepbgm (4.2.0-1) perfsonar-minor-staging; urgency=low
 
   * New upstream version
 
- -- Andy Lake <andy@es.net>  Fri, 09 Aug 2019 00:11:58 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 16 Aug 2019 11:01:41 +0000
 
 pscheduler-tool-sleepbgm (1.1.5-1) perfsonar-release; urgency=low
 
