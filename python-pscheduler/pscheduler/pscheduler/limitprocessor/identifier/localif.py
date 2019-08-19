@@ -38,12 +38,12 @@ class IdentifierLocalIF():
             if netifaces.AF_INET in ifaddrs:
                 for ifaddr in ifaddrs[netifaces.AF_INET]:
                     if 'addr' in ifaddr:
-                        self.cidrs.append(ipaddress.ip_network(unicode(ifaddr['addr'])))
+                        self.cidrs.append(ipaddress.ip_network(str(ifaddr['addr'])))
             if netifaces.AF_INET6 in ifaddrs:
                 for ifaddr in ifaddrs[netifaces.AF_INET6]:
                     if 'addr' in ifaddr:
                         #add v6 but remove stuff like %eth0 that gets thrown on end of some addrs
-                        self.cidrs.append(ipaddress.ip_network(unicode(ifaddr['addr'].split('%')[0])))
+                        self.cidrs.append(ipaddress.ip_network(str(ifaddr['addr'].split('%')[0])))
 
 
 
@@ -57,7 +57,7 @@ class IdentifierLocalIF():
         """
 
         try:
-            ip = ipaddress.ip_network(unicode(hints['requester']))
+            ip = ipaddress.ip_network(str(hints['requester']))
         except KeyError:
             return False
 
@@ -78,4 +78,4 @@ if __name__ == "__main__":
     ident = IdentifierLocalIF({})
 
     for ip in [ "127.0.0.1", "::1", "10.1.1.1", "198.129.254.30", "10.0.0.7" ]:
-        print ip, ident.evaluate({ "requester": ip })
+        print(ip, ident.evaluate({ "requester": ip }))

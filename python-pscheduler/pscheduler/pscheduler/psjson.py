@@ -7,7 +7,7 @@ import string
 import sys
 import pscheduler
 
-from psselect import polled_select
+from .psselect import polled_select
 
 
 def json_decomment(json, prefix='#', null=False):
@@ -18,7 +18,7 @@ def json_decomment(json, prefix='#', null=False):
     """
     if type(json) is dict:
         result = {}
-        for item in json.keys():
+        for item in list(json.keys()):
             if item.startswith(prefix):
                 if null:
                     result[item] = None
@@ -46,7 +46,7 @@ def json_substitute(json, value, replacement):
     """
     if type(json) is dict:
         result = {}
-        for item in json.keys():
+        for item in list(json.keys()):
             if json[item] == value:
                 result[item] = replacement
             else:
@@ -111,7 +111,7 @@ def json_load(source=None, exit_on_error=False, strip=True, max_schema=None):
         source = sys.stdin
 
     try:
-        if type(source) is str or type(source) is unicode:
+        if type(source) is str or type(source) is str:
             json_in = loads(str(source))
         elif type(source) is file:
             json_in = load(source)
@@ -159,7 +159,7 @@ def json_dump(obj, dest=None, pretty=False):
              )
     else:
         dump(obj, dest)
-        print >> dest
+        print(file=dest)
 
 
 
@@ -208,8 +208,7 @@ class RFC7464Parser(object):
         self.handle = handle
         self.timeout = timeout
 
-    # PYTHON3: def __next__(self)
-    def next(self):
+    def __next__(self):
         """Read and parse one item from the file"""
         if self.timeout is not None:
             if polled_select([self.handle],[],[], self.timeout) == ([],[],[]):
@@ -232,5 +231,5 @@ class RFC7464Parser(object):
 
     def __call__(self):
         """Single-shot read of next item"""
-        return self.next()
+        return next(self)
 

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 test for the JQFilter module.
 """
@@ -53,13 +54,9 @@ class TestJQFilter(PschedTestBase):
     # TODO: Need a way to test groomed filters without depending on
     # anything else being installed.  Might not be doable.
 
-
-    # TODO: These tests don't work on 2.6.  Remove the conditions when
-    # we no longer support it.
-
     def test_wrong_type(self):
         """Test a wrongly-typed filter"""
-
+        # This didn't work on 2.6
         if sys.hexversion >= 0x2070000:
             with self.assertRaises(ValueError):
                 f = JQFilter(1234)

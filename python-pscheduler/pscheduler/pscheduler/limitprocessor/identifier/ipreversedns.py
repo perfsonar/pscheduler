@@ -68,7 +68,7 @@ class IdentifierIPReverseDNS():
         except KeyError:
             return False
 
-        addr = ipaddress.ip_address(unicode(ip))
+        addr = ipaddress.ip_address(str(ip))
 
         ip_reverse = dns.reversename.from_address(ip)
 
@@ -124,7 +124,7 @@ if __name__ == "__main__":
         "198.6.1.1"            # cache00.ns.uu.net
     ]
 
-    print "First:"
+    print("First:")
 
     ident = IdentifierIPReverseDNS({
         "match": {
@@ -136,9 +136,9 @@ if __name__ == "__main__":
 
     for ip in ips:
         result = ident.evaluate({ "requester": ip })
-        print ip, result
+        print(ip, result)
 
-    print "\nSecond:"
+    print("\nSecond:")
 
     ident = IdentifierIPReverseDNS({
         "match": {
@@ -150,4 +150,4 @@ if __name__ == "__main__":
 
     for ip in ips:
         result = ident.evaluate({ "requester": ip })
-        print ip, result
+        print(ip, result)

@@ -31,14 +31,14 @@ class NumericRange():
             raise ValueError("Invalid numeric range: %s" % message)
 
         lower = nrange['lower']
-        if type(lower) in [str, unicode]:
+        if type(lower) in [str, str]:
             self.lower = pscheduler.si_as_number(lower)
         else:
             self.lower = lower
         self.lower_str = str(lower)
 
         upper = nrange['upper']
-        if type(upper) in [str, unicode]:
+        if type(upper) in [str, str]:
             self.upper = pscheduler.si_as_number(upper)
         else:
             self.upper = upper
@@ -88,8 +88,8 @@ if __name__ == "__main__":
         "1M"
     ]:
         result = value in nrange
-        print value, result
+        print(value, result)
         for invert in [False, True]:
-            print "%s Invert=%s %s" % (value, invert,
-                                       nrange.contains(value, invert=invert))
-        print
+            print("%s Invert=%s %s" % (value, invert,
+                                       nrange.contains(value, invert=invert)))
+        print()

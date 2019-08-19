@@ -69,7 +69,7 @@ class LimitJQ():
         if type(returned) == bool:
             passed = returned
             reason = None if passed else "Unspecified reason"
-        elif isinstance(returned, basestring):
+        elif isinstance(returned, str):
             passed = False
             reason = returned
         else:
@@ -107,10 +107,10 @@ if __name__ == "__main__":
             "args": {}
         }
 
-        print jq_data_is_valid(data)
+        print(jq_data_is_valid(data))
 
         limit = LimitJQ(data)
 
-        print test
-        print limit.evaluate(test)
-        print
+        print(test)
+        print(limit.evaluate(test))
+        print()

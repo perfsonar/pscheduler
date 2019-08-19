@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
     jqid = IdentifierJQ(data)
 
-    print jqid.evaluate({
+    print(jqid.evaluate({
         "requester": "10.0.0.7",
         "server": "10.0.0.8",
-        })
+        }))

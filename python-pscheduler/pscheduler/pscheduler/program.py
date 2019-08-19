@@ -27,8 +27,8 @@ except ImportError:
     # Python 2
     from pipes import quote
 
-from exit import on_graceful_exit
-from psselect import polled_select
+from .exit import on_graceful_exit
+from .psselect import polled_select
 
 
 
@@ -59,7 +59,7 @@ def __terminate_running():
     __init_running()
     while len(this.running) > 0:
         with this.lock:
-            process = this.running.keys()[0]
+            process = list(this.running.keys())[0]
         try:
             process.terminate()
             process.wait()
@@ -156,14 +156,14 @@ class _Popen(subprocess.Popen):
             if self.stdin and self._input is None:
                 self._input_offset = 0
                 self._input = input
-                if self.universal_newlines and isinstance(self._input, unicode):
+                if self.universal_newlines and isinstance(self._input, str):
                     self._input = self._input.encode(
                         self.stdin.encoding or sys.getdefaultencoding())
 
             while self._fd2file:
                 try:
                     ready = poller.poll(self._remaining_time(endtime))
-                except select.error, e:
+                except select.error as e:
                     if e.args[0] == errno.EINTR:
                         continue
                     raise
@@ -201,6 +201,7 @@ class _Popen(subprocess.Popen):
 
 def run_program(argv,              # Program name and args
                 stdin=None,        # What to send to stdin
+                raw=False,         # Return raw stdout/stderror instead of string
                 line_call=None,    # Lambda to call when a line arrives
                 timeout=None,      # Seconds
                 timeout_ok=False,  # Treat timeouts as not being an error
@@ -257,7 +258,7 @@ def run_program(argv,              # Program name and args
         while attempts > 0:
             attempts -= 1
             try:
-                return _Popen(argv,
+                return subprocess.Popen(argv,
                               stdin=subprocess.PIPE,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE,
@@ -368,8 +369,10 @@ def run_program(argv,              # Program name and args
     if fail_message is not None and status != 0:
         pscheduler.fail("%s: %s" % (fail_message, stderr))
 
-    return status, stdout, stderr
-
+    if raw:
+        return status, stdout, stderr
+    else:
+        return status, stdout.decode("utf-8"), stderr.decode("utf-8")
 
 
 
@@ -531,12 +534,12 @@ if __name__ == "__main__":
 
     def dump_result(title, tup):
         """Spit out a run result"""
-        print
-        print "#\n# %s\n#" % (title)
+        print()
+        print("#\n# %s\n#" % (title))
         (status, stdout, stderr) = tup
-        print "Exited", status
-        print "Stdout", stdout
-        print "Stderr", stderr
+        print("Exited", status)
+        print("Stdout", stdout)
+        print("Stderr", stderr)
 
     do_all = True
 
@@ -576,8 +579,8 @@ if __name__ == "__main__":
                 line_call=line_writer
             ))
 
-        print "Lines:"
-        print "\n".join(["  %s" % (line) for line in lines])
+        print("Lines:")
+        print("\n".join(["  %s" % (line) for line in lines]))
 
     if do_all or False:
         inp = "\n".join([str(number) for number in range(1, 1000000)])

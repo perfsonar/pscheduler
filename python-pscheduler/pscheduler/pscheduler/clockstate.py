@@ -184,4 +184,4 @@ def clock_state():
 
 if __name__ == "__main__":
     import pscheduler
-    print pscheduler.json_dump(clock_state(), pretty=True)
+    print(pscheduler.json_dump(clock_state(), pretty=True))

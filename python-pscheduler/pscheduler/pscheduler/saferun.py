@@ -129,7 +129,7 @@ def safe_run(function,
 if __name__ == "__main__":
 
     def foo():
-        print "FOO"
+        print("FOO")
         time.sleep(2)
         raise Exception("Yuck!")
 

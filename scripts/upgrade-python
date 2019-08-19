@@ -69,10 +69,5 @@ echo
     done
 ) < "${FILES}" 
 
-find "${DIR}" -name "setup.py" -print0 | xargs -0 chmod +x
-
-find "${DIR}" -name "*.spec" -o -name "Makefile" -print0 \
-    | xargs -0 sed -i -e 's|python setup.py|./setup.py|'
-
 find "${DIR}" -type f -print0 \
     | xargs -0 sed -i -e 's/import urllib\.parse/import urllib/g'

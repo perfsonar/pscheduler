@@ -155,4 +155,4 @@ if __name__ == "__main__":
         }
         ])
 
-    print iset.identities(hints)
+    print(iset.identities(hints))

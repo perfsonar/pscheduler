@@ -1402,12 +1402,8 @@ def json_validate(json, skeleton):
         except (KeyError, TypeError):
             message = ex.message
 
-        # TODO: Remove version check once 2.6 support is gone
-        if sys.hexversion >= 0x2070000 and len(ex.absolute_path) > 0:
-            path = "/".join([str(x) for x in ex.absolute_path])
-            return (False, "At /%s: %s" % (path, message))
-        else:
-            return (False, "%s" % (message))
+        path = "/".join([str(x) for x in ex.absolute_path])
+        return (False, "At /%s: %s" % (path, message))
 
     return (True, 'OK')
 
@@ -1453,7 +1449,7 @@ if __name__ == "__main__":
 
     valid, message = json_validate(sample, schema)
 
-    print valid, message
+    print(valid, message)
 
 
 
@@ -1469,10 +1465,10 @@ if __name__ == "__main__":
         ]
     }
 
-    print json_validate({"text": text}, {
+    print(json_validate({"text": text}, {
         "type": "object",
         "properties": {
             "text": { "$ref": "#/pScheduler/TaskSpecification" }
         },
         "required": [ "text" ]
-    })
+    }))

@@ -75,6 +75,6 @@ if __name__ == "__main__":
 
 
     for test in [ "rtt", "trace", "throughput", "bogus" ]:
-        print test, limit.evaluate({ "task": {
+        print(test, limit.evaluate({ "task": {
             "test": { "type": test }}
-                                 })
+                                 }))

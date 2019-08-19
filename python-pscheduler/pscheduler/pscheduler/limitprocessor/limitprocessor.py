@@ -5,12 +5,12 @@ pScheduler Limit Processor
 import os
 import pscheduler
 
-from identifierset  import IdentifierSet
-from classifierset  import ClassifierSet
-from rewriter       import Rewriter
-from limitset       import LimitSet
-from applicationset import ApplicationSet
-from prioritizer    import Prioritizer
+from .identifierset  import IdentifierSet
+from .classifierset  import ClassifierSet
+from .rewriter       import Rewriter
+from .limitset       import LimitSet
+from .applicationset import ApplicationSet
+from .prioritizer    import Prioritizer
 
 class LimitProcessor():
 
@@ -62,7 +62,7 @@ class LimitProcessor():
         # Inhale the source and validate it
         #
 
-        if type(source) is str or type(source) is unicode:
+        if type(source) is str or type(source) is str:
             source = open(source, 'r')
         elif type(source) is file:
             pass  # We're good with this.
@@ -178,7 +178,7 @@ class LimitProcessor():
             if re_changed:
                 diags.append("Rewriter made changes:")
                 if len(re_diags):
-                    diags += map(lambda s: "  " + s, re_diags)
+                    diags += ["  " + s for s in re_diags]
                 else:
                     diags.append("  (Not enumerated)")
                 task = re_new_task
@@ -223,7 +223,7 @@ class LimitProcessor():
             diags.append("Priority%s set at %d%s" % (
                 requested_message, priority, ":" if len(pri_diags) else "."))
             if len(pri_diags):
-                diags += map(lambda s: "  " + s, pri_diags)
+                diags += ["  " + s for s in pri_diags]
         else:
             priority = 0
             diags.append("Priority set to default of %d" % (priority))
@@ -269,7 +269,7 @@ if __name__ == "__main__":
             "requester": "192.52.179.242",   "#": "Internet2",
         })
 
-    print passed
-    print limits_passed
-    print diags
+    print(passed)
+    print(limits_passed)
+    print(diags)
 

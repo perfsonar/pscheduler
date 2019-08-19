@@ -6,7 +6,7 @@ import multiprocessing
 import multiprocessing.pool
 import netaddr
 
-from psdns import dns_resolve
+from .psdns import dns_resolve
 
 
 def __asresolve__(arg):
@@ -89,11 +89,11 @@ def as_bulk_resolve(candidates, threads=50):
 
 if __name__ == "__main__":
 
-    print as_bulk_resolve([
+    print(as_bulk_resolve([
         '8.8.8.8',
         '198.6.1.1',
         '8.8.8.0',
         '2607:f8b0:4002:c06::67',
         'this-is-not-valid',
         '192.168.1.1',
-    ])
+    ]))

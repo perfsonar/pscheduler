@@ -41,7 +41,7 @@ class IdentifierIPCymruBogon():
         if not valid:
             raise ValueError("Invalid data: %s" % message)
 
-        self.exclude = [ ipaddress.ip_network(unicode(addr))
+        self.exclude = [ ipaddress.ip_network(str(addr))
                          for addr in data['exclude'] ]
 
         try:
@@ -100,7 +100,7 @@ class IdentifierIPCymruBogon():
 
         # At this point, we have a bogon.  Filter out exclusions.
 
-        net_ip = ipaddress.ip_network(unicode(ip))
+        net_ip = ipaddress.ip_network(str(ip))
         for exclude in self.exclude:
             if exclude.overlaps(net_ip):
                 return False
@@ -134,4 +134,4 @@ if __name__ == "__main__":
             "2001:48a8:68fe::248"  # www.perfsonar.net
     ]:
         result = ident.evaluate({ "requester": ip })
-        print ip, result
+        print(ip, result)

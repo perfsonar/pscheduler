@@ -82,7 +82,7 @@ def check_endpoint_limits(limit, spec,
     #if no source, dest or endpoint limit then exit immediately
     has_endpoint_limit = False
     for ep_limit in [limit_source, limit_dest, limit_endpoint]:
-        if limit.has_key(ep_limit): 
+        if ep_limit in limit: 
             has_endpoint_limit = True
             break
     if not has_endpoint_limit:
@@ -107,18 +107,18 @@ def check_endpoint_limits(limit, spec,
         possible_ip_versions = [ip_version]
         
     #check source limit if any
-    if limit.has_key(limit_source):
+    if limit_source in limit:
         if source_ip is None:
             errors.append("This test has a limit on the {0} field but the {0} was not specifed. You must specify a {0} to run this test".format(spec_source))
         else:
             errors += check_ip_limit(limit[limit_source], source, ip=source_ip, possible_ip_versions=possible_ip_versions)
     
     #check dest limit if any
-    if limit.has_key(limit_dest):
+    if limit_dest in limit:
         errors += check_ip_limit(limit[limit_dest], dest, ip=dest_ip, possible_ip_versions=possible_ip_versions, )
                 
     #check endpoint limit if any
-    if limit.has_key(limit_endpoint):
+    if limit_endpoint in limit:
         if source is None or check_ip_limit(limit[limit_endpoint], source, ip=source_ip, possible_ip_versions=possible_ip_versions):
             #source does not match
             if check_ip_limit(limit[limit_endpoint], dest, ip=dest_ip, possible_ip_versions=possible_ip_versions):

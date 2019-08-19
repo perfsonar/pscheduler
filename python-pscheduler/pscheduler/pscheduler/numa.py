@@ -20,6 +20,7 @@ def numa_node_ok(node):
     errs = err.split("\n")
     short_errs = []
     for line in errs:
+        print("LINE", line)
         if line.startswith("usage: "):
             break
         short_errs.append(line)
@@ -32,6 +33,6 @@ def numa_node_ok(node):
 if __name__ == "__main__":
 
     for node in range(0, 3):
-        print node, " -> ", numa_ok(node)
+        print(node, " -> ", numa_ok(node))
 
-    print "Foo -> ", numa_ok("Foo")
+    print("Foo -> ", numa_ok("Foo"))

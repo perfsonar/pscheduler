@@ -2,8 +2,8 @@
 Set of Limit Applications
 """
 
-from classifierset import ClassifierSet
-from limitset import LimitSet
+from .classifierset import ClassifierSet
+from .limitset import LimitSet
 
 from pscheduler import indent
 

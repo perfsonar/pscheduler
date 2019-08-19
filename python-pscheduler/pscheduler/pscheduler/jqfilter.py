@@ -25,10 +25,10 @@ def _library_path():
         _DEFAULT_LIBRARY_PATH = [os.path.expanduser("~/.jq")]
 
         try:
-            origin = filter(
+            (origin) = filter(
                 lambda p: os.access(os.path.join(p, "jq"), os.X_OK),
                 os.environ["PATH"].split(os.pathsep)
-            )[0]
+            )
             _DEFAULT_LIBRARY_PATH.extend([
                 "%s/%s" % (origin, path)
                 for path in ["../lib/jq", "lib"]
@@ -50,10 +50,7 @@ def _groom(script):
     """
 
     # Pull and hold all imports
-    lines = map(
-        lambda x: x[0],
-        re.findall(_import_include, script)
-    )
+    lines = [x[0] for x in re.findall(_import_include, script)]
     # Add the rest of the script without the imports and includes
     lines.append(re.sub(_import_include, "", script))
     return "\n".join(lines)
@@ -101,7 +98,7 @@ class JQFilter(object):
         if isinstance(filter_spec, list):
             filter_spec = "\n".join([str(line) for line in filter_spec])
 
-        if not isinstance(filter_spec, basestring):
+        if not isinstance(filter_spec, str):
             raise ValueError("Filter spec must be plain text, list or dict")
 
         if groom:
@@ -144,22 +141,22 @@ if __name__ == "__main__":
 
     # Check out grooming
 
-    print "Groom Check:"
-    print _groom("def xyz: 123 end; import x/y/z; xyz")
-    print
+    print("Groom Check:")
+    print(_groom("def xyz: 123 end; import x/y/z; xyz"))
+    print()
 
-    print "Filter:"
+    print("Filter:")
     filter = JQFilter(".")
-    print filter('{ "foo": 123, "bar": 456 }')
-    print
+    print(list(filter('{ "foo": 123, "bar": 456 }')))
+    print()
 
     # Note that this only works if pscheduler-jq-library is installed.
-    print "Groomed Filter:"
+    print("Groomed Filter:")
     filter = JQFilter([
         'def x: 123;',
         'import "pscheduler/si" as si;',
         'si::as_integer("12ki"), x'
         ], groom=True)
 
-    print filter('{ "foo": 123, "bar": 456 }')
-    print
+    print(list(filter('{ "foo": 123, "bar": 456 }')))
+    print()

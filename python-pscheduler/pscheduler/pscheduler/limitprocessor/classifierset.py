@@ -62,7 +62,7 @@ class ClassifierSet():
                     result[classification] = 0
 
         # TODO: Is there any reason to sort this for consistency?
-        return result.keys()
+        return list(result.keys())
 
 
 
@@ -95,9 +95,9 @@ if __name__ == "__main__":
 
     list = []
     for num in range(0,12):
-        print list, '->', cset.classifications(list)
+        print(list, '->', cset.classifications(list))
         list.append(str(num))
 
     while len(list):
         del list[0]
-        print list, '->', cset.classifications(list)
+        print(list, '->', cset.classifications(list))

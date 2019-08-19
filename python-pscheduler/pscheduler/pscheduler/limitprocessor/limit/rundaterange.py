@@ -101,4 +101,4 @@ if __name__ == "__main__":
     })
 
     ev = limit.evaluate({ "task": test })
-    print test, ev
+    print(test, ev)

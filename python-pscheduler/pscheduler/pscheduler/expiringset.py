@@ -82,7 +82,7 @@ class ExpiringSet(object):
 
         now = datetime.datetime.now()
 
-        for key in self.items.keys():
+        for key in list(self.items.keys()):
             item = self.items[key]
             if item["expires"] < now:
                 self.expire(key)

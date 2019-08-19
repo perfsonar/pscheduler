@@ -133,7 +133,7 @@ if __name__ == "__main__":
     })
 
 
-    print pscheduler.json_dump(limit.evaluate(
+    print(pscheduler.json_dump(limit.evaluate(
         {
             "task": {
                 "test": {
@@ -150,4 +150,4 @@ if __name__ == "__main__":
                 }
             }
         }
-    ), pretty=True)
+    ), pretty=True))

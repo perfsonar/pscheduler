@@ -3,7 +3,7 @@ Class for doing enumerated matches
 """
 
 
-from jsonval import json_validate
+from .jsonval import json_validate
 
 
 class EnumMatcher():
@@ -75,4 +75,4 @@ if __name__ == "__main__":
     for enum in [["foo"],
                  ["foo", "bar"],
                  ["foo", "notallowed", "biz"]]:
-        print enum, matcher.contains(enum)
+        print(enum, matcher.contains(enum))

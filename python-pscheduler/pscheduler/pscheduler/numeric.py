@@ -33,4 +33,4 @@ if __name__ == "__main__":
     high.set(5)
     high.set(4)
     high.set(3)
-    print high.value()
+    print(high.value())

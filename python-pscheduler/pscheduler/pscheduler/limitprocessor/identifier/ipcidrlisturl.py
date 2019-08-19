@@ -228,11 +228,11 @@ if __name__ == "__main__":
         "fail-state": True
     }
 
-    print data_is_valid(data)
+    print(data_is_valid(data))
 
     ident = IdentifierIPCIDRListURL(data)
 
-    print "LEN", len(ident)
+    print("LEN", len(ident))
 
     for ip in [ 
             # Trues
@@ -244,7 +244,7 @@ if __name__ == "__main__":
             "198.6.1.1",
             "192.168.4.3",
     ]:
-        print ip, ident.evaluate({ "requester": ip })
+        print(ip, ident.evaluate({ "requester": ip }))
 
 
     # List from Amazon
@@ -264,8 +264,8 @@ if __name__ == "__main__":
         "fail-state": True
     })
 
-    print
-    print "AMAZON:"
+    print()
+    print("AMAZON:")
     for ip in [ 
             # Trues
             "23.20.12.18",
@@ -277,7 +277,7 @@ if __name__ == "__main__":
             "dead:beef::bad:cafe"
     ]:
         result = ident2.evaluate({ "requester": ip })
-        print ip, result
+        print(ip, result)
 
 
 

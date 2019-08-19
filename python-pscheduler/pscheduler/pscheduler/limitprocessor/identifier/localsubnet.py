@@ -82,14 +82,14 @@ class IdentifierLocalSubnet():
             for ifaddr in ifaddrs[netifaces.AF_INET] \
                 if netifaces.AF_INET in ifaddrs else []:
                 self.cidrs.append(ipaddress.IPv4Network(
-                    unicode("%s/%s" % (ifaddr["addr"], ifaddr["netmask"])),
+                    str("%s/%s" % (ifaddr["addr"], ifaddr["netmask"])),
                     strict=False  # Don't complain about host bits being set.
                 ))
 
             for ifaddr in ifaddrs[netifaces.AF_INET6] \
                 if netifaces.AF_INET6 in ifaddrs else []:
                 self.cidrs.append(ipaddress.IPv6Network(
-                    unicode("%s/%s" % (
+                    str("%s/%s" % (
                         ifaddr["addr"].split("%")[0],
                         ipv6_netmask_size(ifaddr["netmask"]))),
                     strict=False  # Don't complain about host bits being set.
@@ -108,7 +108,7 @@ class IdentifierLocalSubnet():
 
 
         try:
-            ip = ipaddress.ip_network(unicode(hints["requester"]))
+            ip = ipaddress.ip_network(str(hints["requester"]))
         except KeyError:
             return False
 
@@ -133,4 +133,4 @@ if __name__ == "__main__":
             "dead:beef::1",
             "10.0.2.12"
     ]:
-        print ip, ident.evaluate({ "requester": ip })
+        print(ip, ident.evaluate({ "requester": ip }))

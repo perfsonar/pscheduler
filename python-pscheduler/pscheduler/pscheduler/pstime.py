@@ -1,8 +1,6 @@
 #
 # Utilities for dealing with times
 #
-# TODO: Rename this to 'time.py'
-#
 
 import datetime
 import pytz

@@ -75,7 +75,7 @@ def address_interface(address, ip_version=None):
     for interface in all_interfaces:
         addresses = netifaces.ifaddresses(interface)
 
-        for family in addresses.keys():
+        for family in list(addresses.keys()):
             for addr_info in addresses[family]:
                 if addr_info['addr'] == address:
                     return interface
@@ -175,13 +175,13 @@ if __name__ == "__main__":
                  "10.0.2.4",
                  "obvouslynotavalidhost.perfsonar.net"]:
         (addr, intf) = source_interface(dest)
-        print "For dest %s, addr = %s, intf = %s" % (dest, addr, intf)
+        print("For dest %s, addr = %s, intf = %s" % (dest, addr, intf))
 
     for intf in ["eth0", "eth1", "lo", "eth1.412", "eth0.120"]:
         aff = interface_affinity(intf)
-        print "interface affinity = %s for %s" % (aff, intf)
+        print("interface affinity = %s for %s" % (aff, intf))
 
     localips = LocalIPList(refresh=5)
 
     for addr in ["1.2.3.4", "5.6.7.8", "10.0.0.1", "127.0.0.1"]:
-        print addr, addr in localips
+        print(addr, addr in localips)

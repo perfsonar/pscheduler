@@ -90,7 +90,7 @@ class Log():
 
         if self.syslog_handler is None:
             try:
-                # TODO: /dev/log is Linux-specific.
+                # PORT: /dev/log is Linux-specific.
                 self.syslog_handler = logging.handlers.SysLogHandler(
                     '/dev/log', facility=self.facility)
                 self.syslog_handler.setFormatter(
@@ -201,7 +201,7 @@ class Log():
         self.__update_env()
 
         # Grab signals and make them non-interrupting
-        # TODO: How portable is this?
+        # PORT: How portable is this?
         if signals:
             signal.signal(signal.SIGUSR1, self.sigusr1)
             signal.signal(signal.SIGUSR2, self.sigusr2)

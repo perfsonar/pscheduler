@@ -42,7 +42,7 @@ class DurationRange():
 
         if type(duration) == datetime.timedelta:
             test_value = duration
-        elif type(duration) in [str, unicode]:
+        elif type(duration) in [str, str]:
             test_value = pscheduler.iso8601_as_timedelta(duration)
         else:
             raise ValueError(
@@ -85,8 +85,8 @@ if __name__ == "__main__":
                   datetime.timedelta(minutes=10)
                   ]:
         result = value in drange
-        print value, result
+        print(value, result)
         for invert in [False, True]:
-            print "%s Invert=%s %s" % (value, invert,
-                                       drange.contains(value, invert=invert))
-        print
+            print("%s Invert=%s %s" % (value, invert,
+                                       drange.contains(value, invert=invert)))
+        print()

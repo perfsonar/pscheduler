@@ -33,10 +33,10 @@ def wrappable_range_overlaps(start, end, test,
 
     ranges = []
     if end >= start:
-        ranges.extend(range(start, end+1))
+        ranges.extend(list(range(start, end+1)))
     else:
-        ranges.extend(range(start, wrap_after+1))
-        ranges.extend(range(0, wrap_to+1))
+        ranges.extend(list(range(start, wrap_after+1)))
+        ranges.extend(list(range(0, wrap_to+1)))
     ranges = set(ranges)
 
     return bool(test.intersection(ranges)) if overlap \
@@ -275,7 +275,7 @@ class LimitRunSchedule():
             value_list = []
             for item in data[flatten]:
                 if type(item) == dict:
-                    value_list.extend(range(item['lower'], item['upper']+1))
+                    value_list.extend(list(range(item['lower'], item['upper']+1)))
                 else:
                     value_list.append(item)
 
@@ -359,4 +359,4 @@ if __name__ == "__main__":
 
 
     ev = limit.evaluate({ "task": test })
-    print test, ev
+    print(test, ev)

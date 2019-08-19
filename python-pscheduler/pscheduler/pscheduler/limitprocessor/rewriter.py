@@ -98,7 +98,7 @@ class Rewriter():
 
         if ("test" not in result) \
            or ("type" not in result["test"]) \
-           or (not isinstance(result["test"]["type"], basestring)) \
+           or (not isinstance(result["test"]["type"], str)) \
            or ("spec" not in result["test"]) \
            or (result["test"]["type"] != proposal["task"]["test"]["type"]):
             raise ValueError("Invalid rewriter result:\n%s" \
@@ -204,13 +204,13 @@ if __name__ == "__main__":
 
         if changed:
             if len(diags):
-                print "Diagnostics:"
-                print "\n".join(map(lambda s: " - " + s,diags))
+                print("Diagnostics:")
+                print("\n".join([" - " + s for s in diags]))
             else:
-                print "No diagnostics."
-            print
-            print pscheduler.json_dump(new_task, pretty=True)
+                print("No diagnostics.")
+            print()
+            print(pscheduler.json_dump(new_task, pretty=True))
         else:
-            print "No changes."
+            print("No changes.")
     except Exception as ex:
-        print "Failed:", ex
+        print("Failed:", ex)

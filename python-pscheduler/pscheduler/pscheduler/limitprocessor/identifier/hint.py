@@ -66,7 +66,7 @@ class IdentifierHint():
 
 if __name__ == "__main__":
 
-    print "Exact:"
+    print("Exact:")
     ident = IdentifierHint({
         "hint": "value",
         "match": {
@@ -77,10 +77,10 @@ if __name__ == "__main__":
     })
 
     for value in [ "foo", "bar", "baz" ]:
-        print value, ident.evaluate({ "value": value })
+        print(value, ident.evaluate({ "value": value }))
 
-    print
-    print "Regex:"
+    print()
+    print("Regex:")
     ident = IdentifierHint({
         "hint": "value",
         "match": {
@@ -90,5 +90,5 @@ if __name__ == "__main__":
     })
 
     for value in [ "foo", "bar", "baz", "glorp" ]:
-        print value, ident.evaluate({ "value": value })
+        print(value, ident.evaluate({ "value": value }))
 

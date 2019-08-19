@@ -173,6 +173,6 @@ if __name__ == "__main__":
 
 
     try:
-        print "Priority", prioritizer(task, ["friendlies", "priority-positive"])
+        print("Priority", prioritizer(task, ["friendlies", "priority-positive"]))
     except Exception as ex:
-        print "Failed:", ex
+        print("Failed:", ex)

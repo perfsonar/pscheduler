@@ -73,4 +73,4 @@ if __name__ == "__main__":
     ])
 
     for attempt in range(0, 12):
-        print attempt, policy.retry(attempt)
+        print(attempt, policy.retry(attempt))

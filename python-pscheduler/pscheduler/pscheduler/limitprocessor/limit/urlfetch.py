@@ -119,7 +119,7 @@ class LimitURLFetch():
                     "run": proposal["task"],
                     PRIVATE_KEY: private
                 })[0]
-                if not isinstance(url, basestring):
+                if not isinstance(url, str):
                     raise ValueError("Transform did not return a string")
             except Exception as ex:
                 return {
@@ -248,14 +248,14 @@ if __name__ == "__main__":
                 }
             }
         })
-        print url, "->", limit.evaluate({
+        print(url, "->", limit.evaluate({
             "task": { "test": "xxx yyy: Z" },
             "hints": { "requester": "10.9.8.7" }
-            })
+            }))
 
 
-    print
-    print "Succeed-only:"
+    print()
+    print("Succeed-only:")
 
     for url in [
             "https://www.google.com",
@@ -267,7 +267,7 @@ if __name__ == "__main__":
             "url": url,
             "success-only": True
         })
-        print url, "->", limit.evaluate({
+        print(url, "->", limit.evaluate({
         "task": { "test": "xxx yyy: Z" },
         "hints": { "requester": "10.9.8.7" }
-    })
+    }))

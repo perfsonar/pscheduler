@@ -9,8 +9,8 @@ import select
 import sys
 import threading
 
-from filestring import string_from_file
-from psselect import polled_select
+from .filestring import string_from_file
+from .psselect import polled_select
 
 
 def pg_connection(dsn='', autocommit=True, name=None):
@@ -83,11 +83,11 @@ class PgQueryResult:
     def __iter__(self):
         return self.cursor
 
-    def next(self):
+    def __next__(self):
         if self.rows == 0:
             raise StopIteration
         self.rows -= 1
-        result = self.cursor.next()
+        result = next(self.cursor)
         if self.rows == 0:
             self.cursor.close()
         return result
@@ -221,7 +221,7 @@ if __name__ == "__main__":
 
         if db.wait(5):
 
-            print "Notified"
+            print("Notified")
 
             for notification in db.notifications():
                 (channel, payload, count) = notification
@@ -231,15 +231,15 @@ if __name__ == "__main__":
                          SELECT table_name
                          FROM information_schema.tables WHERE table_schema = %s
                          LIMIT 5""", ["public"])
-                    print len(result), "rows"
+                    print(len(result), "rows")
                     for row in result:
-                        print row[0]
-                    print "End of results"
+                        print(row[0])
+                    print("End of results")
                 elif channel == "stop":
                     run = False
                     break
 
         else:
-            print "No notifications"
+            print("No notifications")
 
     db.unlisten()
