@@ -64,7 +64,7 @@ echo
     while read FILE 
     do
 	echo $FILE
-	sed -i -e 's|^#!/usr/bin/python$|#!/usr/bin/python3|g' "${FILE}"
+	sed -i -e 's|^#!.*python[0-9]*|#!/usr/bin/python3|g' "${FILE}"
 	2to3 -f all -n -w "${FILE}" 2>&1
     done
 ) < "${FILES}" 
