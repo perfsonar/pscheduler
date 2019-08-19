@@ -1,0 +1,127 @@
+#!/usr/bin/python
+#
+# Convert command-line options to a test specification
+#
+
+import optparse
+import pscheduler
+import sys
+
+if len(sys.argv) > 1:
+
+   # Args are on the command line
+   args = sys.argv[1:]
+
+else:
+
+   # Args are in a JSON array on stdin
+   json_args = pscheduler.json_load(exit_on_error=True)
+   args = []
+
+   if type(json_args) != list:
+      pscheduler.fail("Invalid JSON for this operation")
+   for arg in json_args:
+      if type(arg) not in (unicode, str, int, float):
+         pscheduler.fail("Invalid JSON for this operation")
+   args = [ str(arg) for arg in json_args ]
+
+
+
+# Gargle the arguments
+
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""Examples:
+
+  task netreach --network 192.0.2.0/24 --gateway 192.0.2.1
+    Test 192.0.2.0/24 reached via 192.0.2.1.
+
+  task netreach --network 192.0.2.0/24 --gateway 1
+    Test 192.0.2.0/24 reached via the first host in the block.
+
+  task netreach --network 192.0.2.0/24 --gateway -1
+    Test 192.0.2.0/24 reached via the last host in the block.
+
+"""
+)
+
+
+opt_parser.add_option("--network",
+                      help="Network to check",
+                      action="store", type="string",
+                      dest="network")
+
+opt_parser.add_option("--gateway",
+                      help="Network's gateway address",
+                      action="store", type="string",
+                      dest="gateway")
+
+opt_parser.add_option("--host",
+                      help="Host where the test should be run",
+                      action="store", type="string",
+                      dest="host")
+
+opt_parser.add_option("--host-node",
+                      help="pScheduler to contact for setup",
+                      action="store", type="string",
+                      dest="host_node")
+
+opt_parser.add_option("--limit",
+                      help="Maximum number of addresses to scan",
+                      action="store", type="int",
+                      dest="limit")
+
+opt_parser.add_option("--parallel",
+                      help="Number of parallel tests (default 1)",
+                      action="store", type="int",
+                      dest="parallel")
+
+opt_parser.add_option("--scan",
+                      help="Scan type (up, down, edges, random)",
+                      action="store", type="string",
+                      dest="scan")
+
+opt_parser.add_option("--timeout",
+                      help="Maximum time to wait for responses.",
+                      action="store", type="string",
+                      dest="timeout")
+
+
+(options, remaining_args) = opt_parser.parse_args(args)
+
+if len(remaining_args) != 0:
+   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
+
+
+result = { 'schema': 1 }
+
+
+if options.network is not None:
+   result['network'] = options.network
+
+if options.gateway is not None:
+   # This can be an integer or a string.
+   try:
+      result['gateway'] = int(options.gateway)
+   except ValueError:
+      result['gateway'] = options.gateway
+
+if options.host is not None:
+   result['host'] = options.host
+
+if options.host_node is not None:
+   result['host-node'] = options.host_node
+
+if options.limit is not None:
+   result['limit'] = options.limit
+
+if options.parallel is not None:
+   result['parallel'] = options.parallel
+
+if options.scan is not None:
+   result['scan'] = options.scan
+
+if options.timeout is not None:
+   result['timeout'] = options.timeout
+
+
+pscheduler.succeed_json(result)

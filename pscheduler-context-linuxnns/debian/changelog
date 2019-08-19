@@ -1,8 +1,8 @@
-pscheduler-context-linuxnns (1.1.6-1) perfsonar-release; urgency=low
+pscheduler-context-linuxnns (4.2.0~b2.2-1) perfsonar-minor-staging; urgency=low
 
   * New upstream version
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sun, 24 Feb 2019 17:08:45 +0000
+ -- Andy Lake <andy@es.net>  Fri, 09 Aug 2019 00:11:58 +0000
 
 pscheduler-context-linuxnns (1.1.5-1) perfsonar-release; urgency=low
 

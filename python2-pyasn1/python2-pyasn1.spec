@@ -4,7 +4,7 @@
 
 %define short	pyasn1
 Name:		python2-%{short}
-Version:	0.3.7
+Version:	0.4.5
 Release:	1%{?dist}
 Summary:	ASN1 for Python
 BuildArch:	%(uname -m)

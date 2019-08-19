@@ -1,0 +1,19 @@
+Source: pscheduler-tool-curl
+Section: net
+Priority: optional
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>,
+ Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9), python
+Standards-Version: 3.9.6
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-tool-curl
+Architecture: all
+Depends: ${misc:Depends}, python, python-pscheduler,
+ pscheduler-server, pscheduler-test-disk-to-disk,
+ curl
+Description: pScheduler curl tool
+ curl tool class for pScheduler

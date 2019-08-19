@@ -13,7 +13,6 @@ import sys
 import time
 import iperf3_parser
 import traceback
-import ipaddr
 import iperf3_utils
 from iperf3_defaults import *
 
@@ -72,7 +71,10 @@ else:
 # if we're doing a reverse test, have to change a few things
 reverse = test_spec.get('reverse', False)
 
-def run_client():    
+
+def run_client():
+
+    diags = []
 
     logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
 
@@ -233,14 +235,28 @@ def run_client():
     # figure out cpu affinity, either use what was passed in
     # or try to auto detect it
     affinity = test_spec.get('client-cpu-affinity')
-    if affinity == None:
-        affinity = pscheduler.source_affinity(normalized_dest, ip_version=ip_version)
+    if affinity is None:
+        if source:
+            interface = pscheduler.address_interface(source, ip_version=ip_version)
+            if interface is not None:
+                logger.debug("Affinity (if any) will be based on source")
+                affinity = pscheduler.interface_affinity(interface)
+        else:
+            affinity = pscheduler.source_affinity(normalized_dest, ip_version=ip_version)
+            logger.debug("Affinity (if any) will be based on destination")
 
-    logger.debug("Selected CPU affinity %s" % affinity)
-    if affinity != None:
-        iperf3_args.insert(0, 'numactl')
-        iperf3_args.insert(1, '-N')
-        iperf3_args.insert(2, affinity)
+    if affinity is not None:
+        numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
+        if numa_ok:
+            logger.debug("Selected CPU affinity %s" % affinity)
+            iperf3_args.insert(0, 'numactl')
+            iperf3_args.insert(1, '-N')
+            iperf3_args.insert(2, affinity)
+        else:
+            logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
+            diags.append("Unable to use NUMA for this test.  Disabling it.")
+
+
 
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string
@@ -251,10 +267,11 @@ def run_client():
 
     iperf_timeout = test_duration
     iperf_timeout += omit_secs
-    iperf_timeout += DEFAULT_FUDGE_FACTOR
+    iperf_timeout += iperf3_utils.setup_time(test_spec.get("link-rtt"))
     # no need for the sleep, we already did that above
 
     logger.debug("timeout for client is %d" % iperf_timeout)
+    diags.append(command_line)
 
     try:
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
@@ -262,16 +279,18 @@ def run_client():
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e)
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": "\n".join(diags),
                                  "error": "The iperf3 command failed during execution. See server logs for more details."})
 
 
 
-    return _make_result(command_line, status, stdout, stderr)
+    return _make_result("\n".join(diags), status, stdout, stderr)
 
     
 
 def run_server():
 
+    diags = []
     #init command
     iperf3_args = [ iperf3_cmd, '-s', '-1', '--json']
 
@@ -304,15 +323,6 @@ def run_server():
             ip_version = pscheduler.ip_addr_version(bind_address)[0]
         else:
             logger.debug("Skipping bind. Source %s and destination %s don't have any common IPs of the same version as far as tool can tell." % (source, test_spec['dest']))
-    elif test_spec.get('udp', False):
-        # We really shouldn't do this but I think we have to because of iperf3 issue #505. 
-        # Basically not doing this causes UDP to bind to the first interface instead of all 
-        # interfaces which is probably more likely to break things than not specifying. This
-        # is imperfect though and we should really advise people to specify the source and/or 
-        # ip-version when doing a UDP test.
-        iperf3_args.append('-B')
-        iperf3_args.append(test_spec['dest'])
-        logger.debug("Binding UDP test to %s. If %s is a hostname with both AAAA and A records, it is highly recommended you modify this test to specify ip-version and/or the source address" % (test_spec['dest'], test_spec['dest']))
     else:
         #If we are here its because we have a TCP test where only the dest was specified 
         # and no ip-version provided. In this case we can't determine what we're supposed 
@@ -322,13 +332,19 @@ def run_server():
     
     # try to grab our default affinity if one wasn't passed in
     affinity = test_spec.get('server-cpu-affinity')
-    if affinity == None:
+    if affinity is None:
         # look up what interface we're going to be receiving on        
         interface = pscheduler.address_interface(normalized_dest, ip_version=ip_version)
         if interface:
             affinity = pscheduler.interface_affinity(interface)
+            logger.debug("CPU affinity for interface is %s" % (affinity))
+        numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
+        if not numa_ok:
+            logger.debug("NUMA doesn't work for %s.  Throwing caution to the wind." % (interface))
+            diags.append("Unable to use NUMA for %s.  Disabling it." % (interface))
+            affinity = None
 
-    if affinity != None:
+    if affinity is not None:
         iperf3_args.insert(0, 'numactl')
         iperf3_args.insert(1, '-N')
         iperf3_args.insert(2, affinity)
@@ -345,10 +361,11 @@ def run_server():
 
         iperf_timeout = test_duration
         iperf_timeout += omit_secs
-        iperf_timeout += DEFAULT_FUDGE_FACTOR
+        iperf_timeout += iperf3_utils.setup_time(test_spec.get("link-rtt"))
         iperf_timeout += DEFAULT_WAIT_SLEEP
 
         logger.debug("timeout for server is %d" % iperf_timeout)
+        diags.append(" ".join(iperf3_args))
 
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
                                                         timeout = iperf_timeout)
@@ -356,14 +373,15 @@ def run_server():
     except Exception as e:
         logger.error("iperf3 failed to complete execution: %s" % e);
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": "\n".join(diags),
                                  "error": "The iperf3 command failed during execution. See server logs for more details."})
 
 
-    return _make_result(" ".join(iperf3_args), status, stdout, stderr)
+    return _make_result("\n".join(diags), status, stdout, stderr)
 
     
 
-def _make_result(command, status, stdout, stderr):
+def _make_result(diags, status, stdout, stderr):
     if status:
         error_text = ""
         try:
@@ -373,16 +391,17 @@ def _make_result(command, status, stdout, stderr):
             pass
 
         if not error_text:
-            error_text = "%s\n%s" % (stdout, stderr)
+            error_text = "%s\n\n%s\n%s" % (stdout, stderr)
 
         pscheduler.succeed_json({"succeeded": False,
+                                 "diags": diags,
                                  "error": "iperf3 returned an error: %s" % (error_text)})
 
     lines = stdout.split("\n")    
     logger.debug("Lines are %s " % lines)
 
     results = iperf3_parser.parse_output(lines)
-    results['diags'] = "%s\n\n%s" % (command, stdout)
+    results['diags'] = "%s\n\n%s" % (diags, stdout)
 
     return results
 

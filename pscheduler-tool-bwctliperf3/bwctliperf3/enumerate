@@ -3,11 +3,11 @@
     "schema": 1,
 
     "name": "bwctliperf3",
-    "description": "Measure network throughput with BWCTL - FOR BACKWARD COMPATIBILITY ONLY",
+    "description": "Measure network throughput with BWCTL - NON-FUNCTIONING",
     "version": "1.0",
-    "tests": [ "throughput" ],
+    "tests": [ ],
 
-    "preference": 20,
+    "preference": 0,
 
     "maintainer": {
         "name": "perfSONAR Development Team",

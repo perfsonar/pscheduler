@@ -5,6 +5,8 @@ Identifier Class for ip-cidr-list-url
 import datetime
 import radix
 import pscheduler
+import time
+import threading
 
 
 data_validator = {
@@ -49,16 +51,17 @@ class IdentifierIPCIDRListURL():
     """
 
     def __len__(self):
-        return self.length
+        with self.data_lock:
+            return self.length
 
 
-    def __populate_cidrs__(self):
 
-        # TODO: Turn this into a thread so checks aren't delayed.
+    def __populate_cidrs_update__(self):
 
-        if self.next_attempt > datetime.datetime.now():
-            # Not time yet.
-            return
+        """
+        Update the CIDR list.  It is assumed that the caller will have
+        protected against calling two of these at once.
+        """
 
         status, text = pscheduler.url_get(self.source, bind=self.bind,
                                           json=False, throw=False)
@@ -67,7 +70,8 @@ class IdentifierIPCIDRListURL():
 
         if status != 200:
             # TODO: Would be nice if we could log the failure
-            self.next_attempt = possible_next_attempt
+            with self.data_lock:
+                self.next_attempt = possible_next_attempt
             return
 
         # If there's a transform, apply it.
@@ -78,18 +82,17 @@ class IdentifierIPCIDRListURL():
             except (ValueError,
                     pscheduler.jqfilter.JQRuntimeError):
                 # TODO: Would be nice if we could log the failure
-                self.next_attempt = possible_next_attempt
+                with self.data_lock:
+                    self.next_attempt = possible_next_attempt
                 return
-
-
 
 
         # TODO: Consider caching this on disk someplace so that it can
         # be retrieved if we fail to fetch at startup.
 
         # TODO: When threaded, hold this separately and swap old list
-        self.cidrs = radix.Radix()
-        self.length = 0
+        new_cidrs = radix.Radix()
+        new_length = 0
 
         for cidr in text.split('\n'):
 
@@ -98,14 +101,34 @@ class IdentifierIPCIDRListURL():
             if len(cidr) == 0:
                 continue
             try:
-                self.cidrs.add(cidr)
-                self.length += 1
+                new_cidrs.add(cidr)
+                new_length += 1
             except ValueError:
                 # Just ignore anything that looks fishy.
                 # TODO: Log it?
                 pass
 
-        self.next_attempt = datetime.datetime.now() + self.update
+        with self.data_lock:
+            self.cidrs = new_cidrs
+            self.length = new_length
+            self.next_attempt = datetime.datetime.now() + self.update
+
+
+
+    def __populate_cidrs__(self):
+
+        with self.data_lock:
+            if self.updating or self.next_attempt > datetime.datetime.now():
+                # Not time yet or an update is already underway.
+                return
+            self.updating = True
+
+        try:
+            self.__populate_cidrs_update__()
+        finally:
+            with self.data_lock:
+                self.updating = False
+
 
 
 
@@ -139,6 +162,10 @@ class IdentifierIPCIDRListURL():
                     self.exclusions.add(excl)
             except ValueError:
                 raise ValueError("Invalid IP or CIDR '%s'" % excl)
+
+
+        self.data_lock = threading.Lock()
+        self.updating = False
 
         # TODO: Would be nice to support a timeout so the system
         # doesn't sit for too long.
@@ -232,8 +259,8 @@ if __name__ == "__main__":
             "172.16.0.0/12",
             "192.168.0.0/16"
         ],
-        "update": "P1D",
-        "retry": "PT1H",
+        "update": "PT5S",
+        "retry": "PT1M",
         "fail-state": True
     })
 
@@ -249,6 +276,8 @@ if __name__ == "__main__":
             "198.6.1.1",
             "dead:beef::bad:cafe"
     ]:
-        print ip, ident2.evaluate({ "requester": ip })
+        result = ident2.evaluate({ "requester": ip })
+        print ip, result
+
 
 

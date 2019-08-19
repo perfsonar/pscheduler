@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -e
+
+pscheduler task --tool=nmapreach netreach --network 127.0.0.1/32 --gateway 1

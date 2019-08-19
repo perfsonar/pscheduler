@@ -11,9 +11,12 @@
 #
 
 %define short	TEMPLATE
+%define perfsonar_auto_version 4.2.0
+%define perfsonar_auto_relnum 0.5.b2
+
 Name:		pscheduler-test-%{short}
-Version:	1.0.2
-Release:	1%{?dist}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
 
 Summary:	TEMPLATE test for pScheduler
 BuildArch:	noarch

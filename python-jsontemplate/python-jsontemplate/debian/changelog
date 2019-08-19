@@ -1,4 +1,10 @@
-python-jsontemplate (0.87-1) perfsonar-jessie-staging; urgency=low
+python-jsontemplate (0.87-2) perfsonar-minor-staging; urgency=low
+
+  * Releasing to perfsonar-minor-staging
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 24 Jul 2019 18:21:26 +0000
+
+python-jsontemplate (0.87-1) perfsonar-minor-snapshot; urgency=low
 
   * Initial release
 

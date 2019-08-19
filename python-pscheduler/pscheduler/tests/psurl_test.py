@@ -13,7 +13,7 @@ class TestPsurl(PschedTestBase):
     URL tests.
     """
 
-    def test_url_get(self):
+    def test_url_bad(self):
         """IP addr tests"""
 
         # Missing scheme
@@ -45,7 +45,9 @@ class TestPsurl(PschedTestBase):
 
 
 
-
+    def test_url_get(self):
+        # TODO: Would need a web server to test this
+        pass
 
     def test_url_put(self):
         # TODO: Would need a web server to test this

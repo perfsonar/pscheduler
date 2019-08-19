@@ -49,4 +49,4 @@ fi
 # This becomes root to change the namespace and then becomes the prior
 # user to exec whatever comes next.
 
-exec sudo /sbin/ip netns exec "${NAMESPACE}" su "${OLD_USER}" "${EXEC}"
+exec sudo /sbin/ip netns exec "${NAMESPACE}" sudo -u "${OLD_USER}" "${EXEC}"

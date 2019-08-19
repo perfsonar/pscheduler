@@ -94,6 +94,8 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS test_alter ON test CASCADE;
 
+DO $$ BEGIN PERFORM drop_function_all('test_alter'); END $$;
+
 CREATE OR REPLACE FUNCTION test_alter()
 RETURNS TRIGGER
 AS $$
@@ -164,6 +166,9 @@ $$ LANGUAGE plpgsql;
 
 
 -- Function to run at startup.
+
+DO $$ BEGIN PERFORM drop_function_all('test_boot'); END $$;
+
 CREATE OR REPLACE FUNCTION test_boot()
 RETURNS VOID
 AS $$
@@ -175,7 +180,7 @@ DECLARE
     json_result TEXT;
     sschema NUMERIC;  -- Name dodges a reserved word
 BEGIN
-    run_result := pscheduler_internal(ARRAY['list', 'test']);
+    run_result := pscheduler_command(ARRAY['internal', 'list', 'test']);
     IF run_result.status <> 0 THEN
        RAISE EXCEPTION 'Unable to list installed tests: %', run_result.stderr;
     END IF;
@@ -184,7 +189,7 @@ BEGIN
 
     FOR test_name IN (select * from jsonb_array_elements_text(test_list))
     LOOP
-	run_result := pscheduler_internal(ARRAY['invoke', 'test', test_name, 'enumerate']);
+	run_result := pscheduler_command(ARRAY['internal', 'invoke', 'test', test_name, 'enumerate']);
         IF run_result.status <> 0 THEN
             RAISE WARNING 'Test "%" failed to enumerate: %',
 	        test_name, run_result.stderr;

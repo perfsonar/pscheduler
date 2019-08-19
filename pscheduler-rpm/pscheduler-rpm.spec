@@ -2,9 +2,12 @@
 # RPM Spec for pScheduler RPM Macros
 #
 
+%define perfsonar_auto_version 4.2.0
+%define perfsonar_auto_relnum 0.5.b2
+
 Name:		pscheduler-rpm
-Version:	1.1.6
-Release:	1%{?dist}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
 
 Summary:	Macros for use by pScheduler RPM specs
 BuildArch:	noarch

@@ -77,8 +77,8 @@ def mtu_path_is_safe(host, ipversion=None):
             last_low_mtu = mtu
 
     if drops:
-        return "MTU along path drops from %d to %s" % (
-            initial_mtu, " to ".join(drops) )
+        return (False, "MTU along path drops from %d to %s" % (
+            initial_mtu, " to ".join(drops)))
 
 
     return (True, "%d+" % (initial_mtu))

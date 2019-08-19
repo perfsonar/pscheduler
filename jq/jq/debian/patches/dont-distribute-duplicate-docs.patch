@@ -4,10 +4,10 @@ Forwarded: not-needed
 Last-Update: 2015-10-11
 ---
 This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
---- a/Makefile.am
-+++ b/Makefile.am
-@@ -168,7 +168,7 @@
- # README.md is expected in Github projects, good stuff in it, so we'll 
+--- jq-1.6.orig/Makefile.am	2019-03-28 15:35:58.927487070 +0100
++++ jq-1.6/Makefile.am	2019-03-28 15:35:58.923487003 +0100
+@@ -183,7 +183,7 @@
+ # README.md is expected in Github projects, good stuff in it, so we'll
  # distribute it and install it with the package in the doc directory.
  docdir = ${datadir}/doc/${PACKAGE}
 -dist_doc_DATA = README.md COPYING AUTHORS README

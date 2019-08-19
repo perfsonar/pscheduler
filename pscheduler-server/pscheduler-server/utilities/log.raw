@@ -1,0 +1,26 @@
+#!/bin/sh -e
+#
+# Dump the pScheduler Logs
+#
+
+if [ "$(id -un)" != "root" ]
+then
+    exec sudo "$0" "$@"
+fi
+
+LOGDIR="__LOGDIR__"
+LOGBASE="__LOGFILE__"
+
+if [ $# -eq 0 ]
+then
+    exec cat "${LOGDIR}/${LOGBASE}"
+elif [ "$1" = "--all" ]
+then
+    find "${LOGDIR}" -type f -name "${LOGBASE}*" -print0 \
+	| xargs -0 ls -htr \
+	| tr "\n" "\0" \
+	| xargs -0 cat
+else
+    echo "Usage: $(basename "$0") [ --all ]"
+    exit 1
+fi

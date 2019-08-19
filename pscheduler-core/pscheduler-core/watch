@@ -39,8 +39,14 @@ opt_parser.add_option("--first",
 
 opt_parser.add_option("--format",
                       help="Result format (text, html, json, none)",
-                      action="store", type="string", default="text",
+                      action="store", type="string",
+                      default=None,
                       dest="format")
+
+opt_parser.add_option("--output",
+                      help="Write result(s) to a file, substituting a run number for %n",
+                      action="store", type="string",
+                      dest="output")
 
 opt_parser.add_option("--quiet",
                       help="Operate quietly",
@@ -81,7 +87,8 @@ formats = {
     }
 
 try:
-    out_format = formats[options.format]
+    opt_format = options.format if options.format is not None else "text"
+    out_format = formats[opt_format]
 except KeyError:
     pscheduler.fail("Invalid --format '%s'; must be text, html, json or none"
                     % (options.format) )
@@ -99,7 +106,7 @@ if not pscheduler.api_is_task(task_url):
 
 
 
-verbose = (not options.quiet) and (out_format == "text/plain")
+verbose = (not options.quiet) and (options.format is None)
 
 
 log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True, propagate=True)
@@ -114,84 +121,61 @@ status, task = pscheduler.url_get(task_url, params={"detail":True},
 if status != 200:
     pscheduler.fail("Unable to fetch task: " + task)
 
-# TODO: This is in anticipation of multi-result.
+
 try:
     multi_result = task["detail"]["multi-result"]
-    multi_duration = task["detail"]["duration"]
 except KeyError:
     pscheduler.fail("Server returned malformed test specification.")
 
-# TODO: Might be nice to dump the test parameters, but need to add a
-# 'format' parameter to the REST API like was done for runs.
+
+if multi_result:
+    print pscheduler.prefixed_wrap(
+        "",  # No prefix
+        "This task produces results asynchronously and"
+        " cannot be watched.  The results it has produced"
+        " since it started running and now can be retrieved"
+        " by running the following command:")
+    print
+    print "pscheduler result ", task_url
+    pscheduler.succeed()
+
 
 run_count = 0
 
 last_url = ""
 
-# TODO: This maintains backward compatibility with older versions and
-# can be backed off to just next-run-href after the 1.0 release.
-
 try:
     first_run_url = task["detail"]["first-run-href"]
     next_run_url = task["detail"]["next-run-href"]
-    next_old_style = False
 except KeyError:
-    try:
-        next_old_style = True
-    except KeyError:
-        pscheduler.fail("Server returned malformed task information.")
+    pscheduler.fail("Server returned malformed task information.")
 
 
 while True:
 
-    # TODO: Remove the old_style decision after the 1.0 release
-
-    if next_old_style:
-
-        status, runs = pscheduler.url_get(
-            "%s/runs" % (task_url),
-            params={
-                'upcoming': True,
-                'limit' : 1
-            },
-            bind=options.bind,
-            throw=False
-        )
-
-        if status != 200:
-            pscheduler.fail("Unable to fetch runs.")
-
-        if len(runs) == 0:
-            if run_count == 0:
-                log.debug("No upcoming runs scheduled")
-                pscheduler.fail("No runs scheduled for this task.")
-            else:
-                pscheduler.succeed()
-
-        run_url = runs[0]
-
+    if run_count == 0 and options.first:
+        fetch = first_run_url
     else:
+        fetch = next_run_url
 
-        if run_count == 0 and options.first:
-            fetch = first_run_url
+    log.debug("Fetching next run from %s", fetch)
+    status, run_data = pscheduler.url_get(fetch,
+                                          params={ "wait": 0 },
+                                          bind=options.bind,
+                                          throw=False)
+    if status == 404:
+        if run_count == 0:
+            pscheduler.fail("No runs scheduled for this task.")
         else:
-            fetch = next_run_url
+            if options.format is None and not options.output:
 
-        log.debug("Fetching next run from %s", fetch)
-        status, run_data = pscheduler.url_get(fetch,
-                                              params={ "wait": 0 },
-                                              bind=options.bind,
-                                              throw=False)
-        if status == 404:
-            if run_count == 0:
-                pscheduler.fail("No runs scheduled for this task.")
-            else:
                 print
-                pscheduler.succeed("No further runs scheduled.")
-        if status != 200:
-            pscheduler.fail("Unable to fetch runs: %s", run_data)
+                print "No further runs scheduled."
+            pscheduler.succeed()
+    if status != 200:
+        pscheduler.fail("Unable to fetch runs: %s", run_data)
 
-        run_url = run_data['href']
+    run_url = run_data['href']
 
 
     if run_url == last_url:
@@ -270,13 +254,26 @@ while True:
     if status != 200:
         pscheduler.fail("Failed to fetch run: %d: %s" % (status, result))
 
-    print
+    if options.format is None \
+       and out_format == "text/plain" \
+       and not options.output:
+        print
+
+    args = [ "pscheduler", "result", "--quiet", "--format", out_format ]
+
+    # If an output file was specified, use it.
+    if options.output is not None:
+        output_path = options.output.replace("%n", str(run_count+1))
+        log.debug("Sending output to %s", output_path)
+        args.append("--output")
+        args.append(output_path)
+
+    if options.debug:
+        args.append("--debug")
+    args.append(run_url)
+    log.debug("Calling %s", args)
     # PYTHON3: Drop the 32; fix the import at the top
-    subprocess32.call([
-        "pscheduler", "result", 
-        "--quiet",
-        "--format", out_format,
-        run_url])
+    subprocess32.call(args)
 
     run_count += 1
 

@@ -1,5 +1,5 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: pscheduler-test-tracepath
+Upstream-Name: pscheduler-tool-tracepath
 Source: https://github.com/perfsonar/pscheduler
 
 Files: *

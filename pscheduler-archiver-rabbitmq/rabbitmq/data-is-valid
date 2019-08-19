@@ -6,7 +6,7 @@
 import pscheduler
 
 try:
-    json = pscheduler.json_load(max_schema=1)
+    json = pscheduler.json_load(max_schema=2)
 except ValueError as ex:
     pscheduler.succeed_json({
         "valid": False,
@@ -14,16 +14,53 @@ except ValueError as ex:
         })
 
 data_validator = {
-    "type": "object",
-    "properties": {
-        "schema": { "$ref": "#/pScheduler/Cardinal" },
-        "_url":         { "$ref": "#/pScheduler/String" },
-        "exchange":     { "$ref": "#/pScheduler/String" },
-        "routing-key":  { "$ref": "#/pScheduler/String" },
-        "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+
+    "local": {
+
+        "RabbitMQArchiveSpecification_V1": {
+            "type": "object",
+            "properties": {
+                "schema":       {" type": "integer", "enum": [ 1 ] },
+                "_url":         { "$ref": "#/pScheduler/String" },
+                "exchange":     { "$ref": "#/pScheduler/String" },
+                "routing-key":  { "$ref": "#/pScheduler/String" },
+                "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+            },
+            "required": [
+                "_url"
+            ],
+            "additionalProperties": False
+        },
+
+        "RabbitMQArchiveSpecification_V2": {
+            "type": "object",
+            "properties": {
+                "schema":              {" type": "integer", "enum": [ 2 ] },
+                "_url":                { "$ref": "#/pScheduler/String" },
+                "exchange":            { "$ref": "#/pScheduler/String" },
+                "routing-key":         { "anyOf": [
+                    { "$ref": "#/pScheduler/String" },
+                    { "$ref": "#/pScheduler/JQTransformSpecification" }
+                ] },
+                "connection-expires":  { "$ref": "#/pScheduler/Duration" },
+                "retry-policy":        { "$ref": "#/pScheduler/RetryPolicy" }
+            },
+            "required": [
+                "schema",
+                "_url"
+            ],
+            "additionalProperties": False
+        },
+
+        "RabbitMQArchiveSpecification": {
+            "anyOf": [
+                { "$ref": "#/local/RabbitMQArchiveSpecification_V1" },
+                { "$ref": "#/local/RabbitMQArchiveSpecification_V2" }
+            ]
+        }
     },
-    "additionalProperties": False,
-    "required": [ "_url" ]
+
+    "$ref": "#/local/RabbitMQArchiveSpecification"
 }
 
 
@@ -35,5 +72,18 @@ if not valid:
         "valid": False,
         "error": error
         })
+
+
+# If the routing key is a jq script, try to compile it.
+routing_key = json.get("routing-key", "")
+if not isinstance(routing_key, basestring):
+    try:
+        filter = pscheduler.JQFilter(routing_key)
+    except ValueError as ex:
+        pscheduler.succeed_json({
+            "valid": False,
+            "error": "Error compiling routing key transform: %s" % (str(ex))
+        })
+
     
 pscheduler.succeed_json({ "valid": True })

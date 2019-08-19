@@ -89,7 +89,7 @@ def interface_affinity(interface):
     for that interface if available, otherwise
     returns None.
 
-    Note: that this only works on linux. A good todo might be
+    PORT: This only works on linux. A good todo might be
     to figure out if it could work on other platforms, but
     given the nature of high speed networking it seems
     like it might not be a big deal.

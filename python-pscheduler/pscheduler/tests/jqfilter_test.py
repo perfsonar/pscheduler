@@ -50,6 +50,9 @@ class TestJQFilter(PschedTestBase):
         self.assertEqual(f({"abc": 123})[0], {"abc": 123 })
 
 
+    # TODO: Need a way to test groomed filters without depending on
+    # anything else being installed.  Might not be doable.
+
 
     # TODO: These tests don't work on 2.6.  Remove the conditions when
     # we no longer support it.

@@ -35,8 +35,8 @@ ifndef LIMITS_FILE
 	@echo No LIMITS_FILE specified for build
 	@false
 endif
-ifndef RUN_SPACE
-	@echo No RUN_SPACE specified for build
+ifndef RUN_DIR
+	@echo No RUN_DIR specified for build
 	@false
 endif
 	sed \
@@ -48,7 +48,7 @@ endif
 		-e 's|__API_DIR__|$(API_DIR)|g' \
 		-e 's|__DSN_FILE__|$(DSN_FILE)|g' \
 		-e 's|__LIMITS_FILE__|$(LIMITS_FILE)|g' \
-		-e 's|__RUN_SPACE__|$(RUN_SPACE)|g' \
+		-e 's|__RUN_DIR__|$(RUN_DIR)|g' \
 		< $^ > $@
 	@if egrep -e '__[A-Z_]+__' $@ ; then \
 		echo "Found un-substituted values in processed file $@" ; \

@@ -84,6 +84,8 @@ $$ LANGUAGE plpgsql;
 -- Functions that encapsulate the numeric values for each state
 --
 
+DO $$ BEGIN PERFORM drop_function_all('scheduling_class_background_multi'); END $$;
+
 CREATE OR REPLACE FUNCTION scheduling_class_background_multi()
 RETURNS INTEGER
 AS $$
@@ -91,6 +93,9 @@ BEGIN
 	RETURN 1;
 END;
 $$ LANGUAGE plpgsql;
+
+
+DO $$ BEGIN PERFORM drop_function_all('scheduling_class_exclusive'); END $$;
 
 CREATE OR REPLACE FUNCTION scheduling_class_exclusive()
 RETURNS INTEGER
@@ -100,6 +105,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+DO $$ BEGIN PERFORM drop_function_all('scheduling_class_normal'); END $$;
+
 CREATE OR REPLACE FUNCTION scheduling_class_normal()
 RETURNS INTEGER
 AS $$
@@ -108,6 +116,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+DO $$ BEGIN PERFORM drop_function_all('scheduling_class_background'); END $$;
 
 CREATE OR REPLACE FUNCTION scheduling_class_background()
 RETURNS INTEGER
@@ -120,6 +130,8 @@ $$ LANGUAGE plpgsql;
 
 
 DROP TRIGGER IF EXISTS scheduling_class_alter ON scheduling_class CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('scheduling_class_alter'); END $$;
 
 CREATE OR REPLACE FUNCTION scheduling_class_alter()
 RETURNS TRIGGER

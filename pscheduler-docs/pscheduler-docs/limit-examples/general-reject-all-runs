@@ -1,0 +1,90 @@
+{
+    "#": "-------------------------------------------------------------------",
+    "#": "                 PSCHEDULER LIMIT CONFIGURATION                    ",
+    "#": "                                                                   ",
+    "#": "This limit file accepts all tasks but denies all runs.  Its        ",
+    "#": "intended use is for debugging, not production.                     ",
+    "#": "-------------------------------------------------------------------",
+
+    "schema": 2,
+
+    "#": "-------------------------------------------------------------------",
+    "#": "IDENTIFIERS:  WHO'S ASKING?                                        ",
+    "#": "                                                                   ",
+    "#": "These identify who's asking to run the test.  One requester can    ",
+    "#": "map to zero or more identifiers.                                   ",
+    "#": "-------------------------------------------------------------------",
+
+    "identifiers": [
+	{
+	    "name": "everybody",
+	    "description": "An identifier that always identifies",
+	    "type": "always",
+	    "data": { }
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "CLASSIFIERS:  HOW DO WE CLASSIFY THE IDENTIFIERS?                  ",
+    "#": "                                                                   ",
+    "#": "These collect identifiers into groups.                             ",
+    "#": "-------------------------------------------------------------------",
+
+    "classifiers": [
+	{
+	    "name": "default",
+	    "description": "Everybody",
+	    "identifiers": [ "everybody" ]
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "LIMITS:  WHAT ARE THE RESTRICTIONS?                                ",
+    "#": "                                                                   ",
+    "#": "These are comparisons made against the type of test being proposed,",
+    "#": "the paramaters for the run and when it is proposed to be run.      ",
+    "#": "-------------------------------------------------------------------",
+
+    "limits": [
+        {
+	    "name": "always",
+	    "description": "Always passes",
+	    "type": "pass-fail",
+	    "data": {
+	        "pass": true
+	    }
+	},
+        {
+	    "name": "nodates",
+	    "description": "Rejects all dates",
+	    "type": "run-daterange",
+	    "data": {
+		"start": "2000-01-01T00:00:00Z",
+		"end": "2999-12-31T23:59:59Z"
+	    },
+	    "invert": true
+	}
+    ],
+
+
+    "#": "-------------------------------------------------------------------",
+    "#": "APPLICATIONS:  TO WHOM DO WE APPLY THE LIMITS?                     ",
+    "#": "                                                                   ",
+    "#": "These are processed in order until one passes all of the           ",
+    "#": "requirements.  The run will be rejected if one fails with          ",
+    "#": "stop-on-failure set to true or none of them passes.                ",
+    "#": "-------------------------------------------------------------------",
+
+    "applications": [
+	{
+	    "description": "Deny all runs",
+	    "classifier": "default",
+	    "apply": [
+		{ "require": "all", "limits": [ "nodates" ] }
+	    ],
+	    "stop-on-failure": true
+	}
+    ]
+}

@@ -4,7 +4,7 @@
 #
 
 import datetime
-import ipaddr
+import ipaddress
 import json
 import math
 import pscheduler
@@ -112,7 +112,7 @@ if role == CLIENT_ROLE:
 
     #calculate destination ip for rtt tests
     try:
-            ipaddr.IPAddress(test_spec['dest'])
+            ipaddress.ip_address(unicode(test_spec['dest']))
             dest_ip = test_spec['dest']
             dest_hostname = pscheduler.dns_resolve_reverse(dest_ip)
     except ValueError:

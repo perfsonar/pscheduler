@@ -1,0 +1,175 @@
+#!/usr/bin/python
+
+#
+# Development Order #5:
+#
+# This is the meat and bones of the tool, where the actual desired
+# commands or operation will be run. The results are then recorded
+# and added to the 'results' JSON data, which will then be sent
+# back to the test. Both system and api are able to be used here.
+#
+
+import os
+import sys
+import time
+import json
+import datetime
+import subprocess
+
+import pscheduler
+
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+log = pscheduler.Log(prefix='curl', quiet=True)
+
+# Take input from test spec
+try:
+    test_type = input['test']['type']
+    if test_type == "disk-to-disk":
+        dest = input['test']['spec']['dest']
+        source = input['test']['spec']['source']
+        cleanup = input['test']['spec'].get('cleanup', True)
+    else:
+        source = input['test']['spec']['url']
+        dest = None
+        cleanup = False #disk-to-disk option
+except KeyError as e:
+    print(e);	pscheduler.fail('Missing data in input')
+
+
+timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
+
+timeout = pscheduler.timedelta_as_seconds( \
+               pscheduler.iso8601_as_timedelta(timeout_iso))
+
+#http option
+parse = input['test']['spec'].get('parse', None)
+
+start_time = datetime.datetime.now()
+succeeded = False
+error = ''
+diags = ''
+
+STDERR = ""
+
+# Run the actual task here:
+if True:
+  # Normalize input with Globus tool
+  if (len(source) > 6 and source[:7] != "file://"):
+    # If source is local file, use file:// protocol
+    if (source[0] == "/" and source[1] != "/"):
+      source = "file://" + source
+
+  if dest and (len(dest) > 6 and  dest[:7] == "file://"):
+    dest = dest.split("file://")[-1]
+
+  # Execute curl command
+  argv = ['curl']
+  if dest:
+      argv.append('-o') # Flag to output file
+      argv.append(dest) # Download location
+  if test_type == "http":
+      #output status code for http tests
+      argv.append('-k') #make https work
+      argv.append('-w')
+      argv.append('\\n%{http_code}')
+  argv.append(source) # Source URL
+  
+
+  status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
+
+  lines = stderr.split('\r')
+  parsed = [stat for stat in lines[-1].split(' ') if stat != '']
+  
+  STDERR = parsed
+
+  if status:
+    succeeded = False
+    error = "Error running program:\n%s"% stderr.strip('\n')
+
+    # Determine how much (if any) of the file was transferred
+    if dest and os.path.isfile(dest):
+      bytes_sent = os.stat(dest).st_size
+
+      # Convert bytes to human readable format 
+      # TODO: The pscheduler module has functions for doing this.
+      scalar = ['B', 'KB', 'MB', 'GB', 'TB']
+      while bytes_sent > 1024 and len(scalar) > 1:
+        bytes_sent /= 1024; scalar = scalar[1:]
+
+      # Put this into diags
+      #error += '\n\nBytes Transfered: %s %s'% (int(bytes_sent), scalar[0])
+      #error += '\n\nActual Timeout: %s seconds' % timeout
+      
+      # Getting source filesize
+      #argv = ['curl', '-s', source, '| wc -c']
+      #outs = pscheduler.run_program(argv, timeout=timeout)
+      #error += '\n\n' + str(outs)
+
+  else:
+    succeeded = True
+    diags = stdout
+
+end_time = datetime.datetime.now()
+
+if cleanup is True:
+    if os.path.isfile(dest): 
+        os.remove(dest)
+
+# Organize results into json data
+final_results = {
+    'succeeded': succeeded,
+    'error': error,
+    'diags': diags }
+
+results = {'schema': 1, 
+	   'succeeded': succeeded}
+
+results['time'] = pscheduler.timedelta_as_iso8601( end_time - start_time)
+
+#handle test_type specific options
+if test_type == "disk-to-disk":
+    #%#%#%#%#%#
+    #STDERR[6] is Average Download Speed
+    #Try to get download speed, if can't parse then skip
+    throughput_str = None
+    try:
+        throughput_str = STDERR[-1].split('\n')[0]
+    except:
+        pass
+    if throughput_str is not None:
+        #convert to bits per second
+        results['throughput'] = pscheduler.si_as_number(throughput_str) * 8
+
+    #%#%#%#%#%#
+    bytes_str = None
+    try:
+        bytes_str = STDERR[1]
+    except:
+        pass
+    if bytes_str is not None:
+        results['bytes-sent'] = pscheduler.si_as_number(bytes_str)
+elif test_type == "http":
+    if parse:
+        if (stdout.find(parse) == -1):
+            results['found'] = False
+        else:
+            results['found'] = True
+    stdout_lines = stdout.split("\n")
+    status_code = ""
+    if len(stdout_lines) > 0:
+        status_code = stdout_lines[-1] 
+    if status_code.isdigit():
+        status_code = int(status_code)
+        results['status'] = status_code
+        if status_code >= 200 and status_code < 300:
+            results['succeeded'] = True
+        else:
+            results['succeeded'] = False
+        
+final_results['result'] = results
+pscheduler.succeed_json(final_results)
+
+
+
+#?

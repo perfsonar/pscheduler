@@ -1,7 +1,9 @@
 Source: pscheduler-archiver-syslog
 Section: net
 Priority: optional
-Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>,
+ Valentin Vidic <Valentin.Vidic@CARNet.hr>
 Build-Depends: debhelper (>= 9)
 Standards-Version: 3.9.6
 Homepage: https://github.com/perfsonar/pscheduler
@@ -11,6 +13,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-archiver-syslog
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
- pscheduler-server (>= 1.1.1), rsyslog | system-log-daemon
+ pscheduler-server (>= 1.1.6), rsyslog | system-log-daemon
 Description: Syslog archiver class for pScheduler
  Archiver sends JSON test results to syslog.

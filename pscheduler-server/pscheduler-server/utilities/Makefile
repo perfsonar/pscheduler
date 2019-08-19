@@ -8,7 +8,9 @@
 COMMANDS=\
 	backup \
 	limit-diags \
-	restore
+	log \
+	restore \
+	validate-configurables
 
 INTERNALS=\
 	service
@@ -21,8 +23,20 @@ ifndef CONFIGDIR
 	@echo CONFIGDIR not defined for $@
 	false
 endif
+ifndef CONFIGURABLESFILE
+	@echo CONFIGURABLESFILE not defined for $@
+	false
+endif
 ifndef LIMITSFILE
 	@echo LIMITSFILE not defined for $@
+	false
+endif
+ifndef LOGDIR
+	@echo LOGDIR not defined for $@
+	false
+endif
+ifndef LOGFILE
+	@echo LOGFILE not defined for $@
 	false
 endif
 ifndef PGDATABASE
@@ -43,7 +57,10 @@ ifndef VERSION
 endif
 	sed \
 		-e 's|__CONFIGDIR__|$(CONFIGDIR)|g' \
+		-e 's|__CONFIGURABLESFILE__|$(CONFIGURABLESFILE)|g' \
 		-e 's|__LIMITSFILE__|$(LIMITSFILE)|g' \
+		-e 's|__LOGDIR__|$(LOGDIR)|g' \
+		-e 's|__LOGFILE__|$(LOGFILE)|g' \
 		-e 's|__PGDATABASE__|$(PGDATABASE)|g' \
 		-e 's|__PGPASSFILE__|$(PGPASSFILE)|g' \
 		-e 's|__TMPDIR__|$(TMPDIR)|g' \

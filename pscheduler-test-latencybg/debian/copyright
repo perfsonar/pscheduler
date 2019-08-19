@@ -1,5 +1,5 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: pscheduler-tool-latencybg
+Upstream-Name: pscheduler-test-latencybg
 Source: https://github.com/perfsonar/pscheduler
 
 Files: *

@@ -3,11 +3,14 @@
 #
 
 %define short	bwctlping
-Name:		pscheduler-tool-%{short}
-Version:	1.1.6
-Release:	1%{?dist}
+%define perfsonar_auto_version 4.2.0
+%define perfsonar_auto_relnum 0.5.b2
 
-Summary:	pScheduler BWCTL Ping Tool
+Name:		pscheduler-tool-%{short}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
+
+Summary:	pScheduler BWCTL Ping Tool (DISABLED)
 BuildArch:	noarch
 License:	ASL 2.0
 Vendor:	perfSONAR
@@ -19,22 +22,14 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
 Requires:	pscheduler-account
-Requires:	python-ipaddr
-Requires:	python-pscheduler >= 1.3
 Requires:	pscheduler-test-rtt
-Requires:	python-icmperror
-# This supplies ping.
-Requires:	iputils
-Requires:	bwctl-client
-Requires:	bwctl-server
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
-BuildRequires:	iputils
 
 
 %description
-pScheduler Ping Tool
+pScheduler Ping Tool (DISABLED)
 
 
 %prep

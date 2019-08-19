@@ -1,4 +1,10 @@
-python-icmperror (0.1-1) perfsonar-jessie-staging; urgency=low
+python-icmperror (0.1-2) perfsonar-minor-staging; urgency=low
+
+  * Releasing to perfsonar-minor-staging
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 24 Jul 2019 18:19:22 +0000
+
+python-icmperror (0.1-1) perfsonar-minor-snapshot; urgency=low
 
   * Initial release
 

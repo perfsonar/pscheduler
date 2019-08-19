@@ -104,6 +104,11 @@ schedule_group.add_option("--max-runs",
                       action="store", type="int", default=1,
                       dest="max_runs")
 
+task_group.add_option("--priority",
+                      help="Scheduling priority to request (default 0 or $PSCHEDULER_PRIORTY)",
+                      action="store", type="int",
+                      dest="priority")
+
 schedule_group.add_option("--repeat",
                       help="Repeat interval (ISO 8601 Duration)",
                       action="store", type="string",
@@ -154,13 +159,19 @@ other_group.add_option("--export",
 other_group.add_option("--format",
                       help="Output format: plain (default), html, json or none",
                       action="store", type="string",
-                      default="text",
+                      default=None,
                       dest="format")
 
 other_group.add_option("--import",
                       help="Read JSON task template from a file, - for stdin",
                       action="store", type="string",
                       dest="importfile")
+
+other_group.add_option("--output",
+                      help="Write result(s) to a file, substituting a run number for %n",
+                      action="store", type="string",
+                      default=None,
+                      dest="output")
 
 other_group.add_option("--quiet",
                       help="Operate quietly",
@@ -209,7 +220,8 @@ formats = {
     }
 
 try:
-    out_format = formats[options.format]
+    opt_format = "text/plain" if options.format is None else options.format
+    out_format = formats[opt_format]
 except KeyError:
     pscheduler.fail("Invalid --format; must be text, html, json or none")
 
@@ -274,7 +286,7 @@ if ( options.repeat is None
 
 verbose = (not options.quiet) \
     and not (options.url) \
-    and (out_format == "text/plain") 
+    and options.format is None
 
 # TODO: Tie this to the options.
 log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True, propagate=True)
@@ -379,6 +391,21 @@ if 'schedule' not in task:
 if options.max_runs > 1:
     task['schedule']['max-runs'] = options.max_runs
 
+if options.priority is not None:
+    task['priority'] = options.priority
+else:
+    try:
+        task['priority'] = int(os.environ['PSCHEDULER_PRIORITY'])
+    except ValueError:
+        pscheduler.fail("PSCHEDULER_PRIORITY does not contain an integer.")
+    except KeyError:
+        pass
+
+
+if 'priority' in task:
+    task_schema.set(3)
+
+
 if options.repeat is not None:
     task['schedule']['repeat'] = options.repeat
 
@@ -427,7 +454,7 @@ if options.archive:
     for archive in options.archive:
         try:
             archive_text = pscheduler.string_from_file(archive)
-            archive_json = pscheduler.json_load(archive_text, max_schema=1)
+            archive_json = pscheduler.json_load(archive_text)
             archives.append(archive_json)
         except IOError as ex:
             pscheduler.fail("Unable to read archive file: %s" % (str(ex)))
@@ -504,13 +531,12 @@ assert 'spec' in task['test']
 final_schema = max(task['test']['spec'].get('schema', 1),
                    json_to_merge.get("schema", 1))
 task['test']['spec'].update(json_to_merge)
-task['test']['spec']['schema'] = final_schema
+if final_schema > 1:
+    task['test']['spec']['schema'] = final_schema
 
 
-task['schema'] = task_schema.value()
-
-task_json_text = pscheduler.json_dump(task)
-
+if task_schema.value() > 1:
+    task['schema'] = task_schema.value()
 
 if options.export:
 
@@ -557,10 +583,6 @@ log.debug("Fetching participant list")
 
 spec_text = pscheduler.json_dump(task['test']['spec'])
 participants_params = {'spec': spec_text}
-# HACK: BWCTLBC.  Participant calculation isn't supposed to know about this.
-if options.lead_bind is not None:
-    participants_params["lead-bind"] = options.lead_bind
-
 log.debug("Spec is: %s", spec_text)
 log.debug("Params are: %s", participants_params)
 status, participants = pscheduler.url_get(
@@ -631,17 +653,12 @@ log.debug("%s is up", lead)
 
 tasks_url = pscheduler.api_url(lead, '/tasks')
 log.debug("Posting task to %s", tasks_url)
-log.debug("Data is %s", task_json_text)
-try:
-    status, task_url = pscheduler.url_post(
-        tasks_url,
-        data=task_json_text,
-        bind=bind,
-        throw=True)
-except Exception as ex:
-    pscheduler.fail("Unable to post task: " + str(ex) +
-        "\nThe 'pscheduler troubleshoot' command may be of use in problem" + 
-        "\ndiagnosis. 'pscheduler troubleshoot --help' for more information.")
+log.debug("Data is %s", task)
+status, task_url = pscheduler.url_post(
+    tasks_url,
+    data=task,
+    bind=bind,
+    throw=False)
 
 if status != 200:
     pscheduler.fail("Failed to post task: " + task_url +
@@ -665,9 +682,11 @@ status, result = pscheduler.url_get(
     task_url,
     bind=bind,
     params={ "detail": 1 },
-    json=True)
+    json=True,
+    throw=False)
+
 if status != 200:
-    pscheduler.fail("Failed to fetch the task.")
+    pscheduler.fail("Failed to fetch the task: %s" % (result))
 
 try:
     log.debug("Submission diagnostics:\n%s" \
@@ -701,9 +720,13 @@ if status == 404:
 
 
 watch_args = [ "pscheduler", "watch",
-               "--first",
-               "--format", out_format
+               "--first"
                ]
+
+# Force a format only if explicitly told to do so.
+if options.format is not None:
+    watch_args.extend(["--format", out_format])
+
 if options.debug:
     watch_args.append("--debug")
 if options.quiet:
@@ -711,6 +734,9 @@ if options.quiet:
 if options.bind is not None:
     watch_args.append("--bind")
     watch_args.append(options.bind)
+if options.output is not None:
+    watch_args.append("--output")
+    watch_args.append(options.output)
 # TODO: Pass --verbose once watch supports that.
 watch_args.append(task_url)
 

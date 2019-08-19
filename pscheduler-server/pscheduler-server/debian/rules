@@ -36,12 +36,15 @@ override_dh_auto_build:
 		PGUSER=pscheduler \
 		PSUSER=pscheduler \
 		ARCHIVERDEFAULTDIR=/etc/pscheduler/default-archives \
-		RUNDIR=/var/run \
+		RUNDIR=/var/run/pscheduler-server \
 		VAR=/var
 
 	make -C utilities \
-		CONFIGDIR=/etc/pscheduler/daemons \
+		CONFIGDIR=/etc/pscheduler \
+		CONFIGURABLESFILE=/etc/pscheduler/configurables.conf \
 		LIMITSFILE=/etc/pscheduler/limits.conf \
+		LOGDIR=/var/log/pscheduler \
+		LOGFILE=pscheduler.log \
 		PGDATABASE=pscheduler \
 		PGPASSFILE=/etc/pscheduler/database/pgpassfile \
 		TMPDIR=/var/tmp \
@@ -85,7 +88,7 @@ override_dh_auto_install:
 		PREFIX=$(ROOT) \
 		DSN_FILE=/etc/pscheduler/database/database-dsn \
 		LIMITS_FILE=/etc/pscheduler/limits.conf \
-		RUN_SPACE=/run/pscheduler-server \
+		RUN_DIR=/var/run/pscheduler-server \
 		install
 	cp api-server/*.py api-server/*.wsgi $(ROOT)/usr/share/pscheduler/api-server/
 	rm $(ROOT)/usr/share/pscheduler/api-server/*.py?
@@ -103,6 +106,11 @@ override_dh_auto_install:
 	ln -s ../../install-dbadmin/pgsql $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/upgrade-dbadmin/pgsql/$(DEB_VERSION)
 	mkdir -p $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/upgrade/pgsql
 	ln -s ../../install/pgsql $(ROOT)/usr/share/dbconfig-common/data/pscheduler-server/upgrade/pgsql/$(DEB_VERSION)
+
+	if [ -f $(CURDIR)/debian/sudoers ]; then \
+		install -D -m 0440 $(CURDIR)/debian/sudoers \
+			$(ROOT)/etc/sudoers.d/$(DEB_SOURCE_PACKAGE); \
+	fi
 
 override_dh_installinit:
 	dh_installinit --onlyscripts --name=pscheduler-archiver

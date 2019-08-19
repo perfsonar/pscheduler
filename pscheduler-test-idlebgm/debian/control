@@ -1,7 +1,9 @@
 Source: pscheduler-test-idlebgm
 Section: net
 Priority: optional
-Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>,
+ Valentin Vidic <Valentin.Vidic@CARNet.hr>
 Build-Depends: debhelper (>= 9), python
 Standards-Version: 3.9.6
 Homepage: https://github.com/perfsonar/pscheduler
@@ -11,6 +13,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-test-idlebgm
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
- pscheduler-server (>= 1.1.1), python-jsontemplate
+ pscheduler-server (>= 1.1.6), python-jsontemplate
 Description: pScheduler idle background test
  Idle test class for pScheduler that runs in the background.

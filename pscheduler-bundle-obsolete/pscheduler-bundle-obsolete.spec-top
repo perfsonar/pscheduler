@@ -1,0 +1,19 @@
+#
+# RPM Spec for Obsolete pScheduler Bundle
+#
+
+%define perfsonar_auto_version 4.2.0
+%define perfsonar_auto_relnum 0.5.b2
+
+Name:		pscheduler-bundle-obsolete
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
+
+Summary:	Obsolete pScheduler Bundle
+BuildArch:	noarch
+
+License:	ASL 2.0
+Vendor:	perfSONAR
+Group:		Unspecified
+
+

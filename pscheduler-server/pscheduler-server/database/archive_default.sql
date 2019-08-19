@@ -61,6 +61,8 @@ $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS archive_default_insert ON archive_default CASCADE;
 
+DO $$ BEGIN PERFORM drop_function_all('archive_default_insert'); END $$;
+
 CREATE OR REPLACE FUNCTION archive_default_insert()
 RETURNS TRIGGER
 AS $$
@@ -82,6 +84,8 @@ FOR EACH ROW
 -- usually the whole table at once.)
 
 DROP TRIGGER IF EXISTS archive_default_update ON archive_default CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('archive_default_update'); END $$;
 
 CREATE OR REPLACE FUNCTION archive_default_update()
 RETURNS TRIGGER

@@ -16,6 +16,7 @@ if __name__ == "__main__":
     from limit import runschedule
     from limit import test
     from limit import testtype
+    from limit import urlfetch
 else:
     from .limit import jq
     from .limit import passfail
@@ -23,6 +24,7 @@ else:
     from .limit import runschedule
     from .limit import test
     from .limit import testtype
+    from .limit import urlfetch
 
 
 limit_creator = {
@@ -31,7 +33,8 @@ limit_creator = {
     'run-daterange': lambda data: rundaterange.LimitRunDateRange(data),
     'run-schedule':  lambda data: runschedule.LimitRunSchedule(data),
     'test':          lambda data: test.LimitTest(data),
-    'test-type':     lambda data: testtype.LimitTestType(data)
+    'test-type':     lambda data: testtype.LimitTestType(data),
+    'url-fetch':     lambda data: urlfetch.LimitURLFetch(data)
     }
 
 
@@ -128,7 +131,7 @@ class LimitSet():
 
 
     def check(self,
-              task,           # Task to use as limit fodder
+              proposal,       # Task and hints
               limit,          # The limit to check against
               check_schedule  # Keep/disregard time-related limits
               ):
@@ -160,7 +163,7 @@ class LimitSet():
         if not check_schedule and evaluator.checks_schedule():
             return { "passed": True }
 
-        evaluated = evaluator.evaluate(task)
+        evaluated = evaluator.evaluate(proposal)
 
         passed = evaluated["passed"]
         result = {
@@ -291,6 +294,12 @@ if __name__ == "__main__":
 
     theset = LimitSet(thelimits)
 
+    hints = {
+        "requester": "127.0.0.1",
+        "server": "127.0.0.1",
+        "protocol": "https"
+    }
+
     task = {
         "type": "idle",
         "spec": {
@@ -303,5 +312,10 @@ if __name__ == "__main__":
         }
     }
 
+    proposal = {
+        "hints": hints,
+        "task": task
+    }
+
     for limit in thelimits:
-        print limit['name'], theset.check(task, limit['name'], True)
+        print limit['name'], theset.check(proposal, limit['name'], True)

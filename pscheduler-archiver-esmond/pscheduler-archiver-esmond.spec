@@ -3,9 +3,12 @@
 #
 
 %define short	esmond
+%define perfsonar_auto_version 4.2.0
+%define perfsonar_auto_relnum 0.5.b2
+
 Name:		pscheduler-archiver-esmond
-Version:	1.1.6
-Release:	1%{?dist}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
 
 Summary:	Esmond archiver class for pScheduler
 BuildArch:	noarch
@@ -18,7 +21,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.1.6
-Requires:	python-requests
+Requires:	python-pscheduler >= 1.3.7.1
 Requires:	python-memcached
 Requires:	memcached
 Requires(post):	memcached

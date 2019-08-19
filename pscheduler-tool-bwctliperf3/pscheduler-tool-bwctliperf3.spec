@@ -3,11 +3,14 @@
 #
 
 %define short	bwctliperf3
-Name:		pscheduler-tool-%{short}
-Version:	1.1.6
-Release:	1%{?dist}
+%define perfsonar_auto_version 4.2.0
+%define perfsonar_auto_relnum 0.5.b2
 
-Summary:	BWCTL iperf3 tool class for pScheduler
+Name:		pscheduler-tool-%{short}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
+
+Summary:	BWCTL iperf3 tool class for pScheduler (DISABLED)
 BuildArch:	noarch
 License:	ASL 2.0
 Vendor:	perfSONAR
@@ -18,17 +21,13 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	python-pscheduler
 Requires:	pscheduler-test-throughput
-Requires:	bwctl-client
-Requires:	bwctl-server
-Requires:	iperf3
 
 BuildRequires:	pscheduler-rpm
 
 
 %description
-BWCTL iperf3 tool class for pScheduler
+BWCTL iperf3 tool class for pScheduler (DISABLED)
 
 
 %prep

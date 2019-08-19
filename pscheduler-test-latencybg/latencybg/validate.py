@@ -10,15 +10,12 @@ REQUEST_SCHEMA = {
         "local": {
             "packet-interval": {
                 "type": "number",
-                "minimum": 0,
-                "exclusiveMinimum": True
+                "exclusiveMinimum": 0.0
             },
             "bucket-width": {
                 "type": "number",
-                "minimum": 0,
-                "exclusiveMinimum": True,
-                "maximum": 1,
-                "exclusiveMaximum": True,
+                "exclusiveMinimum": 0.0,
+                "exclusiveMaximum": 1.0,
                 "default": ".001"
             },
         },
@@ -214,15 +211,12 @@ LIMIT_SCHEMA = {
     "local": {
         "packet-interval": {
             "type": "number",
-            "minimum": 0,
-            "exclusiveMinimum": True
+            "exclusiveMinimum": 0.0
         },
         "bucket-width": {
             "type": "number",
-            "minimum": 0,
-            "exclusiveMinimum": True,
-            "maximum": 1,
-            "exclusiveMaximum": True,
+            "exclusiveMinimum": 0.0,
+            "exclusiveMaximum": 1.0,
             "default": ".001"
         },
         "PacketIntervalRange": {
