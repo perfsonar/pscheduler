@@ -31,14 +31,14 @@ class NumericRange():
             raise ValueError("Invalid numeric range: %s" % message)
 
         lower = nrange['lower']
-        if type(lower) in [str, str]:
+        if isinstance(lower, str):
             self.lower = pscheduler.si_as_number(lower)
         else:
             self.lower = lower
         self.lower_str = str(lower)
 
         upper = nrange['upper']
-        if type(upper) in [str, str]:
+        if isinstance(upper, str):
             self.upper = pscheduler.si_as_number(upper)
         else:
             self.upper = upper
@@ -47,7 +47,7 @@ class NumericRange():
     def __contains__(self, number):
         """See if the range contains the specified number, which can be any Numeric."""
 
-        if type(number) == float:
+        if isinstance(number, float):
             test_value = number
         else:
             test_value = pscheduler.si_as_number(number)

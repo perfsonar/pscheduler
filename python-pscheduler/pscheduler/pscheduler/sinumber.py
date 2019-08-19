@@ -34,10 +34,10 @@ def si_as_number(text):
     """Convert a string containing an SI value to an integer or return an
     integer if that is what was passed in."""
 
-    if type(text) == int:
+    if isinstance(text, int):
         return text
 
-    if type(text) not in [str, str]:
+    if not isinstance(text, str):
         raise ValueError("Source value must be string or integer")
 
     matches = si_regex.search(text.lower(), 0)
@@ -109,11 +109,11 @@ def si_range(value, default_lower=0):
 
     """
 
-    if type(value) in [int, str, str]:
+    if isinstance(value, str) or isinstance(value, int):
         result = si_as_number(value)
         return {"lower": result, "upper": result}
 
-    if type(default_lower) != int:
+    if not isinstance(default_lower, int):
         raise ValueError("Default lower value must be integer")
 
     # TODO: Complain about anything else in the input?

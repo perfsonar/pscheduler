@@ -135,7 +135,7 @@ class Range():
 
     def __or__(self, rhs):
         """Find where two ranges overlap, return None if no overlap"""
-        assert type(rhs) == type(self), "Wrong type"
+        assert isinstance(rhs, type(self)), "Wrong type"
 
         if self.lower > rhs.upper or self.upper < rhs.lower:
             return None
@@ -146,7 +146,7 @@ class Range():
         Find overlap in a list of candidate ranges, filtering out any that
         don't have any.
         """
-        assert type(candidates) == list, "Wrong type"
+        assert isinstance(candidates, list), "Wrong type"
         return [
             overlap for overlap in [
                 self | x for x in candidates 
@@ -321,7 +321,7 @@ def run_post(
         Error message
     """
 
-    assert type(start_time) == datetime.datetime
+    assert isinstance(start_time, datetime.datetime)
 
     log and log.debug("%d: Posting %s at %s", number, url, start_time)
     log and log.debug("%d: Bind is %s", number, bind_addr)
@@ -528,7 +528,7 @@ def run_post(
                 "Failed to post lead run: %s" % run_lead_url)
 
     log and log.debug("%d: Lead URL is %s", number, run_lead_url)
-    assert type(run_lead_url) in [str, unicode]
+    assert isinstance(run_lead_url, str)
     runs_posted.append(run_lead_url)
 
     # TODO: This should parse the URL and change the netloc instead of

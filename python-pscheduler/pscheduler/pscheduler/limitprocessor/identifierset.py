@@ -90,7 +90,7 @@ class IdentifierSet():
                 invert = identifier['invert']
             except KeyError:
                 invert = False
-            assert type(invert) == bool
+            assert isinstance(invert, bool)
 
             if evaluator.evaluate(hints) and not invert:
                 result.append(identifier['name'])

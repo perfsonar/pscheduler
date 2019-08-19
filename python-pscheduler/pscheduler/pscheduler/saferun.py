@@ -45,13 +45,13 @@ def safe_run(function,
             depickled = pickle.loads(os.environ[STATE_VARIABLE])
 
             initial_backoff = depickled['initial_backoff']
-            assert type(initial_backoff) in [int, float]
+            assert isinstance(initial_backoff, int) or isinstance(initial, float)
 
             current_backoff = depickled['current_backoff']
-            assert type(current_backoff) in [int, float]
+            assert isinstance(current_backoff, int) or isinstance(current_backoff, float)
 
             runs = depickled['runs']
-            assert type(runs) == int
+            assert isinstance(runs, int)
 
         except Exception as ex:
             log.error("Failed to decode %s '%s': %s"

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Command-Line Interface for running tasks
 #
@@ -556,7 +556,7 @@ if options.export:
         pass
 
     pscheduler.json_dump(obj=task, dest=sys.stdout, pretty=True)
-    print
+    print()
     pscheduler.succeed()
 
 
@@ -565,8 +565,8 @@ if options.export:
 #
 
 if verbose:
-    print ("Submitting with assistance from %s..." % assist) if assist != last_ditch_assist \
-        else "Submitting task..."
+    print(("Submitting with assistance from %s..." % assist) if assist != last_ditch_assist \
+        else "Submitting task...")
 
 
 
@@ -678,8 +678,8 @@ if options.url:
     pscheduler.succeed(task_url)
 
 if verbose:
-    print "Task URL:"
-    print task_url
+    print("Task URL:")
+    print(task_url)
 log.debug("Posted %s", task_url)
 
 #
@@ -703,7 +703,7 @@ except KeyError:
     log.debug("No submission diagnostics available.")
 
 if verbose:
-    print "Running with tool '%s'" % (result['tool'])
+    print("Running with tool '%s'" % (result['tool']))
 
 
 #
@@ -711,7 +711,7 @@ if verbose:
 #
 
 if verbose:
-    print "Fetching first run..."
+    print("Fetching first run...")
 
 # TODO: It would be more RESTful to have this URL available as part of
 # the task instead of building it here.

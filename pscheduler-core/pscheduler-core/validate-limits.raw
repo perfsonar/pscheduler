@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Check that a limit file is valid.
 #
@@ -71,7 +71,7 @@ except Exception as ex:
     pscheduler.fail(str(ex))
 
 if sys.stdout.isatty() and not options.quiet:
-    print "Limit configuration is valid."
+    print("Limit configuration is valid.")
 
 pscheduler.succeed()
 

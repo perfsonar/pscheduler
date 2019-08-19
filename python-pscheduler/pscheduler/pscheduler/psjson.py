@@ -3,6 +3,7 @@ Functions for inhaling JSON in a pScheduler-normalized way
 """
 
 from json import load, loads, dump, dumps
+import io
 import string
 import sys
 import pscheduler
@@ -16,7 +17,7 @@ def json_decomment(json, prefix='#', null=False):
     (default '#') and return the result.  If 'null' is True, replace
     the prefixed items with a null value instead of deleting them.
     """
-    if type(json) is dict:
+    if isinstance(json, dict):
         result = {}
         for item in list(json.keys()):
             if item.startswith(prefix):
@@ -29,7 +30,7 @@ def json_decomment(json, prefix='#', null=False):
                                               null=null)
         return result
 
-    elif type(json) is list:
+    elif isinstance(json, list):
         result = []
         for item in json:
             result.append(json_decomment(item, prefix=prefix, null=null))
@@ -44,7 +45,7 @@ def json_substitute(json, value, replacement):
     Substitute any pair whose value is 'value' with the replacement
     JSON 'replacement'.  Based on pscheduler.json_decomment().
     """
-    if type(json) is dict:
+    if isinstance(json, dict):
         result = {}
         for item in list(json.keys()):
             if json[item] == value:
@@ -53,7 +54,7 @@ def json_substitute(json, value, replacement):
                 result[item] = json_substitute(json[item], value, replacement)
         return result
 
-    elif type(json) is list:
+    elif isinstance(json, list):
         result = []
         for item in json:
             result.append(json_substitute(item, value, replacement))
@@ -111,15 +112,15 @@ def json_load(source=None, exit_on_error=False, strip=True, max_schema=None):
         source = sys.stdin
 
     try:
-        if type(source) is str or type(source) is str:
+        if isinstance(source, str):
             json_in = loads(str(source))
-        elif type(source) is file:
+        elif isinstance(source,io.IOBase):
             json_in = load(source)
         else:
             raise Exception("Internal error: bad source type ", type(source))
     except ValueError as ex:
         # TODO: Make this consistent and fix scripts that use it.
-        if type(source) is str or not exit_on_error:
+        if isinstance(source, str) or not exit_on_error:
             raise ValueError("Invalid JSON: " + str(ex))
         else:
             pscheduler.fail("Invalid JSON: " + str(ex))
@@ -172,7 +173,7 @@ class RFC7464Emitter(object):
 
     def __init__(self, handle, timeout=None):
 
-        if type(handle) != file:
+        if isinstance(handle, io.IOBase):
             raise TypeError("Handle must be a file.")
 
         self.handle = handle
@@ -203,7 +204,7 @@ class RFC7464Parser(object):
     """Iterable parser for reading streaming JSON from a file handle"""
 
     def __init__(self, handle, timeout=None):
-        if type(handle) != file:
+        if not isinstance(handle, io.IOBase):
             raise TypeError("Handle must be a file.")
         self.handle = handle
         self.timeout = timeout

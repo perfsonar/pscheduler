@@ -91,7 +91,7 @@ class JQFilter(object):
 
         self.output_raw = output_raw
 
-        if type(filter_spec) == dict:
+        if isinstance(filter_spec, dict):
             self.output_raw = filter_spec.get("output-raw", output_raw)
             filter_spec = filter_spec.get("script", ".")
 

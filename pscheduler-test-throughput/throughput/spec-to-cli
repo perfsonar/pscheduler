@@ -7,7 +7,7 @@ import validate
 
 spec = pscheduler.json_load(exit_on_error=True, max_schema=3)
 
-if type(spec) != dict:
+if not isinstance(spec, dict):
     pscheduler.fail("Invalid JSON for this operation")
 
 valid, message = validate.spec_is_valid(spec)

@@ -2,6 +2,7 @@
 pScheduler Limit Processor
 """
 
+import io
 import os
 import pscheduler
 
@@ -62,16 +63,16 @@ class LimitProcessor():
         # Inhale the source and validate it
         #
 
-        if type(source) is str or type(source) is str:
+        if isinstance(source, str):
             source = open(source, 'r')
-        elif type(source) is file:
+        elif isinstance(source, io.IOBase):
             pass  # We're good with this.
         else:
             raise ValueError("Source must be a file or path")
 
         # At this point, source is a file.
 
-        assert type(source) is file
+        assert isinstance(source, io.IOBase)
         limit_config = pscheduler.json_load(source)
 
         valid, message = pscheduler.json_validate(limit_config, validation)

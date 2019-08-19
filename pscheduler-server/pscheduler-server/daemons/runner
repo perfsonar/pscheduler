@@ -570,7 +570,7 @@ class RunWorker:
             try:
                 result_json = pscheduler.json_load(stdout, max_schema=1)
                 if "succeeded" in result_json \
-                        and type(result_json["succeeded"]) == bool \
+                        and isinstance(result_json["succeeded"], bool) \
                         and result_json["succeeded"] == False:
                     failures += 1
             except ValueError:

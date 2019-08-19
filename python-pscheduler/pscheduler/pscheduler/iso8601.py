@@ -14,7 +14,7 @@ def iso8601_as_timedelta(iso):
         duration = isodate.parse_duration(iso)
     except isodate.isoerror.ISO8601Error:
         raise ValueError("Invalid ISO duration")
-    if type(duration) != datetime.timedelta:
+    if not isinstance(duration, datetime.timedelta):
         raise ValueError("Cannot support months or years")
     return duration
 

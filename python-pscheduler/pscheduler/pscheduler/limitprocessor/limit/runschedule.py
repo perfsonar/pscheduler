@@ -20,7 +20,7 @@ def wrappable_range_overlaps(start, end, test,
     must be completely contained within it.
     """
 
-    if type(test) != set:
+    if not isinstance(test, set):
         raise ValueError("Type of 'test' must be 'set'")
 
     if wrap_to >= wrap_after:
@@ -274,7 +274,7 @@ class LimitRunSchedule():
                 continue
             value_list = []
             for item in data[flatten]:
-                if type(item) == dict:
+                if isinstance(item, dict):
                     value_list.extend(list(range(item['lower'], item['upper']+1)))
                 else:
                     value_list.append(item)

@@ -55,7 +55,7 @@ class IdentifierJQ():
         except Exception as ex:
             return False
 
-        if type(returned) == bool:
+        if isinstance(returned, bool):
             return returned
 
         # At this point, there's no usable date.  Don't identify.

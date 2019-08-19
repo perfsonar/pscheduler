@@ -67,7 +67,7 @@ def time_until(when):
     the time specified is in the past, return no time.
     """
 
-    if type(when) != datetime.datetime:
+    if not isinstance(when, datetime.datetime):
         raise ValueError("Not passed a datetime")
 
     now = time_now()

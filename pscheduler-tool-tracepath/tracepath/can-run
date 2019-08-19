@@ -63,7 +63,7 @@ except KeyError:
 try:
     length = spec['length']
     # Length must be in 28..sys.maxint
-    if type(length) == int and (length < 28 or length > sys.maxint):
+    if isinstance(length, int) and (length < 28 or length > sys.maxint):
         errors.append("Cannot handle specified packet length")
 except KeyError:
     pass

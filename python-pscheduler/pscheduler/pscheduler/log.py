@@ -120,10 +120,10 @@ class Log():
 
         if name is None:
             name = os.path.basename(sys.argv[0])
-        assert type(name) == str
+        assert isinstance(name, str)
 
         if prefix is not None:
-            assert type(prefix) == str
+            assert isinstance(prefix, str)
             name = prefix + "/" + name
 
         self.facility = facility
@@ -156,16 +156,16 @@ class Log():
                 depickled = pickle.loads(os.environ[STATE_VARIABLE])
 
                 facility = depickled['facility']
-                assert type(facility) == int
+                assert isinstance(facility, int)
 
                 level = depickled['last_level']
-                assert type(level) == int
+                assert isinstance(level, int)
 
                 self.forced_debug = depickled['forced_debug']
-                assert type(self.forced_debug) == bool
+                assert isinstance(self.forced_debug, bool)
 
                 self.is_quiet = depickled['is_quiet']
-                assert type(self.is_quiet) == bool
+                assert isinstance(self.is_quiet, bool)
 
             except Exception as ex:
                 self.exception("Failed to decode %s '%s'"

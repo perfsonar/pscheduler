@@ -1,4 +1,4 @@
-#!/usr/bin/python -u
+#!/usr/bin/python3 -u
 
 """
 This program does very basic troubleshooting of one or two systems
@@ -99,9 +99,9 @@ except IndexError:
 
 if host_z is not None:
     if host_z == host_a:
-        print
-        print "Both hosts are the same; assuming you meant to troubleshoot only one."
-        print
+        print()
+        print("Both hosts are the same; assuming you meant to troubleshoot only one.")
+        print()
     else:
         hosts.append(host_z)
 
@@ -128,7 +128,7 @@ def ok(message="OK."):
 
 def failed(why, fail=True):
     sys.stdout.write(" Failed.\n")
-    print why
+    print(why)
     if fail:
         pscheduler.fail()
 
@@ -139,7 +139,7 @@ def failed_diags(run, why="Task failed to run properly."):
     Fail and write diagnostic data for a run
     """
     failed(why, fail=False)
-    print
+    print()
     result_args = ["pscheduler", "result", "--diags", "--archivings", run]
     os.execl("/bin/sh", "/bin/sh", "-c",
              " ".join([pipes.quote(arg) for arg in result_args]))
@@ -200,13 +200,11 @@ def dump_stats(host):
     """
     Acquire and dump statistics for a host
     """
-    print "  Server Statistics:"
+    print("  Server Statistics:")
 
     # Figure out how much padding to add
     longest_label =  sorted(
-        map(lambda p: len(p[0]),
-            filter(lambda p: p[1] is not None, statistics)
-        )
+        [len(p[0]) for p in [p for p in statistics if p[1] is not None]]
     )[-1]
 
     last_header = ""
@@ -216,12 +214,12 @@ def dump_stats(host):
 
         # Handle section headers
         if fetch is None:
-            print "    %s" % (label)
+            print("    %s" % (label))
             last_header = label
             continue
 
-        print "      %s %s..." % (
-            label, "." * (longest_label - len(label)) ),
+        print("      %s %s..." % (
+            label, "." * (longest_label - len(label)) ), end=' ')
 
         url = pscheduler.api_url(host, "/stat/%s" % (fetch))
 
@@ -231,11 +229,11 @@ def dump_stats(host):
             status = 200
             result = "N/A"
         elif status != 200:
-            print "FAILED"
+            print("FAILED")
             pscheduler.fail("Unable to retrieve %s %s: %s: %s" \
                             % (last_header, label, status, result))
 
-        print "%6s" % (result.strip())
+        print("%6s" % (result.strip()))
 
 
 def run_task(message, lead, task, bind=None):
@@ -363,8 +361,8 @@ def run_task(message, lead, task, bind=None):
 
 
 
-print "Performing basic troubleshooting of %s." \
-    % (" and ".join(hosts))
+print("Performing basic troubleshooting of %s." \
+    % (" and ".join(hosts)))
 
    
 
@@ -377,9 +375,9 @@ print "Performing basic troubleshooting of %s." \
 clocks = {}
 
 for host in hosts:
-    print
-    print "%s:" % (host)
-    print
+    print()
+    print("%s:" % (host))
+    print()
 
 
     if not options.quick and not options.skip_single:
@@ -470,7 +468,7 @@ for host in hosts:
 
 
 if len(hosts) == 1:
-    print
+    print()
     pscheduler.succeed("pScheduler appears to be functioning normally.")
 
 
@@ -478,9 +476,9 @@ if len(hosts) == 1:
 # Remote pScheduler
 #
 
-print
-print "%s and %s:" % (host_a, host_z)
-print
+print()
+print("%s and %s:" % (host_a, host_z))
+print()
 
 
 # Make sure both hosts resolve to the same address family
@@ -552,6 +550,6 @@ if not options.quick:
 # The End.
 #
 
-print
+print()
 pscheduler.succeed(
     "pScheduler on both hosts appears to be functioning normally.")

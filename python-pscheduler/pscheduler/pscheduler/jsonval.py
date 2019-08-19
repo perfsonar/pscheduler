@@ -1368,10 +1368,10 @@ def json_validate(json, skeleton):
 
     # Validate what came in
 
-    if type(json) != dict:
+    if not isinstance(json, dict):
         raise ValueError("JSON provided must be a dictionary.")
 
-    if type(skeleton) != dict:
+    if not isinstance(skeleton, dict):
         raise ValueError("Skeleton provided must be a dictionary.")
 
 

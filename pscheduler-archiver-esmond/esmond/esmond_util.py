@@ -433,11 +433,11 @@ class EsmondBaseRecord:
         self.add_data(data_point=self.data[data_index], event_type='pscheduler-raw', val=test_result)
     
     def parse_metadata_field(self, key, val):
-        if type(val) is list:
+        if isinstance(val, list):
             for (i, v) in enumerate(val):
                 k = "%s-%d" % (key, i)
                 self.metadata[k] = v
-        elif type(val) is dict:
+        elif isinstance(val, dict):
             for sub_key in val:
                 if sub_key.startswith('_'):
                     continue

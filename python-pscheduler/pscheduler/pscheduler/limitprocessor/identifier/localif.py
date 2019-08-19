@@ -10,7 +10,7 @@ def data_is_valid(data):
     (bool, string) indicating valididty and any error message.
     """
 
-    if type(data) == dict and len(data) == 0:
+    if isinstance(data, dict) and len(data) == 0:
         return True, None
 
     return False, "Data is not an object or not empty."

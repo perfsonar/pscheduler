@@ -40,9 +40,9 @@ class DurationRange():
         """See if the range contains the specified duration, which can be a
         timedelta or ISO8601 string."""
 
-        if type(duration) == datetime.timedelta:
+        if isinstance(duration, datetime.timedelta):
             test_value = duration
-        elif type(duration) in [str, str]:
+        elif isinstance(duration, str):
             test_value = pscheduler.iso8601_as_timedelta(duration)
         else:
             raise ValueError(

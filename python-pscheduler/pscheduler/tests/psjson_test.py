@@ -51,6 +51,16 @@ class TestPsjson(PschedTestBase):
         # bad value
         self.assertRaises(ValueError, json_load, dstring)
 
+    def test_file(self):
+        """Test loading from a file"""
+
+        # PORT: Unix only
+        with open("/dev/null", "r") as infile:
+            # All we care is that it doesn't like the input.
+            self.assertRaises(ValueError, json_load, infile)
+
+
+
     def test_dump(self):
         doc = dict(foo='foo')
 

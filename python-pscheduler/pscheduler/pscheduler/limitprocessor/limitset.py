@@ -156,7 +156,7 @@ class LimitSet():
             invert = self.limits[limit]["invert"]
         except KeyError:
             invert = False
-        assert type(invert) == bool
+        assert isinstance(invert, bool)
 
         # Bypass limits that check the schedule if we've been asked to
         # do that.

@@ -66,7 +66,7 @@ class LimitJQ():
 
         result = {}
 
-        if type(returned) == bool:
+        if isinstance(returned, bool):
             passed = returned
             reason = None if passed else "Unspecified reason"
         elif isinstance(returned, str):
