@@ -1,5 +1,5 @@
 #
-# RPM Spec for Python isodate Module
+# RPM Spec for Python jsontemplate module
 #
 
 %define short	jsontemplate
@@ -19,9 +19,13 @@ Url:		https://code.google.com/archive/p/json-template
 
 Source:		%{short}-%{version}.tar.gz
 
+Patch0:		%{short}-%{version}-00-2to3.patch
+
+
 Requires:	%{_pscheduler_python}
 
 BuildRequires:	%{_pscheduler_python}-setuptools
+
 
 
 %description
@@ -35,11 +39,10 @@ Template system for JSON
 
 %prep
 %setup -q -n %{short}-%{version}
+%patch0 -p1
 
 
 %build
-# DEBIAN:  This needs to be done during Debian builds as well.
-2to3 -w %{short}/*.py
 %{_pscheduler_python} setup.py build
 
 
