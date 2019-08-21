@@ -123,6 +123,7 @@ yum -y install \
     git \
     m4 \
     make \
+    rpm-build \
     which
 
 
