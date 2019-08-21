@@ -160,7 +160,6 @@ def json_dump(obj, dest=None, pretty=False):
              )
     else:
         dump(obj, dest)
-        print(file=dest)
 
 
 
