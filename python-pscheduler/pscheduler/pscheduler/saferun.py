@@ -4,10 +4,12 @@
 
 import os
 import pickle
-import pscheduler
 import resource
 import sys
 import time
+
+from .log import *
+from .pstime import *
 
 # Environment variable used to convey state between runs
 STATE_VARIABLE = "PSCHEDULER_SAFERUN_STATE"
@@ -31,11 +33,11 @@ def safe_run(function,
     if not isinstance(function, type(lambda: 0)):
         raise ValueError("Function provided is not a lambda.")
 
-    log = pscheduler.Log(name=name,
-                         prefix='safe_run',
-                         signals=False,
-                         quiet=True
-                         )
+    log = Log(name=name,
+              prefix='safe_run',
+              signals=False,
+              quiet=True
+    )
 
     # Inherit state from the environment
 
@@ -69,7 +71,7 @@ def safe_run(function,
     do_restart = False
 
     try:
-        started = pscheduler.time_now()
+        started = time_now()
         function()
         runs += 1
         do_restart = restart
@@ -78,8 +80,8 @@ def safe_run(function,
         pass
 
     except Exception as ex:
-        ran = pscheduler.time_now() - started
-        ran_seconds = pscheduler.timedelta_as_seconds(ran)
+        ran = time_now() - started
+        ran_seconds = timedelta_as_seconds(ran)
 
         log.error("Program threw an exception after %s", ran)
         log.exception()

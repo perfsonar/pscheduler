@@ -2,9 +2,11 @@
 Identifier Class for hint
 """
 
-import pscheduler
 import re
 import sre_constants
+
+from ...jsonval import *
+from ...stringmatcher import *
 
 
 data_validator = {
@@ -20,7 +22,7 @@ def data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
-    return pscheduler.json_validate(data, data_validator)
+    return json_validate(data, data_validator)
 
 
 
@@ -41,7 +43,7 @@ class IdentifierHint():
             raise ValueError("Invalid data: %s" % message)
 
         self.hint = data['hint']
-        self.matcher = pscheduler.StringMatcher(data['match'])
+        self.matcher = StringMatcher(data['match'])
 
 
     def evaluate(self,

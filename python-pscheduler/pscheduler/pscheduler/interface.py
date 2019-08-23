@@ -6,9 +6,11 @@ import datetime
 import netaddr
 import netifaces
 import os
-import pscheduler
 import re
 import socket
+
+from .ipaddr import *
+from .psdns import *
 
 
 def source_affinity(address, ip_version=None):
@@ -61,12 +63,12 @@ def address_interface(address, ip_version=None):
 
     # make sure we resolve any address to a specific
     # IP address before looking up interfaces
-    if not pscheduler.is_ip(address):
+    if not is_ip(address):
         if ip_version is not None:
-            resolved = pscheduler.dns_resolve(address, ip_version=ip_version)
+            resolved = dns_resolve(address, ip_version=ip_version)
         else:
             for version in [ 4, 6 ]:
-                resolved = pscheduler.dns_resolve(address, ip_version=version)
+                resolved = dns_resolve(address, ip_version=version)
                 if resolved is not None:
                     break
         address = resolved

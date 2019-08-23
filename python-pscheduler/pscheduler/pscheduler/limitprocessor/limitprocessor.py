@@ -4,7 +4,10 @@ pScheduler Limit Processor
 
 import io
 import os
-import pscheduler
+
+from ..jsonval import *
+from ..psjson import *
+from ..text import *
 
 from .identifierset  import IdentifierSet
 from .classifierset  import ClassifierSet
@@ -53,7 +56,7 @@ class LimitProcessor():
         # NOTE: Don't max_schema this.  The limit validation file is
         # tied to this module.
         try:
-            validation = pscheduler.json_load(validation_file)
+            validation = json_load(validation_file)
         except Exception as ex:
             raise ValueError("Invalid validation file: %s" % (str(ex)))
         finally:
@@ -73,9 +76,9 @@ class LimitProcessor():
         # At this point, source is a file.
 
         assert isinstance(source, io.IOBase)
-        limit_config = pscheduler.json_load(source)
+        limit_config = json_load(source)
 
-        valid, message = pscheduler.json_validate(limit_config, validation)
+        valid, message = json_validate(limit_config, validation)
 
         if not valid:
             raise ValueError("Invalid limit file: %s" % message)
@@ -130,7 +133,7 @@ class LimitProcessor():
         if hints is not None and len(hints) > 0:
             diags.append("Hints:")
             diags.extend([
-                pscheduler.indent("%s: %s" % (item, str(hints[item])))
+                indent("%s: %s" % (item, str(hints[item])))
                 for item in sorted(hints)
             ])
 

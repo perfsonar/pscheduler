@@ -6,7 +6,6 @@ import atexit
 import copy
 import errno
 import os
-import pscheduler
 import select
 import stat
 import subprocess
@@ -18,6 +17,10 @@ import traceback
 # Only used in _Popen
 import errno
 import os
+
+from .exitstatus import *
+from .psjson import *
+from .pstime import *
 
 
 try:
@@ -311,16 +314,16 @@ def run_program(argv,              # Program name and args
             fds = [stdout_fileno, stderr_fileno]
 
             if timeout is not None:
-                end_time = pscheduler.time_now() \
-                    + pscheduler.seconds_as_timedelta(timeout)
+                end_time = time_now() \
+                    + seconds_as_timedelta(timeout)
             else:
                 time_left = None
 
             while True:
 
                 if timeout is not None:
-                    time_left = pscheduler.timedelta_as_seconds(
-                        end_time - pscheduler.time_now())
+                    time_left = timedelta_as_seconds(
+                        end_time - time_now())
 
                 reads, _, _ = polled_select(fds, [], [], time_left)
 
@@ -367,7 +370,7 @@ def run_program(argv,              # Program name and args
 
 
     if fail_message is not None and status != 0:
-        pscheduler.fail("%s: %s" % (fail_message, stderr))
+        fail("%s: %s" % (fail_message, stderr))
 
     if raw:
         return status, stdout, stderr
@@ -411,7 +414,7 @@ class ChainedExecRunner(object):
 
         The "argv" and "stdin" are program parameters and standard
         input with the same semantics as the same arguments to
-        pscheduler.run_program().
+        run_program().
         """
 
         if not isinstance(calls, list):
@@ -449,7 +452,7 @@ class ChainedExecRunner(object):
                                "%s\n" \
                                "EOF\n" % (
                                    " ".join([quote(arg) for arg in calls[stage]["program"]]),
-                                   pscheduler.json_dump({
+                                   json_dump({
                                        "data": calls[stage]["input"],
                                        "exec": self.stages[stage+1]
                                    }))
@@ -503,20 +506,20 @@ class ChainedExecRunner(object):
             attempts=10):      # Max attempts to start the process
         """
         Run the chain.  Return semantics are the same as for
-        pscheduler.run_program(): a tuple of status, stdout, stderr.
+        run_program(): a tuple of status, stdout, stderr.
         """
 
         # TODO: Is there a more-pythonic way to do this than pasting
         # in all of the args?
-        result = pscheduler.run_program([self.stages[0]],
-                                        line_call=line_call,
-                                        timeout=timeout,
-                                        timeout_ok=timeout_ok,
-                                        fail_message=fail_message,
-                                        env=env,
-                                        env_add=env_add,
-                                        attempts=attempts
-                                    )
+        result = run_program([self.stages[0]],
+                             line_call=line_call,
+                             timeout=timeout,
+                             timeout_ok=timeout_ok,
+                             fail_message=fail_message,
+                             env=env,
+                             env_add=env_add,
+                             attempts=attempts
+        )
 
         for remove in self.stages:
             try:
@@ -679,10 +682,10 @@ class StreamingJSONProgram(object):
             return
 
         self.program = ExternalProgram(self.args)
-        self.emitter = pscheduler.RFC7464Emitter(self.program.stdin(),
-                                                 timeout=self.timeout)
-        self.parser = pscheduler.RFC7464Parser(self.program.stdout(),
-                                               timeout=self.timeout)
+        self.emitter = RFC7464Emitter(self.program.stdin(),
+                                      timeout=self.timeout)
+        self.parser = RFC7464Parser(self.program.stdout(),
+                                    timeout=self.timeout)
 
 
     def __call__(self, json):

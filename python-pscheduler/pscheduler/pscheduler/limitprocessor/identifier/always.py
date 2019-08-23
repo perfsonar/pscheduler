@@ -11,7 +11,7 @@ def data_is_valid(data):
     """
 
     if isinstance(data, dict) and len(data) == 0:
-        return True, None
+        return True, "OK"
 
     return False, "Data is not an object or not empty."
 

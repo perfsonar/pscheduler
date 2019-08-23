@@ -6,8 +6,8 @@ from json import load, loads, dump, dumps
 import io
 import string
 import sys
-import pscheduler
 
+from .exitstatus import fail
 from .psselect import polled_select
 
 
@@ -43,7 +43,7 @@ def json_decomment(json, prefix='#', null=False):
 def json_substitute(json, value, replacement):
     """
     Substitute any pair whose value is 'value' with the replacement
-    JSON 'replacement'.  Based on pscheduler.json_decomment().
+    JSON 'replacement'.  Based on json_decomment().
     """
     if isinstance(json, dict):
         result = {}
@@ -123,7 +123,7 @@ def json_load(source=None, exit_on_error=False, strip=True, max_schema=None):
         if isinstance(source, str) or not exit_on_error:
             raise ValueError("Invalid JSON: " + str(ex))
         else:
-            pscheduler.fail("Invalid JSON: " + str(ex))
+            fail("Invalid JSON: " + str(ex))
 
     if max_schema is not None:
         json_check_schema(json_in, max_schema)
@@ -194,7 +194,7 @@ class RFC7464Emitter(object):
 
     def __call__(self, json):
         """Emit serialized JSON to the file"""
-        self.emit_text(pscheduler.json_dump(json, pretty=False))
+        self.emit_text(json_dump(json, pretty=False))
 
 
 
@@ -222,7 +222,7 @@ class RFC7464Parser(object):
             raise ValueError("Line '%s' did not start with record separator" % (data))
 
         # json_load() will raise a ValueError if something's not right.
-        return pscheduler.json_load(data[1:])
+        return json_load(data[1:])
 
 
     def __iter__(self):

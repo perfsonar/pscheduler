@@ -2,7 +2,9 @@
 Limit Class for jq
 """
 
-import pscheduler
+from ...jqfilter import *
+from ...jsonval import *
+
 
 
 # Note that this is done with a string because we don't support args
@@ -16,7 +18,7 @@ def jq_data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
-    return pscheduler.json_validate(data, JQ_DATA_VALIDATOR)
+    return json_validate(data, JQ_DATA_VALIDATOR)
 
 
 
@@ -34,7 +36,7 @@ class LimitJQ():
         if not valid:
             raise ValueError("Invalid data: %s" % message)
 
-        self.jqfilter = pscheduler.JQFilter(
+        self.jqfilter = JQFilter(
             data["script"],
             args=data.get("args", {})
             # Don't bother with raw output.  We don't care.

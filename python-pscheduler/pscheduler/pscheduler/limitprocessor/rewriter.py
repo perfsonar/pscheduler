@@ -4,8 +4,10 @@ Processor for Task Rewriting
 
 import copy
 import re
-import pscheduler
 import pyjq
+
+from ..jqfilter import *
+from ..psjson import *
 
 class Rewriter():
 
@@ -62,7 +64,7 @@ class Rewriter():
 
         transform["script"] = script_lines
 
-        self.transform = pscheduler.JQFilter(
+        self.transform = JQFilter(
             filter_spec=transform,
             args=transform.get("args", {}),
             groom=True
@@ -102,7 +104,7 @@ class Rewriter():
            or ("spec" not in result["test"]) \
            or (result["test"]["type"] != proposal["task"]["test"]["type"]):
             raise ValueError("Invalid rewriter result:\n%s" \
-                             % pscheduler.json_dump(result))
+                             % json_dump(result))
 
         changed = result[self.PRIVATE_KEY]["changed"]
         diags = result[self.PRIVATE_KEY]["diags"]
@@ -209,7 +211,7 @@ if __name__ == "__main__":
             else:
                 print("No diagnostics.")
             print()
-            print(pscheduler.json_dump(new_task, pretty=True))
+            print(json_dump(new_task, pretty=True))
         else:
             print("No changes.")
     except Exception as ex:

@@ -2,8 +2,9 @@
 Range of numeric values
 """
 
-import pscheduler
-
+from .jsonval import *
+from .psjson import *
+from .sinumber import *
 
 class NumericRange():
 
@@ -17,7 +18,7 @@ class NumericRange():
 
         # TODO: Figure out why this can't just point to a NumericRange
 
-        valid, message = pscheduler.json_validate(nrange, {
+        valid, message = json_validate(nrange, {
             "type": "object",
             "properties": {
                 "lower": {"$ref": "#/pScheduler/Numeric"},
@@ -32,14 +33,14 @@ class NumericRange():
 
         lower = nrange['lower']
         if isinstance(lower, str):
-            self.lower = pscheduler.si_as_number(lower)
+            self.lower = si_as_number(lower)
         else:
             self.lower = lower
         self.lower_str = str(lower)
 
         upper = nrange['upper']
         if isinstance(upper, str):
-            self.upper = pscheduler.si_as_number(upper)
+            self.upper = si_as_number(upper)
         else:
             self.upper = upper
         self.upper_str = str(upper)
@@ -50,7 +51,7 @@ class NumericRange():
         if isinstance(number, float):
             test_value = number
         else:
-            test_value = pscheduler.si_as_number(number)
+            test_value = si_as_number(number)
 
         return self.lower <= test_value <= self.upper
 

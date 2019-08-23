@@ -172,7 +172,7 @@ def api_ping(host=None, bind=None, timeout=3):
     Returns a tuple of (up, reason), where reason is a string
     explaining why 'up' is what is is.
     """
-    url = pscheduler.api_url(host)
+    url = api_url(host)
 
     status, result = url_get(url, bind=bind, json=False,
                              throw=False, timeout=timeout)
@@ -264,21 +264,21 @@ def api_has_pscheduler(hostport, timeout=5, bind=None):
 
     resolved = None
     for ip_version in [ 4, 6 ]:
-        resolved = pscheduler.dns_resolve(host,
-                                          ip_version=ip_version,
-                                          timeout=timeout)
+        resolved = dns_resolve(host,
+                               ip_version=ip_version,
+                               timeout=timeout)
         if resolved:
             break
 
     if not resolved:
         return False
 
-    status, raw_spec = pscheduler.url_get(api_url_hostport(hostport),
-                                          timeout=timeout,
-                                          throw=False,
-                                          json=False,
-                                          bind=bind
-                                          )
+    status, raw_spec = url_get(api_url_hostport(hostport),
+                               timeout=timeout,
+                               throw=False,
+                               json=False,
+                               bind=bind
+    )
 
     return status == 200
 

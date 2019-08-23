@@ -2,7 +2,8 @@
 Limit Class for runschedule
 """
 
-import pscheduler
+from ...iso8601 import *
+from ...jsonval import *
 
 
 def wrappable_range_overlaps(start, end, test,
@@ -243,7 +244,7 @@ def runschedule_data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
-    return pscheduler.json_validate(data, runschedule_data_validator)
+    return json_validate(data, runschedule_data_validator)
 
 
 
@@ -293,8 +294,8 @@ class LimitRunSchedule():
 
         """Check that the proposed times don't overlap with this limit"""
 
-        start = pscheduler.iso8601_as_datetime(proposal['task']['run_schedule']['start'])
-        duration = pscheduler.iso8601_as_timedelta(proposal['task']['run_schedule']['duration'])
+        start = iso8601_as_datetime(proposal['task']['run_schedule']['start'])
+        duration = iso8601_as_timedelta(proposal['task']['run_schedule']['duration'])
         end = start + duration
 
         # Python's datetime doesn't have methods to get this.  Bravo.
@@ -318,6 +319,8 @@ class LimitRunSchedule():
             # Don't bother matching things that weren't specified
             if name not in self.matches:
                 continue
+
+            print("CHECK", name, lower, upper, wrap_after, wrap_to)
 
             if not wrappable_range_overlaps(lower, upper, self.matches[name],
                                             wrap_after=wrap_after,

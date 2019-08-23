@@ -4,8 +4,9 @@ Processor for Task Task Prioritization
 
 import copy
 import re
-import pscheduler
 import pyjq
+
+from ..jqfilter import *
 
 class Prioritizer():
 
@@ -80,7 +81,7 @@ class Prioritizer():
 
         transform["script"] = script_lines
 
-        self.transform = pscheduler.JQFilter(
+        self.transform = JQFilter(
             filter_spec=transform,
             args=transform.get("args", {}),
             groom=True

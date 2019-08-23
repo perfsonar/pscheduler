@@ -12,7 +12,7 @@ def data_is_valid(data):
     """
 
     if isinstance(data, dict) and len(data) == 0:
-        return True, None
+        return True, "OK"
 
     return False, "Data is not an object or not empty."
 
@@ -36,7 +36,8 @@ def ipv6_netmask_size(mask_in):
     (32).
     """
 
-    mask = mask_in.lower()
+    mask = mask_in.lower().split("/")[0]
+    print("MASK", mask)
 
     # Lead-pad any parts with less than four digits
     parts = [ '0' * (4-len(part)) + part for part in mask.split(":") ]
@@ -117,20 +118,3 @@ class IdentifierLocalSubnet():
                 return True
 
         return False
-
-
-
-# A short test program
-
-if __name__ == "__main__":
-
-    ident = IdentifierLocalSubnet({})
-
-    for ip in [
-            "127.0.0.1",
-            "::1", "10.1.1.1",
-            "198.129.254.30",
-            "dead:beef::1",
-            "10.0.2.12"
-    ]:
-        print(ip, ident.evaluate({ "requester": ip }))

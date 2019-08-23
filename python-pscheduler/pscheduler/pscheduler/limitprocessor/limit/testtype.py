@@ -2,7 +2,7 @@
 Limit Class for test-type
 """
 
-import pscheduler
+from ...jsonval import *
 
 
 testtype_data_validator = {
@@ -22,7 +22,7 @@ def data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
-    return pscheduler.json_validate(data, testtype_data_validator)
+    return json_validate(data, testtype_data_validator)
 
 
 
@@ -57,7 +57,7 @@ class LimitTestType():
 
         try:
             if proposal['task']['test']['type'] in self.types:
-                return { "passed": True, "reasons": [] }
+                return { "passed": True }
         except KeyError:
             return { "passed": False, "reasons": [ "No type in task" ] }
 

@@ -4,9 +4,14 @@ Identifier Class for ip-reverse-dns
 
 import dns
 import ipaddress
-import pscheduler
 import re
 import sre_constants
+
+from ...iso8601 import *
+from ...psjson import *
+from ...pstime import *
+from ...stringmatcher import *
+
 
 data_validator = {
     "type": "object",
@@ -22,7 +27,7 @@ def data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
-    return pscheduler.json_validate(data, data_validator)
+    return json_validate(data, data_validator)
 
 
 
@@ -42,10 +47,10 @@ class IdentifierIPReverseDNS():
         if not valid:
             raise ValueError("Invalid data: %s" % message)
 
-        self.matcher = pscheduler.StringMatcher(data['match'])
+        self.matcher = StringMatcher(data['match'])
 
-        timeout = pscheduler.timedelta_as_seconds(
-            pscheduler.iso8601_as_timedelta(data['timeout']))
+        timeout = timedelta_as_seconds(
+            iso8601_as_timedelta(data['timeout']))
 
         self.resolver = dns.resolver.Resolver()
         self.resolver.timeout = timeout
@@ -109,45 +114,3 @@ class IdentifierIPReverseDNS():
 
         # No match, no dice.
         return False
-
-
-
-# A short test program
-
-if __name__ == "__main__":
-
-    ips = [
-        "207.75.164.248",      # webprod2.internet2.edu (RRs to internet2.edu)
-        "192.52.179.242",      # ntp.internet2.edu
-        "2001:48a8:68fe::248", # webprod2.internet2.edu
-        "198.124.252.90",      # {chronos,saturn}.es.net
-        "198.6.1.1"            # cache00.ns.uu.net
-    ]
-
-    print("First:")
-
-    ident = IdentifierIPReverseDNS({
-        "match": {
-            "style": "regex",
-            "match": "^(ntp\\.internet2\\.edu|chronos\\.es\\.net|saturn\\.es\\.net)$"
-        },
-        "timeout": "PT2S"
-    })
-
-    for ip in ips:
-        result = ident.evaluate({ "requester": ip })
-        print(ip, result)
-
-    print("\nSecond:")
-
-    ident = IdentifierIPReverseDNS({
-        "match": {
-            "style": "regex",
-            "match": "^(|.*\\.)(internet2.edu|es.net)"
-        },
-        "timeout": "PT2S"
-    })
-
-    for ip in ips:
-        result = ident.evaluate({ "requester": ip })
-        print(ip, result)

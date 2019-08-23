@@ -52,16 +52,21 @@ class PycURLRunner(object):
         self.curl.setopt(pycurl.SSL_VERIFYHOST, verify_keys)
         self.curl.setopt(pycurl.SSL_VERIFYPEER, verify_keys)
 
-        self.buf = io.StringIO()
+        self.buf = io.BytesIO()
         self.curl.setopt(pycurl.WRITEFUNCTION, self.buf.write)
+
 
 
     def __call__(self, json, throw):
         """Fetch the URL"""
+
         try:
             self.curl.perform()
             status = self.curl.getinfo(pycurl.HTTP_CODE)
-            text = self.buf.getvalue()
+            # PycURL returns a zero for non-HTTP URLs
+            if status == 0:
+                status = 200
+            text = self.buf.getvalue().decode()
         except pycurl.error as ex:
             code, message = ex.args
             status = 400
@@ -69,11 +74,12 @@ class PycURLRunner(object):
         finally:
             self.curl.close()
             self.buf.close()
-            
-        #If status is outside the HTTP 2XX success  range
+
+        # 200-299 is success; anything else is an error.
         if status < 200 or status > 299:
+
             if throw:
-                raise URLException(text.strip())
+                raise URLException(text)
             else:
                 return (status, text)
 

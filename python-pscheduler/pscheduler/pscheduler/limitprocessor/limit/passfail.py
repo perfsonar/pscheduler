@@ -2,7 +2,7 @@
 Limit Class for pass-fail
 """
 
-import pscheduler
+from ...jsonval import *
 
 
 passfail_data_validator = {
@@ -18,7 +18,7 @@ def passfail_data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
-    return pscheduler.json_validate(data, passfail_data_validator)
+    return json_validate(data, passfail_data_validator)
 
 
 
