@@ -1,12 +1,12 @@
 #
-# RPM Spec for Python Itsdangerous
+# RPM Spec for Python Flask
 #
 
-%define short	itsdangerous
+%define short	flask
 Name:		%{_pscheduler_python}-%{short}
-Version:	1.1.0
+Version:	1.1.1
 Release:	1%{?dist}
-Summary:	JSON Signature Module
+Summary:	A micro-framework for Python based on Werkzeug, Jinja 2 and good intentions
 BuildArch:	noarch
 License:	BSD
 Group:		Development/Libraries
@@ -20,13 +20,24 @@ URL:		https://palletsprojects.com/p/itsdangerous
 Source:		%{short}-%{version}.tar.gz
 
 Requires:	%{_pscheduler_python}
+Requires:	%{_pscheduler_python}-click
+Requires:	%{_pscheduler_python}-itsdangerous
+Requires:	%{_pscheduler_python}-jinja2
+Requires:	%{_pscheduler_python}-werkzeug
 
 BuildRequires:	%{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-setuptools
 
 
 %description
-JSON signature module
+Flask is called a “micro-framework” because the idea to keep the core
+simple but extensible. There is no database abstraction layer, no form
+validation or anything else where different libraries already exist
+that can handle that. However Flask knows the concept of extensions
+that can add this functionality into your application as if it was
+implemented in Flask itself. There are currently extensions for object
+relational mappers, form validation, upload handling, various open
+authentication technologies and more.
 
 
 

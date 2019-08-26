@@ -45,7 +45,9 @@ postgresql-load
 jq
 
 # Python Modules
+python-daemon
 python-isodate
+python-itsdangerous
 python-pyrsistent
 python-jsonschema
 python-kafka
@@ -61,6 +63,8 @@ python-tzlocal
 python-vcversioner
 python-pyasn1
 python-pyasn1-modules
+python-werkzeug
+python-flask
 # This doesn't get a python- prefix.  Ask CentOS why.
 pysnmp
 
@@ -94,7 +98,7 @@ pscheduler-account
 pscheduler-jq-library
 python-pscheduler
 pscheduler-core
-### pscheduler-server
+pscheduler-server
 ### 
 ### #
 ### # PSCHEDULER PLUG-INS

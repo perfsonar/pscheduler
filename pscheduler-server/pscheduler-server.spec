@@ -47,16 +47,15 @@ Requires:	random-string >= 1.1
 BuildRequires:	m4
 Requires:	curl
 Requires:	pscheduler-account
-Requires:	python-daemon
-Requires:	python-flask
-Requires:	python-ipaddr
-Requires:	python-jsontemplate
+Requires:	%{_pscheduler_python}-daemon
+Requires:	%{_pscheduler_python}-flask
+Requires:	%{_pscheduler_python}-jsontemplate
 
 # API Server
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
-BuildRequires:	python-parse-crontab
-BuildRequires:	python-pscheduler >= 1.3.7.2
+BuildRequires:	%{_pscheduler_python}-parse-crontab
+BuildRequires:	%{_pscheduler_python}-pscheduler >= 1.3.7.2
 BuildRequires:	m4
 Requires:	httpd-wsgi-socket
 Requires:	pscheduler-server
@@ -65,8 +64,8 @@ Requires:	pscheduler-server
 # mod_ssl is required here.
 Requires:	mod_ssl
 Requires:	mod_wsgi > 4.0
-Requires:	python-parse-crontab
-Requires:	python-pscheduler >= 1.3.7.2
+Requires:	%{_pscheduler_python}-parse-crontab
+Requires:	%{_pscheduler_python}-pscheduler >= 1.3.7.2
 Requires:	pytz
 
 # General
@@ -254,7 +253,7 @@ mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_log_dir}
 #
 # API Server
 #
-API_ROOT="$(python -c 'import pscheduler ; print pscheduler.api_root()')"
+API_ROOT="$(%{_pscheduler_python} -c 'import pscheduler ; print(pscheduler.api_root())')"
 
 make -C api-server \
      'USER_NAME=%{_pscheduler_user}' \
@@ -265,6 +264,7 @@ make -C api-server \
      "PREFIX=${RPM_BUILD_ROOT}" \
      "DSN_FILE=%{dsn_file}" \
      "LIMITS_FILE=%{_pscheduler_limit_config}" \
+     "PYTHON=%(which %{_pscheduler_python})" \
      "RUN_DIR=%{run_dir}" \
      install
 

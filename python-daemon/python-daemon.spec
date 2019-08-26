@@ -1,32 +1,30 @@
 #
-# RPM Spec for Python Itsdangerous
+# RPM Spec for Python isodate Module
 #
 
-%define short	itsdangerous
+%define short	daemon
 Name:		%{_pscheduler_python}-%{short}
-Version:	1.1.0
+Version:	2.2.3
 Release:	1%{?dist}
-Summary:	JSON Signature Module
+Summary:	Daemonizer library for Python
 BuildArch:	noarch
-License:	BSD
+License:	ASL 2.0
 Group:		Development/Libraries
 
 Provides:	%{name} = %{version}-%{release}
 Prefix:		%{_prefix}
 
-Vendor:		Pallets Projects
-URL:		https://palletsprojects.com/p/itsdangerous
+Vendor:		Ben Finney <ben+python@benfinney.id.au>
+Url:		https://pagure.io/python-daemon
 
-Source:		%{short}-%{version}.tar.gz
+Source:		python-%{short}-%{version}.tar.gz
 
 Requires:	%{_pscheduler_python}
 
-BuildRequires:	%{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-setuptools
 
-
 %description
-JSON signature module
+Daemonizer library for Python
 
 
 
@@ -35,7 +33,7 @@ JSON signature module
 
 
 %prep
-%setup -q -n %{short}-%{version}
+%setup -q -n python-%{short}-%{version}
 
 
 %build
@@ -43,11 +41,7 @@ JSON signature module
 
 
 %install
-%{_pscheduler_python} setup.py install \
-    --root=$RPM_BUILD_ROOT \
-    --single-version-externally-managed \
-    -O1 \
-    --record=INSTALLED_FILES
+%{_pscheduler_python} setup.py install --root=$RPM_BUILD_ROOT --single-version-externally-managed -O1  --record=INSTALLED_FILES
 
 
 %clean
