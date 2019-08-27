@@ -6,7 +6,7 @@
 
 %define short	snmpget
 %define perfsonar_auto_version 4.2.1
-%define perfsonar_auto_relnum 0.a0.0
+%define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-test-%{short}
 Version:	%{perfsonar_auto_version}
