@@ -16,7 +16,7 @@ from pscheduler.psdns import *
 DATA = {
     "match": {
         "style": "regex",
-        "match": "^(ntp\\.internet2\\.edu|chronos\\.es\\.net|saturn\\.es\\.net)$"
+        "match": "^(ntp[0-9]*\\.internet2\\.edu|chronos\\.es\\.net|saturn\\.es\\.net)$"
     },
     "timeout": "PT2S"
 }
@@ -50,7 +50,7 @@ class TestLimitprocessorIdentifierIPReverseDNS(PschedTestBase):
 
         # Trues
 
-        # ntp.internet2.edu
+        # ntp0.internet2.edu
         self.assertEqual(
             ident.evaluate({ "requester": "207.75.164.18" }),
             True)

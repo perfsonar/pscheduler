@@ -173,7 +173,7 @@ while True:
                 print("No further runs scheduled.")
             pscheduler.succeed()
     if status != 200:
-        pscheduler.fail("Unable to fetch runs: %s", run_data)
+        pscheduler.fail("Unable to fetch runs: %s" %(run_data))
 
     run_url = run_data['href']
 

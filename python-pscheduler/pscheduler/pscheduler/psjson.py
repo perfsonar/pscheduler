@@ -114,6 +114,8 @@ def json_load(source=None, exit_on_error=False, strip=True, max_schema=None):
     try:
         if isinstance(source, str):
             json_in = loads(str(source))
+        elif isinstance(source, bytes):
+            json_in = loads(source.decode("ascii"))
         elif isinstance(source,io.IOBase):
             json_in = load(source)
         else:
@@ -172,7 +174,7 @@ class RFC7464Emitter(object):
 
     def __init__(self, handle, timeout=None):
 
-        if isinstance(handle, io.IOBase):
+        if not isinstance(handle, io.IOBase):
             raise TypeError("Handle must be a file.")
 
         self.handle = handle
@@ -180,14 +182,14 @@ class RFC7464Emitter(object):
 
 
     def emit_text(self, text):
-        """Emit straight text to the file"""
+        """Emit straight text to the file."""
 
         if self.timeout is not None:
             if polled_select([],[self.handle],[], self.timeout) == ([],[],[]):
                 raise IOError("Timed out waiting for write")
 
         self.handle.write(
-            "\x1e%s\n" % (text.translate(string.maketrans('', ''), "\n"))
+            bytes("\x1e%s\n" % (text.replace("\n","")), "ascii")
         )
         self.handle.flush()
 
@@ -203,9 +205,9 @@ class RFC7464Parser(object):
     """Iterable parser for reading streaming JSON from a file handle"""
 
     def __init__(self, handle, timeout=None):
-        if not isinstance(handle, io.IOBase):
-            raise TypeError("Handle must be a file.")
-        self.handle = handle
+        if not isinstance(handle, io.TextIOBase):
+            raise TypeError("Handle must be io.TextIOBase.")
+        self.handle = handle.buffer
         self.timeout = timeout
 
     def __next__(self):
@@ -218,7 +220,7 @@ class RFC7464Parser(object):
         if len(data) == 0:
             raise StopIteration
 
-        if data[0] != b'\x1e':
+        if data[0] != 0x1e:
             raise ValueError("Line '%s' did not start with record separator" % (data))
 
         # json_load() will raise a ValueError if something's not right.
@@ -230,6 +232,9 @@ class RFC7464Parser(object):
 
 
     def __call__(self):
-        """Single-shot read of next item"""
-        return next(self)
+        """Single-shot read of next item, returns None if at EOF."""
+        try:
+            return next(self)
+        except StopIteration:
+            return None
 

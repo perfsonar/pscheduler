@@ -37,7 +37,11 @@ pscheduler-rpm
 # DEVELOPMENT, LIBRARIES AND UTILITIES
 #
 
-# PostgreSQL Additions
+# PostgreSQL and Additions
+
+# Neither EL7 nor PGDG's distro provide PL/Python3.  This will build
+# it if EPEL is present.
+ifelse(REDHAT_RELEASE_MAJOR,7,postgresql)
 postgresql-init
 postgresql-load
 
@@ -108,7 +112,7 @@ pscheduler-server
 ### pscheduler-test-clock
 ### pscheduler-test-disk-to-disk		--bundle extras
 ### pscheduler-test-http
-### pscheduler-test-idle
+pscheduler-test-idle
 ### pscheduler-test-idlebgm
 ### pscheduler-test-idleex
 ### pscheduler-test-latency
@@ -145,9 +149,9 @@ pscheduler-server
 ### pscheduler-tool-psurl
 ### pscheduler-tool-pysnmp			--bundle snmp
 ### pscheduler-tool-simplestreamer
-### pscheduler-tool-sleep
+pscheduler-tool-sleep
 ### pscheduler-tool-sleepbgm
-### pscheduler-tool-snooze
+pscheduler-tool-snooze
 ### pscheduler-tool-tracepath
 ### pscheduler-tool-traceroute
 ### pscheduler-tool-twping
@@ -160,7 +164,7 @@ pscheduler-server
 ### pscheduler-archiver-kafka
 ### pscheduler-archiver-rabbitmq
 ### pscheduler-archiver-snmptrap		--bundle snmp
-### pscheduler-archiver-syslog
+pscheduler-archiver-syslog
 ### 
 ### # Context Changers
 ### pscheduler-context-changefail

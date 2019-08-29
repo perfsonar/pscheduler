@@ -4,7 +4,7 @@
 
 import crontab
 import pscheduler
-import urlparse
+import urllib.request, urllib.parse, urllib.error
 
 from pschedulerapiserver import application
 
@@ -89,7 +89,7 @@ def pick_tool(lists, pick_from=None):
     if pick_from is None:
 
         # Take the tool with the lowest score.
-        ordered = sorted(common.items(), key=lambda value: value[1])
+        ordered = sorted(list(common.items()), key=lambda value: value[1])
         return ordered[0][0]
 
     else:
@@ -543,9 +543,9 @@ def tasks():
                 # other participants.
 
                 posted_to = "%s/%s" % (request.url, task_uuid)
-                parsed = list(urlparse.urlsplit(posted_to))
+                parsed = list(urllib.parse.urlsplit(posted_to))
                 parsed[1] = "%s"
-                template = urlparse.urlunsplit(parsed)
+                template = urllib.parse.urlunsplit(parsed)
 
                 try:
                     dbcursor_query("SELECT api_task_disable(%s, %s)",
@@ -703,9 +703,9 @@ def tasks_uuid(uuid):
         if not access_write_task(requester, key):
             return forbidden()
 
-        parsed = list(urlparse.urlsplit(request.url))
+        parsed = list(urllib.parse.urlsplit(request.url))
         parsed[1] = "%s"
-        template = urlparse.urlunsplit(parsed)
+        template = urllib.parse.urlunsplit(parsed)
 
         log.debug("Disabling")
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Execute runs of tasks and put the results into the database.
 #
@@ -726,10 +726,7 @@ class RunWorker:
                 del to_get[get]
 
 
-            failures = len(list(filter(
-                lambda result:
-                    result is None or not result.get("succeeded",False),
-                    result_full)))
+            failures = len(list([result for result in result_full if result is None or not result.get("succeeded",False)]))
             self.log.debug("%d: %d failures", self.id, failures)
 
 

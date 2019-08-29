@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Format a result
 #
@@ -52,6 +52,6 @@ else:
 
 
 # TODO: Should probably handle exceptions in a nicer way.
-print jsontemplate.expand(
+print(jsontemplate.expand(
    template if json['succeeded'] else fail_template,
-   json).strip()
+   json).strip())

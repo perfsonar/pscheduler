@@ -83,9 +83,6 @@ BEGIN
         	duration        INTERVAL,
 
         	-- How often the test should be repeated.
-        	-- TODO: This needs to handle CRON-style and streaming.  Might
-        	-- be helped by https://pypi.python.org/pypi/croniter or a C
-        	-- counterpart.
         	repeat		INTERVAL,
 
         	-- Time after which scheduling stops.

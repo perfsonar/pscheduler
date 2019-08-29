@@ -29,7 +29,7 @@ BuildRequires:	postgresql-init
 BuildRequires:	postgresql-load
 BuildRequires:	%{_pscheduler_postgresql_package}-server
 BuildRequires:	%{_pscheduler_postgresql_package}-contrib
-BuildRequires:	%{_pscheduler_postgresql_package}-plpython
+BuildRequires:	%{_pscheduler_postgresql_package}-plpython3
 
 Requires:	drop-in
 Requires:	gzip

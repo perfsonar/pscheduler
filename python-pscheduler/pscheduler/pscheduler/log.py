@@ -2,6 +2,7 @@
 Functions for Logging
 """
 
+import codecs
 import logging
 import logging.handlers
 import os
@@ -153,6 +154,9 @@ class Log():
         if STATE_VARIABLE in os.environ:
 
             try:
+                depickled = pickle.loads(
+                    codecs.decode(os.environ[STATE_VARIABLE], "base64"))
+
                 depickled = pickle.loads(os.environ[STATE_VARIABLE])
 
                 facility = depickled['facility']
@@ -224,7 +228,8 @@ class Log():
                 'last_level': self.last_level,
                 'is_quiet': self.is_quiet
             }
-            os.environ[STATE_VARIABLE] = pickle.dumps(to_pickle)
+            os.environ[STATE_VARIABLE] = codecs.encode(
+                pickle.dumps(to_pickle), "base64").decode()
 
     def verbose(self, state):
         "Toggle verbosity (logging to stderr)"

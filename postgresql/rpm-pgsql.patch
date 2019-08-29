@@ -1,0 +1,55 @@
+--- postgresql-8.4devel_20081128/src/Makefile.global.in.old	2008-12-01 01:35:18.000000000 +0200
++++ postgresql-8.4devel_20081128/src/Makefile.global.in	2008-12-01 01:35:52.000000000 +0200
+@@ -53,7 +53,7 @@
+ # Installation directories
+ #
+ # These are set by the equivalent --xxxdir configure options.  We
+-# append "postgresql" to some of them, if the string does not already
++# append "pgsql" to some of them, if the string does not already
+ # contain "pgsql" or "postgres", in order to avoid directory clutter.
+ #
+ # In a PGXS build, we cannot use the values inserted into Makefile.global
+@@ -74,14 +74,14 @@
+ datadir := @datadir@
+ ifeq "$(findstring pgsql, $(datadir))" ""
+ ifeq "$(findstring postgres, $(datadir))" ""
+-override datadir := $(datadir)/postgresql
++override datadir := $(datadir)/pgsql
+ endif
+ endif
+ 
+ sysconfdir := @sysconfdir@
+ ifeq "$(findstring pgsql, $(sysconfdir))" ""
+ ifeq "$(findstring postgres, $(sysconfdir))" ""
+-override sysconfdir := $(sysconfdir)/postgresql
++override sysconfdir := $(sysconfdir)/pgsql
+ endif
+ endif
+ 
+@@ -90,7 +90,7 @@
+ pkglibdir = $(libdir)
+ ifeq "$(findstring pgsql, $(pkglibdir))" ""
+ ifeq "$(findstring postgres, $(pkglibdir))" ""
+-override pkglibdir := $(pkglibdir)/postgresql
++override pkglibdir := $(pkglibdir)/pgsql
+ endif
+ endif
+ 
+@@ -99,7 +99,7 @@
+ pkgincludedir = $(includedir)
+ ifeq "$(findstring pgsql, $(pkgincludedir))" ""
+ ifeq "$(findstring postgres, $(pkgincludedir))" ""
+-override pkgincludedir := $(pkgincludedir)/postgresql
++override pkgincludedir := $(pkgincludedir)/pgsql
+ endif
+ endif
+ 
+@@ -108,7 +108,7 @@
+ docdir := @docdir@
+ ifeq "$(findstring pgsql, $(docdir))" ""
+ ifeq "$(findstring postgres, $(docdir))" ""
+-override docdir := $(docdir)/postgresql
++override docdir := $(docdir)/pgsql
+ endif
+ endif
+ 

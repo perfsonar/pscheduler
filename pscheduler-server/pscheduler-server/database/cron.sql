@@ -25,7 +25,7 @@ except (AttributeError, ValueError):
 
 return True
 
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpython3u;
 
 
 
@@ -57,4 +57,4 @@ except (AttributeError, ValueError):
 # The return is properly converted.
 return after + datetime.timedelta(seconds=cron.next(now=after, default_utc=False))
 
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpython3u;

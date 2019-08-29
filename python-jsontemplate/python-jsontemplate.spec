@@ -20,6 +20,7 @@ Url:		https://code.google.com/archive/p/json-template
 Source:		%{short}-%{version}.tar.gz
 
 Patch0:		%{short}-%{version}-00-2to3.patch
+Patch1:		%{short}-%{version}-01-division.patch
 
 
 Requires:	%{_pscheduler_python}
@@ -40,6 +41,7 @@ Template system for JSON
 %prep
 %setup -q -n %{short}-%{version}
 %patch0 -p1
+%patch1 -p1
 
 
 %build

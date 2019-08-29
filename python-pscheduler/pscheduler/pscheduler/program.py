@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 """
 Functions for running external programs neatly
 """
@@ -13,25 +14,15 @@ import sys
 import tempfile
 import threading
 import traceback
-
-# Only used in _Popen
-import errno
 import os
 
-from .exitstatus import *
-from .psjson import *
-from .pstime import *
-
-
-try:
-    # Python3
-    from shlex import quote
-except ImportError:
-    # Python 2
-    from pipes import quote
+from shlex import quote
 
 from .exit import on_graceful_exit
+from .exitstatus import *
+from .psjson import *
 from .psselect import polled_select
+from .pstime import *
 
 
 
@@ -107,104 +98,9 @@ def _end_process(process):
         process.kill()
 
 
-class _Popen(subprocess.Popen):
-    """
-    Improved version of subprocess's Popen that handles SIGPIPE
-    without throwing an exception.
-    """
-
-    def _communicate_with_poll(self, input, endtime, orig_timeout):
-
-        # This is just to maintain the indentation of the original.
-        if True:
-
-            stdout = None  # Return
-            stderr = None  # Return
-
-            if not self._communication_started:
-                self._fd2file = {}
-
-            poller = select.poll()
-
-            def register_and_append(file_obj, eventmask):
-                poller.register(file_obj.fileno(), eventmask)
-                self._fd2file[file_obj.fileno()] = file_obj
-
-            def close_unregister_and_remove(fd):
-                poller.unregister(fd)
-                self._fd2file[fd].close()
-                self._fd2file.pop(fd)
-
-            if self.stdin and input:
-                register_and_append(self.stdin, select.POLLOUT)
-
-            # Only create this mapping if we haven't already.
-            if not self._communication_started:
-                self._fd2output = {}
-                if self.stdout:
-                    self._fd2output[self.stdout.fileno()] = []
-                if self.stderr:
-                    self._fd2output[self.stderr.fileno()] = []
-
-            select_POLLIN_POLLPRI = select.POLLIN | select.POLLPRI
-            if self.stdout:
-                register_and_append(self.stdout, select_POLLIN_POLLPRI)
-                stdout = self._fd2output[self.stdout.fileno()]
-            if self.stderr:
-                register_and_append(self.stderr, select_POLLIN_POLLPRI)
-                stderr = self._fd2output[self.stderr.fileno()]
-
-            # Save the input here so that if we time out while communicating,
-            # we can continue sending input if we retry.
-            if self.stdin and self._input is None:
-                self._input_offset = 0
-                self._input = input
-                if self.universal_newlines and isinstance(self._input, str):
-                    self._input = self._input.encode(
-                        self.stdin.encoding or sys.getdefaultencoding())
-
-            while self._fd2file:
-                try:
-                    ready = poller.poll(self._remaining_time(endtime))
-                except select.error as e:
-                    if e.args[0] == errno.EINTR:
-                        continue
-                    raise
-                self._check_timeout(endtime, orig_timeout)
-
-                for fd, mode in ready:
-                    if mode & select.POLLOUT:
-                        chunk = self._input[self._input_offset:
-                                            self._input_offset
-                                            + subprocess._PIPE_BUF]
-
-                        # Handle EPIPE, because having this module
-                        # restore the signals doesn't seem to work.
-
-                        try:
-                            self._input_offset += os.write(fd, chunk)
-                            if self._input_offset >= len(self._input):
-                                close_unregister_and_remove(fd)
-                        except OSError as ex:
-                            if ex.errno != errno.EPIPE:
-                                raise ex
-                            close_unregister_and_remove(fd)
-
-                    elif mode & select_POLLIN_POLLPRI:
-                        data = os.read(fd, 4096)
-                        if not data:
-                            close_unregister_and_remove(fd)
-                        self._fd2output[fd].append(data)
-                    else:
-                        # Ignore hang up or errors.
-                        close_unregister_and_remove(fd)
-
-            return (stdout, stderr)
-
 
 def run_program(argv,              # Program name and args
-                stdin=None,        # What to send to stdin
-                raw=False,         # Return raw stdout/stderror instead of string
+                stdin="",          # What to send to stdin
                 line_call=None,    # Lambda to call when a line arrives
                 timeout=None,      # Seconds
                 timeout_ok=False,  # Treat timeouts as not being an error
@@ -262,10 +158,12 @@ def run_program(argv,              # Program name and args
             attempts -= 1
             try:
                 return subprocess.Popen(argv,
-                              stdin=subprocess.PIPE,
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE,
-                              env=new_env)
+                                        stdin=subprocess.PIPE,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE,
+                                        env=new_env,
+                                        universal_newlines=True
+                                    )
             except OSError as ex:
                 # Non-EAGAIN or last attempt gets re-raised.
                 if ex.errno != errno.EAGAIN or attempts == 0:
@@ -372,13 +270,7 @@ def run_program(argv,              # Program name and args
     if fail_message is not None and status != 0:
         fail("%s: %s" % (fail_message, stderr))
 
-    if raw:
-        return status, stdout, stderr
-    else:
-        return status, stdout.decode("utf-8"), stderr.decode("utf-8")
-
-
-
+    return status, stdout, stderr
 
 class ChainedExecRunner(object):
 
@@ -607,7 +499,8 @@ class ExternalProgram(object):
             args,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
+            universal_newlines=True
         )
         self.err = None
 

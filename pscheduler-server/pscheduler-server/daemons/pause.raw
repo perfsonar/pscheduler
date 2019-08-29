@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Pause pScheduler or query its paused state
 #
@@ -95,15 +95,15 @@ if options.query:
     if is_paused:
         if verbose:
             if infinite:
-                print "pScheduler is paused indefinitely."
+                print("pScheduler is paused indefinitely.")
             else:
-                print "pScheduler is paused until %s (%s from now)." \
+                print(("pScheduler is paused until %s (%s from now)." \
                     % ( pscheduler.datetime_as_iso8601(until),
-                        pscheduler.timedelta_as_iso8601(left) )
+                        pscheduler.timedelta_as_iso8601(left) )))
         pscheduler.succeed()
     else:
         if verbose:
-            print "pScheduler is running."
+            print("pScheduler is running.")
         pscheduler.fail()
 
     assert(False)  # Shouldn't get here.
@@ -114,7 +114,7 @@ if options.query:
 #
 
 if verbose and duration is None:
-        print "Pausing indefinitely."
+        print("Pausing indefinitely.")
 
 try:
     cursor.execute("SELECT control_pause(%s)", [duration])

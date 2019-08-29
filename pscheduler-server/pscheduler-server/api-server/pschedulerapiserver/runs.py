@@ -5,6 +5,7 @@
 import copy
 import pscheduler
 import time
+import urllib
 
 from pschedulerapiserver import application
 
@@ -348,10 +349,10 @@ def tasks_uuid_runs_run(task, run):
         # with the run, which might be needed if the 'first' option
         # was used.
 
-        href_path_parts = urlparse.urlparse(request.url).path.split('/')
+        href_path_parts = urllib.parse.urlparse(request.url).path.split('/')
         href_path_parts[-1] = run
         href_path = '/'.join(href_path_parts)
-        href = urlparse.urljoin( request.url, href_path )
+        href = urllib.parse.urljoin( request.url, href_path )
 
         result['href'] = href
         result['task-href'] = root_url('tasks/' + task)

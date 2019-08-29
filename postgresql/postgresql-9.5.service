@@ -1,0 +1,53 @@
+# It's not recommended to modify this file in-place, because it will be
+# overwritten during package upgrades.  If you want to customize, the
+# best way is to create a file "/etc/systemd/system/postgresql-9.5.service",
+# containing
+#	.include /lib/systemd/system/postgresql-9.5.service
+#	...make your changes here...
+# For more info about custom unit files, see
+# http://fedoraproject.org/wiki/Systemd#How_do_I_customize_a_unit_file.2F_add_a_custom_unit_file.3F
+
+# Note: changing PGDATA will typically require adjusting SELinux
+# configuration as well.
+
+# Note: do not use a PGDATA pathname containing spaces, or you will
+# break postgresql-setup.
+[Unit]
+Description=PostgreSQL 9.5 database server
+Documentation=https://www.postgresql.org/docs/9.5/static/
+After=syslog.target
+After=network.target
+
+[Service]
+Type=forking
+
+User=postgres
+Group=postgres
+
+# Note: avoid inserting whitespace in these Environment= lines, or you may
+# break postgresql-setup.
+
+# Location of database directory
+Environment=PGDATA=/var/lib/pgsql/9.5/data/
+
+# Where to send early-startup messages from the server (before the logging
+# options of postgresql.conf take effect)
+# This is normally controlled by the global default set by systemd
+# StandardOutput=syslog
+
+# Disable OOM kill on the postmaster
+OOMScoreAdjust=-1000
+Environment=PG_OOM_ADJUST_FILE=/proc/self/oom_score_adj
+Environment=PG_OOM_ADJUST_VALUE=0
+
+ExecStartPre=/usr/pgsql-9.5/bin/postgresql95-check-db-dir ${PGDATA}
+ExecStart=/usr/pgsql-9.5/bin/pg_ctl start -D ${PGDATA} -s -w -t 300
+ExecStop=/usr/pgsql-9.5/bin/pg_ctl stop -D ${PGDATA} -s -m fast
+ExecReload=/usr/pgsql-9.5/bin/pg_ctl reload -D ${PGDATA} -s
+
+# Do not set any timeout value, so that systemd will not kill postmaster
+# during crash recovery.
+TimeoutSec=0
+
+[Install]
+WantedBy=multi-user.target

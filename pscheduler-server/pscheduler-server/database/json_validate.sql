@@ -21,7 +21,7 @@ AS $$
 
 import pscheduler
 
-if not isinstance(candidate, basestring):
+if not isinstance(candidate, str):
     plpy.error("No idea what to do with type %s" % (type(candidate)))
 
 json = pscheduler.json_load(candidate)
@@ -38,4 +38,4 @@ valid, message = pscheduler.json_validate(
 
 return None if valid else message
 
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpython3u;

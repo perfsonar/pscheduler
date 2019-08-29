@@ -3,7 +3,7 @@
 #
 
 import socket
-import urlparse
+import urllib
 import uuid
 
 from flask import request
@@ -112,7 +112,7 @@ def server_hostname():
     the local host or not available.
     """
 
-    return urlparse.urlparse(request.url_root).hostname
+    return urllib.parse.urlparse(request.url_root).hostname
 
 
 def server_netloc():
@@ -121,7 +121,7 @@ def server_netloc():
     the local host or not available.
     """
 
-    return urlparse.urlparse(request.url_root).netloc
+    return urllib.parse.urlparse(request.url_root).netloc
 
 
 #
@@ -138,7 +138,7 @@ def base_url(path = None):
     return request.base_url + ("" if path is None else "/" + path)
 
 def url_last_in_path(url):
-    result = urlparse.urlparse(url)
+    result = urllib.parse.urlparse(url)
     return result.path.split('/')[-1]
 
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # pScheduler Run Scheduler
 #
@@ -11,7 +11,7 @@ import pscheduler
 import random
 import select
 import threading
-import urlparse
+import urllib.request, urllib.parse, urllib.error
 
 
 pscheduler.set_graceful_exit()
@@ -220,7 +220,6 @@ def fetch_proposals(
         timeout,
         url,
         key_params,
-        participant,
         task_duration,
         proposed_priority
 ):
@@ -255,7 +254,7 @@ def fetch_proposals(
                 log and log.warning("%d: Error while canceling %s: %s",
                                     number, url, del_result)
 
-            raise Exception("Task is gone from %s" % (participant))
+            raise Exception("Task %s is gone" % (url))
 
         # If we asked for a priority and the server says not
         # implemented, it's probably an older one.  Return as if the
@@ -269,8 +268,8 @@ def fetch_proposals(
         if status != 200:
             log and log.debug("%d: Got back %d: %s", number, status,
                               json_ranges)
-            raise Exception("Error trying to schedule with %s: %s %d"
-                    % (participant, runtime_url, status))
+            raise Exception("Error trying to schedule for %s: %s %d"
+                    % (url, runtime_url, status))
 
         if len(json_ranges) == 0:
             log and log.debug("%d: No time available.", number)
@@ -435,13 +434,13 @@ def run_post(
             common_ranges = fetch_proposals(number, task_urls,
                                             range_params, bind_addr,
                                             timeout, url, key_params,
-                                            participant,
                                             task_duration,
                                             priority_attempt)
         except Exception as ex:
+            log and log.exception()
             return (None, None, None, False, False, str(ex))
 
-        log and log.debug("%d: Ranges in common: %s", number, common_ranges)
+        log and log.debug("%d: Ranges in common: %s" % (number, common_ranges))
         if common_ranges:
             break
         

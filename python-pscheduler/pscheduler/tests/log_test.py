@@ -43,5 +43,9 @@ class TestLog(PschedTestBase):
                     signal.SIGUSR1 if (num % 2) != 0 else signal.SIGUSR2)
 
 
+    # TODO: This needs a test of the pickler used to pass data to
+    # child processes.
+
+
 if __name__ == '__main__':
     unittest.main()
