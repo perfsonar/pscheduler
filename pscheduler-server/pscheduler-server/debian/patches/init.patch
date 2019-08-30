@@ -1,5 +1,5 @@
---- a/daemons/init.d-template.raw	2019-08-09 00:11:57.632439747 +0000
-+++ b/daemons/init.d-template.raw	2019-08-09 00:12:03.673498781 +0000
+--- a/daemons/init.d-template.raw	2019-08-16 11:00:14.481996000 +0000
++++ b/daemons/init.d-template.raw	2019-08-16 11:01:57.071444064 +0000
 @@ -1,4 +1,4 @@
 -#!/bin/sh
 +#!/bin/bash

@@ -18,5 +18,8 @@ Depends:
  pscheduler-tool-net-snmp-set,
  pscheduler-tool-pysnmp,
  pscheduler-archiver-snmptrap
-Description: Extra pScheduler Bundle
- Bundle of extra pScheduler packages
+Description: pScheduler SNMP packages
+ Bundle of SNMP related pScheduler packages
+ Archivers: snmptrap
+ Tests: snmpget, snmpgetbgm, snmpset
+ Tools: net-snmp-set, pysnmp
