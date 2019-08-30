@@ -7,6 +7,7 @@ pscheduler-tool-bwctltracepath (4.3.0~a1.0-1) perfsonar-4.3-snapshot; urgency=lo
 pscheduler-tool-bwctltracepath (4.2.0-1) perfsonar-minor-staging; urgency=low
 
   * New upstream version
+  * Building on Stretch.
 
  -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 16 Aug 2019 11:01:41 +0000
 
