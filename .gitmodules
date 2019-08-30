@@ -1,3 +1,0 @@
-[submodule "distribution"]
-	path = distribution
-        url = https://github.com/perfsonar/distribution.git

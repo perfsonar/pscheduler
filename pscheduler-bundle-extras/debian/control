@@ -17,5 +17,8 @@ Depends:
  pscheduler-tool-curl,
  pscheduler-tool-globus,
  pscheduler-tool-nmapreach
-Description: Extra pScheduler Bundle
- Bundle of extra pScheduler packages
+Description: pScheduler extras packages
+ Bundle of extras pScheduler packages:
+ Tests: disk-to-disk, netreach
+ Tools: curl, globus, nmapreach
+

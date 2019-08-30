@@ -36,7 +36,7 @@ class PycURLRunner(object):
         self.curl.setopt(pycurl.URL, str(full_url))
 
         if bind is not None:
-            self.curl.setopt(pycurl.INTERFACE, bind)
+            self.curl.setopt(pycurl.INTERFACE, str(bind))
 
         self.curl.setopt(pycurl.FOLLOWLOCATION, allow_redirects)
 

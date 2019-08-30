@@ -17,5 +17,5 @@ Depends:
  pscheduler-tool-bwctlping,
  pscheduler-tool-bwctltracepath,
  pscheduler-tool-bwctltraceroute
-Description: Extra pScheduler Bundle
- Bundle of extra pScheduler packages
+Description: pScheduler obsolete packages
+ Bundle of obsolete pScheduler packages
