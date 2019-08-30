@@ -438,6 +438,7 @@ for SERVICE in ticker runner archiver scheduler
 do
     NAME="pscheduler-${SERVICE}"
     systemctl enable "${NAME}"
+    systemctl start "${NAME}"
 done
 
 # Some old installations ended up with root-owned files in the run
@@ -470,6 +471,7 @@ then
 fi
 
 systemctl enable httpd
+systemctl start httpd
 
 
 #

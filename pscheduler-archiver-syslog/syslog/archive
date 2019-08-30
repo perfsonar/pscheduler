@@ -96,7 +96,7 @@ def archive(json):
 
     # Log the run
 
-    log.debug("Ident %s, Facility %s" % (str(ident, facility)))
+    log.debug("Ident %s, Facility %d" % (ident, facility))
     try:
         # Ident often comes in unicode and this requires a string.
         syslog.openlog(str(ident), 0, facility)

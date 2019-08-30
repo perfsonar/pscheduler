@@ -71,38 +71,25 @@ class TestPsjson(PschedTestBase):
     #
 
     def test_RFC7464_emitter(self):
-        buf = io.BytesIO()
+        buf = io.StringIO()
         emitter = RFC7464Emitter(buf)
         emitter({"foo": 123})
         emitter({"bar": 123})
         self.assertEqual(buf.getvalue(),
-                         b'\x1e{"foo": 123}\n\x1e{"bar": 123}\n')
+                         '\x1e{"foo": 123}\n\x1e{"bar": 123}\n')
 
 
     def test_RFC7464_parser(self):
 
-        with tempfile.NamedTemporaryFile() as testfile:
+        buf=io.StringIO('\x1e{"foo": 123}\nXYZZY\n')
+        parser = RFC7464Parser(buf)
 
-            emitter = RFC7464Emitter(testfile)
+        # First line is valid
+        self.assertEqual(parser(),  {"foo": 123})
 
-            emitter({"foo": 123})
+        # Second line is bogus
+        self.assertRaises(ValueError, parser)
 
-            MULTI_COUNT = 5
-            for record in range(0,MULTI_COUNT):
-                emitter({"bar": 123})
-
-            testfile.flush()
-
-            parser = RFC7464Parser(open(testfile.name, "r"))
-            self.assertEqual(parser(),  {"foo": 123})
-
-            # Multi-read
-
-
-            records = 0
-            for record in parser:
-                records += 1
-            self.assertEqual(records, MULTI_COUNT)
 
 
 if __name__ == '__main__':

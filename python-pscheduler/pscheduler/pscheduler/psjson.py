@@ -189,7 +189,7 @@ class RFC7464Emitter(object):
                 raise IOError("Timed out waiting for write")
 
         self.handle.write(
-            bytes("\x1e%s\n" % (text.replace("\n","")), "ascii")
+            "\x1e%s\n" % (text.replace("\n",""))
         )
         self.handle.flush()
 
@@ -207,7 +207,7 @@ class RFC7464Parser(object):
     def __init__(self, handle, timeout=None):
         if not isinstance(handle, io.TextIOBase):
             raise TypeError("Handle must be io.TextIOBase.")
-        self.handle = handle.buffer
+        self.handle = handle
         self.timeout = timeout
 
     def __next__(self):
@@ -220,7 +220,7 @@ class RFC7464Parser(object):
         if len(data) == 0:
             raise StopIteration
 
-        if data[0] != 0x1e:
+        if data[0] != '\x1e':
             raise ValueError("Line '%s' did not start with record separator" % (data))
 
         # json_load() will raise a ValueError if something's not right.
