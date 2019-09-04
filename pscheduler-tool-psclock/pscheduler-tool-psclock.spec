@@ -13,7 +13,7 @@ Release:	%{perfsonar_auto_relnum}%{?dist}
 Summary:	Clock tester tool class for pScheduler
 BuildArch:	noarch
 License:	ASL 2.0
-Vendor:	perfSONAR
+Vendor:		perfSONAR
 Group:		Unspecified
 
 Source0:	%{short}-%{version}.tar.gz
@@ -21,8 +21,8 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	python-pscheduler
-Requires:	pscheduler-test-idle
+Requires:	%{_pscheduler_python}-pscheduler
+Requires:	pscheduler-test-clock
 
 BuildRequires:	pscheduler-rpm
 

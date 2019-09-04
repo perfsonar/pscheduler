@@ -103,14 +103,14 @@ pscheduler-jq-library
 python-pscheduler
 pscheduler-core
 pscheduler-server
-### 
-### #
-### # PSCHEDULER PLUG-INS
-### #
-### 
-### # Tests
-### pscheduler-test-clock
-### pscheduler-test-disk-to-disk		--bundle extras
+
+#
+# PSCHEDULER PLUG-INS
+#
+
+# Tests
+pscheduler-test-clock
+pscheduler-test-disk-to-disk		--bundle extras
 ### pscheduler-test-http
 pscheduler-test-idle
 ### pscheduler-test-idlebgm
@@ -120,7 +120,7 @@ pscheduler-test-idle
 ### pscheduler-test-netreach			--bundle extras
 ### pscheduler-test-throughput
 ### pscheduler-test-rtt
-### pscheduler-test-simplestream
+pscheduler-test-simplestream
 ### pscheduler-test-snmpget			--bundle snmp
 ### pscheduler-test-snmpgetbgm		--bundle snmp
 ### pscheduler-test-snmpset			--bundle snmp
@@ -133,9 +133,9 @@ pscheduler-test-idle
 ### pscheduler-tool-bwctlping		--bundle obsolete
 ### pscheduler-tool-bwctltracepath		--bundle obsolete
 ### pscheduler-tool-bwctltraceroute		--bundle obsolete
-### pscheduler-tool-curl			--bundle extras
+pscheduler-tool-curl			--bundle extras
 ### pscheduler-tool-dnspy
-### pscheduler-tool-globus			--bundle extras
+pscheduler-tool-globus			--bundle extras
 ### pscheduler-tool-iperf2
 ### pscheduler-tool-iperf3
 ### pscheduler-tool-net-snmp-set		--bundle snmp
@@ -145,10 +145,10 @@ pscheduler-test-idle
 ### pscheduler-tool-paris-traceroute
 ### pscheduler-tool-ping
 ### pscheduler-tool-powstream
-### pscheduler-tool-psclock
+pscheduler-tool-psclock
 ### pscheduler-tool-psurl
 ### pscheduler-tool-pysnmp			--bundle snmp
-### pscheduler-tool-simplestreamer
+pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 ### pscheduler-tool-sleepbgm
 pscheduler-tool-snooze

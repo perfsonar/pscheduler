@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 #
 # Development Order #8:
@@ -37,27 +37,27 @@ result = input["result"]
 
 if format == 'text/plain':
     # Print results of the test here, in plaintext
-    print 'Total duration of transfer: %s\n' % result['time']
+    print('Total duration of transfer: %s\n' % result['time'])
 
     if 'bytes-sent' in result:
-        print 'Bytes Sent: %s\n' % str(result['bytes-sent']) 
+        print('Bytes Sent: %s\n' % str(result['bytes-sent'])) 
 
     if 'throughput' in result:
-	    print 'Throughput: %sbits/sec\n' % pscheduler.number_as_si(result['throughput'])
+	    print('Throughput: %sbits/sec\n' % pscheduler.number_as_si(result['throughput']))
 
-    print 'Test completed successfully'
+    print('Test completed successfully')
    
 elif format == 'text/html':
     # Print results of the test here, in html
-    print '<table>'
-    print '    <tr>'
-    print '        <th>Time</th>'
-    print '    </tr>'
-    print '    <tr>'
-    print '        <td>%s</td>' % result['time']
-    print '    </tr>'
-    print '</table>'
-    print '</table>'
+    print('<table>')
+    print('    <tr>')
+    print('        <th>Time</th>')
+    print('    </tr>')
+    print('    <tr>')
+    print('        <td>%s</td>' % result['time'])
+    print('    </tr>')
+    print('</table>')
+    print('</table>')
 
 
 else:
