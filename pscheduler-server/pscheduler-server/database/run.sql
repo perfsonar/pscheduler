@@ -613,9 +613,14 @@ BEGIN
 	      AND run2.id <> run1.id
 	      AND run2.priority > run1.priority
 	      AND NOT run_state_is_finished(run2.state)
+	  JOIN task task2 ON task2.id = run2.task
+	  JOIN test test2 ON test2.id = task2.test
+	  JOIN scheduling_class scheduling_class2 ON
+              scheduling_class2.id = test2.scheduling_class
 	WHERE
 	    run1.id = run_id
-	    AND NOT scheduling_class1.anytime
+	    AND (  (scheduling_class1.exclusive AND NOT scheduling_class2.anytime)
+	        OR (scheduling_class2.exclusive AND NOT scheduling_class1.anytime) )
     );
 
 END;
