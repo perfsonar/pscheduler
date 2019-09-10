@@ -391,7 +391,7 @@ def _make_result(diags, status, stdout, stderr):
             pass
 
         if not error_text:
-            error_text = "%s\n\n%s\n%s" % (stdout, stderr)
+            error_text = "%s\n\n%s\n" % (stdout, stderr)
 
         pscheduler.succeed_json({"succeeded": False,
                                  "diags": diags,
