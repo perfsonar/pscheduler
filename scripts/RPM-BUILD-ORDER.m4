@@ -71,8 +71,7 @@ python-pyasn1
 python-pyasn1-modules
 python-werkzeug
 python-flask
-# This doesn't get a python- prefix.  Ask CentOS why.
-pysnmp
+python-pysnmp
 
 # JSON Tools
 python-jsontemplate
@@ -165,7 +164,7 @@ pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-kafka
 pscheduler-archiver-rabbitmq
-### pscheduler-archiver-snmptrap		--bundle snmp
+pscheduler-archiver-snmptrap		--bundle snmp
 pscheduler-archiver-syslog
 
 # Context Changers

@@ -3,7 +3,7 @@
 #
 
 %define short	pysnmp
-Name:		%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	4.3.9
 Release:	1%{?dist}
 Summary:	Python library for SNMP
