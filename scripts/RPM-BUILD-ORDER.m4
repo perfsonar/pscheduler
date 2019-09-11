@@ -165,20 +165,20 @@ pscheduler-tool-snooze
 ### pscheduler-archiver-rabbitmq
 ### pscheduler-archiver-snmptrap		--bundle snmp
 pscheduler-archiver-syslog
-### 
-### # Context Changers
-### pscheduler-context-changefail
-### pscheduler-context-changenothing
-### pscheduler-context-linuxnns
-### pscheduler-context-linuxvrf
-### 
-### 
-### # Misc.
-### pscheduler-docs
-### 
-### 
-### # Bundles
-### pscheduler-bundle-extras
-### pscheduler-bundle-full
-### pscheduler-bundle-obsolete
-### pscheduler-bundle-snmp
+
+# Context Changers
+pscheduler-context-changefail
+pscheduler-context-changenothing
+pscheduler-context-linuxnns
+pscheduler-context-linuxvrf
+
+
+# Misc.
+pscheduler-docs
+
+
+# Bundles
+pscheduler-bundle-extras
+pscheduler-bundle-full
+pscheduler-bundle-obsolete
+pscheduler-bundle-snmp

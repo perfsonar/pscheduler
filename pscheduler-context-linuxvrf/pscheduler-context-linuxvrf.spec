@@ -25,6 +25,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
+Requires:	%{_pscheduler_python}-pscheduler
 Requires:	iproute
 
 BuildRequires:	pscheduler-rpm >= 1.0.0.5.1
