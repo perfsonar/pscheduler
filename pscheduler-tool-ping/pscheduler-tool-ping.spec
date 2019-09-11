@@ -22,10 +22,9 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
 Requires:	pscheduler-account
-Requires:	python-ipaddr
-Requires:	python-pscheduler
+Requires:	%{_pscheduler_python}-pscheduler
 Requires:	pscheduler-test-rtt
-Requires:	python-icmperror
+Requires:	%{_pscheduler_python}-icmperror
 # This supplies ping.
 Requires:	iputils
 Requires:	sudo

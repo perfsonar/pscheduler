@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Format a result
 #
@@ -116,10 +116,10 @@ else:
 # TODO: Should probably handle exceptions in a nicer way.
 
 if not json['succeeded']:
-   print jsontemplate.expand(fail_template, json).strip()
+   print(jsontemplate.expand(fail_template, json).strip())
 
 if template is not None:
-   print jsontemplate.expand(template, json).strip()
+   print(jsontemplate.expand(template, json).strip())
 
 rtno = 1
 for rt in json['roundtrips']:
@@ -131,9 +131,9 @@ for rt in json['roundtrips']:
       pass
 
    if 'error' in rt:
-      print jsontemplate.expand(error_template, rt).strip()
+      print(jsontemplate.expand(error_template, rt).strip())
    else:
-      print jsontemplate.expand(rt_template, rt).strip()
+      print(jsontemplate.expand(rt_template, rt).strip())
 
    rtno += 1
 
@@ -145,4 +145,4 @@ if end_template is not None:
              ( pscheduler.timedelta_as_seconds( \
                pscheduler.iso8601_as_timedelta(json[item]) ) * 1000.0 )
 
-   print jsontemplate.expand(end_template, json).rstrip()
+   print(jsontemplate.expand(end_template, json).rstrip())

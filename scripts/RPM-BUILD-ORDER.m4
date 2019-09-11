@@ -120,7 +120,7 @@ pscheduler-test-idleex
 ### pscheduler-test-latencybg
 pscheduler-test-netreach			--bundle extras
 ### pscheduler-test-throughput
-### pscheduler-test-rtt
+pscheduler-test-rtt
 pscheduler-test-simplestream
 ### pscheduler-test-snmpget			--bundle snmp
 ### pscheduler-test-snmpgetbgm		--bundle snmp
@@ -144,7 +144,7 @@ pscheduler-tool-nmapreach			--bundle extras
 ### pscheduler-tool-nuttcp
 ### pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
-### pscheduler-tool-ping
+pscheduler-tool-ping
 ### pscheduler-tool-powstream
 pscheduler-tool-psclock
 pscheduler-tool-psurl
