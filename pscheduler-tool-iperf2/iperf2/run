@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Run an iperf2 test
 #
@@ -73,7 +73,7 @@ def run_client():
     destination = test_spec['dest']
 
     try:
-        ipaddress.ip_address(unicode(destination))
+        ipaddress.ip_address(str(destination))
         is_ip_address = True
     except ValueError:
         is_ip_address = False
@@ -81,7 +81,7 @@ def run_client():
     # iperf2 has no inherent ability to force v4 or v6, so we do it here but
     # don't bother doing lookups on just a straight IP address, seems like
     # a silly combination of flags but whatever
-    if test_spec.has_key('ip-version') and test_spec['ip-version'] != None:     
+    if 'ip-version' in test_spec and test_spec['ip-version'] != None:     
         if not is_ip_address and test_spec['ip-version'] == 4:
             destination = pscheduler.dns_resolve(destination, ip_version=4)
         
@@ -121,24 +121,24 @@ def run_client():
     # always show mss because why not
     iperf2_args.append('-m')
 
-    if test_spec.has_key('interval') and test_spec['interval'] != None:
+    if 'interval' in test_spec and test_spec['interval'] != None:
         iperf2_args.append('-i')
         delta = pscheduler.iso8601_as_timedelta(test_spec['interval'])
         iperf2_args.append(int(pscheduler.timedelta_as_seconds(delta)))
 
-    if test_spec.has_key('parallel') and test_spec['parallel'] != None:
+    if 'parallel' in test_spec and test_spec['parallel'] != None:
         iperf2_args.append('-P')
         iperf2_args.append(test_spec['parallel'])
 
-    if test_spec.has_key('window-size') and test_spec['window-size'] != None:
+    if 'window-size' in test_spec and test_spec['window-size'] != None:
         iperf2_args.append('-w')
         iperf2_args.append(test_spec['window-size'])
 
-    if test_spec.has_key('mss') and test_spec['mss'] != None:
+    if 'mss' in test_spec and test_spec['mss'] != None:
         iperf2_args.append('-M')
         iperf2_args.append(test_spec['mss'])
 
-    if test_spec.has_key('bandwidth') and test_spec['bandwidth'] != None:
+    if 'bandwidth' in test_spec and test_spec['bandwidth'] != None:
         iperf2_args.append('-u') # iperf only support UDP bandwidth throttling, this is checked for earlier too
         iperf2_args.append('-b')
         iperf2_args.append(test_spec['bandwidth'])
@@ -173,22 +173,22 @@ def run_client():
             iperf2_args.append(max_bandwidth)
 
 
-    if test_spec.has_key('buffer-length') and test_spec['buffer-length'] != None:
+    if 'buffer-length' in test_spec and test_spec['buffer-length'] != None:
         iperf2_args.append('-l')
         iperf2_args.append(test_spec['buffer-length'])
 
-    if test_spec.has_key('local-address') and test_spec['local-address'] != None:
+    if 'local-address' in test_spec and test_spec['local-address'] != None:
         iperf2_args.append('-B')
         iperf2_args.append(test_spec['local-address'])
 
-    if test_spec.has_key('congestion') and test_spec['congestion'] != None:
+    if 'congestion' in test_spec and test_spec['congestion'] != None:
         iperf2_args.append('-Z')
         iperf2_args.append(test_spec['congestion'])
 
     
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string
-    iperf2_args = map(lambda x: str(x), iperf2_args)
+    iperf2_args = [str(x) for x in iperf2_args]
 
     command_line = " ".join(iperf2_args)
     logger.debug("Running command: %s" % command_line)      
@@ -235,7 +235,7 @@ def run_server():
 
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string
-    iperf2_args = map(lambda x: str(x), iperf2_args)
+    iperf2_args = [str(x) for x in iperf2_args]
 
     logger.debug("Running command: %s" % " ".join(iperf2_args))
 

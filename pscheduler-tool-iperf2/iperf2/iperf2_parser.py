@@ -110,7 +110,7 @@ def parse_output(lines):
             if interval_end - interval_start > 5:
                 key = "summary"
 
-            if not streams.has_key(key):
+            if key not in streams:
                 streams[key] = []
 
             streams[key].append({"jitter": jitter,
@@ -124,7 +124,7 @@ def parse_output(lines):
 
         
 
-    if len(streams.keys()) == 0:
+    if len(list(streams.keys())) == 0:
         results["succeeded"] = False
         results["error"] = "No results found"
         return results
@@ -133,7 +133,7 @@ def parse_output(lines):
     summary_interval = None
     intervals        = []
 
-    for interval in streams.keys():
+    for interval in list(streams.keys()):
 
         summary_stream = None
 

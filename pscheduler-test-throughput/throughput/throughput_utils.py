@@ -96,7 +96,7 @@ def format_stream_output(stream_list, udp=False, summary=False):
 
 if __name__ == "__main__":
 
-    print format_si(10 ** 12)
-    print format_si(10 ** 4)
-    print format_si(10 ** 7)
-    print format_si(10 ** 9)
+    print(format_si(10 ** 12))
+    print(format_si(10 ** 4))
+    print(format_si(10 ** 7))
+    print(format_si(10 ** 9))
