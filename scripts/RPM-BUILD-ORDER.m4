@@ -162,7 +162,7 @@ pscheduler-tool-snooze
 pscheduler-archiver-bitbucket
 pscheduler-archiver-esmond
 pscheduler-archiver-failer
-### pscheduler-archiver-http
+pscheduler-archiver-http
 ### pscheduler-archiver-kafka
 ### pscheduler-archiver-rabbitmq
 ### pscheduler-archiver-snmptrap		--bundle snmp
