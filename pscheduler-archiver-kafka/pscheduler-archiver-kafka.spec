@@ -20,7 +20,8 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.0.2
-Requires:       python-kafka
+Requires:       %{_pscheduler_python}-kafka
+Requires:       %{_pscheduler_python}-pscheduler
 
 BuildRequires:	pscheduler-rpm
 
