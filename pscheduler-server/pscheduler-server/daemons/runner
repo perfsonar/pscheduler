@@ -702,7 +702,7 @@ class RunWorker:
                     deadline - pscheduler.time_now()))
 
                 status, run_result = pscheduler.url_get(
-                    run,
+                    get,
                     params={ 'wait-local': True, 'wait': timeout },
                     bind=lead_bind,
                     throw=False,
