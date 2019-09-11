@@ -127,13 +127,13 @@ pscheduler-test-simplestream
 ### pscheduler-test-snmpset			--bundle snmp
 ### pscheduler-test-trace
 pscheduler-test-dns
-### 
-### # Tools
-### pscheduler-tool-bwctliperf2		--bundle obsolete
-### pscheduler-tool-bwctliperf3		--bundle obsolete
-### pscheduler-tool-bwctlping		--bundle obsolete
-### pscheduler-tool-bwctltracepath		--bundle obsolete
-### pscheduler-tool-bwctltraceroute		--bundle obsolete
+
+# Tools
+pscheduler-tool-bwctliperf2		--bundle obsolete
+pscheduler-tool-bwctliperf3		--bundle obsolete
+pscheduler-tool-bwctlping		--bundle obsolete
+pscheduler-tool-bwctltracepath		--bundle obsolete
+pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl			--bundle extras
 pscheduler-tool-dnspy
 pscheduler-tool-globus			--bundle extras
