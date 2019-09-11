@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Run an owping test
 #
@@ -131,7 +131,7 @@ if role == CLIENT_ROLE:
         owping_args.append(ADDR_FORMAT % (test_spec['dest'], control_port))
 
     # Stringify the arguments        
-    owping_args = map(lambda x: str(x), owping_args)
+    owping_args = [str(x) for x in owping_args]
     
     #Run the process
     #time.sleep(DEFAULT_CLIENT_SLEEP) #wait for server to boot

@@ -28,10 +28,10 @@ DEFAULT_EARLY_SERVER_STOP = 2
 DEFAULT_OWAMPD_PORT = 861
 
 # The default owampd contol port range
-DEFAULT_OWAMPD_CTRL_PORTS = range(5601, 5900)
+DEFAULT_OWAMPD_CTRL_PORTS = list(range(5601, 5900))
 
 # The default owampd data port range
-DEFAULT_OWAMPD_DATA_PORTS = range(8760, 9960)
+DEFAULT_OWAMPD_DATA_PORTS = list(range(8760, 9960))
 
 #constants for working with config file
 CONFIG_FILE = '/etc/pscheduler/tool/owping.conf'

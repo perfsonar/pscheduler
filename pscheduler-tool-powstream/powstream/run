@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Run a powstream test
 #
@@ -291,8 +291,8 @@ while True:
                 results = parse_raw_owamp_output(stats_stdout, raw_output=raw_output, bucket_width=bucket_width)
             
                 #print
-                print pscheduler.json_dump(results)
-                print pscheduler.api_result_delimiter()
+                print(pscheduler.json_dump(results))
+                print(pscheduler.api_result_delimiter())
                 sys.stdout.flush()
             elif line == '':
                 #make sure we don't go too long without a result. 

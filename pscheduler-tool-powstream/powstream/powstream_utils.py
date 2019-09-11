@@ -4,7 +4,7 @@
 
 import pscheduler
 from powstream_defaults import *
-import ConfigParser
+import configparser
 import datetime
 import os
 import re
@@ -27,7 +27,7 @@ log = pscheduler.Log(prefix="tool-powstream", quiet=True)
 def get_config():
     config = None
     try:
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         config.read(CONFIG_FILE)
     except:
         log.warning("Unable to read configuration file %s. Proceeding with defaults.")
@@ -102,8 +102,8 @@ def handle_run_error(msg, diags=None, do_log=True):
         'error': msg,
         'diags': diags
     }
-    print pscheduler.json_dump(results)
-    print pscheduler.api_result_delimiter()
+    print(pscheduler.json_dump(results))
+    print(pscheduler.api_result_delimiter())
     sys.stdout.flush()
 
 ##

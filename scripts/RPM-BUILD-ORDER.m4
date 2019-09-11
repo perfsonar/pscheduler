@@ -113,8 +113,8 @@ pscheduler-test-http
 pscheduler-test-idle
 pscheduler-test-idlebgm
 pscheduler-test-idleex
-### pscheduler-test-latency
-### pscheduler-test-latencybg
+pscheduler-test-latency
+pscheduler-test-latencybg
 pscheduler-test-netreach			--bundle extras
 pscheduler-test-throughput
 pscheduler-test-rtt
@@ -139,10 +139,10 @@ pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-nmapreach			--bundle extras
 pscheduler-tool-nuttcp
-### pscheduler-tool-owping
+pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
 pscheduler-tool-ping
-### pscheduler-tool-powstream
+pscheduler-tool-powstream
 pscheduler-tool-psclock
 pscheduler-tool-psurl
 pscheduler-tool-pysnmp			--bundle snmp
@@ -152,7 +152,7 @@ pscheduler-tool-sleepbgm
 pscheduler-tool-snooze
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
-### pscheduler-tool-twping
+pscheduler-tool-twping
 
 # Archivers
 pscheduler-archiver-bitbucket

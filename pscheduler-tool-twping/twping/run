@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Run an twping test
 #
@@ -112,7 +112,7 @@ if role == CLIENT_ROLE:
 
     #calculate destination ip for rtt tests
     try:
-            ipaddress.ip_address(unicode(test_spec['dest']))
+            ipaddress.ip_address(str(test_spec['dest']))
             dest_ip = test_spec['dest']
             dest_hostname = pscheduler.dns_resolve_reverse(dest_ip)
     except ValueError:
@@ -133,12 +133,12 @@ if role == CLIENT_ROLE:
         
     #finally, set the addresses and packet flow direction
     if 'source' in test_spec:
-	twping_args.append('-S')
-	twping_args.append(test_spec['source'])
+        twping_args.append('-S')
+        twping_args.append(test_spec['source'])
     twping_args.append(ADDR_FORMAT % (test_spec['dest'], control_port))
 
     # Force all args to be strings
-    twping_args = map(lambda x: str(x), twping_args)
+    twping_args = [str(x) for x in twping_args]
     
     #Run the process
     #time.sleep(DEFAULT_CLIENT_SLEEP) #wait for server to boot

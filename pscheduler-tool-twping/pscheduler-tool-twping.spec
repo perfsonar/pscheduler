@@ -21,14 +21,13 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	python-pscheduler
+Requires:	%{_pscheduler_python}-pscheduler
 Requires:	pscheduler-test-latency
-#Requires:	twamp-client
-#Requires:	twamp-server
+Requires:	twamp-client
 
 BuildRequires:	pscheduler-rpm
-BuildRequires:	python-pscheduler
-BuildRequires:  python-nose
+BuildRequires:	%{_pscheduler_python}-pscheduler
+BuildRequires:  %{_pscheduler_python}-nose
 
 %description
 twping tool class for pScheduler

@@ -21,11 +21,11 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	python-pscheduler
+Requires:	%{_pscheduler_python}-pscheduler
 
 BuildRequires:	pscheduler-rpm
-BuildRequires:	python-pscheduler
-BuildRequires:  python-nose
+BuildRequires:	%{_pscheduler_python}-pscheduler
+BuildRequires:  %{_pscheduler_python}-nose
 
 %description
 Latency test class for pScheduler that runs in the background.
