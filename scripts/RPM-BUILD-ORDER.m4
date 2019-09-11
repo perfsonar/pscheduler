@@ -164,7 +164,7 @@ pscheduler-archiver-esmond
 pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-kafka
-### pscheduler-archiver-rabbitmq
+pscheduler-archiver-rabbitmq
 ### pscheduler-archiver-snmptrap		--bundle snmp
 pscheduler-archiver-syslog
 
