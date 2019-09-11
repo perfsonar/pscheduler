@@ -1,8 +1,8 @@
 pscheduler-tool-bwctltraceroute (4.3.0~a1.0-1) perfsonar-4.3-snapshot; urgency=low
 
-  * New upstream version.
+  * Dummy package disabling all functionnality.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 27 Aug 2019 18:12:24 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 30 Aug 2019 16:37:51 +0000
 
 pscheduler-tool-bwctltraceroute (4.2.0-1) perfsonar-minor-staging; urgency=low
 

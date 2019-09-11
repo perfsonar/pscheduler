@@ -1,0 +1,11 @@
+--- pscheduler.orig/tests/psurl_test.py	2019-08-30 17:43:53.903770000 +0000
++++ pscheduler/tests/psurl_test.py	2019-08-30 19:17:18.146711000 +0000
+@@ -59,7 +59,7 @@
+ 
+         self.assertEqual(
+             url_get("http://not.a.valid.host", bind="127.0.0.1", throw=False),
+-            (400, 'Could not resolve host: not.a.valid.host; Name or service not known')
++            (400, 'Could not resolve host: not.a.valid.host')
+         )
+ 
+ 

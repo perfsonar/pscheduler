@@ -162,6 +162,15 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
         print_message("No result URL returned by the server.", exit_on_error)
         return
 
+    try:
+        if run_json["participant"] != 0:
+            print_message("Cannot query non-lead server for run result.", exit_on_error)
+            return
+    except KeyError:
+        print_message("Internal error:  Result is mising data.", exit_on_error)
+        return
+
+
     # Non-text/plain is the easy-out case.
     if out_format != "text/plain":
         dump_run_result(result_url, out_format, exit_on_error)
@@ -249,7 +258,10 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
 
     if run_ran:
         try:
-            succeeded = run_json['result-merged']['succeeded']
+            result_merged = run_json['result-merged']
+            if result_merged is None:
+                pscheduler.fail("result-merged missing from run result")
+            succeeded = result_merged['succeeded']
             if succeeded is None:
                 raise KeyError()
         except KeyError as ex:

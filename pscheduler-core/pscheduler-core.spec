@@ -27,6 +27,7 @@ Requires:       net-tools
 Requires:       python-pscheduler >= 1.3.7.1
 Requires:       pytz
 Requires:	curl
+Requires:       dmidecode
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:	m4
