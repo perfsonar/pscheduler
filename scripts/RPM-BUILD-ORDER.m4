@@ -114,7 +114,7 @@ pscheduler-test-clock
 pscheduler-test-disk-to-disk		--bundle extras
 pscheduler-test-http
 pscheduler-test-idle
-### pscheduler-test-idlebgm
+pscheduler-test-idlebgm
 ### pscheduler-test-idleex
 ### pscheduler-test-latency
 ### pscheduler-test-latencybg
@@ -151,7 +151,7 @@ pscheduler-tool-psurl
 ### pscheduler-tool-pysnmp			--bundle snmp
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
-### pscheduler-tool-sleepbgm
+pscheduler-tool-sleepbgm
 pscheduler-tool-snooze
 ### pscheduler-tool-tracepath
 ### pscheduler-tool-traceroute

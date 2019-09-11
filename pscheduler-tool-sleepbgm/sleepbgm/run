@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Run a test.  Just the test spec is provided on stdin.
 #
@@ -64,8 +64,8 @@ while next_output < end_time:
     time.sleep(interval_secs)
     runs += 1
     results['diags'] = "Run #%d" % runs
-    print pscheduler.json_dump(results)
-    print delimiter
+    print(pscheduler.json_dump(results))
+    print(delimiter)
     sys.stdout.flush()
     next_output += interval
     logger.debug("Wrote result")
