@@ -156,8 +156,8 @@ pscheduler-tool-snooze
 ### pscheduler-tool-traceroute
 ### pscheduler-tool-twping
 ### 
-### # Archivers
-### pscheduler-archiver-bitbucket
+# Archivers
+pscheduler-archiver-bitbucket
 ### pscheduler-archiver-esmond
 ### pscheduler-archiver-failer
 ### pscheduler-archiver-http
