@@ -55,6 +55,8 @@ python-itsdangerous
 python-pyrsistent
 python-jsonschema
 python-kafka
+# Used by pscheduler-archiver-esmond
+python-memcached
 python-netifaces
 python-ntplib
 python-parse-crontab
@@ -158,7 +160,7 @@ pscheduler-tool-snooze
 ### 
 # Archivers
 pscheduler-archiver-bitbucket
-### pscheduler-archiver-esmond
+pscheduler-archiver-esmond
 ### pscheduler-archiver-failer
 ### pscheduler-archiver-http
 ### pscheduler-archiver-kafka

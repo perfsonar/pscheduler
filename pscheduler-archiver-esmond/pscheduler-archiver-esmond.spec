@@ -21,8 +21,8 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.1.6
-Requires:	python-pscheduler >= 1.3.7.1
-Requires:	python-memcached
+Requires:	%{_pscheduler_python}-pscheduler >= 1.3.7.1
+Requires:	%{_pscheduler_python}-memcached
 Requires:	memcached
 Requires(post):	memcached
 %if 0%{?el7}
@@ -32,8 +32,8 @@ Requires:		chkconfig
 %endif
 
 BuildRequires:	pscheduler-rpm
-BuildRequires:  python-pscheduler
-BuildRequires:  python-nose
+BuildRequires:  %{_pscheduler_python}-pscheduler
+BuildRequires:  %{_pscheduler_python}-nose
 
 %define directory %{_includedir}/make
 

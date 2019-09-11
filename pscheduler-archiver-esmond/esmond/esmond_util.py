@@ -3,7 +3,7 @@
 
 
 import pscheduler
-import urlparse
+import urllib
 
 log = pscheduler.Log(prefix="archiver-esmond", quiet=True)
 
@@ -492,7 +492,7 @@ class EsmondDiskToDiskRecord(EsmondBaseRecord):
         #get source field from URL, then try measurement agent, then fallback to lead
         if src_field and src_field in test_spec:
             source_url = test_spec[src_field]
-            source_url_host = urlparse.urlparse(test_spec[src_field]).hostname
+            source_url_host = urllib.parse.urlparse(test_spec[src_field]).hostname
             if source_url_host:
                 input_source = source_url_host
             elif measurement_agent:
@@ -501,7 +501,7 @@ class EsmondDiskToDiskRecord(EsmondBaseRecord):
         #do same thingv we did for source but for dest
         if dst_field and dst_field in test_spec:
             dest_url = test_spec[dst_field]
-            dest_url_host = urlparse.urlparse(test_spec[dst_field]).hostname
+            dest_url_host = urllib.parse.urlparse(test_spec[dst_field]).hostname
             if dest_url_host:
                 input_dest = dest_url_host
             elif measurement_agent:
@@ -760,7 +760,7 @@ class EsmondThroughputRecord(EsmondBaseRecord):
                 self.add_data(data_point=data_point, event_type="throughput-subintervals", val=throughput_intervals)
             if throughput_stream_intervals > 0:
                 formatted_tsi = []
-                sorted_streams = throughput_stream_intervals.keys()
+                sorted_streams = list(throughput_stream_intervals.keys())
                 sorted_streams.sort()
                 for id in sorted_streams:
                     formatted_tsi.append(throughput_stream_intervals[id])
@@ -774,21 +774,21 @@ class EsmondThroughputRecord(EsmondBaseRecord):
                     self.add_data(data_point=data_point, event_type="tcp-windowsize-subintervals", val=tcp_windowsize_intervals)
                 if retransmit_stream_intervals > 0:
                     formatted_rsi = []
-                    sorted_streams = retransmit_stream_intervals.keys()
+                    sorted_streams = list(retransmit_stream_intervals.keys())
                     sorted_streams.sort()
                     for id in sorted_streams:
                         formatted_rsi.append(retransmit_stream_intervals[id])
                     self.add_data(data_point=data_point, event_type="streams-packet-retransmits-subintervals", val=formatted_rsi)
                 if rtt_stream_intervals > 0:
                     formatted_rttsi = []
-                    sorted_streams = rtt_stream_intervals.keys()
+                    sorted_streams = list(rtt_stream_intervals.keys())
                     sorted_streams.sort()
                     for id in sorted_streams:
                         formatted_rttsi.append(rtt_stream_intervals[id])
                     self.add_data(data_point=data_point, event_type="streams-packet-rtt-subintervals", val=formatted_rttsi)
                 if tcp_windowsize_stream_intervals > 0:
                     formatted_twssi = []
-                    sorted_streams = tcp_windowsize_stream_intervals.keys()
+                    sorted_streams = list(tcp_windowsize_stream_intervals.keys())
                     sorted_streams.sort()
                     for id in sorted_streams:
                         formatted_twssi.append(tcp_windowsize_stream_intervals[id])
