@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 #
 # Convert command-line options to a test specification for http test
@@ -21,14 +21,14 @@ else:
     json_args = pscheduler.json_load(exit_on_error=True)
     args = []
 
-   if not isinstance(json_args,list):
-      pscheduler.fail("Invalid JSON for this operation")
-   for arg in json_args:
-      if not ( isinstance(arg, str)
-               or isinstance(arg, int)
-               or isinstance(arg, float) ):
-         pscheduler.fail("Invalid JSON for this operation")
-   args = [ str(arg) for arg in json_args ]
+    if not isinstance(json_args,list):
+        pscheduler.fail("Invalid JSON for this operation")
+    for arg in json_args:
+        if not ( isinstance(arg, str)
+                 or isinstance(arg, int)
+                 or isinstance(arg, float) ):
+            pscheduler.fail("Invalid JSON for this operation")
+    args = [ str(arg) for arg in json_args ]
 
 
 # Gargle the arguments

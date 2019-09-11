@@ -112,7 +112,7 @@ pscheduler-server
 # Tests
 pscheduler-test-clock
 pscheduler-test-disk-to-disk		--bundle extras
-### pscheduler-test-http
+pscheduler-test-http
 pscheduler-test-idle
 ### pscheduler-test-idlebgm
 ### pscheduler-test-idleex
@@ -147,7 +147,7 @@ pscheduler-tool-globus			--bundle extras
 ### pscheduler-tool-ping
 ### pscheduler-tool-powstream
 pscheduler-tool-psclock
-### pscheduler-tool-psurl
+pscheduler-tool-psurl
 ### pscheduler-tool-pysnmp			--bundle snmp
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep

@@ -10,6 +10,9 @@
 # compatible with.
 #
 
+# Note that the -5 preference here is to give the psurl tool
+# preference over this one for HTTP tests.
+
 {
     "schema": 1,
 
@@ -18,7 +21,7 @@
     "version": "1.0",
     "tests": [ "disk-to-disk", "http" ],
 
-    "preference": 0,
+    "preference": -5,
 
     "maintainer": {
         "name": "perfSONAR Development Team",

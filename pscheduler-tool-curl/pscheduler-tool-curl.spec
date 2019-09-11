@@ -27,6 +27,8 @@ Provides:	%{name} = %{version}-%{release}
 
 # Include all required libraries here
 Requires:	pscheduler-server
+Requires:	pscheduler-test-http
+Requires:	pscheduler-test-disk-to-disk
 Requires:	%{_pscheduler_python}-pscheduler
 
 BuildRequires:	pscheduler-rpm
