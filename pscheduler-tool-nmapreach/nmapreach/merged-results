@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Merge the participant results of a run by this tool into a
 # test-standard result.

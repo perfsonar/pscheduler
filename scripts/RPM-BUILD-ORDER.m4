@@ -118,7 +118,7 @@ pscheduler-test-idlebgm
 pscheduler-test-idleex
 ### pscheduler-test-latency
 ### pscheduler-test-latencybg
-### pscheduler-test-netreach			--bundle extras
+pscheduler-test-netreach			--bundle extras
 ### pscheduler-test-throughput
 ### pscheduler-test-rtt
 pscheduler-test-simplestream
