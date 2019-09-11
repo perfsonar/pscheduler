@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Run a test.  Just the test spec is provided on stdin.
 #
@@ -34,7 +34,7 @@ run_timeout = datetime.timedelta()
 dest = spec['dest']
 
 try:
-    dest_ip_addr = ipaddress.ip_address(unicode(dest))
+    dest_ip_addr = ipaddress.ip_address(str(dest))
 except ValueError:
     dest_ip_addr = None
 
@@ -193,7 +193,7 @@ log.debug("Timeout is %s", run_timeout)
 run_timeout_secs = pscheduler.timedelta_as_seconds(run_timeout)
 
 # Force all args to be strings
-argv = map(lambda x: str(x), argv)
+argv = [str(x) for x in argv]
 
 status, stdout, stderr \
     = pscheduler.run_program(argv, timeout = run_timeout_secs)

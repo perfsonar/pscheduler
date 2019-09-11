@@ -21,9 +21,9 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	python-pscheduler
+Requires:	%{_pscheduler_python}-pscheduler
 Requires:	pscheduler-test-trace
-Requires:	python-icmperror
+Requires:	%{_pscheduler_python}-icmperror
 Requires:	iputils
 
 BuildRequires:	pscheduler-rpm

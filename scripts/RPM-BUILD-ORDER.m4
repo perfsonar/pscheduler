@@ -125,7 +125,7 @@ pscheduler-test-simplestream
 ### pscheduler-test-snmpget			--bundle snmp
 ### pscheduler-test-snmpgetbgm		--bundle snmp
 ### pscheduler-test-snmpset			--bundle snmp
-### pscheduler-test-trace
+pscheduler-test-trace
 pscheduler-test-dns
 
 # Tools
@@ -143,7 +143,7 @@ pscheduler-tool-globus			--bundle extras
 pscheduler-tool-nmapreach			--bundle extras
 ### pscheduler-tool-nuttcp
 ### pscheduler-tool-owping
-### pscheduler-tool-paris-traceroute
+pscheduler-tool-paris-traceroute
 ### pscheduler-tool-ping
 ### pscheduler-tool-powstream
 pscheduler-tool-psclock
@@ -153,8 +153,8 @@ pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
 pscheduler-tool-snooze
-### pscheduler-tool-tracepath
-### pscheduler-tool-traceroute
+pscheduler-tool-tracepath
+pscheduler-tool-traceroute
 ### pscheduler-tool-twping
 ### 
 # Archivers

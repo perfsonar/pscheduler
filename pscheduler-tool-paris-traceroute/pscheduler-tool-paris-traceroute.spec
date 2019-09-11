@@ -22,12 +22,11 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
 Requires:	pscheduler-account
-Requires:	python-ipaddr
-Requires:	python-pscheduler
+Requires:	%{_pscheduler_python}-pscheduler
 Requires:	pscheduler-test-trace
 Requires:	paris-traceroute
 Requires:	sudo
-Requires:	python-icmperror
+Requires:	%{_pscheduler_python}-icmperror
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
