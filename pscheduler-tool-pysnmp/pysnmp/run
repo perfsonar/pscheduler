@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Run a test.  Just the test spec is provided on stdin.
 #
@@ -231,8 +231,8 @@ while num_polls < spec['polls']:
             'error': '',
             'diags': 'Run #%d' % num_polls
         }
-        print pscheduler.json_dump(results)
-        print delimiter
+        print(pscheduler.json_dump(results))
+        print(delimiter)
         sys.stdout.flush()
 
     if spec['polls'] == 1:

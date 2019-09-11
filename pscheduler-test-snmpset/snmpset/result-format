@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Format a result
 #
@@ -26,38 +26,38 @@ result = input["result"]
 spec = input["spec"]
 
 if format == 'text/plain':
-   print 'Time: %s\n' % result['time']
-   print 'Data:'
+   print('Time: %s\n' % result['time'])
+   print('Data:')
    for i in range(len(result['data'])):
-       print 'OID: %s\t' % spec['oidargs'][i]['oid']
+       print('OID: %s\t' % spec['oidargs'][i]['oid'])
        try:
-           print 'Type: %s\t' % result['data'][i]['type']
-           print 'Value: %s\n' % result['data'][i]['value']
+           print('Type: %s\t' % result['data'][i]['type'])
+           print('Value: %s\n' % result['data'][i]['value'])
        except KeyError:
-           print 'Error: %s\n' % result['data'][i]['value']
+           print('Error: %s\n' % result['data'][i]['value'])
    
 elif format == 'text/html':
-    print '<table>'
-    print '    <tr>'
-    print '        <th>Time</th>'
-    print '    </tr>'
-    print '    <tr>'
-    print '        <td>%s</td>' % result['time']
-    print '    </tr>'
-    print '    <tr>'
-    print '        <th>SNMP Data</th>'
-    print '    </tr>'
+    print('<table>')
+    print('    <tr>')
+    print('        <th>Time</th>')
+    print('    </tr>')
+    print('    <tr>')
+    print('        <td>%s</td>' % result['time'])
+    print('    </tr>')
+    print('    <tr>')
+    print('        <th>SNMP Data</th>')
+    print('    </tr>')
     for index, item in enumerate(result['data']):
-        print '<tr>'
-        print '    <td>OID: %s\t </td>' % spec['oidargs'][index]['oid']
+        print('<tr>')
+        print('    <td>OID: %s\t </td>' % spec['oidargs'][index]['oid'])
         try:
-            print '<td>Type: %s\t </td>' % item['type']
-            print '<td>Value: %s\n</td>' % item['value']
+            print('<td>Type: %s\t </td>' % item['type'])
+            print('<td>Value: %s\n</td>' % item['value'])
         except KeyError:
-            print '<td>Error: %s\n</td>' % item['value']       
-        print '</tr>'
+            print('<td>Error: %s\n</td>' % item['value'])       
+        print('</tr>')
 
-    print '</table>'
+    print('</table>')
 
 
 else:
