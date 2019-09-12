@@ -111,7 +111,7 @@ def spec_is_valid(json):
 
 def result_is_valid(json):
     schema = {
-	"type": "object",
+        "type": "object",
         "properties": {
             "schema":       { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":    { "$ref": "#/pScheduler/Boolean" },

@@ -131,22 +131,22 @@ if __name__ == "__main__":
             "# Start with the lower of the requested and default priorities",
             "| set([default, requested] | min; \"Initial priority\")",
 
-	    "# Friendly requesters get a small bump in priority.",
-	    "| if classifiers_has(\"friendlies\")",
+            "# Friendly requesters get a small bump in priority.",
+            "| if classifiers_has(\"friendlies\")",
             "  then adjust(5; \"Friendly requester\") else . end",
 
-	    "# Knock everyone off their high horses just because.",
-	    "| adjust(-1; \"We don't like you.\")",
+            "# Knock everyone off their high horses just because.",
+            "| adjust(-1; \"We don't like you.\")",
 
-	    "# Allow at least the requested priority for those who are",
-	    "# allowed to do so.  Do this last in case things done",
-	    "# above push the priority higher than was requested",
-	    "| if classifiers_has(\"priority-positive\")",
-	    "  and requested and requested > priority"
-	    "  then set(requested; \"High requested priority\")",
+            "# Allow at least the requested priority for those who are",
+            "# allowed to do so.  Do this last in case things done",
+            "# above push the priority higher than was requested",
+            "| if classifiers_has(\"priority-positive\")",
+            "  and requested and requested > priority"
+            "  then set(requested; \"High requested priority\")",
             "  else . end",
 
-	    "# The end.  (This takes care of the no-comma-at-end problem)"
+            "# The end.  (This takes care of the no-comma-at-end problem)"
 
             ]
     })

@@ -47,7 +47,7 @@ opt_parser.disable_interspersed_args()
 opt_parser.add_option("--archivings",
                       help="For text output, dump archiving status",
                       action="store_true",
-		      default=False,
+                      default=False,
                       dest="archivings")
 
 opt_parser.add_option("--bind",
@@ -59,25 +59,25 @@ opt_parser.add_option("--bind",
 opt_parser.add_option("--diags",
                       help="For text output, dump participant diagnostics",
                       action="store_true",
-		      default=False,
+                      default=False,
                       dest="diags")
 
 opt_parser.add_option("--format",
                       help="Format for output: text (the default), html or json",
                       action="store", type="string",
-		      default="text",
+                      default="text",
                       dest="format")
 
 opt_parser.add_option("--output",
                       help="Path to write output",
                       action="store", type="string",
-		      default=None,
+                      default=None,
                       dest="output")
 
 opt_parser.add_option("--quiet",
                       help="For text output, don't display anything but the result",
                       action="store_true",
-		      default=False,
+                      default=False,
                       dest="quiet")
 
 opt_parser.add_option("--debug", action="store_true", dest="debug")

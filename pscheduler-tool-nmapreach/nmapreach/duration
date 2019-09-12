@@ -31,5 +31,5 @@ duration = timeout * nmap_runs
 duration += datetime.timedelta(seconds=1)  # Internal slop
 
 pscheduler.succeed_json({
-	"duration": pscheduler.timedelta_as_iso8601( duration )
+    "duration": pscheduler.timedelta_as_iso8601( duration )
 })

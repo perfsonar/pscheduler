@@ -286,7 +286,8 @@ def tasks():
                     _ = pscheduler.JQFilter(
                         filter_spec=transform["script"],
                         args=transform.get("args", {} )
-						)
+                    )
+
                 except ValueError as ex:
                     return error("Invalid transform: %s" % (str(ex)))
 

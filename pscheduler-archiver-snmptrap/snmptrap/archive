@@ -121,12 +121,12 @@ def get_generator(data):
         pass
 
     return sendNotification(SnmpEngine(),
-        					credentials,
-        					UdpTransportTarget((data['dest'], 162)),
-        					ContextData(),
-        					'trap',
-        					notification
-    						)
+                            credentials,
+                            UdpTransportTarget((data['dest'], 162)),
+                            ContextData(),
+                            'trap',
+                            notification
+    )
 
 def archive(input_json):
 

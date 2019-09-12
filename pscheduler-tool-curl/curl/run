@@ -34,7 +34,8 @@ try:
         dest = None
         cleanup = False #disk-to-disk option
 except KeyError as e:
-    print(e);	pscheduler.fail('Missing data in input')
+    print(e);
+    pscheduler.fail('Missing data in input')
 
 
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
@@ -127,8 +128,10 @@ final_results = {
     'diags': "\n".join(diags)
 }
 
-results = {'schema': 1, 
-	   'succeeded': succeeded}
+results = {
+    'schema': 1, 
+    'succeeded': succeeded
+}
 
 results['time'] = pscheduler.timedelta_as_iso8601( end_time - start_time)
 

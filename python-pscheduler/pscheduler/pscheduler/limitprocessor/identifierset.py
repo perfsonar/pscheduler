@@ -110,37 +110,37 @@ if __name__ == "__main__":
 
     iset = IdentifierSet([
         {
-	    "name": "everybody",
-	    "description": "An identifier that always identifies",
-	    "type": "always",
-	    "data": { }
-	},
+            "name": "everybody",
+            "description": "An identifier that always identifies",
+            "type": "always",
+            "data": { }
+        },
         {
-	    "name": "nobody",
-	    "description": "An identifier that never identifies",
-	    "type": "always",
-	    "data": { },
+            "name": "nobody",
+            "description": "An identifier that never identifies",
+            "type": "always",
+            "data": { },
             "invert": True
-	},
+        },
         {
-	    "name": "local-interface",
-	    "description": "Requests from local interfaces",
-	    "type": "localif",
-	    "data": { }
-	},
-	{
-	    "name": "private-ip",
-	    "description": "Private IP Blocks per RFCs 1918 and 4193",
-	    "type": "ip-cidr-list",
-	    "data": {
-		"cidrs": [
+            "name": "local-interface",
+            "description": "Requests from local interfaces",
+            "type": "localif",
+            "data": { }
+        },
+        {
+            "name": "private-ip",
+            "description": "Private IP Blocks per RFCs 1918 and 4193",
+            "type": "ip-cidr-list",
+            "data": {
+                "cidrs": [
                     "10.0.0.0/8",
                     "172.16.0.0/12",
                     "192.168.0.0/16",
                     "fd00::/8"
-		]
-	    }
-	},
+                ]
+            }
+        },
         {
             "name": "secure-user",
             "description": "Request arrived using a secure protocol",
@@ -153,6 +153,6 @@ if __name__ == "__main__":
                 }
             }
         }
-        ])
+    ])
 
     print(iset.identities(hints))

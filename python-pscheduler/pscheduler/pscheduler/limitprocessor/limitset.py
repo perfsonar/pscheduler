@@ -192,67 +192,67 @@ class LimitSet():
 if __name__ == "__main__":
 
     thelimits = [
-	{
-	    "name": "always",
-	    "description": "Always passes",
-	    "type": "pass-fail",
-	    "data": {
-		"pass": True
-	    }
-	},
-	{
-	    "name": "never",
-	    "description": "Always fails",
-	    "clone": "always",
-	    "data": {
-		"pass": False
-	    }
-	},
+        {
+            "name": "always",
+            "description": "Always passes",
+            "type": "pass-fail",
+            "data": {
+                "pass": True
+            }
+        },
+        {
+            "name": "never",
+            "description": "Always fails",
+            "clone": "always",
+            "data": {
+                "pass": False
+            }
+        },
         {
             "name": "lunchtime",
-	    "description": "Never at noon",
-	    "type": "run-schedule",
-	    "data": {
+            "description": "Never at noon",
+            "type": "run-schedule",
+            "data": {
                 "hour": [ 12 ],
                 "overlap": True
             }
-	},
+        },
         {
             "name": "century20",
-	    "description": "The 20th century",
-	    "type": "run-daterange",
-	    "data": {
+            "description": "The 20th century",
+            "type": "run-daterange",
+            "data": {
                 "start": "1901-01-01T00:00:00",
                 "end": "2001-01-01T00:00:00"
             }
-	},
+        },
         {
             "name": "century21",
-	    "description": "The 21st century",
-	    "type": "run-daterange",
-	    "data": {
+            "description": "The 21st century",
+            "type": "run-daterange",
+            "data": {
                 "start": "2001-01-01T00:00:00",
                 "end": "2101-01-01T00:00:00"
             }
-	},
+        },
         {
             "name": "innocuous-tests",
-	    "description": "Tests that are harmless",
-	    "type": "test-type",
-	    "data": {
-		"types": [ "rtt", "latency", "trace" ]
+            "description": "Tests that are harmless",
+            "type": "test-type",
+            "data": {
+                "types": [ "rtt", "latency", "trace" ]
             }
-	},
+        },
         {
             "name": "innocuous-tests-inv",
-	    "description": "Tests that are harmful",
-	    "type": "test-type",
-	    "data": {
-		"types": [ "rtt", "latency", "trace" ]
+            "description": "Tests that are harmful",
+            "type": "test-type",
+            "data": {
+                "types": [ "rtt", "latency", "trace" ]
             },
             "invert": True
-	},
-        ]
+        },
+    ]
 
 
     # This only works on a fully-installed system with
