@@ -4,7 +4,6 @@
 #
 
 import re
-import string
 import optparse
 import pscheduler
 import sys

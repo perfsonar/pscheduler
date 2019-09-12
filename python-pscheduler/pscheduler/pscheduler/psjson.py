@@ -4,7 +4,6 @@ Functions for inhaling JSON in a pScheduler-normalized way
 
 from json import load, loads, dump, dumps
 import io
-import string
 import sys
 
 from .exitstatus import fail
