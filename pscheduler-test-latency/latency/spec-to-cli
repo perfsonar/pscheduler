@@ -21,7 +21,6 @@ if not valid:
 
 result = []
 
-# PYTHON3: This would be spec.items()
 for key, value in spec.items():
 
     # Things that get special handling
