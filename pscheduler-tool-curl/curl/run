@@ -33,8 +33,8 @@ try:
         source = input['test']['spec']['url']
         dest = None
         cleanup = False #disk-to-disk option
-except KeyError as e:
-    print(e);
+except KeyError as ex:
+    print(ex);
     pscheduler.fail('Missing data in input')
 
 

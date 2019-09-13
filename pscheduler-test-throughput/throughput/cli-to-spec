@@ -245,14 +245,14 @@ if options.udp:
 if options.bandwidth is not None:
    try:
       result['bandwidth'] = pscheduler.si_as_number(options.bandwidth)
-   except ValueError as e:
-      pscheduler.fail("Invalid value \"%s\" for bandwidth: %s" % (options.bandwidth, e))
+   except ValueError as ex:
+      pscheduler.fail("Invalid value \"%s\" for bandwidth: %s" % (options.bandwidth, ex))
 
 if options.window_size is not None:
    try:
       result["window-size"] = pscheduler.si_as_number(options.window_size)
-   except ValueError as e:
-      pscheduler.fail("Invalid value \"%s\" for window size: %s" % (options.window_size, e))
+   except ValueError as ex:
+      pscheduler.fail("Invalid value \"%s\" for window size: %s" % (options.window_size, ex))
 
 if options.mss is not None:
    result["mss"] = options.mss

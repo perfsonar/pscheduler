@@ -197,8 +197,8 @@ class RunWorker:
     
         try:
             db.commit()
-        except Exception as e:
-            self.log.warning("Error committing DB transaction: %s" % e)
+        except Exception as ex:
+            self.log.warning("Error committing DB transaction: %s" % ex)
         finally:
             self.dbpool.putconn(db)
     
@@ -662,7 +662,7 @@ class RunWorker:
             if returncode == 0:
                 try:
                     local_result = pscheduler.json_load(stdout)
-                except ValueError as ex:
+                except ValueError:
                     self.log.error("%d: Tool %s returned invalid JSON %s",
                                    self.id, tool, stdout)
                     local_result = None
@@ -898,7 +898,7 @@ def main_program():
 
             except select.error as ex:
 
-                err_no, message = ex
+                err_no, message = ex.args
                 if err_no != errno.EINTR:
                     log.exception()
                     raise ex
@@ -999,7 +999,7 @@ def main_program():
                                        AND state = run_state_pending()
                                    """, (tuple(run_ids),))
                 except Exception as ex:
-                    log.error("Unable to set on-deck status: %s")
+                    log.error("Unable to set on-deck status: %s" % (str(ex)))
 
         for worker in run_workers:
             worker.start()

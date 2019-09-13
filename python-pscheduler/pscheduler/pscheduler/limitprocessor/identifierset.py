@@ -55,7 +55,7 @@ class IdentifierSet():
             data = identifier['data']
             try:
                 creator = identifier_creator[id_type]
-            except KeyError as ex:
+            except KeyError:
                 raise ValueError("Identifier '%s' has unsupported type '%s'" \
                                  % (identifier['name'], id_type))
             id_object = creator(data)

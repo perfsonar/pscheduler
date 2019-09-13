@@ -567,7 +567,7 @@ def tasks():
         # Enable the task so the scheduler will schedule it.
         try:
             dbcursor_query("SELECT api_task_enable(%s)", [task_uuid])
-        except Exception as ex:
+        except Exception:
             log.exception()
             return error("Failed to enable task %s.  See system logs." % task_uuid)
         log.debug("Task enabled for scheduling.")

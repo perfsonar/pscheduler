@@ -137,7 +137,7 @@ class PycURLRunner(object):
             status = self.curl.getinfo(pycurl.HTTP_CODE)
             text = self.buf.getvalue()
         except pycurl.error as ex:
-            (code, message) = ex
+            (code, message) = ex.args
             status = 400
             text = message
         finally:

@@ -171,7 +171,7 @@ class Log():
                 self.is_quiet = depickled['is_quiet']
                 assert isinstance(self.is_quiet, bool)
 
-            except Exception as ex:
+            except Exception:
                 self.exception("Failed to decode %s '%s'"
                                % (STATE_VARIABLE, os.environ[STATE_VARIABLE]))
 
@@ -332,7 +332,7 @@ if __name__ == "__main__":
 
     try:
         raise ValueError("Test exception")
-    except Exception as ex:
+    except Exception:
         log.exception("Test exception with message")
 
     for num in range(1, 5):

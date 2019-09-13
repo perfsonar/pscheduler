@@ -14,9 +14,9 @@ def parse_output(lines):
 
     try:
         content = json.loads("".join(lines))
-    except Exception as e:
+    except Exception as ex:
         results['succeeded'] = False
-        results['error'] = "Unable to parse iperf3 output as JSON: %s" % e  
+        results['error'] = "Unable to parse iperf3 output as JSON: %s" % ex
         return results
     
     intervals = []

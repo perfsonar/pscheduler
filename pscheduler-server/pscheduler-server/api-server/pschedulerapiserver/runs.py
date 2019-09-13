@@ -140,7 +140,6 @@ def tasks_uuid_runs(task):
             # TODO: This should be exapandable
 
         except ValueError as ex:
-
             return bad_request(str(ex))
 
 

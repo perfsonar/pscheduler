@@ -604,7 +604,7 @@ class StreamingJSONProgram(object):
                     self.program.kill()
                     self.program = None
                     raise StreamingJSONProgramFailure(ex)
-                except (StopIteration) as ex:
+                except StopIteration:
                     rc = self.program.returncode()
                     # TODO: We seem to hit this a lot.
                     if rc is None:

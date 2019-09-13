@@ -36,8 +36,8 @@ try:
     test_spec = input['test']['spec']
     duration = pscheduler.iso8601_as_timedelta(input['schedule']['duration'])
     limits_passed = input.get('limits-passed', [])
-except KeyError as e:
-    pscheduler.fail("Missing required key in run input: %s" % e)
+except KeyError as ex:
+    pscheduler.fail("Missing required key in run input: %s" % ex)
 except:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 
@@ -200,8 +200,8 @@ def run_client():
 
     try:
         status, stdout, stderr = pscheduler.run_program(nuttcp_args)
-    except Exception as e:
-        logger.error("nuttcp failed to complete execution: %s" % e)
+    except Exception as ex:
+        logger.error("nuttcp failed to complete execution: %s" % ex)
         pscheduler.succeed_json({"succeeded": False,
                                  "diags": "\n".join(diags),
                                  "error": "The nuttcp command failed during execution. See server logs for more details."})
@@ -261,8 +261,8 @@ def run_server():
         status, stdout, stderr = pscheduler.run_program(nuttcp_args,
                                                         timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)),
                                                         timeout_ok = True)
-    except Exception as e:
-        logger.error("nuttcp failed to complete execution: %s" % e);
+    except Exception as ex:
+        logger.error("nuttcp failed to complete execution: %s" % ex);
         pscheduler.succeed_json({"succeeded": False,
                                  "diags": "\n".join(diags),
                                  "error": "The nuttcp command failed during execution. See server logs for more details."})

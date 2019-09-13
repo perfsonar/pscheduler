@@ -42,8 +42,8 @@ try:
     participant_data = input['participant-data']
     test_spec = input['test']['spec']
     duration = pscheduler.iso8601_as_timedelta(input['schedule']['duration'])
-except KeyError as e:
-    pscheduler.fail("Missing required key in run input: %s" % e)
+except KeyError as ex:
+    pscheduler.fail("Missing required key in run input: %s" % ex)
 except:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 
@@ -268,8 +268,8 @@ while True:
                 log.debug("Running owstats command: %s" % " ".join(owstats_args))
                 try:
                     stats_returncode, stats_stdout, stats_stderr = pscheduler.run_program(owstats_args, timeout=30)
-                except OSError as e:
-                    handle_run_error("owstats encountered an OS error: %s" % e)
+                except OSError as ex:
+                    handle_run_error("owstats encountered an OS error: %s" % ex)
                     cleanup_file(line, keep_data_files=keep_data_files)
                     continue
                 except Exception:
@@ -324,8 +324,8 @@ while True:
         elif not sleep_or_end(0, end_time, parent_pid):
             #if powstream exited before end time, report that fact
             log.debug("powstream exited with no errors but should have kept running, will attempt restart")
-    except OSError as e:
-        log.error("powstream encountered an OS error: %s" % e)
+    except OSError as ex:
+        log.error("powstream encountered an OS error: %s" % ex)
         try:
            if proc: proc.terminate()
         except:

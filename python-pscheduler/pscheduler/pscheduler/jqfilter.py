@@ -34,8 +34,7 @@ def _library_path():
                 for path in ["../lib/jq", "lib"]
             ])
         except IndexError:
-            # If there's no jq binary, don't do anything relative to it.
-            
+            # If there's no jq binary, don't do anything relative to it.            
             pass
 
     return _DEFAULT_LIBRARY_PATH

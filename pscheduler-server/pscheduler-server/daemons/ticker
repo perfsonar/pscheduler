@@ -100,7 +100,7 @@ def http_queue_maintainer(log):
                 del db.notifies[:]
                 log.debug("QM: Queue change.")
         except select.error as ex:
-            err_no, message = ex
+            err_no, message = ex.args
             if err_no != errno.EINTR:
                 log.exception()
                 raise ex

@@ -252,7 +252,7 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
             succeeded = run_json['result-merged']['succeeded']
             if succeeded is None:
                 raise KeyError()
-        except KeyError as ex:
+        except KeyError:
             pscheduler.fail("Data missing from run result")
     else:
         succeeded = False
@@ -361,7 +361,7 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
                             raise TypeError  # Treat this as a failure.
                         succeeded = attempt['stdout']['succeeded']
                         diags = "" if succeeded else attempt['stdout']['error']
-                    except (KeyError, TypeError) as ex:
+                    except (KeyError, TypeError):
                         succeeded = False
                         diags = attempt['stderr']
                     print("    %-25s %s" % (

@@ -147,7 +147,7 @@ if participant == 0:
             diags.append("Try %d succeeded." % (try_num))
             break
         except Exception as ex:
-            error = ex[1] if isinstance(ex, socket.gaierror) else str(ex)
+            error = ex.args[1] if isinstance(ex, socket.gaierror) else str(ex)
             error = "Failed to connect: %s" % (error)
             diags.append("Try %d failed: %s" % (try_num, error))
             log.debug(error)
@@ -200,11 +200,11 @@ elif participant == 1:
         connection.close()
         succeeded = True
 
-    except socket.timeout as ex:
+    except socket.timeout:
         error = "Client never connected."
 
     except socket.gaierror as ex:
-        (err_no, err_str) = ex
+        (err_no, err_str) = ex.args
         error = "Unable to set up listener: %s" % (err_str)
 
     except Exception as ex:
