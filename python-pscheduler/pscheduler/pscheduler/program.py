@@ -26,10 +26,6 @@ from .pstime import *
 
 
 
-# Note: Docs for the 3.x version of subprocess, the backport of which
-# is used here, is at https://docs.python.org/3/library/subprocess.html
-
-
 # Keep a hash of what processes are running so they can be killed off
 # when the program exits.  Note that it would behoove any callers to
 # make sure they exit cleanly on most signals so this gets called.
