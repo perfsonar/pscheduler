@@ -49,7 +49,7 @@ def data_is_valid(data):
 
 
 
-class IdentifierIPCIDRListURL():
+class IdentifierIPCIDRListURL(object):
 
     """Class that holds and processes identifiers as lists of CIDRs
     fetched from a URL.

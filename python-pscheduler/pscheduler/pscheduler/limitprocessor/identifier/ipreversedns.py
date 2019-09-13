@@ -31,7 +31,7 @@ def data_is_valid(data):
 
 
 
-class IdentifierIPReverseDNS():
+class IdentifierIPReverseDNS(object):
 
 
     """

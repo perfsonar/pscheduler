@@ -64,7 +64,7 @@ def urlfetch_data_is_valid(data):
 
 
 
-class LimitURLFetch():
+class LimitURLFetch(object):
 
     """
     Limit that passes or fails depending on the result of a URL Fetch

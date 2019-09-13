@@ -51,7 +51,7 @@ local7 = getattr(logging.handlers.SysLogHandler, "LOG_LOCAL7", None)
 STATE_VARIABLE = 'PSCHEDULER_LOG_STATE'
 
 
-class Log():
+class Log(object):
 
     """
     Logger class.

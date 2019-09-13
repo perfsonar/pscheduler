@@ -69,7 +69,7 @@ def pg_cursor(dsn='', autocommit=True, name=None):
 # TODO: Convert existing code to use this and incorporate functions above.
 #
 
-class PgQueryResult:
+class PgQueryResult(object):
 
     def __init__(self, cursor):
         self.cursor = cursor
@@ -98,7 +98,7 @@ class PgQueryResult:
             self.rows = 0
 
 
-class PgConnection:
+class PgConnection(object):
 
     def __init__(self, dsn, autocommit=True, name=None):
 

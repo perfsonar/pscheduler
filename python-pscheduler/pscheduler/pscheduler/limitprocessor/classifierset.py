@@ -2,7 +2,7 @@
 Set of Classifiers
 """
 
-class ClassifierSet():
+class ClassifierSet(object):
 
     """
     Class that holds and processes identifiers

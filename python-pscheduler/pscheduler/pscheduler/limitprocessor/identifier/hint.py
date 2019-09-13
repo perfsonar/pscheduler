@@ -26,7 +26,7 @@ def data_is_valid(data):
 
 
 
-class IdentifierHint():
+class IdentifierHint(object):
 
 
     """

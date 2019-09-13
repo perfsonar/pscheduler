@@ -8,7 +8,7 @@ import sre_constants
 from .jsonval import json_validate
 
 
-class StringMatcher():
+class StringMatcher(object):
 
     "Class that does several types of string matching."
 

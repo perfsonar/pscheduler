@@ -17,7 +17,7 @@ def data_is_valid(data):
 
 
 
-class IdentifierAlways():
+class IdentifierAlways(object):
 
 
     """

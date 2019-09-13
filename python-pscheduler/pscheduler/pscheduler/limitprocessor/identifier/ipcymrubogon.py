@@ -31,7 +31,7 @@ def data_is_valid(data):
 
 
 
-class IdentifierIPCymruBogon():
+class IdentifierIPCymruBogon(object):
 
     """
     Identifier for finding bogons/martians via DNS

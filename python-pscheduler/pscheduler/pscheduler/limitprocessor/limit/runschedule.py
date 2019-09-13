@@ -248,7 +248,7 @@ def runschedule_data_is_valid(data):
 
 
 
-class LimitRunSchedule():
+class LimitRunSchedule(object):
 
     """
     Limit according to runschedule criteria

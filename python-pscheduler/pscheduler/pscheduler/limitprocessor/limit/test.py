@@ -25,7 +25,7 @@ def data_is_valid(data):
 
 
 
-class LimitTest():
+class LimitTest(object):
 
     """Limit that passes or fails based on whether or not a test says it
     does.

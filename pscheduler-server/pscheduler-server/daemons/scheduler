@@ -112,7 +112,7 @@ dsn = options.dsn
 # Range Class and Functions
 #
 
-class Range():
+class Range(object):
     """
     Expresses ranges of values.  Values may be of any type with a
     less-than operator.

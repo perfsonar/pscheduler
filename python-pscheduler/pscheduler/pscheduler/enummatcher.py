@@ -6,7 +6,7 @@ Class for doing enumerated matches
 from .jsonval import json_validate
 
 
-class EnumMatcher():
+class EnumMatcher(object):
 
     "Class that matches an enumeration."
 

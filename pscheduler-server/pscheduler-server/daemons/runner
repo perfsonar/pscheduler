@@ -92,7 +92,7 @@ delimiter = pscheduler.api_result_delimiter()
 
 # TODO: Use the ThreadSafeSet and ThreadSafeSetHold instead
 
-class RunDictionary:
+class RunDictionary(object):
 
     def __init__(self):
         self.dict = {}
@@ -165,7 +165,7 @@ def clock_survey(hosts, bind=None):
 # Class that does the test runs
 #
 
-class RunWorker:
+class RunWorker(object):
 
     def __init__(self, dbpool, log, id, start_at):
 

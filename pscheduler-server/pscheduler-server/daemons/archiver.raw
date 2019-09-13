@@ -122,7 +122,7 @@ dsn = options.dsn
 # Maintainer for default archives
 #
 
-class DefaultArchiveMaintainer:
+class DefaultArchiveMaintainer(object):
 
     def __init__(self, path, dsn, log):
 
@@ -531,7 +531,7 @@ workers = pscheduler.ThreadSafeDictionary()
 # Archive Worker
 #
 
-class ArchiveWorker():
+class ArchiveWorker(object):
 
     def __init__(self, db, log, row, collection):
         self.db = db

@@ -19,7 +19,7 @@ def data_is_valid(data):
 
 
 
-class IdentifierJQ():
+class IdentifierJQ(object):
 
 
     """

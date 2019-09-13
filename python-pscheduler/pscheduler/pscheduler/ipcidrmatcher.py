@@ -5,7 +5,7 @@ Class for doing enumerated matches
 from .jsonval import json_validate
 import netaddr
 
-class IPCIDRMatcher():
+class IPCIDRMatcher(object):
 
     "Class that matches an IP Cidr list."
 

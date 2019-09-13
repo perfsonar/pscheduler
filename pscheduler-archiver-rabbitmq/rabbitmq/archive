@@ -21,7 +21,7 @@ log = pscheduler.Log(prefix=log_prefix, quiet=True)
 
 
 
-class PikaConnectionChannelPair:
+class PikaConnectionChannelPair(object):
     """
     This class implements a RabbitMQ connection and channel pair
     """

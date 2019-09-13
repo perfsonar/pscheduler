@@ -28,7 +28,7 @@ def rundaterange_data_is_valid(data):
 
 
 
-class LimitRunDateRange():
+class LimitRunDateRange(object):
 
     """
     Limit according to rundaterange criteria

@@ -8,7 +8,7 @@ from .iso8601 import *
 from .jsonval import *
 
 
-class DurationRange():
+class DurationRange(object):
 
     "Range of durations"
 

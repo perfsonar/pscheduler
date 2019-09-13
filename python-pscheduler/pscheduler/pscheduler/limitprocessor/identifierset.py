@@ -28,7 +28,7 @@ identifier_creator = {
     }
 
 
-class IdentifierSet():
+class IdentifierSet(object):
 
     """
     Class that holds and processes identifiers

@@ -8,7 +8,7 @@ import pyjq
 
 from ..jqfilter import *
 
-class Prioritizer():
+class Prioritizer(object):
 
     """
     Class that handles determining priority

@@ -16,7 +16,7 @@ from .limitset       import LimitSet
 from .applicationset import ApplicationSet
 from .prioritizer    import Prioritizer
 
-class LimitProcessor():
+class LimitProcessor(object):
 
     """
     pScheduler limit processing class

@@ -6,7 +6,7 @@ from .jsonval import *
 from .psjson import *
 from .sinumber import *
 
-class NumericRange():
+class NumericRange(object):
 
     "Range of numbers"
 

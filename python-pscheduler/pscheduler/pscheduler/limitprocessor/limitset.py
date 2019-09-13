@@ -60,7 +60,7 @@ def merge_dicts(a, b, path=None):
 
 
 
-class LimitSet():
+class LimitSet(object):
 
     """
     Class that holds and processes limits

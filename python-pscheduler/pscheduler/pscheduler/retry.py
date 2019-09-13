@@ -8,7 +8,7 @@ from .iso8601 import *
 from .jsonval import *
 
 
-class RetryPolicy():
+class RetryPolicy(object):
 
     """
     Class that implements retry policies as an array of ("n1 attempts

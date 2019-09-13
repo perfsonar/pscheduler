@@ -26,7 +26,7 @@ def data_is_valid(data):
 
 
 
-class LimitTestType():
+class LimitTestType(object):
 
     """
     Limit that passes or fails according to a hard-wired value.

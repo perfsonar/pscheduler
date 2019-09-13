@@ -23,7 +23,7 @@ def passfail_data_is_valid(data):
 
 
 
-class LimitPassFail():
+class LimitPassFail(object):
 
     """
     Limit that passes or fails according to a hard-wired value.

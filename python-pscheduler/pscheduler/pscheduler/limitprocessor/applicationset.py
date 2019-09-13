@@ -41,7 +41,7 @@ group_condition_tests = {
 
 
 
-class ApplicationSet():
+class ApplicationSet(object):
 
     """
     Class that holds and processes limit applications

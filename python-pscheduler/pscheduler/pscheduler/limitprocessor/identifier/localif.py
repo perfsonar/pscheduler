@@ -16,7 +16,7 @@ def data_is_valid(data):
     return False, "Data is not an object or not empty."
 
 
-class IdentifierLocalIF():
+class IdentifierLocalIF(object):
 
 
     """

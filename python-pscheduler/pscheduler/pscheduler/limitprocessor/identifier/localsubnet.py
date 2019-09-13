@@ -56,7 +56,7 @@ def ipv6_netmask_size(mask_in):
 
 
 
-class IdentifierLocalSubnet():
+class IdentifierLocalSubnet(object):
 
 
     """

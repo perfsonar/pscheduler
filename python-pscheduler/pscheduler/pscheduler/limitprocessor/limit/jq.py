@@ -22,7 +22,7 @@ def jq_data_is_valid(data):
 
 
 
-class LimitJQ():
+class LimitJQ(object):
 
     """
     Use JQ to return a true/false for pass/fail

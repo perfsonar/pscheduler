@@ -30,7 +30,7 @@ def data_is_valid(data):
 
 
 
-class IdentifierIPCIDRList():
+class IdentifierIPCIDRList(object):
 
 
     """

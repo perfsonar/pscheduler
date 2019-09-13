@@ -9,7 +9,7 @@ import pyjq
 from ..jqfilter import *
 from ..psjson import *
 
-class Rewriter():
+class Rewriter(object):
 
     """
     Class that handles rewriting tasks
