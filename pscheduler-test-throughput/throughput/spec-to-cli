@@ -25,7 +25,7 @@ elif spec.get('schema', 1) == 2:
 else:
     spec_properties = validate.SPEC_SCHEMA['local']['throughput_v1']['properties']
 
-for item in list(spec_properties.keys()):
+for item in spec_properties:
     if item == 'schema': continue
     if "$ref" in spec_properties[item] and "Boolean" in spec_properties[item]['$ref']:
         bools.append( (item, item) )

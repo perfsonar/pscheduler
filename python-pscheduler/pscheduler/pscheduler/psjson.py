@@ -18,7 +18,7 @@ def json_decomment(json, prefix='#', null=False):
     """
     if isinstance(json, dict):
         result = {}
-        for item in list(json.keys()):
+        for item in json:
             if item.startswith(prefix):
                 if null:
                     result[item] = None
@@ -46,7 +46,7 @@ def json_substitute(json, value, replacement):
     """
     if isinstance(json, dict):
         result = {}
-        for item in list(json.keys()):
+        for item in json:
             if json[item] == value:
                 result[item] = replacement
             else:

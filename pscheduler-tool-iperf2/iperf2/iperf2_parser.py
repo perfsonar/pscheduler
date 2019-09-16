@@ -124,7 +124,7 @@ def parse_output(lines):
 
         
 
-    if len(list(streams.keys())) == 0:
+    if not streams:
         results["succeeded"] = False
         results["error"] = "No results found"
         return results
@@ -133,7 +133,7 @@ def parse_output(lines):
     summary_interval = None
     intervals        = []
 
-    for interval in list(streams.keys()):
+    for interval in streams:
 
         summary_stream = None
 

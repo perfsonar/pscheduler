@@ -54,7 +54,7 @@ supported_options = ["schema",
                      ]
 
 
-for option in list(spec.keys()):
+for option in spec:
     if option not in supported_options:
         logger.debug("nuttcp unsupported option %s" % option)
         errors.append('nuttcp does not support %s option' % option)

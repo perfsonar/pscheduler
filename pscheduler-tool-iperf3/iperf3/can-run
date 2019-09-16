@@ -55,7 +55,7 @@ supported_options = ["schema",
                      "server-cpu-affinity"
                      ]
 
-for option in list(spec.keys()):
+for option in spec:
     if option not in supported_options:
         logger.debug("iperf3 unsupported option %s" % option)
         errors.append('iperf3 does not support %s option' % option)    

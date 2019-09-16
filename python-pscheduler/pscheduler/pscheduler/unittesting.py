@@ -827,7 +827,7 @@ class TestSpecToCliUnitTest(ExecUnitTest):
         
         #Track that we have all the expected cli args
         unused_cli_args = {}
-        for expected_cli_arg in list(expected_cli_args.keys()):
+        for expected_cli_arg in expected_cli_args:
             unused_cli_args[expected_cli_arg] = True
         
         #go through what we got

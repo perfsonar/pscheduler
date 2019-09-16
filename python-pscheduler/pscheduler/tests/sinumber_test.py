@@ -31,7 +31,7 @@ class TestSinumber(PschedTestBase):
             '3.1415P': 3.1415e+15,
         }
 
-        for i in list(conversion_map.keys()):
+        for i in conversion_map:
             self.assertEqual(conversion_map.get(i), si_as_number(i))
 
         for i in ["ki", "Steak", "123e1", 3.1415]:

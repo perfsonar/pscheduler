@@ -77,7 +77,7 @@ def address_interface(address, ip_version=None):
     for interface in all_interfaces:
         addresses = netifaces.ifaddresses(interface)
 
-        for family in list(addresses.keys()):
+        for family in addresses:
             for addr_info in addresses[family]:
                 if addr_info['addr'] == address:
                     return interface

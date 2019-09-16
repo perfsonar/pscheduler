@@ -62,7 +62,7 @@ class ClassifierSet(object):
                     result[classification] = 0
 
         # TODO: Is there any reason to sort this for consistency?
-        return list(result.keys())
+        return list(result)
 
 
 

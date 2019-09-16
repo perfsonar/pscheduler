@@ -54,7 +54,7 @@ except KeyError:
     protocol = None
 
 # loop through spec to get cli switches 
-for key in list(input['test']['spec'].keys()):
+for key in input['test']['spec']:
     try:
         argv.append(cli_switches[key])
         argv.append(input['test']['spec'][key])

@@ -58,7 +58,7 @@ supported_options = ["schema",
                      "udp", "single-ended", "single-ended-port"
                      ]
 
-for option in list(spec.keys()):
+for option in spec:
     if option not in supported_options:
         logger.debug("iperf2 unsupported option %s" % option)
         errors.append('iperf2 does not support %s option' % option)    
