@@ -169,8 +169,8 @@ DEFAULT_SUMMARIES = {
 ###
 # Utility functions
 def iso8601_to_seconds(val):
-    td = pscheduler.iso8601_as_timedelta(val)
-    return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10.0**6) / 10.0**6
+    return pscheduler.iso8601_as_timedelta(val).total_seconds()
+
 
 ###
 # Private and unit testable  version of handle_storage

@@ -463,7 +463,7 @@ def run_post(
         if max_slip_offset:
             def us(td):
                 return td.microseconds + 1000000 * (td.seconds + 86400 * td.days)
-            increments = us(max_slip_offset) / 1000000
+            increments = int(us(max_slip_offset) / 1000000)
             picked_increment = random.randrange(0, increments)
             log and log.debug("%d: %d increments, picked %d", number,
                               increments, picked_increment)

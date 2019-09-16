@@ -129,8 +129,8 @@ def sleep_or_end(seconds, end_time, parent_pid):
     if time_left < datetime.timedelta(seconds=seconds) :
         #sleep until end time
         # don't convert until here because could be a real big value otherwise
-        # also once 2.6 is out of the picture, can just call time_left.total_seconds()
-        remaining_sleep_time = (time_left.microseconds + (time_left.seconds + time_left.days * 24 * 3600) * 10.0**6) / 10.0**6
+        remaining_sleep_time = time_left.total_seconds()
+
     
     while remaining_sleep_time > 0:
         if(max_sleep_interval < remaining_sleep_time):

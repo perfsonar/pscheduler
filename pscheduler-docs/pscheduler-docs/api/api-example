@@ -324,9 +324,7 @@ except ValueError as ex:
 
 now = datetime.datetime.now(tzlocal())
 sleep_time = end_time - now if end_time > now else datetime.timedelta()
-sleep_seconds = (sleep_time.days * 86400) \
-                + (sleep_time.seconds) \
-                + (sleep_time.microseconds / (10.0**6))
+sleep_seconds = sleep_time.total_seconds()
 
 print
 print "Waiting", sleep_seconds, "seconds for run to finish..."

@@ -111,8 +111,9 @@ def run_client():
 
     if 'bandwidth' in test_spec and test_spec['bandwidth'] != None:
         nuttcp_args.append('-R')
-        # nuttcp specifies bandwidth in Kbps, so need to convert here
-        nuttcp_args.append(test_spec['bandwidth'] / 1000)
+        # nuttcp specifies bandwidth in Kbps and is okay with
+        # fractions, so need to convert here
+        nuttcp_args.append(test_spec['bandwidth'] / 1000.0)
     else:
 
         # Find the largest bandwidth in each participant's passed
@@ -142,8 +143,9 @@ def run_client():
             max_bandwidth = sorted(max_bandwidths)[0]
             logger.debug("Limiting bandwidth to %d", max_bandwidth)
             nuttcp_args.append('-R')
-            # nuttcp specifies bandwidth in Kbps, so need to convert here
-            nuttcp_args.append(max_bandwidth / 1000)
+            # nuttcp specifies bandwidth in Kbps and is okay with
+            # fractions, so need to convert here
+            nuttcp_args.append(max_bandwidth / 1000.0)
 
 
     if 'udp' in test_spec:

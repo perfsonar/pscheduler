@@ -96,7 +96,8 @@ if True:
       # TODO: The pscheduler module has functions for doing this.
       scalar = ['B', 'KB', 'MB', 'GB', 'TB']
       while bytes_sent > 1024 and len(scalar) > 1:
-        bytes_sent /= 1024; scalar = scalar[1:]
+        bytes_sent = int(bytes_sent / 1024)
+        scalar = scalar[1:]
 
       # Put this into diags
       #error += '\n\nBytes Transfered: %s %s'% (int(bytes_sent), scalar[0])
