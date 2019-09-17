@@ -140,7 +140,7 @@ if participant == 0:
             sock.settimeout(time_remaining)
             sock.connect(server_address)
             log.debug("Connected")
-            sock.sendall(material)
+            sock.sendall(material.encode())
             log.debug("Sent")
             succeeded = True
             error = None
@@ -193,7 +193,7 @@ elif participant == 1:
         while True:
             data = connection.recv(1024)
             if data:
-                full += data
+                full += data.decode("ascii")
             else:
                 break
 
