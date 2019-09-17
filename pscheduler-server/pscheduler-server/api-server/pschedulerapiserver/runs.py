@@ -147,7 +147,9 @@ def tasks_uuid_runs(task):
 
     elif request.method == 'POST':
 
-        log.debug("Run POST: %s --> %s", request.url, request.data)
+        data = request.data.decode("ascii")
+
+        log.debug("Run POST: %s --> %s", request.url, data)
 
         requester, key = task_requester_key(task)
         if requester is None:
@@ -158,7 +160,7 @@ def tasks_uuid_runs(task):
 
 
         try:
-            data = pscheduler.json_load(request.data, max_schema=1)
+            data = pscheduler.json_load(data, max_schema=1)
             start_time = pscheduler.iso8601_as_datetime(data['start-time'])
         except KeyError:
             return bad_request("Missing start time")
@@ -370,6 +372,8 @@ def tasks_uuid_runs_run(task, run):
 
     elif request.method == 'PUT':
 
+        data = request.data.decode("ascii")
+
         log.debug("Run PUT %s", request.url)
 
         requester, key = task_requester_key(task)
@@ -382,10 +386,10 @@ def tasks_uuid_runs_run(task, run):
 
         # Get the JSON from the body
         try:
-            run_data = pscheduler.json_load(request.data, max_schema=1)
+            run_data = pscheduler.json_load(data, max_schema=1)
         except ValueError:
             log.exception()
-            log.debug("Run data was %s", request.data)
+            log.debug("Run data was %s", data)
             return bad_request("Invalid or missing run data")
 
         # If the run doesn't exist, take the whole thing as if it were
