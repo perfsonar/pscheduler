@@ -20,7 +20,6 @@ def numa_node_ok(node):
     errs = err.split("\n")
     short_errs = []
     for line in errs:
-        print("LINE", line)
         if line.startswith("usage: "):
             break
         short_errs.append(line)
