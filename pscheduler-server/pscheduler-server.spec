@@ -465,6 +465,7 @@ then
         then
     	    setsebool -P "${SWITCH}" 1
 	fi
+    done
 fi
 
 systemctl enable httpd
