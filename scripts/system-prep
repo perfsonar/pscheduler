@@ -21,7 +21,7 @@
 #NEW_PASS="${NEW_USER}"
 
 # Current version number of perfSONAR repos
-PS_REPO_VERSION=0.8-1
+PS_REPO_VERSION=0.9-1
 
 
 # No user-serviceable parts beyond this point.
