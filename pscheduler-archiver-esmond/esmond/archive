@@ -31,8 +31,18 @@ def archive(json):
     log.debug("Archiver received: %s" % json)
     task_href = json['task-href'].encode("utf-8") #encode to utf-8 so memcache can handle i
     run_href = json['run-href'].encode("utf-8")
-    test_type = json['result']['test']['type']
-    test_spec = json['result']['test']['spec']
+    # Get the test object. This code check in two places. In theory we should
+    # not need to do this but this is a workaround of issue #929
+    test_json = json['result'].get('test', {})
+    if not test_json:
+        test_json = json['result'].get('task', {}).get('test', {})
+        if not test_json:
+            return {
+                "succeeded": False,
+                "error": "Unable to find test definition in JSON given to plugin"
+            }
+    test_type = test_json['type']
+    test_spec = test_json['spec']
     reference = json['result'].get('reference', {})
     test_result = {}
     if json['result']['result'] is not None:
