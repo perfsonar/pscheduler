@@ -31,7 +31,7 @@ Options:
 import optparse
 import pscheduler
 
-from pscheduler.limitprocessor import LimitProcessor
+from pscheduler.limitprocessor.limitprocessor import LimitProcessor
 
 pscheduler.set_graceful_exit()
 
