@@ -114,20 +114,25 @@ if options.skip_single and host_z is None:
 
 # TODO: This would be a nice "narrator" class.
 
+
+def _write(text):
+    sys.stdout.write(text)
+    sys.stdout.flush()
+
 def start(text):
-    sys.stdout.write("%s..." % (text))
+    _write("%s..." % (text))
 
 def progress(text=None):
     if text is None:
-        sys.stdout.write(".")
+        _write(".")
     else:
         start(" %s" % (text))
 
 def ok(message="OK."):
-    sys.stdout.write(" %s\n" % (message))
+    _write(" %s\n" % (message))
 
 def failed(why, fail=True):
-    sys.stdout.write(" Failed.\n")
+    _write(" Failed.\n")
     print(why)
     if fail:
         pscheduler.fail()
