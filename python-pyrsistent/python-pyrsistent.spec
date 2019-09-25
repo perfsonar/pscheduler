@@ -22,9 +22,9 @@ URL:		https://github.com/tobgu/pyrsistent
 Source:		%{short}-%{version}.tar.gz
 
 Requires:       %{_pscheduler_python}
-Requires:       %{_pscheduler_python}-six
+Requires:       %{_pscheduler_python_epel}-six
 
-BuildRequires:  %{_pscheduler_python}-six
+BuildRequires:  %{_pscheduler_python_epel}-six
 BuildRequires:  %{_pscheduler_python}
 BuildRequires:  %{_pscheduler_python}-devel
 BuildRequires:  %{_pscheduler_python}-setuptools

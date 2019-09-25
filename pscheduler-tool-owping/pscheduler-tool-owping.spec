@@ -28,7 +28,7 @@ Requires:	owamp-server
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:	%{_pscheduler_python}-pscheduler
-BuildRequires:  %{_pscheduler_python}-nose
+BuildRequires:  %{_pscheduler_python_epel}-nose
 
 %description
 owping tool class for pScheduler

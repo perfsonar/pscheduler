@@ -19,7 +19,9 @@ URL:            http://modwsgi.org
 Source0:        %{name}-%{version}.tar.gz
 Source1:        wsgi.conf
 #BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:  httpd-devel, %{_pscheduler_python}-devel, autoconf
+BuildRequires:  httpd-devel
+BuildRequires:  %{_pscheduler_python}-devel
+BuildRequires:  autoconf
 Requires: httpd-mmn = %{_httpd_mmn}
 
 # Suppress auto-provides for module DSO

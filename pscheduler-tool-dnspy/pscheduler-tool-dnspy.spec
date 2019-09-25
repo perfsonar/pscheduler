@@ -21,7 +21,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	%{_pscheduler_python}-dns
+Requires:	%{_pscheduler_python_epel}-dns
 Requires:	%{_pscheduler_python}-pscheduler
 Requires:	pscheduler-test-dns
 

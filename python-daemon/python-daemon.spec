@@ -1,5 +1,5 @@
 #
-# RPM Spec for Python isodate Module
+# RPM Spec for a Python Module
 #
 
 %define short	daemon
@@ -21,6 +21,7 @@ Source:		python-%{short}-%{version}.tar.gz
 
 Requires:	%{_pscheduler_python}
 
+BuildRequires:	%{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-setuptools
 
 %description

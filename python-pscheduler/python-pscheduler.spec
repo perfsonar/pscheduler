@@ -26,49 +26,49 @@ Source0:	%{short}-%{version}.tar.gz
 # BuildRequires because they're required to run the tests.
 
 Requires:	iputils
-Requires:	%{_pscheduler_python}-dateutil
-Requires:	%{_pscheduler_python}-dns
+Requires:	%{_pscheduler_python_epel}-dateutil
+Requires:	%{_pscheduler_python_epel}-dns
 Requires:	%{_pscheduler_python}-isodate
 Requires:	%{_pscheduler_python}-jsonschema >= 3.0
-Requires:	%{_pscheduler_python}-netaddr
+Requires:	%{_pscheduler_python_epel}-netaddr
 Requires:	%{_pscheduler_python}-netifaces
 Requires:	%{_pscheduler_python}-ntplib
-Requires:	%{_pscheduler_python}-psycopg2 >= 2.6.1
+Requires:	%{_pscheduler_python_epel}-psycopg2 >= 2.6.1
 Requires:	%{_pscheduler_python}-py-radix
 # The limit system uses this.
 Requires:	pscheduler-jq-library
-Requires:	%{_pscheduler_python}-pycurl
+Requires:	%{_pscheduler_python_epel}-pycurl
 Requires:	%{_pscheduler_python}-pyjq >= 2.2.0
 Requires:	%{_pscheduler_python}-tzlocal
-Requires:	%{_pscheduler_python}-pytz
+Requires:	%{_pscheduler_python_epel}-pytz
 Requires:	rsyslog
 Requires:	logrotate
 Requires:       numactl
 
 BuildRequires:	pscheduler-rpm
-BuildRequires:	%{_pscheduler_python}-coverage
-BuildRequires:	%{_pscheduler_python}-nose
+BuildRequires:	%{_pscheduler_python_epel}-coverage
+BuildRequires:	%{_pscheduler_python_epel}-nose
 BuildRequires:	%{_pscheduler_python}-setuptools
 
 # NOTE:  Cloned from above.
 BuildRequires:	iputils
-BuildRequires:	%{_pscheduler_python}-dateutil
-BuildRequires:	%{_pscheduler_python}-dns
+BuildRequires:	%{_pscheduler_python_epel}-dateutil
+BuildRequires:	%{_pscheduler_python_epel}-dns
 BuildRequires:	%{_pscheduler_python}-isodate
 %if 0%{?el7}
 BuildRequires:	%{_pscheduler_python}-jsonschema
 %endif
-BuildRequires:	%{_pscheduler_python}-netaddr
+BuildRequires:	%{_pscheduler_python_epel}-netaddr
 BuildRequires:	%{_pscheduler_python}-netifaces
 BuildRequires:	%{_pscheduler_python}-ntplib
-BuildRequires:	%{_pscheduler_python}-psycopg2 >= 2.2.0
+BuildRequires:	%{_pscheduler_python_epel}-psycopg2 >= 2.2.0
 BuildRequires:	%{_pscheduler_python}-py-radix
 # The limit system uses this.
 BuildRequires:	pscheduler-jq-library
-BuildRequires:	%{_pscheduler_python}-pycurl
+BuildRequires:	%{_pscheduler_python_epel}-pycurl
 BuildRequires:	%{_pscheduler_python}-pyjq >= 2.2.0
 BuildRequires:	%{_pscheduler_python}-tzlocal
-BuildRequires:	%{_pscheduler_python}-pytz
+BuildRequires:	%{_pscheduler_python_epel}-pytz
 BuildRequires:  numactl
 
 

@@ -33,7 +33,7 @@ Requires:		chkconfig
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:  %{_pscheduler_python}-pscheduler
-BuildRequires:  %{_pscheduler_python}-nose
+BuildRequires:  %{_pscheduler_python_epel}-nose
 
 %define directory %{_includedir}/make
 

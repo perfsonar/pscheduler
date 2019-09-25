@@ -47,6 +47,7 @@ Requires:	random-string >= 1.1
 BuildRequires:	m4
 Requires:	curl
 Requires:	pscheduler-account
+# This is from EPEL but doesn't have a python36 prefix
 Requires:	%{_pscheduler_python}-daemon
 Requires:	%{_pscheduler_python}-flask
 Requires:	%{_pscheduler_python}-jsontemplate
@@ -468,6 +469,7 @@ then
         then
     	    setsebool -P "${SWITCH}" 1
 	fi
+    done
 fi
 
 systemctl enable httpd
@@ -582,7 +584,7 @@ fi
 # Any upgrade of python-pscheduler needs to force a database restart
 # because Pg doesn't see module upgrades.
 
-%triggerin -- python-pscheduler
+%triggerin -- %{_pscheduler_python}-pscheduler
 systemctl restart "%{pgsql_service}"
 
 

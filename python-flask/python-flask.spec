@@ -15,14 +15,14 @@ Provides:	%{name} = %{version}-%{release}
 Prefix:		%{_prefix}
 
 Vendor:		Pallets Projects
-URL:		https://palletsprojects.com/p/itsdangerous
+URL:		https://palletsprojects.com/p/flask
 
 Source:		%{short}-%{version}.tar.gz
 
 Requires:	%{_pscheduler_python}
-Requires:	%{_pscheduler_python}-click
+Requires:	%{_pscheduler_python_epel}-click
 Requires:	%{_pscheduler_python}-itsdangerous
-Requires:	%{_pscheduler_python}-jinja2
+Requires:	%{_pscheduler_python_epel}-jinja2
 Requires:	%{_pscheduler_python}-werkzeug
 
 BuildRequires:	%{_pscheduler_python}

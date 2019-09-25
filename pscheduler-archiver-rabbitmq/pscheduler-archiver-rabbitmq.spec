@@ -22,7 +22,7 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.1.6
 Requires:	%{_pscheduler_python}-pscheduler >= 1.3.7.3
-Requires:	%{_pscheduler_python}-pika >= 0.9.8
+Requires:	%{_pscheduler_python_epel}-pika >= 0.9.8
 
 BuildRequires:	pscheduler-rpm
 
