@@ -1,8 +1,8 @@
-pscheduler-tool-paris-traceroute (4.2.1~a1.0-1) perfsonar-4.2-snapshot; urgency=low
+pscheduler-tool-paris-traceroute (4.2.1-1) perfsonar-4.2; urgency=low
 
   * New upstream version.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 27 Aug 2019 17:33:18 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 02 Oct 2019 23:07:24 +0000
 
 pscheduler-tool-paris-traceroute (4.2.0-1) perfsonar-minor-staging; urgency=low
 
