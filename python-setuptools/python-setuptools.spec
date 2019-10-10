@@ -12,6 +12,7 @@ License:	MIT
 Group:		Applications/System
 
 Provides:	%{name} = %{version}-%{release}
+Provides:	python-%{short} = %{version}-%{release}
 Prefix:		%{_prefix}
 
 Vendor:		Python Packaging Authority
