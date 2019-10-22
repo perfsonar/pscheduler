@@ -3,7 +3,7 @@
 #
 
 %define short	rtt
-%define perfsonar_auto_version 4.2.2
+%define perfsonar_auto_version 4.2.3
 %define perfsonar_auto_relnum 0.a0.0
 
 Name:		pscheduler-test-%{short}
