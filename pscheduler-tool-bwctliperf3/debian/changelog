@@ -8,6 +8,12 @@ pscheduler-tool-bwctliperf3 (4.3.0~a1.0-1) perfsonar-4.3-snapshot; urgency=low
  -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 30 Aug 2019 16:37:51 +0000
 >>>>>>> 4.2.1
 
+pscheduler-tool-bwctliperf3 (4.2.1-1) perfsonar-4.2; urgency=low
+
+  * Dummy package disabling all functionnality.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 02 Oct 2019 23:07:24 +0000
+
 pscheduler-tool-bwctliperf3 (4.2.0-1) perfsonar-minor-staging; urgency=low
 
   * New upstream version
