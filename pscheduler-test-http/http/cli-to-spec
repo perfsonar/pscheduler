@@ -60,6 +60,11 @@ opt_parser.add_option("--host-node",
                       action="store", type="string",
                       dest="host_node")
 
+opt_parser.add_option("--archive-all",
+                      help="Archive all messages, regardless of response code",
+                      action="store_true",
+                      dest="archive_all")
+
 opt_parser.add_option("--timeout",
                       help="Timeout for each query attempt",
                       action="store", type="string",
@@ -82,5 +87,7 @@ if options.parse is not None:
     result['parse'] = options.parse
 if options.timeout is not None:
     result['timeout'] = options.timeout
+if options.archive_all is not None:
+    result['archive_all'] = options.archive_all
 
 pscheduler.succeed_json(result)
