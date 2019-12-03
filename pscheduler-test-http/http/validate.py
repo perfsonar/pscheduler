@@ -17,7 +17,7 @@ def spec_is_valid(json):
             "url":          { "$ref": "#/pScheduler/URL" },
             "parse":        { "$ref": "#/pScheduler/String" },
             "timeout":      { "$ref": "#/pScheduler/Duration" },
-            "archive_all":  { "$ref": "#/pScheduler/Boolean" },
+            "always-succeed":  { "$ref": "#/pScheduler/Boolean" },
         },
         "required": [ "url" ],
         "additionalProperties": False
@@ -52,7 +52,7 @@ def limit_is_valid(json):
             "host-node":     { "$ref": "#/pScheduler/Limit/String" },
             "timeout":         { "$ref": "#/pScheduler/Limit/Duration" },
             "parse":           { "$ref": "#/pScheduler/Limit/String" },
-            "archive_all":  { "$ref": "#/pScheduler/Boolean" },
+            "always-succeed":  { "$ref": "#/pScheduler/Boolean" },
         },
         "additionalProperties": False
     }

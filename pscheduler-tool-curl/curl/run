@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 #
 # Development Order #5:
 #
@@ -24,6 +23,7 @@ log = pscheduler.Log(prefix='curl', quiet=True)
 
 # Take input from test spec
 try:
+    schema = 1
     test_type = input['test']['type']
     if test_type == "disk-to-disk":
         dest = input['test']['spec']['dest']
@@ -33,9 +33,10 @@ try:
         source = input['test']['spec']['url']
         dest = None
         cleanup = False #disk-to-disk option
-        archive_all = False
-        if input['test']['spec'].get('archive_all') is not None:
-            archive_all = True
+        always_succeed = False
+        if input['test']['spec'].get('always-succeed') is not None:
+            always_succeed = True
+            schema = 2
 except KeyError as e:
     print(e);	pscheduler.fail('Missing data in input')
 
@@ -125,7 +126,7 @@ final_results = {
     'error': error,
     'diags': diags }
 
-results = {'schema': 1, 
+results = {'schema': schema, 
 	   'succeeded': succeeded}
 
 results['time'] = pscheduler.timedelta_as_iso8601( end_time - start_time)
@@ -165,7 +166,7 @@ elif test_type == "http":
     if status_code.isdigit():
         status_code = int(status_code)
         results['status'] = status_code
-        if (status_code >= 200 and status_code < 300) or archive_all:
+        if (status_code >= 200 and status_code < 300) or always_succeed:
             results['succeeded'] = True
         else:
             results['succeeded'] = False

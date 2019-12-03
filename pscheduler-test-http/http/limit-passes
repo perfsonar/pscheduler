@@ -39,7 +39,7 @@ errors = []
 # Query host, host-node, timeout, url, strings to parse
 #
 
-for value in [ "host", "host-node", "timeout", "url", "parse", "archive_all" ]:
+for value in [ "host", "host-node", "timeout", "url", "parse", "always-succeed" ]:
     try:
         test = limit[value]
         match = pscheduler.StringMatcher(test["match"])
