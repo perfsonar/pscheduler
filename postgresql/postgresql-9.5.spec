@@ -161,6 +161,7 @@ Patch7:		postgresql-prefer-ncurses.patch
 %endif
 
 BuildRequires:	perl glibc-devel bison flex
+BuildRequires:  gcc
 
 Requires:	/sbin/ldconfig
 
