@@ -50,7 +50,7 @@ then
 %if 0%{?el7}
     firewall-cmd -q --add-service=http --permanent
     firewall-cmd -q --add-service=https --permanent
-    systemctl restart firewalld
+    systemctl reload-or-try-restart firewalld
 %endif
 
 fi
@@ -68,7 +68,7 @@ then
 %if 0%{?el7}
     firewall-cmd -q --add-service=http --permanent
     firewall-cmd -q --add-service=https --permanent
-    systemctl restart firewalld
+    systemctl reload-or-try-restart firewalld
 %endif
 fi
 

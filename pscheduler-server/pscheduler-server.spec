@@ -534,7 +534,7 @@ if [ "$1" = "0" ]; then
 
     # Removing the max_connections change requires a restart, which
     # will also catch the HBA changes.
-    systemctl restart "%{pgsql_service}"
+    systemctl reload-or-try-restart "%{pgsql_service}"
 
 
 
@@ -580,7 +580,7 @@ fi
 # because Pg doesn't see module upgrades.
 
 %triggerin -- python-pscheduler
-systemctl restart "%{pgsql_service}"
+systemctl reload-or-try-restart "%{pgsql_service}"
 
 
 # ------------------------------------------------------------------------------
