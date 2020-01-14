@@ -143,7 +143,7 @@ rm -rf $RPM_BUILD_ROOT
 service rsyslog restart
 %endif
 %if 0%{?el7}
-systemctl restart rsyslog
+systemctl reload-or-try-restart rsyslog
 %endif
 
 
@@ -152,7 +152,7 @@ systemctl restart rsyslog
 service rsyslog restart
 %endif
 %if 0%{?el7}
-systemctl restart rsyslog
+systemctl reload-or-try-restart rsyslog
 %endif
 
 

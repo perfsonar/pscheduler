@@ -19,6 +19,12 @@ resolver = dns.resolver.Resolver()
 
 
 try:
+    resolver.nameservers = [ input['test']['spec']['nameserver'] ]
+except KeyError:
+    pass  # Not there?  Don't care.
+
+
+try:
     query = input['test']['spec']['query']
     record = input['test']['spec']['record']
 except KeyError:

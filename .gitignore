@@ -29,3 +29,6 @@ rpm-with-deps/*.tar.gz
 # Ignore quilt cache directory and backup files
 .pc/
 debian/patches/*~
+
+# Ignore encryption leftovers
+.pki/

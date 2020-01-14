@@ -309,6 +309,14 @@ class EsmondBaseRecord(object):
         self.metadata = { 'event-types': [] }
         self.data = []
         
+        # Set test type outside of fastmode since raw record may need it
+        ##set test type to new value if provided
+        if test_type:
+            self.test_type = test_type
+        ##may be overridden by subclass, so use value even if not in constructor params
+        if self.test_type:
+            self.metadata['pscheduler-test-type'] = self.test_type
+            
         if not fast_mode:
             #determine if we are forcing an ip-version
             ip_version = None
@@ -321,13 +329,6 @@ class EsmondBaseRecord(object):
             #set misc fields
             self.metadata['tool-name'] = tool_name
             self.metadata['time-duration'] = duration
-            
-            #set test type to new value if provided
-            if test_type:
-                self.test_type = test_type
-            #may be overridden by subclass, so use value even if not in constructor params
-            if self.test_type:
-                self.metadata['pscheduler-test-type'] = self.test_type
         
             #Handle event types
             summary_map = DEFAULT_SUMMARIES
