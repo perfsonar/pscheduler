@@ -606,9 +606,9 @@ def run_post(
             log.debug("%d: Deleting runs: %s", number, runs_posted)
             pscheduler.url_delete_list(runs_posted, params=key_params,
                                        bind=bind_addr, timeout=timeout)
-            # TODO: Better error?
             return (None, None, None, False, False,
-                    "Failed to get run data from all participants")
+                    "Failed to get run data from %s: %s: %s" % (run, status, result) )
+
         part_data.append(result['participant-data'])
         log and log.debug("%d: Got %s", number,
                           result['participant-data'])
