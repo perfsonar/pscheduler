@@ -455,12 +455,12 @@ then
     echo "Setting SELinux permissions (may take awhile)"
     # TODO: connect_db may be redundant redundant.
     # nis_enabled allows binding
-    for switch in \
+    for SWITCH in \
 	httpd_can_network_connect \
 	httpd_can_network_connect_db \
 	nis_enabled
     do
-	STATE=$(getsebool "${STATE}" | awk '{ print $3 }')
+	STATE=$(getsebool "${SWITCH}" | awk '{ print $3 }')
         if [ "${STATE}" != "on" ]
         then
     	    setsebool -P "${SWITCH}" 1
