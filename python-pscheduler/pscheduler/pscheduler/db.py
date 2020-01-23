@@ -81,7 +81,7 @@ class PgQueryResult:
         return self.rows
 
     def __iter__(self):
-        return self.cursor
+        return self
 
     def next(self):
         if self.rows == 0:
