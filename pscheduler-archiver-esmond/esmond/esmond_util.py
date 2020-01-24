@@ -395,6 +395,9 @@ class EsmondBaseRecord:
             #Make measurement-agent the created_by_address if we have it, otherwise the lead participant, with same ip type as source
             if measurement_agent:
                 src_ip, self.metadata['measurement-agent'] = pscheduler.ip_normalize_version(src_ip, measurement_agent)
+                if self.metadata['measurement-agent'] is None:
+                    #if we can't normalize with the source, then just use the IP of the given value
+                    self.metadata['measurement-agent'], tmp_ip = pscheduler.ip_normalize_version(measurement_agent, measurement_agent, ip_version=ip_version)
             else:
                 src_ip, self.metadata['measurement-agent'] = pscheduler.ip_normalize_version(src_ip, lead_participant)
     
