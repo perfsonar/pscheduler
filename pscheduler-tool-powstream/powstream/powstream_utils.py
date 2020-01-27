@@ -4,7 +4,7 @@
 
 import pscheduler
 from powstream_defaults import *
-import ConfigParser
+import configparser
 import datetime
 import os
 import re
@@ -27,7 +27,7 @@ log = pscheduler.Log(prefix="tool-powstream", quiet=True)
 def get_config():
     config = None
     try:
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         config.read(CONFIG_FILE)
     except:
         log.warning("Unable to read configuration file %s. Proceeding with defaults.")
@@ -102,8 +102,8 @@ def handle_run_error(msg, diags=None, do_log=True):
         'error': msg,
         'diags': diags
     }
-    print pscheduler.json_dump(results)
-    print pscheduler.api_result_delimiter()
+    print(pscheduler.json_dump(results))
+    print(pscheduler.api_result_delimiter())
     sys.stdout.flush()
 
 ##
@@ -129,8 +129,8 @@ def sleep_or_end(seconds, end_time, parent_pid):
     if time_left < datetime.timedelta(seconds=seconds) :
         #sleep until end time
         # don't convert until here because could be a real big value otherwise
-        # also once 2.6 is out of the picture, can just call time_left.total_seconds()
-        remaining_sleep_time = (time_left.microseconds + (time_left.seconds + time_left.days * 24 * 3600) * 10.0**6) / 10.0**6
+        remaining_sleep_time = time_left.total_seconds()
+
     
     while remaining_sleep_time > 0:
         if(max_sleep_interval < remaining_sleep_time):

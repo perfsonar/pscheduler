@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Determine if this tool can run a test based on a test spec.
 #
@@ -63,7 +63,7 @@ except KeyError:
 try:
     length = spec['length']
     # Length must be in 28..sys.maxint
-    if type(length) == int and (length < 28 or length > sys.maxint):
+    if isinstance(length, int) and (length < 28 or length > sys.maxsize):
         errors.append("Cannot handle specified packet length")
 except KeyError:
     pass

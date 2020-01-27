@@ -3,11 +3,11 @@ Functions for inhaling JSON in a pScheduler-normalized way
 """
 
 from json import load, loads, dump, dumps
-import string
+import io
 import sys
-import pscheduler
 
-from psselect import polled_select
+from .exitstatus import fail
+from .psselect import polled_select
 
 
 def json_decomment(json, prefix='#', null=False):
@@ -16,9 +16,9 @@ def json_decomment(json, prefix='#', null=False):
     (default '#') and return the result.  If 'null' is True, replace
     the prefixed items with a null value instead of deleting them.
     """
-    if type(json) is dict:
+    if isinstance(json, dict):
         result = {}
-        for item in json.keys():
+        for item in json:
             if item.startswith(prefix):
                 if null:
                     result[item] = None
@@ -29,7 +29,7 @@ def json_decomment(json, prefix='#', null=False):
                                               null=null)
         return result
 
-    elif type(json) is list:
+    elif isinstance(json, list):
         result = []
         for item in json:
             result.append(json_decomment(item, prefix=prefix, null=null))
@@ -42,18 +42,18 @@ def json_decomment(json, prefix='#', null=False):
 def json_substitute(json, value, replacement):
     """
     Substitute any pair whose value is 'value' with the replacement
-    JSON 'replacement'.  Based on pscheduler.json_decomment().
+    JSON 'replacement'.  Based on json_decomment().
     """
-    if type(json) is dict:
+    if isinstance(json, dict):
         result = {}
-        for item in json.keys():
+        for item in json:
             if json[item] == value:
                 result[item] = replacement
             else:
                 result[item] = json_substitute(json[item], value, replacement)
         return result
 
-    elif type(json) is list:
+    elif isinstance(json, list):
         result = []
         for item in json:
             result.append(json_substitute(item, value, replacement))
@@ -111,18 +111,20 @@ def json_load(source=None, exit_on_error=False, strip=True, max_schema=None):
         source = sys.stdin
 
     try:
-        if type(source) is str or type(source) is unicode:
+        if isinstance(source, str):
             json_in = loads(str(source))
-        elif type(source) is file:
+        elif isinstance(source, bytes):
+            json_in = loads(source.decode("ascii"))
+        elif isinstance(source,io.IOBase):
             json_in = load(source)
         else:
             raise Exception("Internal error: bad source type ", type(source))
     except ValueError as ex:
         # TODO: Make this consistent and fix scripts that use it.
-        if type(source) is str or not exit_on_error:
+        if isinstance(source, str) or not exit_on_error:
             raise ValueError("Invalid JSON: " + str(ex))
         else:
-            pscheduler.fail("Invalid JSON: " + str(ex))
+            fail("Invalid JSON: " + str(ex))
 
     if max_schema is not None:
         json_check_schema(json_in, max_schema)
@@ -159,7 +161,6 @@ def json_dump(obj, dest=None, pretty=False):
              )
     else:
         dump(obj, dest)
-        print >> dest
 
 
 
@@ -172,7 +173,7 @@ class RFC7464Emitter(object):
 
     def __init__(self, handle, timeout=None):
 
-        if type(handle) != file:
+        if not isinstance(handle, io.IOBase):
             raise TypeError("Handle must be a file.")
 
         self.handle = handle
@@ -180,21 +181,21 @@ class RFC7464Emitter(object):
 
 
     def emit_text(self, text):
-        """Emit straight text to the file"""
+        """Emit straight text to the file."""
 
         if self.timeout is not None:
             if polled_select([],[self.handle],[], self.timeout) == ([],[],[]):
                 raise IOError("Timed out waiting for write")
 
         self.handle.write(
-            "\x1e%s\n" % (text.translate(string.maketrans('', ''), "\n"))
+            "\x1e%s\n" % (text.replace("\n",""))
         )
         self.handle.flush()
 
 
     def __call__(self, json):
         """Emit serialized JSON to the file"""
-        self.emit_text(pscheduler.json_dump(json, pretty=False))
+        self.emit_text(json_dump(json, pretty=False))
 
 
 
@@ -203,13 +204,12 @@ class RFC7464Parser(object):
     """Iterable parser for reading streaming JSON from a file handle"""
 
     def __init__(self, handle, timeout=None):
-        if type(handle) != file:
-            raise TypeError("Handle must be a file.")
+        if not isinstance(handle, io.TextIOBase):
+            raise TypeError("Handle must be io.TextIOBase.")
         self.handle = handle
         self.timeout = timeout
 
-    # PYTHON3: def __next__(self)
-    def next(self):
+    def __next__(self):
         """Read and parse one item from the file"""
         if self.timeout is not None:
             if polled_select([self.handle],[],[], self.timeout) == ([],[],[]):
@@ -219,11 +219,11 @@ class RFC7464Parser(object):
         if len(data) == 0:
             raise StopIteration
 
-        if data[0] != b'\x1e':
+        if data[0] != '\x1e':
             raise ValueError("Line '%s' did not start with record separator" % (data))
 
         # json_load() will raise a ValueError if something's not right.
-        return pscheduler.json_load(data[1:])
+        return json_load(data[1:])
 
 
     def __iter__(self):
@@ -231,6 +231,9 @@ class RFC7464Parser(object):
 
 
     def __call__(self):
-        """Single-shot read of next item"""
-        return self.next()
+        """Single-shot read of next item, returns None if at EOF."""
+        try:
+            return next(self)
+        except StopIteration:
+            return None
 

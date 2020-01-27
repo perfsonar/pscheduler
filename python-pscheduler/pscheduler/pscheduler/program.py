@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 """
 Functions for running external programs neatly
 """
@@ -6,34 +7,23 @@ import atexit
 import copy
 import errno
 import os
-import pscheduler
 import select
 import stat
-import subprocess32
+import subprocess
 import sys
 import tempfile
 import threading
 import traceback
-
-# Only used in _Popen
-import errno
 import os
 
+from shlex import quote
 
-try:
-    # Python3
-    from shlex import quote
-except ImportError:
-    # Python 2
-    from pipes import quote
+from .exit import on_graceful_exit
+from .exitstatus import *
+from .psjson import *
+from .psselect import polled_select
+from .pstime import *
 
-from exit import on_graceful_exit
-from psselect import polled_select
-
-
-
-# Note: Docs for the 3.x version of subprocess, the backport of which
-# is used here, is at https://docs.python.org/3/library/subprocess.html
 
 
 # Keep a hash of what processes are running so they can be killed off
@@ -59,7 +49,7 @@ def __terminate_running():
     __init_running()
     while len(this.running) > 0:
         with this.lock:
-            process = this.running.keys()[0]
+            process = list(this.running.keys())[0]
         try:
             process.terminate()
             process.wait()
@@ -100,107 +90,13 @@ def _end_process(process):
         process.wait(timeout=0.5)
     except OSError:
         pass  # Can't kill things that have changed UID.
-    except subprocess32.TimeoutExpired:
+    except subprocess.TimeoutExpired:
         process.kill()
 
 
-class _Popen(subprocess32.Popen):
-    """
-    Improved version of subprocess32's Popen that handles SIGPIPE
-    without throwing an exception.
-    """
-
-    def _communicate_with_poll(self, input, endtime, orig_timeout):
-
-        # This is just to maintain the indentation of the original.
-        if True:
-
-            stdout = None  # Return
-            stderr = None  # Return
-
-            if not self._communication_started:
-                self._fd2file = {}
-
-            poller = select.poll()
-
-            def register_and_append(file_obj, eventmask):
-                poller.register(file_obj.fileno(), eventmask)
-                self._fd2file[file_obj.fileno()] = file_obj
-
-            def close_unregister_and_remove(fd):
-                poller.unregister(fd)
-                self._fd2file[fd].close()
-                self._fd2file.pop(fd)
-
-            if self.stdin and input:
-                register_and_append(self.stdin, select.POLLOUT)
-
-            # Only create this mapping if we haven't already.
-            if not self._communication_started:
-                self._fd2output = {}
-                if self.stdout:
-                    self._fd2output[self.stdout.fileno()] = []
-                if self.stderr:
-                    self._fd2output[self.stderr.fileno()] = []
-
-            select_POLLIN_POLLPRI = select.POLLIN | select.POLLPRI
-            if self.stdout:
-                register_and_append(self.stdout, select_POLLIN_POLLPRI)
-                stdout = self._fd2output[self.stdout.fileno()]
-            if self.stderr:
-                register_and_append(self.stderr, select_POLLIN_POLLPRI)
-                stderr = self._fd2output[self.stderr.fileno()]
-
-            # Save the input here so that if we time out while communicating,
-            # we can continue sending input if we retry.
-            if self.stdin and self._input is None:
-                self._input_offset = 0
-                self._input = input
-                if self.universal_newlines and isinstance(self._input, unicode):
-                    self._input = self._input.encode(
-                        self.stdin.encoding or sys.getdefaultencoding())
-
-            while self._fd2file:
-                try:
-                    ready = poller.poll(self._remaining_time(endtime))
-                except select.error, e:
-                    if e.args[0] == errno.EINTR:
-                        continue
-                    raise
-                self._check_timeout(endtime, orig_timeout)
-
-                for fd, mode in ready:
-                    if mode & select.POLLOUT:
-                        chunk = self._input[self._input_offset:
-                                            self._input_offset
-                                            + subprocess32._PIPE_BUF]
-
-                        # Handle EPIPE, because having this module
-                        # restore the signals doesn't seem to work.
-
-                        try:
-                            self._input_offset += os.write(fd, chunk)
-                            if self._input_offset >= len(self._input):
-                                close_unregister_and_remove(fd)
-                        except OSError as ex:
-                            if ex.errno != errno.EPIPE:
-                                raise ex
-                            close_unregister_and_remove(fd)
-
-                    elif mode & select_POLLIN_POLLPRI:
-                        data = os.read(fd, 4096)
-                        if not data:
-                            close_unregister_and_remove(fd)
-                        self._fd2output[fd].append(data)
-                    else:
-                        # Ignore hang up or errors.
-                        close_unregister_and_remove(fd)
-
-            return (stdout, stderr)
-
 
 def run_program(argv,              # Program name and args
-                stdin=None,        # What to send to stdin
+                stdin="",          # What to send to stdin
                 line_call=None,    # Lambda to call when a line arrives
                 timeout=None,      # Seconds
                 timeout_ok=False,  # Treat timeouts as not being an error
@@ -257,11 +153,13 @@ def run_program(argv,              # Program name and args
         while attempts > 0:
             attempts -= 1
             try:
-                return _Popen(argv,
-                              stdin=subprocess32.PIPE,
-                              stdout=subprocess32.PIPE,
-                              stderr=subprocess32.PIPE,
-                              env=new_env)
+                return subprocess.Popen(argv,
+                                        stdin=subprocess.PIPE,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE,
+                                        env=new_env,
+                                        universal_newlines=True
+                                    )
             except OSError as ex:
                 # Non-EAGAIN or last attempt gets re-raised.
                 if ex.errno != errno.EAGAIN or attempts == 0:
@@ -285,7 +183,7 @@ def run_program(argv,              # Program name and args
                 stdout, stderr = process.communicate(stdin, timeout=timeout)
                 status = process.returncode
 
-            except subprocess32.TimeoutExpired:
+            except subprocess.TimeoutExpired:
                 _end_process(process)
                 status = 0 if timeout_ok else 2
                 stdout = ''
@@ -310,16 +208,16 @@ def run_program(argv,              # Program name and args
             fds = [stdout_fileno, stderr_fileno]
 
             if timeout is not None:
-                end_time = pscheduler.time_now() \
-                    + pscheduler.seconds_as_timedelta(timeout)
+                end_time = time_now() \
+                    + seconds_as_timedelta(timeout)
             else:
                 time_left = None
 
             while True:
 
                 if timeout is not None:
-                    time_left = pscheduler.timedelta_as_seconds(
-                        end_time - pscheduler.time_now())
+                    time_left = timedelta_as_seconds(
+                        end_time - time_now())
 
                 reads, _, _ = polled_select(fds, [], [], time_left)
 
@@ -366,13 +264,9 @@ def run_program(argv,              # Program name and args
 
 
     if fail_message is not None and status != 0:
-        pscheduler.fail("%s: %s" % (fail_message, stderr))
+        fail("%s: %s" % (fail_message, stderr))
 
     return status, stdout, stderr
-
-
-
-
 
 class ChainedExecRunner(object):
 
@@ -408,7 +302,7 @@ class ChainedExecRunner(object):
 
         The "argv" and "stdin" are program parameters and standard
         input with the same semantics as the same arguments to
-        pscheduler.run_program().
+        run_program().
         """
 
         if not isinstance(calls, list):
@@ -446,7 +340,7 @@ class ChainedExecRunner(object):
                                "%s\n" \
                                "EOF\n" % (
                                    " ".join([quote(arg) for arg in calls[stage]["program"]]),
-                                   pscheduler.json_dump({
+                                   json_dump({
                                        "data": calls[stage]["input"],
                                        "exec": self.stages[stage+1]
                                    }))
@@ -500,20 +394,20 @@ class ChainedExecRunner(object):
             attempts=10):      # Max attempts to start the process
         """
         Run the chain.  Return semantics are the same as for
-        pscheduler.run_program(): a tuple of status, stdout, stderr.
+        run_program(): a tuple of status, stdout, stderr.
         """
 
         # TODO: Is there a more-pythonic way to do this than pasting
         # in all of the args?
-        result = pscheduler.run_program([self.stages[0]],
-                                        line_call=line_call,
-                                        timeout=timeout,
-                                        timeout_ok=timeout_ok,
-                                        fail_message=fail_message,
-                                        env=env,
-                                        env_add=env_add,
-                                        attempts=attempts
-                                    )
+        result = run_program([self.stages[0]],
+                             line_call=line_call,
+                             timeout=timeout,
+                             timeout_ok=timeout_ok,
+                             fail_message=fail_message,
+                             env=env,
+                             env_add=env_add,
+                             attempts=attempts
+        )
 
         for remove in self.stages:
             try:
@@ -531,12 +425,12 @@ if __name__ == "__main__":
 
     def dump_result(title, tup):
         """Spit out a run result"""
-        print
-        print "#\n# %s\n#" % (title)
+        print()
+        print("#\n# %s\n#" % (title))
         (status, stdout, stderr) = tup
-        print "Exited", status
-        print "Stdout", stdout
-        print "Stderr", stderr
+        print("Exited", status)
+        print("Stdout", stdout)
+        print("Stderr", stderr)
 
     do_all = True
 
@@ -576,8 +470,8 @@ if __name__ == "__main__":
                 line_call=line_writer
             ))
 
-        print "Lines:"
-        print "\n".join(["  %s" % (line) for line in lines])
+        print("Lines:")
+        print("\n".join(["  %s" % (line) for line in lines]))
 
     if do_all or False:
         inp = "\n".join([str(number) for number in range(1, 1000000)])
@@ -597,11 +491,12 @@ class ExternalProgram(object):
 
     def __init__(self, args):
         self.args = args
-        self.process = subprocess32.Popen(
+        self.process = subprocess.Popen(
             args,
-            stdin=subprocess32.PIPE,
-            stdout=subprocess32.PIPE,
-            stderr=subprocess32.PIPE
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True
         )
         self.err = None
 
@@ -676,10 +571,10 @@ class StreamingJSONProgram(object):
             return
 
         self.program = ExternalProgram(self.args)
-        self.emitter = pscheduler.RFC7464Emitter(self.program.stdin(),
-                                                 timeout=self.timeout)
-        self.parser = pscheduler.RFC7464Parser(self.program.stdout(),
-                                               timeout=self.timeout)
+        self.emitter = RFC7464Emitter(self.program.stdin(),
+                                      timeout=self.timeout)
+        self.parser = RFC7464Parser(self.program.stdout(),
+                                    timeout=self.timeout)
 
 
     def __call__(self, json):
@@ -705,7 +600,7 @@ class StreamingJSONProgram(object):
                     self.program.kill()
                     self.program = None
                     raise StreamingJSONProgramFailure(ex)
-                except (StopIteration) as ex:
+                except StopIteration:
                     rc = self.program.returncode()
                     # TODO: We seem to hit this a lot.
                     if rc is None:

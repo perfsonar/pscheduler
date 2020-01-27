@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 """
 test for the numa module.
 """

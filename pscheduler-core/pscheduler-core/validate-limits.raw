@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Check that a limit file is valid.
 #
@@ -13,8 +13,7 @@ import optparse
 import pscheduler
 import sys
 
-import pscheduler.limitprocessor
-
+from pscheduler.limitprocessor.limitprocessor import LimitProcessor
 
 pscheduler.set_graceful_exit()
 
@@ -66,12 +65,12 @@ except IOError as ex:
     pscheduler.fail("Unable to read input: %s" % (str(ex)))
 
 try:
-    processor = pscheduler.limitprocessor.LimitProcessor(infile)
+    processor = LimitProcessor(infile)
 except Exception as ex:
     pscheduler.fail(str(ex))
 
 if sys.stdout.isatty() and not options.quiet:
-    print "Limit configuration is valid."
+    print("Limit configuration is valid.")
 
 pscheduler.succeed()
 

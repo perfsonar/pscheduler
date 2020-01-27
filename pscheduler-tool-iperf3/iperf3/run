@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Run an iperf3 test
 #
@@ -32,8 +32,8 @@ try:
     participant_data = input['participant-data']
     test_spec = input['test']['spec']    
     limits_passed = input.get('limits-passed', [])
-except KeyError as e:
-    pscheduler.fail("Missing required key in run input: %s" % e)
+except KeyError as ex:
+    pscheduler.fail("Missing required key in run input: %s" % ex)
 except Exception:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 
@@ -150,20 +150,20 @@ def run_client():
     iperf3_args.append("--json")
 
     # big list of optional arguments to iperf3, map from test spec
-    if test_spec.has_key('interval') and test_spec['interval'] != None:
+    if 'interval' in test_spec and test_spec['interval'] != None:
         iperf3_args.append('-i')
         delta = pscheduler.iso8601_as_timedelta(test_spec['interval'])
         iperf3_args.append(int(pscheduler.timedelta_as_seconds(delta)))
 
-    if test_spec.has_key('parallel') and test_spec['parallel'] != None:
+    if 'parallel' in test_spec and test_spec['parallel'] != None:
         iperf3_args.append('-P')
         iperf3_args.append(test_spec['parallel'])
 
-    if test_spec.has_key('window-size') and test_spec['window-size'] != None:
+    if 'window-size' in test_spec and test_spec['window-size'] != None:
         iperf3_args.append('-w')
         iperf3_args.append(test_spec['window-size'])
 
-    if test_spec.has_key('mss') and test_spec['mss'] != None:
+    if 'mss' in test_spec and test_spec['mss'] != None:
         iperf3_args.append('-M')
         iperf3_args.append(test_spec['mss'])
 
@@ -171,7 +171,7 @@ def run_client():
         iperf3_args.append('-O')
         iperf3_args.append(omit_secs)
 
-    if test_spec.has_key('bandwidth') and test_spec['bandwidth'] != None:
+    if 'bandwidth' in test_spec and test_spec['bandwidth'] != None:
         iperf3_args.append('-b')
         iperf3_args.append(test_spec['bandwidth'])
     else:
@@ -210,22 +210,22 @@ def run_client():
     if test_spec.get('udp', False):
         iperf3_args.append('-u')
 
-    if test_spec.has_key('buffer-length') and test_spec['buffer-length'] != None:
+    if 'buffer-length' in test_spec and test_spec['buffer-length'] != None:
         iperf3_args.append('-l')
         iperf3_args.append(test_spec['buffer-length'])
 
-    if test_spec.has_key('ip-tos') and test_spec['ip-tos'] != None:
+    if 'ip-tos' in test_spec and test_spec['ip-tos'] != None:
         iperf3_args.append('-S')
         iperf3_args.append(test_spec['ip-tos'])
 
-    if test_spec.has_key('congestion') and test_spec['congestion'] != None:
+    if 'congestion' in test_spec and test_spec['congestion'] != None:
         iperf3_args.append('-C')
         iperf3_args.append(test_spec['congestion'])
 
-    if test_spec.has_key('zero-copy'):
+    if 'zero-copy' in test_spec:
         iperf3_args.append('-Z')
 
-    if test_spec.has_key('flow-label') and test_spec['flow-label'] != None:
+    if 'flow-label' in test_spec and test_spec['flow-label'] != None:
         iperf3_args.append('-L')
         iperf3_args.append(test_spec['flow-label'])
     
@@ -260,7 +260,7 @@ def run_client():
 
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string
-    iperf3_args = map(lambda x: str(x), iperf3_args)
+    iperf3_args = [str(x) for x in iperf3_args]
 
     command_line = " ".join(iperf3_args)
     logger.debug("Running command: %s" % command_line)
@@ -276,8 +276,8 @@ def run_client():
     try:
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
                                                         timeout = iperf_timeout)
-    except Exception as e:
-        logger.error("iperf3 failed to complete execution: %s" % e)
+    except Exception as ex:
+        logger.error("iperf3 failed to complete execution: %s" % ex)
         pscheduler.succeed_json({"succeeded": False,
                                  "diags": "\n".join(diags),
                                  "error": "The iperf3 command failed during execution. See server logs for more details."})
@@ -350,7 +350,7 @@ def run_server():
         iperf3_args.insert(2, affinity)
 
 
-    iperf3_args = map(lambda x: str(x), iperf3_args)
+    iperf3_args = [str(x) for x in iperf3_args]
     logger.debug("Running command: %s" % " ".join(iperf3_args))
 
     stdout = ""
@@ -370,8 +370,8 @@ def run_server():
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
                                                         timeout = iperf_timeout)
 
-    except Exception as e:
-        logger.error("iperf3 failed to complete execution: %s" % e);
+    except Exception as ex:
+        logger.error("iperf3 failed to complete execution: %s" % ex);
         pscheduler.succeed_json({"succeeded": False,
                                  "diags": "\n".join(diags),
                                  "error": "The iperf3 command failed during execution. See server logs for more details."})

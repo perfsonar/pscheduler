@@ -37,7 +37,11 @@ pscheduler-rpm
 # DEVELOPMENT, LIBRARIES AND UTILITIES
 #
 
-# PostgreSQL Additions
+# PostgreSQL and Additions
+
+# Neither EL7 nor PGDG's distro provide PL/Python3.  This will build
+# it if EPEL is present.
+ifelse(REDHAT_RELEASE_MAJOR,7,postgresql)
 postgresql-init
 postgresql-load
 
@@ -45,28 +49,26 @@ postgresql-load
 jq
 
 # Python Modules
-python-setuptools
-python-argparse
-python-functools32
+python-daemon
 python-isodate
-python2-pyrsistent
-python2-jsonschema
+python-itsdangerous
+python-pyrsistent
+python-jsonschema
 python-kafka
-python-netaddr
+# Used by pscheduler-archiver-esmond
+python-memcached
+python-netifaces
 python-ntplib
 python-parse-crontab
 python-py-radix
 python-pyjq
-# TODO: This can be dropped in 1.2
-python-repoze.lru
-python-subprocess32
 python-tzlocal
 python-vcversioner
-# This is how EL prefixes it.
-python2-pyasn1
-python2-pyasn1-modules
-# This doesn't get a python- prefix.  Ask CentOS why.
-pysnmp
+python-pyasn1
+python-pyasn1-modules
+python-werkzeug
+python-flask
+python-pysnmp
 
 # JSON Tools
 python-jsontemplate
@@ -74,6 +76,7 @@ python-jsontemplate
 
 # Home-grown Python Modules
 python-icmperror
+
 
 # Apache add-ons
 httpd-firewall

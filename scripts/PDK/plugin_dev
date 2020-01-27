@@ -75,11 +75,11 @@ else:
 
 try:
     shutil.copytree(toCopy, newDir)
-except shutil.Error as e:
-    print "Error copying directory: %s" % e
+except shutil.Error as ex:
+    print "Error copying directory: %s" % ex
     exit(1)
-except OSError as e:
-    print "Error copying directory: %s" % e
+except OSError as ex:
+    print "Error copying directory: %s" % ex
     exit(1)
 
 os.chdir(newDir)

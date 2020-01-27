@@ -2,17 +2,21 @@
 pScheduler Limit Processor
 """
 
+import io
 import os
-import pscheduler
 
-from identifierset  import IdentifierSet
-from classifierset  import ClassifierSet
-from rewriter       import Rewriter
-from limitset       import LimitSet
-from applicationset import ApplicationSet
-from prioritizer    import Prioritizer
+from ..jsonval import *
+from ..psjson import *
+from ..text import *
 
-class LimitProcessor():
+from .identifierset  import IdentifierSet
+from .classifierset  import ClassifierSet
+from .rewriter       import Rewriter
+from .limitset       import LimitSet
+from .applicationset import ApplicationSet
+from .prioritizer    import Prioritizer
+
+class LimitProcessor(object):
 
     """
     pScheduler limit processing class
@@ -52,7 +56,7 @@ class LimitProcessor():
         # NOTE: Don't max_schema this.  The limit validation file is
         # tied to this module.
         try:
-            validation = pscheduler.json_load(validation_file)
+            validation = json_load(validation_file)
         except Exception as ex:
             raise ValueError("Invalid validation file: %s" % (str(ex)))
         finally:
@@ -62,19 +66,19 @@ class LimitProcessor():
         # Inhale the source and validate it
         #
 
-        if type(source) is str or type(source) is unicode:
+        if isinstance(source, str):
             source = open(source, 'r')
-        elif type(source) is file:
+        elif isinstance(source, io.IOBase):
             pass  # We're good with this.
         else:
             raise ValueError("Source must be a file or path")
 
         # At this point, source is a file.
 
-        assert type(source) is file
-        limit_config = pscheduler.json_load(source)
+        assert isinstance(source, io.IOBase)
+        limit_config = json_load(source)
 
-        valid, message = pscheduler.json_validate(limit_config, validation)
+        valid, message = json_validate(limit_config, validation)
 
         if not valid:
             raise ValueError("Invalid limit file: %s" % message)
@@ -129,7 +133,7 @@ class LimitProcessor():
         if hints is not None and len(hints) > 0:
             diags.append("Hints:")
             diags.extend([
-                pscheduler.indent("%s: %s" % (item, str(hints[item])))
+                indent("%s: %s" % (item, str(hints[item])))
                 for item in sorted(hints)
             ])
 
@@ -178,7 +182,7 @@ class LimitProcessor():
             if re_changed:
                 diags.append("Rewriter made changes:")
                 if len(re_diags):
-                    diags += map(lambda s: "  " + s, re_diags)
+                    diags += ["  " + s for s in re_diags]
                 else:
                     diags.append("  (Not enumerated)")
                 task = re_new_task
@@ -223,7 +227,7 @@ class LimitProcessor():
             diags.append("Priority%s set at %d%s" % (
                 requested_message, priority, ":" if len(pri_diags) else "."))
             if len(pri_diags):
-                diags += map(lambda s: "  " + s, pri_diags)
+                diags += ["  " + s for s in pri_diags]
         else:
             priority = 0
             diags.append("Priority set to default of %d" % (priority))
@@ -269,7 +273,7 @@ if __name__ == "__main__":
             "requester": "192.52.179.242",   "#": "Internet2",
         })
 
-    print passed
-    print limits_passed
-    print diags
+    print(passed)
+    print(limits_passed)
+    print(diags)
 

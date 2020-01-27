@@ -10,7 +10,7 @@
 # they should be added here (line 25).
 %define short	curl
 %define perfsonar_auto_version 4.3.0
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 0.a0.0
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
@@ -27,7 +27,9 @@ Provides:	%{name} = %{version}-%{release}
 
 # Include all required libraries here
 Requires:	pscheduler-server
-Requires:	python-pscheduler
+Requires:	pscheduler-test-http
+Requires:	pscheduler-test-disk-to-disk
+Requires:	%{_pscheduler_python}-pscheduler
 
 BuildRequires:	pscheduler-rpm
 

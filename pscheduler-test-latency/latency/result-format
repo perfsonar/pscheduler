@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Format a result
 #
@@ -68,7 +68,7 @@ if stats.get('percentile-75', None) and stats.get('percentile-25', None):
 output += format_float("    Variance", stats.get('variance', None), units="ms")
 output += format_float("    Std Deviation", stats.get('standard-deviation', None), units="ms")
 output += "Histogram:\n"
-for owd_bucket in sorted(json.get('histogram-latency', {}).items(), key=lambda k: float(k[0])):
+for owd_bucket in sorted(list(json.get('histogram-latency', {}).items()), key=lambda k: float(k[0])):
     output += "    %s ms: %d packets\n" % (owd_bucket[0], owd_bucket[1])
     
 #Output TTL histogram
@@ -88,7 +88,7 @@ output += format_float("TTL 25th Percentile", ttl_stats.get('percentile-25', Non
 output += format_float("TTL 75th Percentile", ttl_stats.get('percentile-75', None))
 output += format_float("TTL 95th Percentile", ttl_stats.get('percentile-95', None))
 output += "Histogram:\n"
-for ttl_bucket in sorted(json.get('histogram-ttl', {}).items(), key=lambda k: int(k[0])):
+for ttl_bucket in sorted(list(json.get('histogram-ttl', {}).items()), key=lambda k: int(k[0])):
     output += "    %s: %d packets\n" % (ttl_bucket[0], ttl_bucket[1])
 
 #output raw packets if we have them
@@ -100,4 +100,4 @@ if 'raw-packets' in json:
         output += "%d %d %s %s %d %s %s %d\n" % (p['seq-num'], p['src-ts'], p['src-clock-sync'], p.get('src-clock-err', 'n/a'),  p['dst-ts'], p['dst-clock-sync'], p.get('dst-clock-err', 'n/a'), p['ip-ttl'])
 
 #Print to stdout
-print output
+print(output)

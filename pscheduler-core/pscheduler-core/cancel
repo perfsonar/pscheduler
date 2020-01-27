@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Cancel a task
 #
 
 import optparse
 import pscheduler
-import urlparse
+import urllib
 
 
 pscheduler.set_graceful_exit()
@@ -54,7 +54,7 @@ if len(remaining_args) != 1:
 task_url = remaining_args[0]
 params = {}
 
-parsed = list(urlparse.urlsplit(task_url))
+parsed = list(urllib.parse.urlsplit(task_url))
 
 path_parts = parsed[2].split("/")
 

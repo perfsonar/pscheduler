@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Convert comamnd-line options to a test specification
 
@@ -21,10 +21,12 @@ else:
    json_args = pscheduler.json_load(exit_on_error=True)
    args = []
 
-   if type(json_args) != list:
+   if not isinstance(json_args,list):
       pscheduler.fail("Invalid JSON for this operation")
    for arg in json_args:
-      if type(arg) not in (unicode, str, int, float):
+      if not ( isinstance(arg, str)
+               or isinstance(arg, int)
+               or isinstance(arg, float) ):
          pscheduler.fail("Invalid JSON for this operation")
    args = [ str(arg) for arg in json_args ]
 
@@ -243,14 +245,14 @@ if options.udp:
 if options.bandwidth is not None:
    try:
       result['bandwidth'] = pscheduler.si_as_number(options.bandwidth)
-   except ValueError as e:
-      pscheduler.fail("Invalid value \"%s\" for bandwidth: %s" % (options.bandwidth, e))
+   except ValueError as ex:
+      pscheduler.fail("Invalid value \"%s\" for bandwidth: %s" % (options.bandwidth, ex))
 
 if options.window_size is not None:
    try:
       result["window-size"] = pscheduler.si_as_number(options.window_size)
-   except ValueError as e:
-      pscheduler.fail("Invalid value \"%s\" for window size: %s" % (options.window_size, e))
+   except ValueError as ex:
+      pscheduler.fail("Invalid value \"%s\" for window size: %s" % (options.window_size, ex))
 
 if options.mss is not None:
    result["mss"] = options.mss

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Determine if this tool can run a test based on a test spec.
 #
@@ -58,14 +58,14 @@ supported_options = ["schema",
                      "udp", "single-ended", "single-ended-port"
                      ]
 
-for option in spec.keys():
+for option in spec:
     if option not in supported_options:
         logger.debug("iperf2 unsupported option %s" % option)
         errors.append('iperf2 does not support %s option' % option)    
 
 
 # bandwidth only supported in udp mode
-if spec.has_key("bandwidth") and not spec.has_key("udp"):
+if "bandwidth" in spec and "udp" not in spec:
     errors.append('iperf2 does not support specifying bandwidth on non-udp tests')
 
 logger.debug("can-run succeeded")

@@ -56,7 +56,7 @@ class ThreadSafeDictionary(dict):
         with self.lock:
             return super(ThreadSafeDictionary, self).__hash__()
 
-    def __nonzero__(self):
+    def __bool__(self):
         with self.lock:
             return super(ThreadSafeDictionary, self).__nonzero__()
 
@@ -132,25 +132,3 @@ class ThreadSafeSetHold(object):
 
     def __exit__(self, type, value, traceback):
         self.set.drop(self.id)
-
-
-
-
-class Barrier:
-    """Implementation of barrier class for Python 2.7."""
-
-    # PYTHON3:  Use threading.Barrier instead
-
-    def __init__(self, participants):
-        self.participants = participants
-        self.count = 0
-        self.lock = threading.Semaphore(1)
-        self.barrier = threading.Semaphore(0)
-
-    def wait(self):
-        with self.lock:
-            self.count = self.count + 1
-        if self.count == self.participants:
-            self.barrier.release()
-        self.barrier.acquire()
-        self.barrier.release()

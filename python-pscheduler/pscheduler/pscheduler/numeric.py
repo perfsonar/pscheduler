@@ -13,7 +13,7 @@ class HighInteger(object):
     def set(self, new_value):
         """Set the value to new_value if higher than the old one."""
 
-        if type(new_value) != int:
+        if not isinstance(new_value, int):
             raise ValueError("Value must be an integer.")
 
         if self.__value is None or new_value > self.__value:
@@ -33,4 +33,4 @@ if __name__ == "__main__":
     high.set(5)
     high.set(4)
     high.set(3)
-    print high.value()
+    print(high.value())

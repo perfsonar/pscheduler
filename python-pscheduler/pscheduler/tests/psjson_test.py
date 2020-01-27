@@ -1,17 +1,16 @@
+#!/usr/bin/python3
 """
 test for the Psjson module.
 """
 
+import io
+import os
+import tempfile
 import unittest
 
 from base_test import PschedTestBase
 
-from pscheduler.psjson import (
-    json_decomment,
-    json_dump,
-    json_load,
-    json_substitute,
-)
+from pscheduler.psjson import *
 
 
 class TestPsjson(PschedTestBase):
@@ -50,6 +49,16 @@ class TestPsjson(PschedTestBase):
         # bad value
         self.assertRaises(ValueError, json_load, dstring)
 
+    def test_file(self):
+        """Test loading from a file"""
+
+        # PORT: Unix only
+        with open("/dev/null", "r") as infile:
+            # All we care is that it doesn't like the input.
+            self.assertRaises(ValueError, json_load, infile)
+
+
+
     def test_dump(self):
         doc = dict(foo='foo')
 
@@ -57,8 +66,30 @@ class TestPsjson(PschedTestBase):
         self.assertEqual(ret, '{"foo": "foo"}')
 
 
-    # TODO: Need tests for streaming JSON classes.  These will involve
-    # more code than the actual classes.
+    #
+    # JSON Streaming Classes
+    #
+
+    def test_RFC7464_emitter(self):
+        buf = io.StringIO()
+        emitter = RFC7464Emitter(buf)
+        emitter({"foo": 123})
+        emitter({"bar": 123})
+        self.assertEqual(buf.getvalue(),
+                         '\x1e{"foo": 123}\n\x1e{"bar": 123}\n')
+
+
+    def test_RFC7464_parser(self):
+
+        buf=io.StringIO('\x1e{"foo": 123}\nXYZZY\n')
+        parser = RFC7464Parser(buf)
+
+        # First line is valid
+        self.assertEqual(parser(),  {"foo": 123})
+
+        # Second line is bogus
+        self.assertRaises(ValueError, parser)
+
 
 
 if __name__ == '__main__':

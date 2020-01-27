@@ -2,7 +2,8 @@
 Limit Class for rundaterange
 """
 
-import pscheduler
+from ...iso8601 import *
+from ...jsonval import *
 
 
 rundaterange_data_validator = {
@@ -23,11 +24,11 @@ def rundaterange_data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
-    return pscheduler.json_validate(data, rundaterange_data_validator)
+    return json_validate(data, rundaterange_data_validator)
 
 
 
-class LimitRunDateRange():
+class LimitRunDateRange(object):
 
     """
     Limit according to rundaterange criteria
@@ -42,8 +43,8 @@ class LimitRunDateRange():
         if not valid:
             raise ValueError("Invalid data: %s" % message)
 
-        self.start = pscheduler.iso8601_as_datetime(data['start'])
-        self.end = pscheduler.iso8601_as_datetime(data['end'])
+        self.start = iso8601_as_datetime(data['start'])
+        self.end = iso8601_as_datetime(data['end'])
 
         if self.end < self.start:
             raise ValueError("End must be after start.")
@@ -61,8 +62,8 @@ class LimitRunDateRange():
 
         """Check that the proposed times don't overlap with this limit"""
 
-        start = pscheduler.iso8601_as_datetime(proposal['task']['run_schedule']['start'])
-        duration = pscheduler.iso8601_as_timedelta(proposal['task']['run_schedule']['duration'])
+        start = iso8601_as_datetime(proposal['task']['run_schedule']['start'])
+        duration = iso8601_as_timedelta(proposal['task']['run_schedule']['duration'])
         end = start + duration
 
         subset = start >= self.start and end < self.end
@@ -101,4 +102,4 @@ if __name__ == "__main__":
     })
 
     ev = limit.evaluate({ "task": test })
-    print test, ev
+    print(test, ev)

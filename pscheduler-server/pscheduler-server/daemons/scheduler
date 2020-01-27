@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # pScheduler Run Scheduler
 #
@@ -11,7 +11,7 @@ import pscheduler
 import random
 import select
 import threading
-import urlparse
+import urllib.request, urllib.parse, urllib.error
 
 
 pscheduler.set_graceful_exit()
@@ -112,7 +112,7 @@ dsn = options.dsn
 # Range Class and Functions
 #
 
-class Range():
+class Range(object):
     """
     Expresses ranges of values.  Values may be of any type with a
     less-than operator.
@@ -135,7 +135,7 @@ class Range():
 
     def __or__(self, rhs):
         """Find where two ranges overlap, return None if no overlap"""
-        assert type(rhs) == type(self), "Wrong type"
+        assert isinstance(rhs, type(self)), "Wrong type"
 
         if self.lower > rhs.upper or self.upper < rhs.lower:
             return None
@@ -146,7 +146,7 @@ class Range():
         Find overlap in a list of candidate ranges, filtering out any that
         don't have any.
         """
-        assert type(candidates) == list, "Wrong type"
+        assert isinstance(candidates, list), "Wrong type"
         return [
             overlap for overlap in [
                 self | x for x in candidates 
@@ -220,7 +220,6 @@ def fetch_proposals(
         timeout,
         url,
         key_params,
-        participant,
         task_duration,
         proposed_priority
 ):
@@ -255,7 +254,7 @@ def fetch_proposals(
                 log and log.warning("%d: Error while canceling %s: %s",
                                     number, url, del_result)
 
-            raise Exception("Task is gone from %s" % (participant))
+            raise Exception("Task %s is gone" % (url))
 
         # If we asked for a priority and the server says not
         # implemented, it's probably an older one.  Return as if the
@@ -269,8 +268,8 @@ def fetch_proposals(
         if status != 200:
             log and log.debug("%d: Got back %d: %s", number, status,
                               json_ranges)
-            raise Exception("Error trying to schedule with %s: %s %d"
-                    % (participant, runtime_url, status))
+            raise Exception("Error trying to schedule for %s: %s %d"
+                    % (url, runtime_url, status))
 
         if len(json_ranges) == 0:
             log and log.debug("%d: No time available.", number)
@@ -321,7 +320,7 @@ def run_post(
         Error message
     """
 
-    assert type(start_time) == datetime.datetime
+    assert isinstance(start_time, datetime.datetime)
 
     log and log.debug("%d: Posting %s at %s", number, url, start_time)
     log and log.debug("%d: Bind is %s", number, bind_addr)
@@ -435,13 +434,13 @@ def run_post(
             common_ranges = fetch_proposals(number, task_urls,
                                             range_params, bind_addr,
                                             timeout, url, key_params,
-                                            participant,
                                             task_duration,
                                             priority_attempt)
         except Exception as ex:
+            log and log.exception()
             return (None, None, None, False, False, str(ex))
 
-        log and log.debug("%d: Ranges in common: %s", number, common_ranges)
+        log and log.debug("%d: Ranges in common: %s" % (number, common_ranges))
         if common_ranges:
             break
         
@@ -464,7 +463,7 @@ def run_post(
         if max_slip_offset:
             def us(td):
                 return td.microseconds + 1000000 * (td.seconds + 86400 * td.days)
-            increments = us(max_slip_offset) / 1000000
+            increments = int(us(max_slip_offset) / 1000000)
             picked_increment = random.randrange(0, increments)
             log and log.debug("%d: %d increments, picked %d", number,
                               increments, picked_increment)
@@ -528,7 +527,7 @@ def run_post(
                 "Failed to post lead run: %s" % run_lead_url)
 
     log and log.debug("%d: Lead URL is %s", number, run_lead_url)
-    assert type(run_lead_url) in [str, unicode]
+    assert isinstance(run_lead_url, str)
     runs_posted.append(run_lead_url)
 
     # TODO: This should parse the URL and change the netloc instead of
@@ -607,9 +606,9 @@ def run_post(
             log.debug("%d: Deleting runs: %s", number, runs_posted)
             pscheduler.url_delete_list(runs_posted, params=key_params,
                                        bind=bind_addr, timeout=timeout)
-            # TODO: Better error?
             return (None, None, None, False, False,
-                    "Failed to get run data from all participants")
+                    "Failed to get run data from %s: %s: %s" % (run, status, result) )
+
         part_data.append(result['participant-data'])
         log and log.debug("%d: Got %s", number,
                           result['participant-data'])
@@ -782,10 +781,8 @@ class SchedulerWorker(object):
                      self.task, str(ex))
 
             try:
-                with self.pg.cursor() as cursor:
-                    cursor.execute(
-                        """SELECT api_run_post(%s, %s, NULL, %s)""",
-                        [self.task, self.trynext, str(ex)])
+                self.pg.query("""SELECT api_run_post(%s, %s, NULL, %s)""",
+                              [self.task, self.trynext, str(ex)])
             except Exception as nsex:
                 log.error("%d: Insertion of non-starter failed: %s",
                           self.number, str(nsex))
@@ -809,19 +806,16 @@ def main_program():
 
     # TODO: All DB transactions need to be error checked
 
-    pg = pscheduler.pg_connection(dsn)
-    with pg.cursor() as cursor:
-        cursor.execute("LISTEN task_change")
-
-    with pg.cursor() as cursor:
-        cursor.execute("SELECT heartbeat_boot('scheduler')")
+    pg = pscheduler.PgConnection(dsn, name="scheduler")
+    pg.listen("task_change")
+    pg.query("SELECT heartbeat_boot('scheduler')")
 
     # This is separate so non-start activity doesn't get queued up
     # behind the connection that's doing the work in this function's
     # loop.  Having the non-starers queue up isn't a big deal because
     # they're quick.
 
-    nonstart_pg = pscheduler.pg_connection(dsn)
+    nonstart_pg = pscheduler.PgConnection(dsn)
 
     # What workers are running
     max_workers = options.max_parallel
@@ -836,28 +830,16 @@ def main_program():
 
         if wait:
 
-            with pg.cursor() as cursor:
-                cursor.execute("SELECT heartbeat('scheduler', %s)", [refresh])
+            pg.query("SELECT heartbeat('scheduler', %s)", [refresh])
 
             log.debug("Waiting.")
-
-            try:
-                if pscheduler.polled_select(
-                        [pg], [], [],
-                        pscheduler.timedelta_as_seconds(refresh)) \
-                    != ([], [], []):
-                    # Notified
-                    log.debug("Task change")
-                    pg.poll()
-                    del pg.notifies[:]
-
-            except select.error as ex:
-                err_no, message = ex
-                if err_no != errno.EINTR:
-                    log.exception()
-                    raise ex
-                else:
-                    log.debug("Interrupted during select")
+            if pg.wait(pscheduler.timedelta_as_seconds(refresh)):
+                log.debug("Task change.")
+                # Discard pending notifications
+                print(pg.notifications())
+                # _ = pg.notifications()
+            else:
+                log.debug("Timed out.")
 
         else:
 
@@ -891,29 +873,23 @@ def main_program():
                 log.debug("Limiting query to %d tasks", limit)
             query += " LIMIT %d" % (limit)
 
+        for row in pg.query(query, args):
 
-        with pg.cursor() as cursor:
-            cursor.execute(query, args)
+            number, task, key, runs, trynext, anytime, json, participants = row
 
-            # Check if any notifications arrived while this query executed.
-            if pg.notifies:
-                wait = False
-                del pg.notifies[:]
+            with workers_lock:
+                if number not in workers:
+                    worker = SchedulerWorker(number, nonstart_pg, log,
+                                             workers, workers_lock, task, key,
+                                             runs, trynext, anytime, json,
+                                             participants)
+                    log.debug("Starting thread for ID %d", number)
+                    workers[number] = worker
+                    worker.start()
+                    wait = False
 
-            for row in cursor:
-
-                number, task, key, runs, trynext, anytime, json, participants = row
-
-                with workers_lock:
-                    if number not in workers:
-                        worker = SchedulerWorker(number, nonstart_pg, log,
-                                                 workers, workers_lock, task, key,
-                                                 runs, trynext, anytime, json,
-                                                 participants)
-                        log.debug("Starting thread for ID %d", number)
-                        workers[number] = worker
-                        worker.start()
-                        wait = False
+        if pg.notifications():
+            wait = False
 
 
 
@@ -923,5 +899,7 @@ if options.daemon:
     with daemon.DaemonContext(pidfile=pidfile):
         pscheduler.safe_run(lambda: main_program())
 else:
-    pscheduler.safe_run(lambda: main_program())
+    # TODO: Re-enable this.
+    #pscheduler.safe_run(lambda: main_program())
+    main_program()
 

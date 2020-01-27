@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 """
 test for the Psdns module.
 """
@@ -41,7 +42,7 @@ class TestPsdns(PschedTestBase):
 
         # If none of these resolved, we probably don't have network or
         # DNS is severely broken.
-        have_network = len(filter(lambda key: ret[key] is not None, ret)) > 0
+        have_network = len([key for key in ret if ret[key] is not None]) > 0
 
         if have_network:
             # these should be stable

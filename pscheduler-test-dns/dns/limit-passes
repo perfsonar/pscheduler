@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Checker for 'dns' task limits
 #
@@ -40,19 +40,19 @@ errors = []
 #
 for value in [ "query", "record", "nameserver", "host", "host-node" ]:
     try:
-	match = pscheduler.StringMatcher(limit[value]["match"])
-	try:
-	    invert = limit[value]["invert"]
-	except KeyError:
-	    invert = False
-	in_limit = match.matches(spec[value])
-	if not in_limit or (invert and in_limit):
-	    try:
-		errors.append(limit[value]["fail-message"])
-	    except KeyError:
-		errors.append("%s does not match limit" % (value.capitalize()))
+        match = pscheduler.StringMatcher(limit[value]["match"])
+        try:
+            invert = limit[value]["invert"]
+        except KeyError:
+            invert = False
+        in_limit = match.matches(spec[value])
+        if not in_limit or (invert and in_limit):
+            try:
+                errors.append(limit[value]["fail-message"])
+            except KeyError:
+                errors.append("%s does not match limit" % (value.capitalize()))
     except KeyError:
-	pass  # Don't care if not there.
+        pass  # Don't care if not there.
 
 #
 # Timeout

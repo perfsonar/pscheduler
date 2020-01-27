@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 test for the Stringmatcher module.
 """
@@ -30,7 +31,7 @@ class TestStringmatcher(PschedTestBase):
             'bazbarfoo': True,
         }
 
-        for k, v in match_map.items():
+        for k, v in list(match_map.items()):
             self.assertEqual(matcher.matches(k), v)
 
 

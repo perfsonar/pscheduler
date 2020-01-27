@@ -4,7 +4,7 @@
 
 %define short	traceroute
 %define perfsonar_auto_version 4.3.0
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 0.a0.0
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
@@ -22,9 +22,9 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
 Requires:	pscheduler-account
-Requires:	python-pscheduler
+Requires:	%{_pscheduler_python}-pscheduler
 Requires:	pscheduler-test-trace
-Requires:	python-icmperror
+Requires:	%{_pscheduler_python}-icmperror
 Requires:	traceroute
 Requires:	sudo
 

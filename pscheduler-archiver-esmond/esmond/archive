@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 """
 Send a result to esmond
 """
@@ -6,7 +6,7 @@ Send a result to esmond
 import sys
 import pscheduler
 import calendar
-import esmond_util
+from . import esmond_util
 import memcache
 
 MAX_SCHEMA = 1

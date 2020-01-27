@@ -3,7 +3,7 @@
 #
 
 import pscheduler
-import ConfigParser
+import configparser
 from iperf2_defaults import *
 
 logger = pscheduler.Log(quiet=True)
@@ -17,7 +17,7 @@ def get_config():
     }
 
     try:
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         config.read(CONFIG_FILE)
     except:
         logger.warning("Unable to read configuration file %s. Proceeding with defaults." % CONFIG_FILE)
@@ -35,4 +35,4 @@ def get_config():
 if __name__ == "__main__":
     
     config = get_config()
-    print config
+    print(config)

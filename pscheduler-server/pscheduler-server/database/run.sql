@@ -277,18 +277,40 @@ BEGIN
           AND EXISTS (SELECT * FROM run_conflictable
                       WHERE
 		          times && proposed_times
-		          AND priority >= proposed_priority) )
+			  AND COALESCE(priority, 0) >= COALESCE(proposed_priority, 0)
+		     )
+	)
         -- Non-exclusive can't collide with exclusive
           OR ( NOT taskrec.exclusive
                AND EXISTS (SELECT * FROM run_conflictable
                            WHERE
 			       exclusive
 			       AND times && proposed_times
-			       AND priority >= proposed_priority) )
+			       AND COALESCE(priority, 0) >= COALESCE(proposed_priority, 0)
+		    )
+	    )
         );
 
 END;
 $$ LANGUAGE plpgsql;
+
+
+
+
+
+-- Standard message used when throwing conflict exceptions.  Used by
+-- api_run_post() in a comparison.
+
+DO $$ BEGIN PERFORM drop_function_all('run_conflict_message'); END $$;
+
+CREATE OR REPLACE FUNCTION run_conflict_message()
+RETURNS TEXT
+AS $$
+BEGIN
+    RETURN 'Run would create a scheduling conflict.';
+END;
+$$ LANGUAGE plpgsql;
+
 
 
 
@@ -309,7 +331,6 @@ DECLARE
 BEGIN
 
     -- TODO: What changes to a run don't we allow?
-
 
     SELECT INTO taskrec
         task.*,
@@ -346,33 +367,6 @@ BEGIN
             horizon, NEW.times, (upper(NEW.times) - normalized_now() - horizon),
 	    tstzrange(normalized_now(), normalized_now()+horizon);
     END IF;
-
-    -- Reject new runs that overlap with anything that isn't a
-    -- finished run or where this insert would cause a conflict.
-
-    -- TODO: Post 4.1, the state check can be done against
-    -- run_state.finished.
-    IF (TG_OP = 'INSERT')
-        AND (NEW.state IN (run_state_pending(), run_state_on_deck(), run_state_running()))
-    THEN
-
-        -- Once we start the process of deciding whether or not there
-        -- would be any scheduling conflicts, no other transactions
-        -- can make the same decisions based on what would be the old
-        -- data.  Nonstarters don't matter because they don't result
-        -- in any action by the runner.
-
-	-- TODO: This could probably happen a lot further down after
-	-- all of the other sanity checks have passed.
-
-        LOCK TABLE run IN ACCESS EXCLUSIVE MODE;
-
-        IF run_has_conflicts(taskrec.id, lower(NEW.times))
-        THEN
-           RAISE EXCEPTION 'Run would result in a scheduling conflict.';
-        END IF;
-    END IF;
-
 
     -- Only allow time changes that shorten the run
     IF (TG_OP = 'UPDATE')
@@ -428,6 +422,7 @@ BEGIN
     SELECT INTO tool_name name FROM tool WHERE id = taskrec.tool; 
 
     -- Finished runs are what get inserted for background tasks.
+    -- TODO: Should be anything that's not a "finished" state
     IF TG_OP = 'INSERT' AND NEW.state <> run_state_finished() THEN
 
         pdata_out := row_to_json(t) FROM ( SELECT taskrec.participant AS participant,
@@ -514,6 +509,29 @@ BEGIN
             -- TODO: This skews future runs when the first run slips.
             first_start = coalesce(t.first_start, t.start, lower(NEW.times))
         WHERE t.id = taskrec.id;
+
+
+        -- Reject new runs that overlap with anything that isn't a
+        -- finished run or where this insert would cause a conflict.
+        -- This is done as the absolute last step because the entire
+        -- table has to be locked.  We want that to happen for as
+        -- little time as possible and only if there's potential for
+        -- the run to have conflicts.  The table update above will be
+        -- rolled back if this bombs out.
+
+        IF (NOT taskrec.anytime)                       -- Test can have conflicts
+           AND (NOT run_state_is_finished(NEW.state))  -- Tasks that will run
+
+        THEN
+
+            LOCK TABLE run IN ACCESS EXCLUSIVE MODE;
+
+            IF run_has_conflicts(taskrec.id, lower(NEW.times), NEW.priority)
+            THEN
+               RAISE EXCEPTION '%', run_conflict_message();
+            END IF;
+
+        END IF;
 
         PERFORM pg_notify('run_new', NEW.uuid::TEXT);
 
@@ -868,6 +886,7 @@ DECLARE
     time_range TSTZRANGE;
     initial_state INTEGER;
     initial_status INTEGER;
+    exception_text TEXT;
 BEGIN
 
     SELECT INTO task * FROM task WHERE uuid = task_uuid;
@@ -884,45 +903,43 @@ BEGIN
     END IF;
 
     IF nonstart_reason IS NULL THEN
-
-        -- This is a "live" run, so we lock the table down early (see
-        -- run_alter() for commentary) and check early for conflicts.
-
-        -- TODO: It would be nicer if we could catch the exception
-        -- that the INSERT below would throw and bail out based on
-        -- that.
-        LOCK TABLE run IN ACCESS EXCLUSIVE MODE;
-
-        IF run_has_conflicts(task.id, start_time) THEN
-            RETURN QUERY SELECT FALSE, NULL::UUID, TRUE,
-                'Posting this run would cause a schedule conflict'::TEXT;
-            RETURN;
-        END IF;
-
         initial_state := run_state_pending();
         initial_status := NULL;
-
     ELSE
-
-        -- Nonstarters don't require conflict checks or table locks.
         initial_state := run_state_nonstart();
         initial_status := 1;  -- Nonzero means failure.
-
     END IF;
     
     start_time := normalized_time(start_time);
     time_range := tstzrange(start_time, start_time + task.duration, '[)');
 
-    WITH inserted_row AS (
-        INSERT INTO run (uuid, task, times, state,
-	    errors, priority, limit_diags)
-        VALUES (run_uuid, task.id, time_range, initial_state,
-	    nonstart_reason, priority, limit_diags)
-        RETURNING *
-    ) SELECT INTO run_uuid uuid FROM inserted_row;
+    BEGIN
 
-    RETURN QUERY SELECT TRUE, run_uuid, FALSE, ''::TEXT;
+        WITH inserted_row AS (
+            INSERT INTO run (uuid, task, times, state,
+                errors, priority, limit_diags)
+            VALUES (run_uuid, task.id, time_range, initial_state,
+	        nonstart_reason, priority, limit_diags)
+            RETURNING *
+        ) SELECT INTO run_uuid uuid FROM inserted_row;
+
+        RETURN QUERY SELECT TRUE, run_uuid, FALSE, ''::TEXT;
+
+    EXCEPTION
+
+        WHEN OTHERS THEN
+            GET STACKED DIAGNOSTICS exception_text = MESSAGE_TEXT;
+            IF exception_text <> run_conflict_message()
+            THEN
+                RAISE;  -- Re-reaise the original exception
+            END IF;
+
+            RETURN QUERY SELECT FALSE, NULL::UUID, TRUE, exception_text;
+
+    END;
+
     RETURN;
+
 
 END;
 $$ LANGUAGE plpgsql;

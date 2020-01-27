@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Format a result
 #
@@ -28,23 +28,23 @@ json = input["result"]
 if format == "text/plain":
 
    if "gateway-up" in json:
-      print "Gateway ...", ("Up" if json["gateway-up"] else "Down")
-   print "Network ...", ("Up" if json["network-up"] else "Down")
+      print("Gateway ...", ("Up" if json["gateway-up"] else "Down"))
+   print("Network ...", ("Up" if json["network-up"] else "Down"))
 
 elif format == "text/html":
 
-   print "<table>"
+   print("<table>")
    if "gateway-up" in json:
-      print "  <tr>"
-      print "    <th>Gateway</th>"
-      print "    <td>%s</td>" % ("Up" if json["gateway-up"] else "Down")
-      print "  </tr>"
+      print("  <tr>")
+      print("    <th>Gateway</th>")
+      print("    <td>%s</td>" % ("Up" if json["gateway-up"] else "Down"))
+      print("  </tr>")
 
-   print "  <tr>"
-   print "    <th>Network</th>"
-   print "    <td>%s</td>" % ("Up" if json["network-up"] else "Down")
-   print "  </tr>"
-   print "</table>"
+   print("  <tr>")
+   print("    <th>Network</th>")
+   print("    <td>%s</td>" % ("Up" if json["network-up"] else "Down"))
+   print("  </tr>")
+   print("</table>")
 
 else:
 

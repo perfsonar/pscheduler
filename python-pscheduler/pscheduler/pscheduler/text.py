@@ -15,7 +15,7 @@ def terminal_size():
     NOTE THAT THIS ONLY WORKS ON UNIX.
     """
     if sys.stdout.isatty():
-        # TODO: This only works on Unix.
+        # PORT: This only works on Unix.
         rows, columns = [int(x) for x in
                          os.popen('stty size', 'r').read().split()]
     else:
@@ -54,4 +54,4 @@ def indent(
     Indent single- or multi-lined text.
     """
     prefix = char * indent
-    return "\n".join(map(lambda s: prefix + s, text.split("\n")))
+    return "\n".join([prefix + s for s in text.split("\n")])

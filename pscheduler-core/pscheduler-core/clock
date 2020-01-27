@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Compare the clocks on two hoss
 #
@@ -98,15 +98,15 @@ for result in results:
             sync_state = "error"
         else:
             sync_state = "synchronized  " if result["synchronized"] else "unsynchronized"
-        print "%-10s %s %-14s %s" % (
+        print("%-10s %s %-14s %s" % (
             "clock",
             result["time"],
             sync_state,
             result["host"]
-            )
+            ))
 
         if "error" in result:
-            print "%-10s %s %s" % ("error", result["host"], result["error"])
+            print("%-10s %s %s" % ("error", result["host"], result["error"]))
 
     except (KeyError, ValueError):
         pscheduler.fail("%s returned invalid data" % (host))
@@ -118,8 +118,8 @@ if len(results) < 2:
 
 offset = max(times[0], times[1]) - min(times[0], times[1])
 safe = offset < datetime.timedelta(seconds=1.0)
-print "difference", pscheduler.timedelta_as_iso8601(offset), \
-    "safe" if safe else "unsafe"
+print("difference", pscheduler.timedelta_as_iso8601(offset), \
+    "safe" if safe else "unsafe")
 
 if not safe:
     pscheduler.fail()

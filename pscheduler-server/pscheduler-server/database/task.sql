@@ -83,9 +83,6 @@ BEGIN
         	duration        INTERVAL,
 
         	-- How often the test should be repeated.
-        	-- TODO: This needs to handle CRON-style and streaming.  Might
-        	-- be helped by https://pypi.python.org/pypi/croniter or a C
-        	-- counterpart.
         	repeat		INTERVAL,
 
         	-- Time after which scheduling stops.
@@ -734,7 +731,7 @@ CREATE TRIGGER task_alter_notify_update AFTER UPDATE ON task
     -- One of these per row since changes may be different.
     FOR EACH ROW
     -- Don't trigger scheduling if it's just a run count update.
-    WHEN ( NOT ((NEW.runs = OLD.runs) AND (NEW.runs_started = OLD.runs_started)) )
+    WHEN ((NEW.runs = OLD.runs) AND (NEW.runs_started = OLD.runs_started))
     EXECUTE PROCEDURE task_alter_notify();
 
 

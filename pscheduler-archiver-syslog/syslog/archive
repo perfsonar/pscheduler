@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 """
 Send a result to syslog.
 """
@@ -43,8 +43,11 @@ PRIORITIES = {
     }
 
 
+log = pscheduler.Log(name="syslog-archiver")
 
 def archive(json):
+
+    log.debug("Archiving %s" % (json))
 
     errors = ()
 
@@ -93,12 +96,13 @@ def archive(json):
 
     # Log the run
 
+    log.debug("Ident %s, Facility %d" % (ident, facility))
     try:
         # Ident often comes in unicode and this requires a string.
         syslog.openlog(str(ident), 0, facility)
 
         result = json['result']
-        if isinstance(result, basestring):
+        if isinstance(result, str):
             # Post strings cleanly
             output = result
         else:
@@ -107,12 +111,13 @@ def archive(json):
         syslog.syslog(priority, output)
         syslog.closelog()
     except Exception as ex:
+        log.debug("Failed: %s" % (str(ex)))
         return {
             "succeeded": False,
             "error": "Failed to log result: %s" % str(ex)
         }
 
-
+    log.debug("Succeeded")
     return {'succeeded': True}
 
 

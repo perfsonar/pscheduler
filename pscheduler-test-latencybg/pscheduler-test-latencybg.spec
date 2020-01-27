@@ -4,7 +4,7 @@
 
 %define short	latencybg
 %define perfsonar_auto_version 4.3.0
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 0.a0.0
 
 Name:		pscheduler-test-%{short}
 Version:	%{perfsonar_auto_version}
@@ -21,11 +21,11 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	python-pscheduler
+Requires:	%{_pscheduler_python}-pscheduler
 
 BuildRequires:	pscheduler-rpm
-BuildRequires:	python-pscheduler
-BuildRequires:  python-nose
+BuildRequires:	%{_pscheduler_python}-pscheduler
+BuildRequires:  %{_pscheduler_python_epel}-nose
 
 %description
 Latency test class for pScheduler that runs in the background.

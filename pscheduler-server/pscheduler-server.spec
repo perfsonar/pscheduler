@@ -7,7 +7,7 @@
 # init scripts function just fine.
 
 %define perfsonar_auto_version 4.3.0
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 0.a0.0
 
 Name:		pscheduler-server
 Version:	%{perfsonar_auto_version}
@@ -29,7 +29,7 @@ BuildRequires:	postgresql-init
 BuildRequires:	postgresql-load
 BuildRequires:	%{_pscheduler_postgresql_package}-server
 BuildRequires:	%{_pscheduler_postgresql_package}-contrib
-BuildRequires:	%{_pscheduler_postgresql_package}-plpython
+BuildRequires:	%{_pscheduler_postgresql_package}-plpython3
 
 Requires:	drop-in
 Requires:	gzip
@@ -47,16 +47,16 @@ Requires:	random-string >= 1.1
 BuildRequires:	m4
 Requires:	curl
 Requires:	pscheduler-account
-Requires:	python-daemon
-Requires:	python-flask
-Requires:	python-ipaddr
-Requires:	python-jsontemplate
+# This is from EPEL but doesn't have a python36 prefix
+Requires:	%{_pscheduler_python}-daemon
+Requires:	%{_pscheduler_python}-flask
+Requires:	%{_pscheduler_python}-jsontemplate
 
 # API Server
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
-BuildRequires:	python-parse-crontab
-BuildRequires:	python-pscheduler >= 1.3.7.2
+BuildRequires:	%{_pscheduler_python}-parse-crontab
+BuildRequires:	%{_pscheduler_python}-pscheduler >= 1.3.7.2
 BuildRequires:	m4
 Requires:	httpd-wsgi-socket
 Requires:	pscheduler-server
@@ -65,8 +65,8 @@ Requires:	pscheduler-server
 # mod_ssl is required here.
 Requires:	mod_ssl
 Requires:	mod_wsgi > 4.0
-Requires:	python-parse-crontab
-Requires:	python-pscheduler >= 1.3.7.2
+Requires:	%{_pscheduler_python}-parse-crontab
+Requires:	%{_pscheduler_python}-pscheduler >= 1.3.7.2
 Requires:	pytz
 
 # General
@@ -254,7 +254,7 @@ mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_log_dir}
 #
 # API Server
 #
-API_ROOT="$(python -c 'import pscheduler ; print pscheduler.api_root()')"
+API_ROOT="$(%{_pscheduler_python} -c 'import pscheduler ; print(pscheduler.api_root())')"
 
 make -C api-server \
      'USER_NAME=%{_pscheduler_user}' \
@@ -265,6 +265,7 @@ make -C api-server \
      "PREFIX=${RPM_BUILD_ROOT}" \
      "DSN_FILE=%{dsn_file}" \
      "LIMITS_FILE=%{_pscheduler_limit_config}" \
+     "PYTHON=%(which %{_pscheduler_python})" \
      "RUN_DIR=%{run_dir}" \
      install
 
@@ -344,35 +345,36 @@ fi
 # Increase the number of connections to something substantial
 
 %define pgsql_max_connections 500
+%define pgsql_deadlock_timeout 5s
+
+%define pgsql_conf %{pg_data}/postgresql.conf
+
+OLD_CONF_DIGEST=$(sha256sum "%{pgsql_conf}" | awk '{ print $1 }')
 
 # Note that this must be dropped in at the end so it overrides
 # anything else in the file.
-drop-in -n %{name} - "%{pg_data}/postgresql.conf" <<EOF
+drop-in -n %{name} - "%{pgsql_conf}" <<EOF
 #
 # pScheduler
 #
 max_connections = %{pgsql_max_connections}
+deadlock_timeout = %{pgsql_deadlock_timeout}
 EOF
 
+NEW_CONF_DIGEST=$(sha256sum "%{pgsql_conf}" | awk '{ print $1 }')
 
 systemctl enable "%{pgsql_service}"
 systemctl start "%{pgsql_service}"
 
+# Restart the server only if the configuration has changed as a result
+# of what we did to it.  This is more for development convenience than
+# anything else since regular releases don't happen often.
 
-# Restart the server only if the current maximum connections is less
-# than what we just installed.  This is more for development
-# convenience than anything else since regular releases don't happen
-# often.
-
-SERVER_MAX=$( (echo "\\t" && echo "\\a" && echo "show max_connections") \
-    | postgresql-load)
-
-if [ "${SERVER_MAX}" -lt "%{pgsql_max_connections}" ]
+if [ "${NEW_CONF_DIGEST}" != "${OLD_CONF_DIGEST}" ]
 then
+    echo "Restarting PostgreSQL after configuration change."
     systemctl restart "%{pgsql_service}"
 fi
-
-
 
 
 # Load the database
@@ -438,6 +440,7 @@ for SERVICE in ticker runner archiver scheduler
 do
     NAME="pscheduler-${SERVICE}"
     systemctl enable "${NAME}"
+    systemctl start "${NAME}"
 done
 
 # Some old installations ended up with root-owned files in the run
@@ -457,12 +460,12 @@ then
     echo "Setting SELinux permissions (may take awhile)"
     # TODO: connect_db may be redundant redundant.
     # nis_enabled allows binding
-    for switch in \
+    for SWITCH in \
 	httpd_can_network_connect \
 	httpd_can_network_connect_db \
 	nis_enabled
     do
-	STATE=$(getsebool "${STATE}" | awk '{ print $3 }')
+	STATE=$(getsebool "${SWITCH}" | awk '{ print $3 }')
         if [ "${STATE}" != "on" ]
         then
     	    setsebool -P "${SWITCH}" 1
@@ -471,6 +474,7 @@ then
 fi
 
 systemctl enable httpd
+systemctl start httpd
 
 
 #
@@ -536,7 +540,7 @@ if [ "$1" = "0" ]; then
 
     # Removing the max_connections change requires a restart, which
     # will also catch the HBA changes.
-    systemctl restart "%{pgsql_service}"
+    systemctl reload-or-try-restart "%{pgsql_service}"
 
 
 
@@ -581,9 +585,8 @@ fi
 # Any upgrade of python-pscheduler needs to force a database restart
 # because Pg doesn't see module upgrades.
 
-%triggerin -- python-pscheduler
-systemctl restart "%{pgsql_service}"
-
+%triggerin -- %{_pscheduler_python}-pscheduler
+systemctl reload-or-try-restart "%{pgsql_service}"
 
 # ------------------------------------------------------------------------------
 %files

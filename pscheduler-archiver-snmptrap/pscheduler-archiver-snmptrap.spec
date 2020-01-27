@@ -4,7 +4,7 @@
 
 %define short	snmptrap
 %define perfsonar_auto_version 4.3.0
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 0.a0.0
 
 Name:		pscheduler-archiver-%{short}
 Version:	%{perfsonar_auto_version}
@@ -21,6 +21,8 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
+Requires:	%{_pscheduler_python}-pscheduler
+Requires:	%{_pscheduler_python}-pysnmp
 
 BuildRequires:	pscheduler-rpm
 

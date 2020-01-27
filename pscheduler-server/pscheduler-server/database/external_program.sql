@@ -28,7 +28,7 @@ DO $$ BEGIN PERFORM drop_function_all('pscheduler_command'); END $$;
 
 CREATE OR REPLACE FUNCTION pscheduler_command(
     argv TEXT[] DEFAULT '{}',  -- Arguments to pass to 'pscheduler'
-    input TEXT DEFAULT NULL,   -- What goes to the standard input
+    input TEXT DEFAULT '',     -- What goes to the standard input
     timeout INTEGER DEFAULT 5  -- How long to wait in seconds
 )
 RETURNS external_program_result
@@ -49,4 +49,4 @@ except Exception as ex:
 
 return { 'status': status, 'stdout': stdout, 'stderr': stderr }
 
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpython3u;

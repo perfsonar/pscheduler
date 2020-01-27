@@ -20,8 +20,8 @@ data_validator = {
     "properties": {
         #include any data properties that should be included here
         #if you have more than one version of your archiver, you will need to
-	#include a "schema" property which describes the expected data format
-	#for the given version of your archiver
+        #include a "schema" property which describes the expected data format
+        #for the given version of your archiver
     },
     "additionalProperties": False,
     #include any required properties here

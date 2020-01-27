@@ -180,8 +180,3 @@ def clock_state():
             result["error"] = str(ex)
 
     return result
-
-
-if __name__ == "__main__":
-    import pscheduler
-    print pscheduler.json_dump(clock_state(), pretty=True)

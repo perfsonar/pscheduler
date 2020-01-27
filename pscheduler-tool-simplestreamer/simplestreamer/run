@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Run a test.
 #
@@ -140,14 +140,14 @@ if participant == 0:
             sock.settimeout(time_remaining)
             sock.connect(server_address)
             log.debug("Connected")
-            sock.sendall(material)
+            sock.sendall(material.encode())
             log.debug("Sent")
             succeeded = True
             error = None
             diags.append("Try %d succeeded." % (try_num))
             break
         except Exception as ex:
-            error = ex[1] if isinstance(ex, socket.gaierror) else str(ex)
+            error = ex.args[1] if isinstance(ex, socket.gaierror) else str(ex)
             error = "Failed to connect: %s" % (error)
             diags.append("Try %d failed: %s" % (try_num, error))
             log.debug(error)
@@ -193,18 +193,18 @@ elif participant == 1:
         while True:
             data = connection.recv(1024)
             if data:
-                full += data
+                full += data.decode("ascii")
             else:
                 break
 
         connection.close()
         succeeded = True
 
-    except socket.timeout as ex:
+    except socket.timeout:
         error = "Client never connected."
 
     except socket.gaierror as ex:
-        (err_no, err_str) = ex
+        (err_no, err_str) = ex.args
         error = "Unable to set up listener: %s" % (err_str)
 
     except Exception as ex:

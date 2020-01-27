@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Check to see if the configurables file is valid
 #
@@ -127,6 +127,6 @@ if options.dump:
     pscheduler.succeed(pscheduler.json_dump(json))
 
 if sys.stdout.isatty() and not options.quiet:
-    print "Configurables are valid."
+    print("Configurables are valid.")
 
 pscheduler.succeed()

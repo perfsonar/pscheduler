@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Monitor pScheduler's Schedule
 #
@@ -87,7 +87,7 @@ server_hostname = "Unknown Host"
 def center_on_line(screen, line, string):
     """Center text on a specified line on the screen."""
     height, width = screen.getmaxyx()
-    screen.addstr(line, (width - len(string))/2, string)
+    screen.addstr(line, int((width - len(string))/2), string)
 
 
 
@@ -122,7 +122,7 @@ COLOR_PAIRS = {
 def init_color_pairs():
     curses.start_color()
     number = 0
-    for key in COLOR_PAIRS.keys():
+    for key in COLOR_PAIRS:
         pair = COLOR_PAIRS[key]
         if curses.has_colors() and options.color:
             number += 1
@@ -188,7 +188,7 @@ def draw_static(screen):
         else:
             # Squeeze it in between the two strings.
             screen.addstr(0,
-                          time_len + 2 + ((columns_left - title_len) / 2),
+                          time_len + 2 + int(((columns_left - title_len) / 2)),
                           title_string)
 
 
@@ -248,7 +248,7 @@ def update_tasks(screen):
 
     if error_lines:
         screen.clear()
-        line = (height - len(error_lines)) / 2
+        line = int((height - len(error_lines)) / 2)
         for text in error_lines:
             if len(text) > width:
                 text = "%s%s" % (text[:width-3], "...")

@@ -3,7 +3,7 @@
 #
 
 %define perfsonar_auto_version 4.3.0
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 0.a0.0
 
 Name:		pscheduler-rpm
 Version:	%{perfsonar_auto_version}
@@ -38,6 +38,31 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 # This didn't appear until EL7
 %%_rundir %{_localstatedir}/run
 %endif
+
+
+# Version of Python required
+
+
+# EL7 supports 2, 34 and 36 and names its packages that way (e.g.,
+# python36-foo) and has some named python3-foo.  EL8 has standardized
+# on 3.6 and packages named python3-foo.
+
+%%_pscheduler_python_version_major 3
+%%_pscheduler_python_version_minor 6
+
+%if 0%{el7}
+%%_pscheduler_python python%{_pscheduler_python_version_major}
+# EL7: When support is discontinued, switch all uses of this macro to
+# _pscheduler_python.
+%%_pscheduler_python_epel python%{_pscheduler_python_version_major}%{_pscheduler_python_version_minor}
+%endif
+
+# EL8: Enable this.
+# %if %{el8}
+# %%_pscheduler_python python%{_pscheduler_python_version_major}
+# %endif
+
+
 
 # Minimum-required PostgreSQL version
 %%_pscheduler_postgresql_version_major 9

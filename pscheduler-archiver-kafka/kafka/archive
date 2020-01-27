@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 """
 DESCRIPTION
 """
@@ -19,11 +19,10 @@ def archive(json):
         producer = KafkaProducer(bootstrap_servers=[data["server"]])
         producer.send(data["topic"], pscheduler.json_dump(json["result"])).get(timeout=30)
         
-    except Exception as e:
-        #print(str(e))
-	result = {
+    except Exception as ex:
+        result = {
             "succeeded": False,
-            "error": "Failed to send message: %s" % (str(e))
+            "error": "Failed to send message: %s" % (str(ex))
         }
         return result
 

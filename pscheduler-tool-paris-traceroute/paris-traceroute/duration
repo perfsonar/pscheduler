@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Determine the duration of a specified test.
 #
@@ -22,7 +22,7 @@ total = datetime.timedelta()
 #
 
 try:
-    dest_ip_addr = ipaddress.ip_address(unicode(spec['dest']))
+    dest_ip_addr = ipaddress.ip_address(str(spec['dest']))
 except ValueError:
     # TODO: Should probably ask the DNS module for the timeout.
     total += datetime.timedelta(seconds=2)

@@ -4,7 +4,7 @@
 
 import crontab
 import pscheduler
-import urlparse
+import urllib.request, urllib.parse, urllib.error
 
 from pschedulerapiserver import application
 
@@ -89,7 +89,7 @@ def pick_tool(lists, pick_from=None):
     if pick_from is None:
 
         # Take the tool with the lowest score.
-        ordered = sorted(common.items(), key=lambda value: value[1])
+        ordered = sorted(list(common.items()), key=lambda value: value[1])
         return ordered[0][0]
 
     else:
@@ -203,8 +203,10 @@ def tasks():
 
     elif request.method == 'POST':
 
+        data = request.data.decode("ascii")
+
         try:
-            task = pscheduler.json_load(request.data, max_schema=3)
+            task = pscheduler.json_load(data, max_schema=3)
         except ValueError as ex:
             return bad_request("Invalid task specification: %s" % (str(ex)))
 
@@ -286,7 +288,8 @@ def tasks():
                     _ = pscheduler.JQFilter(
                         filter_spec=transform["script"],
                         args=transform.get("args", {} )
-						)
+                    )
+
                 except ValueError as ex:
                     return error("Invalid transform: %s" % (str(ex)))
 
@@ -543,9 +546,9 @@ def tasks():
                 # other participants.
 
                 posted_to = "%s/%s" % (request.url, task_uuid)
-                parsed = list(urlparse.urlsplit(posted_to))
+                parsed = list(urllib.parse.urlsplit(posted_to))
                 parsed[1] = "%s"
-                template = urlparse.urlunsplit(parsed)
+                template = urllib.parse.urlunsplit(parsed)
 
                 try:
                     dbcursor_query("SELECT api_task_disable(%s, %s)",
@@ -566,7 +569,7 @@ def tasks():
         # Enable the task so the scheduler will schedule it.
         try:
             dbcursor_query("SELECT api_task_enable(%s)", [task_uuid])
-        except Exception as ex:
+        except Exception:
             log.exception()
             return error("Failed to enable task %s.  See system logs." % task_uuid)
         log.debug("Task enabled for scheduling.")
@@ -620,14 +623,16 @@ def tasks_uuid(uuid):
 
     elif request.method == 'POST':
 
+        data = request.data.decode("ascii")
+
         log.debug("Posting to %s", uuid)
-        log.debug("Data is %s", request.data)
+        log.debug("Data is %s", data)
 
         # TODO: This is only for participant 1+
         # TODO: This should probably a PUT and not a POST.
 
         try:
-            json_in = pscheduler.json_load(request.data, max_schema=3)
+            json_in = pscheduler.json_load(data, max_schema=3)
         except ValueError as ex:
             return bad_request("Invalid JSON: %s" % str(ex))
         log.debug("JSON is %s", json_in)
@@ -673,13 +678,13 @@ def tasks_uuid(uuid):
         try:
 
             try:
-                participants = pscheduler.json_load(request.data,
+                participants = pscheduler.json_load(data,
                                                     max_schema=3)["participants"]
             except Exception as ex:
                 return bad_request("Task error: %s" % str(ex))
             cursor = dbcursor_query(
                 "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, %s, TRUE, %s)",
-                [request.data, participants, hints_data,
+                [data, participants, hints_data,
                  pscheduler.json_dump(limits_passed), participant,
                  json_in.get("priority", None),
                  uuid,
@@ -703,9 +708,9 @@ def tasks_uuid(uuid):
         if not access_write_task(requester, key):
             return forbidden()
 
-        parsed = list(urlparse.urlsplit(request.url))
+        parsed = list(urllib.parse.urlsplit(request.url))
         parsed[1] = "%s"
-        template = urlparse.urlunsplit(parsed)
+        template = urllib.parse.urlunsplit(parsed)
 
         log.debug("Disabling")
 

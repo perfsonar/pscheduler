@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Execute runs of tasks and put the results into the database.
 #
@@ -92,7 +92,7 @@ delimiter = pscheduler.api_result_delimiter()
 
 # TODO: Use the ThreadSafeSet and ThreadSafeSetHold instead
 
-class RunDictionary:
+class RunDictionary(object):
 
     def __init__(self):
         self.dict = {}
@@ -165,7 +165,7 @@ def clock_survey(hosts, bind=None):
 # Class that does the test runs
 #
 
-class RunWorker:
+class RunWorker(object):
 
     def __init__(self, dbpool, log, id, start_at):
 
@@ -197,8 +197,8 @@ class RunWorker:
     
         try:
             db.commit()
-        except Exception as e:
-            self.log.warning("Error committing DB transaction: %s" % e)
+        except Exception as ex:
+            self.log.warning("Error committing DB transaction: %s" % ex)
         finally:
             self.dbpool.putconn(db)
     
@@ -570,7 +570,7 @@ class RunWorker:
             try:
                 result_json = pscheduler.json_load(stdout, max_schema=1)
                 if "succeeded" in result_json \
-                        and type(result_json["succeeded"]) == bool \
+                        and isinstance(result_json["succeeded"], bool) \
                         and result_json["succeeded"] == False:
                     failures += 1
             except ValueError:
@@ -662,7 +662,7 @@ class RunWorker:
             if returncode == 0:
                 try:
                     local_result = pscheduler.json_load(stdout)
-                except ValueError as ex:
+                except ValueError:
                     self.log.error("%d: Tool %s returned invalid JSON %s",
                                    self.id, tool, stdout)
                     local_result = None
@@ -702,7 +702,7 @@ class RunWorker:
                     deadline - pscheduler.time_now()))
 
                 status, run_result = pscheduler.url_get(
-                    run,
+                    get,
                     params={ 'wait-local': True, 'wait': timeout },
                     bind=lead_bind,
                     throw=False,
@@ -726,10 +726,7 @@ class RunWorker:
                 del to_get[get]
 
 
-            failures = len(list(filter(
-                lambda result:
-                    result is None or not result.get("succeeded",False),
-                    result_full)))
+            failures = len(list([result for result in result_full if result is None or not result.get("succeeded",False)]))
             self.log.debug("%d: %d failures", self.id, failures)
 
 
@@ -901,7 +898,7 @@ def main_program():
 
             except select.error as ex:
 
-                err_no, message = ex
+                err_no, message = ex.args
                 if err_no != errno.EINTR:
                     log.exception()
                     raise ex
@@ -1002,7 +999,7 @@ def main_program():
                                        AND state = run_state_pending()
                                    """, (tuple(run_ids),))
                 except Exception as ex:
-                    log.error("Unable to set on-deck status: %s")
+                    log.error("Unable to set on-deck status: %s" % (str(ex)))
 
         for worker in run_workers:
             worker.start()

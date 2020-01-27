@@ -3,7 +3,7 @@
 #
 
 %define short	pyjq
-Name:		python-%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	2.3.0
 Release:	1%{?dist}
 Summary:	Python bindings to JQ
@@ -18,15 +18,15 @@ Vendor:		OMOTO Kenji
 URL:		https://github.com/doloopwhile/pyjq
 
 Source:		%{short}-%{version}.tar.gz
-Patch0:		%{name}-%{version}-00-nodownloads.patch
-Patch1:		%{name}-%{version}-01-integer.patch
+Patch0:		python-%{short}-%{version}-00-nodownloads.patch
+Patch1:		python-%{short}-%{version}-01-integer.patch
 
-Requires:       python
+Requires:       %{_pscheduler_python}
 Requires:       jq >= 1.6
 Requires:       oniguruma >= 5.9
 
-BuildRequires:  python
-BuildRequires:  python-setuptools
+BuildRequires:  %{_pscheduler_python}
+BuildRequires:  %{_pscheduler_python}-setuptools
 BuildRequires:  Cython >= 0.19
 BuildRequires:  jq-devel >= 1.5
 BuildRequires:  oniguruma-devel >= 5.9
@@ -55,11 +55,11 @@ Python bindings to JQ
 
 %build
 cython _pyjq.pyx
-python setup.py build
+%{_pscheduler_python} setup.py build
 
 
 %install
-python setup.py install --root=$RPM_BUILD_ROOT -O1  --record=INSTALLED_FILES
+%{_pscheduler_python} setup.py install --root=$RPM_BUILD_ROOT -O1  --record=INSTALLED_FILES
 
 
 %clean
