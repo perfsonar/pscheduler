@@ -24,18 +24,26 @@ def _library_path():
 
         _DEFAULT_LIBRARY_PATH = [os.path.expanduser("~/.jq")]
 
-        try:
-            (origin) = filter(
-                lambda p: os.access(os.path.join(p, "jq"), os.X_OK),
-                os.environ["PATH"].split(os.pathsep)
-            )
-            _DEFAULT_LIBRARY_PATH.extend([
-                "%s/%s" % (origin, path)
-                for path in ["../lib/jq", "lib"]
-            ])
-        except IndexError:
-            # If there's no jq binary, don't do anything relative to it.            
-            pass
+        # All path elements with an executable jq
+        origins = list(filter(
+            lambda p: os.access(os.path.join(p, "jq"), os.X_OK),
+            os.environ["PATH"].split(os.pathsep)
+        ))
+
+        # All potential library directories
+        libdirs_potential = [
+            [
+                "%s/%s" % (origin, suffix)
+                for suffix in ["../lib/jq", "../lib"]
+            ]
+            for origin in origins
+        ]
+
+        # All library directories that actually exist
+        _DEFAULT_LIBRARY_PATH.extend( list(filter(
+            lambda d: os.path.isdir(d),
+            [item for sublist in libdirs_potential for item in sublist]
+        )) )
 
     return _DEFAULT_LIBRARY_PATH
 
