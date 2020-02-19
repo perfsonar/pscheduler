@@ -56,8 +56,6 @@ def archive(json):
         headers = dict((k, v) for k, v in headers.iteritems() if v)
         # Stringify all values
         headers = dict((k, str(v)) for k, v in headers.iteritems())
-    else:
-        headers = None
 
 
     if op == 'post':

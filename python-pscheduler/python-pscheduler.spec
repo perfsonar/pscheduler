@@ -2,8 +2,8 @@
 # RPM Spec for Python pScheduler Module
 #
 
-%define perfsonar_auto_version 4.2.2
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 4.2.3
+%define perfsonar_auto_relnum 0.a0.0
 
 %define short	pscheduler
 Name:		python-%{short}
@@ -152,7 +152,7 @@ rm -rf $RPM_BUILD_ROOT
 service rsyslog restart
 %endif
 %if 0%{?el7}
-systemctl restart rsyslog
+systemctl reload-or-try-restart rsyslog
 %endif
 
 
@@ -161,7 +161,7 @@ systemctl restart rsyslog
 service rsyslog restart
 %endif
 %if 0%{?el7}
-systemctl restart rsyslog
+systemctl reload-or-try-restart rsyslog
 %endif
 
 
