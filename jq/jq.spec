@@ -5,9 +5,19 @@
 # https://github.com/stedolan/jq/blob/master/jq.spec
 #
 
+
+# This is the version of jq we build, plus our patches
+%define actual_version 1.6
+
+# The jq developers don't do bugfix releases, so our is numbered with
+# a bugfix release number to force our patched version to be
+# considered newer and installed.  This is because of the integer
+# patch, which has been accepted into jq but not yet released.
+%define release_version %{actual_version}.10
+
 %define short	jq
 Name:		%{short}
-Version:	1.6
+Version:	%{release_version}
 Release:	1%{?dist}
 Summary:	A filter program for JSON
 BuildArch:	%(uname -m)
@@ -20,9 +30,9 @@ Prefix:		%{_prefix}
 Vendor:		Stephen Dolan <mu@netsoc.tcd.ie>
 URL:		https://stedolan.github.io/jq
 
-Source:		%{short}-%{version}.tar.gz
+Source:		%{short}-%{actual_version}.tar.gz
 
-Patch0:		%{short}-%{version}-00-jv_is_integer_large.patch
+Patch0:		%{short}-%{actual_version}-00-jv_is_integer_large.patch
 
 
 
@@ -42,6 +52,9 @@ jq is like sed for JSON data - you can use it to slice and filter and
 map and transform structured data with the same ease that sed, awk,
 grep and friends let you play with text.
 
+NOTE:  This version contains a bugfix patch that the jq maintainers
+       have not yet released.  Its version number was bumped to %{release_version}
+       to keep it ahead of EPEL and the jq developers (%{actual_version}).
 
 %package devel
 Summary:	Development files for %{name}
@@ -56,7 +69,7 @@ Development files for %{name}
 
 
 %prep
-%setup -q -n %{name}-%{version}
+%setup -q -n %{name}-%{actual_version}
 
 # Replace the version generator with one that doesn't depend on git
 cat > scripts/version <<EOF
