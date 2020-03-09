@@ -641,6 +641,45 @@ $$ LANGUAGE plpgsql;
 
 
 
+DO $$ BEGIN PERFORM drop_function_all('run_start'); END $$;
+
+
+
+-- Get a run marked as started.  Return NULL if successful and an
+-- error message if not.  This is used by the runner.
+
+CREATE OR REPLACE FUNCTION run_start(run_id BIGINT)
+RETURNS TEXT
+AS $$
+BEGIN
+
+    IF control_is_paused()
+    THEN
+        UPDATE run SET
+            state = run_state_missed(),
+            status = 1,
+            result = '{ "succeeded": false, "diags": "System was paused." }'
+        WHERE id = run_id;
+        RETURN 'System was paused at run time.';
+    END IF;
+
+    IF NOT run_can_proceed(run_id)
+    THEN
+        UPDATE run SET
+            state = run_state_preempted(),
+            status = 1,
+            result = '{ "succeeded": false, "diags": "Run was preempted." }'
+        WHERE id = run_id;
+        RETURN 'Run was preempted.';
+    END IF;
+
+    UPDATE run SET state = run_state_running() WHERE id = run_id;
+    RETURN NULL;
+
+END;
+$$ LANGUAGE plpgsql;
+
+
 -- Maintenance functions
 
 DO $$ BEGIN PERFORM drop_function_all('run_handle_stragglers'); END $$;
