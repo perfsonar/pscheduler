@@ -448,14 +448,14 @@ class RunWorker:
             self.log.info("%d: With %s: %s %s", self.id, tool, test, " ".join(cli))
 
         # Tell the database we're proceeding
-        
+
         db = None
         starting_start = pscheduler.time_now()
         try:
             db = self._get_db_conn()
             with db.cursor() as cursor:
                 cursor.execute("SELECT run_start(%s)", [self.id])
-                assert(cursor.rowcount == 1)
+                assert cursor.rowcount == 1
                 result = cursor.fetchone()[0]
                 if result is not None:
                     self.log.info("%d: Aborting run: %s", self.id, result)
@@ -479,12 +479,11 @@ class RunWorker:
 
         how_late = pscheduler.time_now() - self.start_at
         self.log.debug("%d: Start time difference is %s",
-                             self.id, how_late)
+                       self.id, how_late)
 
         if how_late > datetime.timedelta(seconds=0.5):
             self.log.warning("%d: Starting %s later than scheduled",
                              self.id, how_late)
-        
 
         if context_runner is None:
 
