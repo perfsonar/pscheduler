@@ -432,7 +432,7 @@ class RunWorker:
         # Wait for the start time to roll around
         #
 
-        self.log.debug("Start at %s", self.start_at)
+        self.log.debug("%d: Start at %s", self.id, self.start_at)
         time_until_start = pscheduler.time_until(self.start_at)
         sleep_time = pscheduler.timedelta_as_seconds(time_until_start)
         self.log.debug("%d: Sleeping %s until test start", self.id,
