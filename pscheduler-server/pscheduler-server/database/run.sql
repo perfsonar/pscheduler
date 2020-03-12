@@ -519,8 +519,6 @@ BEGIN
 
         THEN
 
-            LOCK TABLE run IN ACCESS EXCLUSIVE MODE;
-
             IF run_has_conflicts(taskrec.id, lower(NEW.times), NEW.priority)
             THEN
                RAISE EXCEPTION '%', run_conflict_message();
