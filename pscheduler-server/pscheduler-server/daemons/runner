@@ -450,7 +450,6 @@ class RunWorker:
         # Tell the database we're proceeding
 
         db = None
-        starting_start = pscheduler.time_now()
         try:
             db = self._get_db_conn()
             with db.cursor() as cursor:
@@ -468,7 +467,6 @@ class RunWorker:
             raise ex
         finally:
             self._put_db_conn(db)
-        starting_time = pscheduler.time_now() - starting_start
 
 
         #
