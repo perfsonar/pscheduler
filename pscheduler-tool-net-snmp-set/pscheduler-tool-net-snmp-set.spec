@@ -4,7 +4,7 @@
 
 %define short	net-snmp-set
 %define perfsonar_auto_version 4.2.3
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_relnum 2
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}

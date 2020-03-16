@@ -1,8 +1,8 @@
-pscheduler-tool-dnspy (4.2.3~a0.0-1) perfsonar-4.2-snapshot; urgency=low
+pscheduler-tool-dnspy (4.2.3-1) perfsonar-4.2; urgency=low
 
   * New upstream version.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 22 Oct 2019 23:16:40 +0100
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 24 Feb 2020 14:32:17 +0000
 
 pscheduler-tool-dnspy (4.2.1-1) perfsonar-4.2; urgency=low
 
