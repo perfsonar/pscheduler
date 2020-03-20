@@ -8,6 +8,7 @@ development with the following features:
 
  - User account to match the one that invoked Vagrant
  - User's home directory shared into the VM
+ - User account given full, passwordless access to sudo
  - Private network segment for the cluster
  - IPv4 network between VMs
  - IPv6 network between VMs (Not currently working)
