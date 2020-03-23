@@ -209,7 +209,7 @@ class PgConnection(object):
 
 if __name__ == "__main__":
 
-    dsn = 'host=127.0.0.1 dbname=pscheduler user=pscheduler password=6ibeARUyecg6YyJpkRnrt1GIugFUoOK3Hb9SEaJD0BJAhxTBgM3XX'
+    dsn = 'host=dbname=pscheduler user=pscheduler password=6ibeARUyecg6YyJpkRnrt1GIugFUoOK3Hb9SEaJD0BJAhxTBgM3XX'
 
     db = PgConnection(dsn, name="PgConnection-test")
 

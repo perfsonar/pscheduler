@@ -121,7 +121,7 @@ case "$1" in
             (
                 . /etc/dbconfig-common/pscheduler-server.conf
 
-                echo "host=127.0.0.1 dbname=$dbc_dbname user=$dbc_dbuser password=$dbc_dbpass" \
+                echo "dbname=$dbc_dbname user=$dbc_dbuser password=$dbc_dbpass" \
                     > /etc/pscheduler/database/database-dsn
                 echo "$dbc_dbpass" > /etc/pscheduler/database/database-password
                 echo "*:*:$dbc_dbname:$dbc_dbuser:$dbc_dbpass" > /etc/pscheduler/database/pgpassfile
