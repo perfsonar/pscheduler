@@ -1,3 +1,9 @@
+pscheduler-test-latencybg (4.2.4-1) perfsonar-4.2; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 25 Mar 2020 15:36:56 -0400
+
 pscheduler-test-latencybg (4.2.3-1) perfsonar-4.2; urgency=low
 
   * New upstream version.

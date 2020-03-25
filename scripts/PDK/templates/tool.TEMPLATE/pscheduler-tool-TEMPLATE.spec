@@ -9,8 +9,8 @@
 # If additional libraries or parts of pScheduler are required,
 # they should be added here (line 25).
 %define short	TEMPLATE
-%define perfsonar_auto_version 4.2.3
-%define perfsonar_auto_relnum 2
+%define perfsonar_auto_version 4.2.4
+%define perfsonar_auto_relnum 1
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
