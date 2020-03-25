@@ -5,11 +5,12 @@
 %define short	setuptools
 Name:		python-%{short}
 Version:	40.8.0
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	Easily build and distribute Python packages
 BuildArch:	noarch
 License:	MIT
 Group:		Applications/System
+Provides:	python2-setuptools
 
 Provides:	%{name} = %{version}-%{release}
 Prefix:		%{_prefix}

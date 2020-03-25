@@ -6,7 +6,7 @@
 # make the scriptlets use them on CentOS 7.  For now the old-style
 # init scripts function just fine.
 
-%define perfsonar_auto_version 4.2.0
+%define perfsonar_auto_version 4.2.4
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-server
@@ -342,35 +342,36 @@ fi
 # Increase the number of connections to something substantial
 
 %define pgsql_max_connections 500
+%define pgsql_deadlock_timeout 5s
+
+%define pgsql_conf %{pg_data}/postgresql.conf
+
+OLD_CONF_DIGEST=$(sha256sum "%{pgsql_conf}" | awk '{ print $1 }')
 
 # Note that this must be dropped in at the end so it overrides
 # anything else in the file.
-drop-in -n %{name} - "%{pg_data}/postgresql.conf" <<EOF
+drop-in -n %{name} - "%{pgsql_conf}" <<EOF
 #
 # pScheduler
 #
 max_connections = %{pgsql_max_connections}
+deadlock_timeout = %{pgsql_deadlock_timeout}
 EOF
 
+NEW_CONF_DIGEST=$(sha256sum "%{pgsql_conf}" | awk '{ print $1 }')
 
 systemctl enable "%{pgsql_service}"
 systemctl start "%{pgsql_service}"
 
+# Restart the server only if the configuration has changed as a result
+# of what we did to it.  This is more for development convenience than
+# anything else since regular releases don't happen often.
 
-# Restart the server only if the current maximum connections is less
-# than what we just installed.  This is more for development
-# convenience than anything else since regular releases don't happen
-# often.
-
-SERVER_MAX=$( (echo "\\t" && echo "\\a" && echo "show max_connections") \
-    | postgresql-load)
-
-if [ "${SERVER_MAX}" -lt "%{pgsql_max_connections}" ]
+if [ "${NEW_CONF_DIGEST}" != "${OLD_CONF_DIGEST}" ]
 then
+    echo "Restarting PostgreSQL after configuration change."
     systemctl restart "%{pgsql_service}"
 fi
-
-
 
 
 # Load the database
@@ -452,13 +453,20 @@ find %{_rundir} -name "pscheduler-*" ! -user "%{_pscheduler_user}" -print0 \
 # On systems with SELINUX, allow database connections.
 if selinuxenabled
 then
-    STATE=$(getsebool httpd_can_network_connect_db | awk '{ print $3 }')
-    if [ "${STATE}" != "on" ]
-    then
-        echo "Setting SELinux permissions (may take awhile)"
-        setsebool -P httpd_can_network_connect_db 1
-    fi
-
+    echo "Setting SELinux permissions (may take awhile)"
+    # TODO: connect_db may be redundant redundant.
+    # nis_enabled allows binding
+    for SWITCH in \
+	httpd_can_network_connect \
+	httpd_can_network_connect_db \
+	nis_enabled
+    do
+	STATE=$(getsebool "${SWITCH}" | awk '{ print $3 }')
+        if [ "${STATE}" != "on" ]
+        then
+    	    setsebool -P "${SWITCH}" 1
+	fi
+    done
 fi
 
 systemctl enable httpd
@@ -527,7 +535,7 @@ if [ "$1" = "0" ]; then
 
     # Removing the max_connections change requires a restart, which
     # will also catch the HBA changes.
-    systemctl restart "%{pgsql_service}"
+    systemctl reload-or-try-restart "%{pgsql_service}"
 
 
 
@@ -573,7 +581,7 @@ fi
 # because Pg doesn't see module upgrades.
 
 %triggerin -- python-pscheduler
-systemctl restart "%{pgsql_service}"
+systemctl reload-or-try-restart "%{pgsql_service}"
 
 
 # ------------------------------------------------------------------------------

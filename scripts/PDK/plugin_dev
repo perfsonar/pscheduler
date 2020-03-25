@@ -65,15 +65,13 @@ except IndexError:
     exit(1)
 
 dirName = "pscheduler-" + type + "-TEMPLATE"
-toCopy = "templates/" + type + ".TEMPLATE"
+toCopy = os.path.join("templates", type + ".TEMPLATE")
 # Copy everything to main directory
 newDir = dirName.replace("TEMPLATE", testName)
 if dest:
-    if (destDir[len(destDir) - 1] != '/'):
-        destDir += "/"
-    newDir = destDir + newDir
+    newDir = os.path.join(destDir, newDir)
 else:
-    newDir = "../../" + newDir
+    newDir = os.path.join("..", "..", newDir)
 
 try:
     shutil.copytree(toCopy, newDir)
@@ -89,13 +87,13 @@ os.chdir(newDir)
 # Rename directories
 for (path, dirs, files) in os.walk("."):
     for dirName in dirs:
-        localPath = path + "/" + dirName
+        localPath = os.path.join(path, dirName)
         newName = dirName.replace("TEMPLATE", testName)
         os.rename(dirName, newName)
 
 for (path, dirs, files) in os.walk("."):
     for filename in files:
-        localPath = path + "/" + filename
+        localPath = os.path.join(path, filename)
         # Find and replace within files
         with open(localPath) as f:
             s = f.read()

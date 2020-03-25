@@ -2,7 +2,7 @@
 # RPM Spec for pScheduler Core
 #
 
-%define perfsonar_auto_version 4.2.0
+%define perfsonar_auto_version 4.2.4
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-core
@@ -27,6 +27,7 @@ Requires:       net-tools
 Requires:       python-pscheduler >= 1.3.7.1
 Requires:       pytz
 Requires:	curl
+Requires:       dmidecode
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:	m4

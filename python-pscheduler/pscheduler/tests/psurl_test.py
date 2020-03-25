@@ -49,6 +49,15 @@ class TestPsurl(PschedTestBase):
         # TODO: Would need a web server to test this
         pass
 
+
+    def test_url_get_bind(self):
+        """See if binding works"""
+        self.assertEqual(
+            url_get("http://127.0.0.1", bind="192.0.2.1", throw=False),
+            (400, 'bind failed with errno 99: Cannot assign requested address')
+        )
+
+
     def test_url_put(self):
         # TODO: Would need a web server to test this
         pass

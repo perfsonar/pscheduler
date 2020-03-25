@@ -1,5 +1,5 @@
---- a/rabbitmq/Makefile	2019-08-16 11:01:53.945758308 +0000
-+++ b/rabbitmq/Makefile	2019-08-16 11:01:55.480325172 +0000
+--- a/rabbitmq/Makefile	2020-03-25 15:37:09.292223452 -0400
++++ b/rabbitmq/Makefile	2020-03-25 15:37:10.663023392 -0400
 @@ -59,7 +59,6 @@
  endif
  	mkdir -p $(DESTDIR)

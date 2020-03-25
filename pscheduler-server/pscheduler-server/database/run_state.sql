@@ -356,13 +356,7 @@ CREATE OR REPLACE FUNCTION run_state_is_finished(
 RETURNS BOOLEAN
 AS $$
 BEGIN
-    -- TODO: This might be better in a table so the control over
-    -- what's finished is all in one place.
-    RETURN state NOT IN (
-        run_state_pending(),
-	run_state_on_deck(),
-	run_state_running()
-    );
+    RETURN EXISTS (SELECT * FROM run_state WHERE id = state AND finished);
 END;
 $$ LANGUAGE plpgsql
 IMMUTABLE;
