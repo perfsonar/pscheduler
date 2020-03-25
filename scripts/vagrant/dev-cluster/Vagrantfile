@@ -9,12 +9,12 @@ development with the following features:
  - User account to match the one that invoked Vagrant
  - User's home directory shared into the VM
  - User account given full, passwordless access to sudo
+ - RPMs listed in ~/.packages pre-installed
  - Private network segment for the cluster
  - IPv4 network between VMs
  - IPv6 network between VMs (Not currently working)
  - VM hostnames available in /etc/hosts
  - Pre-created local storage area in /local/<username>
- - RPMs listed in ~/.packages pre-installed
 
 
 Setup:
@@ -22,7 +22,6 @@ Setup:
  - Edit the configurable items below.
  - Build the cluster with 'vagrant up'.
  - Log in with 'vagrant ssh -c "exec sudo su - `id -un`" psdev1'.
-
 
 Teardown:
 
@@ -39,7 +38,6 @@ further.  Until this is resolved, the recommended workaround is to do
 development done in /local/<username>.
 
 This works on Linux and OS X and has not been tested on Windows.
-
 
 =end
 
@@ -160,11 +158,61 @@ Vagrant.configure("2") do |config|
       # Populate the hosts file
 
       host.vm.provision "#{name}-hosts", type: "shell", run: "once", inline: <<-SHELL
+        # This line forces execution by a specific shell
+        exec /bin/sh -c "sed -e 1,2d '$0' | /bin/sh"
+
         set -e
         fgrep localhost /etc/hosts > /etc/hosts.build
         echo "#{etc_hosts}" >> /etc/hosts.build
         mv -f /etc/hosts.build /etc/hosts
       SHELL
+
+      #
+      # User Account, Shared Folders and Local Storage
+      #
+
+      acct = Etc.getpwnam(Etc.getlogin)
+      home_dir = "/home/#{acct.name}"
+
+      host.vm.provision "#{name}-account", type: "shell", run: "once", inline: <<-SHELL
+        # This line forces execution by a specific shell
+        exec /bin/sh -c "sed -e 1,2d '$0' | /bin/sh"
+
+        set -e
+
+	mkdir -p '#{home_dir}'
+
+	yum -y install '#{acct.shell}'
+
+	userdel '#{acct.name}' || true
+
+        useradd \
+		--no-create-home \
+		--comment '#{acct.gecos}' \
+		--home-dir '#{home_dir}' \
+		--shell '#{acct.shell}' \
+		--uid '#{acct.uid}' \
+		'#{acct.name}'
+
+	# Local Storage
+	install -d -D -o '#{acct.name}' -g '#{acct.name}' -m 770 '/local/#{acct.name}'
+
+        # Grant frictionless sudo
+        SUDOERS="/etc/sudoers.d/#{acct.name}"
+        echo "#{acct.name} ${NEW_USER} ALL= (ALL) NOPASSWD:ALL" > "${SUDOERS}"
+        chmod 440 "${SUDOERS}"
+
+        # Install anything the user's custom package list says it wants
+	[ -e '#{home_dir}/.packages' ] \
+	  && cat '#{home_dir}/.packages' | xargs -r yum -y install 
+
+      SHELL
+
+      # Note that using the same owner and group is intentional.
+      host.vm.synced_folder "#{acct.dir}/", home_dir,
+			    automount: false,
+			    mount_options: ["uid=#{acct.uid}", "gid=#{acct.uid}"],
+			    SharedFoldersEnableSymlinksCreate: true
 
 
 
@@ -176,6 +224,9 @@ Vagrant.configure("2") do |config|
       #
 
       host.vm.provision "#{name}-ps-devel", type: "shell", run: "once", inline: <<-SHELL
+        # This line forces execution by a specific shell
+        exec /bin/sh -c "sed -e 1,2d '$0' | /bin/sh"
+
         set -e
 
         # Determine the RHEL version without depending on lsb_release.
@@ -201,30 +252,17 @@ Vagrant.configure("2") do |config|
 
         # PostgreSQL (9.5 only)
 	# TODO: Find a better URL.  Should be getting the latest.
-	case "${REDHAT_RELEASE_MAJOR}" in
-	    7)
-	        yum -y install "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-${REDHAT_RELEASE_MAJOR}Server-$(uname -m)/pgdg-centos95-9.5-3.noarch.rpm"
-		;;
-	    8)
-		yum -y install "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm"
-		;;
-	    *)
-        	echo "No PostgreSQL support." 1>&2
-        	exit 1
-	esac
-        
+        yum -y install "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-${REDHAT_RELEASE_MAJOR}Server-$(uname -m)/pgdg-centos95-9.5-3.noarch.rpm"
 	yum-config-manager -q --disable 'pgdg*' > /dev/null
-	yum-config-manager -q --enable 'pgdg95*' > /dev/null
+	yum-config-manager -q --enable 'pgdg94*' > /dev/null
 
 
         # EPEL
         yum -y install epel-release
 
         # perfSONAR
-	# EL8:  Need a version of this.
         REPO_PREFIX="http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/$(uname -m)/latest/packages/perfSONAR-repo"
-        for REPO in "" extras
-# staging
+        for REPO in "" extras staging
         do
             [ "$REPO" != "" ] && REPO="${REPO}-"
             yum -y install "${REPO_PREFIX}-${REPO}#{ps_repo_version}.noarch.rpm"
@@ -235,56 +273,11 @@ Vagrant.configure("2") do |config|
 	    git \
 	    m4 \
 	    make \
-	    which
+	    which \
+	    \
+	    man-pages man-db man
 
       SHELL
-
-
-      #
-      # User Account, Shared Folders and Local Storage
-      #
-
-      acct = Etc.getpwnam(Etc.getlogin)
-      home_dir = "/home/#{acct.name}"
-
-      host.vm.provision "#{name}-account", type: "shell", run: "once", inline: <<-SHELL
-        set -e
-
-	mkdir -p '#{home_dir}'
-
-	yum -y install '#{acct.shell}'
-
-        useradd \
-		--no-create-home \
-		--comment '#{acct.gecos}' \
-		--home-dir '#{home_dir}' \
-		--shell '#{acct.shell}' \
-		--uid '#{acct.uid}' \
-		--gid '#{acct.gid}' \
-		'#{acct.name}'
-
-	# Local Storage
-	install -d -D -o '#{acct.uid}' -g '#{acct.gid}' -m 770 '/local/#{acct.name}'
-
-        # Grant frictionless sudo
-        SUDOERS="/etc/sudoers.d/#{acct.name}"
-        echo "#{acct.name} ${NEW_USER} ALL= (ALL) NOPASSWD:ALL" > "${SUDOERS}"
-        chmod 440 "${SUDOERS}"
-
-        # Install anything the user's custom package list says it wants
-	if [ -e '#{home_dir}/.packages' ]
-	then
-	    xargs -r yum -y install < '#{home_dir}/.packages'
-	fi
-
-      SHELL
-
-
-      host.vm.synced_folder "#{acct.dir}/", home_dir,
-			    automount: false,
-			    mount_options: ["uid=#{acct.uid}", "gid=#{acct.gid}"],
-			    SharedFoldersEnableSymlinksCreate: true
-
 
     end  # config.vm.define
 
