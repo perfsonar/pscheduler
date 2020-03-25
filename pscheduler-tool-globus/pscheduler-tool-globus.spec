@@ -10,7 +10,7 @@
 # they should be added here (line 25).
 %define short	globus
 %define perfsonar_auto_version 4.2.4
-%define perfsonar_auto_relnum 0.a0.0
+%define perfsonar_auto_relnum 1
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
