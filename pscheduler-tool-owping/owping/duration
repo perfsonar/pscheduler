@@ -17,7 +17,7 @@ packet_timeout = json.get('packet-timeout', DEFAULT_PACKET_TIMEOUT)
 
 # The duration time account for:
 # (interval * count * 1.1)  owping packet sending and processing time
-# (count / 100000)          owping.run() parsing of the raw output
+# (count / 50000)          owping.run() parsing of the raw output, might need to be adjusted for low-end machines
 pscheduler.succeed_json({
-        "duration": 'PT%dS' % ((interval * count * 1.1) + (count / 100000) + packet_timeout + DEFAULT_FUDGE_FACTOR + DEFAULT_CLIENT_SLEEP)
+        "duration": 'PT%dS' % ((interval * count * 1.1) + (count / 50000) + packet_timeout + DEFAULT_FUDGE_FACTOR + DEFAULT_CLIENT_SLEEP)
 })
