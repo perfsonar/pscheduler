@@ -3,11 +3,13 @@
 Vagrant Configuration for a pScheduler Development System
 
 
-This Vagrantfile builds a cluster of VMs for pScheduler development
-with the following features:
+This Vagrantfile builds a VirtualBox cluster of VMs for pScheduler
+development with the following features:
 
  - User account to match the one that invoked Vagrant
  - User's home directory shared into the VM
+ - User account given full, passwordless access to sudo
+ - RPMs listed in ~/.packages pre-installed
  - Private network segment for the cluster
  - IPv4 network between VMs
  - IPv6 network between VMs (Not currently working)
@@ -15,21 +17,27 @@ with the following features:
  - Pre-created local storage area in /local/<username>
 
 
-The usual "vagrant up" and "vagrant destroy -f" work to put up and
-tear down the cluster.
+Setup:
+
+ - Edit the configurable items below.
+ - Build the cluster with 'vagrant up'.
+ - Log in with 'vagrant ssh -c "exec sudo su - `id -un`" psdev1'.
+
+Teardown:
+
+ - Destroy the cluster with 'vagrant destroy -f'.
 
 
-To log into one of the systems under your own account (no password
-required):
+Notes:
 
-vagrant ssh -c "exec sudo su - `id -un`" test1
+On some systems, pScheduler has failed to build in the shared file
+system where the user's home directory resides but builds fine on the
+guest's "native" file space.  This is likely a problem with VirtualBox
+rather than Vagrant or this configuration and will be investigated
+further.  Until this is resolved, the recommended workaround is to do
+development done in /local/<username>.
 
-
-NOTE: On some systems, pScheduler has failed to build in the shared
-file system where the user's home directory resides but builds fine on
-the guest's "native" file space.  This is likely a problem with
-VirtualBox rather than Vagrant or this configuration and will be
-investigated further.
+This works on Linux and OS X and has not been tested on Windows.
 
 =end
 
@@ -37,9 +45,9 @@ investigated further.
 
 # Configure the following to taste:
 
-# Prefix for hostnames, which will be (e.g., foo1, foo2, etc.).  This
+# Prefix for hostnames, which will be (e.g., psdev1, psdev2, etc.).  This
 # needs to be unique among other running clusters.
-host_prefix = "test"
+host_prefix = "psdev"
 
 # Number of machines to build
 num_hosts = 2
@@ -47,7 +55,6 @@ num_hosts = 2
 # Box on which the machines should be based.  This must have the
 # VirtualBox guest extensions already built in.
 default_box = "bento/centos-7"
-#default_box = "geerlingguy/centos7"
 
 # System configuration
 cpus = 2
@@ -151,6 +158,9 @@ Vagrant.configure("2") do |config|
       # Populate the hosts file
 
       host.vm.provision "#{name}-hosts", type: "shell", run: "once", inline: <<-SHELL
+        # This line forces execution by a specific shell
+        exec /bin/sh -c "sed -e 1,2d '$0' | /bin/sh"
+
         set -e
         fgrep localhost /etc/hosts > /etc/hosts.build
         echo "#{etc_hosts}" >> /etc/hosts.build
@@ -165,6 +175,9 @@ Vagrant.configure("2") do |config|
       home_dir = "/home/#{acct.name}"
 
       host.vm.provision "#{name}-account", type: "shell", run: "once", inline: <<-SHELL
+        # This line forces execution by a specific shell
+        exec /bin/sh -c "sed -e 1,2d '$0' | /bin/sh"
+
         set -e
 
 	mkdir -p '#{home_dir}'
@@ -211,6 +224,9 @@ Vagrant.configure("2") do |config|
       #
 
       host.vm.provision "#{name}-ps-devel", type: "shell", run: "once", inline: <<-SHELL
+        # This line forces execution by a specific shell
+        exec /bin/sh -c "sed -e 1,2d '$0' | /bin/sh"
+
         set -e
 
         # Determine the RHEL version without depending on lsb_release.
@@ -257,7 +273,9 @@ Vagrant.configure("2") do |config|
 	    git \
 	    m4 \
 	    make \
-	    which
+	    which \
+	    \
+	    man-pages man-db man
 
       SHELL
 
