@@ -100,3 +100,100 @@ pscheduler-test-trace (0.0-1) unstable; urgency=low
   * Initial release
 
  -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Mon, 11 Jul 2016 13:12:09 +0200
+pscheduler-test-trace (4.2.4-1) perfsonar-4.2; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 25 Mar 2020 15:36:56 -0400
+
+pscheduler-test-trace (4.2.3-1) perfsonar-4.2; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 24 Feb 2020 14:32:17 +0000
+
+pscheduler-test-trace (4.2.1-1) perfsonar-4.2; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 02 Oct 2019 23:07:24 +0000
+
+pscheduler-test-trace (4.2.0-1) perfsonar-minor-staging; urgency=low
+
+  * New upstream version
+  * Building on Stretch.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 16 Aug 2019 11:01:41 +0000
+
+pscheduler-test-trace (1.1.5-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 18 Dec 2018 21:55:29 +0000
+
+pscheduler-test-trace (1.1.2-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 24 Oct 2018 16:49:45 +0100
+
+pscheduler-test-trace (1.1.1-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 24 Aug 2018 18:25:51 +0000
+
+pscheduler-test-trace (1.1-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 13 Aug 2018 19:37:59 +0000
+
+pscheduler-test-trace (1.0.2.6-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sun, 04 Mar 2018 23:17:16 +0000
+
+pscheduler-test-trace (1.0.2.3-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 25 Jan 2018 16:11:04 +0000
+
+pscheduler-test-trace (1.0.2-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 27 Nov 2017 14:44:54 +0000
+
+pscheduler-test-trace (1.0.1.1-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+  * Moving pscheduler-warmboot call to trigger.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 15 Aug 2017 11:50:29 +0100
+
+pscheduler-test-trace (1.0.0.5-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 14 Jun 2017 19:03:53 +0000
+
+pscheduler-test-trace (1.0.0.2-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 05 May 2017 12:57:52 +0000
+
+pscheduler-test-trace (1.0-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 13 Apr 2017 11:49:09 +0000
+
+pscheduler-test-trace (0.0-1) unstable; urgency=low
+
+  * Initial release
+
+ -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Mon, 11 Jul 2016 13:12:09 +0200
