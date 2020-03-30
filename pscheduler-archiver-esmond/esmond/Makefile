@@ -15,10 +15,15 @@ MODULES=\
 	esmond_util \
 
 PYS=$(MODULES:%=%.py)
-PYCS=$(MODULES:%=%.pyc)
+PYCS=$(MODULES:%=__pycache__/%.pyc)
 
 $(PYCS):
-	python -m compileall .
+ifndef DESTDIR
+	@echo No PYTHON specified for build
+	@false
+endif
+	$(PYTHON) -m compileall .
+
 TO_CLEAN += $(PYCS)
 
 
@@ -29,8 +34,8 @@ ifndef DESTDIR
 endif
 	mkdir -p $(DESTDIR)
 	install -m 555 $(FILES) $(DESTDIR)
-	install -m 444 $(PYS) $(PYCS) $(DESTDIR)
-
+	install -m 444 $(PYS) $(DESTDIR)
+	cp -r __pycache__ $(DESTDIR)
 
 clean:
 	rm -f $(TO_CLEAN) *~
