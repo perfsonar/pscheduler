@@ -1,4 +1,4 @@
-#!/usr/bin/python -u
+#!/usr/bin/env python3 -u
 """
 
 This program goes through all of the steps needed to do a single
@@ -15,9 +15,9 @@ import datetime
 import dateutil.parser
 import json
 import pycurl
-import StringIO
+import io
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 from dateutil.tz import tzlocal
 
@@ -68,7 +68,7 @@ LEAD = "localhost"
 
 def fail(message):
     """Complain about a problem and exit."""
-    print message
+    print(message)
     exit(1)
 
 
@@ -106,7 +106,7 @@ class PycURLRunner(object):
 
         self.curl = pycurl.Curl()
 
-        full_url = url if params is None else "%s?%s" % (url, urllib.urlencode(params))
+        full_url = url if params is None else "%s?%s" % (url, urllib.parse.urlencode(params))
         self.curl.setopt(pycurl.URL, str(full_url))
 
         if bind is not None:
@@ -117,7 +117,7 @@ class PycURLRunner(object):
         if headers is not None:            
             self.curl.setopt(pycurl.HTTPHEADER, [
                 "%s: %s" % (str(key), str(value))
-                for (key, value) in headers.items()
+                for (key, value) in list(headers.items())
             ])
 
         if timeout is not None:
@@ -126,7 +126,7 @@ class PycURLRunner(object):
         self.curl.setopt(pycurl.SSL_VERIFYHOST, verify_keys)
         self.curl.setopt(pycurl.SSL_VERIFYPEER, verify_keys)
 
-        self.buf = StringIO.StringIO()
+        self.buf = io.StringIO()
         self.curl.setopt(pycurl.WRITEFUNCTION, self.buf.write)
 
 
@@ -182,7 +182,7 @@ def __content_type_data(content_type, headers, data):
     """Figure out the Content-Type based on an incoming type and data and
     return that plus data in a type that PycURL can handle."""
 
-    assert(content_type is None or isinstance(content_type, basestring))
+    assert(content_type is None or isinstance(content_type, str))
     assert(isinstance(headers, dict))
 
     if content_type is None or "Content-Type" not in headers:
@@ -242,7 +242,7 @@ def url_post( url,          # GET URL
 #
 
 tasks_url = "https://%s/pscheduler/tasks" % (LEAD)
-print "Posting to", tasks_url
+print("Posting to", tasks_url)
 
 try:
     status, task_url = url_post(tasks_url, data=json_dump(TASK))
@@ -250,8 +250,8 @@ except Exception as ex:
     fail("Unable to post task: %s" % (str(ex)))
 
 
-print
-print "New task is", task_url
+print()
+print("New task is", task_url)
 
 
 # -----------------------------------------------------------------------------
@@ -274,11 +274,11 @@ except KeyError:
     fail("Server returned incomplete data.")
 
 if VERBOSE:
-    print
-    print
-    print "Task with server-added detail:"
-    print
-    print json_dump(task_data)
+    print()
+    print()
+    print("Task with server-added detail:")
+    print()
+    print(json_dump(task_data))
 
 
 # -----------------------------------------------------------------------------
@@ -300,14 +300,14 @@ for key in ["start-time", "end-time", "result-href"]:
     if key not in run_data:
         fail("Server did not return %s with run data" % (key))
 
-print
-print "First run is", run_data["href"]
+print()
+print("First run is", run_data["href"])
 
 if VERBOSE:
-    print
-    print "Data about first run:"
-    print
-    print json_dump(run_data)
+    print()
+    print("Data about first run:")
+    print()
+    print(json_dump(run_data))
 
 
 # -----------------------------------------------------------------------------
@@ -326,8 +326,8 @@ now = datetime.datetime.now(tzlocal())
 sleep_time = end_time - now if end_time > now else datetime.timedelta()
 sleep_seconds = sleep_time.total_seconds()
 
-print
-print "Waiting", sleep_seconds, "seconds for run to finish..."
+print()
+print("Waiting", sleep_seconds, "seconds for run to finish...")
 time.sleep(sleep_seconds)
 
 
@@ -337,19 +337,19 @@ time.sleep(sleep_seconds)
 # Wait for the result to be produced and fetch it.
 #
 
-print
-print "Waiting for result at", run_data["result-href"]
+print()
+print("Waiting for result at", run_data["result-href"])
 
 status, result_data = url_get(run_data["result-href"],
                               params={"wait-merged": True})
 if status != 200:
     fail("Did not get a result: %s" % (result_data))
 
-print
-print
-print "JSON Result:"
-print
-print json_dump(result_data)
+print()
+print()
+print("JSON Result:")
+print()
+print(json_dump(result_data))
 
 
 # -----------------------------------------------------------------------------
@@ -374,11 +374,11 @@ status, result_text = url_get(run_data["result-href"],
 if status != 200:
     fail("Did not get a result: %s" % (result_text))
 
-print
-print
-print "Text-formatted result:"
-print
-print result_text
+print()
+print()
+print("Text-formatted result:")
+print()
+print(result_text)
 
 
 # -----------------------------------------------------------------------------

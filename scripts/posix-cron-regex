@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 This program generates a regular expression for evaluating the
@@ -146,8 +146,8 @@ for test in [
     got = matches is not None
 
     if got != expected:
-        print "ERROR: %s did not evaluate as expected." % (string)
+        print("ERROR: %s did not evaluate as expected." % (string))
         exit(1)
 
 
-print full
+print(full)
