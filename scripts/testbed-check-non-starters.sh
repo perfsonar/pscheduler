@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # CentOS hosts
 hostlist="antg-dev.es.net perfsonardev0.internet2.edu test-pt1.es.net antg-staging.es.net perfsonar-dev.grnoc.iu.edu perfsonar-lab-vm.ilab.umnet.umich.edu psps-test2-mgmt.rrze.uni-erlangen.de"
