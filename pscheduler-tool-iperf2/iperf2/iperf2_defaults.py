@@ -12,6 +12,9 @@ DEFAULT_LINK_RTT = "PT0.200S"
 # Default number of seconds before client will start to allow server time to boot
 DEFAULT_WAIT_SLEEP = 1
 
+# How long to wait for the server to shut down
+DEFAULT_SERVER_SHUTDOWN = 1
+
 # The default iperf2 control port
 DEFAULT_SERVER_PORT = 5001
 
