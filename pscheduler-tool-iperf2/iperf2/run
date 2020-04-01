@@ -277,9 +277,8 @@ def run_server():
                                  })
     
     #log stdout in debug mode
-    if debug:
-        for line in stdout:
-            logger.debug(line)
+    for line in stdout:
+        logger.debug(line)
           
     return {"succeeded": True}
 
