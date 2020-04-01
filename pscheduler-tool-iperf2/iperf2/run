@@ -191,8 +191,13 @@ def run_client():
     iperf2_args = [str(x) for x in iperf2_args]
 
     command_line = " ".join(iperf2_args)
-    logger.debug("Running command: %s" % command_line)      
 
+    try:
+        pscheduler.sleep_until(input['schedule']['start'])
+    except KeyError:
+        pscheduler.fail("Unable to find start time in input")
+
+    logger.debug("Running command: %s" % command_line)      
     try:
         status, stdout, stderr = pscheduler.run_program(iperf2_args)
     except Exception:
@@ -237,8 +242,12 @@ def run_server():
     # just to be safe cast everything in the list to a string
     iperf2_args = [str(x) for x in iperf2_args]
 
-    logger.debug("Running command: %s" % " ".join(iperf2_args))
+    try:
+        pscheduler.sleep_until(input['schedule']['start'])
+    except KeyError:
+        pscheduler.fail("Unable to find start time in input")
 
+    logger.debug("Running command: %s" % " ".join(iperf2_args))
     try:
         status, stdout, stderr = pscheduler.run_program(iperf2_args,
                                                         timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)),

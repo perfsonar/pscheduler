@@ -192,6 +192,11 @@ def succeed(spec, gateway_was_up, network_was_up):
 gateway_up = False
 run_number = 0
 
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
 for next_ip in generator(network, exclude=gateway, limit=run_max_ips):
 
     if len(ip_list) >= parallel:

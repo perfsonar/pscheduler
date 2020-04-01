@@ -34,6 +34,11 @@ timeout = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(timeou
 
 # Perform the test
 
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
 
 start_time = datetime.datetime.now()
 error = ""

@@ -38,6 +38,18 @@ diags = ''
 
 # Run the actual task here:
 
+# IMPORTANT NOTE: This code puts the process to sleep until the
+# scheduled start time has arrived.  It should be placed after all
+# preparatory code has been executed and immediately before the tool
+# is invoked (for plugins that run other programs) or any activity
+# that does a measurement (for those that don't).
+
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
+
 # API Call:
 if testtype == 'api':
     argv = [ 'sleep', str(duration) ]

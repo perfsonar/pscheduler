@@ -156,6 +156,12 @@ succeeded = None
 for item in spec['oid']:
     oid_tuple += (ObjectType(build_object(item)),)
 
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
+
 # n comparisons require n+1 get requests
 while num_polls < spec['polls']:
 

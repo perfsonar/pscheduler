@@ -211,6 +211,12 @@ while True:
             os.makedirs(data_dir)
         
         #spawn process
+
+        try:
+            pscheduler.sleep_until(input['schedule']['start'])
+        except KeyError:
+            pscheduler.fail("Unable to find start time in input")
+
         log.debug("Running command: %s" % " ".join(powstream_args))
         proc = Popen(powstream_args, stdout=PIPE, stderr=PIPE, shell=False)
         #update signal handler to make sure process is killed when terminated

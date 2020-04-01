@@ -39,6 +39,12 @@ if interval is None:
 
 # Perform the test
 
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
+
 # The output is just mocked up since there's no real tool being run.
 
 results = {

@@ -45,6 +45,11 @@ try:
 except KeyError:
     pass
 
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
 time.sleep(pscheduler.timedelta_as_seconds(duration))
 
 try:

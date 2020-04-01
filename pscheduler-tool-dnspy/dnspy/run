@@ -34,10 +34,16 @@ timeout_iso = input['test']['spec'].get("timeout", "PT5S" )
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 resolver.timeout = timeout
 resolver.lifetime = timeout
-start_time = datetime.datetime.now()
+
 
 # Perform the test
 
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
+start_time = datetime.datetime.now()
 error = None
 try:
     answers = resolver.query( query, record )

@@ -195,6 +195,11 @@ run_timeout_secs = pscheduler.timedelta_as_seconds(run_timeout)
 # Force all args to be strings
 argv = [str(x) for x in argv]
 
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
 status, stdout, stderr \
     = pscheduler.run_program(argv, timeout = run_timeout_secs)
 

@@ -87,6 +87,11 @@ for item in input['test']['spec']['oidargs']:
 # Stringify the arguments        
 argv = [str(x) for x in argv]
 
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
 status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
 
 if status:

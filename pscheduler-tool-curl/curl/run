@@ -76,6 +76,10 @@ if True:
       argv.append('\\n%{http_code}')
   argv.append(source) # Source URL
   
+  try:
+      pscheduler.sleep_until(input['schedule']['start'])
+  except KeyError:
+      pscheduler.fail("Unable to find start time in input")
 
   status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
 

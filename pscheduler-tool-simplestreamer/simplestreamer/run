@@ -83,6 +83,13 @@ socket_family = socket.AF_INET if ip_version == 4 else socket.AF_INET6
 
 participant = input['participant']
 
+
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
+
 if participant == 0:
 
     #

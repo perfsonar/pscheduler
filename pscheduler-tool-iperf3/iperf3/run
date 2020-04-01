@@ -274,6 +274,11 @@ def run_client():
     diags.append(command_line)
 
     try:
+        pscheduler.sleep_until(input['schedule']['start'])
+    except KeyError:
+        pscheduler.fail("Unable to find start time in input")
+
+    try:
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
                                                         timeout = iperf_timeout)
     except Exception as ex:
@@ -366,6 +371,11 @@ def run_server():
 
         logger.debug("timeout for server is %d" % iperf_timeout)
         diags.append(" ".join(iperf3_args))
+
+    try:
+        pscheduler.sleep_until(input['schedule']['start'])
+    except KeyError:
+        pscheduler.fail("Unable to find start time in input")
 
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
                                                         timeout = iperf_timeout)

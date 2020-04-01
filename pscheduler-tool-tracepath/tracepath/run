@@ -75,6 +75,11 @@ except KeyError:
 
 # TODO: Investigate whether we care about the -b switch.
 
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
 status, stdout, stderr = pscheduler.run_program( [tracepath], timeout=2)
 if status != 255 or '<destination>' not in stderr:
     pscheduler.succeed_json( {

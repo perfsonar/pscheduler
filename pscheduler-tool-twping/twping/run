@@ -34,6 +34,7 @@ try:
     participant = input['participant']
     participant_data = input['participant-data']
     test_spec = input['test']['spec']
+    start = pscheduler.iso8601_as_timedelta(input['schedule']['start'])
     duration = pscheduler.iso8601_as_timedelta(input['schedule']['duration'])
 except KeyError as ex:
     pscheduler.fail("Missing required key in run input: %s" % ex)
@@ -139,7 +140,9 @@ if role == CLIENT_ROLE:
 
     # Force all args to be strings
     twping_args = [str(x) for x in twping_args]
-    
+
+    pscheduler.sleep_until(start)
+        
     #Run the process
     #time.sleep(DEFAULT_CLIENT_SLEEP) #wait for server to boot
     log.debug("Running command: %s" % " ".join(twping_args))
