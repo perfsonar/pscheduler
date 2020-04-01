@@ -8,8 +8,12 @@ import sys
 import pscheduler
 
 from iperf2_defaults import *
+from iperf2_utils import *
 
 json = pscheduler.json_load(exit_on_error=True)
+
+# Setup:  How long it takes to connect and set up the test
+setup = setup_time(json.get('link-rtt'))
 
 duration = json.get('duration', None)
 if duration:
@@ -19,9 +23,5 @@ else:
     duration = DEFAULT_DURATION
 
 pscheduler.succeed_json({
-        "duration": 'PT%dS' % (duration + DEFAULT_FUDGE_FACTOR + DEFAULT_WAIT_SLEEP)
+        "duration": 'PT%dS' % (setup + duration + DEFAULT_WAIT_SLEEP + DEFAULT_SERVER_SHUTDOWN)
 })
-
-
-
-pscheduler.succeed()
