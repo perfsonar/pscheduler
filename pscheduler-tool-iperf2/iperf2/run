@@ -251,7 +251,7 @@ def run_server():
     iperf2_args = map(lambda x: str(x), iperf2_args)
 
     iperf_timeout = pscheduler.timedelta_as_seconds(duration)
-    iperf_timeout += datetime.timedelta(iperf2_utils.setup_time(test_spec.get("link-rtt")))
+    iperf_timeout += iperf2_utils.setup_time(test_spec.get("link-rtt"))
     logger.debug("Timeout is %s" % (iperf_timeout))
 
     logger.debug("Running command: %s" % " ".join(iperf2_args))
