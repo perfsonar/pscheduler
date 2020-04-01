@@ -55,7 +55,7 @@ class TestPsdns(PschedTestBase):
                 'aaaa1.nv.perfsonar.net',
             ], ip_version=6)
 
-            self.assertEqual(ret.get('aaaa1.nv.perfsonar.net'), 'fc00:1')
+            self.assertEqual(ret.get('aaaa1.nv.perfsonar.net'), 'fc00::1')
 
         # reverse
 
