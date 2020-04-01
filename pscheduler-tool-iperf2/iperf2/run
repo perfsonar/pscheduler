@@ -239,9 +239,13 @@ def run_server():
 
     logger.debug("Running command: %s" % " ".join(iperf2_args))
 
+
+    iperf_timeout = duration
+    iperf_timeout += iperf3_utils.setup_time(test_spec.get("link-rtt"))
+
     try:
         status, stdout, stderr = pscheduler.run_program(iperf2_args,
-                                                        timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)),
+                                                        timeout = pscheduler.timedelta_as_seconds(iperf_timeout),
                                                         timeout_ok = True)
     except Exception as e:
         logger.error("iperf2 failed to complete execution: %s" % e);
