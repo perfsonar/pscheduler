@@ -106,6 +106,9 @@ def parse_output(lines):
 
             key = "%s-%s" % (interval_start, interval_end)
 
+            # TODO: This would appear to not create a summary when the
+            # duration is very short.
+
             # there has to be a better way than this...
             if interval_end - interval_start > 5:
                 key = "summary"
