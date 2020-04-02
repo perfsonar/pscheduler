@@ -3,6 +3,17 @@
 # Run an iperf2 test
 #
 
+# NOTE (see invocations below): Iperf2 has a reputation for not
+# returning a nonzero exit code for certain failures.  The only way to
+# detect this condition is to look for a non-empty stderr.  This
+# causes problems with the server side, which doesn't have a one-shot
+# mode and therefore must be left to time out.  The run_program()
+# function in the pScheduler library returns 2 on a timeout, and an
+# examination of the iperf2 source says nothing exits with that
+# status.  Therefore, this has to be taken into account when
+# evaluating the exit status.
+
+
 import datetime
 import logging
 import json
@@ -204,9 +215,12 @@ def run_client():
     #see if command completed successfully
     logger.debug("iperf2 returned status %d" % status)
 
-    # For whatever reason, iperf2 doesn't always exit with the right code
-    # in the event of failures so we can also look to see if anything
-    # showed up in stderr
+    # See note at the top of this file about evaluating the exit
+    # status.
+    if status == 2:
+        status = 0
+        stderr = ""
+
     if status or stderr:
         pscheduler.succeed_json({"succeeded": False,
                                  "diags": " ".join(iperf2_args),
@@ -221,9 +235,10 @@ def run_client():
     logger.debug("Lines are %s " % lines)
 
     results = iperf2_parser.parse_output(lines)
-    results['diags'] = "%s\n\n%s" % (command_line, stdout)
+    results['diags'] = "%s\n\n%s\n%s" % (command_line, stdout, stderr)
 
     return results
+
 
 def run_server():
 
@@ -237,12 +252,14 @@ def run_server():
     # just to be safe cast everything in the list to a string
     iperf2_args = [str(x) for x in iperf2_args]
 
+    # Time out a little early so we can produce a result
+    iperf_timeout = pscheduler.timedelta_as_seconds(duration) - DEFAULT_SERVER_SHUTDOWN
+    logger.debug("Timeout is %s" % (iperf_timeout))
+
     logger.debug("Running command: %s" % " ".join(iperf2_args))
 
     try:
-        status, stdout, stderr = pscheduler.run_program(iperf2_args,
-                                                        timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)),
-                                                        timeout_ok = True)
+        status, stdout, stderr = pscheduler.run_program(iperf2_args, timeout = iperf_timeout)
     except Exception as e:
         logger.error("iperf2 failed to complete execution: %s" % str(e));
         pscheduler.succeed_json({"succeeded": False,
@@ -250,9 +267,12 @@ def run_server():
                                  "error": "The iperf2 command failed during execution. See server logs for more details."
                                  })
 
-    # For whatever reason, iperf2 doesn't always exit with the right code
-    # in the event of failures so we can also look to see if anything
-    # showed up in stderr
+    # See note at the top of this file about evaluating the exit
+    # status.
+    if status == 2:
+        status = 0
+        stderr = ""
+
     if status or stderr:
         pscheduler.succeed_json({"succeeded": False,
                                  "diags": " ".join(iperf2_args),
