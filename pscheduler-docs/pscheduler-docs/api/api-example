@@ -1,4 +1,10 @@
-#!/usr/bin/env python3 -u
+#!/bin/sh
+#
+# "/usr/bin/env python3 -u" doesn't work as expected, so we use this
+# shell hack to invoke Python in unbuffered mode.
+#
+''''exec python3 -u -- "$0" ${1+"$@"} # '''
+
 """
 
 This program goes through all of the steps needed to do a single
