@@ -19,11 +19,6 @@ Vagrant.configure("2") do |config|
 
   config.vm.hostname = name
 
-#  config.vm.provision "host", type: "shell", run: "once", inline: <<-SHELL
-#    echo "#{name}" > /etc/hostname
-#    hostname "#{name}"
-#  SHELL
-
   config.vm.provision "testpoint", type:"shell", run: "once", inline: <<-SHELL
 
     yum -y install ntp
