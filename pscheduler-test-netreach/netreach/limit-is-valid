@@ -1,11 +1,9 @@
-#!/usr/bin/sh
+#!/bin/sed -e 1d;/^#/d
 #
 # Validator for 'netreach' task limit spec
 #
 
-exec cat << EOF
 {
     "valid": false,
     "error": "This type of limit is deprecated and not supported by this test."
 }
-EOF

@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """Diagnostic program for the limit system
 
 troubleshoot-limits [ OPTIONS ] TASK-FILE

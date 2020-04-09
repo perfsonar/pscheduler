@@ -39,6 +39,7 @@ Latency test class for pScheduler that runs in the background.
 
 %build
 make \
+     PYTHON=%{_pscheduler_python} \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
 

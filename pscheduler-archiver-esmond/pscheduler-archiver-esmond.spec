@@ -49,6 +49,7 @@ This archiver sends JSON test results to Esmond Measurement Archive
 
 %build
 make \
+     PYTHON=%{_pscheduler_python} \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
 

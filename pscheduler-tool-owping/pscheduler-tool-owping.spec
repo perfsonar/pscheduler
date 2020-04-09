@@ -47,6 +47,7 @@ false
 
 %build
 make \
+     PYTHON=%{_pscheduler_python} \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      CONFDIR=$RPM_BUILD_ROOT/%{_pscheduler_tool_confdir}\
      install

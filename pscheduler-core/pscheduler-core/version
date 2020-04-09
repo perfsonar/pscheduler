@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/sh -e
 #
 # Dump the names and version numbers of installed pScheduler packages
 #

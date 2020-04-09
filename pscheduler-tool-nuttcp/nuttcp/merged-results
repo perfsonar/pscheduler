@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 #
 #NOTE: THIS NEEDS A LOT OF WORK. 
 # Merge overal is not working quite right so lost of code that just prevents things from exploding

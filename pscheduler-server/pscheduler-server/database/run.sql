@@ -524,8 +524,6 @@ BEGIN
 
         THEN
 
-            LOCK TABLE run IN ACCESS EXCLUSIVE MODE;
-
             IF run_has_conflicts(taskrec.id, lower(NEW.times), NEW.priority)
             THEN
                RAISE EXCEPTION '%', run_conflict_message();
@@ -615,35 +613,97 @@ CREATE OR REPLACE FUNCTION run_can_proceed(
 )
 RETURNS BOOLEAN
 AS $$
+DECLARE
+    runrec RECORD;
 BEGIN
+    SELECT INTO runrec
+        run.*,
+        test.scheduling_class,
+        scheduling_class.anytime,
+        scheduling_class.exclusive
+    FROM
+        run
+        JOIN task ON task.id = run.task
+        JOIN test ON test.id = task.test
+        JOIN scheduling_class ON scheduling_class.id = test.scheduling_class
+    WHERE run.id = run_id;
 
-    IF NOT EXISTS (SELECT * FROM run WHERE id = run_id)
+
+    IF NOT FOUND
     THEN
         RAISE EXCEPTION 'No such run.';
     END IF;
 
-    RETURN NOT EXISTS (
-        SELECT *
+    -- Anytime tasks don't ever count, so they're good to go.                                                                       
+    IF runrec.anytime
+    THEN
+        RETURN TRUE;
+    END IF;
 
-        FROM
-	  run run1
-	  JOIN task task1 ON task1.id = run1.task
-	  JOIN test test1 ON test1.id = task1.test
-	  JOIN scheduling_class scheduling_class1 ON
-              scheduling_class1.id = test1.scheduling_class
-	  JOIN run run2 ON
-              run2.times && run1.times
-	      AND run2.id <> run1.id
-	      AND run2.priority > run1.priority
-	      AND NOT run_state_is_finished(run2.state)
-	WHERE
-	    run1.id = run_id
-	    AND NOT scheduling_class1.anytime
-    );
+    RETURN NOT (
+        -- Exclusive can't collide with anything                                                                                    
+        ( runrec.exclusive
+          AND EXISTS (SELECT * FROM run_conflictable
+                      WHERE
+                          times && runrec.times
+                          AND COALESCE(priority, 0) >= COALESCE(runrec.priority, 0)
+                          AND id <> run_id
+                     )
+        )
+        -- Non-exclusive can't collide with exclusive          
+          OR ( NOT runrec.exclusive
+               AND EXISTS (SELECT * FROM run_conflictable
+                           WHERE
+                               exclusive
+                               AND times && runrec.times
+                               AND COALESCE(priority, 0) >= COALESCE(runrec.priority, 0)
+                               AND id <> run_id
+                    )
+            )
+        );
 
 END;
 $$ LANGUAGE plpgsql;
 
+
+
+DO $$ BEGIN PERFORM drop_function_all('run_start'); END $$;
+
+
+
+-- Get a run marked as started.  Return NULL if successful and an
+-- error message if not.  This is used by the runner.
+
+CREATE OR REPLACE FUNCTION run_start(run_id BIGINT)
+RETURNS TEXT
+AS $$
+BEGIN
+
+    IF control_is_paused()
+    THEN
+        UPDATE run SET
+            state = run_state_missed(),
+            status = 1,
+            result = '{ "succeeded": false, "diags": "System was paused." }'
+        WHERE id = run_id;
+        RETURN 'System was paused at run time.';
+    END IF;
+
+    IF NOT run_can_proceed(run_id)
+    THEN
+        UPDATE run SET
+            state = run_state_preempted(),
+            status = 1,
+            result = '{ "succeeded": false, "diags": "Run was preempted." }'
+        WHERE id = run_id;
+        RETURN 'Run was preempted.';
+    END IF;
+
+    UPDATE run SET state = run_state_running() WHERE id = run_id;
+    RETURN NULL;
+
+END;
+$$ LANGUAGE plpgsql;
 
 
 -- Maintenance functions
