@@ -18,7 +18,7 @@ Depends: ${misc:Depends}, python3, curl,
  apache2, libapache2-mod-wsgi, rsyslog, logrotate,
  dbconfig-common, postgresql (>= 9.5),
  postgresql-11 | postgresql-10 | postgresql-9.6 | postgresql-9.5,
- postgresql-plpython-11 | postgresql-plpython-10 | postgresql-plpython-9.6 | postgresql-plpython-9.5,
+ postgresql-plpython3-11 | postgresql-plpython3-10 | postgresql-plpython3-9.6 | postgresql-plpython3-9.5,
  postgresql-contrib | postgresql-contrib-10 | postgresql-contrib-9.6 | postgresql-contrib-9.5
 Description: pScheduler server components
  The pScheduler database, daemons and API web server
