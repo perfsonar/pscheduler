@@ -1,3 +1,9 @@
+pyrsistent (0.14.11-3) perfsonar-4.3-staging; urgency=low
+
+  * Building Python3 module only.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 21 Apr 2020 17:53:00 +0000
+
 pyrsistent (0.14.11-2) perfsonar-minor-staging; urgency=low
 
   * Building for Python3 under Stretch

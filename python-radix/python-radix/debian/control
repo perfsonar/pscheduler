@@ -18,7 +18,6 @@ Testsuite: autopkgtest-pkg-python
 Package: python3-radix
 Architecture: any
 Depends: ${shlibs:Depends}, ${python3:Depends}, ${misc:Depends}
-Provides: ${python3:Provides}
 Description: radix tree implementation for storage of IPv4 and IPv6 networks (Python 3)
  py-radix is an implementation of a radix tree for Python, which supports
  storage and lookups of IPv4 and IPv6 networks. This is a Python equivalent to

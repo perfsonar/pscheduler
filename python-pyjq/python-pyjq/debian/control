@@ -12,7 +12,6 @@ Homepage: https://pypi.python.org/pypi/pyjq
 Package: python3-pyjq
 Architecture: any
 Depends: ${python3:Depends}, ${misc:Depends}, ${shlibs:Depends}
-Provides: ${python3:Provides}
 Description: Python bindings for jq
  jq is like sed for JSON data – you can use it to slice and filter and map and
  transform structured data with the same ease that sed, awk, grep and friends

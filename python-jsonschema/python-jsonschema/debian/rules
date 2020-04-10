@@ -1,6 +1,5 @@
 #!/usr/bin/make -f
 
-PYTHONS:=$(shell pyversions -vr)
 PYTHON3S:=$(shell py3versions -vr)
 
 export PACKAGE_VERSION=$(shell dpkg-parsechangelog | grep Version: | cut -d' ' -f2 | sed -e 's/^[[:digit:]]*://' -e 's/[-].*//' -e 's/~/.0/' | head -n 1)
@@ -11,26 +10,21 @@ py3sdo=set -ex; $(foreach py, $(PYTHON3), $(py) $(1);)
 UPSTREAM_GIT = git://github.com/Julian/jsonschema.git
 
 %:
-	dh $@ --with python2,python3
+	dh $@ --with python3
 
 override_dh_auto_test:
 
 override_dh_auto_build:
 	echo $$PACKAGE_VERSION  | sed s/\\./-/g >version.txt
-	dh_auto_build
+#	dh_auto_build
 	$(call py3sdo, setup.py build)
 
 override_dh_auto_install:
-	set -e ; for pyvers in $(PYTHONS); do \
-		python$$pyvers setup.py install --install-layout=deb \
-			--root $(CURDIR)/debian/python-jsonschema; \
-	done
 	set -e ; for pyvers in $(PYTHON3S); do \
 		python$$pyvers setup.py install --install-layout=deb \
 			--root $(CURDIR)/debian/python3-jsonschema; \
 	done
 	rm -f $(CURDIR)/debian/python*/usr/lib/python*/dist-packages/*.pth
-	mv $(CURDIR)/debian/python-jsonschema/usr/bin/jsonschema $(CURDIR)/debian/python-jsonschema/usr/bin/python2-jsonschema
 	mv $(CURDIR)/debian/python3-jsonschema/usr/bin/jsonschema $(CURDIR)/debian/python3-jsonschema/usr/bin/python3-jsonschema
 
 override_dh_python3:
