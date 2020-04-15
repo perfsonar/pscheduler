@@ -34,10 +34,11 @@ class TestPsdns(PschedTestBase):
             'www.perfsonar.net',
             'www.es.net',
             'www.geant.org',
-            'www.iu.edu',
             'www.internet2.edu',
-            'does-not-exist.internet2.edu',
-            'cache00.ns.uu.net',
+            'www.iu.edu',
+            'www.umich.edu',
+            'does-not-exist.perfsonar.net',
+            'a1.nv.perfsonar.net',
         ], ip_version=4)
 
         # If none of these resolved, we probably don't have network or
@@ -46,8 +47,8 @@ class TestPsdns(PschedTestBase):
 
         if have_network:
             # these should be stable
-            assert(ret.get('does-not-exist.internet2.edu') is None)
-            self.assertEqual(ret.get('cache00.ns.uu.net'), '198.6.1.1')
+            assert(ret.get('does-not-exist.perfsonar.net') is None)
+            self.assertEqual(ret.get('a1.nv.perfsonar.net'), '127.0.0.1')
 
         # ipv6
 
