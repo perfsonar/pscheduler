@@ -105,6 +105,7 @@ def ip_addr_version(addr,
         return (None, "Unable to resolve '%s' or find a supported IP version" % (host))
 
 
+    # DNS:  Don't hard-wire this.  Let the resolver functionfigure it out.
     for ip_version in [4, 6]:
         resolved = dns_resolve(addr, ip_version=ip_version, timeout=timeout)
         if resolved is not None:

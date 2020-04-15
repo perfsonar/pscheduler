@@ -63,10 +63,13 @@ def address_interface(address, ip_version=None):
 
     # make sure we resolve any address to a specific
     # IP address before looking up interfaces
+
     if not is_ip(address):
         if ip_version is not None:
             resolved = dns_resolve(address, ip_version=ip_version)
         else:
+            # DNS: This shouldn't hardwire the order.  Pass None instead and
+            # let the resolver figure it out.
             for version in [ 4, 6 ]:
                 resolved = dns_resolve(address, ip_version=version)
                 if resolved is not None:

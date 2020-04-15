@@ -43,6 +43,7 @@ argv = [
 # IP Version
 #
 
+# DNS:  This is a good way to handle things.  Propagate it to other tools.
 try:
     ipversion = spec['ip-version']
 except KeyError:

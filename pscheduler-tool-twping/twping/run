@@ -117,6 +117,7 @@ if role == CLIENT_ROLE:
             dest_hostname = pscheduler.dns_resolve_reverse(dest_ip)
     except ValueError:
         dest_hostname = test_spec['dest']
+        # DNS:  This may not be a valid assumption w/r/t protocol order.
         if ip_version == '6':
             dest_ip = pscheduler.dns_resolve(test_spec['dest'], ip_version=6)
         else:

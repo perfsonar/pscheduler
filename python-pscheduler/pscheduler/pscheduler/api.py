@@ -263,6 +263,11 @@ def api_has_pscheduler(hostport, timeout=5, bind=None):
     # non-200.
 
     resolved = None
+
+    # DNS: Don't hardwire this.  In fact, this should probably not be
+    # done at all.  The url_get will return an error if the host is
+    # unresolvable.
+
     for ip_version in [ 4, 6 ]:
         resolved = dns_resolve(host,
                                ip_version=ip_version,
