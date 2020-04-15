@@ -466,9 +466,7 @@ BEGIN
 	-- Handle times for runs reaching a state where they may have
 	-- been running to one where they've stopped.
 
-	IF NEW.state <> OLD.state
-            AND NEW.state IN ( run_state_finished(), run_state_overdue(),
-                 run_state_missed(), run_state_failed(), run_state_preempted() )
+	IF NEW.state <> OLD.state AND run_state_is_finished(NEW.state)
         THEN
 
 	    -- Adjust the end times only if there's a sane case for
