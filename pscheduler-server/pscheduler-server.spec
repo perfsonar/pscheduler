@@ -81,9 +81,6 @@ The pScheduler server
 
 # Database
 
-%define pgsql_service postgresql-%{_pscheduler_postgresql_version}
-%define pg_data %{_sharedstatedir}/pgsql/%{_pscheduler_postgresql_version}/data
-
 %define daemon_config_dir %{_pscheduler_sysconfdir}/daemons
 %define db_config_dir %{_pscheduler_sysconfdir}/database
 %define db_user %{_pscheduler_user}
@@ -158,7 +155,7 @@ make -C daemons \
      LOGDIR=%{_pscheduler_log_dir} \
      PGDATABASE=%{database_name} \
      PGPASSFILE=%{_pscheduler_database_pgpass_file} \
-     PGSERVICE=%{pgsql_service}.service \
+     PGSERVICE=%{_pscheduler_postgresql_service}.service \
      PGUSER=%{_pscheduler_database_user} \
      PSUSER=%{_pscheduler_user} \
      ARCHIVERDEFAULTDIR=%{archiver_default_dir} \
@@ -347,7 +344,7 @@ fi
 %define pgsql_max_connections 500
 %define pgsql_deadlock_timeout 5s
 
-%define pgsql_conf %{pg_data}/postgresql.conf
+%define pgsql_conf %{_pscheduler_postgresql_data}/postgresql.conf
 
 OLD_CONF_DIGEST=$(sha256sum "%{pgsql_conf}" | awk '{ print $1 }')
 
@@ -363,8 +360,8 @@ EOF
 
 NEW_CONF_DIGEST=$(sha256sum "%{pgsql_conf}" | awk '{ print $1 }')
 
-systemctl enable "%{pgsql_service}"
-systemctl start "%{pgsql_service}"
+systemctl enable "%{_pscheduler_postgresql_service}"
+systemctl start "%{_pscheduler_postgresql_service}"
 
 # Restart the server only if the configuration has changed as a result
 # of what we did to it.  This is more for development convenience than
@@ -373,7 +370,7 @@ systemctl start "%{pgsql_service}"
 if [ "${NEW_CONF_DIGEST}" != "${OLD_CONF_DIGEST}" ]
 then
     echo "Restarting PostgreSQL after configuration change."
-    systemctl restart "%{pgsql_service}"
+    systemctl restart "%{_pscheduler_postgresql_service}"
 fi
 
 
@@ -536,11 +533,11 @@ if [ "$1" = "0" ]; then
 
     drop-in -r %{name} /dev/null $HBA_FILE
 
-    drop-in -r %{name} /dev/null "%{pg_data}/postgresql.conf"
+    drop-in -r %{name} /dev/null "%{_pscheduler_postgresql_data}/postgresql.conf"
 
     # Removing the max_connections change requires a restart, which
     # will also catch the HBA changes.
-    systemctl reload-or-try-restart "%{pgsql_service}"
+    systemctl reload-or-try-restart "%{_pscheduler_postgresql_service}"
 
 
 
@@ -586,7 +583,7 @@ fi
 # because Pg doesn't see module upgrades.
 
 %triggerin -- %{_pscheduler_python}-pscheduler
-systemctl reload-or-try-restart "%{pgsql_service}"
+systemctl reload-or-try-restart "%{_pscheduler_postgresql_service}"
 
 # ------------------------------------------------------------------------------
 %files

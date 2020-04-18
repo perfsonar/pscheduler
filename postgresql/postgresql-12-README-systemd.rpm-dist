@@ -1,0 +1,353 @@
+README.rpm-dist
+-----------------------------------------------------------------------------
+Version 12, for the PostgreSQL 12 RPM set.
+Devrim Gündüz <devrim@gunduz.org>
+-----------------------------------------------------------------------------
+
+Contents:
+ 1.)	Introduction and QuickStart
+ 2.)	Upgrading an installation
+ 3.)	PostgreSQL RPM packages and rationale
+ 4.)	Starting multiple postmasters
+ 5.)	Regression Testing
+ 6.)	Starting postmaster automatically on startup
+ 7.)	Grand Unified Configuration(GUC) File
+ 8.)	Logging set up
+ 9.)	Rebuilding from the source RPM
+10.)	Contrib files
+12.)	Further Information Resource
+
+INTRODUCTION
+-----------------------------------------------------------------------------
+This document exists to explain the layout of the RPMs for PostgreSQL, to 
+describe various RPM specifics, and to document special features found
+in the RPMset.
+
+This document is written to be applicable to version 12 of PostgreSQL,
+which is the current version of the RPMs as of this writing. More to the 
+point, versions prior to 12 are not documented here.
+
+Official PostgreSQL Global Development Group RPMs carry a 'PGDG after the
+release number.  Other RPMsets as distributed with Linux distributions may
+have a different release number and initials.
+
+If you want to stay up-to-date on the PostgreSQL core itself, you may
+want to use PGDG set, instead of the binaries supplied by distribution.
+
+These RPMs do not support any sort of major version upgrading process
+other than that documented in the regular documentation.  That is, you
+must dump, upgrade, initdb, and restore your data if you are
+performing a major version update. This is not needed for minor version
+updates.
+
+QUICKSTART (note that this requires postgresql12-server installed)
+-----------------------------------------------------------------------------
+For a fresh installation, you will need to initialize the cluster first. Run:
+
+	/usr/pgsql-12/bin/postgresql12-setup initdb
+
+as root, and it will prepare a new database cluster for you. Then you will 
+need to start PostgreSQL. Again as root, run:
+
+	systemctl start postgresql-12.service
+
+You will probably also want to do
+
+	systemctl enable postgresql-12.service
+
+so that the postmaster is automatically started during future reboots.
+
+These commands will start a postmaster that will listen on localhost and Unix 
+socket 5432 only.  Edit /var/lib/pgsql/12/data/postgresql.conf and pg_hba.conf 
+if you want to allow remote access -- see the section on Grand Unified 
+Configuration.
+
+The file /var/lib/pgsql/12/.bash_profile is packaged to help with the
+setting of environment variables. Users should not edit this file, because
+it may be overwritten during every new installation. However, you can create
+~/.pgsql_profile file, and add your customizations there.
+
+The user 'postgres' is created during installation of the server subpackage.
+This user by default is UID and GID 26. The user has the default shell set to
+bash, and the home directory set to /var/lib/pgsql.  This user also has no
+default password.  If you want to be able to su to it from a non-root account
+or login as 'postgres' you will need to set a password using passwd.
+
+In the default installation, only postgres user is allowed to access to 
+the database server, because initdb in the RPMs pick up "peer" auth 
+method in the RPMs. 
+
+All the binaries are installed under /usr/pgsql-12/bin. However, the 
+tools that are compatible with the previous releases are symlinked under 
+/usr/bin directory. Please note that RPMs are using alternatives method 
+in here, so whenever a newer major version is installed, symlinks will 
+point to the new version. Here is the current list of the binaries that 
+are under $PATH:
+
+- clusterdb
+- createdb
+- createlang
+- createuser
+- dropdb
+- droplang
+- dropuser
+- pg_dump
+- pg_dumpall
+- pg_restore
+- psql
+- reindexdb
+
+You may want to add /usr/pgsql-12/bin to your $PATH variable in 
+/etc/profile, if you want to use them easily. However, please note that 
+this may lead to some unintentional side effects, so be careful.
+
+
+UPGRADING AN INSTALLATION
+-----------------------------------------------------------------------------
+For a minor-version upgrade (such as 12.1 to 12.2), just install the
+new RPMs; there's usually nothing more to it than that.  Upgrading
+across a major release of PostgreSQL (for example, from 9.2.x to 12.x)
+requires more effort.
+
+If you are upgrading across more than one major release of PostgreSQL
+(for example, from 9.1.x to 12.x), you will need to follow the "traditional"
+dump and reload process to bring your data into the new version. That is:
+*before* upgrading, run pg_dumpall to extract all your data into a SQL file.
+Shut down the old postmaster, upgrade to the new version RPMs, initdb,
+and run the dump file through psql to restore your data.
+
+In 9.1+, the RPMs also support in-place upgrade from the immediately 
+previous major release.  Currently, you can upgrade in-place
+from 9.2.x to 12.x.  Just run:
+$ /usr/pgsql-12/bin/postgresql12-setup upgrade
+
+Please note that 9.2 and 12 contrib RPMs needs	to be installed	for this 
+feature	to work.
+
+POSTGRESQL RPM PACKAGES AND RATIONALE.
+-----------------------------------------------------------------------------
+PostgreSQL is split up into multiple packages so that users can 'pick and
+choose' what pieces are needed, and what dependencies are required.
+
+The RPMset is packaged in the following subpackages:
+
+postgresql12:           Key clients and libraries, and documentation
+postgresql12-server:    Server executables and data files
+postgresql12-devel:     Development libraries and include files
+postgresql12-test:	The regression tests and associated files
+postgresql12-libs:      Client shared libraries
+postgresql12-docs:	Extra documentation, such as the tutorial files
+postgresql12-contrib:   The contrib source tree, as well as selected binaries
+postgresql12-plperl:    PL/Perl procedural language
+postgresql12-plpython:  PL/Python procedural language
+postgresql12-pltcl:     PL/Tcl procedural language
+
+postgresql12-jdbc, postgresql12-python, postgresql12-tcl and postgresql12-odbc have
+been splitted into  seperate (s)rpms.
+
+You have to install postgresql and postgresql12-libs to do anything.
+postgresql12-server is needed unless you only plan to use the clients to work
+with a remote PostgreSQL server. The others are optional.
+
+postgresql12-python package includes PyGreSQL, and Pgtcl is distributed
+via postgresql12-tcl package.
+
+RPM FILE LOCATIONS.
+-----------------------------------------------------------------------------
+To be in compliance with the Linux FHS, the PostgreSQL RPMs install files in
+a manner not consistent with most of the PostgreSQL documentation.  According
+to the standard PostgreSQL documentation, PostgreSQL is installed under the
+directory /usr/local/pgsql, with executables, source, and data existing in
+various subdirectories.
+
+Different distributions have different ideas of some of these file locations.
+In particular, the documentation directory can be /usr/doc, /usr/doc/packages,
+/usr/share/doc, /usr/share/doc/packages, or some other similar path.
+
+However, the Red Hat / Scientific Linux ( CentOS / Fedora RPM's install 
+the files like this:
+
+Executables:		/usr/bin and /usr/pgsql-12/bin
+Libraries:		/usr/pgsql-12/lib
+Documentation:		/usr/pgsql-12/doc
+Contrib documentation:	/usr/pgsql-12/doc
+Source:			not installed
+Data:			/var/lib/pgsql/12/data
+Backup area:		/var/lib/pgsql/12/backups
+Templates:		/usr/pgsql-12/share
+Procedural Languages:	/usr/pgsql-12/lib
+Development Headers:	/usr/pgsql-12/include
+Other shared data:	/usr/pgsql-12/share
+Regression tests:	/usr/pgsql-12/lib/test
+
+While it may seem gratuitous to place these files in different locations, the
+FHS requires it -- distributions should not ever touch /usr/local.  It may
+also seem like more work to keep track of where everything is -- but, that's
+the beauty of RPM -- you don't have to keep track of the files, RPM does it
+for you.
+
+These RPMs are designed to be LSB-compliant -- if you find this not to be the
+case, please let us know by way of the pgsql-pkg-yum@postgresql.org
+mailing list.
+
+-------------------------------------------------------------------------------
+MULTIPLE POSTMASTERS (For the same PostgreSQL version)
+-------------------------------------------------------------------------------
+The postgresql-server RPM contains a 'unit file' that is used to start the
+postmaster.  The current version of this script has logic to be able to start
+multiple postmasters, with different data areas, listening on different ports,
+etc.  To use this functionality requires root access.
+
+Here are the steps:
+
+1.)     First, you will need to create a new unit file for the new cluster.
+	You can give any name in here. To distinguish the cluster, you can
+	add the service name or port value to the unit file name:
+
+	cp /lib/systemd/system/postgresql-12.service /etc/systemd/system/postgresql-12-secondary.service 
+
+2.)	Edit this file, and change PGDATA. Please note that you can give
+	any directory name in here that postgres can access. You don't
+	have to create this directory now, it will be created in the next step:
+
+	Environment=PGDATA=/var/lib/pgsql/12/data-secondary
+
+3.)     Initialize the cluster:
+
+	/usr/pgsql-12/bin/postgresql12-setup initdb postgresql-12-secondary
+
+4.)     Edit postgresql.conf to change the port, address, tcpip settings, etc.
+
+5.)     Start the postmaster with 'systemctl start postgresql-12-secondary.service'
+
+When doing a major-version upgrade of a secondary postmaster, mention the
+service name in the postgresql12-setup command, for example 'postgresql12-setup
+upgrade secondary'.  This will let postgresql12-setup find the correct data
+directory from the service file.
+
+REGRESSION TESTING
+-------------------------------------------------------------------------------
+If you install the postgresql-test RPM then you can run the PostgreSQL
+regression tests.  These tests stress your database installation and produce
+results that give you assurances that the installation is complete, and that
+your database machine is up to the task.
+
+To run the regression tests under the RPM installation, make sure that the
+postmaster has been started (if not, su to root and do "systemctl start
+postgresql-12.service"), cd to /usr/pgsql-12/lib/test/regress, su to 
+postgres, and execute "make check". This command will start the 
+regression tests and will both show the results to the screen and store 
+the results in the file regress.out.
+
+If any tests fail, see the file regression.diffs in that directory for details,
+and read the "Regression Tests" section of the PostgreSQL documentation to
+find out whether the differences are actually significant.  If you need help
+interpreting the results, contact the pgsql-general list at 
+postgresql.org.
+
+After testing, say "make clean" to remove the files generated by the test
+script.
+
+STARTING POSTMASTER AUTOMATICALLY AT SYSTEM STARTUP
+-------------------------------------------------------------------------------
+Fedora / Red Hat / CentOS use the systemd package to manage server startup.
+A systemd unit file for PostgreSQL is provided in the server package, as
+/lib/systemd/system/postgresql-12.service.  To start the postmaster manually,
+as root run
+	systemctl start postgresql-12.service
+To shut the postmaster down,
+	systemctl stop postgresql-12.service
+These two commands only change the postmaster's current status.  If you
+want the postmaster to be started automatically during future system startups,
+run
+	systemctl enable postgresql-12.service
+To undo that again,
+	systemctl disable postgresql-12.service
+See "man systemctl" for other possible subcommands.
+
+GRAND UNIFIED CONFIGURATION (GUC) FILE
+-------------------------------------------------------------------------------
+The PostgreSQL server has many tunable parameters -- the file 
+/var/lib/pgsql/12/data/postgresql.conf is the master configuration file for the
+whole system.  
+
+The RPM ships with a mostly-default file -- you will need to tune the
+parameters for your installation.  In particular, you might want to allow
+nonlocal TCP/IP socket connections -- in order to allow these, you will need
+to edit the postgresql.conf file.  The line in question contains the string 
+'listen_addresses' -- you need to both uncomment the line and set the value
+to '*' to get the postmaster to accept nonlocal connections.  You'll also need
+to adjust pg_hba.conf appropriately.
+
+LOGGING SET UP
+-------------------------------------------------------------------------------
+By default, the postmaster's stderr log is directed into files placed in a
+log subdirectory of the data directory (ie, /var/lib/pgsql/12/data/log).
+The out-of-the-box configuration rotates among seven files, one for each
+day of the week.  You can adjust this by changing postgresql.conf settings.
+
+REBUILDING FROM SOURCE RPM
+-------------------------------------------------------------------------------
+If your distribution is not supported by the binary RPMs from PostgreSQL.org, 
+you will need to rebuild from the source RPM.  Download the .src.rpm for this
+release.  You will need to be root to rebuild, unless you have set up
+a non-root build environment (which is the recommended method anyway).
+
+Install the source RPM with rpm -i, then cd to the rpm building area
+(which is /usr/src/redhat by default).  You will have to have a full
+development environment to rebuild the full RPM set.
+
+This release of the RPMset includes the ability to conditionally build 
+sets of packages.  The parameters, their defaults, and the meanings are:
+
+beta		0	#build with cassert and do not strip the binaries
+python		1	#build the postgresql-python package.
+tcl		1	#build the postgresql-tcl package.
+test		1	#build the postgresql-test package.
+plpython	1	#build the PL/Python procedural language package.
+pltcl		1	#build the PL/Tcl procedural language package.
+plperl		1	#build the PL/Perl procedural language package.
+ssl		1	#use OpenSSL support.
+kerberos	1	#use Kerberos 5 support.
+nls		1	#build with national language support.
+ldap		1	#build with LDAP support.
+pam		1	#build with PAM support.
+runselftest	1	#do "make check" during the build.
+sdt		1	#build with SystemTap support.
+xml		1	#build with XML support
+pgfts		1	#build with --enable-thread-safety
+uuid		1	#build contrib/uuid-ossp
+
+To use these defines, invoke a rebuild like this:
+rpmbuild --rebuild --define 'python 0' --define 'tcl 0' \
+	--define 'test 0' --define 'runselftest 0' --define 'kerberos 0' \
+	postgresql12-12.3-1PGDG.rhel7.src.rpm
+This line would disable the python, tcl, and test subpackages, disable 
+the regression test run during build, and disable kerberos support.
+
+You might need to disable runselftest if there is an installed version of
+PostgreSQL that is a different major version from what you are trying to
+build.  The self test tends to pick up the installed libpq.so shared library
+in place of the one being built :-(, so if that isn't compatible the test will
+fail. Also, you can't use runselftest when doing the build as root.
+
+More of these conditionals will be added in the future.
+
+CONTRIB FILES
+-------------------------------------------------------------------------------
+The contents of the contrib tree are packaged into the -contrib subpackage
+and are processed with make and make install. Most of the modules are in 
+/usr/pgsql-12/lib for loadable modules, and binaries are in 
+/usr/pgsql-12/bin.  In the future these files may be split out, 
+depending upon function and dependencies.
+
+
+MORE INFORMATION
+-------------------------------------------------------------------------------
+You can get more information at http://www.postgresql.org and 
+https://yum.postgresql.org
+
+Please help make this packaging better -- let us know if you find problems, or
+better ways of doing things. You can reach us by e-mail at
+pgsql-pkg-yum@postgresql.org
+-------------------------------------------------------------------------------

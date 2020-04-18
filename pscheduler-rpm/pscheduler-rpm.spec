@@ -65,10 +65,16 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 
 
 # Minimum-required PostgreSQL version
-%%_pscheduler_postgresql_version_major 9
-%%_pscheduler_postgresql_version_minor 5
+%%_pscheduler_postgresql_version_major 12
+%%_pscheduler_postgresql_version_minor 2
+
 %%_pscheduler_postgresql_version %{_pscheduler_postgresql_version_major}.%{_pscheduler_postgresql_version_minor}
-%%_pscheduler_postgresql_package postgresql%{_pscheduler_postgresql_version_major}%{_pscheduler_postgresql_version_minor}
+%%_pscheduler_postgresql_package postgresql%{_pscheduler_postgresql_version_major}
+
+%%_pscheduler_postgresql_data %{_sharedstatedir}/pgsql/%{_pscheduler_postgresql_version_major}/data
+%%_pscheduler_postgresql_service postgresql-%{_pscheduler_postgresql_version_major}
+%%_pscheduler_postgresql_short pgsql-%{_pscheduler_postgresql_version_major}
+
 
 
 %%_pscheduler_libexecdir %{_libexecdir}/pscheduler
