@@ -1,0 +1,80 @@
+--- python-jsonschema.orig/jsonschema.egg-info/requires.txt	2020-04-22 20:02:54.161358000 +0000
++++ python-jsonschema/jsonschema.egg-info/requires.txt	2020-04-22 20:05:24.484735000 +0000
+@@ -3,9 +3,6 @@
+ setuptools
+ six>=1.10.0
+ 
+-[:python_version < "3"]
+-functools32
+-
+ [format]
+ idna
+ jsonpointer>1.13
+--- python-jsonschema.orig/jsonschema/compat.py	2019-02-10 17:45:59.000000000 +0000
++++ python-jsonschema/jsonschema/compat.py	2020-04-22 20:07:35.368161000 +0000
+@@ -13,36 +13,16 @@
+ except ImportError:
+     from collections import MutableMapping, Sequence  # noqa
+ 
+-PY3 = sys.version_info[0] >= 3
+-
+-if PY3:
+-    zip = zip
+-    from functools import lru_cache
+-    from io import StringIO as NativeIO
+-    from urllib.parse import (
+-        unquote, urljoin, urlunsplit, SplitResult, urlsplit as _urlsplit
+-    )
+-    from urllib.request import pathname2url, urlopen
+-    str_types = str,
+-    int_types = int,
+-    iteritems = operator.methodcaller("items")
+-else:
+-    from itertools import izip as zip  # noqa
+-    from io import BytesIO as NativeIO
+-    from urlparse import (
+-        urljoin, urlunsplit, SplitResult, urlsplit as _urlsplit # noqa
+-    )
+-    from urllib import pathname2url, unquote  # noqa
+-    import urllib2  # noqa
+-    def urlopen(*args, **kwargs):
+-        return contextlib.closing(urllib2.urlopen(*args, **kwargs))
+-
+-    str_types = basestring
+-    int_types = int, long
+-    iteritems = operator.methodcaller("iteritems")
+-
+-    from functools32 import lru_cache
+-
++zip = zip
++from functools import lru_cache
++from io import StringIO as NativeIO
++from urllib.parse import (
++    unquote, urljoin, urlunsplit, SplitResult, urlsplit as _urlsplit
++)
++from urllib.request import pathname2url, urlopen
++str_types = str,
++int_types = int,
++iteritems = operator.methodcaller("items")
+ 
+ # On python < 3.3 fragments are not handled properly with unknown schemes
+ def urlsplit(url):
+--- python-jsonschema.orig/setup.cfg	2020-04-22 20:02:54.161672000 +0000
++++ python-jsonschema/setup.cfg	2020-04-22 20:04:34.359298000 +0000
+@@ -11,8 +11,6 @@
+ 	License :: OSI Approved :: MIT License
+ 	Operating System :: OS Independent
+ 	Programming Language :: Python
+-	Programming Language :: Python :: 2
+-	Programming Language :: Python :: 2.7
+ 	Programming Language :: Python :: 3
+ 	Programming Language :: Python :: 3.5
+ 	Programming Language :: Python :: 3.6
+@@ -28,7 +26,6 @@
+ 	pyrsistent>=0.14.0
+ 	setuptools
+ 	six>=1.10.0
+-	functools32;python_version<'3'
+ 
+ [options.extras_require]
+ format = 

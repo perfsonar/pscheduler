@@ -7,30 +7,8 @@
 DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/default.mk
 
-PY3VERS := $(shell py3versions -r)
-PYTHON3S:=$(shell py3versions -vr)
-PYTHON3:=$(shell py3versions -r)
-py3sdo=set -ex; $(foreach py, $(PYTHON3), $(py) $(1);)
+export PYBUILD_NAME=jsontemplate
 
 %:
-	dh $@ --with=python3
-
-override_dh_auto_build:
-	set -ex; \
-	for py in $(PY3VERS); do \
-		$$py setup.py build; \
-	done
-
-override_dh_auto_install:
-	set -ex; \
-	for py in $(PY3VERS); do \
-		$$py setup.py install --skip-build --no-compile \
-		                      --root debian/python3-jsontemplate \
-		                      --install-layout=deb; \
-	done
-
-override_dh_auto_clean:
-	rm -rf build
-	rm -rf src/jsontemplate.egg-info
-	find . \( -name '*.pyc' -o -name __pycache__ \) -delete
+	dh $@ --with=python3 --buildsystem=pybuild
 

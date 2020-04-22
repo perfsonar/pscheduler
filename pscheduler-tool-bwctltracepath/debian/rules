@@ -7,6 +7,15 @@
 DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/default.mk
 
+# see FEATURE AREAS in dpkg-buildflags(1)
+#export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+# see ENVIRONMENT in dpkg-buildflags(1)
+# package maintainers to append CFLAGS
+#export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
+# package maintainers to append LDFLAGS
+#export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
+
 # main packaging script based on dh7 syntax
 %:
 	dh $@
@@ -15,7 +24,6 @@ DEB_SOURCE_PACKAGE ?= $(strip $(shell egrep '^Source: ' debian/control | cut -f 
 CLASS ?= $(shell echo $(DEB_SOURCE_PACKAGE) | sed 's/^pscheduler-//; s/-.*//')
 NAME ?= $(shell echo $(DEB_SOURCE_PACKAGE) | sed 's/^[^-]*-[^-]*-//')
 ROOT ?= $(CURDIR)/debian/$(DEB_SOURCE_PACKAGE)
-PYTHON := $(shell which python3)
 
 override_dh_auto_build:
 
@@ -23,10 +31,12 @@ override_dh_auto_test:
 
 override_dh_auto_install:
 	make -C $(NAME) install \
-		PYTHON=$(PYTHON) \
 		DOCDIR=$(ROOT)/usr/share/doc/pscheduler/$(CLASS) \
 		DESTDIR=$(ROOT)/usr/lib/pscheduler/classes/$(CLASS)/$(NAME) \
 		CONFDIR=$(ROOT)/etc/pscheduler/$(CLASS)/$(NAME)
+
+	rm -f $(ROOT)/usr/lib/pscheduler/classes/$(CLASS)/$(NAME)/*.py?
+	chmod -f -x $(ROOT)/usr/lib/pscheduler/classes/$(CLASS)/$(NAME)/*.py || true
 
 	if [ -f $(CURDIR)/debian/sudoers ]; then \
 		install -D -m 0440 $(CURDIR)/debian/sudoers \
