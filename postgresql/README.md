@@ -1,5 +1,8 @@
 # Notes on Building PostgreSQL
 
+This is temporarily in the sources until we sort out how PgSQL will be
+distributed.  PGDG's distribution points are all off-R&E.
+
 The SRPMs can be found at https://yum.postgresql.org/srpms/12/redhat.
 
 Generally, you'll want the `rhel-<RELEASE>-<ARCHITECTURE>` version.
