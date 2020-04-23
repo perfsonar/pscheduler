@@ -6,3 +6,7 @@ export PYBUILD_NAME=jsonschema
 
 override_dh_auto_test:
 
+override_dh_auto_install:
+	dh_auto_install
+	mv $(CURDIR)/debian/python3-jsonschema/usr/bin/jsonschema $(CURDIR)/debian/python3-jsonschema/usr/bin/python3-jsonschema
+
