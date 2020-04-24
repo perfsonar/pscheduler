@@ -42,28 +42,20 @@ if interval is None:
 # The output is just mocked up since there's no real tool being run.
 
 results = {
-    'succeeded': True,
-    'error': '',
-    'result': { 
-        'schema': 1,
-        'succeeded': True,
-        'time-slept': interval_iso
-        }
+    "succeeded": True,
+    "time-slept": interval_iso
 }
 
 
 interval_secs = pscheduler.timedelta_as_seconds(interval)
 end_time = pscheduler.time_now() + duration
 next_output = pscheduler.time_now() + interval
-runs = 0
 
 delimiter = pscheduler.api_result_delimiter()
 
 while next_output < end_time:
     logger.debug("Sleeping %d", interval_secs)
     time.sleep(interval_secs)
-    runs += 1
-    results['diags'] = "Run #%d" % runs
     print(pscheduler.json_dump(results))
     print(delimiter)
     sys.stdout.flush()

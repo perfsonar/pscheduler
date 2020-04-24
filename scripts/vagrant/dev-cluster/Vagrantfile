@@ -252,9 +252,9 @@ Vagrant.configure("2") do |config|
 
         # PostgreSQL (9.5 only)
 	# TODO: Find a better URL.  Should be getting the latest.
-        yum -y install "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-${REDHAT_RELEASE_MAJOR}Server-$(uname -m)/pgdg-centos95-9.5-3.noarch.rpm"
+        yum -y install "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-${REDHAT_RELEASE_MAJOR}Server-$(uname -m)/pgdg-redhat-repo-latest.noarch.rpm"
 	yum-config-manager -q --disable 'pgdg*' > /dev/null
-	yum-config-manager -q --enable 'pgdg94*' > /dev/null
+	yum-config-manager -q --enable 'pgdg95*' > /dev/null
 
 
         # EPEL

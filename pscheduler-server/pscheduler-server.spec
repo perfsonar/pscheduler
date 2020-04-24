@@ -36,7 +36,7 @@ Requires:	gzip
 Requires:	%{_pscheduler_postgresql_package}-server
 # This is for pgcrypto
 Requires:	%{_pscheduler_postgresql_package}-contrib
-Requires:	%{_pscheduler_postgresql_package}-plpython
+Requires:	%{_pscheduler_postgresql_package}-plpython3
 Requires:	postgresql-load
 Requires:	pscheduler-account
 Requires:	pscheduler-core

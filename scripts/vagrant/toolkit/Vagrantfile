@@ -1,0 +1,41 @@
+#
+# Vagrantfile for perfSONAR tespoint
+#
+
+name = "toolkit"
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos/7"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.cpus = 4
+    vb.memory = 4096
+  end
+
+  # Don't need the guest extensions on this host.
+  if Vagrant.has_plugin?("vagrant-vbguest")
+    config.vbguest.auto_update = false
+  end
+
+  config.vm.hostname = name
+
+  config.vm.provision "testpoint", type:"shell", run: "once", inline: <<-SHELL
+
+    yum -y install ntp
+    systemctl stop ntpd
+    ntpdate pool.ntp.org
+    systemctl enable ntpd
+    systemctl start ntpd
+
+    yum -y install epel-release
+    yum -y install http://software.internet2.edu/rpms/el7/x86_64/main/RPMS/perfSONAR-repo-0.9-1.noarch.rpm
+    yum -y clean all
+    yum -y install perfsonar-toolkit
+    yum -y update
+
+  SHELL
+
+end
+
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
