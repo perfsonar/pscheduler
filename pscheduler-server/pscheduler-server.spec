@@ -25,6 +25,11 @@ Provides:	%{name} = %{version}-%{release}
 
 
 # Database
+
+# NOTE: postgresql-init must be maintained to require the same set of
+# PostgreSQL packages so upgrades between versions will work.  See
+# comments there for more information.
+
 BuildRequires:	postgresql-init
 BuildRequires:	postgresql-load
 BuildRequires:	%{_pscheduler_postgresql_package}-server

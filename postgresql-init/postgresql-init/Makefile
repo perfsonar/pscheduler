@@ -3,6 +3,7 @@
 #
 
 PROGRAMS := \
+	initialize-postgresql \
 	upgrade-postgresql
 
 default: build

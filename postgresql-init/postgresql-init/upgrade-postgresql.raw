@@ -1,9 +1,9 @@
 #!/bin/sh -e
 #
-
-# Find the two installed versions of PostgreSQL and upgrade one to the
-# other.  Note that this will upgrade across more than one major
-# version, which postgresql-xx-setup doesn't.
+# Find the two installed versions of PostgreSQL and upgrade the
+# earlier to the later.  Note that this will upgrade across more than
+# one major version, which postgresql-xx-setup doesn't.
+#
 
 # These are wired in by the build process.
 PG_LIB="__PG_LIB__"
@@ -65,11 +65,14 @@ ls "${USR}" \
 FROM=$(head -1 "${VERSIONS}")
 FROM_BIN=$(printf "${PG_BIN}" "${FROM}")
 FROM_DATA="${PG_LIB}/${FROM}/data"
-[ -d "${FROM_DATA}" ] \
-    || die "No data directory for old ${FROM} (expected ${FROM_DATA})"
+if [ ! -d "${FROM_DATA}" ]
+then
+    echo "No data directory for old ${FROM}; assuming the upgrade has happened."
+    exit 0
+fi
 
-# What we're upgrading to.  This version's data directory must not be
-# initialized.  If it is, fail and don't clobber it.
+
+# What we're upgrading to.
 
 TO=$(tail -1 "${VERSIONS}")
 TO_BIN=$(printf "${PG_BIN}" "${TO}")
@@ -77,9 +80,6 @@ TO_DATA="${PG_LIB}/${TO}/data"
 [ -d "${TO_DATA}" ] \
     || die "No data directory for new ${TO} (expected ${TO_DATA})"
 
-# The new version must not be initialized.  If it is, we don't want to clobber it.
-[ ! -e "${TO_DATA}/PG_VERSION" ] \
-    || die "New PostgreSQL ${TO} has already been initialized."
 
 
 #
@@ -90,6 +90,16 @@ TO_DATA="${PG_LIB}/${TO}/data"
 # TODO: This will vary by distro
 systemctl stop "postgresql-${FROM}"
 systemctl stop "postgresql-${TO}"
+
+# If the new version has been initialized, back it up instead of clobbering it.
+if [ -e "${TO_DATA}/PG_VERSION" ]
+then
+    echo "Warning: Postgresql ${TO} is already initialized.  Backing that up first."
+    mv "${TO_DATA}" "${TO_DATA}-$(date +%Y-%m-%dT%T)"
+    mkdir -p "${TO_DATA}"
+    chown "${PG_USER}.${PG_USER}" "${TO_DATA}"
+fi
+
 
 echo
 echo "#"
