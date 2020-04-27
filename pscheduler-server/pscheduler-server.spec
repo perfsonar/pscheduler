@@ -30,18 +30,18 @@ Provides:	%{name} = %{version}-%{release}
 # PostgreSQL packages so upgrades between versions will work.  See
 # comments there for more information.
 
-BuildRequires:	postgresql-init
+BuildRequires:	postgresql-init >= %{_pscheduler_postgresql_version}
 BuildRequires:	postgresql-load
-BuildRequires:	%{_pscheduler_postgresql_package}-server
-BuildRequires:	%{_pscheduler_postgresql_package}-contrib
-BuildRequires:	%{_pscheduler_postgresql_package}-plpython3
+BuildRequires:	%{_pscheduler_postgresql_package}-server >= %{_pscheduler_postgresql_version}
+BuildRequires:	%{_pscheduler_postgresql_package}-contrib >= %{_pscheduler_postgresql_version}
+BuildRequires:	%{_pscheduler_postgresql_package}-plpython3 >= %{_pscheduler_postgresql_version}
 
 Requires:	drop-in
 Requires:	gzip
-Requires:	%{_pscheduler_postgresql_package}-server
+Requires:	%{_pscheduler_postgresql_package}-server >= %{_pscheduler_postgresql_version}
 # This is for pgcrypto
-Requires:	%{_pscheduler_postgresql_package}-contrib
-Requires:	%{_pscheduler_postgresql_package}-plpython3
+Requires:	%{_pscheduler_postgresql_package}-contrib >= %{_pscheduler_postgresql_version}
+Requires:	%{_pscheduler_postgresql_package}-plpython3 >= %{_pscheduler_postgresql_version}
 Requires:	postgresql-load
 Requires:	pscheduler-account
 Requires:	pscheduler-core
