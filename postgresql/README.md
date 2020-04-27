@@ -14,14 +14,14 @@ side it and hold onto the results.
 
 Remove all traces of the old version from the directory and Git.  This should 
 
-Fetch the SRPM from PGDG.  For Pg 12.2, the command was:
+Fetch the SRPM from PGDG.  For Pg 10.12, the command was:
 ```
-wget https://yum.postgresql.org/srpms/12/redhat/rhel-7-x86_64/postgresql12-12.2-2PGDG.rhel7.src.rpm
+wget https://yum.postgresql.org/srpms/10/redhat/rhel-7-x86_64/postgresql10-10.12-1PGDG.rhel7.src.rpm
 ```
 
 Unpack the SRPM:
 ```
-rpm2cpio postgresql12-12.2-2PGDG.rhel7.src.rpm | cpio -i
+rpm2cpio postgresql10-10.12-1PGDG.rhel7.src.rpm | cpio -i
 ```
 
 Preserve the RPM spec:
