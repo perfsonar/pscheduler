@@ -74,20 +74,11 @@ make \
 
 # TODO: If any of this fails, the install doesn't.  Find a way around this.
 
-case "$1" in
-    1)
-	echo "Initializing database"
-	%{libexec}/initialize-postgresql
-    2)
-	echo "Upgrading database"
-	%{libexec}/upgrade-postgresql
-	;;
-    *)
-	echo "RPM left no clue about what to do here."
-	exit 1
-	;;    
-esac
+set -e
 
+# Try an upgrade first
+%{libexec}/upgrade-postgresql
+%{libexec}/initialize-postgresql
 
 # Set up run at boot
 systemctl enable %{_pscheduler_postgresql_service}

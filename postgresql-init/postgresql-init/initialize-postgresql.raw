@@ -11,10 +11,6 @@ PG_BIN="${USR}/${PG_USR_PATTERN}/bin"
 PG_USER="__PG_USER__"
 
 
-[ $(id -u) -eq 0 ] \
-    || die "This program must be run as root."
-
-
 TMPBASE="${TMP:-/tmp}/${WHOAMI}.$$"
 mkdir -p "${TMPBASE}"
 # The upgrade process runs as PG_USER and writes here.
@@ -35,6 +31,10 @@ die()
 }
 
 
+[ $(id -u) -eq 0 ] \
+    || die "This program must be run as root."
+
+
 VERSIONS="${TMPBASE}/versions"
 
 CHOP=$(echo "$PG_USR_PATTERN" | sed -e 's|%.*$||')
@@ -45,10 +45,6 @@ ls "${USR}" \
     | sort -n \
     | uniq \
     > "${VERSIONS}"
-
-[ $(wc -l "${VERSIONS}" | awk '{ print $1 }') -eq 2 ] \
-    || die "Can't handle more than two installed versions of PostgreSQL."
-
 
 VER=$(tail -1 "${VERSIONS}")
 VER_MAJOR=$(echo "${VER}" | awk -F. '{ print $1 }')
@@ -63,7 +59,14 @@ fi
 
 systemctl stop "postgresql-${VER_MAJOR}"
 
-echo "Initializing PostgreSQL ${VER}"
-su - ${PG_USER} -c "${VER_BIN}/postgresql${VER_MAJOR}-setup initdb"
+echo "Initializing PostgreSQL ${VER}."
+
+rm -rf "${VER_DATA}"
+mkdir -p  "${VER_DATA}"
+chown "${PG_USER}.${PG_USER}" "${VER_DATA}"
+
+echo su - ${PG_USER} -c "${VER_BIN}/postgresql-${VER_MAJOR}-setup initdb"
+
+"${VER_BIN}/postgresql-${VER_MAJOR}-setup" initdb
 
 systemctl start "postgresql-${VER_MAJOR}"

@@ -65,9 +65,9 @@ ls "${USR}" \
 FROM=$(head -1 "${VERSIONS}")
 FROM_BIN=$(printf "${PG_BIN}" "${FROM}")
 FROM_DATA="${PG_LIB}/${FROM}/data"
-if [ ! -d "${FROM_DATA}" ]
+if [ ! -e "${FROM_DATA}/PG_VERSION" ]
 then
-    echo "No data directory for old ${FROM}; assuming the upgrade has happened."
+    echo "Old PostgreSQL ${FROM} is not initialized; no upgrade needed."
     exit 0
 fi
 
