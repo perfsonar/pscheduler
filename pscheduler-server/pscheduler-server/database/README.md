@@ -13,6 +13,7 @@ modifications.
 This database was originally developed for PostgreSQL 9.5.
 
 | Pg Release | OS | OS EOL | Pg Version | Pg EOL |
+| ---------- | -- | ------ | ---------- | ------ |
 | 9.5 | CentOS 7 | 2024-06-30  | 9.5.3 | 2021-02-11 |
 | 9.6 | Debian 9 (Stretch) | 2020-??-?? | 9.6.x | 2021-11-11 |
 | 10  | CentOS 8 | 2029-05-31 |10.6 | 2022-11-10 |
