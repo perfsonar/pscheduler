@@ -40,8 +40,9 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %endif
 
 
-# Version of Python required
-
+#
+# Python
+#
 
 # EL7 supports 2, 34 and 36 and names its packages that way (e.g.,
 # python36-foo) and has some named python3-foo.  EL8 has standardized
@@ -63,13 +64,30 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 # %endif
 
 
+#
+# PostgreSQL
+#
 
+%if 0%{el7}
 # Minimum-required PostgreSQL version
-%%_pscheduler_postgresql_version_major 9
-%%_pscheduler_postgresql_version_minor 5
-%%_pscheduler_postgresql_version %{_pscheduler_postgresql_version_major}.%{_pscheduler_postgresql_version_minor}
-%%_pscheduler_postgresql_package postgresql%{_pscheduler_postgresql_version_major}%{_pscheduler_postgresql_version_minor}
+%%_pscheduler_postgresql_version_major 10
+%%_pscheduler_postgresql_version_minor 12
 
+%%_pscheduler_postgresql_version %{_pscheduler_postgresql_version_major}.%{_pscheduler_postgresql_version_minor}
+%%_pscheduler_postgresql_package postgresql%{_pscheduler_postgresql_version_major}
+
+%%_pscheduler_postgresql_data_top %{_sharedstatedir}/pgsql
+%%_pscheduler_postgresql_data %{_pscheduler_postgresql_data_top}/%{_pscheduler_postgresql_version_major}/data
+%%_pscheduler_postgresql_service postgresql-%{_pscheduler_postgresql_version_major}
+%endif
+
+
+%%_pscheduler_postgresql_user postgres
+
+
+#
+# pScheduler
+#
 
 %%_pscheduler_libexecdir %{_libexecdir}/pscheduler
 %%_pscheduler_sysconfdir %{_sysconfdir}/pscheduler
