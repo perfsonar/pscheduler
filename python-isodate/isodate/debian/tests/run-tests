@@ -1,5 +1,0 @@
-#!/bin/sh
-
-set -e
-
-(python setup.py test && python3 setup.py test) 2>&1
