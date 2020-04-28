@@ -3,7 +3,7 @@
 
 
 import pscheduler
-import urlparse
+import urllib
 
 log = pscheduler.Log(prefix="archiver-esmond", quiet=True)
 
@@ -169,8 +169,8 @@ DEFAULT_SUMMARIES = {
 ###
 # Utility functions
 def iso8601_to_seconds(val):
-    td = pscheduler.iso8601_as_timedelta(val)
-    return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10.0**6) / 10.0**6
+    return pscheduler.iso8601_as_timedelta(val).total_seconds()
+
 
 ###
 # Private and unit testable  version of handle_storage
@@ -198,7 +198,7 @@ def handle_storage_error(result, attempts=0, policy=[]): # pragma: no cover
 
 ###
 # Utility classes
-class EsmondClient: # pragma: no cover
+class EsmondClient(object): # pragma: no cover
     
     def __init__(self, url="http://127.0.0.1/esmond/perfsonar/archive", 
                         auth_token=None, 
@@ -283,7 +283,7 @@ class EsmondClient: # pragma: no cover
 
         return True, ""
 
-class EsmondBaseRecord:
+class EsmondBaseRecord(object):
     test_type = None
     
     def __init__(self,
@@ -309,6 +309,14 @@ class EsmondBaseRecord:
         self.metadata = { 'event-types': [] }
         self.data = []
         
+        # Set test type outside of fastmode since raw record may need it
+        ##set test type to new value if provided
+        if test_type:
+            self.test_type = test_type
+        ##may be overridden by subclass, so use value even if not in constructor params
+        if self.test_type:
+            self.metadata['pscheduler-test-type'] = self.test_type
+            
         if not fast_mode:
             #determine if we are forcing an ip-version
             ip_version = None
@@ -321,13 +329,6 @@ class EsmondBaseRecord:
             #set misc fields
             self.metadata['tool-name'] = tool_name
             self.metadata['time-duration'] = duration
-            
-            #set test type to new value if provided
-            if test_type:
-                self.test_type = test_type
-            #may be overridden by subclass, so use value even if not in constructor params
-            if self.test_type:
-                self.metadata['pscheduler-test-type'] = self.test_type
         
             #Handle event types
             summary_map = DEFAULT_SUMMARIES
@@ -394,6 +395,9 @@ class EsmondBaseRecord:
             #Make measurement-agent the created_by_address if we have it, otherwise the lead participant, with same ip type as source
             if measurement_agent:
                 src_ip, self.metadata['measurement-agent'] = pscheduler.ip_normalize_version(src_ip, measurement_agent)
+                if self.metadata['measurement-agent'] is None:
+                    #if we can't normalize with the source, then just use the IP of the given value
+                    self.metadata['measurement-agent'], tmp_ip = pscheduler.ip_normalize_version(measurement_agent, measurement_agent, ip_version=ip_version)
             else:
                 src_ip, self.metadata['measurement-agent'] = pscheduler.ip_normalize_version(src_ip, lead_participant)
     
@@ -433,11 +437,11 @@ class EsmondBaseRecord:
         self.add_data(data_point=self.data[data_index], event_type='pscheduler-raw', val=test_result)
     
     def parse_metadata_field(self, key, val):
-        if type(val) is list:
+        if isinstance(val, list):
             for (i, v) in enumerate(val):
                 k = "%s-%d" % (key, i)
                 self.metadata[k] = v
-        elif type(val) is dict:
+        elif isinstance(val, dict):
             for sub_key in val:
                 if sub_key.startswith('_'):
                     continue
@@ -492,7 +496,7 @@ class EsmondDiskToDiskRecord(EsmondBaseRecord):
         #get source field from URL, then try measurement agent, then fallback to lead
         if src_field and src_field in test_spec:
             source_url = test_spec[src_field]
-            source_url_host = urlparse.urlparse(test_spec[src_field]).hostname
+            source_url_host = urllib.parse.urlparse(test_spec[src_field]).hostname
             if source_url_host:
                 input_source = source_url_host
             elif measurement_agent:
@@ -501,7 +505,7 @@ class EsmondDiskToDiskRecord(EsmondBaseRecord):
         #do same thingv we did for source but for dest
         if dst_field and dst_field in test_spec:
             dest_url = test_spec[dst_field]
-            dest_url_host = urlparse.urlparse(test_spec[dst_field]).hostname
+            dest_url_host = urllib.parse.urlparse(test_spec[dst_field]).hostname
             if dest_url_host:
                 input_dest = dest_url_host
             elif measurement_agent:
@@ -759,10 +763,9 @@ class EsmondThroughputRecord(EsmondBaseRecord):
             if len(throughput_intervals) > 0:
                 self.add_data(data_point=data_point, event_type="throughput-subintervals", val=throughput_intervals)
             if throughput_stream_intervals > 0:
+                # TODO: This could be better done as a list comprehension
                 formatted_tsi = []
-                sorted_streams = throughput_stream_intervals.keys()
-                sorted_streams.sort()
-                for id in sorted_streams:
+                for id in sorted(throughput_stream_intervals):
                     formatted_tsi.append(throughput_stream_intervals[id])
                 self.add_data(data_point=data_point, event_type="streams-throughput-subintervals", val=formatted_tsi)
             if not is_udp:
@@ -773,24 +776,21 @@ class EsmondThroughputRecord(EsmondBaseRecord):
                 if len(tcp_windowsize_intervals) > 0:
                     self.add_data(data_point=data_point, event_type="tcp-windowsize-subintervals", val=tcp_windowsize_intervals)
                 if retransmit_stream_intervals > 0:
+                    # TODO: This could be better done as a list comprehension
                     formatted_rsi = []
-                    sorted_streams = retransmit_stream_intervals.keys()
-                    sorted_streams.sort()
-                    for id in sorted_streams:
+                    for id in sorted(retransmit_stream_intervals):
                         formatted_rsi.append(retransmit_stream_intervals[id])
                     self.add_data(data_point=data_point, event_type="streams-packet-retransmits-subintervals", val=formatted_rsi)
                 if rtt_stream_intervals > 0:
+                    # TODO: This could be better done as a list comprehension
                     formatted_rttsi = []
-                    sorted_streams = rtt_stream_intervals.keys()
-                    sorted_streams.sort()
-                    for id in sorted_streams:
+                    for id in sorted(rtt_stream_intervals):
                         formatted_rttsi.append(rtt_stream_intervals[id])
                     self.add_data(data_point=data_point, event_type="streams-packet-rtt-subintervals", val=formatted_rttsi)
                 if tcp_windowsize_stream_intervals > 0:
+                    # TODO: This could be better done as a list comprehension
                     formatted_twssi = []
-                    sorted_streams = tcp_windowsize_stream_intervals.keys()
-                    sorted_streams.sort()
-                    for id in sorted_streams:
+                    for id in sorted(tcp_windowsize_stream_intervals):
                         formatted_twssi.append(tcp_windowsize_stream_intervals[id])
                     self.add_data(data_point=data_point, event_type="streams-tcp-windowsize-subintervals", val=formatted_twssi)
 

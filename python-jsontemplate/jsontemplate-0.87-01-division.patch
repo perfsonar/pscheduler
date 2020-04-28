@@ -1,0 +1,12 @@
+diff -rupN jsontemplate-0.87-orig/jsontemplate/_jsontemplate.py jsontemplate-0.87/jsontemplate/_jsontemplate.py
+--- jsontemplate-0.87-orig/jsontemplate/_jsontemplate.py	2019-08-29 08:43:54.000000000 -0400
++++ jsontemplate-0.87/jsontemplate/_jsontemplate.py	2019-08-29 08:47:59.000000000 -0400
+@@ -922,7 +922,7 @@ def SplitMeta(meta):
+   if n % 2 == 1:
+     raise ConfigurationError(
+         '%r has an odd number of metacharacters' % meta)
+-  return meta[:n/2], meta[n/2:]
++  return meta[:int(n/2)], meta[int(n/2):]
+ 
+ 
+ _token_re_cache = {}

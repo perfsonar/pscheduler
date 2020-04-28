@@ -7,28 +7,7 @@ import signal
 import sys
 
 from threading import Thread,Semaphore
-
-
-class Barrier:
-    """
-    Simple barrier, since Python 2.7 doesn't have one.
-    Code from https://stackoverflow.com/a/26703365/180674
-    """
-    def __init__(self, n):
-        self.n = n
-        self.count = 0
-        self.mutex = Semaphore(1)
-        self.barrier = Semaphore(0)
-
-    def wait(self):
-        self.mutex.acquire()
-        self.count = self.count + 1
-        self.mutex.release()
-        if self.count == self.n:
-            self.barrier.release()
-        self.barrier.acquire()
-        self.barrier.release()
-
+import collections
 
 
 this = sys.modules[__name__]
@@ -67,15 +46,15 @@ def on_graceful_exit(call):
 
     #print "OGE", call
 
-    if not callable(call):
+    if not isinstance(call, collections.Callable):
         raise ValueError("%s is not callable", call)
 
     with this.lock:
 
         if this.exit_worker is None and this.exit_barrier is None:
             #print "OGE INITIALIZING"
-            this.finish_barrier = Barrier(2)
-            this.exit_barrier = Barrier(2)
+            this.finish_barrier = threading.Barrier(2)
+            this.exit_barrier = threading.Barrier(2)
             this.exit_worker = threading.Thread(
                 target=lambda: __graceful_exit_worker())
             this.exit_worker.setDaemon(True)

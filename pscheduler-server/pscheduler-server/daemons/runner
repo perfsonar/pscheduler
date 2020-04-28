@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Execute runs of tasks and put the results into the database.
 #
@@ -92,7 +92,7 @@ delimiter = pscheduler.api_result_delimiter()
 
 # TODO: Use the ThreadSafeSet and ThreadSafeSetHold instead
 
-class RunDictionary:
+class RunDictionary(object):
 
     def __init__(self):
         self.dict = {}
@@ -165,7 +165,7 @@ def clock_survey(hosts, bind=None):
 # Class that does the test runs
 #
 
-class RunWorker:
+class RunWorker(object):
 
     def __init__(self, dbpool, log, id, start_at):
 
@@ -197,8 +197,8 @@ class RunWorker:
     
         try:
             db.commit()
-        except Exception as e:
-            self.log.warning("Error committing DB transaction: %s" % e)
+        except Exception as ex:
+            self.log.warning("Error committing DB transaction: %s" % ex)
         finally:
             self.dbpool.putconn(db)
     
@@ -432,7 +432,7 @@ class RunWorker:
         # Wait for the start time to roll around
         #
 
-        self.log.debug("Start at %s", self.start_at)
+        self.log.debug("%d: Start at %s", self.id, self.start_at)
         time_until_start = pscheduler.time_until(self.start_at)
         sleep_time = pscheduler.timedelta_as_seconds(time_until_start)
         self.log.debug("%d: Sleeping %s until test start", self.id,
@@ -447,88 +447,27 @@ class RunWorker:
             self.log.info("%d: Running %s", self.id, run_url)
             self.log.info("%d: With %s: %s %s", self.id, tool, test, " ".join(cli))
 
-        # If the system is paused, set the run as missed and bail out.
-        
+        # Tell the database we're proceeding
+
         db = None
         try:
             db = self._get_db_conn()
             with db.cursor() as cursor:
-                cursor.execute("SELECT control_is_paused()")
-                assert(cursor.rowcount == 1)
-                if cursor.fetchone()[0]:
-                    if log_details:
-                        self.log.info("%d: System is paused.  Aborting.",
-                                      self.id)
-                    cursor.execute("""
-                        UPDATE run
-                        SET
-                            state = run_state_missed(),
-                            status = 1,
-                            result = '{ "succeeded": false, "diags": "pScheduler was paused at run time." }'
-                        WHERE id = %s
-                        """, [self.id])
+                cursor.execute("SELECT run_start(%s)", [self.id])
+                assert cursor.rowcount == 1
+                result = cursor.fetchone()[0]
+                if result is not None:
+                    self.log.info("%d: Aborting run: %s", self.id, result)
                     return
         except AssertionError as ae:
-            self.log.error("%d: Unable to read control_is_paused(). Must be exactly one row.",
-                           self.id)
+            self.log.error("%d: run_start did not return exactly one row.", self.id)
             raise ae
         except Exception as ex:
-            self.log.error("%d: Failed to detect if system is paused and/or set missed state: %s",
-                           self.id, str(ex))
+            self.log.error("%d: Failed to start run: %s", self.id, str(ex))
+            raise ex
         finally:
             self._put_db_conn(db)
 
-
-        # Make sure the run can proceed.
-
-        db = None
-        try:
-            db = self._get_db_conn()
-            with db.cursor() as cursor:
-                cursor.execute("SELECT run_can_proceed(%s)", [self.id])
-                assert(cursor.rowcount == 1)
-                if not cursor.fetchone()[0]:
-                    if log_details:
-                        self.log.info("%d: Run was preempted.",
-                                      self.id)
-                    cursor.execute("""
-                        UPDATE run
-                        SET
-                            state = run_state_preempted(),
-                            status = 1,
-                            result = '{ "succeeded": false, "diags": "Run was preempted." }'
-                        WHERE id = %s
-                        """, [self.id])
-                    return
-        except AssertionError as ae:
-            self.log.error("%d: Unable to read run_can_proceed(). Must be exactly one row.",
-                           self.id)
-            raise ae
-        except Exception as ex:
-            self.log.error("%d: Failed to determine if run can proceed: %s",
-                           self.id, str(ex))
-            return
-        finally:
-            self._put_db_conn(db)
-                    
-
-        # Mark the run as underway
-        db = None
-        try:
-            db = self._get_db_conn()
-            with db.cursor() as cursor:
-                cursor.execute("""
-                               UPDATE run
-                                   SET state = run_state_running()
-                                   WHERE id = %s
-                               """, [self.id])
-        except Exception as ex:
-            self.log.error("%d: Failed to set running state: %s",
-                           self.id, str(ex))
-            return
-        finally:
-            #finally should ensure this is executed  even if return is an exception
-            self._put_db_conn(db)
 
         #
         # Do the local tool run
@@ -538,12 +477,11 @@ class RunWorker:
 
         how_late = pscheduler.time_now() - self.start_at
         self.log.debug("%d: Start time difference is %s",
-                             self.id, how_late)
+                       self.id, how_late)
 
         if how_late > datetime.timedelta(seconds=0.5):
             self.log.warning("%d: Starting %s later than scheduled",
                              self.id, how_late)
-        
 
         if context_runner is None:
 
@@ -570,7 +508,7 @@ class RunWorker:
             try:
                 result_json = pscheduler.json_load(stdout, max_schema=1)
                 if "succeeded" in result_json \
-                        and type(result_json["succeeded"]) == bool \
+                        and isinstance(result_json["succeeded"], bool) \
                         and result_json["succeeded"] == False:
                     failures += 1
             except ValueError:
@@ -662,7 +600,7 @@ class RunWorker:
             if returncode == 0:
                 try:
                     local_result = pscheduler.json_load(stdout)
-                except ValueError as ex:
+                except ValueError:
                     self.log.error("%d: Tool %s returned invalid JSON %s",
                                    self.id, tool, stdout)
                     local_result = None
@@ -702,7 +640,7 @@ class RunWorker:
                     deadline - pscheduler.time_now()))
 
                 status, run_result = pscheduler.url_get(
-                    run,
+                    get,
                     params={ 'wait-local': True, 'wait': timeout },
                     bind=lead_bind,
                     throw=False,
@@ -726,10 +664,7 @@ class RunWorker:
                 del to_get[get]
 
 
-            failures = len(list(filter(
-                lambda result:
-                    result is None or not result.get("succeeded",False),
-                    result_full)))
+            failures = len(list([result for result in result_full if result is None or not result.get("succeeded",False)]))
             self.log.debug("%d: %d failures", self.id, failures)
 
 
@@ -901,7 +836,7 @@ def main_program():
 
             except select.error as ex:
 
-                err_no, message = ex
+                err_no, message = ex.args
                 if err_no != errno.EINTR:
                     log.exception()
                     raise ex
@@ -1002,7 +937,7 @@ def main_program():
                                        AND state = run_state_pending()
                                    """, (tuple(run_ids),))
                 except Exception as ex:
-                    log.error("Unable to set on-deck status: %s")
+                    log.error("Unable to set on-deck status: %s" % (str(ex)))
 
         for worker in run_workers:
             worker.start()

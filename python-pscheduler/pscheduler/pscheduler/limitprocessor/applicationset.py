@@ -2,8 +2,8 @@
 Set of Limit Applications
 """
 
-from classifierset import ClassifierSet
-from limitset import LimitSet
+from .classifierset import ClassifierSet
+from .limitset import LimitSet
 
 from pscheduler import indent
 
@@ -41,7 +41,7 @@ group_condition_tests = {
 
 
 
-class ApplicationSet():
+class ApplicationSet(object):
 
     """
     Class that holds and processes limit applications

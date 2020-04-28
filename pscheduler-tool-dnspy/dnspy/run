@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Run a test.  Just the test spec is provided on stdin.
 #
@@ -65,19 +65,19 @@ elif record in [ "cname", "ptr" ]:
     result_rec = str( answers[ 0 ])
 elif record in [ "mx" ]:
     result_rec = [ {
-	"pref" : mx.preference,
-	"mx" : str( mx.exchange )
+        "pref" : mx.preference,
+        "mx" : str( mx.exchange )
     } for mx in answers ]
 elif record in [ "soa" ]:
     soa = answers[ 0 ]
     result_rec = {
-	"nameserver" : str( soa.mname ),
-	"owner" : str( soa.rname ),
-	"serial" : soa.serial,
-	"refresh" : soa.refresh,
-	"retry" : soa.retry,
-	"expire" : soa.expire,
-	"minimum" : soa.minimum
+        "nameserver" : str( soa.mname ),
+        "owner" : str( soa.rname ),
+        "serial" : soa.serial,
+        "refresh" : soa.refresh,
+        "retry" : soa.retry,
+        "expire" : soa.expire,
+        "minimum" : soa.minimum
     }
 
 #
@@ -89,9 +89,9 @@ results = {
     'diags': '',
     'error': error,
     'result': {
-	'schema': 1,
-	'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
-	'succeeded' : succeeded
+        'schema': 1,
+        'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
+        'succeeded' : succeeded
     }
 }
 

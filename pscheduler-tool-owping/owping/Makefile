@@ -17,10 +17,14 @@ MODULES=\
 	owping_utils \
 
 PYS=$(MODULES:%=%.py)
-PYCS=$(MODULES:%=%.pyc)
+PYCS=$(MODULES:%=__pycache__/%.pyc)
 
 $(PYCS):
-	python -m compileall .
+ifndef DESTDIR
+	@echo No PYTHON specified for build
+	@false
+endif
+	$(PYTHON) -m compileall .
 TO_CLEAN += $(PYCS)
 
 CONFS=\
@@ -40,8 +44,8 @@ endif
 endif
 	mkdir -p $(DESTDIR)
 	install -m 555 $(FILES) $(DESTDIR)
-	install -m 444 $(PYS) $(PYCS) $(DESTDIR)
-
+	install -m 444 $(PYS) $(DESTDIR)
+	cp -r __pycache__ $(DESTDIR)
 ifdef CONFS
 	mkdir -p $(CONFDIR)
 	install -m 644 $(CONFS) $(CONFDIR)

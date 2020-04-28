@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 """Diagnostic program for the limit system
 
 troubleshoot-limits [ OPTIONS ] TASK-FILE
@@ -31,7 +31,7 @@ Options:
 import optparse
 import pscheduler
 
-from pscheduler.limitprocessor import LimitProcessor
+from pscheduler.limitprocessor.limitprocessor import LimitProcessor
 
 pscheduler.set_graceful_exit()
 
@@ -160,17 +160,17 @@ elif options.duration is not None:
         pscheduler.time_now())
 
 if "run_schedule" in task:
-    print "For task starting at %s lasting %s:\n" % (
-        task["run_schedule"]["start"], task["run_schedule"]["duration"])
+    print(("For task starting at %s lasting %s:\n" % (
+        task["run_schedule"]["start"], task["run_schedule"]["duration"])))
 
 _passed, _limits_passed, diags, new_task, priority \
     = processor.process(task, hints, prioritize=True)
 
-print diags
+print(diags)
 if new_task is not None:
-    print
-    print "Rewritten task:"
-    print pscheduler.json_dump(new_task, pretty=True)
+    print()
+    print("Rewritten task:")
+    print((pscheduler.json_dump(new_task, pretty=True)))
 
 pscheduler.succeed()
 

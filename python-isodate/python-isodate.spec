@@ -3,7 +3,7 @@
 #
 
 %define short	isodate
-Name:		python-%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	0.5.4
 Release:	1%{?dist}
 Summary:	An ISO 8601 date/time/duration parser and formatter
@@ -19,9 +19,9 @@ Url:		http://cheeseshop.python.org/pypi/isodate
 
 Source:		%{short}-%{version}.tar.gz
 
-Requires:	python
+Requires:	%{_pscheduler_python}
 
-BuildRequires:	python-setuptools
+BuildRequires:	%{_pscheduler_python}-setuptools
 
 %description
 This module implements ISO 8601 date, time and duration parsing. The
@@ -39,11 +39,11 @@ date/time representations mentioned in the standard.
 
 
 %build
-python setup.py build
+%{_pscheduler_python} setup.py build
 
 
 %install
-python setup.py install --root=$RPM_BUILD_ROOT --single-version-externally-managed -O1  --record=INSTALLED_FILES
+%{_pscheduler_python} setup.py install --root=$RPM_BUILD_ROOT --single-version-externally-managed -O1  --record=INSTALLED_FILES
 
 
 %clean

@@ -1,0 +1,291 @@
+=begin
+
+Vagrant Configuration for a pScheduler Development System
+
+
+This Vagrantfile builds a VirtualBox cluster of VMs for pScheduler
+development with the following features:
+
+ - User account to match the one that invoked Vagrant
+ - User's home directory shared into the VM
+ - User account given full, passwordless access to sudo
+ - RPMs listed in ~/.packages pre-installed
+ - Private network segment for the cluster
+ - IPv4 network between VMs
+ - IPv6 network between VMs (Not currently working)
+ - VM hostnames available in /etc/hosts
+ - Pre-created local storage area in /local/<username>
+
+
+Setup:
+
+ - Edit the configurable items below.
+ - Build the cluster with 'vagrant up'.
+ - Log in with 'vagrant ssh -c "exec sudo su - `id -un`" psdev1'.
+
+Teardown:
+
+ - Destroy the cluster with 'vagrant destroy -f'.
+
+
+Notes:
+
+On some systems, pScheduler has failed to build in the shared file
+system where the user's home directory resides but builds fine on the
+guest's "native" file space.  This is likely a problem with VirtualBox
+rather than Vagrant or this configuration and will be investigated
+further.  Until this is resolved, the recommended workaround is to do
+development done in /local/<username>.
+
+This works on Linux and OS X and has not been tested on Windows.
+
+=end
+
+# ------------------------------------------------------------------------------
+
+# Configure the following to taste:
+
+# Prefix for hostnames, which will be (e.g., psdev1, psdev2, etc.).  This
+# needs to be unique among other running clusters.
+host_prefix = "psdev"
+
+# Number of machines to build
+num_hosts = 2
+
+# Box on which the machines should be based.  This must have the
+# VirtualBox guest extensions already built in.
+default_box = "bento/centos-7"
+
+# System configuration
+cpus = 2
+memory = 2048
+
+# Version of the perfSONAR repo to install
+ps_repo_version="0.9-1"
+
+
+# ------------------------------------------------------------------------------
+# No user-serviceable parts below this point.
+# ------------------------------------------------------------------------------
+
+
+require 'etc'
+
+
+# Machines to build
+# Columns:
+#  1 - Hostname
+#  2 - Private network IPv4 (nil for none)
+#  3 - Private network IPv6 (nil for none)
+
+# TODO: Allow the names of the hosts to be specified as an array
+
+hosts = (1..num_hosts).map {
+      	|num|
+	[
+	  "#{host_prefix}#{num}",
+	  "10.0.0.#{num}",
+	  "fc00::#{sprintf("%x", num)}"
+	]
+      }
+
+private_network = "pscheduler-#{host_prefix}"
+
+
+
+
+# Generate the host list for all of the machines
+
+hosts_v4 = hosts.select{|host, ipv4, ipv6| not ipv4.nil?}
+  .map{ |host, ipv4, ipv6| "#{ipv4} #{host}\n" }.join("")
+
+hosts_v6 = hosts.select{|host, ipv4, ipv6| not ipv6.nil?}
+  .map{ |host, ipv4, ipv6| "#{ipv6} #{host}v6\n"}.join("")
+
+etc_hosts = hosts_v4 + hosts_v6
+
+
+
+Vagrant.configure("2") do |config|
+
+  hosts.each do |name, ipv4, ipv6|
+
+    config.vm.define name do |host|
+
+      if Vagrant.has_plugin?("vagrant-vbguest")
+        # Don't allow upgrades; the box has what it has.
+        config.vbguest.auto_update = false
+      end
+
+
+      #
+      # Basic configuration
+      #
+
+      host.vm.provider "virtualbox" do |vbox|
+        # The default E1000 has a security vulerability.
+        vbox.default_nic_type = "82543GC"
+	vbox.cpus = cpus
+	vbox.memory = memory
+      end
+
+      host.vm.box = default_box
+      host.vm.hostname = name
+
+
+      #
+      # Networking
+      #
+
+      # Add private IPv4 and IPv6 interfaces if they're defined for
+      # this host.  Note that Vagrant is incapable of putting both IPs
+      # on the same interface, so there will be two.
+
+      if not ipv4.nil?
+        host.vm.network "private_network",
+          ip: ipv4,
+          virtualbox__intnet: private_network
+      end
+
+      if not ipv6.nil?
+        # TODO: This doesn't create a second interface and doesn't put
+        # the IP anywhere.
+        host.vm.network "private_network",
+          ip: ipv6,
+          virtualbox__intnet: private_network
+      end
+
+      # Populate the hosts file
+
+      host.vm.provision "#{name}-hosts", type: "shell", run: "once", inline: <<-SHELL
+        # This line forces execution by a specific shell
+        exec /bin/sh -c "sed -e 1,2d '$0' | /bin/sh"
+
+        set -e
+        fgrep localhost /etc/hosts > /etc/hosts.build
+        echo "#{etc_hosts}" >> /etc/hosts.build
+        mv -f /etc/hosts.build /etc/hosts
+      SHELL
+
+      #
+      # User Account, Shared Folders and Local Storage
+      #
+
+      acct = Etc.getpwnam(Etc.getlogin)
+      home_dir = "/home/#{acct.name}"
+
+      host.vm.provision "#{name}-account", type: "shell", run: "once", inline: <<-SHELL
+        # This line forces execution by a specific shell
+        exec /bin/sh -c "sed -e 1,2d '$0' | /bin/sh"
+
+        set -e
+
+	mkdir -p '#{home_dir}'
+
+	yum -y install '#{acct.shell}'
+
+	userdel '#{acct.name}' || true
+
+        useradd \
+		--no-create-home \
+		--comment '#{acct.gecos}' \
+		--home-dir '#{home_dir}' \
+		--shell '#{acct.shell}' \
+		--uid '#{acct.uid}' \
+		'#{acct.name}'
+
+	# Local Storage
+	install -d -D -o '#{acct.name}' -g '#{acct.name}' -m 770 '/local/#{acct.name}'
+
+        # Grant frictionless sudo
+        SUDOERS="/etc/sudoers.d/#{acct.name}"
+        echo "#{acct.name} ${NEW_USER} ALL= (ALL) NOPASSWD:ALL" > "${SUDOERS}"
+        chmod 440 "${SUDOERS}"
+
+        # Install anything the user's custom package list says it wants
+	[ -e '#{home_dir}/.packages' ] \
+	  && cat '#{home_dir}/.packages' | xargs -r yum -y install 
+
+      SHELL
+
+      # Note that using the same owner and group is intentional.
+      host.vm.synced_folder "#{acct.dir}/", home_dir,
+			    automount: false,
+			    mount_options: ["uid=#{acct.uid}", "gid=#{acct.uid}"],
+			    SharedFoldersEnableSymlinksCreate: true
+
+
+
+      #
+      # pefSONAR Development
+      #
+      # TODO: This should be Ansiblized or something like it so it's
+      # not Vagrant-specific.
+      #
+
+      host.vm.provision "#{name}-ps-devel", type: "shell", run: "once", inline: <<-SHELL
+        # This line forces execution by a specific shell
+        exec /bin/sh -c "sed -e 1,2d '$0' | /bin/sh"
+
+        set -e
+
+        # Determine the RHEL version without depending on lsb_release.
+
+        REDHAT_RELEASE=$(sed -e 's/^.*release\s*//; s/\s.*$//' /etc/redhat-release)
+        REDHAT_RELEASE_MAJOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 }')
+
+        # Make sure there's at least the minimal package group on the system.
+        # This is mostly for Docker's benefit.
+        case "${REDHAT_RELEASE_MAJOR}" in
+            7)
+		true
+        	;;
+            *)
+        	echo "This version of RHEL/CentOS (${REDHAT_RELEASE} / ${REDHAT_RELEASE_MAJOR}) is not supported." 1>&2
+        	exit 1
+        	;;
+        esac
+
+        #
+        # Install Other Repositories
+        #
+
+        # PostgreSQL (9.5 only)
+	# TODO: Find a better URL.  Should be getting the latest.
+        yum -y install "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-${REDHAT_RELEASE_MAJOR}Server-$(uname -m)/pgdg-redhat-repo-latest.noarch.rpm"
+	yum-config-manager -q --disable 'pgdg*' > /dev/null
+	yum-config-manager -q --enable 'pgdg95*' > /dev/null
+
+
+        # EPEL
+        yum -y install epel-release
+
+        # perfSONAR
+        REPO_PREFIX="http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/$(uname -m)/latest/packages/perfSONAR-repo"
+        for REPO in "" extras staging
+        do
+            [ "$REPO" != "" ] && REPO="${REPO}-"
+            yum -y install "${REPO_PREFIX}-${REPO}#{ps_repo_version}.noarch.rpm"
+        done
+
+	# Things we need to build:
+	yum -y install \
+	    git \
+	    m4 \
+	    make \
+	    which \
+	    \
+	    man-pages man-db man
+
+      SHELL
+
+    end  # config.vm.define
+
+
+  end  # hosts.each
+
+end
+
+
+# -*- mode: ruby -*-
+# vi: set ft=ruby :

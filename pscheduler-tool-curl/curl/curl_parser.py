@@ -19,8 +19,8 @@ stats = lines[-2].split(' ')
 stats = [stat for stat in stats if stat != '']
 dSpeed = stats[6]
 tBytes = stats[2]
-print("Download speed:", dSpeed)
-print("Total Bytes:", tBytes)
+print(("Download speed:", dSpeed))
+print(("Total Bytes:", tBytes))
 #[print(s) for s in stats]
 #print(lines[-2])
 #print(text)

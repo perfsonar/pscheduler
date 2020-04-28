@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Dump the contents of the schedule in a plottable form
 #
@@ -341,7 +341,7 @@ script_lines.append("eof")
 #
 
 if options.plot:
-    print "\n".join(script_lines)
+    print("\n".join(script_lines))
     pscheduler.succeed()
 
 

@@ -1,5 +1,8 @@
 #!/bin/bash
 #
+# NOTE: This uses BASH arrays.
+# TODO: Try and find a way to be POSIX sh compatible
+#
 # rpm-with-deps - Run RPM and install dependencies on failure.
 #
 # See the manual page for documentation.

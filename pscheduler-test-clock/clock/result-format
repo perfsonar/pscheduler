@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Format a result
 #
@@ -29,21 +29,21 @@ def dump_state(state, label, format):
 
    if format == 'text/plain':
 
-      print label
-      print "  Time ...........", state['time']
+      print(label)
+      print("  Time ...........", state['time'])
       if state['synchronized']:
-         print "  Synchronized ... %s, %s" % (
-            state['source'], state['reference'])
-         print "  Offset .........", state['offset']
+         print("  Synchronized ... %s, %s" % (
+            state['source'], state['reference']))
+         print("  Offset .........", state['offset'])
 
    elif format == 'text/html':
 
-      print '<tr><th colspan="2">%s</td></tr>' % (label)
-      print "<tr><td>Time</td><td>%s</td></tr>" % (state['time'])
+      print('<tr><th colspan="2">%s</td></tr>' % (label))
+      print("<tr><td>Time</td><td>%s</td></tr>" % (state['time']))
       if state['synchronized']:
-         print "<tr><td>Synchronized</td><td>%s %s</td></tr>" \
-            % (state['source'], state['reference'])
-         print "<tr><td>Offset</td><td>%f</td></tr>" % (state['offset'])
+         print("<tr><td>Synchronized</td><td>%s %s</td></tr>" \
+            % (state['source'], state['reference']))
+         print("<tr><td>Offset</td><td>%f</td></tr>" % (state['offset']))
 
    else:
       assert False, "This should never happen."
@@ -51,22 +51,22 @@ def dump_state(state, label, format):
 if format == 'text/plain':
    pass
 elif format == 'text/html':
-   print "<table>"
+   print("<table>")
 else:
    assert False, "This should never happen."
 
 
 dump_state(json['local'], "Local Host", format)
-print
+print()
 dump_state(json['remote'], "Remote Host", format)
 if format == 'text/plain':
-   print
-   print "Difference .......", json['difference']
+   print()
+   print("Difference .......", json['difference'])
 elif format == 'text/html':
-   print '<tr><td colspan="2">&nbsp;</td></tr>'
-   print "<tr><td>Difference</td><td>%s</td></tr>" \
-      % (json['difference'])
-   print "</table>"
+   print('<tr><td colspan="2">&nbsp;</td></tr>')
+   print("<tr><td>Difference</td><td>%s</td></tr>" \
+      % (json['difference']))
+   print("</table>")
 else:
    assert False, "This should never happen."
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Run an owping test
 #
@@ -33,8 +33,8 @@ try:
     participant_data = input['participant-data']
     test_spec = input['test']['spec']
     duration = pscheduler.iso8601_as_timedelta(input['schedule']['duration'])
-except KeyError as e:
-    pscheduler.fail("Missing required key in run input: %s" % e)
+except KeyError as ex:
+    pscheduler.fail("Missing required key in run input: %s" % ex)
 except:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 flip = test_spec.get('flip', False)
@@ -131,15 +131,15 @@ if role == CLIENT_ROLE:
         owping_args.append(ADDR_FORMAT % (test_spec['dest'], control_port))
 
     # Stringify the arguments        
-    owping_args = map(lambda x: str(x), owping_args)
+    owping_args = [str(x) for x in owping_args]
     
     #Run the process
     #time.sleep(DEFAULT_CLIENT_SLEEP) #wait for server to boot
     log.debug("Running command: %s" % " ".join(owping_args))
     try:
         returncode, stdout, stderr = pscheduler.run_program(owping_args)
-    except OSError as e:
-        log.error("owping encountered an OS error: %s" % e)
+    except OSError as ex:
+        log.error("owping encountered an OS error: %s" % ex)
         #Note: Avoids reporting sensitive system details in error message
         results['error'] = "The owping command failed during execution. See server logs for more details."
         pscheduler.succeed_json(results)

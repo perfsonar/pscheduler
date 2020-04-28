@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Run a test.  Just the test spec is provided on stdin.
 #
@@ -54,7 +54,7 @@ except KeyError:
     protocol = None
 
 # loop through spec to get cli switches 
-for key in input['test']['spec'].keys():
+for key in input['test']['spec']:
     try:
         argv.append(cli_switches[key])
         argv.append(input['test']['spec'][key])
@@ -85,7 +85,7 @@ for item in input['test']['spec']['oidargs']:
 
 
 # Stringify the arguments        
-argv = map(lambda x: str(x), argv)
+argv = [str(x) for x in argv]
 
 status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
 

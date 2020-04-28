@@ -2,7 +2,9 @@
 Limit Class for test-type
 """
 
-import pscheduler
+from ...jsonval import *
+from ...program import *
+from ...psjson import *
 
 
 test_data_validator = {
@@ -19,11 +21,11 @@ def data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
-    return pscheduler.json_validate(data, test_data_validator)
+    return json_validate(data, test_data_validator)
 
 
 
-class LimitTest():
+class LimitTest(object):
 
     """Limit that passes or fails based on whether or not a test says it
     does.
@@ -40,9 +42,9 @@ class LimitTest():
         self.test = data['test']
         self.limit = data['limit']
 
-        returncode, stdout, stderr = pscheduler.run_program(
+        returncode, stdout, stderr = run_program(
             [ "pscheduler", "internal", "invoke", "test", self.test, "limit-is-valid" ],
-            stdin = pscheduler.json_dump(self.limit),
+            stdin = json_dump(self.limit),
             # TODO:  Is this reasonable?
             timeout = 5
             )
@@ -50,7 +52,7 @@ class LimitTest():
         if returncode != 0:
             raise RuntimeError("Failed to validate limit: %s" % stderr)
 
-        result = pscheduler.json_load(stdout, max_schema=1)
+        result = json_load(stdout, max_schema=1)
         if not result['valid']:
             raise ValueError("Invalid limit: %s" % result['message'])
 
@@ -73,9 +75,9 @@ class LimitTest():
             "limit": self.limit
             }
 
-        returncode, stdout, stderr = pscheduler.run_program(
+        returncode, stdout, stderr = run_program(
             [ "pscheduler", "internal", "invoke", "test", self.test, "limit-passes" ],
-            stdin = pscheduler.json_dump(pass_input),
+            stdin = json_dump(pass_input),
             # TODO:  Is this reasonable?
             timeout = 5
             )
@@ -83,7 +85,7 @@ class LimitTest():
         if returncode != 0:
             raise RuntimeError("Failed to validate limit: %s" % stderr)
 
-        check_result = pscheduler.json_load(stdout, max_schema=1)
+        check_result = json_load(stdout, max_schema=1)
         passed = check_result["passes"]
 
         result = {
@@ -133,7 +135,7 @@ if __name__ == "__main__":
     })
 
 
-    print pscheduler.json_dump(limit.evaluate(
+    print(json_dump(limit.evaluate(
         {
             "task": {
                 "test": {
@@ -150,4 +152,4 @@ if __name__ == "__main__":
                 }
             }
         }
-    ), pretty=True)
+    ), pretty=True))

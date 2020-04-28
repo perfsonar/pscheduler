@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 test for the Log module.
 """
@@ -40,6 +41,10 @@ class TestLog(PschedTestBase):
             log.critical("Crtitical")
             os.kill(os.getpid(),
                     signal.SIGUSR1 if (num % 2) != 0 else signal.SIGUSR2)
+
+
+    # TODO: This needs a test of the pickler used to pass data to
+    # child processes.
 
 
 if __name__ == '__main__':

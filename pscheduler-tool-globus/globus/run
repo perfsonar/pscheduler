@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 #
 # Development Order #5:
@@ -28,8 +28,8 @@ input = pscheduler.json_load(exit_on_error=True)
 try:
     dest = input['test']['spec']['dest']
     source = input['test']['spec']['source']
-except KeyError as e:
-    pscheduler.fail('Missing required input: {0}'.format(e))
+except KeyError as ex:
+    pscheduler.fail('Missing required input: {0}'.format(ex))
 
 cleanup = input['test']['spec'].get('cleanup', True)
 

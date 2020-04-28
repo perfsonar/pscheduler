@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 test for the Psdns module.
 """
@@ -33,29 +34,30 @@ class TestPsdns(PschedTestBase):
             'www.perfsonar.net',
             'www.es.net',
             'www.geant.org',
-            'www.iu.edu',
             'www.internet2.edu',
-            'does-not-exist.internet2.edu',
-            'cache00.ns.uu.net',
+            'www.iu.edu',
+            'www.umich.edu',
+            'does-not-exist.perfsonar.net',
+            'a1.nv.perfsonar.net',
         ], ip_version=4)
 
         # If none of these resolved, we probably don't have network or
         # DNS is severely broken.
-        have_network = len(filter(lambda key: ret[key] is not None, ret)) > 0
+        have_network = len([key for key in ret if ret[key] is not None]) > 0
 
         if have_network:
             # these should be stable
-            assert(ret.get('does-not-exist.internet2.edu') is None)
-            self.assertEqual(ret.get('cache00.ns.uu.net'), '198.6.1.1')
+            assert(ret.get('does-not-exist.perfsonar.net') is None)
+            self.assertEqual(ret.get('a1.nv.perfsonar.net'), '127.0.0.1')
 
         # ipv6
 
         if have_network:
             ret = dns_bulk_resolve([
-                'www.perfsonar.net',
+                'aaaa1.nv.perfsonar.net',
             ], ip_version=6)
 
-            self.assertEqual(ret.get('www.perfsonar.net'), '2001:48a8:68fe::248')
+            self.assertEqual(ret.get('aaaa1.nv.perfsonar.net'), 'fc00::1')
 
         # reverse
 

@@ -32,6 +32,6 @@ def numa_node_ok(node):
 if __name__ == "__main__":
 
     for node in range(0, 3):
-        print node, " -> ", numa_ok(node)
+        print(node, " -> ", numa_ok(node))
 
-    print "Foo -> ", numa_ok("Foo")
+    print("Foo -> ", numa_ok("Foo"))

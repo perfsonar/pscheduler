@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 """
 Send a result to RabbitMQ.
 """
@@ -21,7 +21,7 @@ log = pscheduler.Log(prefix=log_prefix, quiet=True)
 
 
 
-class PikaConnectionChannelPair:
+class PikaConnectionChannelPair(object):
     """
     This class implements a RabbitMQ connection and channel pair
     """
@@ -73,7 +73,7 @@ def archive(json):
 
     # Figure out the routing key
     routing_key_raw = data.get("routing-key", "")
-    if isinstance(routing_key_raw, basestring):
+    if isinstance(routing_key_raw, str):
         data["routing-key"] = routing_key_raw
     else:
         # JQ Transform

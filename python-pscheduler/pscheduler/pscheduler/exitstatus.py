@@ -36,7 +36,7 @@ def succeed(text=None):
     Exit with success and an optional messsage to stdout.
     """
     if text is not None:
-        print text.strip()
+        print(text.strip())
     exit(0)
 
 
@@ -45,5 +45,5 @@ def succeed_json(result=None):
     Exit with success, dumping JSON to stdout.
     """
     json.dump(result, sys.stdout)
-    print
+    print()
     exit(0)

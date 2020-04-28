@@ -48,7 +48,9 @@ BEGIN
         FROM
             run
             JOIN task ON task.id = run.task
-        WHERE task.repeat IS NOT NULL
+        WHERE
+	    task.repeat IS NOT NULL
+	    OR task.repeat_cron IS NOT NULL
         GROUP BY run.task;
 
         CREATE INDEX run_latest_task_latest ON run_latest(task, latest);
@@ -92,7 +94,12 @@ BEGIN
         END;
 
     -- We only care about tasks that repeat
-    IF NOT EXISTS (SELECT * FROM task WHERE id = affected.task AND repeat IS NOT NULL)
+    IF NOT EXISTS (
+        SELECT * FROM task
+	WHERE
+	    id = affected.task
+	    AND (repeat IS NOT NULL OR repeat_cron IS NOT NULL)
+    )
     THEN
         RETURN affected;
     END IF;

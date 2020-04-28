@@ -6,13 +6,6 @@
 
 WHEREAMI=$(dirname "$0")
 
-# Cleaning requires that make-generic-rpm be installed.
-if ! rpm --quiet -q make-generic-rpm
-then
-    make -C "${WHEREAMI}/../make-generic-rpm" clean build install
-fi
-
-
 for PACKAGE in $("${WHEREAMI}/build-order")
 do
     make -C "${PACKAGE}" install

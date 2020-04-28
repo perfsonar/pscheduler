@@ -34,10 +34,10 @@ def si_as_number(text):
     """Convert a string containing an SI value to an integer or return an
     integer if that is what was passed in."""
 
-    if type(text) == int:
+    if isinstance(text, int):
         return text
 
-    if type(text) not in [str, unicode]:
+    if not isinstance(text, str):
         raise ValueError("Source value must be string or integer")
 
     matches = si_regex.search(text.lower(), 0)
@@ -67,7 +67,7 @@ def number_as_si(number, places=2, base=10):
         raise ValueError("base must be either 2 or 10")
 
     # Ensure we get all the things in the correct order
-    sorted_si = sorted(si_multipliers.items(),
+    sorted_si = sorted(list(si_multipliers.items()),
                        key=lambda x: x[1], reverse=True)
 
     number_format = "{0:.%sf}" % places
@@ -109,11 +109,11 @@ def si_range(value, default_lower=0):
 
     """
 
-    if type(value) in [int, str, unicode]:
+    if isinstance(value, str) or isinstance(value, int):
         result = si_as_number(value)
         return {"lower": result, "upper": result}
 
-    if type(default_lower) != int:
+    if not isinstance(default_lower, int):
         raise ValueError("Default lower value must be integer")
 
     # TODO: Complain about anything else in the input?
@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
     # These should convert
 
-    print "Simple:"
+    print("Simple:")
     for value in [
             "1234",
             "1234K",
@@ -159,12 +159,12 @@ if __name__ == "__main__":
             "3.1415P"
     ]:
         integer = si_as_number(value)
-        print value, integer
+        print(value, integer)
 
     # These should not.
 
-    print
-    print "Simple, should throw exceptions:"
+    print()
+    print("Simple, should throw exceptions:")
 
     for value in [
             "ki",
@@ -174,12 +174,12 @@ if __name__ == "__main__":
     ]:
         try:
             integer = si_as_number(value)
-            print value, integer
+            print(value, integer)
         except ValueError:
-            print value, "-> ValueError"
+            print(value, "-> ValueError")
 
-    print
-    print "Ranges:"
+    print()
+    print("Ranges:")
 
     for value in [
             15,
@@ -193,13 +193,13 @@ if __name__ == "__main__":
     ]:
         try:
             returned = si_range(value, default_lower=0)
-            print value, "->", returned
+            print(value, "->", returned)
         except Exception as ex:
-            print value, "-> Exception:", ex
+            print(value, "-> Exception:", ex)
 
     # Convert to SI
-    print
-    print "Convert from number to SI representation:"
+    print()
+    print("Convert from number to SI representation:")
     for value in [
         1000,
         1000 ** 3,
@@ -208,10 +208,10 @@ if __name__ == "__main__":
         0
     ]:
         result = number_as_si(value)
-        print "%s -> %s (base 10)" % (value, result)
+        print("%s -> %s (base 10)" % (value, result))
 
         result = number_as_si(value, base=2)
-        print "%s -> %s (base 2)" % (value, result)
+        print("%s -> %s (base 2)" % (value, result))
 
         result = number_as_si(value, places=3)
-        print "%s -> %s (3 places)" % (value, result)
+        print("%s -> %s (3 places)" % (value, result))

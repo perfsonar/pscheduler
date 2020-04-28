@@ -10,7 +10,7 @@
 %{!?_httpd_moddir:    %{expand: %%global _httpd_moddir    %%{_libdir}/httpd/modules}}
 
 Name:           mod_wsgi
-Version:        4.6.4
+Version:        4.6.5
 Release:        1%{?dist}
 Summary:        A WSGI interface for Python web applications in Apache
 Group:          System Environment/Libraries
@@ -19,7 +19,9 @@ URL:            http://modwsgi.org
 Source0:        %{name}-%{version}.tar.gz
 Source1:        wsgi.conf
 #BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires:  httpd-devel, python-devel, autoconf
+BuildRequires:  httpd-devel
+BuildRequires:  %{_pscheduler_python}-devel
+BuildRequires:  autoconf
 Requires: httpd-mmn = %{_httpd_mmn}
 
 # Suppress auto-provides for module DSO
@@ -42,7 +44,10 @@ existing WSGI adapters for mod_python or CGI.
 autoconf
 export LDFLAGS="$RPM_LD_FLAGS -L%{_libdir}"
 export CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
-%configure --enable-shared --with-apxs=%{_httpd_apxs}
+./configure \
+    --enable-shared \
+    --with-apxs=%{_httpd_apxs} \
+    --with-python=%(which %{_pscheduler_python})
 make %{?_smp_mflags}
 
 

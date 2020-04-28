@@ -9,8 +9,8 @@
 # If additional libraries or parts of pScheduler are required,
 # they should be added here (line 25).
 %define short	globus
-%define perfsonar_auto_version 4.2.2
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 4.3.0
+%define perfsonar_auto_relnum 0.a0.0
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
@@ -27,7 +27,7 @@ Provides:	%{name} = %{version}-%{release}
 
 # Include all required libraries here
 Requires:	pscheduler-server
-Requires:	python-pscheduler
+Requires:	%{_pscheduler_python}-pscheduler
 
 BuildRequires:	pscheduler-rpm
 

@@ -2,6 +2,7 @@
 Functions for Logging
 """
 
+import codecs
 import logging
 import logging.handlers
 import os
@@ -50,7 +51,7 @@ local7 = getattr(logging.handlers.SysLogHandler, "LOG_LOCAL7", None)
 STATE_VARIABLE = 'PSCHEDULER_LOG_STATE'
 
 
-class Log():
+class Log(object):
 
     """
     Logger class.
@@ -90,7 +91,7 @@ class Log():
 
         if self.syslog_handler is None:
             try:
-                # TODO: /dev/log is Linux-specific.
+                # PORT: /dev/log is Linux-specific.
                 self.syslog_handler = logging.handlers.SysLogHandler(
                     '/dev/log', facility=self.facility)
                 self.syslog_handler.setFormatter(
@@ -120,10 +121,10 @@ class Log():
 
         if name is None:
             name = os.path.basename(sys.argv[0])
-        assert type(name) == str
+        assert isinstance(name, str)
 
         if prefix is not None:
-            assert type(prefix) == str
+            assert isinstance(prefix, str)
             name = prefix + "/" + name
 
         self.facility = facility
@@ -153,21 +154,24 @@ class Log():
         if STATE_VARIABLE in os.environ:
 
             try:
+                depickled = pickle.loads(
+                    codecs.decode(os.environ[STATE_VARIABLE], "base64"))
+
                 depickled = pickle.loads(os.environ[STATE_VARIABLE])
 
                 facility = depickled['facility']
-                assert type(facility) == int
+                assert isinstance(facility, int)
 
                 level = depickled['last_level']
-                assert type(level) == int
+                assert isinstance(level, int)
 
                 self.forced_debug = depickled['forced_debug']
-                assert type(self.forced_debug) == bool
+                assert isinstance(self.forced_debug, bool)
 
                 self.is_quiet = depickled['is_quiet']
-                assert type(self.is_quiet) == bool
+                assert isinstance(self.is_quiet, bool)
 
-            except Exception as ex:
+            except Exception:
                 self.exception("Failed to decode %s '%s'"
                                % (STATE_VARIABLE, os.environ[STATE_VARIABLE]))
 
@@ -201,7 +205,7 @@ class Log():
         self.__update_env()
 
         # Grab signals and make them non-interrupting
-        # TODO: How portable is this?
+        # PORT: How portable is this?
         if signals:
             signal.signal(signal.SIGUSR1, self.sigusr1)
             signal.signal(signal.SIGUSR2, self.sigusr2)
@@ -224,7 +228,8 @@ class Log():
                 'last_level': self.last_level,
                 'is_quiet': self.is_quiet
             }
-            os.environ[STATE_VARIABLE] = pickle.dumps(to_pickle)
+            os.environ[STATE_VARIABLE] = codecs.encode(
+                pickle.dumps(to_pickle), "base64").decode()
 
     def verbose(self, state):
         "Toggle verbosity (logging to stderr)"
@@ -327,7 +332,7 @@ if __name__ == "__main__":
 
     try:
         raise ValueError("Test exception")
-    except Exception as ex:
+    except Exception:
         log.exception("Test exception with message")
 
     for num in range(1, 5):

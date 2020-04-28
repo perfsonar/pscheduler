@@ -23,9 +23,9 @@ def gateway_ip(network, gateway):
 
         return network[gateway]
 
-    elif isinstance(gateway, basestring):
+    elif isinstance(gateway, str):
 
-        return ipaddress.ip_address(unicode(gateway))
+        return ipaddress.ip_address(str(gateway))
 
     else:
 
@@ -85,7 +85,7 @@ def spec_is_valid(json):
     if not json_valid and "gateway" not in json:
         return (json_valid, message)
 
-    network = ipaddress.ip_network(unicode(json["network"]))
+    network = ipaddress.ip_network(str(json["network"]))
     if network.num_addresses <= 2:
         return (False, "Network must have at least two host addresses.")
 
@@ -111,7 +111,7 @@ def spec_is_valid(json):
 
 def result_is_valid(json):
     schema = {
-	"type": "object",
+        "type": "object",
         "properties": {
             "schema":       { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":    { "$ref": "#/pScheduler/Boolean" },

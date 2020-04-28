@@ -21,7 +21,7 @@
 #NEW_PASS="${NEW_USER}"
 
 # Current version number of perfSONAR repos
-PS_REPO_VERSION=0.8-1
+PS_REPO_VERSION=0.9-1
 
 
 # No user-serviceable parts beyond this point.
@@ -102,8 +102,11 @@ fi
 # Install Other Repositories
 #
 
+# RedHat Software Collections
+yum -y install centos-release-scl
+
 # PostgreSQL
-yum -y install "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-${REDHAT_RELEASE_MAJOR}Server-$(uname -m)/pgdg-centos95-9.5-3.noarch.rpm"
+# yum -y install "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-${REDHAT_RELEASE_MAJOR}Server-$(uname -m)/pgdg-centos95-9.5-3.noarch.rpm"
 
 # EPEL
 yum -y install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${REDHAT_RELEASE_MAJOR}.noarch.rpm"
@@ -123,6 +126,7 @@ yum -y install \
     git \
     m4 \
     make \
+    rpm-build \
     which
 
 

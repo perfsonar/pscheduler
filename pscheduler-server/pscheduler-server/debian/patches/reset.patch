@@ -1,5 +1,5 @@
---- a/database/reset.raw	2019-10-02 23:07:02.935915000 +0000
-+++ b/database/reset.raw	2019-10-02 23:07:31.209505000 +0000
+--- pscheduler-server.orig/database/reset.raw	2020-04-27 23:24:31.184644765 +0000
++++ pscheduler-server/database/reset.raw	2020-04-27 23:27:49.001845644 +0000
 @@ -37,47 +37,45 @@
  
  
@@ -35,7 +35,7 @@
 -fi
 -
 -(
--    printf "ALTER ROLE __ROLE__ WITH UNENCRYPTED PASSWORD '"
+-    printf "ALTER ROLE __ROLE__ WITH PASSWORD '"
 -    tr -d "\n" < '__PASSWORDFILE__'
 -    printf "';\n"
 -) | postgresql-load

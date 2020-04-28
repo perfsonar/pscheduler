@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Format a result
 #
@@ -26,39 +26,39 @@ result = input["result"]
 spec = input["spec"]
 
 if format == 'text/plain':
-    print 'Response Time: %s\n' % result['time']
-    print 'Status Code: %s\n' % result['status'] 
+    print('Response Time: %s\n' % result['time'])
+    print('Status Code: %s\n' % result['status']) 
     try:
         str = spec['parse']
-        print 'String found: %s\n' % result['found']
+        print('String found: %s\n' % result['found'])
     except KeyError:
         pass
 
 elif format == 'text/html':
-    print '<table>'
-    print '    <tr>' 
-    print '        <th>Response Time</th>'
-    print '    </tr>'
-    print '    <tr>'
-    print '        <td>%s</td>' % result['time']
-    print '    </tr>'
-    print '    <tr>'
-    print '        <th>Status Code</th>'
-    print '    </tr>'
-    print '    <tr>'
-    print '        <td>%s</td>' % result['status']
-    print '    </tr>'
+    print('<table>')
+    print('    <tr>') 
+    print('        <th>Response Time</th>')
+    print('    </tr>')
+    print('    <tr>')
+    print('        <td>%s</td>' % result['time'])
+    print('    </tr>')
+    print('    <tr>')
+    print('        <th>Status Code</th>')
+    print('    </tr>')
+    print('    <tr>')
+    print('        <td>%s</td>' % result['status'])
+    print('    </tr>')
     try:
         str = spec['parse']
-        print '    <tr>'
-        print '        <th>String found:</th>'
-        print '    </tr>'
-        print '    <tr>'
-        print '         <td>%s</td>' % result['found']
-        print '    </tr>' 
+        print('    <tr>')
+        print('        <th>String found:</th>')
+        print('    </tr>')
+        print('    <tr>')
+        print('         <td>%s</td>' % result['found'])
+        print('    </tr>') 
     except KeyError:
         pass
-    print '</table>'
+    print('</table>')
 
 else:
    pscheduler.fail("Unsupported format '%s'" % format)

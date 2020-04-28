@@ -2,7 +2,12 @@
 Limit Class for url-fetch
 """
 
-import pscheduler
+from ...iso8601 import *
+from ...jsonval import *
+from ...jqfilter import *
+from ...psjson import *
+from ...pstime import *
+from ...psurl import *
 
 
 DATA_VALIDATOR = {
@@ -41,7 +46,7 @@ def _jq_filter(transform):
     full_script = "def hint($name): ." + PRIVATE_KEY + ".hints[$name];" \
                   + script
 
-    return pscheduler.JQFilter(
+    return JQFilter(
         full_script,
         args=transform.get("args", {})
         # Don't care about raw output.  Not doing that.
@@ -55,11 +60,11 @@ def urlfetch_data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
-    return pscheduler.json_validate(data, DATA_VALIDATOR)
+    return json_validate(data, DATA_VALIDATOR)
 
 
 
-class LimitURLFetch():
+class LimitURLFetch(object):
 
     """
     Limit that passes or fails depending on the result of a URL Fetch
@@ -86,8 +91,8 @@ class LimitURLFetch():
         self.url_transform = _jq_filter(data.get("url-transform", None))
         self.bind = data.get("bind", None)
         self.follow = data.get("follow-redirects", True)
-        self.timeout = pscheduler.timedelta_as_seconds(
-            pscheduler.iso8601_as_timedelta(data.get("timeout", "PT3S")) )
+        self.timeout = timedelta_as_seconds(
+            iso8601_as_timedelta(data.get("timeout", "PT3S")) )
         self.verify = data.get("verify-keys", True)
         self.fail_result = data.get("fail-result", False)
 
@@ -119,7 +124,7 @@ class LimitURLFetch():
                     "run": proposal["task"],
                     PRIVATE_KEY: private
                 })[0]
-                if not isinstance(url, basestring):
+                if not isinstance(url, str):
                     raise ValueError("Transform did not return a string")
             except Exception as ex:
                 return {
@@ -161,15 +166,15 @@ class LimitURLFetch():
             params = {}
 
         # Fetch the result
-        status, text = pscheduler.url_get(url,
-                                          bind=self.bind,
-                                          headers=headers,
-                                          params=params,
-                                          json=False,
-                                          throw=False,
-                                          timeout=self.timeout,
-                                          allow_redirects=self.follow,
-                                          verify_keys=self.verify
+        status, text = url_get(url,
+                               bind=self.bind,
+                               headers=headers,
+                               params=params,
+                               json=False,
+                               throw=False,
+                               timeout=self.timeout,
+                               allow_redirects=self.follow,
+                               verify_keys=self.verify
         )
 
         if self.success_only:
@@ -190,7 +195,7 @@ class LimitURLFetch():
             }
 
         try:
-            json = pscheduler.json_load(text)
+            json = json_load(text)
         except ValueError:
             return {
                 "passed": self.fail_result,
@@ -248,14 +253,14 @@ if __name__ == "__main__":
                 }
             }
         })
-        print url, "->", limit.evaluate({
+        print(url, "->", limit.evaluate({
             "task": { "test": "xxx yyy: Z" },
             "hints": { "requester": "10.9.8.7" }
-            })
+            }))
 
 
-    print
-    print "Succeed-only:"
+    print()
+    print("Succeed-only:")
 
     for url in [
             "https://www.google.com",
@@ -267,7 +272,7 @@ if __name__ == "__main__":
             "url": url,
             "success-only": True
         })
-        print url, "->", limit.evaluate({
+        print(url, "->", limit.evaluate({
         "task": { "test": "xxx yyy: Z" },
         "hints": { "requester": "10.9.8.7" }
-    })
+    }))

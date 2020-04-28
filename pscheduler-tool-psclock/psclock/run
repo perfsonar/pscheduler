@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Run a test.  Just the test spec is provided on stdin.
 #
@@ -92,10 +92,7 @@ pool.close()
 # Find errors and bail out if any existed.
 #
 
-errors = list(filter(
-    lambda value: value is not None,
-    [ result.get("error", None) for result in results ]
-    ))
+errors = list([value for value in [ result.get("error", None) for result in results ] if value is not None])
 
 if len(errors) > 0:
     pscheduler.succeed_json({

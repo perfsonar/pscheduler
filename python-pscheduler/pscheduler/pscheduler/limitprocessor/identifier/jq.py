@@ -2,7 +2,8 @@
 Identifier Class for jq
 """
 
-import pscheduler
+from ...jsonval import *
+from ...jqfilter import *
 
 JQ_DATA_VALIDATOR = {
     "$ref": "#/pScheduler/JQTransformSpecification"
@@ -14,11 +15,11 @@ def data_is_valid(data):
     (bool, string) indicating valididty and any error message.
     """
 
-    return pscheduler.json_validate(data, JQ_DATA_VALIDATOR)
+    return json_validate(data, JQ_DATA_VALIDATOR)
 
 
 
-class IdentifierJQ():
+class IdentifierJQ(object):
 
 
     """
@@ -34,7 +35,7 @@ class IdentifierJQ():
         if not valid:
             raise ValueError("Invalid data: %s" % message)
 
-        self.jqfilter = pscheduler.JQFilter(
+        self.jqfilter = JQFilter(
             data["script"],
             args=data.get("args", {}),
             output_raw=data.get("output-raw", False)
@@ -55,26 +56,8 @@ class IdentifierJQ():
         except Exception as ex:
             return False
 
-        if type(returned) == bool:
+        if isinstance(returned, bool):
             return returned
 
         # At this point, there's no usable date.  Don't identify.
         return False
-
-
-
-if __name__ == "__main__":
-
-    data = {
-        "script": ".server == $address",
-        "args": {
-            "address": "10.0.0.7"
-        }
-    }
-
-    jqid = IdentifierJQ(data)
-
-    print jqid.evaluate({
-        "requester": "10.0.0.7",
-        "server": "10.0.0.8",
-        })

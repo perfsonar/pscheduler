@@ -4,9 +4,14 @@ Identifier Class for ip-cidr-list-url
 
 import datetime
 import radix
-import pscheduler
 import time
 import threading
+
+from ...iso8601 import *
+from ...jqfilter import *
+from ...jsonval import *
+from ...psjson import *
+from ...psurl import *
 
 
 data_validator = {
@@ -37,14 +42,14 @@ def data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
-    valid, error = pscheduler.json_validate(data, data_validator)
+    valid, error = json_validate(data, data_validator)
     if not valid:
         return valid, error
     return valid, error
 
 
 
-class IdentifierIPCIDRListURL():
+class IdentifierIPCIDRListURL(object):
 
     """Class that holds and processes identifiers as lists of CIDRs
     fetched from a URL.
@@ -63,8 +68,8 @@ class IdentifierIPCIDRListURL():
         protected against calling two of these at once.
         """
 
-        status, text = pscheduler.url_get(self.source, bind=self.bind,
-                                          json=False, throw=False)
+        status, text = url_get(self.source, bind=self.bind,
+                               json=False, throw=False)
 
         possible_next_attempt = datetime.datetime.now() + self.retry
 
@@ -77,10 +82,10 @@ class IdentifierIPCIDRListURL():
         # If there's a transform, apply it.
         if self.transform is not None:
             try:
-                json = pscheduler.json_load(text)
+                json = json_load(text)
                 text = self.transform(json)
             except (ValueError,
-                    pscheduler.jqfilter.JQRuntimeError):
+                    JQRuntimeError):
                 # TODO: Would be nice if we could log the failure
                 with self.data_lock:
                     self.next_attempt = possible_next_attempt
@@ -142,14 +147,14 @@ class IdentifierIPCIDRListURL():
 
         self.source = data['source']
         self.bind = data.get('bind', None)
-        self.update = pscheduler.iso8601_as_timedelta(data['update'])
-        self.retry = pscheduler.iso8601_as_timedelta(data['retry'])
+        self.update = iso8601_as_timedelta(data['update'])
+        self.retry = iso8601_as_timedelta(data['retry'])
         self.fail_state = data.get('fail-state', False)
         try:
             # This will raise a ValueError if it's wrong.
             transform = data["transform"]
-            self.transform = pscheduler.JQFilter(transform["script"],
-                                                 transform.get("args", {} ),
+            self.transform = JQFilter(transform["script"],
+                                      transform.get("args", {} ),
                                                  output_raw=True)
         except KeyError:
             self.transform = None
@@ -207,77 +212,3 @@ class IdentifierIPCIDRListURL():
             return False
 
         return self.exclusions.search_best(ip) is None
-
-
-
-
-# A short test program
-
-if __name__ == "__main__":
-
-    data = {
-        "source": "http://software.internet2.edu/data/pscheduler/limit-cidrs/ren",
-#        "transform": { "script": "foo" },
-        "exclude": [
-            "10.0.0.0/8",
-            "172.16.0.0/12",
-            "192.168.0.0/16"
-        ],
-        "update": "P1D",
-        "retry": "PT1H",
-        "fail-state": True
-    }
-
-    print data_is_valid(data)
-
-    ident = IdentifierIPCIDRListURL(data)
-
-    print "LEN", len(ident)
-
-    for ip in [ 
-            # Trues
-            "35.132.6.7",
-            "128.82.4.1",
-            "64.185.56.0",
-            # Falses
-            "10.9.8.6",
-            "198.6.1.1",
-            "192.168.4.3",
-    ]:
-        print ip, ident.evaluate({ "requester": ip })
-
-
-    # List from Amazon
-
-    ident2 = IdentifierIPCIDRListURL({
-        "source": "https://ip-ranges.amazonaws.com/ip-ranges.json",
-        "transform": {
-            "script": '.prefixes[].ip_prefix, .ipv6_prefixes[].ipv6_prefix',
-            },
-        "exclude": [
-            "10.0.0.0/8",
-            "172.16.0.0/12",
-            "192.168.0.0/16"
-        ],
-        "update": "PT5S",
-        "retry": "PT1M",
-        "fail-state": True
-    })
-
-    print
-    print "AMAZON:"
-    for ip in [ 
-            # Trues
-            "23.20.12.18",
-            "52.10.9.204",
-            "2a05:d000:8000::1",
-            # Falses
-            "10.9.8.6",
-            "198.6.1.1",
-            "dead:beef::bad:cafe"
-    ]:
-        result = ident2.evaluate({ "requester": ip })
-        print ip, result
-
-
-

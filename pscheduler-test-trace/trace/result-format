@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Format a result
 #
@@ -101,10 +101,10 @@ else:
 # TODO: Should probably handle exceptions in a nicer way.
 
 if not json['succeeded']:
-   print jsontemplate.expand(fail_template, json).strip()
+   print(jsontemplate.expand(fail_template, json).strip())
 
 if template is not None:
-   print jsontemplate.expand(template, json).strip()
+   print(jsontemplate.expand(template, json).strip())
 
 
 pathno = 0
@@ -114,7 +114,7 @@ for path in json['paths']:
 
    pathno += 1
    if npaths > 1:
-      print jsontemplate.expand(path_template, { 'number': pathno })
+      print(jsontemplate.expand(path_template, { 'number': pathno }))
 
    hopno = 1
    for hop in path:
@@ -125,8 +125,8 @@ for path in json['paths']:
       except KeyError:
          pass
 
-      print jsontemplate.expand(hop_template, hop).strip()
+      print(jsontemplate.expand(hop_template, hop).strip())
       hopno += 1
 
 if end_template is not None:
-   print jsontemplate.expand(end_template, json).strip()
+   print(jsontemplate.expand(end_template, json).strip())

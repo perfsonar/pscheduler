@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Determine the duration of a specified test.
 #
@@ -17,5 +17,5 @@ timeout_iso = json.get("timeout", default_timeout )
 timeout = pscheduler.iso8601_as_timedelta(timeout_iso) + datetime.timedelta( seconds=10 )
 
 pscheduler.succeed_json({
-	"duration": pscheduler.timedelta_as_iso8601( timeout )
-	})
+    "duration": pscheduler.timedelta_as_iso8601( timeout )
+})

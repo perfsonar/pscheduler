@@ -3,10 +3,12 @@ Range of durations
 """
 
 import datetime
-import pscheduler
+
+from .iso8601 import *
+from .jsonval import *
 
 
-class DurationRange():
+class DurationRange(object):
 
     "Range of durations"
 
@@ -18,7 +20,7 @@ class DurationRange():
 
         # TODO: Figure out why this can't just point to a DurationRange
 
-        valid, message = pscheduler.json_validate(drange, {
+        valid, message = json_validate(drange, {
             "type": "object",
             "properties": {
                 "lower": {"$ref": "#/pScheduler/Duration"},
@@ -32,18 +34,18 @@ class DurationRange():
             raise ValueError("Invalid duration range: %s" % message)
 
         self.lower_str = drange['lower']
-        self.lower = pscheduler.iso8601_as_timedelta(self.lower_str)
+        self.lower = iso8601_as_timedelta(self.lower_str)
         self.upper_str = drange['upper']
-        self.upper = pscheduler.iso8601_as_timedelta(self.upper_str)
+        self.upper = iso8601_as_timedelta(self.upper_str)
 
     def __contains__(self, duration):
         """See if the range contains the specified duration, which can be a
         timedelta or ISO8601 string."""
 
-        if type(duration) == datetime.timedelta:
+        if isinstance(duration, datetime.timedelta):
             test_value = duration
-        elif type(duration) in [str, unicode]:
-            test_value = pscheduler.iso8601_as_timedelta(duration)
+        elif isinstance(duration, str):
+            test_value = iso8601_as_timedelta(duration)
         else:
             raise ValueError(
                 "Invalid duration; must be ISO8601 string or timedelta.")
@@ -85,8 +87,8 @@ if __name__ == "__main__":
                   datetime.timedelta(minutes=10)
                   ]:
         result = value in drange
-        print value, result
+        print(value, result)
         for invert in [False, True]:
-            print "%s Invert=%s %s" % (value, invert,
-                                       drange.contains(value, invert=invert))
-        print
+            print("%s Invert=%s %s" % (value, invert,
+                                       drange.contains(value, invert=invert)))
+        print()

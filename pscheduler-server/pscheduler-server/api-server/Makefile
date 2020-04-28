@@ -63,8 +63,12 @@ RAWS=$(wildcard pschedulerapiserver/*.raw)
 UNRAWS=$(basename $(RAWS))
 
 build: $(CONFIG) $(WSGI) $(UNRAWS)
-	python -m compileall .
-TO_CLEAN += $(CONFIG) $(WSGI) *.pyc
+ifndef PYTHON
+	@echo No PYTHON specified for build
+	@false
+endif
+	$(PYTHON) -m compileall .
+TO_CLEAN += $(CONFIG) $(WSGI) __pycache__
 
 install: build
 ifndef CONF_D
@@ -74,10 +78,16 @@ endif
 	mkdir -p $(PREFIX)/$(CONF_D)
 	install -m 444 $(CONFIG) $(PREFIX)/$(CONF_D)
 	mkdir -p $(PREFIX)/$(API_DIR)
-	install -m 444 *.pyc *.wsgi $(PREFIX)/$(API_DIR)
-	mkdir -p $(PREFIX)/$(API_DIR)/pschedulerapiserver
-	install -m 444 pschedulerapiserver/*.pyc $(PREFIX)/$(API_DIR)/pschedulerapiserver
+	install -m 444 *.wsgi $(PREFIX)/$(API_DIR)
 
+	mkdir -p $(PREFIX)/$(API_DIR)/__pycache__
+	install -m 444 *.py $(PREFIX)/$(API_DIR)
+	install -m 444 __pycache__/* $(PREFIX)/$(API_DIR)/__pycache__
+	chmod 400 $(PREFIX)/$(API_DIR)/__pycache__
+	mkdir -p $(PREFIX)/$(API_DIR)/pschedulerapiserver/__pycache__
+	install -m 444 pschedulerapiserver/*.py $(PREFIX)/$(API_DIR)/pschedulerapiserver
+	install -m 444 pschedulerapiserver/__pycache__/*.pyc $(PREFIX)/$(API_DIR)/pschedulerapiserver/__pycache__
+	chmod 400 $(PREFIX)/$(API_DIR)/pschedulerapiserver/__pycache__
 
 
 

@@ -23,6 +23,8 @@ include /usr/share/dpkg/default.mk
 DEB_VERSION := $(shell dpkg-parsechangelog | egrep '^Version:' | cut -f 2 -d ' ')
 DEB_SOURCE_PACKAGE ?= $(strip $(shell egrep '^Source: ' debian/control | cut -f 2 -d ':'))
 ROOT ?= $(CURDIR)/debian/$(DEB_SOURCE_PACKAGE)
+PYTHON := $(shell which python3)
+
 
 override_dh_auto_build:
 	make -C daemons \
@@ -89,11 +91,10 @@ override_dh_auto_install:
 		DSN_FILE=/etc/pscheduler/database/database-dsn \
 		LIMITS_FILE=/etc/pscheduler/limits.conf \
 		RUN_DIR=/var/run/pscheduler-server \
+		PYTHON=$(PYTHON) \
 		install
 	cp api-server/*.py api-server/*.wsgi $(ROOT)/usr/share/pscheduler/api-server/
-	rm $(ROOT)/usr/share/pscheduler/api-server/*.py?
 	cp api-server/pschedulerapiserver/*.py $(ROOT)/usr/share/pscheduler/api-server/pschedulerapiserver/
-	rm $(ROOT)/usr/share/pscheduler/api-server/pschedulerapiserver/*.py?
 	mv $(ROOT)/etc/apache2/conf-available/pscheduler-api-server.conf \
 	   $(ROOT)/etc/apache2/conf-available/pscheduler-server.conf
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Development Order #5:
 #
@@ -33,11 +33,17 @@ try:
         source = input['test']['spec']['url']
         dest = None
         cleanup = False #disk-to-disk option
+<<<<<<< HEAD
         always_succeed = False
         if input['test']['spec'].get('always-succeed') is not None:
             always_succeed = True
 except KeyError as e:
     print(e);	pscheduler.fail('Missing data in input')
+=======
+except KeyError as ex:
+    print(ex);
+    pscheduler.fail('Missing data in input')
+>>>>>>> 4.3.0
 
 
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
@@ -51,7 +57,7 @@ parse = input['test']['spec'].get('parse', None)
 start_time = datetime.datetime.now()
 succeeded = False
 error = ''
-diags = ''
+diags = []
 
 STDERR = ""
 
@@ -98,7 +104,8 @@ if True:
       # TODO: The pscheduler module has functions for doing this.
       scalar = ['B', 'KB', 'MB', 'GB', 'TB']
       while bytes_sent > 1024 and len(scalar) > 1:
-        bytes_sent /= 1024; scalar = scalar[1:]
+        bytes_sent = int(bytes_sent / 1024)
+        scalar = scalar[1:]
 
       # Put this into diags
       #error += '\n\nBytes Transfered: %s %s'% (int(bytes_sent), scalar[0])
@@ -111,40 +118,53 @@ if True:
 
   else:
     succeeded = True
-    diags = stdout
+    diags.append(stdout)
 
 end_time = datetime.datetime.now()
 
 if cleanup is True:
-    if os.path.isfile(dest): 
-        os.remove(dest)
+    if os.path.isfile(dest):
+        try:
+            os.remove(dest)
+        except Exception as ex:
+            diags.append("Exception while removing file: %s" % (str(ex)))
+
 
 # Organize results into json data
 final_results = {
     'succeeded': succeeded,
     'error': error,
-    'diags': diags }
+    'diags': "\n".join(diags)
+}
 
+<<<<<<< HEAD
 results = {'schema': schema, 
 	   'succeeded': succeeded}
+=======
+results = {
+    'schema': 1, 
+    'succeeded': succeeded
+}
+>>>>>>> 4.3.0
 
 results['time'] = pscheduler.timedelta_as_iso8601( end_time - start_time)
 
 #handle test_type specific options
 if test_type == "disk-to-disk":
-    #%#%#%#%#%#
+
     #STDERR[6] is Average Download Speed
     #Try to get download speed, if can't parse then skip
-    throughput_str = None
     try:
         throughput_str = STDERR[-1].split('\n')[0]
-    except:
-        pass
-    if throughput_str is not None:
         #convert to bits per second
         results['throughput'] = pscheduler.si_as_number(throughput_str) * 8
+    except Exception as ex:
+        # TODO: This should probably fail since throughput is what the
+        # measurement is all about.
+        diags.append("Throughput speed exception: %s" % (str(ex)))
 
-    #%#%#%#%#%#
+
+    # TODO: Refactor this in the same style as the above try/except.
     bytes_str = None
     try:
         bytes_str = STDERR[1]
@@ -152,7 +172,9 @@ if test_type == "disk-to-disk":
         pass
     if bytes_str is not None:
         results['bytes-sent'] = pscheduler.si_as_number(bytes_str)
+
 elif test_type == "http":
+
     if parse:
         if (stdout.find(parse) == -1):
             results['found'] = False
@@ -172,4 +194,7 @@ elif test_type == "http":
         
 final_results['result'] = results
 pscheduler.succeed_json(final_results)
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4.3.0

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Run a test.  Just the test spec is provided on stdin.
 #
@@ -220,7 +220,7 @@ if need_root:
     argv.insert(0, 'sudo')
 
 # Stringify the arguments        
-argv = map(lambda x: str(x), argv)
+argv = [str(x) for x in argv]
 
 argv_string =  ' '.join(argv)
 log.debug("Running %s", argv_string)
