@@ -126,9 +126,8 @@ SPEC_SCHEMA = {
                 { "$ref": "#/local/throughput_v3" }
             ]
         }
-    },
+    }
 
-    "$ref": "#/local/throughput"
 }
 
 RESULT_SCHEMA = {        
@@ -266,7 +265,21 @@ LIMIT_SCHEMA = {
 
 
 def spec_is_valid(input_json):
-    return json_validate(input_json, SPEC_SCHEMA)
+    schema = input_json.get("schema", 1)
+    if type(schema) != int:
+        return (False, "Invalid schema; must be an integer.")
+
+    # Build a temporary structure with a reference that points
+    # directly at the validator for the specified version of the
+    # schema.  Using oneOf or anyOf results in error messages that are
+    # difficult to decipher.
+
+    temp_schema = {
+        "local": SPEC_SCHEMA["local"],
+        "$ref":"#/local/throughput_v%d" % schema
+    }
+
+    return json_validate(input_json, temp_schema)
 
 
 def result_is_valid(input_json):
