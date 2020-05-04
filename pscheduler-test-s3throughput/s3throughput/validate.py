@@ -21,9 +21,6 @@ def spec_is_valid(json):
         "local": {
             # Local data types such as this can be defined within this file,
             # but are not necessary
-            "Type": {
-                "type": "string",
-                "enum": [ "system", "api" ]
             },
             "Spec": {
                 "type": "object",
@@ -35,12 +32,20 @@ def spec_is_valid(json):
                     "host-node":    { "$ref": "#/pScheduler/Host" },
                     "duration":     { "$ref": "#/pScheduler/Duration" },
                     "timeout":      { "$ref": "#/pScheduler/Duration" },
-                    # Here is the datatype we defined on lines 24-27
-                    "testtype":     { "$ref": "#/local/Type" },
+		    "access-key":   { "$ref": "#/pScheduler/String" },
+		    "bucket":       { "$ref": "#/pScheduler/String" },
+		    "secret-key":   { "$ref": "#/pScheduler/String" },
+		    "url":	    { "$ref": "#/pScheduler/String" },
+		    "iterations":   { "$ref": "#/pScheduler/String" },
+		    "threads":      { "$ref": "#/pScheduler/String" },
+		    "object-size":  { "$ref": "#/pScheduler/String" }
                 },
                 # If listed here, data of this type MUST be in the test spec
                 "required": [
-                    "testtype",
+                    "access-key",
+		    "bucket",
+		    "secret-key",
+		    "url"
                     ],
             }
         },
