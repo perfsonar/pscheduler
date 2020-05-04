@@ -10,7 +10,7 @@
 {
     "schema": 1,
     "name": "s3throughput",
-    "description": "EDIT ME",
+    "description": "Test throughput of S3 web service storage",
     "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",
