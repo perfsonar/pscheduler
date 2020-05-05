@@ -36,8 +36,8 @@ def spec_is_valid(json):
 		    "bucket":       { "$ref": "#/pScheduler/String" },
 		    "secret-key":   { "$ref": "#/pScheduler/String" },
 		    "url":	    { "$ref": "#/pScheduler/String" },
-		    "iterations":   { "$ref": "#/pScheduler/String" },
-		    "threads":      { "$ref": "#/pScheduler/String" },
+		    "iterations":   { "$ref": "#/pScheduler/Cardinal" },
+		    "threads":      { "$ref": "#/pScheduler/Cardinal" },
 		    "object-size":  { "$ref": "#/pScheduler/String" }
                 },
                 # If listed here, data of this type MUST be in the test spec
@@ -62,12 +62,24 @@ def result_is_valid(json):
         "properties": {
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
-            "time":       { "$ref": "#/pScheduler/Duration" },
-            },
+            "put-time":       { "$ref": "#/pScheduler/Duration" },
+            "get-time":       { "$ref": "#/pScheduler/Duration" },
+	    "delete-time":       { "$ref": "#/pScheduler/Duration" },
+	    "object-count":	{ "$ref": "#/pScheduler/CardinalZero" },
+	    "average-put-time": { "$ref": "#/pScheduler/Cardinal" },
+	    "average-get-time": { "$ref": "#/pScheduler/Cardinal" },
+	    "average-delete-time": { "$ref": "#/pScheduler/Cardinal" }    
+	},
         "required": [
             "schema",
             "succeeded",
-            "time",
+            "put-time",
+	    "get-time",
+	    "delete-time",
+	    "object-count",
+	    "average-put-time",
+	    "average-get-time",
+	    "average-delete-time"
             ]
         }
     return json_validate(json, schema)
