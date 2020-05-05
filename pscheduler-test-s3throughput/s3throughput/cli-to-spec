@@ -161,9 +161,8 @@ if options.threads is not None:
 else:
     result['threads'] = 1
 
-if options.object_size is not None:
+if options.object_size is None:
     result['object-size'] = options.object_size
-else :
-    result['object-size] = '1M' 
-
+else:
+    result['object-size'] = '1M'
 pscheduler.succeed_json(result)
