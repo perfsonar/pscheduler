@@ -62,9 +62,15 @@ opt_parser.add_option("--host-node",
                       dest="host_node")
 
 opt_parser.add_option("--always-succeed",
-                      help="Archive all messages, regardless of response code",
+                      help="Treat HTTP failures as successes, regardless of response code",
                       action="store_true",
                       dest="always_succeed")
+
+opt_parser.add_option("--keep-content",
+                      help="Amount of content to keep in bytes; default none, 0 for no limit, SI units supported",
+                      type="string",
+                      action="store",
+                      dest="keep_content")
 
 opt_parser.add_option("--timeout",
                       help="Timeout for each query attempt",
@@ -92,6 +98,13 @@ if options.timeout is not None:
 if options.always_succeed is not None:
     schema.set(2)
     result['always-succeed'] = options.always_succeed
+
+if options.keep_content is not None:
+    try:
+        result['keep-content'] = pscheduler.si_as_number(options.keep_content)
+    except ValueError as ex:
+        pscheduler.fail("Invalid value \"%s\" for keep-content: %s" % (options.bandwidth, ex))
+    schema.set(2)
 
 result['schema'] = schema.value()
 

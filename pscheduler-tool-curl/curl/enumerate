@@ -1,4 +1,4 @@
-#!/bin/sed -e 1d;/^#/d
+#!/bin/sed -e /^#/d
 
 #
 # Development Order #2:

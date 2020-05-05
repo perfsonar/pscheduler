@@ -32,7 +32,8 @@ Timeout ................... {.section timeout}{timeout}{.or}Not Specified{.end}
 URL ....................... {.section url}{url}{.or}Not Specified{.end}
 Parse ..................... {.section parse}{parse}{.or}Not Specified{.end}
 Always Succeed ............ {.section always-succeed}%s{.or}Not Specified{.end}
-""" % ("True")
+Keep Content .............. {.section success-content}%s Bytes{.or}Not Specified{.end}
+""" % ("True", "True")
 
 elif format == 'text/html':
 
@@ -44,8 +45,9 @@ elif format == 'text/html':
 <tr><td>URL</td><td>{.section url}{url}{.or}Not Specified{.end}</td></tr>
 <tr><td>Parse</td><td>{.section parse}{parse}{.or}Not Specified{.end}</td></tr>
 <tr><td>Always Succeed</td><td>{.section always-succeed}%s{.or}Not Specified{.end}</td></tr>
+<tr><td>Keep Content</td><td>{.section always-succeed}%s Bytes{.or}Not Specified{.end}</td></tr>
 </table>
-""" % ("True")
+""" % ("True", "True")
 else:
 
    pscheduler.fail("Unsupported format '%s'" % format)

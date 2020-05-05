@@ -2,17 +2,32 @@
 # Makefile for any tool class
 #
 
-NAME=curl
+NAME := curl
 
-FILES=\
+PROGRAMS := \
 	can-run \
 	duration \
 	enumerate \
 	merged-results \
 	participant-data \
-	run \
+	run
 
-install: $(FILES)
+MODULES :=  run_http
+
+PYS := $(MODULES:%=%.py)
+PYCACHE := __pycache__
+$(PYCACHE): $(PYS)
+ifndef PYTHON
+	@echo No PYTHON specified for build
+	@false
+endif
+	$(PYTHON) -m compileall .
+TO_CLEAN += $(PYCACHE)
+
+FILES := $(PROGRAMS) $(PYS)
+
+
+install: $(FILES) $(PYCACHE)
 ifndef DESTDIR
 	@echo No DESTDIR specified for installation
 	@false
@@ -20,6 +35,7 @@ ifndef DESTDIR
 endif
 	mkdir -p $(DESTDIR)
 	install -m 555 $(FILES) $(DESTDIR)
+	cp -r $(PYCACHE) $(DESTDIR)
 
 clean:
-	rm -f $(TO_CLEAN) *~
+	rm -rf $(TO_CLEAN) *~
