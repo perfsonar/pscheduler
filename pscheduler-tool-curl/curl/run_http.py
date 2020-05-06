@@ -110,6 +110,7 @@ def run(input):
             schema.set(2)
         elif keep_content is not None:
             run_result["content"] = text[:keep_content]
+
             schema.set(2)
 
         run_result["schema"] = schema.value()

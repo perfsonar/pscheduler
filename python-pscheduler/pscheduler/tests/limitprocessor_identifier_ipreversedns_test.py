@@ -18,7 +18,7 @@ DATA = {
         "style": "regex",
         "match": "^(ntp[0-9]*\\.internet2\\.edu|chronos\\.es\\.net|saturn\\.es\\.net)$"
     },
-    "timeout": "PT2S"
+    "timeout": "PT5S"
 }
 
 

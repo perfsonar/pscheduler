@@ -6,7 +6,7 @@ Send a result to esmond
 import sys
 import pscheduler
 import calendar
-from . import esmond_util
+import esmond_util
 import memcache
 
 MAX_SCHEMA = 1
@@ -29,8 +29,8 @@ def archive(json):
     """Archive a single result."""
 
     log.debug("Archiver received: %s" % json)
-    task_href = json['task-href'].encode("utf-8") #encode to utf-8 so memcache can handle i
-    run_href = json['run-href'].encode("utf-8")
+    task_href = json['task-href']
+    run_href = json['run-href']
     # Get the test object. This code check in two places. In theory we should
     # not need to do this but this is a workaround of issue #929
     test_json = json['result'].get('test', {})
@@ -114,7 +114,7 @@ def archive(json):
         retry_policy = json['data']['retry-policy']
 
     #lookup metadata key in cache
-    cache_key = ("%s@%s" % (task_href, url)).encode("utf-8") #encode to utf-8 so memcache can handle i
+    cache_key = "%s@%s" % (task_href, url)
     mc = memcache.Client(memcache_servers, debug=0)
     metadata_key = mc.get(cache_key)
     if metadata_key:

@@ -92,7 +92,7 @@ if options.nameserver is not None:
    result['nameserver'] = options.nameserver
 
 if options.record is not None:
-   result['record'] = options.record
+   result['record'] = options.record.lower()
 
 if options.query is not None:
    result['query'] = options.query
