@@ -142,7 +142,9 @@ if cleanup:
 # Organize results into json data
 
 
-results = {}
+results = {
+    "succeeded": succeeded
+}
 
 
 results['time'] = pscheduler.timedelta_as_iso8601(end_time - start_time)
