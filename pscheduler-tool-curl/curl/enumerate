@@ -21,7 +21,7 @@
     "version": "1.0",
     "tests": [ "disk-to-disk", "http" ],
 
-    "preference": -5,
+    "preference": 0,
 
     "maintainer": {
         "name": "perfSONAR Development Team",
