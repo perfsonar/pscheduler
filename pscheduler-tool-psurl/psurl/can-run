@@ -23,7 +23,6 @@ except KeyError:
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 1)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
@@ -34,6 +33,13 @@ except ValueError as ex:
         "can-run": False,
         "reasons": [str(ex)]
     })
+
+if spec["schema"] > 1:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Deprecated tool does not support newer features."]
+    })
+
 
 
 pscheduler.succeed_json({ "can-run": True })
