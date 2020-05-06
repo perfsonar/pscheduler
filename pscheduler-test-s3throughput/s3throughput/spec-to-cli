@@ -29,7 +29,13 @@ result = pscheduler.speccli_build_args(spec,
         ( 'host-node', 'host-node' ),
         ( 'timeout', 'timeout' ),
         ( 'duration', 'duration'),
-        ( 'testtype', 'testtype' ),
+        ( 'access-key', 'access-key' ),
+	( 'bucket', 'bucket'),
+	( 'secret-key', 'secret-key'),
+	( 'url', 'url'),
+	( 'iterations', 'iterations'),
+	( 'threads', 'threads'),
+	( 'object-size', 'object-size')
         ])
 
 pscheduler.succeed_json(result)
