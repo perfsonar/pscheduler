@@ -95,12 +95,12 @@ opt_parser.add_option("--url",
 
 opt_parser.add_option("--iterations",
                       help="Number of times the test should be run",
-                      action="store", type="number",
+                      action="store", type="int",
                       dest="iterations")
 
 opt_parser.add_option("--threads",
                       help="Number of threads to use",
-                      action="store", type="number",
+                      action="store", type="int",
                       dest="threads")
 
 opt_parser.add_option("--object-size",
@@ -161,7 +161,7 @@ if options.threads is not None:
 else:
     result['threads'] = 1
 
-if options.object_size is None:
+if options.object_size is not None:
     result['object-size'] = options.object_size
 else:
     result['object-size'] = '1M'
