@@ -104,8 +104,12 @@ def run(input):
         except KeyError:
             pass
 
-        if keep_content is not None or (always_succeed and not fetch_succeeded):
-            run_result["content"] = text if keep_content is None or keep_content == 0 else text[:keep_content]
+        # If the fetch failed or we've been told to keep 0 content, plaster it all in.
+        if (not fetch_succeeded) or (keep_content is not None and keep_content == 0):
+            run_result["content"] = text
+            schema.set(2)
+        elif keep_content is not None:
+            run_result["content"] = text[:keep_content]
             schema.set(2)
 
         run_result["schema"] = schema.value()
