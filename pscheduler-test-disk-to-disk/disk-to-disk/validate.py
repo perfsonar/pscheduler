@@ -56,9 +56,8 @@ def result_is_valid(json):
             "throughput": { "$ref": "#/pScheduler/Float" },
             },
         "required": [
-            "schema",
             "succeeded",
-            "time",
+            "time"
             ]
         }
     return json_validate(json, schema)
