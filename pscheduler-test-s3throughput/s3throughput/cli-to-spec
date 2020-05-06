@@ -95,12 +95,12 @@ opt_parser.add_option("--url",
 
 opt_parser.add_option("--iterations",
                       help="Number of times the test should be run",
-                      action="store", type="string",
+                      action="store", type="number",
                       dest="iterations")
 
 opt_parser.add_option("--threads",
                       help="Number of threads to use",
-                      action="store", type="string",
+                      action="store", type="number",
                       dest="threads")
 
 opt_parser.add_option("--object-size",
@@ -165,4 +165,8 @@ if options.object_size is None:
     result['object-size'] = options.object_size
 else:
     result['object-size'] = '1M'
+
+if result['object-size'][-1] not in ['M', 'K', 'G']:
+    pscheduler.fail('Please specify the size in the following format: [integer][M/K/G]')
+
 pscheduler.succeed_json(result)
