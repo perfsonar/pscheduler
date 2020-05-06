@@ -30,7 +30,12 @@ spec = input["spec"]
 if format == 'text/plain':
 
    print('Response Time: %s' % result['time'])
-   print('Status Code: %s' % result['status']) 
+
+   try:
+      print('Status Code: %s' % result['status']) 
+   except KeyError:
+      pass
+
    try:
       str = spec['parse']
       print('String found: %s' % result['found'])
@@ -38,7 +43,7 @@ if format == 'text/plain':
       pass
 
    try:
-      print('Content: ', result['content'])
+      print('Content: ', result['content'].encode('utf-8'))
    except KeyError:
       pass
 
