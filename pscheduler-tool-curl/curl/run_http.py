@@ -30,7 +30,8 @@ def run(input):
     if source[0:5] == "file:" and keep_content is not None:
         return({
             "succeeded": False,
-            "error": "Cannot keep content from file:// URLs"
+            "error": "Cannot keep content from file:// URLs",
+            "diags": None
         })
 
 
@@ -89,60 +90,94 @@ def run(input):
 
         schema = pscheduler.HighInteger(1)
 
-        result = {
+        run_result = {
             "succeeded": True,
             "time": pscheduler.timedelta_as_iso8601(end_time - start_time)
         }
 
         if always_succeed:
-            result["status"] = status
+            run_result["status"] = status
             schema.set(2)
 
         try:
-            result["found"] = text.find(input['test']['spec']["parse"]) >= 0
+            run_result["found"] = text.find(input['test']['spec']["parse"]) >= 0
         except KeyError:
             pass
 
         if keep_content is not None or (always_succeed and not fetch_succeeded):
-            result["content"] = text if keep_content is None or keep_content == 0 else text[:keep_content]
+            run_result["content"] = text if keep_content is None or keep_content == 0 else text[:keep_content]
             schema.set(2)
 
-            # headers?
+        run_result["schema"] = schema.value()
 
-        result["schema"] = schema.value()
+        return {
+            "succeeded": True,
+            "diags": None,
+            "error": None,
+            "result": run_result
+        }
 
     else:
-        result = {
+
+        return {
             "succeeded": False,
+            "diags": "Fetch returned non-success status %d" % (status),
             "error": text
         }
 
-    return result
+    assert False, "Should not be reached."
+
 
 
 
 
 if __name__ == "__main__":
-    print(run({
-        "test": {
-            "type": "http",
-            "spec": {
-                "url": "file:///etc/issue",
-                "parse": "perfSONAR",
-                "keep-content": 100,
-                "always-succeed": True
-            }
-        }
-    }))
 
-    print(run({
-        "test": {
-            "type": "http",
-            "spec": {
-                "url": "https://www.perfsonar.net",
-                "parse": "perfSONAR",
-                "keep-content": 100,
-                "always-succeed": True
+    for data in [
+            {
+                "test": {
+                    "type": "http",
+                    "spec": {
+                        "url": "file:///etc/issue",
+                        "parse": "perfSONAR",
+                        "keep-content": 100,
+                        "always-succeed": True
+                    }
+                }
+            },
+            {
+                "test": {
+                    "type": "http",
+                    "spec": {
+                        "url": "https://www.not-a-real-domain.foo/",
+                        "parse": "perfSONAR",
+                        "keep-content": 100,
+                        "always-succeed": False
+                    }
+                }
+            },
+            {
+                "test": {
+                    "type": "http",
+                    "spec": {
+                        "url": "https://www.not-a-real-domain.foo/",
+                        "parse": "perfSONAR",
+                        "keep-content": 100,
+                        "always-succeed": True
+                    }
+                }
+            },
+            {
+                "test": {
+                    "type": "http",
+                    "spec": {
+                        "url": "https://www.perfsonar.net",
+                        "parse": "perfSONAR",
+                        "keep-content": 100,
+                        "always-succeed": True
+                    }
+                }
             }
-        }
-    }))
+    ]:
+        print(pscheduler.json_dump(run(data), pretty=True))
+
