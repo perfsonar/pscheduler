@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 #
 # Development Order #5:
 #
@@ -14,28 +13,52 @@ import sys
 import time
 import json
 import datetime
+import pscheduler
 import subprocess
 
-import pscheduler
+from run_http import run
+
 
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
 log = pscheduler.Log(prefix='curl', quiet=True)
 
+
 # Take input from test spec
 try:
     test_type = input['test']['type']
-    if test_type == "disk-to-disk":
-        dest = input['test']['spec']['dest']
-        source = input['test']['spec']['source']
-        cleanup = input['test']['spec'].get('cleanup', True)
-    else:
-        source = input['test']['spec']['url']
-        dest = None
-        cleanup = False #disk-to-disk option
 except KeyError as ex:
-    print(ex);
     pscheduler.fail('Missing data in input')
+
+
+# HTTP is implemented in a module
+
+if test_type == "http":
+    try:
+
+        pscheduler.succeed_json(run(input))
+    except Exception as ex:
+        pscheduler.succeed_json({
+            "succeeded": False,
+            "error": str(ex)
+        })
+    assert False, "This should not be reached."
+
+
+# Disk-to-disk is not.
+# TODO: Remedy this.
+
+assert test_type == "disk-to-disk", "Internal problem."
+
+try:
+    schema = input['test']['spec']['schema']
+    dest = input['test']['spec']['dest']
+    source = input['test']['spec']['source']
+    cleanup = input['test']['spec'].get('cleanup', True)
+except KeyError as ex:
+    pscheduler.fail('Missing data in input')
+
+
 
 
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
@@ -43,10 +66,7 @@ timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
 timeout = pscheduler.timedelta_as_seconds( \
                pscheduler.iso8601_as_timedelta(timeout_iso))
 
-#http option
-parse = input['test']['spec'].get('parse', None)
 
-start_time = datetime.datetime.now()
 succeeded = False
 error = ''
 diags = []
@@ -69,17 +89,14 @@ if True:
   if dest:
       argv.append('-o') # Flag to output file
       argv.append(dest) # Download location
-  if test_type == "http":
-      #output status code for http tests
-      argv.append('-k') #make https work
-      argv.append('-w')
-      argv.append('\\n%{http_code}')
   argv.append(source) # Source URL
   
 
+  start_time = datetime.datetime.now()
   status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
+  end_time = datetime.datetime.now()
 
-  lines = stderr.split('\r')
+  lines = stderr.split('\n')
   parsed = [stat for stat in lines[-1].split(' ') if stat != '']
   
   STDERR = parsed
@@ -111,10 +128,10 @@ if True:
   else:
     succeeded = True
     diags.append(stdout)
+    diags.append(stderr)
 
-end_time = datetime.datetime.now()
 
-if cleanup is True:
+if cleanup:
     if os.path.isfile(dest):
         try:
             os.remove(dest)
@@ -123,61 +140,41 @@ if cleanup is True:
 
 
 # Organize results into json data
-final_results = {
-    'succeeded': succeeded,
-    'error': error,
-    'diags': "\n".join(diags)
-}
+
 
 results = {
-    'schema': 1, 
-    'succeeded': succeeded
+    "succeeded": succeeded
 }
 
-results['time'] = pscheduler.timedelta_as_iso8601( end_time - start_time)
 
-#handle test_type specific options
-if test_type == "disk-to-disk":
-
-    #STDERR[6] is Average Download Speed
-    #Try to get download speed, if can't parse then skip
-    try:
-        throughput_str = STDERR[-1].split('\n')[0]
-        #convert to bits per second
-        results['throughput'] = pscheduler.si_as_number(throughput_str) * 8
-    except Exception as ex:
-        # TODO: This should probably fail since throughput is what the
-        # measurement is all about.
-        diags.append("Throughput speed exception: %s" % (str(ex)))
+results['time'] = pscheduler.timedelta_as_iso8601(end_time - start_time)
 
 
-    # TODO: Refactor this in the same style as the above try/except.
-    bytes_str = None
-    try:
-        bytes_str = STDERR[1]
-    except:
-        pass
-    if bytes_str is not None:
-        results['bytes-sent'] = pscheduler.si_as_number(bytes_str)
+STDERR = stderr.split("\n")[-2].split()
 
-elif test_type == "http":
+#STDERR[6] is Average Download Speed
+#Try to get download speed, if can't parse then skip
+try:
+    # This is in bytes/sec; convert to bits/sec.
+    results['throughput'] = pscheduler.si_as_number(STDERR[6]) * 8
+except Exception as ex:
+    # TODO: This should probably fail since throughput is what the
+    # measurement is all about.
+    diags.append("Throughput speed exception: %s" % (str(ex)))
 
-    if parse:
-        if (stdout.find(parse) == -1):
-            results['found'] = False
-        else:
-            results['found'] = True
-    stdout_lines = stdout.split("\n")
-    status_code = ""
-    if len(stdout_lines) > 0:
-        status_code = stdout_lines[-1] 
-    if status_code.isdigit():
-        status_code = int(status_code)
-        results['status'] = status_code
-        if status_code >= 200 and status_code < 300:
-            results['succeeded'] = True
-        else:
-            results['succeeded'] = False
-        
-final_results['result'] = results
-pscheduler.succeed_json(final_results)
+
+# TODO: Refactor this in the same style as the above try/except.
+try:
+    results['bytes-sent'] = pscheduler.si_as_number(STDERR[1])
+except Exception as ex:
+    diags.append("Failed to get bytes sent: %s" % (str(ex)))
+    pass
+
+
+
+pscheduler.succeed_json({
+    'succeeded': succeeded,
+    'result': results,
+    'diags': "\n".join(diags)
+})
+

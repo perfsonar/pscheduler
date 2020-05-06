@@ -3,19 +3,21 @@
 # Format a result
 #
 
+import html
 import json
 import jsontemplate
 import pscheduler
 import sys
 
 from validate import result_is_valid
+from validate import MAX_SCHEMA
 
 try:
    format = sys.argv[1]
 except IndexError:
    format = 'text/plain'
 
-input = pscheduler.json_load(exit_on_error=True)
+input = pscheduler.json_load(exit_on_error=True, max_schema=MAX_SCHEMA)
 
 valid, message = result_is_valid(input["result"])
 
@@ -26,38 +28,48 @@ result = input["result"]
 spec = input["spec"]
 
 if format == 'text/plain':
-    print('Response Time: %s\n' % result['time'])
-    print('Status Code: %s\n' % result['status']) 
-    try:
-        str = spec['parse']
-        print('String found: %s\n' % result['found'])
-    except KeyError:
-        pass
+
+   print('Response Time: %s' % result['time'])
+   print('Status Code: %s' % result['status']) 
+   try:
+      str = spec['parse']
+      print('String found: %s' % result['found'])
+   except KeyError:
+      pass
+
+   try:
+      print('Content: ', result['content'])
+   except KeyError:
+      pass
 
 elif format == 'text/html':
+
     print('<table>')
-    print('    <tr>') 
-    print('        <th>Response Time</th>')
-    print('    </tr>')
-    print('    <tr>')
-    print('        <td>%s</td>' % result['time'])
-    print('    </tr>')
-    print('    <tr>')
-    print('        <th>Status Code</th>')
-    print('    </tr>')
-    print('    <tr>')
-    print('        <td>%s</td>' % result['status'])
-    print('    </tr>')
+    print('<tr>') 
+    print('<td>Response Time</td>')
+    print('<td>%s</td>' % result['time'])
+    print('</tr>')
+
+    print('<tr>')
+    print('<td>Status Code</td>')
+    print('<td>%s</td>' % result['status'])
+    print('</tr>')
+
+    if 'parse' in spec:
+        print('<tr>')
+        print('<td>String Found</td>')
+        print('<td>%s</td>' % result.get('found', False))
+        print('</tr>') 
+
     try:
-        str = spec['parse']
-        print('    <tr>')
-        print('        <th>String found:</th>')
-        print('    </tr>')
-        print('    <tr>')
-        print('         <td>%s</td>' % result['found'])
-        print('    </tr>') 
+       content = result['content']
+       print('<tr>')
+       print('<td>Content</td>')
+       print('<td><pre>\n%s\n</pre>\n</td>' % html.escape(content))
+       print('</tr>') 
     except KeyError:
-        pass
+       pass
+
     print('</table>')
 
 else:
