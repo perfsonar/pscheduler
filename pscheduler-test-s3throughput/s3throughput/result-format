@@ -36,6 +36,12 @@ result = input["result"]
 if format == 'text/plain':
     # Print results of the test here, in plaintext
     print('Time: %s\n' % result['time'])
+    loops = result['iterations']
+    
+    for loop in loops:
+	print("Loop:" + loop + "\n")
+        print("PUT time:" + result['put-time']    
+
    
 elif format == 'text/html':
     # Print results of the test here, in html

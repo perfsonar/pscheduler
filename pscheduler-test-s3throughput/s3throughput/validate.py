@@ -62,9 +62,7 @@ def result_is_valid(json):
         "properties": {
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
-            "put-time":       { "$ref": "#/pScheduler/Duration" },
-            "get-time":       { "$ref": "#/pScheduler/Duration" },
-	    "delete-time":       { "$ref": "#/pScheduler/Duration" },
+	    "loops":       { "$ref": "#/pScheduler/Cardinal" },
 	    "object-count":	{ "$ref": "#/pScheduler/CardinalZero" },
 	    "average-put-time": { "$ref": "#/pScheduler/Cardinal" },
 	    "average-get-time": { "$ref": "#/pScheduler/Cardinal" },
