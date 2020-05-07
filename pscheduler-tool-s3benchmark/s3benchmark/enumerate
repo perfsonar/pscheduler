@@ -14,7 +14,7 @@
     "schema": 1,
 
     "name": "s3benchmark",
-    "description": "EDIT ME",
+    "description": "Tool for measuring perfomance of an S3 web server",
     "version": "1.0",
     "tests": [ "s3throughput" ],
 

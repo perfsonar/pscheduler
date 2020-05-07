@@ -28,6 +28,7 @@ Provides:	%{name} = %{version}-%{release}
 # Include all required libraries here
 Requires:	pscheduler-server
 Requires:	python-pscheduler
+Requires: 	s3-benchmark
 
 BuildRequires:	pscheduler-rpm
 
