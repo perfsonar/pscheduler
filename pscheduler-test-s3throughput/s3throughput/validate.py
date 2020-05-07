@@ -63,7 +63,6 @@ def result_is_valid(json):
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
 	    "loops":       { "$ref": "#/pScheduler/Cardinal" },
-	    "object-count":	{ "$ref": "#/pScheduler/CardinalZero" },
 	    "average-put-time": { "$ref": "#/pScheduler/Cardinal" },
 	    "average-get-time": { "$ref": "#/pScheduler/Cardinal" },
 	    "average-delete-time": { "$ref": "#/pScheduler/Cardinal" }    
@@ -71,10 +70,6 @@ def result_is_valid(json):
         "required": [
             "schema",
             "succeeded",
-            "put-time",
-	    "get-time",
-	    "delete-time",
-	    "object-count",
 	    "average-put-time",
 	    "average-get-time",
 	    "average-delete-time"

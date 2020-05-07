@@ -38,11 +38,20 @@ if format == 'text/plain':
     print('Time: %s\n' % result['time'])
     loops = result['iterations']
     
-    for loop in loops:
-	print("Loop:" + loop + "\n")
-        print("PUT time:" + result['put-time']    
+    for i, loop in enumerate(loops):
+	print("Loop: " + loop + "\n")
+        print("PUT time: " + loop['put-time'] + "\n")
+	print("PUT objects: " + loop['put-objects'] + "\n")
+	print("GET time: " + loop['get-time'] + "\n")
+	print("GET objects: " + loop['get-objects'] + "\n")
+	print("DELETE time: " + loop['delete-time'] + "\n")
+	print("DELETE objects: " + loop['delete-objects'] + "\n")
+    
+    print("Average PUT time: " + result['average-put-time'] + "\n")
+    print("Average GET time: " + result['average-get-time'] + "\n")
+    print("Average DELETE time: " + result['average-delete-time'] + "\n")    
 
-   
+#TODO: HTML formatting   
 elif format == 'text/html':
     # Print results of the test here, in html
     print('<table>')
