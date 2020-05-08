@@ -52,7 +52,7 @@ ls "${USR}" \
     | uniq \
     > "${VERSIONS}"
 
-[ $(wc -l "${VERSIONS}" | awk '{ print $1 }') -eq 2 ] \
+[ $(wc -l "${VERSIONS}" | awk '{ print $1 }') -le 2 ] \
     || die "Can't handle more than two installed versions of PostgreSQL."
 
 
