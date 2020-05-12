@@ -28,7 +28,7 @@ except KeyError:
 if test_type == "disk-to-disk":
     max_schema = 1
 elif test_type == "http":
-    max_schema = 2
+    max_schema = 3
 else:
     pscheduler.succeed_json({
         "can-run": False,

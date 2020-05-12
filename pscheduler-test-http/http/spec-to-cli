@@ -22,6 +22,7 @@ result = pscheduler.speccli_build_args(spec,
                                        strings=[
                                            ( 'host', 'host' ),
                                            ( 'host-node', 'host-node' ),
+                                           ( 'ip-version', 'ip-version' ),
                                            ( 'timeout', 'timeout' ),
                                            ( 'url', 'url' ),
                                            ( 'parse', 'parse' ),

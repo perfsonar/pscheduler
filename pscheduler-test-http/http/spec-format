@@ -29,6 +29,7 @@ if format == 'text/plain':
 Host ...................... {.section host}{host}{.or}Not Specified{.end}
 Host Node ................. {.section host-node}{host_node}{.or}Not Specified{.end}
 Timeout ................... {.section timeout}{timeout}{.or}Not Specified{.end}
+IP Version................. {.section ip-version}{ip-version}{.or}Not Specified{.end}
 URL ....................... {.section url}{url}{.or}Not Specified{.end}
 Parse ..................... {.section parse}{parse}{.or}Not Specified{.end}
 Always Succeed ............ {.section always-succeed}%s{.or}Not Specified{.end}
@@ -42,6 +43,7 @@ elif format == 'text/html':
 <tr><td>Host</td><td>{.section host}{host}{.or}Not Specified{.end}</td></tr>
 <tr><td>Host Node</td><td>{.section host-node}{host_node}{.or}Not Specified{.end}</td></tr>
 <tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
+<tr><td>IP Version</td><td>{.section ip-version}{ip-version}{.or}Not Specified{.end}</td></tr>
 <tr><td>URL</td><td>{.section url}{url}{.or}Not Specified{.end}</td></tr>
 <tr><td>Parse</td><td>{.section parse}{parse}{.or}Not Specified{.end}</td></tr>
 <tr><td>Always Succeed</td><td>{.section always-succeed}%s{.or}Not Specified{.end}</td></tr>

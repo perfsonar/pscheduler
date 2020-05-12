@@ -61,6 +61,11 @@ opt_parser.add_option("--host-node",
                       action="store", type="string",
                       dest="host_node")
 
+opt_parser.add_option("--ip-version",
+                      help="Specificy which IP version to use, 4 or 6",
+                      action="store", type="int",
+                      dest="ip_version")
+
 opt_parser.add_option("--always-succeed",
                       help="Treat HTTP failures as successes, regardless of response code",
                       action="store_true",
@@ -89,6 +94,9 @@ if options.host is not None:
     result['host'] = options.host
 if options.host_node is not None:
     result['host-node'] = options.host_node
+if options.ip_version is not None:
+   result["ip-version"] = options.ip_version
+   schema.set(3)
 if options.url is not None:
     result['url'] = options.url
 if options.parse is not None:
