@@ -18,6 +18,7 @@ def run(input):
         always_succeed = input['test']['spec'].get('always-succeed', False)
         keep_content = input['test']['spec'].get('keep-content', None)
         timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
+        ip_version = input['test']['spec'].get('ip-version', None)
         timeout = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(timeout_iso))
     except KeyError as ex:
         return({
@@ -58,6 +59,11 @@ def run(input):
 
     curl.setopt(pycurl.SSL_VERIFYHOST, False)
     curl.setopt(pycurl.SSL_VERIFYPEER, False)
+
+    if ip_version is not None:
+        curl.setopt(pycurl.IPRESOLVE,
+                    pycurl.IPRESOLVE_V4 if ip_version == 4 else pycurl.IPRESOLVE_V6
+        )
 
     buf = io.BytesIO()
     curl.setopt(pycurl.WRITEFUNCTION, buf.write)

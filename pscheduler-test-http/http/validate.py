@@ -7,7 +7,7 @@
 from pscheduler import json_validate
 from pscheduler import json_check_schema
 
-MAX_SCHEMA = 2
+MAX_SCHEMA = 3
 
 SPEC_SCHEMA = {
     "local": {
@@ -32,6 +32,23 @@ SPEC_SCHEMA = {
                 "schema":       { "type": "integer", "enum": [ 2 ] },
                 "host":         { "$ref": "#/pScheduler/Host" },
                 "host-node":    { "$ref": "#/pScheduler/Host" },
+                "url":          { "$ref": "#/pScheduler/URL" },
+                "parse":        { "$ref": "#/pScheduler/String" },
+                "timeout":      { "$ref": "#/pScheduler/Duration" },
+                "always-succeed":  { "$ref": "#/pScheduler/Boolean" },
+                "keep-content": { "$ref": "#/pScheduler/CardinalZero" }
+            },
+            "required": [ "schema", "url" ],
+            "additionalProperties": False
+        },
+
+        "v3" : {
+            "type": "object",
+            "properties": {
+                "schema":       { "type": "integer", "enum": [ 3 ] },
+                "host":         { "$ref": "#/pScheduler/Host" },
+                "host-node":    { "$ref": "#/pScheduler/Host" },
+                "ip-version":   { "$ref": "#/pScheduler/ip-version" },
                 "url":          { "$ref": "#/pScheduler/URL" },
                 "parse":        { "$ref": "#/pScheduler/String" },
                 "timeout":      { "$ref": "#/pScheduler/Duration" },
