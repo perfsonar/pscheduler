@@ -6,6 +6,7 @@ import pscheduler
 from powstream_defaults import *
 import configparser
 import datetime
+import errno
 import os
 import re
 import shutil
@@ -42,11 +43,12 @@ def cleanup_dir(tmpdir, keep_data_files=False, ignore_errors=False):
     try:
         shutil.rmtree(tmpdir, ignore_errors=ignore_errors)
     except OSError as oe:
-        error = ""
-        if oe.errno: error = "%s: " % oe.errno
-        if oe.strerror: error += oe.strerror
-        if oe.filename: error += " (filename: %s)" % oe.filename
-        log.warning("Unable to remove powstream temporary directory %s due to error reported by OS: %s" % (tmpdir, error))
+        if oe.errno != errno.ENOENT:
+            error = ""
+            if oe.errno: error = "%s: " % oe.errno
+            if oe.strerror: error += oe.strerror
+            if oe.filename: error += " (filename: %s)" % oe.filename
+            log.warning("Unable to remove powstream temporary directory %s due to error reported by OS: %s" % (tmpdir, error))
     except:
         log.warning("Unable to remove powstream temporary directory %s: %s" % (tmpdir, sys.exc_info()[0]))
 

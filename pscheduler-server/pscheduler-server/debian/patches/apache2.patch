@@ -1,6 +1,6 @@
---- a/api-server/pscheduler-api-server.conf.raw	2020-03-25 15:36:35.330954560 -0400
-+++ b/api-server/pscheduler-api-server.conf.raw	2020-03-25 15:37:12.041720530 -0400
-@@ -26,7 +26,13 @@
+--- pscheduler-server.orig/api-server/pscheduler-api-server.conf.raw	2020-04-27 23:13:14.086176936 +0000
++++ pscheduler-server/api-server/pscheduler-api-server.conf.raw	2020-04-27 23:13:45.002506389 +0000
+@@ -27,7 +27,13 @@
      WSGIProcessGroup __USER_NAME__
      WSGIApplicationGroup __USER_NAME__
  

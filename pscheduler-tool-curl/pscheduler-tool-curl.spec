@@ -44,6 +44,7 @@ curl tool class for pScheduler
 %build
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
+     PYTHON=%{_pscheduler_python} \
      install
 
 %post

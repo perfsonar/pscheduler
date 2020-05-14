@@ -29,6 +29,7 @@ Requires:       %{_pscheduler_python}-setuptools
 
 BuildRequires:  %{_pscheduler_python}
 BuildRequires:  %{_pscheduler_python}-setuptools
+BuildRequires:  %{_pscheduler_python_epel}-setuptools_scm
 
 %description
 JSON Schema library for Python
