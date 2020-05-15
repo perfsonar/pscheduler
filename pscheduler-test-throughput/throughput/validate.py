@@ -118,13 +118,6 @@ SPEC_SCHEMA = {
                 "schema",
                 "dest"
             ]
-        },
-        "throughput": {
-            "anyOf" : [
-                { "$ref": "#/local/throughput_v1" },
-                { "$ref": "#/local/throughput_v2" },
-                { "$ref": "#/local/throughput_v3" }
-            ]
         }
     }
 

@@ -13,11 +13,13 @@ except ValueError as ex:
         "error": str(ex)
         })
 
-data_validator = {
+MAX_SCHEMA = 2
+
+SPEC_SCHEMA = {
 
     "local": {
 
-        "FailerArchiveSpecification_V1": {
+        "v1": {
             "type": "object",
             "properties": {
                 "schema": {" type": "integer", "enum": [ 1 ] },
@@ -28,7 +30,7 @@ data_validator = {
             "additionalProperties": False
         },
 
-        "FailerArchiveSpecification_V2": {
+        "v2": {
             "type": "object",
             "properties": {
                 "schema": {" type": "integer", "enum": [ 2 ] },
@@ -42,21 +44,34 @@ data_validator = {
                 "schema"
             ],
             "additionalProperties": False
-        },
-
-        "FailerArchiveSpecification": {
-            "anyOf": [
-                { "$ref": "#/local/FailerArchiveSpecification_V1" },
-                { "$ref": "#/local/FailerArchiveSpecification_V2" }
-            ]
         }
-    },
 
-    "$ref": "#/local/FailerArchiveSpecification"
-
+    }
 }
 
-valid, error = pscheduler.json_validate(json, data_validator)
+
+
+try:
+    pscheduler.json_check_schema(json, MAX_SCHEMA)
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+    })
+
+schema = json.get("schema", 1)        
+
+# Build a temporary structure with a reference that points
+# directly at the validator for the specified version of the
+# schema.  Using oneOf or anyOf results in error messages that are
+# difficult to decipher.
+
+temp_schema = {
+    "local": SPEC_SCHEMA["local"],
+    "$ref":"#/local/v%d" % schema
+}
+
+valid, error = pscheduler.json_validate(json, temp_schema)
 
 if not valid:
     pscheduler.succeed_json({
