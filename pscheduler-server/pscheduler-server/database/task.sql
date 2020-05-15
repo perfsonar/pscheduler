@@ -654,6 +654,9 @@ BEGIN
 	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,exclusive}',
             to_jsonb(scheduling.exclusive));
 
+	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,hints}',
+            to_jsonb(NEW.hints));
+
 	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,multi-result}',
             to_jsonb(scheduling.multi_result));
 
