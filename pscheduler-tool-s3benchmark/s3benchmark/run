@@ -22,22 +22,24 @@ input = pscheduler.json_load(exit_on_error=True)
 
 # Take input from test spec
 try:
-    testtype = input['test']['spec']['access-key']['bucket']['secret-key']['url']
+    testtype = input['test']['spec']
 
 except KeyError:
     pscheduler.fail('Missing data in input')
 
 duration = input['test']['spec'].get('duration', 'PT5S')
-duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
+duration = 'PT' + duration + 'S' # makes duration compatible with ISO time standard
+duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) )
+duration_argument = input['test']['spec'].get('duration') # program itself is expecting duration in a different format 
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
-access-key = input['test']['spec'].get('access-key')
+access_key = input['test']['spec'].get('access-key')
 bucket = input['test']['spec'].get('bucket')
-secret-key = input['test']['spec'].get('secret-key')
+secret_key = input['test']['spec'].get('secret-key')
 url = input['test']['spec'].get('url')
 iterations = input['test']['spec'].get('iterations')
 threads = input['test']['spec'].get('threads')
-object-size = input['test']['spec'].get('object-size')
+object_size = input['test']['spec'].get('object-size')
 start_time = datetime.datetime.now()
 succeeded = False
 error = ''
@@ -45,17 +47,36 @@ diags = ''
 
 # Run the actual task here:
 
-if ports  == None:
-    argv = [ 'nmap', '-oG', '-',  '-F', str(ips)]
-    status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
+argv = [
+    's3-benchmark',
+    '-a', access_key,
+    '-s', secret_key,
+    '-b', bucket,
+    '-u', url
+]
+if iterations != None:
+    argv.append('-l')
+    argv.append(str(iterations))
 
-    if status:
-        succeeded = False
-        error = "Error returned: \n%s" % stderr.strip('\n')
-    else:
-        succeeded = True
-        diags = stdout
+if threads != None:
+    argv.append('-t')
+    argv.append(str(threads))
 
+if object_size != None:
+    argv.append('-z')
+    argv.append(str(object_size))
+
+if duration_argument != None:
+    argv.append('-d')
+    argv.append(str(duration_argument)) 
+status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
+
+if status:
+    succeeded = False
+    error = "Error returned: \n%s" % stderr.strip('\n')
+else:
+    succeeded = True
+    diags = stdout
 end_time = datetime.datetime.now()
 
 # Organize results into json data

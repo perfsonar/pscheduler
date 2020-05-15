@@ -22,32 +22,31 @@ def spec_is_valid(json):
             # Local data types such as this can be defined within this file,
             # but are not necessary
             },
-            "Spec": {
-                "type": "object",
-                # schema, host, host-node, and timeout are standard,
-                # and should be included
-                "properties": {
-                    "schema":       { "$ref": "#/pScheduler/Cardinal" },
-                    "host":         { "$ref": "#/pScheduler/Host" },
-                    "host-node":    { "$ref": "#/pScheduler/Host" },
-                    "duration":     { "$ref": "#/pScheduler/Duration" },
-                    "timeout":      { "$ref": "#/pScheduler/Duration" },
-		    "access-key":   { "$ref": "#/pScheduler/String" },
-		    "bucket":       { "$ref": "#/pScheduler/String" },
-		    "secret-key":   { "$ref": "#/pScheduler/String" },
-		    "url":	    { "$ref": "#/pScheduler/String" },
-		    "iterations":   { "$ref": "#/pScheduler/Cardinal" },
-		    "threads":      { "$ref": "#/pScheduler/Cardinal" },
-		    "object-size":  { "$ref": "#/pScheduler/String" }
-                },
-                # If listed here, data of this type MUST be in the test spec
-                "required": [
-                    "access-key",
-		    "bucket",
-		    "secret-key",
-		    "url"
-                    ],
-            }
+        "Spec": {
+            "type": "object",
+            # schema, host, host-node, and timeout are standard,
+            # and should be included
+            "properties": {
+                "schema":       { "$ref": "#/pScheduler/Cardinal" },
+                "host":         { "$ref": "#/pScheduler/Host" },
+                "host-node":    { "$ref": "#/pScheduler/Host" },
+                "duration":     { "$ref": "#/pScheduler/Duration" },
+                "timeout":      { "$ref": "#/pScheduler/Duration" },
+		"access-key":   { "$ref": "#/pScheduler/String" },
+	        "bucket":       { "$ref": "#/pScheduler/String" },
+             	"secret-key":   { "$ref": "#/pScheduler/String" },
+	        "url":	        { "$ref": "#/pScheduler/String" },
+		"iterations":   { "$ref": "#/pScheduler/Cardinal" },
+		"threads":      { "$ref": "#/pScheduler/Cardinal" },
+		"object-size":  { "$ref": "#/pScheduler/String" }
+            },
+            # If listed here, data of this type MUST be in the test spec
+            "required": [
+                "access-key",
+		"bucket",
+		"secret-key",
+                "url"
+            ],
         },
         # Set to false if ONLY required options should be used
         "additionalProperties": True
