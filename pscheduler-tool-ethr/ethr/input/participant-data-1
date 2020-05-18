@@ -1,0 +1,11 @@
+{
+    "participant": 1,
+    "test": {
+        "type": "throughput",
+	"spec": {
+	    "dest": "psdev2",
+	    "duration": "PT5S",
+	    "schema": 1
+	}
+    }
+}

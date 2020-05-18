@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #4:
+#
+# Determine the duration of a specified test.
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+
+logger = pscheduler.Log(prefix='tool-ethr', quiet=True)
+
+json = pscheduler.json_load(exit_on_error=True)
+
+
+# Duration: How long the test should run
+
+# TODO: Need to make a better study of this.
+
+duration = json.get('duration', None)
+if duration:
+    delta = pscheduler.iso8601_as_timedelta(duration)
+    duration = int(pscheduler.timedelta_as_seconds(delta))
+else:
+    # TODO: This should be a default
+    duration = 20
+
+
+omit_delta = pscheduler.iso8601_as_timedelta(json.get("omit", "P0D"))
+omit = int(pscheduler.timedelta_as_seconds(omit_delta))
+
+
+# TODO: The 3 should be a default like it is for iperf*
+full_duration = duration + omit + 3 + 2
+logger.debug("final duration = %ss" % (full_duration))
+
+
+pscheduler.succeed_json({
+        "duration": 'PT%dS' % (full_duration)
+})
