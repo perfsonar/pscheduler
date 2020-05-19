@@ -8,6 +8,7 @@ import datetime
 import errno
 import multiprocessing
 import optparse
+import os
 import pscheduler
 import psycopg2
 import psycopg2.extensions
@@ -15,6 +16,7 @@ import psycopg2.pool
 import select
 import signal
 import socket
+import tempfile
 import threading
 import time
 
@@ -58,7 +60,6 @@ opt_parser.add_option("--terse-logging",
                       action="store_true",
                       dest="terse",
                       default=False)
-
 
 
 opt_parser.add_option("--verbose", action="store_true", dest="verbose", default=False)
@@ -288,13 +289,17 @@ class RunWorker(object):
         self.log.debug("%d: Thread running", self.id)
         run_dict.start(self.id, self)
         try:
-            self.__run()
+            with tempfile.TemporaryDirectory() as self.temp:
+                self.log.debug("%d: Temp space in %s", self.id, self.temp)
+                self.__run()
+            self.temp = None
         except Exception as ex:
             # Don't worry about the result here.  If __run() failed to
             # post anything, that will be the end of it.  If it did,
             # it might be salvageable.
             self.log.debug("%d: Exception: %s", self.id, ex)
             log.exception()
+
         self.log.debug("%d: Thread finished", self.id)
         run_dict.finish(self.id)
 
@@ -488,12 +493,14 @@ class RunWorker(object):
             returncode, stdout, stderr = pscheduler.run_program(
                 run_args,
                 stdin=tool_input,
+                env_add={ "TMPDIR": self.temp },
                 timeout=pscheduler.timedelta_as_seconds(end - start) + 1,
                 line_call=lambda l: self.__accumulate_output(l))
 
         else:
 
             returncode, stdout, stderr = context_runner.run(
+                env_add={ "TMPDIR": self.temp },
                 timeout=pscheduler.timedelta_as_seconds(end - start) + 1,
                 line_call=lambda l: self.__accumulate_output(l)
             )
@@ -954,3 +961,5 @@ if options.daemon:
         pscheduler.safe_run(lambda: main_program())
 else:
     pscheduler.safe_run(lambda: main_program())
+
+
