@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  pscheduler_build:
+    image: perfsonar/pscheduler-build:latest
+    build:
+        context: .
+        dockerfile: Dockerfile
+    tmpfs: 
+       - /run
+       - /tmp
+    volumes:
+       - .:/app
+       - /sys/fs/cgroup:/sys/fs/cgroup:ro
