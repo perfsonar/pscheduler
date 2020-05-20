@@ -6,7 +6,6 @@
 #   COMMANDDIR - Location for installed programs
 #   DAEMONDIR - Where daemon programs should be installed
 #   DSNFILE - Location of DSN file for database logins
-#   INITDDIR - Location for installed init scripts (/etc/rc.d/init.d)
 #   UNITDIR - Location for installed systemd units
 #   PGPASSFILE - Path to PostgreSQL password file
 #   PGSERVICE - Name of the PostgreSQL systemd service
@@ -252,6 +251,10 @@ ifndef DAEMONDIR
 	@echo No DAEMONDIR specified for installation
 	@false
 endif
+ifndef UNITDIR
+	@echo No UNITDIR specified for installation
+	@false
+endif
 	mkdir -p $(CONFIGDIR)
 	cp -f $(CONFIGS) $(CONFIGDIR)
 	chmod 600 $(CONFIGS:%=$(CONFIGDIR)/%)
@@ -261,16 +264,6 @@ endif
 	mkdir -p $(DAEMONDIR)
 	cp -f $(DAEMONS) $(DAEMONDIR)
 	chmod 555 $(DAEMONS:%=$(DAEMONDIR)/%)
-ifdef INITDDIR
-	mkdir -p $(INITDDIR)
-	@for SCRIPT in $(DAEMONS) ; \
-	do \
-		echo "Installing init.d for $${SCRIPT}" ; \
-		cp -f init.d-$${SCRIPT} $(INITDDIR)/pscheduler-$${SCRIPT} ; \
-		chmod 555 $(INITDDIR)/pscheduler-$${SCRIPT} ; \
-	done
-endif
-ifdef UNITDIR
 	mkdir -p $(UNITDIR)
 	@for SCRIPT in $(DAEMONS) ; \
 	do \
@@ -278,7 +271,6 @@ ifdef UNITDIR
 		cp -f service-$${SCRIPT} $(UNITDIR)/pscheduler-$${SCRIPT}.service ; \
 		chmod 444 $(UNITDIR)/pscheduler-$${SCRIPT}.service ; \
 	done
-endif
 
 
 clean:
