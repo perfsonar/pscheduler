@@ -56,10 +56,8 @@ class TestJQFilter(PschedTestBase):
 
     def test_wrong_type(self):
         """Test a wrongly-typed filter"""
-        # This didn't work on 2.6
-        if sys.hexversion >= 0x2070000:
-            with self.assertRaises(ValueError):
-                f = JQFilter(1234)
+        with self.assertRaises(ValueError):
+            f = JQFilter(1234)
 
 
     def test_bad_syntax(self):

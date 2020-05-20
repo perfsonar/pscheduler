@@ -20,9 +20,6 @@ import tempfile
 import threading
 import time
 
-# See Python 2.6 workaround below
-import weakref
-
 
 pscheduler.set_graceful_exit()
 
@@ -146,11 +143,6 @@ def clock_survey(hosts, bind=None):
     # Prime the result with empties for anything that didn't get
     # tested.
     result = [None] * len(hosts)
-
-    # Work around a bug in 2.6
-    # TODO: Get rid of this when 2.6 is no longer in the picture.
-    if not hasattr(threading.current_thread(), "_children"):
-        threading.current_thread()._children = weakref.WeakKeyDictionary()
 
     # Run the lot of tests in parallel
     pool = multiprocessing.pool.ThreadPool(processes=len(host_args))
