@@ -9,5 +9,4 @@ services:
        - /run
        - /tmp
     volumes:
-       - .:/app
        - /sys/fs/cgroup:/sys/fs/cgroup:ro
