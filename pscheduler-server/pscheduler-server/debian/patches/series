@@ -1,5 +1,4 @@
 apache2.patch
-init.patch
 warmboot.patch
 reset.patch
 backup.patch
