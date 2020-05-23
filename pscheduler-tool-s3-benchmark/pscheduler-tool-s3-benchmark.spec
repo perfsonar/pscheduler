@@ -1,5 +1,5 @@
 #
-# RPM Spec for pScheduler s3benchmark Tool
+# RPM Spec for pScheduler s3-benchmark Tool
 #
 
 #
@@ -8,7 +8,7 @@
 # This file is significant for buildling the tool into pScheduler.
 # If additional libraries or parts of pScheduler are required,
 # they should be added here (line 25).
-%define short	s3benchmark
+%define short	s3-benchmark
 %define perfsonar_auto_version 4.3.0
 %define perfsonar_auto_relnum 0.a0.0
 
@@ -16,7 +16,7 @@ Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
 Release:	%{perfsonar_auto_relnum}%{?dist}
 
-Summary:	s3benchmark tool class for pScheduler
+Summary:	s3-benchmark tool class for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0
 Group:		Unspecified
@@ -33,7 +33,7 @@ Requires: 	s3-benchmark
 BuildRequires:	pscheduler-rpm
 
 %description
-s3benchmark tool class for pScheduler
+s3-benchmark tool class for pScheduler
 
 %prep
 %setup -q -n %{short}-%{version}

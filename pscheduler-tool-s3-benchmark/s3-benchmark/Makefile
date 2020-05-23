@@ -2,7 +2,7 @@
 # Makefile for any tool class
 #
 
-NAME=s3benchmark
+NAME=s3-benchmark
 
 FILES=\
 	can-run \
