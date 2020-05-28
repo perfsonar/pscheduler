@@ -79,6 +79,46 @@ else:
     diags = stdout
 end_time = datetime.datetime.now()
 
+start_line = ""
+
+for line in diags.split(','):
+    if "url" in line:
+        continue
+    if "bucket" in line:
+        continue
+    if "region" in line:
+        continue
+    if "duration" in line:
+        continue
+    if "threads" in line:
+        continue
+    if "loops" in line:
+        continue
+    if "size" in line:
+        start_line = line
+        break
+
+loops = []
+start = False
+for line in diags.split(','):
+    beginning = False
+    while start == False:
+        if line == start_line:
+            start = True
+        beginning = True
+
+    if beginning == True:
+        continue
+
+    for iteration in range(iterations):
+        loop = []
+        if "Slowdowns" in line:
+            stats = line.partition('\n')[2]
+            print(stats) 
+        else :
+            continue        
+        
+
 # Organize results into json data
 results = {
     'succeeded': succeeded,
@@ -91,4 +131,3 @@ results = {
     'diags': diags }
 
 pscheduler.succeed_json(results)
-
