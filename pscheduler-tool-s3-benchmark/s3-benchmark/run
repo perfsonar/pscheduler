@@ -97,26 +97,41 @@ for line in diags.split(','):
     if "size" in line:
         start_line = line
         break
-
-loops = []
+loops = [None] * iterations
 start = False
+loop_counter = 0
+useful = False
 for line in diags.split(','):
+    '''
     beginning = False
-    while start == False:
+    if start == False:
         if line == start_line:
             start = True
-        beginning = True
+            beginning = False
+        else:
+            beginning = True
 
     if beginning == True:
         continue
-
-    for iteration in range(iterations):
-        loop = []
+    '''
+    if "Loop" in line:
+        output = line.partition('\n')[2]
+        print(output)
+        count_string = output.partition(':')[0]
+        loop_counter  = int(count_string.partition(" ")[2])
+        loop_counter -= 1
+        print(loop_counter)
+        loops[loop_counter] = [output]
+        useful = True
+    elif useful == True:
         if "Slowdowns" in line:
-            stats = line.partition('\n')[2]
-            print(stats) 
-        else :
-            continue        
+            output = line.partition('.')[0]
+            loops[loop_counter].append(output)
+            useful = False
+        else:
+            loops[loop_counter].append(line)
+    else:
+        continue        
         
 
 # Organize results into json data
@@ -128,6 +143,7 @@ results = {
         'succeeded': succeeded
     },
     'error': error,
-    'diags': diags }
+    'diags': diags,
+    'loops': loops }
 
 pscheduler.succeed_json(results)
