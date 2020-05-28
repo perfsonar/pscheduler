@@ -97,7 +97,7 @@ for line in diags.split(','):
     if "size" in line:
         start_line = line
         break
-loops = [None] * iterations
+loops = [[None]] * iterations
 start = False
 loop_counter = 0
 useful = False
@@ -121,7 +121,7 @@ for line in diags.split(','):
         loop_counter  = int(count_string.partition(" ")[2])
         loop_counter -= 1
         print(loop_counter)
-        loops[loop_counter] = [output]
+        loops[loop_counter].append(output)
         useful = True
     elif useful == True:
         if "Slowdowns" in line:
@@ -129,6 +129,7 @@ for line in diags.split(','):
             loops[loop_counter].append(output)
             useful = False
         else:
+            print(line)
             loops[loop_counter].append(line)
     else:
         continue        
