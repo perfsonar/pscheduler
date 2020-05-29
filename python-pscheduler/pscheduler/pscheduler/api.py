@@ -83,27 +83,11 @@ def api_host_port(hostport):
     if hostport is None:
         return (None, None)
     formatted_host = __host_per_rfc_2732(hostport)
-    try:
-        parsed=urllib.parse.urlparse("bogus://%s" % (formatted_host))
-        if parsed.port is None: pass #simple test to trigger an error from urlparse on CentOS 6
-    except ValueError as ve:
-        #TODO: can remove this once we drop CentOS 6
-        #python 2.6 urlparse does not properly handle bracketed IPv6, so we do that here
-        if "]:" in formatted_host:
-            formatted_host = formatted_host.replace("[", "")
-            parts = formatted_host.split(']:')
-            if len(parts) != 2:
-                raise ve
-            #convert to int, will raise exception if invalid
-            parts[1] = int(parts[1])
-            return tuple(parts)
-        elif formatted_host.endswith(']'):
-            return formatted_host.replace('[',"").replace(']',""), None
-        else:
-            raise ve
-        
+    # The "bogus" is to make it look like a real, parseable URL.
+    parsed=urllib.parse.urlparse("bogus://%s" % (formatted_host))        
     return (None if parsed.hostname == "none" else parsed.hostname,
             parsed.port)
+
 
 
 def api_url_hostport(hostport=None,
@@ -210,11 +194,6 @@ def api_ping_list(hosts, bind=None, timeout=None, threads=10):
     if len(hosts) == 0:
         return {}
 
-    # Work around a bug in 2.6
-    # TODO: Get rid of this when 2.6 is no longer in the picture.
-    if not hasattr(threading.current_thread(), "_children"):
-        threading.current_thread()._children = weakref.WeakKeyDictionary()
-
     pool = multiprocessing.dummy.Pool(processes=min(len(hosts), threads))
 
     pool_args = [(host, timeout) for host in hosts]
@@ -298,3 +277,5 @@ if __name__ == "__main__":
     print()
 
     print(api_ping())
+
+    print(api_host_port("bogus://"))

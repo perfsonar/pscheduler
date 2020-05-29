@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+#
+# Return participant-specific data for a run
+#
+
+import multiprocessing
+import pscheduler
+import random
+import sys
+
+json = pscheduler.json_load(exit_on_error=True)
+result = {}
+
+try:
+    participant = json['participant']
+except KeyError:
+    pscheduler.fail("Missing participant")
+
+
+# All participants record this.
+result["cores"] = multiprocessing.cpu_count()
+
+
+if participant == 0:
+
+    # Nothing else interesting for sender
+    pass
+
+elif participant == 1:
+
+    # Server has to figure out what port it's going
+    # to listen on, client will need this to figure out
+    # where to connect
+    result["server-port"] = 5201
+
+else:
+
+    pscheduler.fail("Invalid participant number for this test")
+
+
+
+pscheduler.succeed_json(result)

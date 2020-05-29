@@ -79,10 +79,6 @@ hosts = [
     for host in [ source, dest ]
     ]
 
-# Work around a bug in 2.6
-# TODO: Get rid of this when 2.6 is no longer in the picture.
-if not hasattr(threading.current_thread(), "_children"):
-    threading.current_thread()._children = weakref.WeakKeyDictionary()
 
 pool = multiprocessing.dummy.Pool(processes=len(hosts))
 results = pool.map(time_check, hosts)

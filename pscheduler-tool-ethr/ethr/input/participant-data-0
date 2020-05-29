@@ -1,0 +1,10 @@
+{
+    "participant": 0,
+    "test": {
+        "type": "throughput",
+	"spec": {
+	    "dest": "psdev2",
+	    "schema": 1
+	}
+    }
+}

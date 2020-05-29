@@ -88,6 +88,7 @@ httpd-wsgi-socket
 # Utility and Tool programs
 #
 drop-in
+ethr
 paris-traceroute
 random-string
 
@@ -133,6 +134,7 @@ pscheduler-tool-bwctltracepath		--bundle obsolete
 pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl			--bundle extras
 pscheduler-tool-dnspy
+pscheduler-tool-ethr
 pscheduler-tool-globus			--bundle extras
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3

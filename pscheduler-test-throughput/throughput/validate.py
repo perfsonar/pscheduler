@@ -140,6 +140,10 @@ RESULT_SCHEMA = {
                     "description": "Summarized view of the overall sender throughput rate in bytes/second",
                     "type": "number"
                     },
+                "receiver-throughput-bits": {
+                    "description": "Summarized view of the overall sender throughput rate in bits/second",
+                    "type": "number"
+                    },
                 "sent": {
                     "description": "Number of packets sent",
                     "type": ["integer", "null"]

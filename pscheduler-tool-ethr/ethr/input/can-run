@@ -1,0 +1,8 @@
+{
+  "spec": {
+    "dest": "psdev2",
+    "duration": "PT5S",
+    "schema": 1
+  },
+  "type": "throughput"
+}
