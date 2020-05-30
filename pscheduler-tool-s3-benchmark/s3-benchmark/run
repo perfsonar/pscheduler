@@ -137,8 +137,8 @@ for loop in loops:
     loop_num_str = loop[1].partition(':')[0]
     loop_num = int(loop_num_str.partition(" ")[2])
     new_loop.append(loop_num)
-    put_time = loop[1].partition("time")[2]
-    loops[loop_num - 1].append(put_time)
+    put_time = loop[1].partition("time")[2][1:]
+    new_loop.append(put_time)
     loops[loop_num - 1] = new_loop   
 
 # Organize results into json data
