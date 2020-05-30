@@ -116,16 +116,14 @@ for line in diags.split(','):
     '''
     if "Loop" in line:
         output = line.partition('\n')[2]
-        print(output)
         count_string = output.partition(':')[0]
         loop_counter  = int(count_string.partition(" ")[2])
         loop_counter -= 1
-        print(loop_counter)
         loops[loop_counter].append(output)
         useful = True
     elif useful == True:
         if "Slowdowns" in line:
-            output = line.partition('.')[0]
+            output = line.partition('sec.')[0]
             loops[loop_counter].append(output)
             useful = False
         else:
@@ -133,7 +131,15 @@ for line in diags.split(','):
             loops[loop_counter].append(line)
     else:
         continue        
-        
+
+for loop in loops:
+    new_loop = []
+    loop_num_str = loop[1].partition(':')[0]
+    loop_num = int(loop_num_str.partition(" ")[2])
+    new_loop.append(loop_num)
+    put_time = loop[1].partition("time")[2]
+    loops[loop_num - 1].append(put_time)
+    loops[loop_num - 1] = new_loop   
 
 # Organize results into json data
 results = {
