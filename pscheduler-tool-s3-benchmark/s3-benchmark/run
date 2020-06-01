@@ -145,6 +145,18 @@ for loop in loops:
     new_loop.append(speed)
     operations = loop[4].strip().partition("operations")[0].strip()
     new_loop.append(operations)
+    get_time = loop[5].partition("time")[2][1:]
+    new_loop.append(get_time)
+    objects = loop[6].partition('=')[2][1:]
+    new_loop.append(objects)
+    speed = loop[7].partition('=')[2][1:]
+    new_loop.append(speed)
+    operations = loop[8].strip().partition("operations")[0].strip()
+    new_loop.append(operations)
+    delete_time = loop[9].partition("time")[2][1:]
+    new_loop.append(delete_time)
+    deletes = loop[10].strip().partition("deletes")[0].strip()
+    new_loop.append(deletes)
     loops[loop_num - 1] = new_loop   
 
 # Organize results into json data
