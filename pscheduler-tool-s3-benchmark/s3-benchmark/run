@@ -139,6 +139,12 @@ for loop in loops:
     new_loop.append(loop_num)
     put_time = loop[1].partition("time")[2][1:]
     new_loop.append(put_time)
+    objects = loop[2].partition('=')[2][1:]
+    new_loop.append(objects)
+    speed = loop[3].partition('=')[2][1:]
+    new_loop.append(speed)
+    operations = loop[4].strip().partition("operations")[0].strip()
+    new_loop.append(operations)
     loops[loop_num - 1] = new_loop   
 
 # Organize results into json data
