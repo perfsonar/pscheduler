@@ -109,15 +109,14 @@ end = False
 for line in diags.split(','):
     if "Loop" in line:
         output = line.partition('\n')[2]
-        count_string = output.partition(':')[0]
-        loop_counter  = int(count_string.partition(" ")[2])
+        #count_string = output.partition(':')[0]
+        #loop_counter  = int(count_string.partition(" ")[2])
         loops[loop_counter].append(output)
         #print(loops[loop_counter])
         useful = True
         #loops[loop_counter] = loop_counter
         if "DELETE" in line:
             end = True
-            loop_counter += 1
     elif useful == True:
         if "Slowdowns" in line:
             output = line.partition('sec.')[0]
