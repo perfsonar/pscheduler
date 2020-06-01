@@ -97,48 +97,47 @@ for line in diags.split(','):
     if "size" in line:
         start_line = line
         break
-loops = [[None]] * iterations
+#loops = [[None]] * iterations
 start = False
 loop_counter = 0
+loops = []
+for i in range(iterations):
+    loop = [i+1]
+    loops.append(loop)
 useful = False
+end = False
 for line in diags.split(','):
-    '''
-    beginning = False
-    if start == False:
-        if line == start_line:
-            start = True
-            beginning = False
-        else:
-            beginning = True
-
-    if beginning == True:
-        continue
-    '''
     if "Loop" in line:
         output = line.partition('\n')[2]
         count_string = output.partition(':')[0]
         loop_counter  = int(count_string.partition(" ")[2])
-        loop_counter -= 1
         loops[loop_counter].append(output)
+        #print(loops[loop_counter])
         useful = True
+        #loops[loop_counter] = loop_counter
+        if "DELETE" in line:
+            end = True
+            loop_counter += 1
     elif useful == True:
         if "Slowdowns" in line:
             output = line.partition('sec.')[0]
             loops[loop_counter].append(output)
             useful = False
+            if end == True:
+                loop_counter += 1
+                end = False
         else:
-            print(line)
             loops[loop_counter].append(line)
     else:
         continue        
-
-for loop in loops:
+for i, loop in enumerate(loops):
     new_loop = []
     loop_num_str = loop[1].partition(':')[0]
     loop_num = int(loop_num_str.partition(" ")[2])
     new_loop.append(loop_num)
     put_time = loop[1].partition("time")[2][1:]
     new_loop.append(put_time)
+    print(loop)
     objects = loop[2].partition('=')[2][1:]
     new_loop.append(objects)
     speed = loop[3].partition('=')[2][1:]
