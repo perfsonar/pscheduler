@@ -375,6 +375,7 @@ DECLARE
     time_range TSTZRANGE;
     last_end TIMESTAMP WITH TIME ZONE;
     run_record RECORD;
+    use_priority INTEGER;
 BEGIN
 
     -- Validate the input
@@ -438,6 +439,25 @@ BEGIN
     last_end := range_start;
 
 
+    -- Figure out what priority will be used.
+
+    -- TODO: This and code in run.sql (~line 975) are almost close
+    -- enough to merit writing a function to do this.
+
+    use_priority := proposed_priority;
+    IF use_priority IS NOT NULL
+    THEN
+        IF taskrec.priority IS NOT NULL
+	THEN
+	    -- No priority for the task means no priority for the run.
+	    use_priority := NULL;
+	ELSE	
+	    -- Don't exceed the prioirity assigned to the task.
+	    use_priority := LEAST(use_priority, taskrec.priority);
+	END IF;
+    END IF;
+
+
     -- Sift through everything on the timeline that overlaps with the
     -- time range and find the gaps.  Other than non-starters, the
     -- runs we care about avoiding are represented by this truth
@@ -464,7 +484,7 @@ BEGIN
             -- Overlap
 	    times && time_range
 	    -- Higher priority than proposed or already running
-	    AND ( run.priority >= proposed_priority
+	    AND ( run.priority >= use_priority
 	          OR run.state = run_state_running() )
             -- Ignore non-starters
             AND state <> run_state_nonstart()

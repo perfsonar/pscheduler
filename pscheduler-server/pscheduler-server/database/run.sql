@@ -929,7 +929,7 @@ CREATE OR REPLACE FUNCTION api_run_post(
     start_time TIMESTAMP WITH TIME ZONE,
     run_uuid UUID,  -- NULL to assign one
     nonstart_reason TEXT = NULL,
-    priority INTEGER = NULL,
+    proposed_priority INTEGER = NULL,
     limit_diags TEXT = NULL
 )
 RETURNS TABLE (
@@ -945,6 +945,7 @@ DECLARE
     initial_state INTEGER;
     initial_status INTEGER;
     exception_text TEXT;
+    run_priority INTEGER;
 BEGIN
 
     SELECT INTO task * FROM task WHERE uuid = task_uuid;
@@ -971,13 +972,22 @@ BEGIN
     start_time := normalized_time(start_time);
     time_range := tstzrange(start_time, start_time + task.duration, '[)');
 
+    -- Set priority according to what was requested
+
+    IF proposed_priority is NULL
+    THEN
+        run_priority = task.priority;
+    ELSE
+        run_priority := LEAST(task.priority, run_priority);
+    END IF;
+
     BEGIN
 
         WITH inserted_row AS (
             INSERT INTO run (uuid, task, times, state,
                 errors, priority, limit_diags)
             VALUES (run_uuid, task.id, time_range, initial_state,
-	        nonstart_reason, priority, limit_diags)
+	        nonstart_reason, run_priority, limit_diags)
             RETURNING *
         ) SELECT INTO run_uuid uuid FROM inserted_row;
 
