@@ -199,7 +199,7 @@ if options.wait is not None:
    result['wait'] = options.wait
 
 if options.sendwait is not None:
-   result['send-wait'] = options.sendwait
+   result['sendwait'] = options.sendwait
 
 if options.ip_tos is not None:
    result['ip-tos'] = options.ip_tos
