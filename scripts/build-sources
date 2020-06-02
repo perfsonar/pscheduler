@@ -46,7 +46,7 @@ do
 EOF
     
     make -C "${PACKAGE}" srpm | tee -a "${BUILD_LOG}"
-    SRPM=$(echo ${PACKAGE}/${PACKAGE}-*.src.rpm)
+    SRPM=$(echo ${PACKAGE}/*.src.rpm)
     cp -pf "${SRPM}" "${OUTPUT}"
     echo "$(basename ${SRPM})" >> "${BUILD_LIST}"
     
