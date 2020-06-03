@@ -96,6 +96,11 @@ opt_parser.add_option("--first-ttl",
                       action="store", type="int",
                       dest="firstttl")
 
+opt_parser.add_option("--flow-label",
+                      help="IPv6 flow label (ignored for IPv4)",
+                      action="store", type="int",
+                      dest="flowlabel")
+
 opt_parser.add_option("-s","--source",
                       help="Source address",
                       action="store", type="string",
@@ -153,7 +158,8 @@ if len(remaining_args) != 0:
    pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
 
-result = { 'schema': 1 }
+result = { }
+schema = pscheduler.HighInteger(1)
 
 
 if options.algorithm is not None:
@@ -176,6 +182,10 @@ if options.fragment:
 
 if options.firstttl is not None:
    result['first-ttl'] = options.firstttl
+
+if options.flowlabel is not None:
+   result['flow-label'] = options.flowlabel
+   schema.set(2)
 
 if options.source is not None:
    result['source'] = options.source
@@ -208,7 +218,7 @@ if options.as_ is not None:
    result['as'] = options.as_ if \
        options.as_ is not None else True
 
-
+result["schema"] = schema.value()
 
 
 pscheduler.succeed_json(result)

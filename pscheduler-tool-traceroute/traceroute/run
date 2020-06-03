@@ -87,6 +87,19 @@ except KeyError:
 
 
 #
+# Flow Label
+#
+
+try:
+    flow_label = spec['flow-label']
+    argv.append('-l')
+    argv.append(str(flow_label))
+except KeyError:
+    pass
+
+
+
+#
 # First TTL
 #
 
