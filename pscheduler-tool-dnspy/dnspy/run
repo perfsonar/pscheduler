@@ -14,6 +14,8 @@ import dns.resolver
 
 #import pscheduler.dnspy
 
+log = pscheduler.Log(prefix='tool-dnspy', quiet=True)
+
 input = pscheduler.json_load(exit_on_error=True);
 resolver = dns.resolver.Resolver()
 
@@ -39,7 +41,10 @@ resolver.lifetime = timeout
 # Perform the test
 
 try:
-    pscheduler.sleep_until(input['schedule']['start'])
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
 except KeyError:
     pscheduler.fail("Unable to find start time in input")
 

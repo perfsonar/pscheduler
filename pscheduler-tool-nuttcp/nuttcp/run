@@ -201,7 +201,10 @@ def run_client():
     diags.append(joined_args)
 
     try:
-        pscheduler.sleep_until(input['schedule']['start'])
+        start_at = input['schedule']['start']
+        logger.debug("Sleeping until %s", start_at)
+        pscheduler.sleep_until(start_at)
+        logger.debug("Starting")
     except KeyError:
         pscheduler.fail("Unable to find start time in input")
 
@@ -265,7 +268,10 @@ def run_server():
     diags.append(nuttcp_args_string)
 
     try:
-        pscheduler.sleep_until(input['schedule']['start'])
+        start_at = input['schedule']['start']
+        logger.debug("Sleeping until %s", start_at)
+        pscheduler.sleep_until(start_at)
+        logger.debug("Starting")
     except KeyError:
         pscheduler.fail("Unable to find start time in input")
 

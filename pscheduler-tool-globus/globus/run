@@ -64,7 +64,10 @@ if True:
   argv.append(dest) # Destination URL
 
   try:
-      pscheduler.sleep_until(input['schedule']['start'])
+    start_at = input['schedule']['start']
+    logger.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    logger.debug("Starting")
   except KeyError:
       pscheduler.fail("Unable to find start time in input")
   

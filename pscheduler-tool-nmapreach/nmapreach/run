@@ -8,6 +8,8 @@ import pscheduler
 import random
 import re
 
+log = pscheduler.Log(prefix='tool-nmapreach', quiet=True)
+
 input = pscheduler.json_load(exit_on_error=True);
 
 spec = input["test"]["spec"]
@@ -193,7 +195,10 @@ gateway_up = False
 run_number = 0
 
 try:
-    pscheduler.sleep_until(input['schedule']['start'])
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
 except KeyError:
     pscheduler.fail("Unable to find start time in input")
 

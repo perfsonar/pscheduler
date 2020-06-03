@@ -12,6 +12,8 @@ import sys
 import time
 import pscheduler
 
+log = pscheduler.Log(prefix="tool-pysnmp", quiet=True)
+
 # check for missing required fields
 def missing_input(spec, test_type, level):
 
@@ -157,7 +159,10 @@ for item in spec['oid']:
     oid_tuple += (ObjectType(build_object(item)),)
 
 try:
-    pscheduler.sleep_until(input['schedule']['start'])
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
 except KeyError:
     pscheduler.fail("Unable to find start time in input")
 

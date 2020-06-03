@@ -141,6 +141,10 @@ if role == CLIENT_ROLE:
     # Force all args to be strings
     twping_args = [str(x) for x in twping_args]
 
+    log.debug("Sleeping until %s", start)
+    pscheduler.sleep_until(start)
+    log.debug("Starting")
+
     pscheduler.sleep_until(start)
         
     #Run the process
