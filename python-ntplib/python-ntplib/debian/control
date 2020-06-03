@@ -1,0 +1,21 @@
+Source: ntplib
+Maintainer: Debian Python Modules Team <python-modules-team@lists.alioth.debian.org>
+Uploaders: Tim Retout <diocles@debian.org>
+Section: python
+Priority: optional
+Build-Depends: debhelper (>= 9), dh-python, python3-all, python3-setuptools
+Standards-Version: 3.9.8
+Homepage: https://pypi.python.org/pypi/ntplib/
+Testsuite: autopkgtest-pkg-python
+X-Python3-Version: >= 3.2
+
+Package: python3-ntplib
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}
+Description: Python NTP library (Python 3.x)
+ This module offers a simple interface to query NTP servers from Python.
+ .
+ It also provides utility functions to translate NTP fields values to
+ text. It is pure Python, and only depends on core modules.
+ .
+ This package contains the Python 3.x module.

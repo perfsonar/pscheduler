@@ -8,6 +8,7 @@ import datetime
 import errno
 import multiprocessing
 import optparse
+import os
 import pscheduler
 import psycopg2
 import psycopg2.extensions
@@ -15,11 +16,9 @@ import psycopg2.pool
 import select
 import signal
 import socket
+import tempfile
 import threading
 import time
-
-# See Python 2.6 workaround below
-import weakref
 
 
 pscheduler.set_graceful_exit()
@@ -58,7 +57,6 @@ opt_parser.add_option("--terse-logging",
                       action="store_true",
                       dest="terse",
                       default=False)
-
 
 
 opt_parser.add_option("--verbose", action="store_true", dest="verbose", default=False)
@@ -173,11 +171,6 @@ def clock_survey(hosts, bind=None):
     # Prime the result with empties for anything that didn't get
     # tested.
     result = [None] * len(hosts)
-
-    # Work around a bug in 2.6
-    # TODO: Get rid of this when 2.6 is no longer in the picture.
-    if not hasattr(threading.current_thread(), "_children"):
-        threading.current_thread()._children = weakref.WeakKeyDictionary()
 
     # Run the lot of tests in parallel
     pool = multiprocessing.pool.ThreadPool(processes=len(host_args))
@@ -316,13 +309,17 @@ class RunWorker(object):
         self.log.debug("%d: Thread running", self.id)
         run_dict.start(self.id, self)
         try:
-            self.__run()
+            with tempfile.TemporaryDirectory() as self.temp:
+                self.log.debug("%d: Temp space in %s", self.id, self.temp)
+                self.__run()
+            self.temp = None
         except Exception as ex:
             # Don't worry about the result here.  If __run() failed to
             # post anything, that will be the end of it.  If it did,
             # it might be salvageable.
             self.log.debug("%d: Exception: %s", self.id, ex)
             log.exception()
+
         self.log.debug("%d: Thread finished", self.id)
         run_dict.finish(self.id)
 
@@ -516,12 +513,14 @@ class RunWorker(object):
             returncode, stdout, stderr = pscheduler.run_program(
                 run_args,
                 stdin=tool_input,
+                env_add={ "TMPDIR": self.temp },
                 timeout=timeout,
                 line_call=lambda l: self.__accumulate_output(l))
 
         else:
 
             returncode, stdout, stderr = context_runner.run(
+                env_add={ "TMPDIR": self.temp },
                 timeout=timeout,
                 line_call=lambda l: self.__accumulate_output(l)
             )
@@ -989,3 +988,5 @@ if options.daemon:
         pscheduler.safe_run(lambda: main_program())
 else:
     pscheduler.safe_run(lambda: main_program())
+
+

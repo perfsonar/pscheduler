@@ -2,9 +2,11 @@
 # Validator for "latency" Test
 #
 
-from pscheduler import json_validate
+from pscheduler import json_validate, json_check_schema
 
-REQUEST_SCHEMA = {
+MAX_SCHEMA = 2
+
+SPEC_SCHEMA = {
 
         "title": "pScheduler One-way Latency Request Schema",
 
@@ -20,7 +22,7 @@ REQUEST_SCHEMA = {
                 "default": ".001"
             },
 
-            "LatencyTestSpecification_V1": {
+            "v1": {
                 "type": "object",
                 "properties": {
                     "schema": {
@@ -95,7 +97,7 @@ REQUEST_SCHEMA = {
                 "additionalProperties": False
             },
 
-            "LatencyTestSpecification_V2": {
+            "v2": {
                 "type": "object",
                 "properties": {
                     "schema": {
@@ -172,19 +174,8 @@ REQUEST_SCHEMA = {
                 },
                 "required": ["schema", "dest"],
                 "additionalProperties": False
-            },
-
-            "LatencyTestSpecification": {
-                "anyOf": [
-                    { "$ref": "#/local/LatencyTestSpecification_V1" },
-                    { "$ref": "#/local/LatencyTestSpecification_V2" }
-                ]
             }
-
-        },
-
-    "$ref": "#/local/LatencyTestSpecification"
-    
+        }
 }
 
 
@@ -372,8 +363,25 @@ LIMIT_SCHEMA = {
 }
 
 def spec_is_valid(json):
-    
-    return json_validate(json, REQUEST_SCHEMA)
+
+    try:
+        json_check_schema(json, MAX_SCHEMA)
+    except ValueError as ex:
+        return (False, str(ex))
+
+    schema = json.get("schema", 1)        
+
+    # Build a temporary structure with a reference that points
+    # directly at the validator for the specified version of the
+    # schema.  Using oneOf or anyOf results in error messages that are
+    # difficult to decipher.
+
+    temp_schema = {
+        "local": SPEC_SCHEMA["local"],
+        "$ref":"#/local/v%d" % schema
+    }
+
+    return json_validate(json, temp_schema)
 
 def result_is_valid(json):
     

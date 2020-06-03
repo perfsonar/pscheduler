@@ -167,9 +167,14 @@ class Log(object):
                 assert isinstance(level, int)
 
                 self.forced_debug = depickled['forced_debug']
+                if self.forced_debug is None:
+                    self.forced_debug = False
                 assert isinstance(self.forced_debug, bool)
 
                 self.is_quiet = depickled['is_quiet']
+                if self.is_quiet is None:
+                    self.is_quiet = False
+
                 assert isinstance(self.is_quiet, bool)
 
             except Exception as ex:

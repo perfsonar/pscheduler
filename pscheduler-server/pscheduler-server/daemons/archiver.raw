@@ -711,7 +711,7 @@ class ArchiveWorker(object):
             "time": pscheduler.datetime_as_iso8601(datetime.datetime.now(tzlocal())),
             "return-code": returncode,
             "stdout": result,
-            "stderr": result.get("error", "")
+            "stderr": "No result present." if result is None else result.get("error", "")
         }
 
         if returncode != 0:

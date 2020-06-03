@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 #
 # Convert a test specification to command-line options
+#
 
 import pscheduler
 
 from validate import spec_is_valid
+from validate import MAX_SCHEMA
 
-spec = pscheduler.json_load(exit_on_error=True)
+try:
+    spec = pscheduler.json_load(exit_on_error=True, max_schema=MAX_SCHEMA)
+except ValueError as ex:
+    pscheduler.fail(str(ex))
 
 valid, message = spec_is_valid(spec)
 
@@ -15,13 +20,18 @@ if not valid:
 
 result = pscheduler.speccli_build_args(spec, 
                                        strings=[
-        # Strings
-        ( 'host', 'host' ),
-        ( 'host-node', 'host-node' ),
-        ( 'timeout', 'timeout' ),
-        ( 'url', 'url' ),
-        ( 'parse', 'parse' ),
-        ])
+                                           ( 'host', 'host' ),
+                                           ( 'host-node', 'host-node' ),
+                                           ( 'ip-version', 'ip-version' ),
+                                           ( 'timeout', 'timeout' ),
+                                           ( 'url', 'url' ),
+                                           ( 'parse', 'parse' ),
+                                           ( 'keep-content', 'keep-content')
+                                       ],
+                                       bools=[
+                                           ( 'always-succeed', 'always-succeed'),
+                                       ]
+                                   )
 
 
 pscheduler.succeed_json(result)

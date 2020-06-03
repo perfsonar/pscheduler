@@ -1,16 +1,18 @@
 Source: python-jsontemplate
 Section: net
 Priority: optional
-Maintainer: Valentin Vidic <Valentin.Vidic@CARNet.hr>
-Build-Depends: debhelper (>= 9), dh-python, python-setuptools, python
-Standards-Version: 3.9.6
+Maintainer: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
+Build-Depends: debhelper (>= 9), dh-python, python3-all, python3-setuptools
+Standards-Version: 3.9.8
 Homepage: https://code.google.com/archive/p/json-template
 
-Package: python-jsontemplate
+Package: python3-jsontemplate
 Architecture: all
-Depends: ${misc:Depends}, python
+Depends: ${misc:Depends}, ${python3:Depends}
 Description: A declarative templating language based on JSON
  JSON Template is a simple declarative template language based on JSON.
  It is designed to be easy to implement in multiple languages, including
  client-side javascript. This release only contains the official Python
  implementation of JSON Template.
+ .
+ This package contains the Python 3.x module.

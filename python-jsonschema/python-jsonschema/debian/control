@@ -6,45 +6,17 @@ Uploaders: Thomas Goirand <zigo@debian.org>,
 Build-Depends: autopkgtest,
                debhelper (>= 9),
                dh-python,
-               python-all,
-               python-setuptools (>= 12),
-               python-setuptools-scm,
-               python-pyrsistent,
-               python-vcversioner,
                python3-all,
-               python3-setuptools (>= 12),
-               python3-setuptools-scm,
+               python3-setuptools,
                python3-pyrsistent,
-               python3-vcversioner,
-Build-Depends-Indep: python-attr (>= 17.4.0),
-                     python-functools32,
-                     python-mock,
-                     python-nose,
-                     python-pytest,
-                     python3-attr,
+Build-Depends-Indep: python3-attr,
                      python3-mock,
                      python3-nose,
                      python3-pytest,
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=openstack/python-jsonschema.git
 Vcs-Git: git://anonscm.debian.org/openstack/python-jsonschema.git
 Homepage: https://github.com/Julian/jsonschema
-
-Package: python-jsonschema
-Architecture: all
-Depends: python-functools32,
-         python-mock,
-         ${misc:Depends},
-         ${python:Depends},
-Description: An(other) implementation of JSON Schema (Draft 7) - Python 2.7
- JSON Schema is a specification for a JSON-based format for defining
- the structure of JSON data. JSON Schema provides a contract for what
- JSON data is required for a given application and how it can be
- modified, much like what XML Schema provides for XML. JSON Schema is
- intended to provide validation, documentation, and interaction control
- of JSON data.
- .
- This package contains the Python 2.7 module.
 
 Package: python3-jsonschema
 Architecture: all

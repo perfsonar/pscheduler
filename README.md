@@ -39,7 +39,20 @@ have been possible previously.
 Documentation on building pScheuler is in the Developer's Guide, which
 can be found in the docs directory.  This directory is not currently
 part of the build proces and must be built manually.  (See the next
-section.)
+section.) The quickest way to build pScheduler is in the provided Docker
+build environment. Run the following commands to build pScheduler:
+
+```
+docker-compose up --build -d
+docker-compose exec -w /app pscheduler_build make
+```
+
+You can also enter the container for debugging purposes or to try pscheduler
+after building with the command `docker-compose exec pscheduler_build bash`.
+The pscheduler code can be found in `/app`. *Note this is not a shared directory so
+changes to code in the container will not be reflected in the code outside the 
+container.*
+
 
 ## Building the documentation
 

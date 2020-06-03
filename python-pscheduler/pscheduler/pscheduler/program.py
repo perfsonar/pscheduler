@@ -127,6 +127,10 @@ def run_program(argv,              # Program name and args
     status - Status code returned by the program
     stdout - Contents of standard output as a single string
     stderr - Contents of standard erroras a single string
+
+    NOTE: This function is only intended to process strings.  It will
+    throw an exception if handed binary data by the caller or the
+    program it runs.
     """
 
     process = None

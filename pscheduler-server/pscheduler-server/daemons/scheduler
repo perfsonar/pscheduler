@@ -3,6 +3,7 @@
 # pScheduler Run Scheduler
 #
 
+import copy
 import daemon
 import datetime
 import errno
@@ -232,14 +233,19 @@ def fetch_proposals(
         # TODO: It would be nice if the task had a list of the
         # runtimes URLs so we don't have to build it.
         runtime_url = task_url + '/runtimes'
-        if proposed_priority is not None:
-            runtime_url += "?priority=%d&api=4" % proposed_priority
 
-        log and log.debug("%d: Fetching proposals from %s", number,
-                          runtime_url)
+        log and log.debug("%d: Fetching proposals from %s", number, runtime_url)
+
+        # If we're running priorities, add that to the parameters.
+        full_params = range_params
+        if proposed_priority is not None:
+            full_params = copy.copy(range_params)
+            full_params['priority'] = proposed_priority
+            full_params['api'] = '4'
+            log and log.debug("%d: Priority will be %d", number, proposed_priority)
 
         status, json_ranges = pscheduler.url_get(runtime_url,
-                                                 params=range_params,
+                                                 params=full_params,
                                                  bind=bind_addr,
                                                  timeout=timeout,
                                                  throw=False)

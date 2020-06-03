@@ -53,7 +53,7 @@ then
 fi
 
 (
-    printf "ALTER ROLE __ROLE__ WITH UNENCRYPTED PASSWORD '"
+    printf "ALTER ROLE __ROLE__ WITH PASSWORD '"
     tr -d "\n" < '__PASSWORDFILE__'
     printf "';\n"
 ) | postgresql-load

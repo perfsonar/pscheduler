@@ -7,16 +7,6 @@
 DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/default.mk
 
-# see FEATURE AREAS in dpkg-buildflags(1)
-#export DEB_BUILD_MAINT_OPTIONS = hardening=+all
-
-# see ENVIRONMENT in dpkg-buildflags(1)
-# package maintainers to append CFLAGS
-#export DEB_CFLAGS_MAINT_APPEND  = -Wall -pedantic
-# package maintainers to append LDFLAGS
-#export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
-
-# main packaging script based on dh7 syntax
 %:
 	dh $@
 
@@ -28,3 +18,4 @@ override_dh_auto_install:
 	make	\
 		DOCDIR=$(ROOT)/usr/share/doc/pscheduler/ \
 		install
+

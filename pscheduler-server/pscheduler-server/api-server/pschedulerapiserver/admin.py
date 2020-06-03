@@ -44,8 +44,8 @@ def before_req():
         if version > max_api:
             return not_implemented(
                 "No API above %s is supported" % (max_api))
-    except ValueError:
-        return bad_request("Invalid API value.")
+    except ValueError as ex:
+        return bad_request("Invalid API value '%s': %s" %(arg_string("api"), str(ex)))
 
     # All went well.
     return None

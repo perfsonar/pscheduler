@@ -285,7 +285,8 @@ for run in schedule:
     else:
         first = False
 
-    print("%s - %s  (%s)" % (
+
+    print("%s - %s (%s)" % (
         run["start-time"],
         run["end-time"],
         run["state-display"]
@@ -297,7 +298,11 @@ for run in schedule:
             run.get("errors", "Unspecified error").strip(),
             ))
 
-    task_cli.append("(Run with tool '%s')" % run["task"]["tool"])
+    priority = run.get("priority", None)
+    task_cli.append("(Run with tool '{}'{})".format(
+        run["task"]["tool"],
+        "" if priority is None else " at priority {}".format(priority))
+    )
 
     print(pscheduler.prefixed_wrap(
         "", " ".join(task_cli), indent=2))

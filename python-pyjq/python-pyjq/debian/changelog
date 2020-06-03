@@ -1,3 +1,9 @@
+python-pyjq (2.3.0-2) perfsonar-4.3-staging; urgency=low
+
+  * Python 3 only port.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 24 Mar 2020 18:45:40 +0000
+
 python-pyjq (2.3.0-1) perfsonar-minor-staging; urgency=low
 
   * New upstream release.

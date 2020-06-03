@@ -1,13 +1,5 @@
-#!/usr/bin/env python3
+#!/bin/sed -e /^#/d
 #
-# Return participant-specific data for a run
+# Return participant-specific data for a run.  (None in this case.)
 #
-
-import pscheduler
-
-json = pscheduler.json_load(exit_on_error=True)
-
-# In this case, nothing of interest.
-print("{}")
-
-pscheduler.succeed()
+{}

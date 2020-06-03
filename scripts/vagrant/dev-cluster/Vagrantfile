@@ -184,7 +184,10 @@ Vagrant.configure("2") do |config|
 
 	yum -y install '#{acct.shell}'
 
-	userdel '#{acct.name}' || true
+	if id '#{acct.name}' > /dev/null
+	then
+	    userdel '#{acct.name}'
+	fi
 
         useradd \
 		--no-create-home \
@@ -203,8 +206,10 @@ Vagrant.configure("2") do |config|
         chmod 440 "${SUDOERS}"
 
         # Install anything the user's custom package list says it wants
-	[ -e '#{home_dir}/.packages' ] \
-	  && cat '#{home_dir}/.packages' | xargs -r yum -y install 
+	if [ -e '#{home_dir}/.packages' ]
+	then
+	  xargs -r yum -y install < '#{home_dir}/.packages'
+	fi
 
       SHELL
 
@@ -217,7 +222,7 @@ Vagrant.configure("2") do |config|
 
 
       #
-      # pefSONAR Development
+      # perfSONAR Development
       #
       # TODO: This should be Ansiblized or something like it so it's
       # not Vagrant-specific.
@@ -252,9 +257,9 @@ Vagrant.configure("2") do |config|
 
         # PostgreSQL (9.5 only)
 	# TODO: Find a better URL.  Should be getting the latest.
-        yum -y install "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-${REDHAT_RELEASE_MAJOR}Server-$(uname -m)/pgdg-centos95-9.5-3.noarch.rpm"
-	yum-config-manager -q --disable 'pgdg*' > /dev/null
-	yum-config-manager -q --enable 'pgdg94*' > /dev/null
+        #yum -y install "https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-${REDHAT_RELEASE_MAJOR}Server-$(uname -m)/pgdg-redhat-repo-latest.noarch.rpm"
+	#yum-config-manager -q --disable 'pgdg*' > /dev/null
+	#yum-config-manager -q --enable 'pgdg95*' > /dev/null
 
 
         # EPEL
@@ -264,7 +269,10 @@ Vagrant.configure("2") do |config|
         REPO_PREFIX="http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/$(uname -m)/latest/packages/perfSONAR-repo"
         for REPO in "" extras staging
         do
-            [ "$REPO" != "" ] && REPO="${REPO}-"
+            if [ "${REPO}" != "" ]
+	    then
+	        REPO="${REPO}-"
+            fi
             yum -y install "${REPO_PREFIX}-${REPO}#{ps_repo_version}.noarch.rpm"
         done
 

@@ -1,3 +1,9 @@
+python-jsontemplate (0.87-3) perfsonar-minor-staging; urgency=low
+
+  * Building for python3 only
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 10 Apr 2020 12:36:24 +0000
+
 python-jsontemplate (0.87-2) perfsonar-minor-staging; urgency=low
 
   * Releasing to perfsonar-minor-staging

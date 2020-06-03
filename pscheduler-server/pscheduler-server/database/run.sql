@@ -362,9 +362,9 @@ BEGIN
 
     SELECT INTO horizon schedule_horizon FROM configurables;
     IF taskrec.scheduling_class <> scheduling_class_background_multi()
-       AND (upper(NEW.times) - normalized_now()) > horizon THEN
+       AND (lower(NEW.times) - normalized_now()) > horizon THEN
         RAISE EXCEPTION 'Cannot schedule runs more than % in advance (% is % outside the range %)',
-            horizon, NEW.times, (upper(NEW.times) - normalized_now() - horizon),
+            horizon, NEW.times, (lower(NEW.times) - normalized_now() - horizon),
 	    tstzrange(normalized_now(), normalized_now()+horizon);
     END IF;
 
@@ -466,9 +466,7 @@ BEGIN
 	-- Handle times for runs reaching a state where they may have
 	-- been running to one where they've stopped.
 
-	IF NEW.state <> OLD.state
-            AND NEW.state IN ( run_state_finished(), run_state_overdue(),
-                 run_state_missed(), run_state_failed(), run_state_preempted() )
+	IF NEW.state <> OLD.state AND run_state_is_finished(NEW.state)
         THEN
 
 	    -- Adjust the end times only if there's a sane case for
@@ -931,7 +929,7 @@ CREATE OR REPLACE FUNCTION api_run_post(
     start_time TIMESTAMP WITH TIME ZONE,
     run_uuid UUID,  -- NULL to assign one
     nonstart_reason TEXT = NULL,
-    priority INTEGER = NULL,
+    proposed_priority INTEGER = NULL,
     limit_diags TEXT = NULL
 )
 RETURNS TABLE (
@@ -947,6 +945,7 @@ DECLARE
     initial_state INTEGER;
     initial_status INTEGER;
     exception_text TEXT;
+    run_priority INTEGER;
 BEGIN
 
     SELECT INTO task * FROM task WHERE uuid = task_uuid;
@@ -973,13 +972,22 @@ BEGIN
     start_time := normalized_time(start_time);
     time_range := tstzrange(start_time, start_time + task.duration, '[)');
 
+    -- Set priority according to what was requested
+
+    IF proposed_priority is NULL
+    THEN
+        run_priority = task.priority;
+    ELSE
+        run_priority := LEAST(task.priority, run_priority);
+    END IF;
+
     BEGIN
 
         WITH inserted_row AS (
             INSERT INTO run (uuid, task, times, state,
                 errors, priority, limit_diags)
             VALUES (run_uuid, task.id, time_range, initial_state,
-	        nonstart_reason, priority, limit_diags)
+	        nonstart_reason, run_priority, limit_diags)
             RETURNING *
         ) SELECT INTO run_uuid uuid FROM inserted_row;
 
