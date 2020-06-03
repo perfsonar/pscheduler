@@ -217,7 +217,7 @@ AS
         AND ( (until IS NULL) OR (trynext < until) )
 	-- Anything that fits the scheduling horizon or is a backgrounder
         AND (
-            trynext + duration + slip < (normalized_now() + schedule_horizon)
+            trynext < (normalized_now() + schedule_horizon)
             OR scheduling_class = scheduling_class_background_multi()
         )
     ORDER BY trynext, added
