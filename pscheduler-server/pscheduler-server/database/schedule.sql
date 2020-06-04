@@ -425,14 +425,27 @@ BEGIN
     END IF;
 
 
-    -- This is partially correctable
-    range_start := greatest(range_start, time_now);
+    -- Correct for the range start being earlier than now.  Don't
+    -- bother proposing anything for a run_start_margin's worth of
+    -- time, either.
+
+    -- TODO: This might be more precicely accomplished by checking for
+    -- tasks that would collide, but scheduling something so close to
+    -- the present is relatively unlikely.
+
+    range_start := greatest(range_start,
+    		   	    time_now + (SELECT run_start_margin FROM configurables));
     range_start := normalized_time(range_start);
 
     -- Can't schedule past the end of the time horizon, either.
     range_end := LEAST(range_end, horizon_end);
     range_end := normalized_time(range_end);
 
+    -- If the adjusted start overshoots the end, there's no time
+    -- available.  Punt.
+    IF range_start >= range_end THEN
+        RETURN;
+    END IF;
 
     time_range := tstzrange(range_start, range_end, '[)');
 
