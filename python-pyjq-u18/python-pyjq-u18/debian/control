@@ -1,4 +1,4 @@
-Source: python-pyjq
+Source: python-pyjq-u18
 Section: net
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
@@ -9,7 +9,7 @@ Build-Depends: debhelper (>= 9), dh-python, python3-setuptools,
 Standards-Version: 3.9.8
 Homepage: https://pypi.python.org/pypi/pyjq
 
-Package: python3-pyjq
+Package: python3-pyjq-u18
 Architecture: any
 Depends: ${python3:Depends}, ${misc:Depends}, ${shlibs:Depends}
 Description: Python bindings for jq
