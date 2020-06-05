@@ -365,15 +365,13 @@ def run_server():
     stderr = ""
     status = 0
 
-    try:
+    iperf_timeout = test_duration
+    iperf_timeout += omit_secs
+    iperf_timeout += iperf3_utils.setup_time(test_spec.get("link-rtt"))
+    iperf_timeout += DEFAULT_WAIT_SLEEP
 
-        iperf_timeout = test_duration
-        iperf_timeout += omit_secs
-        iperf_timeout += iperf3_utils.setup_time(test_spec.get("link-rtt"))
-        iperf_timeout += DEFAULT_WAIT_SLEEP
-
-        logger.debug("timeout for server is %d" % iperf_timeout)
-        diags.append(" ".join(iperf3_args))
+    logger.debug("timeout for server is %d" % iperf_timeout)
+    diags.append(" ".join(iperf3_args))
 
     try:
         start_at = input['schedule']['start']
