@@ -381,15 +381,8 @@ def run_server():
     except KeyError:
         pscheduler.fail("Unable to find start time in input")
 
-        status, stdout, stderr = pscheduler.run_program(iperf3_args,
-                                                        timeout = iperf_timeout)
-
-    except Exception as ex:
-        logger.error("iperf3 failed to complete execution: %s" % ex);
-        pscheduler.succeed_json({"succeeded": False,
-                                 "diags": "\n".join(diags),
-                                 "error": "The iperf3 command failed during execution. See server logs for more details."})
-
+    status, stdout, stderr = pscheduler.run_program(iperf3_args,
+                                                    timeout=iperf_timeout)
 
     return _make_result("\n".join(diags), status, stdout, stderr)
 
