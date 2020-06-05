@@ -274,6 +274,14 @@ def run_client():
     diags.append(command_line)
 
     try:
+        start_at = input['schedule']['start']
+        logger.debug("Sleeping until %s", start_at)
+        pscheduler.sleep_until(start_at)
+        logger.debug("Starting")
+    except KeyError:
+        pscheduler.fail("Unable to find start time in input")
+
+    try:
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
                                                         timeout = iperf_timeout)
     except Exception as ex:
@@ -357,25 +365,24 @@ def run_server():
     stderr = ""
     status = 0
 
+    iperf_timeout = test_duration
+    iperf_timeout += omit_secs
+    iperf_timeout += iperf3_utils.setup_time(test_spec.get("link-rtt"))
+    iperf_timeout += DEFAULT_WAIT_SLEEP
+
+    logger.debug("timeout for server is %d" % iperf_timeout)
+    diags.append(" ".join(iperf3_args))
+
     try:
+        start_at = input['schedule']['start']
+        logger.debug("Sleeping until %s", start_at)
+        pscheduler.sleep_until(start_at)
+        logger.debug("Starting")
+    except KeyError:
+        pscheduler.fail("Unable to find start time in input")
 
-        iperf_timeout = test_duration
-        iperf_timeout += omit_secs
-        iperf_timeout += iperf3_utils.setup_time(test_spec.get("link-rtt"))
-        iperf_timeout += DEFAULT_WAIT_SLEEP
-
-        logger.debug("timeout for server is %d" % iperf_timeout)
-        diags.append(" ".join(iperf3_args))
-
-        status, stdout, stderr = pscheduler.run_program(iperf3_args,
-                                                        timeout = iperf_timeout)
-
-    except Exception as ex:
-        logger.error("iperf3 failed to complete execution: %s" % ex);
-        pscheduler.succeed_json({"succeeded": False,
-                                 "diags": "\n".join(diags),
-                                 "error": "The iperf3 command failed during execution. See server logs for more details."})
-
+    status, stdout, stderr = pscheduler.run_program(iperf3_args,
+                                                    timeout=iperf_timeout)
 
     return _make_result("\n".join(diags), status, stdout, stderr)
 

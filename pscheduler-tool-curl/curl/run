@@ -21,7 +21,7 @@ from run_http import run
 
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
-log = pscheduler.Log(prefix='curl', quiet=True)
+log = pscheduler.Log(prefix='tool-curl', quiet=True)
 
 
 # Take input from test spec
@@ -91,6 +91,13 @@ if True:
       argv.append(dest) # Download location
   argv.append(source) # Source URL
   
+  try:
+      start_at = input['schedule']['start']
+      log.debug("Sleeping until %s", start_at)
+      pscheduler.sleep_until(start_at)
+      log.debug("Starting")
+  except KeyError:
+      pscheduler.fail("Unable to find start time in input")
 
   start_time = datetime.datetime.now()
   status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)

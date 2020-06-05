@@ -11,6 +11,8 @@ import time
 
 import pscheduler
 
+log = pscheduler.Log(prefix="tool-psurl", quiet=True)
+
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
 
@@ -33,6 +35,14 @@ timeout_iso = input['test']['spec'].get("timeout", "PT5S")
 timeout = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(timeout_iso))
 
 # Perform the test
+
+try:
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
 
 
 start_time = datetime.datetime.now()

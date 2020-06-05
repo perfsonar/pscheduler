@@ -81,6 +81,34 @@ log_details = not options.terse
 delimiter = pscheduler.api_result_delimiter()
 
 
+
+# Current value of run start margin according to the database
+
+__run_start_margin = None
+
+def run_start_margin_set(db):
+    global __run_start_margin
+    with db.cursor() as cursor:
+        try:
+            cursor.execute("SELECT run_start_margin FROM configurables")
+        except Exception as ex:
+            raise RuntimeError("Unable to get run start margin: %s" % (str(ex)))
+
+        if cursor.rowcount != 1:
+            raise RuntimeError("Failed to get run start margin")
+
+        __run_start_margin = cursor.fetchone()[0]
+        log.debug("Run start margin set to %s", __run_start_margin)
+
+
+def run_start_margin():
+    global __run_start_margin
+    assert __run_start_margin is not None, "Run start margin was never set"
+    return __run_start_margin
+
+
+
+
 #
 # Directory of what we believe to be running and what we don't.
 #
@@ -430,11 +458,10 @@ class RunWorker(object):
         #
 
         self.log.debug("%d: Start at %s", self.id, self.start_at)
-        time_until_start = pscheduler.time_until(self.start_at)
-        sleep_time = pscheduler.timedelta_as_seconds(time_until_start)
-        self.log.debug("%d: Sleeping %s until test start", self.id,
-                       time_until_start)
-        time.sleep(sleep_time)
+        start_time = self.start_at - run_start_margin()
+        self.log.debug("%d: Sleeping until test start at %s", self.id,
+                       start_time)
+        pscheduler.sleep_until(start_time)
 
         #
         # Get cracking
@@ -472,7 +499,7 @@ class RunWorker(object):
 
         self.log.debug("%d: Tool input: %s", self.id, tool_input)
 
-        how_late = pscheduler.time_now() - self.start_at
+        how_late = pscheduler.time_now() - start_time
         self.log.debug("%d: Start time difference is %s",
                        self.id, how_late)
 
@@ -480,20 +507,21 @@ class RunWorker(object):
             self.log.warning("%d: Starting %s later than scheduled",
                              self.id, how_late)
 
+        timeout = pscheduler.timedelta_as_seconds(end - start + run_start_margin()) + 1
         if context_runner is None:
 
             returncode, stdout, stderr = pscheduler.run_program(
                 run_args,
                 stdin=tool_input,
                 env_add={ "TMPDIR": self.temp },
-                timeout=pscheduler.timedelta_as_seconds(end - start) + 1,
+                timeout=timeout,
                 line_call=lambda l: self.__accumulate_output(l))
 
         else:
 
             returncode, stdout, stderr = context_runner.run(
                 env_add={ "TMPDIR": self.temp },
-                timeout=pscheduler.timedelta_as_seconds(end - start) + 1,
+                timeout=timeout,
                 line_call=lambda l: self.__accumulate_output(l)
             )
 
@@ -801,13 +829,15 @@ def main_program():
 
     # Listen for notifications.
 
-    for listen in ["run_new", "run_change"]:
+    for listen in ["run_new", "run_change", "configurables_changed" ]:
         log.debug("Listening for notification %s" % (listen))
         with db.cursor() as cursor:
             cursor.execute("LISTEN %s" % (listen))
 
     # Prime this for the first run
     wait_time = datetime.timedelta()
+    run_start_margin_set(db)
+
 
     while True:
 
@@ -830,8 +860,14 @@ def main_program():
                     != ([],[],[]):
                     # Notified
                     db.poll()
+                    notifies = [ notify.channel for notify in db.notifies]
+                    log.debug("Notifications: %s", notifies)
+                    if 'configurables_changed' in notifies:
+                        log.debug("Configurables changed.")
+                        run_start_margin_set(db)
+                    else:
+                        log.debug("Schedule change.")
                     del db.notifies[:]
-                    log.debug("Schedule change.")
 
             except select.error as ex:
 
@@ -944,7 +980,6 @@ def main_program():
 
     # Not that this will ever be reached...
     db.close()
-
 
 
 if options.daemon:

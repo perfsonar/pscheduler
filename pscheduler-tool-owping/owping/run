@@ -133,6 +133,14 @@ if role == CLIENT_ROLE:
     # Stringify the arguments        
     owping_args = [str(x) for x in owping_args]
     
+    try:
+        start_at = input['schedule']['start']
+        log.debug("Sleeping until %s", start_at)
+        pscheduler.sleep_until(start_at)
+        log.debug("Starting")
+    except KeyError:
+        pscheduler.fail("Unable to find start time in input")
+
     #Run the process
     #time.sleep(DEFAULT_CLIENT_SLEEP) #wait for server to boot
     log.debug("Running command: %s" % " ".join(owping_args))

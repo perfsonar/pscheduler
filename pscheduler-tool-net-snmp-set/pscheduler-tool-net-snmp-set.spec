@@ -20,9 +20,9 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server
+Requires:	pscheduler-server >= 4.3.0
 Requires:	net-snmp
-Requires:	%{_pscheduler_python}-pscheduler
+Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	pscheduler-test-snmpset
 
 BuildRequires:	pscheduler-rpm
