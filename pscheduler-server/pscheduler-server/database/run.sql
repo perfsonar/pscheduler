@@ -485,13 +485,15 @@ BEGIN
         END IF;
 
 
-        -- Handle changes in status
+        -- No status changes on future runs unless the new state is a
+        -- finished one.
 
         IF NEW.status IS NOT NULL
            AND ( (OLD.status IS NULL) OR (NEW.status <> OLD.status) )
+	   AND ( NOT run_state_is_finished(NEW.state) )
            AND lower(NEW.times) > normalized_now()
         THEN
-            RAISE EXCEPTION 'Cannot set state on future runs. % / %', lower(NEW.times), normalized_now();
+            RAISE EXCEPTION 'Cannot set status on future runs. % / %', lower(NEW.times), normalized_now();
         END IF;
 
 
