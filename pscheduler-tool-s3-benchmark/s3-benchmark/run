@@ -112,7 +112,6 @@ for line in diags.split(','):
         #count_string = output.partition(':')[0]
         #loop_counter  = int(count_string.partition(" ")[2])
         loops[loop_counter].append(output)
-        #print(loops[loop_counter])
         useful = True
         #loops[loop_counter] = loop_counter
         if "DELETE" in line:
@@ -136,7 +135,6 @@ for i, loop in enumerate(loops):
     new_loop.append(loop_num)
     put_time = loop[1].partition("time")[2][1:]
     new_loop.append(put_time)
-    print(loop)
     objects = loop[2].partition('=')[2][1:]
     new_loop.append(objects)
     speed = loop[3].partition('=')[2][1:]
@@ -166,7 +164,6 @@ results = {
         'succeeded': succeeded
     },
     'error': error,
-    'diags': diags,
     'loops': loops }
 
 pscheduler.succeed_json(results)
