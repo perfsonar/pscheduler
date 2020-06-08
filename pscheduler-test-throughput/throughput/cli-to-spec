@@ -101,6 +101,16 @@ opt_parser.add_option("-b", "--bandwidth",
                       action="store", type="string",
                       dest="bandwidth")
 
+opt_parser.add_option("--bandwidth-strict",
+                      help="Never go faster than --bandwidth, even to make up for lost time.",
+                      action="store_true",
+                      dest="bandwidth_strict")
+
+opt_parser.add_option("--burst-size",
+                      help="Limit bursts of packets to this number",
+                      action="store", type="string",
+                      dest="burst_size")
+
 opt_parser.add_option("-w", "--window-size",
                       help="TCP window size to use for the test, supports SI notation such as 64M",
                       action="store", type="string",
@@ -247,6 +257,17 @@ if options.bandwidth is not None:
       result['bandwidth'] = pscheduler.si_as_number(options.bandwidth)
    except ValueError as ex:
       pscheduler.fail("Invalid value \"%s\" for bandwidth: %s" % (options.bandwidth, ex))
+
+if options.bandwidth_strict is not None:
+   result['bandwidth-strict'] = options.bandwidth_strict
+   schema.set(4)
+
+if options.burst_size is not None:
+   try:
+      result["burst-size"] = pscheduler.si_as_number(options.burst_size)
+      schema.set(4)
+   except ValueError as ex:
+      pscheduler.fail("Invalid value \"%s\" for burst size: %s" % (options.window_size, ex))
 
 if options.window_size is not None:
    try:

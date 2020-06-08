@@ -109,43 +109,55 @@ def run_client():
         nuttcp_args.append('-M')
         nuttcp_args.append(test_spec['mss'])
 
-    if 'bandwidth' in test_spec and test_spec['bandwidth'] != None:
-        nuttcp_args.append('-R')
-        # nuttcp specifies bandwidth in Kbps and is okay with
-        # fractions, so need to convert here
-        nuttcp_args.append(test_spec['bandwidth'] / 1000.0)
-    else:
 
-        # Find the largest bandwidth in each participant's passed
-        # limits and take the minimum of those values.  This will be
-        # the maximum bandwidth allowed by any participant.
+    max_bandwidth = test_spec.get('bandwidth', 0)
 
-        logger.debug("Finding maximum bandwidth")
+    # Find the largest bandwidth in each participant's passed
+    # limits and take the minimum of those values.  This will be
+    # the maximum bandwidth allowed by any participant.
 
-        max_bandwidths = []
+    logger.debug("Finding maximum bandwidth")
 
-        for passed_set in limits_passed:
-            set_max = -1
-            logger.debug("Limit set:")
-            for passed in passed_set:
-                try:
-                    new_max = pscheduler.si_as_number(passed['bandwidth']['range']['upper'])
-                    logger.debug("  Limit says %d", new_max)
-                    set_max = max(set_max, new_max)
-                except KeyError:
-                    logger.debug("  No upper bandwidth limit specified")
-                    continue
+    max_bandwidths = []
 
-            if set_max > -1:
-                max_bandwidths.append(set_max)
+    for passed_set in limits_passed:
+        set_max = -1
+        logger.debug("Limit set:")
+        for passed in passed_set:
+            try:
+                new_max = pscheduler.si_as_number(passed['bandwidth']['range']['upper'])
+                logger.debug("  Limit says %d", new_max)
+                set_max = max(set_max, new_max)
+            except KeyError:
+                logger.debug("  No upper bandwidth limit specified")
+                continue
 
-        if max_bandwidths:
-            max_bandwidth = sorted(max_bandwidths)[0]
-            logger.debug("Limiting bandwidth to %d", max_bandwidth)
-            nuttcp_args.append('-R')
-            # nuttcp specifies bandwidth in Kbps and is okay with
-            # fractions, so need to convert here
-            nuttcp_args.append(max_bandwidth / 1000.0)
+        if set_max > -1:
+            max_bandwidths.append(set_max)
+
+    if max_bandwidths:
+        specified_bandwidth = sorted(max_bandwidths)[0]
+        logger.debug("Limiting bandwidth to %d", max_bandwidth)
+
+
+    # By this point, max_bandwidth will be 0 if none was specified,
+    # something what was specified or somethig fished from the limits.
+    # Nuttcp takes it in Kbps by default and doesn't have a way to
+    # specify bps.
+    nuttcp_bandwidth = max_bandwidth / 1000.0
+
+    if ('bandwidth-strict' in test_spec) or ('burst-size' in test_spec):
+
+        bandwidth_switch = '-Ri' + str(nuttcp_bandwidth)
+        if 'burst-size' in test_spec:
+            bandwidth_switch += '/{}'.format(test_spec['burst-size'])
+        nuttcp_args.append(bandwidth_switch)
+
+    elif max_bandwidth:
+
+        nuttcp_args.append('-R{}'.format(str(nuttcp_bandwidth)))
+
+
 
 
     if 'udp' in test_spec:

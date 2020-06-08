@@ -30,7 +30,7 @@ errors = []
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 1)
+    pscheduler.json_check_schema(spec, 4)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
@@ -43,15 +43,28 @@ except ValueError as ex:
     })
 
 
-supported_options = ["schema",
-                     "source", "source-node",
-                     "dest", "dest-node",
-                     "duration",
-                     "interval", "parallel", "window-size",
-                     "mss", "bandwidth", "udp", "buffer-length",
-                     "ip-tos", "ip-version", "client-cpu-affinity",
-                     "server-cpu-affinity", "reverse"
-                     ]
+supported_options = [
+    "bandwidth",
+    "bandwidth-strict",
+    "buffer-length",
+    "burst-size",
+    "client-cpu-affinity",
+    "dest",
+    "dest-node",
+    "duration",
+    "interval",
+    "ip-tos",
+    "ip-version",
+    "mss",
+    "parallel",
+    "reverse",
+    "schema",
+    "server-cpu-affinity",
+    "source",
+    "source-node",
+    "udp",
+    "window-size",
+]
 
 
 for option in spec:
