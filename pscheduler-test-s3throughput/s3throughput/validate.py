@@ -62,16 +62,17 @@ def result_is_valid(json):
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
 	    "loops":       { "$ref": "#/pScheduler/Cardinal" },
-	    "average-put-time": { "$ref": "#/pScheduler/Cardinal" },
-	    "average-get-time": { "$ref": "#/pScheduler/Cardinal" },
-	    "average-delete-time": { "$ref": "#/pScheduler/Cardinal" }    
+	    "average_put_time": { "$ref": "#/pScheduler/Float" },
+	    "average_get_time": { "$ref": "#/pScheduler/Float" },
+	    "average_delete_time": { "$ref": "#/pScheduler/Float" },
+            "time" : { "$ref": "#/pScheduler/Duration" }    
 	},
         "required": [
             "schema",
             "succeeded",
-	    "average-put-time",
-	    "average-get-time",
-	    "average-delete-time"
+	    "average_put_time",
+	    "average_get_time",
+	    "average_delete_time"
             ]
         }
     return json_validate(json, schema)

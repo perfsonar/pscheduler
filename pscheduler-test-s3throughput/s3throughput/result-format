@@ -39,17 +39,16 @@ if format == 'text/plain':
     loops = result['iterations']
     
     for i, loop in enumerate(loops):
-	print("Loop: " + loop + "\n")
+        print("Loop: " + loop + "\n")
         print("PUT time: " + loop['put-time'] + "\n")
-	print("PUT objects: " + loop['put-objects'] + "\n")
-	print("GET time: " + loop['get-time'] + "\n")
-	print("GET objects: " + loop['get-objects'] + "\n")
-	print("DELETE time: " + loop['delete-time'] + "\n")
-	print("DELETE objects: " + loop['delete-objects'] + "\n")
-    
-    print("Average PUT time: " + result['average-put-time'] + "\n")
-    print("Average GET time: " + result['average-get-time'] + "\n")
-    print("Average DELETE time: " + result['average-delete-time'] + "\n")    
+        print("PUT objects: " + loop['put-objects'] + "\n")
+        print("GET time: " + loop['get-time'] + "\n")
+        print("GET objects: " + loop['get-objects'] + "\n")
+        print("DELETE time: " + loop['delete-time'] + "\n")
+        print("DELETE objects: " + loop['delete-objects'] + "\n")
+    print("Average PUT time: " + result['average_put_time'] + "\n")
+    print("Average GET time: " + result['average_get_time'] + "\n")
+    print("Average DELETE time: " + result['average_delete_time'] + "\n")    
 
 #TODO: HTML formatting   
 elif format == 'text/html':
