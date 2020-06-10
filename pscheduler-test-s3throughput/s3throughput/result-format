@@ -38,19 +38,29 @@ if format == 'text/plain':
     # Print results of the test here, in plaintext
     print('Time: %s\n' % result['time'])
     loops = json.loads(result['loops'])
-    
+
+    count = 0
+    average_put_speed = 0
+    average_get_speed = 0
+
     for loop in loops.values():
         print("Loop: " + str(loop['loop_num']))
         print("PUT time: " + loop['put_time'])
         print("PUT objects: " + loop['put_objects'])
+        print("Average PUT speed: " + loop['put_speed'])
         print("GET time: " + loop['get_time'])
         print("GET objects: " + loop['get_objects'])
-        print("DELETE time: " + loop['delete_time'])
-        print("DELETE objects: " + loop['deletes'] + "\n")
-    print("Average PUT time: " + '%.3f'%result['average_put_time'])
-    print("Average GET time: " + '%.3f'%result['average_get_time'])
-    print("Average DELETE time: " + '%.3f'%result['average_delete_time'])    
+        print("Average GET speed: " + loop['get_speed'])
+        print("DELETE time: " + loop['delete_time'] + "\n")
+        average_put_speed += float(loop['put_speed'][:-6])
+        average_get_speed += float(loop['get_speed'][:-6])
+        count += 1
 
+    print("Average PUT time: " + '%.3f'%result['average_put_time'] + " secs")
+    print("Average GET time: " + '%.3f'%result['average_get_time'] + " secs")
+    print("Average DELETE time: " + '%.3f'%result['average_delete_time'] + " secs")    
+    average_put_speed /= count
+    average_get_speed /= count
 #TODO: HTML formatting   
 elif format == 'text/html':
     # Print results of the test here, in html
