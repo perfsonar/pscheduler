@@ -1,5 +1,5 @@
 #
-# Validator for "snmpset" Test
+# Validator for "s3throughput" Test
 #
 
 #
@@ -61,7 +61,7 @@ def result_is_valid(json):
         "properties": {
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
-	    "loops":       { "$ref": "#/pScheduler/Cardinal" },
+	    "loops":       { "$ref": "#/pScheduler/String" },
 	    "average_put_time": { "$ref": "#/pScheduler/Float" },
 	    "average_get_time": { "$ref": "#/pScheduler/Float" },
 	    "average_delete_time": { "$ref": "#/pScheduler/Float" },

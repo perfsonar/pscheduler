@@ -15,6 +15,7 @@
 import jsontemplate
 import pscheduler
 import sys
+import json
 
 from validate import result_is_valid
 
@@ -36,19 +37,19 @@ result = input["result"]
 if format == 'text/plain':
     # Print results of the test here, in plaintext
     print('Time: %s\n' % result['time'])
-    loops = result['iterations']
+    loops = json.loads(result['loops'])
     
-    for i, loop in enumerate(loops):
-        print("Loop: " + loop + "\n")
-        print("PUT time: " + loop['put-time'] + "\n")
-        print("PUT objects: " + loop['put-objects'] + "\n")
-        print("GET time: " + loop['get-time'] + "\n")
-        print("GET objects: " + loop['get-objects'] + "\n")
-        print("DELETE time: " + loop['delete-time'] + "\n")
-        print("DELETE objects: " + loop['delete-objects'] + "\n")
-    print("Average PUT time: " + result['average_put_time'] + "\n")
-    print("Average GET time: " + result['average_get_time'] + "\n")
-    print("Average DELETE time: " + result['average_delete_time'] + "\n")    
+    for loop in loops.values():
+        print("Loop: " + str(loop['loop_num']))
+        print("PUT time: " + loop['put_time'])
+        print("PUT objects: " + loop['put_objects'])
+        print("GET time: " + loop['get_time'])
+        print("GET objects: " + loop['get_objects'])
+        print("DELETE time: " + loop['delete_time'])
+        print("DELETE objects: " + loop['deletes'] + "\n")
+    print("Average PUT time: " + '%.3f'%result['average_put_time'])
+    print("Average GET time: " + '%.3f'%result['average_get_time'])
+    print("Average DELETE time: " + '%.3f'%result['average_delete_time'])    
 
 #TODO: HTML formatting   
 elif format == 'text/html':
