@@ -128,7 +128,7 @@ put_times = []
 get_times = []
 delete_times = []
 
-loop_json = []
+loop_json = {}
  
 for i, loop in enumerate(loops):
     new_json = {}
@@ -158,7 +158,9 @@ for i, loop in enumerate(loops):
     delete_times.append(delete_time)
     deletes = loop[10].strip().partition("deletes")[0].strip()
     new_json['deletes'] = deletes
-    loop_json.append(new_json)   
+    loop_json[str(loop_num)] = new_json   
+
+loop_json = json.dumps(loop_json)
 
 average_put_time = 0
 average_get_time = 0
