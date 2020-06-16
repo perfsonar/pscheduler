@@ -53,10 +53,6 @@ data_port_start = participant_data[1]['data_port_start']
 
 def run_client():
 
-    logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
-
-    time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
-
     diags = []
     nuttcp_args = [ nuttcp_cmd ]
 
@@ -207,6 +203,9 @@ def run_client():
         logger.debug("Starting")
     except KeyError:
         pscheduler.fail("Unable to find start time in input")
+
+    logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
+    time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
 
     try:
         status, stdout, stderr = pscheduler.run_program(nuttcp_args)
