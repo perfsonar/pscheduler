@@ -34,7 +34,6 @@ result = pscheduler.speccli_build_args(spec,
 	( 'secret-key', 'secret-key'),
 	( 'url', 'url'),
 	( 'iterations', 'iterations'),
-	( 'threads', 'threads'),
 	( 'object-size', 'object-size')
         ])
 

@@ -37,7 +37,6 @@ def spec_is_valid(json):
              	"secret-key":   { "$ref": "#/pScheduler/String" },
 	        "url":	        { "$ref": "#/pScheduler/String" },
 		"iterations":   { "$ref": "#/pScheduler/Cardinal" },
-		"threads":      { "$ref": "#/pScheduler/Cardinal" },
 		"object-size":  { "$ref": "#/pScheduler/String" }
             },
             # If listed here, data of this type MUST be in the test spec

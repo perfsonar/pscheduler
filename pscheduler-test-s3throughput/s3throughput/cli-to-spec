@@ -64,7 +64,7 @@ opt_parser.add_option("--host-node",
                       dest="host_node")
 
 opt_parser.add_option("--duration",
-                      help="Duration of idle test.",
+                      help="Duration of test.",
                       action="store", type="string",
                       dest="duration")
 
@@ -98,11 +98,6 @@ opt_parser.add_option("--iterations",
                       action="store", type="int",
                       dest="iterations")
 
-opt_parser.add_option("--threads",
-                      help="Number of threads to use",
-                      action="store", type="int",
-                      dest="threads")
-
 opt_parser.add_option("--object-size",
                       help="Size of the objects to be used in the test",
                       action="store", type="string",
@@ -122,7 +117,9 @@ if options.timeout is not None:
    result['timeout'] = options.timeout
 
 if options.duration is not None:
-   result['duration'] = options.duration
+   seconds_duration = iso8601_as_timedelta(options.duration)
+   seconds_duration = timedelta_as_seconds(seconds_duration)
+   result['duration'] = seconds_duration
 else:
    result['duration'] = '60';
 
@@ -155,11 +152,6 @@ if options.iterations is not None:
     result['iterations'] = options.iterations
 else:
     result['iterations'] = 1
-
-if options.threads is not None:
-    result['threads'] = options.threads
-else:
-    result['threads'] = 1
 
 if options.object_size is not None:
     result['object-size'] = options.object_size

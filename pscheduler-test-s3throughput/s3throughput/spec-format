@@ -39,7 +39,6 @@ Secret Key ................... {.section secret-key}{secret-key}{.or}Not Specifi
 Bucket ................... {.section bucket}{bucket}{.or}Not Specified{.end}
 URL ................... {.section url}{url}{.or}Not Specified{.end}
 Iterations ................... {.section iterations}{iterations}{.or}Not Specified{.end}
-Threads ................... {.section threads}{threads}{.or}Not Specified{.end}
 Object Size ................... {.section object-size}{object-size}{.or}Not Specified{.end}
 """
 
