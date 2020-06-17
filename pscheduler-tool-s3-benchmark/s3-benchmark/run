@@ -38,7 +38,6 @@ bucket = input['test']['spec'].get('bucket')
 secret_key = input['test']['spec'].get('secret-key')
 url = input['test']['spec'].get('url')
 iterations = input['test']['spec'].get('iterations')
-threads = input['test']['spec'].get('threads')
 object_size = input['test']['spec'].get('object-size')
 start_time = datetime.datetime.now()
 succeeded = False
@@ -57,10 +56,6 @@ argv = [
 if iterations != None:
     argv.append('-l')
     argv.append(str(iterations))
-
-if threads != None:
-    argv.append('-t')
-    argv.append(str(threads))
 
 if object_size != None:
     argv.append('-z')
@@ -89,8 +84,6 @@ for line in diags.split(','):
     if "region" in line:
         continue
     if "duration" in line:
-        continue
-    if "threads" in line:
         continue
     if "loops" in line:
         continue

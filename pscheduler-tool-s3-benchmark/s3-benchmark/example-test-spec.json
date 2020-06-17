@@ -11,7 +11,6 @@
       "secret-key": "zuf+tfteSlswRu7BJ86wekitnifILbZam1KYY3TG",
       "url": "https://play.min.io/",
       "iterations": 2,
-      "threads": 1,
       "object-size": "1M"
     }
   },
