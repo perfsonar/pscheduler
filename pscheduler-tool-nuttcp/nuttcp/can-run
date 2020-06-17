@@ -30,7 +30,7 @@ errors = []
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 1)
+    pscheduler.json_check_schema(spec, 2)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
@@ -50,7 +50,8 @@ supported_options = ["schema",
                      "interval", "parallel", "window-size",
                      "mss", "bandwidth", "udp", "buffer-length",
                      "ip-tos", "ip-version", "client-cpu-affinity",
-                     "server-cpu-affinity", "reverse"
+                     "server-cpu-affinity", "reverse",
+                     "single-ended", "single-ended-port"
                      ]
 
 
