@@ -18,7 +18,7 @@
 %define short	jq
 Name:		%{short}
 Version:	%{release_version}
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	A filter program for JSON
 BuildArch:	%(uname -m)
 License:	BSD
@@ -35,8 +35,7 @@ Source:		%{short}-%{actual_version}.tar.gz
 Patch0:		%{short}-%{actual_version}-00-jv_is_integer_large.patch
 
 
-
-Requires:	oniguruma
+Requires:	oniguruma >= 6.8.2
 
 BuildRequires:  autoconf
 BuildRequires:  bison > 3.0
@@ -44,7 +43,7 @@ BuildRequires:  flex
 BuildRequires:  gcc
 BuildRequires:  libtool
 BuildRequires:  make
-BuildRequires:  oniguruma-devel
+BuildRequires:  oniguruma-devel >= 6.8.2
 
 
 %description

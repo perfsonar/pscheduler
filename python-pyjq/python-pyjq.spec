@@ -5,7 +5,7 @@
 %define short	pyjq
 Name:		python-%{short}
 Version:	2.3.0
-Release:	2%{?dist}
+Release:	3%{?dist}
 Summary:	Python bindings to JQ
 BuildArch:	%(uname -m)
 License:	BSD 2-Clause
@@ -25,13 +25,13 @@ Requires:       python
 # Note that 1.6.10 is a pScheduler-specific version that includes a
 # bug fix required for this module.  See #717.
 Requires:       jq >= 1.6.10
-Requires:       oniguruma >= 5.9
+Requires:       oniguruma >= 6.8.2
 
 BuildRequires:  python
 BuildRequires:  python-setuptools
 BuildRequires:  Cython >= 0.19
 BuildRequires:  jq-devel >= 1.5
-BuildRequires:  oniguruma-devel >= 5.9
+BuildRequires:  oniguruma-devel >= 6.8.2
 
 %description
 Python bindings to JQ
