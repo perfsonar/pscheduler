@@ -52,10 +52,13 @@ class TestPsdns(PschedTestBase):
 
         if have_network:
             ret = dns_bulk_resolve([
-                'www.perfsonar.net',
+                'aaaa1.nv.perfsonar.net',
+                'aaaa2.nv.perfsonar.net'
             ], ip_version=6)
 
-            self.assertEqual(ret.get('www.perfsonar.net'), '2001:48a8:68fe::248')
+            self.assertEqual(ret.get('aaaa1.nv.perfsonar.net'), 'fc00::1')
+            self.assertEqual(ret.get('aaaa2.nv.perfsonar.net'), 'fc00::2')
+
 
         # reverse
 
