@@ -11,7 +11,7 @@ main directory is a tool). It is also important to look at examples of the two d
 
 Once you understand what you want to accomplish with your tool, you'll want to make sure you have a pScheduler development 
 environment set up on your development machine. The instructions for how to do this can be found on the general README page for 
-the pScheduler repository. Then, you'll want to run the plugin_dev script as specified in the PDK README. You will need to have the test your tool will be used with already created before you can create your tool. If you are developing your test simultaneously, make sure to create the test with the script first. If you are developing a new tool to be used with a preexisting test, you should just use the name of the preexisting test when running the PDK script. This script will set 
+the pScheduler repository. Then, you'll want to run the plugin_dev script as specified in the PDK README. You will need to have the test your tool will be used with already created before you can create your tool. If you are developing your test simultaneously, make sure to create the test with the script first. If you are developing a new tool to be used with a preexisting test, you should just use the name of the preexisting test when running the PDK script. Naming conventions for pScheduler dictate that the name of the tool should exactly match the name of the program being used by the tool. This script will set 
 up all of the files you need for your tool and fill in the boilerplate code needed for a basic perfSONAR tool. You
 may also want to run the make commands indicated in the PDK README to make sure that everything is ready to go out of the box.
 
