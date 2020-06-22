@@ -13,7 +13,7 @@ main directory is a test).
 Once you understand what you want to accomplish with your test, you'll want to make sure you have a pScheduler development 
 environment set up on your development machine. The instructions for how to do this can be found on the general README page for 
 the pScheduler repository. Then, you'll want to run the plugin_dev script as specified in the PDK README. This script will set 
-up all of the files you need for your archiver and fill in the boilerplate code needed for a basic perfSONAR test. You
+up all of the files you need for your test and fill in the boilerplate code needed for a basic perfSONAR test. You
 may also want to run the make commands indicated in the PDK README to make sure that everything is ready to go out of the box.
 
 ### 3. Developing your test
