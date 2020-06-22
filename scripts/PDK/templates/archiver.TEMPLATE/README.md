@@ -29,7 +29,7 @@ testing method is usually more useful in terms of output and is also much faster
 
 #### Method 1:
 
--Follow the pScheduler documentation on how to use an archiver (https://github.com/perfsonar/pscheduler/wiki/Archivers)
+-Follow the pScheduler documentation on how to use an archiver (https://docs.perfsonar.net/pscheduler_ref_archivers.html)
 
 #### Method 2:
 
