@@ -84,6 +84,6 @@ This file determines the duration of the specified test. You'll want to designat
 
 ### run
 
-This is where the majority of the development for the tool takes place. The code to actually run the tool is written here. Everything that is needed to successfully complete the given test with the given tool needs to be here. This is the file that will invoke the actual program the tool is written around or be the complete python script to execute the task.
+This is where the majority of the development for the tool takes place. The code to actually run the tool is written here. Everything that is needed to successfully complete the given test with the given tool needs to be here. You'll be using the input from the test spec to run your tool. Make sure that your tool is expecting the input given by the test spec or else your test and tool won't be compatible with each other. This is the file that will invoke the actual program the tool is written around or be the complete python script to execute the task. Output parsing (turning the results of the command line tool into json results) occurs here as well. This is typically the most consuming part of test/tool development. You'll need to make sure that the result output matches the result input expected by your test.
 
 
