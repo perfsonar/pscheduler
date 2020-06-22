@@ -1,5 +1,65 @@
 ## Creating and Understanding a pScheduler Test
 
+
+### 1. Understanding pScheduler Tests
+
+
+### 2. Running the PDK setup script
+
+
+### 3. Developing your archiver
+
+
+### 4. Testing your test
+There are two main ways to test your test:
+
+1. Testing with scheduled pScheduler tasks or
+
+2. Testing with premade JSON files
+
+It's important to utilize both means of testing in your development workflow. However, for debugging purposes, the second 
+testing method is usually more useful in terms of output and is also much faster.
+
+#### Method 1:
+
+-Follow the pScheduler documentation on how to use a test (https://docs.perfsonar.net/pscheduler_ref_tests_tools.html)
+
+#### Method 2:
+
+_This method is somewhat more involved to set up, but ultimately it will allow you to debug much easier. If you do not run 
+your test in this way, you will **not** be able to see any print statements you generate in your test code. **This 
+includes error messages!** Running your test in the regular scheduled test format is important to verify that it works 
+in that manner because that is how it will be used "in the wild", however, it will "fail silently" when run that way which won't 
+help you make progress in developing it._
+
+1. Short, direct piping
+
+Each formatting file (cli-to-spec, spec-to-cli, etc.) can take direct pipe input, and you can also chain these files together. For example, you can test cli-to-spec by doing the following:
+
+```./cli-to-spec < --my-option-name my-argument```
+
+This will allow you to make sure that your required arguments are being enforced correctly. The output of this will be the spec json, which you can then pipe into spec-format for example, to make sure that the plaintext and html representations of the spec look good. An example of how to do that is here:
+
+```cat spec-example.json | ./spec-format text/plain```
+
+Where ```spec-example.json``` is spec json generated through cli-to-spec.
+
+2. More complicated JSON editing
+
+A similar process can be used to test result-format. An example result file is provided by the PDK, however this will need to be edited for your specific test to work. You'll want to edit the "result" portion of the json (assuming your tool will insert it's results into this section of the json). There are two ways to do this:
+
+- If you have already written your tool, the easiest way to do it is to simply generate result json with the tool and replace the example-result file provided by the PDK with this json.
+
+- If you have not yet written the tool (or it's not in a state to generate output json), you can instead edit the provided example json to meet the requirements of your test. Simply insert json dictionary objects into the result section of the json.
+
+Once you have this json, you can pipe it into result-format using the same process as specified for spec format (there's also direct instructions at the top of the result-format file). You can use this to test that your required options for the result are being correctly enforced and being outputted correctly. 
+
+### 5. Debugging your test
+
+Once you're successfully getting good output, it's time to run your test with pScheduler. In order to do this, you will need your tool to be working as well. First, you'll need to do a ```make cbic``` in both the test and tool directories. You'll need to run a ```make cbic``` in your test directory any time you make a change to your test or the change won't be reflected when you run a pScheduler task.
+
+You'll also need to add both the test and the tool to the pScheduler RPM file. This can be found at https://github.com/perfsonar/pscheduler/blob/master/scripts/RPM-BUILD-ORDER.m4 (navigate to directory ```pscheduler/scripts/``` and open ```RPM-BUILD-ORDER.m4```. Any packages (including python packages) or external tools you added to pScheduler to run your test/tool will need to be added to this file in the appropriate section (the section for these is above where you will add your test/tool). Then, you'll need to add the test and tool names in the appropriate sections. Be very careful to spell everything correctly or pScheduler will not recognize your test/tool. This enables pScheduler to make your test and tool during a pScheduler make and adds them to pScheduler. You can then run a make on pScheduler.
+
 ## Anatomy of a Test
 
 ### enumerate
