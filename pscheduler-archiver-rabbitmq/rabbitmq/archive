@@ -17,7 +17,7 @@ MAX_SCHEMA = 2
 
 log_prefix="archiver-rabbitmq"
 
-log = pscheduler.Log(prefix=log_prefix, quiet=True)
+log = pscheduler.Log(prefix=log_prefix, quiet=True, debug=True, verbose=True)
 
 
 
@@ -43,8 +43,19 @@ class PikaConnectionChannelPair(object):
 
     def __del__(self):
 
-        self.channel.close()
-        self.connection.close()
+        # This is best-effort.
+
+        try:
+            self.channel.close()
+        except AttributeError:
+            pass
+
+        try:
+            self.connection.close()
+        except AttributeError:
+            pass
+
+
 
 
 
@@ -61,6 +72,8 @@ channels = pscheduler.ExpiringSet(
 def archive(json):
 
     data = json["data"]
+
+    log.debug("Archiving: %s" % data)
 
     schema = data.get("schema", 1)
     if schema > MAX_SCHEMA:
@@ -90,6 +103,8 @@ def archive(json):
     log.debug("Routing key is '%s'" % (data["routing-key"]))
 
 
+    key = None
+
     try:
 
         key = "%s```%s```%s" % (
@@ -105,6 +120,11 @@ def archive(json):
         result = {'succeeded': True}
 
     except Exception as ex:
+
+        # Destroy the connection.  It's broken.
+        if key is not None:
+            log.debug("Dropping key %s" % (key))
+            channels.expire(key)
 
         try:
             if ex.__module__ == "pika.exceptions":

@@ -117,6 +117,7 @@ class ExpiringSet(object):
 
             # Force expiration if we're past that.
             if item_record["expires"] < datetime.datetime.now():
+                self._debug("Item '%s' has expired," % (key))
                 self.expire(key)
                 raise KeyError
             item = item_record["item"]
