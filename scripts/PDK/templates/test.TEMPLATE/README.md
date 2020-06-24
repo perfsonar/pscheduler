@@ -104,3 +104,7 @@ This file formats the result of the test in both html and plain text format. Thi
 ### spec format
 
 This file is very similar to result-format but it operates on the spec instead of the result. It formats the spec JSON into something human readable in both plain text and html format. You can look at pre-existing plugins here as well to see how the formatting of the spec usually is arranged.
+
+## Notes on pScheduler development
+
+- Time parameters should be in ISO8601 format. You can find pScheduler libraries for using ISO time in iso8601.py and pstime.py
