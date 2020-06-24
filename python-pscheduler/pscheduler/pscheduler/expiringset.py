@@ -63,12 +63,13 @@ class ExpiringSet(object):
 
 
 
-    def expire(self, key):
+    def expire(self, key, missing_ok=False):
         """Force immediate expiration and purging of an object"""
 
         self._debug("Forced expiration of %s" % (key))
-        self.destroyer(self.items[key]["item"])
-        del self.items[key]
+        if key in self.items or not missing_ok:
+            self.destroyer(self.items[key]["item"])
+            del self.items[key]
 
 
     def purge(self, force=True):
@@ -112,21 +113,25 @@ class ExpiringSet(object):
 
         self.purge(force=False)
 
-        try:
-            item_record = self.items[key]
+        item_record = self.items.get(key, None)
 
-            # Force expiration if we're past that.
-            if item_record["expires"] < datetime.datetime.now():
+        # If there was a record but it's expired, get rid of it so we can make a new one.
+        if item_record is not None and item_record["expires"] < datetime.datetime.now():
                 self._debug("Item '%s' has expired," % (key))
                 self.expire(key)
-                raise KeyError
+                item_record = None
+
+        # No record means we need one, no matter how we got there.
+        if item_record is None:
+            item = self.creator(key, data)
+            item_record = { "item": item }
+            self.items[key] = item_record
+            self._debug("Created item '%s'" % (key))
+
+        else:
+
             item = item_record["item"]
             self._debug("Fetched existing item '%s'" % (key))
-
-        except KeyError:
-            item = self.creator(key, data)
-            self.items[key] = { "item": item }
-            self._debug("Created new item '%s'" % (key))
 
 
         if self.purge_interval is not None:
