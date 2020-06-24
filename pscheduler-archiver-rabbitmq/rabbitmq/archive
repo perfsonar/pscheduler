@@ -35,7 +35,6 @@ class PikaConnectionChannelPair(object):
 
 
     def publish(self, message):
-
         self.channel.basic_publish(exchange=self.exchange,
                                    routing_key=self.routing_key,
                                    body=message)
@@ -52,7 +51,7 @@ class PikaConnectionChannelPair(object):
 
         try:
             self.connection.close()
-        except AttributeError:
+        except (AttributeError, pika.exceptions.ConnectionClosed):
             pass
 
 
@@ -115,7 +114,8 @@ def archive(json):
 
         expires = pscheduler.iso8601_as_timedelta(data.get("connection-expires","PT1H"))
 
-        channels(key, data, expires).publish(pscheduler.json_dump(json["result"]))
+        channel = channels(key, data, expires)
+        channel.publish(pscheduler.json_dump(json["result"]))
 
         result = {'succeeded': True}
 
@@ -124,7 +124,7 @@ def archive(json):
         # Destroy the connection.  It's broken.
         if key is not None:
             log.debug("Dropping key %s" % (key))
-            channels.expire(key)
+            channels.expire(key, missing_ok=True)
 
         try:
             if ex.__module__ == "pika.exceptions":
