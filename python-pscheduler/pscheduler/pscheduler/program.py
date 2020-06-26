@@ -424,72 +424,6 @@ class ChainedExecRunner(object):
 
 
 
-
-if __name__ == "__main__":
-
-    def dump_result(title, tup):
-        """Spit out a run result"""
-        print()
-        print("#\n# %s\n#" % (title))
-        (status, stdout, stderr) = tup
-        print("Exited", status)
-        print("Stdout", stdout)
-        print("Stderr", stderr)
-
-    do_all = True
-
-    if do_all or False:
-        dump_result(
-            "Plain run",
-            run_program(
-                ['id']
-            ))
-
-    if do_all or False:
-        dump_result(
-            "Failure with stderr",
-            run_program(
-                ['ls', '/bad/path']
-            ))
-
-    if do_all or False:
-        dump_result(
-            "Timeout",
-            run_program(
-                ['sleep', '2'],
-                timeout=1
-            ))
-
-    if do_all or False:
-        lines = []
-
-        def line_writer(add_line):
-            """Add a line to the list of those received."""
-            lines.append(add_line)
-
-        dump_result(
-            "Line-at-a-time",
-            run_program(
-                ['ls', '/'],
-                line_call=line_writer
-            ))
-
-        print("Lines:")
-        print("\n".join(["  %s" % (line) for line in lines]))
-
-    if do_all or False:
-        inp = "\n".join([str(number) for number in range(1, 1000000)])
-        dump_result(
-            "Induced pipe error (Should show no errors)",
-            run_program(
-                ['head', '-10'],
-                stdin=inp
-            ))
-
-
-
-
-
 class ExternalProgram(object):
     """Long-running external program."""
 
@@ -502,6 +436,7 @@ class ExternalProgram(object):
             stderr=subprocess.PIPE,
             universal_newlines=True
         )
+        self.pid = self.process.pid
         self.err = None
 
     def stdin(self):
@@ -518,16 +453,21 @@ class ExternalProgram(object):
         return self.process.returncode
 
     def running(self):
-        self.process.poll()
+        try:
+            os.kill(self.pid, 0)
+        except OSError:
+            return False
+
         return self.process.returncode is None
 
-    def done(self):
-        self.process.stdin.close()
-        _end_process(self.process)
+    def __del__(self):
+        try:
+            _end_process(self.process)
+        except AttributeError:
+            pass   # Not there?  Don't care.
 
-    def kill(self):
-        self.done()
-        self.process.kill()
+
+
 
 
 
@@ -538,12 +478,12 @@ class StreamingJSONProgramFailure(Exception):
 class StreamingJSONProgram(object):
 
     """Interface to a program that repeatedly takes a single blob of
-    delimited JSON and returns the same.  Should the program fail, a
-    StreamingJSONProgramFailure exception (with explanation) will be
-    thrown and an attempt to re-establish it will be made during the
-    next call.
+    delimited JSON and returns the same.  Should the program fail more
+    than the specified number of times, a StreamingJSONProgramFailure
+    exception (with explanation) will be thrown.
 
     This class is fully thread-safe.
+
     """
 
     def __init__(self, args, retries=3, timeout=None):
@@ -572,7 +512,14 @@ class StreamingJSONProgram(object):
         """Start the program"""
 
         if self.program is not None:
-            return
+            if self.program.running():
+                return
+            else:
+                del self.program
+                # TODO: Not strictly necessary.
+                self.program = None
+
+        # At this point, there is no program.
 
         self.program = ExternalProgram(self.args)
         self.emitter = RFC7464Emitter(self.program.stdin(),
@@ -581,45 +528,78 @@ class StreamingJSONProgram(object):
                                     timeout=self.timeout)
 
 
+    def __roundtrip(self, json):
+        """
+        Do a full round trip to the program and return the result.  If the
+        program died in the middle, throw an exception.
+        """
+
+        self.__establish()
+
+        result = None
+
+        try:
+            self.emitter(json)
+            result = next(self.parser)
+
+            if (result is None) and (not self.program.running()):
+                raise IOError("Program exited unexpectedly.")
+
+        except IOError as ex:
+            del self.program
+            self.program = None
+            raise ex
+
+        except StopIteration:
+            rc = self.program.returncode()
+            # TODO: We seem to hit this a lot.
+            if rc is None:
+                rc = 1
+            err = self.program.stderr().read().strip()
+            self.done()
+            raise IOError("Program exited %d: %s" % (rc, err))
+
+        return result
+        
+        
+
+
     def __call__(self, json):
+
         """Send the program a blob of JSON and get one back.
         Throws StopIteration if the program exits with EOF.
         """
 
         tries = self.retries
+        exception = None
 
         with self.lock:
-
             while tries:
 
                 tries -= 1
 
-                self.__establish()
-
                 try:
-                    # These will throw an I/O error if they times out.
-                    self.emitter(json)
-                    return self.parser()
+                    return self.__roundtrip(json)
                 except IOError as ex:
-                    self.program.kill()
-                    self.program = None
-                    raise StreamingJSONProgramFailure(ex)
-                except StopIteration:
-                    rc = self.program.returncode()
-                    # TODO: We seem to hit this a lot.
-                    if rc is None:
-                        rc = 1
-                    err = self.program.stderr().read().strip()
-                    self.done()
-                    if tries > 0:
+                    if tries:
                         continue
-                    raise StreamingJSONProgramFailure(
-                        "Program exited %d: %s" % (rc, err))
+                    else:
+                        exception = ex
 
-                assert False, "Should not be reached."
+            # If we fell out of the loop, we ran out of tries and
+            # should have an exception to report.  Don't do this
+            # inside the catch above because it makes the error
+            # messages confusing.
+
+            assert not tries, "Should have no tries left."
+            assert exception is not None, "Should have an exception"
+
+            raise StreamingJSONProgramFailure(
+                "Program failed to start after %d tries: %s"
+                % (self.retries, exception))
 
 
     def done(self):
         if self.program is not None:
-            self.program.done()
+            del self.program
             self.program = None
