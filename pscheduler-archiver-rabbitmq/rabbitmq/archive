@@ -3,8 +3,6 @@
 Send a result to RabbitMQ.
 """
 
-# Note that this imports the local copy, not what's installed on the
-# system.
 import pika
 
 import datetime
@@ -17,7 +15,7 @@ MAX_SCHEMA = 2
 
 log_prefix="archiver-rabbitmq"
 
-log = pscheduler.Log(prefix=log_prefix, quiet=True, debug=True, verbose=True)
+log = pscheduler.Log(prefix=log_prefix, quiet=True)
 
 
 
