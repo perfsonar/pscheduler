@@ -53,6 +53,7 @@ class LimitProcessor(object):
                                        'pscheduler-limits-validate.json')
         # TODO: Throw something nicer than IOError if this fails.
         validation_file = open(validation_path, 'r')
+
         # NOTE: Don't max_schema this.  The limit validation file is
         # tied to this module.
         try:
@@ -78,7 +79,16 @@ class LimitProcessor(object):
         assert isinstance(source, io.IOBase)
         limit_config = json_load(source)
 
-        valid, message = json_validate(limit_config, validation)
+        if not isinstance(limit_config, dict):
+            raise ValueError("Limit configuration must be an object.")
+
+        schema = limit_config.get("schema", 1)
+        temp_schema = {
+            "local": validation["local"],
+            "$ref":"#/local/LimitConfiguration_V%d" % schema
+        }
+
+        valid, message = json_validate(limit_config, temp_schema)
 
         if not valid:
             raise ValueError("Invalid limit file: %s" % message)
