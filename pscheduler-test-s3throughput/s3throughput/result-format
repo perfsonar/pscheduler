@@ -40,8 +40,6 @@ if format == 'text/plain':
     loops = json.loads(result['loops'])
 
     count = 0
-    average_put_speed = 0
-    average_get_speed = 0
 
     for loop in loops.values():
         print("Loop: " + str(loop['loop_num']))
@@ -52,15 +50,11 @@ if format == 'text/plain':
         print("GET objects: " + loop['get_objects'])
         print("Average GET speed: " + loop['get_speed'])
         print("DELETE time: " + loop['delete_time'] + "\n")
-        average_put_speed += float(loop['put_speed'][:-6])
-        average_get_speed += float(loop['get_speed'][:-6])
         count += 1
 
     print("Average PUT time: " + '%.3f'%result['average_put_time'] + " secs")
     print("Average GET time: " + '%.3f'%result['average_get_time'] + " secs")
     print("Average DELETE time: " + '%.3f'%result['average_delete_time'] + " secs")    
-    average_put_speed /= count
-    average_get_speed /= count
 #TODO: HTML formatting   
 elif format == 'text/html':
     # Print results of the test here, in html
@@ -71,7 +65,46 @@ elif format == 'text/html':
     print('    <tr>')
     print('        <td>%s</td>' % result['time'])
     print('    </tr>')
-    print('</table>')
+    loops = json.loads(result['loops'])
+
+    count = 0
+    print('    <table>')
+    for loop in loops.values():
+        print('    <tr>')
+        print("        Loop: " + str(loop['loop_num']))
+        print('    </tr>')
+        print('    <tr>')
+        print("        PUT time: " + loop['put_time'])
+        print('    </tr>')
+        print('    <tr>')
+        print("        PUT objects: " + loop['put_objects'])
+        print('    </tr>')
+        print('    <tr>')
+        print("        Average PUT speed: " + loop['put_speed'])
+        print('    </tr>')
+        print('    <tr>')
+        print("        GET time: " + loop['get_time'])
+        print('    </tr>')
+        print('    <tr>')
+        print("        GET objects: " + loop['get_objects'])
+        print('    </tr>')
+        print('    <tr>')
+        print("        Average GET speed: " + loop['get_speed'])
+        print('    </tr>')
+        print('    <tr>')
+        print("        DELETE time: " + loop['delete_time'] + "\n")
+        print('    </tr>')
+        count += 1
+    print('    </table>')
+    print('    <tr>')
+    print("        Average PUT time: " + '%.3f'%result['average_put_time'] + " secs")
+    print('    </tr>')
+    print('    <tr>')
+    print("        Average GET time: " + '%.3f'%result['average_get_time'] + " secs")
+    print('    </tr>')
+    print('    <tr>')
+    print("        Average DELETE time: " + '%.3f'%result['average_delete_time'] + " secs")
+    print('    </tr>')
     print('</table>')
 
 

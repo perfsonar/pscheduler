@@ -53,7 +53,12 @@ elif format == 'text/html':
 <tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
 <tr><td>Duration</td><td>{.section duration}{duration}{.or}Not Specified{.end}</td></tr>
 <tr><td>Test Type</td><td>{.section testtype}{testtype}{.or}Not Specified{.end}</td></tr>
-</table>
+<tr><td>Access Key</td><td>{.section access-key}{access-key}{.or}Not Specified{.end}</td></tr>
+<tr><td>Bucket</td><td>{.section bucket}{bucket}{.or}Not Specified{.end}</td></tr>
+<tr><td>URL</td><td>{.section url}{url}{.or}Not Specified{.end}</td>
+<tr><td>Iterations</td><td>{.section iterations}{iterations}{.or}Not Specified{.end}</td></tr>
+<tr><td>Object Size</td><td>{.section object-size}{object-size}{.or}Not Specified{.end}</td></tr>
+</tr></table>
 """
 
 else:
