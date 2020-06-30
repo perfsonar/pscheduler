@@ -28,9 +28,7 @@ except KeyError:
     pscheduler.fail('Missing data in input')
 
 duration = input['test']['spec'].get('duration', 'PT5S')
-duration = 'PT' + duration + 'S' # makes duration compatible with ISO time standard
-duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) )
-duration_argument = input['test']['spec'].get('duration') # program itself is expecting duration in a different format 
+duration = (int)(pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ))
 timeout_iso = input['test']['spec'].get('timeout', 'PT120S')
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 access_key = input['test']['spec'].get('access-key')
@@ -61,11 +59,10 @@ if object_size != None:
     argv.append('-z')
     argv.append(str(object_size))
 
-if duration_argument != None:
+if duration != None:
     argv.append('-d')
-    argv.append(str(duration_argument)) 
+    argv.append(str(duration))
 status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
-
 if status:
     succeeded = False
     error = "Error returned: \n%s" % stderr.strip('\n')
@@ -75,7 +72,6 @@ else:
 end_time = datetime.datetime.now()
 
 start_line = ""
-
 for line in diags.split(','):
     if "url" in line:
         continue
