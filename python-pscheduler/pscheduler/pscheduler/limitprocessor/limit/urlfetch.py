@@ -202,8 +202,14 @@ class LimitURLFetch(object):
                 "reasons": [ "Server returned invalid JSON '%s'" % (text) ]
             }
 
+        if (not isinstance(json, dict)):
+            return {
+                "passed": False,
+                "reasons": [ "Server returned an invalid result '%s'" % (text) ]
+            }
+
         try:
-            passed = json["result"]
+            passed = json["passed"]
             if not isinstance(passed, bool):
                 raise KeyError
         except KeyError:
@@ -215,7 +221,7 @@ class LimitURLFetch(object):
 
         result = { "passed": passed }
         try:
-            result["reasons"] = [ json["message"] ]
+            result["reasons"] = [ str(json["message"]) ]
         except KeyError:
             pass  # Not there?  Don't care.
 
