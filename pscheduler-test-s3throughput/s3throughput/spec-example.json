@@ -1,1 +1,0 @@
-{"schema": 1, "duration": "60", "access-key": "my-key", "bucket": "my-bucket", "secret-key": "secret", "url": "https://your-url.domain", "iterations": 1, "object-size": "1M"}

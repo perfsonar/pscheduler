@@ -117,11 +117,9 @@ if options.timeout is not None:
    result['timeout'] = options.timeout
 
 if options.duration is not None:
-   seconds_duration = pscheduler.iso8601_as_timedelta(options.duration)
-   seconds_duration = pscheduler.timedelta_as_seconds(seconds_duration)
    result['duration'] = seconds_duration
 else:
-   result['duration'] = '60';
+   result['duration'] = 'PT60S';
 
 if options.access_key is not None:
    result['access-key'] = options.access_key
