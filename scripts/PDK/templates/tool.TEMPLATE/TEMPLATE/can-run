@@ -27,6 +27,10 @@ except KeyError:
         "reasons": [ "Missing test type" ]
     })
 
+
+# The test specification will have been validated before this, so a
+# quick check of the schema value here is fine.
+
 try:
     spec = json["spec"]
     pscheduler.json_check_schema(spec, 1)
