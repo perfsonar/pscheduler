@@ -14,6 +14,7 @@ import re
 import optparse
 import pscheduler
 import sys
+from urllib.parse import urlparse
 
 if len(sys.argv) > 1:
 
@@ -118,8 +119,6 @@ if options.timeout is not None:
 
 if options.duration is not None:
    result['duration'] = seconds_duration
-else:
-   result['duration'] = 'PT60S';
 
 if options.access_key is not None:
    result['access-key'] = options.access_key
@@ -141,15 +140,14 @@ if options.url is not None:
 else:
     pscheduler.fail('Please specify the url and method. \'--url https://your-url.domain\'')
 
-if "http" in options.url:
+parsed = urlparse(options.url)
+if parsed.scheme == "http" or parsed.scheme == "https":
     result['url'] = options.url
 else:
     pscheduler.fail('Please specify a method for your url, such as \'https://\'')
 
 if options.iterations is not None:
     result['iterations'] = options.iterations
-else:
-    result['iterations'] = 1
 
 if options.object_size is not None:
     result['object-size'] = options.object_size
