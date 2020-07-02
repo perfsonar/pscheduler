@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+#
+# Merge the participant results of a run by this tool into a
+# test-standard result.
+#
+
+import pscheduler
+
+input = pscheduler.json_load(exit_on_error=True);
+
+# TODO: Validate the input
+
+pscheduler.succeed_json(input['results'][0]['result'])

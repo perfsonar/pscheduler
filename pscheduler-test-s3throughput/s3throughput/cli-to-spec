@@ -1,0 +1,162 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #4:
+# 
+# This file encodes CLI arguments as JSON data in a test spec,
+# as defined by the datatypes in validate.py
+# 
+# This can be tested directly using the following syntax:
+# ./cli-to-spec --option argument
+#
+
+import re
+import optparse
+import pscheduler
+import sys
+
+if len(sys.argv) > 1:
+
+   # Args are on the command line
+   args = sys.argv[1:]
+
+else:
+
+   # Args are in a JSON array on stdin
+   json_args = pscheduler.json_load(exit_on_error=True)
+   args = []
+
+   if not isinstance(json_args,list):
+      pscheduler.fail("Invalid JSON for this operation")
+   for arg in json_args:
+      if not ( isinstance(arg, str)
+               or isinstance(arg, int)
+               or isinstance(arg, float) ):
+         pscheduler.fail("Invalid JSON for this operation")
+   args = [ str(arg) for arg in json_args ]
+
+
+
+# Gargle the arguments
+
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""
+    This text will be printed out at the bottom of the
+    "help" message. Change this to whatever you like,
+    or don't include it at all. This could be a good place
+    for example usage cases, etc.
+"""
+)
+
+# Add all potential command line options here
+# Check https://docs.python.org/2/library/optparse.html for more
+# documentation on the opt parser
+
+
+opt_parser.add_option("--host",
+                      help="Host to run the test.",
+                      action="store", type="string",
+                      dest="host")
+
+opt_parser.add_option("--host-node",
+                      help="Host to run the test.",
+                      action="store", type="string",
+                      dest="host_node")
+
+opt_parser.add_option("--duration",
+                      help="Duration of test.",
+                      action="store", type="string",
+                      dest="duration")
+
+opt_parser.add_option("--timeout",
+                      help="Timeout for each query attempt",
+                      action="store", type="string",
+                      dest="timeout")
+
+opt_parser.add_option("--access-key",
+                      help="Access key for the S3 server",
+                      action="store", type="string",
+                      dest="access_key")
+
+opt_parser.add_option("--bucket",
+                      help="Bucket to use for the test",
+                      action="store", type="string",
+                      dest="bucket")
+
+opt_parser.add_option("--secret-key",
+                      help="Secret key for the S3 server",
+                      action="store", type="string",
+                      dest="secret_key")
+
+opt_parser.add_option("--url",
+                      help="Url for the S# server (including method)",
+                      action="store", type="string",
+                      dest="url")
+
+opt_parser.add_option("--iterations",
+                      help="Number of times the test should be run",
+                      action="store", type="int",
+                      dest="iterations")
+
+opt_parser.add_option("--object-size",
+                      help="Size of the objects to be used in the test",
+                      action="store", type="string",
+                      dest="object_size")
+
+(options, remaining_args) = opt_parser.parse_args(args)
+
+result = { 'schema': 1 }
+
+if options.host is not None:
+   result['host'] = options.host
+
+if options.host_node is not None:
+   result['host-node'] = options.host_node
+
+if options.timeout is not None:
+   result['timeout'] = options.timeout
+
+if options.duration is not None:
+   result['duration'] = seconds_duration
+else:
+   result['duration'] = 'PT60S';
+
+if options.access_key is not None:
+   result['access-key'] = options.access_key
+else:
+    pscheduler.fail('Please specify the access key. \'--access-key your-key\'')
+
+if options.bucket is not None:
+    result['bucket'] = options.bucket
+else:
+    result['bucket'] = 'pscheduler-test'
+
+if options.secret_key is not None:
+    result['secret-key'] = options.secret_key
+else:
+    pscheduler.fail('Please specify the secret key. \'--secret-key your-key\'')
+
+if options.url is not None:
+    result['url'] = options.url
+else:
+    pscheduler.fail('Please specify the url and method. \'--url https://your-url.domain\'')
+
+if "http" in options.url:
+    result['url'] = options.url
+else:
+    pscheduler.fail('Please specify a method for your url, such as \'https://\'')
+
+if options.iterations is not None:
+    result['iterations'] = options.iterations
+else:
+    result['iterations'] = 1
+
+if options.object_size is not None:
+    result['object-size'] = options.object_size
+else:
+    result['object-size'] = '1M'
+
+if result['object-size'][-1] not in ['M', 'K', 'G']:
+    pscheduler.fail('Please specify the size in the following format: [integer][M/K/G]')
+
+pscheduler.succeed_json(result)
