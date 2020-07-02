@@ -118,8 +118,6 @@ if options.timeout is not None:
 
 if options.duration is not None:
    result['duration'] = seconds_duration
-else:
-   result['duration'] = 'PT60S';
 
 if options.access_key is not None:
    result['access-key'] = options.access_key
