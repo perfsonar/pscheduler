@@ -146,8 +146,6 @@ else:
 
 if options.iterations is not None:
     result['iterations'] = options.iterations
-else:
-    result['iterations'] = 1
 
 if options.object_size is not None:
     result['object-size'] = options.object_size
