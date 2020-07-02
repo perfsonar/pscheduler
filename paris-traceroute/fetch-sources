@@ -1,4 +1,4 @@
-#!/bin/sh -e 
+#!/bin/sh -e
 #
 # Fetch the paris-traceroute sources and make a tarball out of it that
 # has the usual expected layout.

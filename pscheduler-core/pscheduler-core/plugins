@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Dump a list of plugins
 #
@@ -79,33 +79,33 @@ elif status != 200:
 # Dump the results
 #
 
-print "Installed %s on %s:" % (
+print("Installed %s on %s:" % (
     plugin,
     options.host if options.host is not None else "this system"
-    )
+    ))
 
 
 for item in result:
-    print"\n\n%s Version %s" % (
+    print("\n\n%s Version %s" % (
         item["name"],
         item["version"]
-    )
-    print pscheduler.prefixed_wrap("  ", item["description"], indent=2)
+    ))
+    print(pscheduler.prefixed_wrap("  ", item["description"], indent=2))
 
     # Handle type-specific attributes
 
     if plugin == "tests":
-        print
-        print "  Scheduling: %s" % (item["scheduling-class"].title())
+        print()
+        print("  Scheduling: %s" % (item["scheduling-class"].title()))
     if plugin == "tools":
-        print
+        print()
         runs = sorted(item["tests"])
-        print "  Runs tests: %s" % ( (", ".join(runs)) if runs else "None" )
-        print "  Preference: %d" % item["preference"]
+        print("  Runs tests: %s" % ( (", ".join(runs)) if runs else "None" ))
+        print("  Preference: %d" % item["preference"])
 
-    print
-    print "  Maintainer: %s" % item["maintainer"]["name"]
-    print "  Email:      %s" % item["maintainer"]["email"]
-    print "  Website:    %s" % item["maintainer"]["href"]
+    print()
+    print("  Maintainer: %s" % item["maintainer"]["name"])
+    print("  Email:      %s" % item["maintainer"]["email"])
+    print("  Website:    %s" % item["maintainer"]["href"])
 
 pscheduler.succeed()

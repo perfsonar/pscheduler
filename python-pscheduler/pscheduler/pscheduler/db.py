@@ -9,8 +9,8 @@ import select
 import sys
 import threading
 
-from filestring import string_from_file
-from psselect import polled_select
+from .filestring import string_from_file
+from .psselect import polled_select
 
 
 def pg_connection(dsn='', autocommit=True, name=None):
@@ -69,7 +69,7 @@ def pg_cursor(dsn='', autocommit=True, name=None):
 # TODO: Convert existing code to use this and incorporate functions above.
 #
 
-class PgQueryResult:
+class PgQueryResult(object):
 
     def __init__(self, cursor):
         self.cursor = cursor
@@ -81,13 +81,13 @@ class PgQueryResult:
         return self.rows
 
     def __iter__(self):
-        return self.cursor
+        return self
 
-    def next(self):
+    def __next__(self):
         if self.rows == 0:
             raise StopIteration
         self.rows -= 1
-        result = self.cursor.next()
+        result = next(self.cursor)
         if self.rows == 0:
             self.cursor.close()
         return result
@@ -98,7 +98,7 @@ class PgQueryResult:
             self.rows = 0
 
 
-class PgConnection:
+class PgConnection(object):
 
     def __init__(self, dsn, autocommit=True, name=None):
 
@@ -209,7 +209,7 @@ class PgConnection:
 
 if __name__ == "__main__":
 
-    dsn = 'host=127.0.0.1 dbname=pscheduler user=pscheduler password=6ibeARUyecg6YyJpkRnrt1GIugFUoOK3Hb9SEaJD0BJAhxTBgM3XX'
+    dsn = 'host=dbname=pscheduler user=pscheduler password=6ibeARUyecg6YyJpkRnrt1GIugFUoOK3Hb9SEaJD0BJAhxTBgM3XX'
 
     db = PgConnection(dsn, name="PgConnection-test")
 
@@ -221,7 +221,7 @@ if __name__ == "__main__":
 
         if db.wait(5):
 
-            print "Notified"
+            print("Notified")
 
             for notification in db.notifications():
                 (channel, payload, count) = notification
@@ -231,15 +231,15 @@ if __name__ == "__main__":
                          SELECT table_name
                          FROM information_schema.tables WHERE table_schema = %s
                          LIMIT 5""", ["public"])
-                    print len(result), "rows"
+                    print(len(result), "rows")
                     for row in result:
-                        print row[0]
-                    print "End of results"
+                        print(row[0])
+                    print("End of results")
                 elif channel == "stop":
                     run = False
                     break
 
         else:
-            print "No notifications"
+            print("No notifications")
 
     db.unlisten()

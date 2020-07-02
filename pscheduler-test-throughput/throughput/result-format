@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Format a result
 #
@@ -61,7 +61,7 @@ for interval in intervals:
       stream_blocks[stream["stream-id"]] = stream_block
 
 
-stream_ids = stream_blocks.keys()
+stream_ids = list(stream_blocks.keys())
 stream_ids.sort()
 
 # Don't show the per stream info if we only have the one, kind
@@ -106,4 +106,4 @@ if json.get('tcp-window-size'):
 #output += "\n\nDiag....\n"
 #output += json['diags']
 
-print output
+print(output)

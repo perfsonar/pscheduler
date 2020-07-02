@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Run a test.  Just the test spec is provided on stdin.
 #
@@ -11,6 +11,8 @@ import re
 import sys
 import time
 import pscheduler
+
+log = pscheduler.Log(prefix="tool-pysnmp", quiet=True)
 
 # check for missing required fields
 def missing_input(spec, test_type, level):
@@ -156,6 +158,15 @@ succeeded = None
 for item in spec['oid']:
     oid_tuple += (ObjectType(build_object(item)),)
 
+try:
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
+
 # n comparisons require n+1 get requests
 while num_polls < spec['polls']:
 
@@ -231,8 +242,8 @@ while num_polls < spec['polls']:
             'error': '',
             'diags': 'Run #%d' % num_polls
         }
-        print pscheduler.json_dump(results)
-        print delimiter
+        print(pscheduler.json_dump(results))
+        print(delimiter)
         sys.stdout.flush()
 
     if spec['polls'] == 1:
@@ -257,9 +268,9 @@ if succeeded == None:
 results = {
     'succeeded': succeeded,
     'result': {
-	    'schema': 1,
-	    'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
-	    'succeeded' : succeeded,
+        'schema': 1,
+        'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
+        'succeeded' : succeeded,
         'data': data
     },
     'error': error,

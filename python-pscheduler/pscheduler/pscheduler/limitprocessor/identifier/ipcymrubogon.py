@@ -4,7 +4,11 @@ Identifier Class for ip-cymru-bogon
 
 import dns
 import ipaddress
-import pscheduler
+
+from ...iso8601 import *
+from ...jsonval import *
+from ...pstime import *
+
 
 data_validator = {
     "type": "object",
@@ -23,11 +27,11 @@ def data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
-    return pscheduler.json_validate(data, data_validator)
+    return json_validate(data, data_validator)
 
 
 
-class IdentifierIPCymruBogon():
+class IdentifierIPCymruBogon(object):
 
     """
     Identifier for finding bogons/martians via DNS
@@ -41,12 +45,12 @@ class IdentifierIPCymruBogon():
         if not valid:
             raise ValueError("Invalid data: %s" % message)
 
-        self.exclude = [ ipaddress.ip_network(unicode(addr))
+        self.exclude = [ ipaddress.ip_network(str(addr))
                          for addr in data['exclude'] ]
 
         try:
-            timeout = pscheduler.iso8601_as_timedelta(data['timeout'])
-            self.timeout = pscheduler.timedelta_as_seconds(timeout)
+            timeout = iso8601_as_timedelta(data['timeout'])
+            self.timeout = timedelta_as_seconds(timeout)
         except KeyError:
             self.timeout = 2
 
@@ -75,7 +79,8 @@ class IdentifierIPCymruBogon():
         except KeyError:
             return False
 
-        octets = dns.reversename.from_address(ip)[0:-3]
+        octets = [ octet.decode("ascii")
+                   for octet in dns.reversename.from_address(ip)[0:-3] ]
         host = '.'.join(octets)
         host += '.v4.fullbogons.cymru.com' if len(octets) == 4 \
                 else '.v6.fullbogons.cymru.com'
@@ -100,7 +105,7 @@ class IdentifierIPCymruBogon():
 
         # At this point, we have a bogon.  Filter out exclusions.
 
-        net_ip = ipaddress.ip_network(unicode(ip))
+        net_ip = ipaddress.ip_network(str(ip))
         for exclude in self.exclude:
             if exclude.overlaps(net_ip):
                 return False
@@ -108,30 +113,3 @@ class IdentifierIPCymruBogon():
         # Not excluded; must be a legit bogon.
 
         return True
-
-
-# A short test program
-
-if __name__ == "__main__":
-
-    ident = IdentifierIPCymruBogon({
-        "exclude": [
-            "10.0.0.0/8"
-            ],
-        "timeout": "PT2S",
-        "fail-result": False
-    })
-
-    for ip in [
-            # Trues
-            "192.168.1.1",
-            "240.0.0.1",
-            "1000:dead:beef::1",
-            # Falses
-            "10.9.8.6",
-            "198.6.1.1",
-            "128.82.4.1",
-            "2001:48a8:68fe::248"  # www.perfsonar.net
-    ]:
-        result = ident.evaluate({ "requester": ip })
-        print ip, result

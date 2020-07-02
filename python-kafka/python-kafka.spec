@@ -3,7 +3,7 @@
 #
 
 %define short   kafka
-Name:           python-%{short}
+Name:           %{_pscheduler_python}-%{short}
 Version:        1.4.6
 Release:        1%{?dist}
 Summary:        A pure Python library for Apache Kafka
@@ -19,10 +19,9 @@ Url:            https://pypi.org/project/kafka-python/#files
 
 Source:         %{short}-python-%{version}.tar.gz
 
-Requires:       python
+Requires:       %{_pscheduler_python}
 
-
-BuildRequires:  python-setuptools
+BuildRequires:  %{_pscheduler_python}-setuptools
 
 %description
 This module implements Apache Kafka producers and consumers in pure python, which can be used to interact with a pre existing Apache Kafka message bus.
@@ -38,11 +37,11 @@ This module implements Apache Kafka producers and consumers in pure python, whic
 
 
 %build
-python setup.py build
+%{_pscheduler_python} setup.py build
 
 
 %install
-python setup.py install --root=$RPM_BUILD_ROOT --single-version-externally-managed -O1  --record=INSTALLED_FILES
+%{_pscheduler_python} setup.py install --root=$RPM_BUILD_ROOT --single-version-externally-managed -O1  --record=INSTALLED_FILES
 
 
 %clean

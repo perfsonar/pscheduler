@@ -6,7 +6,7 @@ import multiprocessing
 import multiprocessing.dummy
 import socket
 import threading
-import urlparse
+import urllib
 import uuid
 
 from .psdns import *
@@ -22,10 +22,9 @@ def api_local_host():
     "Return a name that should point to the server on this host."
     return 'localhost'
 
-def api_local_host_fqdn():
-    "Return as close to a fully-qualified name for this host as possible."
-    return socket.getfqdn()
-
+def api_local_host_name():
+    "Return the local system's hostname"
+    return socket.gethostname()
 
 def __host_per_rfc_2732(host):
     "Format a host name or IP for a URL according to RFC 2732"
@@ -40,10 +39,10 @@ def __host_per_rfc_2732(host):
 def api_replace_host(url_text, replacement):
     "Replace the host portion of a URL"
 
-    url = list(urlparse.urlparse(url_text))
+    url = list(urllib.parse.urlparse(url_text))
     if replacement is not None:
         url[1] = __host_per_rfc_2732(replacement)
-    return urlparse.urlunparse(url)
+    return urllib.parse.urlunparse(url)
 
 
 
@@ -59,7 +58,7 @@ def api_url(host = None,
     # Force the host into something valid for DNS
     # See http://stackoverflow.com/a/25103444/180674
     try:
-        host = host.encode('idna')
+        host = host.encode('idna').decode("ascii")
     except UnicodeError:
         raise ValueError("Invalid host '%s'" % (host))
     host = __host_per_rfc_2732(host)
@@ -83,27 +82,11 @@ def api_host_port(hostport):
     if hostport is None:
         return (None, None)
     formatted_host = __host_per_rfc_2732(hostport)
-    try:
-        parsed=urlparse.urlparse("bogus://%s" % (formatted_host))
-        if parsed.port is None: pass #simple test to trigger an error from urlparse on CentOS 6
-    except ValueError as ve:
-        #TODO: can remove this once we drop CentOS 6
-        #python 2.6 urlparse does not properly handle bracketed IPv6, so we do that here
-        if "]:" in formatted_host:
-            formatted_host = formatted_host.replace("[", "")
-            parts = formatted_host.split(']:')
-            if len(parts) != 2:
-                raise ve
-            #convert to int, will raise exception if invalid
-            parts[1] = int(parts[1])
-            return tuple(parts)
-        elif formatted_host.endswith(']'):
-            return formatted_host.replace('[',"").replace(']',""), None
-        else:
-            raise ve
-        
+    # The "bogus" is to make it look like a real, parseable URL.
+    parsed=urllib.parse.urlparse("bogus://%s" % (formatted_host))        
     return (None if parsed.hostname == "none" else parsed.hostname,
             parsed.port)
+
 
 
 def api_url_hostport(hostport=None,
@@ -121,7 +104,7 @@ def api_is_task(url):
     """Determine if a URL looks like a valid task URL"""
     # Note that this generates an extra array element because of the
     # leading slash.
-    url_parts = urlparse.urlparse(url).path.split('/')
+    url_parts = urllib.parse.urlparse(url).path.split('/')
 
     if len(url_parts) != 4 \
             or (url_parts[:3] != ['', 'pscheduler', 'tasks' ]):
@@ -140,7 +123,7 @@ def api_is_run(url):
     """Determine if a URL looks like a valid run URL"""
     # Note that this generates an extra array element because of the
     # leading slash.
-    url_parts = urlparse.urlparse(url).path.split('/')
+    url_parts = urllib.parse.urlparse(url).path.split('/')
     if len(url_parts) != 6 \
             or (url_parts[:3] != ['', 'pscheduler', 'tasks' ]) \
             or (url_parts[4] != 'runs'):
@@ -172,7 +155,7 @@ def api_ping(host=None, bind=None, timeout=3):
     Returns a tuple of (up, reason), where reason is a string
     explaining why 'up' is what is is.
     """
-    url = pscheduler.api_url(host)
+    url = api_url(host)
 
     status, result = url_get(url, bind=bind, json=False,
                              throw=False, timeout=timeout)
@@ -183,7 +166,7 @@ def api_ping(host=None, bind=None, timeout=3):
         # pScheduler.
         try:
             returned_json = json_load(result)
-            if not isinstance(returned_json, basestring):
+            if not isinstance(returned_json, str):
                 raise ValueError
         except ValueError:
             return (False, "Not running pScheduler")
@@ -209,11 +192,6 @@ def api_ping_list(hosts, bind=None, timeout=None, threads=10):
 
     if len(hosts) == 0:
         return {}
-
-    # Work around a bug in 2.6
-    # TODO: Get rid of this when 2.6 is no longer in the picture.
-    if not hasattr(threading.current_thread(), "_children"):
-        threading.current_thread()._children = weakref.WeakKeyDictionary()
 
     pool = multiprocessing.dummy.Pool(processes=min(len(hosts), threads))
 
@@ -264,21 +242,21 @@ def api_has_pscheduler(hostport, timeout=5, bind=None):
 
     resolved = None
     for ip_version in [ 4, 6 ]:
-        resolved = pscheduler.dns_resolve(host,
-                                          ip_version=ip_version,
-                                          timeout=timeout)
+        resolved = dns_resolve(host,
+                               ip_version=ip_version,
+                               timeout=timeout)
         if resolved:
             break
 
     if not resolved:
         return False
 
-    status, raw_spec = pscheduler.url_get(api_url_hostport(hostport),
-                                          timeout=timeout,
-                                          throw=False,
-                                          json=False,
-                                          bind=bind
-                                          )
+    status, raw_spec = url_get(api_url_hostport(hostport),
+                               timeout=timeout,
+                               throw=False,
+                               json=False,
+                               bind=bind
+    )
 
     return status == 200
 
@@ -289,13 +267,14 @@ def api_has_pscheduler(hostport, timeout=5, bind=None):
 
 
 if __name__ == "__main__":
-    print api_url()
-    print api_url(protocol='https')
-    print api_url(host='host.example.com')
-    print api_url(host='host.example.com', path='/both-slash')
-    print api_url(host='host.example.com', path='both-noslash')
-    print api_url(path='nohost')
-    print
+    print(api_url())
+    print(api_url(protocol='https'))
+    print(api_url(host='host.example.com'))
+    print(api_url(host='host.example.com', path='/both-slash'))
+    print(api_url(host='host.example.com', path='both-noslash'))
+    print(api_url(path='nohost'))
+    print()
 
-    print api_ping()
+    print(api_ping())
 
+    print(api_host_port("bogus://"))

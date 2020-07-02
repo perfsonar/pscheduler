@@ -3,14 +3,17 @@
 #
 
 %define short	clock
+%define perfsonar_auto_version 4.3.0
+%define perfsonar_auto_relnum 0.a0.0
+
 Name:		pscheduler-test-%{short}
-Version:	1.1.6
-Release:	1%{?dist}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
 
 Summary:	Clock test class for pScheduler
 BuildArch:	noarch
 License:	ASL 2.0
-Vendor:	perfSONAR
+Vendor:		perfSONAR
 Group:		Unspecified
 
 Source0:	%{short}-%{version}.tar.gz
@@ -18,8 +21,8 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.1.6
-Requires:	python-pscheduler >= 1.3
-Requires:	python-jsontemplate
+Requires:	%{_pscheduler_python}-pscheduler >= 1.3
+Requires:	%{_pscheduler_python}-jsontemplate
 
 BuildRequires:	pscheduler-rpm
 
@@ -36,6 +39,7 @@ Clock test class for pScheduler
 
 %build
 make \
+     PYTHON=%{_pscheduler_python} \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
 

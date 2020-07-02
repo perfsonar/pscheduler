@@ -2,19 +2,16 @@ Source: pscheduler-tool-bwctltracepath
 Section: net
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
-Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>,
- Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
 Build-Depends: debhelper (>= 9)
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
 Homepage: https://github.com/perfsonar/pscheduler
 Vcs-Git: git://github.com/perfsonar/pscheduler
 Vcs-Browser: https://github.com/perfsonar/pscheduler
 
 Package: pscheduler-tool-bwctltracepath
 Architecture: all
-Depends: ${misc:Depends}, python, python-pscheduler,
- pscheduler-server, pscheduler-test-trace,
- python-icmperror, iputils-tracepath,
- bwctl-client, bwctl-server
-Description: pScheduler bwctltracepath tool
+Depends: ${misc:Depends}, pscheduler-server, pscheduler-test-trace
+Description: pScheduler bwctltracepath tool (DISABLED)
  bwctltracepath tool class for pScheduler
+ (DISABLED)

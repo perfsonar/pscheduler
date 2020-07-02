@@ -33,7 +33,8 @@ $$ LANGUAGE plpgsql;
 
 \c __DATABASE__
 
-CREATE OR REPLACE LANGUAGE plpythonu;
+CREATE EXTENSION IF NOT EXISTS plpython3u;
+CREATE OR REPLACE LANGUAGE plpython3u;
 
 -- Needed for generating UUIDs
 CREATE EXTENSION IF NOT EXISTS pgcrypto;

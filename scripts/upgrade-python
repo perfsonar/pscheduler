@@ -1,0 +1,73 @@
+#!/bin/sh
+#
+# Basic (but not all) steps for identifying and upgrading a directory
+# full of Python 2 scripts to Python 3
+#
+
+
+TMPBASE=${TMP:=/tmp}/$(basename $0).$$
+
+cleanup()
+{
+    rm -rf ${TMPBASE}*
+}
+trap cleanup EXIT
+
+
+
+DIR="$1"
+
+if [ ! -d "${DIR}" ]
+then
+    echo "${DIR}: Not a directory"
+    exit 1
+fi
+
+
+ALL="${TMPBASE}.all"
+FILES="${TMPBASE}.files"
+
+find "${DIR}" -type f -print \
+    | fgrep -v "debian/" \
+    | egrep -v -e '/(Makefile|LICENSE)$' \
+    | egrep -v -e '\.(json|md|spec|txt)$' \
+    >> "${ALL}"
+
+< "${ALL}" xargs file \
+    | awk '$2 == "Python" { print $1 }' \
+    | sed -e 's/:$//g' \
+    >> "${FILES}"
+
+
+< "${ALL}" egrep -e "\.py$" \
+    >> "${FILES}"
+
+sort "${FILES}" \
+    | uniq \
+    > "${FILES}-rebuild"
+
+mv "${FILES}-rebuild" "${FILES}"
+
+echo "IGNORING FILES:"
+echo
+fgrep -v -f "${FILES}" "${ALL}"
+
+echo
+echo
+
+echo "CONVERTING FILES:"
+echo
+
+
+
+(
+    while read FILE 
+    do
+	echo $FILE
+	sed -i -e 's|^#!.*python[0-9]*|#!/usr/bin/python3|g' "${FILE}"
+	2to3 -f all -n -w "${FILE}" 2>&1
+    done
+) < "${FILES}" 
+
+find "${DIR}" -type f -print0 \
+    | xargs -0 sed -i -e 's/import urllib\.parse/import urllib/g'

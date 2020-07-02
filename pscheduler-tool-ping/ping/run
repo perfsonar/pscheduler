@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Run a test.  Just the test spec is provided on stdin.
 #
@@ -9,7 +9,7 @@ import icmperror
 import pscheduler
 import re
 
-log = pscheduler.Log(prefix='ping', quiet=True)
+log = pscheduler.Log(prefix='tool-ping', quiet=True)
 
 input = pscheduler.json_load(exit_on_error=True);
 
@@ -40,22 +40,37 @@ argv = []
 #
 ## Source
 source = spec.get('source', None)
+
 ## Destination (required)
-dest = spec.get('dest', None)
-if dest is None:
+try:
+    dest = spec['dest']
+except KeyError:
     pscheduler.fail("Dest is a required parameter")
+
 ## IP Version
 ipversion = spec.get('ip-version', None)
-#Lookup ip address so ping does not have to and determine ip version
+
+# Lookup ip address so ping does not have to and determine ip version
+
 source_ip = None
+dest_ip = None
+
 if source is not None:
     (source_ip, dest_ip) = pscheduler.ip_normalize_version(source, dest, ip_version=ipversion)
-    (ipversion, dest_ip) = pscheduler.ip_addr_version(dest_ip)
+    if source_ip is None and dest_ip is None:
+        pscheduler.fail("Can't find same-family IPs for %s and %s." % (source, dest))
+    if dest_ip is not None:
+        (ipversion, dest_ip) = pscheduler.ip_addr_version(dest_ip)
 elif ipversion is None:
     (ipversion, dest_ip) = pscheduler.ip_addr_version(dest)
-else:
+    if ipversion is None:
+        dest_ip = None
+
+# Make a best guess at the IP if we didn't find one above.
+if dest_ip is None:
     dest_ip_map = pscheduler.dns_bulk_resolve([dest], ip_version=ipversion)
-    dest_ip = dest_ip_map[dest]
+    # For failed resolution, just try the hostname and let ping deal with it.
+    dest_ip = dest_ip_map.get(dest, dest)
 
 #Determine ping program
 if (ipversion is not None) and (ipversion == 6):
@@ -193,7 +208,7 @@ argv.append(str(timeout))
 
 
 # Destination (must be last since it's an argument, not a switch)).
-argv.append(str(dest_ip))
+argv.append(str(dest_ip or spec['dest']))
 
 
 
@@ -205,7 +220,7 @@ if need_root:
     argv.insert(0, 'sudo')
 
 # Stringify the arguments        
-argv = map(lambda x: str(x), argv)
+argv = [str(x) for x in argv]
 
 argv_string =  ' '.join(argv)
 log.debug("Running %s", argv_string)
@@ -215,6 +230,14 @@ run_timeout += datetime.timedelta(seconds=2)
 log.debug("Timeout is %s", run_timeout)
 
 run_timeout_secs = pscheduler.timedelta_as_seconds(run_timeout)
+
+try:
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
 
 status, stdout, stderr \
     = pscheduler.run_program(argv, timeout = run_timeout_secs)

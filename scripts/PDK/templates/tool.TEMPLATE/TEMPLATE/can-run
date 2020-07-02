@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 #
 # Development Order #3:
@@ -26,6 +26,10 @@ except KeyError:
         "can-run": False,
         "reasons": [ "Missing test type" ]
     })
+
+
+# The test specification will have been validated before this, so a
+# quick check of the schema value here is fine.
 
 try:
     spec = json["spec"]

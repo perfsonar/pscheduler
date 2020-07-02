@@ -2,7 +2,7 @@
 Limit Class for pass-fail
 """
 
-import pscheduler
+from ...jsonval import *
 
 
 passfail_data_validator = {
@@ -18,12 +18,12 @@ def passfail_data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
-    return pscheduler.json_validate(data, passfail_data_validator)
+    return json_validate(data, passfail_data_validator)
 
 
 
 
-class LimitPassFail():
+class LimitPassFail(object):
 
     """
     Limit that passes or fails according to a hard-wired value.
@@ -68,5 +68,5 @@ if __name__ == "__main__":
 
     for ip in [ "10.9.8.6", "198.6.1.1", "fd00:dead:beef::1" ]:
         for limit in [ passer, failer ]:
-            print ip, limit.evaluate({})
+            print(ip, limit.evaluate({}))
 

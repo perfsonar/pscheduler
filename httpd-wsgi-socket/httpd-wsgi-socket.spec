@@ -43,11 +43,8 @@ false
 
 
 %post
-%if 0%{?el6}
-service httpd reload
-%endif
 %if 0%{?el7}
-systemctl reload httpd
+systemctl reload-or-try-restart httpd
 %endif
 
 

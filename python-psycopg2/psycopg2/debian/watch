@@ -1,3 +1,0 @@
-version=3
-opts=dversionmangle=s/\+dfsg// \
-http://pypi.python.org/packages/source/p/psycopg2/psycopg2-([0-9][0-9\.\-]*).tar.gz debian uupdate

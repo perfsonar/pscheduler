@@ -6,6 +6,8 @@
 
 from pscheduler import json_validate
 
+MAX_SCHEMA = 1
+
 def spec_is_valid(json):
 
     # SNMPv1Spec is valid for both snmp v1 and v2c 
@@ -89,7 +91,8 @@ def spec_is_valid(json):
         "additionalProperties": True
     }
 
-    return json_validate(json, schema)
+    return json_validate(json, schema, max_schema=MAX_SCHEMA)
+
 
 
 def result_is_valid(json):

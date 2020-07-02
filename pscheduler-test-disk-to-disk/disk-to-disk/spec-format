@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 #
 # Development Order #9:
@@ -54,4 +54,4 @@ else:
 
 
 # TODO: Should probably handle exceptions in a nicer way.
-print jsontemplate.expand(template, json).strip()
+print(jsontemplate.expand(template, json).strip())

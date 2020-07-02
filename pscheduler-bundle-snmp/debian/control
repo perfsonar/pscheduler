@@ -1,0 +1,25 @@
+Source: pscheduler-bundle-snmp
+Section: net
+Priority: optional
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.8
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-bundle-snmp
+Architecture: all
+Depends:
+ pscheduler-test-snmpget,
+ pscheduler-test-snmpgetbgm,
+ pscheduler-test-snmpset,
+ pscheduler-tool-net-snmp-set,
+ pscheduler-tool-pysnmp,
+ pscheduler-archiver-snmptrap
+Description: pScheduler SNMP packages
+ Bundle of SNMP related pScheduler packages
+ Archivers: snmptrap
+ Tests: snmpget, snmpgetbgm, snmpset
+ Tools: net-snmp-set, pysnmp

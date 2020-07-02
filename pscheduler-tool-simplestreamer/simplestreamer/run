@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Run a test.
 #
@@ -22,7 +22,6 @@ log.debug("Input is %s", input)
 # Validate the input
 #
 
-# TODO: Validate more than just this.
 if not 'participant-data' in input:
     pscheduler.fail("No participant data.")
 
@@ -37,8 +36,6 @@ if not 'participant-data' in input:
 # implementation is more complex than necessary for this example.
 # This makes a very rough approximation 
 
-# TODO: This should be turned into a class and put into the pscheduler
-# module.
 start_time = datetime.datetime.now()
 try:
     timeout = pscheduler.iso8601_as_timedelta(input['test']['spec']['timeout'])
@@ -85,6 +82,16 @@ socket_family = socket.AF_INET if ip_version == 4 else socket.AF_INET6
 
 
 participant = input['participant']
+
+
+try:
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
 
 if participant == 0:
 
@@ -143,15 +150,14 @@ if participant == 0:
             sock.settimeout(time_remaining)
             sock.connect(server_address)
             log.debug("Connected")
-            # TODO: How do we check for success?
-            sock.sendall(material)
+            sock.sendall(material.encode())
             log.debug("Sent")
             succeeded = True
             error = None
             diags.append("Try %d succeeded." % (try_num))
             break
         except Exception as ex:
-            error = ex[1] if isinstance(ex, socket.gaierror) else str(ex)
+            error = ex.args[1] if isinstance(ex, socket.gaierror) else str(ex)
             error = "Failed to connect: %s" % (error)
             diags.append("Try %d failed: %s" % (try_num, error))
             log.debug(error)
@@ -177,16 +183,18 @@ elif participant == 1:
     # Dest
     #
 
+    diags = []
     succeeded = False
     full = ''
     error = None
 
     try:
-        # TODO: Need to handle exceptions gracefully.
         sock = socket.socket(socket_family, socket.SOCK_STREAM)
         sock.settimeout(time_left())
         server_address = (input['test']['spec']['dest'],
                           input['participant-data'][1]['listen-port'])
+        diags.append("Listening on %s:%s" % server_address)
+        diags.append("Protocol is IPv%d" % (ip_version))
         sock.bind(server_address)
         sock.listen(1)
         connection, client_address = sock.accept()
@@ -195,30 +203,27 @@ elif participant == 1:
         while True:
             data = connection.recv(1024)
             if data:
-                full += data
+                full += data.decode("ascii")
             else:
                 break
 
         connection.close()
         succeeded = True
 
-    except socket.timeout as ex:
-        error = "Timed out"
+    except socket.timeout:
+        error = "Client never connected."
 
     except socket.gaierror as ex:
-        (err_no, err_str) = ex
+        (err_no, err_str) = ex.args
         error = "Unable to set up listener: %s" % (err_str)
 
     except Exception as ex:
         error = "Receiver exception: " + str(ex) \
             + " " + traceback.format_exc()
 
-
-    # TODO: The elapsed time doesn't seem right.
-
     results = {
         'succeeded': succeeded,
-        'diags': 'Nothing to see at the receiving end.',
+        'diags': "\n".join(diags),
         'error': error if not succeeded else None,
         'result': {
             'received': full,
@@ -233,7 +238,3 @@ else:
 
 
 pscheduler.succeed_json(results)
-
-# TODO: This should probably have a simple wrapper that catches and
-# logs exceptions and produces valid JSON with an error.
-

@@ -1,0 +1,151 @@
+#!/bin/sh -e
+#
+# Find the two installed versions of PostgreSQL and upgrade the
+# earlier to the later.  Note that this will upgrade across more than
+# one major version, which postgresql-xx-setup doesn't.
+#
+
+# These are wired in by the build process.
+PG_LIB="__PG_LIB__"
+USR="__USR__"
+PG_USR_PATTERN="pgsql-%s"
+PG_BIN="${USR}/${PG_USR_PATTERN}/bin"
+PG_USER="__PG_USER__"
+
+
+[ $(id -u) -eq 0 ] \
+    || die "This program must be run as root."
+
+
+TMPBASE="${TMP:-/tmp}/${WHOAMI}.$$"
+mkdir -p "${TMPBASE}"
+# The upgrade process runs as PG_USER and writes here.
+chown "${PG_USER}.${PG_USER}" "${TMPBASE}"
+
+cleanup()
+{
+    rm -rf ${TMPBASE}
+}
+
+trap cleanup EXIT
+
+
+die()
+{
+    echo "$@" 1>&2
+    exit 1
+}
+
+
+#
+# Figure out what versions of PostgreSQL are installed
+#
+
+VERSIONS="${TMPBASE}/versions"
+
+CHOP=$(echo "$PG_USR_PATTERN" | sed -e 's|%.*$||')
+
+ls "${USR}" \
+    | egrep -e "^${CHOP}" \
+    | sed -e "s|${CHOP}||g" \
+    | sort -n \
+    | uniq \
+    > "${VERSIONS}"
+
+
+case $(wc -l "${VERSIONS}" | awk '{ print $1 }') in 
+    0|1)
+	exit 0
+	;;
+    2)
+	# Two is the magic number.
+	true
+	;;
+
+    *)
+	die "Can't handle more than two installed versions of PostgreSQL."
+	;;
+esac
+
+
+#
+# Figure out versions and paths
+#
+
+# What we're upgrading from
+
+FROM=$(head -1 "${VERSIONS}")
+FROM_BIN=$(printf "${PG_BIN}" "${FROM}")
+FROM_DATA="${PG_LIB}/${FROM}/data"
+if [ ! -e "${FROM_DATA}/PG_VERSION" ]
+then
+    echo "Old PostgreSQL ${FROM} is not initialized; no upgrade needed."
+    exit 0
+fi
+
+
+# What we're upgrading to.
+
+TO=$(tail -1 "${VERSIONS}")
+TO_BIN=$(printf "${PG_BIN}" "${TO}")
+TO_DATA="${PG_LIB}/${TO}/data"
+[ -d "${TO_DATA}" ] \
+    || die "No data directory for new ${TO} (expected ${TO_DATA})"
+
+
+
+#
+# Do the deed
+#
+
+# The new and old versions must be stopped for this operation
+# TODO: This will vary by distro
+systemctl stop "postgresql-${FROM}"
+systemctl stop "postgresql-${TO}"
+
+# If the new version has been initialized, back it up instead of clobbering it.
+if [ -e "${TO_DATA}/PG_VERSION" ]
+then
+    echo "Warning: Postgresql ${TO} is already initialized.  Backing that up first."
+    mv "${TO_DATA}" "${TO_DATA}-$(date +%Y-%m-%dT%T)"
+    mkdir -p "${TO_DATA}"
+    chown "${PG_USER}.${PG_USER}" "${TO_DATA}"
+fi
+
+
+echo
+echo "#"
+echo "# Upgrading PostgreSQL ${FROM} to ${TO}"
+echo "#"
+echo
+
+# Initialize the database
+su - "${PG_USER}" -c "'${TO_BIN}/initdb' -D '${TO_DATA}'"
+
+# Do the upgrade
+su - "${PG_USER}" -c \
+    "cd '${TMPBASE}' && '${TO_BIN}/pg_upgrade' \
+     -d '${FROM_DATA}' \
+     -D '${TO_DATA}' \
+     -b '${FROM_BIN}' \
+     -B '${TO_BIN}' \
+     -U '${PG_USER}'"
+
+# Restart the new version
+# TODO: This will vary by distro
+systemctl start "postgresql-${TO}"
+
+# These two scripts are written by pg_upgrade.
+
+# Make the new version ready for action
+su - "${PG_USER}" -c "${TMPBASE}/analyze_new_cluster.sh"
+
+# Remove the old one
+su - "${PG_USER}" -c "${TMPBASE}/delete_old_cluster.sh"
+
+
+echo
+echo "#"
+echo "# Successfully Upgraded PostgreSQL ${FROM} to ${TO}"
+echo "#"
+echo

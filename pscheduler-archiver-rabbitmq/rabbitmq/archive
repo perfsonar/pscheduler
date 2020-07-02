@@ -1,22 +1,78 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 """
 Send a result to RabbitMQ.
 """
 
-# Note that this imports the local copy, not what's installed on the
-# system.
 import pika
+
+import datetime
+import pscheduler
 import sys
 
-import pscheduler
 
 
-MAX_SCHEMA = 1
+MAX_SCHEMA = 2
+
+log_prefix="archiver-rabbitmq"
+
+log = pscheduler.Log(prefix=log_prefix, quiet=True)
+
+
+
+class PikaConnectionChannelPair(object):
+    """
+    This class implements a RabbitMQ connection and channel pair
+    """
+
+    def __init__(self, data):
+
+        self.connection = pika.BlockingConnection(pika.URLParameters(data["_url"]))
+        self.channel = self.connection.channel()
+        self.exchange = data.get("exchange", "")
+        self.routing_key = data.get("routing-key", "")
+
+
+    def publish(self, message):
+        self.channel.basic_publish(exchange=self.exchange,
+                                   routing_key=self.routing_key,
+                                   body=message)
+
+
+    def __del__(self):
+
+        # This is best-effort.
+
+        try:
+            self.channel.close()
+        except AttributeError:
+            pass
+
+        try:
+            self.connection.close()
+        except (AttributeError, pika.exceptions.ConnectionClosed):
+            pass
+
+
+
+
+
+
+channels = pscheduler.ExpiringSet(
+    creator=lambda key, data: PikaConnectionChannelPair(data),
+    # No destroyer; __del__ will take care of it.
+    purge_interval=datetime.timedelta(seconds=30),
+    log=log
+)
+
 
 
 def archive(json):
 
-    schema = json["data"].get("schema", 1)
+    data = json["data"]
+
+    log.debug("Archiving: %s" % data)
+
+    schema = data.get("schema", 1)
     if schema > MAX_SCHEMA:
         return {
             "succeeded": False,
@@ -24,25 +80,49 @@ def archive(json):
                 schema, MAX_SCHEMA)
         }
 
-    data = json["data"]
+
+    # Figure out the routing key
+    routing_key_raw = data.get("routing-key", "")
+    if isinstance(routing_key_raw, str):
+        data["routing-key"] = routing_key_raw
+    else:
+        # JQ Transform
+        log.debug("Using transform for routing key.")
+        # This will already have been validated.
+        transform = pscheduler.JQFilter(routing_key_raw)
+        try:
+            data["routing-key"] = str(transform(json["result"])[0])
+        except pscheduler.JQRuntimeError as ex:
+            return {
+                "succeeded": False,
+                "error": "Routing key transform failed: %s" % (str(ex))
+        }
+    log.debug("Routing key is '%s'" % (data["routing-key"]))
+
+
+    key = None
 
     try:
 
-        connection = pika.BlockingConnection(
-            pika.URLParameters(data["_url"])
+        key = "%s```%s```%s" % (
+            data["_url"],
+            data.get("exchange", ""),
+            data.get("routing-key", "")
         )
 
-        connection.channel().basic_publish(
-            exchange=data.get("exchange", ""),
-            routing_key=data.get("routing-key", ""),
-            body=pscheduler.json_dump(json["result"])
-        )
+        expires = pscheduler.iso8601_as_timedelta(data.get("connection-expires","PT1H"))
 
-        connection.close()
+        channel = channels(key, data, expires)
+        channel.publish(pscheduler.json_dump(json["result"]))
 
         result = {'succeeded': True}
 
     except Exception as ex:
+
+        # Destroy the connection.  It's broken.
+        if key is not None:
+            log.debug("Dropping key %s" % (key))
+            channels.expire(key, missing_ok=True)
 
         try:
             if ex.__module__ == "pika.exceptions":

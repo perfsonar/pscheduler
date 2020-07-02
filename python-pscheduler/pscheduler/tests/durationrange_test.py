@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 test for the Durationrange module.
 """

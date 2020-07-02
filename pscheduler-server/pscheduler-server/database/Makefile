@@ -10,6 +10,7 @@ DBNAME=pscheduler
 
 FILES_SUPERUSER=\
 	database \
+	cron \
 	utilities-super \
 	external_program \
 	http_ops \

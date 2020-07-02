@@ -3,9 +3,12 @@
 #
 
 %define short	TEMPLATE
+%define perfsonar_auto_version 4.3.0
+%define perfsonar_auto_relnum 0.a0.0
+
 Name:		pscheduler-archiver-%{short}
-Version:	1.0.2
-Release:	1%{?dist}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
 
 Summary:	TEMPLATE archiver class for pScheduler
 BuildArch:	noarch

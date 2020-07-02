@@ -1,5 +1,5 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: pscheduler-tool-dns
+Upstream-Name: pscheduler-test-http
 Source: https://github.com/perfsonar/pscheduler
 
 Files: *

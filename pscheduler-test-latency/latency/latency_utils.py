@@ -94,10 +94,10 @@ class Histogram(object):
         stats['mean'] = (mean_num/(1.0*sample_size))
         
         #sort items. make sure sort as numbers not strings
-        sorted_hist = sorted(self.hist_dict.iteritems(), key=lambda k: float(k[0]))
+        sorted_hist = sorted(iter(self.hist_dict.items()), key=lambda k: float(k[0]))
         
         #make mode floats.
-        stats['mode'] = map(lambda x: float(x), stats['mode'])
+        stats['mode'] = [float(x) for x in stats['mode']]
         #get min and max
         stats['minimum'] = float(sorted_hist[0][0])
         stats['maximum'] = float(sorted_hist[len(sorted_hist)-1][0])

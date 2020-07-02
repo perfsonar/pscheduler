@@ -3,7 +3,7 @@
 #
 
 from owping_defaults import *
-import ConfigParser
+import configparser
 import pscheduler 
 
 #Role constants
@@ -41,7 +41,7 @@ def get_role(participant, test_spec):
 def get_config():
     config = None
     try:
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         config.read(CONFIG_FILE)
     except:
         log.warning("Unable to read configuration file %s. Proceeding with defaults.")

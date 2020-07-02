@@ -5,7 +5,7 @@ Functions for handling IP addresses
 import netaddr
 import socket
 
-from psdns import *
+from .psdns import *
 
 
 def is_ip(addr):
@@ -53,6 +53,9 @@ def ip_addr_version(addr,
     family as defined by the socket module.
     """
 
+    assert addr is not None
+    assert isinstance(addr, str)
+
     # Chop out any CIDR suffix.
 
     slash_index = addr.find('/')
@@ -95,7 +98,7 @@ def ip_addr_version(addr,
                 continue
 
     except socket.gaierror as ex:
-        (err, string) = ex
+        (err, string) = ex.args
         return (None, string)
 
     if ipversion is None:
@@ -165,6 +168,6 @@ if __name__ == "__main__":
             "ipv4.test-ipv6.com",
             "ipv6.test-ipv6.com"
     ]:
-        print addr, "->", ip_addr_version(addr)
-        print addr, "->", ip_addr_version(addr, resolve=False)
-        print
+        print(addr, "->", ip_addr_version(addr))
+        print(addr, "->", ip_addr_version(addr, resolve=False))
+        print()

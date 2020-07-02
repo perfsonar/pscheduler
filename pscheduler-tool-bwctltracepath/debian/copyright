@@ -1,5 +1,5 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: pscheduler-test-bwctltracepath
+Upstream-Name: pscheduler-tool-bwctltracepath
 Source: https://github.com/perfsonar/pscheduler
 
 Files: *

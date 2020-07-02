@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # pScheduler Archiver Daemon
 #
@@ -122,7 +122,7 @@ dsn = options.dsn
 # Maintainer for default archives
 #
 
-class DefaultArchiveMaintainer:
+class DefaultArchiveMaintainer(object):
 
     def __init__(self, path, dsn, log):
 
@@ -290,12 +290,15 @@ class ArchiveProcess(object):
         try:
             return self.program(json)
         except (IOError, pscheduler.StreamingJSONProgramFailure) as ex:
+            log.debug("Plugin failed: %s", ex)
             self.done()
             return {
                 "succeeded": False,
                 "error": "Possibly-permanent archiver error: %s" % (str(ex))
                 # Don't retry.  The StreamingJSONProgram will have retried.
                 }
+
+        assert False, "Should not be reached."
 
 
     def done(self):
@@ -375,6 +378,9 @@ class ArchiverProcessPool(object):
 
         try:
             result = process(json)
+            self.log.debug("Pool %s: Process returned %s", self.archiver, result)
+        except Exception as ex:
+            raise ex
         finally:
             # Dispose of the process no matter what happened.
             with self.lock:
@@ -531,7 +537,7 @@ workers = pscheduler.ThreadSafeDictionary()
 # Archive Worker
 #
 
-class ArchiveWorker():
+class ArchiveWorker(object):
 
     def __init__(self, db, log, row, collection):
         self.db = db
@@ -579,7 +585,7 @@ class ArchiveWorker():
                                        if participant is None \
                                        else participant)
 
-        uri_host = spec.get("uri-host", pscheduler.api_local_host_fqdn())
+        uri_host = spec.get("uri-host", pscheduler.api_local_host())
         task_href = pscheduler.api_url(host=uri_host, path="tasks/%s" % (task_uuid))
         run_href = pscheduler.api_url(host=uri_host, path="tasks/%s/runs/%s" \
                                       % (task_uuid, run_uuid))
@@ -681,6 +687,10 @@ class ArchiveWorker():
             stdout_attempt = "Transform result forced not archiving."
             stderr = ""
             skip = True
+            result = {
+                "succeeded": True,
+                "error": ""
+            }
         else:
             skip = False
 
@@ -694,6 +704,7 @@ class ArchiveWorker():
                 self.log.debug("%d: Returned JSON from archiver: %s", self.id, result)
                 returncode = 0
             except Exception as ex:
+                self.log.debug("%d: Archiver threw an exception: %s", self.id, exception)
                 result = {
                     "succeeded": False,
                     "error": "Exception during archiving: %s" % (str(ex))
@@ -701,13 +712,15 @@ class ArchiveWorker():
                 self.log.exeption("%d: Exception" % (self.id))
                 returncode = 1
 
+            assert result is not None
+
 
         attempt = {
             # TODO: Figure out to format this with -xx:xx for the timezone offset.
             "time": pscheduler.datetime_as_iso8601(datetime.datetime.now(tzlocal())),
             "return-code": returncode,
             "stdout": result,
-            "stderr": result.get("error", "")
+            "stderr": "No result present." if result is None else result.get("error", "")
         }
 
         if returncode != 0:
@@ -726,7 +739,7 @@ class ArchiveWorker():
 
         else:
 
-            if result['succeeded']:
+            if result is not None and result.get('succeeded', False):
                 self.log.debug("%d: Succeeded: %s to %s",
                                self.id, run_uuid, archiver)
                 self.db.query("""UPDATE archiving

@@ -2,9 +2,12 @@
 # RPM Spec for pScheduler JQ Library
 #
 
+%define perfsonar_auto_version 4.3.0
+%define perfsonar_auto_relnum 0.a0.0
+
 Name:		pscheduler-jq-library
-Version:	1.1.6
-Release:	1%{?dist}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
 
 Summary:	Library of JQ functions for pScheduler
 BuildArch:	noarch

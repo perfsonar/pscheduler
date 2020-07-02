@@ -63,15 +63,15 @@ class ExecUnitTest(unittest.TestCase):
         full_cmd = [self.cmd] + args
         try:
             status, stdout, stderr = run_program(full_cmd, stdin=input)
-            print self.cmd
+            print(self.cmd)
         except:
             #print stacktrace for any errors
             traceback.print_exc()
             self.fail("unable to run command {0}".format(self.cmd))
         
         #check stdout and stderr
-        print stdout
-        print stderr
+        print(stdout)
+        print(stderr)
         self.assertEqual(status, expected_status) #status should be 0
         if expected_status == 0:
             self.assertFalse(stderr) #stderr should be empty
@@ -827,7 +827,7 @@ class TestSpecToCliUnitTest(ExecUnitTest):
         
         #Track that we have all the expected cli args
         unused_cli_args = {}
-        for expected_cli_arg in expected_cli_args.keys():
+        for expected_cli_arg in expected_cli_args:
             unused_cli_args[expected_cli_arg] = True
         
         #go through what we got

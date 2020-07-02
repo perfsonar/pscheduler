@@ -1,4 +1,4 @@
-#!/bin/sed -e 1d;/^#/d
+#!/bin/sed -e /^#/d
 
 #
 # Development Order #2:
@@ -9,6 +9,9 @@
 # Be sure to edit line 19, as this determines what tests the tool is
 # compatible with.
 #
+
+# Note that the -5 preference here is to give the psurl tool
+# preference over this one for HTTP tests.
 
 {
     "schema": 1,

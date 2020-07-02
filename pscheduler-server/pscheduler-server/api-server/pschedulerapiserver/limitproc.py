@@ -3,11 +3,10 @@
 #
 
 import os
-import pscheduler
 import sys
 import time
 
-from pscheduler.limitprocessor import LimitProcessor
+from pscheduler.limitprocessor.limitprocessor import LimitProcessor
 
 from .log import log
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Dump the contents of the schedule in a plottable form
 #
@@ -11,7 +11,9 @@ import optparse
 import os
 import pscheduler
 import pytz
+import shutil
 import sys
+import tempfile
 
 
 pscheduler.set_graceful_exit()
@@ -241,7 +243,8 @@ class_levels = {
     "normal": 2,
     "background": 3,
     "background-multi": 4,
-    "nonstart": 5
+    "nonstart": 5,
+    "preempted": 6
 }
 
 columns = [
@@ -250,16 +253,20 @@ columns = [
     "\\nNormal",
     "Background\\nSingle-Result",
     "Background\\nMulti-Result",
-    "Non\\nStarting"
+    "Non\\nStarting",
+    "\\nPreempted"
     ]
 
 
-script_lines = [
+script_terminal = [
 """
 reset
-
 set terminal png notransparent truecolor size 800,1200 background rgb "#ffffff"
+"""
+]
 
+script_lines = [
+"""
 set timefmt "%Y-%m-%dT%H:%M:%S"
 
 unset xtics
@@ -301,15 +308,6 @@ plot "-" using 1:2:3:2:3 \\
 # Dump it out
 #
 
-class_levels = {
-    "exclusive": 1,
-    "normal": 2,
-    "background-multi": 3,
-    "background": 3,
-    "nonstart": 4,
-}
-
-
 if len(schedule) == 0:
     pscheduler.fail("Nothing scheduled %s to %s" % (
         pscheduler.datetime_as_iso8601(start),
@@ -342,7 +340,7 @@ for run in schedule:
             )
     )
 
-script_lines.append("eof")
+script_lines.append("eof\n")
 
 
 #
@@ -350,7 +348,9 @@ script_lines.append("eof")
 #
 
 if options.plot:
-    print "\n".join(script_lines)
+    print("\n".join(script_terminal),
+          "\n".join(script_lines)
+    )
     pscheduler.succeed()
 
 
@@ -358,16 +358,35 @@ if options.plot:
 # Push it through GNUPlot to make a PNG
 #
 
-status, out, err = pscheduler.run_program(
-    "gnuplot",
-    stdin="\n".join(script_lines)
-    )
+# run_program() can no longer gargle non-text output from programs.
+# Make a temp file, send the plot there and do a faux cat to get it to
+# stdout.
 
-if status != 0:
-    pscheduler.fail(err)
+png = None
+try:
+    (png_file, png_path) = tempfile.mkstemp()
+    os.close(png_file)
+
+    script = "\n".join(script_terminal) \
+             + "\nset output '%s'\n" % (png_path) \
+             + "\n".join(script_lines)
+
+    status, out, err = pscheduler.run_program("gnuplot", stdin=script)
+
+    if status != 0:
+        pscheduler.fail(err)
+
+    with open(png_path, "rb") as image:
+        shutil.copyfileobj(image, sys.stdout.buffer)
+
+#except Exception as ex:
+#    pscheduler.fail("Failed to generate plot: %s" % (ex))
+
+finally:
+    if png_path is not None:
+        os.unlink(png_path)
 
 if sys.stderr.isatty():
     sys.stderr.write("Plotted %d runs\n" % (len(schedule)))
 
-
-pscheduler.succeed(out)
+pscheduler.succeed()

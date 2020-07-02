@@ -1,4 +1,9 @@
-#!/usr/bin/python -u
+#!/bin/sh
+#
+# "/usr/bin/env python3 -u" doesn't work as expected, so we use this
+# shell hack to invoke Python in unbuffered mode.
+#
+''''exec python3 -u -- "$0" ${1+"$@"} # '''
 
 """
 This program does very basic troubleshooting of one or two systems
@@ -11,6 +16,7 @@ import optparse
 import os
 import pipes
 import re
+import socket
 import sys
 import time
 
@@ -49,9 +55,11 @@ Examples:
     )
 opt_parser.disable_interspersed_args()
 
+DEFAULT_BASE_HOST = "localhost"
+
 opt_parser.add_option("--host",
                       help="Base host for troubleshooting",
-                      default="localhost",
+                      default=DEFAULT_BASE_HOST,
                       action="store", type="string",
                       dest="host")
 
@@ -99,9 +107,9 @@ except IndexError:
 
 if host_z is not None:
     if host_z == host_a:
-        print
-        print "Both hosts are the same; assuming you meant to troubleshoot only one."
-        print
+        print()
+        print("Both hosts are the same; assuming you meant to troubleshoot only one.")
+        print()
     else:
         hosts.append(host_z)
 
@@ -114,21 +122,26 @@ if options.skip_single and host_z is None:
 
 # TODO: This would be a nice "narrator" class.
 
+
+def _write(text):
+    sys.stdout.write(text)
+    sys.stdout.flush()
+
 def start(text):
-    sys.stdout.write("%s..." % (text))
+    _write("%s..." % (text))
 
 def progress(text=None):
     if text is None:
-        sys.stdout.write(".")
+        _write(".")
     else:
         start(" %s" % (text))
 
 def ok(message="OK."):
-    sys.stdout.write(" %s\n" % (message))
+    _write(" %s\n" % (message))
 
 def failed(why, fail=True):
-    sys.stdout.write(" Failed.\n")
-    print why
+    _write(" Failed.\n\n")
+    print(why)
     if fail:
         pscheduler.fail()
 
@@ -139,10 +152,22 @@ def failed_diags(run, why="Task failed to run properly."):
     Fail and write diagnostic data for a run
     """
     failed(why, fail=False)
-    print
+    print()
     result_args = ["pscheduler", "result", "--diags", "--archivings", run]
     os.execl("/bin/sh", "/bin/sh", "-c",
              " ".join([pipes.quote(arg) for arg in result_args]))
+
+
+
+def check_hostname_resolvability():
+
+    hostname = socket.gethostname()
+    start("  Making sure local hostname '%s' resolves" % hostname)
+    try:
+        socket.gethostbyname(hostname)
+        ok()
+    except socket.gaierror as ex:
+        ok("Does not.  This is recommended, but not required.")
 
 
 
@@ -200,13 +225,11 @@ def dump_stats(host):
     """
     Acquire and dump statistics for a host
     """
-    print "  Server Statistics:"
+    print("  Server Statistics:")
 
     # Figure out how much padding to add
     longest_label =  sorted(
-        map(lambda p: len(p[0]),
-            filter(lambda p: p[1] is not None, statistics)
-        )
+        [len(p[0]) for p in [p for p in statistics if p[1] is not None]]
     )[-1]
 
     last_header = ""
@@ -216,12 +239,12 @@ def dump_stats(host):
 
         # Handle section headers
         if fetch is None:
-            print "    %s" % (label)
+            print("    %s" % (label))
             last_header = label
             continue
 
-        print "      %s %s..." % (
-            label, "." * (longest_label - len(label)) ),
+        print("      %s %s..." % (
+            label, "." * (longest_label - len(label)) ), end=' ')
 
         url = pscheduler.api_url(host, "/stat/%s" % (fetch))
 
@@ -231,11 +254,11 @@ def dump_stats(host):
             status = 200
             result = "N/A"
         elif status != 200:
-            print "FAILED"
+            print("FAILED")
             pscheduler.fail("Unable to retrieve %s %s: %s: %s" \
                             % (last_header, label, status, result))
 
-        print "%6s" % (result.strip())
+        print("%6s" % (result.strip()))
 
 
 def run_task(message, lead, task, bind=None):
@@ -363,8 +386,8 @@ def run_task(message, lead, task, bind=None):
 
 
 
-print "Performing basic troubleshooting of %s." \
-    % (" and ".join(hosts))
+print("Performing basic troubleshooting of %s." \
+    % (" and ".join(hosts)))
 
    
 
@@ -377,10 +400,13 @@ print "Performing basic troubleshooting of %s." \
 clocks = {}
 
 for host in hosts:
-    print
-    print "%s:" % (host)
-    print
+    print()
+    print("%s:" % (host))
+    print()
 
+
+    if host_a == DEFAULT_BASE_HOST:
+        check_hostname_resolvability()
 
     if not options.quick and not options.skip_single:
         check_mtu(host)
@@ -470,7 +496,7 @@ for host in hosts:
 
 
 if len(hosts) == 1:
-    print
+    print()
     pscheduler.succeed("pScheduler appears to be functioning normally.")
 
 
@@ -478,15 +504,34 @@ if len(hosts) == 1:
 # Remote pScheduler
 #
 
-print
-print "%s and %s:" % (host_a, host_z)
-print
+print()
+print("%s and %s:" % (host_a, host_z))
+print()
+
+
+# Make sure both hosts resolve to the same address family
+
+start("  Checking IP addresses")
+(stripped_a, stripped_a_port) = pscheduler.api_host_port(host_a)
+(stripped_z, stripped_z_port) = pscheduler.api_host_port(host_z)
+normalized_a, normalized_z = pscheduler.ip_normalize_version(stripped_a, stripped_z, ip_version=options.ip_version)
+if normalized_a is None or normalized_z is None:
+    failed("Unable to find %s addresses for both hosts" % (
+        "same-family" if options.ip_version is None else "IPv%d" % (options.ip_version)
+    ))
+
+else:
+    normalized_version, _normalized_ip = pscheduler.ip_addr_version(normalized_a)
+    if options.ip_version is not None and (options.ip_version != normalized_version):
+        failed("IPs are version %d, version %s was requested" % (normalized_version, options.ip_version))
+    else:
+        ok("IPv%s" % (normalized_version))
 
 
 # MTU Between hosts
 
 if not options.quick:
-    check_mtu(host_a, host_z)
+    check_mtu(stripped_a, stripped_z)
 
 
 # Compare clocks
@@ -513,7 +558,7 @@ if not options.quick:
         "schema": 1,
         "test": {
             "spec": {
-                "dest": host_z,
+                "dest": normalized_z,
                 "schema": 1
             },
             "type": "simplestream"
@@ -525,7 +570,7 @@ if not options.quick:
         simplestream_task["test"]["spec"]["ip-version"] = options.ip_version
 
     simplestream_result = run_task(
-        "  Simple stream test", host_a, simplestream_task
+        "  Simple stream test", normalized_a, simplestream_task
     )
 
 
@@ -533,6 +578,6 @@ if not options.quick:
 # The End.
 #
 
-print
+print()
 pscheduler.succeed(
     "pScheduler on both hosts appears to be functioning normally.")

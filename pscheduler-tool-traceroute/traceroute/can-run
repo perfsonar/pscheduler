@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Determine if this tool can run a test based on a test spec.
 #
@@ -8,11 +8,16 @@ import sys
 
 import pscheduler
 
-json = pscheduler.json_load(exit_on_error=True);
+# Highest this tool supports
+MAX_SCHEMA = 2
 
-
-# TODO: Should be checking the package schema and the task spec schema.
-# TODO: Should be validating.
+try:
+    json = pscheduler.json_load(exit_on_error=True, max_schema=MAX_SCHEMA);
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ str(ex) ]
+    })
 
 try:
     if json['type'] != 'trace':
@@ -29,7 +34,7 @@ except KeyError:
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 1)
+    pscheduler.json_check_schema(spec, MAX_SCHEMA)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,

@@ -2,9 +2,12 @@
 # RPM Spec for pScheduler RPM Macros
 #
 
+%define perfsonar_auto_version 4.3.0
+%define perfsonar_auto_relnum 0.a0.0
+
 Name:		pscheduler-rpm
-Version:	1.1.6
-Release:	1%{?dist}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
 
 Summary:	Macros for use by pScheduler RPM specs
 BuildArch:	noarch
@@ -36,12 +39,55 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %%_rundir %{_localstatedir}/run
 %endif
 
-# Minimum-required PostgreSQL version
-%%_pscheduler_postgresql_version_major 9
-%%_pscheduler_postgresql_version_minor 5
-%%_pscheduler_postgresql_version %{_pscheduler_postgresql_version_major}.%{_pscheduler_postgresql_version_minor}
-%%_pscheduler_postgresql_package postgresql%{_pscheduler_postgresql_version_major}%{_pscheduler_postgresql_version_minor}
 
+#
+# Python
+#
+
+# EL7 supports 2, 34 and 36 and names its packages that way (e.g.,
+# python36-foo) and has some named python3-foo.  EL8 has standardized
+# on 3.6 and packages named python3-foo.
+
+%%_pscheduler_python_version_major 3
+%%_pscheduler_python_version_minor 6
+
+%if 0%{el7}
+%%_pscheduler_python python%{_pscheduler_python_version_major}
+# EL7: When support is discontinued, switch all uses of this macro to
+# _pscheduler_python.
+%%_pscheduler_python_epel python%{_pscheduler_python_version_major}%{_pscheduler_python_version_minor}
+%endif
+
+# EL8: Enable this.
+# %if %{el8}
+# %%_pscheduler_python python%{_pscheduler_python_version_major}
+# %endif
+
+
+#
+# PostgreSQL
+#
+
+%if 0%{el7}
+# Minimum-required PostgreSQL version
+%%_pscheduler_postgresql_version_major 10
+%%_pscheduler_postgresql_version_minor 12
+
+%%_pscheduler_postgresql_version %{_pscheduler_postgresql_version_major}.%{_pscheduler_postgresql_version_minor}
+%%_pscheduler_postgresql_package postgresql%{_pscheduler_postgresql_version_major}
+
+%%_pscheduler_postgresql_data_top %{_sharedstatedir}/pgsql
+%%_pscheduler_postgresql_data %{_pscheduler_postgresql_data_top}/%{_pscheduler_postgresql_version_major}/data
+%%_pscheduler_postgresql_service postgresql-%{_pscheduler_postgresql_version_major}
+%endif
+
+
+%%_pscheduler_postgresql_user postgres
+
+
+#
+# pScheduler
+#
 
 %%_pscheduler_libexecdir %{_libexecdir}/pscheduler
 %%_pscheduler_sysconfdir %{_sysconfdir}/pscheduler

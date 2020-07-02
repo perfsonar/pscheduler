@@ -3,7 +3,8 @@ Identifier Class for ip-cidr-list
 """
 
 import ipaddress
-import pscheduler
+
+from ...jsonval import *
 
 data_validator = {
     "type": "object",
@@ -25,11 +26,11 @@ def data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
-    return pscheduler.json_validate(data, data_validator)
+    return json_validate(data, data_validator)
 
 
 
-class IdentifierIPCIDRList():
+class IdentifierIPCIDRList(object):
 
 
     """
@@ -47,7 +48,7 @@ class IdentifierIPCIDRList():
 
         self.cidrs = []
         for cidr in data['cidrs']:
-            self.cidrs.append(ipaddress.ip_network(unicode(cidr)))
+            self.cidrs.append(ipaddress.ip_network(str(cidr)))
 
 
 
@@ -61,7 +62,7 @@ class IdentifierIPCIDRList():
         """
 
         try:
-            ip = ipaddress.ip_network(unicode(hints['requester']))
+            ip = ipaddress.ip_network(str(hints['requester']))
         except KeyError:
             return False
 
@@ -89,4 +90,4 @@ if __name__ == "__main__":
     })
 
     for ip in [ "10.9.8.6", "198.6.1.1", "fd00:dead:beef::1" ]:
-        print ip, ident.evaluate({ "requester": ip })
+        print(ip, ident.evaluate({ "requester": ip }))

@@ -37,7 +37,11 @@ pscheduler-rpm
 # DEVELOPMENT, LIBRARIES AND UTILITIES
 #
 
-# PostgreSQL Additions
+# PostgreSQL and Additions
+
+# Neither EL7 nor PGDG's distro provide PL/Python3.  This will build
+# it if EPEL is present.
+ifelse(REDHAT_RELEASE_MAJOR,7,postgresql)
 postgresql-init
 postgresql-load
 
@@ -45,27 +49,26 @@ postgresql-load
 jq
 
 # Python Modules
-python-setuptools
-python-argparse
-python-functools32
+python-daemon
 python-isodate
-python2-pyrsistent
-python2-jsonschema
+python-itsdangerous
+python-pyrsistent
+python-jsonschema
 python-kafka
-python-netaddr
+# Used by pscheduler-archiver-esmond
+python-memcached
+python-netifaces
 python-ntplib
+python-parse-crontab
 python-py-radix
 python-pyjq
-# TODO: This can be dropped in 1.2
-python-repoze.lru
-python-subprocess32
 python-tzlocal
 python-vcversioner
-# This is how EL prefixes it.
-python2-pyasn1
-python2-pyasn1-modules
-# This doesn't get a python- prefix.  Ask CentOS why.
-pysnmp
+python-pyasn1
+python-pyasn1-modules
+python-werkzeug
+python-flask
+python-pysnmp
 
 # JSON Tools
 python-jsontemplate
@@ -73,6 +76,7 @@ python-jsontemplate
 
 # Home-grown Python Modules
 python-icmperror
+
 
 # Apache add-ons
 httpd-firewall
@@ -84,6 +88,7 @@ httpd-wsgi-socket
 # Utility and Tool programs
 #
 drop-in
+ethr
 paris-traceroute
 random-string
 
@@ -104,51 +109,52 @@ pscheduler-server
 
 # Tests
 pscheduler-test-clock
-pscheduler-test-disk-to-disk	--bundle extras
+pscheduler-test-disk-to-disk		--bundle extras
 pscheduler-test-http
 pscheduler-test-idle
 pscheduler-test-idlebgm
 pscheduler-test-idleex
 pscheduler-test-latency
 pscheduler-test-latencybg
-pscheduler-test-netreach
+pscheduler-test-netreach			--bundle extras
 pscheduler-test-throughput
 pscheduler-test-rtt
 pscheduler-test-simplestream
-pscheduler-test-snmpget			--bundle extras
-pscheduler-test-snmpgetbgm		--bundle extras
-pscheduler-test-snmpset			--bundle extras
+pscheduler-test-snmpget			--bundle snmp
+pscheduler-test-snmpgetbgm		--bundle snmp
+pscheduler-test-snmpset			--bundle snmp
 pscheduler-test-trace
 pscheduler-test-dns
 
 # Tools
-pscheduler-tool-owping
-pscheduler-tool-powstream
+pscheduler-tool-bwctliperf2		--bundle obsolete
+pscheduler-tool-bwctliperf3		--bundle obsolete
+pscheduler-tool-bwctlping		--bundle obsolete
+pscheduler-tool-bwctltracepath		--bundle obsolete
+pscheduler-tool-bwctltraceroute		--bundle obsolete
+pscheduler-tool-curl			--bundle extras
+pscheduler-tool-dnspy
+pscheduler-tool-ethr
+pscheduler-tool-globus			--bundle extras
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
+pscheduler-tool-net-snmp-set		--bundle snmp
+pscheduler-tool-nmapreach			--bundle extras
 pscheduler-tool-nuttcp
-pscheduler-tool-bwctliperf2
-pscheduler-tool-bwctliperf3
-pscheduler-tool-bwctlping
-pscheduler-tool-bwctltraceroute
-pscheduler-tool-bwctltracepath
-pscheduler-tool-net-snmp-set
-pscheduler-tool-nmapreach
+pscheduler-tool-owping
+pscheduler-tool-paris-traceroute
+pscheduler-tool-ping
+pscheduler-tool-powstream
+pscheduler-tool-psclock
 pscheduler-tool-psurl
-pscheduler-tool-pysnmp				--bundle extras
+pscheduler-tool-pysnmp			--bundle snmp
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
 pscheduler-tool-snooze
-pscheduler-tool-ping
-pscheduler-tool-psclock
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
 pscheduler-tool-twping
-pscheduler-tool-paris-traceroute
-pscheduler-tool-dnspy
-pscheduler-tool-curl			--bundle extras
-pscheduler-tool-globus			--bundle extras
 
 # Archivers
 pscheduler-archiver-bitbucket
@@ -157,7 +163,7 @@ pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-kafka
 pscheduler-archiver-rabbitmq
-pscheduler-archiver-snmptrap		--bundle extras
+pscheduler-archiver-snmptrap		--bundle snmp
 pscheduler-archiver-syslog
 
 # Context Changers
@@ -172,5 +178,7 @@ pscheduler-docs
 
 
 # Bundles
-pscheduler-bundle-full
 pscheduler-bundle-extras
+pscheduler-bundle-full
+pscheduler-bundle-obsolete
+pscheduler-bundle-snmp

@@ -3,9 +3,12 @@
 #
 
 %define short	twping
+%define perfsonar_auto_version 4.3.0
+%define perfsonar_auto_relnum 0.a0.0
+
 Name:		pscheduler-tool-%{short}
-Version:	1.1.6
-Release:	1%{?dist}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
 
 Summary:	twping tool class for pScheduler
 BuildArch:	noarch
@@ -17,15 +20,14 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server
-Requires:	python-pscheduler
+Requires:	pscheduler-server >= 4.3.0
+Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	pscheduler-test-latency
-#Requires:	twamp-client
-#Requires:	twamp-server
+Requires:	twamp-client
 
 BuildRequires:	pscheduler-rpm
-BuildRequires:	python-pscheduler
-BuildRequires:  python-nose
+BuildRequires:	%{_pscheduler_python}-pscheduler
+BuildRequires:  %{_pscheduler_python_epel}-nose
 
 %description
 twping tool class for pScheduler
@@ -44,6 +46,7 @@ false
 
 %build
 make \
+     PYTHON=%{_pscheduler_python} \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      CONFDIR=$RPM_BUILD_ROOT/%{_pscheduler_tool_confdir}\
      install

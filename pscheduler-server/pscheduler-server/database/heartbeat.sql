@@ -50,13 +50,14 @@ BEGIN
     END IF;
 
     -- Version 1 to version 2
-    -- ...Description...
-    -- IF t_version = 1
-    -- THEN
-    --     ALTER TABLE tool DROP COLUMN version;
-    --
-    --     t_version := t_version + 1;
-    -- END IF;
+    -- 
+    IF t_version = 1
+    THEN
+        ALTER TABLE heartbeat
+        ALTER COLUMN started SET DEFAULT now();
+    
+        t_version := t_version + 1;
+    END IF;
 
 
     --
@@ -70,34 +71,11 @@ $$ LANGUAGE plpgsql;
 
 
 
+-- This was in an older version.
 
 DROP TRIGGER IF EXISTS heartbeat_alter ON heartbeat CASCADE;
-
 DO $$ BEGIN PERFORM drop_function_all('heartbeat_alter'); END $$;
-
-CREATE OR REPLACE FUNCTION heartbeat_alter()
-RETURNS TRIGGER
-AS $$
-DECLARE
-    json_result TEXT;
-BEGIN
-    IF TG_OP = 'UPDATE' THEN
-        IF OLD.updates = 0 THEN
-	    NEW.started = now();
-        END IF;
-        NEW.last = now();
-        NEW.updates = NEW.updates + 1;
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER heartbeat_alter
-BEFORE INSERT OR UPDATE
-ON heartbeat
-FOR EACH ROW
-    EXECUTE PROCEDURE heartbeat_alter();
-
+ 
 
 
 -- Start a fresh heartbeat record for a program
@@ -109,9 +87,9 @@ RETURNS VOID
 AS $$
 BEGIN
 
-    DELETE FROM heartbeat WHERE name = new_name;
-    INSERT INTO heartbeat (name, last) VALUES (new_name, now());
-
+    INSERT INTO heartbeat (name, last) VALUES (new_name, now())
+    ON CONFLICT (name) DO UPDATE
+    SET started = now(), updates = 0, last = now();
 
 END;
 $$ LANGUAGE plpgsql;
@@ -126,11 +104,13 @@ RETURNS VOID
 AS $$
 BEGIN
 
-    INSERT INTO heartbeat (name, next_time)
-    VALUES (new_name, new_next_time)
+    INSERT INTO heartbeat (name, next_time, updates, last)
+    VALUES (new_name, new_next_time, 0, now())
     ON CONFLICT (name) DO UPDATE
     SET
-        next_time = new_next_time
+        next_time = new_next_time,
+        updates = heartbeat.updates + 1,
+	last = now()
     ;
 
 END;

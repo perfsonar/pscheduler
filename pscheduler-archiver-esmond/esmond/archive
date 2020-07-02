@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 """
 Send a result to esmond
 """
@@ -29,10 +29,20 @@ def archive(json):
     """Archive a single result."""
 
     log.debug("Archiver received: %s" % json)
-    task_href = json['task-href'].encode("utf-8") #encode to utf-8 so memcache can handle i
-    run_href = json['run-href'].encode("utf-8")
-    test_type = json['result']['test']['type']
-    test_spec = json['result']['test']['spec']
+    task_href = json['task-href']
+    run_href = json['run-href']
+    # Get the test object. This code check in two places. In theory we should
+    # not need to do this but this is a workaround of issue #929
+    test_json = json['result'].get('test', {})
+    if not test_json:
+        test_json = json['result'].get('task', {}).get('test', {})
+        if not test_json:
+            return {
+                "succeeded": False,
+                "error": "Unable to find test definition in JSON given to plugin"
+            }
+    test_type = test_json['type']
+    test_spec = test_json['spec']
     reference = json['result'].get('reference', {})
     test_result = {}
     if json['result']['result'] is not None:
@@ -104,7 +114,7 @@ def archive(json):
         retry_policy = json['data']['retry-policy']
 
     #lookup metadata key in cache
-    cache_key = ("%s@%s" % (task_href, url)).encode("utf-8") #encode to utf-8 so memcache can handle i
+    cache_key = "%s@%s" % (task_href, url)
     mc = memcache.Client(memcache_servers, debug=0)
     metadata_key = mc.get(cache_key)
     if metadata_key:

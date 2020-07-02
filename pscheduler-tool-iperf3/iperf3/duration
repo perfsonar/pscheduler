@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Determine the duration of the iperf3
 
@@ -8,10 +8,18 @@ import sys
 import pscheduler
 
 from iperf3_defaults import *
+from iperf3_utils import *
 
 logger = pscheduler.Log(prefix='tool-iperf3', quiet=True)
 
 json = pscheduler.json_load(exit_on_error=True)
+
+
+# Setup:  How long it takes to connect and set up the test
+setup = setup_time(json.get('link-rtt'))
+
+
+# Duration: How long the test should run
 
 duration = json.get('duration', None)
 if duration:
@@ -20,16 +28,20 @@ if duration:
 else:
     duration = DEFAULT_DURATION
 
+
+# Omit: How many seconds' worth of results should be omitted.  The
+# requested duration will be done in addition to this.
+
 # factor in omit time as well
-if json.get('omit'):
-    omit_seconds = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(json['omit'])) 
-    logger.debug("Adding %s seconds because of omit flag" % omit_seconds)
-    duration += omit_seconds
+omit_iso = json.get('omit', "P0D")
+omit = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(omit_iso))
+logger.debug("Adding %s seconds because of omit flag" % (omit))
 
-duration = duration + DEFAULT_FUDGE_FACTOR + DEFAULT_WAIT_SLEEP + DEFAULT_SERVER_SHUTDOWN
 
-logger.debug("final duration = %ss" % duration)
+full_duration = setup + omit + duration + DEFAULT_WAIT_SLEEP + DEFAULT_SERVER_SHUTDOWN
+logger.debug("final duration = %ss" % (full_duration))
+
 
 pscheduler.succeed_json({
-        "duration": 'PT%dS' % (duration)
+        "duration": 'PT%dS' % (full_duration)
 })

@@ -1,0 +1,12 @@
+#!/usr/bin/make -f
+
+export PYBUILD_NAME=jsonschema
+%:
+	dh $@ --with=python3 --buildsystem=pybuild
+
+override_dh_auto_test:
+
+override_dh_auto_install:
+	dh_auto_install
+	mv $(CURDIR)/debian/python3-jsonschema/usr/bin/jsonschema $(CURDIR)/debian/python3-jsonschema/usr/bin/python3-jsonschema
+

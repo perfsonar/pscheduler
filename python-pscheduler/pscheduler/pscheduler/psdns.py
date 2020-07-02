@@ -7,13 +7,9 @@ import dns.resolver
 import multiprocessing
 import multiprocessing.dummy
 import os
-import Queue
+import queue
 import socket
 import threading
-
-# See Python 2.6 workaround below.
-
-import weakref
 
 
 __DEFAULT_TIMEOUT__ = 2
@@ -37,28 +33,28 @@ def __dns_resolve_host(host, ip_version, timeout):
     """
     family = socket.AF_INET if ip_version == 4 else socket.AF_INET6
 
-    def proc(host, family, queue):
+    def proc(host, family, timing_queue):
         try:
-            queue.put(socket.getaddrinfo(host, 0, family))
+            timing_queue.put(socket.getaddrinfo(host, 0, family))
         except socket.gaierror as ex:
             # TODO: Would be nice if we could isolate just the not
             # found error.
-            queue.put([])
+            timing_queue.put([])
         except socket.timeout:
             # Don't care, we just want the queue to be empty if
             # there's an error.
             pass
 
-    queue = Queue.Queue()
-    thread = threading.Thread(target=proc, args=(host, family, queue))
+    timing_queue = queue.Queue()
+    thread = threading.Thread(target=proc, args=(host, family, timing_queue))
     thread.setDaemon(True)
     thread.start()
     try:
-        results = queue.get(True, timeout)
+        results = timing_queue.get(True, timeout)
         if len(results) == 0:
             return None
         family, socktype, proto, canonname, sockaddr = results[0]
-    except Queue.Empty:
+    except queue.Empty:
         return None
 
     # NOTE: Don't make any attempt to kill the thread, as it will get
@@ -125,24 +121,24 @@ def dns_resolve_reverse(ip,
     # TODO: It would be nice of the queue/timeout code wasn't duplicated
     # TODO: Validate 'ip' as an IP and raise a ValueError
 
-    def proc(ip_addr, queue):
+    def proc(ip_addr, timing_queue):
         """Process the query"""
         try:
-            queue.put(socket.gethostbyaddr(ip_addr)[0])
+            timing_queue.put(socket.gethostbyaddr(ip_addr)[0])
         except socket.herror:
-            queue.put(None)
+            timing_queue.put(None)
         except socket.gaierror as ex:
             if ex.errno != -2:
                 raise ex
-            queue.put(None)
+            timing_queue.put(None)
 
-    queue = Queue.Queue()
-    thread = threading.Thread(target=proc, args=(ip, queue))
+    timing_queue = queue.Queue()
+    thread = threading.Thread(target=proc, args=(ip, timing_queue))
     thread.setDaemon(True)
     thread.start()
     try:
-        return queue.get(True, timeout)
-    except Queue.Empty:
+        return timing_queue.get(True, timeout)
+    except queue.Empty:
         return None
 
     # NOTE: Don't make any attempt to kill the thread, as it will get
@@ -195,11 +191,6 @@ def dns_bulk_resolve(candidates, reverse=False, ip_version=None, threads=50):
     if len(candidates) == 0:
         return result
 
-    # Work around a bug in 2.6
-    # TODO: Get rid of this when 2.6 is no longer in the picture.
-    if not hasattr(threading.current_thread(), "_children"):
-        threading.current_thread()._children = weakref.WeakKeyDictionary()
-
     pool = multiprocessing.dummy.Pool(
         processes=min(len(candidates), threads) )
 
@@ -216,29 +207,29 @@ def dns_bulk_resolve(candidates, reverse=False, ip_version=None, threads=50):
 
 
 if __name__ == "__main__":
-    print "IPv4:"
-    print dns_resolve('localhost')
-    print dns_resolve('www.perfsonar.net', ip_version=4)
-    print dns_resolve('www.perfsonar.net', ip_version=4, query='SOA')
-    print dns_bulk_resolve([
+    print("IPv4:")
+    print(dns_resolve('localhost'))
+    print(dns_resolve('www.perfsonar.net', ip_version=4))
+    print(dns_resolve('www.perfsonar.net', ip_version=4, query='SOA'))
+    print(dns_bulk_resolve([
         'www.perfsonar.net',
         'www.es.net',
         'www.geant.org',
         'www.iu.edu',
         'www.internet2.edu',
         'does-not-exist.internet2.edu',
-    ], ip_version=4)
+    ], ip_version=4))
 
-    print
-    print "IPv6:"
-    print dns_resolve('www.perfsonar.net', ip_version=6)
-    print dns_bulk_resolve([
+    print()
+    print("IPv6:")
+    print(dns_resolve('www.perfsonar.net', ip_version=6))
+    print(dns_bulk_resolve([
         'www.perfsonar.net', 'www.google.com'
-    ], ip_version=6)
+    ], ip_version=6))
 
-    print
-    print "Bulk reverse:"
-    print dns_bulk_resolve([
+    print()
+    print("Bulk reverse:")
+    print(dns_bulk_resolve([
         '127.0.0.1',
         '::1',
         '10.0.0.7',
@@ -248,8 +239,8 @@ if __name__ == "__main__":
         '8.8.8.0',
         '2607:f8b0:4002:c06::67',
         'this-is-not-valid'
-    ], reverse=True)
+    ], reverse=True))
 
-    print
-    print "Bulk none:"
-    print dns_bulk_resolve([])
+    print()
+    print("Bulk none:")
+    print(dns_bulk_resolve([]))

@@ -3,9 +3,12 @@
 #
 
 %define short	http
+%define perfsonar_auto_version 4.3.0
+%define perfsonar_auto_relnum 0.a0.0
+
 Name:		pscheduler-archiver-%{short}
-Version:	1.1.6
-Release:	1%{?dist}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
 
 Summary:	HTTP archiver class for pScheduler
 BuildArch:	noarch
@@ -18,7 +21,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.1.6.1
-Requires:	python-pscheduler >= 1.3.7.1
+Requires:	%{_pscheduler_python}-pscheduler >= 1.3.7.1
 
 BuildRequires:	pscheduler-rpm
 

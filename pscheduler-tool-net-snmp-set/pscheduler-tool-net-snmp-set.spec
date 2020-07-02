@@ -3,9 +3,12 @@
 #
 
 %define short	net-snmp-set
+%define perfsonar_auto_version 4.3.0
+%define perfsonar_auto_relnum 0.a0.0
+
 Name:		pscheduler-tool-%{short}
-Version:	1.1.6
-Release:	1%{?dist}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
 
 Summary:	snmpset tool class for pScheduler
 BuildArch:	noarch
@@ -17,9 +20,9 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server
+Requires:	pscheduler-server >= 4.3.0
 Requires:	net-snmp
-Requires:	python-pscheduler
+Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	pscheduler-test-snmpset
 
 BuildRequires:	pscheduler-rpm

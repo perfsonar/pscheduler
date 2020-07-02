@@ -1,8 +1,34 @@
-pscheduler-account (1.1.6-1) perfsonar-minor-snapshot; urgency=low
+pscheduler-account (4.3.0~a1.0-1) perfsonar-4.3-snapshot; urgency=low
+
+  * New upstream version.
+  * Building for Python 3 and Python 3 only.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 22 Apr 2020 18:33:32 +0000
+
+pscheduler-account (4.2.4-1) perfsonar-4.2; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 25 Mar 2020 15:36:56 -0400
+
+pscheduler-account (4.2.3-1) perfsonar-4.2; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 24 Feb 2020 14:32:17 +0000
+
+pscheduler-account (4.2.1-1) perfsonar-4.2; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 02 Oct 2019 23:07:24 +0000
+
+pscheduler-account (4.2.0-1) perfsonar-minor-staging; urgency=low
 
   * New upstream version
+  * Building on Stretch.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sun, 24 Feb 2019 17:08:44 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 16 Aug 2019 11:01:41 +0000
 
 pscheduler-account (1.1.5-1) perfsonar-release; urgency=low
 

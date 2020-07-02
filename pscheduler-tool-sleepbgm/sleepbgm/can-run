@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Determine if this tool can run a test based on a test spec.
 #

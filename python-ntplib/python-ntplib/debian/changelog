@@ -1,0 +1,29 @@
+ntplib (0.3.3-1~u16+1) perfsonar-4.3-staging; urgency=low
+
+  * Backport to Ubuntu 16.
+  * Building Python3 module only.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sat, 30 May 2020 15:27:50 +0000
+
+ntplib (0.3.3-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream release
+  * d/copyright
+    - Upstream license changed to Expat
+    - Added myself to Debian part
+    - Relicensed Debian part to Expat licence
+      (with ack from Tim Retout)
+  * d/watch: Use pypi.debian.net
+  * d/compat: Bumped to 9
+  * Enabled autopkgtest-pkg-python
+  * Added support for Python 3
+  * Standards-Version is 3.9.8 now (no change)
+
+ -- Ondřej Nový <novy@ondrej.org>  Thu, 19 May 2016 21:54:27 +0200
+
+ntplib (0.3.1-1) unstable; urgency=low
+
+  * Initial release (Closes: #727056)
+
+ -- Tim Retout <diocles@debian.org>  Tue, 24 Dec 2013 13:46:00 +0000

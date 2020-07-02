@@ -3,9 +3,12 @@
 #
 
 %define short	dnspy
+%define perfsonar_auto_version 4.3.0
+%define perfsonar_auto_relnum 0.a0.0
+
 Name:		pscheduler-tool-%{short}
-Version:	1.1.6
-Release:	1%{?dist}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
 
 Summary:	DNS tool class for pScheduler
 BuildArch:	noarch
@@ -17,9 +20,9 @@ Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server
-Requires:	python-dns
-Requires:	python-pscheduler
+Requires:	pscheduler-server >= 4.3.0
+Requires:	%{_pscheduler_python_epel}-dns
+Requires:	%{_pscheduler_python}-pscheduler
 Requires:	pscheduler-test-dns
 
 BuildRequires:	pscheduler-rpm

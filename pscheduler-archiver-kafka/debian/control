@@ -1,0 +1,16 @@
+Source: pscheduler-archiver-kafka
+Section: net
+Priority: optional
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.8
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-archiver-kafka
+Architecture: all
+Depends: ${misc:Depends}, python3, python3-pscheduler,
+ pscheduler-server (>= 1.0.2), python3-kafka
+Description: Apache Kafka archiver class for pScheduler

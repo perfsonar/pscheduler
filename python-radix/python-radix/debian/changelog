@@ -1,0 +1,154 @@
+py-radix (0.10.0-2~bpo9+1) perfsonar-4.3-staging; urgency=low
+
+  * Backport to Debian 9
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 24 Mar 2020 18:18:18 +0000
+
+py-radix (0.10.0-2) unstable; urgency=medium
+
+  * d/control: Change homepage since upstream has been moved
+  * d/copyright: Fix copyright and licenses (Closes: #888252)
+
+ -- Aggelos Avgerinos <evaggelos.avgerinos@gmail.com>  Mon, 29 Jan 2018 22:55:15 +0200
+
+py-radix (0.10.0-1) unstable; urgency=medium
+
+  [ Christoph Berg ]
+  * Change order of dh $@ --with arguments. Thanks to KiBi for spotting.
+  * Remove myself from Uploaders.
+
+  [ Jakub Wilk ]
+  * Use canonical URIs for Vcs-* fields.
+
+  [ Ondřej Nový ]
+  * Fixed VCS URL (https)
+
+  [ Aggelos Avgerinos ]
+  * d/control: Add myself to uploaders (Closes: #753271)
+  * New upstream release
+  * d/patches: Drop memleak patch since it has been merged to upstream
+  * d/watch: Change upstream to pypi
+  * Bump standards version; no changes needed
+  * Bump compat and debhelper versions; no changes needed
+  * Add python3 binary package
+    + Add python3 and pybuild dh arguments
+    + Add package definition in d/control
+  * d/docs: Change doc from README -> README.rst
+  * d/rules: Build with all hardening features enabled
+  * d/control: Change priority from extra to optional
+
+ -- Aggelos Avgerinos <evaggelos.avgerinos@gmail.com>  Tue, 23 Jan 2018 11:00:24 +0200
+
+py-radix (0.5-3) unstable; urgency=low
+
+  * Use dh_python2. Closes: #616954.
+  * Bump standards version, use dh 7, use 3.0 (quilt), radically strip down
+    debian/rules.
+
+ -- Christoph Berg <myon@debian.org>  Mon, 11 Jul 2011 22:51:49 +0200
+
+py-radix (0.5-2) unstable; urgency=low
+
+  [ Sandro Tosi ]
+  * debian/control
+    - switch Vcs-Browser field to viewsvn
+
+  [ Christoph Berg ]
+  * Add patch by Alexander Sabourenkov to fix memory leak. Closes: #512830.
+  * Use quilt.
+  * Bump Standards-Version.
+
+ -- Christoph Berg <myon@debian.org>  Tue, 09 Jun 2009 17:42:18 +0200
+
+py-radix (0.5-1) unstable; urgency=low
+
+  * New upstream version.
+  * Move package to the Python Modules Team. Co-maintainers welcome!
+
+ -- Christoph Berg <myon@debian.org>  Sat, 05 Jan 2008 00:59:46 +0100
+
+py-radix (0.4-2) unstable; urgency=low
+
+  * Build extension for all python versions.
+
+ -- Christoph Berg <myon@debian.org>  Fri, 19 Oct 2007 19:17:39 +0200
+
+py-radix (0.4-1) unstable; urgency=low
+
+  * Initial version.
+
+ -- Christoph Berg <myon@debian.org>  Mon, 15 Oct 2007 21:40:39 +0200
+py-radix (0.10.0-2) unstable; urgency=medium
+
+  * d/control: Change homepage since upstream has been moved
+  * d/copyright: Fix copyright and licenses (Closes: #888252)
+
+ -- Aggelos Avgerinos <evaggelos.avgerinos@gmail.com>  Mon, 29 Jan 2018 22:55:15 +0200
+
+py-radix (0.10.0-1) unstable; urgency=medium
+
+  [ Christoph Berg ]
+  * Change order of dh $@ --with arguments. Thanks to KiBi for spotting.
+  * Remove myself from Uploaders.
+
+  [ Jakub Wilk ]
+  * Use canonical URIs for Vcs-* fields.
+
+  [ Ondřej Nový ]
+  * Fixed VCS URL (https)
+
+  [ Aggelos Avgerinos ]
+  * d/control: Add myself to uploaders (Closes: #753271)
+  * New upstream release
+  * d/patches: Drop memleak patch since it has been merged to upstream
+  * d/watch: Change upstream to pypi
+  * Bump standards version; no changes needed
+  * Bump compat and debhelper versions; no changes needed
+  * Add python3 binary package
+    + Add python3 and pybuild dh arguments
+    + Add package definition in d/control
+  * d/docs: Change doc from README -> README.rst
+  * d/rules: Build with all hardening features enabled
+  * d/control: Change priority from extra to optional
+
+ -- Aggelos Avgerinos <evaggelos.avgerinos@gmail.com>  Tue, 23 Jan 2018 11:00:24 +0200
+
+py-radix (0.5-3) unstable; urgency=low
+
+  * Use dh_python2. Closes: #616954.
+  * Bump standards version, use dh 7, use 3.0 (quilt), radically strip down
+    debian/rules.
+
+ -- Christoph Berg <myon@debian.org>  Mon, 11 Jul 2011 22:51:49 +0200
+
+py-radix (0.5-2) unstable; urgency=low
+
+  [ Sandro Tosi ]
+  * debian/control
+    - switch Vcs-Browser field to viewsvn
+
+  [ Christoph Berg ]
+  * Add patch by Alexander Sabourenkov to fix memory leak. Closes: #512830.
+  * Use quilt.
+  * Bump Standards-Version.
+
+ -- Christoph Berg <myon@debian.org>  Tue, 09 Jun 2009 17:42:18 +0200
+
+py-radix (0.5-1) unstable; urgency=low
+
+  * New upstream version.
+  * Move package to the Python Modules Team. Co-maintainers welcome!
+
+ -- Christoph Berg <myon@debian.org>  Sat, 05 Jan 2008 00:59:46 +0100
+
+py-radix (0.4-2) unstable; urgency=low
+
+  * Build extension for all python versions.
+
+ -- Christoph Berg <myon@debian.org>  Fri, 19 Oct 2007 19:17:39 +0200
+
+py-radix (0.4-1) unstable; urgency=low
+
+  * Initial version.
+
+ -- Christoph Berg <myon@debian.org>  Mon, 15 Oct 2007 21:40:39 +0200

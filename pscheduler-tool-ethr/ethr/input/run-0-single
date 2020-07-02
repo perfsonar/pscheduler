@@ -1,0 +1,23 @@
+{
+    "task-uuid": "00000000-0000-0000-0000-000000000000",
+    "schedule": {
+        "start": "2020-03-19T12:34:56",
+        "duration": "PT27S"
+    },
+    "test": {
+        "type": "throughput",
+        "spec": {
+	    "duration": "PT5S",
+	    "dest": "psdev2",
+	    "schema": 1
+	}
+    },
+    "participant": 0,
+    "participant-data": [
+        { },
+        {
+	    "server-port": 5201
+	}
+    ],
+    "limits-passed": { }
+}

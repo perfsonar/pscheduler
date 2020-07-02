@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Format a spec
 #
@@ -12,7 +12,7 @@ try:
 except IndexError:
    format = 'text/plain'
 
-json = pscheduler.json_load(exit_on_error=True, max_schema=2)
+json = pscheduler.json_load(exit_on_error=True, max_schema=3)
 
 if format == 'text/plain':
 
@@ -25,4 +25,4 @@ else:
    pscheduler.fail("Unsupported format '%s'" % format)
 
 
-print jsontemplate.expand(template, json).strip()
+print(jsontemplate.expand(template, json).strip())

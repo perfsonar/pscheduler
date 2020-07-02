@@ -4,7 +4,7 @@ Option parser that fails with minimal output when help is requested
 
 import optparse
 
-from exitstatus import fail
+from .exitstatus import fail
 
 
 class FailingOptionParser(optparse.OptionParser):

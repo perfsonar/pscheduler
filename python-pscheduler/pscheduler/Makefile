@@ -6,14 +6,14 @@ default: build
 
 
 test:
-	nosetests
+	python3 -m nose
 
 test-coverage:
-	nosetests --with-coverage --cover-package rabbitmq
+	python3 -m nose --with-coverage --cover-package rabbitmq
 
 
 build: test
-	python setup.py build
+	python3 setup.py build
 
 clean:
 	make -C tests $@

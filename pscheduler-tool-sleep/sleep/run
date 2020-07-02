@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Run a test.  Just the test spec is provided on stdin.
 #
@@ -9,6 +9,8 @@ import sys
 import time
 
 import pscheduler
+
+log = pscheduler.Log(prefix="tool-sleep", quiet=True)
 
 input = pscheduler.json_load(exit_on_error=True);
 
@@ -44,6 +46,14 @@ try:
     output += input['test']['spec']['starting-comment'] + '\n'
 except KeyError:
     pass
+
+try:
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
 
 time.sleep(pscheduler.timedelta_as_seconds(duration))
 

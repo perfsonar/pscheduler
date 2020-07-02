@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 #
 # Development Order #4:
@@ -11,7 +11,6 @@
 #
 
 import re
-import string
 import optparse
 import pscheduler
 import sys
@@ -27,10 +26,12 @@ else:
    json_args = pscheduler.json_load(exit_on_error=True)
    args = []
 
-   if type(json_args) != list:
+   if not isinstance(json_args,list):
       pscheduler.fail("Invalid JSON for this operation")
    for arg in json_args:
-      if type(arg) not in (unicode, str, int, float):
+      if not ( isinstance(arg, str)
+               or isinstance(arg, int)
+               or isinstance(arg, float) ):
          pscheduler.fail("Invalid JSON for this operation")
    args = [ str(arg) for arg in json_args ]
 
@@ -42,8 +43,8 @@ else:
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """
     This software is a plugin for the pScheduler project that adds a
-    disk-to-disk feature to the testing suite. This test supports two
-    tools, globus and ftp.
+    disk-to-disk feature to the testing suite. This test supports three
+    tools: globus, curl and ftp.
 
     GridFTP test:
         pscheduler task --tool globus disk-to-disk \

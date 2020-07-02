@@ -3,9 +3,12 @@
 #
 
 %define short	rabbitmq
+%define perfsonar_auto_version 4.3.0
+%define perfsonar_auto_relnum 0.a0.0
+
 Name:		pscheduler-archiver-%{short}
-Version:	1.1.6
-Release:	1%{?dist}
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
 
 Summary:	RabbitMQ archiver class for pScheduler
 BuildArch:	noarch
@@ -18,16 +21,11 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.1.6
-
-# Note that this doesn't get used since we're supplying our own 0.10.0
-# as a stopgap.
-# TODO: Make this require >= 0.9.8 once EL6 goes away.
-#Requires:	python-pika
+Requires:	%{_pscheduler_python}-pscheduler >= 1.3.7.3
+Requires:	%{_pscheduler_python_epel}-pika >= 0.9.8
 
 BuildRequires:	pscheduler-rpm
 
-
-%define directory %{_includedir}/make
 
 %description
 This archiver sends JSON test results to RabbitMQ

@@ -1,0 +1,21 @@
+Source: pscheduler-bundle-obsolete
+Section: net
+Priority: optional
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.8
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-bundle-obsolete
+Architecture: all
+Depends:
+ pscheduler-tool-bwctliperf2,
+ pscheduler-tool-bwctliperf3,
+ pscheduler-tool-bwctlping,
+ pscheduler-tool-bwctltracepath,
+ pscheduler-tool-bwctltraceroute
+Description: pScheduler obsolete packages
+ Bundle of obsolete pScheduler packages

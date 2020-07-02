@@ -11,8 +11,8 @@ def data_is_valid(data):
     (bool, string) indicating valididty and any error message.
     """
 
-    if type(data) == dict and len(data) == 0:
-        return True, None
+    if isinstance(data, dict) and len(data) == 0:
+        return True, "OK"
 
     return False, "Data is not an object or not empty."
 
@@ -36,7 +36,8 @@ def ipv6_netmask_size(mask_in):
     (32).
     """
 
-    mask = mask_in.lower()
+    mask = mask_in.lower().split("/")[0]
+    print("MASK", mask)
 
     # Lead-pad any parts with less than four digits
     parts = [ '0' * (4-len(part)) + part for part in mask.split(":") ]
@@ -55,7 +56,7 @@ def ipv6_netmask_size(mask_in):
 
 
 
-class IdentifierLocalSubnet():
+class IdentifierLocalSubnet(object):
 
 
     """
@@ -64,8 +65,8 @@ class IdentifierLocalSubnet():
 
 
     def __init__(self,
-                 data   # Data suitable for this class
-                 ):
+                 data,   # Data suitable for this class
+                 test_ifaces=None):
 
         valid, message = data_is_valid(data)
         if not valid:
@@ -73,23 +74,32 @@ class IdentifierLocalSubnet():
 
         self.cidrs = []
 
-        for iface in netifaces.interfaces():
+        #If a test, use given interfaces otherwise auto-detect
+        ifaces = test_ifaces
+        if not ifaces:
+            ifaces = netifaces.interfaces()
 
-            ifaddrs = netifaces.ifaddresses(iface)
+        for iface in ifaces:
+            #if a test, use given addresses otherwise lookup
+            ifaddrs = {}
+            if test_ifaces:
+                ifaddrs = ifaces[iface]
+            else:
+                ifaddrs = netifaces.ifaddresses(iface)
 
             pairs = []
 
             for ifaddr in ifaddrs[netifaces.AF_INET] \
                 if netifaces.AF_INET in ifaddrs else []:
                 self.cidrs.append(ipaddress.IPv4Network(
-                    unicode("%s/%s" % (ifaddr["addr"], ifaddr["netmask"])),
+                    str("%s/%s" % (ifaddr["addr"], ifaddr["netmask"])),
                     strict=False  # Don't complain about host bits being set.
                 ))
 
             for ifaddr in ifaddrs[netifaces.AF_INET6] \
                 if netifaces.AF_INET6 in ifaddrs else []:
                 self.cidrs.append(ipaddress.IPv6Network(
-                    unicode("%s/%s" % (
+                    str("%s/%s" % (
                         ifaddr["addr"].split("%")[0],
                         ipv6_netmask_size(ifaddr["netmask"]))),
                     strict=False  # Don't complain about host bits being set.
@@ -108,7 +118,7 @@ class IdentifierLocalSubnet():
 
 
         try:
-            ip = ipaddress.ip_network(unicode(hints["requester"]))
+            ip = ipaddress.ip_network(str(hints["requester"]))
         except KeyError:
             return False
 
@@ -117,20 +127,3 @@ class IdentifierLocalSubnet():
                 return True
 
         return False
-
-
-
-# A short test program
-
-if __name__ == "__main__":
-
-    ident = IdentifierLocalSubnet({})
-
-    for ip in [
-            "127.0.0.1",
-            "::1", "10.1.1.1",
-            "198.129.254.30",
-            "dead:beef::1",
-            "10.0.2.12"
-    ]:
-        print ip, ident.evaluate({ "requester": ip })

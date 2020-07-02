@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Run a test.  Just the test spec is provided on stdin.
 #
@@ -87,6 +87,19 @@ except KeyError:
 
 
 #
+# Flow Label
+#
+
+try:
+    flow_label = spec['flow-label']
+    argv.append('-l')
+    argv.append(str(flow_label))
+except KeyError:
+    pass
+
+
+
+#
 # First TTL
 #
 
@@ -105,8 +118,21 @@ except KeyError:
 try:
     source = spec['source']
     # TODO: Needs to be same IP type as dest
+
+    # Traceroute's -s switch doesn't resolve, so that needs to be
+    # handled here.
+    source_resolved = pscheduler.dns_resolve(source, ip_version=ipversion)
+    if source_resolved is None:
+        message = "Unable to resolve %s to an IPv%d address" % (source, ipversion)
+        pscheduler.succeed_json( {
+            'succeeded': False,
+            'diags': None,
+            'error': message,
+            'result': None
+            } )
+
     argv.append('-s')
-    argv.append(source)
+    argv.append(source_resolved)
 except KeyError:
     pass
 
@@ -253,7 +279,7 @@ if need_root:
     argv.insert(0, 'sudo')
 
 # Force all args to be strings
-argv = map(lambda x: str(x), argv)
+argv = [str(x) for x in argv]
 
 log.debug("Running %s", ' '.join(argv))
 
@@ -262,6 +288,14 @@ run_timeout += datetime.timedelta(seconds=2)
 log.debug("Timeout is %s", run_timeout)
 
 run_timeout_secs = pscheduler.timedelta_as_seconds(run_timeout)
+
+try:
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
 
 status, stdout, stderr \
     = pscheduler.run_program(argv, timeout = run_timeout_secs)

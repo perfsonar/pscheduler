@@ -2,10 +2,9 @@ Source: pscheduler-bundle-extras
 Section: net
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
-Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>,
- Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
 Build-Depends: debhelper (>= 9)
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
 Homepage: https://github.com/perfsonar/pscheduler
 Vcs-Git: git://github.com/perfsonar/pscheduler
 Vcs-Browser: https://github.com/perfsonar/pscheduler
@@ -13,16 +12,13 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-bundle-extras
 Architecture: all
 Depends:
- pscheduler-test-snmpget,
- pscheduler-test-snmpgetbgm,
- pscheduler-test-snmpset,
- pscheduler-tool-bwctliperf2,
- pscheduler-tool-bwctliperf3,
- pscheduler-tool-bwctlping,
- pscheduler-tool-bwctltracepath,
- pscheduler-tool-bwctltraceroute,
- pscheduler-tool-net-snmp-set,
- pscheduler-tool-pysnmp,
- pscheduler-archiver-snmptrap
-Description: Extra pScheduler Bundle
- Bundle of extra pScheduler packages
+ pscheduler-test-disk-to-disk,
+ pscheduler-test-netreach,
+ pscheduler-tool-curl,
+ pscheduler-tool-globus,
+ pscheduler-tool-nmapreach
+Description: pScheduler extras packages
+ Bundle of extras pScheduler packages:
+ Tests: disk-to-disk, netreach
+ Tools: curl, globus, nmapreach
+

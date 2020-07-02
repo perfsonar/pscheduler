@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Determine if this tool can run a test based on a test spec.
 #
@@ -30,7 +30,7 @@ errors = []
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 1)
+    pscheduler.json_check_schema(spec, 2)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
@@ -50,11 +50,12 @@ supported_options = ["schema",
                      "interval", "parallel", "window-size",
                      "mss", "bandwidth", "udp", "buffer-length",
                      "ip-tos", "ip-version", "client-cpu-affinity",
-                     "server-cpu-affinity", "reverse"
+                     "server-cpu-affinity", "reverse",
+                     "single-ended", "single-ended-port"
                      ]
 
 
-for option in spec.keys():
+for option in spec:
     if option not in supported_options:
         logger.debug("nuttcp unsupported option %s" % option)
         errors.append('nuttcp does not support %s option' % option)

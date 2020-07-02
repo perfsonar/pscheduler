@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Determine if this tool can run a test based on a test spec.
 #
@@ -29,7 +29,7 @@ except KeyError:
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 2)
+    pscheduler.json_check_schema(spec, 3)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
@@ -48,14 +48,14 @@ supported_options = ["schema",
                      "source", "source-node",
                      "dest", "dest-node",
                      "reverse", "omit", "single-ended", "single-ended-port",
-                     "duration", "interval", "parallel", "window-size",
+                     "duration", "interval", "link-rtt", "parallel", "window-size",
                      "mss", "bandwidth", "udp", "buffer-length",
                      "ip-tos", "local-address", "ip-version", "congestion",
                      "zero-copy", "flow-label", "client-cpu-affinity",
                      "server-cpu-affinity"
                      ]
 
-for option in spec.keys():
+for option in spec:
     if option not in supported_options:
         logger.debug("iperf3 unsupported option %s" % option)
         errors.append('iperf3 does not support %s option' % option)    

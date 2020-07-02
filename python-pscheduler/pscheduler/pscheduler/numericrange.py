@@ -2,10 +2,11 @@
 Range of numeric values
 """
 
-import pscheduler
+from .jsonval import *
+from .psjson import *
+from .sinumber import *
 
-
-class NumericRange():
+class NumericRange(object):
 
     "Range of numbers"
 
@@ -17,7 +18,7 @@ class NumericRange():
 
         # TODO: Figure out why this can't just point to a NumericRange
 
-        valid, message = pscheduler.json_validate(nrange, {
+        valid, message = json_validate(nrange, {
             "type": "object",
             "properties": {
                 "lower": {"$ref": "#/pScheduler/Numeric"},
@@ -31,15 +32,15 @@ class NumericRange():
             raise ValueError("Invalid numeric range: %s" % message)
 
         lower = nrange['lower']
-        if type(lower) in [str, unicode]:
-            self.lower = pscheduler.si_as_number(lower)
+        if isinstance(lower, str):
+            self.lower = si_as_number(lower)
         else:
             self.lower = lower
         self.lower_str = str(lower)
 
         upper = nrange['upper']
-        if type(upper) in [str, unicode]:
-            self.upper = pscheduler.si_as_number(upper)
+        if isinstance(upper, str):
+            self.upper = si_as_number(upper)
         else:
             self.upper = upper
         self.upper_str = str(upper)
@@ -47,10 +48,10 @@ class NumericRange():
     def __contains__(self, number):
         """See if the range contains the specified number, which can be any Numeric."""
 
-        if type(number) == float:
+        if isinstance(number, float):
             test_value = number
         else:
-            test_value = pscheduler.si_as_number(number)
+            test_value = si_as_number(number)
 
         return self.lower <= test_value <= self.upper
 
@@ -88,8 +89,8 @@ if __name__ == "__main__":
         "1M"
     ]:
         result = value in nrange
-        print value, result
+        print(value, result)
         for invert in [False, True]:
-            print "%s Invert=%s %s" % (value, invert,
-                                       nrange.contains(value, invert=invert))
-        print
+            print("%s Invert=%s %s" % (value, invert,
+                                       nrange.contains(value, invert=invert)))
+        print()

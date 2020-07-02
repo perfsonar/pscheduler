@@ -1,9 +1,15 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 #
 # Development Order #9:
 #
 # This will format a test spec into something that is human readable.
+#
+# To test this file, a spec is needed. You can generate one with cli-to-spec
+# after you've written it. Use the following syntax:
+# cat example-spec.json | ./spec-format text/plain
+# cat example-spec.json | ./spec-format text/html
+# 
 #
 
 import jsontemplate
@@ -56,4 +62,4 @@ else:
 
 
 # TODO: Should probably handle exceptions in a nicer way.
-print jsontemplate.expand(template, json).strip()
+print(jsontemplate.expand(template, json).strip())

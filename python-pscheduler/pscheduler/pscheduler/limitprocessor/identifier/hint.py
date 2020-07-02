@@ -2,9 +2,11 @@
 Identifier Class for hint
 """
 
-import pscheduler
 import re
 import sre_constants
+
+from ...jsonval import *
+from ...stringmatcher import *
 
 
 data_validator = {
@@ -20,11 +22,11 @@ def data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
-    return pscheduler.json_validate(data, data_validator)
+    return json_validate(data, data_validator)
 
 
 
-class IdentifierHint():
+class IdentifierHint(object):
 
 
     """
@@ -41,7 +43,7 @@ class IdentifierHint():
             raise ValueError("Invalid data: %s" % message)
 
         self.hint = data['hint']
-        self.matcher = pscheduler.StringMatcher(data['match'])
+        self.matcher = StringMatcher(data['match'])
 
 
     def evaluate(self,
@@ -66,7 +68,7 @@ class IdentifierHint():
 
 if __name__ == "__main__":
 
-    print "Exact:"
+    print("Exact:")
     ident = IdentifierHint({
         "hint": "value",
         "match": {
@@ -77,10 +79,10 @@ if __name__ == "__main__":
     })
 
     for value in [ "foo", "bar", "baz" ]:
-        print value, ident.evaluate({ "value": value })
+        print(value, ident.evaluate({ "value": value }))
 
-    print
-    print "Regex:"
+    print()
+    print("Regex:")
     ident = IdentifierHint({
         "hint": "value",
         "match": {
@@ -90,5 +92,5 @@ if __name__ == "__main__":
     })
 
     for value in [ "foo", "bar", "baz", "glorp" ]:
-        print value, ident.evaluate({ "value": value })
+        print(value, ident.evaluate({ "value": value }))
 

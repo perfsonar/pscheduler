@@ -4,10 +4,12 @@
 
 import os
 import pickle
-import pscheduler
 import resource
 import sys
 import time
+
+from .log import *
+from .pstime import *
 
 # Environment variable used to convey state between runs
 STATE_VARIABLE = "PSCHEDULER_SAFERUN_STATE"
@@ -31,32 +33,33 @@ def safe_run(function,
     if not isinstance(function, type(lambda: 0)):
         raise ValueError("Function provided is not a lambda.")
 
-    log = pscheduler.Log(name=name,
-                         prefix='safe_run',
-                         signals=False,
-                         quiet=True
-                         )
+    log = Log(name=name,
+              prefix='safe_run',
+              signals=False,
+              quiet=True
+    )
 
     # Inherit state from the environment
 
     if STATE_VARIABLE in os.environ:
 
         try:
-            depickled = pickle.loads(os.environ[STATE_VARIABLE])
+            depickled = pickle.loads(os.environ[STATE_VARIABLE].encode())
 
             initial_backoff = depickled['initial_backoff']
-            assert type(initial_backoff) in [int, float]
+            assert isinstance(initial_backoff, int) or isinstance(initial_backoff, float)
 
             current_backoff = depickled['current_backoff']
-            assert type(current_backoff) in [int, float]
+            assert isinstance(current_backoff, int) or isinstance(current_backoff, float)
 
             runs = depickled['runs']
-            assert type(runs) == int
+            assert isinstance(runs, int)
 
         except Exception as ex:
             log.error("Failed to decode %s '%s': %s"
                            % (STATE_VARIABLE, os.environ[STATE_VARIABLE], ex))
-            exit(1)
+            log.exception()
+            sys.exit(1)
     else:
 
         initial_backoff = backoff
@@ -69,7 +72,7 @@ def safe_run(function,
     do_restart = False
 
     try:
-        started = pscheduler.time_now()
+        started = time_now()
         function()
         runs += 1
         do_restart = restart
@@ -78,8 +81,8 @@ def safe_run(function,
         pass
 
     except Exception as ex:
-        ran = pscheduler.time_now() - started
-        ran_seconds = pscheduler.timedelta_as_seconds(ran)
+        ran = time_now() - started
+        ran_seconds = timedelta_as_seconds(ran)
 
         log.error("Program threw an exception after %s", ran)
         log.exception()
@@ -112,7 +115,8 @@ def safe_run(function,
         'current_backoff': current_backoff,
         'runs': runs
     }
-    os.environ[STATE_VARIABLE] = pickle.dumps(to_pickle)
+    os.environ[STATE_VARIABLE] = pickle.dumps(to_pickle, 0).decode()
+
 
     # Close all open FDs other than stdin/stdout/stderr so they don't
     # get inherited by the exec'd process.
@@ -129,7 +133,7 @@ def safe_run(function,
 if __name__ == "__main__":
 
     def foo():
-        print "FOO"
+        print("FOO")
         time.sleep(2)
         raise Exception("Yuck!")
 

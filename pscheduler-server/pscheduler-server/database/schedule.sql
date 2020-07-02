@@ -101,11 +101,12 @@ AS
             JOIN test ON test.id = task.test
         WHERE
 	    repeat IS NULL
+	    AND repeat_cron IS NULL
 	    AND NOT EXISTS (SELECT * FROM run WHERE run.task = task.id)
 
         UNION ALL
 
-        -- Repeating tasks without runs
+        -- Interval-repeating tasks without runs
 
         SELECT
             task.id AS task,
@@ -127,13 +128,14 @@ AS
             task
             JOIN test on test.id = task.test
         WHERE
-	    repeat IS NOT NULL
+	    task.repeat IS NOT NULL
             AND (until IS NULL OR until > normalized_now())
 	    AND runs = 0
 
 	UNION ALL
 
-        -- Repeating tasks with runs
+        -- Interval-repeating tasks with runs
+
         SELECT
             task.id AS task,
             task.uuid,
@@ -147,18 +149,52 @@ AS
             task.until,
             task_next_run(task.first_start,
                          greatest(normalized_now(), task.start, run_latest.latest),
-                         repeat) AS trynext,
+                         task.repeat, NULL) AS trynext,
             task.participant,
             (SELECT scheduling_class FROM test WHERE test.id = task.test) AS scheduling_class,
 	    task.json,
 	    task.participants
        FROM
             task
-            JOIN run_latest ON run_latest.task = task.id
+	    JOIN run_latest ON run_latest.task = task.id
         WHERE
             task.repeat IS NOT NULL
-            AND task.runs > 0
-            AND EXISTS (SELECT * FROM run WHERE run.task = task.id)
+	    AND task.runs > 0
+	    AND EXISTS (SELECT * FROM run WHERE run.task = task.id)
+
+	UNION ALL
+
+        -- Cron-repeating tasks with or without runs
+
+        SELECT
+            task.id AS task,
+            task.uuid,
+	    task.json ->> '_key' AS key,
+            task.enabled,
+            task.added,
+            duration,
+            task.slip,
+            task.max_runs,
+            task.runs,
+            task.until,
+            task_next_run(task.first_start,
+                         greatest(
+			     normalized_now(),
+			     task.start,
+			     task.first_start,
+			     (SELECT latest FROM run_latest where task = task.id)
+			 ),
+                         NULL, task.repeat_cron) AS trynext,
+            task.participant,
+            (SELECT scheduling_class FROM test WHERE test.id = task.test) AS scheduling_class,
+	    task.json,
+	    task.participants
+       FROM
+            task
+        WHERE
+            task.repeat_cron IS NOT NULL
+	    AND task.enabled
+
     )
     SELECT
         task,
@@ -181,7 +217,7 @@ AS
         AND ( (until IS NULL) OR (trynext < until) )
 	-- Anything that fits the scheduling horizon or is a backgrounder
         AND (
-            trynext + duration + slip < (normalized_now() + schedule_horizon)
+            trynext < (normalized_now() + schedule_horizon)
             OR scheduling_class = scheduling_class_background_multi()
         )
     ORDER BY trynext, added
@@ -339,6 +375,7 @@ DECLARE
     time_range TSTZRANGE;
     last_end TIMESTAMP WITH TIME ZONE;
     run_record RECORD;
+    use_priority INTEGER;
 BEGIN
 
     -- Validate the input
@@ -388,18 +425,50 @@ BEGIN
     END IF;
 
 
-    -- This is partially correctable
-    range_start := greatest(range_start, time_now);
+    -- Correct for the range start being earlier than now.  Don't
+    -- bother proposing anything for a run_start_margin's worth of
+    -- time, either.
+
+    -- TODO: This might be more precicely accomplished by checking for
+    -- tasks that would collide, but scheduling something so close to
+    -- the present is relatively unlikely.
+
+    range_start := greatest(range_start,
+    		   	    time_now + (SELECT run_start_margin FROM configurables));
     range_start := normalized_time(range_start);
 
     -- Can't schedule past the end of the time horizon, either.
     range_end := LEAST(range_end, horizon_end);
     range_end := normalized_time(range_end);
 
+    -- If the adjusted start overshoots the end, there's no time
+    -- available.  Punt.
+    IF range_start >= range_end THEN
+        RETURN;
+    END IF;
 
     time_range := tstzrange(range_start, range_end, '[)');
 
     last_end := range_start;
+
+
+    -- Figure out what priority will be used.
+
+    -- TODO: This and code in run.sql (~line 975) are almost close
+    -- enough to merit writing a function to do this.
+
+    use_priority := proposed_priority;
+    IF use_priority IS NOT NULL
+    THEN
+        IF taskrec.priority IS NOT NULL
+	THEN
+	    -- No priority for the task means no priority for the run.
+	    use_priority := NULL;
+	ELSE	
+	    -- Don't exceed the prioirity assigned to the task.
+	    use_priority := LEAST(use_priority, taskrec.priority);
+	END IF;
+    END IF;
 
 
     -- Sift through everything on the timeline that overlaps with the
@@ -428,7 +497,7 @@ BEGIN
             -- Overlap
 	    times && time_range
 	    -- Higher priority than proposed or already running
-	    AND ( run.priority >= proposed_priority
+	    AND ( run.priority >= use_priority
 	          OR run.state = run_state_running() )
             -- Ignore non-starters
             AND state <> run_state_nonstart()
