@@ -14,6 +14,7 @@ import re
 import optparse
 import pscheduler
 import sys
+from urllib.parse import urlparse
 
 if len(sys.argv) > 1:
 
@@ -139,7 +140,8 @@ if options.url is not None:
 else:
     pscheduler.fail('Please specify the url and method. \'--url https://your-url.domain\'')
 
-if "http" in options.url:
+parsed = urlparse(options.url)
+if parsed.scheme == "http" or parsed.scheme == "https":
     result['url'] = options.url
 else:
     pscheduler.fail('Please specify a method for your url, such as \'https://\'')
