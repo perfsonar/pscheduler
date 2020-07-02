@@ -61,7 +61,7 @@ Requires:	%{_pscheduler_python}-jsontemplate
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
 BuildRequires:	%{_pscheduler_python}-parse-crontab
-BuildRequires:	%{_pscheduler_python}-pscheduler >= 1.3.7.2
+BuildRequires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 BuildRequires:	m4
 Requires:	httpd-wsgi-socket
 Requires:	pscheduler-server
@@ -71,7 +71,7 @@ Requires:	pscheduler-server
 Requires:	mod_ssl
 Requires:	mod_wsgi > 4.0
 Requires:	%{_pscheduler_python}-parse-crontab
-Requires:	%{_pscheduler_python}-pscheduler >= 1.3.7.2
+Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	pytz
 
 # General

@@ -585,7 +585,7 @@ class ArchiveWorker(object):
                                        if participant is None \
                                        else participant)
 
-        uri_host = spec.get("uri-host", pscheduler.api_local_host_fqdn())
+        uri_host = spec.get("uri-host", pscheduler.api_local_host())
         task_href = pscheduler.api_url(host=uri_host, path="tasks/%s" % (task_uuid))
         run_href = pscheduler.api_url(host=uri_host, path="tasks/%s/runs/%s" \
                                       % (task_uuid, run_uuid))

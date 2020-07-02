@@ -162,20 +162,12 @@ def failed_diags(run, why="Task failed to run properly."):
 def check_hostname_resolvability():
 
     hostname = socket.gethostname()
-    start("  Makin sure local hostname '%s' resolves" % hostname)
+    start("  Making sure local hostname '%s' resolves" % hostname)
     try:
         socket.gethostbyname(hostname)
         ok()
     except socket.gaierror as ex:
-        failed("%s\nThe hostname must resolve to an IP for pScheduler to work." % str(ex),
-               fail=True)
-
-    start("  Fetching host's FQDN")
-    try:
-        fqdn = socket.getfqdn()
-        ok(fqdn)
-    except Exception as ex:
-        failed("Failed\n\n%s" % str(ex), fail=True)
+        ok("Does not.  This is recommended, but not required.")
 
 
 
