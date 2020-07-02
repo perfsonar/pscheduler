@@ -27,7 +27,7 @@ try:
 except KeyError:
     pscheduler.fail('Missing data in input')
 
-duration = input['test']['spec'].get('duration', 'PT5S')
+duration = input['test']['spec'].get('duration', 'PT30S')
 duration = (int)(pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ))
 timeout_iso = input['test']['spec'].get('timeout', 'PT120S')
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )

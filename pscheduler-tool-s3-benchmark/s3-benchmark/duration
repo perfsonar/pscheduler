@@ -17,7 +17,7 @@ import pscheduler
 
 json = pscheduler.json_load(exit_on_error=True);
 
-auto_timeout = json.get("duration")      
+auto_timeout = json.get("duration", "PT30S")      
 timeout_iso = json.get("timeout", auto_timeout)
 
 if timeout_iso == auto_timeout:
