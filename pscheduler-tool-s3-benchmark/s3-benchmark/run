@@ -36,7 +36,11 @@ bucket = input['test']['spec'].get('bucket')
 secret_key = input['test']['spec'].get('secret-key')
 url = input['test']['spec'].get('url')
 iterations = input['test']['spec'].get('iterations')
-object_size = input['test']['spec'].get('object-size')
+object_size = (int)(input['test']['spec'].get('object-size'))
+object_size = pscheduler.number_as_si(object_size)
+object_char = object_size[-1]
+object_num = (int)(float((object_size[:-1])))
+print(str(object_num) + object_char)
 start_time = datetime.datetime.now()
 succeeded = False
 error = ''
@@ -182,7 +186,8 @@ results = {
         'average_put_time': average_put_time,
         'average_get_time': average_get_time,
         'average_delete_time': average_delete_time,
-        'loops': loop_json
+        'loops': loop_json,
+        'diags' : diags
     },
     'error': error }
 
