@@ -40,7 +40,7 @@ object_size = (int)(input['test']['spec'].get('object-size'))
 object_size = pscheduler.number_as_si(object_size)
 object_char = object_size[-1]
 object_num = (int)(float((object_size[:-1])))
-print(str(object_num) + object_char)
+object_size = str(object_num) + object_char)
 start_time = datetime.datetime.now()
 succeeded = False
 error = ''
