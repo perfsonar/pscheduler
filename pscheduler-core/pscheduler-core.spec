@@ -21,7 +21,7 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:       bash-completion
 # This is for plot-schedule
-Requires:       gnuplot-minimal
+Requires:       gnuplot-minimal >= 4.6.2
 # This is for netstat.
 Requires:       net-tools
 Requires:       %{_pscheduler_python}-pscheduler >= 1.3.7.1

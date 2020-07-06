@@ -151,13 +151,14 @@ class Log(object):
         # Inherit state from the environment
         #
 
+        state_exception = None
         if STATE_VARIABLE in os.environ:
 
             try:
                 depickled = pickle.loads(
-                    codecs.decode(os.environ[STATE_VARIABLE], "base64"))
-
-                depickled = pickle.loads(os.environ[STATE_VARIABLE])
+                    codecs.decode(
+                        bytes(os.environ[STATE_VARIABLE], "ascii")
+                        , "base64"))
 
                 facility = depickled['facility']
                 assert isinstance(facility, int)
@@ -166,14 +167,18 @@ class Log(object):
                 assert isinstance(level, int)
 
                 self.forced_debug = depickled['forced_debug']
+                if self.forced_debug is None:
+                    self.forced_debug = False
                 assert isinstance(self.forced_debug, bool)
 
                 self.is_quiet = depickled['is_quiet']
+                if self.is_quiet is None:
+                    self.is_quiet = False
+
                 assert isinstance(self.is_quiet, bool)
 
-            except Exception:
-                self.exception("Failed to decode %s '%s'"
-                               % (STATE_VARIABLE, os.environ[STATE_VARIABLE]))
+            except Exception as ex:
+                state_exception = ex
 
         #
         # Set up the logger
@@ -214,6 +219,15 @@ class Log(object):
 
         if (not self.is_quiet) and (not forced_quiet):
             self.info("Started")
+
+
+        # If there was an exception while depickling the current
+        # state, log that.
+
+        if state_exception:
+            self.warning("Failed to decode %s '%s': %s"
+                         % (STATE_VARIABLE, os.environ[STATE_VARIABLE], state_exception))
+
 
 
     def __update_env(self):

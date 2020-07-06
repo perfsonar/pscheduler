@@ -87,6 +87,19 @@ except KeyError:
 
 
 #
+# Flow Label
+#
+
+try:
+    flow_label = spec['flow-label']
+    argv.append('-l')
+    argv.append(str(flow_label))
+except KeyError:
+    pass
+
+
+
+#
 # First TTL
 #
 
@@ -275,6 +288,14 @@ run_timeout += datetime.timedelta(seconds=2)
 log.debug("Timeout is %s", run_timeout)
 
 run_timeout_secs = pscheduler.timedelta_as_seconds(run_timeout)
+
+try:
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
 
 status, stdout, stderr \
     = pscheduler.run_program(argv, timeout = run_timeout_secs)

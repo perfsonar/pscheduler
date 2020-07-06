@@ -28,6 +28,7 @@ from .psas import *
 from .psdns import *
 from .psjson import *
 from .psselect import *
+from .pssleep import *
 from .pstime import *
 from .psurl import *
 from .retry import *

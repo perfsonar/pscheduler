@@ -8,6 +8,7 @@ import datetime
 import errno
 import multiprocessing
 import optparse
+import os
 import pscheduler
 import psycopg2
 import psycopg2.extensions
@@ -15,11 +16,9 @@ import psycopg2.pool
 import select
 import signal
 import socket
+import tempfile
 import threading
 import time
-
-# See Python 2.6 workaround below
-import weakref
 
 
 pscheduler.set_graceful_exit()
@@ -60,7 +59,6 @@ opt_parser.add_option("--terse-logging",
                       default=False)
 
 
-
 opt_parser.add_option("--verbose", action="store_true", dest="verbose", default=False)
 opt_parser.add_option("--debug", action="store_true", dest="debug", default=False)
 
@@ -81,6 +79,34 @@ log_details = not options.terse
 
 # Get this once so we don't have to do a function call every time.
 delimiter = pscheduler.api_result_delimiter()
+
+
+
+# Current value of run start margin according to the database
+
+__run_start_margin = None
+
+def run_start_margin_set(db):
+    global __run_start_margin
+    with db.cursor() as cursor:
+        try:
+            cursor.execute("SELECT run_start_margin FROM configurables")
+        except Exception as ex:
+            raise RuntimeError("Unable to get run start margin: %s" % (str(ex)))
+
+        if cursor.rowcount != 1:
+            raise RuntimeError("Failed to get run start margin")
+
+        __run_start_margin = cursor.fetchone()[0]
+        log.debug("Run start margin set to %s", __run_start_margin)
+
+
+def run_start_margin():
+    global __run_start_margin
+    assert __run_start_margin is not None, "Run start margin was never set"
+    return __run_start_margin
+
+
 
 
 #
@@ -145,11 +171,6 @@ def clock_survey(hosts, bind=None):
     # Prime the result with empties for anything that didn't get
     # tested.
     result = [None] * len(hosts)
-
-    # Work around a bug in 2.6
-    # TODO: Get rid of this when 2.6 is no longer in the picture.
-    if not hasattr(threading.current_thread(), "_children"):
-        threading.current_thread()._children = weakref.WeakKeyDictionary()
 
     # Run the lot of tests in parallel
     pool = multiprocessing.pool.ThreadPool(processes=len(host_args))
@@ -288,13 +309,17 @@ class RunWorker(object):
         self.log.debug("%d: Thread running", self.id)
         run_dict.start(self.id, self)
         try:
-            self.__run()
+            with tempfile.TemporaryDirectory() as self.temp:
+                self.log.debug("%d: Temp space in %s", self.id, self.temp)
+                self.__run()
+            self.temp = None
         except Exception as ex:
             # Don't worry about the result here.  If __run() failed to
             # post anything, that will be the end of it.  If it did,
             # it might be salvageable.
             self.log.debug("%d: Exception: %s", self.id, ex)
             log.exception()
+
         self.log.debug("%d: Thread finished", self.id)
         run_dict.finish(self.id)
 
@@ -433,11 +458,10 @@ class RunWorker(object):
         #
 
         self.log.debug("%d: Start at %s", self.id, self.start_at)
-        time_until_start = pscheduler.time_until(self.start_at)
-        sleep_time = pscheduler.timedelta_as_seconds(time_until_start)
-        self.log.debug("%d: Sleeping %s until test start", self.id,
-                       time_until_start)
-        time.sleep(sleep_time)
+        start_time = self.start_at - run_start_margin()
+        self.log.debug("%d: Sleeping until test start at %s", self.id,
+                       start_time)
+        pscheduler.sleep_until(start_time)
 
         #
         # Get cracking
@@ -475,7 +499,7 @@ class RunWorker(object):
 
         self.log.debug("%d: Tool input: %s", self.id, tool_input)
 
-        how_late = pscheduler.time_now() - self.start_at
+        how_late = pscheduler.time_now() - start_time
         self.log.debug("%d: Start time difference is %s",
                        self.id, how_late)
 
@@ -483,18 +507,21 @@ class RunWorker(object):
             self.log.warning("%d: Starting %s later than scheduled",
                              self.id, how_late)
 
+        timeout = pscheduler.timedelta_as_seconds(end - start + run_start_margin()) + 1
         if context_runner is None:
 
             returncode, stdout, stderr = pscheduler.run_program(
                 run_args,
                 stdin=tool_input,
-                timeout=pscheduler.timedelta_as_seconds(end - start) + 1,
+                env_add={ "TMPDIR": self.temp },
+                timeout=timeout,
                 line_call=lambda l: self.__accumulate_output(l))
 
         else:
 
             returncode, stdout, stderr = context_runner.run(
-                timeout=pscheduler.timedelta_as_seconds(end - start) + 1,
+                env_add={ "TMPDIR": self.temp },
+                timeout=timeout,
                 line_call=lambda l: self.__accumulate_output(l)
             )
 
@@ -802,13 +829,15 @@ def main_program():
 
     # Listen for notifications.
 
-    for listen in ["run_new", "run_change"]:
+    for listen in ["run_new", "run_change", "configurables_changed" ]:
         log.debug("Listening for notification %s" % (listen))
         with db.cursor() as cursor:
             cursor.execute("LISTEN %s" % (listen))
 
     # Prime this for the first run
     wait_time = datetime.timedelta()
+    run_start_margin_set(db)
+
 
     while True:
 
@@ -831,8 +860,14 @@ def main_program():
                     != ([],[],[]):
                     # Notified
                     db.poll()
+                    notifies = [ notify.channel for notify in db.notifies]
+                    log.debug("Notifications: %s", notifies)
+                    if 'configurables_changed' in notifies:
+                        log.debug("Configurables changed.")
+                        run_start_margin_set(db)
+                    else:
+                        log.debug("Schedule change.")
                     del db.notifies[:]
-                    log.debug("Schedule change.")
 
             except select.error as ex:
 
@@ -947,10 +982,11 @@ def main_program():
     db.close()
 
 
-
 if options.daemon:
     pidfile = pscheduler.PidFile(options.pidfile)
     with daemon.DaemonContext(pidfile=pidfile):
         pscheduler.safe_run(lambda: main_program())
 else:
     pscheduler.safe_run(lambda: main_program())
+
+

@@ -1,2 +1,0 @@
-Tests: run-tests
-Depends: @, python-setuptools, python3-setuptools

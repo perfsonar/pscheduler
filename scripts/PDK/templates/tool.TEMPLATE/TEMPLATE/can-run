@@ -27,11 +27,6 @@ except KeyError:
         "reasons": [ "Missing test type" ]
     })
 
-except ValueError as ex:
-    pscheduler.succeed_json({
-        "can-run": False,
-        "reasons": [str(ex)]
-    })
 
 
 pscheduler.succeed_json({ "can-run": True })

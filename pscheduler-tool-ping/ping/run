@@ -9,7 +9,7 @@ import icmperror
 import pscheduler
 import re
 
-log = pscheduler.Log(prefix='ping', quiet=True)
+log = pscheduler.Log(prefix='tool-ping', quiet=True)
 
 input = pscheduler.json_load(exit_on_error=True);
 
@@ -230,6 +230,14 @@ run_timeout += datetime.timedelta(seconds=2)
 log.debug("Timeout is %s", run_timeout)
 
 run_timeout_secs = pscheduler.timedelta_as_seconds(run_timeout)
+
+try:
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
 
 status, stdout, stderr \
     = pscheduler.run_program(argv, timeout = run_timeout_secs)

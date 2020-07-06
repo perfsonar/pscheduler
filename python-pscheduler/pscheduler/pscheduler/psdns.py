@@ -11,10 +11,6 @@ import queue
 import socket
 import threading
 
-# See Python 2.6 workaround below.
-
-import weakref
-
 
 __DEFAULT_TIMEOUT__ = 2
 
@@ -194,11 +190,6 @@ def dns_bulk_resolve(candidates, reverse=False, ip_version=None, threads=50):
 
     if len(candidates) == 0:
         return result
-
-    # Work around a bug in 2.6
-    # TODO: Get rid of this when 2.6 is no longer in the picture.
-    if not hasattr(threading.current_thread(), "_children"):
-        threading.current_thread()._children = weakref.WeakKeyDictionary()
 
     pool = multiprocessing.dummy.Pool(
         processes=min(len(candidates), threads) )

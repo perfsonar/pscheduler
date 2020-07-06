@@ -49,7 +49,9 @@ class PycURLRunner(object):
         if timeout is not None:
             self.curl.setopt(pycurl.TIMEOUT_MS, int(timeout * 1000.0))
 
-        self.curl.setopt(pycurl.SSL_VERIFYHOST, verify_keys)
+        # True/false doesn't work here.  See
+        # https://curl.haxx.se/libcurl/c/CURLOPT_SSL_VERIFYHOST.html
+        self.curl.setopt(pycurl.SSL_VERIFYHOST, 2 if verify_keys else 0)
         self.curl.setopt(pycurl.SSL_VERIFYPEER, verify_keys)
 
         self.buf = io.BytesIO()

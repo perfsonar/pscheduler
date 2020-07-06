@@ -4,6 +4,8 @@
 
 from pscheduler import json_validate
 
+MAX_SCHEMA = 1
+
 REQUEST_SCHEMA = {
         "title": "pScheduler One-way Latency Background Request Schema",
         "type": "object",
@@ -279,7 +281,7 @@ LIMIT_SCHEMA = {
 
 def spec_is_valid(json):
     
-    return json_validate(json, REQUEST_SCHEMA)
+    return json_validate(json, REQUEST_SCHEMA, max_schema=MAX_SCHEMA)
 
 def result_is_valid(json):
     

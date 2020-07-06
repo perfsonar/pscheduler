@@ -243,6 +243,7 @@ AS $$
 DECLARE
     taskrec RECORD;
     proposed_times TSTZRANGE;
+    start_margin INTERVAL;
 BEGIN
 
     SELECT INTO taskrec
@@ -271,6 +272,8 @@ BEGIN
     proposed_times := tstzrange(proposed_start,
         proposed_start + taskrec.duration, '[)');
 
+    SELECT INTO start_margin run_start_margin FROM configurables;
+
     RETURN ( 
         -- Exclusive can't collide with anything
         ( taskrec.exclusive
@@ -280,6 +283,7 @@ BEGIN
 			  AND COALESCE(priority, 0) >= COALESCE(proposed_priority, 0)
 		     )
 	)
+
         -- Non-exclusive can't collide with exclusive
           OR ( NOT taskrec.exclusive
                AND EXISTS (SELECT * FROM run_conflictable
@@ -289,7 +293,35 @@ BEGIN
 			       AND COALESCE(priority, 0) >= COALESCE(proposed_priority, 0)
 		    )
 	    )
-        );
+
+        -- Every run is kicked off a few seconds (see run_start_margin
+        -- in the configurables table) before its scheduled start time
+        -- so it can do advance prep and start the measurement at
+        -- exactly the right time (see #970).  The tool plugin cannot
+        -- handle being preempted during the start margin, so anything
+        -- that would preempt it cannot be inserted during that
+        -- period.  Beforehand is okay because the runner will see the
+        -- preemption and not start the plugin.
+
+	-- TODO: This could *probably* be folded into the two queries
+	-- above, but it might get hairy.
+
+	OR ( EXISTS (SELECT * FROM run_conflictable
+                     WHERE
+		         -- Proposed run overlaps an existing conflictable task
+			 times && proposed_times
+			 -- Proposed run would preempt existing run
+			 AND COALESCE(proposed_priority, 0) >= COALESCE(priority, 0)
+			 -- Proposed and existing runs can't coexist
+			 AND ( exclusive OR (taskrec.exclusive AND NOT exclusive) )
+			 -- Proposal is being made within the existing run's start margin
+			 AND now() BETWEEN lower(times) - start_margin AND lower(times)
+			 -- Proposed run would start within the existing's start margin
+			 AND proposed_start BETWEEN lower(times) - start_margin AND lower(times)
+	         )
+	   )
+
+    );
 
 END;
 $$ LANGUAGE plpgsql;
@@ -362,9 +394,9 @@ BEGIN
 
     SELECT INTO horizon schedule_horizon FROM configurables;
     IF taskrec.scheduling_class <> scheduling_class_background_multi()
-       AND (upper(NEW.times) - normalized_now()) > horizon THEN
+       AND (lower(NEW.times) - normalized_now()) > horizon THEN
         RAISE EXCEPTION 'Cannot schedule runs more than % in advance (% is % outside the range %)',
-            horizon, NEW.times, (upper(NEW.times) - normalized_now() - horizon),
+            horizon, NEW.times, (lower(NEW.times) - normalized_now() - horizon),
 	    tstzrange(normalized_now(), normalized_now()+horizon);
     END IF;
 
@@ -453,13 +485,15 @@ BEGIN
         END IF;
 
 
-        -- Handle changes in status
+        -- No status changes on future runs unless the new state is a
+        -- finished one.
 
         IF NEW.status IS NOT NULL
            AND ( (OLD.status IS NULL) OR (NEW.status <> OLD.status) )
+	   AND ( NOT run_state_is_finished(NEW.state) )
            AND lower(NEW.times) > normalized_now()
         THEN
-            RAISE EXCEPTION 'Cannot set state on future runs. % / %', lower(NEW.times), normalized_now();
+            RAISE EXCEPTION 'Cannot set status on future runs. % / %', lower(NEW.times), normalized_now();
         END IF;
 
 
@@ -929,7 +963,7 @@ CREATE OR REPLACE FUNCTION api_run_post(
     start_time TIMESTAMP WITH TIME ZONE,
     run_uuid UUID,  -- NULL to assign one
     nonstart_reason TEXT = NULL,
-    priority INTEGER = NULL,
+    proposed_priority INTEGER = NULL,
     limit_diags TEXT = NULL
 )
 RETURNS TABLE (
@@ -945,6 +979,7 @@ DECLARE
     initial_state INTEGER;
     initial_status INTEGER;
     exception_text TEXT;
+    run_priority INTEGER;
 BEGIN
 
     SELECT INTO task * FROM task WHERE uuid = task_uuid;
@@ -971,13 +1006,22 @@ BEGIN
     start_time := normalized_time(start_time);
     time_range := tstzrange(start_time, start_time + task.duration, '[)');
 
+    -- Set priority according to what was requested
+
+    IF proposed_priority is NULL
+    THEN
+        run_priority = task.priority;
+    ELSE
+        run_priority := LEAST(task.priority, run_priority);
+    END IF;
+
     BEGIN
 
         WITH inserted_row AS (
             INSERT INTO run (uuid, task, times, state,
                 errors, priority, limit_diags)
             VALUES (run_uuid, task.id, time_range, initial_state,
-	        nonstart_reason, priority, limit_diags)
+	        nonstart_reason, run_priority, limit_diags)
             RETURNING *
         ) SELECT INTO run_uuid uuid FROM inserted_row;
 

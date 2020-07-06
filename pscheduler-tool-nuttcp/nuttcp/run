@@ -41,27 +41,38 @@ except KeyError as ex:
 except:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 
-if len(participant_data) != 2:
-    pscheduler.fail("nuttcp requires exactly 2 participants, got %s" % (len(participant_data)))
+single_ended = test_spec.get('single-ended', False)
 
+participants = len(participant_data)
+if not(participants == 2 or (participants == 1 and single_ended)):
+    pscheduler.fail("nuttcp requires 1 or 2 participants, got %s" % (len(participant_data)))
 
 config = nuttcp_utils.get_config()
 nuttcp_cmd  = config["nuttcp_cmd"]
 
-server_port = participant_data[1]['server_port']
-data_port_start = participant_data[1]['data_port_start']
+
+
+# grab the server port
+if single_ended:
+    server_port = test_spec.get('single-ended-port', DEFAULT_SERVER_PORT)
+    data_port_start = DEFAULT_DATA_PORT_START
+else:
+    server_port = participant_data[1]['server_port']
+    try:
+        data_port_start = participant_data[1]['data_port_start']
+    except KeyError:
+        data_port_start = DEFAULT_DATA_PORT_START
+
+
 
 def run_client():
-
-    logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
-
-    time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
 
     diags = []
     nuttcp_args = [ nuttcp_cmd ]
 
-    nuttcp_args.append('-p')
-    nuttcp_args.append(data_port_start)
+    if data_port_start is not None:
+        nuttcp_args.append('-p')
+        nuttcp_args.append(data_port_start)
 
     nuttcp_args.append('-P')
     nuttcp_args.append(server_port)
@@ -201,6 +212,17 @@ def run_client():
     diags.append(joined_args)
 
     try:
+        start_at = input['schedule']['start']
+        logger.debug("Sleeping until %s", start_at)
+        pscheduler.sleep_until(start_at)
+        logger.debug("Starting")
+    except KeyError:
+        pscheduler.fail("Unable to find start time in input")
+
+    logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
+    time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
+
+    try:
         status, stdout, stderr = pscheduler.run_program(nuttcp_args)
     except Exception as ex:
         logger.error("nuttcp failed to complete execution: %s" % ex)
@@ -218,8 +240,9 @@ def run_server():
     nuttcp_args = [ nuttcp_cmd, '-S', '-1', '--nofork']
     diags = []
 
-    nuttcp_args.append("-p")
-    nuttcp_args.append(data_port_start)
+    if data_port_start is not None:
+        nuttcp_args.append("-p")
+        nuttcp_args.append(data_port_start)
 
     nuttcp_args.append("-P")
     nuttcp_args.append(server_port)
@@ -258,6 +281,14 @@ def run_server():
     nuttcp_args_string = " ".join(nuttcp_args)
     logger.debug("Running command: %s" % (nuttcp_args_string))
     diags.append(nuttcp_args_string)
+
+    try:
+        start_at = input['schedule']['start']
+        logger.debug("Sleeping until %s", start_at)
+        pscheduler.sleep_until(start_at)
+        logger.debug("Starting")
+    except KeyError:
+        pscheduler.fail("Unable to find start time in input")
 
     try:
         status, stdout, stderr = pscheduler.run_program(nuttcp_args,

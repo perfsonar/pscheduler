@@ -266,6 +266,7 @@ class EsmondClient(object): # pragma: no cover
             allow_redirects=False,
             timeout=HTTP_TIMEOUT)
 
+        log.debug("Esmond returned status code: %s" % (status_code))
         if status_code == 409:
             #duplicate data
             log.debug("Attempted to add duplicate data point. Skipping")

@@ -14,6 +14,7 @@
 # 
 
 from pscheduler import json_validate
+MAX_SCHEMA = 1
 
 def spec_is_valid(json):
 

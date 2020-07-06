@@ -10,6 +10,8 @@ import time
 
 import pscheduler
 
+log = pscheduler.Log(prefix="tool-net-snmp-set", quiet=True)
+
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
 
@@ -86,6 +88,14 @@ for item in input['test']['spec']['oidargs']:
 
 # Stringify the arguments        
 argv = [str(x) for x in argv]
+
+try:
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
 
 status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
 

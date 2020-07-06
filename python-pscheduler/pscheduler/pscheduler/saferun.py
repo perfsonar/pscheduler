@@ -44,10 +44,10 @@ def safe_run(function,
     if STATE_VARIABLE in os.environ:
 
         try:
-            depickled = pickle.loads(os.environ[STATE_VARIABLE])
+            depickled = pickle.loads(os.environ[STATE_VARIABLE].encode())
 
             initial_backoff = depickled['initial_backoff']
-            assert isinstance(initial_backoff, int) or isinstance(initial, float)
+            assert isinstance(initial_backoff, int) or isinstance(initial_backoff, float)
 
             current_backoff = depickled['current_backoff']
             assert isinstance(current_backoff, int) or isinstance(current_backoff, float)
@@ -58,7 +58,8 @@ def safe_run(function,
         except Exception as ex:
             log.error("Failed to decode %s '%s': %s"
                            % (STATE_VARIABLE, os.environ[STATE_VARIABLE], ex))
-            exit(1)
+            log.exception()
+            sys.exit(1)
     else:
 
         initial_backoff = backoff
@@ -114,7 +115,8 @@ def safe_run(function,
         'current_backoff': current_backoff,
         'runs': runs
     }
-    os.environ[STATE_VARIABLE] = pickle.dumps(to_pickle)
+    os.environ[STATE_VARIABLE] = pickle.dumps(to_pickle, 0).decode()
+
 
     # Close all open FDs other than stdin/stdout/stderr so they don't
     # get inherited by the exec'd process.

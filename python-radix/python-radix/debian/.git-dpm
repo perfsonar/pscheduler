@@ -1,0 +1,11 @@
+# see git-dpm(1) from git-dpm package
+95f0a8d24ac73ef821a4d0b3dcc33a79dd97a56a
+95f0a8d24ac73ef821a4d0b3dcc33a79dd97a56a
+95f0a8d24ac73ef821a4d0b3dcc33a79dd97a56a
+95f0a8d24ac73ef821a4d0b3dcc33a79dd97a56a
+py-radix_0.10.0.orig.tar.gz
+490ff10b69a046365aed690555a78783ec8fbcf2
+21815
+debianTag="debian/%e%v"
+patchedTag="patched/%e%v"
+upstreamTag="upstream/%e%u"

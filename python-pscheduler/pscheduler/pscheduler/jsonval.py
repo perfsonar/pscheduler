@@ -1329,7 +1329,7 @@ __default_schema__ = {
 
 
 
-def json_validate(json, skeleton):
+def json_validate(json, skeleton, max_schema=None):
     """Validate JSON against a jsonschema schema.
 
     The skeleton is a dictionary containing a partial,
@@ -1361,9 +1361,14 @@ def json_validate(json, skeleton):
     Tip:  If your schema needs to be allOf/anyOf/oneOf/not at the top,
     build it in local and use a $ref to refer to it.
 
+    If max_schema is present and an integer, the JSON will be checked
+    for having an integer "schema" value which is less than or equal
+    to max_schema.
+
     The values returned are a tuple containing a boolean indicating
     whether or not the JSON was valid and a string containing any
     error messages if not.
+
     """
 
     # Validate what came in
@@ -1373,6 +1378,21 @@ def json_validate(json, skeleton):
 
     if not isinstance(skeleton, dict):
         raise ValueError("Skeleton provided must be a dictionary.")
+
+    if max_schema is not None:
+
+        if not isinstance(max_schema, int):
+            raise ValueError("Maximum schema provided must be an integer.")
+
+        schema = json.get("schema", 1)
+
+        if not isinstance(schema, int):
+            return (False, "Schema value must be an integer.")
+
+        if schema > max_schema:
+            return (False,
+                    "Schema version %d is not supported (highest is %d)." % (schema, max_schema))
+
 
 
     # Build up the schema from the dictionaries and user input.

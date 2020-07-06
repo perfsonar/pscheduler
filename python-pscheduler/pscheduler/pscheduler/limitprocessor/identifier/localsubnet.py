@@ -65,8 +65,8 @@ class IdentifierLocalSubnet(object):
 
 
     def __init__(self,
-                 data   # Data suitable for this class
-                 ):
+                 data,   # Data suitable for this class
+                 test_ifaces=None):
 
         valid, message = data_is_valid(data)
         if not valid:
@@ -74,9 +74,18 @@ class IdentifierLocalSubnet(object):
 
         self.cidrs = []
 
-        for iface in netifaces.interfaces():
+        #If a test, use given interfaces otherwise auto-detect
+        ifaces = test_ifaces
+        if not ifaces:
+            ifaces = netifaces.interfaces()
 
-            ifaddrs = netifaces.ifaddresses(iface)
+        for iface in ifaces:
+            #if a test, use given addresses otherwise lookup
+            ifaddrs = {}
+            if test_ifaces:
+                ifaddrs = ifaces[iface]
+            else:
+                ifaddrs = netifaces.ifaddresses(iface)
 
             pairs = []
 

@@ -98,6 +98,25 @@ BEGIN
     END IF;
 
 
+    -- Version 5 to version 6
+    -- Add run start margin
+    IF t_version = 5
+    THEN
+
+        ALTER TABLE configurables DISABLE  TRIGGER USER;
+
+        ALTER TABLE configurables
+        ADD COLUMN
+	run_start_margin INTERVAL DEFAULT 'PT3S';
+
+        UPDATE configurables SET run_start_margin = DEFAULT;
+
+        ALTER TABLE configurables ENABLE TRIGGER USER;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --

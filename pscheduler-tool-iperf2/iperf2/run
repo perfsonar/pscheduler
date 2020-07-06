@@ -68,12 +68,19 @@ if single_ended:
 else:
     server_port = participant_data[1].get('server_port', DEFAULT_SERVER_PORT)
 
+# convert from ISO to seconds for test duration
+test_duration = test_spec.get('duration')
+if test_duration:
+    delta = pscheduler.iso8601_as_timedelta(test_duration)
+    test_duration = int(pscheduler.timedelta_as_seconds(delta))
+else:
+    test_duration = DEFAULT_DURATION
+
+
 
 def run_client():    
 
     logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
-
-    time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
 
     iperf2_args = [ iperf2_cmd ]
 
@@ -202,8 +209,19 @@ def run_client():
     iperf2_args = [str(x) for x in iperf2_args]
 
     command_line = " ".join(iperf2_args)
-    logger.debug("Running command: %s" % command_line)      
 
+    try:
+        start_at = input['schedule']['start']
+        logger.debug("Sleeping until %s", start_at)
+        pscheduler.sleep_until(start_at)
+        logger.debug("Starting")
+    except KeyError:
+        pscheduler.fail("Unable to find start time in input")
+
+    logger.debug("Waiting for server to start")
+    time.sleep(DEFAULT_WAIT_SLEEP)
+
+    logger.debug("Running command: %s" % command_line)      
     try:
         status, stdout, stderr = pscheduler.run_program(iperf2_args)
     except Exception:
@@ -252,12 +270,20 @@ def run_server():
     # just to be safe cast everything in the list to a string
     iperf2_args = [str(x) for x in iperf2_args]
 
-    # Time out a little early so we can produce a result
-    iperf_timeout = pscheduler.timedelta_as_seconds(duration) - DEFAULT_SERVER_SHUTDOWN
-    logger.debug("Timeout is %s" % (iperf_timeout))
+
+    iperf_timeout = test_duration
+    iperf_timeout += iperf2_utils.setup_time(test_spec.get("link-rtt", None))
+
+
+    try:
+        start_at = input['schedule']['start']
+        logger.debug("Sleeping until %s", start_at)
+        pscheduler.sleep_until(start_at)
+        logger.debug("Starting")
+    except KeyError:
+        pscheduler.fail("Unable to find start time in input")
 
     logger.debug("Running command: %s" % " ".join(iperf2_args))
-
     try:
         status, stdout, stderr = pscheduler.run_program(iperf2_args, timeout = iperf_timeout)
     except Exception as e:

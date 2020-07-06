@@ -28,6 +28,21 @@
 	    "required": [ "name", "description", "identifiers" ]
 	},
 
+	"Classifier_V4": {
+	    "type": "object",
+	    "properties": {
+		"name": { "$ref": "#/pScheduler/String" },
+		"description": { "$ref": "#/pScheduler/String" },
+		"identifiers": {
+		    "type": "array",
+		    "items": { "$ref": "#/pScheduler/String" }
+		},
+		"require": { "$ref": "#/local/HowMany" }
+	    },
+	    "additionalProperties": false,
+	    "required": [ "name", "description", "identifiers" ]
+	},
+
 	"LimitFull": { 
 	    "type": "object",
 	    "properties": {
@@ -78,10 +93,7 @@
 	"ApplicationLimit": {
 	    "type": "object",
 	    "properties": {
-		"require": {
-		    "type": "string",
-		    "enum": [ "none", "one", "any", "all" ]
-		},
+		"require": { "$ref": "#/local/HowMany" },
 		"limits": {
 		    "type": "array",
 		    "items": { "$ref": "#/pScheduler/String" }
@@ -89,6 +101,11 @@
 	    },
 	    "additionalProperties": false,
 	    "required": [ "require", "limits" ]
+	},
+
+	"HowMany": {
+	    "type": "string",
+	    "enum": [ "none", "one", "any", "all" ]
 	},
 
 
@@ -201,11 +218,49 @@
 	    ]
 	},
 
+	"LimitConfiguration_V4": {
+	    "type": "object",
+	    "properties": {
+		"schema": {
+		    "type": "integer",
+		    "minimum": 4,
+		    "maximum": 4
+		},
+		"identifiers": { 
+		    "type": "array",
+		    "items": { "$ref": "#/local/Identifier" }
+		},
+		"classifiers": { 
+		    "type": "array",
+		    "items": { "$ref": "#/local/Classifier_V4" }
+		},
+		"rewrite": { "$ref": "#/pScheduler/JQTransformSpecification" },
+		"limits": { 
+		    "type": "array",
+		    "items": { "$ref": "#/local/Limit" }
+		},
+		"applications": { 
+		    "type": "array",
+		    "items": { "$ref": "#/local/Application" }
+		},
+		"priority": { "$ref": "#/pScheduler/JQTransformSpecification" }
+	    },
+	    "additionalProperties": false,
+	    "required": [
+		"schema",
+		"identifiers",
+		"classifiers",
+		"limits",
+		"applications"
+	    ]
+	},
+
 	"LimitConfiguration": {
 	    "oneOf": [
 		{ "$ref": "#/local/LimitConfiguration_V1" },
 		{ "$ref": "#/local/LimitConfiguration_V2" },
-		{ "$ref": "#/local/LimitConfiguration_V3" }
+		{ "$ref": "#/local/LimitConfiguration_V3" },
+		{ "$ref": "#/local/LimitConfiguration_V4" }
 	    ]
 	}
     },

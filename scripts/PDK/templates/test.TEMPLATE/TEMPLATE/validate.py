@@ -1,5 +1,5 @@
 #
-# Validator for "snmpset" Test
+# Validator for a pScheduler Test
 #
 
 #
@@ -14,6 +14,8 @@
 # 
 
 from pscheduler import json_validate
+
+MAX_SCHEMA = 1
 
 def spec_is_valid(json):
 
@@ -78,4 +80,4 @@ def limit_is_valid(json):
         "additionalProperties": False
         }
 
-    return json_validate(json, schema)
+    return json_validate(json, schema, max_schema=MAX_SCHEMA)

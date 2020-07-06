@@ -109,14 +109,29 @@ keep_data_files = False
 if config and config.has_option(CONFIG_SECTION, CONFIG_OPT_KEEP_DATA_FILES):
     keep_data_files = config.getboolean(CONFIG_SECTION, CONFIG_OPT_KEEP_DATA_FILES)
 
-#determine data directory
-parent_data_dir = DEFAULT_DATA_DIR
-data_dir=None
+
+# Determine data directory in this order of preference:
+#  1. Config file's data_dir
+#  2. Environment's TMPDIR
+#  3. Contents of DEFAULT_DATA_DIR
+
 if config and config.has_option(CONFIG_SECTION, CONFIG_OPT_DATA_DIR):
     parent_data_dir = config.get(CONFIG_SECTION, CONFIG_OPT_DATA_DIR)
+    log.debug("Using config's temporary space %s", parent_data_dir)
+else:
+    try:
+        parent_data_dir = os.environ['TMPDIR']
+        log.debug("Using TMPDIR temporary space %s", parent_data_dir)
+    except KeyError:
+        parent_data_dir = DEFAULT_DATA_DIR
+        log.debug("Using default temporary space %s", parent_data_dir)
+
 if not parent_data_dir.endswith("/"):
-    parent_data_dir += "/" 
+    parent_data_dir += "/"
+
 data_dir = parent_data_dir + task_uuid + '-' + time_tag
+log.debug("Data directory is %s", data_dir)
+
 
 #Always print files (-p)
 powstream_args = [powstream_cmd, '-p', '-d', data_dir]
@@ -211,6 +226,15 @@ while True:
             os.makedirs(data_dir)
         
         #spawn process
+
+        try:
+            start_at = input['schedule']['start']
+            log.debug("Sleeping until %s", start_at)
+            pscheduler.sleep_until(start_at)
+            log.debug("Starting")
+        except KeyError:
+            pscheduler.fail("Unable to find start time in input")
+
         log.debug("Running command: %s" % " ".join(powstream_args))
         proc = Popen(powstream_args, stdout=PIPE, stderr=PIPE, shell=False)
         #update signal handler to make sure process is killed when terminated
