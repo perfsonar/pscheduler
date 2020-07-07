@@ -19,7 +19,6 @@ dnl
 #               full bundle.
 #
 
-
 #
 # RPM BUILD UTILITIES
 #
