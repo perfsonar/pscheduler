@@ -55,12 +55,12 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %%_pscheduler_python python%{_pscheduler_python_version_major}
 # EL7: When support is discontinued, switch all uses of this macro to
 # _pscheduler_python.
-%%_pscheduler_python_epel python%{_pscheduler_python_version_major}%{_pscheduler_python_version_minor}
+%%_pscheduler_python_epel python%%{_pscheduler_python_version_major}%%{_pscheduler_python_version_minor}
 %endif
 
 # EL8: Enable this.
 # %if %{el8}
-# %%_pscheduler_python python%{_pscheduler_python_version_major}
+# %%_pscheduler_python python%%{_pscheduler_python_version_major}
 # %endif
 
 
@@ -73,12 +73,12 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %%_pscheduler_postgresql_version_major 10
 %%_pscheduler_postgresql_version_minor 12
 
-%%_pscheduler_postgresql_version %{_pscheduler_postgresql_version_major}.%{_pscheduler_postgresql_version_minor}
-%%_pscheduler_postgresql_package postgresql%{_pscheduler_postgresql_version_major}
+%%_pscheduler_postgresql_version %%{_pscheduler_postgresql_version_major}.%%{_pscheduler_postgresql_version_minor}
+%%_pscheduler_postgresql_package postgresql%%{_pscheduler_postgresql_version_major}
 
-%%_pscheduler_postgresql_data_top %{_sharedstatedir}/pgsql
-%%_pscheduler_postgresql_data %{_pscheduler_postgresql_data_top}/%{_pscheduler_postgresql_version_major}/data
-%%_pscheduler_postgresql_service postgresql-%{_pscheduler_postgresql_version_major}
+%%_pscheduler_postgresql_data_top %%{_sharedstatedir}/pgsql
+%%_pscheduler_postgresql_data %%{_pscheduler_postgresql_data_top}/%%{_pscheduler_postgresql_version_major}/data
+%%_pscheduler_postgresql_service postgresql-%%{_pscheduler_postgresql_version_major}
 %endif
 
 
@@ -89,12 +89,12 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 # pScheduler
 #
 
-%%_pscheduler_libexecdir %{_libexecdir}/pscheduler
-%%_pscheduler_sysconfdir %{_sysconfdir}/pscheduler
-%%_pscheduler_sudoersdir %{_sysconfdir}/sudoers.d
-%%_pscheduler_docdir %{_defaultdocdir}/pscheduler
-%%_pscheduler_datadir %{_datadir}/pscheduler
-%%_pscheduler_vardir %{_var}/lib/pscheduler
+%%_pscheduler_libexecdir %%{_libexecdir}/pscheduler
+%%_pscheduler_sysconfdir %%{_sysconfdir}/pscheduler
+%%_pscheduler_sudoersdir %%{_sysconfdir}/sudoers.d
+%%_pscheduler_docdir %%{_defaultdocdir}/pscheduler
+%%_pscheduler_datadir %%{_datadir}/pscheduler
+%%_pscheduler_vardir %%{_var}/lib/pscheduler
 
 # Where RPM Macros live
 %%_pscheduler_rpmmacrodir %{macro_dir}
@@ -102,35 +102,35 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %%_pscheduler_rpmmacroprefix %{macro_prefix}
 
 # Internal commands
-%%_pscheduler_internals %{_pscheduler_libexecdir}/internals
+%%_pscheduler_internals %%{_pscheduler_libexecdir}/internals
 
 # Where all classes live
-%%_pscheduler_classes %{_pscheduler_libexecdir}/classes
+%%_pscheduler_classes %%{_pscheduler_libexecdir}/classes
 
 # Tests
-%%_pscheduler_test_libexec %{_pscheduler_classes}/test
-%%_pscheduler_test_doc %{_pscheduler_docdir}/test
-%%_pscheduler_test_confdir %{_pscheduler_sysconfdir}/test
+%%_pscheduler_test_libexec %%{_pscheduler_classes}/test
+%%_pscheduler_test_doc %%{_pscheduler_docdir}/test
+%%_pscheduler_test_confdir %%{_pscheduler_sysconfdir}/test
 
 # Tools
-%%_pscheduler_tool_libexec %{_pscheduler_classes}/tool
-%%_pscheduler_tool_doc %{_pscheduler_docdir}/tool
-%%_pscheduler_tool_confdir %{_pscheduler_sysconfdir}/tool
-%%_pscheduler_tool_vardir %{_pscheduler_vardir}/tool
+%%_pscheduler_tool_libexec %%{_pscheduler_classes}/tool
+%%_pscheduler_tool_doc %%{_pscheduler_docdir}/tool
+%%_pscheduler_tool_confdir %%{_pscheduler_sysconfdir}/tool
+%%_pscheduler_tool_vardir %%{_pscheduler_vardir}/tool
 
 # Archivers
-%%_pscheduler_archiver_libexec %{_pscheduler_classes}/archiver
-%%_pscheduler_archiver_doc %{_pscheduler_docdir}/archiver
+%%_pscheduler_archiver_libexec %%{_pscheduler_classes}/archiver
+%%_pscheduler_archiver_doc %%{_pscheduler_docdir}/archiver
 
 # Context Changers
-%%_pscheduler_context_libexec %{_pscheduler_classes}/context
-%%_pscheduler_context_doc %{_pscheduler_docdir}/context
+%%_pscheduler_context_libexec %%{_pscheduler_classes}/context
+%%_pscheduler_context_doc %%{_pscheduler_docdir}/context
 
 # pScheduler front-end comands
-%%_pscheduler_commands %{_pscheduler_libexecdir}/commands
+%%_pscheduler_commands %%{_pscheduler_libexecdir}/commands
 
 # pScheduler daemons
-%%_pscheduler_daemons %{_pscheduler_libexecdir}/daemons
+%%_pscheduler_daemons %%{_pscheduler_libexecdir}/daemons
 
 EOF
 
