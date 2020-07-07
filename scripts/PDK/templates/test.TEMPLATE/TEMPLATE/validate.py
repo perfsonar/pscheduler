@@ -1,5 +1,5 @@
 #
-# Validator for "snmpset" Test
+# Validator for a pScheduler Test
 #
 
 #

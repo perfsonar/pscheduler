@@ -91,7 +91,7 @@ drop-in
 ethr
 paris-traceroute
 random-string
-
+s3-benchmark
 
 #
 # PSCHEDULER CORE PARTS
@@ -119,6 +119,7 @@ pscheduler-test-latencybg
 pscheduler-test-netreach			--bundle extras
 pscheduler-test-throughput
 pscheduler-test-rtt
+pscheduler-test-s3throughput
 pscheduler-test-simplestream
 pscheduler-test-snmpget			--bundle snmp
 pscheduler-test-snmpgetbgm		--bundle snmp
@@ -148,6 +149,7 @@ pscheduler-tool-powstream
 pscheduler-tool-psclock
 pscheduler-tool-psurl
 pscheduler-tool-pysnmp			--bundle snmp
+pscheduler-tool-s3-benchmark
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm

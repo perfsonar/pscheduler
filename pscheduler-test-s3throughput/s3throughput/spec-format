@@ -5,12 +5,6 @@
 #
 # This will format a test spec into something that is human readable.
 #
-# To test this file, a spec is needed. You can generate one with cli-to-spec
-# after you've written it. Use the following syntax:
-# cat example-spec.json | ./spec-format text/plain
-# cat example-spec.json | ./spec-format text/html
-# 
-#
 
 import jsontemplate
 import pscheduler
@@ -40,9 +34,15 @@ Host ................... {.section host}{host}{.or}Not Specified{.end}
 Host Node ................... {.section host_ndoe}{host_node}{.or}Not Specified{.end}
 Timeout ................... {.section timeout}{timeout}{.or}Not Specified{.end}
 Duration ................... {.section duration}{duration}{.or}Not Specified{.end}
-Test Type ................... {.section testtype}{testtype}{.or}Not Specified{.end}
+Access Key ................... {.section access-key}{access-key}{.or}Not Specified{.end}
+Secret Key ................... {.section secret-key}{secret-key}{.or}Not Specified{.end}
+Bucket ................... {.section bucket}{bucket}{.or}Not Specified{.end}
+URL ................... {.section url}{url}{.or}Not Specified{.end}
+Iterations ................... {.section iterations}{iterations}{.or}Not Specified{.end}
+Object Size ................... {.section object-size}{object-size}{.or}Not Specified{.end}
 """
 
+# TODO: html formatting
 # Format with html
 elif format == 'text/html':
 
@@ -53,7 +53,12 @@ elif format == 'text/html':
 <tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
 <tr><td>Duration</td><td>{.section duration}{duration}{.or}Not Specified{.end}</td></tr>
 <tr><td>Test Type</td><td>{.section testtype}{testtype}{.or}Not Specified{.end}</td></tr>
-</table>
+<tr><td>Access Key</td><td>{.section access-key}{access-key}{.or}Not Specified{.end}</td></tr>
+<tr><td>Bucket</td><td>{.section bucket}{bucket}{.or}Not Specified{.end}</td></tr>
+<tr><td>URL</td><td>{.section url}{url}{.or}Not Specified{.end}</td>
+<tr><td>Iterations</td><td>{.section iterations}{iterations}{.or}Not Specified{.end}</td></tr>
+<tr><td>Object Size</td><td>{.section object-size}{object-size}{.or}Not Specified{.end}</td></tr>
+</tr></table>
 """
 
 else:
