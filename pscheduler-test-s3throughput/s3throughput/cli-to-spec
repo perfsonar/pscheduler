@@ -153,7 +153,7 @@ if options.object_size is not None:
     if (int)(options.object_size) < 1000:
         pscheduler.fail('Object size is too small. Please specify a size of at least 1KB')
 else:
-    result['object-size'] = '1048576'
+    result['object-size'] = 1048576
 
 
 
