@@ -28,22 +28,5 @@ except KeyError:
     })
 
 
-# The test specification will have been validated before this, so a
-# quick check of the schema value here is fine.
-
-try:
-    spec = json["spec"]
-    pscheduler.json_check_schema(spec, 1)
-except KeyError:
-    pscheduler.succeed_json({
-        "can-run": False,
-        "reasons": ["Missing test specification"]
-    })
-except ValueError as ex:
-    pscheduler.succeed_json({
-        "can-run": False,
-        "reasons": [str(ex)]
-    })
-
 
 pscheduler.succeed_json({ "can-run": True })

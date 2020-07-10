@@ -14,6 +14,7 @@
 # 
 
 from pscheduler import json_validate
+MAX_SCHEMA = 1
 
 def spec_is_valid(json):
 
@@ -51,8 +52,7 @@ def spec_is_valid(json):
         "additionalProperties": True
     }
 
-    return json_validate(json, schema)
-
+    return json_validate(json, schema, max_schema=MAX_SCHEMA)
 
 def result_is_valid(json):
     schema = {

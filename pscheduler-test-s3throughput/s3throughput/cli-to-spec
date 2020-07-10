@@ -42,10 +42,6 @@ else:
 
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """
-    This text will be printed out at the bottom of the
-    "help" message. Change this to whatever you like,
-    or don't include it at all. This could be a good place
-    for example usage cases, etc.
 """
 )
 
@@ -118,7 +114,7 @@ if options.timeout is not None:
    result['timeout'] = options.timeout
 
 if options.duration is not None:
-   result['duration'] = seconds_duration
+   result['duration'] = options.duration
 
 if options.access_key is not None:
    result['access-key'] = options.access_key
@@ -150,11 +146,15 @@ if options.iterations is not None:
     result['iterations'] = options.iterations
 
 if options.object_size is not None:
+    options.object_size = pscheduler.si_as_number(options.object_size)
     result['object-size'] = options.object_size
+    if (int)(options.object_size) >= 1099511627776:
+        pscheduler.fail('Object size is too large. Please specify a size under 1TB')
+    if (int)(options.object_size) < 1000:
+        pscheduler.fail('Object size is too small. Please specify a size of at least 1KB')
 else:
-    result['object-size'] = '1M'
+    result['object-size'] = 1048576
 
-if result['object-size'][-1] not in ['M', 'K', 'G']:
-    pscheduler.fail('Please specify the size in the following format: [integer][M/K/G]')
+
 
 pscheduler.succeed_json(result)
