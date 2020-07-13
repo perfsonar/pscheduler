@@ -44,13 +44,13 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 # Python
 #
 
+%%_pscheduler_python_version_major 3
+%%_pscheduler_python_version_minor 6
+
 %if 0%{?el7}
 
 # EL7 supports 2, 34 and 36 and names its packages that way (e.g.,
 # python36-foo) and has some named python3-foo.
-
-%%_pscheduler_python_version_major 3
-%%_pscheduler_python_version_minor 6
 
 %%_pscheduler_python python%{_pscheduler_python_version_major}
 %%_pscheduler_python_epel python%%{_pscheduler_python_version_major}%%{_pscheduler_python_version_minor}
@@ -74,9 +74,10 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 # PostgreSQL
 #
 
-# Minimum-required PostgreSQL version
+# Minimum-required PostgreSQL version.
+# For EL7, we build 10.12; EL8 bundles 10.6
 %%_pscheduler_postgresql_version_major 10
-%%_pscheduler_postgresql_version_minor 12
+%%_pscheduler_postgresql_version_minor 6
 %%_pscheduler_postgresql_version %%{_pscheduler_postgresql_version_major}.%%{_pscheduler_postgresql_version_minor}
 
 %if 0%{?el7}

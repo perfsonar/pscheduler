@@ -48,26 +48,36 @@ postgresql-load
 jq
 
 # Python Modules
-python-daemon
-python-isodate
+ifelse(REDHAT_RELEASE_MAJOR,7,python-daemon)
+ifelse(REDHAT_RELEASE_MAJOR,7,python-isodate)
+# EL8 has this, but an older version
 python-itsdangerous
 python-pyrsistent
+# EL8 has this, but an older version
 python-jsonschema
 python-kafka
+
 # Used by pscheduler-archiver-esmond
-python-memcached
+
+# EL8's is 1.58, ours is/was 1.59.  Commits to the project show only
+# cosmetic changes for the later version.
+ifelse(REDHAT_RELEASE_MAJOR,7,python-memcached)
+
+# TODO: EL8 has this, but 0.10.6.  Ours is 0.10.9
 python-netifaces
-python-ntplib
+ifelse(REDHAT_RELEASE_MAJOR,7,python-ntplib)
 python-parse-crontab
 python-py-radix
 python-pyjq
 python-tzlocal
 python-vcversioner
+# TODO: EL8 has this, ours is newer
 python-pyasn1
 python-pyasn1-modules
-python-werkzeug
+ifelse(REDHAT_RELEASE_MAJOR,7,python-werkzeug)
+# TODO: EL8 has this, ours is newer
 python-flask
-python-pysnmp
+ifelse(REDHAT_RELEASE_MAJOR,7,python-pysnmp)
 
 # JSON Tools
 python-jsontemplate

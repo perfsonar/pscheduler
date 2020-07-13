@@ -3,8 +3,13 @@
 #
 
 %{!?_httpd_apxs: %{expand: %%global _httpd_apxs %%{_sbindir}/apxs}}
-%{!?_httpd_mmn: %{expand: %%global _httpd_mmn %%(cat %{_includedir}/httpd/.mmn || echo missing-httpd-devel)}}
 %{!?_httpd_confdir:    %{expand: %%global _httpd_confdir    %%{_sysconfdir}/httpd/conf.d}}
+
+# NOTE: This used to echo 'missing-httpd-devel' if the devel package
+# wasn't installed, but since we expand this file to determine the
+# dependencies, something sane has to go there to keep RPM happy.
+%{!?_httpd_mmn: %{expand: %%global _httpd_mmn %%(cat %{_includedir}/httpd/.mmn || echo 0)}}
+
 # /etc/httpd/conf.d with httpd < 2.4 and defined as /etc/httpd/conf.modules.d with httpd >= 2.4
 %{!?_httpd_modconfdir: %{expand: %%global _httpd_modconfdir %%{_sysconfdir}/httpd/conf.d}}
 %{!?_httpd_moddir:    %{expand: %%global _httpd_moddir    %%{_libdir}/httpd/modules}}
@@ -22,6 +27,7 @@ Source1:        wsgi.conf
 BuildRequires:  httpd-devel
 BuildRequires:  %{_pscheduler_python}-devel
 BuildRequires:  autoconf
+
 Requires: httpd-mmn = %{_httpd_mmn}
 
 # Suppress auto-provides for module DSO
