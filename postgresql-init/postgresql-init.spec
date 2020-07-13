@@ -74,9 +74,7 @@ set -e
 %{libexec}/initialize-postgresql
 
 # Set up run at boot
-systemctl enable %{_pscheduler_postgresql_service}
-systemctl start %{_pscheduler_postgresql_service}
-
+systemctl enable --now %{_pscheduler_postgresql_service}
 
 
 %files

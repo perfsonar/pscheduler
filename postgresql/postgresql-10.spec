@@ -3,6 +3,7 @@
 
 BuildRequires: gcc
 
+
 # These are macros to be used with find_lang and other stuff
 %global packageversion 100
 %global pgpackageversion 10
@@ -63,7 +64,7 @@ BuildRequires: gcc
 %{!?selinux:%global selinux 0}
 %else
 %{!?systemd_enabled:%global systemd_enabled 1}
-%ifarch ppc64 ppc64le s390 s390x
+%ifarch ppc64 ppc64le s390 s390x armv7hl
 %{!?sdt:%global sdt 0}
 %else
  %{!?sdt:%global sdt 1}
@@ -83,7 +84,7 @@ BuildRequires: gcc
 
 Summary:	PostgreSQL client programs and libraries
 Name:		%{sname}%{pgmajorversion}
-Version:	10.12
+Version:	10.13
 Release:	1PGDG%{?dist}
 License:	PostgreSQL
 Url:		https://www.postgresql.org/
@@ -247,7 +248,7 @@ Requires:	%{name}-libs%{?_isa} = %{version}-%{release}
 Requires(post):	%{_sbindir}/update-alternatives
 Requires(postun):	%{_sbindir}/update-alternatives
 
-Provides:	%{sname} >= %{version}-%{release}
+Provides:	%{sname} >= %{version}-%{release}  libpq5 >= 10.0
 
 %ifarch ppc64 ppc64le
 AutoReq:	0
@@ -269,7 +270,7 @@ if you're installing the postgresql%{pgmajorversion}-server package.
 
 %package libs
 Summary:	The shared libraries required for any PostgreSQL clients
-Provides:	postgresql-libs = %{pgmajorversion}
+Provides:	postgresql-libs = %{pgmajorversion} libpq5 >= 10.0
 %if 0%{?rhel} && 0%{?rhel} <= 6
 Requires:	openssl
 %else
@@ -342,6 +343,7 @@ includes HTML version of the documentation.
 Summary:	Contributed source and binaries distributed with PostgreSQL
 Requires:	%{name}%{?_isa} = %{version}-%{release}
 Requires:	%{name}-libs%{?_isa} = %{version}-%{release}
+Requires:	%{name}-server%{?_isa} = %{version}-%{release}
 Provides:	postgresql-contrib >= %{version}-%{release}
 
 %ifarch ppc64 ppc64le
@@ -423,8 +425,15 @@ Provides:	postgresql-plpython >= %{version}-%{release}
 Provides:	%{name}-plpython2%{?_isa} = %{version}-%{release}
 %if 0%{?rhel} && 0%{?rhel} <= 6
 Requires:	python-libs
-%else
+%endif
+%if 0%{?rhel} == 7 || 0%{?rhel} == 8
 Requires:	python2-libs
+%endif
+%if 0%{?fedora} && 0%{?fedora} <= 31
+Requires:	python2-libs
+%endif
+%if 0%{?fedora} >= 32
+Requires:	python27
 %endif
 
 %ifarch ppc64 ppc64le
@@ -1440,6 +1449,14 @@ fi
 %endif
 
 %changelog
+* Wed May 13 2020 Devrim Gündüz <devrim@gunduz.org> - 10.13-1PGDG
+- Update to 10.13, per changes described at
+  https://www.postgresql.org/docs/release/10.13/
+
+* Tue Apr 28 2020 2020 Devrim Gündüz <devrim@gunduz.org> - 10.12-2PGDG
+- Fix F-32 PL/Python2 dependency. Fedora 32 is the last version which
+  supports PL/Python2 package.
+
 * Tue Feb 11 2020 Devrim Gündüz <devrim@gunduz.org> - 10.12-1PGDG
 - Update to 10.12, per changes described at
   https://www.postgresql.org/docs/release/10.12/

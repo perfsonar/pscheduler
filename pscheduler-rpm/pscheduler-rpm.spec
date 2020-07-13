@@ -67,35 +67,16 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %endif
 
 
-
-
-
 #
 # PostgreSQL
 #
 
-# Minimum-required PostgreSQL version.
-# For EL7, we build 10.12; EL8 bundles 10.6
+# Minimum-required PostgreSQL version.  This is the one we build.
 %%_pscheduler_postgresql_version_major 10
-%%_pscheduler_postgresql_version_minor 6
+%%_pscheduler_postgresql_version_minor 13
 %%_pscheduler_postgresql_version %%{_pscheduler_postgresql_version_major}.%%{_pscheduler_postgresql_version_minor}
-
-%if 0%{?el7}
-
-# For EL7, we build our own that has to coexist with 9.5.
 %%_pscheduler_postgresql_package postgresql%%{_pscheduler_postgresql_version_major}
 %%_pscheduler_postgresql_service postgresql-%%{_pscheduler_postgresql_version_major}
-
-%endif
-
-%if 0%{?el8}
-
-# For EL8, we use the version that ships with the OS.
-%%_pscheduler_postgresql_package postgresql
-%%_pscheduler_postgresql_service postgresql
-
-%endif
-
 %%_pscheduler_postgresql_data_top %%{_sharedstatedir}/pgsql
 %%_pscheduler_postgresql_data %%{_pscheduler_postgresql_data_top}/%%{_pscheduler_postgresql_version_major}/data
 %%_pscheduler_postgresql_user postgres

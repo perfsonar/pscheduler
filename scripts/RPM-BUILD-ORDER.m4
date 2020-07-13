@@ -37,10 +37,7 @@ pscheduler-rpm
 #
 
 # PostgreSQL and Additions
-
-# Neither EL7 nor PGDG's distro provide PL/Python3.  This will build
-# it if EPEL is present.
-ifelse(REDHAT_RELEASE_MAJOR,7,postgresql)
+postgresql
 postgresql-init
 postgresql-load
 

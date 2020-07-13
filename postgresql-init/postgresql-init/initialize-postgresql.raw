@@ -65,8 +65,6 @@ rm -rf "${VER_DATA}"
 mkdir -p  "${VER_DATA}"
 chown "${PG_USER}.${PG_USER}" "${VER_DATA}"
 
-echo su - ${PG_USER} -c "${VER_BIN}/postgresql-${VER_MAJOR}-setup initdb"
-
 "${VER_BIN}/postgresql-${VER_MAJOR}-setup" initdb
 
 systemctl start "postgresql-${VER_MAJOR}"
