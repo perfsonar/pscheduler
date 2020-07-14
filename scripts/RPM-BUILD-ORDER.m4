@@ -148,8 +148,7 @@ pscheduler-tool-curl			--bundle extras
 pscheduler-tool-dnspy
 pscheduler-tool-ethr
 pscheduler-tool-globus			--bundle extras
-### TODO: Make this work.
-### pscheduler-tool-iperf2
+pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-nmapreach			--bundle extras
