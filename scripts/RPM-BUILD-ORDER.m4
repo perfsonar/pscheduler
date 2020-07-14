@@ -98,6 +98,8 @@ httpd-wsgi-socket
 #
 drop-in
 ethr
+# EPEL dropped this for EL8
+ifelse(REDHAT_RELEASE_MAJOR,8,iperf)
 paris-traceroute
 random-string
 s3-benchmark
