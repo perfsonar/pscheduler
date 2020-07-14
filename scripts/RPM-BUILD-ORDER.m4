@@ -98,8 +98,12 @@ httpd-wsgi-socket
 #
 drop-in
 ethr
+# TODO: Building temporarily for EL8; required for owamp
+ifelse(REDHAT_RELEASE_MAJOR,8,I2util)
 # EPEL dropped this for EL8
 ifelse(REDHAT_RELEASE_MAJOR,8,iperf)
+# TODO: Building temporarily for EL8
+ifelse(REDHAT_RELEASE_MAJOR,8,owamp)
 paris-traceroute
 random-string
 s3-benchmark
@@ -153,12 +157,10 @@ pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-nmapreach			--bundle extras
 pscheduler-tool-nuttcp
-### TODO: Make this work.
-### pscheduler-tool-owping
+pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
 pscheduler-tool-ping
-### TODO: Make this work.
-### pscheduler-tool-powstream
+pscheduler-tool-powstream
 pscheduler-tool-psclock
 pscheduler-tool-psurl
 pscheduler-tool-pysnmp			--bundle snmp
@@ -169,8 +171,7 @@ pscheduler-tool-sleepbgm
 pscheduler-tool-snooze
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
-### TODO: Make this work.
-### pscheduler-tool-twping
+pscheduler-tool-twping
 
 # Archivers
 pscheduler-archiver-bitbucket

@@ -25,7 +25,14 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server >= 4.3.0
 Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	pscheduler-test-latencybg
-Requires:	pytz
+
+%if 0%{?el7}
+Requires:       pytz
+%endif
+%if 0%{?el8}
+Requires:       %{_pscheduler_python}-pytz
+%endif
+
 Requires:	owamp-client
 Requires:	owamp-server
 
@@ -38,8 +45,6 @@ powstream tool class for pScheduler
 
 
 %prep
-%endif
-
 %setup -q -n %{short}-%{version}
 
 
