@@ -1,5 +1,4 @@
 # Things that were missing or that we override globally
-#%global pgmajorversion %{pgpackageversion}
 
 BuildRequires: gcc
 
@@ -7,6 +6,7 @@ BuildRequires: gcc
 # These are macros to be used with find_lang and other stuff
 %global packageversion 100
 %global pgpackageversion 10
+%global pgmajorversion %{pgpackageversion}
 %global prevmajorversion 9.6
 %global sname postgresql
 %global	pgbaseinstdir	/usr/pgsql-%{pgmajorversion}

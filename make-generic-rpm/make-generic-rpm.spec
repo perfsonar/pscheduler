@@ -46,8 +46,3 @@ Generic Makefile for RPMs.  For documentation, see the Makefile in
 %files
 %defattr(-,root,root,-)
 %{directory}/*
-%{_bindir}/*
-
-
-%files
-%attr(444,root,root) %{directory}/*

@@ -23,7 +23,6 @@ License:        ASL 2.0
 URL:            http://modwsgi.org
 Source0:        %{name}-%{version}.tar.gz
 Source1:        wsgi.conf
-#BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildRequires:  httpd-devel
 BuildRequires:  %{_pscheduler_python}-devel
 BuildRequires:  autoconf

@@ -13,7 +13,6 @@ License:	Apache 2.0
 Group:		Unspecified
 
 # No sources
-# Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
