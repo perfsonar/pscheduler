@@ -60,7 +60,7 @@ python-kafka
 # cosmetic changes for the later version.
 ifelse(REDHAT_RELEASE_MAJOR,7,python-memcached)
 
-# TODO: EL8 has this, but 0.10.6.  Ours is 0.10.9
+# EL8 has this, ours is newer
 python-netifaces
 ifelse(REDHAT_RELEASE_MAJOR,7,python-ntplib)
 python-parse-crontab
@@ -68,13 +68,16 @@ python-py-radix
 python-pyjq
 python-tzlocal
 python-vcversioner
-# TODO: EL8 has this, ours is newer
+# EL8 has this, ours is newer
 python-pyasn1
 python-pyasn1-modules
-ifelse(REDHAT_RELEASE_MAJOR,7,python-werkzeug)
-# TODO: EL8 has this, ours is newer
+# EL8 has this, ours is newer
+python-werkzeug
+# EL8 has this, ours is newer
 python-flask
-ifelse(REDHAT_RELEASE_MAJOR,7,python-pysnmp)
+# TODO: EPEL8 has a newer version that doesn't install.
+# See https://bugzilla.redhat.com/show_bug.cgi?id=1838402
+python-pysnmp
 
 # JSON Tools
 python-jsontemplate
@@ -143,15 +146,18 @@ pscheduler-tool-curl			--bundle extras
 pscheduler-tool-dnspy
 pscheduler-tool-ethr
 pscheduler-tool-globus			--bundle extras
-pscheduler-tool-iperf2
+### TODO: Make this work.
+### pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-nmapreach			--bundle extras
 pscheduler-tool-nuttcp
-pscheduler-tool-owping
+### TODO: Make this work.
+### pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
 pscheduler-tool-ping
-pscheduler-tool-powstream
+### TODO: Make this work.
+### pscheduler-tool-powstream
 pscheduler-tool-psclock
 pscheduler-tool-psurl
 pscheduler-tool-pysnmp			--bundle snmp
@@ -162,7 +168,8 @@ pscheduler-tool-sleepbgm
 pscheduler-tool-snooze
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
-pscheduler-tool-twping
+### TODO: Make this work.
+### pscheduler-tool-twping
 
 # Archivers
 pscheduler-archiver-bitbucket

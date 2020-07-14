@@ -72,7 +72,13 @@ Requires:	mod_ssl
 Requires:	mod_wsgi > 4.0
 Requires:	%{_pscheduler_python}-parse-crontab
 Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
+
+%if 0%{?el7}
 Requires:	pytz
+%endif
+%if 0%{?el8}
+Requires:	%{_pscheduler_python}-pytz
+%endif
 
 # General
 BuildRequires:	pscheduler-rpm
@@ -365,8 +371,7 @@ EOF
 
 NEW_CONF_DIGEST=$(sha256sum "%{pgsql_conf}" | awk '{ print $1 }')
 
-systemctl enable "%{_pscheduler_postgresql_service}"
-systemctl start "%{_pscheduler_postgresql_service}"
+systemctl enable --now "%{_pscheduler_postgresql_service}"
 
 # Restart the server only if the configuration has changed as a result
 # of what we did to it.  This is more for development convenience than
