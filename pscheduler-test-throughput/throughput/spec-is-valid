@@ -5,7 +5,7 @@
 
 import pscheduler
 
-from validate import spec_is_valid
+from validate import spec_is_valid, MAX_SCHEMA
 
 
 try:
