@@ -41,7 +41,12 @@ TO_CLEAN += $(REPO)
 build: $(REPO)
 
 
+# The three makes here install the things that are needed to RPM specs
+# to be read properly.  They're uninstalled at the end.
 uninstall:
+	$(MAKE) -C rpm-with-deps clean build install clean
+	$(MAKE) -C make-generic-rpm clean build install clean
+	$(MAKE) -C pscheduler-rpm clean build install clean
 	scripts/remove-all
 
 fresh: uninstall build

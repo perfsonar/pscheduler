@@ -20,12 +20,25 @@ Source0:	%{name}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:       bash-completion
+
 # This is for plot-schedule
+%if 0%{?el7}
 Requires:       gnuplot-minimal >= 4.6.2
+%endif
+%if 0%{?el8}
+Requires:       gnuplot >= 4.6.2
+%endif
+
 # This is for netstat.
 Requires:       net-tools
 Requires:       %{_pscheduler_python}-pscheduler >= 1.3.7.1
+%if 0%{?el7}
 Requires:       pytz
+%endif
+%if 0%{?el8}
+Requires:       %{_pscheduler_python}-pytz
+%endif
+
 Requires:	curl
 Requires:       dmidecode
 

@@ -37,10 +37,7 @@ pscheduler-rpm
 #
 
 # PostgreSQL and Additions
-
-# Neither EL7 nor PGDG's distro provide PL/Python3.  This will build
-# it if EPEL is present.
-ifelse(REDHAT_RELEASE_MAJOR,7,postgresql)
+postgresql
 postgresql-init
 postgresql-load
 
@@ -48,25 +45,38 @@ postgresql-load
 jq
 
 # Python Modules
-python-daemon
-python-isodate
+ifelse(REDHAT_RELEASE_MAJOR,7,python-daemon)
+ifelse(REDHAT_RELEASE_MAJOR,7,python-isodate)
+# EL8 has this, but an older version
 python-itsdangerous
 python-pyrsistent
+# EL8 has this, but an older version
 python-jsonschema
 python-kafka
+
 # Used by pscheduler-archiver-esmond
-python-memcached
+
+# EL8's is 1.58, ours is/was 1.59.  Commits to the project show only
+# cosmetic changes for the later version.
+ifelse(REDHAT_RELEASE_MAJOR,7,python-memcached)
+
+# EL8 has this, ours is newer
 python-netifaces
-python-ntplib
+ifelse(REDHAT_RELEASE_MAJOR,7,python-ntplib)
 python-parse-crontab
 python-py-radix
 python-pyjq
 python-tzlocal
 python-vcversioner
+# EL8 has this, ours is newer
 python-pyasn1
 python-pyasn1-modules
+# EL8 has this, ours is newer
 python-werkzeug
+# EL8 has this, ours is newer
 python-flask
+# TODO: EPEL8 has a newer version that doesn't install.
+# See https://bugzilla.redhat.com/show_bug.cgi?id=1838402
 python-pysnmp
 
 # JSON Tools
@@ -88,6 +98,12 @@ httpd-wsgi-socket
 #
 drop-in
 ethr
+# TODO: Building temporarily for EL8; required for owamp
+ifelse(REDHAT_RELEASE_MAJOR,8,I2util)
+# EPEL dropped this for EL8
+ifelse(REDHAT_RELEASE_MAJOR,8,iperf)
+# TODO: Building temporarily for EL8
+ifelse(REDHAT_RELEASE_MAJOR,8,owamp)
 paris-traceroute
 random-string
 s3-benchmark

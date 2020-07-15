@@ -26,7 +26,6 @@ Requires:	%{_pscheduler_postgresql_package}
 Requires:	%{_pscheduler_postgresql_package}-contrib
 Requires:	%{_pscheduler_postgresql_package}-devel
 Requires:	%{_pscheduler_postgresql_package}-libs
-Requires:	%{_pscheduler_postgresql_package}-plpython
 Requires:	%{_pscheduler_postgresql_package}-plpython3
 Requires:	%{_pscheduler_postgresql_package}-server
 
@@ -50,13 +49,7 @@ sure it runs at boot.
 
 %define libexec %{_libexecdir}/%{name}
 
-
 %prep
-%if 0%{?el7} == 0
-echo "This package cannot be built for %{dist}."
-false
-%endif
-
 %setup -q
 
 
@@ -81,9 +74,7 @@ set -e
 %{libexec}/initialize-postgresql
 
 # Set up run at boot
-systemctl enable %{_pscheduler_postgresql_service}
-systemctl start %{_pscheduler_postgresql_service}
-
+systemctl enable --now %{_pscheduler_postgresql_service}
 
 
 %files
