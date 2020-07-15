@@ -61,7 +61,7 @@ Requires:	%{_pscheduler_python}-jsontemplate
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
 BuildRequires:	%{_pscheduler_python}-parse-crontab
-BuildRequires:	%{_pscheduler_python}-pscheduler >= 1.3.7.2
+BuildRequires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 BuildRequires:	m4
 Requires:	httpd-wsgi-socket
 Requires:	pscheduler-server
@@ -71,8 +71,14 @@ Requires:	pscheduler-server
 Requires:	mod_ssl
 Requires:	mod_wsgi > 4.0
 Requires:	%{_pscheduler_python}-parse-crontab
-Requires:	%{_pscheduler_python}-pscheduler >= 1.3.7.2
+Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
+
+%if 0%{?el7}
 Requires:	pytz
+%endif
+%if 0%{?el8}
+Requires:	%{_pscheduler_python}-pytz
+%endif
 
 # General
 BuildRequires:	pscheduler-rpm
@@ -126,7 +132,7 @@ The pScheduler server
 
 %prep
 
-%if 0%{?el7} == 0
+%if 0%{?el7}%{?el8} == 0
 echo "This package cannot be built for %{dist}."
 false
 %endif
@@ -365,8 +371,7 @@ EOF
 
 NEW_CONF_DIGEST=$(sha256sum "%{pgsql_conf}" | awk '{ print $1 }')
 
-systemctl enable "%{_pscheduler_postgresql_service}"
-systemctl start "%{_pscheduler_postgresql_service}"
+systemctl enable --now "%{_pscheduler_postgresql_service}"
 
 # Restart the server only if the configuration has changed as a result
 # of what we did to it.  This is more for development convenience than

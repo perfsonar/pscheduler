@@ -23,10 +23,10 @@ Requires:	jq
 
 BuildRequires:	jq
 
-%define jq_prog	%(which jq)
+# The false here allows for tidy cleanups when jq isn't installed.
+%define jq_prog	%(which jq 2>/dev/null || echo /bin/false)
 %define jq_bin	%(dirname "%{jq_prog}")
-%define jq_lib	%(cd "%{jq_bin}/../lib" && pwd)/jq/pscheduler
-
+%define jq_lib	%(cd "%{jq_bin}/../lib" 2>/dev/null || true && pwd)/jq/pscheduler
 
 %description
 Library of JQ functions for pScheduler

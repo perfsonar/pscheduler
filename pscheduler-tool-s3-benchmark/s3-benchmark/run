@@ -1,0 +1,191 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #5:
+#
+# This is the meat and bones of the tool, where the actual desired
+# commands or operation will be run. The results are then recorded
+# and added to the 'results' JSON data, which will then be sent
+# back to the test. Both system and api are able to be used here.
+#
+
+import datetime
+import subprocess
+import json
+import sys
+import time
+
+import pscheduler
+
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+
+# Take input from test spec
+try:
+    testtype = input['test']['spec']
+
+except KeyError:
+    pscheduler.fail('Missing data in input')
+
+duration = input['test']['spec'].get('duration', 'PT30S')
+duration = (int)(pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ))
+timeout_iso = input['test']['spec'].get('timeout', 'PT120S')
+timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+access_key = input['test']['spec'].get('access-key')
+bucket = input['test']['spec'].get('bucket')
+secret_key = input['test']['spec'].get('secret-key')
+url = input['test']['spec'].get('url')
+iterations = input['test']['spec'].get('iterations', 1)
+object_size = (int)(input['test']['spec'].get('object-size'))
+object_size = pscheduler.number_as_si(object_size)
+object_char = object_size[-1]
+object_num = (int)(float((object_size[:-1])))
+object_size = str(object_num) + object_char
+start_time = datetime.datetime.now()
+succeeded = False
+error = ''
+diags = ''
+
+# Run the actual task here:
+
+argv = [
+    's3-benchmark',
+    '-a', access_key,
+    '-s', secret_key,
+    '-b', bucket,
+    '-u', url
+]
+if iterations != None:
+    argv.append('-l')
+    argv.append(str(iterations))
+
+if object_size != None:
+    argv.append('-z')
+    argv.append(str(object_size))
+
+if duration != None:
+    argv.append('-d')
+    argv.append(str(duration))
+status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
+if status:
+    succeeded = False
+    error = "Error returned: \n%s" % stderr.strip('\n')
+else:
+    succeeded = True
+    diags = stdout
+end_time = datetime.datetime.now()
+
+start_line = ""
+for line in diags.split(','):
+    if "url" in line:
+        continue
+    if "bucket" in line:
+        continue
+    if "region" in line:
+        continue
+    if "duration" in line:
+        continue
+    if "loops" in line:
+        continue
+    if "size" in line:
+        start_line = line
+        break
+start = False
+loop_counter = 0
+loops = []
+for i in range(iterations):
+    loop = [i+1]
+    loops.append(loop)
+useful = False
+end = False
+for line in diags.split(','):
+    if "Loop" in line:
+        output = line.partition('\n')[2]
+        loops[loop_counter].append(output)
+        useful = True
+        if "DELETE" in line:
+            end = True
+    elif useful == True:
+        if "Slowdowns" in line:
+            output = line.partition('sec.')[0]
+            loops[loop_counter].append(output)
+            useful = False
+            if end == True:
+                loop_counter += 1
+                end = False
+        else:
+            loops[loop_counter].append(line)
+    else:
+        continue       
+put_times = []
+get_times = []
+delete_times = []
+
+loop_json = {}
+ 
+for i, loop in enumerate(loops):
+    new_json = {}
+    loop_num_str = loop[1].partition(':')[0]
+    loop_num = int(loop_num_str.partition(" ")[2])
+    new_json['loop_num'] = loop_num
+    put_time = loop[1].partition("time")[2][1:]
+    new_json['put_time'] = put_time
+    put_times.append(put_time)
+    objects = loop[2].partition('=')[2][1:]
+    new_json['put_objects'] = objects
+    speed = loop[3].partition('=')[2][1:]
+    new_json['put_speed'] = speed
+    operations = loop[4].strip().partition("operations")[0].strip()
+    new_json['put_operations'] = operations
+    get_time = loop[5].partition("time")[2][1:]
+    new_json['get_time'] = get_time
+    get_times.append(get_time)
+    objects = loop[6].partition('=')[2][1:]
+    new_json['get_objects'] = objects
+    speed = loop[7].partition('=')[2][1:]
+    new_json['get_speed'] = speed
+    operations = loop[8].strip().partition("operations")[0].strip()
+    new_json['get_operations'] = operations
+    delete_time = loop[9].partition("time")[2][1:]
+    new_json['delete_time'] = delete_time
+    delete_times.append(delete_time)
+    deletes = loop[10].strip().partition("deletes")[0].strip()
+    new_json['deletes'] = deletes
+    loop_json[str(loop_num)] = new_json   
+
+loop_json = json.dumps(loop_json)
+
+average_put_time = 0
+average_get_time = 0
+average_delete_time = 0
+
+
+put_times = [float(time.partition(" ")[0]) for time in put_times]
+average_put_time = sum(put_times)
+
+average_put_time = average_put_time / len(put_times)
+
+get_times = [float(time.partition(" ")[0]) for time in get_times]
+average_get_time = sum(get_times)
+average_get_time = average_get_time / len(get_times)
+
+for time in delete_times:
+    time = float(time.partition(" ")[0])
+    average_delete_time += time
+
+average_delete_time = average_delete_time / len(delete_times)
+# Organize results into json data
+results = {
+    'succeeded': succeeded,
+    'result': {
+        'schema': 1,
+        'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
+        'succeeded': succeeded,
+        'average_put_time': average_put_time,
+        'average_get_time': average_get_time,
+        'average_delete_time': average_delete_time,
+        'loops': loop_json
+    },
+    'error': error }
+
+pscheduler.succeed_json(results)

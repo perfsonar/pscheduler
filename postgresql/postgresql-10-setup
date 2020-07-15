@@ -41,9 +41,8 @@ Usage: $0 {initdb|check_upgrade|upgrade} [SERVICE_NAME]
 Script is aimed to help sysadmin with basic database cluster administration.
 
 The SERVICE_NAME is used for selection of proper unit configuration file; For
-more info and howto/when use this script please look at the docu file
-$README_RPM_DIST.  The 'postgresql'
-string is used when no SERVICE_NAME is explicitly passed.
+more info and howto/when use this script please look at README.rpm-dist file.
+The 'postgresql' string is used when no SERVICE_NAME is explicitly passed.
 
 Available operation mode:
   initdb        Create a new PostgreSQL database cluster.  This is usually the
@@ -111,7 +110,7 @@ export PGDATA
 # For SELinux we need to use 'runuser' not 'su'
 if [ -x /sbin/runuser ]
 then
-    SU=runuser
+    SU=/sbin/runuser
 else
     SU=su
 fi

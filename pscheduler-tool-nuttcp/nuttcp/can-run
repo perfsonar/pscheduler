@@ -42,7 +42,6 @@ except ValueError as ex:
         "reasons": [str(ex)]
     })
 
-
 supported_options = [
     "bandwidth",
     "bandwidth-strict",
@@ -61,11 +60,12 @@ supported_options = [
     "schema",
     "server-cpu-affinity",
     "source",
+    "single-ended",
+    "single-ended-port",
     "source-node",
     "udp",
     "window-size",
 ]
-
 
 for option in spec:
     if option not in supported_options:

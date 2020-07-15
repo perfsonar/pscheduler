@@ -21,7 +21,7 @@ Source:		%{short}-%{version}.tar.gz
 Patch0:		python-%{short}-%{version}-00-nodownloads.patch
 Patch1:		python-%{short}-%{version}-01-integer.patch
 
-Requires:       python
+Requires:       %{_pscheduler_python}
 # Note that 1.6.10 is a pScheduler-specific version that includes a
 # bug fix required for this module.  See #717.
 Requires:       jq >= 1.6.10
@@ -29,7 +29,12 @@ Requires:       oniguruma >= 5.9
 
 BuildRequires:  %{_pscheduler_python}
 BuildRequires:  %{_pscheduler_python}-setuptools
+%if 0%{?el8}
+BuildRequires:  %{_pscheduler_python}-Cython >= 0.19
+%endif
+%if 0%{?el7}
 BuildRequires:  Cython >= 0.19
+%endif
 BuildRequires:  jq-devel >= 1.5
 BuildRequires:  oniguruma-devel >= 5.9
 

@@ -33,11 +33,6 @@ iperf2 tool class for pScheduler
 
 
 %prep
-%if 0%{?el6}%{?el7} == 0
-echo "This package cannot be built on %{dist}."
-false
-%endif
-
 %setup -q -n %{short}-%{version}
 
 

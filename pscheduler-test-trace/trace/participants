@@ -8,7 +8,7 @@ import sys
 
 from validate import spec_is_valid, MAX_SCHEMA
 
-json = pscheduler.json_load(exit_on_error=True, max_schema=MAX_SCHEMA)
+json = pscheduler.json_load(exit_on_error=True)
 
 null_reason = None
 

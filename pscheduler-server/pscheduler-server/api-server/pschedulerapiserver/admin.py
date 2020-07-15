@@ -21,7 +21,7 @@ from .log import log
 @application.route("/", methods=['GET'])
 def root():
     return ok_json("This is the pScheduler API server on %s (%s)."
-              % (server_hostname(), pscheduler.api_local_host_fqdn()))
+              % (server_hostname(), pscheduler.api_local_host_name()))
 
 
 
@@ -70,7 +70,7 @@ def exception():
 @application.route("/hostname", methods=['GET'])
 def hostname():
     """Return the hosts's name"""
-    return ok_json(pscheduler.api_local_host_fqdn())
+    return ok_json(pscheduler.api_local_host_name())
 
 
 @application.route("/schedule-horizon", methods=['GET'])

@@ -22,10 +22,9 @@ def api_local_host():
     "Return a name that should point to the server on this host."
     return 'localhost'
 
-def api_local_host_fqdn():
-    "Return as close to a fully-qualified name for this host as possible."
-    return socket.getfqdn()
-
+def api_local_host_name():
+    "Return the local system's hostname"
+    return socket.gethostname()
 
 def __host_per_rfc_2732(host):
     "Format a host name or IP for a URL according to RFC 2732"

@@ -76,10 +76,6 @@ def run_client():
 
     diags = []
 
-    logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
-
-    time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
-        
     iperf3_args = [ iperf3_cmd ]
 
     iperf3_args.append('-p')
@@ -280,6 +276,9 @@ def run_client():
         logger.debug("Starting")
     except KeyError:
         pscheduler.fail("Unable to find start time in input")
+
+    logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
+    time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
 
     try:
         status, stdout, stderr = pscheduler.run_program(iperf3_args,

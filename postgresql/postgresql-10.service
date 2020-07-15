@@ -5,8 +5,7 @@
 #	.include /usr/lib/systemd/system/postgresql-10.service
 #	...make your changes here...
 # For more info about custom unit files, see
-# http://fedoraproject.org/wiki/Systemd#How_do_I_customize_a_unit_file.2F_add_a_custom_unit_file.3F
-
+# https://docs.fedoraproject.org/en-US/quick-docs/understanding-and-administering-systemd/index.html
 # Note: changing PGDATA will typically require adjusting SELinux
 # configuration as well.
 

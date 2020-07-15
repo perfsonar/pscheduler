@@ -304,9 +304,6 @@ LIMIT_SCHEMA = {
 
 
 def spec_is_valid(input_json):
-    schema = input_json.get("schema", 1)
-    if type(schema) != int:
-        return (False, "Invalid schema; must be an integer.")
 
     # Build a temporary structure with a reference that points
     # directly at the validator for the specified version of the
@@ -315,10 +312,10 @@ def spec_is_valid(input_json):
 
     temp_schema = {
         "local": SPEC_SCHEMA["local"],
-        "$ref":"#/local/throughput_v%d" % schema
+        "$ref":"#/local/throughput_v%d" % input_json.get("schema", 1)
     }
 
-    return json_validate(input_json, temp_schema)
+    return json_validate(input_json, temp_schema, max_schema=MAX_SCHEMA)
 
 
 def result_is_valid(input_json):

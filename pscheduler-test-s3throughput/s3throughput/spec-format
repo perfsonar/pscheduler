@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #9:
+#
+# This will format a test spec into something that is human readable.
+#
+
+import jsontemplate
+import pscheduler
+import sys
+
+from validate import spec_is_valid
+
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
+
+
+json = pscheduler.json_load(exit_on_error=True)
+
+valid, message = spec_is_valid(json)
+
+if not valid:
+    pscheduler.fail(message)
+
+# Format a test spec into plain text
+if format == 'text/plain':
+
+    template = """
+Host ................... {.section host}{host}{.or}Not Specified{.end}
+Host Node ................... {.section host_ndoe}{host_node}{.or}Not Specified{.end}
+Timeout ................... {.section timeout}{timeout}{.or}Not Specified{.end}
+Duration ................... {.section duration}{duration}{.or}Not Specified{.end}
+Access Key ................... {.section access-key}{access-key}{.or}Not Specified{.end}
+Secret Key ................... {.section secret-key}{secret-key}{.or}Not Specified{.end}
+Bucket ................... {.section bucket}{bucket}{.or}Not Specified{.end}
+URL ................... {.section url}{url}{.or}Not Specified{.end}
+Iterations ................... {.section iterations}{iterations}{.or}Not Specified{.end}
+Object Size ................... {.section object-size}{object-size}{.or}Not Specified{.end}
+"""
+
+# TODO: html formatting
+# Format with html
+elif format == 'text/html':
+
+   template = """
+<table>
+<tr><td>Host</td><td>{.section host}{host}{.or}Not Specified{.end}</td></tr>
+<tr><td>Host Node</td><td>{.section host_node}{host_node}{.or}Not Specified{.end}</td></tr>
+<tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
+<tr><td>Duration</td><td>{.section duration}{duration}{.or}Not Specified{.end}</td></tr>
+<tr><td>Test Type</td><td>{.section testtype}{testtype}{.or}Not Specified{.end}</td></tr>
+<tr><td>Access Key</td><td>{.section access-key}{access-key}{.or}Not Specified{.end}</td></tr>
+<tr><td>Bucket</td><td>{.section bucket}{bucket}{.or}Not Specified{.end}</td></tr>
+<tr><td>URL</td><td>{.section url}{url}{.or}Not Specified{.end}</td>
+<tr><td>Iterations</td><td>{.section iterations}{iterations}{.or}Not Specified{.end}</td></tr>
+<tr><td>Object Size</td><td>{.section object-size}{object-size}{.or}Not Specified{.end}</td></tr>
+</tr></table>
+"""
+
+else:
+
+   pscheduler.fail("Unsupported format '%s'" % format)
+
+
+# TODO: Should probably handle exceptions in a nicer way.
+print(jsontemplate.expand(template, json).strip())

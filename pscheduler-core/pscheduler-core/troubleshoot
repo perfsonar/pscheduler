@@ -16,6 +16,7 @@ import optparse
 import os
 import pipes
 import re
+import socket
 import sys
 import time
 
@@ -54,9 +55,11 @@ Examples:
     )
 opt_parser.disable_interspersed_args()
 
+DEFAULT_BASE_HOST = "localhost"
+
 opt_parser.add_option("--host",
                       help="Base host for troubleshooting",
-                      default="localhost",
+                      default=DEFAULT_BASE_HOST,
                       action="store", type="string",
                       dest="host")
 
@@ -137,7 +140,7 @@ def ok(message="OK."):
     _write(" %s\n" % (message))
 
 def failed(why, fail=True):
-    _write(" Failed.\n")
+    _write(" Failed.\n\n")
     print(why)
     if fail:
         pscheduler.fail()
@@ -153,6 +156,18 @@ def failed_diags(run, why="Task failed to run properly."):
     result_args = ["pscheduler", "result", "--diags", "--archivings", run]
     os.execl("/bin/sh", "/bin/sh", "-c",
              " ".join([pipes.quote(arg) for arg in result_args]))
+
+
+
+def check_hostname_resolvability():
+
+    hostname = socket.gethostname()
+    start("  Making sure local hostname '%s' resolves" % hostname)
+    try:
+        socket.gethostbyname(hostname)
+        ok()
+    except socket.gaierror as ex:
+        ok("Does not.  This is recommended, but not required.")
 
 
 
@@ -389,6 +404,9 @@ for host in hosts:
     print("%s:" % (host))
     print()
 
+
+    if host_a == DEFAULT_BASE_HOST:
+        check_hostname_resolvability()
 
     if not options.quick and not options.skip_single:
         check_mtu(host)

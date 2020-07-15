@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #7:
+#
+# Participant list generator for 's3throughput' task spec
+#
+# Input is an unvalidated test spec.
+#
+# Output is a list of hostnames or IPs that are participating.
+#
+
+import pscheduler
+import sys
+
+from validate import spec_is_valid
+
+
+json = pscheduler.json_load(exit_on_error=True)
+
+valid, message = spec_is_valid(json)
+
+if not valid:
+    pscheduler.fail(message)
+
+
+null_reason = None
+
+#host only participant
+host = json.get('host-node', json.get('host', None))
+if host is None:
+    null_reason = "No host specified"
+
+
+participants = [ host ]
+
+result = { "participants": participants }
+if null_reason is not None:
+    result["null-reason"] = null_reason
+
+pscheduler.succeed_json(result)
+
+
