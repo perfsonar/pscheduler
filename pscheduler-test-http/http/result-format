@@ -43,7 +43,7 @@ if format == 'text/plain':
       pass
 
    try:
-      print('Content: ', result['content'].encode('utf-8'))
+      print('Content: ', result['content'])
    except KeyError:
       pass
 
