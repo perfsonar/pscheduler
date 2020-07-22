@@ -221,6 +221,53 @@ statistics = [
     ("Non-Starting", "runs/nonstart"),
 ]
 
+
+
+# Services run by pScheduler
+services = [
+    "ticker",
+    "scheduler",
+    "runner",
+    "archiver"
+]
+
+def check_service_status(api):
+    """
+    Check on the status of the services
+    """
+
+    if api < 4:
+        # Older servers don't have this.
+        return
+
+    start("  Fetching service status")
+
+    http_status, status  = pscheduler.url_get(
+        pscheduler.api_url(host, "status"),
+        throw=False)
+    if http_status != 200:
+        failed(status)
+    ok()
+
+    start("  Checking services")
+
+    # Figure out how much padding to add
+    longest_service =  sorted([len(p) for p in services])[-1]
+
+    for service in services:
+        service_status = status["services"][service]
+        progress(service)
+        try:
+            if service_status["overdue"] is not None \
+               or service_status["expected"] is None:
+                failed("The %s service does not appear to be running." % service)
+        except KeyError:
+            failed("pScheduler did not report status for the %s service." % service)
+    ok()
+
+
+
+
 def dump_stats(host):
     """
     Acquire and dump statistics for a host
@@ -419,6 +466,16 @@ for host in hosts:
     else:        
         failed(reason.strip())
 
+
+    start("  Fetching API level")
+    status, api = pscheduler.url_get(
+        pscheduler.api_url(host, "api"),
+        throw=False)
+    if status != 200:
+        failed(api)
+    ok(api)    
+
+
     start("  Checking clock")
     status, result = pscheduler.url_get(
         pscheduler.api_url(host, "clock"),
@@ -458,6 +515,8 @@ for host in hosts:
             failed(result)
     ok()
 
+
+    check_service_status(api)
 
     if options.stats:
         dump_stats(host)
