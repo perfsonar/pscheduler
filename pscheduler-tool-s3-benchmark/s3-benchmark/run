@@ -121,6 +121,10 @@ put_times = []
 get_times = []
 delete_times = []
 
+put_objects= []
+get_objects = []
+delete_objects = []
+
 loop_json = {}
  
 for i, loop in enumerate(loops):
@@ -133,6 +137,7 @@ for i, loop in enumerate(loops):
     put_times.append(put_time)
     objects = loop[2].partition('=')[2][1:]
     new_json['put_objects'] = objects
+    put_objects.append(objects)
     speed = loop[3].partition('=')[2][1:]
     new_json['put_speed'] = speed
     operations = loop[4].strip().partition("operations")[0].strip()
@@ -142,6 +147,7 @@ for i, loop in enumerate(loops):
     get_times.append(get_time)
     objects = loop[6].partition('=')[2][1:]
     new_json['get_objects'] = objects
+    get_objects.append(objects)
     speed = loop[7].partition('=')[2][1:]
     new_json['get_speed'] = speed
     operations = loop[8].strip().partition("operations")[0].strip()
@@ -151,6 +157,7 @@ for i, loop in enumerate(loops):
     delete_times.append(delete_time)
     deletes = loop[10].strip().partition("deletes")[0].strip()
     new_json['deletes'] = deletes
+    delete_objects.append(deletes)
     loop_json[str(loop_num)] = new_json   
 
 loop_json = json.dumps(loop_json)
@@ -158,22 +165,37 @@ loop_json = json.dumps(loop_json)
 average_put_time = 0
 average_get_time = 0
 average_delete_time = 0
+total_puts = 0
+total_gets = 0
+total_deletes = 0
 
+for time in put_times:
+    time = float(time.partition(" ")[0])
+    average_put_time += time
 
-put_times = [float(time.partition(" ")[0]) for time in put_times]
-average_put_time = sum(put_times)
+for puts in put_objects:
+    total_puts += float(puts)
 
-average_put_time = average_put_time / len(put_times)
+average_put_time = average_put_time / total_puts
 
-get_times = [float(time.partition(" ")[0]) for time in get_times]
-average_get_time = sum(get_times)
-average_get_time = average_get_time / len(get_times)
+for time in get_times:
+    time = float(time.partition(" ")[0])
+    average_get_time += time
+
+for gets in get_objects:
+    total_gets += float(gets)
+
+average_get_time = average_get_time / total_gets
 
 for time in delete_times:
     time = float(time.partition(" ")[0])
     average_delete_time += time
 
-average_delete_time = average_delete_time / len(delete_times)
+for deletes in delete_objects:
+    total_deletes += float(deletes)
+
+average_delete_time = average_delete_time / total_deletes
+
 # Organize results into json data
 results = {
     'succeeded': succeeded,
