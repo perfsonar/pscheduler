@@ -8,6 +8,7 @@ import pytz
 import socket
 import time
 import tzlocal
+import werkzeug
 
 from pschedulerapiserver import application
 
@@ -53,6 +54,10 @@ def before_req():
 
 @application.errorhandler(Exception)
 def exception_handler(ex):
+
+    if isinstance(ex, werkzeug.exceptions.NotFound):
+        return not_found()
+
     log.exception()
     return error("Internal problem; see system logs.")
 
