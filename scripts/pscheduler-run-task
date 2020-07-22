@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+#
+# Run a pScheduler task.
+#
+# Usage:  pscheduler-run-task [ INPUT-PATH ]
+#
+#   Where INPUT-PATH is the path to a file containing an exported JSON
+#   task specification (see 'pscheduler task --export').  If not provided,
+#   the standard input will be used.
+#
+# Exits 0 if the task ran without error or 1 with messages on the
+# standard error if it didn't.
+#
+
+import datetime
+import dateutil.parser
+import time
+import pscheduler
+import sys
+
+
+# Read the task as input.
+
+try:
+  in_file = open(sys.argv[1])
+except IndexError:
+  in_file = sys.stdin
+except Exception as ex:
+  pscheduler.fail("Unable to open input: %s" % ex)
+
+try:
+  task = pscheduler.json_load(in_file)
+except Exception as ex:
+  pscheduler.fail("Unable to read input: %s" % ex)
+
+
+# The API wants a 'schedule' section even if there isn't one.
+if "schedule" not in task:
+  task["schedule"] = {}
+
+
+# Post the task to the server's "tasks" endpoint
+
+try:
+    status, task_url = pscheduler.url_post(pscheduler.api_url(path="tasks"),
+                                           data=pscheduler.json_dump(task))
+except Exception as ex:
+    pscheduler.fail("Unable to post task: %s" % (str(ex)))
+
+
+# Fetch the posted task with extra details.
+
+try:
+    status, task_data = pscheduler.url_get(task_url, params={"detail": True})
+    if status != 200:
+        raise Exception(task_data)
+except Exception as ex:
+    pscheduler.fail("Failed to get task data: %s" % (str(ex)))
+
+
+try:
+    first_run_url = task_data["detail"]["first-run-href"]
+except KeyError:
+    pscheduler.fail("Server returned incomplete data.")
+
+
+# Get first run and make sure we have what we need to function.
+
+status, run_data = pscheduler.url_get(first_run_url)
+if status == 404:
+    pscheduler.fail("The server never scheduled a run for the task.")
+if status != 200:
+    pscheduler.fail("Error %d: %s" % (status, run_data))
+
+for key in ["start-time", "end-time", "result-href"]:
+    if key not in run_data:
+        pscheduler.fail("Server did not return %s with run data" % (key))
+
+
+# Wait for the end time to pass
+
+try:
+    end_time = dateutil.parser.parse(run_data["end-time"])
+except ValueError as ex:
+    pscheduler.fail("Server did not return a valid end time for the task: %s" % (str(ex)))
+
+time.sleep(pscheduler.time_until_seconds(end_time))
+
+
+# Wait for the result.
+
+status, result_data = pscheduler.url_get(run_data["result-href"],
+                              params={"wait-merged": True})
+if status != 200:
+    pscheduler.fail("Did not get a result: %s" % (result_data))
+
+
+# Bail out if the run was a success
+
+if result_data["succeeded"]:
+  pscheduler.succeed()
+
+
+# Handle errors
+
+status, run_data = pscheduler.url_get(first_run_url)
+if status != 200:
+    pscheduler.fail("Unable to re-read run: %d: %s" % (status, run_data))
+
+# TODO: This takes advantage of some pScheduler inside baseball.
+errors = "\n".join([ result.get("error", "")
+                     for result in run_data["result-full"] ])
+
+pscheduler.fail("Test failed to run properly:\n%s\n" % errors.strip())
