@@ -3,7 +3,7 @@ Functions for determining the state of the system clock.  See
 clock_state() below.
 """
 
-
+import pscheduler
 import datetime
 import ntplib
 import pytz
@@ -117,6 +117,66 @@ def ntp_adjtime():
 
 # ---------------------------
 
+def chrony_clock_state():
+    unsync = False
+    status, stdout, stderr = pscheduler.run_program(["chronyc"," tracking"])
+    if "not found" in stderr:
+        print("chrony not installed")
+    else:
+        if "506 Cannot talk to daemon" in stdout:
+            unsync = True
+    print("chrony installed")
+    adjtime = ntp_adjtime()
+    system_synchronized = adjtime.synchronized
+    utc = datetime.datetime.utcnow()
+    local_tz = tzlocal.get_localzone()
+    time_here = pytz.utc.localize(utc).astimezone(local_tz)
+
+    raw_offset = time_here.strftime("%z")
+    if len(raw_offset):
+        offset = raw_offset[:3] + ":" + raw_offset[-2:]
+    else:
+        offset = ""
+
+    result = {
+        "time": time_here.strftime("%Y-%m-%dT%H:%M:%S.%f") + offset,
+        "synchronized": system_synchronized,
+    }
+    if system_synchronized:
+
+    # chrony implementation
+
+        parameters = stdout.split("\n")
+        reference_str = ""
+        offset_str = ""
+        for parameter in parameters:
+            if "Reference" in parameter:
+                reference_str = parameter
+            if "Last offset" in parameter:
+                offset_str = parameter
+
+        try:
+            if unsync == False:
+                result["source"] = "chrony"
+            else:
+                raise Exception("Chrony not running")        
+            reference = reference_str[reference_str.find('('):reference_str.find(')')]
+            if reference != "":
+                result["reference"] = reference[1:]
+            else:
+                raise Exception("Reference server not found")
+
+            offset = offset_str[offset_str.find(':'):]
+            if offset != "":
+                result["offset"] = offset[2:]
+            else:
+                raise Exception("Offset not found")
+
+        except Exception as ex:
+            result["synchronized"] = False
+            result["error"] = str(ex)
+    print(result)
+
 
 def clock_state():
     """
@@ -145,8 +205,8 @@ def clock_state():
     adjtime = ntp_adjtime()
     system_synchronized = adjtime.synchronized
 
-    # Format the local time with offset as ISO 8601.  Python's
-    # strftime() only does "-0400" format; we need "-04:00".
+# Format the local time with offset as ISO 8601.  Python's
+# strftime() only does "-0400" format; we need "-04:00".
 
     utc = datetime.datetime.utcnow()
     local_tz = tzlocal.get_localzone()
