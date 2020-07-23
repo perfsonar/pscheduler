@@ -137,7 +137,6 @@ def chrony_clock_state(stdout, stderr):
     if system_synchronized:
 
     # chrony implementation
-
         parameters = stdout.split("\n")
         reference_str = ""
         offset_str = ""
@@ -148,18 +147,20 @@ def chrony_clock_state(stdout, stderr):
                 offset_str = parameter
 
         try:
-            reference = reference_str[reference_str.find('('):reference_str.find(')')]
-            if reference != "":
-                result["reference"] = reference[1:]
-            else:
-                raise Exception("Reference server not found")
-
             offset = offset_str[offset_str.find(':'):]
             if offset != "":
                 result["offset"] = offset[2:]
             else:
                 raise Exception("Offset not found")
+            
+            result["source"] = "chrony"
 
+            reference = reference_str[reference_str.find('('):reference_str.find(')')]
+            if reference != "":
+                result["reference"] = reference[1:]
+            else:
+                raise Exception("Reference server not found")
+        
         except Exception as ex:
             result["synchronized"] = False
             result["error"] = str(ex)
@@ -190,10 +191,9 @@ def clock_state():
 
     """
     status, stdout, stderr = pscheduler.run_program(["chronyc"," tracking"])
-    if "not found" not in stderr:
+    if "FileNotFound" not in stderr:
         if "506 Cannot talk to daemon" not in stdout:
             return chrony_clock_state(stdout, stderr)
-
     adjtime = ntp_adjtime()
     system_synchronized = adjtime.synchronized
 
