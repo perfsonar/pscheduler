@@ -117,15 +117,7 @@ def ntp_adjtime():
 
 # ---------------------------
 
-def chrony_clock_state():
-    unsync = False
-    status, stdout, stderr = pscheduler.run_program(["chronyc"," tracking"])
-    if "not found" in stderr:
-        print("chrony not installed")
-    else:
-        if "506 Cannot talk to daemon" in stdout:
-            unsync = True
-    print("chrony installed")
+def chrony_clock_state(stdout, stderr):
     adjtime = ntp_adjtime()
     system_synchronized = adjtime.synchronized
     utc = datetime.datetime.utcnow()
@@ -156,10 +148,6 @@ def chrony_clock_state():
                 offset_str = parameter
 
         try:
-            if unsync == False:
-                result["source"] = "chrony"
-            else:
-                raise Exception("Chrony not running")        
             reference = reference_str[reference_str.find('('):reference_str.find(')')]
             if reference != "":
                 result["reference"] = reference[1:]
@@ -175,7 +163,7 @@ def chrony_clock_state():
         except Exception as ex:
             result["synchronized"] = False
             result["error"] = str(ex)
-    print(result)
+    return result
 
 
 def clock_state():
@@ -201,6 +189,10 @@ def clock_state():
     error -
 
     """
+    status, stdout, stderr = pscheduler.run_program(["chronyc"," tracking"])
+    if "not found" not in stderr:
+        if "506 Cannot talk to daemon" not in stdout:
+            return chrony_clock_state(stdout, stderr)
 
     adjtime = ntp_adjtime()
     system_synchronized = adjtime.synchronized
