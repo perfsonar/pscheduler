@@ -117,12 +117,7 @@ if options.duration is not None:
    result['duration'] = options.duration
 
 if options.access_key is not None:
-   if options.access_key[0] == '@':
-       result['_access-key'] = pscheduler.string_from_file(options.access_key)
-   else:
-       result['_access-key'] = options.access_key
-else:
-    pscheduler.fail('Please specify the access key. \'--access-key your-key\'')
+   result['_access-key'] = options.access_key
 
 if options.bucket is not None:
     result['bucket'] = options.bucket
@@ -130,23 +125,16 @@ else:
     result['bucket'] = 'pscheduler-test'
 
 if options.secret_key is not None:
-    if options.secret_key[0] == '@':
-        result['_secret-key'] = pscheduler.string_from_file(options.secret_key)
-    else:
-        result['_secret-key'] = options.secret_key
-else:
-    pscheduler.fail('Please specify the secret key. \'--secret-key your-key\'')
+   result['_secret-key'] = options.secret_key
 
 if options.url is not None:
     result['url'] = options.url
-else:
-    pscheduler.fail('Please specify the url and method. \'--url https://your-url.domain\'')
 
 parsed = urlparse(options.url)
 if parsed.scheme == "http" or parsed.scheme == "https":
     result['url'] = options.url
 else:
-    pscheduler.fail('Please specify a method for your url, such as \'https://\'')
+    pscheduler.fail('URL must be http:// or https://.')
 
 if options.iterations is not None:
     result['iterations'] = options.iterations
