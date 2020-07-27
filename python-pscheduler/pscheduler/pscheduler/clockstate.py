@@ -149,7 +149,7 @@ def chrony_clock_state(stdout, stderr):
         try:
             offset = offset_str[offset_str.find(':'):]
             if offset != "":
-                result["offset"] = offset[2:]
+                result["offset"] = offset[2:].split(" ")[0][1:]
             else:
                 raise Exception("Offset not found")
             
