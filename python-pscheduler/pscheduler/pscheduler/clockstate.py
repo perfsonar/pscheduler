@@ -197,8 +197,8 @@ def clock_state():
     adjtime = ntp_adjtime()
     system_synchronized = adjtime.synchronized
 
-# Format the local time with offset as ISO 8601.  Python's
-# strftime() only does "-0400" format; we need "-04:00".
+    # Format the local time with offset as ISO 8601.  Python's
+    # strftime() only does "-0400" format; we need "-04:00".
 
     utc = datetime.datetime.utcnow()
     local_tz = tzlocal.get_localzone()
