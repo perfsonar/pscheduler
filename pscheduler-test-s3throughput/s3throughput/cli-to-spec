@@ -117,7 +117,10 @@ if options.duration is not None:
    result['duration'] = options.duration
 
 if options.access_key is not None:
-   result['access-key'] = options.access_key
+   if options.access_key[0] == '@':
+       result['_access-key'] = pscheduler.string_from_file(options.access_key)
+   else:
+       result['_access-key'] = options.access_key
 else:
     pscheduler.fail('Please specify the access key. \'--access-key your-key\'')
 
@@ -127,7 +130,10 @@ else:
     result['bucket'] = 'pscheduler-test'
 
 if options.secret_key is not None:
-    result['secret-key'] = options.secret_key
+    if options.secret_key[0] == '@':
+        result['_secret-key'] = pscheduler.string_from_file(options.secret_key)
+    else:
+        result['_secret-key'] = options.secret_key
 else:
     pscheduler.fail('Please specify the secret key. \'--secret-key your-key\'')
 
