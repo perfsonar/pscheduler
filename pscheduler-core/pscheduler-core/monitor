@@ -428,9 +428,7 @@ server_hostname = result
 curses.setupterm()
 
 for cap in [
-        (curses.tigetstr,  "civis"),
         (curses.tigetstr,  "clear"),
-        (curses.tigetnum,  "colors"),
         (curses.tigetstr,  "cup"),
         ]:
     (check_fun, cap_name) = cap
@@ -446,7 +444,11 @@ try:
     init_color_pairs()
 
     stdscr.nodelay(1)
-    curses.curs_set(0)
+
+    # Make the cursor invisible only if the terminal supports it.
+    if curses.tigetstr("civis"):
+        curses.curs_set(0)
+
     curses.cbreak()
     curses.noecho()
     task_window = stdscr.subwin(2, 0)
