@@ -7,6 +7,7 @@
 import curses
 import datetime
 import optparse
+import os
 import pscheduler
 import time
 
@@ -420,6 +421,23 @@ if status != 200:
                     % (options.host, result))
 server_hostname = result
 
+
+
+# Make sure the terminal is capable of everything we want.
+
+curses.setupterm()
+
+for cap in [
+        (curses.tigetstr,  "civis"),
+        (curses.tigetstr,  "clear"),
+        (curses.tigetnum,  "colors"),
+        (curses.tigetstr,  "cup"),
+        ]:
+    (check_fun, cap_name) = cap
+    result = check_fun(cap_name)
+    if result in [ None, -2, -1, 0 ]:
+        pscheduler.fail("This terminal '%s' lacks features needed to run this program."
+                        % os.environ.get("TERM", "Unknown"))
 
 try:
 
