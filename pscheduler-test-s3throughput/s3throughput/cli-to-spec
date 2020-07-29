@@ -121,8 +121,6 @@ if options.access_key is not None:
 
 if options.bucket is not None:
     result['bucket'] = options.bucket
-else:
-    result['bucket'] = 'pscheduler-test'
 
 if options.secret_key is not None:
    result['_secret-key'] = options.secret_key
