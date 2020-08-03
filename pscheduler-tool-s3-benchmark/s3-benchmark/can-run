@@ -33,5 +33,16 @@ except ValueError as ex:
         "reasons": [str(ex)]
     })
 
+try:
+    if json['spec']['object-size'] < 1000 or json['spec']['object-size'] >= 1099511627776:
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Object size outside supported size range for this tool" ]
+        })
 
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
 pscheduler.succeed_json({ "can-run": True })
