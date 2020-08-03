@@ -149,8 +149,6 @@ if __name__ == "__main__":
     print("Simple:")
     for value in [
             "1234",
-            "1000",
-            "1001",
             "1234K",
             "-1234ki",
             "5g", "5G", "-5Gi",
@@ -204,7 +202,6 @@ if __name__ == "__main__":
     print("Convert from number to SI representation:")
     for value in [
         1000,
-        1001,
         1000 ** 3,
         1234567890,
         "9.8",
