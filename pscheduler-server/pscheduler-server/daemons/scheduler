@@ -70,6 +70,7 @@ args = arg_parser.parse_args()
 
 if args.max_parallel < 1:
     arg_parser.error("Number of concurrent archivings must be positive.")
+max_parallel = args.max_parallel
 
 
 # Minimum amount of time from now when the first run of a task can be
@@ -824,7 +825,6 @@ def main_program():
     nonstart_pg = pscheduler.PgConnection(dsn)
 
     # What workers are running
-    max_workers = args.max_parallel
 
     # TODO: Use the ThreadSafeSet and ThreadSafeSetHold instead
     workers = {}
@@ -842,8 +842,7 @@ def main_program():
             if pg.wait(pscheduler.timedelta_as_seconds(refresh)):
                 log.debug("Task change.")
                 # Discard pending notifications
-                print(pg.notifications())
-                # _ = pg.notifications()
+                _ = pg.notifications()
             else:
                 log.debug("Timed out.")
 
@@ -870,12 +869,12 @@ def main_program():
 
             # Don't ask for more rows than we're going to be able to consume
 
-            limit = max_workers - num_workers
+            limit = max_parallel - num_workers
             if limit == 0:
                 log.debug("Already have a full slate of workers, skipping query.")
                 continue
 
-            if limit < max_workers:
+            if limit < max_parallel:
                 log.debug("Limiting query to %d tasks", limit)
             query += " LIMIT %d" % (limit)
 
