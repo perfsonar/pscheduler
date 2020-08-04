@@ -926,7 +926,6 @@ def main_program():
     # they're quick.
 
     # What workers are running
-    max_workers = args.max_parallel
 
     workers = pscheduler.ThreadSafeSet()
     worker_threads = {}
@@ -992,7 +991,7 @@ def main_program():
                 log.debug("Already have a full slate of workers, skipping query.")
                 continue
 
-            if limit < max_workers:
+            if limit < max_parallel:
                 log.debug("Limiting query to %d tasks", limit)
             query += " LIMIT %d" % (limit)
 
