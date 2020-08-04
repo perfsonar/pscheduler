@@ -4,7 +4,7 @@
 #
 
 import datetime
-import optparse
+import argparse
 import pscheduler
 
 pscheduler.set_graceful_exit()
@@ -13,13 +13,8 @@ pscheduler.set_graceful_exit()
 # Gargle the arguments
 #
 
-
-class VerbatimParser(optparse.OptionParser):
-    def format_epilog(self, formatter):
-        return self.epilog
-
-opt_parser = VerbatimParser(
-    usage="Usage: %prog [ host [ host ] ]",
+arg_parser = argparse.ArgumentParser(
+    usage="%(prog)s [ host [ host ] ]",
     epilog=
 """
 Examples:
@@ -32,30 +27,35 @@ Examples:
 
   clock perfsonar6.example.org perfsonar7.example.org
       Compare the clocks at perfsonar6.example.org to perfsonar7.example.org
-"""
+""",
+    formatter_class=argparse.RawTextHelpFormatter
     )
-opt_parser.disable_interspersed_args()
 
 
-opt_parser.add_option("--bind",
+arg_parser.add_argument("--bind",
                       help="Make the request from the provided address",
                       default=None,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="bind")
-opt_parser.add_option("--timeout", "-W",
+arg_parser.add_argument("--timeout", "-W",
                       help="How long to wait for the server to respond, in seconds (default 15)",
                       default=15,
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="timeout")
 
+arg_parser.add_argument("remaining",
+                        help=argparse.SUPPRESS,
+                        nargs=argparse.REMAINDER)
 
-(options, remaining_args) = opt_parser.parse_args()
+args = arg_parser.parse_args()
 
-if options.timeout <= 0:
+remaining_args = args.remaining
+
+if args.timeout <= 0:
     pscheduler.fail("Timeout must be >= 0")
 
 if len(remaining_args) > 2:
-    opt_parser.print_usage()
+    arg_parser.print_usage()
     pscheduler.fail()
 
 num_args = len(remaining_args)
@@ -72,8 +72,8 @@ results = []
 for host in hosts:
     url = pscheduler.api_url(host, "clock")
     status, result = pscheduler.url_get(url, throw=False,
-                                        bind=options.bind,
-                                        timeout=options.timeout)
+                                        bind=args.bind,
+                                        timeout=args.timeout)
 
     if status == 400:
         pscheduler.fail("%s: %s" % (host, result))

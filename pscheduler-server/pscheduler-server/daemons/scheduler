@@ -7,7 +7,7 @@ import copy
 import daemon
 import datetime
 import errno
-import optparse
+import argparse
 import pscheduler
 import random
 import select
@@ -20,56 +20,56 @@ pscheduler.set_graceful_exit()
 
 # Gargle the arguments
 
-opt_parser = optparse.OptionParser()
+arg_parser = argparse.ArgumentParser()
 
 # Daemon-related options
 
-opt_parser.add_option("--daemon",
+arg_parser.add_argument("--daemon",
                       help="Daemonize",
                       action="store_true",
                       dest="daemon", default=False)
-opt_parser.add_option("--pid-file",
+arg_parser.add_argument("--pid-file",
                       help="Location of PID file",
-                      action="store", type="string", dest="pidfile",
+                      action="store", type=str, dest="pidfile",
                       default="/dev/null")
 
 # Program options
 
-opt_parser.add_option("-d", "--dsn",
+arg_parser.add_argument("-d", "--dsn",
                       help="Database connection string",
-                      action="store", type="string", dest="dsn",
+                      action="store", type=str, dest="dsn",
                       default="dbname=pscheduler")
-opt_parser.add_option("--first-run-offset-multi",
+arg_parser.add_argument("--first-run-offset-multi",
                       help="Time offset for first runs in multi-participant tests (ISO8601)",
-                      action="store", type="string", dest="firstoffsetmulti",
+                      action="store", type=str, dest="firstoffsetmulti",
                       default="PT10S")
-opt_parser.add_option("--first-run-offset-single",
+arg_parser.add_argument("--first-run-offset-single",
                       help="Time offset for first runs in single-participant tests (ISO8601)",
-                      action="store", type="string", dest="firstoffsetsingle",
+                      action="store", type=str, dest="firstoffsetsingle",
                       default="PT5S")
-opt_parser.add_option("-m", "--max-parallel",
+arg_parser.add_argument("-m", "--max-parallel",
                       help="Maximum concurrent archivings",
-                      action="store", type="int", dest="max_parallel",
+                      action="store", type=int, dest="max_parallel",
                       default=50)
-opt_parser.add_option("-r", "--refresh",
+arg_parser.add_argument("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
-                      action="store", type="string", dest="refresh",
+                      action="store", type=str, dest="refresh",
                       default="PT10S")
-opt_parser.add_option("-R", "--retries",
+arg_parser.add_argument("-R", "--retries",
                       help="Number of times to retry after a conflict",
-                      action="store", type="int", dest="retries",
+                      action="store", type=int, dest="retries",
                       default=3)
-opt_parser.add_option("-t", "--timeout",
+arg_parser.add_argument("-t", "--timeout",
                       help="Communication timeout (ISO8601)",
-                      action="store", type="string", dest="timeout",
+                      action="store", type=str, dest="timeout",
                       default="PT10S")
-opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
-opt_parser.add_option("--debug", action="store_true", dest="debug")
+arg_parser.add_argument("-v", "--verbose", action="store_true", dest="verbose")
+arg_parser.add_argument("--debug", action="store_true", dest="debug")
 
-(options, args) = opt_parser.parse_args()
+args = arg_parser.parse_args()
 
-if options.max_parallel < 1:
-    opt_parser.error("Number of concurrent archivings must be positive.")
+if args.max_parallel < 1:
+    arg_parser.error("Number of concurrent archivings must be positive.")
 
 
 # Minimum amount of time from now when the first run of a task can be
@@ -77,36 +77,36 @@ if options.max_parallel < 1:
 # a time before the participants can prepare for them.
 # TODO: Potential race condition?  Yep.
 try:
-    first_run_offset_multi = pscheduler.iso8601_as_timedelta(options.firstoffsetmulti)
+    first_run_offset_multi = pscheduler.iso8601_as_timedelta(args.firstoffsetmulti)
 except ValueError:
-    opt_parser.error('Invalid first offset for multi "' + options.firstoffsetmulti + '"')
+    arg_parser.error('Invalid first offset for multi "' + args.firstoffsetmulti + '"')
 try:
-    first_run_offset_single = pscheduler.iso8601_as_timedelta(options.firstoffsetsingle)
+    first_run_offset_single = pscheduler.iso8601_as_timedelta(args.firstoffsetsingle)
 except ValueError:
-    opt_parser.error('Invalid first offset for single "' + options.firstoffsetsingle + '"')
+    arg_parser.error('Invalid first offset for single "' + args.firstoffsetsingle + '"')
 
 try:
-    refresh = pscheduler.iso8601_as_timedelta(options.refresh)
+    refresh = pscheduler.iso8601_as_timedelta(args.refresh)
 except ValueError:
-    opt_parser.error('Invalid refresh interval "' + options.refresh + '"')
+    arg_parser.error('Invalid refresh interval "' + args.refresh + '"')
 if pscheduler.timedelta_as_seconds(refresh) == 0:
-    opt_parser.error("Refresh interval must be calculable as seconds.")
+    arg_parser.error("Refresh interval must be calculable as seconds.")
 
-conflict_retries = options.retries
+conflict_retries = args.retries
 if conflict_retries < 0:
-    opt_parser.error("Retries cannot be negative.")
+    arg_parser.error("Retries cannot be negative.")
 
 try:
-    timeout_td = pscheduler.iso8601_as_timedelta(options.timeout)
+    timeout_td = pscheduler.iso8601_as_timedelta(args.timeout)
 except ValueError:
-    opt_parser.error('Invalid timeout "' + options.timeout + '"')
+    arg_parser.error('Invalid timeout "' + args.timeout + '"')
 timeout = pscheduler.timedelta_as_seconds(timeout_td)
 
 
 
-log = pscheduler.Log(verbose=options.verbose, debug=options.debug, propagate=True)
+log = pscheduler.Log(verbose=args.verbose, debug=args.debug, propagate=True)
 
-dsn = options.dsn
+dsn = args.dsn
 
 
 #
@@ -824,7 +824,7 @@ def main_program():
     nonstart_pg = pscheduler.PgConnection(dsn)
 
     # What workers are running
-    max_workers = options.max_parallel
+    max_workers = args.max_parallel
 
     # TODO: Use the ThreadSafeSet and ThreadSafeSetHold instead
     workers = {}
@@ -900,8 +900,8 @@ def main_program():
 
 
 
-if options.daemon:
-    pidfile = pscheduler.PidFile(options.pidfile)
+if args.daemon:
+    pidfile = pscheduler.PidFile(args.pidfile)
     with daemon.DaemonContext(pidfile=pidfile):
         pscheduler.safe_run(lambda: main_program())
 else:

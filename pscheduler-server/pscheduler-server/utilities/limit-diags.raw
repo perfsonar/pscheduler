@@ -28,7 +28,7 @@ Options:
 """
 
 
-import optparse
+import argparse
 import pscheduler
 
 from pscheduler.limitprocessor.limitprocessor import LimitProcessor
@@ -40,12 +40,8 @@ pscheduler.set_graceful_exit()
 #
 
 
-class VerbatimParser(optparse.OptionParser):
-    def format_epilog(self, formatter):
-        return self.epilog
-
-opt_parser = VerbatimParser(
-    usage="Usage: %prog [ OPTIONS ] task",
+arg_parser = argparse.ArgumentParser(
+    usage="%(prog)s [ OPTIONS ] task",
     epilog=
 """
 Example:
@@ -56,43 +52,47 @@ Example:
   limit-diags --start 2017-08-14T12:34:56 --duration PT10S taskfile
       Test the task described in taskfile against the system's limits for
       a specified time and duration.
-"""
+""",
+    formatter_class=argparse.RawTextHelpFormatter
     )
 
 
 # TODO: This needs to be filled in during build
 default_limit_file = "__LIMITSFILE__"
 
-opt_parser.disable_interspersed_args()
-
-opt_parser.add_option("--duration",
+arg_parser.add_argument("--duration",
                       help="Proposed duration (ISO 8601)",
                       default=None,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="duration")
 
-opt_parser.add_option("--hints",
+arg_parser.add_argument("--hints",
                       help="Hints as JSON (@/path to read from file;"
                       " defaults 127.0.0.1 for all values)",
                       default=None,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="hints")
 
-opt_parser.add_option("--config",
+arg_parser.add_argument("--config",
                       help="Location of limit configuration file (default %s)" \
                       % (default_limit_file),
                       default=default_limit_file,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="config")
 
-opt_parser.add_option("--start",
+arg_parser.add_argument("--start",
                       help="Proposed start time (ISO 8601)",
                       default=None,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="start")
 
+arg_parser.add_argument("task",
+                        help="Read task from this file",
+                        nargs="?")
 
-(options, remaining_args) = opt_parser.parse_args()
+
+
+args = arg_parser.parse_args()
 
 
 #
@@ -100,21 +100,21 @@ opt_parser.add_option("--start",
 #
 
 try:
-    if options.start is not None:
-        _ = pscheduler.iso8601_as_datetime(options.start)
+    if args.start is not None:
+        _ = pscheduler.iso8601_as_datetime(args.start)
 except ValueError as ex:
     pscheduler.fail("Start time: %s" % (str(ex)))
 
 try:
-    if options.duration is not None:
-        _ = pscheduler.iso8601_as_timedelta(options.duration)
+    if args.duration is not None:
+        _ = pscheduler.iso8601_as_timedelta(args.duration)
 except ValueError as ex:
     pscheduler.fail("Duration: %s" % (str(ex)))
 
-if options.hints is not None:
+if args.hints is not None:
     try:
         hints = pscheduler.json_load(
-            pscheduler.string_from_file(options.hints))
+            pscheduler.string_from_file(args.hints))
     except (IOError, ValueError) as ex:
         pscheduler.fail("Hints: %s" % (str(ex)))
 else:
@@ -123,21 +123,16 @@ else:
         "server": "127.0.0.1"
     }
 
-if len(remaining_args) != 1:
-    opt_parser.print_usage()
-    pscheduler.fail()
-
-
 
 try:
-    processor = LimitProcessor(options.config)
+    processor = LimitProcessor(args.config)
 except Exception as ex:
     pscheduler.fail("Unable to read limit configuration: %s" % (str(ex)))
 
 
 
 
-task_file = remaining_args[0]
+task_file = args.task
 try:
     task_text = pscheduler.string_from_file("@%s" % (task_file))
     task = pscheduler.json_load(task_text)
@@ -145,16 +140,16 @@ except Exception as ex:
     pscheduler.fail("Unable to read task: %s" % (str(ex)))
 
 
-if options.start is not None:
+if args.start is not None:
     task["run_schedule"] = {
-        "start": options.start
+        "start": args.start
     }
-    task["run_schedule"]["duration"] = options.duration \
-                                   if options.duration is not None else "PT10S"
+    task["run_schedule"]["duration"] = args.duration \
+                                   if args.duration is not None else "PT10S"
         
-elif options.duration is not None:
+elif args.duration is not None:
     task["run_schedule"] = {
-        "duration": options.duration
+        "duration": args.duration
     }
     task["run_schedule"]["start"] = pscheduler.datetime_as_iso8601(
         pscheduler.time_now())

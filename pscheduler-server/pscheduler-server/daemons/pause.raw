@@ -3,7 +3,7 @@
 # Pause pScheduler or query its paused state
 #
 
-import optparse
+import argparse
 import pscheduler
 import sys
 
@@ -11,12 +11,8 @@ import sys
 # Gargle the arguments
 #
 
-class VerbatimParser(optparse.OptionParser):
-    def format_epilog(self, formatter):
-        return self.epilog
-
-opt_parser = VerbatimParser(
-    usage="Usage: %prog [ --query | duration ]",
+arg_parser = argparse.ArgumentParser(
+    usage="%(prog)s [ --query | duration ]",
     epilog=
 """
 Examples:
@@ -30,41 +26,45 @@ Examples:
   pause --query
       Determine if the system is paused, exiting 0 if it is or 1 if
       not, displaying a message if the standard output is a TTY.
-"""
+""",
+    formatter_class=argparse.RawTextHelpFormatter
 )
-opt_parser.disable_interspersed_args()
 
 # Program options
 
-opt_parser.add_option("-d", "--dsn",
+arg_parser.add_argument("-d", "--dsn",
                       help="Database connection string, prefix with @ to read from file",
-                      action="store", type="string", dest="dsn",
+                      action="store", type=str, dest="dsn",
                       default="@__DSNFILE__")
-opt_parser.add_option("-q", "--query",
+arg_parser.add_argument("-q", "--query",
                       help="Query if runs are paused",
                       action="store_true", dest="query")
-opt_parser.add_option("-v", "--verbose",
+arg_parser.add_argument("-v", "--verbose",
                       help="Print messages even if stdout is not a tty",
                       action="store_true", dest="verbose")
 
-(options, args) = opt_parser.parse_args()
+arg_parser.add_argument("duration",
+                        help="Length of time the system should be paused (ISO8601)",
+                        nargs="?")
 
-if len(args) > (0 if options.query else 1):
-    opt_parser.print_usage()
+args = arg_parser.parse_args()
+
+if args.query and args.duration:
+    arg_parser.print_usage()
     pscheduler.fail()
 
-if len(args) == 1:
+if args.duration:
     try:
-        duration = pscheduler.iso8601_as_timedelta(args[0])
+        duration = pscheduler.iso8601_as_timedelta(args.duration)
     except ValueError as ex:
-        pscheduler.fail("%s: %s" % (args[0], str(ex)))
+        pscheduler.fail("%s: %s" % (args.duration, str(ex)))
 else:
     duration = None
 
 
-dsn = options.dsn
+dsn = args.dsn
 
-verbose = options.verbose or sys.stdout.isatty()
+verbose = args.verbose or sys.stdout.isatty()
 
 
 # TODO: Bulletproof the SQL queries
@@ -79,7 +79,7 @@ except Exception as ex:
 # Query the current state
 #
 
-if options.query:
+if args.query:
     cursor.execute("""
         SELECT
             control_is_paused(),

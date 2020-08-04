@@ -7,7 +7,7 @@
 #     pscheduler plot-schedule [options]
 
 import datetime
-import optparse
+import argparse
 import os
 import pscheduler
 import pytz
@@ -79,12 +79,8 @@ if len(args) > 0:
 
 
 
-class VerbatimParser(optparse.OptionParser):
-    def format_epilog(self, formatter):
-        return self.epilog
-
-opt_parser = VerbatimParser(
-    usage="Usage: %prog [ OPTIONS ] [ delta | start end ] ",
+arg_parser = argparse.ArgumentParser(
+    usage="%(prog)s [ OPTIONS ] [ delta [delta] | start end ] ",
     epilog=
 """
 Example:
@@ -110,58 +106,59 @@ Example:
   schedule 2016-05-01T12:40:00 2016-05-01T12:55:00
       Plot the schedule on the local host between the times
       specified.
-"""
+""",
+    formatter_class=argparse.RawTextHelpFormatter
     )
-opt_parser.disable_interspersed_args()
 
-opt_parser.add_option("--bind",
+arg_parser.add_argument("--bind",
                       help="Make the request from the provided address",
                       default=None,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="bind")
 
-opt_parser.add_option("--host",
+arg_parser.add_argument("--host",
                       help="Request schedule from named host",
                       default=None,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="host")
 
-opt_parser.add_option("--plot",
+arg_parser.add_argument("--plot",
                       help="Write GNUPlot commands to standard output and exit",
                       action="store_true",
                       dest="plot")
 
+arg_parser.add_argument("remaining",
+                        help=argparse.SUPPRESS,
+                        nargs=argparse.REMAINDER)
+
+args = arg_parser.parse_args(args)
 
 
-(options, remaining_args) = opt_parser.parse_args(args)
-
-
-
-full_host = options.host if options.host is not None \
+full_host = args.host if args.host is not None \
             else pscheduler.api_local_host()
 
 
 # This outputs PNG, which isn't suitable for TTYs.
 
-if sys.stdout.isatty() and not options.plot:
+if sys.stdout.isatty() and not args.plot:
     pscheduler.fail("Not sending PNG output to a tty.  Consider redirecting.")
 
 
 
 now = pscheduler.time_now()
 
-if len(remaining_args) == 0:
+if len(args.remaining) == 0:
 
     # Default; show an hour's worth.
     start = now
     end = start + datetime.timedelta(hours=1)
 
-elif len(remaining_args) == 1:
+elif len(args.remaining) == 1:
 
     # One argument is an absolute time or a timedelta.
 
     try:
-        arg = pscheduler.iso8601_as_datetime(remaining_args[0])
+        arg = pscheduler.iso8601_as_datetime(args.remaining[0])
     except ValueError:
         pscheduler.fail("Invalid time specification")
 
@@ -172,11 +169,11 @@ elif len(remaining_args) == 1:
         start = now
         end = arg
 
-elif len(remaining_args) == 2:
+elif len(args.remaining) == 2:
 
     try:
-        start = pscheduler.iso8601_as_datetime(remaining_args[0])
-        end = pscheduler.iso8601_as_datetime(remaining_args[1])
+        start = pscheduler.iso8601_as_datetime(args.remaining[0])
+        end = pscheduler.iso8601_as_datetime(args.remaining[1])
     except ValueError:
         pscheduler.fail("Invalid time specification")
 
@@ -185,7 +182,8 @@ elif len(remaining_args) == 2:
         start, end = end, start
 
 else:
-    pscheduler.fail(usage)
+    arg_parser.print_usage()
+    pscheduler.fail()
 
 
 #
@@ -193,8 +191,8 @@ else:
 #
 
 status, clock = pscheduler.url_get(
-    pscheduler.api_url(host=options.host, path="clock"),
-    bind=options.bind,
+    pscheduler.api_url(host=args.host, path="clock"),
+    bind=args.bind,
     throw = False
     )
 
@@ -222,12 +220,12 @@ end = end.astimezone(server_timezone)
 #
 
 status, schedule = pscheduler.url_get(
-    pscheduler.api_url(host=options.host, path="schedule"),
+    pscheduler.api_url(host=args.host, path="schedule"),
     params={
         "start": pscheduler.datetime_as_iso8601(start),
         "end": pscheduler.datetime_as_iso8601(end)
         },
-    bind=options.bind,
+    bind=args.bind,
     throw = False
     )
 
@@ -330,7 +328,7 @@ for run in schedule:
                       else run["test"]["scheduling-class"]
     except KeyError:
         pscheduler.fail("%s: Software too old to support this feature" \
-                        % (host))
+                        % (full_host))
 
     script_lines.append(
         "%s %s %s" % (
@@ -347,7 +345,7 @@ script_lines.append("eof\n")
 # Write the plot file if that's what we were asked to do.
 #
 
-if options.plot:
+if args.plot:
     print("\n".join(script_terminal),
           "\n".join(script_lines)
     )

@@ -3,7 +3,7 @@
 # Dump a list of plugins
 #
 
-import optparse
+import argparse
 import pscheduler
 
 pscheduler.set_graceful_exit()
@@ -12,12 +12,8 @@ pscheduler.set_graceful_exit()
 # Gargle the arguments
 #
 
-class VerbatimParser(optparse.OptionParser):
-    def format_epilog(self, formatter):
-        return self.epilog
-
-opt_parser = VerbatimParser(
-    usage="Usage: %prog [options] tests|tools|archivers|contexts",
+arg_parser = argparse.ArgumentParser(
+    usage="%(prog)s [options] type",
     epilog="""
 Example:
 
@@ -26,31 +22,32 @@ Example:
 
   plugins --host ps.example.org tests
       List the test plugins on ps.example.org
-"""
+""",
+    formatter_class=argparse.RawTextHelpFormatter
     )
-opt_parser.disable_interspersed_args()
 
-opt_parser.add_option("--bind",
+
+arg_parser.add_argument("--bind",
                       help="Make the request from the provided address",
                       default=None,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="bind")
-opt_parser.add_option("--host",
+arg_parser.add_argument("--host",
                       help="Query the specified host",
                       default=None,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="host")
 
-(options, remaining_args) = opt_parser.parse_args()
+arg_parser.add_argument("type",
+                        help="Type of plugin (tests, tools, archivers or contexts)",
+                        nargs="?")
 
-if len(remaining_args) != 1:
-    opt_parser.print_usage()
-    pscheduler.fail()
+args = arg_parser.parse_args()
 
-plugin = remaining_args[0]
+plugin = args.type
 
 if plugin not in ["tests", "tools", "archivers", "contexts"]:
-    opt_parser.print_usage()
+    arg_parser.print_usage()
     pscheduler.fail()
 
 
@@ -58,21 +55,21 @@ if plugin not in ["tests", "tools", "archivers", "contexts"]:
 # Fetch the list
 #
 
-url = pscheduler.api_url(options.host, path=plugin)
+url = pscheduler.api_url(args.host, path=plugin)
 
 status, result = pscheduler.url_get(url,
                                     params={"expanded": True},
-                                    bind=options.bind,
+                                    bind=args.bind,
                                     throw=False)
 
 if status == 400:
-    pscheduler.fail("%s: %s" % (host, result))
+    pscheduler.fail("%s: %s" % (args.host, result))
 elif status in [202, 204, 205, 206, 207, 208, 226,
                 300, 301, 302, 303, 304, 205, 306, 307, 308] \
     or ((status >= 400) and (status <= 499)):
-    pscheduler.fail("%s is not running pScheduler" % (options.host))
+    pscheduler.fail("%s is not running pScheduler" % (args.host))
 elif status != 200:
-    pscheduler.fail("%s returned status %d: %s" % (host, status, result))
+    pscheduler.fail("%s returned status %d: %s" % (args.host, status, result))
 
 
 #
@@ -81,7 +78,7 @@ elif status != 200:
 
 print("Installed %s on %s:" % (
     plugin,
-    options.host if options.host is not None else "this system"
+    args.host if args.host is not None else "this system"
     ))
 
 

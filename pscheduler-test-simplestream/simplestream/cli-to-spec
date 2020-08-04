@@ -2,7 +2,7 @@
 #
 # Convert comamnd-line options to a test specification
 
-import optparse
+import argparse
 import pscheduler
 import sys
 
@@ -30,7 +30,7 @@ else:
 
 # Gargle the arguments
 
-opt_parser = pscheduler.FailingOptionParser(epilog=
+arg_parser = argparse.ArgumentParser(epilog=
 """Examples:
 
   task simplestream --dest ps.example.com
@@ -44,92 +44,89 @@ opt_parser = pscheduler.FailingOptionParser(epilog=
 
   task simplestream --fail 0.65 --dest ps.example.com
       Force failure 65% of the time
-"""
-                                            )
+""",
+    formatter_class=argparse.RawTextHelpFormatter)
 
 
-opt_parser.add_option("-e", "--dest",
+
+arg_parser.add_argument("-e", "--dest",
                       help="Destination host",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="dest")
 
-opt_parser.add_option("--dest-node",
+arg_parser.add_argument("--dest-node",
                       help="Destination pScheduler node",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="dest_node")
 
-opt_parser.add_option("-d", "--dawdle",
+arg_parser.add_argument("-d", "--dawdle",
                       help="Time to dawdle (ISO8601 Duration)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="dawdle")
 
-opt_parser.add_option("-i", "--ip-version",
+arg_parser.add_argument("-i", "--ip-version",
                       help="Force IP version (4 or 6)",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="ip_version")
 
-opt_parser.add_option("-m", "--test-material",
+arg_parser.add_argument("-m", "--test-material",
                       help="Test material to be sent",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="test_material")
 
-opt_parser.add_option("-s", "--source",
+arg_parser.add_argument("-s", "--source",
                       help="Source host",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="source")
 
-opt_parser.add_option("--source-node",
+arg_parser.add_argument("--source-node",
                       help="Source pScheduler node",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="source_node")
 
-opt_parser.add_option("-t", "--timeout",
+arg_parser.add_argument("-t", "--timeout",
                       help="Time for receiver to wait (ISO8601 Duration)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="timeout")
 
-opt_parser.add_option("-f", "--fail",
+arg_parser.add_argument("-f", "--fail",
                       help="Probability of forced failure",
-                      action="store", type="float",
+                      action="store", type=float,
                       dest="fail")
 
 
-(options, remaining_args) = opt_parser.parse_args(args)
-
-if len(remaining_args) != 0:
-   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
-
+args = arg_parser.parse_args(args)
 
 spec_schema = pscheduler.HighInteger(1)
 result = {}
 
-if options.dest is not None:
-   result['dest'] = options.dest
+if args.dest is not None:
+   result['dest'] = args.dest
 
-if options.dest_node is not None:
-   result['dest-node'] = options.dest_node
+if args.dest_node is not None:
+   result['dest-node'] = args.dest_node
 
-if options.dawdle is not None:
-   result['dawdle'] = options.dawdle
+if args.dawdle is not None:
+   result['dawdle'] = args.dawdle
 
-if options.ip_version is not None:
-   result['ip-version'] = options.ip_version
+if args.ip_version is not None:
+   result['ip-version'] = args.ip_version
    spec_schema.set(2)
 
-if options.source is not None:
-   result['source'] = options.source
+if args.source is not None:
+   result['source'] = args.source
 
-if options.source_node is not None:
-   result['source-node'] = options.source_node
+if args.source_node is not None:
+   result['source-node'] = args.source_node
 
-if options.test_material is not None:
-   result['test-material'] = options.test_material
+if args.test_material is not None:
+   result['test-material'] = args.test_material
 
-if options.timeout is not None:
-   result['timeout'] = options.timeout
+if args.timeout is not None:
+   result['timeout'] = args.timeout
 
-if options.fail is not None:
-   result['fail'] = options.fail
+if args.fail is not None:
+   result['fail'] = args.fail
 
 result['schema'] = spec_schema.value()
 

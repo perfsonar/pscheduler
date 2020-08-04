@@ -5,7 +5,7 @@
 
 import daemon
 import errno
-import optparse
+import argparse
 import pscheduler
 import select
 import threading
@@ -18,43 +18,43 @@ pscheduler.set_graceful_exit()
 # Gargle the arguments
 #
 
-opt_parser = optparse.OptionParser()
+arg_parser = argparse.ArgumentParser()
 
 # Daemon-related options
 
-opt_parser.add_option("--daemon",
+arg_parser.add_argument("--daemon",
                       help="Daemonize",
                       action="store_true",
                       dest="daemon", default=False)
-opt_parser.add_option("--pid-file",
+arg_parser.add_argument("--pid-file",
                       help="Location of PID file",
-                      action="store", type="string", dest="pidfile",
+                      action="store", type=str, dest="pidfile",
                       default=None)
 
 # Program options
 
-opt_parser.add_option("-d", "--dsn",
+arg_parser.add_argument("-d", "--dsn",
                       help="Database connection string, prefix with @ to read from file",
-                      action="store", type="string", dest="dsn",
+                      action="store", type=str, dest="dsn",
                       default="")
-opt_parser.add_option("-r", "--retry",
+arg_parser.add_argument("-r", "--retry",
                       help="No-rows-returned retry interval (ISO8601)",
-                      action="store", type="string", dest="retry",
+                      action="store", type=str, dest="retry",
                       default="PT15S")
-opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False)
-opt_parser.add_option("--debug", action="store_true", dest="debug", default=False)
+arg_parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", default=False)
+arg_parser.add_argument("--debug", action="store_true", dest="debug", default=False)
 
 
-(options, args) = opt_parser.parse_args()
+args = arg_parser.parse_args()
 
-retry = pscheduler.iso8601_as_timedelta(options.retry)
+retry = pscheduler.iso8601_as_timedelta(args.retry)
 if retry is None:
-    opt_parser.error('Invalid retry interval "' + options.retry + '"')
+    arg_parser.error('Invalid retry interval "' + args.retry + '"')
 if pscheduler.timedelta_as_seconds(retry) == 0:
-    opt_parser.error("Retryinterval must be calculable as seconds.")
+    arg_parser.error("Retry interval must be calculable as seconds.")
 
 
-dsn = options.dsn
+dsn = args.dsn
 
 
 #
@@ -115,7 +115,7 @@ def http_queue_maintainer(log):
 
 def main_program():
 
-    log = pscheduler.Log(verbose=options.verbose, debug=options.debug)
+    log = pscheduler.Log(verbose=args.verbose, debug=args.debug)
 
     http_queue_worker = threading.Thread(
         target=lambda: http_queue_maintainer(log))
@@ -148,8 +148,8 @@ def main_program():
 
             if cursor.rowcount == 0:
                 log.debug("Got no rows back from the database, retrying in"
-                          + str(options.retry) + "\n")
-                time.sleep(pscheduler.timedelta_as_seconds(options.retry))
+                          + str(args.retry) + "\n")
+                time.sleep(pscheduler.timedelta_as_seconds(args.retry))
                 continue
             sleep_time = cursor.fetchone()[0]
 
@@ -164,8 +164,8 @@ def main_program():
     db.close()
 
 
-if options.daemon:
-    pidfile = pscheduler.PidFile(options.pidfile)
+if args.daemon:
+    pidfile = pscheduler.PidFile(args.pidfile)
     with daemon.DaemonContext(pidfile=pidfile):
         pscheduler.safe_run(lambda: main_program())
 else:

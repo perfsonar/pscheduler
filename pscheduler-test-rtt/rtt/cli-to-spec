@@ -3,7 +3,7 @@
 # Convert comamnd-line options to a test specification
 #
 
-import optparse
+import argparse
 import pscheduler
 import sys
 
@@ -31,7 +31,7 @@ else:
 
 # Gargle the arguments
 
-opt_parser = pscheduler.FailingOptionParser(epilog=
+arg_parser = argparse.ArgumentParser(epilog=
 """Examples:
 
   task rtt --dest ps.example.com
@@ -45,161 +45,160 @@ opt_parser = pscheduler.FailingOptionParser(epilog=
 
   task rtt --ttl 12 --dest ps.example.com
       Limit time to live to 12 hops
-"""
-                                            )
+""",
+    formatter_class=argparse.RawTextHelpFormatter)
 
 
-opt_parser.add_option("-c","--count",
+arg_parser.add_argument("-c","--count",
                       help="Test count",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="count")
 
-opt_parser.add_option("-d","--dest",
+arg_parser.add_argument("-d","--dest",
                       help="Destination host",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="dest")
 
-opt_parser.add_option("--flow-label",
+arg_parser.add_argument("--flow-label",
                       help="Flow label",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="flow_label")
 
-opt_parser.add_option("--fragment",
+arg_parser.add_argument("--fragment",
                       help="Allow packet fragmentation",
+                      default=None,
                       action="store_true",
                       dest="fragment")
-opt_parser.add_option("--no-fragment",
+arg_parser.add_argument("--no-fragment",
                       help="Don't allow packet fragmentation",
                       action="store_false",
                       dest="fragment")
 
-opt_parser.add_option("--hostnames",
+arg_parser.add_argument("--hostnames",
                       help="Look up hostnames from IPs",
+                      default=None,
                       action="store_true",
                       dest="hostnames")
-opt_parser.add_option("--no-hostnames",
+arg_parser.add_argument("--no-hostnames",
                       help="Don't look up hostnames from IPs",
                       action="store_false",
                       dest="hostnames")
 
-opt_parser.add_option("-i","--interval",
+arg_parser.add_argument("-i","--interval",
                       help="Time to wait between packets sent",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="interval")
 
-opt_parser.add_option("--ip-version",
+arg_parser.add_argument("--ip-version",
                       help="IP version to use",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="ip_version")
 
-opt_parser.add_option("-s","--source",
+arg_parser.add_argument("-s","--source",
                       help="Source address or interface",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="source")
 
-opt_parser.add_option("--source-node",
+arg_parser.add_argument("--source-node",
                       help="Source pScheduler node, if different",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="source_node")
 
-opt_parser.add_option("--suppress-loopback",
+arg_parser.add_argument("--suppress-loopback",
                       help="Suppress multicast loopback",
+                      default=None,
                       action="store_true",
                       dest="suppress_loopback")
-opt_parser.add_option("--no-suppress-loopback",
+arg_parser.add_argument("--no-suppress-loopback",
                       help="Don't suppress multicast loopback",
                       action="store_false",
                       dest="suppress_loopback")
 
-opt_parser.add_option("--ip-tos",
+arg_parser.add_argument("--ip-tos",
                       help="IP type-of-service octet (integer)",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="ip_tos")
 
-opt_parser.add_option("--length",
+arg_parser.add_argument("--length",
                       help="Packet length",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="length")
 
-opt_parser.add_option("--ttl",
+arg_parser.add_argument("--ttl",
                       help="Time to live",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="ttl")
 
-opt_parser.add_option("--deadline",
+arg_parser.add_argument("--deadline",
                       help="Deadline for all measurements to complete",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="deadline")
 
-opt_parser.add_option("--timeout",
+arg_parser.add_argument("--timeout",
                       help="Timeout for each round trip",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="timeout")
 
-opt_parser.add_option("--protocol",
+arg_parser.add_argument("--protocol",
                       help="Protocol used to measure round trip time",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="protocol")
 
 
-(options, remaining_args) = opt_parser.parse_args(args)
-
-if len(remaining_args) != 0:
-   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
-
+args = arg_parser.parse_args(args)
 
 result = { }
 schema = pscheduler.HighInteger(1)
 
 
-if options.count is not None:
-   result['count'] = options.count
+if args.count is not None:
+   result['count'] = args.count
 
-if options.dest is not None:
-   result['dest'] = options.dest
+if args.dest is not None:
+   result['dest'] = args.dest
 
-if options.flow_label is not None:
-   result['flow-label'] = options.flow_label
+if args.flow_label is not None:
+   result['flow-label'] = args.flow_label
 
-if options.fragment is not None:
-   result['fragment'] = options.fragment
+if args.fragment is not None:
+   result['fragment'] = args.fragment
    schema.set(3)
 
-if options.hostnames is not None:
-   result['hostnames'] = options.hostnames
+if args.hostnames is not None:
+   result['hostnames'] = args.hostnames
 
-if options.interval is not None:
-   result['interval'] = options.interval
+if args.interval is not None:
+   result['interval'] = args.interval
 
-if options.ip_version is not None:
-   result['ip-version'] = options.ip_version
+if args.ip_version is not None:
+   result['ip-version'] = args.ip_version
 
-if options.source is not None:
-   result['source'] = options.source
+if args.source is not None:
+   result['source'] = args.source
 
-if options.source_node is not None:
-   result['source-node'] = options.source_node
+if args.source_node is not None:
+   result['source-node'] = args.source_node
 
-if options.suppress_loopback is not None:
-   result['suppress-loopback'] = options.suppress_loopback
+if args.suppress_loopback is not None:
+   result['suppress-loopback'] = args.suppress_loopback
 
-if options.ip_tos is not None:
-   result['ip-tos'] = options.ip_tos
+if args.ip_tos is not None:
+   result['ip-tos'] = args.ip_tos
 
-if options.length is not None:
-   result['length'] = options.length
+if args.length is not None:
+   result['length'] = args.length
 
-if options.ttl is not None:
-   result['ttl'] = options.ttl
+if args.ttl is not None:
+   result['ttl'] = args.ttl
 
-if options.deadline is not None:
-   result['deadline'] = options.deadline
+if args.deadline is not None:
+   result['deadline'] = args.deadline
 
-if options.timeout is not None:
-   result['timeout'] = options.timeout
+if args.timeout is not None:
+   result['timeout'] = args.timeout
 
-if options.protocol is not None:
-   result['protocol'] = options.protocol
+if args.protocol is not None:
+   result['protocol'] = args.protocol
    schema.set(2)
 
 result["schema"] = schema.value()

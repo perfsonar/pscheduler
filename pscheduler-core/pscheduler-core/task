@@ -4,7 +4,7 @@
 #
 
 import datetime
-import optparse
+import argparse
 import os
 import pipes
 import pscheduler
@@ -21,12 +21,8 @@ pscheduler.set_graceful_exit()
 #
 
 
-class VerbatimParser(optparse.OptionParser):
-    def format_epilog(self, formatter):
-        return self.epilog
-
-opt_parser = VerbatimParser(
-    usage="Usage: %prog [options] test-type [test-options]",
+arg_parser = argparse.ArgumentParser(
+    usage="%(prog)s [options] test-type [test-options]",
     epilog=
 """
 For help with a test:
@@ -55,165 +51,173 @@ Examples:
       to ps.example.net and run it.  Note that the single-hyphen test type
       is required if any parameter changes are to be added on the command
       line.  Specifying a test type here will override the imported value.
-"""
+""",
+    formatter_class=argparse.RawTextHelpFormatter
     )
-opt_parser.disable_interspersed_args()
 
 
 # TASK OPTIONS
 
-task_group = optparse.OptionGroup(opt_parser, "Task Options")
-opt_parser.add_option_group(task_group)
 
-task_group.add_option("--archive",
+task_group = arg_parser.add_argument_group("task", description="Task Options")
+arg_parser.add_argument_group(task_group)
+
+task_group.add_argument("--archive",
                       help="Specify where to archive result(s) (JSON; optionally @/path/to/file; may be repeated)",
                       default=[],
-                      action="append", type="string",
+                      action="append", type=str,
                       dest="archive")
 
-task_group.add_option("--context",
+task_group.add_argument("--context",
                       help="Specify context changes for all participants (JSON; optionally @/path/to/file)",
                       default=None,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="context")
 
-task_group.add_option("--key",
+task_group.add_argument("--key",
                       help="Key required for write access to the task (Optional @/path/to/file)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="key")
 
-task_group.add_option("--reference",
+task_group.add_argument("--reference",
                       help="Save arbitrary JSON with task for reference (Optional @/path/to/file)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="reference")
 
-task_group.add_option("--tool",
+task_group.add_argument("--tool",
                       help="Choose a tool to use for the test (May be repeated for a preferred-order selection)",
                       default=[],
-                      action="append", type="string",
+                      action="append", type=str,
                       dest="tool")
 
 
 # SCHEDULING OPTIONS
 
-schedule_group = optparse.OptionGroup(opt_parser, "Scheduling Options")
-opt_parser.add_option_group(schedule_group)
+schedule_group = arg_parser.add_argument_group("scheduling", description="Scheduling Options")
+arg_parser.add_argument_group(schedule_group)
 
-schedule_group.add_option("--max-runs",
+schedule_group.add_argument("--max-runs",
                       help="Maximum number of repeats (requires --repeat)",
-                      action="store", type="int", default=1,
+                      action="store", type=int, default=1,
                       dest="max_runs")
 
-task_group.add_option("--priority",
+task_group.add_argument("--priority",
                       help="Scheduling priority to request (default 0 or $PSCHEDULER_PRIORTY)",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="priority")
 
-schedule_group.add_option("--repeat",
+schedule_group.add_argument("--repeat",
                       help="Repeat interval (ISO 8601 Duration)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="repeat")
 
-schedule_group.add_option("--repeat-cron",
+schedule_group.add_argument("--repeat-cron",
                           help="Cron-style repeat specification (POSIX Cron)",
-                          action="store", type="string",
+                          action="store", type=str,
                           dest="repeat_cron")
 
-schedule_group.add_option("--slip",
+schedule_group.add_argument("--slip",
                       help="Allowed start slip (ISO8601 Duration)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="slip")
 
-schedule_group.add_option("--sliprand",
+schedule_group.add_argument("--sliprand",
                       help="Slip randomly",
                       action="store_true",
                       dest="sliprand")
 
-schedule_group.add_option("--start",
+schedule_group.add_argument("--start",
                       help="Start time",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="start")
 
-schedule_group.add_option("--until",
+schedule_group.add_argument("--until",
                       help="Time after which scheduling should stop",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="until")
 
 
 # OTHER OPTIONS
 
-other_group = optparse.OptionGroup(opt_parser, "Other Options")
-opt_parser.add_option_group(other_group)
+other_group = arg_parser.add_argument_group("other", description="Other Options")
+arg_parser.add_argument_group(other_group)
 
-other_group.add_option("--assist",
+other_group.add_argument("--assist",
                       help="Use the host ASSIST for assistance (default localhost or $PSCHEDULER_ASSIST)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="assist")  # Conflict with reserved word
 
-other_group.add_option("--bind",
+other_group.add_argument("--bind",
                        help="Bind to the supplied address when submitting the task",
-                       action="store", type="string",
+                       action="store", type=str,
                        default=None,
                        dest="bind")
 
-other_group.add_option("--export",
+other_group.add_argument("--export",
                       help="Export task JSON to stdout and exit",
                       action="store_true", default=False,
                       dest="export")
 
-other_group.add_option("--format",
+other_group.add_argument("--format",
                       help="Output format: plain (default), html, json or none",
-                      action="store", type="string",
+                      action="store", type=str,
                       default=None,
                       dest="format")
 
-other_group.add_option("--import",
+other_group.add_argument("--import",
                       help="Read JSON task template from a file, - for stdin",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="importfile")
 
-other_group.add_option("--output",
+other_group.add_argument("--output",
                       help="Write result(s) to a file, substituting a run number for %n",
-                      action="store", type="string",
+                      action="store", type=str,
                       default=None,
                       dest="output")
 
-other_group.add_option("--quiet",
+other_group.add_argument("--quiet",
                       help="Operate quietly",
                       action="store_true", default=False,
                       dest="quiet")
 
-other_group.add_option("--lead-bind",
+other_group.add_argument("--lead-bind",
                        help="Have the lead participant Bind to the supplied address for administrative communications",
-                       action="store", type="string",
+                       action="store", type=str,
                        default=None,
                        dest="lead_bind")
 
-other_group.add_option("--url",
+other_group.add_argument("--url",
                       help="Dump a URL that points to the task after posting and exit",
                       action="store_true", default=False,
                       dest="url")
 
-other_group.add_option("--debug", action="store_true", dest="debug")
+other_group.add_argument("--debug", action="store_true", dest="debug")
+
+other_group.add_argument("test",
+                         help="Test type",
+                         nargs="?")
+
+other_group.add_argument("testargs",
+                         help="Test arguments",
+                         nargs=argparse.REMAINDER)
 
 
 
+args = arg_parser.parse_args()
 
-(options, remaining_args) = opt_parser.parse_args()
-
-if len(remaining_args) < 1 and options.importfile is None:
-    opt_parser.print_usage()
+if len(args.testargs) < 1 and args.importfile is None:
+    arg_parser.print_usage()
     pscheduler.fail()
 
-
 task_schema = pscheduler.HighInteger(1)
+
 schedule_schema = pscheduler.HighInteger(1)
 
 #
 # Validate the command line
 #
 
-if options.max_runs < 1:
+if args.max_runs < 1:
     pscheduler.fail("Invalid --max-runs; must be 1 or more")
 
 
@@ -229,75 +233,75 @@ formats = {
     }
 
 try:
-    opt_format = "text/plain" if options.format is None else options.format
+    opt_format = "text/plain" if args.format is None else args.format
     out_format = formats[opt_format]
 except KeyError:
     pscheduler.fail("Invalid --format; must be text, html, json or none")
 
 
-if options.repeat is not None:
+if args.repeat is not None:
     try:
-        repeat = pscheduler.iso8601_as_timedelta(options.repeat)
+        repeat = pscheduler.iso8601_as_timedelta(args.repeat)
     except ValueError as ex:
         pscheduler.fail("Invalid --repeat: %s" % str(ex))
 
 
-if options.repeat_cron is not None:
+if args.repeat_cron is not None:
     schedule_schema.set(2)
-    repeat_cron = options.repeat_cron
+    repeat_cron = args.repeat_cron
 
-if options.key is not None:
+if args.key is not None:
     try:
-        key = pscheduler.string_from_file(options.key)
+        key = pscheduler.string_from_file(args.key)
     except IOError as ex:
         pscheduler.fail("Unable to read key file: " + str(ex))
 
 
-if options.reference is not None:
+if args.reference is not None:
     try:
-        reference = pscheduler.string_from_file(options.reference)
+        reference = pscheduler.string_from_file(args.reference)
         reference = pscheduler.json_load(reference)
     except IOError as ex:
         pscheduler.fail("Unable to read reference file: " + str(ex))
     except ValueError as ex:
         pscheduler.fail("Invalid --reference '%s': %s"
-                        % (options.reference, str(ex)))
+                        % (args.reference, str(ex)))
 
 
     
 
-if options.start is not None:
+if args.start is not None:
     # TODO: Support "Pxx" and "@Pxx" formats like the database does
     # Should have a module function that does this.
     try:
-        start = pscheduler.iso8601_as_datetime(options.start, localize=True)
+        start = pscheduler.iso8601_as_datetime(args.start, localize=True)
     except ValueError as ex:
         pscheduler.fail("Invalid --start: %s" % str(ex))
     if start <= pscheduler.time_now():
         pscheduler.fail("Invalid --start; must be in the future.")
     pass
 
-if options.until is not None:
+if args.until is not None:
     # TODO: Support "Pxx" and "@Pxx" formats like the database does
     # TODO: Error handling in iso8601_as_datetime() needs improvement.
     try:
-        until = pscheduler.iso8601_as_datetime(options.until, localize=True)
+        until = pscheduler.iso8601_as_datetime(args.until, localize=True)
     except ValueError as ex:
         pscheduler.fail("Invalid --until: %s" % str(ex))
     if until <= pscheduler.time_now():
         pscheduler.fail("Invalid --until; must be in the future.")
 
 
-verbose = (not options.quiet) \
-    and not (options.url) \
-    and options.format is None
+verbose = (not args.quiet) \
+    and not (args.url) \
+    and args.format is None
 
-# TODO: Tie this to the options.
-log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True, propagate=True)
+# TODO: Tie this to the args.
+log = pscheduler.Log(verbose=verbose, debug=args.debug, quiet=True, propagate=True)
 
 # Decide who assists us.
 
-assist = options.assist
+assist = args.assist
 if assist is None:
     assist = os.getenv('PSCHEDULER_ASSIST')
 
@@ -313,7 +317,7 @@ log.debug("Assistance is from %s", assist)
 # options add will override it.
 #
 
-if options.importfile is None:
+if args.importfile is None:
     task = {
         'schedule': {},
         'test': {
@@ -321,16 +325,16 @@ if options.importfile is None:
             }
         }
 else:
-    if options.importfile == '-':
-        file = sys.stdin
+    if args.importfile == '-':
+        import_file = sys.stdin
     else:
         try:
-            file = open(options.importfile)
+            import_file = open(args.importfile)
         except IOError as ex:
             pscheduler.fail("Unable to open task %s" % (str(ex)))
 
     try:
-        task = pscheduler.json_load(file, exit_on_error=True, max_schema=3)
+        task = pscheduler.json_load(import_file, exit_on_error=True, max_schema=3)
     except ValueError as ex:
         pscheduler.fail("Invalid task specification: %s" % str(ex))
 
@@ -353,11 +357,11 @@ else:
 
 
 
-if options.slip is not None:
+if args.slip is not None:
 
     # The command-line argument overrides everything.
     log.debug("Using slip from command line")
-    task['schedule']['slip'] = options.slip
+    task['schedule']['slip'] = args.slip
 
 else:
 
@@ -365,8 +369,8 @@ else:
     # importing or exporting, force a default.
 
     if ('slip' not in task['schedule']) \
-       and (not options.export) \
-       and (options.importfile is None):
+       and (not args.export) \
+       and (args.importfile is None):
         forced_slip = os.environ.get('PSCHEDULER_SLIP', 'PT5M')
         task['schedule']['slip'] = forced_slip
         log.debug("Forcing default slip of %s" % (forced_slip))
@@ -374,15 +378,15 @@ else:
 
 
 # Overlay the lead bind if specified
-if options.lead_bind is not None:
-    task["lead-bind"] = options.lead_bind
+if args.lead_bind is not None:
+    task["lead-bind"] = args.lead_bind
 
 # Overlay the key if specified
-if options.key is not None:
+if args.key is not None:
     task["_key"] = key
 
 # Overlay the reference if specified
-if options.reference is not None:
+if args.reference is not None:
     task["reference"] = reference
 
 #
@@ -394,11 +398,11 @@ if options.reference is not None:
 if 'schedule' not in task:
     task['schedule'] = {}
 
-if options.max_runs > 1:
-    task['schedule']['max-runs'] = options.max_runs
+if args.max_runs > 1:
+    task['schedule']['max-runs'] = args.max_runs
 
-if options.priority is not None:
-    task['priority'] = options.priority
+if args.priority is not None:
+    task['priority'] = args.priority
 else:
     try:
         task['priority'] = int(os.environ['PSCHEDULER_PRIORITY'])
@@ -412,25 +416,25 @@ if 'priority' in task:
     task_schema.set(3)
 
 
-if options.repeat is not None:
-    task['schedule']['repeat'] = options.repeat
+if args.repeat is not None:
+    task['schedule']['repeat'] = args.repeat
 
-if options.repeat_cron is not None:
-    task['schedule']['repeat-cron'] = options.repeat_cron
+if args.repeat_cron is not None:
+    task['schedule']['repeat-cron'] = args.repeat_cron
 
-if options.sliprand is not None:
-    task['schedule']['sliprand'] = options.sliprand
+if args.sliprand is not None:
+    task['schedule']['sliprand'] = args.sliprand
 
-if options.start is not None:
-    task['schedule']['start'] = options.start
+if args.start is not None:
+    task['schedule']['start'] = args.start
 
-if options.until is not None:
-    task['schedule']['until'] = options.until
+if args.until is not None:
+    task['schedule']['until'] = args.until
 
 
 
-bind = options.bind
-lead_bind = options.lead_bind
+bind = args.bind
+lead_bind = args.lead_bind
 
 
 #
@@ -438,29 +442,25 @@ lead_bind = options.lead_bind
 # valid, that will be checked later.
 #
 
-if len(remaining_args) > 0:
-    test_arg = remaining_args.pop(0)
-    if test_arg != '-':
-        task['test']['type'] = test_arg
-
-test_type = task['test'].get('type', '-')
-
-if test_type == '-':
+if (not args.importfile) and (not args.test):
     pscheduler.fail("No test type specified.")
 
 
+if args.test:
+    task['test']['type'] = args.test
+
 # Add desired tools, if any.
 
-if options.tool:
-    task['tools'] = options.tool
+if args.tool:
+    task['tools'] = args.tool
 
 
 # Add archivers, if any.
-if options.archive:
+if args.archive:
 
     archives = []
 
-    for archive in options.archive:
+    for archive in args.archive:
         try:
             archive_text = pscheduler.string_from_file(archive)
             archive_json = pscheduler.json_load(archive_text)
@@ -474,10 +474,10 @@ if options.archive:
 
 
 # Add contexts, if any.
-if options.context:
+if args.context:
 
     try:
-        context_text = pscheduler.string_from_file(options.context)
+        context_text = pscheduler.string_from_file(args.context)
         context_json = pscheduler.json_load(context_text, max_schema=1)
     except IOError as ex:
         pscheduler.fail("Unable to read context file: %s" % (str(ex)))
@@ -502,38 +502,44 @@ if not pscheduler.api_has_pscheduler(assist, bind=bind):
 # Convert the remaining arguments to a test spec.
 #
 
-spec_url = pscheduler.api_url_hostport(assist,
-                              path='/tests/' + test_type + '/spec')
-log.debug("Converting to spec via %s", spec_url)
-status, raw_spec = pscheduler.url_get(
-    spec_url,
-    params={ 'args': pscheduler.json_dump(remaining_args) },
-    bind=bind,
-    throw=False,
-    timeout=10
+if args.testargs:
+    spec_url = pscheduler.api_url_hostport(assist,
+                                           path='/tests/' + task["test"]["type"] + '/spec')
+    log.debug("Converting to spec via %s", spec_url)
+    status, raw_spec = pscheduler.url_get(
+        spec_url,
+        params={ 'args': pscheduler.json_dump(args.testargs) },
+        bind=bind,
+        throw=False,
+        timeout=10
     )
+else:
+    status = 200
+    raw_spec = {}
+
 
 if status == 400:
 
     # Anything with --help or -h in it is a plea for help.
-    if "--help" in remaining_args or "-h" in remaining_args:
+    if "--help" in args.testargs or "-h" in args.testargs:
         pscheduler.succeed(
             "Usage: task [task-options] %s [test-options]\n\n%s"
-            % (test_type, raw_spec))
+            % (args.test, raw_spec))
 
     # Anything else is a bona-fide bad request.
 
     pscheduler.fail("%s: %s" % (assist, raw_spec))
 
 if status == 404:
-    pscheduler.fail("Could not find test " + test_type + " on server")
+    pscheduler.fail("Could not find test " + args.test + " on server")
 
 if status == 500:
     pscheduler.fail("Internal error on on %s.  Consult system logs for details." \
-                        % ( "local pScheduler server" if assist == last_ditch_assist
-                            else assist ))
+                    % ( "local pScheduler server" if assist == last_ditch_assist
+                        else assist ))
 elif status != 200:
     pscheduler.fail("Unknown error %d: %s" % (status, raw_spec))
+
 
 json_to_merge = raw_spec
 assert 'spec' in task['test']
@@ -550,7 +556,7 @@ if task_schema.value() > 1:
 if schedule_schema.value() > 1:
     task['schedule']['schema'] = schedule_schema.value()
 
-if options.export:
+if args.export:
 
     # If the schedule item ended up empty, get rid of it.
     try:
@@ -678,7 +684,7 @@ if status != 200:
         "\ndiagnosis. 'pscheduler troubleshoot --help' for more information.")
 
 # If asked to just dump the URL, do that and exit.
-if options.url:
+if args.url:
     pscheduler.succeed(task_url)
 
 if verbose:
@@ -736,19 +742,19 @@ watch_args = [ "pscheduler", "watch",
                ]
 
 # Force a format only if explicitly told to do so.
-if options.format is not None:
+if args.format is not None:
     watch_args.extend(["--format", out_format])
 
-if options.debug:
+if args.debug:
     watch_args.append("--debug")
-if options.quiet:
+if args.quiet:
     watch_args.append("--quiet")
-if options.bind is not None:
+if args.bind is not None:
     watch_args.append("--bind")
-    watch_args.append(options.bind)
-if options.output is not None:
+    watch_args.append(args.bind)
+if args.output is not None:
     watch_args.append("--output")
-    watch_args.append(options.output)
+    watch_args.append(args.output)
 # TODO: Pass --verbose once watch supports that.
 watch_args.append(task_url)
 

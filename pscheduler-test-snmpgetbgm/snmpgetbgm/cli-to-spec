@@ -4,7 +4,7 @@
 #
 
 import re
-import optparse
+import argparse
 import pscheduler
 import sys
 
@@ -29,163 +29,161 @@ else:
 
 # Gargle the arguments
 
-opt_parser = pscheduler.FailingOptionParser(epilog=
+arg_parser = argparse.ArgumentParser(epilog=
 """Examples:
 
-  task snmpget --version 2c --community public example.net
+  task snmpgetbgm --version 2c --community public example.net
     text
 
-"""
-)
+""",
+    formatter_class=argparse.RawTextHelpFormatter)
 
-opt_parser.add_option("--host",
+
+arg_parser.add_argument("--host",
                       help="Host to run the test.",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="host")
 
-opt_parser.add_option("--host-node",
+arg_parser.add_argument("--host-node",
                       help="Host to run the test.",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="host_node")
 
-opt_parser.add_option("--dest",
+arg_parser.add_argument("--dest",
                       help="Destination that will be queried.",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="dest")
                     
-opt_parser.add_option("--version",
+arg_parser.add_argument("--version",
                       help="Version of SNMP to be used. (1|2c|3)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="version")
 
-opt_parser.add_option("--period",
+arg_parser.add_argument("--period",
                         help="Seconds between polling periods.",
-                        action="store", type="int",
+                        action="store", type=int,
                         dest="period", default=1)
 
-opt_parser.add_option("--polls",
+arg_parser.add_argument("--polls",
                         help="Number of polls.",
-                        action="store", type="int",
+                        action="store", type=int,
                         dest="polls", default=1)
 
-opt_parser.add_option("--oid",
+arg_parser.add_argument("--oid",
                       help="OID to be queried, can be repeated for multiple.",
                       default=[],
-                      action="append", type="string",
+                      action="append", type=str,
                       dest="oid")
 
-opt_parser.add_option("--protocol",
+arg_parser.add_argument("--protocol",
                       help="Transport specifier (tcp|udp)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="protocol")
 
-opt_parser.add_option("--timeout",
+arg_parser.add_argument("--timeout",
                       help="Timeout for each query attempt",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="timeout")
 
 # snmp v3 specific options
-opt_parser.add_option("--security-name",
+arg_parser.add_argument("--security-name",
                   help="Security Name",
-                  action="store", type="string",
+                  action="store", type=str,
                   dest="security_name")
                 
-opt_parser.add_option("--auth-protocol",
+arg_parser.add_argument("--auth-protocol",
                   help="Authentication Protocol (md5|sha)",
-                  action="store", type="string",
+                  action="store", type=str,
                   dest="auth_protocol")
 
-opt_parser.add_option("--priv-protocol",
+arg_parser.add_argument("--priv-protocol",
                   help="Privacy Protocol (des|3des|aes|aes128|aes192|aes256)",
-                  action="store", type="string",
+                  action="store", type=str,
                   dest="priv_protocol")
 
-opt_parser.add_option("--auth-key",
+arg_parser.add_argument("--auth-key",
                   help="Authentication Passphrase",
-                  action="store", type="string",
+                  action="store", type=str,
                   dest="auth_key")
 
-opt_parser.add_option("--priv-key",
+arg_parser.add_argument("--priv-key",
                   help="Privacy Passphrase",
-                  action="store", type="string",
+                  action="store", type=str,
                   dest="priv_key")
 
-opt_parser.add_option("--security-level",
+arg_parser.add_argument("--security-level",
                   help="Security Level (noAuthNoPriv|authNoPriv|authPriv)",
-                  action="store", type="string",
+                  action="store", type=str,
                   dest="security_level")
 
-opt_parser.add_option("--context",
+arg_parser.add_argument("--context",
                   help="Context Name",
-                  action="store", type="string",
+                  action="store", type=str,
                   dest="context")
 
 # snmp v1 and v2c specific option
-opt_parser.add_option("--community",
+arg_parser.add_argument("--community",
                       help="Community string",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="community")
 
-(options, remaining_args) = opt_parser.parse_args(args)
-
-if len(remaining_args) != 0:
-   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
+args = arg_parser.parse_args(args)
 
 result = { 'schema': 1 }
 
 
-if options.host is not None:
-   result['host'] = options.host
+if args.host is not None:
+   result['host'] = args.host
 
-if options.host_node is not None:
-   result['host-node'] = options.host_node
+if args.host_node is not None:
+   result['host-node'] = args.host_node
 
-if options.dest is not None:
-   result['dest'] = options.dest
+if args.dest is not None:
+   result['dest'] = args.dest
 
-if options.version is not None:
-   result['version'] = options.version
+if args.version is not None:
+   result['version'] = args.version
 
-if options.oid is not None and len(options.oid):
-   result['oid'] = options.oid
+if args.oid is not None and len(args.oid):
+   result['oid'] = args.oid
 
-if options.protocol is not None:
-   result['protocol'] = options.protocol
+if args.protocol is not None:
+   result['protocol'] = args.protocol
 
-if options.timeout is not None:
-   result['timeout'] = options.timeout
+if args.timeout is not None:
+   result['timeout'] = args.timeout
 
 # If no # polls specified, it is an snmpget test and defaults to 1
-if options.polls is not None:
-    result['polls'] = options.polls
+if args.polls is not None:
+    result['polls'] = args.polls
 
-if options.period is not None:
-    result['period'] = options.period
+if args.period is not None:
+    result['period'] = args.period
 
-if options.version in ['1', '2c']:
-  if options.community is not None:
-    result['_community'] = options.community
+if args.version in [None, '1', '2c']:
+  if args.community is not None:
+    result['_community'] = args.community
 
 else:
-    if options.security_name is not None:
-      result['security-name'] = options.security_name
+    if args.security_name is not None:
+      result['security-name'] = args.security_name
 
-    if options.auth_protocol is not None:
-      result['auth-protocol'] = options.auth_protocol
+    if args.auth_protocol is not None:
+      result['auth-protocol'] = args.auth_protocol
 
-    if options.priv_protocol is not None:
-      result['priv-protocol'] = options.priv_protocol
+    if args.priv_protocol is not None:
+      result['priv-protocol'] = args.priv_protocol
 
-    if options.auth_key is not None:
-      result['_auth-key'] = options.auth_key
+    if args.auth_key is not None:
+      result['_auth-key'] = args.auth_key
 
-    if options.priv_key is not None:
-      result['_priv-key'] = options.priv_key
+    if args.priv_key is not None:
+      result['_priv-key'] = args.priv_key
 
-    if options.security_level is not None:
-      result['security-level'] = options.security_level
+    if args.security_level is not None:
+      result['security-level'] = args.security_level
 
-    if options.context is not None:
-      result['context'] = options.context
+    if args.context is not None:
+      result['context'] = args.context
 
 pscheduler.succeed_json(result)

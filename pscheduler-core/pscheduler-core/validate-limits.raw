@@ -9,7 +9,7 @@
 # will be read.
 #
 
-import optparse
+import argparse
 import pscheduler
 import sys
 
@@ -21,12 +21,8 @@ pscheduler.set_graceful_exit()
 # Gargle the arguments
 #
 
-class VerbatimParser(optparse.OptionParser):
-    def format_epilog(self, formatter):
-        return self.epilog
-
-opt_parser = VerbatimParser(
-    usage="Usage: %prog [ FILE ]",
+arg_parser = argparse.ArgumentParser(
+    usage="%(prog)s [ limits ]",
     epilog=
 """
 Examples:
@@ -39,28 +35,29 @@ Examples:
 
   validate-limits
       Validate __LIMITS_FILE__ if readable.
-"""
+""",
+    formatter_class=argparse.RawTextHelpFormatter
     )
-opt_parser.disable_interspersed_args()
 
-opt_parser.add_option("--quiet",
+arg_parser.add_argument("--quiet",
                       help="Print nothing if successful",
                       action="store_true",
                       dest="quiet")
 
-(options, remaining_args) = opt_parser.parse_args()
+
+arg_parser.add_argument("limits",
+                        help="Path to limit file or '-' for standard input",
+                        default="__LIMITS_FILE__",
+                        nargs="?")
+
+args = arg_parser.parse_args()
+
 
 try:
-    if len(remaining_args) == 0:
-        infile = open("__LIMITS_FILE__", 'r')
-    elif len(remaining_args) == 1 and remaining_args[0] == '-':
+    if args.limits == "-":
         infile = sys.stdin
-    elif len(remaining_args) == 1:
-        infile = open(remaining_args[0], 'r')
     else:
-        opt_parser.print_usage()
-        pscheduler.fail()
-
+        infile = open(args.limits, 'r')
 except IOError as ex:
     pscheduler.fail("Unable to read input: %s" % (str(ex)))
 
@@ -69,7 +66,7 @@ try:
 except Exception as ex:
     pscheduler.fail(str(ex))
 
-if sys.stdout.isatty() and not options.quiet:
+if sys.stdout.isatty() and not args.quiet:
     print("Limit configuration is valid.")
 
 pscheduler.succeed()

@@ -10,7 +10,6 @@ from .exit import *
 from .exitstatus import *
 from .enummatcher import *
 from .expiringset import *
-from .failopt import *
 from .filestring import *
 from .ipaddr import *
 from .iso8601 import *

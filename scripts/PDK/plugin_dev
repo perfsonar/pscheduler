@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 #
 # Create new test directory from a provided TEMPLATE dir
@@ -7,65 +7,63 @@
 import glob
 import os
 import shutil
-import optparse
+import argparse
 import sys
 
-# Gather Args
-args = sys.argv[1:]
 
-def print_usage():
-    print("""
-Usage:
-  plugin_dev (options) [test|archiver] [name]
-  plugin_dev (options) [tool] [test-associated] [name]
+parser = argparse.ArgumentParser(
+    usage="""%(prog)s (options) [test|archiver] [name]
+%(prog)s (options) [tool] [test-associated] [name]""",
+    epilog=
+"""
+Examples:
 
-plugin_dev --help for more information
-""")
-
-usage = """
-  plugin_dev (options) [test|archiver] [name]
-  plugin_dev (options) [tool] [test-associated] [name]
-
-Example usage:
   plugin_dev test ftp
   plugin_dev tool ftp dns
   plugin_dev archiver ftp
-  plugin-dev -d /home/user/pscheduler test ftp"""
+  plugin-dev -d /home/user/pscheduler test ftp
+""",
+    formatter_class=argparse.RawTextHelpFormatter
 
-parser = optparse.OptionParser(usage=usage)
+)
 
 # Add Options
-parser.add_option("-d", "--dir", dest="directory",
+parser.add_argument("-d", "--dir", dest="directory",
             help="Directory to which folder will be copied",
-            action="store", type="string")
+            action="store", type=str)
 
-(options, args) = parser.parse_args(args)
+parser.add_argument("args",
+                    help=argparse.SUPPRESS,
+                    nargs="*")
+                    
+
+args = parser.parse_args()
 
 
 whereAmI = os.path.dirname(sys.argv[0])
 
 try:
-    if args[0] not in [ "test", "tool", "archiver" ]:
-        print_usage()
+    if args.args[0] not in [ "test", "tool", "archiver" ]:
+        parser.print_usage()
         exit(1)
 except IndexError:
-    print_usage()
+    parser.print_usage()
     exit(1)
 
 try:
-    type = args[0]
+    type = args.args[0]
     if (type == "tool"):
-        testName = args[2]
-        testAssociated = args[1]
+        testName = args.args[2]
+        testAssociated = args.args[1]
     else:
-        testName = args[1]
+        testName = args.args[1]
 except IndexError:
-    print_usage()
+    parser.print_usage()
     exit(1)
 
 
-if options.directory is not None:
-    destDir = options.directory
+if args.directory is not None:
+    destDir = args.directory
 else:
 
     # By default, point at the top of the pScheduler tree, which we
@@ -96,7 +94,7 @@ except OSError as e:
     print(("Error copying directory: %s" % e))
     exit(1)
 
-absDir = os.path.abspath(os.path.join(whereAmI, newDir))
+absDir = os.path.abspath(newDir)
 
 # Rename directories
 for (path, dirs, files) in os.walk(absDir):

@@ -6,7 +6,7 @@
 
 import collections
 import datetime
-import optparse
+import argparse
 import os
 import signal
 import threading
@@ -26,96 +26,96 @@ pscheduler.set_graceful_exit()
 
 # Gargle the arguments
 
-opt_parser = optparse.OptionParser()
+arg_parser = argparse.ArgumentParser()
 
 # Daemon-related options
 
-opt_parser.add_option("--daemon",
+arg_parser.add_argument("--daemon",
                       help="Daemonize",
                       action="store_true",
                       dest="daemon", default=False)
-opt_parser.add_option("--pid-file",
+arg_parser.add_argument("--pid-file",
                       help="Location of PID file",
-                      action="store", type="string", dest="pidfile",
+                      action="store", type=str, dest="pidfile",
                       default=None)
 
 # Program options
 
-opt_parser.add_option("-a", "--archive-defaults",
+arg_parser.add_argument("-a", "--archive-defaults",
                       help="Directory containing default archivers",
-                      action="store", type="string", dest="archive_defaults",
+                      action="store", type=str, dest="archive_defaults",
                       default="__DEFAULT_DIR__")
-opt_parser.add_option("-c", "--channel",
+arg_parser.add_argument("-c", "--channel",
                       help="Schedule notification channel",
-                      action="store", type="string", dest="channel",
+                      action="store", type=str, dest="channel",
                       default="archiving_change")
-opt_parser.add_option("-d", "--dsn",
+arg_parser.add_argument("-d", "--dsn",
                       help="Database connection string",
-                      action="store", type="string", dest="dsn",
+                      action="store", type=str, dest="dsn",
                       default="dbname=pscheduler")
-opt_parser.add_option("-m", "--max-parallel",
+arg_parser.add_argument("-m", "--max-parallel",
                       help="Maximum concurrent archivings",
-                      action="store", type="int", dest="max_parallel",
+                      action="store", type=int, dest="max_parallel",
                       default=50)
-opt_parser.add_option("-p", "--pool-size",
+arg_parser.add_argument("-p", "--pool-size",
                       help="Size of pool per archive type",
-                      action="store", type="int", dest="pool_size",
+                      action="store", type=int, dest="pool_size",
                       default=15)
-opt_parser.add_option("-r", "--refresh",
+arg_parser.add_argument("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
-                      action="store", type="string", dest="refresh",
+                      action="store", type=str, dest="refresh",
                       default="PT15S")
-opt_parser.add_option("-s", "--skim-interval",
+arg_parser.add_argument("-s", "--skim-interval",
                       help="How often to skim archiver pools (ISO8601)",
-                      action="store", type="string", dest="skim_interval",
+                      action="store", type=str, dest="skim_interval",
                       default="PT30S")
-opt_parser.add_option("--timeout",
+arg_parser.add_argument("--timeout",
                       help="Timeout for archiver I/O (ISO8601)",
-                      action="store", type="string", dest="timeout",
+                      action="store", type=str, dest="timeout",
                       default="PT2M")
-opt_parser.add_option("--retry",
+arg_parser.add_argument("--retry",
                       help="Retry interval after I/O timeout (ISO8601)",
-                      action="store", type="string", dest="retry",
+                      action="store", type=str, dest="retry",
                       default="PT30S")
-opt_parser.add_option("--verbose", action="store_true", dest="verbose")
-opt_parser.add_option("--debug", action="store_true", dest="debug")
+arg_parser.add_argument("--verbose", action="store_true", dest="verbose")
+arg_parser.add_argument("--debug", action="store_true", dest="debug")
 
 
-(options, args) = opt_parser.parse_args()
+args = arg_parser.parse_args()
 
-if options.max_parallel < 1:
-    opt_parser.error("Number of concurrent archivings must be positive.")
+if args.max_parallel < 1:
+    arg_parser.error("Number of concurrent archivings must be positive.")
 
-if options.pool_size < 1:
-    opt_parser.error("Pool size must b be positive.")
+if args.pool_size < 1:
+    arg_parser.error("Pool size must b be positive.")
 
-refresh = pscheduler.iso8601_as_timedelta(options.refresh)
+refresh = pscheduler.iso8601_as_timedelta(args.refresh)
 if refresh is None:
-    opt_parser.error('Invalid refresh interval "' + options.refresh + '"')
+    arg_parser.error('Invalid refresh interval "' + args.refresh + '"')
 refresh = pscheduler.timedelta_as_seconds(refresh)
 
 
 
-skim_interval = pscheduler.iso8601_as_timedelta(options.skim_interval)
+skim_interval = pscheduler.iso8601_as_timedelta(args.skim_interval)
 if skim_interval is None:
-    opt_parser.error('Invalid skim interval "' + options.skim_interval + '"')
+    arg_parser.error('Invalid skim interval "' + args.skim_interval + '"')
 skim_interval = pscheduler.timedelta_as_seconds(skim_interval)
 
 
-timeout = pscheduler.iso8601_as_timedelta(options.timeout)
+timeout = pscheduler.iso8601_as_timedelta(args.timeout)
 if timeout is None:
-    opt_parser.error('Invalid timeout "' + options.timeout + '"')
+    arg_parser.error('Invalid timeout "' + args.timeout + '"')
 timeout = pscheduler.timedelta_as_seconds(timeout)
 
-retry = pscheduler.iso8601_as_timedelta(options.retry)
+retry = pscheduler.iso8601_as_timedelta(args.retry)
 if retry is None:
-    opt_parser.error('Invalid retry "' + options.retry + '"')
+    arg_parser.error('Invalid retry "' + args.retry + '"')
 retry = pscheduler.timedelta_as_seconds(retry)
 
 
-log = pscheduler.Log(verbose=options.verbose, debug=options.debug, propagate=True)
+log = pscheduler.Log(verbose=args.verbose, debug=args.debug, propagate=True)
 
-dsn = options.dsn
+dsn = args.dsn
 
 
 #
@@ -704,7 +704,7 @@ class ArchiveWorker(object):
                 self.log.debug("%d: Returned JSON from archiver: %s", self.id, result)
                 returncode = 0
             except Exception as ex:
-                self.log.debug("%d: Archiver threw an exception: %s", self.id, exception)
+                self.log.debug("%d: Archiver threw an exception: %s", self.id, ex)
                 result = {
                     "succeeded": False,
                     "error": "Exception during archiving: %s" % (str(ex))
@@ -814,17 +814,17 @@ class ArchiveWorker(object):
 def main_program():
 
     db = pscheduler.PgConnection(dsn)
-    db.listen(options.channel)
+    db.listen(args.channel)
     db.listen("warmboot")
 
     archiver_collection = ArchiverPoolCollection(
-        max_size=options.pool_size,
+        max_size=args.pool_size,
         skim_age=skim_interval,
         log=log)
 
 
     # Something to maintain the default archiver list
-    default_maintainer = DefaultArchiveMaintainer(options.archive_defaults, dsn, log)
+    default_maintainer = DefaultArchiveMaintainer(args.archive_defaults, dsn, log)
     default_maintainer.refresh()
 
     next_refresh = None
@@ -881,7 +881,7 @@ def main_program():
             archiver_collection.drain()
 
         # If we're already full up on workers, don't bother hitting the database
-        if len(workers) == options.max_parallel:
+        if len(workers) == args.max_parallel:
             log.debug("Already have a full slate of workers.")
             continue
 
@@ -893,7 +893,7 @@ def main_program():
                              attempts, last_attempt, transform, task_detail, run_detail,
                              spec
                              FROM archiving_next(%s)""",
-                          [options.max_parallel])
+                          [args.max_parallel])
 
         if len(result) == 0:
             log.debug("Nothing to archive; finding time until next archiving.")
@@ -919,7 +919,7 @@ def main_program():
         for row in result:
 
             # Don't bother if there are already too many archivers running.
-            if len(workers) >= options.max_parallel:
+            if len(workers) >= args.max_parallel:
                 log.debug("Already running %d archivers.", len(workers))
                 break
 
@@ -933,8 +933,8 @@ def main_program():
             workers[id] = ArchiveWorker(db, log, row, archiver_collection)
 
 
-if options.daemon:
-    pidfile = pscheduler.PidFile(options.pidfile)
+if args.daemon:
+    pidfile = pscheduler.PidFile(args.pidfile)
     with daemon.DaemonContext(pidfile=pidfile):
         pscheduler.safe_run(lambda: main_program())
 else:

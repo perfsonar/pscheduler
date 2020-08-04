@@ -11,7 +11,7 @@
 #
 
 import re
-import optparse
+import argparse
 import pscheduler
 import sys
 from urllib.parse import urlparse
@@ -40,121 +40,103 @@ else:
 
 # Gargle the arguments
 
-opt_parser = pscheduler.FailingOptionParser(epilog=
+arg_parser = argparse.ArgumentParser(epilog=
 """
-"""
-)
+""",
+    formatter_class=argparse.RawTextHelpFormatter)
 
 # Add all potential command line options here
 # Check https://docs.python.org/2/library/optparse.html for more
 # documentation on the opt parser
 
 
-opt_parser.add_option("--host",
+arg_parser.add_argument("--host",
                       help="Host to run the test.",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="host")
 
-opt_parser.add_option("--host-node",
+arg_parser.add_argument("--host-node",
                       help="Host to run the test.",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="host_node")
 
-opt_parser.add_option("--duration",
+arg_parser.add_argument("--duration",
                       help="Duration of test.",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="duration")
 
-opt_parser.add_option("--timeout",
+arg_parser.add_argument("--timeout",
                       help="Timeout for each query attempt",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="timeout")
 
-opt_parser.add_option("--access-key",
+arg_parser.add_argument("--access-key",
                       help="Access key for the S3 server",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="access_key")
 
-opt_parser.add_option("--bucket",
+arg_parser.add_argument("--bucket",
                       help="Bucket to use for the test",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="bucket")
 
-opt_parser.add_option("--secret-key",
+arg_parser.add_argument("--secret-key",
                       help="Secret key for the S3 server",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="secret_key")
 
-opt_parser.add_option("--url",
+arg_parser.add_argument("--url",
                       help="Url for the S# server (including method)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="url")
 
-opt_parser.add_option("--iterations",
+arg_parser.add_argument("--iterations",
                       help="Number of times the test should be run",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="iterations")
 
-opt_parser.add_option("--object-size",
+arg_parser.add_argument("--object-size",
                       help="Size of the objects to be used in the test",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="object_size")
 
-(options, remaining_args) = opt_parser.parse_args(args)
+args = arg_parser.parse_args(args)
 
 result = { 'schema': 1 }
 
-if options.host is not None:
-   result['host'] = options.host
+if args.host is not None:
+   result['host'] = args.host
 
-if options.host_node is not None:
-   result['host-node'] = options.host_node
+if args.host_node is not None:
+   result['host-node'] = args.host_node
 
-if options.timeout is not None:
-   result['timeout'] = options.timeout
+if args.timeout is not None:
+   result['timeout'] = args.timeout
 
-if options.duration is not None:
-   result['duration'] = options.duration
+if args.duration is not None:
+   result['duration'] = args.duration
 
-if options.access_key is not None:
-   result['access-key'] = options.access_key
-else:
-    pscheduler.fail('Please specify the access key. \'--access-key your-key\'')
+if args.access_key is not None:
+   result['access-key'] = args.access_key
 
-if options.bucket is not None:
-    result['bucket'] = options.bucket
-else:
-    result['bucket'] = 'pscheduler-test'
+if args.bucket is not None:
+    result['bucket'] = args.bucket
 
-if options.secret_key is not None:
-    result['secret-key'] = options.secret_key
-else:
-    pscheduler.fail('Please specify the secret key. \'--secret-key your-key\'')
+if args.secret_key is not None:
+    result['secret-key'] = args.secret_key
 
-if options.url is not None:
-    result['url'] = options.url
-else:
-    pscheduler.fail('Please specify the url and method. \'--url https://your-url.domain\'')
+if args.url is not None:
+    result['url'] = args.url
 
-parsed = urlparse(options.url)
+parsed = urlparse(args.url)
 if parsed.scheme == "http" or parsed.scheme == "https":
-    result['url'] = options.url
-else:
-    pscheduler.fail('Please specify a method for your url, such as \'https://\'')
+    result['url'] = args.url
 
-if options.iterations is not None:
-    result['iterations'] = options.iterations
+if args.iterations is not None:
+    result['iterations'] = args.iterations
 
-if options.object_size is not None:
-    options.object_size = pscheduler.si_as_number(options.object_size)
-    result['object-size'] = options.object_size
-    if (int)(options.object_size) >= 1099511627776:
-        pscheduler.fail('Object size is too large. Please specify a size under 1TB')
-    if (int)(options.object_size) < 1000:
-        pscheduler.fail('Object size is too small. Please specify a size of at least 1KB')
-else:
-    result['object-size'] = 1048576
-
+if args.object_size is not None:
+    result['object-size'] = pscheduler.si_as_number(args.object_size)
 
 
 pscheduler.succeed_json(result)

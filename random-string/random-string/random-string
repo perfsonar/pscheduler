@@ -3,31 +3,31 @@
 # random-string - Generate random, printable strings.
 #
 
-import optparse
+import argparse
 import random
 import string
 
 
 # Gargle the arguments
 
-opt_parser = optparse.OptionParser()
-opt_parser.add_option("-l", "--length",
+arg_parser = argparse.ArgumentParser()
+arg_parser.add_argument("-l", "--length",
                       help="Length of string produced",
-                      action="store", type="int", dest="length",
+                      action="store", type=int, dest="length",
                       default=32)
 
-opt_parser.add_option("-r", "--randlength",
+arg_parser.add_argument("-r", "--randlength",
                       help="Randomize the string length",
                       action="store_true", dest="randlength")
 
-opt_parser.add_option("-s", "--safe",
+arg_parser.add_argument("-s", "--safe",
                       help="Produce a conservative, non-confusing string",
                       action="store_true", dest="safe")
 
-(options, args) = opt_parser.parse_args()
+args = arg_parser.parse_args()
 
-if options.length < 1:
-    opt_parser.error('Length must be greater than zero.')
+if args.length < 1:
+    arg_parser.error('Length must be greater than zero.')
     exit(1)
 
 
@@ -37,14 +37,14 @@ if options.length < 1:
 
 random.seed()
 
-remaining = options.length
-if options.randlength:
+remaining = args.length
+if args.randlength:
     half = int(remaining/2)
     remaining = half + int(random.random() * half)
 
 
 charset = string.digits + string.ascii_letters
-if not options.safe:
+if not args.safe:
     charset += string.punctuation
 charset_len = len(charset)
 

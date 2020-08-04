@@ -3,10 +3,7 @@
 # Attach to a task and watch runs as they happen
 #
 
-# General syntax:
-#     pscheduler attach [options] task-url
-
-import optparse
+import argparse
 import os
 import pscheduler
 import subprocess
@@ -20,60 +17,64 @@ pscheduler.set_graceful_exit()
 # Gargle the arguments
 #
 
-usage = "Usage: %prog [options] task-url"
-opt_parser = optparse.OptionParser(usage = usage)
-opt_parser.disable_interspersed_args()
+arg_parser = argparse.ArgumentParser(
+    usage="%(prog)s [options] task")
 
 # GENERAL OPTIONS
 
-opt_parser.add_option("--bind",
+arg_parser.add_argument("--bind",
                       help="Make the request from the provided address",
                       default=None,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="bind")
 
-opt_parser.add_option("--first",
+arg_parser.add_argument("--first",
                       help="Start with the first run",
                       action="store_true", default=False,
                       dest="first")
 
-opt_parser.add_option("--format",
+arg_parser.add_argument("--format",
                       help="Result format (text, html, json, none)",
-                      action="store", type="string",
+                      action="store", type=str,
                       default=None,
                       dest="format")
 
-opt_parser.add_option("--output",
-                      help="Write result(s) to a file, substituting a run number for %n",
-                      action="store", type="string",
+arg_parser.add_argument("--output",
+                      help="Write result(s) to a file, substituting a run number for %%n",
+                      action="store", type=str,
                       dest="output")
 
-opt_parser.add_option("--quiet",
+arg_parser.add_argument("--quiet",
                       help="Operate quietly",
                       action="store_true", default=False,
                       dest="quiet")
 
-opt_parser.add_option("--runs",
+arg_parser.add_argument("--runs",
                       help="Exit after this many runs (default 0=infinite)",
-                      action="store", type="int", default=0,
+                      action="store", type=int, default=0,
                       dest="runs")
 
-opt_parser.add_option("--debug", action="store_true", dest="debug")
+arg_parser.add_argument("--debug", action="store_true", dest="debug")
+
+arg_parser.add_argument("task",
+                        help="URL of task to watch",
+                        nargs="?"
+                        )
 
 
-(options, remaining_args) = opt_parser.parse_args()
+args = arg_parser.parse_args()
 
-if len(remaining_args) < 1:
-    opt_parser.print_usage()
+if not args.task:
+    arg_parser.print_help()
     pscheduler.fail()
 
 #
 # Validate the command line
 #
 
-if options.runs < 0:
+if args.runs < 0:
     pscheduler.fail("Invalid --runs; must be 0 or more")
-max_runs = options.runs
+max_runs = args.runs
 
 formats = {
     'html': 'text/html',
@@ -87,36 +88,31 @@ formats = {
     }
 
 try:
-    opt_format = options.format if options.format is not None else "text"
+    opt_format = args.format if args.format is not None else "text"
     out_format = formats[opt_format]
 except KeyError:
     pscheduler.fail("Invalid --format '%s'; must be text, html, json or none"
-                    % (options.format) )
+                    % (args.format) )
 
 
 
-if len(remaining_args) != 1:
-    opt_parser.print_usage()
-    pscheduler.fail()
-
-[task_url] = remaining_args
+task_url = args.task
 
 if not pscheduler.api_is_task(task_url):
     pscheduler.fail("Invalid task URL.")
 
 
+verbose = (not args.quiet) and (args.format is None)
 
-verbose = (not options.quiet) and (options.format is None)
 
-
-log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True, propagate=True)
+log = pscheduler.Log(verbose=verbose, debug=args.debug, quiet=True, propagate=True)
 
 
 # Get the task with details and find out its class.
 
 log.debug("Fetching %s", task_url)
 status, task = pscheduler.url_get(task_url, params={"detail":True},
-                                  bind=options.bind, throw=False)
+                                  bind=args.bind, throw=False)
 
 if status != 200:
     pscheduler.fail("Unable to fetch task: " + task)
@@ -153,7 +149,7 @@ except KeyError:
 
 while True:
 
-    if run_count == 0 and options.first:
+    if run_count == 0 and args.first:
         fetch = first_run_url
     else:
         fetch = next_run_url
@@ -161,13 +157,13 @@ while True:
     log.debug("Fetching next run from %s", fetch)
     status, run_data = pscheduler.url_get(fetch,
                                           params={ "wait": 0 },
-                                          bind=options.bind,
+                                          bind=args.bind,
                                           throw=False)
     if status == 404:
         if run_count == 0:
             pscheduler.fail("No runs scheduled for this task.")
         else:
-            if options.format is None and not options.output:
+            if args.format is None and not args.output:
 
                 print()
                 print("No further runs scheduled.")
@@ -193,7 +189,7 @@ while True:
         print(run_url)
 
     try:
-        status, run_json = pscheduler.url_get(run_url, bind=options.bind)
+        status, run_json = pscheduler.url_get(run_url, bind=args.bind)
     except pscheduler.psurl.URLException as ex:
         pscheduler.fail(str(ex))
 
@@ -246,7 +242,7 @@ while True:
 
     status, result = pscheduler.url_get( run_url,
                                          params={ 'wait-merged': True },
-                                         bind=options.bind,
+                                         bind=args.bind,
                                          throw=False )
 
     if status == 404:
@@ -254,25 +250,25 @@ while True:
     if status != 200:
         pscheduler.fail("Failed to fetch run: %d: %s" % (status, result))
 
-    if options.format is None \
+    if args.format is None \
        and out_format == "text/plain" \
-       and not options.output:
+       and not args.output:
         print()
 
-    args = [ "pscheduler", "result", "--quiet", "--format", out_format ]
+    result_args = [ "pscheduler", "result", "--quiet", "--format", out_format ]
 
     # If an output file was specified, use it.
-    if options.output is not None:
-        output_path = options.output.replace("%n", str(run_count+1))
+    if args.output is not None:
+        output_path = args.output.replace("%n", str(run_count+1))
         log.debug("Sending output to %s", output_path)
-        args.append("--output")
-        args.append(output_path)
+        result_args.append("--output")
+        result_args.append(output_path)
 
-    if options.debug:
-        args.append("--debug")
-    args.append(run_url)
-    log.debug("Calling %s", args)
-    subprocess.call(args)
+    if args.debug:
+        result_args.append("--debug")
+    result_args.append(run_url)
+    log.debug("Calling %s", result_args)
+    subprocess.call(result_args)
 
     run_count += 1
 

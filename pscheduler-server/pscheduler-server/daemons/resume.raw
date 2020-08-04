@@ -3,7 +3,7 @@
 # Resume pScheduler testing
 #
 
-import optparse
+import argparse
 import pscheduler
 import sys
 
@@ -11,32 +11,28 @@ import sys
 # Gargle the arguments
 #
 
-class VerbatimParser(optparse.OptionParser):
-    def format_epilog(self, formatter):
-        return self.epilog
-
-opt_parser = VerbatimParser(
-    usage="Usage: %prog",
+arg_parser = argparse.ArgumentParser(
+    usage="%(prog)s",
     epilog=
-"""
+    """
 Examples:
 
   resume
       Resume running of tasks
-"""
+""",
+    formatter_class=argparse.RawTextHelpFormatter
 )
-opt_parser.disable_interspersed_args()
 
 # Program options
 
-opt_parser.add_option("-d", "--dsn",
+arg_parser.add_argument("-d", "--dsn",
                       help="Database connection string, prefix with @ to read from file",
-                      action="store", type="string", dest="dsn",
+                      action="store", type=str, dest="dsn",
                       default="@__DSNFILE__")
 
-(options, args) = opt_parser.parse_args()
+args = arg_parser.parse_args()
 
-dsn = options.dsn
+dsn = args.dsn
 
 # TODO: Bulletproof the SQL queries
 try:

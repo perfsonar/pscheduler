@@ -6,7 +6,7 @@
 
 import curses
 import datetime
-import optparse
+import argparse
 import os
 import pscheduler
 import time
@@ -15,66 +15,60 @@ import time
 # Gargle the arguments
 #
 
-usage = "Usage: %prog [options]"
-opt_parser = optparse.OptionParser(usage = usage)
-opt_parser.disable_interspersed_args()
+arg_parser = argparse.ArgumentParser(usage="%(prog)s [options]")
 
 # GENERAL OPTIONS
 
-opt_parser.add_option("--bind",
+arg_parser.add_argument("--bind",
                       help="Make the request from the provided address",
                       default=None,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="bind")
 
-opt_parser.add_option("--color",
+arg_parser.add_argument("--color",
                       help="Use colors if the terminal supports it.",
                       default=True,
                       action="store_true",
                       dest="color")
-opt_parser.add_option("--no-color",
+arg_parser.add_argument("--no-color",
                       help="Don't use colors even if the terminal supports it.",
                       action="store_false",
                       dest="color")
 
-opt_parser.add_option("--delta",
+arg_parser.add_argument("--delta",
                       help="Show times as deltas from now",
                       default=False,
                       action="store_true",
                       dest="delta")
 
-opt_parser.add_option("--past",
+arg_parser.add_argument("--past",
                       help="Percentage of available screen lines to occupy with past runs (0..100)",
-                      action="store", type="int",
+                      action="store", type=int,
                       default=50,
                       dest="past")
 
-opt_parser.add_option("--host",
+arg_parser.add_argument("--host",
                       help="pScheduler host",
-                      action="store", type="string",
+                      action="store", type=str,
                       default=pscheduler.api_local_host(),
                       dest="host")
 
-opt_parser.add_option("--refresh",
+arg_parser.add_argument("--refresh",
                       help="Seconds between refreshes of the schedule data",
-                      action="store", type="int",
+                      action="store", type=int,
                       default=3,
                       dest="refresh")
 
 
-(options, remaining_args) = opt_parser.parse_args()
+args = arg_parser.parse_args()
 
-if len(remaining_args) != 0:
-    opt_parser.print_usage()
-    pscheduler.fail()
-
-if options.past < 0 or options.past > 100:
+if args.past < 0 or args.past > 100:
     pscheduler.fail("Invalid --past; must be in 0..100")
-past_fraction = float(options.past) / 100.0
+past_fraction = float(args.past) / 100.0
 
-if options.refresh <= 0:
+if args.refresh <= 0:
     pscheduler.fail("Invalid --refresh; must be > 0")
-update_interval = datetime.timedelta(seconds=options.refresh)
+update_interval = datetime.timedelta(seconds=args.refresh)
 
 
 # What the server thinks its hostname is
@@ -125,7 +119,7 @@ def init_color_pairs():
     number = 0
     for key in COLOR_PAIRS:
         pair = COLOR_PAIRS[key]
-        if curses.has_colors() and options.color:
+        if curses.has_colors() and args.color:
             number += 1
             curses.init_pair(number,
                              pair["foreground"], pair["background"])
@@ -198,6 +192,7 @@ def draw_static(screen):
     screen.clear()
     place_text(width)
     if height > 1:
+        # TODO: Find out why Pylint complains about this but Python doesn't.
         screen.hline(1, 0, curses.ACS_HLINE, width)
 
     screen.refresh()
@@ -229,9 +224,9 @@ def update_tasks(screen):
     # Ping it first.
 
     status, schedule = pscheduler.url_get(
-        pscheduler.api_url(host=options.host, path="/monitor"),
+        pscheduler.api_url(host=args.host, path="/monitor"),
         params={"window": height},
-        bind=options.bind,
+        bind=args.bind,
         throw=False)
 
     # Easy outs
@@ -335,7 +330,7 @@ def update_tasks(screen):
 
         run_time = run["end-time"] if run["ppf"] == -1 else run["start-time"]
 
-        if options.delta:
+        if args.delta:
             run_time_dt = pscheduler.iso8601_as_datetime(run_time)
             time_delta = abs(run_time_dt - time_now)
             sign = "+" if run_time_dt >= time_now else "-"
@@ -402,23 +397,23 @@ def update_tasks(screen):
 
 # Make sure the destination is up and speaks pScheduler.
 
-up, reason = pscheduler.api_ping(options.host, bind=options.bind)
+up, reason = pscheduler.api_ping(args.host, bind=args.bind)
 
 if not up:
     pscheduler.fail("Cannot reach pScheduler on %s: %s"
-                    % (options.host, reason))
+                    % (args.host, reason))
 
 
 # Get the server's idea of its name for use in the display.
 
-hostname_url = pscheduler.api_url(options.host, path="/hostname")
+hostname_url = pscheduler.api_url(args.host, path="/hostname")
 status, result = pscheduler.url_get(hostname_url,
-                                             bind=options.bind,
+                                             bind=args.bind,
                                              throw=False,
                                              timeout=5)
 if status != 200:
     pscheduler.fail("Unable to contact pScheduler on %s: %s"
-                    % (options.host, result))
+                    % (args.host, result))
 server_hostname = result
 
 

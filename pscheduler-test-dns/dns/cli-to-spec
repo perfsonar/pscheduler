@@ -3,7 +3,7 @@
 # Convert command-line options to a test specification
 #
 
-import optparse
+import argparse
 import pscheduler
 import sys
 
@@ -31,74 +31,70 @@ else:
 
 # Gargle the arguments
 
-opt_parser = pscheduler.FailingOptionParser(epilog=
+arg_parser = argparse.ArgumentParser(epilog=
 """Examples:
 
   task dns --query example.net --record soa
     text
 
-"""
-)
+""",
+    formatter_class=argparse.RawTextHelpFormatter)
 
 
-opt_parser.add_option("--host",
+arg_parser.add_argument("--host",
                       help="Host to run the test",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="host")
 
-opt_parser.add_option("--host-node",
+arg_parser.add_argument("--host-node",
                       help="Host to run the test",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="host_node")
 
-opt_parser.add_option("--nameserver",
+arg_parser.add_argument("--nameserver",
                       help="Nameserver to query",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="nameserver")
 
-opt_parser.add_option("--record",
+arg_parser.add_argument("--record",
                       help="Record type to query  (One of a, aaaa, ns, cname, soa, ptr, mx and txt)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="record")
 
-opt_parser.add_option("--query",
+arg_parser.add_argument("--query",
                       help="String to query",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="query")
 
-opt_parser.add_option("--timeout",
+arg_parser.add_argument("--timeout",
                       help="Timeout for each query attempt",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="timeout")
 
 
 
-(options, remaining_args) = opt_parser.parse_args(args)
-
-if len(remaining_args) != 0:
-   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
-
+args = arg_parser.parse_args(args)
 
 result = { 'schema': 1 }
 
 
-if options.host is not None:
-   result['host'] = options.host
+if args.host is not None:
+   result['host'] = args.host
 
-if options.host_node is not None:
-   result['host-node'] = options.host_node
+if args.host_node is not None:
+   result['host-node'] = args.host_node
 
-if options.nameserver is not None:
-   result['nameserver'] = options.nameserver
+if args.nameserver is not None:
+   result['nameserver'] = args.nameserver
 
-if options.record is not None:
-   result['record'] = options.record.lower()
+if args.record is not None:
+   result['record'] = args.record.lower()
 
-if options.query is not None:
-   result['query'] = options.query
+if args.query is not None:
+   result['query'] = args.query
 
-if options.timeout is not None:
-   result['timeout'] = options.timeout
+if args.timeout is not None:
+   result['timeout'] = args.timeout
 
 
 pscheduler.succeed_json(result)

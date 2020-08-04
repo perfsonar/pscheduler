@@ -3,65 +3,62 @@
 # Ping another pScheduler host to see if it responds
 #
 
-import optparse
+import argparse
 import pscheduler
 
 pscheduler.set_graceful_exit()
+
 
 #
 # Gargle the arguments
 #
 
-
-class VerbatimParser(optparse.OptionParser):
-    def format_epilog(self, formatter):
-        return self.epilog
-
-opt_parser = VerbatimParser(
-    usage="Usage: %prog host",
+arg_parser = argparse.ArgumentParser(
+    usage="%(prog)s host",
     epilog=
 """
 Example:
 
   ping perfsonar6.example.org
       Check on the host at perfsonar6.example.org
-"""
+""",
+    formatter_class=argparse.RawTextHelpFormatter
     )
-opt_parser.disable_interspersed_args()
 
-opt_parser.add_option("--bind",
+arg_parser.add_argument("--bind",
                       help="Make the request from the provided address",
                       default=None,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="bind")
-opt_parser.add_option("--quiet", "-q",
+arg_parser.add_argument("--quiet", "-q",
                       help="Run without any output",
                       action="store_true", default=False,
                       dest="quiet")
-opt_parser.add_option("--timeout", "-W",
+arg_parser.add_argument("--timeout", "-W",
                       help="How long to wait for the server to respond, in seconds (default 5)",
                       default=5,
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="timeout")
 
+arg_parser.add_argument("host",
+                        help="pScheduler host to ping",
+                        nargs="?")
 
-(options, remaining_args) = opt_parser.parse_args()
+args = arg_parser.parse_args()
 
-if len(remaining_args) != 1:
-    opt_parser.print_usage()
+if not args.host:
+    arg_parser.print_usage()
     pscheduler.fail()
 
-if options.timeout <= 0:
+if args.timeout <= 0:
     pscheduler.fail("Timeout must be >= 0")
 
-host = remaining_args[0]
+host = args.host
 
-up, reason = pscheduler.api_ping(host, timeout=options.timeout,
-                                 bind=options.bind)
-
-message = "%s: %s" % (host, reason)
+up, reason = pscheduler.api_ping(host, timeout=args.timeout,
+                                 bind=args.bind)
 
 if up:
-    pscheduler.succeed(message)
+    pscheduler.succeed(reason)
 
-pscheduler.fail(message)
+pscheduler.fail(reason)

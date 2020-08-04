@@ -12,7 +12,7 @@ running several tests to verify that the basic features of the system
 are working.
 """
 
-import optparse
+import argparse
 import os
 import pipes
 import re
@@ -25,18 +25,14 @@ import pscheduler
 
 pscheduler.set_graceful_exit()
 
+
 #
 # Gargle the arguments
 #
 
-class VerbatimParser(optparse.OptionParser):
-    def format_epilog(self, formatter):
-        return self.epilog
-
-opt_parser = VerbatimParser(
-    usage="Usage: %prog [ OPTIONS ] host",
+arg_parser = argparse.ArgumentParser(
+    usage="%(prog)s [ OPTIONS ] [ dest ]",
     epilog=
-
 """
 Examples:
 
@@ -51,57 +47,57 @@ Examples:
 
   troubleshoot --host ps.example.com ps2.example.com
       Troubleshoot ps.example.com and ps2.example.com
-"""
+""",
+    formatter_class=argparse.RawTextHelpFormatter
     )
-opt_parser.disable_interspersed_args()
+
 
 DEFAULT_BASE_HOST = "localhost"
 
-opt_parser.add_option("--host",
+arg_parser.add_argument("--host",
                       help="Base host for troubleshooting",
                       default=DEFAULT_BASE_HOST,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="host")
 
-opt_parser.add_option("--ip-version",
+arg_parser.add_argument("--ip-version",
                       help="IP version to use (4 or 6)",
                       default=None,
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="ip_version")
 
-opt_parser.add_option("--quick",
+arg_parser.add_argument("--quick",
                       help="Don't do anything time-consuming",
                       default=False,
                       action="store_true",
                       dest="quick")
 
-opt_parser.add_option("--skip-single",
+arg_parser.add_argument("--skip-single",
                       help="Skip most single-participant diagnostics",
                       default=False,
                       action="store_true",
                       dest="skip_single")
 
-opt_parser.add_option("--stats",
+arg_parser.add_argument("--stats",
                       help="Dump server statistics",
                       default=False,
                       action="store_true",
                       dest="stats")
 
-(options, remaining_args) = opt_parser.parse_args()
+arg_parser.add_argument("dest",
+                        help="Optional destination host",
+                        nargs="?")
 
-if len(remaining_args) > 1:
-    opt_parser.print_usage()
-    pscheduler.fail()
+args = arg_parser.parse_args()
 
 
-if options.ip_version is not None and options.ip_version not in [4, 6]:
+if args.ip_version is not None and args.ip_version not in [4, 6]:
     pscheduler.fail("IP version must be 4 or 6.")
 
-
-host_a = options.host
+host_a = args.host
 hosts = [host_a]
 try:
-    host_z = remaining_args[0]
+    host_z = args.dest
 except IndexError:
     host_z = None
 
@@ -115,7 +111,7 @@ if host_z is not None:
 
 
 
-if options.skip_single and host_z is None:
+if args.skip_single and host_z is None:
     pscheduler.fail("Nothing to do on a single host with --skip-single enabled.")
 
 
@@ -455,7 +451,7 @@ for host in hosts:
     if host_a == DEFAULT_BASE_HOST:
         check_hostname_resolvability()
 
-    if not options.quick and not options.skip_single:
+    if not args.quick and not args.skip_single:
         check_mtu(host)
 
 
@@ -497,7 +493,7 @@ for host in hosts:
     # Hold this for later two-host comparison
     clocks[host] = result
 
-    if options.skip_single:
+    if args.skip_single:
         continue
 
     start("  Exercising API")
@@ -518,11 +514,11 @@ for host in hosts:
 
     check_service_status(api)
 
-    if options.stats:
+    if args.stats:
         dump_stats(host)
 
 
-    if not options.quick:
+    if not args.quick:
         run_task("  Idle test", host,
                  {
                      "schema": 1,
@@ -573,23 +569,23 @@ print()
 start("  Checking IP addresses")
 (stripped_a, stripped_a_port) = pscheduler.api_host_port(host_a)
 (stripped_z, stripped_z_port) = pscheduler.api_host_port(host_z)
-normalized_a, normalized_z = pscheduler.ip_normalize_version(stripped_a, stripped_z, ip_version=options.ip_version)
+normalized_a, normalized_z = pscheduler.ip_normalize_version(stripped_a, stripped_z, ip_version=args.ip_version)
 if normalized_a is None or normalized_z is None:
     failed("Unable to find %s addresses for both hosts" % (
-        "same-family" if options.ip_version is None else "IPv%d" % (options.ip_version)
+        "same-family" if args.ip_version is None else "IPv%d" % (args.ip_version)
     ))
 
 else:
     normalized_version, _normalized_ip = pscheduler.ip_addr_version(normalized_a)
-    if options.ip_version is not None and (options.ip_version != normalized_version):
-        failed("IPs are version %d, version %s was requested" % (normalized_version, options.ip_version))
+    if args.ip_version is not None and (args.ip_version != normalized_version):
+        failed("IPs are version %d, version %s was requested" % (normalized_version, args.ip_version))
     else:
         ok("IPv%s" % (normalized_version))
 
 
 # MTU Between hosts
 
-if not options.quick:
+if not args.quick:
     check_mtu(stripped_a, stripped_z)
 
 
@@ -612,7 +608,7 @@ ok()
 
 # Simplestream
 
-if not options.quick:
+if not args.quick:
     simplestream_task =  {
         "schema": 1,
         "test": {
@@ -625,8 +621,8 @@ if not options.quick:
         "schedule": {}
     }
 
-    if options.ip_version is not None:
-        simplestream_task["test"]["spec"]["ip-version"] = options.ip_version
+    if args.ip_version is not None:
+        simplestream_task["test"]["spec"]["ip-version"] = args.ip_version
 
     simplestream_result = run_task(
         "  Simple stream test", normalized_a, simplestream_task

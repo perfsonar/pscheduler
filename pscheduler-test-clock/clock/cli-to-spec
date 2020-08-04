@@ -3,7 +3,7 @@
 # Convert comamnd-line options to a test specification
 #
 
-import optparse
+import argparse
 import pscheduler
 import sys
 
@@ -31,7 +31,7 @@ else:
 
 # Gargle the arguments
 
-opt_parser = pscheduler.FailingOptionParser(epilog=
+arg_parser = argparse.ArgumentParser(epilog=
 """Examples:
 
   task clock --dest ps.example.com
@@ -44,53 +44,48 @@ opt_parser = pscheduler.FailingOptionParser(epilog=
   task clock --source ps2.example.org --dest ps.example.com
       Measure the time difference between ps2.example.org and
       ps.example.com.
-"""
-)
+""",
+    formatter_class=argparse.RawTextHelpFormatter)
 
 
 
-opt_parser.add_option("--dest",
+arg_parser.add_argument("--dest",
                       help="Destination host",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="dest")
 
-opt_parser.add_option("--source",
+arg_parser.add_argument("--source",
                       help="Source address or interface",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="source")
 
-opt_parser.add_option("--source-node",
+arg_parser.add_argument("--source-node",
                       help="Source pScheduler node, if different",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="source_node")
 
-opt_parser.add_option("--timeout",
+arg_parser.add_argument("--timeout",
                       help="Timeout for each round trip",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="timeout")
 
 
-
-(options, remaining_args) = opt_parser.parse_args(args)
-
-if len(remaining_args) != 0:
-   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
+args = arg_parser.parse_args(args)
 
 
 result = { 'schema': 1 }
 
+if args.dest is not None:
+   result['dest'] = args.dest
 
-if options.dest is not None:
-   result['dest'] = options.dest
+if args.source is not None:
+   result['source'] = args.source
 
-if options.source is not None:
-   result['source'] = options.source
+if args.source_node is not None:
+   result['source-node'] = args.source_node
 
-if options.source_node is not None:
-   result['source-node'] = options.source_node
-
-if options.timeout is not None:
-   result['timeout'] = options.timeout
+if args.timeout is not None:
+   result['timeout'] = args.timeout
 
 
 pscheduler.succeed_json(result)

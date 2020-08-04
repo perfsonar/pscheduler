@@ -2,7 +2,7 @@
 #
 # Convert comamnd-line options to a test specification
 
-import optparse
+import argparse
 import pscheduler
 import sys
 import pscheduler
@@ -34,7 +34,7 @@ else:
 
 # Gargle the arguments
 
-opt_parser = pscheduler.FailingOptionParser(epilog=
+arg_parser = argparse.ArgumentParser(epilog=
 """Examples:
 
   task throughput --dest ps.example.com
@@ -48,145 +48,147 @@ opt_parser = pscheduler.FailingOptionParser(epilog=
 
   task throughput --parallel 4 --dest ps.example.com
       Run four parallel streams
-"""
-                                            )
+""",
+    formatter_class=argparse.RawTextHelpFormatter)
 
-opt_parser.add_option("-s", "--source",
+
+arg_parser.add_argument("-s", "--source",
                       help="Sending host",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="source")
 
-opt_parser.add_option("--source-node",
+arg_parser.add_argument("--source-node",
                       help="pScheduler node on sending host, if different",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="source_node")
 
-opt_parser.add_option("-d", "--dest", "--destination",
+arg_parser.add_argument("-d", "--dest", "--destination",
                       help="Receiving host",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="destination")
 
-opt_parser.add_option("--dest-node",
+arg_parser.add_argument("--dest-node",
                       help="pScheduler node on receiving host, if different",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="dest_node")
 
-opt_parser.add_option("-t", "--duration",
+arg_parser.add_argument("-t", "--duration",
                       help="Total runtime of test",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="duration")
 
-opt_parser.add_option("-i", "--interval",
+arg_parser.add_argument("-i", "--interval",
                       help="How often to report results (internally, results still reported in aggregate at end)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="interval")
 
-opt_parser.add_option("--link-rtt",
+arg_parser.add_argument("--link-rtt",
                       help="Approximate link round-trip time (ISO8601 or integer ms)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="link_rtt")
 
-opt_parser.add_option("-P", "--parallel",
+arg_parser.add_argument("-P", "--parallel",
                       help="How many parallel streams to run during the test",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="parallel")
 
-opt_parser.add_option("-u", "--udp",
+arg_parser.add_argument("-u", "--udp",
                       help="Use UDP instead of TCP testing",
                       action="store_true", 
                       dest="udp")
 
-opt_parser.add_option("-b", "--bandwidth",
+arg_parser.add_argument("-b", "--bandwidth",
                       help="Bandwidth to rate limit the test to, supports SI notation such as 1G",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="bandwidth")
 
-opt_parser.add_option("--bandwidth-strict",
+arg_parser.add_argument("--bandwidth-strict",
                       help="Never go faster than --bandwidth, even to make up for lost time.",
+                      default=None,
                       action="store_true",
                       dest="bandwidth_strict")
 
-opt_parser.add_option("--burst-size",
+arg_parser.add_argument("--burst-size",
                       help="Limit bursts of packets to this number",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="burst_size")
 
-opt_parser.add_option("-w", "--window-size",
+arg_parser.add_argument("-w", "--window-size",
                       help="TCP window size to use for the test, supports SI notation such as 64M",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="window_size")
 
-opt_parser.add_option("-m", "--mss",
+arg_parser.add_argument("-m", "--mss",
                       help="TCP maximum segment size",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="mss")
 
-opt_parser.add_option("-l", "--buffer-length",
+arg_parser.add_argument("-l", "--buffer-length",
                       help="length of the buffer to read/write from",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="buffer_length")
 
-opt_parser.add_option("--ip-tos",
+arg_parser.add_argument("--ip-tos",
                       help="IP type-of-service octet (integer)",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="ip_tos")
 
-opt_parser.add_option("--ip-version",
+arg_parser.add_argument("--ip-version",
                       help="Specificy which IP version to use, 4 or 6",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="ip_version")
 
-opt_parser.add_option("-B", "--local-address",
+arg_parser.add_argument("-B", "--local-address",
                       help="Use this as a local address for control and tests",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="local_address")
 
-opt_parser.add_option("-O", "--omit",
+arg_parser.add_argument("-O", "--omit",
                       help="Number of seconds to omit from the start of the test",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="omit")
 
-opt_parser.add_option("--no-delay",
+arg_parser.add_argument("--no-delay",
                       help="Set TCP no-delay flag, disables Nagle's algorithm",
                       action="store_true",
                       dest="no_delay")
 
-opt_parser.add_option("--congestion",
+arg_parser.add_argument("--congestion",
                       help="Set TCP congestion control algorithm",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="congestion")
 
-opt_parser.add_option("--zero-copy",
+arg_parser.add_argument("--zero-copy",
                       help="Use a 'zero copy' method of sending data",
                       action="store_true",
                       dest="zero_copy")
 
-opt_parser.add_option("--flow-label",
+arg_parser.add_argument("--flow-label",
                       help="Set the IPv6 flow label, implies --ip-version 6",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="flow_label")
 
-opt_parser.add_option("--client-cpu-affinity",
+arg_parser.add_argument("--client-cpu-affinity",
                       help="Set's the sending side's CPU affinity",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="client_cpu_affinity")
 
-opt_parser.add_option("--server-cpu-affinity",
+arg_parser.add_argument("--server-cpu-affinity",
                       help="Set's the receiving's side's CPU affinity",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="server_cpu_affinity")
 
-opt_parser.add_option("--single-ended",
+arg_parser.add_argument("--single-ended",
                       help="Run a test directly to a host without pscheduler.",
                       action="store_true",
                       dest="single_ended")
 
-opt_parser.add_option("--single-ended-port",
+arg_parser.add_argument("--single-ended-port",
                       help="Run a test directly to a given port.",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="single_ended_port")
 
-opt_parser.add_option("--reverse",
+arg_parser.add_argument("--reverse",
                       help="Reverses the direction of the test.",
                       action="store_true",
                       dest="reverse")
@@ -195,29 +197,25 @@ opt_parser.add_option("--reverse",
 
 
 
-(options, remaining_args) = opt_parser.parse_args(args)
-
-if len(remaining_args) != 0:
-   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
-
+args = arg_parser.parse_args(args)
 
 result = { }
 schema = pscheduler.HighInteger(1)
 
-if options.source is not None:
-   result['source'] = options.source
+if args.source is not None:
+   result['source'] = args.source
 
-if options.source_node is not None:
-   result['source-node'] = options.source_node
+if args.source_node is not None:
+   result['source-node'] = args.source_node
    
-if options.destination is not None:
-   result['dest'] = options.destination
+if args.destination is not None:
+   result['dest'] = args.destination
 
-if options.dest_node is not None:
-   result['dest-node'] = options.dest_node
+if args.dest_node is not None:
+   result['dest-node'] = args.dest_node
 
-if options.duration is not None:
-   duration = options.duration
+if args.duration is not None:
+   duration = args.duration
 
    # convert epoch seconds to is8601
    if duration.isdigit():
@@ -226,9 +224,9 @@ if options.duration is not None:
 
    result['duration'] = duration
 
-if options.interval is not None:
+if args.interval is not None:
 
-   interval = options.interval
+   interval = args.interval
 
    # convert epoch seconds to is8601
    if interval.isdigit():
@@ -237,8 +235,8 @@ if options.interval is not None:
 
    result['interval'] = interval
 
-if options.link_rtt is not None:
-   rtt_value = options.link_rtt
+if args.link_rtt is not None:
+   rtt_value = args.link_rtt
    try:
       result['link-rtt'] = "PT%sS" % (int(rtt_value) / 1000.0)
    except ValueError:
@@ -246,49 +244,49 @@ if options.link_rtt is not None:
    schema.set(3)
 
 
-if options.parallel is not None:
-   result['parallel'] = options.parallel
+if args.parallel is not None:
+   result['parallel'] = args.parallel
 
-if options.udp:
+if args.udp:
    result['udp'] = True
 
-if options.bandwidth is not None:
+if args.bandwidth is not None:
    try:
-      result['bandwidth'] = pscheduler.si_as_number(options.bandwidth)
+      result['bandwidth'] = pscheduler.si_as_number(args.bandwidth)
    except ValueError as ex:
-      pscheduler.fail("Invalid value \"%s\" for bandwidth: %s" % (options.bandwidth, ex))
+      pscheduler.fail("Invalid value \"%s\" for bandwidth: %s" % (args.bandwidth, ex))
 
-if options.bandwidth_strict is not None:
-   result['bandwidth-strict'] = options.bandwidth_strict
+if args.bandwidth_strict is not None:
+   result['bandwidth-strict'] = args.bandwidth_strict
    schema.set(4)
 
-if options.burst_size is not None:
+if args.burst_size is not None:
    try:
-      result["burst-size"] = pscheduler.si_as_number(options.burst_size)
+      result["burst-size"] = pscheduler.si_as_number(args.burst_size)
       schema.set(4)
    except ValueError as ex:
-      pscheduler.fail("Invalid value \"%s\" for burst size: %s" % (options.window_size, ex))
+      pscheduler.fail("Invalid value \"%s\" for burst size: %s" % (args.window_size, ex))
 
-if options.window_size is not None:
+if args.window_size is not None:
    try:
-      result["window-size"] = pscheduler.si_as_number(options.window_size)
+      result["window-size"] = pscheduler.si_as_number(args.window_size)
    except ValueError as ex:
-      pscheduler.fail("Invalid value \"%s\" for window size: %s" % (options.window_size, ex))
+      pscheduler.fail("Invalid value \"%s\" for window size: %s" % (args.window_size, ex))
 
-if options.mss is not None:
-   result["mss"] = options.mss
+if args.mss is not None:
+   result["mss"] = args.mss
 
-if options.buffer_length is not None:
-   result["buffer-length"] = options.buffer_length
+if args.buffer_length is not None:
+   result["buffer-length"] = args.buffer_length
 
-if options.ip_version is not None:
-   result["ip-version"] = options.ip_version
+if args.ip_version is not None:
+   result["ip-version"] = args.ip_version
 
-if options.local_address:
-   result["local-address"] = options.local_address
+if args.local_address:
+   result["local-address"] = args.local_address
 
-if options.omit:
-   omit = options.omit
+if args.omit:
+   omit = args.omit
 
    # convert epoch seconds to is8601
    if omit.isdigit():
@@ -298,37 +296,37 @@ if options.omit:
    result["omit"] = omit
    
 
-if options.ip_tos:
-   result["ip-tos"] = options.ip_tos
+if args.ip_tos:
+   result["ip-tos"] = args.ip_tos
 
-if options.no_delay:
+if args.no_delay:
    result["no-delay"] = True
 
-if options.congestion:
-   result["congestion"] = options.congestion
+if args.congestion:
+   result["congestion"] = args.congestion
 
-if options.zero_copy:
+if args.zero_copy:
    result["zero-copy"] = True
 
-if options.flow_label:
-   result["flow-label"] = int(options.flow_label)
+if args.flow_label:
+   result["flow-label"] = int(args.flow_label)
    result["ip-version"] = 6 # flow label only works on ipv6
 
-if options.client_cpu_affinity != None:
-   result["client-cpu-affinity"] = options.client_cpu_affinity
+if args.client_cpu_affinity != None:
+   result["client-cpu-affinity"] = args.client_cpu_affinity
 
-if options.server_cpu_affinity != None:
-   result["server-cpu-affinity"] = options.server_cpu_affinity
+if args.server_cpu_affinity != None:
+   result["server-cpu-affinity"] = args.server_cpu_affinity
 
-if options.single_ended:
+if args.single_ended:
    result["single-ended"] = True
    schema.set(2)
 
-if options.single_ended_port:
-   result["single-ended-port"] = options.single_ended_port
+if args.single_ended_port:
+   result["single-ended-port"] = args.single_ended_port
    schema.set(2)
 
-if options.reverse:
+if args.reverse:
    result["reverse"] = True
 
 result["schema"] = schema.value()

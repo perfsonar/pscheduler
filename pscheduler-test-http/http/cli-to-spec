@@ -5,7 +5,7 @@
 #
 
 import re
-import optparse
+import argparse
 import pscheduler
 import sys
 
@@ -32,86 +32,91 @@ else:
 
 # Gargle the arguments
 
-opt_parser = pscheduler.FailingOptionParser(epilog=
+arg_parser = argparse.ArgumentParser(epilog=
     """
       Example:
       task http --url http://umich.edu --timeout PT10S
       task http --url http://google.com --parse search
-      """
-)
+      """,
+    formatter_class=argparse.RawTextHelpFormatter)
 
 
-opt_parser.add_option("--url",
+arg_parser.add_argument("--url",
                       help="URL to query",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="url")
 
-opt_parser.add_option("--parse",
+arg_parser.add_argument("--parse",
                       help="String to parse for",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="parse")
 
-opt_parser.add_option("--host",
+arg_parser.add_argument("--host",
                       help="Host to run the test",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="host")
 
-opt_parser.add_option("--host-node",
+arg_parser.add_argument("--host-node",
                       help="Host to run the test",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="host_node")
 
-opt_parser.add_option("--ip-version",
+arg_parser.add_argument("--ip-version",
                       help="Specificy which IP version to use, 4 or 6",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="ip_version")
 
-opt_parser.add_option("--always-succeed",
+arg_parser.add_argument("--always-succeed",
                       help="Treat HTTP failures as successes, regardless of response code",
+                      default=None,
                       action="store_true",
                       dest="always_succeed")
+arg_parser.add_argument("--no-always-succeed",
+                      help="Don't treat HTTP failures as successes",
+                      default=None,
+                      action="store_false",
+                      dest="always_succeed")
 
-opt_parser.add_option("--keep-content",
+arg_parser.add_argument("--keep-content",
                       help="Amount of content to keep in bytes; default none, 0 for no limit, SI units supported",
-                      type="string",
+                      type=str,
                       action="store",
                       dest="keep_content")
 
-opt_parser.add_option("--timeout",
+arg_parser.add_argument("--timeout",
                       help="Timeout for each query attempt",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="timeout")
 
-(options, remaining_args) = opt_parser.parse_args(args)
 
-if len(remaining_args) != 0:
-    pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
+args = arg_parser.parse_args(args)
+
 
 schema = pscheduler.HighInteger(1)
 result = { }
 
-if options.host is not None:
-    result['host'] = options.host
-if options.host_node is not None:
-    result['host-node'] = options.host_node
-if options.ip_version is not None:
-   result["ip-version"] = options.ip_version
+if args.host is not None:
+    result['host'] = args.host
+if args.host_node is not None:
+    result['host-node'] = args.host_node
+if args.ip_version is not None:
+   result["ip-version"] = args.ip_version
    schema.set(3)
-if options.url is not None:
-    result['url'] = options.url
-if options.parse is not None:
-    result['parse'] = options.parse
-if options.timeout is not None:
-    result['timeout'] = options.timeout
-if options.always_succeed is not None:
+if args.url is not None:
+    result['url'] = args.url
+if args.parse is not None:
+    result['parse'] = args.parse
+if args.timeout is not None:
+    result['timeout'] = args.timeout
+if args.always_succeed is not None:
     schema.set(2)
-    result['always-succeed'] = options.always_succeed
+    result['always-succeed'] = args.always_succeed
 
-if options.keep_content is not None:
+if args.keep_content is not None:
     try:
-        result['keep-content'] = pscheduler.si_as_number(options.keep_content)
+        result['keep-content'] = pscheduler.si_as_number(args.keep_content)
     except ValueError as ex:
-        pscheduler.fail("Invalid value \"%s\" for keep-content: %s" % (options.bandwidth, ex))
+        pscheduler.fail("Invalid value \"%s\" for keep-content: %s" % (args.bandwidth, ex))
     schema.set(2)
 
 result['schema'] = schema.value()

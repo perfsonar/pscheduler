@@ -4,7 +4,7 @@
 #
 
 import datetime
-import optparse
+import argparse
 import os
 import pipes
 import pscheduler
@@ -19,12 +19,8 @@ pscheduler.set_graceful_exit()
 #
 
 
-class VerbatimParser(optparse.OptionParser):
-    def format_epilog(self, formatter):
-        return self.epilog
-
-opt_parser = VerbatimParser(
-    usage="Usage: %prog [options] run-url",
+arg_parser = argparse.ArgumentParser(
+    usage="%(prog)s [options] run",
     epilog=
 """
 Examples:
@@ -40,54 +36,57 @@ Examples:
 
   result --format json html https://ps.foo.org/pscheduler/task/12345...
       Fetch a result of the specified run and format as JSON
-"""
+""",
+    formatter_class=argparse.RawTextHelpFormatter
     )
-opt_parser.disable_interspersed_args()
 
-opt_parser.add_option("--archivings",
+arg_parser.add_argument("--archivings",
                       help="For text output, dump archiving status",
                       action="store_true",
                       default=False,
                       dest="archivings")
 
-opt_parser.add_option("--bind",
+arg_parser.add_argument("--bind",
                       help="Make the request from the provided address",
                       default=None,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="bind")
 
-opt_parser.add_option("--diags",
+arg_parser.add_argument("--diags",
                       help="For text output, dump participant diagnostics",
                       action="store_true",
                       default=False,
                       dest="diags")
 
-opt_parser.add_option("--format",
+arg_parser.add_argument("--format",
                       help="Format for output: text (the default), html or json",
-                      action="store", type="string",
+                      action="store", type=str,
                       default="text",
                       dest="format")
 
-opt_parser.add_option("--output",
+arg_parser.add_argument("--output",
                       help="Path to write output",
-                      action="store", type="string",
+                      action="store", type=str,
                       default=None,
                       dest="output")
 
-opt_parser.add_option("--quiet",
+arg_parser.add_argument("--quiet",
                       help="For text output, don't display anything but the result",
                       action="store_true",
                       default=False,
                       dest="quiet")
 
-opt_parser.add_option("--debug", action="store_true", dest="debug")
+arg_parser.add_argument("--debug", action="store_true", dest="debug")
+
+arg_parser.add_argument("run",
+                        help="URL of run",
+                        nargs="?")
 
 
+args = arg_parser.parse_args()
 
-(options, remaining_args) = opt_parser.parse_args()
-
-if len(remaining_args) < 1:
-    opt_parser.print_usage()
+if not args.run:
+    arg_parser.print_usage()
     pscheduler.fail()
 
 formats = {
@@ -101,28 +100,24 @@ formats = {
     }
 
 try:
-    out_format = formats[options.format]
+    out_format = formats[args.format]
 except KeyError:
     pscheduler.fail("Invalid --format; must be text, html, or json")
 
 
-if options.diags and out_format != "text/plain":
-    pscheduler.fail("Cannot produce diagnostics in %s format" % (options.format))
+if args.diags and out_format != "text/plain":
+    pscheduler.fail("Cannot produce diagnostics in %s format" % (args.format))
 
-if options.archivings and out_format != "text/plain":
-    pscheduler.fail("Cannot produce archivings in %s format" % (options.format))
+if args.archivings and out_format != "text/plain":
+    pscheduler.fail("Cannot produce archivings in %s format" % (args.format))
 
-if options.output:
+if args.output:
     try:
-        out_file = open(options.output, "w")
+        out_file = open(args.output, "w")
     except Exception as ex:
         pscheduler.fail(str(ex))
 else:
     out_file = sys.stdout
-
-
-
-url = remaining_args[0]
 
 
 
@@ -143,7 +138,7 @@ def dump_run_result(url, out_format, exit_on_error=True):
         status, text = pscheduler.url_get(
             url,
             params={ "format": out_format },
-            bind=options.bind,
+            bind=args.bind,
             json=False)
 
     except Exception as ex:
@@ -189,11 +184,11 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
         # TODO: This is repetitive
         status, task_cli = pscheduler.url_get(
             "%s/cli" % task_url,
-            bind=options.bind)
+            bind=args.bind)
 
         status, task_json = pscheduler.url_get(task_url,
                                                params={"detail": True},
-                                               bind=options.bind)
+                                               bind=args.bind)
 
     except Exception as ex:
         print_message("Problem fetching results: %s" % (str(ex)), exit_on_error)
@@ -202,7 +197,7 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
 
     # Header-type stuff for text/plain if not quiet
 
-    if not options.quiet:
+    if not args.quiet:
 
         firstline = [ run_json["start-time"], "on" ]
 
@@ -272,7 +267,7 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
     if succeeded:
         dump_run_result(result_url, out_format, exit_on_error)
 
-    if options.diags or not succeeded:
+    if args.diags or not succeeded:
 
         if "clock-survey" in run_json and len(run_json["clock-survey"]) > 1:
 
@@ -350,7 +345,7 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
 
     # Dump the archiving information
 
-    if succeeded and options.archivings:
+    if succeeded and args.archivings:
         print()
         print("Archivings:")
         if run_json.get('archivings', None) is not None:
@@ -399,9 +394,9 @@ def fail_not_pscheduler():
 
 
 try:
-    status, json = pscheduler.url_get(url,
+    status, json = pscheduler.url_get(args.run,
                                       params={ "detail": True },
-                                      bind=options.bind)
+                                      bind=args.bind)
     if not isinstance(json, dict):
         raise ValueError
 except ValueError:
@@ -425,7 +420,7 @@ if "result-href" in json:
 try:
     status, runs = pscheduler.url_get(
         json["detail"]["runs-href"],
-        bind=options.bind)
+        bind=args.bind)
 except KeyError:
     fail_not_pscheduler()
     pass
@@ -433,13 +428,13 @@ except Exception as ex:
     pscheduler.fail("Problem fetching runs: %s" % (str(ex)))
 
 if out_format != "text/plain":
-    pscheduler.fail("Cannot retrieve muliple runs as %s" % (options.format))
+    pscheduler.fail("Cannot retrieve muliple runs as %s" % (args.format))
 
 need_newline = False
 for run in runs:
 
     try:
-        status, run_json = pscheduler.url_get(run, bind=options.bind)
+        status, run_json = pscheduler.url_get(run, bind=args.bind)
     except Exception as ex:
         pscheduler.fail(str(ex))
 
