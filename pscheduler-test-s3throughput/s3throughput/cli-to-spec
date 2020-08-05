@@ -117,30 +117,17 @@ if options.duration is not None:
    result['duration'] = options.duration
 
 if options.access_key is not None:
-   result['access-key'] = options.access_key
-else:
-    pscheduler.fail('Please specify the access key. \'--access-key your-key\'')
+   result['_access-key'] = options.access_key
 
 if options.bucket is not None:
     result['bucket'] = options.bucket
-else:
-    result['bucket'] = 'pscheduler-test'
 
 if options.secret_key is not None:
-    result['secret-key'] = options.secret_key
-else:
-    pscheduler.fail('Please specify the secret key. \'--secret-key your-key\'')
+   result['_secret-key'] = options.secret_key
 
 if options.url is not None:
     result['url'] = options.url
-else:
-    pscheduler.fail('Please specify the url and method. \'--url https://your-url.domain\'')
 
-parsed = urlparse(options.url)
-if parsed.scheme == "http" or parsed.scheme == "https":
-    result['url'] = options.url
-else:
-    pscheduler.fail('Please specify a method for your url, such as \'https://\'')
 
 if options.iterations is not None:
     result['iterations'] = options.iterations
@@ -148,13 +135,6 @@ if options.iterations is not None:
 if options.object_size is not None:
     options.object_size = pscheduler.si_as_number(options.object_size)
     result['object-size'] = options.object_size
-    if (int)(options.object_size) >= 1099511627776:
-        pscheduler.fail('Object size is too large. Please specify a size under 1TB')
-    if (int)(options.object_size) < 1000:
-        pscheduler.fail('Object size is too small. Please specify a size of at least 1KB')
-else:
-    result['object-size'] = 1048576
-
 
 
 pscheduler.succeed_json(result)

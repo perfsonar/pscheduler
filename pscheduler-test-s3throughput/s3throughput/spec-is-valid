@@ -10,6 +10,7 @@
 # ./cli-to-spec --option argument | ./spec-is-valid
 
 import pscheduler
+from urllib.parse import urlparse
 
 from validate import spec_is_valid
 
@@ -23,6 +24,11 @@ except ValueError as ex:
     })
 
 valid, message = spec_is_valid(json)
+
+scheme = urlparse(json["url"]).scheme
+if scheme != "http" and scheme != "https":
+    valid = False
+    message = "Invalid URL scheme"
 
 result = {
     "valid": valid
