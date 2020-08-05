@@ -85,7 +85,7 @@ def number_as_si(number, places=2, base=10):
         if base == 2 and not unit.endswith("i"):
             continue
 
-        if number > value:
+        if number >= value:
             return number_format.format(number / value) + unit.title()
 
     # no matches, must be less than anything so just return number
