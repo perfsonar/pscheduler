@@ -159,18 +159,6 @@ def failed_diags(run, why="Task failed to run properly."):
 
 
 
-def check_hostname_resolvability():
-
-    hostname = socket.gethostname()
-    start("  Making sure local hostname '%s' resolves" % hostname)
-    try:
-        socket.gethostbyname(hostname)
-        ok()
-    except socket.gaierror as ex:
-        ok("Does not.  This is recommended, but not required.")
-
-
-
 
 def check_mtu(host_a, host_z=None):
     """Report on the MTU between hosts"""
@@ -451,9 +439,6 @@ for host in hosts:
     print("%s:" % (host))
     print()
 
-
-    if host_a == DEFAULT_BASE_HOST:
-        check_hostname_resolvability()
 
     if not options.quick and not options.skip_single:
         check_mtu(host)
