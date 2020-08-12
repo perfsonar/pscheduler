@@ -502,12 +502,20 @@ if not pscheduler.api_has_pscheduler(assist, bind=bind):
 # Convert the remaining arguments to a test spec.
 #
 
+# Resolve any task arguments beginning with @.
+
+try:
+    task_args = [ pscheduler.string_from_file(arg) for arg in remaining_args ]
+except Exception as ex:
+    pscheduler.fail(str(ex))
+
+
 spec_url = pscheduler.api_url_hostport(assist,
                               path='/tests/' + test_type + '/spec')
 log.debug("Converting to spec via %s", spec_url)
 status, raw_spec = pscheduler.url_get(
     spec_url,
-    params={ 'args': pscheduler.json_dump(remaining_args) },
+    params={ 'args': pscheduler.json_dump(task_args) },
     bind=bind,
     throw=False,
     timeout=10
