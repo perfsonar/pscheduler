@@ -45,7 +45,7 @@ Requires:	%{_pscheduler_postgresql_package}-plpython3 >= %{_pscheduler_postgresq
 Requires:	postgresql-load
 Requires:	pscheduler-account
 Requires:	pscheduler-core
-Requires:	pscheduler-database-init
+Requires:	postgresql-init
 Requires:	random-string >= 1.1
 
 # Daemons
