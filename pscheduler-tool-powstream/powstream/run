@@ -297,7 +297,7 @@ while True:
                     cleanup_file(line, keep_data_files=keep_data_files)
                     continue
                 except Exception:
-                    handle_run_error("owstats failed to complete execution: %s" % sys.exc_info()[0])
+                    handle_run_error("While executing owstats", exception=True)
                     cleanup_file(line, keep_data_files=keep_data_files)
                     continue
             
