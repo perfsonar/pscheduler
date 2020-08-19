@@ -560,7 +560,9 @@ class RunWorker(object):
         db = None
         try:
             db = self._get_db_conn()
-            state_selector = 2 if participant > 0 else returncode
+            state_selector = 2 if  (
+                (participant > 0) or (scheduling_class == "background-multi")
+                ) else returncode
             with db.cursor() as cursor:
                 cursor.execute("""
                 UPDATE run
@@ -745,6 +747,7 @@ class RunWorker(object):
             # the local database.
 
             try:
+                self.log.debug("%d: Merged result: Setting final state ", self.id)
                 db = self._get_db_conn()
                 with db.cursor() as cursor:
                     # TODO: Need to figure out succeeded.
