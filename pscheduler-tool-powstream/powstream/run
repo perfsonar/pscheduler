@@ -24,7 +24,9 @@ start_time = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
 time_tag = start_time.strftime("%Y%b%dT%H%M%S%f")
 
 #Init logging
-log = pscheduler.Log(prefix="tool-powstream", quiet=True)
+# TODO: RESTORE THIS
+#log = pscheduler.Log(prefix="tool-powstream", quiet=True)
+log = pscheduler.Log(prefix="tool-powstream", verbose=True, debug=True)
 
 #DEBUGGING: Set static values below
 # task_uuid = 'ABC123'
@@ -242,6 +244,7 @@ while True:
         signal.signal(signal.SIGTERM, cleanup_handler)
         #give it a minute to fire-up
         if sleep_or_end(DEFAULT_CLIENT_SLEEP, end_time, parent_pid):
+            log.debug("Timed out starting up")
             break
             
         #check that it is still running
@@ -266,23 +269,35 @@ while True:
         fl = fcntl.fcntl(fd, fcntl.F_GETFL)
         fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
         
+
+        log.debug("Starting run")
+
         #sleep until expect result. don't exit if stop earlier so we can check for results
         sleep_or_end(result_sleep, end_time, parent_pid)
+        log.debug("SOE Returned")
         attempts_without_result = 0
         while True:
             #make sure we don't get trapped in this loop forever
-            if sleep_or_end(0, end_time, parent_pid): break
+            if sleep_or_end(0, end_time, parent_pid):
+                log.debug("Sleep_or_end said end.")
+                break
             
             #can't use proc.communicate because waits for EOF
             try:
-                line = proc.stdout.readline()
+                line = str(proc.stdout.readline())
+                #log.debug("Line from program: %s", line)
             except IOError:
                 #throws exception in non-blocking mode if no data, so catch that here
+                log.debug("Got an IOError; treating it like an empty line.")
                 line = ''
+
             line = line.strip()
+
             if line == '' and proc.poll() is not None:
+                log.debug("Powstream ended, return code is %s.", proc.returncode)
                 break
             elif line.endswith('.sum'):
+                log.debug("Cleaning up summary file")
                 cleanup_file(line, keep_data_files=keep_data_files)
             elif line.endswith('.owp'):
                 got_result = True
@@ -323,6 +338,7 @@ while True:
                 # powstream is notorious for this
                 attempts_without_result += 1
                 if attempts_without_result > DEFAULT_MAX_RETRIES:
+                    log.debug("Went too long without a result.  Terminating powstream.")
                     proc.terminate()
                     break
                 
