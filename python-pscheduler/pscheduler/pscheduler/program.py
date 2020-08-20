@@ -228,7 +228,7 @@ def run_program(argv,              # Program name and args
                 if len(reads) == 0:
                     __running_drop(process)
                     _end_process(process)
-                    return 2, None, "Process took too long to run."
+                    return (0 if timeout_ok else 2), None, "Process took too long to run."
 
                 for readfd in reads:
                     if readfd == stdout_fileno:
