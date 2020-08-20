@@ -24,9 +24,7 @@ start_time = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
 time_tag = start_time.strftime("%Y%b%dT%H%M%S%f")
 
 #Init logging
-# TODO: RESTORE THIS
-#log = pscheduler.Log(prefix="tool-powstream", quiet=True)
-log = pscheduler.Log(prefix="tool-powstream", verbose=True, debug=True)
+log = pscheduler.Log(prefix="tool-powstream", quiet=True)
 
 #DEBUGGING: Set static values below
 # task_uuid = 'ABC123'
@@ -230,7 +228,7 @@ def powstream_line(line, keep_data_files=False):
             log.debug("Processing .owp file")
 
             owstats_args = [owstats_cmd, '-R', line]
-            print("Running owstats command: %s" % " ".join(owstats_args))
+            log.debug("Running owstats command: %s" % " ".join(owstats_args))
             try:
                 # TODO: The timeout (inherited from the old code) seems long.
                 status, out, error = pscheduler.run_program(owstats_args, timeout=30)
@@ -238,9 +236,13 @@ def powstream_line(line, keep_data_files=False):
 
                 if status == 0:
                     result = parse_raw_owamp_output(out, raw_output=raw_output, bucket_width=bucket_width)
-                    emitter(result)
+                    log.debug("Posting result: %s", result)
+                    # emitter(result)
+                    print(pscheduler.json_dump(result))
+                    print(pscheduler.api_result_delimiter())
+
                 else:
-                    log.debug("owstats failed: %s", error)
+                    log.error("Powstream call to owstats failed: %s", error)
 
             except Exception:
                 handle_run_error("While executing owstats", exception=True)
@@ -258,8 +260,8 @@ def powstream_line(line, keep_data_files=False):
 
 log.debug("Will run %s", " ".join(powstream_args))
 
-duration = pscheduler.timedelta_as_seconds(duration)
-log.debug("Timeout for process is %s seconds", duration)
+duration_secs = pscheduler.timedelta_as_seconds(duration)
+log.debug("Timeout for process is %s seconds", duration_secs)
 
 # Wait for the start time
 try:
@@ -273,7 +275,7 @@ except KeyError:
 
 status, _, err = pscheduler.run_program(powstream_args,
                                         line_call=powstream_line,
-                                        timeout=duration,
+                                        timeout=duration_secs,
                                         timeout_ok=True)
 
 if status != 0:
