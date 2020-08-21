@@ -17,7 +17,7 @@ RestartSec=3
 # Make sure the run directory exists and is owned as expected.
 ExecStartPre=-/bin/mkdir -p __RUNDIR__/__PROG__
 ExecStartPre=-/bin/chown __PSUSER__:__PSUSER__ __RUNDIR__/__PROG__
-ExecStartPre=-/bin/chmod 700 __RUNDIR__/__PROG__
+ExecStartPre=-/bin/chmod 755 __RUNDIR__/__PROG__
 
 # Set up some temporary space and export its location
 ExecStartPre=-/bin/mkdir -p __RUNDIR__/__PROG__/tmp
