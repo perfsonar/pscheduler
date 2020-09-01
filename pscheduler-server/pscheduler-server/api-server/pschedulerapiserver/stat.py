@@ -8,22 +8,10 @@ from pschedulerapiserver import application
 
 from flask import request
 
+from .args import *
 from .dbcursor import dbcursor_query
 from .json import *
 from .response import *
-
-
-def single_numeric_query(query, query_args = []):
-
-    cursor = dbcursor_query(query, query_args)
-
-    if cursor.rowcount == 0:
-        return not_found()
-
-    row = cursor.fetchone()
-    cursor.close()
-
-    return ok(str(row[0]))
 
 
 #
@@ -85,6 +73,53 @@ def stat_http_queue_length():
 #
 # Runs
 #
+
+
+def time_range_condition():
+    """Generate ANDs for a WHERE clause limiting start and end run times"""
+
+    def absrel_arg(arg):
+        value = arg_string(arg)
+        if value is not None:
+            value = pscheduler.iso8601_absrel(value)
+        return value
+
+
+    result = ""
+
+    start = absrel_arg("start")
+    end = absrel_arg("end")
+
+    # Autocorrect upside down ranges.
+    if start > end:
+        (start, end) = (end, start)
+
+    if start is not None:
+        result += " AND lower(times) >= '%s'" % (str(start))
+
+    if end is not None:
+        result += " AND lower(times) <= '%s'" % (str(end))
+
+    return result
+
+
+def single_numeric_query(query, query_args = []):
+
+    try:
+        query += time_range_condition()
+    except ValueError as ex:
+        return bad_request(str(ex))
+
+    cursor = dbcursor_query(query, query_args)
+
+    if cursor.rowcount == 0:
+        return not_found()
+
+    row = cursor.fetchone()
+    cursor.close()
+
+    return ok(str(row[0]))
+
 
 
 @application.route("/stat/runs/pending", methods=['GET'])
