@@ -51,6 +51,13 @@ class TestJQFilter(PschedTestBase):
         self.assertEqual(f({"abc": 123})[0], {"abc": 123 })
 
 
+    def test_args_empty(self):
+        f = JQFilter({"script": "."}, args={})
+
+    # TODO: This causes memory corruption,
+    # def test_args(self):
+    #    f = JQFilter({"script": "."}, args={"value": 123})
+
     # TODO: Need a way to test groomed filters without depending on
     # anything else being installed.  Might not be doable.
 
