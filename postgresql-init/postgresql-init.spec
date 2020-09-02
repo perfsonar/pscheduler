@@ -15,6 +15,7 @@ Group:		Unspecified
 Source:		%{name}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
+#As of 4.3 we can probably get rid of below, but keep around until 4.4 to handle strange upgrade paths.
 Provides:	pscheduler-database-init
 
 

@@ -2,6 +2,7 @@
 JQ JSON Filter Class
 """
 
+import json  # TODO: Part of the fix for #1059
 import os
 import re
 
@@ -107,6 +108,19 @@ class JQFilter(object):
 
         if not isinstance(filter_spec, str):
             raise ValueError("Filter spec must be plain text, list or dict")
+
+        # Passing an args hash into PyJQ causes a memory corruption
+        # problem.  As a temporary workaround, turn them into "as"
+        # statements.  (See #1059)
+        # TODO: Remove this and 'import json' once PyJQ is fixed.
+
+        if len(args):
+            arg_lines = "".join([
+                "%s as $%s | " % (json.dumps(value), name)
+                for name, value in args.items()
+            ])
+            filter_spec = arg_lines + filter_spec
+            args = {}
 
         if groom:
             filter_spec = _groom(filter_spec)

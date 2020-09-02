@@ -250,7 +250,7 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
     run_ran = run_json["state"] == "finished"
     if not run_ran:
         print_message("Run did not complete: %s" % (run_json["state-display"]), exit_on_error)
-
+        return
 
     if (not run_ran) and run_json["state"] in ["overdue", "missed", "preempted"]:
         print_message("Run did not complete: %s" % (run_json["state-display"]), exit_on_error)
@@ -260,12 +260,14 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
         try:
             result_merged = run_json['result-merged']
             if result_merged is None:
-                pscheduler.fail("result-merged missing from run result")
+                print_message("result-merged missing from run result", False)
+                return
             succeeded = result_merged['succeeded']
             if succeeded is None:
                 raise KeyError()
         except KeyError:
-            pscheduler.fail("Data missing from run result")
+            print_message("Data missing from run result", False)
+            return
     else:
         succeeded = False
 
@@ -295,7 +297,7 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
                                                " by %s." % (max_diff)
                                            ))
 
-        if "limit-diags" in run_json:
+        if run_json.get("limit-diags", None) is not None:
             print()
             print("Limit system diagnostics for this run:")
             print()

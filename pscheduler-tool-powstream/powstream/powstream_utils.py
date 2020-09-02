@@ -95,9 +95,12 @@ def cleanup_file(tmpfile, keep_data_files=False):
 
 ##
 # Handles reporting errors in pscheduler format
-def handle_run_error(msg, diags=None, do_log=True):
+def handle_run_error(msg, diags=None, do_log=True, exception=False):
     if do_log:
-        log.error(msg)
+        if exception:
+            log.exception(msg)
+        else:
+            log.error(msg)
     results = { 
         'schema': LATENCY_SCHEMA_VERSION, 
         'succeeded': False,

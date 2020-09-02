@@ -131,6 +131,8 @@ if not parent_data_dir.endswith("/"):
 
 data_dir = parent_data_dir + task_uuid + '-' + time_tag
 log.debug("Data directory is %s", data_dir)
+os.makedirs(data_dir)
+
 
 
 #Always print files (-p)
@@ -206,161 +208,79 @@ else:
 time.sleep(DEFAULT_CLIENT_SLEEP) #wait for server to boot
 powstream_start_attempts = 0
 got_result = False
-parent_pid = os.getppid()
-log.debug("Parent pid is %s" % parent_pid)
-while True:
+
+
+emitter = pscheduler.RFC7464Emitter(sys.stdout)
+
+def powstream_line(line, keep_data_files=False):
+
+    log.debug("Processing line '%s'", line)
+
     try:
-        #make sure we are not past end time
-        if sleep_or_end(0, end_time, parent_pid): break
-        
-        #cleanup an previous runs - i really don't trust powstream
-        try:
-            #kill anything referencing our data_dir
-            call([pkill_cmd, '-9', '-f', parent_data_dir + task_uuid ], shell=False)
-        except:
-            #best effort clean-up
-            pass
-        if os.path.exists(data_dir):
-            cleanup_dir(data_dir, keep_data_files=keep_data_files, ignore_errors=True)
-        if not os.path.exists(data_dir):
-            os.makedirs(data_dir)
-        
-        #spawn process
 
-        try:
-            start_at = input['schedule']['start']
-            log.debug("Sleeping until %s", start_at)
-            pscheduler.sleep_until(start_at)
-            log.debug("Starting")
-        except KeyError:
-            pscheduler.fail("Unable to find start time in input")
+        # Any line we get should be a path to a readable file.
+        if not os.access(line, os.R_OK):
 
-        log.debug("Running command: %s" % " ".join(powstream_args))
-        proc = Popen(powstream_args, stdout=PIPE, stderr=PIPE, shell=False)
-        #update signal handler to make sure process is killed when terminated
-        cleanup_handler = lambda signum, frame: graceful_exit(data_dir, keep_data_files=keep_data_files, proc=proc, pkill_cmd=pkill_cmd)
-        signal.signal(signal.SIGTERM, cleanup_handler)
-        #give it a minute to fire-up
-        if sleep_or_end(DEFAULT_CLIENT_SLEEP, end_time, parent_pid):
-            break
-            
-        #check that it is still running
-        if proc.poll() is not None:
-            powstream_start_attempts += 1
-            pow_error = ''
-            for line in proc.stderr:
-                pow_error += line.strip() + " "
-            if powstream_start_attempts > MAX_POWSTREAM_START_ATTEMPTS:
-                handle_run_error("powstream returned an error on startup for %d consectutive attempts. Giving up. This is the error it reported: %s" % (powstream_start_attempts, pow_error))
-            elif sleep_or_end(DEFAULT_RESTART_SLEEP, end_time, parent_pid):
-                handle_run_error("powstream returned an error on startup, end time reached, so giving up" % pow_error)
-                break
-            else:
-                handle_run_error("powstream returned an error on startup, attempting restart after waiting %d seconds: %s" % (DEFAULT_RESTART_SLEEP, pow_error))
-                continue
-        else:
-            powstream_start_attempts = 0
-        
-        #make stdout non blocking so our program doesn't hang forever if powstream stop reporting
-        fd = proc.stdout.fileno()
-        fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-        fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
-        
-        #sleep until expect result. don't exit if stop earlier so we can check for results
-        sleep_or_end(result_sleep, end_time, parent_pid)
-        attempts_without_result = 0
-        while True:
-            #make sure we don't get trapped in this loop forever
-            if sleep_or_end(0, end_time, parent_pid): break
-            
-            #can't use proc.communicate because waits for EOF
+            log.error("Ignoring unreadable file '%s'", line)
+
+        elif line.endswith('.owp'):
+
+            log.debug("Processing .owp file")
+
+            owstats_args = [owstats_cmd, '-R', line]
+            log.debug("Running owstats command: %s" % " ".join(owstats_args))
             try:
-                line = proc.stdout.readline()
-            except IOError:
-                #throws exception in non-blocking mode if no data, so catch that here
-                line = ''
-            line = line.strip()
-            if line == '' and proc.poll() is not None:
-                break
-            elif line.endswith('.sum'):
-                cleanup_file(line, keep_data_files=keep_data_files)
-            elif line.endswith('.owp'):
-                got_result = True
-                attempts_without_result = 0
-                #run owstats to get output
-                owstats_args = [owstats_cmd, '-R', line]
-                log.debug("Running owstats command: %s" % " ".join(owstats_args))
-                try:
-                    stats_returncode, stats_stdout, stats_stderr = pscheduler.run_program(owstats_args, timeout=30)
-                except OSError as ex:
-                    handle_run_error("owstats encountered an OS error: %s" % ex)
-                    cleanup_file(line, keep_data_files=keep_data_files)
-                    continue
-                except Exception:
-                    handle_run_error("owstats failed to complete execution: %s" % sys.exc_info()[0])
-                    cleanup_file(line, keep_data_files=keep_data_files)
-                    continue
-            
-                #see if command completed successfully
-                log.debug("owstats returned status %s" % stats_returncode)
-                if stats_returncode:
-                    handle_run_error("owstats completed but returned error: %s" % stats_stderr)
-                    cleanup_file(line, keep_data_files=keep_data_files)
-                    continue
-            
-                #no longer need file
-                cleanup_file(line, keep_data_files=keep_data_files)
-            
-                #parse output
-                results = parse_raw_owamp_output(stats_stdout, raw_output=raw_output, bucket_width=bucket_width)
-            
-                #print
-                print(pscheduler.json_dump(results))
-                print(pscheduler.api_result_delimiter())
-                sys.stdout.flush()
-            elif line == '':
-                #make sure we don't go too long without a result. 
-                # powstream is notorious for this
-                attempts_without_result += 1
-                if attempts_without_result > DEFAULT_MAX_RETRIES:
-                    proc.terminate()
-                    break
-                
-                #sleep until next result
-                if got_result and attempts_without_result == 1:
-                    #if first blank line since we got result, sleep until next result
-                    if sleep_or_end(result_sleep, end_time, parent_pid):
-                        break
+                # TODO: The timeout (inherited from the old code) seems long.
+                status, out, error = pscheduler.run_program(owstats_args, timeout=30)
+                log.debug("owstats returned status %s", status)
+
+                if status == 0:
+                    result = parse_raw_owamp_output(out, raw_output=raw_output, bucket_width=bucket_width)
+                    log.debug("Posting result: %s", result)
+                    # emitter(result)
+                    print(pscheduler.json_dump(result))
+                    print(pscheduler.api_result_delimiter())
+
                 else:
-                    #...otherwise try again after a shorter sleep
-                    if sleep_or_end(DEFAULT_RETRY_SLEEP, end_time, parent_pid):
-                        break
-        
-        #command completed, this should not happen. log and restart
-        log.debug("powstream returned status %s" % proc.returncode)
-        if proc.returncode:
-            owp_error = ''
-            for line in proc.stderr:
-                owp_error += line.rstrip().lstrip() + " "
-            if owp_error == '':
-                owp_error = "Nothing on stderr, may have been killed by external command (e.g. something ran 'kill')"
-            handle_run_error("powstream exited with error, will attempt restart: %s" % owp_error)
-        elif not sleep_or_end(0, end_time, parent_pid):
-            #if powstream exited before end time, report that fact
-            log.debug("powstream exited with no errors but should have kept running, will attempt restart")
-    except OSError as ex:
-        log.error("powstream encountered an OS error: %s" % ex)
-        try:
-           if proc: proc.terminate()
-        except:
-            pass
-        handle_run_error("The powstream command failed during execution. See server logs for more details.", do_log=False)
-    except Exception:
-        log.error("powstream failed to complete execution: %s" % sys.exc_info()[0])
-        try:
-           if proc: proc.terminate()
-        except:
-            pass
-        handle_run_error("The powstream command failed during execution. See server logs for more details.", do_log=False)
+                    log.error("Powstream call to owstats failed: %s", error)
+
+            except Exception:
+                handle_run_error("While executing owstats", exception=True)
+
+        else:
+
+            log.debug("Don't care about this file")
+
+    finally:
+
+        # Whatever happened, tidy up
+        cleanup_file(line, keep_data_files=keep_data_files)
+
+
+
+log.debug("Will run %s", " ".join(powstream_args))
+
+duration_secs = pscheduler.timedelta_as_seconds(duration)
+log.debug("Timeout for process is %s seconds", duration_secs)
+
+# Wait for the start time
+try:
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
+
+status, _, err = pscheduler.run_program(powstream_args,
+                                        line_call=powstream_line,
+                                        timeout=duration_secs,
+                                        timeout_ok=True)
+
+if status != 0:
+    log.error("Powstream exited %d: %s", status, err)
+
+log.debug("Powestream error output: %s", err)
 
 pscheduler.succeed()
