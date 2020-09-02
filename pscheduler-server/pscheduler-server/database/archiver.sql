@@ -311,7 +311,7 @@ BEGIN
     FOR archiver_name IN (select * from jsonb_array_elements_text(archiver_list))
     LOOP
 
-	run_result := pscheduler_command(ARRAY['internal', 'invoke', 'archiver', archiver_name, 'enumerate']);
+	run_result := pscheduler_plugin_invoke('archiver', archiver_name, 'enumerate');
         IF run_result.status <> 0 THEN
             RAISE WARNING 'Archiver "%" failed to enumerate: %',
 	        archiver_name, run_result.stderr;
@@ -379,8 +379,8 @@ BEGIN
         candidate_data := 'null'::JSONB;
     END IF;
 
-    run_result := pscheduler_command(ARRAY['internal', 'invoke', 'archiver',
-    	       archiver_name, 'data-is-valid'], candidate_data::TEXT );
+    run_result := pscheduler_plugin_invoke('archiver', archiver_name, 'data-is-valid',
+        candidate_data::TEXT );
     IF run_result.status <> 0 THEN
         RAISE EXCEPTION 'Archiver "%" failed to validate: %', archiver_name, run_result.stderr;
     END IF;

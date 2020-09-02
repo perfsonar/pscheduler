@@ -278,8 +278,7 @@ class ArchiveProcess(object):
         """
         if self.program is None:
             self.program = pscheduler.StreamingJSONProgram([
-                "pscheduler", "internal", "invoke",
-                "archiver", self.archiver, "archive"
+                pscheduler.plugin_method_path("archiver", self.archiver, "archive")
             ], timeout=timeout)
 
     def __call__(self, json):

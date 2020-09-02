@@ -24,6 +24,7 @@ from .numeric import *
 from .numericrange import *
 from .program import *
 from .pidfile import *
+from .plugins import *
 from .psas import *
 from .psdns import *
 from .psjson import *

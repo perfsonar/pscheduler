@@ -189,7 +189,7 @@ BEGIN
 
     FOR test_name IN (select * from jsonb_array_elements_text(test_list))
     LOOP
-	run_result := pscheduler_command(ARRAY['internal', 'invoke', 'test', test_name, 'enumerate']);
+	run_result := pscheduler_plugin_invoke('test', test_name, 'enumerate');
         IF run_result.status <> 0 THEN
             RAISE WARNING 'Test "%" failed to enumerate: %',
 	        test_name, run_result.stderr;

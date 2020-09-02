@@ -3,7 +3,7 @@ Limit Class for test-type
 """
 
 from ...jsonval import *
-from ...program import *
+from ...plugins import *
 from ...psjson import *
 
 
@@ -42,8 +42,8 @@ class LimitTest(object):
         self.test = data['test']
         self.limit = data['limit']
 
-        returncode, stdout, stderr = run_program(
-            [ "pscheduler", "internal", "invoke", "test", self.test, "limit-is-valid" ],
+        returncode, stdout, stderr = plugin_invoke(
+            "test", self.test, "limit-is-valid",
             stdin = json_dump(self.limit),
             # TODO:  Is this reasonable?
             timeout = 5
@@ -75,8 +75,8 @@ class LimitTest(object):
             "limit": self.limit
             }
 
-        returncode, stdout, stderr = run_program(
-            [ "pscheduler", "internal", "invoke", "test", self.test, "limit-passes" ],
+        returncode, stdout, stderr = plugin_invoke(
+            "test", self.test, "limit-passes",
             stdin = json_dump(pass_input),
             # TODO:  Is this reasonable?
             timeout = 5

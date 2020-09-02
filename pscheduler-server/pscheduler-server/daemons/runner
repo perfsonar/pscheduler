@@ -423,8 +423,6 @@ class RunWorker(object):
             })
 
 
-        run_args = ["pscheduler", "internal", "invoke", "tool", tool, "run"]
-
         # If there are contexts, do the advance work for that.
 
         # TODO: Might be good to see if we can just do all of te
@@ -434,20 +432,17 @@ class RunWorker(object):
             context_args = [
                 {
                     "program": [
-                        "pscheduler",
-                        "internal",
-                        "invoke",
-                        "context",
-                        context["context"],
-                        "change"
-                        ],
+                        pscheduler.plugin_method_path("context", context["context"], "change")
+                    ],
                     "input": context.get("data", {})
                 }
                 for context in contexts[participant]
                 ]
 
             context_runner = pscheduler.ChainedExecRunner(
-                context_args, argv=run_args, stdin=tool_input)
+                context_args,
+                argv=[ pscheduler.plugin_method_path("tool", tool, "run") ],
+                stdin=tool_input)
 
         else:
 
@@ -510,8 +505,8 @@ class RunWorker(object):
         timeout = pscheduler.timedelta_as_seconds(end - start + run_start_margin()) + 1
         if context_runner is None:
 
-            returncode, stdout, stderr = pscheduler.run_program(
-                run_args,
+            returncode, stdout, stderr = pscheduler.plugin_invoke(
+                "tool", tool, "run",
                 stdin=tool_input,
                 env_add={ "TMPDIR": self.temp },
                 timeout=timeout,
@@ -716,8 +711,8 @@ class RunWorker(object):
                     merge_input_text = pscheduler.json_dump(merge_input)
                     self.log.debug("%d: Merging %s", self.id, merge_input_text)
 
-                    returncode, stdout, stderr = pscheduler.run_program(
-                        [ "pscheduler", "internal", "invoke", "tool", tool, "merged-results" ],
+                    returncode, stdout, stderr = pscheduler.plugin_invoke(
+                        "tool", tool, "merged-results",
                         stdin=merge_input_text, timeout=5)
 
                     self.log.debug("%d: Merged results: %d %s %s", self.id,

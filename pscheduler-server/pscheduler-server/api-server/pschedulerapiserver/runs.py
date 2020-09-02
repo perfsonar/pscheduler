@@ -650,9 +650,8 @@ def tasks_uuid_runs_run_result(task, run):
         "result": merged_result
         }
 
-    returncode, stdout, stderr = pscheduler.run_program(
-        [ "pscheduler", "internal", "invoke", "test", test_type,
-          "result-format", format ],
+    returncode, stdout, stderr = pscheduler.plugin_invoke(
+        "test", test_type, "result-format", argv=[format],
         stdin = pscheduler.json_dump(formatter_input)
         )
 
