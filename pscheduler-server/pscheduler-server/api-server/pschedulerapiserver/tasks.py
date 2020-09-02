@@ -227,10 +227,9 @@ def tasks():
         # See if the test spec is valid
 
         try:
-            returncode, stdout, stderr = pscheduler.run_program(
-                [ "pscheduler", "internal", "invoke", "test",
-                  task['test']['type'], "spec-is-valid" ],
-                stdin = pscheduler.json_dump(task['test']['spec'])
+            returncode, stdout, stderr = pscheduler.plugin_invoke(
+                "test", task['test']['type'], "spec-is-valid",
+                stdin=pscheduler.json_dump(task['test']['spec'])
                 )
 
             if returncode != 0:
@@ -263,9 +262,8 @@ def tasks():
             # Data
 
             try:
-                returncode, stdout, stderr = pscheduler.run_program(
-                    [ "pscheduler", "internal", "invoke", "archiver",
-                      archive["archiver"], "data-is-valid" ],
+                returncode, stdout, stderr = pscheduler.plugin_invoke(
+                    "archiver", archive["archiver"], "data-is-valid",
                     stdin=pscheduler.json_dump(archive["data"]),
                 )
                 if returncode != 0:
@@ -331,10 +329,9 @@ def tasks():
         if new_task is not None:
             try:
                 task = new_task
-                returncode, stdout, stderr = pscheduler.run_program(
-                    [ "pscheduler", "internal", "invoke", "test",
-                      task['test']['type'], "spec-is-valid" ],
-                    stdin = pscheduler.json_dump(task["test"]["spec"])
+                returncode, stdout, stderr = pscheduler.plugin_invoke(
+                    "test", task['test']['type'], "spec-is-valid",
+                    stdin=pscheduler.json_dump(task["test"]["spec"])
                 )
 
                 if returncode != 0:
@@ -352,10 +349,9 @@ def tasks():
 
         try:
 
-            returncode, stdout, stderr = pscheduler.run_program(
-                [ "pscheduler", "internal", "invoke", "test",
-                  task['test']['type'], "participants" ],
-                stdin = pscheduler.json_dump(task['test']['spec']),
+            returncode, stdout, stderr = pscheduler.plugin_invoke(
+                "test", task['test']['type'], "participants",
+                stdin=pscheduler.json_dump(task['test']['spec']),
                 timeout=5
                 )
 
@@ -755,9 +751,8 @@ def tasks_uuid_cli(uuid):
     json, test = row
 
     try:
-        returncode, stdout, stderr = pscheduler.run_program(
-            [ "pscheduler", "internal", "invoke", "test",
-              test, "spec-to-cli" ], stdin = json )
+        returncode, stdout, stderr = pscheduler.plugin_invoke(
+            "test", test, "spec-to-cli", stdin=json )
         if returncode != 0:
             return error("Unable to convert test spec: " + stderr)
     except Exception as ex:

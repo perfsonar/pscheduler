@@ -164,8 +164,8 @@ BEGIN
 	-- Calculate CLI for all existing tasks
 	FOR v1_2_record IN (SELECT * FROM task)
 	LOOP
-	    v1_2_run_result := pscheduler_command(ARRAY['internal', 'invoke', 'test',
-	        v1_2_record.json #>> '{test, type}', 'spec-to-cli'],
+	    v1_2_run_result := pscheduler_plugin_invoke(
+                'test', v1_2_record.json #>> '{test, type}', 'spec-to-cli',
 		v1_2_record.json #>> '{test, spec}' );
 	    IF v1_2_run_result.status <> 0 THEN
 	        RAISE NOTICE 'Unable to divine CLI from spec id %: %',
@@ -405,7 +405,7 @@ BEGIN
         THEN
 
 	    -- Calculate CLI equivalent
-	    run_result := pscheduler_command(ARRAY['internal', 'invoke', 'test', test_type, 'spec-to-cli'],
+	    run_result := pscheduler_plugin_invoke('test', test_type, 'spec-to-cli',
 		          NEW.json #>> '{test, spec}' );
 	    IF run_result.status <> 0 THEN
 	        RAISE EXCEPTION 'Unable to divine CLI from spec: %', run_result.stderr;
@@ -555,7 +555,7 @@ BEGIN
 	
 	IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND NEW.json <> OLD.json)
         THEN
-	    run_result := pscheduler_command(ARRAY['internal', 'invoke', 'tool', tool_type, 'duration'],
+	    run_result := pscheduler_plugin_invoke('tool', tool_type, 'duration',
 		          NEW.json #>> '{test, spec}' );
 	    IF run_result.status <> 0 THEN
 	        RAISE EXCEPTION 'Unable to determine duration of test: %', run_result.stderr;
