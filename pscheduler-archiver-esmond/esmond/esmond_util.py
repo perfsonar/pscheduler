@@ -763,7 +763,7 @@ class EsmondThroughputRecord(EsmondBaseRecord):
             #add types               
             if len(throughput_intervals) > 0:
                 self.add_data(data_point=data_point, event_type="throughput-subintervals", val=throughput_intervals)
-            if throughput_stream_intervals > 0:
+            if len(throughput_stream_intervals) > 0:
                 # TODO: This could be better done as a list comprehension
                 formatted_tsi = []
                 for id in sorted(throughput_stream_intervals):
@@ -776,19 +776,19 @@ class EsmondThroughputRecord(EsmondBaseRecord):
                     self.add_data(data_point=data_point, event_type="packet-rtt-subintervals", val=rtt_intervals)
                 if len(tcp_windowsize_intervals) > 0:
                     self.add_data(data_point=data_point, event_type="tcp-windowsize-subintervals", val=tcp_windowsize_intervals)
-                if retransmit_stream_intervals > 0:
+                if len(retransmit_stream_intervals) > 0:
                     # TODO: This could be better done as a list comprehension
                     formatted_rsi = []
                     for id in sorted(retransmit_stream_intervals):
                         formatted_rsi.append(retransmit_stream_intervals[id])
                     self.add_data(data_point=data_point, event_type="streams-packet-retransmits-subintervals", val=formatted_rsi)
-                if rtt_stream_intervals > 0:
+                if len(rtt_stream_intervals) > 0:
                     # TODO: This could be better done as a list comprehension
                     formatted_rttsi = []
                     for id in sorted(rtt_stream_intervals):
                         formatted_rttsi.append(rtt_stream_intervals[id])
                     self.add_data(data_point=data_point, event_type="streams-packet-rtt-subintervals", val=formatted_rttsi)
-                if tcp_windowsize_stream_intervals > 0:
+                if len(tcp_windowsize_stream_intervals) > 0:
                     # TODO: This could be better done as a list comprehension
                     formatted_twssi = []
                     for id in sorted(tcp_windowsize_stream_intervals):
