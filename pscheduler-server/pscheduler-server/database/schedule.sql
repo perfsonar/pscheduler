@@ -202,6 +202,7 @@ AS
 	key,
 	runs,
         trynext,
+	slip,
 	scheduling_class.anytime,
 	json,
 	participants
@@ -215,9 +216,19 @@ AS
 	AND participant = 0
         AND ( (max_runs IS NULL) OR (runs < max_runs) )
         AND ( (until IS NULL) OR (trynext < until) )
-	-- Anything that fits the scheduling horizon or is a backgrounder
+	-- This grabs Anything that fits the scheduling horizon or
+	-- runs background-multi.  Note that we adjust out anything
+	-- where the amount of slip could put a run's start time over
+	-- the edge of the horizon.  The horizon is far enough out
+	-- that once the start time falls far enough that slip will
+	-- work, the scheduler will pick it up in plenty of time.  See
+	-- #1064 for the bug that brought this behavior about.
         AND (
-            trynext < (normalized_now() + schedule_horizon)
+            trynext < (
+	        normalized_now()                   -- From now
+		+ schedule_horizon                 -- To the horizon
+		- COALESCE(slip, 'P0D'::INTERVAL)  -- Less any slip that might put us over
+	    )
             OR scheduling_class = scheduling_class_background_multi()
         )
     ORDER BY trynext, added
