@@ -1,0 +1,123 @@
+{
+    "#": "Test input for the pScheduler batch processor.",
+
+    "#": "Suggested invocation:",
+    "#": "pscheduler batch --debug test-input",
+
+    "#": "TODO: This should eventually be broken into small pieces",
+    "#": "for unit testing.  Note that this requires a functioning",
+    "#": "pScheduler to work.",
+
+    "global": {
+
+	"#": "This is made available to all transforms as $global.",
+	"data": {
+            "count_multiplier": 2,
+	    "sponsor": "This measurement is brought to you by perfSONAR.",
+	    "dest": "localhost"
+	},
+
+	"#": "This is applied to all tasks before their task-transform",
+	"transform-pre": {
+	    "script": [
+		"  .reference.before = \"This was inserted first.\"",
+		"| .reference.sponsor = $global.sponsor",
+		"| .reference.iteration = $iteration"
+	    ]
+	},
+
+	"#": "This is applied to all tasks after their task-transform",
+	"transform-post": {
+	    "script": [
+		"  .reference.after = \"This was inserted last.\"",
+
+		"# Apply the destination",
+		"| if (.test.spec | has(\"dest\"))",
+		"    then .test.spec.dest = $global.dest",
+		"    else . end"
+	    ]
+	}
+
+
+    },
+
+    "jobs": [
+	{
+	    "#": "Runs three idle tests serially",
+
+	    "enabled": true,
+	    "label": "idle",
+	    "iterations": 3,
+	    "parallel": false,
+	    "task": {
+		"test": {
+		    "type": "idle",
+		    "spec": {
+			"schema": 1,
+			"duration": "PT2S"
+		    }
+		}
+	    }
+	},
+	
+	{
+	    "#": "Runs five RTTs in parallel, each with an increasing number of",
+	    "#": "packets in the count, as specified by the transform.",
+
+	    "label": "rtt",
+	    "iterations": 5,
+	    "parallel": true,
+	    "backoff": "PT1S",
+	    "sync-start": true,
+	    "task": {
+		"test": {
+		    "type": "rtt",
+		    "spec": {
+			"schema": 1,
+			"dest": "** Filled in by the global transform **"
+		    }
+		}
+	    },
+	    "task-transform": {
+		"script": [		
+		    ".test.spec.count = ($iteration * $global.count_multiplier) + 1"
+		]
+	    }
+	},
+	
+	{
+	    "label": "trace",
+	    "iterations": 3,
+	    "enabled": true,
+	    "task": {
+		"test": {
+		    "type": "trace",
+		    "spec": {
+			"schema": 1,
+			"dest": "** Filled in by the global transform **"
+		    }
+		}
+	    }
+	},
+
+	{
+	    "#": "Runs a single idlebgm that will return multiple results.",
+
+	    "enabled": true,
+	    "label": "idlebgm",
+	    "iterations": 1,
+	    "parallel": false,
+	    "task": {
+		"test": {
+		    "type": "idlebgm",
+		    "spec": {
+			"schema": 1,
+			"duration": "PT15S",
+			"interval": "PT3S"
+		    }
+		}
+	    }
+	}
+
+    ]
+}
