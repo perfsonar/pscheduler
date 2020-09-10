@@ -237,9 +237,7 @@ def powstream_line(line, keep_data_files=False):
                 if status == 0:
                     result = parse_raw_owamp_output(out, raw_output=raw_output, bucket_width=bucket_width)
                     log.debug("Posting result: %s", result)
-                    # emitter(result)
-                    print(pscheduler.json_dump(result))
-                    print(pscheduler.api_result_delimiter())
+                    emitter(result)
 
                 else:
                     log.error("Powstream call to owstats failed: %s", error)
