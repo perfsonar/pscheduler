@@ -22,6 +22,20 @@ arg_parser = argparse.ArgumentParser(
     formatter_class=argparse.RawTextHelpFormatter
     )
 
+arg_parser.add_argument("--assist",
+                        help="Use this host for pScheduler assistance",
+                        action="store",
+                        type=str,
+                        default=None,
+                        dest="assist")
+
+arg_parser.add_argument("--bind",
+                        help="Bind outbound requests to this address",
+                        action="store",
+                        type=str,
+                        default=None,
+                        dest="bind")
+
 arg_parser.add_argument("--debug",
                       help="Enable debugging to standard error",
                       action="store_true",
@@ -64,7 +78,7 @@ def debug(message):
 
 try:
     spec = pscheduler.json_load(input_file)
-    processor = pscheduler.batchprocessor.BatchProcessor(spec)
+    processor = pscheduler.batchprocessor.BatchProcessor(spec, assist=args.assist, bind=args.bind)
 except (ValueError, OSError) as ex:
     pscheduler.fail("%s: %s" % (args.jobfile, str(ex)))
 

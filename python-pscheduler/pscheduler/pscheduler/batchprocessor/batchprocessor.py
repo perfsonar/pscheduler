@@ -93,15 +93,36 @@ class BatchProcessor():
             debug("%s: Dry run; skipping task" % label)
             return {}
 
+
+        # Find the lead participant.
+
+        parts_url = api_url_hostport(self.assist,
+                                     '/tests/%s/participants' % (spec['test']['type']))
+        debug("Fetching participant list from %s" % (parts_url))
+
+        participants_params = {'spec': json_dump(spec['test']['spec'])}
+        status, participants = url_get(parts_url,
+                                       params=participants_params,
+                                       bind=self.bind,
+                                       throw=False )
+
+        if status != 200:
+            debug("Failed: %s" % (participants))
+            return self.__fail("Unable to determine the lead participant: %s" % participants)
+
+        debug("Got participants: %s" % (participants))
+        lead = participants["participants"][0]
+
+
         if delay:
             debug("%s: Sleeping %ss before start" % (label, delay))
             time.sleep(delay)
 
-        tasks_url = api_url(path="/tasks")
+        tasks_url = api_url(host=lead, path="/tasks")
         debug("%s: Posting to %s" % (label, tasks_url))
 
         try:
-            status, task_url = url_post(tasks_url, data=json_dump(spec))
+            status, task_url = url_post(tasks_url, data=json_dump(spec), bind=self.bind)
         except Exception as ex:
             debug("Failed: %s" % (str(ex)))
             return self.__fail("Failed to post task: %s" % (str(ex)))
@@ -112,7 +133,7 @@ class BatchProcessor():
         # Fetch the posted task with extra details.
 
         try:
-            status, task_data = url_get(task_url, params={"detail": True}, throw=False)
+            status, task_data = url_get(task_url, params={"detail": True}, throw=False, bind=self.bind)
             if status != 200:
                 return self.__fail("Failed to get task data: %s" % (task_data))
         except Exception as ex:
@@ -128,7 +149,7 @@ class BatchProcessor():
 
         # Get the first run
 
-        status, run_data = url_get(first_run_url, throw=False)
+        status, run_data = url_get(first_run_url, throw=False, bind=self.bind)
 
         if status == 404:
             return self.__fail("The server never scheduled a run for the task.")
@@ -164,7 +185,7 @@ class BatchProcessor():
 
         status, result_data = url_get(run_data["result-href"],
                                       params={"wait-merged": True},
-                                      throw=False)
+                                      throw=False, bind=self.bind)
 
         # TODO: 404 is only semi-kosher becasue bgmulti doesn't generate a
         # result.  Need a fix in the server for this.
@@ -174,7 +195,7 @@ class BatchProcessor():
 
         # Get all runs and return them in all three formats
 
-        status, runs = url_get(task_data["detail"]["runs-href"], throw=False)
+        status, runs = url_get(task_data["detail"]["runs-href"], throw=False, bind=self.bind)
         if status != 200:
             return self.__fail("Error %d getting runs: %s" % (status, runs))
 
@@ -184,7 +205,7 @@ class BatchProcessor():
 
             debug("%s: Fetching run %s" % (label, run))
 
-            status, run_json = url_get(run)
+            status, run_json = url_get(run, bind=self.bind)
             if status != 200:
                 # TODO: Probably not what we want.
                 return [ { "application/json": self.__fail("Error %d getting runs: %s" % (status, runs)) } ]
@@ -199,7 +220,7 @@ class BatchProcessor():
                     status, text = url_get(result_href,
                                            params={"format": text_format},
                                            json=is_json,
-                                           throw=False)
+                                           throw=False, bind=self.bind)
                     if status == 200:
                         debug("%s: Got %s result" % (label, text_format))
                         run_set[text_format] = text
@@ -335,7 +356,7 @@ class BatchProcessor():
 
 
 
-    def __init__(self, spec):
+    def __init__(self, spec, assist=None, bind=None):
         """
         Create a batch processor.
         """
@@ -346,6 +367,17 @@ class BatchProcessor():
             raise ValueError(message)
 
         self.spec = copy.deepcopy(spec)
+
+
+        # Make sure whoever we're using for assistance is running pScheduler
+        if assist is None:
+            assist = os.environ.get("PSCHEDULER_ASSIST", api_local_host())
+        #if not api_has_pscheduler(assist, bind=bind):
+        if not api_has_pscheduler(assist):
+            raise ValueError("Unable to find pScheduler on %s" % (assist))
+
+        self.assist = assist
+        self.bind = bind
 
         try:
             self.global_data = spec["global"]["data"]
