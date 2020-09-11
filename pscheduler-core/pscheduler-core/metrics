@@ -53,12 +53,15 @@ class VerbatimParser(optparse.OptionParser):
         return self.epilog
 
 opt_parser = VerbatimParser(
-    usage="Usage: %prog",
+    usage="Usage: %prog [options]",
     epilog=
 """
-Example:
+Examples:
 
   metrics
+      Output pScheduler statistics as a JSON object.
+
+  metrics --format prometheus
       Output pScheduler statistics in a format suitable for
       Prometheus node-exporter textfile collector
 """
@@ -66,7 +69,7 @@ Example:
 opt_parser.disable_interspersed_args()
 
 opt_parser.add_option("--format",
-                      help="Output format to use",
+                      help="The output format to use, either json (default) or prometheus",
                       default="json",
                       action="store", type="string",
                       dest="format")
