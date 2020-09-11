@@ -98,7 +98,7 @@ class BatchProcessor():
 
         parts_url = api_url_hostport(self.assist,
                                      '/tests/%s/participants' % (spec['test']['type']))
-        debug("Fetching participant list from %s" % (parts_url))
+        debug("%s: Fetching participant list from %s" % (label, parts_url))
 
         participants_params = {'spec': json_dump(spec['test']['spec'])}
         status, participants = url_get(parts_url,
@@ -107,10 +107,10 @@ class BatchProcessor():
                                        throw=False )
 
         if status != 200:
-            debug("Failed: %s" % (participants))
+            debug("%s: Failed: %s" % (label, participants))
             return self.__fail("Unable to determine the lead participant: %s" % participants)
 
-        debug("Got participants: %s" % (participants))
+        debug("%s: Got participants: %s" % (label, participants))
         lead = participants["participants"][0]
 
 
