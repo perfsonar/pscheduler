@@ -88,6 +88,8 @@ if options.timeout <= 0:
 if options.format not in ["json", "prometheus"]:
     pscheduler.fail("Format must be either json or prometheus")
 
+log = pscheduler.Log(verbose=False, debug=False, quiet=True, propagate=True)
+
 # Collect statistics
 all_stats = {}
 for k,v in pscheduler_stats.items():
@@ -97,7 +99,7 @@ for k,v in pscheduler_stats.items():
         status, result = pscheduler.url_get(url, throw=False, timeout=options.timeout)
 
         if status != 200:
-            log.error("Couldn't collect stats. API return code:{}, message: {}".format(status,
+            log.error("Couldn't collect stat for {}/{} API return code:{}, message: {}".format(k, state, status,
                     result[result.find('<title>') + 7 : result.find('</title>')]))
         else:
             if state != "":
