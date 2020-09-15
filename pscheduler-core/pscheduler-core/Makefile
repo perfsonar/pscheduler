@@ -24,6 +24,7 @@ COMMANDS=\
 	cancel \
 	clock \
 	env \
+	metrics \
 	monitor \
 	ping \
 	plot-schedule \

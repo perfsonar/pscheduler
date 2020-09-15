@@ -1,0 +1,142 @@
+#!/usr/bin/python3
+#
+# Output pScheduler statistics in the Prometheus format
+# To be used with node-exporter textfile collector
+#
+
+import optparse
+import pscheduler
+import json
+
+pscheduler.set_graceful_exit()
+
+# Known stats URL
+# Use an empty list for state when there are no subsequent stats
+
+pscheduler_stats = {
+    "paused": {
+        "url": "stat/control/pause",
+        "prometheus-name": "perfsonar_pscheduler_paused",
+        "desc": "pScheduler is paused",
+        "type": "gauge",
+        "state": [ "" ]
+        },
+    "archiving": {
+        "url": "stat/archiving/",
+        "prometheus-name": "perfsonar_pscheduler_archiving",
+        "desc": "pScheduler archiving queue",
+        "type": "gauge",
+        "state": [ "backlog", "upcoming" ]
+        },
+    "http-queue": {
+        "url": "stat/http-queue/",
+        "prometheus-name": "perfsonar_pscheduler_http_queue",
+        "desc": "pScheduler HTTP queue",
+        "type": "gauge",
+        "state": [ "backlog", "length" ]
+        },
+    "runs": {
+        "url": "stat/runs/",
+        "prometheus-name": "perfsonar_pscheduler_runs",
+        "desc": "Number of pScheduler runs in the different states",
+        "type": "gauge",
+        "state": [ "pending", "on-deck", "running", "cleanup", "finished", "overdue", "missed", "failed", "preempted", "nonstart" ]
+        }
+    }
+
+#
+# Gargle the arguments
+#
+
+class VerbatimParser(optparse.OptionParser):
+    def format_epilog(self, formatter):
+        return self.epilog
+
+opt_parser = VerbatimParser(
+    usage="Usage: %prog [options]",
+    epilog=
+"""
+Examples:
+
+  metrics
+      Output pScheduler statistics as a JSON object.
+
+  metrics --format prometheus
+      Output pScheduler statistics in a format suitable for
+      Prometheus node-exporter textfile collector.
+
+  metrics --host pscheduler.host.net
+      Output pScheduler statistics coming from the
+      pscheduler.host.net machine.
+"""
+    )
+opt_parser.disable_interspersed_args()
+
+opt_parser.add_option("--format",
+                      help="The output format to use, either json (default) or prometheus",
+                      default="json",
+                      action="store", type="string",
+                      dest="format")
+
+opt_parser.add_option("--host",
+                      help="Request statistics from named host",
+                      default=None,
+                      action="store", type="string",
+                      dest="host")
+
+opt_parser.add_option("--timeout", "-W",
+                      help="How long to wait for the server to respond, in seconds (default 5)",
+                      default=5,
+                      action="store", type="int",
+                      dest="timeout")
+
+
+(options, remaining_args) = opt_parser.parse_args()
+
+if options.timeout <= 0:
+    pscheduler.fail("Timeout must be >= 0")
+
+if options.format not in ["json", "prometheus"]:
+    pscheduler.fail("Format must be either json or prometheus")
+
+log = pscheduler.Log(verbose=False, debug=False, quiet=True, propagate=True)
+
+# Collect statistics
+all_stats = {}
+for k,v in pscheduler_stats.items():
+    my_stat = {}
+    for state in v["state"]:
+        url = pscheduler.api_url(host=options.host, path=v["url"]+state)
+        status, result = pscheduler.url_get(url, throw=False, timeout=options.timeout)
+
+        if status != 200:
+            log.error("Couldn't collect stat for {}/{} API return code:{}, message: {}".format(k, state, status,
+                    result[result.find('<title>') + 7 : result.find('</title>')]))
+        else:
+            if state != "":
+                my_stat[state] = result
+            else:
+                my_stat = result
+
+    all_stats[k] = my_stat
+
+# Output the collected statistics
+if options.format == "json":
+    pscheduler.succeed_json(all_stats)
+
+elif options.format == "prometheus":
+    output = ""
+    for k,v in all_stats.items():
+        output += '# HELP {} {}\n'.format(pscheduler_stats[k]["prometheus-name"], pscheduler_stats[k]["desc"])
+        output += '# TYPE {} {}\n'.format(pscheduler_stats[k]["prometheus-name"], pscheduler_stats[k]["type"])
+        for state, value in v.items():
+            if pscheduler_stats[k]["state"] != "":
+                output += '{}{{state="{}"}} {}\n'.format(pscheduler_stats[k]["prometheus-name"], state, int(value))
+            else:
+                output += '{} {}\n'.format(pscheduler_stats[k]["prometheus-name"], int(value))
+
+    pscheduler.succeed(output)
+
+else:
+    pscheduler.fail("Unknown output format")
+
