@@ -1,0 +1,6 @@
+#!/bin/sh
+
+set -e
+
+pscheduler metrics | grep '"is_paused": false'
+pscheduler metrics --prometheus | grep '^perfsonar_pscheduler_paused{state="is_paused"} 0'

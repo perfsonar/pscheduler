@@ -63,7 +63,11 @@ Examples:
 
   metrics --format prometheus
       Output pScheduler statistics in a format suitable for
-      Prometheus node-exporter textfile collector
+      Prometheus node-exporter textfile collector.
+
+  metrics --host pscheduler.host.net
+      Output pScheduler statistics coming from the
+      pscheduler.host.net machine.
 """
     )
 opt_parser.disable_interspersed_args()
@@ -73,6 +77,13 @@ opt_parser.add_option("--format",
                       default="json",
                       action="store", type="string",
                       dest="format")
+
+opt_parser.add_option("--host",
+                      help="Request statistics from named host",
+                      default=None,
+                      action="store", type="string",
+                      dest="host")
+
 opt_parser.add_option("--timeout", "-W",
                       help="How long to wait for the server to respond, in seconds (default 5)",
                       default=5,
@@ -95,7 +106,7 @@ all_stats = {}
 for k,v in pscheduler_stats.items():
     my_stat = {}
     for state in v["state"]:
-        url = pscheduler.api_url("localhost", v["url"] + state)
+        url = pscheduler.api_url(host=options.host, path=v["url"]+state)
         status, result = pscheduler.url_get(url, throw=False, timeout=options.timeout)
 
         if status != 200:
@@ -110,11 +121,11 @@ for k,v in pscheduler_stats.items():
     all_stats[k] = my_stat
 
 # Output the collected statistics
-output = ""
 if options.format == "json":
-    output = json.dumps(all_stats)
+    pscheduler.succeed_json(all_stats)
 
 elif options.format == "prometheus":
+    output = ""
     for k,v in all_stats.items():
         output += '# HELP {} {}\n'.format(pscheduler_stats[k]["prometheus-name"], pscheduler_stats[k]["desc"])
         output += '# TYPE {} {}\n'.format(pscheduler_stats[k]["prometheus-name"], pscheduler_stats[k]["type"])
@@ -124,9 +135,8 @@ elif options.format == "prometheus":
             else:
                 output += '{} {}\n'.format(pscheduler_stats[k]["prometheus-name"], int(value))
 
+    pscheduler.succeed(output)
+
 else:
-    output = "Unknown output format"
-
-
-print(output)
+    pscheduler.fail("Unknown output format")
 
