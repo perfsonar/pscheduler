@@ -27,6 +27,10 @@ Requires:	%{_pscheduler_postgresql_package}
 Requires:	%{_pscheduler_postgresql_package}-contrib
 Requires:	%{_pscheduler_postgresql_package}-devel
 Requires:	%{_pscheduler_postgresql_package}-libs
+# This is required only for an upgrade to succeed.  Post-Python2 code
+# doesn't use it.
+# TODO: Remove this after 4.3.x reaches EOL.
+Requires:	%{_pscheduler_postgresql_package}-plpython
 Requires:	%{_pscheduler_postgresql_package}-plpython3
 Requires:	%{_pscheduler_postgresql_package}-server
 

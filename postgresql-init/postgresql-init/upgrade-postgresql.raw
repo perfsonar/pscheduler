@@ -17,7 +17,7 @@ PG_USER="__PG_USER__"
     || die "This program must be run as root."
 
 
-TMPBASE="${TMP:-/tmp}/${WHOAMI}.$$"
+TMPBASE="${TMP:-/tmp}/$(basename $0).$$"
 mkdir -p "${TMPBASE}"
 # The upgrade process runs as PG_USER and writes here.
 chown "${PG_USER}.${PG_USER}" "${TMPBASE}"
@@ -129,7 +129,8 @@ su - "${PG_USER}" -c \
      -D '${TO_DATA}' \
      -b '${FROM_BIN}' \
      -B '${TO_BIN}' \
-     -U '${PG_USER}'"
+     -U '${PG_USER}' \
+     --retain"
 
 # Restart the new version
 # TODO: This will vary by distro
