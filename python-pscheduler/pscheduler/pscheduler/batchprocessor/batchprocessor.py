@@ -339,9 +339,6 @@ class BatchProcessor():
 
                     transformed["schedule"] = {}
 
-
-                job["task"] = transformed
-
                 # Hold it for run time.
                 run_task_args.append((
                     "%s/%d" % (job.get("label", "unlabeled"), iteration),
