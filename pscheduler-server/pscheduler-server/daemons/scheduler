@@ -12,6 +12,7 @@ import pscheduler
 import random
 import select
 import threading
+import time
 import urllib.request, urllib.parse, urllib.error
 
 
@@ -58,7 +59,11 @@ opt_parser.add_option("-r", "--refresh",
 opt_parser.add_option("-R", "--retries",
                       help="Number of times to retry after a conflict",
                       action="store", type="int", dest="retries",
-                      default=3)
+                      default=5)
+opt_parser.add_option("--retry-backoff",
+                      help="Maximum random backoff between retries (ISO8601)",
+                      action="store", type="string", dest="retrybackoff",
+                      default="PT10S")
 opt_parser.add_option("-t", "--timeout",
                       help="Communication timeout (ISO8601)",
                       action="store", type="string", dest="timeout",
@@ -95,6 +100,14 @@ if pscheduler.timedelta_as_seconds(refresh) == 0:
 conflict_retries = options.retries
 if conflict_retries < 0:
     opt_parser.error("Retries cannot be negative.")
+
+try:
+    conflict_retry_backoff = pscheduler.timedelta_as_seconds(
+        pscheduler.iso8601_as_timedelta(options.retrybackoff)
+    )
+except ValueError:
+    opt_parser.error('Invalid retry backoff "%s"' % options.retrybackoff)
+
 
 try:
     timeout_td = pscheduler.iso8601_as_timedelta(options.timeout)
@@ -709,7 +722,10 @@ def schedule_task(number, log, task, key, runs, trynext, anytime, json,
         if not conflict:
             break
 
-        log.debug("%d: Developed a scheduling conflict.", number)
+        sleep_time = conflict_retry_backoff * random.random()
+        log.debug("%d: Developed a scheduling conflict.  Sleeping %fs.", number, sleep_time)
+        time.sleep(sleep_time)
+
 
     if tries_left == 0:
         skip = False
