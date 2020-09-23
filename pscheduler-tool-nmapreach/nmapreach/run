@@ -8,6 +8,8 @@ import pscheduler
 import random
 import re
 
+random.seed()
+
 log = pscheduler.Log(prefix='tool-nmapreach', quiet=True)
 
 input = pscheduler.json_load(exit_on_error=True);
@@ -84,7 +86,6 @@ def net_edges(network, limit=None, exclude=None):
 def net_random(network, limit=None, exclude=None):
     (addresses, yields) = __addr_yields(network, limit)
 
-    random.seed()
     net_upper = addresses
 
     while yields:

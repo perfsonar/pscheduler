@@ -5,7 +5,6 @@
 
 import multiprocessing
 import pscheduler
-import random
 import sys
 
 json = pscheduler.json_load(exit_on_error=True)

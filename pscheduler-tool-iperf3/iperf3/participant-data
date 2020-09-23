@@ -4,7 +4,6 @@
 #
 
 import pscheduler
-import random
 import sys
 import iperf3_utils
 from iperf3_defaults import *

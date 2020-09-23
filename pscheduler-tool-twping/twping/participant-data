@@ -9,6 +9,8 @@ import sys
 from twping_defaults import *
 from twping_utils import CLIENT_ROLE, SERVER_ROLE, get_role, get_config
 
+random.seed()
+
 #Init logging
 log = pscheduler.Log(prefix="tool-twping", quiet=True)
 

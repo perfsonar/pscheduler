@@ -18,6 +18,8 @@ import urllib.request, urllib.parse, urllib.error
 
 pscheduler.set_graceful_exit()
 
+random.seed()
+
 
 # Gargle the arguments
 
@@ -785,6 +787,10 @@ class SchedulerWorker(object):
 
     def run(self):
         """Do the scheduling"""
+
+        # Give this thread its own seed so it behaves differently than
+        # others.
+        random.seed()
 
         try:
 

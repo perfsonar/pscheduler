@@ -9,6 +9,8 @@ import sys
 from owping_defaults import *
 from owping_utils import CLIENT_ROLE, SERVER_ROLE, get_role, get_config
 
+random.seed()
+
 #Init logging
 log = pscheduler.Log(prefix="tool-owping", quiet=True)
 
