@@ -4,7 +4,7 @@
 
 %define short	pysnmp
 Name:		%{_pscheduler_python}-%{short}
-Version:	4.3.9
+Version:	4.4.12
 Release:	1%{?dist}
 Summary:	Python library for SNMP
 BuildArch:	noarch

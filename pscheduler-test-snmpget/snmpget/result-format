@@ -33,10 +33,14 @@ if format == 'text/plain':
 
         item = result['data'][i]
 
-        print('OID: %s (%s)' % (spec['oid'][i], item['type']))
-        print('    %s' % (item['value']))
+        try:
+            print('OID: %s (%s)' % (spec['oid'][i], item['type']))
+            print('    %s' % (item['value']))
+        except KeyError:
+            pass
 
         try:
+
             print('    Sequence number: %s' % item['seq_num'])
         except KeyError:
             pass
