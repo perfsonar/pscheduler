@@ -20,7 +20,7 @@ def dns_default_timeout():
 
 def __check_ip_version__(ip_version):
     if not ip_version in [4, 6]:
-        raise ValueError("Invalid IP version; must be 4 or 6")
+        raise ValueError("Invalid IP version '%s'; must be 4 or 6" % (str(ip_version)))
 
 
 #
