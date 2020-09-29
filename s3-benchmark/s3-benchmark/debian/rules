@@ -1,0 +1,34 @@
+#!/usr/bin/make -f
+# See debhelper(7) (uncomment to enable)
+# output every command that modifies files on the build system.
+#DH_VERBOSE = 1
+
+export GOPATH=$(CURDIR)/GOPATH
+export GOBIN=$(GOPATH)/bin
+export GOCACHE=$(GOPATH)/.cache
+
+# main packaging script based on dh7 syntax
+%:
+	dh $@ 
+
+override_dh_auto_install:
+	mkdir -p debian/s3-benchmark/usr/bin/
+	cp s3-benchmark debian/s3-benchmark/usr/bin/s3-benchmark
+	dh_auto_install
+
+override_dh_auto_clean:
+	$(RM) -r $(GOPATH)
+	$(RM) s3-branchmark
+	dh_auto_clean
+
+# s3-benchmark is not properly packages and we cannot just do: "go get ./..."
+override_dh_auto_build:
+	mkdir -p $(GOPATH) $(GOBIN)
+	go get golang.org/x/net/http2
+	go get code.cloudfoundry.org/bytefmt
+	go get github.com/aws/aws-sdk-go/aws
+	go get github.com/aws/aws-sdk-go/aws/credentials
+	go get github.com/aws/aws-sdk-go/aws/session
+	go get github.com/aws/aws-sdk-go/service/s3
+	go build s3-benchmark.go
+

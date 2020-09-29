@@ -1,0 +1,6 @@
+pscheduler-tool-s3-benchmark (4.3.0~a1.0-1) perfsonar-4.3-snapshot; urgency=low
+
+  * Initial release
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 29 Sep 2020 18:30:55 +0000
+

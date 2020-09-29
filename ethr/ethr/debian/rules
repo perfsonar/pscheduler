@@ -1,0 +1,30 @@
+#!/usr/bin/make -f
+# See debhelper(7) (uncomment to enable)
+# output every command that modifies files on the build system.
+#DH_VERBOSE = 1
+
+export GOPATH=$(CURDIR)/GOPATH
+export GOBIN=$(GOPATH)/bin
+export GOCACHE=$(GOPATH)/.cache
+
+# main packaging script based on dh7 syntax
+%:
+	dh $@
+
+override_dh_auto_install:
+	mkdir -p debian/ethr/usr/bin/
+	cp ethr-* debian/ethr/usr/bin/ethr
+	dh_auto_install
+
+override_dh_auto_clean:
+	$(RM) -r $(GOPATH)
+	$(RM) ethr-*
+	dh_auto_clean
+
+override_dh_auto_build:
+	mkdir -p $(GOPATH) $(GOBIN)
+	go get ./...
+	go build
+
+override_dh_auto_test:
+

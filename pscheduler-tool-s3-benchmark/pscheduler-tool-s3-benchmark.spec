@@ -29,6 +29,7 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server
 Requires:	%{_pscheduler_python}-pscheduler
 Requires: 	s3-benchmark
+Requires:   pscheduler-test-s3throughput
 
 BuildRequires:	pscheduler-rpm
 

@@ -1,0 +1,16 @@
+Source: s3-benchmark
+Section: net
+Priority: optional
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
+Build-Depends: debhelper (>= 9), golang, git, ca-certificates
+Standards-Version: 3.9.8
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: s3-benchmark
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: S3 benchmark tool for pScheduler
+ S3 benchmark tool for pScheduler

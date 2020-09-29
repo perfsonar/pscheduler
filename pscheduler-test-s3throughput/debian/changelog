@@ -1,0 +1,6 @@
+pscheduler-test-s3throughput (4.3.0~a1.0-1) perfsonar-4.3-snapshot; urgency=low
+
+  * Initial release
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 29 Sep 2020 23:05:11 +0000
+

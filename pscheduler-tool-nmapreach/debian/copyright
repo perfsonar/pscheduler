@@ -3,7 +3,7 @@ Upstream-Name: pscheduler-tool-nmapreach
 Source: https://github.com/perfsonar/pscheduler
 
 Files: *
-Copyright: 2018-2019 perfSONAR project
+Copyright: 2018-2020 perfSONAR project
 License: Apache-2.0
 
 License: Apache-2.0
