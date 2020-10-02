@@ -1,5 +1,5 @@
---- pscheduler-server.orig/database/reset.raw	2020-04-27 23:24:31.184644765 +0000
-+++ pscheduler-server/database/reset.raw	2020-04-27 23:27:49.001845644 +0000
+--- a/database/reset.raw	2020-10-02 12:52:59.985488968 +0000
++++ b/database/reset.raw	2020-10-02 12:53:05.733631574 +0000
 @@ -37,47 +37,45 @@
  
  
