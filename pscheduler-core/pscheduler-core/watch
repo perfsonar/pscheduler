@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Attach to a task and watch runs as they happen
 #
@@ -9,7 +9,7 @@
 import optparse
 import os
 import pscheduler
-import subprocess32
+import subprocess
 import sys
 import time
 
@@ -129,14 +129,14 @@ except KeyError:
 
 
 if multi_result:
-    print pscheduler.prefixed_wrap(
+    print(pscheduler.prefixed_wrap(
         "",  # No prefix
         "This task produces results asynchronously and"
         " cannot be watched.  The results it has produced"
         " since it started running and now can be retrieved"
-        " by running the following command:")
-    print
-    print "pscheduler result ", task_url
+        " by running the following command:"))
+    print()
+    print("pscheduler result ", task_url)
     pscheduler.succeed()
 
 
@@ -169,11 +169,11 @@ while True:
         else:
             if options.format is None and not options.output:
 
-                print
-                print "No further runs scheduled."
+                print()
+                print("No further runs scheduled.")
             pscheduler.succeed()
     if status != 200:
-        pscheduler.fail("Unable to fetch runs: %s", run_data)
+        pscheduler.fail("Unable to fetch runs: %s" %(run_data))
 
     run_url = run_data['href']
 
@@ -188,9 +188,9 @@ while True:
     last_url = run_url
 
     if verbose:
-        print
-        print "Next scheduled run:"
-        print run_url
+        print()
+        print("Next scheduled run:")
+        print(run_url)
 
     try:
         status, run_json = pscheduler.url_get(run_url, bind=options.bind)
@@ -203,9 +203,9 @@ while True:
     if run_json['state'] == 'nonstart':
 
         if verbose:
-            print
-            print "Run scheduled at", run_json['start-time'], "is a non-starter:"
-            print run_json['errors']
+            print()
+            print("Run scheduled at", run_json['start-time'], "is a non-starter:")
+            print(run_json['errors'])
 
         # If the task wasn't a repeater, don't hang around.
         try:
@@ -217,8 +217,8 @@ while True:
         wait_time = pscheduler.time_until_seconds(
             pscheduler.iso8601_as_datetime(end_time))
         if verbose:
-            print "Waiting until this run would have ended (%s, ~%s seconds)" \
-                % (end_time, int(wait_time))
+            print("Waiting until this run would have ended (%s, ~%s seconds)" \
+                % (end_time, int(wait_time)))
         time.sleep(wait_time)
         run_count += 1
         continue
@@ -231,18 +231,18 @@ while True:
     wait_time = pscheduler.time_until_seconds(
         pscheduler.iso8601_as_datetime(start_time))
     if verbose:
-        print "Starts %s (~%s seconds)" % (start_time, int(wait_time))
+        print("Starts %s (~%s seconds)" % (start_time, int(wait_time)))
     time.sleep(wait_time)
 
     end_time = run_json['end-time']
     wait_time = pscheduler.time_until_seconds(
         pscheduler.iso8601_as_datetime(end_time))
     if verbose:
-        print "Ends   %s (~%s seconds)" % (end_time, int(wait_time))
+        print("Ends   %s (~%s seconds)" % (end_time, int(wait_time)))
     time.sleep(wait_time)
 
     if verbose:
-        print "Waiting for result..."
+        print("Waiting for result...")
 
     status, result = pscheduler.url_get( run_url,
                                          params={ 'wait-merged': True },
@@ -257,7 +257,7 @@ while True:
     if options.format is None \
        and out_format == "text/plain" \
        and not options.output:
-        print
+        print()
 
     args = [ "pscheduler", "result", "--quiet", "--format", out_format ]
 
@@ -272,8 +272,7 @@ while True:
         args.append("--debug")
     args.append(run_url)
     log.debug("Calling %s", args)
-    # PYTHON3: Drop the 32; fix the import at the top
-    subprocess32.call(args)
+    subprocess.call(args)
 
     run_count += 1
 

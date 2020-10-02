@@ -24,10 +24,12 @@ from .numeric import *
 from .numericrange import *
 from .program import *
 from .pidfile import *
+from .plugins import *
 from .psas import *
 from .psdns import *
 from .psjson import *
 from .psselect import *
+from .pssleep import *
 from .pstime import *
 from .psurl import *
 from .retry import *

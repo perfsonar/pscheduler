@@ -1,16 +1,15 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Validator for 'throughput' test spec
 #
 
 import pscheduler
 
-from validate import spec_is_valid
+from validate import spec_is_valid, MAX_SCHEMA
 
 
 try:
-    json = pscheduler.json_load(max_schema=3)
-    pscheduler.json_check_schema(json, 3)
+    json = pscheduler.json_load()
 except ValueError as ex:
     pscheduler.succeed_json({
         "valid": False,

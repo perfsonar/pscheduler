@@ -1,9 +1,0 @@
-#!/usr/bin/make -f
-#export DH_VERBOSE=1
-export PYBUILD_NAME=subprocess32
-
-%:
-	dh $@ --with python2 --buildsystem=pybuild
-
-override_dh_auto_test:
-	PYBUILD_SYSTEM=custom PYBUILD_TEST_ARGS="LC_ALL=C {interpreter} test_subprocess32.py" dh_auto_test

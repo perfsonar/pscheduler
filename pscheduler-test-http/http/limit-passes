@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Checker for 'http' task limits
 #
@@ -39,7 +39,7 @@ errors = []
 # Query host, host-node, timeout, url, strings to parse
 #
 
-for value in [ "host", "host-node", "timeout", "url", "parse" ]:
+for value in [ "host", "host-node", "timeout", "url", "parse", "always-succeed" ]:
     try:
         test = limit[value]
         match = pscheduler.StringMatcher(test["match"])

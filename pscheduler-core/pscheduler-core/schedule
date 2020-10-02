@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Show a summary of what's on the schedule
 #
@@ -13,7 +13,7 @@ import pipes
 import pscheduler
 import pytz
 import sys
-import urlparse
+import urllib
 
 
 pscheduler.set_graceful_exit()
@@ -171,7 +171,7 @@ if options.task is not None:
     if not pscheduler.api_is_task(options.task):
         pscheduler.fail("Task does not look like a valid task URL")
 
-    parsed = list(urlparse.urlsplit(options.task))
+    parsed = list(urllib.parse.urlsplit(options.task))
     new_host = parsed[1]
     if host is not None and new_host != host:
         pscheduler.fail("Hosts in --host and --task must be the same.")
@@ -257,10 +257,10 @@ if status != 200:
 #
 
 if len(schedule) == 0:
-    print "Nothing scheduled %s to %s" % (
+    print("Nothing scheduled %s to %s" % (
         pscheduler.datetime_as_iso8601(start),
         pscheduler.datetime_as_iso8601(end)
-        )
+        ))
     pscheduler.succeed()
 
 first = True
@@ -280,29 +280,34 @@ for run in schedule:
     task_cli.extend([ pipes.quote(arg) for arg in run["cli"] ])
 
     if not first:
-        print
-        print
+        print()
+        print()
     else:
         first = False
 
-    print "%s - %s  (%s)" % (
+
+    print("%s - %s (%s)" % (
         run["start-time"],
         run["end-time"],
         run["state-display"]
-        )
+        ))
 
     if options.verbose and run["state"] == "nonstart":
-        print "Non-Start Reason:"
-        print pscheduler.indent(
+        print("Non-Start Reason:")
+        print(pscheduler.indent(
             run.get("errors", "Unspecified error").strip(),
-            )
+            ))
 
-    task_cli.append("(Run with tool '%s')" % run["task"]["tool"])
+    priority = run.get("priority", None)
+    task_cli.append("(Run with tool '{}'{})".format(
+        run["task"]["tool"],
+        "" if priority is None else " at priority {}".format(priority))
+    )
 
-    print pscheduler.prefixed_wrap(
-        "", " ".join(task_cli), indent=2)
+    print(pscheduler.prefixed_wrap(
+        "", " ".join(task_cli), indent=2))
 
-    print run["href"]
+    print(run["href"])
 
     # TODO: If task finished, fetch the result?
 

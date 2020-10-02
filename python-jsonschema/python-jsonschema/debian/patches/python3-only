@@ -1,0 +1,31 @@
+--- python-jsonschema.orig/jsonschema.egg-info/requires.txt	2020-04-23 19:07:30.293254000 +0000
++++ python-jsonschema/jsonschema.egg-info/requires.txt	2020-04-23 19:09:26.758954000 +0000
+@@ -3,9 +3,6 @@
+ setuptools
+ six>=1.10.0
+ 
+-[:python_version < "3"]
+-functools32
+-
+ [format]
+ idna
+ jsonpointer>1.13
+--- python-jsonschema.orig/setup.cfg	2020-04-23 19:07:30.293223000 +0000
++++ python-jsonschema/setup.cfg	2020-04-23 19:09:26.759508000 +0000
+@@ -11,8 +11,6 @@
+ 	License :: OSI Approved :: MIT License
+ 	Operating System :: OS Independent
+ 	Programming Language :: Python
+-	Programming Language :: Python :: 2
+-	Programming Language :: Python :: 2.7
+ 	Programming Language :: Python :: 3
+ 	Programming Language :: Python :: 3.5
+ 	Programming Language :: Python :: 3.6
+@@ -28,7 +26,6 @@
+ 	pyrsistent>=0.14.0
+ 	setuptools
+ 	six>=1.10.0
+-	functools32;python_version<'3'
+ 
+ [options.extras_require]
+ format = 

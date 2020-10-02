@@ -5,6 +5,7 @@
 import copy
 import pscheduler
 import time
+import urllib
 
 from pschedulerapiserver import application
 
@@ -139,7 +140,6 @@ def tasks_uuid_runs(task):
             # TODO: This should be exapandable
 
         except ValueError as ex:
-
             return bad_request(str(ex))
 
 
@@ -147,7 +147,9 @@ def tasks_uuid_runs(task):
 
     elif request.method == 'POST':
 
-        log.debug("Run POST: %s --> %s", request.url, request.data)
+        data = request.data.decode("ascii")
+
+        log.debug("Run POST: %s --> %s", request.url, data)
 
         requester, key = task_requester_key(task)
         if requester is None:
@@ -158,7 +160,7 @@ def tasks_uuid_runs(task):
 
 
         try:
-            data = pscheduler.json_load(request.data, max_schema=1)
+            data = pscheduler.json_load(data, max_schema=1)
             start_time = pscheduler.iso8601_as_datetime(data['start-time'])
         except KeyError:
             return bad_request("Missing start time")
@@ -348,10 +350,10 @@ def tasks_uuid_runs_run(task, run):
         # with the run, which might be needed if the 'first' option
         # was used.
 
-        href_path_parts = urlparse.urlparse(request.url).path.split('/')
+        href_path_parts = urllib.parse.urlparse(request.url).path.split('/')
         href_path_parts[-1] = run
         href_path = '/'.join(href_path_parts)
-        href = urlparse.urljoin( request.url, href_path )
+        href = urllib.parse.urljoin( request.url, href_path )
 
         result['href'] = href
         result['task-href'] = root_url('tasks/' + task)
@@ -370,6 +372,8 @@ def tasks_uuid_runs_run(task, run):
 
     elif request.method == 'PUT':
 
+        data = request.data.decode("ascii")
+
         log.debug("Run PUT %s", request.url)
 
         requester, key = task_requester_key(task)
@@ -382,10 +386,10 @@ def tasks_uuid_runs_run(task, run):
 
         # Get the JSON from the body
         try:
-            run_data = pscheduler.json_load(request.data, max_schema=1)
+            run_data = pscheduler.json_load(data, max_schema=1)
         except ValueError:
             log.exception()
-            log.debug("Run data was %s", request.data)
+            log.debug("Run data was %s", data)
             return bad_request("Invalid or missing run data")
 
         # If the run doesn't exist, take the whole thing as if it were
@@ -646,9 +650,8 @@ def tasks_uuid_runs_run_result(task, run):
         "result": merged_result
         }
 
-    returncode, stdout, stderr = pscheduler.run_program(
-        [ "pscheduler", "internal", "invoke", "test", test_type,
-          "result-format", format ],
+    returncode, stdout, stderr = pscheduler.plugin_invoke(
+        "test", test_type, "result-format", argv=[format],
         stdin = pscheduler.json_dump(formatter_input)
         )
 

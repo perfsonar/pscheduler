@@ -7,7 +7,7 @@ Type=simple
 User=__PSUSER__
 Group=__PSUSER__
 PermissionsStartOnly=true
-PIDFile=__RUNDIR__/pscheduler-__PROG__.pid
+PIDFile=__RUNDIR__/__PROG__/pid
 LimitNOFILE=4096
 LimitNPROC=4096
 
@@ -15,24 +15,30 @@ Restart=on-failure
 RestartSec=3
 
 # Make sure the run directory exists and is owned as expected.
-ExecStartPre=-/bin/mkdir -p __RUNDIR__
-ExecStartPre=-/bin/chown __PSUSER__:__PSUSER__ __RUNDIR__
-ExecStartPre=-/bin/chmod 755 __RUNDIR__
+ExecStartPre=-/bin/mkdir -p __RUNDIR__/__PROG__
+ExecStartPre=-/bin/chown __PSUSER__:__PSUSER__ __RUNDIR__/__PROG__
+ExecStartPre=-/bin/chmod 755 __RUNDIR__/__PROG__
+
+# Set up some temporary space and export its location
+ExecStartPre=-/bin/mkdir -p __RUNDIR__/__PROG__/tmp
+ExecStartPre=-/bin/chmod 700 __RUNDIR__/__PROG__/tmp
+ExecStartPre=-/bin/chown __PSUSER__:__PSUSER__ __RUNDIR__/__PROG__/tmp
+Environment=TMPDIR=__RUNDIR__/__PROG__/tmp
 
 # Generate the PID file in an atomic way
-ExecStartPre=-/bin/rm -f __RUNDIR__/pscheduler-__PROG__.pid.build
-ExecStartPre=-/usr/bin/touch -f __RUNDIR__/pscheduler-__PROG__.pid.build
-ExecStartPre=-/bin/chown __PSUSER__:__PSUSER__ __RUNDIR__/pscheduler-__PROG__.pid.build
-ExecStartPre=-/bin/mv __RUNDIR__/pscheduler-__PROG__.pid.build __RUNDIR__/pscheduler-__PROG__.pid
+ExecStartPre=-/bin/rm -f __RUNDIR__/__PROG__/pid.build
+ExecStartPre=-/usr/bin/touch -f __RUNDIR__/__PROG__/pid.build
+ExecStartPre=-/bin/chown __PSUSER__:__PSUSER__ __RUNDIR__/__PROG__/pid.build
+ExecStartPre=-/bin/mv __RUNDIR__/__PROG__/pid.build __RUNDIR__/__PROG__/pid
 
 # Generate options file
-ExecStartPre=-/bin/sh -c "if [ -r __CONFIGDIR__/__PROG__.conf ]; then opts=$(sed -e 's/#.*$//' __CONFIGDIR__/__PROG__.conf); echo OPTIONS=$opts > __RUNDIR__/pscheduler-__PROG__.options; chown __PSUSER__:__PSUSER__ __RUNDIR__/pscheduler-__PROG__.options; fi"
+ExecStartPre=-/bin/sh -c "if [ -r __CONFIGDIR__/__PROG__/conf ]; then opts=$(sed -e 's/#.*$//' __CONFIGDIR__/__PROG__/conf); echo OPTIONS=$opts > __RUNDIR__/pscheduler/__PROG__/options; chown __PSUSER__:__PSUSER__ __RUNDIR__/__PROG__/options; fi"
 
 # Start service
-ExecStart=__DAEMONDIR__/__PROG__ --daemon --pid-file __RUNDIR__/pscheduler-__PROG__.pid --dsn @__DSN__ $OPTIONS
+ExecStart=__DAEMONDIR__/__PROG__ --daemon --pid-file __RUNDIR__/__PROG__/pid --dsn @__DSN__ $OPTIONS
 
 # Stop service
-ExecStopPost=/bin/rm -f __RUNDIR__/pscheduler-__PROG__.pid __RUNDIR__/pscheduler-__PROG__.options
+ExecStopPost=/bin/rm -rf __RUNDIR__/__PROG__
 
 [Install]
 WantedBy=multi-user.target

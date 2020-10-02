@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #8:
+#
+# This file is called when perfSonar goes to print the result, which
+# has been returned from the tool.
+#
+# To test this file, a result is needed. A sample one has been provided
+# in this directory. Use the following syntax:
+# cat example-result.json | ./result-format text/plain
+# cat example-result.json | ./result-format text/html
+#
+
+import jsontemplate
+import pscheduler
+import sys
+import json
+
+from validate import result_is_valid
+
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
+
+input = pscheduler.json_load(exit_on_error=True)
+
+valid, message = result_is_valid(input["result"])
+
+if not valid:
+    pscheduler.fail(message)
+
+result = input["result"]
+
+if format == 'text/plain':
+    # Print results of the test here, in plaintext
+    print('Time: %s\n' % result['time'])
+    loops = json.loads(result['loops'])
+
+    count = 0
+
+    for loop in loops.values():
+        print("Loop: " + str(loop['loop_num']))
+        print("PUT time: " + loop['put_time'])
+        print("PUT objects: " + loop['put_objects'])
+        print("Average PUT speed: " + loop['put_speed'])
+        print("GET time: " + loop['get_time'])
+        print("GET objects: " + loop['get_objects'])
+        print("Average GET speed: " + loop['get_speed'])
+        print("DELETE time: " + loop['delete_time'] + "\n")
+        count += 1
+
+    print("Average PUT time: " + '%.3f'%result['average_put_time'] + " secs")
+    print("Average GET time: " + '%.3f'%result['average_get_time'] + " secs")
+    print("Average DELETE time: " + '%.3f'%result['average_delete_time'] + " secs")    
+#TODO: HTML formatting   
+elif format == 'text/html':
+    # Print results of the test here, in html
+    print('<table>')
+    print('    <tr>')
+    print('        <th>Time</th>')
+    print('    </tr>')
+    print('    <tr>')
+    print('        <td>%s</td>' % result['time'])
+    print('    </tr>')
+    loops = json.loads(result['loops'])
+
+    count = 0
+    print('    <table>')
+    for loop in loops.values():
+        print('    <tr>')
+        print("        Loop: " + str(loop['loop_num']))
+        print('    </tr>')
+        print('    <tr>')
+        print("        PUT time: " + loop['put_time'])
+        print('    </tr>')
+        print('    <tr>')
+        print("        PUT objects: " + loop['put_objects'])
+        print('    </tr>')
+        print('    <tr>')
+        print("        Average PUT speed: " + loop['put_speed'])
+        print('    </tr>')
+        print('    <tr>')
+        print("        GET time: " + loop['get_time'])
+        print('    </tr>')
+        print('    <tr>')
+        print("        GET objects: " + loop['get_objects'])
+        print('    </tr>')
+        print('    <tr>')
+        print("        Average GET speed: " + loop['get_speed'])
+        print('    </tr>')
+        print('    <tr>')
+        print("        DELETE time: " + loop['delete_time'] + "\n")
+        print('    </tr>')
+        count += 1
+    print('    </table>')
+    print('    <tr>')
+    print("        Average PUT time: " + '%.3f'%result['average_put_time'] + " secs")
+    print('    </tr>')
+    print('    <tr>')
+    print("        Average GET time: " + '%.3f'%result['average_get_time'] + " secs")
+    print('    </tr>')
+    print('    <tr>')
+    print("        Average DELETE time: " + '%.3f'%result['average_delete_time'] + " secs")
+    print('    </tr>')
+    print('</table>')
+
+
+else:
+   pscheduler.fail("Unsupported format '%s'" % format)

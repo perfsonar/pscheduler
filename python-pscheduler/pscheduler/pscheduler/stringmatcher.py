@@ -5,10 +5,10 @@ Class for doing string matches
 import re
 import sre_constants
 
-from jsonval import json_validate
+from .jsonval import json_validate
 
 
-class StringMatcher():
+class StringMatcher(object):
 
     "Class that does several types of string matching."
 
@@ -49,7 +49,7 @@ class StringMatcher():
             try:
                 self.regex = re.compile(match["match"])
             except sre_constants.error as ex:
-                print ex
+                print(ex)
                 raise ValueError("Invalid regular expression: " + str(ex))
         else:
             self.match = match["match"]
@@ -106,4 +106,4 @@ if __name__ == "__main__":
     })
 
     for string in ["foo", "bar", "foobar", "bazbarfoo"]:
-        print string, matcher.matches(string)
+        print(string, matcher.matches(string))

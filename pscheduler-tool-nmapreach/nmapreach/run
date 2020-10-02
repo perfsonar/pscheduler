@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Run a test.  Just the test spec is provided on stdin.
 #
@@ -7,6 +7,10 @@ import ipaddress
 import pscheduler
 import random
 import re
+
+random.seed()
+
+log = pscheduler.Log(prefix='tool-nmapreach', quiet=True)
 
 input = pscheduler.json_load(exit_on_error=True);
 
@@ -82,7 +86,6 @@ def net_edges(network, limit=None, exclude=None):
 def net_random(network, limit=None, exclude=None):
     (addresses, yields) = __addr_yields(network, limit)
 
-    random.seed()
     net_upper = addresses
 
     while yields:
@@ -122,7 +125,7 @@ generator = generators[spec.get("scan", "edges")]
 spec_gateway = spec.get("gateway", None)
 if isinstance(spec_gateway, int):
     gateway = network[spec_gateway]
-elif isinstance(spec_gateway, basestring):
+elif isinstance(spec_gateway, str):
     gateway = str(ipaddress.ip_address(spec_gateway))
     ip_list.append(gateway)
 else:
@@ -151,16 +154,13 @@ def run_nmap(ips, run_number, gateway):
             "error": "Nmap failed: %s" % (err)
         })
 
-    ips_up = map(    # First match
-        lambda m: m.group(1),
-        filter(      # Only lines that matched
-            lambda m: m is not None, 
-            map(     # All lines put through the matcher
-                lambda l: nmap_output_matcher.match(l),
-                out.split("\n")
-            )
-        )
-    )
+    ips_up = [
+        m.group(1)
+        for m in [
+                m for m in [nmap_output_matcher.match(l) for l in out.split("\n")]
+                if m is not None
+        ]
+    ]
 
     # In the first run, we check to see if the first thing we get back
     # is the gateway.
@@ -194,6 +194,14 @@ def succeed(spec, gateway_was_up, network_was_up):
 
 gateway_up = False
 run_number = 0
+
+try:
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
 
 for next_ip in generator(network, exclude=gateway, limit=run_max_ips):
 

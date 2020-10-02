@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+#
+# Run a batch job
+#
+
+import argparse
+import pscheduler
+import pscheduler.batchprocessor
+import sys
+
+# TODO: Remove this when no longer beta.
+pscheduler.beta_feature()
+
+pscheduler.set_graceful_exit()
+
+
+# Gargle the arguments
+
+arg_parser = argparse.ArgumentParser(
+    usage="%(prog)s [options]",
+    epilog=None,
+    formatter_class=argparse.RawTextHelpFormatter
+    )
+
+arg_parser.add_argument("--assist",
+                        help="Use this host for pScheduler assistance",
+                        action="store",
+                        type=str,
+                        default=None,
+                        dest="assist")
+
+arg_parser.add_argument("--bind",
+                        help="Bind outbound requests to this address",
+                        action="store",
+                        type=str,
+                        default=None,
+                        dest="bind")
+
+arg_parser.add_argument("--debug",
+                      help="Enable debugging to standard error",
+                      action="store_true",
+                      default=False,
+                      dest="debug")
+
+arg_parser.add_argument("--dry",
+                      help="Do a dry run",
+                      action="store_true",
+                      default=False,
+                      dest="dry")
+
+arg_parser.add_argument("jobfile", nargs='?', default="-",
+                        help="Path to file containing job.  Defaults to '-' for stdin.")
+
+
+
+args = arg_parser.parse_args()
+
+
+
+# Get set up
+
+if args.jobfile == "-":
+    input_file = sys.stdin
+    args.jobfile = "stdin"
+else:
+    try:
+        input_file = open(args.jobfile, "r")
+    except OSError as ex:
+        pscheduler.fail("%s: %s" % (args.jobfile, str(ex)))
+
+
+def debug(message):
+    """
+    Callback function for the batch processor to emit debug
+    """
+    if args.debug:
+        print(message, file=sys.stderr)
+
+try:
+    spec = pscheduler.json_load(input_file)
+    processor = pscheduler.batchprocessor.BatchProcessor(spec, assist=args.assist, bind=args.bind)
+except (ValueError, OSError) as ex:
+    pscheduler.fail("%s: %s" % (args.jobfile, str(ex)))
+
+
+# Run it.
+
+pscheduler.succeed_json(processor(dry_run=args.dry, debug=debug))

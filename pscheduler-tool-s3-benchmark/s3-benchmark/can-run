@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #3:
+# 
+# This file will determine if this tool can run a test based on a test spec.
+#
+# Be sure to edit line 19, inserting the names of the tests the tool
+# should be compatible with.
+# 
+
+# exit statuses should be different based on error
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True);
+
+try:
+    if json['type'] != 's3throughput':
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Unsupported test type" ]
+        })
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test type" ]
+    })
+
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
+
+try:
+    if json['spec']['object-size'] < 1000 or json['spec']['object-size'] >= 1099511627776:
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Object size outside supported size range for this tool" ]
+        })
+
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
+pscheduler.succeed_json({ "can-run": True })

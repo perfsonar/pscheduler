@@ -8,7 +8,7 @@ from .iso8601 import *
 from .jsonval import *
 
 
-class RetryPolicy():
+class RetryPolicy(object):
 
     """
     Class that implements retry policies as an array of ("n1 attempts
@@ -73,4 +73,4 @@ if __name__ == "__main__":
     ])
 
     for attempt in range(0, 12):
-        print attempt, policy.retry(attempt)
+        print(attempt, policy.retry(attempt))

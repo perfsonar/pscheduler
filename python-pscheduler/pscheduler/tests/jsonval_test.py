@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 test for the Jsonval module.
 """
@@ -18,7 +19,7 @@ class TestJsonval(PschedTestBase):
     def test_jsonval(self):
         """Test jsonval"""
         sample = {
-            "schema": 1,
+            "schema": 10,
             "when": "2015-06-12T13:48:19.234",
             "howlong": "PT10M",
             "sendto": "bob@example.com",
@@ -65,6 +66,16 @@ class TestJsonval(PschedTestBase):
         valid, message = json_validate(sample, schema)
 
         self.assertEqual((valid, message), (True, 'OK'))
+
+
+        # Bad schemas
+
+        valid, message = json_validate(sample, schema, max_schema=5)
+        self.assertEqual((valid, message), (False, "Schema version 10 is not supported (highest is 5)."))
+
+        sample['schema'] = "This is bad."
+        valid, message = json_validate(sample, schema, max_schema=5)
+        self.assertEqual((valid, message), (False, "Schema value must be an integer."))
 
 
 if __name__ == '__main__':

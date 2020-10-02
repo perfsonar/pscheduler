@@ -15,6 +15,8 @@
 
 from pscheduler import json_validate
 
+MAX_SCHEMA = 1
+
 def spec_is_valid(json):
     schema = {"type": "object",
                 # schema, host, host-node, and timeout are standard,
@@ -42,7 +44,7 @@ def spec_is_valid(json):
         "additionalProperties": False
     }
 
-    return json_validate(json, schema)
+    return json_validate(json, schema, max_schema=MAX_SCHEMA)
 
 
 def result_is_valid(json):
@@ -56,9 +58,8 @@ def result_is_valid(json):
             "throughput": { "$ref": "#/pScheduler/Float" },
             },
         "required": [
-            "schema",
             "succeeded",
-            "time",
+            "time"
             ]
         }
     return json_validate(json, schema)

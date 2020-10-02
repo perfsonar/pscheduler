@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
 Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
 Build-Depends: debhelper (>= 9)
-Standards-Version: 3.9.6
+Standards-Version: 3.9.8
 Homepage: https://github.com/perfsonar/pscheduler
 Vcs-Git: git://github.com/perfsonar/pscheduler
 Vcs-Browser: https://github.com/perfsonar/pscheduler
@@ -23,6 +23,7 @@ Depends:
  pscheduler-context-changefail,
  pscheduler-context-changenothing,
  pscheduler-context-linuxnns,
+ pscheduler-context-linuxvrf,
  pscheduler-core,
  pscheduler-docs,
  pscheduler-server,
@@ -35,10 +36,12 @@ Depends:
  pscheduler-test-latency,
  pscheduler-test-latencybg,
  pscheduler-test-rtt,
+ pscheduler-test-s3throughput,
  pscheduler-test-simplestream,
  pscheduler-test-throughput,
  pscheduler-test-trace,
  pscheduler-tool-dnspy,
+ pscheduler-tool-ethr,
  pscheduler-tool-iperf2,
  pscheduler-tool-iperf3,
  pscheduler-tool-nuttcp,
@@ -48,6 +51,7 @@ Depends:
  pscheduler-tool-powstream,
  pscheduler-tool-psclock,
  pscheduler-tool-psurl,
+ pscheduler-tool-s3-benchmark,
  pscheduler-tool-simplestreamer,
  pscheduler-tool-sleep,
  pscheduler-tool-sleepbgm,

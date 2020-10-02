@@ -2,11 +2,11 @@
 Functions for interacting with HTTP servers
 """
 
-from psjson import *
+from .psjson import *
 
-import httplib
+import http.client
 import pycurl
-import StringIO
+import io
 import urllib
 
 
@@ -32,7 +32,7 @@ class PycURLRunner(object):
 
         self.curl = pycurl.Curl()
 
-        full_url = url if params is None else "%s?%s" % (url, urllib.urlencode(params))
+        full_url = url if params is None else "%s?%s" % (url, urllib.parse.urlencode(params))
         self.curl.setopt(pycurl.URL, str(full_url))
 
         if bind is not None:
@@ -43,37 +43,45 @@ class PycURLRunner(object):
         if headers is not None:            
             self.curl.setopt(pycurl.HTTPHEADER, [
                 "%s: %s" % (str(key), str(value))
-                for (key, value) in headers.items()
+                for (key, value) in list(headers.items())
             ])
 
         if timeout is not None:
             self.curl.setopt(pycurl.TIMEOUT_MS, int(timeout * 1000.0))
 
-        self.curl.setopt(pycurl.SSL_VERIFYHOST, verify_keys)
+        # True/false doesn't work here.  See
+        # https://curl.haxx.se/libcurl/c/CURLOPT_SSL_VERIFYHOST.html
+        self.curl.setopt(pycurl.SSL_VERIFYHOST, 2 if verify_keys else 0)
         self.curl.setopt(pycurl.SSL_VERIFYPEER, verify_keys)
 
-        self.buf = StringIO.StringIO()
+        self.buf = io.BytesIO()
         self.curl.setopt(pycurl.WRITEFUNCTION, self.buf.write)
+
 
 
     def __call__(self, json, throw):
         """Fetch the URL"""
+
         try:
             self.curl.perform()
             status = self.curl.getinfo(pycurl.HTTP_CODE)
-            text = self.buf.getvalue()
+            # PycURL returns a zero for non-HTTP URLs
+            if status == 0:
+                status = 200
+            text = self.buf.getvalue().decode()
         except pycurl.error as ex:
-            (code, message) = ex
+            code, message = ex.args
             status = 400
             text = message
         finally:
             self.curl.close()
             self.buf.close()
-            
-        #If status is outside the HTTP 2XX success  range
+
+        # 200-299 is success; anything else is an error.
         if status < 200 or status > 299:
+
             if throw:
-                raise URLException(text.strip())
+                raise URLException(text)
             else:
                 return (status, text)
 
@@ -110,7 +118,7 @@ def __content_type_data(content_type, headers, data):
     """Figure out the Content-Type based on an incoming type and data and
     return that plus data in a type that PycURL can handle."""
 
-    assert(content_type is None or isinstance(content_type, basestring))
+    assert(content_type is None or isinstance(content_type, str))
     assert(isinstance(headers, dict))
 
     if content_type is None or "Content-Type" not in headers:

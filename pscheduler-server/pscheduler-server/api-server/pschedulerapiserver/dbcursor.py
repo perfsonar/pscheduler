@@ -26,7 +26,7 @@ def dbcursor_init(dsn):
 
 
 
-class DBCursor:
+class DBCursor(object):
 
     def __init__(self):
         self.db = None

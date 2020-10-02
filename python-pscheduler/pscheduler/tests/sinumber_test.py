@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 test for the Sinumber module.
 """
@@ -30,7 +31,7 @@ class TestSinumber(PschedTestBase):
             '3.1415P': 3.1415e+15,
         }
 
-        for i in conversion_map.keys():
+        for i in conversion_map:
             self.assertEqual(conversion_map.get(i), si_as_number(i))
 
         for i in ["ki", "Steak", "123e1", 3.1415]:
@@ -39,14 +40,14 @@ class TestSinumber(PschedTestBase):
     def test_number_to_si(self):
         """Number to SI test"""
         conversion_map = {
-            1000: ('1000.00', '1000.00', '1000.000'),
-            1000000000: ('1000.00M', '953.67Mi', '1000.000M'),
+            1000: ('1.00K', '1000.00', '1.000K'),
+            1000000000: ('1.00G', '953.67Mi', '1.000G'),
             1234567890: ('1.23G', '1.15Gi', '1.235G'),
             '9.8': ('9.80', '9.80', '9.800'),
             0: ('0.00', '0.00', '0.000'),
         }
 
-        for k, v in conversion_map.items():
+        for k, v in list(conversion_map.items()):
             self.assertEqual(number_as_si(k), v[0])
             self.assertEqual(number_as_si(k, base=2), v[1])
             self.assertEqual(number_as_si(k, places=3), v[2])

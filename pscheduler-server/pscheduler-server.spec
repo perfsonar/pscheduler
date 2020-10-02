@@ -6,8 +6,8 @@
 # make the scriptlets use them on CentOS 7.  For now the old-style
 # init scripts function just fine.
 
-%define perfsonar_auto_version 4.2.4
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 4.3.0
+%define perfsonar_auto_relnum 0.a0.0
 
 Name:		pscheduler-server
 Version:	%{perfsonar_auto_version}
@@ -25,37 +25,43 @@ Provides:	%{name} = %{version}-%{release}
 
 
 # Database
-BuildRequires:	postgresql-init
+
+# NOTE: postgresql-init must be maintained to require the same set of
+# PostgreSQL packages so upgrades between versions will work.  See
+# comments there for more information.
+
+BuildRequires:	postgresql-init >= %{_pscheduler_postgresql_version}
 BuildRequires:	postgresql-load
-BuildRequires:	%{_pscheduler_postgresql_package}-server
-BuildRequires:	%{_pscheduler_postgresql_package}-contrib
-BuildRequires:	%{_pscheduler_postgresql_package}-plpython
+BuildRequires:	%{_pscheduler_postgresql_package}-server >= %{_pscheduler_postgresql_version}
+BuildRequires:	%{_pscheduler_postgresql_package}-contrib >= %{_pscheduler_postgresql_version}
+BuildRequires:	%{_pscheduler_postgresql_package}-plpython3 >= %{_pscheduler_postgresql_version}
 
 Requires:	drop-in
 Requires:	gzip
-Requires:	%{_pscheduler_postgresql_package}-server
+Requires:	%{_pscheduler_postgresql_package}-server >= %{_pscheduler_postgresql_version}
 # This is for pgcrypto
-Requires:	%{_pscheduler_postgresql_package}-contrib
-Requires:	%{_pscheduler_postgresql_package}-plpython
+Requires:	%{_pscheduler_postgresql_package}-contrib >= %{_pscheduler_postgresql_version}
+Requires:	%{_pscheduler_postgresql_package}-plpython3 >= %{_pscheduler_postgresql_version}
 Requires:	postgresql-load
 Requires:	pscheduler-account
 Requires:	pscheduler-core
-Requires:	pscheduler-database-init
+Requires:	postgresql-init
 Requires:	random-string >= 1.1
 
 # Daemons
 BuildRequires:	m4
 Requires:	curl
 Requires:	pscheduler-account
-Requires:	python-daemon
-Requires:	python-flask
-Requires:	python-ipaddr
-Requires:	python-jsontemplate
+# This is from EPEL but doesn't have a python36 prefix
+Requires:	%{_pscheduler_python}-daemon
+Requires:	%{_pscheduler_python}-flask
+Requires:	%{_pscheduler_python}-jsontemplate
 
 # API Server
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
-BuildRequires:	python-pscheduler >= 1.3.7.2
+BuildRequires:	%{_pscheduler_python}-parse-crontab
+BuildRequires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 BuildRequires:	m4
 Requires:	httpd-wsgi-socket
 Requires:	pscheduler-server
@@ -64,8 +70,15 @@ Requires:	pscheduler-server
 # mod_ssl is required here.
 Requires:	mod_ssl
 Requires:	mod_wsgi > 4.0
-Requires:	python-pscheduler >= 1.3.7.2
+Requires:	%{_pscheduler_python}-parse-crontab
+Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
+
+%if 0%{?el7}
 Requires:	pytz
+%endif
+%if 0%{?el8}
+Requires:	%{_pscheduler_python}-pytz
+%endif
 
 # General
 BuildRequires:	pscheduler-rpm
@@ -78,9 +91,6 @@ The pScheduler server
 
 
 # Database
-
-%define pgsql_service postgresql-%{_pscheduler_postgresql_version}
-%define pg_data %{_sharedstatedir}/pgsql/%{_pscheduler_postgresql_version}/data
 
 %define daemon_config_dir %{_pscheduler_sysconfdir}/daemons
 %define db_config_dir %{_pscheduler_sysconfdir}/database
@@ -122,7 +132,7 @@ The pScheduler server
 
 %prep
 
-%if 0%{?el7} == 0
+%if 0%{?el7}%{?el8} == 0
 echo "This package cannot be built for %{dist}."
 false
 %endif
@@ -156,7 +166,7 @@ make -C daemons \
      LOGDIR=%{_pscheduler_log_dir} \
      PGDATABASE=%{database_name} \
      PGPASSFILE=%{_pscheduler_database_pgpass_file} \
-     PGSERVICE=%{pgsql_service}.service \
+     PGSERVICE=%{_pscheduler_postgresql_service}.service \
      PGUSER=%{_pscheduler_database_user} \
      PSUSER=%{_pscheduler_user} \
      ARCHIVERDEFAULTDIR=%{archiver_default_dir} \
@@ -252,7 +262,7 @@ mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_log_dir}
 #
 # API Server
 #
-API_ROOT="$(python -c 'import pscheduler ; print pscheduler.api_root()')"
+API_ROOT="$(%{_pscheduler_python} -c 'import pscheduler ; print(pscheduler.api_root())')"
 
 make -C api-server \
      'USER_NAME=%{_pscheduler_user}' \
@@ -263,6 +273,7 @@ make -C api-server \
      "PREFIX=${RPM_BUILD_ROOT}" \
      "DSN_FILE=%{dsn_file}" \
      "LIMITS_FILE=%{_pscheduler_limit_config}" \
+     "PYTHON=%(which %{_pscheduler_python})" \
      "RUN_DIR=%{run_dir}" \
      install
 
@@ -344,7 +355,7 @@ fi
 %define pgsql_max_connections 500
 %define pgsql_deadlock_timeout 5s
 
-%define pgsql_conf %{pg_data}/postgresql.conf
+%define pgsql_conf %{_pscheduler_postgresql_data}/postgresql.conf
 
 OLD_CONF_DIGEST=$(sha256sum "%{pgsql_conf}" | awk '{ print $1 }')
 
@@ -360,8 +371,7 @@ EOF
 
 NEW_CONF_DIGEST=$(sha256sum "%{pgsql_conf}" | awk '{ print $1 }')
 
-systemctl enable "%{pgsql_service}"
-systemctl start "%{pgsql_service}"
+systemctl enable --now "%{_pscheduler_postgresql_service}"
 
 # Restart the server only if the configuration has changed as a result
 # of what we did to it.  This is more for development convenience than
@@ -370,7 +380,7 @@ systemctl start "%{pgsql_service}"
 if [ "${NEW_CONF_DIGEST}" != "${OLD_CONF_DIGEST}" ]
 then
     echo "Restarting PostgreSQL after configuration change."
-    systemctl restart "%{pgsql_service}"
+    systemctl restart "%{_pscheduler_postgresql_service}"
 fi
 
 
@@ -437,6 +447,7 @@ for SERVICE in ticker runner archiver scheduler
 do
     NAME="pscheduler-${SERVICE}"
     systemctl enable "${NAME}"
+    systemctl start "${NAME}"
 done
 
 # Some old installations ended up with root-owned files in the run
@@ -470,6 +481,7 @@ then
 fi
 
 systemctl enable httpd
+systemctl start httpd
 
 
 #
@@ -531,11 +543,11 @@ if [ "$1" = "0" ]; then
 
     drop-in -r %{name} /dev/null $HBA_FILE
 
-    drop-in -r %{name} /dev/null "%{pg_data}/postgresql.conf"
+    drop-in -r %{name} /dev/null "%{_pscheduler_postgresql_data}/postgresql.conf"
 
     # Removing the max_connections change requires a restart, which
     # will also catch the HBA changes.
-    systemctl reload-or-try-restart "%{pgsql_service}"
+    systemctl reload-or-try-restart "%{_pscheduler_postgresql_service}"
 
 
 
@@ -580,9 +592,8 @@ fi
 # Any upgrade of python-pscheduler needs to force a database restart
 # because Pg doesn't see module upgrades.
 
-%triggerin -- python-pscheduler
-systemctl reload-or-try-restart "%{pgsql_service}"
-
+%triggerin -- %{_pscheduler_python}-pscheduler
+systemctl reload-or-try-restart "%{_pscheduler_postgresql_service}"
 
 # ------------------------------------------------------------------------------
 %files

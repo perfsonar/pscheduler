@@ -8,6 +8,7 @@ import pytz
 import socket
 import time
 import tzlocal
+import werkzeug
 
 from pschedulerapiserver import application
 
@@ -21,7 +22,7 @@ from .log import log
 @application.route("/", methods=['GET'])
 def root():
     return ok_json("This is the pScheduler API server on %s (%s)."
-              % (server_hostname(), pscheduler.api_local_host_fqdn()))
+              % (server_hostname(), pscheduler.api_local_host_name()))
 
 
 
@@ -44,8 +45,8 @@ def before_req():
         if version > max_api:
             return not_implemented(
                 "No API above %s is supported" % (max_api))
-    except ValueError:
-        return bad_request("Invalid API value.")
+    except ValueError as ex:
+        return bad_request("Invalid API value '%s': %s" %(arg_string("api"), str(ex)))
 
     # All went well.
     return None
@@ -53,6 +54,10 @@ def before_req():
 
 @application.errorhandler(Exception)
 def exception_handler(ex):
+
+    if isinstance(ex, werkzeug.exceptions.NotFound):
+        return not_found()
+
     log.exception()
     return error("Internal problem; see system logs.")
 
@@ -70,7 +75,7 @@ def exception():
 @application.route("/hostname", methods=['GET'])
 def hostname():
     """Return the hosts's name"""
-    return ok_json(pscheduler.api_local_host_fqdn())
+    return ok_json(pscheduler.api_local_host_name())
 
 
 @application.route("/schedule-horizon", methods=['GET'])
@@ -129,7 +134,7 @@ def get_status():
         cursor = dbcursor_query("SELECT extract(epoch from current_timestamp - pg_postmaster_start_time())", onerow=True)
         time_val = pscheduler.seconds_as_timedelta(cursor.fetchone()[0])
         response["services"]["database"] = { "uptime": str(pscheduler.timedelta_as_iso8601(time_val))  }
-    except Exception as ex:
+    except Exception:
         pass
 
     response["services"] = services
@@ -143,7 +148,7 @@ def get_status():
         for val in times:
             formatted.append(val[0].upper)
         runs["last-finished"] = str(pscheduler.datetime_as_iso8601(max(formatted)))
-    except Exception as ex:
+    except Exception:
         # handles empty result and faulty query
         runs["last-finished"] = None
 
@@ -155,7 +160,7 @@ def get_status():
         for val in times:
             formatted.append(val[0])
         runs["last-scheduled"] = str(pscheduler.datetime_as_iso8601(max(formatted)))
-    except Exception as ex:
+    except Exception:
         # handles empty result and faulty query
         runs["last-scheduled"] = None    
 

@@ -35,7 +35,7 @@ WSGISocketPrefix /tmp/%{name}
 EOF
 
 %prep
-%if 0%{?el6}%{?el7} == 0
+%if 0%{?el7}%{?el8} == 0
 echo "This package cannot be built for %{dist}."
 false
 %endif
@@ -43,9 +43,7 @@ false
 
 
 %post
-%if 0%{?el7}
 systemctl reload-or-try-restart httpd
-%endif
 
 
 

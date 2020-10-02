@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 """
 Send a result to http.
 """
@@ -53,9 +53,9 @@ def archive(json):
 
     if len(headers):
         # Remove all null headers
-        headers = dict((k, v) for k, v in headers.iteritems() if v)
+        headers = dict((k, v) for k, v in headers.items() if v)
         # Stringify all values
-        headers = dict((k, str(v)) for k, v in headers.iteritems())
+        headers = dict((k, str(v)) for k, v in headers.items())
 
 
     if op == 'post':

@@ -36,7 +36,7 @@ except Exception as ex:
 
 return { "status": status, "returned": returned }
 
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpython3u;
 
 
 DO $$ BEGIN PERFORM drop_function_all('http_put'); END $$;
@@ -61,7 +61,7 @@ except Exception as ex:
 
 return { "status": status, "returned": returned }
 
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpython3u;
 
 
 DO $$ BEGIN PERFORM drop_function_all('http_post'); END $$;
@@ -86,7 +86,7 @@ except Exception as ex:
 
 return { "status": status, "returned": returned }
 
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpython3u;
 
 
 DO $$ BEGIN PERFORM drop_function_all('http_delete'); END $$;
@@ -109,4 +109,4 @@ except Exception as ex:
 
 return { "status": status, "returned": returned }
 
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpython3u;

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Return participant-specific data for a run
 #
@@ -8,6 +8,8 @@ import random
 import sys
 from twping_defaults import *
 from twping_utils import CLIENT_ROLE, SERVER_ROLE, get_role, get_config
+
+random.seed()
 
 #Init logging
 log = pscheduler.Log(prefix="tool-twping", quiet=True)
@@ -25,7 +27,7 @@ def read_range(range_str):
         upper = int(range_vals[1])
         if lower >= upper:
             pscheduler.fail("Server configuration error. First port in range must be less than second port")
-        range_arr = range(lower, upper)
+        range_arr = list(range(lower, upper))
     else:
         pscheduler.fail("Server configuration error. Ports must contain an integer or range of integers")
     

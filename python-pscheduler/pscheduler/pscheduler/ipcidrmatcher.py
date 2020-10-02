@@ -2,10 +2,10 @@
 Class for doing enumerated matches
 """
 
-from jsonval import json_validate
+from .jsonval import json_validate
 import netaddr
 
-class IPCIDRMatcher():
+class IPCIDRMatcher(object):
 
     "Class that matches an IP Cidr list."
 
@@ -68,4 +68,4 @@ if __name__ == "__main__":
     for ip_address in ["192.168.1.1", "192.168.1.234", "192.168.2.1",
                        "1.2.3.4",
                        "10.16.57.254", "10.0.0.1"]:
-        print "%s in %s = %s" % (ip_address, cidrs, matcher.contains(ip_address))
+        print("%s in %s = %s" % (ip_address, cidrs, matcher.contains(ip_address)))

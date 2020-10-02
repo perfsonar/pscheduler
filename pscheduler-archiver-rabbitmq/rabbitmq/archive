@@ -1,10 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 """
 Send a result to RabbitMQ.
 """
 
-# Note that this imports the local copy, not what's installed on the
-# system.
 import pika
 
 import datetime
@@ -21,7 +19,7 @@ log = pscheduler.Log(prefix=log_prefix, quiet=True)
 
 
 
-class PikaConnectionChannelPair:
+class PikaConnectionChannelPair(object):
     """
     This class implements a RabbitMQ connection and channel pair
     """
@@ -35,7 +33,6 @@ class PikaConnectionChannelPair:
 
 
     def publish(self, message):
-
         self.channel.basic_publish(exchange=self.exchange,
                                    routing_key=self.routing_key,
                                    body=message)
@@ -43,8 +40,19 @@ class PikaConnectionChannelPair:
 
     def __del__(self):
 
-        self.channel.close()
-        self.connection.close()
+        # This is best-effort.
+
+        try:
+            self.channel.close()
+        except AttributeError:
+            pass
+
+        try:
+            self.connection.close()
+        except (AttributeError, pika.exceptions.ConnectionClosed):
+            pass
+
+
 
 
 
@@ -62,6 +70,8 @@ def archive(json):
 
     data = json["data"]
 
+    log.debug("Archiving: %s" % data)
+
     schema = data.get("schema", 1)
     if schema > MAX_SCHEMA:
         return {
@@ -73,7 +83,7 @@ def archive(json):
 
     # Figure out the routing key
     routing_key_raw = data.get("routing-key", "")
-    if isinstance(routing_key_raw, basestring):
+    if isinstance(routing_key_raw, str):
         data["routing-key"] = routing_key_raw
     else:
         # JQ Transform
@@ -90,6 +100,8 @@ def archive(json):
     log.debug("Routing key is '%s'" % (data["routing-key"]))
 
 
+    key = None
+
     try:
 
         key = "%s```%s```%s" % (
@@ -100,11 +112,17 @@ def archive(json):
 
         expires = pscheduler.iso8601_as_timedelta(data.get("connection-expires","PT1H"))
 
-        channels(key, data, expires).publish(pscheduler.json_dump(json["result"]))
+        channel = channels(key, data, expires)
+        channel.publish(pscheduler.json_dump(json["result"]))
 
         result = {'succeeded': True}
 
     except Exception as ex:
+
+        # Destroy the connection.  It's broken.
+        if key is not None:
+            log.debug("Dropping key %s" % (key))
+            channels.expire(key, missing_ok=True)
 
         try:
             if ex.__module__ == "pika.exceptions":

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Run a test.  Just the test spec is provided on stdin.
 #
@@ -13,6 +13,8 @@ import dns.reversename
 import dns.resolver
 
 #import pscheduler.dnspy
+
+log = pscheduler.Log(prefix='tool-dnspy', quiet=True)
 
 input = pscheduler.json_load(exit_on_error=True);
 resolver = dns.resolver.Resolver()
@@ -34,10 +36,19 @@ timeout_iso = input['test']['spec'].get("timeout", "PT5S" )
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 resolver.timeout = timeout
 resolver.lifetime = timeout
-start_time = datetime.datetime.now()
+
 
 # Perform the test
 
+try:
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
+start_time = datetime.datetime.now()
 error = None
 try:
     answers = resolver.query( query, record )
@@ -65,19 +76,19 @@ elif record in [ "cname", "ptr" ]:
     result_rec = str( answers[ 0 ])
 elif record in [ "mx" ]:
     result_rec = [ {
-	"pref" : mx.preference,
-	"mx" : str( mx.exchange )
+        "pref" : mx.preference,
+        "mx" : str( mx.exchange )
     } for mx in answers ]
 elif record in [ "soa" ]:
     soa = answers[ 0 ]
     result_rec = {
-	"nameserver" : str( soa.mname ),
-	"owner" : str( soa.rname ),
-	"serial" : soa.serial,
-	"refresh" : soa.refresh,
-	"retry" : soa.retry,
-	"expire" : soa.expire,
-	"minimum" : soa.minimum
+        "nameserver" : str( soa.mname ),
+        "owner" : str( soa.rname ),
+        "serial" : soa.serial,
+        "refresh" : soa.refresh,
+        "retry" : soa.retry,
+        "expire" : soa.expire,
+        "minimum" : soa.minimum
     }
 
 #
@@ -89,9 +100,9 @@ results = {
     'diags': '',
     'error': error,
     'result': {
-	'schema': 1,
-	'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
-	'succeeded' : succeeded
+        'schema': 1,
+        'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
+        'succeeded' : succeeded
     }
 }
 

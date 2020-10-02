@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Participant list generator for 'rtt' test spec
 #
@@ -8,7 +8,7 @@ import sys
 
 from validate import spec_is_valid
 
-json = pscheduler.json_load(exit_on_error=True, max_schema=3)
+json = pscheduler.json_load(exit_on_error=True)
 
 null_reason = None
 

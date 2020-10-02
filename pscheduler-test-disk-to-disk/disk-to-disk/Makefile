@@ -22,10 +22,14 @@ MODULES=\
 	validate \
 
 FILES += $(MODULES:%=%.py)
-PYCS=$(MODULES:%=%.pyc)
+PYCS=$(MODULES:%=__pycache__/%.pyc)
 
 $(PYCS):
-	python -m compileall .
+ifndef DESTDIR
+	@echo No PYTHON specified for build
+	@false
+endif
+	$(PYTHON) -m compileall .
 
 TO_CLEAN += $(PYCS)
 
@@ -37,7 +41,8 @@ ifndef DESTDIR
 
 endif
 	mkdir -p $(DESTDIR)
-	install -m 555 $(FILES) $(PYCS) $(DESTDIR)
+	install -m 555 $(FILES) $(DESTDIR)
+	cp -r __pycache__ $(DESTDIR)
 
 clean:
 	rm -f $(TO_CLEAN) *~

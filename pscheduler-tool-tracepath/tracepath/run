@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Run a test.  Just the test spec is provided on stdin.
 #
@@ -75,6 +75,14 @@ except KeyError:
 
 # TODO: Investigate whether we care about the -b switch.
 
+try:
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
 status, stdout, stderr = pscheduler.run_program( [tracepath], timeout=2)
 if status != 255 or '<destination>' not in stderr:
     pscheduler.succeed_json( {
@@ -106,7 +114,7 @@ except KeyError:
 argv.append(dest)
 
 # Force all args to be strings
-argv = map(lambda x: str(x), argv)
+argv = [str(x) for x in argv]
 
 
 

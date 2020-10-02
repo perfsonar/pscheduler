@@ -3,8 +3,8 @@
 #
 
 %define short	psclock
-%define perfsonar_auto_version 4.2.4
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 4.3.0
+%define perfsonar_auto_relnum 0.a0.0
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
@@ -13,16 +13,16 @@ Release:	%{perfsonar_auto_relnum}%{?dist}
 Summary:	Clock tester tool class for pScheduler
 BuildArch:	noarch
 License:	ASL 2.0
-Vendor:	perfSONAR
+Vendor:		perfSONAR
 Group:		Unspecified
 
 Source0:	%{short}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-server
-Requires:	python-pscheduler
-Requires:	pscheduler-test-idle
+Requires:	pscheduler-server >= 4.3.0
+Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
+Requires:	pscheduler-test-clock
 
 BuildRequires:	pscheduler-rpm
 

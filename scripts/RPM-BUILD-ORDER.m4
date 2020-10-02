@@ -19,7 +19,6 @@ dnl
 #               full bundle.
 #
 
-
 #
 # RPM BUILD UTILITIES
 #
@@ -37,7 +36,8 @@ pscheduler-rpm
 # DEVELOPMENT, LIBRARIES AND UTILITIES
 #
 
-# PostgreSQL Additions
+# PostgreSQL and Additions
+postgresql
 postgresql-init
 postgresql-load
 
@@ -45,27 +45,39 @@ postgresql-load
 jq
 
 # Python Modules
-python-setuptools
-python-argparse
-python-functools32
-python-isodate
-python2-pyrsistent
-python2-jsonschema
+ifelse(REDHAT_RELEASE_MAJOR,7,python-daemon)
+ifelse(REDHAT_RELEASE_MAJOR,7,python-isodate)
+# EL8 has this, but an older version
+python-itsdangerous
+python-pyrsistent
+# EL8 has this, but an older version
+python-jsonschema
 python-kafka
-python-netaddr
-python-ntplib
+
+# Used by pscheduler-archiver-esmond
+
+# EL8's is 1.58, ours is/was 1.59.  Commits to the project show only
+# cosmetic changes for the later version.
+ifelse(REDHAT_RELEASE_MAJOR,7,python-memcached)
+
+# EL8 has this, ours is newer
+python-netifaces
+ifelse(REDHAT_RELEASE_MAJOR,7,python-ntplib)
+python-parse-crontab
 python-py-radix
 python-pyjq
-# TODO: This can be dropped in 1.2
-python-repoze.lru
-python-subprocess32
 python-tzlocal
 python-vcversioner
-# This is how EL prefixes it.
-python2-pyasn1
-python2-pyasn1-modules
-# This doesn't get a python- prefix.  Ask CentOS why.
-pysnmp
+# EL8 has this, ours is newer
+python-pyasn1
+python-pyasn1-modules
+# EL8 has this, ours is newer
+python-werkzeug
+# EL8 has this, ours is newer
+python-flask
+# TODO: EPEL8 has a newer version that doesn't install.
+# See https://bugzilla.redhat.com/show_bug.cgi?id=1838402
+python-pysnmp
 
 # JSON Tools
 python-jsontemplate
@@ -73,6 +85,7 @@ python-jsontemplate
 
 # Home-grown Python Modules
 python-icmperror
+
 
 # Apache add-ons
 httpd-firewall
@@ -84,9 +97,16 @@ httpd-wsgi-socket
 # Utility and Tool programs
 #
 drop-in
+ethr
+# TODO: Building temporarily for EL8; required for owamp
+ifelse(REDHAT_RELEASE_MAJOR,8,I2util)
+# EPEL dropped this for EL8
+ifelse(REDHAT_RELEASE_MAJOR,8,iperf)
+# TODO: Building temporarily for EL8
+ifelse(REDHAT_RELEASE_MAJOR,8,owamp)
 paris-traceroute
 random-string
-
+s3-benchmark
 
 #
 # PSCHEDULER CORE PARTS
@@ -114,6 +134,7 @@ pscheduler-test-latencybg
 pscheduler-test-netreach			--bundle extras
 pscheduler-test-throughput
 pscheduler-test-rtt
+pscheduler-test-s3throughput
 pscheduler-test-simplestream
 pscheduler-test-snmpget			--bundle snmp
 pscheduler-test-snmpgetbgm		--bundle snmp
@@ -129,6 +150,7 @@ pscheduler-tool-bwctltracepath		--bundle obsolete
 pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl			--bundle extras
 pscheduler-tool-dnspy
+pscheduler-tool-ethr
 pscheduler-tool-globus			--bundle extras
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
@@ -142,6 +164,7 @@ pscheduler-tool-powstream
 pscheduler-tool-psclock
 pscheduler-tool-psurl
 pscheduler-tool-pysnmp			--bundle snmp
+pscheduler-tool-s3-benchmark
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm

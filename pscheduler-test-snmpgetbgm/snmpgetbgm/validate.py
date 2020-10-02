@@ -4,6 +4,8 @@
 
 from pscheduler import json_validate
 
+MAX_SCHEMA = 1
+
 def spec_is_valid(json):
 
     # SNMPv1Spec is valid for both snmp v1 and v2c 
@@ -94,7 +96,7 @@ def spec_is_valid(json):
         "additionalProperties": True
     }
 
-    return json_validate(json, schema)
+    return json_validate(json, schema, max_schema=MAX_SCHEMA)
 
 
 def result_is_valid(json):
@@ -115,28 +117,29 @@ def result_is_valid(json):
             "time",
             ]
         }
-    return json_validate(json, schema)
+
+    return json_validate(json, schema, max_schema=MAX_SCHEMA)
+
 
 def limit_is_valid(json):
     schema = {
         "type": "object",
         "properties": {
-			"host":			{ "$ref": "#/pScheduler/Limit/String" },
-			"host-node": 	{ "$ref": "#/pScheduler/Limit/String" },
-			"oid": 			{ "$ref": "#/pScheduler/Limit/String" },
-			"dest": 		{ "$ref": "#/pScheduler/Limit/String" },
-			"community": 	{ "$ref": "#/pScheduler/Limit/String" },
-			"version": 		{ "$ref": "#/pScheduler/Limit/String" },
-			"protocol": 	{ "$ref": "#/pScheduler/Limit/String" },
-			"timeout": 		{ "$ref": "#/pScheduler/Limit/Duration" },
-			"security-name":{ "$ref": "#/pScheduler/Limit/String" },
-			"auth-protocol":{ "$ref": "#/pScheduler/Limit/String" },
-			"priv-protocol":{ "$ref": "#/pScheduler/Limit/String" }, 
-			"auth-key": 	{ "$ref": "#/pScheduler/Limit/String" },
-			"priv-key": 	{ "$ref": "#/pScheduler/Limit/String" },
-			"security-level":{ "$ref": "#/pScheduler/Limit/String" },
-			"context":		{ "$ref": "#/pScheduler/Limit/String" }
-
+            "host":             { "$ref": "#/pScheduler/Limit/String" },
+            "host-node":        { "$ref": "#/pScheduler/Limit/String" },
+            "oid":              { "$ref": "#/pScheduler/Limit/String" },
+            "dest":             { "$ref": "#/pScheduler/Limit/String" },
+            "community":        { "$ref": "#/pScheduler/Limit/String" },
+            "version":          { "$ref": "#/pScheduler/Limit/String" },
+            "protocol":         { "$ref": "#/pScheduler/Limit/String" },
+            "timeout":          { "$ref": "#/pScheduler/Limit/Duration" },
+            "security-name":    { "$ref": "#/pScheduler/Limit/String" },
+            "auth-protocol":    { "$ref": "#/pScheduler/Limit/String" },
+            "priv-protocol":    { "$ref": "#/pScheduler/Limit/String" }, 
+            "auth-key":         { "$ref": "#/pScheduler/Limit/String" },
+            "priv-key":         { "$ref": "#/pScheduler/Limit/String" },
+            "security-level":   { "$ref": "#/pScheduler/Limit/String" },
+            "context":          { "$ref": "#/pScheduler/Limit/String" }
         },
         "additionalProperties": False
         }

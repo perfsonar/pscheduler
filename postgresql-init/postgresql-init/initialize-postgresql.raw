@@ -1,0 +1,70 @@
+#!/bin/sh -e
+#
+# Find the highest installed version of PostgreSQL and initialize it.
+#
+
+# These are wired in by the build process.
+PG_LIB="__PG_LIB__"
+USR="__USR__"
+PG_USR_PATTERN="pgsql-%s"
+PG_BIN="${USR}/${PG_USR_PATTERN}/bin"
+PG_USER="__PG_USER__"
+
+
+TMPBASE="${TMP:-/tmp}/${WHOAMI}.$$"
+mkdir -p "${TMPBASE}"
+# The upgrade process runs as PG_USER and writes here.
+chown "${PG_USER}.${PG_USER}" "${TMPBASE}"
+
+cleanup()
+{
+    rm -rf ${TMPBASE}
+}
+
+trap cleanup EXIT
+
+
+die()
+{
+    echo "$@" 1>&2
+    exit 1
+}
+
+
+[ $(id -u) -eq 0 ] \
+    || die "This program must be run as root."
+
+
+VERSIONS="${TMPBASE}/versions"
+
+CHOP=$(echo "$PG_USR_PATTERN" | sed -e 's|%.*$||')
+
+ls "${USR}" \
+    | egrep -e "^${CHOP}" \
+    | sed -e "s|${CHOP}||g" \
+    | sort -n \
+    | uniq \
+    > "${VERSIONS}"
+
+VER=$(tail -1 "${VERSIONS}")
+VER_MAJOR=$(echo "${VER}" | awk -F. '{ print $1 }')
+VER_BIN=$(printf "${PG_BIN}" "${VER_MAJOR}")
+VER_DATA="${PG_LIB}/${VER}/data"
+
+if [ -e "${VER_DATA}/PG_VERSION" ]
+then
+    echo "PostgreSQL ${VER} is already initialized; doing nothing."
+    exit 0
+fi
+
+systemctl stop "postgresql-${VER_MAJOR}"
+
+echo "Initializing PostgreSQL ${VER}."
+
+rm -rf "${VER_DATA}"
+mkdir -p  "${VER_DATA}"
+chown "${PG_USER}.${PG_USER}" "${VER_DATA}"
+
+"${VER_BIN}/postgresql-${VER_MAJOR}-setup" initdb
+
+systemctl start "postgresql-${VER_MAJOR}"

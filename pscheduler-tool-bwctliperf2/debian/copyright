@@ -3,11 +3,11 @@ Upstream-Name: pscheduler-tool-bwctliperf2
 Source: https://github.com/perfsonar/pscheduler
 
 Files: *
-Copyright: 2016-2018 perfSONAR project
+Copyright: 2016-2020 perfSONAR project
 License: Apache-2.0
 
 Files: debian/*
-Copyright: 2016-2018 perfSONAR project
+Copyright: 2016-2020 perfSONAR project
 License: Apache-2.0
 
 License: Apache-2.0

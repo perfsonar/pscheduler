@@ -33,7 +33,14 @@ $$ LANGUAGE plpgsql;
 
 \c __DATABASE__
 
-CREATE OR REPLACE LANGUAGE plpythonu;
+-- Remove any vestiges of Python 2
+-- TODO: Remove this after 4.3.x reaches EOL.
+DROP EXTENSION IF EXISTS plpython CASCADE;
+DROP EXTENSION IF EXISTS plpythonu CASCADE;
+
+-- Python language support
+CREATE EXTENSION IF NOT EXISTS plpython3u;
+CREATE OR REPLACE LANGUAGE plpython3u;
 
 -- Needed for generating UUIDs
 CREATE EXTENSION IF NOT EXISTS pgcrypto;

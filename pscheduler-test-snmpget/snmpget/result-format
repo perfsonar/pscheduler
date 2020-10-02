@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Format an snmpget result
 #
@@ -29,65 +29,69 @@ if format == 'text/plain':
     for i in range(len(result['data'])):
 
         if i > 0:
-            print
+            print()
 
         item = result['data'][i]
 
-        print 'OID: %s (%s)' % (spec['oid'][i], item['type'])
-        print '    %s' % (item['value'])
-
         try:
-            print '    Sequence number: %s' % item['seq_num']
+            print('OID: %s (%s)' % (spec['oid'][i], item['type']))
+            print('    %s' % (item['value']))
         except KeyError:
             pass
 
         try:
-            print '    Timestamp: %s' % item['timestamp']
+
+            print('    Sequence number: %s' % item['seq_num'])
+        except KeyError:
+            pass
+
+        try:
+            print('    Timestamp: %s' % item['timestamp'])
         except KeyError:
             pass
 
         # deltas
         try:
-            print '    Time delta: %s' % item['timedelta']
-            print '    Delta: %s' % item['delta']
+            print('    Time delta: %s' % item['timedelta'])
+            print('    Delta: %s' % item['delta'])
         except KeyError:
             pass
 
-    print
-    print 'Elapsed Time: %s' % result['time']
+    print()
+    print('Elapsed Time: %s' % result['time'])
 
 elif format == 'text/html':
-    print '<table>'
-    print '    <tr>'
-    print '        <th>Time</th>'
-    print '    </tr>'
-    print '    <tr>'
-    print '        <td>%s</td>' % result['time']
-    print '    </tr>'
-    print '    <tr>'
-    print '        <th>SNMP Data</th>'
-    print '    </tr>'
+    print('<table>')
+    print('    <tr>')
+    print('        <th>Time</th>')
+    print('    </tr>')
+    print('    <tr>')
+    print('        <td>%s</td>' % result['time'])
+    print('    </tr>')
+    print('    <tr>')
+    print('        <th>SNMP Data</th>')
+    print('    </tr>')
     for i in range(len(result['data'])):
-        print '<tr>'
-        print '    <td>OID: %s\t </td>' % spec['oid'][i]
+        print('<tr>')
+        print('    <td>OID: %s\t </td>' % spec['oid'][i])
         for item in result['data'][i]:
             try:
-                print '<td>Sequence number: %s\t </td>' % item['seq_num']
+                print('<td>Sequence number: %s\t </td>' % item['seq_num'])
             except KeyError:
                 pass
             try:
-                print '<td>Type: %s\t </td>' % item['type']
-                print '<td>Value: %s\n</td>' % item['value']
+                print('<td>Type: %s\t </td>' % item['type'])
+                print('<td>Value: %s\n</td>' % item['value'])
             except KeyError:
-                print '<td>Error: %s\n</td>' % item['value']
+                print('<td>Error: %s\n</td>' % item['value'])
             try:
-                print '<td>Time delta: %s\t </td>' % item['timedelta']
-                print '<td>Delta: %s\n</td>' % item['delta']   
+                print('<td>Time delta: %s\t </td>' % item['timedelta'])
+                print('<td>Delta: %s\n</td>' % item['delta'])   
             except KeyError:
                 pass
-        print '</tr>'
+        print('</tr>')
 
-    print '</table>'
+    print('</table>')
 
 
 else:

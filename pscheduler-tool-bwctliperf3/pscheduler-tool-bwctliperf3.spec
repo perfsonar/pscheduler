@@ -3,8 +3,8 @@
 #
 
 %define short	bwctliperf3
-%define perfsonar_auto_version 4.2.4
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 4.3.0
+%define perfsonar_auto_relnum 0.a0.0
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
@@ -31,11 +31,6 @@ BWCTL iperf3 tool class for pScheduler (DISABLED)
 
 
 %prep
-%if 0%{?el6}%{?el7} == 0
-echo "This package cannot be built on %{dist}."
-false
-%endif
-
 %setup -q -n %{short}-%{version}
 
 

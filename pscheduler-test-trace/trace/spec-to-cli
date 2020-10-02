@@ -1,12 +1,12 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Convert a test specification to command-line options
 
 import pscheduler
 
-from validate import spec_is_valid
+from validate import spec_is_valid, MAX_SCHEMA
 
-spec = pscheduler.json_load(exit_on_error=True, max_schema=1)
+spec = pscheduler.json_load(exit_on_error=True, max_schema=MAX_SCHEMA)
 
 valid, message = spec_is_valid(spec)
 
@@ -20,6 +20,7 @@ result = pscheduler.speccli_build_args(spec,
         ( 'algorithm', 'algorithm' ),
         ( 'as', 'as' ),
         ( 'dest', 'dest' ),
+        ( 'flow-label', 'flow-label' ),
         ( 'ip-version', 'ip-version' ),
         ( 'length', 'length' ),
         ( 'probe-type', 'probe-type' ),
@@ -31,7 +32,7 @@ result = pscheduler.speccli_build_args(spec,
         ( 'dest-port', 'dest-port' ),
         ( 'tos', 'tos' ),
         ( 'wait', 'wait' ),
-        ( 'send-wait', 'send-wait' ),
+        ( 'sendwait', 'sendwait' ),
         ],
                                        bools=[
         ( 'fragment', 'fragment' ),

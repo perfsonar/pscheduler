@@ -3,8 +3,8 @@
 #
 
 %define short	http
-%define perfsonar_auto_version 4.2.4
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 4.3.0
+%define perfsonar_auto_relnum 0.a0.0
 
 Name:		pscheduler-archiver-%{short}
 Version:	%{perfsonar_auto_version}
@@ -21,7 +21,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.1.6.1
-Requires:	python-pscheduler >= 1.3.7.1
+Requires:	%{_pscheduler_python}-pscheduler >= 1.3.7.1
 
 BuildRequires:	pscheduler-rpm
 

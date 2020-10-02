@@ -1,3 +1,10 @@
+pscheduler-test-netreach (4.3.0~a1.0-1) perfsonar-4.3-snapshot; urgency=low
+
+  * New upstream version.
+  * Building for Python 3 and Python 3 only.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 22 Apr 2020 18:33:32 +0000
+
 pscheduler-test-netreach (4.2.4-1) perfsonar-4.2; urgency=low
 
   * New upstream version.

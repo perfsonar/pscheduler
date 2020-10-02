@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Fetch the result of a run or runs by its URL
 #
@@ -47,7 +47,7 @@ opt_parser.disable_interspersed_args()
 opt_parser.add_option("--archivings",
                       help="For text output, dump archiving status",
                       action="store_true",
-		      default=False,
+                      default=False,
                       dest="archivings")
 
 opt_parser.add_option("--bind",
@@ -59,25 +59,25 @@ opt_parser.add_option("--bind",
 opt_parser.add_option("--diags",
                       help="For text output, dump participant diagnostics",
                       action="store_true",
-		      default=False,
+                      default=False,
                       dest="diags")
 
 opt_parser.add_option("--format",
                       help="Format for output: text (the default), html or json",
                       action="store", type="string",
-		      default="text",
+                      default="text",
                       dest="format")
 
 opt_parser.add_option("--output",
                       help="Path to write output",
                       action="store", type="string",
-		      default=None,
+                      default=None,
                       dest="output")
 
 opt_parser.add_option("--quiet",
                       help="For text output, don't display anything but the result",
                       action="store_true",
-		      default=False,
+                      default=False,
                       dest="quiet")
 
 opt_parser.add_option("--debug", action="store_true", dest="debug")
@@ -134,7 +134,7 @@ def print_message(message, exit_after):
     if exit_after:
         pscheduler.fail(message)
     else:
-        print message
+        print(message)
     
 
 def dump_run_result(url, out_format, exit_on_error=True):
@@ -220,18 +220,18 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
 
         firstline.append("with")
         firstline.append(task_json["tool"] + ":")
-        print pscheduler.prefixed_wrap(
-            "", " ".join(firstline), indent=2)
+        print(pscheduler.prefixed_wrap(
+            "", " ".join(firstline), indent=2))
 
         if print_run_url:
-            print
-            print run_json.get("href", "(URL is missing from data)")
+            print()
+            print(run_json.get("href", "(URL is missing from data)"))
 
-        print
-        print pscheduler.prefixed_wrap(
+        print()
+        print(pscheduler.prefixed_wrap(
             "", " ".join([ pipes.quote(arg) for arg in task_cli ]),
-            indent=2)
-        print
+            indent=2))
+        print()
 
     # Deal with the various reasons why the run might not have happened
 
@@ -250,7 +250,7 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
     run_ran = run_json["state"] == "finished"
     if not run_ran:
         print_message("Run did not complete: %s" % (run_json["state-display"]), exit_on_error)
-
+        return
 
     if (not run_ran) and run_json["state"] in ["overdue", "missed", "preempted"]:
         print_message("Run did not complete: %s" % (run_json["state-display"]), exit_on_error)
@@ -260,12 +260,14 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
         try:
             result_merged = run_json['result-merged']
             if result_merged is None:
-                pscheduler.fail("result-merged missing from run result")
+                print_message("result-merged missing from run result", False)
+                return
             succeeded = result_merged['succeeded']
             if succeeded is None:
                 raise KeyError()
-        except KeyError as ex:
-            pscheduler.fail("Data missing from run result")
+        except KeyError:
+            print_message("Data missing from run result", False)
+            return
     else:
         succeeded = False
 
@@ -288,20 +290,20 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
                     max_diff = max(max_diff, abs(time_b - time_a))
 
             if max_diff > datetime.timedelta(seconds=1.0):
-                print
-                print pscheduler.prefixed_wrap("", 
+                print()
+                print(pscheduler.prefixed_wrap("", 
                                                "This run likely failed because"
                                                " the clocks on participants differed"
                                                " by %s." % (max_diff)
-                                           )
+                                           ))
 
-        if "limit-diags" in run_json:
-            print
-            print "Limit system diagnostics for this run:"
-            print
-            print pscheduler.indent(run_json["limit-diags"])
+        if run_json.get("limit-diags", None) is not None:
+            print()
+            print("Limit system diagnostics for this run:")
+            print()
+            print(pscheduler.indent(run_json["limit-diags"]))
             
-        print
+        print()
 
 
         # TODO: Does this even matter?
@@ -311,23 +313,23 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
             err = None
 
         if err is not None:
-            print
-            print "Error:"
+            print()
+            print("Error:")
             try:
-                print "\n".join([
+                print("\n".join([
                     "    %s" % (string) for string in
                     err.split("\n")
-                ])
+                ]))
             except (KeyError, TypeError):
-                print "    (No error)"
+                print("    (No error)")
 
         # Participant diagnostics and errors
 
         parts = task_json["detail"]["participants"]
         for participant in range(0, len(parts)):
 
-            print
-            print "Diagnostics from %s:" % (parts[participant])
+            print()
+            print("Diagnostics from %s:" % (parts[participant]))
 
             try:
                 diags = run_json["result-full"][participant]["diags"]
@@ -335,46 +337,53 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
                     raise KeyError
             except (KeyError, TypeError, AttributeError):
                 diags = "No diagnostics."
-            print pscheduler.indent(diags, indent=2)
+            print(pscheduler.indent(diags, indent=2))
 
-            print
-            print "Error from %s:" % (parts[participant])
+            print()
+            print("Error from %s:" % (parts[participant]))
             try:
                 err = run_json["result-full"][participant].get("error")
                 if err is None or err == "":
                     raise KeyError
             except (KeyError, AttributeError, TypeError):
                 err = "No error."
-            print pscheduler.indent(err, indent=2)
+            print(pscheduler.indent(err, indent=2))
 
 
     # Dump the archiving information
 
     if succeeded and options.archivings:
-        print
-        print "Archivings:"
+        print()
+        print("Archivings:")
         if run_json.get('archivings', None) is not None:
             for archiving in run_json['archivings']:
-                print
-                print "  To %s, %s" % (
-                    archiving['archiver']['name'],
+                print()
+
+                # Servers 4.3 and later add the full archive spec with a label.
+                try:
+                    where_to = "To %s using %s" % (archiving['spec']['label'], archiving['spec']['name'])
+                except KeyError:
+                    where_to = "To %s" % (archiving['archiver']['name'])
+                print("  %s, %s" % (
+                    where_to,
                     "Finished" if archiving['archived'] else "Unfinished"
-                    )
+                    ))
+
                 for attempt in archiving['diags']:
                     try:
-                        if attempt['return-code'] <> 0:
+                        if attempt['return-code'] != 0:
                             raise TypeError  # Treat this as a failure.
                         succeeded = attempt['stdout']['succeeded']
                         diags = "" if succeeded else attempt['stdout']['error']
-                    except (KeyError, TypeError) as ex:
+                    except (KeyError, TypeError):
                         succeeded = False
                         diags = attempt['stderr']
-                    print "    %-25s %s" % (
+                    print("    %-25s %s" % (
                         attempt['time'],
                         "Succeeded" if succeeded else diags
-                        )
+                        ))
         else:
-            print pscheduler.indent("This task had no archivings.")
+            print(pscheduler.indent("This task had no archivings."))
 
 
 
@@ -437,9 +446,9 @@ for run in runs:
         pscheduler.fail(str(ex))
 
     if need_newline:
-        print
-        print
-        print
+        print()
+        print()
+        print()
     else:
         need_newline = True
     dump_run(run_json,

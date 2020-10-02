@@ -450,6 +450,7 @@ BEGIN
         array_to_json(array_agg(row_to_json(t)))
     FROM (
         SELECT
+            archiving.spec AS spec,
             archiver.json AS archiver,
             archiving.archiver_data AS archiver_data,
             archiving.completed AS completed,

@@ -1,13 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Convert a test specification to command-line options
 
 import pscheduler
 import validate
 
-spec = pscheduler.json_load(exit_on_error=True, max_schema=3)
+spec = pscheduler.json_load(exit_on_error=True)
 
-if type(spec) != dict:
+if not isinstance(spec, dict):
     pscheduler.fail("Invalid JSON for this operation")
 
 valid, message = validate.spec_is_valid(spec)
@@ -17,17 +17,15 @@ if not valid:
 strings = []
 bools = []
 
+schema = spec.get('schema', 1)
+try:
+    spec_properties = validate.SPEC_SCHEMA['local']['throughput_v{}'.format(schema)]['properties']
+except KeyError as ex:
+    pscheduler.fail('Internal problem with schema version {}: {}'.format(schema, str(ex)))
 
-if spec.get('schema', 1) == 3:
-    spec_properties = validate.SPEC_SCHEMA['local']['throughput_v3']['properties']
-elif spec.get('schema', 1) == 2:
-    spec_properties = validate.SPEC_SCHEMA['local']['throughput_v2']['properties']
-else:
-    spec_properties = validate.SPEC_SCHEMA['local']['throughput_v1']['properties']
-
-for item in spec_properties.keys():
+for item in spec_properties:
     if item == 'schema': continue
-    if spec_properties[item].has_key("$ref") and "Boolean" in spec_properties[item]['$ref']:
+    if "$ref" in spec_properties[item] and "Boolean" in spec_properties[item]['$ref']:
         bools.append( (item, item) )
     else:
         strings.append( (item, item) )

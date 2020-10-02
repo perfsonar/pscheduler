@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Format a spec
 #
@@ -7,12 +7,19 @@ import jsontemplate
 import pscheduler
 import sys
 
+import validate
+
 try:
    format = sys.argv[1]
 except IndexError:
    format = 'text/plain'
 
-json = pscheduler.json_load(exit_on_error=True, max_schema=3)
+json = pscheduler.json_load(exit_on_error=True)
+
+valid, message = validate.spec_is_valid(json)
+if not valid:
+    pscheduler.fail(message)
+
 
 if format == 'text/plain':
 
@@ -25,4 +32,4 @@ else:
    pscheduler.fail("Unsupported format '%s'" % format)
 
 
-print jsontemplate.expand(template, json).strip()
+print(jsontemplate.expand(template, json).strip())

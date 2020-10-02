@@ -6,8 +6,8 @@ import netaddr
 import re
 import socket
 
-from ipaddr import ip_addr_version
-from program import run_program
+from .ipaddr import ip_addr_version
+from .program import run_program
 
 mtu_match = re.compile("^.*pmtu ([0-9]+)")
 hop_match = re.compile("^\s*[0-9]+\??:")
@@ -96,4 +96,4 @@ if __name__ == "__main__":
             ("badhost.perfsonar.net", None)
     ]:
         host, version = pair
-        print host, version, mtu_path_is_safe(host, ipversion=version)
+        print(host, version, mtu_path_is_safe(host, ipversion=version))

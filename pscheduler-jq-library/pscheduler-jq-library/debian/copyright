@@ -3,11 +3,11 @@ Upstream-Name: pscheduler-jq-library
 Source: https://github.com/perfsonar/pscheduler
 
 Files: *
-Copyright: 2017-2018 perfSONAR project
+Copyright: 2017-2020 perfSONAR project
 License: Apache-2.0
 
 Files: debian/*
-Copyright: 2017-2018 perfSONAR project
+Copyright: 2017-2020 perfSONAR project
 License: Apache-2.0
 
 License: Apache-2.0

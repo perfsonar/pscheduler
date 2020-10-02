@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Run a test.  Just the test spec is provided on stdin.
 #
@@ -84,6 +84,19 @@ try:
         argv.append('-F')
 except KeyError:
     pass
+
+
+#
+# Flow Label
+#
+
+try:
+    flow_label = spec['flow-label']
+    argv.append('-l')
+    argv.append(str(flow_label))
+except KeyError:
+    pass
+
 
 
 #
@@ -266,7 +279,7 @@ if need_root:
     argv.insert(0, 'sudo')
 
 # Force all args to be strings
-argv = map(lambda x: str(x), argv)
+argv = [str(x) for x in argv]
 
 log.debug("Running %s", ' '.join(argv))
 
@@ -275,6 +288,14 @@ run_timeout += datetime.timedelta(seconds=2)
 log.debug("Timeout is %s", run_timeout)
 
 run_timeout_secs = pscheduler.timedelta_as_seconds(run_timeout)
+
+try:
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
 
 status, stdout, stderr \
     = pscheduler.run_program(argv, timeout = run_timeout_secs)

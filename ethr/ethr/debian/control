@@ -1,0 +1,22 @@
+Source: ethr
+Section: misc
+Priority: optional
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
+Build-Depends: debhelper (>= 9), golang-go (>= 2:1.8), git, ca-certificates
+Standards-Version: 3.9.8
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+XS-Go-Import-Path: github.com/Microsoft/Ethr
+
+Package: ethr
+Architecture: all
+Depends: ${misc:Depends}
+Description: A cross-platform network performance measurement tool
+ Ethr is a cross platform network performance measurement tool written
+ in golang. The goal of this project is to provide a native tool for
+ comprehensive network performance measurements of bandwidth,
+ connections/s, packets/s, latency, loss & jitter, across multiple
+ protocols such as TCP, UDP, HTTP, HTTPS, and across multiple platforms
+ such as Windows, Linux and other Unix systems.

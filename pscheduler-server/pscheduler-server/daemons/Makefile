@@ -6,7 +6,6 @@
 #   COMMANDDIR - Location for installed programs
 #   DAEMONDIR - Where daemon programs should be installed
 #   DSNFILE - Location of DSN file for database logins
-#   INITDDIR - Location for installed init scripts (/etc/rc.d/init.d)
 #   UNITDIR - Location for installed systemd units
 #   PGPASSFILE - Path to PostgreSQL password file
 #   PGSERVICE - Name of the PostgreSQL systemd service
@@ -29,7 +28,6 @@ COMMANDS=\
 	resume
 
 
-INITS=$(DAEMONS:%=init.d-%)
 UNITS=$(DAEMONS:%=service-%)
 
 CONFIGS=$(DAEMONS:%=%.conf)
@@ -123,51 +121,6 @@ endif
 TO_CLEAN += resume
 
 
-$(INITS): init.d-template.raw
-ifndef CONFIGDIR
-	@echo No CONFIGDIR specified for build
-	@false
-endif
-ifndef DAEMONDIR
-	@echo No DAEMONDIR specified for build
-	@false
-endif
-ifndef DSNFILE
-	@echo No DSNFILE specified for build
-	@false
-endif
-ifndef LOGDIR
-	@echo No LOGDIR specified for build
-	@false
-endif
-ifndef PSUSER
-	@echo No PSUSER specified for build
-	@false
-endif
-ifndef RUNDIR
-	@echo No RUNDIR specified for build
-	@false
-endif
-ifndef VAR
-	@echo No VAR specified for build
-	@false
-endif
-	sed \
-		-e 's|__CONFIGDIR__|$(CONFIGDIR)|g' \
-		-e 's|__DAEMONDIR__|$(DAEMONDIR)|g' \
-		-e 's|__DSN__|$(DSNFILE)|g' \
-		-e 's|__PROG__|$(@:init.d-%=%)|g' \
-		-e 's|__PSUSER__|$(PSUSER)|g' \
-		-e 's|__RUNDIR__|$(RUNDIR)|g' \
-		-e 's|__VAR__|$(VAR)|g' \
-		-e 's|__LOGDIR__|$(LOGDIR)|g' \
-		< $< > $@
-	@if egrep -e '__[A-Z_]+__' $@ ; then \
-		echo "Found un-substituted values in processed file $@" ; \
-		false ; \
-	fi
-TO_CLEAN += $(INITS)
-
 
 $(UNITS): service-template.raw
 ifndef CONFIGDIR
@@ -231,7 +184,7 @@ $(CONFIGS): config-template.raw
 TO_CLEAN += $(CONFIGS)
 
 
-build: $(DAEMONS) $(INITS) $(UNITS) $(CONFIGS) $(COMMANDS)
+build: $(DAEMONS) $(UNITS) $(CONFIGS) $(COMMANDS)
 	@true
 
 
@@ -252,6 +205,10 @@ ifndef DAEMONDIR
 	@echo No DAEMONDIR specified for installation
 	@false
 endif
+ifndef UNITDIR
+	@echo No UNITDIR specified for installation
+	@false
+endif
 	mkdir -p $(CONFIGDIR)
 	cp -f $(CONFIGS) $(CONFIGDIR)
 	chmod 600 $(CONFIGS:%=$(CONFIGDIR)/%)
@@ -261,16 +218,6 @@ endif
 	mkdir -p $(DAEMONDIR)
 	cp -f $(DAEMONS) $(DAEMONDIR)
 	chmod 555 $(DAEMONS:%=$(DAEMONDIR)/%)
-ifdef INITDDIR
-	mkdir -p $(INITDDIR)
-	@for SCRIPT in $(DAEMONS) ; \
-	do \
-		echo "Installing init.d for $${SCRIPT}" ; \
-		cp -f init.d-$${SCRIPT} $(INITDDIR)/pscheduler-$${SCRIPT} ; \
-		chmod 555 $(INITDDIR)/pscheduler-$${SCRIPT} ; \
-	done
-endif
-ifdef UNITDIR
 	mkdir -p $(UNITDIR)
 	@for SCRIPT in $(DAEMONS) ; \
 	do \
@@ -278,7 +225,6 @@ ifdef UNITDIR
 		cp -f service-$${SCRIPT} $(UNITDIR)/pscheduler-$${SCRIPT}.service ; \
 		chmod 444 $(UNITDIR)/pscheduler-$${SCRIPT}.service ; \
 	done
-endif
 
 
 clean:

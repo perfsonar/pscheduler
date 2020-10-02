@@ -4,8 +4,9 @@
 
 import pscheduler
 from powstream_defaults import *
-import ConfigParser
+import configparser
 import datetime
+import errno
 import os
 import re
 import shutil
@@ -27,7 +28,7 @@ log = pscheduler.Log(prefix="tool-powstream", quiet=True)
 def get_config():
     config = None
     try:
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         config.read(CONFIG_FILE)
     except:
         log.warning("Unable to read configuration file %s. Proceeding with defaults.")
@@ -42,11 +43,12 @@ def cleanup_dir(tmpdir, keep_data_files=False, ignore_errors=False):
     try:
         shutil.rmtree(tmpdir, ignore_errors=ignore_errors)
     except OSError as oe:
-        error = ""
-        if oe.errno: error = "%s: " % oe.errno
-        if oe.strerror: error += oe.strerror
-        if oe.filename: error += " (filename: %s)" % oe.filename
-        log.warning("Unable to remove powstream temporary directory %s due to error reported by OS: %s" % (tmpdir, error))
+        if oe.errno != errno.ENOENT:
+            error = ""
+            if oe.errno: error = "%s: " % oe.errno
+            if oe.strerror: error += oe.strerror
+            if oe.filename: error += " (filename: %s)" % oe.filename
+            log.warning("Unable to remove powstream temporary directory %s due to error reported by OS: %s" % (tmpdir, error))
     except:
         log.warning("Unable to remove powstream temporary directory %s: %s" % (tmpdir, sys.exc_info()[0]))
 
@@ -93,17 +95,20 @@ def cleanup_file(tmpfile, keep_data_files=False):
 
 ##
 # Handles reporting errors in pscheduler format
-def handle_run_error(msg, diags=None, do_log=True):
+def handle_run_error(msg, diags=None, do_log=True, exception=False):
     if do_log:
-        log.error(msg)
+        if exception:
+            log.exception(msg)
+        else:
+            log.error(msg)
     results = { 
         'schema': LATENCY_SCHEMA_VERSION, 
         'succeeded': False,
         'error': msg,
         'diags': diags
     }
-    print pscheduler.json_dump(results)
-    print pscheduler.api_result_delimiter()
+    print(pscheduler.json_dump(results))
+    print(pscheduler.api_result_delimiter())
     sys.stdout.flush()
 
 ##
@@ -129,8 +134,8 @@ def sleep_or_end(seconds, end_time, parent_pid):
     if time_left < datetime.timedelta(seconds=seconds) :
         #sleep until end time
         # don't convert until here because could be a real big value otherwise
-        # also once 2.6 is out of the picture, can just call time_left.total_seconds()
-        remaining_sleep_time = (time_left.microseconds + (time_left.seconds + time_left.days * 24 * 3600) * 10.0**6) / 10.0**6
+        remaining_sleep_time = time_left.total_seconds()
+
     
     while remaining_sleep_time > 0:
         if(max_sleep_interval < remaining_sleep_time):

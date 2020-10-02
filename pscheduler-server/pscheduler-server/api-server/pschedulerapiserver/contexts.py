@@ -49,10 +49,8 @@ def contexts_name_data_is_valid(name):
         return bad_request("No archive data provided")
 
     try:
-        returncode, stdout, stderr = pscheduler.run_program(
-            ["pscheduler", "internal", "invoke", "context",
-             name, "data-is-valid"],
-            stdin=data)
+        returncode, stdout, stderr = pscheduler.plugin_invoke(
+            "context", name, "data-is-valid", stdin=data)
 
         if returncode != 0:
             return error("Unable to validate context data: %s" % (stderr))

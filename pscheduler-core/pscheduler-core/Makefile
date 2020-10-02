@@ -20,9 +20,11 @@ RAWPROGRAMS=\
 	pscheduler
 
 COMMANDS=\
+	batch \
 	cancel \
 	clock \
 	env \
+	metrics \
 	monitor \
 	ping \
 	plot-schedule \

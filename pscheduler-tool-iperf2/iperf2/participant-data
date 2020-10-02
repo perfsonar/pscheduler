@@ -1,10 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Return participant-specific data for a run
 #
 
 import pscheduler
-import random
 import sys
 import iperf2_utils
 from iperf2_defaults import *

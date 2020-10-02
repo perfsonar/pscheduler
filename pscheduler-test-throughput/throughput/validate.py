@@ -5,6 +5,8 @@
 from pscheduler import json_validate
 import json
 
+MAX_SCHEMA = 4
+
 SPEC_SCHEMA = {
     "local": {
         "congestion": {
@@ -119,16 +121,48 @@ SPEC_SCHEMA = {
                 "dest"
             ]
         },
-        "throughput": {
-            "anyOf" : [
-                { "$ref": "#/local/throughput_v1" },
-                { "$ref": "#/local/throughput_v2" },
-                { "$ref": "#/local/throughput_v3" }
+        "throughput_v4" : {
+            "title": "pScheduler Throughput Specification Schema",
+            "type": "object",
+            "properties": {
+                "schema":      { "type": "integer", "enum": [ 4 ] },
+                "source":      { "$ref": "#/pScheduler/Host" },
+                "source-node": { "$ref": "#/pScheduler/URLHostPort" },
+                "dest":        { "$ref": "#/pScheduler/Host" },
+                "dest-node":   { "$ref": "#/pScheduler/URLHostPort" },
+                "duration":    { "$ref": "#/pScheduler/Duration" },
+                "interval":    { "$ref": "#/pScheduler/Duration" },
+                "link-rtt":    { "$ref": "#/pScheduler/Duration" },
+                "parallel":    { "$ref": "#/pScheduler/Cardinal" },
+                "udp":         { "$ref": "#/pScheduler/Boolean" },
+                "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },
+                "bandwidth-strict":   { "$ref": "#/pScheduler/Boolean" },
+                "burst-size": { "$ref": "#/pScheduler/Cardinal" },
+                "window-size": { "$ref": "#/pScheduler/Cardinal" },
+                "mss":         { "$ref": "#/pScheduler/Cardinal" },
+                "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
+                "ip-tos":        { "$ref": "#/pScheduler/IPTOS" },
+                "ip-version":    { "$ref": "#/pScheduler/ip-version" },
+                "local-address": { "$ref": "#/pScheduler/Host" },
+                "omit":          { "$ref": "#/pScheduler/Duration" },
+                "no-delay":    { "$ref": "#/pScheduler/Boolean" },
+                "congestion":    { "$ref": "#/local/congestion" },
+                "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
+                "flow-label":    { "$ref": "#/pScheduler/Cardinal" },
+                "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
+                "server-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
+                "single-ended": { "$ref": "#/pScheduler/Boolean" },
+                "single-ended-port": { "$ref": "#/pScheduler/Integer" },
+                "reverse": { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": False,
+            "required": [
+                "schema",
+                "dest"
             ]
         }
-    },
+    }
 
-    "$ref": "#/local/throughput"
 }
 
 RESULT_SCHEMA = {        
@@ -146,6 +180,10 @@ RESULT_SCHEMA = {
                     },
                 "throughput-bytes": {
                     "description": "Summarized view of the overall sender throughput rate in bytes/second",
+                    "type": "number"
+                    },
+                "receiver-throughput-bits": {
+                    "description": "Summarized view of the overall sender throughput rate in bits/second",
                     "type": "number"
                     },
                 "sent": {
@@ -266,7 +304,18 @@ LIMIT_SCHEMA = {
 
 
 def spec_is_valid(input_json):
-    return json_validate(input_json, SPEC_SCHEMA)
+
+    # Build a temporary structure with a reference that points
+    # directly at the validator for the specified version of the
+    # schema.  Using oneOf or anyOf results in error messages that are
+    # difficult to decipher.
+
+    temp_schema = {
+        "local": SPEC_SCHEMA["local"],
+        "$ref":"#/local/throughput_v%d" % input_json.get("schema", 1)
+    }
+
+    return json_validate(input_json, temp_schema, max_schema=MAX_SCHEMA)
 
 
 def result_is_valid(input_json):
@@ -278,5 +327,5 @@ def limit_is_valid(input_json):
 
 
 if __name__ == "__main__":
-    print result_is_valid({"diags": "------------------------------------------------------------\nClient connecting to 10.0.2.4, TCP port 5001\nTCP window size: 19.3 KByte (default)\n------------------------------------------------------------\n[  3] local 10.0.2.15 port 35914 connected with 10.0.2.4 port 5001\n[ ID] Interval       Transfer     Bandwidth\n[  3]  0.0- 1.0 sec   165 MBytes  1.39 Gbits/sec\n[  3]  1.0- 2.0 sec   207 MBytes  1.73 Gbits/sec\n[  3]  2.0- 3.0 sec   188 MBytes  1.58 Gbits/sec\n[  3]  3.0- 4.0 sec   213 MBytes  1.78 Gbits/sec\n[  3]  4.0- 5.0 sec   210 MBytes  1.76 Gbits/sec\n[  3]  5.0- 6.0 sec   224 MBytes  1.88 Gbits/sec\n[  3]  6.0- 7.0 sec   221 MBytes  1.85 Gbits/sec\n[  3]  7.0- 8.0 sec   221 MBytes  1.85 Gbits/sec\n[  3]  8.0- 9.0 sec   227 MBytes  1.90 Gbits/sec\n[  3]  9.0-10.0 sec   223 MBytes  1.87 Gbits/sec\n[  3]  0.0-10.0 sec  2.05 GBytes  1.76 Gbits/sec\n", "intervals": [{"streams": [{"jitter": None, "throughput-bits": 1390000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 120000000, "start": 0.0, "end": 1.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1390000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 165000000.0, "start": 0.0, "end": 1.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1730000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 207000000.0, "start": 1.0, "end": 2.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1730000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 207000000.0, "start": 1.0, "end": 2.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1580000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 188000000.0, "start": 2.0, "end": 3.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1580000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 188000000.0, "start": 2.0, "end": 3.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1780000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 213000000.0, "start": 3.0, "end": 4.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1780000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 213000000.0, "start": 3.0, "end": 4.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1760000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 210000000.0, "start": 4.0, "end": 5.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1760000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 210000000.0, "start": 4.0, "end": 5.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1880000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 224000000.0, "start": 5.0, "end": 6.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1880000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 224000000.0, "start": 5.0, "end": 6.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1850000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 221000000.0, "start": 6.0, "end": 7.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1850000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 221000000.0, "start": 6.0, "end": 7.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1850000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 221000000.0, "start": 7.0, "end": 8.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1850000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 221000000.0, "start": 7.0, "end": 8.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1900000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 227000000.0, "start": 8.0, "end": 9.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1900000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 227000000.0, "start": 8.0, "end": 9.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1870000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 223000000.0, "start": 9.0, "end": 10.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1870000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 223000000.0, "start": 9.0, "end": 10.0, "sent": None}}], "succeeded": True, "summary": {"streams": [{"jitter": None, "throughput-bits": 1760000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 2049999999.9999998, "start": 0.0, "end": 10.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1760000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 2049999999.9999998, "start": 0.0, "end": 10.0, "sent": None}}})
+    print(result_is_valid({"diags": "------------------------------------------------------------\nClient connecting to 10.0.2.4, TCP port 5001\nTCP window size: 19.3 KByte (default)\n------------------------------------------------------------\n[  3] local 10.0.2.15 port 35914 connected with 10.0.2.4 port 5001\n[ ID] Interval       Transfer     Bandwidth\n[  3]  0.0- 1.0 sec   165 MBytes  1.39 Gbits/sec\n[  3]  1.0- 2.0 sec   207 MBytes  1.73 Gbits/sec\n[  3]  2.0- 3.0 sec   188 MBytes  1.58 Gbits/sec\n[  3]  3.0- 4.0 sec   213 MBytes  1.78 Gbits/sec\n[  3]  4.0- 5.0 sec   210 MBytes  1.76 Gbits/sec\n[  3]  5.0- 6.0 sec   224 MBytes  1.88 Gbits/sec\n[  3]  6.0- 7.0 sec   221 MBytes  1.85 Gbits/sec\n[  3]  7.0- 8.0 sec   221 MBytes  1.85 Gbits/sec\n[  3]  8.0- 9.0 sec   227 MBytes  1.90 Gbits/sec\n[  3]  9.0-10.0 sec   223 MBytes  1.87 Gbits/sec\n[  3]  0.0-10.0 sec  2.05 GBytes  1.76 Gbits/sec\n", "intervals": [{"streams": [{"jitter": None, "throughput-bits": 1390000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 120000000, "start": 0.0, "end": 1.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1390000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 165000000.0, "start": 0.0, "end": 1.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1730000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 207000000.0, "start": 1.0, "end": 2.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1730000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 207000000.0, "start": 1.0, "end": 2.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1580000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 188000000.0, "start": 2.0, "end": 3.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1580000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 188000000.0, "start": 2.0, "end": 3.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1780000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 213000000.0, "start": 3.0, "end": 4.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1780000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 213000000.0, "start": 3.0, "end": 4.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1760000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 210000000.0, "start": 4.0, "end": 5.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1760000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 210000000.0, "start": 4.0, "end": 5.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1880000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 224000000.0, "start": 5.0, "end": 6.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1880000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 224000000.0, "start": 5.0, "end": 6.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1850000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 221000000.0, "start": 6.0, "end": 7.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1850000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 221000000.0, "start": 6.0, "end": 7.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1850000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 221000000.0, "start": 7.0, "end": 8.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1850000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 221000000.0, "start": 7.0, "end": 8.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1900000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 227000000.0, "start": 8.0, "end": 9.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1900000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 227000000.0, "start": 8.0, "end": 9.0, "sent": None}}, {"streams": [{"jitter": None, "throughput-bits": 1870000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 223000000.0, "start": 9.0, "end": 10.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1870000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 223000000.0, "start": 9.0, "end": 10.0, "sent": None}}], "succeeded": True, "summary": {"streams": [{"jitter": None, "throughput-bits": 1760000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 2049999999.9999998, "start": 0.0, "end": 10.0, "sent": None}], "summary": {"jitter": None, "throughput-bits": 1760000000.0, "lost": None, "stream-id": 3, "throughput-bytes": 2049999999.9999998, "start": 0.0, "end": 10.0, "sent": None}}}))
 

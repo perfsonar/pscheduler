@@ -49,9 +49,9 @@ def tests_name_spec(name):
     except ValueError as ex:
         return bad_request("JSON passed to 'args': %s " % (str(ex)))
 
-    status, stdout, stderr = pscheduler.run_program(
-        [ 'pscheduler', 'internal', 'invoke', 'test', name, 'cli-to-spec' ],
-        stdin = pscheduler.json_dump(args),
+    status, stdout, stderr = pscheduler.plugin_invoke(
+        'test', name, 'cli-to-spec',
+        stdin=pscheduler.json_dump(args),
         timeout=5
         )
 
@@ -83,10 +83,8 @@ def tests_name_spec_is_valid(name):
         return bad_request("No test spec provided")
 
     try:
-        returncode, stdout, stderr = pscheduler.run_program(
-            ["pscheduler", "internal", "invoke", "test",
-             name, "spec-is-valid"],
-            stdin=spec)
+        returncode, stdout, stderr = pscheduler.plugin_invoke(
+            "test", name, "spec-is-valid", stdin=spec)
 
         if returncode != 0:
             return error("Unable to validate test spec: %s" % (stderr))
@@ -143,10 +141,9 @@ def tests_name_participants(name):
         return bad_request("No test spec provided")
 
     try:
-        returncode, stdout, stderr = pscheduler.run_program(
-            [ "pscheduler", "internal", "invoke", "test", name,
-              "participants"],
-            stdin = spec,
+        returncode, stdout, stderr = pscheduler.plugin_invoke(
+            "test", name, "participants",
+            stdin=spec,
             )
     except KeyError:
         return bad_request("Invalid spec")

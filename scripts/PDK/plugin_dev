@@ -4,6 +4,7 @@
 # Create new test directory from a provided TEMPLATE dir
 #
 
+import glob
 import os
 import shutil
 import optparse
@@ -13,13 +14,13 @@ import sys
 args = sys.argv[1:]
 
 def print_usage():
-    print """
+    print("""
 Usage:
   plugin_dev (options) [test|archiver] [name]
   plugin_dev (options) [tool] [test-associated] [name]
 
 plugin_dev --help for more information
-"""
+""")
 
 usage = """
   plugin_dev (options) [test|archiver] [name]
@@ -40,10 +41,8 @@ parser.add_option("-d", "--dir", dest="directory",
 
 (options, args) = parser.parse_args(args)
 
-dest = False
-if options.directory is not None:
-    destDir = options.directory
-    dest = True
+
+whereAmI = os.path.dirname(sys.argv[0])
 
 try:
     if args[0] not in [ "test", "tool", "archiver" ]:
@@ -64,34 +63,49 @@ except IndexError:
     print_usage()
     exit(1)
 
-dirName = "pscheduler-" + type + "-TEMPLATE"
-toCopy = os.path.join("templates", type + ".TEMPLATE")
-# Copy everything to main directory
-newDir = dirName.replace("TEMPLATE", testName)
-if dest:
-    newDir = os.path.join(destDir, newDir)
+
+if options.directory is not None:
+    destDir = options.directory
 else:
-    newDir = os.path.join("..", "..", newDir)
+
+    # By default, point at the top of the pScheduler tree, which we
+    # assume to be in ../.. relative to this script.
+    destDir = os.path.join(whereAmI, "..", "..")
+
+    # ...but verify that by looking for at least one of the type of
+    # plugin we're making in that location.
+    if not glob.glob(os.path.join(destDir, "pscheduler-%s-*" % (type))):
+        print((os.path.abspath(destDir), "does not look like the top of the pScheduler tree."))
+        exit(1)
+
+
+
+
+dirName = "pscheduler-" + type + "-TEMPLATE"
+toCopy = os.path.join(whereAmI, "templates", type + ".TEMPLATE")
+# Copy everything to main directory
+newPlugin = dirName.replace("TEMPLATE", testName)
+newDir = os.path.join(destDir, newPlugin)
 
 try:
     shutil.copytree(toCopy, newDir)
 except shutil.Error as e:
-    print "Error copying directory: %s" % e
+    print(("Error copying directory: %s" % e))
     exit(1)
 except OSError as e:
-    print "Error copying directory: %s" % e
+    print(("Error copying directory: %s" % e))
     exit(1)
 
-os.chdir(newDir)
+absDir = os.path.abspath(os.path.join(whereAmI, newDir))
 
 # Rename directories
-for (path, dirs, files) in os.walk("."):
+for (path, dirs, files) in os.walk(absDir):
     for dirName in dirs:
         localPath = os.path.join(path, dirName)
         newName = dirName.replace("TEMPLATE", testName)
-        os.rename(dirName, newName)
+        os.rename(os.path.join(absDir, dirName), os.path.join(absDir, newName))
 
-for (path, dirs, files) in os.walk("."):
+for (path, dirs, files) in os.walk(absDir):
     for filename in files:
         localPath = os.path.join(path, filename)
         # Find and replace within files
@@ -106,8 +120,13 @@ for (path, dirs, files) in os.walk("."):
         # Rename all files as necessary
         os.rename(localPath, localPath.replace("TEMPLATE", testName))
 
-print """
-    New dir '%s' has been created.
+print(("""
+    New %s plugin '%s' has been created
+    at %s.
 
-    Please read README.md for further instructions.
-    """ % newDir
+    Please read %s for further instructions.
+    """ % (type,
+           testName,
+           absDir,
+           os.path.join(whereAmI, "README.md")
+    )))

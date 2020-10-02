@@ -3,7 +3,7 @@ Functions for determining the state of the system clock.  See
 clock_state() below.
 """
 
-
+import pscheduler
 import datetime
 import ntplib
 import pytz
@@ -117,6 +117,55 @@ def ntp_adjtime():
 
 # ---------------------------
 
+def chrony_clock_state(stdout, stderr):
+    adjtime = ntp_adjtime()
+    system_synchronized = adjtime.synchronized
+    utc = datetime.datetime.utcnow()
+    local_tz = tzlocal.get_localzone()
+    time_here = pytz.utc.localize(utc).astimezone(local_tz)
+
+    raw_offset = time_here.strftime("%z")
+    if len(raw_offset):
+        offset = raw_offset[:3] + ":" + raw_offset[-2:]
+    else:
+        offset = ""
+
+    result = {
+        "time": time_here.strftime("%Y-%m-%dT%H:%M:%S.%f") + offset,
+        "synchronized": system_synchronized,
+    }
+    if system_synchronized:
+
+    # chrony implementation
+        parameters = stdout.split("\n")
+        reference_str = ""
+        offset_str = ""
+        for parameter in parameters:
+            if "Reference" in parameter:
+                reference_str = parameter
+            if "Last offset" in parameter:
+                offset_str = parameter
+
+        try:
+            offset = offset_str[offset_str.find(':'):]
+            if offset != "":
+                result["offset"] = float(offset[2:].split(" ")[0][1:])
+            else:
+                raise Exception("Offset not found")
+            
+            result["source"] = "chrony"
+
+            reference = reference_str[reference_str.find('('):reference_str.find(')')]
+            if reference != "":
+                result["reference"] = reference[1:]
+            else:
+                raise Exception("Reference server not found")
+        
+        except Exception as ex:
+            result["synchronized"] = False
+            result["error"] = str(ex)
+    return result
+
 
 def clock_state():
     """
@@ -141,7 +190,10 @@ def clock_state():
     error -
 
     """
-
+    status, stdout, stderr = pscheduler.run_program(["chronyc"," tracking"])
+    if "FileNotFound" not in stderr:
+        if "506 Cannot talk to daemon" not in stdout:
+            return chrony_clock_state(stdout, stderr)
     adjtime = ntp_adjtime()
     system_synchronized = adjtime.synchronized
 
@@ -180,8 +232,3 @@ def clock_state():
             result["error"] = str(ex)
 
     return result
-
-
-if __name__ == "__main__":
-    import pscheduler
-    print pscheduler.json_dump(clock_state(), pretty=True)

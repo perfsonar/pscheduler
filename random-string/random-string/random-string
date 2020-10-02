@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # random-string - Generate random, printable strings.
 #
@@ -55,4 +55,4 @@ while remaining:
     string += charset[int((random.random() * charset_len))]
     remaining -= 1
 
-print string
+print(string)

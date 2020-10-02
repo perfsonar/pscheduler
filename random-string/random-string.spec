@@ -18,7 +18,7 @@ Source0:	%{name}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	python
+Requires:	%{_pscheduler_python}
 
 %description
 Random-string creates strings of random length that contain only

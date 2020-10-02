@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 from setuptools import setup
 
@@ -12,6 +12,7 @@ setup(
     license='Apache 2.0',
     packages=[
         'pscheduler',
+        'pscheduler.batchprocessor',
         'pscheduler.limitprocessor',
         'pscheduler.limitprocessor.identifier',
         'pscheduler.limitprocessor.limit',

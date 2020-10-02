@@ -28,10 +28,10 @@ DEFAULT_EARLY_SERVER_STOP = 2
 DEFAULT_TWAMPD_PORT = 862
 
 # The default twampd contol port range
-DEFAULT_TWAMPD_CTRL_PORTS = range(5601, 5900)
+DEFAULT_TWAMPD_CTRL_PORTS = list(range(5601, 5900))
 
 # The default twampd data port range
-DEFAULT_TWAMPD_DATA_PORTS = range(8760, 9960)
+DEFAULT_TWAMPD_DATA_PORTS = list(range(8760, 9960))
 
 #constants for working with config file
 CONFIG_FILE = '/etc/pscheduler/tool/twping.conf'

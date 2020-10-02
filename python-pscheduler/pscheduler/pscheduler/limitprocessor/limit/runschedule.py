@@ -2,7 +2,8 @@
 Limit Class for runschedule
 """
 
-import pscheduler
+from ...iso8601 import *
+from ...jsonval import *
 
 
 def wrappable_range_overlaps(start, end, test,
@@ -20,7 +21,7 @@ def wrappable_range_overlaps(start, end, test,
     must be completely contained within it.
     """
 
-    if type(test) != set:
+    if not isinstance(test, set):
         raise ValueError("Type of 'test' must be 'set'")
 
     if wrap_to >= wrap_after:
@@ -33,10 +34,10 @@ def wrappable_range_overlaps(start, end, test,
 
     ranges = []
     if end >= start:
-        ranges.extend(range(start, end+1))
+        ranges.extend(list(range(start, end+1)))
     else:
-        ranges.extend(range(start, wrap_after+1))
-        ranges.extend(range(0, wrap_to+1))
+        ranges.extend(list(range(start, wrap_after+1)))
+        ranges.extend(list(range(0, wrap_to+1)))
     ranges = set(ranges)
 
     return bool(test.intersection(ranges)) if overlap \
@@ -243,11 +244,11 @@ def runschedule_data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
     (bool, string) indicating valididty and any error message.
     """
-    return pscheduler.json_validate(data, runschedule_data_validator)
+    return json_validate(data, runschedule_data_validator)
 
 
 
-class LimitRunSchedule():
+class LimitRunSchedule(object):
 
     """
     Limit according to runschedule criteria
@@ -274,8 +275,8 @@ class LimitRunSchedule():
                 continue
             value_list = []
             for item in data[flatten]:
-                if type(item) == dict:
-                    value_list.extend(range(item['lower'], item['upper']+1))
+                if isinstance(item, dict):
+                    value_list.extend(list(range(item['lower'], item['upper']+1)))
                 else:
                     value_list.append(item)
 
@@ -293,8 +294,8 @@ class LimitRunSchedule():
 
         """Check that the proposed times don't overlap with this limit"""
 
-        start = pscheduler.iso8601_as_datetime(proposal['task']['run_schedule']['start'])
-        duration = pscheduler.iso8601_as_timedelta(proposal['task']['run_schedule']['duration'])
+        start = iso8601_as_datetime(proposal['task']['run_schedule']['start'])
+        duration = iso8601_as_timedelta(proposal['task']['run_schedule']['duration'])
         end = start + duration
 
         # Python's datetime doesn't have methods to get this.  Bravo.
@@ -318,6 +319,8 @@ class LimitRunSchedule():
             # Don't bother matching things that weren't specified
             if name not in self.matches:
                 continue
+
+            print("CHECK", name, lower, upper, wrap_after, wrap_to)
 
             if not wrappable_range_overlaps(lower, upper, self.matches[name],
                                             wrap_after=wrap_after,
@@ -359,4 +362,4 @@ if __name__ == "__main__":
 
 
     ev = limit.evaluate({ "task": test })
-    print test, ev
+    print(test, ev)

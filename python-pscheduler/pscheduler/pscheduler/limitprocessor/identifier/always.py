@@ -10,14 +10,14 @@ def data_is_valid(data):
     (bool, string) indicating valididty and any error message.
     """
 
-    if type(data) == dict and len(data) == 0:
-        return True, None
+    if isinstance(data, dict) and len(data) == 0:
+        return True, "OK"
 
     return False, "Data is not an object or not empty."
 
 
 
-class IdentifierAlways():
+class IdentifierAlways(object):
 
 
     """
@@ -50,4 +50,4 @@ if __name__ == "__main__":
     ident = IdentifierAlways({})
 
     for ip in [ "10.9.8.6", "198.6.1.1", "fd00:dead:beef::1" ]:
-        print ip, ident.evaluate({ "requester": ip })
+        print(ip, ident.evaluate({ "requester": ip }))

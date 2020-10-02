@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Run a test.  Just the test spec is provided on stdin.
 #
@@ -9,6 +9,8 @@ import sys
 import time
 
 import pscheduler
+
+log = pscheduler.Log(prefix="tool-net-snmp-set", quiet=True)
 
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
@@ -54,7 +56,7 @@ except KeyError:
     protocol = None
 
 # loop through spec to get cli switches 
-for key in input['test']['spec'].keys():
+for key in input['test']['spec']:
     try:
         argv.append(cli_switches[key])
         argv.append(input['test']['spec'][key])
@@ -85,7 +87,15 @@ for item in input['test']['spec']['oidargs']:
 
 
 # Stringify the arguments        
-argv = map(lambda x: str(x), argv)
+argv = [str(x) for x in argv]
+
+try:
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
 
 status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
 

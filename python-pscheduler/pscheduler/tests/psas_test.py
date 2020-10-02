@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 test for the Psas module.
 """
@@ -28,7 +29,7 @@ class TestPsas(PschedTestBase):
         # Do these only if it looks like anything worked at all.
         # Otherwise, we probably don't have a network connection.
 
-        if filter(lambda key: ret[key] is not None, ret):
+        if [key for key in ret if ret[key] is not None]:
 
             assert(ret.get('this-is-not-valid') is None)
             self.assertEqual(

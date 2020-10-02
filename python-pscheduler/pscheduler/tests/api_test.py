@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 test for the api module.
 """
@@ -56,8 +57,6 @@ class TestApi(PschedTestBase):
 
         # TODO: not sure if this is the best test - are there hosts
         # where we know it will be true?
-
-        # self.assertFalse(api_has_bwctl('localhost'))
         # self.assertFalse(api_has_pscheduler('localhost'))
 
 

@@ -1,0 +1,5 @@
+s3-benchmark (1.0-1) perfsonar-4.3-staging; urgency=low
+
+  * Initial release
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 29 Sep 2020 23:18:32 +0000

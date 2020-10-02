@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Convert comamnd-line options to a test specification
 
@@ -21,10 +21,12 @@ else:
    json_args = pscheduler.json_load(exit_on_error=True)
    args = []
 
-   if type(json_args) != list:
+   if not isinstance(json_args,list):
       pscheduler.fail("Invalid JSON for this operation")
    for arg in json_args:
-      if type(arg) not in (unicode, str, int, float):
+      if not ( isinstance(arg, str)
+               or isinstance(arg, int)
+               or isinstance(arg, float) ):
          pscheduler.fail("Invalid JSON for this operation")
    args = [ str(arg) for arg in json_args ]
 
@@ -98,6 +100,16 @@ opt_parser.add_option("-b", "--bandwidth",
                       help="Bandwidth to rate limit the test to, supports SI notation such as 1G",
                       action="store", type="string",
                       dest="bandwidth")
+
+opt_parser.add_option("--bandwidth-strict",
+                      help="Never go faster than --bandwidth, even to make up for lost time.",
+                      action="store_true",
+                      dest="bandwidth_strict")
+
+opt_parser.add_option("--burst-size",
+                      help="Limit bursts of packets to this number",
+                      action="store", type="string",
+                      dest="burst_size")
 
 opt_parser.add_option("-w", "--window-size",
                       help="TCP window size to use for the test, supports SI notation such as 64M",
@@ -243,14 +255,25 @@ if options.udp:
 if options.bandwidth is not None:
    try:
       result['bandwidth'] = pscheduler.si_as_number(options.bandwidth)
-   except ValueError as e:
-      pscheduler.fail("Invalid value \"%s\" for bandwidth: %s" % (options.bandwidth, e))
+   except ValueError as ex:
+      pscheduler.fail("Invalid value \"%s\" for bandwidth: %s" % (options.bandwidth, ex))
+
+if options.bandwidth_strict is not None:
+   result['bandwidth-strict'] = options.bandwidth_strict
+   schema.set(4)
+
+if options.burst_size is not None:
+   try:
+      result["burst-size"] = pscheduler.si_as_number(options.burst_size)
+      schema.set(4)
+   except ValueError as ex:
+      pscheduler.fail("Invalid value \"%s\" for burst size: %s" % (options.window_size, ex))
 
 if options.window_size is not None:
    try:
       result["window-size"] = pscheduler.si_as_number(options.window_size)
-   except ValueError as e:
-      pscheduler.fail("Invalid value \"%s\" for window size: %s" % (options.window_size, e))
+   except ValueError as ex:
+      pscheduler.fail("Invalid value \"%s\" for window size: %s" % (options.window_size, ex))
 
 if options.mss is not None:
    result["mss"] = options.mss

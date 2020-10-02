@@ -14,13 +14,13 @@ def parse_output(lines):
 
     try:
         content = json.loads("".join(lines))
-    except Exception as e:
+    except Exception as ex:
         results['succeeded'] = False
-        results['error'] = "Unable to parse iperf3 output as JSON: %s" % e  
+        results['error'] = "Unable to parse iperf3 output as JSON: %s" % ex
         return results
     
     intervals = []
-    if content.has_key('intervals'):
+    if 'intervals' in content:
         intervals = content['intervals']
     else:
         results['succeeded'] = False
@@ -51,7 +51,7 @@ def parse_output(lines):
 
 
     sum_end = {}
-    if content.has_key('end'):
+    if 'end' in content:
        sum_end =  content['end']
     else:
         results['succeeded'] = False
@@ -59,9 +59,9 @@ def parse_output(lines):
         return results
     
     # the "summary" keys are different for UDP/TCP here
-    if sum_end.has_key("sum_sent"):
+    if "sum_sent" in sum_end:
         summary = sum_end["sum_sent"]
-    elif sum_end.has_key("sum"):
+    elif "sum" in sum_end:
         summary = sum_end['sum']
     else:
         results['succeeded'] = False
@@ -70,15 +70,19 @@ def parse_output(lines):
 
     renamed_summary = rename_json(summary)
 
+    if "sum_received" in sum_end:
+        received_summary = rename_json(sum_end["sum_received"])
+        renamed_summary["receiver-throughput-bits"] = received_summary["throughput-bits"]
+
     # kind of like above, the streams summary is in a different key
     # json schema does not require, so ignore if not provided
     sum_streams = sum_end.get('streams', [])
 
     renamed_sum_streams = []
     for sum_stream in sum_streams:
-        if sum_stream.has_key("udp"):
+        if "udp" in sum_stream:
             renamed_sum_streams.append(rename_json(sum_stream['udp']))
-        elif sum_stream.has_key("sender"):
+        elif "sender" in sum_stream:
             renamed_sum_streams.append(rename_json(sum_stream['sender']))
 
     results["intervals"] = final_streams
@@ -110,8 +114,8 @@ def rename_json(obj):
         "mean_rtt": "rtt"
         }
 
-    for k,v in obj.iteritems():
-        if lookup.has_key(k):
+    for k,v in obj.items():
+        if k in lookup:
             new_obj[lookup[k]] = v
 
 

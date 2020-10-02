@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 #
 # Participant list generator for 'throughput' task spec
 #
@@ -15,7 +15,7 @@ from validate import spec_is_valid
 
 logger = pscheduler.Log(prefix='test-throughput', quiet=True)
 
-json = pscheduler.json_load(exit_on_error=True, max_schema=3)
+json = pscheduler.json_load(exit_on_error=True)
 
 valid, message = spec_is_valid(json)
 

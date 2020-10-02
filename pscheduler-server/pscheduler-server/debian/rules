@@ -23,6 +23,8 @@ include /usr/share/dpkg/default.mk
 DEB_VERSION := $(shell dpkg-parsechangelog | egrep '^Version:' | cut -f 2 -d ' ')
 DEB_SOURCE_PACKAGE ?= $(strip $(shell egrep '^Source: ' debian/control | cut -f 2 -d ':'))
 ROOT ?= $(CURDIR)/debian/$(DEB_SOURCE_PACKAGE)
+PYTHON := $(shell which python3)
+
 
 override_dh_auto_build:
 	make -C daemons \
@@ -62,7 +64,6 @@ override_dh_auto_build:
 override_dh_auto_install:
 	make -C daemons \
 		CONFIGDIR=$(ROOT)/etc/pscheduler/daemons \
-		INITDDIR=$(ROOT)/etc/init.d \
 		UNITDIR=$(ROOT)/lib/systemd/system \
 		DAEMONDIR=$(ROOT)/usr/lib/pscheduler/daemons \
 		COMMANDDIR=$(ROOT)/usr/lib/pscheduler/commands \
@@ -89,11 +90,10 @@ override_dh_auto_install:
 		DSN_FILE=/etc/pscheduler/database/database-dsn \
 		LIMITS_FILE=/etc/pscheduler/limits.conf \
 		RUN_DIR=/var/run/pscheduler-server \
+		PYTHON=$(PYTHON) \
 		install
 	cp api-server/*.py api-server/*.wsgi $(ROOT)/usr/share/pscheduler/api-server/
-	rm $(ROOT)/usr/share/pscheduler/api-server/*.py?
 	cp api-server/pschedulerapiserver/*.py $(ROOT)/usr/share/pscheduler/api-server/pschedulerapiserver/
-	rm $(ROOT)/usr/share/pscheduler/api-server/pschedulerapiserver/*.py?
 	mv $(ROOT)/etc/apache2/conf-available/pscheduler-api-server.conf \
 	   $(ROOT)/etc/apache2/conf-available/pscheduler-server.conf
 
@@ -113,16 +113,22 @@ override_dh_auto_install:
 	fi
 
 override_dh_installinit:
-	dh_installinit --onlyscripts --name=pscheduler-archiver
-	dh_installinit --onlyscripts --name=pscheduler-runner
-	dh_installinit --onlyscripts --name=pscheduler-scheduler
-	dh_installinit --onlyscripts --name=pscheduler-ticker
+	dh_installinit --name=pscheduler-archiver
+	dh_installinit --name=pscheduler-runner
+	dh_installinit --name=pscheduler-scheduler
+	dh_installinit --name=pscheduler-ticker
 
 override_dh_systemd_enable:
 	dh_systemd_enable --name=pscheduler-archiver
 	dh_systemd_enable --name=pscheduler-runner
 	dh_systemd_enable --name=pscheduler-scheduler
 	dh_systemd_enable --name=pscheduler-ticker
+
+override_dh_systemd_start:
+	dh_systemd_start --name=pscheduler-archiver
+	dh_systemd_start --name=pscheduler-runner
+	dh_systemd_start --name=pscheduler-scheduler
+	dh_systemd_start --name=pscheduler-ticker
 
 override_dh_auto_clean:
 	make -C api-server clean

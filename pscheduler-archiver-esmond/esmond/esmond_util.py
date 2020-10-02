@@ -3,7 +3,7 @@
 
 
 import pscheduler
-import urlparse
+import urllib
 
 log = pscheduler.Log(prefix="archiver-esmond", quiet=True)
 
@@ -169,8 +169,8 @@ DEFAULT_SUMMARIES = {
 ###
 # Utility functions
 def iso8601_to_seconds(val):
-    td = pscheduler.iso8601_as_timedelta(val)
-    return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 10.0**6) / 10.0**6
+    return pscheduler.iso8601_as_timedelta(val).total_seconds()
+
 
 ###
 # Private and unit testable  version of handle_storage
@@ -198,7 +198,7 @@ def handle_storage_error(result, attempts=0, policy=[]): # pragma: no cover
 
 ###
 # Utility classes
-class EsmondClient: # pragma: no cover
+class EsmondClient(object): # pragma: no cover
     
     def __init__(self, url="http://127.0.0.1/esmond/perfsonar/archive", 
                         auth_token=None, 
@@ -266,6 +266,7 @@ class EsmondClient: # pragma: no cover
             allow_redirects=False,
             timeout=HTTP_TIMEOUT)
 
+        log.debug("Esmond returned status code: %s" % (status_code))
         if status_code == 409:
             #duplicate data
             log.debug("Attempted to add duplicate data point. Skipping")
@@ -283,7 +284,7 @@ class EsmondClient: # pragma: no cover
 
         return True, ""
 
-class EsmondBaseRecord:
+class EsmondBaseRecord(object):
     test_type = None
     
     def __init__(self,
@@ -437,11 +438,11 @@ class EsmondBaseRecord:
         self.add_data(data_point=self.data[data_index], event_type='pscheduler-raw', val=test_result)
     
     def parse_metadata_field(self, key, val):
-        if type(val) is list:
+        if isinstance(val, list):
             for (i, v) in enumerate(val):
                 k = "%s-%d" % (key, i)
                 self.metadata[k] = v
-        elif type(val) is dict:
+        elif isinstance(val, dict):
             for sub_key in val:
                 if sub_key.startswith('_'):
                     continue
@@ -496,7 +497,7 @@ class EsmondDiskToDiskRecord(EsmondBaseRecord):
         #get source field from URL, then try measurement agent, then fallback to lead
         if src_field and src_field in test_spec:
             source_url = test_spec[src_field]
-            source_url_host = urlparse.urlparse(test_spec[src_field]).hostname
+            source_url_host = urllib.parse.urlparse(test_spec[src_field]).hostname
             if source_url_host:
                 input_source = source_url_host
             elif measurement_agent:
@@ -505,7 +506,7 @@ class EsmondDiskToDiskRecord(EsmondBaseRecord):
         #do same thingv we did for source but for dest
         if dst_field and dst_field in test_spec:
             dest_url = test_spec[dst_field]
-            dest_url_host = urlparse.urlparse(test_spec[dst_field]).hostname
+            dest_url_host = urllib.parse.urlparse(test_spec[dst_field]).hostname
             if dest_url_host:
                 input_dest = dest_url_host
             elif measurement_agent:
@@ -762,11 +763,10 @@ class EsmondThroughputRecord(EsmondBaseRecord):
             #add types               
             if len(throughput_intervals) > 0:
                 self.add_data(data_point=data_point, event_type="throughput-subintervals", val=throughput_intervals)
-            if throughput_stream_intervals > 0:
+            if len(throughput_stream_intervals) > 0:
+                # TODO: This could be better done as a list comprehension
                 formatted_tsi = []
-                sorted_streams = throughput_stream_intervals.keys()
-                sorted_streams.sort()
-                for id in sorted_streams:
+                for id in sorted(throughput_stream_intervals):
                     formatted_tsi.append(throughput_stream_intervals[id])
                 self.add_data(data_point=data_point, event_type="streams-throughput-subintervals", val=formatted_tsi)
             if not is_udp:
@@ -776,25 +776,22 @@ class EsmondThroughputRecord(EsmondBaseRecord):
                     self.add_data(data_point=data_point, event_type="packet-rtt-subintervals", val=rtt_intervals)
                 if len(tcp_windowsize_intervals) > 0:
                     self.add_data(data_point=data_point, event_type="tcp-windowsize-subintervals", val=tcp_windowsize_intervals)
-                if retransmit_stream_intervals > 0:
+                if len(retransmit_stream_intervals) > 0:
+                    # TODO: This could be better done as a list comprehension
                     formatted_rsi = []
-                    sorted_streams = retransmit_stream_intervals.keys()
-                    sorted_streams.sort()
-                    for id in sorted_streams:
+                    for id in sorted(retransmit_stream_intervals):
                         formatted_rsi.append(retransmit_stream_intervals[id])
                     self.add_data(data_point=data_point, event_type="streams-packet-retransmits-subintervals", val=formatted_rsi)
-                if rtt_stream_intervals > 0:
+                if len(rtt_stream_intervals) > 0:
+                    # TODO: This could be better done as a list comprehension
                     formatted_rttsi = []
-                    sorted_streams = rtt_stream_intervals.keys()
-                    sorted_streams.sort()
-                    for id in sorted_streams:
+                    for id in sorted(rtt_stream_intervals):
                         formatted_rttsi.append(rtt_stream_intervals[id])
                     self.add_data(data_point=data_point, event_type="streams-packet-rtt-subintervals", val=formatted_rttsi)
-                if tcp_windowsize_stream_intervals > 0:
+                if len(tcp_windowsize_stream_intervals) > 0:
+                    # TODO: This could be better done as a list comprehension
                     formatted_twssi = []
-                    sorted_streams = tcp_windowsize_stream_intervals.keys()
-                    sorted_streams.sort()
-                    for id in sorted_streams:
+                    for id in sorted(tcp_windowsize_stream_intervals):
                         formatted_twssi.append(tcp_windowsize_stream_intervals[id])
                     self.add_data(data_point=data_point, event_type="streams-tcp-windowsize-subintervals", val=formatted_twssi)
 

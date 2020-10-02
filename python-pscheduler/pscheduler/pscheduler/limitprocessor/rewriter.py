@@ -4,10 +4,12 @@ Processor for Task Rewriting
 
 import copy
 import re
-import pscheduler
 import pyjq
 
-class Rewriter():
+from ..jqfilter import *
+from ..psjson import *
+
+class Rewriter(object):
 
     """
     Class that handles rewriting tasks
@@ -62,7 +64,7 @@ class Rewriter():
 
         transform["script"] = script_lines
 
-        self.transform = pscheduler.JQFilter(
+        self.transform = JQFilter(
             filter_spec=transform,
             args=transform.get("args", {}),
             groom=True
@@ -98,11 +100,11 @@ class Rewriter():
 
         if ("test" not in result) \
            or ("type" not in result["test"]) \
-           or (not isinstance(result["test"]["type"], basestring)) \
+           or (not isinstance(result["test"]["type"], str)) \
            or ("spec" not in result["test"]) \
            or (result["test"]["type"] != proposal["task"]["test"]["type"]):
             raise ValueError("Invalid rewriter result:\n%s" \
-                             % pscheduler.json_dump(result))
+                             % json_dump(result))
 
         changed = result[self.PRIVATE_KEY]["changed"]
         diags = result[self.PRIVATE_KEY]["diags"]
@@ -204,13 +206,13 @@ if __name__ == "__main__":
 
         if changed:
             if len(diags):
-                print "Diagnostics:"
-                print "\n".join(map(lambda s: " - " + s,diags))
+                print("Diagnostics:")
+                print("\n".join([" - " + s for s in diags]))
             else:
-                print "No diagnostics."
-            print
-            print pscheduler.json_dump(new_task, pretty=True)
+                print("No diagnostics.")
+            print()
+            print(json_dump(new_task, pretty=True))
         else:
-            print "No changes."
+            print("No changes.")
     except Exception as ex:
-        print "Failed:", ex
+        print("Failed:", ex)

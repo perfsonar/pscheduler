@@ -2,11 +2,11 @@
 # RPM Spec for Python pScheduler Module
 #
 
-%define perfsonar_auto_version 4.2.4
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 4.3.0
+%define perfsonar_auto_relnum 0.a0.0
 
 %define short	pscheduler
-Name:		python-%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	%{perfsonar_auto_version}
 Release:	%{perfsonar_auto_relnum}%{?dist}
 Summary:	Utility functions for pScheduler
@@ -26,58 +26,49 @@ Source0:	%{short}-%{version}.tar.gz
 # BuildRequires because they're required to run the tests.
 
 Requires:	iputils
-Requires:	python-dateutil
-Requires:	python-dns
-Requires:	python-isodate
-Requires:	python-ipaddr
-Requires:       python-ipaddress
-Requires:	python2-jsonschema >= 3.0
-Requires:	python-netaddr
-Requires:	python-netifaces
-Requires:	python-ntplib
-Requires:	python-psycopg2 >= 2.6.1
-Requires:	python-py-radix
+Requires:	%{_pscheduler_python_epel}-dateutil
+Requires:	%{_pscheduler_python_epel}-dns
+Requires:	%{_pscheduler_python}-isodate
+Requires:	%{_pscheduler_python}-jsonschema >= 3.0
+Requires:	%{_pscheduler_python_epel}-netaddr
+Requires:	%{_pscheduler_python}-netifaces
+Requires:	%{_pscheduler_python}-ntplib
+Requires:	%{_pscheduler_python_epel}-psycopg2 >= 2.6.1
+Requires:	%{_pscheduler_python}-py-radix
 # The limit system uses this.
 Requires:	pscheduler-jq-library
-Requires:	python-pycurl
-Requires:	python-pyjq >= 2.2.0
-Requires:	python-subprocess32
-Requires:	python-tzlocal
-Requires:	pytz
+Requires:	%{_pscheduler_python_epel}-pycurl
+Requires:	%{_pscheduler_python}-pyjq >= 2.2.0
+Requires:	%{_pscheduler_python}-tzlocal
+Requires:	%{_pscheduler_python_epel}-pytz
 Requires:	rsyslog
 Requires:	logrotate
 Requires:       numactl
 
 BuildRequires:	pscheduler-rpm
-BuildRequires:	python-coverage
-BuildRequires:	python-nose
-BuildRequires:	python-setuptools
+BuildRequires:	%{_pscheduler_python_epel}-coverage
+BuildRequires:	%{_pscheduler_python_epel}-nose
+BuildRequires:	%{_pscheduler_python}-setuptools
 
 # NOTE:  Cloned from above.
 BuildRequires:	iputils
-BuildRequires:	python-dateutil
-BuildRequires:	python-dns
-BuildRequires:	python-isodate
-BuildRequires:	python-ipaddr
-BuildRequires:  python-ipaddress
-%if 0%{?el6}
-BuildRequires:	python-jsonschema
-%endif
+BuildRequires:	%{_pscheduler_python_epel}-dateutil
+BuildRequires:	%{_pscheduler_python_epel}-dns
+BuildRequires:	%{_pscheduler_python}-isodate
 %if 0%{?el7}
-BuildRequires:	python2-jsonschema
+BuildRequires:	%{_pscheduler_python}-jsonschema
 %endif
-BuildRequires:	python-netaddr
-BuildRequires:	python-netifaces
-BuildRequires:	python-ntplib
-BuildRequires:	python-psycopg2 >= 2.2.0
-BuildRequires:	python-py-radix
+BuildRequires:	%{_pscheduler_python_epel}-netaddr
+BuildRequires:	%{_pscheduler_python}-netifaces
+BuildRequires:	%{_pscheduler_python}-ntplib
+BuildRequires:	%{_pscheduler_python_epel}-psycopg2 >= 2.2.0
+BuildRequires:	%{_pscheduler_python}-py-radix
 # The limit system uses this.
 BuildRequires:	pscheduler-jq-library
-BuildRequires:	python-pycurl
-BuildRequires:	python-pyjq >= 2.2.0
-BuildRequires:	python-subprocess32
-BuildRequires:	python-tzlocal
-BuildRequires:	pytz
+BuildRequires:	%{_pscheduler_python_epel}-pycurl
+BuildRequires:	%{_pscheduler_python}-pyjq >= 2.2.0
+BuildRequires:	%{_pscheduler_python}-tzlocal
+BuildRequires:	%{_pscheduler_python_epel}-pytz
 BuildRequires:  numactl
 
 
@@ -103,11 +94,11 @@ Utility functions for pScheduler
 
 
 %build
-make
+make CLASSES="%{_pscheduler_classes}"
 
 
 %install
-python setup.py install --root=$RPM_BUILD_ROOT -O1  --record=INSTALLED_FILES
+%{_pscheduler_python} setup.py install --root=$RPM_BUILD_ROOT -O1  --record=INSTALLED_FILES
 
 mkdir -p $RPM_BUILD_ROOT/%{logrotate_d}
 cat > $RPM_BUILD_ROOT/%{logrotate_d}/%{name} <<EOF

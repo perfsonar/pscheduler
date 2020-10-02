@@ -13,18 +13,36 @@ then
     exit 1
 fi
 
-for PACKAGE in $("${WHEREAMI}/build-order" \
+TMPBASE="${TMP:-/tmp}/$(basename $0).$$"
+
+cleanup()
+{
+    rm -rf ${TMPBASE}*
+}
+trap cleanup EXIT
+
+LIST="${TMPBASE}.list"
+
+
+
+for DIR in $( ${WHEREAMI}/build-order \
     | awk '{ print NR, $0 }' \
     | sort -rn \
-    | cut -d ' ' -f 2-)
+    | cut -d ' ' -f 2- )
 do
-    printf "Removing ${PACKAGE}..."
-    # Don't care if these fail, just get rid of them.
-    if rpm --quiet -q ${PACKAGE}
-    then
-	yum -q -y remove ${PACKAGE} || true
-	echo "  Done."
-    else
-	echo "  Not installed."
-    fi
+    SPEC=$(find "${DIR}" -name "*.spec" -print | head -1)
+    for PACKAGE in $(rpmspec -q --qf '%{NAME}\n' "${SPEC}" \
+	| sort | uniq)
+    do
+	printf "Removing ${PACKAGE}..."
+	# Don't care if these fail, just get rid of them.
+	if rpm --quiet -q ${PACKAGE}
+	then
+	    yum -q -y remove ${PACKAGE} || true
+	    echo "  Done."
+	else
+	    echo "  Not installed."
+	fi
+    done
+
 done
