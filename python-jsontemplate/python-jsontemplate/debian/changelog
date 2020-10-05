@@ -1,4 +1,4 @@
-python-jsontemplate (0.87-3) perfsonar-minor-staging; urgency=low
+python-jsontemplate (0.87-3) perfsonar-release; urgency=low
 
   * Building for python3 only
 
