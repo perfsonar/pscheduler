@@ -6,7 +6,7 @@ Source: https://github.com/mjschultz/py-radix
 Files: *
 Copyright:
  2004-2014 Damien Miller <djm@mindrot.org>
- 2014-2018 Michael J. Schultz <mjschultz@gmail.com>
+ 2014-2020 Michael J. Schultz <mjschultz@gmail.com>
 License: ISC
 
 Files: radix/_radix.c
@@ -23,7 +23,7 @@ License: BSD-4-clause
 Files: debian/*
 Copyright:
  2007-2009,2011 Christoph Berg <myon@debian.org>
- 2018 Aggelos Avgerinos <evggelos.avgerinos@gmail.com>
+ 2020 Aggelos Avgerinos <evggelos.avgerinos@gmail.com>
 License: ISC
 
 License: ISC

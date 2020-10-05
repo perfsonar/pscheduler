@@ -3,7 +3,7 @@
 #
 
 %define perfsonar_auto_version 4.3.0
-%define perfsonar_auto_relnum 0.a0.0
+%define perfsonar_auto_relnum 0.b1.1
 
 Name:		pscheduler-account
 Version:	%{perfsonar_auto_version}

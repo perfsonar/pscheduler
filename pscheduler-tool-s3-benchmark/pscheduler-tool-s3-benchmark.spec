@@ -10,7 +10,7 @@
 # they should be added here (line 25).
 %define short	s3-benchmark
 %define perfsonar_auto_version 4.3.0
-%define perfsonar_auto_relnum 0.a0.0
+%define perfsonar_auto_relnum 0.b1.1
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
@@ -29,6 +29,7 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server
 Requires:	%{_pscheduler_python}-pscheduler
 Requires: 	s3-benchmark
+Requires:   pscheduler-test-s3throughput
 
 BuildRequires:	pscheduler-rpm
 

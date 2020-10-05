@@ -1,8 +1,8 @@
-pscheduler-bundle-obsolete (4.3.0~a1.0-1) perfsonar-4.3-snapshot; urgency=low
+pscheduler-bundle-obsolete (4.3.0~b1.1-1) perfsonar-4.3; urgency=low
 
   * New upstream version.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 22 Apr 2020 18:33:32 +0000
+ -- perfSONAR developers <debian@perfsonar.net>  Fri, 02 Oct 2020 12:53:01 +0000
 
 pscheduler-bundle-obsolete (4.2.4-1) perfsonar-4.2; urgency=low
 

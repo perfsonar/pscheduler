@@ -33,3 +33,6 @@ debian/patches/*~
 
 # Ignore encryption leftovers
 .pki/
+
+# Ignore Vagrant cache
+.vagrant/
