@@ -83,6 +83,13 @@ then
     exit 0
 fi
 
+FROM_ENCODING=$(su - "${PG_USER}" \
+    -c "'${FROM_BIN}/psql' --single-line --no-align --tuples-only -c 'SHOW server_encoding;'")
+
+FROM_LOCALE=$(su - "${PG_USER}" \
+    -c "'${FROM_BIN}/psql' --single-line --no-align --tuples-only -c 'SHOW lc_collate;'")
+
+
 
 # What we're upgrading to.
 
@@ -120,7 +127,10 @@ echo "#"
 echo
 
 # Initialize the database
-su - "${PG_USER}" -c "'${TO_BIN}/initdb' -D '${TO_DATA}'"
+echo "Initializing ${TO} with encoding '${FROM_ENCODING}' and locale '${FROM_LOCALE}'"
+su - "${PG_USER}" \
+    -c "'${TO_BIN}/initdb' --pgdata '${TO_DATA}' --encoding '${FROM_ENCODING}' --locale '${FROM_LOCALE}'"
+echo
 
 # Do the upgrade
 su - "${PG_USER}" -c \
