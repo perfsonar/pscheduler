@@ -8,7 +8,7 @@ Build-Depends: autopkgtest,
                dh-python,
                python3-all,
                python3-setuptools,
-               python3-pyrsistent,
+               python3-pyrsistent | python3-pyrsistent-u18
 Build-Depends-Indep: python3-attr,
                      python3-mock,
                      python3-nose,
