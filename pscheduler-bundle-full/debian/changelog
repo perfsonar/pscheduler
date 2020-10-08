@@ -1,3 +1,10 @@
+pscheduler-bundle-full (4.3.0~b1.3-2) perfsonar-4.3; urgency=low
+
+  * Introducing pscheduler-bundle-full-nos3 for architectures not able to run
+    the S3-benchmark tool.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Thu, 08 Oct 2020 14:34:32 +0000
+
 pscheduler-bundle-full (4.3.0~b1.3-1) perfsonar-4.3; urgency=low
 
   * New upstream version.
