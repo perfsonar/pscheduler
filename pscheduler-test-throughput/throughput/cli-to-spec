@@ -304,8 +304,18 @@ if options.ip_tos:
 if options.no_delay:
    result["no-delay"] = True
 
+
 if options.congestion:
+
+   # In schemas 1-3, this value was a hard-coded list.  In schema 4,
+   # it is no longer validated and is passed directly to the tool.  We
+   # don't have to bump the schema for the old, hard-coded values.
+   if options.congestion not in [ "bbr", "bic", "cubic", "htcp",
+                                  "reno", "vegas", "westwood", "yeah" ]:
+      schema.set(4)
+
    result["congestion"] = options.congestion
+
 
 if options.zero_copy:
    result["zero-copy"] = True
