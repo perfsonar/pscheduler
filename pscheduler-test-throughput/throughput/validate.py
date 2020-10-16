@@ -9,11 +9,20 @@ MAX_SCHEMA = 4
 
 SPEC_SCHEMA = {
     "local": {
+
+        # Schemas 1-3
         "congestion": {
             "type": "string",
             "enum": ["reno", "cubic", "bic", "htcp", "vegas", "westwood",
                      "yeah", "bbr"]
         },
+
+        # Schema 4 and later
+        "congestion-unvalidated": {
+            "type": "string",
+            "minLength": 1
+        },
+
         "throughput_v1" : {
             "title": "pScheduler Throughput Specification Schema",
             "type": "object",
@@ -146,7 +155,7 @@ SPEC_SCHEMA = {
                 "local-address": { "$ref": "#/pScheduler/Host" },
                 "omit":          { "$ref": "#/pScheduler/Duration" },
                 "no-delay":    { "$ref": "#/pScheduler/Boolean" },
-                "congestion":    { "$ref": "#/local/congestion" },
+                "congestion":    { "$ref": "#/local/congestion-unvalidated" },
                 "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
                 "flow-label":    { "$ref": "#/pScheduler/Cardinal" },
                 "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
