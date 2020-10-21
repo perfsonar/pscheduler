@@ -41,6 +41,7 @@ Requires:       %{_pscheduler_python}-pytz
 
 Requires:	curl
 Requires:       dmidecode
+Requires:       lsof
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:	m4
@@ -55,6 +56,7 @@ Core programs for pScheduler
 
 %build
 make \
+     ARCHIVEDEFAULTDIR=%{_pscheduler_archiver_default_dir} \
      BINDIR=$RPM_BUILD_ROOT/%{_bindir} \
      COMMANDSDIR=$RPM_BUILD_ROOT/%{_pscheduler_commands} \
      COMMANDSINSTALLED=%{_pscheduler_commands} \

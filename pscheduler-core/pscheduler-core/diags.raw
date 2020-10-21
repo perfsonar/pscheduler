@@ -47,6 +47,16 @@ section()
 
 # ------------------------------------------------------------------------------
 
+# Other Utilities
+
+dump_url()
+{
+    curl -s -k "$1" 2>&1
+}
+
+
+# ------------------------------------------------------------------------------
+
 #
 # Header
 #
@@ -61,10 +71,6 @@ echo "$(date)" | center
 # pScheduler
 #
 
-dump_url()
-{
-    curl -s -k "$1" 2>&1
-}
 
 section "Installed Tests"
 dump_url 'https://localhost/pscheduler/tests?pretty&expanded=true'
@@ -86,6 +92,21 @@ done
 section "Installed Archivers"
 dump_url 'https://localhost/pscheduler/archivers?pretty&expanded=true'
 
+section "Global Archivers"
+
+FOUND=false
+for FILE in $(find __ARCHIVE_DEFAULT__ -type f)
+do
+    echo
+    echo "${FILE}:"
+    cat "${FILE}"
+    FOUND=true
+done
+
+$FOUND || echo "None installed"
+
+
+
 section "Clock State"
 dump_url 'https://localhost/pscheduler/clock?pretty'
 
@@ -101,10 +122,10 @@ section "New Tasks by Hour Added"
 postgresql-load <<EOF
 \c pscheduler
 SELECT
-    date_trunc('hour', added) AS hour,
-    count(*)
+date_trunc('hour', added) AS hour,
+count(*)
 FROM
-    task
+task
 GROUP BY hour
 ORDER BY hour
 ;
@@ -116,10 +137,10 @@ section "New Runs by Hour Added"
 postgresql-load <<EOF
 \c pscheduler
 SELECT
-    date_trunc('hour', added) AS hour,
-    count(*)
+date_trunc('hour', added) AS hour,
+count(*)
 FROM
-    run
+run
 GROUP BY hour
 ORDER BY hour
 ;
@@ -131,12 +152,12 @@ section "Run States by Hour"
 postgresql-load <<EOF
 \c pscheduler
 SELECT
-    run_state.enum AS state,
-    date_trunc('hour', added) AS hour,
-    count(*)
+run_state.enum AS state,
+date_trunc('hour', added) AS hour,
+count(*)
 FROM
-    run
-    JOIN run_state ON run_state.id = run.state
+run
+JOIN run_state ON run_state.id = run.state
 GROUP BY run_state.id, hour
 ORDER BY run_state.id, hour
 ;
@@ -220,6 +241,10 @@ dmidecode
 
 section Kernel Message Log
 dmesg
+
+
+section Open Files
+lsof
 
 
 section Installed Packages
