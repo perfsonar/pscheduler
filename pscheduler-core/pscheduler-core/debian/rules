@@ -26,7 +26,8 @@ ROOT ?= $(CURDIR)/debian/$(DEB_SOURCE_PACKAGE)
 
 override_dh_auto_build:
 	make	\
-		BINDIR=$(ROOT)/usr/bin/ \
+		ARCHIVEDEFAULTDIR=$(ROOT)/etc/pscheduler/default-archives \
+		BINDIR=$(ROOT)/usr/bin \
 		COMMANDSDIR=$(ROOT)/usr/lib/pscheduler/commands \
 		COMMANDSINSTALLED=/usr/lib/pscheduler/commands \
 		CLASSESDIR=$(ROOT)/usr/lib/pscheduler/classes \
@@ -40,7 +41,8 @@ override_dh_auto_build:
 
 override_dh_auto_install:
 	make	\
-		BINDIR=$(ROOT)/usr/bin/ \
+		ARCHIVEDEFAULTDIR=$(ROOT)/etc/pscheduler/default-archives \
+		BINDIR=$(ROOT)/usr/bin \
 		COMMANDSDIR=$(ROOT)/usr/lib/pscheduler/commands \
 		COMMANDSINSTALLED=/usr/lib/pscheduler/commands \
 		CLASSESDIR=$(ROOT)/usr/lib/pscheduler/classes \
