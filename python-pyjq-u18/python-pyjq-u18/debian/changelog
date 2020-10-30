@@ -1,3 +1,9 @@
+python-pyjq-u18 (2.3.0-2~u18+2) perfsonar-4.3-staging; urgency=low
+
+  * Conflicting with python3-pyjq
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 30 Oct 2020 20:25:41 +0000
+
 python-pyjq-u18 (2.3.0-2~u18+1) perfsonar-4.3-staging; urgency=low
 
   * Backport to Ubuntu 18.

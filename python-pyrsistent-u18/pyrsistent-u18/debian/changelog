@@ -1,3 +1,9 @@
+pyrsistent-u18 (0.14.11-3~u18+2) perfsonar-4.3-staging; urgency=low
+
+  * Conflicting with python3-pyrsistent
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 30 Oct 2020 20:24:27 +0000
+
 pyrsistent-u18 (0.14.11-3~u18+1) perfsonar-4.3-staging; urgency=low
 
   * Backport for Ubuntu 18.

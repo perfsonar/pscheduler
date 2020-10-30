@@ -26,6 +26,8 @@ Depends:
  ${misc:Depends},
  ${python3:Depends},
  ${shlibs:Depends}
+Conflicts: python3-pyrsistent
+Provides: python3-pyrsistent
 Description: persistent/functional/immutable data structures for Python
  Pyrsistent is a number of persistent collections (sometimes referred
  to as functional data structures). Persistent in  the sense that they

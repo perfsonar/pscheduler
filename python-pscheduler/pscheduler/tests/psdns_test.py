@@ -56,7 +56,6 @@ class TestPsdns(PschedTestBase):
             ret = dns_bulk_resolve([
                 'aaaa1.nv.perfsonar.net',
             ], ip_version=6)
-
             self.assertEqual(ret.get('aaaa1.nv.perfsonar.net'), 'fc00::1')
 
         # reverse
