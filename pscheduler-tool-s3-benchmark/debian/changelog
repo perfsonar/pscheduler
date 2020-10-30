@@ -1,6 +1,6 @@
-pscheduler-tool-s3-benchmark (4.3.0~b1.3-1) perfsonar-4.3; urgency=low
+pscheduler-tool-s3-benchmark (4.3.0-1) perfsonar-4.3; urgency=low
 
   * Initial release
 
- -- perfSONAR developers <debian@perfsonar.net>  Tue, 06 Oct 2020 18:26:18 +0000
+ -- perfSONAR developers <debian@perfsonar.net>  Fri, 30 Oct 2020 13:49:58 +0000
 

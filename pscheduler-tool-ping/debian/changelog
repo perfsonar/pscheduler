@@ -1,9 +1,9 @@
-pscheduler-tool-ping (4.3.0~b1.3-1) perfsonar-4.3; urgency=low
+pscheduler-tool-ping (4.3.0-1) perfsonar-4.3; urgency=low
 
   * New upstream version.
   * Building for Python 3 and Python 3 only.
 
- -- perfSONAR developers <debian@perfsonar.net>  Tue, 06 Oct 2020 18:26:18 +0000
+ -- perfSONAR developers <debian@perfsonar.net>  Fri, 30 Oct 2020 13:49:58 +0000
 
 pscheduler-tool-ping (4.2.4-1) perfsonar-4.2; urgency=low
 

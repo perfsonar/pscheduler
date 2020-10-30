@@ -29,7 +29,7 @@ except KeyError:
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 3)
+    pscheduler.json_check_schema(spec, 4)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,

@@ -3,7 +3,7 @@
 #
 
 %define perfsonar_auto_version 4.3.0
-%define perfsonar_auto_relnum 0.b1.3
+%define perfsonar_auto_relnum 1
 
 Name:		pscheduler-core
 Version:	%{perfsonar_auto_version}
@@ -41,6 +41,7 @@ Requires:       %{_pscheduler_python}-pytz
 
 Requires:	curl
 Requires:       dmidecode
+Requires:       lsof
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:	m4
@@ -55,6 +56,7 @@ Core programs for pScheduler
 
 %build
 make \
+     ARCHIVEDEFAULTDIR=%{_pscheduler_archiver_default_dir} \
      BINDIR=$RPM_BUILD_ROOT/%{_bindir} \
      COMMANDSDIR=$RPM_BUILD_ROOT/%{_pscheduler_commands} \
      COMMANDSINSTALLED=%{_pscheduler_commands} \
