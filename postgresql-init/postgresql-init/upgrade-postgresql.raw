@@ -80,6 +80,11 @@ FROM_DATA="${PG_LIB}/${FROM}/data"
 if [ ! -e "${FROM_DATA}/PG_VERSION" ]
 then
     echo "Old PostgreSQL ${FROM} is not initialized; no upgrade needed."
+
+    # This undoes a problem in 4.3.0 that overlooked the reboot case.
+    echo "Disabling it for safety."
+    systemctl disable --now "postgresql-${FROM}"
+
     exit 0
 fi
 
@@ -142,9 +147,12 @@ su - "${PG_USER}" -c \
      -U '${PG_USER}' \
      --retain"
 
-# Restart the new version
+
+# Disable the old and restart the new version
 # TODO: This will vary by distro
-systemctl start "postgresql-${TO}"
+systemctl disable --now "postgresql-${FROM}"
+systemctl enable --now "postgresql-${TO}"
+
 
 # These two scripts are written by pg_upgrade.
 
