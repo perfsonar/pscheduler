@@ -3,7 +3,10 @@
 #
 
 Name:		postgresql-init
-Version:	%{_pscheduler_postgresql_version}
+
+# Note that the dot after this is for versions of this package rather
+# than the Pg relese.
+Version:	%{_pscheduler_postgresql_version}.1
 Release:	1%{?dist}
 
 Summary:	Initializes and upgrades PostgreSQL

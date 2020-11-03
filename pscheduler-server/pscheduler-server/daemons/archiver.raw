@@ -904,7 +904,7 @@ def main_program():
             if len(result) == 0:
                 log.debug("Nothing in the future.")
             else:
-                next_refresh = pscheduler.timedelta_as_seconds(result.next()[0])
+                next_refresh = pscheduler.timedelta_as_seconds(next(result)[0])
                 log.debug("Next archiving in %s", next_refresh)
 
             continue
