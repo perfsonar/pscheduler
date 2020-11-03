@@ -20,9 +20,11 @@ Homepage: https://github.com/Julian/jsonschema
 
 Package: python3-jsonschema
 Architecture: all
-Depends: python3 (>= 3.2.3),
+# We cannot use ${python3:Depends} because we want to add the -u18 dep
+Depends: python3:any (>= 3.3.2-2~),
+         python3-pyrsistent | python3-pyrsistent-u18,
+         python3-attr, python3-pkg-resources, python3-six (>= 1.10.0),
          ${misc:Depends},
-         ${python3:Depends},
 Description: An(other) implementation of JSON Schema (Draft 7) - Python 3.x
  JSON Schema is a specification for a JSON-based format for defining
  the structure of JSON data. JSON Schema provides a contract for what

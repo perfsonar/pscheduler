@@ -12,6 +12,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-test-latencybg
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server, python3-jsontemplate, python3-jsonschema (>= 2.5.1)
+ pscheduler-server
 Description: pScheduler latency background test
  Latency test class for pScheduler that runs in the background.
