@@ -6,7 +6,7 @@
 # make the scriptlets use them on CentOS 7.  For now the old-style
 # init scripts function just fine.
 
-%define perfsonar_auto_version 4.3.1
+%define perfsonar_auto_version 4.4.0
 %define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-server
