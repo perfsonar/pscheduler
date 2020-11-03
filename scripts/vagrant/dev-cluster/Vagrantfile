@@ -170,7 +170,6 @@ Vagrant.configure("2") do |config|
         mv -f /etc/hosts.build /etc/hosts
       SHELL
 
-
       #
       # perfSONAR Development
       #
@@ -220,6 +219,20 @@ Vagrant.configure("2") do |config|
 
         # perfSONAR
         REPO_PREFIX="http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/$(uname -m)/latest/packages/perfSONAR-repo"
+        for REPO in "" extras staging
+        do
+            [ "$REPO" != "" ] && REPO="${REPO}-"
+            yum -y install "${REPO_PREFIX}-${REPO}#{ps_repo_version}.noarch.rpm"
+        done
+
+	# Things we need to build:
+	yum -y install \
+	    git \
+	    m4 \
+	    make \
+	    which \
+	    \
+	    man-pages man-db man
 
         if [ "${REDHAT_RELEASE_MAJOR}" = "7" ]
         then
