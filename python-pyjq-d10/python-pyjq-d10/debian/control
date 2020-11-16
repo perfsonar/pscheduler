@@ -1,0 +1,23 @@
+Source: python-pyjq-d10
+Section: net
+Priority: optional
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
+Build-Depends: debhelper (>= 9), dh-python, python3-setuptools,
+ python3-all, python3-six, python3-mock, cython (>=0.19),
+ libjq-dev (>=1.6), libonig-dev (>=6.9.0), libpython3-dev
+Standards-Version: 3.9.8
+Homepage: https://pypi.python.org/pypi/pyjq
+
+Package: python3-pyjq-d10
+Architecture: any
+Conflicts: python3-pyjq
+Provides: python3-pyjq
+Depends: ${python3:Depends}, ${misc:Depends}, ${shlibs:Depends}
+Description: Python bindings for jq
+ jq is like sed for JSON data – you can use it to slice and filter and map and
+ transform structured data with the same ease that sed, awk, grep and friends
+ let you play with text.
+ .
+ You can seamlessly call jq script (like regular expression) and process plain
+ python data structure.
