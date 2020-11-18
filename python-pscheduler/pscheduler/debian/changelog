@@ -1,9 +1,9 @@
-python-pscheduler (4.3.2~a1.0-1) perfsonar-4.3-snapshot; urgency=low
+python-pscheduler (4.3.2-1) perfsonar-4.3; urgency=low
 
   * New upstream version.
   * Cleaning up dependencies.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sun, 15 Nov 2020 21:29:18 +0000
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 18 Nov 2020 15:41:13 +0000
 
 python-pscheduler (4.3.0-1) perfsonar-4.3; urgency=low
 
