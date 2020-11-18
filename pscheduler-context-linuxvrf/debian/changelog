@@ -1,5 +1,9 @@
-pscheduler-context-linuxvrf (4.3.2~a1.0-1) perfsonar-4.3-snapshot; urgency=low\n\n  * New upstream version.\n\n -- perfSONAR developers <debian@perfsonar.net>  Mon, 09 Nov 2020 15:29:54 +0000\n
-pscheduler-context-linuxvrf (4.3.1-1) perfsonar-4.3; urgency=low
+pscheduler-context-linuxvrf (4.3.2-1) perfsonar-4.3; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 18 Nov 2020 15:41:13 +0000
+
 pscheduler-context-linuxvrf (4.3.0-1) perfsonar-4.3; urgency=low
 
   * New upstream version.

@@ -1,5 +1,5 @@
---- a/tests/ipaddr_test.py	2020-11-03 21:38:46.949878586 +0000
-+++ b/tests/ipaddr_test.py	2020-11-03 21:38:53.785978812 +0000
+--- a/tests/ipaddr_test.py	2020-11-18 15:41:12.664776629 +0000
++++ b/tests/ipaddr_test.py	2020-11-18 15:41:19.207816142 +0000
 @@ -43,7 +43,7 @@
          self.assertEqual(ip_addr_version('::1/32'), (6, '::1'))
          self.assertEqual(ip_addr_version('::1/32', resolve=False), (6, '::1'))
@@ -18,8 +18,8 @@
          self.assertEqual(ip_addr_version('::1/quack', resolve=False, family=True), (None, None))
  
          # By DNS name.  These are guaranteed to be stable as long as
---- a/tests/psurl_test.py	2020-11-03 21:38:46.954878659 +0000
-+++ b/tests/psurl_test.py	2020-11-03 21:38:53.785978812 +0000
+--- a/tests/psurl_test.py	2020-11-18 15:41:12.664776629 +0000
++++ b/tests/psurl_test.py	2020-11-18 15:41:19.207816142 +0000
 @@ -23,7 +23,7 @@
          no_scheme = "no-scheme"
  
