@@ -1,3 +1,9 @@
+python-jsonschema (3.0.1-4) perfsonar-4.3-staging; urgency=low
+
+  * Cleaning up dependencies.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 16 Nov 2020 21:05:35 +0000
+
 python-jsonschema (3.0.1-3) perfsonar-4.3-staging; urgency=low
 
   * Diverting python3-pyrsistent dependency for Ubuntu 18
