@@ -131,6 +131,11 @@ if role == CLIENT_ROLE:
     
     #determine control port
     control_port = int(test_spec.get('ctrl-port', DEFAULT_TWAMPD_PORT))
+
+
+    if test_spec.get('traverse-nat', False):
+        twping_args.append('-Z')
+
         
     #finally, set the addresses and packet flow direction
     if 'source' in test_spec:
