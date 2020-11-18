@@ -156,22 +156,11 @@ then
 EOF
 fi
 
-
-%if 0%{?el6}
-service rsyslog restart
-%endif
-%if 0%{?el7}
 systemctl reload-or-try-restart rsyslog
-%endif
 
 
 %postun
-%if 0%{?el6}
-service rsyslog restart
-%endif
-%if 0%{?el7}
 systemctl reload-or-try-restart rsyslog
-%endif
 
 
 %files -f INSTALLED_FILES
