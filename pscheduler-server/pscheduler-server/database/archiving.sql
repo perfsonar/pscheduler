@@ -349,7 +349,8 @@ RETURNS TABLE (
     transform JSON,
     task_detail JSONB,
     run_detail JSONB,
-    spec JSON
+    spec JSON,
+    debug BOOLEAN
 )
 AS $$
 BEGIN
@@ -375,7 +376,8 @@ BEGIN
 	-- redundancies here and in the archiver.
 	task.json_detail AS task_detail,
 	run_json(run.id) AS run_detail,
-	archiving.spec AS spec
+	archiving.spec AS spec,
+	(task.json ->> 'debug')::BOOLEAN AS debug
     FROM
         archiving
         JOIN archiver ON archiver.id = archiving.archiver
