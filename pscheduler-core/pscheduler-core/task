@@ -194,9 +194,15 @@ other_group.add_option("--url",
                       action="store_true", default=False,
                       dest="url")
 
-other_group.add_option("--debug", action="store_true", dest="debug")
+other_group.add_option("--debug",
+                       help="Enable pScheduler debug for this task",
+                       action="store_true",
+                       dest="debug")
 
-other_group.add_option("--debug-run", action="store_true", dest="debug_task")
+other_group.add_option("--debug-task",
+                       help="Debug this (task) command",
+                       action="store_true",
+                       dest="debug_task")
 
 
 
@@ -428,7 +434,6 @@ if options.start is not None:
 
 if options.until is not None:
     task['schedule']['until'] = options.until
-
 
 
 if options.debug:

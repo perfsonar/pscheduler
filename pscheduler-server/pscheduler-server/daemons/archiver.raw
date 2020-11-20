@@ -555,6 +555,7 @@ class ArchiveWorker(object):
         """
         Archive the result in a thread-safe way
         """
+
         self.log.debug("%d: Thread running", self.id)
         try:
             self.__run()
@@ -563,8 +564,14 @@ class ArchiveWorker(object):
             # post anything, that will be the end of it.  If it did,
             # it might be salvageable.
             self.log.exception()
-        self.log.debug("%d: Thread finished", self.id)
-        del workers[self.id]
+        finally:
+            self.log.debug("%d: Thread finished", self.id)
+            try:
+                del workers[self.id]
+            except KeyError:
+                pass
+
+
 
 
     def __run(self):
@@ -576,7 +583,13 @@ class ArchiveWorker(object):
 
         archiving_id, task_uuid, run_uuid, archiver, archiver_data, start, \
             duration, test, tool, participants, result_merged, attempts, \
-            last_attempt, transform, task_detail, run_detail, spec = self.row
+            last_attempt, transform, task_detail, run_detail, spec, debug = self.row
+
+        if debug:
+            log_debug = self.log.debug_always
+            log_debug("%d: Task requested debug", archiving_id)
+        else:
+            log_debug = self.log.debug
 
         participants_merged = []
         for participant in participants:
@@ -611,8 +624,8 @@ class ArchiveWorker(object):
             except KeyError:
                 pass
 
-        self.log.debug("%d: Task is %s", self.id, task_href)
-        self.log.debug("%d: Run is %s", self.id, run_href)
+        log_debug("%d: Task is %s", self.id, task_href)
+        log_debug("%d: Run is %s", self.id, run_href)
 
         json = {
             # This may contain private data that the archiver needs to see.
@@ -651,8 +664,8 @@ class ArchiveWorker(object):
         # If there's a transform (already validated), do it.
 
         if transform is not None:
-            self.log.debug("%d Transforming input %s", self.id, json)
-            self.log.debug("%d Script is %s", self.id, transform["script"])
+            log_debug("%d Transforming input %s", self.id, json)
+            log_debug("%d Script is %s", self.id, transform["script"])
             try:
                 raw = transform.get("output-raw", False)
                 transformer = pscheduler.JQFilter(
@@ -665,7 +678,7 @@ class ArchiveWorker(object):
                 else:
                     # Result is always a single object when doing JSON.
                     json["result"] = transformer(json["result"])[0]
-                self.log.debug("%d: Transformed to %s", self.id, json)
+                log_debug("%d: Transformed to %s", self.id, json)
             except Exception as ex:
                 self.log.error("%d: Error during transformation: %s", str(ex))
                 failed = True
@@ -680,7 +693,7 @@ class ArchiveWorker(object):
 
 
         if json["result"] is None:
-            self.log.debug("%d: Null transform result; not archiving", self.id)
+            log_debug("%d: Null transform result; not archiving", self.id)
             returncode = 0
             stdout = """{ "succeeded": true }"""
             stdout_attempt = "Transform result forced not archiving."
@@ -695,15 +708,15 @@ class ArchiveWorker(object):
 
         if (not failed) and (not skip):
 
-            self.log.debug("%d: Archiving to %s: %s",
+            log_debug("%d: Archiving to %s: %s",
                            self.id, archiver, json)
 
             try:
                 result = self.collection(archiver, json)
-                self.log.debug("%d: Returned JSON from archiver: %s", self.id, result)
+                log_debug("%d: Returned JSON from archiver: %s", self.id, result)
                 returncode = 0
             except Exception as ex:
-                self.log.debug("%d: Archiver threw an exception: %s", self.id, exception)
+                log_debug("%d: Archiver threw an exception: %s", self.id, exception)
                 result = {
                     "succeeded": False,
                     "error": "Exception during archiving: %s" % (str(ex))
@@ -724,7 +737,7 @@ class ArchiveWorker(object):
 
         if returncode != 0:
 
-            self.log.debug("%d: Permanent Failure: %s", self.id,
+            log_debug("%d: Permanent Failure: %s", self.id,
                            result.get("error", "Unspecified error"))
             self.db.query("""UPDATE archiving
                              SET
@@ -739,7 +752,7 @@ class ArchiveWorker(object):
         else:
 
             if result is not None and result.get('succeeded', False):
-                self.log.debug("%d: Succeeded: %s to %s",
+                log_debug("%d: Succeeded: %s to %s",
                                self.id, run_uuid, archiver)
                 self.db.query("""UPDATE archiving
                                  SET
@@ -768,7 +781,7 @@ class ArchiveWorker(object):
                     next = datetime.datetime.now(tzlocal()) \
                            + next_delta
 
-                    self.log.debug("%d: Rescheduling for %s", self.id, next)
+                    log_debug("%d: Rescheduling for %s", self.id, next)
 
                     self.db.query("""UPDATE archiving
                                      SET
@@ -783,7 +796,7 @@ class ArchiveWorker(object):
 
                 else:
 
-                    self.log.debug("%d: No retry requested.  Giving up.",
+                    log_debug("%d: No retry requested.  Giving up.",
                                    self.id)
                     self.log.warning("%d: Gave up archiving %s to %s",
                                      self.id, run_href, archiver)
@@ -890,7 +903,7 @@ def main_program():
                              archiver_data, start,
                              duration, test, tool, participants, result,
                              attempts, last_attempt, transform, task_detail, run_detail,
-                             spec
+                             spec, debug
                              FROM archiving_next(%s)""",
                           [options.max_parallel])
 
