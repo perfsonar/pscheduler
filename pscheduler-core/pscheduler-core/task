@@ -195,14 +195,16 @@ other_group.add_option("--url",
                       dest="url")
 
 other_group.add_option("--debug",
-                       help="Enable pScheduler debug for this task",
+                       help="Debug this (task) command",
                        action="store_true",
                        dest="debug")
 
-other_group.add_option("--debug-task",
-                       help="Debug this (task) command",
+other_group.add_option("--debug-pscheduler",
+                       help="Enable pScheduler debug for this task",
                        action="store_true",
-                       dest="debug_task")
+                       dest="debug_pscheduler")
+
+
 
 
 
@@ -301,7 +303,7 @@ verbose = (not options.quiet) \
     and options.format is None
 
 # TODO: Tie this to the options.
-log = pscheduler.Log(verbose=verbose, debug=options.debug_task, quiet=True, propagate=True)
+log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True, propagate=True)
 
 # Decide who assists us.
 
@@ -436,7 +438,7 @@ if options.until is not None:
     task['schedule']['until'] = options.until
 
 
-if options.debug:
+if options.debug_pscheduler:
     task_schema.set(4)
     task['debug'] = True
 
