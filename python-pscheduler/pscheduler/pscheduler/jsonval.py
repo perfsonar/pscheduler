@@ -996,11 +996,41 @@ __dictionary__ = {
             ]
         },
 
+    "TaskSpecification_V4": {
+        "type": "object",
+        "properties": {
+            "schema":   {
+                "type": "integer",
+                "enum": [ 4 ]
+                },
+            "lead-bind":{ "$ref": "#/pScheduler/Host" },
+            "test":     { "$ref": "#/pScheduler/TestSpecification" },
+            "tool":     { "$ref": "#/pScheduler/String" },
+            "tools":    { "$ref": "#/pScheduler/StringList" },
+            "schedule": { "$ref": "#/pScheduler/ScheduleSpecification" },
+            "priority": { "$ref": "#/pScheduler/Integer" },
+            "archives": {
+                "type": "array",
+                "items": { "$ref": "#/pScheduler/ArchiveSpecification" },
+                },
+            "contexts": { "$ref": "#/pScheduler/ContextSpecification" },
+            "reference": { "$ref": "#/pScheduler/AnyJSON" },
+            "_key": { "$ref": "#/pScheduler/String" },
+            "debug": { "$ref": "#/pScheduler/Boolean" },
+        },
+        "additionalProperties": False,
+        "required": [
+            "schema",
+            "test",
+            ]
+        },
+
     "TaskSpecification": {
         "anyOf": [
             { "$ref": "#/pScheduler/TaskSpecification_V1" },
             { "$ref": "#/pScheduler/TaskSpecification_V2" },
-            { "$ref": "#/pScheduler/TaskSpecification_V3" }
+            { "$ref": "#/pScheduler/TaskSpecification_V3" },
+            { "$ref": "#/pScheduler/TaskSpecification_V4" }
             ]
         },
 

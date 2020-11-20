@@ -95,7 +95,8 @@ AS
 	    task.participant,
             test.scheduling_class,
 	    task.json,
-	    task.participants
+	    task.participants,
+	    task.json -> 'debug' AS debug
         FROM
             task
             JOIN test ON test.id = task.test
@@ -123,7 +124,8 @@ AS
             task.participant,
             test.scheduling_class,
 	    task.json,
-	    task.participants
+	    task.participants,
+	    task.json -> 'debug' AS debug
         FROM
             task
             JOIN test on test.id = task.test
@@ -153,7 +155,8 @@ AS
             task.participant,
             (SELECT scheduling_class FROM test WHERE test.id = task.test) AS scheduling_class,
 	    task.json,
-	    task.participants
+	    task.participants,
+	    task.json -> 'debug' AS debug
        FROM
             task
 	    JOIN run_latest ON run_latest.task = task.id
@@ -188,7 +191,8 @@ AS
             task.participant,
             (SELECT scheduling_class FROM test WHERE test.id = task.test) AS scheduling_class,
 	    task.json,
-	    task.participants
+	    task.participants,
+	    task.json -> 'debug' AS debug
        FROM
             task
         WHERE
@@ -205,7 +209,8 @@ AS
 	slip,
 	scheduling_class.anytime,
 	json,
-	participants
+	participants,
+	debug
     FROM
         interim
         JOIN scheduling_class

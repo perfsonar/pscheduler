@@ -206,7 +206,7 @@ def tasks():
         data = request.data.decode("ascii")
 
         try:
-            task = pscheduler.json_load(data, max_schema=3)
+            task = pscheduler.json_load(data, max_schema=4)
         except ValueError as ex:
             return bad_request("Invalid task specification: %s" % (str(ex)))
 
