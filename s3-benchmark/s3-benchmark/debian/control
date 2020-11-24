@@ -10,7 +10,7 @@ Vcs-Git: git://github.com/perfsonar/pscheduler
 Vcs-Browser: https://github.com/perfsonar/pscheduler
 
 Package: s3-benchmark
-Architecture: any
+Architecture: amd64 i386
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: S3 benchmark tool for pScheduler
  S3 benchmark tool for pScheduler
