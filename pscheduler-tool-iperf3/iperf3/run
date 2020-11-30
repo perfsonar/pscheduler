@@ -450,6 +450,16 @@ def run_server():
 
     auth_dir.cleanup()
 
+    # There's a bug in the server side that dumps a diagnostic into
+    # stdout.  Correct for that.
+    # See https://github.com/esnet/iperf/issues/1086
+    # TODO: Remove when the bug is fixed.
+
+    pos = stdout.find("{")
+    if pos > 0:
+        stdout = stdout[pos:]
+
+
     return _make_result("\n".join(diags), status, stdout, stderr)
 
     
