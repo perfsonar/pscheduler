@@ -260,23 +260,29 @@ def run_client():
 
     auth_dir = tempfile.TemporaryDirectory()
     os.chmod(auth_dir.name, stat.S_IRWXU)
+
+    auth_env = {}
+
     if "auth" in participant_data[1]:
 
         try:
 
-            public_key_path = "{}/public-key".format(auth_dir.name())
+            # TODO: There should be a better way to do this.
+            auth_env["IPERF3_PASSWORD"] = participant_data[1]["auth"]["password"]
+
+            public_key_path = "{}/public-key".format(auth_dir.name)
             with open(public_key_path, "w") as writer:
-                writer.write(participant_data[1]["public"])
+                writer.write(participant_data[1]["auth"]["public"])
             iperf3_args.append("--rsa-public-key-path")
             iperf3_args.append(public_key_path)
 
             iperf3_args.append("--username")
-            iperf3_args.append(participant_data[1]["username"])
+            iperf3_args.append(participant_data[1]["auth"]["username"])
 
         except Exception as ex:
 
             auth_dir.cleanup()
-            pscheduler.fail("Unable to write auth files: %s" % (str(ex)))
+            pscheduler.fail("Unable to write client auth files: %s" % (str(ex)))
 
 
     # join and run_program want these all to be string types, so
@@ -307,6 +313,7 @@ def run_client():
 
     try:
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
+                                                        env_add = auth_env,
                                                         timeout = iperf_timeout)
     except Exception as ex:
         logger.error("iperf3 failed to complete execution: %s" % ex)
@@ -388,20 +395,22 @@ def run_server():
     auth_dir = tempfile.TemporaryDirectory()
     os.chmod(auth_dir.name, stat.S_IRWXU)
 
+
     # Run auth if the lead participant is and there's auth data
+
     if "auth" in participant_data[1] and participant_data[0].get("schema", 1) >= 2:
 
         try:
 
-            credentials_path = "{}/credentials".format(auth_dir.name())
+            credentials_path = "{}/credentials".format(auth_dir.name)
             with open(credentials_path, "w") as writer:
-                writer.write(participant_data[1]["credentials"])
+                writer.write(participant_data[1]["auth"]["credentials"])
             iperf3_args.append("--authorized-users-path")
             iperf3_args.append(credentials_path)
 
-            private_key_path = "{}/private-key".format(auth_dir.name())
+            private_key_path = "{}/private-key".format(auth_dir.name)
             with open(private_key_path, "w") as writer:
-                writer.write(participant_data[1]["private"])
+                writer.write(participant_data[1]["auth"]["private"])
             iperf3_args.append("--rsa-private-key-path")
             iperf3_args.append(private_key_path)
 
