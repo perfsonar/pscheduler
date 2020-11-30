@@ -3,6 +3,8 @@
 #
 
 import os
+import secrets
+import string
 import sys
 import textwrap
 
@@ -55,3 +57,30 @@ def indent(
     """
     prefix = char * indent
     return "\n".join([prefix + s for s in text.split("\n")])
+
+
+
+
+def random_string(length, randlength=False, safe=False):
+    """Return a random string of length 'length'
+
+    Set 'randlength' True to pick a random length between half of
+    'length' and 'length'.
+
+    Set 'safe' True to onlu include alphanumeric characters.
+    """
+
+    if randlength:
+        length = length - secrets.randbelow(int(length/2))
+
+    charset = string.digits + string.ascii_letters
+    if not safe:
+        charset += string.punctuation
+    charset_len = len(charset)
+
+    characters = [
+        secrets.choice(charset)
+        for _ in range(0, length)
+    ]
+
+    return "".join(characters)
