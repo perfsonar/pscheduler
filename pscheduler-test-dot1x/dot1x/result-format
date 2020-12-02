@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+#
+# Format a result
+#
+import pscheduler
+import sys
+
+from validate import result_is_valid
+
+
+try:
+    format = sys.argv[1]
+except IndexError:
+    format = "text/plain"
+
+js_input = pscheduler.json_load(exit_on_error=True, max_schema=1)
+
+valid, message = result_is_valid(js_input["result"])
+if not valid:
+    pscheduler.fail(message)
+
+json = js_input["result"]
+
+
+if format == "text/plain":
+    print("*** Supplicant (Dot1X auth): %s" % json["supplicant"])
+    print("*** BSSID: %s" % json["bssid"])
+    print("*** MAC address: %s" % json["mac_addr"])
+    print("*** DHCP: %s" % json["dhclient"])
+    print("*** IP address: %s" % json["ip_addr"])
+elif format == "text/html":
+    print("<table>")
+    print("  <tr>")
+    print("    <th>Supplicant (Dot1x auth)</th>")
+    print("  </tr>")
+    print("  <tr>")
+    print("    <td>%s</td>" % json["supplicant"])
+    print("  </tr>")
+    print("  <tr>")
+    print("    <th>BSSID</th>")
+    print("  </tr>")
+    print("  <tr>")
+    print("    <td>%s</td>" % json["bssid"])
+    print("  </tr>")
+    print("  <tr>")
+    print("    <th>MAC address</th>")
+    print("  </tr>")
+    print("  <tr>")
+    print("    <td>%s</td>" % json["mac_addr"])
+    print("  </tr>")
+    print("  <tr>")
+    print("    <th>DHCP</th>")
+    print("  </tr>")
+    print("  <tr>")
+    print("    <td>%s</td>" % json["dhclient"])
+    print("  </tr>")
+    print("  <tr>")
+    print("    <th>IP address</th>")
+    print("  </tr>")
+    print("  <tr>")
+    print("    <td>%s</td>" % json["ip_addr"])
+    print("  </tr>")
+    print("</table>")

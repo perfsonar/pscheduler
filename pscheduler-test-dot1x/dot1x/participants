@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+#
+# Participant list generator for 'trace' test spec
+#
+
+import pscheduler
+
+from validate import spec_is_valid
+
+json = pscheduler.json_load(exit_on_error=True, max_schema=1)
+
+null_reason = None
+
+valid, message = spec_is_valid(json)
+
+if not valid:
+    pscheduler.fail(message)
+
+source = json.get("source-node", json.get("source", None))
+if source is None:
+    null_reason = "No source specified"
+
+participants = [source]
+
+result = {"participants": participants}
+if null_reason is not None:
+    result["null-reason"] = null_reason
+
+pscheduler.succeed_json(result)

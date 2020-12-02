@@ -1,0 +1,13 @@
+#!/bin/sed -e 1d
+{
+    "schema": 1,
+    "name": "dot1x",
+    "description": "Test 802.1X authorization.",
+    "version": "1.0",
+    "maintainer": {
+        "name": "Kristofer Hallin, SUNET",
+	"email": "kristofer@sunet.se",
+	"href": "https://www.sunet.se"
+    },
+    "scheduling-class": "background"
+}

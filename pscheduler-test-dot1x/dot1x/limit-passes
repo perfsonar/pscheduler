@@ -1,0 +1,100 @@
+#!/usr/bin/env python3
+#
+# Checker for 'trace' task limits
+#
+
+import pscheduler
+
+#
+# Load and validate everything
+#
+
+try:
+    json = pscheduler.json_load(max_schema=1)
+except ValueError as ex:
+    pscheduler.fail("Invalid JSON %s" % str(ex))
+
+spec = json["spec"]
+limit = json["limit"]
+
+
+#
+# Evaluate everything
+#
+
+#
+# Handle source, dest and endpoint limits
+#
+errors = pscheduler.check_endpoint_limits(limit, spec)
+
+#
+# Handle numeric ranges
+#
+numeric_ranges = [
+]
+
+for nr in numeric_ranges:
+    errors += pscheduler.check_numeric_limit(limit, spec, nr[0],
+                                             description=nr[1])
+
+#
+# Handle boolean fields
+#
+booleans = [
+]
+
+for b in booleans:
+    errors += pscheduler.check_boolean_limit(limit, spec, b[0],
+                                             description=b[1])
+
+#
+# Handle duration fields
+#
+durations = [
+]
+
+for d in durations:
+    errors += pscheduler.check_duration_limit(limit, spec, d[0],
+                                              description=d[1])
+
+
+#
+# Handle string limits
+#
+string_limits = [
+    ("interface", "Interface to use"),
+    ("driver", "Interface driver (wifi, wext or wired)"),
+    ("eap_type", "EAP type to use"),
+    ("username", "Username"),
+    ("password", "Password")
+]
+
+for s in string_limits:
+    errors += pscheduler.check_string_limit(limit, spec, s[0],
+                                            description=s[1])
+
+#
+# Timeout
+#
+try:
+    match = pscheduler.DurationRange(limit["timeout"]["range"])
+    if spec["timeout"] not in match:
+        try:
+            errors.append(limit["timeout"]["fail-message"])
+        except KeyError:
+            errors.append("Timeout not within limit")
+
+except KeyError:
+    pass  # Don't care if not there.
+
+
+#
+# Finish up
+#
+
+result = {"passes": not errors}
+
+if errors:
+    result["errors"] = errors
+
+pscheduler.succeed_json(result)

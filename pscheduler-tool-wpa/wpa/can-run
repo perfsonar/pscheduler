@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+#
+# Determine if this tool can run a test based on a test spec.
+#
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True)
+
+try:
+    if json['type'] != 'dot1x':
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": ["Unsupported test type"]
+        })
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test type"]
+    })
+
+
+try:
+    spec = json["spec"]
+    pscheduler.json_check_schema(spec, 1)
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test specification"]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
+
+
+errors = []
+
+result = {
+    "can-run": len(errors) == 0
+}
+
+if len(errors) > 0:
+    result["reasons"] = errors
+
+pscheduler.succeed_json(result)

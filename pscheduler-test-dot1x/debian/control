@@ -1,0 +1,18 @@
+Source: pscheduler-test-dot1x
+Section: net
+Priority: optional
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>,
+ Valentin Vidic <Valentin.Vidic@CARNet.hr>
+Build-Depends: debhelper (>= 9), python
+Standards-Version: 3.9.6
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-test-dot1x
+Architecture: all
+Depends: ${misc:Depends}, python, python-pscheduler (>= 1.3),
+ pscheduler-server (>= 1.1.6), python-jsontemplate
+Description: pScheduler dot1X test
+ dot1X test class for pScheduler

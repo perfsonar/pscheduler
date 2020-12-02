@@ -1,0 +1,236 @@
+#!/usr/bin/env python3
+
+import re
+import time
+import pscheduler
+
+
+error = ""
+
+result = {
+    "schema": 1,
+    "succeeded": True,
+    "diags": "",
+    "error": None,
+    "result": {
+        "schema": 1,
+        "supplicant": "",
+        "dhclient": "",
+        "mac_addr": "",
+        "ip_addr": ""
+    }
+}
+
+# Logging facility
+logger = pscheduler.Log(prefix="wpa", quiet=True)
+
+# Incoming JSON data
+json_in = pscheduler.json_load(exit_on_error=True)
+
+# Get the test spec from the JSON data
+spec = json_in["test"]["spec"]
+
+
+#
+# Add a new network and return the ID of it. This requires that WPA
+# supplicant is configured with DBUS support so we can use wpa_cli.
+#
+def wpa_add_network():
+    args = ["wpa_cli", "add_network"]
+
+    logger.debug("Running wpa_cli: %s", " ".join(args))
+
+    try:
+        status, stdout, stderr = pscheduler.run_program(args)
+        network_id = stdout.split("\n")[1]
+        id = int(network_id)
+    except Exception:
+        logger.exception()
+        id = None
+
+    logger.debug("Got network ID %d", id)
+
+    return id
+
+
+#
+# Execute a command using wpa_cli and check if it was successful or
+# not.
+#
+def wpa_cmd(arg_str, response="OK"):
+    args = ["wpa_cli"] + arg_str.split(" ")
+
+    logger.debug("Running wpa_cli: %s", " ".join(args))
+
+    status, stdout, stderr = pscheduler.run_program(args)
+    outcome = stdout.split("\n")[1]
+
+    logger.debug("Response from wpa_cli: %s, expected: %s", outcome, response)
+
+    if outcome != response:
+        raise Exception("Failed to run wpa_cli: %s" % (" ".join(args)))
+
+    return True
+
+
+#
+# Get status from WPA supplicant
+#
+def wpa_status():
+    args = ["wpa_cli", "status"]
+    port_status = re.compile("suppPortStatus=(.*)")
+    eap_status = re.compile("EAP state=(.*)")
+    wpa_bssid = re.compile("bssid=(.*)")
+    wpa_mac_address = re.compile("address=(?:[0-9a-fA-F]:?){12}")
+
+    logger.debug("Running wpa_cli: %s", " ".join(args))
+
+    status, stdout, stderr = pscheduler.run_program(args)
+
+    port = port_status.search(stdout)
+    eap = eap_status.search(stdout)
+    bssid = wpa_bssid.search(stdout)
+    mac_addr = wpa_mac_address.search(stdout)
+
+    logger.debug("Port: %s", port)
+    logger.debug("EAP: %s", eap)
+    logger.debug("BSSID: %s", bssid)
+    logger.debug("MAC address: %s", mac_addr)
+
+    if port is None or eap is None:
+        return None, None
+
+    if port.group(1) != "Authorized" or eap.group(1) != "SUCCESS":
+        return None, None
+
+    return (bssid.group(1).split("=")[-1], mac_addr.group(0).split("=")[-1])
+
+
+def dhcp_client(interface):
+    args_kill = ["sudo", "dhclient", "-x", interface]
+    args_run = ["sudo", "dhclient", "-v", interface]
+    bound_re = re.compile("bound to (\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})")
+
+    try:
+        logger.debug("Killing dhclient: %s", " ".join(args_kill))
+        pscheduler.run_program(args_kill)
+
+        logger.debug("Running dhclient: %s", " ".join(args_run))
+        status, stdout, stderr = pscheduler.run_program(args_run)
+
+        addr = bound_re.search(stderr)
+
+        logger.debug("Got IP address: %s", addr)
+
+        if bound_re.findall(stderr):
+            return addr.group(1)
+        else:
+            return None
+    except Exception:
+        return None
+
+    return None
+
+
+#
+# Get test parameters
+#
+try:
+    interface = spec["interface"]
+except KeyError:
+    pscheduler.fail("interface is a required parameter")
+
+try:
+    eap_type = spec["eap_type"]
+except KeyError:
+    pscheduler.fail("eap_type is a required parameter")
+
+try:
+    username = spec["username"]
+except KeyError:
+    pscheduler.fail("username is a required parameter")
+
+try:
+    password = spec["password"]
+except KeyError:
+    pscheduler.fail("password is a required parameter")
+
+try:
+    driver = spec["driver"]
+except KeyError:
+    pscheduler.fail("driver is a required parameter")
+
+phase2 = spec.get("phase2", "autheap=MSCHAPV2")
+
+try:
+    logger.debug("Adding new network")
+
+    network_id = wpa_add_network()
+
+    if network_id is None:
+        raise ValueError("Failed to get new network ID")
+
+    logger.debug("Setting network properties")
+
+    wpa_cmd("set_network %d key_mgmt IEEE8021X" % (network_id))
+    wpa_cmd("set_network %d eap PEAP" % (network_id))
+    wpa_cmd("set_network %d identity \"%s\"" % (network_id, username))
+    wpa_cmd("set_network %d password \"%s\"" % (network_id, password))
+    wpa_cmd("set_network %d phase1 \"peaplabel=0\"" % (network_id))
+    wpa_cmd("set_network %d phase2 \"auth=MSCHAPV2\"" % (network_id))
+    wpa_cmd("enable_network %d" % (network_id))
+    wpa_cmd("reauthenticate")
+
+    time.sleep(5)
+
+    # This might take a few attempts...
+    for i in range(3):
+        logger.debug("Checking WPA status, attempt %d of 3", i)
+        bssid, mac_addr = wpa_status()
+
+        if bssid is not None and mac_addr is not None:
+            result["succeeded"] = True
+            result["result"]["bssid"] = bssid
+            result["result"]["mac_addr"] = mac_addr
+            result["result"]["supplicant"] = "User %s was authenticated!" % username
+            break
+        else:
+            time.sleep(5)
+    else:
+        logger.debug("Authentication failed")
+        result["error"] = "MAC auth failed"
+        result["result"]["supplicant"] = "Failed to authenticate supplicant"
+        result["result"]["succeeded"] = False
+except Exception as e:
+    logger.exception()
+    result["succeeded"] = False
+    result["result"]["supplicant"] = "Failed to authenticate supplicant"
+    result["result"]["error"] = "Authentication caught an exception: %s\n" % str(e)
+
+    # We could end the run here since the first test failed. However,
+    # we wan't to make sure that we really don't get an address later
+    # even if the authentication failed.
+
+try:
+    logger.debug("Acquiring IP address")
+    addr = dhcp_client(interface)
+    if not addr:
+        result["error"] = "DHCP failed"
+        result["succeeded"] = False
+        result["result"]["dhclient"] = "Failed to acquire IP address"
+    else:
+        if result["result"]["succeeded"] is not True:
+            result["result"]["error"] = "Acquired IP address even if dot1X authentication failed!"
+        else:
+            result["succeeded"] = True
+        result["result"]["dhclient"] = "Acquired IP address"
+        result["result"]["ip_addr"] = addr
+except Exception as e:
+    logger.exception()
+    result["succeeded"] = False
+    result["result"]["dhclient"] = "Failed to acquire IP address"
+    result["result"]["supplicant"] = "Failed to authenticate supplicant"
+    result["result"]["error"] += "dhclient caught an exception: " + str(e)
+
+
+pscheduler.succeed_json(result)
