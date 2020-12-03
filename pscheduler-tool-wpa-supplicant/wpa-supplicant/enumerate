@@ -1,8 +1,8 @@
 #!/bin/sed -e 1d
 {
     "schema": 1,
-    "name": "wpa",
-    "description": "Test wpa-supplicant functionality",
+    "name": "wpa-supplicant",
+    "description": "Test 802.1x functionality",
     "version": "1.0",
     "tests": ["802.1x"],
 

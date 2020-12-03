@@ -1,4 +1,4 @@
-Source: pscheduler-tool-wpa
+Source: pscheduler-tool-wpa-supplicant
 Section: net
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
@@ -9,7 +9,7 @@ Homepage: https://github.com/perfsonar/pscheduler
 Vcs-Git: git://github.com/perfsonar/pscheduler
 Vcs-Browser: https://github.com/perfsonar/pscheduler
 
-Package: pscheduler-tool-wpa
+Package: pscheduler-tool-wpa-supplicant
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler,
  pscheduler-server, pscheduler-test-idle

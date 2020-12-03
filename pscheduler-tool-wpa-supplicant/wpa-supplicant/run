@@ -22,7 +22,7 @@ result = {
 }
 
 # Logging facility
-logger = pscheduler.Log(prefix="wpa", quiet=True)
+logger = pscheduler.Log(prefix="wpa-supplicant", quiet=True)
 
 # Incoming JSON data
 json_in = pscheduler.json_load(exit_on_error=True)
