@@ -176,7 +176,7 @@ try:
     wpa_cmd("enable_network %d" % (network_id))
     wpa_cmd("reauthenticate")
 
-    time.sleep(5)
+    time.sleep(2)
 
     # This might take a few attempts...
     for i in range(3):
@@ -190,7 +190,7 @@ try:
             result["result"]["supplicant"] = "User %s was authenticated!" % username
             break
         else:
-            time.sleep(5)
+            time.sleep(3)
     else:
         logger.debug("Authentication failed")
         result["error"] = "MAC auth failed"
