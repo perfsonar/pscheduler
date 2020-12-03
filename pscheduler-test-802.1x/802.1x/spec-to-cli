@@ -15,7 +15,6 @@ if not valid:
 
 result = pscheduler.speccli_build_args(spec,
                                        strings=[('interface', 'interface'),
-                                                ('driver', 'driver'),
                                                 ('eap_type', 'eap_type'),
                                                 ('username', 'username'),
                                                 ('password', 'password'),

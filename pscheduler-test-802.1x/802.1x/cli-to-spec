@@ -30,7 +30,7 @@ else:
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """Examples:
 
-  task 802.1x --interface eth0 --eap_type PEAP --username test --password test --driver wired --eap_type PEAP
+  task 802.1x --interface eth0 --eap_type PEAP --username test --password test --eap_type PEAP
       Run a PEAP authentisation with test/test as credentials and use eth0 as a wired interface.
 """
 )
@@ -44,11 +44,6 @@ opt_parser.add_option("--interface",
                       help="Interface to use",
                       action="store", type="string",
                       dest="interface")
-
-opt_parser.add_option("--driver",
-                      help="Interface driver (wifi, wext or wired)",
-                      action="store", type="string",
-                      dest="driver")
 
 opt_parser.add_option("--eap_type",
                       help="EAP type to use",
@@ -79,9 +74,6 @@ if options.timeout is not None:
 
 if options.interface is not None:
     result['interface'] = options.interface
-
-if options.driver is not None:
-    result['driver'] = options.driver
 
 if options.eap_type is not None:
     result['eap_type'] = options.eap_type

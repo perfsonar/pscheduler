@@ -155,11 +155,6 @@ try:
 except KeyError:
     pscheduler.fail("password is a required parameter")
 
-try:
-    driver = spec["driver"]
-except KeyError:
-    pscheduler.fail("driver is a required parameter")
-
 phase2 = spec.get("phase2", "autheap=MSCHAPV2")
 
 try:

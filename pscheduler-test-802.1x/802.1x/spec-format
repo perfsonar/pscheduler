@@ -27,7 +27,6 @@ if not valid:
 if format == 'text/plain':
     template = """
 Interface .. {.section interface}{interface}{.or}Not Specified{.end}
-Driver ..... {.section driver}{driver}{.or}Not Specified{.end}
 EAP Type ... {.section eap_type}{eap_type}{.or}Not Specified{.end}
 Username ... {.section username}{username}{.or}Not Specified{.end}
 Password ... {.section password}{password}{.or}Not Specified{.end}
@@ -38,8 +37,7 @@ elif format == 'text/html':
     template = """
 <table>
 <tr><td>Interface</td><td>{.section interface}{interface}{.or}Not Specified{.end}</td></tr>
-<tr><td>Driver</td><td>{.section driver}{driver}{.or}Not Specified{.end}</td></tr>
-<tr><td>Eap type</td><td>{.section eap_type}{eap_type}{.or}Not Specified{.end}</td></tr>
+<tr><td>EAP type</td><td>{.section eap_type}{eap_type}{.or}Not Specified{.end}</td></tr>
 <tr><td>Username</td><td>{.section username}{username}{.or}Not Specified{.end}</td></tr>
 <tr><td>Password</td><td>{.section password}{password}{.or}Not Specified{.end}</td></tr>
 <tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>

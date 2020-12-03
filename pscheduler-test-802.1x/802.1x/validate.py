@@ -13,14 +13,12 @@ def spec_is_valid(json):
             "schema":    {"$ref": "#/pScheduler/Cardinal"},
             "timeout":   {"$ref": "#/pScheduler/Duration"},
             "interface": {"$ref": "#/pScheduler/String"},
-            "driver":    {"$ref": "#/pScheduler/String"},
             "eap_type":  {"$ref": "#/pScheduler/String"},
             "username":  {"$ref": "#/pScheduler/String"},
             "password":  {"$ref": "#/pScheduler/String"},
         },
         "required": [
             "interface",
-            "driver",
             "eap_type",
             "username",
             "password"
@@ -60,7 +58,6 @@ def limit_is_valid(json):
             "schema":    {"$ref": "#/pScheduler/Cardinal"},
             "time":      {"$ref": "#/pScheduler/Duration"},
             "interface": {"$ref": "#/pScheduler/String"},
-            "driver":    {"$ref": "#/pScheduler/String"},
             "eap_type":  {"$ref": "#/pScheduler/String"},
             "username":  {"$ref": "#/pScheduler/String"},
             "password":  {"$ref": "#/pScheduler/String"},
