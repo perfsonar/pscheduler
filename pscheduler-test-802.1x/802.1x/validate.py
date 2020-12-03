@@ -49,21 +49,3 @@ def result_is_valid(json):
     }
 
     return json_validate(json, schema)
-
-
-def limit_is_valid(json):
-    schema = {
-        "type": "object",
-        "properties": {
-            "schema":    {"$ref": "#/pScheduler/Cardinal"},
-            "time":      {"$ref": "#/pScheduler/Duration"},
-            "interface": {"$ref": "#/pScheduler/String"},
-            "eap_type":  {"$ref": "#/pScheduler/String"},
-            "username":  {"$ref": "#/pScheduler/String"},
-            "password":  {"$ref": "#/pScheduler/String"},
-            "timeout":   {"$ref": "#/pScheduler/Limit/Duration"}
-        },
-        "additionalProperties": False
-    }
-
-    return json_validate(json, schema)
