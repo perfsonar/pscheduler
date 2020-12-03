@@ -1,4 +1,4 @@
-Source: pscheduler-test-dot1x
+Source: pscheduler-test-802.1x
 Section: net
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
@@ -9,9 +9,9 @@ Homepage: https://github.com/perfsonar/pscheduler
 Vcs-Git: git://github.com/perfsonar/pscheduler
 Vcs-Browser: https://github.com/perfsonar/pscheduler
 
-Package: pscheduler-test-dot1x
+Package: pscheduler-test-802.1x
 Architecture: all
 Depends: ${misc:Depends}, python, python-pscheduler (>= 1.3),
  pscheduler-server (>= 1.1.6), python-jsontemplate
-Description: pScheduler dot1X test
- dot1X test class for pScheduler
+Description: pScheduler 802.1x test
+ 802.1x test class for pScheduler

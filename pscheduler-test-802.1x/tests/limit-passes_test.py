@@ -5,8 +5,8 @@ tests for the limit-passes command
 import pscheduler
 import unittest
 
-class TraceLimitPassesTest(pscheduler.TestLimitPassesUnitTest):
-    name = 'trace'
+class Dot1xLimitPassesTest(pscheduler.TestLimitPassesUnitTest):
+    name = '802.1x'
         
     """
     Limit passes tests.

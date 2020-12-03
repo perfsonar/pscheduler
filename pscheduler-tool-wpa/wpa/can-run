@@ -8,7 +8,7 @@ import pscheduler
 json = pscheduler.json_load(exit_on_error=True)
 
 try:
-    if json['type'] != 'dot1x':
+    if json['type'] != '802.1x':
         pscheduler.succeed_json({
             "can-run": False,
             "reasons": ["Unsupported test type"]

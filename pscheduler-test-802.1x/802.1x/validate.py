@@ -1,6 +1,6 @@
 
 #
-# Validator for "trace" Test
+# Validator for "802.1x" Test
 #
 
 from pscheduler import json_validate

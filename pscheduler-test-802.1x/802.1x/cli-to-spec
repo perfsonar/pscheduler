@@ -30,7 +30,7 @@ else:
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """Examples:
 
-  task dot1x --interface eth0 --eap_type PEAP --username test --password test --driver wired --eap_type PEAP
+  task 802.1x --interface eth0 --eap_type PEAP --username test --password test --driver wired --eap_type PEAP
       Run a PEAP authentisation with test/test as credentials and use eth0 as a wired interface.
 """
 )

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Checker for 'trace' task limits
+# Checker for '802.1x' task limits
 #
 
 import pscheduler

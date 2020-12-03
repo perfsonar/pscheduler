@@ -2,7 +2,7 @@
 # Makefile for any test class
 #
 
-NAME=trace
+NAME=802.1x
 
 # TODO: Everything below this should be made into a template that can
 # be included.

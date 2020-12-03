@@ -10,4 +10,4 @@ test::
 	nosetests
 
 test-coverage::
-	nosetests --with-coverage --cover-package trace
+	nosetests --with-coverage --cover-package 802.1x
