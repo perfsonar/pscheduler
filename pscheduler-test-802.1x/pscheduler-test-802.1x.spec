@@ -3,7 +3,7 @@
 #
 
 %define short	802.1x
-%define perfsonar_auto_version 4.2.4
+%define perfsonar_auto_version 4.4.0
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-test-%{short}
