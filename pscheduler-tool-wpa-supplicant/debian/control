@@ -11,7 +11,7 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 
 Package: pscheduler-tool-wpa-supplicant
 Architecture: all
-Depends: ${misc:Depends}, python, python-pscheduler,
- pscheduler-server, pscheduler-test-idle
+Depends: ${misc:Depends}, python3, python3-pscheduler,
+ pscheduler-server, sudo, wpasupplicant
 Description: pScheduler wpa-supplicant tool
 
