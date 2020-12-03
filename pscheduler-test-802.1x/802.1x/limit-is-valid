@@ -1,27 +1,9 @@
-#!/usr/bin/env python3
+#!/bin/sed -e 1d;/^#/d
 #
 # Validator for '802.1x' task limit spec
 #
 
-import pscheduler
-
-from validate import limit_is_valid
-
-try:
-    json = pscheduler.json_load(max_schema=1)
-except ValueError as ex:
-    pscheduler.succeed_json({
-        "valid": False,
-        "error": str(ex)
-        })
-
-valid, message = limit_is_valid(json)
-
-result = {
-    "valid": valid
+{
+    "valid": false,
+    "error": "This type of limit is deprecated and not supported by this test."
 }
-
-if not valid:
-    result["message"] = message
-
-pscheduler.succeed_json(result)
