@@ -23,11 +23,11 @@ json = js_input["result"]
 
 
 if format == "text/plain":
-    print("*** Supplicant (Dot1X auth): %s" % json["supplicant"])
-    print("*** BSSID: %s" % json["bssid"])
-    print("*** MAC address: %s" % json["mac_addr"])
-    print("*** DHCP: %s" % json["dhclient"])
-    print("*** IP address: %s" % json["ip_addr"])
+    print("Supplicant (802.1x auth) ... %s" % json["supplicant"])
+    print("BSSID ...................... %s" % json["bssid"])
+    print("MAC address ................ %s" % json["mac_addr"])
+    print("DHCP ....................... %s" % json["dhclient"])
+    print("IP address ................. %s" % json["ip_addr"])
 elif format == "text/html":
     print("<table>")
     print("  <tr>")
