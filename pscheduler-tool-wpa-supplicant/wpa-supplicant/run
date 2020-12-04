@@ -10,14 +10,10 @@ error = ""
 result = {
     "schema": 1,
     "succeeded": True,
-    "diags": "",
-    "error": None,
     "result": {
         "schema": 1,
         "supplicant": "",
-        "dhclient": "",
-        "mac_addr": "",
-        "ip_addr": ""
+        "dhclient": ""
     }
 }
 
@@ -42,6 +38,11 @@ def wpa_add_network():
 
     try:
         status, stdout, stderr = pscheduler.run_program(args)
+
+        if status != 0:
+            logger.debug("Failed to run wpa_cli!")
+            return None
+
         network_id = stdout.split("\n")[1]
         id = int(network_id)
     except Exception:
@@ -63,6 +64,11 @@ def wpa_cmd(arg_str, response="OK"):
     logger.debug("Running wpa_cli: %s", " ".join(args))
 
     status, stdout, stderr = pscheduler.run_program(args)
+
+    if status != 0:
+        logger.debug("Failed to run wpa_cli!")
+        return False
+
     outcome = stdout.split("\n")[1]
 
     logger.debug("Response from wpa_cli: %s, expected: %s", outcome, response)
@@ -86,6 +92,10 @@ def wpa_status():
     logger.debug("Running wpa_cli: %s", " ".join(args))
 
     status, stdout, stderr = pscheduler.run_program(args)
+
+    if status != 0:
+            logger.debug("Failed to run wpa_cli!")
+            return None
 
     port = port_status.search(stdout)
     eap = eap_status.search(stdout)
@@ -113,10 +123,20 @@ def dhcp_client(interface):
 
     try:
         logger.debug("Killing dhclient: %s", " ".join(args_kill))
+
+        # This should return 0 even if dhclient is not running.
         pscheduler.run_program(args_kill)
+
+        if status != 0:
+            logger.debug("Failed to run 'dhclient -x'")
+            return None
 
         logger.debug("Running dhclient: %s", " ".join(args_run))
         status, stdout, stderr = pscheduler.run_program(args_run)
+
+        if status != 0:
+            logger.debug("Failed to start dhclient")
+            return None
 
         addr = bound_re.search(stderr)
 
@@ -186,7 +206,7 @@ try:
         if bssid is not None and mac_addr is not None:
             result["succeeded"] = True
             result["result"]["bssid"] = bssid
-            result["result"]["mac_addr"] = mac_addr
+            result["result"]["mac-addr"] = mac_addr
             result["result"]["supplicant"] = "User %s was authenticated!" % username
             break
         else:
@@ -219,7 +239,7 @@ try:
         else:
             result["succeeded"] = True
         result["result"]["dhclient"] = "Acquired IP address"
-        result["result"]["ip_addr"] = addr
+        result["result"]["ip-addr"] = addr
 except Exception as e:
     logger.exception()
     result["succeeded"] = False
