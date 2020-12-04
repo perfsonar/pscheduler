@@ -328,6 +328,20 @@ BEGIN
     END IF;
 
 
+    -- Version 14 to version 15
+    -- Adds participant_key column
+    IF t_version = 14
+    THEN
+
+	-- Key to be used when tasking second participants when none
+	-- was specified in the task.
+	ALTER TABLE task ADD COLUMN
+	participant_key TEXT;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -451,6 +465,22 @@ BEGIN
             ELSIF NEW.uuid IS NULL THEN
                 RAISE EXCEPTION 'Non-lead participants must have a UUID.';
             END IF;
+        END IF;
+
+
+        --
+        -- Key for second and later participants
+        --
+
+	IF TG_OP = 'INSERT' THEN
+            -- Create a key only if one wasn't provided.
+            IF NEW.json ? '_key' THEN
+	      NEW.participant_key := NEW.json ->> '_key';
+	    ELSE
+	      NEW.participant_key := random_string(64, TRUE, TRUE);
+	    END IF;
+        ELSIF TG_OP = 'UPDATE' AND NEW.participant_key <> OLD.participant_key THEN
+            RAISE EXCEPTION 'Participant key cannot be updated.';
         END IF;
 
 	--
@@ -980,13 +1010,16 @@ BEGIN
 	    bind := NULL;
 	END IF;
 
-	-- If this task has a key, append that to the URL.
-        IF taskrec.json ? '_key'
+	-- If this task has a key, use that for the participant key or
+	-- generate one.
+
+        IF taskrec.participant_key IS NOT NULL
 	THEN
-            task_url_append := '?key=' || uri_encode(taskrec.json ->> '_key');
+	    task_url_append := '?key=' || uri_encode(taskrec.participant_key);
 	ELSE
 	    task_url_append := '';
 	END IF;
+
 
         FOR host IN (SELECT jsonb_array_elements_text(taskrec.participants)
                      FROM task WHERE uuid = task_uuid OFFSET 1)
