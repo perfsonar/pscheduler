@@ -216,12 +216,12 @@ try:
             time.sleep(3)
     else:
         logger.debug("Authentication failed")
-        result["error"] = "MAC auth failed"
+        result["error"] = "MAC auth failed. "
         result["result"]["succeeded"] = False
 except Exception as e:
     logger.exception()
     result["succeeded"] = False
-    result["result"]["error"] = "Authentication caught an exception: %s\n" % str(e)
+    result["error"] = "Authentication caught an exception: %s\n " % str(e)
 
     # We could end the run here since the first test failed. However,
     # we wan't to make sure that we really don't get an address later
@@ -234,14 +234,14 @@ try:
         result["succeeded"] = False
     else:
         if result["result"]["succeeded"] is not True:
-            result["result"]["error"] = "Acquired IP address even if dot1X authentication failed!"
+            result["error"] += "Acquired IP address even if dot1X authentication failed!"
         else:
             result["succeeded"] = True
         result["result"]["ip-addr"] = addr
 except Exception as e:
     logger.exception()
     result["succeeded"] = False
-    result["result"]["error"] += "dhclient caught an exception: " + str(e)
+    result["error"] += "dhclient caught an exception: " + str(e)
 
 
 pscheduler.succeed_json(result)
