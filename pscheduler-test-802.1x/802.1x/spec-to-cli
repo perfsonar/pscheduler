@@ -18,7 +18,9 @@ result = pscheduler.speccli_build_args(spec,
                                                 ('eap_type', 'eap_type'),
                                                 ('username', 'username'),
                                                 ('password', 'password'),
-                                                ('timeout', 'timeout')
+                                                ('timeout', 'timeout'),
+                                                ('auth_inner', 'auth_inner'),
+                                                ('auth_outer', 'auth_outer')
                                                 ])
 
 pscheduler.succeed_json(result)

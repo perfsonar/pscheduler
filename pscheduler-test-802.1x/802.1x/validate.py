@@ -1,4 +1,3 @@
-
 #
 # Validator for "802.1x" Test
 #
@@ -16,6 +15,8 @@ def spec_is_valid(json):
             "eap_type":  {"$ref": "#/pScheduler/String"},
             "username":  {"$ref": "#/pScheduler/String"},
             "password":  {"$ref": "#/pScheduler/String"},
+            "auth_inner":  {"$ref": "#/pScheduler/String"},
+            "auth_outer":  {"$ref": "#/pScheduler/String"},
         },
         "required": [
             "interface",

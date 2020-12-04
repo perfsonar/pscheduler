@@ -60,6 +60,15 @@ opt_parser.add_option("--password",
                       action="store", type="string",
                       dest="password")
 
+opt_parser.add_option("--auth_inner",
+                      help="Inner authentication, optional",
+                      action="store", type="string",
+                      dest="auth_inner")
+
+opt_parser.add_option("--auth_outer",
+                      help="Outer authentication, optional",
+                      action="store", type="string",
+                      dest="auth_outer")
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
@@ -83,5 +92,11 @@ if options.username is not None:
 
 if options.password is not None:
     result['password'] = options.password
+
+if options.auth_inner is not None:
+    result['auth_inner'] = options.auth_inner
+
+if options.auth_outer is not None:
+    result['auth_outer'] = options.auth_outer
 
 pscheduler.succeed_json(result)

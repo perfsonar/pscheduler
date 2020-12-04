@@ -5,15 +5,10 @@ import time
 import pscheduler
 
 
-error = ""
-
 result = {
     "schema": 1,
-    "succeeded": True,
     "result": {
         "schema": 1,
-        "supplicant": "",
-        "dhclient": ""
     }
 }
 
@@ -140,11 +135,12 @@ def dhcp_client(interface):
 
         addr = bound_re.search(stderr)
 
-        logger.debug("Got IP address: %s", addr)
 
         if bound_re.findall(stderr):
+            logger.debug("Got IP address: %s", addr.group(1))
             return addr.group(1)
         else:
+            logger.debug("Failed to acquire an IP address")
             return None
     except Exception:
         return None
@@ -175,7 +171,15 @@ try:
 except KeyError:
     pscheduler.fail("password is a required parameter")
 
-phase2 = spec.get("phase2", "autheap=MSCHAPV2")
+try:
+    phase1 = "peaplabel=%s" % spec["auth_inner"]
+except KeyError:
+    phase1 = "peaplabel=0"
+
+try:
+    phase2 = "autheap=auth=%s" % spec["auth_outer"]
+except KeyError:
+    phase2 = "autheap=auth=MSCHAPV2"
 
 try:
     logger.debug("Adding new network")
@@ -188,11 +192,11 @@ try:
     logger.debug("Setting network properties")
 
     wpa_cmd("set_network %d key_mgmt IEEE8021X" % (network_id))
-    wpa_cmd("set_network %d eap PEAP" % (network_id))
+    wpa_cmd("set_network %d eap %s" % (eap_type, network_id))
     wpa_cmd("set_network %d identity \"%s\"" % (network_id, username))
     wpa_cmd("set_network %d password \"%s\"" % (network_id, password))
-    wpa_cmd("set_network %d phase1 \"peaplabel=0\"" % (network_id))
-    wpa_cmd("set_network %d phase2 \"auth=MSCHAPV2\"" % (network_id))
+    wpa_cmd("set_network %d phase1 \"%s\"" % (network_id, phase1))
+    wpa_cmd("set_network %d phase2 \"%s\"" % (network_id, phase2))
     wpa_cmd("enable_network %d" % (network_id))
     wpa_cmd("reauthenticate")
 
@@ -230,7 +234,6 @@ try:
     logger.debug("Acquiring IP address")
     addr = dhcp_client(interface)
     if not addr:
-        result["error"] = "DHCP failed"
         result["succeeded"] = False
         result["result"]["dhclient"] = "Failed to acquire IP address"
     else:
