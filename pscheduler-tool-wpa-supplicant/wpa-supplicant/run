@@ -211,19 +211,16 @@ try:
             result["succeeded"] = True
             result["result"]["bssid"] = bssid
             result["result"]["mac-addr"] = mac_addr
-            result["result"]["supplicant"] = "User %s was authenticated!" % username
             break
         else:
             time.sleep(3)
     else:
         logger.debug("Authentication failed")
         result["error"] = "MAC auth failed"
-        result["result"]["supplicant"] = "Failed to authenticate supplicant"
         result["result"]["succeeded"] = False
 except Exception as e:
     logger.exception()
     result["succeeded"] = False
-    result["result"]["supplicant"] = "Failed to authenticate supplicant"
     result["result"]["error"] = "Authentication caught an exception: %s\n" % str(e)
 
     # We could end the run here since the first test failed. However,
@@ -235,19 +232,15 @@ try:
     addr = dhcp_client(interface)
     if not addr:
         result["succeeded"] = False
-        result["result"]["dhclient"] = "Failed to acquire IP address"
     else:
         if result["result"]["succeeded"] is not True:
             result["result"]["error"] = "Acquired IP address even if dot1X authentication failed!"
         else:
             result["succeeded"] = True
-        result["result"]["dhclient"] = "Acquired IP address"
         result["result"]["ip-addr"] = addr
 except Exception as e:
     logger.exception()
     result["succeeded"] = False
-    result["result"]["dhclient"] = "Failed to acquire IP address"
-    result["result"]["supplicant"] = "Failed to authenticate supplicant"
     result["result"]["error"] += "dhclient caught an exception: " + str(e)
 
 
