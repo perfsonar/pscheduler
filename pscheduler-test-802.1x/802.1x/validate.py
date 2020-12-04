@@ -13,16 +13,16 @@ def spec_is_valid(json):
             "timeout":   {"$ref": "#/pScheduler/Duration"},
             "interface": {"$ref": "#/pScheduler/String"},
             "eap_type":  {"$ref": "#/pScheduler/String"},
-            "username":  {"$ref": "#/pScheduler/String"},
-            "password":  {"$ref": "#/pScheduler/String"},
+            "_username":  {"$ref": "#/pScheduler/String"},
+            "_password":  {"$ref": "#/pScheduler/String"},
             "auth_inner":  {"$ref": "#/pScheduler/String"},
             "auth_outer":  {"$ref": "#/pScheduler/String"},
         },
         "required": [
             "interface",
             "eap_type",
-            "username",
-            "password"
+            "_username",
+            "_password"
         ]
     }
 
@@ -42,10 +42,8 @@ def result_is_valid(json):
             "ip_addr":    {"$ref": "#/pScheduler/String"},
         },
         "required": [
-            # "duration",
-            # "succeeded",
-            # "supplicant",
-            # "dhclient"
+            "schema",
+            "succeeded"
         ]
     }
 

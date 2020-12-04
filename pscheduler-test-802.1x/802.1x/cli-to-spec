@@ -88,10 +88,10 @@ if options.eap_type is not None:
     result['eap_type'] = options.eap_type
 
 if options.username is not None:
-    result['username'] = options.username
+    result['_username'] = options.username
 
 if options.password is not None:
-    result['password'] = options.password
+    result['_password'] = options.password
 
 if options.auth_inner is not None:
     result['auth_inner'] = options.auth_inner

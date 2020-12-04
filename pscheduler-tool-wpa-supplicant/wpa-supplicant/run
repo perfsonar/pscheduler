@@ -162,12 +162,12 @@ except KeyError:
     pscheduler.fail("eap_type is a required parameter")
 
 try:
-    username = spec["username"]
+    username = spec["_username"]
 except KeyError:
     pscheduler.fail("username is a required parameter")
 
 try:
-    password = spec["password"]
+    password = spec["_password"]
 except KeyError:
     pscheduler.fail("password is a required parameter")
 
