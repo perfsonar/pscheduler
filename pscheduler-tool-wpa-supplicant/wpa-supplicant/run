@@ -172,12 +172,12 @@ except KeyError:
     pscheduler.fail("password is a required parameter")
 
 try:
-    phase1 = "peaplabel=%s" % spec["auth_inner"]
+    phase1 = spec["auth_inner"]
 except KeyError:
     phase1 = "peaplabel=0"
 
 try:
-    phase2 = "autheap=auth=%s" % spec["auth_outer"]
+    phase2 = spec["auth_outer"]
 except KeyError:
     phase2 = "autheap=auth=MSCHAPV2"
 
@@ -195,8 +195,10 @@ try:
     wpa_cmd("set_network %d eap %s" % (eap_type, network_id))
     wpa_cmd("set_network %d identity \"%s\"" % (network_id, username))
     wpa_cmd("set_network %d password \"%s\"" % (network_id, password))
-    wpa_cmd("set_network %d phase1 \"%s\"" % (network_id, phase1))
-    wpa_cmd("set_network %d phase2 \"%s\"" % (network_id, phase2))
+    if phase1 is not "":
+        wpa_cmd("set_network %d phase1 \"%s\"" % (network_id, phase1))
+    if phase2 is not "":
+        wpa_cmd("set_network %d phase2 \"%s\"" % (network_id, phase2))
     wpa_cmd("enable_network %d" % (network_id))
     wpa_cmd("reauthenticate")
 
