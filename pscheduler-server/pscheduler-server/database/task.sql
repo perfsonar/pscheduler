@@ -472,7 +472,7 @@ BEGIN
         -- Key for second and later participants
         --
 
-	IF TG_OP = 'INSERT' THEN
+	IF TG_OP = 'INSERT' AND NEW.nparticipants > 1 THEN
             -- Create a key only if one wasn't provided.
             IF NEW.json ? '_key' THEN
 	      NEW.participant_key := NEW.json ->> '_key';
