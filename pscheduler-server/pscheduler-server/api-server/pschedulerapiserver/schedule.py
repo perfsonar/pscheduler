@@ -85,6 +85,7 @@ def schedule():
 
         result.append(run)
 
+    # This is sanitized because it contains data from multiple tasks
     return ok_json(result)
 
 
@@ -133,4 +134,5 @@ def monitor():
 
         result.append(run)
 
+    # This is sanitized because it contains data from multiple tasks
     return ok_json(result)

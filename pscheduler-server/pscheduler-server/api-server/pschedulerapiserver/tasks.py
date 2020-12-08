@@ -199,7 +199,8 @@ def tasks():
             single=False
         )
 
-        return ok_json(tasks)
+        # Returns multiple tasks, must be sanitized
+        return ok_json(tasks, sanitized=True)
 
     elif request.method == 'POST':
 
@@ -577,9 +578,9 @@ def tasks():
 
         task_url = "%s/%s" % (request.base_url, task_uuid)
 
-        # Non-expanded gets just the URL
+        # Non-expanded gets just the URL; no need tgo sanitize it.
         if not arg_boolean("expanded"):
-            return ok_json(task_url)
+            return ok_json(task_url, sanitize=False)
 
         # Expanded gets a redirect to GET+expanded
 
@@ -619,6 +620,9 @@ def tasks_uuid(uuid):
 
         if not tasks:
             return not_found()
+
+        # TODO: #836: This needs to sanitize if no key
+        log.debug("Fetched task %s: %s", uuid, tasks)
 
         return ok_json(tasks[0])
 

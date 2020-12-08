@@ -90,7 +90,7 @@ def tests_name_spec_is_valid(name):
             return error("Unable to validate test spec: %s" % (stderr))
 
         validate_json = pscheduler.json_load(stdout, max_schema=1)
-        return ok_json(validate_json)
+        return ok_json(validate_json, sanitize=False)
 
     except Exception as ex:
         return error("Unable to validate test spec: %s" % (str(ex)))
@@ -128,7 +128,7 @@ def tests_name_tools(name):
         row[1]['href'] = url
         result.append(row[1])
     cursor.close()
-    return ok_json(result)
+    return ok_json(result, sanitize=False)
 
 
 
@@ -155,4 +155,4 @@ def tests_name_participants(name):
 
     # If this fails because of bad JSON, an exception will be thrown,
     # caught and logged.
-    return ok_json(pscheduler.json_load(stdout, max_schema=1))
+    return ok_json(pscheduler.json_load(stdout, max_schema=1), sanitize=False)

@@ -22,7 +22,8 @@ from .log import log
 @application.route("/", methods=['GET'])
 def root():
     return ok_json("This is the pScheduler API server on %s (%s)."
-              % (server_hostname(), pscheduler.api_local_host_name()))
+                   % (server_hostname(), pscheduler.api_local_host_name()),
+                   sanitize=False)
 
 
 
@@ -31,7 +32,7 @@ max_api = 4
 
 @application.route("/api", methods=['GET'])
 def api():
-    return ok_json(max_api)
+    return ok_json(max_api, sanitize=False)
 
 
 @application.before_request
@@ -75,7 +76,7 @@ def exception():
 @application.route("/hostname", methods=['GET'])
 def hostname():
     """Return the hosts's name"""
-    return ok_json(pscheduler.api_local_host_name())
+    return ok_json(pscheduler.api_local_host_name(), sanitize=False)
 
 
 @application.route("/schedule-horizon", methods=['GET'])
@@ -85,7 +86,8 @@ def schedule_horizon():
     cursor = dbcursor_query(
         "SELECT schedule_horizon FROM configurables", onerow=True)
 
-    return ok_json(pscheduler.timedelta_as_iso8601(cursor.fetchone()[0]))
+    return ok_json(pscheduler.timedelta_as_iso8601(cursor.fetchone()[0]),
+                   sanitize=False)
 
 
 @application.route("/clock", methods=['GET'])
@@ -93,7 +95,7 @@ def clock():
     """Return clock-related information"""
 
     try:
-        return ok_json(pscheduler.clock_state())
+        return ok_json(pscheduler.clock_state(), sanitize=False)
     except Exception as ex:
         return error("Unable to fetch clock state: " + str(ex))
 
@@ -107,10 +109,10 @@ def mtu_safe():
 
     try:
         (status, message) = pscheduler.mtu_path_is_safe(dest)
-        return ok_json({
-            "safe": status,
-            "message": message
-            })
+        return ok_json(
+            { "safe": status, "message": message },
+            sanitize=False)
+
     except Exception as ex:
         log.exception()
         return error(str(ex))
@@ -166,4 +168,4 @@ def get_status():
 
     response["runs"] = runs
 
-    return ok_json(response)
+    return ok_json(response, sanitize=False)

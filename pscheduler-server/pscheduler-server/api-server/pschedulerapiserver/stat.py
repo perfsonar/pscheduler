@@ -36,7 +36,7 @@ def stat_control_pause():
         if not infinite:
             result["remaining"] = pscheduler.timedelta_as_iso8601(left)
 
-    return ok_json(result)
+    return ok_json(result, sanitize=False)
 
 
 

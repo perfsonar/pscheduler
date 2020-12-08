@@ -56,7 +56,7 @@ def contexts_name_data_is_valid(name):
             return error("Unable to validate context data: %s" % (stderr))
 
         validate_json = pscheduler.json_load(stdout, max_schema=1)
-        return ok_json(validate_json)
+        return ok_json(validate_json, sanitize=False)
 
     except Exception as ex:
         return error("Unable to validate context data: %s" % (str(ex)))
