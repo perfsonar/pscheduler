@@ -30,3 +30,13 @@ def access_write_task(original_requester, key=None):
     request_key = arg_string("key")
 
     return (request_key is not None) and (request_key == key)
+
+
+
+def access_read_sensitive():
+    """
+    Determine if a requester can read sensitive information in a task
+    or its runs.
+    """
+
+    return False  # TODO:

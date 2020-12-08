@@ -368,7 +368,7 @@ def tasks_uuid_runs_run(task, run):
             pass  # Not there?  Don't care.
 
 
-        return json_response(result)
+        return ok_json(result)
 
     elif request.method == 'PUT':
 

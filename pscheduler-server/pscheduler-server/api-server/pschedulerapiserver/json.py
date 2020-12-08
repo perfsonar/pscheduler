@@ -29,7 +29,7 @@ def json_query_simple(query, query_args=[], empty_ok=False):
     if cursor.rowcount == 0:
         cursor.close()
         if empty_ok:
-            return json_response([])
+            return ok_json([])
         else:
             return not_found()
 
@@ -37,7 +37,7 @@ def json_query_simple(query, query_args=[], empty_ok=False):
     for row in cursor:
         result.append(row[0])
     cursor.close()
-    return json_response(result)
+    return ok_json(result)
 
 
 
@@ -61,4 +61,4 @@ def json_query(query, query_args=[], name = 'name', single = False):
         row[0]['href'] = this
         result.append( row[0] if single or is_expanded() else this)
     cursor.close()
-    return json_response(result[0] if single else result)
+    return ok_json(result[0] if single else result)

@@ -128,7 +128,7 @@ def tests_name_tools(name):
         row[1]['href'] = url
         result.append(row[1])
     cursor.close()
-    return json_response(result)
+    return ok_json(result)
 
 
 
@@ -155,4 +155,4 @@ def tests_name_participants(name):
 
     # If this fails because of bad JSON, an exception will be thrown,
     # caught and logged.
-    return json_response(pscheduler.json_load(stdout, max_schema=1))
+    return ok_json(pscheduler.json_load(stdout, max_schema=1))
