@@ -471,7 +471,7 @@ def tasks():
         # of the other participants.
 
         cursor = dbcursor_query(
-            "SELECT * FROM api_task_post(%s, %s, %s, %s, 0, %s, NULL, FALSE, %s)",
+            "SELECT uuid, participant_key FROM api_task_post(%s, %s, %s, %s, 0, %s, NULL, FALSE, %s)",
             [pscheduler.json_dump(task), participants, hints_data,
              pscheduler.json_dump(limits_passed),
              task.get("priority", None), diags], onerow=True)
@@ -479,7 +479,7 @@ def tasks():
         if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
 
-        task_uuid = cursor.fetchone()[0]
+        (task_uuid, task_participant_key) = cursor.fetchone()
 
         log.debug("Tasked lead, UUID %s", task_uuid)
 
@@ -487,7 +487,14 @@ def tasks():
 
         task["participants"] = participants
 
-        task_params = { "key": task["_key"] } if "_key" in task else {}
+
+        # If there's a participant key, add that to the task for other
+        # participants.
+
+        if task_participant_key is not None and "_key" not in task:
+            log.debug("Adding participant key %s", task_participant_key)
+            task["_key"] = task_participant_key
+
 
         for participant in range(1,nparticipants):
 
@@ -501,12 +508,10 @@ def tasks():
                 post_url = pscheduler.api_url_hostport(part_name,
                                                        'tasks/' + task_uuid)
 
-                task_params["participant"] = participant
-
                 log.debug("Posting task to %s", post_url)
                 status, result = pscheduler.url_post(
                     post_url,
-                    params=task_params,
+                    params={ "participant": participant },
                     data=task,
                     bind=lead_bind,
                     json=False,

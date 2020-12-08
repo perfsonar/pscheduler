@@ -487,8 +487,6 @@ BEGIN
 	-- TOOL
 	--
 
-	-- TODO: Validate tool name
-
 	tool_type := NEW.json #>> '{tool}';
 	IF tool_type IS NULL THEN
 	   RAISE EXCEPTION 'Task package specifies no tool';
@@ -900,13 +898,16 @@ CREATE OR REPLACE FUNCTION api_task_post(
     enabled BOOLEAN = TRUE,
     diags TEXT = '(None)'
 )
-RETURNS UUID
+RETURNS TABLE(
+  uuid UUID,
+  participant_key TEXT
+)
 AS $$
 DECLARE
     inserted RECORD;
 BEGIN
 
-   IF EXISTS (SELECT * FROM task WHERE uuid = task_uuid)
+   IF EXISTS (SELECT * FROM task WHERE task.uuid = task_uuid)
    THEN
        RAISE EXCEPTION 'Task already exists.  All participants must be on separate systems.';
    END IF;
@@ -919,7 +920,10 @@ BEGIN
         RETURNING *
     ) SELECT INTO inserted * from inserted_row;
 
-    RETURN inserted.uuid;
+    uuid := inserted.uuid;
+    participant_key := inserted.participant_key;
+
+    RETURN NEXT;
 
 END;
 $$ LANGUAGE plpgsql;
