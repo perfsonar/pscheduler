@@ -74,7 +74,7 @@ elif participant == 1:
     password_hash = hashlib.sha256(password_pair.encode('utf-8')).hexdigest()
 
     # TODO: This needs to be pre-underscored
-    result["auth"] = {
+    result["_auth"] = {
         "private": private_key.decode("utf-8"),
         "public": public_key.decode("utf-8"),
         "username": username,
