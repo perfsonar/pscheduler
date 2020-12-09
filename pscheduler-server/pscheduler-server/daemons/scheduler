@@ -623,8 +623,11 @@ def run_post(
 
         # TODO: Should this be multiple attempts to avoid a race condition?
         log_debug("%d: Getting part data from %s", number, run)
-        status, result = pscheduler.url_get(run, bind=bind_addr,
-                                            throw=False, timeout=timeout)
+        status, result = pscheduler.url_get(run,
+                                            params=key_params,
+                                            bind=bind_addr,
+                                            throw=False,
+                                            timeout=timeout)
         if status != 200 or not 'participant-data' in result:
             log.debug("%d: Deleting runs: %s", number, runs_posted)
             pscheduler.url_delete_list(runs_posted, params=key_params,
