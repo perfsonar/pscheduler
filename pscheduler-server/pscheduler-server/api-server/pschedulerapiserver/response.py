@@ -8,7 +8,7 @@ from werkzeug.datastructures import Headers
 from flask import Response
 from flask import request
 
-from .args import arg_boolean
+from .args import arg_boolean, arg_string
 from .log import log
 
 
@@ -27,6 +27,19 @@ def ok_json(data=None, sanitize=True):
     log.debug("Response 200+JSON: %s", text)
     return Response(text + '\n',
                     mimetype='application/json')
+
+def ok_json_sanitize_checked(data, required_key=None):
+    provided_key = arg_string("key")
+    if provided_key is None:
+        # No key, sanitize.
+        sanitize = True
+    elif provided_key == required_key:
+        # Key matches what task expects
+        sanitize = False
+    else:
+        # No match, no dice.
+        return forbidden()
+    return ok_json(data, sanitize=sanitize)
 
 def bad_request(message="Bad request"):
     log.debug("Response 400: %s", message)

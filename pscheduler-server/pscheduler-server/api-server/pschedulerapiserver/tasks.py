@@ -103,22 +103,21 @@ def pick_tool(lists, pick_from=None):
     return None
 
 
-
-
-
 def __tasks_get_filtered(uri_base,
                          where_clause='TRUE',
                          args=[],
                          expanded=False,
                          detail=False,
-                         single=True):
+                         single=True,
+                         part_key_field=None
+):
 
     """Get one or more tasks from a table using a WHERE clause."""
 
     # Let this throw; callers are responsible for catching.
 
     cursor = dbcursor_query(
-        """SELECT json_detail, uuid FROM task WHERE %s""" % (where_clause),
+        """SELECT json_detail, uuid, participant_key FROM task WHERE %s""" % (where_clause),
         args)
 
     tasks_returned = []
@@ -164,6 +163,8 @@ def __tasks_get_filtered(uri_base,
             except KeyError:
                 pass
 
+        if part_key_field is not None:
+            json[part_key_field] = row[2]
 
         tasks_returned.append(json)
 
@@ -602,6 +603,8 @@ def tasks():
 
 
 
+PART_KEY_FIELD = "__participant_key"
+
 @application.route("/tasks/<uuid>", methods=['GET', 'POST', 'DELETE'])
 def tasks_uuid(uuid):
 
@@ -616,15 +619,22 @@ def tasks_uuid(uuid):
             args=[uuid],
             expanded=True,
             detail=arg_boolean("detail"),
-            single=True)
+            single=True,
+            part_key_field=PART_KEY_FIELD
+        )
 
         if not tasks:
             return not_found()
 
-        # TODO: #836: This needs to sanitize if no key
-        log.debug("Fetched task %s: %s", uuid, tasks)
+        task = tasks[0]
 
-        return ok_json(tasks[0])
+        log.debug("GOT TASK %s", task)
+        participant_key = task.get(PART_KEY_FIELD)
+        del task[PART_KEY_FIELD]
+
+        log.debug("LOOKING FOR %s", participant_key)
+
+        return ok_json_sanitize_checked(task, participant_key)
 
     elif request.method == 'POST':
 

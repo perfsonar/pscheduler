@@ -469,7 +469,8 @@ BEGIN
 
 
         --
-        -- Key for second and later participants
+        -- Key for second and later participants.  Use the one
+        -- provided in the task if that exists.
         --
 
 	IF TG_OP = 'INSERT' AND NEW.nparticipants > 1 THEN

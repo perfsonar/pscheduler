@@ -17,7 +17,7 @@ def json_dump(dump):
                                 )
 
 
-def json_query_simple(query, query_args=[], empty_ok=False, sanitize=True):
+def json_query_simple(query, query_args=[], empty_ok=False, key=None):
     """Do a SQL query that selects one column and dump those values as
     a JSON array"""
 
@@ -38,11 +38,11 @@ def json_query_simple(query, query_args=[], empty_ok=False, sanitize=True):
     for row in cursor:
         result.append(row[0])
     cursor.close()
-    return ok_json(result, sanitize=sanitize)
+    return ok_json_sanitize_checked(result, key)
 
 
 
-def json_query(query, query_args=[], name='name', single=False, sanitize=True):
+def json_query(query, query_args=[], name='name', single=False, key=None):
     """Do a SQL query that selects one column containing JSON and dump
     the results, honoring the 'expanded' and 'pretty' arguments.  If
     the 'single' argument is True, the first-returned row will be
@@ -62,4 +62,4 @@ def json_query(query, query_args=[], name='name', single=False, sanitize=True):
         row[0]['href'] = this
         result.append( row[0] if single or is_expanded() else this)
     cursor.close()
-    return ok_json(result[0] if single else result, sanitize=sanitize)
+    return ok_json_sanitize_checked((result[0] if single else result), key)
