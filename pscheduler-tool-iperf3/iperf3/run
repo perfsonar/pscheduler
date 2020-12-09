@@ -6,12 +6,15 @@
 import datetime
 import logging
 import json
+import os
 import pscheduler
 import re
 import shutil
+import stat
 import sys
 import time
 import iperf3_parser
+import tempfile
 import traceback
 import iperf3_utils
 from iperf3_defaults import *
@@ -253,6 +256,34 @@ def run_client():
             diags.append("Unable to use NUMA for this test.  Disabling it.")
 
 
+    # Set up for authorization if that's present.
+
+    auth_dir = tempfile.TemporaryDirectory()
+    os.chmod(auth_dir.name, stat.S_IRWXU)
+
+    auth_env = {}
+
+    if participant_data[1].get("_auth") is not None:
+
+        try:
+
+            # TODO: There should be a better way to do this.
+            auth_env["IPERF3_PASSWORD"] = participant_data[1]["_auth"]["password"]
+
+            public_key_path = "{}/public-key".format(auth_dir.name)
+            with open(public_key_path, "w") as writer:
+                writer.write(participant_data[1]["_auth"]["public"])
+            iperf3_args.append("--rsa-public-key-path")
+            iperf3_args.append(public_key_path)
+
+            iperf3_args.append("--username")
+            iperf3_args.append(participant_data[1]["_auth"]["username"])
+
+        except Exception as ex:
+
+            auth_dir.cleanup()
+            pscheduler.fail("Unable to write client auth files: %s" % (str(ex)))
+
 
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string
@@ -282,6 +313,7 @@ def run_client():
 
     try:
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
+                                                        env_add = auth_env,
                                                         timeout = iperf_timeout)
     except Exception as ex:
         logger.error("iperf3 failed to complete execution: %s" % ex)
@@ -351,11 +383,43 @@ def run_server():
             diags.append("Unable to use NUMA for %s.  Disabling it." % (interface))
             affinity = None
 
+
     if affinity is not None:
         iperf3_args.insert(0, 'numactl')
         iperf3_args.insert(1, '-N')
         iperf3_args.insert(2, affinity)
 
+
+    # Set up for authentication if that's present
+
+    auth_dir = tempfile.TemporaryDirectory()
+    os.chmod(auth_dir.name, stat.S_IRWXU)
+
+
+    # Run auth if the lead participant is and there's auth data
+
+    if participant_data[1].get("_auth") is not None and participant_data[0].get("schema", 1) >= 2:
+
+        try:
+
+            credentials_path = "{}/credentials".format(auth_dir.name)
+            with open(credentials_path, "w") as writer:
+                writer.write(participant_data[1]["_auth"]["credentials"])
+            iperf3_args.append("--authorized-users-path")
+            iperf3_args.append(credentials_path)
+
+            private_key_path = "{}/private-key".format(auth_dir.name)
+            with open(private_key_path, "w") as writer:
+                writer.write(participant_data[1]["_auth"]["private"])
+            iperf3_args.append("--rsa-private-key-path")
+            iperf3_args.append(private_key_path)
+
+        except Exception as ex:
+
+            auth_dir.cleanup()
+            pscheduler.fail("Unable to write auth files: %s" % (str(ex)))
+
+        
 
     iperf3_args = [str(x) for x in iperf3_args]
     logger.debug("Running command: %s" % " ".join(iperf3_args))
@@ -378,10 +442,23 @@ def run_server():
         pscheduler.sleep_until(start_at)
         logger.debug("Starting")
     except KeyError:
+        auth_dir.cleanup()
         pscheduler.fail("Unable to find start time in input")
 
     status, stdout, stderr = pscheduler.run_program(iperf3_args,
                                                     timeout=iperf_timeout)
+
+    auth_dir.cleanup()
+
+    # There's a bug in the server side that dumps a diagnostic into
+    # stdout.  Correct for that.
+    # See https://github.com/esnet/iperf/issues/1086
+    # TODO: Remove when the bug is fixed.
+
+    pos = stdout.find("{")
+    if pos > 0:
+        stdout = stdout[pos:]
+
 
     return _make_result("\n".join(diags), status, stdout, stderr)
 

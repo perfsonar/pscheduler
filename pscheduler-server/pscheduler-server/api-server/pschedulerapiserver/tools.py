@@ -29,6 +29,7 @@ def tools():
         cursor = dbcursor_query("SELECT api_tools_for_test(%s)",
                                 [test_filter],
                                 onerow=True)
+        # Sanitized, even though there should be nothing special in these.
         return ok_json( cursor.fetchone()[0] )
 
 
