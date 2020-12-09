@@ -83,7 +83,7 @@ AS
         SELECT
             task.id AS task,
 	    task.uuid,
-	    task.json ->> '_key' AS key,
+	    participant_key AS key,
             task.enabled,
             task.added,
             task.duration,
@@ -112,7 +112,7 @@ AS
         SELECT
             task.id AS task,
             task.uuid,
-	    task.json ->> '_key' AS key,
+	    participant_key AS key,
             task.enabled,
             task.added,
             task.duration,
@@ -141,7 +141,7 @@ AS
         SELECT
             task.id AS task,
             task.uuid,
-	    task.json ->> '_key' AS key,
+	    participant_key AS key,
             task.enabled,
             task.added,
             duration,
@@ -172,7 +172,7 @@ AS
         SELECT
             task.id AS task,
             task.uuid,
-	    task.json ->> '_key' AS key,
+	    participant_key AS key,
             task.enabled,
             task.added,
             duration,
