@@ -473,7 +473,7 @@ BEGIN
         -- provided in the task if that exists.
         --
 
-	IF TG_OP = 'INSERT' AND NEW.nparticipants > 1 THEN
+	IF TG_OP = 'INSERT' AND NEW.nparticipants > 1 AND new.participant = 0 THEN
             -- Create a key only if one wasn't provided.
             IF NEW.json ? '_key' THEN
 	      NEW.participant_key := NEW.json ->> '_key';
