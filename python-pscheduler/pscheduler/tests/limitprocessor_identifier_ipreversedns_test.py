@@ -13,10 +13,12 @@ from pscheduler.limitprocessor.identifier.ipreversedns import *
 from pscheduler.psdns import *
 
 
+# TODO: This depends on the continued existence of a couple of well-known hosts.
+
 DATA = {
     "match": {
         "style": "regex",
-        "match": "^(ntp[0-9]*\\.internet2\\.edu|chronos\\.es\\.net|saturn\\.es\\.net)$"
+        "match": "^(dns\\.google|one\\.one\\.one\\.one)$"
     },
     "timeout": "PT5S"
 }
@@ -50,26 +52,22 @@ class TestLimitprocessorIdentifierIPReverseDNS(PschedTestBase):
 
         # Trues
 
-        # ntp0.internet2.edu
         self.assertEqual(
-            ident.evaluate({ "requester": "207.75.164.18" }),
+            ident.evaluate({ "requester": "8.8.8.8" }),
             True)
 
-        # {chronos,saturn}.es.net
         self.assertEqual(
-            ident.evaluate({ "requester": "198.124.252.90" }),
+            ident.evaluate({ "requester": "1.1.1.1" }),
             True)
 
         # Falses
 
-        # webprod2.internet2.edu (RRs to internet2.edu)
         self.assertEqual(
-            ident.evaluate({ "requester": "207.75.164.248" }),
+            ident.evaluate({ "requester": "192.0.2.1" }),
             False)
 
-        # www.internet2.edu
         self.assertEqual(
-            ident.evaluate({ "requester": "2001:48a8:68fe::248" }),
+            ident.evaluate({ "requester": "198.51.100.1" }),
             False)
 
 
