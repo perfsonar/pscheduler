@@ -1,4 +1,9 @@
-pscheduler-tool-psclock (4.3.3~a1.0-1) perfsonar-4.3-snapshot; urgency=low\n\n  * New upstream version.\n\n -- perfSONAR developers <debian@perfsonar.net>  Tue, 08 Dec 2020 19:23:03 +0000\n
+pscheduler-tool-psclock (4.3.3~a1.0-1) perfsonar-4.3-snapshot; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 14 Dec 2020 15:53:11 +0000
+
 pscheduler-tool-psclock (4.3.2-1) perfsonar-4.3; urgency=low
 
   * New upstream version.
