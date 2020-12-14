@@ -14,11 +14,10 @@ Architecture: all
 Depends:
  pscheduler-test-disk-to-disk,
  pscheduler-test-netreach,
- pscheduler-tool-curl,
  pscheduler-tool-globus,
  pscheduler-tool-nmapreach
 Description: pScheduler extras packages
  Bundle of extras pScheduler packages:
  Tests: disk-to-disk, netreach
- Tools: curl, globus, nmapreach
+ Tools: globus, nmapreach
 

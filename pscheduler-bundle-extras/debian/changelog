@@ -1,6 +1,7 @@
 pscheduler-bundle-extras (4.3.3~a1.0-1) perfsonar-4.3-snapshot; urgency=low
 
   * New upstream version.
+  * Moving pscheduler-tool-curl to full bundle.
 
  -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 14 Dec 2020 15:53:11 +0000
 
