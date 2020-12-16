@@ -18,7 +18,7 @@ Patch0: owamp-00-root-test.patch
 
 
 Packager: Aaron Brown <aaron@internet2.edu>
-%if 0%{?el7}
+%if 0%{?el7}%{?ol8}
 BuildRequires: libtool, I2util, libcap-devel, openssl-devel, systemd, selinux-policy-devel
 %else
 BuildRequires: libtool, I2util, libcap-devel, openssl-devel

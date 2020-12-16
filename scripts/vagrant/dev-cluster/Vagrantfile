@@ -47,24 +47,28 @@ Yum is used for package installation because it works on EL7 and EL7.
 
 # Configure the following to taste:
 
-# Prefix for hostnames, which will be (e.g., psdev1, psdev2, etc.).  This
-# needs to be unique among other running clusters.
-host_prefix = "psdev"
+# Flavor of Linux (centos, oracle, rhel) and major version
+# NOTE: RHEL has not been tested.
+os_flavor = "centos"
+os_version = 7
 
 # Number of machines to build
-num_hosts = 2
+num_hosts = 1
 
-# Box on which the machines should be based.  This must have the
-# VirtualBox guest extensions already built in.
-default_box = "bento/centos-7"
-#default_box = "bento/centos-8"
+# Prefix for hostnames, which will be (e.g., psdev1, psdev2, etc.).
+# This needs to be unique among other running clusters.  If nil, the
+# prefix will be '#{os_flavor}#{os_version}-' (e.g., centos8-3)..
+host_prefix = nil
 
 # System configuration
 cpus = 2
 memory = 2048
 
+# Start IP addresses here.  Starting at 0 makes Vagrant complain.
+ip_address_base = 10
+
 # Version of the perfSONAR repo to install (EL7 only)
-ps_repo_version="0.9-1"
+ps_repo_version="0.10-1"
 
 
 # ------------------------------------------------------------------------------
@@ -73,6 +77,36 @@ ps_repo_version="0.9-1"
 
 
 require 'etc'
+
+boxes = Hash[
+  "centos" => Hash[
+    7 => "bento/centos-7",
+    8 => "bento/centos-8"
+  ],
+  "oracle" => Hash[
+    7 => "generic/oracle7",
+    8 => "generic/oracle8"
+  ],
+  "rhel" => Hash[
+    7 => "generic/rhel7",
+    8 => "generic/rhel8"
+  ]
+]
+
+if not boxes.has_key?(os_flavor)
+  raise "OS '#{os_flavor}' is not supported."
+end
+
+if not boxes[os_flavor].has_key?(os_version)
+  raise "#{os_flavor} #{os_version} is not supported."
+end
+
+default_box = boxes[os_flavor][os_version]
+
+if host_prefix == nil
+  host_prefix = "#{os_flavor}#{os_version}-"
+end
+
 
 
 # Machines to build
@@ -87,8 +121,8 @@ hosts = (1..num_hosts).map {
               |num|
         [
           "#{host_prefix}#{num}",
-          "10.0.0.#{num}",
-          "fc00::#{sprintf("%x", num)}"
+          "10.0.0.#{num + ip_address_base - 1}",
+          "fc00::#{sprintf("%d", num + ip_address_base - 1)}"
         ]
       }
 
@@ -170,6 +204,7 @@ Vagrant.configure("2") do |config|
         mv -f /etc/hosts.build /etc/hosts
       SHELL
 
+
       #
       # perfSONAR Development
       #
@@ -183,28 +218,13 @@ Vagrant.configure("2") do |config|
 
         set -e
 
-        # Determine the RHEL version without depending on lsb_release.
-
-        REDHAT_RELEASE=$(sed -e 's/^.*release\s*//; s/\s.*$//' /etc/redhat-release)
-        REDHAT_RELEASE_MAJOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 }')
-
-        case "${REDHAT_RELEASE_MAJOR}" in
-            7|8)
-                true
-                ;;
-            *)
-                echo "This version of RHEL/CentOS (${REDHAT_RELEASE} / ${REDHAT_RELEASE_MAJOR}) is not supported." 1>&2
-                exit 1
-                ;;
-        esac
-
         #
         # Install or Enable Other Repositories
         #
 
-        # CentOS
-        case "${REDHAT_RELEASE_MAJOR}" in
-            8)
+        # CentOS PowerTools
+        case "#{os_flavor}/#{os_version}" in
+            centos/8)
                 dnf config-manager --set-enabled PowerTools
                 ;;
             *)
@@ -212,39 +232,39 @@ Vagrant.configure("2") do |config|
                 ;;
         esac
 
-
-
         # EPEL
-        yum -y install epel-release
+        case "#{os_flavor}/#{os_version}" in
+            centos/*|rhel/*)
+                yum -y install epel-release
+                true
+                ;;
+            oracle/*)
+                yum -y install "oracle-epel-release-el#{os_version}"
+                ;;
+            *)
+                true
+                ;;
+        esac
 
         # perfSONAR
-        REPO_PREFIX="http://software.internet2.edu/rpms/el${REDHAT_RELEASE_MAJOR}/$(uname -m)/latest/packages/perfSONAR-repo"
-        for REPO in "" extras staging
-        do
-            [ "$REPO" != "" ] && REPO="${REPO}-"
-            yum -y install "${REPO_PREFIX}-${REPO}#{ps_repo_version}.noarch.rpm"
-        done
+        REPO_PREFIX="http://software.internet2.edu/rpms/el#{os_version}/$(uname -m)/latest/packages/perfSONAR-repo"
 
-	# Things we need to build:
-	yum -y install \
-	    git \
-	    m4 \
-	    make \
-	    which \
-	    \
-	    man-pages man-db man
+        case "#{os_version}" in
+            7)
+                for REPO in "" extras
+                do
+                    if [ "${REPO}" != "" ]
+                    then
+                        REPO="${REPO}-"
+                    fi
+                    yum -y install "${REPO_PREFIX}-${REPO}#{ps_repo_version}.noarch.rpm"
+                done
+                ;;
+            *)
+                true
+                ;;
+        esac
 
-        if [ "${REDHAT_RELEASE_MAJOR}" = "7" ]
-        then
-            for REPO in "" extras
-            do
-                if [ "${REPO}" != "" ]
-                then
-                    REPO="${REPO}-"
-                fi
-                yum -y install "${REPO_PREFIX}-${REPO}#{ps_repo_version}.noarch.rpm"
-            done
-        fi
 
         # Things we need to build:
         yum -y install \

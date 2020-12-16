@@ -41,10 +41,15 @@ postgresql
 postgresql-init
 postgresql-load
 
+
+# Only build this on OL8.  EL8 has it.
+ifelse(REDHAT_RELEASE_MAJOR,8,ifelse(VENDOR,oracle,oniguruma))
 # jq version with new patches. replace when patches accepted upstream
 jq
 
 # Python Modules
+# Only build this on OL8.  EL8 has it.
+ifelse(REDHAT_RELEASE_MAJOR,8,ifelse(VENDOR,oracle,Cython))
 ifelse(REDHAT_RELEASE_MAJOR,7,python-daemon)
 ifelse(REDHAT_RELEASE_MAJOR,7,python-isodate)
 # EL8 has this, but an older version

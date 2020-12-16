@@ -44,26 +44,24 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 # Python
 #
 
+# This is the version we like.
 %%_pscheduler_python_version_major 3
 %%_pscheduler_python_version_minor 6
 
-%if 0%{?el7}
 
+%if 0%{?el7}
 # EL7 supports 2, 34 and 36 and names its packages that way (e.g.,
 # python36-foo) and has some named python3-foo.
-
 %%_pscheduler_python python%{_pscheduler_python_version_major}
 %%_pscheduler_python_epel python%%{_pscheduler_python_version_major}%%{_pscheduler_python_version_minor}
-
 %endif
 
 %if 0%{?el8}
-
+# CentOS 8 and Oracle Linux 8
+# See https://yum.oracle.com/oracle-linux-python.html
 # EL8 standardized on just the major version, as did EPEL.
-
 %%_pscheduler_python python%%{_pscheduler_python_version_major}
 %%_pscheduler_python_epel %{_pscheduler_python}
-
 %endif
 
 
