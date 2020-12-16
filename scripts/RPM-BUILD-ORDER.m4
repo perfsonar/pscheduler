@@ -42,8 +42,8 @@ postgresql-init
 postgresql-load
 
 
-# TODO: Only build this on OL8.  EL8 has it.
-ifelse(REDHAT_RELEASE_MAJOR,8,onigumura)
+# Only build this on OL8.  EL8 has it.
+ifelse(REDHAT_RELEASE_MAJOR,8,ifelse(VENDOR,oracle,oniguruma))
 # jq version with new patches. replace when patches accepted upstream
 jq
 
