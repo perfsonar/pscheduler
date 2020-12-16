@@ -48,8 +48,9 @@ Yum is used for package installation because it works on EL7 and EL7.
 # Configure the following to taste:
 
 # Flavor of Linux (centos, oracle, rhel) and major version
-os_flavor = "oracle"
-os_version = 8
+# NOTE: RHEL has not been tested.
+os_flavor = "centos"
+os_version = 7
 
 # Number of machines to build
 num_hosts = 1
@@ -233,7 +234,7 @@ Vagrant.configure("2") do |config|
 
         # EPEL
         case "#{os_flavor}/#{os_version}" in
-            centos/*)
+            centos/*|rhel/*)
                 yum -y install epel-release
                 true
                 ;;
@@ -247,20 +248,6 @@ Vagrant.configure("2") do |config|
 
         # perfSONAR
         REPO_PREFIX="http://software.internet2.edu/rpms/el#{os_version}/$(uname -m)/latest/packages/perfSONAR-repo"
-
-        case "#{os_version}" in
-            centos/*)
-                yum -y install epel-release
-                true
-                ;;
-            oracle/*)
-                yum -y install "oracle-epel-release-el#{os_version}"
-                ;;
-            *)
-                true
-                ;;
-        esac
-
 
         case "#{os_version}" in
             7)
