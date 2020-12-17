@@ -1,45 +1,5 @@
-#!/usr/bin/env python3
-#
-# Determine if this tool can run a test based on a test spec.
-#
-
-# exit statuses should be different based on error
-
-import pscheduler
-
-json = pscheduler.json_load(exit_on_error=True);
-
-try:
-    if json['type'] != 'http':
-        pscheduler.succeed_json({
-            "can-run": False,
-            "reasons": [ "Unsupported test type" ]
-        })
-except KeyError:
-    pscheduler.succeed_json({
-        "can-run": False,
-        "reasons": [ "Missing test type" ]
-    })
-
-try:
-    spec = json["spec"]
-except KeyError:
-    pscheduler.succeed_json({
-        "can-run": False,
-        "reasons": ["Missing test specification"]
-    })
-except ValueError as ex:
-    pscheduler.succeed_json({
-        "can-run": False,
-        "reasons": [str(ex)]
-    })
-
-if spec["schema"] > 1:
-    pscheduler.succeed_json({
-        "can-run": False,
-        "reasons": ["Deprecated tool does not support newer features."]
-    })
-
-
-
-pscheduler.succeed_json({ "can-run": True })
+#!/bin/sed -e 1d
+{
+  "can-run": false,
+  "reasons": [ "Support for this tool has been discontinued." ]
+}

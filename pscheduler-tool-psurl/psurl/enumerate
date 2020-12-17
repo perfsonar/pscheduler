@@ -1,13 +1,12 @@
 #!/bin/sed -e 1d
 {
     "schema": 1,
-
     "name": "psurl",
-    "description": "Measure an HTTP Response Query",
+    "description": "Measure HTTP query response time - NON-FUNCTIONING",
     "version": "1.0",
-    "tests": [ "http" ],
+    "tests": [ ],
 
-    "preference": -10,
+    "preference": 0,
 
     "maintainer": {
         "name": "perfSONAR Development Team",
