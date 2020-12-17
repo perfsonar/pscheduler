@@ -10,7 +10,7 @@ Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
 Release:	%{perfsonar_auto_relnum}%{?dist}
 
-Summary:	psurl tool class for pScheduler
+Summary:	psurl tool class for pScheduler (DISABLED)
 BuildArch:	noarch
 License:	ASL 2.0
 Vendor:	perfSONAR
@@ -27,7 +27,7 @@ Requires:	pscheduler-test-http
 BuildRequires:	pscheduler-rpm
 
 %description
-psurl tool class for pScheduler
+psurl tool class for pScheduler (DISABLED)
 
 %prep
 %setup -q -n %{short}-%{version}

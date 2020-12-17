@@ -167,7 +167,7 @@ pscheduler-tool-paris-traceroute
 pscheduler-tool-ping
 pscheduler-tool-powstream
 pscheduler-tool-psclock
-pscheduler-tool-psurl
+pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
 pscheduler-tool-s3-benchmark
 pscheduler-tool-simplestreamer
