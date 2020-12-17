@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+"""
+Send a result to a TCP socket.
+"""
+
+import sys
+import pscheduler
+import socket
+
+
+MAX_SCHEMA = 1
+
+log = pscheduler.Log(name="tcp-archiver")
+
+
+def archive(json):
+    """Archive a single result."""
+
+    schema = json["data"].get("schema", 1)
+    if schema > MAX_SCHEMA:
+        return {
+            "succeeded": False,
+            "error": "Unsupported schema version %d; max is %d" % (
+                schema, MAX_SCHEMA)
+        }
+
+    errors = ()
+
+    data = json["data"]
+
+    try:
+        ip_version = data.get("ip-version")
+        bind = data.get("bind")
+        host = data["host"]
+        port = data["port"]
+    except KeyError:
+        raise RuntimeError("Reached code that wasn't supposed to be reached.")
+
+
+    sock = None
+    try:
+
+        if ip_version is None:
+            # Guess based on the host name
+            for ipv in [ 6, 4 ]:
+                resolved = pscheduler.dns_resolve(host, ip_version=ipv)
+                log.debug("Resolved IPv%d: %s", ipv, resolved)
+                if resolved is not None:
+                    ip_version = ipv
+                    break
+
+            if ip_version is None:
+                raise RuntimeError("Unable to guess IP version for %s" % (host))
+
+        family = socket.AF_INET if ip_version == 4 else socket.AF_INET6
+
+        sock = socket.socket(family, socket.SOCK_STREAM)
+        sock.connect((host, port))
+        log.debug("Connected to IPv%d %s:%d", ip_version, host, port)
+
+        send_text = pscheduler.json_dump(json["result"]).encode("utf-8")
+        send_len = len(send_text)
+
+        total_sent = 0
+        while total_sent < send_len:
+            log.debug("Sending a chunk (At %d of %d bytes)", total_sent, send_len)
+            sent = sock.send(send_text[total_sent:])
+            if sent == 0:
+                raise RuntimeError("Socket connection broken")
+            total_sent = total_sent + sent
+
+        log.debug("Sent")
+
+    except Exception as ex:
+
+        log.debug("Failed: %s", str(ex))
+
+        result = {
+            "succeeded": False,
+            "error": "%s" % str(ex)
+        }
+
+        if "retry-policy" in data:
+            policy = pscheduler.RetryPolicy(data['retry-policy'], iso8601=True)
+            retry_time = policy.retry(json["attempts"])
+            if retry_time is not None:
+                result["retry"] = retry_time
+
+        return result
+
+    finally:
+
+        if sock is not None:
+            sock.close()
+
+    return {'succeeded': True}
+
+
+
+PARSER = pscheduler.RFC7464Parser(sys.stdin)
+EMITTER = pscheduler.RFC7464Emitter(sys.stdout)
+
+for parsed in PARSER:
+    EMITTER(archive(parsed))
+
+pscheduler.succeed()
