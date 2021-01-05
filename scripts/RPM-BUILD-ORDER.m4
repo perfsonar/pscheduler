@@ -186,6 +186,7 @@ pscheduler-archiver-http
 pscheduler-archiver-kafka
 pscheduler-archiver-rabbitmq
 pscheduler-archiver-snmptrap		--bundle snmp
+pscheduler-archiver-socket
 pscheduler-archiver-syslog
 
 # Context Changers

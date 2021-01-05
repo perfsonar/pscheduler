@@ -147,7 +147,7 @@ __dictionary__ = {
 
     "HostName": {
         "type": "string",
-        "format": "host-name"
+        "format": "hostname"
         },
 
     "HostNamePort": {
