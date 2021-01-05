@@ -36,30 +36,48 @@ def archive(json):
     except KeyError:
         raise RuntimeError("Reached code that wasn't supposed to be reached.")
 
+    host_family, host_ip_resolved = pscheduler.ip_addr_version(host, ip_version=ip_version, family=True)
+    if host_family is None:
+        return {
+            "succeeded": False,
+            "error": "Unable to resolve host %s: %s" % (host, host_ip_resolved)
+        }
+    log.debug("Sending to %s (%s)", host, host_ip_resolved)
+
+    if bind is not None:
+        bind_family, bind_ip_resolved = pscheduler.ip_addr_version(bind, ip_version=ip_version, family=True)
+        if bind_family is None:
+            return {
+                "succeeded": False,
+                "error": "Unable to resolve bind %s: %s" % (bind, bind_ip_resolved)
+            }
+        log.debug("Binding to %s (%s)", bind, bind_ip_resolved)
+
+        if bind_family != host_family:
+            return {
+                "succeeded": False,
+                "error": "Host and bind have mismatched socket families"
+            }
+
+
+    # Do the deed.
 
     sock = None
     try:
 
-        if ip_version is None:
-            # Guess based on the host name
-            for ipv in [ 6, 4 ]:
-                resolved = pscheduler.dns_resolve(host, ip_version=ipv)
-                log.debug("Resolved IPv%d: %s", ipv, resolved)
-                if resolved is not None:
-                    ip_version = ipv
-                    break
+        # Connect
 
-            if ip_version is None:
-                raise RuntimeError("Unable to guess IP version for %s" % (host))
-
-        family = socket.AF_INET if ip_version == 4 else socket.AF_INET6
-
-        sock = socket.socket(family, socket.SOCK_STREAM)
-        sock.connect((host, port))
-        log.debug("Connected to IPv%d %s:%d", ip_version, host, port)
+        sock = socket.socket(host_family, socket.SOCK_STREAM)
+        if bind:
+            sock.bind((bind_ip_resolved, 0))
+            log.debug("Bound")
+        sock.connect((host_ip_resolved, port))
+        log.debug("Connected")
 
         send_text = pscheduler.json_dump(json["result"]).encode("utf-8")
         send_len = len(send_text)
+
+        # Send the data
 
         total_sent = 0
         while total_sent < send_len:
@@ -104,3 +122,4 @@ for parsed in PARSER:
     EMITTER(archive(parsed))
 
 pscheduler.succeed()
+
