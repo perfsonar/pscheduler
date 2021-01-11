@@ -194,6 +194,19 @@ BEGIN
     END IF;
 
 
+    -- Version 8 to version 9
+    -- Adds 'expires' and index
+    IF t_version = 8
+    THEN
+        ALTER TABLE run ADD COLUMN
+        expires TIMESTAMP WITH TIME ZONE;
+
+	CREATE INDEX run_expires ON run(expires);
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -576,6 +589,56 @@ CREATE TRIGGER run_alter BEFORE INSERT OR UPDATE ON run
 
 
 
+
+DROP TRIGGER IF EXISTS run_delete ON run CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('run_delete'); END $$;
+
+CREATE OR REPLACE FUNCTION run_delete()
+RETURNS TRIGGER
+AS $$
+DECLARE
+    older_than TIMESTAMP WITH TIME ZONE;
+BEGIN
+
+    -- If this isn't the last run, we're good.
+    IF EXISTS (SELECT * FROM run WHERE task = OLD.task)
+    THEN
+        RETURN OLD;
+    END IF;
+
+
+    -- Remove the task if it can be considered completed.
+
+    SELECT INTO older_than normalized_now() - keep_runs_tasks
+    FROM configurables;
+
+    DELETE FROM task
+    WHERE
+        id = OLD.task
+        -- The first of these will be the latest known time.
+        AND COALESCE(until, start, added) < older_than
+        AND (
+            -- Complete based on runs
+            (max_runs IS NOT NULL AND runs >= max_runs)
+            -- One-shot
+            OR (repeat IS NULL AND repeat_cron IS NULL)
+            -- Until time has passed
+            OR until < older_than
+            )
+    ;
+
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER run_delete AFTER DELETE ON run
+       FOR EACH ROW EXECUTE PROCEDURE run_delete();
+
+
+
+
+
 -- If a task becomes disabled, remove all future runs.
 
 DROP TRIGGER IF EXISTS run_task_disabled ON task CASCADE;
@@ -812,9 +875,7 @@ BEGIN
     DELETE FROM run
     WHERE
         upper(times) < purge_before
-        AND state NOT IN (run_state_pending(),
-                          run_state_on_deck(),
-                          run_state_running());
+        AND run_state_is_finished(state);
 
     -- Extra margin for anything that might actually be running
     purge_before := purge_before - 'PT1H'::INTERVAL;

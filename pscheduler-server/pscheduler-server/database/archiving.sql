@@ -315,6 +315,32 @@ BEGIN
         NOTIFY archiving_change;
     END IF;
 
+
+    -- If the task says to purge runs after archiving and this is the
+    -- last one completed, do it.
+
+    -- TODO: Need to do this on a completion
+
+    IF (NEW.completed AND NEW.completed <> OLD.completed)
+    THEN
+        DELETE FROM run
+        WHERE
+            id = NEW.run
+            AND NOT EXISTS (
+                SELECT *
+                FROM
+                    archiving
+                    JOIN run ON run.id = archiving.run
+                    JOIN task ON task.id = run.task
+                WHERE
+                    run = NEW.run
+                    AND NOT archiving.completed
+                    AND task.purge
+            );
+    END IF;
+
+    
+
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

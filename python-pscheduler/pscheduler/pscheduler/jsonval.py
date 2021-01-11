@@ -1017,6 +1017,7 @@ __dictionary__ = {
             "reference": { "$ref": "#/pScheduler/AnyJSON" },
             "_key": { "$ref": "#/pScheduler/String" },
             "debug": { "$ref": "#/pScheduler/Boolean" },
+            "purge": { "$ref": "#/pScheduler/Boolean" }
         },
         "additionalProperties": False,
         "required": [

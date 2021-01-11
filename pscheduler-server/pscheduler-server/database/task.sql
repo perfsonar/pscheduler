@@ -342,6 +342,20 @@ BEGIN
     END IF;
 
 
+    -- Version 15 to version 16
+    -- Adds after column
+    IF t_version = 15
+    THEN
+
+	-- Key to be used when tasking second participants when none
+	-- was specified in the task.
+	ALTER TABLE task ADD COLUMN
+	purge BOOLEAN;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -728,7 +742,15 @@ BEGIN
                 'null'::JSONB);
         END IF;
 
+	--
+	-- Everything Else
+	--
 
+	IF TG_OP = 'INSERT' THEN
+	    NEW.purge :=  COALESCE((NEW.json->>'purge')::BOOLEAN, FALSE);
+        ELSIF TG_OP = 'UPDATE' AND NEW.purge <> OLD.purge THEN
+            RAISE EXCEPTION 'Purge state cannot be updated.';
+        END IF;
 
 
 	RETURN NEW;
@@ -847,6 +869,7 @@ BEGIN
 
     DELETE FROM task
     WHERE
+        -- TODO: This refers to a table created later.
         NOT EXISTS (SELECT * FROM run where run.task = task.id)
         -- The first of these will be the latest known time.
         AND COALESCE(until, start, added) < older_than
