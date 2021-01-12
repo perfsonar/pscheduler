@@ -1,6 +1,6 @@
 [Unit]
 Description=pScheduler server - __PROG__
-After=__PGSERVICE__
+Requires=__PGSERVICE__
 
 [Service]
 Type=simple
