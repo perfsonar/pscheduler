@@ -1,6 +1,8 @@
 [Unit]
 Description=pScheduler server - __PROG__
-Requires=__PGSERVICE__
+# This forces starting and stopping in concert
+WantedBy=__PGSERVICE__
+
 
 [Service]
 Type=simple
@@ -11,7 +13,7 @@ PIDFile=__RUNDIR__/__PROG__/pid
 LimitNOFILE=4096
 LimitNPROC=4096
 
-Restart=on-failure
+Restart=always
 RestartSec=3
 
 # Make sure the run directory exists and is owned as expected.

@@ -33,7 +33,6 @@ from .pssleep import *
 from .pstime import *
 from .psurl import *
 from .retry import *
-from .saferun import *
 from .sinumber import *
 from .stringmatcher import *
 from .ipcidrmatcher import *
