@@ -937,9 +937,6 @@ def main_program():
 if options.daemon:
     pidfile = pscheduler.PidFile(options.pidfile)
     with daemon.DaemonContext(pidfile=pidfile):
-        pscheduler.safe_run(lambda: main_program())
+        main_program()
 else:
-    # TODO: Re-enable this.
-    #pscheduler.safe_run(lambda: main_program())
     main_program()
-
