@@ -193,6 +193,8 @@ class RunWorker(object):
 
         self.dbpool = dbpool
         self.log = log
+        # Use the default debug method until told otherwise.
+        self.log_debug = log.debug
         self.id = id
         self.start_at = start_at
         self.finished = False
@@ -242,7 +244,7 @@ class RunWorker(object):
         """
         Post a finished run for this task using the result provided.
         """
-        self.log.debug("%d: Got result: %s", self.id, result)
+        self.log_debug("%d: Got result: %s", self.id, result)
         try:
             json = pscheduler.json_load(result, max_schema=1)
         except ValueError:
@@ -295,33 +297,33 @@ class RunWorker(object):
         if len(line) > 2 and line[0] == "\x1e":
             # RFC7464.  The JSON parser won't care about the newline at the end.
             line = line[1:]
-            self.log.debug("%d: RFC7464 line %s", self.id, line)
+            self.log_debug("%d: RFC7464 line %s", self.id, line)
             self.__post_new_result(line)
             self.output = []
         else:
             # Ordinary text
-            self.log.debug("%d: Plain text line %s", self.id, line)
+            self.log_debug("%d: Plain text line %s", self.id, line)
             self.output.append(line)
         
     def run(self):
         """
         Run the tool in an exception-safe way
         """
-        self.log.debug("%d: Thread running", self.id)
+        self.log_debug("%d: Thread running", self.id)
         run_dict.start(self.id, self)
         try:
             with tempfile.TemporaryDirectory() as self.temp:
-                self.log.debug("%d: Temp space in %s", self.id, self.temp)
+                self.log_debug("%d: Temp space in %s", self.id, self.temp)
                 self.__run()
             self.temp = None
         except Exception as ex:
             # Don't worry about the result here.  If __run() failed to
             # post anything, that will be the end of it.  If it did,
             # it might be salvageable.
-            self.log.debug("%d: Exception: %s", self.id, ex)
+            self.log_debug("%d: Exception: %s", self.id, ex)
             log.exception()
 
-        self.log.debug("%d: Thread finished", self.id)
+        self.log_debug("%d: Thread finished", self.id)
         run_dict.finish(self.id)
 
 
@@ -393,15 +395,12 @@ class RunWorker(object):
 
 
         if debug:
-            log_debug = self.log.debug_always
-            log_debug("%d: Task requested debug", self.id)
-        else:
-            log_debug = self.log.debug
+            self.log_debug = self.log.debug_always
+            self.log_debug("%d: Task requested debug", self.id)
 
 
         if lead_bind is not None:
-            log_debug("%d: Lead bind for this run is %s",
-                           self.id, lead_bind)
+            self.log_debug("%d: Lead bind for this run is %s", self.id, lead_bind)
 
         # This gets used by __post_result, above.
         self.task_url = pscheduler.api_url_hostport(
@@ -462,10 +461,9 @@ class RunWorker(object):
         # Wait for the start time to roll around
         #
 
-        log_debug("%d: Start at %s", self.id, self.start_at)
+        self.log_debug("%d: Start at %s", self.id, self.start_at)
         start_time = self.start_at - run_start_margin()
-        log_debug("%d: Sleeping until test start at %s", self.id,
-                       start_time)
+        self.log_debug("%d: Sleeping until test start at %s", self.id, start_time)
         pscheduler.sleep_until(start_time)
 
         #
@@ -502,11 +500,10 @@ class RunWorker(object):
         # Do the local tool run
         #
 
-        log_debug("%d: Tool input: %s", self.id, tool_input)
+        self.log_debug("%d: Tool input: %s", self.id, tool_input)
 
         how_late = pscheduler.time_now() - start_time
-        log_debug("%d: Start time difference is %s",
-                       self.id, how_late)
+        self.log_debug("%d: Start time difference is %s", self.id, how_late)
 
         if how_late > datetime.timedelta(seconds=0.5):
             self.log.warning("%d: Starting %s later than scheduled",
@@ -544,7 +541,7 @@ class RunWorker(object):
 
         stdout = "\n".join(self.output)
 
-        log_debug("%d: Tool returned '%s'", self.id, stdout)
+        self.log_debug("%d: Tool returned '%s'", self.id, stdout)
 
         if len(stdout) == 0:
             stdout = None
@@ -566,7 +563,7 @@ class RunWorker(object):
         if returncode == 0:
             if log_details:
                 self.log.info("%d: Run succeeded.", self.id)
-            log_debug("%d: Run returned %s", self.id, stdout)
+            self.log_debug("%d: Run returned %s", self.id, stdout)
         else:
             failures += 1
             if log_details:
@@ -610,7 +607,7 @@ class RunWorker(object):
             #finally should ensure this is executed  even if return is an exception
             self._put_db_conn(db)
         
-        log_debug("%d: Stored local result", self.id)
+        self.log_debug("%d: Stored local result", self.id)
 
         # The lead participant in non-background-multi tasks takes care of
         # gathering and merging the finished results.  Background-multi
@@ -618,19 +615,18 @@ class RunWorker(object):
 
         if participant == 0 and scheduling_class != "background-multi":
 
-            log_debug("%d: Doing lead participant duties", self.id)
+            self.log_debug("%d: Doing lead participant duties", self.id)
 
             # Wait until the scheduled time has passed, which is the
             # only time we can be sure results might be available.
 
             if len(participants) > 1:
                 wait_time = pscheduler.time_until_seconds(end)
-                log_debug("%d: Waiting for task end time to pass (%s)",
-                               self.id, wait_time)
+                self.log_debug("%d: Waiting for task end time to pass (%s)", self.id, wait_time)
                 time.sleep(wait_time)
-                log_debug("%d: Task end time has passed", self.id)
+                self.log_debug("%d: Task end time has passed", self.id)
             else:
-                log_debug("%d: Only one participant; not waiting.", self.id)
+                self.log_debug("%d: Only one participant; not waiting.", self.id)
 
             # Fetch and combine the results.
 
@@ -640,9 +636,8 @@ class RunWorker(object):
                 % (task_uuid, run_uuid) )
                      for host in participants ]
 
-            log_debug("%d: Runs are %s", self.id, runs)
-            log_debug("%d: Local run returned %d",
-                           self.id, returncode)
+            self.log_debug("%d: Runs are %s", self.id, runs)
+            self.log_debug("%d: Local run returned %d", self.id, returncode)
 
             if returncode == 0:
                 try:
@@ -653,8 +648,7 @@ class RunWorker(object):
                     local_result = None
                     failures += 1
             else:
-                log_debug("%d: Tool returned failure: %s",
-                               self.id, stderr)
+                self.log_debug("%d: Tool returned failure: %s", self.id, stderr)
                 local_result = None
                 failures += 1
 
@@ -670,7 +664,7 @@ class RunWorker(object):
 
             # We have this on hand.
             result_full[0] = local_result
-            log_debug("%d: Accumulated local result", self.id)
+            self.log_debug("%d: Accumulated local result", self.id)
 
             # Wait up to 15 seconds for all of the participants to
             # produce results.
@@ -681,7 +675,7 @@ class RunWorker(object):
             deadline = pscheduler.time_now() + datetime.timedelta(seconds=15)
 
             for get in list(to_get):
-                log_debug("%d: Fetching run %s", self.id, get)
+                self.log_debug("%d: Fetching run %s", self.id, get)
 
                 timeout = int(pscheduler.timedelta_as_seconds(
                     deadline - pscheduler.time_now()))
@@ -695,7 +689,7 @@ class RunWorker(object):
                 )
 
                 if status == 200:
-                    log_debug("%d: Retrieved %s", self.id, run_result)
+                    self.log_debug("%d: Retrieved %s", self.id, run_result)
                     index = to_get[get]
                     got = run_result["result"]
                     if got is not None:
@@ -712,7 +706,7 @@ class RunWorker(object):
 
 
             failures = len(list([result for result in result_full if result is None or not result.get("succeeded",False)]))
-            log_debug("%d: %d failures", self.id, failures)
+            self.log_debug("%d: %d failures", self.id, failures)
 
 
             # If there were any failures, survey all of the
@@ -725,21 +719,20 @@ class RunWorker(object):
             if failures:
                 result_merged = { "succeeded": False }
             else:
-                log_debug("%d: Merging results: %s", self.id, result_full)
+                self.log_debug("%d: Merging results: %s", self.id, result_full)
                 try:
                     merge_input = {
                         "test": test_spec,
                         "results": result_full
                     }
                     merge_input_text = pscheduler.json_dump(merge_input)
-                    log_debug("%d: Merging %s", self.id, merge_input_text)
+                    self.log_debug("%d: Merging %s", self.id, merge_input_text)
 
                     returncode, stdout, stderr = pscheduler.plugin_invoke(
                         "tool", tool, "merged-results",
                         stdin=merge_input_text, timeout=5)
 
-                    log_debug("%d: Merged results: %d %s %s", self.id,
-                                   returncode, stdout, stderr)
+                    self.log_debug("%d: Merged results: %d %s %s", self.id, returncode, stdout, stderr)
 
                     if returncode != 0:
                         raise Exception(stderr)
@@ -756,16 +749,16 @@ class RunWorker(object):
 
 
             result_full_text = pscheduler.json_dump(result_full)
-            log_debug("%d: Full result: %s ", self.id, result_full_text)
+            self.log_debug("%d: Full result: %s ", self.id, result_full_text)
 
             result_merged_text = pscheduler.json_dump(result_merged)
-            log_debug("%d: Merged result: %s ", self.id, result_merged_text)
+            self.log_debug("%d: Merged result: %s ", self.id, result_merged_text)
 
             # Store full and merged results and the clock survey in
             # the local database.
 
             try:
-                log_debug("%d: Merged result: Setting final state ", self.id)
+                self.log_debug("%d: Merged result: Setting final state ", self.id)
                 db = self._get_db_conn()
                 with db.cursor() as cursor:
                     # TODO: Need to figure out succeeded.
@@ -792,7 +785,7 @@ class RunWorker(object):
                 self._put_db_conn(db)
 
 
-        log_debug("%d: Run complete", self.id)
+        self.log_debug("%d: Run complete", self.id)
         self.finished = True
 
 
