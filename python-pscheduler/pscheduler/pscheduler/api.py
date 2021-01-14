@@ -138,15 +138,6 @@ def api_is_run(url):
     return True
 
 
-def api_result_delimiter():
-    """
-    Return the delimiter to be used by background tests when producing
-    multiple results.
-    """
-    return "---- pScheduler End Result ----"
-
-
-
 def api_ping(host=None, bind=None, timeout=3):
     """
     See if an API server is alive within a given timeout.  If 'host'
