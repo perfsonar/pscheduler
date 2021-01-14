@@ -95,21 +95,19 @@ def cleanup_file(tmpfile, keep_data_files=False):
 
 ##
 # Handles reporting errors in pscheduler format
-def handle_run_error(msg, diags=None, do_log=True, exception=False):
+def handle_run_error(emitter, msg, diags=None, do_log=True, exception=False):
     if do_log:
         if exception:
             log.exception(msg)
         else:
             log.error(msg)
-    results = { 
+    emitter({
         'schema': LATENCY_SCHEMA_VERSION, 
         'succeeded': False,
         'error': msg,
         'diags': diags
-    }
-    print(pscheduler.json_dump(results))
-    print(pscheduler.api_result_delimiter())
-    sys.stdout.flush()
+    })
+
 
 ##
 # Calculates time to sleep or returns True if end time reached

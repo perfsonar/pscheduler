@@ -77,9 +77,6 @@ dsn = pscheduler.string_from_file(options.dsn)
 
 log_details = not options.terse
 
-# Get this once so we don't have to do a function call every time.
-delimiter = pscheduler.api_result_delimiter()
-
 
 
 # Current value of run start margin according to the database
@@ -291,15 +288,19 @@ class RunWorker(object):
 
     def __accumulate_output(self, line):
         """
-        Accumulate lines of output from the tool in an array until the
-        magic delimiter appears.  When it does, use it to post a
-        finished run for the same task.
+        Accumulate lines of output from the tool.  Treat any input
+        lines that look like RFC7464 as a full result.
         """
-        # TODO: This should be available in the pScheduler module
-        if line == delimiter:
-            self.__post_new_result("\n".join(self.output))
+
+        if len(line) > 2 and line[0] == "\x1e":
+            # RFC7464.  The JSON parser won't care about the newline at the end.
+            line = line[1:]
+            self.log.debug("%d: RFC7464 line %s", self.id, line)
+            self.__post_new_result(line)
             self.output = []
         else:
+            # Ordinary text
+            self.log.debug("%d: Plain text line %s", self.id, line)
             self.output.append(line)
         
     def run(self):
@@ -542,6 +543,8 @@ class RunWorker(object):
 
 
         stdout = "\n".join(self.output)
+
+        log_debug("%d: Tool returned '%s'", self.id, stdout)
 
         if len(stdout) == 0:
             stdout = None

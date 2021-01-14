@@ -60,14 +60,12 @@ interval_secs = pscheduler.timedelta_as_seconds(interval)
 end_time = pscheduler.time_now() + duration
 next_output = pscheduler.time_now() + interval
 
-delimiter = pscheduler.api_result_delimiter()
+emitter = pscheduler.RFC7464Emitter(sys.stdout)
 
 while next_output < end_time:
     logger.debug("Sleeping %d", interval_secs)
     time.sleep(interval_secs)
-    print(pscheduler.json_dump(results))
-    print(delimiter)
-    sys.stdout.flush()
+    emitter(results)
     next_output += interval
     logger.debug("Wrote result")
 
