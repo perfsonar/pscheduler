@@ -1,5 +1,5 @@
---- a/tests/ipaddr_test.py	2020-11-18 15:41:12.664776629 +0000
-+++ b/tests/ipaddr_test.py	2020-11-18 15:41:19.207816142 +0000
+--- pscheduler.orig/tests/ipaddr_test.py	2021-01-19 22:51:44.306800643 +0000
++++ pscheduler/tests/ipaddr_test.py	2021-01-19 22:52:31.719541665 +0000
 @@ -43,7 +43,7 @@
          self.assertEqual(ip_addr_version('::1/32'), (6, '::1'))
          self.assertEqual(ip_addr_version('::1/32', resolve=False), (6, '::1'))
@@ -17,9 +17,9 @@
 +        self.assertIn(ip_addr_version('::1/quack', family=True), ((None, 'Name or service not known'), (None, 'No address associated with hostname')))
          self.assertEqual(ip_addr_version('::1/quack', resolve=False, family=True), (None, None))
  
-         # By DNS name.  These are guaranteed to be stable as long as
---- a/tests/psurl_test.py	2020-11-18 15:41:12.664776629 +0000
-+++ b/tests/psurl_test.py	2020-11-18 15:41:19.207816142 +0000
+         # Restricted to one version of an IP or another
+--- pscheduler.orig/tests/psurl_test.py	2020-10-12 19:47:16.421294593 +0000
++++ pscheduler/tests/psurl_test.py	2021-01-19 22:52:31.720567798 +0000
 @@ -23,7 +23,7 @@
          no_scheme = "no-scheme"
  
