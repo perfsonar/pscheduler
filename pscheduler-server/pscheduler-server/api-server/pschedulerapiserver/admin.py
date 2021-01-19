@@ -27,7 +27,7 @@ def root():
 
 
 
-max_api = 4
+max_api = 5
 
 
 @application.route("/api", methods=['GET'])
