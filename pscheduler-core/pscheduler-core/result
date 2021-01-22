@@ -235,44 +235,45 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
 
     # Deal with the various reasons why the run might not have happened
 
-    if run_json["state"] == "nonstart":
-        try:
-            reason = run_json["errors"] 
-        except KeyError:
-            reason = "No reason provided."
-        print_message("Run never started: %s" % (reason), exit_on_error)
+    state = run_json["state"]
+
+
+    # Handle abject falures
+
+    if state == "nonstart":
+        print_message("Run never started: {}".format(
+            run_json.get("errors", "No reason provided.")
+        ), exit_on_error)
         return
 
-    if run_json["state"] in ["pending", "on-deck", "running", "cleanup"]:
+    if state in ["pending", "on-deck", "running", "cleanup"]:
         print_message("Run has not completed.", exit_on_error)
         return
 
-    run_ran = run_json["state"] == "finished"
-    if not run_ran:
-        print_message("Run did not complete: %s" % (run_json["state-display"]), exit_on_error)
+    if state in ["overdue", "missed", "preempted"]:
+        print_message("Run did not complete: {}".format(run_json["state-display"]), exit_on_error)
         return
 
-    if (not run_ran) and run_json["state"] in ["overdue", "missed", "preempted"]:
-        print_message("Run did not complete: %s" % (run_json["state-display"]), exit_on_error)
-        return
 
-    if run_ran:
-        try:
-            result_merged = run_json['result-merged']
-            if result_merged is None:
-                print_message("result-merged missing from run result", False)
-                return
-            succeeded = result_merged['succeeded']
-            if succeeded is None:
-                raise KeyError()
-        except KeyError:
-            print_message("Data missing from run result", False)
+    try:
+        result_merged = run_json['result-merged']
+        if result_merged is None:
+            print_message("result-merged missing from run result", False)
             return
-    else:
-        succeeded = False
+        succeeded = result_merged['succeeded']
+        if succeeded is None:
+            raise KeyError()
+    except KeyError:
+        print_message("Data missing from run result", False)
+        return
 
     if succeeded:
         dump_run_result(result_url, out_format, exit_on_error)
+    else:
+        print_message("Run failed.", False)
+
+
+    # Failures get a diagnostic dump no matter what.
 
     if options.diags or not succeeded:
 
@@ -297,57 +298,32 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
                                                " by %s." % (max_diff)
                                            ))
 
+        # Limit diagnostics
+
         if run_json.get("limit-diags", None) is not None:
             print()
             print("Limit system diagnostics for this run:")
-            print()
             print(pscheduler.indent(run_json["limit-diags"]))
             
-        print()
-
-
-        # TODO: Does this even matter?
-        try:
-            err = run_json.get("errors", None)
-        except (AttributeError, TypeError):
-            err = None
-
-        if err is not None:
-            print()
-            print("Error:")
-            try:
-                print("\n".join([
-                    "    %s" % (string) for string in
-                    err.split("\n")
-                ]))
-            except (KeyError, TypeError):
-                print("    (No error)")
 
         # Participant diagnostics and errors
 
         parts = task_json["detail"]["participants"]
+
         for participant in range(0, len(parts)):
 
-            print()
-            print("Diagnostics from %s:" % (parts[participant]))
+            part_result = run_json["result-full"][participant]
 
-            try:
-                diags = run_json["result-full"][participant]["diags"]
-                if diags is None or diags == "":
-                    raise KeyError
-            except (KeyError, TypeError, AttributeError):
-                diags = "No diagnostics."
-            print(pscheduler.indent(diags, indent=2))
+            for what, what_text in [ ("error", "Error"), ("diags", "Diagnostics") ]:
 
-            print()
-            print("Error from %s:" % (parts[participant]))
-            try:
-                err = run_json["result-full"][participant].get("error")
-                if err is None or err == "":
-                    raise KeyError
-            except (KeyError, AttributeError, TypeError):
-                err = "No error."
-            print(pscheduler.indent(err, indent=2))
+                if part_result.get(what, None) in [None, ""]:
+                    continue
+
+                print("\n{} from {}:\n{}".format(
+                    what_text,
+                    parts[participant],
+                    pscheduler.indent(part_result[what], indent=2)
+                ))
 
 
     # Dump the archiving information
