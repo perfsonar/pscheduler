@@ -75,6 +75,8 @@ plot "{data_file}" using 1:2:3:2:3 \\
 CHART_TERM = {
     "png": "png notransparent truecolor size 800,1200 background rgb \"#ffffff\"",
     "svg": "svg size 800,1200 dynamic",
+    # This doesn't get used and is there so the format is considered valid.                                                         
+    "json": "",
     # These are for debug and should revert to SVG by default.
     "data": "svg size 800,1200 dynamic",
     "script": "svg size 800,1200 dynamic",
