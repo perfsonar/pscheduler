@@ -28,6 +28,8 @@ def result_is_valid(json):
         "properties": {
             "schema": { "$ref": "#/pScheduler/Cardinal" },
             "succeeded": { "$ref": "#/pScheduler/Boolean" },
+            "error": { "$ref": "#/pScheduler/String" },
+            "diags": { "$ref": "#/pScheduler/String" },
             "local": { "$ref": "#/pScheduler/ClockState" },
             "remote": { "$ref": "#/pScheduler/ClockState" },
             "difference": { "$ref": "#/pScheduler/Duration" },

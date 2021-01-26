@@ -113,6 +113,8 @@ def result_is_valid(json):
         "properties": {
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
+            "error":      { "$ref": "#/pScheduler/String" },
+            "diags":      { "$ref": "#/pScheduler/String" },
             "time":       { "$ref": "#/pScheduler/Duration" },
             "data":       { "$ref": "#/pScheduler/SNMPResultList" },
             },

@@ -115,6 +115,8 @@ def result_is_valid(json):
         "properties": {
             "schema":       { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":    { "$ref": "#/pScheduler/Boolean" },
+            "error":        { "$ref": "#/pScheduler/String" },
+            "diags":        { "$ref": "#/pScheduler/String" },
             "gateway-up":   { "$ref": "#/pScheduler/Boolean" },
             "network-up":   { "$ref": "#/pScheduler/Boolean" }
             },

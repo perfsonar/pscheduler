@@ -333,8 +333,6 @@ class RunWorker(object):
         and post the results.
         """
 
-        failures = 0
-
 
         # Do as much preparation as possible before going to sleep.
 
@@ -549,10 +547,6 @@ class RunWorker(object):
             # See if the test claimed failure
             try:
                 result_json = pscheduler.json_load(stdout, max_schema=1)
-                if "succeeded" in result_json \
-                        and isinstance(result_json["succeeded"], bool) \
-                        and result_json["succeeded"] == False:
-                    failures += 1
             except ValueError:
                 self.log.error("%d: Test returned invalid JSON: %s", self.id, stdout)
 
@@ -565,7 +559,6 @@ class RunWorker(object):
                 self.log.info("%d: Run succeeded.", self.id)
             self.log_debug("%d: Run returned %s", self.id, stdout)
         else:
-            failures += 1
             if log_details:
                 self.log.info("%d: Run failed %d: %s", self.id,
                               returncode, stderr)
@@ -643,24 +636,25 @@ class RunWorker(object):
                 try:
                     local_result = pscheduler.json_load(stdout)
                 except ValueError:
-                    self.log.error("%d: Tool %s returned invalid JSON %s",
-                                   self.id, tool, stdout)
-                    local_result = None
-                    failures += 1
+                    error = "Tool {} returned invalid JSON".format(tool)
+                    self.log.error("%d: %s '%s'", self.id, error, stdout)
+                    local_result = {
+                        "succeeded": False,
+                        "error": error,
+                        "diags": "Returned text:\n\n{}\n".format(stdout)
+                    }
             else:
                 self.log_debug("%d: Tool returned failure: %s", self.id, stderr)
-                local_result = None
-                failures += 1
-
+                local_result = {
+                    "succeeded": False,
+                    "error": "Tool failed: {}".format(stderr),
+                    "diags": "Tool standard output:\n\n{}\n\nTool standard error:\n\n{}\n".format(stdout, stderr)
+                }
 
             # Assemble the results from each participant into an
             # array.
 
-            result_full = [ {
-                "succeeded": False,
-                "error": "No result was produced",
-                "diags": "No result was produced"
-            } for run in runs]
+            result_full = [ None for _ in runs ]
 
             # We have this on hand.
             result_full[0] = local_result
@@ -705,54 +699,52 @@ class RunWorker(object):
                 del to_get[get]
 
 
-            failures = len(list([result for result in result_full if result is None or not result.get("succeeded",False)]))
-            self.log_debug("%d: %d failures", self.id, failures)
+            # Merge the results.  The merged-results method in the
+            # plugin will determine whether or not the full results
+            # constitute success or failure.
 
+            self.log_debug("%d: Merging results: %s", self.id, result_full)
+            merge_input = {
+                "test": test_spec,
+                "results": result_full
+            }
+            merge_input_text = pscheduler.json_dump(merge_input)
+            self.log_debug("%d: Merging %s", self.id, merge_input_text)
 
-            # If there were any failures, survey all of the
-            # particpants' clocks.
+            returncode, stdout, stderr = pscheduler.plugin_invoke(
+                "tool", tool, "merged-results",
+                stdin=merge_input_text, timeout=5)
 
-            survey = clock_survey(participants, lead_bind) if failures > 0 else None
+            self.log_debug("%d: Merged results: %d %s %s", self.id, returncode, stdout, stderr)
 
-            # Merge the results
-
-            if failures:
-                result_merged = { "succeeded": False }
-            else:
-                self.log_debug("%d: Merging results: %s", self.id, result_full)
+            if returncode == 0:
                 try:
-                    merge_input = {
-                        "test": test_spec,
-                        "results": result_full
-                    }
-                    merge_input_text = pscheduler.json_dump(merge_input)
-                    self.log_debug("%d: Merging %s", self.id, merge_input_text)
-
-                    returncode, stdout, stderr = pscheduler.plugin_invoke(
-                        "tool", tool, "merged-results",
-                        stdin=merge_input_text, timeout=5)
-
-                    self.log_debug("%d: Merged results: %d %s %s", self.id, returncode, stdout, stderr)
-
-                    if returncode != 0:
-                        raise Exception(stderr)
-
                     result_merged = pscheduler.json_load(stdout)
-
-                except Exception as ex:
-                    result_merged = { "succeeded": False }
-
-                    # This overwrites the run result but is a good way to get
-                    # the error message in front of the user.
-                    result_full[0]["succeeded"] = False
-                    result_full[0]["diags"] = "Run succeeded, but failed to merge results: %s" % (str(ex))
-
+                except ValueError as ex:
+                    result_merged = {
+                        "succeeded": False,
+                        "error": "Tool {} merged-results returned invalid JSON '{}'".format(tool),
+                        "diags": "Exited {}\n\nStandard out:\n\n{}\n\nStandard error:\n\n".format(returncode, stdout, stderr)
+                    }
+            else:
+                result_merged = {
+                    "succeeded": False,
+                    "error": "Tool {} failed to merge results: {}",
+                    "diags": "Exited {}\n\nStandard out:\n\n{}\n\nStandard error:\n\n".format(returncode, stdout, stderr)
+                }
 
             result_full_text = pscheduler.json_dump(result_full)
             self.log_debug("%d: Full result: %s ", self.id, result_full_text)
 
             result_merged_text = pscheduler.json_dump(result_merged)
             self.log_debug("%d: Merged result: %s ", self.id, result_merged_text)
+
+            succeeded = result_merged.get("succeeded", False) if result_merged is not None else False
+
+            # If the run was a failure, survey all of the particpants'
+            # clocks.
+
+            survey = None if succeeded else clock_survey(participants, lead_bind) 
 
             # Store full and merged results and the clock survey in
             # the local database.
@@ -766,7 +758,7 @@ class RunWorker(object):
                                     UPDATE run
                                     SET
                                         state = CASE
-                                                    WHEN %s = 0 THEN run_state_finished()
+                                                    WHEN %s THEN run_state_finished()
                                                     ELSE run_state_failed()
                                                 END,
                                         result_full = %s,
@@ -774,7 +766,7 @@ class RunWorker(object):
                                         clock_survey = %s
                                     WHERE id = %s
                                     """,
-                                    [failures,
+                                    [succeeded,
                                      pscheduler.json_dump(result_full),
                                      result_merged_text,
                                      survey,
