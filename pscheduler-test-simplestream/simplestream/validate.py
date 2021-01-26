@@ -72,6 +72,8 @@ def result_is_valid(json):
             "received":      { "$ref": "#/pScheduler/String" },
             "sent":          { "$ref": "#/pScheduler/String" },
             "succeeded":     { "$ref": "#/pScheduler/Boolean" },
+            "error":         { "$ref": "#/pScheduler/String" },
+            "diags":         { "$ref": "#/pScheduler/String" }
             },
         "required": [
             "dawdled",

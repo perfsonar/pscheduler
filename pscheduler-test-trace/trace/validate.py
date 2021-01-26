@@ -128,6 +128,8 @@ def result_is_valid(json):
                 "items": { "$ref": "#/local/hoparray" },
                 },
             "succeeded": { "$ref": "#/pScheduler/Boolean" },
+            "error": { "$ref": "#/pScheduler/String" },
+            "diags": { "$ref": "#/pScheduler/String" }
             },
         "required": [
             "paths",

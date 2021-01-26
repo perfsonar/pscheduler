@@ -258,19 +258,37 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
     try:
         result_merged = run_json['result-merged']
         if result_merged is None:
-            print_message("result-merged missing from run result", False)
-            return
-        succeeded = result_merged['succeeded']
-        if succeeded is None:
-            raise KeyError()
-    except KeyError:
-        print_message("Data missing from run result", False)
+            result_merged = {
+                "succeeded": False,
+                "error": "No result was produced."
+            }
+    except KeyError as ex:
+        result_merged = {
+            "succeeded": False,
+            "error": "Merged result missing from run",
+        }
         return
+
+    succeeded = result_merged.get('succeeded', False)
 
     if succeeded:
         dump_run_result(result_url, out_format, exit_on_error)
     else:
-        print_message("Run failed.", False)
+
+        print("Run failed.")
+
+        try:
+            print("\nError:\n{}".format(pscheduler.indent(result_merged['error'])))
+        except (KeyError, TypeError):
+            # Nothing to print.
+            pass
+
+        try:
+            print("\nDiagnostics:\n{}".format(pscheduler.indent(result_merged['diags'])))
+        except (KeyError, TypeError):
+            # Nothing to print.
+            pass
+
 
 
     # Failures get a diagnostic dump no matter what.

@@ -299,6 +299,14 @@ RESPONSE_SCHEMA = {
                 "description": "Indicates if the test ran successfully",
                 "$ref": "#/pScheduler/Boolean"
             },
+            "error": {
+                "description": "Errors that occurred",
+                "$ref": "#/pScheduler/String"
+            },
+            "diags": {
+                "description": "Diagnostic information",
+                "$ref": "#/pScheduler/String"
+            },
             "packets-sent": {
                 "description": "The number of packets sent by the sender",
                 "$ref": "#/pScheduler/CardinalZero"

@@ -245,6 +245,10 @@ RESULT_SCHEMA = {
             "description": "Indicates if the test ran successfully",
             "type": "boolean"
             },
+        "error": {
+            "description": "Error message from the underlying tool",
+            "type": "string"
+            },
         "diags": {
             "description": "Raw output from the underlying tool",
             "type": "string"

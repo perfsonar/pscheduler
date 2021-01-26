@@ -8,18 +8,14 @@ import pscheduler
 
 input = pscheduler.json_load(exit_on_error=True);
 
-# TODO: Validate the input
-
 try:
-    succeeded = input['results'][0]['succeeded']
-except (KeyError, TypeError):
-    succeeded = False
+    result0 = input['results'][0]
+    result = {
+        'schema': 1,
+        'succeeded': result0['succeeded'],
+        'duration': result0['result']['time-slept']
+    }
+except (KeyError, TypeError) as ex:
+    pscheduler.fail("Missing result in returned data: {}".format(ex))
 
-
-results = { 'succeeded' : succeeded }
-
-if succeeded:
-    results['schema']       = 1
-    results['duration']     = input['results'][0]['result']['time-slept']
-
-pscheduler.succeed_json(results)
+pscheduler.succeed_json(result)
