@@ -1,12 +1,12 @@
---- pyjq-2.3.0.orig/setup.py	2019-05-09 16:05:22.996439000 +0000
-+++ pyjq-2.3.0/setup.py	2019-05-09 16:07:47.771688000 +0000
-@@ -44,7 +44,8 @@
+Tests are creating a Segmentation fault
+--- python-pyjq-d10.orig/setup.py	2021-01-27 19:25:47.662963000 +0000
++++ python-pyjq-d10/setup.py	2021-01-27 19:26:16.186956000 +0000
+@@ -39,7 +39,7 @@
+ )
+ 
  setup(
-     py_modules=['pyjq'],
-     install_requires=['six'],
 -    test_suite='test_pyjq',
-+# tests are creating a Segmentation fault on 2.3.0
 +#    test_suite='test_pyjq',
      ext_modules=[pyjq],
      cmdclass={"build_ext": build_ext},
-     name='pyjq',
+ )
