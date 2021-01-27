@@ -3,7 +3,7 @@ Upstream-Name: pyjq
 Source: https://pypi.python.org/pypi/pyjq
 
 Files: *
-Copyright: 2013 Michael Williamson
+Copyright: 2019 Omoto Kenji
 License: MIT
 
 Files: debian/*
