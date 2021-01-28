@@ -4,7 +4,7 @@
 
 AUTO_TARBALL=1
 
-include make/generic-rpm.make
+include make/generic-package.make
 
 test::
 	nosetests

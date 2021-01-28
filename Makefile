@@ -45,7 +45,7 @@ build: $(REPO)
 # to be read properly.  They're uninstalled at the end.
 uninstall:
 	$(MAKE) -C rpm-with-deps clean build install clean
-	$(MAKE) -C make-generic-rpm clean build install clean
+	$(MAKE) -C make-generic-package clean build install clean
 	$(MAKE) -C pscheduler-rpm clean build install clean
 	scripts/remove-all
 

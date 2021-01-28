@@ -2,8 +2,8 @@
 # RPM Spec for Generic RPM Makefile
 #
 
-Name:		make-generic-rpm
-Version:	1.0
+Name:		make-generic-package
+Version:	2.0
 Release:	1%{?dist}
 
 Summary:	Generic Makefile for RPMs
@@ -25,6 +25,9 @@ BuildRequires:	spectool
 Requires:	make
 Requires:	spectool
 
+# This package's previous name
+Obsoletes:	make-generic-rpm
+
 
 %define directory %{_includedir}/make
 
@@ -40,7 +43,7 @@ Generic Makefile for RPMs.  For documentation, see the Makefile in
 
 %install
 %{__mkdir_p} $RPM_BUILD_ROOT/%{directory}
-%{__install} -m 444 generic-rpm.make $RPM_BUILD_ROOT/%{directory}
+%{__install} -m 444 * $RPM_BUILD_ROOT/%{directory}
 
 
 %files

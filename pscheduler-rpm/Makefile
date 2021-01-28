@@ -2,4 +2,4 @@
 # Makefile for pScheduler RPM Macros
 #
 
-include make/generic-rpm.make
+include make/generic-package.make

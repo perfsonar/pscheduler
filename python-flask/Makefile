@@ -2,4 +2,4 @@
 # Generic Makefile for RPMs
 #
 
-include make/generic-rpm.make
+include make/generic-package.make

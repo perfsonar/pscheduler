@@ -1,8 +1,8 @@
 #
 # Makefile for rpm-with-deps RPM
 #
-# This package is built by hand because make-generic-rpm depends on
-# it.
+# This package is built by hand because make-generic-package depends
+# on it (RedHat-derived systems only).
 #
 
 

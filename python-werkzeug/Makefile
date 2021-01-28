@@ -2,4 +2,4 @@
 # Makefile for Python Kafka Module
 #
 
-include make/generic-rpm.make
+include make/generic-package.make

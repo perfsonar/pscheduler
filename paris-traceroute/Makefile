@@ -2,4 +2,4 @@
 # Makefile for Python ISO Date Module
 #
 
-include make/generic-rpm.make
+include make/generic-package.make

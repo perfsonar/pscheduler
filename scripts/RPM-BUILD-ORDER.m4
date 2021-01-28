@@ -20,12 +20,12 @@ dnl
 #
 
 #
-# RPM BUILD UTILITIES
+# PACKAGE BUILD UTILITIES
 #
 # Everything else depends on these.
 #
 rpm-with-deps
-make-generic-rpm
+make-generic-package
 
 # Build this early.  Some of the packages using PostgreSQL depend on
 # knowing what version is required to avoid the "Requires: postgresql"
