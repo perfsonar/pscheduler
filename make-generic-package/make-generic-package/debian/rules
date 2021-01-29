@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+# TODO: Remove these if not needed.
+
+#override_dh_auto_clean:
+#	[ ! -f Makefile ] || $(MAKE) distclean
+
+#override_dh_installdocs:
+#	dh_installdocs NEWS

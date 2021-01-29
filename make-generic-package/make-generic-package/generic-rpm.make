@@ -11,15 +11,15 @@
 #     clean (c) - Remove build by-products
 #     install (i) - Install the RPM forcibly.  Must be run as a user
 #                   that can do this.
-#     rpmdump (r) - Dump contents of built RPMs.
+#     dump (d) - Dump contents of built RPMs.
 #
 # Other useful shortcut targets:
 #
 #     cb - Clean and build
-#     cbr - Clean, build and rpmdump
+#     cbd - Clean, build and dump
 #     cbi - Clean, build and install
 #     cbic - Clean, build and install and forced re-clean
-#     cbrc - Clean, build, rpmdump and forced re-clean
+#     cbdc - Clean, build, dump and forced re-clean
 #
 #
 # To construct a tarball of your sources automatically:
@@ -59,7 +59,8 @@ PATCH_FILES := $(shell spectool -P $(SPEC) | awk '{ print $$2 }')
 
 #
 # Automagic source tarball construction
-#
+# TODO: Move to common
+# 
 
 ifdef AUTO_TARBALL
 
@@ -163,7 +164,7 @@ TO_CLEAN += *.src.rpm
 
 
 
-rpmdump::
+dump::
 	@if [ -d "$(BUILD_RPMS)" ] ; then \
 	    for RPM in `find $(BUILD_RPMS) -name '*.rpm'` ; do \
 	    	echo `basename $${RPM}`: ; \
@@ -201,7 +202,7 @@ test::
 b: build
 c: clean
 i: install
-r: rpmdump
+d: dump
 
 cb: c b
 cbr: c b r
@@ -212,5 +213,11 @@ cbic: cbi
 	$(MAKE) clean
 
 # CBR with forced clean afterward
-cbrc: cbr
+cbdc: cbr
 	$(MAKE) clean
+
+
+# These are holdovers from the RPM-only days
+r: dump
+rpmdump: dump
+cbrc: cbdc
