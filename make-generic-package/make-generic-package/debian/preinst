@@ -1,0 +1,6 @@
+#!/bin/sh -e
+#
+# Debian pre-install
+#
+
+exit 0

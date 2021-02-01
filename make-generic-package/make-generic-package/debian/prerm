@@ -1,0 +1,6 @@
+#!/bin/sh -e
+#
+# Debian pre-remove
+#
+
+exit 0

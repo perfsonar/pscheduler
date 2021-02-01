@@ -121,7 +121,6 @@ endif
 ifneq "$(words $(PATCH_FILES))" "0"
 	cp $(PATCH_FILES) $(BUILD_SOURCES)
 endif
-TO_CLEAN += $(BUILD_DIR)
 
 
 BUILD_ROOT=./BUILD-ROOT
@@ -183,8 +182,6 @@ install::
 
 
 clean::
-	rm -rf $(TO_CLEAN)
-	find . -name '*~' | xargs rm -rf
 	find . -depth -name Makefile \
 	    -exec /bin/sh -c \
 	    '[ "{}" != "./Makefile" ] && make -C `dirname {}` clean' \;
@@ -194,30 +191,3 @@ clean::
 test::
 	@true
 
-
-#
-# Convenient shorthands
-#
-
-b: build
-c: clean
-i: install
-d: dump
-
-cb: c b
-cbr: c b r
-cbi: c b i
-
-# CBI with forced clean afterward
-cbic: cbi
-	$(MAKE) clean
-
-# CBR with forced clean afterward
-cbdc: cbr
-	$(MAKE) clean
-
-
-# These are holdovers from the RPM-only days
-r: dump
-rpmdump: dump
-cbrc: cbdc
