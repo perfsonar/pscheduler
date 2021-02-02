@@ -51,7 +51,6 @@ error = ""
 try:
     result = psurl.url_get(url, json=False, timeout=timeout)
     succeeded = True
-    statusCode = result[0]
     htmlOutput = result[1]
     if parse:
         if (htmlOutput.find(string) == -1):
@@ -61,7 +60,6 @@ try:
 except pscheduler.psurl.URLException as e:
     error += str(e)
     succeeded = False
-    statusCode = "" 
 
 end_time = datetime.datetime.now() 
 
@@ -75,7 +73,6 @@ results = {
         'schema': 1,
         'time': pscheduler.timedelta_as_iso8601( end_time - start_time ),
         'succeeded': succeeded,
-        'status': statusCode,
         'found': found,
     },
     'error': error

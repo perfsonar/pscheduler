@@ -42,8 +42,6 @@ def run(input):
 
     STDERR = ""
 
-    # TODO: Implement this with libcurl
-
     curl = pycurl.Curl()
 
     curl.setopt(pycurl.URL, str(source))
@@ -77,7 +75,18 @@ def run(input):
         # PycURL returns a zero for non-HTTP URLs
         if status == 0:
             status = 200
-        text = buf.getvalue().decode()
+        try:
+            text = buf.getvalue().decode()
+        except ValueError:
+            if keep_content:
+                status = 415
+                text = "Data returned from the server could not be decoded as a string."
+            else:
+                # Note that if the content isn't being kept, the
+                # 'parse' parameter still needs something to chew on,
+                # so we leave the empty string in place.
+                pass
+
     except pycurl.error as ex:
         code, message = ex.args
         status = 400

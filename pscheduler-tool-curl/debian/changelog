@@ -1,3 +1,10 @@
+pscheduler-tool-curl (4.3.3-1) perfsonar-4.3; urgency=low
+
+  * New upstream version.
+  * Changing dependency from curl to python3-pycurl
+
+ -- perfSONAR developers <debian@perfsonar.net>  Tue, 02 Feb 2021 16:35:32 +0000
+
 pscheduler-tool-curl (4.3.2-1) perfsonar-4.3; urgency=low
 
   * New upstream version.
