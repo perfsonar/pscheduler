@@ -1,8 +1,8 @@
-pscheduler-test-clock (4.3.3~a1.0-1) perfsonar-4.3-snapshot; urgency=low
+pscheduler-test-clock (4.3.3-1) perfsonar-4.3; urgency=low
 
   * New upstream version.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 14 Dec 2020 15:53:11 +0000
+ -- perfSONAR developers <debian@perfsonar.net>  Tue, 02 Feb 2021 16:35:32 +0000
 
 pscheduler-test-clock (4.3.2-1) perfsonar-4.3; urgency=low
 
