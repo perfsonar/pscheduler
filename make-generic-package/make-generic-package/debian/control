@@ -13,4 +13,3 @@ Package: make-generic-package
 Architecture: all
 Depends: ${misc:Depends}, make
 Description: Generic package builder
-

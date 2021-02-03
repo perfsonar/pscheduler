@@ -1,6 +1,9 @@
 #
-# Make-generic-package Makefile, Stage 1
+# Make-generic-package Makefile
 #
+
+# TODO: When you run the default target (i.e., just 'make'), it builds
+# twice.  Not really a problem, just an annoyance.
 
 default: build
 
@@ -34,7 +37,6 @@ ifeq "$(PACKAGE_FORMAT)" "rpm"
 prep:
 	which spectool > /dev/null 2>&1 || sudo yum -y install spectool
 	which rpmbuild > /dev/null 2>&1 || sudo yum -y install rpm-build
-	$(MAKE) -f Makefile-stage2 $@
 
 else
 

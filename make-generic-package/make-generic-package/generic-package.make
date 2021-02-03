@@ -3,6 +3,15 @@
 # packaging model.
 #
 
+# generic-*.make will define this target.
+
+default: build
+
+
+# This is used to make sure the RPM and Debian templates aren't
+# included directly.
+GENERIC_PACKAGE_MAKE=1
+
 # Figure out what kind of packages are used by this system
 
 DISTRO_FAMILY := $(shell lsb_release --id --short)
@@ -24,7 +33,10 @@ $(error "Don't know how to package for $(DISTRO_FAMILY)")
 endif
 
 
-# Standard directories
+# Standard directories and files
+
+
+TOP := $(CURDIR)
 
 # Where the build happens
 BUILD_DIR := ./BUILD
@@ -33,10 +45,15 @@ $(BUILD_DIR):
 TO_CLEAN += $(BUILD_DIR)
 
 # Where the finished products go
-PRODUCTS_DIR=./PRODUCTS
+PRODUCTS_DIR := ./PRODUCTS
 $(PRODUCTS_DIR):
 	mkdir -p $@
 TO_CLEAN += $(PRODUCTS_DIR)
+
+# Build log
+BUILD_LOG := $(TOP)/LOG
+TO_CLEAN += $(BUILD_LOG)
+
 
 
 # Include the right version for this package format
@@ -77,23 +94,27 @@ cbi: c b i
 
 # CBI with forced clean afterward
 cbic: cbi
-	$(MAKE) clean
+	@$(MAKE) clean
 
 # CBR with forced clean afterward
 cbdc: cbd
-	$(MAKE) clean
+	@$(MAKE) clean
 
 
 # These are deprecated holdovers from the RPM-only days
 
 r:
 	@printf "\n\nThe '$@' target is deprecated, use 'd' instead.\n\n"
-	$(MAKE) d
+	@$(MAKE) d
+
+cbr:
+	@printf "\n\nThe '$@' target is deprecated, use 'cbd' instead.\n\n"
+	@$(MAKE) cbd
 
 rpmdump:
 	@printf "\n\nThe '$@' target is deprecated, use 'dump' instead.\n\n"
-	$(MAKE) dump
+	@$(MAKE) dump
 
 cbrc:
 	@printf "\n\nThe '$@' target is deprecated, use 'cbdc' instead.\n\n"
-	$(MAKE) cbdc
+	@$(MAKE) cbdc

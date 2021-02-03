@@ -1,41 +1,16 @@
 #
 # Generic Makefile for RPMs
 #
-# To use this file, create a Makefile containing the following:
-#
-#     inclulde make/generic-rpm.make
-#
-# Targets (Shortcuts in Parentheses):
-#
-#     build (b) - Build the RPM.  This is the default target.
-#     clean (c) - Remove build by-products
-#     install (i) - Install the RPM forcibly.  Must be run as a user
-#                   that can do this.
-#     dump (d) - Dump contents of built RPMs.
-#
-# Other useful shortcut targets:
-#
-#     cb - Clean and build
-#     cbd - Clean, build and dump
-#     cbi - Clean, build and install
-#     cbic - Clean, build and install and forced re-clean
-#     cbdc - Clean, build, dump and forced re-clean
-#
-#
-# To construct a tarball of your sources automatically:
-#
-#   - Name a subdirectory with the name of the product (e.g, foomatic)
-#   - Specify a tarball in the source (e.g., Source0: foomatic-1.3.tar.gz)
-#   - Set AUTO_TARBALL=1 in your makefile
-#
-#   NOTE:  The version number in the spec may not contain hyphens.
-#
+
 
 #
 # NO USER-SERVICEABLE PARTS BELOW THIS LINE
 #
 
-default: build
+ifndef GENERIC_PACKAGE_MAKE
+$(error "Include generic-package.make, not an environment-specific template.")
+endif
+
 
 #
 # Spec file and things derived from it
