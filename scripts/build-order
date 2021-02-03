@@ -9,17 +9,6 @@
 
 WHEREAMI="$(dirname $0)"
 
-if ! which m4 > /dev/null 2>&1
-then
-    if [ "$(id -u)" = "0" ]
-    then
-	yum -y install m4
-    else
-	echo "M4 is not installed" 1>&2
-	exit 1
-    fi
-fi
-
 
 # Gargle the arguments
 
@@ -61,23 +50,15 @@ bundle_filter()
     esac
 }
 
-
-# Determine vendor and RHEL version without depending on lsb_release.
-
-for VENDOR in oracle centos redhat ""
-do
-    [ -e "/etc/${VENDOR}-release" ] && break
-done
-
-REDHAT_RELEASE=$(sed -e 's/^.* \([0-9.]\+\) .*$/\1/' /etc/redhat-release)
-REDHAT_RELEASE_MAJOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 }')
-REDHAT_RELEASE_MAJOR_MINOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 "." $2 }')
-
 m4 \
-    "-DVENDOR=${VENDOR}" \
-    "-DREDHAT_RELEASE_MAJOR=${REDHAT_RELEASE_MAJOR}" \
-    "-DREDHAT_RELEASE_MAJOR_MINOR=${REDHAT_RELEASE_MAJORMINOR}" \
-    $WHEREAMI/RPM-BUILD-ORDER.m4 \
+    "-DLSB_VENDOR=${LSB_VENDOR}" \
+    "-DLSB_RELEASE=${LSB_RELEASE}" \
+    "-DLSB_RELEASE_MAJOR=${LSB_RELEASE_MAJOR}" \
+    "-DLSB_FAMILY=${LSB_FAMILY}" \
+    "-DPACKAGE_FORMAT=${PACKAGE_FORMAT}" \
+    "-DOS=${LSB_VENDOR}-${LSB_RELEASE_MAJOR}" \
+    "-DOS_FAMILY=${LSB_FAMILY}-${LSB_RELEASE_MAJOR}" \
+    $WHEREAMI/PACKAGE-BUILD-ORDER.m4 \
     | sed -e 's/#.*$//' \
     | egrep -ve '^\s*$' \
     | bundle_filter \

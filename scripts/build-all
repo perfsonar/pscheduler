@@ -14,12 +14,11 @@ cleanup()
 trap cleanup EXIT
 
 
-if [ "$(id -u)" = "0" ]
-then
-    INSTALL=install
-fi
+. "${WHEREAMI}/os-info"
 
 ${WHEREAMI}/build-order > "${TMPBASE}.list"
+
+FOUND_LIST="${TMPBASE}.found"
 
 for PACKAGE in $(cat "${TMPBASE}.list")
 do
@@ -31,6 +30,33 @@ do
 #
 
 EOF
-    
-    make -C "${PACKAGE}" clean build ${INSTALL}
+
+    case "${PACKAGE_FORMAT}" in
+
+	rpm)
+	    find "${PACKAGE}" -name "*.spec" > "${FOUND_LIST}"
+	    if [ -s "${FOUND_LIST}" ]
+	    then
+		make -C "${PACKAGE}" clean build install
+	    else
+		echo "No RPM spec found.  Skipping."
+	    fi
+	    ;;
+	
+	deb)
+	    find "${PACKAGE}" -name "debian" -type d > "${FOUND_LIST}"
+	    if [ -s "${FOUND_LIST}" ]
+	    then
+		make -C "${PACKAGE}" clean build install
+	    else
+		echo "No debian directory found.  Skipping."
+	    fi
+	    ;;
+
+	*)
+	    echo "Can't buld for ${PACKAGE_FORMAT}" 1>&2
+	    exit 1
+	    ;;
+    esac
+
 done

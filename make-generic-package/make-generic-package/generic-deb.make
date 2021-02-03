@@ -39,26 +39,36 @@ SOURCE_TARBALL := $(NAME)-$(VERSION).tar.gz
 
 BUILD_UNPACK_DIR := $(BUILD_DIR)/$(NAME)
 $(BUILD_UNPACK_DIR): $(BUILD_DIR)
-	@set -e && if [ -e "$(SOURCE_TARBALL)" ] ; \
+	mkdir -p '$@'
+	@if [ -e "$(SOURCE_TARBALL)" ] ; \
 	then \
-		mkdir -p '$@' ; \
+		echo "Building from tarball." ; \
 		(cd '$@' && tar xzf -) < '$(SOURCE_TARBALL)' ; \
 		mv '$@/$(NAME)-$(VERSION)'/* '$@' ; \
-		cp -r '$(DEBIAN_DIR)' '$@' ; \
 		cp '$(SOURCE_TARBALL)' '$@' ; \
+		cp -r '$(DEBIAN_DIR)' '$@' ; \
 		(cd '$@' && mk-origtargz '$(SOURCE_TARBALL)') ; \
+	elif [ -e "$(NAME)" ] ; \
+	then \
+		echo "Building from source directory." ; \
+		(cd '$(NAME)' && tar cf - .) | (cd '$@' && tar xpf -) ; \
+		cp -r '$(DEBIAN_DIR)' '$@/debian' ; \
 	else \
-		mkdir -p '$@' ; \
-		(cd '$(NAME)' && tar cf - .) | (cd '$(BUILD_UNPACK_DIR)' && tar xpf -) ; \
+		echo "No tarball or source directory." ; \
+		cp -r '$(DEBIAN_DIR)' '$@/debian' ; \
 	fi
 
 
 
-
 BUILD_DEBIAN_DIR := $(BUILD_UNPACK_DIR)/debian
+$(BUILD_DEBIAN_DIR):
+	mkdir -p $@
+TO_BUILD += $(BUILD_DEBIAN_DIR)
 
 
 # Patches
+
+# TODO: Need to handle global and Debian-only patches
 
 PATCHES_SERIES := $(DEBIAN_DIR)/patches/series
 PATCHES := $(shell [ -e '$(PATCHES_SERIES)' ] && sed -e '/^\s*\#/d' '$(PATCHES_SERIES)')
@@ -68,22 +78,35 @@ BUILD_PATCHES := $(PATCHES:%=$(BUILD_PATCHES_DIR)/%)
 $(BUILD_PATCHES_DIR):
 	mkdir -p $@
 
-$(BUILD_PATCHES_DIR)/%: ./%
+$(BUILD_PATCHES_DIR)/%: %
 	cp -f $< $@
 
+ifneq "$(PATCHES)" ""
+TO_BUILD += $(BUILD_PATCHES_DIR) $(BUILD_PATCHES)
+endif
 
 # Targets
 
 
-# cd $(BUILD_UNPACK_DIR) 
+# This is detritus from mk-build-deps
+BUILD_DEPS_PACKAGE := $(NAME)-build-deps
 
-build: $(BUILD_UNPACK_DIR) $(BUILD_PATCHES_DIR) $(BUILD_PATCHES) $(PRODUCTS_DIR)
+build: $(BUILD_UNPACK_DIR) $(TO_BUILD) $(PRODUCTS_DIR)
 	date | tee -a '$(BUILD_LOG)'
-	@printf "\n\n#\n# Install Dependencies\n#\n\n" | tee -a '$(BUILD_LOG)'
-	@cd $(BUILD_UNPACK_DIR) && mk-build-deps -i -r -s sudo 'debian/control' | tee -a '$(BUILD_LOG)'
-	printf "\n\n#\n# Build Package\n#\n\n" | tee -a '$(BUILD_LOG)'
+	@printf "\nInstall Dependencies\n\n" | tee -a '$(BUILD_LOG)'
+	@cd $(BUILD_UNPACK_DIR) \
+		&& mk-build-deps --install --tool 'apt-get --yes --no-install-recommends' \
+		       --remove -s sudo 'debian/control' \
+		| tee -a '$(BUILD_LOG)'
+	@if dpkg -S '$(BUILD_DEPS_PACKAGE)' > /dev/null 2> /dev/null ; \
+	then \
+		echo 'Removing $(BUILD_DEPS_PACKAGE)' ; \
+		sudo dpkg --remove '$(BUILD_DEPS_PACKAGE)' ; \
+	fi
+	printf "\nBuild Package\n\n" | tee -a '$(BUILD_LOG)'
 	cd $(BUILD_UNPACK_DIR) && dpkg-buildpackage --build=all \
-		--root-command=fakeroot --no-sign 2>&1 | tee -a '$(BUILD_LOG)' 
+		--root-command=fakeroot --no-sign 2>&1 \
+		| tee -a '$(BUILD_LOG)'
 	cp '$(BUILD_DIR)/$(NAME)_$(VERSION)-'* '$(PRODUCTS_DIR)'
 
 

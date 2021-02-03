@@ -1,0 +1,27 @@
+
+# Get some information about the OS
+#
+# This file is intended to be sourced rather than executed.
+#
+
+LSB_VENDOR=$(lsb_release --id --short)
+LSB_RELEASE=$(lsb_release --release --short)
+LSB_RELEASE_MAJOR=$(echo "${LSB_RELEASE}" | sed -e 's/\..*$//')
+
+case "${LSB_VENDOR}" in
+    CentOS|Fedora|RedHat)
+	LSB_FAMILY=RedHat
+	PACKAGE_FORMAT=rpm
+	;;
+    Debian|Ubuntu)
+	LSB_FAMILY=Debian
+	PACKAGE_FORMAT=deb
+	;;
+    *)
+	echo "Can't handle ${LSB_VENDOR}" 1>&2
+	exit 1
+	;;
+esac
+
+OS="${LSB_VENDOR}-${LSB_RELEASE_MAJOR}"
+OS_FAMILY="${LSB_FAMILY}-${LSB_RELEASE_MAJOR}"

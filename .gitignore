@@ -6,9 +6,11 @@
 *~
 
 # Ignore rpms, logs and other build artifacts
-*.rpm
-*.pyc
-*.log
+BUILD
+PRODUCTS
+LOG
+
+# TODO: These shouldn't be needed anymore.
 */rpmbuild
 REPO/
 */.rpmmacros
@@ -17,7 +19,10 @@ REPO/
 *.coverage
 *.pc/
 
+
+
 #ignore tarballs from build process
+# TODO: These shouldn't be necessary.
 make-generic-rpm/*.tar.gz
 postgresql-init/*.tar.gz
 postgresql-load/*.tar.gz

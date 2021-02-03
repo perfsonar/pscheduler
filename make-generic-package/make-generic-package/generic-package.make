@@ -48,6 +48,7 @@ TO_CLEAN += $(BUILD_DIR)
 PRODUCTS_DIR := ./PRODUCTS
 $(PRODUCTS_DIR):
 	mkdir -p $@
+TO_BUILD += $(PRODUCTS_DIR)
 TO_CLEAN += $(PRODUCTS_DIR)
 
 # Build log
