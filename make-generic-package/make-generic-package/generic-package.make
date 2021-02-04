@@ -105,17 +105,21 @@ cbdc: cbd
 # These are deprecated holdovers from the RPM-only days
 
 r:
-	@printf "\n\nThe '$@' target is deprecated, use 'd' instead.\n\n"
+	@printf "\n\nThe '$@' target is deprecated, use 'd' instead.  Continuing shortly.\n\n"
+	@sleep 3
 	@$(MAKE) d
 
 cbr:
-	@printf "\n\nThe '$@' target is deprecated, use 'cbd' instead.\n\n"
+	@printf "\n\nThe '$@' target is deprecated, use 'cbd' instead.  Continuing shortly.\n\n"
+	@sleep 3
 	@$(MAKE) cbd
 
 rpmdump:
-	@printf "\n\nThe '$@' target is deprecated, use 'dump' instead.\n\n"
+	@printf "\n\nThe '$@' target is deprecated, use 'dump' instead.  Continuing shortly.\n\n"
+	@sleep 3
 	@$(MAKE) dump
 
 cbrc:
-	@printf "\n\nThe '$@' target is deprecated, use 'cbdc' instead.\n\n"
+	@printf "\n\nThe '$@' target is deprecated, use 'cbdc' instead.  Continuing shortly.\n\n"
+	@sleep 3
 	@$(MAKE) cbdc

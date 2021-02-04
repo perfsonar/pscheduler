@@ -1,46 +1,46 @@
-python-jsonschema (3.0.1-4) perfsonar-4.3-staging; urgency=low
+jsonschema (3.0.1-4) perfsonar-4.3-staging; urgency=low
 
   * Cleaning up dependencies.
 
  -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 16 Nov 2020 21:05:35 +0000
 
-python-jsonschema (3.0.1-3) perfsonar-4.3-staging; urgency=low
+jsonschema (3.0.1-3) perfsonar-4.3-staging; urgency=low
 
   * Diverting python3-pyrsistent dependency for Ubuntu 18
 
  -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 30 Oct 2020 19:52:02 +0000
 
-python-jsonschema (3.0.1-2) perfsonar-4.3-staging; urgency=low
+jsonschema (3.0.1-2) perfsonar-4.3-staging; urgency=low
 
   * Building Python3 module only
 
  -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 21 Apr 2020 17:55:54 +0000
 
-python-jsonschema (3.0.1-1) perfsonar-minor-staging; urgency=low
+jsonschema (3.0.1-1) perfsonar-minor-staging; urgency=low
 
   * New upstream version.
 
  -- Valentin Vidic <Valentin.Vidic@CARNet.hr>  Wed, 10 Apr 2019 15:46:37 +0000
 
-python-jsonschema (2.5.1-4~bpo8+1~1) perfsonar-jessie-staging; urgency=low
+jsonschema (2.5.1-4~bpo8+1~1) perfsonar-jessie-staging; urgency=low
 
   * Backport to Jessie.
 
  -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 12 Apr 2017 17:46:23 +0000
 
-python-jsonschema (2.5.1-4) unstable; urgency=medium
+jsonschema (2.5.1-4) unstable; urgency=medium
 
   * override_dh_python3 to fix Py3 shebang.
 
  -- Thomas Goirand <zigo@debian.org>  Fri, 23 Oct 2015 22:40:58 +0000
 
-python-jsonschema (2.5.1-3) unstable; urgency=medium
+jsonschema (2.5.1-3) unstable; urgency=medium
 
   * Uploading to unstable.
 
  -- Thomas Goirand <zigo@debian.org>  Fri, 16 Oct 2015 10:02:14 +0000
 
-python-jsonschema (2.5.1-2) experimental; urgency=medium
+jsonschema (2.5.1-2) experimental; urgency=medium
 
   * Fixed pacakge version parsing to be compatible with Ubuntu Trusty.
   * Fixed http{s,}_proxy during dh_auto_clean to avoid PyPi downloads.
@@ -50,7 +50,7 @@ python-jsonschema (2.5.1-2) experimental; urgency=medium
 
  -- Thomas Goirand <zigo@debian.org>  Thu, 17 Sep 2015 09:25:38 +0200
 
-python-jsonschema (2.5.1-1) experimental; urgency=medium
+jsonschema (2.5.1-1) experimental; urgency=medium
 
   * New upstream release.
   * Usual debian/control clean-up.
@@ -62,13 +62,13 @@ python-jsonschema (2.5.1-1) experimental; urgency=medium
 
  -- Thomas Goirand <zigo@debian.org>  Wed, 29 Jul 2015 23:18:54 +0200
 
-python-jsonschema (2.4.0-1) unstable; urgency=medium
+jsonschema (2.4.0-1) unstable; urgency=medium
 
   * New upstream release.
 
  -- Thomas Goirand <zigo@debian.org>  Wed, 15 Apr 2015 09:44:16 +0200
 
-python-jsonschema (2.3.0-1) unstable; urgency=low
+jsonschema (2.3.0-1) unstable; urgency=low
 
   [ Thomas Goirand ]
   * New upstream release.
@@ -81,7 +81,7 @@ python-jsonschema (2.3.0-1) unstable; urgency=low
 
  -- Thomas Goirand <zigo@debian.org>  Sun, 08 Dec 2013 11:37:07 +0800
 
-python-jsonschema (2.0.0-1) unstable; urgency=low
+jsonschema (2.0.0-1) unstable; urgency=low
 
   * New upstream release.
   * Added Pre-Depends dpkg (>= 1.15.6~) missing for the python3 package.
@@ -90,7 +90,7 @@ python-jsonschema (2.0.0-1) unstable; urgency=low
 
  -- Thomas Goirand <zigo@debian.org>  Wed, 24 Jul 2013 15:11:14 +0800
 
-python-jsonschema (1.1.0-2) unstable; urgency=low
+jsonschema (1.1.0-2) unstable; urgency=low
 
   [ Thomas Goirand ]
   * Ran wrap-and-sort.
@@ -100,20 +100,20 @@ python-jsonschema (1.1.0-2) unstable; urgency=low
 
  -- Thomas Goirand <zigo@debian.org>  Thu, 30 May 2013 14:04:07 +0800
 
-python-jsonschema (1.1.0-1) unstable; urgency=low
+jsonschema (1.1.0-1) unstable; urgency=low
 
   * Uploading to unstable.
   * New upstream release.
 
  -- Thomas Goirand <zigo@debian.org>  Sat, 11 May 2013 07:30:18 +0000
 
-python-jsonschema (0.8.0-2) experimental; urgency=low
+jsonschema (0.8.0-2) experimental; urgency=low
 
   * Missing build-dependency: python-mock (Closes: #700283).
 
  -- Thomas Goirand <zigo@debian.org>  Mon, 11 Feb 2013 02:19:29 +0000
 
-python-jsonschema (0.8.0-1) experimental; urgency=low
+jsonschema (0.8.0-1) experimental; urgency=low
 
   * New upstream release.
   * Team maintains the package in pkg-openstack.
@@ -128,20 +128,20 @@ python-jsonschema (0.8.0-1) experimental; urgency=low
 
  -- Thomas Goirand <zigo@debian.org>  Thu, 31 Jan 2013 23:12:17 +0800
 
-python-jsonschema (0.2-1) unstable; urgency=low
+jsonschema (0.2-1) unstable; urgency=low
 
   * First Debian Packaging
 
  -- Ghe Rivero <ghe@debian.org>  Wed, 30 May 2012 14:43:07 +0200
 
-python-jsonschema (0.2-0ubuntu2) quantal; urgency=low
+jsonschema (0.2-0ubuntu2) quantal; urgency=low
 
   * debian/control: Add python-nose as a build dependency.
-  * debian/rules: Run testsuite during build. 
+  * debian/rules: Run testsuite during build.
 
  -- Chuck Short <zulcss@ubuntu.com>  Wed, 23 May 2012 20:02:47 -0400
 
-python-jsonschema (0.2-0ubuntu1) quantal; urgency=low
+jsonschema (0.2-0ubuntu1) quantal; urgency=low
 
   * Initial release.
 

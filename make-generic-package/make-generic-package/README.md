@@ -16,7 +16,8 @@ RPM systems require the following packages preinstalled:
 
 Debian systems require the following packages preinstalled:
 
- * TODO: Write this.
+ * devscripts
+ * equivs
 
 The package uses itself to do a build and install, so simply running
 `make cbic` (clean, build, install, re-clean) in its package directory
