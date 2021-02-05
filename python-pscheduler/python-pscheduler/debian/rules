@@ -25,4 +25,4 @@ override_dh_auto_build:
 	make CLASSES=$(ROOT)/usr/lib/pscheduler/classes
 
 override_dh_auto_test:
-	true nosetests3 tests
+	nosetests3 tests

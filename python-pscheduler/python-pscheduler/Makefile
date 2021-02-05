@@ -15,10 +15,10 @@ endif
 
 
 test: file-setup
-	true python3 -m nose
+	python3 -m nose
 
 test-coverage: file-setup
-	true python3 -m nose --with-coverage --cover-package rabbitmq
+	python3 -m nose --with-coverage --cover-package rabbitmq
 
 
 build: file-setup test

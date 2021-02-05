@@ -127,6 +127,7 @@ _built:
 install: _built
 	@find '$(PRODUCTS_DIR)' -name "*.deb" \
 		| xargs sudo dpkg -i
+	@yes | sudo apt install -f 
 
 
 dump: _built
