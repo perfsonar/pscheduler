@@ -108,7 +108,7 @@ build: $(BUILD_UNPACK_DIR) $(TO_BUILD) $(PRODUCTS_DIR)
 		&& mk-build-deps --root-cmd=sudo --install --remove \
 			--tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
 			'debian/control'
-	printf "\nBuild Package $(SOURCE) $(VERSION)\n\n"
+	@printf "\nBuild Package $(SOURCE) $(VERSION)\n\n"
 	cd $(BUILD_UNPACK_DIR) && dpkg-buildpackage --build=any,all \
 		--root-command=fakeroot --no-sign 2>&1
 	find '$(BUILD_DIR)' \
