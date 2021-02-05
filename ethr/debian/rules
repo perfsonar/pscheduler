@@ -17,8 +17,8 @@ override_dh_auto_install:
 	dh_auto_install
 
 override_dh_auto_clean:
-	$(RM) -r $(GOPATH)
-	$(RM) ethr-*
+	$(RM) -rf $(GOPATH)
+	$(RM) -rf ethr-*
 	dh_auto_clean
 
 override_dh_auto_build:

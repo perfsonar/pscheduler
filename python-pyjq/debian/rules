@@ -18,13 +18,16 @@ include /usr/share/dpkg/default.mk
 
 export PYBUILD_NAME = pyjq
 
+PYTHON := python3
+INCLUDE_FLAGS := $(shell $(PYTHON)-config --includes)
+CFLAGS += $(INCLUDE_FLAGS)
+
 # main packaging script based on dh7 syntax
 %:
-	dh $@ --with=python3 --buildsystem=pybuild
+	PYBUILD_SYSTEM=pybuild dh $@ --with=$(PYTHON)
 
 override_dh_auto_test:
 
 override_dh_auto_build:
-	cython _pyjq.pyx
+	cython $(INCLUDE_FLAGS) _pyjq.pyx
 	dh_auto_build
-

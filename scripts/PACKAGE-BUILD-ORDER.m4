@@ -19,108 +19,110 @@ dnl
 #               full bundle.
 #
 
-#
-# PACKAGE BUILD UTILITIES
-#
-# Everything else depends on these.
-#
-rpm-with-deps
-make-generic-package
-
-# Build this early.  Some of the packages using PostgreSQL depend on
-# knowing what version is required to avoid the "Requires: postgresql"
-# trap we fell into with RH6.
-pscheduler-rpm
-
-#
-# DEVELOPMENT, LIBRARIES AND UTILITIES
-#
-
-# PostgreSQL and Additions
-postgresql
-postgresql-init
-postgresql-load
-
-
-# Only build this on OL8.  EL8 has it.
-ifelse(OS,Oracle-8,oniguruma)
-
-# jq version with new patches. replace when patches accepted upstream
-jq
-
-### # Python Modules
+### #
+### # PACKAGE BUILD UTILITIES
+### #
+### # Everything else depends on these.
+### #
+### rpm-with-deps
+### make-generic-package
+### 
+### # Build this early.  Some of the packages using PostgreSQL depend on
+### # knowing what version is required to avoid the "Requires: postgresql"
+### # trap we fell into with RH6.
+### pscheduler-rpm
+### 
+### #
+### # DEVELOPMENT, LIBRARIES AND UTILITIES
+### #
+### 
+### # PostgreSQL and Additions
+### postgresql
+### postgresql-init
+### postgresql-load
+### 
+### 
 ### # Only build this on OL8.  EL8 has it.
-### ifelse(OS,Oracle-8,Cython)
-### ifelse(OS_FAMILY,RedHat-7,python-daemon)
-### ifelse(OS_FAMILY,RedHat-7,python-isodate)
-### # EL8 has this, but an older version
-ifelse(OS_FAMILY,RedHat,python-itsdangerous)
-python-pyrsistent
-### # EL8 has this, but an older version
-python-jsonschema
-python-kafka
-
-# Used by pscheduler-archiver-esmond
-
-# EL8's is 1.58, ours is/was 1.59.  Commits to the project show only
-# cosmetic changes for the later version.
-ifelse(OS,CentOS-7,python-memcached)
-# EL8 has this, ours is newer
-python-netifaces
-ifelse(OS,CentOS-7,python-ntplib)
-python-parse-crontab
-python-py-radix
-python-pyjq
-python-tzlocal
-python-vcversioner
-# EL8 has this, ours is newer
-python-pyasn1
-python-pyasn1-modules
-# EL8 has this, ours is newer
-python-werkzeug
-# EL8 has this, ours is newer
-python-flask
-# TODO: EPEL8 has a newer version that doesn't install.
-# See https://bugzilla.redhat.com/show_bug.cgi?id=1838402
-python-pysnmp
-
-# JSON Tools
-python-jsontemplate
-
-
-# Home-grown Python Modules
-python-icmperror
-
-
-# Apache add-ons
-httpd-firewall
-mod_wsgi
-httpd-wsgi-socket
-
-
-#
-# Utility and Tool programs
-#
-drop-in
-ethr
-# TODO: Building temporarily for EL8; required for owamp
-ifelse(OS,CentOS-8,I2util)
-# EPEL dropped this for EL8
-ifelse(OS,CentOS-8,iperf)
-# TODO: Building temporarily for EL8
-ifelse(OS,CentOS-8,owamp)
-paris-traceroute
-random-string
-s3-benchmark
-
-#
-# PSCHEDULER CORE PARTS
-#
-
-eduler-account
-eduler-jq-library
-python-pscheduler
-pscheduler-core
+### ifelse(OS,Oracle-8,oniguruma)
+### 
+### # jq version with new patches. replace when patches accepted upstream
+### jq
+### 
+### ### # Python Modules
+### ### # Only build this on OL8.  EL8 has it.
+### ### ifelse(OS,Oracle-8,Cython)
+### ### ifelse(OS_FAMILY,RedHat-7,python-daemon)
+### ### ifelse(OS_FAMILY,RedHat-7,python-isodate)
+### ### # EL8 has this, but an older version
+### ifelse(OS_FAMILY,RedHat,python-itsdangerous)
+### python-pyrsistent
+### ### # EL8 has this, but an older version
+### python-jsonschema
+### python-kafka
+### 
+### # Used by pscheduler-archiver-esmond
+### 
+### # EL8's is 1.58, ours is/was 1.59.  Commits to the project show only
+### # cosmetic changes for the later version.
+### ifelse(OS,CentOS-7,python-memcached)
+### # EL8 has this, ours is newer
+### python-netifaces
+### ifelse(OS,CentOS-7,python-ntplib)
+### python-parse-crontab
+### python-py-radix
+### python-pyjq
+### python-tzlocal
+### python-vcversioner
+### # EL8 has this, ours is newer
+### python-pyasn1
+### python-pyasn1-modules
+### # EL8 has this, ours is newer
+### python-werkzeug
+### # EL8 has this, ours is newer
+### python-flask
+### # TODO: EPEL8 has a newer version that doesn't install.
+### # See https://bugzilla.redhat.com/show_bug.cgi?id=1838402
+### python-pysnmp
+### 
+### # JSON Tools
+### python-jsontemplate
+### 
+### 
+### # Home-grown Python Modules
+### python-icmperror
+### 
+### 
+### # Apache add-ons
+### httpd-firewall
+### mod_wsgi
+### httpd-wsgi-socket
+### 
+### 
+### #
+### # Utility and Tool programs
+### #
+### drop-in
+### # TODO: Doesn't build on Debian 9 (Go 1.7)
+### ifelse(LSB_FAMILY,Debian,,ethr)
+### # TODO: Building temporarily for EL8; required for owamp
+### ifelse(OS,CentOS-8,I2util)
+### # EPEL dropped this for EL8
+### ifelse(OS,CentOS-8,iperf)
+### # TODO: Building temporarily for EL8
+### ifelse(OS,CentOS-8,owamp)
+### paris-traceroute
+### random-string
+### ### # TODO: Doesn't build on Debian 9 (Go 1.7)
+### ifelse(LSB_FAMILY,Debian,,pscheduler-s3-benchmark)
+### 
+### #
+### # PSCHEDULER CORE PARTS
+### #
+### 
+### pscheduler-account
+### pscheduler-jq-library
+### python-pscheduler
+### pscheduler-core
 pscheduler-server
 
 #
@@ -155,7 +157,8 @@ pscheduler-tool-bwctltracepath		--bundle obsolete
 pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl			--bundle extras
 pscheduler-tool-dnspy
-pscheduler-tool-ethr
+# TODO: Doesn't build on Debian 9 (Go 1.7)
+ifelse(LSB_FAMILY,Debian,,pscheduler-tool-ethr)
 pscheduler-tool-globus			--bundle extras
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
@@ -169,7 +172,8 @@ pscheduler-tool-powstream
 pscheduler-tool-psclock
 pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
-pscheduler-tool-s3-benchmark
+# TODO: Doesn't build on Debian 9 (Go 1.7)
+ifelse(LSB_FAMILY,Debian,,pscheduler-tool-s3-benchmark)
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm

@@ -10,5 +10,5 @@ include /usr/share/dpkg/default.mk
 export PYBUILD_NAME=jsontemplate
 
 %:
-	dh $@ --with=python3 --buildsystem=pybuild
+	PYBUILD_SYSTEM=pybuild dh $@ --with=python3
 

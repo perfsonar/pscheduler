@@ -1,4 +1,4 @@
-Source: pscheduler
+Source: python-pscheduler
 Section: net
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>

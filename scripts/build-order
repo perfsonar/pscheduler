@@ -50,6 +50,8 @@ bundle_filter()
     esac
 }
 
+. "${WHEREAMI}/os-info"
+
 m4 \
     "-DLSB_VENDOR=${LSB_VENDOR}" \
     "-DLSB_RELEASE=${LSB_RELEASE}" \

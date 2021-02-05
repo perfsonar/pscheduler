@@ -43,7 +43,7 @@ inclulde make/generic-package.make
 ### Sources
 
 Source code may be in the form of a tarball downloaded from another
-source or a directory containing the sourc code.
+source or a directory containing the source code.
 
 #### Tarball
 
