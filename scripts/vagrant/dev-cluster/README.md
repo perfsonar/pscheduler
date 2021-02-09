@@ -26,9 +26,12 @@ workaround is to do development done in `/local/<username>`.
 
 Your system must have the following installed:
 
+ * Python
+ * Python netaddr (`sudo pip install netaddr`)
  * VirtualBox
  * Vagrant
  * Ansible
+ * Ansible community collection (`ansible-galaxy collection install community.general`)
 
 
 ## Setup
