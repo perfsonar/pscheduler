@@ -9,7 +9,7 @@
 NAME=$(shell fgrep Name: *.spec | awk '{ print $$2 }')
 VERSION=$(shell fgrep Version: *.spec | awk '{ print $$2 }')
 
-RPMDIR=$(shell pwd)/rpmbuild
+RPMDIR=$(shell pwd)/BUILD
 BUILDROOT=$(RPMDIR)/BUILDROOT
 
 
@@ -46,7 +46,7 @@ $(RPMDIR): $(TARBALL)
 	cp -pf $(NAME).spec $(RPMDIR)/SPECS
 TO_CLEAN += $(RPMDIR) $(BUILDROOT)
 
-LOG=build.log
+LOG=LOG
 build: .rpmmacros $(TARBALL) $(RPMDIR)
 	HOME=$(shell pwd) rpmbuild -v -ba --buildroot $(BUILDROOT) ./$(NAME).spec 2>&1 \
                 | tee $(LOG)
