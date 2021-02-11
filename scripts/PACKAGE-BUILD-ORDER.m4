@@ -113,7 +113,7 @@ ifelse(OS,CentOS-8,owamp)
 paris-traceroute
 random-string
 ### # TODO: Doesn't build on Debian 9 (Go 1.7)
-ifelse(LSB_FAMILY,Debian,,pscheduler-s3-benchmark)
+ifelse(LSB_FAMILY,Debian,,s3-benchmark)
 
 #
 # PSCHEDULER CORE PARTS
