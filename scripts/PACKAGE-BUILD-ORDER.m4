@@ -48,15 +48,15 @@ ifelse(OS,Oracle-8,oniguruma)
 # jq version with new patches. replace when patches accepted upstream
 jq
 
-### # Python Modules
-### # Only build this on OL8.  EL8 has it.
-### ifelse(OS,Oracle-8,Cython)
-### ifelse(OS_FAMILY,RedHat-7,python-daemon)
-### ifelse(OS_FAMILY,RedHat-7,python-isodate)
-### # EL8 has this, but an older version
+# Python Modules
+# Only build this on OL8.  EL8 has it.
+ifelse(OS,Oracle-8,Cython)
+ifelse(OS_FAMILY,RedHat-7,python-daemon)
+ifelse(OS_FAMILY,RedHat-7,python-isodate)
+# EL8 has this, but an older version
 ifelse(OS_FAMILY,RedHat,python-itsdangerous)
 python-pyrsistent
-### # EL8 has this, but an older version
+# EL8 has this, but an older version
 python-jsonschema
 python-kafka
 

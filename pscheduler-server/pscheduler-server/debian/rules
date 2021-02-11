@@ -49,7 +49,6 @@ override_dh_auto_build:
 		LOGFILE=pscheduler.log \
 		PGDATABASE=pscheduler \
 		PGPASSFILE=/etc/pscheduler/database/pgpassfile \
-		TMPDIR=/var/tmp \
 		VERSION=$(DEB_VERSION)
 
 	make -C database \

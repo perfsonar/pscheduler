@@ -12,97 +12,116 @@ $(error "Include generic-package.make, not an environment-specific template.")
 endif
 
 
-#
-# Spec file and things derived from it
-#
+# RPM Directory
 
-# Do this in a POSIX-y way, which precludes mindepth.
-SPEC := $(shell find . -name '*.spec' | sed -e '/^\.\/[^/]*$$/!d; s/^\.\///')
+RPM_DIR := $(shell find . -type d -name "rpm" | egrep -ve '^$(BUILD_DIR)')
+ifeq "$(RPM_DIR)" ""
+$(error "Unable to find rpm directory.")
+endif
+ifneq "$(words $(RPM_DIR))" "1"
+$(error "Found more than one rpm directory.  There can be only one.")
+endif
+
+
+# Spec file and things derived from it
+
+SPEC := $(shell find '$(RPM_DIR)' -name '*.spec')
+SPEC_BASE := $(notdir $(SPEC))
 
 ifeq "$(words $(SPEC))" "0"
-  $(error No spec in this directory)
+  $(error No spec in the $(RPM_DIR) directory)
 endif
 ifneq "$(words $(SPEC))" "1"
-  $(error This directory contains more than one spec file)
+  $(error $(RPM_DIR) contains more than one spec file)
 endif
 
-NAME := $(shell echo "$(SPEC)" | sed -e 's/\.spec$$//')
-VERSION := $(shell rpmspec -P "$(SPEC)" | awk '$$1 == "Version:" { print $$2 }')
+VERSION := $(shell rpm -q --queryformat="%{version}\n" --specfile '$(SPEC)')
 SOURCE_FILES := $(shell spectool -S $(SPEC) | awk '{ print $$2 }')
 PATCH_FILES := $(shell spectool -P $(SPEC) | awk '{ print $$2 }')
-
-
-#
-# Automagic source tarball construction
-# TODO: Move to common
-# 
-
-ifdef AUTO_TARBALL
-
-    ifeq "$(words $(SOURCE_FILES))" "0"
-        $(error No need to set AUTO_TARBALL with no sources in spec file)
-    endif
-
-    ifeq "$(shell [ $(words $(SOURCE_FILES)) -gt 1 ]; echo $$?)" "0"
-        $(error Cannot automatically build a tarball from multiple sources)
-    endif
-
-    ifneq "$(findstring -, $(VERSION))" ""
-        $(error The version number in the spec may not contain hyphens.)
-    endif
-
-
-TARBALL_SOURCE=$(shell echo $(SOURCE_FILES) | sed -e 's/-[^-]*\.tar\.gz$$//')
-TARBALL_NAME=$(TARBALL_SOURCE)-$(VERSION)
-TARBALL=$(TARBALL_NAME).tar.gz
-ALL_TARBALLS=$(TARBALL_SOURCE)-*.tar.gz
-
-$(TARBALL):
-	cp -r $(TARBALL_SOURCE) $(TARBALL_NAME)
-	tar czf $@ $(TARBALL_NAME)
-	rm -rf $(TARBALL_NAME)
-
-BUILD_DEPS += $(TARBALL)
-TO_CLEAN += $(TARBALL) $(TARBALL_NAME) $(ALL_TARBALLS)
-
-endif
-
 
 #
 # RPM Build Directory
 #
 
-BUILD_DIR=./rpmbuild
-BUILD_BUILD=$(BUILD_DIR)/BUILD
 BUILD_RPMS=$(BUILD_DIR)/RPMS
 BUILD_SOURCES=$(BUILD_DIR)/SOURCES
 BUILD_SPECS=$(BUILD_DIR)/SPECS
 BUILD_SRPMS=$(BUILD_DIR)/SRPMS
 
 BUILD_SUBS=\
-	$(BUILD_BUILD) \
 	$(BUILD_RPMS) \
 	$(BUILD_SOURCES) \
 	$(BUILD_SPECS) \
-	$(BUILD_SRPMS) \
+	$(BUILD_SRPMS)
 
-$(BUILD_DIR): $(SPEC) $(SOURCE_FILES)
-	rm -rf $@
-	mkdir -p $(BUILD_SUBS)
+
+TO_BUILD += $(BUILD_SUBS)
+
+# Source files installed int he build directory
+INSTALLED_SOURCE_FILES := $(SOURCE_FILES:%=$(BUILD_SOURCES)/%)
+
+$(BUILD_SUBS):
+	mkdir -p '$@'
+
+$(BUILD_DIR):: $(SPEC) $(INSTALLED_SOURCE_FILES) $(PATCH_FILES) $(BUILD_SUBS)
 	cp $(SPEC) $(BUILD_SPECS)
-ifneq "$(words $(SOURCE_FILES))" "0"
-	cp $(SOURCE_FILES) $(BUILD_SOURCES)
-endif
 ifneq "$(words $(PATCH_FILES))" "0"
 	cp $(PATCH_FILES) $(BUILD_SOURCES)
 endif
 
 
-BUILD_ROOT=./BUILD-ROOT
-$(BUILD_ROOT):
-	mkdir -p $@
-TO_CLEAN += $(BUILD_ROOT)
+# Source files
 
+ifeq "$(words $(SOURCE_FILES))" "1"
+  TARBALL_EXISTS := $(shell [ -e '$(SOURCE_FILES)' ] && echo 1 || true)
+else
+  # Go with whatever's in the source file.
+  TARBALL_EXISTS=1
+endif
+
+
+ifeq "$(TARBALL_EXISTS)" "1"
+
+# Have tarball(s), just need to copy into $(BUILD_SOURCES)
+
+TO_BUILD += $(SOURCE_FILES:%=$(BUILD_SOURCES)/%)
+
+$(BUILD_SOURCES)/%: % $(BUILD_SOURCES)
+	cp '$(notdir $@)' '$@'
+
+else
+
+# Have a tarball, need to generate it in $(BUILD_SOURCES)
+
+TARBALL_SOURCE := $(shell echo $(SOURCE_FILES) | sed -e 's/-[^-]*\.tar\.gz$$//')
+TARBALL_NAME := $(TARBALL_SOURCE)-$(VERSION)
+TARBALL_FULL := $(TARBALL_NAME).tar.gz
+
+TARBALL_BUILD := $(BUILD_SOURCES)/$(TARBALL_NAME)
+BUILD_SOURCE_TARBALL := $(BUILD_SOURCES)/$(TARBALL_FULL)
+
+$(BUILD_SOURCE_TARBALL): $(BUILD_SOURCES)
+	cp -r '$(TARBALL_SOURCE)' '$(TARBALL_BUILD)'
+	cd '$(BUILD_SOURCES)' && tar czf '$(TARBALL_FULL)' '$(TARBALL_NAME)'
+	rm -rf '$(TARBALL_BUILD)'
+
+TO_BUILD += $(BUILD_SOURCE_TARBALL)
+
+endif
+
+
+# Spec file in the build directory
+
+BUILD_SPEC_FILE := $(BUILD_SPECS)/$(SPEC_BASE)
+$(BUILD_SPEC_FILE): $(SPEC)
+	cp '$<' '$@'
+TO_BUILD += $(BUILD_SPEC_FILE)
+
+
+
+#
+# Useful Targets
+#
 
 ifdef NO_DEPS
   RPM=rpm
@@ -112,30 +131,15 @@ else
   RPMBUILD=rpmbuild-with-deps
 endif
 
-
-
-#
-# Useful Targets
-#
-
-build:: $(BUILD_DEPS) $(BUILD_DIR) $(BUILD_ROOT)
+# PORT: Note that the pipefail requries BASH.
+build:: $(TO_BUILD)
 	set -o pipefail \
-                && HOME=$(shell pwd) \
-                   $(RPMBUILD) -ba \
-			--buildroot $(shell cd $(BUILD_ROOT) && pwd) \
-			$(SPEC) 2>&1 \
-		| tee build.log
-	find $(BUILD_DIR) -name '*.rpm' | xargs -I{} cp {} .
-TO_CLEAN += build.log
-TO_CLEAN += *.rpm
-
-
-
-srpm:: $(BUILD_DEPS) $(BUILD_DIR)
-	HOME=$(shell pwd) rpmbuild -v -bs $(RPMBUILD_OPTS) $(SPEC)
-	find $(BUILD_DIR) -name '*.src.rpm' | xargs -I{} cp {} .
-TO_CLEAN += *.src.rpm
-
+		&& $(RPMBUILD) -ba \
+			--define '_topdir $(shell cd $(BUILD_DIR) && pwd)' \
+			$(BUILD_SPEC_FILE) 2>&1 \
+		| tee $(BUILD_LOG)
+	find $(BUILD_DIR)/RPMS -name '*.rpm' | xargs -I{} cp {} '$(PRODUCTS_DIR)'
+	find $(BUILD_DIR)/SRPMS -name '*.rpm' | xargs -I{} cp {} '$(PRODUCTS_DIR)'
 
 
 dump::
@@ -152,17 +156,14 @@ dump::
 
 
 install::
-	find $(BUILD_RPMS) -name '*.rpm' | xargs $(RPM) -Uvh --force
-
-
-
-clean::
-	find . -depth -name Makefile \
-	    -exec /bin/sh -c \
-	    '[ "{}" != "./Makefile" ] && make -C `dirname {}` clean' \;
+	@for PACKAGE in `find $(BUILD_RPMS) -name '*.rpm'`; do \
+	    SHORT=`basename "$${PACKAGE}" | sed -e 's/.rpm$$//'` ; \
+	    rpm --quiet -q "$${SHORT}" && OP="reinstall" || OP="install" ; \
+	    echo "$${SHORT} will be $${OP}ed" ; \
+	    sudo yum -y "$${OP}" "$${PACKAGE}" ; \
+	done
 
 
 # Placeholder for running unit tests.
 test::
 	@true
-

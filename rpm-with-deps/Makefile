@@ -62,11 +62,11 @@ TO_CLEAN += *.src.rpm
 
 
 install: build
-	find $(RPMDIR)/RPMS -name "*.rpm" | xargs rpm -Uvh --force
+	find $(RPMDIR)/RPMS -name "*.rpm" | xargs sudo rpm -Uvh --force
 
 
 uninstall:
-	yum -y remove $(NAME) || true
+	sudo yum -y remove $(NAME) || true
 
 
 clean:

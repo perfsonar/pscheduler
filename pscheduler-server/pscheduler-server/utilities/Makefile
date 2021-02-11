@@ -47,10 +47,6 @@ ifndef PGPASSFILE
 	@echo PGPASSFILE not defined for $@
 	false
 endif
-ifndef TMPDIR
-	@echo TMPDIR not defined for $@
-	false
-endif
 ifndef VERSION
 	@echo VERSION not defined for $@
 	false
@@ -63,7 +59,6 @@ endif
 		-e 's|__LOGFILE__|$(LOGFILE)|g' \
 		-e 's|__PGDATABASE__|$(PGDATABASE)|g' \
 		-e 's|__PGPASSFILE__|$(PGPASSFILE)|g' \
-		-e 's|__TMPDIR__|$(TMPDIR)|g' \
 		-e 's|__VERSION__|$(VERSION)|g' \
 		< $< > $@
 	@if egrep -e '__[A-Z_]+__' $@ ; then \

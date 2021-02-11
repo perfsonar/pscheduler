@@ -13,6 +13,7 @@ URL: https://github.com/kkos/oniguruma/
 Source: %{name}-%{version}.tar.gz
 
 BuildRequires: autoconf
+BuildRequires: automake
 
 %description
 Oniguruma is a regular expressions library.  The characteristics of

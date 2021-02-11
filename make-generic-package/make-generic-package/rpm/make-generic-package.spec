@@ -36,6 +36,7 @@ Generic Makefile for RPMs.  For documentation, see the Makefile in
 %{directory}.
 
 
+%define docdir %{_docdir}/%{name}
 
 %prep
 %setup -q
@@ -43,9 +44,13 @@ Generic Makefile for RPMs.  For documentation, see the Makefile in
 
 %install
 %{__mkdir_p} $RPM_BUILD_ROOT/%{directory}
-%{__install} -m 444 * $RPM_BUILD_ROOT/%{directory}
+%{__install} -m 444 *.make $RPM_BUILD_ROOT/%{directory}
+
+%{__mkdir_p} $RPM_BUILD_ROOT/%{docdir}
+%{__install} -m 444 *.md $RPM_BUILD_ROOT/%{docdir}
 
 
 %files
 %defattr(-,root,root,-)
 %{directory}/*
+%{docdir}/*

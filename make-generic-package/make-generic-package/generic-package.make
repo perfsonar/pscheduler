@@ -40,8 +40,9 @@ TOP := $(CURDIR)
 
 # Where the build happens
 BUILD_DIR := ./BUILD
-$(BUILD_DIR):
+$(BUILD_DIR)::
 	mkdir -p $@
+TO_BUILD += $(BUILD_DIR)
 TO_CLEAN += $(BUILD_DIR)
 
 # Where the finished products go
