@@ -16,6 +16,7 @@ trap cleanup EXIT
 
 . "${WHEREAMI}/os-info"
 
+
 ${WHEREAMI}/build-order > "${TMPBASE}.list"
 
 FOUND_LIST="${TMPBASE}.found"
@@ -31,10 +32,10 @@ do
 
 EOF
 
-    case "${PACKAGE_FORMAT}" in
+    case "${OSINFO_PACKAGING}" in
 
 	rpm)
-	    find "${PACKAGE}" -name "*.spec" > "${FOUND_LIST}"
+	    find "${PACKAGE}" -name "rpm" -type d > "${FOUND_LIST}"
 	    if [ -s "${FOUND_LIST}" ]
 	    then
 		make -C "${PACKAGE}" clean build install

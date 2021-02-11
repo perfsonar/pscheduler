@@ -50,18 +50,25 @@ bundle_filter()
     esac
 }
 
+
 . "${WHEREAMI}/os-info"
 
-m4 \
-    "-DLSB_VENDOR=${LSB_VENDOR}" \
-    "-DLSB_RELEASE=${LSB_RELEASE}" \
-    "-DLSB_RELEASE_MAJOR=${LSB_RELEASE_MAJOR}" \
-    "-DLSB_FAMILY=${LSB_FAMILY}" \
-    "-DPACKAGE_FORMAT=${PACKAGE_FORMAT}" \
-    "-DOS=${LSB_VENDOR}-${LSB_RELEASE_MAJOR}" \
-    "-DOS_FAMILY=${LSB_FAMILY}-${LSB_RELEASE_MAJOR}" \
-    $WHEREAMI/PACKAGE-BUILD-ORDER.m4 \
-    | sed -e 's/#.*$//' \
-    | egrep -ve '^\s*$' \
+
+# Make arguments for M4, which is every set variable that begins with
+# OSINFO_.
+DEFINES=$(set \
+    | sed -e '/^OSINFO_/!d; s/^OSINFO_\([^=]\+\)=\(.*\)$/-D '\''\1=\2'\''/' \
+    | tr '\n' ' ')
+
+
+# Process file file:
+#  - Strip comments
+#  - Run through M4
+#  - Drop blank lines
+#  - Filter bundles we want or don't want
+#  - Grab package names only
+sed -e 's/\s*#.*$//' "${WHEREAMI}/PACKAGE-BUILD-ORDER.m4" \
+    | sh -c "m4 ${DEFINES}" \
+    | sed -e '/^\s*$/d' \
     | bundle_filter \
     | awk '{ print $1 }'

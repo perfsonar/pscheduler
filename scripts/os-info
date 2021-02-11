@@ -1,27 +1,34 @@
-
+#
 # Get some information about the OS
 #
 # This file is intended to be sourced rather than executed.
 #
 
-LSB_VENDOR=$(lsb_release --id --short)
-LSB_RELEASE=$(lsb_release --release --short)
-LSB_RELEASE_MAJOR=$(echo "${LSB_RELEASE}" | sed -e 's/\..*$//')
+OSINFO_OS=$(uname -s)
 
-case "${LSB_VENDOR}" in
-    CentOS|Fedora|RedHat)
-	LSB_FAMILY=RedHat
-	PACKAGE_FORMAT=rpm
+# This page has some useful information about figuring out what
+# distribution you're running:
+# http://linuxmafia.com/faq/Admin/release-files.html
+if [ -e '/etc/redhat-release' ]; then
+    OSINFO_FAMILY=RedHat
+elif [ -e '/etc/debian_version' ]; then
+    OSINFO_FAMILY=Debian
+fi
+
+OSINFO_DISTRO=$(lsb_release --id --short)
+OSINFO_RELEASE=$(lsb_release --release --short)
+OSINFO_MAJOR=$(echo "${OSINFO_RELEASE}" | cut -d . -f 1)
+OSINFO_MINOR=$(echo "${OSINFO_RELEASE}" | cut -d . -f 2)
+OSINFO_ARCH=$(uname -m)
+
+case "${OSINFO_FAMILY}" in
+    RedHat)
+	OSINFO_PACKAGING=rpm
 	;;
-    Debian|Ubuntu)
-	LSB_FAMILY=Debian
-	PACKAGE_FORMAT=deb
+    Debian)
+	OSINFO_PACKAGING=deb
 	;;
     *)
-	echo "Can't handle ${LSB_VENDOR}" 1>&2
+	echo "Unknown OS family '${OSINFO_FAMILY}'" 1>&2
 	exit 1
-	;;
 esac
-
-OS="${LSB_VENDOR}-${LSB_RELEASE_MAJOR}"
-OS_FAMILY="${LSB_FAMILY}-${LSB_RELEASE_MAJOR}"

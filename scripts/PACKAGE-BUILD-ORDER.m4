@@ -4,7 +4,6 @@ dnl
 dnl
 dnl Pre-process with M4.
 dnl
-dnl
 changequote(<!,!>)dnl
 changecom()dnl
 dnl
@@ -18,19 +17,32 @@ dnl
 #  --bundle b   Include the package in bundle b and not the default
 #               full bundle.
 #
+# The following macros are provided to use in determining whether or
+# not to build a package:
+#
+# OS         Operating system, per 'uname -s'       Linux, Darwin
+# FAMILY     OS family, empty of doesn't apply      RedHat, Debian
+# DISTRO     OS distribution (LSB ID)               RHEL, CentOS, Oracle, Debian, Ubuntu
+# RELEASE    Distribution release                   7.8.2003
+# MAJOR      Major part of RELEASE                  7
+# MINOR      Minor part of RELEASE                  8
+# ARCH       System architecture, per 'uname -m'    x86_64, armhf
+# PACKAGING  Type of packaging on this system       rpm, deb
+#
+#
 
 #
 # PACKAGE BUILD UTILITIES
 #
 # Everything else depends on these.
 #
-rpm-with-deps
+ifelse(PACKAGING,rpm,rpm-with-deps)
 make-generic-package
 
 # Build this early.  Some of the packages using PostgreSQL depend on
 # knowing what version is required to avoid the "Requires: postgresql"
 # trap we fell into with RH6.
-pscheduler-rpm
+ifelse(PACKAGING,rpm,pscheduler-rpm)
 
 #
 # DEVELOPMENT, LIBRARIES AND UTILITIES
@@ -42,44 +54,39 @@ postgresql-init
 postgresql-load
 
 
-# Only build this on OL8.  EL8 has it.
-ifelse(OS,Oracle-8,oniguruma)
 
-# jq version with new patches. replace when patches accepted upstream
+ifelse(DISTRO/MAJOR,Oracle/8,oniguruma)			# Only build this on OL8.  EL8 has it.
+
+# Our version of jq has patches. replace when patches accepted upstream.
 jq
 
 # Python Modules
-# Only build this on OL8.  EL8 has it.
-ifelse(OS,Oracle-8,Cython)
-ifelse(OS_FAMILY,RedHat-7,python-daemon)
-ifelse(OS_FAMILY,RedHat-7,python-isodate)
-# EL8 has this, but an older version
-ifelse(OS_FAMILY,RedHat,python-itsdangerous)
+
+ifelse(FAMILY/DISTRO/MAJOR,RedHat/Oracle/8,Cython)	# Only build this on OL8.
+ifelse(FAMILY/MAJOR,RedHat/7,python-daemon)		# EL7 needs this; EL8 is up to date
+ifelse(FAMILY/MAJOR,RedHat/7,python-isodate)		# EL7 needs this; EL8 is up to date
+ifelse(FAMILY/MAJOR,RedHat/8,python-itsdangerous)	# EL8 has this, but an older version
 python-pyrsistent
-# EL8 has this, but an older version
 python-jsonschema
 python-kafka
 
 # Used by pscheduler-archiver-esmond
-
 # EL8's is 1.58, ours is/was 1.59.  Commits to the project show only
 # cosmetic changes for the later version.
-ifelse(OS,CentOS-7,python-memcached)
-# EL8 has this, ours is newer
+ifelse(DISTRO/MAJOR,CentOS/7,python-memcached)
+
 python-netifaces
-ifelse(OS,CentOS-7,python-ntplib)
+ifelse(DISTRO/MAJOR,CentOS/7,python-ntplib)		# EL8 has this, ours is newer
 python-parse-crontab
 python-py-radix
 python-pyjq
 python-tzlocal
 python-vcversioner
-# EL8 has this, ours is newer
-python-pyasn1
+python-pyasn1						# EL8 has this, ours is newer
 python-pyasn1-modules
-# EL8 has this, ours is newer
-python-werkzeug
-# EL8 has this, ours is newer
-python-flask
+python-werkzeug						# EL8 has this, ours is newer
+python-flask						# EL8 has this, ours is newer
+
 # TODO: EPEL8 has a newer version that doesn't install.
 # See https://bugzilla.redhat.com/show_bug.cgi?id=1838402
 python-pysnmp
@@ -102,18 +109,21 @@ httpd-wsgi-socket
 # Utility and Tool programs
 #
 drop-in
-# TODO: Doesn't build on Debian 9 (Go 1.7)
-ifelse(LSB_FAMILY,Debian,,ethr)
-# TODO: Building temporarily for EL8; required for owamp
-ifelse(OS,CentOS-8,I2util)
-# EPEL dropped this for EL8
-ifelse(OS,CentOS-8,iperf)
-# TODO: Building temporarily for EL8
-ifelse(OS,CentOS-8,owamp)
+
+# No good support for this on Debian arm64 and ppc64el
+ifelse(FAMILY/ARCH,Debian/arm64,,
+       FAMILY/ARCH,Debian/ppc64el,,
+       ethr)
+
+ifelse(FAMILY/MAJOR,REDHAT/8,I2util)			# TODO: Building temporarily for EL8; required for owamp
+ifelse(FAMILY/MAJOR,REDHAT/8,iperf)			# EPEL dropped this for EL8
+ifelse(FAMILY/MAJOR,REDHAT/8,owamp)			# TODO: Building temporarily for EL8
 paris-traceroute
 random-string
-### # TODO: Doesn't build on Debian 9 (Go 1.7)
-ifelse(LSB_FAMILY,Debian,,s3-benchmark)
+# No good support for this on Debian arm64 and ppc64el
+ifelse(FAMILY/ARCH,Debian/arm64,,
+       FAMILY/ARCH,Debian/ppc64el,,
+       s3-benchmark)
 
 #
 # PSCHEDULER CORE PARTS
@@ -138,10 +148,13 @@ pscheduler-test-idlebgm
 pscheduler-test-idleex
 pscheduler-test-latency
 pscheduler-test-latencybg
-pscheduler-test-netreach			--bundle extras
+pscheduler-test-netreach		--bundle extras
 pscheduler-test-throughput
 pscheduler-test-rtt
-pscheduler-test-s3throughput
+# No good support for this on Debian arm64 and ppc64el
+ifelse(FAMILY/ARCH,Debian/arm64,,
+       FAMILY/ARCH,Debian/ppc64el,,
+       pscheduler-test-s3throughput)
 pscheduler-test-simplestream
 pscheduler-test-snmpget			--bundle snmp
 pscheduler-test-snmpgetbgm		--bundle snmp
@@ -157,13 +170,15 @@ pscheduler-tool-bwctltracepath		--bundle obsolete
 pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl			--bundle extras
 pscheduler-tool-dnspy
-# TODO: Doesn't build on Debian 9 (Go 1.7)
-ifelse(LSB_FAMILY,Debian,,pscheduler-tool-ethr)
+# No good support for this on Debian arm64 and ppc64el
+ifelse(FAMILY/ARCH,Debian/arm64,,
+       FAMILY/ARCH,Debian/ppc64el,,
+       pscheduler-tool-ethr)
 pscheduler-tool-globus			--bundle extras
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
-pscheduler-tool-nmapreach			--bundle extras
+pscheduler-tool-nmapreach		--bundle extras
 pscheduler-tool-nuttcp
 pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
@@ -172,8 +187,10 @@ pscheduler-tool-powstream
 pscheduler-tool-psclock
 pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
-# TODO: Doesn't build on Debian 9 (Go 1.7)
-ifelse(LSB_FAMILY,Debian,,pscheduler-tool-s3-benchmark)
+# No good support for this on Debian arm64 and ppc64el
+ifelse(FAMILY/ARCH,Debian/arm64,,
+       FAMILY/ARCH,Debian/ppc64el,,
+       pscheduler-tool-s3-benchmark)
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
