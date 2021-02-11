@@ -22,7 +22,7 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 4.3.0
 Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
-Requires:	%{_pscheduler_python}-cryptography
+Requires:	%{_pscheduler_python_epel}-cryptography
 Requires:	pscheduler-test-throughput
 requires:	iperf3
 Requires:	numactl
