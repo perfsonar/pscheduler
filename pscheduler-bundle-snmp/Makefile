@@ -29,13 +29,16 @@ TO_CLEAN += $(SPEC)
 # These add compatibility with the generic package makefile template's
 # targets.
 
-clean c: $(SPEC)
+clean c: 
+	$(MAKE) $(SPEC)
 	$(MAKE) -f $(PACKAGE_MAKEFILE) $@
 	rm -rf $(TO_CLEAN) *~
 
-build b install i rpmdump d r cb cbd cbr cbi srpm: $(SPEC)
+build b install i rpmdump d r cb cbd cbr cbi srpm:
+	$(MAKE) $(SPEC)
 	$(MAKE) -f $(PACKAGE_MAKEFILE) $@
 
-cbic cbdc cbrc: $(SPEC)
+cbic cbdc cbrc:
+	$(MAKE) $(SPEC)
 	$(MAKE) -f $(PACKAGE_MAKEFILE) $@
 	$(MAKE) clean
