@@ -14,7 +14,7 @@ TO_CLEAN += $(SOURCES_DIR)
 
 
 
-BUILD_LOG=build.log
+BUILD_LOG=LOG
 
 # The shell command below does the equivalent of BASH's pipefail
 # within the confines of POSIX.
