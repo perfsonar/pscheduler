@@ -131,13 +131,16 @@ else
   RPMBUILD=rpmbuild-with-deps
 endif
 
-# PORT: Note that the pipefail requries BASH.
 build:: $(TO_BUILD)
-	set -o pipefail \
-		&& $(RPMBUILD) -ba \
+	(((( \
+		$(RPMBUILD) -ba \
 			--define '_topdir $(shell cd $(BUILD_DIR) && pwd)' \
-			$(BUILD_SPEC_FILE) 2>&1 \
-		| tee $(BUILD_LOG)
+			$(BUILD_SPEC_FILE) 2>&1 ; \
+		echo $$? >&3 \
+	) \
+	| tee $(BUILD_LOG) >&4) 3>&1) \
+	| (read XS; exit $$XS) \
+	) 4>&1
 	find $(BUILD_DIR)/RPMS -name '*.rpm' | xargs -I{} cp {} '$(PRODUCTS_DIR)'
 	find $(BUILD_DIR)/SRPMS -name '*.rpm' | xargs -I{} cp {} '$(PRODUCTS_DIR)'
 
