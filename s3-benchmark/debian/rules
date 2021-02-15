@@ -11,17 +11,8 @@ export GOCACHE=$(GOPATH)/.cache
 %:
 	dh $@ 
 
-override_dh_auto_install:
-	mkdir -p debian/s3-benchmark/usr/bin/
-	cp s3-benchmark debian/s3-benchmark/usr/bin/s3-benchmark
-	dh_auto_install
-
-override_dh_auto_clean:
-	$(RM) -r $(GOPATH)
-	$(RM) s3-branchmark
-	dh_auto_clean
-
-# s3-benchmark is not properly packages and we cannot just do: "go get ./..."
+# s3-benchmark is not properly packaged and we cannot just do: "go get ./..."
+# TODO: This fails to build.
 override_dh_auto_build:
 	mkdir -p $(GOPATH) $(GOBIN)
 	go get golang.org/x/net/http2
@@ -32,3 +23,12 @@ override_dh_auto_build:
 	go get github.com/aws/aws-sdk-go/service/s3
 	go build s3-benchmark.go
 
+override_dh_auto_install:
+	mkdir -p debian/s3-benchmark/usr/bin
+	cp s3-benchmark debian/s3-benchmark/usr/bin/s3-benchmark
+	dh_auto_install
+
+override_dh_auto_clean:
+	$(RM) -r $(GOPATH)
+	$(RM) s3-benchmark
+	dh_auto_clean

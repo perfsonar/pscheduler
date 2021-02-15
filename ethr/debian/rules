@@ -13,12 +13,12 @@ export GOCACHE=$(GOPATH)/.cache
 
 override_dh_auto_install:
 	mkdir -p debian/ethr/usr/bin/
-	cp ethr-* debian/ethr/usr/bin/ethr
+	cp ethr debian/ethr/usr/bin/ethr
 	dh_auto_install
 
 override_dh_auto_clean:
 	$(RM) -rf $(GOPATH)
-	$(RM) -rf ethr-*
+	$(RM) -rf ethr
 	dh_auto_clean
 
 override_dh_auto_build:

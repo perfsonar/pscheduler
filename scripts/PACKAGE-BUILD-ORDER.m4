@@ -127,7 +127,9 @@ ifelse(FAMILY/MAJOR,REDHAT/8,owamp)			# TODO: Building temporarily for EL8
 paris-traceroute
 random-string
 # No good support for this on Debian 9 or on arm64 and ppc64el
-ifelse(FAMILY/MAJOR,Debian/9,,
+# TODO: Doesn't build properly anywhere on Debian.
+ifelse(FAMILY,Debian,,
+       FAMILY/MAJOR,Debian/9,,
        FAMILY/ARCH,Debian/arm64,,
        FAMILY/ARCH,Debian/ppc64el,,
        s3-benchmark)
@@ -159,7 +161,9 @@ pscheduler-test-netreach		--bundle extras
 pscheduler-test-throughput
 pscheduler-test-rtt
 # No good support for this on Debian 9 or arm64 and ppc64el
-ifelse(FAMILY/MAJOR,Debian/9,,
+# TODO: Not built on Debian because of s3-benchmark; see above.
+ifelse(FAMILY,Debian,,
+       FAMILY/MAJOR,Debian/9,,
        FAMILY/ARCH,Debian/arm64,,
        FAMILY/ARCH,Debian/ppc64el,,
        pscheduler-test-s3throughput)
@@ -197,7 +201,9 @@ pscheduler-tool-psclock
 pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
 # No good support for this on Debian 9 or arm64 and ppc64el
-ifelse(FAMILY/MAJOR,Debian/9,,
+# TODO: Not build on debian because of s3-benchmark; see above.
+ifelse(FAMILY,Debian,,
+       FAMILY/MAJOR,Debian/9,,
        FAMILY/ARCH,Debian/arm64,,
        FAMILY/ARCH,Debian/ppc64el,,
        pscheduler-tool-s3-benchmark)
