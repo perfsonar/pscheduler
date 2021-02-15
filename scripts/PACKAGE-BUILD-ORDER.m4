@@ -115,8 +115,9 @@ httpd-wsgi-socket
 #
 drop-in
 
-# No good support for this on Debian arm64 and ppc64el
-ifelse(FAMILY/ARCH,Debian/arm64,,
+# No good support for this on Debian 9 or arm64 and ppc64el
+ifelse(FAMILY/MAJOR,Debian/9,,
+       FAMILY/ARCH,Debian/arm64,,
        FAMILY/ARCH,Debian/ppc64el,,
        ethr)
 
@@ -125,8 +126,9 @@ ifelse(FAMILY/MAJOR,REDHAT/8,iperf)			# EPEL dropped this for EL8
 ifelse(FAMILY/MAJOR,REDHAT/8,owamp)			# TODO: Building temporarily for EL8
 paris-traceroute
 random-string
-# No good support for this on Debian arm64 and ppc64el
-ifelse(FAMILY/ARCH,Debian/arm64,,
+# No good support for this on Debian 9 or on arm64 and ppc64el
+ifelse(FAMILY/MAJOR,Debian/9,,
+       FAMILY/ARCH,Debian/arm64,,
        FAMILY/ARCH,Debian/ppc64el,,
        s3-benchmark)
 
@@ -156,8 +158,9 @@ pscheduler-test-latencybg
 pscheduler-test-netreach		--bundle extras
 pscheduler-test-throughput
 pscheduler-test-rtt
-# No good support for this on Debian arm64 and ppc64el
-ifelse(FAMILY/ARCH,Debian/arm64,,
+# No good support for this on Debian 9 or arm64 and ppc64el
+ifelse(FAMILY/MAJOR,Debian/9,,
+       FAMILY/ARCH,Debian/arm64,,
        FAMILY/ARCH,Debian/ppc64el,,
        pscheduler-test-s3throughput)
 pscheduler-test-simplestream
@@ -175,8 +178,9 @@ pscheduler-tool-bwctltracepath		--bundle obsolete
 pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl			--bundle extras
 pscheduler-tool-dnspy
-# No good support for this on Debian arm64 and ppc64el
-ifelse(FAMILY/ARCH,Debian/arm64,,
+# No good support for this on Debian 9 or arm64 and ppc64el
+ifelse(FAMILY/MAJOR,Debian/9,,
+       FAMILY/ARCH,Debian/arm64,,
        FAMILY/ARCH,Debian/ppc64el,,
        pscheduler-tool-ethr)
 pscheduler-tool-globus			--bundle extras
@@ -192,8 +196,9 @@ pscheduler-tool-powstream
 pscheduler-tool-psclock
 pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
-# No good support for this on Debian arm64 and ppc64el
-ifelse(FAMILY/ARCH,Debian/arm64,,
+# No good support for this on Debian 9 or arm64 and ppc64el
+ifelse(FAMILY/MAJOR,Debian/9,,
+       FAMILY/ARCH,Debian/arm64,,
        FAMILY/ARCH,Debian/ppc64el,,
        pscheduler-tool-s3-benchmark)
 pscheduler-tool-simplestreamer
