@@ -1,0 +1,35 @@
+attrs (16.3.0-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Mon, 12 Dec 2016 02:49:57 +0200
+
+attrs (16.2.0-1) unstable; urgency=medium
+
+  * New upstream release.
+    - Doc build is now reproducible (closes: #833886).
+  * Fix API documentation build, and use the local copy of the Python
+    documentation (closes: #834639).
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Mon, 10 Oct 2016 01:09:18 +0200
+
+attrs (16.0.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Install doc-base entry.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Thu, 23 Jun 2016 19:50:19 +0200
+
+attrs (15.2.0-2) unstable; urgency=medium
+
+  * Fix debian/watch.
+  * Add attr-doc to Suggests: (closes: #816577).
+  * Bump Standards-Version to 3.9.8 (no changes).
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Wed, 27 Apr 2016 21:51:33 +0200
+
+attrs (15.2.0-1) unstable; urgency=low
+
+  * Initial upload (closes: #815387).
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Sun, 21 Feb 2016 08:22:06 +0200

@@ -1,0 +1,11 @@
+# see git-dpm(1) from git-dpm package
+f19260ca33c981b8835b7b03fa1a7aca8df036fe
+f19260ca33c981b8835b7b03fa1a7aca8df036fe
+f9f18163dabea726ad79ab693f42417448756a26
+f9f18163dabea726ad79ab693f42417448756a26
+python-attrs_16.3.0.orig.tar.gz
+11f397eb6ffb12ddc9a51d353ecab457919fe7ef
+53347
+debianTag="debian/%e%v"
+patchedTag="patched/%e%v"
+upstreamTag="upstream/%e%u"
