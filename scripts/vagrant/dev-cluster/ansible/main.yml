@@ -1,0 +1,244 @@
+#
+# Builder for pScheduler development box
+#
+
+# Prerequisites:
+# sudo pip install netaddr
+# ansible-galaxy collection install community.general
+#
+# Variables that must be passed in from outside:
+# TODO: There should be default variables for these.
+# cluster_size - Number of machines in the cluster
+# user
+# user_gecos
+# user_uid
+# user_gid
+# user_shell
+
+- name: Host Setup
+
+  hosts: all
+
+  vars:
+
+    # TODO: There should be default variables for these.
+    ip_address_base: 0
+
+    private_interface: eth1
+    private_cidr_v4: 10.0.0.0/24
+    private_cidr_v6: fc00::/64
+
+    # Derived values
+
+    private_v4: "{{ private_cidr_v4 | ipaddr(ip_address_base + (host_number | int())) }}"
+    private_v6: "{{ private_cidr_v6 | ipv6(ip_address_base + (host_number | int())) }}"
+
+  become: true
+  become_user: root
+
+  tasks:
+
+    #
+    # General system prep
+    #
+
+    - name: Hosts file
+      ansible.builtin.template:
+        src: etc-hosts.j2
+        dest: /etc/hosts
+        owner: root
+        group: root
+        mode: "0444"
+
+    - name: EPEL Repository
+      package:
+          name: epel-release
+      when: ansible_facts["os_family"] == "RedHat"
+
+    - name: Local workspace
+      file:
+        path: /local
+        state: directory
+        owner: root
+        group: root
+        mode: 0775
+
+
+    #
+    # Networking
+    #
+
+    - name: Validate IPv4 block
+      fail:
+        msg: "IPv4 block {{ private_cidr_v4 }} is invalid."
+      when: private_cidr_v4 | ipaddr == False
+
+    - name: Validate IPv4 block size
+      fail:
+        msg: "IPv4 block {{ private_cidr_v4 }} too small for {{ cluster_size }} hosts."
+      when: cluster_size > private_cidr_v4 | ipaddr("size") - 2 + ip_address_base
+
+    - name: Validate IPv6 block
+      fail:
+        msg: "IPv6 block {{ private_cidr_v6 }} is invalid."
+      when: private_cidr_v6 | ipv6 == False
+
+    - name: Validate IPv6 block size
+      fail:
+        msg: "IPv6 block {{ private_cidr_v6 }} too small for {{ cluster_size }} hosts."
+      when: cluster_size > private_cidr_v6 | ipv6("size") - 2 + ip_address_base
+
+    - name: NMCLI for CentOS 7
+      package:
+        name: NetworkManager-tui
+      when:
+        - ansible_facts["os_family"] == "CentOS"
+        - ansible_facts["distribution_major_version"] == 7
+
+    - name: NMCLI for CentOS 8
+      package:
+        name: NetworkManager
+      when:
+        - ansible_facts["os_family"] == "CentOS"
+        - ansible_facts["distribution_major_version"] == 8
+
+    - name: NMCLI for Debian/Ubuntu
+      package:
+        name: network-manager
+      when: ansible_facts["os_family"] == "Debian"
+
+    - name: Private network interface
+      nmcli:
+          ifname: "{{ private_interface }}"
+          conn_name: ethernet-private
+          type: ethernet
+          ip4: "{{ private_v4 }}"
+          ip6: "{{ private_v6 }}"
+          state: present  
+
+   
+    #
+    # User Account
+    #
+
+    # TODO: See if there's a clever way to do this with a loop.
+    
+    - name: Check for user variables
+      fail:
+        msg: "Variable user_gecos is not defined"
+      when:
+        - user is defined
+        - user_gecos is undefined
+
+    - name: Check for user_uid
+      fail:
+        msg: "Variable user_uid is not defined"
+      when:
+        - user is defined
+        - user_uid is undefined
+
+    - name: Check for user_gid
+      fail:
+        msg: "Variable user_gid is not defined"
+      when:
+        - user is defined
+        - user_uid is undefined
+
+    - name: User group
+      group:
+        name: "{{ user }}"
+        gid: "{{ user_uid }}"
+      when:
+        - user is defined
+        - user_uid is defined
+      
+    - name: User account
+      user:
+        name: "{{ user }}"
+        comment: "{{ user_gecos }}"
+        uid: "{{ user_uid }}"
+        group: "{{ user }}"
+      when:
+        - user is defined
+        - user_gecos is defined
+        - user_uid is defined
+
+    - name: User shell
+      user:
+        name: "{{ user }}"
+        shell: "{{ user_shell }}"
+      when:
+        - user is defined
+        - user_shell is defined
+      
+    - name: Local user workspace
+      file:
+        path: "/local/{{ user }}"
+        state: directory
+        recurse: yes
+        owner: "{{ user }}"
+        group: "{{ user }}"
+        mode: 0775
+      when: user is defined
+      
+    - name: Sudo package
+      package:
+        name: sudo
+      when: user is defined
+
+    - name: Passwordless sudo
+      template:
+        src: etc-sudoers.d.j2
+        dest: "/etc/sudoers.d/{{ user }}"
+        owner: root
+        group: root
+        mode: 0440
+      when: user is defined
+
+
+    #
+    # pScheduler-Specific Setup
+    #
+
+    - name: perfSONAR repository
+      package:
+          # TODO: URL and version shouldn't be hard-wired
+          name: "http://software.internet2.edu/rpms/el{{ ansible_facts['distribution_major_version'] }}/{{ ansible_architecture }}/latest/packages/perfSONAR-repo-0.10-1.noarch.rpm"
+      when: ansible_facts["os_family"] == "RedHat"
+
+
+    #
+    # Things required for development
+    #
+
+    - name: General development prerequisites
+      package:
+        name:
+          - git
+          - m4
+          - pylint
+
+    # RHEL/CentOS
+
+    - name: RedHat/CentOS development prerequisites
+      package:
+        name:
+          - redhat-lsb
+      when: ansible_facts["os_family"] == "RedHat"
+
+    # Debian/Ubuntu
+
+    - name: Debian/Ubuntu development prerequisites
+      package:
+        name:
+          - dpkg-dev
+          - devscripts
+          - lsb-release
+      when: ansible_facts["os_family"] == "Debian"
+
+    - name: Debian/Ubuntu sources
+      replace:
+        path: /etc/apt/sources.list
+        regexp: '^\s*#\s*(deb-src\s+.*)$'
+        replace: '\1'
+      when: ansible_facts["os_family"] == "Debian"

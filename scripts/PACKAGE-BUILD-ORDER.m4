@@ -180,7 +180,7 @@ pscheduler-tool-bwctliperf3		--bundle obsolete
 pscheduler-tool-bwctlping		--bundle obsolete
 pscheduler-tool-bwctltracepath		--bundle obsolete
 pscheduler-tool-bwctltraceroute		--bundle obsolete
-pscheduler-tool-curl			--bundle extras
+pscheduler-tool-curl
 pscheduler-tool-dnspy
 # No good support for this on Debian 9 or arm64 and ppc64el
 ifelse(FAMILY/MAJOR,Debian/9,,

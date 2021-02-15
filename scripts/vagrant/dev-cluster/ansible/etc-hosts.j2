@@ -1,0 +1,12 @@
+# {{ ansible_managed }}
+#
+# Hosts file for {{ host_prefix }}{{ host_number }}
+#
+
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+{% for item in range(1,vars['cluster_size']+1) %}
+{{ vars['private_cidr_v4'] | ipaddr(item) | ipaddr('address') }} {{ host_prefix }}{{ item }}
+{{ vars['private_cidr_v6'] | ipv6(item) | ipv6('address') }} {{ host_prefix }}{{ item }}v6
+{% endfor %}

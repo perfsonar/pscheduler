@@ -1,153 +1,78 @@
-=begin
+#
+# Vagrant Configuration for a pScheduler Development System
+#
+# See README.md for use and care.
+#
 
-Vagrant Configuration for a pScheduler Development System
+# Customize the following to taste:
 
+# Operating system.  These are the two favorites; see the "boxes" hash
+# below for a full list of valid values.
+os = "centos7"
+#os = "debian9"
 
-This Vagrantfile builds a VirtualBox cluster of VMs for pScheduler
-development with the following features:
+# Prefix for VM host names.  This should be unique across clusters on
+# the same host.
+host_prefix = "psdev"
 
- - User account to match the one that invoked Vagrant
- - User's home directory shared into the VM
- - User account given full, passwordless access to sudo
- - RPMs listed in ~/.packages pre-installed
- - Private network segment for the cluster
- - IPv4 network between VMs
- - IPv6 network between VMs (Not currently working)
- - VM hostnames available in /etc/hosts
- - Pre-created local storage area in /local/<username>
+# How many VMs to build
+cluster_size = 1
 
-
-Setup:
-
- - Edit the configurable items below.
- - Build the cluster with 'vagrant up'.
- - Log in with 'vagrant ssh -c "exec sudo su - `id -un`" psdev1'.
-
-Teardown:
-
- - Destroy the cluster with 'vagrant destroy -f'.
-
-
-Notes:
-
-On some systems, pScheduler has failed to build in the shared file
-system where the user's home directory resides but builds fine on the
-guest's "native" file space.  This is likely a problem with VirtualBox
-rather than Vagrant or this configuration and will be investigated
-further.  Until this is resolved, the recommended workaround is to do
-development done in /local/<username>.
-
-This works on Linux and OS X and has not been tested on Windows.
-
-Yum is used for package installation because it works on EL7 and EL7.
-
-=end
-
-# ------------------------------------------------------------------------------
-
-# Configure the following to taste:
-
-# Flavor of Linux (centos, oracle, rhel) and major version
-# NOTE: RHEL has not been tested.
-os_flavor = "centos"
-os_version = 7
-
-# Number of machines to build
-num_hosts = 1
-
-# Prefix for hostnames, which will be (e.g., psdev1, psdev2, etc.).
-# This needs to be unique among other running clusters.  If nil, the
-# prefix will be '#{os_flavor}#{os_version}-' (e.g., centos8-3)..
-host_prefix = nil
-
-# System configuration
+# Resources given to each VM
 cpus = 2
 memory = 2048
 
-# Start IP addresses here.  Starting at 0 makes Vagrant complain.
-ip_address_base = 10
+# Paths to Ansible playbooks to run after each system is configured
+additional_playbooks = [
+  # Example: "#{ENV['HOME']}/ansible/my-stuff.yml"
+]
 
-# Version of the perfSONAR repo to install (EL7 only)
-ps_repo_version="0.10-1"
 
 
 # ------------------------------------------------------------------------------
 # No user-serviceable parts below this point.
 # ------------------------------------------------------------------------------
 
-
 require 'etc'
 
 boxes = Hash[
-  "centos" => Hash[
-    7 => "bento/centos-7",
-    8 => "bento/centos-8"
-  ],
-  "oracle" => Hash[
-    7 => "generic/oracle7",
-    8 => "generic/oracle8"
-  ],
-  "rhel" => Hash[
-    7 => "generic/rhel7",
-    8 => "generic/rhel8"
-  ]
+  # RedHat and Derivatives
+  "centos7" => "bento/centos-7",
+  "centos8" => "bento/centos-8",
+  "oracle7" => "generic/oracle7",
+  "oracle8" => "generic/oracle8",
+  "rhel7" => "generic/rhel7",
+  "rhel8" => "generic/rhel8",
+  # Debian and Derivatives
+  "debian8" => "generic/debian8",
+  "debian9" => "generic/debian9",
+  "debian10" => "generic/debian10",
+  "ubuntu16" => "ubuntu/xenial64",
+  "ubuntu18" => "ubuntu/bionic64",
+  "ubuntu20" => "ubuntu/focal64",
 ]
 
-if not boxes.has_key?(os_flavor)
-  raise "OS '#{os_flavor}' is not supported."
+
+
+if not boxes.has_key?(os)
+  raise "OS '#{os}' is not supported."
 end
 
-if not boxes[os_flavor].has_key?(os_version)
-  raise "#{os_flavor} #{os_version} is not supported."
-end
-
-default_box = boxes[os_flavor][os_version]
-
-if host_prefix == nil
-  host_prefix = "#{os_flavor}#{os_version}-"
-end
+box = boxes[os]
 
 
 
 # Machines to build
-# Columns:
-#  1 - Hostname
-#  2 - Private network IPv4 (nil for none)
-#  3 - Private network IPv6 (nil for none)
-
-# TODO: Allow the names of the hosts to be specified as an array
-
-hosts = (1..num_hosts).map {
-              |num|
-        [
-          "#{host_prefix}#{num}",
-          "10.0.0.#{num + ip_address_base - 1}",
-          "fc00::#{sprintf("%d", num + ip_address_base - 1)}"
-        ]
-      }
 
 private_network = "pscheduler-#{host_prefix}"
 
-
-
-
-# Generate the host list for all of the machines
-
-hosts_v4 = hosts.select{|host, ipv4, ipv6| not ipv4.nil?}
-  .map{ |host, ipv4, ipv6| "#{ipv4} #{host}\n" }.join("")
-
-hosts_v6 = hosts.select{|host, ipv4, ipv6| not ipv6.nil?}
-  .map{ |host, ipv4, ipv6| "#{ipv6} #{host}v6\n"}.join("")
-
-etc_hosts = hosts_v4 + hosts_v6
-
-
-
 Vagrant.configure("2") do |config|
 
-  hosts.each do |name, ipv4, ipv6|
+  (1..cluster_size).each do |host_number|
 
-    config.vm.define name do |host|
+    host_name = "#{host_prefix}#{host_number}"
+
+    config.vm.define host_name do |host|
 
       if Vagrant.has_plugin?("vagrant-vbguest")
         # Don't allow upgrades; the box has what it has.
@@ -155,10 +80,11 @@ Vagrant.configure("2") do |config|
       end
 
 
-      #
-      # Basic configuration
-      #
+      # System
 
+      host.vm.box = box
+      host.vm.hostname = host_name
+      
       host.vm.provider "virtualbox" do |vbox|
         # The default E1000 has a security vulerability.
         vbox.default_nic_type = "82543GC"
@@ -166,172 +92,53 @@ Vagrant.configure("2") do |config|
         vbox.memory = memory
       end
 
-      host.vm.box = default_box
-      host.vm.hostname = name
-
-
-      #
       # Networking
-      #
+     
+      host.vm.network "private_network",
+                      # This is a dummy address that will be replaced by Ansible.
+                      ip: "10.222.222.222",
+                      netmask: "255.255.255.0",
+                      virtualbox__intnet: private_network
 
-      # Add private IPv4 and IPv6 interfaces if they're defined for
-      # this host.  Note that Vagrant is incapable of putting both IPs
-      # on the same interface, so there will be two.
+      # User Account
 
-      if not ipv4.nil?
-        host.vm.network "private_network",
-          ip: ipv4,
-          virtualbox__intnet: private_network
-      end
+      acct = Etc.getpwnam(Etc.getlogin)
+      home_dir = "/home/#{acct.name}"
 
-      if not ipv6.nil?
-        # TODO: This doesn't create a second interface and doesn't put
-        # the IP anywhere.
-        host.vm.network "private_network",
-          ip: ipv6,
-          virtualbox__intnet: private_network
-      end
-
-      # Populate the hosts file
-
-      host.vm.provision "#{name}-hosts", type: "shell", run: "once", inline: <<-SHELL
-        # This line forces execution by a specific shell
-        exec /bin/sh -c "sed -e 1,2d '$0' | /bin/sh"
-
-        set -e
-        fgrep localhost /etc/hosts > /etc/hosts.build
-        echo "#{etc_hosts}" >> /etc/hosts.build
-        mv -f /etc/hosts.build /etc/hosts
-      SHELL
-
-
-      #
-      # perfSONAR Development
-      #
-      # TODO: This should be Ansiblized or something like it so it's
-      # not Vagrant-specific.
-      #
-
-      host.vm.provision "#{name}-ps-devel", type: "shell", run: "once", inline: <<-SHELL
-        # This line forces execution by a specific shell
-        exec /bin/sh -c "sed -e 1,2d '$0' | /bin/sh"
-
-        set -e
-
-        #
-        # Install or Enable Other Repositories
-        #
-
-        # CentOS PowerTools
-        case "#{os_flavor}/#{os_version}" in
-            centos/8)
-                dnf config-manager --set-enabled PowerTools
-                ;;
-            *)
-                true
-                ;;
-        esac
-
-        # EPEL
-        case "#{os_flavor}/#{os_version}" in
-            centos/*|rhel/*)
-                yum -y install epel-release
-                true
-                ;;
-            oracle/*)
-                yum -y install "oracle-epel-release-el#{os_version}"
-                ;;
-            *)
-                true
-                ;;
-        esac
-
-        # perfSONAR
-        REPO_PREFIX="http://software.internet2.edu/rpms/el#{os_version}/$(uname -m)/latest/packages/perfSONAR-repo"
-
-        case "#{os_version}" in
-            7)
-                for REPO in "" extras
-                do
-                    if [ "${REPO}" != "" ]
-                    then
-                        REPO="${REPO}-"
-                    fi
-                    yum -y install "${REPO_PREFIX}-${REPO}#{ps_repo_version}.noarch.rpm"
-                done
-                ;;
-            *)
-                true
-                ;;
-        esac
-
-
-        # Things we need to build:
-        yum -y install \
-            git \
-            m4 \
-            make \
-            which \
-            \
-            man-pages man-db man
-    SHELL
-
-
-    #
-    # User Account, Shared Folders and Local Storage
-    #
-    # This happens last so all additional repositories are
-    # available.
-    #
-
-    acct = Etc.getpwnam(Etc.getlogin)
-    home_dir = "/home/#{acct.name}"
- 
-    host.vm.provision "#{name}-account", type: "shell", run: "once", inline: <<-SHELL
-        # This line forces execution by a specific shell
-        exec /bin/sh -c "sed -e 1,2d '$0' | /bin/sh"
-  
-        set -e
-  
-        mkdir -p '#{home_dir}'
-  
-        yum -y install '#{acct.shell}'
-
-        if id '#{acct.name}' > /dev/null 2>&1 
-        then
-            userdel --remove --force '#{acct.name}'
-        fi
-  
-        useradd \
-                --no-create-home \
-                --comment '#{acct.gecos}' \
-                --home-dir '#{home_dir}' \
-                --shell '#{acct.shell}' \
-                --uid '#{acct.uid}' \
-                '#{acct.name}'
-  
-        # Local Storage
-        install -d -D -o '#{acct.name}' -g '#{acct.name}' -m 770 '/local/#{acct.name}'
-  
-        # Grant frictionless sudo
-        SUDOERS="/etc/sudoers.d/#{acct.name}"
-        echo "#{acct.name} ${NEW_USER} ALL= (ALL) NOPASSWD:ALL" > "${SUDOERS}"
-        chmod 440 "${SUDOERS}"
-  
-        # Install anything the user's custom package list says it wants
-        if [ -e '#{home_dir}/.packages' ]
-        then
-            sed -e 's/^\s*#.*$//g; /^\s*$/d' '#{home_dir}/.packages' \
-                | xargs -r yum -y install
-        fi
-
-      SHELL
-    
       # Note that using the same owner and group is intentional.
       host.vm.synced_folder "#{acct.dir}/", home_dir,
-          automount: false,
-          mount_options: ["uid=#{acct.uid}", "gid=#{acct.uid}"],
-          SharedFoldersEnableSymlinksCreate: true
+                            automount: true,
+                            mount_options: ["uid=#{acct.uid}", "gid=#{acct.uid}"],
+                            SharedFoldersEnableSymlinksCreate: true
+
+      # Setup
+
+      ansible_extra_vars = {
+        cluster_size: cluster_size,
+        host_name: host_name,
+        host_number: host_number,
+        host_prefix: host_prefix,
+        user: acct.name,
+        user_gecos: acct.gecos,
+        user_uid: acct.uid,
+        user_gid: acct.gid,
+        user_shell: acct.shell
+      }
+
+      host.vm.provision "#{host_name}-ansible", type: "ansible", run: "always" do |ansible|
+        ansible.playbook = "ansible/main.yml"
+        ansible.verbose = true
+        ansible.extra_vars = ansible_extra_vars
+      end
+      
+      additional_playbooks.each do |playbook|
+        host.vm.provision "#{host_name}-ansible-#{playbook}", type: "ansible", run: "always" do |ansible|
+          ansible.playbook = playbook
+          ansible.verbose = true
+          ansible.extra_vars = ansible_extra_vars
+      end  # additional_playbooks.each
+
+      end  # (1..cluster_size).each
 
     end  # config.vm.define
 
