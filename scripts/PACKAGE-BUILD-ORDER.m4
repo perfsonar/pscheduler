@@ -67,7 +67,7 @@ jq
 # Python Modules
 
 ifelse(FAMILY/DISTRO/MAJOR,RedHat/Oracle/8,Cython)	# Only build this on OL8.
-python-attrs
+ifelse(FAMILY/MAJOR,Debian/9,python-attrs)              # Needed here only.
 ifelse(FAMILY/MAJOR,RedHat/7,python-daemon)		# EL7 needs this; EL8 is up to date
 ifelse(FAMILY/MAJOR,RedHat/7,python-isodate)		# EL7 needs this; EL8 is up to date
 ifelse(FAMILY/MAJOR,RedHat/8,python-itsdangerous)	# EL8 has this, but an older version
