@@ -42,3 +42,10 @@ cbic cbdc cbrc:
 	$(MAKE) $(SPEC)
 	$(MAKE) -f $(PACKAGE_MAKEFILE) $@
 	$(MAKE) clean
+
+
+
+# This is to keep the global uninstall target happy.
+uninstall:
+	@echo Nothing to do here.
+

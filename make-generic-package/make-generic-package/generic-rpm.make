@@ -181,6 +181,11 @@ install:: $(TMP_DIR)
 	fi
 
 
+
+uninstall::
+	rpm -q --specfile "$(SPEC)" | xargs sudo yum -y erase
+
+
 # Placeholder for running unit tests.
 test::
 	@true

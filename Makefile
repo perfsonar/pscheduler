@@ -41,6 +41,9 @@ TO_CLEAN += $(PRODUCTS)
 build: $(PRODUCTS)
 
 
+
+# TODO: These targets are still RPM-specific
+
 # The three makes here install the things that are needed to RPM specs
 # to be read properly.  They're uninstalled at the end.
 uninstall:
@@ -52,7 +55,9 @@ uninstall:
 fresh: uninstall build
 
 clean:
-	scripts/clean-all
+	$(MAKE) -C rpm-with-deps clean build install clean
+	$(MAKE) -C make-generic-package clean build install clean
+	scripts/build-all $@
 	$(MAKE) -C docs $@
 	rm -rf $(TO_CLEAN)
 	find . -name '*~' | xargs rm -f
