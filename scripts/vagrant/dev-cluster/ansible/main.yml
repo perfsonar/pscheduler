@@ -33,6 +33,8 @@
     private_v4: "{{ private_cidr_v4 | ipaddr(ip_address_base + (host_number | int())) }}"
     private_v6: "{{ private_cidr_v6 | ipv6(ip_address_base + (host_number | int())) }}"
 
+    redhat_families: [ "RedHat", "AlmaLinux" ]
+
   become: true
   become_user: root
 
@@ -50,11 +52,6 @@
         group: root
         mode: "0444"
 
-    - name: EPEL Repository
-      package:
-          name: epel-release
-      when: ansible_facts["os_family"] == "RedHat"
-
     - name: Local workspace
       file:
         path: /local
@@ -62,6 +59,42 @@
         owner: root
         group: root
         mode: 0775
+
+
+    #
+    # Repositories and Packages
+    #
+
+    # RedHat
+
+    - name: EPEL Repository
+      package:
+          name: epel-release
+      when: ansible_facts["os_family"] in redhat_families
+
+    - name: Upgrade all packages
+      yum:
+        name: '*'
+        update_cache: yes
+        state: latest
+      when: ansible_facts["os_family"] in redhat_families
+
+    # Debian
+
+    - name: Update Debian cache
+      apt:
+        update_cache: yes
+        force_apt_get: yes
+        cache_valid_time: 3600
+      when: ansible_facts["os_family"] == "Debian"
+
+    - name: Update Debian packages
+      apt:
+        upgrade: dist
+        force_apt_get: yes
+      when: ansible_facts["os_family"] == "Debian"
+
+      
 
 
     #
@@ -204,7 +237,7 @@
       package:
           # TODO: URL and version shouldn't be hard-wired
           name: "http://software.internet2.edu/rpms/el{{ ansible_facts['distribution_major_version'] }}/{{ ansible_architecture }}/latest/packages/perfSONAR-repo-0.10-1.noarch.rpm"
-      when: ansible_facts["os_family"] == "RedHat"
+      when: ansible_facts["os_family"] in redhat_families
 
 
     #
@@ -215,8 +248,10 @@
       package:
         name:
           - git
+          - make
           - m4
           - pylint
+          - rsync
 
     # RHEL/CentOS
 
@@ -224,7 +259,8 @@
       package:
         name:
           - redhat-lsb
-      when: ansible_facts["os_family"] == "RedHat"
+          - rpmdevtools
+      when: ansible_facts["os_family"] in redhat_families
 
     # Debian/Ubuntu
 
@@ -241,4 +277,15 @@
         path: /etc/apt/sources.list
         regexp: '^\s*#\s*(deb-src\s+.*)$'
         replace: '\1'
+      when: ansible_facts["os_family"] == "Debian"
+
+
+    #
+    # Final cleanup
+    #
+
+    - name: Final cleanup for Debian/Ubuntu
+      apt:
+        autoremove: yes
+        purge: yes
       when: ansible_facts["os_family"] == "Debian"
