@@ -158,13 +158,27 @@ dump::
 	fi
 
 
-install::
+
+# Install the built packages.  This is done in two phases so it can be
+# done with YUM (or DNF): Reinstall anything that's already installed,
+# then install anything that isn't.  This is the YUMmy equivalent of
+# rpm -Uvh.
+
+INSTALL_INSTALLED=$(TMP_DIR)/install-installed
+INSTALL_NOT_INSTALLED=$(TMP_DIR)/install-not-installed
+install:: $(TMP_DIR)
+	rm -f "$(INSTALL_INSTALLED)" "$(INSTALL_NOT_INSTALLED)"
 	@for PACKAGE in `find $(BUILD_RPMS) -name '*.rpm'`; do \
 	    SHORT=`basename "$${PACKAGE}" | sed -e 's/.rpm$$//'` ; \
-	    rpm --quiet -q "$${SHORT}" && OP="reinstall" || OP="install" ; \
-	    echo "$${SHORT} will be $${OP}ed" ; \
-	    sudo yum -y "$${OP}" "$${PACKAGE}" ; \
+	    rpm --quiet -q "$${SHORT}" && LIST_OUT="$(INSTALL_INSTALLED)" || LIST_OUT="$(INSTALL_NOT_INSTALLED)" ; \
+	    echo "$${PACKAGE}" >> "$${LIST_OUT}" ; \
 	done
+	@if [ -s "$(INSTALL_INSTALLED)" ]  ; then \
+		xargs sudo yum -y reinstall < "$(INSTALL_INSTALLED)" ; \
+	fi
+	@if [ -s "$(INSTALL_NOT_INSTALLED)" ] ; then \
+		xargs sudo yum -y install < "$(INSTALL_NOT_INSTALLED)" ; \
+	fi
 
 
 # Placeholder for running unit tests.

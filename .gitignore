@@ -9,6 +9,8 @@
 BUILD
 PRODUCTS
 LOG
+TMP
+
 
 # TODO: These shouldn't be needed anymore.
 */rpmbuild

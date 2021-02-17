@@ -17,7 +17,7 @@ ifeq "$(DISTRO_FAMILY)" ""
 $(error "Unable to determine Linux distribution.  (Is lsb_releases installed?)")
 endif
 
-ifneq "$(filter CentOS Fedora,$(DISTRO_FAMILY))" ""
+ifneq "$(filter AlmaLinux CentOS Fedora,$(DISTRO_FAMILY))" ""
 PACKAGE_FORMAT := rpm
 endif
 

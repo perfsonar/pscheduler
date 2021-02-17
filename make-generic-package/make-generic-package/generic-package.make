@@ -20,7 +20,7 @@ ifeq "$(DISTRO_FAMILY)" ""
 $(error "Unable to determine Linux distribution.  (Is lsb_releases installed?)")
 endif
 
-ifneq "$(filter CentOS Fedora,$(DISTRO_FAMILY))" ""
+ifneq "$(filter AlmaLinux CentOS Fedora,$(DISTRO_FAMILY))" ""
 PACKAGE_FORMAT := rpm
 endif
 
@@ -55,6 +55,12 @@ TO_CLEAN += $(PRODUCTS_DIR)
 # Build log
 BUILD_LOG := $(TOP)/LOG
 TO_CLEAN += $(BUILD_LOG)
+
+# A place to create temporary files
+TMP_DIR := $(TOP)/TMP
+$(TMP_DIR):
+	mkdir -p $@
+TO_CLEAN += $(TMP_DIR)
 
 
 
