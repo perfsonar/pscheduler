@@ -40,109 +40,109 @@ dnl
 #
 # Everything else depends on these.
 #
-### ifelse(PACKAGING,rpm,rpm-with-deps)
-### make-generic-package
-### 
-### # Build this early.  Some of the packages using PostgreSQL depend on
-### # knowing what version is required to avoid the "Requires: postgresql"
-### # trap we fell into with RH6.
-### ifelse(PACKAGING,rpm,pscheduler-rpm)
-### 
-### #
-### # DEVELOPMENT, LIBRARIES AND UTILITIES
-### #
-### 
-### # PostgreSQL and Additions
-### postgresql
-### postgresql-init
-### postgresql-load
-### 
-### 
-### 
-### ifelse(DISTRO/MAJOR,Oracle/8,oniguruma)			# Only build this on OL8.  EL8 has it.
-### 
-### # Our version of jq has patches. replace when patches accepted upstream.
-### jq
-### 
-### # Python Modules
-### 
-### ifelse(FAMILY/DISTRO/MAJOR,RedHat/Oracle/8,Cython)	# Only build this on OL8.
-### ifelse(FAMILY/MAJOR,Debian/9,python-attrs)              # Needed here only.
-### ifelse(FAMILY/MAJOR,RedHat/7,python-daemon)		# EL7 needs this; EL8 is up to date
-### ifelse(FAMILY/MAJOR,RedHat/7,python-isodate)		# EL7 needs this; EL8 is up to date
-### ifelse(FAMILY/MAJOR,RedHat/8,python-itsdangerous)	# EL8 has this, but an older version
-### python-pyrsistent
-### python-jsonschema
-### python-kafka
-### 
-### # Used by pscheduler-archiver-esmond
-### # EL8's is 1.58, ours is/was 1.59.  Commits to the project show only
-### # cosmetic changes for the later version.
-### ifelse(DISTRO/MAJOR,CentOS/7,python-memcached)
-### 
-### python-netifaces
-### ifelse(DISTRO/MAJOR,CentOS/7,python-ntplib)		# EL8 has this, ours is newer
-### python-parse-crontab
-### python-py-radix
-### python-pyjq
-### python-tzlocal
-### python-vcversioner
-### python-pyasn1						# EL8 has this, ours is newer
-### python-pyasn1-modules
-### python-werkzeug						# EL8 has this, ours is newer
-### python-flask						# EL8 has this, ours is newer
-### 
-### # TODO: EPEL8 has a newer version that doesn't install.
-### # See https://bugzilla.redhat.com/show_bug.cgi?id=1838402
-### python-pysnmp
-### 
-### # JSON Tools
-### python-jsontemplate
-### 
-### 
-### # Home-grown Python Modules
-### python-icmperror
-### 
-### 
-### # Apache add-ons
-### httpd-firewall
-### mod_wsgi
-### httpd-wsgi-socket
-### 
-### 
-### #
-### # Utility and Tool programs
-### #
-### drop-in
-### 
-### # No good support for this on Debian 9 or arm64 and ppc64el
-### ifelse(FAMILY/MAJOR,Debian/9,,
-###        FAMILY/ARCH,Debian/arm64,,
-###        FAMILY/ARCH,Debian/ppc64el,,
-###        ethr)
-### 
-### ifelse(FAMILY/MAJOR,REDHAT/8,I2util)			# TODO: Building temporarily for EL8; required for owamp
-### ifelse(FAMILY/MAJOR,REDHAT/8,iperf)			# EPEL dropped this for EL8
-### ifelse(FAMILY/MAJOR,REDHAT/8,owamp)			# TODO: Building temporarily for EL8
-### paris-traceroute
-### random-string
-### # No good support for this on Debian 9 or on arm64 and ppc64el
-### # TODO: Doesn't build properly anywhere on Debian.
-### ifelse(FAMILY,Debian,,
-###        FAMILY/MAJOR,Debian/9,,
-###        FAMILY/ARCH,Debian/arm64,,
-###        FAMILY/ARCH,Debian/ppc64el,,
-###        s3-benchmark)
-### 
-### #
-### # PSCHEDULER CORE PARTS
-### #
-### 
-### pscheduler-account
-### pscheduler-jq-library
-### python-pscheduler
-### pscheduler-core
-### pscheduler-server
+ifelse(PACKAGING,rpm,rpm-with-deps)
+make-generic-package
+
+# Build this early.  Some of the packages using PostgreSQL depend on
+# knowing what version is required to avoid the "Requires: postgresql"
+# trap we fell into with RH6.
+ifelse(PACKAGING,rpm,pscheduler-rpm)
+
+#
+# DEVELOPMENT, LIBRARIES AND UTILITIES
+#
+
+# PostgreSQL and Additions
+postgresql
+postgresql-init
+postgresql-load
+
+
+
+ifelse(DISTRO/MAJOR,Oracle/8,oniguruma)			# Only build this on OL8.  EL8 has it.
+
+# Our version of jq has patches. replace when patches accepted upstream.
+jq
+
+# Python Modules
+
+ifelse(FAMILY/DISTRO/MAJOR,RedHat/Oracle/8,Cython)	# Only build this on OL8.
+ifelse(FAMILY/MAJOR,Debian/9,python-attrs)              # Needed here only.
+ifelse(FAMILY/MAJOR,RedHat/7,python-daemon)		# EL7 needs this; EL8 is up to date
+ifelse(FAMILY/MAJOR,RedHat/7,python-isodate)		# EL7 needs this; EL8 is up to date
+ifelse(FAMILY/MAJOR,RedHat/8,python-itsdangerous)	# EL8 has this, but an older version
+python-pyrsistent
+python-jsonschema
+python-kafka
+
+# Used by pscheduler-archiver-esmond
+# EL8's is 1.58, ours is/was 1.59.  Commits to the project show only
+# cosmetic changes for the later version.
+ifelse(DISTRO/MAJOR,CentOS/7,python-memcached)
+
+python-netifaces
+ifelse(DISTRO/MAJOR,CentOS/7,python-ntplib)		# EL8 has this, ours is newer
+python-parse-crontab
+python-py-radix
+python-pyjq
+python-tzlocal
+python-vcversioner
+python-pyasn1						# EL8 has this, ours is newer
+python-pyasn1-modules
+python-werkzeug						# EL8 has this, ours is newer
+python-flask						# EL8 has this, ours is newer
+
+# TODO: EPEL8 has a newer version that doesn't install.
+# See https://bugzilla.redhat.com/show_bug.cgi?id=1838402
+python-pysnmp
+
+# JSON Tools
+python-jsontemplate
+
+
+# Home-grown Python Modules
+python-icmperror
+
+
+# Apache add-ons
+httpd-firewall
+mod_wsgi
+httpd-wsgi-socket
+
+
+#
+# Utility and Tool programs
+#
+drop-in
+
+# No good support for this on Debian 9 or arm64 and ppc64el
+ifelse(FAMILY/MAJOR,Debian/9,,
+       FAMILY/ARCH,Debian/arm64,,
+       FAMILY/ARCH,Debian/ppc64el,,
+       ethr)
+
+ifelse(FAMILY/MAJOR,REDHAT/8,I2util)			# TODO: Building temporarily for EL8; required for owamp
+ifelse(FAMILY/MAJOR,REDHAT/8,iperf)			# EPEL dropped this for EL8
+ifelse(FAMILY/MAJOR,REDHAT/8,owamp)			# TODO: Building temporarily for EL8
+paris-traceroute
+random-string
+# No good support for this on Debian 9 or on arm64 and ppc64el
+# TODO: Doesn't build properly anywhere on Debian.
+ifelse(FAMILY,Debian,,
+       FAMILY/MAJOR,Debian/9,,
+       FAMILY/ARCH,Debian/arm64,,
+       FAMILY/ARCH,Debian/ppc64el,,
+       s3-benchmark)
+
+#
+# PSCHEDULER CORE PARTS
+#
+
+pscheduler-account
+pscheduler-jq-library
+python-pscheduler
+pscheduler-core
+pscheduler-server
 
 #
 # PSCHEDULER PLUG-INS
