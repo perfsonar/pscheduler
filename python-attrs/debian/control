@@ -8,12 +8,6 @@ Build-Depends:
  dh-python,
  pypy,
  pypy-setuptools,
- python-all,
- python-hypothesis,
- python-pytest,
- python-setuptools,
- python-sphinx-rtd-theme,
- python-zope.interface,
  python3-all,
  python3-doc,
  python3-hypothesis,
@@ -25,24 +19,6 @@ Standards-Version: 3.9.8
 Homepage: https://attrs.readthedocs.org/
 Vcs-Git: https://anonscm.debian.org/git/python-modules/packages/python-attrs.git
 Vcs-Browser: https://anonscm.debian.org/cgit/python-modules/packages/python-attrs.git
-
-Package: python-attr
-Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}
-Recommends: ${python:Recommends}
-Suggests: python-attr-doc, ${python:Suggests}
-Description: Attributes without boilerplate (Python 2)
- attrs is an MIT-licensed Python package with class decorators that ease the
- chores of implementing the most common attribute-related object protocols.
- .
- You just specify the attributes to work with and attrs gives you:
-   - a nice human-readable __repr__,
-   - a complete set of comparison methods,
-   - an initializer,
-   - and much more
- without writing dull boilerplate code again and again.
- .
- This package contains attrs packged for Python 2.
 
 Package: python3-attr
 Architecture: all

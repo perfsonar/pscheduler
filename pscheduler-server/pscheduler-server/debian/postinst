@@ -134,6 +134,7 @@ case "$1" in
                                       /etc/pscheduler/database/pgpassfile
             )
         fi
+	pscheduler internal db-change-password
 
         # handle large number of pscheduler connections
         if grep -q '^max_connections = 100[^0-9]' /etc/postgresql/*/main/postgresql.conf; then

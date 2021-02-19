@@ -20,6 +20,7 @@ endif
 ifneq "$(words $(DEBIAN_DIR))" "1"
 $(error "Found more than one debian directory.  There can be only one.")
 endif
+DEBIAN_DIR_PARENT := $(dir $(DEBIAN_DIR))
 
 
 CONTROL := $(DEBIAN_DIR)/control
@@ -66,6 +67,10 @@ $(BUILD_UNPACK_DIR): $(BUILD_DIR)
 		(cd '$(SOURCE)' && tar cf - .) | (cd '$@' && tar xpf -) ; \
 		rm -rf '$(BUILD_DEBIAN_DIR)' ; \
 		cp -r '$(DEBIAN_DIR)' '$(BUILD_DEBIAN_DIR)' ; \
+	elif [ "$(DEBIAN_DIR_PARENT)" != "$(dir $(BUILD_DIR))" ] ; \
+	then \
+		echo "Building from source directory $(DEBIAN_DIR_PARENT)." ; \
+		(cd '$(DEBIAN_DIR_PARENT)' && tar cf - .) | (cd '$@' && tar xpf -) ; \
 	else \
 		echo "No tarball or source directory." ; \
 		cp -r '$(DEBIAN_DIR)' '$(BUILD_DEBIAN_DIR)' ; \
@@ -127,7 +132,9 @@ _built:
 install: _built
 	@find '$(PRODUCTS_DIR)' -name "*.deb" \
 		| xargs sudo dpkg -i
-	@yes | sudo apt install -f 
+
+# TODO: See if this is actually necessary.
+#	@yes | sudo apt install -f
 
 
 dump: _built
