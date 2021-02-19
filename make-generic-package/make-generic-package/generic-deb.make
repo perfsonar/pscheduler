@@ -114,8 +114,15 @@ build: $(BUILD_UNPACK_DIR) $(TO_BUILD) $(PRODUCTS_DIR)
 			--tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
 			'debian/control'
 	@printf "\nBuild Package $(SOURCE) $(VERSION)\n\n"
-	cd $(BUILD_UNPACK_DIR) && dpkg-buildpackage --build=any,all \
-		--root-command=fakeroot --no-sign 2>&1
+	(((( \
+		cd $(BUILD_UNPACK_DIR) && dpkg-buildpackage --build=any,all \
+			--root-command=fakeroot --no-sign 2>&1 ; \
+		echo $$? >&3 \
+	) \
+	| tee $(BUILD_LOG) >&4) 3>&1) \
+	| (read XS; exit $$XS) \
+	) 4>&1
+
 	find '$(BUILD_DIR)' \
 		'(' -name "*.deb" -o -name "*.changes" -o -name "*.buildinfo" ')' \
 		-exec cp {} '$(PRODUCTS_DIR)' ';'
