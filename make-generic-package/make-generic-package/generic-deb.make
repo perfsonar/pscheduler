@@ -51,6 +51,7 @@ BUILD_UNPACK_DIR := $(BUILD_DIR)/$(SOURCE)
 BUILD_DEBIAN_DIR := $(BUILD_UNPACK_DIR)/debian
 
 $(BUILD_UNPACK_DIR): $(BUILD_DIR)
+	rm -rf '$@'
 	mkdir -p '$@'
 	@set -e && if [ -e "$(SOURCE_TARBALL)" ] ; \
 	then \
