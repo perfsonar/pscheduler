@@ -79,23 +79,45 @@ $(BUILD_UNPACK_DIR): $(BUILD_DIR)
 
 
 
+#
 # Patches
+#
+# See note below about search path.
+#
 
-# TODO: Need to handle global and Debian-only patches
-
-PATCHES_SERIES := $(DEBIAN_DIR)/patches/series
-PATCHES := $(shell [ -e '$(PATCHES_SERIES)' ] && sed -e '/^\s*\#/d' '$(PATCHES_SERIES)')
+DEBIAN_PATCHES_DIR := $(DEBIAN_DIR)/patches
+DEBIAN_PATCHES_SERIES := $(DEBIAN_PATCHES_DIR)/series
+PATCHES := $(shell [ -e '$(DEBIAN_PATCHES_SERIES)' ] && sed -e '/^\s*\#/d' '$(DEBIAN_PATCHES_SERIES)')
 BUILD_PATCHES_DIR := $(BUILD_DEBIAN_DIR)/patches
+BUILD_PATCHES_SERIES := $(BUILD_PATCHES_DIR)/series
 BUILD_PATCHES := $(PATCHES:%=$(BUILD_PATCHES_DIR)/%)
 
-$(BUILD_PATCHES_DIR):
-	mkdir -p $@
-
-$(BUILD_PATCHES_DIR)/%: %
-	cp -f $< $@
-
 ifneq "$(PATCHES)" ""
-TO_BUILD += $(BUILD_PATCHES_DIR) $(BUILD_PATCHES)
+
+#export QUILT_PATCHES=$(DEBIAN_PATCHES_DIR)
+
+FORCE:
+
+$(BUILD_PATCHES_DIR): FORCE
+	rm -rf '$@'
+	mkdir -p '$@'
+
+$(BUILD_PATCHES_SERIES): $(BUILD_PATCHES_DIR) $(DEBIAN_PATCHES_SERIES)
+	cp '$(DEBIAN_PATCHES_SERIES)' '$@'
+	@echo "Installing patches in $(BUILD_PATCHES_DIR):"
+
+# This searches for patches first in Debian's patch directory
+# $(DEBIAN_PATCHES_DIR) and then in the package-global
+# $(PATCH_DIRECTORY), allowing Debian to add its own patches or
+# override others.
+$(BUILD_PATCHES_DIR)/%: $(BUILD_PATCHES_SERIES)
+	@[ -e "$(DEBIAN_PATCHES_DIR)/$(notdir $@)" ] && cp -v "$(DEBIAN_PATCHES_DIR)/$(notdir $@)" '$@' || true
+	@[ -e "$(PATCHES_DIR)/$(notdir $@)" ] && cp -v "$(PATCHES_DIR)/$(notdir $@)" '$@' || true
+	@[ ! -e "$@" ] || echo "  $(notdir $@)"
+	@[ -e "$@" ] || (echo "Can't find patch $(notdir $@)" && false)
+
+
+TO_BUILD += $(PATCHES:%=$(BUILD_PATCHES_DIR)/%)
 endif
 
 

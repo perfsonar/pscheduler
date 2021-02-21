@@ -16,8 +16,15 @@ trap cleanup EXIT
 
 . "${WHEREAMI}/os-info"
 
-
-${WHEREAMI}/build-order > "${TMPBASE}.list"
+if [ "$1" = "--start-with" ]
+then
+    START_WITH=$2
+    ${WHEREAMI}/build-order \
+	| sed -n "/^${START_WITH}\$/,\$p" \
+	> "${TMPBASE}.list"
+else
+    ${WHEREAMI}/build-order > "${TMPBASE}.list"
+fi
 
 FOUND_LIST="${TMPBASE}.found"
 

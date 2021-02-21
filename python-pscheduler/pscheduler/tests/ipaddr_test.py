@@ -43,7 +43,8 @@ class TestIpaddr(PschedTestBase):
         self.assertEqual(ip_addr_version('::1/32'), (6, '::1'))
         self.assertEqual(ip_addr_version('::1/32', resolve=False), (6, '::1'))
 
-        self.assertEqual(ip_addr_version('::1/quack'), (None, 'Name or service not known'))
+        # Different systems come up with different messages, so just check None/not-None
+        self.assertEqual(ip_addr_version('::1/quack')[0], None)
         self.assertEqual(ip_addr_version('::1/quack', resolve=False), (None, None))
 
         # By Address Family
@@ -63,7 +64,8 @@ class TestIpaddr(PschedTestBase):
         self.assertEqual(ip_addr_version('::1/32', family=True), (socket.AF_INET6, '::1'))
         self.assertEqual(ip_addr_version('::1/32', resolve=False, family=True), (socket.AF_INET6, '::1'))
 
-        self.assertEqual(ip_addr_version('::1/quack', family=True),(None, 'Name or service not known'))
+        # Different systems come up with different messages, so just check None/not-None
+        self.assertEqual(ip_addr_version('::1/quack', family=True)[0],None)
         self.assertEqual(ip_addr_version('::1/quack', resolve=False, family=True), (None, None))
 
         # Restricted to one version of an IP or another

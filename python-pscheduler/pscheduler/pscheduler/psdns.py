@@ -128,7 +128,7 @@ def dns_resolve_reverse(ip,
         except socket.herror:
             timing_queue.put(None)
         except socket.gaierror as ex:
-            if ex.errno != -2:
+            if ex.errno not in [-2, -5]:
                 raise ex
             timing_queue.put(None)
 

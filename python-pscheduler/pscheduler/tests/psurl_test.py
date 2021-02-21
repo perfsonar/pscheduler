@@ -59,13 +59,9 @@ class TestPsurl(PschedTestBase):
             (400, 'bind failed with errno 99: Cannot assign requested address')
         )
 
-        # This returns varied error strings; we just care that the beginning is right.
+        # This returns varied error strings; we just care that the status is right.
         (status, message) = url_get("http://not.a.valid.host", bind="127.0.0.1", throw=False)
-        self.assertEqual(
-            (status, message.startswith("Could not resolve host:")),
-            (400, True)
-        )
-
+        self.assertEqual(status, 400)
 
     def test_url_put(self):
         # TODO: Would need a web server to test this

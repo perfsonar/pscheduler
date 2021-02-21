@@ -38,6 +38,10 @@ endif
 
 TOP := $(CURDIR)
 
+# Where patches live
+
+PATCHES_DIR := $(TOP)
+
 # Where the build happens
 BUILD_DIR := ./BUILD
 $(BUILD_DIR)::

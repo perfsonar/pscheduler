@@ -1,0 +1,43 @@
+diff -rupN a/Makefile pscheduler-b/Makefile
+--- a/Makefile	2021-02-20 18:19:54.314335616 +0000
++++ b/Makefile	2021-02-20 18:21:19.674335616 +0000
+@@ -4,24 +4,14 @@
+ 
+ default: build
+ 
+-
+-file-setup:
+-ifndef CLASSES
+-	@echo No CLASSES specified for build
+-	@false
+-endif
+-	find pscheduler -type f -name "*.py" \
+-	| xargs sed -i -e 's|__CLASSES__|$(CLASSES)|'
+-
+-
+-test: file-setup
++test:
+ 	python3 -m nose
+ 
+-test-coverage: file-setup
++test-coverage:
+ 	python3 -m nose --with-coverage --cover-package rabbitmq
+ 
+ 
+-build: file-setup test
++build: test
+ 	python3 setup.py build
+ 
+ clean:
+diff -rupN a/pscheduler/plugins.py pscheduler-b/pscheduler/plugins.py
+--- a/pscheduler/plugins.py	2021-02-20 18:19:54.314335616 +0000
++++ b/pscheduler/plugins.py	2021-02-20 18:20:24.830335616 +0000
+@@ -7,7 +7,7 @@ import os
+ from .program import run_program
+ 
+ # The absolute here path was filled in by the build process.
+-__CLASSES = os.path.abspath("__CLASSES__")
++__CLASSES = os.path.abspath("/usr/lib/pscheduler/classes")
+ 
+ 
+ def plugin_method_path(pltype, which, method):
