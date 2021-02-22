@@ -164,11 +164,8 @@ install: _built
 	@find '$(PRODUCTS_DIR)' -name '*.deb' | sed -e 's/^/  /'
 	@echo
 	@find '$(PRODUCTS_DIR)' -name '*.deb' \
-		| xargs sudo apt install
-
-
-# TODO: See if this is actually necessary.
-#	@yes | sudo apt install -f
+		| xargs sudo dpkg -i
+	@yes | sudo apt install -f
 
 
 dump: _built
