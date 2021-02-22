@@ -26,6 +26,8 @@ ROOT ?= $(CURDIR)/debian/$(DEB_SOURCE_PACKAGE)
 PYTHON := $(shell which python3)
 
 
+# TODO: The database build needs to check syntax, which requires Pg as
+# a build dependency.
 override_dh_auto_build:
 	make -C daemons \
 		CONFIGDIR=/etc/pscheduler/daemons \
