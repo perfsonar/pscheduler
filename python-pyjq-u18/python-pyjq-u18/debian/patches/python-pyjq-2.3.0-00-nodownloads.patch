@@ -1,6 +1,6 @@
---- pyjq-2.3.0.orig/setup.py	2019-05-08 14:37:12.330653000 +0000
-+++ pyjq-2.3.0/setup.py	2019-05-08 14:38:12.774895000 +0000
-@@ -7,60 +7,23 @@
+--- python-pyjq-u18.orig/setup.py	2021-01-27 19:29:06.563508000 +0000
++++ python-pyjq-u18/setup.py	2021-01-27 19:31:18.641317000 +0000
+@@ -7,59 +7,21 @@
  from os.path import join, dirname, abspath
  import platform
  
@@ -15,7 +15,6 @@
  from setuptools.extension import Extension
  from setuptools.command.build_ext import _build_ext
  
- long_description = io.open('README.rst', encoding='utf-8').read()
  
 -dependencies_dir_path = join(abspath(dirname(__file__)), "dependencies")
 -
@@ -27,7 +26,7 @@
 -jq_install_path = join(dependencies_dir_path, "jq_install")
 -jq_source_path = join(dependencies_dir_path, "jq-jq-1.5")
 -
- 
+-
  class build_ext(_build_ext):
      def run(self):
 -        self._build_oniguruma()
@@ -67,7 +66,7 @@
      def _build_lib(self, lib_dir, commands):
          macosx_deployment_target = sysconfig.get_config_var("MACOSX_DEPLOYMENT_TARGET")
          if macosx_deployment_target:
-@@ -69,25 +32,13 @@
+@@ -68,30 +30,17 @@
          for command in commands:
              subprocess.check_call(command, cwd=lib_dir)
  
@@ -93,11 +92,8 @@
  )
  
  setup(
-@@ -103,7 +54,6 @@
-     author='OMOTO Kenji',
-     url='http://github.com/doloopwhile/pyjq',
-     license='MIT License',
+     test_suite='test_pyjq',
+     ext_modules=[pyjq],
+     cmdclass={"build_ext": build_ext},
 -    package_data={'': [onig_tarball_path, jq_tarball_path]},
-     classifiers=[
-         'Development Status :: 5 - Production/Stable',
-         'Intended Audience :: Developers',
+ )
