@@ -1,21 +1,8 @@
---- pyjq-2.3.0.orig/setup.py	2019-05-08 14:37:12.330653000 +0000
-+++ pyjq-2.3.0/setup.py	2019-05-08 14:38:12.774895000 +0000
-@@ -7,60 +7,23 @@
- from os.path import join, dirname, abspath
- import platform
- 
--import sysconfig
-+try:
-+    import sysconfig
-+except ImportError:
-+    # Python 2.6
-+    from distutils import sysconfig
-+
- from setuptools import setup
- from setuptools.extension import Extension
+--- python-pyjq.orig/setup.py	2019-09-18 07:14:51.000000000 +0000
++++ python-pyjq/setup.py	2021-01-27 18:28:44.079995000 +0000
+@@ -13,53 +13,11 @@
  from setuptools.command.build_ext import _build_ext
  
- long_description = io.open('README.rst', encoding='utf-8').read()
  
 -dependencies_dir_path = join(abspath(dirname(__file__)), "dependencies")
 -
@@ -67,37 +54,36 @@
      def _build_lib(self, lib_dir, commands):
          macosx_deployment_target = sysconfig.get_config_var("MACOSX_DEPLOYMENT_TARGET")
          if macosx_deployment_target:
-@@ -69,25 +32,13 @@
+@@ -68,16 +26,13 @@
          for command in commands:
              subprocess.check_call(command, cwd=lib_dir)
  
 -    def _extract_tarball(self, tarball_path, workdir_path):
 -        tarfile.open(tarball_path, "r:gz").extractall(workdir_path)
 -
--    def _safe_rmtree(self, d):
--        try:
--            shutil.rmtree(d)
--        except OSError:
--            pass
+     def _safe_rmtree(self, d):
+         try:
+             shutil.rmtree(d)
+         except OSError:
+             pass
  
- libraries = ["jq", "onig"]
--if platform.architecture()[1] == 'WindowsPE':
--    libraries.append("shlwapi")
+-libraries = ["jq", "onig"]
++libraries = ["jq"]
+ if platform.architecture()[1] == 'WindowsPE':
+     libraries.append("shlwapi")
  
- pyjq = Extension(
+@@ -85,13 +40,11 @@
      "_pyjq",
      sources=["_pyjq.c"],
--    include_dirs=["dependencies/jq_install/include"],
-     libraries=libraries,
+     include_dirs=["dependencies/jq_install/include"],
+-    libraries=libraries,
 -    library_dirs=["dependencies/jq_install/lib", "dependencies/onig_install/lib"]
++    libraries=libraries
  )
  
  setup(
-@@ -103,7 +54,6 @@
-     author='OMOTO Kenji',
-     url='http://github.com/doloopwhile/pyjq',
-     license='MIT License',
+     test_suite='test_pyjq',
+     ext_modules=[pyjq],
+     cmdclass={"build_ext": build_ext},
 -    package_data={'': [onig_tarball_path, jq_tarball_path]},
-     classifiers=[
-         'Development Status :: 5 - Production/Stable',
-         'Intended Audience :: Developers',
+ )

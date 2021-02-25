@@ -1,9 +1,9 @@
-diff -rupN pyjq-2.3.0-orig/setup.py pyjq-2.3.0/setup.py
---- pyjq-2.3.0-orig/setup.py	2019-03-14 10:57:11.000000000 -0400
-+++ pyjq-2.3.0/setup.py	2019-03-14 10:57:22.000000000 -0400
-@@ -14,53 +14,11 @@ from setuptools.command.build_ext import
+diff -rupN pyjq-2.4.0-orig/setup.py pyjq-2.4.0/setup.py
+--- pyjq-2.4.0-orig/setup.py	2019-09-18 07:14:51.000000000 +0000
++++ pyjq-2.4.0/setup.py	2021-01-27 12:29:54.661255107 +0000
+@@ -13,53 +13,11 @@ from setuptools.extension import Extensi
+ from setuptools.command.build_ext import _build_ext
  
- long_description = io.open('README.rst', encoding='utf-8').read()
  
 -dependencies_dir_path = join(abspath(dirname(__file__)), "dependencies")
 -
@@ -55,7 +55,7 @@ diff -rupN pyjq-2.3.0-orig/setup.py pyjq-2.3.0/setup.py
      def _build_lib(self, lib_dir, commands):
          macosx_deployment_target = sysconfig.get_config_var("MACOSX_DEPLOYMENT_TARGET")
          if macosx_deployment_target:
-@@ -69,16 +27,13 @@ class build_ext(_build_ext):
+@@ -68,16 +26,13 @@ class build_ext(_build_ext):
          for command in commands:
              subprocess.check_call(command, cwd=lib_dir)
  
@@ -69,11 +69,11 @@ diff -rupN pyjq-2.3.0-orig/setup.py pyjq-2.3.0/setup.py
              pass
  
 -libraries = ["jq", "onig"]
-+libraries=["jq"]
++libraries = ["jq"]
  if platform.architecture()[1] == 'WindowsPE':
      libraries.append("shlwapi")
  
-@@ -86,8 +41,7 @@ pyjq = Extension(
+@@ -85,13 +40,11 @@ pyjq = Extension(
      "_pyjq",
      sources=["_pyjq.c"],
      include_dirs=["dependencies/jq_install/include"],
@@ -83,11 +83,8 @@ diff -rupN pyjq-2.3.0-orig/setup.py pyjq-2.3.0/setup.py
  )
  
  setup(
-@@ -103,7 +57,6 @@ setup(
-     author='OMOTO Kenji',
-     url='http://github.com/doloopwhile/pyjq',
-     license='MIT License',
+     test_suite='test_pyjq',
+     ext_modules=[pyjq],
+     cmdclass={"build_ext": build_ext},
 -    package_data={'': [onig_tarball_path, jq_tarball_path]},
-     classifiers=[
-         'Development Status :: 5 - Production/Stable',
-         'Intended Audience :: Developers',
+ )

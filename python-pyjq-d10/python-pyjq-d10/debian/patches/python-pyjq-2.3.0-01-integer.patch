@@ -1,14 +1,14 @@
---- pyjq-2.3.0.orig/_pyjq.pyx	2018-12-07 09:07:33.000000000 +0000
-+++ pyjq-2.3.0/_pyjq.pyx	2019-05-07 19:30:04.628034000 +0000
+--- python-pyjq-d10.orig/_pyjq.pyx	2019-09-18 07:14:51.000000000 +0000
++++ python-pyjq-d10/_pyjq.pyx	2021-01-27 19:25:32.817950000 +0000
 @@ -4,6 +4,7 @@
  """
  
  import os
 +import sys
  
- from collections import OrderedDict
- import six
-@@ -44,7 +45,7 @@
+ 
+ class ScriptRuntimeError(Exception):
+@@ -42,7 +43,7 @@
  
      jv jv_number(double)
      double jv_number_value(jv)
@@ -17,7 +17,7 @@
  
      jv jv_array()
      jv jv_array_sized(int)
-@@ -104,8 +105,13 @@
+@@ -102,8 +103,13 @@
          return True
      elif kind == JV_KIND_NUMBER:
          v = jv_number_value(jval)
