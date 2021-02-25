@@ -5,6 +5,8 @@
 # See manual page for documentation.
 #
 
+WHOAMI=$(basename $0)
+
 die()
 {
     echo "$@" 1>&2
@@ -35,17 +37,36 @@ fi
 
 
 ROLE=
-if [ "$1" = '--role' ]
-then
-    shift
-    if [ $# -eq 0 ]
-    then
-	die "The --role switch requires an argument"
-    fi
+LOG_ERRORS=false
+LOG_TAG="${WHOAMI}"
+while [ "$1" ]
+do
+    case "$1" in
+	--role)
+	    if [ ! "$2" ]
+	    then
+		die "The --role switch requires an argument."
+	    fi
+	    ROLE="SET ROLE '$2'"
+	    shift 2
+	    ;;
+	--log-errors)
+	    if [ ! "$2" ]
+	    then
+		die "The --log-errors switch requires an argument."
+	    fi
+	    LOG_ERRORS=true
+	    LOG_TAG=$2
+	    shift 2
+	    ;;
+	*)
+	    # Anything not looking like an option is plain old
+	    # arguments.  The end.
+	    break
+	    ;;
 
-    ROLE="SET ROLE '$1';"
-    shift
-fi
+    esac
+done
 
 
 PGOPTIONS="PGOPTIONS='--client-min-messages=warning'"
@@ -65,6 +86,10 @@ fi
 if [ "$STATUS" -ne 0 ]
 then
     cat $TMPBASE.error 1>&2
+    if ${LOG_ERRORS}
+    then
+	logger --priority error --tag "${LOG_TAG}" --file $TMPBASE.error 
+    fi
     exit $STATUS
 fi
 
