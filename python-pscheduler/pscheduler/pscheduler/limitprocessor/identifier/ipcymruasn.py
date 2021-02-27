@@ -17,11 +17,13 @@ data_validator = {
             "type": "array",
             "items": { "$ref": "#/pScheduler/Cardinal" }
         },
+        "peers": { "$ref": "#/pScheduler/Boolean" },
         "timeout": { "$ref": "#/pScheduler/Duration" },
         "fail-result": { "$ref": "#/pScheduler/Boolean" }
     },
     "required": [ "fail-result" ]
 }
+
 
 def data_is_valid(data):
     """Check to see if data is valid for this class.  Returns a tuple of
@@ -46,6 +48,7 @@ class IdentifierIPCymruASN(object):
             raise ValueError("Invalid data: %s" % message)
 
         self.asns = dict((asn, True) for asn in data['asns'])
+        self.peers = data.get('peers', False)
 
         try:
             timeout = iso8601_as_timedelta(data['timeout'])
@@ -81,8 +84,11 @@ class IdentifierIPCymruASN(object):
         octets = [ octet.decode("ascii")
                    for octet in dns.reversename.from_address(ip)[0:-3] ]
         host = '.'.join(octets)
-        host += '.origin.asn.cymru.com' if len(octets) == 4 \
-                else '.origin6.asn.cymru.com'
+        if self.peers:
+            host += '.peer'
+        else:
+            host += '.origin' if len(octets) == 4 else '.origin6'
+        host += ".asn.cymru.com"
 
         try:
             resolved = self.resolver.query(host, 'TXT')[0]
@@ -93,19 +99,38 @@ class IdentifierIPCymruASN(object):
                 dns.resolver.NoNameservers):
             return self.fail_result
 
-        # The query will return this in a string:
+
+        # The query will return one or more newline-separated strings
+        # in this format:
         #   "ASN | CIDR | Country | Registrar | Date"
         #
         # For example:
         #   "23028 | 216.90.108.0/24 | US | arin | 1998-09-25"
         #
+        # When querying peers, there will be multiple ASNs (e.g.,
+        # 12345 6789 | ...).
+        #
         # See https://team-cymru.com/community-services/ip-asn-mapping for more.
 
-        try:
-            asn = int(str(resolved)[1:].split(" ")[0])
-        except ValueError:
-            # Doesn't look like an integer.
-            return False
+        # Split lines and strip quotes
+        results = [ result[1:-1] for result in str(resolved).split("\n") ]
 
-        # If it's in the list, it's a match.
-        return asn in self.asns
+        # Split first section of each into ASNs
+        result_asns = [ result.split(" | ")[0].split() for result in results ]
+
+        # Flatten the list
+        asns = [item for sublist in result_asns for item in sublist]
+
+        for candidate_asn in asns:
+
+            try:
+                asn = int(candidate_asn)
+            except ValueError:
+                # Doesn't look like an integer.
+                continue
+
+            if asn in self.asns:
+                return True
+
+        # Nothing matched.
+        return False
