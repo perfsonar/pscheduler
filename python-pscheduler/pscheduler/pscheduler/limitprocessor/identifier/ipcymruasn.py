@@ -45,7 +45,7 @@ class IdentifierIPCymruASN(object):
         if not valid:
             raise ValueError("Invalid data: %s" % message)
 
-        self.asns = data['asns']
+        self.asns = dict((asn, True) for asn in data['asns'])
 
         try:
             timeout = iso8601_as_timedelta(data['timeout'])
