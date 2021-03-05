@@ -82,11 +82,17 @@ class ExpiringSet(object):
         self._debug("Purging")
 
         now = datetime.datetime.now()
+        
+        # Do this in two stages so the dictionary doesn't change while
+        # we're iterating over it.
 
+        to_expire = []
         for key in self.items:
-            item = self.items[key]
-            if item["expires"] < now:
-                self.expire(key)
+            if self.items[key]["expires"] < now:
+                to_expire.append(key)
+
+        for key in to_expire:
+            self.expire(key)
 
         self._debug("Done purging")
 
