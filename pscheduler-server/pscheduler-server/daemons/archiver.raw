@@ -865,12 +865,12 @@ def main_program():
 
             db.query("SELECT heartbeat('archiver', %s)", [datetime.timedelta(seconds=next_refresh)])
 
-            if db.wait(next_refresh):
+            if next_refresh is not None and db.wait(next_refresh):
                 notifications = [ tup[0] for tup in db.notifications() ]
                 log.debug("Notifications: %s" % (" ".join(notifications)))
                 warmboot = "warmboot" in notifications
             else:
-                log.debug("Nothing happened.")
+                log.debug("Not waiting or nothing happened.")
 
         # Until we hear otherwise...
         next_refresh = refresh
@@ -879,10 +879,16 @@ def main_program():
             log.debug("Warm boot; draining archiver pools")
             archiver_collection.drain()
 
+        query_limit = options.max_parallel - len(workers)
+
         # If we're already full up on workers, don't bother hitting the database
-        if len(workers) == options.max_parallel:
+        if query_limit < 1:
             log.debug("Already have a full slate of workers.")
             continue
+        log.debug("Limiting query to %d", query_limit)
+
+        exclusions = [ worker for worker in workers ]
+        log.debug("Excluding %s", exclusions)
 
         # TODO: A lot of what's being pulled here can be pulled from
         # the spec.  Remove anything unnecessary.
@@ -891,8 +897,8 @@ def main_program():
                              duration, test, tool, participants, result,
                              attempts, last_attempt, transform, task_detail, run_detail,
                              spec
-                             FROM archiving_next(%s)""",
-                          [options.max_parallel])
+                             FROM archiving_next(%s, %s)""",
+                          [query_limit, exclusions])
 
         if len(result) == 0:
             log.debug("Nothing to archive; finding time until next archiving.")
@@ -930,6 +936,9 @@ def main_program():
 
             log.debug("%d: Starting worker", id)
             workers[id] = ArchiveWorker(db, log, row, archiver_collection)
+
+            # Anytime we start worker(s), query again immediately.
+            next_refresh = None
 
 
 if options.daemon:

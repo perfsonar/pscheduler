@@ -330,7 +330,8 @@ CREATE TRIGGER archiving_update AFTER UPDATE ON archiving
 DO $$ BEGIN PERFORM drop_function_all('archiving_next'); END $$;
 
 CREATE OR REPLACE FUNCTION archiving_next(
-    max_return INTEGER
+    max_return INTEGER,
+    exclusions BIGINT[]
 )
 RETURNS TABLE (
     id BIGINT,
@@ -390,6 +391,7 @@ BEGIN
                 AND next_attempt IS NOT NULL
                 AND next_attempt < now()
                 AND (ttl_expires IS NULL OR ttl_expires > now())
+                AND archiving.id NOT IN (SELECT UNNEST(exclusions))
             ORDER BY archiving.attempts, next_attempt
             LIMIT max_return
         )
