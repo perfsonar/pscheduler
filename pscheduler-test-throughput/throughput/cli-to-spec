@@ -5,7 +5,6 @@
 import optparse
 import pscheduler
 import sys
-import pscheduler
 import datetime
 
 logger = pscheduler.Log(prefix='test-throughput', quiet=True)
@@ -191,9 +190,10 @@ opt_parser.add_option("--reverse",
                       action="store_true",
                       dest="reverse")
 
-
-
-
+opt_parser.add_option("--loopback",
+                      help="Run both client and server side in a loopback test.",
+                      action="store_true",
+                      dest="loopback")
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
@@ -341,6 +341,10 @@ if options.single_ended_port:
 if options.reverse:
    result["reverse"] = True
 
+if options.loopback:
+   result["loopback"] = True
+   schema.set(5)
+       
 result["schema"] = schema.value()
 
 logger.debug("cli-to-spec -> %s" % result)

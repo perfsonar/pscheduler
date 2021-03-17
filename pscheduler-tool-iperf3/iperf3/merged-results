@@ -22,19 +22,20 @@ except KeyError as ex:
     pscheduler.fail("Missing required key in merged-result input: %s" % ex)
 
 single_ended = input['test']['spec'].get('single-ended')
+loopback = input['test']['spec'].get('loopback')
 result_len = len(result_list)
-if not(result_len == 2 or (result_len == 1 and single_ended)):
+if not(result_len == 2 or (result_len == 1 and (single_ended or loopback))):
     pscheduler.fail("Expected 2 results in merged-results, got %s" % len(result_list))
 
 source_results = result_list[0]
-if not single_ended:
+if (not single_ended) and (not loopback):
     dest_results = result_list[1]
 
 final_results = source_results
 
 # if this was a reverse test, we want to look at the destination's
 # output instead of the source's
-if input['test']['spec'].get('reverse') and not single_ended:
+if input['test']['spec'].get('reverse') and not (single_ended or loopback):
     final_results = dest_results
 
 # it's possible one could come back as null, ensure we have the right type
@@ -46,7 +47,7 @@ final_diag = ""
 if source_results and source_results.get('diags'):
     final_diag += "Participant 0:\n%s\n" % source_results.get('diags')
 
-if not single_ended and dest_results and dest_results.get('diags'):
+if not (single_ended or loopback) and dest_results and dest_results.get('diags'):
     final_diag += "Participant 1:\n%s\n" % dest_results.get('diags')
 
 final_results['diags'] = final_diag

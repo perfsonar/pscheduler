@@ -36,7 +36,7 @@ if destination is None:
 
 participants = [ source ]
 
-if 'single-ended' not in json:
+if ('single-ended' not in json) and ('loopback' not in json):
     participants.append(destination)
 
 result = { "participants": participants }
