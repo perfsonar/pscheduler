@@ -75,22 +75,34 @@ class ExpiringSet(object):
     def purge(self, force=True):
         """Purge expired objects if it's time to do so immediately if requested."""
 
-        if ( self.next_purge is None or datetime.datetime.now() < self.next_purge ) \
+        if ( self.next_purge is not None and datetime.datetime.now() < self.next_purge ) \
            and not force:
+            self._debug("Not purging; too early and not forced.")
             return
 
         self._debug("Purging")
 
         now = datetime.datetime.now()
+        
+        # Do this in two stages so the dictionary doesn't change while
+        # we're iterating over it.
 
+        to_expire = []
         for key in self.items:
-            item = self.items[key]
-            if item["expires"] < now:
-                self.expire(key)
+            try:
+                if self.items[key]["expires"] < now:
+                    to_expire.append(key)
+            except KeyError:
+                self._debug("Key %s: No expiration" % (key))
+
+        for key in to_expire:
+            self.expire(key)
 
         self._debug("Done purging")
 
-        self.next_purge = now + self.purge_interval
+
+        if self.purge_interval is not None:
+            self.next_purge = now + self.purge_interval
 
 
 
@@ -134,10 +146,9 @@ class ExpiringSet(object):
             self._debug("Fetched existing item '%s'" % (key))
 
 
-        if self.purge_interval is not None:
-            self.items[key]["expires"] = datetime.datetime.now() \
-                                             + ( cache_time if cache_time is not None
-                                                 else datetime.timedelta(seconds=0) )
+        self.items[key]["expires"] = datetime.datetime.now() \
+                                     + ( cache_time if cache_time is not None
+                                         else datetime.timedelta(seconds=0) )
         self.items[key]["cache_time"] = cache_time
         self._debug("Caching for %s" % (str(cache_time)))
 

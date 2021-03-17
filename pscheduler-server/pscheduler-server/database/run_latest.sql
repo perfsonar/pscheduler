@@ -111,7 +111,7 @@ BEGIN
         WHERE task = affected.task
         GROUP BY task;
 
-    IF NOT FOUND  -- No run records left
+    IF NOT FOUND OR latest IS NULL -- No run records left
     THEN
         DELETE FROM run_latest WHERE task = affected.task;
         RETURN affected;

@@ -493,7 +493,7 @@ BEGIN
 	   RAISE EXCEPTION 'Task package specifies no tool';
 	END IF;
 
-	SELECT INTO NEW.tool id FROM tool WHERE name = tool_type;
+	SELECT INTO NEW.tool id FROM tool WHERE name = tool_type AND available;
 
 	IF NOT FOUND THEN
             RAISE EXCEPTION 'Tool "%" is not available', tool_type;
