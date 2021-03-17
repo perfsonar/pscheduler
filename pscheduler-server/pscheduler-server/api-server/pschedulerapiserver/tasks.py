@@ -470,11 +470,14 @@ def tasks():
         # do anything with it until the task has been submitted to all
         # of the other participants.
 
-        cursor = dbcursor_query(
-            "SELECT * FROM api_task_post(%s, %s, %s, %s, 0, %s, NULL, FALSE, %s)",
-            [pscheduler.json_dump(task), participants, hints_data,
-             pscheduler.json_dump(limits_passed),
-             task.get("priority", None), diags], onerow=True)
+        try:
+            cursor = dbcursor_query(
+                "SELECT * FROM api_task_post(%s, %s, %s, %s, 0, %s, NULL, FALSE, %s)",
+                [pscheduler.json_dump(task), participants, hints_data,
+                 pscheduler.json_dump(limits_passed),
+                 task.get("priority", None), diags], onerow=True)
+        except psycopg2.InternalError as ex:
+            return bad_request("Task error: %s" % str(ex))
 
         if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
@@ -672,12 +675,11 @@ def tasks_uuid(uuid):
         log.debug("Posting task %s", uuid)
 
         try:
+            participants = pscheduler.json_load(data, max_schema=3)["participants"]
+        except ValueError as ex:
+            return bad_request("Task error: %s" % str(ex))
 
-            try:
-                participants = pscheduler.json_load(data,
-                                                    max_schema=3)["participants"]
-            except Exception as ex:
-                return bad_request("Task error: %s" % str(ex))
+        try:
             cursor = dbcursor_query(
                 "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, %s, TRUE, %s)",
                 [data, participants, hints_data,
@@ -685,8 +687,7 @@ def tasks_uuid(uuid):
                  json_in.get("priority", None),
                  uuid,
                  "\n".join(diags)])
-
-        except Exception as ex:
+        except psycopg2.InternalError as ex:
             return bad_request("Task error: %s" % str(ex))
 
         if cursor.rowcount == 0:

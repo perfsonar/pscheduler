@@ -49,8 +49,10 @@ def run(input):
     # TODO: This test doesn't have bind but needs one.
     # curl.setopt(pycurl.INTERFACE, str(bind))
 
-    # TODO: Redirects as an option?
-    # curl.setopt(pycurl.FOLLOWLOCATION, allow_redirects)
+    # The origianl psurl tool followed redirects, this one should,
+    # too.
+    # TODO: This should be a test parameter.
+    curl.setopt(pycurl.FOLLOWLOCATION, True)
 
     if timeout is not None:
         curl.setopt(pycurl.TIMEOUT_MS, int(timeout * 1000.0))
