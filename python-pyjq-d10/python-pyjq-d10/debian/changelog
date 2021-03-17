@@ -1,8 +1,14 @@
-python-pyjq-d10 (2.3.0-2~d10+1) perfsonar-4.3-staging; urgency=low
+python-pyjq-d10 (2.4.0-1~d10+1) perfsonar-4.3-staging; urgency=low
 
   * Backport to Debian 10.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 16 Nov 2020 20:38:54 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 17 Mar 2021 14:53:41 +0000
+
+python-pyjq (2.4.0-1) perfsonar-4.3-staging; urgency=low
+
+  * New upstream release.
+
+ -- Mark Feit <mfeit@internet2.edu>  Wed, 27 Jan 2021 12:56:07 +0000
 
 python-pyjq (2.3.0-2) perfsonar-4.3-staging; urgency=low
 
