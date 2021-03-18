@@ -57,7 +57,7 @@ fresh: uninstall build
 clean:
 	$(MAKE) -C rpm-with-deps clean build install clean
 	$(MAKE) -C make-generic-package clean build install clean
-	scripts/build-all $@
+	scripts/$@-all
 	$(MAKE) -C docs $@
 	rm -rf $(TO_CLEAN)
 	find . -name '*~' | xargs rm -f
