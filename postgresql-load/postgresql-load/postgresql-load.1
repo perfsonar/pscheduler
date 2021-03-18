@@ -41,7 +41,12 @@ will be read from the standard input.
 
 .SH OPTIONS
 .TP
-.BI --role\ role
+.BI --role\ ROLE
 Force a change to the role named
-.I role
+.I ROLE
 before executing the SQL.
+
+.TP
+.BI --log-errors\ TAG
+Send errors to syslog, tagged with
+.I TAG.

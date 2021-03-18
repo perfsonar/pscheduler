@@ -111,8 +111,12 @@ class BatchProcessor():
             return self.__fail("Unable to determine the lead participant: %s" % participants)
 
         debug("%s: Got participants: %s" % (label, participants))
-        lead = participants["participants"][0]
 
+        # Substitute the lead if one was provided and the returned
+        # lead is local.
+        if participants["participants"][0] is None:
+            debug("%s: Using directed lead of %s" % (label, self.lead))
+        lead = participants["participants"][0] or self.lead
 
         if delay:
             debug("%s: Sleeping %ss before start" % (label, delay))
@@ -353,7 +357,7 @@ class BatchProcessor():
 
 
 
-    def __init__(self, spec, assist=None, bind=None):
+    def __init__(self, spec, assist=None, lead=None, bind=None):
         """
         Create a batch processor.
         """
@@ -374,6 +378,7 @@ class BatchProcessor():
             raise ValueError("Unable to find pScheduler on %s" % (assist))
 
         self.assist = assist
+        self.lead = lead
         self.bind = bind
 
         try:

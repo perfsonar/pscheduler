@@ -31,7 +31,7 @@ Provides:	%{name} = %{version}-%{release}
 # comments there for more information.
 
 BuildRequires:	postgresql-init >= %{_pscheduler_postgresql_version}
-BuildRequires:	postgresql-load
+BuildRequires:	postgresql-load >= 1.2
 BuildRequires:	%{_pscheduler_postgresql_package}-server >= %{_pscheduler_postgresql_version}
 BuildRequires:	%{_pscheduler_postgresql_package}-contrib >= %{_pscheduler_postgresql_version}
 BuildRequires:	%{_pscheduler_postgresql_package}-plpython3 >= %{_pscheduler_postgresql_version}
@@ -42,7 +42,7 @@ Requires:	%{_pscheduler_postgresql_package}-server >= %{_pscheduler_postgresql_v
 # This is for pgcrypto
 Requires:	%{_pscheduler_postgresql_package}-contrib >= %{_pscheduler_postgresql_version}
 Requires:	%{_pscheduler_postgresql_package}-plpython3 >= %{_pscheduler_postgresql_version}
-Requires:	postgresql-load
+Requires:	postgresql-load >= 1.2
 Requires:	pscheduler-account
 Requires:	pscheduler-core
 Requires:	postgresql-init
@@ -407,7 +407,7 @@ pscheduler internal db-change-password
 #
 
 HBA_FILE=$( (echo "\t on" ; echo "show hba_file;") \
-	    | postgresql-load \
+	    | postgresql-load --log-errors "%{name}-hba-file" \
 	    | head -1 \
 	    | sed -e 's/^\s*//' )
 
@@ -424,7 +424,7 @@ host      pscheduler      pscheduler     ::1/128                md5
 EOF
 
 # Make Pg reload what we just changed.
-postgresql-load <<EOF
+postgresql-load --log-errors "%{name}-config-reload" <<EOF
 DO \$\$
 DECLARE
     status BOOLEAN;
@@ -517,7 +517,7 @@ systemctl stop httpd
 if [ "$1" = "0" ]
 then
     # Have to do this before the files are erased.
-    postgresql-load %{_pscheduler_datadir}/database-teardown.sql
+    postgresql-load  --log-errors "%{name}-teardown" %{_pscheduler_datadir}/database-teardown.sql
 fi
 
 
@@ -537,7 +537,7 @@ if [ "$1" = "0" ]; then
     # Database
     #
     HBA_FILE=$( (echo "\t on" ; echo "show hba_file;") \
-            | postgresql-load \
+            | postgresql-load --log-errors "%{name}-postun-hba-file" \
             | head -1 \
             | sed -e 's/^\s*//' )
 

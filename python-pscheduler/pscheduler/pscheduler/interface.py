@@ -132,7 +132,9 @@ class LocalIPList(object):
     ):
         self.refresh = refresh
         self.addresses = None
-        self.expires = None
+        # Force immediate expiration.
+        self.expires = datetime.datetime(year=datetime.MINYEAR, month=1, day=1)
+
 
     def __refresh(self):
         """

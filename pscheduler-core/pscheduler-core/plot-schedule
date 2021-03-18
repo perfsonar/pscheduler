@@ -289,6 +289,8 @@ class_levels = {
     "preempted": 6
 }
 
+# TODO: These could be pulled from the database, but there would need
+# to be an API endpoint for it.
 columns = [
     "\\n",
     "\\nExclusive",
