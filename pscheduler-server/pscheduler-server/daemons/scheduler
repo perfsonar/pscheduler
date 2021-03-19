@@ -864,8 +864,7 @@ def main_program():
             if pg.wait(pscheduler.timedelta_as_seconds(refresh)):
                 log.debug("Task change.")
                 # Discard pending notifications
-                print(pg.notifications())
-                # _ = pg.notifications()
+                _ = pg.notifications()
             else:
                 log.debug("Timed out.")
 
