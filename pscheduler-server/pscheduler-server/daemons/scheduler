@@ -775,14 +775,10 @@ class SchedulerWorker(object):
 
         self.worker = threading.Thread(target=lambda: self.run())
         self.worker.setDaemon(True)
+        self.worker.start()
+                        
         self.log.debug("%d: New thread for task %s at %s", number,
                        self.task, self.trynext)
-
-
-    def start(self):
-        """Start running."""
-        self.worker.start()
-
 
 
     def run(self):
@@ -906,14 +902,17 @@ def main_program():
 
             with workers_lock:
                 if number not in workers:
-                    worker = SchedulerWorker(number, nonstart_pg, log,
-                                             workers, workers_lock, task, key,
-                                             runs, trynext, anytime, json,
-                                             participants)
-                    log.debug("Starting thread for ID %d", number)
-                    workers[number] = worker
-                    worker.start()
-                    wait = False
+                    try:
+                        worker = SchedulerWorker(number, nonstart_pg, log,
+                                                 workers, workers_lock, task, key,
+                                                 runs, trynext, anytime, json,
+                                                 participants)
+                        log.debug("Starting thread for ID %d", number)
+                        workers[number] = worker
+                        wait = False
+                    except Exception:
+                        log.exception(message="%d: Exception while starting worker" % (number))
+
 
         if pg.notifications():
             wait = False
@@ -930,3 +929,4 @@ else:
     #pscheduler.safe_run(lambda: main_program())
     main_program()
 
+x

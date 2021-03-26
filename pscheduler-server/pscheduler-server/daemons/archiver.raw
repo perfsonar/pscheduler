@@ -928,17 +928,20 @@ def main_program():
                 log.debug("Already running %d archivers.", len(workers))
                 break
 
-            id = row[0]
+            archiving_id = row[0]
 
-            if id in workers:
-                log.debug("%d: Already running a worker", id)
+            if archiving_id in workers:
+                log.debug("%d: Already running a worker", archiving_id)
                 continue
 
-            log.debug("%d: Starting worker", id)
-            workers[id] = ArchiveWorker(db, log, row, archiver_collection)
+            try:
+                workers[archiving_id] = ArchiveWorker(db, log, row, archiver_collection)
+                log.debug("%d: Started worker", archiving_id)
+                # Anytime we start worker(s), query again immediately.
+                next_refresh = None
+            except Exception:
+                log.exception(message="%d: Exception while starting worker" % (archiving_id))
 
-            # Anytime we start worker(s), query again immediately.
-            next_refresh = None
 
 
 if options.daemon:

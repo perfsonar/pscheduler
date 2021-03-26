@@ -201,12 +201,17 @@ class RunWorker(object):
         self.finished = False
         self.output = []
 
+        # This is used to hold in place of start() so any exceptions
+        # related to thread creation happen here and not there.
+        self.barrier = threading.Barrier(2)
+
         self.worker = threading.Thread(target=lambda: self.run())
         self.worker.setDaemon(True)
+        self.worker.start()
 
 
     def start(self):
-        self.worker.start()
+        self.barrier.wait()
 
 
     def _put_db_conn(self, db):
@@ -306,9 +311,11 @@ class RunWorker(object):
         """
         Run the tool in an exception-safe way
         """
-        self.log.debug("%d: Thread running", self.id)
-        run_dict.start(self.id, self)
+        self.log.debug("%d: Thread started; waiting for go-ahead", self.id)
         try:
+            self.barrier.wait()
+            self.log.debug("%d: Running", self.id)
+            run_dict.start(self.id, self)
             with tempfile.TemporaryDirectory() as self.temp:
                 self.log.debug("%d: Temp space in %s", self.id, self.temp)
                 self.__run()
@@ -938,15 +945,19 @@ def main_program():
 
                 log.debug("Run %d, starts at %s", run_id, start_at)
 
-                run_ids.append(run_id)
+                try:
+                    worker = RunWorker(dbpool, log, run_id, start_at)
+                    run_workers.append(worker)
+                    run_ids.append(run_id)
+                    log.debug("%d: Created worker", run_id)
+                    if not background_multi and start_in < wait_time:
+                        log.debug("Dropping wait time to %s", start_in)
+                        wait_time = start_in
+                except Exception:
+                    # Just log an error.  Don't try to set status in
+                    # the run; it will eventually come up as missed.
+                    log.exception(message="%d: Exception while starting worker" % (run_id))
 
-                worker = RunWorker(dbpool, log, run_id, start_at)
-                run_workers.append(worker)
-                log.debug("%d: Created worker", run_id)
-
-                if not background_multi and start_in < wait_time:
-                    log.debug("Dropping wait time to %s", start_in)
-                    wait_time = start_in
 
         if already_running > 0:
             log.debug("Skipped %d already-running runs", already_running)
@@ -980,11 +991,12 @@ def main_program():
     db.close()
 
 
-if options.daemon:
-    pidfile = pscheduler.PidFile(options.pidfile)
-    with daemon.DaemonContext(pidfile=pidfile):
-        pscheduler.safe_run(lambda: main_program())
-else:
-    pscheduler.safe_run(lambda: main_program())
+main_program()
+#if options.daemon:
+#    pidfile = pscheduler.PidFile(options.pidfile)
+#    with daemon.DaemonContext(pidfile=pidfile):
+#        pscheduler.safe_run(lambda: main_program())
+#else:
+#    pscheduler.safe_run(lambda: main_program())
 
 
