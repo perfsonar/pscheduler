@@ -438,7 +438,7 @@ except Exception as ex:
     tb_lines = [ line.rstrip('\n') for line in
                  traceback.format_exception(ex.__class__, ex, ex_traceback)]
     logger.debug(tb_lines)
-    logger.error("Exception %s" % ex);
+    logger.error("Exception %s" % ex)
 
 logger.debug("Results: %s" % results)
 

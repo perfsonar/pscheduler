@@ -6,6 +6,6 @@
 
 import pscheduler
 
-input = pscheduler.json_load(exit_on_error=True);
+input = pscheduler.json_load(exit_on_error=True)
 
 pscheduler.succeed_json(input['results'][0])
