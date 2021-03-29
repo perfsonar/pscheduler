@@ -30,7 +30,7 @@ errors = []
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 4)
+    pscheduler.json_check_schema(spec, 5)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
@@ -65,6 +65,7 @@ supported_options = [
     "source-node",
     "udp",
     "window-size",
+    "loopback"
 ]
 
 for option in spec:
