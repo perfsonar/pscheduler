@@ -32,7 +32,7 @@ if not json.get('spec'):
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 4)
+    pscheduler.json_check_schema(spec, 5)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
@@ -55,7 +55,7 @@ supported_options = ["schema",
                      "ip-version", "duration", "interval", "link-rtt",
                      "parallel", "window-size", "mss", "bandwidth",
                      "buffer-length", "local-address", "congestion",
-                     "udp", "single-ended", "single-ended-port"
+                     "udp", "single-ended", "single-ended-port", "loopback"
                      ]
 
 for option in spec:

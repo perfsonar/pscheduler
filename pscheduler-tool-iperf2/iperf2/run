@@ -22,6 +22,7 @@ import re
 import shutil
 import sys
 import time
+import threading
 import iperf2_parser
 import traceback
 import ipaddress
@@ -52,8 +53,9 @@ except:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 
 single_ended = test_spec.get('single-ended', False)
+loopback = test_spec.get('loopback', False)
 participants = len(participant_data)
-if not(participants == 2 or (participants == 1 and single_ended)):
+if not(participants == 2 or (participants == 1 and (single_ended or loopback))):
     pscheduler.fail("iperf2 requires exactly 2 participants, got %s" % (len(participant_data)))
 
 
@@ -66,7 +68,10 @@ iperf2_cmd  = config["iperf2_cmd"]
 if single_ended:
     server_port = test_spec.get('single-ended-port', DEFAULT_SERVER_PORT)
 else:
-    server_port = participant_data[1].get('server_port', DEFAULT_SERVER_PORT)
+    if loopback:
+        server_port = DEFAULT_SERVER_PORT
+    else:
+        server_port = participant_data[1].get('server_port', DEFAULT_SERVER_PORT)
 
 # convert from ISO to seconds for test duration
 test_duration = test_spec.get('duration')
@@ -287,7 +292,7 @@ def run_server():
     try:
         status, stdout, stderr = pscheduler.run_program(iperf2_args, timeout = iperf_timeout)
     except Exception as e:
-        logger.error("iperf2 failed to complete execution: %s" % str(e));
+        logger.error("iperf2 failed to complete execution: %s" % str(e))
         pscheduler.succeed_json({"succeeded": False,
                                  "diags": " ".join(iperf2_args),
                                  "error": "The iperf2 command failed during execution. See server logs for more details."
@@ -317,7 +322,13 @@ def run_server():
 results = {}
 try:
     if participant == 0:
-        results = run_client()
+        if loopback:
+            server_thread = threading.Thread(target=run_server)
+            server_thread.start()
+            results = run_client()
+            server_thread.join() #Wait until the server thread terminates
+        else:
+            results = run_client()
     elif participant == 1:
         results = run_server()
     else:
@@ -329,7 +340,7 @@ except Exception as ex:
     tb_lines = [ line.rstrip('\n') for line in
                  traceback.format_exception(ex.__class__, ex, ex_traceback)]
     logger.debug(tb_lines)
-    logger.error("Exception %s" % ex);
+    logger.error("Exception %s" % ex)
 
 logger.debug("Results: %s" % results)
 
