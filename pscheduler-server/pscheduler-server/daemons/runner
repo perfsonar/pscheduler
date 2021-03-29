@@ -991,12 +991,9 @@ def main_program():
     db.close()
 
 
-main_program()
-#if options.daemon:
-#    pidfile = pscheduler.PidFile(options.pidfile)
-#    with daemon.DaemonContext(pidfile=pidfile):
-#        pscheduler.safe_run(lambda: main_program())
-#else:
-#    pscheduler.safe_run(lambda: main_program())
-
-
+if options.daemon:
+    pidfile = pscheduler.PidFile(options.pidfile)
+    with daemon.DaemonContext(pidfile=pidfile):
+        pscheduler.safe_run(lambda: main_program())
+else:
+    pscheduler.safe_run(lambda: main_program())
