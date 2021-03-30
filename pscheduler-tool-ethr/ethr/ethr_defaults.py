@@ -6,4 +6,4 @@
 DEFAULT_DURATION = 20
 
 # The default ethr port for TCP & UDP tests
-DEFAULT_SERVER_PORT = 9999
+DEFAULT_SERVER_PORT = 5201

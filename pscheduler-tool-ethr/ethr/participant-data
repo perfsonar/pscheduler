@@ -30,7 +30,7 @@ elif participant == 1:
     # Server has to figure out what port it's going
     # to listen on, client will need this to figure out
     # where to connect
-    result["server_port"] = 9999
+    result["server_port"] = 5201
 
 else:
 
