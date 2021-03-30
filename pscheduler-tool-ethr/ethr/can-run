@@ -35,7 +35,7 @@ except KeyError:
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 3)
+    pscheduler.json_check_schema(spec, 5)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
@@ -62,7 +62,8 @@ supported_options = [
     "schema",
     "source",
     "source-node",
-    "udp"
+    "udp",
+    "loopback"
 ]
 
 for option in list(spec.keys()):

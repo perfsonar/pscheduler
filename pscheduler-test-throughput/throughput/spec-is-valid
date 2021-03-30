@@ -25,4 +25,10 @@ result = {
 if not valid:
     result["error"] = message
 
+if ('single-ended' in json) and ('loopback' in json):
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": "Single-ended and loopback modes are mutually exclusive"
+    })
+
 pscheduler.succeed_json(result)
