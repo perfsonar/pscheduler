@@ -56,6 +56,7 @@ def on_graceful_exit(call):
             this.finish_barrier = threading.Barrier(2)
             this.exit_barrier = threading.Barrier(2)
             this.exit_worker = threading.Thread(
+                name="Exit Worker",
                 target=lambda: __graceful_exit_worker())
             this.exit_worker.setDaemon(True)
             this.exit_worker.start()
