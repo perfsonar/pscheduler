@@ -926,6 +926,8 @@ class RunWorker(GenericWorker):
         self.output = []
 
 
+    # TODO: This would probably be nice in the library.
+
     class PooledDBCursor:
 
         def __init__(self):
