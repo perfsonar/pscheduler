@@ -17,8 +17,660 @@ import select
 import signal
 import socket
 import tempfile
+import time
+import traceback
+
+
+# ---------- BEGIN MOVE TO LIBRARY
+
+import multiprocessing
+import queue
 import threading
 import time
+import traceback
+import types
+
+
+class GenericWorker:
+    def __init__(self):
+        raise NotImplementedError("Attempted to use an abstract GenericWorker")
+
+    def __call__(self):
+        raise NotImplementedError("Attempted to use an incomplete GenericWorker")
+
+
+
+class WorkerProcess(object):
+    """
+    External process that runs GenericWorkers on a caller's behalf
+    """
+
+    #
+    # Worker Runner
+    #
+
+    class WorkerRunner:
+        """
+        Run a GenericWorker in a thread
+        """
+        def __init__(self, identifier, worker, callback=lambda i, r, d: None):
+            assert isinstance(worker, GenericWorker)
+            assert callback is None or callable(callback)
+
+            self.identifier = identifier
+            self.worker = worker
+            self.callback = callback
+            self.thread = threading.Thread(target=self.__run)
+            self.thread.setDaemon(True)
+            self.thread.start()
+
+        def __run(self):
+            """
+            Run the worker, calling back with what it returns or any exception
+            it throws.
+            """
+            try:
+                result = self.worker()
+                diags = None
+            except Exception as ex:
+                result = ex
+                diags = "\n".join(traceback.format_exception(type(ex), ex, ex.__traceback__))
+
+
+            self.callback(self.identifier, result, diags)
+
+        def join(self):
+            """
+            Wait for the work to finish
+            """
+            self.thread.join()
+
+
+    #
+    # Processor
+    #
+
+    #
+    # Message types; for internal use only.
+    #
+
+    class Message(object):
+        pass
+
+    # Caller -> Processor
+
+    class InboundMessage(Message):
+        pass
+
+    class MessageNewTask(InboundMessage):
+        """
+        Specifies a new task to be run
+        """
+        def __init__(self, identifier, worker):
+            assert isinstance(identifier, int) or isinstance(identifier, str)
+            assert isinstance(worker,GenericWorker)
+            self.identifier = identifier
+            self.worker = worker
+
+        def __str__(self):
+            return "New Task '%s'" % (self.identifier)
+
+    class MessageFinish(InboundMessage):
+        """
+        Finish all work and exit
+        """
+        def __init__(self, wait=True):
+            self.wait = wait
+
+        def __str__(self):
+            return "Finish, %s wait" % ("with" if self.wait else "without")
+
+    class MessageAction(InboundMessage):
+        """
+        Take an action
+        """
+        def __init__(self,
+                     action=lambda a: None,
+                     args=()
+        ):
+            self.action = action
+            self.args = args
+
+        def __str__(self):
+            return "Action: %s %s" % (self.action, self.args)
+
+
+    # Processor -> Caller
+
+    class OutboundMessage(Message):
+        pass
+
+    class MessageDebug(OutboundMessage):
+        """
+        Provides debug information
+        """
+        def __init__(self, message):
+            self.message = message
+
+        def __str__(self):
+            return self.message
+
+
+    class MessageExceptionReceived(OutboundMessage):
+        """
+        Something on the external process side threw an exception
+        """
+        def __init__(self, exception):
+            assert isinstance(exception,Exception)
+            self.exception = exception
+            self.traceback = "\n".join(traceback.format_exception(
+                type(exception), exception, exception.__traceback__))
+
+        def __str__(self):
+            return "Exception %s" % (self.exception)
+
+
+    class MessageResult(OutboundMessage):
+        """
+        A task has finished and has a result to return
+        """
+        def __init__(self, identifier, result, diags):
+            self.identifier = identifier
+            self.result = result
+            self.diags = diags
+
+        def __str__(self):
+            return "Result from '%s': %s" % (self.identifier, self.result)
+
+
+    class MessageExited(OutboundMessage):
+        """
+        The processor is exiting.
+        """
+        pass
+
+
+
+    #
+    # The Processor
+    #
+
+
+    def __init__(self,
+                 name=None,
+                 setup=lambda a: None,     # Global setup
+                 setup_args=(),
+                 teardown=lambda a: None,  # Global teardown
+                 teardown_args=(),
+                 load_limit=0,
+                 idle_time=None,  # Seconds with no work before terminating
+                 debug_callback=lambda s: None
+    ):
+
+        assert isinstance(load_limit, int), "Load limit must be an integer"
+        assert load_limit >= 0, "Load limit must be zero or positive"
+        assert idle_time is None \
+            or isinstance(idle_time, float) \
+            or isinstance(idle_time, int)
+        
+        self.name = name or self.__class__.__name__
+        self.setup = setup
+        self.setup_args = setup_args
+        self.teardown = teardown
+        self.teardown_args = teardown_args
+
+        self.load_limit = load_limit
+        self.idle_time = idle_time
+        self.debug_callback = debug_callback
+
+        self.lock = threading.Lock()
+
+        # Outstanding callbacks by identifier
+        self.callbacks = {}
+
+        # Used by the relay to notify close() that all work is done.
+        self.ended = threading.Condition()
+
+        # Shared between both sides
+
+        context = multiprocessing.get_context()
+
+        self.to_proc = context.Queue()
+        self.from_proc = context.Queue()
+
+        # Caller-side thread to relay results
+
+        self.relay = threading.Thread(name="%s Relay" % (name), target=self.__relay)
+        self.relay.setDaemon(True)
+
+
+        self.relayed_exception = None
+        self.relayed_traceback = None
+
+        # Worker-side process
+
+        self.process = context.Process(
+            target=self.__proc_run,
+            args=(self.to_proc, self.from_proc,),
+            daemon=True
+        )
+
+        self.running = True
+        self.process.start()
+        self.relay.start()
+
+
+    def __debug(self, message):
+        """Send a debug message"""
+        self.from_proc.put(self.MessageDebug("%s: %s" % (self.name, message)))
+
+
+    def __raise(self):
+        """Raise an exception if one was stored by the process."""
+        if self.relayed_exception is not None:
+            raise(self.relayed_exception)
+
+    def __len__(self):
+        """
+        Return the number of running workers
+        """
+        self.__raise()
+        return len(self.callbacks)
+
+
+    def is_running(self):
+        """
+        Determine if the processor is running
+        """
+        return self.running and self.process.is_alive and self.relayed_exception is None
+
+    def is_taking_work(self):
+        """
+        Determine if the process can take more workers
+        """
+        self.__raise()
+        return self.is_running() and (self.load_limit == 0 or len(self.callbacks) < self.load_limit)
+
+
+    def __relay(self):
+        """
+        Listen for returned results and call callbacks (Caller side)
+        """
+
+        try:
+
+            while True:
+
+                incoming = self.from_proc.get()
+
+                if isinstance(incoming, self.MessageResult):
+
+                    self.callbacks[incoming.identifier](incoming.identifier, incoming.result, incoming.diags)
+                    with self.lock:
+                        del self.callbacks[incoming.identifier]
+
+                elif isinstance(incoming, self.MessageDebug):
+
+                    self.debug_callback(str(incoming))
+
+                elif isinstance(incoming, self.MessageExited):
+
+                    break
+
+                elif isinstance(incoming, self.MessageExceptionReceived):
+
+                    with self.lock:
+                        self.running = False
+
+                    # Do callbacks on anything outstanding
+                    for identifier, callback in self.callbacks.items():
+                        callback(identifier,
+                                 RuntimeError("Processor failed: %s" % (incoming.exception)),
+                                 diags=incoming.traceback)
+                    self.callbacks.clear()
+
+                else:
+
+                    raise ValueError("Invalid message type '%s' received" % (type(incoming)))
+
+        except Exception as ex:
+
+            raise(ex)
+
+        finally:
+
+            # No matter what happens, force this to die.
+            self.process.terminate()
+
+            # Tell close() we're done if it's listening.
+            self.ended.acquire()
+            try:
+                self.ended.notify_all()
+            finally:
+                self.ended.release()
+
+            with self.lock:
+                self.running = False
+
+
+
+    def __proc_result_callback(self, identifier, result, diags):
+        """
+        Handle results provided by the WorkerRunner (External process side)
+        """
+
+        self.from_proc.put(self.MessageResult(identifier, result, diags))
+        self.__debug("Sent result from %s" % (identifier))
+        with self.proc_lock:
+            del self.proc_workers[identifier]
+
+
+    def __proc_run(self, to_proc, from_proc):
+        """
+        Run the processor (External process side)
+        """
+
+        try:
+
+            self.__debug("Starting")
+
+            # Run the setup code.  If that throws an exception, so be it.
+            self.setup(self.setup_args)
+            self.__debug("Setup succeeded")
+
+            # These only exist on the process side
+
+            self.proc_lock = threading.Lock()
+            self.proc_workers = {}
+
+            while True:
+
+                # Get a message from the caller.  If we sit idle long
+                # enough without work, behave as if we'd been told to
+                # finish.
+
+                try:
+                    incoming = to_proc.get(timeout=self.idle_time)
+                except queue.Empty:
+                    if len(self.proc_workers) > 0:
+                        continue
+                    self.__debug("No work for %s seconds.  Terminating." % (self.idle_time))
+                    # There should be no workers, but just in case...
+                    incoming = self.MessageFinish(wait=True)
+
+
+                self.__debug("Incoming message: %s" % (str(incoming)))
+
+                if isinstance(incoming, self.MessageNewTask):
+
+                    with self.proc_lock:
+                        self.proc_workers[incoming.identifier] = self.WorkerRunner(
+                            incoming.identifier,
+                            incoming.worker,
+                            callback=self.__proc_result_callback)
+
+                elif isinstance(incoming, self.MessageAction):
+
+                    self.__debug("Taking action: %s %s" % (incoming.action, incoming.args))
+                    incoming.action(incoming.args)
+
+                elif isinstance(incoming, self.MessageFinish):
+
+                    self.__debug("Finishing")
+
+                    # Let the caller know first so we don't get any more work.
+                    from_proc.put(self.MessageExited())
+
+                    if incoming.wait:
+                        # Wait for all of the workers to finish
+                        self.__debug("Waiting for %d workers to finish" % (len(self.proc_workers)))
+                        for identifier, worker in list(self.proc_workers.items()):
+                            worker.join()
+                            self.__debug("  %s" % (identifier))
+
+                    # Run teardown.
+                    self.__debug("Exiting")
+                    self.teardown(self.teardown_args)
+
+                    break
+
+                else:
+                    message = "Client sent invalid message type '%s' received" % (type(incoming))
+                    self.__debug(message)
+                    raise ValueError(message)
+
+
+        except Exception as ex:
+
+            self.__debug("Processor exception: %s" % (ex))
+            from_proc.put(self.MessageExceptionReceived(ex))
+
+        finally:
+
+            # Let the caller know we're done
+            self.__debug("Exiting")
+            # We'll have done this already for a forced finish.
+            if not isinstance(incoming, self.MessageFinish):
+                from_proc.put(self.MessageExited())
+
+
+
+    def __call__(self, identifier, worker, callback):
+        """
+        Add a new worker to the process (Caller side)
+        """
+        assert isinstance(identifier, int) or isinstance(identifier, str)
+        assert isinstance(worker, GenericWorker)
+        assert callback is None or callable(callback)
+
+        self.__raise()
+
+        with self.lock:
+
+            if not self.running:
+                raise RuntimeError("Processor is no longer running")
+
+            if self.load_limit > 0 and len(self.callbacks) >= self.load_limit:
+                raise RuntimeError("Processor has a full workload")
+
+            self.callbacks[identifier] = callback
+            self.to_proc.put(self.MessageNewTask(identifier, worker))
+
+
+
+    def action(self, action=lambda a: None, args=None):
+        """
+        Take an action.
+        """
+        assert isinstance(action, types.LambdaType)
+
+        with self.lock:
+            self.to_proc.put(self.MessageAction(action, args))
+
+
+    def close(self, wait=False):
+        """
+        Tell the external process to finish and exit.  (Caller side)
+        """
+        self.__raise()
+        with self.lock:
+            was_running = self.running
+            self.running = False
+        self.to_proc.put(self.MessageFinish(wait=wait))
+
+        if wait and was_running and self.relayed_exception is None:
+            self.ended.acquire()
+            try:
+                self.ended.wait()
+            finally:
+                self.ended.release()
+
+
+    def terminate(self):
+        """
+        Hard kill the process (Caller side)
+        """
+        self.__raise()
+        self.process.terminate()
+
+
+
+class WorkerProcessPool(object):
+    """
+    A pool of worker processes selected based on number of jobs.
+    """
+
+    def __init__(self,
+
+                 # WorkerProcess arguments
+                 name=None,
+                 setup=lambda: None,
+                 setup_args=(),
+                 teardown=lambda: None,
+                 teardown_args=(),
+                 load_limit=0,
+                 idle_time=None,
+
+                 # Common arguments
+                 debug_callback=lambda s: None,
+
+                 # WorkerProcessPool arguments
+                 pool_size_limit=0
+            
+    ):
+        self.processor_name = name
+        self.processor_setup = setup
+        self.processor_setup_args = setup_args
+        self.processor_teardown = teardown
+        self.processor_teardown_args = teardown_args
+        self.processor_load_limit = load_limit
+        self.processor_idle_time = idle_time
+
+        self.debug_callback = debug_callback
+        self.pool_size_limit = pool_size_limit
+
+        self.lock = threading.Lock()
+        self.running = True
+        self.processor_number = 0
+        self.processors = {}
+
+
+    def __debug(self, message):
+        """
+        Produce a debug message for whataver wants it.
+        """
+        self.debug_callback("%s: %s" % (self.processor_name, message))
+
+
+    def __groom(self):
+        """
+        Remove processors that are no longer running.
+        """
+
+        with self.lock:
+            remove = []
+            for name, processor in self.processors.items():
+                if not processor.is_running():
+                    remove.append(name)
+
+            for processor in remove:
+                self.processors[processor].terminate()
+                del self.processors[processor]
+                self.__debug("Removing %s" % (processor))
+
+
+
+    def __call__(self, identifier, worker, callback):
+        """
+        Run a GenericWorker in the pool.  Call is identical to the same method
+        in WorkerProcess.
+        """
+
+        with self.lock:
+            if not self.running:
+                raise RuntimeError("Pool is no longer running.")
+
+        self.__groom()
+
+        with self.lock:
+
+            # Find the least-loaded processor in the pool.
+
+            lowest_load = self.processor_load_limit  # Can't be any higher than this.
+            lowest_processor = None
+
+            for name, processor in self.processors.items():
+
+                if not processor.is_taking_work():
+                    continue
+
+                load = len(processor)
+                if load < lowest_load:
+                    lowest_load = load
+                    lowest_processor = processor
+                    if load == 0:  # Easy out.
+                        break
+
+            # If no processor was found, spin up a new one.
+
+            if lowest_processor is None:
+
+                if self.pool_size_limit and len(self.processors) >= self.pool_size_limit:
+                    # TODO: Better exception?
+                    raise RuntimeError("Pool is completely full.")
+
+                self.processor_number += 1
+                name = "%s-%d" % (self.processor_name, self.processor_number)
+                self.__debug("Starting new processor %s" % (name))
+                lowest_processor = WorkerProcess(
+                    name=name,
+                    setup=self.processor_setup,
+                    setup_args=self.processor_setup_args,
+                    teardown=self.processor_teardown,
+                    teardown_args=self.processor_teardown_args,
+                    load_limit=self.processor_load_limit,
+                    idle_time=self.processor_idle_time,
+                    debug_callback=self.debug_callback,
+                )
+
+                self.processors[name] = lowest_processor
+
+            lowest_processor(identifier, worker, callback)
+
+    def action(self, action=lambda a: None, args=None):
+        """
+        Take an action on all processors in the pool.
+        """
+        assert isinstance(action, types.LambdaType)
+
+        with self.lock:
+            self.__debug("Taking action on all processors in pool:")
+            for name, processor in self.processors.items():
+                self.__debug("  %s" % (name))
+                processor.action(action, args)
+
+
+    def close(self, wait=False):
+        """
+        Close out the pool.
+        """
+
+        with self.lock:
+            self.running = False
+
+        # Beyond this point, calls to __call__() will fail, so there's
+        # no need to continue holdin the lock.
+
+        self.__groom()
+
+        for name in list(self.processors.keys()):
+            self.__debug("Closing %s" % (name))
+            self.processors[name].close(wait=wait)
+            del self.processors[name]
+
+
+# ---------- END MOVE TO LIBRARY                
+
 
 
 pscheduler.set_graceful_exit()
@@ -44,10 +696,6 @@ opt_parser.add_option("-d", "--dsn",
                       help="Database connection string",
                       action="store", type="string", dest="dsn",
                       default="")
-opt_parser.add_option("-m", "--max-parallel",
-                      help="Maximum concurrent runs",
-                      action="store", type="int", dest="max_parallel",
-                      default=15)
 opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
@@ -57,6 +705,15 @@ opt_parser.add_option("--terse-logging",
                       action="store_true",
                       dest="terse",
                       default=False)
+
+opt_parser.add_option("--worker-idle",
+                      help="Idle time before worker processes exit",
+                      action="store", type="string", dest="worker_idle",
+                      default="PT1M")
+opt_parser.add_option("--worker-threads",
+                      help="Maximum threads per worker process",
+                      action="store", type="int", dest="worker_threads",
+                      default=20)
 
 
 opt_parser.add_option("--verbose", action="store_true", dest="verbose", default=False)
@@ -70,6 +727,16 @@ if refresh is None:
 if pscheduler.timedelta_as_seconds(refresh) == 0:
     opt_parser.error("Refresh interval must be calculable as seconds.")
 
+worker_idle_td = pscheduler.iso8601_as_timedelta(options.worker_idle)
+if worker_idle_td is None:
+    opt_parser.error('Invalid worker idle time "' + options.worker_idle + '"')
+worker_idle = pscheduler.timedelta_as_seconds(worker_idle_td)
+
+worker_threads = options.worker_threads
+if worker_threads < 1:
+    opt_parser.error("Worker threads must be positive.")
+
+
 
 log = pscheduler.Log(verbose=options.verbose, debug=options.debug, propagate=True)
 
@@ -79,6 +746,80 @@ log_details = not options.terse
 
 # Get this once so we don't have to do a function call every time.
 delimiter = pscheduler.api_result_delimiter()
+
+
+
+# ------------------------------------------------------------------------------
+
+#
+# Resources for worker processes
+#
+
+#
+# Database pool for use by threads.
+#
+# Note that these connections do not have autocommit, so anything
+# using them will need to do its own commits.
+#
+
+dbpool = None
+
+DBPOOL_TEST_VALUE = 1234
+
+def dbpool_setup(dsn, max_size):
+    global dbpool
+
+    if dbpool is None:
+        dbpool = psycopg2.pool.ThreadedConnectionPool(
+            1,
+            max_size,
+            dsn="%s application_name=runner-pool-%d" % (dsn, os.getpid())
+        )
+
+    # Try to do a query against it
+
+    db = dbpool.getconn()
+    try:
+        with db.cursor() as cursor:
+            cursor.execute("SELECT %s", [DBPOOL_TEST_VALUE])
+            if cursor.rowcount != 1:
+                raise RuntimeError("Initial query test returned wrong number of rows.")
+            got = cursor.fetchone()[0]
+            if got != DBPOOL_TEST_VALUE:
+                raise RuntimeError("Initial query test did not return expected value.")
+    finally:
+
+        # This doesn't matter if we throw an exception because it will
+        # torpedo the entire process.
+        dbpool.putconn(db)
+
+
+def dbpool_teardown():
+    global dbpool
+
+    dbpool.closeall()
+    dbpool = None
+
+
+
+#
+# Setup and teardown for everything
+#
+
+def worker_process_setup(args):
+
+    dsn, max_size = args
+
+    dbpool_setup(dsn, max_size)
+
+
+def worker_process_teardown(*args):
+
+    dbpool_teardown()
+
+
+
+# ------------------------------------------------------------------------------
 
 
 
@@ -110,34 +851,19 @@ def run_start_margin():
 
 
 #
-# Directory of what we believe to be running and what we don't.
-#
-# Even though Python de-parallelizes threads, force this to become
-# thread-safe in case it gets smarter later.
+# A record of what we believe to be running and what we don't.
 #
 
-# TODO: Use the ThreadSafeSet and ThreadSafeSetHold instead
+ids_running = pscheduler.ThreadSafeSet()
 
-class RunDictionary(object):
+# This is run when a task completes
+def run_completion(identifier, value, diags):
+    ids_running.drop(identifier)
+    if value is None:
+        log.debug("%d: Worker reported completion", identifier)
+    else:
+        log.error("%d: Worker failed; returned %s: %s", identifier, value, diags)
 
-    def __init__(self):
-        self.dict = {}
-        self.lock = threading.Lock()
-
-    def start(self, id, worker):
-        with self.lock:
-            self.dict[id] = worker
-
-    def finish(self, id):
-        with self.lock:
-            del self.dict[id]
-
-    def is_running(self, id):
-        with self.lock:
-            result = id in self.dict
-        return result
-
-run_dict = RunDictionary()
 
 
 #
@@ -186,65 +912,63 @@ def clock_survey(hosts, bind=None):
 # Class that does the test runs
 #
 
-class RunWorker(object):
+class RunWorker(GenericWorker):
 
-    def __init__(self, dbpool, log, id, start_at):
+    def __init__(self, id, start_at):
 
         # Per http://initd.org/psycopg/docs/usage.html#thread-safety,
         # Psycopg is thread-safe when you use multiple cursors against the
         # same connection.
 
-        self.dbpool = dbpool
-        self.log = log
         self.id = id
         self.start_at = start_at
         self.finished = False
         self.output = []
 
-        # This is used to hold in place of start() so any exceptions
-        # related to thread creation happen here and not there.
-        self.barrier = threading.Barrier(2)
 
-        self.worker = threading.Thread(target=lambda: self.run())
-        self.worker.setDaemon(True)
-        self.worker.start()
+    class PooledDBCursor:
+
+        def __init__(self):
+            self.db = None
+
+        def __enter__(self, attempts=5, wait=1):
+            """
+            Get connection from pool. If cannot get connection retry a few times before giving up.
+            """
+            if self.db is None:
+
+                for attempt in range(0, attempts):
+                    try:
+                        self.db = dbpool.getconn()
+                        break
+                    except psycopg2.pool.PoolError as ex:
+                        time.sleep(wait)
+
+                # Unable to get connection, throw exception
+                if self.db is None:
+                    raise Exception("Unable to get database pool connection after %d attempts." % attempts)
+
+            return self.db.cursor()
 
 
-    def start(self):
-        self.barrier.wait()
+        def __exit__(self, exc_type=None, exc_value=None, exc_tb=None):
 
+            if self.db is None:
+                return
 
-    def _put_db_conn(self, db):
-        """
-        Commits any changes made with a database connection and restores to the pool
-        """
-        if not db:
-            return
-    
-        try:
-            db.commit()
-        except Exception as ex:
-            self.log.warning("Error committing DB transaction: %s" % ex)
-        finally:
-            self.dbpool.putconn(db)
-    
-    def _get_db_conn(self, attempts=60, wait=1):
-        """
-        Get connection from pool. If cannot get connection retry a few times before giving-up
-        """
-        db = None
-        for attempt in range(0, attempts):
             try:
-                db = self.dbpool.getconn()
-                break
-            except psycopg2.pool.PoolError:
-                time.sleep(wait)
-        
-        #Unable to get connection, throw exception
-        if db is None:
-            raise Exception("Database connection pool exhausted. Unable to get connection after %d attempts." % attempts)
-        
-        return db
+                self.db.commit()
+            except Exception as ex:
+                log.warning("Error committing DB transaction: %s" % ex)
+            finally:
+                dbpool.putconn(self.db)
+
+
+
+    
+
+
+
     
     def __post_new_result(self, result):
         """
@@ -257,10 +981,8 @@ class RunWorker(object):
             log.warning("%d: Discarding bogus result %s", self.id, result)
             return
         
-        db = None
         try:
-            db = self._get_db_conn()
-            with db.cursor() as cursor:
+            with self.PooledDBCursor() as cursor:
                 cursor.execute("""
                 WITH inserted_row AS (
                     INSERT INTO run (task, uuid, times, state, status, result_merged)
@@ -290,8 +1012,7 @@ class RunWorker(object):
 
         except Exception as ex:
             self.log.error("%d: Failed to post run for result: %s", self.id, str(ex))
-        finally:
-            self._put_db_conn(db)
+
 
 
     def __accumulate_output(self, line):
@@ -307,15 +1028,22 @@ class RunWorker(object):
         else:
             self.output.append(line)
         
-    def run(self):
+    def __call__(self):
         """
         Run the tool in an exception-safe way
         """
-        self.log.debug("%d: Thread started; waiting for go-ahead", self.id)
+
+        # These are initialized here because they can't be passed
+        # through to another process.
+
+        global dbpool
+        self.dbpool = dbpool
+
+        global log
+        self.log = log
+
         try:
-            self.barrier.wait()
             self.log.debug("%d: Running", self.id)
-            run_dict.start(self.id, self)
             with tempfile.TemporaryDirectory() as self.temp:
                 self.log.debug("%d: Temp space in %s", self.id, self.temp)
                 self.__run()
@@ -326,9 +1054,12 @@ class RunWorker(object):
             # it might be salvageable.
             self.log.debug("%d: Exception: %s", self.id, ex)
             log.exception()
+            return ex
 
-        self.log.debug("%d: Thread finished", self.id)
-        run_dict.finish(self.id)
+        self.log.debug("%d: Finished", self.id)
+
+        # No news is good news.
+        return None
 
 
     def __run(self):
@@ -342,10 +1073,8 @@ class RunWorker(object):
 
         # Do as much preparation as possible before going to sleep.
 
-        db = None
         try:
-            db = self._get_db_conn()
-            with db.cursor() as cursor:
+            with self.PooledDBCursor() as cursor:
                 cursor.execute("""
                            SELECT            
                                test.name,
@@ -393,8 +1122,7 @@ class RunWorker(object):
             self.log.error("%d: Failed to fetch run info: %s",
                            self.id, str(ex))
             return
-        finally:
-            self._put_db_conn(db)
+
 
         if lead_bind is not None:
             self.log.debug("%d: Lead bind for this run is %s",
@@ -475,10 +1203,8 @@ class RunWorker(object):
 
         # Tell the database we're proceeding
 
-        db = None
         try:
-            db = self._get_db_conn()
-            with db.cursor() as cursor:
+            with self.PooledDBCursor() as cursor:
                 cursor.execute("SELECT run_start(%s)", [self.id])
                 assert cursor.rowcount == 1
                 result = cursor.fetchone()[0]
@@ -491,8 +1217,6 @@ class RunWorker(object):
         except Exception as ex:
             self.log.error("%d: Failed to start run: %s", self.id, str(ex))
             raise ex
-        finally:
-            self._put_db_conn(db)
 
 
         #
@@ -559,13 +1283,11 @@ class RunWorker(object):
             if stderr is None:
                 stderr = "Tool exited with status %d" % (returncode)
         
-        db = None
         try:
-            db = self._get_db_conn()
             state_selector = 2 if  (
                 (participant > 0) or (scheduling_class == "background-multi")
                 ) else returncode
-            with db.cursor() as cursor:
+            with self.PooledDBCursor() as cursor:
                 cursor.execute("""
                 UPDATE run
                 SET
@@ -590,9 +1312,6 @@ class RunWorker(object):
                            self.id, str(ex))
 
             return
-        finally:
-            #finally should ensure this is executed  even if return is an exception
-            self._put_db_conn(db)
         
         self.log.debug("%d: Stored local result", self.id)
 
@@ -750,8 +1469,7 @@ class RunWorker(object):
 
             try:
                 self.log.debug("%d: Merged result: Setting final state ", self.id)
-                db = self._get_db_conn()
-                with db.cursor() as cursor:
+                with self.PooledDBCursor() as cursor:
                     # TODO: Need to figure out succeeded.
                     cursor.execute("""
                                     UPDATE run
@@ -772,12 +1490,11 @@ class RunWorker(object):
                                      self.id])
             except Exception as ex:
                 self.log.error("%d: Failed to store run: %s", self.id, str(ex))
-            finally:
-                self._put_db_conn(db)
-
 
         self.log.debug("%d: Run complete", self.id)
-        self.finished = True
+
+        # No news is good news.
+        return None
 
 
 
@@ -790,47 +1507,27 @@ def main_program():
 
     log.debug("Begin main")
 
+
+    worker_pool = WorkerProcessPool(
+        name="runner-pool",
+        load_limit=worker_threads,
+        setup=worker_process_setup,
+        setup_args=(dsn, options.worker_threads,),
+        teardown=worker_process_teardown,
+        teardown_args=(),
+        debug_callback=lambda m: log.debug(m),
+        # Don't limit this; the OS will punish too many processes.
+        pool_size_limit=None,
+        idle_time=worker_idle
+    )
+
+
     # This is for local use.
     db = pscheduler.pg_connection(dsn)
     log.debug("Connected to DB")
 
     with db.cursor() as cursor:
         cursor.execute("SELECT heartbeat_boot('runner')")
-
-    with db.cursor() as cursor:
-
-        # Get the maximum number of connections available and limit use of
-        # them to half.
-
-        try:
-            cursor.execute("SHOW max_connections")
-
-            # Should get exactly one row back.  If not, the run probably
-            # vanished.
-
-            if cursor.rowcount != 1:
-                raise Exception("Got %d rows back when expecting one"
-                                % (cursor.rowcount))
-
-            max_connections = int(cursor.fetchone()[0])
-        except Exception as ex:
-            log.error("Failed to fetch maximum connections: %s", str(ex))
-            # This is the PgSQL default
-            max_connections = 100
-            log.error("Using default of %d", max_connections)
-
-    pool_size = int(max_connections / 2)
-    log.debug("Using a pool size of %d", pool_size)
-
-    # Pool of connections for use by the threads.  Note that these
-    # connections do not have autocommit, so anything using them will
-    # need to do its own commits.
-
-    dbpool = psycopg2.pool.ThreadedConnectionPool(
-        int(pool_size/100),   # Minimum connections
-        pool_size,            # Maximum connections
-        dsn="%s application_name=runner-pool" % (dsn))
-
 
     # Listen for notifications.
 
@@ -931,64 +1628,56 @@ def main_program():
 
             wait_time = refresh
 
-            already_running = 0
-            run_ids = []
-            run_workers = []
             for row in cursor:
 
                 run_id, start_in, start_at, background_multi = row
 
-                if run_dict.is_running(run_id):
+                if run_id in ids_running:
                     log.debug("%d is already running" % (run_id))
-                    already_running += 1
                     continue
 
                 log.debug("Run %d, starts at %s", run_id, start_at)
 
                 try:
-                    worker = RunWorker(dbpool, log, run_id, start_at)
-                    run_workers.append(worker)
-                    run_ids.append(run_id)
+
+                    # Put the run on deck before starting it so we
+                    # don't try to start it again later.
+                    with db.cursor() as ondeck:
+                        ondeck.execute("UPDATE run SET state = run_state_on_deck() WHERE id = %s", [run_id])
+                    log.debug("%d: Placed on deck", run_id)
+
+                    # Make a worker and throw it into the pool.
+                    worker_pool(run_id, RunWorker(run_id, start_at), run_completion)
                     log.debug("%d: Created worker", run_id)
-                    if not background_multi and start_in < wait_time:
-                        log.debug("Dropping wait time to %s", start_in)
-                        wait_time = start_in
-                except Exception:
-                    # Just log an error.  Don't try to set status in
-                    # the run; it will eventually come up as missed.
-                    log.exception(message="%d: Exception while starting worker" % (run_id))
+                    ids_running.add(run_id)
 
-
-        if already_running > 0:
-            log.debug("Skipped %d already-running runs", already_running)
-
-        if not run_workers:
-            log.debug("No workers to run.")
-            wait_time = refresh
-            continue
-
-        with db.cursor() as cursor:
-            # Do this here to guarantee that we don't pick up rows for
-            # runs we just started in the next iteration of the loop.
-            if run_ids:
-                log.debug("Putting runs on deck: %s", run_ids)
-                try:
-                    cursor.execute("""
-                                   UPDATE run
-                                   SET state = run_state_on_deck()
-                                   WHERE
-                                       id in %s
-                                       AND state = run_state_pending()
-                                   """, (tuple(run_ids),))
                 except Exception as ex:
-                    log.error("Unable to set on-deck status: %s" % (str(ex)))
 
-        for worker in run_workers:
-            worker.start()
+                    # Any failure here means failure of the run.
 
+                    diags = "\n".join(traceback.format_exception(type(ex), ex, ex.__traceback__))
+                    log.error("%d: Unable to start worker: %s" % (run_id, diags))
+                    with db.cursor() as failed:
+                        failed.execute("""
+                            UPDATE RUN
+                            SET
+                              state = run_state_failed(),
+                              status = 1,
+                              errors = %s
+                            WHERE id = %s
+                        """, ["Failed to start worker: %s" % (diags),
+                              run_id])
+
+                # Reduce the wait time if we did something shorter
+                # TODO: Why do we do this?
+                if not background_multi and start_in < wait_time:
+                    log.debug("Dropping wait time to %s", start_in)
+                    wait_time = start_in
 
     # Not that this will ever be reached...
     db.close()
+
+
 
 
 if options.daemon:
