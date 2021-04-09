@@ -56,6 +56,7 @@ Requires:	pscheduler-account
 Requires:	%{_pscheduler_python}-daemon
 Requires:	%{_pscheduler_python}-flask
 Requires:	%{_pscheduler_python}-jsontemplate
+Requires:	%{_pscheduler_python_epel}-psutil
 
 # API Server
 BuildRequires:	pscheduler-account

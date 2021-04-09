@@ -10,6 +10,7 @@ import multiprocessing
 import optparse
 import os
 import pscheduler
+import psutil
 import psycopg2
 import psycopg2.extensions
 import psycopg2.pool
@@ -21,8 +22,12 @@ import time
 import traceback
 
 
+
+# TODO: The code in this block is to be moved into the pScheduler library in 4.4.
+
 # ---------- BEGIN MOVE TO LIBRARY
 
+import datetime
 import multiprocessing
 import queue
 import threading
@@ -212,7 +217,9 @@ class WorkerProcess(object):
         assert idle_time is None \
             or isinstance(idle_time, float) \
             or isinstance(idle_time, int)
-        
+
+        self.created = datetime.datetime.now()
+
         self.name = name or self.__class__.__name__
         self.setup = setup
         self.setup_args = setup_args
@@ -538,6 +545,7 @@ class WorkerProcessPool(object):
                  pool_size_limit=0
             
     ):
+
         self.processor_name = name
         self.processor_setup = setup
         self.processor_setup_args = setup_args
@@ -553,6 +561,10 @@ class WorkerProcessPool(object):
         self.running = True
         self.processor_number = 0
         self.processors = {}
+
+
+    def __len__(self):
+        return len(self.processors)
 
 
     def __debug(self, message):
@@ -580,6 +592,14 @@ class WorkerProcessPool(object):
 
 
 
+    def status(self):
+        """
+        Return a dictionary of the names of the processors and their loads
+        """
+        return dict([ (name, len(processor)) for name, processor in self.processors.items()])
+
+
+
     def __call__(self, identifier, worker, callback):
         """
         Run a GenericWorker in the pool.  Call is identical to the same method
@@ -594,26 +614,36 @@ class WorkerProcessPool(object):
 
         with self.lock:
 
-            # Find the least-loaded processor in the pool.
+            # Select the youngest, least-loaded processor that's doing
+            # something else, only selecting one with no load or
+            # creating a new one as a last resort.  This will starve
+            # unloaded processors of work as a way to encourage them
+            # to shut down.
 
-            lowest_load = self.processor_load_limit  # Can't be any higher than this.
+            lowest_load = self.processor_load_limit  # Can't be any more than this
             lowest_processor = None
+            zero = None
 
-            for name, processor in self.processors.items():
+            for name in sorted(self.processors, key=lambda p: self.processors[p].created, reverse=True):
+
+                processor = self.processors[name]
 
                 if not processor.is_taking_work():
                     continue
 
                 load = len(processor)
-                if load < lowest_load:
+                if load == 0:
+                    # Keep this in reserve in case everyone else is full.
+                    zero = processor
+                elif load < lowest_load:
                     lowest_load = load
                     lowest_processor = processor
-                    if load == 0:  # Easy out.
-                        break
+
+            use = lowest_processor or zero
 
             # If no processor was found, spin up a new one.
 
-            if lowest_processor is None:
+            if use is None:
 
                 if self.pool_size_limit and len(self.processors) >= self.pool_size_limit:
                     # TODO: Better exception?
@@ -622,7 +652,7 @@ class WorkerProcessPool(object):
                 self.processor_number += 1
                 name = "%s-%d" % (self.processor_name, self.processor_number)
                 self.__debug("Starting new processor %s" % (name))
-                lowest_processor = WorkerProcess(
+                use = WorkerProcess(
                     name=name,
                     setup=self.processor_setup,
                     setup_args=self.processor_setup_args,
@@ -633,9 +663,10 @@ class WorkerProcessPool(object):
                     debug_callback=self.debug_callback,
                 )
 
-                self.processors[name] = lowest_processor
+                self.processors[name] = use
 
-            lowest_processor(identifier, worker, callback)
+            use(identifier, worker, callback)
+
 
     def action(self, action=lambda a: None, args=None):
         """
@@ -650,7 +681,7 @@ class WorkerProcessPool(object):
                 processor.action(action, args)
 
 
-    def close(self, wait=False):
+    def close(self, wait=False, terminate=False):
         """
         Close out the pool.
         """
@@ -659,13 +690,19 @@ class WorkerProcessPool(object):
             self.running = False
 
         # Beyond this point, calls to __call__() will fail, so there's
-        # no need to continue holdin the lock.
+        # no need to continue holding the lock.
 
         self.__groom()
 
+        self.__debug("Closing the pool.")
         for name in list(self.processors.keys()):
-            self.__debug("Closing %s" % (name))
-            self.processors[name].close(wait=wait)
+            if terminate:
+                self.__debug("Terminating %s" % (name))
+                self.processors[name].terminate
+            else:
+                self.__debug("Closing %s" % (name))
+                self.processors[name].close(wait=wait)
+
             del self.processors[name]
 
 
@@ -674,6 +711,7 @@ class WorkerProcessPool(object):
 
 
 pscheduler.set_graceful_exit()
+
 
 # Gargle the arguments
 
@@ -1254,6 +1292,8 @@ class RunWorker(GenericWorker):
             )
 
 
+        self.log.debug("%d: Program has finished.", self.id)
+
         stdout = "\n".join(self.output)
 
         if len(stdout) == 0:
@@ -1505,10 +1545,21 @@ class RunWorker(GenericWorker):
 #
 
 
+# This is rough treatment, but child processes really have to go when
+# the program exits.
+def kill_subprocesses():
+    for child in psutil.Process().children(recursive=True):
+        try:
+            os.kill(child.pid, signal.SIGKILL)
+        except Exception:
+            pass  # This is best-effort.
+
+pscheduler.on_graceful_exit(kill_subprocesses)
+
+
 def main_program():
 
     log.debug("Begin main")
-
 
     worker_pool = WorkerProcessPool(
         name="runner-pool",
@@ -1635,7 +1686,7 @@ def main_program():
                 run_id, start_in, start_at, background_multi = row
 
                 if run_id in ids_running:
-                    log.debug("%d is already running" % (run_id))
+                    #log.debug("%d is already running" % (run_id))
                     continue
 
                 log.debug("Run %d, starts at %s", run_id, start_at)
@@ -1652,6 +1703,8 @@ def main_program():
                     worker_pool(run_id, RunWorker(run_id, start_at), run_completion)
                     log.debug("%d: Created worker", run_id)
                     ids_running.add(run_id)
+
+                    log.debug("%d processors in pool: %s", len(worker_pool), worker_pool.status())
 
                 except Exception as ex:
 
@@ -1678,6 +1731,7 @@ def main_program():
 
     # Not that this will ever be reached...
     db.close()
+
 
 
 
