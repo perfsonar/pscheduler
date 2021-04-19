@@ -683,12 +683,12 @@ class ArchiveWorker(object):
             self.log.debug("%d: Null transform result; not archiving", self.id)
             returncode = 0
             stdout = """{ "succeeded": true }"""
-            stdout_attempt = "Transform result forced not archiving."
+            stdout_attempt = "Archiving stopped by transform."
             stderr = ""
             skip = True
             result = {
                 "succeeded": True,
-                "error": ""
+                "error": stdout_attempt
             }
         else:
             skip = False
