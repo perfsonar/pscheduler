@@ -968,40 +968,52 @@ class RunWorker(GenericWorker):
 
     class PooledDBCursor:
 
-        def __init__(self):
+        # TODO: Take the ident out of this.
+        def __init__(self, ident=0):
             self.db = None
+            self.ident = ident
 
         def __enter__(self, attempts=5, wait=1):
             """
             Get connection from pool. If cannot get connection retry a few times before giving up.
             """
             if self.db is None:
-
+                log.debug("%d: PDBC: Getting a cursor", self.ident)
                 for attempt in range(0, attempts):
                     try:
+                        log.debug("%d: PDBC: Attempt %d", self.ident, attempt)
                         self.db = dbpool.getconn()
+                        log.debug("%d: PDBC: Got one", self.ident)
                         break
                     except psycopg2.pool.PoolError as ex:
+                        log.debug("%d: PDBC: Pool error: %s, sleeping", self.ident, ex)
                         time.sleep(wait)
 
-                # Unable to get connection, throw exception
-                if self.db is None:
-                    raise Exception("Unable to get database pool connection after %d attempts." % attempts)
+            # Unable to get connection, throw exception
+            if self.db is None:
+                raise Exception("Unable to get database pool connection after %d attempts." % attempts)
 
-            return self.db.cursor()
+            log.debug("%d: PDBC: Returning cursor", self.ident)
+            self.cursor = self.db.cursor()
+            return self.cursor
 
 
         def __exit__(self, exc_type=None, exc_value=None, exc_tb=None):
 
+            log.debug("%d: PDBC: Exiting context", self.ident)
             if self.db is None:
                 return
 
             try:
                 self.db.commit()
+                log.debug("%d: PDBC: Committed", self.ident)
+                self.cursor.close()
+                log.debug("%d: PDBC: Closed", self.ident)
             except Exception as ex:
                 log.warning("Error committing DB transaction: %s" % ex)
             finally:
                 dbpool.putconn(self.db)
+                log.debug("%d: PDBC: Connection returned", self.ident)
 
 
 
@@ -1329,7 +1341,10 @@ class RunWorker(GenericWorker):
             state_selector = 2 if  (
                 (participant > 0) or (scheduling_class == "background-multi")
                 ) else returncode
-            with self.PooledDBCursor() as cursor:
+            self.log.debug("%d: State selector is %d", self.id, state_selector)
+            # TODO: Remove id argument
+            with self.PooledDBCursor(self.id) as cursor:
+                self.log.debug("%d: Updating run with state selector %d", self.id, state_selector)
                 cursor.execute("""
                 UPDATE run
                 SET
@@ -1352,7 +1367,6 @@ class RunWorker(GenericWorker):
         except Exception as ex:
             self.log.error("%d: Failed to store local result: %s",
                            self.id, str(ex))
-
             return
         
         self.log.debug("%d: Stored local result", self.id)
