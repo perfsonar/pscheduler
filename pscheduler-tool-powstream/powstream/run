@@ -204,13 +204,11 @@ else:
         powstream_args.append(test_spec['source'])
     powstream_args.append(ADDR_FORMAT % (test_spec['dest'], control_port))
 
+
 #Run the process
-time.sleep(DEFAULT_CLIENT_SLEEP) #wait for server to boot
-powstream_start_attempts = 0
-got_result = False
 
-
-emitter = pscheduler.RFC7464Emitter(sys.stdout)
+#TODO in 4.4: Migrate to new delimiter and use emitter(result) instead
+#emitter = pscheduler.RFC7464Emitter(sys.stdout)
 
 def powstream_line(line, keep_data_files=False):
 
