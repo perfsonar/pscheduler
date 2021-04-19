@@ -374,13 +374,15 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
                         if attempt['return-code'] != 0:
                             raise TypeError  # Treat this as a failure.
                         succeeded = attempt['stdout']['succeeded']
-                        diags = "" if succeeded else attempt['stdout']['error']
+                        diags = attempt['stdout'].get('error', None)
+                        if diags == "":
+                            diags = None
                     except (KeyError, TypeError):
                         succeeded = False
                         diags = attempt['stderr']
                     print("    %-25s %s" % (
                         attempt['time'],
-                        "Succeeded" if succeeded else diags
+                        diags or "Succeeded"
                         ))
         else:
             print(pscheduler.indent("This task had no archivings."))
