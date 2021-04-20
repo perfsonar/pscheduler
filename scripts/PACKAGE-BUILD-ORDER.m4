@@ -116,6 +116,8 @@ httpd-wsgi-socket
 drop-in
 
 # No good support for this on Debian 9 or arm64 and ppc64el
+# TODO: Doesn't build properly anywhere on Debian.
+# TODO: Antoine says this is okay on Deb10
 ifelse(FAMILY/MAJOR,Debian/9,,
        FAMILY/ARCH,Debian/arm64,,
        FAMILY/ARCH,Debian/ppc64el,,
@@ -128,6 +130,7 @@ paris-traceroute
 random-string
 # No good support for this on Debian 9 or on arm64 and ppc64el
 # TODO: Doesn't build properly anywhere on Debian.
+# TODO: Antoine says this is okay on Deb10
 ifelse(FAMILY,Debian,,
        FAMILY/MAJOR,Debian/9,,
        FAMILY/ARCH,Debian/arm64,,
@@ -162,6 +165,7 @@ pscheduler-test-throughput
 pscheduler-test-rtt
 # No good support for this on Debian 9 or arm64 and ppc64el
 # TODO: Not built on Debian because of s3-benchmark; see above.
+# TODO: Antoine says this is okay on Deb10
 ifelse(FAMILY,Debian,,
        FAMILY/MAJOR,Debian/9,,
        FAMILY/ARCH,Debian/arm64,,
@@ -202,6 +206,7 @@ pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
 # No good support for this on Debian 9 or arm64 and ppc64el
 # TODO: Not build on debian because of s3-benchmark; see above.
+# TODO: Antoine says this is okay on Deb10
 ifelse(FAMILY,Debian,,
        FAMILY/MAJOR,Debian/9,,
        FAMILY/ARCH,Debian/arm64,,
