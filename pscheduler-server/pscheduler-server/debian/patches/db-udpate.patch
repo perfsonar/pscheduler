@@ -1,16 +1,21 @@
---- a/database/db-update.raw	2021-03-17 01:08:53.957969744 +0000
-+++ b/database/db-update.raw	2021-03-17 01:08:59.604054398 +0000
-@@ -18,9 +18,11 @@
+--- pscheduler-server.orig/database/db-update.raw	2021-04-20 18:47:32.322185224 +0000
++++ pscheduler-server/database/db-update.raw	2021-04-20 18:46:58.061443456 +0000
+@@ -20,14 +20,11 @@
  $INTERACTIVE && printf "Loading database:\n" || true
  
  $INTERACTIVE && printf '    Administrative...' || true
--postgresql-load '__DATADIR__/database-build-super.sql'
+-postgresql-load \
+-    --log-errors "${WHOAMI}-super" \
+-    '__DATADIR__/database-build-super.sql'
 +DB_ADMIN=$(ls -v /usr/share/dbconfig-common/data/pscheduler-server/upgrade-dbadmin/pgsql/* | tail -1)
 +su -l -c "psql" postgres <$DB_ADMIN >/dev/null 2>&1
  $INTERACTIVE && printf ' Done.\n' || true
  
  $INTERACTIVE && printf '    User __ROLE__...' || true
--postgresql-load --role '__ROLE__' '__DATADIR__/database-build.sql'
+-postgresql-load \
+-    --role '__ROLE__' \
+-    --log-errors "${WHOAMI}-__ROLE__"  \
+-    '__DATADIR__/database-build.sql'
 +DB_USER=$(ls -v /usr/share/dbconfig-common/data/pscheduler-server/upgrade/pgsql/* | tail -1)
 +su -l -c "psql -U __ROLE__ pscheduler" pscheduler <$DB_USER >/dev/null 2>&1
  $INTERACTIVE && printf ' Done.\n' || true
