@@ -1,3 +1,9 @@
+pscheduler-archiver-bitbucket (4.4.0~a1.0-1) perfsonar-4.4-snapshot; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 20 Apr 2021 16:12:06 +0000
+
 pscheduler-archiver-bitbucket (4.3.3-1) perfsonar-4.3; urgency=low
 
   * New upstream version.
