@@ -197,7 +197,17 @@ def run_client():
     destination = test_spec['dest']
 
     affinity = test_spec.get('client-cpu-affinity')
-    if affinity is None:
+    if affinity is not None:
+        numa_ok, numa_diags = pscheduler.numa_cpu_core_ok(affinity)
+        if numa_ok:
+            logger.debug("Selected CPU affinity %s" % affinity)
+            nuttcp_args.insert(0, 'numactl')
+            nuttcp_args.insert(1, '-C')
+            nuttcp_args.insert(2, affinity)
+        else:
+            logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
+            diags.append("Unable to use NUMA for this test.  Disabling it.")
+    else:
         if source:
             interface = pscheduler.address_interface(source, ip_version=ip_version)
             if interface is not None:
@@ -207,16 +217,16 @@ def run_client():
             affinity = pscheduler.source_affinity(destination, ip_version=ip_version)
             logger.debug("Affinity (if any) will be based on destination")
 
-    if affinity is not None:
-        numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
-        if numa_ok:
-            logger.debug("Selected CPU affinity %s" % affinity)
-            nuttcp_args.insert(0, 'numactl')
-            nuttcp_args.insert(1, '-N')
-            nuttcp_args.insert(2, affinity)
-        else:
-            logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
-            diags.append("Unable to use NUMA for this test.  Disabling it.")
+        if affinity is not None:
+            numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
+            if numa_ok:
+                logger.debug("Selected CPU affinity %s" % affinity)
+                nuttcp_args.insert(0, 'numactl')
+                nuttcp_args.insert(1, '-N')
+                nuttcp_args.insert(2, affinity)
+            else:
+                logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
+                diags.append("Unable to use NUMA for this test.  Disabling it.")
 
     nuttcp_args.append(destination)
 
@@ -277,22 +287,33 @@ def run_server():
 
     # try to grab our default affinity if one wasn't passed in
     affinity = test_spec.get('server-cpu-affinity')
-    if affinity is None:
+    if affinity is not None:
+        numa_ok, numa_diags = pscheduler.numa_cpu_core_ok(affinity)
+        if numa_ok:
+            logger.debug("Selected CPU affinity %s" % affinity)
+            nuttcp_args.insert(0, 'numactl')
+            nuttcp_args.insert(1, '-C')
+            nuttcp_args.insert(2, affinity)
+        else:
+            logger.debug("NUMA doesn't work for destination.  Throwing caution to the wind.")
+            diags.append("Unable to use NUMA for this test.  Disabling it.")
+    else:        
         # look up what interface we're going to be receiving on        
         interface = pscheduler.address_interface(test_spec['dest'], ip_version=ip_version)
         if interface:
             affinity = pscheduler.interface_affinity(interface)
+            logger.debug("CPU affinity for interface is %s" % (affinity))
 
-    if affinity is not None:
-        numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
-        if numa_ok:
-            logger.debug("Selected CPU affinity %s" % affinity)
-            nuttcp_args.insert(0, 'numactl')
-            nuttcp_args.insert(1, '-N')
-            nuttcp_args.insert(2, affinity)
-        else:
-            logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
-            diags.append("Unable to use NUMA for this test.  Disabling it.")
+            if affinity is not None:
+                numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
+                if numa_ok:
+                    logger.debug("Selected CPU affinity %s" % affinity)
+                    nuttcp_args.insert(0, 'numactl')
+                    nuttcp_args.insert(1, '-N')
+                    nuttcp_args.insert(2, affinity)
+                else:
+                    logger.debug("NUMA doesn't work for %s.  Throwing caution to the wind." % (interface))
+                    diags.append("Unable to use NUMA for %s.  Disabling it." % (interface))
 
     nuttcp_args = [str(x) for x in nuttcp_args]
     nuttcp_args_string = " ".join(nuttcp_args)
