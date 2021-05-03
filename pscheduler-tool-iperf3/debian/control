@@ -11,8 +11,8 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 
 Package: pscheduler-tool-iperf3
 Architecture: all
-Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server, pscheduler-test-throughput, iperf3
+Depends: ${misc:Depends}, python3, python3-pscheduler (>= 4.4.0),
+ pscheduler-server (>= 4.4.0), pscheduler-test-throughput, iperf3
 Recommends: numactl
 Description: pScheduler iperf3 tool
  iperf3 tool class for pScheduler
