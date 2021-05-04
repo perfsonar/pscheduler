@@ -2,8 +2,6 @@
 # Thread-Safe versions of popular things
 #
 
-import threading
-
 import queue
 import threading
 
