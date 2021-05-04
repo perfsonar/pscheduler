@@ -113,7 +113,8 @@ def run_start_margin():
 # thread-safe in case it gets smarter later.
 #
 
-# TODO: Use the ThreadSafeSet and ThreadSafeSetHold instead
+# TODO: Replace this with a dictionary in the main routine and a
+# deletion queue as done in #1146.
 
 class RunDictionary(object):
 

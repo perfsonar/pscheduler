@@ -861,8 +861,8 @@ def main_program():
     # What workers are running
     max_workers = options.max_parallel
 
-    # TODO: Use the ThreadSafeSet and ThreadSafeSetHold instead
     workers = {}
+    # TODO: Use a queue like in the archiver.  See #1143.
     workers_lock = threading.Lock()
 
     wait = False  # First iteration is always no-wait.
