@@ -760,7 +760,7 @@ class SchedulerWorker(object):
 
     """Handles scheduling for a single run."""
 
-    def __init__(self, number, pg, log, working_set, working_set_lock,
+    def __init__(self, number, pg, log, working_set,
                  task, key, runs, trynext, anytime, json, participants, debug):
         """Initialize"""
 
@@ -768,7 +768,6 @@ class SchedulerWorker(object):
         self.pg = pg
         self.log = log
         self.working_set = working_set
-        self.working_set_lock = working_set_lock
 
         self.task = task
         self.key = key
@@ -781,7 +780,6 @@ class SchedulerWorker(object):
         self.worker = threading.Thread(target=lambda: self.run())
         self.worker.setDaemon(True)
 
-
         if debug:
             self.log_debug = self.log.debug_always
             self.log_debug("%d: Task requested debug", number)
@@ -791,11 +789,7 @@ class SchedulerWorker(object):
         self.log_debug("%d: New thread for task %s at %s", number,
                        self.task, self.trynext)
 
-
-    def start(self):
-        """Start running."""
         self.worker.start()
-
 
 
     def run(self):
@@ -831,8 +825,7 @@ class SchedulerWorker(object):
         finally:
 
             # However it went, we're no longer working on this task.
-            with self.working_set_lock:
-                del self.working_set[self.number]
+            self.working_set.remove(self.number)
             self.log_debug("%d: Thread finished", self.number)
 
 
@@ -861,13 +854,17 @@ def main_program():
     # What workers are running
     max_workers = options.max_parallel
 
-    workers = {}
-    # TODO: Use a queue like in the archiver.  See #1143.
-    workers_lock = threading.Lock()
+    workers = pscheduler.ThreadSafeSet()
+    worker_threads = {}
 
     wait = False  # First iteration is always no-wait.
 
     while True:
+
+        # Purge any workers that are no longer running
+        for remove in [ worker_id for worker_id in worker_threads if worker_id not in workers ]:
+            log.debug("Purging completed thread %d", remove)
+            del worker_threads[remove]
 
         if wait:
 
@@ -892,19 +889,18 @@ def main_program():
             FROM schedule_runs_to_schedule"""
         args = []
 
-        with workers_lock:
-            num_workers = len(workers)
+        # Weed out any tasks that have a worker scheduling a run.
 
-            # Weed out any tasks that have a worker scheduling a run.
+        working = workers.items()
 
-            if num_workers > 0:
-                query += " WHERE task NOT IN %s"
-                args.append(tuple(workers.keys()))
-                log.debug("Already have workers for %s", tuple(workers.keys()))
+        if len(working) > 0:
+            query += " WHERE task NOT IN %s"
+            args.append(tuple(working))
+            log.debug("Already have workers for %s", working)
 
             # Don't ask for more rows than we're going to be able to consume
 
-            limit = max_workers - num_workers
+            limit = max_workers - len(working)
             if limit == 0:
                 log.debug("Already have a full slate of workers, skipping query.")
                 continue
@@ -917,16 +913,15 @@ def main_program():
 
             number, task, key, runs, trynext, anytime, json, participants, debug = row
 
-            with workers_lock:
-                if number not in workers:
-                    worker = SchedulerWorker(number, nonstart_pg, log,
-                                             workers, workers_lock, task, key,
-                                             runs, trynext, anytime, json,
-                                             participants, debug)
-                    log.debug("Starting thread for ID %d", number)
-                    workers[number] = worker
-                    worker.start()
-                    wait = False
+            if number not in workers:
+                worker = SchedulerWorker(number, nonstart_pg, log,
+                                         workers, task, key,
+                                         runs, trynext, anytime, json,
+                                         participants, debug)
+                log.debug("Starting thread for ID %d", number)
+                workers.add(number)
+                worker_threads[number] = worker
+                wait = False
 
         if pg.notifications():
             wait = False

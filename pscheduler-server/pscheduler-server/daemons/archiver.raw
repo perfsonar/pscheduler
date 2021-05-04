@@ -854,8 +854,7 @@ def main_program():
             archiver_collection.skim()
 
         # Purge any workers that are no longer running
-        to_remove = [ worker_id for worker_id in worker_threads if worker_id not in workers ]
-        for remove in to_remove:
+        for remove in [ worker_id for worker_id in worker_threads if worker_id not in workers ]:
             log.debug("Purging completed thread %d", remove)
             del worker_threads[remove]
 
