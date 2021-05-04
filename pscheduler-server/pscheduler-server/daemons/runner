@@ -107,37 +107,6 @@ def run_start_margin():
 
 
 #
-# Directory of what we believe to be running and what we don't.
-#
-# Even though Python de-parallelizes threads, force this to become
-# thread-safe in case it gets smarter later.
-#
-
-# TODO: Use the ThreadSafeSet and ThreadSafeSetHold instead
-
-class RunDictionary(object):
-
-    def __init__(self):
-        self.dict = {}
-        self.lock = threading.Lock()
-
-    def start(self, id, worker):
-        with self.lock:
-            self.dict[id] = worker
-
-    def finish(self, id):
-        with self.lock:
-            del self.dict[id]
-
-    def is_running(self, id):
-        with self.lock:
-            result = id in self.dict
-        return result
-
-run_dict = RunDictionary()
-
-
-#
 # Clock Survey
 #
 
@@ -185,7 +154,7 @@ def clock_survey(hosts, bind=None):
 
 class RunWorker(object):
 
-    def __init__(self, dbpool, log, id, start_at):
+    def __init__(self, dbpool, log, id, start_at, worker_set):
 
         # Per http://initd.org/psycopg/docs/usage.html#thread-safety,
         # Psycopg is thread-safe when you use multiple cursors against the
@@ -197,14 +166,13 @@ class RunWorker(object):
         self.log_debug = log.debug
         self.id = id
         self.start_at = start_at
+        self.worker_set = worker_set
+
         self.finished = False
         self.output = []
 
         self.worker = threading.Thread(target=lambda: self.run())
         self.worker.setDaemon(True)
-
-
-    def start(self):
         self.worker.start()
 
 
@@ -310,7 +278,6 @@ class RunWorker(object):
         Run the tool in an exception-safe way
         """
         self.log_debug("%d: Thread running", self.id)
-        run_dict.start(self.id, self)
         try:
             with tempfile.TemporaryDirectory() as self.temp:
                 self.log_debug("%d: Temp space in %s", self.id, self.temp)
@@ -322,9 +289,9 @@ class RunWorker(object):
             # it might be salvageable.
             self.log_debug("%d: Exception: %s", self.id, ex)
             log.exception()
-
-        self.log_debug("%d: Thread finished", self.id)
-        run_dict.finish(self.id)
+        finally:
+            self.log_debug("%d: Thread finished", self.id)
+            self.worker_set.remove(self.id)
 
 
     def __run(self):
@@ -845,7 +812,15 @@ def main_program():
     run_start_margin_set(db)
 
 
+    workers = pscheduler.ThreadSafeSet()
+    worker_threads = {}
+
     while True:
+
+        # Purge any workers that are no longer running
+        for remove in [ worker_id for worker_id in worker_threads if worker_id not in workers ]:
+            log.debug("Purging completed thread %d", remove)
+            del worker_threads[remove]
 
         log.debug("Next run or check in %s", wait_time)
         if not pscheduler.timedelta_is_zero(wait_time):
@@ -932,34 +907,32 @@ def main_program():
 
             wait_time = refresh
 
-            already_running = 0
             run_ids = []
-            run_workers = []
+            runs_started = False
+
             for row in cursor:
 
                 run_id, start_in, start_at, background_multi = row
 
-                if run_dict.is_running(run_id):
+                if run_id in workers:
                     log.debug("%d is already running" % (run_id))
-                    already_running += 1
                     continue
 
                 log.debug("Run %d, starts at %s", run_id, start_at)
 
                 run_ids.append(run_id)
 
-                worker = RunWorker(dbpool, log, run_id, start_at)
-                run_workers.append(worker)
+                worker_threads[run_id] = RunWorker(dbpool, log, run_id, start_at, workers)
+                workers.add(run_id)
+                runs_started = True
+
                 log.debug("%d: Created worker", run_id)
 
                 if not background_multi and start_in < wait_time:
                     log.debug("Dropping wait time to %s", start_in)
                     wait_time = start_in
 
-        if already_running > 0:
-            log.debug("Skipped %d already-running runs", already_running)
-
-        if not run_workers:
+        if not runs_started:
             log.debug("No workers to run.")
             wait_time = refresh
             continue
@@ -979,9 +952,6 @@ def main_program():
                                    """, (tuple(run_ids),))
                 except Exception as ex:
                     log.error("Unable to set on-deck status: %s" % (str(ex)))
-
-        for worker in run_workers:
-            worker.start()
 
 
     # Not that this will ever be reached...
