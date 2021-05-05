@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 python-pyjq-u18 (2.4.0-1~u18+1) perfsonar-4.4-staging; urgency=low
 
   * Forward port to Ubuntu 18.
@@ -11,16 +12,19 @@ python-pyjq (2.4.0-1) perfsonar-4.4-staging; urgency=low
  -- Mark Feit <mfeit@internet2.edu>  Wed, 27 Jan 2021 12:56:07 +0000
 
 python-pyjq-u18 (2.3.0-2~u18+2) perfsonar-4.3-staging; urgency=low
-
-  * Conflicting with python3-pyjq
-
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 30 Oct 2020 20:25:41 +0000
-
-python-pyjq-u18 (2.3.0-2~u18+1) perfsonar-4.3-staging; urgency=low
+=======
+python-pyjq-u18 (2.4.0-1~u18+1) perfsonar-4.3-staging; urgency=low
+>>>>>>> 4.3.5
 
   * Backport to Ubuntu 18.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 05 Jun 2020 12:23:10 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 17 Mar 2021 14:54:48 +0000
+
+python-pyjq (2.4.0-1) perfsonar-4.3-staging; urgency=low
+
+  * New upstream release.
+
+ -- Mark Feit <mfeit@internet2.edu>  Wed, 27 Jan 2021 12:56:07 +0000
 
 python-pyjq (2.3.0-2) perfsonar-4.3-staging; urgency=low
 

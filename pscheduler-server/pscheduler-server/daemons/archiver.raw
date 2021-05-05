@@ -687,12 +687,12 @@ class ArchiveWorker(object):
             log_debug("%d: Null transform result; not archiving", self.id)
             returncode = 0
             stdout = """{ "succeeded": true }"""
-            stdout_attempt = "Transform result forced not archiving."
+            stdout_attempt = "Archiving stopped by transform."
             stderr = ""
             skip = True
             result = {
                 "succeeded": True,
-                "error": ""
+                "error": stdout_attempt
             }
         else:
             skip = False
@@ -940,19 +940,22 @@ def main_program():
                 log.debug("Already running %d archivers.", len(workers))
                 break
 
-            id = row[0]
+            archiving_id = row[0]
 
-            if id in workers:
-                log.debug("%d: Already running a worker", id)
+            if archiving_id in workers:
+                log.debug("%d: Already running a worker", archiving_id)
                 continue
 
             log.debug("%d: Starting worker", id)
-            # Store this to avoid scope issues
-            worker_threads[id] = ArchiveWorker(db, log, row, archiver_collection, workers)
-            workers.add(id)
+            try:
+                # Store this to avoid scope issues
+                worker_threads[id] = ArchiveWorker(db, log, row, archiver_collection, workers)
+                workers.add(id)
+                next_refresh = None
+            except Exception:
+                log.exception(message="%d: Exception while starting worker" % (archiving_id))
 
-            # Anytime we start worker(s), query again immediately.
-            next_refresh = None
+
 
 
 

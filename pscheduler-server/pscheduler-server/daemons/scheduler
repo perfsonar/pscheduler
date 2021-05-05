@@ -914,14 +914,18 @@ def main_program():
             number, task, key, runs, trynext, anytime, json, participants, debug = row
 
             if number not in workers:
-                worker = SchedulerWorker(number, nonstart_pg, log,
-                                         workers, task, key,
-                                         runs, trynext, anytime, json,
-                                         participants, debug)
-                log.debug("Starting thread for ID %d", number)
-                workers.add(number)
-                worker_threads[number] = worker
-                wait = False
+                try:
+                    worker = SchedulerWorker(number, nonstart_pg, log,
+                                             workers, task, key,
+                                             runs, trynext, anytime, json,
+                                             participants, debug)
+                    log.debug("Starting thread for ID %d", number)
+                    workers.add(number)
+                    worker_threads[number] = worker
+                    wait = False
+                except Exception as ex:
+                    log.exception(message="%d: Exception while starting worker" % (number))
+
 
         if pg.notifications():
             wait = False

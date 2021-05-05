@@ -1,21 +1,9 @@
---- python-pyjq-d10.orig/setup.py	2021-01-27 19:21:12.327348000 +0000
-+++ python-pyjq-d10/setup.py	2021-01-27 19:25:17.648991000 +0000
-@@ -7,59 +7,20 @@
- from os.path import join, dirname, abspath
- import platform
- 
--import sysconfig
-+try:
-+    import sysconfig
-+except ImportError:
-+    # Python 2.6
-+    from distutils import sysconfig
-+
- from setuptools import setup
- from setuptools.extension import Extension
+--- python-pyjq.orig/setup.py	2019-09-18 07:14:51.000000000 +0000
++++ python-pyjq/setup.py	2021-01-27 18:28:44.079995000 +0000
+@@ -13,53 +13,11 @@
  from setuptools.command.build_ext import _build_ext
  
--
+ 
 -dependencies_dir_path = join(abspath(dirname(__file__)), "dependencies")
 -
 -onig_tarball_path = join(dependencies_dir_path, "onig-6.9.0.tar.gz")
@@ -66,29 +54,31 @@
      def _build_lib(self, lib_dir, commands):
          macosx_deployment_target = sysconfig.get_config_var("MACOSX_DEPLOYMENT_TARGET")
          if macosx_deployment_target:
-@@ -68,30 +29,17 @@
+@@ -68,16 +26,13 @@
          for command in commands:
              subprocess.check_call(command, cwd=lib_dir)
  
 -    def _extract_tarball(self, tarball_path, workdir_path):
 -        tarfile.open(tarball_path, "r:gz").extractall(workdir_path)
 -
--    def _safe_rmtree(self, d):
--        try:
--            shutil.rmtree(d)
--        except OSError:
--            pass
+     def _safe_rmtree(self, d):
+         try:
+             shutil.rmtree(d)
+         except OSError:
+             pass
  
- libraries = ["jq", "onig"]
--if platform.architecture()[1] == 'WindowsPE':
--    libraries.append("shlwapi")
+-libraries = ["jq", "onig"]
++libraries = ["jq"]
+ if platform.architecture()[1] == 'WindowsPE':
+     libraries.append("shlwapi")
  
- pyjq = Extension(
+@@ -85,13 +40,11 @@
      "_pyjq",
      sources=["_pyjq.c"],
--    include_dirs=["dependencies/jq_install/include"],
-     libraries=libraries,
+     include_dirs=["dependencies/jq_install/include"],
+-    libraries=libraries,
 -    library_dirs=["dependencies/jq_install/lib", "dependencies/onig_install/lib"]
++    libraries=libraries
  )
  
  setup(
