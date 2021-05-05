@@ -899,7 +899,7 @@ def main_program():
 
         log.debug("Limiting query to %d", query_limit)
 
-        exclusions = workers.items();
+        exclusions = workers.items()
         log.debug("Excluding %s", exclusions)
 
         # TODO: A lot of what's being pulled here can be pulled from
@@ -946,11 +946,11 @@ def main_program():
                 log.debug("%d: Already running a worker", archiving_id)
                 continue
 
-            log.debug("%d: Starting worker", id)
+            log.debug("%d: Starting worker", archiving_id)
             try:
                 # Store this to avoid scope issues
-                worker_threads[id] = ArchiveWorker(db, log, row, archiver_collection, workers)
-                workers.add(id)
+                worker_threads[archiving_id] = ArchiveWorker(db, log, row, archiver_collection, workers)
+                workers.add(archiving_id)
                 next_refresh = None
             except Exception:
                 log.exception(message="%d: Exception while starting worker" % (archiving_id))
