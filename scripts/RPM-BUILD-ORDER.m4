@@ -102,6 +102,8 @@ httpd-wsgi-socket
 # Utility and Tool programs
 #
 drop-in
+libtins
+dublin-traceroute
 ethr
 # TODO: Building temporarily for EL8; required for owamp
 ifelse(REDHAT_RELEASE_MAJOR,8,I2util)
