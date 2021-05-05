@@ -171,11 +171,7 @@ class RunWorker(object):
         self.finished = False
         self.output = []
 
-        # This is used to hold in place of start() so any exceptions
-        # related to thread creation happen here and not there.
-        self.barrier = threading.Barrier(2)
-
-        self.worker = threading.Thread(target=lambda: self.run())
+        self.worker = threading.Thread(target=self.run)
         self.worker.setDaemon(True)
         self.worker.start()
 
@@ -283,9 +279,7 @@ class RunWorker(object):
         """
         self.log_debug("%d: Thread running", self.id)
         try:
-            self.barrier.wait()
             self.log.debug("%d: Running", self.id)
-            run_dict.start(self.id, self)
             with tempfile.TemporaryDirectory() as self.temp:
                 self.log_debug("%d: Temp space in %s", self.id, self.temp)
                 self.__run()
@@ -930,8 +924,8 @@ def main_program():
                 run_ids.append(run_id)
 
                 try:
-                    worker_threads[run_id] = RunWorker(dbpool, log, run_id, start_at, workers)
                     workers.add(run_id)
+                    worker_threads[run_id] = RunWorker(dbpool, log, run_id, start_at, workers)
                     runs_started = True
                     if not background_multi and start_in < wait_time:
                         log.debug("Dropping wait time to %s", start_in)
