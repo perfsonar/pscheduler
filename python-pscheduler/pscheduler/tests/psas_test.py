@@ -29,18 +29,21 @@ class TestPsas(PschedTestBase):
         # Do these only if it looks like anything worked at all.
         # Otherwise, we probably don't have a network connection.
 
-        if [key for key in ret if ret[key] is not None]:
+        assert(ret.get('this-is-not-valid') is None)
 
-            assert(ret.get('this-is-not-valid') is None)
-            self.assertEqual(
-                ret.get('8.8.8.8')[0],
-                15169, 'GOOGLE, US')
-            self.assertEqual(
-                ret.get('2607:f8b0:4002:c06::67')[0],
-                15169)
-            self.assertEqual(
-                ret.get('198.6.1.1')[0],
-                701)
+        # TODO: These aren't going to be stable forever.
+        if False:
+            if [key for key in ret if ret[key] is not None]:
+
+                self.assertEqual(
+                    ret.get('8.8.8.8')[0],
+                    15169, 'GOOGLE, US')
+                self.assertEqual(
+                    ret.get('2607:f8b0:4002:c06::67')[0],
+                    15169)
+                self.assertEqual(
+                    ret.get('198.6.1.1')[0],
+                    701)
 
 
 if __name__ == '__main__':
