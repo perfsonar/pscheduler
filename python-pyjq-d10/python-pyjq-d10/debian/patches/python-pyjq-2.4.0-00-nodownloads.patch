@@ -14,7 +14,7 @@
 -jq_install_path = join(dependencies_dir_path, "jq_install")
 -jq_source_path = join(dependencies_dir_path, "jq-jq-1.5")
 -
--
+ 
  class build_ext(_build_ext):
      def run(self):
 -        self._build_oniguruma()
