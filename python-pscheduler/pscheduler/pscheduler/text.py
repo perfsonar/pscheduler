@@ -3,10 +3,31 @@
 #
 
 import os
-import secrets
 import string
 import sys
 import textwrap
+
+# This is not available on Debian 9, so if it isn't, roll our own.
+# DEBIAN: Go back to using secrets directly when Debian 9 goes away.
+try:
+
+    import secrets
+    SECRETS_CHOICE = secrets.choice
+    SECRETS_RANDBELOW = secrets.randbelow
+    
+except ImportError:
+
+    import random
+
+    def secrets_randbelow(below):
+        return random.randint(0, below-1)
+
+    def secrets_choice(charset):
+        return charset[secrets_randbelow(len(charset)-1)]
+
+
+    SECRETS_CHOICE = secrets_choice
+    SECRETS_RANDBELOW = secrets_randbelow
 
 
 def terminal_size():
@@ -71,7 +92,7 @@ def random_string(length, randlength=False, safe=False):
     """
 
     if randlength:
-        length = length - secrets.randbelow(int(length/2))
+        length = length - SECRETS_RANDBELOW(int(length/2))
 
     charset = string.digits + string.ascii_letters
     if not safe:
@@ -79,7 +100,7 @@ def random_string(length, randlength=False, safe=False):
     charset_len = len(charset)
 
     characters = [
-        secrets.choice(charset)
+        SECRETS_CHOICE(charset)
         for _ in range(0, length)
     ]
 
