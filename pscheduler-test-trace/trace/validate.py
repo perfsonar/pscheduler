@@ -23,7 +23,6 @@ SPEC_SCHEMA = {
             "type": "object",
             "properties": {
                 "schema":      { "type": "integer", "enum": [ 1 ] },
-                "schema":      { "$ref": "#/pScheduler/Cardinal" },
                 "algorithm":   { "$ref": "#/local/algorithm" },
                 "as":          { "$ref": "#/pScheduler/Boolean" },
                 "dest-port":   { "$ref": "#/pScheduler/IPPort" },
@@ -51,7 +50,6 @@ SPEC_SCHEMA = {
             "type": "object",
             "properties": {
                 "schema":      { "type": "integer", "enum": [ 2 ] },
-                "schema":      { "$ref": "#/pScheduler/Cardinal" },
                 "algorithm":   { "$ref": "#/local/algorithm" },
                 "as":          { "$ref": "#/pScheduler/Boolean" },
                 "dest-port":   { "$ref": "#/pScheduler/IPPort" },
