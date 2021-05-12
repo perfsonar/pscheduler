@@ -190,6 +190,11 @@ opt_parser.add_option("--reverse",
                       action="store_true",
                       dest="reverse")
 
+opt_parser.add_option("--reverse-connections",
+                      help="Make connections from destination to source where possible.",
+                      action="store_true",
+                      dest="reverse_connections")
+
 opt_parser.add_option("--loopback",
                       help="Run both client and server side in a loopback test.",
                       action="store_true",
@@ -340,6 +345,10 @@ if options.single_ended_port:
 
 if options.reverse:
    result["reverse"] = True
+
+if options.reverse_connections:
+   result["reverse-connections"] = True
+   schema.set(6)
 
 if options.loopback:
    result["loopback"] = True

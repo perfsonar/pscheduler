@@ -193,6 +193,9 @@ def run_client():
     if test_spec.get('reverse'):
         nuttcp_args.append('-F')
 
+    if test_spec.get('reverse-connections'):
+        nuttcp_args.append('-r')
+
     # who to connect to
     destination = test_spec['dest']
 
