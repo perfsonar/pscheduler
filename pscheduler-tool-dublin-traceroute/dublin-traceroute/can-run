@@ -1,0 +1,124 @@
+#!/usr/bin/env python3
+#
+# Determine if this tool can run a test based on a test spec.
+#
+
+import datetime
+import pscheduler
+import sys
+
+MAX_SCHEMA = 2
+
+json = pscheduler.json_load(exit_on_error=True);
+
+try:
+    if json['type'] != 'trace':
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Unsupported test type" ]
+        })
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test type" ]
+    })
+
+
+try:
+    spec = json["spec"]
+    pscheduler.json_check_schema(spec, MAX_SCHEMA)
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test specification"]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
+
+
+errors = []
+
+# algorithm
+try:
+    if spec["algorithm"] != "dublin-traceroute":
+        errors.append("Algorithm '{}' is not supported.".format(spec["algorithm"]))
+except KeyError:
+    pass
+
+# as - Okay in any form.
+
+# dest-port
+if "dest-port" in spec:
+    errors.append("Destination ports are not supported.")
+
+# dest - Okay in any form.
+
+# first-ttl
+# Hold this for later.
+first_ttl = spec.get("first-ttl", 1)
+if first_ttl < 1 or first_ttl > 255:
+    errors.append("Unsupported TTL")
+
+# flow-label
+if "flow-label" in spec:
+    errors.append("Flow labels are not supported.")
+
+# fragment
+if spec.get("fragment", False):
+    errors.append("Cannot control fragmentation.")
+
+# hops - Okay in any form.
+hops = spec.get("hops", 30)
+if hops > 255:
+    errors.append("Maximum hops is 30.")
+elif hops < first_ttl:
+    errors.append("Cannot support fewer hops than the first TTL.")
+
+# hostnames - Okay in any form.
+
+# ip-tos
+if "ip-tos" in spec:
+    errors.append("IP type of service is not supported.")
+
+# ip-version - No IPv6
+if spec.get("ip-version", 4) != 4:
+    errors.append("Only IPv4 is supported.")
+
+# length
+if "length" in spec:
+    errors.append("Unable to control Packet length.")
+
+# probe-type
+if spec.get("probe-type", "udp") != "udp":
+    errors.append("Probe type '{}' is not supported.".format(spec["probe-type"]))
+
+# queries
+if "queries" in spec:
+    errors.append("Cannot control queries per hop")
+
+# send-wait - Okay in any form.
+if "sendwait" in spec:
+    errors.append("Sendwait is not supported.")
+
+# source
+if "source" in spec:
+    errors.append("Cannot control source address.")
+
+# source-node - Okay in any form
+
+# wait
+if "wait" in spec:
+    errors.append("Cannot control wait time")
+
+
+result = {
+    "can-run": len(errors) == 0
+}
+
+if len(errors) > 0:
+    result["reasons"] = errors
+
+pscheduler.succeed_json(result)
