@@ -69,7 +69,7 @@ do
     [ -e "/etc/${VENDOR}-release" ] && break
 done
 
-REDHAT_RELEASE=$(sed -e 's/^.* \([0-9.]\+\) .*$/\1/' /etc/redhat-release)
+REDHAT_RELEASE=$(grep -o "[0-9.]\+" /etc/redhat-release)
 REDHAT_RELEASE_MAJOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 }')
 REDHAT_RELEASE_MAJOR_MINOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 "." $2 }')
 
