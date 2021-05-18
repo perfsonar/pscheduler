@@ -69,6 +69,8 @@ ifelse(REDHAT_RELEASE_MAJOR,7,python-memcached)
 python-netifaces
 ifelse(REDHAT_RELEASE_MAJOR,7,python-ntplib)
 python-parse-crontab
+python-vine
+python-py-amqp
 python-py-radix
 python-pyjq
 python-tzlocal
