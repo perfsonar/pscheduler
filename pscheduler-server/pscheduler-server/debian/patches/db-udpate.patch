@@ -1,5 +1,5 @@
---- pscheduler-server.orig/database/db-update.raw	2021-04-20 18:47:32.322185224 +0000
-+++ pscheduler-server/database/db-update.raw	2021-04-20 18:46:58.061443456 +0000
+--- a/database/db-update.raw	2021-05-18 13:00:44.908704380 +0000
++++ b/database/db-update.raw	2021-05-18 13:00:50.080769576 +0000
 @@ -20,14 +20,11 @@
  $INTERACTIVE && printf "Loading database:\n" || true
  
