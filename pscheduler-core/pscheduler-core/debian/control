@@ -11,7 +11,7 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 
 Package: pscheduler-core
 Architecture: all
-Depends: ${misc:Depends}, python3-pscheduler,
+Depends: ${misc:Depends}, python3-pscheduler (>= 4.4.0~),
  curl, dmidecode, lsof
 Recommends: gnuplot-nox | gnuplot5-nox | gnuplot | gnuplot5
 Description: pScheduler core programs

@@ -14,7 +14,7 @@ Architecture: all
 Depends: ${misc:Depends}, python3, curl,
  python3-daemon, python3-flask,
  python3-tz, python3-jsontemplate, python3-radix, python3-crontab,
- python3-pscheduler, pscheduler-core, pscheduler-account,
+ python3-pscheduler (>= 4.4.0~), pscheduler-core, pscheduler-account,
  apache2, libapache2-mod-wsgi-py3, rsyslog, logrotate,
  dbconfig-common, postgresql (>= 9.5),
  postgresql-11 | postgresql-10 | postgresql-9.6 | postgresql-9.5,
