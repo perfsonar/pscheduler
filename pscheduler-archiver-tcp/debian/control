@@ -1,4 +1,4 @@
-Source: pscheduler-archiver-http
+Source: pscheduler-archiver-tcp
 Section: net
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
@@ -9,9 +9,9 @@ Homepage: https://github.com/perfsonar/pscheduler
 Vcs-Git: git://github.com/perfsonar/pscheduler
 Vcs-Browser: https://github.com/perfsonar/pscheduler
 
-Package: pscheduler-archiver-http
+Package: pscheduler-archiver-tcp
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler (>= 4.4.0~),
  pscheduler-server (>= 1.1.6.1)
-Description: HTTP archiver class for pScheduler
- Archiver sends JSON test results to HTTP server.
+Description: TCP archiver class for pScheduler
+ Archiver sends JSON test results to a TCP socket
