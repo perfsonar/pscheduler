@@ -13,7 +13,7 @@ Package: pscheduler-tool-nuttcp
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler (>= 4.4.0~),
  pscheduler-server (>= 4.4.0~), pscheduler-test-throughput,
- nuttcp (>= 8.1.4)
+ nuttcp (>= 8.1.4~)
 Recommends: numactl
 Description: pScheduler nuttcp tool
  nuttcp tool class for pScheduler
