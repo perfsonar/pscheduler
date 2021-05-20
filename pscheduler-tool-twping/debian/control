@@ -12,7 +12,7 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-tool-twping
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server, pscheduler-test-latency,
+ pscheduler-server (>= 4.3.0), pscheduler-test-latency,
  twamp-server, twamp-client
 Description: pScheduler twping tool
  twping tool class for pScheduler

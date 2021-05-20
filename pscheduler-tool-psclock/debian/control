@@ -12,6 +12,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-tool-psclock
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server, pscheduler-test-clock
+ pscheduler-server (>= 4.3.0), pscheduler-test-clock
 Description: pScheduler clock tool
  Clock tool class for pScheduler

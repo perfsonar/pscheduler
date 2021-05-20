@@ -12,7 +12,7 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-tool-powstream
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server, pscheduler-test-latencybg,
+ pscheduler-server (>= 4.3.0), pscheduler-test-latencybg,
  python3-tz, owamp-server, owamp-client
 Description: pScheduler powstream tool
  powstream tool class for pScheduler

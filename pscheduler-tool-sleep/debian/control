@@ -12,6 +12,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-tool-sleep
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server, pscheduler-test-idle
+ pscheduler-server (>= 4.3.0), pscheduler-test-idle
 Description: pScheduler sleep tool
  Sleep tool class for pScheduler

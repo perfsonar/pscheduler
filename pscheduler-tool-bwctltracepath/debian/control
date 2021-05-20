@@ -11,7 +11,7 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 
 Package: pscheduler-tool-bwctltracepath
 Architecture: all
-Depends: ${misc:Depends}, pscheduler-server, pscheduler-test-trace
+Depends: ${misc:Depends}, pscheduler-server (>= 4.3.0), pscheduler-test-trace
 Description: pScheduler bwctltracepath tool (DISABLED)
  bwctltracepath tool class for pScheduler
  (DISABLED)
