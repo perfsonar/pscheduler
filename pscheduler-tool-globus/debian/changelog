@@ -1,8 +1,8 @@
-pscheduler-tool-globus (4.4.0~2.b1-1) perfsonar-4.4; urgency=low
+pscheduler-tool-globus (4.4.0~2.b1-2) perfsonar-4.4; urgency=low
 
   * New upstream version.
 
- -- perfSONAR developers <debian@perfsonar.net>  Wed, 19 May 2021 13:22:58 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 20 May 2021 12:52:12 +0000
 
 pscheduler-tool-globus (4.3.3-1) perfsonar-4.3; urgency=low
 
