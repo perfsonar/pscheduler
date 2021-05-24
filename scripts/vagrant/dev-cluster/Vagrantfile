@@ -6,25 +6,32 @@
 
 # Customize the following to taste:
 
-# Operating system.  These are the two favorites; see the "boxes" hash
-# below for a full list of valid values.
-os = "centos7"
-#os = "debian9"
+# An array of operating system names; see the "boxes" hash below for a
+# full list of valid values.  Each element in the array will be turned
+# into a VM running that system.  These are a few popular choices:
+boxes = [ "centos7" ]
+#boxes = [ "centos7", "centos8" ]
+#boxes = [ "debian9" ]
+#boxes = [ "debian10"]
+#boxes = [ "debian9", "debian9" ]
+#boxes = [ "centos7", "debian9" ]
 
-# Prefix for VM host names.  This should be unique across clusters on
+
+# Prefix for VM names.  This should be unique across clusters on
 # the same host.
 host_prefix = "psdev"
 
-# How many VMs to build
-cluster_size = 1
 
 # Resources given to each VM
 cpus = 2
 memory = 2048
 
-# Paths to Ansible playbooks to run after each system is configured
+
+# Additional Ansible playbooks to run after each system is configured,
+# usually used for user-specific customizations.
 additional_playbooks = [
-  # Example: "#{ENV['HOME']}/ansible/my-stuff.yml"
+#  "#{ENV['HOME']}/ansible/my-essentials/main.yml",
+#  "#{ENV['HOME']}/ansible/my-essentials/debug.yml"
 ]
 
 
@@ -35,8 +42,9 @@ additional_playbooks = [
 
 require 'etc'
 
-boxes = Hash[
+valid_boxes = Hash[
   # RedHat and Derivatives
+  "alma8" => "almalinux/8",
   "centos7" => "bento/centos-7",
   "centos8" => "bento/centos-8",
   "oracle7" => "generic/oracle7",
@@ -46,7 +54,7 @@ boxes = Hash[
   # Debian and Derivatives
   "debian8" => "generic/debian8",
   "debian9" => "generic/debian9",
-  "debian10" => "generic/debian10",
+  "debian10" => "geerlingguy/debian10",
   "ubuntu16" => "ubuntu/xenial64",
   "ubuntu18" => "ubuntu/bionic64",
   "ubuntu20" => "ubuntu/focal64",
@@ -54,11 +62,11 @@ boxes = Hash[
 
 
 
-if not boxes.has_key?(os)
-  raise "OS '#{os}' is not supported."
+if boxes.is_a?(Array)
+  cluster_size = boxes.length
+else
+  raise "Box list 'boxes' is not an array."
 end
-
-box = boxes[os]
 
 
 
@@ -82,7 +90,11 @@ Vagrant.configure("2") do |config|
 
       # System
 
-      host.vm.box = box
+      box_os = boxes[host_number-1]
+      if not valid_boxes.has_key?(box_os)
+        raise "OS '#{box_os}' is not supported."
+      end
+      host.vm.box = valid_boxes[box_os]
       host.vm.hostname = host_name
       
       host.vm.provider "virtualbox" do |vbox|
