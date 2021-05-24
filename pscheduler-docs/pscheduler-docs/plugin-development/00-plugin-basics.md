@@ -1,0 +1,1188 @@
+# Plugin Basics
+
+## The pScheduler Plugin Architecture
+
+As its name hints, pScheduler's job is to do five things, all of which
+center around scheduling and making measurements:
+
+ * Accept tasking from the outside.
+ * Maintain a schedule of one or more times when the tasking should be
+   carried out.  These events are called _runs_.
+ * Carry out the tasking by executing the scheduled runs.
+ * Receive run results.
+ * Distribute the results to archives for processing or long-term
+   storage.
+
+One of the key tenets of pScheduler's design is that its core should
+not be influenced by the idiosyncrasies of the measurements or the
+tools used to carry them out.  To that end, some of the data
+pScheduler handles is treated as opaque, understood only by a
+separately-developed system of plugins.
+
+By developing plugins, pScheduler's capabilities can be expanded by
+its user community without having to rely on the core development
+team's limited resrouces.  Software to handle measurements of
+less-than-broad interest can be developed and maintained by those who
+need them and, optionally, adopted by the development team for
+inclusion in the perfSONAR distribution.
+
+### Classes
+
+pScheduler divides its plugins into four _classes_:
+
+ * _Tests,_ which are abstract descriptions of a measurement to be made
+   and the results.
+
+ * _Tools,_ which are programs which, insingle or multiple instances
+   working together, make a measurement specified by a test.
+
+ * _Contexts,_ which alter the execution environment of tools before
+   they are run.
+
+ * _Archivers,_ which send test results produced by tools to other
+   systems for processing or long-term storage.
+
+Each of these will be described in more detail in later sections.
+
+Classes, like all other plugin components, live in a directory known
+to pScheduler's build system.
+
+
+### Instances
+
+Each class will have one more more _instances_, which are
+implementations of the type of each class.  For example,
+
+
+
+
+
+
+-----------------------------------------------------
+## Concept of Operation
+
+# TODO: Intro paragraph
+
+This is the lifecycle of a measurement:
+
+ * At startup and during installation or upgrades of plugins,
+   pScheduler inventories the installed tests, tools, contexts and
+   archivers.  For tools, this includes getting information on which
+   tests they run.
+
+ * A task, consisting of a test specification, scheduling, archiving
+   and other administrative information is written and provided to
+   pScheduler.
+
+ * The test specfication is validated by the plugin for the test type
+   specified in the task.
+
+ * The test specification is given to the test, which uses it to
+   determine the list of nodes that will be participating.
+
+ * pScheduler provides the test to each of the participants and is
+   returned a list of the tools which are able and willing to carry
+   out the test in order of preference.
+
+ * The lead participant combs through the lists and selects a tool to
+   be used for runs of the task.
+
+ * The task is registered with each of the participants.
+
+ * One or more runs of the task are scheduled.  As part of the
+   scheduling process, the tool on each participant generates
+   participant-specific data for that run, such as ports to be used.
+
+ * The participant-specific data is collected, merged and distributed
+   to all participants.
+
+ * At the scheduled time, the measurement is performed, optionally
+   with any specified context changes.  This produces a result which
+   is stored locally by each participant.
+
+ * The lead participant retrieves and stores the other participants'
+   results.
+
+ * The set of participant results are merged into a full result, which
+   is stored by the lead participant.
+
+ * The lead participant puts the results in a queue to be archived.
+
+ * The results are sent to the specified archives, repeatedly if
+   necessary because of failures.
+
+
+## Plugin Concepts
+
+### Classes
+
+At the top level of the API are {\it classes}, each of which defines
+an entity pScheduler requires to function.
+
+There are three defined classes, which are the three items described
+earlier (tests, tools and archivers).
+
+\subsection{Methods}
+
+Each class defines one or more {\it methods}, which carry out
+functions specific to that class.
+
+Methods are invoked across a process boundary (i.e., by running
+programs external to pScheduler).  This almost completely decouples
+pScheduler's technology stack from those of the components, providing
+several benefits:
+
+\begin{itemize}
+\item Developers are free to select the right tool for the job 
+
+developers to select the right tool for the job and allowing
+significant evolution of one part without requiring the same of the
+others.
+\end{itemize}
+
+Each method program will:
+
+\begin{itemize}
+\item Be installed in a defined location.
+\item Have a defined name based on its function.
+\item Accept input in a defined format.  For most programs, this will
+  be JSON data.
+\item Provide output on the standard output stream in a defined
+  format.  For most programs, this will be JSON data.
+\item Provide error output on the standard error stream as plain,
+  human-readable text.
+\item Exit with one of several defined status values, usually
+  following the \true/\false\ convention or using values in
+  the \headerfile{sysexits.h} header found on many systems.
+\end{itemize}
+
+
+\subsection{Implementations}
+\todo{Write this.  (What was I going to put in this section?)}
+
+
+\subsection{Directory Structure}
+
+\note{This information is provided as background and should not be
+  used in determining where files should be installed.  Specific
+  instructions for use with the standard packaging systems for various
+  OS distributions can be found later in this document.}
+
+Generally, pScheduler's installation of files follows the conventions
+put forth in the {\it Filesystem Hierarchy Standard}
+(\url{http://www.pathname.com/fhs}).
+
+A typical directory tree on a system with several tests, tools and
+archivers installed might look like this:
+
+\dirtree{%
+.1 /usr.
+.2 libexec.
+.3 pscheduler.
+.4 classes $\odot$.
+.5 test $\odot$ {\it Implementations of tests}.
+.6 idle.
+.6 rtt.
+.5 tool $\odot$ {\it Implementations of tools}.
+.6 sleep.
+.6 snooze.
+.6 ping.
+.6 owping.
+.5 archiver $\odot$ {\it Implementations of archivers}.
+.6 bitbucket.
+.6 esmond.
+.2 share.
+.3 doc.
+.4 pscheduler.
+.5 test $\odot$ {\it Test documentation}.
+.5 tool $\odot$ {\it Tool documentation}.
+.5 archiver $\odot$ {\it Archiver documentation}.
+}
+
+The full paths of directories marked with the symbol $\odot$ should be
+provided as macros for packaging system specifications to use in
+ensuring correct placement of installed files.
+
+\todo{Should we specify the name of a directory inside each
+  test/tool/archiver where private code can live?  (Thinking about
+  common JSON validator modules which would to be used for tool {\tt
+    can-run} and {\tt run} methods.)  {\tt PRIVATE} might be a good
+  candidate.}
+
+
+% -----------------------------------------------------------------------------
+% -----------------------------------------------------------------------------
+
+
+\section{Plugin Classes}
+
+\todo{Need to add a ``Command Line Arguments'' item to the description
+  of each method.}
+
+\todo{Change the ``Exit Status'' sections to be enumerated so they're easier to read.}
+
+%
+% TEST
+%
+\subsection{Test}
+
+\todo{Introductory material}
+
+\todo{Design of Tests}
+
+\todo{Work this in somewhere: Tests are not necessarily restricted to
+  the subset of parameters the tools which implement it have in
+  common, rather they should be the superset of all parameters.  This
+  makes it possible to use tool-unique features without requiring that
+  every tool understand every parameter.  Tools will seeing tests
+  containing parameters they do not understand or are outside of their
+  abilities will simply decline to perform them.}
+
+\todo{Test Specification}
+
+The specification for a round-trip time test might look like this:
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+  "schema": 1,
+  "source": null,
+  "target": "somehost.example.org",
+  "duration": "PT20S",
+  "interval": "PT3S",
+  "size": 1024,
+  "ttl": 100,
+  "tos": "0x5a"
+  }
+}
+\end{lstlisting}
+
+
+
+Every test must implement the methods listed in the following sections.
+
+The directory tree of a test implementation would look like this ({\tt
+  *} denotes an executable file):
+\dirtree{%
+.1 /usr/libexec/pscheduler/classes/test.
+.2 {\itt test-name}.
+.3 cli-to-spec*.
+.3 enumerate*.
+.3 participants*.
+.3 result-format*.
+.3 result-is-valid*.
+.3 spec-is-valid*.
+.3 spec-to-cli*.
+}
+
+
+\todo{Put these in alphabetical order.}
+
+\subsubsection{enumerate}
+
+This method produces a description of the test in a standard format
+used when pScheduler needs to determine what tests are installed.
+
+\calloutitem{Standard Input} Ignored.
+
+\calloutitem{Standard Output} JSON containing the following items:
+\begin{itemize}
+\item{\tt name} - A string serving as a short name for the test.  This
+  value should be lowercase and match the name of the directory where
+  the test class is installed.  Test names should be industry-standard
+  terms rather than the names of the tools which carry them out.  For
+  example, a test that determines how long it takes for packets to get
+  from one host to another should be called {\tt latency} and not {\tt
+    owamp}.  A test the determines the same for a round trip should be
+  called {\tt rtt} (short for {\it round-trip time}) and not {\tt
+    ping}.
+\item{\tt description} - A short, textual description of what the test
+  measures.
+\item{\tt version} - A \jsontype{Version}.
+\item{\tt maintainer} - A \jsontype{Maintainer}.
+\item{\tt scheduling-class} - A string indicating how runs of this
+  kind of test should be scheduled.  Valid values are as follows:
+  \begin{itemize}
+  \item {\tt background} - These tests are run without regard to
+    whether anything else is happening.
+  \item {\tt background-multi} - These tests are scheduled by the same
+    rules as {\tt background}, will run even if the start time has
+    passed, and produce multiple results.  (See \autoref{toolrun},
+    {\it \nameref{toolrun}} for details on how this is accomplished.)
+  \item {\tt exclusive} - Runs are given time on the schedule
+    that is not shared with any scheduling class other than {\tt
+      background} and {\tt background-multi}.
+  \item {\tt normal} - These runs share schedule time with {\tt
+    background} and other {\tt normal} runs but not {\tt exclusive}.
+  \end{itemize}
+\end{itemize}
+
+\example
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "name": "rtt",
+    "description": "Round-trip time between hosts",
+    "version": "1.0",
+    "maintainer": {
+        "name": "Example Development Team",
+        "email": "plugins@example.org",
+        "href": "http://www.example.org/plugins"
+    },
+    "scheduling-class": "normal"
+}
+\end{lstlisting}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if successful, nonzero on error.
+
+% TODO: At some point in the future, there will probably be an
+% enumeration of what the test itself should look like for use by
+% GUIs.
+
+
+\subsubsection{participants}
+This method produces a list of the systems participating in the test
+based on the test specification.
+
+\calloutitem{Standard Input} A JSON specification of the test.
+
+\calloutitem{Standard Output} A JSON object containing the following
+items:
+
+\begin{itemize}
+\item{\tt participants} - An array of the participants, with any {\tt
+  null} values indicating the lead participant.  The order of this
+  list will match the numbering of participant roles specified in the
+  definition of the test.
+\item{\tt null-reason} - If the first element of {\tt participants} is
+  {\tt null}, a string giving the reason why.
+\end{itemize}
+
+\example
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "participants": [ null, "receivinghost.example.com" ],
+    "null-reason": "No source specified"
+}
+\end{lstlisting}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if successful, nonzero on error.
+
+
+
+\subsubsection{spec-is-valid}
+This method determines whether not a test specification is valid.
+
+Validation of a parameter should be according to whether or not its
+value is usable in a test, not whether or not any of the tools
+actually implement it.  For example, a test with a {\tt port}
+parameter representing a UDP or TCP port should accept numeric values
+in the range {\tt 0} to {\tt 65535} and perhaps strings which can be
+translated to port numbers using {\tt getservbyname(3)}.  Tools will
+accept or decline individual tests based on their own restrictions.
+
+\calloutitem{Standard Input} A JSON test specification.
+
+\calloutitem{Standard Output} A JSON object containing the following
+items:
+
+\begin{itemize}
+\item{\tt valid} - A {\tt Boolean} indicating whether or not the input
+  was valid.
+\item{\tt error} - If {\tt valid} is {\tt false}, a {\tt String}
+  describing the problem(s).
+\end{itemize}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on errors unrelated to the input.
+
+\calloutitem{Exit Status} {\tt 0} on success, nonzero on failure
+unrelated to the input.
+
+
+
+\subsubsection{result-is-valid}
+This method determines whether or not a result produced by a tool for
+this test conforms to the expected format.  \todo{None of the tests so
+  far have this.  Not sure there's a need for it.}
+
+\calloutitem{Standard Input} JSON results for the test as produced by
+a tool.
+
+\calloutitem{Standard Output} None.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if the result was valid, {\tt 1} if
+not, {\tt 2} if there was some other problem unrelated to the input.
+
+
+
+\subsubsection{cli-to-spec}
+This method produces a test specification from a set of command-line
+switches which, when fed to {\tt spec-to-cli} will produce the same
+set of command-line switches.
+
+This method can be invoked as a filter by providing a JSON array of
+arguments on the standard input or as a converter by providing the
+arguments on the command line.  The set of valid arguments is
+test-specific.
+
+\calloutitem{Standard Input} None if arguments are present on the
+command line, otherwise a JSON array of strings, each being a
+command-line argument.
+
+\calloutitem{Standard Output} A JSON specification for the test.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if the conversion was a success,
+            {\tt 1} if not, {\tt 2} if there was some other problem
+            unrelated to the input.
+
+
+
+\subsubsection{spec-to-cli}
+This method produces a list of command-line switches from a test
+specification which, when fed to {\tt cli-to-spec} will produce the
+same specification.
+
+\calloutitem{Standard Input} A specification valid for the test.
+
+\calloutitem{Standard Output} A JSON array of strings, each having
+being a command-line argument suitable for passing to {\tt
+  cli-to-spec}.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if the conversion was a success,
+            {\tt 1} if not, {\tt 2} if there was some other problem
+            unrelated to the input.
+
+
+\subsubsection{result-format}
+This method converts a JSON result for this test into some other
+format, usually intended for human consumption.  Note that
+implementations of this method must be able to format output for a
+failed test, normally a short ``test failed'' message.
+
+\calloutitem{Arguments} The desired MIME type for the output.  All
+implementations must support at least {\tt text/plain} and {\tt
+  text/html}.
+
+\calloutitem{Standard Input} A JSON object containing the following
+elements:
+\begin{itemize}
+\item{\tt spec} - The specification for the test that was run.
+\item{\tt result} - The result produced by the run.
+\end{itemize}
+
+\calloutitem{Standard Output} The formatted output.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} on success, {\tt 1} if not, {\tt 2}
+if there was some other problem unrelated to the input.
+
+
+\subsubsection{specformat}
+This method converts a JSON specification for this test into some
+other format, usually intended for human consumption.
+
+\calloutitem{Arguments} The desired MIME type for the output.  All
+implementations must support at least {\tt text/plain} and {\tt
+  text/html}.  If no argument is provided, the default will be {\tt
+  text/plain}.
+
+\calloutitem{Standard Input} JSON containing a specification for this
+test.
+
+\calloutitem{Standard Output} The formatted output.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} on success, {\tt 1} if not, {\tt 2}
+if there was some other problem unrelated to the input.
+
+
+\subsubsection{limit-is-valid}
+This method validates a limit specification for the test.
+
+\calloutitem{Arguments} None
+
+\calloutitem{Standard Input} JSON containing the limit specification
+to be validated.
+
+\calloutitem{Standard Output} A JSON object containing the following pairs:
+
+\todo{This is duplicated from above; should be part of the JSON
+  dictionary.}
+\begin{itemize}
+\item \typeditem{valid}{Boolean} An indication of whether or not the
+  input was valid.
+
+\item \typeditem{error}{String} if {\tt valid} was \false, a plain
+  text message indicating the reason.
+\end{itemize}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} on success, {\tt 1} if there was a
+problem unrelated to the input.
+
+
+
+\subsubsection{limit-passes}
+
+This method checks to see if a test specification falls within the
+restrictions of a limit.
+
+\calloutitem{Arguments} None
+
+\calloutitem{Standard Input} A JSON object containing the following
+pairs:
+
+\begin{itemize}
+\item \typeditem{spec}{AnyJSON} The specification of the test parameters.
+This must be valid for the current test type.
+
+\item \typeditem{limit}{AnyJSON} The limit to be checked.  This must be
+valid for the current test type.
+
+\end{itemize}
+
+
+\calloutitem{Standard Output} A JSON object containing the following pairs:
+
+\begin{itemize}
+\item \typeditem{passed}{Boolean} An indication of whether or not the
+  test was within the limit's constraints.
+
+\item \typeditem{errors}{Array} if {\tt valid} was \false, an array of
+  strings containing text messages enumerating the reasons for the
+  failure.
+\end{itemize}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} on success, {\tt 1} if there was a
+problem unrelated to the input.
+
+
+
+%
+% TOOL
+%
+\subsection{Tool}
+\todo{Write this.}
+
+\subsubsection{enumerate}
+
+This method produces a description of the tool in a standard format
+used when pScheduler needs to determine what tools are installed.
+
+\calloutitem{Standard Input} Ignored.
+
+\calloutitem{Standard Output} JSON containing the following items:
+\begin{itemize}
+\item{\tt name} - A string serving as a short name for the tool.  This
+  value should be lowercase and match the name of the directory where
+  the tool class is installed.  The name should reflect the software
+  used, such as {\tt traceroute}, {\tt tracepath} or {\tt mtr}.
+\item{\tt description} - A short, textual description of what the tool
+  does.
+\item{\tt version} - A \jsontype{Version}.
+\item{\tt tests} - An array of strings listing the tests which the
+  tool is capable of accommodating.  Including a class here does not
+  imply that the tool is required to actually perform the test, only
+  that it should be asked if it can perform tests of those listed.
+\item{\tt preference} - An integer used to determine the order in
+  which tools are selected for tests, with larger numbers indicating
+  more oreference.  This allows current, better-supported tools to be
+  considered first while still allowing those that are deprecated to
+  be used if necessary.  Nominally, the value for most tools should be
+  {\tt 0} and deprecated tools should use a negative number.  This
+  value is considered advisory only, as some measurements may specify
+  that a specific tool be used to conduct a measurement.
+\item{\tt maintainer} - A \jsontype{Maintainer}.
+\end{itemize}
+
+\example
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "name": "mtr",
+    "description": "Determine network path using MTR",
+    "version": "1.0",
+    "tests": [ "path" ],
+    "preference": 0,
+    "maintainer": {
+        "name": "Example Development Team",
+        "email": "plugins@example.org",
+        "href": "http://www.example.org/plugins"
+    }
+}
+\end{lstlisting}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if successful, nonzero on error.
+
+
+
+\subsubsection{can-run}
+This method determines whether or not the tool can run a specified
+test.  The test must be in the list of those which the {\tt enumerate}
+method lists as being
+
+\calloutitem{Standard Input} A \jsontype{TestSpecification}
+
+\calloutitem{Standard Output} A single JSON object containing the
+following:
+
+\begin{itemize}
+\item{\tt can-run} - A \jsontype{Boolean} indicating whether or not
+  the tool is willing to run the specified test.
+\item{\tt reasons} - If {\tt can-run} is {\tt false}, an array of
+  \jsontype{String}, each giving one reason why the test cannot be run
+  by this tool.
+\end{itemize}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if the tool is willing to run the
+specified test, nonzero for an error unrelated to the input.
+
+
+
+\subsubsection{duration}
+
+This method determines how long the tool will require to run the
+specified test and how long it should take to produce a result.
+
+\calloutitem{Standard Input} A \jsontype{TestSpecification}.
+
+\calloutitem{Standard Output} A JSON object containing the following
+items:
+
+\begin{itemize}
+\item{\tt duration} - The amount of time required to set up and
+  execute the test, specified as a \jsontype{Duration}.  This value
+  should be in whole seconds; any fraction will be increased to the
+  next-largest number of seconds (e.g., {\tt PT7.13S} will be
+  converted to {\tt PT8S}).
+\item{\tt post} - The amount of time expected to produce a result
+  after the test has been executed, specified as a
+  \jsontype{Duration}.  This value should be in whole seconds; any
+  fraction will be increased to the next-largest number of seconds
+  (e.g., {\tt PT7.13S} will be converted to {\tt PT8S}).  \note{This
+    value is currently ignored but will be used in a later version of
+    the software.}
+\end{itemize}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if determination of the duration was
+successful, {\tt 1} if not, {\tt 2} if there was an error related to
+the input and {\tt 3} for an error unrelated to the input.
+
+
+
+\subsubsection{participant-data}
+
+This method returns a tool-specific set of data for a given
+participant in a given test.  This data will be gathered centrally and
+distributed to all participants, who can use it in carrying out the test.
+
+The canonical use case for this is a tool which requires that one
+participant open a port and another connect to it.  Listening
+participant 1 would put the port it intends to use in its participant
+data.  Connecting participant 0 would use that information in
+establishing its connection.
+
+
+\calloutitem{Standard Input} A JSON object containing the following items:
+
+\begin{itemize}
+\item{\tt test} - A \jsontype{TestSpecification}.
+
+\item{\tt participant} - The number of the participant whose data
+  should be generated.  Must be in the range of {\tt 0} to the number
+  of participants
+\end{itemize}
+
+
+\calloutitem{Standard Output} An \jsontype{AnyJSON} containing
+whatever the tool deems necessary to provide.  If the tool has nothing
+to contribute for a given participant, the object should be empty
+(i.e., {\tt \{\}}).
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if generation of the participant
+data was successful, {\tt 1} if not, {\tt 2} if there was an error
+related to the input and {\tt 3} for an error unrelated to the input.
+
+
+
+\subsubsection{run}\label{toolrun}
+This method carries out the test as one of its participants.
+
+For tests whose scheduling class is {\tt normal} or {\tt exclusive},
+the method runs the test, produces the output described below and exits.
+
+When the scheduling class is {\tt background}, the method will produce
+multiple results until its time to run (duration) has expired.  Each
+result will be JSON in RFC 7464 format (beginning with a ``{\tt RS}''
+character and ending with a newline).  It is recommended that programs
+implementing this method for background tests use the {\tt
+  RFC7464Emitter} class in the pScheduler library and not buffer their
+output or make sure to flush it after writing the delimiter.  Once the
+run is complete, the method should exit without producing any
+additional output.  Errors may be generated in the same way as for
+non-background tasks.
+
+
+\todo{Could use some examples.}
+
+\calloutitem{Standard Input} A JSON run specification containing the following items:
+\begin{itemize}
+
+\item{\tt schema} - A \jsontype{Cardinal} indicating the version of the structure
+
+\item{\tt schedule} - A \jsontype{TimeInterval} indicating when the
+  task is scheduled to start and how long it should run.  This figure
+  includes any additional time added by the tool for startup and
+  teardown, so all participants should behave accordingly.
+
+\item{\tt test} - A \jsontype{TestSpecification} describing the test
+  being run.
+
+\item{\tt participant} - A \jsontype{Number} indicating which
+  participant role in the test is to be played.
+
+\item{\tt participant-data} - A JSON array containing one element of
+  tool-specific, per-participant data for the run of the task, as
+  generated by the {\tt participant-data} method.
+
+\item{\tt limits-passed} - A JSON array containing a list of objects
+  describing limits specific to this test that were passed.  This
+  requires that tools implementing limits for unspecified parameters
+  (e.g., bandwidth limits for throughput tests) understand the limits
+  of the tasks they agree to run.
+
+
+\end{itemize}
+
+\calloutitem{Standard Output} A single JSON object containing the following:
+
+\begin{itemize}
+\item{\tt succeeded} - A \jsontype{Boolean} indicating whether or not
+  the run was a success.
+
+\item{\tt diags} - A free-form \jsontype{String} containing diagnostic
+  output.  This is usually populated with raw program output or other
+  information the tool finds useful to provide.
+
+\item{\tt error} - A free-form \jsontype{String} containing any errors
+  encountered by the tool while running.  This should be {\tt null} or
+  empty if the test succeeded.  Non-fatal warnings should be
+  incorporated into {\tt diags}.
+
+\item{\tt result} - A JSON object containing test-specific results for
+  this participant.
+
+\end{itemize}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if the test ran successfully, {\tt
+  1} if there was a test-related error (i.e., the test could run but
+was unable to produce results because a remote participant failed to
+answer) or {\tt 2} if there was an error unrelated to the test.
+
+
+
+\subsubsection{merged-results}
+
+This method takes the results from all participants of a run done with
+this tool and prodces a single, merged result in the format specified
+by the test being conducted.
+
+\calloutitem{Standard Input} A single JSON object containing the following:
+
+\begin{itemize}
+
+\item{\tt test} - A \jsontype{TestSpecification} describing the test
+  that was run.
+
+\item{\tt results} - A JSON array containing one test result for each
+  participant in the test.  Each is any valid JSON object and the
+  format is tool-specific.
+
+\end{itemize}
+
+\calloutitem{Standard Output} A single JSON object representing the
+result.  This object must contain at least the following:
+
+\begin{itemize}
+
+\item{\tt succeeded} - A \jsontype{Boolean} indicating whether the
+  test was a success or failure.
+
+\end{itemize}
+
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if generation of the merged result
+was successful, {\tt 1} if there was an error related to the input or
+{\tt 2} if there was an error unrelated to the input.
+
+
+
+%
+% CONTEXT
+%
+\subsection{Context}
+
+Context plugins alter the execution context of tools before they are
+run.  This is accomplished using {\it exec chaining}, where the
+plugins replace themselves with other programs via the system's {\tt
+  exec*(3)} family of calls instead of exiting.
+
+At this writing, the only known application for this type of
+plugin is changing network namespaces on Linux systems.
+
+\subsubsection{enumerate}
+
+This method produces a description of the context changer in a
+standard format used when pScheduler needs to determine what tools are
+installed.
+
+\calloutitem{Standard Input} Ignored.
+
+\calloutitem{Standard Output} JSON containing the following items:
+\begin{itemize}
+\item{\tt name} - A string serving as a short name for the plugin.
+  This value should be lowercase and match the name of the directory
+  where the tool class is installed.  The name should reflect its
+  function, such as {\tt linuxnns} or {\tt null}.
+\item{\tt description} - A short, textual description of what the
+  context changer does.
+\item{\tt version} - A \jsontype{Version}.
+\item{\tt maintainer} - A \jsontype{Maintainer}.
+\end{itemize}
+
+\example
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "name": "kafooble",
+    "description": "Change the kafoobling factor",
+    "version": "1.0",
+    "maintainer": {
+        "name": "Example Development Team",
+        "email": "plugins@example.org",
+        "href": "http://www.example.org/plugins"
+    }
+}
+\end{lstlisting}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if successful, nonzero on error.
+
+
+\subsubsection{data-is-valid}
+
+This method determines whether or not provided data is valid for use
+by the context changer.  Note that this checks the data for validity
+only and not for whether or not the data will result in the context
+being successfully changed.  It should not do anything that could be
+long-running or may be intermittent such as performing DNS lookups or
+determining if a web server answers.
+
+\calloutitem{Standard Input} JSON containing the {\tt data} element of
+an \jsontype{ContextSpecificationSingle}.
+
+\calloutitem{Standard Output} A JSON object containing the following pairs:
+
+\todo{This gets used in multiple places and should be brought into the
+  JSON dictionary.}
+\begin{itemize}
+\item \typeditem{valid}{Boolean} An indication of whether or not the
+  input was valid.
+
+\item \typeditem{error}{String} if {\tt valid} was \false, a plain
+  text message indicating the reason.
+\end{itemize}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages describing any errors other than the data being invald.
+
+\calloutitem{Exit Status} {\tt 0} if successful, {\tt 1} if there was
+any error unrelated to the input.
+
+
+\subsubsection{change}
+
+This method effects the context change and then executes another
+program specified by the input.
+
+\calloutitem{Standard Input} JSON containing the following pairs:
+\begin{itemize}
+\item{\tt data} - The data to be used by the plugin.  This is assumed
+  to have been validated by the {\tt data-is-valid} method.
+\item{\tt exec} - A \jsontype{String} naming the path of the program
+  to be executed when this one finishes successfully.  This program
+  {\em must} be invoked using one of the {\tt exec*(3)} family of
+  calls.
+\end{itemize}
+
+\calloutitem{Standard Output} None.
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages describing any errors other than the data being invald.
+
+\calloutitem{Exit Status} If successful, the method should not exit
+(see {\tt exec}, above).  The method should exit {\tt 1} if there was
+any error.
+
+
+
+%
+% ARCHIVER
+%
+\subsection{Archiver}
+Archivers are plugins which transfer the results of a run to
+long-term storage.
+
+\todo{Flesh this out.}
+
+\todo{Add note about supporting a {\tt bind} option for archivers that
+  use the network}
+
+
+\subsubsection{enumerate}
+
+This method produces a description of the archiver in a standard
+format used when pScheduler needs to determine what archivers are
+installed.
+
+\calloutitem{Standard Input} Ignored.
+
+\calloutitem{Standard Output} JSON containing the following items:
+\begin{itemize}
+\item{\tt name} - A string serving as a short name for the archiver.
+  This value should be lowercase and match the name of the directory
+  where the archiver implementation is installed.  Archiver names
+  should reflect the destination, such as {\tt bitbucket} for a data
+  sink or {\tt esmond} for an archiving system like {\it esmond}.
+\item{\tt description} - A short, textual description of what the
+  archiver does.
+\item{\tt version} - A \jsontype{Version}.
+\item{\tt maintainer} - A \jsontype{Maintainer}.
+\end{itemize}
+
+\example
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "name": "bitbucket",
+    "description": "Dump results into the bit bucket.",
+    "version": "1.0",
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+        "email": "info@perfsonar.net",
+        "href": "http://www.perfsonar.net"
+    }
+}
+\end{lstlisting}
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages on error.
+
+\calloutitem{Exit Status} {\tt 0} if successful, nonzero on error.
+
+
+
+\subsubsection{data-is-valid}
+
+This method determines whether or not provided data is valid for use
+by the archiver.  Note that this checks the data for validity only and
+not for whether or not the data will result in the archiving being
+successful.  It should not do anything that could be long-running or
+may be intermittent such as performing DNS lookups or determining if a
+web server answers.
+
+\calloutitem{Standard Input} JSON containing the {\tt data} element of
+an \jsontype{ArchiveSpecification}.  If the archive specification
+contained no {\tt data} element, the standard input will be an empty
+JSON object (i.e., {\tt \{ \}}).
+
+\calloutitem{Standard Output} A JSON object containing the following pairs:
+
+\todo{This gets used in multiple places and should be brought into the
+  JSON dictionary.}
+\begin{itemize}
+\item \typeditem{valid}{Boolean} An indication of whether or not the
+  input was valid.
+
+\item \typeditem{error}{String} if {\tt valid} was \false, a plain
+  text message indicating the reason.
+\end{itemize}
+
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages describing any errors other than the data being invald.
+
+\calloutitem{Exit Status} {\tt 0} if successful, {\tt 1} if there was
+any error unrelated to the input.
+
+
+\subsubsection{archive}
+
+This method sends the results of a run to the archiver.
+
+\calloutitem{Standard Input} JSON containing the following items:
+
+\begin{itemize}
+\item \typeditem{data}{AnyJSON} Archiver-specific information on how to proceed.
+
+\item \typeditem{task-href}{URL} The URI for the task that produced
+  this result.
+
+\item \typeditem{run-href}{URL} The URI for the run that produced
+  this result.
+
+\item\typeditem{participants}{Array}: An array of {\tt String} items
+  listing the nodes that participated in the test.
+
+\item \typeditem{result}{RunResult} A {\tt RunResult} describing
+  the results of the run.
+
+\item \typeditem{attempts}{Cardinal} The number of prior, unsuccessful
+  attempts to archive the run.
+
+\item \typeditem{last-attempt}{Timestamp} The time of the last attempt
+  to archive the run.  This will be {\tt null} if there have been no
+  prior attempts.
+\end{itemize}
+
+\example
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "data": { ...Archiver-Specific Data... },
+    "participants": [ "host1", "host2" ],
+    "task": { ...Task specification... },
+    "result": { ...Results of run... },
+    "attempts": 2,
+    "last-attempt": "2016-05-07T13:05:27"
+}
+\end{lstlisting}
+
+
+\calloutitem{Standard Output} A JSON object with information on how
+the attempt to archive the run went, containing the following pairs:
+
+\begin{itemize}
+\item \typeditem{succeeded}{Boolean} Whether or not the attempt to archive
+the run succeeded.
+\item \typeditem{error}{String} An optional explanation of why the
+  attempt to archive the run did not succeed.
+\item \typeditem{retry}{Duration} The minimum amount of time that
+  should elapse before the next attempt.  Not provided if {\tt
+    succeeded} is \true\  or no further attempts should be made to
+  archive the run.
+\end{itemize}
+
+\example
+\begin{lstlisting}[language=json,firstnumber=1]
+{
+    "succeeded": false,
+    "error": "Unable to connect: Unknown host 'badhost'",
+    "retry": "PT15M"
+}
+\end{lstlisting}
+
+
+\calloutitem{Standard Error} Empty if successful, plain text error
+messages describing any problem unrelated to the input.
+
+\calloutitem{Exit Status} {\tt 0} if successful, {\tt 1} if there was
+an error.  Note that in this context, an error means a problem running
+the method and not with the archiving process.
+
+
+
+
+% -----------------------------------------------------------------------------
+
+\part{Building Plugins}
+
+\section{Implementation}
+\todo{Write this.}
+
+\section{Packaging}
+
+\subsection{Red Hat Enterprise Linux, CentOS and Fedora}
+\todo{Write this.}
+
+The RPM specs for the {\tt pscheduler-archiver-bitbucket}, {\tt
+  pscheduler-test-idle} and {\tt pscheduler-tool-sleep} packages are
+recommended to be used as templates for new development.
+
+With {\tt pscheduler-rpm} installed on the system, the following
+macros are available for use in RPM specifications:
+\begin{center}
+  \begin{tabular}{ll} 
+    % Tests
+    {\tt _pscheduler_test_libexec} & Test implementations \\
+    {\tt _pscheduler_test_doc} & Test documentation \\
+    % Tools
+    {\tt _pscheduler_tool_libexec} & Tool implementations \\
+    {\tt _pscheduler_tool_doc} & Tool documentation \\
+    % Archivers
+    {\tt _pscheduler_archiver_libexec} & Archiver implementations \\
+    {\tt _pscheduler_archiver_doc} & Archiver documentation \\
+  \end{tabular}
+\end{center}
+
+Test, tool and archiver implementations should be installed in a
+subdirectory matching their names.  For example,
+{\tt\%\{_pscheduler_tool_libexec\}/owamp} would be the recommended
+way to specify the installation directory for the {\tt owamp} tool.
+
+\subsection{Debian}
+\todo{Write this after Antoine has had a chance to package a few
+  things.}
+
+\subsection{OS X}
+\todo{Do we want to support OS X?  Nothing in pScheduler should be
+  Linux-specific.  Some tools may need to understand what environment
+  they're running in when invoking test programs because command line
+  switches or other things may be different (e.g., With {\tt ping(8)},
+  the switch to change TOS is {\tt -Q} where OS X uses {\tt -z}).
+  This will either need to be accommodated by making the tools smart
+  enough to detect and handle the differences or having multiple
+  versions.  Either way, there may be a need for a list of supported
+  OS names to be in the enumeration.  (Use the output of {\tt uname
+    -s} for this.)}
+
+\end{document}
