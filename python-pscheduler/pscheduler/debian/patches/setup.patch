@@ -1,5 +1,5 @@
---- a/setup.py	2021-04-20 18:42:02.388979000 +0000
-+++ b/setup.py	2021-05-20 12:52:33.145658784 +0000
+--- a/setup.py	2021-05-25 23:17:27.114522493 +0000
++++ b/setup.py	2021-05-25 23:17:33.877623624 +0000
 @@ -17,17 +17,6 @@
          'pscheduler.limitprocessor.identifier',
          'pscheduler.limitprocessor.limit',

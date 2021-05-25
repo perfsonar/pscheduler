@@ -12,7 +12,7 @@
 
 %define short	TEMPLATE
 %define perfsonar_auto_version 4.4.0
-%define perfsonar_auto_relnum 0.2.b1
+%define perfsonar_auto_relnum 0.3.b1
 
 Name:		pscheduler-test-%{short}
 Version:	%{perfsonar_auto_version}

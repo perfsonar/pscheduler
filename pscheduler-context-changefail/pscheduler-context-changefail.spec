@@ -4,7 +4,7 @@
 
 %define short	changefail
 %define perfsonar_auto_version 4.4.0
-%define perfsonar_auto_relnum 0.2.b1
+%define perfsonar_auto_relnum 0.3.b1
 
 Name:		pscheduler-context-%{short}
 Version:	%{perfsonar_auto_version}
