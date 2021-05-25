@@ -201,7 +201,7 @@ def tasks():
         )
 
         # Returns multiple tasks, must be sanitized
-        return ok_json(tasks, sanitized=True)
+        return ok_json(tasks, sanitize=True)
 
     elif request.method == 'POST':
 
