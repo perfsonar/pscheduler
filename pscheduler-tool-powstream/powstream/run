@@ -207,8 +207,7 @@ else:
 
 #Run the process
 
-#TODO in 4.4: Migrate to new delimiter and use emitter(result) instead
-#emitter = pscheduler.RFC7464Emitter(sys.stdout)
+emitter = pscheduler.RFC7464Emitter(sys.stdout)
 
 def powstream_line(line, keep_data_files=False):
 
