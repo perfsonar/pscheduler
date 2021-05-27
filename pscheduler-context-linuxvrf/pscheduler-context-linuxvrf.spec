@@ -8,7 +8,7 @@
 
 %define short	linuxvrf
 %define perfsonar_auto_version 4.4.0
-%define perfsonar_auto_relnum 0.4.b1
+%define perfsonar_auto_relnum 0.5.b1
 
 Name:		pscheduler-context-%{short}
 Version:	%{perfsonar_auto_version}
