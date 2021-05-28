@@ -1,5 +1,5 @@
---- a/database/db-update.raw	2021-05-26 13:38:44.605318368 +0000
-+++ b/database/db-update.raw	2021-05-26 13:38:50.249223393 +0000
+--- a/database/db-update.raw	2021-05-27 16:04:52.467252837 +0000
++++ b/database/db-update.raw	2021-05-27 16:04:57.826336959 +0000
 @@ -20,14 +20,11 @@
  $INTERACTIVE && printf "Loading database:\n" || true
  
