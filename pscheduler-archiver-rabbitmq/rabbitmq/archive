@@ -106,8 +106,8 @@ class AMQPExpiringConnection(object):
         self.expire_time = expire_time
 
         parsed_url = urllib.parse.urlparse(url)
-        if parsed_url.scheme != "amqp":
-            raise ValueError("URL must be amqp://...")
+        if parsed_url.scheme not in ["amqp", "amqps"]:
+            raise ValueError("URL must be amqp[s]://...")
 
         self.hostname=parsed_url.hostname
         self.port=parsed_url.port
