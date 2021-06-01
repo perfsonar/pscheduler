@@ -3,7 +3,7 @@
 #
 
 %define perfsonar_auto_version 4.4.0
-%define perfsonar_auto_relnum 0.6.b1
+%define perfsonar_auto_relnum 0.7.b1
 
 %define short	pscheduler
 Name:		%{_pscheduler_python}-%{short}

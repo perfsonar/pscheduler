@@ -10,7 +10,7 @@
 # they should be added here (line 25).
 %define short	ethr
 %define perfsonar_auto_version 4.4.0
-%define perfsonar_auto_relnum 0.6.b1
+%define perfsonar_auto_relnum 0.7.b1
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
