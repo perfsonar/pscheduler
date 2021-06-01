@@ -281,10 +281,10 @@ if options.window_size is not None:
       pscheduler.fail("Invalid value \"%s\" for window size: %s" % (options.window_size, ex))
 
 if options.mss is not None:
-   result["mss"] = options.mss
+   result["mss"] = pscheduler.si_as_number(options.mss)
 
 if options.buffer_length is not None:
-   result["buffer-length"] = options.buffer_length
+   result["buffer-length"] = pscheduler.si_as_number(options.buffer_length)
 
 if options.ip_version is not None:
    result["ip-version"] = options.ip_version
