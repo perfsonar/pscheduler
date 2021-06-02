@@ -20,7 +20,7 @@ Rules-Requires-Root: no
 Package: python3-amqp
 Architecture: all
 Depends:
- python3-vine (> 5.0),
+ python3-vine (>= 5.0),
  ${misc:Depends},
  ${python3:Depends},
 Suggests:
