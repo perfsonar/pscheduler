@@ -253,6 +253,15 @@ def check_service_status(api):
             failed("pScheduler did not report status for the %s service." % service)
     ok()
 
+    # Look at the limits
+    if "limits" in status:
+        start("  Checking limits")
+        limit_status = status["limits"]
+
+        if limit_status.get("ok", False):
+            ok()
+        else:
+            failed(limit_status.get("error", "Unspecified error"))
 
 
 
