@@ -1,4 +1,4 @@
-vine (5.0.0+dfsg-2~bpo90+1) unstable; urgency=medium
+vine (5.0.0+dfsg-2~bpo90+1) perfsonar-4.4-staging; urgency=medium
 
   * Backport to Debian 9, Ubuntu 16 & 18.
   * Lower debhelper version to 9.
