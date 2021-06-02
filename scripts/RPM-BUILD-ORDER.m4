@@ -37,6 +37,7 @@ pscheduler-rpm
 #
 
 # PostgreSQL and Additions
+pgdg-srpm-macros
 postgresql
 postgresql-init
 postgresql-load

@@ -1,15 +1,14 @@
-# Things that were missing or that we override globally
-
-BuildRequires: gcc
-
-
 # These are macros to be used with find_lang and other stuff
 %global packageversion 100
 %global pgpackageversion 10
-%global pgmajorversion %{pgpackageversion}
 %global prevmajorversion 9.6
 %global sname postgresql
 %global	pgbaseinstdir	/usr/pgsql-%{pgmajorversion}
+
+# Things that were missing or that we override globally
+BuildRequires: gcc
+%global pgmajorversion %{pgpackageversion}
+
 
 %global beta 0
 %{?beta:%global __os_install_post /usr/lib/rpm/brp-compress}
@@ -29,7 +28,12 @@ BuildRequires: gcc
 %{!?ldap:%global ldap 1}
 %{!?nls:%global nls 1}
 %{!?pam:%global pam 1}
+
+%if 0%{?fedora} >= 33 || 0%{?rhel} >= 9 || 0%{?suse_version} >= 1500
+%{!?plpython2:%global plpython2 0}
+%else
 %{!?plpython2:%global plpython2 1}
+%endif
 
 %if 0%{?rhel} && 0%{?rhel} < 7
 # RHEL 6 does not have Python 3
@@ -39,8 +43,6 @@ BuildRequires: gcc
 # Support Python3 on RHEL 7.7+ natively
 # RHEL 8 uses Python3
 %{!?plpython3:%global plpython3 1}
-# This is the list of contrib modules that will be compiled with PY3 as well:
-%global	python3_build_list hstore_plpython ltree_plpython
 %endif
 
 %if 0%{?suse_version}
@@ -49,6 +51,9 @@ BuildRequires: gcc
 %{!?plpython3:%global plpython3 0}
 %endif
 %endif
+
+# This is the list of contrib modules that will be compiled with PY3 as well:
+%global python3_build_list hstore_plpython ltree_plpython
 
 %{!?pltcl:%global pltcl 1}
 %{!?plperl:%global plperl 1}
@@ -76,15 +81,15 @@ BuildRequires: gcc
 %global _hardened_build 1
 %endif
 
+%if 0%{?rhel} && 0%{?rhel} == 7
 %ifarch ppc64 ppc64le
-# Define the AT version and path.
-%global atstring	at10.0
-%global atpath		/opt/%{atstring}
+%pgdg_set_ppc64le_compiler_at10
+%endif
 %endif
 
 Summary:	PostgreSQL client programs and libraries
 Name:		%{sname}%{pgmajorversion}
-Version:	10.13
+Version:	10.17
 Release:	1PGDG%{?dist}
 License:	PostgreSQL
 Url:		https://www.postgresql.org/
@@ -116,7 +121,7 @@ Patch3:		%{sname}-%{pgmajorversion}-logging.patch
 Patch5:		%{sname}-%{pgmajorversion}-var-run-socket.patch
 Patch6:		%{sname}-%{pgmajorversion}-perl-rpath.patch
 
-BuildRequires:	perl glibc-devel bison flex >= 2.5.31
+BuildRequires:	perl glibc-devel bison flex >= 2.5.31 pgdg-srpm-macros >= 1.0.14
 BuildRequires:	perl(ExtUtils::MakeMaker)
 BuildRequires:	readline-devel zlib-devel >= 1.0.4
 
@@ -125,8 +130,10 @@ BuildRequires:	readline-devel zlib-devel >= 1.0.4
 BuildRequires:	perl-generators
 %endif
 
+%if 0%{?rhel} && 0%{?rhel} == 7
 %ifarch ppc64 ppc64le
 BuildRequires:	advance-toolchain-%{atstring}-devel
+%endif
 %endif
 
 Requires:	/sbin/ldconfig
@@ -248,11 +255,13 @@ Requires:	%{name}-libs%{?_isa} = %{version}-%{release}
 Requires(post):	%{_sbindir}/update-alternatives
 Requires(postun):	%{_sbindir}/update-alternatives
 
-Provides:	%{sname} >= %{version}-%{release}  libpq5 >= 10.0
+Provides:	%{sname} >= %{version}-%{release}
 
+%if 0%{?rhel} && 0%{?rhel} == 7
 %ifarch ppc64 ppc64le
 AutoReq:	0
 Requires:	advance-toolchain-%{atstring}-runtime
+%endif
 %endif
 
 %description
@@ -271,19 +280,26 @@ if you're installing the postgresql%{pgmajorversion}-server package.
 %package libs
 Summary:	The shared libraries required for any PostgreSQL clients
 Provides:	postgresql-libs = %{pgmajorversion} libpq5 >= 10.0
+
 %if 0%{?rhel} && 0%{?rhel} <= 6
 Requires:	openssl
 %else
 %if 0%{?suse_version} >= 1315 && 0%{?suse_version} <= 1499
-Requires:      libopenssl1_0_0
+Requires:	libopenssl1_0_0
+%else
+%if 0%{?suse_version} >= 1500
+Requires:	libopenssl1_1
 %else
 Requires:	openssl-libs >= 1.0.2k
 %endif
 %endif
+%endif
 
+%if 0%{?rhel} && 0%{?rhel} == 7
 %ifarch ppc64 ppc64le
 AutoReq:	0
 Requires:	advance-toolchain-%{atstring}-runtime
+%endif
 %endif
 
 %description libs
@@ -317,9 +333,11 @@ Requires:	/usr/sbin/useradd, /sbin/chkconfig
 %endif
 Provides:	postgresql-server >= %{version}-%{release}
 
+%if 0%{?rhel} && 0%{?rhel} == 7
 %ifarch ppc64 ppc64le
 AutoReq:	0
 Requires:	advance-toolchain-%{atstring}-runtime
+%endif
 %endif
 
 %description server
@@ -346,9 +364,11 @@ Requires:	%{name}-libs%{?_isa} = %{version}-%{release}
 Requires:	%{name}-server%{?_isa} = %{version}-%{release}
 Provides:	postgresql-contrib >= %{version}-%{release}
 
+%if 0%{?rhel} && 0%{?rhel} == 7
 %ifarch ppc64 ppc64le
 AutoReq:	0
 Requires:	advance-toolchain-%{atstring}-runtime
+%endif
 %endif
 
 %description contrib
@@ -379,10 +399,13 @@ BuildRequires:	perl-IPC-Run
 %endif
 
 Provides:	postgresql-devel >= %{version}-%{release}
+Obsoletes:	libpq-devel
 
+%if 0%{?rhel} && 0%{?rhel} == 7
 %ifarch ppc64 ppc64le
 AutoReq:	0
 Requires:	advance-toolchain-%{atstring}-runtime
+%endif
 %endif
 
 %description devel
@@ -436,9 +459,11 @@ Requires:	python2-libs
 Requires:	python27
 %endif
 
+%if 0%{?rhel} && 0%{?rhel} == 7
 %ifarch ppc64 ppc64le
 AutoReq:	0
 Requires:	advance-toolchain-%{atstring}-runtime
+%endif
 %endif
 
 %description plpython
@@ -457,9 +482,11 @@ Obsoletes:	%{name}-pl <= %{version}-%{release}
 Provides:	postgresql-plpython3 >= %{version}-%{release}
 Requires:	python3-libs
 
+%if 0%{?rhel} && 0%{?rhel} == 7
 %ifarch ppc64 ppc64le
 AutoReq:	0
 Requires:	advance-toolchain-%{atstring}-runtime
+%endif
 %endif
 
 %description plpython3
@@ -478,9 +505,11 @@ Requires:	tcl
 Obsoletes:	%{name}-pl <= %{version}-%{release}
 Provides:	postgresql-pltcl >= %{version}-%{release}
 
+%if 0%{?rhel} && 0%{?rhel} == 7
 %ifarch ppc64 ppc64le
 AutoReq:	0
 Requires:	advance-toolchain-%{atstring}-runtime
+%endif
 %endif
 
 %description pltcl
@@ -496,9 +525,11 @@ Requires:	%{name}-server%{?_isa} = %{version}-%{release}
 Requires:	%{name}-devel%{?_isa} = %{version}-%{release}
 Provides:	postgresql-test >= %{version}-%{release}
 
+%if 0%{?rhel} && 0%{?rhel} == 7
 %ifarch ppc64 ppc64le
 AutoReq:	0
 Requires:	advance-toolchain-%{atstring}-runtime
+%endif
 %endif
 
 %description test
@@ -531,11 +562,13 @@ benchmarks.
 %endif
 
 CFLAGS="${CFLAGS:-%optflags}"
+%if 0%{?rhel} && 0%{?rhel} == 7
 %ifarch ppc64 ppc64le
 	CFLAGS="${CFLAGS} $(echo %{__global_cflags} | sed 's/-O2/-O3/g') -m64 -mcpu=power8 -mtune=power8 -I%{atpath}/include"
 	CXXFLAGS="${CXXFLAGS} $(echo %{__global_cflags} | sed 's/-O2/-O3/g') -m64 -mcpu=power8 -mtune=power8 -I%{atpath}/include"
 	LDFLAGS="-L%{atpath}/%{_lib}"
 	CC=%{atpath}/bin/gcc; export CC
+%endif
 %else
 	# Strip out -ffast-math from CFLAGS....
 	CFLAGS=`echo $CFLAGS|xargs -n 1|grep -v ffast-math|xargs -n 100`
@@ -626,16 +659,18 @@ export PYTHON=/usr/bin/python3
 %if %{systemd_enabled}
 	--with-systemd \
 %endif
+%if 0%{?rhel} && 0%{?rhel} == 7
 %ifarch ppc64 ppc64le
 	--with-includes=%{atpath}/include \
 	--with-libraries=%{atpath}/lib64 \
+%endif
 %endif
 	--with-system-tzdata=%{_datadir}/zoneinfo \
 	--sysconfdir=/etc/sysconfig/pgsql \
 	--docdir=%{pgbaseinstdir}/doc \
 	--htmldir=%{pgbaseinstdir}/doc/html
-# We need to build PL/Python and a few extensions:
-# Build PL/Python
+# We need to build PL/Python 3 and a few extensions:
+# Build PL/Python 3
 cd src/backend
 %{__make} submake-errcodes
 cd ../..
@@ -655,14 +690,20 @@ for p3bl in %{python3_build_list} ; do
 	%{__cp} -a $p3bl $p3blpy3dir
 	popd
 done
-
-
 # must also save this version of Makefile.global for later
+# on platforms where Python 2 is still available:
 %{__cp} src/Makefile.global src/Makefile.global.python3
 
+%if %plpython2
+# Clean up the tree.
 %{__make} distclean
+%endif
 
 %endif
+# NOTE: PL/Python3 (END)
+
+# NOTE: PL/Python 2
+%if %{?plpython2}
 
 unset PYTHON
 # Explicitly run Python2 here -- in future releases,
@@ -732,16 +773,43 @@ export PYTHON=/usr/bin/python2
 %if %{systemd_enabled}
 	--with-systemd \
 %endif
+%if 0%{?rhel} && 0%{?rhel} == 7
 %ifarch ppc64 ppc64le
 	--with-includes=%{atpath}/include \
 	--with-libraries=%{atpath}/lib64 \
+%endif
 %endif
 	--with-system-tzdata=%{_datadir}/zoneinfo \
 	--sysconfdir=/etc/sysconfig/pgsql \
 	--docdir=%{pgbaseinstdir}/doc \
 	--htmldir=%{pgbaseinstdir}/doc/html
 
-%{__make} %{?_smp_mflags} all
+# We need to build PL/Python 2 and a few extensions:
+# Build PL/Python 2
+cd src/backend
+MAKELEVEL=0 %{__make} submake-generated-headers
+cd ../..
+cd src/pl/plpython
+%{__make} all
+cd ..
+# save built form in a directory that "make distclean" won't touch
+%{__cp} -a plpython plpython2
+cd ../..
+# Build some of the extensions with PY2 support as well.
+for p2bl in %{python3_build_list} ; do
+	p2blpy2dir="$p2bl"2
+	pushd contrib/$p2bl
+	MAKELEVEL=0 %{__make} %{?_smp_mflags} all
+	# save built form in a directory that "make distclean" won't touch
+	cd ..
+	%{__cp} -a $p2bl $p2blpy2dir
+	popd
+done
+%endif
+# NOTE: PL/Python 2 (END)
+
+
+MAKELEVEL=0 %{__make} %{?_smp_mflags} all
 %{__make} %{?_smp_mflags} -C contrib all
 %if %uuid
 %{__make} %{?_smp_mflags} -C contrib/uuid-ossp all
@@ -859,6 +927,9 @@ sed -e 's|^PGVERSION=.*$|PGVERSION=%{pgmajorversion}|' \
 	-e 's|^PREVMAJORVERSION=.*$|PREVMAJORVERSION=%{prevmajorversion}|' \
 	<%{SOURCE17} >postgresql-%{pgmajorversion}-setup
 %{__install} -m 755 postgresql-%{pgmajorversion}-setup %{buildroot}%{pgbaseinstdir}/bin/postgresql-%{pgmajorversion}-setup
+# Create a symlink of the setup script under $PATH
+%{__mkdir} -p %{buildroot}%{_bindir}
+%{__ln_s} %{pgbaseinstdir}/bin/postgresql-%{pgmajorversion}-setup %{buildroot}%{_bindir}/%{sname}-%{pgmajorversion}-setup
 
 # prep the startup check script, including insertion of some values it needs
 sed -e 's|^PGVERSION=.*$|PGVERSION=%{pgmajorversion}|' \
@@ -920,6 +991,12 @@ sed 's/^PGVERSION=.*$/PGVERSION=%{version}/' <%{SOURCE3} > %{sname}.init
 	chmod 0644 %{buildroot}%{pgbaseinstdir}/lib/test/regress/Makefile
 %endif
 
+%if ! %plpython2
+%{__rm} -f %{buildroot}/%{pginstdir}/share/extension/*plpython2u*
+%{__rm} -f %{buildroot}/%{pginstdir}/share/extension/*plpythonu-*
+%{__rm} -f %{buildroot}/%{pginstdir}/share/extension/*_plpythonu.control
+%endif
+
 # Fix some more documentation
 # gzip doc/internals.ps
 %{__cp} %{SOURCE6} README.rpm-dist
@@ -942,7 +1019,7 @@ sed 's/^PGVERSION=.*$/PGVERSION=%{version}/' <%{SOURCE3} > %{sname}.init
 %{__cp} /dev/null devel.lst
 %{__cp} /dev/null plperl.lst
 %{__cp} /dev/null pltcl.lst
-%{__cp} /dev/null plpython.lst
+%{__cp} /dev/null pg_plpython.lst
 %{__cp} /dev/null pg_plpython3.lst
 
 %if %nls
@@ -975,7 +1052,7 @@ cat plpython-%{pgmajorversion}.lang > pg_plpython.lst
 %if %plpython3
 # plpython3 shares message files with plpython
 %find_lang plpython-%{pgmajorversion}
-cat plpython-%{pgmajorversion}.lang >> pg_plpython3.lst
+cat plpython-%{pgmajorversion}.lang > pg_plpython3.lst
 %endif
 
 %if %pltcl
@@ -1267,7 +1344,9 @@ fi
 %{pgbaseinstdir}/share/extension/fuzzystrmatch*
 %{pgbaseinstdir}/share/extension/hstore.control
 %{pgbaseinstdir}/share/extension/hstore--*.sql
+%if %plperl
 %{pgbaseinstdir}/share/extension/hstore_plperl*
+%endif
 %{pgbaseinstdir}/share/extension/insert_username*
 %{pgbaseinstdir}/share/extension/intagg*
 %{pgbaseinstdir}/share/extension/intarray*
@@ -1327,6 +1406,7 @@ fi
 %defattr(-,root,root)
 %if %{systemd_enabled}
 %{pgbaseinstdir}/bin/%{sname}-%{pgmajorversion}-setup
+%{_bindir}/%{sname}-%{pgmajorversion}-setup
 %{pgbaseinstdir}/bin/%{sname}-%{pgmajorversion}-check-db-dir
 %{_tmpfilesdir}/%{sname}-%{pgmajorversion}.conf
 %{_unitdir}/%{sname}-%{pgmajorversion}.service
@@ -1449,6 +1529,35 @@ fi
 %endif
 
 %changelog
+* Thu May 13 2021 Devrim Gündüz <devrim@gunduz.org> - 10.17-1PGDG
+- Update to 10.17, per changes described at
+  https://www.postgresql.org/docs/release/10.17/
+
+* Tue Feb 9 2021 Devrim Gündüz <devrim@gunduz.org> - 10.16-1PGDG
+- Update to 10.16, per changes described at
+  https://www.postgresql.org/docs/release/10.16/
+
+* Thu Jan 7 2021 Devrim Gündüz <devrim@gunduz.org> - 10.15-2PGDG
+- Drop Advance Toolchain on RHEL 8 - ppc64le.
+
+* Mon Nov 9 2020 Devrim Gündüz <devrim@gunduz.org> - 10.15-1PGDG
+- Update to 10.15, per changes described at
+  https://www.postgresql.org/docs/release/10.15/
+
+* Thu Oct 1 2020 Devrim Gündüz <devrim@gunduz.org> - 10.14-3PGDG
+- Updates for Fedora 33 support.
+
+* Wed Sep 23 2020 Devrim Gündüz <devrim@gunduz.org> - 10.14-2PGDG
+- Add setup script under $PATH
+
+* Wed Aug 12 2020 Devrim Gündüz <devrim@gunduz.org> - 10.14-1PGDG
+- Update to 10.14, per changes described at
+  https://www.postgresql.org/docs/release/10.14/
+
+* Mon Jun 15 2020 Devrim Gündüz <devrim@gunduz.org> - 10.13-2PGDG
+- Fix builds if plperl macro is disabled. Per report and patch from
+  Floris Van Nee.
+
 * Wed May 13 2020 Devrim Gündüz <devrim@gunduz.org> - 10.13-1PGDG
 - Update to 10.13, per changes described at
   https://www.postgresql.org/docs/release/10.13/
