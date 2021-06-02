@@ -7,6 +7,7 @@ Type=simple
 User=__PSUSER__
 Group=__PSUSER__
 PermissionsStartOnly=true
+PIDFile=__RUNDIR__/__PROG__/pid
 LimitNOFILE=4096
 LimitNPROC=4096
 
@@ -33,7 +34,7 @@ StandardError=journal
 
 # Start service
 EnvironmentFile=-__RUNDIR__/__PROG__/options
-ExecStart=__DAEMONDIR__/__PROG__ --dsn @__DSN__ $OPTIONS
+ExecStart=__DAEMONDIR__/__PROG__ --dsn @__DSN__ $OPTIONS --pid-file __RUNDIR__/__PROG__/pid
 
 # Stop service
 ExecStopPost=/bin/rm -rf __RUNDIR__/__PROG__
