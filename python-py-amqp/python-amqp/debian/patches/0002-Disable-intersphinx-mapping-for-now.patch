@@ -1,0 +1,23 @@
+From: Michael Fladischer <FladischerMichael@fladi.at>
+Date: Sun, 30 Jul 2017 23:36:34 +0200
+Subject: Disable intersphinx mapping for now.
+
+The best way to fix network requests when building the documentation would be to
+patch INTERSPHINX_MAPPING in sphinx_celery.conf in src:sphinx-celery.
+---
+ docs/conf.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: python-amqp/docs/conf.py
+===================================================================
+--- python-amqp.orig/docs/conf.py
++++ python-amqp/docs/conf.py
+@@ -17,7 +17,7 @@ globals().update(conf.build_config(
+     html_favicon='images/favicon.ico',
+     html_prepend_sidebars=['sidebardonations.html'],
+     extra_extensions=[],
+-    include_intersphinx={'python', 'sphinx'},
++    intersphinx_mapping={},
+     apicheck_package='amqp',
+     apicheck_ignore_modules=['amqp'],
+ ))

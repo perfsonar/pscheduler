@@ -1,0 +1,108 @@
+vine (5.0.0+dfsg-2~bpo90+1) unstable; urgency=medium
+
+  * Backport to Debian 9, Ubuntu 16 & 18.
+  * Lower debhelper version to 9.
+  * Removal of python-vine-doc package.
+  * Removal of unittests.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 02 Jun 2021 15:34:37 +0000
+
+vine (5.0.0+dfsg-2) unstable; urgency=medium
+
+  * Team upload.
+  * Declare Breaks: python3-celery (<< 5.0), python3-kombu (<< 5.0)
+
+ -- Antonio Terceiro <terceiro@debian.org>  Mon, 26 Oct 2020 14:09:17 -0300
+
+vine (5.0.0+dfsg-1) unstable; urgency=low
+
+  * Team upload.
+
+  [ Debian Janitor ]
+  * Apply multi-arch hints.
+    + python-vine-doc: Add Multi-Arch: foreign.
+
+  [ Ondřej Nový ]
+  * d/control: Update Maintainer field with new Debian Python Team
+    contact address.
+  * d/control: Update Vcs-* fields with new Debian Python Team Salsa
+    layout.
+
+  [ Thomas Goirand ]
+  * New upstream release.
+  * Dropping debian/upstream, as uscan --download --report doesn't work
+    anymore: now using the github generated tarball. Upstead the watch
+    file accordingly.
+  * Add a debian/salsa-ci.yml.
+
+  [ Nicolas Dandrimont ]
+  * Mark import-only autopkgtests as superficial.
+
+ -- Nicolas Dandrimont <olasd@debian.org>  Sat, 17 Oct 2020 01:06:26 +0200
+
+vine (1.3.0+dfsg-1) unstable; urgency=low
+
+  * Team upload.
+  * New upstream release.
+  * Add debian/gbp.conf.
+  * Clean up pytest artifacts to allow two builds in a row.
+  * Bump debhelper version to 12.
+  * Bump Standards-Version to 4.4.1.
+  * Run wrap-and-sort -bast to reduce diff size of future changes.
+  * Add new upstream signing key 29C4F24992EDDC6D.
+  * Refresh patches.
+  * Mention imagemagick in d/repack.local as graphicsmagick cannot write
+    ICO files.
+  * Install README in python3-vine binary package.
+
+ -- Michael Fladischer <fladi@debian.org>  Fri, 18 Oct 2019 18:16:39 +0200
+
+vine (1.1.4+dfsg-3) unstable; urgency=medium
+
+  * Team upload.
+
+  [ Ondřej Nový ]
+  * d/control: Set Vcs-* to salsa.debian.org
+  * d/watch: Use https protocol
+  * d/tests: Use AUTOPKGTEST_TMP instead of ADTTMP
+  * Convert git repository from git-dpm to gbp layout
+  * Use 'python3 -m sphinx' instead of sphinx-build for building docs
+  * Use debhelper-compat instead of debian/compat.
+
+  [ Andrey Rahmatullin ]
+  * Drop Python 2 support.
+
+ -- Andrey Rahmatullin <wrar@debian.org>  Sat, 10 Aug 2019 13:05:34 +0500
+
+vine (1.1.4+dfsg-2) unstable; urgency=medium
+
+  * Fix file-contains-trailing-whitespace in control and changelog
+  * Fix homepage-field-uses-insecure-uri
+  * Bump debhelper compat from 9 to 11
+  * Bump Standards-Version from 4.1.1 to 4.1.3 (no change required)
+
+ -- Christopher Hoskin <mans0954@debian.org>  Wed, 24 Jan 2018 22:44:47 +0000
+
+vine (1.1.4+dfsg-1) unstable; urgency=medium
+
+  * Fix "please make the build reproducible" included patch Reproducible-build
+    provided by bug submitter (Closes: #858926)
+  * Add new signing key https://github.com/celery/kombu/issues/773
+  * New upstream release (1.1.4)
+  * Use secure uri in debian/watch
+  * Force use of python3-sphinx by build conflicting on python-sphinx
+  * Update Standards-Version from 3.9.8 to 4.1.1 (no change required)
+
+ -- Christopher Hoskin <mans0954@debian.org>  Fri, 27 Oct 2017 20:19:52 +0100
+
+vine (1.1.3+dfsg-2) unstable; urgency=medium
+
+  * Add Python 2 package
+
+ -- Christopher Hoskin <mans0954@debian.org>  Sun, 19 Mar 2017 08:31:38 +0000
+
+vine (1.1.3+dfsg-1) unstable; urgency=low
+
+  * source package automatically created by stdeb 0.8.5. Closes: #855311
+
+ -- Christopher Hoskin <mans0954@debian.org>  Thu, 16 Feb 2017 20:56:25 +0000
