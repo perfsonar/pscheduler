@@ -901,7 +901,7 @@ def main_program():
             # Don't ask for more rows than we're going to be able to consume
 
             limit = max_workers - len(working)
-            if limit == 0:
+            if limit < 1:
                 log.debug("Already have a full slate of workers, skipping query.")
                 continue
 
