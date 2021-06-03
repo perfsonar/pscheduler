@@ -71,7 +71,7 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 
 # Minimum-required PostgreSQL version.  This is the one we build.
 %%_pscheduler_postgresql_version_major 10
-%%_pscheduler_postgresql_version_minor 13
+%%_pscheduler_postgresql_version_minor 17
 %%_pscheduler_postgresql_version %%{_pscheduler_postgresql_version_major}.%%{_pscheduler_postgresql_version_minor}
 %%_pscheduler_postgresql_package postgresql%%{_pscheduler_postgresql_version_major}
 %%_pscheduler_postgresql_service postgresql-%%{_pscheduler_postgresql_version_major}
