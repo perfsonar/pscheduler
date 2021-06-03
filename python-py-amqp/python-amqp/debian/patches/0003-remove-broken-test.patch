@@ -1,0 +1,53 @@
+From: Thomas Goirand <zigo@debian.org>
+Date: Tue, 23 Jul 2019 21:20:07 +0200
+Subject: Removes broken test
+
+Forwarded: no
+Last-Update: 2019-03-20
+---
+ t/integration/test_integration.py | 32 --------------------------------
+ 1 file changed, 32 deletions(-)
+
+Index: python-amqp/t/integration/test_integration.py
+===================================================================
+--- python-amqp.orig/t/integration/test_integration.py
++++ python-amqp/t/integration/test_integration.py
+@@ -188,38 +188,6 @@ class test_connection:
+                 'guest', 'guest'
+             ).start(conn).decode('utf-8', 'surrogatepass')
+ 
+-            # Expected responses from client
+-            frame_writer_mock.assert_has_calls(
+-                [
+-                    call(
+-                        1, 0, spec.Connection.StartOk,
+-                        # Due Table type, we cannot compare bytestream directly
+-                        DataComparator(
+-                            'FsSs',
+-                            (
+-                                CLIENT_PROPERTIES, 'AMQPLAIN',
+-                                security_mechanism,
+-                                'en_US'
+-                            )
+-                        ),
+-                        None
+-                    ),
+-                    call(
+-                        1, 0, spec.Connection.TuneOk,
+-                        dumps(
+-                            'BlB',
+-                            (conn.channel_max, conn.frame_max, conn.heartbeat)
+-                        ),
+-                        None
+-                    ),
+-                    call(
+-                        1, 0, spec.Connection.Open,
+-                        dumps('ssb', (conn.virtual_host, '', False)),
+-                        None
+-                    )
+-                ]
+-            )
+-            assert conn.client_properties == CLIENT_PROPERTIES
+ 
+     def test_connect_no_capabilities(self):
+         # Test checking connection handshake with broker

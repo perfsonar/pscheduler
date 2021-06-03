@@ -1,0 +1,65 @@
+--- python-amqp.orig/amqp/abstract_channel.py	2021-06-02 19:32:42.875494000 +0000
++++ python-amqp/amqp/abstract_channel.py	2021-06-02 19:37:30.624926000 +0000
+@@ -120,7 +120,7 @@
+             amqp_method = self._METHODS[method_sig]
+         except KeyError:
+             raise AMQPNotImplementedError(
+-                f'Unknown AMQP method {method_sig!r}')
++                'Unknown AMQP method {!r}'.format(method_sig))
+ 
+         try:
+             listeners = [self._callbacks[method_sig]]
+--- python-amqp.orig/amqp/connection.py	2021-06-02 19:32:42.875513000 +0000
++++ python-amqp/amqp/connection.py	2021-06-02 19:37:50.753257000 +0000
+@@ -280,11 +280,11 @@
+ 
+     def __repr__(self):
+         if self._transport:
+-            return f'<AMQP Connection: {self.host}/{self.virtual_host} '\
+-                   f'using {self._transport} at {id(self):#x}>'
++            return '<AMQP Connection: {}/{} using {} at {0:#x}'.format(
++                    self.host, self.virtual_host, self._transport, id(self))
+         else:
+-            return f'<AMQP Connection: {self.host}/{self.virtual_host} '\
+-                   f'(disconnected) at {id(self):#x}>'
++            return '<AMQP Connection: {}/{} (disconnected) at {0:#x}'.format(
++                    self.host, self.virtual_host, id(self))
+ 
+     def __enter__(self):
+         self.connect()
+@@ -497,7 +497,7 @@
+         try:
+             return self._avail_channel_ids.remove(channel_id)
+         except ValueError:
+-            raise ConnectionError(f'Channel {channel_id!r} already open')
++            raise ConnectionError('Channel {!r} already open'.format(channel_id))
+ 
+     def channel(self, channel_id=None, callback=None):
+         """Create new channel.
+--- python-amqp.orig/amqp/transport.py	2021-06-02 19:32:42.875523000 +0000
++++ python-amqp/amqp/transport.py	2021-06-02 19:37:30.625676000 +0000
+@@ -99,11 +99,11 @@
+ 
+     def __repr__(self):
+         if self.sock:
+-            src = f'{self.sock.getsockname()[0]}:{self.sock.getsockname()[1]}'
+-            dst = f'{self.sock.getpeername()[0]}:{self.sock.getpeername()[1]}'
+-            return f'<{type(self).__name__}: {src} -> {dst} at {id(self):#x}>'
++            src = '{}:{}'.format(self.sock.getsockname()[0], self.sock.getsockname()[1])
++            dst = '{}:{}'.format(self.sock.getpeername()[0], self.sock.getpeername()[1])
++            return '<{}: {} -> {} at 0x{1:x}'.format(type(self).__name__, src, dst, id(self))
+         else:
+-            return f'<{type(self).__name__}: (disconnected) at {id(self):#x}>'
++            return '<{}: (disconnected) at 0x{1:x}'.format(type(self).__name__, id(self))
+ 
+     def connect(self):
+         try:
+@@ -345,7 +345,7 @@
+             return frame_type, channel, payload
+         else:
+             raise UnexpectedFrame(
+-                f'Received frame_end {frame_end:#04x} while expecting 0xce')
++                'Received frame_end 0x{4} while expecting 0xce'.format(frame_end))
+ 
+     def write(self, s):
+         try:

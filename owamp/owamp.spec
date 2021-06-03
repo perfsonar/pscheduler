@@ -3,7 +3,7 @@
 #
 
 %define perfsonar_auto_version 4.4.0
-%define perfsonar_auto_relnum 0.7.b1
+%define perfsonar_auto_relnum 0.8.b1
 
 Name: owamp
 Summary: owamp - one-way delay tester

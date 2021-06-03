@@ -1,0 +1,5 @@
+# please also check https://pypi.debian.net/vine/watch
+version=3
+opts="uversionmangle=s/(rc|a|b|c)/~$1/;s/v//,dversionmangle=s/\+dfsg$//,repacksuffix=+dfsg" \
+https://github.com/celery/vine/tags .*/[v]*(\d[\d\.]+)\.tar\.gz \
+#debian sh debian/repack.stub

@@ -1,6 +1,6 @@
-pscheduler-archiver-tcp (4.4.0~7.b1-1) perfsonar-4.4; urgency=low
+pscheduler-archiver-tcp (4.4.0~8.b1-1) perfsonar-4.4; urgency=low
 
   * Initial release
 
- -- perfSONAR developers <debian@perfsonar.net>  Fri, 28 May 2021 20:08:53 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 03 Jun 2021 10:57:58 +0000
 
