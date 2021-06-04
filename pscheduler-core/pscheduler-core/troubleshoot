@@ -213,10 +213,10 @@ statistics = [
 
 # Services run by pScheduler
 services = [
-    "ticker",
-    "scheduler",
-    "runner",
-    "archiver"
+    ("ticker", "Ticker"),
+    ("scheduler", "Scheduler"),
+    ("runner", "Runner"),
+    ("archiver", "Archiver")
 ]
 
 def check_service_status(api):
@@ -239,17 +239,14 @@ def check_service_status(api):
 
     start("  Checking services")
 
-    # Figure out how much padding to add
-    longest_service =  sorted([len(p) for p in services])[-1]
-
-    for service in services:
+    for service, name in services:
         service_status = status["services"][service]
-        progress(service)
+        progress(name)
         try:
             if service_status["overdue"] is not None:
-                failed("The %s service does not appear to be running." % service)
+                failed("The %s service does not appear to be running." % name)
         except KeyError:
-            failed("pScheduler did not report status for the %s service." % service)
+            failed("pScheduler did not report status for the %s service." % name)
     ok()
 
     # Look at the limits
@@ -495,9 +492,11 @@ for host in hosts:
 
     start("  Exercising API")
     for test in [
-            ("status", "Status", True),
+            ("archivers", "Archivers", False),
+            ("clock", "Clock", False),
+            ("contexts", "Contexts", False),
             ("tests", "Tests", False),
-            ("tools", "Tools", False)
+            ("tools", "Tools", False),
     ]:
         endpoint, title, ok_404 = test
         progress(title)
