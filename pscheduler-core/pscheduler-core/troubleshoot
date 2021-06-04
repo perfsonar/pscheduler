@@ -246,8 +246,7 @@ def check_service_status(api):
         service_status = status["services"][service]
         progress(service)
         try:
-            if service_status["overdue"] is not None \
-               or service_status["expected"] is None:
+            if service_status["overdue"] is not None:
                 failed("The %s service does not appear to be running." % service)
         except KeyError:
             failed("pScheduler did not report status for the %s service." % service)
