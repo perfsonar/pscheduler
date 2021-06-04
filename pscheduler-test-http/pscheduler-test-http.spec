@@ -4,7 +4,7 @@
 
 %define short	http
 %define perfsonar_auto_version 4.4.0
-%define perfsonar_auto_relnum 0.8.b1
+%define perfsonar_auto_relnum 0.9.b1
 
 Name:		pscheduler-test-%{short}
 Version:	%{perfsonar_auto_version}
