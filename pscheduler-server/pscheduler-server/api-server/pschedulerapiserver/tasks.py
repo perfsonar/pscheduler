@@ -109,6 +109,7 @@ def __tasks_get_filtered(uri_base,
                          expanded=False,
                          detail=False,
                          single=True,
+                         part_field=None,
                          part_key_field=None
 ):
 
@@ -117,7 +118,7 @@ def __tasks_get_filtered(uri_base,
     # Let this throw; callers are responsible for catching.
 
     cursor = dbcursor_query(
-        """SELECT json_detail, uuid, participant_key FROM task WHERE %s""" % (where_clause),
+        """SELECT json_detail, uuid, participant, participant_key FROM task WHERE %s""" % (where_clause),
         args)
 
     tasks_returned = []
@@ -163,8 +164,11 @@ def __tasks_get_filtered(uri_base,
             except KeyError:
                 pass
 
+        if part_field is not None:
+            json[part_field] = row[2]
+
         if part_key_field is not None:
-            json[part_key_field] = row[2]
+            json[part_key_field] = row[3]
 
         tasks_returned.append(json)
 
@@ -603,6 +607,7 @@ def tasks():
 
 
 
+PART_FIELD = "__participant"
 PART_KEY_FIELD = "__participant_key"
 
 @application.route("/tasks/<uuid>", methods=['GET', 'POST', 'DELETE'])
@@ -620,6 +625,7 @@ def tasks_uuid(uuid):
             expanded=True,
             detail=arg_boolean("detail"),
             single=True,
+            part_field=PART_FIELD,
             part_key_field=PART_KEY_FIELD
         )
 
@@ -629,12 +635,18 @@ def tasks_uuid(uuid):
         task = tasks[0]
 
         log.debug("GOT TASK %s", task)
+
+        participant = task.get(PART_FIELD)
+        del task[PART_FIELD]
+
         participant_key = task.get(PART_KEY_FIELD)
         del task[PART_KEY_FIELD]
 
-        log.debug("LOOKING FOR %s", participant_key)
+        required_key = participant_key if participant > 0 else task.get("_key")
 
-        return ok_json_sanitize_checked(task, participant_key)
+        log.debug("LOOKING FOR %s", required_key)
+
+        return ok_json_sanitize_checked(task, required_key)
 
     elif request.method == 'POST':
 

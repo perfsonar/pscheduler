@@ -30,7 +30,7 @@ def ok_json(data=None, sanitize=True):
 
 def ok_json_sanitize_checked(data, required_key=None):
     provided_key = arg_string("key")
-    if required_key is None:
+    if required_key is None or provided_key is None:
         # No keys, sanitize.
         sanitize = True
     elif provided_key == required_key:

@@ -657,8 +657,8 @@ class RunWorker(object):
                     if got is not None:
                         result_full[index] = got
                 else:
-                    self.log.warning("%d: Unable to retrieve run %s",
-                                         self.id, get)
+                    self.log.warning("%d: Unable to retrieve run %s: %d: %s",
+                                         self.id, get, status, run_result)
                     got = { "succeeded": False,
                             "error": run_result,
                             "diags": run_result
