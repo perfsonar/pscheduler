@@ -697,7 +697,7 @@ class RunWorker(object):
             else:
                 result_merged = {
                     "succeeded": False,
-                    "error": "Tool {} failed to merge results: {}",
+                    "error": "Tool {} failed to merge results: {}".format(tool, stderr),
                     "diags": "Exited {}\n\nStandard out:\n\n{}\n\nStandard error:\n\n".format(returncode, stdout, stderr)
                 }
 
