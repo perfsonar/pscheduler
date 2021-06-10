@@ -309,7 +309,7 @@ def tasks_uuid_runs_run(task, run):
                     SELECT
                         run_json(run.id),
                         run_state.finished,
-                        task.participant_key
+                        task.json ->> '_key'
                     FROM
                         task
                         JOIN run ON task.id = run.task
@@ -326,7 +326,7 @@ def tasks_uuid_runs_run(task, run):
                 cursor.close()
                 return not_found()
 
-            result, finished, participant_key = cursor.fetchone()
+            result, finished, required_key = cursor.fetchone()
             cursor.close()
 
             if not (wait_local or wait_merged):
@@ -368,7 +368,7 @@ def tasks_uuid_runs_run(task, run):
         except KeyError:
             pass  # Not there?  Don't care.
 
-        return ok_json_sanitize_checked(result, participant_key)
+        return ok_json_sanitize_checked(result, required_key)
 
 
     elif request.method == 'PUT':
