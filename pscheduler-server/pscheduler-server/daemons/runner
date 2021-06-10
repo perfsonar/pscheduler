@@ -698,7 +698,7 @@ class RunWorker(object):
                 result_merged = {
                     "succeeded": False,
                     "error": "Tool {} failed to merge results: {}".format(tool, stderr),
-                    "diags": "Exited {}\n\nStandard out:\n\n{}\n\nStandard error:\n\n".format(returncode, stdout, stderr)
+                    "diags": "Exited {}\n\nStandard out:\n\n{}\n\nStandard error:\n\n{}\n".format(returncode, stdout, stderr)
                 }
 
             result_full_text = pscheduler.json_dump(result_full)
