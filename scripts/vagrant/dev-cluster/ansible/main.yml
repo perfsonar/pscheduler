@@ -121,19 +121,33 @@
         msg: "IPv6 block {{ private_cidr_v6 }} too small for {{ cluster_size }} hosts."
       when: cluster_size > private_cidr_v6 | ipv6("size") - 2 + ip_address_base
 
+
+    - name: "NMCLI dependencies for CentOS 7"
+      package:
+        name:
+          - nm-connection-editor
+          - NetworkManager-libnm
+      when: ansible_facts["os_family"] in redhat_families and ansible_facts["distribution_major_version"] == "7"
+
     - name: NMCLI for CentOS 7
       package:
         name: NetworkManager-tui
       when: ansible_facts["os_family"] in redhat_families and ansible_facts["distribution_major_version"] == "7"
+
     - name: NMCLI for CentOS 8
       package:
         name: NetworkManager
       when: ansible_facts["os_family"] in redhat_families and ansible_facts["distribution_major_version"] == "8"
 
+
+    # TODO: See if there any dependencies required for this.
     - name: NMCLI for Debian/Ubuntu
       package:
         name: network-manager
       when: ansible_facts["os_family"] == "Debian"
+
+
+
 
     - name: Private network interface
       nmcli:

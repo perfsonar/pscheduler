@@ -33,6 +33,8 @@ Your system must have the following installed:
 
 ## Setup
 
+Configure Ansible by running `ansible-galaxy collection install community.general`.
+
 The default is to build a single-host cluster of CentOS 7 systems, which
 can be done by running `vagrant up`.
 
