@@ -1,6 +1,7 @@
 pscheduler-server (4.4.0~9.b1-1) perfsonar-4.4; urgency=low
 
   * New upstream version.
+  * debhelper 9.20160709 provides dh-systemd
 
  -- perfSONAR developers <debian@perfsonar.net>  Thu, 03 Jun 2021 22:48:28 +0000
 
