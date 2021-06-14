@@ -276,7 +276,7 @@ def run_client():
 
     auth_env = {}
 
-    if participant_data[1].get("_auth") is not None:
+    if not (single_ended or loopback) and (participant_data[1].get("_auth") is not None):
 
         try:
 
@@ -421,7 +421,7 @@ def run_server():
 
     # Run auth if the lead participant is and there's auth data
 
-    if participant_data[1].get("_auth") is not None and participant_data[0].get("schema", 1) >= 2:
+    if not (single_ended or loopback) and (participant_data[1].get("_auth") is not None and participant_data[0].get("schema", 1) >= 2):
 
         try:
 
