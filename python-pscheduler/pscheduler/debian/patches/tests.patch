@@ -1,5 +1,5 @@
---- a/tests/ipaddr_test.py	2021-06-03 22:48:27.489996190 +0000
-+++ b/tests/ipaddr_test.py	2021-06-03 22:48:34.073822733 +0000
+--- a/tests/ipaddr_test.py	2021-06-03 10:58:20.845531000 +0000
++++ b/tests/ipaddr_test.py	2021-06-14 14:20:14.379954297 +0000
 @@ -43,7 +43,7 @@
          self.assertEqual(ip_addr_version('::1/32'), (6, '::1'))
          self.assertEqual(ip_addr_version('::1/32', resolve=False), (6, '::1'))
@@ -18,8 +18,8 @@
          self.assertEqual(ip_addr_version('::1/quack', resolve=False, family=True), (None, None))
  
          # Restricted to one version of an IP or another
---- a/tests/psurl_test.py	2021-06-03 22:48:26.620019111 +0000
-+++ b/tests/psurl_test.py	2021-06-03 22:48:34.073822733 +0000
+--- a/tests/psurl_test.py	2021-06-03 10:58:20.845531000 +0000
++++ b/tests/psurl_test.py	2021-06-14 14:20:14.381004249 +0000
 @@ -23,7 +23,7 @@
          no_scheme = "no-scheme"
  

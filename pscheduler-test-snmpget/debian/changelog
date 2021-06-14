@@ -1,8 +1,8 @@
-pscheduler-test-snmpget (4.4.0~9.b1-1) perfsonar-4.4; urgency=low
+pscheduler-test-snmpget (4.4.0~10.b1-1) perfsonar-4.4; urgency=low
 
   * New upstream version.
 
- -- perfSONAR developers <debian@perfsonar.net>  Thu, 03 Jun 2021 22:48:28 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 14 Jun 2021 14:19:52 +0000
 
 pscheduler-test-snmpget (4.3.3-1) perfsonar-4.3; urgency=low
 
