@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+#
+# Validate data for __PLUGIN_NAME__
+#
+
+import pscheduler
+
+try:
+    json = pscheduler.json_load(max_schema=1)
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+        })
+
+data_validator = {
+    #Data validation json object
+
+    "type": "object",
+    "properties": {
+        #include any data properties that should be included here
+        #if you have more than one version of your archiver, you will need to
+        #include a "schema" property which describes the expected data format
+        #for the given version of your archiver
+    },
+    "additionalProperties": False,
+    #include any required properties here
+    #"required": []
+}
+
+valid, error = pscheduler.json_validate(json, data_validator)
+
+if not valid:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": error
+        })
+
+pscheduler.succeed_json({ "valid": True })
