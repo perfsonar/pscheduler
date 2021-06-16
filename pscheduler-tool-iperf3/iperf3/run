@@ -528,13 +528,7 @@ try:
     else:
         pscheduler.fail("Invalid participant.")
 except Exception as ex:
-    _, _, ex_traceback = sys.exc_info()
-    if ex_traceback is None:
-        ex_traceback = ex.__traceback__
-    tb_lines = [ line.rstrip('\n') for line in
-                 traceback.format_exception(ex.__class__, ex, ex_traceback)]
-    logger.debug(tb_lines)
-    logger.error("Exception %s" % ex)
+    logger.exception()
 
 logger.debug("Results: %s" % results)
 
