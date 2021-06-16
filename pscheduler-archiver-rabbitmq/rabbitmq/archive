@@ -109,21 +109,21 @@ class AMQPExpiringConnection(object):
 
         # Set default port and SSL flag based on URL scheme
         if (parsed_url.scheme == "amqp"):
-            port=5672
-            self.ssl=False
+            port = 5672
+            self.ssl = False
         elif (parsed_url.scheme == "amqps"):
-            port=5671
-            self.ssl=True
+            port = 5671
+            self.ssl = True
         else:
             raise ValueError("URL must be amqp[s]://...")
 
         # Use port if specified in URL
         if parsed_url.port:
-            port=parsed_url.port
+            port = parsed_url.port
 
-        self.host="%s:%s" % (parsed_url.hostname, port)
+        self.host = "%s:%s" % (parsed_url.hostname, port)
         # Remove leading slash from path to match pika parsing convention
-        self.virtual_host=parsed_url.path[1:] or ""
+        self.virtual_host = parsed_url.path[1:] or ""
 
         # These are the amqp module's defaults
         self.userid = parsed_url.username or "guest"
