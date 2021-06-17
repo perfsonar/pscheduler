@@ -258,16 +258,12 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
     try:
         result_merged = run_json['result-merged']
         if result_merged is None:
-            result_merged = {
-                "succeeded": False,
-                "error": "No result was produced."
-            }
-    except KeyError as ex:
+            raise KeyError()
+    except KeyError:
         result_merged = {
             "succeeded": False,
-            "error": "Merged result missing from run",
+            "error": "No result was produced."
         }
-        return
 
     succeeded = result_merged.get('succeeded', False)
 
@@ -328,11 +324,17 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
 
         parts = task_json["detail"]["participants"]
 
+        full_result = run_json.get("result-full")
+
         for participant in range(0, len(parts)):
 
-            part_result = run_json["result-full"][participant]
+            try:
+                part_result = None if full_result is None else full_result[participant]
+            except IndexError:
+                part_result = None
+
             if part_result is None:
-                print("\nNothing available from {}.".format(parts[participant]))
+                print("\nNo additional information available from {}.".format(parts[participant]))
                 continue
 
             for what, what_text in [ ("error", "Error"), ("diags", "Diagnostics") ]:
