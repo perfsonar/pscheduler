@@ -23,11 +23,11 @@ def spec_is_valid(json):
         "local": {
             # Local data types such as this can be defined within this file,
             # but are not necessary
-            "Type": {
+            "type": {
                 "type": "string",
                 "enum": [ "system", "api" ]
             },
-            "Spec": {
+            "spec": {
                 "type": "object",
                 # schema, host, host-node, and timeout are standard,
                 # and should be included
