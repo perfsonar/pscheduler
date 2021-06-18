@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+#
+# Format a result
+#
+
+import html
+import json
+import jsontemplate
+import pscheduler
+import sys
+
+from validate import result_is_valid
+from validate import MAX_SCHEMA
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
+
+input = pscheduler.json_load(exit_on_error=True, max_schema=MAX_SCHEMA)
+
+valid, message = result_is_valid(input["result"])
+
+if not valid:
+    pscheduler.fail(message)
+
+result = input["result"]
+spec = input["spec"]
+
+if format == 'text/plain':
+
+   print('Response Time: %s' % result['time'])
+
+   try:
+      print('Status Code: %s' % result['status']) 
+   except KeyError:
+      pass
+
+   try:
+      str = spec['parse']
+      print('String found: %s' % result['found'])
+   except KeyError:
+      pass
+
+   try:
+      print('Content: ', result['content'])
+   except KeyError:
+      pass
+
+elif format == 'text/html':
+
+    print('<table>')
+    print('<tr>') 
+    print('<td>Response Time</td>')
+    print('<td>%s</td>' % result['time'])
+    print('</tr>')
+
+    print('<tr>')
+    print('<td>Status Code</td>')
+    print('<td>%s</td>' % result['status'])
+    print('</tr>')
+
+    if 'parse' in spec:
+        print('<tr>')
+        print('<td>String Found</td>')
+        print('<td>%s</td>' % result.get('found', False))
+        print('</tr>') 
+
+    try:
+       content = result['content']
+       print('<tr>')
+       print('<td>Content</td>')
+       print('<td><pre>\n%s\n</pre>\n</td>' % html.escape(content))
+       print('</tr>') 
+    except KeyError:
+       pass
+
+    print('</table>')
+
+else:
+   pscheduler.fail("Unsupported format '%s'" % format)
