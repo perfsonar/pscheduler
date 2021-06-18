@@ -4,7 +4,7 @@
 
 %define short ethr
 Name:		%{short}
-Version:	0.2.1
+Version:	1.0.0
 Release:	1%{?dist}
 Summary:	A cross-platform network performance measurement tool
 BuildArch:	%(uname -m)
@@ -42,22 +42,12 @@ such as Windows, Linux and other Unix systems.
 
 mkdir -p %{gopath} %{gobin}
 
-export GOPATH=%{gopath}
-export GOBIN=%{gobin}
-export GOCACHE=%{gocache}
-
-go get ./...
-
-
-
 %build
 export GOPATH=%{gopath}
 export GOBIN=%{gobin}
 export GOCACHE=%{gocache}
 
-go build
-
-
+go build -o %{name}-%{version}
 
 %install
 %{__mkdir_p} %{buildroot}/%{_bindir}
