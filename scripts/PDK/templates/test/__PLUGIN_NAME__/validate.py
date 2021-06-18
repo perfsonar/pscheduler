@@ -47,7 +47,7 @@ def spec_is_valid(json):
             }
         },
         # Set to false if ONLY required options should be used
-        "additionalProperties": True
+        "additionalProperties": False
     }
 
     return json_validate(json, schema, max_schema=MAX_SCHEMA)
@@ -61,7 +61,6 @@ def result_is_valid(json):
             "time":       { "$ref": "#/pScheduler/Duration" },
             },
         "required": [
-            "schema",
             "succeeded",
             "time",
             ]
