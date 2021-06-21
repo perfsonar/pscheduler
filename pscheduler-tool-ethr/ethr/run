@@ -89,7 +89,7 @@ def run_client():
         "-c", test_spec['dest'],
 
         # Port
-        "-ports", "%s=%d" % (protocol, server_port),
+        "-port", server_port,
 
         # Duration
         "-d", "%ss" % (test_duration),
@@ -285,7 +285,7 @@ def run_server():
         "-s",
 
         # Port
-        "-ports", "%s=%d" % (protocol, server_port)
+        "-port", server_port
 
     ]
 
@@ -349,21 +349,24 @@ def run_server():
 
 results = {}
 
-if participant == 0:
-    if loopback:
-        logger.debug("Running client and server")
-        server_thread = threading.Thread(target=run_server)
-        server_thread.start()
-        results = run_client()
-        server_thread.join() #Wait until the server thread terminates
+try:
+    if participant == 0:
+        if loopback:
+            logger.debug("Running client and server")
+            server_thread = threading.Thread(target=run_server)
+            server_thread.start()
+            results = run_client()
+            server_thread.join() #Wait until the server thread terminates
+        else:
+            logger.debug("Running client")
+            results = run_client()
+    elif participant == 1:
+        logger.debug("Running server")
+        results = run_server()
     else:
-        logger.debug("Running client")
-        results = run_client()
-elif participant == 1:
-    logger.debug("Running server")
-    results = run_server()
-else:
-    pscheduler.fail("Invalid participant.")
+        pscheduler.fail("Invalid participant.")
+except Exception as ex:
+    logger.exception()
 
 
 logger.debug("Results: %s" % results)
