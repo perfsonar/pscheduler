@@ -106,6 +106,10 @@ def run_client():
         ethr_args.append('-n')
         ethr_args.append(parallel)
 
+    if 'bandwidth' in test_spec and test_spec['bandwidth'] != None:
+        ethr_args.append('-b')
+        ethr_args.append(test_spec['bandwidth'])
+
     # Buffer length
     if 'buffer-length' in test_spec and test_spec['buffer-length'] != None:
         ethr_args.append('-l')

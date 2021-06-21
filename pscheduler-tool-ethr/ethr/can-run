@@ -51,6 +51,7 @@ except ValueError as ex:
 errors = []
 
 supported_options = [
+    "bandwidth",
     "buffer-length",
     "dest",
     "dest-node",
