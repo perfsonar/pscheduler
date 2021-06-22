@@ -35,8 +35,24 @@ final_results = source_results
 
 # if this was a reverse test, we want to look at the destination's
 # output instead of the source's
-if input['test']['spec'].get('reverse') and not (single_ended or loopback):
-    final_results = dest_results
+
+if input['test']['spec'].get('reverse', False):
+
+    if not (single_ended or loopback):
+        final_results = dest_results
+
+    if not single_ended:
+        # When running in reverse, iperf3 has a limitation that makes
+        # receiver-throughput-bits be reported zero in the place where it's
+        # expected.  If that's the case, use the reported value.
+        try:
+            if final_results["summary"]["summary"]["receiver-throughput-bits"] < 1:
+                final_results["summary"]["summary"]["receiver-throughput-bits"] = \
+                result_list[0]["summary"]["summary"]["receiver-throughput-bits"]
+        except KeyError:
+            # Don't care if it's not there.
+            pass
+
 
 # it's possible one could come back as null, ensure we have the right type
 if not final_results:
