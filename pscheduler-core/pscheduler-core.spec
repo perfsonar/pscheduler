@@ -3,7 +3,7 @@
 #
 
 %define perfsonar_auto_version 4.4.0
-%define perfsonar_auto_relnum 0.10.b1
+%define perfsonar_auto_relnum 0.11.b1
 
 Name:		pscheduler-core
 Version:	%{perfsonar_auto_version}

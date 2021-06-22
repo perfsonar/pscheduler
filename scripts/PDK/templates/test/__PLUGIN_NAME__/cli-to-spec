@@ -49,7 +49,7 @@ opt_parser = pscheduler.FailingOptionParser(epilog=
 )
 
 # Add all potential command line options here
-# Check https://docs.python.org/2/library/optparse.html for more
+# Check https://docs.python.org/3/library/optparse.html for more
 # documentation on the opt parser
 
 
@@ -80,7 +80,23 @@ opt_parser.add_option("--test-type",
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
-result = { 'schema': 1 }
+
+# Call .set(n) on this object to indicate that a parameter requires
+# schema level n or higher.  The object will return the highes-set
+# value when .value() is called.
+#
+# For example, if the 'foo' paramater was introduced in schema level 2:
+#
+#  if options.foo is not None:
+#      result['foo'] = options.foo
+#      schema.set(2)
+#
+# If this is a brand-new test, you won't need to call .set() since the
+# default is 1.
+
+schema = pscheduler.HighInteger(1)
+
+result = { }
 
 if options.host is not None:
    result['host'] = options.host
@@ -101,5 +117,8 @@ else:
 
 if result['testtype'] not in [ 'api', 'system' ]:
     pscheduler.fail('Invalid test type. Choose api or system.')
+
+
+result['schema'] = schema.value()
 
 pscheduler.succeed_json(result)
