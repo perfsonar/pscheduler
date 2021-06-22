@@ -22,7 +22,7 @@ input = pscheduler.json_load(exit_on_error=True)
 
 # Take input from test spec
 try:
-    testtype = input['test']['spec']['testtype']
+    testtype = input['test']['type']
 
 except KeyError:
     pscheduler.fail('Missing data in input')
