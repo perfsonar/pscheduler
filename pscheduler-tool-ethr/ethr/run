@@ -115,6 +115,10 @@ def run_client():
         ethr_args.append('-l')
         ethr_args.append(test_spec['buffer-length'])
 
+    if 'ip-tos' in test_spec and test_spec['ip-tos'] != None:
+        ethr_args.append('-tos')
+        ethr_args.append(test_spec['ip-tos'])
+
     # IP version
     ip_version = test_spec.get('ip-version', None)
     if ip_version is not None:
