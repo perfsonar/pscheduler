@@ -10,7 +10,7 @@
 {
     "schema": 1,
     "name": "openports",
-    "description": "EDIT ME",
+    "description": "Identifies open ports on a given host",
     "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",
