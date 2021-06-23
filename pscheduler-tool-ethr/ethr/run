@@ -85,9 +85,6 @@ def run_client():
 
         "ethr",
 
-        # Client
-        "-c", test_spec['dest'],
-
         # Port
         "-port", server_port,
 
@@ -119,6 +116,10 @@ def run_client():
         ethr_args.append('-tos')
         ethr_args.append(test_spec['ip-tos'])
 
+    #Determine if we need to bind to an address and have enough info to do so intelligently
+    source = test_spec.get('source', None)
+    destination = test_spec['dest'] #required
+    local_address = test_spec.get('local-address', None)
     # IP version
     ip_version = test_spec.get('ip-version', None)
     if ip_version is not None:
@@ -127,6 +128,46 @@ def run_client():
             ethr_args.append('-4')
         else:
             ethr_args.append('-6')
+        #use whatever was provided as the bind
+        if local_address is not None:
+            ethr_args.append('-ip')
+            ethr_args.append(local_address)
+        elif source is not None:
+            ethr_args.append('-ip')
+            ethr_args.append(source)
+        ethr_args.append('-c')
+        ethr_args.append(destination) 
+    elif local_address is not None:
+        # if we have the local-address and dest, we can determine what ip version they have in common
+        # we prefer IPv6 but fallback to IPv4 if they don't both have IPv6. If one end only 
+        # has IPv4 and the other only has IPv6 we don't bind at all but don't throw error in 
+        # case there is some external factor we don't know about (maybe should change this?)
+        local_ip, dest_ip = pscheduler.ip_normalize_version(local_address, destination)
+        if local_ip is not None:
+            ethr_args.append('-ip')
+            ethr_args.append(local_ip)
+        if dest_ip is not None:
+            ethr_args.append('-c')
+            ethr_args.append(dest_ip)
+        else:
+            pscheduler.succeed_json({"succeeded": False,
+                                     "error": "Unable to find common IP version between local-address %s and dest %s" % (local_address, destination)})
+    elif source is not None:
+        #see comment for local-address, but s/local-address/source/g
+        source_ip, dest_ip = pscheduler.ip_normalize_version(source, destination)
+        if source_ip is not None:
+            ethr_args.append('-ip')
+            ethr_args.append(source_ip)
+        if dest_ip is not None:
+            ethr_args.append('-c')
+            ethr_args.append(dest_ip)
+        else:
+            pscheduler.succeed_json({"succeeded": False,
+                                     "error": "Unable to find common IP version between source %s and dest %s" % (source, destination)})
+    else:
+        #set destination
+        ethr_args.append('-c')
+        ethr_args.append(destination)
 
     # Reverse
     if reverse:
@@ -297,7 +338,8 @@ def run_server():
 
     ]
 
-
+    #Determine if we need to bind to an address and have enough info to do so intelligently
+    source = test_spec.get('source', None)
     # IP version
     ip_version = test_spec.get('ip-version', None)
     if ip_version is not None:
@@ -306,6 +348,26 @@ def run_server():
             ethr_args.append('-4')
         else:
             ethr_args.append('-6')
+        #if the ip version is given we just use the dest as the bind address and have
+        ethr_args.append('-ip')
+        ethr_args.append(test_spec['dest'])
+    elif (source is not None) and (not loopback):
+        # if we have the source and dest, we can determine what ip version they have in common
+        # we prefer IPv6 but fallback to IPv4 if they don't both have IPv6. If one end only 
+        # has IPv4 and the other only has IPv6 we don't bind at all but don't throw error in 
+        # case there is some external factor we don't know about (maybe should change this?)
+        source_ip, bind_address = pscheduler.ip_normalize_version(source, test_spec['dest'])
+        if bind_address is not None:
+            ethr_args.append('-ip')
+            ethr_args.append(bind_address)
+        else:
+            logger.debug("Skipping bind. Source %s and destination %s don't have any common IPs of the same version as far as tool can tell." % (source, test_spec['dest']))
+    else:
+        #If we are here its because we have a TCP test where only the dest was specified 
+        # and no ip-version provided. In this case we can't determine what we're supposed 
+        # to bind to, so don't specify and ethr will bind to all interfaces
+        logger.debug("Skipping bind. No source or ip-version given so can't make an intelligent decision about where to bind. ethr will listen on all interfaces")
+        pass
 
 
     # join and run_program want these all to be string types, so

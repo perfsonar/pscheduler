@@ -58,6 +58,7 @@ supported_options = [
     "duration",
     "ip-tos",
     "ip-version",
+    "local-address",
     "omit",
     "parallel",
     "reverse",
