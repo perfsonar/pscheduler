@@ -22,6 +22,7 @@ Source:		%{actual}-%{version}.tar.gz
 
 Requires:	%{_pscheduler_python}
 Requires:       %{_pscheduler_python_epel}-simplejson
+Requires:      	nmap
 
 BuildRequires:	%{_pscheduler_python}-setuptools
 
