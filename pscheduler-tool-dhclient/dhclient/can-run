@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #3:
+# 
+# This file will determine if this tool can run a test based on a test spec.
+#
+# Be sure to edit line 19, inserting the names of the tests the tool
+# should be compatible with.
+# 
+
+# exit statuses should be different based on error
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True);
+
+try:
+    if json['type'] != 'dhcp':
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Unsupported test type" ]
+        })
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test type" ]
+    })
+
+
+
+pscheduler.succeed_json({ "can-run": True })
