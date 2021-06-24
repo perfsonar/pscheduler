@@ -1,8 +1,8 @@
 #!/bin/sed -e 1d
 {
     "schema": 1,
-    "name": "http",
-    "description": "Measure HTTP Response Time",
+    "name": "psresponse",
+    "description": "Measure pScheduler Response Time",
     "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",

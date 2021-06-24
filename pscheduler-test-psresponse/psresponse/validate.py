@@ -1,12 +1,10 @@
 #
-# Validator for "http" Test
+# Validator for "psresponse" Test
 #
-
-# TODO: _ for sensitive values
 
 from pscheduler import json_validate
 
-MAX_SCHEMA = 3
+MAX_SCHEMA = 1
 
 SPEC_SCHEMA = {
     "local": {
@@ -15,46 +13,12 @@ SPEC_SCHEMA = {
             "type": "object",
             "properties": {
                 "schema":      { "type": "integer", "enum": [ 1 ] },
-                "host":         { "$ref": "#/pScheduler/Host" },
-                "host-node":    { "$ref": "#/pScheduler/Host" },
-                "url":          { "$ref": "#/pScheduler/URL" },
-                "parse":        { "$ref": "#/pScheduler/String" },
+                "source":         { "$ref": "#/pScheduler/Host" },
+                "source-node":    { "$ref": "#/pScheduler/Host" },
+                "dest":          { "$ref": "#/pScheduler/Host" },
                 "timeout":      { "$ref": "#/pScheduler/Duration" }
             },
-            "required": [ "url" ],
-            "additionalProperties": False
-        },
-
-        "v2" : {
-            "type": "object",
-            "properties": {
-                "schema":       { "type": "integer", "enum": [ 2 ] },
-                "host":         { "$ref": "#/pScheduler/Host" },
-                "host-node":    { "$ref": "#/pScheduler/Host" },
-                "url":          { "$ref": "#/pScheduler/URL" },
-                "parse":        { "$ref": "#/pScheduler/String" },
-                "timeout":      { "$ref": "#/pScheduler/Duration" },
-                "always-succeed":  { "$ref": "#/pScheduler/Boolean" },
-                "keep-content": { "$ref": "#/pScheduler/CardinalZero" }
-            },
-            "required": [ "schema", "url" ],
-            "additionalProperties": False
-        },
-
-        "v3" : {
-            "type": "object",
-            "properties": {
-                "schema":       { "type": "integer", "enum": [ 3 ] },
-                "host":         { "$ref": "#/pScheduler/Host" },
-                "host-node":    { "$ref": "#/pScheduler/Host" },
-                "ip-version":   { "$ref": "#/pScheduler/ip-version" },
-                "url":          { "$ref": "#/pScheduler/URL" },
-                "parse":        { "$ref": "#/pScheduler/String" },
-                "timeout":      { "$ref": "#/pScheduler/Duration" },
-                "always-succeed":  { "$ref": "#/pScheduler/Boolean" },
-                "keep-content": { "$ref": "#/pScheduler/CardinalZero" }
-            },
-            "required": [ "schema", "url" ],
+            "required": [ "dest" ],
             "additionalProperties": False
         }
 
@@ -88,40 +52,9 @@ RESULT_SCHEMA = {
                 "succeeded":  { "$ref": "#/pScheduler/Boolean" },
                 "error":      { "$ref": "#/pScheduler/String" },
                 "diags":      { "$ref": "#/pScheduler/String" },
-                "time":       { "$ref": "#/pScheduler/Duration" },
-                "found":      { "$ref": "#/pScheduler/Boolean" }
+                "time":       { "$ref": "#/pScheduler/Duration" }
             },
             "required": [
-                "succeeded",
-                "time",
-            ],
-            "additionalProperties": False
-        },
-
-        "headers": {
-            "type": "object",
-            "patternProperties": {
-                # Regex is per https://tools.ietf.org/html/rfc7230#section-3.2
-                "^[!#\$%&'*+\-.\^`|~0-9A-Za-z]+$": { "$ref": "#/pScheduler/String" }
-            },
-            "additionalProperties": False
-        },
-
-        "v2" : {
-            "type": "object",
-            "properties": {
-                "schema":     { "type": "integer", "enum": [ 2 ] },
-                "succeeded":  { "$ref": "#/pScheduler/Boolean" },
-                "error":      { "$ref": "#/pScheduler/String" },
-                "diags":      { "$ref": "#/pScheduler/String" },
-                "time":       { "$ref": "#/pScheduler/Duration" },
-                "found":      { "$ref": "#/pScheduler/Boolean" },
-                "status":     { "$ref": "#/pScheduler/Cardinal" },
-                "headers":    { "$ref": "#/local/headers" },
-                "content":    { "$ref": "#/pScheduler/String" },
-            },
-            "required": [
-                "schema",
                 "succeeded",
                 "time",
             ],

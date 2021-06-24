@@ -20,16 +20,10 @@ if not valid:
 
 result = pscheduler.speccli_build_args(spec, 
                                        strings=[
-                                           ( 'host', 'host' ),
-                                           ( 'host-node', 'host-node' ),
-                                           ( 'ip-version', 'ip-version' ),
+                                           ( 'source', 'source' ),
+                                           ( 'source-node', 'source-node' ),
+                                           ( 'dest', 'dest' ),
                                            ( 'timeout', 'timeout' ),
-                                           ( 'url', 'url' ),
-                                           ( 'parse', 'parse' ),
-                                           ( 'keep-content', 'keep-content')
-                                       ],
-                                       bools=[
-                                           ( 'always-succeed', 'always-succeed'),
                                        ]
                                    )
 

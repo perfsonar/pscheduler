@@ -32,53 +32,26 @@ else:
 
 # Gargle the arguments
 
-opt_parser = pscheduler.FailingOptionParser(epilog=
-    """
-      Example:
-      task http --url http://umich.edu --timeout PT10S
-      task http --url http://google.com --parse search
-      """
-)
+opt_parser = pscheduler.FailingOptionParser()
 
 
-opt_parser.add_option("--url",
-                      help="URL to query",
+opt_parser.add_option("--source",
+                      help="Source address",
                       action="store", type="string",
-                      dest="url")
+                      dest="source")
 
-opt_parser.add_option("--parse",
-                      help="String to parse for",
-                      action="store", type="string",
-                      dest="parse")
-
-opt_parser.add_option("--host",
+opt_parser.add_option("--source-node",
                       help="Host to run the test",
                       action="store", type="string",
-                      dest="host")
+                      dest="source_node")
 
-opt_parser.add_option("--host-node",
-                      help="Host to run the test",
+opt_parser.add_option("--dest",
+                      help="pScheduler server",
                       action="store", type="string",
-                      dest="host_node")
-
-opt_parser.add_option("--ip-version",
-                      help="Specificy which IP version to use, 4 or 6",
-                      action="store", type="int",
-                      dest="ip_version")
-
-opt_parser.add_option("--always-succeed",
-                      help="Treat HTTP failures as successes, regardless of response code",
-                      action="store_true",
-                      dest="always_succeed")
-
-opt_parser.add_option("--keep-content",
-                      help="Amount of content to keep in bytes; default none, 0 for no limit, SI units supported",
-                      type="string",
-                      action="store",
-                      dest="keep_content")
+                      dest="dest")
 
 opt_parser.add_option("--timeout",
-                      help="Timeout for each query attempt",
+                      help="Timeout for query",
                       action="store", type="string",
                       dest="timeout")
 
@@ -90,29 +63,17 @@ if len(remaining_args) != 0:
 schema = pscheduler.HighInteger(1)
 result = { }
 
-if options.host is not None:
-    result['host'] = options.host
-if options.host_node is not None:
-    result['host-node'] = options.host_node
-if options.ip_version is not None:
-   result["ip-version"] = options.ip_version
-   schema.set(3)
-if options.url is not None:
-    result['url'] = options.url
-if options.parse is not None:
-    result['parse'] = options.parse
+if options.source is not None:
+    result['source'] = options.source
+
+if options.source_node is not None:
+    result['source-node'] = options.source_node
+
+if options.dest is not None:
+   result["dest"] = options.dest
+ 
 if options.timeout is not None:
     result['timeout'] = options.timeout
-if options.always_succeed is not None:
-    schema.set(2)
-    result['always-succeed'] = options.always_succeed
-
-if options.keep_content is not None:
-    try:
-        result['keep-content'] = pscheduler.si_as_number(options.keep_content)
-    except ValueError as ex:
-        pscheduler.fail("Invalid value \"%s\" for keep-content: %s" % (options.bandwidth, ex))
-    schema.set(2)
 
 result['schema'] = schema.value()
 
