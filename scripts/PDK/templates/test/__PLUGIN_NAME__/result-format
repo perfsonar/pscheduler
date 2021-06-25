@@ -47,7 +47,6 @@ elif format == 'text/html':
     print('        <td>%s</td>' % result['time'])
     print('    </tr>')
     print('</table>')
-    print('</table>')
 
 
 else:
