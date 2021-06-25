@@ -59,6 +59,7 @@ python-pyrsistent
 # EL8 has this, but an older version
 python-jsonschema
 python-kafka
+python-speedtest-cli
 
 # Used by pscheduler-archiver-esmond
 

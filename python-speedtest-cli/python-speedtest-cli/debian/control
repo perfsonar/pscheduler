@@ -1,0 +1,15 @@
+Source: speedtest-cli
+Maintainer: Debian Python Modules Team <python-modules-team@lists.alioth.debian.org>
+Uploaders: Ali Alrubaiee <aalrubai@umich.edu>
+Section: python
+Priority: optional
+Build-Depends: debhelper (>= 9), dh-python, python3-all, python3-setuptools
+Standards-Version: 3.9.8
+Homepage: https://github.com/sivel/speedtest-cli
+Testsuite: autopkgtest-pkg-python
+X-Python3-Version: >= 3.2
+
+Package: python3-ntplib
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}
+Description: Python Ookla Speedtest
