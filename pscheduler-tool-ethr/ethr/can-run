@@ -56,7 +56,6 @@ supported_options = [
     "dest",
     "dest-node",
     "duration",
-    "ip-tos",
     "ip-version",
     "local-address",
     "omit",
