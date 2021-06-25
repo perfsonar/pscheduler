@@ -19,38 +19,42 @@ MAX_SCHEMA = 1
 
 def spec_is_valid(json):
 
-    schema = {
+    SPEC_SCHEMA = {
         "local": {
             # Local data types such as this can be defined within this file,
             # but are not necessary
-            "type": {
-                "type": "string",
-                "enum": [ "system", "api" ]
+            "portlist": {
+                "type": "string"
             },
-            "spec": {
+            "v1": {
                 "type": "object",
                 # schema, host, host-node, and timeout are standard,
                 # and should be included
                 "properties": {
                     "schema":       { "$ref": "#/pScheduler/Cardinal" },
-                    "host":         { "$ref": "#/pScheduler/Host" },
-                    "host-node":    { "$ref": "#/pScheduler/Host" },
-                    "duration":     { "$ref": "#/pScheduler/Duration" },
-                    "timeout":      { "$ref": "#/pScheduler/Duration" },
-                    # Here is the datatype we defined on lines 24-27
-                    "testtype":     { "$ref": "#/local/Type" },
+                    "network":      { "$ref": "#/pScheduler/IPCIDR" },
+                    "source":       { "$ref": "#/pScheduler/Host" },
+                    "ports":        { "$ref": "#/local/portlist" },
+                    "timeout":      { "$ref": "#/pScheduler/Duration" }
                 },
                 # If listed here, data of this type MUST be in the test spec
                 "required": [
-                    "testtype",
+                    "network",
                     ],
+		"additionalProperties": False
             }
         },
-        # Set to false if ONLY required options should be used
-        "additionalProperties": False
     }
 
-    return json_validate(json, schema, max_schema=MAX_SCHEMA)
+    # Build a temporary structure with a reference that points
+    # directly at the validator for the specified version of the
+    # schema.  Using oneOf or anyOf results in error messages that are
+    # difficult to decipher.
+    temp_schema = {
+        "local": SPEC_SCHEMA["local"],
+        "$ref":"#/local/v%d" % json.get("schema", 1)
+    }
+    return json_validate(json, temp_schema, max_schema=MAX_SCHEMA)
 
 def result_is_valid(json):
     schema = {

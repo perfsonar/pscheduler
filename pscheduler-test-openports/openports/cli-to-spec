@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import optparse
 import pscheduler
 import sys
@@ -67,16 +68,6 @@ opt_parser.add_option("--timeout",
                       action="store", type="string",
                       dest="timeout")
 
-opt_parser.add_option("--osdetect",
-                      help="Enable OS detection",
-                      action="store_true",
-                      dest="os_detect")
-
-opt_parser.add_option("--version",
-                      help="Enable os/version information detection",
-                      action="store_true", 
-                      dest="version_detect")
-
 (options, remaining_args) = opt_parser.parse_args(args)
 
 
@@ -96,10 +87,6 @@ if options.source is not None:
 
 if options.timeout is not None:
    result['timeout'] = options.timeout
-
-if options.version_detect:
-    result['version_detect'] = True
-else: result['version_detect'] = False
 
 
 pscheduler.succeed_json(result)
