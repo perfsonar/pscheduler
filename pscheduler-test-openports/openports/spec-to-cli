@@ -25,11 +25,10 @@ result = pscheduler.speccli_build_args(spec,
 
         # Add all argument strings here, as tuples
 
-        ( 'host', 'host' ),
-        ( 'host-node', 'host-node' ),
+        ( 'network', 'network' ),
+        ( 'ports', 'ports' ),
         ( 'timeout', 'timeout' ),
-        ( 'duration', 'duration'),
-        ( 'testtype', 'testtype' ),
+        ( 'source', 'source')
         ])
 
 pscheduler.succeed_json(result)

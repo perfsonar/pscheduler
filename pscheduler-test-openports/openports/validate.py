@@ -43,7 +43,7 @@ def spec_is_valid(json):
                     ],
 		"additionalProperties": False
             }
-        },
+        }
     }
 
     # Build a temporary structure with a reference that points
