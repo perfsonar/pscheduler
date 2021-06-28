@@ -1,15 +1,6 @@
 #!/usr/bin/env python3
-
 #
-# Development Order #8:
-#
-# This file is called when perfSonar goes to print the result, which
-# has been returned from the tool.
-#
-# To test this file, a result is needed. A sample one has been provided
-# in this directory. Use the following syntax:
-# cat example-result.json | ./result-format text/plain
-# cat example-result.json | ./result-format text/html
+# Format a result
 #
 
 import jsontemplate
@@ -20,35 +11,90 @@ from validate import result_is_valid
 
 
 try:
-   format = sys.argv[1]
+    format = sys.argv[1]
 except IndexError:
-   format = 'text/plain'
+    format = "text/plain"
 
-input = pscheduler.json_load(exit_on_error=True)
+input = pscheduler.json_load(exit_on_error=True, max_schema=1)
 
 valid, message = result_is_valid(input["result"])
 
 if not valid:
     pscheduler.fail(message)
+json = input["result"]
 
-result = input["result"]
 
-if format == 'text/plain':
-    # Print results of the test here, in plaintext
-    print('Time: %s\n' % result['time'])
-   
-elif format == 'text/html':
-    # Print results of the test here, in html
-    print('<table>')
-    print('    <tr>')
-    print('        <th>Time</th>')
-    print('    </tr>')
-    print('    <tr>')
-    print('        <td>%s</td>' % result['time'])
-    print('    </tr>')
-    print('</table>')
-    print('</table>')
+if format == "text/plain":
+    for network in json:
+        if type(json[network]) is dict:
+            print("{:14s}|{:>6s} |{:<9s}|{:<15s}|{:<21s}|{:<10s}|{:<10s}|{:<30s}".format(network, "PORT", "STATE", "NAME", "PRODUCT", "VERSION", "OS", "EXTRA INFORMATION"))
+            print("{:-<14s}+{:->6s}-+{:-<9s}+{:-<15s}+{:-<21s}+{:-<10s}+{:-<10s}+{:-<30s}".format("", "", "", "", "", "", "", ""))
+            for port in json[network]:
+                portKey = port
+                port = json[network][port]
+                print("{:14.14s}|{:>6.6s} |{:<9.9s}|{:<15.15s}|{:<21.21s}|{:<10.10s}|{:<10.10s}|{:<30s}".format( "",
+                    str(portKey), 
+                    str(port["state"]) if "state" in port else " ", 
+                    str(port["name"]) if "name" in port else " ", 
+                    str(port["product"]) if "product" in port else " ", 
+                    str(port["version"])  if "version" in port else " ",
+                    str(port["ostype"]) if "ostype" in port else " ", 
+                    str(port["extrainfo"]) if "extrainfo" in port else " "))
+        else:
+            print("{:14}".format(network))
+            print("{:>5} {:<8s}".format("PORT", "STATE"))
+            for port in json[network]:
+                print("{:>5s} {:<8s}".format(str(port), str(json[network][port])))
+        print("")
 
+elif format == "text/html":
+    for network in json:
+        print("<h3>"+network+"</h3>")
+        print('<table border = "2">')
+        if type(json[network]) is dict:
+            print("<thead>")
+            print("  <tr>")
+            print("    <th>Port</th>")
+            print("    <th>State</th>")
+            print("    <th>Name</th>")
+            print("    <th>Product</th>")
+            print("    <th>Version</th>")
+            print("    <th>OS</th>")
+            print("    <th>Extra Information</th>")
+            print("  </tr>")
+            print("</thead>")
+
+            print("<tbody>")
+            for port in json[network]:
+                portKey = port
+                port = json[network][port]
+                print(" <tr>")
+                print("    <td>"+str(portKey)+"</td>")
+                print("    <td>"+str(port["state"]) if "state" in port else " "+"</td>")
+                print("    <td>"+str(port["name"]) if "name" in port else " "+"</td>")
+                print("    <td>"+str(port["product"]) if "product" in port else " "+"</td>")
+                print("    <td>"+str(port["version"])  if "version" in port else " "+"</td>")
+                print("    <td>"+str(port["ostype"]) if "ostype" in port else " "+"</td>")
+                print("    <td>"+str(port["extrainfo"]) if "extrainfo" in port else " "+"</td>")
+                print("  </tr>")
+            print("</tbody>")
+        else:
+            print("  <tr>")
+            print("    <th>Port</th>")
+            for port in json[network]:
+                print("    <td>"+str(port)+"</td>")
+            print("  </tr>")
+
+            print("  <tr>")
+            print("    <th>State</th>")
+            for port in json[network]:
+                print("    <td>"+str(json[network][port])+"</td>")
+            print("  </tr>")
+        print("</table>")
+        print("<br></br>")
 
 else:
-   pscheduler.fail("Unsupported format '%s'" % format)
+
+    pscheduler.fail("Unsupported format '%s'" % format)
+
+pscheduler.succeed()
