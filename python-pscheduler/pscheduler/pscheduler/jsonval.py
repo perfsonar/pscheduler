@@ -1458,6 +1458,77 @@ def json_validate(json, skeleton, max_schema=None):
     return (True, 'OK')
 
 
+
+
+def json_validate_from_standard_template(json, template):
+    """
+    Validate json from a standard template consisting of the following:
+
+    {
+      "local": {
+          ... JSON Schema for locally-defined objects ...
+      },
+      "versions": {
+        "1": {
+           ... JSON Schema for version 1 ...
+        },
+        "2": {
+           ... JSON Schema for version 2 ...
+        }
+      }
+    }
+
+    Return value is the same as for json_validate(), above.
+    """
+
+    # Build a temporary structure suitable for json_validate().  This
+    # is done manually because using oneOf or anyOf results in error
+    # messages that are difficult to decipher.
+
+    schema = json.get("schema", 1)
+    if not isinstance(schema, int):
+        return ("False", "Schema must be an integer")
+
+    try:
+        json_schema = template["versions"][str(schema)]
+    except KeyError:
+        return (False, "Schema {} is not supported.".format(schema))
+
+    temp_schema = {
+        "local": template.get("local", {})
+    }
+
+    for field in [ "type", "items", "properties", "additionalProperties", "required" ]:
+        try:
+            temp_schema[field] = json_schema[field]
+        except KeyError:
+            pass  # Don't care if it's not there.
+
+    return json_validate(json, temp_schema)
+
+
+
+def json_standard_template_max_schema(template):
+    """
+    Determine the maximum schema in a standard template (see above)
+    and make sure there are no gaps in the versions provided.
+    """
+
+    versions = 0
+    max_version = 0
+
+    for version in template.get("versions", {}):
+        max_version = max(int(version), max_version)
+        versions += 1
+
+    if versions == 0 or versions != max_version:
+        raise ValueError("Schema is missing versions")
+
+    return max_version
+
+
+
+
 # Test program
 
 if __name__ == "__main__":
