@@ -33,6 +33,10 @@ if not valid:
 
 result = input["result"]
 
+# NOTE: For more-complex restult structures, the 'jsontemplate' module
+# used in the spec-format method might be a better choice than
+# print().
+
 if format == 'text/plain':
     # Print results of the test here, in plaintext
     print('Time: %s\n' % result['time'])
