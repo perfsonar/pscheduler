@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 #
 # Development Order #5:
 #
@@ -9,12 +8,10 @@
 # back to the test. Both system and api are able to be used here.
 #
 
-import datetime
 import subprocess
 import json
 import sys
-import time
-
+import nmap3
 import pscheduler
 
 # from stdin
@@ -27,16 +24,117 @@ try:
 except KeyError:
     pscheduler.fail('Missing data in input')
 
-duration = input['test']['spec'].get('duration', 'PT5S')
-duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
-timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
+spec = input['test']['spec']
+timeout_iso = spec.get('timeout', 'PT10S')
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
-start_time = datetime.datetime.now()
 succeeded = False
 error = ''
 diags = ''
 
-# Run the actual task here:
+host = spec["network"]
+ports = spec.get("ports")
+source = spec.get("source")
+###################################################
+version_detect = True#spec.get("version")
+###################################################
+
+def valid_ipv4(hostString):
+    a = hostString.split('.')
+    if len(a) != 4:
+        return False
+    for group in a:
+        if (group.find("/")!=-1):
+            group = group[:group.find("/")]
+        if not group.isdigit():
+            return False
+        i = int(group)
+        if i < 0 or i > 255:
+            return False
+    return True
+
+def valid_ipv6(hostString):
+    #account for omitted 0's
+    o = hostString.find("::")
+    if (o != -1):
+        hostString.count(":")
+        hostString = hostString[:o]+":"*(7-hostString.count(":"))+hostString[o:]
+
+    a = hostString.split(':')
+    if len(a) != 8:
+        return False
+        
+    for group in a:
+        if (group == ''): group = '0000'
+        if (group.find("/")!=-1):
+            group = group[:group.find("/")]
+        try:
+            decimal = int(group, 16)
+        except ValueError:
+            return False
+        if decimal < 0 or decimal > 65535:
+            return False
+    return True
+
+#-------------------------------------------------------------------------------Nmap Class
+class NmapObj:
+    def __init__(self, host, ports):
+        self.args = ""
+        self.hosts = list()
+        self.hosts.append(host)
+        self.raw = ""
+        self.result = dict()
+        if (valid_ipv6(host)): 
+            self.args+="-6"
+        self.version = False
+        self.os = False
+        self.versionInfo = dict()
+
+    def enable_version_detect(self):
+        self.args += " -sV"
+        self.version = True
+
+    def add_ports(self, ports):
+        ports = ports.strip(" ")
+        self.args+=" -p " + ports
+
+    def set_source(self, source):
+        self.args+=" -S "+source
+
+    def set_timeout(self, timeout):
+        self.args+=" --host-timeout " + timeout
+
+
+    def scan(self):
+        nmapScanner = nmap3.Nmap()
+        results = nmapScanner.scan_top_ports(self.hosts[0], default=1000, args=self.args)
+        self.raw = results
+        #print(results)
+        self.hosts = list(results.keys())[:-2]
+        self.result = dict()
+        for host in self.hosts:
+            for port in results[host]["ports"]:
+                if(not self.version):
+                    try:
+                        self.result[host][port["portid"]] = port["state"]
+                    except KeyError:
+                        self.result[host] = dict()
+                        self.result[host][port["portid"]] = port["state"]
+                else:
+                    try:
+                        if("service" in port):
+                            self.result[host][port["portid"]] = port["service"]
+                        else: self.result[host][port["portid"]] = dict()
+                        self.result[host][port["portid"]]["state"] = port["state"]
+                    except KeyError:
+                        self.result[host] = dict(dict())
+                        if("service" in port):
+                            self.result[host][port["portid"]] = port["service"]
+                        else: self.result[host][port["portid"]] = dict()
+                        self.result[host][port["portid"]]["state"] = port["state"]
+        output = self.result
+
+        return output
+#-------------------------------------------------------------------------------Nmap Class
 
 # IMPORTANT NOTE: This code puts the process to sleep until the
 # scheduled start time has arrived.  It should be placed after all
@@ -50,35 +148,25 @@ except KeyError:
     pscheduler.fail("Unable to find start time in input")
 
 
-# API Call:
-if testtype == 'api':
-    argv = [ 'sleep', str(duration) ]
-    status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
+nmap = NmapObj(host, ports)
+if (ports is not None and ports != ""): nmap.add_ports(ports)
+if (source is not None and source != ""): nmap.set_source(source)
+if (timeout is not None and timeout != ""): nmap.set_timeout(timeout)
+if (version_detect): nmap.enable_version_detect()
+output = nmap.scan()
+if output is not None: succeeded = True
 
-    if status:
-        succeeded = False
-        error = "Error returned: \n%s" % stderr.strip('\n')
-    else:
-        succeeded = True
-        diags = stdout
 
-# System Call:
-elif testtype == 'system':
-    subprocess.check_call( ['sleep', str(duration) ])
-    succeeded = True
-
-end_time = datetime.datetime.now()
 
 # Organize results into json data
 results = {
     'succeeded': succeeded,
     'result': {
         'schema': 1,
-        'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
+        'output': output,
         'succeeded': succeeded
     },
     'error': error,
     'diags': diags }
 
 pscheduler.succeed_json(results)
-
