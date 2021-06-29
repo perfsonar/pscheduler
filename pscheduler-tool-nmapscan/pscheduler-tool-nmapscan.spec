@@ -28,6 +28,8 @@ Provides:	%{name} = %{version}-%{release}
 # Include all required libraries here
 Requires:	pscheduler-server
 Requires:	%{_pscheduler_python}-pscheduler
+Requires:	simplejson
+Requires:	nmap3
 
 BuildRequires:	pscheduler-rpm
 

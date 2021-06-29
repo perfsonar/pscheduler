@@ -32,7 +32,7 @@ if host is None:
     null_reason = "No host specified"
 
 
-participants = [ host ]
+participants = [ host, nmapscan ]
 
 result = { "participants": participants }
 if null_reason is not None:
