@@ -27,6 +27,6 @@ result = {
 logger.debug("limit valid = %s" % valid)
 
 if not valid:
-    result["message"] = message
+    result["error"] = message
 
 pscheduler.succeed_json(result)
