@@ -54,7 +54,7 @@ class LimitTest(object):
 
         result = json_load(stdout, max_schema=1)
         if not result['valid']:
-            raise ValueError("Invalid limit: %s" % result['message'])
+            raise ValueError("Invalid limit: %s" % result['error'])
 
 
     def checks_schedule(self):

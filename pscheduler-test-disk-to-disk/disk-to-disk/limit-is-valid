@@ -22,6 +22,6 @@ result = {
 }
 
 if not valid:
-    result["message"] = message
+    result["error"] = message
 
 pscheduler.succeed_json(result)
