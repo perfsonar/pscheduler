@@ -14,6 +14,9 @@ import sys
 import nmap3
 import pscheduler
 
+print("Begin test", flush=True)
+
+
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
 
@@ -37,7 +40,7 @@ source = spec.get("source")
 ###################################################
 version_detect = True#spec.get("version")
 ###################################################
-
+print("...", flush=True)
 def valid_ipv4(hostString):
     a = hostString.split('.')
     if len(a) != 4:
@@ -147,13 +150,15 @@ try:
 except KeyError:
     pscheduler.fail("Unable to find start time in input")
 
-
+print("begin-main", flush=True)
 nmap = NmapObj(host, ports)
 if (ports is not None and ports != ""): nmap.add_ports(ports)
 if (source is not None and source != ""): nmap.set_source(source)
 if (timeout is not None and timeout != ""): nmap.set_timeout(timeout)
 if (version_detect): nmap.enable_version_detect()
+print("begin-scan")
 output = nmap.scan()
+print("end-scan", flush=True)
 if output is not None: succeeded = True
 
 
