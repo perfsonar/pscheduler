@@ -10,7 +10,7 @@
 {
     "schema": 1,
     "name": "dhcp",
-    "description": "EDIT ME",
+    "description": "Tests the response time for getting a new dhcp lease.",
     "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",
