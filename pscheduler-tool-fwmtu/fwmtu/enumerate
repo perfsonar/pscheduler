@@ -14,7 +14,7 @@
     "schema": 1,
 
     "name": "fwmtu",
-    "description": "EDIT ME",
+    "description": "Measure Maximum Transmission Unit (MTU)",
     "version": "1.0",
     "tests": [ "mtu" ],
 

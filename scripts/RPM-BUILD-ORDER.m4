@@ -150,6 +150,7 @@ pscheduler-test-snmpgetbgm		--bundle snmp
 pscheduler-test-snmpset			--bundle snmp
 pscheduler-test-trace
 pscheduler-test-dns
+pscheduler-test-mtu
 
 # Tools
 pscheduler-tool-bwctliperf2		--bundle obsolete
@@ -181,6 +182,7 @@ pscheduler-tool-snooze
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
 pscheduler-tool-twping
+pscheduler-tool-fwmtu
 
 # Archivers
 pscheduler-archiver-bitbucket

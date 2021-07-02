@@ -35,18 +35,17 @@ result = input["result"]
 
 if format == 'text/plain':
     # Print results of the test here, in plaintext
-    print('Time: %s\n' % result['time'])
+    print('MTU: %s\n' % result['mtu'])
    
 elif format == 'text/html':
     # Print results of the test here, in html
     print('<table>')
     print('    <tr>')
-    print('        <th>Time</th>')
+    print('        <th>MTU</th>')
     print('    </tr>')
     print('    <tr>')
-    print('        <td>%s</td>' % result['time'])
+    print('        <td>%s</td>' % result['mtu'])
     print('    </tr>')
-    print('</table>')
     print('</table>')
 
 

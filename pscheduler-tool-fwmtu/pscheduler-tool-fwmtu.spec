@@ -16,7 +16,7 @@ Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
 Release:	%{perfsonar_auto_relnum}%{?dist}
 
-Summary:	fwmtu tool class for pScheduler
+Summary:	MTU tool class for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0
 Group:		Unspecified
@@ -32,7 +32,7 @@ Requires:	%{_pscheduler_python}-pscheduler
 BuildRequires:	pscheduler-rpm
 
 %description
-fwmtu tool class for pScheduler
+MTU tool class for pScheduler
 
 %prep
 %setup -q -n %{short}-%{version}

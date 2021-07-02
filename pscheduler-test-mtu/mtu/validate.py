@@ -28,6 +28,7 @@ def spec_is_valid(json):
             "source":       { "$ref": "#/pScheduler/Host" },
             "source-node":  { "$ref": "#/pScheduler/Host" },
             "dest":         { "$ref": "#/pScheduler/Host" },
+            "timeout":      { "$ref": "#/pScheduler/Cardinal" },
         },
         # If listed here, data of this type MUST be in the test spec
         "required": [

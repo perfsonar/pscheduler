@@ -17,13 +17,19 @@ import time
 
 import pscheduler
 
+from scapy.all import *
+from scapy.layers.inet import IP, ICMP
+
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
 
-# Take input from test spec
+# Get arguments
 try:
-    testtype = input['test']['spec']['testtype']
-
+    spec = input['test']['spec']
+    dest = spec['dest']
+    ping_timeout = spec.get('timeout', 1000)  # Default ping timeout is 1000 ms
+    init_payload_size = 0  # TODO: can probably make this an arg, "initial payload size" or something
+    increment = 10000  # TODO: can probably make this an arg, "increment" or something
 except KeyError:
     pscheduler.fail('Missing data in input')
 
@@ -31,10 +37,62 @@ duration = input['test']['spec'].get('duration', 'PT5S')
 duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
-start_time = datetime.datetime.now()
+start_time = datetime.now()
 succeeded = False
 error = ''
 diags = ''
+
+# Define method to get MTU
+def find_mtu(dest, timeout=1000, init_payload_size=0, increment=10000):
+    OVERHEAD_SIZE = 28
+
+    timeout_secs = timeout / 1000
+    print(f"timeout_secs: {timeout_secs}")
+
+    # First test to see if dest can be reached with payload size 0
+    my_packet = IP(dst=dest)/ICMP()/b''  
+    result = sr1(my_packet, timeout=timeout_secs, verbose=0)
+    print(result)
+    if (not result) or (result.getlayer(ICMP).type == 3 and result.getlayer(ICMP).code == 4):
+        succeeded = False
+        error = "Could not reach destination"  # TODO: Change this message?
+        mtu = 0
+        return (succeeded, error, mtu)  # TODO: Change the return type?
+
+    cur_payload_size = init_payload_size
+    print("dest: {}".format(dest))
+    while increment > 0:
+
+        # Check for negative payload size.
+        # This shouldn't happen, but just for safety
+        if cur_payload_size < 0:
+            print("Negative payload size detected. Setting to 0")
+            succeeded = False
+            error = "Negative payload size reached due to inconsistent connection"
+            mtu = 0
+            return (succeeded, error, mtu)
+            break
+
+        # data = bytearray(random.getrandbits(8) for _ in range(cur_payload_size))  # Generate payload with correct size
+        data = b'z'*cur_payload_size
+        # print(f"\nData: {data}")
+
+        print(f"\nPayload size: {cur_payload_size}")
+        my_packet = IP(dst=dest, flags="DF") / ICMP() / data  # Create packet
+        result = sr1(my_packet, timeout=timeout_secs, verbose=1)  # Send and receive packet
+
+        if (not result) or (result.getlayer(ICMP).type == 3 and result.getlayer(ICMP).code == 4):
+            cur_payload_size -= increment
+            increment //= 10
+            cur_payload_size += increment
+        else:
+            cur_payload_size += increment
+
+    succeeded = True
+    error = None
+    mtu = cur_payload_size + OVERHEAD_SIZE
+    return (succeeded, error, mtu)  # TODO: change the return type?
+    
 
 # Run the actual task here:
 
@@ -43,42 +101,34 @@ diags = ''
 # preparatory code has been executed and immediately before the tool
 # is invoked (for plugins that run other programs) or any activity
 # that does a measurement (for those that don't).
-
+'''
 try:
     pscheduler.sleep_until(input['schedule']['start'])
 except KeyError:
     pscheduler.fail("Unable to find start time in input")
+'''
 
+# Run tool
+succeeded, error, mtu = find_mtu(dest, ping_timeout, init_payload_size, increment)
+diags = ""  # TODO: what does diags mean?
 
-# API Call:
-if testtype == 'api':
-    argv = [ 'sleep', str(duration) ]
-    status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
-
-    if status:
-        succeeded = False
-        error = "Error returned: \n%s" % stderr.strip('\n')
-    else:
-        succeeded = True
-        diags = stdout
-
-# System Call:
-elif testtype == 'system':
-    subprocess.check_call( ['sleep', str(duration) ])
-    succeeded = True
-
-end_time = datetime.datetime.now()
+end_time = datetime.now()
 
 # Organize results into json data
-results = {
-    'succeeded': succeeded,
-    'result': {
+if succeeded:
+    results = {
         'schema': 1,
         'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
-        'succeeded': succeeded
-    },
-    'error': error,
-    'diags': diags }
+        'succeeded': succeeded,
+        'mtu': mtu
+    }
+else:
+    results = {
+        'schema': 1,
+        'succeeded': False,
+        'error': error,
+        'diags': diags
+    }
 
 pscheduler.succeed_json(results)
 

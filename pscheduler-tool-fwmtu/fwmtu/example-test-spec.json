@@ -4,7 +4,8 @@
     "spec": {
       "duration": "PT2S",
       "testtype": "api",
-      "schema": 1
+      "schema": 1,
+      "dest": "www.umich.edu"
     }
   },
   "schema": 1,

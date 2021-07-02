@@ -28,6 +28,7 @@ result = pscheduler.speccli_build_args(spec,
         ( 'source', 'source' ),
         ( 'source-node', 'source-node' ),
         ( 'dest', 'dest' ),
+        ( 'timeout', 'timeout' ),
         ])
 
 pscheduler.succeed_json(result)
