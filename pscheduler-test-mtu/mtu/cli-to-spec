@@ -68,10 +68,10 @@ opt_parser.add_option("--dest",
                       action="store", type="string",
                       dest="dest")
 
-opt_parser.add_option("--timeout",
-                      help="Timeout for each ping, in milliseconds",
+opt_parser.add_option("--port",
+                      help="Receiving port. Defaults to 1060.",
                       action="store", type="int",
-                      dest="timeout")
+                      dest="port")
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
@@ -86,7 +86,7 @@ if options.source_node is not None:
 if options.dest is not None:
    result['dest'] = options.dest
 
-if options.timeout is not None:
-   result['timeout'] = options.timeout
+if options.port is not None:
+   result['port'] = options.port
 
 pscheduler.succeed_json(result)

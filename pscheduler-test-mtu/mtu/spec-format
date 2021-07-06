@@ -39,7 +39,7 @@ if format == 'text/plain':
 Source ........................ {.section source}{source}{.or}Not Specified{.end}
 Source Node ................... {.section source_node}{source_node}{.or}Not Specified{.end}
 Destination ................... {.section dest}{dest}{.or}Not Specified{.end}
-Timeout ....................... {.section timeout}{timeout} ms{.or}Not Specified{.end}
+Port .......................... {.section port}{port}{.or}Not Specified{.end}
 """
 
 # Format with html
@@ -50,7 +50,7 @@ elif format == 'text/html':
 <tr><td>Source</td><td>{.section source}{source}{.or}Not Specified{.end}</td></tr>
 <tr><td>Source Node</td><td>{.section source_node}{source_node}{.or}Not Specified{.end}</td></tr>
 <tr><td>Destination</td><td>{.section destination}{destination}{.or}Not Specified{.end}</td></tr>
-<tr><td>Timeout</td><td>{.section timeout}{timeout} ms{.or}Not Specified{.end}</td></tr>
+<tr><td>Port</td><td>{.section port}{port}{.or}Not Specified{.end}</td></tr>
 </table>
 """
 

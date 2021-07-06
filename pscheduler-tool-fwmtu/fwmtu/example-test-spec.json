@@ -5,7 +5,8 @@
       "duration": "PT2S",
       "testtype": "api",
       "schema": 1,
-      "dest": "www.umich.edu"
+      "dest": "www.umich.edu",
+      "port": 1060
     }
   },
   "schema": 1,
