@@ -45,4 +45,4 @@ endif
 
 
 clean:
-	rm -f $(TO_CLEAN) *~
+	rm -rf $(TO_CLEAN) *~

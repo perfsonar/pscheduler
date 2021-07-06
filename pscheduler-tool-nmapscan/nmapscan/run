@@ -14,18 +14,9 @@ import sys
 import nmap3
 import pscheduler
 
-print("Begin test", flush=True)
-
 
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
-
-# Take input from test spec
-try:
-    testtype = input['test']['spec']['testtype']
-
-except KeyError:
-    pscheduler.fail('Missing data in input')
 
 spec = input['test']['spec']
 timeout_iso = spec.get('timeout', 'PT10S')
@@ -40,7 +31,6 @@ source = spec.get("source")
 ###################################################
 version_detect = True#spec.get("version")
 ###################################################
-print("...", flush=True)
 def valid_ipv4(hostString):
     a = hostString.split('.')
     if len(a) != 4:
@@ -104,7 +94,7 @@ class NmapObj:
         self.args+=" -S "+source
 
     def set_timeout(self, timeout):
-        self.args+=" --host-timeout " + timeout
+        self.args+=" --host-timeout " + str(timeout)
 
 
     def scan(self):
@@ -141,24 +131,21 @@ class NmapObj:
 
 # IMPORTANT NOTE: This code puts the process to sleep until the
 # scheduled start time has arrived.  It should be placed after all
-# preparatory code has been executed and immediately before the tool
-# is invoked (for plugins that run other programs) or any activity
-# that does a measurement (for those that don't).
-
+# preparatory code has been executed and immediately before the tool # is invoked (for plugins that run other programs) or any activity
+# that does a measurement (for those that don't).  
 try:
     pscheduler.sleep_until(input['schedule']['start'])
 except KeyError:
     pscheduler.fail("Unable to find start time in input")
 
-print("begin-main", flush=True)
+#TODO: check for errors
 nmap = NmapObj(host, ports)
+
 if (ports is not None and ports != ""): nmap.add_ports(ports)
 if (source is not None and source != ""): nmap.set_source(source)
 if (timeout is not None and timeout != ""): nmap.set_timeout(timeout)
 if (version_detect): nmap.enable_version_detect()
-print("begin-scan")
 output = nmap.scan()
-print("end-scan", flush=True)
 if output is not None: succeeded = True
 
 
@@ -167,9 +154,10 @@ if output is not None: succeeded = True
 results = {
     'succeeded': succeeded,
     'result': {
-        'schema': 1,
-        'output': output,
-        'succeeded': succeeded
+         'succeeded' : succeeded,
+         'result' : output,
+         'error'  : error,
+         'diags'  : diags
     },
     'error': error,
     'diags': diags }

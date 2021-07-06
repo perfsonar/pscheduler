@@ -59,16 +59,17 @@ def spec_is_valid(json):
 
 def result_is_valid(json):
     schema = {
-        "type": "object",
-        "properties": {
-            "schema":     { "$ref": "#/pScheduler/Cardinal" },
-            "succeeded":  { "$ref": "#/pScheduler/Boolean" },
-            "time":       { "$ref": "#/pScheduler/Duration" },
-            },
-        "required": [
-            "succeeded",
-            "time",
-            ]
+        "$ref": "#/pScheduler/AnyJSON" 
+        #"type": "object",
+        #"properties": {
+        #    "schema":     { "$ref": "#/pScheduler/Cardinal" },
+        #    "succeeded":  { "$ref": "#/pScheduler/Boolean" },
+        #    "":     { "$ref": "#/pScheduler/AnyJSON" },
+        #    },
+        #"required": [
+        #    "succeeded",
+        #    "output",
+        #    ]
         }
     return json_validate(json, schema)
 
@@ -76,10 +77,11 @@ def limit_is_valid(json):
     schema = {
         "type": "object",
         "properties": {
-            "host":            { "$ref": "#/pScheduler/Limit/String" },
-            "host-node":       { "$ref": "#/pScheduler/Limit/String" },
-            "testtype":        { "$ref": "#/local/Type" },
-            "timeout":         { "$ref": "#/pScheduler/Limit/Duration" },
+            "schema":       { "$ref": "#/pScheduler/Cardinal" },
+            "network":      { "$ref": "#/pScheduler/IPCIDR" },
+            "source":       { "$ref": "#/pScheduler/Host" },
+            "ports":        { "$ref": "#/local/portlist" },
+            "timeout":      { "$ref": "#/pScheduler/Duration" }
         },
         "additionalProperties": False
         }

@@ -21,12 +21,12 @@ valid, message = result_is_valid(input["result"])
 
 if not valid:
     pscheduler.fail(message)
-json = input["result"]
+json = input["result"]["result"]
 
 
 if format == "text/plain":
     for network in json:
-        if type(json[network]) is dict:
+        if isinstance(json[network], dict):
             print("{:14s}|{:>6s} |{:<9s}|{:<15s}|{:<21s}|{:<10s}|{:<10s}|{:<30s}".format(network, "PORT", "STATE", "NAME", "PRODUCT", "VERSION", "OS", "EXTRA INFORMATION"))
             print("{:-<14s}+{:->6s}-+{:-<9s}+{:-<15s}+{:-<21s}+{:-<10s}+{:-<10s}+{:-<30s}".format("", "", "", "", "", "", "", ""))
             for port in json[network]:
