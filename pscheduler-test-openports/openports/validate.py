@@ -59,17 +59,17 @@ def spec_is_valid(json):
 
 def result_is_valid(json):
     schema = {
-        "$ref": "#/pScheduler/AnyJSON" 
-        #"type": "object",
-        #"properties": {
-        #    "schema":     { "$ref": "#/pScheduler/Cardinal" },
-        #    "succeeded":  { "$ref": "#/pScheduler/Boolean" },
-        #    "":     { "$ref": "#/pScheduler/AnyJSON" },
-        #    },
-        #"required": [
-        #    "succeeded",
-        #    "output",
-        #    ]
+        #"$ref": "#/pScheduler/AnyJSON" 
+        "type": "object",
+        "properties": {
+            "schema":     { "$ref": "#/pScheduler/Cardinal" },
+            "succeeded":  { "$ref": "#/pScheduler/Boolean" },
+            "":     { "$ref": "#/pScheduler/AnyJSON" },
+            },
+        "required": [
+            "succeeded",
+            "output",
+            ]
         }
     return json_validate(json, schema)
 
