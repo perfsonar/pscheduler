@@ -90,7 +90,7 @@ def task_requester_key(task_uuid):
     """
 
     with dbcursor_query(
-        "SELECT hints, json ->> '_key' FROM task WHERE uuid = %s", [task_uuid]
+        "SELECT hints, participant_key FROM task WHERE uuid = %s", [task_uuid]
     ) as cursor:
         if cursor.rowcount == 0:
             return (None, None)

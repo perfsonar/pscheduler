@@ -3,8 +3,8 @@
 #
 
 %define short	bwctltracepath
-%define perfsonar_auto_version 4.3.4
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 4.4.0
+%define perfsonar_auto_relnum 0.11.b1
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}

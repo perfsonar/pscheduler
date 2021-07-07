@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+"""
+Send a result to a TCP socket.
+"""
+
+import sys
+import pscheduler
+import socket
+
+
+MAX_SCHEMA = 1
+
+log = pscheduler.Log(name="tcp-archiver")
+
+
+def archive(json):
+    """Archive a single result."""
+
+    schema = json["data"].get("schema", 1)
+    if schema > MAX_SCHEMA:
+        return {
+            "succeeded": False,
+            "error": "Unsupported schema version %d; max is %d" % (
+                schema, MAX_SCHEMA)
+        }
+
+    errors = ()
+
+    data = json["data"]
+
+    try:
+        ip_version = data.get("ip-version")
+        bind = data.get("bind")
+        host = data["host"]
+        port = data["port"]
+    except KeyError:
+        raise RuntimeError("Reached code that wasn't supposed to be reached.")
+
+    host_family, host_ip_resolved = pscheduler.ip_addr_version(host, ip_version=ip_version, family=True)
+    if host_family is None:
+        return {
+            "succeeded": False,
+            "error": "Unable to resolve host %s: %s" % (host, host_ip_resolved)
+        }
+    log.debug("Sending to %s (%s)", host, host_ip_resolved)
+
+    if bind is not None:
+        bind_family, bind_ip_resolved = pscheduler.ip_addr_version(bind, ip_version=ip_version, family=True)
+        if bind_family is None:
+            return {
+                "succeeded": False,
+                "error": "Unable to resolve bind %s: %s" % (bind, bind_ip_resolved)
+            }
+        log.debug("Binding to %s (%s)", bind, bind_ip_resolved)
+
+        if bind_family != host_family:
+            return {
+                "succeeded": False,
+                "error": "Host and bind have mismatched socket families"
+            }
+
+
+    # Do the deed.
+
+    sock = None
+    try:
+
+        # Connect
+
+        sock = socket.socket(host_family, socket.SOCK_STREAM)
+        if bind:
+            sock.bind((bind_ip_resolved, 0))
+            log.debug("Bound")
+        sock.connect((host_ip_resolved, port))
+        log.debug("Connected")
+
+        send_text = pscheduler.json_dump(json["result"]).encode("utf-8")
+        send_len = len(send_text)
+
+        # Send the data
+
+        total_sent = 0
+        while total_sent < send_len:
+            log.debug("Sending a chunk (At %d of %d bytes)", total_sent, send_len)
+            sent = sock.send(send_text[total_sent:])
+            if sent == 0:
+                raise RuntimeError("Socket connection broken")
+            total_sent = total_sent + sent
+
+        log.debug("Sent")
+
+    except Exception as ex:
+
+        log.debug("Failed: %s", str(ex))
+
+        result = {
+            "succeeded": False,
+            "error": "%s" % str(ex)
+        }
+
+        if "retry-policy" in data:
+            policy = pscheduler.RetryPolicy(data['retry-policy'], iso8601=True)
+            retry_time = policy.retry(json["attempts"])
+            if retry_time is not None:
+                result["retry"] = retry_time
+
+        return result
+
+    finally:
+
+        if sock is not None:
+            sock.close()
+
+    return {'succeeded': True}
+
+
+
+PARSER = pscheduler.RFC7464Parser(sys.stdin)
+EMITTER = pscheduler.RFC7464Emitter(sys.stdout)
+
+for parsed in PARSER:
+    EMITTER(archive(parsed))
+
+pscheduler.succeed()
+

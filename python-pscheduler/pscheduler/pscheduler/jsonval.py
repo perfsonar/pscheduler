@@ -147,7 +147,7 @@ __dictionary__ = {
 
     "HostName": {
         "type": "string",
-        "format": "host-name"
+        "format": "hostname"
         },
 
     "HostNamePort": {
@@ -996,11 +996,41 @@ __dictionary__ = {
             ]
         },
 
+    "TaskSpecification_V4": {
+        "type": "object",
+        "properties": {
+            "schema":   {
+                "type": "integer",
+                "enum": [ 4 ]
+                },
+            "lead-bind":{ "$ref": "#/pScheduler/Host" },
+            "test":     { "$ref": "#/pScheduler/TestSpecification" },
+            "tool":     { "$ref": "#/pScheduler/String" },
+            "tools":    { "$ref": "#/pScheduler/StringList" },
+            "schedule": { "$ref": "#/pScheduler/ScheduleSpecification" },
+            "priority": { "$ref": "#/pScheduler/Integer" },
+            "archives": {
+                "type": "array",
+                "items": { "$ref": "#/pScheduler/ArchiveSpecification" },
+                },
+            "contexts": { "$ref": "#/pScheduler/ContextSpecification" },
+            "reference": { "$ref": "#/pScheduler/AnyJSON" },
+            "_key": { "$ref": "#/pScheduler/String" },
+            "debug": { "$ref": "#/pScheduler/Boolean" },
+        },
+        "additionalProperties": False,
+        "required": [
+            "schema",
+            "test",
+            ]
+        },
+
     "TaskSpecification": {
         "anyOf": [
             { "$ref": "#/pScheduler/TaskSpecification_V1" },
             { "$ref": "#/pScheduler/TaskSpecification_V2" },
-            { "$ref": "#/pScheduler/TaskSpecification_V3" }
+            { "$ref": "#/pScheduler/TaskSpecification_V3" },
+            { "$ref": "#/pScheduler/TaskSpecification_V4" }
             ]
         },
 
@@ -1426,6 +1456,77 @@ def json_validate(json, skeleton, max_schema=None):
         return (False, "At /%s: %s" % (path, message))
 
     return (True, 'OK')
+
+
+
+
+def json_validate_from_standard_template(json, template):
+    """
+    Validate json from a standard template consisting of the following:
+
+    {
+      "local": {
+          ... JSON Schema for locally-defined objects ...
+      },
+      "versions": {
+        "1": {
+           ... JSON Schema for version 1 ...
+        },
+        "2": {
+           ... JSON Schema for version 2 ...
+        }
+      }
+    }
+
+    Return value is the same as for json_validate(), above.
+    """
+
+    # Build a temporary structure suitable for json_validate().  This
+    # is done manually because using oneOf or anyOf results in error
+    # messages that are difficult to decipher.
+
+    schema = json.get("schema", 1)
+    if not isinstance(schema, int):
+        return ("False", "Schema must be an integer")
+
+    try:
+        json_schema = template["versions"][str(schema)]
+    except KeyError:
+        return (False, "Schema {} is not supported.".format(schema))
+
+    temp_schema = {
+        "local": template.get("local", {})
+    }
+
+    for field in [ "type", "items", "properties", "additionalProperties", "required" ]:
+        try:
+            temp_schema[field] = json_schema[field]
+        except KeyError:
+            pass  # Don't care if it's not there.
+
+    return json_validate(json, temp_schema)
+
+
+
+def json_standard_template_max_schema(template):
+    """
+    Determine the maximum schema in a standard template (see above)
+    and make sure there are no gaps in the versions provided.
+    """
+
+    versions = 0
+    max_version = 0
+
+    for version in template.get("versions", {}):
+        max_version = max(int(version), max_version)
+        versions += 1
+
+    if versions == 0 or versions != max_version:
+        raise ValueError("Schema is missing versions")
+
+    return max_version
+
+
 
 
 # Test program

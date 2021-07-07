@@ -39,6 +39,7 @@ __ip_versions = {
 
 def ip_addr_version(addr,
                     resolve=True,
+                    ip_version=None,
                     family=False,
                     timeout=dns_default_timeout()):
     """Determine what IP version an address, CIDR block or hostname
@@ -49,12 +50,17 @@ def ip_addr_version(addr,
     of nothing can be determined and ip is the ip address supplied or
     resolved.
 
+    If 'ip_version' is 4 or 6, only that version will be used attempting
+    to do resolutions.
+
     If 'family' is True, the returned version will be the address
     family as defined by the socket module.
     """
 
     assert addr is not None
     assert isinstance(addr, str)
+    assert ip_version in [None, 4, 6]
+
 
     # Chop out any CIDR suffix.
 
@@ -67,13 +73,21 @@ def ip_addr_version(addr,
             # DNS resolution will torpedo this.
             pass
 
-    # If it looks like an IP address, act on it.
+    # If it looks like an IP address, act on it, but only if it's the
+    # version requested.
 
     try:
-        ipversion = netaddr.IPAddress(addr).version
+        addr_version = netaddr.IPAddress(addr).version
+
+        # Version mismatches are bad.
+        if ip_version is not None and addr_version != ip_version:
+            return (None, None)
+
         if family:
-            ipversion = __ip_families[ipversion]
-        return (ipversion, addr)
+            addr_version = __ip_families[addr_version]
+
+        return (addr_version, addr)
+
     except (netaddr.core.AddrFormatError, ValueError):
         # Don't care, will resolve.
         pass
@@ -104,8 +118,9 @@ def ip_addr_version(addr,
     if ipversion is None:
         return (None, "Unable to resolve '%s' or find a supported IP version" % (host))
 
+    version_list = [4, 6] if ip_version is None else [ip_version]
 
-    for ip_version in [4, 6]:
+    for ip_version in version_list:
         resolved = dns_resolve(addr, ip_version=ip_version, timeout=timeout)
         if resolved is not None:
             return (ip_addr_version(resolved, resolve=False,

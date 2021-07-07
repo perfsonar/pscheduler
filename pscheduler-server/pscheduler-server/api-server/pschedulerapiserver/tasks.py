@@ -103,22 +103,22 @@ def pick_tool(lists, pick_from=None):
     return None
 
 
-
-
-
 def __tasks_get_filtered(uri_base,
                          where_clause='TRUE',
                          args=[],
                          expanded=False,
                          detail=False,
-                         single=True):
+                         single=True,
+                         part_field=None,
+                         part_key_field=None
+):
 
     """Get one or more tasks from a table using a WHERE clause."""
 
     # Let this throw; callers are responsible for catching.
 
     cursor = dbcursor_query(
-        """SELECT json_detail, uuid FROM task WHERE %s""" % (where_clause),
+        """SELECT json_detail, uuid, participant, participant_key FROM task WHERE %s""" % (where_clause),
         args)
 
     tasks_returned = []
@@ -164,6 +164,11 @@ def __tasks_get_filtered(uri_base,
             except KeyError:
                 pass
 
+        if part_field is not None:
+            json[part_field] = row[2]
+
+        if part_key_field is not None:
+            json[part_key_field] = row[3]
 
         tasks_returned.append(json)
 
@@ -199,14 +204,15 @@ def tasks():
             single=False
         )
 
-        return ok_json(tasks)
+        # Returns multiple tasks, must be sanitized
+        return ok_json(tasks, sanitize=True)
 
     elif request.method == 'POST':
 
         data = request.data.decode("ascii")
 
         try:
-            task = pscheduler.json_load(data, max_schema=3)
+            task = pscheduler.json_load(data, max_schema=4)
         except ValueError as ex:
             return bad_request("Invalid task specification: %s" % (str(ex)))
 
@@ -470,19 +476,16 @@ def tasks():
         # do anything with it until the task has been submitted to all
         # of the other participants.
 
-        try:
-            cursor = dbcursor_query(
-                "SELECT * FROM api_task_post(%s, %s, %s, %s, 0, %s, NULL, FALSE, %s)",
-                [pscheduler.json_dump(task), participants, hints_data,
-                 pscheduler.json_dump(limits_passed),
-                 task.get("priority", None), diags], onerow=True)
-        except psycopg2.InternalError as ex:
-            return bad_request("Task error: %s" % str(ex))
+        cursor = dbcursor_query(
+            "SELECT uuid, participant_key FROM api_task_post(%s, %s, %s, %s, 0, %s, NULL, FALSE, %s)",
+            [pscheduler.json_dump(task), participants, hints_data,
+             pscheduler.json_dump(limits_passed),
+             task.get("priority", None), diags], onerow=True)
 
         if cursor.rowcount == 0:
             return error("Task post failed; poster returned nothing.")
 
-        task_uuid = cursor.fetchone()[0]
+        (task_uuid, task_participant_key) = cursor.fetchone()
 
         log.debug("Tasked lead, UUID %s", task_uuid)
 
@@ -490,7 +493,14 @@ def tasks():
 
         task["participants"] = participants
 
-        task_params = { "key": task["_key"] } if "_key" in task else {}
+
+        # If there's a participant key, add that to the task for other
+        # participants.
+
+        if task_participant_key is not None and "_key" not in task:
+            log.debug("Adding participant key %s", task_participant_key)
+            task["_key"] = task_participant_key
+
 
         for participant in range(1,nparticipants):
 
@@ -504,12 +514,10 @@ def tasks():
                 post_url = pscheduler.api_url_hostport(part_name,
                                                        'tasks/' + task_uuid)
 
-                task_params["participant"] = participant
-
                 log.debug("Posting task to %s", post_url)
                 status, result = pscheduler.url_post(
                     post_url,
-                    params=task_params,
+                    params={ "participant": participant },
                     data=task,
                     bind=lead_bind,
                     json=False,
@@ -575,9 +583,9 @@ def tasks():
 
         task_url = "%s/%s" % (request.base_url, task_uuid)
 
-        # Non-expanded gets just the URL
+        # Non-expanded gets just the URL; no need tgo sanitize it.
         if not arg_boolean("expanded"):
-            return ok_json(task_url)
+            return ok_json(task_url, sanitize=False)
 
         # Expanded gets a redirect to GET+expanded
 
@@ -599,6 +607,9 @@ def tasks():
 
 
 
+PART_FIELD = "__participant"
+PART_KEY_FIELD = "__participant_key"
+
 @application.route("/tasks/<uuid>", methods=['GET', 'POST', 'DELETE'])
 def tasks_uuid(uuid):
 
@@ -613,12 +624,29 @@ def tasks_uuid(uuid):
             args=[uuid],
             expanded=True,
             detail=arg_boolean("detail"),
-            single=True)
+            single=True,
+            part_field=PART_FIELD,
+            part_key_field=PART_KEY_FIELD
+        )
 
         if not tasks:
             return not_found()
 
-        return ok_json(tasks[0])
+        task = tasks[0]
+
+        log.debug("GOT TASK %s", task)
+
+        participant = task.get(PART_FIELD)
+        del task[PART_FIELD]
+
+        participant_key = task.get(PART_KEY_FIELD)
+        del task[PART_KEY_FIELD]
+
+        required_key = participant_key if participant > 0 else task.get("_key")
+
+        log.debug("LOOKING FOR %s", required_key)
+
+        return ok_json_sanitize_checked(task, required_key)
 
     elif request.method == 'POST':
 
@@ -631,7 +659,7 @@ def tasks_uuid(uuid):
         # TODO: This should probably a PUT and not a POST.
 
         try:
-            json_in = pscheduler.json_load(data, max_schema=3)
+            json_in = pscheduler.json_load(data, max_schema=4)
         except ValueError as ex:
             return bad_request("Invalid JSON: %s" % str(ex))
         log.debug("JSON is %s", json_in)
@@ -675,11 +703,12 @@ def tasks_uuid(uuid):
         log.debug("Posting task %s", uuid)
 
         try:
-            participants = pscheduler.json_load(data, max_schema=3)["participants"]
-        except ValueError as ex:
-            return bad_request("Task error: %s" % str(ex))
 
-        try:
+            try:
+                participants = pscheduler.json_load(data,
+                                                    max_schema=4)["participants"]
+            except Exception as ex:
+                return bad_request("Task error: %s" % str(ex))
             cursor = dbcursor_query(
                 "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, %s, TRUE, %s)",
                 [data, participants, hints_data,
@@ -687,7 +716,8 @@ def tasks_uuid(uuid):
                  json_in.get("priority", None),
                  uuid,
                  "\n".join(diags)])
-        except psycopg2.InternalError as ex:
+
+        except Exception as ex:
             return bad_request("Task error: %s" % str(ex))
 
         if cursor.rowcount == 0:

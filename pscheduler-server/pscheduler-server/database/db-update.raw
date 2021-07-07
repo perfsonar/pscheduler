@@ -7,6 +7,8 @@
 # latest version of the tables and functions.
 #
 
+WHOAMI=$(basename $0)
+
 if [ "$(id -u)" != "0" ]
 then
     echo "This command must be run as root."
@@ -18,9 +20,14 @@ fi
 $INTERACTIVE && printf "Loading database:\n" || true
 
 $INTERACTIVE && printf '    Administrative...' || true
-postgresql-load '__DATADIR__/database-build-super.sql'
+postgresql-load \
+    --log-errors "${WHOAMI}-super" \
+    '__DATADIR__/database-build-super.sql'
 $INTERACTIVE && printf ' Done.\n' || true
 
 $INTERACTIVE && printf '    User __ROLE__...' || true
-postgresql-load --role '__ROLE__' '__DATADIR__/database-build.sql'
+postgresql-load \
+    --role '__ROLE__' \
+    --log-errors "${WHOAMI}-__ROLE__"  \
+    '__DATADIR__/database-build.sql'
 $INTERACTIVE && printf ' Done.\n' || true

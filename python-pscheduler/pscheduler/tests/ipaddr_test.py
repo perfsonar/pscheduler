@@ -66,6 +66,20 @@ class TestIpaddr(PschedTestBase):
         self.assertEqual(ip_addr_version('::1/quack', family=True),(None, 'Name or service not known'))
         self.assertEqual(ip_addr_version('::1/quack', resolve=False, family=True), (None, None))
 
+        # Restricted to one version of an IP or another
+
+        self.assertRaises(AssertionError, ip_addr_version, '127.0.0.1', ip_version=99)
+
+        self.assertEqual(ip_addr_version('127.0.0.1', ip_version=4), (4, '127.0.0.1'))
+        self.assertEqual(ip_addr_version('127.0.0.1', ip_version=6), (None, None))
+        self.assertEqual(ip_addr_version('a1.nv.perfsonar.net', ip_version=4), (4, '127.0.0.1'))
+        self.assertEqual(ip_addr_version('a1.nv.perfsonar.net', ip_version=6), (None, None))
+
+        self.assertEqual(ip_addr_version('::1', ip_version=6), (6, '::1'))
+        self.assertEqual(ip_addr_version('::1', ip_version=4), (None, None))
+        self.assertEqual(ip_addr_version('aaaa1.nv.perfsonar.net', ip_version=6), (6, 'fc00::1'))
+        self.assertEqual(ip_addr_version('aaaa1.nv.perfsonar.net', ip_version=4), (None, None))
+
         # By DNS name.  These are guaranteed to be stable as long as
         # nobody breaks the perfsonar.net zone.
 

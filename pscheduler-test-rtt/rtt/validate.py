@@ -136,6 +136,8 @@ def result_is_valid(json):
         "properties": {
             "schema": { "$ref": "#/pScheduler/Cardinal" },
             "succeeded": { "$ref": "#/pScheduler/Boolean" },
+            "error": { "$ref": "#/pScheduler/String" },
+            "diags": { "$ref": "#/pScheduler/String" },
             "roundtrips": {
                 "type": "array",
                 "items": { "$ref": "#/local/roundtrip" },

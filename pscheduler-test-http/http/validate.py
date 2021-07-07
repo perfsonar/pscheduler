@@ -86,6 +86,8 @@ RESULT_SCHEMA = {
             "properties": {
                 "schema":     { "type": "integer", "enum": [ 1 ] },
                 "succeeded":  { "$ref": "#/pScheduler/Boolean" },
+                "error":      { "$ref": "#/pScheduler/String" },
+                "diags":      { "$ref": "#/pScheduler/String" },
                 "time":       { "$ref": "#/pScheduler/Duration" },
                 "found":      { "$ref": "#/pScheduler/Boolean" }
             },
@@ -110,6 +112,8 @@ RESULT_SCHEMA = {
             "properties": {
                 "schema":     { "type": "integer", "enum": [ 2 ] },
                 "succeeded":  { "$ref": "#/pScheduler/Boolean" },
+                "error":      { "$ref": "#/pScheduler/String" },
+                "diags":      { "$ref": "#/pScheduler/String" },
                 "time":       { "$ref": "#/pScheduler/Duration" },
                 "found":      { "$ref": "#/pScheduler/Boolean" },
                 "status":     { "$ref": "#/pScheduler/Cardinal" },

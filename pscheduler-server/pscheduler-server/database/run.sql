@@ -811,19 +811,20 @@ BEGIN
     SELECT INTO purge_before now() - keep_runs_tasks FROM configurables;
     DELETE FROM run
     WHERE
-        upper(times) < purge_before
-        AND state NOT IN (run_state_pending(),
-                          run_state_on_deck(),
-                          run_state_running());
+        (
+	  (upper(times) < purge_before)                       -- Runs that got a time
+	  OR (upper(times) IS NULL AND added < purge_before)  -- Runs that didn't
+        )
+        AND state IN (SELECT id FROM run_state WHERE finished)
+    ;
 
     -- Extra margin for anything that might actually be running
+    -- TODO: This is probably redundant.
     purge_before := purge_before - 'PT1H'::INTERVAL;
     DELETE FROM run
     WHERE
         upper(times) < purge_before
-        AND state IN (run_state_pending(),
-                      run_state_on_deck(),
-                      run_state_running());
+        AND state IN (SELECT id FROM run_state WHERE NOT finished);
 
 END;
 $$ LANGUAGE plpgsql;

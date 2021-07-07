@@ -9,6 +9,8 @@ import sys
 from base_test import PschedTestBase
 
 from pscheduler.jsonval import json_validate
+from pscheduler.jsonval import json_validate_from_standard_template
+from pscheduler.jsonval import json_standard_template_max_schema
 
 
 class TestJsonval(PschedTestBase):
@@ -48,7 +50,6 @@ class TestJsonval(PschedTestBase):
                 "protocol": {"$ref": "#/local/protocol"},
                 "x-factor": {"type": "number"},
                 "archspec": {"$ref": "#/pScheduler/ArchiveSpecification"},
-
             },
             "required": ["sendto", "x-factor"]
         }
@@ -76,6 +77,73 @@ class TestJsonval(PschedTestBase):
         sample['schema'] = "This is bad."
         valid, message = json_validate(sample, schema, max_schema=5)
         self.assertEqual((valid, message), (False, "Schema value must be an integer."))
+
+
+    def test_json_validate_from_standard_template(self):
+
+        template = {
+            "local": {
+            },
+            "versions": {
+                "1": {
+                    "type": "object",
+                    "properties": {
+                        "schema": {"$ref": "#/pScheduler/Cardinal"},
+                        "foo":    {"$ref": "#/pScheduler/String"},
+                    }
+                },
+                "2": {
+                    "type": "object",
+                    "properties": {
+                        "schema": {"$ref": "#/pScheduler/Cardinal"},
+                        "foo":    {"$ref": "#/pScheduler/String"},
+                        "bar":    {"$ref": "#/pScheduler/String"},
+                    }
+                }
+            }
+        }
+
+
+        (result, error) = json_validate_from_standard_template({ "schema": 1, "foo": "Hello, world!" }, template)
+        self.assertEqual(result, True)
+
+        (result, error) = json_validate_from_standard_template({ "schema": 1, "bar": "Hello, world!" }, template)
+        self.assertEqual(result, False)
+
+        (result, error) = json_validate_from_standard_template({ "schema": 9, "foo": "Hello, world!" }, template)
+        self.assertEqual(result, False)
+
+
+
+    def test_json_standard_template_max_schema(self):
+
+        self.assertRaises(
+            ValueError,
+            json_standard_template_max_schema, {}
+        )
+
+        self.assertRaises(
+            ValueError,
+            json_standard_template_max_schema, { "versions": {} }
+        )
+
+        self.assertEqual(
+            json_standard_template_max_schema({ "versions": { "1": {} } }),
+            1
+        )
+
+        self.assertEqual(
+            json_standard_template_max_schema({ "versions": { "1": {}, "2": {} } }),
+            2
+        )
+
+        self.assertRaises(
+            ValueError,
+            json_standard_template_max_schema, { "versions": { "1": {}, "3": {} } }
+        )
+
+
+
 
 
 if __name__ == '__main__':

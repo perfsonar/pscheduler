@@ -22,7 +22,7 @@ then
     exit 1
 fi
 
-REDHAT_RELEASE=$(sed -e 's/^.* \([0-9.]\+\) .*$/\1/' "${RELEASE_FILE}")
+REDHAT_RELEASE=$(grep -o "[0-9.]\+" "${RELEASE_FILE}")
 REDHAT_RELEASE_MAJOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 }')
 REDHAT_RELEASE_MAJOR_MINOR=$(echo ${REDHAT_RELEASE} | awk -F. '{ print $1 "." $2 }')
 

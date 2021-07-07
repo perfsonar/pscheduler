@@ -22,7 +22,12 @@ Source:         %{short}-%{version}.tar.gz
 Requires:       %{_pscheduler_python}
 BuildRequires:  %{_pscheduler_python}-devel
 BuildRequires:  %{_pscheduler_python}-setuptools
+
+%if %{?ol8:0}%{!?ol8:1}
+# OL8 doesn't have this, but the build succeeds without it.
+# TODO: See of we can live without this on CentOS
 BuildRequires:  %{_pscheduler_python}-sphinx
+%endif
 
 BuildRequires:  %{_pscheduler_python}-setuptools
 

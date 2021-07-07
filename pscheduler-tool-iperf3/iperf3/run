@@ -6,12 +6,16 @@
 import datetime
 import logging
 import json
+import os
 import pscheduler
 import re
 import shutil
+import stat
 import sys
 import time
+import threading
 import iperf3_parser
+import tempfile
 import traceback
 import iperf3_utils
 from iperf3_defaults import *
@@ -38,8 +42,9 @@ except Exception:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 
 single_ended = test_spec.get('single-ended', False)
+loopback = test_spec.get('loopback', False)
 participants = len(participant_data)
-if not(participants == 2 or (participants == 1 and single_ended)):
+if not(participants == 2 or (participants == 1 and (single_ended or loopback))):
     pscheduler.fail("iperf3 requires exactly 2 participants, got %s" % (len(participant_data)))
 
 config = iperf3_utils.get_config()
@@ -51,7 +56,10 @@ iperf3_cmd  = config["iperf3_cmd"]
 if single_ended:
     server_port = test_spec.get('single-ended-port', DEFAULT_SERVER_PORT)
 else:
-    server_port = participant_data[1]['server_port']
+    if loopback:
+        server_port = DEFAULT_SERVER_PORT
+    else:
+        server_port = participant_data[1]['server_port']
 
 # need this to pad out the wait timeout,
 # convert to seconds
@@ -70,7 +78,6 @@ else:
 
 # if we're doing a reverse test, have to change a few things
 reverse = test_spec.get('reverse', False)
-
 
 def run_client():
 
@@ -231,7 +238,17 @@ def run_client():
     # figure out cpu affinity, either use what was passed in
     # or try to auto detect it
     affinity = test_spec.get('client-cpu-affinity')
-    if affinity is None:
+    if affinity is not None:
+        numa_ok, numa_diags = pscheduler.numa_cpu_core_ok(affinity)
+        if numa_ok:
+            logger.debug("Selected CPU affinity %s" % affinity)
+            iperf3_args.insert(0, 'numactl')
+            iperf3_args.insert(1, '-C')
+            iperf3_args.insert(2, affinity)
+        else:
+            logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
+            diags.append("Unable to use NUMA for this test.  Disabling it.")
+    else:
         if source:
             interface = pscheduler.address_interface(source, ip_version=ip_version)
             if interface is not None:
@@ -241,17 +258,44 @@ def run_client():
             affinity = pscheduler.source_affinity(normalized_dest, ip_version=ip_version)
             logger.debug("Affinity (if any) will be based on destination")
 
-    if affinity is not None:
-        numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
-        if numa_ok:
-            logger.debug("Selected CPU affinity %s" % affinity)
-            iperf3_args.insert(0, 'numactl')
-            iperf3_args.insert(1, '-N')
-            iperf3_args.insert(2, affinity)
-        else:
-            logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
-            diags.append("Unable to use NUMA for this test.  Disabling it.")
+        if affinity is not None:
+            numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
+            if numa_ok:
+                logger.debug("Selected CPU affinity %s" % affinity)
+                iperf3_args.insert(0, 'numactl')
+                iperf3_args.insert(1, '-N')
+                iperf3_args.insert(2, affinity)
+            else:
+                logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
+                diags.append("Unable to use NUMA for this test.  Disabling it.")
 
+    # Set up for authorization if that's present.
+
+    auth_dir = tempfile.TemporaryDirectory()
+    os.chmod(auth_dir.name, stat.S_IRWXU)
+
+    auth_env = {}
+
+    if not (single_ended or loopback) and (participant_data[1].get("_auth") is not None):
+
+        try:
+
+            # TODO: There should be a better way to do this.
+            auth_env["IPERF3_PASSWORD"] = participant_data[1]["_auth"]["password"]
+
+            public_key_path = "{}/public-key".format(auth_dir.name)
+            with open(public_key_path, "w") as writer:
+                writer.write(participant_data[1]["_auth"]["public"])
+            iperf3_args.append("--rsa-public-key-path")
+            iperf3_args.append(public_key_path)
+
+            iperf3_args.append("--username")
+            iperf3_args.append(participant_data[1]["_auth"]["username"])
+
+        except Exception as ex:
+
+            auth_dir.cleanup()
+            pscheduler.fail("Unable to write client auth files: %s" % (str(ex)))
 
 
     # join and run_program want these all to be string types, so
@@ -282,6 +326,7 @@ def run_client():
 
     try:
         status, stdout, stderr = pscheduler.run_program(iperf3_args,
+                                                        env_add = auth_env,
                                                         timeout = iperf_timeout)
     except Exception as ex:
         logger.error("iperf3 failed to complete execution: %s" % ex)
@@ -317,7 +362,7 @@ def run_server():
             iperf3_args.append('-4')
         else:
             iperf3_args.append('-6')
-    elif source is not None:
+    elif (source is not None) and (not loopback):
         # if we have the source and dest, we can determine what ip version they have in common
         # we prefer IPv6 but fallback to IPv4 if they don't both have IPv6. If one end only 
         # has IPv4 and the other only has IPv6 we don't bind at all but don't throw error in 
@@ -339,23 +384,65 @@ def run_server():
     
     # try to grab our default affinity if one wasn't passed in
     affinity = test_spec.get('server-cpu-affinity')
-    if affinity is None:
+    if affinity is not None:
+        numa_ok, numa_diags = pscheduler.numa_cpu_core_ok(affinity)
+        if numa_ok:
+            logger.debug("Selected CPU affinity %s" % affinity)
+            iperf3_args.insert(0, 'numactl')
+            iperf3_args.insert(1, '-C')
+            iperf3_args.insert(2, affinity)
+        else:
+            logger.debug("NUMA doesn't work for destination.  Throwing caution to the wind.")
+            diags.append("Unable to use NUMA for this test.  Disabling it.")
+    else:
         # look up what interface we're going to be receiving on        
         interface = pscheduler.address_interface(normalized_dest, ip_version=ip_version)
         if interface:
             affinity = pscheduler.interface_affinity(interface)
             logger.debug("CPU affinity for interface is %s" % (affinity))
-        numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
-        if not numa_ok:
-            logger.debug("NUMA doesn't work for %s.  Throwing caution to the wind." % (interface))
-            diags.append("Unable to use NUMA for %s.  Disabling it." % (interface))
-            affinity = None
 
-    if affinity is not None:
-        iperf3_args.insert(0, 'numactl')
-        iperf3_args.insert(1, '-N')
-        iperf3_args.insert(2, affinity)
+            if affinity is not None:
+                numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
+                if numa_ok:
+                    logger.debug("Selected CPU affinity %s" % affinity)
+                    iperf3_args.insert(0, 'numactl')
+                    iperf3_args.insert(1, '-N')
+                    iperf3_args.insert(2, affinity)
+                else:
+                    logger.debug("NUMA doesn't work for %s.  Throwing caution to the wind." % (interface))
+                    diags.append("Unable to use NUMA for %s.  Disabling it." % (interface))
 
+
+    # Set up for authentication if that's present
+
+    auth_dir = tempfile.TemporaryDirectory()
+    os.chmod(auth_dir.name, stat.S_IRWXU)
+
+
+    # Run auth if the lead participant is and there's auth data
+
+    if not (single_ended or loopback) and (participant_data[1].get("_auth") is not None and participant_data[0].get("schema", 1) >= 2):
+
+        try:
+
+            credentials_path = "{}/credentials".format(auth_dir.name)
+            with open(credentials_path, "w") as writer:
+                writer.write(participant_data[1]["_auth"]["credentials"])
+            iperf3_args.append("--authorized-users-path")
+            iperf3_args.append(credentials_path)
+
+            private_key_path = "{}/private-key".format(auth_dir.name)
+            with open(private_key_path, "w") as writer:
+                writer.write(participant_data[1]["_auth"]["private"])
+            iperf3_args.append("--rsa-private-key-path")
+            iperf3_args.append(private_key_path)
+
+        except Exception as ex:
+
+            auth_dir.cleanup()
+            pscheduler.fail("Unable to write auth files: %s" % (str(ex)))
+
+        
 
     iperf3_args = [str(x) for x in iperf3_args]
     logger.debug("Running command: %s" % " ".join(iperf3_args))
@@ -378,10 +465,23 @@ def run_server():
         pscheduler.sleep_until(start_at)
         logger.debug("Starting")
     except KeyError:
+        auth_dir.cleanup()
         pscheduler.fail("Unable to find start time in input")
 
     status, stdout, stderr = pscheduler.run_program(iperf3_args,
                                                     timeout=iperf_timeout)
+
+    auth_dir.cleanup()
+
+    # There's a bug in the server side that dumps a diagnostic into
+    # stdout.  Correct for that.
+    # See https://github.com/esnet/iperf/issues/1086
+    # TODO: Remove when the bug is fixed.
+
+    pos = stdout.find("{")
+    if pos > 0:
+        stdout = stdout[pos:]
+
 
     return _make_result("\n".join(diags), status, stdout, stderr)
 
@@ -415,20 +515,20 @@ def _make_result(diags, status, stdout, stderr):
 #determine whether we are the client or server mode for iperf
 results = {}
 try:
-    if participant == 0:
-        results = run_client()
+    if participant == 0 :
+        if loopback:
+            server_thread = threading.Thread(target=run_server)
+            server_thread.start()
+            results = run_client()
+            server_thread.join() #Wait until the server thread terminates
+        else:
+            results = run_client()
     elif participant == 1:
         results = run_server()
     else:
         pscheduler.fail("Invalid participant.")
 except Exception as ex:
-    _, _, ex_traceback = sys.exc_info()
-    if ex_traceback is None:
-        ex_traceback = ex.__traceback__
-    tb_lines = [ line.rstrip('\n') for line in
-                 traceback.format_exception(ex.__class__, ex, ex_traceback)]
-    logger.debug(tb_lines)
-    logger.error("Exception %s" % ex);
+    logger.exception()
 
 logger.debug("Results: %s" % results)
 

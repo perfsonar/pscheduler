@@ -424,6 +424,43 @@ $$
 ;
 
 
+
+-- Generate a random string
+
+DO $$ BEGIN PERFORM drop_function_all('random_string'); END $$;
+
+CREATE OR REPLACE FUNCTION random_string(
+  len INTEGER,                         -- String length
+  alphanumeric BOOLEAN DEFAULT FALSE,  -- Alphanumeric only
+  random_len BOOLEAN DEFAULT FALSE     -- Make length random between len/2 and len
+)
+  RETURNS text
+  LANGUAGE plpgsql
+  IMMUTABLE STRICT
+AS $$
+DECLARE
+  charset TEXT;
+BEGIN
+
+  charset := 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  IF NOT alphanumeric THEN
+    charset := CONCAT(charset, '!"#$%&''()*+,-./:;<=>?@[\]^_`{|}~');
+  END IF;
+
+  IF random_len THEN
+     -- Chop off up to half of the length
+     len := (len - (random() * (len / 2)))::integer;
+  END IF;
+
+  RETURN array_to_string(array(
+    SELECT SUBSTR(charset, ((random()*(LENGTH(charset)-1)+1)::integer), 1)
+    FROM generate_series(1,len)), '');
+
+END;
+$$
+;
+
+
 -- ----------------------------------------------------------------------------
 
 --

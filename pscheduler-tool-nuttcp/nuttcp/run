@@ -11,6 +11,7 @@ import re
 import shutil
 import sys
 import time
+import threading
 import nuttcp_parser
 import traceback
 import nuttcp_utils
@@ -42,9 +43,9 @@ except:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 
 single_ended = test_spec.get('single-ended', False)
-
+loopback = test_spec.get('loopback', False)
 participants = len(participant_data)
-if not(participants == 2 or (participants == 1 and single_ended)):
+if not(participants == 2 or (participants == 1 and (single_ended or loopback))):
     pscheduler.fail("nuttcp requires 1 or 2 participants, got %s" % (len(participant_data)))
 
 config = nuttcp_utils.get_config()
@@ -57,11 +58,15 @@ if single_ended:
     server_port = test_spec.get('single-ended-port', DEFAULT_SERVER_PORT)
     data_port_start = DEFAULT_DATA_PORT_START
 else:
-    server_port = participant_data[1]['server_port']
-    try:
-        data_port_start = participant_data[1]['data_port_start']
-    except KeyError:
+    if loopback:
+        server_port = DEFAULT_SERVER_PORT
         data_port_start = DEFAULT_DATA_PORT_START
+    else:
+        server_port = participant_data[1]['server_port']
+        try:
+            data_port_start = participant_data[1]['data_port_start']
+        except KeyError:
+            data_port_start = DEFAULT_DATA_PORT_START
 
 
 
@@ -188,11 +193,24 @@ def run_client():
     if test_spec.get('reverse'):
         nuttcp_args.append('-F')
 
+    if test_spec.get('reverse-connections'):
+        nuttcp_args.append('-r')
+
     # who to connect to
     destination = test_spec['dest']
 
     affinity = test_spec.get('client-cpu-affinity')
-    if affinity is None:
+    if affinity is not None:
+        numa_ok, numa_diags = pscheduler.numa_cpu_core_ok(affinity)
+        if numa_ok:
+            logger.debug("Selected CPU affinity %s" % affinity)
+            nuttcp_args.insert(0, 'numactl')
+            nuttcp_args.insert(1, '-C')
+            nuttcp_args.insert(2, affinity)
+        else:
+            logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
+            diags.append("Unable to use NUMA for this test.  Disabling it.")
+    else:
         if source:
             interface = pscheduler.address_interface(source, ip_version=ip_version)
             if interface is not None:
@@ -202,16 +220,16 @@ def run_client():
             affinity = pscheduler.source_affinity(destination, ip_version=ip_version)
             logger.debug("Affinity (if any) will be based on destination")
 
-    if affinity is not None:
-        numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
-        if numa_ok:
-            logger.debug("Selected CPU affinity %s" % affinity)
-            nuttcp_args.insert(0, 'numactl')
-            nuttcp_args.insert(1, '-N')
-            nuttcp_args.insert(2, affinity)
-        else:
-            logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
-            diags.append("Unable to use NUMA for this test.  Disabling it.")
+        if affinity is not None:
+            numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
+            if numa_ok:
+                logger.debug("Selected CPU affinity %s" % affinity)
+                nuttcp_args.insert(0, 'numactl')
+                nuttcp_args.insert(1, '-N')
+                nuttcp_args.insert(2, affinity)
+            else:
+                logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
+                diags.append("Unable to use NUMA for this test.  Disabling it.")
 
     nuttcp_args.append(destination)
 
@@ -272,22 +290,33 @@ def run_server():
 
     # try to grab our default affinity if one wasn't passed in
     affinity = test_spec.get('server-cpu-affinity')
-    if affinity is None:
+    if affinity is not None:
+        numa_ok, numa_diags = pscheduler.numa_cpu_core_ok(affinity)
+        if numa_ok:
+            logger.debug("Selected CPU affinity %s" % affinity)
+            nuttcp_args.insert(0, 'numactl')
+            nuttcp_args.insert(1, '-C')
+            nuttcp_args.insert(2, affinity)
+        else:
+            logger.debug("NUMA doesn't work for destination.  Throwing caution to the wind.")
+            diags.append("Unable to use NUMA for this test.  Disabling it.")
+    else:        
         # look up what interface we're going to be receiving on        
         interface = pscheduler.address_interface(test_spec['dest'], ip_version=ip_version)
         if interface:
             affinity = pscheduler.interface_affinity(interface)
+            logger.debug("CPU affinity for interface is %s" % (affinity))
 
-    if affinity is not None:
-        numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
-        if numa_ok:
-            logger.debug("Selected CPU affinity %s" % affinity)
-            nuttcp_args.insert(0, 'numactl')
-            nuttcp_args.insert(1, '-N')
-            nuttcp_args.insert(2, affinity)
-        else:
-            logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
-            diags.append("Unable to use NUMA for this test.  Disabling it.")
+            if affinity is not None:
+                numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
+                if numa_ok:
+                    logger.debug("Selected CPU affinity %s" % affinity)
+                    nuttcp_args.insert(0, 'numactl')
+                    nuttcp_args.insert(1, '-N')
+                    nuttcp_args.insert(2, affinity)
+                else:
+                    logger.debug("NUMA doesn't work for %s.  Throwing caution to the wind." % (interface))
+                    diags.append("Unable to use NUMA for %s.  Disabling it." % (interface))
 
     nuttcp_args = [str(x) for x in nuttcp_args]
     nuttcp_args_string = " ".join(nuttcp_args)
@@ -307,7 +336,7 @@ def run_server():
                                                         timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)),
                                                         timeout_ok = True)
     except Exception as ex:
-        logger.error("nuttcp failed to complete execution: %s" % ex);
+        logger.error("nuttcp failed to complete execution: %s" % ex)
         pscheduler.succeed_json({"succeeded": False,
                                  "diags": "\n".join(diags),
                                  "error": "The nuttcp command failed during execution. See server logs for more details."})
@@ -345,7 +374,13 @@ def _make_result(command_line, status, stdout, stderr, parse=True):
 results = {}
 try:
     if participant == 0:
-        results = run_client()
+        if loopback:
+            server_thread = threading.Thread(target=run_server)
+            server_thread.start()
+            results = run_client()
+            server_thread.join() #Wait until the server thread terminates
+        else:
+            results = run_client()
     elif participant == 1:
         results = run_server()
     else:
@@ -357,7 +392,7 @@ except Exception as ex:
     tb_lines = [ line.rstrip('\n') for line in
                  traceback.format_exception(ex.__class__, ex, ex_traceback)]
     logger.debug(tb_lines)
-    logger.error("Exception %s" % ex);
+    logger.error("Exception %s" % ex)
 
 logger.debug("Results: %s" % results)
 

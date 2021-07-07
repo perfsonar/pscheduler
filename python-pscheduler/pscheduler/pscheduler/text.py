@@ -3,8 +3,31 @@
 #
 
 import os
+import string
 import sys
 import textwrap
+
+# This is not available on Debian 9, so if it isn't, roll our own.
+# DEBIAN: Go back to using secrets directly when Debian 9 goes away.
+try:
+
+    import secrets
+    SECRETS_CHOICE = secrets.choice
+    SECRETS_RANDBELOW = secrets.randbelow
+    
+except ImportError:
+
+    import random
+
+    def secrets_randbelow(below):
+        return random.randint(0, below-1)
+
+    def secrets_choice(charset):
+        return charset[secrets_randbelow(len(charset)-1)]
+
+
+    SECRETS_CHOICE = secrets_choice
+    SECRETS_RANDBELOW = secrets_randbelow
 
 
 def terminal_size():
@@ -55,3 +78,30 @@ def indent(
     """
     prefix = char * indent
     return "\n".join([prefix + s for s in text.split("\n")])
+
+
+
+
+def random_string(length, randlength=False, safe=False):
+    """Return a random string of length 'length'
+
+    Set 'randlength' True to pick a random length between half of
+    'length' and 'length'.
+
+    Set 'safe' True to onlu include alphanumeric characters.
+    """
+
+    if randlength:
+        length = length - SECRETS_RANDBELOW(int(length/2))
+
+    charset = string.digits + string.ascii_letters
+    if not safe:
+        charset += string.punctuation
+    charset_len = len(charset)
+
+    characters = [
+        SECRETS_CHOICE(charset)
+        for _ in range(0, length)
+    ]
+
+    return "".join(characters)

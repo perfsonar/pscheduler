@@ -35,7 +35,7 @@ def limits():
     passed, limits_passed, diags, _new_task, _priority \
         = processor.process(proposal, hints)
 
-    return json_response({
+    return ok_json({
         "passed": passed,
         "limits_passed": limits_passed,
         "diags": diags

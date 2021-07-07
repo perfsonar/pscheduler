@@ -1,0 +1,11 @@
+--- vine.orig/vine/promises.py	2020-09-03 12:03:18.000000000 +0000
++++ vine/vine/promises.py	2021-06-02 18:24:29.622713000 +0000
+@@ -123,7 +123,7 @@
+ 
+     def __repr__(self):
+         return ('<{0} --> {1!r}>' if self.fun else '<{0}>').format(
+-            f'{type(self).__name__}@0x{id(self):x}', self.fun,
++            '{0}@0x{1:x}'.format(type(self).__name__, id(self)), self.fun,
+         )
+ 
+     def cancel(self):

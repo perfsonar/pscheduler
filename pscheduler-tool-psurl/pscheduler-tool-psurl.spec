@@ -3,14 +3,14 @@
 #
 
 %define short	psurl
-%define perfsonar_auto_version 4.3.4
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 4.4.0
+%define perfsonar_auto_relnum 0.11.b1
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
 Release:	%{perfsonar_auto_relnum}%{?dist}
 
-Summary:	psurl tool class for pScheduler
+Summary:	psurl tool class for pScheduler (DISABLED)
 BuildArch:	noarch
 License:	ASL 2.0
 Vendor:	perfSONAR
@@ -27,7 +27,7 @@ Requires:	pscheduler-test-http
 BuildRequires:	pscheduler-rpm
 
 %description
-psurl tool class for pScheduler
+psurl tool class for pScheduler (DISABLED)
 
 %prep
 %setup -q -n %{short}-%{version}

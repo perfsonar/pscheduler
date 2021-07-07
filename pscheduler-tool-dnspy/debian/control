@@ -12,6 +12,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-tool-dnspy
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- python3-dns, pscheduler-server, pscheduler-test-dns
+ python3-dns, pscheduler-server (>= 4.3.0), pscheduler-test-dns
 Description: pScheduler DNS tool
  DNS tool class for pScheduler

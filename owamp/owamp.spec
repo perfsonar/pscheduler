@@ -2,8 +2,8 @@
 # Adapted from the spec in the sources
 #
 
-%define perfsonar_auto_version 4.3.4
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 4.4.0
+%define perfsonar_auto_relnum 0.11.b1
 
 Name: owamp
 Summary: owamp - one-way delay tester
@@ -18,11 +18,7 @@ Patch0: owamp-00-root-test.patch
 
 
 Packager: Aaron Brown <aaron@internet2.edu>
-%if 0%{?el7}
 BuildRequires: libtool, I2util, libcap-devel, openssl-devel, systemd, selinux-policy-devel
-%else
-BuildRequires: libtool, I2util, libcap-devel, openssl-devel
-%endif
 Requires: owamp-client, owamp-server, I2util
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 

@@ -18,6 +18,8 @@ import shutil
 import sys
 import time
 import traceback
+import threading
+from ethr_defaults import *
 
 # track when this run starts
 start_time = datetime.datetime.now()
@@ -41,6 +43,12 @@ except Exception:
 
 protocol = "udp" if test_spec.get("udp", False) else "tcp"
 
+loopback = test_spec.get('loopback', False)
+if loopback:
+    server_port = DEFAULT_SERVER_PORT
+else:
+    server_port = participant_data[1]['server_port']
+
 try:
     parallel = int(test_spec["parallel"])
     # TODO: Enable this or get rid of it.
@@ -50,9 +58,6 @@ try:
     #)
 except KeyError:
     parallel = 1
-
-
-
 
 omit_delta = pscheduler.iso8601_as_timedelta(test_spec.get("omit", "P0D"))
 omit = int(pscheduler.timedelta_as_seconds(omit_delta))
@@ -64,7 +69,7 @@ if test_duration:
     delta = pscheduler.iso8601_as_timedelta(test_duration)
     test_duration = int(pscheduler.timedelta_as_seconds(delta))
 else:
-    test_duration = 20
+    test_duration = DEFAULT_DURATION
 
 test_duration += omit
 
@@ -84,7 +89,7 @@ def run_client():
         "-c", test_spec['dest'],
 
         # Port
-        "-ports", "%s=%d" % (protocol, participant_data[1]['server-port']),
+        "-ports", "%s=%d" % (protocol, server_port),
 
         # Duration
         "-d", "%ss" % (test_duration),
@@ -280,7 +285,7 @@ def run_server():
         "-s",
 
         # Port
-        "-ports", "%s=%d" % (protocol, participant_data[1]['server-port'])
+        "-ports", "%s=%d" % (protocol, server_port)
 
     ]
 
@@ -345,8 +350,15 @@ def run_server():
 results = {}
 
 if participant == 0:
-    logger.debug("Running client")
-    results = run_client()
+    if loopback:
+        logger.debug("Running client and server")
+        server_thread = threading.Thread(target=run_server)
+        server_thread.start()
+        results = run_client()
+        server_thread.join() #Wait until the server thread terminates
+    else:
+        logger.debug("Running client")
+        results = run_client()
 elif participant == 1:
     logger.debug("Running server")
     results = run_server()

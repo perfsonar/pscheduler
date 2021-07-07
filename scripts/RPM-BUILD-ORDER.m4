@@ -37,14 +37,20 @@ pscheduler-rpm
 #
 
 # PostgreSQL and Additions
+pgdg-srpm-macros
 postgresql
 postgresql-init
 postgresql-load
 
+
+# Only build this on OL8.  EL8 has it.
+ifelse(REDHAT_RELEASE_MAJOR,8,ifelse(VENDOR,oracle,oniguruma))
 # jq version with new patches. replace when patches accepted upstream
 jq
 
 # Python Modules
+# Only build this on OL8.  EL8 has it.
+ifelse(REDHAT_RELEASE_MAJOR,8,ifelse(VENDOR,oracle,Cython))
 ifelse(REDHAT_RELEASE_MAJOR,7,python-daemon)
 ifelse(REDHAT_RELEASE_MAJOR,7,python-isodate)
 # EL8 has this, but an older version
@@ -64,6 +70,8 @@ ifelse(REDHAT_RELEASE_MAJOR,7,python-memcached)
 python-netifaces
 ifelse(REDHAT_RELEASE_MAJOR,7,python-ntplib)
 python-parse-crontab
+python-vine
+python-py-amqp
 python-py-radix
 python-pyjq
 python-tzlocal
@@ -162,7 +170,7 @@ pscheduler-tool-paris-traceroute
 pscheduler-tool-ping
 pscheduler-tool-powstream
 pscheduler-tool-psclock
-pscheduler-tool-psurl
+pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
 pscheduler-tool-s3-benchmark
 pscheduler-tool-simplestreamer

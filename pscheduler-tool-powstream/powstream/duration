@@ -3,14 +3,15 @@
 # Determine the duration of powstream
 
 import pscheduler
+import datetime
 
-from powstream_defaults import DEFAULT_DURATION
+from powstream_defaults import *
 
 json = pscheduler.json_load(exit_on_error=True)
 
-
-duration = json.get('duration', DEFAULT_DURATION)
-
 pscheduler.succeed_json({
-        "duration": duration
+        "duration": pscheduler.timedelta_as_iso8601(
+            pscheduler.iso8601_as_timedelta(json.get('duration', DEFAULT_DURATION))
+            + datetime.timedelta(seconds=DEFAULT_CLIENT_SHUTDOWN)
+        )
 })

@@ -76,6 +76,7 @@ class Log(object):
         try:
             if self.syslog_handler is not None:
                 self.logger.removeHandler(self.syslog_handler)
+                self.debug_always_logger.removeHandler(self.syslog_handler)
                 self.syslog_handler = None
         except AttributeError:
             # Don't care if it's not there.
@@ -100,6 +101,7 @@ class Log(object):
                     )
                 )
                 self.logger.addHandler(self.syslog_handler)
+                self.debug_always_logger.addHandler(self.syslog_handler)
             except:
                 self.__syslog_handler_deinit()
 
@@ -187,6 +189,14 @@ class Log(object):
         self.logger = logging.getLogger(name)
         self.logger.propagate = False
 
+        # The string append is a sneaky trick to get a different
+        # logger, then it's renamed as we want it.
+        self.debug_always_logger = logging.getLogger(name + "-always")
+        self.debug_always_logger.name = name
+        self.debug_always_logger.propagate = False
+        self.debug_always_logger.setLevel(DEBUG)
+
+
         self.syslog_handler = None
         self.__syslog_handler_init()
 
@@ -230,20 +240,45 @@ class Log(object):
 
 
 
+    def __pickled_environment(self, debug=None):
+        """
+        (INTERNAL USE ONLY) Return a pickled environment value for
+        propogation to child processes.
+        """
+
+        assert (debug is None) or (type(debug) == bool)
+
+        to_pickle = {
+            'forced_debug': self.forced_debug if debug is None else debug,
+            'facility': self.facility,
+            'last_level': self.last_level,
+            'is_quiet': self.is_quiet
+        }
+
+        return codecs.encode(pickle.dumps(to_pickle), "base64").decode()
+
+
+    def environment(self, debug=None):
+        """
+        Produce a hash of environment variable(s) required to pass on
+        the current debug state to a child process.
+
+        If debug (Boolean) is not None, forced debugging will be set
+        to that state.
+        """
+        return { STATE_VARIABLE: self.__pickled_environment(debug) }
+
+
+
+
     def __update_env(self):
         """
         (INTERNAL USE ONLY) Update the environment variable passed to
         child processes to pre-set the state.
         """
         if self.is_propagating:
-            to_pickle = {
-                'forced_debug': self.forced_debug,
-                'facility': self.facility,
-                'last_level': self.last_level,
-                'is_quiet': self.is_quiet
-            }
-            os.environ[STATE_VARIABLE] = codecs.encode(
-                pickle.dumps(to_pickle), "base64").decode()
+            os.environ[STATE_VARIABLE] = self.__pickled_environment()
+
 
     def verbose(self, state):
         "Toggle verbosity (logging to stderr)"
@@ -252,8 +287,10 @@ class Log(object):
 
         if state:
             self.logger.addHandler(self.stderr_handler)
+            self.debug_always_logger.addHandler(self.stderr_handler)
         else:
             self.logger.removeHandler(self.stderr_handler)
+            self.debug_always_logger.removeHandler(self.stderr_handler)
 
         self.is_verbose = state
 
@@ -267,7 +304,7 @@ class Log(object):
 
     # Logging
 
-    def log(self, level, format, *args):
+    def log(self, logger, level, format, *args):
         self.__syslog_handler_init()
         try:
             message = format % args
@@ -277,24 +314,28 @@ class Log(object):
             while lines[-1] == "":
                 del lines[-1]
             for line in lines:
-                self.logger.log(level, line)
+                logger.log(level, line)
         except Exception:
             self.__syslog_handler_deinit()
 
+    def debug_always(self, format, *args):
+        """Emit debug regardless of the debug state"""
+        self.log(self.debug_always_logger, DEBUG, format, *args)
+
     def debug(self, format, *args):
-        self.log(DEBUG, format, *args)
+        self.log(self.logger, DEBUG,format, *args)
 
     def info(self, format, *args):
-        self.log(INFO, format, *args)
+        self.log(self.logger, INFO, format, *args)
 
     def warning(self, format, *args):
-        self.log(WARNING, format, *args)
+        self.log(self.logger, WARNING, format, *args)
 
     def error(self, format, *args):
-        self.log(ERROR, format, *args)
+        self.log(self.logger, ERROR, format, *args)
 
     def critical(self, format, *args):
-        self.log(CRITICAL, format, *args)
+        self.log(self.logger, CRITICAL, format, *args)
 
     def exception(self, message=None):
         "Log an exception as an error and debug if we're doing that."

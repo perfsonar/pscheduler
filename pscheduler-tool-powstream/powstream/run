@@ -204,11 +204,8 @@ else:
         powstream_args.append(test_spec['source'])
     powstream_args.append(ADDR_FORMAT % (test_spec['dest'], control_port))
 
-#Run the process
-time.sleep(DEFAULT_CLIENT_SLEEP) #wait for server to boot
-powstream_start_attempts = 0
-got_result = False
 
+#Run the process
 
 emitter = pscheduler.RFC7464Emitter(sys.stdout)
 
@@ -237,15 +234,12 @@ def powstream_line(line, keep_data_files=False):
                 if status == 0:
                     result = parse_raw_owamp_output(out, raw_output=raw_output, bucket_width=bucket_width)
                     log.debug("Posting result: %s", result)
-                    #TODO in 4.4: Migrate to new delimiter and use emitter(result) instead
-                    print(pscheduler.json_dump(result))
-                    print(pscheduler.api_result_delimiter())
-                    sys.stdout.flush()
+                    emitter(result)
                 else:
                     log.error("Powstream call to owstats failed: %s", error)
 
             except Exception:
-                handle_run_error("While executing owstats", exception=True)
+                handle_run_error(emitter, "While executing owstats", exception=True)
 
         else:
 
