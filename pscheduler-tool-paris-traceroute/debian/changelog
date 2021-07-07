@@ -1,8 +1,8 @@
-pscheduler-tool-paris-traceroute (4.4.0~11.b1-1) perfsonar-4.4; urgency=low
+pscheduler-tool-paris-traceroute (4.4.0-1) perfsonar-4.4; urgency=low
 
   * New upstream version.
 
- -- perfSONAR developers <debian@perfsonar.net>  Mon, 21 Jun 2021 14:24:10 +0000
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 07 Jul 2021 15:32:38 +0000
 
 pscheduler-tool-paris-traceroute (4.3.3-1) perfsonar-4.3; urgency=low
 
