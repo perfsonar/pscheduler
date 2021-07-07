@@ -36,17 +36,6 @@ if format == 'text/plain':
    except KeyError:
       pass
 
-   try:
-      str = spec['parse']
-      print('String found: %s' % result['found'])
-   except KeyError:
-      pass
-
-   try:
-      print('Content: ', result['content'])
-   except KeyError:
-      pass
-
 elif format == 'text/html':
 
     print('<table>')
@@ -59,21 +48,6 @@ elif format == 'text/html':
     print('<td>Status Code</td>')
     print('<td>%s</td>' % result['status'])
     print('</tr>')
-
-    if 'parse' in spec:
-        print('<tr>')
-        print('<td>String Found</td>')
-        print('<td>%s</td>' % result.get('found', False))
-        print('</tr>') 
-
-    try:
-       content = result['content']
-       print('<tr>')
-       print('<td>Content</td>')
-       print('<td><pre>\n%s\n</pre>\n</td>' % html.escape(content))
-       print('</tr>') 
-    except KeyError:
-       pass
 
     print('</table>')
 

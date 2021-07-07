@@ -26,28 +26,20 @@ if not valid:
 if format == 'text/plain':
 
     template = """
-Host ...................... {.section host}{host}{.or}Not Specified{.end}
-Host Node ................. {.section host-node}{host_node}{.or}Not Specified{.end}
+Source ...................... {.section source}{source}{.or}Not Specified{.end}
+Source Node ................. {.section source-node}{source_node}{.or}Not Specified{.end}
 Timeout ................... {.section timeout}{timeout}{.or}Not Specified{.end}
-IP Version................. {.section ip-version}{ip-version}{.or}Not Specified{.end}
-URL ....................... {.section url}{url}{.or}Not Specified{.end}
-Parse ..................... {.section parse}{parse}{.or}Not Specified{.end}
-Always Succeed ............ {.section always-succeed}%s{.or}Not Specified{.end}
-Keep Content .............. {.section success-content}%s Bytes{.or}Not Specified{.end}
+Dest................. {.section dest}{dest}{.or}Not Specified{.end}
 """ % ("True", "True")
 
 elif format == 'text/html':
 
    template = """
 <table>
-<tr><td>Host</td><td>{.section host}{host}{.or}Not Specified{.end}</td></tr>
-<tr><td>Host Node</td><td>{.section host-node}{host_node}{.or}Not Specified{.end}</td></tr>
+<tr><td>Host</td><td>{.section source}{source}{.or}Not Specified{.end}</td></tr>
+<tr><td>Source Node</td><td>{.section source-node}{source_node}{.or}Not Specified{.end}</td></tr>
 <tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
-<tr><td>IP Version</td><td>{.section ip-version}{ip-version}{.or}Not Specified{.end}</td></tr>
-<tr><td>URL</td><td>{.section url}{url}{.or}Not Specified{.end}</td></tr>
-<tr><td>Parse</td><td>{.section parse}{parse}{.or}Not Specified{.end}</td></tr>
-<tr><td>Always Succeed</td><td>{.section always-succeed}%s{.or}Not Specified{.end}</td></tr>
-<tr><td>Keep Content</td><td>{.section always-succeed}%s Bytes{.or}Not Specified{.end}</td></tr>
+<tr><td>Dest</td><td>{.section dest}{dest}{.or}Not Specified{.end}</td></tr>
 </table>
 """ % ("True", "True")
 else:

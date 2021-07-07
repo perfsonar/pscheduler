@@ -1,0 +1,31 @@
+#!/bin/sed -e /^#/d
+
+#
+# Development Order #2:
+# 
+# This JSON data describes the tool, and will be shown when 'pscheduler 
+# plugins tools' is run. This is the first file which should be edited.
+#
+# Be sure to edit line 19, as this determines what tests the tool is
+# compatible with.
+#
+
+# Note that the -5 preference here is to give the psurl tool
+# preference over this one for HTTP tests.
+
+{
+    "schema": 1,
+
+    "name": "curl",
+    "description": "Use this tool to configure disk-to-disk and http tests",
+    "version": "1.0",
+    "tests": [ "disk-to-disk", "http" ],
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    }
+}

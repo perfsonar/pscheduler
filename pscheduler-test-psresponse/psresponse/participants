@@ -24,12 +24,12 @@ if not valid:
 null_reason = None
 
 # host only participant
-host = json.get('host-node', json.get('host', None))
-if host is None:
-    null_reason = "No host specified"
+source = json.get('source-node', json.get('source', None))
+if source is None:
+    null_reason = "No source specified"
 
 
-participants = [ host ]
+participants = [ source ]
 
 result = { "participants": participants }
 if null_reason is not None:
