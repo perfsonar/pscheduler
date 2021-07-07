@@ -23,5 +23,31 @@ result = {
 
 if not valid:
     result["error"] = message
+    pscheduler.succeed_json(result)
+
+
+#Verify Port Order is valid
+if json.get("ports") is None:
+    pscheduler.succeed_json(result)
+portlist = json.get("ports").split(",")
+allports = []
+for ele in portlist:
+    begin = end = ele
+    if "-" in ele:
+        (begin, end) = ele.split("-")
+        if int(end) < int(begin):
+            pscheduler.succeed_json({
+                "valid": False,
+                "error": "Port range is backwards. Did you mean " + end + "-" + begin +"?"
+            })
+    for port in range(int(begin), int(end)+1):
+        newports = []
+        if port in allports:
+            pscheduler.succeed_json({
+            "valid": False,
+            "error": "Duplicate value in port list: " + str(port)
+            })
+        newports.append(port)
+    allports+=newports
 
 pscheduler.succeed_json(result)

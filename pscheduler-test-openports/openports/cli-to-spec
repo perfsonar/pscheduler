@@ -26,8 +26,6 @@ else:
 
 
 
-#usage: pscheduler task openports [optional: -p [portNumber]........]
-
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """Examples:
   task openports --source 127.0.0.1 --network 192.0.2.0

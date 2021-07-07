@@ -27,13 +27,19 @@ def spec_is_valid(json):
                 "type": "string",
 		"pattern" : r'^(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9]{1,4})((,(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9]{1,4}))|(-(6553[0-5]|655[0-2][0-9]|65[0-4][0-9]{2}|6[0-4][0-9]{3}|[1-5][0-9]{4}|[0-9]{1,4})))*$'
             },
+            "HostOrCIDR": {
+                "oneOf": [
+                     { "$ref": "#/pScheduler/IPCIDR" },
+                     { "$ref": "#/pScheduler/Host" }
+                ]
+            },
             "v1": {
                 "type": "object",
                 # schema, host, host-node, and timeout are standard,
                 # and should be included
                 "properties": {
                     "schema":       { "$ref": "#/pScheduler/Cardinal" },
-                    "network":      { "$ref": "#/pScheduler/IPCIDR" },
+                    "network":      { "$ref": "#/local/HostOrCIDR" },
                     "source":       { "$ref": "#/pScheduler/Host" },
                     "ports":        { "$ref": "#/local/portlist" },
                     "timeout":      { "$ref": "#/pScheduler/Duration" }
@@ -79,7 +85,7 @@ def limit_is_valid(json):
         "properties": {
             "schema":       { "$ref": "#/pScheduler/Cardinal" },
             "network":      { "$ref": "#/pScheduler/IPCIDR" },
-            "source":       { "$ref": "#/pScheduler/Host" },
+            "source":       { "$ref": "#/pScheduler/IPAddress" },
             "ports":        { "$ref": "#/local/portlist" },
             "timeout":      { "$ref": "#/pScheduler/Duration" }
         },

@@ -99,7 +99,10 @@ class NmapObj:
 
     def scan(self):
         nmapScanner = nmap3.Nmap()
-        results = nmapScanner.scan_top_ports(self.hosts[0], default=1000, args=self.args)
+        try:
+            results = nmapScanner.scan_top_ports(self.hosts[0], default=1000, args=self.args)
+        except:
+            print("nmap error", file=sys.stderr)
         self.raw = results
         #print(results)
         self.hosts = list(results.keys())[:-2]
