@@ -23,16 +23,18 @@ if not valid:
     pscheduler.fail(message)
 json = input["result"]["result"]
 
-
 if format == "text/plain":
     for network in json:
-        if isinstance(json[network], dict):
-            print("{:14s}|{:>6s} |{:<9s}|{:<15s}|{:<21s}|{:<10s}|{:<10s}|{:<30s}".format(network, "PORT", "STATE", "NAME", "PRODUCT", "VERSION", "OS", "EXTRA INFORMATION"))
-            print("{:-<14s}+{:->6s}-+{:-<9s}+{:-<15s}+{:-<21s}+{:-<10s}+{:-<10s}+{:-<30s}".format("", "", "", "", "", "", "", ""))
+        ipv6pad = ""
+        if len(network) > 15: 
+            ipv6pad = " " * (len(network)-15)
+        if isinstance(list(json[network].values())[0], dict):
+            print(network[:-15]+"{:15s}|{:>6s} |{:<9s}|{:<15s}|{:<21s}|{:<10s}|{:<10s}|{:<30s}".format(network[-15:], "PORT", "STATE", "NAME", "PRODUCT", "VERSION", "OS", "EXTRA INFORMATION"))
+            print(ipv6pad.replace(" ", "-")+"{:-<15s}+{:->6s}-+{:-<9s}+{:-<15s}+{:-<21s}+{:-<10s}+{:-<10s}+{:-<30s}".format("", "", "", "", "", "", "", ""))
             for port in json[network]:
                 portKey = port
                 port = json[network][port]
-                print("{:14.14s}|{:>6.6s} |{:<9.9s}|{:<15.15s}|{:<21.21s}|{:<10.10s}|{:<10.10s}|{:<30s}".format( "",
+                print(ipv6pad+"{:15.15s}|{:>6.6s} |{:<9.9s}|{:<15.15s}|{:<21.21s}|{:<10.10s}|{:<10.10s}|{:<30s}".format( "",
                     str(portKey), 
                     str(port["state"]) if "state" in port else " ", 
                     str(port["name"]) if "name" in port else " ", 
@@ -41,10 +43,11 @@ if format == "text/plain":
                     str(port["ostype"]) if "ostype" in port else " ", 
                     str(port["extrainfo"]) if "extrainfo" in port else " "))
         else:
-            print("{:14}".format(network))
-            print("{:>5} {:<8s}".format("PORT", "STATE"))
+            print(network[:-15]+"{:15}".format(network[-15:]))
+            print("{:>5} | {:<8s}".format("PORT", "STATE"))
+            print("-"*6 + "+" + "-"*6)
             for port in json[network]:
-                print("{:>5s} {:<8s}".format(str(port), str(json[network][port])))
+                print("{:>5s} | {:<8s}".format(str(port), str(json[network][port])))
         print("")
 
 elif format == "text/html":

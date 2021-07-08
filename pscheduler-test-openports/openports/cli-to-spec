@@ -28,22 +28,42 @@ else:
 
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """Examples:
-  task openports --source 127.0.0.1 --network 192.0.2.0
-    IP Address | Open Ports 
-    192.0.2.0  : [1, 2, 3, 4]
+  task openports --source 127.0.0.1 --network 192.0.2.0 --noversion --timeout PT10S
+      192.0.2.0
+     PORT | STATE
+    ------+------
+        1 | open
+       22 | closed
+     8080 | filtered
     
-  task openports --source 127.0.0.1 --network 192.0.2.0/24
-    IP Address | Open Ports 
-    192.0.2.0  : [1, 2, 3, 4]
-    192.0.2.1  : [1, 2, 3, 4]
-    192.0.2.2  : [1, 2, 3, 4]
-       ...     :     ...
-    192.0.2.253: [1, 2, 3, 4]
-    192.0.2.254: [1, 2, 3, 4]
-    192.0.2.255: [1, 2, 3, 4]
+  task openports --source 127.0.0.1 --network 45.33.32.156/28 --timeout PT5M
+  
+  45.33.32.145   |  PORT |STATE    |NAME           |PRODUCT              |VERSION   |OS        |EXTRA INFORMATION
+  ---------------+-------+---------+---------------+---------------------+----------+----------+------------------------------
+                 |   135 |open     |msrpc          |Microsoft Windows RPC|          |Windows   |
+                 |  3306 |open     |mysql          |                     |          |          |
+                 |  8009 |open     |ajp13          |Apache Jserv         |          |          |Protocol v1.3
+  
+  45.33.32.147   |  PORT |STATE    |NAME           |PRODUCT              |VERSION   |OS        |EXTRA INFORMATION
+  ---------------+-------+---------+---------------+---------------------+----------+----------+------------------------------
+                 |  1022 |filtered |exp2           |                     |          |          |
+                 |  8291 |filtered |unknown        |                     |          |          |
 
-  task openports --source 127.0.0.1 --network 192.0.2.0 --ports 8080-8081
-    192.0.2.0: [8081]
+  45.33.32.148   |  PORT |STATE    |NAME           |PRODUCT              |VERSION   |OS        |EXTRA INFORMATION
+  ---------------+-------+---------+---------------+---------------------+----------+----------+------------------------------
+                 |    22 |open     |ssh            |OpenSSH              |7.4p1 Debi|Linux     |protocol 2.0
+                 |    80 |open     |http           |nginx                |1.10.3    |          |
+
+  45.33.32.149   |  PORT |STATE    |NAME           |PRODUCT              |VERSION   |OS        |EXTRA INFORMATION
+  ---------------+-------+---------+---------------+---------------------+----------+----------+------------------------------
+                 |   443 |open     |http           |Apache httpd         |2.4.25    |          |(Debian)
+                 |  2222 |open     |ssh            |OpenSSH              |7.4p1 Debi|Linux     |protocol 2.0
+
+  task openports --source 127.0.0.1 --network 192.0.2.0 --ports 8080-8081 --noversion --timeout PT5S
+      192.0.2.0
+     PORT | STATE
+    ------+------
+     8081 | open
 """
 )
 
@@ -67,6 +87,11 @@ opt_parser.add_option("--timeout",
                       action="store", type="string",
                       dest="timeout")
 
+opt_parser.add_option("--noversion",
+                      help="Only display open ports on network, suppress version/OS details.",
+                      action="store_false",
+                      dest="versionDetect")
+
 (options, remaining_args) = opt_parser.parse_args(args)
 
 
@@ -86,6 +111,9 @@ if options.source is not None:
 
 if options.timeout is not None:
    result['timeout'] = options.timeout
+
+result['versionDetect'] = options.versionDetect if options.versionDetect is not None else True
+
 
 
 pscheduler.succeed_json(result)

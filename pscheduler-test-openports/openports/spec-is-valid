@@ -23,7 +23,7 @@ result = {
 
 if not valid:
     result["error"] = message
-    pscheduler.succeed_json(result)
+pscheduler.succeed_json(result)
 
 
 #Verify Port Order is valid

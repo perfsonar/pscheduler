@@ -41,6 +41,7 @@ def spec_is_valid(json):
                     "schema":       { "$ref": "#/pScheduler/Cardinal" },
                     "network":      { "$ref": "#/local/HostOrCIDR" },
                     "source":       { "$ref": "#/pScheduler/Host" },
+                    "versionDetect":{ "$ref": "#/pScheduler/Boolean" },
                     "ports":        { "$ref": "#/local/portlist" },
                     "timeout":      { "$ref": "#/pScheduler/Duration" }
                 },
@@ -65,16 +66,22 @@ def spec_is_valid(json):
 
 def result_is_valid(json):
     schema = {
-        #"$ref": "#/pScheduler/AnyJSON" 
         "type": "object",
         "properties": {
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
-            "":     { "$ref": "#/pScheduler/AnyJSON" },
+            "result":     {
+                "succeeded":  { "$ref": "#/pScheduler/Boolean" },
+                "result":     { "$ref": "#/pScheduler/AnyJSON" },
+                "error":      { "$ref": "#/pScheduler/String" },
+                "diags":      { "$ref": "#/pScheduler/String" }
+                },
+            "error":      { "$ref": "#/pScheduler/String" },
+            "diags":      { "$ref": "#/pScheduler/String" }
             },
         "required": [
             "succeeded",
-            "output",
+            "result"
             ]
         }
     return json_validate(json, schema)
@@ -86,6 +93,7 @@ def limit_is_valid(json):
             "schema":       { "$ref": "#/pScheduler/Cardinal" },
             "network":      { "$ref": "#/pScheduler/IPCIDR" },
             "source":       { "$ref": "#/pScheduler/IPAddress" },
+            "versionDetect":{ "$ref": "#/pScheduler/Boolean" },
             "ports":        { "$ref": "#/local/portlist" },
             "timeout":      { "$ref": "#/pScheduler/Duration" }
         },

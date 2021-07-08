@@ -28,7 +28,9 @@ result = pscheduler.speccli_build_args(spec,
         ( 'network', 'network' ),
         ( 'ports', 'ports' ),
         ( 'timeout', 'timeout' ),
-        ( 'source', 'source')
+        ( 'source', 'source'),
+        ( 'noversion', 'noversion'),
+        ( 'versionDetect', 'versionDetect'),
         ])
 
 pscheduler.succeed_json(result)
