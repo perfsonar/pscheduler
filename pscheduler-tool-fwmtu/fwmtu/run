@@ -34,13 +34,11 @@ duration = input['test']['spec'].get('duration', 'PT5S')
 duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
-start_time = datetime.datetime.now()
-succeeded = False
-error = ''
-diags = ''
+
+BIG_PACKET = 999999
 
 # Define method to get MTU
-def find_mtu(dest, port=1060):
+def find_mtu(dest, port):
     OVERHEAD_SIZE = 28
     # Python 3.6 dropped the IN module
     class IN:
@@ -52,23 +50,15 @@ def find_mtu(dest, port=1060):
     sock.setsockopt(socket.IPPROTO_IP, IN.IP_MTU_DISCOVER, IN.IP_PMTUDISC_DO)
     sock.connect((dest, port))
 
-    # First test to see if dest can be reached with payload size 0
-    try:
-        sock.send(b"")
-    except socket.error:
-        succeeded = False
-        error = "Could not reach destination"  # TODO: Change this message?
-        mtu = 0
-        return (succeeded, error, mtu)  # TODO: Change the return type?
+    # Try reaching with payload size 0
+    sock.send(b"")
 
     try:
-        sock.send(b'#'*999999)
-    except socket.error:
-        mtu = sock.getsockopt(socket.IPPROTO_IP, IN.IP_MTU)
-        succeeded = True
-        error = None
-        return (succeeded, error, mtu)  # TODO: change the return type?
-    
+        sock.send(b'#'*BIG_PACKET)
+    except socket.error as ex:
+        return sock.getsockopt(socket.IPPROTO_IP, IN.IP_MTU)
+ 
+    raise Exception(f"Couldn't measure MTU because it was bigger than {BIG_PACKET}.")
 
 # Run the actual task here:
 
@@ -77,30 +67,30 @@ def find_mtu(dest, port=1060):
 # preparatory code has been executed and immediately before the tool
 # is invoked (for plugins that run other programs) or any activity
 # that does a measurement (for those that don't).
-'''
+
 try:
     pscheduler.sleep_until(input['schedule']['start'])
 except KeyError:
     pscheduler.fail("Unable to find start time in input")
-'''
 
 # Run tool
-succeeded, error, mtu = find_mtu(dest, port)
-diags = ""  # TODO: what does diags mean?
+try:
+    mtu = find_mtu(dest, port)
+    results = {
+        'succeeded': True,
+        'result': {
+            'schema': 1,
+            'mtu': mtu,
+            'succeeded': True
+        }
+    }
 
-end_time = datetime.datetime.now()
-
-# Organize results into json data
-results = {
-    'succeeded': succeeded,
-    'result': {
-        'schema': 1,
-        'mtu': mtu,
-        'succeeded': succeeded
-    },
-    'error': error,
-    'diags': diags
-}
+except Exception as ex:
+    results = {
+        'succeeded': False,
+        'error': str(ex),
+        'diags': ''
+    }
 
 pscheduler.succeed_json(results)
 

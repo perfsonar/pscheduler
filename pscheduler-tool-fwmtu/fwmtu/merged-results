@@ -21,7 +21,7 @@ try:
 except (IndexError, KeyError) as ex:
     result = {
         'succeeded': False,
-        'error': "Error in participant data: {}".format(str(ex))
+        'error': "Error in result data: {}".format(str(ex))
     }
 
 pscheduler.succeed_json(result)
