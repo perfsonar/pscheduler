@@ -1,0 +1,198 @@
+#!/usr/bin/env python3
+"""
+Archive measurements to PostgreSQL
+"""
+
+import datetime
+import pscheduler
+import sys
+
+log = pscheduler.Log(prefix="archiver-postgresql", quiet=True)
+
+
+class PostgreSQLExpiringConnection(object):
+
+    """
+    Maintains an expiring connection to PostgreSQL
+    """
+
+    def expired(self):
+        """
+        Determine if the connection is expired
+        """
+        return (self.connection_expires is not None) and (datetime.datetime.now() > self.connection_expires)
+
+
+    def __disconnect(self):
+        """
+        INTERNAL: Close down the connection
+        """
+        try:
+            self.connection.close()
+        except Exception:
+            pass  # This is best-effort.
+        self.connection = None
+        self.connection_expires = None
+
+
+    def __connect(self):
+        """
+        INTERNAL: Establish a connection if one is needed
+        """
+
+        # If the connection has expired, drop it.
+        if self.expired():
+            self.__disconnect()
+
+        if self.connection is not None:
+            # Already connected.
+            return
+
+        self.connection = pscheduler.pg_connection(self.dsn)
+
+        if self.expire_time is not None:
+            self.connection_expires = datetime.datetime.now() + self.expire_time
+
+
+
+    def __init__(self,
+                 dsn=None,
+                 expire_time=None
+    ):
+        """
+        Construct a connection to PostgreSQL
+        """
+
+        if not isinstance(dsn, str):
+            raise ValueError("Invalid DSN.")
+        self.dsn = dsn
+
+        if expire_time is not None and not isinstance(expire_time, datetime.timedelta):
+            raise ValueError("Invalid expiration time")
+        self.expire_time = expire_time
+
+        self.connection = None
+        self.connection_expires = None
+
+        self.__connect()
+
+
+    def __del__(self):
+        """
+        Destroy the connection
+        """
+        self.__disconnect()
+
+
+    def insert(self, table, column, value):
+        """
+        Insert a row into the database
+        """
+        self.__connect()
+        try:
+            with self.connection.cursor() as cursor:
+                cursor.execute("""INSERT INTO {} ({}) VALUES (%s)""".format(table, column),
+                               [pscheduler.json_dump(value)])
+        except Exception as ex:
+            # Any error means we start over next time.
+            self.__disconnect()
+            raise ex
+
+
+connections = {}
+
+
+GROOM_INTERVAL = datetime.timedelta(seconds=20)
+next_groom = datetime.datetime.now() + GROOM_INTERVAL
+
+def groom_connections():
+    """
+    Get rid of expired connections.  This is intended to sweep up
+    connections that are no longer used.  Those in continuous use will
+    self-expire and re-create themeselves.
+    """
+
+    global next_groom
+    if datetime.datetime.now() < next_groom:
+        # Not time yet.
+        return
+
+    log.debug("Grooming connections")
+    for groom in list([ key
+                        for key, connection in connections.items()
+                        if connection.expired()
+                    ]):
+        log.debug("Dropping expired connection {}".format(groom))
+        del connections[groom]
+
+    next_groom += GROOM_INTERVAL
+    log.debug("Next groom at {}".format(next_groom))
+
+
+
+def archive(json):
+    """
+    Archive a measurement
+    """
+
+    # This is guaranteed to have been okayed by data-is-valid.
+    data = json["data"]
+
+    try:
+        dsn = data["_dsn"]
+    except KeyError:
+        return {
+            "succeeded": False,
+            "error": "No DSN in data"
+        }
+
+    try:
+        connection = connections[dsn]
+    except KeyError:
+        log.debug("New connection for this DSN")
+
+        expires = pscheduler.iso8601_as_timedelta(data.get("connection-expires", "PT1H"))
+
+        connection = PostgreSQLExpiringConnection(dsn, expire_time=expires)
+        connections[dsn] = connection
+
+    log.debug("Archiving: %s" % pscheduler.json_dump(data))
+
+
+    try:
+
+        connection.insert(data["table"], data["column"], json["result"])
+        result = {'succeeded': True}
+
+    except Exception as ex:
+
+        # The connection will self-recover from failures, so no need
+        # to do anything other than complain about it.
+
+        result = {
+            "succeeded": False,
+            "error": str(ex)
+        }
+
+        if "retry-policy" in data:
+            policy = pscheduler.RetryPolicy(data["retry-policy"], iso8601=True)
+            retry_time = policy.retry(json["attempts"])
+            if retry_time is not None:
+                result["retry"] = retry_time
+
+    groom_connections()
+
+    return result
+
+
+
+
+# Read and streamed JSON and emit results
+
+PARSER = pscheduler.RFC7464Parser(sys.stdin)
+EMITTER = pscheduler.RFC7464Emitter(sys.stdout)
+
+for parsed in PARSER:
+    EMITTER(archive(parsed))
+
+pscheduler.succeed()
