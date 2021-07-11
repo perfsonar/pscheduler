@@ -41,10 +41,14 @@ else:
 
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """
-    This text will be printed out at the bottom of the
-    "help" message. Change this to whatever you like,
-    or don't include it at all. This could be a good place
-    for example usage cases, etc.
+Finds the path MTU (Maximum Transmission Unit) from this machine to a specified destination.
+Can specify a port.
+
+pscheduler task mtu --dest www.google.com
+    Finds the MTU to www.google.com
+
+pscheduler task mtu --dest www.google.com --port 80
+    Finds the MTU to www.google.com at port 80
 """
 )
 
