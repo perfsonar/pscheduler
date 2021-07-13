@@ -28,9 +28,8 @@ diags = ''
 host = spec["network"]
 ports = spec.get("ports")
 source = spec.get("source")
-###################################################
 version_detect = spec.get("versionDetect")
-###################################################
+
 def valid_ipv4(hostString):
     a = hostString.split('.')
     if len(a) != 4:
@@ -103,9 +102,11 @@ class NmapObj:
             results = nmapScanner.scan_top_ports(self.hosts[0], default=1000, args=self.args)
         except Exception as e:
             if "Could not figure out what device to send the packet out on with the source address you gave me!" in str(e):
-                print("Source address must be a valid local host address.", file=sys.stderr)
+                print("Source must be a valid local host address or hostname.", file=sys.stderr)
+                succeeded=False
             else:
-                print("Unknown nmap error. Check input parameters.", file=sys.stderr)
+                succeeded=False
+
         self.raw = results
         self.hosts = list(results.keys())[:-2]
         self.result = dict()
@@ -142,15 +143,14 @@ try:
     pscheduler.sleep_until(input['schedule']['start'])
 except KeyError:
     pscheduler.fail("Unable to find start time in input")
-
-#TODO: check for errors
+    succeeded = False
 nmap = NmapObj(host, ports)
 
 if (ports is not None and ports != ""): nmap.add_ports(ports)
 if (source is not None and source != ""): nmap.set_source(source)
-#if ((valid_ipv4(host) and valid_ipv6(source)) or (valid_ipv6(host) and not valid_ipv6(source))):
-#    print("Host and Source Address must use same IP version formats", file = sys.stderr)
-#    exit(1)
+if ((valid_ipv4(host) and valid_ipv6(source)) or (valid_ipv6(host) and not valid_ipv6(source))):
+    print("Host and Source Address must use same IP version formats", file = sys.stderr)
+    succeeded=False
 
 if (timeout is not None and timeout != ""): nmap.set_timeout(timeout)
 if (version_detect): nmap.enable_version_detect()
