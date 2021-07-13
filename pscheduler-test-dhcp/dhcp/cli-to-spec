@@ -41,12 +41,9 @@ else:
 
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """
-    This text will be printed out at the bottom of the
-    "help" message. Change this to whatever you like,
-    or don't include it at all. This could be a good place
-    for example usage cases, etc.
 """
 )
+# no epilog string required?
 
 # Add all potential command line options here
 # Check https://docs.python.org/3/library/optparse.html for more
@@ -73,10 +70,15 @@ opt_parser.add_option("--timeout",
                       action="store", type="string",
                       dest="timeout")
 
-opt_parser.add_option("--test-type",
+opt_parser.add_option("--testtype",
                       help="Type of test to be used. (api|system)",
                       action="store", type="string",
                       dest="testtype")
+
+opt_parser.add_option("--interface",
+		      help="Interface to be used.",
+		      action="store", type="string",
+		      dest="interface")
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
@@ -112,11 +114,9 @@ if options.duration is not None:
 
 if options.testtype is not None:
    result['testtype'] = options.testtype
-else:
-    pscheduler.fail('Please specify a test type. \'--test-type (api|system)\'')
 
-if result['testtype'] not in [ 'api', 'system' ]:
-    pscheduler.fail('Invalid test type. Choose api or system.')
+if options.interface is not None:
+   result['interface'] = options.interface
 
 
 result['schema'] = schema.value()

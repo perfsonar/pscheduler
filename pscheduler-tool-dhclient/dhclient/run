@@ -19,7 +19,7 @@ import pscheduler
 
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
-
+print(input)
 # Take input from test spec
 try:
     testtype = input['test']['spec']['testtype']

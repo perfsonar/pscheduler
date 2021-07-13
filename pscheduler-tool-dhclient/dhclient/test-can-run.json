@@ -1,0 +1,9 @@
+{
+    "test": {
+        "spec": {
+            "interface": "eth0",
+            "schema": 1
+        },
+        "type": "dhcp"
+    }
+}

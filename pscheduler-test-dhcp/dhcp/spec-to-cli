@@ -30,6 +30,7 @@ result = pscheduler.speccli_build_args(spec,
         ( 'timeout', 'timeout' ),
         ( 'duration', 'duration'),
         ( 'testtype', 'testtype' ),
+	( 'interface', 'interface' ),
         ])
 
 pscheduler.succeed_json(result)
