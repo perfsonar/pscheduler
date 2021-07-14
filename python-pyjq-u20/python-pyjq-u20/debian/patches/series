@@ -1,0 +1,3 @@
+python-pyjq-2.4.0-00-nodownloads.patch
+python-pyjq-2.4.0-01-integer.patch
+disable-tests.patch
