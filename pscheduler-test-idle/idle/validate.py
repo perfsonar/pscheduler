@@ -1,4 +1,4 @@
-#
+# change max schema to 2
 # Validator for "idle" Test
 #
 
