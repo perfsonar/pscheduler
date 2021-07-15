@@ -284,22 +284,20 @@ def parse_results(status, stdout, stderr):
     # Matchers for output lines we care about
     #
 
-    PACKET_RETURNED = re.compile("""^\
-    ([0-9]+) bytes\
-    \s+from (.*):\
-    \s+icmp_[rs]eq=([0-9]+)\
-    \s+ttl=([0-9]+)\
-    \s+time=([0-9.]+) ms\
-    $""")
+    PACKET_RETURNED = re.compile("^([0-9]+) bytes"
+    "\s+from (.*):"
+    "\s+icmp_[rs]eq=([0-9]+)"
+    "\s+ttl=([0-9]+)"
+    "\s+time=([0-9.]+) ms"
+    "$")
 
     # Error:   From 5.6.7.8 icmp_seq=7 Destination Net Unreachable
 
-    ERROR_RETURNED = re.compile("""^\
-    From\
-    \s+([^\s]+)\
-    \s+icmp_seq=([0-9]+)\
-    \s+(.*)\
-    $""")
+    ERROR_RETURNED = re.compile("^From"
+    "\s+([^\s]+)"
+    "\s+icmp_seq=([0-9]+)"
+    "\s+(.*)"
+    "$")
 
     # Error messages known to be output by ping
     ERROR_STRINGS = {
@@ -400,18 +398,18 @@ def parse_results(status, stdout, stderr):
 
         # Anything else we just ignore.
     
-    summary_results = {}
-    summary_results['roundtrips'] = roundtrips
-    summary_results['ips'] = ips
-    summary_results['min'] = pscheduler.timedelta_as_iso8601(
-        datetime.timedelta(seconds=float(min)/1000.0) ),
-    summary_results['max'] = pscheduler.timedelta_as_iso8601(
-        datetime.timedelta(seconds=float(max)/1000.0) ),
-    summary_results['mean'] = pscheduler.timedelta_as_iso8601(
-        datetime.timedelta(seconds=float(mean)/1000.0) ),
-    summary_results['stddev'] = pscheduler.timedelta_as_iso8601(
-        datetime.timedelta(seconds=float(stddev)/1000.0) ),
-    print(summary_results)
+    summary_results = {
+        'roundtrips': roundtrips,
+        'ips': ips,
+        'min':  pscheduler.timedelta_as_iso8601(
+            datetime.timedelta(seconds=float(min)/1000.0) ),
+        'max':  pscheduler.timedelta_as_iso8601(
+            datetime.timedelta(seconds=float(max)/1000.0) ),
+        'mean':  pscheduler.timedelta_as_iso8601(
+            datetime.timedelta(seconds=float(mean)/1000.0) ),
+        'stddev':  pscheduler.timedelta_as_iso8601(
+            datetime.timedelta(seconds=float(stddev)/1000.0) ),
+    }
     return summary_results       
 
 
