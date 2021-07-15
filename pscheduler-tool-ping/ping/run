@@ -271,140 +271,160 @@ result = {
     }
 
 
-roundtrips = []
+def parse_results(status, stdout, stderr):
+    """
+    Parse the results of a ping based on the pScheduler status, stdout, stderr.
+    Returns a dictionary:
+        "roundtrips": a list of roundtrip times and stats for each ping
+        "ips": a list of ips
+        "min", "max", "mean", "stddev": stats for all pings
+    """
 
+    #
+    # Matchers for output lines we care about
+    #
 
+    PACKET_RETURNED = re.compile("""^\
+    ([0-9]+) bytes\
+    \s+from (.*):\
+    \s+icmp_[rs]eq=([0-9]+)\
+    \s+ttl=([0-9]+)\
+    \s+time=([0-9.]+) ms\
+    $""")
 
-#
-# Matchers for output lines we care about
-#
+    # Error:   From 5.6.7.8 icmp_seq=7 Destination Net Unreachable
 
-packet_returned = re.compile("""^\
-([0-9]+) bytes\
-\s+from (.*):\
-\s+icmp_[rs]eq=([0-9]+)\
-\s+ttl=([0-9]+)\
-\s+time=([0-9.]+) ms\
-$""")
+    ERROR_RETURNED = re.compile("""^\
+    From\
+    \s+([^\s]+)\
+    \s+icmp_seq=([0-9]+)\
+    \s+(.*)\
+    $""")
 
-# Error:   From 5.6.7.8 icmp_seq=7 Destination Net Unreachable
+    # Error messages known to be output by ping
+    ERROR_STRINGS = {
+        "Destination Net Unreachable": 'net-unreachable',
+        "Destination Host Unreachable": 'host-unreachable',
+        "Destination Protocol Unreachable": 'protocol-unreachable',
+        "Destination Port Unreachable": 'port-unreachable',
+        "Source Route Failed": 'source-route-failed',
+        "Packet filtered": 'communication-administratively-prohibited',    
+        }
 
-error_returned = re.compile("""^\
-From\
-\s+([^\s]+)\
-\s+icmp_seq=([0-9]+)\
-\s+(.*)\
-$""")
+    # Same, but require regexps to match
+    ERROR_MATCHES = [
+        ( re.compile("^Frag needed and DF set"), 'fragmentation-needed-and-df-set' )
+        ]
 
-# Error messages known to be output by ping
-error_strings = {
-    "Destination Net Unreachable": 'net-unreachable',
-    "Destination Host Unreachable": 'host-unreachable',
-    "Destination Protocol Unreachable": 'protocol-unreachable',
-    "Destination Port Unreachable": 'port-unreachable',
-    "Source Route Failed": 'source-route-failed',
-    "Packet filtered": 'communication-administratively-prohibited',    
-    }
+    # Times:   rtt min/avg/max/mdev = 19.631/24.191/29.874/4.262 ms
+    TIMES_RETURNED = re.compile("^rtt min/avg/max/mdev\s*=\s*"
+    "([0-9.]+)"
+    "/([0-9.]+)"
+    "/([0-9.]+)"
+    "/([0-9.]+)"
+    "\s+ms$")
 
-# Same, but require regexps to match
-error_matches = [
-    ( re.compile("^Frag needed and DF set"), 'fragmentation-needed-and-df-set' )
-    ]
+    roundtrips = []
+    ips = []
 
-# Times:   rtt min/avg/max/mdev = 19.631/24.191/29.874/4.262 ms
-times_returned = re.compile("""^\
-rtt min/avg/max/mdev\s*=\s*\
-([0-9.]+)\
-/([0-9.]+)\
-/([0-9.]+)\
-/([0-9.]+)\
-\s+ms\
-$""")
+    for line in stdout.split('\n'):
+        line = line.strip()
+        log.debug("LINE: %s", line)
 
-ips = []
+        # Returned Packet
 
-for line in stdout.split('\n'):
-    line = line.strip()
-    log.debug("LINE: %s", line)
+        matches = PACKET_RETURNED.match(line)
+        if matches is not None:
+            length, ip, seq, ttl, rtt = matches.groups()
+            length = int(length)
+            seq = int(seq)
+            ttl = int(ttl)
+            rtt = float(rtt)
+            if seq > count:
+                log.warning("Discarding sequence %s; greater than count %s", seq, count)
+                continue
 
-    # Returned Packet
+            # Under some conditions, ping6 returns the interface with the
+            # IP.  Remove that.
+            ip = ip.split("%")[0]
 
-    matches = packet_returned.match(line)
-    if matches is not None:
-        length, ip, seq, ttl, rtt = matches.groups()
-        length = int(length)
-        seq = int(seq)
-        ttl = int(ttl)
-        rtt = float(rtt)
-        if seq > count:
-            log.warning("Discarding sequence %s; greater than count %s", seq, count)
+            #append as we may get multiple of same seq (duplicates) or seq out of order (reorders)
+            roundtrips.append({
+                'seq': seq,
+                'length': length,
+                'ip': ip,
+                'ttl': ttl,
+                'rtt': pscheduler.timedelta_as_iso8601(
+                    datetime.timedelta(seconds=rtt/1000.0) )
+                })
+            log.debug("Packet returned: %s", roundtrips[-1])
+            ips.append(ip)
             continue
 
-        # Under some conditions, ping6 returns the interface with the
-        # IP.  Remove that.
-        ip = ip.split("%")[0]
+        # Error
 
-        #append as we may get multiple of same seq (duplicates) or seq out of order (reorders)
-        roundtrips.append({
-            'seq': seq,
-            'length': length,
-            'ip': ip,
-            'ttl': ttl,
-            'rtt': pscheduler.timedelta_as_iso8601(
-                datetime.timedelta(seconds=rtt/1000.0) )
-            })
-        log.debug("Packet returned: %s", roundtrips[-1])
-        ips.append(ip)
-        continue
+        matches = ERROR_RETURNED.match(line)
+        if matches is not None:
+            ip, seq, error = matches.groups()
+            seq = int(seq)
+            if seq > count:
+                log.warning("Discarding sequence %s; greater than count %s", seq, count)
+                continue
 
-    # Error
+            if error in ERROR_STRINGS:
+                error = ERROR_STRINGS[error]
+            else:
+                error_str = error
+                error = None
+                for regex, string in ERROR_MATCHES:
+                    if regex.match(error_str):
+                        error = string
+                        break
 
-    matches = error_returned.match(line)
-    if matches is not None:
-        ip, seq, error = matches.groups()
-        seq = int(seq)
-        if seq > count:
-            log.warning("Discarding sequence %s; greater than count %s", seq, count)
+            roundtrips.append({
+                'seq': seq,
+                'ip': ip,
+                'error': error
+                })
+            log.debug("Error returned: %s", roundtrips[-1])
+            ips.append(ip)
             continue
-
-        if error in error_strings:
-            error = error_strings[error]
-        else:
-            error_str = error
-            error = None
-            for regex, string in error_matches:
-                if regex.match(error_str):
-                    error = string
-                    break
-
-        roundtrips.append({
-            'seq': seq,
-            'ip': ip,
-            'error': error
-            })
-        log.debug("Error returned: %s", roundtrips[-1])
-        ips.append(ip)
-        continue
     
-    # Final times
-    matches = times_returned.match(line)
-    if matches is not None:
-        min_, mean, max_, stddev = matches.groups()
-        result['min'] = pscheduler.timedelta_as_iso8601(
-            datetime.timedelta(seconds=float(min_)/1000.0) )
-        result['mean'] = pscheduler.timedelta_as_iso8601(
-            datetime.timedelta(seconds=float(mean)/1000.0) )
-        result['max'] = pscheduler.timedelta_as_iso8601(
-                datetime.timedelta(seconds=float(max_)/1000.0) )
-        result['stddev'] = pscheduler.timedelta_as_iso8601(
-            datetime.timedelta(seconds=float(stddev)/1000.0) )
-        log.debug("Got time summary")
-        # This is the last line we care about.
-        break
+        # Final times
+        matches = TIMES_RETURNED.match(line)
+        if matches is not None:
+            min, mean, max, stddev = matches.groups()
+            log.debug("Got time summary")
+            # This is the last line we care about.
+            break
 
-    # Anything else we just ignore.
+        # Anything else we just ignore.
+    
+    summary_results = {}
+    summary_results['roundtrips'] = roundtrips
+    summary_results['ips'] = ips
+    summary_results['min'] = pscheduler.timedelta_as_iso8601(
+        datetime.timedelta(seconds=float(min)/1000.0) ),
+    summary_results['max'] = pscheduler.timedelta_as_iso8601(
+        datetime.timedelta(seconds=float(max)/1000.0) ),
+    summary_results['mean'] = pscheduler.timedelta_as_iso8601(
+        datetime.timedelta(seconds=float(mean)/1000.0) ),
+    summary_results['stddev'] = pscheduler.timedelta_as_iso8601(
+        datetime.timedelta(seconds=float(stddev)/1000.0) ),
+    print(summary_results)
+    return summary_results       
 
+
+parsed_results = parse_results(status, stdout, stderr)
+
+result['min'] = parsed_results['min']
+result['max'] = parsed_results['max']
+result['mean'] = parsed_results['mean']
+result['stddev'] = parsed_results['stddev']
+ips = parsed_results['ips']
+roundtrips = parsed_results['roundtrips']
 result['roundtrips'] = roundtrips
+
 
 result['succeeded'] = True
 
