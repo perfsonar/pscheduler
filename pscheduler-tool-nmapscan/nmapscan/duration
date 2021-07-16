@@ -6,19 +6,31 @@
 # Determine the duration of a specified test.
 #
 
-#
-# TODO: This is a bare-bones, unreliable implementation that should be
-# used only for testing.
-#
-
 import datetime
 
 import pscheduler
 
 json = pscheduler.json_load(exit_on_error=True);
 
-        
-timeout_iso = json.get("timeout", "PT10S")
+#Rationale for timing values: https://docs.google.com/spreadsheets/d/1-5NABml5QcdBkCoF211HAFam8PGCpZkAaajcx8RII0M/edit?usp=sharing
+TIME_PER_HOST_SERVICE_DETECT_ON  = 9
+TIME_PER_HOST_SERVICE_DETECT_OFF = 6
+PSCHEDULER_TIME_BUFFER           = 5
+TOLERANCE_MULTIPLIER             = 1.1
+
+
+timeout_iso = json.get("timeout")
+#if timeout wasn't specified, calculate what it should be
+if timeout_iso is None:
+    subnet_size = 32
+    network = json.get("network")
+    if network.find("/") != -1:
+        subnet_size = network[network.find("/")+1:]
+    ip_count = pow(2, 32 - int(subnet_size) )
+    time_per_host = TIME_PER_HOST_SERVICE_DETECT_ON if json.get("service_detect") is True else TIME_PER_HOST_SERVICE_DETECT_OFF
+    timeout_int = ((ip_count * time_per_host)+PSCHEDULER_TIME_BUFFER)*TOLERANCE_MULTIPLIER
+    timeout_iso = "PT" + str(timeout_int) + "S"
+
 timeout = pscheduler.iso8601_as_timedelta(timeout_iso)
 
 pscheduler.succeed_json({

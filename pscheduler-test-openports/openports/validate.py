@@ -38,12 +38,12 @@ def spec_is_valid(json):
                 # schema, host, host-node, and timeout are standard,
                 # and should be included
                 "properties": {
-                    "schema":       { "$ref": "#/pScheduler/Cardinal" },
-                    "network":      { "$ref": "#/local/HostOrCIDR" },
-                    "source":       { "$ref": "#/pScheduler/Host" },
-                    "versionDetect":{ "$ref": "#/pScheduler/Boolean" },
-                    "ports":        { "$ref": "#/local/portlist" },
-                    "timeout":      { "$ref": "#/pScheduler/Duration" }
+                    "schema":         { "$ref": "#/pScheduler/Cardinal" },
+                    "network":        { "$ref": "#/local/HostOrCIDR" },
+                    "source":         { "$ref": "#/pScheduler/Host" },
+                    "service_detect": { "$ref": "#/pScheduler/Boolean" },
+                    "ports":          { "$ref": "#/local/portlist" },
+                    "timeout":        { "$ref": "#/pScheduler/Duration" }
                 },
                 # If listed here, data of this type MUST be in the test spec
                 "required": [
@@ -90,12 +90,12 @@ def limit_is_valid(json):
     schema = {
         "type": "object",
         "properties": {
-            "schema":       { "$ref": "#/pScheduler/Cardinal" },
-            "network":      { "$ref": "#/pScheduler/IPCIDR" },
-            "source":       { "$ref": "#/pScheduler/IPAddress" },
-            "versionDetect":{ "$ref": "#/pScheduler/Boolean" },
-            "ports":        { "$ref": "#/local/portlist" },
-            "timeout":      { "$ref": "#/pScheduler/Duration" }
+            "schema":         { "$ref": "#/pScheduler/Cardinal" },
+            "network":        { "$ref": "#/pScheduler/IPCIDR" },
+            "source":         { "$ref": "#/pScheduler/IPAddress" },
+            "service_detect": { "$ref": "#/pScheduler/Boolean" },
+            "ports":          { "$ref": "#/local/portlist" },
+            "timeout":        { "$ref": "#/pScheduler/Duration" }
         },
         "additionalProperties": False
         }

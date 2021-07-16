@@ -28,7 +28,7 @@ else:
 
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """Examples:
-  task openports --source 127.0.0.1 --network 192.0.2.0 --noversion --timeout PT10S
+  task openports --source 127.0.0.1 --network 192.0.2.0 --lessinfo --timeout PT10S
       192.0.2.0
      PORT | STATE
     ------+------
@@ -59,7 +59,7 @@ opt_parser = pscheduler.FailingOptionParser(epilog=
                  |   443 |open     |http           |Apache httpd         |2.4.25    |          |(Debian)
                  |  2222 |open     |ssh            |OpenSSH              |7.4p1 Debi|Linux     |protocol 2.0
 
-  task openports --source 127.0.0.1 --network 192.0.2.0 --ports 8080-8081 --noversion --timeout PT5S
+  task openports --source 127.0.0.1 --network 192.0.2.0 --ports 8080-8081 --lessinfo --timeout PT5S
       192.0.2.0
      PORT | STATE
     ------+------
@@ -87,10 +87,10 @@ opt_parser.add_option("--timeout",
                       action="store", type="string",
                       dest="timeout")
 
-opt_parser.add_option("--noversion",
-                      help="Only display open ports on network, suppress version/OS details.",
+opt_parser.add_option("--lessinfo",
+                      help="Only display open ports on network, suppress service/version/OS details. Runs faster.",
                       action="store_false",
-                      dest="versionDetect")
+                      dest="service_detect")
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
@@ -112,7 +112,7 @@ if options.source is not None:
 if options.timeout is not None:
    result['timeout'] = options.timeout
 
-result['versionDetect'] = options.versionDetect if options.versionDetect is not None else True
+result['service_detect'] = options.service_detect if options.service_detect is not None else True
 
 
 
