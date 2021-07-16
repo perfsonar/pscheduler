@@ -39,8 +39,7 @@ if format == 'text/plain':
 Host ................... {.section host}{host}{.or}Not Specified{.end}
 Host Node ................... {.section host_ndoe}{host_node}{.or}Not Specified{.end}
 Timeout ................... {.section timeout}{timeout}{.or}Not Specified{.end}
-Duration ................... {.section duration}{duration}{.or}Not Specified{.end}
-Test Type ................... {.section testtype}{testtype}{.or}Not Specified{.end}
+Interface ................... {.section interface}{interface}{.or}Not Specified{.end}
 """
 
 # Format with html
@@ -51,8 +50,7 @@ elif format == 'text/html':
 <tr><td>Host</td><td>{.section host}{host}{.or}Not Specified{.end}</td></tr>
 <tr><td>Host Node</td><td>{.section host_node}{host_node}{.or}Not Specified{.end}</td></tr>
 <tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
-<tr><td>Duration</td><td>{.section duration}{duration}{.or}Not Specified{.end}</td></tr>
-<tr><td>Test Type</td><td>{.section testtype}{testtype}{.or}Not Specified{.end}</td></tr>
+<tr><td>Interface</td><td>{.section interface}{interface}{.or}Not Specified{.end}</td></tr>
 </table>
 """
 

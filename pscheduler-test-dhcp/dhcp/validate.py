@@ -20,14 +20,9 @@ MAX_SCHEMA = 1
 def spec_is_valid(json):
 
     schema = {
-        "local": {
+        "local": {},
             # Local data types such as this can be defined within this file,
             # but are not necessary
-            "Type": {
-                "type": "string",
-                "enum": [ "system", "api" ]
-            }
-        },
 	"type": "object",
 	# schema, host, host-node, and timeout are standard,
 	# and should be included
@@ -35,10 +30,7 @@ def spec_is_valid(json):
 	    "schema":       { "$ref": "#/pScheduler/Cardinal" },
 	    "host":         { "$ref": "#/pScheduler/Host" },
 	    "host-node":    { "$ref": "#/pScheduler/Host" },
-	    "duration":     { "$ref": "#/pScheduler/Duration" },
 	    "timeout":      { "$ref": "#/pScheduler/Duration" },
-	    # Here is the datatype we defined on lines 24-27
-	    "testtype":     { "$ref": "#/local/Type" },
 	    "interface":    { "$ref": "#/pScheduler/AnyJSON" },
 	},
 	# If listed here, data of this type MUST be in the test spec
