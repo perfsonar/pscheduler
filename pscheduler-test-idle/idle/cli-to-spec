@@ -58,13 +58,8 @@ opt_parser.add_option("-d", "--duration",
 # The short version is capitalized because -h is for help.
 opt_parser.add_option("-H", "--host",
                       help="Host which should be idle",
-                      action="store", type="string",
+                      action="append", type="string",
                       dest="host")
-
-opt_parser.add_option("--host-node",
-                      help="Host pScheduler node",
-                      action="store", type="string",
-                      dest="host_node")
 
 opt_parser.add_option("-s", "--starting-comment",
                       help="Starting comment",
@@ -81,23 +76,26 @@ opt_parser.add_option("-p", "--parting-comment",
 if len(remaining_args) != 0:
    pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
-
-result = { 'schema': 1 }
+schema = pscheduler.HighInteger(1)
+result = { }
 
 if options.duration is not None:
    result['duration'] = options.duration
 
 if options.host is not None:
-   result['host'] = options.host
-
-if options.host_node is not None:
-   result['host-node'] = options.host_node
+   if len(options.host) == 1:
+      result['host'] = options.host[0]
+   else:
+      result['host'] = options.host
+      schema.set(2)
 
 if options.starting_comment is not None:
    result['starting-comment'] = options.starting_comment
 
 if options.parting_comment is not None:
    result['parting-comment'] = options.parting_comment
+
+result['schema'] = schema.value()
 
 pscheduler.succeed_json(result)
 
