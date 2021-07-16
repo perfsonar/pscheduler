@@ -21,8 +21,7 @@ import pscheduler
 input = pscheduler.json_load(exit_on_error=True)
 # Take input from test spec
 try:
-    testtype = input['test']['spec']['testtype']
-
+    interface = input['test']['spec']['interface']
 except KeyError:
     pscheduler.fail('Missing data in input')
 
@@ -48,24 +47,11 @@ try:
 except KeyError:
     pscheduler.fail("Unable to find start time in input")
 
-
-# API Call:
-if testtype == 'api':
-    argv = [ 'sleep', str(duration) ]
-    status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
-
-    if status:
-        succeeded = False
-        error = "Error returned: \n%s" % stderr.strip('\n')
-    else:
-        succeeded = True
-        diags = stdout
-
-# System Call:
-elif testtype == 'system':
-    subprocess.check_call( ['sleep', str(duration) ])
-    succeeded = True
-
+dhclient = ('dhclient ' + interface + ' -timeout 30')
+dhclient_release = ('dhclient -r ' + interface + ' -timeout 10')
+# subprocess_calls(dhclient_release)
+start_time = datetime.datetime.now()
+# subprocess_calls(dhclient)
 end_time = datetime.datetime.now()
 
 # Organize results into json data
@@ -81,3 +67,7 @@ results = {
 
 pscheduler.succeed_json(results)
 
+
+def subprocess_calls(args):
+    sp_output = sp.run(args, shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+    print(sp_output)

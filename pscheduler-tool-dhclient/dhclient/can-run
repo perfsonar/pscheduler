@@ -16,7 +16,7 @@ import pscheduler
 json = pscheduler.json_load(exit_on_error=True);
 
 try:
-    if json['test']['type'] != 'dhcp':
+    if json['type'] != 'dhcp':
 	    pscheduler.succeed_json({
             "can-run": False,
             "reasons": [ "Unsupported test type" ]
