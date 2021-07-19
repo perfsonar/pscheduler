@@ -10,12 +10,18 @@
 #
 
 import datetime
-import subprocess
+import subprocess as sp
 import json
 import sys
 import time
 
 import pscheduler
+
+
+def subprocess_calls(args):
+    sp_output = sp.run(args, shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
+    print(sp_output)
+
 
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
@@ -45,12 +51,14 @@ diags = ''
 try:
     pscheduler.sleep_until(input['schedule']['start'])
 except KeyError:
-    pscheduler.fail("Unable to find start time in input")
+    # pscheduler.fail("Unable to find start time in input")
+    pass
 
 dhclient = ('dhclient ' + interface + ' -timeout 30')
 dhclient_release = ('dhclient -r ' + interface + ' -timeout 10')
-# subprocess_calls(dhclient_release)
+subprocess_calls(dhclient_release)
 start_time = datetime.datetime.now()
+print(start_time)
 # subprocess_calls(dhclient)
 end_time = datetime.datetime.now()
 
@@ -68,6 +76,3 @@ results = {
 pscheduler.succeed_json(results)
 
 
-def subprocess_calls(args):
-    sp_output = sp.run(args, shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-    print(sp_output)

@@ -3,8 +3,9 @@
         "spec": {
             "interface": "eth0",
             "schema": 1,
-            "testtype": "api"
-        },
-        "type": "dhcp"
+	    "host": "localhost",
+	    "host-node": "localhost",
+	    "timeout": "PT45S"
+        }
     }
 }
