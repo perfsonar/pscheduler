@@ -1,5 +1,5 @@
 #
-# RPM Spec for pScheduler curl Tool
+# RPM Spec for pScheduler pstimer Tool
 #
 
 #
@@ -8,7 +8,7 @@
 # This file is significant for buildling the tool into pScheduler.
 # If additional libraries or parts of pScheduler are required,
 # they should be added here (line 25).
-%define short	curl
+%define short	pstimer
 %define perfsonar_auto_version 4.4.0
 %define perfsonar_auto_relnum 0.10.b1
 
@@ -16,7 +16,7 @@ Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
 Release:	%{perfsonar_auto_relnum}%{?dist}
 
-Summary:	curl tool class for pScheduler
+Summary:	pstimer tool class for pScheduler
 BuildArch:	noarch
 License:	Apache 2.0
 Group:		Unspecified
@@ -27,15 +27,14 @@ Provides:	%{name} = %{version}-%{release}
 
 # Include all required libraries here
 Requires:	pscheduler-server >= 4.3.0
-Requires:	pscheduler-test-http
-Requires:	pscheduler-test-disk-to-disk
+Requires:	pscheduler-test-psresponse
 Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	%{_pscheduler_python}-pycurl
 
 BuildRequires:	pscheduler-rpm
 
 %description
-curl tool class for pScheduler
+pstimer tool class for pScheduler
 
 %prep
 %setup -q -n %{short}-%{version}

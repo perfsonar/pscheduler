@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Participant list generator for 'http' task spec
+# Participant list generator for 'psresponse' task spec
 #
 # Input is a test spec, assumed to have been validated by spec-is-valid.
 #

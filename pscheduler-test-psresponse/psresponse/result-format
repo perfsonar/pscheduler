@@ -26,13 +26,14 @@ if not valid:
 
 result = input["result"]
 spec = input["spec"]
+response_time = result['time'] or "Not Measured"
 
 if format == 'text/plain':
 
-   print('Response Time: %s' % result['time'])
+   print('Response Time: %s' % response_time)
 
    try:
-      print('Status Code: %s' % result['status']) 
+      print('Reason: %s' % result['reason']) 
    except KeyError:
       pass
 
@@ -41,13 +42,13 @@ elif format == 'text/html':
     print('<table>')
     print('<tr>') 
     print('<td>Response Time</td>')
-    print('<td>%s</td>' % result['time'])
+    print('<td>%s</td>' % response_time)
     print('</tr>')
-
-    print('<tr>')
-    print('<td>Status Code</td>')
-    print('<td>%s</td>' % result['status'])
-    print('</tr>')
+    if "reason" in result:
+        print('<tr>')
+        print('<td>Reason</td>')
+        print('<td>%s</td>' % result['reason'])
+        print('</tr>')
 
     print('</table>')
 

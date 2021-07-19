@@ -50,9 +50,11 @@ RESULT_SCHEMA = {
             "properties": {
                 "schema":     { "type": "integer", "enum": [ 1 ] },
                 "succeeded":  { "$ref": "#/pScheduler/Boolean" },
-                "error":      { "$ref": "#/pScheduler/String" },
-                "diags":      { "$ref": "#/pScheduler/String" },
-                "time":       { "$ref": "#/pScheduler/Duration" }
+                "reason":      { "$ref": "#/pScheduler/String" },
+                "time":      {"anyOf": [
+                                 { "type": "null" },
+                                 { "$ref": "#/pScheduler/Duration" }
+                              ]} 
             },
             "required": [
                 "succeeded",
