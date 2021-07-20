@@ -1,11 +1,8 @@
 {
     "test": {
         "spec": {
-            "interface": "eth0",
-            "schema": 1,
-	    "host": "localhost",
-	    "host-node": "localhost",
-	    "timeout": "PT45S"
+            "interface": "eth1",
+            "schema": 1
         }
     }
 }

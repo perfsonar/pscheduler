@@ -18,11 +18,6 @@ import time
 import pscheduler
 
 
-def subprocess_calls(args):
-    sp_output = sp.run(args, shell=True, stdout=sp.DEVNULL, stderr=sp.DEVNULL)
-    print(sp_output)
-
-
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
 # Take input from test spec
@@ -31,14 +26,12 @@ try:
 except KeyError:
     pscheduler.fail('Missing data in input')
 
-duration = input['test']['spec'].get('duration', 'PT5S')
-duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 start_time = datetime.datetime.now()
 succeeded = False
 error = ''
-diags = ''
+diags = []
 
 # Run the actual task here:
 
@@ -54,12 +47,13 @@ except KeyError:
     # pscheduler.fail("Unable to find start time in input")
     pass
 
-dhclient = ('dhclient ' + interface + ' -timeout 30')
-dhclient_release = ('dhclient -r ' + interface + ' -timeout 10')
-subprocess_calls(dhclient_release)
+dhclient_args = ['sudo', 'dhclient', '-v', interface]
+dhclient_release_args = ['sudo', 'dhclient', '-r',  interface]
+status, stdout, stderr = pscheduler.run_program(dhclient_release_args)
+print('status:', status, 'stdout:', stdout, 'stderr:', stderr)
 start_time = datetime.datetime.now()
-print(start_time)
-# subprocess_calls(dhclient)
+status, stdout, stderr = pscheduler.run_program(dhclient_args)
+print('status:', status, 'stdout:', stdout, 'stderr:', stderr)
 end_time = datetime.datetime.now()
 
 # Organize results into json data
