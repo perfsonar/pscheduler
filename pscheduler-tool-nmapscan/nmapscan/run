@@ -7,6 +7,7 @@
 # and added to the 'results' JSON data, which will then be sent
 # back to the test. Both system and api are able to be used here.
 #
+# sjcu, July 2021
 
 import subprocess
 import json
@@ -18,7 +19,7 @@ import pscheduler
 NO_RESULTS_ERROR            = "No running hosts found for specified network. Check input parameters."
 INVALID_SOURCE_ERROR        = "Source must be a valid local host address or hostname."
 MISMATCHED_IP_VERSION_ERROR = "Host and Source Address must use same IP version formats."
-UNKNOWN_NMAP_ERROR          = "An error occurred with nmap. Check input parameters and try again: "
+UNKNOWN_NMAP_ERROR          = "An error occurred with nmap. Check input parameters and try again"
 
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
@@ -112,16 +113,24 @@ class NmapObj:
         except Exception as e:
             #Source IP Was not recognized as a valid IP on the user's local network
             if "Could not figure out what device to send the packet out on with the source address you gave me!" in str(e):
-                print(INVALID_SOURCE_ERROR, file=sys.stderr)
-                succeeded=False
+                pscheduler.succeed_json({
+                    "succeeded": False,
+                    "diags": '',
+                    "error": "Nmap failed: {}".format(INVALID_SOURCE_ERROR)
+                })
             else:
-                print(UNKNOWN_NMAP_ERROR, e, file=sys.stderr)
-                succeeded=False
+                pscheduler.succeed_json({
+                    "succeeded": False,
+                    "diags": '',
+                    "error": "{}: {}".format(UNKNOWN_NMAP_ERROR,e)
+                })
         #Other than diagnostics/stats info, if there are no other elements in the results, no up networks were found
-        if len(results) < 3:
-            print(NO_RESULTS_ERROR, file=sys.stderr)
-            exit(1)
-
+        #if len(results) < 3:
+        #    pscheduler.succeed_json({
+        #        "succeeded": False,
+        #        "diags": '',
+        #        "error": NO_RESULTS_ERROR
+        #    })
         self.raw = results
         #last 2 elements are diagnostics
         self.hosts = list(results.keys())[:-2]
@@ -164,11 +173,14 @@ except KeyError:
 nmap = NmapObj(host, ports)
 
 if (ports is not None and ports != ""): nmap.add_ports(ports)
-if (source is not None and source != ""): nmap.set_source(source)
-if ((valid_ipv4(host) and valid_ipv6(source)) or (valid_ipv6(host) and not valid_ipv6(source))):
-    print(MISMATCHED_IP_VERSION_ERROR, file = sys.stderr)
-    succeeded=False
-    exit(1)
+if (source is not None and source != ""):
+    nmap.set_source(source)
+    if ((valid_ipv4(host) and valid_ipv6(source)) or (valid_ipv6(host) and not valid_ipv6(source))):
+        pscheduler.succeed_json({
+            "succeeded": False,
+            "diags": '',
+            "error": MISMATCHED_IP_VERSION_ERROR
+        })
 
 if (timeout is not None and timeout != ""): nmap.set_timeout(timeout)
 if (service_detect): nmap.enable_service_detect()
