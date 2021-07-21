@@ -24,14 +24,21 @@ if not valid:
 
 host = json.get("host-node", json.get("host", None))
 if host is None:
-    null_reason = "No source specified"
+    null_reason = "No host specified"
 
-participants = [ host ]
+schema = json.get("schema", 1)
+
+if schema == 1:
+    participants = [ host ]
+elif schema == 2:
+    participants = []
+    for everyhost in host:
+        participants.append(everyhost)
+
 
 result = {
     "participants": participants
 }
-
 if null_reason is not None:
     result["reason"] = null_reason
 

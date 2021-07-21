@@ -57,7 +57,7 @@ opt_parser.add_option("-d", "--duration",
 
 # The short version is capitalized because -h is for help.
 opt_parser.add_option("-H", "--host",
-                      help="Host which should be idle",
+                      help="Host which should be idle, can be repeated",
                       action="append", type="string",
                       dest="host")
 
