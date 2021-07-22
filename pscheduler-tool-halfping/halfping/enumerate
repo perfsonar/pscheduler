@@ -18,7 +18,7 @@
     "version": "1.0",
     "tests": [ "latency" ],
 
-    "preference": 0,
+    "preference": -100,
 
     "maintainer": {
         "name": "perfSONAR Development Team",

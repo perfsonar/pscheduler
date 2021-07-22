@@ -28,7 +28,7 @@ except KeyError:
     count = 5
 
 try:
-    interval = pscheduler.iso8601_as_timedelta(spec['packet-interval'])
+    interval = datetime.timedelta(seconds=spec['packet-interval'])
 except KeyError:
     interval = datetime.timedelta(seconds=1)
 

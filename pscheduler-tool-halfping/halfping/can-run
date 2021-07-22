@@ -27,7 +27,7 @@ except KeyError:
         "reasons": [ "Missing test type" ]
     })
 
-spec = json['test']['spec']
+spec = json['spec']
 DISALLOWED_ARGS = ['ctrl-port', 'data-ports', 'flip', 'output-raw']
 for arg in DISALLOWED_ARGS:
     if arg in spec:

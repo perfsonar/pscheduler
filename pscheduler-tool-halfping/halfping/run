@@ -74,7 +74,7 @@ argv.append(str(count))
 
 # Interval
 try:
-    interval = pscheduler.iso8601_as_timedelta(spec['packet-interval'])
+    interval = datetime.timedelta(seconds=spec['packet-interval'])
 except KeyError:
     interval=datetime.timedelta(seconds=1)
 if interval < datetime.timedelta(seconds=0.2):
@@ -109,7 +109,7 @@ argv = [str(x) for x in argv]
 argv_string =  ' '.join(argv)
 
 # Other args for formatting output
-bucket_width = spec.get('bucket-width', 0.1)
+bucket_width = spec.get('bucket-width', 0.01)
 
 # Run the actual task here:
 
@@ -163,13 +163,16 @@ for rt in roundtrips:
         reorders += 1
     prev_seq = rt["seq"]
 
-    # count ttl and rtt
+    # count ttl
     ttl = str(rt['ttl'])
-    rtt = (pscheduler.iso8601_as_timedelta(rt['rtt'])).total_seconds() * 1000
-    latency = str(round(rtt/2, 2))
-
     ttl_counts[ttl] = ttl_counts.setdefault(ttl, 0) + 1
-    latency_counts[latency] = latency_counts.setdefault(latency, 0) + 1
+    
+    #count latency and divide into buckets
+    rtt = (pscheduler.iso8601_as_timedelta(rt['rtt'])).total_seconds() * 1000
+    latency = rtt/2
+    bucket_num = latency//bucket_width
+    bucket_label = str(round(bucket_num*bucket_width,2))
+    latency_counts[bucket_label] = latency_counts.setdefault(bucket_label, 0) + 1
 
 result = {
     'schema': 1,
