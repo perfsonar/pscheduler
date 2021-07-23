@@ -6,6 +6,8 @@
       "dest": "www.umich.edu",
       "packet-count": 10,
       "packet-interval": 0.5,
+      "packet-timeout": 2,
+      "packet-padding": 44,
       "bucket-width": 0.25
     }
   },

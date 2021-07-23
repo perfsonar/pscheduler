@@ -28,12 +28,21 @@ except KeyError:
     })
 
 spec = json['spec']
-DISALLOWED_ARGS = ['ctrl-port', 'data-ports', 'flip', 'output-raw']
-for arg in DISALLOWED_ARGS:
-    if arg in spec:
-        pscheduler.succeed_json({
-            "can-run": False,
-            "reasons": [ f"Unsupported argument: {arg}" ]
-        })
+SUPPORTED_OPTIONS = ["schema",
+                     "source", "source-node", "dest", "dest-node",
+                     "packet-count", "packet-interval",
+                     "packet-timeout", "packet-padding",
+                     "ip-tos", "ip-version",
+                     "bucket-width"
+                     ]
 
-pscheduler.succeed_json({ "can-run": True })
+errors = []
+for option in spec:
+    if option not in SUPPORTED_OPTIONS:
+        errors.append(f"halfping does not support {option}")
+
+result = {"can-run": len(errors) == 0}
+if len(errors) > 0:
+    result["reasons"] = errors
+
+pscheduler.succeed_json(result)

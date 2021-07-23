@@ -83,6 +83,22 @@ if interval < datetime.timedelta(seconds=0.2):
 argv.append('-i')
 argv.append(str(pscheduler.timedelta_as_seconds(interval)))
 
+# Ping timeout
+try:
+    ping_timeout = datetime.timedelta(seconds=spec['packet-timeout'])
+    argv.append('-W')
+    argv.append(str(ping_timeout))
+except KeyError:
+    pass
+
+# Ping padding
+try:
+    ping_padding = spec['packet-padding']
+    argv.append('-s')
+    argv.append(str(ping_padding + 56))  # Ping defaults to 56 bytes, add padding
+except KeyError:
+    pass
+
 # Interface/Source Address
 if source_ip is not None:
     argv.append('-I')
