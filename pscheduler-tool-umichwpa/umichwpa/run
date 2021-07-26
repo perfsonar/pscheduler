@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #5:
+#
+# This is the meat and bones of the tool, where the actual desired
+# commands or operation will be run. The results are then recorded
+# and added to the 'results' JSON data, which will then be sent
+# back to the test. Both system and api are able to be used here.
+#
+
+import datetime
+import subprocess
+import json
+import sys
+import time
+import os
+import pscheduler
+
+#error and diagnostic trackign
+error = []
+diags = []
+
+
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+
+# Take input from test spec
+try:
+    interface = input['test']['spec']['interface']
+
+except KeyError:
+    error.append("No interface given")
+    pscheduler.fail('Missing the interface in input')
+
+try:
+    path = input['test']['spec']['path']
+except KeyError:
+    error.append("No path given")
+    pscheduler.fail('Missing the path in input')
+
+try:
+    driver = input['test']['spec']['driver']
+except KeyError:
+    diags.append("proceeding with default driver")
+
+
+
+duration = input['test']['spec'].get('duration', 'PT5S')
+duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
+timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
+timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+start_time = datetime.datetime.now()
+succeeded = False
+diags.append('interface: ' + interface)
+diags.append('driver: ' + driver)
+diags.append('path: ' + path)
+
+#sleep until designated start time
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
+interface_path = '/var/run/wpa_supplicant' + interface
+if os.path.exists(interface_path):
+    #TODO: ask if sudo should be a flag (passwordless sudo vs running as root)
+    clear_interface = [sudo, rm, interface_path]
+    status, stdout, stderr = pscheduler.run_program(clear_interface, timeout=timeout)
+    if status:
+        succeeded = False
+        error.append("(failed to delete old interface file) Error returned: \n%s" % stderr.strip('\n'))
+    else:
+        succeeded = True
+        diags.append("Successfully deleted old interface file")
+
+#remove the interface file if it exists
+
+# Run the actual task here:
+argv = [sudo, 'wpa_supplicant', '-i', interface, '-c', path, '-d', driver, -B]
+status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
+
+if status:
+    succeeded = False
+    error.append("Error returned: \n%s" % stderr.strip('\n'))
+
+else:
+    succeeded = True
+    diags.append(stdout)
+
+succeeded = True
+end_time = datetime.datetime.now()
+
+# Organize results into json data
+results = {
+    'succeeded': succeeded,
+    'result': {
+        'schema': 1,
+        'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
+        'succeeded': succeeded
+    },
+    'error': error,
+    'diags': diags }
+
+pscheduler.succeed_json(results)
+
