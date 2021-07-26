@@ -1,0 +1,21 @@
+#!/bin/sed -e 1d;/^#/d
+
+#
+# Development Order #2:
+# 
+# This JSON data describes the test, and will be shown when 'pscheduler 
+# plugins tests' is run. This is the first file which should be edited.
+#
+
+{
+    "schema": 1,
+    "name": "dot1x",
+    "description": "EDIT ME",
+    "version": "1.0",
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    },
+    "scheduling-class": "background"
+}
