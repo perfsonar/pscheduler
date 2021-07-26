@@ -25,8 +25,8 @@ UNKNOWN_NMAP_ERROR          = "An error occurred with nmap. Check input paramete
 input = pscheduler.json_load(exit_on_error=True)
 
 spec = input['test']['spec']
-timeout_iso = spec.get('timeout', 'PT10S')
-timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+#timeout_iso = spec.get('timeout', 'PT10S')
+#timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 succeeded = False
 error = ''
 diags = ''
@@ -110,6 +110,9 @@ class NmapObj:
         #try to perform nmap scan with given parameters
         try:
             results = nmapScanner.scan_top_ports(self.hosts[0], default=1000, args=self.args)
+            #results = nmapScanner.nmap_version_detection(self.hosts[0], args=self.args)
+            #print(results,file=sys.stderr)
+            #exit(1)
         except Exception as e:
             #Source IP Was not recognized as a valid IP on the user's local network
             if "Could not figure out what device to send the packet out on with the source address you gave me!" in str(e):
@@ -135,29 +138,20 @@ class NmapObj:
         #last 2 elements are diagnostics
         self.hosts = list(results.keys())[:-2]
         self.result = dict()
+                        
         for host in self.hosts:
+            self.result[host] = dict() if self.service else dict(dict())
             for port in results[host]["ports"]:
                 #if service detection is not enabled, results structure is slightly different
                 if(not self.service):
-                    try:
-                        self.result[host][port["portid"]] = port["state"]
-                    except KeyError:
-                        self.result[host] = dict()
-                        self.result[host][port["portid"]] = port["state"]
+                    self.result[host][port["portid"]] = port["state"]
                 else:
-                    try:
-                        if("service" in port):
-                            self.result[host][port["portid"]] = port["service"]
-                        else: self.result[host][port["portid"]] = dict()
-                        self.result[host][port["portid"]]["state"] = port["state"]
-                    except KeyError:
-                        self.result[host] = dict(dict())
-                        if("service" in port):
-                            self.result[host][port["portid"]] = port["service"]
-                        else: self.result[host][port["portid"]] = dict()
+                    if("service" in port):
+                        self.result[host][port["portid"]] = port["service"]
+                    else:
+                        self.result[host][port["portid"]] = dict()
                         self.result[host][port["portid"]]["state"] = port["state"]
         output = self.result
-
         return output
 #-------------------------------------------------------------------------------Nmap Class
 
@@ -182,7 +176,7 @@ if (source is not None and source != ""):
             "error": MISMATCHED_IP_VERSION_ERROR
         })
 
-if (timeout is not None and timeout != ""): nmap.set_timeout(timeout)
+#if (timeout is not None and timeout != ""): nmap.set_timeout(timeout)
 if (service_detect): nmap.enable_service_detect()
 output = nmap.scan()
 if output is not None: succeeded = True

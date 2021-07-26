@@ -22,6 +22,7 @@ valid, message = result_is_valid(input["result"])
 if not valid:
     pscheduler.fail(message)
 json = input["result"]["result"]
+#print(json)
 if len(json) == 0:
     print("No networks found!")
 if format == "text/plain":
@@ -32,13 +33,12 @@ if format == "text/plain":
         
         if len(json[network]) == 0:
             print("No open ports found on network: {}".format(network))
-
+            continue
         if isinstance(list(json[network].values())[0], dict):
             print(network[:-15]+"{:15s}|{:>6s} |{:<9s}|{:<15s}|{:<21s}|{:<10s}|{:<10s}|{:<30s}".format(network[-15:], "PORT", "STATE", "NAME", "PRODUCT", "VERSION", "OS", "EXTRA INFORMATION"))
             print(ipv6pad.replace(" ", "-")+"{:-<15s}+{:->6s}-+{:-<9s}+{:-<15s}+{:-<21s}+{:-<10s}+{:-<10s}+{:-<30s}".format("", "", "", "", "", "", "", ""))
-            for port in json[network]:
-                portKey = port
-                port = json[network][port]
+            for portKey in json[network]:
+                port = json[network][portKey]
                 print(ipv6pad+"{:15.15s}|{:>6.6s} |{:<9.9s}|{:<15.15s}|{:<21.21s}|{:<10.10s}|{:<10.10s}|{:<30s}".format( "",
                     str(portKey), 
                     str(port["state"]) if "state" in port else " ", 
@@ -51,12 +51,15 @@ if format == "text/plain":
             print(network[:-15]+"{:15}".format(network[-15:]))
             print("{:>5} | {:<8s}".format("PORT", "STATE"))
             print("-"*6 + "+" + "-"*6)
-            for port in json[network]:
-                print("{:>5s} | {:<8s}".format(str(port), str(json[network][port])))
+            for portKey in json[network]:
+                print("{:>5s} | {:<8s}".format(str(portKey), str(json[network][portKey])))
         print("")
 
 elif format == "text/html":
-    for network in json:
+    for network in json:    
+        if len(json[network]) == 0:
+            print("No open ports on network: "+str(network))
+            continue
         print("<h3>"+network+"</h3>")
         print('<table border = "2">')
         if type(json[network]) is dict:
