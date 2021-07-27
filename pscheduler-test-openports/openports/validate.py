@@ -43,7 +43,8 @@ def spec_is_valid(json):
                     "source":         { "$ref": "#/pScheduler/Host" },
                     "service_detect": { "$ref": "#/pScheduler/Boolean" },
                     "ports":          { "$ref": "#/local/portlist" },
-                    "timeout":        { "$ref": "#/pScheduler/Duration" }
+                    "timeout":        { "$ref": "#/pScheduler/Duration" },
+                    "source-node":    { "$ref": "#/pScheduler/URLHostPort"}
                 },
                 # If listed here, data of this type MUST be in the test spec
                 "required": [
@@ -95,7 +96,8 @@ def limit_is_valid(json):
             "source":         { "$ref": "#/pScheduler/IPAddress" },
             "service_detect": { "$ref": "#/pScheduler/Boolean" },
             "ports":          { "$ref": "#/local/portlist" },
-            "timeout":        { "$ref": "#/pScheduler/Duration" }
+            "timeout":        { "$ref": "#/pScheduler/Duration" },
+            "source-node":    { "$ref": "#/pScheduler/URLHostPort"}
         },
         "additionalProperties": False
         }

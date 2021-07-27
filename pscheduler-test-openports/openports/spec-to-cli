@@ -29,6 +29,7 @@ result = pscheduler.speccli_build_args(spec,
         ( 'ports', 'ports' ),
         ( 'timeout', 'timeout' ),
         ( 'source', 'source' ),
+        ( 'source_node', 'source_node' ),
         ( 'service_detect', 'service_detect'),
         ])
 

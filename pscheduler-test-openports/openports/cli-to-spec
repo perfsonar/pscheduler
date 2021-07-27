@@ -78,7 +78,7 @@ opt_parser.add_option("--ports",
                       dest="ports")
 
 opt_parser.add_option("--source",
-                      help="Set source IP for nmap call",
+                      help="Set source IP for nmap call. Not to be used with --source-node",
                       action="store", type="string",
                       dest="source")
 
@@ -86,6 +86,11 @@ opt_parser.add_option("--timeout",
                       help="Maximum time to wait for responses.",
                       action="store", type="string",
                       dest="timeout")
+
+opt_parser.add_option("--source-node",
+                      help="Set the source pScheduler node to make this call from. Not to be used with --source",
+                      action="store", type="string",
+                      dest="source_node")
 
 opt_parser.add_option("--lessinfo",
                       help="Only display open ports on network, suppress service/version/OS details. Runs faster.",
@@ -109,6 +114,8 @@ if options.ports is not None:
 if options.source is not None:
    result['source'] = options.source
 
+if options.source_node is not None:
+   result['source_node'] = options.source_node
 if options.timeout is not None:
    result['timeout'] = options.timeout
 
