@@ -149,8 +149,10 @@ pscheduler-test-snmpgetbgm		--bundle snmp
 pscheduler-test-snmpset			--bundle snmp
 pscheduler-test-trace
 pscheduler-test-dns
+pscheduler-test-wifibssid
 
 # Tools
+pscheduler-tool-bssidscanner
 pscheduler-tool-bwctliperf2		--bundle obsolete
 pscheduler-tool-bwctliperf3		--bundle obsolete
 pscheduler-tool-bwctlping		--bundle obsolete
