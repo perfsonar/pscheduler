@@ -58,7 +58,7 @@ diags.append(stderr)
 
 # do some math and set a timeout for the run_program
 
-dhclient_args = ['sudo', 'dhclient', '-v', interface]
+dhclient_args = ['sudo', 'dhclient', '-v', '-1',  interface]
 
 diags.append(' '.join(dhclient_args))
 start_time = datetime.datetime.now()
@@ -79,7 +79,7 @@ results = {
         'succeeded': succeeded
     },
     'error': error,
-    'diags': '\n'.join(diags) }
+    'diags': '/n'.join(diags) }
 
 pscheduler.succeed_json(results)
 
