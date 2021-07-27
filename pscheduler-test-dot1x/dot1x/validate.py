@@ -50,11 +50,14 @@ SPEC_SCHEMA = {
                 "host-node":      { "$ref": "#/pScheduler/Host" },
                 "duration":       { "$ref": "#/pScheduler/Duration" },
                 "timeout":        { "$ref": "#/pScheduler/Duration" },
-                "implementation": { "$ref": "#/local/TestImplementation" },
+                "interface":      { "$ref": "#/pScheduler/String" },
+                "path":           { "$ref": "#/pScheduler/String" },
+                "driver":         { "$ref": "#/pScheduler/String" },
             },
             # If listed here, these parameters MUST be in the test spec.
             "required": [
-                "implementation",
+                "interface",
+                "path",
             ],
             # Treat other properties as acceptable.  This should
             # ALWAYS be false.
@@ -116,9 +119,10 @@ RESULT_SCHEMA = {
         "1": {
             "type": "object",
             "properties": {
-                "schema":     { "type": "integer", "enum": [ 1 ] },
-                "succeeded":  { "$ref": "#/pScheduler/Boolean" },
-                "time":       { "$ref": "#/pScheduler/Duration" },
+                "schema":           { "type": "integer", "enum": [ 1 ] },
+                "succeeded":        { "$ref": "#/pScheduler/Boolean" },
+                "Authenticated":    { "$ref": "#/pScheduler/Boolean" },
+                "time":             { "$ref": "#/pScheduler/Duration" },
             },
             "required": [
                 "succeeded",

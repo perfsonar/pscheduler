@@ -10,7 +10,7 @@
 {
     "schema": 1,
     "name": "dot1x",
-    "description": "EDIT ME",
+    "description": "802.1x authentication using wpa_supplicant and a wpa_supplicant config file",
     "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",

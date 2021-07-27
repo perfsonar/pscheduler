@@ -73,10 +73,21 @@ opt_parser.add_option("--timeout",
                       action="store", type="string",
                       dest="timeout")
 
-opt_parser.add_option("--implementation",
-                      help="Preferred implementation to be used. (api|system)",
+opt_parser.add_option("--interface",
+                      help="Interface to scan on",
                       action="store", type="string",
-                      dest="implementation")
+                      dest="interface")
+
+opt_parser.add_option("--path",
+                      help="path to wpa supplicant file",
+                      action="store", type="string",
+                      dest="path")
+
+opt_parser.add_option("--driver",
+                      help="Wireless driver to use (will default to system if nothing is specified)",
+                      action="store", type="string",
+                      dest="driver")
+
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
@@ -114,8 +125,15 @@ if options.timeout is not None:
 if options.duration is not None:
    result['duration'] = options.duration
 
-if options.implementation is not None:
-   result['implementation'] = options.implementation
+if options.interface is not None:
+   result['interface'] = options.interface
+
+if options.path is not None:
+   result['path'] = options.path
+
+if options.driver is not None:
+   result['driver'] = options.driver
+
 
 result['schema'] = schema.value()
 

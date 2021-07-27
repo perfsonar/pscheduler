@@ -50,6 +50,12 @@ elif format == 'text/html':
     print('    <tr>')
     print('        <td>%s</td>' % result['time'])
     print('    </tr>')
+    print('    <tr>')
+    print('        <th>Authenticated</th>')
+    print('    </tr>')
+    print('    <tr>')
+    print('        <td>%s</td>' % result['authenticated'])
+    print('    </tr>')
     print('</table>')
 
 

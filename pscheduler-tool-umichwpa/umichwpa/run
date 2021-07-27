@@ -20,6 +20,7 @@ import pscheduler
 #error and diagnostic trackign
 error = []
 diags = []
+authenticated = False
 
 
 # from stdin
@@ -62,6 +63,7 @@ try:
 except KeyError:
     pscheduler.fail("Unable to find start time in input")
 
+#remove the interface file if it exists
 interface_path = '/var/run/wpa_supplicant' + interface
 if os.path.exists(interface_path):
     #TODO: ask if sudo should be a flag (passwordless sudo vs running as root)
@@ -74,17 +76,20 @@ if os.path.exists(interface_path):
         succeeded = True
         diags.append("Successfully deleted old interface file")
 
-#remove the interface file if it exists
 
-# Run the actual task here:
-argv = [sudo, 'wpa_supplicant', '-i', interface, '-c', path, '-d', driver, -B]
-status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
+#kill all previous wpa_supplicants
+kill_wpa = [sudo, killall, wpa_supplicant]
+status, stdout, stderr = pscheduler.run_program(kill_wpa, timeout=timeout)
+
+#run wpa to authenticate
+wpa_auth = [sudo, 'wpa_supplicant', '-i', interface, '-c', path, '-d', driver, -B]
+status, stdout, stderr = pscheduler.run_program(wpa_auth, timeout=timeout)
 
 if status:
     succeeded = False
     error.append("Error returned: \n%s" % stderr.strip('\n'))
-
 else:
+    authenticated = True
     succeeded = True
     diags.append(stdout)
 
@@ -98,6 +103,7 @@ results = {
         'schema': 1,
         'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
         'succeeded': succeeded
+        'authenticated': authenticated
     },
     'error': error,
     'diags': diags }
