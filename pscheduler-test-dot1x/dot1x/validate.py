@@ -51,13 +51,17 @@ SPEC_SCHEMA = {
                 "duration":       { "$ref": "#/pScheduler/Duration" },
                 "timeout":        { "$ref": "#/pScheduler/Duration" },
                 "interface":      { "$ref": "#/pScheduler/String" },
-                "path":           { "$ref": "#/pScheduler/String" },
                 "driver":         { "$ref": "#/pScheduler/String" },
+                "_username":      { "$ref": "#/pScheduler/String" },
+                "_driver":        { "$ref": "#/pScheduler/String" },
+                "ssid":           { "$ref": "#/pScheduler/String" },
+                "bssid":          { "$ref": "#/pScheduler/String" },
+                "key-management": { "$ref": "#/pScheduler/String" },
+
             },
             # If listed here, these parameters MUST be in the test spec.
             "required": [
                 "interface",
-                "path",
             ],
             # Treat other properties as acceptable.  This should
             # ALWAYS be false.

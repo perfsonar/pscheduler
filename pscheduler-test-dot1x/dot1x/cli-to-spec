@@ -78,15 +78,36 @@ opt_parser.add_option("--interface",
                       action="store", type="string",
                       dest="interface")
 
-opt_parser.add_option("--path",
-                      help="path to wpa supplicant file",
+opt_parser.add_option("--username",
+                      help="username to login to network with",
                       action="store", type="string",
-                      dest="path")
+                      dest="username")
+
+opt_parser.add_option("--password",
+                      help="password to login to network with",
+                      action="store", type="string",
+                      dest="password")
 
 opt_parser.add_option("--driver",
                       help="Wireless driver to use (will default to system if nothing is specified)",
                       action="store", type="string",
                       dest="driver")
+
+opt_parser.add_option("--ssid",
+                      help="Which nearby ssid to connect to",
+                      action="store", type="string",
+                      dest="ssid")
+
+opt_parser.add_option("--bssid",
+                      help="Which nearby bssid to connect to",
+                      action="store", type="string",
+                      dest="bssid")
+
+opt_parser.add_option("--key-management",
+                      help="wpa_supplicant key managmenent (NONE for no password)",
+                      action="store", type="string",
+                      dest="key_management")
+
 
 
 (options, remaining_args) = opt_parser.parse_args(args)
@@ -128,11 +149,23 @@ if options.duration is not None:
 if options.interface is not None:
    result['interface'] = options.interface
 
-if options.path is not None:
-   result['path'] = options.path
-
 if options.driver is not None:
    result['driver'] = options.driver
+
+if options.username is not None:
+   result['_username'] = options.username
+
+if options.password is not None:
+   result['_password'] = options.password
+
+if options.ssid is not None:
+   result['ssid'] = options.ssid
+
+if options.bssid is not None:
+   result['bssid'] = options.bssid
+
+if options.key_management is not None:
+   result['key-management'] = options.key_management
 
 
 result['schema'] = schema.value()

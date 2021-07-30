@@ -31,7 +31,11 @@ result = pscheduler.speccli_build_args(spec,
         ( 'duration', 'duration'),
         ( 'interface', 'interface' ),
         ( 'driver', 'driver' ),
-        ( 'path', 'path' ),
+        ( 'username', 'username' ),
+        ( 'password', 'password' ),
+        ( 'ssid', 'ssid' ),
+        ( 'bssid', 'bssid' ),
+        ( 'key-managment', 'key-management' ),
         ])
 
 pscheduler.succeed_json(result)
