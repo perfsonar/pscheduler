@@ -110,15 +110,15 @@ RESULT_SCHEMA = {
         "ssid_info": {
             "type": "object",
             "properties": {
-                "ssid":      {"$ref": "/pScheduler/String"},
-                "signal":    {"$ref": "/pScheduler/String"},
-                "address":   {"$ref": "/pScheduler/String"},
-                "frequency": {"$ref": "/pScheduler/String"},
-                "quality":   {"$ref": "/pScheduler/String"},
-                "bitrates":  {"$ref": "/pScheduler/String"},
-                "encrypted": {"$ref": "/pScheduler/Boolean"},
-                "channel":   {"$ref": "/pScheduler/String"},
-                "mode":      {"$ref": "/pScheduler/String"},
+                "ssid":      { "$ref": "#/pScheduler/String" },
+                "signal":    { "type": "number" },
+                "address":   { "$ref": "#/pScheduler/String" },
+                "frequency": { "type": "number" },
+                "quality":   { "type": "number" },
+                "bitrates":  { "type": "array", "items": { "type": "number" } },
+                "encrypted": { "$ref": "#/pScheduler/Boolean" },
+                "channel":   { "$ref": "#/pScheduler/Cardinal" },
+                "mode":      { "$ref": "#/pScheduler/String" },
             },
             "required": [
                 "ssid",
@@ -143,7 +143,7 @@ RESULT_SCHEMA = {
                 "schema":     { "type": "integer", "enum": [ 1 ] },
                 "succeeded":  { "$ref": "#/pScheduler/Boolean" },
                 "time":       { "$ref": "#/pScheduler/Duration" },
-		"ssid_list":  { "type": "array", "items": {"local": "#/local/ssid_info" } },
+		"ssid_list":  { "type": "array", "items": { "local": "#/local/ssid_info" } },
             },
             "required": [
                 "succeeded",

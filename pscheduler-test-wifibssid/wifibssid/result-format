@@ -43,7 +43,17 @@ if format == 'text/plain':
     # Print ssid_list
     print('BSSIDs:')
     for entry in result['ssid_list']:
-        print("    " + str(entry)) 
+        print("")
+        print(entry["ssid"] + ":")
+        print(f'   Signal: {entry["signal"]}')
+        print(f'   Address: {entry["address"]}') 
+        print(f'   Frequency: {entry["frequency"]}') 
+        print(f'   Quality: {entry["quality"]}')
+        print(f'   Bitrates: {entry["bitrates"]}')
+        print(f'   Encrypted: {entry["encrypted"]}')
+        print(f'   Channel: {entry["channel"]}')
+        print(f'   Mode: {entry["mode"]}') 
+        print("") 
    
 elif format == 'text/html':
     # Print results of the test here, in html
@@ -54,7 +64,16 @@ elif format == 'text/html':
     print('    </tr>')
     print('    <tr>')
     print('        <td><b>BSSIDs</b></td><td>')
-    print('    <br/>'.join(result['ssid_list']))
+    for entry in result['ssid_list']:
+        print('    <br/>SSID: ' + entry["ssid"])
+        print('    <br/>Signal: ' + entry["signal"])
+        print('    <br/>Address: ' + entry["address"])
+        print('    <br/>Frequency: ' + entry["frequency"])
+        print('    <br/>Quality: ' + entry["quality"])
+        print('    <br/>Bitrates: ' + str(entry["bitrates"]))
+        print('    <br/>Encrypted: ' + str(entry["signal"]))
+        print('    <br/>Channel :' + str(entry["ssid"]))
+        print('    <br/>Mode: ' + str(entry["ssid"]))   
     print('    </td> </tr>')
     print('</table>')
 

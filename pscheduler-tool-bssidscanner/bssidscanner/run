@@ -53,9 +53,10 @@ def get_all_bssids(interface):
         bssid['ssid'] = cell.ssid
         bssid['signal'] = cell.signal
         bssid['address'] = cell.address
-        bssid['frequency'] = cell.frequency
-        bssid['quality'] = cell.quality
-        bssid['bitrates'] = cell.bitrates
+        bssid['frequency'] = pscheduler.si_as_number(cell.frequency[:-2])
+        quality_num,quality_denom = cell.quality.split('/')
+        bssid['quality'] = float(quality_num) / float(quality_denom)
+	bssid['bitrates'] = sorted(map(lambda v : pscheduler.si_as_number(v[:-3]), cell.bitrates))
         bssid['encrypted'] = cell.encrypted
         bssid['channel'] = cell.channel
         bssid['mode'] = cell.mode
@@ -70,7 +71,8 @@ def get_all_bssids(interface):
 Scan on the given interface
 Output a list of all bssids in json format with the given ssid
 """
-all_bssids = [ { "ssid": "asdf", "signal": "asdf", "address": "asdf", "frequency": "a", "quality": "b", "bitrates": "c", "encrypted": True, "channel": "d", "mode": "e" } ] 
+#all_bssids = [ { "ssid": "MGuest", "signal": -42, "address": "F0:7F:06:32:92:22", "frequency": "2.412 GHz", "quality": "68/70", "bitrates": ["36 Mb/s", "48 Mb/s", "54 Mb/s"], "encrypted": False, "channel": 1, "mode": "Master" }, { "ssid": "MGuest", "signal": -59, "address": "00:2C:C8:EB:C9:32", "frequency": "2.462 GHz", "quality": "51/70", "bitrates": ["36 Mb/s", "48 Mb/s", "54 Mb/s"], "encrypted": False, "channel": 11, "mode": "Master" } ] 
+all_bssids, elapsed_time = get_all_bssids(interface)
 ssid_list = []
 
 # Check complete list for matching ssids
