@@ -1,6 +1,7 @@
 {
     "test": {
         "spec": {
+            "interface": "eth1",
             "schema": 1
         }
     }

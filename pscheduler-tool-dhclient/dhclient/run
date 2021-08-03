@@ -33,9 +33,8 @@ ip_addr = ""
 try:
     pscheduler.sleep_until(input['schedule']['start'])
 except KeyError:
-    # pscheduler.fail("Unable to find start time in input")
-    pass
-
+    pscheduler.fail("Unable to find start time in input")
+    #pass
 start_release = datetime.datetime.now()
 
 dhclient_release_args = ['sudo', 'dhclient', '-r', '-v', '-1']
@@ -44,7 +43,6 @@ if interface:
 
 diags.append(' '.join(dhclient_release_args))
 status, stdout, stderr = pscheduler.run_program(dhclient_release_args)
-print('status:', status, 'stdout:', stdout, 'stderr:', stderr)
 if status != 0:
     pscheduler.fail("Unable to release current DHCP lease.")
 diags.append(stderr)
@@ -57,7 +55,6 @@ time_left = 20 - (datetime.datetime.now() - start_release).total_seconds()
 start_time = datetime.datetime.now()
 status, stdout, stderr = pscheduler.run_program(dhclient_args, timeout=time_left)
 end_time = datetime.datetime.now()
-print('status:', status, 'stdout:', stdout, 'stderr:', stderr)
 if status == 0:
     succeeded = True
     # get ip address
@@ -72,12 +69,12 @@ results = {
     'succeeded': succeeded,
     'result': {
         'schema': 1,
-	'succeeded': succeeded,
+        'succeeded': succeeded,
         'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
-	'ip_address': ip_addr
+        'ip_address': ip_addr
     },
     'error': error,
-    'diags': diags }
+    'diags': '\n'.join(diags) }
 
 pscheduler.succeed_json(results)
 
