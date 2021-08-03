@@ -34,9 +34,7 @@ def spec_is_valid(json):
 	    "interface":    { "$ref": "#/pScheduler/AnyJSON" },
 	},
 	# If listed here, data of this type MUST be in the test spec
-	"required": [
-	    "interface",
-	    ],
+	"required": [],
     
         # Set to false if ONLY required options should be used
         "additionalProperties": False
@@ -51,11 +49,11 @@ def result_is_valid(json):
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
             "time":       { "$ref": "#/pScheduler/Duration" },
-	    "ip_address": { "$ref": "#/pScheduler/AnyJSON" },
+	        "ip_address": { "$ref": "#/pScheduler/AnyJSON" },
             },
         "required": [
-            "succeeded",
             "time",
+            "ip_address",
             ]
         }
     return json_validate(json, schema)

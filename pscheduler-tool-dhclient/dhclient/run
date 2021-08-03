@@ -76,7 +76,7 @@ results = {
     'succeeded': succeeded,
     'result': {
         'schema': 1,
-	'suceeded': suceeded,
+	    'suceeded': suceeded,
         'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
 	'ip_address': ip_addr
     },

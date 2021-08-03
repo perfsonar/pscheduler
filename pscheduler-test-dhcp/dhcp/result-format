@@ -36,6 +36,7 @@ result = input["result"]
 if format == 'text/plain':
     # Print results of the test here, in plaintext
     print('Time: %s\n' % result['time'])
+    print('IP Address: %s\n' % result['ip_address'])
    
 elif format == 'text/html':
     # Print results of the test here, in html
@@ -46,7 +47,12 @@ elif format == 'text/html':
     print('    <tr>')
     print('        <td>%s</td>' % result['time'])
     print('    </tr>')
-    print('</table>')
+    print('    <tr>')
+    print('        <th>IP Address</th>')
+    print('    </tr>')
+    print('    <tr>')
+    print('        <td>%s</td>' % result['ip_address'])
+    print('    </tr>')
     print('</table>')
 
 
