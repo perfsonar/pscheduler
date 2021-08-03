@@ -31,7 +31,7 @@ except KeyError:
 succeeded = False
 error = ''
 diags = []
-
+ip_addr = ""
 
 # IMPORTANT NOTE: This code puts the process to sleep until the
 # scheduled start time has arrived.  It should be placed after all
@@ -43,13 +43,13 @@ try:
     pscheduler.sleep_until(input['schedule']['start'])
 except KeyError:
     pass
-    pscheduler.fail("Unable to find start time in input")
+    # pscheduler.fail("Unable to find start time in input")
 
 start_release = datetime.datetime.now()
 dhclient_release_args = ['sudo', 'dhclient', '-r', '-v', '-1', '-d', interface]
 
 diags.append(' '.join(dhclient_release_args))
-status, stdout, stderr = pscheduler.run_program(dhclient_release_args, timeout=datetime.timedelta(seconds=20))
+status, stdout, stderr = pscheduler.run_program(dhclient_release_args, timeout=20)
 print('status:', status, 'stdout:', stdout, 'stderr:', stderr)
 if status != 0:
     pscheduler.fail("Unable to release current DHCP lease.")
@@ -57,11 +57,11 @@ diags.append(stderr)
 
 dhclient_args = ['sudo', 'dhclient', '-v', '-1', '-d',  interface]
 diags.append(' '.join(dhclient_args))
-time_left = datetime.timedelta(seconds=20) - (datetime.datetime.now() - start_release)
+time_left = 20 - (datetime.datetime.now() - start_release).total_seconds()
 start_time = datetime.datetime.now()
 status, stdout, stderr = pscheduler.run_program(dhclient_args, timeout=time_left)
 end_time = datetime.datetime.now()
-# print('status:', status, 'stdout:', stdout, 'stderr:', stderr)
+print('status:', status, 'stdout:', stdout, 'stderr:', stderr)
 if status == 0:
     succeeded = True
     # get ip address
@@ -77,7 +77,7 @@ results = {
     'succeeded': succeeded,
     'result': {
         'schema': 1,
-	    'suceeded': suceeded,
+	'succeeded': succeeded,
         'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
 	'ip_address': ip_addr
     },
