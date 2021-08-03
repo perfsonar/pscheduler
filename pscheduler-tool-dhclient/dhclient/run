@@ -42,11 +42,10 @@ ip_addr = ""
 try:
     pscheduler.sleep_until(input['schedule']['start'])
 except KeyError:
-    pass
-    # pscheduler.fail("Unable to find start time in input")
+    pscheduler.fail("Unable to find start time in input")
 
 start_release = datetime.datetime.now()
-dhclient_release_args = ['sudo', 'dhclient', '-r', '-v', '-1', '-d', interface]
+dhclient_release_args = ['sudo', 'dhclient', '-r', '-v', '-1', interface]
 
 diags.append(' '.join(dhclient_release_args))
 status, stdout, stderr = pscheduler.run_program(dhclient_release_args, timeout=20)
@@ -55,7 +54,7 @@ if status != 0:
     pscheduler.fail("Unable to release current DHCP lease.")
 diags.append(stderr)
 
-dhclient_args = ['sudo', 'dhclient', '-v', '-1', '-d',  interface]
+dhclient_args = ['sudo', 'dhclient', '-v', '-1',  interface]
 diags.append(' '.join(dhclient_args))
 time_left = 20 - (datetime.datetime.now() - start_release).total_seconds()
 start_time = datetime.datetime.now()
