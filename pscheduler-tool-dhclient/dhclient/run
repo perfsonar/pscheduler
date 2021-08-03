@@ -14,7 +14,6 @@ import subprocess as sp
 import json
 import sys
 import time
-import netifaces
 import pscheduler
 
 
@@ -26,35 +25,33 @@ try:
 except KeyError:
     interface = ""
 
-# timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
-# timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 succeeded = False
 error = ''
 diags = []
 ip_addr = ""
 
-# IMPORTANT NOTE: This code puts the process to sleep until the
-# scheduled start time has arrived.  It should be placed after all
-# preparatory code has been executed and immediately before the tool
-# is invoked (for plugins that run other programs) or any activity
-# that does a measurement (for those that don't).
-
 try:
     pscheduler.sleep_until(input['schedule']['start'])
 except KeyError:
-    pscheduler.fail("Unable to find start time in input")
+    # pscheduler.fail("Unable to find start time in input")
+    pass
 
 start_release = datetime.datetime.now()
-dhclient_release_args = ['sudo', 'dhclient', '-r', '-v', '-1', interface]
+
+dhclient_release_args = ['sudo', 'dhclient', '-r', '-v', '-1']
+if interface:
+    dhclient_release_args.append(interface)
 
 diags.append(' '.join(dhclient_release_args))
-status, stdout, stderr = pscheduler.run_program(dhclient_release_args, timeout=20)
+status, stdout, stderr = pscheduler.run_program(dhclient_release_args)
 print('status:', status, 'stdout:', stdout, 'stderr:', stderr)
 if status != 0:
     pscheduler.fail("Unable to release current DHCP lease.")
 diags.append(stderr)
 
-dhclient_args = ['sudo', 'dhclient', '-v', '-1',  interface]
+dhclient_args = ['sudo', 'dhclient', '-v', '-1']
+if interface:
+    dhclient_args.append(interface)
 diags.append(' '.join(dhclient_args))
 time_left = 20 - (datetime.datetime.now() - start_release).total_seconds()
 start_time = datetime.datetime.now()
@@ -64,11 +61,10 @@ print('status:', status, 'stdout:', stdout, 'stderr:', stderr)
 if status == 0:
     succeeded = True
     # get ip address
-    try:
-        netifaces.ifaddresses(interface)
-        ip_addr = netifaces.ifaddresses(interface)[netifaces.AF_INET][0]['addr']
-    except:
-        ip_addr = 'Unable to fetch IP address'
+    if 'bound to' in stderr:
+        stderr_list = stderr.split('bound to ')
+        ip_info_list = stderr_list[1].split(' ')
+        ip_addr = ip_info_list[0]
 diags.append(stderr)
 # Organize results into json data
 
