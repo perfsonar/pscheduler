@@ -16,12 +16,23 @@ import sys
 import time
 import os
 import pscheduler
+import tempfile
 
 #error and diagnostic tracking
 error = []
 diags = []
 authenticated = False
 need_root = False
+
+#declare local variables
+interface = ''
+path = ''
+username = ''
+password = ''
+driver = ''
+ssid = ''
+bssid = ''
+key_managment = ''
 
 
 # from stdin
@@ -32,14 +43,39 @@ try:
     interface = input['test']['spec']['interface']
 
 except KeyError:
-    error.append("No interface given")
     pscheduler.fail('Missing the interface in input')
 
 try:
-    path = input['test']['spec']['path']
+    username = input['test']['spec']['username']
 except KeyError:
-    error.append("No path given")
-    pscheduler.fail('Missing the path in input')
+    diags.append("Proceeding without a username")
+
+try:
+    password = input['test']['spec']['password']
+except KeyError:
+    diags.append("Proceeding without a password")
+
+try:
+    driver = input['test']['spec']['driver']
+except KeyError:
+    diags.append("Proceeding without a driver")
+
+try:
+    ssid = input['test']['spec']['ssid']
+except KeyError:
+    diags.append("Proceeding without a ssid")
+
+try:
+    bssid = input['test']['spec']['bssid']
+except KeyError:
+    diags.append("Proceeding without a bssid")
+
+try:
+    key_management = input['test']['spec']['key_management']
+except KeyError:
+    diags.append("Proceeding without key_management")
+
+
 
 try:
     driver = input['test']['spec']['driver']
