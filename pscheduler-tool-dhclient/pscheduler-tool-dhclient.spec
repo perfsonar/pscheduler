@@ -39,10 +39,25 @@ dhclient tool class for pScheduler
 
 %define dest %{_pscheduler_tool_libexec}/%{short}
 
-%build
+%install
+
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
+
+# Enable sudo for dhclient
+
+DHCLIENT=$(which dhclient)
+
+mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}
+cat > $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}/%{name} <<EOF
+#
+# %{name}
+#
+Cmnd_Alias PSCHEDULER_TOOL_DHCLIENT = ${DHCLIENT}
+%{_pscheduler_user} ALL = (root) NOPASSWD: ${DHCLIENT}
+Defaults!PSCHEDULER_TOOL_DHCLIENT !requiretty
+EOF
 
 %post
 pscheduler internal warmboot
@@ -53,3 +68,4 @@ pscheduler internal warmboot
 %files
 %defattr(-,root,root,-)
 %{dest}
+%attr(440,root,root) %{_pscheduler_sudoersdir}/*
