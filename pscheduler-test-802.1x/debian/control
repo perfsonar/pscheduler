@@ -1,0 +1,17 @@
+Source: pscheduler-test-802.1x
+Section: net
+Priority: optional
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Uploaders: Kristofer Hallin <kristofer@sunet.se>
+Build-Depends: debhelper (>= 9), python
+Standards-Version: 3.9.6
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-test-802.1x
+Architecture: all
+Depends: ${misc:Depends}, python3, python3-pscheduler,
+ pscheduler-server
+Description: pScheduler 802.1x test
+ 802.1x test class for pScheduler

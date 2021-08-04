@@ -1,0 +1,6 @@
+#
+# pscheduler-tool-wpa-supplicant
+#
+Cmnd_Alias PSCHEDULER_TOOL_DHCLIENT = /sbin/dhclient
+pscheduler ALL = (root) NOPASSWD: PSCHEDULER_TOOL_DHCLIENT
+Defaults!PSCHEDULER_TOOL_DHCLIENT !requiretty

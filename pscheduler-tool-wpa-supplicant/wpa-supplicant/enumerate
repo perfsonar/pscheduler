@@ -1,0 +1,16 @@
+#!/bin/sed -e 1d
+{
+    "schema": 1,
+    "name": "wpa-supplicant",
+    "description": "Test 802.1x functionality",
+    "version": "1.0",
+    "tests": ["802.1x"],
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "Kristofer Hallin, SUNET",
+	"email": "kristofer@sunet.se",
+	"href": "https://www.sunet.se"
+    }
+}
