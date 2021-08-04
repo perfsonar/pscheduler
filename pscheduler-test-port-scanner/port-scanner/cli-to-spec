@@ -1,0 +1,102 @@
+#!/usr/bin/python
+
+#
+# Development Order #4:
+# 
+# This file encodes CLI arguments as JSON data in a test spec,
+# as defined by the datatypes in validate.py
+# 
+# This can be tested directly using the following syntax:
+# ./cli-to-spec --option argument
+#
+
+import re
+import string
+import optparse
+import pscheduler
+import sys
+
+if len(sys.argv) > 1:
+
+   # Args are on the command line
+   args = sys.argv[1:]
+
+else:
+
+   # Args are in a JSON array on stdin
+   json_args = pscheduler.json_load(exit_on_error=True)
+   args = []
+
+   if type(json_args) != list:
+      pscheduler.fail("Invalid JSON for this operation")
+   for arg in json_args:
+      if type(arg) not in (unicode, str, int, float):
+         pscheduler.fail("Invalid JSON for this operation")
+   args = [ str(arg) for arg in json_args ]
+
+
+
+# Gargle the arguments
+
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""
+    This text will be printed out at the bottom of the
+    "help" message. Change this to whatever you like,
+    or don't include it at all. This could be a good place
+    for example usage cases, etc.
+"""
+)
+
+# Add all potential command line options here
+# Check https://docs.python.org/2/library/optparse.html for more
+# documentation on the opt parser
+
+
+opt_parser.add_option("--host",
+                      help="Host to run the test.",
+                      action="store", type="string",
+                      dest="host")
+
+opt_parser.add_option("--host-node",
+                      help="Host to run the test.",
+                      action="store", type="string",
+                      dest="host_node")
+
+opt_parser.add_option("--ips",
+                      help="IP address or range of addresses to scan",
+                      action="store", type="string",
+                      dest="ips")
+
+opt_parser.add_option("--timeout",
+                      help="Timeout for each query attempt",
+                      action="store", type="string",
+                      dest="timeout")
+
+opt_parser.add_option("--ports",
+                      help="Ports to scan",
+                      action="store", type="string",
+                      dest="ports")
+
+(options, remaining_args) = opt_parser.parse_args(args)
+
+result = { 'schema': 1 }
+
+if options.host is not None:
+   result['host'] = options.host
+
+if options.host_node is not None:
+   result['host-node'] = options.host_node
+
+if options.timeout is not None:
+   result['timeout'] = options.timeout
+
+if options.ips is not None:
+   result['ips'] = options.ips
+else:
+   pscheduler.fail('Please specify an ip address or range of addresses to scan with --ips')
+
+if options.ports is not None:
+   result['ports'] = options.ports
+# might need else here to handle special case
+
+pscheduler.succeed_json(result)

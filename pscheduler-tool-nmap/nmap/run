@@ -1,0 +1,146 @@
+#!/usr/bin/python
+
+#
+# Development Order #5:
+#
+# This is the meat and bones of the tool, where the actual desired
+# commands or operation will be run. The results are then recorded
+# and added to the 'results' JSON data, which will then be sent
+# back to the test. Both system and api are able to be used here.
+#
+
+import datetime
+import subprocess
+import json
+import sys
+import time
+
+import pscheduler
+
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+
+# Take input from test spec
+try:
+    ips = input['test']['spec']['ips']
+
+except KeyError:
+    pscheduler.fail('Missing data in input')
+
+ips = input['test']['spec'].get('ips')
+ports = input['test']['spec'].get('ports', None)
+timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
+timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+start_time = datetime.datetime.now()
+succeeded = False
+error = ''
+diags = ''
+
+# Run the actual task here:
+
+if ports  == None:
+    argv = [ 'nmap', '-oG', '-',  '-F', str(ips)]
+    status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
+
+    if status:
+        succeeded = False
+        error = "Error returned: \n%s" % stderr.strip('\n')
+    else:
+        succeeded = True
+        diags = stdout
+
+else:
+    argv = [ 'nmap', '-p', str(ports),  str(ips)]
+    status, tdout, stderr = pscheduler.run_program(argv, timeout=timeout)
+
+    if status:
+        succeeded = False
+        error = "Error returned: n%s" % stderr.strip('\n')
+    else:
+        succeeded = True
+        diags = stdout
+
+end_time = datetime.datetime.now()
+
+host_ports = {}
+
+port_lines = ""
+
+host = ""
+
+for line in diags.split("\n"):
+   if "Ports" in line:
+	port_lines += line.strip()
+	port_lines += "\t"
+
+for section in port_lines.split("\t"):
+    if "Host" in section:
+	host = section.strip()
+	for w, word in enumerate(host.split(" ")):
+	    if w == 1:
+		host = word
+	    
+    if "Ports" in section:
+	host_ports[host] =  section.strip()
+	host_ports[host] = host_ports[host][6:]
+
+open_list = []
+for p in host_ports.values():
+    for i in p.split(" "):
+	open_list.append(i)
+    p = open_list
+    open_list = []
+
+new = []
+for ports in host_ports.values():
+    new_ports = ""
+    for port in ports.split(","):
+	new_port = ""
+	for n, identifier in enumerate(port.split('/')):
+            if n == 0:
+		new_port += identifier
+                new_port += " "
+            if n == 2:
+                new_port += identifier
+                new_port += " "
+            if n == 4:
+                new_port += identifier
+                new_port += " "
+ 	new_port += ","
+	new_ports += new_port
+    new_ports = new_ports[:-1]
+    new.append(new_ports)
+   
+for new_val, key in zip(new, host_ports):
+    host_ports[key] = new_val
+
+for k in host_ports:
+    port_dict_list = []
+    for port in host_ports[k].split(","):
+	port_dict = {}
+        for i, item in enumerate(port.split(" ")):
+            if i == 1:
+                port_dict['number'] = item
+            if i == 2:
+                port_dict['protocol'] = item
+            if i == 3:
+                port_dict['service'] = item
+        port_dict_list.append(port_dict)
+        port_dict = {}
+    host_ports[k] = port_dict_list
+
+port_data = json.dumps(host_ports)
+
+# Organize results into json data
+results = {
+    'succeeded': succeeded,
+    'result': {
+        'schema': 1,
+        'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
+        'succeeded': succeeded,
+	'ports-open': port_data
+    }
+}
+
+pscheduler.succeed_json(results)
+
