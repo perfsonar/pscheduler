@@ -34,7 +34,6 @@ try:
     pscheduler.sleep_until(input['schedule']['start'])
 except KeyError:
     pscheduler.fail("Unable to find start time in input")
-    #pass
 start_release = datetime.datetime.now()
 
 dhclient_release_args = ['sudo', 'dhclient', '-r', '-v', '-1']
