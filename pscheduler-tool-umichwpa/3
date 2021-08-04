@@ -104,6 +104,7 @@ try:
         temp.write('  key_mgmt=' + key_management + '\n')
 
     temp.write('}')
+
     temp.seek(0)
 
 
