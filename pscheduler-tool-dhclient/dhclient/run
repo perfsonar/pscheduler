@@ -46,7 +46,6 @@ diags.append(stderr)
 if status != 0:
     fail_json = {
         'succeeded': succeeded,
-        'result': {},
         'error': 'DHClient unable to release current lease.',
         'diags': '\n'.join(diags) }
     pscheduler.succeed_json(fail_json)
@@ -65,7 +64,6 @@ diags.append(stderr)
 if status != 0:
     fail_json = {
         'succeeded': succeeded,
-        'result': {},
         'error': 'DHClient unable to lease a new IP address.',
         'diags': '\n'.join(diags) }
     pscheduler.succeed_json(fail_json)
