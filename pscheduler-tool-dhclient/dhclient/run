@@ -34,35 +34,48 @@ try:
     pscheduler.sleep_until(input['schedule']['start'])
 except KeyError:
     pscheduler.fail("Unable to find start time in input")
-start_release = datetime.datetime.now()
 
+start_release = datetime.datetime.now()
 dhclient_release_args = ['sudo', 'dhclient', '-r', '-v', '-1']
 if interface:
     dhclient_release_args.append(interface)
-
 diags.append(' '.join(dhclient_release_args))
-status, stdout, stderr = pscheduler.run_program(dhclient_release_args)
-if status != 0:
-    pscheduler.fail("Unable to release current DHCP lease.")
+
+status, stdout, stderr = pscheduler.run_program(dhclient_release_args, timeout=5)
 diags.append(stderr)
+if status != 0:
+    fail_json = {
+        'succeeded': succeeded,
+        'result': {},
+        'error': 'DHClient unable to release current lease.',
+        'diags': '\n'.join(diags) }
+    pscheduler.succeed_json(fail_json)
 
 dhclient_args = ['sudo', 'dhclient', '-v', '-1']
 if interface:
     dhclient_args.append(interface)
 diags.append(' '.join(dhclient_args))
+
 time_left = 20 - (datetime.datetime.now() - start_release).total_seconds()
 start_time = datetime.datetime.now()
 status, stdout, stderr = pscheduler.run_program(dhclient_args, timeout=time_left)
 end_time = datetime.datetime.now()
-if status == 0:
-    succeeded = True
-    # get ip address
-    if 'bound to' in stderr:
-        stderr_list = stderr.split('bound to ')
-        ip_info_list = stderr_list[1].split(' ')
-        ip_addr = ip_info_list[0]
 diags.append(stderr)
-# Organize results into json data
+
+if status != 0:
+    fail_json = {
+        'succeeded': succeeded,
+        'result': {},
+        'error': 'DHClient unable to lease a new IP address.',
+        'diags': '\n'.join(diags) }
+    pscheduler.succeed_json(fail_json)
+
+succeeded = True
+# get ip address
+if 'bound to' in stderr:
+    stderr_list = stderr.split('bound to ')
+    ip_info_list = stderr_list[1].split(' ')
+    ip_addr = ip_info_list[0]
 
 results = {
     'succeeded': succeeded,
