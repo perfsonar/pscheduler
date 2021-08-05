@@ -33,7 +33,7 @@ opt_parser.add_option("--daemon",
 opt_parser.add_option("--pid-file",
                       help="Location of PID file",
                       action="store", type="string", dest="pidfile",
-                      default="/dev/null")
+                      default=None)
 
 # Program options
 
