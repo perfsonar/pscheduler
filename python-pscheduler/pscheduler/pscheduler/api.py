@@ -138,6 +138,15 @@ def api_is_run(url):
     return True
 
 
+def api_run_uuid(url):
+    """Return the UUID of a run from its URL"""
+    if not api_is_run(url):
+        raise ValueError("URL is not a valid run")
+
+    return urllib.parse.urlparse(url).path.split('/')[5]
+
+
+
 def api_ping(host=None, bind=None, timeout=3):
     """
     See if an API server is alive within a given timeout.  If 'host'

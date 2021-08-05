@@ -54,6 +54,11 @@ class TestApi(PschedTestBase):
         self.assertEqual(api_is_run("https://localhost/pscheduler/tasks/00000000-0000-0000-0000-000000000000/runs/not-a-run"),
                          False)
 
+        self.assertEqual(api_run_uuid("https://localhost/pscheduler/tasks/00000000-0000-0000-0000-000000000000/runs/11111111-1111-1111-1111-111111111111"),
+                         "11111111-1111-1111-1111-111111111111")
+        self.assertRaises(ValueError,
+                          api_run_uuid, "https://localhost/pscheduler/tasks/00000000-0000-0000-0000-000000000000/not-a-run")
+
 
         # TODO: not sure if this is the best test - are there hosts
         # where we know it will be true?
