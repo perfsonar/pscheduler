@@ -346,6 +346,19 @@ def run_server():
     #init command
     iperf3_args = [ iperf3_cmd, '-s', '-1', '--json']
 
+    # Once in awhile, a server process gets orphaned.  Find those and
+    # try to kill them.
+
+    try:
+        # Note that the client waits three seconds for us to start up,
+        # which is already overkill.  No need to add this to the run time.
+        pscheduler.kill_processes(iperf3_args, wait=1.0)
+    except Exception as ex:
+        pscheduler.succeed_json({"succeeded": False,
+                                 "diags": "",
+                                 "error": f'Found but could not kill stray iperf3 server: {str(ex)}'})
+
+
     iperf3_args.append("-p")
     iperf3_args.append(server_port)
 

@@ -23,6 +23,7 @@ from .mtu import *
 from .numa import *
 from .numeric import *
 from .numericrange import *
+from .process import *
 from .program import *
 from .pidfile import *
 from .plugins import *
