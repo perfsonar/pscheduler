@@ -124,8 +124,8 @@ def run_client():
             normalized_dest = dest_ip
             ip_version = pscheduler.ip_addr_version(dest_ip)[0]
         else:
-            pscheduler.succeed_json({"succeeded": False,
-                                     "error": "Unable to find common IP version between local-address %s and dest %s" % (local_address, destination)})
+            return {"succeeded": False,
+                    "error": "Unable to find common IP version between local-address %s and dest %s" % (local_address, destination)}
     elif source is not None:
         #see comment for local-address, but s/local-address/source/g
         source_ip, dest_ip = pscheduler.ip_normalize_version(source, destination)
@@ -138,8 +138,8 @@ def run_client():
             normalized_dest = dest_ip
             ip_version = pscheduler.ip_addr_version(dest_ip)[0]
         else:
-            pscheduler.succeed_json({"succeeded": False,
-                                     "error": "Unable to find common IP version between source %s and dest %s" % (source, destination)})
+            return {"succeeded": False,
+                    "error": "Unable to find common IP version between source %s and dest %s" % (source, destination)}
     else:
         #set destination
         iperf3_args.append('-c')
@@ -330,9 +330,9 @@ def run_client():
                                                         timeout = iperf_timeout)
     except Exception as ex:
         logger.error("iperf3 failed to complete execution: %s" % ex)
-        pscheduler.succeed_json({"succeeded": False,
-                                 "diags": "\n".join(diags),
-                                 "error": "The iperf3 command failed during execution. See server logs for more details."})
+        return {"succeeded": False,
+                "diags": "\n".join(diags),
+                "error": "The iperf3 command failed during execution. See server logs for more details."}
 
 
 
@@ -354,9 +354,9 @@ def run_server():
         # which is already overkill.  No need to add this to the run time.
         pscheduler.kill_processes(iperf3_args, wait=1.0)
     except Exception as ex:
-        pscheduler.succeed_json({"succeeded": False,
-                                 "diags": "",
-                                 "error": f'Found stray iperf3 server running could not terminate it: {str(ex)}'})
+        return {"succeeded": False,
+                "diags": "",
+                "error": f'Found stray iperf3 server running could not terminate it: {str(ex)}'}
 
 
     iperf3_args.append("-p")
@@ -512,9 +512,9 @@ def _make_result(diags, status, stdout, stderr):
         if not error_text:
             error_text = "%s\n\n%s\n" % (stdout, stderr)
 
-        pscheduler.succeed_json({"succeeded": False,
-                                 "diags": diags,
-                                 "error": "iperf3 returned an error: %s" % (error_text)})
+        return {"succeeded": False,
+                "diags": diags,
+                "error": "iperf3 returned an error: %s" % (error_text)}
 
     lines = stdout.split("\n")    
     logger.debug("Lines are %s " % lines)
@@ -530,14 +530,43 @@ results = {}
 try:
     if participant == 0 :
         if loopback:
-            server_thread = threading.Thread(target=run_server)
+
+            # Loopback - Run both.
+
+            server_thread = pscheduler.ThreadWithReturnValue(target=run_server)
             server_thread.start()
-            results = run_client()
-            server_thread.join() #Wait until the server thread terminates
+            client_results = run_client()
+            server_results = server_thread.join()
+
+            # Figure out whether we succeeded or failed in aggregate
+            # and return a result accordingly.
+
+            succeeded = client_results["succeeded"] and server_results["succeeded"]
+
+            if succeeded:
+                results["result"] = client_results
+            else:
+                results = { "result": {
+                    "succeeded": False,
+                    "error": f'Client:\n\n{client_results.get("error", "No error.")}' \
+                             f'\n\nServer:\n\n{server_results.get("error", "No error.")}'
+                } }
+
+            results["result"]["diags"] = f'Client:\n\n{client_results.get("diags", "No diagnostics.")}' \
+                    f'\n\nServer:\n\n{server_results.get("diags", "No diagnostics.")}'
+
+
+
         else:
+
+            # Non-loopback client
             results = run_client()
+
     elif participant == 1:
+
+        # Non-loopback server
         results = run_server()
+
     else:
         pscheduler.fail("Invalid participant.")
 except Exception as ex:
