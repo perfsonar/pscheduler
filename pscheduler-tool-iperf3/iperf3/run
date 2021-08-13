@@ -356,7 +356,7 @@ def run_server():
     except Exception as ex:
         pscheduler.succeed_json({"succeeded": False,
                                  "diags": "",
-                                 "error": f'Found but could not kill stray iperf3 server: {str(ex)}'})
+                                 "error": f'Found stray iperf3 server running could not terminate it: {str(ex)}'})
 
 
     iperf3_args.append("-p")
