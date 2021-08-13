@@ -1,6 +1,0 @@
-#!/bin/sh
-
-set -e
-
-pscheduler task --archive '{ "archiver": "TEMPLATE", "data": {} }' \
-  rtt --dest=localhost

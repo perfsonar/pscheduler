@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-#
-# Validate data for the syslogarchiver
-#
+"""
+Validate data for the RabbitMQ archiver
+"""
 
 import pscheduler
 
@@ -13,7 +13,7 @@ except ValueError as ex:
         "error": str(ex)
         })
 
-MAX_SCHEMA = 2
+MAX_SCHEMA = 3
 
 SPEC_SCHEMA = {
 
@@ -40,6 +40,27 @@ SPEC_SCHEMA = {
                 "schema":              {" type": "integer", "enum": [ 2 ] },
                 "_url":                { "$ref": "#/pScheduler/String" },
                 "exchange":            { "$ref": "#/pScheduler/String" },
+                "routing-key":         { "anyOf": [
+                    { "$ref": "#/pScheduler/String" },
+                    { "$ref": "#/pScheduler/JQTransformSpecification" }
+                ] },
+                "connection-expires":  { "$ref": "#/pScheduler/Duration" },
+                "retry-policy":        { "$ref": "#/pScheduler/RetryPolicy" }
+            },
+            "required": [
+                "schema",
+                "_url"
+            ],
+            "additionalProperties": False
+        },
+
+        "v3": {
+            "type": "object",
+            "properties": {
+                "schema":              {" type": "integer", "enum": [ 2 ] },
+                "_url":                { "$ref": "#/pScheduler/String" },
+                "exchange":            { "$ref": "#/pScheduler/String" },
+                "timeout":             { "$ref": "#/pScheduler/Duration" },
                 "routing-key":         { "anyOf": [
                     { "$ref": "#/pScheduler/String" },
                     { "$ref": "#/pScheduler/JQTransformSpecification" }

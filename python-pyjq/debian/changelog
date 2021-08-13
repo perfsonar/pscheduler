@@ -1,4 +1,10 @@
-pyjq (2.4.0-1) perfsonar-4.4-staging; urgency=low
+python-pyjq (2.4.0-2) perfsonar-4.4-staging; urgency=low
+
+  * Rebuild for 4.4 repo.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 06 May 2021 17:04:43 +0000
+
+python-pyjq (2.4.0-1) perfsonar-4.3-staging; urgency=low
 
   * New upstream release.
 

@@ -16,7 +16,7 @@ RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == \
 # NOTE: We point at the perfSONAR repo to grab nuttcp, owping and other tools.
 RUN yum update -y && \
     yum install -y make spectool git which m4 epel-release rsyslog && \
-    yum install -y http://linux.mirrors.es.net/perfsonar/el7/x86_64/4/packages/perfSONAR-repo-0.9-1.noarch.rpm && \
+    yum install -y http://linux.mirrors.es.net/perfsonar/el7/x86_64/4/packages/perfSONAR-repo-0.10-1.noarch.rpm && \
     yum clean all
 
 # Copy code to /app

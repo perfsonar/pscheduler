@@ -53,13 +53,12 @@ ifelse(PACKAGING,rpm,pscheduler-rpm)
 #
 
 # PostgreSQL and Additions
+pgdg-srpm-macros
 postgresql
 postgresql-init
 postgresql-load
 
-
-
-ifelse(DISTRO/MAJOR,Oracle/8,oniguruma)			# Only build this on OL8.  EL8 has it.
+ifelse(DISTRO/MAJOR,Oracle/8,oniguruma)			# Only build this on OL8.  CentOS 7 and EL8 have it.
 
 # Our version of jq has patches. replace when patches accepted upstream.
 jq
@@ -83,6 +82,8 @@ ifelse(DISTRO/MAJOR,CentOS/7,python-memcached)
 python-netifaces
 ifelse(DISTRO/MAJOR,CentOS/7,python-ntplib)		# EL8 has this, ours is newer
 python-parse-crontab
+python-vine
+python-py-amqp
 python-py-radix
 python-pyjq
 python-tzlocal

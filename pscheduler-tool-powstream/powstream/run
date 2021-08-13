@@ -204,11 +204,8 @@ else:
         powstream_args.append(test_spec['source'])
     powstream_args.append(ADDR_FORMAT % (test_spec['dest'], control_port))
 
-#Run the process
-time.sleep(DEFAULT_CLIENT_SLEEP) #wait for server to boot
-powstream_start_attempts = 0
-got_result = False
 
+#Run the process
 
 emitter = pscheduler.RFC7464Emitter(sys.stdout)
 

@@ -1,7 +1,5 @@
 [Unit]
 Description=pScheduler server - __PROG__
-# This forces starting and stopping in concert
-WantedBy=__PGSERVICE__
 
 
 [Service]
@@ -27,12 +25,6 @@ ExecStartPre=-/bin/chmod 700 __RUNDIR__/__PROG__/tmp
 ExecStartPre=-/bin/chown __PSUSER__:__PSUSER__ __RUNDIR__/__PROG__/tmp
 Environment=TMPDIR=__RUNDIR__/__PROG__/tmp
 
-# Generate the PID file in an atomic way
-ExecStartPre=-/bin/rm -f __RUNDIR__/__PROG__/pid.build
-ExecStartPre=-/usr/bin/touch -f __RUNDIR__/__PROG__/pid.build
-ExecStartPre=-/bin/chown __PSUSER__:__PSUSER__ __RUNDIR__/__PROG__/pid.build
-ExecStartPre=-/bin/mv __RUNDIR__/__PROG__/pid.build __RUNDIR__/__PROG__/pid
-
 # Generate options file
 ExecStartPre=-/bin/sh -c "if [ -r __CONFIGDIR__/__PROG__.conf ]; then opts=$(sed -e 's/#.*$//' __CONFIGDIR__/__PROG__.conf); echo OPTIONS=$opts > __RUNDIR__/__PROG__/options; chown __PSUSER__:__PSUSER__ __RUNDIR__/__PROG__/options; fi"
 
@@ -42,10 +34,12 @@ StandardError=journal
 
 # Start service
 EnvironmentFile=-__RUNDIR__/__PROG__/options
-ExecStart=__DAEMONDIR__/__PROG__ --daemon --pid-file __RUNDIR__/__PROG__/pid --dsn @__DSN__ $OPTIONS
+ExecStart=__DAEMONDIR__/__PROG__ --dsn @__DSN__ $OPTIONS --pid-file __RUNDIR__/__PROG__/pid
 
 # Stop service
 ExecStopPost=/bin/rm -rf __RUNDIR__/__PROG__
 
 [Install]
 WantedBy=multi-user.target
+# This forces starting and stopping in concert
+WantedBy=__PGSERVICE__

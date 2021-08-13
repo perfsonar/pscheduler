@@ -1,6 +1,0 @@
-pscheduler-tool-TEMPLATE (4.3.0~0.a1-1) perfsonar-4.3-staging; urgency=low
-
-  * Initial release
-
- -- perfSONAR developers <debian@perfsonar.net>  Tue, 13 Oct 2020 17:50:44 +0000
-

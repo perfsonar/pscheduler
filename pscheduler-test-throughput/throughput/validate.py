@@ -5,7 +5,7 @@
 from pscheduler import json_validate
 import json
 
-MAX_SCHEMA = 4
+MAX_SCHEMA = 6
 
 SPEC_SCHEMA = {
     "local": {
@@ -169,9 +169,92 @@ SPEC_SCHEMA = {
                 "schema",
                 "dest"
             ]
+        },
+        "throughput_v5" : {
+            "title": "pScheduler Throughput Specification Schema",
+            "type": "object",
+            "properties": {
+                "schema":      { "type": "integer", "enum": [ 5 ] },
+                "source":      { "$ref": "#/pScheduler/Host" },
+                "source-node": { "$ref": "#/pScheduler/URLHostPort" },
+                "dest":        { "$ref": "#/pScheduler/Host" },
+                "dest-node":   { "$ref": "#/pScheduler/URLHostPort" },
+                "duration":    { "$ref": "#/pScheduler/Duration" },
+                "interval":    { "$ref": "#/pScheduler/Duration" },
+                "link-rtt":    { "$ref": "#/pScheduler/Duration" },
+                "parallel":    { "$ref": "#/pScheduler/Cardinal" },
+                "udp":         { "$ref": "#/pScheduler/Boolean" },
+                "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },
+                "bandwidth-strict":   { "$ref": "#/pScheduler/Boolean" },
+                "burst-size": { "$ref": "#/pScheduler/Cardinal" },
+                "window-size": { "$ref": "#/pScheduler/Cardinal" },
+                "mss":         { "$ref": "#/pScheduler/Cardinal" },
+                "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
+                "ip-tos":        { "$ref": "#/pScheduler/IPTOS" },
+                "ip-version":    { "$ref": "#/pScheduler/ip-version" },
+                "local-address": { "$ref": "#/pScheduler/Host" },
+                "omit":          { "$ref": "#/pScheduler/Duration" },
+                "no-delay":    { "$ref": "#/pScheduler/Boolean" },
+                "congestion":    { "$ref": "#/local/congestion-unvalidated" },
+                "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
+                "flow-label":    { "$ref": "#/pScheduler/Cardinal" },
+                "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
+                "server-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
+                "single-ended": { "$ref": "#/pScheduler/Boolean" },
+                "single-ended-port": { "$ref": "#/pScheduler/Integer" },
+                "reverse": { "$ref": "#/pScheduler/Boolean" },
+                "loopback":    { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": False,
+            "required": [
+                "schema",
+                "dest"
+            ]
+        },
+        "throughput_v6" : {
+            "title": "pScheduler Throughput Specification Schema",
+            "type": "object",
+            "properties": {
+                "schema":      { "type": "integer", "enum": [ 6 ] },
+                "source":      { "$ref": "#/pScheduler/Host" },
+                "source-node": { "$ref": "#/pScheduler/URLHostPort" },
+                "dest":        { "$ref": "#/pScheduler/Host" },
+                "dest-node":   { "$ref": "#/pScheduler/URLHostPort" },
+                "duration":    { "$ref": "#/pScheduler/Duration" },
+                "interval":    { "$ref": "#/pScheduler/Duration" },
+                "link-rtt":    { "$ref": "#/pScheduler/Duration" },
+                "parallel":    { "$ref": "#/pScheduler/Cardinal" },
+                "udp":         { "$ref": "#/pScheduler/Boolean" },
+                "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },
+                "bandwidth-strict":   { "$ref": "#/pScheduler/Boolean" },
+                "burst-size": { "$ref": "#/pScheduler/Cardinal" },
+                "window-size": { "$ref": "#/pScheduler/Cardinal" },
+                "mss":         { "$ref": "#/pScheduler/Cardinal" },
+                "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
+                "ip-tos":        { "$ref": "#/pScheduler/IPTOS" },
+                "ip-version":    { "$ref": "#/pScheduler/ip-version" },
+                "local-address": { "$ref": "#/pScheduler/Host" },
+                "omit":          { "$ref": "#/pScheduler/Duration" },
+                "no-delay":    { "$ref": "#/pScheduler/Boolean" },
+                "congestion":    { "$ref": "#/local/congestion-unvalidated" },
+                "zero-copy":    { "$ref": "#/pScheduler/Boolean" },
+                "flow-label":    { "$ref": "#/pScheduler/Cardinal" },
+                "client-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
+                "server-cpu-affinity":    { "$ref": "#/pScheduler/Integer" },
+                "single-ended": { "$ref": "#/pScheduler/Boolean" },
+                "single-ended-port": { "$ref": "#/pScheduler/Integer" },
+                "reverse": { "$ref": "#/pScheduler/Boolean" },
+                "reverse-connections": { "$ref": "#/pScheduler/Boolean" },
+                "loopback":    { "$ref": "#/pScheduler/Boolean" }
+            },
+            "additionalProperties": False,
+            "required": [
+                "schema",
+                "dest"
+            ]
         }
-    }
 
+    }
 }
 
 RESULT_SCHEMA = {        

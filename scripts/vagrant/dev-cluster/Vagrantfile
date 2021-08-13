@@ -27,9 +27,11 @@ cpus = 2
 memory = 2048
 
 
-# Additional Ansible playbooks to run after each system is configured
+# Additional Ansible playbooks to run after each system is configured,
+# usually used for user-specific customizations.
 additional_playbooks = [
-  # "#{ENV['HOME']}/ansible/my-essentials/main.yml",
+#  "#{ENV['HOME']}/ansible/my-essentials/main.yml",
+#  "#{ENV['HOME']}/ansible/my-essentials/debug.yml"
 ]
 
 

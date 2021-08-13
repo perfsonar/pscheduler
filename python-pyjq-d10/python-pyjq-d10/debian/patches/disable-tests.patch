@@ -1,12 +1,13 @@
 Tests are creating a Segmentation fault
---- python-pyjq-d10.orig/setup.py	2021-01-27 19:25:47.662963000 +0000
-+++ python-pyjq-d10/setup.py	2021-01-27 19:26:16.186956000 +0000
-@@ -39,7 +39,7 @@
+--- python-pyjq.orig/setup.py	2021-03-17 21:11:53.470092000 +0000
++++ python-pyjq/setup.py	2021-03-17 21:12:01.805196000 +0000
+@@ -44,7 +44,8 @@
  )
  
  setup(
 -    test_suite='test_pyjq',
-+#    test_suite='test_pyjq',
++    py_modules=['pyjq'],
++#   test_suite='test_pyjq',
      ext_modules=[pyjq],
      cmdclass={"build_ext": build_ext},
  )

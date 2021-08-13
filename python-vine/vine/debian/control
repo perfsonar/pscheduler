@@ -1,0 +1,33 @@
+Source: vine
+Maintainer: Debian Python Team <team+python@tracker.debian.org>
+Uploaders:
+ Christopher Hoskin <mans0954@debian.org>,
+Section: python
+Priority: optional
+Build-Depends:
+ debhelper (>= 9),
+ dh-python,
+ python3-all,
+ python3-setuptools,
+Standards-Version: 4.4.1
+Homepage: https://github.com/celery/vine
+Vcs-Git: https://salsa.debian.org/python-team/packages/vine.git
+Vcs-Browser: https://salsa.debian.org/python-team/packages/vine
+
+Package: python3-vine
+Architecture: all
+Depends:
+ ${misc:Depends},
+ ${python3:Depends},
+Breaks:
+ python3-celery (<< 5.0),
+ python3-kombu (<< 5.0),
+Description: Python promises (Python 3 version)
+ A Python implementation of the promise pattern for asynchronous programming.
+ .
+ This is a special implementation of promises in that it can be used both for
+ "promise of a value" and lazy evaluation. The biggest upside for this is that
+ everything in a promise can also be a promise, e.g. filters, callbacks and
+ errbacks can all be promises.
+ .
+ This package contains the Python 3 version of the library.

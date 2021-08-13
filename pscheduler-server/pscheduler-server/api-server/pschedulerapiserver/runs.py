@@ -112,7 +112,8 @@ def tasks_uuid_runs(task):
                  run
                  JOIN task ON task.id = run.task
              WHERE
-                task.uuid = %s"""
+                task.uuid = %s
+                AND run.state <> run_state_scheduling()"""
         args = [task]
 
         try:
@@ -228,6 +229,7 @@ def __runs_first_run(
                 WHERE
                   task.uuid = %s
                   AND (%s OR lower(run.times) >= normalized_now())
+                  AND run.state <> run_state_scheduling()
                 ORDER BY run.times
                 LIMIT 1
                 """, [task, not future])
@@ -278,7 +280,7 @@ def tasks_uuid_runs_run(task, run):
         if wait_time < 0:
             return bad_request("Wait time must be >= 0")
 
-        # If asked for 'first', dig up the first run and use its UUID.
+        # If asked for 'first', dig up the first visible run and use its UUID.
 
         if run in ['next', 'first']:
             future = run == 'next'
@@ -309,7 +311,7 @@ def tasks_uuid_runs_run(task, run):
                     SELECT
                         run_json(run.id),
                         run_state.finished,
-                        task.participant_key
+                        task.json ->> '_key'
                     FROM
                         task
                         JOIN run ON task.id = run.task
@@ -317,6 +319,7 @@ def tasks_uuid_runs_run(task, run):
                     WHERE 
                         task.uuid = %s
                         AND run.uuid = %s
+                        AND run.state <> run_state_scheduling()
                     """, [task, run])
             except Exception as ex:
                 log.exception()
@@ -326,7 +329,7 @@ def tasks_uuid_runs_run(task, run):
                 cursor.close()
                 return not_found()
 
-            result, finished, participant_key = cursor.fetchone()
+            result, finished, required_key = cursor.fetchone()
             cursor.close()
 
             if not (wait_local or wait_merged):
@@ -368,7 +371,7 @@ def tasks_uuid_runs_run(task, run):
         except KeyError:
             pass  # Not there?  Don't care.
 
-        return ok_json_sanitize_checked(result, participant_key)
+        return ok_json_sanitize_checked(result, required_key)
 
 
     elif request.method == 'PUT':
@@ -614,6 +617,7 @@ def tasks_uuid_runs_run_result(task, run):
             WHERE
                 task.uuid = %s
                 AND run.uuid = %s
+                AND run.state <> run_state_scheduling()
             """, [task, run])
 
         if cursor.rowcount == 0:

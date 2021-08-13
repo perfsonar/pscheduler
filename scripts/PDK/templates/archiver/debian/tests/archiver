@@ -1,0 +1,6 @@
+#!/bin/sh
+
+set -e
+
+pscheduler task --archive '{ "archiver": "__PLUGIN_NAME__", "data": {} }' \
+  rtt --dest=localhost

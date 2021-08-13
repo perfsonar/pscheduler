@@ -20,11 +20,9 @@ except ImportError:
     import random
 
     def secrets_randbelow(below):
-        # TODO: Implement this.
         return random.randint(0, below-1)
 
     def secrets_choice(charset):
-        # TODO: Implement this.
         return charset[secrets_randbelow(len(charset)-1)]
 
 
