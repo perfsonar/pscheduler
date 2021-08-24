@@ -11,9 +11,9 @@ This program goes through all of the steps needed to do a single
 run of a pScheduler task through its REST API.
 
 To install non-standard modules used by this script (available from
-the standard CentOS repository):
+the standard CentOS repository and EPEL):
 
-    yum -y install python-dateutil python-requests
+    yum -y install python-dateutil python36-pycurl
 
 """
 
