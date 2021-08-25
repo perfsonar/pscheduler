@@ -21,7 +21,7 @@ dnl
 # not to build a package:
 #
 # OS         Operating system, per 'uname -s'       Linux, Darwin
-# FAMILY     OS family, empty of doesn't apply      RedHat, Debian
+# FAMILY     OS family, empty if not applicable     RedHat, Debian
 # DISTRO     OS distribution (LSB ID)               RHEL, CentOS, Oracle, Debian, Ubuntu
 # RELEASE    Distribution release                   7.8.2003
 # MAJOR      Major part of RELEASE                  7
@@ -34,6 +34,19 @@ dnl
 # builds in this file; if there is no packaging information for an OS
 # family in with the sources, it will not be built.
 #
+
+
+# GENERAL-PURPOSE MACROS
+
+# Debian 9 doesn't support Golang sufficiently for what we need, nor
+# is there support for it on arm64 or ppc64el.
+# TODO: Doesn't build properly anywhere on Debian.
+# TODO: Antoine says this is okay on Deb10
+define(HAVE_GOLANG,ifelse(FAMILY/MAJOR,Debian/9,,
+              FAMILY/ARCH,Debian/arm64,,
+              FAMILY/ARCH,Debian/ppc64el,,
+              1))
+
 
 #
 # PACKAGE BUILD UTILITIES
@@ -116,27 +129,13 @@ httpd-wsgi-socket
 #
 drop-in
 
-# No good support for this on Debian 9 or arm64 and ppc64el
-# TODO: Doesn't build properly anywhere on Debian.
-# TODO: Antoine says this is okay on Deb10
-ifelse(FAMILY/MAJOR,Debian/9,,
-       FAMILY/ARCH,Debian/arm64,,
-       FAMILY/ARCH,Debian/ppc64el,,
-       ethr)
-
+ifelse(HAVE_GOLANG,1,ethr)
 ifelse(FAMILY/MAJOR,REDHAT/8,I2util)			# TODO: Building temporarily for EL8; required for owamp
 ifelse(FAMILY/MAJOR,REDHAT/8,iperf)			# EPEL dropped this for EL8
 ifelse(FAMILY/MAJOR,REDHAT/8,owamp)			# TODO: Building temporarily for EL8
 paris-traceroute
 random-string
-# No good support for this on Debian 9 or on arm64 and ppc64el
-# TODO: Doesn't build properly anywhere on Debian.
-# TODO: Antoine says this is okay on Deb10
-ifelse(FAMILY,Debian,,
-       FAMILY/MAJOR,Debian/9,,
-       FAMILY/ARCH,Debian/arm64,,
-       FAMILY/ARCH,Debian/ppc64el,,
-       s3-benchmark)
+ifelse(HAVE_GOLANG,1,s3-benchmark)
 
 #
 # PSCHEDULER CORE PARTS
@@ -164,14 +163,7 @@ pscheduler-test-latencybg
 pscheduler-test-netreach		--bundle extras
 pscheduler-test-throughput
 pscheduler-test-rtt
-# No good support for this on Debian 9 or arm64 and ppc64el
-# TODO: Not built on Debian because of s3-benchmark; see above.
-# TODO: Antoine says this is okay on Deb10
-ifelse(FAMILY,Debian,,
-       FAMILY/MAJOR,Debian/9,,
-       FAMILY/ARCH,Debian/arm64,,
-       FAMILY/ARCH,Debian/ppc64el,,
-       pscheduler-test-s3throughput)
+ifelse(HAVE_GOLANG,1,pscheduler-test-s3throughput)
 pscheduler-test-simplestream
 pscheduler-test-snmpget			--bundle snmp
 pscheduler-test-snmpgetbgm		--bundle snmp
@@ -187,11 +179,8 @@ pscheduler-tool-bwctltracepath		--bundle obsolete
 pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl
 pscheduler-tool-dnspy
-# No good support for this on Debian 9 or arm64 and ppc64el
-ifelse(FAMILY/MAJOR,Debian/9,,
-       FAMILY/ARCH,Debian/arm64,,
-       FAMILY/ARCH,Debian/ppc64el,,
-       pscheduler-tool-ethr)
+
+ifelse(HAVE_GOLANG,1,pscheduler-tool-ethr)
 pscheduler-tool-globus			--bundle extras
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
@@ -205,14 +194,7 @@ pscheduler-tool-powstream
 pscheduler-tool-psclock
 pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
-# No good support for this on Debian 9 or arm64 and ppc64el
-# TODO: Not build on debian because of s3-benchmark; see above.
-# TODO: Antoine says this is okay on Deb10
-ifelse(FAMILY,Debian,,
-       FAMILY/MAJOR,Debian/9,,
-       FAMILY/ARCH,Debian/arm64,,
-       FAMILY/ARCH,Debian/ppc64el,,
-       pscheduler-tool-s3-benchmark)
+ifelse(HAVE_GOLANG,1,pscheduler-tool-s3-benchmark)
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
