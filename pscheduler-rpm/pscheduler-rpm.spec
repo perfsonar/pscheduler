@@ -3,7 +3,7 @@
 #
 
 %define perfsonar_auto_version 4.4.1
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 1
 
 Name:		pscheduler-rpm
 Version:	%{perfsonar_auto_version}
