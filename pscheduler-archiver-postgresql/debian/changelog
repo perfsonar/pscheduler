@@ -1,5 +1,5 @@
-pscheduler-archiver-postgresql (4.3.0~0.a1-1) perfsonar-4.3-staging; urgency=low
+pscheduler-archiver-postgresql (5.0.0~0.a1-1) perfsonar-5.0-staging; urgency=low
 
   * Initial release
 
- -- perfSONAR developers <debian@perfsonar.net>  Tue, 13 Oct 2020 17:40:35 +0000
+ -- perfSONAR developers <debian@perfsonar.net>  Thu, 26 Aug 2021 19:50:17 +0100
