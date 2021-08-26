@@ -4,11 +4,11 @@ pscheduler-tool-ethr (4.5.0~a1.0-1) perfsonar-4.5-snapshot; urgency=low
 
  -- perfSONAR developers <debian@perfsonar.net>  Fri, 16 Jul 2021 17:09:14 +0000
 
-pscheduler-tool-ethr (4.4.1~a1.0-1) perfsonar-4.4-snapshot; urgency=low
+pscheduler-tool-ethr (4.4.1-1) perfsonar-4.4; urgency=low
 
   * New upstream version.
 
- -- perfSONAR developers <debian@perfsonar.net>  Fri, 16 Jul 2021 17:09:05 +0000
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 26 Aug 2021 03:17:22 +0100
 
 pscheduler-tool-ethr (4.4.0-1) perfsonar-4.4; urgency=low
 
