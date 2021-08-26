@@ -3,8 +3,8 @@
 #
 
 %define short	psurl
-%define perfsonar_auto_version 4.4.1
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 4.4.2
+%define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
