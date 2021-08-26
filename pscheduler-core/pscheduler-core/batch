@@ -8,8 +8,6 @@ import pscheduler
 import pscheduler.batchprocessor
 import sys
 
-# TODO: Remove this when no longer beta.
-pscheduler.beta_feature()
 
 pscheduler.set_graceful_exit()
 
