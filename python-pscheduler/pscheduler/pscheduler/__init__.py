@@ -6,6 +6,7 @@ from .api import *
 from .clockstate import *
 from .db import *
 from .durationrange import *
+from .exception import *
 from .exit import *
 from .exitstatus import *
 from .enummatcher import *
@@ -22,6 +23,7 @@ from .mtu import *
 from .numa import *
 from .numeric import *
 from .numericrange import *
+from .process import *
 from .program import *
 from .pidfile import *
 from .plugins import *

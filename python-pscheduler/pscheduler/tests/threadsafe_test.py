@@ -8,7 +8,7 @@ import unittest
 from base_test import PschedTestBase
 
 from pscheduler.threadsafe import ThreadSafeSet
-
+from pscheduler.threadsafe import ThreadWithReturnValue
 
 class TestThreadsafe(PschedTestBase):
     """
@@ -35,6 +35,18 @@ class TestThreadsafe(PschedTestBase):
         self.assertEqual(len(tss),num - half)
 
         self.assertEqual(tss.items(),list(range(half, num)))
+
+
+    def test_thread_with_return_value(self):
+        """Test ThreadWithReturnValue"""
+
+        def func():
+            return "returned-value"
+
+        thread = ThreadWithReturnValue(target=func)
+        thread.start()
+        self.assertEqual(thread.join(), "returned-value")
+
 
 
 if __name__ == '__main__':

@@ -3,7 +3,7 @@
 #
 
 %define short	snooze
-%define perfsonar_auto_version 4.4.0
+%define perfsonar_auto_version 4.4.1
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-tool-%{short}

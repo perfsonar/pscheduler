@@ -2,7 +2,7 @@
 # RPM Spec for Python pScheduler Module
 #
 
-%define perfsonar_auto_version 4.4.0
+%define perfsonar_auto_version 4.4.1
 %define perfsonar_auto_relnum 1
 
 %define short	pscheduler
@@ -33,6 +33,7 @@ Requires:	%{_pscheduler_python}-jsonschema >= 3.0
 Requires:	%{_pscheduler_python_epel}-netaddr
 Requires:	%{_pscheduler_python}-netifaces
 Requires:	%{_pscheduler_python}-ntplib
+Requires:	%{_pscheduler_python_epel}-psutil
 Requires:	%{_pscheduler_python_epel}-psycopg2 >= 2.6.1
 Requires:	%{_pscheduler_python}-py-radix
 # The limit system uses this.
@@ -61,6 +62,7 @@ BuildRequires:	%{_pscheduler_python}-jsonschema
 BuildRequires:	%{_pscheduler_python_epel}-netaddr
 BuildRequires:	%{_pscheduler_python}-netifaces
 BuildRequires:	%{_pscheduler_python}-ntplib
+BuildRequires:	%{_pscheduler_python_epel}-psutil
 BuildRequires:	%{_pscheduler_python_epel}-psycopg2 >= 2.2.0
 BuildRequires:	%{_pscheduler_python}-py-radix
 # The limit system uses this.
