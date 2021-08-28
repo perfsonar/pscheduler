@@ -1,3 +1,9 @@
+python-pscheduler (4.4.1-2) perfsonar-4.4; urgency=low
+
+  * Adding dependency to python3-psutil into python3-pscheduler.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sat, 28 Aug 2021 00:07:12 +0100
+
 python-pscheduler (4.4.1-1) perfsonar-4.4; urgency=low
 
   * New upstream version.
