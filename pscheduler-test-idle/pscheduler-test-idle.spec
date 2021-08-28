@@ -3,8 +3,8 @@
 #
 
 %define short	idle
-%define perfsonar_auto_version 4.4.1
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 5.0.0
+%define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-test-%{short}
 Version:	%{perfsonar_auto_version}
