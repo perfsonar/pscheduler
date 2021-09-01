@@ -1,3 +1,9 @@
+pscheduler-server (4.4.1-4) perfsonar-4.4; urgency=low
+
+  * Patch: Not using f-string as Python 3.5 is still the default on Debian 9.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 01 Sep 2021 19:32:13 +0100
+
 pscheduler-server (4.4.1-1) perfsonar-4.4; urgency=low
 
   * New upstream version.
