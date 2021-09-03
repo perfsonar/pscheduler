@@ -1,1 +1,2 @@
 # Ignore those files when creating a tarball with `git archive`
+debian/         export-ignore
