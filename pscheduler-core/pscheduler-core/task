@@ -148,7 +148,13 @@ opt_parser.add_option_group(other_group)
 other_group.add_option("--assist",
                       help="Use the host ASSIST for assistance (default localhost or $PSCHEDULER_ASSIST)",
                       action="store", type="string",
-                      dest="assist")  # Conflict with reserved word
+                      dest="assist")
+
+other_group.add_option("--assist-bind",
+                       help="Bind to the supplied address when looking for assistance" \
+                       "(default localhost or $PSCHEDULER_ASSIST_BIND)",
+                      action="store", type="string",
+                      dest="assist_bind")
 
 other_group.add_option("--bind",
                        help="Bind to the supplied address when submitting the task",
@@ -305,17 +311,13 @@ verbose = (not options.quiet) \
 # TODO: Tie this to the options.
 log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True, propagate=True)
 
-# Decide who assists us.
 
-assist = options.assist
-if assist is None:
-    assist = os.getenv('PSCHEDULER_ASSIST')
+# Decide who assists and where to bind for it.
 
-# Last-ditch default
 last_ditch_assist = 'localhost'
-if assist is None:
-    assist = last_ditch_assist
-log.debug("Assistance is from %s", assist)
+assist = options.assist or os.getenv('PSCHEDULER_ASSIST') or last_ditch_assist
+assist_bind = options.assist_bind or os.getenv('PSCHEDULER_ASSIST_BIND')
+log.debug("Assistance is from %s bound from %s", assist, assist_bind)
 
 
 #
@@ -509,7 +511,7 @@ if 'contexts' in task:
 
 
 # Make sure whoever we're using for assistance is running pScheduler
-if not pscheduler.api_has_pscheduler(assist, bind=bind):
+if not pscheduler.api_has_pscheduler(assist, bind=assist_bind):
     pscheduler.fail("Unable to find pScheduler on %s" % (assist))
 
 
@@ -531,7 +533,7 @@ log.debug("Converting to spec via %s", spec_url)
 status, raw_spec = pscheduler.url_get(
     spec_url,
     params={ 'args': pscheduler.json_dump(task_args) },
-    bind=bind,
+    bind=assist_bind,
     throw=False,
     timeout=10
     )
@@ -623,7 +625,7 @@ log.debug("Params are: %s", participants_params)
 status, participants = pscheduler.url_get(
     url,
     params=participants_params,
-    bind=bind,
+    bind=assist_bind,
     throw=False )
 
 if status not in [ 200, 404 ]:
@@ -631,13 +633,10 @@ if status not in [ 200, 404 ]:
 if status == 200:
     log.debug("Got participants: %s", participants)
     lead = participants["participants"][0]
-    try:
-        null_reason = participants["null-reason"]
-    except KeyError:
-        null_reason = None
+    null_reason = participants.get("null-reason")
 
 if null_reason is None:
-    null_reason = "No reason provided.  (Server is running old software.)"
+    null_reason = "No reason provided."
 
 log.debug("Lead is %s", lead)
 if lead is None:
@@ -649,8 +648,10 @@ if lead is None:
 # Barf mightily.
 
 if lead is None and assist != last_ditch_assist:
-    pscheduler.fail("Cannot use an assist server with ambiguous parameters: %s"
-                    % null_reason)
+    pscheduler.fail("Cannot use an assist server when the test parameters are ambiguous.\n" \
+                    "A parameter like --host, --host-node, --source or --source-node that\n" \
+                    "provides a hint about where the test is to run will prevent this error.")
+
 
 
 #
