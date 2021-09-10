@@ -93,4 +93,7 @@ except (ValueError, OSError) as ex:
 
 # Run it.
 
-pscheduler.succeed_json(processor(dry_run=args.dry, debug=debug))
+try:
+    pscheduler.succeed_json(processor(dry_run=args.dry, debug=debug))
+except Exception as ex:
+    pscheduler.fail("Batch Failed: %s" % (str(ex)))
