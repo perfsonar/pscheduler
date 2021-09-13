@@ -413,6 +413,11 @@ class BatchProcessor():
 
         self.spec = copy.deepcopy(spec)
 
+        try:
+            self.global_data = self.spec["global"]["data"]
+        except KeyError:
+            self.global_data = None
+
         # Check the continue-if transforms in all jobs
 
         # This has to stay separate because there's some deeepcopy
@@ -422,13 +427,13 @@ class BatchProcessor():
 
         for job_number, job in enumerate(self.spec["jobs"]):
             try:
-                self.job_continue_if[job_number] = JQFilter(job["continue-if"])
+                self.job_continue_if[job_number] = JQFilter(job["continue-if"],
+                                                            args={"global": self.global_data})
             except KeyError:
                 # None for this job
                 pass
             except ValueError as ex:
                 raise ValueError("At jobs[%d]: %s" % (job_number, str(ex)))
-
         # Make sure whoever we're using for assistance is running pScheduler
         if assist is None:
             assist = os.environ.get("PSCHEDULER_ASSIST", api_local_host())
@@ -439,11 +444,6 @@ class BatchProcessor():
         self.assist = assist
         self.lead = lead
         self.bind = bind
-
-        try:
-            self.global_data = spec["global"]["data"]
-        except KeyError:
-            self.global_data = None
 
         try:
             self.global_transform_pre = spec["global"]["transform-pre"]
