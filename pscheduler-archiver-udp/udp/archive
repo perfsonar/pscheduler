@@ -80,7 +80,7 @@ def archive(json):
         send_text = pscheduler.json_dump(json["result"]).encode("utf-8")
         send_len = len(send_text)
         if send_len > payload_size:
-            raise ValueError(f'Payload of {send_len} bytes is too big (maximum {payload_size})')
+            raise ValueError("Payload of %s bytes is too big (maximum %s)" % (send_len, payload_size))
 
         # Send the data
 
