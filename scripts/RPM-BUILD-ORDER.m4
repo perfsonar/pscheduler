@@ -191,6 +191,8 @@ pscheduler-archiver-postgresql
 pscheduler-archiver-rabbitmq
 pscheduler-archiver-snmptrap		--bundle snmp
 pscheduler-archiver-syslog
+pscheduler-archiver-tcp
+pscheduler-archiver-udp
 
 # Context Changers
 pscheduler-context-changefail
