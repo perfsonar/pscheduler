@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Validate data for the tcp archiver
+# Validate data for the udp archiver
 #
 
 import pscheduler

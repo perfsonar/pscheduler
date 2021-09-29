@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Send a result to a TCP socket.
+Send a result to a UDP socket.
 """
 
 import sys
@@ -10,7 +10,7 @@ import socket
 
 MAX_SCHEMA = 1
 
-log = pscheduler.Log(name="tcp-archiver")
+log = pscheduler.Log(name="udp-archiver")
 
 
 def archive(json):

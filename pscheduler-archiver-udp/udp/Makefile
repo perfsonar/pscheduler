@@ -2,7 +2,7 @@
 # Makefile for any archiver class
 #
 
-NAME=tcp
+NAME=udp
 
 # TODO: This should be an includable template.
 
