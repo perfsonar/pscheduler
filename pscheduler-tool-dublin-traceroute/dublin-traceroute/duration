@@ -32,8 +32,8 @@ except ValueError:
 
 hops = spec.get('hops', 30)
 
-# Generally, a 30-hop run takes about 10 seconds.
-total += datetime.timedelta(seconds=(10/30)*hops)
+# TODO: This is a rough to-be-safe estimate
+total += datetime.timedelta(seconds=hops)
 
 
 delay = pscheduler.iso8601_as_timedelta(spec.get('sendwait', "P0D"))

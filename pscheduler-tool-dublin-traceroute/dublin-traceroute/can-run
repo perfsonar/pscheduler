@@ -50,11 +50,14 @@ except KeyError:
 
 # as - Okay in any form.
 
-# dest-port
-if "dest-port" in spec:
-    errors.append("Destination ports are not supported.")
+# dest-port - Okay in any form
 
-# dest - Okay in any form.
+# dest - Okay if it's a hostname or IPv4 address.
+dest = spec["dest"]
+if pscheduler.is_ip(dest):
+    family, ip = pscheduler.ip_addr_version(dest, resolve=False, family=True)
+    if family != socket.AF_INET:
+        errors.append("Only IPv4 is supported.")
 
 # first-ttl
 # Hold this for later.
@@ -100,8 +103,6 @@ if "queries" in spec:
     errors.append("Cannot control queries per hop")
 
 # send-wait - Okay in any form.
-if "sendwait" in spec:
-    errors.append("Sendwait is not supported.")
 
 # source
 if "source" in spec:

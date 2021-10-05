@@ -24,12 +24,11 @@ Requires:	pscheduler-server >= 4.3.0
 Requires:	pscheduler-account
 Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	pscheduler-test-trace
-Requires:	dublin-traceroute
+Requires:	dublin-traceroute >= 0.4.2
 Requires:	%{_pscheduler_python}-icmperror
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
-BuildRequires:	dublin-traceroute
 
 %description
 pScheduler Dublin Traceroute Tool
