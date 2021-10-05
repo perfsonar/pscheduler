@@ -191,9 +191,8 @@ for flow_id, flow in json_result["flows"].items():
             hop_ip =  hop["received"]["ip"]["src"]
             hops.append({
                 "ip": hop_ip,
-                # TODO: DTR comes up with weird RTTs.
+                # TODO: DTR comes up with weird RTTs.  See #1144 for commentary.
                 # "rtt": "PT%fS" % (rtt_usec / 1000000.0)
-                # TODO: Evaluate ICMP errors
             })
             ips.add(hop_ip)
         else:
