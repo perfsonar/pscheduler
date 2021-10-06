@@ -20,7 +20,7 @@ PG_USER="__PG_USER__"
 TMPBASE="${TMP:-/tmp}/$(basename $0).$$"
 mkdir -p "${TMPBASE}"
 # The upgrade process runs as PG_USER and writes here.
-chown "${PG_USER}.${PG_USER}" "${TMPBASE}"
+chown "${PG_USER}:${PG_USER}" "${TMPBASE}"
 
 cleanup()
 {
@@ -121,7 +121,7 @@ then
     echo "Warning: Postgresql ${TO} is already initialized.  Backing that up first."
     mv "${TO_DATA}" "${TO_DATA}-$(date +%Y-%m-%dT%T)"
     mkdir -p "${TO_DATA}"
-    chown "${PG_USER}.${PG_USER}" "${TO_DATA}"
+    chown "${PG_USER}:${PG_USER}" "${TO_DATA}"
 fi
 
 
