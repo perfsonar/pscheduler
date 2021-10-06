@@ -3,3 +3,6 @@
 #
 
 include make/generic-rpm.make
+
+TO_CLEAN += .cmake
+
