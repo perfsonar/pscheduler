@@ -77,7 +77,9 @@ if len(remaining_args) != 0:
    pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
 
-result = { 'schema': 1 }
+schema = pscheduler.HighInteger(1)
+
+result = {}
 
 
 if options.dest is not None:
@@ -88,9 +90,12 @@ if options.source is not None:
 
 if options.source_node is not None:
    result['source-node'] = options.source_node
+   schema.set(2)
 
 if options.timeout is not None:
    result['timeout'] = options.timeout
+
+result['schema'] = schema.value()
 
 
 pscheduler.succeed_json(result)
