@@ -236,7 +236,12 @@ def powstream_line(line, keep_data_files=False):
                     log.debug("Posting result: %s", result)
                     emitter(result)
                 else:
-                    log.error("Powstream call to owstats failed: %s", error)
+                    message = "Powstream call to owstats failed: %s" % (error)
+                    log.error(message)
+                    emitter({
+                        "succeeded": False,
+                        "error": message
+                    })
 
             except Exception:
                 handle_run_error(emitter, "While executing owstats", exception=True)
