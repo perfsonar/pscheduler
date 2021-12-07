@@ -216,13 +216,9 @@ def powstream_line(line, keep_data_files=False):
     try:
 
         # Any line we get should be a path to a readable file.
-        if not os.access(line, os.R_OK):
+        if line.endswith('.owp'):
 
-            log.error("Ignoring unreadable file '%s'", line)
-
-        elif line.endswith('.owp'):
-
-            log.debug("Processing .owp file")
+            log.debug("Processing .owp file %s" % line)
 
             owstats_args = [owstats_cmd, '-R', line]
             log.debug("Running owstats command: %s" % " ".join(owstats_args))
