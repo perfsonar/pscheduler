@@ -139,7 +139,10 @@ class LimitProcessor(object):
         # Identification
         #
 
-        identifications = self.identifiers.identities(hints)
+        identifications, ident_diags = self.identifiers.identities(hints)
+        if ident_diags:
+            diags.append("Identifier diagnostics:")
+            diags += ident_diags
         if not identifications:
             diags.append("Made no identifications.")
             return False, [], '\n'.join(diags), None, None
