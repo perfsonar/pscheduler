@@ -18,10 +18,19 @@ data_validator = {
     "type": "object",
     "properties": {
         "topic": {"$ref": "#/pScheduler/String"},
-        "server": {"$ref": "#/pScheduler/String"}
+        "server": {"$ref": "#/pScheduler/String"},
+        "archiver_id": {"$ref": "#/pScheduler/String"},
+        "security_protocol": {"$ref": "#/pScheduler/String"},
+        "ssl_cafile": {"$ref": "#/pScheduler/String"},
+        "ssl_certfile": {"$ref": "#/pScheduler/String"},
+        "ssl_keyfile": {"$ref": "#/pScheduler/String"},
+        "ssl_password": {"$ref": "#/pScheduler/String"},
+        "ssl_checkhostname": {"$ref": "#/pScheduler/Boolean"},
+        "kafka_retries": {"$ref": "#/pScheduler/Integer"},
+        "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
     },
     "additionalProperties": False,
-    "required": ["topic", "server"]
+    "required": ["topic", "server", "archiver_id"]
 }
 
 valid, error = pscheduler.json_validate(json, data_validator)

@@ -10,25 +10,115 @@ from kafka.errors import KafkaError
 
 MAX_SCHEMA = 1
 
+log_prefix="archiver-kafka"
+
+log = pscheduler.Log(prefix=log_prefix, quiet=False)
+
+archiver = None
+
+class psKafkaArchiver(object):
+    def is_connected(self):
+        """
+        Determine if producer is connected
+        """
+        return self.producer is not None
+
+    def close(self):
+        """
+        Close producer connection
+        """
+        self.producer.close()
+        self.producer=None
+
+    def publish(self, message):
+        """
+        Send message to producer
+        """
+        if self.is_connected() is True:
+            self.producer.send(self.topic, message)
+
+    def __init__(self, archiver_id, bootstrap_servers,topic, retries=3, security_protocol='',ssl_cafile=None,ssl_certfile=None,ssl_keyfile=None,ssl_password='', ssl_checkhostname=False ):
+        self.bootstrap_servers = bootstrap_servers
+        self.topic=topic
+        self.ssl_checkhostname=False
+        self.client_id=archiver_id
+        self.retries= retries
+        if(security_protocol=='SSL'):
+            self.security_protocol=security_protocol
+            if(ssl_cafile is None or ssl_certfile is None or ssl_keyfile is None):
+                raise ValueError("ssl files missing")
+            self.ssl_cafile = ssl_cafile
+            self.ssl_certfile=ssl_certfile
+            self.ssl_keyfile=ssl_keyfile
+            if(ssl_password):
+                self.ssl_password = ssl_password
+            if(ssl_checkhostname):
+                self.ssl_checkhostname=ssl_checkhostname
+            self.producer = KafkaProducer(bootstrap_servers=self.bootstrap_servers,client_id=self.client_id, retries=self.retries, security_protocol=self.security_protocol,
+                ssl_cafile=self.ssl_cafile, ssl_certfile=self.ssl_certfile, ssl_keyfile=self.ssl_keyfile, ssl_password=self.ssl_password, ssl_check_hostname=self.ssl_checkhostname)
+        else:
+            self.producer = KafkaProducer(bootstrap_servers=self.bootstrap_servers, client_id=self.client_id, retries=self.retries)
+
+        
+
+def get_archiver(archiverconfig):
+    global archiver
+    if archiver is not None and archiver.is_connected():
+        log.debug("Kafka archiver exists. So reusing")
+        return
+    else:
+        archiver=None
+        create_archiver(archiverconfig)
+    
+def create_archiver(archiverconfig):
+    bootstrap_servers=archiverconfig["server"]
+    log.debug("Bootstrap server: "+bootstrap_servers)
+    topic=archiverconfig["topic"]
+    log.debug("Topic: "+topic)
+    archiver_id = archiverconfig["archiver_id"]
+    retries = archiverconfig["kafka_retries"]
+    security_protocol=''
+
+    global archiver
+
+    if ("security_protocol" in archiverconfig):
+        log.debug("Found security protocol in config")
+        security_protocol=archiverconfig['security_protocol']
+        archiver = psKafkaArchiver(bootstrap_servers=bootstrap_servers, archiver_id=archiver_id, topic=topic, retries=retries, security_protocol=security_protocol, ssl_certfile=archiverconfig['ssl_certfile'],
+            ssl_cafile=archiverconfig['ssl_cafile'], ssl_keyfile=archiverconfig['ssl_keyfile'], ssl_password=archiverconfig['ssl_password'],
+            ssl_checkhostname=archiverconfig['ssl_checkhostname'])
+    else:
+        log.debug("Creating plain text archiver")
+        archiver = psKafkaArchiver(bootstrap_servers=bootstrap_servers, archiver_id=archiver_id, topic=topic, retries=retries)
+
+
 def archive(json):
     #Do archiving here
 
-    data = json["data"]     
-
+    data = json["data"]
+    message = pscheduler.json_dump(json["result"]).encode('utf-8')
+    log.debug("Kafka server and topic %s" % data)
     try:
-        producer = KafkaProducer(bootstrap_servers=[data["server"]])
-        producer.send(data["topic"], pscheduler.json_dump(json["result"])).get(timeout=30)
-        
+        get_archiver(data)
+        archiver.publish(message)
+        result = {'succeeded': True}
+  
     except Exception as ex:
+        #Cleanup producer and start a fresh connection
+        if archiver :
+            archiver.close()
+        get_archiver(data)
         result = {
             "succeeded": False,
             "error": "Failed to send message: %s" % (str(ex))
         }
-        return result
-
-    return {'succeeded': True}
-
-
+        if "retry-policy" in data:
+            log.debug("Retry exists")
+            policy = pscheduler.RetryPolicy(data["retry-policy"], iso8601=True)
+            retry_time = policy.retry(json["attempts"])
+            if retry_time is not None:
+                result["retry"] = retry_time
+    return result
 
 
 PARSER = pscheduler.RFC7464Parser(sys.stdin)
