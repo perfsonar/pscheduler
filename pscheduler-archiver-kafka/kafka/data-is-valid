@@ -8,37 +8,31 @@ import pscheduler
 try:
     json = pscheduler.json_load(max_schema=1)
 except ValueError as ex:
-    pscheduler.succeed_json({
-        "valid": False,
-        "error": str(ex)
-        })
+    pscheduler.succeed_json({"valid": False, "error": str(ex)})
 
 data_validator = {
-    #Data validation json object
+    # Data validation json object
     "type": "object",
     "properties": {
         "topic": {"$ref": "#/pScheduler/String"},
         "server": {"$ref": "#/pScheduler/String"},
-        "archiver_id": {"$ref": "#/pScheduler/String"},
-        "security_protocol": {"$ref": "#/pScheduler/String"},
-        "ssl_cafile": {"$ref": "#/pScheduler/String"},
-        "ssl_certfile": {"$ref": "#/pScheduler/String"},
-        "ssl_keyfile": {"$ref": "#/pScheduler/String"},
-        "ssl_password": {"$ref": "#/pScheduler/String"},
-        "ssl_checkhostname": {"$ref": "#/pScheduler/Boolean"},
-        "kafka_retries": {"$ref": "#/pScheduler/Integer"},
-        "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+        "archiver-id": {"$ref": "#/pScheduler/String"},
+        "security-protocol": {"$ref": "#/pScheduler/String"},
+        "_ssl-cafile": {"$ref": "#/pScheduler/String"},
+        "_ssl-certfile": {"$ref": "#/pScheduler/String"},
+        "_ssl-keyfile": {"$ref": "#/pScheduler/String"},
+        "_ssl-password": {"$ref": "#/pScheduler/String"},
+        "ssl-checkhostname": {"$ref": "#/pScheduler/Boolean"},
+        "kafka-retries": {"$ref": "#/pScheduler/Integer"},
+        "retry-policy": {"$ref": "#/pScheduler/RetryPolicy"},
     },
     "additionalProperties": False,
-    "required": ["topic", "server", "archiver_id"]
+    "required": ["topic", "server"],
 }
 
 valid, error = pscheduler.json_validate(json, data_validator)
 
 if not valid:
-    pscheduler.succeed_json({
-        "valid": False,
-        "error": error
-        })
+    pscheduler.succeed_json({"valid": False, "error": error})
 
-pscheduler.succeed_json({ "valid": True })
+pscheduler.succeed_json({"valid": True})
