@@ -7,6 +7,7 @@
 
 
 # This is the version of jq we build, plus our patches
+# TODO: Set Release: back to 1 when a new version is released.
 %define actual_version 1.6
 
 # The jq developers don't do bugfix releases, so our is numbered with
@@ -18,7 +19,9 @@
 %define short	jq
 Name:		%{short}
 Version:	%{release_version}
-Release:	1%{?dist}
+# There was no real difference between -2 and -3, but this bump will
+# force some older systems to upgrade properly.
+Release:	3%{?dist}
 Summary:	A filter program for JSON
 BuildArch:	%(uname -m)
 License:	BSD
