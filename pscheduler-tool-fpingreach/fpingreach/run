@@ -1,0 +1,250 @@
+#!/usr/bin/env python3
+#
+# Run a test.  Just the test spec is provided on stdin.
+#
+
+# TODO: Take the parallel stuff out.
+
+import ipaddress
+import pscheduler
+import random
+import socket
+
+from fpingreach_common import *
+
+random.seed()
+
+log = pscheduler.Log(prefix='tool-fpingreach', quiet=True)
+
+input = pscheduler.json_load(exit_on_error=True);
+
+spec = input["test"]["spec"]
+
+timeout_iso = spec.get("timeout", DEFAULT_TIMEOUT )
+timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+
+diags = []
+
+
+# ------------------------------------------------------------------------------
+
+def __addr_yields(network, limit):
+    addresses = network.num_addresses - 2
+    yields = min(limit, addresses)
+    return (addresses, yields)
+
+
+# Generator functions for the scan modes
+
+def net_up(network, limit=None, exclude=None):
+    (addresses, yields) = __addr_yields(network, limit)
+    address = 1
+    while addresses and yields:
+        addresses -= 1
+        address += 1
+
+        to_yield = network[address]
+        if to_yield == exclude:
+            continue
+
+        yield str(to_yield)
+        yields -= 1
+
+
+def net_down(network, limit=None, exclude=None):
+    (addresses, yields) = __addr_yields(network, limit)
+    address = network.num_addresses-2
+    while addresses and yields:
+        addresses -= 1
+        to_yield = network[address]
+        address -= 1
+
+        if to_yield == exclude:
+            continue
+
+        yield str(to_yield)
+        yields -= 1
+
+
+def net_edges(network, limit=None, exclude=None):
+    (addresses, yields) = __addr_yields(network, limit)
+    lower_address = 1
+    upper_address = -2
+    use_lower = True
+
+    while addresses and yields:
+        addresses -= 1
+        if use_lower:
+            to_yield = network[lower_address]
+            lower_address += 1
+        else:
+            to_yield = network[upper_address]
+            upper_address -= 1
+
+        if to_yield == exclude:
+            continue
+
+        yield str(to_yield)
+        yields -= 1
+        use_lower = not use_lower
+
+
+def net_random(network, limit=None, exclude=None):
+    (addresses, yields) = __addr_yields(network, limit)
+
+    net_upper = addresses
+
+    while yields:
+        address = random.randrange(1, net_upper)
+        to_yield = network[address]
+
+        if to_yield == exclude:
+            continue
+
+        addresses -= 1
+        yield str(to_yield)
+        yields -= 1
+
+
+generators = {
+    "up": net_up,
+    "down": net_down,
+    "edges": net_edges,
+    "random": net_random
+};
+
+# ------------------------------------------------------------------------------
+
+# Perform the test
+
+network = ipaddress.ip_network(spec["network"])
+run_max_ips = spec.get("limit", network.num_addresses - 2)
+parallel = spec.get("parallel", 100)
+
+
+ip_list = []
+generator = generators[spec.get("scan", "edges")]
+
+
+spec_gateway = spec.get("gateway", None)
+if isinstance(spec_gateway, int):
+    gateway = network[spec_gateway]
+elif isinstance(spec_gateway, str):
+    gateway = str(ipaddress.ip_address(spec_gateway))
+else:
+    gateway = None
+
+
+fping_first_args = [
+    'fping' if network.version == 4 else 'fping6',
+    '-q', '-a', '-r', '1',
+]
+
+# Figure out what interface the source address is on if there is one.
+try:
+    spec_host = spec['host']
+    try:
+        # TODO: This needs to work for IPv4 and IPv6
+        spec_host_ip = socket.gethostbyname(spec_host)
+    except socket.gaierror:
+        pscheduler.succeed_json({
+            "succeeded": False,
+            "diags": 'No diagnostics',
+            "error": "Failed to turn %s into an IP." % (spec_host)
+        })
+
+    fping_first_args.extend(['-S', spec_host_ip])
+    interface = pscheduler.address_interface(spec_host)
+    if interface is not None:
+        fping_first_args.extend(['-I', interface])
+except KeyError:
+    pass  # Not there, don't care.
+
+
+# TODO: Need to figure this.
+fping_timeout = timeout * 1.5
+
+def run_fping(ips, run_number, gateway):
+    """Execute fping and determine what was up"""
+    diags.append('Running %s' % (' '.join(fping_first_args + ips)))
+    (status, out, err) = pscheduler.run_program(fping_first_args + ips, 
+                                                timeout=fping_timeout)
+
+    diags.append('Exited %d' % (status))
+    diags.append('Stdout:\n%s' % (out))
+    diags.append('Stderr:\n%s' % (err))
+
+    # Status 0 or 1 is okay
+    # 3 is IPs not found, which shouldn't happen
+    # 4 is a problem while running
+    if status in [3, 4]:
+        pscheduler.succeed_json({
+            "succeeded": False,
+            "diags": '\n\n'.join(diags),
+            "error": "Fping failed: %s" % (err)
+        })
+
+    ips_up = [ value for value in out.split("\n") if len(value) ]
+
+    # In the first run, we check to see if the first thing we get back
+    # is the gateway.
+    if run_number == 0 and ips_up and ips_up[0] == gateway:
+        gateway_up = True
+        del ips_up[0]
+    else:
+        gateway_up = False
+
+    return (gateway_up, bool(ips_up))
+
+
+
+def succeed(spec, gateway_was_up, network_was_up):
+    """Exit with results"""
+
+    result = {
+        "succeeded": True,
+        "diags": "\n".join(diags),
+        "result": {
+            "succeeded": True,
+            "network-up": network_was_up
+        }
+    }
+
+    if "gateway" in spec:
+        result["result"]["gateway-up"] = gateway_was_up
+
+    pscheduler.succeed_json(result)
+
+
+gateway_up = False
+run_number = 0
+
+try:
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
+for next_ip in generator(network, exclude=gateway, limit=run_max_ips):
+
+    if len(ip_list) >= parallel:
+        (gateway_up, network_up) = run_fping(ip_list, run_number, gateway)
+        if network_up:
+            succeed(spec, gateway_up, True)
+        run_number += 1
+        ip_list = []
+
+    ip_list.append(next_ip)
+
+# Do another fping if there's anything left in the array
+if ip_list:
+    (gateway_up, network_up) = run_fping(ip_list, run_number, gateway)
+    if network_up:
+            succeed(spec, gateway_up, True)
+
+
+# If nothing else happened, nothing on the network is up.
+
+succeed(spec, gateway_up, False)
