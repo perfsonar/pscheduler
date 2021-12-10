@@ -1,0 +1,189 @@
+#!/usr/bin/env python3
+#
+# Development Order #5:
+#
+# This is the meat and bones of the tool, where the actual desired
+# commands or operation will be run. The results are then recorded
+# and added to the 'results' JSON data, which will then be sent
+# back to the test. Both system and api are able to be used here.
+#
+# sjcu, July 2021
+
+import subprocess
+import json
+import sys
+import nmap3
+import pscheduler
+
+#Error Messages
+NO_RESULTS_ERROR            = "No running hosts found for specified network. Check input parameters."
+INVALID_SOURCE_ERROR        = "Source must be a valid local host address or hostname."
+MISMATCHED_IP_VERSION_ERROR = "Host and Source Address must use same IP version formats."
+UNKNOWN_NMAP_ERROR          = "An error occurred with nmap. Check input parameters and try again"
+
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+
+spec = input['test']['spec']
+#timeout_iso = spec.get('timeout', 'PT10S')
+#timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+succeeded = False
+error = ''
+diags = ''
+
+host = spec["network"]
+ports = spec.get("ports")
+source = spec.get("source")
+service_detect = spec.get("service_detect")
+
+#returns True if the string matches a valid IPv4 address
+def valid_ipv4(hostString):
+    a = hostString.split('.')
+    if len(a) != 4:
+        return False
+    for group in a:
+        if (group.find("/")!=-1):
+            group = group[:group.find("/")]
+        if not group.isdigit():
+            return False
+        i = int(group)
+        if i < 0 or i > 255:
+            return False
+    return True
+
+#returns True if the string matches a valid IPv6 address
+def valid_ipv6(hostString):
+    #account for omitted 0's
+    o = hostString.find("::")
+    if (o != -1):
+        hostString.count(":")
+        hostString = hostString[:o]+":"*(7-hostString.count(":"))+hostString[o:]
+
+    a = hostString.split(':')
+    if len(a) != 8:
+        return False
+        
+    for group in a:
+        if (group == ''): group = '0000'
+        if (group.find("/")!=-1):
+            group = group[:group.find("/")]
+        try:
+            decimal = int(group, 16)
+        except ValueError:
+            return False
+        if decimal < 0 or decimal > 65535:
+            return False
+    return True
+
+#-------------------------------------------------------------------------------Nmap Class
+class NmapObj:
+    def __init__(self, host, ports):
+        self.args = ""
+        self.hosts = list()
+        self.hosts.append(host)
+        self.raw = ""
+        self.result = dict()
+        if (valid_ipv6(host)): 
+            self.args+="-6"
+        self.service = False
+        self.serviceInfo = dict()
+
+    def enable_service_detect(self):
+        self.args += " -sV"
+        self.service = True
+
+    def add_ports(self, ports):
+        ports = ports.strip(" ")
+        self.args+=" -p " + ports
+
+    def set_source(self, source):
+        self.args+=" -S "+source
+
+    def set_timeout(self, timeout):
+        self.args+=" --host-timeout " + str(timeout)
+
+
+    def scan(self):
+        #initialize python3 Nmap scanner
+        nmapScanner = nmap3.Nmap()
+        
+        #try to perform nmap scan with given parameters
+        try:
+            results = nmapScanner.scan_top_ports(self.hosts[0], default=1000, args=self.args)
+        except Exception as e:
+            #Source IP Was not recognized as a valid IP on the user's local network
+            if "Could not figure out what device to send the packet out on with the source address you gave me!" in str(e):
+                pscheduler.succeed_json({
+                    "succeeded": False,
+                    "diags": '',
+                    "error": "Nmap failed: {}".format(INVALID_SOURCE_ERROR)
+                })
+            #Some other error occurred with nmap
+            else:
+                pscheduler.succeed_json({
+                    "succeeded": False,
+                    "diags": '',
+                    "error": "{}: {}".format(UNKNOWN_NMAP_ERROR,e)
+                })
+        
+        self.raw = results
+        #last 2 elements are diagnostics
+        self.hosts = list(results.keys())[:-2]
+        self.result = dict()
+                        
+        for host in self.hosts:
+            self.result[host] = dict() if self.service else dict(dict())
+            for port in results[host]["ports"]:
+                #if service detection is not enabled, results structure is slightly different
+                if(not self.service):
+                    self.result[host][port["portid"]] = port["state"]
+                else:
+                    if("service" in port):
+                        self.result[host][port["portid"]] = port["service"]
+                    else:
+                        self.result[host][port["portid"]] = dict()
+                    self.result[host][port["portid"]]["state"] = port["state"]
+        
+        output = self.result
+        return output
+#-------------------------------------------------------------------------------Nmap Class
+
+# IMPORTANT NOTE: This code puts the process to sleep until the
+# scheduled start time has arrived.  It should be placed after all
+# preparatory code has been executed and immediately before the tool # is invoked (for plugins that run other programs) or any activity
+# that does a measurement (for those that don't).  
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+    succeeded = False
+nmap = NmapObj(host, ports)
+
+if (ports is not None and ports != ""): nmap.add_ports(ports)
+if (source is not None and source != ""):
+    nmap.set_source(source)
+    if ((valid_ipv4(host) and valid_ipv6(source)) or (valid_ipv6(host) and not valid_ipv6(source))):
+        pscheduler.succeed_json({
+            "succeeded": False,
+            "diags": '',
+            "error": MISMATCHED_IP_VERSION_ERROR
+        })
+if (service_detect): nmap.enable_service_detect()
+
+output = nmap.scan()
+
+if output is not None: succeeded = True
+
+# Organize results into json data
+results = {
+    'succeeded': succeeded,
+    'result': {
+         'succeeded' : succeeded,
+         'result' : output,
+         'error'  : error,
+         'diags'  : diags
+    },
+    'error': error,
+    'diags': diags }
+
+pscheduler.succeed_json(results)

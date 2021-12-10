@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #5:
+# 
+# This file will convert a test specification to command-line options.
+#
+# This can be tested directly using the following syntax:
+# ./cli-to-spec --option argument | ./spec-to-cli
+
+import pscheduler
+
+from validate import spec_is_valid
+
+spec = pscheduler.json_load(exit_on_error=True)
+
+# First, validate the spec
+valid, message = spec_is_valid(spec)
+
+if not valid:
+    pscheduler.fail(message)
+
+result = pscheduler.speccli_build_args(spec, 
+                                       strings=[
+
+        # Add all argument strings here, as tuples
+
+        ( 'network', 'network' ),
+        ( 'ports', 'ports' ),
+        ( 'timeout', 'timeout' ),
+        ( 'source', 'source' ),
+        ( 'source_node', 'source_node' ),
+        ( 'service_detect', 'service_detect'),
+        ])
+
+pscheduler.succeed_json(result)

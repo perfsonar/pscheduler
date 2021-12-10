@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #9:
+#
+# This will format a test spec into something that is human readable.
+#
+# To test this file, a spec is needed. You can generate one with cli-to-spec
+# after you've written it. Use the following syntax:
+# cat example-spec.json | ./spec-format text/plain
+# cat example-spec.json | ./spec-format text/html
+# 
+#
+
+import jsontemplate
+import pscheduler
+import sys
+
+from validate import spec_is_valid
+
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
+
+
+json = pscheduler.json_load(exit_on_error=True)
+
+valid, message = spec_is_valid(json)
+
+if not valid:
+    pscheduler.fail(message)
+
+# Format a test spec into plain text
+if format == 'text/plain':
+
+    template = """
+Network ............. {.section network}{network}{.or}Not Specified{.end}
+Ports ............... {.section ports}{ports}{.or}Not Specified{.end}
+Source .............. {.section source}{source}{.or}Not Specified{.end}
+Timeout ............. {.section timeout}{timeout}{.or}Not Specified{.end}
+Service Detection.... {.section service_detect}{service_detect}{.or}False{.end}
+"""
+
+# Format with html
+elif format == 'text/html':
+
+   template = """
+<table>
+<tr><td>Network</td><td>{.section network}{network}{.or}Not Specified{.end}</td></tr>
+<tr><td>Ports</td><td>{.section ports}{ports}{.or}Not Specified{.end}</td></tr>
+<tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
+<tr><td>Source</td><td>{.section source}{source}{.or}Not Specified{.end}</td></tr>
+<tr><td>Service Detection</td><td>{.section service_detect}{service_detect}{.or}False{.end}</td></tr>
+</table>
+"""
+
+else:
+
+   pscheduler.fail("Unsupported format '%s'" % format)
+
+
+# TODO: Should probably handle exceptions in a nicer way.
+print(jsontemplate.expand(template, json).strip())

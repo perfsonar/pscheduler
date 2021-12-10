@@ -56,6 +56,7 @@ ifelse(REDHAT_RELEASE_MAJOR,7,python-isodate)
 # EL8 has this, but an older version
 python-itsdangerous
 python-pyrsistent
+python-nmap3
 # EL8 has this, but an older version
 python-jsonschema
 python-kafka

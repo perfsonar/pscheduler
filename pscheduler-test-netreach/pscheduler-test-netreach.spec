@@ -10,7 +10,7 @@ Name:		pscheduler-test-%{short}
 Version:	%{perfsonar_auto_version}
 Release:	%{perfsonar_auto_relnum}%{?dist}
 
-Summary:	Network reachability test for pScheduler
+Summary:	Network Reachability test for pScheduler
 BuildArch:	noarch
 License:	ASL 2.0
 Vendor:	perfSONAR
@@ -28,7 +28,7 @@ BuildRequires:	pscheduler-rpm
 
 
 %description
-Network reachability test for pScheduler
+Network Reachability test for pScheduler
 
 
 %prep
