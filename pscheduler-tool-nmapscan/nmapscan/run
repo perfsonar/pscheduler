@@ -34,7 +34,10 @@ diags = ''
 host = spec["network"]
 ports = spec.get("ports")
 source = spec.get("source")
-service_detect = spec.get("service_detect")
+
+# TODO: Re-enable this or get rid of it.  #1223
+#service_detect = spec.get("services")
+service_detect = False
 
 #returns True if the string matches a valid IPv4 address
 def valid_ipv4(hostString):

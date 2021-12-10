@@ -40,8 +40,9 @@ Network ............. {.section network}{network}{.or}Not Specified{.end}
 Ports ............... {.section ports}{ports}{.or}Not Specified{.end}
 Source .............. {.section source}{source}{.or}Not Specified{.end}
 Timeout ............. {.section timeout}{timeout}{.or}Not Specified{.end}
-Service Detection.... {.section service_detect}{service_detect}{.or}False{.end}
 """
+# TODO: Re-add this once we figure out service detection.  #1223
+#Service Detection.... {.section services}{services}{.or}False{.end}
 
 # Format with html
 elif format == 'text/html':
@@ -52,9 +53,10 @@ elif format == 'text/html':
 <tr><td>Ports</td><td>{.section ports}{ports}{.or}Not Specified{.end}</td></tr>
 <tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
 <tr><td>Source</td><td>{.section source}{source}{.or}Not Specified{.end}</td></tr>
-<tr><td>Service Detection</td><td>{.section service_detect}{service_detect}{.or}False{.end}</td></tr>
 </table>
 """
+# TODO: Re-add this once we figure out service detection.  #1223
+# <tr><td>Service Detection</td><td>{.section services}{services}{.or}False{.end}</td></tr>
 
 else:
 

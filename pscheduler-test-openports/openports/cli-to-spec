@@ -28,42 +28,14 @@ else:
 
 opt_parser = pscheduler.FailingOptionParser(epilog=
 """Examples:
-  task openports --source 127.0.0.1 --network 192.0.2.0 --lessinfo --timeout PT10S
-      192.0.2.0
-     PORT | STATE
-    ------+------
-        1 | open
-       22 | closed
-     8080 | filtered
-    
-  task openports --source 127.0.0.1 --network 45.33.32.156/28 --timeout PT5M
-  
-  45.33.32.145   |  PORT |STATE    |NAME           |PRODUCT              |VERSION   |OS        |EXTRA INFORMATION
-  ---------------+-------+---------+---------------+---------------------+----------+----------+------------------------------
-                 |   135 |open     |msrpc          |Microsoft Windows RPC|          |Windows   |
-                 |  3306 |open     |mysql          |                     |          |          |
-                 |  8009 |open     |ajp13          |Apache Jserv         |          |          |Protocol v1.3
-  
-  45.33.32.147   |  PORT |STATE    |NAME           |PRODUCT              |VERSION   |OS        |EXTRA INFORMATION
-  ---------------+-------+---------+---------------+---------------------+----------+----------+------------------------------
-                 |  1022 |filtered |exp2           |                     |          |          |
-                 |  8291 |filtered |unknown        |                     |          |          |
+  task openports --network 192.0.2.0/24
+    Scan for open ports on a network
 
-  45.33.32.148   |  PORT |STATE    |NAME           |PRODUCT              |VERSION   |OS        |EXTRA INFORMATION
-  ---------------+-------+---------+---------------+---------------------+----------+----------+------------------------------
-                 |    22 |open     |ssh            |OpenSSH              |7.4p1 Debi|Linux     |protocol 2.0
-                 |    80 |open     |http           |nginx                |1.10.3    |          |
+  task openports --network 192.0.2.74 --lessinfo --timeout PT10S
+    Scan a host and skip collecting OS information
 
-  45.33.32.149   |  PORT |STATE    |NAME           |PRODUCT              |VERSION   |OS        |EXTRA INFORMATION
-  ---------------+-------+---------+---------------+---------------------+----------+----------+------------------------------
-                 |   443 |open     |http           |Apache httpd         |2.4.25    |          |(Debian)
-                 |  2222 |open     |ssh            |OpenSSH              |7.4p1 Debi|Linux     |protocol 2.0
-
-  task openports --source 127.0.0.1 --network 192.0.2.0 --ports 8080-8081 --lessinfo --timeout PT5S
-      192.0.2.0
-     PORT | STATE
-    ------+------
-     8081 | open
+  task openports --network 192.0.2.0/24 --ports 8080-8081
+    Scan a range of ports on a network
 """
 )
 
@@ -82,20 +54,21 @@ opt_parser.add_option("--source",
                       action="store", type="string",
                       dest="source")
 
-opt_parser.add_option("--timeout",
-                      help="Maximum time to wait for responses.",
-                      action="store", type="string",
-                      dest="timeout")
-
 opt_parser.add_option("--source-node",
                       help="Set the source pScheduler node to make this call from. Not to be used with --source",
                       action="store", type="string",
                       dest="source_node")
 
-opt_parser.add_option("--lessinfo",
-                      help="Only display open ports on network, suppress service/version/OS details. Runs faster.",
-                      action="store_false",
-                      dest="service_detect")
+opt_parser.add_option("--timeout",
+                      help="Maximum time to wait for responses.",
+                      action="store", type="string",
+                      dest="timeout")
+
+# TODO: This is hidden from the CLI for the time being but is left enabled everywhere else.  #1223
+#opt_parser.add_option("--services",
+#                      help="Scan for additional info beyond open ports.  (May run slower.)",
+#                      action="store_true",
+#                      dest="services")
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
@@ -119,8 +92,9 @@ if options.source_node is not None:
 if options.timeout is not None:
    result['timeout'] = options.timeout
 
-result['service_detect'] = options.service_detect if options.service_detect is not None else True
-
+# TODO: Hidden until service detection problems are resolved.  #1223
+#if options.services is not None:
+#   result['services'] = options.services
 
 
 pscheduler.succeed_json(result)

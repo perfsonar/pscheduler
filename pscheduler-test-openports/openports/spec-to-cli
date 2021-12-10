@@ -30,7 +30,8 @@ result = pscheduler.speccli_build_args(spec,
         ( 'timeout', 'timeout' ),
         ( 'source', 'source' ),
         ( 'source_node', 'source_node' ),
-        ( 'service_detect', 'service_detect'),
+        # TODO: Disabled until we figure out timings.  #1223
+        #( 'services', 'services'),
         ])
 
 pscheduler.succeed_json(result)

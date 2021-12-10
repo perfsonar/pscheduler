@@ -3,7 +3,7 @@ Upstream-Name: pscheduler-test-openports
 Source: https://github.com/perfsonar/pscheduler
 
 Files: *
-Copyright: 2020-2020 perfSONAR project
+Copyright: 2020-2021 perfSONAR project
 License: Apache-2.0
 
 License: Apache-2.0
