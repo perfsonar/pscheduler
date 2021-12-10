@@ -56,9 +56,11 @@ ifelse(REDHAT_RELEASE_MAJOR,7,python-isodate)
 # EL8 has this, but an older version
 python-itsdangerous
 python-pyrsistent
+python-nmap3
 # EL8 has this, but an older version
 python-jsonschema
 python-kafka
+python-nmap3
 
 # Used by pscheduler-archiver-esmond
 
@@ -142,6 +144,7 @@ pscheduler-test-latencybg
 pscheduler-test-netreach			--bundle extras
 pscheduler-test-psresponse
 pscheduler-test-throughput
+pscheduler-test-openports		--bundle extras
 pscheduler-test-rtt
 pscheduler-test-s3throughput
 pscheduler-test-simplestream
@@ -166,6 +169,7 @@ pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-nmapreach			--bundle extras
+pscheduler-tool-nmapscan		--bundle extras
 pscheduler-tool-nuttcp
 pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
