@@ -1,49 +1,5 @@
-pscheduler-tool-curl (4.4.0~10.b1-1) perfsonar-4.4; urgency=low
-
-  * New upstream version.
-
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 14 Jun 2021 14:19:52 +0000
-
-pscheduler-tool-curl (4.3.3-1) perfsonar-4.3; urgency=low
-
-  * New upstream version.
-  * Changing dependency from curl to python3-pycurl
-
- -- perfSONAR developers <debian@perfsonar.net>  Tue, 02 Feb 2021 16:35:32 +0000
-
-pscheduler-tool-curl (4.3.2-1) perfsonar-4.3; urgency=low
-
-  * New upstream version.
-
- -- perfSONAR developers <debian@perfsonar.net>  Wed, 18 Nov 2020 15:41:13 +0000
-
-pscheduler-tool-curl (4.3.0-1) perfsonar-4.3; urgency=low
-
-  * New upstream version.
-  * Building for Python 3 and Python 3 only.
-
- -- perfSONAR developers <debian@perfsonar.net>  Fri, 30 Oct 2020 13:49:58 +0000
-
-pscheduler-tool-curl (4.2.4-1) perfsonar-4.2; urgency=low
-
-  * New upstream version.
-
- -- perfSONAR developers <debian@perfsonar.net>  Wed, 25 Mar 2020 15:36:56 -0400
-
-pscheduler-tool-curl (4.2.3-1) perfsonar-4.2; urgency=low
-
-  * New upstream version.
-
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 24 Feb 2020 14:32:17 +0000
-
-pscheduler-tool-curl (4.2.1-1) perfsonar-4.2; urgency=low
-
-  * New upstream version.
-
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 02 Oct 2019 23:07:24 +0000
-
-pscheduler-tool-curl (4.2.0-1) perfsonar-minor-staging; urgency=low
+pscheduler-tool-pstimer (5.0.0-1) perfsonar-minor-staging; urgency=low
 
   * Initial release
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 16 Aug 2019 11:01:41 +0000
+ -- Mark Feit <mfeit@internet2.edu>  Fri, 10 Dec 2021 12:59:00 -0500

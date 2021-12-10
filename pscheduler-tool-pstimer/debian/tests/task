@@ -2,5 +2,4 @@
 
 set -e
 
-pscheduler task --tool curl disk-to-disk --source ftp://speedtest.tele2.net/1KB.zip --dest /tmp/test.out
-pscheduler task --tool curl http --url http://docs.perfsonar.net/
+pscheduler task --tool pstimer psresponse --dest 127.0.0.1
