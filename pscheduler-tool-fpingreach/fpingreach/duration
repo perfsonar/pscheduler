@@ -6,6 +6,7 @@
 import datetime
 import ipaddress
 import math
+import os
 
 import pscheduler
 
@@ -19,8 +20,6 @@ hosts_to_scan = 1 if "gateway" in json else 0
 
 limit = json.get("limit", network.num_addresses - 2)
 
-parallel = json.get("parallel", limit);
-
 # Add this to whatever the gateway did.
 hosts_to_scan += min(limit, network.num_addresses-2)
 
@@ -28,9 +27,9 @@ timeout_iso = json.get("timeout", DEFAULT_TIMEOUT)
 timeout = pscheduler.iso8601_as_timedelta(timeout_iso) + datetime.timedelta( seconds=0.5 )
 
 # Any fraction means an additional run, so round up.
-fping_runs = int( math.ceil(float(hosts_to_scan) / float(parallel)) )
+fping_runs = int(math.ceil(float(hosts_to_scan) / float(max_args_per_run(network))))
 
-duration = timeout * fping_runs
+duration = (timeout + datetime.timedelta(seconds=FPING_RUN_SLOP)) * fping_runs
 duration += datetime.timedelta(seconds=1)  # Internal slop
 
 pscheduler.succeed_json({

@@ -3,8 +3,6 @@
 # Run a test.  Just the test spec is provided on stdin.
 #
 
-# TODO: Take the parallel stuff out.
-
 import ipaddress
 import pscheduler
 import random
@@ -119,7 +117,7 @@ generators = {
 
 network = ipaddress.ip_network(spec["network"])
 run_max_ips = spec.get("limit", network.num_addresses - 2)
-parallel = spec.get("parallel", 100)
+args_per_run = max_args_per_run(network)
 
 
 ip_list = []
@@ -140,12 +138,20 @@ fping_first_args = [
     '-q', '-a', '-r', '1',
 ]
 
+
+FAMILIES = {
+    '4': socket.AddressFamily.AF_INET,
+    '6': socket.AddressFamily.AF_INET6,
+}
+
 # Figure out what interface the source address is on if there is one.
 try:
     spec_host = spec['host']
+    assert str(network.version) in FAMILIES
     try:
-        # TODO: This needs to work for IPv4 and IPv6
-        spec_host_ip = socket.gethostbyname(spec_host)
+        # The selected element is the first address in this family.
+        spec_host_ip = socket.getaddrinfo(spec_host, 1,
+                                          family=FAMILIES[str(network.version)])[0][4][0]
     except socket.gaierror:
         pscheduler.succeed_json({
             "succeeded": False,
@@ -161,15 +167,14 @@ except KeyError:
     pass  # Not there, don't care.
 
 
-# TODO: Need to figure this.
-fping_timeout = timeout * 1.5
+fping_timeout = timeout + FPING_RUN_SLOP
 
 def run_fping(ips, run_number, gateway):
     """Execute fping and determine what was up"""
-    diags.append('Running %s' % (' '.join(fping_first_args + ips)))
+    log.debug("Running %s", (' '.join(fping_first_args + ips)))
+    diags.append('Running %s + %d hosts' % (' '.join(fping_first_args), len(ips)))
     (status, out, err) = pscheduler.run_program(fping_first_args + ips, 
                                                 timeout=fping_timeout)
-
     diags.append('Exited %d' % (status))
     diags.append('Stdout:\n%s' % (out))
     diags.append('Stderr:\n%s' % (err))
@@ -229,7 +234,7 @@ except KeyError:
 
 for next_ip in generator(network, exclude=gateway, limit=run_max_ips):
 
-    if len(ip_list) >= parallel:
+    if len(ip_list) >= args_per_run:
         (gateway_up, network_up) = run_fping(ip_list, run_number, gateway)
         if network_up:
             succeed(spec, gateway_up, True)
