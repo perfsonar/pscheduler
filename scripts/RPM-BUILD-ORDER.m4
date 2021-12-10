@@ -140,6 +140,7 @@ pscheduler-test-idleex
 pscheduler-test-latency
 pscheduler-test-latencybg
 pscheduler-test-netreach			--bundle extras
+pscheduler-test-psresponse
 pscheduler-test-throughput
 pscheduler-test-rtt
 pscheduler-test-s3throughput
@@ -171,6 +172,7 @@ pscheduler-tool-paris-traceroute
 pscheduler-tool-ping
 pscheduler-tool-powstream
 pscheduler-tool-psclock
+pscheduler-tool-pstimer
 pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
 pscheduler-tool-s3-benchmark

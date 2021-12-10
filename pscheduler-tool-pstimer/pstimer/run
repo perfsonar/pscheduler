@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+#
+# Development Order #5:
+#
+# This is the meat and bones of the tool, where the actual desired
+# commands or operation will be run. The results are then recorded
+# and added to the 'results' JSON data, which will then be sent
+# back to the test. Both system and api are able to be used here.
+#
+
+import os
+import sys
+import time
+import json
+import datetime
+import pscheduler
+import subprocess
+
+
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+
+# Take input from test spec
+try:
+    test_type = input['test']['type']
+except KeyError as ex:
+    pscheduler.fail('Missing data in input')
+
+
+if test_type == "psresponse":
+    try:
+        assert input["test"]["type"] == "psresponse"
+        source = input['test']['spec'].get('source', None)
+        dest = input['test']['spec']['dest']
+        timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
+        timeout = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(timeout_iso))
+    
+    except KeyError as ex:
+        pscheduler.fail({
+            "succeeded": False,
+            "error": "Missing data in input"
+        })
+    
+    start_time = datetime.datetime.now()
+
+    up, reason = pscheduler.api_ping(dest, source, timeout)
+
+    end_time = datetime.datetime.now()
+
+    if up:
+        pscheduler.succeed_json({
+            "succeeded": True,
+            "time": pscheduler.timedelta_as_iso8601(end_time - start_time),
+        })
+    else:
+        pscheduler.succeed_json({
+            "succeeded": True,
+            "time": None,
+            "reason": reason 
+        })
