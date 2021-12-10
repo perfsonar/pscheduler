@@ -159,6 +159,7 @@ pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl
 pscheduler-tool-dnspy
 pscheduler-tool-ethr
+pscheduler-tool-fpingreach		--bundle extras
 pscheduler-tool-globus			--bundle extras
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
