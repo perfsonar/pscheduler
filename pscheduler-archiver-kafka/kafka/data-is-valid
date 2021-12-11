@@ -5,32 +5,50 @@
 
 import pscheduler
 
+
+ARCHIVER_SPEC_SCHEMA = {
+    "local":{},
+    "versions": {
+        "1":{
+            "type": "object",
+            "properties": {
+                "schema": { "type": "integer", "enum": [ 1 ] },
+                "topic": {"$ref": "#/pScheduler/String"},
+                "server": {"$ref": "#/pScheduler/String"}
+            },
+            "additionalProperties": False,
+            "required": ["topic", "server"]
+        },
+        "2": {
+            "type": "object",
+            "properties": {
+                "schema": { "type": "integer", "enum": [ 2 ] },
+                "topic": {"$ref": "#/pScheduler/String"},
+                "server": {"$ref": "#/pScheduler/String"},
+                "archiver-id": {"$ref": "#/pScheduler/String"},
+                "security-protocol": {"$ref": "#/pScheduler/String"},
+                "_ssl-cafile": {"$ref": "#/pScheduler/String"},
+                "_ssl-certfile": {"$ref": "#/pScheduler/String"},
+                "_ssl-keyfile": {"$ref": "#/pScheduler/String"},
+                "_ssl-password": {"$ref": "#/pScheduler/String"},
+                "ssl-checkhostname": {"$ref": "#/pScheduler/Boolean"},
+                "kafka-retries": {"$ref": "#/pScheduler/Integer"},
+                "retry-policy": {"$ref": "#/pScheduler/RetryPolicy"},
+            },
+            "additionalProperties": False,
+            "required": ["schema", "topic", "server"]
+        }
+    }
+}
+
 try:
-    json = pscheduler.json_load(max_schema=1)
+    json = pscheduler.json_load()
 except ValueError as ex:
     pscheduler.succeed_json({"valid": False, "error": str(ex)})
 
-data_validator = {
-    # Data validation json object
-    "type": "object",
-    "properties": {
-        "topic": {"$ref": "#/pScheduler/String"},
-        "server": {"$ref": "#/pScheduler/String"},
-        "archiver-id": {"$ref": "#/pScheduler/String"},
-        "security-protocol": {"$ref": "#/pScheduler/String"},
-        "_ssl-cafile": {"$ref": "#/pScheduler/String"},
-        "_ssl-certfile": {"$ref": "#/pScheduler/String"},
-        "_ssl-keyfile": {"$ref": "#/pScheduler/String"},
-        "_ssl-password": {"$ref": "#/pScheduler/String"},
-        "ssl-checkhostname": {"$ref": "#/pScheduler/Boolean"},
-        "kafka-retries": {"$ref": "#/pScheduler/Integer"},
-        "retry-policy": {"$ref": "#/pScheduler/RetryPolicy"},
-    },
-    "additionalProperties": False,
-    "required": ["topic", "server"],
-}
 
-valid, error = pscheduler.json_validate(json, data_validator)
+valid, error = pscheduler.json_validate_from_standard_template(json, ARCHIVER_SPEC_SCHEMA)
+
 
 if not valid:
     pscheduler.succeed_json({"valid": False, "error": error})

@@ -1,6 +1,7 @@
 {
     "archiver": "kafka",
     "data": {
+        "schema": 2,
         "topic": "pscheduler",
         "server": "host:port",
         "security-protocol": "SSL",
