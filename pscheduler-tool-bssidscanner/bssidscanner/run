@@ -79,9 +79,11 @@ ssid_list = []
 
 # Check complete list for matching ssids
 for bssid in all_bssids:
+    #if no ssids were given then append all the ssids
     if not ssid:
         ssid_list.append(bssid)
     else:
+    #if ssid/ssids were given then only append those 
         if bssid['ssid'] in ssid:
             ssid_list.append(bssid)
 
