@@ -9,8 +9,8 @@
 # If additional libraries or parts of pScheduler are required,
 # they should be added here (line 25).
 %define short	halfping
-%define perfsonar_auto_version 4.4.0
-%define perfsonar_auto_relnum 0.10.b1
+%define perfsonar_auto_version 5.0.0
+%define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
@@ -27,7 +27,7 @@ Provides:	%{name} = %{version}-%{release}
 
 # Include all required libraries here
 Requires:	pscheduler-server
-Requires:	%{_pscheduler_python}-pscheduler
+Requires:	%{_pscheduler_python}-pscheduler >= 5.0.0
 
 BuildRequires:	pscheduler-rpm
 
