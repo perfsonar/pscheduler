@@ -1,0 +1,11 @@
+{
+  "spec": {
+      "schema": 1,
+      "dest": "www.umich.edu",
+      "packet-count": 10,
+      "packet-interval": 0.5,
+      "bucket-width": 0.25
+    },
+  "type": "latency"
+}
+

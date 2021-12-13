@@ -165,6 +165,7 @@ pscheduler-tool-dnspy
 pscheduler-tool-ethr
 pscheduler-tool-fpingreach		--bundle extras
 pscheduler-tool-globus			--bundle extras
+pscheduler-tool-halfping
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
