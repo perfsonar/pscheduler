@@ -47,7 +47,7 @@ SPEC_SCHEMA = {
                 "duration":       { "$ref": "#/pScheduler/Duration" },
                 "timeout":        { "$ref": "#/pScheduler/Duration" },
 		        "interface":      { "$ref": "#/pScheduler/String" },
-		        "ssid":           { "$ref": "#/pScheduler/Array" },
+		        "ssid":           { "$ref": "#/pScheduler/String" },
             },
             # If listed here, these parameters MUST be in the test spec.
             "required": [
