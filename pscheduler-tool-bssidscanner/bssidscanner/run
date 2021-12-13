@@ -76,7 +76,7 @@ ssid_list = []
 
 # Check complete list for matching ssids
 for bssid in all_bssids:
-    if bssid['ssid'] == ssid:
+    if bssid['ssid'] in ssid:
         ssid_list.append(bssid)
 
 succeeded = True

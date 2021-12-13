@@ -80,7 +80,7 @@ opt_parser.add_option("--interface",
 
 opt_parser.add_option("--ssid",
                       help="List of all bssids for this ssid will be outputted.",
-                      action="store", type="string",
+                      action="store", type="array",
                       dest="ssid")
 
 (options, remaining_args) = opt_parser.parse_args(args)
