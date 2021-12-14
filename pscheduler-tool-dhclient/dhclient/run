@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+#
+#
+# Development Order #5:
+#
+# This is the meat and bones of the tool, where the actual desired
+# commands or operation will be run. The results are then recorded
+# and added to the 'results' JSON data, which will then be sent
+# back to the test. Both system and api are able to be used here.
+#
+
+import datetime
+import subprocess as sp
+import json
+import sys
+import time
+import pscheduler
+
+
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+# Take input from test spec
+try:
+    interface = input['test']['spec']['interface']
+except KeyError:
+    interface = ""
+
+succeeded = False
+error = ''
+diags = []
+ip_addr = ""
+
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
+start_release = datetime.datetime.now()
+dhclient_release_args = ['sudo', 'dhclient', '-r', '-v', '-1']
+if interface:
+    dhclient_release_args.append(interface)
+diags.append(' '.join(dhclient_release_args))
+
+status, stdout, stderr = pscheduler.run_program(dhclient_release_args, timeout=5)
+diags.append(stderr)
+if status != 0:
+    fail_json = {
+        'succeeded': succeeded,
+        'error': 'DHClient unable to release current lease.',
+        'diags': '\n'.join(diags) }
+    pscheduler.succeed_json(fail_json)
+
+dhclient_args = ['sudo', 'dhclient', '-v', '-1']
+if interface:
+    dhclient_args.append(interface)
+diags.append(' '.join(dhclient_args))
+
+time_left = 20 - (datetime.datetime.now() - start_release).total_seconds()
+start_time = datetime.datetime.now()
+status, stdout, stderr = pscheduler.run_program(dhclient_args, timeout=time_left)
+end_time = datetime.datetime.now()
+diags.append(stderr)
+
+if status != 0:
+    fail_json = {
+        'succeeded': succeeded,
+        'error': 'DHClient unable to lease a new IP address.',
+        'diags': '\n'.join(diags) }
+    pscheduler.succeed_json(fail_json)
+
+succeeded = True
+# get ip address
+if 'bound to' in stderr:
+    stderr_list = stderr.split('bound to ')
+    ip_info_list = stderr_list[1].split(' ')
+    ip_addr = ip_info_list[0]
+
+results = {
+    'succeeded': succeeded,
+    'result': {
+        'schema': 1,
+        'succeeded': succeeded,
+        'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
+        'ip_address': ip_addr
+    },
+    'error': error,
+    'diags': '\n'.join(diags) }
+
+pscheduler.succeed_json(results)
+
+
