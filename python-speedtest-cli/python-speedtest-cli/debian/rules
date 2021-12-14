@@ -1,8 +1,0 @@
-#!/usr/bin/make -f
-
-export PYBUILD_NAME=speedtest-cli
-
-%:
-	dh $@ --with=python3 --buildsystem=pybuild
-
-
