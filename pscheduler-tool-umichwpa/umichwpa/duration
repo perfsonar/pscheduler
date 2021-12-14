@@ -19,7 +19,7 @@ json = pscheduler.json_load(exit_on_error=True);
 
         
 timeout_iso = json.get("timeout", "PT10S")
-timeout = pscheduler.iso8601_as_timedelta(timeout_iso)
+timeout = pscheduler.iso8601_as_timedelta(timeout_iso) + datetime.timedelta(seconds=5)
 
 pscheduler.succeed_json({
     "duration": pscheduler.timedelta_as_iso8601( timeout )
