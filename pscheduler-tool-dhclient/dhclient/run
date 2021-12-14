@@ -16,14 +16,15 @@ import sys
 import time
 import pscheduler
 
+from common import *
+
 
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
+spec = input['test']['spec']
+
 # Take input from test spec
-try:
-    interface = input['test']['spec']['interface']
-except KeyError:
-    interface = ""
+interface = spec.get('interface')
 
 succeeded = False
 error = ''
@@ -35,13 +36,15 @@ try:
 except KeyError:
     pscheduler.fail("Unable to find start time in input")
 
-start_release = datetime.datetime.now()
+
+# Release any existing lease
+
 dhclient_release_args = ['sudo', 'dhclient', '-r', '-v', '-1']
 if interface:
     dhclient_release_args.append(interface)
 diags.append(' '.join(dhclient_release_args))
 
-status, stdout, stderr = pscheduler.run_program(dhclient_release_args, timeout=5)
+status, stdout, stderr = pscheduler.run_program(dhclient_release_args, timeout=RELEASE_TIMEOUT)
 diags.append(stderr)
 if status != 0:
     fail_json = {
@@ -50,15 +53,20 @@ if status != 0:
         'diags': '\n'.join(diags) }
     pscheduler.succeed_json(fail_json)
 
-dhclient_args = ['sudo', 'dhclient', '-v', '-1']
+
+# Get a new lease
+
+lease_timeout = pscheduler.iso8601_as_timedelta(spec.get('timeout', 'PT%dS' % DEFAULT_LEASE_TIMEOUT)).total_seconds()
+
+dhclient_args = ['sudo', 'dhclient', '-v', '-1', '-timeout', str(lease_timeout)]
+
 if interface:
     dhclient_args.append(interface)
-diags.append(' '.join(dhclient_args))
 
-time_left = 20 - (datetime.datetime.now() - start_release).total_seconds()
-start_time = datetime.datetime.now()
-status, stdout, stderr = pscheduler.run_program(dhclient_args, timeout=time_left)
-end_time = datetime.datetime.now()
+diags.append(' '.join(dhclient_args))
+diags.append('')
+
+status, stdout, stderr = pscheduler.run_program(dhclient_args, timeout=lease_timeout)
 diags.append(stderr)
 
 if status != 0:
