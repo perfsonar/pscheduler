@@ -134,6 +134,7 @@ pscheduler-server
 
 # Tests
 pscheduler-test-clock
+pscheduler-test-dhcp			--bundle extras
 pscheduler-test-disk-to-disk		--bundle extras
 pscheduler-test-http
 pscheduler-test-idle
@@ -162,6 +163,7 @@ pscheduler-tool-bwctlping		--bundle obsolete
 pscheduler-tool-bwctltracepath		--bundle obsolete
 pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl
+pscheduler-tool-dhclient		--bundle extras
 pscheduler-tool-dnspy
 pscheduler-tool-ethr
 pscheduler-tool-fpingreach		--bundle extras
