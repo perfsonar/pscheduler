@@ -61,9 +61,9 @@ python-nmap3
 python-jsonschema
 python-kafka
 python-nmap3
+python-speedtest-cli
 
 # Used by pscheduler-archiver-esmond
-
 # EL8's is 1.58, ours is/was 1.59.  Commits to the project show only
 # cosmetic changes for the later version.
 ifelse(REDHAT_RELEASE_MAJOR,7,python-memcached)
