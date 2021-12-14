@@ -56,13 +56,14 @@ ifelse(REDHAT_RELEASE_MAJOR,7,python-isodate)
 # EL8 has this, but an older version
 python-itsdangerous
 python-pyrsistent
+python-nmap3
 # EL8 has this, but an older version
 python-jsonschema
 python-kafka
+python-nmap3
 python-speedtest-cli
 
 # Used by pscheduler-archiver-esmond
-
 # EL8's is 1.58, ours is/was 1.59.  Commits to the project show only
 # cosmetic changes for the later version.
 ifelse(REDHAT_RELEASE_MAJOR,7,python-memcached)
@@ -141,7 +142,9 @@ pscheduler-test-idleex
 pscheduler-test-latency
 pscheduler-test-latencybg
 pscheduler-test-netreach			--bundle extras
+pscheduler-test-psresponse
 pscheduler-test-throughput
+pscheduler-test-openports		--bundle extras
 pscheduler-test-rtt
 pscheduler-test-s3throughput
 pscheduler-test-simplestream
@@ -150,6 +153,7 @@ pscheduler-test-snmpgetbgm		--bundle snmp
 pscheduler-test-snmpset			--bundle snmp
 pscheduler-test-trace
 pscheduler-test-dns
+pscheduler-test-mtu
 
 # Tools
 pscheduler-tool-bwctliperf2		--bundle obsolete
@@ -160,17 +164,21 @@ pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl
 pscheduler-tool-dnspy
 pscheduler-tool-ethr
+pscheduler-tool-fpingreach		--bundle extras
 pscheduler-tool-globus			--bundle extras
+pscheduler-tool-halfping
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-nmapreach			--bundle extras
+pscheduler-tool-nmapscan		--bundle extras
 pscheduler-tool-nuttcp
 pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
 pscheduler-tool-ping
 pscheduler-tool-powstream
 pscheduler-tool-psclock
+pscheduler-tool-pstimer
 pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
 pscheduler-tool-s3-benchmark
@@ -181,6 +189,7 @@ pscheduler-tool-snooze
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
 pscheduler-tool-twping
+pscheduler-tool-fwmtu
 
 # Archivers
 pscheduler-archiver-bitbucket
@@ -188,6 +197,7 @@ pscheduler-archiver-esmond
 pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-kafka
+pscheduler-archiver-postgresql
 pscheduler-archiver-rabbitmq
 pscheduler-archiver-snmptrap		--bundle snmp
 pscheduler-archiver-syslog

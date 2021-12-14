@@ -5,6 +5,7 @@ pScheduler Limit Processor
 import io
 import os
 
+from ..exception import *
 from ..jsonval import *
 from ..psjson import *
 from ..text import *
@@ -112,27 +113,8 @@ class LimitProcessor(object):
             self.prioritizer = None
 
 
-    def process(self, task, hints, rewrite=True, prioritize=False):
-        """Evaluate a proposed task against the full limit set.
-
-        If the task has no 'run_schedule' section it will be assumed that
-        is being evaluated on all other parameters except when it
-        runs.  (This will be used for restricting submission of new
-        tasks.)
-
-        Arguments:
-            task - The proposed task, with run_schedule if there's a run time
-            hints - A hash of the hints to be used in identification
-            rewrite - True if the rewriter should be applied
-            prioritize - True to prioritize the task
-
-        Returns a tuple containing:
-            passed - True if the proposed task passed the limits applied
-            limits - A list of the limits that passed
-            diags - A textual summary of how the conclusion was reached
-            task - The task, after rewriting or None if unchanged
-            priority - Integer priority or None of not calculated
-        """
+    def _process(self, task, hints, rewrite=True, prioritize=False):
+        """Wrapped function; see process()."""
 
         if self.inert:
             return True, [], "No limits were applied", None, None
@@ -157,7 +139,10 @@ class LimitProcessor(object):
         # Identification
         #
 
-        identifications = self.identifiers.identities(hints)
+        identifications, ident_diags = self.identifiers.identities(hints)
+        if ident_diags:
+            diags.append("Identifier diagnostics:")
+            diags += ident_diags
         if not identifications:
             diags.append("Made no identifications.")
             return False, [], '\n'.join(diags), None, None
@@ -251,6 +236,38 @@ class LimitProcessor(object):
             priority
 
 
+
+    def process(self, task, hints, rewrite=True, prioritize=False):
+        """Evaluate a proposed task against the full limit set.
+
+        If the task has no 'run_schedule' section it will be assumed that
+        is being evaluated on all other parameters except when it
+        runs.  (This will be used for restricting submission of new
+        tasks.)
+
+        Arguments:
+            task - The proposed task, with run_schedule if there's a run time
+            hints - A hash of the hints to be used in identification
+            rewrite - True if the rewriter should be applied
+            prioritize - True to prioritize the task
+
+        Returns a tuple containing:
+            passed - True if the proposed task passed the limits applied
+            limits - A list of the limits that passed
+            diags - A textual summary of how the conclusion was reached
+            task - The task, after rewriting or None if unchanged
+            priority - Integer priority or None of not calculated
+
+        This is an exception-safe wrapper around _process().
+        """
+
+        try:
+            return self._process(task, hints, rewrite, prioritize)
+        except Exception as ex:
+            diags = 'Failed to process limits: processor threw an exception.\n\n' \
+                    f'{formatted_exception(ex)}\n\n' \
+                    'Please report this as a bug.'
+            return (False, [], diags, task, None)
 
 
 

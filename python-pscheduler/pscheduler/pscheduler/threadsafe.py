@@ -1,5 +1,6 @@
 #
-# Thread-Safe versions of popular things
+# Thread-Safe versions of popular things and other thread-related
+# classes.
 #
 
 import queue
@@ -67,3 +68,27 @@ class ThreadSafeSet:
         with self.__lock:
             self.__clear_queue()
             return list(self.__dict.keys())
+
+
+
+
+# Source: https://stackoverflow.com/a/6894023
+# LICENSE: CC-BY-SA 4.0
+
+class ThreadWithReturnValue(threading.Thread):
+    """
+    Thread with a join() that returns whatever the target did.
+    """
+
+    def __init__(self, group=None, target=None, name=None,
+                 args=(), kwargs={}, Verbose=None):
+        threading.Thread.__init__(self, group, target, name, args, kwargs)
+        self._return = None
+
+    def run(self):
+        if self._target is not None:
+            self._return = self._target(*self._args, **self._kwargs)
+
+    def join(self, *args):
+        threading.Thread.join(self, *args)
+        return self._return

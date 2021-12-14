@@ -9,15 +9,17 @@ import pscheduler
 MAX_SCHEMA = 1
 
 def archive(json):
-    #Do archiving here
-
-
-    #TODO: Add more descriptive comments
+    """
+    Archive the measurement
+    """
+    # Do whatever is necessary
 
     return {'succeeded': True}
 
 
 
+
+# Read and streamed JSON and emit results
 
 PARSER = pscheduler.RFC7464Parser(sys.stdin)
 EMITTER = pscheduler.RFC7464Emitter(sys.stdout)
