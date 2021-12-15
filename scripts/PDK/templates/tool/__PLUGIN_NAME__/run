@@ -22,7 +22,7 @@ input = pscheduler.json_load(exit_on_error=True)
 
 # Take input from test spec
 try:
-    testtype = input['test']['spec']['testtype']
+    implementation = input['test']['spec']['implementation']
 
 except KeyError:
     pscheduler.fail('Missing data in input')
@@ -51,7 +51,7 @@ except KeyError:
 
 
 # API Call:
-if testtype == 'api':
+if implementation == 'api':
     argv = [ 'sleep', str(duration) ]
     status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
 
@@ -63,7 +63,7 @@ if testtype == 'api':
         diags = stdout
 
 # System Call:
-elif testtype == 'system':
+elif implementation == 'system':
     subprocess.check_call( ['sleep', str(duration) ])
     succeeded = True
 

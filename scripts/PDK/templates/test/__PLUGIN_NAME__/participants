@@ -5,9 +5,18 @@
 #
 # Participant list generator for '__PLUGIN_NAME__' task spec
 #
-# Input is an unvalidated test spec.
+# Input is an unvalidated __PLUGIN_NAME__ test specification.
 #
-# Output is a list of hostnames or IPs that are participating.
+
+# Output is a JSON object:
+#
+#   {
+#     "participants": [ "host-1", ..., "host-n" ]
+#     "null-reason": "Optional reason why participants[0] is null"
+#   }
+#
+# The first element of "participants" array may be null to
+# signify that local host is the first participant.
 #
 
 import pscheduler
@@ -15,29 +24,30 @@ import sys
 
 from validate import spec_is_valid
 
+# Validate the input
 
 json = pscheduler.json_load(exit_on_error=True)
 
 valid, message = spec_is_valid(json)
-
 if not valid:
     pscheduler.fail(message)
 
 
-null_reason = None
+# Determine the list of participants
 
-#host only participant
+# This test only has a single participant, which can be determined by
+# looking up the 'host-node' or 'host' item in the specification.
 host = json.get('host-node', json.get('host', None))
-if host is None:
-    null_reason = "No host specified"
-
 
 participants = [ host ]
 
 result = { "participants": participants }
-if null_reason is not None:
-    result["null-reason"] = null_reason
+
+
+# Explain why the first participant is null
+
+if host is None:
+    result["null-reason"] = "No host specified"
+
 
 pscheduler.succeed_json(result)
-
-

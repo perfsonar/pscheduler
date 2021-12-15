@@ -111,7 +111,7 @@ opt_parser.add_option("--burst-size",
                       dest="burst_size")
 
 opt_parser.add_option("-w", "--window-size",
-                      help="TCP window size to use for the test, supports SI notation such as 64M",
+                      help="TCP window (buffer) size to use for the test, supports SI notation such as 64M",
                       action="store", type="string",
                       dest="window_size")
 

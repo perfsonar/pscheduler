@@ -1,82 +1,136 @@
 #
-# Validator for a pScheduler Test
+# Validator for a pScheduler test and its result.
 #
 
 #
-# Development Order #3:
+# Development Order #3: Test specification and result validation
 #
-# This file determines the required and optional data types which are 
-# allowed to be in the test spec, result, and limit. This is used
-# for validation of these structures.
+# The functions in this file determine whether or not specifications
+# and results for this test are valid.
 #
-# Several existing datatypes are available for use at:
-# pscheduler/python-pscheduler/pscheduler/pscheduler/jsonval.py
-# 
 
-from pscheduler import json_validate
 
-MAX_SCHEMA = 1
+from pscheduler import json_validate_from_standard_template
+
+
+
+#
+# Test Specification
+#
+
+# NOTE: A large dictionary of existing, commonly-used datatypes used
+# throughout pScheduler is defined in
+# pscheduler/python-pscheduler/pscheduler/pscheduler/jsonval.py.
+# Please use those where possible.
+
+SPEC_SCHEMA = {
+    
+    "local": {
+        
+        # Define any local types used in the spec here
+        "TestImplementation": {
+            "type": "string",
+            "enum": [ "system", "api" ]
+        },
+
+    },
+    
+    "versions": {
+        
+        # Initial version of the specification
+        "1": {
+            "type": "object",
+            # schema, host, host-node, and timeout are standard and
+            # should be included in most single-participant tests.
+            "properties": {
+                # The schema should always be constrained to a single
+                # value per version.
+                "schema":         { "type": "integer", "enum": [ 1 ] },
+                "host":           { "$ref": "#/pScheduler/Host" },
+                "host-node":      { "$ref": "#/pScheduler/Host" },
+                "duration":       { "$ref": "#/pScheduler/Duration" },
+                "timeout":        { "$ref": "#/pScheduler/Duration" },
+                "implementation": { "$ref": "#/local/TestImplementation" },
+            },
+            # If listed here, these parameters MUST be in the test spec.
+            "required": [
+                "implementation",
+            ],
+            # Treat other properties as acceptable.  This should
+            # ALWAYS be false.
+            "additionalProperties": False
+        },
+        
+        # Second and later versions of the specification
+        # "2": {
+        #    "type": "object",
+        #    "properties": {
+        #        "schema": { "type": "integer", "enum": [ 2 ] },
+        #        ...
+        #    },
+        #    "required": [
+        #        "schema",
+        #        ...
+        #    ],
+        #    "additionalProperties": False
+        #},
+        
+    }
+
+}
+
+
 
 def spec_is_valid(json):
 
-    schema = {
-        "local": {
-            # Local data types such as this can be defined within this file,
-            # but are not necessary
-            "type": {
-                "type": "string",
-                "enum": [ "system", "api" ]
+    (valid, errors) = json_validate_from_standard_template(json, SPEC_SCHEMA)
+
+    if not valid:
+        return (valid, errors)
+
+    # If there are semantic relationships that can't be expressed the
+    # JSON Schema (e.g., parameter X can't be less then 5 when
+    # parameter Y is an odd number), evaluate them here and complain
+    # if there's a problem.  E.g.,:
+    #
+    #if some_condition_which_is_an_error
+    #    return(False, "...Error Message...")
+
+    # By this point, everything is okay.
+    return (valid, errors)
+
+
+
+#
+# Test Result
+#
+
+RESULT_SCHEMA = {
+
+    "local": {
+        # Define any local types here.
+    },
+
+    "versions": {
+
+        "1": {
+            "type": "object",
+            "properties": {
+                "schema":     { "type": "integer", "enum": [ 1 ] },
+                "succeeded":  { "$ref": "#/pScheduler/Boolean" },
+                "time":       { "$ref": "#/pScheduler/Duration" },
             },
-            "spec": {
-                "type": "object",
-                # schema, host, host-node, and timeout are standard,
-                # and should be included
-                "properties": {
-                    "schema":       { "$ref": "#/pScheduler/Cardinal" },
-                    "host":         { "$ref": "#/pScheduler/Host" },
-                    "host-node":    { "$ref": "#/pScheduler/Host" },
-                    "duration":     { "$ref": "#/pScheduler/Duration" },
-                    "timeout":      { "$ref": "#/pScheduler/Duration" },
-                    # Here is the datatype we defined on lines 24-27
-                    "testtype":     { "$ref": "#/local/Type" },
-                },
-                # If listed here, data of this type MUST be in the test spec
-                "required": [
-                    "testtype",
-                    ],
-            }
-        },
-        # Set to false if ONLY required options should be used
-        "additionalProperties": False
+            "required": [
+                "succeeded",
+                "time",
+            ],
+            "additionalProperties": False
+        }
+
     }
 
-    return json_validate(json, schema, max_schema=MAX_SCHEMA)
+}
+
 
 def result_is_valid(json):
-    schema = {
-        "type": "object",
-        "properties": {
-            "schema":     { "$ref": "#/pScheduler/Cardinal" },
-            "succeeded":  { "$ref": "#/pScheduler/Boolean" },
-            "time":       { "$ref": "#/pScheduler/Duration" },
-            },
-        "required": [
-            "succeeded",
-            "time",
-            ]
-        }
-    return json_validate(json, schema)
-
-def limit_is_valid(json):
-    schema = {
-        "type": "object",
-        "properties": {
-            "host":            { "$ref": "#/pScheduler/Limit/String" },
-            "host-node":       { "$ref": "#/pScheduler/Limit/String" },
-            "testtype":        { "$ref": "#/local/Type" },
-            "timeout":         { "$ref": "#/pScheduler/Limit/Duration" },
-        },
-        "additionalProperties": False
-        }
-
-    return json_validate(json, schema, max_schema=MAX_SCHEMA)
+    return json_validate_from_standard_template(json, RESULT_SCHEMA)

@@ -116,7 +116,14 @@ class ApplicationSet(object):
             # doesn't have to be processed again.  Might not actually
             # be an issue.
 
-            evaluated = self.limits.check(proposal, limit, check_schedule)
+            try:
+                evaluated = self.limits.check(proposal, limit, check_schedule)
+            except Exception as ex:
+                evaluated = {
+                    "passed": False,
+                    "reasons": [ "Limit %s threw an exception:\n%s" % (limit, str(ex)) ]
+                }
+
             limit_passed = evaluated['passed']
 
             if limit_passed:

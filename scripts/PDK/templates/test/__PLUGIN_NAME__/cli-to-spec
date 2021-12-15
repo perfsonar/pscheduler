@@ -73,10 +73,10 @@ opt_parser.add_option("--timeout",
                       action="store", type="string",
                       dest="timeout")
 
-opt_parser.add_option("--test-type",
-                      help="Type of test to be used. (api|system)",
+opt_parser.add_option("--implementation",
+                      help="Preferred implementation to be used. (api|system)",
                       action="store", type="string",
-                      dest="testtype")
+                      dest="implementation")
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
@@ -96,6 +96,10 @@ opt_parser.add_option("--test-type",
 
 schema = pscheduler.HighInteger(1)
 
+
+# Build the test specification.  All we do here is build and set
+# schema levels.  Validation happens elsewhere.
+
 result = { }
 
 if options.host is not None:
@@ -110,14 +114,8 @@ if options.timeout is not None:
 if options.duration is not None:
    result['duration'] = options.duration
 
-if options.testtype is not None:
-   result['testtype'] = options.testtype
-else:
-    pscheduler.fail('Please specify a test type. \'--test-type (api|system)\'')
-
-if result['testtype'] not in [ 'api', 'system' ]:
-    pscheduler.fail('Invalid test type. Choose api or system.')
-
+if options.implementation is not None:
+   result['implementation'] = options.implementation
 
 result['schema'] = schema.value()
 

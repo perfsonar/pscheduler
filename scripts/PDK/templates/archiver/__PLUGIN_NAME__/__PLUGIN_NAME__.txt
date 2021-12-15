@@ -1,0 +1,3 @@
+#
+# Documentation for the __PLUGIN_NAME__ archiver
+#

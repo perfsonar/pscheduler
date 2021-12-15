@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #4:
+# 
+# This file encodes CLI arguments as JSON data in a test spec,
+# as defined by the datatypes in validate.py
+# 
+# This can be tested directly using the following syntax:
+# ./cli-to-spec --option argument
+#
+
+import re
+import optparse
+import pscheduler
+import sys
+
+if len(sys.argv) > 1:
+
+   # Args are on the command line
+   args = sys.argv[1:]
+
+else:
+
+   # Args are in a JSON array on stdin
+   json_args = pscheduler.json_load(exit_on_error=True)
+   args = []
+
+   if not isinstance(json_args,list):
+      pscheduler.fail("Invalid JSON for this operation")
+   for arg in json_args:
+      if not ( isinstance(arg, str)
+               or isinstance(arg, int)
+               or isinstance(arg, float) ):
+         pscheduler.fail("Invalid JSON for this operation")
+   args = [ str(arg) for arg in json_args ]
+
+
+
+# Gargle the arguments
+
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""
+Finds the path MTU (Maximum Transmission Unit) from this machine to a specified destination.
+Can specify a port.
+
+pscheduler task mtu --dest www.google.com
+    Finds the MTU to www.google.com
+
+pscheduler task mtu --dest www.google.com --port 80
+    Finds the MTU to www.google.com at port 80
+"""
+)
+
+# Add all potential command line options here
+# Check https://docs.python.org/3/library/optparse.html for more
+# documentation on the opt parser
+
+
+opt_parser.add_option("--source",
+                      help="Sending host",
+                      action="store", type="string",
+                      dest="source")
+
+opt_parser.add_option("--source-node",
+                      help="pScheduler node on sending host, if different",
+                      action="store", type="string",
+                      dest="source_node")
+
+opt_parser.add_option("--dest",
+                      help="Receiving host",
+                      action="store", type="string",
+                      dest="dest")
+
+opt_parser.add_option("--port",
+                      help="Receiving port. Defaults to 1060.",
+                      action="store", type="int",
+                      dest="port")
+
+(options, remaining_args) = opt_parser.parse_args(args)
+
+result = { 'schema': 1 }
+
+if options.source is not None:
+   result['source'] = options.source
+
+if options.source_node is not None:
+   result['source-node'] = options.source_node
+
+if options.dest is not None:
+   result['dest'] = options.dest
+
+if options.port is not None:
+   result['port'] = options.port
+
+pscheduler.succeed_json(result)

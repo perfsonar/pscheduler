@@ -718,7 +718,7 @@ class RunWorker(object):
             # the local database.
 
             try:
-                self.log_debug("%d: Merged result: Setting final state ", self.id)
+                self.log_debug(f'{self.id}: Merged result: Setting final state.  Succeeded={succeeded}')
                 db = self._get_db_conn()
                 with db.cursor() as cursor:
                     # TODO: Need to figure out succeeded.
@@ -836,7 +836,7 @@ def main_program():
                 cursor.execute("SELECT heartbeat('runner', %s)", [wait_time])
 
             try:
-                if pscheduler.polled_select(
+                if db.notifies or pscheduler.polled_select(
                         [db],[],[],
                         pscheduler.timedelta_as_seconds(wait_time)) \
                     != ([],[],[]):
@@ -849,7 +849,11 @@ def main_program():
                         run_start_margin_set(db)
                     else:
                         log.debug("Schedule change.")
-                    del db.notifies[:]
+
+                    # Remove only the first notification so we act on
+                    # all of them.  When scheduled start times are
+                    # tight, removing everything causes runs to be missed.
+                    db.notifies.pop(0)
 
             except select.error as ex:
 

@@ -2,8 +2,8 @@
 # RPM Spec for pScheduler JQ Library
 #
 
-%define perfsonar_auto_version 4.4.0
-%define perfsonar_auto_relnum 0.11.b1
+%define perfsonar_auto_version 5.0.0
+%define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-jq-library
 Version:	%{perfsonar_auto_version}
