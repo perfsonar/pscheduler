@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #5:
+#
+# This is the meat and bones of the tool, where the actual desired
+# commands or operation will be run. The results are then recorded
+# and added to the 'results' JSON data, which will then be sent
+# back to the test. Both system and api are able to be used here.
+#
+
+import datetime
+import subprocess
+import json
+import sys
+import time
+
+import pscheduler
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+# Take input from test spec
+
+
+duration = input['test']['spec'].get('duration', 'PT30S')
+duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
+succeeded = False
+error = ''
+diags = ''
+
+# Run the actual task here:
+
+# IMPORTANT NOTE: This code puts the process to sleep until the
+# scheduled start time has arrived.  It should be placed after all
+# preparatory code has been executed and immediately before the tool
+# is invoked (for plugins that run other programs) or any activity
+# that does a measurement (for those that don't).
+
+
+
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
+
+argv = [ 'speedtest-cli', '--no-download', '--json', '--single' ]
+status, stdout, stderr = pscheduler.run_program(argv, timeout=duration)
+
+if status:
+    pscheduler.succeed_json({
+                             "succeeded": False,
+                             "error": "Error returned: \n%s" % stderr.strip('\n')
+                            })
+
+succeeded = True
+diags = stdout
+
+# The results returned by speedtest is a str object
+results_string = stdout
+results_dict = json.loads(results_string)
+# Grab throughput measurement from the dictionary
+throughput_bits = results_dict["upload"]
+throughput_bits = round(throughput_bits)
+    
+# TODO: Figure out "start" & "end" for this results json
+end_time = datetime.datetime.now()
+# Organize results into json data
+results = {
+    'succeeded': succeeded,
+    'result': {
+        'schema': 1,
+        'succeeded': succeeded,
+        'diags': f"{' '.join(argv)}\n\n {diags}",
+  "summary": {
+    "streams": [
+      {
+        "end": 10,
+        "start": 0,
+        "stream-id": 1,
+        "throughput-bits": throughput_bits
+      }
+    ],
+    "summary": {
+      "end": 10,
+      "start": 0,
+      "stream-id": 1,
+      "throughput-bits": throughput_bits
+    }
+  },
+  "intervals": [],
+  "succeeded": True
+    },
+    'error': error }
+
+pscheduler.succeed_json(results)
+

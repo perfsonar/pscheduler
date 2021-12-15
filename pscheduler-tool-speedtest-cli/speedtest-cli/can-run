@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #3:
+# 
+# This file will determine if this tool can run a test based on a test spec.
+#
+# Be sure to edit line 19, inserting the names of the tests the tool
+# should be compatible with.
+# 
+
+# exit statuses should be different based on error
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True);
+
+try:
+    if json['type'] != 'throughput':
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Unsupported test type" ]
+        })
+# TODO: Figure out what to do with this!!
+    if json['spec']['dest'] != 'speedtest':
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Unsupported destination - dest for throughput has to be: speedtest" ]
+        })
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test type" ]
+    })
+
+
+# TODO: Write this!!!
+pscheduler.succeed_json({ "can-run": True })

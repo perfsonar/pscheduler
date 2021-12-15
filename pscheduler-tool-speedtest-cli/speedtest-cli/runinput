@@ -1,0 +1,14 @@
+{
+    "test": {
+
+        "spec": {
+            "dest": "umich.edu",
+            "duration": "PT15S",
+            "schema": 1
+        },
+        "type": "throughput"
+    },
+    "schedule": {
+        "start": "2021-07-09T08:00:00Z"
+}
+}

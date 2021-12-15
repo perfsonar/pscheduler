@@ -1,0 +1,8 @@
+import speedtest
+
+speedtester = speedtest.Speedtest()
+speedtester.get_best_server()
+speedtester.get_config()
+
+print(speedtester.config)
+print(speedtester.results)
