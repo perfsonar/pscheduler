@@ -82,8 +82,6 @@ except KeyError:
     diags.append("proceeding with default driver")
 
 
-duration = input['test']['spec'].get('duration', 'PT5S')
-duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 succeeded = False

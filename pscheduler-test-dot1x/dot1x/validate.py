@@ -48,7 +48,6 @@ SPEC_SCHEMA = {
                 "schema":         { "type": "integer", "enum": [ 1 ] },
                 "host":           { "$ref": "#/pScheduler/Host" },
                 "host-node":      { "$ref": "#/pScheduler/Host" },
-                "duration":       { "$ref": "#/pScheduler/Duration" },
                 "timeout":        { "$ref": "#/pScheduler/Duration" },
                 "interface":      { "$ref": "#/pScheduler/String" },
                 "driver":         { "$ref": "#/pScheduler/String" },
