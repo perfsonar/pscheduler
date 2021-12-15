@@ -136,6 +136,7 @@ pscheduler-server
 pscheduler-test-clock
 pscheduler-test-dhcp			--bundle extras
 pscheduler-test-disk-to-disk		--bundle extras
+pscheduler-test-dot1x			--bundle extras
 pscheduler-test-http
 pscheduler-test-idle
 pscheduler-test-idlebgm
@@ -167,6 +168,7 @@ pscheduler-tool-dhclient		--bundle extras
 pscheduler-tool-dnspy
 pscheduler-tool-ethr
 pscheduler-tool-fpingreach		--bundle extras
+pscheduler-tool-fwmtu
 pscheduler-tool-globus			--bundle extras
 pscheduler-tool-halfping
 pscheduler-tool-iperf2
@@ -191,7 +193,7 @@ pscheduler-tool-snooze
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
 pscheduler-tool-twping
-pscheduler-tool-fwmtu
+pscheduler-tool-umichwpa		--bundle extras
 
 # Archivers
 pscheduler-archiver-bitbucket
