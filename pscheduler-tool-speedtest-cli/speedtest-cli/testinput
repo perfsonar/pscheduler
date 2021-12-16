@@ -1,0 +1,16 @@
+{
+    "test": {
+        "spec": {
+            "dest": "speedtest",
+            "schema": 2,
+            "single-ended": true
+        },
+        "type": "throughput"
+    },
+    "schedule": {
+         "start": "2021-07-27T00:00:00Z"
+    },
+    "tools": [
+        "speedtest-cli"
+    ]
+}

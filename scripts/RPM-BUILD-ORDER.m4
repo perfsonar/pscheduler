@@ -190,6 +190,7 @@ pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
 pscheduler-tool-snooze
+pscheduler-tool-speedtest-cli
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
 pscheduler-tool-twping

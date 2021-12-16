@@ -1,0 +1,11 @@
+# see git-dpm(1) from git-dpm package
+7b53be66950057e13c10a65aba64c718cb29e456
+7b53be66950057e13c10a65aba64c718cb29e456
+7b53be66950057e13c10a65aba64c718cb29e456
+7b53be66950057e13c10a65aba64c718cb29e456
+ntplib_0.3.3.orig.tar.gz
+403ac0cc01398bacdf608d4aa35e74e36f5ad64d
+6808
+debianTag="debian/%e%v"
+patchedTag="patched/%e%v"
+upstreamTag="upstream/%e%u"
