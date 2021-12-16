@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #5:
+#
+# This is the meat and bones of the tool, where the actual desired
+# commands or operation will be run. The results are then recorded
+# and added to the 'results' JSON data, which will then be sent
+# back to the test. Both system and api are able to be used here.
+#
+
+import datetime
+import subprocess
+import json
+import sys
+import time
+import argparse
+import time
+from wifi import Cell #TODO
+
+import pscheduler
+
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+
+# Take input from test spec
+try:
+    interface = input['test']['spec']['interface']
+    ssid = input['test']['spec']['ssid']
+except KeyError:
+    pscheduler.fail('Missing data in input')
+
+duration = input['test']['spec'].get('duration', 'PT5S')
+duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
+timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
+timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+start_time = datetime.datetime.now()
+succeeded = False
+error = ''
+diags = ''
+
+# Run the actual task here:
+def get_all_bssids(interface):
+    """
+    Scan the given interface for all bssids
+    Return a list of all bssids
+    """
+    start_time = time.time()
+    cells = Cell.all(interface) # Specify interface to scan on
+    wifi_list = []
+    for cell in cells:
+        bssid = {}
+        bssid['ssid'] = cell.ssid
+        bssid['signal'] = cell.signal
+        bssid['address'] = cell.address
+        bssid['frequency'] = pscheduler.si_as_number(cell.frequency[:-2])
+        quality_num,quality_denom = cell.quality.split('/')
+        bssid['quality'] = float(quality_num) / float(quality_denom)
+        bssid['bitrates'] = sorted(map(lambda v : pscheduler.si_as_number(v[:-3]), cell.bitrates))
+        bssid['encrypted'] = cell.encrypted
+        bssid['channel'] = cell.channel
+        bssid['mode'] = cell.mode
+        wifi_list.append(bssid)
+    
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    log_msg = "Scan finished in " + str(elapsed_time)
+    return wifi_list, elapsed_time
+
+"""
+Scan on the given interface
+Output a list of all bssids in json format with the given ssid
+"""
+all_bssids, elapsed_time = get_all_bssids(interface)
+ssid_list = []
+
+# Check complete list for matching ssids
+for bssid in all_bssids:
+    if bssid['ssid'] == ssid:
+        ssid_list.append(bssid)
+
+succeeded = True
+
+# IMPORTANT NOTE: This code puts the process to sleep until the
+# scheduled start time has arrived.  It should be placed after all
+# preparatory code has been executed and immediately before the tool
+# is invoked (for plugins that run other programs) or any activity
+# that does a measurement (for those that don't).
+
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
+
+end_time = datetime.datetime.now()
+
+# Organize results into json data
+results = {
+    'succeeded': succeeded,
+    'result': {
+        'schema': 1,
+        'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
+        'succeeded': succeeded,
+        'ssid_list': ssid_list
+    },
+    'error': error,
+    'diags': diags }
+
+pscheduler.succeed_json(results)
+

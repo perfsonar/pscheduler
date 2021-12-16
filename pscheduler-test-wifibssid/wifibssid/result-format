@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #8:
+#
+# This file is called when perfSonar goes to print the result, which
+# has been returned from the tool.
+#
+# To test this file, a result is needed. A sample one has been provided
+# in this directory. Use the following syntax:
+# cat example-result.json | ./result-format text/plain
+# cat example-result.json | ./result-format text/html
+#
+
+import jsontemplate
+import pscheduler
+import sys
+
+from validate import result_is_valid
+
+
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
+
+input = pscheduler.json_load(exit_on_error=True)
+
+valid, message = result_is_valid(input["result"])
+
+if not valid:
+    pscheduler.fail(message)
+
+result = input["result"]
+
+# NOTE: For more-complex restult structures, the 'jsontemplate' module
+# used in the spec-format method might be a better choice than
+# print().
+
+if format == 'text/plain':
+    # Print results of the test here, in plaintext
+    print('Time: %s\n' % result['time'])
+    # Print ssid_list
+    print('BSSIDs:')
+    for entry in result['ssid_list']:
+        print("")
+        print(entry["ssid"] + ":")
+        print(f'   Signal: {entry["signal"]}')
+        print(f'   Address: {entry["address"]}') 
+        print(f'   Frequency: {entry["frequency"]}') 
+        print(f'   Quality: {entry["quality"]}')
+        print(f'   Bitrates: {entry["bitrates"]}')
+        print(f'   Encrypted: {entry["encrypted"]}')
+        print(f'   Channel: {entry["channel"]}')
+        print(f'   Mode: {entry["mode"]}') 
+        print("") 
+   
+elif format == 'text/html':
+    # Print results of the test here, in html
+    print('<table>')
+    print('    <tr>')
+    print('        <td><b>Time</b></td>')
+    print('        <td>%s</td>' % result['time'])
+    print('    </tr>')
+    print('    <tr>')
+    print('        <td colspan="2"><b>BSSIDs</b></td>')
+    print('   </tr>')
+    for entry in result['ssid_list']:
+        print(f'    <tr><td><b>SSID</b></td> <td>{entry["ssid"]}</td></tr>')
+        print(f'    <tr><td><b>Signal</b></td> <td>{entry["signal"]}</td></tr>') 
+        print(f'    <tr><td><b>Address</b></td> <td>{entry["address"]}</td></tr>')
+        print(f'    <tr><td><b>Frequency</b></td> <td>{entry["frequency"]}</td></tr>')
+        print(f'    <tr><td><b>Quality</b></td> <td>{entry["quality"]}</td></tr>')
+        print(f'    <tr><td><b>Bitrates</b></td> <td>{entry["bitrates"]}</td></tr>')
+        print(f'    <tr><td><b>Encrypted</b></td> <td>{entry["signal"]}</td></tr>')
+        print(f'    <tr><td><b>Channel</b></td> <td>{entry["channel"]}</td></tr>')
+        print(f'    <tr><td><b>Mode</b></td> <td>{entry["mode"]}</td></tr>')
+    print('</table>')
+
+
+else:
+   pscheduler.fail("Unsupported format '%s'" % format)
