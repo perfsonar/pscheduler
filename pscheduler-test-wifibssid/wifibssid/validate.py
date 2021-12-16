@@ -46,13 +46,13 @@ SPEC_SCHEMA = {
                 "host-node":      { "$ref": "#/pScheduler/Host" },
                 "duration":       { "$ref": "#/pScheduler/Duration" },
                 "timeout":        { "$ref": "#/pScheduler/Duration" },
-		"interface":      { "$ref": "#/pScheduler/String" },
-		"ssid":           { "$ref": "#/pScheduler/String" },
+		        "interface":      { "$ref": "#/pScheduler/String" },
+		        "ssid":           { "$ref": "#/pScheduler/String" },
             },
             # If listed here, these parameters MUST be in the test spec.
             "required": [
                 "interface",
-		"ssid",
+		        "ssid",
             ],
             # Treat other properties as acceptable.  This should
             # ALWAYS be false.

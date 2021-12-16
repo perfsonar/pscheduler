@@ -29,8 +29,8 @@ result = pscheduler.speccli_build_args(spec,
         ( 'host-node', 'host-node' ),
         ( 'timeout', 'timeout' ),
         ( 'duration', 'duration' ),
-	( 'interface', 'interface'),
-	( 'ssid', 'ssid'),
+        ( 'interface', 'interface'),
+        ( 'ssid', 'ssid'),
         ])
 
 pscheduler.succeed_json(result)

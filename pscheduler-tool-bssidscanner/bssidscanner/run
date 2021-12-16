@@ -16,7 +16,7 @@ import sys
 import time
 import argparse
 import time
-from wifi import Cell #TODO
+from wifi import Cell #make sure that you have pip installed wifi
 
 import pscheduler
 
@@ -29,6 +29,9 @@ try:
     ssid = input['test']['spec']['ssid']
 except KeyError:
     pscheduler.fail('Missing data in input')
+
+# convert the comma separated ssids to a list
+ssid = list(ssid.split(','))
 
 duration = input['test']['spec'].get('duration', 'PT5S')
 duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
@@ -76,8 +79,13 @@ ssid_list = []
 
 # Check complete list for matching ssids
 for bssid in all_bssids:
-    if bssid['ssid'] == ssid:
+    #if no ssids were given then append all the ssids
+    if not ssid:
         ssid_list.append(bssid)
+    else:
+    #if ssid/ssids were given then only append those 
+        if bssid['ssid'] in ssid:
+            ssid_list.append(bssid)
 
 succeeded = True
 
