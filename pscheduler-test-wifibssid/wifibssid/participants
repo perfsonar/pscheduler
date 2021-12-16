@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #7:
+#
+# Participant list generator for 'wifibssid' task spec
+#
+# Input is an unvalidated wifibssid test specification.
+#
+
+# Output is a JSON object:
+#
+#   {
+#     "participants": [ "host-1", ..., "host-n" ]
+#     "null-reason": "Optional reason why participants[0] is null"
+#   }
+#
+# The first element of "participants" array may be null to
+# signify that local host is the first participant.
+#
+
+import pscheduler
+import sys
+
+from validate import spec_is_valid
+
+# Validate the input
+
+json = pscheduler.json_load(exit_on_error=True)
+
+valid, message = spec_is_valid(json)
+if not valid:
+    pscheduler.fail(message)
+
+
+# Determine the list of participants
+
+# This test only has a single participant, which can be determined by
+# looking up the 'host-node' or 'host' item in the specification.
+host = json.get('host-node', json.get('host', None))
+
+participants = [ host ]
+
+result = { "participants": participants }
+
+
+# Explain why the first participant is null
+
+if host is None:
+    result["null-reason"] = "No host specified"
+
+
+pscheduler.succeed_json(result)
