@@ -7,8 +7,12 @@ import sys
 import pscheduler
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
+import tempfile
+import os
 
 MAX_SCHEMA = 1
+
+SECURITY_PROTOCOL_SSL = "SSL"
 
 log_prefix = "archiver-kafka"
 
@@ -28,8 +32,15 @@ class psKafkaArchiver(object):
         """
         Close producer connection
         """
-        self.producer.close()
+        if self.producer:
+            self.producer.close()
         self.producer = None
+
+        if(self.security_protocol == SECURITY_PROTOCOL_SSL):
+            log.debug("Cleaning up cert files")
+            os.unlink(self.ssl_cafile)
+            os.unlink(self.ssl_keyfile)
+            os.unlink(self.ssl_certfile)
 
     def publish(self, message):
         """
@@ -38,6 +49,13 @@ class psKafkaArchiver(object):
         if self.is_connected() is True:
             self.producer.send(self.topic, message)
 
+    def _write_to_tempfile(self, data):
+        tfile = tempfile.NamedTemporaryFile(delete=False)
+        tfile.write(bytes(data,'utf-8'))
+        tfile.flush()
+        tfile.close()
+        return tfile
+
     def __init__(
         self,
         bootstrap_servers,
@@ -45,9 +63,9 @@ class psKafkaArchiver(object):
         archiver_id='ps-kafka-archiver',
         retries=3,
         security_protocol="",
-        ssl_cafile=None,
-        ssl_certfile=None,
-        ssl_keyfile=None,
+        ssl_cacert=None,
+        ssl_cert=None,
+        ssl_key=None,
         ssl_password="",
         ssl_checkhostname=False,
     ):
@@ -56,17 +74,22 @@ class psKafkaArchiver(object):
         self.ssl_checkhostname = False
         self.client_id = archiver_id
         self.retries = retries
-        if security_protocol == "SSL":
+        log.debug(security_protocol)
+        if security_protocol == SECURITY_PROTOCOL_SSL:
             self.security_protocol = security_protocol
-            if ssl_cafile is None or ssl_certfile is None or ssl_keyfile is None:
-                raise ValueError("ssl files missing")
-            self.ssl_cafile = ssl_cafile
-            self.ssl_certfile = ssl_certfile
-            self.ssl_keyfile = ssl_keyfile
+            self.ssl_cacert = ssl_cacert
+            cafile = self._write_to_tempfile(ssl_cacert)
+            self.ssl_cafile = cafile.name
+            self.ssl_cert = ssl_cert
+            certfile = self._write_to_tempfile(ssl_cert)
+            self.ssl_certfile = certfile.name
+            self.ssl_key = ssl_key
+            keyfile = self._write_to_tempfile(ssl_key)
+            self.ssl_keyfile = keyfile.name
             if ssl_password:
                 self.ssl_password = ssl_password
-            if ssl_checkhostname:
-                self.ssl_checkhostname = ssl_checkhostname
+            log.debug("Cert Files: "+self.ssl_cafile+","+self.ssl_certfile+","+self.ssl_keyfile)
+            self.ssl_checkhostname = ssl_checkhostname
             self.producer = KafkaProducer(
                 bootstrap_servers=self.bootstrap_servers,
                 client_id=self.client_id,
@@ -92,6 +115,8 @@ def get_archiver(archiverconfig):
         log.debug("Kafka archiver exists. So reusing")
         return
     else:
+        if archiver:
+            archiver.close()
         archiver = None
         create_archiver(archiverconfig)
 
@@ -103,22 +128,22 @@ def create_archiver(archiverconfig):
     log.debug("Topic: " + topic)
     archiver_id = archiverconfig["archiver-id"]
     retries = archiverconfig["kafka-retries"]
-    security_protocol = ""
-
+    security_protocol = archiverconfig["security-protocol"]
+    log.debug("Security protocol is"+security_protocol)
     global archiver
 
-    if "security-protocol" in archiverconfig:
+    if (security_protocol == SECURITY_PROTOCOL_SSL):
         log.debug("Found security protocol in config")
-        security_protocol = archiverconfig["security-protocol"]
+
         archiver = psKafkaArchiver(
             bootstrap_servers=bootstrap_servers,
             archiver_id=archiver_id,
             topic=topic,
             retries=retries,
             security_protocol=security_protocol,
-            ssl_certfile=archiverconfig["_ssl-certfile"],
-            ssl_cafile=archiverconfig["_ssl-cafile"],
-            ssl_keyfile=archiverconfig["_ssl-keyfile"],
+            ssl_cert=archiverconfig["_ssl-cert"],
+            ssl_cacert=archiverconfig["_ssl-cacert"],
+            ssl_key=archiverconfig["_ssl-key"],
             ssl_password=archiverconfig["_ssl-password"],
             ssl_checkhostname=archiverconfig["ssl-checkhostname"],
         )
@@ -141,7 +166,8 @@ def archive(json):
     try:
         get_archiver(data)
         archiver.publish(message)
-        result = {"succeeded": True}
+        result = {"succeeded": True} 
+        archiver.close()
 
     except Exception as ex:
         # Cleanup producer and start a fresh connection

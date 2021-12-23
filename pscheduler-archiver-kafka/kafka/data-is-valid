@@ -26,17 +26,30 @@ ARCHIVER_SPEC_SCHEMA = {
                 "topic": {"$ref": "#/pScheduler/String"},
                 "server": {"$ref": "#/pScheduler/String"},
                 "archiver-id": {"$ref": "#/pScheduler/String"},
-                "security-protocol": {"$ref": "#/pScheduler/String"},
-                "_ssl-cafile": {"$ref": "#/pScheduler/String"},
-                "_ssl-certfile": {"$ref": "#/pScheduler/String"},
-                "_ssl-keyfile": {"$ref": "#/pScheduler/String"},
-                "_ssl-password": {"$ref": "#/pScheduler/String"},
-                "ssl-checkhostname": {"$ref": "#/pScheduler/Boolean"},
+                "security-protocol": {"default": "PLAINTEXT", "enum": ["PLAINTEXT", "SSL"]},
                 "kafka-retries": {"$ref": "#/pScheduler/Integer"},
                 "retry-policy": {"$ref": "#/pScheduler/RetryPolicy"},
             },
-            "additionalProperties": False,
-            "required": ["schema", "topic", "server"]
+            "additionalProperties": True,
+            "required": ["schema", "topic", "server", "security-protocol"],
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {"security-protocol": { "const": "SSL" }},
+                        "required": ["security-protocol"]
+                    },
+                    "then": {
+                        "properties": {
+                            "_ssl-cacert": {"$ref": "#/pScheduler/String"},
+                            "_ssl-cert": {"$ref": "#/pScheduler/String"},
+                            "_ssl-key": {"$ref": "#/pScheduler/String"},
+                            "_ssl-password": {"$ref": "#/pScheduler/String"},
+                            "ssl-checkhostname": {"$ref": "#/pScheduler/Boolean"},
+                        }
+                    }
+                }
+            ]
+
         }
     }
 }
