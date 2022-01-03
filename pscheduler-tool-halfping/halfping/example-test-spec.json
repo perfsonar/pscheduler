@@ -1,0 +1,21 @@
+{
+  "test": {
+    "type": "latency",
+    "spec": {
+      "schema": 1,
+      "dest": "www.umich.edu",
+      "packet-count": 10,
+      "packet-interval": 0.5,
+      "packet-timeout": 2,
+      "packet-padding": 44,
+      "bucket-width": 0.25
+    }
+  },
+  "schema": 1,
+  "tool": "halfping",
+  "href": "https://localhost.localdomain/pscheduler/tasks/d0035107-6ef0-4cc7-83b4-19367b502bfc",
+  "schedule": {
+    "start": "2021-06-19T00:00:00Z"
+  }
+}
+

@@ -1,0 +1,2 @@
+Depends: @, pscheduler-bundle-extras
+Tests: task
