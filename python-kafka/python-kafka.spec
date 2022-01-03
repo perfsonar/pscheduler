@@ -4,7 +4,7 @@
 
 %define short   kafka
 Name:           %{_pscheduler_python}-%{short}
-Version:        1.4.6
+Version:        2.0.2
 Release:        1%{?dist}
 Summary:        A pure Python library for Apache Kafka
 BuildArch:      noarch
