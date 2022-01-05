@@ -117,6 +117,8 @@ ifelse(REDHAT_RELEASE_MAJOR,8,owamp)
 paris-traceroute
 random-string
 s3-benchmark
+tcpping
+
 
 #
 # PSCHEDULER CORE PARTS
