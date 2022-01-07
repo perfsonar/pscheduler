@@ -78,7 +78,6 @@ except KeyError:
             'error': err
         })
 
-socket_family = socket.AF_INET if ip_version == 4 else socket.AF_INET6
 
 
 participant = input['participant']
@@ -129,26 +128,20 @@ if participant == 0:
 
     while try_num <= max_tries:
 
-        try:
-            sock = socket.socket(socket_family, socket.SOCK_STREAM)
-            try:
-                source = input['test']['spec']['source']
-                log.debug("Binding to %s", source)
-                sock.bind((source, 0))
-            except KeyError:
-                pass
+        source_address = (input['test']['spec'].get('source', ""), 0)
 
-            server_address = (input['test']['spec']['dest'],
-                              input['participant-data'][1]['listen-port'])
-            log.debug("Connecting to %s", str(server_address))
+        server_address = (input['test']['spec']['dest'],
+                          input['participant-data'][1]['listen-port'])
+
+        log.debug("Connecting %s -> %s", str(source_address), str(server_address))
+        try:
             log.debug("Timeout is %s", str(time_left()))
             time_remaining = time_left()
+            sock = socket.create_connection(server_address, time_remaining, source_address)
             if time_remaining <= 0:
                 log.debug("Timed out")
                 diags.append("Ran out of time trying to connect.")
                 break
-            sock.settimeout(time_remaining)
-            sock.connect(server_address)
             log.debug("Connected")
             sock.sendall(material.encode())
             log.debug("Sent")
@@ -188,13 +181,18 @@ elif participant == 1:
     full = ''
     error = None
 
+    server_host = input['test']['spec']['dest']
+    server_address = (server_host, input['participant-data'][1]['listen-port'])
+    diags.append("Listening on %s" % str(server_address))
+
     try:
+        socket_family = pscheduler.ip_addr_version(server_host, family=True)[0]
+        diags.append("Socket family is %s" % str(socket_family))
+        if socket_family is None:
+            raise socket.gaierror("Unable to determine address family.")
+
         sock = socket.socket(socket_family, socket.SOCK_STREAM)
         sock.settimeout(time_left())
-        server_address = (input['test']['spec']['dest'],
-                          input['participant-data'][1]['listen-port'])
-        diags.append("Listening on %s:%s" % server_address)
-        diags.append("Protocol is IPv%d" % (ip_version))
         sock.bind(server_address)
         sock.listen(1)
         connection, client_address = sock.accept()

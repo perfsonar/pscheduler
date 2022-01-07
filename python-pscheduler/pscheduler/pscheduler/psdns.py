@@ -19,7 +19,7 @@ def dns_default_timeout():
 
 
 def __check_ip_version__(ip_version):
-    if not ip_version in [4, 6]:
+    if not ip_version in [4, 6, None]:
         raise ValueError("Invalid IP version '%s'; must be 4 or 6" % (str(ip_version)))
 
 
@@ -31,7 +31,12 @@ def __dns_resolve_host(host, ip_version, timeout):
     """
     Resolve a host using the system's facilities
     """
-    family = socket.AF_INET if ip_version == 4 else socket.AF_INET6
+    __check_ip_version__(ip_version)
+
+    if ip_version is None:
+        family = 0
+    else:
+        family = socket.AF_INET if ip_version == 4 else socket.AF_INET6
 
     def proc(host, family, timing_queue):
         try:
@@ -67,7 +72,7 @@ def __dns_resolve_host(host, ip_version, timeout):
 
 def dns_resolve(host,
                 query=None,
-                ip_version=4,
+                ip_version=None,
                 timeout=__DEFAULT_TIMEOUT__
                 ):
     """
@@ -90,8 +95,6 @@ def dns_resolve(host,
             resolver = dns.resolver.Resolver()
             resolver.timeout = timeout
             resolver.lifetime = timeout
-            if query is None:
-                query = 'A' if ip_version == 4 else 'AAAA'
             answers = resolver.query(host, query)
         except (dns.exception.Timeout,
                 dns.name.EmptyLabel,
@@ -182,8 +185,6 @@ def dns_bulk_resolve(candidates, reverse=False, ip_version=None, threads=50):
     if reverse and ip_version is not None:
         raise ValueError("Unable to force IP version when reverse-resolving")
 
-    if ip_version is None:
-        ip_version = 4
     __check_ip_version__(ip_version)
 
     result = {}
