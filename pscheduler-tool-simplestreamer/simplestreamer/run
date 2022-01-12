@@ -119,26 +119,27 @@ if participant == 0:
     except KeyError:
         material = "Data sent at " + str(datetime.datetime.now())
 
-    max_tries = 10
-    sleep_time = pscheduler.timedelta_as_seconds(timeout) / max_tries
-    try_num = 1
 
+    source_address = (input['test']['spec'].get('source', ""), 0)
+
+    server_address = (input['test']['spec']['dest'],
+                      input['participant-data'][1]['listen-port'])
+
+    try_num = 1
     succeeded = False
     diags = []
 
-    while try_num <= max_tries:
+    sock = None
 
-        source_address = (input['test']['spec'].get('source', ""), 0)
+    while datetime.datetime.now() < end_time:
 
-        server_address = (input['test']['spec']['dest'],
-                          input['participant-data'][1]['listen-port'])
+        time_remaining = time_left()
+        log.debug("Timeout is %s", time_remaining)
 
         log.debug("Connecting %s -> %s", str(source_address), str(server_address))
         try:
-            log.debug("Timeout is %s", str(time_left()))
-            time_remaining = time_left()
             sock = socket.create_connection(server_address, time_remaining, source_address)
-            if time_remaining <= 0:
+            if time_left() <= 0:
                 log.debug("Timed out")
                 diags.append("Ran out of time trying to connect.")
                 break
@@ -154,8 +155,13 @@ if participant == 0:
             error = "Failed to connect: %s" % (error)
             diags.append("Try %d failed: %s" % (try_num, error))
             log.debug(error)
-            log.debug("Sleeping %s", sleep_time)
-            time.sleep(sleep_time)
+            sleep_time = time_left() * 0.10
+            if sleep_time > 0:
+                log.debug("Sleeping %s", sleep_time)
+                time.sleep(sleep_time)
+        finally:
+            if sock is not None:
+                sock.close()
 
         try_num += 1
 
