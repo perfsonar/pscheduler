@@ -511,8 +511,9 @@ if 'contexts' in task:
 
 
 # Make sure whoever we're using for assistance is running pScheduler
-if not pscheduler.api_has_pscheduler(assist, bind=assist_bind):
-    pscheduler.fail("Unable to find pScheduler on %s" % (assist))
+(has, error) = pscheduler.api_has_pscheduler(assist, bind=assist_bind)
+if not has:
+    pscheduler.fail("%s: %s" % (assist, error))
 
 
 #

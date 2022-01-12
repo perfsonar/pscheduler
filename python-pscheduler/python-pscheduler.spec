@@ -2,7 +2,7 @@
 # RPM Spec for Python pScheduler Module
 #
 
-%define perfsonar_auto_version 4.4.2
+%define perfsonar_auto_version 5.0.0
 %define perfsonar_auto_relnum 0.a1.0
 
 %define short	pscheduler
@@ -145,9 +145,6 @@ rm -rf $RPM_BUILD_ROOT
 # This removes a duplicate entry leftover from the Python 2 version.
 # TODO: Remove this after we stop supporting 4.2.x.
 OLD_LOGROTATE="%{logrotate_d}/python-pscheduler"
-echo $OLD_LOGROTATE
-ls -alh $OLD_LOGROTATE
-
 if [ -e "${OLD_LOGROTATE}" ]
 then
     cat > "${OLD_LOGROTATE}" <<EOF

@@ -6,7 +6,7 @@
 # make the scriptlets use them on CentOS 7.  For now the old-style
 # init scripts function just fine.
 
-%define perfsonar_auto_version 4.4.2
+%define perfsonar_auto_version 5.0.0
 %define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-server
@@ -464,7 +464,6 @@ find %{_rundir} -name "pscheduler-*" ! -user "%{_pscheduler_user}" -print0 \
 # On systems with SELINUX, allow database connections.
 if selinuxenabled
 then
-    echo "Setting SELinux permissions (may take awhile)"
     # TODO: connect_db may be redundant redundant.
     # nis_enabled allows binding
     for SWITCH in \

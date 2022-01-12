@@ -104,7 +104,7 @@ def run_client():
     # iperf2 has no inherent ability to force v4 or v6, so we do it here but
     # don't bother doing lookups on just a straight IP address, seems like
     # a silly combination of flags but whatever
-    if 'ip-version' in test_spec and test_spec['ip-version'] != None:     
+    if test_spec.get('ip-version') is not None:
         if not is_ip_address and test_spec['ip-version'] == 4:
             destination = pscheduler.dns_resolve(destination, ip_version=4)
         

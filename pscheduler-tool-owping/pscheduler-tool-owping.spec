@@ -3,7 +3,7 @@
 #
 
 %define short	owping
-%define perfsonar_auto_version 4.4.2
+%define perfsonar_auto_version 5.0.0
 %define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-tool-%{short}

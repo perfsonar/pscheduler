@@ -1,0 +1,8 @@
+#!/bin/sed -e 1d;/^#/d
+#
+# Validator for 'psresponse' task limit spec
+#
+{
+    "valid": false,
+    "error": "This type of limit is deprecated and not supported by this test."
+}

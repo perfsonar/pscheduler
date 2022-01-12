@@ -2,8 +2,10 @@
 # RPM Spec for pScheduler Ping Tool
 #
 
+#TODO: Requires pscheduler version >= 5.0 for ping parsing
+
 %define short	ping
-%define perfsonar_auto_version 4.4.2
+%define perfsonar_auto_version 5.0.0
 %define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-tool-%{short}

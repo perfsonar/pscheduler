@@ -149,7 +149,7 @@ class BatchProcessor():
         participants_params = {'spec': json_dump(spec['test']['spec'])}
         status, participants = url_get(parts_url,
                                        params=participants_params,
-                                       bind=self.bind,
+                                       bind=self.assist_bind,
                                        throw=False )
 
         if status != 200:
@@ -402,7 +402,7 @@ class BatchProcessor():
 
 
 
-    def __init__(self, spec, assist=None, lead=None, bind=None):
+    def __init__(self, spec, assist=None, assist_bind=None, lead=None, bind=None):
         """
         Create a batch processor.
         """
@@ -437,11 +437,14 @@ class BatchProcessor():
         # Make sure whoever we're using for assistance is running pScheduler
         if assist is None:
             assist = os.environ.get("PSCHEDULER_ASSIST", api_local_host())
-        #if not api_has_pscheduler(assist, bind=bind):
-        if not api_has_pscheduler(assist):
-            raise ValueError("Unable to find pScheduler on %s" % (assist))
+        if assist_bind is None:
+            assist_bind = os.environ.get("PSCHEDULER_ASSIST_BIND", api_local_host())
+        (has, error) = api_has_pscheduler(assist, bind=assist_bind)
+        if not has:
+            raise ValueError("Unable to find pScheduler on %s: %s" % (assist, error))
 
         self.assist = assist
+        self.assist_bind = assist_bind
         self.lead = lead
         self.bind = bind
 

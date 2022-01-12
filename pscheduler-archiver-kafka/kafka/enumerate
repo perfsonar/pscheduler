@@ -3,11 +3,11 @@
     "schema": 1,
     "name": "kafka",
     "description": "Archives data to an Apache Kafka message bus",
-    "version": "1.0",
+    "version": "1.2",
 
     "maintainer": {
         "name": "perfSONAR Development Team",
-	"email": "perfsonar-developer@internet2.edu",
-	"href": "http://www.perfsonar.net"
+        "email": "perfsonar-developer@internet2.edu",
+	    "href": "http://www.perfsonar.net"
     }
 }
