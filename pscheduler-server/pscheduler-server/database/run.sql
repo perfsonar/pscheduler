@@ -799,6 +799,27 @@ BEGIN
     );
 
 
+    -- Straggling background-multi runs stuck in the on-deck state get
+    -- knocked back into pending so the runner will try and start them
+    -- again.  If they keep failing, the code above will eventually
+    -- mark them missed.
+
+    UPDATE run
+    SET state = run_state_pending()
+    WHERE id IN (
+        SELECT run.id
+        FROM
+           run
+           JOIN task ON task.id = run.task
+           JOIN test ON test.id = task.test
+           JOIN scheduling_class ON scheduling_class.id = test.scheduling_class
+        WHERE
+            run.times @> straggle_time
+            AND run.state = run_state_on_deck()
+            AND scheduling_class.multi_result
+    );
+
+
     -- Runs that started and didn't report back in a timely manner
     UPDATE run
     SET state = run_state_overdue()

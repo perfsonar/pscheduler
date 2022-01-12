@@ -239,17 +239,8 @@ def api_has_pscheduler(hostport, timeout=5, bind=None):
 
     # Make sure the address resolves, otherwise url_get will return
     # non-200.
-
-    resolved = None
-    for ip_version in [ 4, 6 ]:
-        resolved = dns_resolve(host,
-                               ip_version=ip_version,
-                               timeout=timeout)
-        if resolved:
-            break
-
-    if not resolved:
-        return False
+    if not dns_resolve(host, timeout=timeout):
+        return (False, "Unable to resolve host '%s'" % (host))
 
     status, raw_spec = url_get(api_url_hostport(hostport),
                                timeout=timeout,
@@ -258,7 +249,8 @@ def api_has_pscheduler(hostport, timeout=5, bind=None):
                                bind=bind
     )
 
-    return status == 200
+    return (status == 200,
+            raw_spec if status != 200 else None)
 
 
 

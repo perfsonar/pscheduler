@@ -43,8 +43,8 @@ def ip_addr_version(addr,
                     family=False,
                     timeout=dns_default_timeout()):
     """Determine what IP version an address, CIDR block or hostname
-    represents.  When resolving hostnames to an IP, the search order
-    will be A followed by AAAA.
+    represents.  When resolving hostnames to an IP, the system search
+    order will be A followed.
 
     The returned tuple is (version, ip), where version is 4, 6 or None
     of nothing can be determined and ip is the ip address supplied or
@@ -55,6 +55,7 @@ def ip_addr_version(addr,
 
     If 'family' is True, the returned version will be the address
     family as defined by the socket module.
+
     """
 
     assert addr is not None

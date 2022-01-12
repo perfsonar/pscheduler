@@ -26,6 +26,13 @@ class TestInterface(PschedTestBase):
 
         self.assertTrue('127.0.0.1' in localips)
 
+    def test_source_interface(self):
+        """Source interface test"""
+        ip = '127.0.0.1'
+        address, interface = source_interface(ip)
+        self.assertEqual(address, ip)
+        self.assertNotEqual(interface, None)
+
 
 if __name__ == '__main__':
     unittest.main()
