@@ -1,3 +1,9 @@
+pscheduler-tool-iperf3 (4.4.2-1) perfsonar-4.4; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 12 Jan 2022 09:57:04 -0500
+
 pscheduler-tool-iperf3 (4.4.1-4) perfsonar-4.4; urgency=low
 
   * Patch: Not using f-string as Python 3.5 is still the default on Debian 9.

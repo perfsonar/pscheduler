@@ -2,7 +2,7 @@
 # RPM Spec for pScheduler Core
 #
 
-%define perfsonar_auto_version 4.4.1
+%define perfsonar_auto_version 4.4.2
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-core
@@ -31,7 +31,7 @@ Requires:       gnuplot >= 4.6.2
 
 # This is for netstat.
 Requires:       net-tools
-Requires:       %{_pscheduler_python}-pscheduler >= 4.4.0
+Requires:       %{_pscheduler_python}-pscheduler >= 4.4.2
 %if 0%{?el7}
 Requires:       pytz
 %endif

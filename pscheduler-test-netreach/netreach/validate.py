@@ -85,7 +85,11 @@ def spec_is_valid(json):
     if not json_valid and "gateway" not in json:
         return (json_valid, message)
 
-    network = ipaddress.ip_network(str(json["network"]))
+    try:
+        network = ipaddress.ip_network(str(json["network"]))
+    except ValueError:
+        return(False, "Invalid network '%s'" % str(json["network"]))
+
     if network.num_addresses <= 2:
         return (False, "Network must have at least two host addresses.")
 

@@ -27,6 +27,14 @@ arg_parser.add_argument("--assist",
                         default=None,
                         dest="assist")
 
+arg_parser.add_argument("--assist-bind",
+                        help="Bind outbound assist requests to this address",
+                        action="store",
+                        type=str,
+                        default=None,
+                        dest="assist_bind")
+
+
 arg_parser.add_argument("--lead",
                         help="Use this host as the lead if a task doesn't provide one",
                         action="store",
@@ -85,12 +93,12 @@ try:
     spec = pscheduler.json_load(input_file)
     processor = pscheduler.batchprocessor.BatchProcessor(spec,
                                                          assist=args.assist,
+                                                         assist_bind=args.assist_bind,
                                                          lead=args.lead,
                                                          bind=args.bind)
+
+    # Run it.
+    pscheduler.succeed_json(processor(dry_run=args.dry, debug=debug))
+
 except (ValueError, OSError) as ex:
     pscheduler.fail("%s: %s" % (args.jobfile, str(ex)))
-
-
-# Run it.
-
-pscheduler.succeed_json(processor(dry_run=args.dry, debug=debug))
