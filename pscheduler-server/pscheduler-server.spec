@@ -464,7 +464,6 @@ find %{_rundir} -name "pscheduler-*" ! -user "%{_pscheduler_user}" -print0 \
 # On systems with SELINUX, allow database connections.
 if selinuxenabled
 then
-    echo "Setting SELinux permissions (may take awhile)"
     # TODO: connect_db may be redundant redundant.
     # nis_enabled allows binding
     for SWITCH in \
