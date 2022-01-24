@@ -18,6 +18,5 @@
         {
 	    "server-port": 5201
 	}
-    ],
-    "limits-passed": { }
+    ]
 }

@@ -543,45 +543,6 @@ problem unrelated to the input.
 
 
 
-\subsubsection{limit-passes}
-
-This method checks to see if a test specification falls within the
-restrictions of a limit.
-
-\calloutitem{Arguments} None
-
-\calloutitem{Standard Input} A JSON object containing the following
-pairs:
-
-\begin{itemize}
-\item \typeditem{spec}{AnyJSON} The specification of the test parameters.
-This must be valid for the current test type.
-
-\item \typeditem{limit}{AnyJSON} The limit to be checked.  This must be
-valid for the current test type.
-
-\end{itemize}
-
-
-\calloutitem{Standard Output} A JSON object containing the following pairs:
-
-\begin{itemize}
-\item \typeditem{passed}{Boolean} An indication of whether or not the
-  test was within the limit's constraints.
-
-\item \typeditem{errors}{Array} if {\tt valid} was \false, an array of
-  strings containing text messages enumerating the reasons for the
-  failure.
-\end{itemize}
-
-\calloutitem{Standard Error} Empty if successful, plain text error
-messages on error.
-
-\calloutitem{Exit Status} {\tt 0} on success, {\tt 1} if there was a
-problem unrelated to the input.
-
-
-
 %
 % TOOL
 %
