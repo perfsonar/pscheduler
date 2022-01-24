@@ -326,7 +326,7 @@ def tasks():
         hints_data = pscheduler.json_dump(hints)
 
         log.debug("Processor = %s" % processor)
-        passed, limits_passed, diags, new_task, _priority \
+        passed, diags, new_task, _priority \
             = processor.process(task, hints)
 
         if not passed:
@@ -477,9 +477,8 @@ def tasks():
         # of the other participants.
 
         cursor = dbcursor_query(
-            "SELECT uuid, participant_key FROM api_task_post(%s, %s, %s, %s, 0, %s, NULL, FALSE, %s)",
+            "SELECT uuid, participant_key FROM api_task_post(%s, %s, %s, 0, %s, NULL, FALSE, %s)",
             [pscheduler.json_dump(task), participants, hints_data,
-             pscheduler.json_dump(limits_passed),
              task.get("priority", None), diags], onerow=True)
 
         if cursor.rowcount == 0:
@@ -540,12 +539,6 @@ def tasks():
                         "Unable to fetch posted task from %s: %s"
                         % (part_name, result))
                 log.debug("Fetched %s", result)
-                try:
-                    details = result["detail"]["spec-limits-passed"]
-                    log.debug("Details from %s: %s", post_url, details)
-                    limits_passed.extend(details)
-                except KeyError:
-                    pass
 
             except TaskPostingException as ex:
 
@@ -564,14 +557,6 @@ def tasks():
                     log.exception()
 
                 return error("Error while tasking %s: %s" % (part_name, ex))
-
-
-        # Update the list of limits passed in the local database
-        # TODO: How do the other participants know about this?
-        log.debug("Limits passed: %s", limits_passed)
-        cursor = dbcursor_query(
-            "UPDATE task SET limits_passed = %s::JSON WHERE uuid = %s",
-            [pscheduler.json_dump(limits_passed), task_uuid])
 
         # Enable the task so the scheduler will schedule it.
         try:
@@ -690,7 +675,7 @@ def tasks_uuid(uuid):
 
         # Only the lead rewrites tasks; everyone else just applies
         # limits.
-        passed, limits_passed, diags, _new_task, priority \
+        passed, diags, _new_task, priority \
             = processor.process(json_in, hints, rewrite=False)
 
         if not passed:
@@ -710,9 +695,9 @@ def tasks_uuid(uuid):
             except Exception as ex:
                 return bad_request("Task error: %s" % str(ex))
             cursor = dbcursor_query(
-                "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, %s, TRUE, %s)",
+                "SELECT * FROM api_task_post(%s, %s, %s, %s, %s, %s, TRUE, %s)",
                 [data, participants, hints_data,
-                 pscheduler.json_dump(limits_passed), participant,
+                 participant,
                  json_in.get("priority", None),
                  uuid,
                  "\n".join(diags)])

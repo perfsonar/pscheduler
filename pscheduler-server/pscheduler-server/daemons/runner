@@ -316,7 +316,6 @@ class RunWorker(object):
                                task.id,
                                task.participant,
                                task.participants,
-                               task.limits_passed,
                                lower(run.times),
                                upper(run.times),
                                task.json #> '{test}',
@@ -349,7 +348,7 @@ class RunWorker(object):
                 row = cursor.fetchone()
 
                 test, tool, task_uuid, task_id, participant, participants, \
-                    limits_passed, start, end, test_spec, cli, run_uuid, \
+                    start, end, test_spec, cli, run_uuid, \
                     partdata, scheduling_class, lead_bind, contexts, key, debug = row
 
         except Exception as ex:
@@ -394,7 +393,6 @@ class RunWorker(object):
             'test': test_spec,
             'participant': participant,
             'participant-data': partdata,
-            'limits-passed': limits_passed
             })
 
 

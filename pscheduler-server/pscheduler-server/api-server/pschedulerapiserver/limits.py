@@ -32,12 +32,11 @@ def limits():
     if hints is None:
         return error_response
 
-    passed, limits_passed, diags, _new_task, _priority \
+    passed, diags, _new_task, _priority \
         = processor.process(proposal, hints)
 
     return ok_json({
         "passed": passed,
-        "limits_passed": limits_passed,
         "diags": diags
     })
 
