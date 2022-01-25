@@ -31,7 +31,7 @@ Requires:       gnuplot >= 4.6.2
 
 # This is for netstat.
 Requires:       net-tools
-Requires:       %{_pscheduler_python}-pscheduler >= 4.4.0
+Requires:       %{_pscheduler_python}-pscheduler >= 4.4.2
 %if 0%{?el7}
 Requires:       pytz
 %endif

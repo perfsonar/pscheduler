@@ -3,6 +3,11 @@ pscheduler-tool-bwctltracepath (4.5.0~a1.0-1) perfsonar-4.5-snapshot; urgency=lo
   * New upstream version.
 
  -- perfSONAR developers <debian@perfsonar.net>  Fri, 16 Jul 2021 17:09:14 +0000
+pscheduler-tool-bwctltracepath (4.4.2-1) perfsonar-4.4; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 12 Jan 2022 09:57:04 -0500
 
 pscheduler-tool-bwctltracepath (4.4.1-1) perfsonar-4.4; urgency=low
 
