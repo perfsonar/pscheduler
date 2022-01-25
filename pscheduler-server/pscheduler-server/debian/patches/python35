@@ -1,5 +1,5 @@
---- pscheduler-server.orig/daemons/runner	2021-08-26 19:45:48.374342001 +0100
-+++ pscheduler-server/daemons/runner	2021-09-01 19:20:21.598653780 +0100
+--- a/daemons/runner	2022-01-12 09:57:02.688120265 -0500
++++ b/daemons/runner	2022-01-12 09:57:24.676264234 -0500
 @@ -718,7 +718,7 @@
              # the local database.
  
@@ -9,8 +9,8 @@
                  db = self._get_db_conn()
                  with db.cursor() as cursor:
                      # TODO: Need to figure out succeeded.
---- pscheduler-server.orig/daemons/scheduler	2021-08-26 19:45:48.375007095 +0100
-+++ pscheduler-server/daemons/scheduler	2021-09-01 19:28:24.496116043 +0100
+--- a/daemons/scheduler	2022-01-12 09:57:02.688365561 -0500
++++ b/daemons/scheduler	2022-01-12 09:57:24.679067298 -0500
 @@ -629,14 +629,14 @@
              [pscheduler.api_run_uuid(run_lead_url)]
          )
