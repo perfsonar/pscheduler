@@ -308,9 +308,8 @@ for run in schedule:
 
     if options.verbose and run["state"] == "nonstart":
         print("Non-Start Reason:")
-        print(pscheduler.indent(
-            run.get("errors", "Unspecified error").strip(),
-            ))
+        error = run.get("errors") or "Unspecified error"
+        print(pscheduler.indent(error.strip()))
 
     priority = run.get("priority", None)
     task_cli.append("(Run with tool '{}'{})".format(
