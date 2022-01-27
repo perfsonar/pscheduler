@@ -304,7 +304,7 @@ class Log(object):
 
     # Logging
 
-    def log(self, logger, level, format, *args):
+    def __log(self, logger, level, format, *args):
         self.__syslog_handler_init()
         try:
             message = format % args
@@ -320,22 +320,22 @@ class Log(object):
 
     def debug_always(self, format, *args):
         """Emit debug regardless of the debug state"""
-        self.log(self.debug_always_logger, DEBUG, format, *args)
+        self.__log(self.debug_always_logger, DEBUG, format, *args)
 
     def debug(self, format, *args):
-        self.log(self.logger, DEBUG,format, *args)
+        self.__log(self.logger, DEBUG,format, *args)
 
     def info(self, format, *args):
-        self.log(self.logger, INFO, format, *args)
+        self.__log(self.logger, INFO, format, *args)
 
     def warning(self, format, *args):
-        self.log(self.logger, WARNING, format, *args)
+        self.__log(self.logger, WARNING, format, *args)
 
     def error(self, format, *args):
-        self.log(self.logger, ERROR, format, *args)
+        self.__log(self.logger, ERROR, format, *args)
 
     def critical(self, format, *args):
-        self.log(self.logger, CRITICAL, format, *args)
+        self.__log(self.logger, CRITICAL, format, *args)
 
     def exception(self, message=None):
         "Log an exception as an error and debug if we're doing that."
