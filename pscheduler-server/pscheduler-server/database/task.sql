@@ -342,6 +342,21 @@ BEGIN
     END IF;
 
 
+    -- Version 15 to version 16
+    -- Corrects erroneous added time formatting (see issue #1256)
+    IF t_version = 15
+    THEN
+
+        -- The bug requiring this fix is in utilities.sql, which will
+        -- already have been updated by this point.  This will force
+        -- the update trigger to fire and produce a new version of the
+        -- details with corrected data.
+        UPDATE task SET json_detail = NULL;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --

@@ -81,7 +81,7 @@ BEGIN
         minutes := extract(timezone_minutes from value);
         IF MINUTES <> 0
         THEN
-            converted := converted || ':' || trim(to_char(minutes, '00'));
+            converted := converted || ':' || trim(to_char(abs(minutes), '00'));
         END IF;
     ELSE
         converted := converted || 'Z';
