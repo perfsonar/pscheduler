@@ -9,6 +9,7 @@ import os
 import pickle
 import signal
 import sys
+import threading
 import time
 import traceback
 
@@ -70,7 +71,7 @@ class Log(object):
 
     def __syslog_handler_deinit(self):
         """
-        Kill off the syslog handler; called when a log event fails.
+        Kill off the syslog handlers; called when any log event fails.
         """
 
         try:
@@ -186,6 +187,7 @@ class Log(object):
         # Set up the logger
         #
 
+        self.lock = threading.RLock()
         self.logger = logging.getLogger(name)
         self.logger.propagate = False
 
@@ -277,7 +279,8 @@ class Log(object):
         child processes to pre-set the state.
         """
         if self.is_propagating:
-            os.environ[STATE_VARIABLE] = self.__pickled_environment()
+            with self.lock:
+                os.environ[STATE_VARIABLE] = self.__pickled_environment()
 
 
     def verbose(self, state):
@@ -304,38 +307,45 @@ class Log(object):
 
     # Logging
 
-    def log(self, logger, level, format, *args):
-        self.__syslog_handler_init()
-        try:
-            message = format % args
-            lines = message.split("\n")
-            while lines[0] == "":
-                del lines[0]
-            while lines[-1] == "":
-                del lines[-1]
-            for line in lines:
-                logger.log(level, line)
-        except Exception:
-            self.__syslog_handler_deinit()
+    def __log(self, logger, level, format, *args):
+
+        message = format % args
+
+        lines = message.split("\n")
+        while lines[0] == "":
+            del lines[0]
+        while lines[-1] == "":
+            del lines[-1]
+
+        with self.lock:
+            self.__syslog_handler_init()
+            try:
+                # Do this while locked to make multi-line messages log contiguously
+                for line in lines:
+                    logger.log(level, line)
+            except Exception as ex:
+                print("Exception while logging:\n%s\nMissed message: %s\n" % (str(ex), message), file=sys.stderr)
+                self.__syslog_handler_deinit()
+
 
     def debug_always(self, format, *args):
         """Emit debug regardless of the debug state"""
-        self.log(self.debug_always_logger, DEBUG, format, *args)
+        self.__log(self.debug_always_logger, DEBUG, format, *args)
 
     def debug(self, format, *args):
-        self.log(self.logger, DEBUG,format, *args)
+        self.__log(self.logger, DEBUG,format, *args)
 
     def info(self, format, *args):
-        self.log(self.logger, INFO, format, *args)
+        self.__log(self.logger, INFO, format, *args)
 
     def warning(self, format, *args):
-        self.log(self.logger, WARNING, format, *args)
+        self.__log(self.logger, WARNING, format, *args)
 
     def error(self, format, *args):
-        self.log(self.logger, ERROR, format, *args)
+        self.__log(self.logger, ERROR, format, *args)
 
     def critical(self, format, *args):
-        self.log(self.logger, CRITICAL, format, *args)
+        self.__log(self.logger, CRITICAL, format, *args)
 
     def exception(self, message=None):
         "Log an exception as an error and debug if we're doing that."
@@ -361,15 +371,16 @@ class Log(object):
     def set_debug(self, state):
         "Turn debugging on or off, remembering the last-set level"
 
-        if state:
-            self.level(DEBUG, save=False)
-            self.debug("Debug started")
-        else:
-            self.debug("Debug discontinued")
-            self.level(self.last_level)
-
-        self.forced_debug = state
-        self.__update_env()
+        with self.lock:
+            if state:
+                self.level(DEBUG, save=False)
+                self.debug("Debug started")
+            else:
+                self.debug("Debug discontinued")
+                self.level(self.last_level)
+            
+            self.forced_debug = state
+            self.__update_env()
 
 
     def is_forced_debugging(self):

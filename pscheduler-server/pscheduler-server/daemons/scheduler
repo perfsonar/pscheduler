@@ -586,7 +586,7 @@ def run_post(
 
         if status == 409:
             message = "%s developed a schedule conflict." % (put_url)
-            log_debug("%d: %s", message)
+            log_debug("%d: %s", number, message)
             errors.append(message)
             conflict = True
             # No sense in continuing.
