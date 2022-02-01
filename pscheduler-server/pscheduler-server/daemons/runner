@@ -52,11 +52,6 @@ opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
                       default="PT1M")
-opt_parser.add_option("--terse-logging",
-                      help="Don't log run details",
-                      action="store_true",
-                      dest="terse",
-                      default=False)
 
 
 opt_parser.add_option("--verbose", action="store_true", dest="verbose", default=False)
@@ -74,8 +69,6 @@ if pscheduler.timedelta_as_seconds(refresh) == 0:
 log = pscheduler.Log(verbose=options.verbose, debug=options.debug, propagate=True)
 
 dsn = pscheduler.string_from_file(options.dsn)
-
-log_details = not options.terse
 
 
 
@@ -244,10 +237,9 @@ class RunWorker(object):
                                    self.id)
                     return
 
-                if log_details:
-                    self.log.info("%d: Posted result to %s/runs/%s",
-                                  self.id, self.task_url,
-                                  cursor.fetchone()[0])
+                self.log_debug("%d: Posted result to %s/runs/%s",
+                              self.id, self.task_url,
+                              cursor.fetchone()[0])
 
 
         except Exception as ex:
@@ -279,7 +271,7 @@ class RunWorker(object):
         """
         self.log_debug("%d: Thread running", self.id)
         try:
-            self.log.debug("%d: Running", self.id)
+            self.log_debug("%d: Running", self.id)
             with tempfile.TemporaryDirectory() as self.temp:
                 self.log_debug("%d: Temp space in %s", self.id, self.temp)
                 self.__run()
@@ -341,8 +333,7 @@ class RunWorker(object):
                 # vanished.
 
                 if cursor.rowcount != 1:
-                    if log_details:
-                        self.log.info("%d: Run is gone.  Stopping.", self.id)
+                    self.log_debug("%d: Run is gone.  Stopping.", self.id)
                     return
 
                 row = cursor.fetchone()
@@ -434,9 +425,8 @@ class RunWorker(object):
         # Get cracking
         #
 
-        if log_details:
-            self.log.info("%d: Running %s", self.id, run_url)
-            self.log.info("%d: With %s: %s %s", self.id, tool, test, " ".join(cli))
+        self.log_debug("%d: Running %s", self.id, run_url)
+        self.log_debug("%d: With %s: %s %s", self.id, tool, test, " ".join(cli))
 
         # Tell the database we're proceeding
 
@@ -521,13 +511,10 @@ class RunWorker(object):
             stderr = None
 
         if returncode == 0:
-            if log_details:
-                self.log.info("%d: Run succeeded.", self.id)
             self.log_debug("%d: Run returned %s", self.id, stdout)
         else:
-            if log_details:
-                self.log.info("%d: Run failed %d: %s", self.id,
-                              returncode, stderr)
+            self.log.error("%d: Run failed %d: %s", self.id,
+                          returncode, stderr)
             if stderr is None:
                 stderr = "Tool exited with status %d" % (returncode)
         
