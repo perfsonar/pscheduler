@@ -44,6 +44,7 @@ def run(input):
 
     curl = pycurl.Curl()
 
+    curl.setopt(pycurl.USERAGENT, "Mozilla/5.0 (pScheduler) HTTP response measurement tool")
     curl.setopt(pycurl.URL, str(source))
 
     # TODO: This test doesn't have bind but needs one.
