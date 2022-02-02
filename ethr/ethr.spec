@@ -46,6 +46,8 @@ export GOPATH=%{gopath}
 export GOBIN=%{gobin}
 export GOCACHE=%{gocache}
 
+go mod init microsoft.com/ethr
+go mod tidy
 go get ./...
 
 
@@ -61,7 +63,7 @@ go build
 
 %install
 %{__mkdir_p} %{buildroot}/%{_bindir}
-install %{name}-%{version} %{buildroot}/%{_bindir}/%{name}
+install %{name} %{buildroot}/%{_bindir}/%{name}
 
 
 
