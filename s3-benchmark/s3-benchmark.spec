@@ -42,15 +42,17 @@ export GOPATH=%{gopath}
 export GOBIN=%{gobin}
 export GOCACHE=%{gocache}
 
-#doesn't work
-#go get ./...
+%if 0%{el7}
+# EL7 has problems with its git that cause module fetches not to work.
+# Use Golang's proxy to do it instead.
+export GO111MODULE=on
+export GOPROXY="https://proxy.golang.org"
+%endif
 
-go get golang.org/x/net/http2
-go get code.cloudfoundry.org/bytefmt
-go get github.com/aws/aws-sdk-go/aws
-go get github.com/aws/aws-sdk-go/aws/credentials
-go get github.com/aws/aws-sdk-go/aws/session
-go get github.com/aws/aws-sdk-go/service/s3
+go mod init wasabi.com/s3-benchmark
+go mod tidy
+go get ./...
+
 
 
 %build -n %{directory}
