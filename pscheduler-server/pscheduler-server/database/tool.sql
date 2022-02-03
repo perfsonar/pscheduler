@@ -2,10 +2,6 @@
 -- Tables of tools and the tests they run.
 --
 
--- NOTE: Rows in this table should only be maintained (i.e., inserted
--- or updated) using the tool_upsert() function.
--- TODO: Use native upserting when Pg is upgraded to 9.5
-
 DO $$
 DECLARE
     t_name TEXT;            -- Name of the table being worked on
@@ -242,49 +238,6 @@ FOR EACH ROW
 
 
 
-
-
-
--- Insert a new tool or update an existing one by name
-
-DO $$ BEGIN PERFORM drop_function_all('tool_upsert'); END $$;
-
-CREATE OR REPLACE FUNCTION tool_upsert(new_json JSONB)
-RETURNS VOID
-AS $$
-DECLARE
-    existing_id INTEGER;
-    new_name TEXT;
-BEGIN
-
-   new_name := (new_json ->> 'name')::TEXT;
-
-   SELECT id from tool into existing_id WHERE name = new_name;
-
-   IF NOT FOUND THEN
-
-      -- Legitimately-new row.
-      INSERT INTO tool (json, updated, available)
-      VALUES (new_json, now(), true);
-
-   ELSE
-
-     -- Update of existing row.
-     UPDATE tool
-     SET
-       json = new_json,
-       updated = now(),
-       available = true
-     WHERE id = existing_id;
-
-   END IF;
-
-END;
-$$ LANGUAGE plpgsql;
-
-
-
-
 -- Function to run at startup.
 
 DO $$ BEGIN PERFORM drop_function_all('tool_boot'); END $$;
@@ -334,7 +287,10 @@ BEGIN
 	    CONTINUE;
         END IF;
 
-	PERFORM tool_upsert(tool_enumeration);
+	INSERT INTO tool (json, updated, available)
+	VALUES (tool_enumeration, now(), TRUE)
+	ON CONFLICT (name) DO UPDATE
+        SET json = tool_enumeration, updated = now(), available = TRUE;
 
     END LOOP;
 
