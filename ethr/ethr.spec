@@ -47,6 +47,7 @@ export GOBIN=%{gobin}
 export GOCACHE=%{gocache}
 
 go mod init microsoft.com/ethr
+go mod tidy
 go get ./...
 
 
