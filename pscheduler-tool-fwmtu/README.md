@@ -1,1 +1,6 @@
-Documentation for writing a tool for pScheduler can be found in the main directory of the PDK in the file tool.md (https://github.com/perfsonar/pscheduler/blob/pdk-docs/scripts/PDK/tool.md)
+# pScheduler `fwmtu` tool
+
+## Acknowledgements
+
+This package was originally developed by Frank Wang at the University
+of Michigan as part of the 2021 perfSONAR intern cohort.

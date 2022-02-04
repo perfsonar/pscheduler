@@ -566,17 +566,18 @@ start("  Checking IP addresses")
 (stripped_a, stripped_a_port) = pscheduler.api_host_port(host_a)
 (stripped_z, stripped_z_port) = pscheduler.api_host_port(host_z)
 normalized_a, normalized_z = pscheduler.ip_normalize_version(stripped_a, stripped_z, ip_version=options.ip_version)
-if normalized_a is None or normalized_z is None:
-    failed("Unable to find %s addresses for both hosts" % (
-        "same-family" if options.ip_version is None else "IPv%d" % (options.ip_version)
-    ))
 
+if normalized_a is None or normalized_z is None:
+    ok("Unable to find %s addresses for both hosts.  This may not be a problem on %s." % (
+        "same-family" if options.ip_version is None else "IPv%d" % (options.ip_version), host_a
+    ))
 else:
     normalized_version, _normalized_ip = pscheduler.ip_addr_version(normalized_a)
     if options.ip_version is not None and (options.ip_version != normalized_version):
-        failed("IPs are version %d, version %s was requested" % (normalized_version, options.ip_version))
+        ok("IPs are version %d, version %s was requested.  This may not be a problem on %s."
+             % (normalized_version, options.ip_version, host_a))
     else:
-        ok("IPv%s" % (normalized_version))
+        ok()
 
 
 # MTU Between hosts
@@ -609,7 +610,8 @@ if not options.quick:
         "schema": 1,
         "test": {
             "spec": {
-                "dest": normalized_z,
+		"source-node": host_a,
+                "dest": host_z,
                 "schema": 1
             },
             "type": "simplestream"
@@ -621,7 +623,7 @@ if not options.quick:
         simplestream_task["test"]["spec"]["ip-version"] = options.ip_version
 
     simplestream_result = run_task(
-        "  Simple stream test", normalized_a, simplestream_task
+        "  Simple stream test", host_a, simplestream_task
     )
 
 
@@ -630,5 +632,4 @@ if not options.quick:
 #
 
 print()
-pscheduler.succeed(
-    "pScheduler on both hosts appears to be functioning normally.")
+pscheduler.succeed("pScheduler on both hosts appears to be functioning normally.")

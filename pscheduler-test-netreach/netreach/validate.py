@@ -88,7 +88,7 @@ def spec_is_valid(json):
     try:
         network = ipaddress.ip_network(str(json["network"]))
     except ValueError as ex:
-        return (False, str(ex))
+        return (False, "Invalid network: %s" % (str(ex)))
 
     if network.num_addresses <= 2:
         return (False, "Network must have at least two host addresses.")

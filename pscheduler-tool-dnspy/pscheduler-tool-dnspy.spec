@@ -40,6 +40,7 @@ DNS tool class for pScheduler
 
 %build
 make \
+     PYTHON=%{_pscheduler_python} \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
 

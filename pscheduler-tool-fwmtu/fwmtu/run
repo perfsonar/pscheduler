@@ -46,9 +46,12 @@ def find_mtu(dest, port):
         IP_MTU_DISCOVER = 10
         IP_PMTUDISC_DO = 2
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    (family, ip) = pscheduler.ip_addr_version(dest, family=True)
+    if family is None or ip is None:
+        raise Exception("Cannot convert destination to an IP address.")
+    sock = socket.socket(family, socket.SOCK_DGRAM)
     sock.setsockopt(socket.IPPROTO_IP, IN.IP_MTU_DISCOVER, IN.IP_PMTUDISC_DO)
-    sock.connect((dest, port))
+    sock.connect((ip, port))
 
     # Try reaching with payload size 0
     sock.send(b"")

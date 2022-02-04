@@ -33,9 +33,11 @@ def source_interface(address, port=80, ip_version=None):
     Returns a tuple of (address, interface_name)
     """
 
-    sock = socket.socket(
-        socket.AF_INET6 if ip_version == 6 else socket.AF_INET,
-        socket.SOCK_DGRAM)
+    family = ip_addr_version(address, resolve=False, family=True)[0]
+    if family is None:
+        return (None, None)
+
+    sock = socket.socket(family, socket.SOCK_DGRAM)
     try:
         sock.connect((address, port))
     except socket.error:
@@ -60,17 +62,13 @@ def address_interface(address, ip_version=None):
     """
 
     # See if the address looks like an address and not a hostname.
+    # Make sure we resolve any address to a specific IP address before
+    # looking up interfaces
 
-    # make sure we resolve any address to a specific
-    # IP address before looking up interfaces
     if not is_ip(address):
-        if ip_version is not None:
-            resolved = dns_resolve(address, ip_version=ip_version)
-        else:
-            for version in [ 4, 6 ]:
-                resolved = dns_resolve(address, ip_version=version)
-                if resolved is not None:
-                    break
+        resolved = dns_resolve(address, ip_version=ip_version)
+        if resolved is None:
+            return None
         address = resolved
 
     all_interfaces = netifaces.interfaces()

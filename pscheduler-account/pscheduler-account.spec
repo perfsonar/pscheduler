@@ -61,17 +61,21 @@ then
         --no-create-home \
         --system \
         '%{user}'
-else
 
-    # Do make changes to an existing account
+elif [ $1 -eq 2 ]  # Upgrade
+then
+
+    # Make changes to an existing account (quietly)
 
     # Force the account home directory to be temporary space
-    usermod --home '%{_tmppath}' '%{user}'
-
+    OUTPUT=$(usermod --home '%{_tmppath}' '%{user}' 2>&1) \
+	|| echo $OUTPUT 1>&2
+    
     # Don't allow logins
-    usermod --shell /sbin/nologin '%{user}'
+    OUTPUT=$(usermod --shell /sbin/nologin '%{user}' 2>&1) \
+	|| echo $OUTPUT 1>&2
 
-fi
+ fi
 
 
 # Make sure the account is never never disabled or requires a password

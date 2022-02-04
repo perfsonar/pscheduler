@@ -132,7 +132,11 @@ def json_load(source=None, exit_on_error=False, strip=True, max_schema=None):
     return json_decomment(json_in) if strip else json_in
 
 
-def json_dump(obj, dest=None, pretty=False):
+
+NORMAL_SEPARATORS = (',', ':')
+PRETTY_SEPARATORS = (', ', ': ')
+
+def json_dump(obj, dest=None, pretty=False, compact=False):
     """
     Write a blob of JSON contained in a hash to a file destination.
     If no destination is specified, it will be returned as a string.
@@ -147,20 +151,20 @@ def json_dump(obj, dest=None, pretty=False):
             return dumps(obj,
                          sort_keys=True,
                          indent=4,
-                         separators=(',', ': ')
+                         separators=PRETTY_SEPARATORS
                          )
         else:
-            return dumps(obj)
+            return dumps(obj, separators=NORMAL_SEPARATORS)
 
     # Send to a file
     if pretty:
         dump(obj, dest,
              sort_keys=True,
              indent=4,
-             separators=(',', ': ')
+             separators=PRETTY_SEPARATORS
              )
     else:
-        dump(obj, dest)
+        dump(obj, dest, separators=NORMAL_SEPARATORS)
 
 
 
