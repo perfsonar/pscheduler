@@ -1,0 +1,14 @@
+Source: tcpping
+Section: misc
+Priority: optional
+Maintainer: George Uhl <george.d.uhl@nasa.gov>
+Build-Depends: debhelper (>= 9), python
+Standards-Version: 3.9.6
+Homepage: https://github.com/guhl1956/tcpping
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: tcpping
+Architecture: all
+Depends: ${misc:Depends}, python
+Description: Measure round trip time with TCP connections
