@@ -273,10 +273,15 @@ result = {
 # Use pscheduler library to parse results into dictionary
 parsed_results = pscheduler.parse_ping(stdout, count)
 
-result['min'] = parsed_results['min']
-result['max'] = parsed_results['max']
-result['mean'] = parsed_results['mean']
-result['stddev'] = parsed_results['stddev']
+try:
+    result['min'] = parsed_results['min']
+    result['max'] = parsed_results['max']
+    result['mean'] = parsed_results['mean']
+    result['stddev'] = parsed_results['stddev']
+except KeyError:
+    # Don't care if these are missing.
+    pass
+
 ips = parsed_results['ips']
 roundtrips = parsed_results['roundtrips']
 result['roundtrips'] = roundtrips
