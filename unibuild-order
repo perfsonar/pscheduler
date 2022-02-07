@@ -47,7 +47,7 @@ ifelse(PACKAGING,rpm,pscheduler-rpm)
 #
 
 # PostgreSQL and Additions
-pgdg-srpm-macros
+ifelse(PACKAGING,rpm,pgdg-srpm-macros)
 postgresql
 postgresql-init
 postgresql-load
