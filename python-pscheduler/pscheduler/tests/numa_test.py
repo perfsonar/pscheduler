@@ -24,9 +24,10 @@ class TestNuma(PschedTestBase):
 
         # One bad one.
 
-        self.assertEqual(
+        self.assertIn(
             numa_node_ok("foo"),
-            (False, "libnuma: Warning: unparseable node description `foo'")
+            [(False, "libnuma: Warning: unparseable node description `foo'"),
+                (False, 'numactl: This system does not support NUMA policy')]
             )
 
 

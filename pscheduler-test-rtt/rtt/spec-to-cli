@@ -5,8 +5,9 @@
 import pscheduler
 
 from validate import spec_is_valid
+from validate import MAX_SCHEMA
 
-spec = pscheduler.json_load(exit_on_error=True, max_schema=3)
+spec = pscheduler.json_load(exit_on_error=True, max_schema=MAX_SCHEMA)
 
 valid, message = spec_is_valid(spec)
 
@@ -29,6 +30,7 @@ result = pscheduler.speccli_build_args(spec,
         ( 'ttl', 'ttl' ),
         ( 'deadline', 'deadline' ),
         ( 'timeout', 'timeout' ),
+        ( 'port', 'port' ),
         ( 'protocol', 'protocol' ),
         ],
                                        bools=[

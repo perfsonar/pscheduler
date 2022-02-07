@@ -26,6 +26,7 @@ REPO/
 #ignore tarballs from build process
 # TODO: These shouldn't be necessary.
 make-generic-rpm/*.tar.gz
+pgdg-srpm-macros/*.tar.gz
 postgresql-init/*.tar.gz
 postgresql-load/*.tar.gz
 pscheduler*/*.tar.gz

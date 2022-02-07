@@ -342,6 +342,15 @@ BEGIN
     END IF;
 
 
+    -- Version 15 to version 16
+    -- Drops limits_passed column
+    IF t_version = 15
+    THEN
+	ALTER TABLE task DROP COLUMN limits_passed;
+
+        t_version := t_version + 1;
+    END IF;
+
     --
     -- Cleanup
     --
@@ -716,9 +725,6 @@ BEGIN
                 'null'::JSONB);
         END IF;
 
-	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,spec-limits-passed}',
-	    to_jsonb(NEW.limits_passed));
-
         IF NEW.start IS NOT NULL
         THEN
 	    NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,start}',
@@ -892,7 +898,6 @@ CREATE OR REPLACE FUNCTION api_task_post(
     task_package JSONB,
     participant_list TEXT[],
     hints JSONB,
-    limits_passed JSON = '[]',
     participant INTEGER DEFAULT 0,
     priority INTEGER DEFAULT NULL,
     task_uuid UUID = NULL,
@@ -914,9 +919,9 @@ BEGIN
    END IF;
 
    WITH inserted_row AS (
-        INSERT INTO task(json, participants, limits_passed, participant,
+        INSERT INTO task(json, participants, participant,
 	                 priority, uuid, hints, enabled, diags)
-        VALUES (task_package, array_to_json(participant_list), limits_passed,
+        VALUES (task_package, array_to_json(participant_list),
 	        participant, priority, task_uuid, hints, enabled, diags)
         RETURNING *
     ) SELECT INTO inserted * from inserted_row;

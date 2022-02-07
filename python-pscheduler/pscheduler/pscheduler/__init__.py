@@ -23,8 +23,10 @@ from .mtu import *
 from .numa import *
 from .numeric import *
 from .numericrange import *
+from .process import *
 from .program import *
 from .pidfile import *
+from .ping import *
 from .plugins import *
 from .psas import *
 from .psdns import *

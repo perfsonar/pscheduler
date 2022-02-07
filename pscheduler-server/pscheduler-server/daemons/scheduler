@@ -586,7 +586,7 @@ def run_post(
 
         if status == 409:
             message = "%s developed a schedule conflict." % (put_url)
-            log_debug("%d: %s", message)
+            log_debug("%d: %s", number, message)
             errors.append(message)
             conflict = True
             # No sense in continuing.
@@ -908,7 +908,11 @@ def main_program():
             log.debug("Waiting.")
             if pg.wait(pscheduler.timedelta_as_seconds(refresh)):
                 log.debug("Task change.")
-                # Discard pending notifications
+
+                # Discard pending notifications.  This is safe to do
+                # because all we ever get is task changes and the
+                # query below will find everything that needs
+                # scheduling.
                 _ = pg.notifications()
             else:
                 log.debug("Timed out.")

@@ -7,8 +7,6 @@ NAME=latency
 FILES=\
 	cli-to-spec \
 	enumerate \
-	limit-is-valid \
-	limit-passes \
 	participants \
 	result-format \
 	spec-format \

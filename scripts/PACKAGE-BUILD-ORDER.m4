@@ -84,8 +84,11 @@ ifelse(FAMILY/MAJOR,RedHat/7,python-daemon)		# EL7 needs this; EL8 is up to date
 ifelse(FAMILY/MAJOR,RedHat/7,python-isodate)		# EL7 needs this; EL8 is up to date
 ifelse(FAMILY/MAJOR,RedHat/8,python-itsdangerous)	# EL8 has this, but an older version
 python-pyrsistent
+python-nmap3
+# EL8 has this, but an older version
 python-jsonschema
 python-kafka
+python-nmap3
 
 # Used by pscheduler-archiver-esmond
 # EL8's is 1.58, ours is/was 1.59.  Commits to the project show only
@@ -135,7 +138,13 @@ ifelse(FAMILY/MAJOR,REDHAT/8,iperf)			# EPEL dropped this for EL8
 ifelse(FAMILY/MAJOR,REDHAT/8,owamp)			# TODO: Building temporarily for EL8
 paris-traceroute
 random-string
+<<<<<<< HEAD:scripts/PACKAGE-BUILD-ORDER.m4
 ifelse(HAVE_GOLANG,1,s3-benchmark)
+=======
+s3-benchmark
+tcpping
+
+>>>>>>> 5.0.0:scripts/RPM-BUILD-ORDER.m4
 
 #
 # PSCHEDULER CORE PARTS
@@ -153,15 +162,23 @@ pscheduler-server
 
 # Tests
 pscheduler-test-clock
+pscheduler-test-dhcp			--bundle extras
 pscheduler-test-disk-to-disk		--bundle extras
+pscheduler-test-dot1x			--bundle extras
 pscheduler-test-http
 pscheduler-test-idle
 pscheduler-test-idlebgm
 pscheduler-test-idleex
 pscheduler-test-latency
 pscheduler-test-latencybg
+<<<<<<< HEAD:scripts/PACKAGE-BUILD-ORDER.m4
 pscheduler-test-netreach		--bundle extras
+=======
+pscheduler-test-netreach			--bundle extras
+pscheduler-test-psresponse
+>>>>>>> 5.0.0:scripts/RPM-BUILD-ORDER.m4
 pscheduler-test-throughput
+pscheduler-test-openports		--bundle extras
 pscheduler-test-rtt
 ifelse(HAVE_GOLANG,1,pscheduler-test-s3throughput)
 pscheduler-test-simplestream
@@ -170,28 +187,46 @@ pscheduler-test-snmpgetbgm		--bundle snmp
 pscheduler-test-snmpset			--bundle snmp
 pscheduler-test-trace
 pscheduler-test-dns
+pscheduler-test-mtu
+pscheduler-test-wifibssid
+
 
 # Tools
+pscheduler-tool-bssidscanner
 pscheduler-tool-bwctliperf2		--bundle obsolete
 pscheduler-tool-bwctliperf3		--bundle obsolete
 pscheduler-tool-bwctlping		--bundle obsolete
 pscheduler-tool-bwctltracepath		--bundle obsolete
 pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl
+pscheduler-tool-dhclient		--bundle extras
 pscheduler-tool-dnspy
+<<<<<<< HEAD:scripts/PACKAGE-BUILD-ORDER.m4
 
 ifelse(HAVE_GOLANG,1,pscheduler-tool-ethr)
+=======
+pscheduler-tool-ethr
+pscheduler-tool-fpingreach		--bundle extras
+pscheduler-tool-fwmtu
+>>>>>>> 5.0.0:scripts/RPM-BUILD-ORDER.m4
 pscheduler-tool-globus			--bundle extras
+pscheduler-tool-halfping
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
+<<<<<<< HEAD:scripts/PACKAGE-BUILD-ORDER.m4
 pscheduler-tool-nmapreach		--bundle extras
+=======
+pscheduler-tool-nmapreach			--bundle extras
+pscheduler-tool-nmapscan		--bundle extras
+>>>>>>> 5.0.0:scripts/RPM-BUILD-ORDER.m4
 pscheduler-tool-nuttcp
 pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
 pscheduler-tool-ping
 pscheduler-tool-powstream
 pscheduler-tool-psclock
+pscheduler-tool-pstimer
 pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
 ifelse(HAVE_GOLANG,1,pscheduler-tool-s3-benchmark)
@@ -199,9 +234,11 @@ pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
 pscheduler-tool-snooze
+pscheduler-tool-tcpping
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
 pscheduler-tool-twping
+pscheduler-tool-umichwpa		--bundle extras
 
 # Archivers
 pscheduler-archiver-bitbucket
@@ -209,9 +246,12 @@ pscheduler-archiver-esmond
 pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-kafka
+pscheduler-archiver-postgresql
 pscheduler-archiver-rabbitmq
 pscheduler-archiver-snmptrap		--bundle snmp
 pscheduler-archiver-syslog
+pscheduler-archiver-tcp
+pscheduler-archiver-udp
 
 # Context Changers
 pscheduler-context-changefail

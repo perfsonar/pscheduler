@@ -1,0 +1,14 @@
+{
+    "spec": {
+	"type": "mtu",
+	"spec": {
+	    "schema": 1,
+	    "dest": "foo.bar.net"
+	}
+    },
+    "result": {
+	"schema": 1,
+	"succeeded": true,
+	"mtu": 1500
+    }
+}

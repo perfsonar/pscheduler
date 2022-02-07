@@ -68,6 +68,12 @@ opt_parser.add_option("--format",
                       default="text",
                       dest="format")
 
+opt_parser.add_option("--full",
+                      help="Produce full diagnostics and archiving information",
+                      action="store_true",
+                      default=False,
+                      dest="full")
+
 opt_parser.add_option("--output",
                       help="Path to write output",
                       action="store", type="string",
@@ -85,6 +91,10 @@ opt_parser.add_option("--debug", action="store_true", dest="debug")
 
 
 (options, remaining_args) = opt_parser.parse_args()
+
+if options.full:
+    options.archivings = True
+    options.diags = True
 
 if len(remaining_args) < 1:
     opt_parser.print_usage()

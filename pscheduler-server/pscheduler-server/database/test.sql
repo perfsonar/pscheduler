@@ -2,11 +2,6 @@
 -- Table of Test Types
 --
 
--- NOTE: Rows in this table should only be maintained (i.e., inserted
--- or updated) using the test_upsert() function.
--- TODO: Use native upserting when Pg is upgraded to 9.5
-
-
 DO $$
 DECLARE
     t_name TEXT;            -- Name of the table being worked on
@@ -125,46 +120,6 @@ FOR EACH ROW
 
 
 
--- Insert a new test or update an existing one by name
-
-DO $$ BEGIN PERFORM drop_function_all('test_upsert'); END $$;
-
-CREATE OR REPLACE FUNCTION test_upsert(new_json JSONB)
-RETURNS VOID
-AS $$
-DECLARE
-    existing_id BIGINT;
-    new_name TEXT;
-BEGIN
-
-   new_name := (new_json ->> 'name')::TEXT;
-
-   SELECT id from test into existing_id WHERE test.name = new_name;
-
-   IF NOT FOUND THEN
-
-      -- Legitimately-new row.
-      INSERT INTO test (json, updated, available)
-      VALUES (new_json, now(), true);
-
-   ELSE
-
-     -- Update of existing row.
-     UPDATE test
-     SET
-       json = new_json,
-       updated = now(),
-       available = true
-     WHERE id = existing_id;
-
-   END IF;
-
-END;
-$$ LANGUAGE plpgsql;
-
-
-
-
 -- Function to run at startup.
 
 DO $$ BEGIN PERFORM drop_function_all('test_boot'); END $$;
@@ -213,7 +168,10 @@ BEGIN
 	    CONTINUE;
         END IF;
 
-	PERFORM test_upsert(test_enumeration);
+	INSERT INTO test (json, updated, available)
+	VALUES (test_enumeration, now(), TRUE)
+	ON CONFLICT (name) DO UPDATE
+        SET json = test_enumeration, updated = now(), available = TRUE;
 
     END LOOP;
 

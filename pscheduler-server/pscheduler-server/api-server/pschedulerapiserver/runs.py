@@ -89,7 +89,7 @@ def __evaluate_limits(
     # Don't pass hints since that would have been covered when the
     # task was submitted and only the scheduler will be submitting
     # runs.
-    passed, limits_passed, diags, _new_task, priority \
+    passed, diags, _new_task, priority \
         = processor.process(limit_input, hints, rewrite=False, prioritize=True)
 
     log.debug("Passed: %s.  Diags: %s" % (passed, diags))

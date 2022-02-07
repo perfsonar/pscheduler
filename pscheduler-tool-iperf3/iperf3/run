@@ -35,7 +35,6 @@ try:
     participant = input['participant']
     participant_data = input['participant-data']
     test_spec = input['test']['spec']    
-    limits_passed = input.get('limits-passed', [])
 except KeyError as ex:
     pscheduler.fail("Missing required key in run input: %s" % ex)
 except Exception:
@@ -124,8 +123,8 @@ def run_client():
             normalized_dest = dest_ip
             ip_version = pscheduler.ip_addr_version(dest_ip)[0]
         else:
-            pscheduler.succeed_json({"succeeded": False,
-                                     "error": "Unable to find common IP version between local-address %s and dest %s" % (local_address, destination)})
+            return {"succeeded": False,
+                    "error": "Unable to find common IP version between local-address %s and dest %s" % (local_address, destination)}
     elif source is not None:
         #see comment for local-address, but s/local-address/source/g
         source_ip, dest_ip = pscheduler.ip_normalize_version(source, destination)
@@ -138,8 +137,8 @@ def run_client():
             normalized_dest = dest_ip
             ip_version = pscheduler.ip_addr_version(dest_ip)[0]
         else:
-            pscheduler.succeed_json({"succeeded": False,
-                                     "error": "Unable to find common IP version between source %s and dest %s" % (source, destination)})
+            return {"succeeded": False,
+                    "error": "Unable to find common IP version between source %s and dest %s" % (source, destination)}
     else:
         #set destination
         iperf3_args.append('-c')
@@ -177,38 +176,6 @@ def run_client():
     if 'bandwidth' in test_spec and test_spec['bandwidth'] != None:
         iperf3_args.append('-b')
         iperf3_args.append(test_spec['bandwidth'])
-    else:
-
-        # Find the largest bandwidth in each participant's passed
-        # limits and take the minimum of those values.  This will be
-        # the maximum bandwidth allowed by any participant.
-
-        logger.debug("Finding maximum bandwidth")
-
-        max_bandwidths = []
-
-        for passed_set in limits_passed:
-            set_max = -1
-            logger.debug("Limit set:")
-            for passed in passed_set:
-                try:
-                    new_max = pscheduler.si_as_number(passed['bandwidth']['range']['upper'])
-                    logger.debug("  Limit says %d", new_max)
-                    set_max = max(set_max, new_max)
-                except KeyError:
-                    logger.debug("  No upper bandwidth limit specified")
-                    continue
-
-            if set_max > -1:
-                max_bandwidths.append(set_max)
-
-        if max_bandwidths:
-            max_bandwidth = sorted(max_bandwidths)[0]
-            logger.debug("Limiting bandwidth to %d", max_bandwidth)
-            iperf3_args.append('-b')
-            iperf3_args.append(max_bandwidth)
-
-
 
     if test_spec.get('udp', False):
         iperf3_args.append('-u')
@@ -241,32 +208,32 @@ def run_client():
     if affinity is not None:
         numa_ok, numa_diags = pscheduler.numa_cpu_core_ok(affinity)
         if numa_ok:
-            logger.debug("Selected CPU affinity %s" % affinity)
+            logger.debug("Client: Selected CPU affinity %s" % affinity)
             iperf3_args.insert(0, 'numactl')
             iperf3_args.insert(1, '-C')
             iperf3_args.insert(2, affinity)
         else:
-            logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
+            logger.debug("Client: NUMA doesn't work for source.  Throwing caution to the wind.")
             diags.append("Unable to use NUMA for this test.  Disabling it.")
     else:
         if source:
             interface = pscheduler.address_interface(source, ip_version=ip_version)
             if interface is not None:
-                logger.debug("Affinity (if any) will be based on source")
+                logger.debug("Client: Affinity (if any) will be based on source")
                 affinity = pscheduler.interface_affinity(interface)
         else:
             affinity = pscheduler.source_affinity(normalized_dest, ip_version=ip_version)
-            logger.debug("Affinity (if any) will be based on destination")
+            logger.debug("Client: Affinity (if any) will be based on destination")
 
         if affinity is not None:
             numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
             if numa_ok:
-                logger.debug("Selected CPU affinity %s" % affinity)
+                logger.debug("Client: Selected CPU affinity %s" % affinity)
                 iperf3_args.insert(0, 'numactl')
                 iperf3_args.insert(1, '-N')
                 iperf3_args.insert(2, affinity)
             else:
-                logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
+                logger.debug("Client: NUMA doesn't work for source.  Throwing caution to the wind.")
                 diags.append("Unable to use NUMA for this test.  Disabling it.")
 
     # Set up for authorization if that's present.
@@ -303,25 +270,25 @@ def run_client():
     iperf3_args = [str(x) for x in iperf3_args]
 
     command_line = " ".join(iperf3_args)
-    logger.debug("Running command: %s" % command_line)
+    logger.debug("Client: Running command: %s" % command_line)
 
     iperf_timeout = test_duration
     iperf_timeout += omit_secs
     iperf_timeout += iperf3_utils.setup_time(test_spec.get("link-rtt"))
     # no need for the sleep, we already did that above
 
-    logger.debug("timeout for client is %d" % iperf_timeout)
+    logger.debug("Client: timeout for client is %d" % iperf_timeout)
     diags.append(command_line)
 
     try:
         start_at = input['schedule']['start']
-        logger.debug("Sleeping until %s", start_at)
+        logger.debug("Client: Sleeping until %s", start_at)
         pscheduler.sleep_until(start_at)
-        logger.debug("Starting")
+        logger.debug("Client: Starting")
     except KeyError:
         pscheduler.fail("Unable to find start time in input")
 
-    logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
+    logger.debug("Client: Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
     time.sleep(DEFAULT_WAIT_SLEEP) #wait for server to start on other side
 
     try:
@@ -330,11 +297,9 @@ def run_client():
                                                         timeout = iperf_timeout)
     except Exception as ex:
         logger.error("iperf3 failed to complete execution: %s" % ex)
-        pscheduler.succeed_json({"succeeded": False,
-                                 "diags": "\n".join(diags),
-                                 "error": "The iperf3 command failed during execution. See server logs for more details."})
-
-
+        return {"succeeded": False,
+                "diags": "\n".join(diags),
+                "error": "The iperf3 command failed during execution. See server logs for more details."}
 
     return _make_result("\n".join(diags), status, stdout, stderr)
 
@@ -345,6 +310,19 @@ def run_server():
     diags = []
     #init command
     iperf3_args = [ iperf3_cmd, '-s', '-1', '--json']
+
+    # Once in awhile, a server process gets orphaned.  Find those and
+    # try to kill them.
+
+    try:
+        # Note that the client waits three seconds for us to start up,
+        # which is already overkill.  No need to add this to the run time.
+        pscheduler.kill_processes(iperf3_args, wait=1.0)
+    except Exception as ex:
+        return {"succeeded": False,
+                "diags": "",
+                "error": f'Found stray iperf3 server running could not terminate it: {str(ex)}'}
+
 
     iperf3_args.append("-p")
     iperf3_args.append(server_port)
@@ -374,12 +352,12 @@ def run_server():
             normalized_dest = bind_address
             ip_version = pscheduler.ip_addr_version(bind_address)[0]
         else:
-            logger.debug("Skipping bind. Source %s and destination %s don't have any common IPs of the same version as far as tool can tell." % (source, test_spec['dest']))
+            logger.debug("Server: Skipping bind. Source %s and destination %s don't have any common IPs of the same version as far as tool can tell." % (source, test_spec['dest']))
     else:
         #If we are here its because we have a TCP test where only the dest was specified 
         # and no ip-version provided. In this case we can't determine what we're supposed 
         # to bind to, so don't specify and iperf3 will bind to all interfaces
-        logger.debug("Skipping bind. No source or ip-version given so can't make an intelligent decision about where to bind. iperf3 will listen on all interfaces")
+        logger.debug("Server: Skipping bind. No source or ip-version given so can't make an intelligent decision about where to bind. iperf3 will listen on all interfaces")
         pass
     
     # try to grab our default affinity if one wasn't passed in
@@ -387,29 +365,29 @@ def run_server():
     if affinity is not None:
         numa_ok, numa_diags = pscheduler.numa_cpu_core_ok(affinity)
         if numa_ok:
-            logger.debug("Selected CPU affinity %s" % affinity)
+            logger.debug("Server: Selected CPU affinity %s" % affinity)
             iperf3_args.insert(0, 'numactl')
             iperf3_args.insert(1, '-C')
             iperf3_args.insert(2, affinity)
         else:
-            logger.debug("NUMA doesn't work for destination.  Throwing caution to the wind.")
+            logger.debug("Server: NUMA doesn't work for destination.  Throwing caution to the wind.")
             diags.append("Unable to use NUMA for this test.  Disabling it.")
     else:
         # look up what interface we're going to be receiving on        
         interface = pscheduler.address_interface(normalized_dest, ip_version=ip_version)
         if interface:
             affinity = pscheduler.interface_affinity(interface)
-            logger.debug("CPU affinity for interface is %s" % (affinity))
+            logger.debug("Server: CPU affinity for interface is %s" % (affinity))
 
             if affinity is not None:
                 numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
                 if numa_ok:
-                    logger.debug("Selected CPU affinity %s" % affinity)
+                    logger.debug("Server: Selected CPU affinity %s" % affinity)
                     iperf3_args.insert(0, 'numactl')
                     iperf3_args.insert(1, '-N')
                     iperf3_args.insert(2, affinity)
                 else:
-                    logger.debug("NUMA doesn't work for %s.  Throwing caution to the wind." % (interface))
+                    logger.debug("Server: NUMA doesn't work for %s.  Throwing caution to the wind." % (interface))
                     diags.append("Unable to use NUMA for %s.  Disabling it." % (interface))
 
 
@@ -445,7 +423,7 @@ def run_server():
         
 
     iperf3_args = [str(x) for x in iperf3_args]
-    logger.debug("Running command: %s" % " ".join(iperf3_args))
+    logger.debug("Server: Running command: %s" % " ".join(iperf3_args))
 
     stdout = ""
     stderr = ""
@@ -456,14 +434,14 @@ def run_server():
     iperf_timeout += iperf3_utils.setup_time(test_spec.get("link-rtt"))
     iperf_timeout += DEFAULT_WAIT_SLEEP
 
-    logger.debug("timeout for server is %d" % iperf_timeout)
+    logger.debug("Server: Timeout for server is %d" % iperf_timeout)
     diags.append(" ".join(iperf3_args))
 
     try:
         start_at = input['schedule']['start']
-        logger.debug("Sleeping until %s", start_at)
+        logger.debug("Server: Sleeping until %s", start_at)
         pscheduler.sleep_until(start_at)
-        logger.debug("Starting")
+        logger.debug("Server: Starting")
     except KeyError:
         auth_dir.cleanup()
         pscheduler.fail("Unable to find start time in input")
@@ -499,12 +477,11 @@ def _make_result(diags, status, stdout, stderr):
         if not error_text:
             error_text = "%s\n\n%s\n" % (stdout, stderr)
 
-        pscheduler.succeed_json({"succeeded": False,
-                                 "diags": diags,
-                                 "error": "iperf3 returned an error: %s" % (error_text)})
+        return {"succeeded": False,
+                "diags": diags,
+                "error": "iperf3 returned an error: %s" % (error_text)}
 
     lines = stdout.split("\n")    
-    logger.debug("Lines are %s " % lines)
 
     results = iperf3_parser.parse_output(lines)
     results['diags'] = "%s\n\n%s" % (diags, stdout)
@@ -515,16 +492,56 @@ def _make_result(diags, status, stdout, stderr):
 #determine whether we are the client or server mode for iperf
 results = {}
 try:
-    if participant == 0 :
+    if participant == 0:
+
         if loopback:
-            server_thread = threading.Thread(target=run_server)
+
+            # Loopback - Run both.
+
+            logger.debug("Running loopback")
+
+            server_thread = pscheduler.ThreadWithReturnValue(target=run_server)
             server_thread.start()
-            results = run_client()
-            server_thread.join() #Wait until the server thread terminates
+            client_results = run_client()
+            server_results = server_thread.join()
+
+
+            if client_results["succeeded"]:
+
+                logger.debug("Loopback client succeeded; using that result.")
+                results = client_results
+
+            elif server_results["succeeded"]:
+
+                logger.debug("Loopback server succeeded; using that result.")
+                results = server_results
+
+            else:
+
+                logger.debug("Nothing succeeded.")
+                results = { 
+                    "succeeded": False,
+                    "error": f'Client:\n\n{client_results.get("error", "No error.")}' \
+                             f'\n\nServer:\n\n{server_results.get("error", "No error.")}'
+                }
+
+            results["diags"] = f'Client:\n\n{client_results.get("diags", "No diagnostics.")}' \
+                    f'\n\nServer:\n\n{server_results.get("diags", "No diagnostics.")}'
+
         else:
+
+            # Non-loopback client
+
+            logger.debug("Running client")
             results = run_client()
+
     elif participant == 1:
+
+        # Non-loopback server
+
+        logger.debug("Running server")
         results = run_server()
+
     else:
         pscheduler.fail("Invalid participant.")
 except Exception as ex:
