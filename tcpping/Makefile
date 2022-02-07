@@ -1,5 +1,5 @@
 #
-# Makefile for any RPM
+# Makefile for Any Package
 #
 
-include make/generic-rpm.make
+include unibuild/unibuild.make
