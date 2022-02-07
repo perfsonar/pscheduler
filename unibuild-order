@@ -119,8 +119,6 @@ ifelse(HAVE_GOLANG,1,s3-benchmark)
 s3-benchmark
 tcpping
 
->>>>>>> 5.0.0:scripts/RPM-BUILD-ORDER.m4
-
 #
 # PSCHEDULER CORE PARTS
 #
