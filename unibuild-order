@@ -1,34 +1,16 @@
-dnl
-dnl Build Order for pScheduler RPMs
-dnl
-dnl
-dnl Pre-process with M4.
-dnl
 changequote(<!,!>)dnl
 changecom()dnl
-dnl
 #
+# Build Order for pScheduler Packages for use with Unibuild
+#
+
 # Packages must be listed in an order where dependent packages are
 # built after their dependencies.
-#
 #
 # Options that can be added to a package line:
 #
 #  --bundle b   Include the package in bundle b and not the default
 #               full bundle.
-#
-# The following macros are provided to use in determining whether or
-# not to build a package:
-#
-# OS         Operating system, per 'uname -s'       Linux, Darwin
-# FAMILY     OS family, empty if not applicable     RedHat, Debian
-# DISTRO     OS distribution (LSB ID)               RHEL, CentOS, Oracle, Debian, Ubuntu
-# RELEASE    Distribution release                   7.8.2003
-# MAJOR      Major part of RELEASE                  7
-# MINOR      Minor part of RELEASE                  8
-# ARCH       System architecture, per 'uname -m'    x86_64, armhf
-# PACKAGING  Type of packaging on this system       rpm, deb
-#
 #
 # Note that there is no need to make decisions for RPM- or Debian-only
 # builds in this file; if there is no packaging information for an OS
@@ -53,12 +35,11 @@ define(HAVE_GOLANG,ifelse(FAMILY/MAJOR,Debian/9,,
 #
 # Everything else depends on these.
 #
-ifelse(PACKAGING,rpm,rpm-with-deps)
-make-generic-package
+
 
 # Build this early.  Some of the packages using PostgreSQL depend on
 # knowing what version is required to avoid the "Requires: postgresql"
-# trap we fell into with RH6.
+# trap we fell into with EL6.
 ifelse(PACKAGING,rpm,pscheduler-rpm)
 
 #
@@ -71,10 +52,9 @@ postgresql
 postgresql-init
 postgresql-load
 
-ifelse(DISTRO/MAJOR,Oracle/8,oniguruma)			# Only build this on OL8.  CentOS 7 and EL8 have it.
+ifelse(DISTRO/MAJOR,Oracle/8,oniguruma)			# CentOS 7 and EL8 have this, OL8 doesn't.
+jq							# Ours has patches.
 
-# Our version of jq has patches. replace when patches accepted upstream.
-jq
 
 # Python Modules
 
@@ -85,8 +65,7 @@ ifelse(FAMILY/MAJOR,RedHat/7,python-isodate)		# EL7 needs this; EL8 is up to dat
 ifelse(FAMILY/MAJOR,RedHat/8,python-itsdangerous)	# EL8 has this, but an older version
 python-pyrsistent
 python-nmap3
-# EL8 has this, but an older version
-python-jsonschema
+python-jsonschema					# EL8 has this, but an older version
 python-kafka
 python-nmap3
 
@@ -95,6 +74,7 @@ python-nmap3
 # cosmetic changes for the later version.
 ifelse(DISTRO/MAJOR,CentOS/7,python-memcached)
 
+python-jsontemplate
 python-netifaces
 ifelse(DISTRO/MAJOR,CentOS/7,python-ntplib)		# EL8 has this, ours is newer
 python-parse-crontab
@@ -112,9 +92,6 @@ python-flask						# EL8 has this, ours is newer
 # TODO: EPEL8 has a newer version that doesn't install.
 # See https://bugzilla.redhat.com/show_bug.cgi?id=1838402
 python-pysnmp
-
-# JSON Tools
-python-jsontemplate
 
 
 # Home-grown Python Modules
@@ -138,9 +115,7 @@ ifelse(FAMILY/MAJOR,REDHAT/8,iperf)			# EPEL dropped this for EL8
 ifelse(FAMILY/MAJOR,REDHAT/8,owamp)			# TODO: Building temporarily for EL8
 paris-traceroute
 random-string
-<<<<<<< HEAD:scripts/PACKAGE-BUILD-ORDER.m4
 ifelse(HAVE_GOLANG,1,s3-benchmark)
-=======
 s3-benchmark
 tcpping
 
@@ -171,12 +146,8 @@ pscheduler-test-idlebgm
 pscheduler-test-idleex
 pscheduler-test-latency
 pscheduler-test-latencybg
-<<<<<<< HEAD:scripts/PACKAGE-BUILD-ORDER.m4
 pscheduler-test-netreach		--bundle extras
-=======
-pscheduler-test-netreach			--bundle extras
 pscheduler-test-psresponse
->>>>>>> 5.0.0:scripts/RPM-BUILD-ORDER.m4
 pscheduler-test-throughput
 pscheduler-test-openports		--bundle extras
 pscheduler-test-rtt
@@ -201,25 +172,16 @@ pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl
 pscheduler-tool-dhclient		--bundle extras
 pscheduler-tool-dnspy
-<<<<<<< HEAD:scripts/PACKAGE-BUILD-ORDER.m4
-
 ifelse(HAVE_GOLANG,1,pscheduler-tool-ethr)
-=======
-pscheduler-tool-ethr
 pscheduler-tool-fpingreach		--bundle extras
 pscheduler-tool-fwmtu
->>>>>>> 5.0.0:scripts/RPM-BUILD-ORDER.m4
 pscheduler-tool-globus			--bundle extras
 pscheduler-tool-halfping
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
-<<<<<<< HEAD:scripts/PACKAGE-BUILD-ORDER.m4
 pscheduler-tool-nmapreach		--bundle extras
-=======
-pscheduler-tool-nmapreach			--bundle extras
 pscheduler-tool-nmapscan		--bundle extras
->>>>>>> 5.0.0:scripts/RPM-BUILD-ORDER.m4
 pscheduler-tool-nuttcp
 pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
