@@ -128,6 +128,7 @@ python-pscheduler
 pscheduler-core
 pscheduler-server
 
+
 #
 # PSCHEDULER PLUG-INS
 #
@@ -136,6 +137,7 @@ pscheduler-server
 pscheduler-test-clock
 pscheduler-test-dhcp			--bundle extras
 pscheduler-test-disk-to-disk		--bundle extras
+pscheduler-test-dns
 pscheduler-test-dot1x			--bundle extras
 pscheduler-test-http
 pscheduler-test-idle
@@ -143,6 +145,7 @@ pscheduler-test-idlebgm
 pscheduler-test-idleex
 pscheduler-test-latency
 pscheduler-test-latencybg
+pscheduler-test-mtu
 pscheduler-test-netreach		--bundle extras
 pscheduler-test-psresponse
 pscheduler-test-throughput
@@ -154,10 +157,7 @@ pscheduler-test-snmpget			--bundle snmp
 pscheduler-test-snmpgetbgm		--bundle snmp
 pscheduler-test-snmpset			--bundle snmp
 pscheduler-test-trace
-pscheduler-test-dns
-pscheduler-test-mtu
 pscheduler-test-wifibssid
-
 
 # Tools
 pscheduler-tool-bssidscanner
@@ -199,6 +199,7 @@ pscheduler-tool-traceroute
 pscheduler-tool-twping
 pscheduler-tool-umichwpa		--bundle extras
 
+
 # Archivers
 pscheduler-archiver-bitbucket
 pscheduler-archiver-esmond
@@ -211,6 +212,7 @@ pscheduler-archiver-snmptrap		--bundle snmp
 pscheduler-archiver-syslog
 pscheduler-archiver-tcp
 pscheduler-archiver-udp
+
 
 # Context Changers
 pscheduler-context-changefail

@@ -1,10 +1,10 @@
 #
-# Makefile for Any Tool
+# Makefile for Any Package
 #
 
-AUTO_TARBALL=1
+AUTO_TARBALL := 1
 
-include make/generic-package.make
+include unibuild/unibuild.make
 
 test::
 	nosetests

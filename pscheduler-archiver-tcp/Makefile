@@ -1,16 +1,16 @@
 #
-# Makefile for Any Archiver
+# Makefile for Any Package
 #
 
-AUTO_TARBALL=1
+AUTO_TARBALL := 1
 
-include make/generic-package.make
+include unibuild/unibuild.make
 
 test::
 	nosetests
 
 test-coverage::
-	nosetests --with-coverage --cover-package rabbitmq
+	nosetests --with-coverage --cover-package tcp
 
 clean::
 	make -C tests $@
