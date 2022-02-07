@@ -93,7 +93,6 @@ python-flask						# EL8 has this, ours is newer
 # See https://bugzilla.redhat.com/show_bug.cgi?id=1838402
 python-pysnmp
 
-
 # Home-grown Python Modules
 python-icmperror
 

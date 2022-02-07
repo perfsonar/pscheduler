@@ -1,5 +1,5 @@
 #
-# Makefile for Python Kafka Module
+# Makefile for Any Package
 #
 
-include make/generic-package.make
+include unibuild/unibuild.make

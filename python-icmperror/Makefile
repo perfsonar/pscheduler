@@ -1,5 +1,7 @@
 #
-# Makefile for Python pScheduler Module
+# Makefile for Any Package
 #
 
-include make/generic-package.make
+AUTO_TARBALL := 1
+
+include unibuild/unibuild.make
