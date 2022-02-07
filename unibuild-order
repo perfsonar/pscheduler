@@ -98,7 +98,7 @@ python-icmperror
 
 
 # Apache add-ons
-httpd-firewall
+httpd-firewall						# TODO: May no longer be used.  Maybe for development?
 mod_wsgi
 httpd-wsgi-socket
 
