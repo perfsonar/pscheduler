@@ -107,7 +107,6 @@ httpd-wsgi-socket
 # Utility and Tool programs
 #
 drop-in
-
 ifelse(HAVE_GOLANG,1,ethr)
 ifelse(FAMILY/MAJOR,REDHAT/8,I2util)			# TODO: Building temporarily for EL8; required for owamp
 ifelse(FAMILY/MAJOR,REDHAT/8,iperf)			# EPEL dropped this for EL8
@@ -117,6 +116,7 @@ random-string
 ifelse(HAVE_GOLANG,1,s3-benchmark)
 s3-benchmark
 tcpping
+
 
 #
 # PSCHEDULER CORE PARTS
