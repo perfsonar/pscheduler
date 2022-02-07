@@ -10,6 +10,9 @@ BUILD
 PRODUCTS
 LOG
 TMP
+unibuild-log
+unibuild-repo
+unibuild-work
 
 
 # TODO: These shouldn't be needed anymore.
