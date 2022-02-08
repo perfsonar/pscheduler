@@ -1,49 +1,20 @@
-# Ignore mac hidden file
+# Ignore mac hidden files
 .DS_Store
+
+# Keyring files
+.pki/
 
 # Editor Droppings
 .*.swp
 *~
 
 # Ignore rpms, logs and other build artifacts
-BUILD
-PRODUCTS
-LOG
-TMP
 unibuild-log
 unibuild-repo
 unibuild-work
 
-
-# TODO: These shouldn't be needed anymore.
-*/rpmbuild
-REPO/
-*/.rpmmacros
-*/BUILD-ROOT/
-*.egg-info
-*.coverage
-*.pc/
-
-
-
-#ignore tarballs from build process
-# TODO: These shouldn't be necessary.
-make-generic-rpm/*.tar.gz
-pgdg-srpm-macros/*.tar.gz
-postgresql-init/*.tar.gz
-postgresql-load/*.tar.gz
-pscheduler*/*.tar.gz
-python-icmperror/*.tar.gz
-python-pscheduler/*.tar.gz
-random-string/*.tar.gz
-rpm-with-deps/*.tar.gz
-
-# Ignore quilt cache directory and backup files
+# Quilt cache directory
 .pc/
-debian/patches/*~
 
-# Ignore encryption leftovers
-.pki/
-
-# Ignore Vagrant cache
+# Vagrant cache
 .vagrant/
