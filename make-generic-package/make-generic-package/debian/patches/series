@@ -1,9 +1,0 @@
-#
-# List patches here but don't install them in this directory.  The
-# builder will assemble everything necessary.
-#
-
-# These patches exist only to exercise the build infrastructure and
-# don't make any changes to the source code.
-make-generic-package-00-nothing.patch
-make-generic-package-01-nothing2.patch

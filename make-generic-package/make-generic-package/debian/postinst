@@ -1,6 +1,0 @@
-#!/bin/sh -e
-#
-# Debian post-install
-#
-
-exit 0

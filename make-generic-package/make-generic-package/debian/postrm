@@ -1,6 +1,0 @@
-#!/bin/sh -e
-#
-# Debian post-remove
-#
-
-exit 0
