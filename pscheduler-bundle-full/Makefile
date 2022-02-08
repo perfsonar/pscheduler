@@ -15,10 +15,10 @@ PACKAGE_MAKEFILE=Makefile-package
 
 default: build
 
-SPEC=./rpm/$(NAME).spec
+SPEC=./unibuild-packaging/rpm/$(NAME).spec
 $(SPEC): $(SPEC)-top $(SPEC)-bottom
 	cat $(SPEC)-top > $@
-	../scripts/build-order --bundle none \
+	(cd .. && unibuild order) \
 		| egrep -e '^pscheduler-' \
 		| egrep -ve '^pscheduler-bundle-' \
 		| sed -e 's/^/Requires: /g' \

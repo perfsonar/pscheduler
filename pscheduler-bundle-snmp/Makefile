@@ -9,16 +9,17 @@
 # repos-preinstalled into YUM.  Should maybe write a package that does
 # that.
 
-NAME=pscheduler-bundle-snmp
+BUNDLE=snmp
+NAME=pscheduler-bundle-$(BUNDLE)
 
 PACKAGE_MAKEFILE=Makefile-package
 
 default: build
 
-SPEC=./rpm/$(NAME).spec
+SPEC=./unibuild-packaging/rpm/$(NAME).spec
 $(SPEC): $(SPEC)-top $(SPEC)-bottom
 	cat $(SPEC)-top > $@
-	../scripts/build-order --bundle snmp \
+	(cd .. && unibuild order --bundle $(BUNDLE)) \
 		| egrep -e '^pscheduler-' \
 		| egrep -ve '^pscheduler-bundle-' \
 		| sed -e 's/^/Requires: /g' \

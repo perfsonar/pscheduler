@@ -1,5 +1,5 @@
 #
-# Makefile for any package
+# Makefile for Any Package
 #
 
-include make/generic-package.make
+include unibuild/unibuild.make
