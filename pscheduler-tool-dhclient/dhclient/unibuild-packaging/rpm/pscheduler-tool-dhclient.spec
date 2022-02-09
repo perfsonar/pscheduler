@@ -28,6 +28,14 @@ Provides:	%{name} = %{version}-%{release}
 # Include all required libraries here
 Requires:	pscheduler-server
 Requires:	%{_pscheduler_python}-pscheduler
+%if 0%{?el7}
+Requires:	dhclient
+%endif
+%if 0%{?el8}
+Requires:	dhcp-client
+# Needed so the sudoers file can be built
+BuildRequires:	dhcp-client
+%endif
 
 BuildRequires:	pscheduler-rpm
 

@@ -57,11 +57,11 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %endif
 
 %if 0%{?el8}
-# CentOS 8 and Oracle Linux 8
+# EL7 supports Alma and Rocky.  RHEL is untested.
 # See https://yum.oracle.com/oracle-linux-python.html
 # EL8 standardized on just the major version, as did EPEL.
 %%_pscheduler_python python%%{_pscheduler_python_version_major}
-%%_pscheduler_python_epel %{_pscheduler_python}
+%%_pscheduler_python_epel python%%{_pscheduler_python_version_major}
 %endif
 
 

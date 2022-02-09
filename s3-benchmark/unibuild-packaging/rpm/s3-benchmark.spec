@@ -33,7 +33,9 @@ S3 benchmark tool for pScheduler
 %define gobin %{gopath}/bin
 %define gocache %{gopath}/.cache
 
-%prep 
+%prep
+
+rm -rf %{name}-%{version}-beta
 %setup -q -n %{directory}
 
 mkdir -p %{gopath} %{gobin}
@@ -42,7 +44,7 @@ export GOPATH=%{gopath}
 export GOBIN=%{gobin}
 export GOCACHE=%{gocache}
 
-%if 0%{el7}
+%if 0%{?el7}
 # EL7 has problems with its git that cause module fetches not to work.
 # Use Golang's proxy to do it instead.
 export GO111MODULE=on

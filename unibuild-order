@@ -108,9 +108,9 @@ httpd-wsgi-socket
 #
 drop-in
 ifelse(HAVE_GOLANG,1,ethr)
-ifelse(FAMILY/MAJOR,REDHAT/8,I2util)			# TODO: Building temporarily for EL8; required for owamp
-ifelse(FAMILY/MAJOR,REDHAT/8,iperf)			# EPEL dropped this for EL8
-ifelse(FAMILY/MAJOR,REDHAT/8,owamp)			# TODO: Building temporarily for EL8
+ifelse(FAMILY/MAJOR,RedHat/8,I2util)			# TODO: Building temporarily for EL8; required for owamp
+ifelse(FAMILY/MAJOR,RedHat/8,iperf)			# EPEL dropped this for EL8
+ifelse(FAMILY/MAJOR,RedHat/8,owamp)			# TODO: Building temporarily for EL8
 paris-traceroute
 random-string
 ifelse(HAVE_GOLANG,1,s3-benchmark)
@@ -175,15 +175,18 @@ pscheduler-tool-fwmtu
 pscheduler-tool-globus			--bundle extras
 pscheduler-tool-halfping
 pscheduler-tool-iperf2
-pscheduler-tool-iperf3
+### TODO: Need iperf3
+### pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-nmapreach		--bundle extras
 pscheduler-tool-nmapscan		--bundle extras
 pscheduler-tool-nuttcp
-pscheduler-tool-owping
+### TODO:  Need OWAMP
+### pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
 pscheduler-tool-ping
-pscheduler-tool-powstream
+### TODO:  Need OWAMP
+### pscheduler-tool-powstream
 pscheduler-tool-psclock
 pscheduler-tool-pstimer
 pscheduler-tool-psurl			--bundle obsolete
@@ -196,7 +199,8 @@ pscheduler-tool-snooze
 pscheduler-tool-tcpping
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
-pscheduler-tool-twping
+### TODO:  Need OWAMP
+### pscheduler-tool-twping
 pscheduler-tool-umichwpa		--bundle extras
 
 
