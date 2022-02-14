@@ -3,18 +3,32 @@
 # Find the highest installed version of PostgreSQL and initialize it.
 #
 
+if [ $(id -u) -ne 0 ]
+then
+    echo "This program must be run as root." 1>&2
+    exit 1
+fi
+
+
 # These are wired in by the build process.
-PG_LIB="__PG_LIB__"
-USR="__USR__"
-PG_USR_PATTERN="pgsql-%s"
-PG_BIN="${USR}/${PG_USR_PATTERN}/bin"
+PG_DATA_DIR="__PG_DATA_DIR__"
+PG_GROUP="__PG_GROUP__"
+PG_INITDB="__PG_INITDB__"
+PG_SERVICE="__PG_SERVICE__"
 PG_USER="__PG_USER__"
+PG_VERSION_FILE="__PG_VERSION_FILE__"
+
+
+if [ -e "${PG_VERSION_FILE}" ]
+then
+    exit 0
+fi
 
 
 TMPBASE="${TMP:-/tmp}/${WHOAMI}.$$"
 mkdir -p "${TMPBASE}"
 # The upgrade process runs as PG_USER and writes here.
-chown "${PG_USER}:${PG_USER}" "${TMPBASE}"
+chown "${PG_USER}:${PG_GROUP}" "${TMPBASE}"
 
 cleanup()
 {
@@ -24,47 +38,17 @@ cleanup()
 trap cleanup EXIT
 
 
-die()
-{
-    echo "$@" 1>&2
-    exit 1
-}
+# Initialize PostgreSQL
 
+systemctl stop "${PG_SERVICE}"
 
-[ $(id -u) -eq 0 ] \
-    || die "This program must be run as root."
+echo "Initializing PostgreSQL."
 
+# TODO: Recreating the directory is really only necessary on EL7.
+rm -rf "${PG_DATA_DIR}"
+mkdir -p  "${PG_DATA_DIR}"
+chown -R "${PG_USER}:${PG_USER}" "${PG_DATA_DIR}"
 
-VERSIONS="${TMPBASE}/versions"
+sh -c "${PG_INITDB}"
 
-CHOP=$(echo "$PG_USR_PATTERN" | sed -e 's|%.*$||')
-
-ls "${USR}" \
-    | egrep -e "^${CHOP}" \
-    | sed -e "s|${CHOP}||g" \
-    | sort -n \
-    | uniq \
-    > "${VERSIONS}"
-
-VER=$(tail -1 "${VERSIONS}")
-VER_MAJOR=$(echo "${VER}" | awk -F. '{ print $1 }')
-VER_BIN=$(printf "${PG_BIN}" "${VER_MAJOR}")
-VER_DATA="${PG_LIB}/${VER}/data"
-
-if [ -e "${VER_DATA}/PG_VERSION" ]
-then
-    echo "PostgreSQL ${VER} is already initialized; doing nothing."
-    exit 0
-fi
-
-systemctl stop "postgresql-${VER_MAJOR}"
-
-echo "Initializing PostgreSQL ${VER}."
-
-rm -rf "${VER_DATA}"
-mkdir -p  "${VER_DATA}"
-chown "${PG_USER}:${PG_USER}" "${VER_DATA}"
-
-"${VER_BIN}/postgresql-${VER_MAJOR}-setup" initdb
-
-systemctl start "postgresql-${VER_MAJOR}"
+systemctl start "${PG_SERVICE}"

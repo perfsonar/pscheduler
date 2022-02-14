@@ -26,16 +26,20 @@ Provides:	pscheduler-database-init
 # all packages that are likely to be used.  It's necessary because
 # pg_upgrade will refuse to work if required libraries are absent.
 
-Requires:	%{_pscheduler_postgresql_package}
-Requires:	%{_pscheduler_postgresql_package}-contrib
-Requires:	%{_pscheduler_postgresql_package}-devel
-Requires:	%{_pscheduler_postgresql_package}-libs
+Requires:	%{_pscheduler_postgresql_package} >= %{_pscheduler_postgresql_version}
+Requires:	%{_pscheduler_postgresql_package}-contrib >= %{_pscheduler_postgresql_version}
+Requires:	%{_pscheduler_postgresql_package}-devel >= %{_pscheduler_postgresql_version}
+Requires:	%{_pscheduler_postgresql_package}-libs >= %{_pscheduler_postgresql_version}
+
+%if 0%{?el7}
 # This is required only for an upgrade to succeed.  Post-Python2 code
 # doesn't use it.
 # TODO: Remove this after 4.3.x reaches EOL.
 Requires:	%{_pscheduler_postgresql_package}-plpython
-Requires:	%{_pscheduler_postgresql_package}-plpython3
-Requires:	%{_pscheduler_postgresql_package}-server
+%endif
+
+Requires:	%{_pscheduler_postgresql_plpython}  >= %{_pscheduler_postgresql_version}
+Requires:	%{_pscheduler_postgresql_package}-server  >= %{_pscheduler_postgresql_version}
 
 
 BuildRequires:	pscheduler-rpm
@@ -63,10 +67,15 @@ sure it runs at boot.
 
 %build
 make \
-    PG_LIB="%{_pscheduler_postgresql_data_top}" \
-    PG_USER="%{_pscheduler_postgresql_user}" \
-    USR="%{_usr}" \
     DESTDIR="${RPM_BUILD_ROOT}/%{libexec}" \
+    PG_DATA_DIR="%{_pscheduler_postgresql_data}" \
+    PG_GROUP="%{_pscheduler_postgresql_group}" \
+    PG_INITDB="%{_pscheduler_postgresql_initdb}" \
+    PG_LIB="%{_pscheduler_postgresql_data_top}" \
+    PG_SERVICE="%{_pscheduler_postgresql_service}" \
+    PG_USER="%{_pscheduler_postgresql_user}" \
+    PG_VERSION_FILE="%{_pscheduler_postgresql_version_file}" \
+    USR="%{_usr}" \
     install
 
 
@@ -77,8 +86,10 @@ make \
 
 set -e
 
-# Try an upgrade first
+%if 0%{?el7}
+# Try an upgrade first, but only on EL7.  EL8 is self-tending.
 %{libexec}/upgrade-postgresql
+%endif
 %{libexec}/initialize-postgresql
 
 # Set up run at boot

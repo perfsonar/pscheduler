@@ -34,14 +34,15 @@ BuildRequires:	postgresql-init >= %{_pscheduler_postgresql_version}
 BuildRequires:	postgresql-load >= 1.2
 BuildRequires:	%{_pscheduler_postgresql_package}-server >= %{_pscheduler_postgresql_version}
 BuildRequires:	%{_pscheduler_postgresql_package}-contrib >= %{_pscheduler_postgresql_version}
-BuildRequires:	%{_pscheduler_postgresql_package}-plpython3 >= %{_pscheduler_postgresql_version}
+BuildRequires:	%{_pscheduler_postgresql_plpython} >= %{_pscheduler_postgresql_version}
+
 
 Requires:	drop-in
 Requires:	gzip
 Requires:	%{_pscheduler_postgresql_package}-server >= %{_pscheduler_postgresql_version}
 # This is for pgcrypto
 Requires:	%{_pscheduler_postgresql_package}-contrib >= %{_pscheduler_postgresql_version}
-Requires:	%{_pscheduler_postgresql_package}-plpython3 >= %{_pscheduler_postgresql_version}
+Requires:	%{_pscheduler_postgresql_plpython} >= %{_pscheduler_postgresql_version}
 Requires:	postgresql-load >= 1.2
 Requires:	pscheduler-account
 Requires:	pscheduler-core

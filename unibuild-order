@@ -47,10 +47,15 @@ ifelse(PACKAGING,rpm,pscheduler-rpm)
 #
 
 # PostgreSQL and Additions
-ifelse(PACKAGING,rpm,pgdg-srpm-macros)
-postgresql
+
+# EL8 has a PostgreSQL we like, so skip building it there.
+ifelse(FAMILY/MAJOR,RedHat/8,,pgdg-srpm-macros)
+ifelse(FAMILY/MAJOR,RedHat/8,,postgresql)
 postgresql-init
 postgresql-load
+
+
+# jq and friends
 
 ifelse(DISTRO/MAJOR,Oracle/8,oniguruma)			# CentOS 7 and EL8 have this, OL8 doesn't.
 jq							# Ours has patches.

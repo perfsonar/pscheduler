@@ -5,6 +5,8 @@
 # one major version, which postgresql-xx-setup doesn't.
 #
 
+# NOTE:  This script should only be run on EL7; EL8 self-upgrades.
+
 # These are wired in by the build process.
 PG_LIB="__PG_LIB__"
 USR="__USR__"
