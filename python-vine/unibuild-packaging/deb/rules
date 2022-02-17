@@ -6,8 +6,8 @@ export PYBUILD_NAME=vine
 
 export PYBUILD_BEFORE_TEST=cp -r {dir}/t {build_dir}
 export PYBUILD_AFTER_TEST=rm -rf {build_dir}/t
+
 %:
-	dh $@ --with python3 --buildsystem=pybuild
+	PYBUILD_SYSTEM=pybuild dh $@ --with python3
 
 override_dh_auto_test:
-
