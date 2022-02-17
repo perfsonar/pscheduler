@@ -274,6 +274,6 @@ class LimitProcessor(object):
             return self._process(task, hints, rewrite, prioritize)
         except Exception as ex:
             diags = 'Failed to process limits: processor threw an exception.\n\n' \
-                    f'{formatted_exception(ex)}\n\n' \
-                    'Please report this as a bug.'
+                    + formatted_exception(ex) \
+                    + '\n\nPlease report this as a bug.'
             return (False, diags, task, None)

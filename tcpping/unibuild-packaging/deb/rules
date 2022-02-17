@@ -22,6 +22,7 @@ include /usr/share/dpkg/default.mk
 
 INSTALL_BINDIR=$(CURDIR)/debian/tcpping/usr/bin
 override_dh_auto_install:
+	mkdir -p $(INSTALL_BINDIR)
 	cp tcpping.py $(INSTALL_BINDIR)/tcpping
 	chmod 555 $(INSTALL_BINDIR)/tcpping
 

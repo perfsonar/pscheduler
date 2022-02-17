@@ -3,5 +3,5 @@
 export PYBUILD_NAME = python-pscheduler
 
 %:
-	dh $@ --with python3 --buildsystem=pybuild
+	PYBUILD_SYSTEM=pybuild dh $@ --with python3
 

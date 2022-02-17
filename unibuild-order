@@ -118,8 +118,8 @@ ifelse(FAMILY/MAJOR,RedHat/8,iperf)			# EPEL dropped this for EL8
 ifelse(FAMILY/MAJOR,RedHat/8,owamp)			# TODO: Building temporarily for EL8
 paris-traceroute
 random-string
-ifelse(HAVE_GOLANG,1,s3-benchmark)
-s3-benchmark
+### TODO: Doesn't build on Debian10
+### ifelse(HAVE_GOLANG,1,s3-benchmark)
 tcpping
 
 
@@ -156,7 +156,8 @@ pscheduler-test-psresponse
 pscheduler-test-throughput
 pscheduler-test-openports		--bundle extras
 pscheduler-test-rtt
-ifelse(HAVE_GOLANG,1,pscheduler-test-s3throughput)
+### TODO: s3benchmark doesn't build on Debian 10
+### ifelse(HAVE_GOLANG,1,pscheduler-test-s3throughput)
 pscheduler-test-simplestream
 pscheduler-test-snmpget			--bundle snmp
 pscheduler-test-snmpgetbgm		--bundle snmp
