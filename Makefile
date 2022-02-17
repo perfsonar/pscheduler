@@ -7,13 +7,17 @@ default: build
 
 BUILD_LOG=unibuild-log
 
+ifdef START
+START_OPTS := --start $(START)
+endif
+
 # The shell command below does the equivalent of BASH's pipefail
 # within the confines of POSIX.
 # Source: https://unix.stackexchange.com/a/70675/15184
 build:
 	rm -rf $(BUILD_LOG)
 	((( \
-	(unibuild build; echo $$? >&3) \
+	(unibuild build $(START_OPTS); echo $$? >&3) \
 	| tee $(BUILD_LOG) >&4) 3>&1) \
 	| (read XS; exit $$XS) \
 	) 4>&1
