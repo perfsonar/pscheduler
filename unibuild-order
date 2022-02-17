@@ -48,17 +48,17 @@ ifelse(PACKAGING,rpm,pscheduler-rpm)
 
 # PostgreSQL and Additions
 
-# EL8 has a PostgreSQL we like, so skip building it there.
-ifelse(FAMILY/MAJOR,RedHat/8,,pgdg-srpm-macros)
-ifelse(FAMILY/MAJOR,RedHat/8,,postgresql)
-postgresql-init
+# EL7 needs a custom PostgreSQL
+ifelse(FAMILY/MAJOR,RedHat/7,pgdg-srpm-macros)
+ifelse(FAMILY/MAJOR,RedHat/7,postgresql)
+postgresql-init)
 postgresql-load
 
 
 # jq and friends
 
 ifelse(DISTRO/MAJOR,Oracle/8,oniguruma)			# CentOS 7 and EL8 have this, OL8 doesn't.
-jq							# Ours has patches.
+jq							# Ours has patches.  TODO: Does Debian need this?
 
 
 # Python Modules
@@ -180,18 +180,15 @@ pscheduler-tool-fwmtu
 pscheduler-tool-globus			--bundle extras
 pscheduler-tool-halfping
 pscheduler-tool-iperf2
-### TODO: Need iperf3
-### pscheduler-tool-iperf3
+pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-nmapreach		--bundle extras
 pscheduler-tool-nmapscan		--bundle extras
 pscheduler-tool-nuttcp
-### TODO:  Need OWAMP
-### pscheduler-tool-owping
+pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
 pscheduler-tool-ping
-### TODO:  Need OWAMP
-### pscheduler-tool-powstream
+pscheduler-tool-powstream
 pscheduler-tool-psclock
 pscheduler-tool-pstimer
 pscheduler-tool-psurl			--bundle obsolete
@@ -204,8 +201,7 @@ pscheduler-tool-snooze
 pscheduler-tool-tcpping
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
-### TODO:  Need OWAMP
-### pscheduler-tool-twping
+pscheduler-tool-twping
 pscheduler-tool-umichwpa		--bundle extras
 
 
