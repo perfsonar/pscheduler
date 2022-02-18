@@ -28,8 +28,10 @@ Provides:	%{name} = %{version}-%{release}
 # Include all required libraries here
 Requires:	pscheduler-server
 Requires:	%{_pscheduler_python}-pscheduler
+Requires: dhclient
 
 BuildRequires:	pscheduler-rpm
+BuildRequires: dhclient
 
 %description
 dhclient tool class for pScheduler
