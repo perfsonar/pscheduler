@@ -8,7 +8,10 @@ default: build
 BUILD_LOG=unibuild-log
 
 ifdef START
-START_OPTS := --start $(START)
+UNIBUILD_OPTS += --start $(START)
+endif
+ifdef STOP
+UNIBUILD_OPTS += --stop $(STOP)
 endif
 
 # The shell command below does the equivalent of BASH's pipefail
@@ -17,7 +20,7 @@ endif
 build:
 	rm -rf $(BUILD_LOG)
 	((( \
-	(unibuild build $(START_OPTS); echo $$? >&3) \
+	(unibuild build $(UNIBUILD_OPTS); echo $$? >&3) \
 	| tee $(BUILD_LOG) >&4) 3>&1) \
 	| (read XS; exit $$XS) \
 	) 4>&1
