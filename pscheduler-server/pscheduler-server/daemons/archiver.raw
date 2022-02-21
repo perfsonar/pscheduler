@@ -595,7 +595,7 @@ class ArchiveWorker(object):
 
 
         if 'label' in spec:
-            label = "%d: %s" % (archiving_id, spec.['label'])
+            label = "%d: %s" % (archiving_id, spec['label'])
         else:
             label = str(archiving_id)
 
