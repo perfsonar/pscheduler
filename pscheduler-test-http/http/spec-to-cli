@@ -33,5 +33,9 @@ result = pscheduler.speccli_build_args(spec,
                                        ]
                                    )
 
+for header in spec.get('headers', {}).items():
+    (name, value) = header
+    result.append('--header')
+    result.append('%s: %s' % (name, value))
 
 pscheduler.succeed_json(result)
