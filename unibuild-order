@@ -131,7 +131,6 @@ pscheduler-account
 pscheduler-jq-library
 python-pscheduler
 pscheduler-core
-### TODO: This fails on dependencies the first time, installs (partially) the second.
 pscheduler-server
 
 
