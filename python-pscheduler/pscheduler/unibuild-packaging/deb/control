@@ -18,7 +18,7 @@ X-Python3-Version: >= 3.2
 
 Package: python3-pscheduler
 Architecture: all
-Depends: ${python3:Depends}, ${misc:Depends},
+Depends: python3, ${misc:Depends},
  python3-ntplib, python3-tz, python3-tzlocal, python3-netifaces,
  python3-psycopg2 (>= 2.5.4), python3-jsonschema (>= 3.0.1~0),
  python3-isodate (>= 0.5.0), python3-netaddr,
