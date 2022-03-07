@@ -2,7 +2,7 @@ Source: tcpping
 Section: misc
 Priority: optional
 Maintainer: George Uhl <george.d.uhl@nasa.gov>
-Build-Depends: debhelper (>= 9), python
+Build-Depends: debhelper (>= 10), python
 Standards-Version: 3.9.6
 Homepage: https://github.com/guhl1956/tcpping
 Vcs-Git: git://github.com/perfsonar/pscheduler

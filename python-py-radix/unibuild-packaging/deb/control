@@ -3,7 +3,7 @@ Section: python
 Priority: optional
 Maintainer: Debian Python Team <team+python@tracker.debian.org>
 Uploaders: Aggelos Avgerinos <evaggelos.avgerinos@gmail.com>
-Build-Depends: debhelper (>= 9),
+Build-Depends: debhelper (>= 10),
                dh-python,
                python3-all-dev,
                python3-setuptools,

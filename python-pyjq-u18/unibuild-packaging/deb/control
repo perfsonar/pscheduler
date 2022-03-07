@@ -3,7 +3,7 @@ Section: net
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
 Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
-Build-Depends: debhelper (>= 9), dh-python, python3-setuptools,
+Build-Depends: debhelper (>= 10), dh-python, python3-setuptools,
  python3-all, python3-six, python3-mock, cython (>=0.19),
  libjq-dev (>=1.6~), libonig-dev (>=6.9.0), libpython3-dev
 Standards-Version: 3.9.8

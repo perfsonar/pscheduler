@@ -18,7 +18,7 @@ override_dh_auto_build:
 override_dh_auto_test:
 
 override_dh_auto_install:
-	make -C $(NAME) install \
+	make install \
 		PYTHON=$(PYTHON) \
 		DOCDIR=$(ROOT)/usr/share/doc/pscheduler/$(CLASS) \
 		DESTDIR=$(ROOT)/usr/lib/pscheduler/classes/$(CLASS)/$(NAME) \
@@ -30,4 +30,4 @@ override_dh_auto_install:
 	fi
 
 override_dh_auto_clean:
-	make -C $(NAME) clean
+	make clean

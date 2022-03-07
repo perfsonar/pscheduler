@@ -1,17 +1,17 @@
-python-amqp (5.0.6-1~bpo90+1) perfsonar-4.4-staging; urgency=low
+py-amqp (5.0.6-1~bpo90+1) perfsonar-4.4-staging; urgency=low
 
   * Backport to Debian 9, Ubuntu 16 & 18
   * Lower debhelper version to 9.
-  * Removal of python-amqp-doc package.
+  * Removal of py-amqp-doc package.
   * Removal of unittests.
 
  -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 02 Jun 2021 15:22:39 +0000
 
-python-amqp (5.0.3-3) unstable; urgency=medium
+py-amqp (5.0.3-3) unstable; urgency=medium
 
   [ Debian Janitor ]
   * Apply multi-arch hints.
-    + python-amqp-doc: Add Multi-Arch: foreign.
+    + py-amqp-doc: Add Multi-Arch: foreign.
 
   [ Thomas Goirand ]
   * New upstream point release.
@@ -19,7 +19,7 @@ python-amqp (5.0.3-3) unstable; urgency=medium
 
  -- Thomas Goirand <zigo@debian.org>  Fri, 22 Jan 2021 17:12:54 +0100
 
-python-amqp (5.0.1-1) unstable; urgency=medium
+py-amqp (5.0.1-1) unstable; urgency=medium
 
   * Team upload.
 
@@ -33,7 +33,7 @@ python-amqp (5.0.1-1) unstable; urgency=medium
 
  -- Nicolas Dandrimont <olasd@debian.org>  Sat, 17 Oct 2020 00:44:17 +0200
 
-python-amqp (2.6.1-1) unstable; urgency=low
+py-amqp (2.6.1-1) unstable; urgency=low
 
   [ Debian Janitor ]
   * Set upstream metadata fields: Bug-Database, Bug-Submit, Repository,
@@ -50,7 +50,7 @@ python-amqp (2.6.1-1) unstable; urgency=low
 
  -- Thomas Goirand <zigo@debian.org>  Tue, 13 Oct 2020 14:51:57 +0200
 
-python-amqp (2.6.0-1) unstable; urgency=medium
+py-amqp (2.6.0-1) unstable; urgency=medium
 
   * Team upload.
   * New upstream version 2.6.0
@@ -58,7 +58,7 @@ python-amqp (2.6.0-1) unstable; urgency=medium
 
  -- Sergio Durigan Junior <sergiodj@debian.org>  Sun, 14 Jun 2020 23:45:22 -0400
 
-python-amqp (2.5.2-1) unstable; urgency=low
+py-amqp (2.5.2-1) unstable; urgency=low
 
   * New upstream release.
   * Refresh patches.
@@ -70,14 +70,14 @@ python-amqp (2.5.2-1) unstable; urgency=low
 
  -- Michael Fladischer <fladi@debian.org>  Mon, 16 Dec 2019 20:33:18 +0100
 
-python-amqp (2.5.0-2) unstable; urgency=medium
+py-amqp (2.5.0-2) unstable; urgency=medium
 
   * Team upload.
   * Don't try to run autopkgtests on Python 2.
 
  -- Andrey Rahmatullin <wrar@debian.org>  Wed, 07 Aug 2019 23:42:36 +0500
 
-python-amqp (2.5.0-1) unstable; urgency=low
+py-amqp (2.5.0-1) unstable; urgency=low
 
   [ Ondřej Nový ]
   * Use debhelper-compat instead of debian/compat.
@@ -95,13 +95,13 @@ python-amqp (2.5.0-1) unstable; urgency=low
 
  -- Michael Fladischer <fladi@debian.org>  Thu, 25 Jul 2019 09:11:38 +0200
 
-python-amqp (2.4.2-2) unstable; urgency=medium
+py-amqp (2.4.2-2) unstable; urgency=medium
 
   * Uploading to unstable.
 
  -- Thomas Goirand <zigo@debian.org>  Wed, 17 Jul 2019 01:32:00 +0200
 
-python-amqp (2.4.2-1) experimental; urgency=medium
+py-amqp (2.4.2-1) experimental; urgency=medium
 
   * New upstream release.
   * Refresh 0010-remove-broken-test.patch.
@@ -110,7 +110,7 @@ python-amqp (2.4.2-1) experimental; urgency=medium
 
  -- Thomas Goirand <zigo@debian.org>  Wed, 20 Mar 2019 22:00:34 +0100
 
-python-amqp (2.4.0-1) unstable; urgency=medium
+py-amqp (2.4.0-1) unstable; urgency=medium
 
   [ Ondřej Nový ]
   * Use 'python3 -m sphinx' instead of sphinx-build for building docs
@@ -121,7 +121,7 @@ python-amqp (2.4.0-1) unstable; urgency=medium
 
  -- Thomas Goirand <zigo@debian.org>  Tue, 22 Jan 2019 14:29:00 +0000
 
-python-amqp (2.3.2-1) unstable; urgency=medium
+py-amqp (2.3.2-1) unstable; urgency=medium
 
   [ Ondřej Nový ]
   * d/control: Set Vcs-* to salsa.debian.org
@@ -134,7 +134,7 @@ python-amqp (2.3.2-1) unstable; urgency=medium
 
  -- Thomas Goirand <zigo@debian.org>  Sun, 19 Aug 2018 21:48:17 +0000
 
-python-amqp (2.2.2-1) unstable; urgency=medium
+py-amqp (2.2.2-1) unstable; urgency=medium
 
   * Uploading to unstable.
   * Ran wrap-and-sort -bast to reduce diff size of future changes.
@@ -143,11 +143,11 @@ python-amqp (2.2.2-1) unstable; urgency=medium
   * Properly building docs from override_dh_sphinxdoc and respecting
     DEB_BUILD_OPTIONS=nodoc, plus handling build profiles (also with nocheck).
   * Building sphinx doc directly within the destination folder:
-    $(CURDIR)/debian/python-amqp-doc/usr/share/doc/python-amqp-doc/html
+    $(CURDIR)/debian/py-amqp-doc/usr/share/doc/py-amqp-doc/html
 
  -- Thomas Goirand <zigo@debian.org>  Sat, 04 Nov 2017 20:57:21 +0000
 
-python-amqp (2.2.2-1~exp1) experimental; urgency=low
+py-amqp (2.2.2-1~exp1) experimental; urgency=low
 
   * New upstream release.
   * Move upstream signing key to debian/upstream/signing-key.asc.
@@ -161,7 +161,7 @@ python-amqp (2.2.2-1~exp1) experimental; urgency=low
 
  -- Michael Fladischer <fladi@debian.org>  Wed, 01 Nov 2017 18:21:42 +0100
 
-python-amqp (2.2.1-1~exp1) experimental; urgency=low
+py-amqp (2.2.1-1~exp1) experimental; urgency=low
 
   * New upstream release.
   * Add new upstream signing key.
@@ -171,7 +171,7 @@ python-amqp (2.2.1-1~exp1) experimental; urgency=low
 
  -- Michael Fladischer <fladi@debian.org>  Sun, 30 Jul 2017 23:38:21 +0200
 
-python-amqp (2.1.4-1) experimental; urgency=medium
+py-amqp (2.1.4-1) experimental; urgency=medium
 
   * Refresh patches after git-dpm to gbp pq conversion
   * New upstream release (2.1.4)
@@ -188,7 +188,7 @@ python-amqp (2.1.4-1) experimental; urgency=medium
 
  -- Christopher Hoskin <mans0954@debian.org>  Sun, 19 Mar 2017 11:18:39 +0000
 
-python-amqp (1.4.9-2) unstable; urgency=medium
+py-amqp (1.4.9-2) unstable; urgency=medium
 
   * Team upload.
   * Add pgpsigurlmangle to debian/watch
@@ -199,14 +199,14 @@ python-amqp (1.4.9-2) unstable; urgency=medium
 
  -- Christopher Hoskin <mans0954@debian.org>  Sun, 19 Feb 2017 13:44:47 +0000
 
-python-amqp (1.4.9-1) unstable; urgency=medium
+py-amqp (1.4.9-1) unstable; urgency=medium
 
   * Team upload.
   * New upstream release.
 
  -- Brian May <bam@debian.org>  Mon, 18 Jan 2016 18:42:27 +1100
 
-python-amqp (1.4.8-1) unstable; urgency=low
+py-amqp (1.4.8-1) unstable; urgency=low
 
   * New upstream release.
   * Replace broken git-dpm config.
@@ -214,7 +214,7 @@ python-amqp (1.4.8-1) unstable; urgency=low
 
  -- Michael Fladischer <fladi@debian.org>  Sat, 19 Dec 2015 18:25:57 +0100
 
-python-amqp (1.4.7-1) unstable; urgency=low
+py-amqp (1.4.7-1) unstable; urgency=low
 
   [ Michael Fladischer ]
   * New upstream release.
@@ -231,23 +231,23 @@ python-amqp (1.4.7-1) unstable; urgency=low
 
  -- Michael Fladischer <fladi@debian.org>  Sun, 11 Oct 2015 12:20:37 +0200
 
-python-amqp (1.4.6-3) unstable; urgency=low
+py-amqp (1.4.6-3) unstable; urgency=low
 
   * Allow for reproducible builds by setting a fixed date in the
     documentation, thanks to Juan Picca for the patch (Closes: #788487).
 
  -- Michael Fladischer <fladi@debian.org>  Sun, 02 Aug 2015 21:05:37 +0200
 
-python-amqp (1.4.6-2) unstable; urgency=medium
+py-amqp (1.4.6-2) unstable; urgency=medium
 
   * Team upload.
-  * Fixed Python 3 syntax error preventing the python3-amqp package to be
+  * Fixed Python 3 syntax error preventing the python3-py-amqp package to be
     installed.
   * Added myself as uploader.
 
  -- Thomas Goirand <zigo@debian.org>  Fri, 19 Jun 2015 08:47:11 +0000
 
-python-amqp (1.4.6-1) unstable; urgency=medium
+py-amqp (1.4.6-1) unstable; urgency=medium
 
   * New upstream release.
   * Bump Standards-Version to 3.9.6.
@@ -265,7 +265,7 @@ python-amqp (1.4.6-1) unstable; urgency=medium
 
  -- Michael Fladischer <fladi@debian.org>  Tue, 19 May 2015 11:51:55 +0200
 
-python-amqp (1.4.5-2) unstable; urgency=medium
+py-amqp (1.4.5-2) unstable; urgency=medium
 
   * Team upload.
   * Removes the VDeprecationWarning which is flooding all nova services, thanks to
@@ -273,13 +273,13 @@ python-amqp (1.4.5-2) unstable; urgency=medium
 
  -- Thomas Goirand <zigo@debian.org>  Sat, 17 Jan 2015 16:52:46 +0000
 
-python-amqp (1.4.5-1) unstable; urgency=low
+py-amqp (1.4.5-1) unstable; urgency=low
 
   * New upstream release.
 
  -- Michael Fladischer <FladischerMichael@fladi.at>  Wed, 23 Apr 2014 11:40:52 +0200
 
-python-amqp (1.4.4-1) unstable; urgency=medium
+py-amqp (1.4.4-1) unstable; urgency=medium
 
   * New upstream release.
   * Check PGP signature on upstream tarball:
@@ -291,7 +291,7 @@ python-amqp (1.4.4-1) unstable; urgency=medium
 
  -- Michael Fladischer <FladischerMichael@fladi.at>  Tue, 08 Apr 2014 21:25:31 +0200
 
-python-amqp (1.4.3-1) unstable; urgency=medium
+py-amqp (1.4.3-1) unstable; urgency=medium
 
   * New upstream release.
   * Bump Standards version to 3.9.5.
@@ -300,13 +300,13 @@ python-amqp (1.4.3-1) unstable; urgency=medium
 
  -- Michael Fladischer <FladischerMichael@fladi.at>  Tue, 11 Feb 2014 10:43:25 +0100
 
-python-amqp (1.3.3-1) unstable; urgency=low
+py-amqp (1.3.3-1) unstable; urgency=low
 
   * New upstream release.
 
  -- Michael Fladischer <FladischerMichael@fladi.at>  Wed, 11 Dec 2013 09:11:20 +0100
 
-python-amqp (1.0.13-1) unstable; urgency=low
+py-amqp (1.0.13-1) unstable; urgency=low
 
   * New upstream release.
   * Enable basic message tests.
@@ -314,7 +314,7 @@ python-amqp (1.0.13-1) unstable; urgency=low
 
  -- Michael Fladischer <FladischerMichael@fladi.at>  Wed, 25 Sep 2013 11:24:32 +0200
 
-python-amqp (1.0.12-1) unstable; urgency=low
+py-amqp (1.0.12-1) unstable; urgency=low
 
   * Initial release (Closes: #712786).
 

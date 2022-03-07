@@ -84,8 +84,10 @@ python-netifaces
 ifelse(DISTRO/MAJOR,CentOS/7,python-ntplib)		# EL8 has this, ours is newer
 python-parse-crontab
 python-vine
-python-py-amqp
-python-py-radix
+### TODO: This has build issues on Deb10
+### python-py-amqp
+### TODO: This may not be needed on Deb10.
+### python-py-radix
 python-pyjq
 python-tzlocal
 python-vcversioner
@@ -118,7 +120,7 @@ ifelse(FAMILY/MAJOR,RedHat/8,iperf)			# EPEL dropped this for EL8
 ifelse(FAMILY/MAJOR,RedHat/8,owamp)			# TODO: Building temporarily for EL8
 paris-traceroute
 random-string
-### TODO: Doesn't build on Debian10
+### TODO: Doesn't build on Deb10
 ### ifelse(HAVE_GOLANG,1,s3-benchmark)
 tcpping
 
@@ -166,44 +168,44 @@ pscheduler-test-trace
 pscheduler-test-wifibssid
 
 # Tools
-pscheduler-tool-bssidscanner
+### TODO: pscheduler-tool-bssidscanner
 pscheduler-tool-bwctliperf2		--bundle obsolete
 pscheduler-tool-bwctliperf3		--bundle obsolete
 pscheduler-tool-bwctlping		--bundle obsolete
 pscheduler-tool-bwctltracepath		--bundle obsolete
 pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl
-pscheduler-tool-dhclient		--bundle extras
+### TODO: pscheduler-tool-dhclient		--bundle extras
 pscheduler-tool-dnspy
 ifelse(HAVE_GOLANG,1,pscheduler-tool-ethr)
-pscheduler-tool-fpingreach		--bundle extras
-pscheduler-tool-fwmtu
+### TODO: pscheduler-tool-fpingreach		--bundle extras
+### TODO: pscheduler-tool-fwmtu
 pscheduler-tool-globus			--bundle extras
-pscheduler-tool-halfping
+### TODO: pscheduler-tool-halfping
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-nmapreach		--bundle extras
-pscheduler-tool-nmapscan		--bundle extras
-pscheduler-tool-nuttcp
-pscheduler-tool-owping
+### TODO: pscheduler-tool-nmapscan		--bundle extras
+### TODO: Needs 8.1.2: pscheduler-tool-nuttcp
+### TODO: Needs owamp-server and -client pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
 pscheduler-tool-ping
-pscheduler-tool-powstream
+### TODO: Needs owamp-server and -client pscheduler-tool-powstream
 pscheduler-tool-psclock
 pscheduler-tool-pstimer
 pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
-ifelse(HAVE_GOLANG,1,pscheduler-tool-s3-benchmark)
+### TODO: Test doesn't build.  ifelse(HAVE_GOLANG,1,pscheduler-tool-s3-benchmark)
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
 pscheduler-tool-snooze
-pscheduler-tool-tcpping
+### TODO: pscheduler-tool-tcpping
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
-pscheduler-tool-twping
-pscheduler-tool-umichwpa		--bundle extras
+### TODO: pscheduler-tool-twping
+### TODO: pscheduler-tool-umichwpa		--bundle extras
 
 
 # Archivers
@@ -213,7 +215,8 @@ pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-kafka
 pscheduler-archiver-postgresql
-pscheduler-archiver-rabbitmq
+### Needs py-amqp, which has problems.
+### pscheduler-archiver-rabbitmq
 pscheduler-archiver-snmptrap		--bundle snmp
 pscheduler-archiver-syslog
 pscheduler-archiver-tcp
