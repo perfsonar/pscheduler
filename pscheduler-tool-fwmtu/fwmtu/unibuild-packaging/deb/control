@@ -12,6 +12,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-tool-fwmtu
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server, pscheduler-test-fwmtu
+ pscheduler-server, pscheduler-test-mtu
 Description: pScheduler fwmtu tool
  fwmtu tool class for pScheduler

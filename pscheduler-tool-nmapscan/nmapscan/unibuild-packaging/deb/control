@@ -12,6 +12,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-tool-nmapscan
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server, pscheduler-test-nmapscan
+ pscheduler-server, pscheduler-test-openports
 Description: pScheduler nmapscan tool
  nmapscan tool class for pScheduler

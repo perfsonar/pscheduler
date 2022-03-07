@@ -168,25 +168,25 @@ pscheduler-test-trace
 pscheduler-test-wifibssid
 
 # Tools
-### TODO: pscheduler-tool-bssidscanner
+pscheduler-tool-bssidscanner
 pscheduler-tool-bwctliperf2		--bundle obsolete
 pscheduler-tool-bwctliperf3		--bundle obsolete
 pscheduler-tool-bwctlping		--bundle obsolete
 pscheduler-tool-bwctltracepath		--bundle obsolete
 pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl
-### TODO: pscheduler-tool-dhclient		--bundle extras
+pscheduler-tool-dhclient		--bundle extras
 pscheduler-tool-dnspy
 ifelse(HAVE_GOLANG,1,pscheduler-tool-ethr)
-### TODO: pscheduler-tool-fpingreach		--bundle extras
-### TODO: pscheduler-tool-fwmtu
+pscheduler-tool-fpingreach		--bundle extras
+pscheduler-tool-fwmtu
 pscheduler-tool-globus			--bundle extras
-### TODO: pscheduler-tool-halfping
+pscheduler-tool-halfping
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-nmapreach		--bundle extras
-### TODO: pscheduler-tool-nmapscan		--bundle extras
+pscheduler-tool-nmapscan		--bundle extras
 ### TODO: Needs 8.1.2: pscheduler-tool-nuttcp
 ### TODO: Needs owamp-server and -client pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
@@ -201,11 +201,11 @@ pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
 pscheduler-tool-snooze
-### TODO: pscheduler-tool-tcpping
+pscheduler-tool-tcpping
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
-### TODO: pscheduler-tool-twping
-### TODO: pscheduler-tool-umichwpa		--bundle extras
+### TODO: Needs OWAMP pscheduler-tool-twping
+pscheduler-tool-umichwpa		--bundle extras
 
 
 # Archivers
@@ -215,7 +215,7 @@ pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-kafka
 pscheduler-archiver-postgresql
-### Needs py-amqp, which has problems.
+### TODO: Needs py-amqp, which has problems.
 ### pscheduler-archiver-rabbitmq
 pscheduler-archiver-snmptrap		--bundle snmp
 pscheduler-archiver-syslog

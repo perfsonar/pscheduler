@@ -12,6 +12,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-tool-halfping
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server, pscheduler-test-halfping
+ pscheduler-server, pscheduler-test-rtt
 Description: pScheduler halfping tool
  halfping tool class for pScheduler

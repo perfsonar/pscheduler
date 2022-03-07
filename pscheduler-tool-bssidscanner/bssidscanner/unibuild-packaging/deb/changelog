@@ -1,6 +1,5 @@
-pscheduler-tool-bssidscanner (4.3.0~0.a1-1) perfsonar-4.3-staging; urgency=low
+pscheduler-tool-bssidscanner (5.0.0~a1.0-1) perfsonar-5.0-staging; urgency=low
 
   * Initial release
 
- -- perfSONAR developers <debian@perfsonar.net>  Tue, 13 Oct 2020 17:50:44 +0000
-
+ -- perfSONAR developers <perfsonar-developer@internet2.edu>  Tue, 13 Oct 2020 17:50:44 +0000
