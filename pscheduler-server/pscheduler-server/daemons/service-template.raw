@@ -8,8 +8,8 @@ User=__PSUSER__
 Group=__PSUSER__
 PermissionsStartOnly=true
 PIDFile=__RUNDIR__/__PROG__/pid
-LimitNOFILE=4096
-LimitNPROC=4096
+LimitNOFILE=32768
+LimitNPROC=32768
 
 Restart=always
 RestartSec=3

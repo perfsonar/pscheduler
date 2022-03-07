@@ -243,12 +243,15 @@ def run_program(argv,              # Program name and args
                 if process.poll() != None:
                     break
 
-            # Siphon off anything left on stdout
+            # Siphon off anything left on stdout and stderr
+
             while True:
                 got_line = process.stdout.readline()
                 if got_line == '':
                     break
                 line_call(got_line[:-1])
+
+            stderr += process.stderr.read()
 
             process.wait()
 

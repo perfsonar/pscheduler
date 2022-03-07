@@ -1,6 +1,5 @@
 import re
 import pscheduler
-import pprint
 
 logger = pscheduler.Log(quiet=True)
 
@@ -17,6 +16,10 @@ def parse_output(lines):
     dest_port = None
     src_ip    = None
     src_port  = None
+
+    # These are used to tease out which interval is the summary.
+    longest_interval = 0
+    longest_interval_key = None
 
     for line in lines:
 
@@ -106,12 +109,10 @@ def parse_output(lines):
 
             key = "%s-%s" % (interval_start, interval_end)
 
-            # TODO: This would appear to not create a summary when the
-            # duration is very short.
-
-            # there has to be a better way than this...
-            if interval_end - interval_start > 5:
-                key = "summary"
+            interval_length = float(interval_end) - float(interval_start)
+            if interval_length > longest_interval:
+                longest_interval = interval_length
+                longest_interval_key = key
 
             if key not in streams:
                 streams[key] = []
@@ -125,7 +126,6 @@ def parse_output(lines):
                                  "end": interval_end,
                                  "stream-id": stream_id})
 
-        
 
     if not streams:
         results["succeeded"] = False
@@ -148,13 +148,13 @@ def parse_output(lines):
                 summary_stream = stream
             else:
                 interval_streams.append(stream)
-                
- 
+
+
         # if we couldn't find it, there was probably
         # just the one line so use that
         if not summary_stream and len(interval_streams) == 1:
             summary_stream = interval_streams[0]
-
+ 
         finalized = {
             "streams": interval_streams,
             "summary": summary_stream
@@ -171,9 +171,12 @@ def parse_output(lines):
     # sort according to start interval
     intervals.sort(key = lambda x: x['summary']['start'])
 
-    
     results["intervals"] = intervals
-    results["summary"]   = summary_interval
+
+    # If there's no summary interval by now, grab the one with the
+    # longest interval.  This is safe to do because we'll have seen
+    # that key before.
+    results["summary"] = summary_interval or streams[longest_interval_key]
 
     return results
 
@@ -202,9 +205,24 @@ TCP window size: 19800 Byte (default)
 """
 
     #result = parse_output(test_output.split("\n"))
-    #pprint.PrettyPrinter(indent=4).pprint(result)
+    #print(pscheduler.json_dump(result, pretty=True))
 
 
+    # In some cases, the output is short on summary information.
+    test_output = """
+------------------------------------------------------------
+Client connecting to tb-el7-prod.ps.dev.internet2.edu, TCP port 5001
+TCP window size:  196 KByte (default)
+------------------------------------------------------------
+[  3] local 10.0.2.15 port 36852 connected with 163.253.37.202 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec   108 MBytes  90.9 Mbits/sec
+[  3]  0.0-10.1 sec   108 MBytes  89.9 Mbits/sec
+[  3] MSS size 1460 bytes (MTU 1500 bytes, ethernet)
+"""
+
+    #result = parse_output(test_output.split("\n"))
+    #print(pscheduler.json_dump(result, pretty=True))
 
     test_output = """
 ------------------------------------------------------------
@@ -261,8 +279,6 @@ TCP window size:  244 KByte (WARNING: requested 7.63 MByte)
 [SUM]  0.0-10.0 sec  2.02 GBytes  1.73 Gbits/sec
 [  3] MSS size 1448 bytes (MTU 1500 bytes, ethernet)
 """
-
-    result = parse_output(test_output.split("\n"))
-    pprint.PrettyPrinter(indent=4).pprint(result)
-
     
+    #result = parse_output(test_output.split("\n"))
+    #print(pscheduler.json_dump(result, pretty=True))

@@ -94,12 +94,10 @@ class ApplicationSet(object):
         """
         Check a group of limits and return a tuple:
             pass - True if the group passed
-            limits_passed - List of the limits that passed
             diags - Array of diagnostic messages
         """
 
         diags = []
-        limits_passed = []
 
         requirement = group['require']
  
@@ -116,16 +114,19 @@ class ApplicationSet(object):
             # doesn't have to be processed again.  Might not actually
             # be an issue.
 
-            evaluated = self.limits.check(proposal, limit, check_schedule)
+            try:
+                evaluated = self.limits.check(proposal, limit, check_schedule)
+            except Exception as ex:
+                evaluated = {
+                    "passed": False,
+                    "reasons": [ "Limit %s threw an exception:\n%s" % (limit, str(ex)) ]
+                }
+
             limit_passed = evaluated['passed']
 
             if limit_passed:
                 diags.append("Limit '%s' passed" % limit)
                 passes += 1
-                try:
-                    limits_passed.append(evaluated['limit'])                    
-                except KeyError:
-                    pass
             else:
                 fails += 1
                 diags.append("Limit '%s' failed: %s" % (
@@ -140,7 +141,7 @@ class ApplicationSet(object):
                        fails, total,
                        "PASS" if passed else "FAIL" ))
 
-        return passed, limits_passed, diags
+        return passed, diags
 
 
     def __check_application(self, application, proposal, classifiers, check_schedule):
@@ -150,21 +151,18 @@ class ApplicationSet(object):
         """
 
         diags = []
-        limits_passed = []
 
         group_no = 0
         groups_failed = len(application['apply'])
 
         for group in application['apply']:
             group_no += 1
-            group_passed, group_limits_passed, group_diags \
+            group_passed, group_diags \
                 = self.__check_group(proposal, group, check_schedule)
             diags.extend([ "Group %d: %s" % (group_no, diag) for diag in group_diags ])
             if group_passed:
                 groups_failed -= 1
-                limits_passed.extend(group_limits_passed)
             else:
-                diags.append("Group %d: Failed; stopping here." % group_no)
                 break
 
         stop_on_failure = application.get('stop-on-failure', False)
@@ -178,7 +176,7 @@ class ApplicationSet(object):
                      ( "PASSES" if pass_ else "FAILS",
                        " (Inverted)" if invert else "" ))
 
-        return pass_, stop_on_failure, limits_passed, diags
+        return pass_, stop_on_failure, diags
 
 
 
@@ -198,8 +196,7 @@ class ApplicationSet(object):
         """
 
         diags = []
-        pass_count = 0
-        limits_passed = []
+        passed_enough = False
 
         # Run through each application, stopping when one passes or a
         # failed one has stop-on-failure
@@ -220,23 +217,22 @@ class ApplicationSet(object):
             diags.append("Application: %s" % 
                          application.get('description', "(No description)"))
 
-            passed, forced_stop, check_limits_passed, app_diags \
+            passed, forced_stop, app_diags \
                 = self.__check_application(application, proposal, classifiers,
                                            check_schedule)
            
             diags.extend([ indent(diag) for diag in app_diags])
 
-            if not passed and forced_stop:
-                diags.append("    Failed - Stop Forced")
-                return False, [], '\n'.join(diags)
-
-
+            # A pass short-circuits the win
             if passed:
-                limits_passed.append(check_limits_passed)
-                pass_count += 1
+                diags.append("Passed one application.  Stopping.")
+                passed_enough = True
+                break
+
+            # Forced stop ends it all
+            if forced_stop:
+                diags.append("Failed; stop forced")
+                break
 
 
-        if pass_count > 0:
-            return True, limits_passed, '\n'.join(diags)
-        else:
-            return False, [], '\n'.join(diags)
+        return passed_enough, '\n'.join(diags)

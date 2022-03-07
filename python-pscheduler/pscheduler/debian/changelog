@@ -1,3 +1,43 @@
+python-pscheduler (5.0.0~a1.0-1) perfsonar-5.0-snapshot; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sat, 28 Aug 2021 02:01:41 +0100
+
+python-pscheduler (4.5.0~a1.0-1) perfsonar-4.5-snapshot; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Fri, 16 Jul 2021 17:09:14 +0000
+python-pscheduler (4.5.0~a1.0-1) perfsonar-4.5-snapshot; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Fri, 16 Jul 2021 17:09:14 +0000
+python-pscheduler (4.4.2-1) perfsonar-4.4; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 12 Jan 2022 09:57:04 -0500
+
+python-pscheduler (4.4.1-3) perfsonar-4.4; urgency=low
+
+  * Patch: Not using f-string as Python 3.5 is still the default on Debian 9.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 31 Aug 2021 09:30:09 +0100
+
+python-pscheduler (4.4.1-2) perfsonar-4.4; urgency=low
+
+  * Adding dependency to python3-psutil into python3-pscheduler.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sat, 28 Aug 2021 00:07:12 +0100
+
+python-pscheduler (4.4.1-1) perfsonar-4.4; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 26 Aug 2021 03:17:22 +0100
+
 python-pscheduler (4.4.0-1) perfsonar-4.4; urgency=low
 
   * New upstream version.

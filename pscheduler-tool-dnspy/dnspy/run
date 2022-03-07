@@ -12,7 +12,7 @@ import pscheduler
 import dns.reversename
 import dns.resolver
 
-#import pscheduler.dnspy
+from dnspy_defaults import DEFAULT_TIMEOUT
 
 log = pscheduler.Log(prefix='tool-dnspy', quiet=True)
 
@@ -32,10 +32,14 @@ try:
 except KeyError:
     pscheduler.fail('missing data in input')
 
-timeout_iso = input['test']['spec'].get("timeout", "PT5S" )
+timeout_iso = input['test']['spec'].get("timeout", DEFAULT_TIMEOUT )
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
-resolver.timeout = timeout
+
+# Timeout governs the entire query.  Because we don't know how many
+# nameservers there will be until runtime, the only sane way to deal
+# with individual timeouts is for each to get a fraction of the whole.
 resolver.lifetime = timeout
+resolver.timeout = timeout / len(resolver.nameservers)
 
 
 # Perform the test
@@ -50,21 +54,17 @@ except KeyError:
 
 start_time = datetime.datetime.now()
 error = None
+succeeded = False
+answers = None
 try:
     answers = resolver.query( query, record )
     succeeded = True
 except (dns.exception.Timeout):
     error = 'Timeout'
-    succeeded = False
-    answers = None
 except (dns.resolver.NoAnswer ):
-    error = 'NoAnswer'
-    succeeded = False
-    answers = None
+    error = 'No answer'
 except ( dns.resolver.NXDOMAIN ):
-    error = 'DNS error'
-    succeeded = False
-    answers = None
+    error = 'Domain does not exist'
 
 end_time = datetime.datetime.now()
 

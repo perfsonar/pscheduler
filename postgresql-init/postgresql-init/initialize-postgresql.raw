@@ -14,7 +14,7 @@ PG_USER="__PG_USER__"
 TMPBASE="${TMP:-/tmp}/${WHOAMI}.$$"
 mkdir -p "${TMPBASE}"
 # The upgrade process runs as PG_USER and writes here.
-chown "${PG_USER}.${PG_USER}" "${TMPBASE}"
+chown "${PG_USER}:${PG_USER}" "${TMPBASE}"
 
 cleanup()
 {
@@ -63,7 +63,7 @@ echo "Initializing PostgreSQL ${VER}."
 
 rm -rf "${VER_DATA}"
 mkdir -p  "${VER_DATA}"
-chown "${PG_USER}.${PG_USER}" "${VER_DATA}"
+chown "${PG_USER}:${PG_USER}" "${VER_DATA}"
 
 "${VER_BIN}/postgresql-${VER_MAJOR}-setup" initdb
 

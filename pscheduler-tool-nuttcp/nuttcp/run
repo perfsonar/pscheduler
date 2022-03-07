@@ -36,7 +36,6 @@ try:
     participant_data = input['participant-data']
     test_spec = input['test']['spec']
     duration = pscheduler.iso8601_as_timedelta(input['schedule']['duration'])
-    limits_passed = input.get('limits-passed', [])
 except KeyError as ex:
     pscheduler.fail("Missing required key in run input: %s" % ex)
 except:
@@ -127,53 +126,25 @@ def run_client():
 
 
     max_bandwidth = test_spec.get('bandwidth', 0)
-
-    # Find the largest bandwidth in each participant's passed
-    # limits and take the minimum of those values.  This will be
-    # the maximum bandwidth allowed by any participant.
-
-    logger.debug("Finding maximum bandwidth")
-
-    max_bandwidths = []
-
-    for passed_set in limits_passed:
-        set_max = -1
-        logger.debug("Limit set:")
-        for passed in passed_set:
-            try:
-                new_max = pscheduler.si_as_number(passed['bandwidth']['range']['upper'])
-                logger.debug("  Limit says %d", new_max)
-                set_max = max(set_max, new_max)
-            except KeyError:
-                logger.debug("  No upper bandwidth limit specified")
-                continue
-
-        if set_max > -1:
-            max_bandwidths.append(set_max)
-
-    if max_bandwidths:
-        specified_bandwidth = sorted(max_bandwidths)[0]
-        logger.debug("Limiting bandwidth to %d", max_bandwidth)
-
-
-    # By this point, max_bandwidth will be 0 if none was specified,
-    # something what was specified or somethig fished from the limits.
-    # Nuttcp takes it in Kbps by default and doesn't have a way to
-    # specify bps.
     nuttcp_bandwidth = max_bandwidth / 1000.0
+
+    # Nuttcp can exceed the bandwidth limit if a burst size is in
+    # effect, so don't honor burst size unless there's no bandwidth limit.
 
     if ('bandwidth-strict' in test_spec) or ('burst-size' in test_spec):
 
-        bandwidth_switch = '-Ri' + str(nuttcp_bandwidth)
-        if 'burst-size' in test_spec:
-            bandwidth_switch += '/{}'.format(test_spec['burst-size'])
-        nuttcp_args.append(bandwidth_switch)
+        if not max_bandwidth:
+            bandwidth_switch = '-Ri' + str(nuttcp_bandwidth)
+            if 'burst-size' in test_spec:
+                bandwidth_switch += '/{}'.format(test_spec['burst-size'])
+                nuttcp_args.append(bandwidth_switch)
+        else:
+            diags.append("Ignoring burst size in favor of bandwidth limit.")
+            nuttcp_args.append('-R{}'.format(str(nuttcp_bandwidth)))
 
     elif max_bandwidth:
 
         nuttcp_args.append('-R{}'.format(str(nuttcp_bandwidth)))
-
-
 
 
     if 'udp' in test_spec:
@@ -261,7 +232,7 @@ def run_client():
                                  "error": "The nuttcp command failed during execution. See server logs for more details."})
 
 
-    return _make_result(" ".join(nuttcp_args), status, stdout, stderr)
+    return _make_result(" ".join(nuttcp_args), diags, status, stdout, stderr)
 
 
 def run_server():
@@ -344,11 +315,11 @@ def run_server():
 
     # in nuttcp, the client always reports the results even in reverse mode so 
     # we never need to parse the server's output
-    return _make_result(" ".join(nuttcp_args), status, stdout, stderr, parse=False)
+    return _make_result(" ".join(nuttcp_args), diags, status, stdout, stderr, parse=False)
 
 
 
-def _make_result(command_line, status, stdout, stderr, parse=True):
+def _make_result(command_line, diags, status, stdout, stderr, parse=True):
     logger.debug("Stdout = %s" % stdout)
     logger.debug("Stderr = %s" % stderr)
     
@@ -365,7 +336,9 @@ def _make_result(command_line, status, stdout, stderr, parse=True):
     else:
         results = { "succeeded": True }
 
-    results['diags'] = "%s\n\n%s\n%s" % (command_line, stdout, stderr)
+    diags_text = "%s\n\n" % ("\n".join(diags)) if diags else ""
+
+    results['diags'] = "%s%s\n\n%s\n%s" % (diags_text, command_line, stdout, stderr)
 
     return results
 

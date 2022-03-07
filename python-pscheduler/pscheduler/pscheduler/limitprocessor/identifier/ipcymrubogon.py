@@ -94,7 +94,10 @@ class IdentifierIPCymruBogon(object):
             return False
         except (dns.exception.Timeout,
                 dns.resolver.NoAnswer,
-                dns.resolver.NoNameservers):
+                dns.resolver.NoNameservers,
+                # This happens if there's something wrong with the reply.
+                dns.exception.SyntaxError
+        ):
             return self.fail_result
 
         # The query will return 127.0.0.2 if it's in the bogon list.

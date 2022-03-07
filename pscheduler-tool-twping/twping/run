@@ -105,23 +105,24 @@ if role == CLIENT_ROLE:
     twping_args.append(str(test_spec.get('packet-timeout', test_spec.get('timeout', DEFAULT_PACKET_TIMEOUT))))
     
     #set if ipv4 only or ipv6 only
-    ip_version = str(test_spec.get('ip-version', ''))
-    if ip_version == '4':
+    ip_version = str(test_spec.get('ip-version'))
+    if ip_version == 4:
         twping_args.append('-4')
-    elif ip_version == '6':
+    elif ip_version == 6:
         twping_args.append('-6')
 
     #calculate destination ip for rtt tests
+    dest = test_spec['dest']
     try:
-            ipaddress.ip_address(str(test_spec['dest']))
-            dest_ip = test_spec['dest']
-            dest_hostname = pscheduler.dns_resolve_reverse(dest_ip)
+            ipaddress.ip_address(dest)
+            # It's an IP at this point
+            dest_ip = dest
+            dest_hostname = pscheduler.dns_resolve_reverse(dest)
     except ValueError:
-        dest_hostname = test_spec['dest']
-        if ip_version == '6':
-            dest_ip = pscheduler.dns_resolve(test_spec['dest'], ip_version=6)
-        else:
-            dest_ip = pscheduler.dns_resolve(test_spec['dest'], ip_version=4)
+        # Not an IP, assume a hostname
+        dest_hostname = dest
+        # None here is okay and will be sorted out later.
+        dest_ip = pscheduler.dns_resolve(dest, ip_version=ip_version)
     
     #bucket width is used for rounding delay values used as buckets for histogram
     bucket_width = test_spec.get('bucket-width', DEFAULT_BUCKET_WIDTH)

@@ -33,7 +33,7 @@ opt_parser.add_option("--daemon",
 opt_parser.add_option("--pid-file",
                       help="Location of PID file",
                       action="store", type="string", dest="pidfile",
-                      default="/dev/null")
+                      default=None)
 
 # Program options
 
@@ -321,6 +321,7 @@ def fetch_proposals(
 
 def run_post(
         number,        # Logging tag
+        pg,            # Database connection
         log_debug,     # Method to call for debugging
         url,           # URL for task
         start_time,    # Desired start time
@@ -585,7 +586,7 @@ def run_post(
 
         if status == 409:
             message = "%s developed a schedule conflict." % (put_url)
-            log_debug("%d: %s", message)
+            log_debug("%d: %s", number, message)
             errors.append(message)
             conflict = True
             # No sense in continuing.
@@ -619,7 +620,27 @@ def run_post(
 
     part_data = []
 
-    for run in runs_posted:
+    # The lead's participant data has to come from the local database
+    # because it's invisible to the API
+
+    try:
+        lead_result = pg.query(
+            "SELECT part_data FROM run WHERE uuid = %s",
+            [pscheduler.api_run_uuid(run_lead_url)]
+        )
+        if len(lead_result) != 1:
+            raise RuntimeError(f'Got unexpected lead part data result from database ({len(lead_result)} rows)')
+        lead_part_data = next(lead_result)[0]
+    except Exception as ex:
+        log.debug(f'{number}: Failed to get lead participant data: {str(ex)}')
+        return (None, None, None, False, False,
+                f'Failed to get lead run data: {str(ex)}')
+
+    log_debug(f'{number}: Lead part data: {str(lead_part_data)}')
+    part_data.append(lead_part_data)
+
+
+    for run in runs_posted[1:]:
 
         # TODO: Should this be multiple attempts to avoid a race condition?
         log_debug("%d: Getting part data from %s", number, run)
@@ -662,7 +683,8 @@ def run_post(
 
 
     # TODO: Probably also want to return the start and end times?
-    log_debug("%d: Run posting finished", number)
+    log_debug("%d: Run posting finished", number)    
+
     return (runs_posted[0], schedule_lower, schedule_upper, False, False, None)
 
 
@@ -676,7 +698,7 @@ class NonStarterException(Exception):
 
 
 def schedule_task(number, log, task, key, runs, trynext, anytime, json,
-                  participants, log_debug):
+                  participants, log_debug, pg):
     """Do the actual work of scheduling a run."""
     # TODO: This could probably be part of the SchedulerWorker class.
 
@@ -719,7 +741,7 @@ def schedule_task(number, log, task, key, runs, trynext, anytime, json,
         tries_left -= 1
         try:
             run_uri, start_time, end_time, skip, conflict, error \
-                = run_post(number, log_debug, url, trynext, anytime, lead_bind,
+                = run_post(number, pg, log_debug, url, trynext, anytime, lead_bind,
                            log=log, key=key)
         except Exception as ex:
             error = str(ex)
@@ -737,6 +759,7 @@ def schedule_task(number, log, task, key, runs, trynext, anytime, json,
     if tries_left == 0:
         skip = False
         error = "Gave up after too many scheduling conflicts."
+        # TODO: Delete lead run
 
     if skip:
         log_debug("%d: Skipping: %s", number, error)
@@ -745,11 +768,23 @@ def schedule_task(number, log, task, key, runs, trynext, anytime, json,
     if error is not None:
         log_debug("%d: Unable: %s", number, error)
         raise NonStarterException(error)
-    else:
-        log_debug("%d: Scheduled for %s - %s at %s", number, start_time,
-                  end_time, run_uri)
 
 
+    log_debug("%d: Scheduled for %s - %s at %s", number, start_time,
+              end_time, run_uri)
+
+    # TODO: Set lead run to pending so the runner will see it.
+
+    try:
+        pg.query(
+            """UPDATE run SET state = run_state_pending() WHERE uuid = %s""",
+            [pscheduler.api_run_uuid(run_uri)]
+        )
+        log_debug(f'{number}: Run state set to pending')
+    except Exception as ex:
+        log_debug(f'{number}: Failed to set pending: {str(ex)}')
+        # This is best-effort; the maintainer will clean up anything that gets left.
+        pass
 
 
 
@@ -803,7 +838,7 @@ class SchedulerWorker(object):
 
             schedule_task(self.number, self.log, self.task, self.key,
                           self.runs, self.trynext, self.anytime, self.json,
-                          self.participants, self.log_debug)
+                          self.participants, self.log_debug, self.pg)
 
         except NonStarterException as ex:
 
@@ -873,7 +908,11 @@ def main_program():
             log.debug("Waiting.")
             if pg.wait(pscheduler.timedelta_as_seconds(refresh)):
                 log.debug("Task change.")
-                # Discard pending notifications
+
+                # Discard pending notifications.  This is safe to do
+                # because all we ever get is task changes and the
+                # query below will find everything that needs
+                # scheduling.
                 _ = pg.notifications()
             else:
                 log.debug("Timed out.")
@@ -913,18 +952,21 @@ def main_program():
 
             number, task, key, runs, trynext, anytime, json, participants, debug = row
 
-            if number not in workers:
-                try:
-                    worker = SchedulerWorker(number, nonstart_pg, log,
-                                             workers, task, key,
-                                             runs, trynext, anytime, json,
-                                             participants, debug)
-                    log.debug("Starting thread for ID %d", number)
-                    workers.add(number)
-                    worker_threads[number] = worker
-                    wait = False
-                except Exception as ex:
-                    log.exception(message="%d: Exception while starting worker" % (number))
+            if number in workers:
+                log.debug(f'Already have a worker for {number}')
+                continue
+
+            try:
+                log.debug("Starting thread for ID %d", number)
+                worker = SchedulerWorker(number, nonstart_pg, log,
+                                         workers, task, key,
+                                         runs, trynext, anytime, json,
+                                         participants, debug)
+                workers.add(number)
+                worker_threads[number] = worker
+                wait = False
+            except Exception as ex:
+                log.exception(message="%d: Exception while starting worker" % (number))
 
 
         if pg.notifications():

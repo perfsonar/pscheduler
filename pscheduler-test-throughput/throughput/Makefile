@@ -11,9 +11,7 @@ FILES=\
 	result-format \
 	spec-format \
 	spec-is-valid \
-        spec-to-cli \
-        limit-is-valid \
-        limit-passes \
+        spec-to-cli
 
 MODULES=\
         throughput_utils \
