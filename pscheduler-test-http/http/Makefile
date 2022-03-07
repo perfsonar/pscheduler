@@ -22,13 +22,14 @@ MODULES=\
 FILES += $(MODULES:%=%.py)
 PYCS=$(MODULES:%=__pycache__/%.pyc)
 
+
 $(PYCS):
 ifndef DESTDIR
 	@echo No PYTHON specified for build
 	@false
 endif
 	$(PYTHON) -m compileall .
-TO_CLEAN += $(PYCS)
+TO_CLEAN += __pycache__
 
 install: $(FILES) $(PYCS)
 
@@ -42,4 +43,4 @@ endif
 	cp -r __pycache__ $(DESTDIR)
 
 clean:
-	rm -f $(TO_CLEAN) *~
+	rm -rf $(TO_CLEAN) *~

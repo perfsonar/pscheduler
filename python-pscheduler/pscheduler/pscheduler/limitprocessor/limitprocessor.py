@@ -5,9 +5,12 @@ pScheduler Limit Processor
 import io
 import os
 
+from urllib.parse import urlparse
+
 from ..exception import *
 from ..jsonval import *
 from ..psjson import *
+from ..psurl import *
 from ..text import *
 
 from .identifierset  import IdentifierSet
@@ -78,7 +81,22 @@ class LimitProcessor(object):
         # At this point, source is a file.
 
         assert isinstance(source, io.IOBase)
-        limit_config = json_load(source)
+        limit_file_contents = source.read().strip()
+
+        # Try to parse it as a URL.  If it's got a scheme, fetch it
+        # and replace the contents with that.
+
+        url_parsed = urlparse(limit_file_contents)
+        if url_parsed.scheme != '':
+            url = limit_file_contents
+            status, limit_file_contents = url_get(limit_file_contents, throw=False, json=False)
+            if status != 200:
+                raise ValueError("Unable to load limit configuration from %s: Status %d" % (url, status))
+
+
+        # Parse it.
+
+        limit_config = json_load(limit_file_contents)
 
         if not isinstance(limit_config, dict):
             raise ValueError("Limit configuration must be an object.")

@@ -61,6 +61,11 @@ def parse_ping(output, count):
     roundtrips = []
     ips = []
 
+    rtt_min = None
+    rtt_mean = None
+    rtt_max = None
+    rtt_stddev = None
+
     for line in output.split('\n'):
         line = line.strip()
 
@@ -149,7 +154,7 @@ def parse_ping(output, count):
         # Final times
         matches = TIMES_RETURNED.match(line)
         if matches is not None:
-            min, mean, max, stddev = matches.groups()
+            rtt_min, rtt_mean, rtt_max, rtt_stddev = matches.groups()
             # This is the last line we care about.
             break
 
@@ -157,15 +162,23 @@ def parse_ping(output, count):
 
     summary_results = {
         'roundtrips': roundtrips,
-        'ips': ips,
-        'min': timedelta_as_iso8601(
-            datetime.timedelta(seconds=float(min)/1000.0) ),
-        'max': timedelta_as_iso8601(
-            datetime.timedelta(seconds=float(max)/1000.0) ),
-        'mean': timedelta_as_iso8601(
-            datetime.timedelta(seconds=float(mean)/1000.0) ),
-        'stddev': timedelta_as_iso8601(
-            datetime.timedelta(seconds=float(stddev)/1000.0) ),
+        'ips': ips
     }
-    return summary_results
 
+    if rtt_min is not None:
+        summary_results['min'] = timedelta_as_iso8601(
+            datetime.timedelta(seconds=float(rtt_min)/1000.0))
+
+    if rtt_max is not None:
+        summary_results['max'] = timedelta_as_iso8601(
+            datetime.timedelta(seconds=float(rtt_max)/1000.0))
+
+    if rtt_mean is not None:
+        summary_results['mean'] = timedelta_as_iso8601(
+            datetime.timedelta(seconds=float(rtt_mean)/1000.0))
+
+    if rtt_stddev is not None:
+        summary_results['stddev'] = timedelta_as_iso8601(
+            datetime.timedelta(seconds=float(rtt_stddev)/1000.0))
+
+    return summary_results

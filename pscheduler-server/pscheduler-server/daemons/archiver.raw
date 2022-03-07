@@ -593,6 +593,13 @@ class ArchiveWorker(object):
         run_href = pscheduler.api_url(host=uri_host, path="tasks/%s/runs/%s" \
                                       % (task_uuid, run_uuid))
 
+
+        if 'label' in spec:
+            label = "%d: %s" % (archiving_id, spec['label'])
+        else:
+            label = str(archiving_id)
+
+
         # Strip the internal-use-only parts from the task details.
         for remove in [
                 'archives'
@@ -615,8 +622,8 @@ class ArchiveWorker(object):
             except KeyError:
                 pass
 
-        log_debug("%d: Task is %s", self.id, task_href)
-        log_debug("%d: Run is %s", self.id, run_href)
+        log_debug("%s: Task is %s", label, task_href)
+        log_debug("%s: Run is %s", label, run_href)
 
         json = {
             # This may contain private data that the archiver needs to see.
@@ -669,9 +676,9 @@ class ArchiveWorker(object):
                 else:
                     # Result is always a single object when doing JSON.
                     json["result"] = transformer(json["result"])[0]
-                log_debug("%d: Transformed to %s", self.id, json)
+                log_debug("%s: Transformed to %s", label, json)
             except Exception as ex:
-                self.log.error("%d: Error during transformation: %s", str(ex))
+                self.log.error("%s: Error during transformation: %s", label, str(ex))
                 failed = True
                 returncode = 1
                 stdout = ""
@@ -684,7 +691,7 @@ class ArchiveWorker(object):
 
 
         if json["result"] is None:
-            log_debug("%d: Null transform result; not archiving", self.id)
+            log_debug("%s: Null transform result; not archiving", label)
             returncode = 0
             stdout = """{ "succeeded": true }"""
             stdout_attempt = "Archiving stopped by transform."
@@ -699,20 +706,20 @@ class ArchiveWorker(object):
 
         if (not failed) and (not skip):
 
-            log_debug("%d: Archiving to %s: %s",
-                           self.id, archiver, json)
+            log_debug("%s: Archiving to %s: %s",
+                           label, archiver, json)
 
             try:
                 result = self.collection(archiver, json)
-                log_debug("%d: Returned JSON from archiver: %s", self.id, result)
+                log_debug("%s: Returned JSON from archiver: %s", label, result)
                 returncode = 0
             except Exception as ex:
-                log_debug("%d: Archiver threw an exception: %s", self.id, exception)
+                log_debug("%s: Archiver threw an exception: %s", label, exception)
                 result = {
                     "succeeded": False,
                     "error": "Exception during archiving: %s" % (str(ex))
                 }
-                self.log.exeption("%d: Exception" % (self.id))
+                self.log.exeption("%s: Exception" % (label))
                 returncode = 1
 
             assert result is not None
@@ -728,7 +735,7 @@ class ArchiveWorker(object):
 
         if returncode != 0:
 
-            log_debug("%d: Permanent Failure: %s", self.id,
+            log_debug("%s: Permanent Failure: %s", label,
                            result.get("error", "Unspecified error"))
             self.db.query("""UPDATE archiving
                              SET
@@ -743,8 +750,8 @@ class ArchiveWorker(object):
         else:
 
             if result is not None and result.get('succeeded', False):
-                log_debug("%d: Succeeded: %s to %s",
-                               self.id, run_uuid, archiver)
+                log_debug("%s: Succeeded: %s to %s",
+                               label, run_uuid, archiver)
                 self.db.query("""UPDATE archiving
                                  SET
                                      completed = TRUE,
@@ -758,8 +765,8 @@ class ArchiveWorker(object):
 
             else:
 
-                self.log.warning("%d: Failed to archive %s to %s: %s",
-                                 self.id, run_href, archiver,
+                self.log.warning("%s: Failed to archive %s to %s: %s",
+                                 label, run_href, archiver,
                                  result.get("error", "Unspecified problem"))
 
                 # If there's a retry, schedule the next one.
@@ -772,7 +779,7 @@ class ArchiveWorker(object):
                     next = datetime.datetime.now(tzlocal()) \
                            + next_delta
 
-                    log_debug("%d: Rescheduling for %s", self.id, next)
+                    log_debug("%s: Rescheduling for %s", label, next)
 
                     self.db.query("""UPDATE archiving
                                      SET
@@ -787,10 +794,10 @@ class ArchiveWorker(object):
 
                 else:
 
-                    log_debug("%d: No retry requested.  Giving up.",
-                                   self.id)
-                    self.log.warning("%d: Gave up archiving %s to %s",
-                                     self.id, run_href, archiver)
+                    log_debug("%s: No retry requested.  Giving up.", label)
+
+                    self.log.warning("%s: Gave up archiving %s to %s",
+                                     label, run_href, archiver)
 
 
                     self.db.query("""UPDATE archiving

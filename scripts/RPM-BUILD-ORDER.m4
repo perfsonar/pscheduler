@@ -117,6 +117,8 @@ ifelse(REDHAT_RELEASE_MAJOR,8,owamp)
 paris-traceroute
 random-string
 s3-benchmark
+tcpping
+
 
 #
 # PSCHEDULER CORE PARTS
@@ -193,6 +195,7 @@ pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
 pscheduler-tool-snooze
+pscheduler-tool-tcpping
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
 pscheduler-tool-twping

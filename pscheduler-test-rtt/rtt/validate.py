@@ -4,7 +4,7 @@
 
 from pscheduler import json_validate
 
-MAX_SCHEMA = 3
+MAX_SCHEMA = 4
 
 def spec_is_valid(json):
     SPEC_SCHEMA = {
@@ -89,6 +89,36 @@ def spec_is_valid(json):
                     "deadline":          { "$ref": "#/pScheduler/Duration" },
                     "timeout":           { "$ref": "#/pScheduler/Duration" },
                     "protocol":          { "$ref": "#/local/protocol" },
+                    },
+                "required": [
+                    "schema",
+                    "dest"
+                    ],
+                "additionalProperties": False
+            },
+            "v4": {
+                "type": "object",
+                "properties": {
+                    "schema":            { "$ref": "#/pScheduler/Cardinal", "enum": [ 4 ] },
+                    "count":             { "$ref": "#/pScheduler/Cardinal" },
+                    "dest":              { "$ref": "#/pScheduler/Host" },
+                    # There is no dest-node because this is a one-participant test.
+                    # TODO: This is supposed to be a 20-bit number.  Validate that.
+                    "flow-label":        { "$ref": "#/pScheduler/CardinalZero" },
+                    "fragment":          { "$ref": "#/pScheduler/Boolean" },
+                    "hostnames":         { "$ref": "#/pScheduler/Boolean" },
+                    "interval":          { "$ref": "#/pScheduler/Duration" },
+                    "ip-version":        { "$ref": "#/pScheduler/ip-version" },
+                    "source":            { "$ref": "#/pScheduler/Host" },
+                    "source-node":       { "$ref": "#/pScheduler/URLHostPort" },
+                    "suppress-loopback": { "$ref": "#/pScheduler/Boolean" },
+                    "ip-tos":            { "$ref": "#/pScheduler/IPTOS" },
+                    "length":            { "$ref": "#/pScheduler/Cardinal" },
+                    "ttl":               { "$ref": "#/pScheduler/Cardinal" },
+                    "deadline":          { "$ref": "#/pScheduler/Duration" },
+                    "timeout":           { "$ref": "#/pScheduler/Duration" },
+                    "port":              { "$ref": "#/pScheduler/IPPort" },
+                    "protocol":          { "$ref": "#/pScheduler/String" },
                     },
                 "required": [
                     "schema",
