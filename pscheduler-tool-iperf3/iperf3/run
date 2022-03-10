@@ -547,6 +547,6 @@ try:
 except Exception as ex:
     logger.exception()
 
-logger.debug("Results: %s" % results)
+logger.debug("Results: %s", results)
 
 pscheduler.succeed_json(results)
