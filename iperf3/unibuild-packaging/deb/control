@@ -1,0 +1,50 @@
+Source: iperf3
+Section: net
+Priority: optional
+Maintainer: Raoul Gunnar Borenius <borenius@dfn.de>
+Build-Depends: debhelper (>= 10), autotools-dev
+Standards-Version: 3.9.8
+Homepage: http://software.es.net/iperf/
+
+Package: iperf3
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Internet Protocol bandwidth measuring tool
+ Iperf3 is a tool for performing network throughput measurements. It can
+ test either TCP or UDP throughput.
+ .
+ This is a new implementation that shares no code with the original
+ iperf from NLANR/DAST and also is not backwards compatible.
+ .
+ This package contains the command line utility.
+
+Package: libiperf0
+Architecture: any
+Section: libs
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Internet Protocol bandwidth measuring tool (runtime files)
+ Iperf3 is a tool for performing network throughput measurements. It can
+ test either TCP or UDP throughput.
+ .
+ This is a new implementation that shares no code with the original
+ iperf from NLANR/DAST and also is not backwards compatible.
+ .
+ This is the runtime package for programs that use the shared iperf
+ library.
+
+Package: libiperf-dev
+Architecture: any
+Section: libdevel
+Multi-Arch: same
+Depends: libiperf0 (= ${binary:Version}), ${misc:Depends}
+Description: Internet Protocol bandwidth measuring tool (development files)
+ Iperf3 is a tool for performing network throughput measurements. It can
+ test either TCP or UDP throughput.
+ .
+ This is a new implementation that shares no code with the original
+ iperf from NLANR/DAST and also is not backwards compatible.
+ .
+ This is the development package which contains headers files and the
+ static iperf library.

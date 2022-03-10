@@ -1,0 +1,3 @@
+usr/lib/*/libiperf.a
+usr/lib/*/libiperf.so
+usr/include/iperf_api.h

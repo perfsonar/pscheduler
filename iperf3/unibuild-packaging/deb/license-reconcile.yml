@@ -1,0 +1,21 @@
+Rules:
+ rules:
+  -
+   Glob: src/locale.c
+   License: NCSA
+   Copyright: 2014, The Regents of the University of California; 1999-2003, The Board of Trustees of the University of Illinois
+  -
+   Glob: src/units.c src/tcp_window_size.c
+   CopyrightExtract: \s+\*\s+\Copyright\s+\(c\)\s+\Y+
+   License: NCSA
+   Copyright: The Board of Trustees of the University of Illinois
+  -
+   Glob: src/queue.h src/net.c
+   License: BSD-3-clause
+   Copyright: 1991-2011, The Regents of the University of California
+  -
+   Glob: config/ltmain.sh
+   Copyright: 1994-2009. Free Software Foundation
+  -
+   Glob: src/cjson.c src/cjson.h
+   License: MIT/X11
