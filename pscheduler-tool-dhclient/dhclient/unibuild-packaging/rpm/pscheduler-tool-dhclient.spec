@@ -38,6 +38,7 @@ BuildRequires:	dhcp-client
 %endif
 
 BuildRequires:	pscheduler-rpm
+BuildRequires: dhclient
 
 %description
 dhclient tool class for pScheduler

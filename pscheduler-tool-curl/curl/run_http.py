@@ -15,6 +15,7 @@ def run(input):
     try:
         assert input["test"]["type"] == "http"
         source = input['test']['spec']['url']
+        headers = input['test']['spec'].get('headers', {})
         always_succeed = input['test']['spec'].get('always-succeed', False)
         keep_content = input['test']['spec'].get('keep-content', None)
         timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
@@ -46,6 +47,7 @@ def run(input):
 
     curl.setopt(pycurl.USERAGENT, "Mozilla/5.0 (pScheduler) HTTP response measurement tool")
     curl.setopt(pycurl.URL, str(source))
+    curl.setopt(pycurl.HTTPHEADER, [header + ': ' + value for header, value in headers.items()])
 
     # TODO: This test doesn't have bind but needs one.
     # curl.setopt(pycurl.INTERFACE, str(bind))

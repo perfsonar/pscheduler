@@ -358,14 +358,25 @@ def run_task(message, lead, task, bind=None):
     progress("%d seconds" % (sleep_time))
     time.sleep(sleep_time)
 
-    # Wait for the result to happen
+    # Wait for the result to happen (or not)
 
     status, run_data = pscheduler.url_get(first_run_url,
                                           params={"wait-merged": True},
                                           throw=False)
 
+    # Whatever the outcome, grab a fresh copy of the run so we can get its status.
+    second_status, second_run_data = pscheduler.url_get(first_run_url, throw=False)
+    if second_status != 200:
+        failed("Unable to get run data: Error: %d: %s" % (second_status, second_run_data))
+
+    extra_comment = progress(
+        second_run_data.get("state-display")
+        + (", probably missed" if second_run_data.get("state") == "pending" else "")
+    )
+
+
     if status != 200:
-        failed("Error %d: %s" % (status, run_data))
+        failed("Error %d while waiting for result: %s" % (status, run_data))
 
 
     # Get the result
@@ -375,7 +386,6 @@ def run_task(message, lead, task, bind=None):
                                              throw=False)
     if status != 200:
         failed("Did not get a result: %s" % (result_data))
-    progress()
 
     try:
         if not result_data["succeeded"]:
@@ -610,7 +620,7 @@ if not options.quick:
         "schema": 1,
         "test": {
             "spec": {
-		"source-node": host_a,
+                "source-node": host_a,
                 "dest": host_z,
                 "schema": 1
             },

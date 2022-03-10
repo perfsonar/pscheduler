@@ -309,7 +309,7 @@ def run_server():
 
     diags = []
     #init command
-    iperf3_args = [ iperf3_cmd, '-s', '-1', '--json']
+    iperf3_args = [ iperf3_cmd, '-s', '-1', '--idle-timeout', str(test_duration), '--json']
 
     # Once in awhile, a server process gets orphaned.  Find those and
     # try to kill them.
