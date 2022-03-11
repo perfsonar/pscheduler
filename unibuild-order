@@ -85,8 +85,7 @@ ifelse(DISTRO/MAJOR,CentOS/7,python-ntplib)		# EL8 has this, ours is newer
 python-parse-crontab
 python-vine
 python-py-amqp
-### TODO: This may not be needed on Deb10.
-### python-py-radix
+python-py-radix
 python-pyjq
 python-tzlocal
 python-vcversioner
