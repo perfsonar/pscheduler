@@ -20,11 +20,9 @@ changecom()dnl
 
 # GENERAL-PURPOSE MACROS
 
-# Debian 9 doesn't support Golang sufficiently for what we need, nor
-# is there support for it on arm64 or ppc64el.
-# TODO: Doesn't build properly anywhere on Debian.
-# TODO: Antoine says this is okay on Deb10
-define(HAVE_GOLANG,ifelse(FAMILY/MAJOR,Debian/9,,
+# Debian 9 (Stretch) doesn't support Golang sufficiently for what we
+# need, nor is there support for it on arm64 or ppc64el.
+define(HAVE_GOLANG,ifelse(FAMILY/eval(MAJOR < 10),Debian/1,,
               FAMILY/ARCH,Debian/arm64,,
               FAMILY/ARCH,Debian/ppc64el,,
               1))
@@ -112,7 +110,10 @@ httpd-wsgi-socket
 # Utility and Tool programs
 #
 drop-in
-ifelse(HAVE_GOLANG,1,ethr)
+
+define(HAVE_ETHR,HAVE_GOLANG)
+ifelse(HAVE_ETHR,1,ethr)
+
 ifelse(FAMILY/MAJOR,RedHat/8,I2util)			# TODO: Building temporarily for EL8; required for owamp
 ifelse(FAMILY/MAJOR,RedHat/8,iperf)			# EPEL dropped this for EL8
 ifelse(FAMILY,Debian,iperf3)				# TODO: EL gets this from the perfSONAR repo
@@ -120,8 +121,13 @@ nuttcp
 ifelse(FAMILY/MAJOR,RedHat/8,owamp)			# TODO: Building temporarily for EL8
 paris-traceroute
 random-string
-### TODO: Doesn't build on Deb10
-### ifelse(HAVE_GOLANG,1,s3-benchmark)
+
+# Debian before 12 doesn't have a recent-enough Golang to build this.
+define(HAVE_S3_BENCHMARK,ifelse(HAVE_GOLANG,0,0,
+	FAMILY/eval(MAJOR < 12),Debian/1,0,
+        1))
+ifelse(HAVE_S3_BENCHMARK,1,s3-benchmark)
+
 tcpping
 
 
@@ -158,8 +164,7 @@ pscheduler-test-psresponse
 pscheduler-test-throughput
 pscheduler-test-openports		--bundle extras
 pscheduler-test-rtt
-### TODO: s3benchmark doesn't build on Debian 10
-### ifelse(HAVE_GOLANG,1,pscheduler-test-s3throughput)
+ifelse(HAVE_S3_BENCHMARK,1,pscheduler-test-s3throughput)
 pscheduler-test-simplestream
 pscheduler-test-snmpget			--bundle snmp
 pscheduler-test-snmpgetbgm		--bundle snmp
@@ -177,7 +182,7 @@ pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl
 pscheduler-tool-dhclient		--bundle extras
 pscheduler-tool-dnspy
-ifelse(HAVE_GOLANG,1,pscheduler-tool-ethr)
+ifelse(HAVE_ETHR,1,pscheduler-tool-ethr)
 pscheduler-tool-fpingreach		--bundle extras
 pscheduler-tool-fwmtu
 pscheduler-tool-globus			--bundle extras
@@ -196,7 +201,7 @@ pscheduler-tool-psclock
 pscheduler-tool-pstimer
 pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
-### TODO: Test doesn't build.  ifelse(HAVE_GOLANG,1,pscheduler-tool-s3-benchmark)
+ifelse(HAVE_S3_BENCHMARK,1,pscheduler-tool-s3-benchmark)
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
