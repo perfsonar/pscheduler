@@ -49,7 +49,7 @@ ifelse(PACKAGING,rpm,pscheduler-rpm)
 # EL7 needs a custom PostgreSQL
 ifelse(FAMILY/MAJOR,RedHat/7,pgdg-srpm-macros)
 ifelse(FAMILY/MAJOR,RedHat/7,postgresql)
-postgresql-init)
+postgresql-init
 postgresql-load
 
 
