@@ -242,7 +242,6 @@ pscheduler-docs
 
 
 # Bundles
-### TODO: These need work on Debian.
 pscheduler-bundle-extras
 pscheduler-bundle-full
 pscheduler-bundle-obsolete
