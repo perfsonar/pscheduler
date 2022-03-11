@@ -18,7 +18,7 @@ Vcs-Git: https://salsa.debian.org/python-team/packages/python-amqp.git
 Vcs-Browser: https://salsa.debian.org/python-team/packages/python-amqp
 Rules-Requires-Root: no
 
-Package: python3-py-amqp
+Package: python3-amqp
 Architecture: all
 Depends:
  python3-vine (>= 5.0),

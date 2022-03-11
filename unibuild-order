@@ -84,8 +84,7 @@ python-netifaces
 ifelse(DISTRO/MAJOR,CentOS/7,python-ntplib)		# EL8 has this, ours is newer
 python-parse-crontab
 python-vine
-### TODO: This has build issues on Deb10
-### python-py-amqp
+python-py-amqp
 ### TODO: This may not be needed on Deb10.
 ### python-py-radix
 python-pyjq
@@ -216,8 +215,7 @@ pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-kafka
 pscheduler-archiver-postgresql
-### TODO: Needs py-amqp, which has problems.
-### pscheduler-archiver-rabbitmq
+pscheduler-archiver-rabbitmq
 pscheduler-archiver-snmptrap		--bundle snmp
 pscheduler-archiver-syslog
 pscheduler-archiver-tcp

@@ -5,28 +5,4 @@
 # DH_VERBOSE := 1
 
 %:
-	dh $@ --with=python3 --system=pybuild
-
-
-### include /usr/share/dpkg/pkg-info.mk
-
-
-
-### BUILD_DATE=$(shell LC_ALL=C date -u "+%B %d, %Y" -d "@$(SOURCE_DATE_EPOCH)")
-### 
-### export PYBUILD_NAME=amqp
-### export PYBUILD_BEFORE_TEST=cp -r {dir}/t {build_dir} ; rm -rf {build_dir}/t/integration
-### export PYBUILD_AFTER_TEST=rm -rf {build_dir}/t
-### 
-### %:
-### 	PYBUILD_SYSTEM=pybuild dh $@ --with python3
-### 
-### override_dh_auto_test:
-### 
-### override_dh_clean:
-### 	rm -rf docs/.build
-### 	dh_clean
-### 
-### #override_dh_installchangelogs:
-### #	dh_installchangelogs docs/changelog.rst
-### 
+	dh $@ --with=python3 --buildsystem=pybuild
