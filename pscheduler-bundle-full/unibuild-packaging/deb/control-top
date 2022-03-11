@@ -1,4 +1,4 @@
-Source: pscheduler-bundle-extras
+Source: pscheduler-bundle-full
 Section: net
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
@@ -9,15 +9,6 @@ Homepage: https://github.com/perfsonar/pscheduler
 Vcs-Git: git://github.com/perfsonar/pscheduler
 Vcs-Browser: https://github.com/perfsonar/pscheduler
 
-Package: pscheduler-bundle-extras
-Architecture: all
+Package: pscheduler-bundle-full
+Architecture: amd64 i386 armel armhf
 Depends:
- pscheduler-test-disk-to-disk,
- pscheduler-test-netreach,
- pscheduler-tool-globus,
- pscheduler-tool-nmapreach
-Description: pScheduler extras packages
- Bundle of extras pScheduler packages:
- Tests: disk-to-disk, netreach
- Tools: globus, nmapreach
-

@@ -12,14 +12,3 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-bundle-snmp
 Architecture: all
 Depends:
- pscheduler-test-snmpget,
- pscheduler-test-snmpgetbgm,
- pscheduler-test-snmpset,
- pscheduler-tool-net-snmp-set,
- pscheduler-tool-pysnmp,
- pscheduler-archiver-snmptrap
-Description: pScheduler SNMP packages
- Bundle of SNMP related pScheduler packages
- Archivers: snmptrap
- Tests: snmpget, snmpgetbgm, snmpset
- Tools: net-snmp-set, pysnmp
