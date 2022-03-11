@@ -117,6 +117,7 @@ ifelse(HAVE_GOLANG,1,ethr)
 ifelse(FAMILY/MAJOR,RedHat/8,I2util)			# TODO: Building temporarily for EL8; required for owamp
 ifelse(FAMILY/MAJOR,RedHat/8,iperf)			# EPEL dropped this for EL8
 ifelse(FAMILY,Debian,iperf3)				# TODO: EL gets this from the perfSONAR repo
+nuttcp
 ifelse(FAMILY/MAJOR,RedHat/8,owamp)			# TODO: Building temporarily for EL8
 paris-traceroute
 random-string
@@ -187,7 +188,7 @@ pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-nmapreach		--bundle extras
 pscheduler-tool-nmapscan		--bundle extras
-### TODO: Needs 8.1.2: pscheduler-tool-nuttcp
+pscheduler-tool-nuttcp
 ### TODO: Needs owamp-server and -client pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
 pscheduler-tool-ping

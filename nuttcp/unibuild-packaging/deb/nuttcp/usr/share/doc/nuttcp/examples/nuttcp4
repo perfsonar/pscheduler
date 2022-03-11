@@ -1,0 +1,13 @@
+# default: off
+# description: network performance testing server (developed from ttcp/nttcp)
+service nuttcp
+{
+	flags		= REUSE IPv4
+	socket_type	= stream        
+	wait		= no
+	user		= nobody
+	server		= /usr/local/bin/nuttcp
+	server_args     = -S -4
+	log_on_failure	+= USERID
+	disable		= yes
+}
