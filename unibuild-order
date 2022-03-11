@@ -188,10 +188,10 @@ pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-nmapreach		--bundle extras
 pscheduler-tool-nmapscan		--bundle extras
 pscheduler-tool-nuttcp
-### TODO: Needs owamp-server and -client pscheduler-tool-owping
+pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
 pscheduler-tool-ping
-### TODO: Needs owamp-server and -client pscheduler-tool-powstream
+pscheduler-tool-powstream
 pscheduler-tool-psclock
 pscheduler-tool-pstimer
 pscheduler-tool-psurl			--bundle obsolete
@@ -204,7 +204,6 @@ pscheduler-tool-snooze
 pscheduler-tool-tcpping
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
-### TODO: Needs OWAMP pscheduler-tool-twping
 pscheduler-tool-umichwpa		--bundle extras
 
 
