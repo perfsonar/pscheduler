@@ -47,7 +47,6 @@ Requires:	postgresql-load >= 1.2
 Requires:	pscheduler-account
 Requires:	pscheduler-core
 Requires:	postgresql-init
-Requires:	random-string >= 1.1
 
 # Daemons
 BuildRequires:	m4

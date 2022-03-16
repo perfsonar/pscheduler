@@ -1,0 +1,5 @@
+postgresql-load (1.2-1) perfsonar-minor-staging; urgency=low
+
+  * First upstream version
+
+ -- Mark Feit <mfeit@internet2.edu>  Tue, 15 Mar 2022 17:30:00 -0500

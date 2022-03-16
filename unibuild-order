@@ -66,9 +66,11 @@ ifelse(FAMILY/MAJOR,Debian/9,python-attrs)              # Needed here only.
 ifelse(FAMILY/MAJOR,RedHat/7,python-daemon)		# EL7 needs this; EL8 is up to date
 ifelse(FAMILY/MAJOR,RedHat/7,python-isodate)		# EL7 needs this; EL8 is up to date
 ifelse(FAMILY/MAJOR,RedHat/8,python-itsdangerous)	# EL8 has this, but an older version
-python-pyrsistent
+ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of this.
+       python-pyrsistent)
 python-nmap3
-python-jsonschema					# EL8 has this, but an older version
+ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of this.
+       python-jsonschema)				# EL8 has this, but an older version
 python-kafka
 python-nmap3
 
@@ -124,11 +126,12 @@ ifelse(FAMILY/MAJOR,RedHat/8,owamp,
        FAMILY,Debian,owamp)
 
 paris-traceroute
-random-string
 
-# Debian before 12 doesn't have a recent-enough Golang to build this.
+# Some Debian and all Ubuntus don't have a recent-enough Golang to
+# build this.
 define(HAVE_S3_BENCHMARK,ifelse(HAVE_GOLANG,0,0,
 	FAMILY/eval(MAJOR < 12),Debian/1,0,
+	DISTRO,Ubuntu,0,
         1))
 ifelse(HAVE_S3_BENCHMARK,1,s3-benchmark)
 
