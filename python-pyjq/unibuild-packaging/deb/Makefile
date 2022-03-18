@@ -9,10 +9,12 @@ OS_MAJOR := $(shell unibuild macros MAJOR)
 
 FILES := \
 	compat \
-	gbp.conf
+	control \
+	gbp.conf \
+	rules
 
 OS_SUFFIX := $(OS_DISTRO)-$(OS_MAJOR)
-$(FILES):
+$(FILES): FORCE
 	@if [ ! -e '$@-$(OS_SUFFIX)' ] ; \
 	then \
 		echo 'Missing $@ for $(OS_DISTRO) $(OS_MAJOR) ($@-$(OS_SUFFIX))'; \
@@ -23,6 +25,8 @@ $(FILES):
 TO_CLEAN += $(FILES)
 
 build: $(FILES)
+
+FORCE:
 
 
 clean:

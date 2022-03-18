@@ -70,6 +70,7 @@ ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of th
        python-pyrsistent)
 python-nmap3
 ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of this.
+       DISTRO/eval(MAJOR > 10),Debian/1,,               # As does Debian 11.
        python-jsonschema)				# EL8 has this, but an older version
 python-kafka
 python-nmap3
@@ -125,7 +126,9 @@ nuttcp
 ifelse(FAMILY/MAJOR,RedHat/8,owamp,
        FAMILY,Debian,owamp)
 
-paris-traceroute
+# TODO: Needed for D11, having difficulties with the packaging.
+define(HAVE_PARIS_TRACEROUTE,ifelse(DISTRO/eval(MAJOR > 10),Debian/1,,1))
+ifelse(HAVE_PARIS_TRACEROUTE,paris-traceroute,)
 
 # Some Debian and all Ubuntus don't have a recent-enough Golang to
 # build this.
@@ -201,7 +204,7 @@ pscheduler-tool-nmapreach		--bundle extras
 pscheduler-tool-nmapscan		--bundle extras
 pscheduler-tool-nuttcp
 pscheduler-tool-owping
-pscheduler-tool-paris-traceroute
+ifelse(HAVE_PARIS_TRACEROUTE,pscheduler-tool-paris-traceroute,,)
 pscheduler-tool-ping
 pscheduler-tool-powstream
 pscheduler-tool-psclock

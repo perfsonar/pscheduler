@@ -1,0 +1,12 @@
+diff -ru paris-traceroute-1.0-orig/libparistraceroute/whois.c paris-traceroute-1.0/libparistraceroute/whois.c
+--- paris-traceroute-1.0-orig/libparistraceroute/whois.c        2016-04-21 13:58:33.000000000 +0000
++++ paris-traceroute-1.0/libparistraceroute/whois.c     2022-03-18 15:44:06.354636592 +0000
+@@ -74,7 +74,7 @@
+ ) {
+     char * query;
+     const  size_t BUFFER_SIZE = 1000;
+-    char   buffer[BUFFER_SIZE];
++    char   buffer[BUFFER_SIZE + 1];  // Extra account for the NUL at the end.
+     int    sockfd, read_size; //, total_size = 0;
+
+     struct sockaddr     * sa;

@@ -1,0 +1,6 @@
+This directory contains support for multiple flavors of Debian and
+Ubuntu, set up using the Makefile.  That build is triggered in the
+top-level Makefile for the package (../../Makefile).
+
+Files generated are in .gitignore so they don't slip into version
+control.

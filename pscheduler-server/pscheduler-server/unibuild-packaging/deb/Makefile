@@ -8,9 +8,7 @@ OS_DISTRO := $(shell unibuild macros DISTRO)
 OS_MAJOR := $(shell unibuild macros MAJOR)
 
 FILES := \
-	control \
-	compat \
-	gbp.conf
+	control
 
 OS_SUFFIX := $(OS_DISTRO)-$(OS_MAJOR)
 $(FILES): FORCE

@@ -1,0 +1,19 @@
+#!/usr/bin/make -f
+
+#DH_VERBOSE = 1
+
+export PYBUILD_NAME = pyjq
+
+DPKG_EXPORT_BUILDFLAGS = 1
+INCLUDE_FLAGS := $(shell python3-config --includes)
+CFLAGS += $(INCLUDE_FLAGS)
+
+%:
+	dh $@ --with python3 --buildsystem=pybuild
+
+override_dh_auto_test:
+	@true
+
+override_dh_auto_build:
+	cython $(INCLUDE_FLAGS) _pyjq.pyx
+	dh_auto_build

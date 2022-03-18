@@ -12,7 +12,7 @@ FILES := \
 	gbp.conf
 
 OS_SUFFIX := $(OS_DISTRO)-$(OS_MAJOR)
-$(FILES):
+$(FILES): FORCE
 	@if [ ! -e '$@-$(OS_SUFFIX)' ] ; \
 	then \
 		echo 'Missing $@ for $(OS_DISTRO) $(OS_MAJOR) ($@-$(OS_SUFFIX))'; \
@@ -23,6 +23,8 @@ $(FILES):
 TO_CLEAN += $(FILES)
 
 build: $(FILES)
+
+FORCE:
 
 
 clean:
