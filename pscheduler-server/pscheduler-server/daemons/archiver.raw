@@ -532,18 +532,25 @@ class ArchiverPoolCollection(object):
 
 class ArchiveWorker(object):
 
-    def __init__(self, db, log, row, collection, worker_set):
+    def __init__(self, db, log, row, collection):
         self.db = db
         self.log = log
         self.row = row
         self.collection = collection
-        self.worker_set = worker_set
 
         self.id = row[0]
 
         self.worker = threading.Thread(target=self.run)
         self.worker.setDaemon(True)
         self.worker.start()
+
+
+    def is_complete(self):
+        """Determine whether or not the worker is still running"""
+        # TODO: Impose some sort of absolute timeout to catch and kill
+        # hung threads?  (Haven't seen that in production.)
+        self.worker.join(timeout=0)
+        return not self.worker.is_alive()
 
 
     def run(self):
@@ -554,15 +561,13 @@ class ArchiveWorker(object):
         self.log.debug("%d: Thread running", self.id)
         try:
             self.__run()
-        except Exception as ex:
+        except Exception:
             # Don't worry about the result here.  If __run() failed to
             # post anything, that will be the end of it.  If it did,
             # it might be salvageable.
             self.log.exception()
         finally:
-            self.worker_set.remove(self.id)
             self.log.debug("%d: Thread finished", self.id)
-
 
 
     def __run(self):
@@ -842,8 +847,6 @@ def main_program():
 
     db.query("SELECT heartbeat_boot('archiver')")
 
-    # Dictionary of archivings in progress
-    workers = pscheduler.ThreadSafeSet()
     worker_threads = {}
 
     while True:
@@ -861,7 +864,8 @@ def main_program():
             archiver_collection.skim()
 
         # Purge any workers that are no longer running
-        for remove in [ worker_id for worker_id in worker_threads if worker_id not in workers ]:
+        for remove in [worker_id for worker_id in worker_threads
+                       if worker_threads[worker_id].is_complete()]:
             log.debug("Purging completed thread %d", remove)
             del worker_threads[remove]
 
@@ -897,7 +901,7 @@ def main_program():
             log.debug("Warm boot; draining archiver pools")
             archiver_collection.drain()
 
-        query_limit = options.max_parallel - len(workers)
+        query_limit = options.max_parallel - len(worker_threads)
 
         # If we're already full up on workers, don't bother hitting the database
         if query_limit < 1:
@@ -906,7 +910,7 @@ def main_program():
 
         log.debug("Limiting query to %d", query_limit)
 
-        exclusions = workers.items()
+        exclusions = list(worker_threads.keys())
         log.debug("Excluding %s", exclusions)
 
         # TODO: A lot of what's being pulled here can be pulled from
@@ -943,21 +947,20 @@ def main_program():
         for row in result:
 
             # Don't bother if there are already too many archivers running.
-            if len(workers) >= options.max_parallel:
-                log.debug("Already running %d archivers.", len(workers))
+            if len(worker_threads) >= options.max_parallel:
+                log.debug("Already running %d archivers.", len(worker_threads))
                 break
 
             archiving_id = row[0]
 
-            if archiving_id in workers:
+            if archiving_id in worker_threads:
                 log.debug("%d: Already running a worker", archiving_id)
                 continue
 
             log.debug("%d: Starting worker", archiving_id)
             try:
                 # Store this to avoid scope issues
-                worker_threads[archiving_id] = ArchiveWorker(db, log, row, archiver_collection, workers)
-                workers.add(archiving_id)
+                worker_threads[archiving_id] = ArchiveWorker(db, log, row, archiver_collection)
                 next_refresh = None
             except Exception:
                 log.exception(message="%d: Exception while starting worker" % (archiving_id))
