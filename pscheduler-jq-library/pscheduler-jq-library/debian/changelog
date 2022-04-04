@@ -1,3 +1,9 @@
+pscheduler-jq-library (4.4.4-1) perfsonar-4.4; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Mon, 04 Apr 2022 13:04:06 -0400
+
 pscheduler-jq-library (4.4.3-1) perfsonar-4.4; urgency=low
 
   * New upstream version.

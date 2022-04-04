@@ -21,6 +21,142 @@ import threading
 import time
 
 
+# ------------------------------------------------------------------------------
+
+# TODO: Move to library in 5.0
+
+import inspect
+from dateutil.tz import tzlocal
+
+class DBConnection(object):
+    """Database connection with self-awareness of expiration"""
+
+    def __init__(self, connection, timeout, done_callback, name):
+        self.connection = connection
+        self._done_callback = done_callback
+        self.name = str(name)
+        self._expires = datetime.datetime.now(tzlocal()) + timeout
+
+    def returnable(self):
+        """Determine if the connection is past its expiration date"""
+        return datetime.datetime.now(tzlocal()) > self._expires
+
+    def __enter__(self):
+        return self.connection
+
+    def __exit__(self, exc_type=None, exc_value=None, exc_tb=None):
+        self.connection.commit()
+        self._done_callback(self)
+
+    def cursor(self):
+        return self.connection.cursor()
+
+    def __repr__(self):
+        return '<%s %s Expires %s>' % (self.__class__.__name__, self.name, self._expires)
+
+
+class DBConnectionPool():
+    """Self-skimming pool of DBConnections"""
+
+    # How long to wait for a connection to become available
+    DEFAULT_CONNECTION_TIMEOUT = datetime.timedelta(seconds=5)
+
+    # Connection age before purging
+    DEFAULT_SKIM_TIME = datetime.timedelta(seconds=60)
+
+
+    def _pass(_message):
+        """Drop a message on the floor."""
+        pass
+
+
+    def __init__(self, dsn, max_pool_size, name, skim_time=DEFAULT_SKIM_TIME, log_callback=_pass):
+        self.pool = psycopg2.pool.ThreadedConnectionPool(
+            1,              # Minimum connections
+            max_pool_size,  # Maximum connections
+            dsn='%s application_name=%s-pool' % (dsn, name))
+        self.max_pool_size = max_pool_size
+        self.name = name
+        self._skim_time = skim_time
+        self._log_callback = log_callback
+        self._connections_out = {}
+        self._lock = threading.Lock()
+        self._pool_semaphore = threading.Semaphore(max_pool_size)
+
+
+    def _return_callback(self, connection):
+        with self._lock:
+            try:
+                self.pool.putconn(self._connections_out[connection])
+                del self._connections_out[connection]
+            except KeyError:
+                self._log_callback('Connection %s not in the checked out list' % connection)
+                pass  # Not there?  Don't care.
+
+
+    def skim(self):
+        """Get rid of any connections that say they're returnable."""
+
+        with self._lock:
+            for (connection, dbc) in [
+                    (connection, db)
+                    for (connection, db) in self._connections_out.items()
+                    if connection.returnable()
+            ]:
+                self.pool.putconn(dbc)
+                del self._connections_out[connection]
+                self._log_callback('%s: Skimmed orphaned connection "%s"'
+                                   % (self.name, connection.name))
+
+
+    def __call__(self, identifier, timeout=DEFAULT_CONNECTION_TIMEOUT):
+        """Get a database connection from the pool, waiting up to 'timeout'
+           seconds to get one."""
+
+        caller = inspect.getframeinfo(inspect.stack()[1][0])
+        name = '%s:%s/%s' % (os.path.basename(caller.filename), caller.lineno, str(identifier))
+
+        started = datetime.datetime.now(tzlocal())
+        give_up_after = started + timeout
+        attempts = 0
+
+        while datetime.datetime.now(tzlocal()) < give_up_after:
+
+            pool_con = None
+            try:
+                pool_con = self.pool.getconn()  # Already thread-safe
+                connection = DBConnection(pool_con, self._skim_time, self._return_callback, name)
+                with self._lock:
+                    self._connections_out[connection] = pool_con
+                if attempts:
+                    self._log_callback('Waited %s for a connection' % (datetime.datetime.now(tzlocal()) - started))
+                return connection
+            except psycopg2.pool.PoolError as ex:
+                self._log_callback('%s: Pool error: %s' % (str(identifier), str(ex)))
+                if len(self._connections_out) == self.max_pool_size:
+                    self._log_callback('%s: Encountered empty pool' % (self.name, connection.name))
+                    self.skim()
+                    if attempts > 0:
+                        time.sleep(0.1)
+                    attempts += 1
+                    continue
+            except Exception as ex:
+                # Any other failure is automatic return to the pool if there was one.
+                if pool_con is not None:
+                    self.pool.putconn(pool_con)
+                raise ex
+
+        # Reaching here means the pool is still full.
+        raise psycopg2.pool.PoolError('Timed out getting database connection')
+
+    def __repr__(self):
+        with self._lock:
+            return '<%s %d/%d>' % (self.__class__.__name__,
+                                   len(self._connections_out), self.max_pool_size)
+
+# ------------------------------------------------------------------------------
+
+
 pscheduler.set_graceful_exit()
 
 # Gargle the arguments
@@ -51,7 +187,7 @@ opt_parser.add_option("-m", "--max-parallel",
 opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
-                      default="PT1M")
+                      default="PT15S")
 opt_parser.add_option("--terse-logging",
                       help="Don't log run details",
                       action="store_true",
@@ -154,7 +290,7 @@ def clock_survey(hosts, bind=None):
 
 class RunWorker(object):
 
-    def __init__(self, dbpool, log, id, start_at, worker_set):
+    def __init__(self, dbpool, log, id, start_at):
 
         # Per http://initd.org/psycopg/docs/usage.html#thread-safety,
         # Psycopg is thread-safe when you use multiple cursors against the
@@ -166,7 +302,6 @@ class RunWorker(object):
         self.log_debug = log.debug
         self.id = id
         self.start_at = start_at
-        self.worker_set = worker_set
 
         self.finished = False
         self.output = []
@@ -174,40 +309,14 @@ class RunWorker(object):
         self.worker = threading.Thread(target=self.run)
         self.worker.setDaemon(True)
         self.worker.start()
+    
 
+    def is_complete(self):
+        """Determine whether or not the worker is still running"""
+        self.worker.join(timeout=0)
+        return not self.worker.is_alive()
+        
 
-    def _put_db_conn(self, db):
-        """
-        Commits any changes made with a database connection and restores to the pool
-        """
-        if not db:
-            return
-    
-        try:
-            db.commit()
-        except Exception as ex:
-            self.log.warning("Error committing DB transaction: %s" % ex)
-        finally:
-            self.dbpool.putconn(db)
-    
-    def _get_db_conn(self, attempts=60, wait=1):
-        """
-        Get connection from pool. If cannot get connection retry a few times before giving-up
-        """
-        db = None
-        for attempt in range(0, attempts):
-            try:
-                db = self.dbpool.getconn()
-                break
-            except psycopg2.pool.PoolError:
-                time.sleep(wait)
-        
-        #Unable to get connection, throw exception
-        if db is None:
-            raise Exception("Database connection pool exhausted. Unable to get connection after %d attempts." % attempts)
-        
-        return db
-    
     def __post_new_result(self, result):
         """
         Post a finished run for this task using the result provided.
@@ -219,10 +328,9 @@ class RunWorker(object):
             log.warning("%d: Discarding bogus result %s", self.id, result)
             return
         
-        db = None
         try:
-            db = self._get_db_conn()
-            with db.cursor() as cursor:
+            with self.dbpool(self.id) as db:
+                cursor = db.cursor()
                 cursor.execute("""
                 WITH inserted_row AS (
                     INSERT INTO run (task, uuid, times, state, status, result_merged)
@@ -251,9 +359,8 @@ class RunWorker(object):
 
 
         except Exception as ex:
+            self.log.excpetion()
             self.log.error("%d: Failed to post run for result: %s", self.id, str(ex))
-        finally:
-            self._put_db_conn(db)
 
 
     def __accumulate_output(self, line):
@@ -292,7 +399,6 @@ class RunWorker(object):
             log.exception()
         finally:
             self.log_debug("%d: Thread finished", self.id)
-            self.worker_set.remove(self.id)
 
 
     def __run(self):
@@ -301,13 +407,11 @@ class RunWorker(object):
         and post the results.
         """
 
-
         # Do as much preparation as possible before going to sleep.
 
-        db = None
         try:
-            db = self._get_db_conn()
-            with db.cursor() as cursor:
+            with self.dbpool(self.id) as db:
+                cursor = db.cursor()
                 cursor.execute("""
                            SELECT            
                                test.name,
@@ -353,11 +457,10 @@ class RunWorker(object):
                     partdata, scheduling_class, lead_bind, contexts, key, debug = row
 
         except Exception as ex:
+            self.log.exception()
             self.log.error("%d: Failed to fetch run info: %s",
                            self.id, str(ex))
             return
-        finally:
-            self._put_db_conn(db)
 
 
         if debug:
@@ -432,6 +535,14 @@ class RunWorker(object):
         self.log_debug("%d: Sleeping until test start at %s", self.id, start_time)
         pscheduler.sleep_until(start_time)
 
+        how_late = pscheduler.time_now() - start_time
+        self.log_debug("%d: Start time difference is %s", self.id, how_late)
+
+        if how_late > run_start_margin():
+            self.log.warning("%d: Starting %s later than scheduled.",
+                             self.id, how_late)
+
+
         #
         # Get cracking
         #
@@ -442,10 +553,9 @@ class RunWorker(object):
 
         # Tell the database we're proceeding
 
-        db = None
         try:
-            db = self._get_db_conn()
-            with db.cursor() as cursor:
+            with self.dbpool(self.id) as db:
+                cursor = db.cursor()
                 cursor.execute("SELECT run_start(%s)", [self.id])
                 assert cursor.rowcount == 1
                 result = cursor.fetchone()[0]
@@ -456,10 +566,9 @@ class RunWorker(object):
             self.log.error("%d: run_start did not return exactly one row.", self.id)
             raise ae
         except Exception as ex:
+            self.log.exception()
             self.log.error("%d: Failed to start run: %s", self.id, str(ex))
             raise ex
-        finally:
-            self._put_db_conn(db)
 
 
         #
@@ -468,15 +577,7 @@ class RunWorker(object):
 
         self.log_debug("%d: Tool input: %s", self.id, tool_input)
 
-        how_late = pscheduler.time_now() - start_time
-        self.log_debug("%d: Start time difference is %s", self.id, how_late)
-
-        if how_late > datetime.timedelta(seconds=0.5):
-            self.log.warning("%d: Starting %s later than scheduled",
-                             self.id, how_late)
-
         timeout = pscheduler.timedelta_as_seconds(end - start + run_start_margin()) + 1
-
 
         # Environment that will be passed into the child process
 
@@ -532,15 +633,14 @@ class RunWorker(object):
                               returncode, stderr)
             if stderr is None:
                 stderr = "Tool exited with status %d" % (returncode)
-        
-        db = None
+
+
         try:
-            db = self._get_db_conn()
             state_selector = 2 if  (
                 (participant > 0) or (scheduling_class == "background-multi")
                 ) else returncode
-            with db.cursor() as cursor:
-                cursor.execute("""
+            with self.dbpool(self.id) as db:
+                db.cursor().execute("""
                 UPDATE run
                 SET
                 status = %s,
@@ -560,13 +660,10 @@ class RunWorker(object):
                  state_selector,
                  self.id])
         except Exception as ex:
+            self.log.exception()
             self.log.error("%d: Failed to store local result: %s",
                            self.id, str(ex))
-
             return
-        finally:
-            #finally should ensure this is executed  even if return is an exception
-            self._put_db_conn(db)
         
         self.log_debug("%d: Stored local result", self.id)
 
@@ -719,10 +816,9 @@ class RunWorker(object):
 
             try:
                 self.log_debug(f'{self.id}: Merged result: Setting final state.  Succeeded={succeeded}')
-                db = self._get_db_conn()
-                with db.cursor() as cursor:
+                with self.dbpool(self.id) as db:
                     # TODO: Need to figure out succeeded.
-                    cursor.execute("""
+                    db.cursor().execute("""
                                     UPDATE run
                                     SET
                                         state = CASE
@@ -740,10 +836,9 @@ class RunWorker(object):
                                      survey,
                                      self.id])
             except Exception as ex:
+                self.log.exception()
                 self.log.error("%d: Failed to store run: %s", self.id, str(ex))
-            finally:
-                self._put_db_conn(db)
-
+                return
 
         self.log_debug("%d: Run complete", self.id)
         self.finished = True
@@ -783,6 +878,7 @@ def main_program():
 
             max_connections = int(cursor.fetchone()[0])
         except Exception as ex:
+            log.exception()
             log.error("Failed to fetch maximum connections: %s", str(ex))
             # This is the PgSQL default
             max_connections = 100
@@ -791,14 +887,8 @@ def main_program():
     pool_size = int(max_connections / 2)
     log.debug("Using a pool size of %d", pool_size)
 
-    # Pool of connections for use by the threads.  Note that these
-    # connections do not have autocommit, so anything using them will
-    # need to do its own commits.
-
-    dbpool = psycopg2.pool.ThreadedConnectionPool(
-        int(pool_size/100),   # Minimum connections
-        pool_size,            # Maximum connections
-        dsn="%s application_name=runner-pool" % (dsn))
+    # Pool of database connections for use by the threads.
+    dbpool = DBConnectionPool(dsn, pool_size, name='runner', log_callback=log.warning)
 
 
     # Listen for notifications.
@@ -812,19 +902,20 @@ def main_program():
     wait_time = datetime.timedelta()
     run_start_margin_set(db)
 
-
-    workers = pscheduler.ThreadSafeSet()
     worker_threads = {}
 
     while True:
 
         # Purge any workers that are no longer running
-        for remove in [ worker_id for worker_id in worker_threads if worker_id not in workers ]:
+        for remove in [worker_id for worker_id in worker_threads
+                       if worker_threads[worker_id].is_complete()]:
             log.debug("Purging completed thread %d", remove)
             del worker_threads[remove]
 
-        log.debug("Next run or check in %s", wait_time)
         if not pscheduler.timedelta_is_zero(wait_time):
+
+            # Before waiting is a good time to skim the database pool.
+            dbpool.skim()
 
             # Wait for a notification or the wait time to elapse.  Eat all
             # notifications as a group; we only care that we were notified.
@@ -835,6 +926,7 @@ def main_program():
             with db.cursor() as cursor:
                 cursor.execute("SELECT heartbeat('runner', %s)", [wait_time])
 
+            log.debug("Next run or check in %s", wait_time)
             try:
                 if db.notifies or pscheduler.polled_select(
                         [db],[],[],
@@ -919,7 +1011,7 @@ def main_program():
 
                 run_id, start_in, start_at, background_multi = row
 
-                if run_id in workers:
+                if run_id in worker_threads:
                     log.debug("%d is already running" % (run_id))
                     continue
 
@@ -928,8 +1020,7 @@ def main_program():
                 run_ids.append(run_id)
 
                 try:
-                    workers.add(run_id)
-                    worker_threads[run_id] = RunWorker(dbpool, log, run_id, start_at, workers)
+                    worker_threads[run_id] = RunWorker(dbpool, log, run_id, start_at)
                     runs_started = True
                     if not background_multi and start_in < wait_time:
                         log.debug("Dropping wait time to %s", start_in)
@@ -962,6 +1053,7 @@ def main_program():
                                        AND state = run_state_pending()
                                    """, (tuple(run_ids),))
                 except Exception as ex:
+                    log.exception()
                     log.error("Unable to set on-deck status: %s" % (str(ex)))
 
 
