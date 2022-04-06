@@ -1,0 +1,17 @@
+Source: pscheduler-test-mtu
+Section: net
+Priority: optional
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.8
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-test-mtu
+Architecture: all
+Depends: ${misc:Depends}, python3, python3-pscheduler,
+ pscheduler-server
+Description: pScheduler mtu test
+ mtu test class for pScheduler

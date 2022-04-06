@@ -83,7 +83,7 @@ AS
         SELECT
             task.id AS task,
 	    task.uuid,
-	    task.json ->> '_key' AS key,
+	    participant_key AS key,
             task.enabled,
             task.added,
             task.duration,
@@ -95,7 +95,8 @@ AS
 	    task.participant,
             test.scheduling_class,
 	    task.json,
-	    task.participants
+	    task.participants,
+	    task.json -> 'debug' AS debug
         FROM
             task
             JOIN test ON test.id = task.test
@@ -111,7 +112,7 @@ AS
         SELECT
             task.id AS task,
             task.uuid,
-	    task.json ->> '_key' AS key,
+	    participant_key AS key,
             task.enabled,
             task.added,
             task.duration,
@@ -123,7 +124,8 @@ AS
             task.participant,
             test.scheduling_class,
 	    task.json,
-	    task.participants
+	    task.participants,
+	    task.json -> 'debug' AS debug
         FROM
             task
             JOIN test on test.id = task.test
@@ -139,7 +141,7 @@ AS
         SELECT
             task.id AS task,
             task.uuid,
-	    task.json ->> '_key' AS key,
+	    participant_key AS key,
             task.enabled,
             task.added,
             duration,
@@ -153,7 +155,8 @@ AS
             task.participant,
             (SELECT scheduling_class FROM test WHERE test.id = task.test) AS scheduling_class,
 	    task.json,
-	    task.participants
+	    task.participants,
+	    task.json -> 'debug' AS debug
        FROM
             task
 	    JOIN run_latest ON run_latest.task = task.id
@@ -169,7 +172,7 @@ AS
         SELECT
             task.id AS task,
             task.uuid,
-	    task.json ->> '_key' AS key,
+	    participant_key AS key,
             task.enabled,
             task.added,
             duration,
@@ -188,7 +191,8 @@ AS
             task.participant,
             (SELECT scheduling_class FROM test WHERE test.id = task.test) AS scheduling_class,
 	    task.json,
-	    task.participants
+	    task.participants,
+	    task.json -> 'debug' AS debug
        FROM
             task
         WHERE
@@ -205,7 +209,8 @@ AS
 	slip,
 	scheduling_class.anytime,
 	json,
-	participants
+	participants,
+	debug
     FROM
         interim
         JOIN scheduling_class

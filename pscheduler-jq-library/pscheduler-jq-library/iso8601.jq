@@ -54,5 +54,6 @@ def timestamp_parsed(timestamp):
   | if .z != null then .offset_min = "0" else . end
   | del(.z)
   | with_entries(select(.value != null ))
+  | with_entries(.value = (.value | tonumber))
   | .
   ;

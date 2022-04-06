@@ -328,6 +328,29 @@ BEGIN
     END IF;
 
 
+    -- Version 14 to version 15
+    -- Adds participant_key column
+    IF t_version = 14
+    THEN
+
+	-- Key to be used when tasking second participants when none
+	-- was specified in the task.
+	ALTER TABLE task ADD COLUMN
+	participant_key TEXT;
+
+        t_version := t_version + 1;
+    END IF;
+
+
+    -- Version 15 to version 16
+    -- Drops limits_passed column
+    IF t_version = 15
+    THEN
+	ALTER TABLE task DROP COLUMN limits_passed;
+
+        t_version := t_version + 1;
+    END IF;
+
     --
     -- Cleanup
     --
@@ -453,11 +476,26 @@ BEGIN
             END IF;
         END IF;
 
+
+        --
+        -- Key for second and later participants.  Use the one
+        -- provided in the task if that exists.
+        --
+
+	IF TG_OP = 'INSERT' AND NEW.nparticipants > 1 AND new.participant = 0 THEN
+            -- Create a key only if one wasn't provided.
+            IF NEW.json ? '_key' THEN
+	      NEW.participant_key := NEW.json ->> '_key';
+	    ELSE
+	      NEW.participant_key := random_string(64, TRUE, TRUE);
+	    END IF;
+        ELSIF TG_OP = 'UPDATE' AND NEW.participant_key <> OLD.participant_key THEN
+            RAISE EXCEPTION 'Participant key cannot be updated.';
+        END IF;
+
 	--
 	-- TOOL
 	--
-
-	-- TODO: Validate tool name
 
 	tool_type := NEW.json #>> '{tool}';
 	IF tool_type IS NULL THEN
@@ -687,9 +725,6 @@ BEGIN
                 'null'::JSONB);
         END IF;
 
-	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,spec-limits-passed}',
-	    to_jsonb(NEW.limits_passed));
-
         IF NEW.start IS NOT NULL
         THEN
 	    NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,start}',
@@ -863,33 +898,38 @@ CREATE OR REPLACE FUNCTION api_task_post(
     task_package JSONB,
     participant_list TEXT[],
     hints JSONB,
-    limits_passed JSON = '[]',
     participant INTEGER DEFAULT 0,
     priority INTEGER DEFAULT NULL,
     task_uuid UUID = NULL,
     enabled BOOLEAN = TRUE,
     diags TEXT = '(None)'
 )
-RETURNS UUID
+RETURNS TABLE(
+  uuid UUID,
+  participant_key TEXT
+)
 AS $$
 DECLARE
     inserted RECORD;
 BEGIN
 
-   IF EXISTS (SELECT * FROM task WHERE uuid = task_uuid)
+   IF EXISTS (SELECT * FROM task WHERE task.uuid = task_uuid)
    THEN
        RAISE EXCEPTION 'Task already exists.  All participants must be on separate systems.';
    END IF;
 
    WITH inserted_row AS (
-        INSERT INTO task(json, participants, limits_passed, participant,
+        INSERT INTO task(json, participants, participant,
 	                 priority, uuid, hints, enabled, diags)
-        VALUES (task_package, array_to_json(participant_list), limits_passed,
+        VALUES (task_package, array_to_json(participant_list),
 	        participant, priority, task_uuid, hints, enabled, diags)
         RETURNING *
     ) SELECT INTO inserted * from inserted_row;
 
-    RETURN inserted.uuid;
+    uuid := inserted.uuid;
+    participant_key := inserted.participant_key;
+
+    RETURN NEXT;
 
 END;
 $$ LANGUAGE plpgsql;
@@ -980,13 +1020,16 @@ BEGIN
 	    bind := NULL;
 	END IF;
 
-	-- If this task has a key, append that to the URL.
-        IF taskrec.json ? '_key'
+	-- If this task has a key, use that for the participant key or
+	-- generate one.
+
+        IF taskrec.participant_key IS NOT NULL
 	THEN
-            task_url_append := '?key=' || uri_encode(taskrec.json ->> '_key');
+	    task_url_append := '?key=' || uri_encode(taskrec.participant_key);
 	ELSE
 	    task_url_append := '';
 	END IF;
+
 
         FOR host IN (SELECT jsonb_array_elements_text(taskrec.participants)
                      FROM task WHERE uuid = task_uuid OFFSET 1)

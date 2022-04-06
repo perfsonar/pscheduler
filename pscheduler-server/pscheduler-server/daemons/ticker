@@ -73,7 +73,7 @@ def http_queue_maintainer(log):
 
     with conn as db:
         with db.cursor() as cursor:
-            # Don't catch anything here so safe_run can catch it.
+            # Don't catch anything here; if it dies, it dies.
             cursor.execute("LISTEN run_change")
             log.debug("QM: Listening")
 
@@ -164,9 +164,9 @@ def main_program():
     db.close()
 
 
-if options.daemon:
-    pidfile = pscheduler.PidFile(options.pidfile)
-    with daemon.DaemonContext(pidfile=pidfile):
-        pscheduler.safe_run(lambda: main_program())
-else:
-    pscheduler.safe_run(lambda: main_program())
+with pscheduler.PidFile(options.pidfile) as pidfile:
+    if options.daemon:
+        with daemon.DaemonContext(pidfile=pidfile):
+            main_program()
+    else:
+        main_program()

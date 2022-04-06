@@ -14,6 +14,7 @@ import pytz
 import shutil
 import sys
 import tempfile
+import urllib.parse
 
 
 pscheduler.set_graceful_exit()
@@ -188,15 +189,14 @@ else:
     pscheduler.fail(usage)
 
 
-#
 # Find the server's time zone and convert all times to that.
-#
 
 status, clock = pscheduler.url_get(
     pscheduler.api_url(host=options.host, path="clock"),
     bind=options.bind,
     throw = False
     )
+
 
 if status != 200:
     pscheduler.fail("Failed to get server's clock:  %d: %s" % (status, clock))
@@ -215,6 +215,48 @@ server_timezone = server_time.tzinfo
 # pylint: disable=maybe-no-member
 start = start.astimezone(server_timezone)
 end = end.astimezone(server_timezone)
+
+#
+# If the server is API 5 or higher, let it do the work.
+#
+status, api = pscheduler.url_get(
+    pscheduler.api_url(host=options.host, path="api"),
+    bind=options.bind,
+    throw = False
+    )
+
+if status != 200:
+    pscheduler.fail("Failed to get server's API level:  %d: %s" % (status, api))
+
+try:
+    api_level = int(api)
+except ValueError:
+    pscheduler.fail("Server returned a malformed API level.")
+
+if api_level >= 5:
+
+    schedule_url = pscheduler.api_url(host=options.host or None, path="/schedule")
+    query = urllib.parse.urlencode({
+        "start": start.isoformat(),
+        "end": end.isoformat(),
+        "format": "png"
+    })
+    curl_args = [ "curl", "-s", "-k", "-A", "pScheduler plot-schedule" ]
+    if options.bind is not None:
+        curl_args.extend(["--interface", options.bind])
+    curl_args.append("{}?{}".format(schedule_url, query))
+
+    #print(curl_args)
+    os.execvp(curl_args[0], curl_args)
+    #pscheduler.fail("Not implemented yet.")
+    #exit(99)
+
+
+#
+# Locally-generated graph for older servers
+#
+
+# TODO: This can be removed once 4.3.x is no longer supported.
 
 
 #
@@ -247,6 +289,8 @@ class_levels = {
     "preempted": 6
 }
 
+# TODO: These could be pulled from the database, but there would need
+# to be an API endpoint for it.
 columns = [
     "\\n",
     "\\nExclusive",

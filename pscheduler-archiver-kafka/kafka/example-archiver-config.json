@@ -1,0 +1,16 @@
+{
+    "archiver": "kafka",
+    "data": {
+        "schema": 2,
+        "topic": "pscheduler",
+        "server": "host:port",
+        "security-protocol": "SSL",
+        "_ssl-ca": "pem cacert contents",
+        "_ssl-key": "pem privatekeycontents",
+        "_ssl-cert": "pem cert contents",
+        "_ssl-password": "password",
+        "ssl-checkhostname": false,
+        "archiver-id": "pscheduler-kafka-archiver",
+        "kafka-retries": 3
+    }
+}

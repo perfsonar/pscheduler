@@ -59,6 +59,8 @@ def result_is_valid(json):
         "properties": {
             "schema":     { "$ref": "#/pScheduler/Cardinal" },
             "succeeded":  { "$ref": "#/pScheduler/Boolean" },
+	    "error":      { "$ref": "#/pScheduler/String" },
+	    "diags":      { "$ref": "#/pScheduler/String" },
 	    "loops":       { "$ref": "#/pScheduler/String" },
 	    "average_put_time": { "$ref": "#/pScheduler/Float" },
 	    "average_get_time": { "$ref": "#/pScheduler/Float" },

@@ -11,9 +11,9 @@ from validate import spec_is_valid
 
 
 try:
-   format = sys.argv[1]
+    format = sys.argv[1]
 except IndexError:
-   format = 'text/plain'
+    format = 'text/plain'
 
 
 json = pscheduler.json_load(exit_on_error=True)
@@ -23,37 +23,49 @@ valid, message = spec_is_valid(json)
 if not valid:
     pscheduler.fail(message)
 
+
 if format == 'text/plain':
 
-    template = """
-Host ...................... {.section host}{host}{.or}Not Specified{.end}
-Host Node ................. {.section host-node}{host_node}{.or}Not Specified{.end}
-Timeout ................... {.section timeout}{timeout}{.or}Not Specified{.end}
-IP Version................. {.section ip-version}{ip-version}{.or}Not Specified{.end}
-URL ....................... {.section url}{url}{.or}Not Specified{.end}
-Parse ..................... {.section parse}{parse}{.or}Not Specified{.end}
-Always Succeed ............ {.section always-succeed}%s{.or}Not Specified{.end}
-Keep Content .............. {.section success-content}%s Bytes{.or}Not Specified{.end}
-""" % ("True", "True")
+    print(jsontemplate.expand("""
+Host ............. {.section host}{host}{.or}Not Specified{.end}
+Host Node ........ {.section host-node}{host_node}{.or}Not Specified{.end}
+Timeout .......... {.section timeout}{timeout}{.or}Not Specified{.end}
+IP Version ....... {.section ip-version}{ip-version}{.or}Not Specified{.end}
+URL .............. {.section url}{url}{.or}Not Specified{.end}""", json).strip())
+
+    if 'headers' in json:
+        print('Headers:')
+        print("\n".join([ "    %s: %s" % (header, value) for (header, value) in json['headers'].items() ]))
+
+    print(jsontemplate.expand("""
+Parse ............ {.section parse}{parse}{.or}Not Specified{.end}
+Always Succeed ... {.section always-succeed}%s{.or}Not Specified{.end}
+Keep Content ..... {.section keep-content}%d Bytes{.or}Not Specified{.end}
+    """ % ("True", json.get("keep-content")), json).strip())
+
 
 elif format == 'text/html':
 
-   template = """
+    print(jsontemplate.expand("""
 <table>
 <tr><td>Host</td><td>{.section host}{host}{.or}Not Specified{.end}</td></tr>
 <tr><td>Host Node</td><td>{.section host-node}{host_node}{.or}Not Specified{.end}</td></tr>
 <tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
 <tr><td>IP Version</td><td>{.section ip-version}{ip-version}{.or}Not Specified{.end}</td></tr>
 <tr><td>URL</td><td>{.section url}{url}{.or}Not Specified{.end}</td></tr>
+""", json).strip())
+
+    if 'headers' in json:
+        print('<tr><td>Headers</td><td>')
+        print("</br>".join([ "<tt>%s: %s</tt>" % (header, value) for (header, value) in json['headers'].items() ]))
+        print("</td></tr>")
+
+    print(jsontemplate.expand("""
 <tr><td>Parse</td><td>{.section parse}{parse}{.or}Not Specified{.end}</td></tr>
 <tr><td>Always Succeed</td><td>{.section always-succeed}%s{.or}Not Specified{.end}</td></tr>
 <tr><td>Keep Content</td><td>{.section always-succeed}%s Bytes{.or}Not Specified{.end}</td></tr>
-</table>
-""" % ("True", "True")
+</table>""" % ("True", "True"), json).strip())
+
 else:
 
-   pscheduler.fail("Unsupported format '%s'" % format)
-
-
-# TODO: Should probably handle exceptions in a nicer way.
-print(jsontemplate.expand(template, json).strip())
+    pscheduler.fail("Unsupported format '%s'" % format)

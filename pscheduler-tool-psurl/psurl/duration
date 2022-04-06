@@ -1,25 +1,4 @@
-#!/usr/bin/env python3
-#
-# Determine the duration of a specified test.
-#
-#
-# TODO: This is a bare-bones, unreliable implementation that should be
-# used only for testing.
-#
-
-
-import datetime
-
-import pscheduler
-
-json = pscheduler.json_load(exit_on_error=True);
-
-        
-timeout_iso = json.get("timeout", "PT5S")
-timeout = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(timeout_iso))
-timeout += 2
-timeout = pscheduler.seconds_as_timedelta(timeout)
-
-pscheduler.succeed_json({
-    "duration": pscheduler.timedelta_as_iso8601( timeout )
-    })
+#!/bin/sed -e 1d
+{
+  "duration": "P0D"
+}

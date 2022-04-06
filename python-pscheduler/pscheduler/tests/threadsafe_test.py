@@ -7,26 +7,46 @@ import unittest
 
 from base_test import PschedTestBase
 
-from pscheduler.threadsafe import ThreadSafeDictionary
-
+from pscheduler.threadsafe import ThreadSafeSet
+from pscheduler.threadsafe import ThreadWithReturnValue
 
 class TestThreadsafe(PschedTestBase):
     """
     Threadsafe tests.
     """
 
-    def test_safe_dict(self):
-        """Thread safe dict test"""
-        tsd = ThreadSafeDictionary()
-        tsd['foo'] = 'bar'
-        tsd['num'] = 1
+    def test_safe_set(self):
+        """Thread safe set test"""
+        tss = ThreadSafeSet()
 
-        # no use working every __ method but hit a few to get that class
-        # into the tests.
-        self.assertEqual(tsd.get('foo'), 'bar')
-        self.assertTrue(2 > tsd.get('num'))
-        self.assertTrue(0 < tsd.get('num'))
-        self.assertTrue(1 == tsd.get('num'))
+        num = 10
+        half = int(num / 2)
+
+        self.assertEqual(len(tss),0)
+
+        for item in range(0,num):
+            tss.add(item)
+            self.assertTrue(item in tss)
+        self.assertEqual(len(tss), num)
+
+        for item in range(0,half):
+            tss.remove(item)
+            self.assertTrue(item not in tss)
+        self.assertEqual(len(tss),num - half)
+
+        self.assertEqual(tss.items(),list(range(half, num)))
+
+
+    def test_thread_with_return_value(self):
+        """Test ThreadWithReturnValue"""
+
+        def func():
+            return "returned-value"
+
+        thread = ThreadWithReturnValue(target=func)
+        thread.start()
+        self.assertEqual(thread.join(), "returned-value")
+
 
 
 if __name__ == '__main__':

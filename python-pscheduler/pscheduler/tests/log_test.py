@@ -34,6 +34,7 @@ class TestLog(PschedTestBase):
             log.exception("Test exception with message")
 
         for num in range(1, 5):
+            log.debug_always("Debug Always")
             log.debug("Debug")
             log.info("Info")
             log.warning("Warning")

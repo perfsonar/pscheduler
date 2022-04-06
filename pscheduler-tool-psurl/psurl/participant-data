@@ -1,13 +1,5 @@
-#!/usr/bin/env python3
-#
-# Return participant-specific data for a run
-#
-
-import pscheduler
-
-json = pscheduler.json_load(exit_on_error=True)
-
-# In this case, nothing of interest.
-print("{}")
-
-pscheduler.succeed()
+#!/bin/sed -e 1d
+{
+  "succeeded": false,
+  "error": "Support for this tool has been discontinued."
+}

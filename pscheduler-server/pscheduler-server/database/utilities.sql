@@ -60,10 +60,6 @@ timestamp_with_time_zone_to_iso8601(
 )
 RETURNS TEXT
 AS $$
-DECLARE
-        hours INTEGER;
-        minutes INTEGER;
-	converted TEXT;
 BEGIN
 
     IF value IS NULL
@@ -71,23 +67,8 @@ BEGIN
         RETURN NULL;
     END IF;
 
-    converted := to_char(value, 'YYYY-MM-DD"T"HH24:MI:SS');
+    return to_json(date_trunc('seconds', value)) #>> '{}';
 
-    hours := extract(timezone_hour from value);
-    IF hours <> 0
-    THEN
-        converted := converted || trim(to_char(hours, 'MIPL'));
-        converted := converted || trim(to_char(abs(hours), '00'));
-        minutes := extract(timezone_minutes from value);
-        IF MINUTES <> 0
-        THEN
-            converted := converted || ':' || trim(to_char(minutes, '00'));
-        END IF;
-    ELSE
-        converted := converted || 'Z';
-    END IF;
-
-    RETURN converted;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -419,6 +400,43 @@ BEGIN
   ELSE
     RETURN input;
   END IF;
+END;
+$$
+;
+
+
+
+-- Generate a random string
+
+DO $$ BEGIN PERFORM drop_function_all('random_string'); END $$;
+
+CREATE OR REPLACE FUNCTION random_string(
+  len INTEGER,                         -- String length
+  alphanumeric BOOLEAN DEFAULT FALSE,  -- Alphanumeric only
+  random_len BOOLEAN DEFAULT FALSE     -- Make length random between len/2 and len
+)
+  RETURNS text
+  LANGUAGE plpgsql
+  IMMUTABLE STRICT
+AS $$
+DECLARE
+  charset TEXT;
+BEGIN
+
+  charset := 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  IF NOT alphanumeric THEN
+    charset := CONCAT(charset, '!"#$%&''()*+,-./:;<=>?@[\]^_`{|}~');
+  END IF;
+
+  IF random_len THEN
+     -- Chop off up to half of the length
+     len := (len - (random() * (len / 2)))::integer;
+  END IF;
+
+  RETURN array_to_string(array(
+    SELECT SUBSTR(charset, ((random()*(LENGTH(charset)-1)+1)::integer), 1)
+    FROM generate_series(1,len)), '');
+
 END;
 $$
 ;

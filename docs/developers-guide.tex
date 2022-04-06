@@ -543,45 +543,6 @@ problem unrelated to the input.
 
 
 
-\subsubsection{limit-passes}
-
-This method checks to see if a test specification falls within the
-restrictions of a limit.
-
-\calloutitem{Arguments} None
-
-\calloutitem{Standard Input} A JSON object containing the following
-pairs:
-
-\begin{itemize}
-\item \typeditem{spec}{AnyJSON} The specification of the test parameters.
-This must be valid for the current test type.
-
-\item \typeditem{limit}{AnyJSON} The limit to be checked.  This must be
-valid for the current test type.
-
-\end{itemize}
-
-
-\calloutitem{Standard Output} A JSON object containing the following pairs:
-
-\begin{itemize}
-\item \typeditem{passed}{Boolean} An indication of whether or not the
-  test was within the limit's constraints.
-
-\item \typeditem{errors}{Array} if {\tt valid} was \false, an array of
-  strings containing text messages enumerating the reasons for the
-  failure.
-\end{itemize}
-
-\calloutitem{Standard Error} Empty if successful, plain text error
-messages on error.
-
-\calloutitem{Exit Status} {\tt 0} on success, {\tt 1} if there was a
-problem unrelated to the input.
-
-
-
 %
 % TOOL
 %
@@ -748,16 +709,14 @@ the method runs the test, produces the output described below and exits.
 
 When the scheduling class is {\tt background}, the method will produce
 multiple results until its time to run (duration) has expired.  Each
-result will be in the format described below followed by the delimiter
-string ``{\tt ---- pScheduler End Result ----}'' (four hyphens and a
-space on either end) placed on its own line.  The {\tt
-  api_result_delimiter()} function in the {\tt pscheduler} Python
-module makes this value available to programs.  It is recommended that
-programs implementing this method for background tests not buffer
-their output or make sure to flush it after writing the delimiter.
-Once the run is complete, the method should exit without producing any
-output.  Errors may be generated in the same way as for non-background
-tasks.
+result will be JSON in RFC 7464 format (beginning with a ``{\tt RS}''
+character and ending with a newline).  It is recommended that programs
+implementing this method for background tests use the {\tt
+  RFC7464Emitter} class in the pScheduler library and not buffer their
+output or make sure to flush it after writing the delimiter.  Once the
+run is complete, the method should exit without producing any
+additional output.  Errors may be generated in the same way as for
+non-background tasks.
 
 
 \todo{Could use some examples.}

@@ -3,13 +3,22 @@
 # Return participant-specific data for a run
 #
 
+import hashlib
 import pscheduler
 import sys
 import iperf3_utils
+
 from iperf3_defaults import *
 
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.backends import default_backend
+
+
 json = pscheduler.json_load(exit_on_error=True)
-result = {}
+result = {
+    "schema": 2
+}
 
 try:
     participant = json['participant']
@@ -18,15 +27,65 @@ except KeyError:
 
 config = iperf3_utils.get_config()
 
-# Nothing else interesting for sender
 if participant == 0:    
+
+    # Note that the schema is used as a hint that authorization can
+    # happen.  If 1 or not present, it means the data was produced by
+    # an older system that doesn't do it.
+
     pass
-# Receiver has to figure out what port it's going
-# to listen on, client will need this to figure out
-# where to connect
+
 elif participant == 1:
+
+    # Server's listening port
     result["server_port"] = config["server_port"]
+
+    # Authorization data.
+
+    keypair = rsa.generate_private_key(
+        backend=default_backend(),
+        public_exponent=65537,
+        key_size=2048
+    )
+
+    # RSA private key in PEM container format
+    private_key = keypair.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.TraditionalOpenSSL,
+        #format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+
+    # RSA public key in X.509 format
+    public_key = keypair.public_key().public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+
+
+    # Longest username and password iperf3 will take
+    IPERF3_LONG_STRING = 20
+
+    username = pscheduler.random_string(IPERF3_LONG_STRING, safe=True)
+    password = pscheduler.random_string(IPERF3_LONG_STRING)
+
+    # Credentials get a hash of {USERNAME}PASSWORD (braces literal)
+    password_pair = "{{{}}}{}".format(username, password)
+    password_hash = hashlib.sha256(password_pair.encode('utf-8')).hexdigest()
+
+    # TODO: This needs to be pre-underscored
+    result["_auth"] = {
+        "private": private_key.decode("utf-8"),
+        "public": public_key.decode("utf-8"),
+        "username": username,
+        "password": password,
+        "credentials": "{},{}\n".format(username, password_hash)
+    }
+
+
 else:
+
     pscheduler.fail("Invalid participant number for this test")
+
 
 pscheduler.succeed_json(result)

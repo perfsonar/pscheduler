@@ -1,0 +1,321 @@
+python-amqp (5.0.6-1~bpo90+1) perfsonar-4.4-staging; urgency=low
+
+  * Backport to Debian 9, Ubuntu 16 & 18
+  * Lower debhelper version to 9.
+  * Removal of python-amqp-doc package.
+  * Removal of unittests.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 02 Jun 2021 15:22:39 +0000
+
+python-amqp (5.0.3-3) unstable; urgency=medium
+
+  [ Debian Janitor ]
+  * Apply multi-arch hints.
+    + python-amqp-doc: Add Multi-Arch: foreign.
+
+  [ Thomas Goirand ]
+  * New upstream point release.
+  * Refresh patches.
+
+ -- Thomas Goirand <zigo@debian.org>  Fri, 22 Jan 2021 17:12:54 +0100
+
+python-amqp (5.0.1-1) unstable; urgency=medium
+
+  * Team upload.
+
+  [ Thomas Goirand ]
+  * New upstream release.
+  * Add a debian/salsa-ci.yml.
+
+  [ Nicolas Dandrimont ]
+  * Mark import autopkgtest as superficial.
+  * Drop unused upstream signing key (Closes: #925389).
+
+ -- Nicolas Dandrimont <olasd@debian.org>  Sat, 17 Oct 2020 00:44:17 +0200
+
+python-amqp (2.6.1-1) unstable; urgency=low
+
+  [ Debian Janitor ]
+  * Set upstream metadata fields: Bug-Database, Bug-Submit, Repository,
+    Repository-Browse.
+
+  [ Ondřej Nový ]
+  * d/control: Update Maintainer field with new Debian Python Team
+    contact address.
+  * d/control: Update Vcs-* fields with new Debian Python Team Salsa
+    layout.
+
+  [ Thomas Goirand ]
+  * New upstream release.
+
+ -- Thomas Goirand <zigo@debian.org>  Tue, 13 Oct 2020 14:51:57 +0200
+
+python-amqp (2.6.0-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream version 2.6.0
+  * Bump Standards-Version to 4.5.0.
+
+ -- Sergio Durigan Junior <sergiodj@debian.org>  Sun, 14 Jun 2020 23:45:22 -0400
+
+python-amqp (2.5.2-1) unstable; urgency=low
+
+  * New upstream release.
+  * Refresh patches.
+  * Clean up .pytest_cache/CACHEDIR.TAG to allow two builds in a row.
+  * Bump Standards-Version to 4.4.1.
+  * Set Rules-Requires-Root: no.
+  * Use SOURCE_DATE_EPOCH instead of parsing d/changelog.
+  * Fix typo in patch.
+
+ -- Michael Fladischer <fladi@debian.org>  Mon, 16 Dec 2019 20:33:18 +0100
+
+python-amqp (2.5.0-2) unstable; urgency=medium
+
+  * Team upload.
+  * Don't try to run autopkgtests on Python 2.
+
+ -- Andrey Rahmatullin <wrar@debian.org>  Wed, 07 Aug 2019 23:42:36 +0500
+
+python-amqp (2.5.0-1) unstable; urgency=low
+
+  [ Ondřej Nový ]
+  * Use debhelper-compat instead of debian/compat.
+  * Bump Standards-Version to 4.4.0.
+
+  [ Michael Fladischer ]
+  * New upstream release.
+  * Add debian/gbp.conf.
+  * Disable PGP signature check in uscan as upstream is not providing a
+    signature for current releases.
+  * Refresh patches.
+  * Bump debhelper version to 12.
+  * Clean up pytest artifacts to allow two builds in a row.
+  * Fix typo in patch.
+
+ -- Michael Fladischer <fladi@debian.org>  Thu, 25 Jul 2019 09:11:38 +0200
+
+python-amqp (2.4.2-2) unstable; urgency=medium
+
+  * Uploading to unstable.
+
+ -- Thomas Goirand <zigo@debian.org>  Wed, 17 Jul 2019 01:32:00 +0200
+
+python-amqp (2.4.2-1) experimental; urgency=medium
+
+  * New upstream release.
+  * Refresh 0010-remove-broken-test.patch.
+  * Removed Python 2 support.
+  * Do not run integration tests.
+
+ -- Thomas Goirand <zigo@debian.org>  Wed, 20 Mar 2019 22:00:34 +0100
+
+python-amqp (2.4.0-1) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * Use 'python3 -m sphinx' instead of sphinx-build for building docs
+
+  [ Thomas Goirand ]
+  * New upstream release, working with OpenSSL 1.1.1.
+  * Add 0010-remove-broken-test.patch.
+
+ -- Thomas Goirand <zigo@debian.org>  Tue, 22 Jan 2019 14:29:00 +0000
+
+python-amqp (2.3.2-1) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * d/control: Set Vcs-* to salsa.debian.org
+  * d/changelog: Remove trailing whitespaces
+  * d/tests: Use AUTOPKGTEST_TMP instead of ADTTMP
+
+  [ Thomas Goirand ]
+  * Removed debian/gbp.conf, not needed, inducing gbp in wrong branch.
+  * New upstream release.
+
+ -- Thomas Goirand <zigo@debian.org>  Sun, 19 Aug 2018 21:48:17 +0000
+
+python-amqp (2.2.2-1) unstable; urgency=medium
+
+  * Uploading to unstable.
+  * Ran wrap-and-sort -bast to reduce diff size of future changes.
+  * Removed X-Python-Version: >= 2.5 and X-Python3-Version: >= 3.0, as these
+    versions are even satisfied in oldoldstable.
+  * Properly building docs from override_dh_sphinxdoc and respecting
+    DEB_BUILD_OPTIONS=nodoc, plus handling build profiles (also with nocheck).
+  * Building sphinx doc directly within the destination folder:
+    $(CURDIR)/debian/python-amqp-doc/usr/share/doc/python-amqp-doc/html
+
+ -- Thomas Goirand <zigo@debian.org>  Sat, 04 Nov 2017 20:57:21 +0000
+
+python-amqp (2.2.2-1~exp1) experimental; urgency=low
+
+  * New upstream release.
+  * Move upstream signing key to debian/upstream/signing-key.asc.
+  * Use https:// for uscan URL.
+  * Bump Standards-Version to 4.1.1.
+  * Raise minimum Python versions to 2.7 and 3.4.
+  * Remove trailing whitespaces from d/changelog.
+  * Replace Priority extra with optional as required by policy 4.0.1.
+  * Let /usr/share/dpkg/pkg-info.mk export SOURCE_DATE_EPOCH so sphinx
+    can pick it up directly.
+
+ -- Michael Fladischer <fladi@debian.org>  Wed, 01 Nov 2017 18:21:42 +0100
+
+python-amqp (2.2.1-1~exp1) experimental; urgency=low
+
+  * New upstream release.
+  * Add new upstream signing key.
+  * Add patch disabling intersphinx to prevent network requests during
+    build.
+  * Bump Standards-Version to 4.0.0.
+
+ -- Michael Fladischer <fladi@debian.org>  Sun, 30 Jul 2017 23:38:21 +0200
+
+python-amqp (2.1.4-1) experimental; urgency=medium
+
+  * Refresh patches after git-dpm to gbp pq conversion
+  * New upstream release (2.1.4)
+  * Remove patches no longer required
+  * Add .cache to debian/clean
+  * Add .egg-info to diff ignore
+  * Update build dependencies
+  * Use new tests
+  * Update debian/copyright (project license changed from LGPL-2.1+ to
+    BSD-3-clause)
+  * Add myself to uploaders
+  * Add patch to remove PayPal image URLs
+  * Set http(s) proxy to localhost during doc build
+
+ -- Christopher Hoskin <mans0954@debian.org>  Sun, 19 Mar 2017 11:18:39 +0000
+
+python-amqp (1.4.9-2) unstable; urgency=medium
+
+  * Team upload.
+  * Add pgpsigurlmangle to debian/watch
+  * Bump standards version 3.9.6 to 3.9.8 (no change required)
+  * Add basic autodep8 CI test
+  * Remove unnecessary version from dependency
+  * Use secure URL for debian/copyright format
+
+ -- Christopher Hoskin <mans0954@debian.org>  Sun, 19 Feb 2017 13:44:47 +0000
+
+python-amqp (1.4.9-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream release.
+
+ -- Brian May <bam@debian.org>  Mon, 18 Jan 2016 18:42:27 +1100
+
+python-amqp (1.4.8-1) unstable; urgency=low
+
+  * New upstream release.
+  * Replace broken git-dpm config.
+  * Enable more tests.
+
+ -- Michael Fladischer <fladi@debian.org>  Sat, 19 Dec 2015 18:25:57 +0100
+
+python-amqp (1.4.7-1) unstable; urgency=low
+
+  [ Michael Fladischer ]
+  * New upstream release.
+  * Drop dependency on sphinxcontrib.issuetracker.
+  * Remove github-hosted logo from documentation.
+  * Bump debhelper compatibility and version to 9.
+
+  [ Thomas Goirand ]
+  * Removes deprecation warning.
+  * Fixed Python 3 syntax error.
+
+  [ SVN-Git Migration ]
+  * Update Vcs fields for git migration.
+
+ -- Michael Fladischer <fladi@debian.org>  Sun, 11 Oct 2015 12:20:37 +0200
+
+python-amqp (1.4.6-3) unstable; urgency=low
+
+  * Allow for reproducible builds by setting a fixed date in the
+    documentation, thanks to Juan Picca for the patch (Closes: #788487).
+
+ -- Michael Fladischer <fladi@debian.org>  Sun, 02 Aug 2015 21:05:37 +0200
+
+python-amqp (1.4.6-2) unstable; urgency=medium
+
+  * Team upload.
+  * Fixed Python 3 syntax error preventing the python3-amqp package to be
+    installed.
+  * Added myself as uploader.
+
+ -- Thomas Goirand <zigo@debian.org>  Fri, 19 Jun 2015 08:47:11 +0000
+
+python-amqp (1.4.6-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Bump Standards-Version to 3.9.6.
+  * Add dh-python to Build-Depends.
+  * Switch buildsystem to pybuild.
+  * Remove PHONY target declarations from d/rules.
+  * Execute tests for Python 3.
+  * Add drop_issuetracker.patch to remove issuetracker dependency for
+    sphinx documentation.
+  * Drop python-sphinxcontrib.issuetracker from Build-Depends-Indep.
+  * Use pypi.debian.net service for uscan.
+  * Disable uscan PGP signature check as the latest upstream tarball was
+    released without a signature.
+  * Change my email address to fladi@debian.org.
+
+ -- Michael Fladischer <fladi@debian.org>  Tue, 19 May 2015 11:51:55 +0200
+
+python-amqp (1.4.5-2) unstable; urgency=medium
+
+  * Team upload.
+  * Removes the VDeprecationWarning which is flooding all nova services, thanks to
+    Bastian Blank for reporting (Closes: #774966).
+
+ -- Thomas Goirand <zigo@debian.org>  Sat, 17 Jan 2015 16:52:46 +0000
+
+python-amqp (1.4.5-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Michael Fladischer <FladischerMichael@fladi.at>  Wed, 23 Apr 2014 11:40:52 +0200
+
+python-amqp (1.4.4-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Check PGP signature on upstream tarball:
+    + Add signature URL to debian/watch.
+    + Include upstream public PGP key 030A2708.
+    + Allow debian/upstream-signing-key.pgp to be included as a binary.
+  * Update modified files to be cleaned up in debian/clean.
+  * Add patch to remove usage of github-hosted image in documentation.
+
+ -- Michael Fladischer <FladischerMichael@fladi.at>  Tue, 08 Apr 2014 21:25:31 +0200
+
+python-amqp (1.4.3-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Bump Standards version to 3.9.5.
+  * Make Build-Depends on python-all and python3-all unversioned as no
+    prior versions are available in Wheezy.
+
+ -- Michael Fladischer <FladischerMichael@fladi.at>  Tue, 11 Feb 2014 10:43:25 +0100
+
+python-amqp (1.3.3-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Michael Fladischer <FladischerMichael@fladi.at>  Wed, 11 Dec 2013 09:11:20 +0100
+
+python-amqp (1.0.13-1) unstable; urgency=low
+
+  * New upstream release.
+  * Enable basic message tests.
+  * Clean funtests/settings.pyc after each build.
+
+ -- Michael Fladischer <FladischerMichael@fladi.at>  Wed, 25 Sep 2013 11:24:32 +0200
+
+python-amqp (1.0.12-1) unstable; urgency=low
+
+  * Initial release (Closes: #712786).
+
+ -- Michael Fladischer <FladischerMichael@fladi.at>  Thu, 27 Jun 2013 15:12:51 +0200

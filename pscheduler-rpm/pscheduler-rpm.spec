@@ -2,7 +2,7 @@
 # RPM Spec for pScheduler RPM Macros
 #
 
-%define perfsonar_auto_version 4.3.5
+%define perfsonar_auto_version 5.0.0
 %define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-rpm
@@ -44,26 +44,24 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 # Python
 #
 
+# This is the version we like.
 %%_pscheduler_python_version_major 3
 %%_pscheduler_python_version_minor 6
 
-%if 0%{?el7}
 
+%if 0%{?el7}
 # EL7 supports 2, 34 and 36 and names its packages that way (e.g.,
 # python36-foo) and has some named python3-foo.
-
 %%_pscheduler_python python%{_pscheduler_python_version_major}
 %%_pscheduler_python_epel python%%{_pscheduler_python_version_major}%%{_pscheduler_python_version_minor}
-
 %endif
 
 %if 0%{?el8}
-
+# CentOS 8 and Oracle Linux 8
+# See https://yum.oracle.com/oracle-linux-python.html
 # EL8 standardized on just the major version, as did EPEL.
-
 %%_pscheduler_python python%%{_pscheduler_python_version_major}
 %%_pscheduler_python_epel %{_pscheduler_python}
-
 %endif
 
 
@@ -73,7 +71,7 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 
 # Minimum-required PostgreSQL version.  This is the one we build.
 %%_pscheduler_postgresql_version_major 10
-%%_pscheduler_postgresql_version_minor 13
+%%_pscheduler_postgresql_version_minor 17
 %%_pscheduler_postgresql_version %%{_pscheduler_postgresql_version_major}.%%{_pscheduler_postgresql_version_minor}
 %%_pscheduler_postgresql_package postgresql%%{_pscheduler_postgresql_version_major}
 %%_pscheduler_postgresql_service postgresql-%%{_pscheduler_postgresql_version_major}

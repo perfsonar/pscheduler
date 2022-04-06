@@ -1,0 +1,135 @@
+#  -*- Mode: rpm-spec; indent-tabs-mode: nil -*- */
+#  SPDX-License-Identifier: PostgreSQL
+#
+#  This file is part of PostgreSQL Global Development Group RPM Packages
+#
+#  Copyright 2019-2020 Devrim Gündüz <devrim@gunduz.org>
+
+# RPM macros for building PostgreSQL RPM Packages
+
+%pgbaseinstdir   /usr/pgsql-%{pgmajorversion}
+
+%pgdg_set_ppc64le_compiler_at10\
+%ifarch ppc64 ppc64le\
+# Define the AT version and path.  \
+%global atstring	at10.0 \
+%global atpath		/opt/%{atstring} \
+%endif\
+
+%pgdg_set_ppc64le_compiler_at11\
+%ifarch ppc64 ppc64le\
+# Define the AT version and path.  \
+%global atstring	at11.0 \
+%global atpath		/opt/%{atstring} \
+%endif\
+
+%pgdg_set_ppc64le_compiler_at12\
+%ifarch ppc64 ppc64le\
+# Define the AT version and path.  \
+%global atstring	at12.0 \
+%global atpath		/opt/%{atstring} \
+%endif\
+
+%pgdg_set_ppc64le_compiler_at13\
+%ifarch ppc64 ppc64le\
+# Define the AT version and path.  \
+%global atstring	at13.0 \
+%global atpath		/opt/%{atstring} \
+%endif\
+
+%pgdg_set_ppc64le_compiler_at14\
+%ifarch ppc64 ppc64le\
+# Define the AT version and path.  \
+%global atstring	at14.0 \
+%global atpath		/opt/%{atstring} \
+%endif\
+
+%pgdg_set_ppc64le_compiler_flags\
+	CFLAGS="${CFLAGS} $(echo %{__global_cflags} | sed 's/-O2/-O3/g') -m64 -mcpu=power8 -mtune=power8 -I%{atpath}/include"
+	CXXFLAGS="${CXXFLAGS} $(echo %{__global_cflags} | sed 's/-O2/-O3/g') -m64 -mcpu=power8 -mtune=power8 -I%{atpath}/include"
+	LDFLAGS="-L%{atpath}/%{_lib}"
+	CC=%{atpath}/bin/gcc; export CC
+	CXX=%{atpath}/bin/g++; export CXX
+\
+
+%pgdg_set_ppc64le_min_requires\
+AutoReq:	0
+Requires:	advance-toolchain-%{atstring}-runtime
+BuildRequires:	advance-toolchain-%{atstring}-devel
+\
+
+# PGDG Fedora Globals
+%pgdg_fedora_global_macros\
+%endif\
+
+# PGDG Python3 common macros
+# This is the list of contrib modules that will be compiled with PY3 as well:
+%python3_build_list hstore_plpython jsonb_plpython ltree_plpython
+
+%pgdg_plpython_version\
+%if 0%{?rhel} && 0%{?rhel} <= 6\
+# RHEL 6 does not have Python 3\
+%{!?plpython3:%global plpython3 0}\
+%endif\
+%if 0%{?fedora} && 0%{?fedora} > 27\
+# All Fedora releases use Python3\
+%{!?plpython3:%global plpython3 1}\
+%endif\
+%if 0%{?rhel} && 0%{?rhel} >= 7\
+# RHEL 7 and 8 use Python3\
+%{!?plpython3:%global plpython3 1}\
+%endif\
+
+# Macro for the dail snapshot packages
+%pgdg_build_timestamp %(date +"%Y%m%d")
+
+%pgdg_set_gis_variables() %{expand: \
+%global geosmajorversion	39
+%global gdalmajorversion	32
+%global libgeotiffmajorversion	16
+%global ogdimajorversion	41
+%global projmajorversion	80
+%global proj80majorversion	80
+%global proj72majorversion	72
+%global proj71majorversion	71
+%global proj70majorversion	70
+%global gdalinstdir		/usr/gdal%{gdalmajorversion}
+%global geosinstdir		/usr/geos%{geosmajorversion}
+%global libgeotiffinstdir	/usr/libgeotiff%{libgeotiffmajorversion}
+%global libspatialiteinstdir	/usr/libspatialite%{libspatialitemajorversion}
+%global ogdiinstdir		/usr/ogdi%{ogdimajorversion}
+%global projinstdir		/usr/proj%{projmajorversion}
+%global proj80instdir		/usr/proj%{proj80majorversion}
+%global proj72instdir		/usr/proj%{proj72majorversion}
+%global proj71instdir		/usr/proj%{proj71majorversion}
+%global proj70instdir		/usr/proj%{proj70majorversion}
+%global geosfullversion		3.9.1
+%global projfullversion		8.0.1
+%global gdalfullversion		3.2.3
+\
+}
+
+%pgdg_set_llvm_variables() %{expand: \
+%if 0%{?rhel} && 0%{?rhel} == 7
+%ifarch ppc64 ppc64le
+%global isllvm	0
+%else
+%global isllvm	1
+%endif
+%endif
+%if 0%{?rhel} && 0%{?rhel} == 6
+%global isllvm	0
+%endif
+%if 0%{?fedora} && 0%{?fedora} > 30
+%global isllvm	1
+%endif
+%if 0%{?rhel} && 0%{?rhel} >= 8
+%global isllvm	1
+%endif
+%if 0%{?suse_version}
+%if 0%{?suse_version} >= 1315
+%global isllvm	1
+%endif
+%endif
+\
+}

@@ -11,6 +11,7 @@ import re
 import shutil
 import sys
 import time
+import threading
 import nuttcp_parser
 import traceback
 import nuttcp_utils
@@ -35,16 +36,15 @@ try:
     participant_data = input['participant-data']
     test_spec = input['test']['spec']
     duration = pscheduler.iso8601_as_timedelta(input['schedule']['duration'])
-    limits_passed = input.get('limits-passed', [])
 except KeyError as ex:
     pscheduler.fail("Missing required key in run input: %s" % ex)
 except:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 
 single_ended = test_spec.get('single-ended', False)
-
+loopback = test_spec.get('loopback', False)
 participants = len(participant_data)
-if not(participants == 2 or (participants == 1 and single_ended)):
+if not(participants == 2 or (participants == 1 and (single_ended or loopback))):
     pscheduler.fail("nuttcp requires 1 or 2 participants, got %s" % (len(participant_data)))
 
 config = nuttcp_utils.get_config()
@@ -57,11 +57,15 @@ if single_ended:
     server_port = test_spec.get('single-ended-port', DEFAULT_SERVER_PORT)
     data_port_start = DEFAULT_DATA_PORT_START
 else:
-    server_port = participant_data[1]['server_port']
-    try:
-        data_port_start = participant_data[1]['data_port_start']
-    except KeyError:
+    if loopback:
+        server_port = DEFAULT_SERVER_PORT
         data_port_start = DEFAULT_DATA_PORT_START
+    else:
+        server_port = participant_data[1]['server_port']
+        try:
+            data_port_start = participant_data[1]['data_port_start']
+        except KeyError:
+            data_port_start = DEFAULT_DATA_PORT_START
 
 
 
@@ -122,53 +126,25 @@ def run_client():
 
 
     max_bandwidth = test_spec.get('bandwidth', 0)
-
-    # Find the largest bandwidth in each participant's passed
-    # limits and take the minimum of those values.  This will be
-    # the maximum bandwidth allowed by any participant.
-
-    logger.debug("Finding maximum bandwidth")
-
-    max_bandwidths = []
-
-    for passed_set in limits_passed:
-        set_max = -1
-        logger.debug("Limit set:")
-        for passed in passed_set:
-            try:
-                new_max = pscheduler.si_as_number(passed['bandwidth']['range']['upper'])
-                logger.debug("  Limit says %d", new_max)
-                set_max = max(set_max, new_max)
-            except KeyError:
-                logger.debug("  No upper bandwidth limit specified")
-                continue
-
-        if set_max > -1:
-            max_bandwidths.append(set_max)
-
-    if max_bandwidths:
-        specified_bandwidth = sorted(max_bandwidths)[0]
-        logger.debug("Limiting bandwidth to %d", max_bandwidth)
-
-
-    # By this point, max_bandwidth will be 0 if none was specified,
-    # something what was specified or somethig fished from the limits.
-    # Nuttcp takes it in Kbps by default and doesn't have a way to
-    # specify bps.
     nuttcp_bandwidth = max_bandwidth / 1000.0
+
+    # Nuttcp can exceed the bandwidth limit if a burst size is in
+    # effect, so don't honor burst size unless there's no bandwidth limit.
 
     if ('bandwidth-strict' in test_spec) or ('burst-size' in test_spec):
 
-        bandwidth_switch = '-Ri' + str(nuttcp_bandwidth)
-        if 'burst-size' in test_spec:
-            bandwidth_switch += '/{}'.format(test_spec['burst-size'])
-        nuttcp_args.append(bandwidth_switch)
+        if not max_bandwidth:
+            bandwidth_switch = '-Ri' + str(nuttcp_bandwidth)
+            if 'burst-size' in test_spec:
+                bandwidth_switch += '/{}'.format(test_spec['burst-size'])
+                nuttcp_args.append(bandwidth_switch)
+        else:
+            diags.append("Ignoring burst size in favor of bandwidth limit.")
+            nuttcp_args.append('-R{}'.format(str(nuttcp_bandwidth)))
 
     elif max_bandwidth:
 
         nuttcp_args.append('-R{}'.format(str(nuttcp_bandwidth)))
-
-
 
 
     if 'udp' in test_spec:
@@ -188,11 +164,24 @@ def run_client():
     if test_spec.get('reverse'):
         nuttcp_args.append('-F')
 
+    if test_spec.get('reverse-connections'):
+        nuttcp_args.append('-r')
+
     # who to connect to
     destination = test_spec['dest']
 
     affinity = test_spec.get('client-cpu-affinity')
-    if affinity is None:
+    if affinity is not None:
+        numa_ok, numa_diags = pscheduler.numa_cpu_core_ok(affinity)
+        if numa_ok:
+            logger.debug("Selected CPU affinity %s" % affinity)
+            nuttcp_args.insert(0, 'numactl')
+            nuttcp_args.insert(1, '-C')
+            nuttcp_args.insert(2, affinity)
+        else:
+            logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
+            diags.append("Unable to use NUMA for this test.  Disabling it.")
+    else:
         if source:
             interface = pscheduler.address_interface(source, ip_version=ip_version)
             if interface is not None:
@@ -202,16 +191,16 @@ def run_client():
             affinity = pscheduler.source_affinity(destination, ip_version=ip_version)
             logger.debug("Affinity (if any) will be based on destination")
 
-    if affinity is not None:
-        numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
-        if numa_ok:
-            logger.debug("Selected CPU affinity %s" % affinity)
-            nuttcp_args.insert(0, 'numactl')
-            nuttcp_args.insert(1, '-N')
-            nuttcp_args.insert(2, affinity)
-        else:
-            logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
-            diags.append("Unable to use NUMA for this test.  Disabling it.")
+        if affinity is not None:
+            numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
+            if numa_ok:
+                logger.debug("Selected CPU affinity %s" % affinity)
+                nuttcp_args.insert(0, 'numactl')
+                nuttcp_args.insert(1, '-N')
+                nuttcp_args.insert(2, affinity)
+            else:
+                logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
+                diags.append("Unable to use NUMA for this test.  Disabling it.")
 
     nuttcp_args.append(destination)
 
@@ -243,7 +232,7 @@ def run_client():
                                  "error": "The nuttcp command failed during execution. See server logs for more details."})
 
 
-    return _make_result(" ".join(nuttcp_args), status, stdout, stderr)
+    return _make_result(" ".join(nuttcp_args), diags, status, stdout, stderr)
 
 
 def run_server():
@@ -272,22 +261,33 @@ def run_server():
 
     # try to grab our default affinity if one wasn't passed in
     affinity = test_spec.get('server-cpu-affinity')
-    if affinity is None:
+    if affinity is not None:
+        numa_ok, numa_diags = pscheduler.numa_cpu_core_ok(affinity)
+        if numa_ok:
+            logger.debug("Selected CPU affinity %s" % affinity)
+            nuttcp_args.insert(0, 'numactl')
+            nuttcp_args.insert(1, '-C')
+            nuttcp_args.insert(2, affinity)
+        else:
+            logger.debug("NUMA doesn't work for destination.  Throwing caution to the wind.")
+            diags.append("Unable to use NUMA for this test.  Disabling it.")
+    else:        
         # look up what interface we're going to be receiving on        
         interface = pscheduler.address_interface(test_spec['dest'], ip_version=ip_version)
         if interface:
             affinity = pscheduler.interface_affinity(interface)
+            logger.debug("CPU affinity for interface is %s" % (affinity))
 
-    if affinity is not None:
-        numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
-        if numa_ok:
-            logger.debug("Selected CPU affinity %s" % affinity)
-            nuttcp_args.insert(0, 'numactl')
-            nuttcp_args.insert(1, '-N')
-            nuttcp_args.insert(2, affinity)
-        else:
-            logger.debug("NUMA doesn't work for source.  Throwing caution to the wind.")
-            diags.append("Unable to use NUMA for this test.  Disabling it.")
+            if affinity is not None:
+                numa_ok, numa_diags = pscheduler.numa_node_ok(affinity)
+                if numa_ok:
+                    logger.debug("Selected CPU affinity %s" % affinity)
+                    nuttcp_args.insert(0, 'numactl')
+                    nuttcp_args.insert(1, '-N')
+                    nuttcp_args.insert(2, affinity)
+                else:
+                    logger.debug("NUMA doesn't work for %s.  Throwing caution to the wind." % (interface))
+                    diags.append("Unable to use NUMA for %s.  Disabling it." % (interface))
 
     nuttcp_args = [str(x) for x in nuttcp_args]
     nuttcp_args_string = " ".join(nuttcp_args)
@@ -307,7 +307,7 @@ def run_server():
                                                         timeout = pscheduler.timedelta_as_seconds(duration - (datetime.datetime.now() - start_time)),
                                                         timeout_ok = True)
     except Exception as ex:
-        logger.error("nuttcp failed to complete execution: %s" % ex);
+        logger.error("nuttcp failed to complete execution: %s" % ex)
         pscheduler.succeed_json({"succeeded": False,
                                  "diags": "\n".join(diags),
                                  "error": "The nuttcp command failed during execution. See server logs for more details."})
@@ -315,11 +315,11 @@ def run_server():
 
     # in nuttcp, the client always reports the results even in reverse mode so 
     # we never need to parse the server's output
-    return _make_result(" ".join(nuttcp_args), status, stdout, stderr, parse=False)
+    return _make_result(" ".join(nuttcp_args), diags, status, stdout, stderr, parse=False)
 
 
 
-def _make_result(command_line, status, stdout, stderr, parse=True):
+def _make_result(command_line, diags, status, stdout, stderr, parse=True):
     logger.debug("Stdout = %s" % stdout)
     logger.debug("Stderr = %s" % stderr)
     
@@ -336,7 +336,9 @@ def _make_result(command_line, status, stdout, stderr, parse=True):
     else:
         results = { "succeeded": True }
 
-    results['diags'] = "%s\n\n%s\n%s" % (command_line, stdout, stderr)
+    diags_text = "%s\n\n" % ("\n".join(diags)) if diags else ""
+
+    results['diags'] = "%s%s\n\n%s\n%s" % (diags_text, command_line, stdout, stderr)
 
     return results
 
@@ -345,7 +347,13 @@ def _make_result(command_line, status, stdout, stderr, parse=True):
 results = {}
 try:
     if participant == 0:
-        results = run_client()
+        if loopback:
+            server_thread = threading.Thread(target=run_server)
+            server_thread.start()
+            results = run_client()
+            server_thread.join() #Wait until the server thread terminates
+        else:
+            results = run_client()
     elif participant == 1:
         results = run_server()
     else:
@@ -357,7 +365,7 @@ except Exception as ex:
     tb_lines = [ line.rstrip('\n') for line in
                  traceback.format_exception(ex.__class__, ex, ex_traceback)]
     logger.debug(tb_lines)
-    logger.error("Exception %s" % ex);
+    logger.error("Exception %s" % ex)
 
 logger.debug("Results: %s" % results)
 

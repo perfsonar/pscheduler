@@ -28,7 +28,7 @@ except KeyError:
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 3)
+    pscheduler.json_check_schema(spec, 4)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
@@ -41,12 +41,10 @@ except ValueError as ex:
     })
 
 
-# This tool runs the entire version 3 schema.
-
 errors = []
 
 source = spec.get("source-node", spec.get("source", None))
-    
+
 try:
     ip_version = spec['ip-version']
 except KeyError:
@@ -58,6 +56,9 @@ if 'flow-label' in spec and ip_version != 6:
 
 if 'protocol' in spec and spec['protocol'] != 'icmp':
     errors.append("Only icmp protocol is supported")
+
+if 'port' in spec:
+    errors.append("Ports are not supported")
 
 
 result = {

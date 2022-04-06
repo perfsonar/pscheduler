@@ -10,6 +10,7 @@ from .identifier import hint
 from .identifier import jq
 from .identifier import ipcidrlist
 from .identifier import ipcidrlisturl
+from .identifier import ipcymruasn
 from .identifier import ipcymrubogon
 from .identifier import ipreversedns
 from .identifier import localif
@@ -21,6 +22,7 @@ identifier_creator = {
     'jq':               lambda data: jq.IdentifierJQ(data),
     'ip-cidr-list':     lambda data: ipcidrlist.IdentifierIPCIDRList(data),
     'ip-cidr-list-url': lambda data: ipcidrlisturl.IdentifierIPCIDRListURL(data),
+    'ip-cymru-asn':     lambda data: ipcymruasn.IdentifierIPCymruASN(data),
     'ip-cymru-bogon':   lambda data: ipcymrubogon.IdentifierIPCymruBogon(data),
     'ip-reverse-dns':   lambda data: ipreversedns.IdentifierIPReverseDNS(data),
     'localif':          lambda data: localif.IdentifierLocalIF(data),
@@ -74,6 +76,7 @@ class IdentifierSet(object):
         that match."""
 
         result = []
+        diags = []
 
         # TODO: Thread this so things like DNS lookups run in
         # pseudo-parallel.
@@ -92,10 +95,17 @@ class IdentifierSet(object):
                 invert = False
             assert isinstance(invert, bool)
 
-            if evaluator.evaluate(hints) and not invert:
+            try:
+                identified = evaluator.evaluate(hints)
+            except Exception as ex:
+                diags.append("Identifier %s threw an exception:\n%s\nPlease report this as a bug."
+                             % (identifier['name'], str(ex)))
+                identified = False
+
+            if identified and not invert:
                 result.append(identifier['name'])
 
-        return result
+        return result, diags
 
 
 # A small test program

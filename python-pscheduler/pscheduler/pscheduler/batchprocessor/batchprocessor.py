@@ -18,8 +18,10 @@ from ..jsonval import *
 
 class BatchProcessor():
 
+    # Where internal-use data is stored temporarily
     __INTERNAL = "__internal__"
 
+    # Validator for batch specifications
     __INPUT_SCHEMA = {
 
         "local": {
@@ -35,37 +37,81 @@ class BatchProcessor():
             },
 
             "job": {
-                "type": "object",
-                "properties": {
-                    "label": { "$ref": "#/pScheduler/String" },
-                    "enabled": { "$ref": "#/pScheduler/Boolean" },
-                    "iterations": { "$ref": "#/pScheduler/Cardinal" },
-                    "parallel": { "$ref": "#/pScheduler/Boolean" },
-                    "backoff": { "$ref": "#/pScheduler/Duration" },
-                    "sync-start": { "$ref": "#/pScheduler/Boolean" },
-                    "task": { "$ref": "#/pScheduler/AnyJSON" },  # Validated later.
-                    "task-transform": { "$ref": "#/pScheduler/JQTransformSpecification" }
-                },
-                "additionalProperties": False,
-                "required": [
-                    "task"
-                ]
             }
         },
 
-        "type": "object",
-        "properties": {
-            "schema": { "type": "integer" },
-            "global": { "$ref": "#/local/global" },
-            "jobs": { 
-                "type": "array",
-                "items": { "$ref": "#/local/job" }
+        "versions": {
+            "1": {
+                "type": "object",
+                "properties": {
+                    "schema": {
+                        "type": "integer",
+                        "enum": [ 1 ]
+                    },
+                    "global": { "$ref": "#/local/global" },
+                    "jobs": { 
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "label": { "$ref": "#/pScheduler/String" },
+                                "enabled": { "$ref": "#/pScheduler/Boolean" },
+                                "iterations": { "$ref": "#/pScheduler/Cardinal" },
+                                "parallel": { "$ref": "#/pScheduler/Boolean" },
+                                "backoff": { "$ref": "#/pScheduler/Duration" },
+                                "sync-start": { "$ref": "#/pScheduler/Boolean" },
+                                "task": { "$ref": "#/pScheduler/AnyJSON" },  # Validated later.
+                                "task-transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
+                            },
+                            "additionalProperties": False,
+                            "required": [
+                                "task"
+                            ]
+                        }
+                    },
+                },
+                "additionalProperties": False,
+                "required": [
+                    "jobs",
+                ]
             },
-        },
-        "additionalProperties": False,
-        "required": [
-            "jobs",
-        ]
+            "2": {
+                "type": "object",
+                "properties": {
+                    "schema": {
+                        "type": "integer",
+                        "enum": [ 2 ]
+                    },
+                    "global": { "$ref": "#/local/global" },
+                    "jobs": { 
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "label": { "$ref": "#/pScheduler/String" },
+                                "enabled": { "$ref": "#/pScheduler/Boolean" },
+                                "iterations": { "$ref": "#/pScheduler/Cardinal" },
+                                "parallel": { "$ref": "#/pScheduler/Boolean" },
+                                "backoff": { "$ref": "#/pScheduler/Duration" },
+                                "sync-start": { "$ref": "#/pScheduler/Boolean" },
+                                "task": { "$ref": "#/pScheduler/AnyJSON" },  # Validated later.
+                                "task-transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
+                                "continue-if": { "$ref": "#/pScheduler/JQTransformSpecification" },
+                            },
+                            "additionalProperties": False,
+                            "required": [
+                                "task"
+                            ]
+                        }
+                    },
+                },
+                "additionalProperties": False,
+                "required": [
+                    "schema",
+                    "jobs",
+                ]
+            }
+        }
     }
 
 
@@ -103,7 +149,7 @@ class BatchProcessor():
         participants_params = {'spec': json_dump(spec['test']['spec'])}
         status, participants = url_get(parts_url,
                                        params=participants_params,
-                                       bind=self.bind,
+                                       bind=self.assist_bind,
                                        throw=False )
 
         if status != 200:
@@ -111,8 +157,12 @@ class BatchProcessor():
             return self.__fail("Unable to determine the lead participant: %s" % participants)
 
         debug("%s: Got participants: %s" % (label, participants))
-        lead = participants["participants"][0]
 
+        # Substitute the lead if one was provided and the returned
+        # lead is local.
+        if participants["participants"][0] is None:
+            debug("%s: Using directed lead of %s" % (label, self.lead))
+        lead = participants["participants"][0] or self.lead
 
         if delay:
             debug("%s: Sleeping %ss before start" % (label, delay))
@@ -270,8 +320,7 @@ class BatchProcessor():
                     return data
         
                 try:
-                    script = "\n".join(transform["script"])
-                    filterer = JQFilter(script, args=args)
+                    filterer = JQFilter(transform["script"], args=args)
                     return filterer(data)[0]
                 except ValueError as ex:
                     raise ValueError("At %s: %s" % (transform_location, ex))
@@ -319,7 +368,7 @@ class BatchProcessor():
                 # Make sure the task back up structurally-valid
 
                 valid, message = json_validate(transformed,
-                                               { "$ref": "#/pScheduler/TaskSpecification" })
+                                                { "$ref": "#/pScheduler/TaskSpecification" })
 
                 if not valid:
                     raise ValueError("At /jobs/%d/task iteration %d: %s" % (job_number, iteration, message))
@@ -353,33 +402,51 @@ class BatchProcessor():
 
 
 
-    def __init__(self, spec, assist=None, bind=None):
+    def __init__(self, spec, assist=None, assist_bind=None, lead=None, bind=None):
         """
         Create a batch processor.
         """
 
-        valid, message = json_validate(spec, self.__INPUT_SCHEMA,
-                                       max_schema=1)
+        valid, message = json_validate_from_standard_template(spec, self.__INPUT_SCHEMA)
         if not valid:
             raise ValueError(message)
 
         self.spec = copy.deepcopy(spec)
 
+        try:
+            self.global_data = self.spec["global"]["data"]
+        except KeyError:
+            self.global_data = None
 
+        # Check the continue-if transforms in all jobs
+
+        # This has to stay separate because there's some deeepcopy
+        # pickling that goes on and it can't picle these objects.
+
+        self.job_continue_if = {}
+
+        for job_number, job in enumerate(self.spec["jobs"]):
+            try:
+                self.job_continue_if[job_number] = JQFilter(job["continue-if"],
+                                                            args={"global": self.global_data})
+            except KeyError:
+                # None for this job
+                pass
+            except ValueError as ex:
+                raise ValueError("At jobs[%d]: %s" % (job_number, str(ex)))
         # Make sure whoever we're using for assistance is running pScheduler
         if assist is None:
             assist = os.environ.get("PSCHEDULER_ASSIST", api_local_host())
-        #if not api_has_pscheduler(assist, bind=bind):
-        if not api_has_pscheduler(assist):
-            raise ValueError("Unable to find pScheduler on %s" % (assist))
+        if assist_bind is None:
+            assist_bind = os.environ.get("PSCHEDULER_ASSIST_BIND", api_local_host())
+        (has, error) = api_has_pscheduler(assist, bind=assist_bind)
+        if not has:
+            raise ValueError("Unable to find pScheduler on %s: %s" % (assist, error))
 
         self.assist = assist
+        self.assist_bind = assist_bind
+        self.lead = lead
         self.bind = bind
-
-        try:
-            self.global_data = spec["global"]["data"]
-        except KeyError:
-            self.global_data = None
 
         try:
             self.global_transform_pre = spec["global"]["transform-pre"]
@@ -409,19 +476,26 @@ class BatchProcessor():
             self.__prep_job(job_number, job, debug, dry_run)
 
 
-        for job in result["jobs"]:
+        aborted = False
 
-            label = job.get("label", "unlabeled")
+        for job_number, job in enumerate(result["jobs"]):
+
+            label = job.get("label", "job[%d]" % (job_number))
 
             # Grab the internal stuff first and delete it so we can debug in peace.
 
             run_task_args = job.get(self.__INTERNAL, [])
             iterations = len(run_task_args)
 
+            # Make sure this gets cleaned out so aborted batches don't still have it.
             try:
                 del job[self.__INTERNAL]
             except KeyError:
                 pass
+
+            if aborted:
+                debug("%s: Aborted.  Skipping." % (label))
+                continue
 
             debug("Job %s: %s" % (label, json_dump(job, pretty=True)))
 
@@ -429,7 +503,6 @@ class BatchProcessor():
                 debug("%s: Disabled" % label)
                 job["results"] = []
                 continue
-
 
             # TODO: It might be better to use a mutex to serialize access to
             # the server instead of backoff.
@@ -467,5 +540,19 @@ class BatchProcessor():
                 # TODO: REMOVE THIS.  TODO: Why?
                 job["results"] = [ self.__run_task(arg) for arg in run_task_args ]
 
+
+            # If there's a continue-if transform, pass the results to
+            # it and see if we should continue.
+
+            if job_number in self.job_continue_if:
+                debug("%s: Deciding whether or not to continue" % (label))
+                to_continue = self.job_continue_if[job_number](job["results"])[0]
+                debug("%s: Script returned %s" % (label, to_continue))
+                if not isinstance(to_continue, bool):
+                    raise ValueError("%s: continue-if returned a non-boolean value %s"
+                                     % (label, json_dump(to_continue)))
+                if not to_continue:
+                    debug("%s: continue-if said to stop." % (label))
+                    aborted = True
 
         return result

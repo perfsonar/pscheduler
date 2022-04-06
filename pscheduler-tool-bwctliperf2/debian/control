@@ -11,7 +11,7 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 
 Package: pscheduler-tool-bwctliperf2
 Architecture: all
-Depends: ${misc:Depends}, pscheduler-server, pscheduler-test-throughput
+Depends: ${misc:Depends}, pscheduler-server (>= 4.3.0), pscheduler-test-throughput
 Description: pScheduler bwctliperf2 tool (DISABLED)
  bwctliperf2 tool class for pScheduler
  (DISABLED)

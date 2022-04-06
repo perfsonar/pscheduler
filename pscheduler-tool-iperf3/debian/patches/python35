@@ -1,0 +1,28 @@
+--- a/iperf3/run	2022-02-03 15:54:20.655429107 -0500
++++ b/iperf3/run	2022-02-03 15:54:42.959055690 -0500
+@@ -354,7 +354,7 @@
+     except Exception as ex:
+         return {"succeeded": False,
+                 "diags": "",
+-                "error": f'Found stray iperf3 server running could not terminate it: {str(ex)}'}
++                "error": "Found stray iperf3 server running could not terminate it: %s".format(str(ex))}
+ 
+ 
+     iperf3_args.append("-p")
+@@ -554,12 +554,12 @@
+                 logger.debug("Nothing succeeded.")
+                 results = { 
+                     "succeeded": False,
+-                    "error": f'Client:\n\n{client_results.get("error", "No error.")}' \
+-                             f'\n\nServer:\n\n{server_results.get("error", "No error.")}'
++                    "error": "Client:\n\n%s".format(client_results.get("error", "No error.")) + \
++                             "\n\nServer:\n\n%s".format(server_results.get("error", "No error."))
+                 }
+ 
+-            results["diags"] = f'Client:\n\n{client_results.get("diags", "No diagnostics.")}' \
+-                    f'\n\nServer:\n\n{server_results.get("diags", "No diagnostics.")}'
++            results["diags"] = "Client:\n\n%s".format(client_results.get("diags", "No diagnostics.")) + \
++                    "\n\nServer:\n\n%s".format(server_results.get("diags", "No diagnostics."))
+ 
+         else:
+ 

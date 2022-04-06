@@ -3,7 +3,7 @@
 #
 
 %define short	dnspy
-%define perfsonar_auto_version 4.3.5
+%define perfsonar_auto_version 5.0.0
 %define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-tool-%{short}
@@ -40,6 +40,7 @@ DNS tool class for pScheduler
 
 %build
 make \
+     PYTHON=%{_pscheduler_python} \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
 

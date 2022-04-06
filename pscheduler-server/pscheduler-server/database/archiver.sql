@@ -2,10 +2,6 @@
 -- Table of archivers
 --
 
--- NOTE: Rows in this table should only be maintained (i.e., inserted
--- or updated) using the archiver_upsert() function.
--- TODO: Use native upserting when Pg is upgraded to 9.5
-
 
 DO $$
 DECLARE
@@ -243,49 +239,6 @@ FOR EACH ROW
 
 
 
-
-
-
--- Insert a new archiver or update an existing one by name
-
-DO $$ BEGIN PERFORM drop_function_all('archiver_upsert'); END $$;
-
-CREATE OR REPLACE FUNCTION archiver_upsert(new_json JSONB)
-RETURNS VOID
-AS $$
-DECLARE
-    existing_id BIGINT;
-    new_name TEXT;
-BEGIN
-
-   new_name := (new_json ->> 'name')::TEXT;
-
-   SELECT id from archiver into existing_id WHERE name = new_name;
-
-   IF NOT FOUND THEN
-
-      -- Legitimately-new row.
-      INSERT INTO archiver (json, updated, available)
-      VALUES (new_json, now(), true);
-
-   ELSE
-
-     -- Update of existing row.
-     UPDATE archiver
-     SET
-       json = new_json,
-       updated = now(),
-       available = true
-     WHERE id = existing_id;
-
-   END IF;
-
-END;
-$$ LANGUAGE plpgsql;
-
-
-
-
 -- Function to run at startup.
 
 DO $$ BEGIN PERFORM drop_function_all('archiver_boot'); END $$;
@@ -335,8 +288,10 @@ BEGIN
 	    CONTINUE;
         END IF;
 
-
-	PERFORM archiver_upsert(archiver_enumeration);
+	INSERT INTO archiver (json, updated, available)
+	VALUES (archiver_enumeration, now(), TRUE)
+	ON CONFLICT (name) DO UPDATE
+        SET json = archiver_enumeration, updated = now(), available = TRUE;
 
     END LOOP;
 

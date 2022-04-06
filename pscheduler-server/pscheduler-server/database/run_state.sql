@@ -90,6 +90,21 @@ $$ LANGUAGE plpgsql;
 -- NOTE: These use ALTER FUNCTION to set the IMMUTABLE attribute
 -- because in some cases, replacement doesn't set it properly.
 
+
+-- Run is being scheduled and should be invisible to the API
+
+DO $$ BEGIN PERFORM drop_function_all('run_state_scheduling'); END $$;
+
+CREATE OR REPLACE FUNCTION run_state_scheduling()
+RETURNS INTEGER
+AS $$
+BEGIN
+	RETURN 0;
+END;
+$$ LANGUAGE plpgsql;
+ALTER FUNCTION run_state_scheduling() IMMUTABLE;
+
+
 -- Run is waiting to execute (not time yet)
 
 DO $$ BEGIN PERFORM drop_function_all('run_state_pending'); END $$;
@@ -269,6 +284,7 @@ ON run_state
 ALTER TABLE run_state DISABLE TRIGGER run_state_alter;
 INSERT INTO run_state (id, display, enum, finished, success)
 VALUES
+    (run_state_scheduling(),'Scheduling',  'scheduling',FALSE, NULL),
     (run_state_pending(),   'Pending',     'pending',   FALSE, NULL),
     (run_state_on_deck(),   'On Deck',     'on-deck',   FALSE, NULL),
     (run_state_running(),   'Running',     'running',   FALSE, NULL),
@@ -301,8 +317,14 @@ AS $$
 BEGIN
    -- TODO: This might be worth putting into a table.
    RETURN  new = old
+           OR   ( old = run_state_scheduling()
+	          AND new IN (run_state_pending(),
+			      run_state_preempted(),
+			      run_state_canceled(),
+			      run_state_nonstart()) )
            OR   ( old = run_state_pending()
 	          AND new IN (run_state_on_deck(),
+			      run_state_running(),
 			      run_state_missed(),
 			      run_state_failed(),
 			      run_state_preempted(),

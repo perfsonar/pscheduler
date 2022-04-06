@@ -8,8 +8,6 @@ import pscheduler
 import pscheduler.batchprocessor
 import sys
 
-# TODO: Remove this when no longer beta.
-pscheduler.beta_feature()
 
 pscheduler.set_graceful_exit()
 
@@ -28,6 +26,21 @@ arg_parser.add_argument("--assist",
                         type=str,
                         default=None,
                         dest="assist")
+
+arg_parser.add_argument("--assist-bind",
+                        help="Bind outbound assist requests to this address",
+                        action="store",
+                        type=str,
+                        default=None,
+                        dest="assist_bind")
+
+
+arg_parser.add_argument("--lead",
+                        help="Use this host as the lead if a task doesn't provide one",
+                        action="store",
+                        type=str,
+                        default=None,
+                        dest="lead")
 
 arg_parser.add_argument("--bind",
                         help="Bind outbound requests to this address",
@@ -78,11 +91,18 @@ def debug(message):
 
 try:
     spec = pscheduler.json_load(input_file)
-    processor = pscheduler.batchprocessor.BatchProcessor(spec, assist=args.assist, bind=args.bind)
+    processor = pscheduler.batchprocessor.BatchProcessor(spec,
+                                                         assist=args.assist,
+                                                         assist_bind=args.assist_bind,
+                                                         lead=args.lead,
+                                                         bind=args.bind)
+
+    # Run it.
+    pscheduler.succeed_json(processor(dry_run=args.dry, debug=debug))
+
+try:
+    pscheduler.succeed_json(processor(dry_run=args.dry, debug=debug))
 except (ValueError, OSError) as ex:
     pscheduler.fail("%s: %s" % (args.jobfile, str(ex)))
-
-
-# Run it.
-
-pscheduler.succeed_json(processor(dry_run=args.dry, debug=debug))
+except Exception as ex:
+    pscheduler.fail("Batch Failed: %s" % (str(ex)))

@@ -8,25 +8,7 @@ import pscheduler
 
 input = pscheduler.json_load(exit_on_error=True);
 
-# TODO: Validate the input
-
 try:
-    succeeded = input["results"][0]["result"]["succeeded"]
+    pscheduler.succeed_json(input["results"][0]["result"])
 except (KeyError, TypeError):
-    succeeded = False
-
-results = {
-    "schema": 1,
-    "succeeded": succeeded
-}
-
-if succeeded:
-    try:
-        results["paths"] = input["results"][0]["result"]["paths"]
-    except:
-        results = {
-            "schema": 1,
-            "succeeded": False
-            }
-
-pscheduler.succeed_json(results)
+    pscheduler.fail("Missing result in returned data")

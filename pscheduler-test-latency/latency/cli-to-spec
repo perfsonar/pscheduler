@@ -120,6 +120,10 @@ opt_parser.add_option("-r", "--reverse",
                       help="Report results in the reverse direction (destination to source) if possible.",
                       action="store_true", dest="reverse", default=False)
 
+opt_parser.add_option("--traverse-nat",
+                      help="Take steps to traverse outbound NAT",
+                      action="store_true", dest="traverse_nat", default=False)
+
 opt_parser.add_option("-R", "--output-raw",
                       help="Output individual packet statistics. This will substantially increase the size of a successful result.",
                       action="store_true", dest="output_raw", default=False)
@@ -189,6 +193,10 @@ if options.flip:
 if options.reverse:
    result['reverse'] = options.reverse
    spec_schema.set(2)
+
+if options.traverse_nat:
+   result['traverse-nat'] = options.traverse_nat
+   spec_schema.set(3)
 
 if options.output_raw:
    result['output-raw'] = options.output_raw

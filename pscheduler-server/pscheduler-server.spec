@@ -6,7 +6,7 @@
 # make the scriptlets use them on CentOS 7.  For now the old-style
 # init scripts function just fine.
 
-%define perfsonar_auto_version 4.3.5
+%define perfsonar_auto_version 5.0.0
 %define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-server
@@ -31,7 +31,7 @@ Provides:	%{name} = %{version}-%{release}
 # comments there for more information.
 
 BuildRequires:	postgresql-init >= %{_pscheduler_postgresql_version}
-BuildRequires:	postgresql-load
+BuildRequires:	postgresql-load >= 1.2
 BuildRequires:	%{_pscheduler_postgresql_package}-server >= %{_pscheduler_postgresql_version}
 BuildRequires:	%{_pscheduler_postgresql_package}-contrib >= %{_pscheduler_postgresql_version}
 BuildRequires:	%{_pscheduler_postgresql_package}-plpython3 >= %{_pscheduler_postgresql_version}
@@ -42,7 +42,7 @@ Requires:	%{_pscheduler_postgresql_package}-server >= %{_pscheduler_postgresql_v
 # This is for pgcrypto
 Requires:	%{_pscheduler_postgresql_package}-contrib >= %{_pscheduler_postgresql_version}
 Requires:	%{_pscheduler_postgresql_package}-plpython3 >= %{_pscheduler_postgresql_version}
-Requires:	postgresql-load
+Requires:	postgresql-load >= 1.2
 Requires:	pscheduler-account
 Requires:	pscheduler-core
 Requires:	postgresql-init
@@ -62,7 +62,7 @@ Requires:	%{_pscheduler_python_epel}-psutil
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
 BuildRequires:	%{_pscheduler_python}-parse-crontab
-BuildRequires:	%{_pscheduler_python}-pscheduler >= 4.3.0
+BuildRequires:	%{_pscheduler_python}-pscheduler >= 5.0.0
 BuildRequires:	m4
 Requires:	httpd-wsgi-socket
 Requires:	pscheduler-server
@@ -72,7 +72,7 @@ Requires:	pscheduler-server
 Requires:	mod_ssl
 Requires:	mod_wsgi > 4.0
 Requires:	%{_pscheduler_python}-parse-crontab
-Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
+Requires:	%{_pscheduler_python}-pscheduler >= 5.0.0
 
 %if 0%{?el7}
 Requires:	pytz
@@ -408,7 +408,7 @@ pscheduler internal db-change-password
 #
 
 HBA_FILE=$( (echo "\t on" ; echo "show hba_file;") \
-	    | postgresql-load \
+	    | postgresql-load --log-errors "%{name}-hba-file" \
 	    | head -1 \
 	    | sed -e 's/^\s*//' )
 
@@ -425,7 +425,7 @@ host      pscheduler      pscheduler     ::1/128                md5
 EOF
 
 # Make Pg reload what we just changed.
-postgresql-load <<EOF
+postgresql-load --log-errors "%{name}-config-reload" <<EOF
 DO \$\$
 DECLARE
     status BOOLEAN;
@@ -465,7 +465,6 @@ find %{_rundir} -name "pscheduler-*" ! -user "%{_pscheduler_user}" -print0 \
 # On systems with SELINUX, allow database connections.
 if selinuxenabled
 then
-    echo "Setting SELinux permissions (may take awhile)"
     # TODO: connect_db may be redundant redundant.
     # nis_enabled allows binding
     for SWITCH in \
@@ -518,7 +517,7 @@ systemctl stop httpd
 if [ "$1" = "0" ]
 then
     # Have to do this before the files are erased.
-    postgresql-load %{_pscheduler_datadir}/database-teardown.sql
+    postgresql-load  --log-errors "%{name}-teardown" %{_pscheduler_datadir}/database-teardown.sql
 fi
 
 
@@ -538,7 +537,7 @@ if [ "$1" = "0" ]; then
     # Database
     #
     HBA_FILE=$( (echo "\t on" ; echo "show hba_file;") \
-            | postgresql-load \
+            | postgresql-load --log-errors "%{name}-postun-hba-file" \
             | head -1 \
             | sed -e 's/^\s*//' )
 

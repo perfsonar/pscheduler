@@ -1,0 +1,32 @@
+#!/usr/bin/make -f
+# See debhelper(7) (uncomment to enable)
+# output every command that modifies files on the build system.
+#DH_VERBOSE = 1
+
+# see EXAMPLES in dpkg-buildflags(1) and read /usr/share/dpkg/*
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/default.mk
+
+# main packaging script based on dh7 syntax
+%:
+	dh $@
+
+DEB_SOURCE_PACKAGE ?= $(strip $(shell egrep '^Source: ' debian/control | cut -f 2 -d ':'))
+CLASS ?= $(shell echo $(DEB_SOURCE_PACKAGE) | sed 's/^pscheduler-//; s/-.*//')
+NAME ?= $(shell echo $(DEB_SOURCE_PACKAGE) | sed 's/^[^-]*-[^-]*-//')
+ROOT ?= $(CURDIR)/debian/$(DEB_SOURCE_PACKAGE)
+PYTHON := $(shell which python3)
+
+override_dh_auto_build:
+
+override_dh_auto_test:
+
+override_dh_auto_install:
+	make -C $(NAME) install \
+		PYTHON=$(PYTHON) \
+		DOCDIR=$(ROOT)/usr/share/doc/pscheduler/$(CLASS) \
+		DESTDIR=$(ROOT)/usr/lib/pscheduler/classes/$(CLASS)/$(NAME) \
+		CONFDIR=$(ROOT)/etc/pscheduler/$(CLASS)/$(NAME)
+
+override_dh_auto_clean:
+	make -C $(NAME) clean

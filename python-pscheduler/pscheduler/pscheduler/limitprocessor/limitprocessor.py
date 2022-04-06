@@ -5,8 +5,12 @@ pScheduler Limit Processor
 import io
 import os
 
+from urllib.parse import urlparse
+
+from ..exception import *
 from ..jsonval import *
 from ..psjson import *
+from ..psurl import *
 from ..text import *
 
 from .identifierset  import IdentifierSet
@@ -77,7 +81,22 @@ class LimitProcessor(object):
         # At this point, source is a file.
 
         assert isinstance(source, io.IOBase)
-        limit_config = json_load(source)
+        limit_file_contents = source.read().strip()
+
+        # Try to parse it as a URL.  If it's got a scheme, fetch it
+        # and replace the contents with that.
+
+        url_parsed = urlparse(limit_file_contents)
+        if url_parsed.scheme != '':
+            url = limit_file_contents
+            status, limit_file_contents = url_get(limit_file_contents, throw=False, json=False)
+            if status != 200:
+                raise ValueError("Unable to load limit configuration from %s: Status %d" % (url, status))
+
+
+        # Parse it.
+
+        limit_config = json_load(limit_file_contents)
 
         if not isinstance(limit_config, dict):
             raise ValueError("Limit configuration must be an object.")
@@ -112,32 +131,12 @@ class LimitProcessor(object):
             self.prioritizer = None
 
 
-    def process(self, task, hints, rewrite=True, prioritize=False):
-        """Evaluate a proposed task against the full limit set.
-
-        If the task has no 'run_schedule' section it will be assumed that
-        is being evaluated on all other parameters except when it
-        runs.  (This will be used for restricting submission of new
-        tasks.)
-
-        Arguments:
-            task - The proposed task, with run_schedule if there's a run time
-            hints - A hash of the hints to be used in identification
-            rewrite - True if the rewriter should be applied
-            prioritize - True to prioritize the task
-
-        Returns a tuple containing:
-            passed - True if the proposed task passed the limits applied
-            limits - A list of the limits that passed
-            diags - A textual summary of how the conclusion was reached
-            task - The task, after rewriting or None if unchanged
-            priority - Integer priority or None of not calculated
-        """
+    def _process(self, task, hints, rewrite=True, prioritize=False):
+        """Wrapped function; see process()."""
 
         if self.inert:
-            return True, [], "No limits were applied", None, None
+            return True, "No limits were applied", None, None
 
-        # TODO: Should this be JSON, or is text sufficient?
         diags = []
 
         if hints is not None and len(hints) > 0:
@@ -157,10 +156,13 @@ class LimitProcessor(object):
         # Identification
         #
 
-        identifications = self.identifiers.identities(hints)
+        identifications, ident_diags = self.identifiers.identities(hints)
+        if ident_diags:
+            diags.append("Identifier diagnostics:")
+            diags += ident_diags
         if not identifications:
             diags.append("Made no identifications.")
-            return False, [], '\n'.join(diags), None, None
+            return False, '\n'.join(diags), None, None
         diags.append("Identified as %s" % (', '.join(identifications)))
 
         #
@@ -170,7 +172,7 @@ class LimitProcessor(object):
         classifications = self.classifiers.classifications(identifications)
         if not classifications:
             diags.append("Made no classifications.")
-            return False, [], '\n'.join(diags), None, None
+            return False, '\n'.join(diags), None, None
         diags.append("Classified as %s" % (', '.join(classifications)))
 
         check_schedule='run_schedule' in task
@@ -187,7 +189,7 @@ class LimitProcessor(object):
                 re_changed, re_new_task, re_diags \
                     = self.rewriter(proposal, classifications)
             except Exception as ex:
-                return False, [], "Error while rewriting: %s" % (str(ex)), None, None
+                return False, "Error while rewriting: %s" % (str(ex)), None, None
 
             if re_changed:
                 diags.append("Rewriter made changes:")
@@ -195,24 +197,18 @@ class LimitProcessor(object):
                     diags += ["  " + s for s in re_diags]
                 else:
                     diags.append("  (Not enumerated)")
-                task = re_new_task
+                proposal['task'] = re_new_task
 
 
         #
         # Applications
         #
 
-        passed, app_limits_passed, app_diags \
+        passed, app_diags \
             = self.applications.check(proposal, classifications, check_schedule)
 
         diags.append(app_diags)
         diags.append("Proposal %s limits" % ("meets" if passed else "does not meet"))
-
-        # If any of the passed applications had no task limits, there
-        # should be no limits placed on the run.
-
-        unlimited = len(app_limits_passed) == 0 \
-                    or min([ len(item) for item in app_limits_passed ]) == 0
 
 
         #
@@ -223,10 +219,10 @@ class LimitProcessor(object):
             try:
                 priority, pri_diags = self.prioritizer(task, classifications)
             except Exception as ex:
-                return False, [], "Error determining priority: %s" % (str(ex)), None, None
+                return False, "Error determining priority: %s" % (str(ex)), None, None
 
             if priority is None:
-                return False, [], "Prioritizer produced no result", None, None
+                return False, "Prioritizer produced no result", None, None
 
             requested_priority = task.get("priority", None)
             if requested_priority is not None:
@@ -245,45 +241,39 @@ class LimitProcessor(object):
 
 
         return passed, \
-            [] if (unlimited or not passed) else app_limits_passed, \
             '\n'.join(diags), \
             re_new_task, \
             priority
 
 
 
+    def process(self, task, hints, rewrite=True, prioritize=False):
+        """Evaluate a proposed task against the full limit set.
 
+        If the task has no 'run_schedule' section it will be assumed that
+        is being evaluated on all other parameters except when it
+        runs.  (This will be used for restricting submission of new
+        tasks.)
 
-# Test program
+        Arguments:
+            task - The proposed task, with run_schedule if there's a run time
+            hints - A hash of the hints to be used in identification
+            rewrite - True if the rewriter should be applied
+            prioritize - True to prioritize the task
 
-if __name__ == "__main__":
+        Returns a tuple containing:
+            passed - True if the proposed task passed the limits applied
+            diags - A textual summary of how the conclusion was reached
+            task - The task, after rewriting or None if unchanged
+            priority - Integer priority or None of not calculated
 
-    # TODO: This should refer to a sample file in the distribution
-    processor = LimitProcessor('/home/mfeit/tmp/limits-pri')
+        This is an exception-safe wrapper around _process().
+        """
 
-    passed, limits_passed, diags, rewritten, priority = processor.process(
-        {
-            "type": "rtt",
-            "spec": {
-                "schema": 1,
-                "count": 50,
-                "dest": "www.perfsonar.edu"
-            },
-            "run_schedule": {
-                "start": "2016-06-15T14:33:38-04",
-                "duration": "PT20S"
-            }
-        },
-        {
-            "#requester": "10.0.0.7",        "#": "Dev VM",
-            "#requester": "128.82.4.1",      "#": "Nobody in particular",
-            "#requester": "198.51.100.3",    "#": "Hacker",
-            "#requester": "62.40.106.13",    "#": "GEANT",
-            "#requester": "140.182.44.164",  "#": "IU",
-            "requester": "192.52.179.242",   "#": "Internet2",
-        })
-
-    print(passed)
-    print(limits_passed)
-    print(diags)
-
+        try:
+            return self._process(task, hints, rewrite, prioritize)
+        except Exception as ex:
+            diags = 'Failed to process limits: processor threw an exception.\n\n' \
+                    f'{formatted_exception(ex)}\n\n' \
+                    'Please report this as a bug.'
+            return (False, diags, task, None)

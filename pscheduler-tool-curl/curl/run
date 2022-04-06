@@ -184,4 +184,3 @@ pscheduler.succeed_json({
     'result': results,
     'diags': "\n".join(diags)
 })
-

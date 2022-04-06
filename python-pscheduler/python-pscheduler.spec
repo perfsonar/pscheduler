@@ -2,7 +2,7 @@
 # RPM Spec for Python pScheduler Module
 #
 
-%define perfsonar_auto_version 4.3.5
+%define perfsonar_auto_version 5.0.0
 %define perfsonar_auto_relnum 0.a1.0
 
 %define short	pscheduler
@@ -33,6 +33,7 @@ Requires:	%{_pscheduler_python}-jsonschema >= 3.0
 Requires:	%{_pscheduler_python_epel}-netaddr
 Requires:	%{_pscheduler_python}-netifaces
 Requires:	%{_pscheduler_python}-ntplib
+Requires:	%{_pscheduler_python_epel}-psutil
 Requires:	%{_pscheduler_python_epel}-psycopg2 >= 2.6.1
 Requires:	%{_pscheduler_python}-py-radix
 # The limit system uses this.
@@ -61,6 +62,7 @@ BuildRequires:	%{_pscheduler_python}-jsonschema
 BuildRequires:	%{_pscheduler_python_epel}-netaddr
 BuildRequires:	%{_pscheduler_python}-netifaces
 BuildRequires:	%{_pscheduler_python}-ntplib
+BuildRequires:	%{_pscheduler_python_epel}-psutil
 BuildRequires:	%{_pscheduler_python_epel}-psycopg2 >= 2.2.0
 BuildRequires:	%{_pscheduler_python}-py-radix
 # The limit system uses this.
@@ -143,9 +145,6 @@ rm -rf $RPM_BUILD_ROOT
 # This removes a duplicate entry leftover from the Python 2 version.
 # TODO: Remove this after we stop supporting 4.2.x.
 OLD_LOGROTATE="%{logrotate_d}/python-pscheduler"
-echo $OLD_LOGROTATE
-ls -alh $OLD_LOGROTATE
-
 if [ -e "${OLD_LOGROTATE}" ]
 then
     cat > "${OLD_LOGROTATE}" <<EOF
@@ -156,22 +155,11 @@ then
 EOF
 fi
 
-
-%if 0%{?el6}
-service rsyslog restart
-%endif
-%if 0%{?el7}
 systemctl reload-or-try-restart rsyslog
-%endif
 
 
 %postun
-%if 0%{?el6}
-service rsyslog restart
-%endif
-%if 0%{?el7}
 systemctl reload-or-try-restart rsyslog
-%endif
 
 
 %files -f INSTALLED_FILES

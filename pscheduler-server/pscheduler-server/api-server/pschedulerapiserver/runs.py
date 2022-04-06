@@ -89,7 +89,7 @@ def __evaluate_limits(
     # Don't pass hints since that would have been covered when the
     # task was submitted and only the scheduler will be submitting
     # runs.
-    passed, limits_passed, diags, _new_task, priority \
+    passed, diags, _new_task, priority \
         = processor.process(limit_input, hints, rewrite=False, prioritize=True)
 
     log.debug("Passed: %s.  Diags: %s" % (passed, diags))
@@ -112,7 +112,8 @@ def tasks_uuid_runs(task):
                  run
                  JOIN task ON task.id = run.task
              WHERE
-                task.uuid = %s"""
+                task.uuid = %s
+                AND run.state <> run_state_scheduling()"""
         args = [task]
 
         try:
@@ -201,7 +202,7 @@ def tasks_uuid_runs(task):
 
         url = base_url() + '/' + uuid
         log.debug("New run posted to %s", url)
-        return ok_json(url)
+        return ok_json(url, sanitize=False)
 
     else:
 
@@ -228,6 +229,7 @@ def __runs_first_run(
                 WHERE
                   task.uuid = %s
                   AND (%s OR lower(run.times) >= normalized_now())
+                  AND run.state <> run_state_scheduling()
                 ORDER BY run.times
                 LIMIT 1
                 """, [task, not future])
@@ -278,7 +280,7 @@ def tasks_uuid_runs_run(task, run):
         if wait_time < 0:
             return bad_request("Wait time must be >= 0")
 
-        # If asked for 'first', dig up the first run and use its UUID.
+        # If asked for 'first', dig up the first visible run and use its UUID.
 
         if run in ['next', 'first']:
             future = run == 'next'
@@ -308,7 +310,8 @@ def tasks_uuid_runs_run(task, run):
                     """
                     SELECT
                         run_json(run.id),
-                        run_state.finished
+                        run_state.finished,
+                        task.json ->> '_key'
                     FROM
                         task
                         JOIN run ON task.id = run.task
@@ -316,6 +319,7 @@ def tasks_uuid_runs_run(task, run):
                     WHERE 
                         task.uuid = %s
                         AND run.uuid = %s
+                        AND run.state <> run_state_scheduling()
                     """, [task, run])
             except Exception as ex:
                 log.exception()
@@ -325,7 +329,7 @@ def tasks_uuid_runs_run(task, run):
                 cursor.close()
                 return not_found()
 
-            result, finished = cursor.fetchone()
+            result, finished, required_key = cursor.fetchone()
             cursor.close()
 
             if not (wait_local or wait_merged):
@@ -367,8 +371,8 @@ def tasks_uuid_runs_run(task, run):
         except KeyError:
             pass  # Not there?  Don't care.
 
+        return ok_json_sanitize_checked(result, required_key)
 
-        return json_response(result)
 
     elif request.method == 'PUT':
 
@@ -381,6 +385,7 @@ def tasks_uuid_runs_run(task, run):
         if requester is None:
             return not_found()
 
+        log.debug("AW %s / %s", requester, key)
         if not access_write_task(requester, key):
             return forbidden()
 
@@ -603,7 +608,8 @@ def tasks_uuid_runs_run_result(task, run):
             SELECT
                 test.name,
                 run.result_merged,
-                task.json #> '{test, spec}'
+                task.json #> '{test, spec}',
+                COALESCE (task.json ->> '_key', task.participant_key)
             FROM
                 run
                 JOIN task ON task.id = run.task
@@ -611,6 +617,7 @@ def tasks_uuid_runs_run_result(task, run):
             WHERE
                 task.uuid = %s
                 AND run.uuid = %s
+                AND run.state <> run_state_scheduling()
             """, [task, run])
 
         if cursor.rowcount == 0:
@@ -631,12 +638,12 @@ def tasks_uuid_runs_run_result(task, run):
         return not_found()
 
 
-    test_type, merged_result, test_spec = row
+    test_type, merged_result, test_spec, key = row
 
 
     # JSON requires no formatting.
     if format == 'application/json':
-        return ok_json(merged_result)
+        return ok_json_sanitize_checked(merged_result, key)
 
     if not merged_result['succeeded']:
         if format == 'text/plain':
