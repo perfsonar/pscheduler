@@ -11,9 +11,6 @@ import optparse
 import os
 import pscheduler
 import psutil
-import psycopg2
-import psycopg2.extensions
-import psycopg2.pool
 import select
 import signal
 import socket
@@ -803,32 +800,6 @@ def main_program():
 
     with db.cursor() as cursor:
         cursor.execute("SELECT heartbeat_boot('runner')")
-
-    with db.cursor() as cursor:
-
-        # Get the maximum number of connections available and limit use of
-        # them to half.
-
-        try:
-            cursor.execute("SHOW max_connections")
-
-            # Should get exactly one row back.  If not, the run probably
-            # vanished.
-
-            if cursor.rowcount != 1:
-                raise Exception("Got %d rows back when expecting one"
-                                % (cursor.rowcount))
-
-            max_connections = int(cursor.fetchone()[0])
-        except Exception as ex:
-            log.exception()
-            log.error("Failed to fetch maximum connections: %s", str(ex))
-            # This is the PgSQL default
-            max_connections = 100
-            log.error("Using default of %d", max_connections)
-
-    pool_size = int(max_connections / 2)
-    log.debug("Using a pool size of %d", pool_size)
 
     # Listen for notifications.
 
