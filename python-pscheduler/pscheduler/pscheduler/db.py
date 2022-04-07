@@ -7,6 +7,7 @@ import errno
 import inspect
 import os
 import psycopg2
+import psycopg2.pool
 import select
 import sys
 import threading
@@ -312,8 +313,8 @@ class DBConnectionPool():
             except psycopg2.pool.PoolError as ex:
                 self._log_callback('%s: Pool error: %s' % (str(identifier), str(ex)))
                 if len(self._connections_out) == self.max_pool_size:
-                    self._log_callback('%s: Encountered empty pool' % (self.name, connection.name))
-                    self.skim()
+                    self._log_callback('%s: Encountered empty pool' % (self.name))
+                    self._skim()
                     if attempts > 0:
                         time.sleep(0.1)
                     attempts += 1
