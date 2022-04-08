@@ -594,13 +594,6 @@ class ArchiveWorker(pscheduler.GenericWorker):
         # This is set in a later method.
         self.log_debug = None
 
-    def is_complete(self):
-        """Determine whether or not the worker is still running"""
-        # TODO: Impose some sort of absolute timeout to catch and kill
-        # hung threads?  (Haven't seen that in production.)
-        self.worker.join(timeout=0)
-        return not self.worker.is_alive()
-
 
     def __call__(self):
         """
@@ -870,11 +863,6 @@ class ArchiveWorker(pscheduler.GenericWorker):
                                               diags = diags || (%s::JSONB)
                                           WHERE id = %s""",
                                        [pscheduler.json_dump(attempt), archiving_id])
-
-
-
-
-
 
 
 
