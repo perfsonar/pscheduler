@@ -837,7 +837,7 @@ class SchedulerWorker(pscheduler.GenericWorker):
 
     """Handles scheduling for a single run."""
 
-    def __init__(self, number, task, key, runs, trynext, anytime, json, participants, debug):
+    def __init__(self, number, task, key, runs, trynext, anytime, json, participants, task_debug, forced_debug):
         """Initialize"""
 
         self.number = number
@@ -849,17 +849,17 @@ class SchedulerWorker(pscheduler.GenericWorker):
         self.anytime = anytime
         self.json = json
         self.participants = participants
-        self.debug = debug
+        self.task_debug = task_debug
+        self.forced_debug = forced_debug
 
 
     def __call__(self):
         """Do the scheduling"""
 
-        if self.debug:
+        if self.debug or self.forced_debug:
             self.log_debug = log.debug_always
-            self.log_debug("%d: Task requested debug", number)
-        else:
-            self.log_debug = log.debug
+            if self.task_debug:
+                self.log_debug("%d: Task requested debug", self.number)
 
         self.log_debug("%d: Scheduling task %s at %s", self.number, self.task, self.trynext)
 
@@ -1010,7 +1010,8 @@ def main_program():
 
             try:
                 # Make a worker and throw it into the pool.
-                worker = SchedulerWorker(number, task, key, runs, trynext, anytime, json, participants, debug)
+                worker = SchedulerWorker(number, task, key, runs, trynext, anytime, json,
+                                         participants, debug, log.is_forced_debug())
                 worker_pool(number, worker, scheduling_completion)
                 workers.add(number)
                 log.debug("%d: Created worker", number)

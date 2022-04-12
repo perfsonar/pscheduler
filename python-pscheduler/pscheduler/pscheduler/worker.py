@@ -5,6 +5,8 @@ Functions for running workers in pools of processes
 import datetime
 import multiprocessing
 import queue
+import os
+import signal
 import threading
 import time
 import traceback
@@ -405,20 +407,19 @@ class WorkerProcess(object):
 
                     self.__debug("Finishing")
 
-                    # Let the caller know first so we don't get any more work.
-                    from_proc.put(self._MessageExited())
+                    self.running = False
 
                     if incoming.wait:
                         # Wait for all of the workers to finish
                         self.__debug("Waiting for %d workers to finish" % (len(self.proc_workers)))
                         for identifier, worker in list(self.proc_workers.items()):
+                            self.__debug("%s: Waiting for completion" % (identifier))
                             worker.join()
-                            self.__debug("  %s" % (identifier))
+                            self.__debug("%s: Completed" % (identifier))
 
                     # Run teardown.
-                    self.__debug("Exiting")
                     self.teardown(self.teardown_args)
-
+                    self.__debug("Tore down")
                     break
 
                 else:
@@ -436,9 +437,8 @@ class WorkerProcess(object):
 
             # Let the caller know we're done
             self.__debug("Exiting")
-            # We'll have done this already for a forced finish.
-            if not isinstance(incoming, self._MessageFinish):
-                from_proc.put(self._MessageExited())
+            self.running = False
+            from_proc.put(self._MessageExited())
 
 
 
@@ -496,8 +496,13 @@ class WorkerProcess(object):
         """
         Hard kill the process (Caller side)
         """
-        self.__raise()
+        pid = self.process.pid
+        # TODO: In Python 3.7 or later, use .close()
         self.process.terminate()
+        # Multiprocessing will have just orphaned this without .kill()
+        # and .close().
+        os.kill(pid, signal.SIGTERM)
+        self.__raise()
 
 
 
@@ -551,7 +556,7 @@ class WorkerProcessPool(object):
         self.debug_callback("%s: %s" % (self.processor_name, message))
 
 
-    def __groom(self):
+    def groom(self):
         """
         Remove processors that are no longer running.
         """
@@ -559,13 +564,14 @@ class WorkerProcessPool(object):
         with self.lock:
             to_remove = []
             for name, processor in self.processors.items():
+                self.__debug("Considering %s for grooming" % (name))
                 if not processor.is_running():
-                    to_remove.append(name)
+                    to_remove.append((name, processor))
 
-            for processor in to_remove:
+            for name, processor in to_remove:
                 self.processors[processor].terminate()
                 del self.processors[processor]
-                self.__debug("Removing %s" % (processor))
+                self.__debug("Groomed %s" % (name))
 
 
 
@@ -587,7 +593,7 @@ class WorkerProcessPool(object):
             if not self.running:
                 raise RuntimeError("Pool is no longer running.")
 
-        self.__groom()
+        self.groom()
 
         with self.lock:
 

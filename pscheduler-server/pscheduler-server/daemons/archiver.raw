@@ -414,7 +414,7 @@ def worker_process_setup(args):
     global dbpool
     dbpool = pscheduler.DBConnectionPool(pool_dsn,
                                          dbpool_size,
-                                         name='runner-%s' % (os.getpid()),
+                                         name='archiver-%s' % (os.getpid()),
                                          log_callback=log.warning)
 
     global archiver_collection
@@ -880,14 +880,8 @@ def main_program():
     default_maintainer = DefaultArchiveMaintainer(options.archive_defaults, dsn, log)
     default_maintainer.refresh()
 
-    next_refresh = None
-    last_debug = log.is_forced_debugging()
-
-    db.query("SELECT heartbeat_boot('archiver')")
-
-
     worker_pool = pscheduler.WorkerProcessPool(
-        name="runner-pool",
+        name="archiver-pool",
         load_limit=options.worker_threads,
         setup=worker_process_setup,
         setup_args=(dsn, options.worker_threads,),
@@ -898,6 +892,11 @@ def main_program():
         pool_size_limit=None,
         idle_time=worker_idle
     )
+
+    next_refresh = None
+    last_debug = log.is_forced_debugging()
+
+    db.query("SELECT heartbeat_boot('archiver')")
 
     ids_archiving = pscheduler.ThreadSafeSet()
 
@@ -914,13 +913,6 @@ def main_program():
     while True:
 
         db.query("SELECT heartbeat('archiver')")
-
-        # Drain the pools if the debug level changes.  This is done
-        # since persisting archivers won't register the change in state.
-
-        current_debug = log.is_forced_debugging()
-        if current_debug != last_debug:
-            last_debug = current_debug
 
         warmboot = False
 
@@ -947,14 +939,14 @@ def main_program():
             else:
                 log.debug("Not waiting or nohing happened.")
 
+        if warmboot:
+            log.info("Warm boot; restarting.")
+            # The pool will hang around until its idle children disappear.
+            del worker_pool
+            return True
+
         # Until we hear otherwise...
         next_refresh = refresh
-
-        if warmboot:
-            # TODO: Need to pass this down to the child processes
-            log.warning("TODO: NEED TO DRAIN ARCHIVER POOLS")
-            # log.debug("Warm boot; draining archiver pools")
-            # archiver_collection.drain()
 
         query_limit = options.max_parallel - len(ids_archiving)
 
@@ -968,8 +960,6 @@ def main_program():
         exclusions = list(ids_archiving.items())
         log.debug("Excluding %s", exclusions)
 
-        # TODO: A lot of what's being pulled here can be pulled from
-        # the spec.  Remove anything unnecessary.
         result = db.query("""SELECT id, task_uuid, run_uuid, archiver,
                              archiver_data, start,
                              duration, test, tool, participants, result,
@@ -1015,7 +1005,7 @@ def main_program():
             log.debug("%d: Starting worker", archiving_id)
             try:
                 worker_pool(archiving_id,
-                            ArchiveWorker(archiving_id, row, current_debug),
+                            ArchiveWorker(archiving_id, row, log.is_forced_debugging()),
                             archive_completion)
                 ids_archiving.add(archiving_id)
                 next_refresh = None
@@ -1024,11 +1014,13 @@ def main_program():
 
 
 
-
-
 with pscheduler.PidFile(options.pidfile) as pidfile:
     if options.daemon:
         with daemon.DaemonContext(pidfile=pidfile):
-            main_program()
+            # Any return of True means run it again.
+            while main_program():
+                pass
     else:
-        main_program()
+        # Ibid.
+        while main_program():
+            pass

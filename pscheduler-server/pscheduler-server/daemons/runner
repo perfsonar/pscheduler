@@ -207,12 +207,17 @@ def clock_survey(hosts, bind=None):
 
 class RunWorker(pscheduler.GenericWorker):
 
-    def __init__(self, id, start_at):
+    def __init__(self, id, start_at, debug):
 
         self.id = id
         self.start_at = start_at
         self.finished = False
         self.output = []
+        self.debug = debug
+
+        # This will be set definitively when the worker runs because
+        # the log class can't be passed across processes.
+        self.log_debug = None
 
 
     def __post_new_result(self, result):
@@ -293,8 +298,7 @@ class RunWorker(pscheduler.GenericWorker):
         global log
         self.log = log
 
-        # Use the default debug method until told otherwise.
-        self.log_debug = log.debug
+        self.log_debug = log.debug_always if self.debug else lambda *args: None
 
         try:
             self.log_debug("%d: Running", self.id)
@@ -377,9 +381,11 @@ class RunWorker(pscheduler.GenericWorker):
                            self.id, str(ex))
             return
 
-        if debug:
+        # Debug if object creatior or the task said to.
+        if self.debug or debug:
             self.log_debug = self.log.debug_always
-            self.log_debug("%d: Task requested debug", self.id)
+            if debug:
+                self.log_debug("%d: Task requested debug", self.id)
 
         if lead_bind is not None:
             self.log_debug("%d: Lead bind for this run is %s", self.id, lead_bind)
@@ -822,6 +828,9 @@ def main_program():
             log.debug("Purging completed thread %d", remove)
             del worker_threads[remove]
 
+        # Skim the worker pool
+        worker_pool.groom()
+
         if not pscheduler.timedelta_is_zero(wait_time):
 
             # Wait for a notification or the wait time to elapse.  Eat all
@@ -929,7 +938,7 @@ def main_program():
                 try:
 
                     # Make a worker and throw it into the pool.
-                    worker_pool(run_id, RunWorker(run_id, start_at), run_completion)
+                    worker_pool(run_id, RunWorker(run_id, start_at, log.is_forced_debugging()), run_completion)
                     log.debug("%d: Created worker", run_id)
                     ids_running.add(run_id)
 
