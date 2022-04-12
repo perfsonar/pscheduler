@@ -1011,7 +1011,7 @@ def main_program():
             try:
                 # Make a worker and throw it into the pool.
                 worker = SchedulerWorker(number, task, key, runs, trynext, anytime, json,
-                                         participants, debug, log.is_forced_debug())
+                                         participants, debug, log.is_forced_debugging())
                 worker_pool(number, worker, scheduling_completion)
                 workers.add(number)
                 log.debug("%d: Created worker", number)
