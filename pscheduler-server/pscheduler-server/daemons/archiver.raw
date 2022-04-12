@@ -931,6 +931,8 @@ def main_program():
 
             db.query("SELECT heartbeat('archiver', %s)", [datetime.timedelta(seconds=next_refresh)])
 
+            worker_pool.groom()
+
             if next_refresh is not None and db.wait(next_refresh):
                 notifications = [tup[0] for tup in db.notifications()]
                 log.debug("Notifications: %s" % (" ".join(notifications)))

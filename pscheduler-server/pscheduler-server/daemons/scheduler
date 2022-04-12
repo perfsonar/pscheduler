@@ -739,7 +739,7 @@ class NonStarterException(Exception):
     pass
 
 
-def schedule_task(number, log, task, key, runs, trynext, anytime, json,
+def schedule_task(number, task, key, runs, trynext, anytime, json,
                   participants, log_debug):
     """Do the actual work of scheduling a run."""
     # TODO: This could probably be part of the SchedulerWorker class.
@@ -856,19 +856,21 @@ class SchedulerWorker(pscheduler.GenericWorker):
     def __call__(self):
         """Do the scheduling"""
 
-        if self.debug or self.forced_debug:
-            self.log_debug = log.debug_always
+        if self.task_debug or self.forced_debug:
+            log_debug = log.debug_always
             if self.task_debug:
-                self.log_debug("%d: Task requested debug", self.number)
+                log_debug("%d: Task requested debug", self.number)
+        else:
+            log_debug = lambda *args: None
 
-        self.log_debug("%d: Scheduling task %s at %s", self.number, self.task, self.trynext)
+        log_debug("%d: Scheduling task %s at %s", self.number, self.task, self.trynext)
 
 
         try:
 
-            schedule_task(self.number, self.log_debug, self.task, self.key,
+            schedule_task(self.number, self.task, self.key,
                           self.runs, self.trynext, self.anytime, self.json,
-                          self.participants, self.log_debug)
+                          self.participants, log_debug)
 
         except NonStarterException as ex:
 
@@ -891,7 +893,7 @@ class SchedulerWorker(pscheduler.GenericWorker):
         finally:
 
             # However it went, we're no longer working on this task.
-            self.log_debug("%d: Thread finished", self.number)
+            log_debug("%d: Thread finished", self.number)
 
         # No news is good news.
         return None
@@ -954,6 +956,8 @@ def main_program():
             for remove in [ worker_id for worker_id in worker_threads if worker_id not in workers ]:
                 log.debug("Purging completed thread %d", remove)
                 del worker_threads[remove]
+
+            worker_pool.groom()
 
             db.query("SELECT heartbeat('scheduler', %s)", [refresh])
 
@@ -1021,7 +1025,6 @@ def main_program():
 
         if db.notifications():
             wait = False
-
 
 
 

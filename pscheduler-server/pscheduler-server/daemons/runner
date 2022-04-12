@@ -828,9 +828,6 @@ def main_program():
             log.debug("Purging completed thread %d", remove)
             del worker_threads[remove]
 
-        # Skim the worker pool
-        worker_pool.groom()
-
         if not pscheduler.timedelta_is_zero(wait_time):
 
             # Wait for a notification or the wait time to elapse.  Eat all
@@ -841,6 +838,8 @@ def main_program():
 
             with db.cursor() as cursor:
                 cursor.execute("SELECT heartbeat('runner', %s)", [wait_time])
+
+            worker_pool.groom()
 
             log.debug("Next run or check in %s", wait_time)
             try:
@@ -964,6 +963,7 @@ def main_program():
 
 
                     log.error("Unable to set on-deck status: %s" % (str(ex)))
+
 
     # Not that this will ever be reached...
     db.close()

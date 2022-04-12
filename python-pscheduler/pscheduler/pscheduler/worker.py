@@ -268,7 +268,7 @@ class WorkerProcess(object):
         """
         Determine if the processor is running
         """
-        return self.running and self.process.is_alive and self.relayed_exception is None
+        return self.running and self.process.is_alive() and self.relayed_exception is None
 
 
     def is_taking_work(self):
@@ -501,7 +501,10 @@ class WorkerProcess(object):
         self.process.terminate()
         # Multiprocessing will have just orphaned this without .kill()
         # and .close().
-        os.kill(pid, signal.SIGTERM)
+        try:
+            os.kill(pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass  # Not there?  Don't care.
         self.__raise()
 
 
@@ -564,22 +567,27 @@ class WorkerProcessPool(object):
         with self.lock:
             to_remove = []
             for name, processor in self.processors.items():
-                self.__debug("Considering %s for grooming" % (name))
                 if not processor.is_running():
                     to_remove.append((name, processor))
 
             for name, processor in to_remove:
-                self.processors[processor].terminate()
-                del self.processors[processor]
-                self.__debug("Groomed %s" % (name))
+                self.__debug("Terminating %s" % (name))
+                self.processors[name].terminate()
+                del self.processors[name]
 
+            # If we hit an empty pool and the number has become
+            # arbitrarily-large, reset it.
+            if len(self.processors) == 0 and self.processor_number > 999999:
+                self.__debug("Empty pool; resetting counter.")
+                self.processor_number = 0
 
 
     def status(self):
         """
         Return a dictionary of the names of the processors and their loads
         """
-        return dict([(name, len(processor)) for name, processor in self.processors.items()])
+        with self.lock:
+            return dict([(name, len(processor)) for name, processor in self.processors.items()])
 
 
 
@@ -675,7 +683,7 @@ class WorkerProcessPool(object):
         # Beyond this point, calls to __call__() will fail, so there's
         # no need to continue holding the lock.
 
-        self.__groom()
+        self.groom()
 
         self.__debug("Closing the pool.")
 
