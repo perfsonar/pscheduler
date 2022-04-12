@@ -894,7 +894,6 @@ def main_program():
     )
 
     next_refresh = None
-    last_debug = log.is_forced_debugging()
 
     db.query("SELECT heartbeat_boot('archiver')")
 
