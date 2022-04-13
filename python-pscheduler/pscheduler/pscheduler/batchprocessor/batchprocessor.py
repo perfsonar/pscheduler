@@ -110,6 +110,47 @@ class BatchProcessor():
                     "schema",
                     "jobs",
                 ]
+            },
+            "3": {
+                "type": "object",
+                "properties": {
+                    "schema": {
+                        "type": "integer",
+                        "enum": [ 3 ]
+                    },
+                    "global": { "$ref": "#/local/global" },
+                    "jobs": { 
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "label": { "$ref": "#/pScheduler/String" },
+                                "enabled": { "$ref": "#/pScheduler/Boolean" },
+                                "iterations": {
+                                    "oneOf": [
+                                        { "$ref": "#/pScheduler/Cardinal" },
+                                        { "$ref": "#/pScheduler/JQTransformSpecification" }
+                                    ]                                    
+                                },
+                                "parallel": { "$ref": "#/pScheduler/Boolean" },
+                                "backoff": { "$ref": "#/pScheduler/Duration" },
+                                "sync-start": { "$ref": "#/pScheduler/Boolean" },
+                                "task": { "$ref": "#/pScheduler/AnyJSON" },  # Validated later.
+                                "task-transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
+                                "continue-if": { "$ref": "#/pScheduler/JQTransformSpecification" },
+                            },
+                            "additionalProperties": False,
+                            "required": [
+                                "task"
+                            ]
+                        }
+                    },
+                },
+                "additionalProperties": False,
+                "required": [
+                    "schema",
+                    "jobs",
+                ]
             }
         }
     }
@@ -288,116 +329,135 @@ class BatchProcessor():
         }
 
 
-
-
-
-
     def __prep_job(self, job_number, job, debug, dry_run):
 
-            if not job.get("enabled", True):
-                return
+        if not job.get("enabled", True):
+            return
 
-            iterations = job.get("iterations", 1)
+        iterations = job.get("iterations", 1)
+        if not isinstance(iterations, int):
+            assert isinstance(iterations, dict)
+            try:
+                iter_args = copy.deepcopy(iterations.get('args', {}))
+                iter_args['global'] = self.global_data
+                iter_filter = JQFilter(iterations['script'], args=iter_args)
+                iterations = iter_filter(None)[0]
+            except ValueError as ex:
+                raise ValueError("At /iterations: %s" % (ex))
+            except JQRuntimeError as ex:
+                raise ValueError("At /iterations: %s" % (ex))
 
-            backoff = iso8601_as_timedelta(job.get("backoff", "P0D"))
-            backoff_secs = timedelta_as_seconds(backoff)
-
-            run_task_args = []
-
-
-            def __apply_transform(data,
-                                  transform,
-                                  args,
-                                  transform_location,
-                                  runtime_location
-                              ):
-                """
-                Apply a transform and return the results, exiting if compilation
-                or runtime fails.
-                """
-
-                if transform is None:
-                    return data
-        
-                try:
-                    filterer = JQFilter(transform["script"], args=args)
-                    return filterer(data)[0]
-                except ValueError as ex:
-                    raise ValueError("At %s: %s" % (transform_location, ex))
-                except jqfilter.JQRuntimeError as ex:
-                    raise ValueError("At %s: %s" % (runtime_location, ex))
-
-                assert False, "Should not be reached."
+            if not isinstance(iterations, int):
+                raise ValueError("At /iterations: Transform did not return an integer")
 
 
-            for iteration in range(0, iterations):
+        tasks = job['task']
 
-                transform_args = {
-                    "global": self.global_data,
-                    "iteration": iteration
-                }
-
-
-                # Global Pre Transform
-                global_pre_transformed = __apply_transform(job["task"],
-                                                           self.global_transform_pre,
-                                                           transform_args,
-                                                           "/global/transform-pre",
-                                                           "/jobs/%d, iteration %d, global pre-transform" % (job_number,
-                                                                                                                  iteration)
-                )
-
-                # Job Task Transform
-                job_task_transformed = __apply_transform(global_pre_transformed,
-                                                         job.get("task-transform"),
-                                                         transform_args,
-                                                         "/jobs/%d/task-transform" % (job_number),
-                                                         "/jobs/%d/task-transform, iteration %d" % (job_number, iteration)
-                )
-
-                # Global Post Transform
-                transformed = __apply_transform(job_task_transformed,
-                                                self.global_transform_post,
-                                                transform_args,
-                                                "/global/transform-post",
-                                                "/jobs/%d, iteration %d, global post-transform" % (job_number, iteration)
-                )
+        # An array'd set of tasks overrides anything calculated above.
+        if isinstance(tasks, list):
+            iterations = len(tasks)
 
 
+        backoff = iso8601_as_timedelta(job.get("backoff", "P0D"))
+        backoff_secs = timedelta_as_seconds(backoff)
 
-                # Make sure the task back up structurally-valid
+        run_task_args = []
 
-                valid, message = json_validate(transformed,
-                                                { "$ref": "#/pScheduler/TaskSpecification" })
 
-                if not valid:
-                    raise ValueError("At /jobs/%d/task iteration %d: %s" % (job_number, iteration, message))
+        def __apply_transform(data,
+                              transform,
+                              args,
+                              transform_location,
+                              runtime_location
+                          ):
+            """
+            Apply a transform and return the results, exiting if compilation
+            or runtime fails.
+            """
 
-                if "schedule" in transformed:
+            if transform is None:
+                return data
 
-                    schedule = transformed["schedule"]
+            try:
+                filterer = JQFilter(transform["script"], args=args)
+                return filterer(data)[0]
+            except ValueError as ex:
+                raise ValueError("At %s: %s" % (transform_location, ex))
+            except JQRuntimeError as ex:
+                raise ValueError("At %s: %s" % (runtime_location, ex))
 
-                    # Scrub out anything that shouldn't be there.
-                    for parameter in [ "start", "repeat", "repeat-cron", "until", "max-runs" ]:
-                        try:
-                            del schedule[parameter]
-                        except KeyError:
-                            pass  # Not there?  Don't care.
+            assert False, "Should not be reached."
 
-                else:
 
-                    transformed["schedule"] = {}
+        for iteration in range(0, iterations):
 
-                # Hold it for run time.
-                run_task_args.append((
-                    "%s/%d" % (job.get("label", "unlabeled"), iteration),
-                    backoff_secs * iteration,
-                    transformed,
-                    debug,
-                    dry_run
-                ))
+            transform_args = {
+                "global": self.global_data,
+                "iteration": iteration
+            }
 
-            job[self.__INTERNAL] = run_task_args
+            initial_task = tasks[iteration] if isinstance(tasks, list) else tasks
+
+            # Global Pre Transform
+            global_pre_transformed = __apply_transform(initial_task,
+                                                       self.global_transform_pre,
+                                                       transform_args,
+                                                       "/global/transform-pre",
+                                                       "/jobs/%d, iteration %d, global pre-transform" % (job_number,
+                                                                                                              iteration)
+            )
+
+            # Job Task Transform
+            job_task_transformed = __apply_transform(global_pre_transformed,
+                                                     job.get("task-transform"),
+                                                     transform_args,
+                                                     "/jobs/%d/task-transform" % (job_number),
+                                                     "/jobs/%d/task-transform, iteration %d" % (job_number, iteration)
+            )
+
+            # Global Post Transform
+            transformed = __apply_transform(job_task_transformed,
+                                            self.global_transform_post,
+                                            transform_args,
+                                            "/global/transform-post",
+                                            "/jobs/%d, iteration %d, global post-transform" % (job_number, iteration)
+            )
+
+
+
+            # Make sure the task back up structurally-valid
+
+            valid, message = json_validate(transformed,
+                                            { "$ref": "#/pScheduler/TaskSpecification" })
+
+            if not valid:
+                raise ValueError("At /jobs/%d/task iteration %d: %s" % (job_number, iteration, message))
+
+            if "schedule" in transformed:
+
+                schedule = transformed["schedule"]
+
+                # Scrub out anything that shouldn't be there.
+                for parameter in [ "start", "repeat", "repeat-cron", "until", "max-runs" ]:
+                    try:
+                        del schedule[parameter]
+                    except KeyError:
+                        pass  # Not there?  Don't care.
+
+            else:
+
+                transformed["schedule"] = {}
+
+            # Hold it for run time.
+            run_task_args.append((
+                "%s/%d" % (job.get("label", "unlabeled"), iteration),
+                backoff_secs * iteration,
+                transformed,
+                debug,
+                dry_run
+            ))
+
+        job[self.__INTERNAL] = run_task_args
 
 
 
