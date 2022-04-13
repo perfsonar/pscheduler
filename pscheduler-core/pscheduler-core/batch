@@ -90,6 +90,7 @@ def debug(message):
         print(message, file=sys.stderr)
 
 try:
+
     spec = pscheduler.json_load(input_file)
     processor = pscheduler.batchprocessor.BatchProcessor(spec,
                                                          assist=args.assist,
@@ -100,8 +101,6 @@ try:
     # Run it.
     pscheduler.succeed_json(processor(dry_run=args.dry, debug=debug))
 
-try:
-    pscheduler.succeed_json(processor(dry_run=args.dry, debug=debug))
 except (ValueError, OSError) as ex:
     pscheduler.fail("%s: %s" % (args.jobfile, str(ex)))
 except Exception as ex:
