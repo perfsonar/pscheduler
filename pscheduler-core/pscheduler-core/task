@@ -513,7 +513,7 @@ if 'contexts' in task:
 # Make sure whoever we're using for assistance is running pScheduler
 (has, error) = pscheduler.api_has_pscheduler(assist, bind=assist_bind)
 if not has:
-    pscheduler.fail("%s: %s" % (assist, error))
+    pscheduler.fail("Assist server %s is unavailable: %s" % (assist, error))
 
 
 #
