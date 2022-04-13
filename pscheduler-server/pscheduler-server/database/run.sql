@@ -466,8 +466,7 @@ BEGIN
     SELECT INTO tool_name name FROM tool WHERE id = taskrec.tool; 
 
     -- Finished runs are what get inserted for background tasks.
-    -- TODO: Should be anything that's not a "finished" state
-    IF TG_OP = 'INSERT' AND NEW.state <> run_state_finished() THEN
+    IF TG_OP = 'INSERT' AND NOT run_state_is_finished(NEW.state) THEN
 
         pdata_out := row_to_json(t) FROM ( SELECT taskrec.participant AS participant,
                                            cast ( taskrec.json #>> '{test, spec}' AS json ) AS test ) t;
