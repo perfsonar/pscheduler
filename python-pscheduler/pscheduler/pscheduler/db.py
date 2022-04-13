@@ -2,12 +2,17 @@
 Functions for connecting to the pScheduler database
 """
 
+import datetime
 import errno
+import inspect
 import os
 import psycopg2
+import psycopg2.pool
 import select
 import sys
 import threading
+
+from dateutil.tz import tzlocal
 
 from .filestring import string_from_file
 from .psselect import polled_select
@@ -41,22 +46,6 @@ def pg_connection(dsn='', autocommit=True, name=None):
     return pg
 
 
-def pg_cursor(dsn='', autocommit=True, name=None):
-    """
-    Connect to the database, and return a cursor.
-
-    Arguments:
-
-    dsn - A data source name to use in connecting to the database.  If
-    the string begins with an '@', the remainder will be treated as
-    the path to a file where the value can be retrieved.
-
-    autocommit - Whether or not commits are done automatically when
-    quesies are issued.
-    """
-
-    pg = pg_connection(dsn, autocommit, name)
-    return pg.cursor()
 
 
 # TODO: Need a routine that does the select wait currently
@@ -203,43 +192,143 @@ class PgConnection(object):
         self.pg.rowback()
 
 
+
 #
-# Test Program
+# Classes for use in connection pools
 #
 
-if __name__ == "__main__":
 
-    dsn = 'host=dbname=pscheduler user=pscheduler password=6ibeARUyecg6YyJpkRnrt1GIugFUoOK3Hb9SEaJD0BJAhxTBgM3XX'
+class DBConnection(object):
+    """Database connection with self-awareness of expiration time"""
 
-    db = PgConnection(dsn, name="PgConnection-test")
+    def __init__(self, connection, timeout, done_callback, name):
+        self.connection = connection
+        self._done_callback = done_callback
+        self.name = str(name)
+        self._expires = datetime.datetime.now(tzlocal()) + timeout
 
-    db.listen("query")
-    db.listen("stop")
+    def returnable(self):
+        """Determine if the connection is past its expiration date"""
+        return datetime.datetime.now(tzlocal()) > self._expires
 
-    run = True
-    while run:
+    def __enter__(self):
+        return self.connection
 
-        if db.wait(5):
+    def __exit__(self, exc_type=None, exc_value=None, exc_tb=None):
+        self.connection.commit()
+        self._done_callback(self)
 
-            print("Notified")
+    def cursor(self):
+        return self.connection.cursor()
 
-            for notification in db.notifications():
-                (channel, payload, count) = notification
+    def __repr__(self):
+        return '<%s %s Expires %s>' % (self.__class__.__name__, self.name, self._expires)
 
-                if channel == "query":
-                    result = db.query("""
-                         SELECT table_name
-                         FROM information_schema.tables WHERE table_schema = %s
-                         LIMIT 5""", ["public"])
-                    print(len(result), "rows")
-                    for row in result:
-                        print(row[0])
-                    print("End of results")
-                elif channel == "stop":
-                    run = False
-                    break
 
-        else:
-            print("No notifications")
+class DBConnectionPool():
+    """Self-skimming pool of DBConnections"""
 
-    db.unlisten()
+    # How long to wait for a connection to become available
+    DEFAULT_CONNECTION_TIMEOUT = datetime.timedelta(seconds=5)
+
+    # Connection age before purging
+    DEFAULT_SKIM_TIME = datetime.timedelta(seconds=60)
+
+
+    def _pass(_message):
+        """Drop a message on the floor."""
+        pass
+
+
+    def __init__(self, dsn, max_pool_size, name, skim_time=DEFAULT_SKIM_TIME, log_callback=_pass):
+        self.pool = psycopg2.pool.ThreadedConnectionPool(
+            1,              # Minimum connections
+            max_pool_size,  # Maximum connections
+            dsn='%s application_name=%s-pool' % (dsn, name))
+        self.max_pool_size = max_pool_size
+        self.name = name
+        self._skim_time = skim_time
+        self._next_skim = datetime.datetime.now(tzlocal())
+        self._log_callback = log_callback
+        self._connections_out = {}
+        self._lock = threading.Lock()
+        self._pool_semaphore = threading.Semaphore(max_pool_size)
+
+
+    def _return_callback(self, connection):
+        with self._lock:
+            try:
+                self.pool.putconn(self._connections_out[connection])
+                del self._connections_out[connection]
+            except KeyError:
+                self._log_callback('Connection %s not in the checked out list' % connection)
+                pass  # Not there?  Don't care.
+
+
+    def _skim(self, force=False):
+        """Get rid of any connections that say they're returnable."""
+
+        # Do a periodic skim if it's time to do that.
+        if (datetime.datetime.now(tzlocal()) < self._next_skim) and not force:
+            return
+
+        with self._lock:
+            for (connection, dbc) in [
+                    (connection, db)
+                    for (connection, db) in self._connections_out.items()
+                    if connection.returnable()
+            ]:
+                self.pool.putconn(dbc)
+                del self._connections_out[connection]
+                self._log_callback('%s: Skimmed orphaned connection "%s"'
+                                   % (self.name, connection.name))
+
+        self._next_skim = datetime.datetime.now(tzlocal()) + self._skim_time
+
+
+    def __call__(self, identifier, timeout=DEFAULT_CONNECTION_TIMEOUT):
+        """Get a database connection from the pool, waiting up to 'timeout'
+           seconds to get one."""
+
+        self._skim()
+
+        caller = inspect.getframeinfo(inspect.stack()[1][0])
+        name = '%s:%s/%s' % (os.path.basename(caller.filename), caller.lineno, str(identifier))
+
+        started = datetime.datetime.now(tzlocal())
+        give_up_after = started + timeout
+        attempts = 0
+
+        while datetime.datetime.now(tzlocal()) < give_up_after:
+
+            pool_con = None
+            try:
+                pool_con = self.pool.getconn()  # Already thread-safe
+                connection = DBConnection(pool_con, self._skim_time, self._return_callback, name)
+                with self._lock:
+                    self._connections_out[connection] = pool_con
+                if attempts:
+                    self._log_callback('Waited %s for a connection' % (datetime.datetime.now(tzlocal()) - started))
+                return connection
+            except psycopg2.pool.PoolError as ex:
+                self._log_callback('%s: Pool error: %s' % (str(identifier), str(ex)))
+                if len(self._connections_out) == self.max_pool_size:
+                    self._log_callback('%s: Encountered empty pool' % (self.name))
+                    self._skim()
+                    if attempts > 0:
+                        time.sleep(0.1)
+                    attempts += 1
+                    continue
+            except Exception as ex:
+                # Any other failure is automatic return to the pool if there was one.
+                if pool_con is not None:
+                    self.pool.putconn(pool_con)
+                raise ex
+
+        # Reaching here means the pool is still full.
+        raise psycopg2.pool.PoolError('Timed out getting database connection')
+
+    def __repr__(self):
+        with self._lock:
+            return '<%s %d/%d>' % (self.__class__.__name__,
+                                   len(self._connections_out), self.max_pool_size)

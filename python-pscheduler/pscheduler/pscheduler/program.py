@@ -88,6 +88,8 @@ def _end_process(process):
     try:
         process.terminate()
         process.wait(timeout=0.5)
+    except SystemExit:
+        pass
     except OSError:
         pass  # Can't kill things that have changed UID.
     except subprocess.TimeoutExpired:

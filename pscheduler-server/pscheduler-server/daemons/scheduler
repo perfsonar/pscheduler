@@ -8,6 +8,7 @@ import daemon
 import datetime
 import errno
 import optparse
+import os
 import pscheduler
 import random
 import select
@@ -52,7 +53,7 @@ opt_parser.add_option("--first-run-offset-single",
 opt_parser.add_option("-m", "--max-parallel",
                       help="Maximum concurrent archivings",
                       action="store", type="int", dest="max_parallel",
-                      default=50)
+                      default=100)
 opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
@@ -69,6 +70,16 @@ opt_parser.add_option("-t", "--timeout",
                       help="Communication timeout (ISO8601)",
                       action="store", type="string", dest="timeout",
                       default="PT10S")
+
+opt_parser.add_option("--worker-idle",
+                      help="Idle time before worker processes exit",
+                      action="store", type="string", dest="worker_idle",
+                      default="PT1M")
+opt_parser.add_option("--worker-threads",
+                      help="Maximum threads per worker process",
+                      action="store", type="int", dest="worker_threads",
+                      default=20)
+
 opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
 opt_parser.add_option("--debug", action="store_true", dest="debug")
 
@@ -117,10 +128,45 @@ except ValueError:
 timeout = pscheduler.timedelta_as_seconds(timeout_td)
 
 
+worker_idle_td = pscheduler.iso8601_as_timedelta(options.worker_idle)
+if worker_idle_td is None:
+    opt_parser.error('Invalid worker idle time "' + options.worker_idle + '"')
+worker_idle = pscheduler.timedelta_as_seconds(worker_idle_td)
+
+worker_threads = options.worker_threads
+if worker_threads < 1:
+    opt_parser.error("Worker threads must be positive.")
+
 
 log = pscheduler.Log(verbose=options.verbose, debug=options.debug, propagate=True)
 
-dsn = options.dsn
+dsn = pscheduler.string_from_file(options.dsn)
+
+
+#
+# Globals for use by worker pool processes
+#
+
+
+dbpool_size = int(options.worker_threads * 0.20)
+dbpool = None
+
+def worker_process_setup(args):
+    """Set up everything globally for a worker process"""
+    dsn, max_size = args
+    global dbpool
+    dbpool = pscheduler.DBConnectionPool(dsn,
+                                         dbpool_size,
+                                         name='runner-%s' % (os.getpid()),
+                                         log_callback=log.warning)
+
+
+def worker_process_teardown(*args):
+    """Tear down up everything globally for a worker process"""
+    # Nothing to do here, the pool will go away with the process.
+    pass
+
+
 
 
 #
@@ -321,7 +367,6 @@ def fetch_proposals(
 
 def run_post(
         number,        # Logging tag
-        pg,            # Database connection
         log_debug,     # Method to call for debugging
         url,           # URL for task
         start_time,    # Desired start time
@@ -461,7 +506,7 @@ def run_post(
                                             task_duration,
                                             priority_attempt)
         except Exception as ex:
-            log and log.exception()
+            log.exception()
             return (None, None, None, False, False, str(ex))
 
         log_debug("%d: Ranges in common: %s" % (number, common_ranges))
@@ -502,17 +547,15 @@ def run_post(
         selected_range = common_ranges[0]
         slip_offset = datetime.timedelta()
 
-    if log:
-        log.debug("%d: Selected range %s", number, selected_range)
-        log.debug("%d: Using a slip offset of %s", number, slip_offset)
+    log_debug("%d: Selected range %s", number, selected_range)
+    log_debug("%d: Using a slip offset of %s", number, slip_offset)
     schedule_lower = selected_range.lower + slip_offset
     schedule_upper = schedule_lower + task_duration
 
-    if log:
-        now = pscheduler.time_now()
-        log.debug("%d: Horizon range: %s - %s", number,
-                  pscheduler.timedelta_as_iso8601(schedule_lower - now),
-                  pscheduler.timedelta_as_iso8601(schedule_upper - now))
+    now = pscheduler.time_now()
+    log_debug("%d: Horizon range: %s - %s", number,
+              pscheduler.timedelta_as_iso8601(schedule_lower - now),
+              pscheduler.timedelta_as_iso8601(schedule_upper - now))
 
 
 
@@ -526,9 +569,8 @@ def run_post(
 
     # First one is the lead.  Post it and get the UUID.
 
-    if log:
-        log.debug("%d: Posting lead run to %s", number, task_urls[0])
-        log.debug("%d: Data %s", number, run_params)
+    log_debug("%d: Posting lead run to %s", number, task_urls[0])
+    log_debug("%d: Data %s", number, run_params)
     status, run_lead_url \
         = pscheduler.url_post(task_urls[0] + '/runs',
                               data=run_params,
@@ -569,9 +611,8 @@ def run_post(
 
         put_url = task_url + run_suffix
 
-        if log:
-            log.debug("%d: Putting run to participant %s", number, put_url)
-            log.debug("%d: Parameters: %s", number, run_params)
+        log_debug("%d: Putting run to participant %s", number, put_url)
+        log_debug("%d: Parameters: %s", number, run_params)
 
         status, output = pscheduler.url_put(put_url,
                                             data=run_params,
@@ -624,15 +665,16 @@ def run_post(
     # because it's invisible to the API
 
     try:
-        lead_result = pg.query(
-            "SELECT part_data FROM run WHERE uuid = %s",
+        with dbpool(number) as db:
+            cursor = db.cursor()
+            cursor.execute("SELECT part_data FROM run WHERE uuid = %s",
             [pscheduler.api_run_uuid(run_lead_url)]
         )
-        if len(lead_result) != 1:
+        if cursor.rowcount != 1:
             raise RuntimeError(f'Got unexpected lead part data result from database ({len(lead_result)} rows)')
-        lead_part_data = next(lead_result)[0]
+        lead_part_data = cursor.fetchone()[0]
     except Exception as ex:
-        log.debug(f'{number}: Failed to get lead participant data: {str(ex)}')
+        log_debug('%d: Failed to get lead participant data: %s' % (number, str(ex)))
         return (None, None, None, False, False,
                 f'Failed to get lead run data: {str(ex)}')
 
@@ -650,7 +692,7 @@ def run_post(
                                             throw=False,
                                             timeout=timeout)
         if status != 200 or not 'participant-data' in result:
-            log.debug("%d: Deleting runs: %s", number, runs_posted)
+            log_debug("%d: Deleting runs: %s", number, runs_posted)
             pscheduler.url_delete_list(runs_posted, params=key_params,
                                        bind=bind_addr, timeout=timeout)
             return (None, None, None, False, False,
@@ -697,8 +739,8 @@ class NonStarterException(Exception):
     pass
 
 
-def schedule_task(number, log, task, key, runs, trynext, anytime, json,
-                  participants, log_debug, pg):
+def schedule_task(number, task, key, runs, trynext, anytime, json,
+                  participants, log_debug):
     """Do the actual work of scheduling a run."""
     # TODO: This could probably be part of the SchedulerWorker class.
 
@@ -741,7 +783,7 @@ def schedule_task(number, log, task, key, runs, trynext, anytime, json,
         tries_left -= 1
         try:
             run_uri, start_time, end_time, skip, conflict, error \
-                = run_post(number, pg, log_debug, url, trynext, anytime, lead_bind,
+                = run_post(number, log_debug, url, trynext, anytime, lead_bind,
                            log=log, key=key)
         except Exception as ex:
             error = str(ex)
@@ -776,10 +818,10 @@ def schedule_task(number, log, task, key, runs, trynext, anytime, json,
     # TODO: Set lead run to pending so the runner will see it.
 
     try:
-        pg.query(
-            """UPDATE run SET state = run_state_pending() WHERE uuid = %s""",
-            [pscheduler.api_run_uuid(run_uri)]
-        )
+        with dbpool(number) as db:
+            cursor = db.cursor()
+            cursor.execute("""UPDATE run SET state = run_state_pending() WHERE uuid = %s""",
+                           [pscheduler.api_run_uuid(run_uri)])
         log_debug(f'{number}: Run state set to pending')
     except Exception as ex:
         log_debug(f'{number}: Failed to set pending: {str(ex)}')
@@ -791,18 +833,14 @@ def schedule_task(number, log, task, key, runs, trynext, anytime, json,
 
 # ------------------------------------------------------------------------------
 
-class SchedulerWorker(object):
+class SchedulerWorker(pscheduler.GenericWorker):
 
     """Handles scheduling for a single run."""
 
-    def __init__(self, number, pg, log, working_set,
-                 task, key, runs, trynext, anytime, json, participants, debug):
+    def __init__(self, number, task, key, runs, trynext, anytime, json, participants, task_debug, forced_debug):
         """Initialize"""
 
         self.number = number
-        self.pg = pg
-        self.log = log
-        self.working_set = working_set
 
         self.task = task
         self.key = key
@@ -811,34 +849,28 @@ class SchedulerWorker(object):
         self.anytime = anytime
         self.json = json
         self.participants = participants
-
-        self.worker = threading.Thread(target=lambda: self.run())
-        self.worker.setDaemon(True)
-
-        if debug:
-            self.log_debug = self.log.debug_always
-            self.log_debug("%d: Task requested debug", number)
-        else:
-            self.log_debug = self.log.debug
-
-        self.log_debug("%d: New thread for task %s at %s", number,
-                       self.task, self.trynext)
-
-        self.worker.start()
+        self.task_debug = task_debug
+        self.forced_debug = forced_debug
 
 
-    def run(self):
+    def __call__(self):
         """Do the scheduling"""
 
-        # Give this thread its own seed so it behaves differently than
-        # others.
-        random.seed()
+        if self.task_debug or self.forced_debug:
+            log_debug = log.debug_always
+            if self.task_debug:
+                log_debug("%d: Task requested debug", self.number)
+        else:
+            log_debug = lambda *args: None
+
+        log_debug("%d: Scheduling task %s at %s", self.number, self.task, self.trynext)
+
 
         try:
 
-            schedule_task(self.number, self.log, self.task, self.key,
+            schedule_task(self.number, self.task, self.key,
                           self.runs, self.trynext, self.anytime, self.json,
-                          self.participants, self.log_debug, self.pg)
+                          self.participants, log_debug)
 
         except NonStarterException as ex:
 
@@ -851,7 +883,8 @@ class SchedulerWorker(object):
                      self.task, str(ex))
 
             try:
-                self.pg.query("""SELECT api_run_post(%s, %s, NULL, %s)""",
+                with dbpool(self.number).cursor() as cursor:
+                    cursor.execute("""SELECT api_run_post(%s, %s, NULL, %s)""",
                               [self.task, self.trynext, str(ex)])
             except Exception as nsex:
                 log.error("%d: Insertion of non-starter failed: %s",
@@ -860,8 +893,10 @@ class SchedulerWorker(object):
         finally:
 
             # However it went, we're no longer working on this task.
-            self.working_set.remove(self.number)
-            self.log_debug("%d: Thread finished", self.number)
+            log_debug("%d: Thread finished", self.number)
+
+        # No news is good news.
+        return None
 
 
 
@@ -875,16 +910,28 @@ def main_program():
 
     # TODO: All DB transactions need to be error checked
 
-    pg = pscheduler.PgConnection(dsn, name="scheduler")
-    pg.listen("task_change")
-    pg.query("SELECT heartbeat_boot('scheduler')")
+    worker_pool = pscheduler.WorkerProcessPool(
+        name="scheduler-pool",
+        load_limit=options.worker_threads,
+        setup=worker_process_setup,
+        setup_args=(dsn, options.worker_threads,),
+        teardown=worker_process_teardown,
+        teardown_args=(),
+        debug_callback=lambda m: log.debug(m),
+        # Don't limit this; the OS will punish too many processes.
+        pool_size_limit=None,
+        idle_time=worker_idle
+    )
+
+
+    db = pscheduler.PgConnection(dsn, name="scheduler")
+    db.listen("task_change")
+    db.query("SELECT heartbeat_boot('scheduler')")
 
     # This is separate so non-start activity doesn't get queued up
     # behind the connection that's doing the work in this function's
     # loop.  Having the non-starers queue up isn't a big deal because
     # they're quick.
-
-    nonstart_pg = pscheduler.PgConnection(dsn)
 
     # What workers are running
     max_workers = options.max_parallel
@@ -892,28 +939,37 @@ def main_program():
     workers = pscheduler.ThreadSafeSet()
     worker_threads = {}
 
+    def scheduling_completion(identifier, value, diags):
+        workers.remove(identifier)
+        if value is None:
+            log.debug("%d: Worker reported completion", identifier)
+        else:
+            log.error("%d: Worker failed; returned %s: %s", identifier, value, diags)
+
     wait = False  # First iteration is always no-wait.
 
     while True:
 
-        # Purge any workers that are no longer running
-        for remove in [ worker_id for worker_id in worker_threads if worker_id not in workers ]:
-            log.debug("Purging completed thread %d", remove)
-            del worker_threads[remove]
-
         if wait:
 
-            pg.query("SELECT heartbeat('scheduler', %s)", [refresh])
+            # Purge any workers that are no longer running
+            for remove in [ worker_id for worker_id in worker_threads if worker_id not in workers ]:
+                log.debug("Purging completed thread %d", remove)
+                del worker_threads[remove]
+
+            worker_pool.groom()
+
+            db.query("SELECT heartbeat('scheduler', %s)", [refresh])
 
             log.debug("Waiting.")
-            if pg.wait(pscheduler.timedelta_as_seconds(refresh)):
+            if db.wait(pscheduler.timedelta_as_seconds(refresh)):
                 log.debug("Task change.")
 
                 # Discard pending notifications.  This is safe to do
                 # because all we ever get is task changes and the
                 # query below will find everything that needs
                 # scheduling.
-                _ = pg.notifications()
+                _ = db.notifications()
             else:
                 log.debug("Timed out.")
 
@@ -948,7 +1004,7 @@ def main_program():
                 log.debug("Limiting query to %d tasks", limit)
             query += " LIMIT %d" % (limit)
 
-        for row in pg.query(query, args):
+        for row in db.query(query, args):
 
             number, task, key, runs, trynext, anytime, json, participants, debug = row
 
@@ -957,21 +1013,18 @@ def main_program():
                 continue
 
             try:
-                log.debug("Starting thread for ID %d", number)
-                worker = SchedulerWorker(number, nonstart_pg, log,
-                                         workers, task, key,
-                                         runs, trynext, anytime, json,
-                                         participants, debug)
+                # Make a worker and throw it into the pool.
+                worker = SchedulerWorker(number, task, key, runs, trynext, anytime, json,
+                                         participants, debug, log.is_forced_debugging())
+                worker_pool(number, worker, scheduling_completion)
                 workers.add(number)
-                worker_threads[number] = worker
+                log.debug("%d: Created worker", number)
                 wait = False
             except Exception as ex:
                 log.exception(message="%d: Exception while starting worker" % (number))
 
-
-        if pg.notifications():
+        if db.notifications():
             wait = False
-
 
 
 

@@ -1,0 +1,13 @@
+#!/bin/sh -e
+#
+# Dump the daemon threads
+#
+
+[ -t 1 ] && LONG= || LONG=l
+
+for SERVICE in scheduler runner archiver ticker
+do
+	PID=$(ps -ef | fgrep "/daemons/${SERVICE}" | awk '{ print $2 }' | sort -n | head -1)
+	pstree -ap${LONG} "${PID}"
+	echo
+done

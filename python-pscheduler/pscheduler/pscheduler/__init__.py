@@ -44,3 +44,4 @@ from .text import *
 from .threadsafe import *
 from .unittesting import *
 from .interface import *
+from .worker import *

@@ -10,154 +10,17 @@ import multiprocessing
 import optparse
 import os
 import pscheduler
-import psycopg2
-import psycopg2.extensions
-import psycopg2.pool
+import psutil
 import select
 import signal
 import socket
 import tempfile
-import threading
 import time
-
-
-# ------------------------------------------------------------------------------
-
-# TODO: Move to library in 5.0
-
-import inspect
-from dateutil.tz import tzlocal
-
-class DBConnection(object):
-    """Database connection with self-awareness of expiration"""
-
-    def __init__(self, connection, timeout, done_callback, name):
-        self.connection = connection
-        self._done_callback = done_callback
-        self.name = str(name)
-        self._expires = datetime.datetime.now(tzlocal()) + timeout
-
-    def returnable(self):
-        """Determine if the connection is past its expiration date"""
-        return datetime.datetime.now(tzlocal()) > self._expires
-
-    def __enter__(self):
-        return self.connection
-
-    def __exit__(self, exc_type=None, exc_value=None, exc_tb=None):
-        self.connection.commit()
-        self._done_callback(self)
-
-    def cursor(self):
-        return self.connection.cursor()
-
-    def __repr__(self):
-        return '<%s %s Expires %s>' % (self.__class__.__name__, self.name, self._expires)
-
-
-class DBConnectionPool():
-    """Self-skimming pool of DBConnections"""
-
-    # How long to wait for a connection to become available
-    DEFAULT_CONNECTION_TIMEOUT = datetime.timedelta(seconds=5)
-
-    # Connection age before purging
-    DEFAULT_SKIM_TIME = datetime.timedelta(seconds=60)
-
-
-    def _pass(_message):
-        """Drop a message on the floor."""
-        pass
-
-
-    def __init__(self, dsn, max_pool_size, name, skim_time=DEFAULT_SKIM_TIME, log_callback=_pass):
-        self.pool = psycopg2.pool.ThreadedConnectionPool(
-            1,              # Minimum connections
-            max_pool_size,  # Maximum connections
-            dsn='%s application_name=%s-pool' % (dsn, name))
-        self.max_pool_size = max_pool_size
-        self.name = name
-        self._skim_time = skim_time
-        self._log_callback = log_callback
-        self._connections_out = {}
-        self._lock = threading.Lock()
-        self._pool_semaphore = threading.Semaphore(max_pool_size)
-
-
-    def _return_callback(self, connection):
-        with self._lock:
-            try:
-                self.pool.putconn(self._connections_out[connection])
-                del self._connections_out[connection]
-            except KeyError:
-                self._log_callback('Connection %s not in the checked out list' % connection)
-                pass  # Not there?  Don't care.
-
-
-    def skim(self):
-        """Get rid of any connections that say they're returnable."""
-
-        with self._lock:
-            for (connection, dbc) in [
-                    (connection, db)
-                    for (connection, db) in self._connections_out.items()
-                    if connection.returnable()
-            ]:
-                self.pool.putconn(dbc)
-                del self._connections_out[connection]
-                self._log_callback('%s: Skimmed orphaned connection "%s"'
-                                   % (self.name, connection.name))
-
-
-    def __call__(self, identifier, timeout=DEFAULT_CONNECTION_TIMEOUT):
-        """Get a database connection from the pool, waiting up to 'timeout'
-           seconds to get one."""
-
-        caller = inspect.getframeinfo(inspect.stack()[1][0])
-        name = '%s:%s/%s' % (os.path.basename(caller.filename), caller.lineno, str(identifier))
-
-        started = datetime.datetime.now(tzlocal())
-        give_up_after = started + timeout
-        attempts = 0
-
-        while datetime.datetime.now(tzlocal()) < give_up_after:
-
-            pool_con = None
-            try:
-                pool_con = self.pool.getconn()  # Already thread-safe
-                connection = DBConnection(pool_con, self._skim_time, self._return_callback, name)
-                with self._lock:
-                    self._connections_out[connection] = pool_con
-                if attempts:
-                    self._log_callback('Waited %s for a connection' % (datetime.datetime.now(tzlocal()) - started))
-                return connection
-            except psycopg2.pool.PoolError as ex:
-                self._log_callback('%s: Pool error: %s' % (str(identifier), str(ex)))
-                if len(self._connections_out) == self.max_pool_size:
-                    self._log_callback('%s: Encountered empty pool' % (self.name, connection.name))
-                    self.skim()
-                    if attempts > 0:
-                        time.sleep(0.1)
-                    attempts += 1
-                    continue
-            except Exception as ex:
-                # Any other failure is automatic return to the pool if there was one.
-                if pool_con is not None:
-                    self.pool.putconn(pool_con)
-                raise ex
-
-        # Reaching here means the pool is still full.
-        raise psycopg2.pool.PoolError('Timed out getting database connection')
-
-    def __repr__(self):
-        with self._lock:
-            return '<%s %d/%d>' % (self.__class__.__name__,
-                                   len(self._connections_out), self.max_pool_size)
-
-# ------------------------------------------------------------------------------
+import traceback
 
 
 pscheduler.set_graceful_exit()
+
 
 # Gargle the arguments
 
@@ -180,10 +43,6 @@ opt_parser.add_option("-d", "--dsn",
                       help="Database connection string",
                       action="store", type="string", dest="dsn",
                       default="")
-opt_parser.add_option("-m", "--max-parallel",
-                      help="Maximum concurrent runs",
-                      action="store", type="int", dest="max_parallel",
-                      default=15)
 opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
@@ -193,6 +52,15 @@ opt_parser.add_option("--terse-logging",
                       action="store_true",
                       dest="terse",
                       default=False)
+
+opt_parser.add_option("--worker-idle",
+                      help="Idle time before worker processes exit",
+                      action="store", type="string", dest="worker_idle",
+                      default="PT1M")
+opt_parser.add_option("--worker-threads",
+                      help="Maximum threads per worker process",
+                      action="store", type="int", dest="worker_threads",
+                      default=20)
 
 
 opt_parser.add_option("--verbose", action="store_true", dest="verbose", default=False)
@@ -206,12 +74,49 @@ if refresh is None:
 if pscheduler.timedelta_as_seconds(refresh) == 0:
     opt_parser.error("Refresh interval must be calculable as seconds.")
 
+worker_idle_td = pscheduler.iso8601_as_timedelta(options.worker_idle)
+if worker_idle_td is None:
+    opt_parser.error('Invalid worker idle time "' + options.worker_idle + '"')
+worker_idle = pscheduler.timedelta_as_seconds(worker_idle_td)
+
+worker_threads = options.worker_threads
+if worker_threads < 1:
+    opt_parser.error("Worker threads must be positive.")
+
+
 
 log = pscheduler.Log(verbose=options.verbose, debug=options.debug, propagate=True)
 
 dsn = pscheduler.string_from_file(options.dsn)
 
 log_details = not options.terse
+
+
+# ------------------------------------------------------------------------------
+
+# Globals for use by worker pool processes
+
+dbpool_size = int(options.worker_threads * 0.20)
+dbpool = None
+
+def worker_process_setup(args):
+    """Set up everything globally for a worker process"""
+    dsn, max_size = args
+    global dbpool
+    dbpool = pscheduler.DBConnectionPool(dsn,
+                                         dbpool_size,
+                                         name='runner-%s' % (os.getpid()),
+                                         log_callback=log.warning)
+
+
+def worker_process_teardown(*args):
+    """Tear down up everything globally for a worker process"""
+    # Nothing to do here, the pool will go away with the process.
+    pass
+
+ 
+# ------------------------------------------------------------------------------
+
 
 
 # Current value of run start margin according to the database
@@ -239,6 +144,19 @@ def run_start_margin():
     return __run_start_margin
 
 
+#
+# A record of what we believe to be running and what we don't.
+#
+
+ids_running = pscheduler.ThreadSafeSet()
+
+# This is run when a task completes
+def run_completion(identifier, value, diags):
+    ids_running.remove(identifier)
+    if value is None:
+        log.debug("%d: Worker reported completion", identifier)
+    else:
+        log.error("%d: Worker failed; returned %s: %s", identifier, value, diags)
 
 
 #
@@ -287,34 +205,20 @@ def clock_survey(hosts, bind=None):
 # Class that does the test runs
 #
 
-class RunWorker(object):
+class RunWorker(pscheduler.GenericWorker):
 
-    def __init__(self, dbpool, log, id, start_at):
+    def __init__(self, id, start_at, debug):
 
-        # Per http://initd.org/psycopg/docs/usage.html#thread-safety,
-        # Psycopg is thread-safe when you use multiple cursors against the
-        # same connection.
-
-        self.dbpool = dbpool
-        self.log = log
-        # Use the default debug method until told otherwise.
-        self.log_debug = log.debug
         self.id = id
         self.start_at = start_at
-
         self.finished = False
         self.output = []
+        self.debug = debug
 
-        self.worker = threading.Thread(target=self.run)
-        self.worker.setDaemon(True)
-        self.worker.start()
-    
+        # This will be set definitively when the worker runs because
+        # the log class can't be passed across processes.
+        self.log_debug = None
 
-    def is_complete(self):
-        """Determine whether or not the worker is still running"""
-        self.worker.join(timeout=0)
-        return not self.worker.is_alive()
-        
 
     def __post_new_result(self, result):
         """
@@ -378,12 +282,24 @@ class RunWorker(object):
             # Ordinary text
             self.log_debug("%d: Plain text line %s", self.id, line)
             self.output.append(line)
+
         
-    def run(self):
+    def __call__(self):
         """
         Run the tool in an exception-safe way
         """
-        self.log_debug("%d: Thread running", self.id)
+
+        # These are initialized here because they can't be passed
+        # through to another process.
+
+        global dbpool
+        self.dbpool = dbpool
+
+        global log
+        self.log = log
+
+        self.log_debug = log.debug_always if self.debug else lambda *args: None
+
         try:
             self.log_debug("%d: Running", self.id)
             with tempfile.TemporaryDirectory() as self.temp:
@@ -396,8 +312,12 @@ class RunWorker(object):
             # it might be salvageable.
             self.log_debug("%d: Exception: %s", self.id, ex)
             log.exception()
+            return ex
         finally:
             self.log_debug("%d: Thread finished", self.id)
+
+        # No news is good news.
+        return None
 
 
     def __run(self):
@@ -461,11 +381,11 @@ class RunWorker(object):
                            self.id, str(ex))
             return
 
-
-        if debug:
+        # Debug if object creatior or the task said to.
+        if self.debug or debug:
             self.log_debug = self.log.debug_always
-            self.log_debug("%d: Task requested debug", self.id)
-
+            if debug:
+                self.log_debug("%d: Task requested debug", self.id)
 
         if lead_bind is not None:
             self.log_debug("%d: Lead bind for this run is %s", self.id, lead_bind)
@@ -604,6 +524,8 @@ class RunWorker(object):
             )
 
 
+        self.log_debug("%d: Program has finished.", self.id)
+
         stdout = "\n".join(self.output)
 
         self.log_debug("%d: Tool returned '%s'", self.id, stdout)
@@ -630,7 +552,6 @@ class RunWorker(object):
                                returncode, stderr)
             if stderr is None:
                 stderr = "Tool exited with status %d" % (returncode)
-
 
         try:
             state_selector = 2 if  (
@@ -812,7 +733,7 @@ class RunWorker(object):
             # the local database.
 
             try:
-                self.log_debug(f'{self.id}: Merged result: Setting final state.  Succeeded={succeeded}')
+                self.log_debug("%d: Merged result: Setting final state.  Succeeded=%s", self.id, succeeded)
                 with self.dbpool(self.id) as db:
                     # TODO: Need to figure out succeeded.
                     db.cursor().execute("""
@@ -835,10 +756,12 @@ class RunWorker(object):
             except Exception as ex:
                 self.log.exception()
                 self.log.error("%d: Failed to store run: %s", self.id, str(ex))
-                return
 
         self.log_debug("%d: Run complete", self.id)
         self.finished = True
+
+        # No news is good news.
+        return None
 
 
 
@@ -847,9 +770,35 @@ class RunWorker(object):
 #
 
 
+# This is rough treatment, but child processes really have to go when
+# the program exits.
+def kill_subprocesses():
+    for child in psutil.Process().children(recursive=True):
+        try:
+            os.kill(child.pid, signal.SIGKILL)
+        except Exception:
+            pass  # This is best-effort.
+
+pscheduler.on_graceful_exit(kill_subprocesses)
+
+
 def main_program():
 
     log.debug("Begin main")
+
+    worker_pool = pscheduler.WorkerProcessPool(
+        name="runner-pool",
+        load_limit=options.worker_threads,
+        setup=worker_process_setup,
+        setup_args=(dsn, options.worker_threads,),
+        teardown=worker_process_teardown,
+        teardown_args=(),
+        debug_callback=lambda m: log.debug(m),
+        # Don't limit this; the OS will punish too many processes.
+        pool_size_limit=None,
+        idle_time=worker_idle
+    )
+
 
     # This is for local use.
     db = pscheduler.pg_connection(dsn)
@@ -857,36 +806,6 @@ def main_program():
 
     with db.cursor() as cursor:
         cursor.execute("SELECT heartbeat_boot('runner')")
-
-    with db.cursor() as cursor:
-
-        # Get the maximum number of connections available and limit use of
-        # them to half.
-
-        try:
-            cursor.execute("SHOW max_connections")
-
-            # Should get exactly one row back.  If not, the run probably
-            # vanished.
-
-            if cursor.rowcount != 1:
-                raise Exception("Got %d rows back when expecting one"
-                                % (cursor.rowcount))
-
-            max_connections = int(cursor.fetchone()[0])
-        except Exception as ex:
-            log.exception()
-            log.error("Failed to fetch maximum connections: %s", str(ex))
-            # This is the PgSQL default
-            max_connections = 100
-            log.error("Using default of %d", max_connections)
-
-    pool_size = int(max_connections / 2)
-    log.debug("Using a pool size of %d", pool_size)
-
-    # Pool of database connections for use by the threads.
-    dbpool = DBConnectionPool(dsn, pool_size, name='runner', log_callback=log.warning)
-
 
     # Listen for notifications.
 
@@ -911,9 +830,6 @@ def main_program():
 
         if not pscheduler.timedelta_is_zero(wait_time):
 
-            # Before waiting is a good time to skim the database pool.
-            dbpool.skim()
-
             # Wait for a notification or the wait time to elapse.  Eat all
             # notifications as a group; we only care that we were notified.
 
@@ -922,6 +838,8 @@ def main_program():
 
             with db.cursor() as cursor:
                 cursor.execute("SELECT heartbeat('runner', %s)", [wait_time])
+
+            worker_pool.groom()
 
             log.debug("Next run or check in %s", wait_time)
             try:
@@ -1008,7 +926,7 @@ def main_program():
 
                 run_id, start_in, start_at, background_multi = row
 
-                if run_id in worker_threads:
+                if run_id in ids_running:
                     log.debug("%d is already running" % (run_id))
                     continue
 
@@ -1017,40 +935,33 @@ def main_program():
                 run_ids.append(run_id)
 
                 try:
-                    worker_threads[run_id] = RunWorker(dbpool, log, run_id, start_at)
-                    runs_started = True
-                    if not background_multi and start_in < wait_time:
-                        log.debug("Dropping wait time to %s", start_in)
-                        wait_time = start_in
+
+                    # Make a worker and throw it into the pool.
+                    worker_pool(run_id, RunWorker(run_id, start_at, log.is_forced_debugging()), run_completion)
                     log.debug("%d: Created worker", run_id)
-                except Exception:
-                    # Just log an error.  Don't try to set status in
-                    # the run; it will eventually come up as missed.
-                    log.exception(message="%d: Exception while starting worker" % (run_id))
+                    ids_running.add(run_id)
 
+                    log.debug("%d processors in pool: %s", len(worker_pool), worker_pool.status())
 
-
-
-        if not runs_started:
-            log.debug("No workers to run.")
-            wait_time = refresh
-            continue
-
-        with db.cursor() as cursor:
-            # Do this here to guarantee that we don't pick up rows for
-            # runs we just started in the next iteration of the loop.
-            if run_ids:
-                log.debug("Putting runs on deck: %s", run_ids)
-                try:
-                    cursor.execute("""
-                                   UPDATE run
-                                   SET state = run_state_on_deck()
-                                   WHERE
-                                       id in %s
-                                       AND state = run_state_pending()
-                                   """, (tuple(run_ids),))
                 except Exception as ex:
-                    log.exception()
+
+                    # Any failure here means failure of the run.
+
+                    diags = "\n".join(traceback.format_exception(type(ex), ex, ex.__traceback__))
+                    log.error("%d: Unable to start worker: %s" % (run_id, diags))
+
+                    with db.cursor() as failed:
+                        failed.execute("""
+                            UPDATE RUN
+                            SET
+                              state = run_state_failed(),
+                              status = 1,
+                              errors = %s
+                            WHERE id = %s
+                        """, ["Failed to start worker: %s" % (diags),
+                              run_id])
+
+
                     log.error("Unable to set on-deck status: %s" % (str(ex)))
 
 
