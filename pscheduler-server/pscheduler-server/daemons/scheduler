@@ -883,7 +883,8 @@ class SchedulerWorker(pscheduler.GenericWorker):
                      self.task, str(ex))
 
             try:
-                with dbpool(self.number).cursor() as cursor:
+                with dbpool(self.number) as db:
+                    cursor = db.cursor()
                     cursor.execute("""SELECT api_run_post(%s, %s, NULL, %s)""",
                               [self.task, self.trynext, str(ex)])
             except Exception as nsex:
