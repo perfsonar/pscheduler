@@ -180,7 +180,8 @@ pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-nmapreach			--bundle extras
-pscheduler-tool-nmapscan		--bundle extras
+# This has problems.  See #1223.
+#pscheduler-tool-nmapscan		--bundle extras
 pscheduler-tool-nuttcp
 pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
