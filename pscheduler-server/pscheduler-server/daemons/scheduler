@@ -668,17 +668,16 @@ def run_post(
         with dbpool(number) as db:
             cursor = db.cursor()
             cursor.execute("SELECT part_data FROM run WHERE uuid = %s",
-            [pscheduler.api_run_uuid(run_lead_url)]
-        )
-        if cursor.rowcount != 1:
-            raise RuntimeError(f'Got unexpected lead part data result from database ({len(lead_result)} rows)')
-        lead_part_data = cursor.fetchone()[0]
+                           [pscheduler.api_run_uuid(run_lead_url)])
+            if cursor.rowcount != 1:
+                raise RuntimeError('Got more than one row of lead participant data')
+            lead_part_data = cursor.fetchone()[0]
     except Exception as ex:
         log_debug('%d: Failed to get lead participant data: %s' % (number, str(ex)))
         return (None, None, None, False, False,
-                f'Failed to get lead run data: {str(ex)}')
+                'Failed to get lead run data: %s' % (str(ex)))
 
-    log_debug(f'{number}: Lead part data: {str(lead_part_data)}')
+    log_debug('%s: Lead part data: %s', number, str(lead_part_data))
     part_data.append(lead_part_data)
 
 
