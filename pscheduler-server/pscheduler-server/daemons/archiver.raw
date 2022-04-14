@@ -728,7 +728,7 @@ class ArchiveWorker(pscheduler.GenericWorker):
                     json["result"] = transformer(json["result"])[0]
                 log_debug("%s: Transformed to %s", label, json)
             except Exception as ex:
-                self.log.error("%s: Error during transformation: %s", label, str(ex))
+                log.error("%s: Error during transformation: %s", label, str(ex))
                 failed = True
                 returncode = 1
                 stdout = ""
@@ -816,7 +816,7 @@ class ArchiveWorker(pscheduler.GenericWorker):
 
             else:
 
-                self.log.warning("%s: Failed to archive %s to %s: %s",
+                log.warning("%s: Failed to archive %s to %s: %s",
                                  label, run_href, archiver,
                                  result.get("error", "Unspecified problem"))
 
@@ -849,7 +849,7 @@ class ArchiveWorker(pscheduler.GenericWorker):
 
                     log_debug("%s: No retry requested.  Giving up.", label)
 
-                    self.log.warning("%s: Gave up archiving %s to %s",
+                    log.warning("%s: Gave up archiving %s to %s",
                                      label, run_href, archiver)
 
                     with dbpool(self.number) as db:
