@@ -122,7 +122,7 @@ if role == CLIENT_ROLE:
         # Not an IP, assume a hostname
         dest_hostname = dest
         # None here is okay and will be sorted out later.
-        dest_ip = pscheduler.dns_resolve(dest, ip_version=ip_version)
+        dest_ip = pscheduler.dns_resolve(dest_hostname, ip_version=ip_version)
     
     #bucket width is used for rounding delay values used as buckets for histogram
     bucket_width = test_spec.get('bucket-width', DEFAULT_BUCKET_WIDTH)
