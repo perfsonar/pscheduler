@@ -402,7 +402,6 @@ class ArchiverPoolCollection(object):
 
 # Globals for use by worker pool processes
 
-dbpool_size = int(options.worker_threads * 0.20)
 dbpool = None
 
 archiver_collection = None
@@ -413,7 +412,7 @@ def worker_process_setup(args):
     pool_dsn, max_size = args
     global dbpool
     dbpool = pscheduler.DBConnectionPool(pool_dsn,
-                                         dbpool_size,
+                                         options.worker_threads,
                                          name='archiver-%s' % (os.getpid()),
                                          log_callback=log.warning)
 

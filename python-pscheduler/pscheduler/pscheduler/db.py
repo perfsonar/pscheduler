@@ -11,6 +11,7 @@ import psycopg2.pool
 import select
 import sys
 import threading
+import time
 
 from dateutil.tz import tzlocal
 
