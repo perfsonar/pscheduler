@@ -126,8 +126,6 @@ def archive(json):
     elif op == 'put':
 
         try:
-            pscheduler.url_put( url, data=result, json=False,
-                                headers=headers, bind=bind )
 
             # New:
 
