@@ -9,10 +9,11 @@ import pscheduler.psurl
 import urllib
 import pycurl
 import http.client
+from urllib.parse import urlparse
 
 MAX_SCHEMA = 2
 
-connections = {} # key: url. will need to manually inspect port
+connections = {} # key: scheme hostname port (if port provided)
 
 def archive(json):
     """Archive a single result."""
@@ -64,8 +65,19 @@ def archive(json):
 
     curl = None
 
+    parsed = urlparse(url)
+    scheme = parsed.scheme
+    hostname = parsed.hostname
+    port = parsed.port
+
+    key = scheme + " " + hostname
+
+    if port is not None:
+        key += " "
+        key += port
+
     # TODO: does this URL include port?
-    if url not in connections:
+    if key not in connections:
         # Create PycURL object
         curl = pycurl.Curl()
         curl.setopt(pycurl.URL, str(url))
@@ -82,10 +94,10 @@ def archive(json):
         buf = io.BytesIO()
         curl.setopt(pycurl.WRITEFUNCTION, buf.write)
 
-        connections[url] = curl
+        connections[key] = curl
 
     else:
-        curl = connections[url]
+        curl = connections[key]
 
 
     if op == 'post':
@@ -126,6 +138,8 @@ def archive(json):
     elif op == 'put':
 
         try:
+            pscheduler.url_put( url, data=result, json=False,
+                                headers=headers, bind=bind )
 
             # New:
 
