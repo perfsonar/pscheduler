@@ -6,8 +6,13 @@ Send a result to http.
 import sys
 import pscheduler
 import pscheduler.psurl
+import urllib
+import pycurl
+import http.client
 
 MAX_SCHEMA = 2
+
+connections = {} # key: url. will need to manually inspect port
 
 def archive(json):
     """Archive a single result."""
@@ -57,12 +62,55 @@ def archive(json):
         # Stringify all values
         headers = dict((k, str(v)) for k, v in headers.items())
 
+    curl = None
+
+    # TODO: does this URL include port?
+    if url not in connections:
+        # Create PycURL object
+        curl = pycurl.Curl()
+        curl.setopt(pycurl.URL, str(url))
+
+        if bind is not None:
+            curl.setopt(pycurl.INTERFACE, str(bind))
+
+        if headers is not None:            
+            curl.setopt(pycurl.HTTPHEADER, [
+                "%s: %s" % (str(key), str(value))
+                for (key, value) in list(headers.items())
+            ])
+
+        buf = io.BytesIO()
+        curl.setopt(pycurl.WRITEFUNCTION, buf.write)
+
+        connections[url] = curl
+
+    else:
+        curl = connections[url]
+
 
     if op == 'post':
 
         try:
-            pscheduler.url_post( url, data=result, json=False,
-                                 headers=headers, bind=bind )
+            # pscheduler.url_post( url, data=result, json=False,
+            #                      headers=headers, bind=bind )
+            # New:
+            curl.setopt(pycurl.POSTFIELDS, data)
+            try:
+                curl.perform()
+                status = curl.getinfo(pycurl.HTTP_CODE)
+                # PycURL returns a zero for non-HTTP URLs
+                if status == 0:
+                    status = 200
+                text = buf.getvalue().decode()
+
+            except pycurl.error as ex:
+                code, message = ex.args
+                status = 400
+                text = message
+
+            if status < 200 or status > 299:
+                raise URLException(text)
+
         except Exception as ex:
             result = {
                 "succeeded": False,
@@ -80,6 +128,27 @@ def archive(json):
         try:
             pscheduler.url_put( url, data=result, json=False,
                                 headers=headers, bind=bind )
+
+            # New:
+
+            curl.setopt(pycurl.CUSTOMREQUEST, "PUT")
+            curl.setopt(pycurl.POSTFIELDS, data)
+            try:
+                curl.perform()
+                status = curl.getinfo(pycurl.HTTP_CODE)
+                # PycURL returns a zero for non-HTTP URLs
+                if status == 0:
+                    status = 200
+                text = buf.getvalue().decode()
+
+            except pycurl.error as ex:
+                code, message = ex.args
+                status = 400
+                text = message
+
+            if status < 200 or status > 299:
+                raise URLException(text)
+
         except Exception as ex:
             result = {
                 "succeeded": False,
