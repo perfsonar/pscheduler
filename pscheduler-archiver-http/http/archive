@@ -76,7 +76,6 @@ def archive(json):
         key += " "
         key += port
 
-    # TODO: does this URL include port?
     if key not in connections:
         # Create PycURL object
         curl = pycurl.Curl()
@@ -103,9 +102,6 @@ def archive(json):
     if op == 'post':
 
         try:
-            # pscheduler.url_post( url, data=result, json=False,
-            #                      headers=headers, bind=bind )
-            # New:
             curl.setopt(pycurl.POSTFIELDS, data)
             try:
                 curl.perform()
@@ -138,11 +134,6 @@ def archive(json):
     elif op == 'put':
 
         try:
-            pscheduler.url_put( url, data=result, json=False,
-                                headers=headers, bind=bind )
-
-            # New:
-
             curl.setopt(pycurl.CUSTOMREQUEST, "PUT")
             curl.setopt(pycurl.POSTFIELDS, data)
             try:
