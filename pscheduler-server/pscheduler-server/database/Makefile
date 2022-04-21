@@ -63,9 +63,11 @@ TEARDOWN_SQL=database-teardown.sql
 SQL=$(BUILD_SUPER_SQL) $(BUILD_SQL) $(TEARDOWN_SQL)
 
 INTERNALS=\
-	db-update \
+	db-connections \
 	db-change-password \
+	db-update \
 	key \
+	purge-runs \
 	reset \
 	warmboot
 

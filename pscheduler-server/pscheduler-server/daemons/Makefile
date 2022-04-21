@@ -27,6 +27,9 @@ COMMANDS=\
 	pause \
 	resume
 
+INTERNALS=\
+	threads
+
 
 UNITS=$(DAEMONS:%=service-%)
 
@@ -184,7 +187,7 @@ $(CONFIGS): config-template.raw
 TO_CLEAN += $(CONFIGS)
 
 
-build: $(DAEMONS) $(UNITS) $(CONFIGS) $(COMMANDS)
+build: $(DAEMONS) $(UNITS) $(CONFIGS) $(COMMANDS) $(INTERNALS)
 	@true
 
 
@@ -218,6 +221,8 @@ endif
 	mkdir -p $(DAEMONDIR)
 	cp -f $(DAEMONS) $(DAEMONDIR)
 	chmod 555 $(DAEMONS:%=$(DAEMONDIR)/%)
+	cp -f $(INTERNALS) $(INTERNALSDIR)
+	chmod 555 $(INTERNALS:%=$(INTERNALSDIR)/%)
 	mkdir -p $(UNITDIR)
 	@for SCRIPT in $(DAEMONS) ; \
 	do \

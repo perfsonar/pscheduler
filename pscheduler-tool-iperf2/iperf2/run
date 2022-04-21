@@ -159,10 +159,6 @@ def run_client():
         iperf2_args.append('-w')
         iperf2_args.append(test_spec['window-size'])
 
-    if 'mss' in test_spec and test_spec['mss'] != None:
-        iperf2_args.append('-M')
-        iperf2_args.append(test_spec['mss'])
-
     if 'bandwidth' in test_spec and test_spec['bandwidth'] != None:
         # Bandwidth throttling is only supported for UDP.  This will
         # have been checked by can_run,

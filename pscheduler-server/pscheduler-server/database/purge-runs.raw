@@ -1,0 +1,32 @@
+#!/bin/sh -e
+#
+# Purge runs for all tasks where the local system is the lead and the
+# start time is beyond a certain number of minutes.  This will force
+# rescheduling.
+#
+
+MINUTES=1
+
+if [ "$1" ]
+then
+    if ! echo "$1" | egrep -q -e '^[0-9]+$'
+    then
+	echo "Usage: $(basename $0) [ MINUTES ]" 1>&2
+	exit 1
+    fi
+    MINUTES="$1"
+fi
+
+exec postgresql-load << EOF
+\c __DATABASE__
+
+DELETE FROM run WHERE id IN (
+    SELECT run.id
+    FROM
+        run
+        JOIN task ON task.id = run.task
+    WHERE
+        lower(run.times) > (now() + 'PT${MINUTES}M')
+        AND task.participant = 0
+);
+EOF

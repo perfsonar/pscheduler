@@ -51,11 +51,13 @@ Requires:	postgresql-init
 # Daemons
 BuildRequires:	m4
 Requires:	curl
+Requires:	psmisc
 Requires:	pscheduler-account
 # This is from EPEL but doesn't have a python36 prefix
 Requires:	%{_pscheduler_python}-daemon
 Requires:	%{_pscheduler_python}-flask
 Requires:	%{_pscheduler_python}-jsontemplate
+Requires:	%{_pscheduler_python_epel}-psutil
 
 # API Server
 BuildRequires:	pscheduler-account
@@ -254,6 +256,7 @@ make -C daemons \
      UNITDIR=$RPM_BUILD_ROOT/%{_unitdir} \
      DAEMONDIR=$RPM_BUILD_ROOT/%{_pscheduler_daemons} \
      COMMANDDIR=$RPM_BUILD_ROOT/%{_pscheduler_commands} \
+     INTERNALSDIR=$RPM_BUILD_ROOT/%{_pscheduler_internals} \
      install
 
 mkdir -p $RPM_BUILD_ROOT/%{archiver_default_dir}

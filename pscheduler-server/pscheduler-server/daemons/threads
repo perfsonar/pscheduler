@@ -1,0 +1,26 @@
+#!/bin/sh -e
+#
+# Dump the daemon threads
+#
+
+[ -t 1 ] && LONG= || LONG=l
+
+[ $# -eq 0 ] &&  LIST='scheduler runner archiver ticker' || LIST=$@
+
+for SERVICE in ${LIST}
+do
+    PID_FILE=$(ps -ef \
+        | fgrep "/daemons/${SERVICE}" \
+        | fgrep -- '--pid-file' \
+        | head -1 \
+        | sed -e 's/^.*--pid-file\s\+//; s/\s\+.*$//')
+
+    if [ ! -r "${PID_FILE}" ]
+    then
+        echo "Can't find ${SERVICE} PID file ${PID_FILE}" 1>&2
+        exit 1
+    fi
+
+    pstree -ap${LONG} $(cat "${PID_FILE}")
+    echo
+done

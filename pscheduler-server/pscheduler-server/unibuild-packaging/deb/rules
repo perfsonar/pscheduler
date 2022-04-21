@@ -68,6 +68,7 @@ override_dh_auto_install:
 		UNITDIR=$(ROOT)/lib/systemd/system \
 		DAEMONDIR=$(ROOT)/usr/lib/pscheduler/daemons \
 		COMMANDDIR=$(ROOT)/usr/lib/pscheduler/commands \
+		INTERNALSDIR=$(ROOT)/usr/lib/pscheduler/internals \
 		install
 
 	make -C utilities \

@@ -324,6 +324,7 @@ BEGIN
 			      run_state_nonstart()) )
            OR   ( old = run_state_pending()
 	          AND new IN (run_state_on_deck(),
+			      run_state_running(),
 			      run_state_missed(),
 			      run_state_failed(),
 			      run_state_preempted(),

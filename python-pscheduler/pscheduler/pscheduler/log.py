@@ -307,9 +307,10 @@ class Log(object):
 
     # Logging
 
-    def __log(self, logger, level, format, *args):
+    def __log(self, logger, level, fmt, *args):
 
-        message = format % args
+        # No args means don't try formatting the string.
+        message = fmt % args if args else fmt
 
         lines = message.split("\n")
         while lines[0] == "":
