@@ -145,6 +145,7 @@ pscheduler-test-idlebgm
 pscheduler-test-idleex
 pscheduler-test-latency
 pscheduler-test-latencybg
+pscheduler-test-noop
 pscheduler-test-netreach			--bundle extras
 pscheduler-test-psresponse
 pscheduler-test-throughput
@@ -185,6 +186,7 @@ pscheduler-tool-nmapreach			--bundle extras
 pscheduler-tool-nuttcp
 pscheduler-tool-owping
 pscheduler-tool-paris-traceroute
+pscheduler-tool-passthrough
 pscheduler-tool-ping
 pscheduler-tool-powstream
 pscheduler-tool-psclock
