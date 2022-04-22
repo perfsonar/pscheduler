@@ -3,6 +3,7 @@
 Send a result to http.
 """
 
+import io
 import sys
 import pscheduler
 import pscheduler.psurl
@@ -49,13 +50,16 @@ def archive(json):
     # strings will be made text/plain and anything else will be
     # application/json.
 
-    result = json['result']
+    result = pscheduler.json_dump(json['result'])
 
     try:
         headers = json['data']['_headers']
     except KeyError:
         headers = {}
 
+    # check for content-type header -> if not application/json
+    if 'Content-Type' not in headers:
+        headers['Content-Type'] = 'application/json'
 
     if len(headers):
         # Remove all null headers
@@ -97,12 +101,13 @@ def archive(json):
 
     else:
         curl = connections[key]
-
+        buf = io.BytesIO()
+        curl.setopt(pycurl.WRITEFUNCTION, buf.write)
 
     if op == 'post':
 
         try:
-            curl.setopt(pycurl.POSTFIELDS, data)
+            curl.setopt(pycurl.POSTFIELDS, result)
             try:
                 curl.perform()
                 status = curl.getinfo(pycurl.HTTP_CODE)
@@ -135,7 +140,7 @@ def archive(json):
 
         try:
             curl.setopt(pycurl.CUSTOMREQUEST, "PUT")
-            curl.setopt(pycurl.POSTFIELDS, data)
+            curl.setopt(pycurl.POSTFIELDS, result)
             try:
                 curl.perform()
                 status = curl.getinfo(pycurl.HTTP_CODE)
@@ -182,3 +187,4 @@ for parsed in PARSER:
     EMITTER(archive(parsed))
 
 pscheduler.succeed()
+
