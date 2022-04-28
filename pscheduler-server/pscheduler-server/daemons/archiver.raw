@@ -378,10 +378,8 @@ class ArchiverPoolCollection(object):
         Skim all pools
         """
         with self.lock:
-            del_list = []
             for archiver_name in self.pool:
-                archiver = self.pool[archiver_name]
-                archiver.skim()
+                self.pool[archiver_name].skim()
 
 
     def drain(self):
