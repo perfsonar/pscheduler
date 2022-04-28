@@ -51,7 +51,6 @@ DELAY_BUCKET_DIGITS = 2 #number of digits to round delay buckets
 DELAY_BUCKET_FORMAT = '%.2f' #Set buckets to nearest 2 decimal places
 DEFAULT_RAW_OUTPUT = False #don't display raw packets by default
 CLOCK_ERROR_DIGITS = 2 #number of digits to round clock error
-ADDR_FORMAT = "[%s]:%d"
 TWPING_RANGE_ARGS = [
     ('data-ports', '-P'),
 ]
@@ -105,24 +104,37 @@ if role == CLIENT_ROLE:
     twping_args.append(str(test_spec.get('packet-timeout', test_spec.get('timeout', DEFAULT_PACKET_TIMEOUT))))
     
     #set if ipv4 only or ipv6 only
-    ip_version = str(test_spec.get('ip-version'))
+    try:
+        ip_version = int(test_spec.get('ip-version'))
+    except TypeError:
+        ip_version = None
+
     if ip_version == 4:
         twping_args.append('-4')
     elif ip_version == 6:
         twping_args.append('-6')
 
+    #determine control port
+    control_port = int(test_spec.get('ctrl-port', DEFAULT_TWAMPD_PORT))
+
     #calculate destination ip for rtt tests
     dest = test_spec['dest']
+
     try:
-            ipaddress.ip_address(dest)
-            # It's an IP at this point
-            dest_ip = dest
-            dest_hostname = pscheduler.dns_resolve_reverse(dest)
+        addr = ipaddress.ip_address(dest)
+        # It's an IP at this point
+        dest_ip = dest
+        dest_hostname = None
+        if addr.version == 6:
+            dest_arg = '[%s]:%d' % (dest, control_port)
+        else:
+            dest_arg = '%s:%d' % (dest, control_port)
     except ValueError:
         # Not an IP, assume a hostname
         dest_hostname = dest
         # None here is okay and will be sorted out later.
         dest_ip = pscheduler.dns_resolve(dest_hostname, ip_version=ip_version)
+        dest_arg = '%s:%d' % (dest, control_port)
     
     #bucket width is used for rounding delay values used as buckets for histogram
     bucket_width = test_spec.get('bucket-width', DEFAULT_BUCKET_WIDTH)
@@ -130,8 +142,6 @@ if role == CLIENT_ROLE:
     #determine whether we will return raw packets
     raw_output = test_spec.get('output-raw', DEFAULT_RAW_OUTPUT)
     
-    #determine control port
-    control_port = int(test_spec.get('ctrl-port', DEFAULT_TWAMPD_PORT))
 
 
     if test_spec.get('traverse-nat', False):
@@ -142,7 +152,11 @@ if role == CLIENT_ROLE:
     if 'source' in test_spec:
         twping_args.append('-S')
         twping_args.append(test_spec['source'])
-    twping_args.append(ADDR_FORMAT % (test_spec['dest'], control_port))
+
+    # Set up the destination
+
+    twping_args.append(dest_arg)
+
 
     # Force all args to be strings
     twping_args = [str(x) for x in twping_args]
