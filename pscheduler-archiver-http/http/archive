@@ -3,10 +3,10 @@
 Send a result to http.
 """
 
+import datetime
 import io
 import sys
 import pscheduler
-import pscheduler.psurl
 import urllib
 import pycurl
 import http.client
@@ -14,7 +14,80 @@ from urllib.parse import urlparse
 
 MAX_SCHEMA = 2
 
-connections = {} # key: scheme hostname port (if port provided)
+log = pscheduler.Log(prefix="archiver-http", quiet=True)
+
+
+class PycURLHandle(object):
+    """PycURL connection that's aware of how long it's been idle."""
+
+    DEFAULT_EXPIRATION = datetime.timedelta(hours=1)
+
+    def __init__(self, expiration=DEFAULT_EXPIRATION):
+        self.expiration = expiration
+        self.handle = pycurl.Curl()
+        self._used()
+
+    def _used(self):
+        """Mark the connection as just-used."""
+        self.expires = datetime.datetime.now() + self.expiration
+
+    def is_expired(self):
+        """Determine if the connection has been idle long enough to expire."""
+        return datetime.datetime.now() > self.expires
+
+    def __call__(self):
+        """Return the connection and mark it as just-used."""
+        self._used()
+        return self.handle
+
+    def close(self):
+        """Close out the handle's affairs."""
+        self.handle.close()
+
+
+
+class PyCURLHandlePool(object):
+    """Pool of PycURL handles"""
+
+    DEFAULT_SKIM_TIME = datetime.timedelta(minutes=1)
+
+    def __init__(self, logger, skim_time=DEFAULT_SKIM_TIME):
+
+        self.log = logger
+        self.skim_time = skim_time
+
+        self.pool = {}
+        self.next_skim = None
+
+        self.skim()
+
+    def skim(self):
+        """Remove any expired handles from the pool."""
+        now = datetime.datetime.now()
+        if self.next_skim is None or now >= self.next_skim:
+            self.next_skim = now + self.skim_time
+            #for handle in [key for key in self.pool.keys() if self.pool[key].is_expired()]:
+            to_skim = [key for key in self.pool if self.pool[key].is_expired()]
+            for key in to_skim:
+                self.log.debug('Skimmed %s', key)
+                self.pool[key].close()
+                del self.pool[key]
+
+    def __call__(self, key, bind=None):
+        """Create a new handle or return one that exists."""
+        self.skim()
+
+        if key not in self.pool:
+            handle = PycURLHandle()
+            if bind is not None:
+                handle().setopt(pycurl.INTERFACE, str(bind))
+            self.pool[key] = handle
+
+        return self.pool[key]()
+
+
+handle_pool = PyCURLHandlePool(log)
+
 
 def archive(json):
     """Archive a single result."""
@@ -27,153 +100,92 @@ def archive(json):
                 schema, MAX_SCHEMA)
         }
 
-    errors = ()
-
     try:
         url = json['data']['_url']
     except KeyError:
         raise RuntimeError("Reached code that wasn't supposed to be reached.")
 
-    try:
-        op = json['data']['op']
-    except KeyError:
-        op = 'post'
+    op = json['data'].get('op', 'post')
+    log.debug("%s to %s", op, url)
+    bind = json['data'].get('bind')
 
-    try:
-        bind = json['data']['bind']
-    except KeyError:
-        bind = None
-
+    # This must default to an empty hash so any previous headers are
+    # cleared out.
+    headers = json['data'].get('_headers', {})
 
     # Headers get special behavior because the Content-Type may be
-    # provided explicitly, in which case it's obeyed.  Otherwise,
-    # strings will be made text/plain and anything else will be
-    # application/json.
+    # provided explicitly, in which case it's obeyed.
 
-    result = pscheduler.json_dump(json['result'])
-
-    try:
-        headers = json['data']['_headers']
-    except KeyError:
-        headers = {}
-
-    # check for content-type header -> if not application/json
     if 'Content-Type' not in headers:
         headers['Content-Type'] = 'application/json'
 
-    if len(headers):
-        # Remove all null headers
-        headers = dict((k, v) for k, v in headers.items() if v)
-        # Stringify all values
-        headers = dict((k, str(v)) for k, v in headers.items())
+    # Remove null headers and stringify others
+    headers = dict((k, str(v)) for k, v in headers.items() if v)
 
-    curl = None
 
-    parsed = urlparse(url)
-    scheme = parsed.scheme
-    hostname = parsed.hostname
-    port = parsed.port
+    # Calculate the key based on everything that would be unique to a
+    # connection.
 
-    key = scheme + " " + hostname
+    parsed_url = urlparse(url)
 
-    if port is not None:
-        key += " "
-        key += port
+    key = "%s|%s|%s|%s" % (
+        parsed_url.scheme,
+        parsed_url.hostname,
+        '' if parsed_url.port is None else parsed_url.port,
+        '' if bind is None else bind
+    )
 
-    if key not in connections:
-        # Create PycURL object
-        curl = pycurl.Curl()
-        curl.setopt(pycurl.URL, str(url))
+    log.debug("Key is %s", key)
 
-        if bind is not None:
-            curl.setopt(pycurl.INTERFACE, str(bind))
+    curl = handle_pool(key, bind)
 
-        if headers is not None:            
-            curl.setopt(pycurl.HTTPHEADER, [
-                "%s: %s" % (str(key), str(value))
-                for (key, value) in list(headers.items())
-            ])
+    # URL and headers may be different for each request.
 
-        buf = io.BytesIO()
-        curl.setopt(pycurl.WRITEFUNCTION, buf.write)
-
-        connections[key] = curl
-
-    else:
-        curl = connections[key]
-        buf = io.BytesIO()
-        curl.setopt(pycurl.WRITEFUNCTION, buf.write)
+    curl.setopt(pycurl.URL, str(url))
+    curl.setopt(pycurl.HTTPHEADER, [
+        "%s: %s" % (str(key), str(value))
+        for (key, value) in list(headers.items())
+    ])
 
     if op == 'post':
-
-        try:
-            curl.setopt(pycurl.POSTFIELDS, result)
-            try:
-                curl.perform()
-                status = curl.getinfo(pycurl.HTTP_CODE)
-                # PycURL returns a zero for non-HTTP URLs
-                if status == 0:
-                    status = 200
-                text = buf.getvalue().decode()
-
-            except pycurl.error as ex:
-                code, message = ex.args
-                status = 400
-                text = message
-
-            if status < 200 or status > 299:
-                raise URLException(text)
-
-        except Exception as ex:
-            result = {
-                "succeeded": False,
-                "error": "Failed to log result: %s" % str(ex)
-            }
-            if "retry-policy" in json['data']:
-                policy = pscheduler.RetryPolicy(json['data']['retry-policy'], iso8601=True)
-                retry_time = policy.retry(json["attempts"])
-                if retry_time is not None:
-                    result["retry"] = retry_time
-            return result
-
+        curl.setopt(pycurl.CUSTOMREQUEST, 'POST')
     elif op == 'put':
-
-        try:
-            curl.setopt(pycurl.CUSTOMREQUEST, "PUT")
-            curl.setopt(pycurl.POSTFIELDS, result)
-            try:
-                curl.perform()
-                status = curl.getinfo(pycurl.HTTP_CODE)
-                # PycURL returns a zero for non-HTTP URLs
-                if status == 0:
-                    status = 200
-                text = buf.getvalue().decode()
-
-            except pycurl.error as ex:
-                code, message = ex.args
-                status = 400
-                text = message
-
-            if status < 200 or status > 299:
-                raise URLException(text)
-
-        except Exception as ex:
-            result = {
-                "succeeded": False,
-                "error": "Failed to log result: %s" % str(ex)
-            }
-            if "retry-policy" in json['data']:
-                policy = pscheduler.RetryPolicy(json['data']['retry-policy'], iso8601=True)
-                retry_time = policy.retry(json["attempts"])
-                if retry_time is not None:
-                    result["retry"] = retry_time
-            return result
-
+        curl.setopt(pycurl.CUSTOMREQUEST, 'PUT')
     else:
+        # This shouldn't happen with pre-validated data.
         return {
             "succeeded": False,
-            "error": "Invalid op arg: %s" % op
+            "error": 'Unsupported operation "%s"' % (op)
         }
+
+    curl.setopt(pycurl.POSTFIELDS, pscheduler.json_dump(json['result']))
+
+    buf = io.BytesIO()
+    curl.setopt(pycurl.WRITEFUNCTION, buf.write)
+
+    try:
+        curl.perform()
+        status = curl.getinfo(pycurl.HTTP_CODE)
+        # PycURL returns a zero for non-HTTP URLs
+        if status == 0:
+            status = 200
+        text = buf.getvalue().decode()
+    except pycurl.error as ex:
+        _code, message = ex.args
+        status = 400
+        text = message
+
+    if status < 200 or status > 299:
+        result = {
+            "succeeded": False,
+            "error": "Failed to %s result: %d: %s" % (op, status, text)
+        }
+        if "retry-policy" in json['data']:
+            policy = pscheduler.RetryPolicy(json['data']['retry-policy'], iso8601=True)
+            retry_time = policy.retry(json["attempts"])
+            if retry_time is not None:
+                result["retry"] = retry_time
+            return result
 
     return {'succeeded': True}
 
@@ -184,7 +196,14 @@ PARSER = pscheduler.RFC7464Parser(sys.stdin)
 EMITTER = pscheduler.RFC7464Emitter(sys.stdout)
 
 for parsed in PARSER:
-    EMITTER(archive(parsed))
+    try:
+        EMITTER(archive(parsed))
+    except Exception as ex:
+        log.exception()
+        EMITTER({
+            "succeeded": False,
+            "error": "Exception during HTTP operation: %s" % str(ex)
+        })
+
 
 pscheduler.succeed()
-
