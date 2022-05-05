@@ -44,10 +44,6 @@ opt_parser.add_option("-a", "--archive-defaults",
                       help="Directory containing default archivers",
                       action="store", type="string", dest="archive_defaults",
                       default="__DEFAULT_DIR__")
-opt_parser.add_option("-c", "--channel",
-                      help="Schedule notification channel",
-                      action="store", type="string", dest="channel",
-                      default="archiving_change")
 opt_parser.add_option("-d", "--dsn",
                       help="Database connection string",
                       action="store", type="string", dest="dsn",
@@ -63,19 +59,11 @@ opt_parser.add_option("-p", "--pool-size",
 opt_parser.add_option("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
                       action="store", type="string", dest="refresh",
-                      default="PT15S")
-opt_parser.add_option("-s", "--skim-interval",
-                      help="How often to skim archiver pools (ISO8601)",
-                      action="store", type="string", dest="skim_interval",
-                      default="PT30S")
+                      default="PT1M")
 opt_parser.add_option("--timeout",
                       help="Timeout for archiver I/O (ISO8601)",
                       action="store", type="string", dest="timeout",
                       default="PT2M")
-opt_parser.add_option("--retry",
-                      help="Retry interval after I/O timeout (ISO8601)",
-                      action="store", type="string", dest="retry",
-                      default="PT30S")
 
 opt_parser.add_option("--worker-idle",
                       help="Idle time before worker processes exit",
@@ -85,6 +73,20 @@ opt_parser.add_option("--worker-threads",
                       help="Maximum threads per worker process",
                       action="store", type="int", dest="worker_threads",
                       default=25)
+
+opt_parser.add_option("--skim-interval",
+                      help="How often to skim archiver pools (ISO8601)",
+                      action="store", type="string", dest="skim_interval",
+                      default="PT30S")
+opt_parser.add_option("--archiver-iterations",
+                      help="How many iterations before an archiver is stopped",
+                      action="store", type="int", dest="archiver_iterations",
+                      default=10000)
+opt_parser.add_option("--archiver-idle",
+                      help="How long idle archivers are kept",
+                      action="store", type="string", dest="archiver_idle",
+                      default="PT1M")
+
 
 opt_parser.add_option("--verbose", action="store_true", dest="verbose")
 opt_parser.add_option("--debug", action="store_true", dest="debug")
@@ -104,28 +106,30 @@ if refresh is None:
 refresh = pscheduler.timedelta_as_seconds(refresh)
 
 
+if options.worker_threads < 1:
+    opt_parser.error("Number of worker threads must be positive.")
 
 skim_interval = pscheduler.iso8601_as_timedelta(options.skim_interval)
 if skim_interval is None:
     opt_parser.error('Invalid skim interval "' + options.skim_interval + '"')
-skim_interval = pscheduler.timedelta_as_seconds(skim_interval)
 
+if options.archiver_iterations < 1:
+    opt_parser.error("Number of archiver iterations must be positive.")
+archiver_iterations = options.archiver_iterations
+
+archiver_idle = pscheduler.iso8601_as_timedelta(options.archiver_idle)
+if archiver_idle is None:
+    opt_parser.error('Invalid archiver idle time "' + options.archiver_idle + '"')
 
 timeout = pscheduler.iso8601_as_timedelta(options.timeout)
 if timeout is None:
     opt_parser.error('Invalid timeout "' + options.timeout + '"')
 timeout = pscheduler.timedelta_as_seconds(timeout)
 
-retry = pscheduler.iso8601_as_timedelta(options.retry)
-if retry is None:
-    opt_parser.error('Invalid retry "' + options.retry + '"')
-retry = pscheduler.timedelta_as_seconds(retry)
-
 worker_idle_td = pscheduler.iso8601_as_timedelta(options.worker_idle)
 if worker_idle_td is None:
     opt_parser.error('Invalid worker idle time "' + options.worker_idle + '"')
 worker_idle = pscheduler.timedelta_as_seconds(worker_idle_td)
-
 
 log = pscheduler.Log(verbose=options.verbose, debug=options.debug, propagate=True)
 
@@ -144,12 +148,39 @@ class ArchiveProcess(object):
     Maintain an archive process that streams JSON in and out.
     """
 
-    def __init__(self, archiver):
+    def __init__(self,
+                 archiver,
+                 max_iterations=None,  # Max iterations before expiring
+                 idle=None             # Idle time before expiring
+                ):
         self.archiver = archiver
+        self.max_iterations = max_iterations
+        self.idle = idle
         self.program = None
-        self.__establish()
+        self._establish()
 
-    def __establish(self):
+        # The call to _used() will properly initialize these.
+        self.iterations = -1
+        self.expires = None
+        self._used()
+
+    def __repr__(self):
+        result = '<%s %s' % (self.__class__.__name__, self.archiver)
+        if self.max_iterations is not None:
+            result += ' Iters:%d/%d' % (self.iterations, self.max_iterations)
+        if self.idle is not None:
+            result += ' Expires:%s' % (self.expires - datetime.datetime.now())
+        result += ' Expired>' if self.is_expired() else '>'
+        return result
+
+    def _used(self):
+        """Calculate a new expiration time"""
+        if self.idle is not None:
+            self.expires = datetime.datetime.now() + self.idle
+        self.iterations += 1
+
+
+    def _establish(self):
         """
         Start the archiver process
         """
@@ -162,7 +193,8 @@ class ArchiveProcess(object):
         """
         Do a round trip with the program.
         """
-        self.__establish()
+        self._establish()
+        self._used()
         try:
             return self.program(json)
         except (IOError, pscheduler.StreamingJSONProgramFailure) as ex:
@@ -185,6 +217,13 @@ class ArchiveProcess(object):
             self.program = None
 
 
+    def is_expired(self):
+        """Determine if the program has expired through time or iterations.."""
+        return ((self.max_iterations is not None and (self.iterations >= self.max_iterations))
+                or (self.idle is not None and (datetime.datetime.now() > self.expires)))
+
+
+
     def __del__(self):
         self.done()
 
@@ -194,66 +233,69 @@ class ArchiverProcessPool(object):
     A pool of archivers of a single type
     """
 
-    def __init__(self, archiver, log, max_size, skim_age=60):
+    def __init__(self, archiver, logger, max_size, max_iterations=None, idle=None):
         self.archiver = archiver
-        self.log = log
+        self.log = logger
         self.max_size = max_size
-        self.skim_age = skim_age
+        self.max_iterations = max_iterations
+        self.idle = idle
 
         self.pool = collections.deque()
         self.lock = threading.Lock()
         self.size = 0
         self.reset_cycle = 0
         self.skim_count = 0
-        self.next_skim = time.time() + skim_age
-        self.max_utilization = 0
 
 
     def __len__(self):
         return self.size
 
 
-    def __call__(self, json):
+    def __call__(self, json, label=None):
         """
         Pull a process from the pool (or create one) and run a result
         through it.
         """
 
+        label = '' if label is None else ' ' + label
+
         process = None
+        tries = 0
 
         while process is None:
             with self.lock:
-                if len(self.pool) > 0:
-                    # Take a process from the pool.
+                # Take a process from the pool.
+                try:
                     process = self.pool.pop()
-                else:
-                    # Pool is empty
+                    self.log.debug("Pool %s%s: Got a process (%d in pool)",
+                                   self.archiver, label, len(self.pool))
+                except IndexError:
+                    # Pool is empty.
                     if self.size < self.max_size:
                         # Room for new processes; create one.
-                        process = ArchiveProcess(self.archiver)
+                        process = ArchiveProcess(self.archiver,
+                                                 max_iterations=archiver_iterations,
+                                                 idle=archiver_idle)
                         self.size += 1
-                        self.log.debug("Pool %s: New process %d",
-                                       self.archiver, self.size)
+                        self.log.debug("Pool %s%s: New process %d",
+                                       self.archiver, label, self.size)
                     else:
                         # Pool is full and all processes are busy.
                         pass
 
                 if process is not None:
-                    self.log.debug("Pool %s: Got a process", self.archiver)
                     cycle_at_start = self.reset_cycle
-                    self.max_utilization = max(self.max_utilization,
-                                               self.size - len(self.pool))
 
             # TODO: Need to do something better than this, but it has
             # to be deadlock-proof.
             if process is None:
-                self.log.debug("Pool %s: Waiting for a process", self.archiver)
+                tries += 1
+                self.log.debug("Pool %s%s: Waiting for a process (%d)", self.archiver, label, tries)
                 time.sleep(0.25)
-
 
         try:
             result = process(json)
-            self.log.debug("Pool %s: Process returned %s", self.archiver, result)
+            self.log.debug("Pool %s%s: Process returned %s", self.archiver, label, result)
         except Exception as ex:
             raise ex
         finally:
@@ -264,12 +306,14 @@ class ArchiverProcessPool(object):
                    and self.skim_count == 0 \
                    and self.size <= self.max_size:
                     self.pool.append(process)
+                    self.log.debug("Pool %s%s: Returned a process (%d in pool)",
+                                   self.archiver, label, len(self.pool))
                 else:
                     process.done()
                     self.size -= 1
                     if same_cycle and self.skim_count > 0:
                         self.skim_count -= 1
-                    self.log.debug("Pool %s: Dropped a process", self.archiver)
+                    self.log.debug("Pool %s%s: Dropped a process", self.archiver, label)
 
         return result
 
@@ -306,34 +350,20 @@ class ArchiverProcessPool(object):
 
     def skim(self):
         """
-        Clean out anything beyond peak utilization since the last skim.
+        Clean out anything that's expired
         """
-        now = time.time()
-        if now < self.next_skim:
-            return
 
         self.log.debug("Pool %s: Skimming", self.archiver)
-
         with self.lock:
-
-            if self.max_utilization < self.size:
-                to_remove = self.size - self.max_utilization 
-                self.log.debug("Pool %s: Removing %d/%d processes for %d",
-                               self.archiver, to_remove, self.size,
-                               self.max_utilization)
-
-                # Idle processes get removed first
-                while to_remove > 0 and len(self.pool) >= to_remove:
-                    self.pool.pop().done()
-                    self.size -= 1
-                    to_remove -= 1
-
-                    # Anything left comes out of what's in circulation
-                    self.skim_count = to_remove
-
-            # Reset for next time.
-            self.max_utilization = 0
-            self.next_skim = now + self.skim_age
+            rotates_left = len(self.pool)
+            while rotates_left > 0:
+                self.pool.rotate(1)
+                rotates_left -= 1
+                if self.pool[-1].is_expired():
+                    popped = self.pool.pop()
+                    self.log.debug("Pool %s: Skimmed %s", self.archiver, popped)
+                    popped.done()
+                    rotates_left -= 1
 
 
     def done(self):
@@ -349,16 +379,35 @@ class ArchiverPoolCollection(object):
     A collection of ArchiverProcessPools for each archiver type.
     """
 
-    def __init__(self, log, max_size=10, skim_age=60):
-        self.log = log
+    def __init__(self, logger, max_size=10, max_iterations=None, idle=None, skim_time=None):
+        self.log = logger
         self.max_size = max_size
-        self.skim_age = skim_age
+        self.max_iterations = max_iterations
+        self.idle = idle
 
         self.pool = {}
         self.lock = threading.Lock()
 
+        if skim_interval is not None:
+            self.log.debug("Starting collection skimmer.")
+            self.skim_interval = skim_time.total_seconds()
+            self.skimmer = threading.Thread(
+                target=self._skimmer)
+            self.skimmer.setDaemon(True)
+            self.skimmer.start()
 
-    def __call__(self, archiver, json):
+
+    def _skimmer(self):
+        """
+        Worker thread to periodically skim the pools.
+        """
+        while True:
+            self.skim()
+            time.sleep(self.skim_interval)
+
+
+
+    def __call__(self, archiver, json, label=None):
         """
         Archive a result to the correct pool.
         """
@@ -367,10 +416,13 @@ class ArchiverPoolCollection(object):
             if archiver not in self.pool:
                 self.pool[archiver] = ArchiverProcessPool(
                     archiver, self.log,
-                    max_size=self.max_size, skim_age=self.skim_age)
+                    max_size=self.max_size,
+                    max_iterations=self.max_iterations,
+                    idle=self.idle
+                    )
 
         assert archiver in self.pool
-        return self.pool[archiver](json)
+        return self.pool[archiver](json, label=label)
 
 
     def skim(self):
@@ -378,10 +430,8 @@ class ArchiverPoolCollection(object):
         Skim all pools
         """
         with self.lock:
-            del_list = []
             for archiver_name in self.pool:
-                archiver = self.pool[archiver_name]
-                archiver.skim()
+                self.pool[archiver_name].skim()
 
 
     def drain(self):
@@ -409,7 +459,7 @@ archiver_collection = None
 def worker_process_setup(args):
     """Set up everything globally for a worker process"""
 
-    pool_dsn, max_size = args
+    pool_dsn, _max_size = args
     global dbpool
     dbpool = pscheduler.DBConnectionPool(pool_dsn,
                                          options.worker_threads,
@@ -419,8 +469,11 @@ def worker_process_setup(args):
     global archiver_collection
     archiver_collection = ArchiverPoolCollection(
         max_size=options.pool_size,
-        skim_age=skim_interval,
-        log=log)
+        max_iterations=archiver_iterations,
+        idle=archiver_idle,
+        skim_time=skim_interval,
+        logger=log)
+
 
 
 
@@ -435,27 +488,23 @@ def worker_process_teardown(*args):
 def worker_process_reset_collection():
     global archiver_collection
     archiver_collection.done()
-    
+
 
 
 # ------------------------------------------------------------------------------
 
 
-
-#
-# Maintainer for default archives.  This runs in the main process.
-#
-
 class DefaultArchiveMaintainer(object):
+    """Maintainer for default archives.  This runs in the main process."""
 
-    def __init__(self, path, dsn, log):
+    def __init__(self, path, db_dsn, logger):
 
         self.path = path
-        self.dsn = dsn
-        self.log = log
+        self.dsn = db_dsn
+        self.log = logger
 
         # This needs its own database connection without autocommit.
-        self.db = pscheduler.PgConnection(dsn, name="archiver-default",
+        self.db = pscheduler.PgConnection(db_dsn, name="archiver-default",
                                           autocommit=False)
 
         # Most recent file or directory change we saw
@@ -563,7 +612,7 @@ class DefaultArchiveMaintainer(object):
                 self.log.debug("Inserted data from %s", archive["path"])
                 failed = False
             except psycopg2.Error as ex:
-                self.log.warning("Ignoring %s: %s", archive["path"], ex.diag.message_primary)
+                self.log.warning("Ignoring %s: %s", archive["path"], str(ex))
             except Exception as ex:
                 self.log.error("%s: %s", archive["path"], str(ex))
 
@@ -730,7 +779,6 @@ class ArchiveWorker(pscheduler.GenericWorker):
                 log.error("%s: Error during transformation: %s", label, str(ex))
                 failed = True
                 returncode = 1
-                stdout = ""
                 stdout_attempt = ""
                 stderr = "Error during transformation: %s" % (str(ex))
                 result = {
@@ -742,7 +790,6 @@ class ArchiveWorker(pscheduler.GenericWorker):
         if json["result"] is None:
             log_debug("%s: Null transform result; not archiving", label)
             returncode = 0
-            stdout = """{ "succeeded": true }"""
             stdout_attempt = "Archiving stopped by transform."
             stderr = ""
             skip = True
@@ -758,7 +805,7 @@ class ArchiveWorker(pscheduler.GenericWorker):
             log_debug("%s: Archiving to %s: %s", label, archiver, json)
 
             try:
-                result = archiver_collection(archiver, json)
+                result = archiver_collection(archiver, json, label=label)
                 log_debug("%s: Returned JSON from archiver: %s", label, result)
                 returncode = 0
             except Exception as ex:
@@ -816,8 +863,8 @@ class ArchiveWorker(pscheduler.GenericWorker):
             else:
 
                 log.warning("%s: Failed to archive %s to %s: %s",
-                                 label, run_href, archiver,
-                                 result.get("error", "Unspecified problem"))
+                            label, run_href, archiver,
+                            result.get("error", "Unspecified problem"))
 
                 # If there's a retry, schedule the next one.
 
@@ -849,7 +896,7 @@ class ArchiveWorker(pscheduler.GenericWorker):
                     log_debug("%s: No retry requested.  Giving up.", label)
 
                     log.warning("%s: Gave up archiving %s to %s",
-                                     label, run_href, archiver)
+                                label, run_href, archiver)
 
                     with dbpool(self.number) as db:
                         cursor = db.cursor()
@@ -872,7 +919,7 @@ class ArchiveWorker(pscheduler.GenericWorker):
 def main_program():
 
     db = pscheduler.PgConnection(dsn)
-    db.listen(options.channel)
+    db.listen("archiving_change")
     db.listen("warmboot")
 
     # Something to maintain the default archiver list
