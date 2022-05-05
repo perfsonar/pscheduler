@@ -201,21 +201,13 @@ pscheduler-tool-halfping
 pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
-<<<<<<< HEAD:unibuild-order
-pscheduler-tool-nmapreach		--bundle extras
-pscheduler-tool-nmapscan		--bundle extras
-pscheduler-tool-nuttcp
-pscheduler-tool-owping
-ifelse(HAVE_PARIS_TRACEROUTE,pscheduler-tool-paris-traceroute,,)
-=======
 pscheduler-tool-nmapreach			--bundle extras
 # This has problems.  See #1223.
 #pscheduler-tool-nmapscan		--bundle extras
 pscheduler-tool-nuttcp
 pscheduler-tool-owping
-pscheduler-tool-paris-traceroute
+ifelse(HAVE_PARIS_TRACEROUTE,pscheduler-tool-paris-traceroute,,)
 pscheduler-tool-passthrough
->>>>>>> 5.0.0:scripts/RPM-BUILD-ORDER.m4
 pscheduler-tool-ping
 pscheduler-tool-powstream
 pscheduler-tool-psclock
