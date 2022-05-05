@@ -33,7 +33,7 @@ uninstall:
 fresh: uninstall build
 
 clean:
-	unibuild make clean
+	unibuild make $(UNIBUILD_OPTS) clean
 	unibuild clean
 	$(MAKE) -C docs $@
 	rm -rf $(TO_CLEAN)
