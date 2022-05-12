@@ -212,6 +212,10 @@ ifndef UNITDIR
 	@echo No UNITDIR specified for installation
 	@false
 endif
+ifndef INTERNALSDIR
+	@echo No INTERNALSDIR specified for installation
+	@false
+endif
 	mkdir -p $(CONFIGDIR)
 	cp -f $(CONFIGS) $(CONFIGDIR)
 	chmod 600 $(CONFIGS:%=$(CONFIGDIR)/%)
@@ -221,6 +225,7 @@ endif
 	mkdir -p $(DAEMONDIR)
 	cp -f $(DAEMONS) $(DAEMONDIR)
 	chmod 555 $(DAEMONS:%=$(DAEMONDIR)/%)
+	mkdir -p $(INTERNALSDIR)
 	cp -f $(INTERNALS) $(INTERNALSDIR)
 	chmod 555 $(INTERNALS:%=$(INTERNALSDIR)/%)
 	mkdir -p $(UNITDIR)
