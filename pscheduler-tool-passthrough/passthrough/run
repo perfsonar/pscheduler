@@ -5,6 +5,7 @@
 
 import datetime
 import json
+import random
 import sys
 import time
 
@@ -17,9 +18,24 @@ input = pscheduler.json_load(exit_on_error=True);
 try:
     data = input['test']['spec']['data']
 except KeyError:
-    pscheduler.fail('Unable to find data in input')
+    data = None
 
 # Don't bother sleeping here; there's no reason to wait.
+
+# Force a hard failure if one is indicated
+try:
+    fail_prob = float(input['test']['spec']['fail'])
+    fail_rand = random.random()
+    if fail_rand < fail_prob:
+        pscheduler.succeed_json({
+            'succeeded': False,
+            'diags': ("Random %f on failure probability %f" % (fail_rand, fail_prob)),
+            'error': 'Randomly-induced failure',
+            'result': None
+            })
+except KeyError:
+    pass  # Skip it if not in the input
+
 
 # Perform the test
 
