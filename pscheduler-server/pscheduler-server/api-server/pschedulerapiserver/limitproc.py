@@ -101,6 +101,6 @@ def limitproc_init(limit_file):
 def limitprocessor():
     __limitproc_update()
     if this.processor is None:
-        return (None, "Limit processor is not initialized.  See system logs.")
+        return (None, "Limit processor is not initialized: %s" % (this.whynot))
     else:
         return (this.processor, None)
