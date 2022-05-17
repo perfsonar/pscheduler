@@ -1016,7 +1016,7 @@ __dictionary__ = {
             "contexts": { "$ref": "#/pScheduler/ContextSpecification" },
             "reference": { "$ref": "#/pScheduler/AnyJSON" },
             "_key": { "$ref": "#/pScheduler/String" },
-            "debug": { "$ref": "#/pScheduler/Boolean" },
+            "debug": { "$ref": "#/pScheduler/Boolean" }
         },
         "additionalProperties": False,
         "required": [

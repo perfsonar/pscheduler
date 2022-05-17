@@ -749,9 +749,6 @@ BEGIN
                 'null'::JSONB);
         END IF;
 
-
-
-
 	RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -868,6 +865,7 @@ BEGIN
 
     DELETE FROM task
     WHERE
+        -- TODO: This refers to a table created later.
         NOT EXISTS (SELECT * FROM run where run.task = task.id)
         -- The first of these will be the latest known time.
         AND COALESCE(until, start, added) < older_than
