@@ -351,6 +351,17 @@ BEGIN
         t_version := t_version + 1;
     END IF;
 
+
+    -- Version 16 to version 17
+    -- Adds keep_after_archive column
+    IF t_version = 16
+    THEN
+	ALTER TABLE task ADD COLUMN
+	keep_after_archive INTERVAL DEFAULT NULL;
+
+        t_version := t_version + 1;
+    END IF;
+
     --
     -- Cleanup
     --
@@ -619,7 +630,11 @@ BEGIN
 	    LOOP
 	        PERFORM archiver_validate(archive);
 	    END LOOP;
+
+	    -- Only needed if archives are specified.
+	    NEW.keep_after_archive := text_to_interval(NEW.json #>> '{keep-after-archive}');
 	END IF;
+
 
 
 	--

@@ -206,6 +206,19 @@ BEGIN
     END IF;
 
 
+    -- Version 9 to version 10
+    -- Add expiration time
+    IF t_version = 9
+    THEN
+        ALTER TABLE run ADD COLUMN
+	expires TIMESTAMP WITH TIME ZONE DEFAULT NULL;
+
+	CREATE INDEX run_expires ON run(expires) WHERE expires IS NOT NULL;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -874,6 +887,12 @@ BEGIN
     WHERE
         upper(times) < purge_before
         AND state IN (SELECT id FROM run_state WHERE NOT finished);
+
+    -- Runs with explicit expiration times
+    DELETE FROM run
+    WHERE
+        expires IS NOT NULL
+	AND expires < now();
 
 END;
 $$ LANGUAGE plpgsql;
