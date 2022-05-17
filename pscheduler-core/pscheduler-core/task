@@ -99,11 +99,6 @@ task_group.add_option("--tool",
                       action="append", type="string",
                       dest="tool")
 
-task_group.add_option("--purge",
-                       help="Remove runs after archiving is complete",
-                       action="store_true",
-                       dest="purge")
-
 
 
 # SCHEDULING OPTIONS
@@ -456,10 +451,6 @@ if options.debug_pscheduler:
     task_schema.set(4)
     task['debug'] = True
 
-
-if options.purge:
-    task_schema.set(4)
-    task['purge'] = options.purge
 
 
 
