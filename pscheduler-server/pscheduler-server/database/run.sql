@@ -196,11 +196,24 @@ BEGIN
 
     -- Version 8 to version 9
     -- New rows start in run_state_scheduling()
-    IF t_version = 9
+    IF t_version = 8
     THEN
         ALTER TABLE run
         ALTER COLUMN state
 	SET DEFAULT run_state_scheduling();
+
+        t_version := t_version + 1;
+    END IF;
+
+
+    -- Version 9 to version 10
+    -- Add expiration time
+    IF t_version = 9
+    THEN
+        ALTER TABLE run ADD COLUMN
+	expires TIMESTAMP WITH TIME ZONE DEFAULT NULL;
+
+	CREATE INDEX run_expires ON run(expires) WHERE expires IS NOT NULL;
 
         t_version := t_version + 1;
     END IF;
@@ -587,6 +600,56 @@ CREATE TRIGGER run_alter BEFORE INSERT OR UPDATE ON run
 
 
 
+
+DROP TRIGGER IF EXISTS run_delete ON run CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('run_delete'); END $$;
+
+CREATE OR REPLACE FUNCTION run_delete()
+RETURNS TRIGGER
+AS $$
+DECLARE
+    older_than TIMESTAMP WITH TIME ZONE;
+BEGIN
+
+    -- If this isn't the last run, we're good.
+    IF EXISTS (SELECT * FROM run WHERE task = OLD.task)
+    THEN
+        RETURN OLD;
+    END IF;
+
+
+    -- Remove the task if it can be considered completed.
+
+    SELECT INTO older_than normalized_now() - keep_runs_tasks
+    FROM configurables;
+
+    DELETE FROM task
+    WHERE
+        id = OLD.task
+        -- The first of these will be the latest known time.
+        AND COALESCE(until, start, added) < older_than
+        AND (
+            -- Complete based on runs
+            (max_runs IS NOT NULL AND runs >= max_runs)
+            -- One-shot
+            OR (repeat IS NULL AND repeat_cron IS NULL)
+            -- Until time has passed
+            OR until < older_than
+            )
+    ;
+
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER run_delete AFTER DELETE ON run
+       FOR EACH ROW EXECUTE PROCEDURE run_delete();
+
+
+
+
+
 -- If a task becomes disabled, remove all future runs.
 
 DROP TRIGGER IF EXISTS run_task_disabled ON task CASCADE;
@@ -864,7 +927,7 @@ BEGIN
 	  (upper(times) < purge_before)                       -- Runs that got a time
 	  OR (upper(times) IS NULL AND added < purge_before)  -- Runs that didn't
         )
-        AND state IN (SELECT id FROM run_state WHERE finished)
+        AND run_state_is_finished(state)
     ;
 
     -- Extra margin for anything that might actually be running
@@ -874,6 +937,12 @@ BEGIN
     WHERE
         upper(times) < purge_before
         AND state IN (SELECT id FROM run_state WHERE NOT finished);
+
+    -- Runs with explicit expiration times
+    DELETE FROM run
+    WHERE
+        expires IS NOT NULL
+	AND expires < now();
 
 END;
 $$ LANGUAGE plpgsql;

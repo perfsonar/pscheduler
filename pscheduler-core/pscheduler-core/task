@@ -71,6 +71,12 @@ task_group.add_option("--archive",
                       action="append", type="string",
                       dest="archive")
 
+task_group.add_option("--keep-after-archive",
+                      help="Maximim time to keep runs after archiving is complete (ISO 8601 Duration)",
+                      action="store",
+                      type="string",
+                      dest="keep_after_archive")
+
 task_group.add_option("--context",
                       help="Specify context changes for all participants (JSON; optionally @/path/to/file)",
                       default=None,
@@ -92,6 +98,7 @@ task_group.add_option("--tool",
                       default=[],
                       action="append", type="string",
                       dest="tool")
+
 
 
 # SCHEDULING OPTIONS
@@ -163,7 +170,7 @@ other_group.add_option("--bind",
                        dest="bind")
 
 other_group.add_option("--export",
-                      help="Export task JSON to stdout and exit",
+                      help="Export (unvalidated) task JSON to stdout and exit",
                       action="store_true", default=False,
                       dest="export")
 
@@ -446,6 +453,7 @@ if options.debug_pscheduler:
 
 
 
+
 bind = options.bind
 lead_bind = options.lead_bind
 
@@ -489,6 +497,10 @@ if options.archive:
 
     task['archives'] = archives
 
+
+if options.keep_after_archive:
+    task['keep-after-archive'] = options.keep_after_archive
+    task_schema.set(5)
 
 # Add contexts, if any.
 if options.context:
