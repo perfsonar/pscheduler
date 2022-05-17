@@ -196,7 +196,7 @@ BEGIN
 
     -- Version 8 to version 9
     -- New rows start in run_state_scheduling()
-    IF t_version = 9
+    IF t_version = 8
     THEN
         ALTER TABLE run
         ALTER COLUMN state
