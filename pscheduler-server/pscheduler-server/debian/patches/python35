@@ -1,16 +1,16 @@
---- a/daemons/runner	2022-02-03 15:54:20.574564529 -0500
-+++ b/daemons/runner	2022-02-03 15:54:41.083727231 -0500
-@@ -718,7 +718,7 @@
+--- a/daemons/runner	2022-04-04 13:04:05.534923246 -0400
++++ b/daemons/runner	2022-04-04 13:04:24.225682907 -0400
+@@ -815,7 +815,7 @@
              # the local database.
  
              try:
 -                self.log_debug(f'{self.id}: Merged result: Setting final state.  Succeeded={succeeded}')
-+                self.log_debug("%d: Merged result: Setting final state.  Succeeded=%s", self.id, succeeded)
-                 db = self._get_db_conn()
-                 with db.cursor() as cursor:
++                self.log_debug("%d: Merged result: Setting final state.  Succeeded=%s", self.id, succeeded) 
+                 with self.dbpool(self.id) as db:
                      # TODO: Need to figure out succeeded.
---- a/daemons/scheduler	2022-02-03 15:54:20.574789208 -0500
-+++ b/daemons/scheduler	2022-02-03 15:54:41.084317143 -0500
+                     db.cursor().execute("""
+--- a/daemons/scheduler	2022-04-04 13:04:02.557697681 -0400
++++ b/daemons/scheduler	2022-04-04 13:04:24.226468670 -0400
 @@ -629,14 +629,14 @@
              [pscheduler.api_run_uuid(run_lead_url)]
          )

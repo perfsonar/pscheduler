@@ -24,7 +24,7 @@ Requires:	pscheduler-server >= 4.4.0
 Requires:	%{_pscheduler_python}-pscheduler >= 4.4.1
 Requires:	%{_pscheduler_python_epel}-cryptography
 Requires:	pscheduler-test-throughput
-requires:	iperf3
+requires:	iperf3 >= 3.11
 Requires:	numactl
 
 BuildRequires:	pscheduler-rpm
