@@ -1,6 +1,6 @@
---- a/iperf3/run	2022-04-04 13:04:05.549478534 -0400
-+++ b/iperf3/run	2022-04-04 13:04:26.309707200 -0400
-@@ -354,7 +354,7 @@
+--- a/iperf3/run	2022-05-26 11:19:24.275031180 -0400
++++ b/iperf3/run	2022-05-26 11:19:50.325038360 -0400
+@@ -321,7 +321,7 @@
      except Exception as ex:
          return {"succeeded": False,
                  "diags": "",
@@ -9,7 +9,7 @@
  
  
      iperf3_args.append("-p")
-@@ -554,12 +554,12 @@
+@@ -521,12 +521,12 @@
                  logger.debug("Nothing succeeded.")
                  results = { 
                      "succeeded": False,

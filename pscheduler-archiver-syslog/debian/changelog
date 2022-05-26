@@ -1,8 +1,8 @@
-pscheduler-archiver-syslog (5.0.0~a1.0-1) perfsonar-5.0-snapshot; urgency=low
+pscheduler-archiver-syslog (5.0.0~b1.1-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
 
- -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sat, 28 Aug 2021 02:01:41 +0100
+ -- perfSONAR developers <debian@perfsonar.net>  Thu, 26 May 2022 11:19:25 -0400
 
 pscheduler-archiver-syslog (4.4.4-1) perfsonar-4.4; urgency=low
 

@@ -1,5 +1,5 @@
-pscheduler-test-noop (5.0.0~a1.0-1) perfsonar-5.0-snapshot; urgency=low
+pscheduler-test-noop (5.0.0~b1.1-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
 
- -- Mark Feit <mfeit@internet2.edu>  Thu, 21 Apr 2022 15:07:00 -0400
+ -- perfSONAR developers <debian@perfsonar.net>  Thu, 26 May 2022 11:19:25 -0400

@@ -1,5 +1,5 @@
-pscheduler-tool-pstimer (5.0.0-1) perfsonar-minor-staging; urgency=low
+pscheduler-tool-pstimer (5.0.0~b1.1-1) perfsonar-5.0; urgency=low
 
   * Initial release
 
- -- Mark Feit <mfeit@internet2.edu>  Fri, 10 Dec 2021 12:59:00 -0500
+ -- perfSONAR developers <debian@perfsonar.net>  Thu, 26 May 2022 11:19:25 -0400
