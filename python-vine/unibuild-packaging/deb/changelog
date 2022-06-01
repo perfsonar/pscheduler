@@ -1,3 +1,10 @@
+vine (5.0.0+dfsg-2~bpo10+1) perfsonar-5.0-staging; urgency=medium
+
+  * Backport to Debian 10, Ubuntu 20.
+  * Raised debhelper version to 10.
+
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Wed, 01 Jun 2022 13:54:32 +0000 
+
 vine (5.0.0+dfsg-2~bpo90+1) perfsonar-4.4-staging; urgency=medium
 
   * Backport to Debian 9, Ubuntu 16 & 18.

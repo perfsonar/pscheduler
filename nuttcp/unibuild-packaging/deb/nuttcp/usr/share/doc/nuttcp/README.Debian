@@ -1,7 +1,0 @@
-nuttcp for Debian
------------------
-
- There are some example xinetd scripts in the '/usr/share/docs/nuttcp/examples/'
- directory for using nuttcp as a server through inetd.
-
- -- Chris Taylor <ctaylor@debian.org>  Sun, 06 Dec 2009 16:48:37 -0700

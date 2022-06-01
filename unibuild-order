@@ -119,12 +119,9 @@ ifelse(HAVE_ETHR,1,ethr)
 
 ifelse(FAMILY/MAJOR,RedHat/8,I2util)			# TODO: Building temporarily for EL8; required for owamp
 ifelse(FAMILY/MAJOR,RedHat/8,iperf)			# EPEL dropped this for EL8
-iperf3							# TODO: EL7 would normally get this from the perfSONAR repo
-nuttcp
 
-# TODO: Building temporarily for EL8 and Debian
-ifelse(FAMILY/MAJOR,RedHat/8,owamp,
-       FAMILY,Debian,owamp)
+# TODO: Building temporarily for EL8
+ifelse(FAMILY/MAJOR,RedHat/8,owamp)
 
 # TODO: Needed for D11, having difficulties with the packaging.
 define(HAVE_PARIS_TRACEROUTE,ifelse(DISTRO/eval(MAJOR > 10),Debian/1,,1))

@@ -13,6 +13,9 @@ endif
 ifdef STOP
 UNIBUILD_OPTS += --stop $(STOP)
 endif
+ifdef RELEASE
+UNIBUILD_OPTS += --release
+endif
 
 # The shell command below does the equivalent of BASH's pipefail
 # within the confines of POSIX.
