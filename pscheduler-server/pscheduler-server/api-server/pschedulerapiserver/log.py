@@ -2,6 +2,7 @@
 # Logger Handle
 #
 
+import os
 import pscheduler
 import sys
 import time
@@ -30,4 +31,4 @@ class APILog(pscheduler.Log):
 
 
 # This is thread-safe, so no need to do anything special with it.
-log = APILog(name='pscheduler-api', signals=False, propagate=True)
+log = APILog(name='pscheduler-api[%d]' % (os.getpid()), signals=False, propagate=True)
