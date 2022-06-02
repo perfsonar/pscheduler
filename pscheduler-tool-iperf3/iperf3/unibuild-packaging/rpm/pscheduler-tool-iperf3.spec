@@ -4,7 +4,7 @@
 
 %define short	iperf3
 %define perfsonar_auto_version 5.0.0
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 0.b1.1
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
@@ -24,7 +24,7 @@ Requires:	pscheduler-server >= 4.4.0
 Requires:	%{_pscheduler_python}-pscheduler >= 4.4.1
 Requires:	%{_pscheduler_python_epel}-cryptography
 Requires:	pscheduler-test-throughput
-requires:	iperf3 >= 3.10
+requires:	iperf3 >= 3.11
 Requires:	numactl
 
 BuildRequires:	pscheduler-rpm

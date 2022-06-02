@@ -96,10 +96,14 @@ class LimitProcessor(object):
 
         # Parse it.
 
-        limit_config = json_load(limit_file_contents)
+        try:
+            limit_config = json_load(limit_file_contents)
+        except ValueError as ex:
+            raise ValueError("Invalid limit configuration: %s" % str(ex))
 
         if not isinstance(limit_config, dict):
-            raise ValueError("Limit configuration must be an object.")
+            raise ValueError("Invalid limit configuration: must be a JSON object")
+
 
         schema = limit_config.get("schema", 1)
         temp_schema = {
@@ -110,7 +114,7 @@ class LimitProcessor(object):
         valid, message = json_validate(limit_config, temp_schema)
 
         if not valid:
-            raise ValueError("Invalid limit file: %s" % message)
+            raise ValueError("Invalid limit configuration: %s" % message)
 
         #
         # Set up all of the stages

@@ -15,12 +15,11 @@ def spec_is_valid(json):
                     "schema":           { "type": "integer", "enum": [ 1 ] },
                     "data":             { "$ref": "#/pScheduler/AnyJSON" },
                     "host":             { "$ref": "#/pScheduler/Host" },
-                    "host-node":        { "$ref": "#/pScheduler/URLHostPort" }
+                    "host-node":        { "$ref": "#/pScheduler/URLHostPort" },
+                    "fail":             { "$ref": "#/pScheduler/Probability" }
                 },
                 "additionalProperties": False,
-                "required": [
-                    "data",
-                ]
+                "required": [],
             }
         }
     }

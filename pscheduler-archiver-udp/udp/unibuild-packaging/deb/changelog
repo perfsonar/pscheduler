@@ -1,5 +1,5 @@
-pscheduler-archiver-udp (5.0.0~a1.0-1) perfsonar-5.0-snapshot; urgency=low
+pscheduler-archiver-udp (5.0.0~b1.1-1) perfsonar-5.0; urgency=low
 
   * Initial release.
 
- -- Mark Feit <mfeit@internet2.edu>  Tue, 28 Sep 2021 17:13:30 -0400
+ -- perfSONAR developers <debian@perfsonar.net>  Thu, 26 May 2022 11:19:25 -0400

@@ -1,11 +1,10 @@
---- a/pscheduler/limitprocessor/limitprocessor.py	2022-02-03 15:54:20.716301383 -0500
-+++ b/pscheduler/limitprocessor/limitprocessor.py	2022-02-03 15:54:44.204205934 -0500
-@@ -262,7 +262,7 @@
+--- a/pscheduler/limitprocessor/limitprocessor.py	2022-05-26 11:19:24.314253187 -0400
++++ b/pscheduler/limitprocessor/limitprocessor.py	2022-05-26 11:19:52.164970167 -0400
+@@ -278,6 +278,6 @@
              return self._process(task, hints, rewrite, prioritize)
          except Exception as ex:
              diags = 'Failed to process limits: processor threw an exception.\n\n' \
 -                    f'{formatted_exception(ex)}\n\n' \
 +                    '{!r}'.formatted_exception(ex)+'\n\n' \
                      'Please report this as a bug.'
-             return (False, [], diags, task, None)
- 
+             return (False, diags, task, None)
