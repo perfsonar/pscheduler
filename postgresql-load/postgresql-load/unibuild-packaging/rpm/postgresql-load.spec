@@ -19,6 +19,7 @@ Source0:	%{name}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	%{_pscheduler_postgresql_package}-server
+Requires:	procps-ng
 
 BuildRequires:	pscheduler-rpm
 

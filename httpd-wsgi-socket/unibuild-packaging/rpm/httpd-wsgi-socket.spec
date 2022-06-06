@@ -34,13 +34,6 @@ cat > $RPM_BUILD_ROOT/%{conf} <<EOF
 WSGISocketPrefix /tmp/%{name}
 EOF
 
-%prep
-%if 0%{?el7}%{?el8} == 0
-echo "This package cannot be built for %{dist}."
-false
-%endif
-
-
 
 %post
 systemctl reload-or-try-restart httpd

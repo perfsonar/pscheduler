@@ -65,7 +65,8 @@ ifelse(FAMILY/DISTRO/MAJOR,RedHat/Oracle/8,Cython)	# Only build this on OL8.
 ifelse(FAMILY/MAJOR,Debian/9,python-attrs)              # Needed here only.
 ifelse(FAMILY/MAJOR,RedHat/7,python-daemon)		# EL7 needs this; EL8 is up to date
 ifelse(FAMILY/MAJOR,RedHat/7,python-isodate)		# EL7 needs this; EL8 is up to date
-ifelse(FAMILY/MAJOR,RedHat/8,python-itsdangerous)	# EL8 has this, but an older version
+# EL7 has a reasonably-current version of this.  EL8 and later, we build.
+ifelse(FAMILY/eval(MAJOR > 7),RedHat/1,python-itsdangerous)
 ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of this.
        python-pyrsistent)
 python-nmap3
@@ -78,11 +79,15 @@ python-nmap3
 # Used by pscheduler-archiver-esmond
 # EL8's is 1.58, ours is/was 1.59.  Commits to the project show only
 # cosmetic changes for the later version.
-ifelse(DISTRO/MAJOR,CentOS/7,python-memcached)
+ifelse(FAMILY/MAJOR,RedHat/7,python-memcached)
 
 python-jsontemplate
 python-netifaces
-ifelse(DISTRO/MAJOR,CentOS/7,python-ntplib)		# EL8 has this, ours is newer
+
+# TODO: This was deprecated after EL8.  Switch to something new.
+ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-nose)
+
+ifelse(FAMILY/eval(MAJOR == 7 || MAJOR == 9),RedHat/1,python-ntplib)
 python-parse-crontab
 python-vine
 python-py-amqp
@@ -105,7 +110,7 @@ python-icmperror
 
 # Apache add-ons
 httpd-firewall						# TODO: May no longer be used.  Maybe for development?
-mod_wsgi
+ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,mod_wsgi)
 httpd-wsgi-socket
 
 

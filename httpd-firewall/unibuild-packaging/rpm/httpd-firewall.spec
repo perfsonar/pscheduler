@@ -23,13 +23,6 @@ Requires:	httpd
 Firewall configuration for allowing access to HTTPD
 
 
-%prep
-%if 0%{?el7}%{?el8} == 0
-echo "This package cannot be built on %{dist}."
-false
-%endif
-
-
 %post
 systemctl enable --now firewalld
 firewall-cmd -q --add-service=https --permanent

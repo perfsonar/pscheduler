@@ -133,11 +133,6 @@ The pScheduler server
 # ------------------------------------------------------------------------------
 
 %prep
-
-%if 0%{?el7}%{?el8} == 0
-echo "This package cannot be built for %{dist}."
-false
-%endif
 %setup -q
 
 
