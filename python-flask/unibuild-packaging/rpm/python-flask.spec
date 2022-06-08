@@ -25,7 +25,7 @@ Requires:	%{_pscheduler_python}
 Requires:	%{_pscheduler_python_epel}-click
 Requires:	%{_pscheduler_python_epel}-jinja2
 %endif
-%if 0%{?el8}
+%if 0%{?el8}%{?el9}
 Requires:	%{_pscheduler_python}-click
 Requires:	%{_pscheduler_python}-jinja2
 %endif

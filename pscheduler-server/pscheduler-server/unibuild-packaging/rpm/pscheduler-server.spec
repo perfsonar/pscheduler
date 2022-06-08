@@ -66,7 +66,6 @@ BuildRequires:	%{_pscheduler_python}-parse-crontab
 BuildRequires:	%{_pscheduler_python}-pscheduler >= 5.0.0
 BuildRequires:	m4
 Requires:	httpd-wsgi-socket
-Requires:	pscheduler-server
 # Note that the actual definition of what protocol is used is part of
 # python-pscheduler, but this package is what does the serving, so
 # mod_ssl is required here.
@@ -78,7 +77,7 @@ Requires:	%{_pscheduler_python}-pscheduler >= 5.0.0
 %if 0%{?el7}
 Requires:	pytz
 %endif
-%if 0%{?el8}
+%if 0%{?el8}%{?el9}
 Requires:	%{_pscheduler_python}-pytz
 %endif
 

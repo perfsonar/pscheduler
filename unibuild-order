@@ -63,7 +63,10 @@ jq							# Ours has patches.  TODO: Does Debian need this?
 
 ifelse(FAMILY/DISTRO/MAJOR,RedHat/Oracle/8,Cython)	# Only build this on OL8.
 ifelse(FAMILY/MAJOR,Debian/9,python-attrs)              # Needed here only.
-ifelse(FAMILY/MAJOR,RedHat/7,python-daemon)		# EL7 needs this; EL8 is up to date
+
+# EL8 has a good one, EL7 and EL9 don't.
+ifelse(FAMILY/eval(MAJOR == 7 || MAJOR == 9),RedHat/1,python-daemon)
+
 ifelse(FAMILY/MAJOR,RedHat/7,python-isodate)		# EL7 needs this; EL8 is up to date
 # EL7 has a reasonably-current version of this.  EL8 and later, we build.
 ifelse(FAMILY/eval(MAJOR > 7),RedHat/1,python-itsdangerous)
@@ -122,11 +125,12 @@ drop-in
 define(HAVE_ETHR,HAVE_GOLANG)
 ifelse(HAVE_ETHR,1,ethr)
 
-ifelse(FAMILY/MAJOR,RedHat/8,I2util)			# TODO: Building temporarily for EL8; required for owamp
-ifelse(FAMILY/MAJOR,RedHat/8,iperf)			# EPEL dropped this for EL8
+ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,I2util)		# TODO: Building temporarily for EL8/EL9; required for owamp
+ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,iperf)		# EPEL dropped this for EL8
+ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,iperf3)
 
-# TODO: Building temporarily for EL8
-ifelse(FAMILY/MAJOR,RedHat/8,owamp)
+# TODO: Building temporarily for EL8 and EL9
+ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,owamp)
 
 # TODO: Needed for D11, having difficulties with the packaging.
 define(HAVE_PARIS_TRACEROUTE,ifelse(DISTRO/eval(MAJOR > 10),Debian/1,,1))
@@ -204,8 +208,10 @@ pscheduler-tool-iperf2
 pscheduler-tool-iperf3
 pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-nmapreach			--bundle extras
-# This has problems.  See #1223.
+# TODO: This has problems.  See #1223.
 #pscheduler-tool-nmapscan		--bundle extras
+### TODO: Re-enable this on EL9
+ifelse(FAMILY/eval(MAJOR != 9),RedHat/1,pscheduler-tool-nuttcp)
 pscheduler-tool-nuttcp
 pscheduler-tool-owping
 ifelse(HAVE_PARIS_TRACEROUTE,pscheduler-tool-paris-traceroute,,)
