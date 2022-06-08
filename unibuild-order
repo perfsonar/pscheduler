@@ -212,7 +212,6 @@ pscheduler-tool-nmapreach			--bundle extras
 #pscheduler-tool-nmapscan		--bundle extras
 ### TODO: Re-enable this on EL9
 ifelse(FAMILY/eval(MAJOR != 9),RedHat/1,pscheduler-tool-nuttcp)
-pscheduler-tool-nuttcp
 pscheduler-tool-owping
 ifelse(HAVE_PARIS_TRACEROUTE,pscheduler-tool-paris-traceroute,,)
 pscheduler-tool-passthrough
