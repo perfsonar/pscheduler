@@ -37,8 +37,8 @@ BuildRequires:	%{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-setuptools
 
 
-%if 0%{?el8}
-# EL8's auto dependency scanner wants /bin/python3, which nothing provides.
+%if 0%{?el8}%{?el9}
+# EL8/EL9's auto dependency scanner wants /bin/python3, which nothing provides.
 AutoReqProv: no
 %endif
 
