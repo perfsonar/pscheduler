@@ -1,12 +1,53 @@
-version: '3.8'
+version: '3.9'
+  #
+###
+# Some repeated defaults:
+# tmpfs and /sys/fs/cgroup volumes are needed for systemd to work properly
+# /app is where the git repositories will be shared with the host
+###
+x-tmpfs:
+  &default-tmpfs
+  - /run
+  - /run/lock
+  - /tmp
+
+x-volumes:
+  &default-volumes
+  -  .:/app
+ 
 services:
-  pscheduler_build:
-    image: perfsonar/pscheduler-build:latest
-    build:
-        context: .
-        dockerfile: Dockerfile
-    tmpfs: 
-       - /run
-       - /tmp
-    volumes:
-       - /sys/fs/cgroup:/sys/fs/cgroup:ro
+  alma8:
+    image: ghcr.io/perfsonar/unibuild/alma8:latest
+    volumes: *default-volumes
+  alma9:
+    image: ghcr.io/perfsonar/unibuild/alma9:latest
+    volumes: *default-volumes
+  centos7:
+    image: ghcr.io/perfsonar/unibuild/centos7:latest
+    volumes: *default-volumes
+  debian10_amd64:
+    platform: "linux/amd64"
+    image: ghcr.io/perfsonar/unibuild/debian10:latest
+    volumes: *default-volumes
+  debian10_arm64:
+    platform: "linux/arm64"
+    image: docker.io/ntw0n/psbuild.$REPO.debian@sha256:ef9edb92a76f79ad3e3b776a3235a0a5d15b60a29d392b6d8b5b5ba6a44c2167
+    privileged: true
+    tmpfs: *default-tmpfs
+    volumes: *default-volumes
+    working_dir: /app
+  debian10_armv7:
+    platform: "linux/arm/v7"
+    image: docker.io/ntw0n/psbuild.$REPO.debian@sha256:c0d374312879c7d61aa5a4d2c78c98c6254f6cc299f954875eaba9df6a9353a5
+    privileged: true
+    tmpfs: *default-tmpfs
+    volumes: *default-volumes
+    working_dir: /app
+  debian10_ppc64le:
+    platform: "linux/ppc64le"
+    image: docker.io/ntw0n/psbuild.$REPO.debian@sha256:273348716553a69cdb70a60b1435c08e88c8caff94aab4fdbfdd459b3f3f916c
+    privileged: true
+    tmpfs: *default-tmpfs
+    volumes: *default-volumes
+    working_dir: /app
+
