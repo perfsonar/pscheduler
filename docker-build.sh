@@ -4,20 +4,8 @@
 BUILD_DIR=multiarch_build
 
 # Variables
-PROJECT=pscheduler
 export OS=debian10
 export REPO=perfsonar-5.0-snapshot
-
-# To run in Jenkins only
-#git clone https://github.com/perfsonar/${PROJECT}.git
-#cd ${PROJECT}
-#if [ -n "${tag}" ]; then
-#  echo "We have a tag, this is a release build."
-#  git checkout ${tag}
-#else
-#  echo "We build from a branch, this is a snapshot build."
-#  git checkout ${branch}
-#fi
 
 # Launch all containers
 ARCHES='linux/amd64 linux/arm64 linux/armv7 linux/ppc64le'
@@ -38,7 +26,9 @@ for ARCH in ${ARCHES[@]}; do
     LARCH=${ARCH#*\/}
     LARCH=${LARCH/\/}
     # TODO: can we run all builds in parallel?
+    # TODO: remove install of curl when it is part of the unibuild images
     docker compose exec ${OS}_${LARCH} bash -c "\
+        apt-get -y install curl && \
         curl http://downloads.perfsonar.net/debian/$REPO.gpg.key | apt-key add - && \
         curl -o /etc/apt/sources.list.d/$REPO.list http://downloads.perfsonar.net/debian/$REPO.list && \
         apt-get update \
@@ -48,18 +38,22 @@ done
 # Make the master build with unibuild (on amd64 container)
 #docker compose exec ${OS}_amd64 unibuild build
 
+echo 
+echo "*** Unibuild: done! ***"
+echo
+
 # Then loop on all packages from the unibuild/build-order file
 cd unibuild-repo
 mkdir -p $BUILD_DIR
-for p in `cat unibuild/build-order`; do
+for p in `cat unibuild/debian-package-order`; do
     # Extract source package
     rm -rf $BUILD_DIR/*
-    if grep -q '(native)' ../${p}/*/unibuild-packaging/deb/source/format ; then
+    if head -1 ${p}*.dsc | grep -q '(native)' ; then
         echo "This is a Debian native package, there is no orig tarball."
-        tar -x -C $BUILD_DIR --strip-components 1 -f ${p}*.tar.xz
+        cat ${p}*.tar.xz | tar -x -C $BUILD_DIR --strip-components 1 -f -
     else
-        tar -x -C $BUILD_DIR --strip-components 1 -f ${p}*.orig.*
-        tar -x -C $BUILD_DIR -f ${p}*.debian.*
+        cat ${p}*.orig.* | tar -x -C $BUILD_DIR --strip-components 1 -f -
+        cat ${p}*.debian.tar.xz | tar -x -C $BUILD_DIR -f -
     fi
 
     if grep '^Architecture: ' $BUILD_DIR/debian/control | grep -qv 'Architecture: all'; then
