@@ -59,8 +59,11 @@ def __evaluate_limits(
     task,       # Task UUID
     start_time  # When the task should start
     ):
+    """
+    Evaluate the limits for a run.
 
-    """Evaluate the limits for a run."""
+    Returns passed, diagnostics, HTTP response and priority.
+    """
 
     log.debug("Applying limits")
     # Let this throw what it may; callers have to catch it.
@@ -68,7 +71,7 @@ def __evaluate_limits(
         "SELECT json, duration, hints FROM task where uuid = %s", [task])
     if cursor.rowcount == 0:
         # TODO: This or bad_request when the task isn't there?
-        return False, None, not_found()
+        return False, 'Task not found', None, not_found()
     task_spec, duration, hints = cursor.fetchone()
     cursor.close()
     log.debug("Task is %s, duration is %s" % (task_spec, duration))
@@ -83,8 +86,9 @@ def __evaluate_limits(
 
     processor, whynot = limitprocessor()
     if processor is None:
-        log.debug("Limit processor is not initialized. %s", whynot)
-        return False, None, no_can_do("Limit processor is not initialized: %s" % whynot)
+        reason = 'Limit processor is not initialized. %s' % (whynot)
+        log.debug(reason)
+        return False, reason, None, no_can_do("Limit processor is not initialized: %s" % whynot)
 
     # Don't pass hints since that would have been covered when the
     # task was submitted and only the scheduler will be submitting
