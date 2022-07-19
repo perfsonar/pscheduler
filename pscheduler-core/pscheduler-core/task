@@ -174,6 +174,11 @@ other_group.add_option("--export",
                       action="store_true", default=False,
                       dest="export")
 
+other_group.add_option("--export-format",
+                      help="Format for exports ('task' or 'batch')",
+                      action="store", default="task",
+                      dest="export_format")
+
 other_group.add_option("--format",
                       help="Output format: plain (default), html, json or none",
                       action="store", type="string",
@@ -588,6 +593,9 @@ if task_schema.value() > 1:
 if schedule_schema.value() > 1:
     task['schedule']['schema'] = schedule_schema.value()
 
+
+# Export
+
 if options.export:
 
     # If the schedule item ended up empty, get rid of it.
@@ -597,7 +605,27 @@ if options.export:
     except KeyError:
         pass
 
-    pscheduler.json_dump(obj=task, dest=sys.stdout, pretty=True)
+    if options.export_format == 'task':
+        to_export = task
+    elif options.export_format == 'batch':
+        try:
+            del task['schedule']
+        except KeyError:
+            pass  # Not there?  Don't care.
+
+        to_export = {
+            'schema': 1,
+            'jobs': [
+                {
+                    'label': 'Exported %s' % (test_arg),
+                    'task': task
+                }
+            ]
+        }
+    else:
+        pscheduler.fail("Invalid export format '%s'" % (options.export_format))
+
+    pscheduler.json_dump(obj=to_export, dest=sys.stdout, pretty=True)
     print()
     pscheduler.succeed()
 
