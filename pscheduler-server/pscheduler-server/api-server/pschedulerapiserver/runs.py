@@ -88,7 +88,7 @@ def __evaluate_limits(
     if processor is None:
         reason = 'Limit processor is not initialized. %s' % (whynot)
         log.debug(reason)
-        return False, reason, None, no_can_do("Limit processor is not initialized: %s" % whynot)
+        return False, reason, None, no_can_do(reason)
 
     # Don't pass hints since that would have been covered when the
     # task was submitted and only the scheduler will be submitting
