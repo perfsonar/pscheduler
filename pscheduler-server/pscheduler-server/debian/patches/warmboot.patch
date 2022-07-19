@@ -1,5 +1,5 @@
---- a/database/warmboot.raw	2022-05-26 11:19:21.552450588 -0400
-+++ b/database/warmboot.raw	2022-05-26 11:19:47.206101814 -0400
+--- a/database/warmboot.raw	2022-07-19 08:47:42.856386922 -0400
++++ b/database/warmboot.raw	2022-07-19 08:48:06.920004818 -0400
 @@ -3,8 +3,7 @@
  # Warm boot the database
  #
