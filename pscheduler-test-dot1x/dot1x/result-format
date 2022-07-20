@@ -40,6 +40,9 @@ result = input["result"]
 if format == 'text/plain':
     # Print results of the test here, in plaintext
     print('Time: %s\n' % result['time'])
+    print('SSID: %s\n' % result.get('ssid', 'N/A'))
+    print('BSSID: %s\n' % result.get('bssid', 'N/A'))
+    print('State: %s\n' % result.get('state', 'N/A'))
    
 elif format == 'text/html':
     # Print results of the test here, in html

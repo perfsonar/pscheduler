@@ -52,7 +52,7 @@ SPEC_SCHEMA = {
                 "interface":      { "$ref": "#/pScheduler/String" },
                 "driver":         { "$ref": "#/pScheduler/String" },
                 "_username":      { "$ref": "#/pScheduler/String" },
-                "_driver":        { "$ref": "#/pScheduler/String" },
+                "_password":        { "$ref": "#/pScheduler/String" },
                 "ssid":           { "$ref": "#/pScheduler/String" },
                 "bssid":          { "$ref": "#/pScheduler/String" },
                 "key-management": { "$ref": "#/pScheduler/String" },
@@ -124,8 +124,11 @@ RESULT_SCHEMA = {
             "properties": {
                 "schema":           { "type": "integer", "enum": [ 1 ] },
                 "succeeded":        { "$ref": "#/pScheduler/Boolean" },
-                "Authenticated":    { "$ref": "#/pScheduler/Boolean" },
+                "authenticated":    { "$ref": "#/pScheduler/Boolean" },
                 "time":             { "$ref": "#/pScheduler/Duration" },
+                "bssid":             { "$ref": "#/pScheduler/String" },
+                "ssid":            { "$ref": "#/pScheduler/String" },
+                "state":            { "$ref": "#/pScheduler/String" }
             },
             "required": [
                 "succeeded",
