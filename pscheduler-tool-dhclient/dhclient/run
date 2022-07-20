@@ -60,7 +60,7 @@ if status != 0:
 
 lease_timeout = pscheduler.iso8601_as_timedelta(spec.get('timeout', 'PT%dS' % DEFAULT_LEASE_TIMEOUT)).total_seconds()
 
-dhclient_args = ['sudo', 'dhclient', '-v', '-1', '-timeout', str(lease_timeout)]
+dhclient_args = ['sudo', 'dhclient', '-v', '-1']
 
 if interface:
     dhclient_args.append(interface)
