@@ -9,31 +9,23 @@
 # back to the test. Both system and api are able to be used here.
 #
 
+import time
 import datetime
-import subprocess
-import json
-import sys
-import time
-import argparse
-import time
+import threading
 from wpa_supplicant.core import WpaSupplicantDriver
 from twisted.internet.selectreactor import SelectReactor
-import threading
-import datetime
 import pscheduler
-import time
 
-import pscheduler
 # from stdin
-input = pscheduler.json_load(exit_on_error=True)
+pscheduler_input = pscheduler.json_load(exit_on_error=True)
 
 # Take input from test spec
 try:
-    interface = input['test']['spec']['interface']
+    interface = pscheduler_input['test']['spec']['interface']
 except KeyError:
     pscheduler.fail('Missing data in input')
 
-ssid_name = input['test']['spec'].get('ssid', None)
+ssid_name = pscheduler_input['test']['spec'].get('ssid', None)
 
 # convert the comma separated ssids to a list
 if ssid_name:
@@ -41,9 +33,9 @@ if ssid_name:
 else:
     ssid = None
 
-duration = input['test']['spec'].get('duration', 'PT5S')
+duration = pscheduler_input['test']['spec'].get('duration', 'PT5S')
 duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
-timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
+timeout_iso = pscheduler_input['test']['spec'].get('timeout', 'PT10S')
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 start_time = datetime.datetime.now()
 succeeded = False
@@ -138,7 +130,7 @@ succeeded = True
 # that does a measurement (for those that don't).
 
 try:
-    pscheduler.sleep_until(input['schedule']['start'])
+    pscheduler.sleep_until(pscheduler_input['schedule']['start'])
 except KeyError:
     pscheduler.fail("Unable to find start time in input")
 
