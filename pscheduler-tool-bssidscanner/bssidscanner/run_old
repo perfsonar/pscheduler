@@ -16,16 +16,12 @@ import sys
 import time
 import argparse
 import time
-from wpa_supplicant.core import WpaSupplicantDriver
-from twisted.internet.selectreactor import SelectReactor
-import threading
-import datetime
-import pscheduler
-import time
+from wifi import Cell #make sure that you have pip installed wifi
 
 import pscheduler
+txt = """{"schema":1,"task-uuid":"b2afa82f-c3a2-478b-8953-06abb036a9a6","schedule":{"start":"2022-07-20T14:44:23Z","duration":"PT12S"},"test":{"spec":{"schema":1,"interface":"wlan0"},"type":"wifibssid"},"participant":0,"participant-data":[{}]}"""
 # from stdin
-input = pscheduler.json_load(exit_on_error=True)
+input = pscheduler.json_load(source=txt, exit_on_error=True)
 
 # Take input from test spec
 try:
@@ -39,7 +35,7 @@ ssid_name = input['test']['spec'].get('ssid', None)
 if ssid_name:
     ssid = list(ssid_name.split(','))
 else:
-    ssid = None
+    ssid = []
 
 duration = input['test']['spec'].get('duration', 'PT5S')
 duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
@@ -50,63 +46,29 @@ succeeded = False
 error = ''
 diags = ''
 
-#802.11ax frequency to channel conversion
-def ieee80211_freq_khz_to_channel(freq):
-    if freq == 2484:
-        return 14
-    elif freq<2484 :
-        return int((freq - 2407) / 5)
-    elif freq >= 4910 and freq <= 4980:
-        return int((freq - 4000) / 5)
-    elif freq < 5925:
-        return int((freq - 5000) / 5)
-    elif freq == 5935:
-        return 2
-    elif freq <= 45000:
-        return int((freq - 5950) / 5)
-    elif freq >= 58320 and freq <= 70200:
-        return int((freq - 56160) / 2160)
-    else:
-        return 0  
-
 # Run the actual task here:
 def get_all_bssids(interface):
     """
     Scan the given interface for all bssids
     Return a list of all bssids
     """
-    reactor = SelectReactor()
-    t = threading.Thread(target=reactor.run, kwargs={'installSignalHandlers': 0})
-    t.daemon = True
-    t.start()
-    time.sleep(0.1)  # let reactor start
-    driver = WpaSupplicantDriver(reactor)
-    supplicant = driver.connect()
-
-    try:
-        interface = supplicant.create_interface(interface)
-    #interface already exists
-    except:
-        interface = supplicant.get_interface(interface)
-    cells = interface.scan(ssids=ssid, block=True)
-    
     start_time = time.time()
+    cells = Cell.all(interface) # Specify interface to scan on
     wifi_list = []
     for cell in cells:
         bssid = {}
-        bssid['ssid'] = cell.get_ssid()
-        bssid['signal'] = cell.get_signal_quality()
-        bssid['address'] = cell.get_bssid()
-        bssid['frequency'] = cell.get_frequency()
-        bssid['quality'] = float(cell.get_signal_quality()) / float(100)
-        bssid['bitrates'] =  cell.get_rates()
-        bssid['encrypted'] = cell.get_privacy()
-        bssid['channel'] = ieee80211_freq_khz_to_channel(cell.get_frequency())  
-        bssid['mode'] = cell.get_mode()
+        bssid['ssid'] = cell.ssid
+        bssid['signal'] = cell.signal
+        bssid['address'] = cell.address
+        bssid['frequency'] = pscheduler.si_as_number(cell.frequency[:-2])
+        quality_num,quality_denom = cell.quality.split('/')
+        bssid['quality'] = float(quality_num) / float(quality_denom)
+        bssid['bitrates'] = sorted(map(lambda v : pscheduler.si_as_number(v[:-3]), cell.bitrates))
+        bssid['encrypted'] = cell.encrypted
+        bssid['channel'] = cell.channel
+        bssid['mode'] = cell.mode
         wifi_list.append(bssid)
     
-    reactor.disconnectAll()
-    reactor.sigTerm()
     end_time = time.time()
     elapsed_time = end_time - start_time
     log_msg = "Scan finished in " + str(elapsed_time)
@@ -156,7 +118,5 @@ results = {
     },
     'error': error,
     'diags': diags }
-
-
 
 pscheduler.succeed_json(results)
