@@ -73,6 +73,8 @@ ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of th
        python-pyrsistent)
 python-nmap3
 python-hyperlink
+python-incremental
+python-Twisted
 ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of this.
        DISTRO/eval(MAJOR > 10),Debian/1,,               # As does Debian 11.
        python-jsonschema)				# EL8 has this, but an older version
