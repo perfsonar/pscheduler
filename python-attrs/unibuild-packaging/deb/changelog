@@ -1,3 +1,9 @@
+attrs (21.4.0-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mark Feit <mfeit@internet2.edu>  Thu, 21 Jul 2022 15:56:00 -0500
+
 attrs (17.4.0-1) unstable; urgency=medium
 
   * New upstream release.

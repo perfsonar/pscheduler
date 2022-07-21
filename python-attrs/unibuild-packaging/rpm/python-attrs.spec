@@ -4,12 +4,12 @@
 
 # DEBIAN:  This may need to be packaged for Debian
 
-%define short	Automat
+%define short	attrs
 %define long	python-%{short}
 Name:		%{_pscheduler_python}-%{short}
-Version:	20.2.0
+Version:	21.4.0
 Release:	1%{?dist}
-Summary:	Self-service finite-state machines for the programmer on the go.
+Summary:	Relieves the drudgery of implementing object protocols
 BuildArch:	%(uname -m)
 License:	MIT
 Group:		Development/Libraries
@@ -20,18 +20,18 @@ Prefix:		%{_prefix}
 Vendor:		Glyph <glyph@twistedmatrix.com>
 Url:		https://github.com/glyph/Automat
 
-Source:		python-%{short}-%{version}.tar.gz
+Source:		%{short}-%{version}.tar.gz
 
 Requires:	%{_pscheduler_python}
-Requires:	%{_pscheduler_python}-attrs >= 19.2.0
-Requires:	%{_pscheduler_python}-six
 
 BuildRequires:	%{_pscheduler_python}-setuptools
 
 %description
-Automat is a library for concise, idiomatic Python expression of
-finite-state automata (particularly deterministic finite-state
-transducers).
+Attrs is the Python package that will bring back the joy of writing
+classes by relieving you from the drudgery of implementing object
+protocols (aka dunder methods). Trusted by NASA for Mars missions
+since 2020!  Its main goal is to help you to write concise and correct
+software without slowing down your code.
 
 
 # Don't do automagic post-build things.
