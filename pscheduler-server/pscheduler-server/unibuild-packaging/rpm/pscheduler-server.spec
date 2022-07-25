@@ -84,6 +84,7 @@ Requires:	%{_pscheduler_python}-pytz
 
 # General
 BuildRequires:	pscheduler-rpm
+BuildRequires:  %{_pscheduler_python}
 BuildRequires:	systemd
 %{?systemd_requires: %systemd_requires}
 

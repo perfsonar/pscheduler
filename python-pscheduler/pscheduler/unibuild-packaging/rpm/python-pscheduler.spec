@@ -47,6 +47,7 @@ Requires:	logrotate
 Requires:       numactl
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:  %{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python_epel}-coverage
 BuildRequires:	%{_pscheduler_python_epel}-nose
 BuildRequires:	%{_pscheduler_python}-setuptools
