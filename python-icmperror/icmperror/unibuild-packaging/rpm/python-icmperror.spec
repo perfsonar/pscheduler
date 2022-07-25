@@ -21,6 +21,7 @@ Source0:	%{short}-%{version}.tar.gz
 
 Requires:	%{_pscheduler_python}
 
+BuildRequires:  %{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-setuptools
 
 
