@@ -4,12 +4,12 @@
 
 # DEBIAN:  This may need to be packaged for Debian
 
-%define short	Automat
+%define short	txdbus
 %define long	python-%{short}
 Name:		%{_pscheduler_python}-%{short}
-Version:	20.2.0
+Version:	1.1.2
 Release:	1%{?dist}
-Summary:	Self-service finite-state machines for the programmer on the go.
+Summary:	Pure python interface to DBus
 BuildArch:	%(uname -m)
 License:	MIT
 Group:		Development/Libraries
@@ -17,23 +17,18 @@ Group:		Development/Libraries
 Provides:	%{name} = %{version}-%{release}
 Prefix:		%{_prefix}
 
-Vendor:		Glyph <glyph@twistedmatrix.com>
-Url:		https://github.com/glyph/Automat
+Vendor:		Tom Cocagne
+Url:		https://github.com/twisted/constantly
 
-Source:		python-%{short}-%{version}.tar.gz
+Source:		%{short}-%{version}.tar.gz
 
 Requires:	%{_pscheduler_python}
-Requires:	%{_pscheduler_python}-attrs >= 19.2.0
-Requires:	%{_pscheduler_python}-six
+Requires:	%{_pscheduler_python}-Twisted
 
 BuildRequires:	%{_pscheduler_python}-setuptools
-BuildRequires:	%{_pscheduler_python_epel}-setuptools_scm
 
 %description
-Automat is a library for concise, idiomatic Python expression of
-finite-state automata (particularly deterministic finite-state
-transducers).
-
+Pure python interface to DBus
 
 # Don't do automagic post-build things.
 %global              __os_install_post %{nil}

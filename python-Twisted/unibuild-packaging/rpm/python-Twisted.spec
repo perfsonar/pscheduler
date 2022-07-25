@@ -23,13 +23,14 @@ Url:		https://github.com/twisted/constantly
 Source:		%{short}-%{version}.tar.gz
 
 Requires:	%{_pscheduler_python}
-Requires:	%{_pscheduler_python_epel}-attrs >= 19.2.0
-Requires:	%{_pscheduler_python_epel}-Automat >= 0.8.0
-Requires:	%{_pscheduler_python_epel}-constantly >= 15.1
-Requires:	%{_pscheduler_python_epel}-hyperlink >= 17.1.1
-Requires:	%{_pscheduler_python_epel}-incremental >= 21.3.0
-Requires:	%{_pscheduler_python_epel}-typing_extensions >= 3.6.5
-Requires:	%{_pscheduler_python_epel}-zope.interface >= 4.4.2
+Requires:	%{_pscheduler_python}-attrs >= 19.2.0
+Requires:	%{_pscheduler_python}-Automat >= 0.8.0
+Requires:	%{_pscheduler_python}-constantly >= 15.1
+Requires:	%{_pscheduler_python}-hyperlink >= 17.1.1
+Requires:	%{_pscheduler_python}-incremental >= 21.3.0
+Requires:	%{_pscheduler_python}-typing_extensions >= 3.6.5
+Requires:	%{_pscheduler_python}-zope-interface >= 4.4.2
+
 
 BuildRequires:	%{_pscheduler_python}-setuptools
 
