@@ -26,6 +26,7 @@ Source2:	__init__.py
 
 Requires:	%{_pscheduler_python}
 
+BuildRequires:	%{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-devel
 BuildRequires:	%{_pscheduler_python}-test
 BuildRequires:	%{_pscheduler_python_epel}-pytest

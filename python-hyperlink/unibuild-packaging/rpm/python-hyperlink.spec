@@ -24,6 +24,8 @@ Source:		%{short}-%{version}.tar.gz
 
 Requires:	%{_pscheduler_python}
 Requires:	%{_pscheduler_python}-idna >= 2.5
+
+BuildRequires:	%{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-setuptools
 
 %description

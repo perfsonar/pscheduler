@@ -25,6 +25,7 @@ Source:		%{short}-%{version}.tar.gz
 Requires:	%{_pscheduler_python}
 Requires:	%{_pscheduler_python_epel}-click >= 6.0
 
+BuildRequires:	%{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-setuptools
 
 %description

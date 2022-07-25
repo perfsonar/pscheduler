@@ -26,6 +26,7 @@ Requires:	%{_pscheduler_python}
 Requires:	%{_pscheduler_python}-attrs >= 19.2.0
 Requires:	%{_pscheduler_python}-six
 
+BuildRequires:	%{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-setuptools
 BuildRequires:	%{_pscheduler_python_epel}-setuptools_scm
 

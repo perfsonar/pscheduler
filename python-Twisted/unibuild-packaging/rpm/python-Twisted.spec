@@ -31,7 +31,7 @@ Requires:	%{_pscheduler_python}-incremental >= 21.3.0
 Requires:	%{_pscheduler_python}-typing_extensions >= 3.6.5
 Requires:	%{_pscheduler_python}-zope-interface >= 4.4.2
 
-
+BuildRequires:	%{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-setuptools
 
 %description
