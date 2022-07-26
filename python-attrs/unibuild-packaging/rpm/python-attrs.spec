@@ -37,7 +37,7 @@ software without slowing down your code.
 
 # Don't do automagic post-build things.
 %global              __os_install_post %{nil}
-
+%global              debug_package %{nil}
 
 %prep
 %setup -q -n %{short}-%{version}

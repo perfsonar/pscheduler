@@ -72,17 +72,11 @@ ifelse(FAMILY/MAJOR,RedHat/8,python-itsdangerous)	# EL8 has this, but an older v
 ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of this.
        python-pyrsistent)
 python-nmap3
-python-hyperlink
-python-incremental
-python-typing_extensions
-python-zope-interface
-python-Twisted
-python-txdbus
+python-kafka
+python-nmap3
 ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of this.
        DISTRO/eval(MAJOR > 10),Debian/1,,               # As does Debian 11.
        python-jsonschema)				# EL8 has this, but an older version
-python-kafka
-python-nmap3
 
 # Used by pscheduler-archiver-esmond
 # EL8's is 1.58, ours is/was 1.59.  Commits to the project show only
@@ -107,6 +101,20 @@ python-flask						# EL8 has this, ours is newer
 # TODO: EPEL8 has a newer version that doesn't install.
 # See https://bugzilla.redhat.com/show_bug.cgi?id=1838402
 python-pysnmp
+
+# These are for the txdbus-based version of UMich WPA.  EL9 is the
+# earliest distro with a Python that supports it.
+# TODO: Figure out Debian and Ubuntu
+ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,,
+python-hyperlink
+python-incremental
+python-typing_extensions
+python-zope-interface
+python-Twisted
+python-txdbus
+python-wpa_supplicant
+)
+
 
 # Home-grown Python Modules
 python-icmperror

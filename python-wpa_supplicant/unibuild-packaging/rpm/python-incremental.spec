@@ -4,41 +4,36 @@
 
 # DEBIAN:  This may need to be packaged for Debian
 
-%define short	Automat
+%define short	wpa_supplicant
 %define long	python-%{short}
 Name:		%{_pscheduler_python}-%{short}
-Version:	20.2.0
+Version:	0.2
 Release:	1%{?dist}
-Summary:	Self-service finite-state machines for the programmer on the go.
+Summary:	Python DBus interface to wpa_supplicant
 BuildArch:	%(uname -m)
-License:	MIT
+License:	MPL 2.0
 Group:		Development/Libraries
 
 Provides:	%{name} = %{version}-%{release}
 Prefix:		%{_prefix}
 
-Vendor:		Glyph <glyph@twistedmatrix.com>
-Url:		https://github.com/glyph/Automat
+Url:		https://pypi.org/project/wpa_supplicant
 
-Source:		python-%{short}-%{version}.tar.gz
+Source:		%{short}-%{version}.tar.gz
 
 Requires:	%{_pscheduler_python}
-Requires:	%{_pscheduler_python}-attrs >= 19.2.0
-Requires:	%{_pscheduler_python}-six
+Requires:	%{_pscheduler_python_epel}-click >= 6.0
 
 BuildRequires:	%{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-setuptools
-BuildRequires:	%{_pscheduler_python_epel}-setuptools_scm
 
 %description
-Automat is a library for concise, idiomatic Python expression of
-finite-state automata (particularly deterministic finite-state
-transducers).
-
+Python DBus interface to wpa_supplicant
 
 # Don't do automagic post-build things.
 %global              __os_install_post %{nil}
 %global              debug_package %{nil}
+
 
 %prep
 %setup -q -n %{short}-%{version}

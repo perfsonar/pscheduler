@@ -38,6 +38,7 @@ Type compatibility for older Pythons
 
 # Don't do automagic post-build things.
 %global              __os_install_post %{nil}
+%global              debug_package %{nil}
 
 
 %prep
