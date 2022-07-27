@@ -21,6 +21,7 @@ Vendor:		Twisted Matrix
 Url:		https://github.com/twisted/constantly
 
 Source:		%{short}-%{version}.tar.gz
+Patch1:		01-typing_extensions.patch
 
 Requires:	%{_pscheduler_python}
 Requires:	%{_pscheduler_python}-attrs >= 19.2.0
@@ -45,6 +46,7 @@ Twisted is an event-based framework for internet applications.
 
 %prep
 %setup -q -n %{short}-%{version}
+%patch1 -p1
 
 
 

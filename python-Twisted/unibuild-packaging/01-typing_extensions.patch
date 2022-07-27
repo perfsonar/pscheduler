@@ -1,0 +1,73 @@
+diff -rupN Twisted-22.4.0-orig/src/twisted/internet/address.py Twisted-22.4.0/src/twisted/internet/address.py
+--- Twisted-22.4.0-orig/src/twisted/internet/address.py	2022-04-11 14:53:19.000000000 +0000
++++ Twisted-22.4.0/src/twisted/internet/address.py	2022-07-27 13:42:10.352967098 +0000
+@@ -13,7 +13,11 @@ from warnings import warn
+ from zope.interface import implementer
+ 
+ import attr
+-from typing_extensions import Literal
++
++try:
++    from typing import Literal
++except ImportError:
++    from typing_extensions import Literal
+ 
+ from twisted.internet.interfaces import IAddress
+ from twisted.python.filepath import _asFilesystemBytes, _coerceToFilesystemEncoding
+diff -rupN Twisted-22.4.0-orig/src/twisted/internet/defer.py Twisted-22.4.0/src/twisted/internet/defer.py
+--- Twisted-22.4.0-orig/src/twisted/internet/defer.py	2022-04-11 14:53:19.000000000 +0000
++++ Twisted-22.4.0/src/twisted/internet/defer.py	2022-07-27 13:42:52.748729797 +0000
+@@ -39,7 +39,10 @@ from typing import (
+ 
+ import attr
+ from incremental import Version
+-from typing_extensions import Literal
++try:
++    from typing import Literal
++except ImportError:
++    from typing_extensions import Literal
+ 
+ from twisted.internet.interfaces import IDelayedCall, IReactorTime
+ from twisted.logger import Logger
+diff -rupN Twisted-22.4.0-orig/src/twisted/internet/tcp.py Twisted-22.4.0/src/twisted/internet/tcp.py
+--- Twisted-22.4.0-orig/src/twisted/internet/tcp.py	2022-04-11 14:53:19.000000000 +0000
++++ Twisted-22.4.0/src/twisted/internet/tcp.py	2022-07-27 14:48:54.934074357 +0000
+@@ -19,7 +19,13 @@ from typing import Callable, ClassVar, L
+ from zope.interface import Interface, implementer
+ 
+ import attr
+-import typing_extensions
++
++import typing
++if hasattr(typing,"Protocol"):
++    PROTOCOL_MODULE = typing
++else:
++    import typing_extensions
++    PROTOCOL_MODULE = typing_extensions
+ 
+ from twisted.internet.interfaces import (
+     IHalfCloseableProtocol,
+@@ -936,7 +942,7 @@ class _IFileDescriptorReservation(Interf
+         """
+ 
+ 
+-class _HasClose(typing_extensions.Protocol):
++class _HasClose(PROTOCOL_MODULE.Protocol):
+     def close(self) -> object:
+         ...
+ 
+diff -rupN Twisted-22.4.0-orig/src/twisted/protocols/haproxy/_v2parser.py Twisted-22.4.0/src/twisted/protocols/haproxy/_v2parser.py
+--- Twisted-22.4.0-orig/src/twisted/protocols/haproxy/_v2parser.py	2022-04-11 14:53:19.000000000 +0000
++++ Twisted-22.4.0/src/twisted/protocols/haproxy/_v2parser.py	2022-07-27 13:44:29.486906535 +0000
+@@ -14,7 +14,10 @@ from typing import Callable, Tuple, Type
+ from zope.interface import implementer
+ 
+ from constantly import ValueConstant, Values  # type: ignore[import]
+-from typing_extensions import Literal
++try:
++    from typing import Literal
++except ImportError:
++    from typing_extensions import Literal
+ 
+ from twisted.internet import address
+ from twisted.python import compat
