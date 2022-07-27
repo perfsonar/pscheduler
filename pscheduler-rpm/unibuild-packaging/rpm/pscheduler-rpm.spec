@@ -56,10 +56,10 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %%_pscheduler_python_epel python%%{_pscheduler_python_version_major}%%{_pscheduler_python_version_minor}
 %endif
 
-%if 0%{?el8}
+%if 0%{?el8}%{?el9}
 # EL7 supports Alma and Rocky.  RHEL is untested.
 # See https://yum.oracle.com/oracle-linux-python.html
-# EL8 standardized on just the major version, as did EPEL.
+# EL8+ standardized on just the major version, as did EPEL.
 %%_pscheduler_python python%%{_pscheduler_python_version_major}
 %%_pscheduler_python_epel python%%{_pscheduler_python_version_major}
 %endif
@@ -86,8 +86,8 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %%_pscheduler_postgresql_plpython %%{_pscheduler_postgresql_package}-plpython
 %endif
 
-%if 0%{?el8}
-# EL8 keeps it simple(r).
+%if 0%{?el8}%{?el9}
+# EL8+ keeps it simple(r).
 %%_pscheduler_postgresql_package postgresql
 %%_pscheduler_postgresql_service postgresql
 %%_pscheduler_postgresql_data %%{_pscheduler_postgresql_data_top}/data
