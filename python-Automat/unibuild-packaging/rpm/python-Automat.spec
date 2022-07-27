@@ -29,6 +29,7 @@ Requires:	%{_pscheduler_python}-six
 BuildRequires:	%{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-setuptools
 BuildRequires:	%{_pscheduler_python_epel}-setuptools_scm
+BuildRequires:	%{_pscheduler_python}-wheel
 
 %description
 Automat is a library for concise, idiomatic Python expression of
