@@ -34,6 +34,7 @@ try:
     participant = input['participant']
     participant_data = input['participant-data']
     test_spec = input['test']['spec']
+    test_type = input['test']['type']
     start = pscheduler.iso8601_as_datetime(input['schedule']['start'])
     duration = pscheduler.iso8601_as_timedelta(input['schedule']['duration'])
 except KeyError as ex:
@@ -41,6 +42,11 @@ except KeyError as ex:
 except:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 reverse = test_spec.get('reverse', False)
+
+
+# These are the only test types supported
+assert test_type in ['latency', 'rtt'], 'Unsupported test type "%s"' % (test_type)
+
 
 #constants
 TIME_SCALE = .001 #use for millisecond conversions
@@ -95,13 +101,33 @@ if role == CLIENT_ROLE:
         twping_args.append('-s')
         twping_args.append(str(test_spec['length'] - 6))
 
-    #set interval,count and timeout to ensure consistent with duration
+    # Set interval,count and timeout to ensure consistent with
+    # duration.  Note that the RTT test specifies its durations and
+    # timeout as ISO8601 and latency uses decimal seconds.  Handle
+    # that accordingly.
+
     twping_args.append('-c')
     twping_args.append(str(test_spec.get('packet-count', test_spec.get('count', DEFAULT_PACKET_COUNT))))
-    twping_args.append('-i')
-    twping_args.append(str(test_spec.get('packet-interval', test_spec.get('interval', DEFAULT_PACKET_INTERVAL))))
-    twping_args.append('-L')
-    twping_args.append(str(test_spec.get('packet-timeout', test_spec.get('timeout', DEFAULT_PACKET_TIMEOUT))))
+
+    try:
+        if test_type == 'latency':  # Decimal seconds
+            interval = float(test_spec['packet-interval'])
+        else:  # RTT, ISO8601
+            interval =  pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(test_spec['interval']))
+    except KeyError:
+        interval = DEFAULT_PACKET_INTERVAL
+    twping_args += ['-i', str(interval) ]
+
+
+    try:
+        if test_type == 'latency':  # Decimal seconds
+            timeout = float(test_spec['packet-timeout'])
+        else:  # RTT, ISO8601
+            timeout =  pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(test_spec['timeout']))
+    except KeyError:
+        timeout = DEFAULT_PACKET_TIMEOUT
+    twping_args += ['-L', str(timeout) ]
+
     
     #set if ipv4 only or ipv6 only
     try:
