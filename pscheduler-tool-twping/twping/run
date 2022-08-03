@@ -96,13 +96,26 @@ if role == CLIENT_ROLE:
         twping_args.append('-s')
         twping_args.append(str(test_spec['length'] - 6))
 
+
     #set interval,count and timeout to ensure consistent with duration
     twping_args.append('-c')
     twping_args.append(str(test_spec.get('packet-count', test_spec.get('count', DEFAULT_PACKET_COUNT))))
-    twping_args.append('-i')
-    twping_args.append(str(test_spec.get('packet-interval', test_spec.get('interval', DEFAULT_PACKET_INTERVAL))))
-    twping_args.append('-L')
-    twping_args.append(str(test_spec.get('packet-timeout', test_spec.get('timeout', DEFAULT_PACKET_TIMEOUT))))
+    
+    # Interval
+    if 'interval' in test_spec:
+        interval = test_spec.get('interval', '')
+        interval = pscheduler.iso8601_as_timedelta(interval)
+        interval = str(pscheduler.timedelta_as_seconds(interval))
+        twping_args.append('-i')
+        twping_args.append(interval)
+    
+    # Timeout
+    if 'timeout' in test_spec:
+        timeout = test_spec.get('timeout', '')
+        timeout = pscheduler.iso8601_as_timedelta(timeout)
+        timeout = str(pscheduler.timedelta_as_seconds(timeout))
+        twping_args.append('-L')
+        twping_args.append(timeout)
     
     #set if ipv4 only or ipv6 only
     ip_version = str(test_spec.get('ip-version', ''))
