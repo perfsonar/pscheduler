@@ -1,8 +1,8 @@
-Source: constantly
+Source: hyperlink
 Section: python
 Priority: optional
-Maintainer: Debian Python Modules Team <python-modules-team@lists.alioth.debian.org>
-Uploaders: Tristan Seligmann <mithrandi@debian.org>
+Maintainer: perfSONAR Development Team <perfsonar-developer@internet2.edu>
+Uploaders: Mark Feit <mfeit@internet2.edu>
 Build-Depends:
  debhelper (>= 10),
  dh-python,
@@ -16,27 +16,16 @@ Build-Depends:
  python3-sphinx,
  python3-zope.interface,
 Standards-Version: 3.9.8
-Homepage: https://attrs.readthedocs.org/
+Homepage: https://github.com/python-hyper/hyperlink
 X-Python3-Version: >= 3.2
 
-
-Package: python3-attr
+Package: python3-hyperlink
 Architecture: all
 Depends:
  ${misc:Depends},
  ${python3:Depends}
 Recommends:
  ${python3:Recommends}
-Suggests: python-attr-doc, ${python3:Suggests}
-Description: Attributes without boilerplate (Python 3)
- attrs is an MIT-licensed Python package with class decorators that ease the
- chores of implementing the most common attribute-related object protocols.
- .
- You just specify the attributes to work with and attrs gives you:
-   - a nice human-readable __repr__,
-   - a complete set of comparison methods,
-   - an initializer,
-   - and much more
- without writing dull boilerplate code again and again.
- .
- This package contains attrs packged for Python 3.
+Description: Hyperlink provides a pure-Python implementation of
+  immutable URLs. Based on RFC 3986 and 3987, the Hyperlink URL makes
+  working with both URIs and IRIs easy.

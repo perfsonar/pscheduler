@@ -1,17 +1,25 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: attrs
-Upstream-Contact: Hynek Schlawack <hs@ox.cx>
-Source: https://attrs.readthedocs.org/
+Upstream-Name: hyperlink
+Upstream-Contact: Mahmoud Hashemi and Glyph Lefkowitz <mahmoud@hatnote.com>
+Source: https://github.com/python-hyper/hyperlink
 
 Files: *
-Copyright: 2015 Hynek Schlawack
-License: Expat
+Copyright: Copyright (c) 2017
+  Glyph Lefkowitz
+  Itamar Turner-Trauring
+  Jean Paul Calderone
+  Adi Roiban
+  Amber Hawkie Brown
+  Mahmoud Hashemi
+  Wilfredo Sanchez Vega
+  and others that have contributed code to the public domain.
+License: MIT
 
 Files: debian/*
 Copyright: 2015 Tristan Seligmann <mithrandi@debian.org>
 License: Expat
 
-License: Expat
+License: MIT
  The MIT License (MIT)
  .
  Permission is hereby granted, free of charge, to any person obtaining a copy
