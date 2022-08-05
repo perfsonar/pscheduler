@@ -104,6 +104,7 @@ python-pysnmp
 # earliest distro with a Python that supports it.
 # TODO: Figure out Debian and Ubuntu
 ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,,
+       FAMILY/eval(MAJOR < 10),Debian/1,,
 python-Automat
 python-constantly
 python-hyperlink
