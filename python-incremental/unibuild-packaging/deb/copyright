@@ -1,17 +1,17 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: attrs
-Upstream-Contact: Hynek Schlawack <hs@ox.cx>
-Source: https://attrs.readthedocs.org/
+Upstream-Name: incremental
+Upstream-Contact: Amber Brown <hawkowl@twistedmatrix.com>
+Source: https://pypi.org/project/incremental/
 
 Files: *
 Copyright: 2015 Hynek Schlawack
-License: Expat
+License: MIT
 
 Files: debian/*
 Copyright: 2015 Tristan Seligmann <mithrandi@debian.org>
 License: Expat
 
-License: Expat
+License: MIT
  The MIT License (MIT)
  .
  Permission is hereby granted, free of charge, to any person obtaining a copy
