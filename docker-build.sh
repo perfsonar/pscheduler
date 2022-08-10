@@ -4,7 +4,7 @@
 BUILD_DIR=multiarch_build
 
 # Variables
-export OS=debian10
+export OS=d10
 export REPO=perfsonar-5.0-snapshot
 
 # Launch all containers
