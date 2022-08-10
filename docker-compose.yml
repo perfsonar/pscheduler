@@ -25,25 +25,25 @@ services:
   centos7:
     image: ghcr.io/perfsonar/unibuild/centos7:latest
     volumes: *default-volumes
-  debian10_amd64:
+  d10_amd64:
     platform: "linux/amd64"
-    image: ghcr.io/perfsonar/unibuild/debian10:latest
+    image: ghcr.io/perfsonar/unibuild/d10:latest
     volumes: *default-volumes
-  debian10_arm64:
+  d10_arm64:
     platform: "linux/arm64"
-    image: docker.io/ntw0n/psbuild.$REPO.debian@sha256:ef9edb92a76f79ad3e3b776a3235a0a5d15b60a29d392b6d8b5b5ba6a44c2167
+    image: docker.io/ntw0n/unibuild-d10@sha256:a6346594b08bb0c8b6b8694e923007908f120bb58cfcae979d24cc4beaedee52
     privileged: true
     tmpfs: *default-tmpfs
     volumes: *default-volumes
     working_dir: /app
-  debian10_armv7:
+  d10_armv7:
     platform: "linux/arm/v7"
     image: docker.io/ntw0n/psbuild.$REPO.debian@sha256:c0d374312879c7d61aa5a4d2c78c98c6254f6cc299f954875eaba9df6a9353a5
     privileged: true
     tmpfs: *default-tmpfs
     volumes: *default-volumes
     working_dir: /app
-  debian10_ppc64le:
+  d10_ppc64le:
     platform: "linux/ppc64le"
     image: docker.io/ntw0n/psbuild.$REPO.debian@sha256:273348716553a69cdb70a60b1435c08e88c8caff94aab4fdbfdd459b3f3f916c
     privileged: true
