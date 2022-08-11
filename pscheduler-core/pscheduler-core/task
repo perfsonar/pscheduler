@@ -354,7 +354,7 @@ else:
             pscheduler.fail("Unable to open task %s" % (str(ex)))
 
     try:
-        task = pscheduler.json_load(file, exit_on_error=True, max_schema=3)
+        task = pscheduler.json_load(file, exit_on_error=True)
     except ValueError as ex:
         pscheduler.fail("Invalid task specification: %s" % str(ex))
 
