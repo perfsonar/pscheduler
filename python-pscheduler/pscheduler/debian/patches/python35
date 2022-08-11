@@ -1,5 +1,5 @@
---- a/pscheduler/limitprocessor/limitprocessor.py	2022-05-26 11:19:24.314253187 -0400
-+++ b/pscheduler/limitprocessor/limitprocessor.py	2022-05-26 11:19:52.164970167 -0400
+--- a/pscheduler/limitprocessor/limitprocessor.py	2022-07-21 16:51:25.161232426 -0400
++++ b/pscheduler/limitprocessor/limitprocessor.py	2022-07-21 16:51:51.652799327 -0400
 @@ -278,6 +278,6 @@
              return self._process(task, hints, rewrite, prioritize)
          except Exception as ex:

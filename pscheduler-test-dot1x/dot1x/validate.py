@@ -52,7 +52,7 @@ SPEC_SCHEMA = {
                 "interface":      { "$ref": "#/pScheduler/String" },
                 "driver":         { "$ref": "#/pScheduler/String" },
                 "_username":      { "$ref": "#/pScheduler/String" },
-                "_driver":        { "$ref": "#/pScheduler/String" },
+                "_password":      { "$ref": "#/pScheduler/String" },
                 "ssid":           { "$ref": "#/pScheduler/String" },
                 "bssid":          { "$ref": "#/pScheduler/String" },
                 "key-management": { "$ref": "#/pScheduler/String" },

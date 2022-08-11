@@ -29,6 +29,7 @@ Requires:       %{_pscheduler_python}-simplejson
 %endif
 Requires:      	nmap
 
+BuildRequires:  %{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-setuptools
 
 %description

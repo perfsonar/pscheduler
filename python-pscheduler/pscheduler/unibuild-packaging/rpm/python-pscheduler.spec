@@ -3,7 +3,7 @@
 #
 
 %define perfsonar_auto_version 5.0.0
-%define perfsonar_auto_relnum 0.b1.1
+%define perfsonar_auto_relnum 0.b1.3
 
 %define short	pscheduler
 Name:		%{_pscheduler_python}-%{short}
@@ -48,6 +48,7 @@ Requires:	logrotate
 Requires:       numactl
 
 BuildRequires:	pscheduler-rpm
+BuildRequires:  %{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python_epel}-coverage
 BuildRequires:	%{_pscheduler_python_epel}-nose
 BuildRequires:	%{_pscheduler_python}-setuptools

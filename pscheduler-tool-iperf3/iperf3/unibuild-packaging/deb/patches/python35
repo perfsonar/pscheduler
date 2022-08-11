@@ -1,5 +1,5 @@
---- iperf3.orig/run	2022-06-01 16:44:23.135269056 +0000
-+++ iperf3/run	2022-06-01 16:44:23.135269056 +0000
+--- a/iperf3/run	2022-07-21 16:51:25.107109325 -0400
++++ b/iperf3/run	2022-07-21 16:51:50.033623484 -0400
 @@ -321,7 +321,7 @@
      except Exception as ex:
          return {"succeeded": False,
@@ -25,4 +25,3 @@
 +                    "\n\nServer:\n\n%s".format(server_results.get("diags", "No diagnostics."))
  
          else:
- 

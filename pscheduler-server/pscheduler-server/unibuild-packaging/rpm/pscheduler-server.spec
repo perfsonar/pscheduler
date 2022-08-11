@@ -7,7 +7,7 @@
 # init scripts function just fine.
 
 %define perfsonar_auto_version 5.0.0
-%define perfsonar_auto_relnum 0.b1.1
+%define perfsonar_auto_relnum 0.b1.3
 
 Name:		pscheduler-server
 Version:	%{perfsonar_auto_version}
@@ -83,6 +83,7 @@ Requires:	%{_pscheduler_python}-pytz
 
 # General
 BuildRequires:	pscheduler-rpm
+BuildRequires:  %{_pscheduler_python}
 BuildRequires:	systemd
 %{?systemd_requires: %systemd_requires}
 

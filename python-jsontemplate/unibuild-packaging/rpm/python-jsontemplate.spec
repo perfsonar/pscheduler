@@ -25,6 +25,7 @@ Patch1:		%{short}-%{version}-01-division.patch
 
 Requires:	%{_pscheduler_python}
 
+BuildRequires:  %{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-setuptools
 
 
