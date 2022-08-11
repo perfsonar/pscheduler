@@ -69,3 +69,7 @@ cbic cbdc cbrc:
 # This is to keep the global uninstall target happy.
 uninstall:
 	@echo Nothing to do here.
+
+# Unibuild triggers this.
+install-products:
+	$(MAKE) -f $(PACKAGE_MAKEFILE) $@
