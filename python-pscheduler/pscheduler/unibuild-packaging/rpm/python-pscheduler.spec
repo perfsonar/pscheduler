@@ -26,7 +26,12 @@ Source0:	%{short}-%{version}.tar.gz
 # BuildRequires because they're required to run the tests.
 
 Requires:	iputils
+
+%if 0%{?el7} != 0
+Requires:	%{_pscheduler_python_epel}-attrs
+%else
 Requires:	%{_pscheduler_python}-attrs
+%endif
 Requires:	%{_pscheduler_python_epel}-dateutil
 Requires:	%{_pscheduler_python_epel}-dns
 Requires:	%{_pscheduler_python}-isodate
@@ -55,7 +60,11 @@ BuildRequires:	%{_pscheduler_python}-setuptools
 
 # NOTE:  Cloned from above.
 BuildRequires:	iputils
+%if 0%{?el7} != 0
+BuildRequires:	%{_pscheduler_python_epel}-attrs
+%else
 BuildRequires:	%{_pscheduler_python}-attrs
+%endif
 BuildRequires:	%{_pscheduler_python_epel}-dateutil
 BuildRequires:	%{_pscheduler_python_epel}-dns
 BuildRequires:	%{_pscheduler_python}-isodate
