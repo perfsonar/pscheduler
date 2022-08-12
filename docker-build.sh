@@ -28,9 +28,8 @@ for ARCH in ${ARCHES[@]}; do
     # TODO: can we run all builds in parallel?
     # TODO: remove install of curl when it is part of the unibuild images
     docker compose exec ${OS}_${LARCH} bash -c "\
-        apt-get -y install curl && \
-        curl http://downloads.perfsonar.net/debian/$REPO.gpg.key | apt-key add - && \
-        curl -o /etc/apt/sources.list.d/$REPO.list http://downloads.perfsonar.net/debian/$REPO.list && \
+        curl -s http://downloads.perfsonar.net/debian/$REPO.gpg.key | apt-key add - && \
+        curl -s -o /etc/apt/sources.list.d/$REPO.list http://downloads.perfsonar.net/debian/$REPO.list && \
         apt-get update \
         "
 done
