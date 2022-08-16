@@ -4,8 +4,8 @@ export DH_OPTIONS
 
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
-#override_dh_installchangelogs:
-#	dh_installchangelogs RELEASE_NOTES
+override_dh_installchangelogs:
+	dh_installchangelogs RELNOTES.md
 
 %:
-	dh $@ --with autotools-dev
+	dh $@

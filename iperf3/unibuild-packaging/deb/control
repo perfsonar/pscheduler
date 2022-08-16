@@ -1,8 +1,9 @@
 Source: iperf3
 Section: net
 Priority: optional
-Maintainer: Raoul Gunnar Borenius <borenius@dfn.de>
-Build-Depends: debhelper (>= 10), autotools-dev
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
+Build-Depends: debhelper (>= 10), libssl-dev, libsctp-dev [linux-any]
 Standards-Version: 3.9.8
 Homepage: http://software.es.net/iperf/
 

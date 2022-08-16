@@ -128,6 +128,7 @@ ifelse(HAVE_ETHR,1,ethr)
 ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,I2util)		# TODO: Building temporarily for EL8/EL9; required for owamp
 ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,iperf)		# EPEL dropped this for EL8
 ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,iperf3)
+ifelse(FAMILY/eval(MAJOR >= 10),Debian/1,iperf3)
 ifelse(FAMILY,RedHat,nuttcp)
 
 # TODO: Building temporarily for EL8 and EL9
