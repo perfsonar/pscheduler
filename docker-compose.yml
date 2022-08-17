@@ -38,16 +38,24 @@ services:
     working_dir: /app
   d10_armv7:
     platform: "linux/arm/v7"
-    image: docker.io/ntw0n/psbuild.$REPO.debian@sha256:c0d374312879c7d61aa5a4d2c78c98c6254f6cc299f954875eaba9df6a9353a5
+    image: docker.io/ntw0n/psbuild.$REPO.debian@sha256:b4ee4edb348d3a0579335d9d2fd2bdac29e1c3a2a56e82975e4452e246d31fcf
     privileged: true
     tmpfs: *default-tmpfs
     volumes: *default-volumes
     working_dir: /app
   d10_ppc64le:
     platform: "linux/ppc64le"
-    image: docker.io/ntw0n/psbuild.$REPO.debian@sha256:273348716553a69cdb70a60b1435c08e88c8caff94aab4fdbfdd459b3f3f916c
+    image: docker.io/ntw0n/psbuild.$REPO.debian@sha256:5024191176f7df2ae37a41a14df00b90a09cfcaa345e0c18c99dbb7beea84e69
     privileged: true
     tmpfs: *default-tmpfs
     volumes: *default-volumes
     working_dir: /app
+  u18_amd64:
+    platform: "linux/amd64"
+    image: ghcr.io/perfsonar/unibuild/u18:latest
+    volumes: *default-volumes
+  u20_amd64:
+    platform: "linux/amd64"
+    image: ghcr.io/perfsonar/unibuild/u20:latest
+    volumes: *default-volumes
 
