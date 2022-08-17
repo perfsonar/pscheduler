@@ -10,5 +10,5 @@ Vcs-Git: git://github.com/perfsonar/pscheduler
 Vcs-Browser: https://github.com/perfsonar/pscheduler
 
 Package: pscheduler-bundle-full
-Architecture: amd64 i386 armel armhf
+Architecture: all
 Depends:
