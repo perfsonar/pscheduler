@@ -86,7 +86,7 @@ SPEC_SCHEMA = {
 
 temp_schema = {
     "local": SPEC_SCHEMA["local"],
-    "$ref":"#/local/v%d" % json.get("schema", 1)
+    "$ref":"#/local/v%s" % json.get("schema", 1)
 }
 
 valid, error = pscheduler.json_validate(json, temp_schema, max_schema=MAX_SCHEMA)
