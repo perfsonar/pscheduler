@@ -57,7 +57,6 @@ BuildRequires:  %{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python_epel}-coverage
 BuildRequires:	%{_pscheduler_python_epel}-nose
 BuildRequires:	%{_pscheduler_python}-setuptools
-
 # NOTE:  Cloned from above.
 BuildRequires:	iputils
 %if 0%{?el7} != 0
@@ -84,7 +83,7 @@ BuildRequires:	%{_pscheduler_python}-pyjq >= 2.2.0
 BuildRequires:	%{_pscheduler_python}-tzlocal
 BuildRequires:	%{_pscheduler_python_epel}-pytz
 BuildRequires:  numactl
-
+BuildRequires:	rsyslog
 
 %define limit_config %{_pscheduler_sysconfdir}/limits.conf
 %define logdir %{_var}/log/pscheduler
@@ -108,6 +107,8 @@ Utility functions for pScheduler
 
 
 %build
+
+systemctl start rsyslog
 make CLASSES="%{_pscheduler_classes}"
 
 
