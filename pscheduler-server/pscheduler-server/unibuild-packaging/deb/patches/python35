@@ -1,5 +1,5 @@
---- pscheduler-server.orig/daemons/scheduler	2022-05-12 17:18:07.494154980 +0000
-+++ pscheduler-server/daemons/scheduler	2022-05-12 17:18:51.420128003 +0000
+--- pscheduler-server.orig/daemons/scheduler
++++ pscheduler-server/daemons/scheduler
 @@ -820,9 +820,9 @@
              cursor = db.cursor()
              cursor.execute("""UPDATE run SET state = run_state_pending() WHERE uuid = %s""",

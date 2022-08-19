@@ -1,5 +1,7 @@
---- a/database/reset.raw	2022-07-21 16:51:22.260525377 -0400
-+++ b/database/reset.raw	2022-07-21 16:51:47.214838015 -0400
+Index: b/database/reset.raw
+===================================================================
+--- a/database/reset.raw
++++ b/database/reset.raw
 @@ -37,47 +37,45 @@
  
  
