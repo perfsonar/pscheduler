@@ -55,7 +55,7 @@ def spec_is_valid(json):
 
     temp_schema = {
         "local": SPEC_SCHEMA["local"],
-        "$ref":"#/local/v%d" % json.get("schema", 1)
+        "$ref":"#/local/v%s" % json.get("schema", 1)
     }
 
     return json_validate(json, temp_schema, max_schema=MAX_SCHEMA)
