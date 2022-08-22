@@ -10,8 +10,7 @@ SPEC_SCHEMA = {
     "local": {
 
         "algorithm": {
-            "type": "string",
-            "enum": ["paris-traceroute"]
+            "type": "string"
         },
 
         "probe-type": {
@@ -23,7 +22,7 @@ SPEC_SCHEMA = {
             "type": "object",
             "properties": {
                 "schema":      { "type": "integer", "enum": [ 1 ] },
-                "algorithm":   { "$ref": "#/local/algorithm" },
+                "algorithm":   { "$ref": "#/pScheduler/String" },
                 "as":          { "$ref": "#/pScheduler/Boolean" },
                 "dest-port":   { "$ref": "#/pScheduler/IPPort" },
                 "dest":        { "$ref": "#/pScheduler/Host" },
@@ -50,7 +49,7 @@ SPEC_SCHEMA = {
             "type": "object",
             "properties": {
                 "schema":      { "type": "integer", "enum": [ 2 ] },
-                "algorithm":   { "$ref": "#/local/algorithm" },
+                "algorithm":   { "$ref": "#/pScheduler/String" },
                 "as":          { "$ref": "#/pScheduler/Boolean" },
                 "dest-port":   { "$ref": "#/pScheduler/IPPort" },
                 "dest":        { "$ref": "#/pScheduler/Host" },
