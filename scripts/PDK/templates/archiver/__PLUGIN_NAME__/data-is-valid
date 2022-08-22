@@ -1,0 +1,97 @@
+#!/usr/bin/env python3
+#
+# Validate data for __PLUGIN_NAME__
+#
+
+import pscheduler
+
+
+ARCHIVE_SPEC_SCHEMA = {
+    
+    "local": {
+        
+        # Define any local types used in the spec here
+        # "Something": {
+        #     "type": "string"
+        # }
+
+    },
+    
+    "versions": {
+        
+        # Initial version of the specification
+        "1": {
+            "type": "object",
+
+            "properties": {
+
+                # The schema should always be constrained to a single
+                # value per version.  This is optional for version 1.
+                "schema":          { "type": "integer", "enum": [ 1 ] },
+
+                # Add any additional data properties that are part of
+                # the specification.
+                # "foo":           { "$ref": "#/pScheduler/String" },
+                # "bar":           { "$ref": "#/pScheduler/String" }
+
+            },
+            # If listed here, these properties MUST be present in the
+            # specification.
+            "required": [
+            ],
+            # Treat other properties as acceptable.  This should
+            # ALWAYS be false.
+            "additionalProperties": False
+        },
+        
+        # Second and later versions of the specification
+        # "2": {
+        #    "type": "object",
+        #    "properties": {
+        #        # Constrain the schema to this version and require it.
+        #        "schema": { "type": "integer", "enum": [ 2 ] },
+        #        ...
+        #    },
+        #    "required": [
+        #        "schema",
+        #        ...
+        #    ],
+        #    "additionalProperties": False
+        #},
+        
+    }
+
+}
+
+
+try:
+    json = pscheduler.json_load()
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+    })
+
+(valid, error) = pscheduler.json_validate_from_standard_template(json, ARCHIVE_SPEC_SCHEMA)
+
+if not valid:
+    pscheduler.succeed_json({
+        "valid": valid,
+        "error": error
+    })
+
+# If there are semantic relationships that can't be expressed the
+# JSON Schema (e.g., parameter X can't be less then 5 when
+# parameter Y is an odd number), evaluate them here and complain
+# if there's a problem.  E.g.,:
+#
+#if some_condition_which_is_an_error:
+#    pscheduler.succeed_json({
+#        "valid": false,
+#        "error": "...Error Message..."
+#    })
+
+
+# By this point, everything is okay.
+
+pscheduler.succeed_json({ "valid": True })

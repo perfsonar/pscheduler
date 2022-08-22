@@ -1,0 +1,3 @@
+Depends: @, pscheduler-bundle-full
+Tests: archiver
+Restrictions: isolation-container

@@ -136,6 +136,11 @@ opt_parser.add_option("--timeout",
                       action="store", type="string",
                       dest="timeout")
 
+opt_parser.add_option("--port",
+                      help="TCP or UDP port for protocols that use one",
+                      action="store", type="int",
+                      dest="port")
+
 opt_parser.add_option("--protocol",
                       help="Protocol used to measure round trip time",
                       action="store", type="string",
@@ -198,9 +203,13 @@ if options.deadline is not None:
 if options.timeout is not None:
    result['timeout'] = options.timeout
 
+if options.port is not None:
+   result['port'] = options.port
+   schema.set(4)
+
 if options.protocol is not None:
    result['protocol'] = options.protocol
-   schema.set(2)
+   schema.set(2 if options.protocol in ['icmp', 'twamp'] else 4)
 
 result["schema"] = schema.value()
 

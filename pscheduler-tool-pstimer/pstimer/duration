@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #4:
+#
+# Determine the duration of a specified test.
+#
+
+import math
+import datetime
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True);
+
+# Default Duration
+duration = "PT10S"
+
+timeout_iso = json.get("timeout", duration)
+timeout = pscheduler.iso8601_as_timedelta(timeout_iso)
+
+pscheduler.succeed_json({
+    "duration": pscheduler.timedelta_as_iso8601( timeout )
+    })
+
+#?

@@ -33,7 +33,7 @@ fi
 # Working Directory
 #
 
-WORK_DIR="__TMPDIR__/$(basename $0).$$"
+WORK_DIR="${TMPDIR:-/var/tmp}/$(basename $0).$$"
 
 cleanup()
 {

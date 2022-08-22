@@ -43,7 +43,7 @@ if format == 'text/plain':
       pass
 
    try:
-      print('Content: ', result['content'])
+      print('Content: ', str(result['content']).encode('ascii', 'backslashreplace'))
    except KeyError:
       pass
 
@@ -55,10 +55,10 @@ elif format == 'text/html':
     print('<td>%s</td>' % result['time'])
     print('</tr>')
 
-    print('<tr>')
-    print('<td>Status Code</td>')
-    print('<td>%s</td>' % result['status'])
-    print('</tr>')
+    try:
+       print('<tr><td>Status Code</td><td>%s</td></tr>' % result['status'])
+    except KeyError:
+       pass
 
     if 'parse' in spec:
         print('<tr>')
@@ -67,10 +67,9 @@ elif format == 'text/html':
         print('</tr>') 
 
     try:
-       content = result['content']
        print('<tr>')
        print('<td>Content</td>')
-       print('<td><pre>\n%s\n</pre>\n</td>' % html.escape(content))
+       print('<td><pre>\n%s\n</pre>\n</td>' % html.escape(result['content']).encode('ascii', 'backslashreplace'))
        print('</tr>') 
     except KeyError:
        pass

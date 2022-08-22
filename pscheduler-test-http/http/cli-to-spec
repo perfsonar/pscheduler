@@ -46,6 +46,11 @@ opt_parser.add_option("--url",
                       action="store", type="string",
                       dest="url")
 
+opt_parser.add_option("--header",
+                      help="HTTP header for request, format 'HeaderName: Value'.  May be repeated.",
+                      action="append", type="string",
+                      dest="headers")
+
 opt_parser.add_option("--parse",
                       help="String to parse for",
                       action="store", type="string",
@@ -95,10 +100,19 @@ if options.host is not None:
 if options.host_node is not None:
     result['host-node'] = options.host_node
 if options.ip_version is not None:
-   result["ip-version"] = options.ip_version
-   schema.set(3)
+    result["ip-version"] = options.ip_version
+    schema.set(3)
+
 if options.url is not None:
     result['url'] = options.url
+
+if options.headers is not None:
+    result['headers'] = {
+        key.strip(): value.strip()
+        for (key, value) in [item.split(':') for item in options.headers]
+    }
+    schema.set(4)
+
 if options.parse is not None:
     result['parse'] = options.parse
 if options.timeout is not None:

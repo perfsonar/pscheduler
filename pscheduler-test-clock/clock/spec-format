@@ -29,6 +29,7 @@ if format == 'text/plain':
    template = """
 Destination ................... {.section dest}{dest}{.or}Not Specified{.end}
 Source ........................ {.section source}{source}{.or}Not Specified{.end}
+Source Node.................... {.section source-node}{source-node}{.or}Not Specified{.end}
 Timeout .,..................... {.section timeout}{timeout}{.or}Not Specified{.end}
 """
 

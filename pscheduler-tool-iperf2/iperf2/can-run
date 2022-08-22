@@ -53,7 +53,7 @@ supported_options = ["schema",
                      "source", "source-node",
                      "dest", "dest-node",
                      "ip-version", "duration", "interval", "link-rtt",
-                     "parallel", "window-size", "mss", "bandwidth",
+                     "parallel", "window-size", "bandwidth",
                      "buffer-length", "local-address", "congestion",
                      "udp", "single-ended", "single-ended-port", "loopback"
                      ]

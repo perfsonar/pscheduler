@@ -24,7 +24,7 @@ class TestLog(PschedTestBase):
         # Not much to test here but exercise the code nonetheless
         # for regression/coverage.
 
-        log = Log(verbose=False, prefix='test')
+        log = Log(verbose=False, prefix='test', syslog=False)
 
         log.debug("Invisible debug.")
 

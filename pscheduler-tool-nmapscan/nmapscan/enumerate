@@ -1,0 +1,28 @@
+#!/bin/sed -e 1d;/^#/d
+
+#
+# Development Order #2:
+# 
+# This JSON data describes the tool, and will be shown when 'pscheduler 
+# plugins tools' is run. This is the first file which should be edited.
+#
+# Be sure to edit line 19, as this determines what tests the tool is
+# compatible with.
+#
+
+{
+    "schema": 1,
+
+    "name": "nmapscan",
+    "description": "Uses the nmap tool (https://nmap.org/) to locate open ports and service information on a given host/subnet",
+    "version": "1.0",
+    "tests": [ "openports" ],
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    }
+}

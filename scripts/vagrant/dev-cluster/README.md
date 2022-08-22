@@ -26,15 +26,21 @@ workaround is to do development done in `/local/<username>`.
 
 Your system must have the following installed:
 
- * Python
- * Python netaddr (`sudo pip install netaddr`)
  * VirtualBox
  * Vagrant
  * Ansible
- * Ansible community collection (`ansible-galaxy collection install community.general`)
 
 
 ## Setup
+
+Configure Ansible by running:
+
+  * `ansible-galaxy collection install community.general`
+  * `ansible-galaxy collection install ansible.netcommon`
+
+Configure Python:
+
+  * On CentOS 7:  `sudo yum -y install python-netaddr`
 
 The default is to build a single-host cluster of CentOS 7 systems, which
 can be done by running `vagrant up`.

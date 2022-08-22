@@ -1,0 +1,17 @@
+#!/bin/sed -e 1d
+{
+    "schema": 1,
+
+    "name": "tcpping",
+    "description": "Measure the round-trip time to another host with tcpping",
+    "version": "1.0",
+    "tests": [ "rtt" ],
+
+    "preference": 0,
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    }
+}

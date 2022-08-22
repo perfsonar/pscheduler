@@ -1,0 +1,20 @@
+From 0a67006a07baee3577afc8fe7a45e8676d3af680 Mon Sep 17 00:00:00 2001
+From: Tristan Seligmann <mithrandi@mithrandi.net>
+Date: Mon, 10 Oct 2016 04:40:30 +0200
+Subject: Point intersphinx_mapping at local Python docs.
+
+---
+ docs/conf.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/docs/conf.py b/docs/conf.py
+index dbfdf36..2ff5f66 100644
+--- a/docs/conf.py
++++ b/docs/conf.py
+@@ -300,5 +300,5 @@ texinfo_documents = [
+ 
+ # Example configuration for intersphinx: refer to the Python standard library.
+ intersphinx_mapping = {
+-    "https://docs.python.org/3": None,
++    'python': ('/usr/share/doc/python3-doc/html', '/usr/share/doc/python3-doc/html/objects.inv')
+ }

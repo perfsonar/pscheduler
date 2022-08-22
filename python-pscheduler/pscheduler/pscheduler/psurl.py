@@ -86,7 +86,13 @@ class PycURLRunner(object):
                 return (status, text)
 
         if json:
-            return (status, json_load(text))
+            try:
+                return (status, json_load(text))
+            except ValueError as ex:
+                if throw:
+                    raise ex
+                else:
+                    return (400, str(ex))
         else:
             return (status, text)
 

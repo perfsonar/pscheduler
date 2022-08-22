@@ -30,8 +30,8 @@ def ok_json(data=None, sanitize=True):
 
 def ok_json_sanitize_checked(data, required_key=None):
     provided_key = arg_string("key")
-    if provided_key is None:
-        # No key, sanitize.
+    if required_key is None or provided_key is None:
+        # No keys, sanitize.
         sanitize = True
     elif provided_key == required_key:
         # Key matches what task expects
@@ -47,7 +47,6 @@ def bad_request(message="Bad request"):
 
 def forbidden(message="Forbidden."):
     log.debug("Response 403: %s", message)
-    log.info("Forbade %s %s %s: %s", request.remote_addr, request.method, request.base_url, message)
     return Response(message + "\n", status=403, mimetype="text/plain")
 
 def not_found(message="Resource Not found.", mimetype="text/plain"):
@@ -56,7 +55,6 @@ def not_found(message="Resource Not found.", mimetype="text/plain"):
 
 def not_allowed():
     log.debug("Response 405: %s not allowed.", request.method)
-    log.info("Disallowed %s %s %s", request.remote_addr, request.method, request.base_url)
     return Response("%s not allowed on this resource\n" % (request.method),
                     status=405, mimetype="text/plain")
 

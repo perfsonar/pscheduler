@@ -1,0 +1,12 @@
+#!/bin/sh -e
+#
+# Determine the duration of a specified test.
+#
+# For this tool, it's one second no matter what.
+#
+
+cat <<EOF
+{ "duration": "PT1S" }
+EOF
+
+exit 0

@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+#
+# Determine the duration of a specified test.
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+spec = pscheduler.json_load(exit_on_error=True);
+
+# TODO: Make sure the type is one we like
+# TODO: Validate the spec
+
+total = datetime.timedelta()
+
+total = datetime.timedelta(seconds=2)
+
+
+count = int(spec.get('count', 5))
+
+if count > 1:
+    # We do one less because there's no wait interval after the last
+    # packet other than the timeout.  The time is hard-wired into the
+    # tool.
+    total += (count - 1) * datetime.timedelta(seconds=2)
+
+# Stick one timeout on the end, which comes from waiting for the last packet.
+timeout = pscheduler.iso8601_as_timedelta(spec.get('timeout', 'PT2S'))
+
+
+#
+# DNS Resolution
+#
+
+try:
+    hostnames = spec['hostnames']
+except KeyError:
+    hostnames = True
+
+# Some time for DNS, which will be done in parallel.
+# TODO: Should probably ask the DNS module for the timeout.
+if hostnames:
+    total += datetime.timedelta(seconds=2)
+
+
+#
+# Slop
+#
+
+total += datetime.timedelta(seconds=1)
+
+pscheduler.succeed_json({
+        "duration": pscheduler.timedelta_as_iso8601(total)
+})

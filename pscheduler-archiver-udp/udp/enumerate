@@ -1,0 +1,13 @@
+#!/bin/sed -e 1d
+{
+    "schema": 1,
+    "name": "udp",
+    "description": "Send a JSON result as a UDP datagram",
+    "version": "1.0",
+
+    "maintainer": {
+        "name": "perfSONAR Development Team",
+	"email": "perfsonar-developer@internet2.edu",
+	"href": "http://www.perfsonar.net"
+    }
+}

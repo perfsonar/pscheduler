@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+#
+# Determine if this tool can run a test based on a test spec.
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True);
+
+try:
+    if json['type'] != 'rtt':
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Unsupported test type" ]
+        })
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test type" ]
+    })
+
+try:
+    spec = json["spec"]
+    pscheduler.json_check_schema(spec, 4)
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": ["Missing test specification"]
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [str(ex)]
+    })
+
+
+errors = []
+
+
+if 'protocol' in spec and spec['protocol'] != 'tcp':
+    errors.append("Only tcp protocol is supported")
+
+SUPPORTED_OPTIONS = [
+    "count",
+    "schema",
+    "source",
+    "source-node",
+    "dest",
+    "hostnames",
+    "ip-version",
+    "port",
+    "protocol"
+]
+
+for option in spec:
+    if option not in SUPPORTED_OPTIONS:
+        errors.append("Unsupported option '%s'" % option)    
+
+result = {
+    "can-run": len(errors) == 0
+}
+
+if len(errors) > 0:
+    result["reasons"] = errors
+
+pscheduler.succeed_json(result)

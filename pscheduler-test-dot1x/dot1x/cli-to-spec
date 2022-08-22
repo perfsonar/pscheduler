@@ -1,0 +1,165 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #4:
+# 
+# This file encodes CLI arguments as JSON data in a test spec,
+# as defined by the datatypes in validate.py
+# 
+# This can be tested directly using the following syntax:
+# ./cli-to-spec --option argument
+#
+
+import re
+import optparse
+import pscheduler
+import sys
+
+if len(sys.argv) > 1:
+
+   # Args are on the command line
+   args = sys.argv[1:]
+
+else:
+
+   # Args are in a JSON array on stdin
+   json_args = pscheduler.json_load(exit_on_error=True)
+   args = []
+
+   if not isinstance(json_args,list):
+      pscheduler.fail("Invalid JSON for this operation")
+   for arg in json_args:
+      if not ( isinstance(arg, str)
+               or isinstance(arg, int)
+               or isinstance(arg, float) ):
+         pscheduler.fail("Invalid JSON for this operation")
+   args = [ str(arg) for arg in json_args ]
+
+
+
+# Gargle the arguments
+
+opt_parser = pscheduler.FailingOptionParser(epilog=
+"""
+    This text will be printed out at the bottom of the
+    "help" message. Change this to whatever you like,
+    or don't include it at all. This could be a good place
+    for example usage cases, etc.
+"""
+)
+
+# Add all potential command line options here
+# Check https://docs.python.org/3/library/optparse.html for more
+# documentation on the opt parser
+
+
+opt_parser.add_option("--host",
+                      help="Host to run the test.",
+                      action="store", type="string",
+                      dest="host")
+
+opt_parser.add_option("--host-node",
+                      help="Host to run the test.",
+                      action="store", type="string",
+                      dest="host_node")
+
+opt_parser.add_option("--timeout",
+                      help="Timeout for each query attempt",
+                      action="store", type="string",
+                      dest="timeout")
+
+opt_parser.add_option("--interface",
+                      help="Interface to use for scan (required)",
+                      action="store", type="string",
+                      dest="interface")
+
+opt_parser.add_option("--username",
+                      help="Network login username",
+                      action="store", type="string",
+                      dest="username")
+
+opt_parser.add_option("--password",
+                      help="Network login password",
+                      action="store", type="string",
+                      dest="password")
+
+opt_parser.add_option("--driver",
+                      help="Wireless driver to use (defaults to system)",
+                      action="store", type="string",
+                      dest="driver")
+
+opt_parser.add_option("--ssid",
+                      help="Service set identifier (SSID) if using wireless",
+                      action="store", type="string",
+                      dest="ssid")
+
+opt_parser.add_option("--bssid",
+                      help="Basic service set identifier (BSSID) if using wireless",
+                      action="store", type="string",
+                      dest="bssid")
+
+opt_parser.add_option("--key-management",
+                      help="WPA supplicant key managmenent (optional; 'NONE' for no password)",
+                      action="store", type="string",
+                      dest="key_management")
+
+
+
+(options, remaining_args) = opt_parser.parse_args(args)
+
+
+# Call .set(n) on this object to indicate that a parameter requires
+# schema level n or higher.  The object will return the highes-set
+# value when .value() is called.
+#
+# For example, if the 'foo' paramater was introduced in schema level 2:
+#
+#  if options.foo is not None:
+#      result['foo'] = options.foo
+#      schema.set(2)
+#
+# If this is a brand-new test, you won't need to call .set() since the
+# default is 1.
+
+schema = pscheduler.HighInteger(1)
+
+
+# Build the test specification.  All we do here is build and set
+# schema levels.  Validation happens elsewhere.
+
+result = { }
+
+if options.host is not None:
+   result['host'] = options.host
+
+if options.host_node is not None:
+   result['host-node'] = options.host_node
+
+if options.timeout is not None:
+   result['timeout'] = options.timeout
+
+if options.interface is not None:
+   result['interface'] = options.interface
+
+if options.driver is not None:
+   result['driver'] = options.driver
+
+if options.username is not None:
+   result['_username'] = options.username
+
+if options.password is not None:
+   result['_password'] = options.password
+
+if options.ssid is not None:
+   result['ssid'] = options.ssid
+
+if options.bssid is not None:
+   result['bssid'] = options.bssid
+
+if options.key_management is not None:
+   result['key-management'] = options.key_management
+
+
+result['schema'] = schema.value()
+
+pscheduler.succeed_json(result)

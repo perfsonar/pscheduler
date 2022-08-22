@@ -160,9 +160,9 @@ def schedule():
                 "task": row[7],
                 "cli": row[8],
                 "test": row[9],
-                "tool": row[9],
-                "errors": row[10],
-                "priority": row[11]
+                "tool": row[10],
+                "errors": row[11],
+                "priority": row[12]
             }
 
             run["task"]["href"] = task_href

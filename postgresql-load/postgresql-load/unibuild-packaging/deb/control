@@ -1,0 +1,15 @@
+Source: postgresql-load
+Section: misc
+Priority: optional
+Maintainer: perfSONAR Developers <perfsonar-developer@internet2.edu>
+Build-Depends: debhelper (>= 10)
+Standards-Version: 3.9.6
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: postgresql-load
+Architecture: all
+Depends: ${misc:Depends}, postgresql
+Description: Runs SQL files through psql with an option to
+ run them under an account guaranteed to have superuser
+ rights.

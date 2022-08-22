@@ -1,0 +1,6 @@
+pscheduler-test-mtu (5.0.0~b1.3-1) perfsonar-5.0; urgency=low
+
+  * Initial release
+
+ -- perfSONAR developers <debian@perfsonar.net>  Thu, 21 Jul 2022 16:51:26 -0400
+

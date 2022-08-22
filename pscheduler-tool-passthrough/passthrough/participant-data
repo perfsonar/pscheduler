@@ -1,0 +1,10 @@
+#!/bin/sh -e
+#
+# Return participant-specific data for a run
+#
+
+cat <<EOF
+{}
+EOF
+
+exit 0

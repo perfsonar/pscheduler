@@ -342,6 +342,26 @@ BEGIN
     END IF;
 
 
+    -- Version 15 to version 16
+    -- Drops limits_passed column
+    IF t_version = 15
+    THEN
+	ALTER TABLE task DROP COLUMN limits_passed;
+
+        t_version := t_version + 1;
+    END IF;
+
+
+    -- Version 16 to version 17
+    -- Adds keep_after_archive column
+    IF t_version = 16
+    THEN
+	ALTER TABLE task ADD COLUMN
+	keep_after_archive INTERVAL DEFAULT NULL;
+
+        t_version := t_version + 1;
+    END IF;
+
     --
     -- Cleanup
     --
@@ -610,7 +630,11 @@ BEGIN
 	    LOOP
 	        PERFORM archiver_validate(archive);
 	    END LOOP;
+
+	    -- Only needed if archives are specified.
+	    NEW.keep_after_archive := text_to_interval(NEW.json #>> '{keep-after-archive}');
 	END IF;
+
 
 
 	--
@@ -716,9 +740,6 @@ BEGIN
                 'null'::JSONB);
         END IF;
 
-	NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,spec-limits-passed}',
-	    to_jsonb(NEW.limits_passed));
-
         IF NEW.start IS NOT NULL
         THEN
 	    NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,start}',
@@ -727,9 +748,6 @@ BEGIN
             NEW.json_detail := jsonb_set(NEW.json_detail, '{detail,start}',
                 'null'::JSONB);
         END IF;
-
-
-
 
 	RETURN NEW;
 END;
@@ -847,6 +865,7 @@ BEGIN
 
     DELETE FROM task
     WHERE
+        -- TODO: This refers to a table created later.
         NOT EXISTS (SELECT * FROM run where run.task = task.id)
         -- The first of these will be the latest known time.
         AND COALESCE(until, start, added) < older_than
@@ -892,7 +911,6 @@ CREATE OR REPLACE FUNCTION api_task_post(
     task_package JSONB,
     participant_list TEXT[],
     hints JSONB,
-    limits_passed JSON = '[]',
     participant INTEGER DEFAULT 0,
     priority INTEGER DEFAULT NULL,
     task_uuid UUID = NULL,
@@ -914,9 +932,9 @@ BEGIN
    END IF;
 
    WITH inserted_row AS (
-        INSERT INTO task(json, participants, limits_passed, participant,
+        INSERT INTO task(json, participants, participant,
 	                 priority, uuid, hints, enabled, diags)
-        VALUES (task_package, array_to_json(participant_list), limits_passed,
+        VALUES (task_package, array_to_json(participant_list),
 	        participant, priority, task_uuid, hints, enabled, diags)
         RETURNING *
     ) SELECT INTO inserted * from inserted_row;

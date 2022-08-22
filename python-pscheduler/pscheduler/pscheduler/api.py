@@ -138,6 +138,15 @@ def api_is_run(url):
     return True
 
 
+def api_run_uuid(url):
+    """Return the UUID of a run from its URL"""
+    if not api_is_run(url):
+        raise ValueError("URL is not a valid run")
+
+    return urllib.parse.urlparse(url).path.split('/')[5]
+
+
+
 def api_ping(host=None, bind=None, timeout=3):
     """
     See if an API server is alive within a given timeout.  If 'host'
@@ -230,17 +239,8 @@ def api_has_pscheduler(hostport, timeout=5, bind=None):
 
     # Make sure the address resolves, otherwise url_get will return
     # non-200.
-
-    resolved = None
-    for ip_version in [ 4, 6 ]:
-        resolved = dns_resolve(host,
-                               ip_version=ip_version,
-                               timeout=timeout)
-        if resolved:
-            break
-
-    if not resolved:
-        return False
+    if not dns_resolve(host, timeout=timeout):
+        return (False, "Unable to resolve host '%s'" % (host))
 
     status, raw_spec = url_get(api_url_hostport(hostport),
                                timeout=timeout,
@@ -249,7 +249,8 @@ def api_has_pscheduler(hostport, timeout=5, bind=None):
                                bind=bind
     )
 
-    return status == 200
+    return (status == 200,
+            raw_spec if status != 200 else None)
 
 
 

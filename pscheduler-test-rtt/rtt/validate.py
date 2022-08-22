@@ -4,7 +4,7 @@
 
 from pscheduler import json_validate
 
-MAX_SCHEMA = 3
+MAX_SCHEMA = 4
 
 def spec_is_valid(json):
     SPEC_SCHEMA = {
@@ -96,6 +96,36 @@ def spec_is_valid(json):
                     ],
                 "additionalProperties": False
             },
+            "v4": {
+                "type": "object",
+                "properties": {
+                    "schema":            { "$ref": "#/pScheduler/Cardinal", "enum": [ 4 ] },
+                    "count":             { "$ref": "#/pScheduler/Cardinal" },
+                    "dest":              { "$ref": "#/pScheduler/Host" },
+                    # There is no dest-node because this is a one-participant test.
+                    # TODO: This is supposed to be a 20-bit number.  Validate that.
+                    "flow-label":        { "$ref": "#/pScheduler/CardinalZero" },
+                    "fragment":          { "$ref": "#/pScheduler/Boolean" },
+                    "hostnames":         { "$ref": "#/pScheduler/Boolean" },
+                    "interval":          { "$ref": "#/pScheduler/Duration" },
+                    "ip-version":        { "$ref": "#/pScheduler/ip-version" },
+                    "source":            { "$ref": "#/pScheduler/Host" },
+                    "source-node":       { "$ref": "#/pScheduler/URLHostPort" },
+                    "suppress-loopback": { "$ref": "#/pScheduler/Boolean" },
+                    "ip-tos":            { "$ref": "#/pScheduler/IPTOS" },
+                    "length":            { "$ref": "#/pScheduler/Cardinal" },
+                    "ttl":               { "$ref": "#/pScheduler/Cardinal" },
+                    "deadline":          { "$ref": "#/pScheduler/Duration" },
+                    "timeout":           { "$ref": "#/pScheduler/Duration" },
+                    "port":              { "$ref": "#/pScheduler/IPPort" },
+                    "protocol":          { "$ref": "#/pScheduler/String" },
+                    },
+                "required": [
+                    "schema",
+                    "dest"
+                    ],
+                "additionalProperties": False
+            },
         }
     }
 
@@ -107,7 +137,7 @@ def spec_is_valid(json):
 
     temp_schema = {
         "local": SPEC_SCHEMA["local"],
-        "$ref":"#/local/v%d" % json.get("schema", 1)
+        "$ref":"#/local/v%s" % json.get("schema", 1)
     }
 
     return json_validate(json, temp_schema, max_schema=MAX_SCHEMA)

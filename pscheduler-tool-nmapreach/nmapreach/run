@@ -114,7 +114,11 @@ generators = {
 runs = 0
 
 network = ipaddress.ip_network(spec["network"])
-run_max_ips = spec.get("limit", network.num_addresses - 2)
+
+network_scannable = network.num_addresses - 2
+run_max_ips = min(spec.get("limit", network_scannable), network_scannable)
+log.debug("Limiting scan to %d addresses", run_max_ips)
+
 parallel = spec.get("parallel", 100)
 
 
@@ -144,8 +148,12 @@ nmap_timeout = timeout * 1.5
 
 def run_nmap(ips, run_number, gateway):
     """Execute nmap and determine what was up"""
-    (status, out, err) = pscheduler.run_program(nmap_first_args + ips,
-                                                timeout=nmap_timeout)
+
+    diags = []
+
+    args = nmap_first_args + ips
+    diags.append(' '.join(args))
+    (status, out, err) = pscheduler.run_program(args, timeout=nmap_timeout)
 
     if status != 0:
         pscheduler.succeed_json({
@@ -153,6 +161,9 @@ def run_nmap(ips, run_number, gateway):
             "diags": '',
             "error": "Nmap failed: %s" % (err)
         })
+
+    diags.append("")
+    diags.append(out)
 
     ips_up = [
         m.group(1)
@@ -162,6 +173,8 @@ def run_nmap(ips, run_number, gateway):
         ]
     ]
 
+    log.debug("Found these IPs up: %s", ips_up)
+
     # In the first run, we check to see if the first thing we get back
     # is the gateway.
     if run_number == 0 and ips_up and ips_up[0] == gateway:
@@ -170,16 +183,16 @@ def run_nmap(ips, run_number, gateway):
     else:
         gateway_up = False
 
-    return (gateway_up, bool(ips_up))
+    return (gateway_up, bool(ips_up), diags)
 
 
 
-def succeed(spec, gateway_was_up, network_was_up):
+def succeed(spec, gateway_was_up, network_was_up, diags):
     """Exit with results"""
 
     result = {
         "succeeded": True,
-        "diags": "No diagnostics.",
+        "diags": diags or "No diagnostics.",
         "result": {
             "succeeded": True,
             "network-up": network_was_up
@@ -192,8 +205,10 @@ def succeed(spec, gateway_was_up, network_was_up):
     pscheduler.succeed_json(result)
 
 
+
 gateway_up = False
 run_number = 0
+diags = []
 
 try:
     start_at = input['schedule']['start']
@@ -206,9 +221,11 @@ except KeyError:
 for next_ip in generator(network, exclude=gateway, limit=run_max_ips):
 
     if len(ip_list) >= parallel:
-        (gateway_up, network_up) = run_nmap(ip_list, run_number, gateway)
+        log.debug("Batch %d IPs: %s", run_number, ip_list)
+        (gateway_up, network_up, nmap_diags) = run_nmap(ip_list, run_number, gateway)
+        diags += nmap_diags
         if network_up:
-            succeed(spec, gateway_up, True)
+            succeed(spec, gateway_up, True, diags)
         run_number += 1
         ip_list = []
 
@@ -216,9 +233,11 @@ for next_ip in generator(network, exclude=gateway, limit=run_max_ips):
 
 # Do another nmap if there's anything left in the array
 if ip_list:
-    (gateway_up, network_up) = run_nmap(ip_list, run_number, gateway)
+    log.debug("Batch %d IPs: %s", run_number, ip_list)
+    (gateway_up, network_up, nmap_diags) = run_nmap(ip_list, run_number, gateway)
+    diags += nmap_diags
     if network_up:
-            succeed(spec, gateway_up, True)
+            succeed(spec, gateway_up, True, diags)
 
 
 # If nothing else happened, nothing on the network is up.

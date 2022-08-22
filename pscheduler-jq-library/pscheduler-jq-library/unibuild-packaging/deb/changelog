@@ -1,0 +1,120 @@
+pscheduler-jq-library (5.0.0~b1.3-1) perfsonar-5.0; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Thu, 21 Jul 2022 16:51:26 -0400
+
+pscheduler-jq-library (4.4.4-1) perfsonar-4.4; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Mon, 04 Apr 2022 13:04:06 -0400
+
+pscheduler-jq-library (4.4.3-1) perfsonar-4.4; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Thu, 03 Feb 2022 15:54:24 -0500
+
+pscheduler-jq-library (4.4.2-1) perfsonar-4.4; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 12 Jan 2022 09:57:04 -0500
+
+pscheduler-jq-library (4.4.1-1) perfsonar-4.4; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 26 Aug 2021 03:17:22 +0100
+
+pscheduler-jq-library (4.4.0-1) perfsonar-4.4; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 07 Jul 2021 15:32:38 +0000
+
+pscheduler-jq-library (4.3.3-1) perfsonar-4.3; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Tue, 02 Feb 2021 16:35:32 +0000
+
+pscheduler-jq-library (4.3.2-1) perfsonar-4.3; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 18 Nov 2020 15:41:13 +0000
+
+pscheduler-jq-library (4.3.0-1) perfsonar-4.3; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Fri, 30 Oct 2020 13:49:58 +0000
+
+pscheduler-jq-library (4.2.4-1) perfsonar-4.2; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 25 Mar 2020 15:36:56 -0400
+
+pscheduler-jq-library (4.2.3-1) perfsonar-4.2; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 24 Feb 2020 14:32:17 +0000
+
+pscheduler-jq-library (4.2.1-1) perfsonar-4.2; urgency=low
+
+  * New upstream version.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 02 Oct 2019 23:07:24 +0000
+
+pscheduler-jq-library (4.2.0-1) perfsonar-minor-staging; urgency=low
+
+  * New upstream version
+  * Building on Stretch.
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 16 Aug 2019 11:01:41 +0000
+
+pscheduler-jq-library (1.1.5-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Tue, 18 Dec 2018 21:55:25 +0000
+
+pscheduler-jq-library (1.1.2-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Wed, 24 Oct 2018 16:49:38 +0100
+
+pscheduler-jq-library (1.1.1-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Fri, 24 Aug 2018 18:25:45 +0000
+
+pscheduler-jq-library (1.1-1) perfsonar-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 13 Aug 2018 19:37:54 +0000
+
+pscheduler-jq-library (1.0.2.6-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Sun, 04 Mar 2018 23:17:12 +0000
+
+pscheduler-jq-library (1.0.2.3-1) perfsonar-jessie-release; urgency=low
+
+  * New upstream version
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Thu, 25 Jan 2018 16:10:59 +0000
+
+pscheduler-jq-library (1.0.2-1) perfsonar-jessie-release; urgency=low
+
+  * Initial release
+
+ -- Antoine Delvaux <antoine.delvaux@man.poznan.pl>  Mon, 27 Nov 2017 14:44:51 +0000

@@ -127,6 +127,12 @@ opt_parser.add_option("--filter-test",
                       action="append", type="string",
                       dest="filter_test")
 
+opt_parser.add_option("--format",
+                      help="Select output format (plain or json)",
+                      default="plain",
+                      action="store", type="string",
+                      dest="out_format")
+
 opt_parser.add_option("--host",
                       help="Request schedule from named host",
                       default=None,
@@ -165,6 +171,9 @@ else:
 filter_invert = options.invert
 
 host = options.host
+
+if options.out_format not in [ "plain", "json" ]:
+    pscheduler.fail("Format must be plain or json.")
 
 if options.task is not None:
 
@@ -256,6 +265,11 @@ if status != 200:
 # Dump it out
 #
 
+if options.out_format == 'json':
+    pscheduler.succeed_json(schedule)
+
+assert options.out_format == 'plain'
+
 if len(schedule) == 0:
     print("Nothing scheduled %s to %s" % (
         pscheduler.datetime_as_iso8601(start),
@@ -294,9 +308,8 @@ for run in schedule:
 
     if options.verbose and run["state"] == "nonstart":
         print("Non-Start Reason:")
-        print(pscheduler.indent(
-            run.get("errors", "Unspecified error").strip(),
-            ))
+        error = run.get("errors") or "Unspecified error"
+        print(pscheduler.indent(error.strip()))
 
     priority = run.get("priority", None)
     task_cli.append("(Run with tool '{}'{})".format(

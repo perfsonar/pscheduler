@@ -17,7 +17,7 @@ class VerbatimParser(optparse.OptionParser):
         return self.epilog
 
 opt_parser = VerbatimParser(
-    usage="Usage: %prog [options] tests|tools|archivers|contexts",
+    usage="Usage: %prog [options] test[s]|tool[s]|archiver[s]|context[s]",
     epilog="""
 Example:
 
@@ -40,6 +40,11 @@ opt_parser.add_option("--host",
                       default=None,
                       action="store", type="string",
                       dest="host")
+opt_parser.add_option("--verbose", "-v",
+                      help="Dump long-form information about the plugins",
+                      default=False,
+                      action="store_true",
+                      dest="verbose")
 
 (options, remaining_args) = opt_parser.parse_args()
 
@@ -49,9 +54,15 @@ if len(remaining_args) != 1:
 
 plugin = remaining_args[0]
 
+if not plugin.endswith("s"):
+    plugin += "s"
+
 if plugin not in ["tests", "tools", "archivers", "contexts"]:
     opt_parser.print_usage()
     pscheduler.fail()
+
+
+verbose = options.verbose
 
 
 #
@@ -66,26 +77,32 @@ status, result = pscheduler.url_get(url,
                                     throw=False)
 
 if status == 400:
-    pscheduler.fail("%s: %s" % (host, result))
+    pscheduler.fail("%s: %s" % (options.host, result))
 elif status in [202, 204, 205, 206, 207, 208, 226,
                 300, 301, 302, 303, 304, 205, 306, 307, 308] \
     or ((status >= 400) and (status <= 499)):
     pscheduler.fail("%s is not running pScheduler" % (options.host))
 elif status != 200:
-    pscheduler.fail("%s returned status %d: %s" % (host, status, result))
+    pscheduler.fail("%s returned status %d: %s" % (options.host, status, result))
 
 
 #
 # Dump the results
 #
 
-print("Installed %s on %s:" % (
-    plugin,
-    options.host if options.host is not None else "this system"
+if verbose:
+    print("Installed %s on %s:" % (
+        plugin,
+        options.host if options.host is not None else "this system"
     ))
 
 
 for item in result:
+
+    if not verbose:
+        print('{0:<20} {1}'.format(item["name"], item["description"]))
+        continue
+
     print("\n\n%s Version %s" % (
         item["name"],
         item["version"]

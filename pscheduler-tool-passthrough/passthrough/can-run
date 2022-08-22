@@ -1,0 +1,42 @@
+#!/usr/bin/env python3
+#
+# Determine if this tool can run a test based on a test spec.
+#
+
+import datetime
+import sys
+
+import pscheduler
+
+json = pscheduler.json_load(exit_on_error=True);
+
+# TODO: Should be checking the package schema and the task spec schema.
+
+try:
+    if json['type'] not in [ 'noop' ]:
+        pscheduler.succeed_json({
+            'can-run': False,
+            'reasons': [ 'Unsupported test type' ]
+        })
+except KeyError:
+    pscheduler.succeed_json({
+        'can-run': False,
+        'reasons': [ 'Missing test type' ]
+    })
+
+try:
+    spec = json['spec']
+    pscheduler.json_check_schema(spec, 1)
+except KeyError:
+    pscheduler.succeed_json({
+        'can-run': False,
+        'reasons': ['Missing test specification']
+    })
+except ValueError as ex:
+    pscheduler.succeed_json({
+        'can-run': False,
+        'reasons': [str(ex)]
+    })
+
+
+pscheduler.succeed_json({'can-run': True})

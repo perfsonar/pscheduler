@@ -247,7 +247,8 @@ def run_client():
             # stream rather than the full sum of how much data was
             # pushed.
 
-            bits = int(stream["throughput-bits"] / used_intervals)
+            bits = int(stream["throughput-bits"] / used_intervals) if used_intervals else 0
+
             try:
                 stream_summary[stream_id]["throughput-bits"] += bits
                 stream_summary[stream_id]["throughput-bytes"] += int(bits / 8)
@@ -256,7 +257,7 @@ def run_client():
 
             full_bits += stream["throughput-bits"]
 
-    full_bits = int(full_bits / used_intervals)
+        full_bits = int(full_bits / used_intervals) if used_intervals else 0
 
     full_summary["throughput-bits"] = full_bits
     full_summary["throughput-bytes"] = int(full_bits / 8)

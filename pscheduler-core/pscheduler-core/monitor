@@ -39,8 +39,14 @@ opt_parser.add_option("--no-color",
 
 opt_parser.add_option("--delta",
                       help="Show times as deltas from now",
-                      default=False,
+                      # New default behavior
+                      default=True,
                       action="store_true",
+                      dest="delta")
+
+opt_parser.add_option("--absolute",
+                      help="Show absolute times",
+                      action="store_false",
                       dest="delta")
 
 opt_parser.add_option("--past",

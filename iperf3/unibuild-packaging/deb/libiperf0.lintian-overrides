@@ -1,0 +1,3 @@
+# false positive, only debian/* is GPL
+libiperf0: possible-gpl-code-linked-with-openssl
+

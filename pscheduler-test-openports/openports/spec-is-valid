@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #6:
+#
+# This file accepts a test spec through stdin and outputs whether
+# or not it was validated through stdout.
+#
+# This can be tested directly using the following syntax:
+# ./cli-to-spec --option argument | ./spec-is-valid
+
+import pscheduler
+
+from validate import spec_is_valid
+
+json = pscheduler.json_load(exit_on_error=True)
+
+valid, message = spec_is_valid(json)
+
+result = {
+    "valid": valid
+}
+
+if not valid:
+    result["error"] = message
+pscheduler.succeed_json(result)
+
+
+#Verify Port Order is valid
+if json.get("ports") is None:
+    pscheduler.succeed_json(result)
+portlist = json.get("ports").split(",")
+allports = []
+for ele in portlist:
+    begin = end = ele
+    if "-" in ele:
+        (begin, end) = ele.split("-")
+        if int(end) < int(begin):
+            pscheduler.succeed_json({
+                "valid": False,
+                "error": "Port range is backwards. Did you mean " + end + "-" + begin +"?"
+            })
+    for port in range(int(begin), int(end)+1):
+        newports = []
+        if port in allports:
+            pscheduler.succeed_json({
+            "valid": False,
+            "error": "Duplicate value in port list: " + str(port)
+            })
+        newports.append(port)
+    allports+=newports
+
+pscheduler.succeed_json(result)

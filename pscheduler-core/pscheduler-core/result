@@ -68,6 +68,12 @@ opt_parser.add_option("--format",
                       default="text",
                       dest="format")
 
+opt_parser.add_option("--full",
+                      help="Produce full diagnostics and archiving information",
+                      action="store_true",
+                      default=False,
+                      dest="full")
+
 opt_parser.add_option("--output",
                       help="Path to write output",
                       action="store", type="string",
@@ -85,6 +91,10 @@ opt_parser.add_option("--debug", action="store_true", dest="debug")
 
 
 (options, remaining_args) = opt_parser.parse_args()
+
+if options.full:
+    options.archivings = True
+    options.diags = True
 
 if len(remaining_args) < 1:
     opt_parser.print_usage()
@@ -258,16 +268,12 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
     try:
         result_merged = run_json['result-merged']
         if result_merged is None:
-            result_merged = {
-                "succeeded": False,
-                "error": "No result was produced."
-            }
-    except KeyError as ex:
+            raise KeyError()
+    except KeyError:
         result_merged = {
             "succeeded": False,
-            "error": "Merged result missing from run",
+            "error": "No result was produced."
         }
-        return
 
     succeeded = result_merged.get('succeeded', False)
 
@@ -328,9 +334,18 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
 
         parts = task_json["detail"]["participants"]
 
+        full_result = run_json.get("result-full")
+
         for participant in range(0, len(parts)):
 
-            part_result = run_json["result-full"][participant]
+            try:
+                part_result = None if full_result is None else full_result[participant]
+            except IndexError:
+                part_result = None
+
+            if part_result is None:
+                print("\nNo additional information available from {}.".format(parts[participant]))
+                continue
 
             for what, what_text in [ ("error", "Error"), ("diags", "Diagnostics") ]:
 
@@ -368,13 +383,15 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
                         if attempt['return-code'] != 0:
                             raise TypeError  # Treat this as a failure.
                         succeeded = attempt['stdout']['succeeded']
-                        diags = "" if succeeded else attempt['stdout']['error']
+                        diags = attempt['stdout'].get('error', None)
+                        if diags == "":
+                            diags = None
                     except (KeyError, TypeError):
                         succeeded = False
                         diags = attempt['stderr']
                     print("    %-25s %s" % (
                         attempt['time'],
-                        "Succeeded" if succeeded else diags
+                        diags or "Succeeded"
                         ))
         else:
             print(pscheduler.indent("This task had no archivings."))

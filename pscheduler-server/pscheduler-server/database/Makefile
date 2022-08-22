@@ -63,9 +63,11 @@ TEARDOWN_SQL=database-teardown.sql
 SQL=$(BUILD_SUPER_SQL) $(BUILD_SQL) $(TEARDOWN_SQL)
 
 INTERNALS=\
-	db-update \
+	db-connections \
 	db-change-password \
+	db-update \
 	key \
+	purge-runs \
 	reset \
 	warmboot
 
@@ -161,10 +163,18 @@ TO_CLEAN += $(CHECK_DIR)
 
 DB_ERROR=.db_error
 
+
+IS_ROOT := $(shell [ -w / ] && echo 1 || true)
+HAS_SUDO := $(shell sudo -v 2>/dev/null && echo 1 || true)
+
+ifneq ($(HAS_SUDO),)
+SUDO := sudo
+endif
+
 check: $(CHECK_DIR)
-ifeq ($(shell id -u),0)
-	@postgresql-load $(CHECK_DIR)/$(FULL_CHECK_SQL) || touch $(DB_ERROR)
-	@echo "DROP DATABASE IF EXISTS $(CHECK_PREFIX);" | postgresql-load
+ifneq ($(IS_ROOT)$(HAS_SUDO),)
+	@$(SUDO) postgresql-load $(CHECK_DIR)/$(FULL_CHECK_SQL) || touch $(DB_ERROR)
+	@echo "DROP DATABASE IF EXISTS $(CHECK_PREFIX);" | $(SUDO) postgresql-load
 	@[ -e $(DB_ERROR) ] && echo "Database syntax check failed." || true
 	@[ ! -e $(DB_ERROR) ]
 	@echo Database syntax OK

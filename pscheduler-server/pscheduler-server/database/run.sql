@@ -194,6 +194,31 @@ BEGIN
     END IF;
 
 
+    -- Version 8 to version 9
+    -- New rows start in run_state_scheduling()
+    IF t_version = 8
+    THEN
+        ALTER TABLE run
+        ALTER COLUMN state
+	SET DEFAULT run_state_scheduling();
+
+        t_version := t_version + 1;
+    END IF;
+
+
+    -- Version 9 to version 10
+    -- Add expiration time
+    IF t_version = 9
+    THEN
+        ALTER TABLE run ADD COLUMN
+	expires TIMESTAMP WITH TIME ZONE DEFAULT NULL;
+
+	CREATE INDEX run_expires ON run(expires) WHERE expires IS NOT NULL;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -454,8 +479,7 @@ BEGIN
     SELECT INTO tool_name name FROM tool WHERE id = taskrec.tool; 
 
     -- Finished runs are what get inserted for background tasks.
-    -- TODO: Should be anything that's not a "finished" state
-    IF TG_OP = 'INSERT' AND NEW.state <> run_state_finished() THEN
+    IF TG_OP = 'INSERT' AND NOT run_state_is_finished(NEW.state) THEN
 
         pdata_out := row_to_json(t) FROM ( SELECT taskrec.participant AS participant,
                                            cast ( taskrec.json #>> '{test, spec}' AS json ) AS test ) t;
@@ -573,6 +597,56 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER run_alter BEFORE INSERT OR UPDATE ON run
        FOR EACH ROW EXECUTE PROCEDURE run_alter();
+
+
+
+
+DROP TRIGGER IF EXISTS run_delete ON run CASCADE;
+
+DO $$ BEGIN PERFORM drop_function_all('run_delete'); END $$;
+
+CREATE OR REPLACE FUNCTION run_delete()
+RETURNS TRIGGER
+AS $$
+DECLARE
+    older_than TIMESTAMP WITH TIME ZONE;
+BEGIN
+
+    -- If this isn't the last run, we're good.
+    IF EXISTS (SELECT * FROM run WHERE task = OLD.task)
+    THEN
+        RETURN OLD;
+    END IF;
+
+
+    -- Remove the task if it can be considered completed.
+
+    SELECT INTO older_than normalized_now() - keep_runs_tasks
+    FROM configurables;
+
+    DELETE FROM task
+    WHERE
+        id = OLD.task
+        -- The first of these will be the latest known time.
+        AND COALESCE(until, start, added) < older_than
+        AND (
+            -- Complete based on runs
+            (max_runs IS NOT NULL AND runs >= max_runs)
+            -- One-shot
+            OR (repeat IS NULL AND repeat_cron IS NULL)
+            -- Until time has passed
+            OR until < older_than
+            )
+    ;
+
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER run_delete AFTER DELETE ON run
+       FOR EACH ROW EXECUTE PROCEDURE run_delete();
+
+
 
 
 
@@ -787,12 +861,50 @@ BEGIN
     );
 
 
+    -- Straggling background-multi runs stuck in the on-deck state get
+    -- knocked back into pending so the runner will try and start them
+    -- again.  If they keep failing, the code above will eventually
+    -- mark them missed.
+
+    UPDATE run
+    SET state = run_state_pending()
+    WHERE id IN (
+        SELECT run.id
+        FROM
+           run
+           JOIN task ON task.id = run.task
+           JOIN test ON test.id = task.test
+           JOIN scheduling_class ON scheduling_class.id = test.scheduling_class
+        WHERE
+            run.times @> straggle_time
+            AND run.state = run_state_on_deck()
+            AND scheduling_class.multi_result
+    );
+
+
     -- Runs that started and didn't report back in a timely manner
     UPDATE run
     SET state = run_state_overdue()
     WHERE
         upper(times) < straggle_time
         AND state = run_state_running();
+
+END;
+$$ LANGUAGE plpgsql;
+
+
+DO $$ BEGIN PERFORM drop_function_all('run_remove_old_scheduled'); END $$;
+
+CREATE OR REPLACE FUNCTION run_remove_old_scheduled()
+RETURNS VOID
+AS $$
+BEGIN
+
+    DELETE FROM run
+    WHERE
+      state = run_state_scheduling()
+      AND normalized_now() > lower(times)
+    ;
 
 END;
 $$ LANGUAGE plpgsql;
@@ -811,19 +923,26 @@ BEGIN
     SELECT INTO purge_before now() - keep_runs_tasks FROM configurables;
     DELETE FROM run
     WHERE
-        upper(times) < purge_before
-        AND state NOT IN (run_state_pending(),
-                          run_state_on_deck(),
-                          run_state_running());
+        (
+	  (upper(times) < purge_before)                       -- Runs that got a time
+	  OR (upper(times) IS NULL AND added < purge_before)  -- Runs that didn't
+        )
+        AND run_state_is_finished(state)
+    ;
 
     -- Extra margin for anything that might actually be running
+    -- TODO: This is probably redundant.
     purge_before := purge_before - 'PT1H'::INTERVAL;
     DELETE FROM run
     WHERE
         upper(times) < purge_before
-        AND state IN (run_state_pending(),
-                      run_state_on_deck(),
-                      run_state_running());
+        AND state IN (SELECT id FROM run_state WHERE NOT finished);
+
+    -- Runs with explicit expiration times
+    DELETE FROM run
+    WHERE
+        expires IS NOT NULL
+	AND expires < now();
 
 END;
 $$ LANGUAGE plpgsql;
@@ -839,6 +958,7 @@ RETURNS VOID
 AS $$
 BEGIN
     PERFORM run_handle_stragglers();
+    PERFORM run_remove_old_scheduled();
     PERFORM run_purge();
 END;
 $$ LANGUAGE plpgsql;
@@ -996,7 +1116,12 @@ BEGIN
     END IF;
 
     IF nonstart_reason IS NULL THEN
-        initial_state := run_state_pending();
+        IF task.participant = 0 THEN
+            -- The scheduler will adjust this when scheduling is complete.
+            initial_state := run_state_scheduling();
+        ELSE
+            initial_state := run_state_pending();
+        END IF;
         initial_status := NULL;
     ELSE
         initial_state := run_state_nonstart();

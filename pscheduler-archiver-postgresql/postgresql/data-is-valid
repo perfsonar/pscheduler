@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+#
+# Validate data for postgresql
+#
+
+import pscheduler
+
+
+ARCHIVE_SPEC_SCHEMA = {
+    
+    "local": {
+
+        # Source:  https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
+        # PostgreSQL supports non-ASCII characters; JSON doesn't.
+        "PostgreSQLIdentifier": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 63,
+            "pattern": "^[A-Za-z_][A-Za-z0-9_\$]*$"
+        }
+
+    },
+    
+    "versions": {
+        
+        # Initial version of the specification
+        "1": {
+            "type": "object",
+
+            "properties": {
+
+                # The schema should always be constrained to a single
+                # value per version.  This is optional for version 1.
+                "schema":             { "type": "integer", "enum": [ 1 ] },
+                "_dsn":               { "$ref": "#/pScheduler/String" },
+                "table":              { "$ref": "#/local/PostgreSQLIdentifier" },
+                "column":             { "$ref": "#/local/PostgreSQLIdentifier" },
+                "connection-expires": { "$ref": "#/pScheduler/Duration" },
+                "retry-policy":       { "$ref": "#/pScheduler/RetryPolicy" }
+            },
+            # If listed here, these properties MUST be present in the
+            # specification.
+            "required": [
+                "_dsn",
+                "table",
+                "column"
+            ],
+            # Treat other properties as acceptable.  This should
+            # ALWAYS be false.
+            "additionalProperties": False
+        },
+        
+        # Second and later versions of the specification
+        # "2": {
+        #    "type": "object",
+        #    "properties": {
+        #        # Constrain the schema to this version and require it.
+        #        "schema": { "type": "integer", "enum": [ 2 ] },
+        #        ...
+        #    },
+        #    "required": [
+        #        "schema",
+        #        ...
+        #    ],
+        #    "additionalProperties": False
+        #},
+        
+    }
+
+}
+
+
+try:
+    json = pscheduler.json_load()
+except ValueError as ex:
+    pscheduler.succeed_json({
+        "valid": False,
+        "error": str(ex)
+    })
+
+(valid, error) = pscheduler.json_validate_from_standard_template(json, ARCHIVE_SPEC_SCHEMA)
+
+if not valid:
+    pscheduler.succeed_json({
+        "valid": valid,
+        "error": error
+    })
+
+# If there are semantic relationships that can't be expressed the
+# JSON Schema (e.g., parameter X can't be less then 5 when
+# parameter Y is an odd number), evaluate them here and complain
+# if there's a problem.  E.g.,:
+#
+#if some_condition_which_is_an_error:
+#    pscheduler.succeed_json({
+#        "valid": false,
+#        "error": "...Error Message..."
+#    })
+
+
+# By this point, everything is okay.
+
+pscheduler.succeed_json({ "valid": True })

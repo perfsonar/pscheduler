@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+#
+# Run a test.  Just the test spec is provided on stdin.
+#
+
+import datetime
+import json
+import random
+import sys
+import time
+
+import pscheduler
+
+log = pscheduler.Log(prefix="tool-passthrough", quiet=True)
+
+input = pscheduler.json_load(exit_on_error=True);
+
+try:
+    data = input['test']['spec']['data']
+except KeyError:
+    data = None
+
+# Don't bother sleeping here; there's no reason to wait.
+
+# Force a hard failure if one is indicated
+try:
+    fail_prob = float(input['test']['spec']['fail'])
+    fail_rand = random.random()
+    if fail_rand < fail_prob:
+        pscheduler.succeed_json({
+            'succeeded': False,
+            'diags': ("Random %f on failure probability %f" % (fail_rand, fail_prob)),
+            'error': 'Randomly-induced failure',
+            'result': None
+            })
+except KeyError:
+    pass  # Skip it if not in the input
+
+
+# Perform the test
+
+pscheduler.succeed_json({
+    'succeeded': True,
+    'diags': '',
+    'error': '',
+    'result': data
+})

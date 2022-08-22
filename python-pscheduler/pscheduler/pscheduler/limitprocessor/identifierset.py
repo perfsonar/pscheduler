@@ -76,6 +76,7 @@ class IdentifierSet(object):
         that match."""
 
         result = []
+        diags = []
 
         # TODO: Thread this so things like DNS lookups run in
         # pseudo-parallel.
@@ -94,10 +95,17 @@ class IdentifierSet(object):
                 invert = False
             assert isinstance(invert, bool)
 
-            if evaluator.evaluate(hints) and not invert:
+            try:
+                identified = evaluator.evaluate(hints)
+            except Exception as ex:
+                diags.append("Identifier %s threw an exception:\n%s\nPlease report this as a bug."
+                             % (identifier['name'], str(ex)))
+                identified = False
+
+            if identified and not invert:
                 result.append(identifier['name'])
 
-        return result
+        return result, diags
 
 
 # A small test program

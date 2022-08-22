@@ -1,0 +1,17 @@
+Source: python-icmperror
+Section: net
+Priority: optional
+Maintainer: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
+Build-Depends: debhelper (>= 10), dh-python, python3-all
+Standards-Version: 3.9.8
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: python3-icmperror
+Architecture: all
+Depends: ${misc:Depends}, ${python3:Depends}
+Description: ICMP error codes library
+ Functions for translating ICMP error codes to enumerated values.
+ .
+ This package contains the Python 3.x module.

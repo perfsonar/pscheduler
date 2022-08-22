@@ -35,6 +35,7 @@ final_results = source_results
 
 # if this was a reverse test, we want to look at the destination's
 # output instead of the source's
+
 if input['test']['spec'].get('reverse') and not (single_ended or loopback):
     final_results = dest_results
 

@@ -301,6 +301,8 @@ DO $$ BEGIN PERFORM drop_function_all('archiving_update'); END $$;
 CREATE OR REPLACE FUNCTION archiving_update()
 RETURNS TRIGGER
 AS $$
+DECLARE
+    keep_after INTERVAL;
 BEGIN
 
     -- Notify on things the archiver will want to know about:
@@ -312,7 +314,30 @@ BEGIN
         OR (NEW.next_attempt IS NOT NULL
                 AND NEW.next_attempt <> OLD.next_attempt)
     THEN
+
+	-- Set an expiration time on the run if the task has a
+	-- keep_after_archiving and this is the last-completed archiving.
+
+	IF NOT EXISTS (SELECT * FROM archiving
+	               WHERE archiving.run = NEW.run
+		       AND NOT archiving.completed)
+	THEN
+	    SELECT INTO keep_after task.keep_after_archive
+	    FROM task JOIN run ON task.id = run.task
+	    WHERE run.id = NEW.run;
+
+	    IF keep_after IS NOT NULL
+	    THEN
+	        UPDATE run SET expires = now() + keep_after
+		WHERE id = NEW.run;
+	    END IF;
+
+	END IF;
+
+	-- Let interested parties know what's happening.
+
         NOTIFY archiving_change;
+
     END IF;
 
     RETURN NEW;
@@ -507,6 +532,7 @@ BEGIN
     WHERE
         NOT completed
         AND ttl_expires < now();
+
 
 END;
 $$ LANGUAGE plpgsql;

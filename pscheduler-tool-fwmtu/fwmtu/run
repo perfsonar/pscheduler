@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #5:
+#
+# This is the meat and bones of the tool, where the actual desired
+# commands or operation will be run. The results are then recorded
+# and added to the 'results' JSON data, which will then be sent
+# back to the test. Both system and api are able to be used here.
+#
+
+import datetime
+import subprocess
+import json
+import sys
+import time
+import pscheduler
+import socket
+
+#PORT: Only works on Linux
+
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+
+# Get arguments
+try:
+    spec = input['test']['spec']
+    dest = spec['dest']
+    port = spec.get('port', 1060)  # Default UDP port is 1060
+except KeyError:
+    pscheduler.fail('Missing data in input')
+
+duration = input['test']['spec'].get('duration', 'PT5S')
+duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
+timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
+timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+
+BIG_PACKET = 999999
+
+# Define method to get MTU
+def find_mtu(dest, port):
+    OVERHEAD_SIZE = 28
+    # Python 3.6 dropped the IN module
+    class IN:
+        IP_MTU = 14
+        IP_MTU_DISCOVER = 10
+        IP_PMTUDISC_DO = 2
+
+    (family, ip) = pscheduler.ip_addr_version(dest, family=True)
+    if family is None or ip is None:
+        raise Exception("Cannot convert destination to an IP address.")
+    sock = socket.socket(family, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.IPPROTO_IP, IN.IP_MTU_DISCOVER, IN.IP_PMTUDISC_DO)
+    sock.connect((ip, port))
+
+    # Try reaching with payload size 0
+    sock.send(b"")
+
+    try:
+        sock.send(b'#'*BIG_PACKET)
+    except socket.error as ex:
+        return sock.getsockopt(socket.IPPROTO_IP, IN.IP_MTU)
+ 
+    raise Exception(f"Couldn't measure MTU because it was bigger than {BIG_PACKET}.")
+
+# Run the actual task here:
+
+# IMPORTANT NOTE: This code puts the process to sleep until the
+# scheduled start time has arrived.  It should be placed after all
+# preparatory code has been executed and immediately before the tool
+# is invoked (for plugins that run other programs) or any activity
+# that does a measurement (for those that don't).
+
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
+# Run tool
+try:
+    mtu = find_mtu(dest, port)
+    results = {
+        'succeeded': True,
+        'result': {
+            'schema': 1,
+            'mtu': mtu,
+            'succeeded': True
+        }
+    }
+
+except Exception as ex:
+    results = {
+        'succeeded': False,
+        'error': str(ex),
+        'diags': ''
+    }
+
+pscheduler.succeed_json(results)
+

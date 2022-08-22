@@ -1,0 +1,214 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #5:
+#
+# This is the meat and bones of the tool, where the actual desired
+# commands or operation will be run. The results are then recorded
+# and added to the 'results' JSON data, which will then be sent
+# back to the test. Both system and api are able to be used here.
+#
+
+import datetime
+import subprocess
+import json
+import sys
+import time
+
+import pscheduler
+
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+spec = input['test']['spec']
+
+need_root = False
+argv = []
+
+# Source
+source = spec.get('source', None)
+
+# Dest (required)
+try:
+    dest = spec['dest']
+except KeyError:
+    pscheduler.fail('Missing destination in input')
+
+# IP Version
+ipversion = spec.get('ip-version', None)
+
+# Lookup ip address so ping does not have to and determine ip version
+source_ip = None
+dest_ip = None
+
+if source is not None:
+    (source_ip, dest_ip) = pscheduler.ip_normalize_version(source, dest, ip_version=ipversion)
+    if source_ip is None and dest_ip is None:
+        pscheduler.fail("Can't find same-family IPs for %s and %s." % (source, dest))
+    if dest_ip is not None:
+        (ipversion, dest_ip) = pscheduler.ip_addr_version(dest_ip)
+elif ipversion is None:
+    (ipversion, dest_ip) = pscheduler.ip_addr_version(dest)
+    if ipversion is None:
+        dest_ip = None
+
+# Make a best guess at the IP if we didn't find one above.
+if dest_ip is None:
+    dest_ip_map = pscheduler.dns_bulk_resolve([dest], ip_version=ipversion)
+    # For failed resolution, just try the hostname and let ping deal with it.
+    dest_ip = dest_ip_map.get(dest, dest)
+
+#Determine ping program
+if (ipversion is not None) and (ipversion == 6):
+    program = 'ping6'
+else:
+    program = 'ping'
+argv.append(program)
+
+# Turn off DNS; we'll do that afterward.
+argv.append('-n')
+
+# Count
+count = spec.get('packet-count', 5)
+argv.append('-c')
+argv.append(str(count))
+
+# Interval
+try:
+    interval = datetime.timedelta(seconds=spec['packet-interval'])
+except KeyError:
+    interval=datetime.timedelta(seconds=1)
+if interval < datetime.timedelta(seconds=0.2):
+    need_root = True
+
+argv.append('-i')
+argv.append(str(pscheduler.timedelta_as_seconds(interval)))
+
+# Ping timeout
+try:
+    ping_timeout = datetime.timedelta(seconds=spec['packet-timeout'])
+    argv.append('-W')
+    argv.append(str(ping_timeout))
+except KeyError:
+    pass
+
+# Ping padding
+try:
+    ping_padding = spec['packet-padding']
+    argv.append('-s')
+    argv.append(str(ping_padding + 56))  # Ping defaults to 56 bytes, add padding
+except KeyError:
+    pass
+
+# Interface/Source Address
+if source_ip is not None:
+    argv.append('-I')
+    argv.append(source_ip)
+
+# TOS
+try:
+    ip_tos = spec['ip-tos']
+    argv.append('-Q')
+    # Ping takes the full byte.
+    argv.append(str(ip_tos))
+except KeyError:
+    pass  # Whatever.
+
+# Destination (must be last since it's an argument, not a switch)).
+argv.append(str(dest_ip or spec['dest']))
+
+if need_root:
+    argv.insert(0, 'sudo')
+
+# Stringify the arguments        
+argv = [str(x) for x in argv]
+
+argv_string =  ' '.join(argv)
+
+# Other args for formatting output
+bucket_width = spec.get('bucket-width', 0.01)
+
+# Run the actual task here:
+
+# IMPORTANT NOTE: This code puts the process to sleep until the
+# scheduled start time has arrived.  It should be placed after all
+# preparatory code has been executed and immediately before the tool
+# is invoked (for plugins that run other programs) or any activity
+# that does a measurement (for those that don't).
+
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
+status, stdout, stderr = pscheduler.run_program(argv)
+
+# Ping exits 1 if the host isn't up, which for us is still a success.
+if not status in [0, 1]:
+    pscheduler.succeed_json( {
+            'succeeded': False,
+            'diags': argv_string,
+            'error': stderr,
+            'result': None
+            } )
+
+parsed_results = pscheduler.parse_ping(stdout, count)
+
+roundtrips = parsed_results['roundtrips']
+packets_seen = {}
+sent = count
+recvd = 0
+dups = 0
+reorders = 0
+prev_seq = None
+ttl_counts = {}
+latency_counts = {}
+for rt in roundtrips:
+    # duplicate packet
+    if rt["seq"] in packets_seen:
+        dups += 1
+        continue
+    
+    # skip lost
+    if rt.get('error', None):
+        continue
+    #made it to other end
+    packets_seen[rt["seq"]] = True
+    recvd += 1
+    #check for reorder
+    if prev_seq is not None and rt["seq"] < prev_seq:
+        reorders += 1
+    prev_seq = rt["seq"]
+
+    # count ttl
+    ttl = str(rt['ttl'])
+    ttl_counts[ttl] = ttl_counts.setdefault(ttl, 0) + 1
+    
+    #count latency and divide into buckets
+    rtt = (pscheduler.iso8601_as_timedelta(rt['rtt'])).total_seconds() * 1000
+    latency = rtt/2
+    bucket_num = latency//bucket_width
+    bucket_label = str(round(bucket_num*bucket_width,2))
+    latency_counts[bucket_label] = latency_counts.setdefault(bucket_label, 0) + 1
+
+result = {
+    'schema': 1,
+    'succeeded': True,
+    'packets-sent': sent,
+    'packets-received': recvd,
+    'packets-lost': sent-recvd,
+    'packets-reordered': reorders,
+    'packets-duplicated': dups,
+    'histogram-ttl': ttl_counts,
+    'histogram-latency': latency_counts
+}
+
+# Organize results into json data
+results = {
+    'succeeded': True,
+    'result': result,
+    'error': None,
+    'diags': argv_string + '\n\n' + stdout
+}
+
+pscheduler.succeed_json(results)
+

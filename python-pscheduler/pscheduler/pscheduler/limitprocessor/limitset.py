@@ -14,6 +14,7 @@ if __name__ == "__main__":
     from limit import passfail
     from limit import rundaterange
     from limit import runschedule
+    # TODO: #824: Remove this in 5.1
     from limit import test
     from limit import testtype
     from limit import urlfetch
@@ -22,6 +23,7 @@ else:
     from .limit import passfail
     from .limit import rundaterange
     from .limit import runschedule
+    # TODO: #824: Remove this in 5.1
     from .limit import test
     from .limit import testtype
     from .limit import urlfetch
@@ -32,7 +34,6 @@ limit_creator = {
     'pass-fail':     lambda data: passfail.LimitPassFail(data),
     'run-daterange': lambda data: rundaterange.LimitRunDateRange(data),
     'run-schedule':  lambda data: runschedule.LimitRunSchedule(data),
-    'test':          lambda data: test.LimitTest(data),
     'test-type':     lambda data: testtype.LimitTestType(data),
     'url-fetch':     lambda data: urlfetch.LimitURLFetch(data)
     }
@@ -139,10 +140,6 @@ class LimitSet(object):
         {
           "passed": <Boolean>,       # True if passed
           "reasons": [ <String> ],   # Optional array of failure reasons
-          "keep": {                  # Limit info to be passed along to run
-              "limit": <AnyJSON>,    # Limit evaluated and passed
-              "inverted": <Boolean>  # True if passed because of inversion
-          }
         }
         """
 
@@ -168,13 +165,8 @@ class LimitSet(object):
         passed = evaluated["passed"]
         result = {
             "passed": passed,
+            "reasons": evaluated.get("reasons", [])
         }
-
-        for key in [ "limit", "reasons" ]:
-            try:
-                result[key] = evaluated[key]
-            except KeyError:
-                pass
 
         result["inverted"] = invert
         if invert:

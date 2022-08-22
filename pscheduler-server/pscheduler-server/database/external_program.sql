@@ -29,7 +29,7 @@ DO $$ BEGIN PERFORM drop_function_all('pscheduler_command'); END $$;
 CREATE OR REPLACE FUNCTION pscheduler_command(
     argv TEXT[] DEFAULT '{}',  -- Arguments to pass to 'pscheduler'
     input TEXT DEFAULT '',     -- What goes to the standard input
-    timeout INTEGER DEFAULT 5  -- How long to wait in seconds
+    timeout INTEGER DEFAULT 15  -- How long to wait in seconds
 )
 RETURNS external_program_result
 AS $$
@@ -64,7 +64,7 @@ CREATE OR REPLACE FUNCTION pscheduler_plugin_invoke(
     which TEXT,                -- Instance of the type
     method TEXT,               -- Method within the instance
     input TEXT DEFAULT '',     -- What goes to the standard input
-    timeout INTEGER DEFAULT 5  -- How long to wait in seconds
+    timeout INTEGER DEFAULT 15  -- How long to wait in seconds
 )
 RETURNS external_program_result
 AS $$

@@ -1,0 +1,19 @@
+#
+# RPM Spec for Full pScheduler Bundle
+#
+
+%define perfsonar_auto_version 5.0.0
+%define perfsonar_auto_relnum 0.b1.3
+
+Name:		pscheduler-bundle-full
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
+
+Summary:	Full pScheduler Bundle
+BuildArch:	noarch
+
+License:	ASL 2.0
+Vendor:	perfSONAR
+Group:		Unspecified
+
+

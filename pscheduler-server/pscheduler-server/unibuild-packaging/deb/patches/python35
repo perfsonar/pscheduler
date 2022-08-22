@@ -1,0 +1,23 @@
+--- pscheduler-server.orig/daemons/scheduler
++++ pscheduler-server/daemons/scheduler
+@@ -820,9 +820,9 @@
+             cursor = db.cursor()
+             cursor.execute("""UPDATE run SET state = run_state_pending() WHERE uuid = %s""",
+                            [pscheduler.api_run_uuid(run_uri)])
+-        log_debug(f'{number}: Run state set to pending')
++        log_debug("%d: Run state set to pending", number)
+     except Exception as ex:
+-        log_debug(f'{number}: Failed to set pending: {str(ex)}')
++        log_debug("%d: Failed to set pending: %s", number, str(ex))
+         # This is best-effort; the maintainer will clean up anything that gets left.
+         pass
+ 
+@@ -1008,7 +1008,7 @@
+             number, task, key, runs, trynext, anytime, json, participants, debug = row
+ 
+             if number in workers:
+-                log.debug(f'Already have a worker for {number}')
++                log.debug("Already have a worker for %d", number)
+                 continue
+ 
+             try:

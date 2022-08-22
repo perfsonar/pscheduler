@@ -1,11 +1,10 @@
 # It's not recommended to modify this file in-place, because it will be
-# overwritten during package upgrades.  If you want to customize, the
-# best way is to create a file "/etc/systemd/system/postgresql-10.service",
-# containing
-#	.include /usr/lib/systemd/system/postgresql-10.service
-#	...make your changes here...
-# For more info about custom unit files, see
-# https://docs.fedoraproject.org/en-US/quick-docs/understanding-and-administering-systemd/index.html
+# overwritten during package upgrades.  It is recommended to use systemd
+# "dropin" feature;  i.e. create file with suffix .conf under
+# /etc/systemd/system/postgresql-10.service.d directory overriding the
+# unit's defaults. You can also use "systemctl edit postgresql-10"
+# Look at systemd.unit(5) manual page for more info.
+
 # Note: changing PGDATA will typically require adjusting SELinux
 # configuration as well.
 

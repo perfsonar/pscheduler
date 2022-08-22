@@ -18,15 +18,20 @@ def parse_output(lines):
         results['succeeded'] = False
         results['error'] = "Unable to parse iperf3 output as JSON: %s" % ex
         return results
-    
+
+    if 'error' in content:
+        results['succeeded'] = False
+        results['error'] = "Iperf3 failed: %s" % (content['error'])
+        return results
+
     intervals = []
     if 'intervals' in content:
         intervals = content['intervals']
     else:
         results['succeeded'] = False
-        results['error'] = "iperf3 output is missing required field 'intervals'" 
+        results['error'] = "iperf3 output is missing required field 'intervals'"
         return results
-    
+
     final_streams = []
 
     # Go through the JSON and convert to what we're expecting in throughput tests

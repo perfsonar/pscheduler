@@ -1,0 +1,4 @@
+version=4
+opts="filenamemangle=s%(?:.*?)?v?(\d[\d.]*)\.tar\.gz%attrs-$1.tar.gz%" \
+    https://github.com/hynek/attrs/tags \
+    (?:.*?/)?v?(\d[\d.]*)\.tar\.gz

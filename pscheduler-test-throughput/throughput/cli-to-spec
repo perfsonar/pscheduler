@@ -111,7 +111,7 @@ opt_parser.add_option("--burst-size",
                       dest="burst_size")
 
 opt_parser.add_option("-w", "--window-size",
-                      help="TCP window size to use for the test, supports SI notation such as 64M",
+                      help="TCP window (buffer) size to use for the test, supports SI notation such as 64M",
                       action="store", type="string",
                       dest="window_size")
 
@@ -189,6 +189,11 @@ opt_parser.add_option("--reverse",
                       help="Reverses the direction of the test.",
                       action="store_true",
                       dest="reverse")
+
+opt_parser.add_option("--reverse-connections",
+                      help="Make connections from destination to source where possible.",
+                      action="store_true",
+                      dest="reverse_connections")
 
 opt_parser.add_option("--loopback",
                       help="Run both client and server side in a loopback test.",
@@ -276,10 +281,10 @@ if options.window_size is not None:
       pscheduler.fail("Invalid value \"%s\" for window size: %s" % (options.window_size, ex))
 
 if options.mss is not None:
-   result["mss"] = options.mss
+   result["mss"] = pscheduler.si_as_number(options.mss)
 
 if options.buffer_length is not None:
-   result["buffer-length"] = options.buffer_length
+   result["buffer-length"] = pscheduler.si_as_number(options.buffer_length)
 
 if options.ip_version is not None:
    result["ip-version"] = options.ip_version
@@ -340,6 +345,10 @@ if options.single_ended_port:
 
 if options.reverse:
    result["reverse"] = True
+
+if options.reverse_connections:
+   result["reverse-connections"] = True
+   schema.set(6)
 
 if options.loopback:
    result["loopback"] = True

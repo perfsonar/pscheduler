@@ -60,10 +60,6 @@ timestamp_with_time_zone_to_iso8601(
 )
 RETURNS TEXT
 AS $$
-DECLARE
-        hours INTEGER;
-        minutes INTEGER;
-	converted TEXT;
 BEGIN
 
     IF value IS NULL
@@ -71,23 +67,8 @@ BEGIN
         RETURN NULL;
     END IF;
 
-    converted := to_char(value, 'YYYY-MM-DD"T"HH24:MI:SS');
+    return to_json(date_trunc('seconds', value)) #>> '{}';
 
-    hours := extract(timezone_hour from value);
-    IF hours <> 0
-    THEN
-        converted := converted || trim(to_char(hours, 'MIPL'));
-        converted := converted || trim(to_char(abs(hours), '00'));
-        minutes := extract(timezone_minutes from value);
-        IF MINUTES <> 0
-        THEN
-            converted := converted || ':' || trim(to_char(minutes, '00'));
-        END IF;
-    ELSE
-        converted := converted || 'Z';
-    END IF;
-
-    RETURN converted;
 END;
 $$ LANGUAGE plpgsql;
 

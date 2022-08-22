@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+#
+# Participant list generator for 'noop' task spec
+#
+# Input is a test spec, assumed to have been validated by spec-is-valid.
+#
+# Output is a list of hostnames or IPs that are participating.
+#
+
+import pscheduler
+
+from validate import spec_is_valid
+
+
+json = pscheduler.json_load(exit_on_error=True)
+
+null_reason = None
+
+valid, message = spec_is_valid(json)
+
+if not valid:
+    pscheduler.fail(message)
+
+
+host = json.get("host-node", json.get("host", None))
+if host is None:
+    null_reason = "No host specified"
+
+schema = json.get("schema", 1)
+
+result = {
+    "participants": [ host ]
+}
+if null_reason is not None:
+    result["reason"] = null_reason
+
+
+pscheduler.succeed_json(result)

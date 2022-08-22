@@ -63,7 +63,7 @@ class TestPsjson(PschedTestBase):
         doc = dict(foo='foo')
 
         ret = json_dump(doc)
-        self.assertEqual(ret, '{"foo": "foo"}')
+        self.assertEqual(ret, '{"foo":"foo"}')
 
 
     #
@@ -76,7 +76,7 @@ class TestPsjson(PschedTestBase):
         emitter({"foo": 123})
         emitter({"bar": 123})
         self.assertEqual(buf.getvalue(),
-                         '\x1e{"foo": 123}\n\x1e{"bar": 123}\n')
+                         '\x1e{"foo":123}\n\x1e{"bar":123}\n')
 
 
     def test_RFC7464_parser(self):

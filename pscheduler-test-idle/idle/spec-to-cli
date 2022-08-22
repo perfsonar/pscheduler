@@ -7,7 +7,7 @@ import pscheduler
 from validate import spec_is_valid
 
 
-spec = pscheduler.json_load(exit_on_error=True, max_schema=1)
+spec = pscheduler.json_load(exit_on_error=True, max_schema=2)
 
 valid, message = spec_is_valid(spec)
 
@@ -17,9 +17,20 @@ if not valid:
 result = pscheduler.speccli_build_args(spec, 
                                        strings=[
         ( 'duration', 'duration' ),
-        ( 'host', 'host' ),
         ( 'starting-comment', 'starting-comment' ),
         ( 'parting-comment', 'parting-comment' ),
         ])
+
+schema = spec.get('schema', 1)
+
+if schema == 1 and 'host' in spec:
+    result.append("--host")
+    result.append(spec['host'])
+
+elif schema == 2:
+    for everyhost in spec['host']:
+        result.append("--host")
+        result.append(everyhost)
+    
 
 pscheduler.succeed_json(result)
