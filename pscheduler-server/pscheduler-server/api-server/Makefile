@@ -81,13 +81,11 @@ endif
 	install -m 444 *.wsgi $(PREFIX)/$(API_DIR)
 
 	mkdir -p $(PREFIX)/$(API_DIR)/__pycache__
-	install -m 444 *.py $(PREFIX)/$(API_DIR)
-	install -m 444 __pycache__/* $(PREFIX)/$(API_DIR)/__pycache__
-	chmod 400 $(PREFIX)/$(API_DIR)/__pycache__
+	install -m 555 *.py $(PREFIX)/$(API_DIR)
+	install -m 555 __pycache__/* $(PREFIX)/$(API_DIR)/__pycache__
 	mkdir -p $(PREFIX)/$(API_DIR)/pschedulerapiserver/__pycache__
 	install -m 444 pschedulerapiserver/*.py $(PREFIX)/$(API_DIR)/pschedulerapiserver
 	install -m 444 pschedulerapiserver/__pycache__/*.pyc $(PREFIX)/$(API_DIR)/pschedulerapiserver/__pycache__
-	chmod 400 $(PREFIX)/$(API_DIR)/pschedulerapiserver/__pycache__
 
 
 

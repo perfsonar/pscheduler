@@ -10,7 +10,7 @@
 # full list of valid values.  Each element in the array will be turned
 # into a VM running that system.  These are a few popular choices:
 boxes = [ "centos7" ]
-#boxes = [ "centos7", "centos8" ]
+#boxes = [ "centos7", "centos7" ]
 #boxes = [ "debian9" ]
 #boxes = [ "debian10"]
 #boxes = [ "debian9", "debian9" ]

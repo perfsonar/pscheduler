@@ -37,7 +37,7 @@ class TestSleep(PschedTestBase):
         sleep_until(target)
         elapsed = time_now() - start
         self.assertGreaterEqual(elapsed, datetime.timedelta(seconds=0.1))
-        self.assertLess(elapsed,datetime.timedelta(seconds=0.2))
+        self.assertLess(elapsed,datetime.timedelta(seconds=1.0))
 
 
 if __name__ == '__main__':

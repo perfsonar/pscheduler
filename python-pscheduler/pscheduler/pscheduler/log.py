@@ -74,6 +74,10 @@ class Log(object):
         Kill off the syslog handlers; called when any log event fails.
         """
 
+        if not self.syslog:
+            # Syslog is disabled; don't bother.
+            return
+
         try:
             if self.syslog_handler is not None:
                 self.logger.removeHandler(self.syslog_handler)
@@ -87,6 +91,10 @@ class Log(object):
         """
         Initialize the syslog handler if it hasn't been
         """
+
+        if not self.syslog:
+            # Syslog is disabled; don't bother.
+            return
 
         if not hasattr(self, "syslog_handler"):
             self.syslog_handler = None
@@ -115,7 +123,8 @@ class Log(object):
                  verbose=False,  # Log to stderr, too.
                  quiet=None,   # Don't log anything on startup  (See below)
                  signals=True,  # Enable debug on/off with SIGUSR1/SIGUSR2
-                 propagate=False  # Pass debug state on to child processes
+                 propagate=False,  # Pass debug state on to child processes
+                 syslog=True    # Enable logging to syslog
                  ):
 
         #
@@ -198,7 +207,7 @@ class Log(object):
         self.debug_always_logger.propagate = False
         self.debug_always_logger.setLevel(DEBUG)
 
-
+        self.syslog = syslog
         self.syslog_handler = None
         self.__syslog_handler_init()
 

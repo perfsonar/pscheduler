@@ -1,12 +1,61 @@
-version: '3.8'
+version: '3.9'
+  #
+###
+# Some repeated defaults:
+# tmpfs and /sys/fs/cgroup volumes are needed for systemd to work properly
+# /app is where the git repositories will be shared with the host
+###
+x-tmpfs:
+  &default-tmpfs
+  - /run
+  - /run/lock
+  - /tmp
+
+x-volumes:
+  &default-volumes
+  -  .:/app
+ 
 services:
-  pscheduler_build:
-    image: perfsonar/pscheduler-build:latest
-    build:
-        context: .
-        dockerfile: Dockerfile
-    tmpfs: 
-       - /run
-       - /tmp
-    volumes:
-       - /sys/fs/cgroup:/sys/fs/cgroup:ro
+  alma8:
+    image: ghcr.io/perfsonar/unibuild/alma8:latest
+    volumes: *default-volumes
+  alma9:
+    image: ghcr.io/perfsonar/unibuild/alma9:latest
+    volumes: *default-volumes
+  centos7:
+    image: ghcr.io/perfsonar/unibuild/centos7:latest
+    volumes: *default-volumes
+  d10_amd64:
+    platform: "linux/amd64"
+    image: ghcr.io/perfsonar/unibuild/d10:latest
+    volumes: *default-volumes
+  d10_arm64:
+    platform: "linux/arm64"
+    image: docker.io/ntw0n/unibuild-d10@sha256:a6346594b08bb0c8b6b8694e923007908f120bb58cfcae979d24cc4beaedee52
+    privileged: true
+    tmpfs: *default-tmpfs
+    volumes: *default-volumes
+    working_dir: /app
+  d10_armv7:
+    platform: "linux/arm/v7"
+    image: docker.io/ntw0n/psbuild.$REPO.debian@sha256:b4ee4edb348d3a0579335d9d2fd2bdac29e1c3a2a56e82975e4452e246d31fcf
+    privileged: true
+    tmpfs: *default-tmpfs
+    volumes: *default-volumes
+    working_dir: /app
+  d10_ppc64le:
+    platform: "linux/ppc64le"
+    image: docker.io/ntw0n/psbuild.$REPO.debian@sha256:5024191176f7df2ae37a41a14df00b90a09cfcaa345e0c18c99dbb7beea84e69
+    privileged: true
+    tmpfs: *default-tmpfs
+    volumes: *default-volumes
+    working_dir: /app
+  u18_amd64:
+    platform: "linux/amd64"
+    image: ghcr.io/perfsonar/unibuild/u18:latest
+    volumes: *default-volumes
+  u20_amd64:
+    platform: "linux/amd64"
+    image: ghcr.io/perfsonar/unibuild/u20:latest
+    volumes: *default-volumes
+

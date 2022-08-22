@@ -1,0 +1,23 @@
+From f19260ca33c981b8835b7b03fa1a7aca8df036fe Mon Sep 17 00:00:00 2001
+From: Tristan Seligmann <mithrandi@mithrandi.net>
+Date: Mon, 10 Oct 2016 04:42:22 +0200
+Subject: Add build directory to sys.path for autodoc.
+
+---
+ docs/conf.py | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/docs/conf.py b/docs/conf.py
+index 2ff5f66..640dd9e 100644
+--- a/docs/conf.py
++++ b/docs/conf.py
+@@ -47,7 +47,8 @@ def find_version(*file_paths):
+ # If extensions (or modules to document with autodoc) are in another directory,
+ # add these directories to sys.path here. If the directory is relative to the
+ # documentation root, use os.path.abspath to make it absolute, like shown here.
+-#sys.path.insert(0, os.path.abspath('.'))
++import sys
++sys.path.insert(0, os.path.abspath('../.pybuild/pythonX.Y_3.5/build'))
+ 
+ # -- General configuration ------------------------------------------------
+ 

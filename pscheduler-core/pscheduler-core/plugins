@@ -77,13 +77,13 @@ status, result = pscheduler.url_get(url,
                                     throw=False)
 
 if status == 400:
-    pscheduler.fail("%s: %s" % (host, result))
+    pscheduler.fail("%s: %s" % (options.host, result))
 elif status in [202, 204, 205, 206, 207, 208, 226,
                 300, 301, 302, 303, 304, 205, 306, 307, 308] \
     or ((status >= 400) and (status <= 499)):
     pscheduler.fail("%s is not running pScheduler" % (options.host))
 elif status != 200:
-    pscheduler.fail("%s returned status %d: %s" % (host, status, result))
+    pscheduler.fail("%s returned status %d: %s" % (options.host, status, result))
 
 
 #

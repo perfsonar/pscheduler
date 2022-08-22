@@ -244,9 +244,9 @@
 
     - name: perfSONAR repository
       package:
-        # TODO: URL and version shouldn't be hard-wired
-        name: "http://software.internet2.edu/rpms/el{{ ansible_facts['distribution_major_version'] }}/{{ ansible_architecture }}/latest/packages/perfSONAR-repo-0.10-1.noarch.rpm"
-      when: ansible_facts["os_family"] in redhat_families and ansible_facts["distribution_major_version"] == "7"
+          # TODO: URL and version shouldn't be hard-wired
+          name: "http://software.internet2.edu/rpms/el{{ ansible_facts['distribution_major_version'] }}/{{ ansible_architecture }}/latest/packages/perfSONAR-repo-0.10-1.noarch.rpm"
+      when: ansible_facts["os_family"] in redhat_families
 
 
     #
