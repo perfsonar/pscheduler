@@ -1,5 +1,0 @@
-#!/bin/sh
-
-set -e
-
-pscheduler task --tool=dublin-traceroute trace --dest=localhost

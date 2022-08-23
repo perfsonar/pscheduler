@@ -2,8 +2,6 @@
 # Makefile for any tool class
 #
 
-NAME=simplestreamer
-
 FILES=\
 	can-run \
 	duration \

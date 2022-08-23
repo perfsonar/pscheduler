@@ -83,7 +83,7 @@ except KeyError:
     pass
 
 try:
-    send_wait = spec['send-wait']
+    send_wait = spec['sendwait']
 
     send_wait = pscheduler.iso8601_as_timedelta(send_wait)
     argv.append('--delay')

@@ -102,7 +102,7 @@ if spec.get("probe-type", "udp") != "udp":
 if "queries" in spec:
     errors.append("Cannot control queries per hop")
 
-# send-wait - Okay in any form.
+# sendwait - Okay in any form.
 
 # source
 if "source" in spec:

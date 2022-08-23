@@ -19,13 +19,16 @@ Url:		http://www.dublin-traceroute.net
 
 Source:		%{short}-%{version}.tar.gz
 
+Requires:	libpcap
 Requires:	libtins
 Requires:	jsoncpp
+
 
 BuildRequires:  cmake
 #TODO: They really want this; EL7 doesn't have it.
 #BuildRequires:  gcc-c++ >= 4.9
 BuildRequires:  gcc-c++
+BuildRequires:  libpcap-devel
 BuildRequires:  libtins-devel
 BuildRequires:  jsoncpp-devel
 
@@ -33,6 +36,9 @@ BuildRequires:  jsoncpp-devel
 %description
 A smarter traceroute
 
+
+# Don't need this.
+%global debug_package %{nil}
 
 
 %prep

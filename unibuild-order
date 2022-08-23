@@ -122,10 +122,12 @@ httpd-wsgi-socket
 #
 drop-in
 
+ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,libtins)		# Dublin-traceroute needs this
+dublin-traceroute
+
 define(HAVE_ETHR,HAVE_GOLANG)
 ifelse(HAVE_ETHR,1,ethr)
 
-dublin-traceroute
 ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,I2util)		# TODO: Building temporarily for EL8/EL9; required for owamp
 ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,iperf)		# EPEL dropped this for EL8
 ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,iperf3)

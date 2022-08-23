@@ -1,7 +1,5 @@
 #
-# Makefile for Any RPM
+# Makefile for Any Package
 #
 
-AUTO_TARBALL=1
-
-include make/generic-rpm.make
+include unibuild/unibuild.make

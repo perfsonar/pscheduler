@@ -23,15 +23,7 @@ override_dh_auto_test:
 
 override_dh_auto_install:
 	make -C $(NAME) install \
-		PYTHON=$(PYTHON) \
-		DOCDIR=$(ROOT)/usr/share/doc/pscheduler/$(CLASS) \
-		DESTDIR=$(ROOT)/usr/lib/pscheduler/classes/$(CLASS)/$(NAME) \
-		CONFDIR=$(ROOT)/etc/pscheduler/$(CLASS)/$(NAME)
-
-	if [ -f $(CURDIR)/debian/sudoers ]; then \
-		install -D -m 0440 $(CURDIR)/debian/sudoers \
-			$(ROOT)/etc/sudoers.d/$(DEB_SOURCE_PACKAGE); \
-	fi
+		DESTDIR=$(ROOT)/usr/lib/pscheduler/classes/$(CLASS)/$(NAME)
 
 override_dh_auto_clean:
 	make -C $(NAME) clean

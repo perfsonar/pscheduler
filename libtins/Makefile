@@ -1,8 +1,5 @@
 #
-# Makefile for any RPM
+# Makefile for Any Package
 #
 
-include make/generic-rpm.make
-
-TO_CLEAN += .cmake
-
+include unibuild/unibuild.make
