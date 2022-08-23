@@ -204,6 +204,7 @@ pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl
 pscheduler-tool-dhclient		--bundle extras
 pscheduler-tool-dnspy
+pscheduler-tool-dublin-traceroute
 ifelse(HAVE_ETHR,1,pscheduler-tool-ethr)
 pscheduler-tool-fpingreach		--bundle extras
 pscheduler-tool-fwmtu
