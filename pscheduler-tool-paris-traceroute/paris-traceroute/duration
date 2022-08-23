@@ -40,7 +40,7 @@ except KeyError:
 
 
 try:
-    send_wait = pscheduler.iso8601_as_timedelta(spec['send-wait'])
+    send_wait = pscheduler.iso8601_as_timedelta(spec['sendwait'])
     total += send_wait * hops
 except KeyError:
     # Program default is zero.

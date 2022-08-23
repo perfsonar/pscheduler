@@ -210,7 +210,7 @@ run_timeout += wait
 #
 
 try:
-    send_wait = spec['send-wait']
+    send_wait = spec['sendwait']
 
     # This has weird behavior, per the manual page:
     #
