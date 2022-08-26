@@ -1,0 +1,19 @@
+#!/bin/sh -e
+#
+# Interactively connect to the PostgreSQL database
+#
+
+# Note: Paths and names were filled in as part of the build process.
+
+if [ ! -r "__PGPASSFILE__" ]
+then
+    if ! sudo -v 2>/dev/null
+    then
+        echo "This program must be run as root." 1>&2
+        exit 1
+    fi
+    exec sudo "$0" "$@"
+fi
+
+export PGPASSFILE="//etc/pscheduler/database/pgpassfile"
+exec psql -d "pscheduler" -U "pscheduler"
