@@ -626,7 +626,7 @@ systemctl reload-or-try-restart "%{_pscheduler_postgresql_service}"
 #
 # API Server
 #
-%defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
+%defattr(-,root,root,-)
 %license LICENSE
 %{api_dir}
 %config(noreplace) %{api_httpd_conf}
