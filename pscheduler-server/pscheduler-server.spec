@@ -601,10 +601,10 @@ systemctl reload-or-try-restart "%{_pscheduler_postgresql_service}"
 #
 # Database
 #
-%defattr(-,%{_pscheduler_user},%{_pscheduler_group},-)
+%defattr(-,root,root,-)
 %license LICENSE
-%{_pscheduler_datadir}/*
-%attr(400,-,-)%verify(user group mode) %{db_config_dir}/*
+%attr(-,%{_pscheduler_user},%{_pscheduler_group}) %{_pscheduler_datadir}/*
+%attr(400,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %{db_config_dir}/*
 %{_pscheduler_internals}/*
 %{rpm_macros}
 %{profile_d}/*
@@ -615,13 +615,13 @@ systemctl reload-or-try-restart "%{_pscheduler_postgresql_service}"
 
 %defattr(-,root,root,-)
 %license LICENSE
-%attr(755,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %{daemon_config_dir}
-%attr(600,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %config(noreplace) %{daemon_config_dir}/*
+%attr(750,root,%{_pscheduler_group})%verify(user group mode) %{daemon_config_dir}
+%attr(640,root,%{_pscheduler_group})%verify(user group mode) %config(noreplace) %{daemon_config_dir}/*
 %{_unitdir}/*
 %{_pscheduler_daemons}/*
 %{_pscheduler_commands}/*
-%attr(750,%{_pscheduler_user},%{_pscheduler_group}) %{archiver_default_dir}
-%attr(750,%{_pscheduler_user},%{_pscheduler_group}) %{_pscheduler_log_dir}
+%attr(750,root,%{_pscheduler_group}) %{archiver_default_dir}
+%attr(700,root,root) %{_pscheduler_log_dir}
 
 #
 # API Server
