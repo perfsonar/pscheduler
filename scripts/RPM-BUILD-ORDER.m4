@@ -157,6 +157,7 @@ pscheduler-tool-bwctlping		--bundle obsolete
 pscheduler-tool-bwctltracepath		--bundle obsolete
 pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl
+pscheduler-tool-curl-d2d		--bundle extras
 pscheduler-tool-dnspy
 pscheduler-tool-ethr
 pscheduler-tool-globus			--bundle extras

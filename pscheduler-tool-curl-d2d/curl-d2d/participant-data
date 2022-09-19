@@ -1,0 +1,5 @@
+#!/bin/sed -e /^#/d
+#
+# Return participant-specific data for a run.  (None in this case.)
+#
+{}
