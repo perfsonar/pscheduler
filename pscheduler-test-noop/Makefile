@@ -1,7 +1,7 @@
 #
-# Makefile for Python pScheduler Noop Test Class
+# Makefile for Any Package
 #
 
-AUTO_TARBALL=1
+AUTO_TARBALL := 1
 
-include make/generic-rpm.make
+include unibuild/unibuild.make
