@@ -24,12 +24,7 @@ except KeyError:
         "reasons": [ "Missing test type" ]
     })
 
-
-if test_type == "disk-to-disk":
-    max_schema = 1
-elif test_type == "http":
-    max_schema = 3
-else:
+if test_type != "http":
     pscheduler.succeed_json({
         "can-run": False,
         "reasons": [ "Unsupported test type" ]
@@ -37,8 +32,11 @@ else:
 
 
 
+MAX_SCHEMA = 3
+
+
 try:
-    pscheduler.json_check_schema(json["spec"], max_schema)
+    pscheduler.json_check_schema(json["spec"], MAX_SCHEMA)
 except ValueError as ex:
     # Schema check failed
     pscheduler.succeed_json({
@@ -52,14 +50,11 @@ except KeyError:
         "reasons": ["Missing data in test specification"]
     })
 
-if test_type == "http" \
-   and json["spec"]["url"][0:5] == "file:" \
-   and json["spec"].get("success-content", False):
+if json["spec"]["url"][0:5] == "file:" \
+   and json["spec"].get("keep-content", False):
     pscheduler.succeed_json({
         "can-run": False,
         "reasons": ["Cannot return content for file:// URLs"]
     })
-  
-    
 
 pscheduler.succeed_json({ "can-run": True })

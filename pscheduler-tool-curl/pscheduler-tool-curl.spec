@@ -9,7 +9,7 @@
 # If additional libraries or parts of pScheduler are required,
 # they should be added here (line 25).
 %define short	curl
-%define perfsonar_auto_version 4.4.4
+%define perfsonar_auto_version 4.4.5
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-tool-%{short}
@@ -28,7 +28,6 @@ Provides:	%{name} = %{version}-%{release}
 # Include all required libraries here
 Requires:	pscheduler-server >= 4.3.0
 Requires:	pscheduler-test-http
-Requires:	pscheduler-test-disk-to-disk
 Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	%{_pscheduler_python}-pycurl
 

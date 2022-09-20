@@ -1,5 +1,5 @@
---- a/utilities/backup.raw	2022-04-04 13:04:02.567138296 -0400
-+++ b/utilities/backup.raw	2022-04-04 13:04:23.782491730 -0400
+--- a/utilities/backup.raw	2022-09-20 08:41:14.498295667 -0400
++++ b/utilities/backup.raw	2022-09-20 08:41:38.986266799 -0400
 @@ -73,6 +73,7 @@
      --format plain \
      --serializable-deferrable \
@@ -8,8 +8,8 @@
      pscheduler \
      > "${WORK_DIR}/database-dump"
  $INTERACTIVE && printf ' Done.\n' 1>&2 || true
---- a/utilities/restore.raw	2022-04-04 13:04:02.567493914 -0400
-+++ b/utilities/restore.raw	2022-04-04 13:04:23.782929314 -0400
+--- a/utilities/restore.raw	2022-09-20 08:41:14.499262971 -0400
++++ b/utilities/restore.raw	2022-09-20 08:41:38.986807950 -0400
 @@ -203,7 +203,7 @@
  DB_OUTPUT="${WORK_DIR}/db-output"
  LOAD_EXIT=0
