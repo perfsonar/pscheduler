@@ -317,8 +317,12 @@ for run in schedule:
         "" if priority is None else " at priority {}".format(priority))
     )
 
-    print(pscheduler.prefixed_wrap(
-        "", " ".join(task_cli), indent=2))
+
+    if sys.stdout.isatty():
+        print(pscheduler.prefixed_wrap(
+            "", " ".join(task_cli), indent=2))
+    else:
+        print(" ".join(task_cli))
 
     print(run["href"])
 
