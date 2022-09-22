@@ -530,6 +530,8 @@ class BatchProcessor():
         Run the jobs and return the result.
         """
 
+        batch_start = time_now()
+
         result = copy.deepcopy(self.spec)
 
         for job_number, job in enumerate(result["jobs"]):
@@ -614,5 +616,12 @@ class BatchProcessor():
                 if not to_continue:
                     debug("%s: continue-if said to stop." % (label))
                     aborted = True
+
+        batch_end = time_now()
+        result['batch'] = {
+            "start": datetime_as_iso8601(batch_start),
+            "end": datetime_as_iso8601(batch_end),
+            "duration": timedelta_as_iso8601(batch_end - batch_start)
+        }
 
         return result

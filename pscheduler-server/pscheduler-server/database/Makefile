@@ -68,6 +68,7 @@ INTERNALS=\
 	db-update \
 	key \
 	purge-runs \
+	psql \
 	reset \
 	warmboot
 
@@ -210,7 +211,7 @@ endif
 	mkdir -p $(DATADIR)
 	install -m 440 $(SQL) $(DATADIR)
 	mkdir -p $(INTERNALSDIR)
-	install -m 550 $(INTERNALS) $(INTERNALSDIR)
+	install -m 555 $(INTERNALS) $(INTERNALSDIR)
 
 
 clean:
