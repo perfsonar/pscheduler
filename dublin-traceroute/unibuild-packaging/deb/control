@@ -1,0 +1,28 @@
+Source: dublin-traceroute
+Priority: extra
+Maintainer: Andrea Barberio <insomniac@slackware.it>
+Uploaders:  Mark Feit <mfeit@internet2.edu>
+Build-Depends: cmake,
+               debhelper (>= 10),
+	       gcc,
+	       libc-dev,
+	       libtins-dev,
+	       libjsoncpp-dev
+Standards-Version: 3.9.4
+Section: net
+Homepage: https://dublin-traceroute.net/
+Vcs-Git: https://github.com/insomniacslk/dublin-traceroute
+Vcs-Browser: https://github.com/insomniacslk/dublin-traceroute
+
+Package: dublin-traceroute
+Section: net
+Architecture: any
+Depends: libcap2-bin,
+         libdublintraceroute1 (= ${binary:Version}),
+         ${misc:Depends},
+         ${shlibs:Depends}
+Description: multipath traceroute
+ Dublin traceroute is a new version of traceroute based on
+ paris-traceroute.
+
+# TODO: Need to do dublin-traceroute-dev package
