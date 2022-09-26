@@ -6,6 +6,10 @@
 *~
 
 # Ignore rpms, logs and other build artifacts
+unibuild-log
+unibuild-repo
+unibuild-work
+multiarch_build/
 *.rpm
 *.pyc
 *.log
