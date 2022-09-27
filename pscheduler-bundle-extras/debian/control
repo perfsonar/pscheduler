@@ -14,6 +14,7 @@ Architecture: all
 Depends:
  pscheduler-test-disk-to-disk,
  pscheduler-test-netreach,
+ pscheduler-tool-curl-d2d,
  pscheduler-tool-globus,
  pscheduler-tool-nmapreach
 Description: pScheduler extras packages

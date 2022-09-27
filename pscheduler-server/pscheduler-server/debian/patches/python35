@@ -1,5 +1,5 @@
---- a/daemons/runner	2022-09-20 08:41:14.474245594 -0400
-+++ b/daemons/runner	2022-09-20 08:41:39.570359220 -0400
+--- a/daemons/runner	2022-09-26 18:21:21.607472000 +0000
++++ b/daemons/runner	2022-09-26 18:23:56.854136617 +0000
 @@ -815,7 +815,7 @@
              # the local database.
  
@@ -9,8 +9,8 @@
                  with self.dbpool(self.id) as db:
                      # TODO: Need to figure out succeeded.
                      db.cursor().execute("""
---- a/daemons/scheduler	2022-09-20 08:41:14.474855119 -0400
-+++ b/daemons/scheduler	2022-09-20 08:41:39.571276740 -0400
+--- a/daemons/scheduler	2022-09-26 18:21:21.607472000 +0000
++++ b/daemons/scheduler	2022-09-26 18:23:56.855772229 +0000
 @@ -629,14 +629,14 @@
              [pscheduler.api_run_uuid(run_lead_url)]
          )
