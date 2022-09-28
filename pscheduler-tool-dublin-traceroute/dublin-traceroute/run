@@ -1,0 +1,243 @@
+#!/usr/bin/env python3
+#
+# Run a test.
+#
+
+
+import datetime
+import icmperror
+import ipaddress
+import os
+import pscheduler
+import tempfile
+
+# TODO: Fix this
+#log = pscheduler.Log(prefix='dublin-traceroute', quiet=True)
+log = pscheduler.Log(prefix='dublin-traceroute', quiet=True, debug=True)
+
+input = pscheduler.json_load(exit_on_error=True);
+
+participant = input['participant']
+
+if participant != 0:
+    pscheduler.fail("Invalid participant.")
+
+spec = input['test']['spec']
+schedule = input['schedule']
+
+
+run_timeout = datetime.timedelta()
+
+
+# Resolve the destination.  If it doesn't look like an IP, resolve it
+# down to one so the program doesn't get bogged down doing it.
+
+dest = spec['dest']
+
+try:
+    dest_ip_addr = ipaddress.ip_address(str(dest))
+except ValueError:
+    dest_ip_addr = None
+
+if dest_ip_addr is None:
+    dest_ip_map = pscheduler.dns_bulk_resolve([dest])
+    dest_ip_addr = dest_ip_map[dest]
+
+if dest_ip_addr is None:
+    pscheduler.succeed_json( {
+            'succeeded': False,
+            'diags': None,
+            'error': "Unable to resolve destination '%s'" % dest,
+            'result': None
+            } )
+
+
+
+#
+# Figure out how to invoke the program
+#
+
+argv = [
+    'dublin-traceroute',
+    ]
+
+
+# dest is covered later.
+
+try:
+    first_ttl = spec['first-ttl']
+    argv.append('--min-ttl')
+    argv.append(str(first_ttl))
+except KeyError:
+    pass
+
+hops = spec.get('hops', 30)
+argv.append('--max-ttl')
+argv.append(str(hops))
+
+try:
+    dest_port = spec['port']
+    argv.append('--dport')
+    argv.append(str(dest_port))
+except KeyError:
+    pass
+
+try:
+    send_wait = spec['sendwait']
+
+    send_wait = pscheduler.iso8601_as_timedelta(send_wait)
+    argv.append('--delay')
+    # The tool expects this to be in milliseconds
+    argv.append(str(pscheduler.timedelta_as_seconds(send_wait) * 1000))
+except KeyError:
+    # This will be used in a calculation later.
+    send_wait = datetime.timedelta()
+    pass
+
+run_timeout += datetime.timedelta(seconds=hops)
+run_timeout += send_wait * hops
+
+# This must be last since it's an argument, not a switch)
+argv.append(str(dest_ip_addr))
+
+
+
+
+#
+# Run the test
+#
+
+run_string = ' '.join(argv)
+diags = [ run_string ]
+
+log.debug("Running %s", run_string)
+
+# Add some run slop
+run_timeout += datetime.timedelta(seconds=5)
+log.debug("Timeout is %s", run_timeout)
+
+run_timeout_secs = pscheduler.timedelta_as_seconds(run_timeout)
+
+# Force all args to be strings
+argv = [str(x) for x in argv]
+
+try:
+    start_at = input['schedule']['start']
+    log.debug("Sleeping until %s", start_at)
+    pscheduler.sleep_until(start_at)
+    log.debug("Starting")
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
+
+# Dublin-traceroute writes its JSON results into a file called
+# trace.json in the current directory and doesn't provide any way to
+# redirect it.  This does it in a temporary directory.
+
+old_cwd = os.getcwd()
+with tempfile.TemporaryDirectory() as working:
+    try:
+        os.chdir(working)
+        log.debug("Working in %s", os.getcwd())
+        status, stdout, stderr \
+            = pscheduler.run_program(argv, timeout=run_timeout_secs)
+        diags.append("%s" % (stdout))
+        log.debug("Exited %s", status)
+        if status == 0:
+            with open("trace.json") as json_file:
+                json_result = pscheduler.json_load(json_file)
+            diags.append(pscheduler.json_dump(json_result))
+        else:
+            json_result = None
+    except Exception as ex:
+        status = 1
+        stderr = "Exception while running dublin-traceroute:\n%s" % (str(ex))
+        diags.append(stderr)
+    finally:
+        os.chdir(old_cwd)
+        log.debug("Returned to %s", os.getcwd())
+
+
+diags.append(stdout)
+
+log.debug("Dublin-traceroute exited %d: %s",
+          status, stdout if status == 0 else stderr)
+
+
+if status != 0:
+    pscheduler.succeed_json( {
+            'succeeded': False,
+            'diags': "\n".join(diags),
+            'error': stderr,
+            'result': None
+            } )
+
+
+#
+# Dissect the results
+#
+
+assert json_result is not None
+
+ips = set()
+
+paths = []
+for flow_id, flow in json_result["flows"].items():
+    hops = []
+    for hop in flow:
+        # TODO: of rtt_usc is None, it was no response
+        rtt_usec = hop["rtt_usec"]
+        if rtt_usec is not None:
+            hop_ip =  hop["received"]["ip"]["src"]
+            hops.append({
+                "ip": hop_ip,
+                # TODO: DTR comes up with weird RTTs.  See #1144 for commentary.
+                # "rtt": "PT%fS" % (rtt_usec / 1000000.0)
+            })
+            ips.add(hop_ip)
+        else:
+            hops.append({})
+
+    paths.append(hops)
+
+# Reverse-resolve the IPs if we're doing that.
+hostnames = spec.get('hostnames', True)
+hosts = pscheduler.dns_bulk_resolve(ips, reverse=True, threads=len(ips)) if hostnames else {}
+
+# Figure out ASes if we're doing that
+as_ = spec.get('as', True)
+ases = pscheduler.as_bulk_resolve(ips, threads=len(ips)) if as_ else {}
+
+# Iterate through the entire pile of hops and value-add where we can.
+
+for path in paths:
+    for hop in path:
+        ip = hop.get("ip", None)
+        if ip is None:
+            continue
+
+        hostname = hosts.get(ip, None)
+        if hostname is not None:
+            hop["hostname"] = hostname
+
+        asinfo = ases.get(ip, None)
+        if asinfo is not None:
+            hop["as"] = {
+                "number": asinfo[0],
+                "owner": asinfo[1]
+            }
+
+
+# Spit out the results
+
+pscheduler.succeed_json( {
+    'schema': 1,
+    'succeeded': True,
+    'diags': diags,
+    'error': None,
+    'result': {
+        'schema': 1,
+        'succeeded': True,
+        'paths': paths
+    }
+} )

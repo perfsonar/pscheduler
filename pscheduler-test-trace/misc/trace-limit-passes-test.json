@@ -12,7 +12,7 @@
 	"ip-version": 6,
 	"length": 5000,
 	"probe-type": "udp",
-	"send-wait": "PT45M",
+	"sendwait": "PT45M",
 	"tos": 86,
 	"wait": "PT45M"
     },
@@ -74,7 +74,7 @@
                 "style": "regex"
             }
 	},
-        "send-wait": {
+        "sendwait": {
             "range": {
                 "lower": "PT0.1S",
                 "upper": "PT4S"

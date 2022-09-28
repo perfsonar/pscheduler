@@ -122,6 +122,8 @@ httpd-wsgi-socket
 #
 drop-in
 
+ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,libtins)		# Dublin-traceroute needs this
+ifelse(FAMILY,Debian,,dublin-traceroute)		# TODO: Doesn't build on Debian.
 define(HAVE_ETHR,HAVE_GOLANG)
 ifelse(HAVE_ETHR,1,ethr)
 
@@ -202,6 +204,7 @@ pscheduler-tool-curl
 pscheduler-tool-curl-d2d		--bundle extras
 pscheduler-tool-dhclient		--bundle extras
 pscheduler-tool-dnspy
+ifelse(FAMILY,Debian,,pscheduler-tool-dublin-traceroute)	# TODO: DT doesn't build on Debian, so no plugin.
 ifelse(HAVE_ETHR,1,pscheduler-tool-ethr)
 pscheduler-tool-fpingreach		--bundle extras
 pscheduler-tool-fwmtu

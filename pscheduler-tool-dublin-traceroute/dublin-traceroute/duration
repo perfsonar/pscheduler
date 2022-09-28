@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+#
+# Determine the duration of a specified test.
+#
+
+import datetime
+import ipaddress
+import sys
+
+import pscheduler
+
+spec = pscheduler.json_load(exit_on_error=True);
+
+total = datetime.timedelta()
+
+
+#
+# Pre-Run DNS Resolution
+#
+
+try:
+    dest_ip_addr = ipaddress.ip_address(str(spec['dest']))
+except ValueError:
+    # TODO: Should probably ask the DNS module for the timeout.
+    total += datetime.timedelta(seconds=2)
+    dest_ip_addr = None
+
+
+#
+# Traceroute time
+#
+
+hops = spec.get('hops', 30)
+
+## TODO: This is a rough to-be-safe estimate
+total += datetime.timedelta(seconds=hops * 0.100)
+
+
+delay = pscheduler.iso8601_as_timedelta(spec.get('sendwait', "P0D"))
+
+total += delay * hops
+
+
+#
+# No post-Run DNS resolution; dublin-traceroute does that.  Add some
+# slop.
+#
+
+total += hops * datetime.timedelta(seconds=0.10)
+
+
+#
+# AS Resolution
+#
+
+if spec.get('as', True):
+    total += datetime.timedelta(seconds=4)
+
+
+#
+# General Slop
+#
+
+total += datetime.timedelta(seconds=2)
+
+
+pscheduler.succeed_json({
+        "duration": pscheduler.timedelta_as_iso8601(total)
+})

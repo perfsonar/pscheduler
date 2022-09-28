@@ -1,0 +1,18 @@
+Source: pscheduler-tool-dublin-traceroute
+Section: net
+Priority: optional
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Uploaders: Mark Feit <mfeit@internet2.edu>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.8
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-tool-dublin-traceroute
+Architecture: all
+Depends: ${misc:Depends}, python3, python3-pscheduler,
+ pscheduler-server, pscheduler-test-trace, pscheduler-account,
+ python3-icmperror, dublin-traceroute
+Description: pScheduler Dublin Traceroute Tool
+ Dublin Traceroute tool class for pScheduler

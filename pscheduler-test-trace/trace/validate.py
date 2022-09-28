@@ -10,8 +10,7 @@ SPEC_SCHEMA = {
     "local": {
 
         "algorithm": {
-            "type": "string",
-            "enum": ["paris-traceroute"]
+            "type": "string"
         },
 
         "probe-type": {
@@ -23,8 +22,7 @@ SPEC_SCHEMA = {
             "type": "object",
             "properties": {
                 "schema":      { "type": "integer", "enum": [ 1 ] },
-                "schema":      { "$ref": "#/pScheduler/Cardinal" },
-                "algorithm":   { "$ref": "#/local/algorithm" },
+                "algorithm":   { "$ref": "#/pScheduler/String" },
                 "as":          { "$ref": "#/pScheduler/Boolean" },
                 "dest-port":   { "$ref": "#/pScheduler/IPPort" },
                 "dest":        { "$ref": "#/pScheduler/Host" },
@@ -51,8 +49,7 @@ SPEC_SCHEMA = {
             "type": "object",
             "properties": {
                 "schema":      { "type": "integer", "enum": [ 2 ] },
-                "schema":      { "$ref": "#/pScheduler/Cardinal" },
-                "algorithm":   { "$ref": "#/local/algorithm" },
+                "algorithm":   { "$ref": "#/pScheduler/String" },
                 "as":          { "$ref": "#/pScheduler/Boolean" },
                 "dest-port":   { "$ref": "#/pScheduler/IPPort" },
                 "dest":        { "$ref": "#/pScheduler/Host" },
@@ -136,34 +133,4 @@ def result_is_valid(json):
             "succeeded",
             ]
         }
-    return json_validate(json, schema)
-
-
-
-def limit_is_valid(json):
-    schema = {
-        "type": "object",
-        "properties": {
-            "schema":     { "$ref": "#/pScheduler/Cardinal" },
-            "source":     { "$ref": "#/pScheduler/Limit/IPCIDRList"},
-            "dest":       { "$ref": "#/pScheduler/Limit/IPCIDRList"},
-            "endpoint":   { "$ref": "#/pScheduler/Limit/IPCIDRList"},
-            "algorithm":  { "$ref": "#/pScheduler/Limit/String" },
-            "as":         { "$ref": "#/pScheduler/Limit/Boolean" },
-            "dest-port":  { "$ref": "#/pScheduler/Limit/Cardinal" },
-            "first-ttl":  { "$ref": "#/pScheduler/Limit/Cardinal" },
-            "fragment":   { "$ref": "#/pScheduler/Limit/Boolean" },
-            "hops":       { "$ref": "#/pScheduler/Limit/Cardinal" },
-            "hostnames":  { "$ref": "#/pScheduler/Limit/Boolean" },
-            "ip-version": { "$ref": "#/pScheduler/Limit/CardinalList" },
-            "length":     { "$ref": "#/pScheduler/Limit/Cardinal" },
-            "probe-type": { "$ref": "#/pScheduler/Limit/String" },
-            "queries":    { "$ref": "#/pScheduler/Limit/Cardinal" },
-            "sendwait":   { "$ref": "#/pScheduler/Limit/Duration" },
-            "ip-tos":     { "$ref": "#/pScheduler/Limit/CardinalZeroList" },
-            "wait":       { "$ref": "#/pScheduler/Limit/Duration" }
-        },
-        "additionalProperties": False
-        }
-
     return json_validate(json, schema)

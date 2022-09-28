@@ -113,7 +113,7 @@ except KeyError:
 
 # wait - All are supported
 
-# send-wait - All are supported
+# sendwait - All are supported
 
 # as - All are supported
 
