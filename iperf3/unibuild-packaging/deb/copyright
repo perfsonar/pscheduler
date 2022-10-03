@@ -3,7 +3,7 @@ Upstream-Name: iperf
 Source: http://software.es.net/iperf/
 
 Files: *
-Copyright: 1991-2016, The Regents of the University of California
+Copyright: 1991-2022, The Regents of the University of California
 License: BSD-3-clause
 
 Files: src/units.c src/tcp_window_size.c
@@ -86,11 +86,11 @@ License: public-domain
 
 Files: debian/*
 Copyright: 2014-2016 Raoul Gunnar Borenius <borenius@dfn.de>
- 2016-2021 perfSONAR Developers https://www.perfsonar.net
+ 2016-2022 perfSONAR Developers https://www.perfsonar.net
 License: GPL-2+
 
 Files: debian/*
-Copyright: 2015-2021 perfSONAR project
+Copyright: 2015-2022 perfSONAR project
 License: Apache-2.0
 
 License: Apache-2.0

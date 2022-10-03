@@ -1,3 +1,9 @@
+iperf3 (3.12-1) perfsonar-5.0-staging; urgency=low
+
+  * New upstream version
+
+ -- Mark Feit <mfeit@internet2.edu>  Mon, 03 Oct 2022 11:23:33 -0400
+
 iperf3 (3.11-1) perfsonar-5.0-staging; urgency=low
 
   * New upstream version
