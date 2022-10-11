@@ -848,18 +848,20 @@ def main_program():
                     != ([],[],[]):
                     # Notified
                     db.poll()
-                    notifies = [ notify.channel for notify in db.notifies]
-                    log.debug("Notifications: %s", notifies)
-                    if 'configurables_changed' in notifies:
-                        log.debug("Configurables changed.")
-                        run_start_margin_set(db)
-                    else:
-                        log.debug("Schedule change.")
 
-                    # Remove only the first notification so we act on
-                    # all of them.  When scheduled start times are
-                    # tight, removing everything causes runs to be missed.
-                    db.notifies.pop(0)
+                    if len(db.notifies):
+                        notifies = [ notify.channel for notify in db.notifies]
+                        log.debug("Notifications: %s", notifies)
+                        if 'configurables_changed' in notifies:
+                            log.debug("Configurables changed.")
+                            run_start_margin_set(db)
+                        else:
+                            log.debug("Schedule change.")
+
+                        # Remove only the first notification so we act on
+                        # all of them.  When scheduled start times are
+                        # tight, removing everything causes runs to be missed.
+                        db.notifies.pop(0)
 
             except select.error as ex:
 
