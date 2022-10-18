@@ -12,6 +12,7 @@
 unibuild-log
 unibuild-repo
 unibuild-work
+multiarch_build
 
 # Quilt cache directory
 .pc/

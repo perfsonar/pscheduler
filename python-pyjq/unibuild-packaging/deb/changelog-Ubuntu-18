@@ -1,3 +1,9 @@
+pyjq (2.4.0-3~bpo18+1) perfsonar-5.0-staging; urgency=low
+
+  * Port to Ubuntu 18.
+
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Sat, 15 Oct 2022 15:02:08 +0000 
+
 pyjq (2.4.0-2) perfsonar-4.4-staging; urgency=low
 
   * Rebuild for 4.4 repo.

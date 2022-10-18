@@ -19,7 +19,7 @@ Standards-Version: 3.9.8
 Homepage: https://pypi.python.org/pypi/pyjq
 X-Python3-Version: >= 3.2
 
-Package: python3-pyjq
+Package: python3-pyjq-u18
 Architecture: any
 Depends:
  ${python3:Depends},

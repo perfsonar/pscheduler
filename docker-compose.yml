@@ -27,35 +27,62 @@ services:
     volumes: *default-volumes
   d10_amd64:
     platform: "linux/amd64"
-    image: ghcr.io/perfsonar/unibuild/d10:latest
+    image: docker.io/ntw0n/unibuild.d10@sha256:ad283ba7764b6d416b29d415ae8ae097567adfd5c69722d4565f87a9effdf991
+    command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
   d10_arm64:
     platform: "linux/arm64"
-    image: docker.io/ntw0n/unibuild-d10@sha256:a6346594b08bb0c8b6b8694e923007908f120bb58cfcae979d24cc4beaedee52
-    privileged: true
-    tmpfs: *default-tmpfs
+    image: docker.io/ntw0n/unibuild.d10@sha256:411bc5f9b08209ebd313d1a3ca8fd66c02741d9c59b3d00dffc550a0af545693
+    command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
-    working_dir: /app
   d10_armv7:
     platform: "linux/arm/v7"
-    image: docker.io/ntw0n/psbuild.$REPO.debian@sha256:b4ee4edb348d3a0579335d9d2fd2bdac29e1c3a2a56e82975e4452e246d31fcf
-    privileged: true
-    tmpfs: *default-tmpfs
+    image: docker.io/ntw0n/unibuild.d10@sha256:745b6a6028ba9ce13df90da5a16cc320768815a41fdd2e32dcbd1baaa5ed3a67
+    command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
-    working_dir: /app
   d10_ppc64le:
     platform: "linux/ppc64le"
-    image: docker.io/ntw0n/psbuild.$REPO.debian@sha256:5024191176f7df2ae37a41a14df00b90a09cfcaa345e0c18c99dbb7beea84e69
-    privileged: true
-    tmpfs: *default-tmpfs
+    image: docker.io/ntw0n/unibuild.d10@sha256:764e8024b184068b8e3dcfaf0321db8a71bcfe27196ce041fff7489f1269d577
+    command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
-    working_dir: /app
   u18_amd64:
     platform: "linux/amd64"
-    image: ghcr.io/perfsonar/unibuild/u18:latest
+    image: docker.io/ntw0n/unibuild.u18@sha256:7f41e7385415b4942d2f1feff525ce4a8cda4ad8a83ac1606a38376c0b945705
+    command: bash -c "while true; do sleep 3; done"
+    volumes: *default-volumes
+  u18_arm64:
+    platform: "linux/arm64"
+    image: docker.io/ntw0n/unibuild.u18@sha256:48712ad8bbd430d93c3787ce6c0083afccc52ff7be10614c0d20084c4a96cd78
+    command: bash -c "while true; do sleep 3; done"
+    volumes: *default-volumes
+  u18_armv7:
+    platform: "linux/arm/v7"
+    image: docker.io/ntw0n/unibuild.u18@sha256:fb3038c657171b159d8f5541ee2c6f86d21cb605de2d282d914fc18e4d316a3e
+    command: bash -c "while true; do sleep 3; done"
+    volumes: *default-volumes
+  u18_ppc64le:
+    platform: "linux/ppc64le"
+    image: docker.io/ntw0n/unibuild.u18@sha256:665ec58249b1a6661ee1e22a7a1e37efcd052d138d89ce8599a6ac3bb41c0549
+    command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
   u20_amd64:
     platform: "linux/amd64"
-    image: ghcr.io/perfsonar/unibuild/u20:latest
+    image: docker.io/ntw0n/unibuild.u20@sha256:1b5329bd19d02b3470f2761ea03bf8682788eef754c12dd1038e87c2a0f9776d
+    command: bash -c "while true; do sleep 3; done"
+    volumes: *default-volumes
+  u20_arm64:
+    platform: "linux/arm64"
+    image: docker.io/ntw0n/unibuild.u20@sha256:3425bcc2d4b6dd6e6bddf17af8330b8b0eca5ff4800b8bf2232d6b06224de7bc
+    command: bash -c "while true; do sleep 3; done"
+    volumes: *default-volumes
+  u20_armv7:
+    platform: "linux/arm/v7"
+    image: docker.io/ntw0n/unibuild.u20@sha256:80dff8f4ca92c65c791315dafb6d0c14f78df963461c117f3f6ea7388d62c1cb
+    command: bash -c "while true; do sleep 3; done"
+    volumes: *default-volumes
+  u20_ppc64le:
+    platform: "linux/ppc64le"
+    image: docker.io/ntw0n/unibuild.u20@sha256:2ef60663a831227e4522e69f334637187fc267b01fad7cef729d015befaeea82
+    command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
 
