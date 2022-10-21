@@ -27,62 +27,62 @@ services:
     volumes: *default-volumes
   d10_amd64:
     platform: "linux/amd64"
-    image: docker.io/ntw0n/unibuild.d10@sha256:ad283ba7764b6d416b29d415ae8ae097567adfd5c69722d4565f87a9effdf991
+    image: ghcr.io/perfsonar/unibuild/d10:multiarch@sha256:6e15c6700ba7f6d4f56bbaf0e5034ee872bcbc2ab91ab8b5630f6f18a812f618
     command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
   d10_arm64:
     platform: "linux/arm64"
-    image: docker.io/ntw0n/unibuild.d10@sha256:411bc5f9b08209ebd313d1a3ca8fd66c02741d9c59b3d00dffc550a0af545693
+    image: ghcr.io/perfsonar/unibuild/d10:multiarch@sha256:cbbd4d617ea55062b891bf5160fe01047e1bbf0c84d0f8fddf3eb8f4698a9b13
     command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
   d10_armv7:
     platform: "linux/arm/v7"
-    image: docker.io/ntw0n/unibuild.d10@sha256:745b6a6028ba9ce13df90da5a16cc320768815a41fdd2e32dcbd1baaa5ed3a67
+    image: ghcr.io/perfsonar/unibuild/d10:multiarch@sha256:2d67964a34ba8f6250cff4d833a70fa5644a1503d893965e42b1c43355e84ed7
     command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
   d10_ppc64le:
     platform: "linux/ppc64le"
-    image: docker.io/ntw0n/unibuild.d10@sha256:764e8024b184068b8e3dcfaf0321db8a71bcfe27196ce041fff7489f1269d577
+    image: ghcr.io/perfsonar/unibuild/d10:multiarch@sha256:72dea5b899956112720c31c5502cc43cd97dc44e41346040c477586adf3da3f3
     command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
   u18_amd64:
     platform: "linux/amd64"
-    image: docker.io/ntw0n/unibuild.u18@sha256:7f41e7385415b4942d2f1feff525ce4a8cda4ad8a83ac1606a38376c0b945705
+    image: ghcr.io/perfsonar/unibuild/u18:multiarch@sha256:51826928c84fdee51484af8a6551f991a747ba05337015d392350c25c670519b
     command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
   u18_arm64:
     platform: "linux/arm64"
-    image: docker.io/ntw0n/unibuild.u18@sha256:48712ad8bbd430d93c3787ce6c0083afccc52ff7be10614c0d20084c4a96cd78
+    image: ghcr.io/perfsonar/unibuild/u18:multiarch@sha256:774688a068e814883c48136742c377f2b0eb296c60d9ef743f918b8084658eb2
     command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
   u18_armv7:
     platform: "linux/arm/v7"
-    image: docker.io/ntw0n/unibuild.u18@sha256:fb3038c657171b159d8f5541ee2c6f86d21cb605de2d282d914fc18e4d316a3e
+    image: ghcr.io/perfsonar/unibuild/u18:multiarch@sha256:7e0097b3b993f97ddb40f6d6d001bd9b8ab9be829f815b4e6bef6337eb6cdd02
     command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
   u18_ppc64le:
     platform: "linux/ppc64le"
-    image: docker.io/ntw0n/unibuild.u18@sha256:665ec58249b1a6661ee1e22a7a1e37efcd052d138d89ce8599a6ac3bb41c0549
+    image: ghcr.io/perfsonar/unibuild/u18:multiarch@sha256:72e37524c58e8ef717d6fc5e318547910bc1565e0bc19cf630dc0e6a3b9ec30f
     command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
   u20_amd64:
     platform: "linux/amd64"
-    image: docker.io/ntw0n/unibuild.u20@sha256:1b5329bd19d02b3470f2761ea03bf8682788eef754c12dd1038e87c2a0f9776d
+    image: ghcr.io/perfsonar/unibuild/u20:multiarch@sha256:92e43427d5b4dd35bcabbc8194697cea90370bf1cd79186b0eec9071d1393120
     command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
   u20_arm64:
     platform: "linux/arm64"
-    image: docker.io/ntw0n/unibuild.u20@sha256:3425bcc2d4b6dd6e6bddf17af8330b8b0eca5ff4800b8bf2232d6b06224de7bc
+    image: ghcr.io/perfsonar/unibuild/u20:multiarch@sha256:a4f6d97f39349f4579a9a66dd33c7091f3737cf3fdf703b01fb33909d93eca92
     command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
   u20_armv7:
     platform: "linux/arm/v7"
-    image: docker.io/ntw0n/unibuild.u20@sha256:80dff8f4ca92c65c791315dafb6d0c14f78df963461c117f3f6ea7388d62c1cb
+    image: ghcr.io/perfsonar/unibuild/u20:multiarch@sha256:1acc2885d7630cc94e90ee6e59afaf424212c3d21b077e853d06b5671bcd9c11
     command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
   u20_ppc64le:
     platform: "linux/ppc64le"
-    image: docker.io/ntw0n/unibuild.u20@sha256:2ef60663a831227e4522e69f334637187fc267b01fad7cef729d015befaeea82
+    image: ghcr.io/perfsonar/unibuild/u20:multiarch@sha256:20f6628f69ca1fab6a945f6e41dc9cf19edd5450b70033b7bc2eef5838d18db6
     command: bash -c "while true; do sleep 3; done"
     volumes: *default-volumes
 
