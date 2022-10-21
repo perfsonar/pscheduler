@@ -1,6 +1,6 @@
-py-amqp (5.0.6-2~bpo10+1) perfsonar-5.0-staging; urgency=low
+py-amqp (5.0.6-2~bpo90+1) perfsonar-5.0-staging; urgency=low
 
-  * Backport to Debian 10.
+  * Backport to Debian 10, Debian 11, Ubuntu 18 and Ubuntu 20
 
  -- Antoine Delvaux <adelvaux@man.poznan.pl>  Tue, 18 Oct 2022 17:32:32 +0000 
 
