@@ -56,7 +56,8 @@ postgresql-load
 # jq and friends
 
 ifelse(DISTRO/MAJOR,Oracle/8,oniguruma)			# CentOS 7 and EL8 have this, OL8 doesn't.
-jq							# Ours has patches.  TODO: Does Debian need this?
+ifelse(DISTRO/eval(MAJOR < 20),Ubuntu/1,oniguruma)		# Ubuntu 20 and up are good.
+jq							# Ours has patches.
 
 
 # Python Modules
