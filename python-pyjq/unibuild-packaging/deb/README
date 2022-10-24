@@ -2,5 +2,11 @@ This directory contains support for multiple flavors of Debian and
 Ubuntu, set up using the Makefile.  That build is triggered in the
 top-level Makefile for the package (../../Makefile).
 
-Files generated are in .gitignore so they don't slip into version
+Files generated are in .gitignore so they don't slip into  version
 control.
+
+There is a specially crafted metapackage that  is  added  to  what
+should be the master build OS control file. This metapackage takes
+care of creating a dependency  list  to  get  the  correct  binary
+package for each distribution we support. It only needs  to  exist
+in one of the control files.
