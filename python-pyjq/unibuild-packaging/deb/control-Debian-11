@@ -25,6 +25,8 @@ Depends:
  ${python3:Depends},
  ${misc:Depends},
  ${shlibs:Depends}
+Conflicts: python3-pyjq, python3-pyjq-d10, python3-pyjq-u18, python3-pyjq-u20
+Provides: python3-pyjq
 Recommends:
  ${python3:Recommends}
 Description: Python bindings for jq

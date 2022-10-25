@@ -19,18 +19,14 @@ Standards-Version: 3.9.8
 Homepage: https://pypi.python.org/pypi/pyjq
 X-Python3-Version: >= 3.2
 
-Package: python3-pyjq
-Architecture: any
-Depends:
- python3-pyjq-d10 | python3-pyjq-d11 | python3-pyjq-u18 | python3-pyjq-u20
-Description: OS independant meta package of pyjq
-
 Package: python3-pyjq-d10
 Architecture: any
 Depends:
  ${python3:Depends},
  ${misc:Depends},
  ${shlibs:Depends}
+Conflicts: python3-pyjq, python3-pyjq-d11, python3-pyjq-u18, python3-pyjq-u20
+Provides: python3-pyjq
 Recommends:
  ${python3:Recommends}
 Description: Python bindings for jq
