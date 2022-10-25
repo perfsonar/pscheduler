@@ -1,0 +1,9 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	ln -sfv nuttcp-*.c nuttcp.c
+	dh_auto_build
+

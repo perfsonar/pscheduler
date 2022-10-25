@@ -1,0 +1,5 @@
+There are no special requirements needed to build nuttcp from source. It
+uses the quilt patch system, which you can find information about on Debian
+systems at '/usr/share/doc/quilt/README.source.'
+
+ -- Chris Taylor <ctaylor@debian.org>  Sun, 06 Dec 2009 16:48:37 -0700
