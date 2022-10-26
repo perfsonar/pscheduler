@@ -72,6 +72,7 @@ ifelse(FAMILY/MAJOR,RedHat/7,python-isodate)		# EL7 needs this; EL8 is up to dat
 # EL7 has a reasonably-current version of this.  EL8 and later, we build.
 ifelse(FAMILY/eval(MAJOR > 7),RedHat/1,python-itsdangerous)
 ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of this.
+       DISTRO/eval(MAJOR > 10),Debian/1,,		# As does Debian 11
        python-pyrsistent)
 python-nmap3
 ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of this.

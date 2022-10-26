@@ -1,3 +1,9 @@
+pyrsistent (0.14.11-4) perfsonar-5.0-staging; urgency=low
+
+  * Backport to Debian 10 and 11 and Ubuntu 18 and 20.
+
+ -- Antoine Delvaux <adelvaux@man.poznan.pl>  Wed, 26 Oct 2022 20:27:21 +0000 
+
 pyrsistent (0.14.11-3) perfsonar-4.3-staging; urgency=low
 
   * Building Python3 module only.
