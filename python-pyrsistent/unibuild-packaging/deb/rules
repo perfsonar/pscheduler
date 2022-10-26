@@ -8,9 +8,6 @@ PYTHON3S:=$(shell py3versions -vr)
 
 %:
 	dh $@ --with python3 --buildsystem=pybuild
-# python3 package build creates a dependency to python3 << 3.6
-# and Ubuntu18 ships with python3.6 only, so no go
-#	dh $@ --with python2,python3 --buildsystem=pybuild
 
 override_dh_auto_install:
 	dh_auto_install
@@ -20,3 +17,7 @@ override_dh_installchangelogs:
 	dh_installchangelogs CHANGES.txt
 
 override_dh_auto_test:
+
+# Ubuntu dbgsym.ddeb are currently not supported by reprepro
+override_dh_strip:
+	dh_strip --no-automatic-dbgsym
