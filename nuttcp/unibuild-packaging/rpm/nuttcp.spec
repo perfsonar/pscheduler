@@ -1,7 +1,7 @@
 Name: nuttcp
 Version: 8.2.2
 Release: 1%{?dist}
-Source0: %{name}-%{version}.tar.bz2
+Source0: %{name}-%{version}.tar.gz
 URL: ftp://ftp.lcp.nrl.navy.mil/pub/nuttcp/
 Summary: Tool for testing TCP connections
 Group: Applications/Internet
