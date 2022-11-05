@@ -364,10 +364,13 @@ def tasks():
             if returncode != 0:
                 return error("Unable to determine participants: " + stderr)
 
-            participants = [ host if host is not None else
-                             server_netloc() for host in
-                             pscheduler.json_load(stdout,
-                                                  max_schema=1)["participants"] ]
+            participants = pscheduler.json_load(stdout, max_schema=1)["participants"]
+
+            # The only thing that should ever come up none is the
+            # first element, which should point at us.
+            if participants[0] is None:
+                participants[0] = pscheduler.api_local_host()
+
         except Exception as ex:
             return error("Exception while determining participants: " + str(ex))
         nparticipants = len(participants)
