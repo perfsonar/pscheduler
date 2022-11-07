@@ -28,13 +28,25 @@ def run(input):
         })
 
 
-    # Can-run should weed these out, but backstop it with a check just in case.
-    if source[0:5] == "file:" and keep_content is not None:
-        return({
-            "succeeded": False,
-            "error": "Cannot keep content from file:// URLs",
-            "diags": None
-        })
+    # Choke on anything that would allow insight into the contents of
+    # local files.
+
+    if source[0:5] == "file:":
+
+        if keep_content is not None:
+            return({
+                "succeeded": False,
+                "error": "Cannot keep content from file:// URLs",
+                "diags": None
+            })
+
+        if input['test']['spec'].get("parse", None):
+            return({
+                "succeeded": False,
+                "error": "Cannot parse content from file:// URLs",
+                "diags": None
+            })
+
 
 
     succeeded = False
