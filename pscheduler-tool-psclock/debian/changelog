@@ -1,3 +1,9 @@
+pscheduler-tool-psclock (4.4.6-1) perfsonar-4.4; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Mon, 07 Nov 2022 10:59:32 -0500
+
 pscheduler-tool-psclock (4.4.5-2) perfsonar-4.4; urgency=low
 
   * New upstream version.

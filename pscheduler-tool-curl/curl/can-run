@@ -34,7 +34,6 @@ if test_type != "http":
 
 MAX_SCHEMA = 3
 
-
 try:
     pscheduler.json_check_schema(json["spec"], MAX_SCHEMA)
 except ValueError as ex:
@@ -50,11 +49,5 @@ except KeyError:
         "reasons": ["Missing data in test specification"]
     })
 
-if json["spec"]["url"][0:5] == "file:" \
-   and json["spec"].get("keep-content", False):
-    pscheduler.succeed_json({
-        "can-run": False,
-        "reasons": ["Cannot return content for file:// URLs"]
-    })
 
 pscheduler.succeed_json({ "can-run": True })
