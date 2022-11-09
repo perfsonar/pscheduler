@@ -1,0 +1,12 @@
+--- a/database/warmboot.raw	2022-09-20 08:41:14.486979687 -0400
++++ b/database/warmboot.raw	2022-09-20 08:41:38.637512824 -0400
+@@ -3,8 +3,7 @@
+ # Warm boot the database
+ #
+ 
+-postgresql-load --role __ROLE__ <<EOF
+-\c __DATABASE__
++PGPASSFILE=/etc/pscheduler/database/pgpassfile psql -U __ROLE__ __ROLE__ -h localhost <<EOF >/dev/null
+ DO \$\$
+ BEGIN
+     PERFORM warm_boot();
