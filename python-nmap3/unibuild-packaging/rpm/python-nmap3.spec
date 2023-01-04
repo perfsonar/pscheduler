@@ -27,10 +27,12 @@ Requires:       %{_pscheduler_python_epel}-simplejson
 %if 0%{?el8}
 Requires:       %{_pscheduler_python}-simplejson
 %endif
+Requires:	%{_pscheduler_python}-wheel
 Requires:      	nmap
 
 BuildRequires:  %{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-setuptools
+BuildRequires:	%{_pscheduler_python}-wheel
 
 %description
 A python 3 library which helps in using nmap port scanner. The way this tools works is by defining each nmap command into a python function making it very easy to use sophisticated nmap commands in other python scripts. Nmap is a complicated piece of software used for reconnaissance on target networks, over the years new features have been added making it more sophisticated.
