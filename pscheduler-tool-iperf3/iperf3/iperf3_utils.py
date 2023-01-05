@@ -57,6 +57,24 @@ def setup_time(rtt):
 
 
 
+def strip_output(output):
+    """
+    Remove any sensitive information from iperf3 output.
+    """
+
+    try:
+        output_json = pscheduler.json_load(output)
+    except ValueError:
+        return output
+
+    try:
+        output_json['start']['system_info'] = 'REDACTED'
+    except KeyError:
+        return output
+
+    return pscheduler.json_dump(output_json, pretty=True)
+
+
 if __name__ == "__main__":
     
     config = get_config()
