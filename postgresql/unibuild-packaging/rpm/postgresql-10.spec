@@ -5,6 +5,9 @@
 %global sname postgresql
 %global	pgbaseinstdir	/usr/pgsql-%{pgmajorversion}
 
+# Don't produce this.  It causes problems.
+%global                  debug_package %{nil}
+
 # Things that were missing or that we override globally
 BuildRequires: gcc
 %global pgmajorversion %{pgpackageversion}
