@@ -466,6 +466,10 @@ def run_server():
     
 
 def _make_result(diags, status, stdout, stderr):
+
+    # Remove anything sensitive.
+    stdout = iperf3_utils.strip_output(stdout)
+
     if status:
         error_text = ""
         try:
