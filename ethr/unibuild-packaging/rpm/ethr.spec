@@ -54,7 +54,7 @@ export GOCACHE=%{gocache}
 %endif
 
 go mod init microsoft.com/ethr
-go mod tidy
+go mod tidy -e
 go get ./...
 
 
