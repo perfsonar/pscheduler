@@ -54,6 +54,8 @@ Core programs for pScheduler
 %prep
 %setup -q
 
+%define completionsdir %{_datarootdir}/bash-completion/completions
+
 %build
 make \
      ARCHIVEDEFAULTDIR=%{_pscheduler_archiver_default_dir} \
@@ -66,7 +68,7 @@ make \
      INTERNALSINSTALLED=%{_pscheduler_internals} \
      LIMITSFILE=%{_pscheduler_limit_config} \
      TOOLCONFIGDIR=%{_pscheduler_tool_confdir} \
-     BASHCOMPDIR=$RPM_BUILD_ROOT/%{_datarootdir}/bash-completion/completions \
+     BASHCOMPDIR=$RPM_BUILD_ROOT/%{completionsdir} \
      install
 
 
@@ -74,7 +76,7 @@ make \
 %defattr(-,root,root,-)
 %license LICENSE
 %{_bindir}/*
-%{_datarootdir}/*
+%{completionsdir}/*
 %{_pscheduler_commands}
 %{_pscheduler_commands}/*
 %{_pscheduler_internals}/*

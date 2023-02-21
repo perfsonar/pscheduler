@@ -41,6 +41,9 @@ for hosting WSGI applications within Apache has a lower overhead than using
 existing WSGI adapters for mod_python or CGI.
 
 
+# Don't need this.
+%global         debug_package %{nil}
+
 %prep
 %setup -q
 

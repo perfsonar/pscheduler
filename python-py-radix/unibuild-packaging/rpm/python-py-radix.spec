@@ -34,6 +34,8 @@ A network address manipulation library for Python
 # Don't do automagic post-build things.
 %global              __os_install_post %{nil}
 
+# Don't need this, either.
+%global              debug_package %{nil}
 
 %prep
 %setup -q -n %{short}-%{version}

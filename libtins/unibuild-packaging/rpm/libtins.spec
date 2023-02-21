@@ -36,6 +36,10 @@ efficient, platform and endianess-independent way to create tools which
 need to send, receive and manipulate specially crafted packets.
 
 
+# Don't need this.
+%global         debug_package %{nil}
+
+
 %prep
 %setup -q
 
