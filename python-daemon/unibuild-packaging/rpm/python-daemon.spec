@@ -25,6 +25,7 @@ BuildRequires:	%{_pscheduler_python}
 BuildRequires:  %{_pscheduler_python}-pip
 BuildRequires:  %{_pscheduler_python}-setuptools
 BuildRequires:  %{_pscheduler_python}-wheel
+BuildRequires:  %{_pscheduler_python_epel}-docutils
 
 %description
 Daemonizer library for Python
