@@ -22,7 +22,7 @@ Source:		%{short}-%{version}.tar.gz
 Requires:	libpcap
 Requires:	libtins
 Requires:	jsoncpp
-
+Requires:	openssl
 
 BuildRequires:  cmake
 #TODO: They really want this; EL7 doesn't have it.
@@ -31,7 +31,7 @@ BuildRequires:  gcc-c++
 BuildRequires:  libpcap-devel
 BuildRequires:  libtins-devel
 BuildRequires:  jsoncpp-devel
-
+BuildRequires:  openssl-devel
 
 %description
 A smarter traceroute
