@@ -503,7 +503,6 @@ for host in hosts:
     start("  Exercising API")
     for test in [
             ("archivers", "Archivers", False),
-            ("clock", "Clock", False),
             ("contexts", "Contexts", False),
             ("tests", "Tests", False),
             ("tools", "Tools", False),
