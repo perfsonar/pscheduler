@@ -1,11 +1,11 @@
---- iperf-3.12-orig/configure.ac	2022-09-30 18:49:24.000000000 +0000
-+++ iperf-3.12/configure.ac	2022-10-03 15:30:21.299022766 +0000
+--- a/configure.ac	2023-02-28 17:48:24.993041164 +0000
++++ b/configure.ac	2023-02-28 17:49:01.590315370 +0000
 @@ -24,7 +24,7 @@
  # file for complete information.
  
  # Initialize the autoconf system for the specified tool, version and mailing list
 -AC_PREREQ([2.71])
 +AC_PREREQ([2.69])
- AC_INIT([iperf],[3.12],[https://github.com/esnet/iperf],[iperf],[https://software.es.net/iperf/])
+ AC_INIT([iperf],[3.13],[https://github.com/esnet/iperf],[iperf],[https://software.es.net/iperf/])
  m4_include([config/ax_check_openssl.m4])
  m4_include([config/iperf_config_static_bin.m4])
