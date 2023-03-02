@@ -71,7 +71,7 @@ try:
 except KeyError:
     probe_type = 'udp'
 
-if probe_type == 'icmp':
+if probe_type in ['icmp', 'tcp']:
     need_root = True
 
 
