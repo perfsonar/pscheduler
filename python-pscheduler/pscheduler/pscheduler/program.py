@@ -7,6 +7,7 @@ import atexit
 import copy
 import errno
 import os
+import psutil
 import select
 import stat
 import subprocess
@@ -459,11 +460,15 @@ class ExternalProgram(object):
 
     def running(self):
         try:
-            os.kill(self.pid, 0)
-        except OSError:
+            process = psutil.Process(self.pid)
+        except psutil.NoSuchProcess:
+            return False
+
+        if process.status() in [psutil.STATUS_ZOMBIE, psutil.STATUS_DEAD]:
             return False
 
         return self.process.returncode is None
+
 
     def __del__(self):
         try:
