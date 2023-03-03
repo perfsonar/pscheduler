@@ -392,11 +392,13 @@ class WorkerProcess(object):
 
                 if isinstance(incoming, self._MessageNewTask):
 
+                    self.__debug("%s: Starting worker runner" % incoming.identifier)
                     with self.proc_lock:
                         self.proc_workers[incoming.identifier] = self.WorkerRunner(
                             incoming.identifier,
                             incoming.worker,
                             callback=self.__proc_result_callback)
+                        self.__debug("%s: Started worker runner" % incoming.identifier)
 
                 elif isinstance(incoming, self._MessageAction):
 
@@ -641,6 +643,8 @@ class WorkerProcessPool(object):
                 if self.pool_size_limit and len(self.processors) >= self.pool_size_limit:
                     raise RuntimeError("Pool is completely full.")
 
+                # TODO: Need to increment until we find an empty slot
+                # because the number may have been reset.
                 self.processor_number += 1
                 name = "%s-%d" % (self.processor_name, self.processor_number)
                 self.__debug("Starting new processor %s" % (name))

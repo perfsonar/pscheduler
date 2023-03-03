@@ -184,6 +184,7 @@ class ArchiveProcess(object):
         """
         Start the archiver process
         """
+        # TODO: This is pulling timeout from a global and shouldn't be.
         if self.program is None:
             self.program = pscheduler.StreamingJSONProgram([
                 pscheduler.plugin_method_path("archiver", self.archiver, "archive")
@@ -272,6 +273,8 @@ class ArchiverProcessPool(object):
                                    self.archiver, label, len(self.pool))
                 except IndexError:
                     # Pool is empty.
+                    self.log.debug("Pool %s%s: Pool is empty.", self.archiver, label)
+
                     if self.size < self.max_size:
                         # Room for new processes; create one.
                         process = ArchiveProcess(self.archiver,
@@ -282,6 +285,7 @@ class ArchiverProcessPool(object):
                                        self.archiver, label, self.size)
                     else:
                         # Pool is full and all processes are busy.
+                        self.log.debug("Pool %s%s: Pool is full and busy.", self.archiver, label)
                         pass
 
                 if process is not None:
@@ -295,12 +299,14 @@ class ArchiverProcessPool(object):
                     self.log.debug("Pool %s%s: Gave up waiting for a process", self.archiver, label)
                     return {
                         "succeeded": False,
-                        "error": "Unable to get a process after %s attempts" % self.max_process_tries
+                        "error": "Unable to get an archiver process after %s attempts" % self.max_process_tries
+                        # Don't do a retry here.  This is a problem.
                     }
                 self.log.debug("Pool %s%s: Waiting for a process (%d)", self.archiver, label, tries)
                 time.sleep(0.5)
 
         try:
+            self.log.debug("Pool %s%s: Sending %s", self.archiver, label, json)
             result = process(json)
             self.log.debug("Pool %s%s: Process returned %s", self.archiver, label, result)
         except Exception as ex:
@@ -1050,6 +1056,7 @@ def main_program():
         for row in result:
 
             # Don't bother if there are already too many archivers running.
+            # TODO: Why do we do this when we checked for it above?
             if len(ids_archiving) >= options.max_parallel:
                 log.debug("Already running %d archivers.", len(ids_archiving))
                 break
