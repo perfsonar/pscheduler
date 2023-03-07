@@ -4,8 +4,8 @@ Forwarded: not-needed
 Last-Update: 2014-06-21
 ---
 This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
---- jq-1.6.orig/Makefile.am	2019-03-28 14:46:45.118245270 +0100
-+++ jq-1.6/Makefile.am	2019-03-28 14:46:45.114245203 +0100
+--- a/Makefile.am	2018-11-02 01:49:29.000000000 +0000
++++ b/Makefile.am	2023-03-07 21:57:14.293868124 +0000
 @@ -126,6 +126,7 @@
  ### Building the manpage
  

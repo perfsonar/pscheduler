@@ -1,8 +1,8 @@
 Description: Ensure jq doesn't statically link in libraries
 Author: Harlan Lieberman-Berg <hlieberman@debian.org>
 Forwarded: not-needed
---- jq-1.6.orig/Makefile.am	2019-03-28 15:39:06.250612941 +0100
-+++ jq-1.6/Makefile.am	2019-03-28 15:40:03.799573053 +0100
+--- a/Makefile.am	2019-03-28 15:39:06.250612941 +0100
++++ b/Makefile.am	2019-03-28 15:40:03.799573053 +0100
 @@ -106,7 +106,6 @@
  
  bin_PROGRAMS = jq
@@ -20,8 +20,8 @@ Forwarded: not-needed
  endif
  
  ### Tests (make check)
---- jq-1.6.orig/tests/setup	2019-03-28 15:39:06.250612941 +0100
-+++ jq-1.6/tests/setup	2019-03-28 15:41:10.104679165 +0100
+--- a/tests/setup	2019-03-28 15:39:06.250612941 +0100
++++ b/tests/setup	2019-03-28 15:41:10.104679165 +0100
 @@ -13,8 +13,9 @@
  JQ=$JQBASEDIR/jq
  
