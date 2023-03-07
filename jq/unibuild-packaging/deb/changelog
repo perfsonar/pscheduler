@@ -1,3 +1,11 @@
+jq (1.6.0-1~bpo8+2) perfsonar-minor-staging; urgency=medium
+
+  * Building on buster
+  * Using version number greater to what provides Ubuntu as we have a patch
+    they don't ship.
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Mar, 07 mar 2023 20:00:18 +0000 
+
 jq (1.6-1~bpo8+2) perfsonar-minor-staging; urgency=medium
 
   * Building on stretch
