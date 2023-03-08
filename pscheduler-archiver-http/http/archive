@@ -185,7 +185,7 @@ def archive(json):
             retry_time = policy.retry(json["attempts"])
             if retry_time is not None:
                 result["retry"] = retry_time
-            return result
+        return result
 
     return {'succeeded': True}
 
