@@ -12,7 +12,7 @@ import pycurl
 import http.client
 from urllib.parse import urlparse
 
-MAX_SCHEMA = 2
+MAX_SCHEMA = 3
 
 log = pscheduler.Log(prefix="archiver-http", quiet=True)
 
@@ -108,6 +108,7 @@ def archive(json):
     op = json['data'].get('op', 'post')
     log.debug("%s to %s", op, url)
     bind = json['data'].get('bind')
+    verify_ssl = json['data'].get('verify-ssl', False)
 
     # This must default to an empty hash so any previous headers are
     # cleared out.
@@ -128,11 +129,12 @@ def archive(json):
 
     parsed_url = urlparse(url)
 
-    key = "%s|%s|%s|%s" % (
+    key = "%s|%s|%s|%s|%s" % (
         parsed_url.scheme,
         parsed_url.hostname,
         '' if parsed_url.port is None else parsed_url.port,
-        '' if bind is None else bind
+        '' if bind is None else bind,
+        '' if not verify_ssl else 'verify-ssl'
     )
 
     log.debug("Key is %s", key)
@@ -146,6 +148,11 @@ def archive(json):
         "%s: %s" % (str(key), str(value))
         for (key, value) in list(headers.items())
     ])
+
+    #Disable SSL checks if not enabled, default behavior for curl is to enable
+    if not verify_ssl:
+        curl.setopt(pycurl.SSL_VERIFYPEER, 0)
+        curl.setopt(pycurl.SSL_VERIFYHOST, 0)
 
     if op == 'post':
         curl.setopt(pycurl.CUSTOMREQUEST, 'POST')
@@ -185,7 +192,7 @@ def archive(json):
             retry_time = policy.retry(json["attempts"])
             if retry_time is not None:
                 result["retry"] = retry_time
-            return result
+        return result
 
     return {'succeeded': True}
 
