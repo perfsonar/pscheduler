@@ -13,7 +13,7 @@ except ValueError as ex:
         "error": str(ex)
         })
 
-MAX_SCHEMA = 2
+MAX_SCHEMA = 3
 
 SPEC_SCHEMA = {
 
@@ -50,6 +50,33 @@ SPEC_SCHEMA = {
                         "post",
                     ]
                 },
+                "_headers": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^.*$": { "$ref": "#/pScheduler/String" }
+                    },
+                    "additionalProperties": False
+                },
+                "bind": { "$ref": "#/pScheduler/Host" },
+                "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+            },
+            "required": [ "schema", "_url" ],
+            "additionalProperties": False
+        },
+
+         "v3": {
+            "type": "object",
+            "properties": {
+                "schema": {" type": "integer", "enum": [ 3 ] },
+                "_url": { "$ref": "#/pScheduler/URL" },
+                "op": {
+                    "type": "string",
+                    "enum": [
+                        "put",
+                        "post",
+                    ]
+                },
+                "verify-ssl": { "$ref": "#/pScheduler/Boolean" },
                 "_headers": {
                     "type": "object",
                     "patternProperties": {
