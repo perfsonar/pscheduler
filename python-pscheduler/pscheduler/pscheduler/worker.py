@@ -656,8 +656,6 @@ class WorkerProcessPool(object):
                 if self.pool_size_limit and len(self.processors) >= self.pool_size_limit:
                     raise RuntimeError("Pool is completely full.")
 
-                # TODO: Need to increment until we find an empty slot
-                # because the number may have been reset.
                 self.processor_number += 1
                 name = "%s-%d" % (self.processor_name, self.processor_number)
                 self.__debug("Starting new processor %s" % (name))
