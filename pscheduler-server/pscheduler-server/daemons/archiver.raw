@@ -98,7 +98,7 @@ if options.max_parallel < 1:
     opt_parser.error("Number of concurrent archivings must be positive.")
 
 if options.pool_size < 1:
-    opt_parser.error("Pool size must b be positive.")
+    opt_parser.error("Pool size must be positive.")
 
 refresh = pscheduler.iso8601_as_timedelta(options.refresh)
 if refresh is None:
@@ -283,7 +283,7 @@ class ArchiverProcessPool(object):
         tries = 0
 
         self.log.debug("Pool %s%s: Getting a process (%d available, %d max)",
-                       self.archiver, label, len(self.pool), self.size)
+                       self.archiver, label, len(self.pool), self.max_size)
 
         while process is None:
             with self.lock:
@@ -293,12 +293,17 @@ class ArchiverProcessPool(object):
                     # This self-skims the pool.  If the deque ends up
                     # empty, an IndexError will escape the loop.
                     while True:
+
                         process = self.pool.pop()
-                        if process.is_expired():
-                            self.log.debug("Pool %s%s: Purging an expired process", self.archiver, label)
-                            del process
-                            self.size -= 1
-                            continue 
+
+                        # If what we got is useable, use it.
+                        if not process.is_expired():
+                            break
+
+                        # What we got was expired.  Remove it.
+                        self.log.debug("Pool %s%s: Purging an expired process", self.archiver, label)
+                        del process
+                        self.size -= 1
 
                     self.log.debug("Pool %s%s: Got an existing process (%d in pool)",
                                    self.archiver, label, len(self.pool))
