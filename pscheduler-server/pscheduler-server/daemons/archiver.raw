@@ -290,10 +290,9 @@ class ArchiverProcessPool(object):
                 # Take a process from the pool.
                 try:
 
-                    # This self-skims the pool.  If the deque ends up
-                    # empty, an IndexError will escape the loop.
                     while True:
 
+                        # If the pool is empty, an IndexError will break out of the loop.
                         process = self.pool.pop()
 
                         # If what we got is useable, use it.
