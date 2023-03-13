@@ -40,16 +40,22 @@ class WorkerProcess(object):
         Run a GenericWorker in a thread
         """
 
-        def __init__(self, identifier, worker, callback=lambda i, r, d: None):
+        def __init__(self, identifier, worker, callback=lambda i, r, d: None, debug_callback=lambda s: None):
             assert isinstance(worker, GenericWorker)
             assert callback is None or callable(callback)
 
             self.identifier = identifier
             self.worker = worker
             self.callback = callback
+            self.debug_callback = debug_callback
+            self.__debug("New thread")
             self.thread = threading.Thread(target=self.__run)
             self.thread.setDaemon(True)
             self.thread.start()
+            self.__debug("Thread started")
+
+        def __debug(self, message):
+            self.debug_callback("%s: %s: %s" % (self.identifier, self.__class__.__name__, message))
 
 
         def __run(self):
@@ -57,14 +63,16 @@ class WorkerProcess(object):
             Run the worker, calling back with what it returns or any exception
             it throws.
             """
+            self.__debug("Thread running")
             try:
                 result = self.worker()
                 diags = None
             except Exception as ex:
                 result = ex
                 diags = "\n".join(traceback.format_exception(type(ex), ex, ex.__traceback__))
-
+            self.__debug("Worker returned")
             self.callback(self.identifier, result, diags)
+            self.__debug("Callback complete")
 
 
         def join(self):
@@ -394,10 +402,13 @@ class WorkerProcess(object):
 
                     self.__debug("%s: Starting worker runner" % incoming.identifier)
                     with self.proc_lock:
+                        self.__debug("%s: Got lock" % incoming.identifier)
                         self.proc_workers[incoming.identifier] = self.WorkerRunner(
                             incoming.identifier,
                             incoming.worker,
-                            callback=self.__proc_result_callback)
+                            callback=self.__proc_result_callback,
+                            debug_callback=self.__debug
+                        )
                         self.__debug("%s: Started worker runner" % incoming.identifier)
 
                 elif isinstance(incoming, self._MessageAction):
@@ -548,6 +559,8 @@ class WorkerProcessPool(object):
         self.running = True
         self.processor_number = 0
         self.processors = {}
+
+        self.__debug("Started")
 
 
     def __len__(self):

@@ -5,6 +5,7 @@
 from .api import *
 from .clockstate import *
 from .db import *
+from .debuggable import *
 from .durationrange import *
 from .exception import *
 from .exit import *

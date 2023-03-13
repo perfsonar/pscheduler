@@ -150,45 +150,61 @@ class ArchiveProcess(object):
 
     def __init__(self,
                  archiver,
+                 logger,
                  max_iterations=None,  # Max iterations before expiring
                  idle=None             # Idle time before expiring
                 ):
         self.archiver = archiver
+        self.log = logger
         self.max_iterations = max_iterations
         self.idle = idle
         self.program = None
+        self._used(initialize=True)
         self._establish()
-
-        # The call to _used() will properly initialize these.
-        self.iterations = -1
-        self.expires = None
-        self._used()
 
     def __repr__(self):
         result = '<%s %s' % (self.__class__.__name__, self.archiver)
         if self.max_iterations is not None:
             result += ' Iters:%d/%d' % (self.iterations, self.max_iterations)
-        if self.idle is not None:
+        if self.expires is not None:
             result += ' Expires:%s' % (self.expires - datetime.datetime.now())
         result += ' Expired>' if self.is_expired() else '>'
         return result
 
-    def _used(self):
-        """Calculate a new expiration time"""
+
+    def _used(self, initialize=False):
+        """Calculate a new iteration count and expiration time"""
+        if initialize:
+            self.iterations = 0
+            self.expires = None
+        else:
+            self.iterations += 1
         if self.idle is not None:
             self.expires = datetime.datetime.now() + self.idle
-        self.iterations += 1
 
 
     def _establish(self):
         """
         Start the archiver process
         """
+
+        if self.program is not None and not self.program.running():
+            self.log.warning("%s: Program stopped running unexpectedly", self.archiver)
+            self.program.done()
+            self.program = None
+
+        if self.is_expired():
+            self.log.debug("%s: Expired.  Restarting.", self.archiver)
+            self.done()
+
         # TODO: This is pulling timeout from a global and shouldn't be.
         if self.program is None:
-            self.program = pscheduler.StreamingJSONProgram([
-                pscheduler.plugin_method_path("archiver", self.archiver, "archive")
-            ], timeout=timeout)
+            path = pscheduler.plugin_method_path("archiver", self.archiver, "archive")
+            self.log.debug("%s: Starting %s", self.archiver, path)
+            self.program = pscheduler.StreamingJSONProgram([path], timeout=timeout,
+                                                           debug=self.log.debug, label=self.archiver)
+            self._used(initialize=True)
+
 
     def __call__(self, json):
         """
@@ -196,10 +212,11 @@ class ArchiveProcess(object):
         """
         self._establish()
         self._used()
+        # TODO:  Should assert or raise if expired.
         try:
             return self.program(json)
         except (IOError, pscheduler.StreamingJSONProgramFailure) as ex:
-            log.debug("Plugin failed: %s", ex)
+            self.log.debug("Plugin failed: %s", ex)
             self.done()
             # Return an error but Don't retry.  The
             # StreamingJSONProgram will have retried.
@@ -214,6 +231,7 @@ class ArchiveProcess(object):
     def done(self):
         """Stop the archive process"""
         if self.program is not None:
+            self.log.debug("%s: Process done", self.archiver)
             self.program.done()
             self.program = None
 
@@ -224,9 +242,9 @@ class ArchiveProcess(object):
                 or (self.idle is not None and (datetime.datetime.now() > self.expires)))
 
 
-
     def __del__(self):
         self.done()
+
 
 
 class ArchiverProcessPool(object):
@@ -264,29 +282,42 @@ class ArchiverProcessPool(object):
         process = None
         tries = 0
 
+        self.log.debug("Pool %s%s: Getting a process (%d available, %d max)",
+                       self.archiver, label, len(self.pool), self.size)
+
         while process is None:
             with self.lock:
                 # Take a process from the pool.
                 try:
-                    process = self.pool.pop()
-                    self.log.debug("Pool %s%s: Got a process (%d in pool)",
+
+                    # This self-skims the pool.  If the deque ends up
+                    # empty, an IndexError will escape the loop.
+                    while True:
+                        process = self.pool.pop()
+                        if process.is_expired():
+                            self.log.debug("Pool %s%s: Purging an expired process", self.archiver, label)
+                            del process
+                            self.size -= 1
+                            continue 
+
+                    self.log.debug("Pool %s%s: Got an existing process (%d in pool)",
                                    self.archiver, label, len(self.pool))
                 except IndexError:
                     # Pool is empty.
-                    self.log.debug("Pool %s%s: Pool is empty.", self.archiver, label)
-
+                    self.log.debug("Pool %s%s: No processes available.", self.archiver, label)
                     if self.size < self.max_size:
                         # Room for new processes; create one.
-                        process = ArchiveProcess(self.archiver,
-                                                 max_iterations=archiver_iterations,
-                                                 idle=archiver_idle)
+                        self.log.debug("Pool %s%s: Creating a new process",
+                                       self.archiver, label)
+                        process = ArchiveProcess(self.archiver, self.log,
+                                                 max_iterations=self.max_iterations,
+                                                 idle=self.idle)
                         self.size += 1
                         self.log.debug("Pool %s%s: New process %d",
                                        self.archiver, label, self.size)
                     else:
                         # Pool is full and all processes are busy.
                         self.log.debug("Pool %s%s: Pool is full and busy.", self.archiver, label)
-                        pass
 
                 if process is not None:
                     cycle_at_start = self.reset_cycle
@@ -306,10 +337,13 @@ class ArchiverProcessPool(object):
                 time.sleep(0.5)
 
         try:
-            self.log.debug("Pool %s%s: Sending %s", self.archiver, label, json)
+            ### TODO: Re-enable this and lose the following line.
+            ### self.log.debug("Pool %s%s: Sending %s", self.archiver, label, json)
+            self.log.debug("Pool %s%s: Sending", self.archiver, label)
             result = process(json)
             self.log.debug("Pool %s%s: Process returned %s", self.archiver, label, result)
         except Exception as ex:
+            self.log.error("Pool %s%s: Exception: %s", self.archiver, label, str(ex))
             raise ex
         finally:
             # Dispose of the process no matter what happened.
@@ -338,7 +372,7 @@ class ArchiverProcessPool(object):
         """
         with self.lock:
             while self.size < self.max_size:
-                self.pool.append(ArchiveProcess(self.archiver))
+                self.pool.append(ArchiveProcess(self.archiver, self.log))
                 self.size += 1
             self.log.debug("Pool %s: Filled to %d", self.archiver, self.size)
 
@@ -376,6 +410,7 @@ class ArchiverProcessPool(object):
                     popped = self.pool.pop()
                     self.log.debug("Pool %s: Skimmed %s", self.archiver, popped)
                     popped.done()
+                    self.size -= 1
                     rotates_left -= 1
 
 
@@ -716,6 +751,7 @@ class ArchiveWorker(pscheduler.GenericWorker):
 
 
         # Strip the internal-use-only parts from the task details.
+        # TODO: Consider leaving this in and doing a full strip on everything.
         for remove in [
                 'archives'
         ]:
@@ -819,11 +855,13 @@ class ArchiveWorker(pscheduler.GenericWorker):
 
         if (not failed) and (not skip):
 
-            log_debug("%s: Archiving to %s: %s", label, archiver, json)
+            ### TODO: Re-enable this.
+            ### log_debug("%s: Archiving to %s: %s", label, archiver, json)
 
             try:
                 result = archiver_collection(archiver, json, label=label)
-                log_debug("%s: Returned JSON from archiver: %s", label, result)
+                ### TODO: Re-enable this.
+                ### log_debug("%s: Returned JSON from archiver: %s", label, result)
                 returncode = 0
             except Exception as ex:
                 log_debug("%s: Archiver threw an exception: %s", label, ex)
@@ -1074,8 +1112,10 @@ def main_program():
                             archive_completion)
                 ids_archiving.add(archiving_id)
                 next_refresh = None
+                log.debug("%d: Worker started", archiving_id)
             except Exception:
                 log.exception(message="%d: Exception while starting worker" % (archiving_id))
+
 
 
 

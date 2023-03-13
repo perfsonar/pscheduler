@@ -19,6 +19,7 @@ import os
 
 from shlex import quote
 
+from .debuggable import *
 from .exit import on_graceful_exit
 from .exitstatus import *
 from .psjson import *
@@ -443,6 +444,7 @@ class ExternalProgram(object):
             universal_newlines=True
         )
         self.pid = self.process.pid
+        self.returned_code = None
         self.err = None
 
     def stdin(self):
@@ -455,8 +457,10 @@ class ExternalProgram(object):
         return self.process.stderr
 
     def returncode(self):
-        self.process.poll()
-        return self.process.returncode
+        if self.returned_code is None:
+            self.process.poll()
+            self.returned_code = self.process.returncode
+        return self.returned_code
 
     def running(self):
         try:
@@ -464,17 +468,25 @@ class ExternalProgram(object):
         except psutil.NoSuchProcess:
             return False
 
-        if process.status() in [psutil.STATUS_ZOMBIE, psutil.STATUS_DEAD]:
+        if process.status() == psutil.STATUS_ZOMBIE:
+            _unused = self.returncode()
             return False
 
-        return self.process.returncode is None
+        if process.status() == psutil.STATUS_DEAD:
+            return False
 
+        return self.returned_code is None
 
-    def __del__(self):
+    def done(self):
+        self.process.poll()
         try:
             _end_process(self.process)
         except AttributeError:
             pass   # Not there?  Don't care.
+
+
+    def __del__(self):
+        self.done()
 
 
 
@@ -485,18 +497,18 @@ class StreamingJSONProgramFailure(Exception):
     pass
 
 
-class StreamingJSONProgram(object):
+class StreamingJSONProgram(Debuggable):
 
-    """Interface to a program that repeatedly takes a single blob of
-    delimited JSON and returns the same.  Should the program fail more
-    than the specified number of times, a StreamingJSONProgramFailure
+    """
+    Interface to a program that repeatedly takes a single blob of RFC
+    7464-delimited JSON and returns the same.  Should the program fail
+    more than the specified number of times, a StreamingJSONProgramFailure
     exception (with explanation) will be thrown.
 
     This class is fully thread-safe.
-
     """
 
-    def __init__(self, args, retries=3, timeout=None):
+    def __init__(self, args, retries=3, timeout=None, debug=lambda s: None, label=None):
         """Construct an instance.
 
         Arguments:
@@ -515,8 +527,9 @@ class StreamingJSONProgram(object):
         self.emitter = None
         self.parser = None
 
-        self.__establish()
+        super().__init__(debug, label=label if label else args[0])
 
+        self.__establish()
 
     def __establish(self):
         """Start the program"""
@@ -531,11 +544,11 @@ class StreamingJSONProgram(object):
 
         # At this point, there is no program.
 
+        self.debug("Starting program %s", self.args)
         self.program = ExternalProgram(self.args)
-        self.emitter = RFC7464Emitter(self.program.stdin(),
-                                      timeout=self.timeout)
-        self.parser = RFC7464Parser(self.program.stdout(),
-                                    timeout=self.timeout)
+        self.emitter = RFC7464Emitter(self.program.stdin(), timeout=self.timeout)
+        self.parser = RFC7464Parser(self.program.stdout(), timeout=self.timeout)
+        self.debug("Program is running")
 
 
     def __roundtrip(self, json):
@@ -556,8 +569,8 @@ class StreamingJSONProgram(object):
                 raise IOError("Program exited unexpectedly.")
 
         except IOError as ex:
-            del self.program
-            self.program = None
+            self.debug("Exception: %s", ex)
+            self.done()
             raise ex
 
         except StopIteration:
@@ -566,13 +579,17 @@ class StreamingJSONProgram(object):
             if rc is None:
                 rc = 1
             err = self.program.stderr().read().strip()
+            self.debug("Exited with %s.  Stderr = %s", rc, err)
             self.done()
             raise IOError("Program exited %d: %s" % (rc, err))
 
+        except Exception as ex:
+            # Anything else is just bad.
+            self.done()
+            raise StreamingJSONProgramFailure(str(ex))
+
         return result
         
-        
-
 
     def __call__(self, json):
 
@@ -592,8 +609,10 @@ class StreamingJSONProgram(object):
                     return self.__roundtrip(json)
                 except IOError as ex:
                     if tries:
+                        self.debug("I/O error.  Trying again.")
                         continue
                     else:
+                        self.debug("Giving up")
                         exception = ex
 
             # If we fell out of the loop, we ran out of tries and
@@ -609,7 +628,12 @@ class StreamingJSONProgram(object):
                 % (self.retries, exception))
 
 
+    def running(self):
+        return self.program.running()
+
+
     def done(self):
         if self.program is not None:
+            self.program.done()
             del self.program
             self.program = None
