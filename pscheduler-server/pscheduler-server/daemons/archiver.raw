@@ -90,6 +90,7 @@ opt_parser.add_option("--archiver-idle",
 
 opt_parser.add_option("--verbose", action="store_true", dest="verbose")
 opt_parser.add_option("--debug", action="store_true", dest="debug")
+opt_parser.add_option("--debug_noio", action="store_true", dest="debug_noio")
 
 
 (options, _args) = opt_parser.parse_args()
@@ -341,9 +342,9 @@ class ArchiverProcessPool(object):
                 time.sleep(0.5)
 
         try:
-            ### TODO: Re-enable this and lose the following line.
-            ### self.log.debug("Pool %s%s: Sending %s", self.archiver, label, json)
-            self.log.debug("Pool %s%s: Sending", self.archiver, label)
+            # TODO: This gets lengthy, so use a shorter version for now.
+            ### self.log.debug("Pool %s%s: Sending JSON %s", self.archiver, label, json)
+            self.log.debug("Pool %s%s: Sending JSON", self.archiver, label)
             result = process(json)
             self.log.debug("Pool %s%s: Process returned %s", self.archiver, label, result)
         except Exception as ex:
@@ -859,13 +860,13 @@ class ArchiveWorker(pscheduler.GenericWorker):
 
         if (not failed) and (not skip):
 
-            ### TODO: Re-enable this.
-            ### log_debug("%s: Archiving to %s: %s", label, archiver, json)
+            # TODO: This gets long, so use a shorter version for now.
+            # log_debug("%s: Archiving to %s: %s", label, archiver, json)
+            log_debug("%s: Archiving to %s", label, archiver)
 
             try:
                 result = archiver_collection(archiver, json, label=label)
-                ### TODO: Re-enable this.
-                ### log_debug("%s: Returned JSON from archiver: %s", label, result)
+                log_debug("%s: Returned JSON from archiver: %s", label, result)
                 returncode = 0
             except Exception as ex:
                 log_debug("%s: Archiver threw an exception: %s", label, ex)
