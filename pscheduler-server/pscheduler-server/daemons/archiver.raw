@@ -756,7 +756,6 @@ class ArchiveWorker(pscheduler.GenericWorker):
 
 
         # Strip the internal-use-only parts from the task details.
-        # TODO: Consider leaving this in and doing a full strip on everything.
         for remove in [
                 'archives'
         ]:
