@@ -9,6 +9,7 @@ import os
 import pickle
 import signal
 import sys
+import textwrap
 import threading
 import time
 import traceback
@@ -332,7 +333,8 @@ class Log(object):
             try:
                 # Do this while locked to make multi-line messages log contiguously
                 for line in lines:
-                    logger.log(level, line)
+                    for chunk in textwrap.wrap(line, 4096):
+                        logger.log(level, chunk)
             except Exception as ex:
                 print("Exception while logging:\n%s\nMissed message: %s\n" % (str(ex), message), file=sys.stderr)
                 self.__syslog_handler_deinit()
