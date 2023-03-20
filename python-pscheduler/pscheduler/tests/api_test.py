@@ -38,7 +38,6 @@ class TestApi(PschedTestBase):
         self.assertEqual(api_host_port('[::1]'), ('::1', None))
         self.assertEqual(api_host_port('[::1]:1234'), ('::1', 1234))
 
-        self.assertEqual(api_url_hostport(None), 'https://localhost/pscheduler/')
         self.assertEqual(api_url_hostport('foo'), 'https://foo/pscheduler/')
         self.assertEqual(api_url_hostport('foo:1234'), 'https://foo:1234/pscheduler/')
         self.assertEqual(api_url_hostport('[::1]'), 'https://[::1]/pscheduler/')

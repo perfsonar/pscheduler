@@ -55,7 +55,7 @@ Examples:
     )
 opt_parser.disable_interspersed_args()
 
-DEFAULT_BASE_HOST = "localhost"
+DEFAULT_BASE_HOST = pscheduler.api_local_host()
 
 opt_parser.add_option("--host",
                       help="Base host for troubleshooting",

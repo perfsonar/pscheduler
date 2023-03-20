@@ -123,7 +123,7 @@ opt_parser.add_option("--bind",
 
 opt_parser.add_option("--host",
                       help="Request schedule from named host",
-                      default=None,
+                      default=pscheduler.api_local_host(),
                       action="store", type="string",
                       dest="host")
 
@@ -138,9 +138,7 @@ opt_parser.add_option("--plot",
 
 
 
-full_host = options.host if options.host is not None \
-            else pscheduler.api_local_host()
-
+full_host = options.host
 
 # This outputs PNG, which isn't suitable for TTYs.
 

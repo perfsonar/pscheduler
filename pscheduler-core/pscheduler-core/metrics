@@ -80,7 +80,7 @@ opt_parser.add_option("--format",
 
 opt_parser.add_option("--host",
                       help="Request statistics from named host",
-                      default=None,
+                      default=pscheduler.api_local_host(),
                       action="store", type="string",
                       dest="host")
 

@@ -37,7 +37,7 @@ opt_parser.add_option("--bind",
                       dest="bind")
 opt_parser.add_option("--host",
                       help="Query the specified host",
-                      default=None,
+                      default=pscheduler.api_local_host(),
                       action="store", type="string",
                       dest="host")
 opt_parser.add_option("--verbose", "-v",

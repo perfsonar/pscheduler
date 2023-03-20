@@ -326,7 +326,7 @@ log = pscheduler.Log(verbose=verbose, debug=options.debug, quiet=True, propagate
 
 # Decide who assists and where to bind for it.
 
-last_ditch_assist = 'localhost'
+last_ditch_assist = pscheduler.api_local_host()
 assist = options.assist or os.getenv('PSCHEDULER_ASSIST') or last_ditch_assist
 assist_bind = options.assist_bind or os.getenv('PSCHEDULER_ASSIST_BIND')
 log.debug("Assistance is from %s bound from %s", assist, assist_bind)
