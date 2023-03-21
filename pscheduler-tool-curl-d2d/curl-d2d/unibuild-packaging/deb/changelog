@@ -1,8 +1,8 @@
-pscheduler-tool-curl-d2d (5.0.0~b1.3-1) perfsonar-5.0; urgency=low
+pscheduler-tool-curl-d2d (5.0.0~b2.2-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
 
- -- perfSONAR developers <debian@perfsonar.net>  Tue, 20 Sep 2022 08:41:19 -0400
+ -- perfSONAR developers <debian@perfsonar.net>  Tue, 21 Mar 2023 15:09:54 -0400
 
 pscheduler-tool-curl-d2d (4.4.5-1) perfsonar-4.4; urgency=low
 
