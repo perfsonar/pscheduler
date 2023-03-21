@@ -1,4 +1,10 @@
-paris-traceroute (1.0-1) unstable; urgency=low
+paris-traceroute (0.93.ps-1) unstable; urgency=low
+
+  * perfSONAR built
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Tue, 21 Mar 2023 17:07:32 +0000
+
+paris-traceroute (0.1-1) unstable; urgency=low
 
   * Initial release.
 

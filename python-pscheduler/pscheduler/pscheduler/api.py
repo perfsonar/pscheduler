@@ -4,6 +4,7 @@ Functions related to the pScheduler REST and Plugin APIs
 
 import multiprocessing
 import multiprocessing.dummy
+import os
 import socket
 import threading
 import urllib
@@ -19,8 +20,8 @@ def api_root():
     return '/pscheduler'
 
 def api_local_host():
-    "Return a name that should point to the server on this host."
-    return 'localhost'
+    "Return a hostname and, optionally, a port that should point to the server on this host."
+    return os.environ.get("PSCHEDULER_LOCALHOST", api_local_host_name())
 
 def api_local_host_name():
     "Return the local system's hostname"
