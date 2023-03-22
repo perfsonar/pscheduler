@@ -91,7 +91,7 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %%_pscheduler_postgresql_service postgresql-%%{_pscheduler_postgresql_version_major}
 %%_pscheduler_postgresql_data %%{_pscheduler_postgresql_data_top}/%%{_pscheduler_postgresql_version_major}/data
 %%_pscheduler_postgresql_initdb %%{_usr}/pgsql-%%{_pscheduler_postgresql_version_major}/bin/postgresql-%%{_pscheduler_postgresql_version_major}-setup initdb
-%%_pscheduler_postgresql_plpython %%{_pscheduler_postgresql_package}-plpython
+%%_pscheduler_postgresql_plpython %%{_pscheduler_postgresql_package}-plpython%%{_pscheduler_python_version_major}
 %endif
 
 %if 0%{?el8}%{?el9}
