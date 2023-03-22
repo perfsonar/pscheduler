@@ -140,8 +140,9 @@ nuttcp
 ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,owamp)
 
 # TODO: Needed for D11, having difficulties with the packaging.
-define(HAVE_PARIS_TRACEROUTE,ifelse(DISTRO/eval(MAJOR > 10),Debian/1,,1))
-ifelse(HAVE_PARIS_TRACEROUTE,paris-traceroute,)
+#define(HAVE_PARIS_TRACEROUTE,ifelse(DISTRO/eval(MAJOR > 10),Debian/1,,1))
+#ifelse(HAVE_PARIS_TRACEROUTE,paris-traceroute,)
+paris-traceroute
 
 # Some Debian and all Ubuntus don't have a recent-enough Golang to
 # build this.

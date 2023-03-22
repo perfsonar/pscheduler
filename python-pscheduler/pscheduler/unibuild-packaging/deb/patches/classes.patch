@@ -1,6 +1,5 @@
-diff -rupN a/Makefile pscheduler-b/Makefile
---- a/Makefile	2021-02-20 18:19:54.314335616 +0000
-+++ b/Makefile	2021-02-20 18:21:19.674335616 +0000
+--- a/Makefile	2023-03-21 15:09:49.697559951 -0400
++++ b/Makefile	2023-03-21 15:09:55.123801512 -0400
 @@ -4,24 +4,14 @@
  
  default: build
@@ -29,10 +28,9 @@ diff -rupN a/Makefile pscheduler-b/Makefile
  	python3 setup.py build
  
  clean:
-diff -rupN a/pscheduler/plugins.py pscheduler-b/pscheduler/plugins.py
---- a/pscheduler/plugins.py	2021-02-20 18:19:54.314335616 +0000
-+++ b/pscheduler/plugins.py	2021-02-20 18:20:24.830335616 +0000
-@@ -7,7 +7,7 @@ import os
+--- a/pscheduler/plugins.py	2023-03-21 15:09:49.702539453 -0400
++++ b/pscheduler/plugins.py	2023-03-21 15:09:55.124073428 -0400
+@@ -7,7 +7,7 @@
  from .program import run_program
  
  # The absolute here path was filled in by the build process.

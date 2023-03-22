@@ -1,7 +1,5 @@
-Index: b/utilities/backup.raw
-===================================================================
---- a/utilities/backup.raw
-+++ b/utilities/backup.raw
+--- a/utilities/backup.raw	2023-03-21 15:09:50.279855098 -0400
++++ b/utilities/backup.raw	2023-03-21 15:09:51.921170542 -0400
 @@ -73,6 +73,7 @@
      --format plain \
      --serializable-deferrable \
@@ -10,10 +8,8 @@ Index: b/utilities/backup.raw
      pscheduler \
      > "${WORK_DIR}/database-dump"
  $INTERACTIVE && printf ' Done.\n' 1>&2 || true
-Index: b/utilities/restore.raw
-===================================================================
---- a/utilities/restore.raw
-+++ b/utilities/restore.raw
+--- a/utilities/restore.raw	2023-03-21 15:09:50.280066848 -0400
++++ b/utilities/restore.raw	2023-03-21 15:09:51.921477917 -0400
 @@ -203,7 +203,7 @@
  DB_OUTPUT="${WORK_DIR}/db-output"
  LOAD_EXIT=0

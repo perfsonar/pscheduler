@@ -1,5 +1,5 @@
-pscheduler-tool-dublin-traceroute (5.0.0~a1.0-1) perfsonar-5.0-snapshot; urgency=low
+pscheduler-tool-dublin-traceroute (5.0.0~b2.2-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
 
- -- Mark Feit <mfeit@internet2.edu>  Tue, 23 Aug 2022 15:49:54 -0400
+ -- perfSONAR developers <debian@perfsonar.net>  Tue, 21 Mar 2023 15:09:54 -0400

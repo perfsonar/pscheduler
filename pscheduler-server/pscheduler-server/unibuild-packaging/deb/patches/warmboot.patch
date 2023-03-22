@@ -1,7 +1,5 @@
-Index: b/database/warmboot.raw
-===================================================================
---- a/database/warmboot.raw
-+++ b/database/warmboot.raw
+--- a/database/warmboot.raw	2023-03-21 15:09:49.619111784 -0400
++++ b/database/warmboot.raw	2023-03-21 15:09:51.772959667 -0400
 @@ -3,8 +3,7 @@
  # Warm boot the database
  #
