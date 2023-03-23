@@ -271,7 +271,7 @@ make -C api-server \
      "PREFIX=${RPM_BUILD_ROOT}" \
      "DSN_FILE=%{dsn_file}" \
      "LIMITS_FILE=%{_pscheduler_limit_config}" \
-     "PYTHON=%(which %{_pscheduler_python})" \
+     "PYTHON=%(command -v %{_pscheduler_python})" \
      "RUN_DIR=%{run_dir}" \
      install
 
