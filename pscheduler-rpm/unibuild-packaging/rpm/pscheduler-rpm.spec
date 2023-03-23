@@ -52,7 +52,7 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %if 0%{?el7}
 # EL7 supports 2, 34 and 36 and names its packages that way (e.g.,
 # python36-foo) and has some named python3-foo.
-%%_pscheduler_python python%{_pscheduler_python_version_major}
+%%_pscheduler_python python%%{_pscheduler_python_version_major}
 %%_pscheduler_python_epel python%%{_pscheduler_python_version_major}%%{_pscheduler_python_version_minor}
 %endif
 
