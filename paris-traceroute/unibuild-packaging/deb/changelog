@@ -1,8 +1,9 @@
 paris-traceroute (0.93.ps-1) unstable; urgency=low
 
   * perfSONAR built
+  * Keeping only include files in the libparistraceroute-dev package
 
- -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Tue, 21 Mar 2023 17:07:32 +0000
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Thu, 23 Mar 2023 15:54:16 +0000
 
 paris-traceroute (0.1-1) unstable; urgency=low
 
