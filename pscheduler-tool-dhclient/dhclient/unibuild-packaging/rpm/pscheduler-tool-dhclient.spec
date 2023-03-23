@@ -57,7 +57,7 @@ make \
 
 # Enable sudo for dhclient
 
-DHCLIENT=$(which dhclient)
+DHCLIENT=$(command -v dhclient)
 
 mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}
 cat > $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}/%{name} <<EOF
