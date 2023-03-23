@@ -44,7 +44,7 @@ Python bindings to JQ
 
 # The jq library doesn't have a way to figure this out, and the
 # behavior is hard-wired into the command-line program.
-%define jq_prog %(which jq)
+%define jq_prog %(command -v jq)
 %define jq_bin  %(dirname "%{jq_prog}")
 %define jq_lib  %(cd "%{jq_bin}/../lib" && pwd)/jq
 

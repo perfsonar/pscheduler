@@ -50,7 +50,7 @@ make \
 
 # Enable sudo for traceroute
 
-TRACEROUTE=$(which traceroute)
+TRACEROUTE=$(command -v traceroute)
 
 mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}
 cat > $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}/%{name} <<EOF

@@ -55,7 +55,7 @@ export CFLAGS="$RPM_OPT_FLAGS -fno-strict-aliasing"
 ./configure \
     --enable-shared \
     --with-apxs=%{_httpd_apxs} \
-    --with-python=%(which %{_pscheduler_python})
+    --with-python=%(command -v %{_pscheduler_python})
 make %{?_smp_mflags}
 
 

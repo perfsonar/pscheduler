@@ -54,7 +54,7 @@ make \
 
 # Enable sudo for ping
 
-PING=$(which ping)
+PING=$(command -v ping)
 
 mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}
 cat > $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}/%{name} <<EOF

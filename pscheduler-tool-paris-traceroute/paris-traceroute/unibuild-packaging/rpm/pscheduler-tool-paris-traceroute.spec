@@ -50,7 +50,7 @@ make \
 
 # Enable sudo for traceroute
 
-PARIS_TRACEROUTE=$(which paris-traceroute)
+PARIS_TRACEROUTE=$(command -v paris-traceroute)
 
 mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}
 cat > $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}/%{name} <<EOF
