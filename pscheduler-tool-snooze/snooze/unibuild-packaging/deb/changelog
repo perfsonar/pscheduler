@@ -1,8 +1,8 @@
-pscheduler-tool-snooze (5.0.0~b2.2-1) perfsonar-5.0; urgency=low
+pscheduler-tool-snooze (5.0.0~b2.4-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
 
- -- perfSONAR developers <debian@perfsonar.net>  Tue, 21 Mar 2023 15:09:52 -0400
+ -- perfSONAR developers <debian@perfsonar.net>  Tue, 28 Mar 2023 17:35:52 +0000
 
 pscheduler-tool-snooze (4.4.4-1) perfsonar-4.4; urgency=low
 

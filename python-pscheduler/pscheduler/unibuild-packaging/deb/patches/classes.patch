@@ -1,5 +1,5 @@
---- a/Makefile	2023-03-21 15:09:49.697559951 -0400
-+++ b/Makefile	2023-03-21 15:09:55.123801512 -0400
+--- a/Makefile	2023-03-28 17:35:36.013181000 +0000
++++ b/Makefile	2023-03-28 17:36:00.047958752 +0000
 @@ -4,24 +4,14 @@
  
  default: build
@@ -28,8 +28,8 @@
  	python3 setup.py build
  
  clean:
---- a/pscheduler/plugins.py	2023-03-21 15:09:49.702539453 -0400
-+++ b/pscheduler/plugins.py	2023-03-21 15:09:55.124073428 -0400
+--- a/pscheduler/plugins.py	2023-03-28 17:35:36.013181000 +0000
++++ b/pscheduler/plugins.py	2023-03-28 17:36:00.048905982 +0000
 @@ -7,7 +7,7 @@
  from .program import run_program
  
