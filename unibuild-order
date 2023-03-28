@@ -130,13 +130,12 @@ define(HAVE_ETHR,HAVE_GOLANG)
 ifelse(DISTRO/eval(MAJOR <= 18),Ubuntu/1,,      # Doesn't build on U18, TODO: not sure about U20…
        HAVE_ETHR,1,ethr)                        # But D10 build can be used on U18 and U20
 
-ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,I2util)		# TODO: Building temporarily for EL8/EL9; required for owamp
 ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,iperf)		# EPEL dropped this for EL8
-ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,iperf3)
-ifelse(FAMILY/eval(MAJOR >= 10),Debian/1,iperf3)
+iperf3
 nuttcp
 
 # TODO: Building temporarily for EL8 and EL9
+ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,I2util)
 ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,owamp)
 
 # TODO: Needed for D11, having difficulties with the packaging.
