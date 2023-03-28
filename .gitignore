@@ -19,3 +19,7 @@ multiarch_build
 
 # Vagrant cache
 .vagrant/
+
+# Detritus from the one-shot Docker builder
+DOSB/
+
