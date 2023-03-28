@@ -3,7 +3,7 @@ Upstream-Name: pscheduler-archiver-__PLUGIN_NAME__
 Source: https://github.com/perfsonar/pscheduler
 
 Files: *
-Copyright: 2020-2020 perfSONAR project
+Copyright: 2020-2023 perfSONAR project
 License: Apache-2.0
 
 License: Apache-2.0

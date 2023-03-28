@@ -2,7 +2,6 @@ Source: pscheduler-tool-dublin-traceroute
 Section: net
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
-Uploaders: Mark Feit <mfeit@internet2.edu>
 Build-Depends: debhelper (>= 9)
 Standards-Version: 3.9.8
 Homepage: https://github.com/perfsonar/pscheduler
