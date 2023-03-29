@@ -1,3 +1,9 @@
+drop-in (1.6-3) perfsonar-minor-staging; urgency=low
+
+  * Rebuild with Unibuild
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Wed, 29 Mar 2023 14:02:34 +0000
+
 drop-in (1.6-2) perfsonar-minor-staging; urgency=low
 
   * Releasing to perfsonar-minor-staging
