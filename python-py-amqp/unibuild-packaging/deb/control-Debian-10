@@ -30,6 +30,8 @@ Depends:
  python3-vine (>= 5.0),
  ${misc:Depends},
  ${python3:Depends},
+Conflicts: python3-amqp-d11, python3-amqp-u18, python3-amqp-u20
+Provides: python3-amqp
 Suggests:
  python3-py-amqp-doc,
 Description: Low-level AMQP client (Python3 version)

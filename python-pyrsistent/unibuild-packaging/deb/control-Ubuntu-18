@@ -24,8 +24,6 @@ Architecture: any
 Multi-Arch: same
 Conflicts: python3-pyrsistent, python3-pyrsistent-d10, python3-pyrsistent-d11, python3-pyrsistent-u20
 Provides: python3-pyrsistent
-Recommends:
- ${python3:Recommends}
 Depends:
  ${misc:Depends},
  ${python3:Depends},

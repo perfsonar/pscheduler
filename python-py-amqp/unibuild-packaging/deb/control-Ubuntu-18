@@ -18,12 +18,20 @@ Vcs-Git: https://salsa.debian.org/python-team/packages/python-amqp.git
 Vcs-Browser: https://salsa.debian.org/python-team/packages/python-amqp
 Rules-Requires-Root: no
 
+Package: python3-amqp
+Architecture: all
+Depends:
+ python3-amqp-d10 | python3-amqp-d11 | python3-amqp-u18 | python3-amqp-u20
+Description: OS independant meta package of py-amqp
+
 Package: python3-amqp-u18
 Architecture: all
 Depends:
  python3-vine (>= 5.0),
  ${misc:Depends},
  ${python3:Depends},
+Conflicts: python3-amqp-d10, python3-amqp-d11, python3-amqp-u20
+Provides: python3-amqp
 Suggests:
  python3-py-amqp-doc,
 Description: Low-level AMQP client (Python3 version)
