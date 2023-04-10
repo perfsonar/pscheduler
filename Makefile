@@ -6,6 +6,7 @@ default: build
 
 
 BUILD_LOG=unibuild-log
+UNIBUILD_REPO=unibuild-repo
 
 ifdef START
 UNIBUILD_OPTS += --start $(START)
@@ -21,7 +22,7 @@ endif
 # within the confines of POSIX.
 # Source: https://unix.stackexchange.com/a/70675/15184
 build:
-	rm -rf $(BUILD_LOG)
+	rm -rf $(BUILD_LOG) $(UNIBUILD_REPO)
 	((( \
 	(unibuild build $(UNIBUILD_OPTS); echo $$? >&3) \
 	| tee $(BUILD_LOG) >&4) 3>&1) \
