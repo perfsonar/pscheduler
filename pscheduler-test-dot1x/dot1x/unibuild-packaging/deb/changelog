@@ -1,6 +1,6 @@
-pscheduler-test-dot1x (5.0.0~b2.4-1) perfsonar-5.0; urgency=low
+pscheduler-test-dot1x (5.0.0~b2.8-1) perfsonar-5.0; urgency=low
 
   * Initial release
 
- -- perfSONAR developers <debian@perfsonar.net>  Tue, 28 Mar 2023 17:35:54 +0000
+ -- perfSONAR developers <debian@perfsonar.net>  Mon, 10 Apr 2023 09:21:55 -0400
 

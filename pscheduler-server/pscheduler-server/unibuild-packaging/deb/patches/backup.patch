@@ -19,3 +19,24 @@
      || LOAD_EXIT=$?
  
  if [ "${LOAD_EXIT}" -ne 0 ]
+--- a/utilities/backup.raw	2023-04-10 09:21:52.419950099 -0400
++++ b/utilities/backup.raw	2023-04-10 09:21:54.199275586 -0400
+@@ -73,6 +73,7 @@
+     --format plain \
+     --serializable-deferrable \
+     --user pscheduler \
++    --host localhost \
+     pscheduler \
+     > "${WORK_DIR}/database-dump"
+ $INTERACTIVE && printf ' Done.\n' 1>&2 || true
+--- a/utilities/restore.raw	2023-04-10 09:21:52.420166181 -0400
++++ b/utilities/restore.raw	2023-04-10 09:21:54.199562292 -0400
+@@ -203,7 +203,7 @@
+ DB_OUTPUT="${WORK_DIR}/db-output"
+ LOAD_EXIT=0
+ 
+-postgresql-load "${SQL_WORK}" > "${DB_OUTPUT}" 2>&1 \
++su -l -c psql postgres < "${SQL_WORK}" > "${DB_OUTPUT}" 2>&1 \
+     || LOAD_EXIT=$?
+ 
+ if [ "${LOAD_EXIT}" -ne 0 ]

@@ -12,7 +12,7 @@
 
 %define short	mtu
 %define perfsonar_auto_version 5.0.0
-%define perfsonar_auto_relnum 0.b2.4
+%define perfsonar_auto_relnum 0.b2.8
 
 Name:		pscheduler-test-%{short}
 Version:	%{perfsonar_auto_version}

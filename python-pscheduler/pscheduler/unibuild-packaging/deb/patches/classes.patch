@@ -39,3 +39,44 @@
  
  
  def plugin_method_path(pltype, which, method):
+--- a/Makefile	2023-04-10 09:21:51.840929527 -0400
++++ b/Makefile	2023-04-10 09:21:57.049613649 -0400
+@@ -4,24 +4,14 @@
+ 
+ default: build
+ 
+-
+-file-setup:
+-ifndef CLASSES
+-	@echo No CLASSES specified for build
+-	@false
+-endif
+-	find pscheduler -type f -name "*.py" \
+-	| xargs sed -i -e 's|__CLASSES__|$(CLASSES)|'
+-
+-
+-test: file-setup
++test:
+ 	python3 -m nose
+ 
+-test-coverage: file-setup
++test-coverage:
+ 	python3 -m nose --with-coverage --cover-package rabbitmq
+ 
+ 
+-build: file-setup test
++build: test
+ 	python3 setup.py build
+ 
+ clean:
+--- a/pscheduler/plugins.py	2023-04-10 09:21:51.845460911 -0400
++++ b/pscheduler/plugins.py	2023-04-10 09:21:57.049900646 -0400
+@@ -7,7 +7,7 @@
+ from .program import run_program
+ 
+ # The absolute here path was filled in by the build process.
+-__CLASSES = os.path.abspath("__CLASSES__")
++__CLASSES = os.path.abspath("/usr/lib/pscheduler/classes")
+ 
+ 
+ def plugin_method_path(pltype, which, method):
