@@ -10,15 +10,3 @@
  DO \$\$
  BEGIN
      PERFORM warm_boot();
---- a/database/warmboot.raw	2023-04-10 09:21:51.773525440 -0400
-+++ b/database/warmboot.raw	2023-04-10 09:21:54.058659246 -0400
-@@ -3,8 +3,7 @@
- # Warm boot the database
- #
- 
--postgresql-load --role __ROLE__ <<EOF
--\c __DATABASE__
-+PGPASSFILE=/etc/pscheduler/database/pgpassfile psql -U __ROLE__ __ROLE__ -h localhost <<EOF >/dev/null
- DO \$\$
- BEGIN
-     PERFORM warm_boot();
