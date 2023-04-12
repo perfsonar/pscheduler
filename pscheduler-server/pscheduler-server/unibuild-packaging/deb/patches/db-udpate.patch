@@ -1,5 +1,7 @@
---- a/database/db-update.raw	2023-03-28 17:34:11.249580000 +0000
-+++ b/database/db-update.raw	2023-03-28 17:35:50.296106602 +0000
+Index: b/database/db-update.raw
+===================================================================
+--- a/database/db-update.raw	2023-03-28 19:35:51.038774000 +0200
++++ b/database/db-update.raw	2023-04-12 16:17:24.522240837 +0200
 @@ -20,14 +20,11 @@
  $INTERACTIVE && printf "Loading database:\n" || true
  
