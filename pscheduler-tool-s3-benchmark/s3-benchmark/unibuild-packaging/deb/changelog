@@ -4,6 +4,18 @@ pscheduler-tool-s3-benchmark (5.0.0~b2.9-1) perfsonar-5.0; urgency=low
 
  -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Wed, 12 Apr 2023 16:17:31 +0200
 
+pscheduler-tool-s3-benchmark (4.4.6-2) perfsonar-4.4; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 09 Nov 2022 20:23:12 +0000
+
+pscheduler-tool-s3-benchmark (4.4.5-2) perfsonar-4.4; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Mon, 26 Sep 2022 18:23:19 +0000
+
 pscheduler-tool-s3-benchmark (4.4.4-1) perfsonar-4.4; urgency=low
 
   * New upstream version.
