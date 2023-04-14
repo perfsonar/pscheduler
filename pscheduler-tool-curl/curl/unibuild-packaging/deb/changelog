@@ -2,7 +2,7 @@ pscheduler-tool-curl (5.0.0-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
 
- -- perfSONAR developers <debian@perfsonar.net>  Thu, 13 Apr 2023 16:49:37 -0400
+ -- perfSONAR developers <debian@perfsonar.net>  Thu, 13 Apr 2023 20:34:18 -0400
 
 pscheduler-tool-curl (4.4.6-2) perfsonar-4.4; urgency=low
 
