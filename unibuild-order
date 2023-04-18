@@ -185,7 +185,7 @@ pscheduler-test-psresponse
 pscheduler-test-throughput
 pscheduler-test-openports		--bundle extras
 pscheduler-test-rtt
-ifelse(HAVE_S3_BENCHMARK,1,pscheduler-test-s3throughput)
+pscheduler-test-s3throughput
 pscheduler-test-simplestream
 pscheduler-test-snmpget			--bundle snmp
 pscheduler-test-snmpgetbgm		--bundle snmp
@@ -205,7 +205,7 @@ pscheduler-tool-curl-d2d		--bundle extras
 pscheduler-tool-dhclient		--bundle extras
 pscheduler-tool-dnspy
 ifelse(FAMILY,Debian,,pscheduler-tool-dublin-traceroute)	# TODO: DT doesn't build on Debian, so no plugin.
-ifelse(HAVE_ETHR,1,pscheduler-tool-ethr)
+pscheduler-tool-ethr
 pscheduler-tool-fpingreach		--bundle extras
 pscheduler-tool-fwmtu
 pscheduler-tool-globus			--bundle extras
@@ -226,7 +226,7 @@ pscheduler-tool-psclock
 pscheduler-tool-pstimer
 pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
-ifelse(HAVE_S3_BENCHMARK,1,pscheduler-tool-s3-benchmark)
+pscheduler-tool-s3-benchmark
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
