@@ -21,7 +21,6 @@ python-pscheduler (4.4.5-2) perfsonar-4.4; urgency=low
   * New upstream version.
 
  -- perfSONAR developers <debian@perfsonar.net>  Mon, 26 Sep 2022 18:23:19 +0000
->>>>>>> master:python-pscheduler/pscheduler/debian/changelog
 
 python-pscheduler (4.4.4-1) perfsonar-4.4; urgency=low
 
