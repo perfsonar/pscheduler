@@ -1,3 +1,9 @@
+pscheduler-tool-traceroute (5.0.2-1) perfsonar-5.0; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Fri, 21 Apr 2023 16:16:16 -0400
+
 pscheduler-tool-traceroute (5.0.1-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
