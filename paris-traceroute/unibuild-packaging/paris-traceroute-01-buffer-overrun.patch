@@ -1,0 +1,12 @@
+diff -rupN paris-traceroute-1.0-orig/libparistraceroute/whois.c paris-traceroute-1.0/libparistraceroute/whois.c
+--- paris-traceroute-1.0-orig/libparistraceroute/whois.c	2016-04-21 13:58:33.000000000 +0000
++++ paris-traceroute-1.0/libparistraceroute/whois.c	2023-05-08 17:06:50.538561263 +0000
+@@ -85,7 +85,7 @@ bool whois_query(
+     int    family = server_address->family;
+     size_t len = 0;
+ 
+-    buffer[BUFFER_SIZE] = '\0';
++    buffer[BUFFER_SIZE - 1] = '\0';
+ 
+     if (queried_address->family != AF_INET && queried_address->family != AF_INET6) {
+         fprintf(stderr, "whois_query: queried address family not supported (family = %d)\n", queried_address->family);

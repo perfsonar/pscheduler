@@ -19,6 +19,10 @@ Url:		http://www.paris-traceroute.net
 
 Source:		%{short}-%{version}.tar.gz
 
+Patch0:		paris-traceroute-00-mda-bounds.patch
+Patch1:         paris-traceroute-01-buffer-overrun.patch
+
+
 BuildRequires:  autoconf
 BuildRequires:  gcc
 BuildRequires:  libtool
@@ -33,6 +37,8 @@ A smarter traceroute
 
 %prep
 %setup -q -n %{short}-%{version}
+%patch0 -p1
+%patch1 -p1
 ./autogen.sh
 ./configure --prefix=%{_prefix}
 
