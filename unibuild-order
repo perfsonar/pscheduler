@@ -90,7 +90,8 @@ python-nmap3
 ifelse(FAMILY/MAJOR,RedHat/7,python-memcached)
 
 python-jsontemplate
-python-netifaces
+ifelse(FAMILY/eval(MAJOR >= 9),,			# EL9+ has this.
+       python-netifaces)
 
 # TODO: This was deprecated after EL8.  Switch to something new.
 ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-nose)
