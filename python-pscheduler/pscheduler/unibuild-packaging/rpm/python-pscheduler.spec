@@ -67,9 +67,7 @@ BuildRequires:	%{_pscheduler_python}-attrs
 BuildRequires:	%{_pscheduler_python_epel}-dateutil
 BuildRequires:	%{_pscheduler_python_epel}-dns
 BuildRequires:	%{_pscheduler_python}-isodate
-%if 0%{?el7}
 BuildRequires:	%{_pscheduler_python}-jsonschema
-%endif
 BuildRequires:	%{_pscheduler_python_epel}-netaddr
 BuildRequires:	%{_pscheduler_python}-netifaces
 BuildRequires:	%{_pscheduler_python}-ntplib
