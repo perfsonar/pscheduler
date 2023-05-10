@@ -4,6 +4,12 @@ pscheduler-tool-tcpping (5.1.0~a1.0-1) perfsonar-5.1-snapshot; urgency=low
 
  -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Wed, 19 Apr 2023 08:27:55 +0200
 
+pscheduler-tool-tcpping (5.0.1-1) perfsonar-5.0; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 19 Apr 2023 15:50:15 -0400
+
 pscheduler-tool-tcpping (5.0.0-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
