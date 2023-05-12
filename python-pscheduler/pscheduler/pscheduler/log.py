@@ -320,7 +320,13 @@ class Log(object):
     def __log(self, logger, level, fmt, *args):
 
         # No args means don't try formatting the string.
-        message = fmt % args if args else fmt
+        if args:
+            if isinstance(fmt, str):
+                message = fmt % args
+            else:
+                raise ValueError("Format must be a string.")
+        else:
+            message = str(fmt)
 
         lines = message.split("\n")
         while lines[0] == "":
