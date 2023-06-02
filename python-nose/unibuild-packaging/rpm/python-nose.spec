@@ -84,8 +84,7 @@ pushd %{modname}-%{version}
 dos2unix examples/attrib_plugin.py
 cp -pr lgpl.txt AUTHORS CHANGELOG examples NEWS README.txt ..
 popd
-mv %{modname}-%{version} python2
-cp -pr python2 python3
+mv %{modname}-%{version} python3
 
 %build
 pushd python3
@@ -113,7 +112,7 @@ pushd python2/doc
   rm -vrf .build
 popd
 %endif
-cp -a python2/doc reST
+cp -a python3/doc reST
 rm -vrf reST/{.static,.templates}
 
 %check

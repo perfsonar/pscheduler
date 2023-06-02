@@ -234,10 +234,14 @@ def check_service_status(api):
         pscheduler.api_url(host, "status"),
         throw=False)
     if http_status != 200:
-        failed(status)
+       failed(status)
+    if status is None:
+        failed("Server did not provide full status.")
     ok()
 
     start("  Checking services")
+    if status.get("services", None) is None:
+        failed("Server did not provide service status")
 
     for service, name in services:
         service_status = status["services"][service]

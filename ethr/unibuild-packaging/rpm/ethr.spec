@@ -33,18 +33,32 @@ such as Windows, Linux and other Unix systems.
 %global debug_package %{nil}
 
 
-%define gopath $(pwd)/GOPATH
-%define gobin %{gopath}/bin
-%define gocache %{gopath}/.cache
+%define godir $(pwd)/GOPATH
+%define gopath %{godir}:/usr/lib/golang/src/vendor:/usr/lib/golang/pkg/linux_amd64/vendor
+%define gobin %{godir}/bin
+%define gocache %{godir}/.cache
 
 %prep
 %setup -q
 
-mkdir -p %{gopath} %{gobin}
 
-export GOPATH=%{gopath}
-export GOBIN=%{gobin}
-export GOCACHE=%{gocache}
+%build
+export GOPATH="%{gopath}"
+export GOBIN="%{gobin}"
+export GOCACHE="%{gocache}"
+
+mkdir -p "%{godir}" "%{gobin}"
+
+# Go leaves a bunch of directories read-only, which makes cleaning out
+# the workspace difficult.  Make sure that's cleaned up no matter
+# what.
+
+mkdir -p "%{godir}"
+cleanup()
+{
+    find "%{godir}" -type d | xargs chmod +w
+}
+trap cleanup EXIT
 
 %if 0%{?el7}
 ## EL7 has problems with its git that cause module fetches not to work.
@@ -57,15 +71,7 @@ go mod init microsoft.com/ethr
 go mod tidy -e
 go get ./...
 
-
-
-%build
-export GOPATH=%{gopath}
-export GOBIN=%{gobin}
-export GOCACHE=%{gocache}
-
 go build
-
 
 
 %install

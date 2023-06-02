@@ -10,6 +10,10 @@ Group:          Development/Libraries
 Source0:        I2util.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
+BuildRequires:  autoconf
+BuildRequires:  automake
+BuildRequires:  gcc
+
 %description
 I2 Utility library. Currently contains:
 	* error logging

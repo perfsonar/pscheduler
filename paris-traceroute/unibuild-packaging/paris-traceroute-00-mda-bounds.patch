@@ -1,0 +1,12 @@
+diff -rupN paris-traceroute-1.0-orig/libparistraceroute/algorithms/mda/interface.h paris-traceroute-1.0/libparistraceroute/algorithms/mda/interface.h
+--- paris-traceroute-1.0-orig/libparistraceroute/algorithms/mda/interface.h	2016-04-21 13:58:33.000000000 +0000
++++ paris-traceroute-1.0/libparistraceroute/algorithms/mda/interface.h	2023-05-08 16:57:49.159112849 +0000
+@@ -111,7 +111,7 @@ void mda_flow_dump(const mda_interface_t
+  *    the corresponding FQDN.
+  */
+ 
+-void mda_link_dump(const mda_interface_t ** link, bool do_resolv);
++void mda_link_dump(const mda_interface_t * link[2], bool do_resolv);
+ 
+ /**
+  * \brief Callback used by lattice_dump
