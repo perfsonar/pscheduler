@@ -9,98 +9,101 @@
 # back to the test. Both system and api are able to be used here.
 #
 
+import select
+from os import getpid, makedirs, unlink, access, R_OK, system, listdir, path
+from socket import socket, AF_UNIX, SOCK_DGRAM
 import datetime
-import subprocess
-import json
-import sys
-import time
-import argparse
-import time
-from wifi import Cell #make sure that you have pip installed wifi
-
 import pscheduler
+import os
 
-# from stdin
-input = pscheduler.json_load(exit_on_error=True)
+#temp file preserved between consecutive runs but not reboots
+WPA_CONFIG_PATH = '/tmp/wpa_supplicant/wpa_supplicant.conf'
+#initializes only when wpa_supplicant starts
+WPA_CTRL_IFACE_BASE = '/var/run/wpa_supplicant'
+interface = 'wlan0'
+timeout = 3000
+ssid_set = set()
 
-# Take input from test spec
-try:
-    interface = input['test']['spec']['interface']
-    ssid = input['test']['spec']['ssid']
-except KeyError:
-    pscheduler.fail('Missing data in input')
-
-# convert the comma separated ssids to a list
-ssid = list(ssid.split(','))
-
-duration = input['test']['spec'].get('duration', 'PT5S')
-duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
-timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
-timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+# parse config
+pscheduler_input = pscheduler.json_load(exit_on_error=True)
+get_ssid = pscheduler_input['test']['spec'].get('ssid', None)
+ssid_set = set(get_ssid.split(',')) if get_ssid else None
+duration_iso = pscheduler_input['test']['spec'].get('duration', 'PT5S')
+timeout_iso = pscheduler_input['test']['spec'].get('timeout', 'PT10S')
+timeout = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(timeout_iso))
+duration = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(duration_iso))
 start_time = datetime.datetime.now()
 succeeded = False
 error = ''
 diags = ''
-
-# Run the actual task here:
-def get_all_bssids(interface):
-    """
-    Scan the given interface for all bssids
-    Return a list of all bssids
-    """
-    start_time = time.time()
-    cells = Cell.all(interface) # Specify interface to scan on
-    wifi_list = []
-    for cell in cells:
-        bssid = {}
-        bssid['ssid'] = cell.ssid
-        bssid['signal'] = cell.signal
-        bssid['address'] = cell.address
-        bssid['frequency'] = pscheduler.si_as_number(cell.frequency[:-2])
-        quality_num,quality_denom = cell.quality.split('/')
-        bssid['quality'] = float(quality_num) / float(quality_denom)
-        bssid['bitrates'] = sorted(map(lambda v : pscheduler.si_as_number(v[:-3]), cell.bitrates))
-        bssid['encrypted'] = cell.encrypted
-        bssid['channel'] = cell.channel
-        bssid['mode'] = cell.mode
-        wifi_list.append(bssid)
-    
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    log_msg = "Scan finished in " + str(elapsed_time)
-    return wifi_list, elapsed_time
-
-"""
-Scan on the given interface
-Output a list of all bssids in json format with the given ssid
-"""
-all_bssids, elapsed_time = get_all_bssids(interface)
 ssid_list = []
+dir_path = path.dirname(WPA_CONFIG_PATH)
 
-# Check complete list for matching ssids
-for bssid in all_bssids:
-    #if no ssids were given then append all the ssids
-    if not ssid:
-        ssid_list.append(bssid)
-    else:
-    #if ssid/ssids were given then only append those 
-        if bssid['ssid'] in ssid:
-            ssid_list.append(bssid)
+#check if interface already exists
+# interface_path = path.join(WPA_CTRL_IFACE_BASE,interface)
+# os.system('killall wpa_supplicant')
+# os.remove(interface_path)
+if not access(f'{WPA_CTRL_IFACE_BASE}/{interface}', R_OK):
+    #create config file and start wpa_supplicant
+    if not path.exists(dir_path):
+        makedirs(dir_path)
+    with open(WPA_CONFIG_PATH, 'w') as f:
+        f.write('ctrl_interface='+WPA_CTRL_IFACE_BASE+'\r\n')
+        f.write('update_config=1\r\n')
+    os.system('wpa_supplicant -B -i '+interface+' -c '+WPA_CONFIG_PATH)
 
-succeeded = True
+# print('set up config file')
+#setting up socket
+sock = socket(AF_UNIX, SOCK_DGRAM)
+sock.settimeout(3)
+start  = datetime.datetime.now()
+# response will be written to this socket
+recv_sock = "/tmp/wpa_ctrl_{}".format(os.getpid())
+sock.bind(recv_sock)
+# print('set up and bind receive socket')
 
-# IMPORTANT NOTE: This code puts the process to sleep until the
-# scheduled start time has arrived.  It should be placed after all
-# preparatory code has been executed and immediately before the tool
-# is invoked (for plugins that run other programs) or any activity
-# that does a measurement (for those that don't).
+ctrl_interface = f"{WPA_CTRL_IFACE_BASE}/{interface}"
+# os.chmod(ctrl_interface, 0o777)
+sock.connect(ctrl_interface)
+# print('start attaching at', datetime.datetime.now() - start)
+# attach to wpa_supplicant
+sock.send(b'ATTACH')
 
-try:
-    pscheduler.sleep_until(input['schedule']['start'])
-except KeyError:
-    pscheduler.fail("Unable to find start time in input")
+if sock.recv(3) != b'OK\n':
+    raise OSError(f"error attaching to {ctrl_interface}")
 
+# start scan
+sock.send(bytes("SCAN", 'utf-8'))
+# polling for scan results
+poll = select.poll()
+poll.register(sock, select.POLLIN)
 
+data = []
+# wait for scan to complete
+while poll.poll(timeout):
+    result = sock.recv(4096)
+    if result.endswith(b'<3>CTRL-EVENT-SCAN-RESULTS '):
+        sock.send(bytes("SCAN_RESULTS", 'utf-8'))
+        break
+
+# gather scan results
+while poll.poll(200):
+    result = sock.recv(8192)
+    if result:
+        data.append(result)
+
+blob = data[1].decode('utf-8')
+result = [s.split('\t') for s in blob.split('\n')][1:-1]
+
+for bssid, freq, signal, flags, ssid in result:
+    if not ssid_set or ssid in ssid_set:
+        ssid_list.append({
+            'ssid': ssid,
+            'bssid': bssid,
+            'freq': int(freq),
+            'signal': int(signal),
+            'flags': flags
+            })
 end_time = datetime.datetime.now()
 
 # Organize results into json data
@@ -108,12 +111,14 @@ results = {
     'succeeded': succeeded,
     'result': {
         'schema': 1,
-        'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
+        'time': pscheduler.timedelta_as_iso8601(end_time - start_time),
         'succeeded': succeeded,
         'ssid_list': ssid_list
     },
     'error': error,
-    'diags': diags }
+    'diags': diags
+}
 
-pscheduler.succeed_json(results)
-
+# pscheduler.succeed_json(results)
+# print(results)
+# print('finished at', datetime.datetime.now() - start)

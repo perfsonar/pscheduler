@@ -126,6 +126,7 @@ RESULT_SCHEMA = {
                 "succeeded":        { "$ref": "#/pScheduler/Boolean" },
                 "Authenticated":    { "$ref": "#/pScheduler/Boolean" },
                 "time":             { "$ref": "#/pScheduler/Duration" },
+                "final":            { "type": "array", "items": { "$ref": "#/pScheduler/String"  } }
             },
             "required": [
                 "succeeded",
