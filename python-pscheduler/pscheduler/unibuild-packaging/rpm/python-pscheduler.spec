@@ -2,7 +2,7 @@
 # RPM Spec for Python pScheduler Module
 #
 
-%define perfsonar_auto_version 5.0.1
+%define perfsonar_auto_version 5.0.2
 %define perfsonar_auto_relnum 1
 
 %define short	pscheduler
@@ -67,9 +67,7 @@ BuildRequires:	%{_pscheduler_python}-attrs
 BuildRequires:	%{_pscheduler_python_epel}-dateutil
 BuildRequires:	%{_pscheduler_python_epel}-dns
 BuildRequires:	%{_pscheduler_python}-isodate
-%if 0%{?el7}
 BuildRequires:	%{_pscheduler_python}-jsonschema
-%endif
 BuildRequires:	%{_pscheduler_python_epel}-netaddr
 BuildRequires:	%{_pscheduler_python}-netifaces
 BuildRequires:	%{_pscheduler_python}-ntplib

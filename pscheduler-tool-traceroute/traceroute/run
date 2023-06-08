@@ -233,10 +233,10 @@ try:
     argv.append(str(send_wait_secs))
 except KeyError:
     # This will be used in a calculation later.
-    send_wait = datetime.timedelta()
+    send_wait_delta = datetime.timedelta()
     pass
 
-run_timeout += send_wait * hops
+run_timeout += send_wait_delta * hops
 
 
 #

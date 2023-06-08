@@ -2,7 +2,7 @@
 # RPM Spec for PostgreSQL Initializer
 #
 
-%define perfsonar_auto_version 5.0.1
+%define perfsonar_auto_version 5.0.2
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-account

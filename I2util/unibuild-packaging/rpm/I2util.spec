@@ -1,4 +1,4 @@
-%define perfsonar_auto_version 5.0.1
+%define perfsonar_auto_version 5.0.2
 %define perfsonar_auto_relnum 1
 
 Name:           I2util
@@ -9,6 +9,10 @@ License:        ASL 2.0
 Group:          Development/Libraries
 Source0:        I2util.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
+BuildRequires:  autoconf
+BuildRequires:  automake
+BuildRequires:  gcc
 
 %description
 I2 Utility library. Currently contains:

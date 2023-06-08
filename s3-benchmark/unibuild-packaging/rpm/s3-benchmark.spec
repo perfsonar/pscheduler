@@ -29,20 +29,33 @@ S3 benchmark tool for pScheduler
 
 %define directory %{name}-%{version}-beta
 
-%define gopath $(pwd)/GOPATH:/usr/lib/golang/src/vendor:/usr/lib/golang/pkg/linux_amd64/vendor
-%define gobin %{gopath}/bin
-%define gocache %{gopath}/.cache
+%define godir $(pwd)/GOPATH
+%define gopath %{godir}:/usr/lib/golang/src/vendor:/usr/lib/golang/pkg/linux_amd64/vendor
+%define gobin %{godir}/bin
+%define gocache %{godir}/.cache
 
 %prep
 
 rm -rf %{name}-%{version}-beta
 %setup -q -n %{directory}
 
-mkdir -p %{gopath} %{gobin}
 
-export GOPATH=%{gopath}
-export GOBIN=%{gobin}
-export GOCACHE=%{gocache}
+%build -n %{directory}
+mkdir -p "%{godir}" "%{gobin}"
+export GOPATH="%{gopath}"
+export GOBIN="%{gobin}"
+export GOCACHE"=%{gocache}"
+
+# Go leaves a bunch of directories read-only, which makes cleaning out
+# the workspace difficult.  Make sure that's cleaned up no matter
+# what.
+
+mkdir -p "%{godir}"
+cleanup()
+{
+    find "%{godir}" -type d | xargs chmod +w
+}
+trap cleanup EXIT
 
 %if 0%{?el7}
 # EL7 has problems with its git that cause module fetches not to work.
@@ -55,15 +68,7 @@ go mod init wasabi.com/s3-benchmark
 go mod tidy
 go get ./...
 
-
-
-%build -n %{directory}
-export GOPATH=%{gopath}
-export GOBIN=%{gobin}
-export GOCACHE=%{gocache}
-
 go build s3-benchmark.go
-
 
 
 %install

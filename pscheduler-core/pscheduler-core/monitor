@@ -295,7 +295,7 @@ def update_tasks(screen):
 
     # Past things take up to some fraction of what's left.
     if rows_left > 0 and past_fraction > 0:
-        past_max = int(round(rows_left * past_fraction))
+        past_max = int(rows_left * past_fraction)
         past_len = min(past_max, rows_left)
         past = past[-past_len:]
         rows_left -= len(past)
