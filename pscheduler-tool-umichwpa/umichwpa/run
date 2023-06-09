@@ -85,7 +85,7 @@ timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 succeeded = False
 
-WPA_CONFIG_PATH = '/tmp/wpa_supplicant/wpa_supplicant.conf'
+WPA_CONFIG_PATH = '/tmp/wpa_supplicant.conf'
 dir_path = os.path.dirname(WPA_CONFIG_PATH)
 WPA_CTRL_IFACE_BASE = '/var/run/wpa_supplicant'
 
@@ -96,17 +96,17 @@ status, stdout, stderr = pscheduler.run_program(wpa_status, timeout=timeout)
 if status:
     # create config file and start wpa_supplicant
     # print('create new interface')
-    if not os.path.exists(dir_path):
-        status, out, err = pscheduler.run_program(['sudo','mkdir',WPA_CONFIG_PATH])
-        if status:
-         pscheduler.succeed_json( {
-            'succeeded': False,
-            'diags': '' + out,
-            'error': 'failed to create dir for interface: ' + err,
-            'result': None
-            })
-        else:
-            diags += "created new interface dir\n"
+    # if not os.path.exists(dir_path):
+    #    status, out, err = pscheduler.run_program(['sudo','mkdir',WPA_CONFIG_PATH])
+    #    if status:
+    #     pscheduler.succeed_json( {
+    #        'succeeded': False,
+    #        'diags': '' + out,
+    #        'error': 'failed to create dir for interface: ' + err,
+    #        'result': None
+    #        })
+    #    else:
+    #        diags += "created new interface dir\n"
 
     with open(WPA_CONFIG_PATH, 'w') as f:
         f.write('ctrl_interface='+WPA_CTRL_IFACE_BASE+'\r\n')
