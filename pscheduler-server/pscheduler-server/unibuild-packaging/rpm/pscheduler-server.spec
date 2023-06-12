@@ -63,7 +63,7 @@ Requires:	%{_pscheduler_python_epel}-psutil
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
 BuildRequires:	%{_pscheduler_python}-parse-crontab
-BuildRequires:	%{_pscheduler_python}-pscheduler >= 5.0.0
+BuildRequires:	%{_pscheduler_python}-pscheduler >= 5.1.0
 BuildRequires:	m4
 Requires:	httpd-wsgi-socket
 # Note that the actual definition of what protocol is used is part of
@@ -72,7 +72,7 @@ Requires:	httpd-wsgi-socket
 Requires:	mod_ssl
 Requires:	mod_wsgi > 4.0
 Requires:	%{_pscheduler_python}-parse-crontab
-Requires:	%{_pscheduler_python}-pscheduler >= 5.0.0
+Requires:	%{_pscheduler_python}-pscheduler >= 5.1.0
 
 %if 0%{?el7}
 Requires:	pytz

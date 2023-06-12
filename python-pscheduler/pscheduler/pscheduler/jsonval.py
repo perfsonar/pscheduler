@@ -606,36 +606,14 @@ __dictionary__ = {
     "ParticipantResult": {
         "type": "object",
         "properties": {
-            "participant": { "$ref": "#/pScheduler/Host" },
+            "diags": { "$ref": "#/pScheduler/String" },
+            "error": { "$ref": "#/pScheduler/String" },
+            "succeeded": { "$ref": "#/pScheduler/Boolean" },
             "result":      { "$ref": "#/pScheduler/AnyJSON" },
             },
         "additionalProperties": False,
         "required": [
-            "participant",
-            "result",
-            ]
-        },
-
-    "RunResult": {
-        "type": "object",
-        "properties": {
-            "id":           { "$ref": "#/pScheduler/UUID" },
-            "schedule":     { "$ref": "#/pScheduler/TimeRange" },
-            "test":         { "$ref": "#/pScheduler/TestSpecification" },
-            "tool":         { "$ref": "#/pScheduler/NameVersion" },
-            "participants": {
-                "type": "array",
-                "items": { "$ref": "#/pScheduler/ParticipantResult" },
-                },
-            "result":       { "$ref": "#/pScheduler/AnyJSON" }
-            },
-        "additionalProperties": False,
-        "required": [
-            "id",
-            "schedule",
-            "test",
-            "tool",
-            "participants",
+            "succeeded",
             "result",
             ]
         },
