@@ -138,10 +138,6 @@ ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,iperf)		# EPEL dropped this for EL8
 iperf3
 nuttcp
 
-# TODO: Building temporarily for EL8 and EL9
-ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,I2util)
-ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,owamp)
-
 paris-traceroute
 
 # Some Debian and all Ubuntus don't have a recent-enough Golang to

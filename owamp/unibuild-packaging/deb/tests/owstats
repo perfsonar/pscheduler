@@ -1,7 +1,0 @@
-#!/bin/sh
-
-set -e
-
-owping -F $AUTOPKGTEST_TMP/stats localhost
-
-owstats $AUTOPKGTEST_TMP/stats
