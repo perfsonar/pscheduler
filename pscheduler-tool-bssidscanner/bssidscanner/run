@@ -1,4 +1,126 @@
-#!/bin/sh -e
+#!/usr/bin/env python3
 
-exec sudo "$(dirname $0)/run-wrapped"
+#
+# Development Order #5:
+#
+# This is the meat and bones of the tool, where the actual desired
+# commands or operation will be run. The results are then recorded
+# and added to the 'results' JSON data, which will then be sent
+# back to the test. Both system and api are able to be used here.
+#
 
+import select
+from os import getpid, makedirs, unlink, access, R_OK, system, listdir, path
+import datetime
+import pscheduler
+# import subprocess
+import time
+
+#temp file preserved between consecutive runs but not reboots
+WPA_CONFIG_PATH = '/tmp/wpa_supplicant.conf'
+#initializes only when wpa_supplicant starts
+WPA_CTRL_IFACE_BASE = '/var/run/wpa_supplicant'
+ssid_set = set()
+
+# parse config
+pscheduler_input = pscheduler.json_load(exit_on_error=True)
+interface = pscheduler_input['test']['spec'].get('interface')
+get_ssid = pscheduler_input['test']['spec'].get('ssid', None)
+ssid_set = set(get_ssid.split(',')) if get_ssid else None
+duration_iso = pscheduler_input['test']['spec'].get('duration', 'PT5S')
+timeout_iso = pscheduler_input['test']['spec'].get('timeout', 'PT10S')
+timeout = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(timeout_iso))
+duration = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(duration_iso))
+start_time = datetime.datetime.now()
+error = ''
+diags = ''
+ssid_list = []
+dir_path = path.dirname(WPA_CONFIG_PATH)
+
+# check if interface already exists
+status, res, err = pscheduler.run_program(['wpa_cli', 'status'])
+if status:
+   # create config file and start wpa_supplicant
+   # if not path.exists(dir_path):
+   # makedirs(dir_path)
+   with open(WPA_CONFIG_PATH, 'w') as f:
+       f.write('ctrl_interface='+WPA_CTRL_IFACE_BASE+'\n')
+       f.write('update_config=1\n')
+       f.write('p2p_disabled=1\n')
+   status, out, err = pscheduler.run_program(['wpa_supplicant','-Dnl80211','-B','-i',interface,'-c',WPA_CONFIG_PATH])
+   if status:
+       pscheduler.succeed_json( {
+           'succeeded': False,
+           'diags': out,
+           'error': 'failed to initialize interface',
+           'result': None
+       })
+
+# run wpa_cli
+start  = datetime.datetime.now()
+status, res, err = pscheduler.run_program(['wpa_cli', 'scan'])
+if not status:
+    status, res, err = pscheduler.run_program(['wpa_cli', 'scan_result'])
+else:
+    pscheduler.succeed_json( {
+        'succeeded': False,
+        'diags': res,
+        'error': 'wpa_cli scan failed',
+        'result': None
+        } )
+    
+
+result = res.split('\n')
+
+# account for automatic scanning interval of cli
+while len(result) <= 3:
+    status, res, err = pscheduler.run_program(['wpa_cli', 'scan_result'])
+    result = res.split('\n')
+    time.sleep(0.3)
+
+for i in range(2, len(result)):
+    line = result[i].split('\t')
+    if len(line) == 1:
+        break
+    elif len(line) == 4:
+        bssid, freq, signal, flags = line
+    elif len(line) == 5:
+        bssid, freq, signal, flags, ssid = line
+
+    if not ssid_set or ssid in ssid_set:
+        # retrieve prev ssid if ssid is empty
+        if ssid == '':
+            ssid = ssid_list[-1]['ssid']
+        ssid_list.append({
+            'ssid': ssid,
+            'bssid': bssid,
+            'freq': int(freq),
+            'signal': int(signal),
+            'flags': flags
+            })
+end_time = datetime.datetime.now()
+
+# Check for empty result
+if len(ssid_list) == 0:
+    pscheduler.succeed_json( {
+        'succeeded': False,
+        'diags': '',
+        'error': 'scan completed but returned empty result',
+        'result': None
+        } )
+
+# Organize results into json data
+results = {
+    'succeeded': True,
+    'result': {
+        'schema': 1,
+        'time': pscheduler.timedelta_as_iso8601(end_time - start_time),
+        'succeeded': True,
+        'ssid_list': ssid_list
+    },
+    'error': error,
+    'diags': diags
+}
+
+
+pscheduler.succeed_json(results)

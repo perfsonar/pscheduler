@@ -11,7 +11,6 @@ FILES=\
 	merged-results \
 	participant-data \
 	run \
-	run-wrapped
 
 install: $(FILES)
 ifndef DESTDIR
