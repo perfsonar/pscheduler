@@ -40,7 +40,7 @@ def mtu_path_is_safe(host, ipversion=None):
     else:
         tracepath = "tracepath"
 
-    status, stdout, stderr = run_program([tracepath, host], timeout=30)
+    status, stdout, stderr = run_program([tracepath, host], timeout=60)
 
     if status != 0:
         return(False, "Error: %s" % (stderr.strip()))

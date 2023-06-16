@@ -1,7 +1,0 @@
-#!/bin/sh
-
-set -e
-
-service owamp-server status
-
-pgrep -l owampd
