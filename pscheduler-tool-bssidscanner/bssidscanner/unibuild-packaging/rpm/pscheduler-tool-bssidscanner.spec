@@ -50,6 +50,7 @@ WPA_CLI=$(command -v wpa_cli)
 
 mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}
 cat > $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}/%{name} <<EOF
+
 #
 # %{name}
 #

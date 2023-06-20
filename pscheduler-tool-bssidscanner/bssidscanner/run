@@ -41,20 +41,18 @@ dir_path = path.dirname(WPA_CONFIG_PATH)
 status, res, err = pscheduler.run_program(['wpa_cli', 'status'])
 if status:
    # create config file and start wpa_supplicant
-   # if not path.exists(dir_path):
-   # makedirs(dir_path)
    with open(WPA_CONFIG_PATH, 'w') as f:
        f.write('ctrl_interface='+WPA_CTRL_IFACE_BASE+'\n')
        f.write('update_config=1\n')
        f.write('p2p_disabled=1\n')
-   status, out, err = pscheduler.run_program(['wpa_supplicant','-Dnl80211','-B','-i',interface,'-c',WPA_CONFIG_PATH])
+   status, out, err = pscheduler.run_program(['wpa_supplicant','-D','nl80211','-B','-i',interface,'-c',WPA_CONFIG_PATH])
    if status:
        pscheduler.succeed_json( {
            'succeeded': False,
-           'diags': out,
+           'diags': out + ' ' + str(status) + ' ' + err,
            'error': 'failed to initialize interface',
            'result': None
-       })
+    })
 
 # run wpa_cli
 start  = datetime.datetime.now()
@@ -69,7 +67,6 @@ else:
         'result': None
         } )
     
-
 result = res.split('\n')
 
 # account for automatic scanning interval of cli
