@@ -1,3 +1,9 @@
+pscheduler-test-dot1x (5.0.4~a1.0-1) perfsonar-5.0-snapshot; urgency=low
+
+  * New upstream version.
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Thu, 22 Jun 2023 16:24:06 +0000
+
 pscheduler-test-dot1x (5.0.3-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
