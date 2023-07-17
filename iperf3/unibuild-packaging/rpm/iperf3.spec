@@ -5,7 +5,7 @@
 #
 
 Name:	iperf3
-Version: 3.13
+Version: 3.14
 Release:	1%{?dist}
 Summary: Measurement tool for TCP/UDP bandwidth performance
 
