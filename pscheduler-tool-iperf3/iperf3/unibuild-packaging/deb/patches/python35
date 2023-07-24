@@ -1,17 +1,8 @@
 Index: b/run
 ===================================================================
---- a/run	2023-06-16 12:43:20.184321676 -0400
-+++ b/run	2023-06-16 12:43:24.333469651 -0400
-@@ -321,7 +321,7 @@
-     except Exception as ex:
-         return {"succeeded": False,
-                 "diags": "",
--                "error": f'Found stray iperf3 server running could not terminate it: {str(ex)}'}
-+                "error": "Found stray iperf3 server running could not terminate it: %s".format(str(ex))}
- 
- 
-     iperf3_args.append("-p")
-@@ -525,12 +525,12 @@
+--- a/run	2023-07-24 11:15:45.000161075 -0400
++++ b/run	2023-07-24 11:15:47.943487122 -0400
+@@ -511,12 +511,12 @@
                  logger.debug("Nothing succeeded.")
                  results = { 
                      "succeeded": False,
