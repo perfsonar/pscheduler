@@ -19,6 +19,9 @@ Url:		http://www.dublin-traceroute.net
 
 Source:		%{short}-%{version}.tar.gz
 
+# RPM does bad things with this.
+AutoReqProv: no
+
 Requires:	libpcap
 Requires:	libtins
 Requires:	jsoncpp
