@@ -1,3 +1,9 @@
+paris-traceroute (0.93.ps-2) unstable; urgency=low
+
+  * Exclude implementation of ping from installation
+
+ -- Mark Feit <mfeit@internet2.edu>  Wed, 26 Jul 2023 16:41:08 -0500
+
 paris-traceroute (0.93.ps-1) unstable; urgency=low
 
   * perfSONAR built
