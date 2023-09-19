@@ -176,7 +176,13 @@ def parse_output(lines):
     # If there's no summary interval by now, grab the one with the
     # longest interval.  This is safe to do because we'll have seen
     # that key before.
-    results["summary"] = summary_interval or streams[longest_interval_key]
+    if summary_interval:
+        results["summary"] = summary_interval
+    else:
+        results["summary"] = {
+            "streams": streams[longest_interval_key],
+            "summary": streams[longest_interval_key][0]
+        }
 
     return results
 
