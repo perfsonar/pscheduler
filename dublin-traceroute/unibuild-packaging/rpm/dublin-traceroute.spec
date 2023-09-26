@@ -5,7 +5,7 @@
 %define short dublin-traceroute
 Name:		%{short}
 Version:	0.4.2
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	A smarter traceroute
 BuildArch:	%(uname -m)
 License:	BSD-2-Clause
