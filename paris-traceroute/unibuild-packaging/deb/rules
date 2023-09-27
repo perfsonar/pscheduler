@@ -12,6 +12,10 @@
 %:
 	dh $@
 
+override_dh_install:
+	$(RM) debian/tmp/usr/bin/ping
+	dh_install
+
 # Ubuntu dbgsym.ddeb are currently not supported by reprepro
 override_dh_strip:
 	dh_strip --no-automatic-dbgsym
