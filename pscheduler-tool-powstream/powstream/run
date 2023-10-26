@@ -161,10 +161,16 @@ for rarg in POWSTREAM_RANGE_ARGS:
         
 #set interval,count and timeout to ensure consistent with duration
 count = test_spec.get('packet-count', DEFAULT_PACKET_COUNT)
+subcount = test_spec.get('packet-subcount', 0)
 interval = test_spec.get('packet-interval', DEFAULT_PACKET_INTERVAL)
 packet_timeout = test_spec.get('packet-timeout', 0)
 powstream_args.append('-c')
 powstream_args.append(str(count))
+if subcount > 0:
+    # Add full subsession reports
+    powstream_args.append('-N')
+    powstream_args.append(str(subcount))
+    powstream_args.append('-n')
 powstream_args.append('-i')
 powstream_args.append(str(interval))
 if packet_timeout > 0:

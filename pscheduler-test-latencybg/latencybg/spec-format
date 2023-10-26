@@ -20,6 +20,7 @@ if format == 'text/plain':
 Source   ............ {.section source}{@}{.or}Not Specified{.end}
 Destination ......... {.section dest}{@}{.or}Not Specified{.end}
 Packet Count ........ {.section packet-count}{@}{.or}Not Specified{.end}
+Packet Subcount ..... {.section packet-subcount}{@}{.or}Not Specified{.end}
 Packet Interval ..... {.section packet-interval}{@}{.or}Not Specified{.end}
 Packet Timeout. ..... {.section packet-timeout}{@}{.or}Not Specified{.end}
 Packet Padding. ..... {.section packet-padding}{@}{.or}Not Specified{.end}
