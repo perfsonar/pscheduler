@@ -395,6 +395,13 @@ __dictionary__ = {
         "required": [ "style", "match" ]
     },
 
+    "StringNull": {
+        "anyOf": [
+            { "$ref": "#/pScheduler/String" },
+            { "type": "null" }
+        ]
+    },
+
     "EnumMatch": {
         "type": "object",
         "properties": {
@@ -606,8 +613,9 @@ __dictionary__ = {
     "ParticipantResult": {
         "type": "object",
         "properties": {
-            "diags": { "$ref": "#/pScheduler/String" },
-            "error": { "$ref": "#/pScheduler/String" },
+            "schema": { "$ref": "#/pScheduler/Cardinal" },
+            "diags": { "$ref": "#/pScheduler/StringNull" },
+            "error": { "$ref": "#/pScheduler/StringNull" },
             "succeeded": { "$ref": "#/pScheduler/Boolean" },
             "result":      { "$ref": "#/pScheduler/AnyJSON" },
             },
