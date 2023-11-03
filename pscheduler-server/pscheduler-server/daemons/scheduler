@@ -742,6 +742,8 @@ def schedule_task(number, task, key, runs, trynext, anytime, json,
     """Do the actual work of scheduling a run."""
     # TODO: This could probably be part of the SchedulerWorker class.
 
+    scheduling_error = None
+
     log_debug("%d: %sTASK %s, %d runs, try %s", number,
               "ANYTIME " if anytime else "",
               task, runs, trynext)
@@ -780,11 +782,11 @@ def schedule_task(number, task, key, runs, trynext, anytime, json,
     while tries_left > 0:
         tries_left -= 1
         try:
-            run_uri, start_time, end_time, skip, conflict, error \
+            run_uri, start_time, end_time, skip, conflict, scheduling_error \
                 = run_post(number, log_debug, url, trynext, anytime, lead_bind,
                            log=log, key=key)
         except Exception as ex:
-            error = str(ex)
+            scheduling_error = str(ex)
             skip = False
             break
 
@@ -798,17 +800,16 @@ def schedule_task(number, task, key, runs, trynext, anytime, json,
 
     if tries_left == 0:
         skip = False
-        error = "Gave up after too many scheduling conflicts."
+        scheduling_error = "Gave up after too many scheduling conflicts."
         # TODO: Delete lead run
 
     if skip:
-        log_debug("%d: Skipping: %s", number, error)
+        log_debug("%d: Skipping: %s", number, scheduling_error)
         return
 
-    if error is not None:
-        log_debug("%d: Unable: %s", number, error)
-        raise NonStarterException(error)
-
+    if scheduling_error is not None:
+        log_debug("%d: Unable: %s", number, scheduling_error)
+        raise NonStarterException(scheduling_error)
 
     log_debug("%d: Scheduled for %s - %s at %s", number, start_time,
               end_time, run_uri)
