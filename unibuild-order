@@ -99,7 +99,9 @@ ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-nose)
 ifelse(FAMILY/eval(MAJOR == 7 || MAJOR == 9),RedHat/1,python-ntplib)
 python-parse-crontab
 python-vine
-python-py-amqp
+ifelse(DISTRO/eval(MAJOR > 21),Ubuntu/1,,		# Ubuntu 22 has a newer version of this.
+       DISTRO/eval(MAJOR > 11),Debian/1,,       # As does Debian 12.
+       python-py-amqp)
 python-py-radix
 python-pyjq
 python-tzlocal

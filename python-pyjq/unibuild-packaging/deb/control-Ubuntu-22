@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
 Uploaders: Lætitia Delvaux <adelvaux@man.poznan.pl>
 Build-Depends:
- debhelper (>= 10),
+ debhelper (>= 12),
  dh-python,
  python3,
  python3-all,
@@ -19,13 +19,13 @@ Standards-Version: 3.9.8
 Homepage: https://pypi.python.org/pypi/pyjq
 X-Python3-Version: >= 3.2
 
-Package: python3-pyjq-u18
+Package: python3-pyjq-u22
 Architecture: any
 Depends:
  ${python3:Depends},
  ${misc:Depends},
  ${shlibs:Depends}
-Conflicts: python3-pyjq, python3-pyjq-d10, python3-pyjq-d11, python3-pyjq-d12, python3-pyjq-u20, python3-pyjq-u22
+Conflicts: python3-pyjq, python3-pyjq-d10, python3-pyjq-d11, python3-pyjq-d12, python3-pyjq-u18, python3-pyjq-u20
 Provides: python3-pyjq
 Recommends:
  ${python3:Recommends}
