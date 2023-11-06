@@ -4,7 +4,7 @@
 
 %define short	pyrsistent
 Name:		%{_pscheduler_python}-%{short}
-Version:	0.14.11
+Version:	0.14.11.ps
 Release:	1%{?dist}
 Summary:	Persistent/Immutable/Functional data structures for Python
 

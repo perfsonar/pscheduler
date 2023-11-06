@@ -134,7 +134,7 @@ ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,libtins)		# Dublin-traceroute needs this
 ifelse(FAMILY,Debian,,dublin-traceroute)		# TODO: Doesn't build on Debian.
 define(HAVE_ETHR,HAVE_GOLANG)
 ifelse(DISTRO/eval(MAJOR <= 18),Ubuntu/1,,      # Doesn't build on U18, TODO: not sure about U20…
-       HAVE_ETHR,1,ethr)                        # But D10 build can be used on U18 and U20
+       HAVE_ETHR,1,ethr)                        # But D10 build can be used on U18 and up
 
 ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,iperf)		# EPEL dropped this for EL8
 iperf3
@@ -145,8 +145,8 @@ paris-traceroute
 # Some Debian and all Ubuntus don't have a recent-enough Golang to
 # build this.
 define(HAVE_S3_BENCHMARK,ifelse(HAVE_GOLANG,0,0,
-	FAMILY/eval(MAJOR < 12),Debian/1,0,
-	DISTRO,Ubuntu,0,
+	FAMILY/eval(MAJOR < 11),Debian/1,0,
+	DISTRO/eval(MAJOR <= 22),Ubuntu/1,0,
         1))
 ifelse(HAVE_S3_BENCHMARK,1,s3-benchmark)
 
@@ -187,7 +187,8 @@ pscheduler-test-psresponse
 pscheduler-test-throughput
 pscheduler-test-openports		--bundle extras
 pscheduler-test-rtt
-ifelse(HAVE_S3_BENCHMARK,1,pscheduler-test-s3throughput)
+#ifelse(HAVE_S3_BENCHMARK,1,pscheduler-test-s3throughput)
+pscheduler-test-s3throughput
 pscheduler-test-simplestream
 pscheduler-test-snmpget			--bundle snmp
 pscheduler-test-snmpgetbgm		--bundle snmp
@@ -228,7 +229,8 @@ pscheduler-tool-psclock
 pscheduler-tool-pstimer
 pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
-ifelse(HAVE_S3_BENCHMARK,1,pscheduler-tool-s3-benchmark)
+#ifelse(HAVE_S3_BENCHMARK,1,pscheduler-tool-s3-benchmark)
+pscheduler-tool-s3-benchmark
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm

@@ -3,32 +3,33 @@
 # output every command that modifies files on the build system.
 #DH_VERBOSE = 1
 
-export GOPATH=$(CURDIR)/GOPATH
-export GOBIN=$(GOPATH)/bin
-export GOCACHE=$(GOPATH)/.cache
+export BUILD_DIR := _build
+export DH_GOPKG := wasabi.com/s3-benchmark
+export GOPATH := $(CURDIR)/$(BUILD_DIR)
 
-# main packaging script based on dh7 syntax
+# packaging script based on dh11 syntax
 %:
-	dh $@ 
+	dh $@ --builddirectory=$(BUILD_DIR) --buildsystem=golang --with=golang
 
-# s3-benchmark is not properly packaged and we cannot just do: "go get ./..."
-# TODO: This fails to build.
+# The tarball doesn't contain any dependency information, we need to build that up
+# This is not ideal as it fetches the latest version of the modules which will not
+# work on older OS versions.
+override_dh_auto_configure:
+	go mod init wasabi.com/s3-benchmark
+	go mod tidy
+	go get ./...
+	dh_auto_configure
+
 override_dh_auto_build:
-	mkdir -p $(GOPATH) $(GOBIN)
-	go get golang.org/x/net/http2
-	go get code.cloudfoundry.org/bytefmt
-	go get github.com/aws/aws-sdk-go/aws
-	go get github.com/aws/aws-sdk-go/aws/credentials
-	go get github.com/aws/aws-sdk-go/aws/session
-	go get github.com/aws/aws-sdk-go/service/s3
-	go build s3-benchmark.go
+	cd $(BUILD_DIR) && go build $(DH_GOPKG)
+
+override_dh_auto_test:
+	cd $(BUILD_DIR) && go test -vet=off -v -p 8 $(DH_GOPKG)
 
 override_dh_auto_install:
 	mkdir -p debian/s3-benchmark/usr/bin
-	cp s3-benchmark debian/s3-benchmark/usr/bin/s3-benchmark
+	cp $(BUILD_DIR)/s3-benchmark debian/s3-benchmark/usr/bin/s3-benchmark
 	dh_auto_install
 
-override_dh_auto_clean:
-	$(RM) -r $(GOPATH)
-	$(RM) s3-benchmark
-	dh_auto_clean
+override_dh_golang:
+
