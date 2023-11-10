@@ -3,7 +3,7 @@
 #
 
 %define short	bitbucket
-%define perfsonar_auto_version 5.0.5
+%define perfsonar_auto_version 5.0.6
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-archiver-%{short}

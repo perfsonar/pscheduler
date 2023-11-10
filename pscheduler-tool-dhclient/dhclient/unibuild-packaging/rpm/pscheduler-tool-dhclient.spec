@@ -9,7 +9,7 @@
 # If additional libraries or parts of pScheduler are required,
 # they should be added here (line 25).
 %define short	dhclient
-%define perfsonar_auto_version 5.0.5
+%define perfsonar_auto_version 5.0.6
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-tool-%{short}

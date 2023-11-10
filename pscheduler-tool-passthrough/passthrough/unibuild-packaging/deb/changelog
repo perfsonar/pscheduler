@@ -1,3 +1,9 @@
+pscheduler-tool-passthrough (5.0.6-1) perfsonar-5.0; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Fri, 10 Nov 2023 15:29:52 -0500
+
 pscheduler-tool-passthrough (5.0.5-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
