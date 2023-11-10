@@ -14,7 +14,6 @@ import signal
 import threading
 import time
 
-import daemon
 import pscheduler
 
 from dateutil.tz import tzlocal
@@ -26,17 +25,6 @@ pscheduler.set_graceful_exit()
 # Gargle the arguments
 
 opt_parser = optparse.OptionParser()
-
-# Daemon-related options
-
-opt_parser.add_option("--daemon",
-                      help="Daemonize",
-                      action="store_true",
-                      dest="daemon", default=False)
-opt_parser.add_option("--pid-file",
-                      help="Location of PID file",
-                      action="store", type="string", dest="pidfile",
-                      default=None)
 
 # Program options
 
@@ -1123,13 +1111,4 @@ def main_program():
 
 
 
-with pscheduler.PidFile(options.pidfile) as pidfile:
-    if options.daemon:
-        with daemon.DaemonContext(pidfile=pidfile):
-            # Any return of True means run it again.
-            while main_program():
-                pass
-    else:
-        # Ibid.
-        while main_program():
-            pass
+main_program()

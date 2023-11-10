@@ -3,7 +3,6 @@
 # Execute runs of tasks and put the results into the database.
 #
 
-import daemon
 import datetime
 import errno
 import multiprocessing
@@ -25,17 +24,6 @@ pscheduler.set_graceful_exit()
 # Gargle the arguments
 
 opt_parser = optparse.OptionParser()
-
-# Daemon-related options
-
-opt_parser.add_option("--daemon",
-                      help="Daemonize",
-                      action="store_true",
-                      dest="daemon", default=False)
-opt_parser.add_option("--pid-file",
-                      help="Location of PID file",
-                      action="store", type="string", dest="pidfile",
-                      default=None)
 
 # Program options
 
@@ -975,9 +963,4 @@ def main_program():
     db.close()
 
 
-with pscheduler.PidFile(options.pidfile) as pidfile:
-    if options.daemon:
-        with daemon.DaemonContext(pidfile=pidfile):
-            main_program()
-    else:
-        main_program()
+main_program()
