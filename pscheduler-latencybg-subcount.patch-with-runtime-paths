@@ -1,0 +1,78 @@
+@@@
+@@@ *** cd to /usr/libexec/pscheduler
+@@@ *** run patch -up1 < pscheduler-latencybg-subcount.patch-with-runtime-paths
+@@@
+diff --git a/classes/test/latencybg/cli-to-spec b/pscheduler-test-latencybg/latencybg/cli-to-spec
+index 973434e6c..826444c32 100755
+--- a/classes/test/latencybg/cli-to-spec
++++ b/classes/test/latencybg/cli-to-spec
+@@ -74,6 +74,11 @@ opt_parser.add_option("-c", "--packet-count",
+                       action="store", type="int",
+                       dest="packet_count")
+ 
++opt_parser.add_option("--packet-subcount",
++                      help="The number of packets between each time results are fetched and reported",
++                      action="store", type="int",
++                      dest="packet_subcount")
++
+ opt_parser.add_option("-t", "--duration",
+                       help="The duration of he test in seconds or ISO8601",
+                       action="store", type="string",
+@@ -159,6 +164,9 @@ if options.duration is not None:
+ if options.packet_count is not None:
+    result['packet-count'] = options.packet_count
+ 
++if options.packet_subcount is not None:
++   result['packet-subcount'] = options.packet_subcount
++
+ if options.packet_interval is not None:
+    result['packet-interval'] = options.packet_interval
+   
+diff --git a/classes/test/latencybg/spec-format b/pscheduler-test-latencybg/latencybg/spec-format
+index 7c8fc1464..0bf1ffac8 100755
+--- a/classes/test/latencybg/spec-format
++++ b/classes/test/latencybg/spec-format
+@@ -20,6 +20,7 @@ if format == 'text/plain':
+ Source   ............ {.section source}{@}{.or}Not Specified{.end}
+ Destination ......... {.section dest}{@}{.or}Not Specified{.end}
+ Packet Count ........ {.section packet-count}{@}{.or}Not Specified{.end}
++Packet Subcount ..... {.section packet-subcount}{@}{.or}Not Specified{.end}
+ Packet Interval ..... {.section packet-interval}{@}{.or}Not Specified{.end}
+ Packet Timeout. ..... {.section packet-timeout}{@}{.or}Not Specified{.end}
+ Packet Padding. ..... {.section packet-padding}{@}{.or}Not Specified{.end}
+diff --git a/classes/test/latencybg/validate.py b/pscheduler-test-latencybg/latencybg/validate.py
+index 7721fee7c..55540cfa7 100644
+--- a/classes/test/latencybg/validate.py
++++ b/classes/test/latencybg/validate.py
+@@ -50,6 +50,10 @@ REQUEST_SCHEMA = {
+                 "description": "The number of packets to send before reporting a result",
+                 "$ref": "#/pScheduler/Cardinal"
+             },
++            "packet-subcount": {
++                "description": "The number of packets before fetching and reporting an intermediate result",
++                "$ref": "#/pScheduler/Cardinal"
++            },
+             "packet-interval": {
+                 "description": "The number of seconds to delay between sending packets",
+                 "$ref": "#/local/packet-interval"
+diff --git a/classes/tool/powstream/run b/pscheduler-tool-powstream/powstream/run
+index 5bc5c2e00..8047f8068 100755
+--- a/classes/tool/powstream/run
++++ b/classes/tool/powstream/run
+@@ -161,10 +161,16 @@ for rarg in POWSTREAM_RANGE_ARGS:
+         
+ #set interval,count and timeout to ensure consistent with duration
+ count = test_spec.get('packet-count', DEFAULT_PACKET_COUNT)
++subcount = test_spec.get('packet-subcount', 0)
+ interval = test_spec.get('packet-interval', DEFAULT_PACKET_INTERVAL)
+ packet_timeout = test_spec.get('packet-timeout', 0)
+ powstream_args.append('-c')
+ powstream_args.append(str(count))
++if subcount > 0:
++    # Add full subsession reports
++    powstream_args.append('-N')
++    powstream_args.append(str(subcount))
++    powstream_args.append('-n')
+ powstream_args.append('-i')
+ powstream_args.append(str(interval))
+ if packet_timeout > 0:

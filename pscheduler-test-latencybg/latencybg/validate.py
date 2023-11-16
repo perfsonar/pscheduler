@@ -50,6 +50,10 @@ REQUEST_SCHEMA = {
                 "description": "The number of packets to send before reporting a result",
                 "$ref": "#/pScheduler/Cardinal"
             },
+            "packet-subcount": {
+                "description": "The number of packets before fetching and reporting an intermediate result",
+                "$ref": "#/pScheduler/Cardinal"
+            },
             "packet-interval": {
                 "description": "The number of seconds to delay between sending packets",
                 "$ref": "#/local/packet-interval"

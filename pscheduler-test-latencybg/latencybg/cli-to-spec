@@ -74,6 +74,11 @@ opt_parser.add_option("-c", "--packet-count",
                       action="store", type="int",
                       dest="packet_count")
 
+opt_parser.add_option("--packet-subcount",
+                      help="The number of packets between each time results are fetched and reported",
+                      action="store", type="int",
+                      dest="packet_subcount")
+
 opt_parser.add_option("-t", "--duration",
                       help="The duration of he test in seconds or ISO8601",
                       action="store", type="string",
@@ -158,6 +163,9 @@ if options.duration is not None:
    
 if options.packet_count is not None:
    result['packet-count'] = options.packet_count
+
+if options.packet_subcount is not None:
+   result['packet-subcount'] = options.packet_subcount
 
 if options.packet_interval is not None:
    result['packet-interval'] = options.packet_interval
