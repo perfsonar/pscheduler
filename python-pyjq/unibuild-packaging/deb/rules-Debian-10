@@ -15,5 +15,5 @@ override_dh_auto_test:
 	@true
 
 override_dh_auto_build:
-	cython $(INCLUDE_FLAGS) _pyjq.pyx
+	cython3 $(INCLUDE_FLAGS) _pyjq.pyx
 	dh_auto_build

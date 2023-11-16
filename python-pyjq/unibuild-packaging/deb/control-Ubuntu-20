@@ -11,7 +11,7 @@ Build-Depends:
  python3-setuptools,
  python3-six,
  python3-mock,
- cython (>=0.19),
+ cython3,
  libjq-dev (>=1.6~),
  libonig-dev (>=5.9),
  libpython3-dev
