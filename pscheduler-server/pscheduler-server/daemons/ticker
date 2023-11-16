@@ -3,7 +3,6 @@
 # Operate all on-boot and periodic functions in the database.
 #
 
-import daemon
 import errno
 import optparse
 import pscheduler
@@ -19,17 +18,6 @@ pscheduler.set_graceful_exit()
 #
 
 opt_parser = optparse.OptionParser()
-
-# Daemon-related options
-
-opt_parser.add_option("--daemon",
-                      help="Daemonize",
-                      action="store_true",
-                      dest="daemon", default=False)
-opt_parser.add_option("--pid-file",
-                      help="Location of PID file",
-                      action="store", type="string", dest="pidfile",
-                      default=None)
 
 # Program options
 
@@ -164,9 +152,4 @@ def main_program():
     db.close()
 
 
-with pscheduler.PidFile(options.pidfile) as pidfile:
-    if options.daemon:
-        with daemon.DaemonContext(pidfile=pidfile):
-            main_program()
-    else:
-        main_program()
+main_program()

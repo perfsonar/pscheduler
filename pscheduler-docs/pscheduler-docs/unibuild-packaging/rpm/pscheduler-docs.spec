@@ -2,7 +2,7 @@
 # RPM Spec for pScheduler Docs
 #
 
-%define perfsonar_auto_version 5.0.6
+%define perfsonar_auto_version 5.0.7
 %define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-docs
