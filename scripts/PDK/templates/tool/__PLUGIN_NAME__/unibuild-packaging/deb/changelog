@@ -1,34 +1,4 @@
-pscheduler-tool-__PLUGIN_NAME__ (5.0.6~a1.0-1) perfsonar-5.0-snapshot; urgency=low
-
-  * New upstream version.
-
- -- perfSONAR developers <debian@perfsonar.net>  Wed, 27 Sep 2023 10:54:09 -0400
-
-pscheduler-tool-__PLUGIN_NAME__ (5.0.5~a1.0-1) perfsonar-5.0-snapshot; urgency=low
-
-  * New upstream version.
-
- -- perfSONAR developers <debian@perfsonar.net>  Wed, 26 Jul 2023 11:42:50 -0400
-
-pscheduler-tool-__PLUGIN_NAME__ (5.0.4~a1.0-1) perfsonar-5.0-snapshot; urgency=low
-
-  * New upstream version.
-
- -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Thu, 22 Jun 2023 16:24:06 +0000
-
-pscheduler-tool-__PLUGIN_NAME__ (5.0.3~a1.0-1) perfsonar-5.0-snapshot; urgency=low
-
-  * New upstream version.
-
- -- perfSONAR developers <debian@perfsonar.net>  Mon, 05 Jun 2023 12:13:48 -0400
-
-pscheduler-tool-__PLUGIN_NAME__ (5.0.2~a1.0-1) perfsonar-5.0-snapshot; urgency=low
-
-  * New upstream version.
-
- -- perfSONAR developers <debian@perfsonar.net>  Wed, 31 May 2023 07:47:00 -0700
-
-pscheduler-tool-__PLUGIN_NAME__ (5.0.1~a1.0-1) perfsonar-5.0-snapshot; urgency=low
+pscheduler-tool-__PLUGIN_NAME__ (5.1.0~a1.0-1) perfsonar-5.1-snapshot; urgency=low
 
   * Initial release
 

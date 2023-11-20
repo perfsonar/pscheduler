@@ -605,6 +605,11 @@ class RunWorker(pscheduler.GenericWorker):
             if returncode == 0:
                 try:
                     local_result = pscheduler.json_load(stdout)
+                    (is_valid, reason) = pscheduler.json_validate(local_result,
+                                                                  { "$ref": "#/pScheduler/ParticipantResult" },
+                                                                  max_schema=1)
+                    if not is_valid:
+                        raise ValueError();
                 except ValueError:
                     error = "Tool {} returned invalid JSON".format(tool)
                     self.log.error("%d: %s '%s'", self.id, error, stdout)

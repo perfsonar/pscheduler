@@ -395,6 +395,13 @@ __dictionary__ = {
         "required": [ "style", "match" ]
     },
 
+    "StringNull": {
+        "anyOf": [
+            { "$ref": "#/pScheduler/String" },
+            { "type": "null" }
+        ]
+    },
+
     "EnumMatch": {
         "type": "object",
         "properties": {
@@ -606,36 +613,15 @@ __dictionary__ = {
     "ParticipantResult": {
         "type": "object",
         "properties": {
-            "participant": { "$ref": "#/pScheduler/Host" },
+            "schema": { "$ref": "#/pScheduler/Cardinal" },
+            "diags": { "$ref": "#/pScheduler/StringNull" },
+            "error": { "$ref": "#/pScheduler/StringNull" },
+            "succeeded": { "$ref": "#/pScheduler/Boolean" },
             "result":      { "$ref": "#/pScheduler/AnyJSON" },
             },
         "additionalProperties": False,
         "required": [
-            "participant",
-            "result",
-            ]
-        },
-
-    "RunResult": {
-        "type": "object",
-        "properties": {
-            "id":           { "$ref": "#/pScheduler/UUID" },
-            "schedule":     { "$ref": "#/pScheduler/TimeRange" },
-            "test":         { "$ref": "#/pScheduler/TestSpecification" },
-            "tool":         { "$ref": "#/pScheduler/NameVersion" },
-            "participants": {
-                "type": "array",
-                "items": { "$ref": "#/pScheduler/ParticipantResult" },
-                },
-            "result":       { "$ref": "#/pScheduler/AnyJSON" }
-            },
-        "additionalProperties": False,
-        "required": [
-            "id",
-            "schedule",
-            "test",
-            "tool",
-            "participants",
+            "succeeded",
             "result",
             ]
         },

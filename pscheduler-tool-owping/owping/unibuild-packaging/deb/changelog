@@ -1,3 +1,9 @@
+pscheduler-tool-owping (5.1.0~a1.0-1) perfsonar-5.1-snapshot; urgency=low
+
+  * New upstream version.
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Wed, 19 Apr 2023 08:27:55 +0200
+
 pscheduler-tool-owping (5.0.6-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
