@@ -12,7 +12,7 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 XS-Go-Import-Path: wasabi.com/s3-benchmark
 
 Package: s3-benchmark
-Architecture: amd64 i386
+Architecture: amd64 arm64 ppc64el
 Depends: ${misc:Depends}
 Description: S3 benchmark tool for pScheduler
  S3 benchmark tool for pScheduler
