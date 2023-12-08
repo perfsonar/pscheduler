@@ -1,6 +1,7 @@
 [Unit]
 Description=pScheduler server - __PROG__
-
+# This forces starting and stopping in concert
+PartOf=__PGSERVICE__
 
 [Service]
 Type=exec
@@ -11,8 +12,6 @@ LimitNOFILE=32768
 LimitNPROC=32768
 
 Restart=always
-RestartSec=3
-
 
 # Create the run directory
 ExecStartPre=-/bin/mkdir -p __RUNDIR__/__PROG__
