@@ -42,5 +42,3 @@ ExecStopPost=/bin/rm -rf __RUNDIR__/__PROG__
 
 [Install]
 WantedBy=multi-user.target
-# This forces starting and stopping in concert
-WantedBy=__PGSERVICE__
