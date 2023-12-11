@@ -4,6 +4,12 @@ python-pscheduler (5.1.0-1) perfsonar-5.1; urgency=low
 
  -- perfSONAR developers <debian@perfsonar.net>  Wed, 19 Apr 2023 15:50:16 -0400
 
+python-pscheduler (5.0.7-1) perfsonar-5.0; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Mon, 11 Dec 2023 11:09:20 -0500
+
 python-pscheduler (5.0.6-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
