@@ -1,3 +1,9 @@
+pscheduler-test-psresponse (5.0.7-1) perfsonar-5.0; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Mon, 11 Dec 2023 11:09:16 -0500
+
 pscheduler-test-psresponse (5.0.6-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
