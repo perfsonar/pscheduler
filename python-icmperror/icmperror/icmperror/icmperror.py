@@ -15,6 +15,8 @@ icmp_errors = {
     'X': 'communication-administratively-prohibited',
     'V': 'host-precedence-violation',
     'C': 'precedence-cutoff-in-effect',
+    # Produced by traceoath and some others
+    'A': 'communication-administratively-prohibited',
     # ICMP Type 3 Error Codes, from RFC 792
     '0':  'net-unreachable',
     '1':  'host-unreachable',
@@ -46,7 +48,8 @@ def translate(code):
 
     For example, 5 or !5 translates to source-route-failed.
 
-    A ValueError is thrown if the code is not valid.
+    If the code is unknown, the string unknown-error-%s is returned
+    with the unknown code at the end.
     """
     code = str(code)
     if len(code) and code[0] == '!':
@@ -55,6 +58,4 @@ def translate(code):
     try:
         return icmp_errors[code]
     except KeyError:
-        raise ValueError("Code is not valid")
-
-
+        return 'unknown-error-%s' % (code)
