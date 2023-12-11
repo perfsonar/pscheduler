@@ -12,7 +12,7 @@
 
 %define short	__PLUGIN_NAME__
 %define perfsonar_auto_version 5.0.7
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 1
 
 Name:		pscheduler-test-%{short}
 Version:	%{perfsonar_auto_version}
