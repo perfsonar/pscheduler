@@ -1,3 +1,9 @@
+pscheduler-tool-bssidscanner (5.0.8~a1.0-1) perfsonar-5.0-snapshot; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Tue, 12 Dec 2023 13:12:31 -0500
+
 pscheduler-tool-bssidscanner (5.0.7-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
