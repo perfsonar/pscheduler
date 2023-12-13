@@ -144,7 +144,7 @@ def worker_process_setup(args):
     global dbpool
     dbpool = pscheduler.DBConnectionPool(dsn,
                                          options.worker_threads,
-                                         name='runner-%s' % (os.getpid()),
+                                         name='scheduler-%s' % (os.getpid()),
                                          log_callback=log.warning)
 
 
