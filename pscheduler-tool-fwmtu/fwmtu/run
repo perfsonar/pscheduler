@@ -38,7 +38,7 @@ timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeo
 BIG_PACKET = 999999
 
 # Define method to get MTU
-def find_mtu(dest, port):
+def find_mtu(dest, port, ip_version):
     OVERHEAD_SIZE = 28
     # Python 3.6 dropped the IN module
     class IN:
@@ -46,7 +46,7 @@ def find_mtu(dest, port):
         IP_MTU_DISCOVER = 10
         IP_PMTUDISC_DO = 2
 
-    (family, ip) = pscheduler.ip_addr_version(dest, family=True)
+    (family, ip) = pscheduler.ip_addr_version(dest, family=True, ip_version=ip_version)
     if family is None or ip is None:
         raise Exception("Cannot convert destination to an IP address.")
     sock = socket.socket(family, socket.SOCK_DGRAM)
@@ -77,8 +77,11 @@ except KeyError:
     pscheduler.fail("Unable to find start time in input")
 
 # Run tool
+
+ip_version = input['test']['spec'].get('ip-version', None)
+
 try:
-    mtu = find_mtu(dest, port)
+    mtu = find_mtu(dest, port, ip_version)
     results = {
         'succeeded': True,
         'result': {
