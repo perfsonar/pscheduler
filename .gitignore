@@ -8,6 +8,9 @@
 .*.swp
 *~
 
+# Python by-products
+__pycache__
+
 # Ignore rpms, logs and other build artifacts
 unibuild-log
 unibuild-repo
