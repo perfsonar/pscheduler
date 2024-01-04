@@ -39,6 +39,7 @@ if format == 'text/plain':
 Source ........................ {.section source}{source}{.or}Not Specified{.end}
 Source Node ................... {.section source_node}{source_node}{.or}Not Specified{.end}
 Destination ................... {.section dest}{dest}{.or}Not Specified{.end}
+IP Version .................... {.section ip-version}{ip-version}{.or}Not Specified{.end}
 Port .......................... {.section port}{port}{.or}Not Specified{.end}
 """
 
@@ -50,6 +51,7 @@ elif format == 'text/html':
 <tr><td>Source</td><td>{.section source}{source}{.or}Not Specified{.end}</td></tr>
 <tr><td>Source Node</td><td>{.section source_node}{source_node}{.or}Not Specified{.end}</td></tr>
 <tr><td>Destination</td><td>{.section destination}{destination}{.or}Not Specified{.end}</td></tr>
+<tr><td>IP Version</td><td>{.section ip-version}{ip-version}{.or}Not Specified{.end}</td></tr>
 <tr><td>Port</td><td>{.section port}{port}{.or}Not Specified{.end}</td></tr>
 </table>
 """

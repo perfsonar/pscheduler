@@ -1,11 +1,10 @@
 {
     "test": {
         "spec": {
+            "schema": 2,
             "dest": "www.umich.edu",
-            "#dest": "localhost",
-            "#dest": "fdkjldsal",
-            "schema": 1
-        },
+	    "ip-version": 4
+        }, 
         "type": "mtu"
     },
     "schedule": {

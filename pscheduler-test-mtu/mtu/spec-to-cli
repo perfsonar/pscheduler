@@ -29,6 +29,7 @@ result = pscheduler.speccli_build_args(spec,
         ( 'source-node', 'source-node' ),
         ( 'dest', 'dest' ),
         ( 'port', 'port' ),
+        ( 'ip-version', 'ip-version' ),
         ])
 
 pscheduler.succeed_json(result)
