@@ -15,7 +15,7 @@ try:
 except IndexError:
    format = 'text/plain'
 
-json = pscheduler.json_load(exit_on_error=True, max_schema=2)
+json = pscheduler.json_load(exit_on_error=True, max_schema=3)
 
 valid, message = spec_is_valid(json)
 
@@ -32,7 +32,7 @@ IP Version ....... {.section ip-version}{ip-version}{.or}Not Specified{.end}
 Test Material .... {.section test-material}{test-material}{.or}Not Specified{.end}
 Timeout .......... {.section timeout}{timeout}{.or}Not Specified{.end}
 Chance of Fail ... {.section fail}{fail}{.or}Not Specified{.end}
-
+Port ............. {.section port}{port}{.or}Not Specified{.end}
    """
 
 elif format == 'text/html':
@@ -56,6 +56,9 @@ elif format == 'text/html':
 </td></tr>
 <tr><td><b>Chance of Fail</b></td><td>
 {.section fail}{fail}{.or}<i>Not Specified</i>{.end}
+</td></tr>
+<tr><td><b>Port</b></td><td>
+{.section port}{port}{.or}<i>Not Specified</i>{.end}
 </td></tr>
 </table>
    """

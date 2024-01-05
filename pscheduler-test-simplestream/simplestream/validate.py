@@ -4,7 +4,7 @@
 
 from pscheduler import json_validate
 
-MAX_SCHEMA = 2
+MAX_SCHEMA = 3
 
 def spec_is_valid(json):
     SPEC_SCHEMA = {
@@ -44,7 +44,26 @@ def spec_is_valid(json):
                 "required": [
                     "schema", "dest"
                 ]
-            }
+            },
+            "v3" : {
+                "type": "object",
+                "properties": {
+                    "schema":         {" type": "integer", "enum": [ 3 ] },
+                    "dawdle":         { "$ref": "#/pScheduler/Duration" },
+                    "fail":           { "$ref": "#/pScheduler/Probability" },
+                    "ip-version":     { "$ref": "#/pScheduler/ip-version" },
+                    "dest":           { "$ref": "#/pScheduler/Host" },
+                    "dest-node":      { "$ref": "#/pScheduler/URLHostPort" },
+                    "port":           { "$ref": "#/pScheduler/IPPort" },
+                    "source":         { "$ref": "#/pScheduler/Host" },
+                    "source-node":    { "$ref": "#/pScheduler/URLHostPort" },
+                    "test-material":  { "$ref": "#/pScheduler/String" },
+                    "timeout":        { "$ref": "#/pScheduler/Duration" },
+                },
+                "required": [
+                    "schema", "dest"
+                ]
+            },
         }
     }
 

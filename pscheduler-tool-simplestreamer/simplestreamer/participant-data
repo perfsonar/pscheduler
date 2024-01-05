@@ -27,7 +27,10 @@ if participant == 0:
 
 elif participant == 1:
 
-    result['listen-port'] = random.randint(5890,5899)
+    if json['test']['spec'].get('port') is not None:
+       result['listen-port'] = json['test']['spec']['port'] 
+    else:   
+       result['listen-port'] = random.randint(5890,5899)
 
 else:
 
