@@ -52,7 +52,7 @@ if ipversion is None or ipversion == 4:
     if old_style_tracepath:
         argv.append('tracepath')
     else:
-        argv.extend(['tracepath', '-6'])
+        argv.extend(['tracepath', '-4'])
     localhost = '127.0.0.1'
 else:
     if old_style_tracepath:
