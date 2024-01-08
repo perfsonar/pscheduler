@@ -34,7 +34,7 @@ def mtu_path_is_safe(host, ipversion=None):
         if ipversion is None:
             return (False, message)
 
-    assert ipversion is not None, "No ip version; cannot proceed."
+    assert ipversion in [4, 6], "No ip version; cannot proceed."
 
     argv = []
 
@@ -43,11 +43,11 @@ def mtu_path_is_safe(host, ipversion=None):
 
     old_style_tracepath = shutil.which('tracepath6') is not None
 
-    if ipversion is None or ipversion == 4:
+    if ipversion == 4:
         if old_style_tracepath:
             argv.append('tracepath')
         else:
-            argv.extend(['tracepath', '-6'])
+            argv.extend(['tracepath', '-4'])
     else:
         if old_style_tracepath:
             argv.append('tracepath6')
@@ -56,7 +56,6 @@ def mtu_path_is_safe(host, ipversion=None):
 
     argv.append(host)
 
-    return(False, str(argv))
     status, stdout, stderr = run_program(argv, timeout=60)
 
     if status != 0:
@@ -82,7 +81,7 @@ def mtu_path_is_safe(host, ipversion=None):
         return (True, "%d (Local)" % (mtus[0]))
 
     if len(mtus) == 1:
-        return (False, "Found only one MTU in trace to %s" % (host))
+        return (False, "Found only one MTU (%d) in trace to %s" % (mtus[0], host))
 
     initial_mtu = mtus[0]
     last_low_mtu = initial_mtu
