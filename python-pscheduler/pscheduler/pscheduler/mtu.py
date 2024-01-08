@@ -4,6 +4,7 @@ Functions for diagnosing path MTU
 
 import netaddr
 import re
+import shutil
 import socket
 
 from .ipaddr import ip_addr_version
@@ -35,12 +36,28 @@ def mtu_path_is_safe(host, ipversion=None):
 
     assert ipversion is not None, "No ip version; cannot proceed."
 
-    if ipversion == 6:
-        tracepath = "tracepath6"
-    else:
-        tracepath = "tracepath"
+    argv = []
 
-    status, stdout, stderr = run_program([tracepath, host], timeout=60)
+    # Some older systems have a separate tracepath and tracepath6; newer
+    # versions don't have traceroute6 but support -4 and -6 switches.  Deal with that.
+
+    old_style_tracepath = shutil.which('tracepath6') is not None
+
+    if ipversion is None or ipversion == 4:
+        if old_style_tracepath:
+            argv.append('tracepath')
+        else:
+            argv.extend(['tracepath', '-6'])
+    else:
+        if old_style_tracepath:
+            argv.append('tracepath6')
+        else:
+            argv.extend(['tracepath', '-6'])
+
+    argv.append(host)
+
+    return(False, str(argv))
+    status, stdout, stderr = run_program(argv, timeout=60)
 
     if status != 0:
         return(False, "Error: %s" % (stderr.strip()))
