@@ -7,7 +7,7 @@ import signal
 import sys
 
 from threading import Thread,Semaphore
-import collections
+import collections.abc
 
 
 this = sys.modules[__name__]
@@ -46,7 +46,7 @@ def on_graceful_exit(call):
 
     #print "OGE", call
 
-    if not isinstance(call, collections.Callable):
+    if not isinstance(call, collections.abc.Callable):
         raise ValueError("%s is not callable", call)
 
     with this.lock:
