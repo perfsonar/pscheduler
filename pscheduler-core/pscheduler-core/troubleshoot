@@ -14,8 +14,8 @@ are working.
 
 import optparse
 import os
-import pipes
 import re
+import shlex
 import socket
 import sys
 import time
@@ -30,7 +30,6 @@ pscheduler.set_graceful_exit()
 #
 
 class VerbatimParser(optparse.OptionParser):
-    def format_epilog(self, formatter):
         return self.epilog
 
 opt_parser = VerbatimParser(
@@ -155,7 +154,7 @@ def failed_diags(run, why="Task failed to run properly."):
     print()
     result_args = ["pscheduler", "result", "--diags", "--archivings", run]
     os.execl("/bin/sh", "/bin/sh", "-c",
-             " ".join([pipes.quote(arg) for arg in result_args]))
+             " ".join([shlex.quote(arg) for arg in result_args]))
 
 
 

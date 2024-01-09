@@ -9,9 +9,9 @@
 import datetime
 import optparse
 import os
-import pipes
 import pscheduler
 import pytz
+import shlex
 import sys
 import urllib
 
@@ -291,7 +291,7 @@ for run in schedule:
         
 
     task_cli = [ test ]
-    task_cli.extend([ pipes.quote(arg) for arg in run["cli"] ])
+    task_cli.extend([ shlex.quote(arg) for arg in run["cli"] ])
 
     if not first:
         print()
