@@ -32,17 +32,17 @@ Provides:	%{name} = %{version}-%{release}
 
 BuildRequires:	postgresql-init >= %{_pscheduler_postgresql_version}
 BuildRequires:	postgresql-load >= 1.2
-BuildRequires:	%{_pscheduler_postgresql_package}-server >= %{_pscheduler_postgresql_version}
-BuildRequires:	%{_pscheduler_postgresql_package}-contrib >= %{_pscheduler_postgresql_version}
-BuildRequires:	%{_pscheduler_postgresql_plpython} >= %{_pscheduler_postgresql_version}
+BuildRequires:	postgresql-server >= %{_pscheduler_postgresql_version}
+BuildRequires:	postgresql-contrib >= %{_pscheduler_postgresql_version}
+BuildRequires:	postgresql-plpython3 >= %{_pscheduler_postgresql_version}
 
 
 Requires:	drop-in
 Requires:	gzip
-Requires:	%{_pscheduler_postgresql_package}-server >= %{_pscheduler_postgresql_version}
+Requires:	postgresql-server >= %{_pscheduler_postgresql_version}
 # This is for pgcrypto
-Requires:	%{_pscheduler_postgresql_package}-contrib >= %{_pscheduler_postgresql_version}
-Requires:	%{_pscheduler_postgresql_plpython} >= %{_pscheduler_postgresql_version}
+Requires:	postgresql-contrib >= %{_pscheduler_postgresql_version}
+Requires:	postgresql-plpython3 >= %{_pscheduler_postgresql_version}
 Requires:	postgresql-load >= 1.2
 Requires:	pscheduler-account
 Requires:	pscheduler-core
@@ -157,7 +157,7 @@ make -C daemons \
      LOGDIR=%{_pscheduler_log_dir} \
      PGDATABASE=%{database_name} \
      PGPASSFILE=%{_pscheduler_database_pgpass_file} \
-     PGSERVICE=%{_pscheduler_postgresql_service}.service \
+     PGSERVICE=postgresql.service \
      PGUSER=%{_pscheduler_database_user} \
      PSUSER=%{_pscheduler_user} \
      ARCHIVERDEFAULTDIR=%{archiver_default_dir} \
@@ -363,7 +363,7 @@ EOF
 
 NEW_CONF_DIGEST=$(sha256sum "%{pgsql_conf}" | awk '{ print $1 }')
 
-systemctl enable --now "%{_pscheduler_postgresql_service}"
+systemctl enable --now postgresql
 
 # Restart the server only if the configuration has changed as a result
 # of what we did to it.  This is more for development convenience than
@@ -372,7 +372,7 @@ systemctl enable --now "%{_pscheduler_postgresql_service}"
 if [ "${NEW_CONF_DIGEST}" != "${OLD_CONF_DIGEST}" ]
 then
     echo "Restarting PostgreSQL after configuration change."
-    systemctl restart "%{_pscheduler_postgresql_service}"
+    systemctl restart postgresql
 fi
 
 
@@ -538,7 +538,7 @@ if [ "$1" = "0" ]; then
 
     # Removing the max_connections change requires a restart, which
     # will also catch the HBA changes.
-    systemctl reload-or-try-restart "%{_pscheduler_postgresql_service}"
+    systemctl reload-or-try-restart postgresql
 
 
 
@@ -584,7 +584,7 @@ fi
 # because Pg doesn't see module upgrades.
 
 %triggerin -- python-pscheduler
-systemctl reload-or-try-restart "%{_pscheduler_postgresql_service}"
+systemctl reload-or-try-restart postgresql
 
 # ------------------------------------------------------------------------------
 %files

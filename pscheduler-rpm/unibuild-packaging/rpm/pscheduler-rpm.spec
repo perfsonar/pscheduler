@@ -39,25 +39,12 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 # PostgreSQL
 #
 
-# TODO: See if this is necessary since we no longer build.
-
 # Minimum-required PostgreSQL version.
 %%_pscheduler_postgresql_version_major 10
 %%_pscheduler_postgresql_version_minor 17
+
 %%_pscheduler_postgresql_version %%{_pscheduler_postgresql_version_major}.%%{_pscheduler_postgresql_version_minor}
-%%_pscheduler_postgresql_data_top %%{_sharedstatedir}/pgsql
-%%_pscheduler_postgresql_user postgres
-%%_pscheduler_postgresql_group postgres
-
-%%_pscheduler_postgresql_package postgresql
-%%_pscheduler_postgresql_service postgresql
-%%_pscheduler_postgresql_data %%{_pscheduler_postgresql_data_top}/data
-%%_pscheduler_postgresql_initdb postgresql-setup --initdb
-
-# PostgreSQL still specifies the version number in the package.
-%%_pscheduler_postgresql_plpython %%{_pscheduler_postgresql_package}-plpython3
-
-%%_pscheduler_postgresql_version_file %%{_pscheduler_postgresql_data}/PG_VERSION
+%%_pscheduler_postgresql_data %%{_sharedstatedir}/pgsql/data
 
 
 #
