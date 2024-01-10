@@ -40,10 +40,6 @@ define(HAVE_GOLANG,ifelse(FAMILY/eval(MAJOR < 10),Debian/1,,
 # Everything else depends on these.
 #
 
-
-# Build this early.  Some of the packages using PostgreSQL depend on
-# knowing what version is required to avoid the "Requires: postgresql"
-# trap we fell into with EL6.
 ifelse(PACKAGING,rpm,pscheduler-rpm)
 
 #
