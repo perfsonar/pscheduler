@@ -25,11 +25,7 @@ Requires:	%{_pscheduler_python}-pscheduler >= 1.3.7.1
 Requires:	%{_pscheduler_python}-memcached
 Requires:	memcached
 Requires(post):	memcached
-%if 0%{?el7}
-%{?systemd_requires: %systemd_requires}
-%else
 Requires:		chkconfig
-%endif
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:  %{_pscheduler_python}-pscheduler
@@ -59,16 +55,8 @@ pscheduler internal warmboot
 
 #Only start memcached on new install so people have ability to disable if they so desire
 if [ "$1" = "1" ]; then
-
-%if 0%{?el7}
-    #enable memcached on new install
-    systemctl enable memcached.service
-    systemctl start memcached.service
-%else
     /sbin/chkconfig memcached on
     /sbin/service memcached start
-%endif
-
 fi
 
 

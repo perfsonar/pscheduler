@@ -29,12 +29,7 @@ Requires:       oniguruma >= 5.9
 
 BuildRequires:  %{_pscheduler_python}
 BuildRequires:  %{_pscheduler_python}-setuptools
-%if 0%{?el8}
-BuildRequires:  %{_pscheduler_python}-Cython >= 0.19
-%endif
-%if 0%{?el7}%{?el9}
 BuildRequires:  Cython >= 0.19
-%endif
 BuildRequires:  jq-devel >= 1.5
 BuildRequires:  oniguruma-devel >= 5.9
 

@@ -21,12 +21,6 @@ Url:		https://www.nmmapper.com/
 Source:		%{actual}-%{version}.tar.gz
 
 Requires:	%{_pscheduler_python}
-%if 0%{?el7}
-Requires:       %{_pscheduler_python_epel}-simplejson
-%endif
-%if 0%{?el8}
-Requires:       %{_pscheduler_python}-simplejson
-%endif
 Requires:	%{_pscheduler_python}-wheel
 Requires:      	nmap
 

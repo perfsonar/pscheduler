@@ -22,26 +22,12 @@ URL:		http://pypi.python.org/pypi/jsonschema
 Source:		%{short}-%{version}.tar.gz
 
 Requires:       %{_pscheduler_python}
-%if 0%{?el7}
-Requires:       %{_pscheduler_python_epel}-attrs
-%endif
-%if 0%{?el8}
-Requires:       %{_pscheduler_python}-attrs
-%endif
-
 Requires:       %{_pscheduler_python}-pyrsistent
 # This is required for some reason.
 Requires:       %{_pscheduler_python}-setuptools
 
 BuildRequires:  %{_pscheduler_python}
 BuildRequires:  %{_pscheduler_python}-setuptools
-
-%if 0%{?el7}
-BuildRequires:  %{_pscheduler_python_epel}-setuptools_scm
-%endif
-%if 0%{?el8}
-BuildRequires:  %{_pscheduler_python}-setuptools_scm
-%endif
 
 
 %description

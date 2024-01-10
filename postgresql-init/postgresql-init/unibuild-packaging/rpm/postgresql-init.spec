@@ -31,13 +31,6 @@ Requires:	%{_pscheduler_postgresql_package}-contrib >= %{_pscheduler_postgresql_
 Requires:	%{_pscheduler_postgresql_package}-devel >= %{_pscheduler_postgresql_version}
 Requires:	%{_pscheduler_postgresql_package}-libs >= %{_pscheduler_postgresql_version}
 
-%if 0%{?el7}
-# This is required only for an upgrade to succeed.  Post-Python2 code
-# doesn't use it.
-# TODO: Remove this after 4.3.x reaches EOL.
-Requires:	%{_pscheduler_postgresql_package}-plpython
-%endif
-
 Requires:	%{_pscheduler_postgresql_plpython}  >= %{_pscheduler_postgresql_version}
 Requires:	%{_pscheduler_postgresql_package}-server  >= %{_pscheduler_postgresql_version}
 
@@ -86,10 +79,6 @@ make \
 
 set -e
 
-%if 0%{?el7}
-# Try an upgrade first, but only on EL7.  EL8 is self-tending.
-%{libexec}/upgrade-postgresql
-%endif
 %{libexec}/initialize-postgresql
 
 # Set up run at boot
