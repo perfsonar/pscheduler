@@ -3,7 +3,7 @@
 #
 
 %define short	pyjq
-Name:		%{_pscheduler_python}-%{short}
+Name:		python-%{short}
 Version:	2.4.0
 Release:	2%{?dist}
 Summary:	Python bindings to JQ
@@ -21,14 +21,14 @@ Source:		%{short}-%{version}.tar.gz
 Patch0:		python-%{short}-%{version}-00-nodownloads.patch
 Patch1:		python-%{short}-%{version}-01-integer.patch
 
-Requires:       %{_pscheduler_python}
+Requires:       python
 # Note that 1.6.10 is a pScheduler-specific version that includes a
 # bug fix required for this module.  See #717.
 Requires:       jq >= 1.6.10
 Requires:       oniguruma >= 5.9
 
-BuildRequires:  %{_pscheduler_python}
-BuildRequires:  %{_pscheduler_python}-setuptools
+BuildRequires:  python
+BuildRequires:  python-setuptools
 BuildRequires:  Cython >= 0.19
 BuildRequires:  jq-devel >= 1.5
 BuildRequires:  oniguruma-devel >= 5.9
@@ -59,11 +59,11 @@ Python bindings to JQ
 
 %build
 cython _pyjq.pyx
-%{_pscheduler_python} setup.py build
+python setup.py build
 
 
 %install
-%{_pscheduler_python} setup.py install --root=$RPM_BUILD_ROOT -O1  --record=INSTALLED_FILES
+python setup.py install --root=$RPM_BUILD_ROOT -O1  --record=INSTALLED_FILES
 
 
 %clean

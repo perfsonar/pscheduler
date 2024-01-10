@@ -29,8 +29,8 @@ Provides:	%{name} = %{version}-%{release}
 
 # Include all required libraries here
 Requires:	pscheduler-server
-Requires:	%{_pscheduler_python}-pscheduler >= 1.3
-Requires:	%{_pscheduler_python}-jsontemplate
+Requires:	python-pscheduler >= 1.3
+Requires:	python-jsontemplate
 Requires:       s3-benchmark
 
 BuildRequires:	pscheduler-rpm
@@ -48,7 +48,7 @@ s3throughput test class for pScheduler
 
 %build
 make \
-     PYTHON=%{_pscheduler_python} \
+     PYTHON=python \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
 

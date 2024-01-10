@@ -24,9 +24,9 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 4.3.0
 Requires:	pscheduler-account
-Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
+Requires:	python-pscheduler >= 4.3.0
 Requires:	pscheduler-test-rtt
-Requires:	%{_pscheduler_python}-icmperror
+Requires:	python-icmperror
 # This supplies ping.
 Requires:	iputils
 Requires:	sudo

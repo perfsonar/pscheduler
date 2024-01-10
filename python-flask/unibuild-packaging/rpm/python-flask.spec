@@ -3,7 +3,7 @@
 #
 
 %define short	flask
-Name:		%{_pscheduler_python}-%{short}
+Name:		python-%{short}
 Version:	1.1.1
 Release:	1%{?dist}
 Summary:	A micro-framework for Python based on Werkzeug, Jinja 2 and good intentions
@@ -19,14 +19,14 @@ URL:		https://palletsprojects.com/p/flask
 
 Source:		%{short}-%{version}.tar.gz
 
-Requires:	%{_pscheduler_python}
-Requires:	%{_pscheduler_python}-click
-Requires:	%{_pscheduler_python}-jinja2
-Requires:	%{_pscheduler_python}-itsdangerous
-Requires:	%{_pscheduler_python}-werkzeug
+Requires:	python
+Requires:	python-click
+Requires:	python-jinja2
+Requires:	python-itsdangerous
+Requires:	python-werkzeug
 
-BuildRequires:	%{_pscheduler_python}
-BuildRequires:	%{_pscheduler_python}-setuptools
+BuildRequires:	python
+BuildRequires:	python-setuptools
 
 %description
 Flask is called a “micro-framework” because the idea to keep the core
@@ -49,11 +49,11 @@ authentication technologies and more.
 
 
 %build
-%{_pscheduler_python} setup.py build
+python setup.py build
 
 
 %install
-%{_pscheduler_python} setup.py install \
+python setup.py install \
     --root=$RPM_BUILD_ROOT \
     --single-version-externally-managed \
     -O1 \

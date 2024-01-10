@@ -21,12 +21,12 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.1.6
-Requires:	%{_pscheduler_python}-pscheduler
-Requires:	%{_pscheduler_python}-jsontemplate
+Requires:	python-pscheduler
+Requires:	python-jsontemplate
 
 BuildRequires:	pscheduler-rpm
-BuildRequires:	%{_pscheduler_python}-pscheduler
-BuildRequires:  %{_pscheduler_python_epel}-nose
+BuildRequires:	python-pscheduler
+BuildRequires:  python-nose
 
 %description
 Latency test class for pScheduler
@@ -40,7 +40,7 @@ Latency test class for pScheduler
 
 %build
 make \
-     PYTHON=%{_pscheduler_python} \
+     PYTHON=python \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
 

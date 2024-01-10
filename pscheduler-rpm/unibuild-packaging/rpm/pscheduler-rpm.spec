@@ -36,24 +36,6 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 
 
 #
-# Python
-#
-
-# This is the version we like.
-%%_pscheduler_python_version_major 3
-%%_pscheduler_python_version_minor 6
-
-
-# TODO: Clean use of this out of the RPM specs
-
-# This is a hold-over from the bad old days when there were
-# inconsistencies in how repos named packages.  By EL9, everything was
-# the same name.
-%%_pscheduler_python python
-%%_pscheduler_python_epel python
-
-
-#
 # PostgreSQL
 #
 
@@ -71,7 +53,9 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 %%_pscheduler_postgresql_service postgresql
 %%_pscheduler_postgresql_data %%{_pscheduler_postgresql_data_top}/data
 %%_pscheduler_postgresql_initdb postgresql-setup --initdb
-%%_pscheduler_postgresql_plpython %%{_pscheduler_postgresql_package}-plpython%%{_pscheduler_python_version_major}
+
+# PostgreSQL still specifies the version number in the package.
+%%_pscheduler_postgresql_plpython %%{_pscheduler_postgresql_package}-plpython3
 
 %%_pscheduler_postgresql_version_file %%{_pscheduler_postgresql_data}/PG_VERSION
 
