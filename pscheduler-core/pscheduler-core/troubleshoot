@@ -30,7 +30,8 @@ pscheduler.set_graceful_exit()
 #
 
 class VerbatimParser(optparse.OptionParser):
-    return self.epilog
+    def format_epilog(self, formatter):
+        return self.epilog
 
 opt_parser = VerbatimParser(
     usage="Usage: %prog [ OPTIONS ] host",
