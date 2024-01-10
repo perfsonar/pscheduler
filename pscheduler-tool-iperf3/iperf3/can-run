@@ -29,7 +29,7 @@ except KeyError:
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 5)
+    pscheduler.json_check_schema(spec, 7)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
@@ -49,7 +49,7 @@ supported_options = ["schema",
                      "dest", "dest-node",
                      "reverse", "omit", "single-ended", "single-ended-port",
                      "duration", "interval", "link-rtt", "parallel", "window-size",
-                     "mss", "bandwidth", "udp", "buffer-length",
+                     "mss", "bandwidth", "udp", "buffer-length", "fq-rate",
                      "ip-tos", "local-address", "ip-version", "congestion",
                      "zero-copy", "flow-label", "client-cpu-affinity",
                      "server-cpu-affinity", "loopback"
@@ -58,7 +58,12 @@ supported_options = ["schema",
 for option in spec:
     if option not in supported_options:
         logger.debug("iperf3 unsupported option %s" % option)
-        errors.append('iperf3 does not support %s option' % option)    
+        errors.append('iperf3 does not support %s option' % option)
+
+
+# TODO: We should really reject having bandwidth and fq-rate set here
+# instead of at runtime once #384 is completed.
+
 
 logger.debug("can-run succeeded")
 

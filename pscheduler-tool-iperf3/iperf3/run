@@ -40,6 +40,12 @@ except KeyError as ex:
 except Exception:
     pscheduler.fail("Error parsing run input: %s" % sys.exc_info()[0])
 
+# TODO: This should be rejected in can-run once #384 is completed.
+if 'bandwidth' in test_spec and 'fq-rate' in test_spec:
+    pscheduler.succeed_json({ "succeeded": False,
+                              "error": "Cannot have bandwidth and fq-rate set simultaneously." })
+
+
 single_ended = test_spec.get('single-ended', False)
 loopback = test_spec.get('loopback', False)
 participants = len(participant_data)
