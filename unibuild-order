@@ -96,9 +96,9 @@ python-vcversioner
 # TODO: We were building this; EL9 has a newer version.
 python-pyasn1						# EL8 has this, ours is newer
 python-pyasn1-modules
-# TODO: See if EL9 is newer
+
+# TODO: EL8 had these, ours was newer.  See about upgrading to current. (#1387)
 python-werkzeug						# EL8 has this, ours is newer
-# TODO: See if EL9 is newer
 python-flask						# EL8 has this, ours is newer
 
 # TODO: See if this is available in EL9
