@@ -23,8 +23,8 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	%{_pscheduler_python}-pscheduler >= 1.3
-Requires:	%{_pscheduler_python}-jsontemplate
+Requires:	python-pscheduler >= 1.3
+Requires:	python-jsontemplate
 
 BuildRequires:	pscheduler-rpm
 
@@ -41,7 +41,7 @@ SNMP test class for pScheduler
 
 %build
 make \
-     PYTHON=%{_pscheduler_python} \
+     PYTHON=python \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
 

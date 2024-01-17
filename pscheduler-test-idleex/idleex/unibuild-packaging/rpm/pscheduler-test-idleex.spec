@@ -21,8 +21,8 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	%{_pscheduler_python}-pscheduler
-Requires:	%{_pscheduler_python}-jsontemplate
+Requires:	python-pscheduler
+Requires:	python-jsontemplate
 
 BuildRequires:	pscheduler-rpm
 
@@ -39,7 +39,7 @@ Idle test class for pScheduler that runs exclusively.
 
 %build
 make \
-     PYTHON=%{_pscheduler_python} \
+     PYTHON=python \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
 

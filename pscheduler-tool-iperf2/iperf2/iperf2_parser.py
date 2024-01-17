@@ -217,7 +217,7 @@ TCP window size: 19800 Byte (default)
     # In some cases, the output is short on summary information.
     test_output = """
 ------------------------------------------------------------
-Client connecting to tb-el7-prod.ps.dev.internet2.edu, TCP port 5001
+Client connecting to ps.example.net, TCP port 5001
 TCP window size:  196 KByte (default)
 ------------------------------------------------------------
 [  3] local 10.0.2.15 port 36852 connected with 163.253.37.202 port 5001

@@ -21,19 +21,15 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.1.6
-Requires:	%{_pscheduler_python}-pscheduler >= 1.3.7.1
-Requires:	%{_pscheduler_python}-memcached
+Requires:	python-pscheduler >= 1.3.7.1
+Requires:	python-memcached
 Requires:	memcached
 Requires(post):	memcached
-%if 0%{?el7}
-%{?systemd_requires: %systemd_requires}
-%else
 Requires:		chkconfig
-%endif
 
 BuildRequires:	pscheduler-rpm
-BuildRequires:  %{_pscheduler_python}-pscheduler
-BuildRequires:  %{_pscheduler_python_epel}-nose
+BuildRequires:  python-pscheduler
+BuildRequires:  python-nose
 
 %define directory %{_includedir}/make
 
@@ -49,7 +45,7 @@ This archiver sends JSON test results to Esmond Measurement Archive
 
 %build
 make \
-     PYTHON=%{_pscheduler_python} \
+     PYTHON=python \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
 
@@ -59,16 +55,8 @@ pscheduler internal warmboot
 
 #Only start memcached on new install so people have ability to disable if they so desire
 if [ "$1" = "1" ]; then
-
-%if 0%{?el7}
-    #enable memcached on new install
-    systemctl enable memcached.service
-    systemctl start memcached.service
-%else
     /sbin/chkconfig memcached on
     /sbin/service memcached start
-%endif
-
 fi
 
 

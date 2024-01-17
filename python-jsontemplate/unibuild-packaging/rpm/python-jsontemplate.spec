@@ -3,7 +3,7 @@
 #
 
 %define short	jsontemplate
-Name:		%{_pscheduler_python}-%{short}
+Name:		python-%{short}
 Version:	0.87
 Release:	1%{?dist}
 Summary:	Template system for JSON
@@ -23,10 +23,10 @@ Patch0:		%{short}-%{version}-00-2to3.patch
 Patch1:		%{short}-%{version}-01-division.patch
 
 
-Requires:	%{_pscheduler_python}
+Requires:	python
 
-BuildRequires:  %{_pscheduler_python}
-BuildRequires:	%{_pscheduler_python}-setuptools
+BuildRequires:  python
+BuildRequires:	python-setuptools
 
 
 
@@ -46,11 +46,11 @@ Template system for JSON
 
 
 %build
-%{_pscheduler_python} setup.py build
+python setup.py build
 
 
 %install
-%{_pscheduler_python} setup.py install \
+python setup.py install \
     --root=$RPM_BUILD_ROOT \
     -O1 \
     --record=INSTALLED_FILES

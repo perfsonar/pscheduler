@@ -32,17 +32,17 @@ Provides:	%{name} = %{version}-%{release}
 
 BuildRequires:	postgresql-init >= %{_pscheduler_postgresql_version}
 BuildRequires:	postgresql-load >= 1.2
-BuildRequires:	%{_pscheduler_postgresql_package}-server >= %{_pscheduler_postgresql_version}
-BuildRequires:	%{_pscheduler_postgresql_package}-contrib >= %{_pscheduler_postgresql_version}
-BuildRequires:	%{_pscheduler_postgresql_plpython} >= %{_pscheduler_postgresql_version}
+BuildRequires:	postgresql-server >= %{_pscheduler_postgresql_version}
+BuildRequires:	postgresql-contrib >= %{_pscheduler_postgresql_version}
+BuildRequires:	postgresql-plpython3 >= %{_pscheduler_postgresql_version}
 
 
 Requires:	drop-in
 Requires:	gzip
-Requires:	%{_pscheduler_postgresql_package}-server >= %{_pscheduler_postgresql_version}
+Requires:	postgresql-server >= %{_pscheduler_postgresql_version}
 # This is for pgcrypto
-Requires:	%{_pscheduler_postgresql_package}-contrib >= %{_pscheduler_postgresql_version}
-Requires:	%{_pscheduler_postgresql_plpython} >= %{_pscheduler_postgresql_version}
+Requires:	postgresql-contrib >= %{_pscheduler_postgresql_version}
+Requires:	postgresql-plpython3 >= %{_pscheduler_postgresql_version}
 Requires:	postgresql-load >= 1.2
 Requires:	pscheduler-account
 Requires:	pscheduler-core
@@ -54,16 +54,16 @@ Requires:	curl
 Requires:	psmisc
 Requires:	pscheduler-account
 # This is from EPEL but doesn't have a python36 prefix
-Requires:	%{_pscheduler_python}-daemon
-Requires:	%{_pscheduler_python}-flask
-Requires:	%{_pscheduler_python}-jsontemplate
-Requires:	%{_pscheduler_python_epel}-psutil
+Requires:	python-daemon
+Requires:	python-flask
+Requires:	python-jsontemplate
+Requires:	python-psutil
 
 # API Server
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
-BuildRequires:	%{_pscheduler_python}-parse-crontab
-BuildRequires:	%{_pscheduler_python}-pscheduler >= 5.1.0
+BuildRequires:	python-parse-crontab
+BuildRequires:	python-pscheduler >= 5.1.0
 BuildRequires:	m4
 Requires:	httpd-wsgi-socket
 # Note that the actual definition of what protocol is used is part of
@@ -71,19 +71,13 @@ Requires:	httpd-wsgi-socket
 # mod_ssl is required here.
 Requires:	mod_ssl
 Requires:	mod_wsgi > 4.0
-Requires:	%{_pscheduler_python}-parse-crontab
-Requires:	%{_pscheduler_python}-pscheduler >= 5.1.0
-
-%if 0%{?el7}
-Requires:	pytz
-%endif
-%if 0%{?el8}%{?el9}
-Requires:	%{_pscheduler_python}-pytz
-%endif
+Requires:	python-parse-crontab
+Requires:	python-pscheduler >= 5.1.0
+Requires:	python-pytz
 
 # General
 BuildRequires:	pscheduler-rpm
-BuildRequires:  %{_pscheduler_python}
+BuildRequires:  python
 BuildRequires:	systemd
 %{?systemd_requires: %systemd_requires}
 
@@ -163,7 +157,7 @@ make -C daemons \
      LOGDIR=%{_pscheduler_log_dir} \
      PGDATABASE=%{database_name} \
      PGPASSFILE=%{_pscheduler_database_pgpass_file} \
-     PGSERVICE=%{_pscheduler_postgresql_service}.service \
+     PGSERVICE=postgresql.service \
      PGUSER=%{_pscheduler_database_user} \
      PSUSER=%{_pscheduler_user} \
      ARCHIVERDEFAULTDIR=%{archiver_default_dir} \
@@ -260,7 +254,7 @@ mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_log_dir}
 #
 # API Server
 #
-API_ROOT="$(%{_pscheduler_python} -c 'import pscheduler ; print(pscheduler.api_root())')"
+API_ROOT="$(python -c 'import pscheduler ; print(pscheduler.api_root())')"
 
 make -C api-server \
      'USER_NAME=%{_pscheduler_user}' \
@@ -271,7 +265,7 @@ make -C api-server \
      "PREFIX=${RPM_BUILD_ROOT}" \
      "DSN_FILE=%{dsn_file}" \
      "LIMITS_FILE=%{_pscheduler_limit_config}" \
-     "PYTHON=%(command -v %{_pscheduler_python})" \
+     "PYTHON=%(command -v python)" \
      "RUN_DIR=%{run_dir}" \
      install
 
@@ -369,7 +363,7 @@ EOF
 
 NEW_CONF_DIGEST=$(sha256sum "%{pgsql_conf}" | awk '{ print $1 }')
 
-systemctl enable --now "%{_pscheduler_postgresql_service}"
+systemctl enable --now postgresql
 
 # Restart the server only if the configuration has changed as a result
 # of what we did to it.  This is more for development convenience than
@@ -378,7 +372,7 @@ systemctl enable --now "%{_pscheduler_postgresql_service}"
 if [ "${NEW_CONF_DIGEST}" != "${OLD_CONF_DIGEST}" ]
 then
     echo "Restarting PostgreSQL after configuration change."
-    systemctl restart "%{_pscheduler_postgresql_service}"
+    systemctl restart postgresql
 fi
 
 
@@ -544,7 +538,7 @@ if [ "$1" = "0" ]; then
 
     # Removing the max_connections change requires a restart, which
     # will also catch the HBA changes.
-    systemctl reload-or-try-restart "%{_pscheduler_postgresql_service}"
+    systemctl reload-or-try-restart postgresql
 
 
 
@@ -589,8 +583,8 @@ fi
 # Any upgrade of python-pscheduler needs to force a database restart
 # because Pg doesn't see module upgrades.
 
-%triggerin -- %{_pscheduler_python}-pscheduler
-systemctl reload-or-try-restart "%{_pscheduler_postgresql_service}"
+%triggerin -- python-pscheduler
+systemctl reload-or-try-restart postgresql
 
 # ------------------------------------------------------------------------------
 %files
