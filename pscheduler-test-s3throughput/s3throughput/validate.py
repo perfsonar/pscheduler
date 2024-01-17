@@ -6,7 +6,7 @@
 # Development Order #3:
 #
 # This file determines the required and optional data types which are 
-# allowed to be in the test spec, result, and limit. This is used
+# allowed to be in the test spec and result. This is used
 # for validation of these structures.
 #
 # Several existing datatypes are available for use at:
@@ -75,18 +75,4 @@ def result_is_valid(json):
 	    "average_delete_time"
             ]
         }
-    return json_validate(json, schema)
-
-def limit_is_valid(json):
-    schema = {
-        "type": "object",
-        "properties": {
-            "host":            { "$ref": "#/pScheduler/Limit/String" },
-            "host-node":       { "$ref": "#/pScheduler/Limit/String" },
-            "testtype":        { "$ref": "#/local/Type" },
-            "timeout":         { "$ref": "#/pScheduler/Limit/Duration" },
-        },
-        "additionalProperties": False
-        }
-
     return json_validate(json, schema)

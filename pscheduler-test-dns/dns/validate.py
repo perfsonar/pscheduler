@@ -131,20 +131,3 @@ def result_is_valid(json):
         "required": [ "succeeded" ]
         }
     return json_validate(json, schema)
-
-
-def limit_is_valid(json):
-    schema = {
-        "type": "object",
-        "properties": {
-            "schema":            { "$ref": "#/pScheduler/Cardinal" },
-            "host":              { "$ref": "#/pScheduler/Limit/String" },
-            "host-node":         { "$ref": "#/pScheduler/Limit/String" },
-            "query":             { "$ref": "#/pScheduler/Limit/String" },
-            "record":            { "$ref": "#/pScheduler/Limit/String" },
-            "timeout":           { "$ref": "#/pScheduler/Limit/Duration" },
-            "nameserver":        { "$ref": "#/pScheduler/Limit/String" },
-            },
-        "additionalProperties": False
-    }
-    return json_validate(json, schema)

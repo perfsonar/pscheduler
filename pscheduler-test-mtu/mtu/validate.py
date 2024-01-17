@@ -6,7 +6,7 @@
 # Development Order #3:
 #
 # This file determines the required and optional data types which are 
-# allowed to be in the test spec, result, and limit. This is used
+# allowed to be in the test spec and result. This is used
 # for validation of these structures.
 #
 # Several existing datatypes are available for use at:

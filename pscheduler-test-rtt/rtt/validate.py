@@ -190,29 +190,3 @@ def result_is_valid(json):
             ]
         }
     return json_validate(json, schema)
-
-
-def limit_is_valid(json):
-    schema = {
-        "type": "object",
-        "properties": {
-            "schema":            { "$ref": "#/pScheduler/Cardinal" },
-            "source":            { "$ref": "#/pScheduler/Limit/IPCIDRList"},
-            "dest":              { "$ref": "#/pScheduler/Limit/IPCIDRList"},
-            "endpoint":          { "$ref": "#/pScheduler/Limit/IPCIDRList"},
-            "count":             { "$ref": "#/pScheduler/Limit/Cardinal" },
-            "flow-label":        { "$ref": "#/pScheduler/Limit/CardinalZeroList" },
-            "hostnames":         { "$ref": "#/pScheduler/Limit/Boolean" },
-            "interval":          { "$ref": "#/pScheduler/Limit/Duration" },
-            "ip-version":        { "$ref": "#/pScheduler/Limit/IPVersionList" },
-            "suppress-loopback": { "$ref": "#/pScheduler/Limit/Boolean" },
-            "ip-tos":            { "$ref": "#/pScheduler/Limit/CardinalList" },
-            "length":            { "$ref": "#/pScheduler/Limit/Cardinal" },
-            "ttl":               { "$ref": "#/pScheduler/Limit/Cardinal" },
-            "deadline":          { "$ref": "#/pScheduler/Limit/Duration" },
-            "timeout":           { "$ref": "#/pScheduler/Limit/Duration" }
-        },
-        "additionalProperties": False
-        }
-
-    return json_validate(json, schema)

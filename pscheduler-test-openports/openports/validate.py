@@ -6,7 +6,7 @@
 # Development Order #3:
 #
 # This file determines the required and optional data types which are 
-# allowed to be in the test spec, result, and limit. This is used
+# allowed to be in the test spec and result. This is used
 # for validation of these structures.
 #
 # Several existing datatypes are available for use at:
@@ -86,20 +86,3 @@ def result_is_valid(json):
             ]
         }
     return json_validate(json, schema)
-
-def limit_is_valid(json):
-    schema = {
-        "type": "object",
-        "properties": {
-            "schema":         { "$ref": "#/pScheduler/Cardinal" },
-            "network":        { "$ref": "#/pScheduler/IPCIDR" },
-            "source":         { "$ref": "#/pScheduler/IPAddress" },
-            "services":       { "$ref": "#/pScheduler/Boolean" },
-            "ports":          { "$ref": "#/local/portlist" },
-            "timeout":        { "$ref": "#/pScheduler/Duration" },
-            "source-node":    { "$ref": "#/pScheduler/URLHostPort"}
-        },
-        "additionalProperties": False
-        }
-
-    return json_validate(json, schema, max_schema=MAX_SCHEMA)

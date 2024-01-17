@@ -40,18 +40,3 @@ def result_is_valid(json):
             ]
         }
     return json_validate(json, schema)
-
-
-def limit_is_valid(json):
-    schema = {
-        "type": "object",
-        "properties": {
-            "schema":           { "$ref": "#/pScheduler/Cardinal" },
-            "duration":         { "$ref": "#/pScheduler/Limit/Duration" },
-            "starting-comment": { "$ref": "#/pScheduler/Limit/String" },
-            "parting-comment":  { "$ref": "#/pScheduler/Limit/String" }
-        },
-        "additionalProperties": False
-        }
-
-    return json_validate(json, schema)

@@ -84,21 +84,3 @@ def result_is_valid(json):
             ]
         }
     return json_validate(json, schema)
-
-
-def limit_is_valid(json):
-    schema = {
-        "type": "object",
-        "properties": {
-        "schema": { "$ref": "#/pScheduler/Cardinal" },
-            "dawdle":        { "$ref": "#/pScheduler/Limit/Duration" },
-            "fail":          { "$ref": "#/pScheduler/Limit/Probability" },
-            "dest":          { "$ref": "#/pScheduler/Limit/String" },
-            "ip-version":    { "$ref": "#/pScheduler/Limit/IPVersion" },
-            "test-material": { "$ref": "#/pScheduler/Limit/String" },
-            "timeout":       { "$ref": "#/pScheduler/Limit/Duration" }
-        },
-        "additionalProperties": False
-    }
-
-    return json_validate(json, schema)
