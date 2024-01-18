@@ -91,6 +91,10 @@ def run_client():
     iperf2_args.append('-p')
     iperf2_args.append(server_port)
 
+    if 'mss' in test_spec:
+        iperf2_args.append('--mss')
+        iperf2_args.append(test_spec['mss'])
+
     # who to connect to
     destination = test_spec['dest']
 
@@ -243,6 +247,10 @@ def run_server():
 
     #init command
     iperf2_args = [ iperf2_cmd, '-s' ]
+
+    if 'mss' in test_spec:
+        iperf2_args.append('--mss')
+        iperf2_args.append(test_spec['mss'])
 
     iperf2_args.append('-p')
     iperf2_args.append(server_port)
