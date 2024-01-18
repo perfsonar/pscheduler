@@ -55,6 +55,11 @@ opt_parser.add_option("-s", "--source",
                       action="store", type="string",
                       dest="source")
 
+opt_parser.add_option("--source-bind",
+                      help="Bind address on sending host",
+                      action="store", type="string",
+                      dest="source_bind")
+
 opt_parser.add_option("--source-node",
                       help="pScheduler node on sending host, if different",
                       action="store", type="string",
@@ -64,6 +69,11 @@ opt_parser.add_option("-d", "--dest", "--destination",
                       help="Receiving host",
                       action="store", type="string",
                       dest="destination")
+
+opt_parser.add_option("--dest-bind",
+                      help="Bind address on receiving host",
+                      action="store", type="string",
+                      dest="dest_bind")
 
 opt_parser.add_option("--dest-node",
                       help="pScheduler node on receiving host, if different",
@@ -212,11 +222,19 @@ schema = pscheduler.HighInteger(1)
 if options.source is not None:
    result['source'] = options.source
 
+if options.source_bind is not None:
+   result['source-bind'] = options.source_bind
+   schema.set(7)
+
 if options.source_node is not None:
    result['source-node'] = options.source_node
-   
+
 if options.destination is not None:
    result['dest'] = options.destination
+
+if options.dest_bind is not None:
+   result['dest-bind'] = options.dest_bind
+   schema.set(7)
 
 if options.dest_node is not None:
    result['dest-node'] = options.dest_node

@@ -29,7 +29,7 @@ except KeyError:
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 5)
+    pscheduler.json_check_schema(spec, 7)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
@@ -45,8 +45,8 @@ except ValueError as ex:
 errors = []
 
 supported_options = ["schema",
-                     "source", "source-node",
-                     "dest", "dest-node",
+                     "source", "source-bind", "source-node",
+                     "dest", "dest-bind", "dest-node",
                      "reverse", "omit", "single-ended", "single-ended-port",
                      "duration", "interval", "link-rtt", "parallel", "window-size",
                      "mss", "bandwidth", "udp", "buffer-length",

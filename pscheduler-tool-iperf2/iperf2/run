@@ -169,9 +169,16 @@ def run_client():
         iperf2_args.append('-l')
         iperf2_args.append(test_spec['buffer-length'])
 
-    if 'local-address' in test_spec and test_spec['local-address'] != None:
+    # local-address is deprecated and is overridden by source-bind.
+
+    if test_spec.get('source-bind') is not None:
         iperf2_args.append('-B')
-        iperf2_args.append(test_spec['local-address'])
+        iperf2_args.append(test_spec['source-bind'])
+    else:
+        if test_spec.get('local-address') is not None:
+            iperf2_args.append('-B')
+            iperf2_args.append(test_spec['local-address'])
+        
 
     if 'congestion' in test_spec and test_spec['congestion'] != None:
         iperf2_args.append('-Z')
@@ -239,6 +246,10 @@ def run_server():
 
     iperf2_args.append('-p')
     iperf2_args.append(server_port)
+
+    if test_spec.get('dest-bind') is not None:
+        iperf2_args.append('-B')
+        iperf2_args.append(test_spec['dest-bind'])
 
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string
