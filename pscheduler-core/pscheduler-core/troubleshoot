@@ -12,6 +12,8 @@ running several tests to verify that the basic features of the system
 are working.
 """
 
+import babel.dates
+import datetime
 import optparse
 import os
 import re
@@ -263,6 +265,21 @@ def check_service_status(api):
         else:
             failed(limit_status.get("error", "Unspecified error"))
 
+    # Look at the schedule
+    if "runs" in status:
+        for check in [
+                ('last-scheduled', '  Last run scheduled'),
+                ('last-finished', '  Last run completed')
+                ]:
+            item, label = check
+            start(label)
+            last = status['runs'].get(item)
+            if last is None:
+                ok('Never')
+            else:
+                last_delta = pscheduler.iso8601_as_datetime(last) \
+                - pscheduler.time_now()
+                ok(babel.dates.format_timedelta(last_delta, add_direction=True))
 
 
 def dump_stats(host):

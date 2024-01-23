@@ -26,6 +26,7 @@ Requires:       gnuplot >= 4.6.2
 
 # This is for netstat.
 Requires:       net-tools
+Requires:       python-babel
 Requires:       python-pscheduler >= 4.4.0
 
 Requires:	curl
