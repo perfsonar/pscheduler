@@ -4,7 +4,7 @@ Description=pScheduler server - __PROG__
 PartOf=__PGSERVICE__
 
 [Service]
-Type=exec
+Type=__SERVICE_TYPE__
 User=__PSUSER__
 Group=__PSUSER__
 PermissionsStartOnly=true

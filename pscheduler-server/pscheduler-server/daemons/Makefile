@@ -125,6 +125,17 @@ TO_CLEAN += resume
 
 
 
+# Systemd 240 and later supports the 'exec' service type, which is
+# preferred becuase it catches more failures sooner.  For anything
+# earlier, fall back on 'simple'.
+SYSTEMD_VERSION := $(shell systemctl --version | awk '$$1 == "systemd" { print $$2 }')
+ifeq ($(shell expr '$(SYSTEMD_VERSION)' '>=' 240), 1)
+     SERVICE_TYPE := exec
+else
+    SERVICE_TYPE := simple
+endif
+
+
 $(UNITS): service-template.raw
 ifndef CONFIGDIR
 	@echo No CONFIGDIR specified for build
@@ -168,6 +179,7 @@ endif
 		-e 's|__VAR__|$(VAR)|g' \
 		-e 's|__LOGDIR__|$(LOGDIR)|g' \
 		-e 's|__PGSERVICE__|$(PGSERVICE)|g' \
+		-e 's|__SERVICE_TYPE__|$(SERVICE_TYPE)|g' \
 		< $< > $@
 	@if egrep -e '__[A-Z_]+__' $@ ; then \
 		echo "Found un-substituted values in processed file $@" ; \
