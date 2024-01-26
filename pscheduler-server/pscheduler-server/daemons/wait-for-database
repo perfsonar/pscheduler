@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+#
+# Check that the database is available for connections and working.
+#
+
+import datetime
+import optparse
+import pscheduler
+import psycopg2
+import sys
+import time
+
+pscheduler.set_graceful_exit()
+
+#
+# Gargle the arguments
+#
+
+opt_parser = optparse.OptionParser()
+
+# Program options
+
+opt_parser.add_option("--dsn",
+                      help="Database connection string, prefix with @ to read from file",
+                      action="store", type="string", dest="dsn",
+                      default="")
+opt_parser.add_option("--dwell",
+                      help="How long to keep trying to connect (seconds)",
+                      action="store", type="int", dest="dwell",
+                      default=60)
+opt_parser.add_option("--retry",
+                      help="How often to try connecting (seconds)",
+                      action="store", type="int", dest="retry",
+                      default=2)
+
+(options, args) = opt_parser.parse_args()
+
+
+def try_database(dsn):
+    """
+    Attempt to connect to the database and use it, returning a tuple
+    of True/False if successful/failed and an error message.
+    """
+    db = None
+    try:
+        db = pscheduler.PgConnection(dsn, name="check-database")
+        rows = list(db.query('SELECT 12345'))
+    except Exception as ex:
+        return (False, str(ex))
+    finally:
+        if db is not None:
+            db.close()
+
+    if (len(rows) != 1) or (rows[0] != (12345,)):
+        return(False, 'Got unexpected data: %s' % (rows))
+
+    return (True, 'OK')
+
+
+attempts = 0
+dwell_until = pscheduler.time_now() + datetime.timedelta(seconds=options.dwell)
+
+# This will be overwritten in the loop below.
+reason = 'Never tried to connect'
+
+while pscheduler.time_now() < dwell_until:
+
+    status, reason = try_database(options.dsn)
+
+    if status:
+        print('Successfully connected to the database.', file=sys.stderr)
+        exit(0)
+
+    attempts += 1
+    if attempts == 1:
+        print('Failed first attempt connecting to the database:', reason, file=sys.stderr)
+
+    time.sleep(options.retry)
+
+
+# No dice.
+
+print('Unable to connect within the dwell time.  Last error:\n',
+      reason, file=sys.stderr)
+
+exit(1)
