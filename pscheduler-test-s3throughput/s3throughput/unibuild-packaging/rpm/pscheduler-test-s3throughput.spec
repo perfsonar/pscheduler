@@ -31,7 +31,6 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server
 Requires:	python-pscheduler >= 1.3
 Requires:	python-jsontemplate
-Requires:       s3-benchmark
 
 BuildRequires:	pscheduler-rpm
 
