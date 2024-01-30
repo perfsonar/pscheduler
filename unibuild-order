@@ -78,8 +78,6 @@ ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of th
 python-kafka
 python-nmap3
 
-python-jsontemplate
-
 # TODO: This was deprecated after EL8.  Switch to something new.
 ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-nose)
 
