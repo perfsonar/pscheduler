@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-context-changefail
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server, python3-jsontemplate
+ pscheduler-server
 Description: Failing context changer class for pScheduler
  Always-failing context changer class for pScheduler.
