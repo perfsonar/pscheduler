@@ -12,7 +12,7 @@
 
 from pscheduler import json_validate_from_standard_template
 
-
+MAX_SCHEMA = 1
 
 #
 # Test Specification
@@ -124,7 +124,7 @@ RESULT_SCHEMA = {
             "properties": {
                 "schema":           { "type": "integer", "enum": [ 1 ] },
                 "succeeded":        { "$ref": "#/pScheduler/Boolean" },
-                "Authenticated":    { "$ref": "#/pScheduler/Boolean" },
+                "authenticated":    { "$ref": "#/pScheduler/Boolean" },
                 "time":             { "$ref": "#/pScheduler/Duration" },
             },
             "required": [
