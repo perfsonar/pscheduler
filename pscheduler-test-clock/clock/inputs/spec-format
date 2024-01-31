@@ -1,0 +1,7 @@
+{
+    "schema": 2,
+    "dest": "foo.bar.org",
+    "source": "bar.bar.org",
+    "source-node": "bar2.bar.org",
+    "#timeout": "PT10S"
+}

@@ -3,11 +3,11 @@
 # Format a result
 #
 
-import jsontemplate
 import pscheduler
 import sys
 
 from validate import result_is_valid
+from validate import MAX_SCHEMA
 
 
 try:
@@ -15,7 +15,7 @@ try:
 except IndexError:
    format = 'text/plain'
 
-input = pscheduler.json_load(exit_on_error=True, max_schema=1)
+input = pscheduler.json_load(exit_on_error=True, max_schema=MAX_SCHEMA)
 
 valid, message = result_is_valid(input["result"])
 

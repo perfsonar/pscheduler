@@ -3,50 +3,54 @@
 # Format a spec
 #
 
-import jsontemplate
-import pscheduler
 import sys
+import pscheduler
 
 from validate import spec_is_valid
-
+from validate import MAX_SCHEMA
 
 try:
-   format = sys.argv[1]
+    FMT = sys.argv[1]
 except IndexError:
-   format = 'text/plain'
+    FMT = 'text/plain'
 
+json_in = pscheduler.json_load(exit_on_error=True, max_schema=MAX_SCHEMA)
 
-json = pscheduler.json_load(exit_on_error=True, max_schema=1)
-
-valid, message = spec_is_valid(json)
-
+valid, message = spec_is_valid(json_in)
 if not valid:
     pscheduler.fail(message)
 
+json = pscheduler.json_strip_hyphens(json_in)
 
-if format == 'text/plain':
+json['_format'] = 'text/plain'
 
-   template = """
-Destination ................... {.section dest}{dest}{.or}Not Specified{.end}
-Source ........................ {.section source}{source}{.or}Not Specified{.end}
-Source Node.................... {.section source-node}{source-node}{.or}Not Specified{.end}
-Timeout .,..................... {.section timeout}{timeout}{.or}Not Specified{.end}
-"""
+# NB: Hyphens have been stripped out of key names.
 
-elif format == 'text/html':
+TEMPLATE='''
+{% if _format == 'text/plain' %}
 
-   template = """
+Destination ... {{ unspec(dest) }}
+Source ........ {{ unspec(source) }}
+Source Node ... {{ unspec(sourcenode) }}
+Timeout ....... {{ unspec(timeout) }}
+
+{% elif _format == 'text/html' %}
+
 <table>
-<tr><td>Destination</td><td>{.section dest}{dest}{.or}Not Specified{.end}</td></tr>
-<tr><td>Source</td><td>{.section source}{source}{.or}Not Specified{.end}</td></tr>
-<tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
+<tr><td>Destination</td><td>{{ unspec(dest) }}</td></tr>
+<tr><td>Source</td><td>{{ unspec(source) }}</td></tr>
+<tr><td>Source Node</td><td>{{ unspec(sourcenode) }}</td></tr>
+<tr><td>Timeout</td><td>{{ unspec(timeout) }}</td></tr>
 </table>
-   """
 
-else:
+{% else %}
 
-   pscheduler.fail("Unsupported format '%s'" % format)
+{{ error('Unsupported format "' + _format + '"') }}
 
+{% endif %}
+'''
 
-# TODO: Should probably handle exceptions in a nicer way.
-print(jsontemplate.expand(template, json).strip())
+try:
+    print(pscheduler.jinja2_format(TEMPLATE, json, strip=True))
+except RuntimeError as ex:
+    pscheduler.fail(str(ex))
