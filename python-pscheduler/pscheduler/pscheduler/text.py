@@ -116,10 +116,17 @@ def random_string(length, randlength=False, safe=False):
 
 def jinja2_format(template, info, strip=True):
     """
-    Format a string template and dict using Jinja2.  Adds an
-    error('msg') function that makes this function raise a
-    RuntimeError (e.g.: {{ error('Something went wrong') }}) and an
-    unspec(var) to return var or 'Not Specified' if it isn't defined.
+    Format a string template and dict using Jinja2.
+
+    This functions Adds the following utilities to Jinja2:
+
+    error(msg) - Raises a RuntimeError (e.g.: {{ error('Something went
+    wrong') }})
+
+    siformat(val) - Formats a number as an SI number (e.g., 1000 -> 1k).
+
+    unspec(var) - Returns return var or 'Not Specified' if it isn't
+    defined.
     """
     assert isinstance(template, str)
     assert isinstance(info, dict)
@@ -128,9 +135,12 @@ def jinja2_format(template, info, strip=True):
         raise RuntimeError(message)
 
     HEADER = '''
+{%- macro siformat(arg) -%}
+{{ arg | filesizeformat | replace('B','') }}
+{%- endmacro -%}
 {% macro unspec(arg) -%}
 {{ arg if arg is defined else 'Not Specified' }}
-{%- endmacro %}
+{%- endmacro -%}
     '''
 
     def unspec_helper(value):
@@ -154,7 +164,8 @@ def _format_method(template,
                    pick=None,
                    validator=None
                    ):
-    """Carry out most of what the spec-format and result-format text
+    """
+    Carry out most of what the spec-format and result-format text
     plugin methods do:
 
      - Load a JSON file from standard input
@@ -191,15 +202,7 @@ def _format_method(template,
     E.g., the key 'foo-bar' will be changed to 'foobar'.  Templates
     should use that accordingly.
 
-    The Jinja2 template is provided with the following additional
-    functions:
-
-     - error(message) - Raises an error, usually for unsupported MIME
-       types.
-
-     - unspec(variable) - Returns a standard string when 'variable' is
-       undefined.
-
+    See jinja2_format for a list of utility functions added to Jinja2.
     """
 
     assert isinstance(template, str)
