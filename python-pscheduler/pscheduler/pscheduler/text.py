@@ -2,6 +2,7 @@
 # Text-related utilities
 #
 
+import jinja2
 import os
 import string
 import sys
@@ -105,3 +106,38 @@ def random_string(length, randlength=False, safe=False):
     ]
 
     return "".join(characters)
+
+
+
+def jinja2_format(template, info, strip=True):
+    """
+    Format a string template and dict using Jinja2.  Adds an
+    error('msg') function that makes this function raise a
+    RuntimeError (e.g.: {{ error('Something went wrong') }}) and an
+    unspec(var) to return var or 'Not Specified' if it isn't defined.
+    """
+    assert isinstance(template, str)
+    assert isinstance(info, dict)
+
+    def error_helper(message):
+        raise RuntimeError(message)
+
+    HEADER = '''
+{% macro unspec(arg) -%}
+{{ arg if arg is defined else 'Not Specified' }}
+{%- endmacro %}
+    '''
+
+    def unspec_helper(value):
+        if value:
+            return value
+        return 'Unspecified'
+
+    j2 = jinja2.Environment()
+    j2.globals.update(
+        error=error_helper,
+        unspec=unspec_helper
+        )
+    finished = j2.from_string(HEADER + template).render(info)
+
+    return finished.strip() if strip else finished
