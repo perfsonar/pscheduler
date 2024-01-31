@@ -24,16 +24,11 @@ def spec_is_valid(json):
                 "properties": {
                     "schema":       { "$ref": "#/pScheduler/Cardinal" },
                     "parallel":     { "$ref": "#/pScheduler/Cardinal" },
-
                     "host":         { "$ref": "#/pScheduler/Host"     },
-
                     "dest":         { "$ref": "#/pScheduler/String"   },
                     "source":       { "$ref": "#/pScheduler/String"   },
-                    
-                    "timeout":      { "$ref": "#/pScheduler/Duration" }, 
-                    "min-bandwith": { "$ref": "#/pScheduler/Cardinal" },
-                    
-                    "max-size":     { "$ref": "#/pScheduler/Cardinal" },
+                    "duration":     { "$ref": "#/pScheduler/Duration" },
+                    "timeout":      { "$ref": "#/pScheduler/Duration" },
                     "cleanup":      { "$ref": "#/pScheduler/Boolean"  },
                 },
                 # If listed here, data of this type MUST be in the test spec
