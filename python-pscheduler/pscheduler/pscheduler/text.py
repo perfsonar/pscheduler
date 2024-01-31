@@ -143,15 +143,9 @@ def jinja2_format(template, info, strip=True):
 {%- endmacro -%}
     '''
 
-    def unspec_helper(value):
-        if value:
-            return value
-        return 'Unspecified'
-
     j2 = jinja2.Environment()
     j2.globals.update(
-        error=error_helper,
-        unspec=unspec_helper
+        error=error_helper
         )
     finished = j2.from_string(HEADER + template).render(info)
 
