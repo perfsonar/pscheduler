@@ -3,55 +3,63 @@
 # Format a spec
 #
 
-import jsontemplate
 import pscheduler
-import sys
 
 from validate import spec_is_valid
+from validate import MAX_SCHEMA
 
+TEMPLATE='''
+{%- set schema = 1 if schema is undefined else schema -%}
+{% if _mime_type == 'text/plain' %}
 
-try:
-   format = sys.argv[1]
-except IndexError:
-   format = 'text/plain'
+{%- if schema == 1 -%}
+Host ............... {{ unspec(host) }}
+Host Node .......... {{ unspec(hostnode) }}
+{%- elif schema == 2 -%}
+Hosts:
+  {%- for hostname in host %}
+    {{ hostname }}
+  {%- endfor -%}
+{%- else -%}
+{{ error("Unsupported schema %d" | format(schema)) }}
+{%- endif %}
+Duration ........... {{ unspec(duration) }}
+Starting Comment ... {{ unspec(startingcomment) }}
+Parting Comment .... {{ unspec(partingcomment) }}
 
-json = pscheduler.json_load(exit_on_error=True, max_schema=1)
+{% elif _mime_type == 'text/html' %}
 
-valid, message = spec_is_valid(json)
+HTML
 
-if not valid:
-    pscheduler.fail(message)
+{% else %}
 
+{{ error('Unsupported MIME type "' + _mime_type + '"') }}
 
-if format == 'text/plain':
+{% endif %}
+'''
 
-   template = """
-Starting Comment ... {.section starting-comment}{starting-comment}{.or}Not Specified{.end}
-Duration ........... {.section duration}{duration}{.or}Not Specified{.end}
-Parting Comment .... {.section parting-comment}{parting-comment}{.or}Not Specified{.end}
-   """
-
-elif format == 'text/html':
-
-   template = """
-<table border="0">
-<tr><td><b>Starting Comment</b></td><td>
-{.section starting-comment}{starting-comment}{.or}<i>Not Specified</i>{.end}
-</td></tr>
-<tr><td><b>Duration</b></td><td>
-{.section duration}{duration}{.or}<i>Not Specified</i>{.end}
-</td></tr>
-<table border="0">
-<tr><td><b>Parting Comment</b></td><td>
-{.section parting-comment}{parting-comment}{.or}<i>Not Specified</i>{.end}
-</td></tr>
-</table>
-   """
-
-else:
-
-   pscheduler.fail("Unsupported format '%s'" % format)
-
-
-# TODO: Should probably handle exceptions in a nicer way.
-print(jsontemplate.expand(template, json).strip())
+pscheduler.spec_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=spec_is_valid)
+### 
+###    template = """
+### Starting Comment ... {.section starting-comment}{starting-comment}{.or}Not Specified{.end}
+### Duration ........... {.section duration}{duration}{.or}Not Specified{.end}
+### Parting Comment .... {.section parting-comment}{parting-comment}{.or}Not Specified{.end}
+###    """
+### 
+### elif format == 'text/html':
+### 
+###    template = """
+### <table border="0">
+### <tr><td><b>Starting Comment</b></td><td>
+### {.section starting-comment}{starting-comment}{.or}<i>Not Specified</i>{.end}
+### </td></tr>
+### <tr><td><b>Duration</b></td><td>
+### {.section duration}{duration}{.or}<i>Not Specified</i>{.end}
+### </td></tr>
+### <table border="0">
+### <tr><td><b>Parting Comment</b></td><td>
+### {.section parting-comment}{parting-comment}{.or}<i>Not Specified</i>{.end}
+### </td></tr>
+### </table>
+###    """
+### 
