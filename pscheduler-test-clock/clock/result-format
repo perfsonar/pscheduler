@@ -30,18 +30,18 @@ TEMPLATE = '''
 
 {% if _mime_type == 'text/plain' %}
 
-{{ dump_text('Local', local) }}
+{{ dump_text('Local', result.local) }}
 
-{{ dump_text('Remote', remote) }}
+{{ dump_text('Remote', result.remote) }}
 
-Difference ... {{ difference }}
+Difference ... {{ result.difference }}
 
 {% elif _mime_type == 'text/html' %}
 <table>
-  {{ dump_html('Local', local) }}
-  {{ dump_html('Remote', remote) }}
+  {{ dump_html('Local', result.local) }}
+  {{ dump_html('Remote', result.remote) }}
   <tr><td colspan="2">&nbsp;</td></tr>
-  <tr><td>Difference</td><td>{{ difference }}</td></tr>
+  <tr><td>Difference</td><td>{{ result.difference }}</td></tr>
 </table>
 
 {% else %}

@@ -20,14 +20,14 @@ from validate import MAX_SCHEMA
 TEMPLATE = '''
 {% if _mime_type == 'text/plain' %}
 
-Time ......... {{ time }}
-IP Address ... {{ ip_address }}
+Time ......... {{ result.time }}
+IP Address ... {{ result.ip_address }}
 
 {% elif _mime_type == 'text/html' %}
 
 <table>
-<tr><td>Time</td><td>{{ time }}</td></tr>
-<tr><td>IP Address</td><td>{{ ip_address }}</td></tr>
+<tr><td>Time</td><td>{{ result.time }}</td></tr>
+<tr><td>IP Address</td><td>{{ result.ip_address }}</td></tr>
 </table>
 {% else %}
 

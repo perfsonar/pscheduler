@@ -73,7 +73,7 @@ def json_strip_hyphens(data):
             new_name = item.replace('-', '')
             value = data[item]
             if isinstance(value, dict):
-                json_strip_hyphens(value)
+                value = json_strip_hyphens(value)
             item.replace('-', '_')
             result[new_name] = value
         return result

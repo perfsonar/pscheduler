@@ -164,8 +164,7 @@ def _format_method(template,
                    pick=None,
                    validator=None
                    ):
-    """
-    Carry out most of what the spec-format and result-format text
+    """Carry out most of what the spec-format and result-format text
     plugin methods do:
 
      - Load a JSON file from standard input
@@ -187,8 +186,9 @@ def _format_method(template,
     max_schema - The maximum value for the input's 'schema' pair or
     None (the default) to skip checking.
 
-    pick - A function to pick out the desired part of the input to
-    format.  For result-format methods, this is usually TODO
+    pick - A function to pick out the desired part of the input for
+    validation.  For result-format methods, the usual value would be
+    lambda v: v['result'].
 
     validator = A callable that takes the input data as an argument
     and returns a tuple of (bool, str), where the bool indicates
@@ -203,6 +203,7 @@ def _format_method(template,
     should use that accordingly.
 
     See jinja2_format for a list of utility functions added to Jinja2.
+
     """
 
     assert isinstance(template, str)
@@ -214,13 +215,17 @@ def _format_method(template,
             mime_type = 'text/plain'
 
     json_in = json_load(exit_on_error=True, max_schema=max_schema)
-    if pick is not None:
-        assert callable(pick)
-        json_in = pick(json_in)
 
     if validator is not None:
         assert callable(validator)
-        valid, message = validator(json_in)
+
+        if pick is not None:
+            assert callable(pick)
+            json_val = pick(json_in)
+        else:
+            json_val = json_in
+
+        valid, message = validator(json_val)
         if not valid:
             fail(message)
 
