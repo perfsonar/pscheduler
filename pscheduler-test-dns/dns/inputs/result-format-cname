@@ -1,0 +1,16 @@
+{
+    "spec": {
+	"host": "foo",
+	"host-node": "foo-node",
+	"nameserver": "ns1.foo.org",
+	"record": "cname",
+	"query": "example.org",
+	"timeout": "PT10S"
+    },
+    "result": {
+	"record": "bleep.example.org",
+	"schema": 1,
+	"succeeded": true,
+	"time": "PT0.031422S"
+    }
+}

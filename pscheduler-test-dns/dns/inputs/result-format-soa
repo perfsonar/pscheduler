@@ -1,0 +1,24 @@
+{
+    "spec": {
+	"host": "foo",
+	"host-node": "foo-node",
+	"nameserver": "ns1.foo.org",
+	"record": "soa",
+	"query": "example.org",
+	"timeout": "PT10S"
+    },
+    "result": {
+	"record": {
+	    "nameserver": "ns.example.org",
+	    "owner": "Me",
+	    "serial": 12345,
+	    "refresh": 100,
+	    "retry": 200,
+	    "expire": 300,
+	    "minimum": 400
+	},
+	"schema": 1,
+	"succeeded": true,
+	"time": "PT0.031422S"
+    }
+}

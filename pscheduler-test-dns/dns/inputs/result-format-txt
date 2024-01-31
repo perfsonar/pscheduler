@@ -1,0 +1,19 @@
+{
+    "spec": {
+	"host": "foo",
+	"host-node": "foo-node",
+	"nameserver": "ns1.foo.org",
+	"record": "txt",
+	"query": "foo.example.org",
+	"timeout": "PT10S"
+    },
+    "result": {
+	"record": [
+	    "Textual Goodness",
+	    "More Textual Goodness"
+	],
+	"schema": 1,
+	"succeeded": true,
+	"time": "PT0.031422S"
+    }
+}

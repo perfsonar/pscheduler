@@ -1,0 +1,16 @@
+{
+    "spec": {
+	"host": "foo",
+	"host-node": "foo-node",
+	"nameserver": "ns1.foo.org",
+	"record": "ptr",
+	"query": "4.3.2.1.in-addr.arpa",
+	"timeout": "PT10S"
+    },
+    "result": {
+	"record": "foo.example.org",
+	"schema": 1,
+	"succeeded": true,
+	"time": "PT0.031422S"
+    }
+}
