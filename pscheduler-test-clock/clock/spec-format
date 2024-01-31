@@ -3,38 +3,20 @@
 # Format a spec
 #
 
-import sys
 import pscheduler
 
 from validate import spec_is_valid
 from validate import MAX_SCHEMA
 
-try:
-    FMT = sys.argv[1]
-except IndexError:
-    FMT = 'text/plain'
-
-json_in = pscheduler.json_load(exit_on_error=True, max_schema=MAX_SCHEMA)
-
-valid, message = spec_is_valid(json_in)
-if not valid:
-    pscheduler.fail(message)
-
-json = pscheduler.json_strip_hyphens(json_in)
-
-json['_format'] = 'text/plain'
-
-# NB: Hyphens have been stripped out of key names.
-
 TEMPLATE='''
-{% if _format == 'text/plain' %}
+{% if _mime_type == 'text/plain' %}
 
 Destination ... {{ unspec(dest) }}
 Source ........ {{ unspec(source) }}
 Source Node ... {{ unspec(sourcenode) }}
 Timeout ....... {{ unspec(timeout) }}
 
-{% elif _format == 'text/html' %}
+{% elif _mime_type == 'text/html' %}
 
 <table>
 <tr><td>Destination</td><td>{{ unspec(dest) }}</td></tr>
@@ -45,12 +27,9 @@ Timeout ....... {{ unspec(timeout) }}
 
 {% else %}
 
-{{ error('Unsupported format "' + _format + '"') }}
+{{ error('Unsupported MIME type "' + _mime_type + '"') }}
 
 {% endif %}
 '''
 
-try:
-    print(pscheduler.jinja2_format(TEMPLATE, json, strip=True))
-except RuntimeError as ex:
-    pscheduler.fail(str(ex))
+pscheduler.spec_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=spec_is_valid)

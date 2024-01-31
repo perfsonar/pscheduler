@@ -8,6 +8,11 @@ import string
 import sys
 import textwrap
 
+from .exitstatus import fail
+from .exitstatus import succeed
+from .psjson import json_load
+from .psjson import json_strip_hyphens
+
 # This is not available on Debian 9, so if it isn't, roll our own.
 # DEBIAN: Go back to using secrets directly when Debian 9 goes away.
 try:
@@ -141,3 +146,107 @@ def jinja2_format(template, info, strip=True):
     finished = j2.from_string(HEADER + template).render(info)
 
     return finished.strip() if strip else finished
+
+
+def _format_method(template,
+                   mime_type=None,
+                   max_schema=None,
+                   pick=None,
+                   validator=None
+                   ):
+    """Carry out most of what the spec-format and result-format text
+    plugin methods do:
+
+     - Load a JSON file from standard input
+     - Check it against a maximum schema value in max_schema
+     - Validate the structure of the JSON using a validator function
+     - Format it with a Jinja2 template
+     - Print the result to standard output and exit successfully
+     - Fail with a message to standard error if any step along the way fails
+
+    Arguments:
+
+    template - A Jinja2 template to be applied to the input data.  See
+    'Template Notes' below.
+
+    mime_type - Passed to the template as the variable _mime_type,
+    used in making decisions about formatting.  If None, it will be
+    taken from sys.argv[1] or defaulted to 'text/plain'.
+
+    max_schema - The maximum value for the input's 'schema' pair or
+    None (the default) to skip checking.
+
+    pick - A function to pick out the desired part of the input to
+    format.  For result-format methods, this is usually TODO
+
+    validator = A callable that takes the input data as an argument
+    and returns a tuple of (bool, str), where the bool indicates
+    validity and the str is an error message, if any.  If None, no
+    validation will be done.
+
+    Template Notes:
+
+    Because Jinja2 cannot support dictionaries with hyphens in the
+    keys, all hyphens will be removed from keys after validation.
+    E.g., the key 'foo-bar' will be changed to 'foobar'.  Templates
+    should use that accordingly.
+
+    The Jinja2 template is provided with the following additional
+    functions:
+
+     - error(message) - Raises an error, usually for unsupported MIME
+       types.
+
+     - unspec(variable) - Returns a standard string when 'variable' is
+       undefined.
+
+    """
+
+    assert isinstance(template, str)
+
+    if mime_type is None:
+        try:
+            mime_type = sys.argv[1]
+        except IndexError:
+            mime_type = 'text/plain'
+
+    json_in = json_load(exit_on_error=True, max_schema=max_schema)
+    if pick is not None:
+        assert callable(pick)
+        json_in = pick(json_in)
+
+    if validator is not None:
+        assert callable(validator)
+        valid, message = validator(json_in)
+        if not valid:
+            fail(message)
+
+    json_stripped = json_strip_hyphens(json_in)
+    json_stripped['_mime_type'] = mime_type
+
+    try:
+        succeed(jinja2_format(template, json_stripped, strip=True))
+    except RuntimeError as ex:
+        fail(str(ex))
+    except jinja2.TemplateError as ex:
+        fail(f'Template error: {ex}')
+
+
+
+def spec_format_method(template, max_schema=None, validator=None):
+    """
+    Implement a result-format method.  See _format_method() for more information.
+    """
+    return _format_method(template,
+                         max_schema=max_schema,
+                         validator=validator)
+
+
+def result_format_method(template, max_schema=None, validator=None):
+    """
+    Implement a result-format method.  See _format_method() for more information.
+    """
+    return _format_method(template,
+                         max_schema=max_schema,
+                         pick=lambda v: v['result'],
+                         validator=validator)
