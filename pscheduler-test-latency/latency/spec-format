@@ -32,7 +32,7 @@ Bucket Width ......... {{ unspec(bucketwidth) }}
 Output Raw Packets ... {{ unspec(outputraw) }}
 Flip Mode ............ {{ unspec(flip) }}
 {% if schema >= 2 -%}
-Reverse ..,,.......... {{ unspec(reverse) }}
+Reverse .............. {{ unspec(reverse) }}
 {%- endif %}
 {% if schema >= 3 -%}
 NAT Traversal ........ {{ unspec(traversenat) }}
