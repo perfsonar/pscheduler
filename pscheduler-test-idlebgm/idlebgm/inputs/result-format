@@ -1,6 +1,6 @@
 {
     "result": {
 	"succeeded": true,
-	"duration": "PT5S"
+	"time-slept": "PT5S"
     }
 }

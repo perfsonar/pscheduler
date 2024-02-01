@@ -34,11 +34,11 @@ def result_is_valid(json):
             "succeeded":        { "$ref": "#/pScheduler/Boolean" },
             "error":            { "$ref": "#/pScheduler/String" },
             "diags":            { "$ref": "#/pScheduler/String" },
-            "duration":         { "$ref": "#/pScheduler/Duration" },
+            "time-slept":       { "$ref": "#/pScheduler/Duration" },
             },
         "required": [
             "succeeded",
-            "duration",
+            "time-slept",
             ]
         }
     return json_validate(json, schema)

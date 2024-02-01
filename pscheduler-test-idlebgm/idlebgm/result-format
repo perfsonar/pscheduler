@@ -16,12 +16,12 @@ from validate import MAX_SCHEMA
 TEMPLATE = '''
 {% if _mime_type == 'text/plain' %}
 
-Duration ... {{ unspec(result.duration) }}
+Time Slept ... {{ unspec(result.timeslept) }}
 
 {% elif _mime_type == 'text/html' %}
 
 <table>
-<tr><td>Duration</td><td>{{ unspec(result.duration) }}</td></tr>
+<tr><td>Time Slept</td><td>{{ unspec(result.timeslept) }}</td></tr>
 </table>
 
 {% else %}
