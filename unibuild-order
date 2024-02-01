@@ -172,7 +172,8 @@ pscheduler-test-netreach		--bundle extras
 pscheduler-test-noop
 pscheduler-test-psresponse
 pscheduler-test-throughput
-pscheduler-test-openports		--bundle extras
+# This has not been released.
+# pscheduler-test-openports		--bundle extras
 pscheduler-test-rtt
 ifelse(HAVE_S3_BENCHMARK,1,pscheduler-test-s3throughput)
 pscheduler-test-simplestream
