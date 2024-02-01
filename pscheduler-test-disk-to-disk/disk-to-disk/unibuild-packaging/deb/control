@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-test-disk-to-disk
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server, python3-jsontemplate
+ pscheduler-server
 Description: pScheduler disk-to-disk test
  Disk-to-disk test class for pScheduler

@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-test-psresponse
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server, python3-jsontemplate
+ pscheduler-server
 Description: pScheduler Response test
  pScheduler response test class for pScheduler

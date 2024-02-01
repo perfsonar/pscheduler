@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-test-noop
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server (>= 1.1.6), python3-jsontemplate
+ pscheduler-server (>= 1.1.6)
 Description: pScheduler no-op test
  No-op test class for pScheduler
