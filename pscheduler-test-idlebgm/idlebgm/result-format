@@ -3,55 +3,32 @@
 # Format a result
 #
 
-import jsontemplate
+#!/usr/bin/env python3
+#
+# Format a result
+#
+
 import pscheduler
-import sys
 
 from validate import result_is_valid
+from validate import MAX_SCHEMA
 
+TEMPLATE = '''
+{% if _mime_type == 'text/plain' %}
 
-try:
-   format = sys.argv[1]
-except IndexError:
-   format = 'text/plain'
+Duration ... {{ unspec(result.duration) }}
 
-input = pscheduler.json_load(exit_on_error=True, max_schema=1)
+{% elif _mime_type == 'text/html' %}
 
-valid, message = result_is_valid(input["result"])
-
-if not valid:
-    pscheduler.fail(message)
-
-json = input["result"]
-
-
-if format == 'text/plain':
-
-   fail_template = "Test failed."
-
-   template = """
-Slept ... {.section time-slept}{time-slept}{.or}Not Reported{.end}
-   """
-
-elif format == 'text/html':
-
-   fail_template = "<p>Test failed.</p>"
-
-   template = """
-<table border="0">
-
-<tr><td><b>Time Slept</b></td><td>
-{.section time-slept}{time-slept}{.or}<i>Not Reported</i>{.end}
-</td></tr>
+<table>
+<tr><td>Duration</td><td>{{ unspec(result.duration) }}</td></tr>
 </table>
-   """
 
-else:
+{% else %}
 
-   pscheduler.fail("Unsupported format '%s'" % format)
+{{ error('Unsupported MIME type "' + _mime_type + '"') }}
 
+{% endif %}
+'''
 
-# TODO: Should probably handle exceptions in a nicer way.
-print(jsontemplate.expand(
-   template if json['succeeded'] else fail_template,
-   json).strip())
+pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)
