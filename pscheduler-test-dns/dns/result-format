@@ -96,3 +96,5 @@ Nameserver ... {{ result.record.nameserver }}
 
 {% endif %}
 '''
+
+pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)
