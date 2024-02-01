@@ -3,6 +3,7 @@
 #
 
 import jinja2
+import json
 import os
 import string
 import sys
@@ -123,6 +124,8 @@ def jinja2_format(template, info, strip=True):
     error(msg) - Raises a RuntimeError (e.g.: {{ error('Something went
     wrong') }})
 
+    json_pretty(val) - Pretty prints 'val' as JSON.
+
     siformat(val) - Formats a number as an SI number (e.g., 1000 -> 1k).
 
     unspec(var) - Returns return var or 'Not Specified' if it isn't
@@ -133,6 +136,9 @@ def jinja2_format(template, info, strip=True):
 
     def error_helper(message):
         raise RuntimeError(message)
+
+    def json_pretty_helper(data):
+        return json.dumps(data, indent=2)
 
     HEADER = '''
 {%- macro siformat(arg) -%}
@@ -145,7 +151,8 @@ def jinja2_format(template, info, strip=True):
 
     j2 = jinja2.Environment()
     j2.globals.update(
-        error=error_helper
+        error=error_helper,
+        json_pretty=json_pretty_helper
         )
     finished = j2.from_string(HEADER + template).render(info)
 
