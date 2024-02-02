@@ -1,0 +1,56 @@
+{
+  "result": {
+    "duplicates": 0,
+    "loss": 0.1234,
+    "lost": 0,
+    "max": "PT0.000012S",
+    "mean": "PT0.00001S",
+    "min": "PT0.000008S",
+    "received": 5,
+    "reorders": 0,
+    "roundtrips": [
+      {
+        "hostname": "localhost",
+        "ip": "127.0.0.1",
+        "length": 64,
+        "rtt": "PT0.000012S",
+        "seq": 1,
+        "ttl": 33
+      },
+      {
+        "hostname": "localhost",
+        "ip": "127.0.0.1",
+        "length": 64,
+        "rtt": "PT0.000011S",
+        "seq": 2,
+        "ttl": 33
+      },
+      {
+        "hostname": "localhost",
+        "length": 64,
+        "rtt": "PT0.000008S",
+        "seq": 3,
+        "ttl": 33
+      },
+      {
+        "ip": "127.0.0.1",
+        "length": 64,
+        "rtt": "PT0.000008S",
+        "seq": 4,
+        "ttl": 33
+      },
+	{
+	    "error": "communication-administratively-prohibited"
+	},
+      {
+      },
+      {
+	  "error": "communication-administratively-prohibited"
+      }
+    ],
+    "schema": 1,
+    "sent": 5,
+    "stddev": "PT0.000002S",
+    "succeeded": true
+  }
+}

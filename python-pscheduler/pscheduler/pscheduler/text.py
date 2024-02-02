@@ -11,8 +11,10 @@ import textwrap
 
 from .exitstatus import fail
 from .exitstatus import succeed
+from .iso8601 import iso8601_as_timedelta
 from .psjson import json_load
 from .psjson import json_strip_hyphens
+from .pstime import timedelta_as_seconds
 
 # This is not available on Debian 9, so if it isn't, roll our own.
 # DEBIAN: Go back to using secrets directly when Debian 9 goes away.
@@ -124,18 +126,29 @@ def jinja2_format(template, info, strip=True):
     error(msg) - Raises a RuntimeError (e.g.: {{ error('Something went
     wrong') }})
 
+    iso8601_duration_seconds(duration) - Convert ISO8601 duration into
+    seconds.
+
     json_pretty(val) - Pretty prints 'val' as JSON.
 
     siformat(val) - Formats a number as an SI number (e.g., 1000 -> 1k).
 
     unspec(var) - Returns return var or 'Not Specified' if it isn't
     defined.
+
     """
     assert isinstance(template, str)
     assert isinstance(info, dict)
 
     def error_helper(message):
         raise RuntimeError(message)
+
+    def iso8601_duration_seconds_helper(duration):
+        try:
+            delta = iso8601_as_timedelta(duration)
+        except ValueError as ex:
+            raise RuntimeError(f'Invalid ISO8601 duration {duration}')
+        return timedelta_as_seconds(delta)
 
     def json_pretty_helper(data):
         return json.dumps(data, indent=2)
@@ -152,6 +165,7 @@ def jinja2_format(template, info, strip=True):
     j2 = jinja2.Environment()
     j2.globals.update(
         error=error_helper,
+        iso8601_duration_seconds=iso8601_duration_seconds_helper,
         json_pretty=json_pretty_helper
         )
     finished = j2.from_string(HEADER + template).render(info)
