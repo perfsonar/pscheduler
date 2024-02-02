@@ -7,7 +7,8 @@
     "mean": "PT0.00001S",
     "min": "PT0.000008S",
     "received": 5,
-    "reorders": 0,
+      "reorders": 0,
+      "#roundtrips": [],
     "roundtrips": [
       {
         "hostname": "localhost",

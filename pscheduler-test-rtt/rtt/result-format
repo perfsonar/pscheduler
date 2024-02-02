@@ -10,13 +10,17 @@ from validate import MAX_SCHEMA
 
 TEMPLATE = '''
 {% macro rtt_stat(iso) -%}
+{% if iso is defined -%}
   {{ "%.4f" | format(iso8601_duration_seconds(iso) * 1000) }}
+{%- else -%}
+None
+{%- endif -%}
 {%- endmacro -%}
 
 {% if _mime_type == 'text/plain' %}
 
 {% for trip in result.roundtrips -%}
-  {{ "%-8d" | format(loop.index) }}
+{{ "%-8d" | format(loop.index) }}
   {%- if trip.error is defined -%}
     {{ trip.error }}
   {%- elif trip.hostname is defined or trip.ip is defined -%}
