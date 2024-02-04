@@ -155,7 +155,7 @@ def jinja2_format(template, info, strip=True):
 
     HEADER = '''
 {%- macro siformat(arg) -%}
-{{ arg | filesizeformat | replace('B','') }}
+{{ arg | filesizeformat | replace('ytes', '') | replace('B','') }}
 {%- endmacro -%}
 {% macro unspec(arg) -%}
 {{ arg if arg is defined else 'Not Specified' }}
