@@ -68,7 +68,6 @@ def result_is_valid(json):
             "time" : { "$ref": "#/pScheduler/Duration" }    
 	},
         "required": [
-            "schema",
             "succeeded",
 	    "average_put_time",
 	    "average_get_time",
