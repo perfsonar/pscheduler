@@ -98,26 +98,3 @@ None
 '''
 
 pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)
-
-# --------------------------------------
-'''
-
-   rt_template = """
-<tr>
-  <th>{number}</th>
-  <td>{.section ip}{ip}{.end}</td>
-  <td>{.section hostname}{hostname}{.end}</td>
-  <td>{.section length}{length}{.end}</td>
-  <td>{.section rtt}{rtt}{.end}</td>
-  <td>{.section error}{error}{.end}</td>
-</tr>
-"""
-
-   error_template = """
-<tr>
-  <th>{number}</th>
-  <td colspan="5">{.section error}Error: {error}{.or}Unknown Error{.end}</td>
-</tr>
-"""
-
-'''
