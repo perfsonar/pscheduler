@@ -12,7 +12,7 @@
 
 from pscheduler import json_validate_from_standard_template
 
-
+MAX_SCHEMA = 1
 
 #
 # Test Specification
