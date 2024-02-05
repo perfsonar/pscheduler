@@ -9,7 +9,7 @@
 import pscheduler
 
 from validate import spec_is_valid
-from validate import MAX_SCHEMA
+from validate import spec_max_schema
 
 TEMPLATE='''
 {% if _mime_type == 'text/plain' %}
@@ -43,4 +43,4 @@ Timeout ....... {{ unspec(timeout) }}
 {% endif %}
 '''
 
-pscheduler.spec_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=spec_is_valid)
+pscheduler.spec_format_method(TEMPLATE, max_schema=spec_max_schema(), validator=spec_is_valid)
