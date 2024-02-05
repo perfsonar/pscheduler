@@ -96,6 +96,9 @@ class PgConnection(object):
         self.pending_notifications = {}
         self.lock = threading.Lock()
 
+    def close(self):
+        self.pg.close()
+
     #
     # Notifications
     #

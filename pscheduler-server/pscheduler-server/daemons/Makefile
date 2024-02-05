@@ -21,6 +21,10 @@ DAEMONS=\
 	ticker \
 	scheduler \
 
+DAEMON_UTILITIES=\
+	wait-for-database
+
+DAEMON_INSTALL=$(DAEMONS) $(DAEMON_UTILITIES)
 
 COMMANDS=\
 	debug \
@@ -123,9 +127,9 @@ endif
 	fi
 TO_CLEAN += resume
 
+SYSTEMD_VERSION := $(shell systemctl --version | awk '$$1 == "systemd" { print $$2 }')
 
-
-$(UNITS): service-template.raw
+$(UNITS): service-template.m4
 ifndef CONFIGDIR
 	@echo No CONFIGDIR specified for build
 	@false
@@ -158,16 +162,17 @@ ifndef VAR
 	@echo No VAR specified for build
 	@false
 endif
-	sed \
-		-e 's|__CONFIGDIR__|$(CONFIGDIR)|g' \
-		-e 's|__DAEMONDIR__|$(DAEMONDIR)|g' \
-		-e 's|__DSN__|$(DSNFILE)|g' \
-		-e 's|__PROG__|$(@:service-%=%)|g' \
-		-e 's|__PSUSER__|$(PSUSER)|g' \
-		-e 's|__RUNDIR__|$(RUNDIR)|g' \
-		-e 's|__VAR__|$(VAR)|g' \
-		-e 's|__LOGDIR__|$(LOGDIR)|g' \
-		-e 's|__PGSERVICE__|$(PGSERVICE)|g' \
+	m4 \
+		-D '__CONFIGDIR__=$(CONFIGDIR)' \
+		-D '__DAEMONDIR__=$(DAEMONDIR)' \
+		-D '__DSN__=$(DSNFILE)' \
+		-D '__PROG__=$(@:service-%=%)' \
+		-D '__PSUSER__=$(PSUSER)' \
+		-D '__RUNDIR__=$(RUNDIR)' \
+		-D '__VAR__=$(VAR)' \
+		-D '__LOGDIR__=$(LOGDIR)' \
+		-D '__PGSERVICE__=$(PGSERVICE)' \
+		-D '__SYSTEMD_VERSION__=$(SYSTEMD_VERSION)' \
 		< $< > $@
 	@if egrep -e '__[A-Z_]+__' $@ ; then \
 		echo "Found un-substituted values in processed file $@" ; \
@@ -187,7 +192,7 @@ $(CONFIGS): config-template.raw
 TO_CLEAN += $(CONFIGS)
 
 
-build: $(DAEMONS) $(UNITS) $(CONFIGS) $(COMMANDS) $(INTERNALS)
+build: $(DAEMON_INSTALL) $(UNITS) $(CONFIGS) $(COMMANDS) $(INTERNALS)
 	@true
 
 
@@ -223,8 +228,8 @@ endif
 	cp -f $(COMMANDS) $(COMMANDDIR)
 	chmod 555 $(COMMANDS:%=$(COMMANDDIR)/%)
 	mkdir -p $(DAEMONDIR)
-	cp -f $(DAEMONS) $(DAEMONDIR)
-	chmod 555 $(DAEMONS:%=$(DAEMONDIR)/%)
+	cp -f $(DAEMON_INSTALL) $(DAEMONDIR)
+	chmod 555 $(DAEMON_INSTALL:%=$(DAEMONDIR)/%)
 	mkdir -p $(INTERNALSDIR)
 	cp -f $(INTERNALS) $(INTERNALSDIR)
 	chmod 555 $(INTERNALS:%=$(INTERNALSDIR)/%)

@@ -13,6 +13,8 @@
 
 import pscheduler
 
+MAX_SCHEMA = 1
+
 json = pscheduler.json_load(exit_on_error=True);
 
 try:
@@ -28,5 +30,11 @@ except KeyError:
     })
 
 
+schema = json['spec'].get('schema',1)
+if schema > MAX_SCHEMA:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ 'Unsupported schema version %d' % (schema) ]
+    })
 
 pscheduler.succeed_json({ "can-run": True })

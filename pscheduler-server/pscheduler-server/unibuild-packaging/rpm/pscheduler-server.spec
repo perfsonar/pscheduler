@@ -6,7 +6,7 @@
 # make the scriptlets use them on CentOS 7.  For now the old-style
 # init scripts function just fine.
 
-%define perfsonar_auto_version 5.0.7
+%define perfsonar_auto_version 5.0.8
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-server
@@ -72,7 +72,7 @@ Requires:	httpd-wsgi-socket
 Requires:	mod_ssl
 Requires:	mod_wsgi > 4.0
 Requires:	%{_pscheduler_python}-parse-crontab
-Requires:	%{_pscheduler_python}-pscheduler >= 5.0.0
+Requires:	%{_pscheduler_python}-pscheduler >= 5.0.8
 
 %if 0%{?el7}
 Requires:	pytz

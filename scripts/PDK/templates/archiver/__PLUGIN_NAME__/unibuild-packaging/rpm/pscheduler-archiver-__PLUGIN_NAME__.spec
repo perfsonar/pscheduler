@@ -3,7 +3,7 @@
 #
 
 %define short	__PLUGIN_NAME__
-%define perfsonar_auto_version 5.0.7
+%define perfsonar_auto_version 5.0.8
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-archiver-%{short}

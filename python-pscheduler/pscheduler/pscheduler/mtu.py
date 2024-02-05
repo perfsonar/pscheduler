@@ -4,6 +4,7 @@ Functions for diagnosing path MTU
 
 import netaddr
 import re
+import shutil
 import socket
 
 from .ipaddr import ip_addr_version
@@ -33,14 +34,29 @@ def mtu_path_is_safe(host, ipversion=None):
         if ipversion is None:
             return (False, message)
 
-    assert ipversion is not None, "No ip version; cannot proceed."
+    assert ipversion in [4, 6], "No ip version; cannot proceed."
 
-    if ipversion == 6:
-        tracepath = "tracepath6"
+    argv = []
+
+    # Some older systems have a separate tracepath and tracepath6; newer
+    # versions don't have traceroute6 but support -4 and -6 switches.  Deal with that.
+
+    old_style_tracepath = shutil.which('tracepath6') is not None
+
+    if ipversion == 4:
+        if old_style_tracepath:
+            argv.append('tracepath')
+        else:
+            argv.extend(['tracepath', '-4'])
     else:
-        tracepath = "tracepath"
+        if old_style_tracepath:
+            argv.append('tracepath6')
+        else:
+            argv.extend(['tracepath', '-6'])
 
-    status, stdout, stderr = run_program([tracepath, host], timeout=60)
+    argv.append(host)
+
+    status, stdout, stderr = run_program(argv, timeout=60)
 
     if status != 0:
         return(False, "Error: %s" % (stderr.strip()))
@@ -65,7 +81,7 @@ def mtu_path_is_safe(host, ipversion=None):
         return (True, "%d (Local)" % (mtus[0]))
 
     if len(mtus) == 1:
-        return (False, "Found only one MTU in trace to %s" % (host))
+        return (False, "Found only one MTU (%d) in trace to %s" % (mtus[0], host))
 
     initial_mtu = mtus[0]
     last_low_mtu = initial_mtu
