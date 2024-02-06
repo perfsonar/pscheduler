@@ -2,77 +2,121 @@
 # Validator for "s3throughput" Test
 #
 
-#
-# Development Order #3:
-#
-# This file determines the required and optional data types which are 
-# allowed to be in the test spec and result. This is used
-# for validation of these structures.
-#
-# Several existing datatypes are available for use at:
-# pscheduler/python-pscheduler/pscheduler/pscheduler/jsonval.py
-# 
+from pscheduler import json_validate_from_standard_template
+from pscheduler import json_standard_template_max_schema
 
-from pscheduler import json_validate
-MAX_SCHEMA = 1
+
+#
+# Test Specification
+#
+
+# NOTE: A large dictionary of existing, commonly-used datatypes used
+# throughout pScheduler is defined in
+# pscheduler/python-pscheduler/pscheduler/pscheduler/jsonval.py.
+# Please use those where possible.
+
+SPEC_SCHEMA = {
+    
+    "local": {
+        # Define any local types used in the spec here
+    },
+    
+    "versions": {
+        
+        # Initial version of the specification
+        "1": {
+            "type": "object",
+            "properties": {
+                "schema": { "type": "integer", "enum": [ 1 ] },
+                "host":        { "$ref": "#/pScheduler/Host" },
+                "host-node":   { "$ref": "#/pScheduler/Host" },
+                "duration":    { "$ref": "#/pScheduler/Duration" },
+                "timeout":     { "$ref": "#/pScheduler/Duration" },
+	        "_access-key": { "$ref": "#/pScheduler/String" },
+	        "bucket":      { "$ref": "#/pScheduler/String" },
+                "_secret-key": { "$ref": "#/pScheduler/String" },
+	        "url":	       { "$ref": "#/pScheduler/URL" },
+       	        "iterations":  { "$ref": "#/pScheduler/Cardinal" },
+	        "object-size": { "$ref": "#/pScheduler/Cardinal" }
+            },
+            # If listed here, data of this type MUST be in the test spec
+            "required": [
+                "_access-key",
+                "bucket",
+	        "_secret-key",
+                "url",
+                "object-size"
+            ],
+            # Set to false if ONLY required options should be used
+            "additionalProperties": False
+        },
+        
+        # Second and later versions of the specification
+        # "2": {
+        #    "type": "object",
+        #    "properties": {
+        #        "schema": { "type": "integer", "enum": [ 2 ] },
+        #        ...
+        #    },
+        #    "required": [
+        #        "schema",
+        #        ...
+        #    ],
+        #    "additionalProperties": False
+        #},
+        
+    }
+}
+
+
+def spec_max_schema():
+    return json_standard_template_max_schema(SPEC_SCHEMA)
+
 
 def spec_is_valid(json):
+    return json_validate_from_standard_template(json, SPEC_SCHEMA)
 
-    schema = {
-        "local": {
-            # Local data types such as this can be defined within this file,
-            # but are not necessary
-            },
-        "type": "object",
-        # schema, host, host-node, and timeout are standard,
-        # and should be included
-        "properties": {
-            "schema":       { "$ref": "#/pScheduler/Cardinal" },
-            "host":         { "$ref": "#/pScheduler/Host" },
-            "host-node":    { "$ref": "#/pScheduler/Host" },
-            "duration":     { "$ref": "#/pScheduler/Duration" },
-            "timeout":      { "$ref": "#/pScheduler/Duration" },
-	    "_access-key":   { "$ref": "#/pScheduler/String" },
-	    "bucket":       { "$ref": "#/pScheduler/String" },
-            "_secret-key":   { "$ref": "#/pScheduler/String" },
-	    "url":	        { "$ref": "#/pScheduler/URL" },
-       	    "iterations":   { "$ref": "#/pScheduler/Cardinal" },
-	    "object-size":  { "$ref": "#/pScheduler/Cardinal" }
-        },
-        # If listed here, data of this type MUST be in the test spec
-        "required": [
-            "_access-key",
-            "bucket",
-	    "_secret-key",
-            "url",
-            "object-size"
-        ],
-        # Set to false if ONLY required options should be used
-        "additionalProperties": True
-    }
 
-    return json_validate(json, schema, max_schema=MAX_SCHEMA)
 
-def result_is_valid(json):
-    schema = {
-        "type": "object",
-        "properties": {
-            "schema":     { "$ref": "#/pScheduler/Cardinal" },
-            "succeeded":  { "$ref": "#/pScheduler/Boolean" },
-	    "error":      { "$ref": "#/pScheduler/String" },
-	    "diags":      { "$ref": "#/pScheduler/String" },
-	    "loops":       { "$ref": "#/pScheduler/String" },
-	    "average_put_time": { "$ref": "#/pScheduler/Float" },
-	    "average_get_time": { "$ref": "#/pScheduler/Float" },
-	    "average_delete_time": { "$ref": "#/pScheduler/Float" },
-            "time" : { "$ref": "#/pScheduler/Duration" }    
-	},
-        "required": [
-            "schema",
-            "succeeded",
-	    "average_put_time",
-	    "average_get_time",
-	    "average_delete_time"
+#
+# Test Result
+#
+
+RESULT_SCHEMA = {
+
+    "local": {
+        # Define any local types here.
+    },
+
+    "versions": {
+
+        "1": {
+            "type": "object",
+            "properties": {
+                "schema":              { "type": "integer", "enum": [ 1 ] },
+                "succeeded":           { "$ref": "#/pScheduler/Boolean" },
+	        "error":               { "$ref": "#/pScheduler/String" },
+	        "diags":               { "$ref": "#/pScheduler/String" },
+	        "loops":               { "$ref": "#/pScheduler/String" },
+	        "average_put_time":    { "$ref": "#/pScheduler/Float" },
+	        "average_get_time":    { "$ref": "#/pScheduler/Float" },
+	        "average_delete_time": { "$ref": "#/pScheduler/Float" },
+                "time" :               { "$ref": "#/pScheduler/Duration" }    
+	    },
+            "required": [
+                "succeeded",
+	        "average_put_time",
+	        "average_get_time",
+	        "average_delete_time"
             ]
         }
-    return json_validate(json, schema)
+    }
+}
+
+
+def result_max_schema():
+    return json_standard_template_max_schema(RESULT_SCHEMA)
+
+
+def result_is_valid(json):
+    return json_validate_from_standard_template(json, RESULT_SCHEMA)

@@ -12,7 +12,6 @@
 # cat example-result.json | ./result-format text/html
 #
 
-import jsontemplate
 import pscheduler
 import sys
 import json

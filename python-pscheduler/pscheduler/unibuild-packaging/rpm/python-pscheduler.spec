@@ -31,6 +31,7 @@ Requires:	python-attrs
 Requires:	python-dateutil
 Requires:	python-dns
 Requires:	python-isodate
+Requires:	python-jinja2
 Requires:	python-jsonschema >= 3.0
 Requires:	python-netaddr
 Requires:	python-netifaces

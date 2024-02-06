@@ -24,7 +24,6 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
 Requires:	python-pscheduler >= 1.3
-Requires:	python-jsontemplate
 
 BuildRequires:	pscheduler-rpm
 

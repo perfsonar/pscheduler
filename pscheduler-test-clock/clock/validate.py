@@ -4,7 +4,7 @@
 
 from pscheduler import json_validate, json_validate_from_standard_template
 
-MAX_SCHEMA = 1
+MAX_SCHEMA = 2
 
 def spec_is_valid(json):
     schema = {

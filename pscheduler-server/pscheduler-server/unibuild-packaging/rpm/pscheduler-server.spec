@@ -56,7 +56,6 @@ Requires:	pscheduler-account
 # This is from EPEL but doesn't have a python36 prefix
 Requires:	python-daemon
 Requires:	python-flask
-Requires:	python-jsontemplate
 Requires:	python-psutil
 
 # API Server

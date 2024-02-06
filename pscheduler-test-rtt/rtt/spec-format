@@ -3,72 +3,72 @@
 # Format a spec
 #
 
-import jsontemplate
 import pscheduler
-import sys
 
 from validate import spec_is_valid
 from validate import MAX_SCHEMA
 
+TEMPLATE='''
+{%- set schema = 1 if schema is undefined else schema -%}
+{% if _mime_type == 'text/plain' %}
 
-try:
-   format = sys.argv[1]
-except IndexError:
-   format = 'text/plain'
+Source ........................ {{ unspec(source) }}
+Source Node ................... {{ unspec(sourcenode) }}
+Destination ................... {{ unspec(dest) }}
+IP Version .................... {{ unspec(ipversion) }}
+{%- if schema >= 2 %}
+Protocol ...................... {{ unspec(protocol) }}
+{%- endif -%}
+{%- if schema >= 4 %}
+Port .......................... {{ unspec(port) }}
+{% endif -%}
+Packet Count .................. {{ unspec(count) }}
+Interval ...................... {{ unspec(interval) }}
+Flow Label .................... {{ unspec(flowlabel) }}
+Suppress Multicast Loopback ... {{ unspec(suppressloopback) }}
+Packet Length ................. {{ unspec(length) }}
+{%- if schema >= 3 %}
+Fragment ...................... {{ unspec(fragment) }}
+{% endif -%}
+Time to Live .................. {{ unspec(ttl) }}
+IP Type of Service ............ {{ unspec(iptos) }}
+Deadline ...................... {{ unspec(deadline) }}
+Timeout ....................... {{ unspec(timeout) }}
+Resolve Hostnames ............. {{ unspec(hostnames) }}
 
+{% elif _mime_type == 'text/html' %}
 
-json = pscheduler.json_load(exit_on_error=True, max_schema=MAX_SCHEMA)
-
-valid, message = spec_is_valid(json)
-
-if not valid:
-    pscheduler.fail(message)
-
-
-if format == 'text/plain':
-
-   template = """
-Destination ................... {.section dest}{dest}{.or}Not Specified{.end}
-IP Version .................... {.section ip-version}{ip-version}{.or}Not Specified{.end}
-Packet Count .................. {.section count}{count}{.or}Not Specified{.end}
-Source ........................ {.section source}{source}{.or}Not Specified{.end}
-Flow Label .................... {.section flow-label}{flow-label}{.or}Not Specified{.end}
-Interval ...................... {.section interval}{interval}{.or}Not Specified{.end}
-Suppress Multicast Loopback ... {.section suppress-loopback}{suppress-loopback}{.or}Not Specified{.end}
-Type of Service ............... {.section ip-tos}{ip-tos}{.or}Not Specified{.end}
-Packet Length ................. {.section length}{length}{.or}Not Specified{.end}
-Time to Live .................. {.section ttl}{ttl}{.or}Not Specified{.end}
-Deadline ...................... {.section deadline}{deadline}{.or}Not Specified{.end}
-Timeout .,..................... {.section timeout}{timeout}{.or}Not Specified{.end}
-Port .......................... {.section port}{port}{.or}Not Specified{.end}
-Protocol ...................... {.section protocol}{protocol}{.or}Not Specified{.end}
-"""
-
-elif format == 'text/html':
-
-   template = """
 <table>
-<tr><td>Destination</td><td>{.section dest}{dest}{.or}Not Specified{.end}</td></tr>
-<tr><td>IP Version</td><td>{.section ip-version}{ip-version}{.or}Not Specified{.end}</td></tr>
-<tr><td>Packet Count</td><td>{.section count}{count}{.or}Not Specified{.end}</td></tr>
-<tr><td>Source</td><td>{.section source}{source}{.or}Not Specified{.end}</td></tr>
-<tr><td>Flow Label</td><td>{.section flow-label}{flow-label}{.or}Not Specified{.end}</td></tr>
-<tr><td>Interval</td><td>{.section interval}{interval}{.or}Not Specified{.end}</td></tr>
-<tr><td>Suppress Multicast Loopback</td><td>{.section suppress-loopback}{suppress-loopback}{.or}Not Specified{.end}</td></tr>
-<tr><td>Type of Service</td><td>{.section ip-tos}{ip-tos}{.or}Not Specified{.end}</td></tr>
-<tr><td>Packet Length</td><td>{.section length}{length}{.or}Not Specified{.end}</td></tr>
-<tr><td>Time to Live</td><td>{.section ttl}{ttl}{.or}Not Specified{.end}</td></tr>
-<tr><td>Deadline</td><td>{.section deadline}{deadline}{.or}Not Specified{.end}</td></tr>
-<tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
-<tr><td>Port</td><td>{.section port}{port}{.or}Not Specified{.end}</td></tr>
-<tr><td>Protocol</td><td>{.section protocol}{protocol}{.or}Not Specified{.end}</td></tr>
+<tr><td>Source</td><td>{{ unspec(source) }}</td></tr>
+<tr><td>Source Node</td><td>{{ unspec(sourcenode) }}</td></tr>
+<tr><td>Destination</td><td>{{ unspec(dest) }}</td></tr>
+<tr><td>IP Version</td><td>{{ unspec(ipversion) }}</td></tr>
+{%- if schema >= 2 %}
+<tr><td>Protocol</td><td>{{ unspec(protocol) }}</td></tr>
+{% endif -%}
+{%- if schema >= 4 -%}
+<tr><td>Port</td><td>{{ unspec(port) }}</td></tr>
+{% endif -%}
+<tr><td>Packet Count</td><td>{{ unspec(count) }}</td></tr>
+<tr><td>Interval</td><td>{{ unspec(interval) }}</td></tr>
+<tr><td>Flow Label</td><td>{{ unspec(flowlabel) }}</td></tr>
+<tr><td>Suppress Multicast Loopback</td><td>{{ unspec(suppressloopback) }}</td></tr>
+<tr><td>Packet Length</td><td>{{ unspec(length) }}</td></tr>
+{%- if schema >= 3 %}
+<tr><td>Fragment</td><td>{{ unspec(fragment) }}</td></tr>
+{% endif -%}
+<tr><td>Time to Live</td><td>{{ unspec(ttl) }}</td></tr>
+<tr><td>IP Type of Service</td><td>{{ unspec(iptos) }}</td></tr>
+<tr><td>Deadline</td><td>{{ unspec(deadline) }}</td></tr>
+<tr><td>Timeout</td><td>{{ unspec(timeout) }}</td></tr>
+<tr><td>Resolve Hostnames</td><td>{{ unspec(hostnames) }}</td></tr>
 </table>
-   """
 
-else:
+{% else %}
 
-   pscheduler.fail("Unsupported format '%s'" % format)
+{{ error('Unsupported MIME type "' + _mime_type + '"') }}
 
+{% endif %}
+'''
 
-# TODO: Should probably handle exceptions in a nicer way.
-print(jsontemplate.expand(template, json).strip())
+pscheduler.spec_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=spec_is_valid)

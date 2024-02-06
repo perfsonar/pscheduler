@@ -78,8 +78,6 @@ ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of th
 python-kafka
 python-nmap3
 
-python-jsontemplate
-
 # TODO: This was deprecated after EL8.  Switch to something new.
 ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-nose)
 
@@ -174,7 +172,8 @@ pscheduler-test-netreach		--bundle extras
 pscheduler-test-noop
 pscheduler-test-psresponse
 pscheduler-test-throughput
-pscheduler-test-openports		--bundle extras
+# This has not been released.  See also pscheduler-tool-nmapscan
+# pscheduler-test-openports		--bundle extras
 pscheduler-test-rtt
 ifelse(HAVE_S3_BENCHMARK,1,pscheduler-test-s3throughput)
 pscheduler-test-simplestream

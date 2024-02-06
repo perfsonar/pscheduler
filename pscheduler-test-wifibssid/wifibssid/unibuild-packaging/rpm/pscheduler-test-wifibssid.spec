@@ -30,7 +30,6 @@ Provides:	%{name} = %{version}-%{release}
 # Include all required libraries here
 Requires:	pscheduler-server
 Requires:	python-pscheduler >= 1.3
-Requires:	python-jsontemplate
 
 BuildRequires:	pscheduler-rpm
 
