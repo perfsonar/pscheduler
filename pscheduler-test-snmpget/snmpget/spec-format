@@ -20,7 +20,7 @@ Period ............. {{ unspec(period) }}
 OID ................ {{ oid | join(", ") }}
 Protocol ........... {{ unspec(protocol) }}
 Timeout ............ {{ unspec(timeout) }}
-{%- if version == '3' -%}
+{% if version == '3' -%}
 Security Name ...... {{ unspec(securityname) }}
 Auth Protocol ...... {{ unspec(authprotocol) }}
 Privacy Protocol ... {{ unspec(privprotocol) }}
@@ -30,8 +30,23 @@ Context .............{{ unspec(context) }}
 
 {% elif _mime_type == 'text/html' %}
 
-# TODO HTML
 <table>
+<tr><td>Host</td><td>{{ unspec(host) }}</td></tr>
+<tr><td>Host Node</td><td>{{ unspec(hostnode) }}</td></tr>
+<tr><td>Destination</td><td>{{ unspec(dest) }}</td></tr>
+<tr><td>Version</td><td>{{ unspec(version) }}</td></tr>
+<tr><td>Polls</td><td>{{ unspec(polls) }}</td></tr>
+<tr><td>Period</td><td>{{ unspec(period) }}</td></tr>
+<tr><td>OID</td><td>{{ oid | join(", ") }}</td></tr>
+<tr><td>Protocol</td><td>{{ unspec(protocol) }}</td></tr>
+<tr><td>Timeout</td><td>{{ unspec(timeout) }}</td></tr>
+{% if version == '3' -%}
+<tr><td>Security Name</td><td>{{ unspec(securityname) }}</td></tr>
+<tr><td>Auth Protocol</td><td>{{ unspec(authprotocol) }}</td></tr>
+<tr><td>Privacy Protocol</td><td>{{ unspec(privprotocol) }}</td></tr>
+<tr><td>Security Level</td><td>{{ unspec(securitylevel) }}</td></tr>
+<tr><td>Context</td><td>{{ unspec(context) }}</td></tr>
+{% endif -%}
 </table>
 
 {% else %}
