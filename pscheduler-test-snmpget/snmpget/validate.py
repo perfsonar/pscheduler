@@ -11,9 +11,9 @@ def spec_is_valid(json):
     # SNMPv1Spec is valid for both snmp v1 and v2c 
     schema = {
         "local": {
-            "VersionNumber": {
+            "VersionNumberPre3": {
                 "type": "string",
-                "enum": [ "1", "2c", "3"]
+                "enum": [ "1", "2c" ]
             },
             "AuthProtocol": {
                 "type": "string",
@@ -38,7 +38,7 @@ def spec_is_valid(json):
                     "host":         { "$ref": "#/pScheduler/Host" },
                     "host-node":    { "$ref": "#/pScheduler/Host" },
                     "dest":         { "$ref": "#/pScheduler/Host" },
-                    "version":      { "$ref": "#/local/VersionNumber"},
+                    "version":      { "$ref": "#/local/VersionNumberPre3"},
                     "_community":   { "$ref": "#/pScheduler/String"},
                     "period":       { "$ref": "#/pScheduler/Integer" },
                     "polls":        { "$ref": "#/pScheduler/Integer" },
@@ -66,7 +66,7 @@ def spec_is_valid(json):
                     "host":         { "$ref": "#/pScheduler/Host" },
                     "host-node":    { "$ref": "#/pScheduler/Host" },
                     "dest":         { "$ref": "#/pScheduler/Host" },
-                    "version":      { "$ref": "#/local/VersionNumber"},
+                    "version":      { "type": "string", "enum": [ "3" ] },
                     "period":       { "$ref": "#/pScheduler/Integer" },
                     "polls":        { "$ref": "#/pScheduler/Integer" },
                     "oid":          { "type": "array", 
