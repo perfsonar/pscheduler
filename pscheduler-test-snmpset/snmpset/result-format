@@ -3,7 +3,6 @@
 # Format a result
 #
 
-import jsontemplate
 import pscheduler
 import sys
 
