@@ -476,6 +476,13 @@ for host in hosts:
     print()
 
 
+    start("  Checking name resolution")
+    resolved = pscheduler.dns_resolve(host, ip_version=options.ip_version)
+    if resolved is not None:
+       ok(resolved)
+    else:
+        failed("Host '%s' is unresolvable or timed out" % (host))
+
     if not options.quick and not options.skip_single:
         check_mtu(host)
 
