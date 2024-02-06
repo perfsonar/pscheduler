@@ -10,6 +10,10 @@ PARSER = pscheduler.RFC7464Parser(sys.stdin)
 EMITTER = pscheduler.RFC7464Emitter(sys.stdout)
 
 for parsed in PARSER:
-    EMITTER({"succeeded": True})
+    try:
+        EMITTER({"succeeded": True})
+    except BrokenPipeError as ex:
+        log.warning("Broken pipe during archiving; parent must have exited.")
+        pscheduler.succeed()
 
 pscheduler.succeed()
