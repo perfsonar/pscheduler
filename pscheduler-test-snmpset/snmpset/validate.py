@@ -2,6 +2,12 @@
 # Validator for "snmpset" Test
 #
 
+# IMPORTANT:
+#
+# When making changes to the JSON schemas in this file, corresponding
+# changes MUST be made in 'spec-format' and 'result-format' to make
+# them capable of formatting the new specifications and results.
+
 # TODO: _ for sensitive values
 
 from pscheduler import json_validate

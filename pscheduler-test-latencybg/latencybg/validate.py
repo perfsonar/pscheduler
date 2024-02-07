@@ -2,6 +2,17 @@
 # Validator for "latency" Test
 #
 
+#
+# Development Order #3:
+#
+# This file determines the required and optional data types which are 
+# allowed to be in the test spec and result. This is used
+# for validation of these structures.
+#
+# Several existing datatypes are available for use at:
+# pscheduler/python-pscheduler/pscheduler/pscheduler/jsonval.py
+# 
+
 from pscheduler import json_validate
 
 MAX_SCHEMA = 1
