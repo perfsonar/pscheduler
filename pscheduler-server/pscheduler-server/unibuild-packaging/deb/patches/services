@@ -1,0 +1,13 @@
+Index: b/daemons/service-template.m4
+===================================================================
+--- a/daemons/service-template.m4	2024-02-07 18:23:00.910904000 +0100
++++ b/daemons/service-template.m4	2024-02-07 18:24:53.078426711 +0100
+@@ -45,7 +45,7 @@
+ # Wait for the database to become accessible.  This is done because
+ # the PostgreSQL service can appear up when it isn't ready to take
+ # queries yet.  That will cause this service to die.
+-ExecStartPre=__DAEMONDIR__/wait-for-database --dsn @__DSN__ --dwell 120 --retry 5
++ExecStartPre=sudo -u pscheduler __DAEMONDIR__/wait-for-database --dsn @__DSN__ --dwell 120 --retry 5
+ 
+ # Create the run directory
+ ExecStartPre=/bin/mkdir -p __RUNDIR__/__PROG__
