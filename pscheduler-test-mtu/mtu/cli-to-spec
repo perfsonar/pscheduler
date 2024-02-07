@@ -72,6 +72,11 @@ opt_parser.add_option("--dest",
                       action="store", type="string",
                       dest="dest")
 
+opt_parser.add_option("-i", "--ip-version",
+                      help="Force IP version (4 or 6)",
+                      action="store", type="int",
+                      dest="ip_version")
+
 opt_parser.add_option("--port",
                       help="Receiving port. Defaults to 1060.",
                       action="store", type="int",
@@ -79,7 +84,8 @@ opt_parser.add_option("--port",
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
-result = { 'schema': 1 }
+spec_schema = pscheduler.HighInteger(1)
+result = {}
 
 if options.source is not None:
    result['source'] = options.source
@@ -92,5 +98,11 @@ if options.dest is not None:
 
 if options.port is not None:
    result['port'] = options.port
+
+if options.ip_version is not None:
+   result['ip-version'] = options.ip_version
+   spec_schema.set(2)
+
+result['schema'] = spec_schema.value()
 
 pscheduler.succeed_json(result)

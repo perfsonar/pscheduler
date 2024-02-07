@@ -6,8 +6,8 @@
 import datetime
 import optparse
 import os
-import pipes
 import pscheduler
+import shlex
 import sys
 
 
@@ -239,7 +239,7 @@ def dump_run(run_json, exit_on_error=False, print_run_url=False):
 
         print()
         print(pscheduler.prefixed_wrap(
-            "", " ".join([ pipes.quote(arg) for arg in task_cli ]),
+            "", " ".join([ shlex.quote(arg) for arg in task_cli ]),
             indent=2))
         print()
 

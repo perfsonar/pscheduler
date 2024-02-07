@@ -1,9 +1,3 @@
-pyrsistent (0.14.11.ps-1) perfsonar-5.0-staging; urgency=low
-
-  * Removing some docs files creating tar extraction errors.
-
- -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Sat, 04 Nov 2023 17:35:48 +0000 
-
 pyrsistent (0.14.11-4) perfsonar-5.0-staging; urgency=low
 
   * Backport to Debian 10 and 11 and Ubuntu 18 and 20.

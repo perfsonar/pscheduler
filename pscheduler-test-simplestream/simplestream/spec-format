@@ -3,70 +3,54 @@
 # Format a spec
 #
 
-import jsontemplate
 import pscheduler
-import sys
 
 from validate import spec_is_valid
+from validate import MAX_SCHEMA
 
+TEMPLATE='''
+{%- set schema = 1 if schema is undefined else schema -%}
+{% if _mime_type == 'text/plain' %}
 
-try:
-   format = sys.argv[1]
-except IndexError:
-   format = 'text/plain'
+Source ................ {{ unspec(source) }}
+Source Node ........... {{ unspec(sourcenode) }}
+Destination ........... {{ unspec(dest) }}
+Destination Node ...... {{ unspec(destnode) }}
+{%- if schema >= 2 %}
+IP Version ............ {{ unspec(ipversion) }}
+{%- endif -%}
+{%- if schema >= 3 %}
+Port .................. {{ unspec(port) }}
+{%- endif -%}
+Test Material ......... {{ unspec(testmaterial) }}
+Dawdle ................ {{ unspec(dawdle) }}
+Timeout ............... {{ unspec(timeout) }}
+Failure Probability ... {{ unspec(fail) }}
 
-json = pscheduler.json_load(exit_on_error=True, max_schema=3)
+{% elif _mime_type == 'text/html' %}
 
-valid, message = spec_is_valid(json)
-
-if not valid:
-    pscheduler.fail(message)
-
-
-if format == 'text/plain':
-
-   template = """
-Destination ...... {.section dest}{dest}{.or}Not Specified{.end}
-Max. Dawdle  ..... {.section dawdle}{dawdle}{.or}Not Specified{.end}
-IP Version ....... {.section ip-version}{ip-version}{.or}Not Specified{.end}
-Test Material .... {.section test-material}{test-material}{.or}Not Specified{.end}
-Timeout .......... {.section timeout}{timeout}{.or}Not Specified{.end}
-Chance of Fail ... {.section fail}{fail}{.or}Not Specified{.end}
-Port ............. {.section port}{port}{.or}Not Specified{.end}
-   """
-
-elif format == 'text/html':
-
-   template = """
-<table border="0">
-<tr><td><b>Destination</b></td><td>
-{.section destf}{dest}{.or}<i>Not Specified</i>{.end}
-</td></tr>
-<tr><td><b>Max. Dawdle</b></td><td>
-{.section dawdle}{dawdle}{.or}<i>Not Specified</i>{.end}
-</td></tr>
-<tr><td><b>Max. Dawdle</b></td><td>
-{.section ip-version}{ip-version}{.or}<i>Not Specified</i>{.end}
-</td></tr>
-<tr><td><b>Test Material</b></td><td>
-{.section test-material}<tt>{test-material}</tt>{.or}<i>Not Specified</i>{.end}
-</td></tr>
-<tr><td><b>Timeout</b></td><td>
-{.section timeout}{timeout}{.or}<i>Not Specified</i>{.end}
-</td></tr>
-<tr><td><b>Chance of Fail</b></td><td>
-{.section fail}{fail}{.or}<i>Not Specified</i>{.end}
-</td></tr>
-<tr><td><b>Port</b></td><td>
-{.section port}{port}{.or}<i>Not Specified</i>{.end}
-</td></tr>
+<table>
+<tr><td>Source</td><td>{{ unspec(source) }}</td></tr>
+<tr><td>Source Node</td><td>{{ unspec(sourcenode) }}</td></tr>
+<tr><td>Destination</td><td>{{ unspec(dest) }}</td></tr>
+<tr><td>Destination Node</td><td>{{ unspec(destnode) }}</td></tr>
+{%- if schema >= 2 %}
+<tr><td>IP Version</td><td>{{ unspec(ipversion) }}</td></tr>
+{%- endif -%}
+{%- if schema >= 3 %}
+<tr><td>Port</td><td>{{ unspec(port) }}</td></tr>
+{%- endif -%}
+<tr><td>Test Material</td><td>{{ unspec(testmaterial) }}</td></tr>
+<tr><td>Dawdle</td><td>{{ unspec(dawdle) }}</td></tr>
+<tr><td>Timeout</td><td>{{ unspec(timeout) }}</td></tr>
+<tr><td>Failure Probability</td><td>{{ unspec(fail) }}</td></tr>
 </table>
-   """
 
-else:
+{% else %}
 
-   pscheduler.fail("Unsupported format '%s'" % format)
+{{ error('Unsupported MIME type "' + _mime_type + '"') }}
 
+{% endif %}
+'''
 
-# TODO: Should probably handle exceptions in a nicer way.
-print(jsontemplate.expand(template, json).strip())
+pscheduler.spec_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=spec_is_valid)

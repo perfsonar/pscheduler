@@ -1,18 +1,15 @@
 {
-  "test": {
-    "type": "itest",
-    "spec": {
-      "duration": "PT2S",
-      "testtype": "api",
-      "schema": 1,
-      "dest": "127.0.0.1"
+    "test": {
+	"type": "mtu",
+	"spec": {
+	    "schema": 1,
+	    "dest": "foo.example.org"
+	}
+    },
+    "schema": 1,
+    "tool": "fwmtu",
+    "href": "https://localhost.localdomain/pscheduler/tasks/d0035107-6ef0-4cc7-83b4-19367b502bfc",
+    "schedule": {
+	"slip": "PT5M"
     }
-  },
-  "schema": 1,
-  "tool": "itool",
-  "href": "https://localhost.localdomain/pscheduler/tasks/d0035107-6ef0-4cc7-83b4-19367b502bfc",
-  "schedule": {
-    "slip": "PT5M"
-  }
 }
-

@@ -1,0 +1,32 @@
+{
+    "spec": {
+	"host": "foo.example.org",
+	"host-node": "foo-ps.example.org",
+	"dest": "bar.example.org",
+	"version": "1",
+	"_community": "mumble",
+	"period": 5,
+	"polls": 4,
+	"oid": [ "1.2.3.4", "5.6.7.8", "9.10.11.12" ],
+	"protocol": "udp",
+	"timeout": "PT20S"
+    },
+    "result": {
+	"succeeded": true,
+	"time": "PT0.0123S",
+	"data": [
+	    {
+		"type": "String",
+		"value": "Foo"
+	    },
+	    {
+		"type": "String",
+		"value": "Bar"
+	    },
+	    {
+		"type": "String",
+		"value": "Baz"
+	    }
+	]
+    }
+}

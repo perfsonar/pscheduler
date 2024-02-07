@@ -2,6 +2,12 @@
 # Validator for "rtt" Test
 #
 
+# IMPORTANT:
+#
+# When making changes to the JSON schemas in this file, corresponding
+# changes MUST be made in 'spec-format' and 'result-format' to make
+# them capable of formatting the new specifications and results.
+
 from pscheduler import json_validate
 
 MAX_SCHEMA = 4
@@ -189,30 +195,4 @@ def result_is_valid(json):
             "loss",
             ]
         }
-    return json_validate(json, schema)
-
-
-def limit_is_valid(json):
-    schema = {
-        "type": "object",
-        "properties": {
-            "schema":            { "$ref": "#/pScheduler/Cardinal" },
-            "source":            { "$ref": "#/pScheduler/Limit/IPCIDRList"},
-            "dest":              { "$ref": "#/pScheduler/Limit/IPCIDRList"},
-            "endpoint":          { "$ref": "#/pScheduler/Limit/IPCIDRList"},
-            "count":             { "$ref": "#/pScheduler/Limit/Cardinal" },
-            "flow-label":        { "$ref": "#/pScheduler/Limit/CardinalZeroList" },
-            "hostnames":         { "$ref": "#/pScheduler/Limit/Boolean" },
-            "interval":          { "$ref": "#/pScheduler/Limit/Duration" },
-            "ip-version":        { "$ref": "#/pScheduler/Limit/IPVersionList" },
-            "suppress-loopback": { "$ref": "#/pScheduler/Limit/Boolean" },
-            "ip-tos":            { "$ref": "#/pScheduler/Limit/CardinalList" },
-            "length":            { "$ref": "#/pScheduler/Limit/Cardinal" },
-            "ttl":               { "$ref": "#/pScheduler/Limit/Cardinal" },
-            "deadline":          { "$ref": "#/pScheduler/Limit/Duration" },
-            "timeout":           { "$ref": "#/pScheduler/Limit/Duration" }
-        },
-        "additionalProperties": False
-        }
-
     return json_validate(json, schema)

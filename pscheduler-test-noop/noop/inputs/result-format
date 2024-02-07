@@ -1,0 +1,9 @@
+{
+    "result":  {
+        "succeeded": true,
+	"data": {
+	    "foo": 123,
+	    "bar": "This <<<is>>> cool."
+	}
+    }
+}

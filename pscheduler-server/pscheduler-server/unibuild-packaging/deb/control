@@ -12,7 +12,7 @@ Package: pscheduler-server
 Architecture: all
 Depends: ${misc:Depends}, python3, curl,
  python3-daemon, python3-flask, python3-psutil,
- python3-tz, python3-jsontemplate, python3-radix, python3-crontab,
+ python3-tz, python3-radix, python3-crontab,
  python3-pscheduler (>= 5.1.0~), pscheduler-core, pscheduler-account,
  apache2, libapache2-mod-wsgi-py3, logrotate, psmisc,
  dbconfig-common, postgresql (>= 10),

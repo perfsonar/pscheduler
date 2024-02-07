@@ -48,6 +48,11 @@ opt_parser.add_option("--output",
                       action="store", type="string",
                       dest="output")
 
+opt_parser.add_option("--full",
+                      help="Produce full diagnostics and archiving information with result",
+                      action="store_true", default=False,
+                      dest="full")
+
 opt_parser.add_option("--quiet",
                       help="Operate quietly",
                       action="store_true", default=False,
@@ -272,6 +277,9 @@ while True:
     if options.bind is not None:
         args.append("--bind")
         args.append(options.bind)
+
+    if options.full:
+        args.append("--full")
 
     if options.debug:
         args.append("--debug")

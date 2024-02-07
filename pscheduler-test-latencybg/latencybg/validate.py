@@ -2,6 +2,17 @@
 # Validator for "latency" Test
 #
 
+#
+# Development Order #3:
+#
+# This file determines the required and optional data types which are 
+# allowed to be in the test spec and result. This is used
+# for validation of these structures.
+#
+# Several existing datatypes are available for use at:
+# pscheduler/python-pscheduler/pscheduler/pscheduler/jsonval.py
+# 
+
 from pscheduler import json_validate
 
 MAX_SCHEMA = 1
@@ -215,86 +226,8 @@ RESPONSE_SCHEMA = {
         "required": [ "succeeded"]
     }
 
-LIMIT_SCHEMA = {
-    "title": "pScheduler One-way Latency Background Limit Schema",
-    "type": "object",
-    "local": {
-        "packet-interval": {
-            "type": "number",
-            "exclusiveMinimum": 0.0
-        },
-        "bucket-width": {
-            "type": "number",
-            "exclusiveMinimum": 0.0,
-            "exclusiveMaximum": 1.0,
-            "default": ".001"
-        },
-        "PacketIntervalRange": {
-            "type": "object",
-            "properties": {
-                "lower": { "$ref": "#/local/packet-interval" },
-                "upper": { "$ref": "#/local/packet-interval" }
-            },
-            "required": ["lower", "upper"],
-            "additionalProperties": False
-        },
-        "BucketWidthRange": {
-            "type": "object",
-            "properties": {
-                "lower": { "$ref": "#/local/bucket-width" },
-                "upper": { "$ref": "#/local/bucket-width" }
-            },
-            "required": ["lower", "upper"],
-            "additionalProperties": False
-        },
-        "packet-interval-limit": {
-            "type": "object",
-            "properties": {
-                "description":  { "$ref": "#/pScheduler/String" },
-                "range":        { "$ref": "#/local/PacketIntervalRange" },
-                "invert":       { "$ref": "#/pScheduler/Boolean" }
-            },
-        },
-        "bucket-width-limit": {
-            "type": "object",
-            "properties": {
-                "description":  { "$ref": "#/pScheduler/String" },
-                "range":        { "$ref": "#/local/BucketWidthRange" },
-                "invert":       { "$ref": "#/pScheduler/Boolean" }
-            },
-        },
-    },
-    "properties": {
-        "source":     { "$ref": "#/pScheduler/Limit/IPCIDRList"},
-        "dest":       { "$ref": "#/pScheduler/Limit/IPCIDRList"},
-        "endpoint":   { "$ref": "#/pScheduler/Limit/IPCIDRList"},
-        "schema":           { "$ref": "#/pScheduler/Cardinal" },
-        "packet-count":     { "$ref": "#/pScheduler/Limit/Cardinal" },
-        "packet-interval":  { "$ref": "#/local/packet-interval-limit" },
-        "duration":  { "$ref": "#/pScheduler/Limit/Duration" },
-        "report-interval":  { "$ref": "#/pScheduler/Limit/Duration" }, # packet-count * packet-interval
-        "packet-timeout":   { "$ref": "#/pScheduler/Limit/CardinalZero" },
-        "packet-padding":   { "$ref": "#/pScheduler/Limit/CardinalZero" },
-        "ctrl-port":        { "$ref": "#/pScheduler/Limit/CardinalZero" },
-        "data-ports":       { "$ref": "#/pScheduler/Limit/CardinalZero" },
-        "ip-tos":           { "$ref": "#/pScheduler/Limit/CardinalList" },
-        "ip-version":       { "$ref": "#/pScheduler/Limit/IPVersionList" },
-        "bucket-width":     { "$ref": "#/local/bucket-width-limit" },
-        "output-raw":       { "$ref": "#/pScheduler/Limit/Boolean" },
-        "flip":             { "$ref": "#/pScheduler/Limit/Boolean" },
-    },
-    "additionalProperties": False
-}
-
-
 def spec_is_valid(json):
-    
     return json_validate(json, REQUEST_SCHEMA, max_schema=MAX_SCHEMA)
 
 def result_is_valid(json):
-    
     return json_validate(json, RESPONSE_SCHEMA)
-
-def limit_is_valid(json):
-    
-    return json_validate(json, LIMIT_SCHEMA)

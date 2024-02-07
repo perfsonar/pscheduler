@@ -1,0 +1,25 @@
+{
+    "spec": {
+	"host": "foo",
+	"host-node": "foo-node",
+	"nameserver": "ns1.foo.org",
+	"record": "mx",
+	"query": "example.org",
+	"timeout": "PT10S"
+    },
+    "result": {
+	"record": [
+	    {
+		"mx": "smtp10.example.org.",
+		"pref": 10
+	    },
+	    {
+		"mx": "smtp20.example.org.",
+		"pref": 20
+	    }
+	],
+	"schema": 1,
+	"succeeded": true,
+	"time": "PT0.031422S"
+    }
+}

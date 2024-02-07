@@ -21,14 +21,14 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 4.3.0
-Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
+Requires:	python-pscheduler >= 4.3.0
 Requires:	pscheduler-test-latency
 Requires:	owamp-client
 Requires:	owamp-server
 
 BuildRequires:	pscheduler-rpm
-BuildRequires:	%{_pscheduler_python}-pscheduler
-BuildRequires:  %{_pscheduler_python_epel}-nose
+BuildRequires:	python-pscheduler
+BuildRequires:  python-nose
 
 %description
 owping tool class for pScheduler
@@ -42,7 +42,7 @@ owping tool class for pScheduler
 
 %build
 make \
-     PYTHON=%{_pscheduler_python} \
+     PYTHON=python \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      CONFDIR=$RPM_BUILD_ROOT/%{_pscheduler_tool_confdir}\
      install

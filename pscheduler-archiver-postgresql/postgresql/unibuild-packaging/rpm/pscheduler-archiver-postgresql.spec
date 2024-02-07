@@ -20,7 +20,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.0.2
-Requires:	%{_pscheduler_python_epel}-psycopg2 >= 2.6.1
+Requires:	python-psycopg2 >= 2.6.1
 
 BuildRequires:	pscheduler-rpm
 

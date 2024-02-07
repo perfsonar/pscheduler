@@ -1,0 +1,30 @@
+{
+    "result": {
+	"succeeded": true,
+	"time": "PT20S",
+	"ssid_list": [
+	    {
+		"ssid": "eduroam",
+		"signal": 123,
+		"address": "04:56:78:89:23:7a",
+		"frequency": 2404.1234,
+		"quality": 60,
+		"bitrates":  [ 54000000, 10000000 ],
+		"encrypted": true,
+		"channel": 19,
+		"mode": "magic"
+	    },
+	    {
+		"ssid": "sketchy",
+		"signal": 123,
+		"address": "04:56:78:89:23:7a",
+		"frequency": 2404.1234,
+		"quality": 60,
+		"bitrates":  [ 300, 1200, 2400, 4800, 9600, 19200 ],
+		"encrypted": true,
+		"channel": 19,
+		"mode": "magic"
+	    }
+	]
+    }
+}

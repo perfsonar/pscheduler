@@ -458,8 +458,9 @@ def tasks():
                 ))
 
             return no_can_do(
-                "No tool in common among the participants:  %s." % (
-                    ";  ".join(offers)) )
+                "No tool in common among the participants can support the task's test"
+                " and/or its parameters:  %s." % (";  ".join(offers))
+            )
 
 
         task['tool'] = tool
