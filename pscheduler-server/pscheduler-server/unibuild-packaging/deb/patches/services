@@ -1,7 +1,7 @@
 Index: b/daemons/service-template.m4
 ===================================================================
---- a/daemons/service-template.m4	2024-02-07 15:37:06.675678909 +0100
-+++ b/daemons/service-template.m4	2024-02-07 18:05:28.998039367 +0100
+--- a/daemons/service-template.m4	2024-02-07 18:23:00.910904000 +0100
++++ b/daemons/service-template.m4	2024-02-07 18:24:53.078426711 +0100
 @@ -45,7 +45,7 @@
  # Wait for the database to become accessible.  This is done because
  # the PostgreSQL service can appear up when it isn't ready to take
