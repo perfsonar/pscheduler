@@ -1,8 +1,8 @@
-pscheduler-test-wifibssid (5.0.8-2) perfsonar-5.0; urgency=low
+pscheduler-test-wifibssid (5.0.8-3) perfsonar-5.0; urgency=low
 
   * New upstream version.
 
- -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Wed, 07 Feb 2024 18:24:55 +0100
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Thu, 08 Feb 2024 16:04:44 +0100
 
 pscheduler-test-wifibssid (5.0.7-1) perfsonar-5.0; urgency=low
 
