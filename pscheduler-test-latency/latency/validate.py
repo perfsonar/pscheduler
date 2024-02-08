@@ -10,7 +10,7 @@
 
 from pscheduler import json_validate
 
-MAX_SCHEMA = 3
+MAX_SCHEMA = 4
 
 SPEC_SCHEMA = {
 
@@ -60,7 +60,7 @@ SPEC_SCHEMA = {
                     "packet-interval": {
                         "description": "The number of seconds to delay between sending packets",
                         "$ref": "#/local/packet-interval"
-                        
+
                     },
                     "packet-timeout": {
                         "description": "The number of seconds to wait before declaring a packet lost",
@@ -83,12 +83,12 @@ SPEC_SCHEMA = {
                         "$ref": "#/pScheduler/IPTOS"
                     },
                     "ip-version": {
-                        "description": "Force a specific IP address type used performing the test. Useful when specifying hostnames as source or dest that may map to both IPv4 and IPv6 addresses.", 
-                        "$ref": "#/pScheduler/ip-version" 
+                        "description": "Force a specific IP address type used performing the test. Useful when specifying hostnames as source or dest that may map to both IPv4 and IPv6 addresses.",
+                        "$ref": "#/pScheduler/ip-version"
                     },
                     "bucket-width": {
                         "description": "The bin size to use for histogram calculations. This value is divided into the result as reported in seconds and truncated to the nearest 2 decimal places.",
-                        "$ref": "#/local/bucket-width" 
+                        "$ref": "#/local/bucket-width"
                     },
                     "output-raw": {
                         "description": "Output individual packet statistics. This will substantially increase the size of a successful result.",
@@ -135,7 +135,7 @@ SPEC_SCHEMA = {
                     "packet-interval": {
                         "description": "The number of seconds to delay between sending packets",
                         "$ref": "#/local/packet-interval"
-                        
+
                     },
                     "packet-timeout": {
                         "description": "The number of seconds to wait before declaring a packet lost",
@@ -158,12 +158,12 @@ SPEC_SCHEMA = {
                         "$ref": "#/pScheduler/IPTOS"
                     },
                     "ip-version": {
-                        "description": "Force a specific IP address type used performing the test. Useful when specifying hostnames as source or dest that may map to both IPv4 and IPv6 addresses.", 
-                        "$ref": "#/pScheduler/ip-version" 
+                        "description": "Force a specific IP address type used performing the test. Useful when specifying hostnames as source or dest that may map to both IPv4 and IPv6 addresses.",
+                        "$ref": "#/pScheduler/ip-version"
                     },
                     "bucket-width": {
                         "description": "The bin size to use for histogram calculations. This value is divided into the result as reported in seconds and truncated to the nearest 2 decimal places.",
-                        "$ref": "#/local/bucket-width" 
+                        "$ref": "#/local/bucket-width"
                     },
                     "output-raw": {
                         "description": "Output individual packet statistics. This will substantially increase the size of a successful result.",
@@ -214,7 +214,7 @@ SPEC_SCHEMA = {
                     "packet-interval": {
                         "description": "The number of seconds to delay between sending packets",
                         "$ref": "#/local/packet-interval"
-                        
+
                     },
                     "packet-timeout": {
                         "description": "The number of seconds to wait before declaring a packet lost",
@@ -237,12 +237,98 @@ SPEC_SCHEMA = {
                         "$ref": "#/pScheduler/IPTOS"
                     },
                     "ip-version": {
-                        "description": "Force a specific IP address type used performing the test. Useful when specifying hostnames as source or dest that may map to both IPv4 and IPv6 addresses.", 
-                        "$ref": "#/pScheduler/ip-version" 
+                        "description": "Force a specific IP address type used performing the test. Useful when specifying hostnames as source or dest that may map to both IPv4 and IPv6 addresses.",
+                        "$ref": "#/pScheduler/ip-version"
                     },
                     "bucket-width": {
                         "description": "The bin size to use for histogram calculations. This value is divided into the result as reported in seconds and truncated to the nearest 2 decimal places.",
-                        "$ref": "#/local/bucket-width" 
+                        "$ref": "#/local/bucket-width"
+                    },
+                    "output-raw": {
+                        "description": "Output individual packet statistics. This will substantially increase the size of a successful result.",
+                        "$ref": "#/pScheduler/Boolean"
+                    },
+                    "flip": {
+                        "description": "In multi-participant mode, have the dest start the client and request a reverse test. Useful in some firewall and NAT environments.",
+                        "$ref": "#/pScheduler/Boolean"
+                    },
+                    "reverse": {
+                        "description": "Report results in the reverse direction (destination to source) if possible.",
+                        "$ref": "#/pScheduler/Boolean"
+                    },
+                    "traverse-nat": {
+                        "description": "Make an effort to traverse outbound NAT,",
+                        "$ref": "#/pScheduler/Boolean"
+                    },
+                },
+                "required": ["schema", "dest"],
+                "additionalProperties": False
+            },
+
+            "v4": {
+                "type": "object",
+                "properties": {
+                    "schema": {
+                        "description": "The version of the schema",
+                        "type": "integer",
+                        "enum": [ 4 ]
+                    },
+                    "source": {
+                        "description": "The address of the entity sending packets in this test",
+                        "$ref": "#/pScheduler/Host"
+                    },
+                    "source-node": {
+                        "description": "The address of the source pScheduler node, if different",
+                        "$ref": "#/pScheduler/URLHostPort"
+                    },
+                    "dest": {
+                        "description": "The address of the entity receiving packets in this test",
+                        "$ref": "#/pScheduler/Host"
+                    },
+                    "dest-node": {
+                        "description": "The address of the destination pScheduler node, if different",
+                        "$ref": "#/pScheduler/URLHostPort"
+                    },
+                    "protocol": {
+                        "description": "The protocol to use in making the measurement",
+                        "$ref": "#/pScheduler/String"
+                    },
+                    "packet-count": {
+                        "description": "The number of packets to send",
+                        "$ref": "#/pScheduler/Cardinal"
+                    },
+                    "packet-interval": {
+                        "description": "The number of seconds to delay between sending packets",
+                        "$ref": "#/local/packet-interval"
+
+                    },
+                    "packet-timeout": {
+                        "description": "The number of seconds to wait before declaring a packet lost",
+                        "$ref": "#/pScheduler/CardinalZero"
+                    },
+                    "packet-padding": {
+                        "description": "The size of padding to add to the packet in bytes",
+                        "$ref": "#/pScheduler/CardinalZero"
+                    },
+                    "ctrl-port": {
+                        "description": "The control plane port to use for the entity acting as the server (the dest if flip is not set, the source otherwise)",
+                        "$ref": "#/pScheduler/IPPort"
+                    },
+                    "data-ports": {
+                        "description": "The port range to use on the side of the test running the client. At least two ports required.",
+                        "$ref": "#/pScheduler/IPPortRange"
+                    },
+                    "ip-tos": {
+                        "description": "DSCP value for TOS byte in the IP header as an integer",
+                        "$ref": "#/pScheduler/IPTOS"
+                    },
+                    "ip-version": {
+                        "description": "Force a specific IP address type used performing the test. Useful when specifying hostnames as source or dest that may map to both IPv4 and IPv6 addresses.",
+                        "$ref": "#/pScheduler/ip-version"
+                    },
+                    "bucket-width": {
+                        "description": "The bin size to use for histogram calculations. This value is divided into the result as reported in seconds and truncated to the nearest 2 decimal places.",
+                        "$ref": "#/local/bucket-width"
                     },
                     "output-raw": {
                         "description": "Output individual packet statistics. This will substantially increase the size of a successful result.",
@@ -292,7 +378,7 @@ RESPONSE_SCHEMA = {
             },
             "ip-ttl": {
                 "type": "integer",
-                "minimum": 0, 
+                "minimum": 0,
                 "maximum": 255
             }
         },
@@ -407,5 +493,5 @@ def spec_is_valid(json):
     return json_validate(json, temp_schema, max_schema=MAX_SCHEMA)
 
 
-def result_is_valid(json):    
+def result_is_valid(json):
     return json_validate(json, RESPONSE_SCHEMA)

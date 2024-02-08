@@ -16,6 +16,9 @@ Source ............... {{ unspec(source) }}
 Source Node .......... {{ unspec(sourcenode) }}
 Destination .......... {{ unspec(dest) }}
 Destination Node ..... {{ unspec(destnode) }}
+{% if schema >= 4 -%}
+Protocol ............. {{ unspec(protocol) }}
+{%- endif %}
 Packet Count ......... {{ unspec(packetcount) }}
 Packet Interval ...... {{ unspec(packetinterval) }}
 Packet Timeout ....... {{ unspec(packettimeout) }}
