@@ -135,9 +135,10 @@ def get_status():
         response["limits"]["error"] = error
 
 
-    services = {}
     # Get the heartbeat status
     services = dbcursor_query("SELECT * FROM heartbeat_json", onerow=True).fetchone()[0]
+    if services is None:
+        services = {}
 
     # Add the database status
 
