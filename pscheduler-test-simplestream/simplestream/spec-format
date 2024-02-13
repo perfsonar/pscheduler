@@ -19,6 +19,9 @@ Destination Node ...... {{ unspec(destnode) }}
 {%- if schema >= 2 %}
 IP Version ............ {{ unspec(ipversion) }}
 {%- endif -%}
+{%- if schema >= 3 %}
+Port .................. {{ unspec(port) }}
+{%- endif -%}
 Test Material ......... {{ unspec(testmaterial) }}
 Dawdle ................ {{ unspec(dawdle) }}
 Timeout ............... {{ unspec(timeout) }}
@@ -33,6 +36,9 @@ Failure Probability ... {{ unspec(fail) }}
 <tr><td>Destination Node</td><td>{{ unspec(destnode) }}</td></tr>
 {%- if schema >= 2 %}
 <tr><td>IP Version</td><td>{{ unspec(ipversion) }}</td></tr>
+{%- endif -%}
+{%- if schema >= 3 %}
+<tr><td>Port</td><td>{{ unspec(port) }}</td></tr>
 {%- endif -%}
 <tr><td>Test Material</td><td>{{ unspec(testmaterial) }}</td></tr>
 <tr><td>Dawdle</td><td>{{ unspec(dawdle) }}</td></tr>
