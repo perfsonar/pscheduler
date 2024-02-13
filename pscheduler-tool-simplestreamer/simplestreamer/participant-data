@@ -27,10 +27,9 @@ if participant == 0:
 
 elif participant == 1:
 
-    ## removed spec for bug
-    if json['test'].get('port') is not None:
-       result['listen-port'] = json['test']['port'] 
-    else:   
+    try:
+        result['listen-port'] = json['test']['spec']['port'] 
+    except KeyError:
        result['listen-port'] = random.randint(5890,5899)
 
 else:
