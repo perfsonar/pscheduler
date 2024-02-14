@@ -6,7 +6,7 @@
 import datetime
 import pscheduler
 
-json = pscheduler.json_load(exit_on_error=True);
+json = pscheduler.json_load(exit_on_error=True)['spec']
 
 timeout_iso = json.get("timeout", "PT5S")
 duration = pscheduler.iso8601_as_timedelta(timeout_iso) \

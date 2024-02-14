@@ -10,7 +10,7 @@ import pscheduler
 from iperf2_defaults import *
 from iperf2_utils import *
 
-json = pscheduler.json_load(exit_on_error=True)
+json = pscheduler.json_load(exit_on_error=True)['spec']
 
 # Setup:  How long it takes to connect and set up the test
 setup = setup_time(json.get('link-rtt'))
