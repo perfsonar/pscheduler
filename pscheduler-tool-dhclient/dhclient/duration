@@ -16,7 +16,7 @@ import pscheduler
 
 from common import *
 
-json = pscheduler.json_load(exit_on_error=True);
+json = pscheduler.json_load(exit_on_error=True)['spec']
 
 # Release wait time
 timeout = datetime.timedelta(seconds=RELEASE_TIMEOUT)
