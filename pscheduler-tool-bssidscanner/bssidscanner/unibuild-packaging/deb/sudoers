@@ -1,0 +1,10 @@
+#
+# pscheduler-tool-bssidscanner
+#
+Cmnd_Alias PSCHEDULER_WPA_SUPPLICANT = /usr/sbin/wpa_supplicant
+pscheduler ALL = (root) NOPASSWD: PSCHEDULER_WPA_SUPPLICANT
+Defaults!PSCHEDULER_WPA_SUPPLICANT !requiretty
+
+Cmnd_Alias PSCHEDULER_WPA_CLI = /usr/sbin/wpa_cli
+pscheduler ALL = (root) NOPASSWD: PSCHEDULER_WPA_CLI
+Defaults!PSCHEDULER_WPA_CLI !requiretty

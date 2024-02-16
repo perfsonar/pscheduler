@@ -44,6 +44,24 @@ make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
 
+# Enable sudo for this tool
+WPA_SUPP=$(command -v wpa_supplicant)
+WPA_CLI=$(command -v wpa_cli)
+
+mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}
+cat > $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}/%{name} <<EOF
+
+#
+# %{name}
+#
+Cmnd_Alias PSCHEDULER_WPA_SUPP = ${WPA_SUPP}
+%{_pscheduler_user} ALL = (root) NOPASSWD: ${WPA_SUPP}
+Defaults!PSCHEDULER_WPA_SUPP !requiretty
+
+Cmnd_Alias PSCHEDULER_WPA_CLI = ${WPA_CLI}
+%{_pscheduler_user} ALL = (root) NOPASSWD: ${WPA_CLI}
+Defaults!PSCHEDULER_WPA_CLI !requiretty
+
 %post
 pscheduler internal warmboot
 
