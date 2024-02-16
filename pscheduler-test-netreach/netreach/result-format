@@ -3,28 +3,51 @@
 # Format a result
 #
 
+import jsontemplate
 import pscheduler
+import sys
 
 from validate import result_is_valid
-from validate import MAX_SCHEMA
 
-TEMPLATE = '''
-{% if _mime_type == 'text/plain' %}
 
-Gateway Up ... {{ unspec(result.gatewayup) }}
-Network Up ... {{ unspec(result.networkup) }}
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = "text/plain"
 
-{% elif _mime_type == 'text/html' %}
-<table>
-  <tr><td >Gateway Up</td><td>{{ unspec(result.gatewayup) }}</td></tr>
-  <tr><td >Network Up</td><td>{{ unspec(result.networkup) }}</td></tr>
-</table>
+input = pscheduler.json_load(exit_on_error=True, max_schema=1)
 
-{% else %}
+valid, message = result_is_valid(input["result"])
 
-{{ error('Unsupported MIME type "' + _mime_type + '"') }}
+if not valid:
+    pscheduler.fail(message)
 
-{% endif %}
-'''
+json = input["result"]
 
-pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)
+
+if format == "text/plain":
+
+   if "gateway-up" in json:
+      print("Gateway ...", ("Up" if json["gateway-up"] else "Down"))
+   print("Network ...", ("Up" if json["network-up"] else "Down"))
+
+elif format == "text/html":
+
+   print("<table>")
+   if "gateway-up" in json:
+      print("  <tr>")
+      print("    <th>Gateway</th>")
+      print("    <td>%s</td>" % ("Up" if json["gateway-up"] else "Down"))
+      print("  </tr>")
+
+   print("  <tr>")
+   print("    <th>Network</th>")
+   print("    <td>%s</td>" % ("Up" if json["network-up"] else "Down"))
+   print("  </tr>")
+   print("</table>")
+
+else:
+
+   pscheduler.fail("Unsupported format '%s'" % format)
+
+pscheduler.succeed()

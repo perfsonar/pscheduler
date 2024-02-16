@@ -3,7 +3,7 @@
 #
 
 %define short	flask
-Name:		python-%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	1.1.1
 Release:	1%{?dist}
 Summary:	A micro-framework for Python based on Werkzeug, Jinja 2 and good intentions
@@ -19,14 +19,28 @@ URL:		https://palletsprojects.com/p/flask
 
 Source:		%{short}-%{version}.tar.gz
 
-Requires:	python
-Requires:	python-click
-Requires:	python-jinja2
-Requires:	python-itsdangerous
-Requires:	python-werkzeug
+Requires:	%{_pscheduler_python}
 
-BuildRequires:	python
-BuildRequires:	python-setuptools
+%if 0%{?el7}
+Requires:	%{_pscheduler_python_epel}-click
+Requires:	%{_pscheduler_python_epel}-jinja2
+%endif
+%if 0%{?el8}%{?el9}
+Requires:	%{_pscheduler_python}-click
+Requires:	%{_pscheduler_python}-jinja2
+%endif
+
+Requires:	%{_pscheduler_python}-itsdangerous
+Requires:	%{_pscheduler_python}-werkzeug
+
+BuildRequires:	%{_pscheduler_python}
+BuildRequires:	%{_pscheduler_python}-setuptools
+
+
+%if 0%{?el8}%{?el9}
+# EL8/EL9's auto dependency scanner wants /bin/python3, which nothing provides.
+AutoReqProv: no
+%endif
 
 %description
 Flask is called a “micro-framework” because the idea to keep the core
@@ -49,11 +63,11 @@ authentication technologies and more.
 
 
 %build
-python setup.py build
+%{_pscheduler_python} setup.py build
 
 
 %install
-python setup.py install \
+%{_pscheduler_python} setup.py install \
     --root=$RPM_BUILD_ROOT \
     --single-version-externally-managed \
     -O1 \

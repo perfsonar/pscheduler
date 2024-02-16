@@ -1,0 +1,11 @@
+--- python-jsontemplate.orig/jsontemplate/_jsontemplate.py	2020-04-10 14:17:00.124962000 +0000
++++ python-jsontemplate/jsontemplate/_jsontemplate.py	2020-04-10 14:18:51.036547000 +0000
+@@ -922,7 +922,7 @@
+   if n % 2 == 1:
+     raise ConfigurationError(
+         '%r has an odd number of metacharacters' % meta)
+-  return meta[:n/2], meta[n/2:]
++  return meta[:int(n/2)], meta[int(n/2):]
+ 
+ 
+ _token_re_cache = {}

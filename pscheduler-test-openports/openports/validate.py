@@ -2,11 +2,16 @@
 # Validator for a pScheduler Test
 #
 
-# IMPORTANT:
 #
-# When making changes to the JSON schemas in this file, corresponding
-# changes MUST be made in 'spec-format' and 'result-format' to make
-# them capable of formatting the new specifications and results.
+# Development Order #3:
+#
+# This file determines the required and optional data types which are 
+# allowed to be in the test spec, result, and limit. This is used
+# for validation of these structures.
+#
+# Several existing datatypes are available for use at:
+# pscheduler/python-pscheduler/pscheduler/pscheduler/jsonval.py
+# 
 
 from pscheduler import json_validate
 
@@ -81,3 +86,20 @@ def result_is_valid(json):
             ]
         }
     return json_validate(json, schema)
+
+def limit_is_valid(json):
+    schema = {
+        "type": "object",
+        "properties": {
+            "schema":         { "$ref": "#/pScheduler/Cardinal" },
+            "network":        { "$ref": "#/pScheduler/IPCIDR" },
+            "source":         { "$ref": "#/pScheduler/IPAddress" },
+            "services":       { "$ref": "#/pScheduler/Boolean" },
+            "ports":          { "$ref": "#/local/portlist" },
+            "timeout":        { "$ref": "#/pScheduler/Duration" },
+            "source-node":    { "$ref": "#/pScheduler/URLHostPort"}
+        },
+        "additionalProperties": False
+        }
+
+    return json_validate(json, schema, max_schema=MAX_SCHEMA)

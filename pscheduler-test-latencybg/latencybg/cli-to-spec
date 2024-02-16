@@ -69,11 +69,6 @@ opt_parser.add_option("--dest-node",
                       action="store", type="string",
                       dest="dest_node")
 
-opt_parser.add_option("--protocol",
-                      help="The protocol to use in making the measurement",
-                      action="store", type="str",
-                      dest="protocol")
-
 opt_parser.add_option("-c", "--packet-count",
                       help="The number of packets to send",
                       action="store", type="int",
@@ -137,8 +132,7 @@ if len(remaining_args) != 0:
    pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
 
 
-result = { }
-schema = pscheduler.HighInteger(1)
+result = { 'schema': 1 }
 
 if options.source is not None:
    result['source'] = options.source
@@ -164,10 +158,6 @@ if options.duration is not None:
    
 if options.packet_count is not None:
    result['packet-count'] = options.packet_count
-
-if options.protocol is not None:
-   result['protocol'] = options.protocol
-   schema.set(2)
 
 if options.packet_interval is not None:
    result['packet-interval'] = options.packet_interval
@@ -209,6 +199,5 @@ if options.flip:
 if options.output_raw:
    result['output-raw'] = options.output_raw
 
-result['schema'] = schema.value()
 
 pscheduler.succeed_json(result)

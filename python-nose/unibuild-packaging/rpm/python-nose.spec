@@ -63,8 +63,11 @@ Summary:        %{summary}
 BuildRequires:  python3-devel
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-coverage >= 3.4-1
+%if 0%{?rhel} && 0%{?rhel} >= 8
+Requires:       platform-python-setuptools
+%else
 Requires:       python3-setuptools
-
+%endif
 %{?python_provide:%python_provide python3-%{modname}}
 Obsoletes:      platform-python-%{modname} < %{version}-%{release}
 

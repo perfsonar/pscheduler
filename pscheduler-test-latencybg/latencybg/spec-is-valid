@@ -6,11 +6,10 @@
 import pscheduler
 
 from validate import spec_is_valid
-from validate import spec_max_schema
 
 
 try:
-    json = pscheduler.json_load(max_schema=spec_max_schema())
+    json = pscheduler.json_load(max_schema=1)
 except ValueError as ex:
     pscheduler.succeed_json({
         "valid": False,

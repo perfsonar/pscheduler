@@ -3,62 +3,69 @@
 # Format a spec
 #
 
+import jsontemplate
 import pscheduler
+import sys
 
 from validate import spec_is_valid
-from validate import MAX_SCHEMA
 
-TEMPLATE='''
-{% if _mime_type == 'text/plain' %}
 
-Host ............. {{ unspec(host) }}
-Host Node ........ {{ unspec(hostnode) }}
-URL .............. {{ unspec(url) }}
-IP Version ....... {{ unspec(ipversion) }}
-{% if headers is defined -%}
-Headers:   (May be missing hyphens)
-{#- TODO: The hyphens get deleted from the keys. #}
-{%- for header in headers %}
-  {{ header }}: {{ headers[header] }}
-{%- endfor %}
-{%- else -%}
-Headers .......... {{ unspec(not_specified) }}
-{%- endif %}
-Parse ............ {{ unspec(parse) }}
-Timeout .......... {{ unspec(timeout) }}
-Always Succeed ... {{ unspec(alwayssucceed) }}
-Keep Content ..... {{ unspec(keepcontent) }}
+try:
+    format = sys.argv[1]
+except IndexError:
+    format = 'text/plain'
 
-{% elif _mime_type == 'text/html' %}
+
+json = pscheduler.json_load(exit_on_error=True)
+
+valid, message = spec_is_valid(json)
+
+if not valid:
+    pscheduler.fail(message)
+
+
+if format == 'text/plain':
+
+    print(jsontemplate.expand("""
+Host ............. {.section host}{host}{.or}Not Specified{.end}
+Host Node ........ {.section host-node}{host_node}{.or}Not Specified{.end}
+Timeout .......... {.section timeout}{timeout}{.or}Not Specified{.end}
+IP Version ....... {.section ip-version}{ip-version}{.or}Not Specified{.end}
+URL .............. {.section url}{url}{.or}Not Specified{.end}""", json).strip())
+
+    if 'headers' in json:
+        print('Headers:')
+        print("\n".join([ "    %s: %s" % (header, value) for (header, value) in json['headers'].items() ]))
+
+    print(jsontemplate.expand("""
+Parse ............ {.section parse}{parse}{.or}Not Specified{.end}
+Always Succeed ... {.section always-succeed}%s{.or}Not Specified{.end}
+Keep Content ..... {.section keep-content}%d Bytes{.or}Not Specified{.end}
+    """ % ("True", json.get("keep-content")), json).strip())
+
+
+elif format == 'text/html':
+
+    print(jsontemplate.expand("""
 <table>
-<tr><td>Host</td><td>{{ unspec(host) }}</td></tr>
-<tr><td>Host Node</td><td>{{ unspec(hostnode) }}</td></tr>
-<tr><td>URL</td><td>{{ unspec(url) }}</td></tr>
-<tr><td>IP Version</td><td>{{ unspec(ipversion) }}</td></tr>
-<tr><td>Headers</td><td>
-{% if headers is defined -%}
-(May be missing hyphens)
-{#- TODO: The hyphens get deleted from the keys. #}
-<ul>
-{%- for header in headers %}
-<li>{{ header }}: {{ headers[header] }}</li>
-{%- endfor %}
-</ul>
-{%- else -%}
-{{ unspec(not_specified) }}
-{%- endif %}
-</td></tr>
-<tr><td>Parse</td><td>{{ unspec(parse) }}</td></tr>
-<tr><td>Timeout</td><td>{{ unspec(timeout) }}</td></tr>
-<tr><td>Always Succeed</td><td>{{ unspec(alwayssucceed) }}</td></tr>
-<tr><td>Keep Content</td><td>{{ unspec(keepcontent) }}</td></tr>
-</table>
+<tr><td>Host</td><td>{.section host}{host}{.or}Not Specified{.end}</td></tr>
+<tr><td>Host Node</td><td>{.section host-node}{host_node}{.or}Not Specified{.end}</td></tr>
+<tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
+<tr><td>IP Version</td><td>{.section ip-version}{ip-version}{.or}Not Specified{.end}</td></tr>
+<tr><td>URL</td><td>{.section url}{url}{.or}Not Specified{.end}</td></tr>
+""", json).strip())
 
-{% else %}
+    if 'headers' in json:
+        print('<tr><td>Headers</td><td>')
+        print("</br>".join([ "<tt>%s: %s</tt>" % (header, value) for (header, value) in json['headers'].items() ]))
+        print("</td></tr>")
 
-{{ error('Unsupported MIME type "' + _mime_type + '"') }}
+    print(jsontemplate.expand("""
+<tr><td>Parse</td><td>{.section parse}{parse}{.or}Not Specified{.end}</td></tr>
+<tr><td>Always Succeed</td><td>{.section always-succeed}%s{.or}Not Specified{.end}</td></tr>
+<tr><td>Keep Content</td><td>{.section always-succeed}%s Bytes{.or}Not Specified{.end}</td></tr>
+</table>""" % ("True", "True"), json).strip())
 
-{% endif %}
-'''
+else:
 
-pscheduler.spec_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=spec_is_valid)
+    pscheduler.fail("Unsupported format '%s'" % format)

@@ -3,98 +3,146 @@
 # Format a result
 #
 
+import jsontemplate
 import pscheduler
+import sys
 
 from validate import result_is_valid
-from validate import MAX_SCHEMA
 
-TEMPLATE = '''
-{% macro rtt_stat(iso) -%}
-{% if iso is defined -%}
-  {{ "%.4f" | format(iso8601_duration_seconds(iso) * 1000) }}
-{%- else -%}
-None
-{%- endif -%}
-{%- endmacro -%}
 
-{% if _mime_type == 'text/plain' %}
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
 
-{% for trip in result.roundtrips -%}
-{{ "%-8d" | format(loop.index) }}
-  {%- if trip.error is defined -%}
-    {{ trip.error }}
-  {%- elif trip.hostname is defined or trip.ip is defined -%}
-    {%- if trip.hostname is defined -%}
-      {{ trip.hostname}} ({{ trip.ip }})
-    {%- else -%}
-      {{ trip.ip}} ({{ trip.ip }})
-    {%- endif -%}
-    {{ "  %d Bytes  TTL %d  RTT %.4f ms"
-       | format( trip.length, trip.ttl,
-                 (iso8601_duration_seconds(trip.rtt) * 1000)
-       ) }}
-  {%- else -%}
-    No Response
-  {%- endif %}
-{% endfor %}
-\
-{{ (result.loss * 100) | int }}% Packet Loss  \
-\
-{{ "RTT Min/Mean/Max/StdDev = %s/%s/%s/%s ms"
-   | format( rtt_stat(result.min),
-             rtt_stat(result.mean),
-             rtt_stat(result.max),
-             rtt_stat(result.stddev)
-     ) }}
+input = pscheduler.json_load(exit_on_error=True, max_schema=1)
 
-{% elif _mime_type == 'text/html' %}
+valid, message = result_is_valid(input["result"])
 
+if not valid:
+    pscheduler.fail(message)
+
+json = input["result"]
+
+
+# TODO: These should do something reasonable if there are no rts in
+# the result.
+
+if format == 'text/plain':
+
+   fail_template = "Test failed."
+
+   template = None
+
+   rt_template = """{number}\t\
+{.section hostname}{hostname} ({.end}\
+{.section ip}{ip}{.or}{.section hostname}NONE{.or}No Response{.end}{.end}\
+{.section hostname}){.end}\
+{.section length}  {length} Bytes{.or}{.end}\
+{.section ttl}  TTL {ttl}{.or}{.end}\
+{.section rtt}  RTT {rtt} ms{.or}{.end}
+"""
+
+   error_template = """
+{number}\t\
+{.section hostname}{hostname} ({.end}\
+{.section ip}{ip}{.or}{.section hostname}NONE{.or}No Response{.end}{.end}\
+{.section hostname}){.end}\
+{.section error}: {error}{.end}\
+"""
+
+   end_template = """
+{.section loss-pct}{loss-pct}% Packet Loss{.end}\
+  RTT Min/Mean/Max/StdDev = \
+{.section min-fmt}{min-fmt}{.or}Unknown{.end}\
+/{.section mean-fmt}{mean-fmt}{.or}Unknown{.end}\
+/{.section max-fmt}{max-fmt}{.or}Unknown{.end}\
+/{.section stddev-fmt}{stddev-fmt}{.or}Unknown{.end}\
+ ms
+"""
+
+elif format == 'text/html':
+
+   fail_template = "<p>Test failed.</p>"
+
+   template = """
 <table>
 <tr>
   <th>Packet</th>
-  <th>Host</th>
   <th>Address</th>
+  <th>Host</th>
   <th>Length</th>
-  <th>TTL</th>
   <th>RTT (ms)</th>
 </tr>
+   """
 
-{% for trip in result.roundtrips -%}
-  <tr>
-    <td>{{ loop.index }}</td>
-  {% if trip.error is defined -%}
-    <td colspan="4">{{ trip.error }}</td>
-  {%- elif trip.hostname is defined or trip.ip is defined -%}
-    {%- if trip.hostname is defined -%}
-      <td>{{ trip.hostname }}</td>
-    {%- else -%}
-      <td>{{ trip.ip }}</td>
-    {%- endif -%}
-      <td>{{ trip.ip }}</td>
-      <td>{{ trip.length }}</td>
-      <td>{{ trip.ttl }}</td>
-      <td>{{ iso8601_duration_seconds(trip.rtt) * 1000 }}</td>
-  {%- else -%}
-    <td colspan="4">No Response</td>
-  {%- endif %}
-  </tr>
-{% endfor %}
+   rt_template = """
+<tr>
+  <th>{number}</th>
+  <td>{.section ip}{ip}{.end}</td>
+  <td>{.section hostname}{hostname}{.end}</td>
+  <td>{.section length}{length}{.end}</td>
+  <td>{.section rtt}{rtt}{.end}</td>
+  <td>{.section error}{error}{.end}</td>
+</tr>
+"""
 
-<tr><td colspan="5">{{ (result.loss * 100) | int }}% Packet Loss</td></tr>
-<tr><td colspan="5">{{ "RTT Min/Mean/Max/StdDev = %s/%s/%s/%s ms"
-   | format( rtt_stat(result.min),
-             rtt_stat(result.mean),
-             rtt_stat(result.max),
-             rtt_stat(result.stddev)
-     ) }}</td></tr>
+   error_template = """
+<tr>
+  <th>{number}</th>
+  <td colspan="5">{.section error}Error: {error}{.or}Unknown Error{.end}</td>
+</tr>
+"""
 
+   end_template = """
+<tr>
+<td align="middle" colspan="5">\
+{.section loss-pct}{loss-pct}% Packet Loss{.end}<br/>\
+RTT Min/Mean/Max/StdDev = \
+{.section min}{min-fmt}{.or}Unknown{.end}\
+/{.section mean}{mean-fmt}{.or}Unknown{.end}\
+/{.section max}{max-fmt}{.or}Unknown{.end}\
+/{.section stddev}{stddev-fmt}{.or}Unknown{.end}\
+ ms</td></tr>
 </table>
+"""
 
-{% else %}
 
-{{ error('Unsupported MIME type "' + _mime_type + '"') }}
+else:
 
-{% endif %}
-'''
+   pscheduler.fail("Unsupported format '%s'" % format)
 
-pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)
+
+# TODO: Should probably handle exceptions in a nicer way.
+
+if not json['succeeded']:
+   print(jsontemplate.expand(fail_template, json).strip())
+
+if template is not None:
+   print(jsontemplate.expand(template, json).strip())
+
+rtno = 1
+for rt in json['roundtrips']:
+   rt['number'] = rtno
+   try:
+      ms = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(rt['rtt'])) * 1000
+      rt['rtt'] = '%8.4f' % ms
+   except KeyError:
+      pass
+
+   if 'error' in rt:
+      print(jsontemplate.expand(error_template, rt).strip())
+   else:
+      print(jsontemplate.expand(rt_template, rt).strip())
+
+   rtno += 1
+
+if end_template is not None:
+   json['loss-pct'] = str(int(json['loss'] * 100.0))
+   for item in ['min', 'mean', 'max', 'stddev']:
+      if item in json:
+         json[item + '-fmt'] = "%f" % \
+             ( pscheduler.timedelta_as_seconds( \
+               pscheduler.iso8601_as_timedelta(json[item]) ) * 1000.0 )
+
+   print(jsontemplate.expand(end_template, json).rstrip())

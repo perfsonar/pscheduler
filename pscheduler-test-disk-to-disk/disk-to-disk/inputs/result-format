@@ -1,8 +1,0 @@
-{
-    "result": {
-	"succeeded": true,
-	"time": "PT25.3S",
-	"bytes-sent": 1234567,
-	"throughput": 10000000
-    }
-}

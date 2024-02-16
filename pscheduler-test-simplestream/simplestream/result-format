@@ -3,33 +3,71 @@
 # Format a result
 #
 
+import jsontemplate
 import pscheduler
+import sys
 
 from validate import result_is_valid
-from validate import MAX_SCHEMA
 
-TEMPLATE = '''
-{% if _mime_type == 'text/plain' %}
 
-Dawdled ......... {{ unspec(result.dawdled) }}
-Text Sent ....... {{ unspec(result.sent) }}
-Text Received ... {{ unspec(result.received) }}
-Elapsed Time .... {{ unspec(result.elapsedtime) }}
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
 
-{% elif _mime_type == 'text/html' %}
+input = pscheduler.json_load(exit_on_error=True, max_schema=1)
 
-<table>
-<tr><td>Dawdled</td><td>{{ unspec(result.dawdled) }}</td></tr>
-<tr><td>Text Sent</td><td>{{ unspec(result.sent) }}</td></tr>
-<tr><td>Text Received</td><td>{{ unspec(result.received) }}</td></tr>
-<tr><td>Elapsed Time</td><td>{{ unspec(result.elapsedtime) }}</td></tr>
+valid, message = result_is_valid(input["result"])
+
+if not valid:
+    pscheduler.fail(message)
+
+json = input["result"]
+
+
+if format == 'text/plain':
+
+   fail_template = "Test failed."
+
+   template = """
+Dawdled ......... {.section dawdled}{dawdled}{.or}Not Reported{.end}
+Text Sent ....... {.section sent}{sent}{.or}Not Reported{.end}
+Text Received ... {.section received}{received}{.or}Not Reported{.end}
+Elapsed Time .... {.section elapsed-time}{elapsed-time}{.or}Not Reported{.end}
+   """
+
+elif format == 'text/html':
+
+   fail_template = "<p>Test failed.</p>"
+
+   template = """
+<table border="0">
+
+<tr><td><b>Dawdled</b></td><td>
+{.section dawdled}{dawdled}{.or}<i>Not Reported</i>{.end}
+</td></tr>
+
+<tr><td><b>Text Sent</b></td><td>
+{.section sent}{sent}{.or}<i>Not Reported</i>{.end}
+</td></tr>
+
+<tr><td><b>Text Received</b></td><td>
+{.section received}{received}{.or}<i>Not Reported</i>{.end}
+</td></tr>
+
+<tr><td><b>Elapsed Time</b></td><td>
+{.section elapsed-time}{elapsed-time}{.or}<i>Not Reported</i>{.end}
+</td></tr>
+
 </table>
+   """
 
-{% else %}
+else:
 
-{{ error('Unsupported MIME type "' + _mime_type + '"') }}
+   pscheduler.fail("Unsupported format '%s'" % format)
 
-{% endif %}
-'''
 
-pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)
+# TODO: Should probably handle exceptions in a nicer way.
+print(jsontemplate.expand(
+   template if json['succeeded'] else fail_template,
+   json).strip())

@@ -79,10 +79,17 @@ except KeyError:
 
 check_with_error('first-ttl', "Cannot control first TTL")
 
+# TODO: source?
+
+# Note that the version of tracepath in CentOS 6 (20071127) supports
+# _only_ 31 hops.  A -m switch supporting 1..255 hops was added to the
+# sources on 2013-02-16 and appears to have been backported by Red Hat
+# in an RHEL7 update.
+
 try:
     hops = spec['hops']
-    if hops > 255:
-        errors.append("Cannot set more than 255 hops")
+    if hops != 31:
+        errors.append("Cannot set hop value to other than 31")
 except KeyError:
     pass
 

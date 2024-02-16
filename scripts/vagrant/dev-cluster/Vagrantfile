@@ -9,7 +9,13 @@
 # An array of operating system names; see the "boxes" hash below for a
 # full list of valid values.  Each element in the array will be turned
 # into a VM running that system.  These are a few popular choices:
-boxes = [ "alma9" ]
+boxes = [ "centos7" ]
+#boxes = [ "centos7", "centos7" ]
+#boxes = [ "debian9" ]
+#boxes = [ "debian10"]
+#boxes = [ "debian9", "debian9" ]
+#boxes = [ "centos7", "debian9" ]
+
 
 # Prefix for VM names.  This should be unique across clusters on
 # the same host.
@@ -39,14 +45,19 @@ require 'etc'
 valid_boxes = Hash[
   # RedHat and Derivatives
   "alma8" => "almalinux/8",
-  "alma9" => "almalinux/8",
-  # Debian
+  "centos7" => "bento/centos-7",
+  "centos8" => "bento/centos-8",
+  "oracle7" => "generic/oracle7",
+  "oracle8" => "generic/oracle8",
+  "rhel7" => "generic/rhel7",
+  "rhel8" => "generic/rhel8",
+  # Debian and Derivatives
+  "debian8" => "generic/debian8",
+  "debian9" => "generic/debian9",
   "debian10" => "geerlingguy/debian10",
-  "debian11" => "geerlingguy/debian12",
-  "debian12" => "geerlingguy/debian12",
-  # Ubuntu
+  "ubuntu16" => "ubuntu/xenial64",
+  "ubuntu18" => "ubuntu/bionic64",
   "ubuntu20" => "ubuntu/focal64",
-  "ubuntu22" => "ubuntu/jammy64",
 ]
 
 

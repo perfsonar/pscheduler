@@ -15,7 +15,7 @@ import datetime
 
 import pscheduler
 
-json = pscheduler.json_load(exit_on_error=True)['spec']
+json = pscheduler.json_load(exit_on_error=True);
 
 auto_timeout = json.get("duration", "PT30S")      
 timeout_iso = json.get("timeout", auto_timeout)

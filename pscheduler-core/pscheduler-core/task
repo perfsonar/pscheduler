@@ -196,11 +196,6 @@ other_group.add_option("--output",
                       default=None,
                       dest="output")
 
-other_group.add_option("--full",
-                       help="Produce full diagnostics and archiving information with result",
-                       action="store_true", default=False,
-                       dest="full")
-
 other_group.add_option("--quiet",
                       help="Operate quietly",
                       action="store_true", default=False,
@@ -796,8 +791,6 @@ if options.format is not None:
 
 if options.debug:
     watch_args.append("--debug")
-if options.full:
-    watch_args.append("--full")
 if options.quiet:
     watch_args.append("--quiet")
 if options.bind is not None:

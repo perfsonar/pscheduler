@@ -12,40 +12,54 @@
 # 
 #
 
+import jsontemplate
 import pscheduler
+import sys
 
 from validate import spec_is_valid
-from validate import MAX_SCHEMA
 
-TEMPLATE='''
-{%- set schema = 1 if schema is undefined else schema -%}
-{% if _mime_type == 'text/plain' %}
 
-Source ........ {{ unspec(source) }}
-Source Node ... {{ unspec(sourcenode) }}
-Destination ... {{ unspec(dest) }}
-Port .......... {{ unspec(port) }}
-{% if schema >= 2 -%}
-IP Version .... {{ unspec(ipversion) }}
-{%- endif %}
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
 
-{% elif _mime_type == 'text/html' %}
 
+json = pscheduler.json_load(exit_on_error=True)
+
+valid, message = spec_is_valid(json)
+
+if not valid:
+    pscheduler.fail(message)
+
+# Format a test spec into plain text
+if format == 'text/plain':
+
+    template = """
+Source ........................ {.section source}{source}{.or}Not Specified{.end}
+Source Node ................... {.section source_node}{source_node}{.or}Not Specified{.end}
+Destination ................... {.section dest}{dest}{.or}Not Specified{.end}
+IP Version .................... {.section ip-version}{ip-version}{.or}Not Specified{.end}
+Port .......................... {.section port}{port}{.or}Not Specified{.end}
+"""
+
+# Format with html
+elif format == 'text/html':
+
+   template = """
 <table>
-<tr><td>Source</td><td>{{ unspec(source) }}</td></tr>
-<tr><td>Source Node</td><td>{{ unspec(sourcenode) }}</td></tr>
-<tr><td>Destination</td><td>{{ unspec(dest) }}</td></tr>
-<tr><td>Port</td><td>{{ unspec(port) }}</td></tr>
-{% if schema >= 2 -%}
-<tr><td>IP Version</td><td>{{ unspec(ipversion) }}</td></tr>
-{%- endif %}
+<tr><td>Source</td><td>{.section source}{source}{.or}Not Specified{.end}</td></tr>
+<tr><td>Source Node</td><td>{.section source_node}{source_node}{.or}Not Specified{.end}</td></tr>
+<tr><td>Destination</td><td>{.section destination}{destination}{.or}Not Specified{.end}</td></tr>
+<tr><td>IP Version</td><td>{.section ip-version}{ip-version}{.or}Not Specified{.end}</td></tr>
+<tr><td>Port</td><td>{.section port}{port}{.or}Not Specified{.end}</td></tr>
 </table>
+"""
 
-{% else %}
+else:
 
-{{ error('Unsupported MIME type "' + _mime_type + '"') }}
+   pscheduler.fail("Unsupported format '%s'" % format)
 
-{% endif %}
-'''
 
-pscheduler.spec_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=spec_is_valid)
+# TODO: Should probably handle exceptions in a nicer way.
+print(jsontemplate.expand(template, json).strip())

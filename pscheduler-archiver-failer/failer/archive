@@ -71,10 +71,6 @@ for parsed in PARSER:
     if parsed["data"].get("badly", False):
         pscheduler.fail("Forced to fail badly.")
 
-    try:
-        EMITTER(archive(parsed))
-    except BrokenPipeError as ex:
-        log.warning("Broken pipe during archiving; parent must have exited.")
-        pscheduler.succeed()
+    EMITTER(archive(parsed))
 
 pscheduler.succeed()

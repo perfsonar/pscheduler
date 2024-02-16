@@ -40,6 +40,10 @@ define(HAVE_GOLANG,ifelse(FAMILY/eval(MAJOR < 10),Debian/1,,
 # Everything else depends on these.
 #
 
+
+# Build this early.  Some of the packages using PostgreSQL depend on
+# knowing what version is required to avoid the "Requires: postgresql"
+# trap we fell into with EL6.
 ifelse(PACKAGING,rpm,pscheduler-rpm)
 
 #
@@ -48,40 +52,57 @@ ifelse(PACKAGING,rpm,pscheduler-rpm)
 
 # PostgreSQL and Additions
 
+# EL7 needs a custom PostgreSQL
+ifelse(FAMILY/MAJOR,RedHat/7,pgdg-srpm-macros)
+ifelse(FAMILY/MAJOR,RedHat/7,postgresql)
+ifelse(FAMILY/MAJOR,RedHat/8,postgresql-systemd-fix)
 postgresql-init
 postgresql-load
 
 
 # jq and friends
 
+ifelse(DISTRO/MAJOR,Oracle/8,oniguruma)			# CentOS 7 and EL8 have this, OL8 doesn't.
 ifelse(DISTRO/eval(MAJOR < 20),Ubuntu/1,oniguruma)		# Ubuntu 20 and up are good.
 jq							# Ours has patches.
 
 
 # Python Modules
 
+ifelse(FAMILY/DISTRO/MAJOR,RedHat/Oracle/8,Cython)	# Only build this on OL8.
 ifelse(FAMILY/MAJOR,Debian/9,python-attrs)              # Needed here only.
 
-# EL9 doesn't have a good version of this
-ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-daemon)
+# EL8 has a good one, EL7 and EL9 don't.
+ifelse(FAMILY/eval(MAJOR == 7 || MAJOR == 9),RedHat/1,python-daemon)
 
-# This needs to be built on EL9 and later
-ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-itsdangerous)
+ifelse(FAMILY/MAJOR,RedHat/7,python-isodate)		# EL7 needs this; EL8 is up to date
+# EL7 has a reasonably-current version of this.  EL8 and later, we build.
+ifelse(FAMILY/eval(MAJOR > 7),RedHat/1,python-itsdangerous)
 ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of this.
        DISTRO/eval(MAJOR > 10),Debian/1,,		# As does Debian 11
-       FAMILY/eval(MAJOR >= 9),RedHat/1,,               # And EL9+
+       FAMILY/eval(MAJOR > 8),RedHat/1,,                # And EL9+
        python-pyrsistent)
 python-nmap3
 ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of this.
        DISTRO/eval(MAJOR > 10),Debian/1,,               # As does Debian 11.
-       python-jsonschema)
+       FAMILY/eval(MAJOR > 8),RedHat/1,,                # EL9 provides a suitable version.
+       python-jsonschema)				# EL8 has this, but an older version
 python-kafka
 python-nmap3
+
+# Used by pscheduler-archiver-esmond
+# EL8's is 1.58, ours is/was 1.59.  Commits to the project show only
+# cosmetic changes for the later version.
+ifelse(FAMILY/MAJOR,RedHat/7,python-memcached)
+
+python-jsontemplate
+ifelse(FAMILY/eval(MAJOR >= 9),,			# EL9+ has this.
+       python-netifaces)
 
 # TODO: This was deprecated after EL8.  Switch to something new.
 ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-nose)
 
-ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-ntplib)
+ifelse(FAMILY/eval(MAJOR == 7 || MAJOR == 9),RedHat/1,python-ntplib)
 python-parse-crontab
 python-vine
 ifelse(DISTRO/eval(MAJOR > 21),Ubuntu/1,,		# Ubuntu 22 has a newer version of this.
@@ -91,15 +112,13 @@ python-py-radix
 python-pyjq
 python-tzlocal
 python-vcversioner
-# TODO: We were building this; EL9 has a newer version.
 python-pyasn1						# EL8 has this, ours is newer
 python-pyasn1-modules
-
-# TODO: EL8 had these, ours was newer.  See about upgrading to current. (#1387)
 python-werkzeug						# EL8 has this, ours is newer
 python-flask						# EL8 has this, ours is newer
 
-# TODO: See if this is available in EL9
+# TODO: EPEL8 has a newer version that doesn't install.
+# See https://bugzilla.redhat.com/show_bug.cgi?id=1838402
 python-pysnmp
 
 # Home-grown Python Modules
@@ -108,6 +127,7 @@ python-icmperror
 
 # Apache add-ons
 httpd-firewall						# TODO: May no longer be used.  Maybe for development?
+ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,mod_wsgi)
 httpd-wsgi-socket
 
 
@@ -116,12 +136,13 @@ httpd-wsgi-socket
 #
 drop-in
 
+ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,libtins)		# Dublin-traceroute needs this
 ifelse(FAMILY,Debian,,dublin-traceroute)		# TODO: Doesn't build on Debian.
 define(HAVE_ETHR,HAVE_GOLANG)
 ifelse(DISTRO/eval(MAJOR <= 18),Ubuntu/1,,      # Doesn't build on U18, TODO: not sure about U20…
        HAVE_ETHR,1,ethr)                        # But D10 build can be used on U18 and up
 
-ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,iperf)		# EPEL dropped this in EL8
+ifelse(FAMILY/eval(MAJOR >= 8),RedHat/1,iperf)		# EPEL dropped this for EL8
 ifelse(FAMILY/eval(MAJOR == 10 || MAJOR == 12),Debian/1,iperf3,          # We only want iperf3 on D10 and D12
        FAMILY,Debian,,
        iperf3)
@@ -172,10 +193,9 @@ pscheduler-test-netreach		--bundle extras
 pscheduler-test-noop
 pscheduler-test-psresponse
 pscheduler-test-throughput
-# This has not been released.  See also pscheduler-tool-nmapscan
-# pscheduler-test-openports		--bundle extras
+pscheduler-test-openports		--bundle extras
 pscheduler-test-rtt
-ifelse(HAVE_S3_BENCHMARK,1,pscheduler-test-s3throughput)
+pscheduler-test-s3throughput
 pscheduler-test-simplestream
 pscheduler-test-snmpget			--bundle snmp
 pscheduler-test-snmpgetbgm		--bundle snmp
@@ -216,7 +236,7 @@ pscheduler-tool-psclock
 pscheduler-tool-pstimer
 pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
-ifelse(HAVE_S3_BENCHMARK,1,pscheduler-tool-s3-benchmark)
+pscheduler-tool-s3-benchmark
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm

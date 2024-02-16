@@ -3,37 +3,56 @@
 # Format a spec
 #
 
+import jsontemplate
 import pscheduler
+import sys
 
 from validate import spec_is_valid
-from validate import MAX_SCHEMA
 
-TEMPLATE='''
-{% if _mime_type == 'text/plain' %}
 
-Host ......... {{ unspec(host) }}
-Host Node .... {{ unspec(hostnode) }}
-Nameserver ... {{ unspec(nameserver) }}
-Record ....... {{ unspec(record) }}
-Query ........ {{ unspec(query) }}
-Timeout ...... {{ unspec(timeout) }}
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
 
-{% elif _mime_type == 'text/html' %}
 
+json = pscheduler.json_load(exit_on_error=True, max_schema=1)
+
+valid, message = spec_is_valid(json)
+
+if not valid:
+    pscheduler.fail(message)
+
+
+if format == 'text/plain':
+
+   template = """
+
+Host ...................... {.section host}{host}{.or}Not Specified{.end}
+Host Node ................. {.section host-node}{host-node}{.or}Not Specified{.end}
+Nameserver ................ {.section nameserver}{nameserver}{.or}Not Specified{.end}
+Record .................... {.section record}{record}{.or}Not Specified{.end}
+Query ..................... {.section query}{query}{.or}Not Specified{.end}
+Timeout ................... {.section timeout}{timeout}{.or}Not Specified{.end}
+"""
+
+elif format == 'text/html':
+
+   template = """
 <table>
-<tr><td>Host</td><td>{{ unspec(host) }}</td></tr>
-<tr><td>Host Node</td><td>{{ unspec(hostnode) }}</td></tr>
-<tr><td>Nameserver</td><td>{{ unspec(nameserver) }}</td></tr>
-<tr><td>Record</td><td>{{ unspec(record) }}</td></tr>
-<tr><td>Query</td><td>{{ unspec(query) }}</td></tr>
-<tr><td>Timeout</td><td>{{ unspec(timeout) }}</td></tr>
+<tr><td>Host</td><td>{.section host}{host}{.or}Not Specified{.end}</td></tr>
+<tr><td>Host Node</td><td>{.section host node}{host node}{.or}Not Specified{.end}</td></tr>
+<tr><td>Nameserver</td><td>{.section nameserver}{nameserver}{.or}Not Specified{.end}</td></tr>
+<tr><td>Record</td><td>{.section record}{record}{.or}Not Specified{.end}</td></tr>
+<tr><td>Query</td><td>{.section query}{query}{.or}Not Specified{.end}</td></tr>
+<tr><td>Timeout</td><td>{.section timeout}{timeout}{.or}Not Specified{.end}</td></tr>
 </table>
+   """
 
-{% else %}
+else:
 
-{{ error('Unsupported MIME type "' + _mime_type + '"') }}
+   pscheduler.fail("Unsupported format '%s'" % format)
 
-{% endif %}
-'''
 
-pscheduler.spec_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=spec_is_valid)
+# TODO: Should probably handle exceptions in a nicer way.
+print(jsontemplate.expand(template, json).strip())

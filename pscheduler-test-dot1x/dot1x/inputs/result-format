@@ -1,7 +1,0 @@
-{
-    "result": {
-    	"succeeded": true,
-	"authenticated": true,
-	"time": "PT0.1234S"
-    }
-}

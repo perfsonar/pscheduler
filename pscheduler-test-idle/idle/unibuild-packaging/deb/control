@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-test-idle
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server (>= 1.1.6)
+ pscheduler-server (>= 1.1.6), python3-jsontemplate
 Description: pScheduler idle test
  Idle test class for pScheduler

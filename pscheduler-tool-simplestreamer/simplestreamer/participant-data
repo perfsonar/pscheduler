@@ -27,10 +27,7 @@ if participant == 0:
 
 elif participant == 1:
 
-    try:
-        result['listen-port'] = json['test']['spec']['port'] 
-    except KeyError:
-       result['listen-port'] = random.randint(5890,5899)
+    result['listen-port'] = random.randint(5890,5899)
 
 else:
 

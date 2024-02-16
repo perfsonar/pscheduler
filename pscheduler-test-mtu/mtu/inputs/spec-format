@@ -1,8 +1,0 @@
-{
-    "schema": 2,
-    "source": "foo.example.org",
-    "source-node": "foo-ps.example.org",
-    "dest": "bar.example.org",
-    "port": 12345,
-    "ip-version": 4
-}

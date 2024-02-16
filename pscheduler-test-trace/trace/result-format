@@ -3,67 +3,130 @@
 # Format a result
 #
 
+import jsontemplate
 import pscheduler
+import sys
 
 from validate import result_is_valid
-from validate import MAX_SCHEMA
 
-TEMPLATE = '''
-{% if _mime_type == 'text/plain' %}
 
-{% for path in result.paths %}
-{%- if (result.paths | length) > 1 %}
-Path {{ loop.index }}:
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
 
-{% endif -%}
-{% for hop in path -%}
-{{ "%-8d%s (%s) %.1f ms" | format(
-       loop.index,
-       (hop.hostname or hop.ip),
-       hop.ip,
-       (iso8601_duration_seconds(hop.rtt) * 1000)
-    ) }}
-{% if hop.as is defined -%}
-{{ "%10sAS%d %s" | format("", hop.as.number, hop.as.owner) }}
-{% endif -%}
-{% endfor -%}
-{%- endfor -%}
+input = pscheduler.json_load(exit_on_error=True, max_schema=1)
 
-{% elif _mime_type == 'text/html' %}
+valid, message = result_is_valid(input["result"])
+if not valid:
+    pscheduler.fail(message)
 
+json = input["result"]
+
+
+# TODO: These should do something reasonable if there are no hops in
+# the result.
+
+if format == 'text/plain':
+
+   fail_template = "Test failed."
+
+   template = None
+
+   path_template = """
+Path {number}:"""
+
+   hop_template = """{number}\t\
+{.section hostname}{hostname} ({.end}\
+{.section ip}{ip}{.or}{.section hostname}NONE{.or}No Response{.end}{.end}\
+{.section hostname}){.end}\
+{.section as}{.section number} AS{number}{.or}{.end}{.or}{.end}\
+{.section rtt} {rtt} ms{.end}\
+{.section mtu} mtu {mtu} bytes{.end}\
+{.section error} {error}{.end}
+{.section as}{.section owner}\t  {owner}{.or}{.end}{.or}{.end}
+
+"""
+
+   end_template = None
+
+elif format == 'text/html':
+
+   fail_template = "<p>Test failed.</p>"
+
+   template = """
 <table>
-{% for path in result.paths %}
-{%- if (result.paths | length) > 1 %}
-<tr><th colspan="6">Path {{ loop.index }}</th></tr>
-{% endif -%}
 <tr>
-  <th>Hop</th>
-  <th>Host</th>
+  <th>TTL</th>
   <th>Address</th>
+  <th>Host</th>
   <th>RTT (ms)</th>
+  <th>Error</th>
   <th>AS</th>
-  <th>AS Owner</th>
+  <th>Operator</th>
 </tr>
+   """
+
+   path_template = """
 <tr>
-{% for hop in path -%}
-  <td>{{ loop.index }}</td>
-  <td>{{ hop.hostname or hop.ip }}</td>
-  <td>{{ hop.ip }}</td>
-  <td>{{ "%.1f" | format(iso8601_duration_seconds(hop.rtt) * 1000) }}</td>
-  {%- if hop.as is defined %}
-  <td>{{ hop.as.number if hop.as.number is defined else "&nbsp;" }}</td>
-  <td>{{ hop.as.owner if hop.as.owner is defined else "&nbsp;" }}</td>
-  {% endif %}
+  <th colspan="7">Path {number}</th>
 </tr>
-{% endfor -%}
-{%- endfor -%}
+"""
+
+   hop_template = """
+<tr>
+  <th>{number}</th>
+  <td>{.section ip}{ip}{.end}</td>
+  <td>{.section hostname}{hostname}{.end}</td>
+  <td>{.section rtt}{rtt}{.end}</td>
+  <td>{.section error}{error}{.end}</td>
+  <td>{.section as}
+{.section number}{number}{.or}{.end}
+{.end}</td>
+  <td>{.section as}{.section owner}{owner}{.or}{.end}{.end}</td>
+</tr>
+
+"""
+
+   end_template = """
 </table>
+"""
 
-{% else %}
 
-{{ error('Unsupported MIME type "' + _mime_type + '"') }}
+else:
 
-{% endif %}
-'''
+   pscheduler.fail("Unsupported format '%s'" % format)
 
-pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)
+
+# TODO: Should probably handle exceptions in a nicer way.
+
+if not json['succeeded']:
+   print(jsontemplate.expand(fail_template, json).strip())
+
+if template is not None:
+   print(jsontemplate.expand(template, json).strip())
+
+
+pathno = 0
+npaths = len(json['paths'])
+
+for path in json['paths']:
+
+   pathno += 1
+   if npaths > 1:
+      print(jsontemplate.expand(path_template, { 'number': pathno }))
+
+   hopno = 1
+   for hop in path:
+      hop['number'] = hopno
+      try:
+         ms = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(hop['rtt'])) * 1000
+         hop['rtt'] = ('%f' % ms).rstrip('0').rstrip('.')
+      except KeyError:
+         pass
+
+      print(jsontemplate.expand(hop_template, hop).strip())
+      hopno += 1
+
+if end_template is not None:
+   print(jsontemplate.expand(end_template, json).strip())

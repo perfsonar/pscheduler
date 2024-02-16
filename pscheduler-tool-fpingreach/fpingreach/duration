@@ -12,7 +12,7 @@ import pscheduler
 
 from fpingreach_common import *
 
-json = pscheduler.json_load(exit_on_error=True)['spec']
+json = pscheduler.json_load(exit_on_error=True);
 
 network = ipaddress.ip_network(json["network"])
 

@@ -2,12 +2,6 @@
 # Validator for "throughput" Test
 #
 
-# IMPORTANT:
-#
-# When making changes to the JSON schemas in this file, corresponding
-# changes MUST be made in 'spec-format' and 'result-format' to make
-# them capable of formatting the new specifications and results.
-
 from pscheduler import json_validate
 import json
 
@@ -265,10 +259,8 @@ SPEC_SCHEMA = {
             "properties": {
                 "schema":      { "type": "integer", "enum": [ 7 ] },
                 "source":      { "$ref": "#/pScheduler/Host" },
-                "source-bind": { "$ref": "#/pScheduler/Host" },
                 "source-node": { "$ref": "#/pScheduler/URLHostPort" },
                 "dest":        { "$ref": "#/pScheduler/Host" },
-                "dest-bind":   { "$ref": "#/pScheduler/Host" },
                 "dest-node":   { "$ref": "#/pScheduler/URLHostPort" },
                 "duration":    { "$ref": "#/pScheduler/Duration" },
                 "interval":    { "$ref": "#/pScheduler/Duration" },
@@ -278,12 +270,12 @@ SPEC_SCHEMA = {
                 "bandwidth":   { "$ref": "#/pScheduler/Cardinal" },
                 "bandwidth-strict":   { "$ref": "#/pScheduler/Boolean" },
                 "burst-size": { "$ref": "#/pScheduler/Cardinal" },
+                "fq-rate":     { "$ref": "#/pScheduler/Cardinal" },
                 "window-size": { "$ref": "#/pScheduler/Cardinal" },
                 "mss":         { "$ref": "#/pScheduler/Cardinal" },
                 "buffer-length": { "$ref": "#/pScheduler/Cardinal" },
                 "ip-tos":        { "$ref": "#/pScheduler/IPTOS" },
                 "ip-version":    { "$ref": "#/pScheduler/ip-version" },
-                # This is deprecated by source-bind.
                 "local-address": { "$ref": "#/pScheduler/Host" },
                 "omit":          { "$ref": "#/pScheduler/Duration" },
                 "no-delay":    { "$ref": "#/pScheduler/Boolean" },
@@ -433,6 +425,22 @@ RESULT_SCHEMA = {
         }
     }
 
+LIMIT_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "schema":     { "$ref": "#/pScheduler/Cardinal" },
+        "bandwidth":  { "$ref": "#/pScheduler/Limit/SINumber" },
+        "duration":   { "$ref": "#/pScheduler/Limit/Duration" },
+        "udp":        { "$ref": "#/pScheduler/Limit/Boolean" },
+        "ip-version": { "$ref": "#/pScheduler/Limit/IPVersionList" },
+        "parallel":   { "$ref": "#/pScheduler/Limit/Cardinal"},
+        "source":     { "$ref": "#/pScheduler/Limit/IPCIDRList"},
+        "dest":       { "$ref": "#/pScheduler/Limit/IPCIDRList"},
+        "endpoint":   { "$ref": "#/pScheduler/Limit/IPCIDRList"}
+        },
+    "additionalProperties": False
+    }
+
 
 def spec_is_valid(input_json):
 
@@ -451,6 +459,10 @@ def spec_is_valid(input_json):
 
 def result_is_valid(input_json):
     return json_validate(input_json, RESULT_SCHEMA)
+
+
+def limit_is_valid(input_json):
+    return json_validate(input_json, LIMIT_SCHEMA)
 
 
 if __name__ == "__main__":

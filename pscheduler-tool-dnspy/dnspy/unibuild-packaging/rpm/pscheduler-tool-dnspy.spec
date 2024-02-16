@@ -21,8 +21,8 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 4.3.0
-Requires:	python-dns
-Requires:	python-pscheduler
+Requires:	%{_pscheduler_python_epel}-dns
+Requires:	%{_pscheduler_python}-pscheduler
 Requires:	pscheduler-test-dns
 
 BuildRequires:	pscheduler-rpm
@@ -40,7 +40,7 @@ DNS tool class for pScheduler
 
 %build
 make \
-     PYTHON=python \
+     PYTHON=%{_pscheduler_python} \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
 

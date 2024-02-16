@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-test-snmpget
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server
+ pscheduler-server, python3-jsontemplate
 Description: pScheduler snmp test
  SNMP test class for pScheduler

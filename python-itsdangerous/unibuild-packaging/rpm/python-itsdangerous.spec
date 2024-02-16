@@ -3,7 +3,7 @@
 #
 
 %define short	itsdangerous
-Name:		python-%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	1.1.0
 Release:	1%{?dist}
 Summary:	JSON Signature Module
@@ -19,10 +19,10 @@ URL:		https://palletsprojects.com/p/itsdangerous
 
 Source:		%{short}-%{version}.tar.gz
 
-Requires:	python
+Requires:	%{_pscheduler_python}
 
-BuildRequires:	python
-BuildRequires:	python-setuptools
+BuildRequires:	%{_pscheduler_python}
+BuildRequires:	%{_pscheduler_python}-setuptools
 
 
 %description
@@ -39,11 +39,11 @@ JSON signature module
 
 
 %build
-python setup.py build
+%{_pscheduler_python} setup.py build
 
 
 %install
-python setup.py install \
+%{_pscheduler_python} setup.py install \
     --root=$RPM_BUILD_ROOT \
     --single-version-externally-managed \
     -O1 \

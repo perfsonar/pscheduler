@@ -24,7 +24,7 @@ except KeyError:
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 4)
+    pscheduler.json_check_schema(spec, 1)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
@@ -38,17 +38,4 @@ except ValueError as ex:
 
 
 
-errors = []
-
-try:
-    protocol = spec['protocol']
-    if protocol != 'owamp':
-        errors.append(f'Protocol "{protocol}" is not supported.')
-except KeyError:
-    pass
-
-result = {"can-run": len(errors) == 0}
-if len(errors) > 0:
-    result["reasons"] = errors
-
-pscheduler.succeed_json(result)
+pscheduler.succeed_json({ "can-run": True })

@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-test-rtt
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server
+ pscheduler-server, python3-jsontemplate
 Description: pScheduler rtt test
  RTT test class for pScheduler

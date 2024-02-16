@@ -2,11 +2,16 @@
 # Validator for a pScheduler Test
 #
 
-# IMPORTANT:
 #
-# When making changes to the JSON schemas in this file, corresponding
-# changes MUST be made in 'spec-format' and 'result-format' to make
-# them capable of formatting the new specifications and results.
+# Development Order #3:
+#
+# This file determines the required and optional data types which are 
+# allowed to be in the test spec, result, and limit. This is used
+# for validation of these structures.
+#
+# Several existing datatypes are available for use at:
+# pscheduler/python-pscheduler/pscheduler/pscheduler/jsonval.py
+# 
 
 from pscheduler import json_validate
 

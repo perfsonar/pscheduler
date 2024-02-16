@@ -12,7 +12,7 @@ from iperf3_utils import *
 
 logger = pscheduler.Log(prefix='tool-iperf3', quiet=True)
 
-json = pscheduler.json_load(exit_on_error=True)['spec']
+json = pscheduler.json_load(exit_on_error=True)
 
 
 # Setup:  How long it takes to connect and set up the test

@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-test-s3throughput
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server
+ pscheduler-server, python3-jsontemplate, s3-benchmark
 Description: pScheduler S3 throughput test
  S3 throughput test class for pScheduler

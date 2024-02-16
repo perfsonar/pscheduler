@@ -1,6 +1,0 @@
-{
-    "source": "foo.example.org",
-    "source-node": "foo-ps.example.org",
-    "dest": "bar.example.org",
-    "timeout": "PT20S"
-}

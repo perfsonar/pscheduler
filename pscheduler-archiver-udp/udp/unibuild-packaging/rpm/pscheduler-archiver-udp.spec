@@ -21,11 +21,11 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.1.6.1
-Requires:	python-pscheduler >= 5.0.0
+Requires:	%{_pscheduler_python}-pscheduler >= 5.0.0
 
 BuildRequires:	pscheduler-rpm
-BuildRequires:  python
-BuildRequires:	python-nose
+BuildRequires:  %{_pscheduler_python}
+BuildRequires:	%{_pscheduler_python_epel}-nose
 
 %define directory %{_includedir}/make
 

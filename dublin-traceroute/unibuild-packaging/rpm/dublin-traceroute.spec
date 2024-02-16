@@ -28,7 +28,9 @@ Requires:	jsoncpp
 Requires:	openssl
 
 BuildRequires:  cmake
-BuildRequires:  gcc-c++ >= 4.9
+#TODO: They really want this; EL7 doesn't have it.
+#BuildRequires:  gcc-c++ >= 4.9
+BuildRequires:  gcc-c++
 BuildRequires:  libpcap-devel
 BuildRequires:  libtins-devel
 BuildRequires:  jsoncpp-devel

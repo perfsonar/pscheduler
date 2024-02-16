@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-context-changenothing
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server
+ pscheduler-server, python3-jsontemplate
 Description: Null context changer class for pScheduler
  This context changer does nothing.

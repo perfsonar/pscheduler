@@ -3,50 +3,55 @@
 #
 # Development Order #8:
 #
-# This will format a test result into something that is human readable.
+# This file is called when perfSonar goes to print the result, which
+# has been returned from the tool.
 #
-# To test this file, a spec is needed. You can generate one by pulling
-# a result out of the pScheduler API or modifying inputs/result-format
-# to suit your format.
-#
-# Invoke this program as follows:
-#
-#
-# ./result-format text/plain < inputs/result-format
-# ./result-format text/html < inputs/result-format
+# To test this file, a result is needed. A sample one has been provided
+# in this directory. Use the following syntax:
+# cat example-result.json | ./result-format text/plain
+# cat example-result.json | ./result-format text/html
 #
 
+import jsontemplate
 import pscheduler
+import sys
 
 from validate import result_is_valid
-from validate import MAX_SCHEMA
 
-# This is a Jinja2 template with the contents of the test
-# specification provided as variables.
-#
-# Input provided to the template will be the original test spec in
-# spec.* and the result to bef formatted in result.*.
-#
-# See the documentation for spec_result_method() in
-# python-pscheduler/pscheduler/pscheduler/text.py for a list of
-# variables and functions provided.
 
-TEMPLATE = '''
-{% if _mime_type == 'text/plain' %}
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
 
-Elapsed Time ... {{ unspec(result.time) }}
+input = pscheduler.json_load(exit_on_error=True)
 
-{% elif _mime_type == 'text/html' %}
+valid, message = result_is_valid(input["result"])
 
-<table>
-<tr><td>Elapsed Time</td><td>{{ unspec(result.time) }}</td></tr>
-</table>
+if not valid:
+    pscheduler.fail(message)
 
-{% else %}
+result = input["result"]
 
-{{ error('Unsupported MIME type "' + _mime_type + '"') }}
+# NOTE: For more-complex restult structures, the 'jsontemplate' module
+# used in the spec-format method might be a better choice than
+# print().
 
-{% endif %}
-'''
+if format == 'text/plain':
+    # Print results of the test here, in plaintext
+    print('Time: %s\n' % result['time'])
+   
+elif format == 'text/html':
+    # Print results of the test here, in html
+    print('<table>')
+    print('    <tr>')
+    print('        <th>Time</th>')
+    print('    </tr>')
+    print('    <tr>')
+    print('        <td>%s</td>' % result['time'])
+    print('    </tr>')
+    print('</table>')
 
-pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)
+
+else:
+   pscheduler.fail("Unsupported format '%s'" % format)

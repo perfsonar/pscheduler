@@ -12,65 +12,71 @@
 # cat example-result.json | ./result-format text/html
 #
 
+import jsontemplate
 import pscheduler
+import sys
 
 from validate import result_is_valid
-from validate import MAX_SCHEMA
 
-TEMPLATE = '''
 
-{% if _mime_type == 'text/plain' %}
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
 
-{% for ssid in result.ssid_list %}
-SSID {{ ssid.ssid }}:
+input = pscheduler.json_load(exit_on_error=True)
 
-  Address ..... {{ unspec(ssid.address) }}
-  Bitrates .... {% for rate in ssid.bitrates %}{{ siformat(rate) | replace(' ', '') }} {% endfor %}
-  Encrypted ... {{ unspec(ssid.encrypted) }}
-  Signal ...... {{ unspec(ssid.signal) }}
-  Frequency ... {{ unspec(ssid.frequency) }}
-  Channel ..... {{ unspec(ssid.channel) }}
-  Quality ..... {{ unspec(ssid.quality) }}
-  Mode ........ {{ unspec(ssid.mode) }}
-{% endfor %}
+valid, message = result_is_valid(input["result"])
 
-Elapsed Time ... {{ result.time }}
+if not valid:
+    pscheduler.fail(message)
 
-{% elif _mime_type == 'text/html' %}
+result = input["result"]
 
-<table>
-<tr>
-  <th>SSID</th>
-  <th>Address</th>
-  <th>Bitrates</th>
-  <th>Encrypted</th>
-  <th>Signal</th>
-  <th>Frequency</th>
-  <th>Channel</th>
-  <th>Quality</th>
-  <th>Mode</th>
-</tr>
-{% for ssid in result.ssid_list %}
-<tr>
-  <td>{{ ssid.ssid }}</td>
-  <td>{{ unspec(ssid.address) }}</td>
-  <td>{% for rate in ssid.bitrates %}{{ siformat(rate) | replace(' ', '') }} {% endfor %}</td>
-  <td>{{ unspec(ssid.encrypted) }}</td>
-  <td>{{ unspec(ssid.signal) }}</td>
-  <td>{{ unspec(ssid.frequency) }}</td>
-  <td>{{ unspec(ssid.channel) }}</td>
-  <td>{{ unspec(ssid.quality) }}</td>
-  <td>{{ unspec(ssid.mode) }}</td>
-</tr>
-{% endfor %}
-<tr><td colspan="9">Elapsed Time: {{ result.time }}</td></tr>
-</table>
+# NOTE: For more-complex restult structures, the 'jsontemplate' module
+# used in the spec-format method might be a better choice than
+# print().
 
-{% else %}
+if format == 'text/plain':
+    # Print results of the test here, in plaintext
+    print('Time: %s\n' % result['time'])
+    # Print ssid_list
+    print('BSSIDs:')
+    for entry in result['ssid_list']:
+        print("")
+        print(entry["ssid"] + ":")
+        print(f'   Signal: {entry["signal"]}')
+        print(f'   Address: {entry["address"]}') 
+        print(f'   Frequency: {entry["frequency"]}') 
+        print(f'   Quality: {entry["quality"]}')
+        print(f'   Bitrates: {entry["bitrates"]}')
+        print(f'   Encrypted: {entry["encrypted"]}')
+        print(f'   Channel: {entry["channel"]}')
+        print(f'   Mode: {entry["mode"]}') 
+        print("") 
+   
+elif format == 'text/html':
+    # Print results of the test here, in html
+    print('<table>')
+    print('    <tr>')
+    print('        <td><b>Time</b></td>')
+    print('        <td>%s</td>' % result['time'])
+    print('    </tr>')
+    print('    <tr>')
+    print('        <td colspan="2"><b>BSSIDs</b></td>')
+    print('   </tr>')
+    for entry in result['ssid_list']:
+        print(f'    <tr><td><b>SSID</b></td> <td>{entry["ssid"]}</td></tr>')
+        print(f'    <tr><td><b>Signal</b></td> <td>{entry["signal"]}</td></tr>') 
+        print(f'    <tr><td><b>Address</b></td> <td>{entry["address"]}</td></tr>')
+        print(f'    <tr><td><b>Frequency</b></td> <td>{entry["frequency"]}</td></tr>')
+        print(f'    <tr><td><b>Quality</b></td> <td>{entry["quality"]}</td></tr>')
+        print(f'    <tr><td><b>Bitrates</b></td> <td>{entry["bitrates"]}</td></tr>')
+        print(f'    <tr><td><b>Encrypted</b></td> <td>{entry["signal"]}</td></tr>')
+        print(f'    <tr><td><b>Channel</b></td> <td>{entry["channel"]}</td></tr>')
+        print(f'    <tr><td><b>Mode</b></td> <td>{entry["mode"]}</td></tr>')
+    print('</table>')
 
-{{ error('Unsupported MIME type "' + _mime_type + '"') }}
 
-{% endif %}
-'''
-
-pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)
+else:
+   pscheduler.fail("Unsupported format '%s'" % format)

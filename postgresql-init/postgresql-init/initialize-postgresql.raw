@@ -1,0 +1,54 @@
+#!/bin/sh -e
+#
+# Find the highest installed version of PostgreSQL and initialize it.
+#
+
+if [ $(id -u) -ne 0 ]
+then
+    echo "This program must be run as root." 1>&2
+    exit 1
+fi
+
+
+# These are wired in by the build process.
+PG_DATA_DIR="__PG_DATA_DIR__"
+PG_GROUP="__PG_GROUP__"
+PG_INITDB="__PG_INITDB__"
+PG_SERVICE="__PG_SERVICE__"
+PG_USER="__PG_USER__"
+PG_VERSION_FILE="__PG_VERSION_FILE__"
+
+
+if [ -e "${PG_VERSION_FILE}" ]
+then
+    exit 0
+fi
+
+
+TMPBASE="${TMP:-/tmp}/${WHOAMI}.$$"
+mkdir -p "${TMPBASE}"
+# The upgrade process runs as PG_USER and writes here.
+chown "${PG_USER}:${PG_GROUP}" "${TMPBASE}"
+
+cleanup()
+{
+    rm -rf ${TMPBASE}
+}
+
+trap cleanup EXIT
+
+
+# Initialize PostgreSQL
+
+systemctl stop "${PG_SERVICE}"
+
+echo "Initializing PostgreSQL."
+
+# TODO: Recreating the directory is really only necessary on EL7.
+rm -rf "${PG_DATA_DIR}"
+mkdir -p  "${PG_DATA_DIR}"
+chown -R "${PG_USER}:${PG_USER}" "${PG_DATA_DIR}"
+
+sh -c "${PG_INITDB}"
+
+systemctl start "${PG_SERVICE}"

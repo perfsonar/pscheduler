@@ -1,7 +1,0 @@
-{
-    "host": "foo",
-    "host-node": "ps-foo",
-    "interface": "eth0",
-    "schema": 1,
-    "timeout": "PT10S"
-}

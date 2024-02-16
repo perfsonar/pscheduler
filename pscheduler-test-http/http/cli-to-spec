@@ -77,7 +77,7 @@ opt_parser.add_option("--always-succeed",
                       dest="always_succeed")
 
 opt_parser.add_option("--keep-content",
-                      help="Amount of content to keep in bytes; default none, 0 for all, SI units supported",
+                      help="Amount of content to keep in bytes; default none, 0 for no limit, SI units supported",
                       type="string",
                       action="store",
                       dest="keep_content")

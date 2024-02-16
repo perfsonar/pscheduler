@@ -3,7 +3,7 @@
 #
 
 %define short	icmperror
-Name:		python-%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	0.1
 Release:	1%{?dist}
 Summary:	Functions for translating ICMP error codes to enumerated values
@@ -19,10 +19,10 @@ Url:		http://www.perfsonar.net
 
 Source0:	%{short}-%{version}.tar.gz
 
-Requires:	python
+Requires:	%{_pscheduler_python}
 
-BuildRequires:  python
-BuildRequires:	python-setuptools
+BuildRequires:  %{_pscheduler_python}
+BuildRequires:	%{_pscheduler_python}-setuptools
 
 
 %description
@@ -38,11 +38,11 @@ Functions for translating ICMP error codes to enumerated values
 
 
 %build
-python setup.py build
+%{_pscheduler_python} setup.py build
 
 
 %install
-python setup.py install \
+%{_pscheduler_python} setup.py install \
     --root=$RPM_BUILD_ROOT \
     -O1 \
     --record=INSTALLED_FILES

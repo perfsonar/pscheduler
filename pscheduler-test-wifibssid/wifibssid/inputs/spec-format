@@ -1,8 +1,0 @@
-{
-    "host": "foo.example.org",
-    "host-node": "foo-ps.example.org",
-    "duration": "PT15S",
-    "timeout": "PT20S",
-    "interface": "wlan0",
-    "ssid": "perfWireless"
-}

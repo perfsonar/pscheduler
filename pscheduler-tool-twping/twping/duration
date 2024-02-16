@@ -9,7 +9,7 @@ import pscheduler
 
 from twping_defaults import *
 
-json = pscheduler.json_load(exit_on_error=True)['spec']
+json = pscheduler.json_load(exit_on_error=True)
 
 interval = json.get('packet-interval', DEFAULT_PACKET_INTERVAL)
 count = json.get('packet-count', DEFAULT_PACKET_COUNT)

@@ -1,8 +1,0 @@
-{
-    "host": "foo",
-    "host-node": "foo-node",
-    "nameserver": "ns1.foo.org",
-    "record": "mx",
-    "query": "example.org",
-    "timeout": "PT10S"
-}

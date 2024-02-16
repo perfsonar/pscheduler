@@ -205,9 +205,6 @@ EMITTER = pscheduler.RFC7464Emitter(sys.stdout)
 for parsed in PARSER:
     try:
         EMITTER(archive(parsed))
-    except BrokenPipeError as ex:
-        log.warning("Broken pipe during archiving; parent must have exited.")
-        pscheduler.succeed()
     except Exception as ex:
         log.exception()
         EMITTER({

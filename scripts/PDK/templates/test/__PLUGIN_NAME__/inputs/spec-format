@@ -1,7 +1,0 @@
-{
-    "host": "foo.example.org",
-    "host-node": "foo-ps.example.org",
-    "timeout": "PT15S",
-    "duration": "PT10S",
-    "implementation": "system"
-}

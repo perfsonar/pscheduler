@@ -3,6 +3,7 @@
 # Format an snmpget result
 #
 
+import jsontemplate
 import pscheduler
 import sys
 from validate import result_is_valid

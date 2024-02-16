@@ -2,12 +2,6 @@
 # Validator for "snmpget" Test
 #
 
-# IMPORTANT:
-#
-# When making changes to the JSON schemas in this file, corresponding
-# changes MUST be made in 'spec-format' and 'result-format' to make
-# them capable of formatting the new specifications and results.
-
 from pscheduler import json_validate
 
 MAX_SCHEMA = 1
@@ -17,9 +11,9 @@ def spec_is_valid(json):
     # SNMPv1Spec is valid for both snmp v1 and v2c 
     schema = {
         "local": {
-            "VersionNumberPre3": {
+            "VersionNumber": {
                 "type": "string",
-                "enum": [ "1", "2c" ]
+                "enum": [ "1", "2c", "3"]
             },
             "AuthProtocol": {
                 "type": "string",
@@ -44,7 +38,7 @@ def spec_is_valid(json):
                     "host":         { "$ref": "#/pScheduler/Host" },
                     "host-node":    { "$ref": "#/pScheduler/Host" },
                     "dest":         { "$ref": "#/pScheduler/Host" },
-                    "version":      { "$ref": "#/local/VersionNumberPre3"},
+                    "version":      { "$ref": "#/local/VersionNumber"},
                     "_community":   { "$ref": "#/pScheduler/String"},
                     "period":       { "$ref": "#/pScheduler/Integer" },
                     "polls":        { "$ref": "#/pScheduler/Integer" },
@@ -72,7 +66,7 @@ def spec_is_valid(json):
                     "host":         { "$ref": "#/pScheduler/Host" },
                     "host-node":    { "$ref": "#/pScheduler/Host" },
                     "dest":         { "$ref": "#/pScheduler/Host" },
-                    "version":      { "type": "string", "enum": [ "3" ] },
+                    "version":      { "$ref": "#/local/VersionNumber"},
                     "period":       { "$ref": "#/pScheduler/Integer" },
                     "polls":        { "$ref": "#/pScheduler/Integer" },
                     "oid":          { "type": "array", 
@@ -130,4 +124,29 @@ def result_is_valid(json):
             "time",
             ]
         }
+    return json_validate(json, schema)
+
+def limit_is_valid(json):
+    schema = {
+        "type": "object",
+        "properties": {
+            "host":            { "$ref": "#/pScheduler/Limit/String" },
+            "host-node":       { "$ref": "#/pScheduler/Limit/String" },
+            "oid":             { "$ref": "#/pScheduler/Limit/String" },
+            "dest":            { "$ref": "#/pScheduler/Limit/String" },
+            "community":       { "$ref": "#/pScheduler/Limit/String" },
+            "version":         { "$ref": "#/pScheduler/Limit/String" },
+            "protocol":        { "$ref": "#/pScheduler/Limit/String" },
+            "timeout":         { "$ref": "#/pScheduler/Limit/Duration" },
+            "security-name":   { "$ref": "#/pScheduler/Limit/String" },
+            "auth-protocol":   { "$ref": "#/pScheduler/Limit/String" },
+            "priv-protocol":   { "$ref": "#/pScheduler/Limit/String" }, 
+            "auth-key":        { "$ref": "#/pScheduler/Limit/String" },
+            "priv-key":        { "$ref": "#/pScheduler/Limit/String" },
+            "security-level":  { "$ref": "#/pScheduler/Limit/String" },
+            "context":         { "$ref": "#/pScheduler/Limit/String" }
+        },
+        "additionalProperties": False
+        }
+
     return json_validate(json, schema)

@@ -12,27 +12,42 @@
 # cat example-result.json | ./result-format text/html
 #
 
+import jsontemplate
 import pscheduler
+import sys
 
 from validate import result_is_valid
-from validate import MAX_SCHEMA
 
-TEMPLATE = '''
-{% if _mime_type == 'text/plain' %}
 
-MTU ... {{ result.mtu }}
+try:
+   format = sys.argv[1]
+except IndexError:
+   format = 'text/plain'
 
-{% elif _mime_type == 'text/html' %}
+input = pscheduler.json_load(exit_on_error=True)
 
-<table>
-<tr><td>MTU</td><td>{{ result.mtu }}</td></tr>
-</table>
+valid, message = result_is_valid(input["result"])
 
-{% else %}
+if not valid:
+    pscheduler.fail(message)
 
-{{ error('Unsupported MIME type "' + _mime_type + '"') }}
+result = input["result"]
 
-{% endif %}
-'''
+if format == 'text/plain':
+    # Print results of the test here, in plaintext
+    print('MTU: %s\n' % result['mtu'])
+   
+elif format == 'text/html':
+    # Print results of the test here, in html
+    print('<table>')
+    print('    <tr>')
+    print('        <th>MTU</th>')
+    print('    </tr>')
+    print('    <tr>')
+    print('        <td>%s</td>' % result['mtu'])
+    print('    </tr>')
+    print('</table>')
 
-pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)
+
+else:
+   pscheduler.fail("Unsupported format '%s'" % format)
