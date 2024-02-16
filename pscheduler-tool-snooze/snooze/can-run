@@ -46,7 +46,7 @@ errors = []
 
 duration = pscheduler.iso8601_as_timedelta(spec['duration'])
 if duration is not None and duration > datetime.timedelta(seconds=60):
-    errors.append("Won't sleep for that longer than 60 seconds")
+    errors.append("Won't sleep for longer than 60 seconds")
 
 result = {
     "can-run": len(errors) == 0

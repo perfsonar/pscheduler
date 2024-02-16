@@ -33,12 +33,20 @@ except ValueError as ex:
         "reasons": [str(ex)]
     })
 
+errors = []
 
 if "ip-tos" in spec:
-    pscheduler.succeed_json({
-        "can-run": False,
-        "reasons": ["IP TOS is not supported"]
-    })
+    errors.append("IP TOS is not supported")
 
+protocol = spec.get('protocol', 'owamp')
+if protocol != 'owamp':
+    errors.append(f'Protocol {protocol} is not supported')
 
-pscheduler.succeed_json({ "can-run": True })
+result = {
+    "can-run": len(errors) == 0
+}
+
+if len(errors) > 0:
+    result["reasons"] = errors
+
+pscheduler.succeed_json(result)

@@ -310,7 +310,7 @@ CREATE OR REPLACE FUNCTION tool_can_run_test(
     tool_id BIGINT,
     test JSONB
 )
-RETURNS BOOLEAN
+RETURNS JSONB
 AS $$
 DECLARE
     tool_name TEXT;
@@ -331,16 +331,16 @@ BEGIN
     -- no dice.
     IF run_result.status <> 0 THEN
         RAISE WARNING 'Tool "%" failed can-run: %', tool_name, run_result.stderr;
-        RETURN FALSE;
+        RETURN '{ "can-run": false, "reasons": [ "Failed can-run; see system logs." ] }'::JSONB;
     END IF;
 
     result_json = text_to_jsonb(run_result.stdout);
     IF result_json IS NULL THEN
         RAISE WARNING 'Tool "%" returned invalid JSON "%"', tool_name, run_result.stdout;
-        RETURN FALSE;
+	RETURN '{ "can-run": false, "reasons": [ "Failed can-run; see system logs." ] }'::JSONB;
     END IF;
 
-    RETURN result_json #> '{can-run}';
+    RETURN result_json;
 
 END;
 $$ LANGUAGE plpgsql;
@@ -360,11 +360,13 @@ DO $$ BEGIN PERFORM drop_function_all('api_tools_for_test'); END $$;
 CREATE OR REPLACE FUNCTION api_tools_for_test(
     test_json JSONB
 )
-RETURNS JSON
+RETURNS TABLE (
+    can_run JSONB,
+    tool JSONB
+)
 AS $$
 DECLARE
     test_type TEXT;
-    return_json JSON;
 BEGIN
 
     test_type := test_json ->> 'type';
@@ -372,25 +374,22 @@ BEGIN
         RAISE EXCEPTION 'No test type found in JSON';
     END IF;
 
-    SELECT INTO return_json
-        array_to_json(array_agg(tools.tool_json))
-    FROM (
-        SELECT
-            tool.json AS tool_json
-        FROM
-	    test
-            JOIN tool_test ON tool_test.test = test.id
-	    JOIN tool ON tool.id = tool_test.tool
-        WHERE
-	    test.name = test_type
-            AND test.available
-            AND tool.available
-            AND tool_can_run_test( tool.id, test_json )
-        ORDER BY
-            tool.preference DESC,
-            tool.name ASC
-    ) tools;
+    RETURN QUERY
+    SELECT
+        tool_can_run_test( tool.id, test_json )::JSONB as can_run,
+        tool.json::JSONB AS tool
+    FROM
+        test
+        JOIN tool_test ON tool_test.test = test.id
+        JOIN tool ON tool.id = tool_test.tool
+    WHERE
+        test.name = test_type
+        AND test.available
+        AND tool.available
+    ORDER BY
+        tool.preference DESC,
+        tool.name ASC
+    ;
 
-    RETURN return_json;
 END;
 $$ LANGUAGE plpgsql;

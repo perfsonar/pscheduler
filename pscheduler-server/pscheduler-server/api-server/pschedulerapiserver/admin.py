@@ -28,7 +28,7 @@ def root():
 
 
 
-max_api = 5
+max_api = 6
 
 
 @application.route("/api", methods=['GET'])
@@ -41,10 +41,7 @@ def before_req():
     log.debug("REQUEST: %s %s", request.method, request.url)
 
     try:
-        version = arg_integer("api")
-        if version is None:
-            version = 1
-        if version > max_api:
+        if requested_api() > max_api:
             return not_implemented(
                 "No API above %s is supported" % (max_api))
     except ValueError as ex:
