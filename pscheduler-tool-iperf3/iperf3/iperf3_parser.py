@@ -129,6 +129,10 @@ def rename_json(obj):
  
 if __name__ == "__main__":
 
+    # The use of xx in the system_info strings below is to keep from
+    # mentioning Enterprise Linux, which we search for when phasing
+    # out old distros.
+
     # Test "regular" output
     test_output = """
 {
@@ -141,7 +145,7 @@ if __name__ == "__main__":
             "remote_port": 5201
         }],
         "version": "iperf 3.1.3",
-        "system_info": "Linux ps-test1 2.6.32-642.3.1.el6.x86_64 #1 SMP Tue Jul 12 18:30:56 UTC 2016 x86_64",
+        "system_info": "Linux ps-test1 2.6.32-642.3.1.xx6.x86_64 #1 SMP Tue Jul 12 18:30:56 UTC 2016 x86_64",
         "timestamp": {
             "time": "Tue, 16 Aug 2016 03:39:47 GMT",
             "timesecs": 1471318787
@@ -451,7 +455,7 @@ if __name__ == "__main__":
                        "remote_port":     5201
                    }],
                "version":         "iperf 3.1.3",
-               "system_info":     "Linux ps-test1 2.6.32-642.3.1.el6.x86_64 #1 SMP Tue Jul 12 18:30:56 UTC 2016 x86_64",
+               "system_info":     "Linux ps-test1 2.6.32-642.3.1.xx6.x86_64 #1 SMP Tue Jul 12 18:30:56 UTC 2016 x86_64",
                "timestamp":       {
                    "time":    "Tue, 16 Aug 2016 04:48:35 GMT",
                    "timesecs":        1471322915

@@ -3,78 +3,57 @@
 # Format a result
 #
 
-import html
-import json
-import jsontemplate
 import pscheduler
-import sys
 
 from validate import result_is_valid
 from validate import MAX_SCHEMA
 
-try:
-   format = sys.argv[1]
-except IndexError:
-   format = 'text/plain'
+TEMPLATE = '''
+{% if _mime_type == 'text/plain' %}
 
-input = pscheduler.json_load(exit_on_error=True, max_schema=MAX_SCHEMA)
+Response Time ... {{ unspec(result.time) }}
+Status Code ..... {{ unspec(result.status) }}
+{% if spec.parse is defined -%}
+String Found .... {{ result.found }}
+{%- endif -%}
+{% if result.headers is defined %}
+Headers:   (May be missing hyphens)
+{#- TODO: The hyphens get deleted from the keys. #}
+{%- for header in result.headers %}
+  {{ header }}: {{ result.headers[header] }}
+{%- endfor %}
+{%- endif %}
+{%- if result.content is defined %}
+Content:
+{{ result.content }}
+{%- endif -%}
 
-valid, message = result_is_valid(input["result"])
+{% elif _mime_type == 'text/html' %}
 
-if not valid:
-    pscheduler.fail(message)
+<table>
+<tr><td>Response Time</td><td>{{ unspec(result.time) }}</td></tr>
+<tr><td>Status Code</td><td>{{ unspec(result.status) }}</td></tr>
+{% if spec.parse is defined -%}
+<tr><td>String Found</td><td>{{ result.found }}</td></tr>
+{%- endif -%}
+{% if result.headers is defined %}
+<tr><td>Headers</td><td>(May be missing hyphens)<ul>
+{#- TODO: The hyphens get deleted from the keys. #}
+{%- for header in result.headers %}
+  <li>{{ header }}: {{ result.headers[header] }}</li>
+{%- endfor %}
+</ul></td></tr>
+{%- endif %}
+{%- if result.content is defined %}
+<tr><td>Content</td><td>{{ result.content | e }}</td></tr>
+{%- endif %}
+</table>
 
-result = input["result"]
-spec = input["spec"]
+{% else %}
 
-if format == 'text/plain':
+{{ error('Unsupported MIME type "' + _mime_type + '"') }}
 
-   print('Response Time: %s' % result['time'])
+{% endif %}
+'''
 
-   try:
-      print('Status Code: %s' % result['status']) 
-   except KeyError:
-      pass
-
-   try:
-      str = spec['parse']
-      print('String found: %s' % result['found'])
-   except KeyError:
-      pass
-
-   try:
-      print('Content: ', str(result['content']).encode('ascii', 'backslashreplace'))
-   except KeyError:
-      pass
-
-elif format == 'text/html':
-
-    print('<table>')
-    print('<tr>') 
-    print('<td>Response Time</td>')
-    print('<td>%s</td>' % result['time'])
-    print('</tr>')
-
-    try:
-       print('<tr><td>Status Code</td><td>%s</td></tr>' % result['status'])
-    except KeyError:
-       pass
-
-    if 'parse' in spec:
-        print('<tr>')
-        print('<td>String Found</td>')
-        print('<td>%s</td>' % result.get('found', False))
-        print('</tr>') 
-
-    try:
-       print('<tr>')
-       print('<td>Content</td>')
-       print('<td><pre>\n%s\n</pre>\n</td>' % html.escape(result['content']).encode('ascii', 'backslashreplace'))
-       print('</tr>') 
-    except KeyError:
-       pass
-
-    print('</table>')
-
-else:
-   pscheduler.fail("Unsupported format '%s'" % format)
+pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)

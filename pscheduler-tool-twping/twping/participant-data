@@ -53,7 +53,11 @@ try:
     participant = json['participant']
 except KeyError:
     pscheduler.fail("Missing participant")
-test_spec = json.get('test', {})
+
+try:
+    test_spec = json['test', 'spec']
+except KeyError:
+    test_spec = {}
 
 #determine role
 role = get_role(participant, test_spec)

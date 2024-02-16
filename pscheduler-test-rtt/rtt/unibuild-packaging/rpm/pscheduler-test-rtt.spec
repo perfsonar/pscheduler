@@ -21,12 +21,11 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	%{_pscheduler_python}-pscheduler >= 1.3
-Requires:	%{_pscheduler_python}-jsontemplate
+Requires:	python-pscheduler >= 1.3
 
 BuildRequires:	pscheduler-rpm
-BuildRequires:	%{_pscheduler_python}-pscheduler
-BuildRequires:  %{_pscheduler_python_epel}-nose
+BuildRequires:	python-pscheduler
+BuildRequires:  python-nose
 
 %description
 Round trip time test class for pScheduler
@@ -40,7 +39,7 @@ Round trip time test class for pScheduler
 
 %build
 make \
-     PYTHON=%{_pscheduler_python} \
+     PYTHON=python \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
 

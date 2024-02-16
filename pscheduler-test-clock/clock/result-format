@@ -3,71 +3,52 @@
 # Format a result
 #
 
-import jsontemplate
 import pscheduler
-import sys
 
 from validate import result_is_valid
+from validate import MAX_SCHEMA
 
+TEMPLATE = '''
+{%- macro dump_text(label, arg) -%}
+{{ label }}:
 
-try:
-   format = sys.argv[1]
-except IndexError:
-   format = 'text/plain'
+  Time ........... {{ unspec(arg.time) }}
+{%- if arg.synchronized %}
+  Synchronized ... {{ arg.source }}, {{ arg.reference }}
+  Offset ......... {{ arg.offset }}
+{%- endif -%}
+{%- endmacro -%}
 
-input = pscheduler.json_load(exit_on_error=True, max_schema=1)
+{%- macro dump_html(label, arg) -%}
+<tr><th colspan="2">{{ label }}</th></tr>
+<tr><td>Time</td><td>{{ unspec(arg.time) }}</td></tr>
+{%- if arg.synchronized %}
+<tr><td>Synchronized</td><td>{{ arg.source }}, {{ arg.reference }}</td></tr>
+<tr><td>Offset</td><td>{{ arg.offset }}</td></tr>
+{%- endif -%}
+{%- endmacro -%}
 
-valid, message = result_is_valid(input["result"])
+{% if _mime_type == 'text/plain' %}
 
-if not valid:
-    pscheduler.fail(message)
+{{ dump_text('Local', result.local) }}
 
-json = input["result"]
+{{ dump_text('Remote', result.remote) }}
 
+Difference ... {{ result.difference }}
 
-def dump_state(state, label, format):
+{% elif _mime_type == 'text/html' %}
+<table>
+  {{ dump_html('Local', result.local) }}
+  {{ dump_html('Remote', result.remote) }}
+  <tr><td colspan="2">&nbsp;</td></tr>
+  <tr><td>Difference</td><td>{{ result.difference }}</td></tr>
+</table>
 
-   if format == 'text/plain':
+{% else %}
 
-      print(label)
-      print("  Time ...........", state['time'])
-      if state['synchronized']:
-         print("  Synchronized ... %s, %s" % (
-            state['source'], state['reference']))
-         print("  Offset .........", state['offset'])
+{{ error('Unsupported MIME type "' + _mime_type + '"') }}
 
-   elif format == 'text/html':
+{% endif %}
+'''
 
-      print('<tr><th colspan="2">%s</td></tr>' % (label))
-      print("<tr><td>Time</td><td>%s</td></tr>" % (state['time']))
-      if state['synchronized']:
-         print("<tr><td>Synchronized</td><td>%s %s</td></tr>" \
-            % (state['source'], state['reference']))
-         print("<tr><td>Offset</td><td>%f</td></tr>" % (state['offset']))
-
-   else:
-      assert False, "This should never happen."
-
-if format == 'text/plain':
-   pass
-elif format == 'text/html':
-   print("<table>")
-else:
-   assert False, "This should never happen."
-
-
-dump_state(json['local'], "Local Host", format)
-print()
-dump_state(json['remote'], "Remote Host", format)
-if format == 'text/plain':
-   print()
-   print("Difference .......", json['difference'])
-elif format == 'text/html':
-   print('<tr><td colspan="2">&nbsp;</td></tr>')
-   print("<tr><td>Difference</td><td>%s</td></tr>" \
-      % (json['difference']))
-   print("</table>")
-else:
-   assert False, "This should never happen."
-
-pscheduler.succeed()
+pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)

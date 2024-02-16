@@ -21,7 +21,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 4.3.0
-Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
+Requires:	python-pscheduler >= 4.3.0
 Requires:	pscheduler-test-idle
 
 BuildRequires:	pscheduler-rpm

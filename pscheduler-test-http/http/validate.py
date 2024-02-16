@@ -2,6 +2,12 @@
 # Validator for "http" Test
 #
 
+# IMPORTANT:
+#
+# When making changes to the JSON schemas in this file, corresponding
+# changes MUST be made in 'spec-format' and 'result-format' to make
+# them capable of formatting the new specifications and results.
+
 # TODO: _ for sensitive values
 
 from pscheduler import json_validate
@@ -167,21 +173,3 @@ def result_is_valid(json):
     }
 
     return json_validate(json, temp_schema, max_schema=MAX_SCHEMA)
-
-
-
-def limit_is_valid(json):
-    schema = {
-        "type": "object",
-        "properties": {
-            "url":          { "$ref": "#/pScheduler/Limit/String" },
-            "host":            { "$ref": "#/pScheduler/Limit/String" },
-            "host-node":     { "$ref": "#/pScheduler/Limit/String" },
-            "timeout":         { "$ref": "#/pScheduler/Limit/Duration" },
-            "parse":           { "$ref": "#/pScheduler/Limit/String" },
-            "always-succeed":  { "$ref": "#/pScheduler/Boolean" },
-        },
-        "additionalProperties": False
-    }
-
-    return json_validate(json, schema)

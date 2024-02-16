@@ -68,6 +68,11 @@ opt_parser.add_option("--dest-node",
                       action="store", type="string",
                       dest="dest_node")
 
+opt_parser.add_option("--protocol",
+                      help="The protocol to use in making the measurement",
+                      action="store", type="str",
+                      dest="protocol")
+
 opt_parser.add_option("-c", "--packet-count",
                       help="The number of packets to send",
                       action="store", type="int",
@@ -111,7 +116,7 @@ opt_parser.add_option("-b", "--bucket-width",
                       help="The bin size to use for histogram calculations. This value is divided into the result as reported in seconds and truncated to the nearest 2 decimal places.",
                       action="store", type="float",
                       dest="bucket_width")
-                          
+
 opt_parser.add_option("-f", "--flip",
                       help="In multi-participant mode, have the dest start the client and request a reverse test. Useful in some firewall and NAT environments.",
                       action="store_true", dest="flip", default=False)
@@ -127,7 +132,7 @@ opt_parser.add_option("--traverse-nat",
 opt_parser.add_option("-R", "--output-raw",
                       help="Output individual packet statistics. This will substantially increase the size of a successful result.",
                       action="store_true", dest="output_raw", default=False)
-                      
+
 (options, remaining_args) = opt_parser.parse_args(args)
 
 if len(remaining_args) != 0:
@@ -143,7 +148,7 @@ if options.source is not None:
 
 if options.source_node is not None:
    result['source-node'] = options.source_node
-  
+
 if options.dest is not None:
    result['dest'] = options.dest
 
@@ -153,9 +158,13 @@ if options.dest_node is not None:
 if options.packet_count is not None:
    result['packet-count'] = options.packet_count
 
+if options.protocol is not None:
+   result['protocol'] = options.protocol
+   spec_schema.set(4)
+
 if options.packet_interval is not None:
    result['packet-interval'] = options.packet_interval
-  
+
 if options.packet_timeout is not None:
    result['packet-timeout'] = options.packet_timeout
 

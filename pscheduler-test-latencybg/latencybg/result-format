@@ -6,6 +6,7 @@
 import pscheduler
 import sys
 import math
+from validate import result_max_schema
 from validate import result_is_valid
 
 '''
@@ -147,7 +148,7 @@ if format != 'text/plain':
     pscheduler.fail("Unsupported format '%s'" % format)
 
 #parse JSON input
-input = pscheduler.json_load(exit_on_error=True, max_schema=1)
+input = pscheduler.json_load(exit_on_error=True, max_schema=result_max_schema())
 
 #validate against JSON schema file
 if "result" not in input:

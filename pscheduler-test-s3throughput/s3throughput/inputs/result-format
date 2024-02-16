@@ -1,0 +1,11 @@
+{
+    "result": {
+	"schema": 1,
+	"succeeded": true,
+	"loops": "{ }",
+	"average_put_time": 0.123,
+	"average_get_time": 0.456,
+	"average_delete_time": 0.789,
+	"time": "PT25.3S"
+    }
+}

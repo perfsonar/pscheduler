@@ -2,9 +2,15 @@
 # Validator for "simplestream" Test
 #
 
+# IMPORTANT:
+#
+# When making changes to the JSON schemas in this file, corresponding
+# changes MUST be made in 'spec-format' and 'result-format' to make
+# them capable of formatting the new specifications and results.
+
 from pscheduler import json_validate
 
-MAX_SCHEMA = 2
+MAX_SCHEMA = 3
 
 def spec_is_valid(json):
     SPEC_SCHEMA = {
@@ -44,7 +50,26 @@ def spec_is_valid(json):
                 "required": [
                     "schema", "dest"
                 ]
-            }
+            },
+            "v3" : {
+                "type": "object",
+                "properties": {
+                    "schema":         {" type": "integer", "enum": [ 3 ] },
+                    "dawdle":         { "$ref": "#/pScheduler/Duration" },
+                    "fail":           { "$ref": "#/pScheduler/Probability" },
+                    "ip-version":     { "$ref": "#/pScheduler/ip-version" },
+                    "dest":           { "$ref": "#/pScheduler/Host" },
+                    "dest-node":      { "$ref": "#/pScheduler/URLHostPort" },
+                    "port":           { "$ref": "#/pScheduler/IPPort" },
+                    "source":         { "$ref": "#/pScheduler/Host" },
+                    "source-node":    { "$ref": "#/pScheduler/URLHostPort" },
+                    "test-material":  { "$ref": "#/pScheduler/String" },
+                    "timeout":        { "$ref": "#/pScheduler/Duration" },
+                },
+                "required": [
+                    "schema", "dest"
+                ]
+            },
         }
     }
 
@@ -83,22 +108,4 @@ def result_is_valid(json):
             "succeeded",
             ]
         }
-    return json_validate(json, schema)
-
-
-def limit_is_valid(json):
-    schema = {
-        "type": "object",
-        "properties": {
-        "schema": { "$ref": "#/pScheduler/Cardinal" },
-            "dawdle":        { "$ref": "#/pScheduler/Limit/Duration" },
-            "fail":          { "$ref": "#/pScheduler/Limit/Probability" },
-            "dest":          { "$ref": "#/pScheduler/Limit/String" },
-            "ip-version":    { "$ref": "#/pScheduler/Limit/IPVersion" },
-            "test-material": { "$ref": "#/pScheduler/Limit/String" },
-            "timeout":       { "$ref": "#/pScheduler/Limit/Duration" }
-        },
-        "additionalProperties": False
-    }
-
     return json_validate(json, schema)

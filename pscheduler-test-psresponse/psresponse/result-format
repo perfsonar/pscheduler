@@ -3,54 +3,37 @@
 # Format a result
 #
 
-import html
-import json
-import jsontemplate
+#!/usr/bin/env python3
+#
+# Format a result
+#
+
 import pscheduler
-import sys
 
 from validate import result_is_valid
 from validate import MAX_SCHEMA
 
-try:
-   format = sys.argv[1]
-except IndexError:
-   format = 'text/plain'
+TEMPLATE = '''
+{% if _mime_type == 'text/plain' %}
 
-input = pscheduler.json_load(exit_on_error=True, max_schema=MAX_SCHEMA)
+Time ..... {{ unspec(result.time) }}
+{% if result.reason is defined -%}
+Reason ... {{ unspec(result.reason) }}
+{% endif -%}
 
-valid, message = result_is_valid(input["result"])
+{% elif _mime_type == 'text/html' %}
+<table>
+  <tr><td>Time</td><td>{{ unspec(result.time) }}</td></tr>
+{% if result.reason is defined -%}
+  <tr><td>Reason</td><td>{{ unspec(result.reason) }}</td></tr>
+{% endif -%}
+</table>
 
-if not valid:
-    pscheduler.fail(message)
+{% else %}
 
-result = input["result"]
-spec = input["spec"]
-response_time = result['time'] or "Not Measured"
+{{ error('Unsupported MIME type "' + _mime_type + '"') }}
 
-if format == 'text/plain':
+{% endif %}
+'''
 
-   print('Response Time: %s' % response_time)
-
-   try:
-      print('Reason: %s' % result['reason']) 
-   except KeyError:
-      pass
-
-elif format == 'text/html':
-
-    print('<table>')
-    print('<tr>') 
-    print('<td>Response Time</td>')
-    print('<td>%s</td>' % response_time)
-    print('</tr>')
-    if "reason" in result:
-        print('<tr>')
-        print('<td>Reason</td>')
-        print('<td>%s</td>' % result['reason'])
-        print('</tr>')
-
-    print('</table>')
-
-else:
-   pscheduler.fail("Unsupported format '%s'" % format)
+pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)

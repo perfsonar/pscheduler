@@ -22,11 +22,11 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 4.3.0
 Requires:	pscheduler-account
-Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
+Requires:	python-pscheduler >= 4.3.0
 Requires:	pscheduler-test-trace
 Requires:	paris-traceroute
 Requires:	sudo
-Requires:	%{_pscheduler_python}-icmperror
+Requires:	python-icmperror
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm

@@ -605,7 +605,7 @@ BEGIN
 	IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND NEW.json <> OLD.json)
         THEN
 	    run_result := pscheduler_plugin_invoke('tool', tool_type, 'duration',
-		          NEW.json #>> '{test, spec}' );
+		          NEW.json #>> '{test}' );
 	    IF run_result.status <> 0 THEN
 	        RAISE EXCEPTION 'Unable to determine duration of test: %', run_result.stderr;
 	    END IF;

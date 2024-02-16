@@ -12,6 +12,8 @@ running several tests to verify that the basic features of the system
 are working.
 """
 
+import babel.dates
+import datetime
 import optparse
 import os
 import re
@@ -30,7 +32,8 @@ pscheduler.set_graceful_exit()
 #
 
 class VerbatimParser(optparse.OptionParser):
-    return self.epilog
+    def format_epilog(self, formatter):
+        return self.epilog
 
 opt_parser = VerbatimParser(
     usage="Usage: %prog [ OPTIONS ] host",
@@ -262,6 +265,21 @@ def check_service_status(api):
         else:
             failed(limit_status.get("error", "Unspecified error"))
 
+    # Look at the schedule
+    if "runs" in status:
+        for check in [
+                ('last-scheduled', '  Last run scheduled'),
+                ('last-finished', '  Last run completed')
+                ]:
+            item, label = check
+            start(label)
+            last = status['runs'].get(item)
+            if last is None:
+                ok('Never')
+            else:
+                last_delta = pscheduler.iso8601_as_datetime(last) \
+                - pscheduler.time_now()
+                ok(babel.dates.format_timedelta(last_delta, add_direction=True))
 
 
 def dump_stats(host):
@@ -457,6 +475,13 @@ for host in hosts:
     print("%s:" % (host))
     print()
 
+
+    start("  Checking name resolution")
+    resolved = pscheduler.dns_resolve(host, ip_version=options.ip_version)
+    if resolved is not None:
+       ok(resolved)
+    else:
+        failed("Host '%s' is unresolvable or timed out" % (host))
 
     if not options.quick and not options.skip_single:
         check_mtu(host)

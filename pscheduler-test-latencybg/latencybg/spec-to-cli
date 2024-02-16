@@ -3,11 +3,13 @@
 # Convert a test specification to command-line options
 
 import pscheduler
-import jsonschema
-from validate import spec_is_valid, REQUEST_SCHEMA
+
+from validate import spec_is_valid
+from validate import spec_max_schema
+from validate import SPEC_SCHEMA
 
 #load spec JSON
-spec = pscheduler.json_load(exit_on_error=True, max_schema=1)
+spec = pscheduler.json_load(exit_on_error=True, max_schema=spec_max_schema())
 if not isinstance(spec, dict):
     pscheduler.fail("Invalid JSON for this operation")
 
@@ -17,8 +19,12 @@ if not valid:
     pscheduler.fail(message)
 
 #get properties from schema
-schema_props = REQUEST_SCHEMA.get('properties', {})
-if not schema_props:
+spec_version = spec.get('schema', 1)
+try:
+    # It's safe to assume that the schema version is valid because it
+    # passed validation above.
+    schema_props = SPEC_SCHEMA['versions'][str(spec_version)]['properties']
+except KeyError:
     pscheduler.fail("Error retrieving schema properties")
 
 #build command-line from schema

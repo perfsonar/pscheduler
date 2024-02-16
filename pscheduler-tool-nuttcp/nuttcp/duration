@@ -11,7 +11,7 @@ from nuttcp_defaults import *
 
 logger = pscheduler.Log(prefix='tool-nuttcp', quiet=True)
 
-json = pscheduler.json_load(exit_on_error=True)
+json = pscheduler.json_load(exit_on_error=True)['spec']
 
 duration = json.get('duration', None)
 if duration:

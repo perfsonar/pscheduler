@@ -3,7 +3,7 @@
 #
 
 %define short	pysnmp
-Name:		%{_pscheduler_python}-%{short}
+Name:		python-%{short}
 Version:	4.4.12
 Release:	1%{?dist}
 Summary:	Python library for SNMP
@@ -19,11 +19,11 @@ Prefix:		%{_prefix}
 
 Source:		%{short}-%{version}.tar.gz
 
-Requires:	%{_pscheduler_python}
-Requires:	%{_pscheduler_python}-pyasn1 >= 0.3.7
+Requires:	python
+Requires:	python-pyasn1 >= 0.3.7
 
-BuildRequires:  %{_pscheduler_python}
-BuildRequires:	%{_pscheduler_python}-setuptools
+BuildRequires:  python
+BuildRequires:	python-setuptools
 
 
 %description 
@@ -39,11 +39,11 @@ Python library for SNMP
 
 
 %build
-%{_pscheduler_python} setup.py build
+python setup.py build
 
 
 %install
-%{_pscheduler_python} setup.py install \
+python setup.py install \
     --root=$RPM_BUILD_ROOT \
     --record=INSTALLED_FILES \
     -O1

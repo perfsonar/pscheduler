@@ -2,17 +2,15 @@
 # Validator for a pScheduler test and its result.
 #
 
+# IMPORTANT:
 #
-# Development Order #3: Test specification and result validation
-#
-# The functions in this file determine whether or not specifications
-# and results for this test are valid.
-#
-
+# When making changes to the JSON schemas in this file, corresponding
+# changes MUST be made in 'spec-format' and 'result-format' to make
+# them capable of formatting the new specifications and results.
 
 from pscheduler import json_validate_from_standard_template
 
-
+MAX_SCHEMA = 1
 
 #
 # Test Specification
@@ -124,7 +122,7 @@ RESULT_SCHEMA = {
             "properties": {
                 "schema":           { "type": "integer", "enum": [ 1 ] },
                 "succeeded":        { "$ref": "#/pScheduler/Boolean" },
-                "Authenticated":    { "$ref": "#/pScheduler/Boolean" },
+                "authenticated":    { "$ref": "#/pScheduler/Boolean" },
                 "time":             { "$ref": "#/pScheduler/Duration" },
             },
             "required": [
