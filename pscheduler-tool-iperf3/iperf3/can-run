@@ -45,11 +45,11 @@ except ValueError as ex:
 errors = []
 
 supported_options = ["schema",
-                     "source", "source-bind", "source-node",
-                     "dest", "dest-bind", "dest-node",
+                     "source", "source-node",
+                     "dest", "dest-node",
                      "reverse", "omit", "single-ended", "single-ended-port",
                      "duration", "interval", "link-rtt", "parallel", "window-size",
-                     "mss", "bandwidth", "udp", "buffer-length",
+                     "mss", "bandwidth", "udp", "buffer-length", "fq-rate",
                      "ip-tos", "local-address", "ip-version", "congestion",
                      "zero-copy", "flow-label", "client-cpu-affinity",
                      "server-cpu-affinity", "loopback"
@@ -58,7 +58,13 @@ supported_options = ["schema",
 for option in spec:
     if option not in supported_options:
         logger.debug("iperf3 unsupported option %s" % option)
-        errors.append('iperf3 does not support %s option' % option)    
+        errors.append('iperf3 does not support %s option' % option)
+
+
+if 'bandwidth' in spec and 'fq-rate' in spec:
+    errors.append('Cannot have bandwidth and fq-rate set simultaneously.')
+
+
 
 logger.debug("can-run succeeded")
 
