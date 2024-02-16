@@ -60,13 +60,11 @@ supported_options = ["schema",
 
 for option in spec:
     if option not in supported_options:
-        logger.debug("iperf2 unsupported option %s" % option)
-        errors.append('iperf2 does not support %s option' % option)    
-
+        errors.append(f'''Option '{option}' is not supported.''')
 
 # bandwidth only supported in udp mode
 if "bandwidth" in spec and "udp" not in spec:
-    errors.append('iperf2 does not support specifying bandwidth on non-udp tests')
+    errors.append('Cannot set bandwidth on non-udp tests')
 
 logger.debug("can-run succeeded")
 

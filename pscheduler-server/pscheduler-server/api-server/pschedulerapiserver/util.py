@@ -8,10 +8,29 @@ import uuid
 
 from flask import request
 
+from .args import *
 from .dbcursor import *
 from .log import log
 from .response import *
 
+
+
+#
+# API
+#
+
+def requested_api():
+    """
+    Get the requested API, raising a ValueError if it's not valid
+    """
+
+    try:
+        api = arg_integer("api")
+    except ValueError as ex:
+        raise ValueError(f'Invalid API value {arg_string("api")}: {str(ex)}')
+    if api is None:
+        api = 1
+    return api
 
 
 #
