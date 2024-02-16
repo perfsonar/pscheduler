@@ -63,7 +63,11 @@ def pick_tool(lists, pick_from=None):
 
         for position in range(len(tool_list)):
 
-            tool = tool_list[position]['name']
+            # All we care about is tools that can run the test
+            if not tool_list[position]['can-run']['can-run']:
+                continue
+
+            tool = tool_list[position]['tool']['name']
 
             try:
                 count[tool] += 1
@@ -399,38 +403,52 @@ def tasks():
 
                 # Make sure the other participants are running pScheduler
 
-                participant_api = pscheduler.api_url_hostport(participant)
+                participant_api_root = pscheduler.api_url_hostport(participant)
 
-                log.debug("Pinging %s" % (participant))
-                status, result = pscheduler.url_get(
-                    participant_api, throw=False, timeout=10,
+                log.debug("Getting API from %s" % (participant))
+                status, participant_api = pscheduler.url_get(
+                    f'{participant_api_root}/api', throw=False, timeout=10,
                     bind=lead_bind)
 
                 if status == 400:
-                    raise TaskPostingException(result)
+                    raise TaskPostingException(participant_api)
                 elif status in [ 202, 204, 205, 206, 207, 208, 226,
                                  300, 301, 302, 303, 304, 205, 306, 307, 308 ] \
                     or ( (status >= 400) and (status <=499) ):
                     raise TaskPostingException("Host is not running pScheduler")
                 elif status != 200:
                     raise TaskPostingException("returned status %d: %s"
-                                               % (status, result))
+                                               % (status, participant_api))
 
+                if not isinstance(participant_api, int):
+                    raise TaskPostingException(f'{participant} returned bad API value {participant_api}')
+                tool_params['api'] = participant_api
 
                 # TODO: This will fail with a very large test spec.
                 status, result = pscheduler.url_get(
-                    "%s/tools" % (participant_api),
+                    "%s/tools" % (participant_api_root),
                     params=tool_params,
                     throw=False,
                     bind=lead_bind
                     )
                 if status != 200:
                     raise TaskPostingException("%d: %s" % (status, result))
-                tools.append(result)
             except TaskPostingException as ex:
                 return error("Error getting tools from %s: %s" \
                                      % (participant, str(ex)))
-            log.debug("Participant %s offers tools %s", participant, result)
+            log.debug(f'Participant {participant} (API {participant_api}) offers tools {result}')
+
+            # If the participant's API is before 6, turn what came
+            # back into something comparable.
+
+            if result is not None and participant_api < 6:
+                result = [ {
+                    "can-run": { "can-run": True },
+                    "tool": tool
+                } for tool in result ]
+
+            tools.append(result)
+
             tool_offers[participant] = result
 
         if len(tools) != nparticipants:
@@ -446,22 +464,37 @@ def tasks():
         if tool is None:
 
             offers = []
+            
             for participant in participants:
-                participant_offers = tool_offers.get(participant, [{"name": "nothing"}])
-                if participant_offers is not None:
-                    offer_set = [ offer["name"] for offer in participant_offers ]
+
+                offer_set = tool_offers.get(participant)                
+                if offer_set is None:
+                    offers.append(
+                        f'{participant}:\n\n  Offered nothing.'
+                        f'{ "  (System is running older software.)" if participant_api < 6 else ""}'
+                    )
+                    continue
+
+                offer_list = '\n    '.join([
+                    offer['tool']['name']
+                    for offer in offer_set if offer['can-run']['can-run']
+                ])
+                offered = f'  Offered:\n    {offer_list}'
+
+                declined_list = [ offer for offer in offer_set if not offer['can-run']['can-run'] ]
+                if declined_list:
+                    declined = '\n  Declined:\n'
+                    for decline in declined_list:
+                        declined += f'''    {decline['tool']['name']}:\n'''
+                        for reason in decline['can-run'].get('reasons', []):
+                            declined += f'''      - {reason}\n'''
                 else:
-                    offer_set = [ "nothing" ]
-                offers.append("%s offered %s" % (
-                    participant,
-                    ", ".join(offer_set)
-                ))
+                    declined = ''
 
-            return no_can_do(
-                "No tool in common among the participants can support the task's test"
-                " and/or its parameters:  %s." % (";  ".join(offers))
-            )
+                offers.append(f'{participant}:\n\n{offered}{declined}')
 
+            joined = '\n'.join(offers)
+            return no_can_do(f'None of the participants could run this test:\n\n{joined}')
 
         task['tool'] = tool
 
