@@ -45,12 +45,14 @@ errors = []
 
 
 # This tool has a (forced) quirk that makes it not sleep for less than
-# 30 seconds.
+# 30 seconds or more than one hour.
 
 duration = pscheduler.iso8601_as_timedelta(spec['duration'])
 if duration is not None:
     if duration < datetime.timedelta(seconds=15):
         errors.append("Won't sleep for less than 15 seconds.")
+    if duration > datetime.timedelta(hours=1):
+        errors.append("Won't sleep for more than one hour.")
 
 
 result = {
