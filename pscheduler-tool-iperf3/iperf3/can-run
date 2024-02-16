@@ -61,8 +61,9 @@ for option in spec:
         errors.append('iperf3 does not support %s option' % option)
 
 
-# TODO: We should really reject having bandwidth and fq-rate set here
-# instead of at runtime once #384 is completed.
+if 'bandwidth' in spec and 'fq-rate' in spec:
+    errors.append('Cannot have bandwidth and fq-rate set simultaneously.')
+
 
 
 logger.debug("can-run succeeded")
