@@ -1,0 +1,23 @@
+{
+    "schema": 3,
+    "source": "foo.example.org",
+    "source-node": "foo-ps.example.org",
+    "dest": "bar.example.org",
+    "dest-node": "bar-ps.example.org",
+    "packet-count": 400,
+    "packet-interval": 0.1,
+    "packet-timeout": 5,
+    "packet-padding": 234,
+    "ctrl-port": 9999,
+    "data-ports": {
+	"lower": 9000,
+	"upper": 9010
+    },
+    "ip-tos": 55,
+    "ip-version": 6,
+    "bucket-width": 0.5,
+    "output-raw": false,
+    "flip": true,
+    "reverse": false,
+    "traverse-nat": true
+}

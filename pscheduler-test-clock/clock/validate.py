@@ -2,9 +2,15 @@
 # Validator for "trace" Test
 #
 
+# IMPORTANT:
+#
+# When making changes to the JSON schemas in this file, corresponding
+# changes MUST be made in 'spec-format' and 'result-format' to make
+# them capable of formatting the new specifications and results.
+
 from pscheduler import json_validate, json_validate_from_standard_template
 
-MAX_SCHEMA = 1
+MAX_SCHEMA = 2
 
 def spec_is_valid(json):
     schema = {
@@ -59,19 +65,3 @@ def result_is_valid(json):
             ]
         }
     return json_validate(json, schema)
-
-
-def limit_is_valid(json):
-    schema = {
-        "type": "object",
-        "properties": {
-            "schema": { "$ref": "#/pScheduler/Cardinal" },
-            "dest":              { "$ref": "#/pScheduler/Limit/String" },
-            "source":            { "$ref": "#/pScheduler/Limit/String" },
-            "source-node":       { "$ref": "#/pScheduler/Limit/String" },
-            "timeout":           { "$ref": "#/pScheduler/Limit/Duration" }
-        },
-        "additionalProperties": False
-        }
-
-    return json_validate(json, schema, max_schema=MAX_SCHEMA)

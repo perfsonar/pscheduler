@@ -18,6 +18,10 @@ override_dh_auto_build:
 	cython3 $(INCLUDE_FLAGS) _pyjq.pyx
 	dh_auto_build
 
+# Needed for our old reprepro to recognise the archives (U22 uses Zstandard)
+override_dh_builddeb:
+	dh_builddeb -- -Zxz
+
 # Ubuntu dbgsym.ddeb are currently not supported by reprepro
 override_dh_strip:
 	dh_strip --no-automatic-dbgsym

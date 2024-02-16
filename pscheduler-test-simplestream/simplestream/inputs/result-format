@@ -1,0 +1,10 @@
+{
+  "result": {
+    "dawdled": "P0D",
+    "elapsed-time": "PT2.797024S",
+    "received": "Data sent at 2024-02-04 16:52:06.000641",
+    "schema": 1,
+    "sent": "Data sent at 2024-02-04 16:52:06.000641",
+    "succeeded": true
+  }
+}

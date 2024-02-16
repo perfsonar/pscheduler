@@ -1,0 +1,20 @@
+{
+    "host": "foo.example.org",
+    "host-node": "foo-ps.example.org",
+    "dest": "bar.example.org",
+    "version": "3",
+    "period": 5,
+    "polls": 4,
+    "oid": [ "1.2.3.4", "5.6.7.8", "9.10.11.12" ],
+    "protocol": "udp",
+    "timeout": "PT20S",
+    "security-name": "Bob",
+    "auth-protocol": "SHA",
+    "_auth-key": "mumble",
+    "_priv-key": "mumblemumble",
+    "security-level": "authPriv",
+    "priv-protocol": "AES256",
+    "context": "Blorp",
+    "vartype": "foo",
+    "varvalue": "bar"
+}

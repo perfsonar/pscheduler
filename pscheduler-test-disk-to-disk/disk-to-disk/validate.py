@@ -2,16 +2,11 @@
 # Validator for "disk-to-disk" Test
 #
 
+# IMPORTANT:
 #
-# Development Order #3:
-#
-# This file determines the required and optional data types which are 
-# allowed to be in the test spec, result, and limit. This is used
-# for validation of these structures.
-#
-# Several existing datatypes are available for use at:
-# pscheduler/python-pscheduler/pscheduler/pscheduler/jsonval.py
-# 
+# When making changes to the JSON schemas in this file, corresponding
+# changes MUST be made in 'spec-format' and 'result-format' to make
+# them capable of formatting the new specifications and results.
 
 from pscheduler import json_validate
 
@@ -24,16 +19,11 @@ def spec_is_valid(json):
                 "properties": {
                     "schema":       { "$ref": "#/pScheduler/Cardinal" },
                     "parallel":     { "$ref": "#/pScheduler/Cardinal" },
-
                     "host":         { "$ref": "#/pScheduler/Host"     },
-
                     "dest":         { "$ref": "#/pScheduler/String"   },
                     "source":       { "$ref": "#/pScheduler/String"   },
-                    
-                    "timeout":      { "$ref": "#/pScheduler/Duration" }, 
-                    "min-bandwith": { "$ref": "#/pScheduler/Cardinal" },
-                    
-                    "max-size":     { "$ref": "#/pScheduler/Cardinal" },
+                    "duration":     { "$ref": "#/pScheduler/Duration" },
+                    "timeout":      { "$ref": "#/pScheduler/Duration" },
                     "cleanup":      { "$ref": "#/pScheduler/Boolean"  },
                 },
                 # If listed here, data of this type MUST be in the test spec
@@ -64,18 +54,4 @@ def result_is_valid(json):
             "time"
             ]
         }
-    return json_validate(json, schema)
-
-def limit_is_valid(json):
-    schema = {
-        "type": "object",
-        "properties": {
-            "host":            { "$ref": "#/pScheduler/Limit/String" },
-            "host-node":       { "$ref": "#/pScheduler/Limit/String" },
-            "testtype":        { "$ref": "#/local/Type" },
-            "timeout":         { "$ref": "#/pScheduler/Limit/Duration" },
-        },
-        "additionalProperties": False
-        }
-
     return json_validate(json, schema)

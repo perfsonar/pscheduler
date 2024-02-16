@@ -27,15 +27,12 @@ Provides:	%{name} = %{version}-%{release}
 
 # Include all required libraries here
 Requires:	pscheduler-server
-Requires:	%{_pscheduler_python}-pscheduler
-%if 0%{?el7}
-Requires:	dhclient
-%endif
-%if 0%{?el8}
-Requires:	dhcp-client
+Requires:	python-pscheduler
+
+# TODO: Why is there a discrepancy between dhcp-client and dhclient here?
+
 # Needed so the sudoers file can be built
 BuildRequires:	dhcp-client
-%endif
 
 BuildRequires:	pscheduler-rpm
 BuildRequires: dhclient
@@ -52,7 +49,7 @@ dhclient tool class for pScheduler
 
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
-     PYTHON=%{_pscheduler_python} \
+     PYTHON=python \
      install
 
 # Enable sudo for dhclient

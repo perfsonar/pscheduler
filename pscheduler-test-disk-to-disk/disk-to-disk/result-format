@@ -12,53 +12,31 @@
 # cat example-result.json | ./result-format text/html
 #
 
-import jsontemplate
 import pscheduler
-import sys
 
 from validate import result_is_valid
+from validate import MAX_SCHEMA
 
 
-try:
-   format = sys.argv[1]
-except IndexError:
-   format = 'text/plain'
+TEMPLATE = '''
+{% if _mime_type == 'text/plain' %}
 
-input = pscheduler.json_load(exit_on_error=True)
+Duration ......... {{ result.time }}
+Sent ............. {{ siformat(result.bytessent) }}B
+Throughput ....... {{ siformat(result.throughput) }}b/sec
 
-valid, message = result_is_valid(input["result"])
+{% elif _mime_type == 'text/html' %}
 
-if not valid:
-    pscheduler.fail(message)
+<table>
+<tr><td>Time</td><td>{{ time }}</td></tr>
+<tr><td>Sent</td><td>{{ siformat(result.bytessent) }}B</td></tr>
+<tr><td>Sent</td><td>{{ siformat(result.throughput) }}b/sec</td></tr>
+</table>
+{% else %}
 
-result = input["result"]
+{{ error('Unsupported MIME type "' + _mime_type + '"') }}
 
-#TODO: Get stdout from run and pipe through json result var
+{% endif %}
+'''
 
-if format == 'text/plain':
-    # Print results of the test here, in plaintext
-    print('Total duration of transfer: %s\n' % result['time'])
-
-    if 'bytes-sent' in result:
-        print('Bytes Sent: %s\n' % str(result['bytes-sent'])) 
-
-    if 'throughput' in result:
-       print('Throughput: %sbits/sec\n' % pscheduler.number_as_si(result['throughput']))
-
-    print('Test completed successfully')
-   
-elif format == 'text/html':
-    # Print results of the test here, in html
-    print('<table>')
-    print('    <tr>')
-    print('        <th>Time</th>')
-    print('    </tr>')
-    print('    <tr>')
-    print('        <td>%s</td>' % result['time'])
-    print('    </tr>')
-    print('</table>')
-    print('</table>')
-
-
-else:
-   pscheduler.fail("Unsupported format '%s'" % format)
+pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)

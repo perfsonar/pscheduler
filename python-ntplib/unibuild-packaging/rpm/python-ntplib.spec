@@ -3,7 +3,7 @@
 #
 
 %define short	ntplib
-Name:		%{_pscheduler_python}-%{short}
+Name:		python-%{short}
 Version:	0.3.3
 Release:	1%{?dist}
 Summary:	Python library for querying NTP
@@ -19,10 +19,10 @@ Url:		https://pypi.python.org/pypi/ntplib
 
 Source:		%{short}-%{version}.tar.gz
 
-Requires:	%{_pscheduler_python}
+Requires:	python
 
-BuildRequires:  %{_pscheduler_python}
-BuildRequires:	%{_pscheduler_python}-setuptools
+BuildRequires:  python
+BuildRequires:	python-setuptools
 
 
 
@@ -42,11 +42,11 @@ Python.
 
 
 %build
-%{_pscheduler_python} setup.py build
+python setup.py build
 
 
 %install
-%{_pscheduler_python} setup.py install --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES -O1
+python setup.py install --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES -O1
 
 
 %clean

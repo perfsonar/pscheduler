@@ -1,0 +1,17 @@
+{
+    "spec": {
+	"parse": "Parsed"
+    },
+    "result": {
+	"succeeded": true,
+	"schema": 2,
+	"time": "PT1.234S",
+	"found": true,
+	"status": 200,
+	"headers": {
+	    "Beep": "boop",
+	    "Foo": "bar"
+	},
+	"content": "This is Parsed from <<something>>."
+    }
+}

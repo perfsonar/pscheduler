@@ -11,7 +11,7 @@ import datetime
 
 import pscheduler
 
-json = pscheduler.json_load(exit_on_error=True);
+json = pscheduler.json_load(exit_on_error=True)['spec']
 default_timeout = 'PT' + str(json['polls'] * json['period']) + 'S'
 timeout_iso = json.get("timeout", default_timeout )
 timeout = pscheduler.iso8601_as_timedelta(timeout_iso) + datetime.timedelta( seconds=10 )

@@ -3,7 +3,7 @@
 #
 
 %define short   werkzeug
-Name:           %{_pscheduler_python}-%{short}
+Name:           python-%{short}
 Version:        0.15.5
 Release:        1%{?dist}
 BuildArch:      noarch
@@ -19,17 +19,17 @@ Prefix:         %{_prefix}
 
 Source:         %{short}-%{version}.tar.gz
 
-Requires:       %{_pscheduler_python}
-BuildRequires:  %{_pscheduler_python}-devel
-BuildRequires:  %{_pscheduler_python}-setuptools
+Requires:       python
+BuildRequires:  python-devel
+BuildRequires:  python-setuptools
 
 %if %{?ol8:0}%{!?ol8:1}
 # OL8 doesn't have this, but the build succeeds without it.
 # TODO: See of we can live without this on CentOS
-BuildRequires:  %{_pscheduler_python}-sphinx
+BuildRequires:  python-sphinx
 %endif
 
-BuildRequires:  %{_pscheduler_python}-setuptools
+BuildRequires:  python-setuptools
 
 %description
 Werkzeug
@@ -60,11 +60,11 @@ bulletin boards, etc.).
 
 
 %build
-%{_pscheduler_python} setup.py build
+python setup.py build
 
 
 %install
-%{_pscheduler_python} setup.py install --root=$RPM_BUILD_ROOT --single-version-externally-managed -O1  --record=INSTALLED_FILES
+python setup.py install --root=$RPM_BUILD_ROOT --single-version-externally-managed -O1  --record=INSTALLED_FILES
 
 
 %clean

@@ -55,6 +55,11 @@ opt_parser.add_option("-s", "--source",
                       action="store", type="string",
                       dest="source")
 
+opt_parser.add_option("--source-bind",
+                      help="Bind address on sending host",
+                      action="store", type="string",
+                      dest="source_bind")
+
 opt_parser.add_option("--source-node",
                       help="pScheduler node on sending host, if different",
                       action="store", type="string",
@@ -64,6 +69,11 @@ opt_parser.add_option("-d", "--dest", "--destination",
                       help="Receiving host",
                       action="store", type="string",
                       dest="destination")
+
+opt_parser.add_option("--dest-bind",
+                      help="Bind address on receiving host",
+                      action="store", type="string",
+                      dest="dest_bind")
 
 opt_parser.add_option("--dest-node",
                       help="pScheduler node on receiving host, if different",
@@ -96,7 +106,7 @@ opt_parser.add_option("-u", "--udp",
                       dest="udp")
 
 opt_parser.add_option("-b", "--bandwidth",
-                      help="Bandwidth to rate limit the test to, supports SI notation such as 1G",
+                      help="Maximum bandwidth for test, supports SI notation such as 1G",
                       action="store", type="string",
                       dest="bandwidth")
 
@@ -109,11 +119,6 @@ opt_parser.add_option("--burst-size",
                       help="Limit bursts of packets to this number",
                       action="store", type="string",
                       dest="burst_size")
-
-opt_parser.add_option("--fq-rate",
-                      help="Fair queueing rate, supports SI notation such as 1G",
-                      action="store", type="string",
-                      dest="fq_rate")
 
 opt_parser.add_option("-w", "--window-size",
                       help="TCP window (buffer) size to use for the test, supports SI notation such as 64M",
@@ -217,11 +222,19 @@ schema = pscheduler.HighInteger(1)
 if options.source is not None:
    result['source'] = options.source
 
+if options.source_bind is not None:
+   result['source-bind'] = options.source_bind
+   schema.set(7)
+
 if options.source_node is not None:
    result['source-node'] = options.source_node
-   
+
 if options.destination is not None:
    result['dest'] = options.destination
+
+if options.dest_bind is not None:
+   result['dest-bind'] = options.dest_bind
+   schema.set(7)
 
 if options.dest_node is not None:
    result['dest-node'] = options.dest_node
@@ -278,13 +291,6 @@ if options.burst_size is not None:
       schema.set(4)
    except ValueError as ex:
       pscheduler.fail("Invalid value \"%s\" for burst size: %s" % (options.window_size, ex))
-
-if options.fq_rate is not None:
-   try:
-      result['fq-rate'] = pscheduler.si_as_number(options.fq_rate)
-      schema.set(7)
-   except ValueError as ex:
-      pscheduler.fail("Invalid value \"%s\" for fq-rate: %s" % (options.fq_rate, ex))
 
 if options.window_size is not None:
    try:

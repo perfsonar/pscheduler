@@ -7,7 +7,7 @@ import datetime
 
 from powstream_defaults import *
 
-json = pscheduler.json_load(exit_on_error=True)
+json = pscheduler.json_load(exit_on_error=True)['spec']
 
 pscheduler.succeed_json({
         "duration": pscheduler.timedelta_as_iso8601(

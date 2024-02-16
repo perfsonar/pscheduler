@@ -31,12 +31,7 @@ jitter, datagram loss.
 %patch0 -p1
 
 %build
-%if 0%{?el9}
-# The macro isn't present on EL9.
 autoconf
-%else
-%{__autoconf}
-%endif
 %configure
 %{__make} %{?_smp_mflags}
 

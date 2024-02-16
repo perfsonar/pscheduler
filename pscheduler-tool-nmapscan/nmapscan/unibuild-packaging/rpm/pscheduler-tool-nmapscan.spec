@@ -27,8 +27,8 @@ Provides:	%{name} = %{version}-%{release}
 
 # Include all required libraries here
 Requires:	pscheduler-server
-Requires:	%{_pscheduler_python}-pscheduler
-Requires:	%{_pscheduler_python}-nmap3
+Requires:	python-pscheduler
+Requires:	python-nmap3
 
 BuildRequires:	pscheduler-rpm
 

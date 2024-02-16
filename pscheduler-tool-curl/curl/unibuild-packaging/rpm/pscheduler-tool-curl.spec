@@ -29,8 +29,8 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server >= 4.3.0
 Requires:	pscheduler-test-http
 Requires:	pscheduler-test-disk-to-disk
-Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
-Requires:	%{_pscheduler_python}-pycurl
+Requires:	python-pscheduler >= 4.3.0
+Requires:	python-pycurl
 
 BuildRequires:	pscheduler-rpm
 
@@ -45,7 +45,7 @@ curl tool class for pScheduler
 %build
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
-     PYTHON=%{_pscheduler_python} \
+     PYTHON=python \
      install
 
 %post
