@@ -83,10 +83,10 @@ opt_parser.add_option("--password",
                       action="store", type="string",
                       dest="password")
 
-opt_parser.add_option("--driver",
-                      help="Wireless driver to use (defaults to system)",
+opt_parser.add_option("--token",
+                      help="File token(line identifier) that retrieves username/password",
                       action="store", type="string",
-                      dest="driver")
+                      dest="token")
 
 opt_parser.add_option("--ssid",
                       help="Service set identifier (SSID) if using wireless",
@@ -141,8 +141,8 @@ if options.timeout is not None:
 if options.interface is not None:
    result['interface'] = options.interface
 
-if options.driver is not None:
-   result['driver'] = options.driver
+if options.token is not None:
+   result['token'] = options.token
 
 if options.username is not None:
    result['_username'] = options.username

@@ -38,8 +38,12 @@ result = input["result"]
 # print().
 
 if format == 'text/plain':
+    final = result["final"]
     # Print results of the test here, in plaintext
     print('Time: %s\n' % result['time'])
+    print('')
+    for each in final:
+        print(each)
    
 elif format == 'text/html':
     # Print results of the test here, in html

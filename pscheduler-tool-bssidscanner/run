@@ -1,16 +1,6 @@
 #!/usr/bin/env python3
-
-#
-# Development Order #5:
-#
-# This is the meat and bones of the tool, where the actual desired
-# commands or operation will be run. The results are then recorded
-# and added to the 'results' JSON data, which will then be sent
-# back to the test. Both system and api are able to be used here.
-#
-
 import select
-from os import getpid, makedirs, unlink, access, R_OK, system, listdir, path
+from os import getpid, unlink, access, R_OK, listdir, path
 from socket import socket, AF_UNIX, SOCK_DGRAM
 import datetime
 import pscheduler
@@ -27,45 +17,37 @@ ssid_set = set()
 # parse config
 pscheduler_input = pscheduler.json_load(exit_on_error=True)
 get_ssid = pscheduler_input['test']['spec'].get('ssid', None)
-ssid_set = set(get_ssid.split(',')) if get_ssid else None
+ssid_set = set(get_ssid.split(',')) if get_ssid else set()
 duration_iso = pscheduler_input['test']['spec'].get('duration', 'PT5S')
 timeout_iso = pscheduler_input['test']['spec'].get('timeout', 'PT10S')
 timeout = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(timeout_iso))
-duration = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(duration_iso))
+duration = pscheduler.timedelta_as_seconds(pscheduler.iso8601_as_timedelta(duration_iso)) 
 start_time = datetime.datetime.now()
 succeeded = False
 error = ''
 diags = ''
 ssid_list = []
-dir_path = path.dirname(WPA_CONFIG_PATH)
 
 #check if interface already exists
-# interface_path = path.join(WPA_CTRL_IFACE_BASE,interface)
-# os.system('killall wpa_supplicant')
-# os.remove(interface_path)
 if not access(f'{WPA_CTRL_IFACE_BASE}/{interface}', R_OK):
     #create config file and start wpa_supplicant
-    if not path.exists(dir_path):
-        makedirs(dir_path)
     with open(WPA_CONFIG_PATH, 'w') as f:
         f.write('ctrl_interface='+WPA_CTRL_IFACE_BASE+'\r\n')
         f.write('update_config=1\r\n')
     os.system('wpa_supplicant -B -i '+interface+' -c '+WPA_CONFIG_PATH)
 
-# print('set up config file')
 #setting up socket
 sock = socket(AF_UNIX, SOCK_DGRAM)
 sock.settimeout(3)
 start  = datetime.datetime.now()
 # response will be written to this socket
-recv_sock = "/tmp/wpa_ctrl_{}".format(os.getpid())
+recv_sock = f"/tmp/wpa_ctrl_{getpid()}"
 sock.bind(recv_sock)
-# print('set up and bind receive socket')
 
 ctrl_interface = f"{WPA_CTRL_IFACE_BASE}/{interface}"
-# os.chmod(ctrl_interface, 0o777)
+
 sock.connect(ctrl_interface)
-# print('start attaching at', datetime.datetime.now() - start)
+print('start attaching at', datetime.datetime.now() - start)
 # attach to wpa_supplicant
 sock.send(b'ATTACH')
 
@@ -103,7 +85,7 @@ for bssid, freq, signal, flags, ssid in result:
             'freq': int(freq),
             'signal': int(signal),
             'flags': flags
-            })
+        })
 end_time = datetime.datetime.now()
 
 # Organize results into json data
@@ -116,9 +98,9 @@ results = {
         'ssid_list': ssid_list
     },
     'error': error,
-    'diags': diags
+    'diags': diags 
 }
 
-# pscheduler.succeed_json(results)
-# print(results)
-# print('finished at', datetime.datetime.now() - start)
+# pscheduler.succeed_json(results)    
+print(results)
+print('finished at', datetime.datetime.now() - start)
