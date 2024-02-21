@@ -121,7 +121,7 @@ define(HAVE_ETHR,HAVE_GOLANG)
 ifelse(DISTRO/eval(MAJOR <= 18),Ubuntu/1,,      # Doesn't build on U18, TODO: not sure about U20…
        HAVE_ETHR,1,ethr)                        # But D10 build can be used on U18 and up
 
-ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,iperf)		# EPEL dropped this in EL8
+iperf
 ifelse(FAMILY/eval(MAJOR == 10 || MAJOR == 12),Debian/1,iperf3,          # We only want iperf3 on D10 and D12
        FAMILY,Debian,,
        iperf3)
