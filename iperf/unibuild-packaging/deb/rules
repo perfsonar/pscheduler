@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+
+export DH_OPTIONS
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/buildflags.mk
+override_dh_auto_configure:
+	dh_auto_configure -- --enable-fastsampling
+%:
+	dh $@
+override_dh_auto_test:

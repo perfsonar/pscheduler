@@ -1,0 +1,10 @@
+Document: iperf
+Title: iperf Manual
+Author: The Board of Trustees of the University of Illinois
+Abstract: Internet bandwidth measuring tool
+Section: Network/Monitoring
+
+Format: HTML
+Index: /usr/share/doc/iperf/html/index.html
+Files: /usr/share/doc/iperf/html/*.html
+

@@ -1,0 +1,20 @@
+Description: delete unused service.[ch] files with restrictive license
+ include/service.h and src/service.c files are copyrighted by Microsoft
+ with just a 'All Rights Reserved' message as license. Supposedly iperf
+ is distributed under NCSA license, but licensing information in this
+ file should be changed. In the meantime, and as these files are only used
+ for compiling the windows iperf binary, I'm deleting them from the Debian
+ version.
+Forwarded: not-needed
+Author: Roberto Lumbreras <rover@debian.org>
+
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -42,7 +42,6 @@
+ 		gnu_getopt_long.c \
+ 	        histogram.c \
+ 		main.cpp \
+-		service.c \
+ 		socket_io.c \
+ 		stdio.c \
+ 		packet_ring.c \

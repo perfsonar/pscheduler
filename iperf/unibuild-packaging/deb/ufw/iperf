@@ -1,0 +1,4 @@
+[iperf]
+title=iperf
+description=Network performance measurement tool
+ports=5001

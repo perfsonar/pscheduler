@@ -1,0 +1,4 @@
+doc/dast.gif usr/share/doc/iperf/html
+doc/*.html usr/share/doc/iperf/html
+src/iperf usr/bin
+debian/ufw/iperf etc/ufw/applications.d

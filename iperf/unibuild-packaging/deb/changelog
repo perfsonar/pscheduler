@@ -1,0 +1,247 @@
+iperf (2.1.9+dfsg-1) unstable; urgency=low
+
+  * New upstream release.
+  * Closes: #1028318
+
+ -- Roberto Lumbreras <rover@debian.org>  Sun, 28 May 2023 11:08:43 +0200
+
+iperf (2.1.8+dfsg-1) unstable; urgency=low
+
+  * New upstream version.
+  * Updated standards.
+
+ -- Roberto Lumbreras <rover@debian.org>  Wed, 04 Jan 2023 12:07:46 +0100
+
+iperf (2.1.7+dfsg1-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Roberto Lumbreras <rover@debian.org>  Wed, 27 Apr 2022 17:00:23 +0200
+
+iperf (2.1.5+dfsg1-1) unstable; urgency=low
+
+  * New upstream version.
+  * Updated standards.
+
+ -- Roberto Lumbreras <rover@debian.org>  Fri, 10 Dec 2021 00:47:56 +0100
+
+iperf (2.1.2+dfsg1-1) unstable; urgency=low
+
+  * New upstream version. (Closes: #983201)
+  * Updated standards.
+  * Add ufw profile. (Closes: #990045)
+  * Old bugs fixed by this / previous versions:
+    (Closes: #776282, #760590, #759225, #965974, #687424, #267592)
+
+ -- Roberto Lumbreras <rover@debian.org>  Sat, 26 Jun 2021 13:06:35 +0200
+
+iperf (2.0.14a+dfsg1-1) unstable; urgency=medium
+
+  * New upstream version.
+  * Updated standards.
+
+ -- Roberto Lumbreras <rover@debian.org>  Sun, 04 Oct 2020 17:35:02 +0200
+
+iperf (2.0.13+dfsg1-1) unstable; urgency=low
+
+  * New upstream version. (Closes: #930386, #930390)
+  * Updated standards.
+  * Use upstream fix for compilation on kfreebsd-amd64.
+  * Use only debhelper, compat 11.
+  * Fix building without -g flag.
+  * Updated debian/copyright.
+
+ -- Roberto Lumbreras <rover@debian.org>  Sat, 15 Jun 2019 23:18:33 +0200
+
+iperf (2.0.12+dfsg1-2) unstable; urgency=low
+
+  * Fix compilation on kfreebsd-amd64.
+
+ -- Roberto Lumbreras <rover@debian.org>  Fri, 13 Jul 2018 08:48:41 +0200
+
+iperf (2.0.12+dfsg1-1) unstable; urgency=medium
+
+  * New upstream version.
+  * Updated standards.
+
+ -- Roberto Lumbreras <rover@debian.org>  Thu, 12 Jul 2018 21:18:53 +0200
+
+iperf (2.0.10+dfsg1-1) unstable; urgency=low
+
+  * New upstream version.
+  * Fixed homepage in copyright file.
+  * Updated standards.
+
+ -- Roberto Lumbreras <rover@debian.org>  Thu, 17 Aug 2017 17:08:16 +0200
+
+iperf (2.0.9+dfsg1-1) unstable; urgency=low
+
+  * New upstream version, including fix for FTBFS with gcc 6. (Closes: #831180)
+  * Updated standards.
+  * Updated homepage and watch file.
+
+ -- Roberto Lumbreras <rover@debian.org>  Fri, 15 Jul 2016 13:05:06 +0200
+
+iperf (2.0.5+dfsg1-2) unstable; urgency=low
+
+  * Fix hardening building.
+
+ -- Roberto Lumbreras <rover@debian.org>  Tue, 15 Jul 2014 08:29:54 +0200
+
+iperf (2.0.5+dfsg1-1) unstable; urgency=low
+
+  * Repackaged tarball to delete */service.[ch] (unused) files with
+    restrictive copyright.
+  * Machine readable debian/copyright.
+  * Updated standards.
+  * Fix 100% CPU consumption bug in daemon mode.
+  * Set traffic class for IPv6.
+
+ -- Roberto Lumbreras <rover@debian.org>  Sun, 13 Jul 2014 23:56:57 +0200
+
+iperf (2.0.5-3) unstable; urgency=low
+
+  * ACK NMU.
+  * Fix improper check for IPv6 family when sending multicast
+    (Closes: #674288).
+  * Updated standards.
+
+ -- Roberto Lumbreras <rover@debian.org>  Thu, 24 May 2012 19:00:01 +0200
+
+iperf (2.0.5-2.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Fix FTBFS -Werror=format-security (Closes: #643408)
+
+ -- Simon Paillard <spaillard@debian.org>  Tue, 15 Nov 2011 19:42:14 +0100
+
+iperf (2.0.5-2) unstable; urgency=low
+
+  * Fix server mode exiting after TCP bidirectional test.
+
+ -- Roberto Lumbreras <rover@debian.org>  Sat, 08 Jan 2011 21:24:28 +0100
+
+iperf (2.0.5-1) unstable; urgency=low
+
+  * New upstream version.
+  * Updated standards.
+  * Deleted patches merged by upstream:
+    000-Iperf_Fix-CPU-Usage.diff
+    004-svn-r43-ro.patch
+    006-iperf-die-on-connect-fail.patch
+  * Dropped probably unnecesary patches:
+    008-numofreport.patch
+    009-delayloop.patch
+  * Fix 'recieve' spelling-error-in-binary (lintian).
+
+ -- Roberto Lumbreras <rover@debian.org>  Sun, 26 Dec 2010 16:29:07 +0100
+
+iperf (2.0.4-5) unstable; urgency=low
+
+  * Fix deadlock while acting as server with multiple clients (thanks Kirby
+  Zhou). Add patches: 007-iperf-reporter-deadlock, 008-numofreport,
+  009-delayloop, modify 004-svn-r43.patch deleting the nanonsleep() bits.
+  (Closes: #533592)
+
+ -- Roberto Lumbreras <rover@debian.org>  Mon, 06 Jul 2009 12:32:03 +0200
+
+iperf (2.0.4-4) unstable; urgency=low
+
+  * Die instead of warn on bind/connect fatal errors (thanks to Deny IP Any
+    Any). (closes: #517239, #518033)
+  * Add missing comma after ${shlibs:Depends} in the control file. Add
+    Homepage in control file. (thanks to lintian).
+
+ -- Roberto Lumbreras <rover@debian.org>  Wed, 04 Mar 2009 12:46:12 +0100
+
+iperf (2.0.4-3) unstable; urgency=low
+
+  * Merged in svn r43 including the following changes:
+     - print report headers only once
+       ==> drop debian/patches/002-*.patch doing the same.
+     - replace costly gettimeofday() with nanosleep()
+       ==> should lower the CPU usage in UDP mode.
+  * Re-added the Ingo Molnar patch changing thread_rest for Condition_Wait.
+  * With these two patches the 100% cpu usage in UDP mode is fixed.
+    (closes: #496865)
+
+ -- Roberto Lumbreras <rover@debian.org>  Thu, 28 Aug 2008 16:17:46 +0200
+
+iperf (2.0.4-2) unstable; urgency=low
+
+  * Updated standards. Set debhelper compatibility level to 7.
+  * iperf.1: fix minus/hyphen issues.
+
+ -- Roberto Lumbreras <rover@debian.org>  Thu, 21 Aug 2008 00:38:16 +0200
+
+iperf (2.0.4-1) unstable; urgency=low
+
+  * New upstream version. (closes: #480000)
+  * Deleted performance problem patch, it is now fixed upstream.
+  * Deleted debian specific manpage, the package has one now. Fix several
+    hyphen-used-as-minus-sign in the new manpage. Add lintian overrides as
+    it still thinks there are hyphens used as minus sign but there are not.
+  * Fix bw-header being printed each time.
+  * The following bugs are also fixed now: (closes: #356448, #400662, #353037)
+
+ -- Roberto Lumbreras <rover@debian.org>  Thu, 08 May 2008 00:45:51 +0200
+
+iperf (2.0.2-4) unstable; urgency=low
+
+  * Reverted patch to fix bug #431366; added proper patch for performance
+    problem with kernels using CFS (>= 2.6.23) (closes: #444277).
+  * debian/rules: using simple-patchsys from cdbs.
+  * Standards 3.7.3 (no changes).
+  * doc-base: changed section to Network/Monitoring section.
+
+ -- Roberto Lumbreras <rover@debian.org>  Tue, 18 Mar 2008 09:12:52 +0100
+
+iperf (2.0.2-3) unstable; urgency=low
+
+  * Added patch to fix poor performance with >= 2.6.21 kernels
+   (closes: #431666).
+  * Fix -t: cast to max_size_t instead of int (closes: #346099).
+    Updated auto-makefiles and autoconf.
+  * debian/rules: now using cdbs.
+
+ -- Roberto Lumbreras <rover@debian.org>  Tue, 17 Jul 2007 15:16:00 +0200
+
+iperf (2.0.2-2) unstable; urgency=low
+
+  * Add PTHREAD_LIBS to iperf_LDADD and regenerate configure, hopefully
+    will fix #314383: FTBFS on hurd-i386.
+  * Updated standards (no changes).
+
+ -- Roberto Lumbreras <rover@debian.org>  Fri, 12 May 2006 16:49:36 +0200
+
+iperf (2.0.2-1) unstable; urgency=low
+
+  * New upstream version (closes: #312300).
+
+ -- Roberto Lumbreras <rover@debian.org>  Tue, 07 Jun 2005 16:42:55 +0200
+
+iperf (2.0.1-1) unstable; urgency=low
+
+  * New upstream version.
+  * Added watch file.
+  * Updated standards.
+
+ -- Roberto Lumbreras <rover@debian.org>  Fri, 04 Feb 2005 02:38:36 +0100
+
+iperf (1.7.0-1) unstable; urgency=low
+
+  * New upstream version.
+  * Use config.sub and config.guess symlinks from autotools-dev
+    (closes: #190015, #189673).
+  * Changed short description (closes: #188476).
+
+ -- Roberto Lumbreras <rover@debian.org>  Tue, 22 Apr 2003 01:48:12 +0200
+
+iperf (1.6.5-1) unstable; urgency=low
+
+  * Initial Release (closes: #186418).
+  * Do not include getopt functions in libdast (they are provided by libc6).
+  * Send --help and --version outputs to stdout and exit success, to make
+    help2man happy (GNU standards, see bug #138752).
+
+ -- Roberto Lumbreras <rover@debian.org>  Fri, 28 Mar 2003 19:07:09 +0100
