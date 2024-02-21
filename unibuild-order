@@ -74,6 +74,7 @@ ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of th
 python-nmap3
 ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of this.
        DISTRO/eval(MAJOR > 10),Debian/1,,               # As does Debian 11.
+       FAMILY/eval(MAJOR > 8),RedHat/1,,                # As does EL9+
        python-jsonschema)
 python-kafka
 python-nmap3
