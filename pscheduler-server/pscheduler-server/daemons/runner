@@ -524,7 +524,7 @@ class RunWorker(pscheduler.GenericWorker):
             try:
                 result_json = pscheduler.json_load(stdout, max_schema=1)
             except ValueError:
-                self.log.error("%d: Test returned invalid JSON: %s", self.id, stdout)
+                self.log.error("%d: Tool returned invalid JSON: %s", self.id, stdout)
 
 
         if len(stderr) == 0:
