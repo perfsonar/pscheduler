@@ -263,6 +263,9 @@ def run_server():
         iperf2_args.append('-B')
         iperf2_args.append(test_spec['dest-bind'])
 
+    if test_spec.get('udp'):
+        iperf2_args.append('-u')
+
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string
     iperf2_args = [str(x) for x in iperf2_args]
