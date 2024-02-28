@@ -86,7 +86,11 @@ def run_client():
 
     logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
 
-    iperf2_args = [ iperf2_cmd ]
+    iperf2_args = [
+        iperf2_cmd,
+        '-e',
+        '--format', 'b'
+    ]
 
     iperf2_args.append('-p')
     iperf2_args.append(server_port)
@@ -237,7 +241,7 @@ def run_client():
 
     logger.debug("Lines are %s " % lines)
 
-    results = iperf2_parser.parse_output(lines)
+    results = iperf2_parser.parse_output(lines, expect_udp=test_spec.get('udp', False))
     results['diags'] = "%s\n\n%s\n%s" % (command_line, stdout, stderr)
 
     return results
