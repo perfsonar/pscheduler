@@ -86,7 +86,11 @@ def run_client():
 
     logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
 
-    iperf2_args = [ iperf2_cmd ]
+    iperf2_args = [
+        iperf2_cmd,
+        '-e',
+        '--format', 'b'
+    ]
 
     iperf2_args.append('-p')
     iperf2_args.append(server_port)
@@ -237,7 +241,11 @@ def run_client():
 
     logger.debug("Lines are %s " % lines)
 
-    results = iperf2_parser.parse_output(lines)
+    results = iperf2_parser.parse_output(
+        lines,
+        expect_udp=test_spec.get('udp', False),
+        logger=logger
+    )
     results['diags'] = "%s\n\n%s\n%s" % (command_line, stdout, stderr)
 
     return results
@@ -258,6 +266,9 @@ def run_server():
     if test_spec.get('dest-bind') is not None:
         iperf2_args.append('-B')
         iperf2_args.append(test_spec['dest-bind'])
+
+    if test_spec.get('udp'):
+        iperf2_args.append('-u')
 
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string

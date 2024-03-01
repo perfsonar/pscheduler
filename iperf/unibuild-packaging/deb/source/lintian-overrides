@@ -1,0 +1,2 @@
+# Upstream does not provide a cryptographic signature
+iperf source: debian-watch-does-not-check-openpgp-signature

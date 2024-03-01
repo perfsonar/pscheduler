@@ -1,0 +1,41 @@
+Description: spelling errors in binary (lintian)
+ fix spelling errors / typos
+Author: Roberto Lumbreras
+
+Index: iperf-2.1.9+dfsg/src/socket_io.c
+===================================================================
+--- iperf-2.1.9+dfsg.orig/src/socket_io.c	2023-03-19 22:35:11.629287791 +0100
++++ iperf-2.1.9+dfsg/src/socket_io.c	2023-03-20 01:01:33.235639884 +0100
+@@ -212,8 +212,8 @@
+ 	    // check for a fatal error vs an error that should retry
+ 	    if ((errno != EINTR) && (errno != EAGAIN) && (errno != EWOULDBLOCK)) {
+ 		nwritten = inLen - nleft;
+-		fprintf(stdout, "FAIL: writen errno = %d\n", errno);
+-		WARN_errno(1, "writen fatal");
++		fprintf(stdout, "FAIL: written errno = %d\n", errno);
++		WARN_errno(1, "written fatal");
+ 		sInterupted = 1;
+ 		goto DONE;
+ 	    }
+Index: iperf-2.1.9+dfsg/src/Client.cpp
+===================================================================
+--- iperf-2.1.9+dfsg.orig/src/Client.cpp	2023-03-19 22:35:11.629287791 +0100
++++ iperf-2.1.9+dfsg/src/Client.cpp	2023-03-19 23:20:45.991993974 +0100
+@@ -994,7 +994,7 @@
+ 	    reportstruct->sentTime = reportstruct->packetTime;
+ 	    reportstruct->packetLen = writen(mySocket, mSettings->mBuf, writelen, &reportstruct->writecnt);
+ 	    if (reportstruct->packetLen <= 0) {
+-		WARN_errno((reportstruct->packetLen < 0), "event writen()");
++		WARN_errno((reportstruct->packetLen < 0), "event written()");
+ 		if (reportstruct->packetLen == 0) {
+ 		    peerclose = true;
+ 		}
+@@ -1076,7 +1076,7 @@
+ 		} else if (reportstruct->packetLen == 0) {
+ 		    peerclose = true;
+ 		} else if (reportstruct->packetLen != writelen) {
+-		    WARN_errno(1, "tcp bounceback writen incomplete");
++		    WARN_errno(1, "tcp bounceback written incomplete");
+ 		    peerclose = true;
+ 		} else {
+ 		    // retry the write
