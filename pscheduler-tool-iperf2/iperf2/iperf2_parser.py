@@ -1,15 +1,16 @@
 import re
 import pscheduler
 
-logger = pscheduler.Log(quiet=True)
 
-def _finalize_interval(streams):
+def _finalize_interval(streams, debug):
     '''
     Prepare a final interval, figuring out what the summary should be
     based on iperf's output.
     '''
     assert isinstance(streams,list)
     assert len(streams) > 0
+
+    debug(f'''Finalizing {streams[0]['start']}-{streams[0]['end']}''')
 
     if len(streams) == 1:
         # Sole stream
@@ -19,6 +20,9 @@ def _finalize_interval(streams):
         summary = streams.pop()
         assert summary['stream-id'] == 'SUM'
 
+    # Put the streams into a reasonable order with the summary last.
+    streams.sort(key=lambda v: int(v['stream-id']))
+
     return {
         'streams': streams,
         'summary': summary
@@ -26,7 +30,7 @@ def _finalize_interval(streams):
 
 
 
-def parse_output(lines, expect_udp=False):
+def parse_output(lines, expect_udp=False, logger=None):
     '''
     A whole bunch of pattern matching against the output of the
     "iperf" tool client output. Builds up an object of interesting bits
@@ -37,6 +41,8 @@ def parse_output(lines, expect_udp=False):
     Note that this assumes iperf was invoked with '--format b' so there
     are no SI units to be converted and -m so MSS is displayed.
     '''
+
+    debug = logger.debug if logger is not None else lambda m: None
 
 
     results = {
@@ -49,15 +55,19 @@ def parse_output(lines, expect_udp=False):
     current_interval = []
     current_interval_key = None
 
-    has_summaries = False
-
-    longest_interval = 0
-    longest_interval_key = None
-
     streams = {}
 
+    # These are used in detecting and correcting the time stamps on
+    # what should be the last interval.
+
+    last_start = 0
+    highest_end = 0
+    highest_end_string = '0.0'
+    in_final_summary = False
 
     for line in lines:
+
+        debug(f'Line {line}')
 
         # Bogus numbers
 
@@ -155,8 +165,8 @@ def parse_output(lines, expect_udp=False):
                 continue
 
             stream_id = test.group(1)
-            interval_start = float(test.group(2))
-            interval_end = float(test.group(3))
+            interval_start = test.group(2)
+            interval_end = test.group(3)
 
             stream_interval = {
                 'throughput-bits': int(test.group(5)),
@@ -166,13 +176,6 @@ def parse_output(lines, expect_udp=False):
                 'start': interval_start,
                 'end': interval_end
             }
-
-            # Use the text as matched rather than the Python-parsed
-            # floats.  If it's a summary, don't change the key because
-            # the numbers are usually off.
-            if stream_id != 'SUM':
-                key = f'{test.group(2)}-{test.group(3)}'
-
 
         else:
 
@@ -202,8 +205,8 @@ def parse_output(lines, expect_udp=False):
                 continue
 
             stream_id = test.group(1)
-            interval_start = float(test.group(2))
-            interval_end = float(test.group(3))
+            interval_start = test.group(2)
+            interval_end = test.group(3)
 
             stream_interval = {
                 'throughput-bits': int(test.group(5)),
@@ -221,18 +224,47 @@ def parse_output(lines, expect_udp=False):
             if test.group(11) is not None:
                 stream_interval['rtt'] = int(test.group(11))
 
-            # Use the text as matched rather than the Python-parsed
-            # floats.  If it's a summary, don't change the key because
-            # the numbers are usually off.
-            if stream_id != 'SUM':
-                key = f'{test.group(2)}-{test.group(3)}'
 
         assert interval_start is not None
         assert interval_end is not None
 
+        interval_start_float = float(interval_start)
+        interval_end_float = float(interval_end)
+
+        if not in_final_summary:
+
+            if interval_start_float < last_start:
+                # Start of summary interval, e.g., went from 8.00-10.00 to 0.00-10.00
+                debug(f'Start final summary: Start dropeed from {last_start} -> {interval_start_float}')
+                in_final_summary = True
+                interval_end = highest_end_string
+                debug(f'Adjusted interval end to {interval_end}')
+            else:
+                last_start = interval_start_float
+                if interval_end_float > highest_end:
+                    highest_end = interval_end_float
+                    highest_end_string = interval_end
+                    debug(f'New high {interval_end}')
+
+        else:
+
+            # Inside the final summary, force the end of the interval
+            # to the end of the last interval to avoid complications
+            # from iperf2's wrong concept of when the last measurement
+            # interval ended.
+            interval_end = highest_end_string
+            debug(f'Adjusted final interval end to {interval_end}')
+
+        if stream_id != 'SUM':
+            key = f'{interval_start}-{interval_end}'
+
+        stream_interval['start'] = float(interval_start)
+        stream_interval['end'] = float(interval_end)
+
         if key != current_interval_key:
+            debug(f'New interval: {current_interval_key} -> {key}')
             if current_interval:
-                intervals.append(_finalize_interval(current_interval))
+                intervals.append(_finalize_interval(current_interval, debug))
             current_interval = []
             current_interval_key = key
 
@@ -240,7 +272,7 @@ def parse_output(lines, expect_udp=False):
 
     # Push anything left onto the list.
     if current_interval:
-        intervals.append(_finalize_interval(current_interval))
+        intervals.append(_finalize_interval(current_interval, debug))
                 
 
     if not intervals:
@@ -378,17 +410,68 @@ UDP buffer size: 212992 Byte (default)
 [  1] 0.00-6.01 sec  792330 Bytes  1054424 bits/sec   0.008 ms 0/538 (0%)
 [  1] 0.00-6.01 sec  1 datagrams received out-of-order
 '''
-            }
+        },
+        {
+            'label': 'Uneven final interval',
+            'expect_udp': False,
+            'text': '''
+------------------------------------------------------------
+Client connecting to denv.ps.internet2.edu, TCP port 5001 with pid 188114 (4 flows)
+Write buffer size: 131072 Byte
+MSS size 536 bytes
+TOS set to 0x0 (Nagle on)
+TCP window size: 16384 Byte (default)
+------------------------------------------------------------
+[  3] local 10.88.0.116%eth0 port 54908 connected with 163.253.16.23 port 5001 (sock=3) (icwnd/mss/irtt=14/1460/31343) (ct=31.43 ms) on 2024-02-29 20:24:26.026 (UTC)
+[  1] local 10.88.0.116%eth0 port 54916 connected with 163.253.16.23 port 5001 (sock=5) (icwnd/mss/irtt=14/1460/31149) (ct=31.26 ms) on 2024-02-29 20:24:26.026 (UTC)
+[  4] local 10.88.0.116%eth0 port 54912 connected with 163.253.16.23 port 5001 (sock=4) (icwnd/mss/irtt=14/1460/31210) (ct=31.33 ms) on 2024-02-29 20:24:26.026 (UTC)
+[  2] local 10.88.0.116%eth0 port 54932 connected with 163.253.16.23 port 5001 (sock=6) (icwnd/mss/irtt=14/1460/31083) (ct=31.18 ms) on 2024-02-29 20:24:26.026 (UTC)
+[ ID] Interval        Transfer    Bandwidth       Write/Err  Rtry     Cwnd/RTT(var)        NetPwr
+[  4] 0.00-2.00 sec  34078780 Bytes  136315120 bits/sec  260/0       387       58K/1107(145) us  15392
+[  2] 0.00-2.00 sec  27000892 Bytes  108003568 bits/sec  206/0       254       41K/1451(36) us  9304
+[  3] 0.00-2.00 sec  31326268 Bytes  125305072 bits/sec  239/0       562       69K/1024(210) us  15296
+[  1] 0.00-2.00 sec  29491260 Bytes  117965040 bits/sec  225/0       444       54K/3966(192) us  3718
+[SUM] 0.00-2.00 sec  121897200 Bytes  487588800 bits/sec  930/0      1647
+[  1] 2.00-4.00 sec  28049408 Bytes  112197632 bits/sec  214/0       111       25K/2323(352) us  6037
+[  4] 2.00-4.00 sec  33161216 Bytes  132644864 bits/sec  253/0       272       65K/2349(46) us  7059
+[  2] 2.00-4.00 sec  29884416 Bytes  119537664 bits/sec  228/0       128       65K/1550(65) us  9640
+[  3] 2.00-4.00 sec  32505856 Bytes  130023424 bits/sec  248/0       193       65K/1621(157) us  10026
+[SUM] 2.00-4.00 sec  123600896 Bytes  494403584 bits/sec  943/0       704
+[  1] 4.00-6.00 sec  31850496 Bytes  127401984 bits/sec  243/0       647       22K/1545(58) us  10308
+[  3] 4.00-6.00 sec  32112640 Bytes  128450560 bits/sec  245/0       334       14K/1866(129) us  8605
+[  4] 4.00-6.00 sec  38797312 Bytes  155189248 bits/sec  296/0       568       57K/1798(8) us  10789
+[  2] 4.00-6.00 sec  29491200 Bytes  117964800 bits/sec  225/0       526       27K/1683(55) us  8761
+[SUM] 4.00-6.00 sec  132251648 Bytes  529006592 bits/sec  1009/0      2075
+[  3] 6.00-8.00 sec  39452672 Bytes  157810688 bits/sec  301/0       230       72K/2468(225) us  7993
+[  4] 6.00-8.00 sec  40763392 Bytes  163053568 bits/sec  311/0        77       68K/2218(142) us  9189
+[  2] 6.00-8.00 sec  34865152 Bytes  139460608 bits/sec  266/0       509       48K/1181(106) us  14761
+[  1] 6.00-8.00 sec  36438016 Bytes  145752064 bits/sec  278/0       168       67K/920(164) us  19803
+[SUM] 6.00-8.00 sec  151519232 Bytes  606076928 bits/sec  1156/0       984
+[  1] 8.00-10.00 sec  38010880 Bytes  152043520 bits/sec  290/0       157       59K/2268(289) us  8380
+[  3] 8.00-10.00 sec  39583744 Bytes  158334976 bits/sec  302/0        44       67K/2700(92) us  7330
+[  4] 8.00-10.00 sec  42598400 Bytes  170393600 bits/sec  325/0        18       67K/1622(60) us  13131
+[  2] 8.00-10.00 sec  36175872 Bytes  144703488 bits/sec  276/0       253       38K/2034(207) us  8893
+[SUM] 8.00-10.00 sec  156368896 Bytes  625475584 bits/sec  1193/0       472
+[  2] 0.00-10.14 sec  157548604 Bytes  124306045 bits/sec  1202/0      1670       38K/458(18) us  33926
+[  3] 0.00-10.19 sec  175112252 Bytes  137469482 bits/sec  1336/0      1363       67K/1805(283) us  9520
+[  4] 0.00-10.19 sec  189530172 Bytes  148792118 bits/sec  1446/0      1322       67K/897(131) us  20735
+[  1] 0.00-10.21 sec  163971132 Bytes  128471237 bits/sec  1251/0      1527       62K/2821(112) us  5693
+[SUM] 0.00-10.01 sec  686162160 Bytes  548236045 bits/sec  5235/0      5882
+[ CT] final connect times (min/avg/max/stdev) = 31.182/31.303/31.434/107.410 ms (tot/err) = 4/0
+'''
+        }
     ]
 
+    logger = pscheduler.Log(debug=True, verbose=True)
+
+    # Enable this to test a specific element
+    # TEST_OUTPUTS = [ TEST_OUTPUTS[-1] ]
 
     for test in TEST_OUTPUTS:
         print(f'''\n{test['label']}\n''')
-        print(
-            pscheduler.json_dump(
-                parse_output(
-                    test['text'].split('\n'),
-                    expect_udp=test['expect_udp']
-                ),
-                pretty=True)
-    )
+        result = parse_output(
+            test['text'].split('\n'),
+            expect_udp=test['expect_udp'],
+            logger=logger
+        )
+        print(pscheduler.json_dump(result, pretty=True))

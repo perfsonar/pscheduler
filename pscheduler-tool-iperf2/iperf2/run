@@ -241,7 +241,11 @@ def run_client():
 
     logger.debug("Lines are %s " % lines)
 
-    results = iperf2_parser.parse_output(lines, expect_udp=test_spec.get('udp', False))
+    results = iperf2_parser.parse_output(
+        lines,
+        expect_udp=test_spec.get('udp', False),
+        logger=logger
+    )
     results['diags'] = "%s\n\n%s\n%s" % (command_line, stdout, stderr)
 
     return results
