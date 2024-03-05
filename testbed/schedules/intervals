@@ -1,0 +1,14 @@
+#
+# Standard testbed test durations
+#
+PT30S
+PT1M
+PT5M
+PT10M
+PT15M
+PT30M
+PT1H
+PT4H
+PT6H
+PT12H
+P1D

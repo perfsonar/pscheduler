@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+
+# Generate pSConfig schedules for all ISO 8601 durations listed on stdin
+
+import isodate
+import json
+import re
+import sys
+
+schedules = {}
+
+for line in sys.stdin:
+    # TODO: Chop comments and extra whitespace
+    duration = re.sub(r'\s*[#].*$', '', line[:-1])
+    if not duration:
+        continue
+    schedules[duration] = {
+        'repeat': duration,
+        'slip': isodate.duration_isoformat(
+            isodate.parse_duration(duration) / 2
+        ),
+        'sliprand': True
+    }
+
+print(json.dumps(
+    { 'schedules': schedules },
+    sort_keys=True,
+    indent=4,
+    separators=(', ', ': ')))
