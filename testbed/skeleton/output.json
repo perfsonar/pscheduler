@@ -1,0 +1,23 @@
+{
+    "_meta": {
+        "administrators": [
+            {
+                "email": "perfsonar-developer@internet2.edu",
+                "name": "The perfSONAR Development Team"
+            }
+        ],
+        "display-name": "perfSONAR Test Bed for pScheduler"
+    },
+    "addresses": {
+    },
+    "archives": {
+    },
+    "groups": {
+    },
+    "schedules": {
+    },
+    "tasks": {
+    },
+    "tests": {
+    }
+}

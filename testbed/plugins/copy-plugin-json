@@ -1,0 +1,21 @@
+#!/bin/sh -e
+#
+# Find all of the plugins' output.json files and dump them into one
+# place.
+#
+
+TOP="$1"
+DEST="$2"
+
+ls "${TOP}" \
+    | egrep -e '^pscheduler-(archiver|context|text|tool)-.*$' \
+    | (
+    while read PLUGIN
+    do
+	PLUGIN_FILE="${TOP}/${PLUGIN}/testbed.json"
+	if [ -e "${PLUGIN_FILE}" ]
+	then
+	    cp "${PLUGIN_FILE}" "${DEST}/${PLUGIN}"
+	fi
+    done
+    )

@@ -6,6 +6,8 @@ PRODUCT := testbed.json
 
 # Each subdirectory's Makefile produces a file called "output.json"
 SUBDIRS := \
+	skeleton \
+	plugins \
 	schedules
 
 
