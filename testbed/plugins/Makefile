@@ -21,7 +21,7 @@ TO_CLEAN += $(WORK)
 BUILDER := ./copy-plugin-json
 $(PRODUCT): Makefile $(BUILDER) $(WORK)
 	$(BUILDER) '$(TOP)' '$(WORK)'
-	jq -s add $(WORK)/* > $@
+	../bin/merge-json $(WORK)/* > $@
 TO_CLEAN += $(PRODUCT)
 
 

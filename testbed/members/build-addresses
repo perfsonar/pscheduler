@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+#
+# Build a pSConfig addresses section from a list of hosts on stdin
+#
+
+import json
+import re
+import sys
+
+addresses = {}
+
+for line in sys.stdin:
+    # TODO: Remove excess whitespace and blanks
+    member = re.sub(r'\s*[#].*$', '', line[:-1])
+    if not member:
+        continue
+
+    address, label = re.split(r'\s+', member,  maxsplit=1)
+
+    addresses[address] = {
+        'address': address,
+        '_meta': {
+            'display-name': label
+        }
+    }
+
+print(json.dumps(
+    { 'addresses': addresses },
+    sort_keys=True,
+    indent=4,
+    separators=(', ', ': ')))

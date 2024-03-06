@@ -7,6 +7,8 @@
 TOP="$1"
 DEST="$2"
 
+WHEREAMI=$(dirname "$0")
+
 ls "${TOP}" \
     | egrep -e '^pscheduler-(archiver|context|text|tool)-.*$' \
     | (
@@ -15,6 +17,7 @@ ls "${TOP}" \
 	PLUGIN_FILE="${TOP}/${PLUGIN}/testbed.json"
 	if [ -e "${PLUGIN_FILE}" ]
 	then
+	    "${WHEREAMI}/../bin/validate-json" "${PLUGIN_FILE}"
 	    cp "${PLUGIN_FILE}" "${DEST}/${PLUGIN}"
 	fi
     done

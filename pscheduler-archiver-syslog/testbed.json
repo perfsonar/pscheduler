@@ -1,0 +1,35 @@
+{
+    "tasks": {
+	"pscheduler-archiver-syslog-basic": {
+	    "_meta": {
+		"display-name": "Syslog Archiver - Basic"
+	    },
+	    "group": "list",
+	    "schedule": "PT1H",
+	    "test": "pscheduler-archiver-syslog-basic"
+	}
+    },
+    "tests": {
+	"pscheduler-archiver-syslog-basic": {
+	    "type": "noop",
+	    "spec": {
+		"host": "{% address[0] %}"
+	    }
+	}
+    },
+    "archives": {
+	"pscheduler-archiver-syslog": {
+	    "label": "Syslog Archiver",
+	    "archiver": "syslog",
+	    "data": {
+		"ident": "pscheduler-archiver-syslog",
+		"facility": "local4",
+		"priority": "info"
+	    },
+	    "transform": {
+		"script": "\"Syslog Archiver: \\(.test.type) with \\(.tool.name)\"",
+		"output-raw": true
+	    }
+	}
+    }
+}

@@ -1,5 +1,11 @@
 {
     "_meta": {
+	"NOTE": [
+	    "",
+	    "This file was automatically-generated and should not",
+	    "be edited manually.",
+	    ""
+	],
         "administrators": [
             {
                 "email": "perfsonar-developer@internet2.edu",

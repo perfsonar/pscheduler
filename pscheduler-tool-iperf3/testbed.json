@@ -1,0 +1,42 @@
+{
+    "tasks": {
+	"pscheduler-tool-iperf3-tcp": {
+	    "_meta": {
+		"display-name": "Throughput - Iperf3 TCP"
+	    },
+	    "group": "mesh",
+	    "schedule": "PT4H",
+	    "test": "pscheduler-tool-iperf3-tcp",
+	    "tools": [ "iperf3" ]
+	},
+	"pscheduler-tool-iperf3-udp": {
+	    "_meta": {
+		"display-name": "Throughput - Iperf3 UDP"
+	    },
+	    "group": "mesh",
+	    "schedule": "PT4H",
+	    "test": "pscheduler-tool-iperf3-udp",
+	    "tools": [ "iperf3" ]
+	}
+
+    },
+    "tests": {
+	"pscheduler-tool-iperf3-tcp": {
+	    "type": "throughput",
+	    "spec": {
+		"source": "{% address[0] %}",
+		"dest": "{% address[1] %}",
+		"duration": "PT20S"
+	    }
+	},
+	"pscheduler-tool-iperf3-udp": {
+	    "type": "throughput",
+	    "spec": {
+		"udp": true,
+		"source": "{% address[0] %}",
+		"dest": "{% address[1] %}",
+		"duration": "PT20S"
+	    }
+	}	
+    }
+}

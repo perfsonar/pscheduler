@@ -1,0 +1,22 @@
+{
+    "tasks": {
+	"pscheduler-tool-traceroute-basic": {
+	    "_meta": {
+		"display-name": "RTT - Traceroute"
+	    },
+	    "group": "mesh",
+	    "schedule": "PT5M",
+	    "test": "pscheduler-tool-traceroute-basic",
+	    "tools": [ "traceroute" ]
+	}
+    },
+    "tests": {
+	"pscheduler-tool-traceroute-basic": {
+	    "type": "trace",
+	    "spec": {
+		"source": "{% address[0] %}",
+		"dest": "{% address[1] %}"
+	    }
+	}
+    }
+}

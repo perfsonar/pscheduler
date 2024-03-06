@@ -1,0 +1,33 @@
+{
+    "tasks": {
+	"pscheduler-archiver-failer-basic": {
+	    "_meta": {
+		"display-name": "Failer Archiver - Basic"
+	    },
+	    "group": "list",
+	    "schedule": "PT1H",
+	    "test": "pscheduler-archiver-failer-basic"
+	}
+    },
+    "tests": {
+	"pscheduler-archiver-failer-basic": {
+	    "type": "noop",
+	    "spec": {
+		"host": "{% address[0] %}"
+	    }
+	}
+    },
+    "archives": {
+	"pscheduler-archiver-failer": {
+	    "label": "Failer Archiver - Expect some failures",
+	    "archiver": "failer",
+	    "data": {
+		"schema": 2,
+		"delay": "PT0S",
+		"fail": 0.5,
+		"retry": 0.5,
+		"badly": 0.5
+	    }
+	}
+    }
+}

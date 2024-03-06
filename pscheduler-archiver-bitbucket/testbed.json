@@ -1,0 +1,28 @@
+{
+    "tasks": {
+	"pscheduler-archiver-bitbucket-basic": {
+	    "_meta": {
+		"display-name": "Bitbucket Archiver - Basic"
+	    },
+	    "group": "list",
+	    "schedule": "PT1H",
+	    "test": "pscheduler-archiver-bitbucket-basic"
+	}
+    },
+    "tests": {
+	"pscheduler-archiver-bitbucket-basic": {
+	    "type": "noop",
+	    "spec": {
+		"host": "{% address[0] %}"
+	    }
+	}
+    },
+    "archives": {
+	"pscheduler-archiver-bitbucket": {
+	    "label": "Bitbucket Archiver",
+	    "archiver": "bitbucket",
+	    "data": {
+	    }
+	}
+    }
+}

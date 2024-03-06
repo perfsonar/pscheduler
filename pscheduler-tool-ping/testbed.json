@@ -1,0 +1,22 @@
+{
+    "tasks": {
+	"pscheduler-tool-ping-basic": {
+	    "_meta": {
+		"display-name": "RTT - Ping"
+	    },
+	    "group": "mesh",
+	    "schedule": "PT5M",
+	    "test": "pscheduler-tool-ping-basic",
+	    "tools": [ "ping" ]
+	}
+    },
+    "tests": {
+	"pscheduler-tool-ping-basic": {
+	    "type": "rtt",
+	    "spec": {
+		"source": "{% address[0] %}",
+		"dest": "{% address[1] %}"
+	    }
+	}
+    }
+}
