@@ -4,7 +4,7 @@
 
 PRODUCT := output.json
 
-INTERVALS := intervals
+INTERVALS := intervals.json
 
 
 default: build

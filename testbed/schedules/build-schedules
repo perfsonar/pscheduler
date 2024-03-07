@@ -2,6 +2,7 @@
 
 # Generate pSConfig schedules for all ISO 8601 durations listed on stdin
 
+import datetime
 import isodate
 import json
 import re
@@ -9,17 +10,33 @@ import sys
 
 schedules = {}
 
-for line in sys.stdin:
-    # TODO: Chop comments and extra whitespace
-    duration = re.sub(r'\s*[#].*$', '', line[:-1])
-    if not duration:
-        continue
-    schedules[duration] = {
-        'repeat': duration,
-        'slip': isodate.duration_isoformat(
-            isodate.parse_duration(duration) / 2
-        ),
+input_data = json.load(sys.stdin)
+
+assert isinstance(input_data, list)
+
+for interval in input_data:
+
+    howlong = isodate.parse_duration(interval)
+
+    # The default is to allow random slip of up to half the interval
+
+    schedules[interval] = {
+        'repeat': interval,
+        'slip': isodate.duration_isoformat(howlong / 2),
         'sliprand': True
+    }
+
+    # The strict version allows at most a minute of slip and doesn't
+    # randomize it.
+
+    MAX_STRICT_SLIP = datetime.timedelta(minutes=3)
+    if howlong > MAX_STRICT_SLIP:
+        howlong = MAX_STRICT_SLIP
+
+    schedules[f'{interval}-strict'] = {
+        'repeat': interval,
+        'slip': isodate.duration_isoformat(howlong),
+        'sliprand': False
     }
 
 print(json.dumps(

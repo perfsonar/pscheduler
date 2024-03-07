@@ -1,7 +1,6 @@
 # pScheduler Test Bed Configuration
 
 
-
 ## Building the Configuration
 
  * Install the prerequisites:
@@ -38,14 +37,15 @@ directory (e.g., `pscheduler-tool-iperf2/testbed.json`).  Note that
 only directories for known plugin types (`archiver` , `context` ,
 `test` or `tool`) will be probed for these files.
 
-Inside the file
-
-
-Identifiers for tests and tasks must be unique to avoid colliding with
-those in other plugins.  The recommended convention is to use the full
-name of the plugin package as a prefix, (e.g.,
+Identifiers for tests and tasks **must be unique** to avoid colliding
+with those in other plugins.  The recommended convention is to use the
+full name of the plugin package as a prefix, (e.g.,
 `pscheduler-tool-iperf3-udp`).
 
+See `schedules/intervals.json` for a set of standard schedules.  Each
+one is named by its ISO 8601 duration (e.g., `PT1H`) and allows random
+slip of up to half the time.  There is also an accompanying `*-strict`
+version that will slip for three minutes (`PT3M`) at most.
 
 
 
