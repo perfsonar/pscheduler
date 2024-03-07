@@ -1,0 +1,16 @@
+{
+    "#":  "perfSONAR Development Testbed Hosts",
+
+    "host1.perfsonar.net": {
+	"label": "First Host"
+    },
+    "host2.perfsonar.net": {
+	"label": "Second Host"
+    },
+    "host3.perfsonar.net": {
+	"label": "Third Host"
+    },
+    "host4.perfsonar.net": {
+	"#": "No label on this one."
+    }
+}

@@ -7,7 +7,7 @@ PRODUCT := output.json
 
 default: build
 
-MEMBERS := members
+MEMBERS := members.json
 
 BUILDER := ./build-addresses
 $(PRODUCT): Makefile $(BUILDER) $(MEMBERS)

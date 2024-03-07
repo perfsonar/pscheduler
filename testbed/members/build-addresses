@@ -9,18 +9,16 @@ import sys
 
 addresses = {}
 
-for line in sys.stdin:
-    # TODO: Remove excess whitespace and blanks
-    member = re.sub(r'\s*[#].*$', '', line[:-1])
-    if not member:
-        continue
+input_data = json.load(sys.stdin)
 
-    address, label = re.split(r'\s+', member,  maxsplit=1)
+for address, data in input_data.items():
+    if address[0] == '#':
+        continue
 
     addresses[address] = {
         'address': address,
         '_meta': {
-            'display-name': label
+            'display-name': data.get('label', address)
         }
     }
 
