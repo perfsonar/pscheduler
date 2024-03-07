@@ -110,3 +110,25 @@ A suitable sample for each type may be found in these plugins:
 Everything in this directory is designed to work on a minimal system
 with no perfSONAR components intstalled.  Ergo, it is preferable to
 write a Python script to process the data rather than using jq.
+
+
+### Installing Minimal pSConfig
+
+#### Red Hat
+
+```
+TODO
+```
+
+#### Debian/Ubuntu
+
+```
+apt-get -y install curl make python3 gnupg
+apt update
+cd /etc/apt/sources.list.d/
+curl -o perfsonar-release.list http://downloads.perfsonar.net/debian/perfsonar-release.list
+curl http://downloads.perfsonar.net/debian/perfsonar-official.gpg.key | apt-key add -
+apt update
+apt install -y perfsonar-psconfig-utils
+psconfig validate /dev/null
+```

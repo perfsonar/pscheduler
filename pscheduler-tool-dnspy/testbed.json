@@ -1,0 +1,40 @@
+{
+    "tasks": {
+	"pscheduler-tool-dnspy-a": {
+	    "_meta": {
+		"display-name": "DNS - dnspy A"
+	    },
+	    "group": "list",
+	    "schedule": "PT1H",
+	    "test": "pscheduler-tool-dnspy-a",
+	    "tools": [ "dnspy" ]
+	},
+	"pscheduler-tool-dnspy-aaaa": {
+	    "_meta": {
+		"display-name": "DNS - dnspy AAAA"
+	    },
+	    "group": "list",
+	    "schedule": "PT1H",
+	    "test": "pscheduler-tool-dnspy-aaaa",
+	    "tools": [ "dnspy" ]
+	}
+    },
+    "tests": {
+	"pscheduler-tool-dnspy-a": {
+	    "type": "dns",
+	    "spec": {
+		"host": "{% address[0] %}",
+		"record": "a",
+		"query": "www.perfsonar.net"
+	    }
+	},
+	"pscheduler-tool-dnspy-aaaa": {
+	    "type": "dns",
+	    "spec": {
+		"host": "{% address[0] %}",
+		"record": "aaaa",
+		"query": "www.perfsonar.net"
+	    }
+	}
+    }
+}

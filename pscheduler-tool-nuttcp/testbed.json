@@ -1,27 +1,27 @@
 {
     "tasks": {
-	"pscheduler-tool-iperf3-tcp": {
+	"pscheduler-tool-nuttcp-tcp": {
 	    "_meta": {
-		"display-name": "Throughput - Iperf3 TCP"
+		"display-name": "Throughput - Nuttcp TCP"
 	    },
 	    "group": "mesh",
 	    "schedule": "PT4H",
-	    "test": "pscheduler-tool-iperf3-tcp",
-	    "tools": [ "iperf3" ]
+	    "test": "pscheduler-tool-nuttcp-tcp",
+	    "tools": [ "nuttcp" ]
 	},
-	"pscheduler-tool-iperf3-udp": {
+	"pscheduler-tool-nuttcp-udp": {
 	    "_meta": {
-		"display-name": "Throughput - Iperf3 UDP"
+		"display-name": "Throughput - Nuttcp UDP"
 	    },
 	    "group": "mesh",
 	    "schedule": "PT4H",
-	    "test": "pscheduler-tool-iperf3-udp",
-	    "tools": [ "iperf3" ]
+	    "test": "pscheduler-tool-nuttcp-udp",
+	    "tools": [ "nuttcp" ]
 	}
 
     },
     "tests": {
-	"pscheduler-tool-iperf3-tcp": {
+	"pscheduler-tool-nuttcp-tcp": {
 	    "type": "throughput",
 	    "spec": {
 		"source": "{% address[0] %}",
@@ -30,7 +30,7 @@
 		"bandwidth": 50000000
 	    }
 	},
-	"pscheduler-tool-iperf3-udp": {
+	"pscheduler-tool-nuttcp-udp": {
 	    "type": "throughput",
 	    "spec": {
 		"udp": true,

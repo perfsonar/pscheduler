@@ -1,0 +1,40 @@
+{
+    "tasks": {
+	"pscheduler-tool-curl-ipv4": {
+	    "_meta": {
+		"display-name": "HTTP - cURL IPv4"
+	    },
+	    "group": "list",
+	    "schedule": "PT1H",
+	    "test": "pscheduler-tool-curl-ipv4",
+	    "tools": [ "curl" ]
+	},
+	"pscheduler-tool-curl-ipv6": {
+	    "_meta": {
+		"display-name": "HTTP - cURL IPv6"
+	    },
+	    "group": "list",
+	    "schedule": "PT1H",
+	    "test": "pscheduler-tool-curl-ipv6",
+	    "tools": [ "curl" ]
+	}
+    },
+    "tests": {
+	"pscheduler-tool-curl-ipv4": {
+	    "type": "http",
+	    "spec": {
+		"host": "{% address[0] %}",
+		"url": "https://www.perfsonar/net",
+		"ip-version": 4
+	    }
+	},
+	"pscheduler-tool-curl-ipv6": {
+	    "type": "http",
+	    "spec": {
+		"host": "{% address[0] %}",
+		"url": "https://www.perfsonar/net",
+		"ip-version": 6
+	    }
+	}
+    }
+}

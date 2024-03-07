@@ -6,6 +6,7 @@ default: build
 
 
 build:
+	../bin/validate-json output.json
 	@true
 
 clean:

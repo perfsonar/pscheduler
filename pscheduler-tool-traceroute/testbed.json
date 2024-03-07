@@ -1,21 +1,39 @@
 {
     "tasks": {
-	"pscheduler-tool-traceroute-basic": {
+	"pscheduler-tool-traceroute-ipv4": {
 	    "_meta": {
-		"display-name": "RTT - Traceroute"
+		"display-name": "RTT - Traceroute IPv4"
 	    },
 	    "group": "mesh",
 	    "schedule": "PT5M",
-	    "test": "pscheduler-tool-traceroute-basic",
+	    "test": "pscheduler-tool-traceroute-ipv4",
+	    "tools": [ "traceroute" ]
+	},
+	"pscheduler-tool-traceroute-ipv6": {
+	    "_meta": {
+		"display-name": "RTT - Traceroute IPv6"
+	    },
+	    "group": "mesh",
+	    "schedule": "PT5M",
+	    "test": "pscheduler-tool-traceroute-ipv6",
 	    "tools": [ "traceroute" ]
 	}
     },
     "tests": {
-	"pscheduler-tool-traceroute-basic": {
+	"pscheduler-tool-traceroute-ipv4": {
 	    "type": "trace",
 	    "spec": {
 		"source": "{% address[0] %}",
-		"dest": "{% address[1] %}"
+		"dest": "{% address[1] %}",
+		"ip-version": 4
+	    }
+	},
+	"pscheduler-tool-traceroute-ipv6": {
+	    "type": "trace",
+	    "spec": {
+		"source": "{% address[0] %}",
+		"dest": "{% address[1] %}",
+		"ip-version": 6
 	    }
 	}
     }

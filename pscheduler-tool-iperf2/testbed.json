@@ -1,36 +1,35 @@
 {
     "tasks": {
-	"pscheduler-tool-iperf3-tcp": {
+	"pscheduler-tool-iperf2-tcp": {
 	    "_meta": {
-		"display-name": "Throughput - Iperf3 TCP"
+		"display-name": "Throughput - Iperf2 TCP"
 	    },
 	    "group": "mesh",
 	    "schedule": "PT4H",
-	    "test": "pscheduler-tool-iperf3-tcp",
-	    "tools": [ "iperf3" ]
+	    "test": "pscheduler-tool-iperf2-tcp",
+	    "tools": [ "iperf2" ]
 	},
-	"pscheduler-tool-iperf3-udp": {
+	"pscheduler-tool-iperf2-udp": {
 	    "_meta": {
-		"display-name": "Throughput - Iperf3 UDP"
+		"display-name": "Throughput - Iperf2 UDP"
 	    },
 	    "group": "mesh",
 	    "schedule": "PT4H",
-	    "test": "pscheduler-tool-iperf3-udp",
-	    "tools": [ "iperf3" ]
+	    "test": "pscheduler-tool-iperf2-udp",
+	    "tools": [ "iperf2" ]
 	}
 
     },
     "tests": {
-	"pscheduler-tool-iperf3-tcp": {
+	"pscheduler-tool-iperf2-tcp": {
 	    "type": "throughput",
 	    "spec": {
 		"source": "{% address[0] %}",
 		"dest": "{% address[1] %}",
-		"duration": "PT20S",
-		"bandwidth": 50000000
+		"duration": "PT20S"
 	    }
 	},
-	"pscheduler-tool-iperf3-udp": {
+	"pscheduler-tool-iperf2-udp": {
 	    "type": "throughput",
 	    "spec": {
 		"udp": true,

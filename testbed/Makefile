@@ -21,7 +21,7 @@ $(PRODUCT)::
 		printf "\n#\n# Building $$SUBDIR\n#\n\n" ; \
 		$(MAKE) -C "$${SUBDIR}" ; \
 	done
-	printf "\n#\n# Merging results\n#\n\n"
+	@printf "\n#\n# Merging results\n#\n\n"
 	./bin/merge-json $(SUBDIRS:%=%/output.json) \
 		| ./bin/finish \
 		> "$@"

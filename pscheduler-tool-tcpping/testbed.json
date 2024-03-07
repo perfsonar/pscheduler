@@ -1,0 +1,22 @@
+{
+    "tasks": {
+	"pscheduler-tool-tcpping-basic": {
+	    "_meta": {
+		"display-name": "RTT - Tcpping"
+	    },
+	    "group": "mesh",
+	    "schedule": "PT5M",
+	    "test": "pscheduler-tool-tcpping-basic",
+	    "tools": [ "tcpping" ]
+	}
+    },
+    "tests": {
+	"pscheduler-tool-tcpping-basic": {
+	    "type": "rtt",
+	    "spec": {
+		"source": "{% address[0] %}",
+		"dest": "{% address[1] %}"
+	    }
+	}
+    }
+}

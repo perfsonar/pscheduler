@@ -1,0 +1,40 @@
+{
+    "tasks": {
+	"pscheduler-tool-halfping-ipv4": {
+	    "_meta": {
+		"display-name": "Latency - halfping IPv4"
+	    },
+	    "group": "mesh",
+	    "schedule": "PT5M",
+	    "test": "pscheduler-tool-halfping-ipv4",
+	    "tools": [ "halfping" ]
+	},
+	"pscheduler-tool-halfping-ipv6": {
+	    "_meta": {
+		"display-name": "Latency - halfping IPv6"
+	    },
+	    "group": "mesh",
+	    "schedule": "PT5M",
+	    "test": "pscheduler-tool-halfping-ipv6",
+	    "tools": [ "halfping" ]
+	}
+    },
+    "tests": {
+	"pscheduler-tool-halfping-ipv4": {
+	    "type": "latency",
+	    "spec": {
+		"source": "{% address[0] %}",
+		"dest": "{% address[1] %}",
+		"ip-version": 4
+	    }
+	},
+	"pscheduler-tool-halfping-ipv6": {
+	    "type": "latency",
+	    "spec": {
+		"source": "{% address[0] %}",
+		"dest": "{% address[1] %}",
+		"ip-version": 6
+	    }
+	}
+    }
+}

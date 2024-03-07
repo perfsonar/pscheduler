@@ -1,0 +1,40 @@
+{
+    "tasks": {
+	"pscheduler-tool-fwmtu-ipv4": {
+	    "_meta": {
+		"display-name": "MTU - fwmtu IPv4"
+	    },
+	    "group": "mesh",
+	    "schedule": "PT5M",
+	    "test": "pscheduler-tool-fwmtu-ipv4",
+	    "tools": [ "fwmtu" ]
+	},
+	"pscheduler-tool-fwmtu-ipv6": {
+	    "_meta": {
+		"display-name": "MTU - fwmtu IPv6"
+	    },
+	    "group": "mesh",
+	    "schedule": "PT5M",
+	    "test": "pscheduler-tool-fwmtu-ipv6",
+	    "tools": [ "fwmtu" ]
+	}
+    },
+    "tests": {
+	"pscheduler-tool-fwmtu-ipv4": {
+	    "type": "mtu",
+	    "spec": {
+		"source": "{% address[0] %}",
+		"dest": "{% address[1] %}",
+		"ip-version": 4
+	    }
+	},
+	"pscheduler-tool-fwmtu-ipv6": {
+	    "type": "mtu",
+	    "spec": {
+		"source": "{% address[0] %}",
+		"dest": "{% address[1] %}",
+		"ip-version": 6
+	    }
+	}
+    }
+}
