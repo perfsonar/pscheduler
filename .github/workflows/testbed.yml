@@ -37,12 +37,12 @@ jobs:
         run: |
           set -e
           make -C testbed
-          cp testbed/testbed.json testbed/testbed-${{ github.ref }}.json
+          cp testbed/testbed.json testbed/testbed-${{ github.ref_name }}.json
 
       - name: Publish the result
         uses: actions/upload-artifact@v4
         with:
           name: development-testbed
-          path: testbed/testbed-${{ github.ref }}.json
+          path: testbed/testbed-${{ github.ref_name }}.json
           if-no-files-found: error
           overwrite: true
