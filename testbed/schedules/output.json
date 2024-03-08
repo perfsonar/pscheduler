@@ -1,0 +1,127 @@
+{
+    "schedules": {
+
+	"PT30S": {
+            "repeat": "PT30S", 
+            "slip": "PT15S", 
+            "sliprand": true
+        }, 
+        "PT30S-strict": {
+            "repeat": "PT30S", 
+            "slip": "PT30S", 
+            "sliprand": false
+        },
+
+	"PT1M": {
+            "repeat": "PT1M", 
+            "slip": "PT30S", 
+            "sliprand": true
+        }, 
+        "PT1M-strict": {
+            "repeat": "PT1M", 
+            "slip": "PT1M", 
+            "sliprand": false
+        }, 
+
+        "PT5M": {
+            "repeat": "PT5M", 
+            "slip": "PT2M30S", 
+            "sliprand": true
+        }, 
+        "PT5M-strict": {
+            "repeat": "PT5M", 
+            "slip": "PT3M", 
+            "sliprand": false
+        },
+
+	"PT10M": {
+	    "repeat": "PT10M",
+	    "slip": "PT5M",
+	    "sliprand": true
+	},
+        "PT10M-strict": {
+	    "repeat": "PT10M",
+	    "slip": "PT3M",
+	    "sliprand": false
+	},
+
+	"PT15M": {
+            "repeat": "PT15M", 
+            "slip": "PT7M30S", 
+            "sliprand": true
+        }, 
+        "PT15M-strict": {
+            "repeat": "PT15M", 
+            "slip": "PT3M", 
+            "sliprand": false
+        },
+
+
+        "PT1H": {
+            "repeat": "PT1H", 
+            "slip": "PT30M", 
+            "sliprand": true
+        }, 
+        "PT1H-strict": {
+            "repeat": "PT1H", 
+            "slip": "PT3M", 
+            "sliprand": false
+        },
+
+        "PT30M": {
+            "repeat": "PT30M", 
+            "slip": "PT15M", 
+            "sliprand": true
+        }, 
+        "PT30M-strict": {
+            "repeat": "PT30M", 
+            "slip": "PT3M", 
+            "sliprand": false
+        }, 
+
+        "PT4H": {
+            "repeat": "PT4H", 
+            "slip": "PT2H", 
+            "sliprand": true
+        }, 
+        "PT4H-strict": {
+            "repeat": "PT4H", 
+            "slip": "PT3M", 
+            "sliprand": false
+        }, 
+
+	"PT6H": {
+            "repeat": "PT6H", 
+            "slip": "PT3H", 
+            "sliprand": true
+        }, 
+        "PT6H-strict": {
+            "repeat": "PT6H", 
+            "slip": "PT3M", 
+            "sliprand": false
+        },
+
+	"PT12H": {
+	    "repeat": "PT12H",
+	    "slip": "PT6H",
+	    "sliprand": true
+	},
+        "PT12H-strict": {
+	    "repeat": "PT12H",
+	    "slip": "PT3M",
+	    "sliprand": false
+	},
+
+        "P1D": {
+	    "repeat": "P1D",
+	    "slip": "PT12H",
+	    "sliprand": true
+	}, 
+        "P1D-strict": {
+	    "repeat": "P1D",
+	    "slip": "PT3M",
+	    "sliprand": false
+	}
+
+    }
+}

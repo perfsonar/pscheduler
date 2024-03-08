@@ -1,23 +1,13 @@
 #
-# Makefile for Testbed Schedules
+# Makefile for Testbed Skeleton
 #
-
-PRODUCT := output.json
-
-INTERVALS := intervals.json
-
 
 default: build
 
 
-BUILDER := ./build-schedules
-$(PRODUCT): Makefile $(BUILDER) $(INTERVALS)
-	$(BUILDER) $(BUILDER_ARGS) < $(INTERVALS) > "$@"
-TO_CLEAN += $(PRODUCT)
-
-
-build: $(PRODUCT)
-
+build:
+	../bin/validate-json output.json
+	@true
 
 clean:
 	rm -rf $(TO_CLEAN) *~
