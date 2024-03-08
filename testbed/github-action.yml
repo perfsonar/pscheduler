@@ -1,0 +1,40 @@
+#
+# Generate the testbed configuration
+#
+
+# TODO: Need to deal with pushes in multiple branches.
+
+name: testbed
+
+on:
+  push:
+    branches:
+      - 'issue-1410'
+    paths:
+      - 'testbed/**/*'
+      - 'pscheduler-test-*/testbed.json'
+      - 'pscheduler-tool-*/testbed.json'
+      - 'pscheduler-archiver-*/testbed.json'
+      - 'pscheduler-context-*/testbed.json'
+
+jobs:
+
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Build the testbed configuration
+        run: make -C testbed
+
+      - name: Publish the result
+        uses: actions/upload-artifact@v4
+        with:
+          name: development-testbed
+          path: testbed/testbed.json
+          if-no-files-found: error
+          overwrite: true
