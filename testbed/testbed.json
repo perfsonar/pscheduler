@@ -1,0 +1,721 @@
+{
+    "_meta": {
+        "NOTE": [
+            "", 
+            "This file was automatically-generated and should not", 
+            "be edited manually.", 
+            ""
+        ], 
+        "administrators": [
+            {
+                "email": "perfsonar-developer@internet2.edu", 
+                "name": "The perfSONAR Development Team"
+            }
+        ], 
+        "display-name": "perfSONAR Test Bed for pScheduler"
+    }, 
+    "addresses": {
+        "host1.perfsonar.net": {
+            "_meta": {
+                "display-name": "First Host"
+            }, 
+            "address": "host1.perfsonar.net"
+        }, 
+        "host2.perfsonar.net": {
+            "_meta": {
+                "display-name": "Second Host"
+            }, 
+            "address": "host2.perfsonar.net"
+        }, 
+        "host3.perfsonar.net": {
+            "_meta": {
+                "display-name": "Third Host"
+            }, 
+            "address": "host3.perfsonar.net"
+        }, 
+        "host4.perfsonar.net": {
+            "_meta": {
+                "display-name": "host4.perfsonar.net"
+            }, 
+            "address": "host4.perfsonar.net"
+        }
+    }, 
+    "archives": {
+        "pscheduler-archiver-bitbucket": {
+            "archiver": "bitbucket", 
+            "data": {}, 
+            "label": "Bitbucket Archiver"
+        }, 
+        "pscheduler-archiver-failer": {
+            "archiver": "failer", 
+            "data": {
+                "badly": 0.5, 
+                "delay": "PT0S", 
+                "fail": 0.5, 
+                "retry": 0.5, 
+                "schema": 2
+            }, 
+            "label": "Failer Archiver - Expect some failures"
+        }, 
+        "pscheduler-archiver-syslog": {
+            "archiver": "syslog", 
+            "data": {
+                "facility": "local4", 
+                "ident": "pscheduler-archiver-syslog", 
+                "priority": "info"
+            }, 
+            "label": "Syslog Archiver", 
+            "transform": {
+                "output-raw": true, 
+                "script": "\"Syslog Archiver: \\(.test.type) with \\(.tool.name)\""
+            }
+        }
+    }, 
+    "groups": {
+        "list": {
+            "addresses": [
+                {
+                    "name": "host1.perfsonar.net"
+                }, 
+                {
+                    "name": "host2.perfsonar.net"
+                }, 
+                {
+                    "name": "host3.perfsonar.net"
+                }, 
+                {
+                    "name": "host4.perfsonar.net"
+                }
+            ], 
+            "type": "list"
+        }, 
+        "mesh": {
+            "addresses": [
+                {
+                    "name": "host1.perfsonar.net"
+                }, 
+                {
+                    "name": "host2.perfsonar.net"
+                }, 
+                {
+                    "name": "host3.perfsonar.net"
+                }, 
+                {
+                    "name": "host4.perfsonar.net"
+                }
+            ], 
+            "type": "mesh"
+        }
+    }, 
+    "schedules": {
+        "P1D": {
+            "repeat": "P1D", 
+            "slip": "PT12H", 
+            "sliprand": true
+        }, 
+        "P1D-strict": {
+            "repeat": "P1D", 
+            "slip": "PT3M", 
+            "sliprand": false
+        }, 
+        "PT10M": {
+            "repeat": "PT10M", 
+            "slip": "PT5M", 
+            "sliprand": true
+        }, 
+        "PT10M-strict": {
+            "repeat": "PT10M", 
+            "slip": "PT3M", 
+            "sliprand": false
+        }, 
+        "PT12H": {
+            "repeat": "PT12H", 
+            "slip": "PT6H", 
+            "sliprand": true
+        }, 
+        "PT12H-strict": {
+            "repeat": "PT12H", 
+            "slip": "PT3M", 
+            "sliprand": false
+        }, 
+        "PT15M": {
+            "repeat": "PT15M", 
+            "slip": "PT7M30S", 
+            "sliprand": true
+        }, 
+        "PT15M-strict": {
+            "repeat": "PT15M", 
+            "slip": "PT3M", 
+            "sliprand": false
+        }, 
+        "PT1H": {
+            "repeat": "PT1H", 
+            "slip": "PT30M", 
+            "sliprand": true
+        }, 
+        "PT1H-strict": {
+            "repeat": "PT1H", 
+            "slip": "PT3M", 
+            "sliprand": false
+        }, 
+        "PT1M": {
+            "repeat": "PT1M", 
+            "slip": "PT30S", 
+            "sliprand": true
+        }, 
+        "PT1M-strict": {
+            "repeat": "PT1M", 
+            "slip": "PT1M", 
+            "sliprand": false
+        }, 
+        "PT30M": {
+            "repeat": "PT30M", 
+            "slip": "PT15M", 
+            "sliprand": true
+        }, 
+        "PT30M-strict": {
+            "repeat": "PT30M", 
+            "slip": "PT3M", 
+            "sliprand": false
+        }, 
+        "PT30S": {
+            "repeat": "PT30S", 
+            "slip": "PT15S", 
+            "sliprand": true
+        }, 
+        "PT30S-strict": {
+            "repeat": "PT30S", 
+            "slip": "PT30S", 
+            "sliprand": false
+        }, 
+        "PT4H": {
+            "repeat": "PT4H", 
+            "slip": "PT2H", 
+            "sliprand": true
+        }, 
+        "PT4H-strict": {
+            "repeat": "PT4H", 
+            "slip": "PT3M", 
+            "sliprand": false
+        }, 
+        "PT5M": {
+            "repeat": "PT5M", 
+            "slip": "PT2M30S", 
+            "sliprand": true
+        }, 
+        "PT5M-strict": {
+            "repeat": "PT5M", 
+            "slip": "PT3M", 
+            "sliprand": false
+        }, 
+        "PT6H": {
+            "repeat": "PT6H", 
+            "slip": "PT3H", 
+            "sliprand": true
+        }, 
+        "PT6H-strict": {
+            "repeat": "PT6H", 
+            "slip": "PT3M", 
+            "sliprand": false
+        }
+    }, 
+    "tasks": {
+        "pscheduler-archiver-bitbucket-basic": {
+            "_meta": {
+                "display-name": "Bitbucket Archiver - Basic"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "list", 
+            "schedule": "PT1H", 
+            "test": "pscheduler-archiver-bitbucket-basic"
+        }, 
+        "pscheduler-archiver-failer-basic": {
+            "_meta": {
+                "display-name": "Failer Archiver - Basic"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "list", 
+            "schedule": "PT1H", 
+            "test": "pscheduler-archiver-failer-basic"
+        }, 
+        "pscheduler-archiver-syslog-basic": {
+            "_meta": {
+                "display-name": "Syslog Archiver - Basic"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "list", 
+            "schedule": "PT1H", 
+            "test": "pscheduler-archiver-syslog-basic"
+        }, 
+        "pscheduler-tool-curl-ipv4": {
+            "_meta": {
+                "display-name": "HTTP - cURL IPv4"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "list", 
+            "schedule": "PT1H", 
+            "test": "pscheduler-tool-curl-ipv4", 
+            "tools": [
+                "curl"
+            ]
+        }, 
+        "pscheduler-tool-curl-ipv6": {
+            "_meta": {
+                "display-name": "HTTP - cURL IPv6"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "list", 
+            "schedule": "PT1H", 
+            "test": "pscheduler-tool-curl-ipv6", 
+            "tools": [
+                "curl"
+            ]
+        }, 
+        "pscheduler-tool-dnspy-a": {
+            "_meta": {
+                "display-name": "DNS - dnspy A"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "list", 
+            "schedule": "PT1H", 
+            "test": "pscheduler-tool-dnspy-a", 
+            "tools": [
+                "dnspy"
+            ]
+        }, 
+        "pscheduler-tool-dnspy-aaaa": {
+            "_meta": {
+                "display-name": "DNS - dnspy AAAA"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "list", 
+            "schedule": "PT1H", 
+            "test": "pscheduler-tool-dnspy-aaaa", 
+            "tools": [
+                "dnspy"
+            ]
+        }, 
+        "pscheduler-tool-fwmtu-ipv4": {
+            "_meta": {
+                "display-name": "MTU - fwmtu IPv4"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "mesh", 
+            "schedule": "PT5M", 
+            "test": "pscheduler-tool-fwmtu-ipv4", 
+            "tools": [
+                "fwmtu"
+            ]
+        }, 
+        "pscheduler-tool-fwmtu-ipv6": {
+            "_meta": {
+                "display-name": "MTU - fwmtu IPv6"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "mesh", 
+            "schedule": "PT5M", 
+            "test": "pscheduler-tool-fwmtu-ipv6", 
+            "tools": [
+                "fwmtu"
+            ]
+        }, 
+        "pscheduler-tool-halfping-ipv4": {
+            "_meta": {
+                "display-name": "Latency - halfping IPv4"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "mesh", 
+            "schedule": "PT5M", 
+            "test": "pscheduler-tool-halfping-ipv4", 
+            "tools": [
+                "halfping"
+            ]
+        }, 
+        "pscheduler-tool-halfping-ipv6": {
+            "_meta": {
+                "display-name": "Latency - halfping IPv6"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "mesh", 
+            "schedule": "PT5M", 
+            "test": "pscheduler-tool-halfping-ipv6", 
+            "tools": [
+                "halfping"
+            ]
+        }, 
+        "pscheduler-tool-iperf2-tcp": {
+            "_meta": {
+                "display-name": "Throughput - Iperf2 TCP"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "mesh", 
+            "schedule": "PT4H", 
+            "test": "pscheduler-tool-iperf2-tcp", 
+            "tools": [
+                "iperf2"
+            ]
+        }, 
+        "pscheduler-tool-iperf2-udp": {
+            "_meta": {
+                "display-name": "Throughput - Iperf2 UDP"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "mesh", 
+            "schedule": "PT4H", 
+            "test": "pscheduler-tool-iperf2-udp", 
+            "tools": [
+                "iperf2"
+            ]
+        }, 
+        "pscheduler-tool-iperf3-tcp": {
+            "_meta": {
+                "display-name": "Throughput - Iperf3 TCP"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "mesh", 
+            "schedule": "PT4H", 
+            "test": "pscheduler-tool-iperf3-tcp", 
+            "tools": [
+                "iperf3"
+            ]
+        }, 
+        "pscheduler-tool-iperf3-udp": {
+            "_meta": {
+                "display-name": "Throughput - Iperf3 UDP"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "mesh", 
+            "schedule": "PT4H", 
+            "test": "pscheduler-tool-iperf3-udp", 
+            "tools": [
+                "iperf3"
+            ]
+        }, 
+        "pscheduler-tool-nuttcp-tcp": {
+            "_meta": {
+                "display-name": "Throughput - Nuttcp TCP"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "mesh", 
+            "schedule": "PT4H", 
+            "test": "pscheduler-tool-nuttcp-tcp", 
+            "tools": [
+                "nuttcp"
+            ]
+        }, 
+        "pscheduler-tool-nuttcp-udp": {
+            "_meta": {
+                "display-name": "Throughput - Nuttcp UDP"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "mesh", 
+            "schedule": "PT4H", 
+            "test": "pscheduler-tool-nuttcp-udp", 
+            "tools": [
+                "nuttcp"
+            ]
+        }, 
+        "pscheduler-tool-ping-basic": {
+            "_meta": {
+                "display-name": "RTT - Ping"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "mesh", 
+            "schedule": "PT5M", 
+            "test": "pscheduler-tool-ping-basic", 
+            "tools": [
+                "ping"
+            ]
+        }, 
+        "pscheduler-tool-tcpping-basic": {
+            "_meta": {
+                "display-name": "RTT - Tcpping"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "mesh", 
+            "schedule": "PT5M", 
+            "test": "pscheduler-tool-tcpping-basic", 
+            "tools": [
+                "tcpping"
+            ]
+        }, 
+        "pscheduler-tool-traceroute-ipv4": {
+            "_meta": {
+                "display-name": "RTT - Traceroute IPv4"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "mesh", 
+            "schedule": "PT5M", 
+            "test": "pscheduler-tool-traceroute-ipv4", 
+            "tools": [
+                "traceroute"
+            ]
+        }, 
+        "pscheduler-tool-traceroute-ipv6": {
+            "_meta": {
+                "display-name": "RTT - Traceroute IPv6"
+            }, 
+            "archives": [
+                "pscheduler-archiver-bitbucket", 
+                "pscheduler-archiver-failer", 
+                "pscheduler-archiver-syslog"
+            ], 
+            "group": "mesh", 
+            "schedule": "PT5M", 
+            "test": "pscheduler-tool-traceroute-ipv6", 
+            "tools": [
+                "traceroute"
+            ]
+        }
+    }, 
+    "tests": {
+        "pscheduler-archiver-bitbucket-basic": {
+            "spec": {
+                "host": "{% address[0] %}"
+            }, 
+            "type": "noop"
+        }, 
+        "pscheduler-archiver-failer-basic": {
+            "spec": {
+                "host": "{% address[0] %}"
+            }, 
+            "type": "noop"
+        }, 
+        "pscheduler-archiver-syslog-basic": {
+            "spec": {
+                "host": "{% address[0] %}"
+            }, 
+            "type": "noop"
+        }, 
+        "pscheduler-tool-curl-ipv4": {
+            "spec": {
+                "host": "{% address[0] %}", 
+                "ip-version": 4, 
+                "url": "https://www.perfsonar/net"
+            }, 
+            "type": "http"
+        }, 
+        "pscheduler-tool-curl-ipv6": {
+            "spec": {
+                "host": "{% address[0] %}", 
+                "ip-version": 6, 
+                "url": "https://www.perfsonar/net"
+            }, 
+            "type": "http"
+        }, 
+        "pscheduler-tool-dnspy-a": {
+            "spec": {
+                "host": "{% address[0] %}", 
+                "query": "www.perfsonar.net", 
+                "record": "a"
+            }, 
+            "type": "dns"
+        }, 
+        "pscheduler-tool-dnspy-aaaa": {
+            "spec": {
+                "host": "{% address[0] %}", 
+                "query": "www.perfsonar.net", 
+                "record": "aaaa"
+            }, 
+            "type": "dns"
+        }, 
+        "pscheduler-tool-fwmtu-ipv4": {
+            "spec": {
+                "dest": "{% address[1] %}", 
+                "ip-version": 4, 
+                "source": "{% address[0] %}"
+            }, 
+            "type": "mtu"
+        }, 
+        "pscheduler-tool-fwmtu-ipv6": {
+            "spec": {
+                "dest": "{% address[1] %}", 
+                "ip-version": 6, 
+                "source": "{% address[0] %}"
+            }, 
+            "type": "mtu"
+        }, 
+        "pscheduler-tool-halfping-ipv4": {
+            "spec": {
+                "dest": "{% address[1] %}", 
+                "ip-version": 4, 
+                "source": "{% address[0] %}"
+            }, 
+            "type": "latency"
+        }, 
+        "pscheduler-tool-halfping-ipv6": {
+            "spec": {
+                "dest": "{% address[1] %}", 
+                "ip-version": 6, 
+                "source": "{% address[0] %}"
+            }, 
+            "type": "latency"
+        }, 
+        "pscheduler-tool-iperf2-tcp": {
+            "spec": {
+                "dest": "{% address[1] %}", 
+                "duration": "PT20S", 
+                "source": "{% address[0] %}"
+            }, 
+            "type": "throughput"
+        }, 
+        "pscheduler-tool-iperf2-udp": {
+            "spec": {
+                "bandwidth": 50000000, 
+                "dest": "{% address[1] %}", 
+                "duration": "PT20S", 
+                "source": "{% address[0] %}", 
+                "udp": true
+            }, 
+            "type": "throughput"
+        }, 
+        "pscheduler-tool-iperf3-tcp": {
+            "spec": {
+                "bandwidth": 50000000, 
+                "dest": "{% address[1] %}", 
+                "duration": "PT20S", 
+                "source": "{% address[0] %}"
+            }, 
+            "type": "throughput"
+        }, 
+        "pscheduler-tool-iperf3-udp": {
+            "spec": {
+                "bandwidth": 50000000, 
+                "dest": "{% address[1] %}", 
+                "duration": "PT20S", 
+                "source": "{% address[0] %}", 
+                "udp": true
+            }, 
+            "type": "throughput"
+        }, 
+        "pscheduler-tool-nuttcp-tcp": {
+            "spec": {
+                "bandwidth": 50000000, 
+                "dest": "{% address[1] %}", 
+                "duration": "PT20S", 
+                "source": "{% address[0] %}"
+            }, 
+            "type": "throughput"
+        }, 
+        "pscheduler-tool-nuttcp-udp": {
+            "spec": {
+                "bandwidth": 50000000, 
+                "dest": "{% address[1] %}", 
+                "duration": "PT20S", 
+                "source": "{% address[0] %}", 
+                "udp": true
+            }, 
+            "type": "throughput"
+        }, 
+        "pscheduler-tool-ping-basic": {
+            "spec": {
+                "dest": "{% address[1] %}", 
+                "source": "{% address[0] %}"
+            }, 
+            "type": "rtt"
+        }, 
+        "pscheduler-tool-tcpping-basic": {
+            "spec": {
+                "dest": "{% address[1] %}", 
+                "source": "{% address[0] %}"
+            }, 
+            "type": "rtt"
+        }, 
+        "pscheduler-tool-traceroute-ipv4": {
+            "spec": {
+                "dest": "{% address[1] %}", 
+                "ip-version": 4, 
+                "source": "{% address[0] %}"
+            }, 
+            "type": "trace"
+        }, 
+        "pscheduler-tool-traceroute-ipv6": {
+            "spec": {
+                "dest": "{% address[1] %}", 
+                "ip-version": 6, 
+                "source": "{% address[0] %}"
+            }, 
+            "type": "trace"
+        }
+    }
+}

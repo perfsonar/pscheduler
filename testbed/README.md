@@ -12,6 +12,19 @@
  * Find the ready-to-use mesh in `testbed.json`.
 
 
+### Deployment
+
+Until there's a clean way to deploy the testbed file, run `make` in
+this directory and commit the changed version of `testbed.json`.
+Systems wanting to use it can retrieve the following URL:
+
+`https://raw.githubusercontent.com/perfsonar/pscheduler/<BRANCH>/testbed/testbed.json`
+
+There is a prototype workflow in `github-action.yml` that does builds
+and deployment on `master`, `main`, or any version-numbered branch but
+**does not do anything beyond producing an artifact**.
+
+
 ## Configuration Files
 
 
