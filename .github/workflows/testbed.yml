@@ -27,7 +27,6 @@ jobs:
 
       - name: Check out repo
         uses: actions/checkout@v4
-          ref: '${{ github.ref }}'
 
       - name: Build the testbed configuration
         run: make -C testbed
