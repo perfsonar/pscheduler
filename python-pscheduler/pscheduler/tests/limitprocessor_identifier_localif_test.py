@@ -33,7 +33,7 @@ class TestLimitprocessorIdentifierJQ(PschedTestBase):
         ident = IdentifierLocalIF(DATA)
 
         self.assertEqual(ident.evaluate({ "requester": "192.168.1.1" }), False)
-        self.assertEqual(ident.evaluate({ "requester": "127.0.0.1" }), True)
+        self.assertEqual(ident.evaluate({ "requester": "localhost" }), True)
 
 
 

@@ -31,7 +31,7 @@ class TestParticipants(pscheduler.TestParticipantsUnitTest):
     
         # missing source
         test_input = {
-            "dest": "127.0.0.1"
+            "dest": "localhost"
             }
         expected = [None, test_input["dest"]] 
         self.assert_participants(test_input, expected, null_reason="No source specified")
@@ -43,7 +43,7 @@ class TestParticipants(pscheduler.TestParticipantsUnitTest):
         
         # missing dest
         test_input = {
-            "source": "127.0.0.1"
+            "source": "localhost"
             }
         self.run_cmd(
             dumps(test_input), 

@@ -200,7 +200,7 @@ def handle_storage_error(result, attempts=0, policy=[]): # pragma: no cover
 # Utility classes
 class EsmondClient(object): # pragma: no cover
     
-    def __init__(self, url="http://127.0.0.1/esmond/perfsonar/archive", 
+    def __init__(self, url="http://localhost/esmond/perfsonar/archive", 
                         auth_token=None, 
                         verify_ssl=False,
                         bind=None):

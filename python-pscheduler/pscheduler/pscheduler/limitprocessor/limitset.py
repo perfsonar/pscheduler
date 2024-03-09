@@ -287,8 +287,8 @@ if __name__ == "__main__":
     theset = LimitSet(thelimits)
 
     hints = {
-        "requester": "127.0.0.1",
-        "server": "127.0.0.1",
+        "requester": "localhost",
+        "server": "localhost",
         "protocol": "https"
     }
 

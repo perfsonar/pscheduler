@@ -155,7 +155,7 @@ if __name__ == "__main__":
     task = {
         "schema": 3,
 
-        "lead-bind": "127.0.0.1",
+        "lead-bind": "localhost",
         "schedule": {
             "max-runs": 3,
             "repeat": "PT10S",

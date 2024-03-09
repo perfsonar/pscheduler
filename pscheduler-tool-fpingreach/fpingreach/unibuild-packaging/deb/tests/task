@@ -2,4 +2,4 @@
 
 set -e
 
-pscheduler task --tool=fpingreach netreach --network 127.0.0.1/32
+pscheduler task --tool=fpingreach netreach --network localhost/32

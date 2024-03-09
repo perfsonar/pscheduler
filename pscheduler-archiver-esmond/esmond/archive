@@ -15,7 +15,7 @@ MAX_SCHEMA = 1
 log = pscheduler.Log(prefix="archiver-esmond", quiet=True)
 
 #set default memcache values
-memcache_servers = ['127.0.0.1:11211']
+memcache_servers = ['localhost:11211']
 cache_ttl = 86400 #cache for 24 hours
 
 #read required JSON fields

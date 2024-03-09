@@ -17,7 +17,7 @@ Options:
   Defaults to the limit configuration file on the local system.
 
 --hints HINTS - JSON hints (or @/path to read from a file).  If not
-  provided, hints of 127.0.0.1 will be used for the requester and
+  provided, hints of localhost will be used for the requester and
   server.
 
 --start START-TIME - Proposed start time as an ISO 8601 timestamp.  If
@@ -94,7 +94,7 @@ opt_parser.add_option("--duration",
 
 opt_parser.add_option("--hints",
                       help="Hints as JSON (@/path to read from file;"
-                      " defaults 127.0.0.1 for all values)",
+                      " defaults localhost for all values)",
                       default=None,
                       action="store", type="string",
                       dest="hints")
@@ -140,8 +140,8 @@ if options.hints is not None:
         pscheduler.fail("Hints: %s" % (str(ex)))
 else:
     hints = {
-        "requester": "127.0.0.1",
-        "server": "127.0.0.1"
+        "requester": "localhost",
+        "server": "localhost"
     }
 
 if len(remaining_args) not in [0, 1]:

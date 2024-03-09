@@ -175,15 +175,15 @@ if __name__ == "__main__":
     })
 
     hints = {
-        "requester": "127.0.0.1",
-        "server": "127.0.0.1",
+        "requester": "localhost",
+        "server": "localhost",
         "protocol": "https"
     }
 
     task = {
         "schema": 1,
 
-        "lead-bind": "127.0.0.1",
+        "lead-bind": "localhost",
         "schedule": {
             "max-runs": 3,
             "repeat": "PT10S",

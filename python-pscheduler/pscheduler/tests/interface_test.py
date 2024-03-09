@@ -24,11 +24,11 @@ class TestInterface(PschedTestBase):
         """Local ip test"""
         localips = LocalIPList(refresh=5)
 
-        self.assertTrue('127.0.0.1' in localips)
+        self.assertTrue('localhost' in localips)
 
     def test_source_interface(self):
         """Source interface test"""
-        ip = '127.0.0.1'
+        ip = 'localhost'
         address, interface = source_interface(ip)
         self.assertEqual(address, ip)
         self.assertNotEqual(interface, None)
