@@ -4,6 +4,7 @@ Test for localif identifier
 """
 
 import unittest
+import socket
 
 from base_test import PschedTestBase
 
@@ -33,7 +34,7 @@ class TestLimitprocessorIdentifierJQ(PschedTestBase):
         ident = IdentifierLocalIF(DATA)
 
         self.assertEqual(ident.evaluate({ "requester": "192.168.1.1" }), False)
-        self.assertEqual(ident.evaluate({ "requester": "localhost" }), True)
+        self.assertEqual(ident.evaluate({ "requester": socket.gethostbyname("localhost") }), True)
 
 
 

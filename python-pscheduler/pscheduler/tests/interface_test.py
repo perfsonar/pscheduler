@@ -4,6 +4,7 @@ test for the Interface module.
 """
 
 import unittest
+import socket
 
 from base_test import PschedTestBase
 
@@ -15,6 +16,8 @@ class TestInterface(PschedTestBase):
     Interface tests.
     """
 
+    ip_to_test = socket.gethostbyname('localhost')
+
     # The following are wrappers around another library and don't need
     # testing:
     #    source_interface
@@ -24,13 +27,12 @@ class TestInterface(PschedTestBase):
         """Local ip test"""
         localips = LocalIPList(refresh=5)
 
-        self.assertTrue('localhost' in localips)
+        self.assertTrue(self.ip_to_test in localips)
 
     def test_source_interface(self):
         """Source interface test"""
-        ip = 'localhost'
-        address, interface = source_interface(ip)
-        self.assertEqual(address, ip)
+        address, interface = source_interface(self.ip_to_test)
+        self.assertEqual(address, self.ip_to_test)
         self.assertNotEqual(interface, None)
 
 
