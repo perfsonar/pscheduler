@@ -174,16 +174,20 @@ if __name__ == "__main__":
             ]
     })
 
+    # This is test code that doesn't interact with the network, so
+    # hard-wired IPv4s are fine here.
     hints = {
-        "requester": "localhost",
-        "server": "localhost",
+        "requester": "127.0.0.1",
+        "server": "127.0.0.1",
         "protocol": "https"
     }
 
     task = {
         "schema": 1,
 
-        "lead-bind": "localhost",
+        # This is test code that doesn't interact with the network, so
+        # hard-wired IPv4s are fine here.
+        "lead-bind": "127.0.0.1",
         "schedule": {
             "max-runs": 3,
             "repeat": "PT10S",

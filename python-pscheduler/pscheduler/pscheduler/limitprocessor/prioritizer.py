@@ -155,7 +155,9 @@ if __name__ == "__main__":
     task = {
         "schema": 3,
 
-        "lead-bind": "localhost",
+        # This is test code that doesn't interact with the network, so
+        # hard-wired IPv4s are fine here.
+        "lead-bind": "127.0.0.1",
         "schedule": {
             "max-runs": 3,
             "repeat": "PT10S",
