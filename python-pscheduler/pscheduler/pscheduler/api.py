@@ -4,6 +4,7 @@ Functions related to the pScheduler REST and Plugin APIs
 
 import multiprocessing
 import multiprocessing.dummy
+import netifaces
 import os
 import socket
 import threading
@@ -23,9 +24,53 @@ def api_local_host():
     "Return a hostname and, optionally, a port that should point to the server on this host."
     return os.environ.get("PSCHEDULER_LOCALHOST", api_local_host_name())
 
+
 def api_local_host_name():
-    "Return the local system's hostname"
-    return socket.gethostname()
+    """
+    Return a host name or IP suitable for reaching the local system
+    """
+
+    # Try the system's hostname.  This shoud cover most cases.
+
+    hostname = socket.gethostname()
+    try:
+        socket.gethostbyname(hostname)
+        # Local host name resolves.  Use that.
+        return hostname
+    except socket.gaierror:
+        # Local host name didn't resolve.  Do what's next.
+        pass
+
+    # Enumerate the interface addresses on the system and pick the
+    # first one, preferring loopbacks and IPv6.  This is based loosely
+    # on the code in pScheduler's LocalIPList class and is duplicated
+    # here so it can be used elsewhere without the rest of the
+    # pScehduler library.
+
+    if_regex = r'%.*$'
+
+    addresses = []
+
+    # Netifaces returns a very deep structure.
+    for ifhash in [ netifaces.ifaddresses(iface)
+                    for iface in netifaces.interfaces() ]:
+        for afamily in ifhash:
+            for iface in ifhash[afamily]:
+                address = re.sub(if_regex, '', iface["addr"])
+                try:
+                    addresses.append(netaddr.IPAddress(address))
+                except netaddr.core.AddrFormatError:
+                    # Don't care about things that don't look like IPS.
+                    pass
+
+    addresses = sorted(addresses,
+                       key=lambda v: [v.is_loopback(), v.version, v.sort_key()],
+                       reverse=True)
+    try:
+        return addresses[0]
+    except IndexError:
+        raise RuntimeError('No interfaces found on this system')
+
 
 def __host_per_rfc_2732(host):
     "Format a host name or IP for a URL according to RFC 2732"
