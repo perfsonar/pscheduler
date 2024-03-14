@@ -4,8 +4,10 @@ Functions related to the pScheduler REST and Plugin APIs
 
 import multiprocessing
 import multiprocessing.dummy
+import netaddr
 import netifaces
 import os
+import re
 import socket
 import threading
 import urllib
@@ -67,7 +69,7 @@ def api_local_host_name():
                        key=lambda v: [v.is_loopback(), v.version, v.sort_key()],
                        reverse=True)
     try:
-        return addresses[0]
+        return str(addresses[0])
     except IndexError:
         raise RuntimeError('No interfaces found on this system')
 
