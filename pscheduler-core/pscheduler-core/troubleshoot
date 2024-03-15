@@ -482,7 +482,7 @@ for host in hosts:
     except ValueError:
         host_ip = None
     if host_ip is None:
-        start(f'  Checking that {host} resolves')
+        start(f'  Checking that host "{host}" resolves')
         resolved = pscheduler.dns_resolve(host, ip_version=options.ip_version)
         if resolved is None:
             failed('Not resolvable or timed out')
