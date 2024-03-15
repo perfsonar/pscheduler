@@ -29,8 +29,7 @@ class Rewriter(object):
         else:
             script = transform["script"]
 
-
-        script_lines = [
+        SCRIPT_HEADER = [
 
             "def classifiers:",
             "  ." + self.PRIVATE_KEY + ".classifiers",
@@ -59,15 +58,22 @@ class Rewriter(object):
             "  error(\"Task rejected: \" + ($message | tostring))",
             ";",
 
-            script
-            ]
+            "def __END_HEADER__:",
+            "  .",
+            ";",
+            "__END_HEADER__ | "
+        ]
 
-        transform["script"] = script_lines
+        # Stuff the entire header onto the first line so errors
+        # reflect the line numbers of what the user provided.
+        
+        transform["script"] = ' '.join(SCRIPT_HEADER) + script
 
         self.transform = JQFilter(
             filter_spec=transform,
             args=transform.get("args", {}),
-            groom=True
+            groom=True,
+            strip_errors_to='__END_HEADER__ | '
         )
 
 
