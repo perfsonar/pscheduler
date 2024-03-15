@@ -37,6 +37,5 @@ class TestLimitprocessorIdentifierJQ(PschedTestBase):
         self.assertEqual(ident.evaluate({ "requester": socket.gethostbyname("localhost") }), True)
 
 
-
 if __name__ == '__main__':
     unittest.main()

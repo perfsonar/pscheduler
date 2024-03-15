@@ -26,7 +26,6 @@ class TestInterface(PschedTestBase):
     def test_local_ip(self):
         """Local ip test"""
         localips = LocalIPList(refresh=5)
-
         self.assertTrue(self.ip_to_test in localips)
 
     def test_source_interface(self):
