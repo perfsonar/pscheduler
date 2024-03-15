@@ -17,15 +17,19 @@ Path {{ loop.index }}:
 
 {% endif -%}
 {% for hop in path -%}
+{% if hop.ip is defined %}
 {{ "%-8d%s (%s) %.1f ms" | format(
        loop.index,
        (hop.hostname or hop.ip),
        hop.ip,
        (iso8601_duration_seconds(hop.rtt) * 1000)
     ) }}
-{% if hop.as is defined -%}
+{%- if hop.as is defined %}
 {{ "%10sAS%d %s" | format("", hop.as.number, hop.as.owner) }}
-{% endif -%}
+{%- endif -%}
+{%- else %}
+{{ "%-8dNo Response" | format(loop.index) }}
+{%- endif -%}
 {% endfor -%}
 {%- endfor -%}
 
