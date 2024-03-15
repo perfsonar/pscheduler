@@ -20,7 +20,6 @@ from flask import Response
 from .args import *
 
 
-
 module = sys.modules[__name__]
 
 module.RUN_DIR = "__RUN_DIR__"
@@ -46,7 +45,7 @@ def debug_state():
 def debug():
 
     # Allow only from localhost
-    if not request.remote_addr in ['127.0.0.1', '::1']:
+    if not remote_address() in ['127.0.0.1', '::1']:
         return Response("Forbidden", status=403)
 
     if request.method == 'GET':

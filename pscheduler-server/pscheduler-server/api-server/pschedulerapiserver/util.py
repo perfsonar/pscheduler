@@ -13,6 +13,22 @@ from .log import log
 from .response import *
 
 
+#
+# Addresses
+#
+
+def _clean_address(address):
+    """
+    Remove scope (e.g., '1234::5%eth0') from an IP address.  Does not
+    apply to IPv4s but is safe to apply.
+    """
+    return address.split(sep='%', maxsplit=1)[0]
+
+
+def remote_address():
+    """Return a cleaned version of the remote address"""
+    return _clean_address(request.remote_addr)
+
 
 #
 # Hints
@@ -38,7 +54,7 @@ def request_hints():
     try:
         requester_header = request.headers["X-pScheduler-Requester"]
     except KeyError:
-        result["requester"] = request.remote_addr
+        result["requester"] = remote_address()
         return (result, None)
 
     # See if the actual requester is allowed to substitute its own address
@@ -73,7 +89,7 @@ def request_hints():
         log.debug("Database says requester key is okay.")
 
     result["requester"] = ip
-    result["requester-proxied-by"] = request.remote_addr
+    result["requester-proxied-by"] = remote_address()
 
     log.debug("Hints: %s", result)
 
