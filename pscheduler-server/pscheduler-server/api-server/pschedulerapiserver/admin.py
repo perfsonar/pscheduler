@@ -22,8 +22,8 @@ from .log import log
 
 @application.route("/", methods=['GET'])
 def root():
-    return ok_json("This is the pScheduler API server on %s (%s)."
-                   % (server_hostname(), pscheduler.api_local_host_name()),
+    return ok_json('This is the pScheduler API server'
+                   f' on {server_hostname()} ({socket.gethostname()})',
                    sanitize=False)
 
 

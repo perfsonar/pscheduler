@@ -17,8 +17,8 @@ Options:
   Defaults to the limit configuration file on the local system.
 
 --hints HINTS - JSON hints (or @/path to read from a file).  If not
-  provided, hints of localhost will be used for the requester and
-  server.
+  provided, hints of a local loopback interface will be used for
+  the requester and server.
 
 --start START-TIME - Proposed start time as an ISO 8601 timestamp.  If
   not provided, time-related limits will be ignored.  If not provided
@@ -94,7 +94,7 @@ opt_parser.add_option("--duration",
 
 opt_parser.add_option("--hints",
                       help="Hints as JSON (@/path to read from file;"
-                      " defaults localhost for all values)",
+                      " defaults to a loopback address for all values)",
                       default=None,
                       action="store", type="string",
                       dest="hints")
@@ -139,9 +139,14 @@ if options.hints is not None:
     except (IOError, ValueError) as ex:
         pscheduler.fail("Hints: %s" % (str(ex)))
 else:
+    try:
+        loopback = str(pscheduler.LocalIPList().loopback())
+    except IndexError:
+        # No loopbacks.  Horse 'em.
+        loopback = '::1'
     hints = {
-        "requester": "localhost",
-        "server": "localhost"
+        "requester": loopback,
+        "server": loopback
     }
 
 if len(remaining_args) not in [0, 1]:

@@ -2,4 +2,5 @@
 
 set -e
 
-pscheduler task --tool=nmapreach netreach --network localhost/32 --gateway 1
+pscheduler task --tool=nmapreach netreach --network 127.0.0.1/32 --gateway 1
+test -f /proc/net/if_inet6 && pscheduler task --tool=nmapreach netreach --network ::1/128 --gateway 1

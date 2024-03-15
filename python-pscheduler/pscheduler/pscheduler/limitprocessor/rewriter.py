@@ -29,8 +29,7 @@ class Rewriter(object):
         else:
             script = transform["script"]
 
-
-        script_lines = [
+        SCRIPT_HEADER = [
 
             "def classifiers:",
             "  ." + self.PRIVATE_KEY + ".classifiers",
@@ -59,15 +58,22 @@ class Rewriter(object):
             "  error(\"Task rejected: \" + ($message | tostring))",
             ";",
 
-            script
-            ]
+            "def __END_HEADER__:",
+            "  .",
+            ";",
+            "__END_HEADER__ | "
+        ]
 
-        transform["script"] = script_lines
+        # Stuff the entire header onto the first line so errors
+        # reflect the line numbers of what the user provided.
+        
+        transform["script"] = ' '.join(SCRIPT_HEADER) + script
 
         self.transform = JQFilter(
             filter_spec=transform,
             args=transform.get("args", {}),
-            groom=True
+            groom=True,
+            strip_errors_to='__END_HEADER__ | '
         )
 
 
@@ -174,16 +180,20 @@ if __name__ == "__main__":
             ]
     })
 
+    # This is test code that doesn't interact with the network, so
+    # hard-wired IPv4s are fine here.
     hints = {
-        "requester": "localhost",
-        "server": "localhost",
+        "requester": "127.0.0.1",
+        "server": "127.0.0.1",
         "protocol": "https"
     }
 
     task = {
         "schema": 1,
 
-        "lead-bind": "localhost",
+        # This is test code that doesn't interact with the network, so
+        # hard-wired IPv4s are fine here.
+        "lead-bind": "127.0.0.1",
         "schedule": {
             "max-runs": 3,
             "repeat": "PT10S",

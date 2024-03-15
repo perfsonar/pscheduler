@@ -14,6 +14,7 @@ are working.
 
 import babel.dates
 import datetime
+import ipaddress
 import optparse
 import os
 import re
@@ -475,13 +476,18 @@ for host in hosts:
     print("%s:" % (host))
     print()
 
+    # Try to resolve the host if it's not already an IP address
+    try:
+        host_ip = ipaddress.ip_address(host)
+    except ValueError:
+        host_ip = None
+    if host_ip is None:
+        start(f'  Checking that host "{host}" resolves')
+        resolved = pscheduler.dns_resolve(host, ip_version=options.ip_version)
+        if resolved is None:
+            failed('Not resolvable or timed out')
+        ok(resolved)
 
-    start("  Checking name resolution")
-    resolved = pscheduler.dns_resolve(host, ip_version=options.ip_version)
-    if resolved is not None:
-       ok(resolved)
-    else:
-        failed("Host '%s' is unresolvable or timed out" % (host))
 
     if not options.quick and not options.skip_single:
         check_mtu(host)
