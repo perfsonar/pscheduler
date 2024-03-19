@@ -102,7 +102,7 @@ make CLASSES="%{_pscheduler_classes}"
 
 
 %install
-python setup.py install --root=$RPM_BUILD_ROOT -O1  --record=INSTALLED_FILES
+%{_pscheduler_python} setup.py install --root=$RPM_BUILD_ROOT -O1  --record=INSTALLED_FILES
 
 mkdir -p $RPM_BUILD_ROOT/%{logrotate_d}
 cat > $RPM_BUILD_ROOT/%{logrotate_d}/%{name} <<EOF
