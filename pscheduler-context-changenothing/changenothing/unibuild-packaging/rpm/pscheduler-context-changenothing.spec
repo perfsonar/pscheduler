@@ -21,7 +21,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	python-pscheduler
+Requires:	%{_pscheduler_python}-pscheduler
 
 BuildRequires:	pscheduler-rpm >= 1.0.0.5.1
 

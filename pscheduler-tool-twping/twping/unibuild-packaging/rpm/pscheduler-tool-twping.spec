@@ -21,13 +21,13 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 4.3.0
-Requires:	python-pscheduler >= 4.3.0
+Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	pscheduler-test-latency
 Requires:	twamp-client
 
 BuildRequires:	pscheduler-rpm
-BuildRequires:	python-pscheduler
-BuildRequires:  python-nose
+BuildRequires:	%{_pscheduler_python}-pscheduler
+BuildRequires:  %{_pscheduler_python}-nose
 
 %description
 twping tool class for pScheduler
@@ -41,7 +41,7 @@ twping tool class for pScheduler
 
 %build
 make \
-     PYTHON=python \
+     PYTHON=%{_pscheduler_python} \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      CONFDIR=$RPM_BUILD_ROOT/%{_pscheduler_tool_confdir}\
      install

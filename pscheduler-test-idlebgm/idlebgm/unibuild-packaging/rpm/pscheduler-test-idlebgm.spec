@@ -21,7 +21,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.1.6
-Requires:	python-pscheduler
+Requires:	%{_pscheduler_python}-pscheduler
 
 BuildRequires:	pscheduler-rpm
 
@@ -39,7 +39,7 @@ produces multiple results.
 
 %build
 make \
-     PYTHON=python \
+     PYTHON=%{_pscheduler_python} \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
 

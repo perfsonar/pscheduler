@@ -3,7 +3,7 @@
 #
 
 %define short	vcversioner
-Name:		python-%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	2.16.0.0
 Release:	1%{?dist}
 Summary:	Python version extractor
@@ -19,10 +19,10 @@ URL:		https://github.com/habnabit/vcversioner
 
 Source:		%{short}-%{version}.tar.gz
 
-Requires:	python
+Requires:	%{_pscheduler_python}
 
-BuildRequires:	python
-BuildRequires:	python-setuptools
+BuildRequires:	%{_pscheduler_python}
+BuildRequires:	%{_pscheduler_python}-setuptools
 
 
 %description

@@ -21,8 +21,8 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 4.4.0
-Requires:	python-pscheduler >= 4.4.1
-Requires:	python-cryptography
+Requires:	%{_pscheduler_python}-pscheduler >= 4.4.1
+Requires:	%{_pscheduler_python}-cryptography
 Requires:	pscheduler-test-throughput
 requires:	iperf3 >= 3.11
 Requires:	numactl
@@ -42,7 +42,7 @@ iperf3 tool class for pScheduler
 
 %build
 make \
-     PYTHON=python \
+     PYTHON=%{_pscheduler_python} \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      CONFDIR=$RPM_BUILD_ROOT/%{_pscheduler_tool_confdir}\
      install

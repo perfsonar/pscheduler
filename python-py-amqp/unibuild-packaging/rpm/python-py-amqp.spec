@@ -3,7 +3,7 @@
 #
 
 %define short   py-amqp
-Name:           python-%{short}
+Name:           %{_pscheduler_python}-%{short}
 Version:        5.0.6
 Release:        1%{?dist}
 Summary:        A pure Python library for AMQP
@@ -19,11 +19,11 @@ Url:            https://docs.celeryproject.org/projects/amqp/en/latest/
 
 Source:         %{short}-%{version}.tar.gz
 
-Requires:       python
+Requires:       %{_pscheduler_python}
 
-BuildRequires:  python
-BuildRequires:  python-setuptools
-BuildRequires:  python-vine
+BuildRequires:  %{_pscheduler_python}
+BuildRequires:  %{_pscheduler_python}-setuptools
+BuildRequires:  %{_pscheduler_python}-vine
 
 
 %description

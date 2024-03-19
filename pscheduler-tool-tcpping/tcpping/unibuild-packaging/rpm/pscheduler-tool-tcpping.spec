@@ -22,9 +22,9 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 4.3.0
 Requires:	pscheduler-account
-Requires:	python-pscheduler >= 4.3.0
+Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	pscheduler-test-rtt
-Requires:	python-icmperror
+Requires:	%{_pscheduler_python}-icmperror
 Requires:	tcpping
 
 BuildRequires:	pscheduler-account

@@ -3,7 +3,7 @@
 #
 
 %define short	pyasn1
-Name:		python-%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	0.4.5
 Release:	1%{?dist}
 Summary:	ASN1 for Python
@@ -20,10 +20,10 @@ URL:		https://github.com/etingof/pyasn1
 
 Source:		%{short}-%{version}.tar.gz
 
-Requires:       python
+Requires:       %{_pscheduler_python}
 
-BuildRequires:  python
-BuildRequires:  python-setuptools
+BuildRequires:  %{_pscheduler_python}
+BuildRequires:  %{_pscheduler_python}-setuptools
 
 %description
 ASN1 for Python

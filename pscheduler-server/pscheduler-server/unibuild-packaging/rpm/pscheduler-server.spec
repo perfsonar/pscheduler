@@ -54,15 +54,15 @@ Requires:	curl
 Requires:	psmisc
 Requires:	pscheduler-account
 # This is from EPEL but doesn't have a python36 prefix
-Requires:	python-daemon
-Requires:	python-flask
-Requires:	python-psutil
+Requires:	%{_pscheduler_python}-daemon
+Requires:	%{_pscheduler_python}-flask
+Requires:	%{_pscheduler_python}-psutil
 
 # API Server
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
-BuildRequires:	python-parse-crontab
-BuildRequires:	python-pscheduler >= 5.1.0
+BuildRequires:	%{_pscheduler_python}-parse-crontab
+BuildRequires:	%{_pscheduler_python}-pscheduler >= 5.1.0
 BuildRequires:	m4
 Requires:	httpd-wsgi-socket
 # Note that the actual definition of what protocol is used is part of
@@ -70,13 +70,13 @@ Requires:	httpd-wsgi-socket
 # mod_ssl is required here.
 Requires:	mod_ssl
 Requires:	mod_wsgi > 4.0
-Requires:	python-parse-crontab
-Requires:	python-pscheduler >= 5.1.0
-Requires:	python-pytz
+Requires:	%{_pscheduler_python}-parse-crontab
+Requires:	%{_pscheduler_python}-pscheduler >= 5.1.0
+Requires:	%{_pscheduler_python}-pytz
 
 # General
 BuildRequires:	pscheduler-rpm
-BuildRequires:  python
+BuildRequires:  %{_pscheduler_python}
 BuildRequires:	systemd
 %{?systemd_requires: %systemd_requires}
 

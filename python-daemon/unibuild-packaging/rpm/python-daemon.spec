@@ -3,7 +3,7 @@
 #
 
 %define short	daemon
-Name:		python-%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	2.2.3
 Release:	1%{?dist}
 Summary:	Daemonizer library for Python
@@ -19,13 +19,13 @@ Url:		https://pagure.io/python-daemon
 
 Source:		python-%{short}-%{version}.tar.gz
 
-Requires:	python
+Requires:	%{_pscheduler_python}
 
-BuildRequires:	python
-BuildRequires:  python-pip
-BuildRequires:  python-setuptools
-BuildRequires:  python-wheel
-BuildRequires:  python-docutils
+BuildRequires:	%{_pscheduler_python}
+BuildRequires:  %{_pscheduler_python}-pip
+BuildRequires:  %{_pscheduler_python}-setuptools
+BuildRequires:  %{_pscheduler_python}-wheel
+BuildRequires:  %{_pscheduler_python}-docutils
 
 %description
 Daemonizer library for Python

@@ -3,7 +3,7 @@
 #
 
 %define short	tzlocal
-Name:		python-%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	1.2.2
 Release:	1%{?dist}
 Summary:	Local timezone information for Python
@@ -19,10 +19,10 @@ Url:		https://github.com/regebro/tzlocal
 
 Source:		%{short}-%{version}.tar.gz
 
-BuildRequires:	python
-BuildRequires:	python-setuptools
+BuildRequires:	%{_pscheduler_python}
+BuildRequires:	%{_pscheduler_python}-setuptools
 
-Requires:	python
+Requires:	%{_pscheduler_python}
 
 
 %description

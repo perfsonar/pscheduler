@@ -3,7 +3,7 @@
 #
 
 %define short	py-radix
-Name:		python-%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	0.9.6
 Release:	1%{?dist}
 Summary:        Radix tree for Python
@@ -19,12 +19,12 @@ URL:		https://github.com/mjschultz/py-radix
 
 Source:		%{short}-%{version}.tar.gz
 
-Requires:	python
+Requires:	%{_pscheduler_python}
 
 BuildRequires:	gcc
-BuildRequires:	python
-BuildRequires:	python-setuptools
-BuildRequires:	python-devel
+BuildRequires:	%{_pscheduler_python}
+BuildRequires:	%{_pscheduler_python}-setuptools
+BuildRequires:	%{_pscheduler_python}-devel
 
 %description
 A network address manipulation library for Python

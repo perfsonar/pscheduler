@@ -6,7 +6,7 @@
 %define perfsonar_auto_relnum 0.a1.0
 
 %define short	pscheduler
-Name:		python-%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	%{perfsonar_auto_version}
 Release:	%{perfsonar_auto_relnum}%{?dist}
 Summary:	Utility functions for pScheduler
@@ -27,52 +27,52 @@ Source0:	%{short}-%{version}.tar.gz
 
 Requires:	iputils
 
-Requires:	python-attrs
-Requires:	python-dateutil
-Requires:	python-dns
-Requires:	python-isodate
-Requires:	python-jinja2
-Requires:	python-jsonschema >= 3.0
-Requires:	python-netaddr
-Requires:	python-netifaces
-Requires:	python-ntplib
-Requires:	python-psutil
-Requires:	python-psycopg2 >= 2.6.1
-Requires:	python-py-radix
+Requires:	%{_pscheduler_python}-attrs
+Requires:	%{_pscheduler_python}-dateutil
+Requires:	%{_pscheduler_python}-dns
+Requires:	%{_pscheduler_python}-isodate
+Requires:	%{_pscheduler_python}-jinja2
+Requires:	%{_pscheduler_python}-jsonschema >= 3.0
+Requires:	%{_pscheduler_python}-netaddr
+Requires:	%{_pscheduler_python}-netifaces
+Requires:	%{_pscheduler_python}-ntplib
+Requires:	%{_pscheduler_python}-psutil
+Requires:	%{_pscheduler_python}-psycopg2 >= 2.6.1
+Requires:	%{_pscheduler_python}-py-radix
 # The limit system uses this.
 Requires:	pscheduler-jq-library
-Requires:	python-pycurl
-Requires:	python-pyjq >= 2.2.0
-Requires:	python-tzlocal
-Requires:	python-pytz
+Requires:	%{_pscheduler_python}-pycurl
+Requires:	%{_pscheduler_python}-pyjq >= 2.2.0
+Requires:	%{_pscheduler_python}-tzlocal
+Requires:	%{_pscheduler_python}-pytz
 Requires:	rsyslog
 Requires:	logrotate
 Requires:       numactl
 
 BuildRequires:	pscheduler-rpm
-BuildRequires:  python
-BuildRequires:	python-coverage
-BuildRequires:	python-nose
-BuildRequires:	python-setuptools
+BuildRequires:  %{_pscheduler_python}
+BuildRequires:	%{_pscheduler_python}-coverage
+BuildRequires:	%{_pscheduler_python}-nose
+BuildRequires:	%{_pscheduler_python}-setuptools
 # NOTE:  Cloned from above.
 BuildRequires:	iputils
-BuildRequires:	python-attrs
-BuildRequires:	python-dateutil
-BuildRequires:	python-dns
-BuildRequires:	python-isodate
-BuildRequires:	python-jsonschema
-BuildRequires:	python-netaddr
-BuildRequires:	python-netifaces
-BuildRequires:	python-ntplib
-BuildRequires:	python-psutil
-BuildRequires:	python-psycopg2 >= 2.2.0
-BuildRequires:	python-py-radix
+BuildRequires:	%{_pscheduler_python}-attrs
+BuildRequires:	%{_pscheduler_python}-dateutil
+BuildRequires:	%{_pscheduler_python}-dns
+BuildRequires:	%{_pscheduler_python}-isodate
+BuildRequires:	%{_pscheduler_python}-jsonschema
+BuildRequires:	%{_pscheduler_python}-netaddr
+BuildRequires:	%{_pscheduler_python}-netifaces
+BuildRequires:	%{_pscheduler_python}-ntplib
+BuildRequires:	%{_pscheduler_python}-psutil
+BuildRequires:	%{_pscheduler_python}-psycopg2 >= 2.2.0
+BuildRequires:	%{_pscheduler_python}-py-radix
 # The limit system uses this.
 BuildRequires:	pscheduler-jq-library
-BuildRequires:	python-pycurl
-BuildRequires:	python-pyjq >= 2.2.0
-BuildRequires:	python-tzlocal
-BuildRequires:	python-pytz
+BuildRequires:	%{_pscheduler_python}-pycurl
+BuildRequires:	%{_pscheduler_python}-pyjq >= 2.2.0
+BuildRequires:	%{_pscheduler_python}-tzlocal
+BuildRequires:	%{_pscheduler_python}-pytz
 BuildRequires:  numactl
 
 %define limit_config %{_pscheduler_sysconfdir}/limits.conf

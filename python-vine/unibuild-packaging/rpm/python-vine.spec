@@ -3,7 +3,7 @@
 #
 
 %define short   vine
-Name:           python-%{short}
+Name:           %{_pscheduler_python}-%{short}
 Version:        5.0.0
 Release:        1%{?dist}
 Summary:        A pure Python library implementing promises
@@ -19,10 +19,10 @@ Url:            https://docs.celeryproject.org/projects/amqp/en/latest/
 
 Source:         %{short}-%{version}.tar.gz
 
-Requires:       python
+Requires:       %{_pscheduler_python}
 
-BuildRequires:  python
-BuildRequires:  python-setuptools
+BuildRequires:  %{_pscheduler_python}
+BuildRequires:  %{_pscheduler_python}-setuptools
 
 %description
 A pure Python library implementing promises

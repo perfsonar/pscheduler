@@ -3,7 +3,7 @@
 #
 
 %define short	jsonschema
-Name:		python-%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	3.0.1
 Release:	1%{?dist}
 Summary:	JSON Schema library for Python
@@ -21,13 +21,13 @@ URL:		http://pypi.python.org/pypi/jsonschema
 
 Source:		%{short}-%{version}.tar.gz
 
-Requires:       python
-Requires:       python-pyrsistent
+Requires:       %{_pscheduler_python}
+Requires:       %{_pscheduler_python}-pyrsistent
 # This is required for some reason.
-Requires:       python-setuptools
+Requires:       %{_pscheduler_python}-setuptools
 
-BuildRequires:  python
-BuildRequires:  python-setuptools
+BuildRequires:  %{_pscheduler_python}
+BuildRequires:  %{_pscheduler_python}-setuptools
 
 
 %description
