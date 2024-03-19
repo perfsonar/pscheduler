@@ -41,11 +41,11 @@ ASN1 modules for Python
 
 
 %build
-python setup.py build
+%{_pscheduler_python} setup.py build
 
 
 %install
-python setup.py install \
+%{_pscheduler_python} setup.py install \
     --root=$RPM_BUILD_ROOT \
     -O1 \
     --record=INSTALLED_FILES

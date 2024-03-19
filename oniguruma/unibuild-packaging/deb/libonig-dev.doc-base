@@ -1,0 +1,16 @@
+Document: libonig2
+Title: Oniguruma Library Documentation
+Section: Programming/C++
+
+Format: Text
+Files: /usr/share/doc/libonig-dev/API.gz
+       /usr/share/doc/libonig-dev/API.ja.gz
+       /usr/share/doc/libonig-dev/FAQ
+       /usr/share/doc/libonig-dev/FAQ.ja
+       /usr/share/doc/libonig-dev/RE.gz
+       /usr/share/doc/libonig-dev/RE.ja.gz
+       /usr/share/doc/libonig-dev/README.gz
+
+Format: HTML
+Index: /usr/share/doc/libonig-dev/index.html
+Files: /usr/share/doc/libonig-dev/*.html

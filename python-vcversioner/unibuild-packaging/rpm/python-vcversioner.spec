@@ -39,11 +39,11 @@ Python version extractor
 
 
 %build
-python setup.py build
+%{_pscheduler_python} setup.py build
 
 
 %install
-python setup.py install \
+%{_pscheduler_python} setup.py install \
     --root=$RPM_BUILD_ROOT \
     --single-version-externally-managed \
     -O1 \
