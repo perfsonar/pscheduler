@@ -6,6 +6,7 @@
     compress
     delaycompress
     missingok
+    create 644 pscheduler pscheduler
     sharedscripts
     postrotate
         invoke-rc.d rsyslog restart > /dev/null
