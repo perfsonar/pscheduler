@@ -35,6 +35,32 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 #
 
 
+
+#
+# Python
+#
+
+# This is the version we like.
+%%_pscheduler_python_version_major 3
+
+%if 0%{?el7}
+%%error EL7 is no longer supported.  Try something newer.
+%endif
+
+%if 0%{?el8}%{?ol8}
+# EL8 standardized on just the major version, as did EPEL.
+%%_pscheduler_python python%%{_pscheduler_python_version_major}
+%%_pscheduler_python_epel python%%{_pscheduler_python_version_major}
+
+%else
+
+# EL9+ has everyting as just plain python
+%%_pscheduler_python python
+%%_pscheduler_python_epel python
+
+%endif
+
+
 #
 # PostgreSQL
 #
