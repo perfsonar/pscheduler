@@ -13,7 +13,6 @@ License:	MIT
 Group:		Development/Libraries
 
 Provides:	%{name} = %{version}-%{release}
-Provides:	python-%{short} = %{version}-%{release}
 Prefix:		%{_prefix}
 
 Vendor:		Tobias Gustaffson

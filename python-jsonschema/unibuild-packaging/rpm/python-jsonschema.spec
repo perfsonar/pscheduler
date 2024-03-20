@@ -12,8 +12,6 @@ License:	MIT
 Group:		Development/Libraries
 
 Provides:	%{name} = %{version}-%{release}
-Provides:	python-%{short} = %{version}-%{release}
-Provides:	python-%{short} = %{version}-%{release}
 Prefix:		%{_prefix}
 
 Vendor:		Julian Berman

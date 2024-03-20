@@ -253,7 +253,7 @@ mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_log_dir}
 #
 # API Server
 #
-API_ROOT="$(python -c 'import pscheduler ; print(pscheduler.api_root())')"
+API_ROOT="$(%{_pscheduler_python} -c 'import pscheduler ; print(pscheduler.api_root())')"
 
 make -C api-server \
      'USER_NAME=%{_pscheduler_user}' \
@@ -264,7 +264,7 @@ make -C api-server \
      "PREFIX=${RPM_BUILD_ROOT}" \
      "DSN_FILE=%{dsn_file}" \
      "LIMITS_FILE=%{_pscheduler_limit_config}" \
-     "PYTHON=%(command -v python)" \
+     "PYTHON=%(command -v %{_pscheduler_python})" \
      "RUN_DIR=%{run_dir}" \
      install
 
@@ -582,7 +582,7 @@ fi
 # Any upgrade of python-pscheduler needs to force a database restart
 # because Pg doesn't see module upgrades.
 
-%triggerin -- python-pscheduler
+%triggerin -- %{_pscheduler_python}-pscheduler
 systemctl reload-or-try-restart postgresql
 
 # ------------------------------------------------------------------------------
