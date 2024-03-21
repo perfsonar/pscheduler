@@ -50,6 +50,14 @@ def parse_ping(output, count):
         ( re.compile("^Frag needed and DF set"), 'fragmentation-needed-and-df-set' )
         ]
 
+
+    # Sent/received/loss statistics:
+    # 5 packets transmitted, 5 received, 0% packet loss, time 4131ms
+    LOSS_STATS = re.compile(
+        '^([0-9]+) packets transmitted,'
+        ' ([0-9]+) received,'
+        ' ([0-9.]+)% packet loss')
+
     # Times:   rtt min/avg/max/mdev = 19.631/24.191/29.874/4.262 ms
     TIMES_RETURNED = re.compile("^rtt min/avg/max/mdev\s*=\s*"
     "([0-9.]+)"
@@ -61,6 +69,9 @@ def parse_ping(output, count):
     roundtrips = []
     ips = []
 
+    rtt_sent = None
+    rtt_received = None
+    rtt_loss = None
     rtt_min = None
     rtt_mean = None
     rtt_max = None
@@ -158,12 +169,26 @@ def parse_ping(output, count):
             # This is the last line we care about.
             break
 
+        # Final sent/received/loss
+        matches = LOSS_STATS.match(line)
+        if matches is not None:
+            rtt_sent, rtt_received, rtt_loss = matches.groups()
+
         # Anything else we just ignore.
 
     summary_results = {
         'roundtrips': roundtrips,
         'ips': ips
     }
+
+    if rtt_sent is not None:
+        summary_results['sent'] = int(rtt_sent)
+
+    if rtt_received is not None:
+        summary_results['received'] = int(rtt_received)
+
+    if rtt_loss is not None:
+        summary_results['loss'] = float(rtt_loss)/100
 
     if rtt_min is not None:
         summary_results['min'] = timedelta_as_iso8601(
