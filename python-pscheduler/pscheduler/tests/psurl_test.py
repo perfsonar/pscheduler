@@ -7,8 +7,12 @@ import unittest
 import os
 
 # Remove any proxy that might be in the way of testing
-os.environ.pop('http_proxy')
-os.environ.pop('https_proxy')
+for env in [ 'HTTP_PROXY', 'http_proxy', 'HTTPS_PROXY', 'https_proxy' ]:
+    try:
+        os.environ.pop(env)
+    except KeyError:
+        pass
+
 
 from base_test import PschedTestBase
 
