@@ -187,8 +187,8 @@ except KeyError:
 # Deadline
 
 try:
-    deadline = pscheduler.timedelta_as_seconds(
-        pscheduler.iso8601_as_timedelta(spec['deadline']) )
+    deadline = int(pscheduler.timedelta_as_seconds(
+        pscheduler.iso8601_as_timedelta(spec['deadline']) ))
     argv.append('-w')
     argv.append(str(deadline))
 except KeyError:
@@ -245,15 +245,29 @@ status, stdout, stderr \
 log.debug("Program exited %d: %s",
           status, stdout if status == 0 else stderr)
 
-# Ping exits 1 if the host isn't up, which for us is still a success.
-if not status in [0, 1]:
+diags = f'{argv_string}\n\nStandard output:\n{stdout}\n\nStandard error:\n{stderr}'
+
+# Ping exits 1 if the host isn't up, which for us is still a success,
+# but it also exits 1 on error.  The presence of anything in stderr is
+# what signifies a "real" error.
+
+if (status != 0) and stderr:
     pscheduler.succeed_json( {
             'succeeded': False,
-            'diags': argv_string,
+            'diags': diags,
             'error': stderr,
             'result': None
             } )
 
+stdout = ''
+# At this point there should be output.
+if not stdout:
+    pscheduler.succeed_json( {
+            'succeeded': False,
+            'diags': diags,
+            'error': 'No output from ping',
+            'result': None
+            } )
 
 #
 # Dissect the results
@@ -262,7 +276,7 @@ if not status in [0, 1]:
 final_result = {
     'schema': 1,
     'succeeded': True,
-    'diags': argv_string + '\n\n' + stdout,
+    'diags': diags,
     'error': None
 }
 
