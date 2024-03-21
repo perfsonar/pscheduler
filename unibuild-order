@@ -23,7 +23,7 @@ changecom()dnl
 # Setting this to zero removes all tools that depend on OWAMP, which
 # is built in a separate repository.  The only time you'd want to do
 # this is when doing unrelated development.
-define(INCLUDE_OWAMP_TOOLS,1)
+define(INCLUDE_OWAMP_TOOLS,0)
 define(OWAMP_TOOL,ifelse(INCLUDE_OWAMP_TOOLS,1,$1,))
 
 # Debian 9 (Stretch) doesn't support Golang sufficiently for what we

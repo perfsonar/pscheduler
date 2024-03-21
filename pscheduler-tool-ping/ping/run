@@ -259,7 +259,6 @@ if (status != 0) and stderr:
             'result': None
             } )
 
-stdout = ''
 # At this point there should be output.
 if not stdout:
     pscheduler.succeed_json( {
