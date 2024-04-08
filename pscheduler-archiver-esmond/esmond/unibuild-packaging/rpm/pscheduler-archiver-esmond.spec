@@ -4,7 +4,7 @@
 
 %define short	esmond
 %define perfsonar_auto_version 5.1.0
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 0.b1.1
 
 Name:		pscheduler-archiver-esmond
 Version:	%{perfsonar_auto_version}
@@ -21,15 +21,15 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.1.6
-Requires:	python-pscheduler >= 1.3.7.1
-Requires:	python-memcached
+Requires:	%{_pscheduler_python}-pscheduler >= 1.3.7.1
+Requires:	%{_pscheduler_python}-memcached
 Requires:	memcached
 Requires(post):	memcached
 Requires:		chkconfig
 
 BuildRequires:	pscheduler-rpm
-BuildRequires:  python-pscheduler
-BuildRequires:  python-nose
+BuildRequires:  %{_pscheduler_python}-pscheduler
+BuildRequires:  %{_pscheduler_python}-nose
 
 %define directory %{_includedir}/make
 
@@ -45,7 +45,7 @@ This archiver sends JSON test results to Esmond Measurement Archive
 
 %build
 make \
-     PYTHON=python \
+     PYTHON=%{_pscheduler_python} \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
 

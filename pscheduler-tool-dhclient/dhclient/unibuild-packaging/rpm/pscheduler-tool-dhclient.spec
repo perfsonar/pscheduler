@@ -10,7 +10,7 @@
 # they should be added here (line 25).
 %define short	dhclient
 %define perfsonar_auto_version 5.1.0
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 0.b1.1
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
@@ -27,7 +27,7 @@ Provides:	%{name} = %{version}-%{release}
 
 # Include all required libraries here
 Requires:	pscheduler-server
-Requires:	python-pscheduler
+Requires:	%{_pscheduler_python}-pscheduler
 
 # TODO: Why is there a discrepancy between dhcp-client and dhclient here?
 
@@ -49,7 +49,7 @@ dhclient tool class for pScheduler
 
 make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
-     PYTHON=python \
+     PYTHON=%{_pscheduler_python} \
      install
 
 # Enable sudo for dhclient

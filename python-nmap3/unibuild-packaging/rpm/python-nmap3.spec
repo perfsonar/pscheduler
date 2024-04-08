@@ -4,7 +4,7 @@
 
 %define short	nmap3
 %define actual  python3-nmap
-Name:		python-%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	1.5.0
 Release:	%{?dist}
 Summary:	python3 library for nmap port scanner
@@ -20,13 +20,13 @@ Url:		https://www.nmmapper.com/
 
 Source:		%{actual}-%{version}.tar.gz
 
-Requires:	python
-Requires:	python-wheel
+Requires:	%{_pscheduler_python}
+Requires:	%{_pscheduler_python}-wheel
 Requires:      	nmap
 
-BuildRequires:  python
-BuildRequires:	python-setuptools
-BuildRequires:	python-wheel
+BuildRequires:  %{_pscheduler_python}
+BuildRequires:	%{_pscheduler_python}-setuptools
+BuildRequires:	%{_pscheduler_python}-wheel
 
 %description
 A python 3 library which helps in using nmap port scanner. The way this tools works is by defining each nmap command into a python function making it very easy to use sophisticated nmap commands in other python scripts. Nmap is a complicated piece of software used for reconnaissance on target networks, over the years new features have been added making it more sophisticated.
@@ -42,11 +42,11 @@ A python 3 library which helps in using nmap port scanner. The way this tools wo
 
 
 %build
-python setup.py build
+%{_pscheduler_python} setup.py build
 
 
 %install
-python setup.py install --root=$RPM_BUILD_ROOT --single-version-externally-managed -O1  --record=INSTALLED_FILES
+%{_pscheduler_python} setup.py install --root=$RPM_BUILD_ROOT --single-version-externally-managed -O1  --record=INSTALLED_FILES
 
 
 %clean

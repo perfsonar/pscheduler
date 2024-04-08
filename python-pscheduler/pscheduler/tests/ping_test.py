@@ -18,6 +18,8 @@ class TestPing(PschedTestBase):
         """Basic ping output parse test:
         ping -c 5 www.umich.edu"""
 
+        self.maxDiff = None   # Show everything on error
+
         output = """PING 141.211.243.251 (141.211.243.251) 56(84) bytes of data.
 64 bytes from 141.211.243.251: icmp_seq=1 ttl=63 time=0.704 ms
 64 bytes from 141.211.243.251: icmp_seq=2 ttl=63 time=1.37 ms
@@ -40,7 +42,10 @@ rtt min/avg/max/mdev = 0.704/1.122/1.372/0.231 ms"""
                            'min': 'PT0.000704S',
                            'max': 'PT0.001372S',
                            'mean': 'PT0.001122S',
-                           'stddev': 'PT0.000231S'
+                           'stddev': 'PT0.000231S',
+                           'sent': 5,
+                           'received': 5,
+                           'loss': 0.0
                           }
 
         self.assertEqual(parsed_results, expected_result)
@@ -48,6 +53,8 @@ rtt min/avg/max/mdev = 0.704/1.122/1.372/0.231 ms"""
     def test_more_options(self):
         """Ping output parse test with more options:
         ping -n -c 3 -i 0.5 -W 0:00:02 -s 100 www.umich.edu"""
+
+        self.maxDiff = None   # Show everything on error
 
         output = """PING 141.211.243.251 (141.211.243.251) 100(128) bytes of data.
 108 bytes from 141.211.243.251: icmp_seq=1 ttl=63 time=0.872 ms
@@ -67,7 +74,10 @@ rtt min/avg/max/mdev = 0.872/1.072/1.255/0.156 ms"""
                            'min': 'PT0.000872S',
                            'max': 'PT0.001255S',
                            'mean': 'PT0.001072S',
-                           'stddev': 'PT0.000156S'}
+                           'stddev': 'PT0.000156S',
+                           'sent': 3,
+                           'received': 3,
+                           'loss': 0.0}
 
         self.assertEqual(parsed_results, expected_result)
 

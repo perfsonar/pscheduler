@@ -76,9 +76,9 @@ class JQFilter(object):
             args={},
             output_raw=False,
             groom=False,
+            strip_errors_to=None
             ):
-        """
-        Construct a filter.  Arguments:
+        """Construct a filter.  Arguments:
 
         filter_spec - The JQ script to be used for this filter.  This
         may be any subclass of basestring, a list or a dict.  Strings
@@ -95,6 +95,11 @@ class JQFilter(object):
         top of the script before compiling.  This allows filters
         prepending functions to user-provided scripts that do
         imports to compile properly.
+
+        strip_errors_to - Strip all lines in error messages up to the
+        string provided.  This is used to weed known-correct,
+        program-provided code out of errors on the first line so the
+        user sees the correct line numbers.
         """
 
         self.output_raw = output_raw
@@ -108,6 +113,9 @@ class JQFilter(object):
 
         if not isinstance(filter_spec, str):
             raise ValueError("Filter spec must be plain text, list or dict")
+
+        if strip_errors_to is not None and not isinstance(strip_errors_to, str):
+            raise ValueError("Strip string must be a string")
 
         # Passing an args hash into PyJQ causes a memory corruption
         # problem.  As a temporary workaround, turn them into "as"
@@ -125,7 +133,28 @@ class JQFilter(object):
         if groom:
             filter_spec = _groom(filter_spec)
 
-        self.script = pyjq.compile(filter_spec, args, library_paths=_library_path())
+        value_error = None
+        try:
+            self.script = pyjq.compile(filter_spec, args, library_paths=_library_path())
+        except ValueError as ex:
+            # This is held and thrown seprately because Python will
+            # produce a confusing nested exception message when it's
+            # thrown.
+            value_error = ex
+
+        if value_error is not None:
+
+            if strip_errors_to is not None:
+                ex_lines = []
+                strip_length = len(strip_errors_to)
+                for num, line in enumerate(str(value_error).split('\n')):
+                    place = line.find(strip_errors_to)
+                    if place != -1:
+                        line = line[place+strip_length:]
+                    ex_lines.append(line.rstrip())
+                value_error = ValueError('\n'.join(ex_lines))
+
+            raise value_error
 
 
 

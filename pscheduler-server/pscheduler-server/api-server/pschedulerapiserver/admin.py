@@ -22,8 +22,8 @@ from .log import log
 
 @application.route("/", methods=['GET'])
 def root():
-    return ok_json("This is the pScheduler API server on %s (%s)."
-                   % (server_hostname(), pscheduler.api_local_host_name()),
+    return ok_json('This is the pScheduler API server'
+                   f' on {server_hostname()} ({socket.gethostname()})',
                    sanitize=False)
 
 
@@ -65,7 +65,7 @@ def exception_handler(ex):
 def exception():
     """Throw an exception"""
     # Allow only from localhost
-    if not request.remote_addr in ['127.0.0.1', '::1']:
+    if not remote_address() in ['127.0.0.1', '::1']:
         return not_allowed()
 
     raise Exception("Forced exception.")

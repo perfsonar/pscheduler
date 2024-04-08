@@ -130,6 +130,8 @@ log = pscheduler.Log(verbose=options.verbose, debug=options.debug, propagate=Tru
 
 dsn = pscheduler.string_from_file(options.dsn)
 
+TIMEDELTA_ZERO = datetime.timedelta()
+
 
 #
 # Globals for use by worker pool processes
@@ -432,7 +434,7 @@ def run_post(
     try:
         task_slip = pscheduler.iso8601_as_timedelta(task['schedule']['slip'])
     except KeyError:
-        task_slip = datetime.timedelta()
+        task_slip = TIMEDELTA_ZERO
 
 
     # If the task is a repeater, the run can't be slipped so far that
@@ -444,6 +446,8 @@ def run_post(
         repeat_interval = pscheduler.iso8601_as_timedelta(task['schedule']['repeat'])
         if task_slip + task_duration >= repeat_interval:
             task_slip = repeat_interval - task_duration
+            if task_slip < TIMEDELTA_ZERO:
+                task_slip = TIMEDELTA_ZERO
             log_debug("%d: Chopped slip to %s", number, task_slip)
     except KeyError:
         pass
@@ -532,7 +536,7 @@ def run_post(
 
         log_debug("%d: Taking earliest available time", number)
         selected_range = common_ranges[0]
-        slip_offset = datetime.timedelta()
+        slip_offset = TIMEDELTA_ZERO
 
     log_debug("%d: Selected range %s", number, selected_range)
     log_debug("%d: Using a slip offset of %s", number, slip_offset)

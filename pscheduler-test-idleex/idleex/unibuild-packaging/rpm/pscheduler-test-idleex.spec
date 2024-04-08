@@ -4,7 +4,7 @@
 
 %define short	idleex
 %define perfsonar_auto_version 5.1.0
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 0.b1.1
 
 Name:		pscheduler-test-%{short}
 Version:	%{perfsonar_auto_version}
@@ -21,7 +21,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	python-pscheduler
+Requires:	%{_pscheduler_python}-pscheduler
 
 BuildRequires:	pscheduler-rpm
 
@@ -38,7 +38,7 @@ Idle test class for pScheduler that runs exclusively.
 
 %build
 make \
-     PYTHON=python \
+     PYTHON=%{_pscheduler_python} \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
 

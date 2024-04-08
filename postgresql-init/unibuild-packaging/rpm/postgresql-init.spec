@@ -33,6 +33,7 @@ Requires:	postgresql-libs >= %{_pscheduler_postgresql_version}
 Requires:	postgresql-plpython3 >= %{_pscheduler_postgresql_version}
 Requires:	postgresql-server  >= %{_pscheduler_postgresql_version}
 
+Requires:       pscheduler-rpm
 
 BuildRequires:	pscheduler-rpm
 
@@ -43,7 +44,7 @@ Installing this package initializes the PostgreSQL server, starts it
 and makes sure it runs at boot.
 
 
-%define version_file %%{_pscheduler_postgresql_data}/PG_VERSION
+%define pg_version_file %{_pscheduler_postgresql_data}/PG_VERSION
 
 
 # No prep or build.
@@ -56,10 +57,10 @@ and makes sure it runs at boot.
 
 set -e
 
-
-if [ -e "${PG_VERSION_FILE}" ]
+if [ -e "%{pg_version_file}" ]
 then
     echo "PostgreSQL is already initialized.  Doing nothing."
+    systemctl enable --now postgresql
     exit 0
 fi
 

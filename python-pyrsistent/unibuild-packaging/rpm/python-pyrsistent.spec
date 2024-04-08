@@ -3,7 +3,7 @@
 #
 
 %define short	pyrsistent
-Name:		python-%{short}
+Name:		%{_pscheduler_python}-%{short}
 Version:	0.14.11
 Release:	1%{?dist}
 Summary:	Persistent/Immutable/Functional data structures for Python
@@ -13,7 +13,6 @@ License:	MIT
 Group:		Development/Libraries
 
 Provides:	%{name} = %{version}-%{release}
-Provides:	python-%{short} = %{version}-%{release}
 Prefix:		%{_prefix}
 
 Vendor:		Tobias Gustaffson
@@ -21,13 +20,13 @@ URL:		https://github.com/tobgu/pyrsistent
 
 Source:		%{short}-%{version}.tar.gz
 
-Requires:       python
-Requires:       python-six
+Requires:       %{_pscheduler_python}
+Requires:       %{_pscheduler_python}-six
 
-BuildRequires:  python-six
-BuildRequires:  python
-BuildRequires:  python-devel
-BuildRequires:  python-setuptools
+BuildRequires:  %{_pscheduler_python}-six
+BuildRequires:  %{_pscheduler_python}
+BuildRequires:  %{_pscheduler_python}-devel
+BuildRequires:  %{_pscheduler_python}-setuptools
 
 %description 
 Pyrsistent is a number of persistent collections (by some referred to
@@ -47,11 +46,11 @@ immutable.
 
 
 %build
-python setup.py build
+%{_pscheduler_python} setup.py build
 
 
 %install
-python setup.py install --root=$RPM_BUILD_ROOT -O1  --record=INSTALLED_FILES
+%{_pscheduler_python} setup.py install --root=$RPM_BUILD_ROOT -O1  --record=INSTALLED_FILES
 
 
 %clean

@@ -4,7 +4,7 @@
 
 %define short	nuttcp
 %define perfsonar_auto_version 5.1.0
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 0.b1.1
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
@@ -21,7 +21,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 4.4.0
-Requires:	python-pscheduler >= 4.4.0
+Requires:	%{_pscheduler_python}-pscheduler >= 4.4.0
 Requires:	pscheduler-test-throughput
 Requires:	numactl
 Requires:	nuttcp >= 8.1.4
@@ -41,7 +41,7 @@ nuttcp tool class for pScheduler
 
 %build
 make \
-     PYTHON=python \
+     PYTHON=%{_pscheduler_python} \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      CONFDIR=$RPM_BUILD_ROOT/%{_pscheduler_tool_confdir}\
      install

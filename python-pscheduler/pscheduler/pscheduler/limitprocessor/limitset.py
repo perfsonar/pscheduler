@@ -286,6 +286,8 @@ if __name__ == "__main__":
 
     theset = LimitSet(thelimits)
 
+    # This is test code that doesn't interact with the network, so
+    # hard-wired IPv4s are fine here.
     hints = {
         "requester": "127.0.0.1",
         "server": "127.0.0.1",

@@ -67,11 +67,9 @@ except IOError as ex:
 try:
     processor = LimitProcessor(infile)
 except Exception as ex:
-    pscheduler.fail(str(ex))
+    pscheduler.fail(f'Limit configuration is invalid:\n{str(ex)}')
 
 if sys.stdout.isatty() and not options.quiet:
     print("Limit configuration is valid.")
 
 pscheduler.succeed()
-
-

@@ -8,7 +8,7 @@
 
 %define short	linuxvrf
 %define perfsonar_auto_version 5.1.0
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 0.b1.1
 
 Name:		pscheduler-context-%{short}
 Version:	%{perfsonar_auto_version}
@@ -25,7 +25,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
-Requires:	python-pscheduler
+Requires:	%{_pscheduler_python}-pscheduler
 Requires:	iproute
 
 BuildRequires:	pscheduler-rpm >= 1.0.0.5.1

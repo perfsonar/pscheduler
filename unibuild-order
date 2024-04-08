@@ -54,12 +54,14 @@ postgresql-load
 
 # jq and friends
 
+ifelse(DISTRO/MAJOR,ol/8,oniguruma)
 ifelse(DISTRO/eval(MAJOR < 20),Ubuntu/1,oniguruma)		# Ubuntu 20 and up are good.
 jq							# Ours has patches.
 
 
 # Python Modules
 
+ifelse(FAMILY/DISTRO/MAJOR,RedHat/ol/8,Cython)
 ifelse(FAMILY/MAJOR,Debian/9,python-attrs)              # Needed here only.
 
 # EL9 doesn't have a good version of this
@@ -117,6 +119,7 @@ httpd-wsgi-socket
 #
 drop-in
 
+ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,libtins)		# Dublin-traceroute needs this
 ifelse(FAMILY,Debian,,dublin-traceroute)		# TODO: Doesn't build on Debian.
 define(HAVE_ETHR,HAVE_GOLANG)
 ifelse(DISTRO/eval(MAJOR <= 18),Ubuntu/1,,      # Doesn't build on U18, TODO: not sure about U20…

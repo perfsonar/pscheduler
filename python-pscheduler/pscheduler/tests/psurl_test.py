@@ -4,11 +4,19 @@ test for the psurl module.
 """
 
 import unittest
+import os
+
+# Remove any proxy that might be in the way of testing
+for env in [ 'HTTP_PROXY', 'http_proxy', 'HTTPS_PROXY', 'https_proxy' ]:
+    try:
+        os.environ.pop(env)
+    except KeyError:
+        pass
+
 
 from base_test import PschedTestBase
 
 from pscheduler.psurl import *
-
 
 class TestPsurl(PschedTestBase):
     """

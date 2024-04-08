@@ -4,7 +4,7 @@
 
 %define short	postgresql
 %define perfsonar_auto_version 5.1.0
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 0.b1.1
 
 Name:		pscheduler-archiver-%{short}
 Version:	%{perfsonar_auto_version}
@@ -20,7 +20,7 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.0.2
-Requires:	python-psycopg2 >= 2.6.1
+Requires:	%{_pscheduler_python}-psycopg2 >= 2.6.1
 
 BuildRequires:	pscheduler-rpm
 

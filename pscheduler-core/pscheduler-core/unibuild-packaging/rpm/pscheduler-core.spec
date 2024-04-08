@@ -3,7 +3,7 @@
 #
 
 %define perfsonar_auto_version 5.1.0
-%define perfsonar_auto_relnum 0.a1.0
+%define perfsonar_auto_relnum 0.b1.1
 
 Name:		pscheduler-core
 Version:	%{perfsonar_auto_version}
@@ -26,8 +26,8 @@ Requires:       gnuplot >= 4.6.2
 
 # This is for netstat.
 Requires:       net-tools
-Requires:       python-babel
-Requires:       python-pscheduler >= 4.4.0
+Requires:       %{_pscheduler_python}-babel
+Requires:       %{_pscheduler_python}-pscheduler >= 4.4.0
 
 Requires:	curl
 Requires:       dmidecode
