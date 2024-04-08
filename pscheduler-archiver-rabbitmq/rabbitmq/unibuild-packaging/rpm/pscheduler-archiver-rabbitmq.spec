@@ -21,9 +21,9 @@ Source0:	%{short}-%{version}.tar.gz
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.1.6
-Requires:	python-pscheduler >= 1.3.7.3
-Requires:	python-py-amqp >= 5.0.6
-Requires:	python-vine >= 5.0.0
+Requires:	%{_pscheduler_python}-pscheduler >= 1.3.7.3
+Requires:	%{_pscheduler_python}-py-amqp >= 5.0.6
+Requires:	%{_pscheduler_python}-vine >= 5.0.0
 
 BuildRequires:	pscheduler-rpm
 
