@@ -173,6 +173,10 @@ def run_client():
         iperf2_args.append('-b')
         iperf2_args.append(test_spec['bandwidth'])
 
+    if 'fq-rate' in test_spec and test_spec['fq-rate'] is not None:
+        iperf2_args.append('--fq-rate')
+        iperf2_args.append(test_spec['fq-rate'])
+
     if 'buffer-length' in test_spec and test_spec['buffer-length'] != None:
         iperf2_args.append('-l')
         iperf2_args.append(test_spec['buffer-length'])
