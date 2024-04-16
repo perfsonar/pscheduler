@@ -26,11 +26,9 @@ changecom()dnl
 define(INCLUDE_OWAMP_TOOLS,1)
 define(OWAMP_TOOL,ifelse(INCLUDE_OWAMP_TOOLS,1,$1,))
 
-# Debian 9 (Stretch) doesn't support Golang sufficiently for what we
-# need, nor is there support for it on arm64 or ppc64el.
-define(HAVE_GOLANG,ifelse(FAMILY/eval(MAJOR < 10),Debian/1,,
-              FAMILY/ARCH,Debian/arm64,,
-              FAMILY/ARCH,Debian/ppc64el,,
+# There is no Golang support on armhf or ppc64le.
+define(HAVE_GOLANG,ifelse(FAMILY/ARCH,Debian/armv7,,
+              FAMILY/ARCH,Debian/ppc64le,,
               1))
 
 
@@ -136,7 +134,7 @@ paris-traceroute
 # Some Debian and all Ubuntus don't have a recent-enough Golang to
 # build this.
 define(HAVE_S3_BENCHMARK,ifelse(HAVE_GOLANG,0,0,
-	   FAMILY/eval(MAJOR == 11),Debian/1,1,
+	   FAMILY/eval(MAJOR == 11),Debian/1,HAVE_GOLANG,
        FAMILY,Debian,,
        1))
 ifelse(HAVE_S3_BENCHMARK,1,s3-benchmark)
@@ -179,7 +177,8 @@ pscheduler-test-throughput
 # This has not been released.  See also pscheduler-tool-nmapscan
 # pscheduler-test-openports		--bundle extras
 pscheduler-test-rtt
-ifelse(HAVE_S3_BENCHMARK,1,pscheduler-test-s3throughput)
+#ifelse(HAVE_S3_BENCHMARK,1,pscheduler-test-s3throughput)
+pscheduler-test-s3throughput
 pscheduler-test-simplestream
 pscheduler-test-snmpget			--bundle snmp
 pscheduler-test-snmpgetbgm		--bundle snmp
@@ -220,7 +219,8 @@ pscheduler-tool-psclock
 pscheduler-tool-pstimer
 pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
-ifelse(HAVE_S3_BENCHMARK,1,pscheduler-tool-s3-benchmark)
+#ifelse(HAVE_S3_BENCHMARK,1,pscheduler-tool-s3-benchmark)
+pscheduler-tool-s3-benchmark
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm

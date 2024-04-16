@@ -12,3 +12,4 @@ Package: pscheduler-jq-library
 Architecture: all
 Depends: ${misc:Depends}, jq
 Description: Library of JQ functions for pScheduler
+ A library of JQ functions to use pScheduler internals.
