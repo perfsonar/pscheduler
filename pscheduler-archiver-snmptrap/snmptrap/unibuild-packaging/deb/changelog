@@ -4,6 +4,12 @@ pscheduler-archiver-snmptrap (5.1.0~b1.1-1) perfsonar-5.1; urgency=low
 
  -- perfSONAR developers <debian@perfsonar.net>  Thu, 04 Apr 2024 08:06:34 -0400
 
+pscheduler-archiver-snmptrap (5.0.8-4) perfsonar-5.0; urgency=low
+
+  * New upstream version.
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Mon, 22 Apr 2024 16:56:21 +0200
+
 pscheduler-archiver-snmptrap (5.0.7-1) perfsonar-5.0; urgency=low
 
   * New upstream version.
