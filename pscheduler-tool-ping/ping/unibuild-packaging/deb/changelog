@@ -1,8 +1,8 @@
-pscheduler-tool-ping (5.0.8-3) perfsonar-5.0; urgency=low
+pscheduler-tool-ping (5.0.8-4) perfsonar-5.0; urgency=low
 
   * New upstream version.
 
- -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Thu, 08 Feb 2024 16:04:48 +0100
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Mon, 22 Apr 2024 16:56:43 +0200
 
 pscheduler-tool-ping (5.0.7-1) perfsonar-5.0; urgency=low
 
