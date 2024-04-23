@@ -1,3 +1,10 @@
+nuttcp (8.2.2-2) perfsonar-5.1-staging; urgency=low
+
+  * Building on Ubuntu 20.
+  * Port to Debian 12 and Ubuntu 22.
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Tue, 23 Apr 2024 00:56:51 +0200 
+
 nuttcp (8.2.2-1) perfsonar-5.0-staging; urgency=low
 
   * New upstream release.

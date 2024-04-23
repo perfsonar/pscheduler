@@ -1,3 +1,10 @@
+py-amqp (5.0.6-2~bpo90+3) perfsonar-5.1-staging; urgency=low
+
+  * Building on Ubuntu 20.
+  * Port to Debian 12 and Ubuntu 22.
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Tue, 23 Apr 2024 00:41:48 +0200 
+
 py-amqp (5.0.6-2~bpo90+2) perfsonar-5.0-staging; urgency=low
 
   * Backport to Debian 10, Debian 11, Ubuntu 18 and Ubuntu 20

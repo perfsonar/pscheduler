@@ -1,3 +1,10 @@
+vine (5.0.0+dfsg-2~bpo10+2) perfsonar-5.1-staging; urgency=medium
+
+  * Building on Ubuntu 20.
+  * Port to Debian 12 and Ubuntu 22.
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Tue, 23 Apr 2024 00:40:19 +0200 
+
 vine (5.0.0+dfsg-2~bpo10+1) perfsonar-5.0-staging; urgency=medium
 
   * Backport to Debian 10, Ubuntu 20.
