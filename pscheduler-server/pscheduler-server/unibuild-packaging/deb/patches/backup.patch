@@ -1,7 +1,7 @@
 Index: b/utilities/backup.raw
 ===================================================================
---- a/utilities/backup.raw	2024-04-04 08:06:32.288818011 -0400
-+++ b/utilities/backup.raw	2024-04-04 08:06:37.142983167 -0400
+--- a/utilities/backup.raw	2024-04-23 09:49:50.896280546 -0400
++++ b/utilities/backup.raw	2024-04-23 09:49:55.426033598 -0400
 @@ -73,6 +73,7 @@
      --format plain \
      --serializable-deferrable \
@@ -12,8 +12,8 @@ Index: b/utilities/backup.raw
  $INTERACTIVE && printf ' Done.\n' 1>&2 || true
 Index: b/utilities/restore.raw
 ===================================================================
---- a/utilities/restore.raw	2024-04-04 08:06:32.289214176 -0400
-+++ b/utilities/restore.raw	2024-04-04 08:06:37.143375374 -0400
+--- a/utilities/restore.raw	2024-04-23 09:49:50.896526904 -0400
++++ b/utilities/restore.raw	2024-04-23 09:49:55.426524782 -0400
 @@ -203,7 +203,7 @@
  DB_OUTPUT="${WORK_DIR}/db-output"
  LOAD_EXIT=0
