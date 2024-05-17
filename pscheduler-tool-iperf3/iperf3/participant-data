@@ -4,6 +4,7 @@
 #
 
 import hashlib
+import packaging.version
 import pscheduler
 import sys
 import iperf3_utils
@@ -17,8 +18,24 @@ from cryptography.hazmat.backends import default_backend
 
 json = pscheduler.json_load(exit_on_error=True)
 result = {
-    "schema": 2
+    "schema": 3
 }
+
+
+# Provide the local iperf3 version
+
+status, out, err = pscheduler.run_program(['iperf3', '--version'], timeout=2)
+if status != 0:
+    pscheduler.fail(f'Unable to run iperf3: {err}')
+
+try:
+    version_text = out.split()[1]
+    version = packaging.version.Version(version_text)
+except (IndexError, packaging.version.InvalidVersion) as ex:
+    pscheduler.fail(str(ex))
+
+result['iperf3-version'] = str(version)
+
 
 try:
     participant = json['participant']
