@@ -46,6 +46,8 @@ such as Windows, Linux and other Unix systems.
 export GOPATH="%{gopath}"
 export GOBIN="%{gobin}"
 export GOCACHE="%{gocache}"
+export GOFLAGS=-buildvcs=false
+
 
 mkdir -p "%{godir}" "%{gobin}"
 
