@@ -363,7 +363,7 @@ EOF
 NEW_CONF_DIGEST=$(sha256sum "%{pgsql_conf}" | awk '{ print $1 }')
 
 # Change TimeoutSec to 5 sec to allow postgres to start for Oracle 8
-%if 0%{ol8} 
+%if 0%{?ol8} 
    sed -i -e 's/^TimeoutSec=0$/TimeoutSec=5/' '%{_unitdir}/postgresql.service'
    systemctl daemon-reload
 %endif
