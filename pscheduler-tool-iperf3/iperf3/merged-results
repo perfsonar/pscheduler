@@ -38,6 +38,10 @@ final_results = source_results
 
 if input['test']['spec'].get('reverse') and not (single_ended or loopback):
     final_results = dest_results
+    # This has to be copied in manually since the 'source' side in a reverse
+    # test is the receiver.
+    final_results['summary']['summary']['receiver-throughput-bits'] \
+        = source_results['summary']['summary']['receiver-throughput-bits']
 
 # it's possible one could come back as null, ensure we have the right type
 if not final_results:
