@@ -29,7 +29,7 @@ PG_USER=$(ps -e -o 'user,command' \
     | uniq )
 if [ -z "${PG_USER}" ]
 then
-    die "Unable to determine PostgreSQL user."
+    die "Unable to determine PostgreSQL user.  Is PostgreSQL running?"
 fi
 
 [ "$(id -nu)" = "${PG_USER}" -o "$(id -u)" = "0" ] \
