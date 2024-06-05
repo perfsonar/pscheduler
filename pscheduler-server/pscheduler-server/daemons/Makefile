@@ -11,7 +11,8 @@
 #   PGSERVICE - Name of the PostgreSQL systemd service
 #   PGUSER - Name of pScheduler PostgreSQL account
 #   PSUSER - Name of pScheduler user account
-#   RUNDIR - Location of run directory (nominally /run)
+#   STORAGEDIR - Location of temporary storage.  Must not be
+#                  in a directory where 'noexec' is in effect.
 #   VAR - Location of /var directory
 #
 
@@ -60,7 +61,7 @@ ifndef PSUSER
 endif
 	sed \
 		-e 's|__PSUSER__|$(PSUSER)|g' \
-		-e 's|__RUNDIR__|$(RUNDIR)|g' \
+		-e 's|__STORAGEDIR__|$(STORAGEDIR)|g' \
 		< $< > $@
 	@if egrep -e '__[A-Z_]+__' $@ ; then \
 		echo "Found un-substituted values in processed file $@" ; \
@@ -150,8 +151,8 @@ ifndef PGSERVICE
 	@echo No PGSERVICE specified for build
 	@false
 endif
-ifndef RUNDIR
-	@echo No RUNDIR specified for build
+ifndef STORAGEDIR
+	@echo No STORAGEDIR specified for build
 	@false
 endif
 ifndef VAR
@@ -164,7 +165,7 @@ endif
 		-e 's|__DSN__|$(DSNFILE)|g' \
 		-e 's|__PROG__|$(@:service-%=%)|g' \
 		-e 's|__PSUSER__|$(PSUSER)|g' \
-		-e 's|__RUNDIR__|$(RUNDIR)|g' \
+		-e 's|__STORAGEDIR__|$(STORAGEDIR)|g' \
 		-e 's|__VAR__|$(VAR)|g' \
 		-e 's|__LOGDIR__|$(LOGDIR)|g' \
 		-e 's|__PGSERVICE__|$(PGSERVICE)|g' \
@@ -216,6 +217,10 @@ ifndef INTERNALSDIR
 	@echo No INTERNALSDIR specified for installation
 	@false
 endif
+ifndef STORAGEDIR
+	@echo No STORAGEDIR specified for installation
+	@false
+endif
 	mkdir -p $(CONFIGDIR)
 	cp -f $(CONFIGS) $(CONFIGDIR)
 	chmod 600 $(CONFIGS:%=$(CONFIGDIR)/%)
@@ -228,6 +233,8 @@ endif
 	mkdir -p $(INTERNALSDIR)
 	cp -f $(INTERNALS) $(INTERNALSDIR)
 	chmod 555 $(INTERNALS:%=$(INTERNALSDIR)/%)
+	mkdir -p $(STORAGEDIR)
+	chmod 700 $(STORAGEDIR)
 	mkdir -p $(UNITDIR)
 	@for SCRIPT in $(DAEMONS) ; \
 	do \

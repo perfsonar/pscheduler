@@ -111,7 +111,7 @@ The pScheduler server
 
 %define server_conf_dir %{_pscheduler_sysconfdir}
 # Runtime space for PID files and debug flags.
-%define run_dir  %{_rundir}/%{name}
+%define storage_dir  %{_localstatedir}/%{name}
 
 # Note that we want this here because it seems to work well without
 # assistance on systems where selinux is enabled.  Anywhere else and
@@ -160,7 +160,7 @@ make -C daemons \
      PGUSER=%{_pscheduler_database_user} \
      PSUSER=%{_pscheduler_user} \
      ARCHIVERDEFAULTDIR=%{archiver_default_dir} \
-     RUNDIR=%{run_dir} \
+     STORAGEDIR=%{storage_dir} \
      VAR=%{_var}
 
 #
@@ -245,6 +245,7 @@ make -C daemons \
      DAEMONDIR=$RPM_BUILD_ROOT/%{_pscheduler_daemons} \
      COMMANDDIR=$RPM_BUILD_ROOT/%{_pscheduler_commands} \
      INTERNALSDIR=$RPM_BUILD_ROOT/%{_pscheduler_internals} \
+     STORAGEDIR=$RPM_BUILD_ROOT/%{storage_dir} \
      install
 
 mkdir -p $RPM_BUILD_ROOT/%{archiver_default_dir}
@@ -612,6 +613,7 @@ systemctl reload-or-try-restart postgresql
 
 %defattr(-,root,root,-)
 %license LICENSE
+%attr(700,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %{storage_dir}
 %attr(755,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %{daemon_config_dir}
 %attr(600,%{_pscheduler_user},%{_pscheduler_group})%verify(user group mode) %config(noreplace) %{daemon_config_dir}/*
 %{_unitdir}/*
