@@ -422,7 +422,7 @@ class ChainedExecRunner(object):
 
         for remove in self.stages:
             try:
-                pass # os.unlink(remove)
+                os.unlink(remove)
             except IOError:
                 pass  # This is best effort only.
 
