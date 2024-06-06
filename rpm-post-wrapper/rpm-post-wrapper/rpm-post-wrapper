@@ -1,0 +1,72 @@
+#!/bin/sh -e
+#
+#BEGIN-HELP
+#
+# Wrap a RPM %post scriptlet so errors can be logged.
+#
+# Usage: rpm-post-wrapper PACKAGE-NAME [ ARG ... ]
+#
+# See rpm-post-wrapper(1) for more information.
+#
+#END-HELP
+
+self_help()
+{
+    sed -n -e '/^#BEGIN-HELP/,/^#END-HELP/{//!p}' $0 \
+	| sed -e 's/^#\s*//'
+}
+
+
+if [ $# -lt 1 ]
+then
+    self_help
+    exit 1
+fi
+
+PACKAGE=$1
+shift
+
+WORK=$(mktemp -d)
+cleanup()
+{
+    rm -rf "${WORK}"
+}
+trap cleanup EXIT
+
+SCRIPT="${WORK}/script"
+echo "#!/bin/bash -e" > "${SCRIPT}"
+chmod 700 "${SCRIPT}"
+cat >> "${SCRIPT}"
+
+LOG="${WORK}/log"
+STATUS="${WORK}/status"
+
+
+# Run the script, capture stdout and stderr together in $LOG and
+# put the exit code into $EXITED.
+    
+(((( \
+     "${SCRIPT}" "$@" || echo $? >&3 ; \
+     echo $? >&3 \
+  ) \
+      | tee "${LOG}" >&4) 3>&1) \
+     | (read EXIT_CODE && echo "${EXIT_CODE}" > "${STATUS}") \
+  ) 4>&1
+
+EXITED=$(cat "${STATUS}")
+
+# Log failures
+
+if [ ! -s "${LOG}" ]
+then
+    echo "(No output produced)" > "${LOG}"
+fi
+
+if [ "${EXITED}" -ne 0 ]
+then
+    (echo "${PACKAGE} %post($@) failed:" \
+	 && sed -e 's/^//g' "${LOG}" ) \
+	| logger -p error -t rpm-post-wrapper
+fi
+
+exit "${EXITED}"

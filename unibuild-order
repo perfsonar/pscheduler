@@ -38,6 +38,7 @@ define(HAVE_GOLANG,ifelse(FAMILY/ARCH,Debian/armv7,,
 # Everything else depends on these.
 #
 
+ifelse(PACKAGING,rpm,rpm-post-wrapper)
 ifelse(PACKAGING,rpm,pscheduler-rpm)
 
 #
