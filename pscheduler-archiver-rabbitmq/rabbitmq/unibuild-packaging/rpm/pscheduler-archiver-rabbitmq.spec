@@ -24,6 +24,7 @@ Requires:	pscheduler-server >= 1.1.6
 Requires:	%{_pscheduler_python}-pscheduler >= 1.3.7.3
 Requires:	%{_pscheduler_python}-py-amqp >= 5.0.6
 Requires:	%{_pscheduler_python}-vine >= 5.0.0
+Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 
@@ -44,7 +45,9 @@ make \
      install
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 pscheduler internal warmboot
+POST-WRAPPER-EOF
 
 %postun
 pscheduler internal warmboot

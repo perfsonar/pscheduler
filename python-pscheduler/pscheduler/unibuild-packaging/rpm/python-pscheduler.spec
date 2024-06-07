@@ -48,6 +48,7 @@ Requires:	%{_pscheduler_python}-pytz
 Requires:	rsyslog
 Requires:	logrotate
 Requires:       numactl
+Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:  %{_pscheduler_python}
@@ -143,6 +144,7 @@ EOF
 rm -rf $RPM_BUILD_ROOT
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 
 # This removes a duplicate entry leftover from the Python 2 version.
 # TODO: Remove this after we stop supporting 4.2.x.
@@ -159,6 +161,7 @@ fi
 
 systemctl enable rsyslog
 systemctl reload-or-try-restart rsyslog
+POST-WRAPPER-EOF
 
 
 %postun

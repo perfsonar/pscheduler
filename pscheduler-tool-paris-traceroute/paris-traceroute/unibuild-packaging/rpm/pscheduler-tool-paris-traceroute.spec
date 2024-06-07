@@ -27,6 +27,7 @@ Requires:	pscheduler-test-trace
 Requires:	paris-traceroute
 Requires:	sudo
 Requires:	%{_pscheduler_python}-icmperror
+Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
@@ -66,7 +67,9 @@ EOF
 
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 pscheduler internal warmboot
+POST-WRAPPER-EOF
 
 %postun
 ldconfig

@@ -17,6 +17,7 @@ Group:		Unspecified
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	mod_wsgi
+Requires:	rpm-post-wrapper
 
 %description
 WSGI socket configuration for Apache HTTPD
@@ -36,7 +37,9 @@ EOF
 
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 systemctl reload-or-try-restart httpd
+POST-WRAPPER-EOF
 
 
 

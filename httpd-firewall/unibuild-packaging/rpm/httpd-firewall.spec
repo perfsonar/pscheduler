@@ -17,6 +17,7 @@ Group:		Unspecified
 Provides:	%{name} = %{version}-%{release}
 
 Requires:	httpd
+Requires:	firewalld
 
 
 %description
@@ -24,9 +25,11 @@ Firewall configuration for allowing access to HTTPD
 
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 systemctl enable --now firewalld
 firewall-cmd -q --add-service=https --permanent
 systemctl reload-or-try-restart firewalld
+POST-WRAPPER-EOF
 
 
 
