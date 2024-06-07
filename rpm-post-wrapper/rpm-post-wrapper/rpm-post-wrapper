@@ -67,6 +67,9 @@ then
     (echo "${PACKAGE} %post($@) failed:" \
 	 && sed -e 's/^//g' "${LOG}" ) \
 	| logger -p error -t rpm-post-wrapper
+else
+    echo "${PACKAGE} %post($@) OK." \
+	| logger -p info -t rpm-post-wrapper
 fi
 
 exit "${EXITED}"
