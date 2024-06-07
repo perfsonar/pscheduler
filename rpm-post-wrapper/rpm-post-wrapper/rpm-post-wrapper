@@ -46,7 +46,7 @@ STATUS="${WORK}/status"
 # put the exit code into $EXITED.
     
 (((( \
-     "${SCRIPT}" "$@" || echo $? >&3 ; \
+     "${SCRIPT}" "$@" 2>&1 || echo $? >&3 ; \
      echo $? >&3 \
   ) \
       | tee "${LOG}" >&4) 3>&1) \
