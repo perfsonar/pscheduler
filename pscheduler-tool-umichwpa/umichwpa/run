@@ -18,13 +18,13 @@ import os
 import pscheduler
 import tempfile
 
-#error and diagnostic tracking
-error = []
-diags = []
+# error and diagnostic tracking
+error = ''
+diags = ''
 authenticated = False
 need_root = False
 
-#declare local variables
+# declare local variables
 interface = ''
 path = ''
 username = ''
@@ -33,171 +33,141 @@ driver = ''
 ssid = ''
 bssid = ''
 key_managment = ''
-
+timeout = 4000
 
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
 
-# Take input from test spec
-try:
-    interface = input['test']['spec']['interface']
-
-except KeyError:
-    pscheduler.fail('Missing the interface in input')
+# take input from test spec
+interface = input['test']['spec']['interface']
 
 try:
-    username = input['test']['spec']['username']
+    username = input['test']['spec']['_username']
 except KeyError:
-    diags.append("Proceeding without a username")
+    diags += "Proceeding without a username"
 
 try:
-    password = input['test']['spec']['password']
+    password = input['test']['spec']['_password']
 except KeyError:
-    diags.append("Proceeding without a password")
+    diags += "Proceeding without a password"
 
-try:
-    driver = input['test']['spec']['driver']
-except KeyError:
-    diags.append("Proceeding without a driver")
-
-try:
-    ssid = input['test']['spec']['ssid']
-except KeyError:
-    diags.append("Proceeding without a ssid")
+ssid = input['test']['spec']['ssid']
 
 try:
     bssid = input['test']['spec']['bssid']
 except KeyError:
-    diags.append("Proceeding without a bssid")
+    diags += "Proceeding without a bssid"
+
+key_management = input['test']['spec']['key-management']
+diags += "Proceeding without key_management"
 
 try:
-    key_management = input['test']['spec']['key_management']
+    token = input['test']['spec']['token']
+    with open('/etc/tokens', 'r') as f:
+        for line in f:
+            identifier, usrname, pwd = line.split(' ')
+            if identifier == token:
+                username = usrname
+                password = pwd
 except KeyError:
-    diags.append("Proceeding without key_management")
+    diags += "proceeding without token"
 
-
-try:
-    driver = input['test']['spec']['driver']
-except KeyError:
-    diags.append("proceeding with default driver")
-
+# validate the existance of username and password
+if not username and not password:
+     pscheduler.succeed_json( {
+        'succeeded': False,
+        'diags': '',
+        'error': ' username or/and password not supplied ',
+        'result': None
+        })
 
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 succeeded = False
 
-# create a temporary configuration file
-temp = tempfile.TemporaryFile(mode = 'w+t')
-path = temp.name
-try:
-    temp.writelines(['ctrl_interface=DIR=/var/run/wpa_supplicant\n', 'update_config=1\n', 'network={\n'])
-    if ssid != '':
-        temp.write('  ssid="' + ssid + '"' + '\n')
-    if bssid != '':
-        temp.write('  bssid="' + bssid + '"' + '\n')
-    if password != '':
-        temp.write('  psk="' + password + '"' + '\n')
-    if key_management != '':
-        temp.write('  key_mgmt=' + key_management + '\n')
-    temp.write('}')
-    #temp.seek(0)
+WPA_CONFIG_PATH = '/tmp/wpa_supplicant.conf'
+WPA_CTRL_IFACE_BASE = '/var/run/wpa_supplicant'
 
-#sleep until designated start time
-try:
-    pscheduler.sleep_until(input['schedule']['start'])
-except KeyError:
-    pscheduler.fail('Unable to find start time in input')
-
-# check if the EUID is not the root
-if os.geteuid() != 0:
-    need_root = True
-
-#remove the interface file if it exists
-interface_path = '/var/run/wpa_supplicant' + interface
-if os.path.exists(interface_path):
-    need_root = True
-    diags.append('Need root privilage to delete prior interface file')
-    clear_interface = ['rm', interface_path]
-    if need_root:
-        clear_interface.insert(0, 'sudo') 
-    # run the commands 
-    status, stdout, stderr = pscheduler.run_program(clear_interface, timeout=timeout)
-    if status != 0:
-        succeeded = False
-        fail_json = { 'succeeded': succeeded,
-                      'error': 'failed to delete old interface file',
-                      'diags':'\n'.join(diags)} }
-        pscheduler.succeed_json(fail_json)
-        error.append("(failed to delete old interface file) Error returned: \n%s" % stderr.strip('\n'))
+# use wpa_cli to check if the interface exists
+wpa_status = ["sudo", "wpa_cli", "status"]
+status, stdout, stderr = pscheduler.run_program(wpa_status, timeout=timeout)
+if status:
+    with open(WPA_CONFIG_PATH, 'w') as f:
+        f.write('update_config=1\r\n')
+        f.write('p2p_disabled=1\r\n')
+    status, out, err = pscheduler.run_program(['sudo','wpa_supplicant','-Dnl80211','-B','-i',interface,'-c',WPA_CONFIG_PATH])
+    if status:
+         pscheduler.succeed_json( {
+            'succeeded': False,
+            'diags': '' + out,
+            'error': 'failed to initialize interface: ' + err,
+            'result': None
+            })
     else:
-        succeeded = True
-        diags.append("Successfully deleted old interface file")
+        diags += out
 
-# reset the need root flag as root might not be needed next time
-need_root = False
+# write the config file for reconfiguring the interface
+temp = open(WPA_CONFIG_PATH,'w')
+temp.writelines(['ctrl_interface=DIR=/var/run/wpa_supplicant\n', 'update_config=1\n', 'country=US\n', 'p2p_disabled=1\n',  'network={\n'])
+temp.write('ssid="{}"\n'.format(ssid))
+temp.write('scan_ssid=1\n')
+if bssid != '':
+    temp.write('bssid={}\n'.format(bssid))
+temp.write('key_mgmt={}\n'.format(key_management))
+temp.write('identity="{}"\n'.format(username))
+temp.write('password="{}"\n'.format(password))
+temp.write('eap=PEAP\n')
+temp.write('phase1="peaplabel=0"\n')
+temp.write('phase2="auth=MSCHAPV2"\n')
+temp.write('}\n')
+temp.close()
 
-#kill all previous wpa_supplicants
-kill_wpa = ['killall', 'wpa_supplicant']
-if need_root: 
-    diags.insert('Need root privelage to kill all wpa supplicant processes before starting a new one')
-    kill_wpa.insert(0, 'sudo')
-status, stdout, stderr = pscheduler.run_program(kill_wpa, timeout=timeout)
-
-#run wpa to authenticate
+# reconfigure the interface and establish connection
 start_time = datetime.datetime.now()
-wpa_auth = ['wpa_supplicant', '-i', interface, '-c', path, '-d', driver, '-B']
-if need_root: 
-    wpa_auth.insert(0, 'sudo')
+wpa_auth = ['sudo', 'wpa_cli', '-i', interface, 'reconfigure']
 status, stdout, stderr = pscheduler.run_program(wpa_auth, timeout=timeout)
-
 if status != 0:
-    error.append('Error returned: \n%s' % stderr.strip('\n'))
+    error += 'Error returned: \n%s' % stderr.strip('\n')
     succeeded = False
     fail_json = { 'succeeded': succeeded,
-              'error': 'failed to run wpa_supplicant',
-              'diags':'\n'.join(diags)} }
-        
-    pscheduler.succeed_json(fail_json
-
+              'error': 'failed to reconfigure interface',
+              'diags': diags }
 else:
-    diags.append(stdout)
+    diags += stdout
+    succeeded = True
 
-#use wpa_cli to check if it was intiizlized correctly
-wpa_status = ["wpa_cli", "status"]
-if need_root:
-    wpa_status.insert(0, 'sudo')
-
+wpa_status = ["sudo", "wpa_cli", "status"]
 status, stdout, stderr = pscheduler.run_program(wpa_status, timeout=timeout)
-    
 if status != 0:
-    error.append('Error returned: \n%s' % stderr.strip('\n'))
+    error += 'Error returned: \n%s' % stderr.strip('\n')
     succeeded = False
     fail_json = { 'succeeded': succeeded,
               'error': 'failed to run wpa_cli to validate the authentication',
-              'diags':'\n'.join(diags)} }
-    
-    succeeded = False
+              'diags': diags }
 else:
-    authenticated = True
+    diags += stdout
     succeeded = True
 
-#get the end time for wpa_supplicant to be initialized
+# iteratively checks the wpa state until completion
+res = stdout.split('\n')
+while "wpa_state=COMPLETED" not in res:
+    status, stdout, stderr = pscheduler.run_program(wpa_status, timeout=timeout)
+    res = stdout.split('\n')
+    time.sleep(0.3)
+
+# get the end time for wpa_supplicant to be initialized
 end_time = datetime.datetime.now()
 
-# clean up the temporary file
-temp.close()
-
-# Organize results into json data
+# organize results into json data
 results = {
     'succeeded': succeeded,
     'result': {
         'schema': 1,
         'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
-        'succeeded': succeeded
-        'authenticated': authenticated
+        'succeeded': succeeded,
+        'final': res
     },
     'error': error,
     'diags': diags }
 
 pscheduler.succeed_json(results)
-

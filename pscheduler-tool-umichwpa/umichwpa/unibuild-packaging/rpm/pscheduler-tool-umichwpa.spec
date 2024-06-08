@@ -44,6 +44,25 @@ make \
      DESTDIR=$RPM_BUILD_ROOT/%{dest} \
      install
 
+# Enable sudo for layer2 auth
+
+SUPP=$(command -v wpa_supplicant)
+CLI=$(command -v wpa_cli)
+
+mkdir -p $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}
+cat > $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}/%{name} <<EOF
+
+#
+# pscheduler-tool-umichwpa
+#
+Cmnd_Alias PSCHEDULER_WPA_SUPPLICANT = ${SUPP}
+%{_pscheduler_user} ALL = (root) NOPASSWD: ${SUPP}
+Defaults!PSCHEDULER_WPA_SUPPLICANT !requiretty
+
+Cmnd_Alias PSCHEDULER_WPA_CLI = ${CLI}
+%{_pscheduler_user} ALL = (root) NOPASSWD: ${CLI}
+Defaults!PSCHEDULER_WPA_CLI !requiretty
+
 %post
 pscheduler internal warmboot
 

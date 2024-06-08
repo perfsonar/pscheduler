@@ -50,7 +50,7 @@ SPEC_SCHEMA = {
                 "host-node":      { "$ref": "#/pScheduler/Host" },
                 "timeout":        { "$ref": "#/pScheduler/Duration" },
                 "interface":      { "$ref": "#/pScheduler/String" },
-                "driver":         { "$ref": "#/pScheduler/String" },
+                "token":         { "$ref": "#/pScheduler/String" },
                 "_username":      { "$ref": "#/pScheduler/String" },
                 "_password":      { "$ref": "#/pScheduler/String" },
                 "ssid":           { "$ref": "#/pScheduler/String" },
@@ -61,6 +61,8 @@ SPEC_SCHEMA = {
             # If listed here, these parameters MUST be in the test spec.
             "required": [
                 "interface",
+                "ssid",
+                "key-management"
             ],
             # Treat other properties as acceptable.  This should
             # ALWAYS be false.
@@ -126,6 +128,7 @@ RESULT_SCHEMA = {
                 "succeeded":        { "$ref": "#/pScheduler/Boolean" },
                 "Authenticated":    { "$ref": "#/pScheduler/Boolean" },
                 "time":             { "$ref": "#/pScheduler/Duration" },
+                "final":            { "type": "array", "items": { "$ref": "#/pScheduler/String"  } }
             },
             "required": [
                 "succeeded",
