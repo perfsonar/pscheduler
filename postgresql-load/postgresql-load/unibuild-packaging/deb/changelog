@@ -1,3 +1,9 @@
+postgresql-load (1.2-2) perfsonar-minor-staging; urgency=low
+
+  * Reducing lintian warnings
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Mon, 22 Apr 2024 19:54:10 +0200 
+
 postgresql-load (1.2-1) perfsonar-minor-staging; urgency=low
 
   * First upstream version

@@ -3,7 +3,7 @@
 #
 
 %define short	owping
-%define perfsonar_auto_version 5.0.8
+%define perfsonar_auto_version 5.1.0
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-tool-%{short}
@@ -28,7 +28,7 @@ Requires:	owamp-server
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:	%{_pscheduler_python}-pscheduler
-BuildRequires:  %{_pscheduler_python_epel}-nose
+BuildRequires:  %{_pscheduler_python}-nose
 
 %description
 owping tool class for pScheduler

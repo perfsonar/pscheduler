@@ -1,3 +1,10 @@
+oniguruma (6.9.6-1~bpo18+2) perfsonar-5.1-staging; urgency=medium
+
+  * Building on Ubuntu 20.
+  * Port to Debian 12 and Ubuntu 22.
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Tue, 23 Apr 2024 00:59:33 +0200 
+
 oniguruma (6.9.6-1~bpo18+1) perfsonar-release; urgency=medium
 
   * Backport to bionic.

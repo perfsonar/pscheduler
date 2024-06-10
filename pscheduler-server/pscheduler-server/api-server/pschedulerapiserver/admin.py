@@ -22,13 +22,13 @@ from .log import log
 
 @application.route("/", methods=['GET'])
 def root():
-    return ok_json("This is the pScheduler API server on %s (%s)."
-                   % (server_hostname(), pscheduler.api_local_host_name()),
+    return ok_json('This is the pScheduler API server'
+                   f' on {server_hostname()} ({socket.gethostname()})',
                    sanitize=False)
 
 
 
-max_api = 5
+max_api = 6
 
 
 @application.route("/api", methods=['GET'])
@@ -41,10 +41,7 @@ def before_req():
     log.debug("REQUEST: %s %s", request.method, request.url)
 
     try:
-        version = arg_integer("api")
-        if version is None:
-            version = 1
-        if version > max_api:
+        if requested_api() > max_api:
             return not_implemented(
                 "No API above %s is supported" % (max_api))
     except ValueError as ex:
@@ -68,7 +65,7 @@ def exception_handler(ex):
 def exception():
     """Throw an exception"""
     # Allow only from localhost
-    if not request.remote_addr in ['127.0.0.1', '::1']:
+    if not remote_address() in ['127.0.0.1', '::1']:
         return not_allowed()
 
     raise Exception("Forced exception.")

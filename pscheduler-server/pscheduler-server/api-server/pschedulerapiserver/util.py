@@ -8,10 +8,46 @@ import uuid
 
 from flask import request
 
+from .args import *
 from .dbcursor import *
 from .log import log
 from .response import *
 
+
+
+#
+# Addresses
+#
+
+def _clean_address(address):
+    """
+    Remove scope (e.g., '1234::5%eth0') from an IP address.  Does not
+    apply to IPv4s but is safe to apply.
+    """
+    return address.split(sep='%', maxsplit=1)[0]
+
+
+def remote_address():
+    """Return a cleaned version of the remote address"""
+    return _clean_address(request.remote_addr)
+
+
+#
+# API
+#
+
+def requested_api():
+    """
+    Get the requested API, raising a ValueError if it's not valid
+    """
+
+    try:
+        api = arg_integer("api")
+    except ValueError as ex:
+        raise ValueError(f'Invalid API value {arg_string("api")}: {str(ex)}')
+    if api is None:
+        api = 1
+    return api
 
 
 #
@@ -38,7 +74,7 @@ def request_hints():
     try:
         requester_header = request.headers["X-pScheduler-Requester"]
     except KeyError:
-        result["requester"] = request.remote_addr
+        result["requester"] = remote_address()
         return (result, None)
 
     # See if the actual requester is allowed to substitute its own address

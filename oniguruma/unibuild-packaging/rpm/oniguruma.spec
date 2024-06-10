@@ -14,6 +14,7 @@ Source: %{name}-%{version}.tar.gz
 
 BuildRequires: autoconf
 BuildRequires: automake
+BuildRequires: libtool
 
 %description
 Oniguruma is a regular expressions library.  The characteristics of

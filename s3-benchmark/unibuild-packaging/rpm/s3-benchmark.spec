@@ -57,13 +57,6 @@ cleanup()
 }
 trap cleanup EXIT
 
-%if 0%{?el7}
-# EL7 has problems with its git that cause module fetches not to work.
-# Use Golang's proxy to do it instead.
-export GO111MODULE=on
-export GOPROXY="https://proxy.golang.org"
-%endif
-
 go mod init wasabi.com/s3-benchmark
 go mod tidy
 go get ./...

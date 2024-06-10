@@ -20,27 +20,13 @@ URL:		https://palletsprojects.com/p/flask
 Source:		%{short}-%{version}.tar.gz
 
 Requires:	%{_pscheduler_python}
-
-%if 0%{?el7}
-Requires:	%{_pscheduler_python_epel}-click
-Requires:	%{_pscheduler_python_epel}-jinja2
-%endif
-%if 0%{?el8}%{?el9}
 Requires:	%{_pscheduler_python}-click
 Requires:	%{_pscheduler_python}-jinja2
-%endif
-
 Requires:	%{_pscheduler_python}-itsdangerous
 Requires:	%{_pscheduler_python}-werkzeug
 
 BuildRequires:	%{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-setuptools
-
-
-%if 0%{?el8}%{?el9}
-# EL8/EL9's auto dependency scanner wants /bin/python3, which nothing provides.
-AutoReqProv: no
-%endif
 
 %description
 Flask is called a “micro-framework” because the idea to keep the core

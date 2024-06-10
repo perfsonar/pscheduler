@@ -3,7 +3,7 @@
 #
 
 %define short	tcp
-%define perfsonar_auto_version 5.0.8
+%define perfsonar_auto_version 5.1.0
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-archiver-%{short}
@@ -25,7 +25,7 @@ Requires:	%{_pscheduler_python}-pscheduler >= 4.4.0
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:  %{_pscheduler_python}
-BuildRequires:	%{_pscheduler_python_epel}-nose
+BuildRequires:	%{_pscheduler_python}-nose
 
 %define directory %{_includedir}/make
 

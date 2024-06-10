@@ -82,19 +82,21 @@ do
 	continue
     fi
 
-    PID=$(systemctl show --property MainPID --value "pscheduler-${SERVICE}")
-
-    if ! echo "${PID}" | egrep -qe '^[0-9]+$'
-    then
-	echo "Warning: ${SERVICE} PID did not contain valid data." 1>&2
-	continue
-    fi
-
-    if [ "${PID}" = 0 ]
+    PID_FILE="__STORAGEDIR__/${SERVICE}/pid"
+    if [ ! -r "${PID_FILE}" ]
     then
 	echo "Warning: ${SERVICE} does not appear to be running." 1>&2
 	continue
     fi
+
+    PID=$(cat "${PID_FILE}")
+
+    if ! echo "${PID}" | egrep -qe '^[0-9]+$'
+    then
+	echo "Warning: ${SERVICE} PID file does not contain valid data." 1>&2
+	continue
+    fi
+
 
     # Don't care if this fails, just keep going.
     kill -${SIGNAL} ${PID} || true

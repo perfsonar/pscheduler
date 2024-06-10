@@ -9,7 +9,7 @@
 # If additional libraries or parts of pScheduler are required,
 # they should be added here (line 25).
 %define short	dhclient
-%define perfsonar_auto_version 5.0.8
+%define perfsonar_auto_version 5.1.0
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-tool-%{short}
@@ -28,14 +28,11 @@ Provides:	%{name} = %{version}-%{release}
 # Include all required libraries here
 Requires:	pscheduler-server
 Requires:	%{_pscheduler_python}-pscheduler
-%if 0%{?el7}
-Requires:	dhclient
-%endif
-%if 0%{?el8}
-Requires:	dhcp-client
+
+# TODO: Why is there a discrepancy between dhcp-client and dhclient here?
+
 # Needed so the sudoers file can be built
 BuildRequires:	dhcp-client
-%endif
 
 BuildRequires:	pscheduler-rpm
 BuildRequires: dhclient

@@ -30,7 +30,7 @@ errors = []
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 6)
+    pscheduler.json_check_schema(spec, 7)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
@@ -71,8 +71,7 @@ supported_options = [
 
 for option in spec:
     if option not in supported_options:
-        logger.debug("nuttcp unsupported option %s" % option)
-        errors.append('nuttcp does not support %s option' % option)
+        errors.append(f'''Option '{option}' is not supported.''')
 
 logger.debug("can-run succeeded")
 

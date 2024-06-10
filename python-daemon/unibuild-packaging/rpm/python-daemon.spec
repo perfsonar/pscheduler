@@ -25,7 +25,7 @@ BuildRequires:	%{_pscheduler_python}
 BuildRequires:  %{_pscheduler_python}-pip
 BuildRequires:  %{_pscheduler_python}-setuptools
 BuildRequires:  %{_pscheduler_python}-wheel
-BuildRequires:  %{_pscheduler_python_epel}-docutils
+BuildRequires:  %{_pscheduler_python}-docutils
 
 %description
 Daemonizer library for Python
@@ -41,11 +41,11 @@ Daemonizer library for Python
 
 
 %build
-%{_pscheduler_python} setup.py build
+python setup.py build
 
 
 %install
-%{_pscheduler_python} setup.py install --root=$RPM_BUILD_ROOT --single-version-externally-managed -O1  --record=INSTALLED_FILES
+python setup.py install --root=$RPM_BUILD_ROOT --single-version-externally-managed -O1  --record=INSTALLED_FILES
 
 
 %clean

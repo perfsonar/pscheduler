@@ -86,10 +86,18 @@ def run_client():
 
     logger.debug("Waiting %s sec for server on other side to start" % DEFAULT_WAIT_SLEEP)
 
-    iperf2_args = [ iperf2_cmd ]
+    iperf2_args = [
+        iperf2_cmd,
+        '-e',
+        '--format', 'b'
+    ]
 
     iperf2_args.append('-p')
     iperf2_args.append(server_port)
+
+    if 'mss' in test_spec:
+        iperf2_args.append('--mss')
+        iperf2_args.append(test_spec['mss'])
 
     # who to connect to
     destination = test_spec['dest']
@@ -165,13 +173,24 @@ def run_client():
         iperf2_args.append('-b')
         iperf2_args.append(test_spec['bandwidth'])
 
+    if 'fq-rate' in test_spec and test_spec['fq-rate'] is not None:
+        iperf2_args.append('--fq-rate')
+        iperf2_args.append(test_spec['fq-rate'])
+
     if 'buffer-length' in test_spec and test_spec['buffer-length'] != None:
         iperf2_args.append('-l')
         iperf2_args.append(test_spec['buffer-length'])
 
-    if 'local-address' in test_spec and test_spec['local-address'] != None:
+    # local-address is deprecated and is overridden by source-bind.
+
+    if test_spec.get('source-bind') is not None:
         iperf2_args.append('-B')
-        iperf2_args.append(test_spec['local-address'])
+        iperf2_args.append(test_spec['source-bind'])
+    else:
+        if test_spec.get('local-address') is not None:
+            iperf2_args.append('-B')
+            iperf2_args.append(test_spec['local-address'])
+        
 
     if 'congestion' in test_spec and test_spec['congestion'] != None:
         iperf2_args.append('-Z')
@@ -226,7 +245,11 @@ def run_client():
 
     logger.debug("Lines are %s " % lines)
 
-    results = iperf2_parser.parse_output(lines)
+    results = iperf2_parser.parse_output(
+        lines,
+        expect_udp=test_spec.get('udp', False),
+        logger=logger
+    )
     results['diags'] = "%s\n\n%s\n%s" % (command_line, stdout, stderr)
 
     return results
@@ -237,8 +260,19 @@ def run_server():
     #init command
     iperf2_args = [ iperf2_cmd, '-s' ]
 
+    if 'mss' in test_spec:
+        iperf2_args.append('--mss')
+        iperf2_args.append(test_spec['mss'])
+
     iperf2_args.append('-p')
     iperf2_args.append(server_port)
+
+    if test_spec.get('dest-bind') is not None:
+        iperf2_args.append('-B')
+        iperf2_args.append(test_spec['dest-bind'])
+
+    if test_spec.get('udp'):
+        iperf2_args.append('-u')
 
     # join and run_program want these all to be string types, so
     # just to be safe cast everything in the list to a string

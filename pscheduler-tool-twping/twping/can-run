@@ -38,14 +38,20 @@ except ValueError as ex:
 
 errors = []
 
-if json['type'] == 'rtt' and ('protocol' not in spec or spec['protocol'] != 'twamp'):
-    errors.append("Only twamp protocol is supported")
-
-if json['type'] == 'rtt' and ('fragment' in spec):
-    errors.append("Fragmentation control is not supported.")
+test_type = json['type']
 
 if 'port' in spec:
     errors.append("Ports are not supported")
+
+try:
+    if spec['protocol'] != 'twamp':
+        errors.append("Only twamp protocol is supported")
+except KeyError:
+    pass
+
+if test_type == 'rtt':
+    if spec.get('fragment', False):
+        errors.append("Fragmentation control is not supported.")
 
 
 result = {

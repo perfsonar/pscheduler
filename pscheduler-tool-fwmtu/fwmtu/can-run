@@ -13,7 +13,7 @@
 
 import pscheduler
 
-MAX_SCHEMA = 1
+MAX_SCHEMA = 2
 
 json = pscheduler.json_load(exit_on_error=True);
 
@@ -28,7 +28,6 @@ except KeyError:
         "can-run": False,
         "reasons": [ "Missing test type" ]
     })
-
 
 schema = json['spec'].get('schema',1)
 if schema > MAX_SCHEMA:

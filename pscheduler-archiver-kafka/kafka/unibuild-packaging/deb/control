@@ -13,3 +13,4 @@ Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
  pscheduler-server (>= 1.0.2), python3-kafka
 Description: Apache Kafka archiver class for pScheduler
+ Archiver sends test results to a Kafka bus

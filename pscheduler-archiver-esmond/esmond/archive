@@ -15,7 +15,7 @@ MAX_SCHEMA = 1
 log = pscheduler.Log(prefix="archiver-esmond", quiet=True)
 
 #set default memcache values
-memcache_servers = ['127.0.0.1:11211']
+memcache_servers = ['localhost:11211']
 cache_ttl = 86400 #cache for 24 hours
 
 #read required JSON fields
@@ -296,6 +296,10 @@ PARSER = pscheduler.RFC7464Parser(sys.stdin)
 EMITTER = pscheduler.RFC7464Emitter(sys.stdout)
 
 for parsed in PARSER:
-    EMITTER(archive(parsed))
+    try:
+        EMITTER(archive(parsed))
+    except BrokenPipeError as ex:
+        log.warning("Broken pipe during archiving; parent must have exited.")
+        pscheduler.succeed()
 
 pscheduler.succeed()

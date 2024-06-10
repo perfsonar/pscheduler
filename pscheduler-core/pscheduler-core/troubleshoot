@@ -12,10 +12,13 @@ running several tests to verify that the basic features of the system
 are working.
 """
 
+import babel.dates
+import datetime
+import ipaddress
 import optparse
 import os
-import pipes
 import re
+import shlex
 import socket
 import sys
 import time
@@ -155,7 +158,7 @@ def failed_diags(run, why="Task failed to run properly."):
     print()
     result_args = ["pscheduler", "result", "--diags", "--archivings", run]
     os.execl("/bin/sh", "/bin/sh", "-c",
-             " ".join([pipes.quote(arg) for arg in result_args]))
+             " ".join([shlex.quote(arg) for arg in result_args]))
 
 
 
@@ -234,7 +237,7 @@ def check_service_status(api):
         pscheduler.api_url(host, "status"),
         throw=False)
     if http_status != 200:
-       failed(status)
+        failed(status)
     if status is None:
         failed("Server did not provide full status.")
     ok()
@@ -244,9 +247,9 @@ def check_service_status(api):
         failed("Server did not provide service status")
 
     for service, name in services:
-        service_status = status["services"][service]
         progress(name)
         try:
+            service_status = status["services"][service]
             if service_status["overdue"] is not None:
                 failed("The %s service does not appear to be running." % name)
         except KeyError:
@@ -263,6 +266,21 @@ def check_service_status(api):
         else:
             failed(limit_status.get("error", "Unspecified error"))
 
+    # Look at the schedule
+    if "runs" in status:
+        for check in [
+                ('last-scheduled', '  Last run scheduled'),
+                ('last-finished', '  Last run completed')
+                ]:
+            item, label = check
+            start(label)
+            last = status['runs'].get(item)
+            if last is None:
+                ok('Never')
+            else:
+                last_delta = pscheduler.iso8601_as_datetime(last) \
+                - pscheduler.time_now()
+                ok(babel.dates.format_timedelta(last_delta, add_direction=True))
 
 
 def dump_stats(host):
@@ -443,7 +461,7 @@ def run_task(message, lead, task, bind=None):
 print("Performing basic troubleshooting of %s." \
     % (" and ".join(hosts)))
 
-   
+
 
 
 
@@ -458,6 +476,18 @@ for host in hosts:
     print("%s:" % (host))
     print()
 
+    # Try to resolve the host if it's not already an IP address
+    try:
+        host_ip = ipaddress.ip_address(host)
+    except ValueError:
+        host_ip = None
+    if host_ip is None:
+        start(f'  Checking that host "{host}" resolves')
+        resolved = pscheduler.dns_resolve(host, ip_version=options.ip_version)
+        if resolved is None:
+            failed('Not resolvable or timed out')
+        ok(resolved)
+
 
     if not options.quick and not options.skip_single:
         check_mtu(host)
@@ -467,7 +497,7 @@ for host in hosts:
     up, reason = pscheduler.api_ping(host)
     if up:
         ok()
-    else:        
+    else:
         failed(reason.strip())
 
 
@@ -477,7 +507,7 @@ for host in hosts:
         throw=False)
     if status != 200:
         failed(api)
-    ok(api)    
+    ok(api)
 
 
     start("  Checking clock")
@@ -608,7 +638,7 @@ try:
                 - pscheduler.iso8601_as_datetime(clocks[host_z]["time"])
 
     clock_difference = pscheduler.timedelta_as_seconds(time_diff)
-except (KeyError):
+except KeyError:
     failed("Clock tests did not yield a valid result.")
 
 if clock_difference > 1.0:

@@ -2,7 +2,7 @@
 # RPM Spec for pScheduler Core
 #
 
-%define perfsonar_auto_version 5.0.8
+%define perfsonar_auto_version 5.1.0
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-core
@@ -22,22 +22,12 @@ Provides:	%{name} = %{version}-%{release}
 Requires:       bash-completion
 
 # This is for plot-schedule
-%if 0%{?el7}
-Requires:       gnuplot-minimal >= 4.6.2
-%endif
-%if 0%{?el8}
 Requires:       gnuplot >= 4.6.2
-%endif
 
 # This is for netstat.
 Requires:       net-tools
+Requires:       %{_pscheduler_python}-babel
 Requires:       %{_pscheduler_python}-pscheduler >= 4.4.0
-%if 0%{?el7}
-Requires:       pytz
-%endif
-%if 0%{?el8}
-Requires:       %{_pscheduler_python}-pytz
-%endif
 
 Requires:	curl
 Requires:       dmidecode

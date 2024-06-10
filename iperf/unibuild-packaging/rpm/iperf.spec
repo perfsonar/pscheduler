@@ -3,14 +3,13 @@
 #
 
 Name: iperf
-Version: 2.0.13
+Version: 2.1.9
 Release: 1%{?dist}
 Summary: Measurement tool for TCP/UDP bandwidth performance
 License: BSD
 Group: Applications/Internet
 URL: http://sourceforge.net/projects/iperf2
 Source: %{name}-%{version}.tar.gz
-Patch0: iperf-2.0.8-debuginfo.patch
 BuildRequires: autoconf gcc-c++
 
 %description
@@ -24,19 +23,12 @@ jitter, datagram loss.
 %global debug_package %{nil}
 
 
-
-
 %prep
 %setup -q
-%patch0 -p1
+
 
 %build
-%if 0%{?el9}
-# The macro isn't present on EL9.
 autoconf
-%else
-%{__autoconf}
-%endif
 %configure
 %{__make} %{?_smp_mflags}
 

@@ -3,7 +3,7 @@
 #
 
 %define short	throughput
-%define perfsonar_auto_version 5.0.8
+%define perfsonar_auto_version 5.1.0
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-test-%{short}
@@ -22,11 +22,10 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server
 Requires:	%{_pscheduler_python}-pscheduler
-Requires:	%{_pscheduler_python}-jsontemplate
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:	%{_pscheduler_python}-pscheduler
-BuildRequires:  %{_pscheduler_python_epel}-nose
+BuildRequires:  %{_pscheduler_python}-nose
 
 %description
 Throughput test class for pScheduler

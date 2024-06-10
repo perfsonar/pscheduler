@@ -118,7 +118,7 @@ def dbcursor_query(query,
     if rows < 0:
         raise psycopg2.Error("No results returned; may be an internal problem")
     if onerow and rows != 1:
-        raise psycopg2.Error("Expected one row; got %d" % cursor)
+        raise psycopg2.Error(f'Expected one row; got {cursor.rowcount}')
 
     log.debug("QUERY returned %s rows", rows)
 

@@ -161,14 +161,59 @@ class LocalIPList(object):
             self.expires = datetime.datetime.now() \
                 + datetime.timedelta(seconds=self.refresh)
 
+
+    def __len__(self):
+        """Return the number of addresses on the system"""
+        self.__refresh()
+        return len(self.addresses)
+
+
+    def __iter__(self):
+        """Return an iterator for instances of this class"""
+        self.__refresh()
+        return iter(self.addresses)
+
+
+    def __next__(self):
+        """Return the next address"""
+        if not self.addresses:
+            raise StopIteration
+        return next(self.addresses)
+
+
     def __contains__(self, item):
         """
         Determine if item is in the address list
         """
-
         self.__refresh()
         item_ip = netaddr.IPAddress(item)
         return item_ip in self.addresses
+
+
+    def loopback(self, ip_version=None):
+        """
+        Find the first loopback for IP version 'ip_version', preferring
+        IPv6 if None.  If there is no loopback interface, raise an
+        IndexError.
+        """
+        assert ip_version in [ None, 4, 6 ], f'Invalid ip_version {ip_version}'
+        self.__refresh()
+        loopbacks = filter(lambda v: v.is_loopback(), self.addresses)
+        if ip_version is not None:
+            try:
+                return list(filter(lambda v: v.version == ip_version, loopbacks))[0]
+            except IndexError:
+                raise IndexError(f'No IPv{ip_version} loopbacks on this system')
+
+        # With no ip_version, sort the list to prefer IPv6 and return whatever is first.
+        loopbacks = sorted(loopbacks,
+                           key=lambda v: [ v.version, v.sort_key() ],
+                           reverse=True  # Prefer IPv6
+                           )
+        try:
+            return list(loopbacks)[0]
+        except IndexError:
+            raise IndexError('No loopbacks on this system')
 
 
 if __name__ == "__main__":

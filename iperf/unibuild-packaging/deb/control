@@ -1,0 +1,33 @@
+Source: iperf
+Section: net
+Priority: optional
+Maintainer: Roberto Lumbreras <rover@debian.org>
+Build-Depends: debhelper-compat (= 12)
+Standards-Version: 4.6.2
+Homepage: https://sourceforge.net/projects/iperf2/
+Rules-Requires-Root: no
+
+Package: iperf
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Internet Protocol bandwidth measuring tool
+ Iperf is a modern alternative for measuring TCP and UDP bandwidth performance,
+ allowing the tuning of various parameters and characteristics.
+ .
+ Features:
+    * Measure bandwidth, packet loss, delay jitter
+    * Report MSS/MTU size and observed read sizes.
+    * Support for TCP window size via socket buffers.
+    * Multi-threaded. Client and server can have multiple simultaneous
+      connections.
+    * Client can create UDP streams of specified bandwidth.
+    * Multicast and IPv6 capable.
+    * Options can be specified with K (kilo-) and M (mega-) suffices.
+    * Can run for specified time, rather than a set amount of data to transfer.
+    * Picks the best units for the size of data being reported.
+    * Server handles multiple connections.
+    * Print periodic, intermediate bandwidth, jitter, and loss reports at
+      specified intervals.
+    * Server can be run as a daemon.
+    * Use representative streams to test out how link layer compression affects
+      your achievable bandwidth.

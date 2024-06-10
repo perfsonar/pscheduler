@@ -2,4 +2,4 @@
 
 set -e
 
-pscheduler task --tool pstimer psresponse --dest 127.0.0.1
+pscheduler task --tool pstimer psresponse --dest localhost

@@ -1,290 +1,477 @@
 import re
 import pscheduler
 
-logger = pscheduler.Log(quiet=True)
 
-# A whole bunch of pattern matching against the output of the "iperf" tool
-# client output. Builds up an object of interesting bits from it.
-def parse_output(lines):
-    results = {}
-    results['succeeded'] = True
+def _finalize_interval(streams, debug):
+    '''
+    Prepare a final interval, figuring out what the summary should be
+    based on iperf's output.
+    '''
+    assert isinstance(streams,list)
+    assert len(streams) > 0
 
-    seen_header = False
-    streams    = {}
+    debug(f'''Finalizing {streams[0]['start']}-{streams[0]['end']}''')
 
-    dest_ip   = None
-    dest_port = None
-    src_ip    = None
-    src_port  = None
+    if len(streams) == 1:
+        # Sole stream
+        summary = streams[0]
+    else:
+        # Multi-stream, last one is the summary
+        summary = streams.pop()
+        assert summary['stream-id'] == 'SUM'
 
-    # These are used to tease out which interval is the summary.
-    longest_interval = 0
-    longest_interval_key = None
+    # Put the streams into a reasonable order with the summary last.
+    streams.sort(key=lambda v: int(v['stream-id']))
+
+    return {
+        'streams': streams,
+        'summary': summary
+    }
+
+
+
+def parse_output(lines, expect_udp=False, logger=None):
+    '''
+    A whole bunch of pattern matching against the output of the
+    "iperf" tool client output. Builds up an object of interesting bits
+    from it.
+
+    Developed against iperf version 2.1.9 (14 March 2023) pthreads
+
+    Note that this assumes iperf was invoked with '--format b' so there
+    are no SI units to be converted and -m so MSS is displayed.
+    '''
+
+    debug = logger.debug if logger is not None else lambda m: None
+
+
+    results = {
+        'succeeded': True
+    }
+
+
+
+    intervals = []
+    current_interval = []
+    current_interval_key = None
+
+    streams = {}
+
+    # These are used in detecting and correcting the time stamps on
+    # what should be the last interval.
+
+    last_start = 0
+    highest_end = 0
+    highest_end_string = '0.0'
+    in_final_summary = False
 
     for line in lines:
 
-        # ignore bogus sessions
+        debug(f'Line {line}')
+
+        # Bogus numbers
+
         if re.match('\(nan%\)', line):
-            results["succeeded"] = False
-            results["error"]    = "Found NaN result";
-            break;
+            return {
+                'succeeded': False,
+                'error': 'Found NaN result'
+            }
+
+        # Connection failures
 
         if re.match('read failed: Connection refused', line):
-            results["succeeded"] = False
-            results["error"]     = "Connection refused"
+            return {
+                'succeeded': False,
+                'error': 'Connection refused'
+            }
+
+        # Initial connection message
+
+        # Example lines:
+        # Client connecting to localhost, TCP port 5001 with pid 119661 (1 flows)
+        # Client connecting to localhost, UDP port 5001 with pid 119686 (1 flows)
+
+        test = re.match('^Client connecting to .*, (TCP|UDP) port', line)
+        if test:
+            protocol = test.group(1)
+            if (protocol == 'TCP' and expect_udp) or (protocol == 'UDP' and not expect_udp):
+                return {
+                    "succeeded": False,
+                    "error": f'Protocol mismatch: was not expecting {protocol}.'
+                }
+            # Anything else is okay.
+            continue
+
+        # TCP Window Size
+
+        # Example line:
+        # TCP window size: 2626560 Byte (default)
+        # TCP window size: 425984 Byte (WARNING: requested 1000000 Byte)
+
+        test = re.match('^TCP window size:\s+(\d+) Byte (\(WARNING: requested (\d+) Byte\))?', line)
+        if test:
+            assert not expect_udp
+            results['tcp-window-size'] = int(test.group(1))
+            requested_size = test.group(3)
+            if requested_size:
+                results['requested-tcp-window-size'] = int(requested_size)
+
+
+        # MSS
+
+        # Example line:
+        # [  1] local 127.0.0.1%lo port 58260 connected with 127.0.0.1 port 5001 (sock=3) (icwnd/mss/irtt=319/32741/38) (ct=0.11 ms) on 2024-02-22 15:54:35.781 (UTC)
+
+        # Note that this will be matched and overwritten once per
+        # stream.  This shouldn't matter because, in theory, they
+        # should all be the same.
+
+        test = re.match('^\[\s*\d+\].*\(icwnd/mss/irtt=\d+/(\d+)/\d+\)', line)
+        if test:
+            assert not expect_udp
+            results['mss'] = int(test.group(1))
+
+
+        # If we start seeing server reports, we've seen everything
+        # from the client side.  Treat it as EOF.
+        if re.match('^\[\s*(\d+|SUM) Server Report:', line):
             break
 
-        test = re.match('local ([^ ]+) port (\d+) connected with ([^ ]+) port (\d+)', line)
-        if test:
-            dest_ip   = test.group(1)
-            dest_port = test.group(2)
-            src_ip    = test.group(3)
-            src_port  = test.group(4)
+        # Interval
 
-        # Example lines
-        # TCP window size:  244 KByte (WARNING: requested 64.0 MByte)
-        # TCP window size: 19800 Byte (default)
-        test = re.match('TCP window size:\s+(\d+(\.\d+)?) (\S)?Byte(.*\(WARNING:\s+requested\s+(\d+(\.\d+)?) (\S)?Byte)?', line)
-        if test:
-            window_size = test.group(1)
-            window_si   = test.group(3)
+        # Single parsed record
+        stream_interval = None
+        interval_start = None
+        interval_end = None
 
-            request_size = test.group(5)
-            request_si   = test.group(7)
+        if expect_udp:
 
-            if window_si:
-                window_size = pscheduler.si_as_number("%s%s" % (window_size, window_si))
+            # Example line (with annotations):
+            # [ ID] Interval        Transfer     Bandwidth      Write/Err  PPS
+            # [  1] 4.00-6.00 sec  263130 Bytes  1052520 bits/sec  179/0       89 pps
 
-            if request_size:
-                if request_si:
-                    request_size = pscheduler.si_as_number("%s%s" % (request_size, request_si))
-                results["requested-tcp-window-size"] = int(request_size)
+            test = re.match(
+                '^\[\s*(\d+|SUM)\]'   # 1 - Stream ID
+                '\s+(\d+\.\d+)'       # 2 - Interval start
+                '-(\d+\.\d+) sec'     # 3 - Interval end
+                '\s+(\d+) Bytes'      # 4 - Bytes transferred
+                '\s+(\d+) bits/sec'   # 5 - Bandwidth
+                '\s+(\d+)'            # 6 - Writes
+                '/(\d+)'              # 7 - Errors
+                '\s+(\d+) pps$'       # 8 - Packets per second
+                , line)
 
-            results["tcp-window-size"] = int(window_size)
+            if not test:
+                continue
 
-        # Example line
-        # [  3] MSS size 1448 bytes (MTU 1500 bytes, ethernet)
-        test = re.match('.*MSS size (\d+) bytes \(MTU (\d+) bytes', line)
-        if test:
-            results['mss'] = int(test.group(1))
-            results['mtu'] = int(test.group(2))
+            stream_id = test.group(1)
+            interval_start = test.group(2)
+            interval_end = test.group(3)
 
+            stream_interval = {
+                'throughput-bits': int(test.group(5)),
+                'throughput-bytes': int(int(test.group(5)) / 8),
+                'sent': int(test.group(6)),
+                'stream-id': test.group(1),
+                'start': interval_start,
+                'end': interval_end
+            }
 
-        stream_id        = None
-        interval_start   = None
-        throughput_bytes = None
-        si_bytes         = None
-        throughput_bits  = None
-        si_bits          = None
-        jitter           = None
-        lost             = None
-        sent             = None
-
-        # Example line
-        # [  3] 16.0-17.0 sec  37355520 Bytes  298844160 bits/sec
-        test = re.match('\[\s*(\d+|SUM)\s*\]\s+([0-9\.]+)\s*\-\s*([0-9\.]+)\s+sec\s+(\d+(\.\d+)?)\s+(P|T|G|M|K)?Bytes\s+(\d+(\.\d+)?)\s+(P|T|G|M|K)?bits\/sec(\s+([0-9\.]+)\s+ms\s+(\d+)\/\s*(\d+)\s+)?', line)
-        if test:
-            stream_id         = test.group(1)
-            interval_start    = float(test.group(2))
-            interval_end      = float(test.group(3))
-            throughput_bytes  = float(test.group(4))
-            si_bytes          = test.group(6)
-            throughput_bits   = float(test.group(7))
-            si_bits           = test.group(9)
-            
-            # these may or may not be present depending on versions
-            jitter = test.group(11)
-            lost   = test.group(12)
-            send   = test.group(13)
-
-            # If the output was in say GBytes convert back to regular Bytes for ease
-            # of things later
-            if si_bytes:
-                throughput_bytes = pscheduler.si_as_number("%s%s" % (throughput_bytes, si_bytes))
-            if si_bits:
-                throughput_bits = pscheduler.si_as_number("%s%s" % (throughput_bits, si_bits))
-
-        # if we found a matching line, we can add this info to our streams
-        if stream_id:
-
-            key = "%s-%s" % (interval_start, interval_end)
-
-            interval_length = float(interval_end) - float(interval_start)
-            if interval_length > longest_interval:
-                longest_interval = interval_length
-                longest_interval_key = key
-
-            if key not in streams:
-                streams[key] = []
-
-            streams[key].append({"jitter": jitter,
-                                 "lost": lost,
-                                 "sent": sent,
-                                 "throughput-bits": throughput_bits,
-                                 "throughput-bytes": throughput_bytes,
-                                 "start": interval_start,
-                                 "end": interval_end,
-                                 "stream-id": stream_id})
-
-
-    if not streams:
-        results["succeeded"] = False
-        results["error"] = "No results found"
-        return results
-
-
-    summary_interval = None
-    intervals        = []
-
-    for interval in streams:
-
-        summary_stream = None
-
-        interval_streams = []
-
-        # try to find the SUM if possible
-        for stream in streams[interval]:
-            if stream['stream-id'] == "SUM":
-                summary_stream = stream
-            else:
-                interval_streams.append(stream)
-
-
-        # if we couldn't find it, there was probably
-        # just the one line so use that
-        if not summary_stream and len(interval_streams) == 1:
-            summary_stream = interval_streams[0]
- 
-        finalized = {
-            "streams": interval_streams,
-            "summary": summary_stream
-        }
-
-        if interval == "summary":
-            summary_interval = finalized
         else:
-            intervals.append(finalized)
+
+            # Example line (with annotations):
+            # [ ID] Interval        Transfer    Bandwidth       Write/Err  Rtry     Cwnd/RTT(var)        NetPwr
+            # [  1] 2.00-4.00 sec  11173888000 Bytes  44695552000 bits/sec  85250/0        10     1470K/33(4) us  169301333
+
+            test = re.match(
+                '^\[\s*(\d+|SUM)\]'   # 1 - Stream ID
+                '\s+(\d+\.\d+)'       # 2 - Interval start
+                '-(\d+\.\d+) sec'     # 3 - Interval end
+                '\s+(\d+) Bytes'      # 4 - Bytes transferred
+                '\s+(\d+) bits/sec'   # 5 - Bandwidth
+                '\s+(\d+)'            # 6 - Writes
+                '/(\d+)'              # 7 - Errors
+                '\s+(\d+)'            # 8 - Retransmits
+                '('                   # 9 - Begin optional stuff
+                '\s+(\d+K)'           # 10 - Window size in SI units
+                '/(\d+)'              # 11 - RTT
+                '\((\d+)\) us'        # 12 - RTT Variance(?)
+                '\s*(\d+)'            # 13 - Net Power (Experimental)
+                ')?'
+                '\s*$'
+                , line)
+            
+            if not test:
+                continue
+
+            stream_id = test.group(1)
+            interval_start = test.group(2)
+            interval_end = test.group(3)
+
+            stream_interval = {
+                'throughput-bits': int(test.group(5)),
+                'throughput-bytes': int(int(test.group(5)) / 8),
+                'sent': int(test.group(6)),
+                'stream-id': test.group(1),
+                'start': interval_start,
+                'end': interval_end,
+                'retransmits': int(test.group(8))
+            }
+
+            if test.group(10) is not None:
+                stream_interval['tcp-window-size'] = pscheduler.si_as_number(test.group(10))
+
+            if test.group(11) is not None:
+                stream_interval['rtt'] = int(test.group(11))
 
 
-    logger.debug(intervals)
+        assert interval_start is not None
+        assert interval_end is not None
 
-    # sort according to start interval
-    intervals.sort(key = lambda x: x['summary']['start'])
+        interval_start_float = float(interval_start)
+        interval_end_float = float(interval_end)
 
-    results["intervals"] = intervals
+        if not in_final_summary:
 
-    # If there's no summary interval by now, grab the one with the
-    # longest interval.  This is safe to do because we'll have seen
-    # that key before.
-    if summary_interval:
-        results["summary"] = summary_interval
-    else:
-        results["summary"] = {
-            "streams": streams[longest_interval_key],
-            "summary": streams[longest_interval_key][0]
+            if interval_start_float < last_start:
+                # Start of summary interval, e.g., went from 8.00-10.00 to 0.00-10.00
+                debug(f'Start final summary: Start dropeed from {last_start} -> {interval_start_float}')
+                in_final_summary = True
+                interval_end = highest_end_string
+                debug(f'Adjusted interval end to {interval_end}')
+            else:
+                last_start = interval_start_float
+                if interval_end_float > highest_end:
+                    highest_end = interval_end_float
+                    highest_end_string = interval_end
+                    debug(f'New high {interval_end}')
+
+        else:
+
+            # Inside the final summary, force the end of the interval
+            # to the end of the last interval to avoid complications
+            # from iperf2's wrong concept of when the last measurement
+            # interval ended.
+            interval_end = highest_end_string
+            debug(f'Adjusted final interval end to {interval_end}')
+
+        if stream_id != 'SUM':
+            key = f'{interval_start}-{interval_end}'
+
+        stream_interval['start'] = float(interval_start)
+        stream_interval['end'] = float(interval_end)
+
+        if key != current_interval_key:
+            debug(f'New interval: {current_interval_key} -> {key}')
+            if current_interval:
+                intervals.append(_finalize_interval(current_interval, debug))
+            current_interval = []
+            current_interval_key = key
+
+        current_interval.append(stream_interval)
+
+    # Push anything left onto the list.
+    if current_interval:
+        intervals.append(_finalize_interval(current_interval, debug))
+                
+
+    if not intervals:
+        return {
+            'succeeded': False,
+            'error': 'No results found'
         }
+
+
+    if len(intervals) == 1:
+        # The summary is the same as the sole interval
+        summary_interval = intervals[0]
+    else:        
+        # The last interval is the summary interval.
+        summary_interval = intervals.pop()
+
+    results['intervals'] = intervals
+    results['summary'] = summary_interval
 
     return results
 
 
 if __name__ == "__main__":
 
-    # Test a "regular" output
-    test_output = """
-------------------------------------------------------------
-Client connecting to 10.0.2.15, TCP port 5001
-TCP window size: 19800 Byte (default)
-------------------------------------------------------------
-[  3] local 10.0.2.4 port 50338 connected with 10.0.2.15 port 5001
-[ ID] Interval       Transfer     Bandwidth
-[  3]  0.0- 1.0 sec  224788480 Bytes  1798307840 bits/sec
-[  3]  1.0- 2.0 sec  222298112 Bytes  1778384896 bits/sec
-[  3]  2.0- 3.0 sec  150339584 Bytes  1202716672 bits/sec
-[  3]  3.0- 4.0 sec  210501632 Bytes  1684013056 bits/sec
-[  3]  4.0- 5.0 sec  218759168 Bytes  1750073344 bits/sec
-[  3]  5.0- 6.0 sec  222298112 Bytes  1778384896 bits/sec
-[  3]  6.0- 7.0 sec  233177088 Bytes  1865416704 bits/sec
-[  3]  7.0- 8.0 sec  230686720 Bytes  1845493760 bits/sec
-[  3]  8.0- 9.0 sec  229638144 Bytes  1837105152 bits/sec
-[  3]  9.0-10.0 sec  226492416 Bytes  1811939328 bits/sec
-[  3]  0.0-10.0 sec  2169110528 Bytes  1735167481 bits/sec
-"""
+    TEST_OUTPUTS = [
 
-    #result = parse_output(test_output.split("\n"))
-    #print(pscheduler.json_dump(result, pretty=True))
-
-
-    # In some cases, the output is short on summary information.
-    test_output = """
+        {
+            'label': 'TCP Single-Stream',
+            'expect_udp': False,
+            'text': '''
+iperf -c localhost -e  --format b -i 2 -t 6
 ------------------------------------------------------------
-Client connecting to tb-el7-prod.ps.dev.internet2.edu, TCP port 5001
-TCP window size:  196 KByte (default)
+Client connecting to localhost, TCP port 5001 with pid 157041 (1 flows)
+Write buffer size: 131072 Byte
+TOS set to 0x0 (Nagle on)
+TCP window size: 2626560 Byte (default)
 ------------------------------------------------------------
-[  3] local 10.0.2.15 port 36852 connected with 163.253.37.202 port 5001
-[ ID] Interval       Transfer     Bandwidth
-[  3]  0.0-10.0 sec   108 MBytes  90.9 Mbits/sec
-[  3]  0.0-10.1 sec   108 MBytes  89.9 Mbits/sec
-[  3] MSS size 1460 bytes (MTU 1500 bytes, ethernet)
-"""
+[  1] local 127.0.0.1%lo port 47358 connected with 127.0.0.1 port 5001 (sock=3) (icwnd/mss/irtt=319/32741/35) (ct=0.09 ms) on 2024-02-26 22:16:25.887 (UTC)
+[ ID] Interval        Transfer    Bandwidth       Write/Err  Rtry     Cwnd/RTT(var)        NetPwr
+[  1] 0.00-2.00 sec  10924589116 Bytes  43698356464 bits/sec  83348/0        11     3645K/36(7) us  151730404
+[  1] 2.00-4.00 sec  11269832704 Bytes  45079330816 bits/sec  85982/0         4     3645K/38(6) us  148287272
+[  1] 4.00-6.00 sec  11097866240 Bytes  44391464960 bits/sec  84670/0         2     3645K/32(5) us  173404160
+[  1] 0.00-6.01 sec  33292419132 Bytes  44297878100 bits/sec  254001/0        17     3645K/1575(3097) us  3515705
+'''
+        },
 
-    #result = parse_output(test_output.split("\n"))
-    #print(pscheduler.json_dump(result, pretty=True))
+        {
+            'label': 'TCP Multi-Stream',
+            'expect_udp': False,
+            'text': '''
+iperf -c localhost -e  --format b -i 2 -t 6 -P 2
+------------------------------------------------------------
+Client connecting to localhost, TCP port 5001 with pid 133581 (2 flows)
+Write buffer size: 131072 Byte
+TOS set to 0x0 (Nagle on)
+TCP window size: 2626560 Byte (default)
+------------------------------------------------------------
+[  1] local 127.0.0.1%lo port 55778 connected with 127.0.0.1 port 5001 (sock=3) (icwnd/mss/irtt=319/32741/39) (ct=0.11 ms) on 2024-02-23 15:51:57.435 (UTC)
+[  2] local 127.0.0.1%lo port 55790 connected with 127.0.0.1 port 5001 (sock=4) (icwnd/mss/irtt=319/32741/58) (ct=0.11 ms) on 2024-02-23 15:51:57.435 (UTC)
+[ ID] Interval        Transfer    Bandwidth       Write/Err  Rtry     Cwnd/RTT(var)        NetPwr
+[  1] 0.00-2.00 sec  9784655932 Bytes  39138623728 bits/sec  74651/0         0     2110K/34(2) us  143891999
+[  2] 0.00-2.00 sec  9957408828 Bytes  39829635312 bits/sec  75969/0         1     4220K/34(1) us  146432483
+[SUM] 0.00-2.00 sec  19742064760 Bytes  78968259040 bits/sec  150620/0         1
+[  1] 2.00-4.00 sec  9664200704 Bytes  38656802816 bits/sec  73732/0         0     2877K/39(5) us  123900009
+[  2] 2.00-4.00 sec  10205396992 Bytes  40821587968 bits/sec  77861/0         0     4220K/38(4) us  134281539
+[SUM] 2.00-4.00 sec  19869597696 Bytes  79478390784 bits/sec  151593/0         0
+[  1] 4.00-6.00 sec  8287682560 Bytes  33150730240 bits/sec  63230/0         0     2877K/36(7) us  115106702
+[  2] 4.00-6.00 sec  10189537280 Bytes  40758149120 bits/sec  77740/0         2     4220K/35(2) us  145564818
+[SUM] 4.00-6.00 sec  18477219840 Bytes  73908879360 bits/sec  140970/0         2
+[  1] 0.00-6.02 sec  27737194556 Bytes  36857799987 bits/sec  211618/0         1     2877K/408(745) us  11292218
+[  2] 0.00-6.02 sec  30352474172 Bytes  40332659745 bits/sec  231571/0         3     4220K/2574(5082) us  1958657
+[SUM] 0.00-6.00 sec  58089668728 Bytes  77452452740 bits/sec  443189/0         4
+[ CT] final connect times (min/avg/max/stdev) = 0.106/0.106/0.107/0.707 ms (tot/err) = 2/0
+'''
+        },
 
-    test_output = """
+        {
+            'label': 'UDP Single-Stream',
+            'expect_udp': True,
+            'text': '''
+iperf -c localhost -e  --format b -i 2 -t 6 -u
 ------------------------------------------------------------
-Client connecting to 10.0.2.4, TCP port 5001
-TCP window size:  244 KByte (WARNING: requested 7.63 MByte)
+Client connecting to localhost, UDP port 5001 with pid 157309 (1 flows)
+TOS set to 0x0 (Nagle on)
+Sending 1470 byte datagrams, IPG target: 11215.21 us (kalman adjust)
+UDP buffer size: 212992 Byte (default)
 ------------------------------------------------------------
-[  5] local 10.0.2.15 port 42309 connected with 10.0.2.4 port 5001
-[  3] local 10.0.2.15 port 42307 connected with 10.0.2.4 port 5001
-[  4] local 10.0.2.15 port 42308 connected with 10.0.2.4 port 5001
-[ ID] Interval       Transfer     Bandwidth
-[  5]  0.0- 1.0 sec  74.8 MBytes   627 Mbits/sec
-[  4]  0.0- 1.0 sec  67.0 MBytes   562 Mbits/sec
-[  3]  0.0- 1.0 sec  59.0 MBytes   495 Mbits/sec
-[SUM]  0.0- 1.0 sec   201 MBytes  1.68 Gbits/sec
-[  5]  1.0- 2.0 sec  76.4 MBytes   641 Mbits/sec
-[  3]  1.0- 2.0 sec  68.1 MBytes   571 Mbits/sec
-[  4]  1.0- 2.0 sec  63.8 MBytes   535 Mbits/sec
-[SUM]  1.0- 2.0 sec   208 MBytes  1.75 Gbits/sec
-[  5]  2.0- 3.0 sec  76.9 MBytes   645 Mbits/sec
-[  3]  2.0- 3.0 sec  61.8 MBytes   518 Mbits/sec
-[  4]  2.0- 3.0 sec  65.9 MBytes   553 Mbits/sec
-[SUM]  2.0- 3.0 sec   204 MBytes  1.72 Gbits/sec
-[  5]  3.0- 4.0 sec  72.6 MBytes   609 Mbits/sec
-[  3]  3.0- 4.0 sec  68.8 MBytes   577 Mbits/sec
-[  4]  3.0- 4.0 sec  60.9 MBytes   511 Mbits/sec
-[SUM]  3.0- 4.0 sec   202 MBytes  1.70 Gbits/sec
-[  5]  4.0- 5.0 sec  73.4 MBytes   616 Mbits/sec
-[  3]  4.0- 5.0 sec  71.5 MBytes   600 Mbits/sec
-[  4]  4.0- 5.0 sec  61.6 MBytes   517 Mbits/sec
-[SUM]  4.0- 5.0 sec   206 MBytes  1.73 Gbits/sec
-[  3]  5.0- 6.0 sec  73.2 MBytes   614 Mbits/sec
-[  4]  5.0- 6.0 sec  67.0 MBytes   562 Mbits/sec
-[  5]  5.0- 6.0 sec  64.5 MBytes   541 Mbits/sec
-[SUM]  5.0- 6.0 sec   205 MBytes  1.72 Gbits/sec
-[  5]  6.0- 7.0 sec  65.6 MBytes   551 Mbits/sec
-[  3]  6.0- 7.0 sec  75.0 MBytes   629 Mbits/sec
-[  4]  6.0- 7.0 sec  70.4 MBytes   590 Mbits/sec
-[SUM]  6.0- 7.0 sec   211 MBytes  1.77 Gbits/sec
-[  3]  7.0- 8.0 sec  77.0 MBytes   646 Mbits/sec
-[  4]  7.0- 8.0 sec  65.9 MBytes   553 Mbits/sec
-[  5]  7.0- 8.0 sec  63.8 MBytes   535 Mbits/sec
-[SUM]  7.0- 8.0 sec   207 MBytes  1.73 Gbits/sec
-[  3]  8.0- 9.0 sec  76.2 MBytes   640 Mbits/sec
-[  5]  8.0- 9.0 sec  65.0 MBytes   545 Mbits/sec
-[  4]  8.0- 9.0 sec  68.4 MBytes   574 Mbits/sec
-[SUM]  8.0- 9.0 sec   210 MBytes  1.76 Gbits/sec
-[  5]  9.0-10.0 sec  67.6 MBytes   567 Mbits/sec
-[  5]  0.0-10.0 sec   701 MBytes   588 Mbits/sec
-[  3]  9.0-10.0 sec  71.1 MBytes   597 Mbits/sec
-[  3]  0.0-10.0 sec   702 MBytes   589 Mbits/sec
-[  4]  9.0-10.0 sec  72.2 MBytes   606 Mbits/sec
-[SUM]  9.0-10.0 sec   211 MBytes  1.77 Gbits/sec
-[  4]  0.0-10.0 sec   663 MBytes   556 Mbits/sec
-[SUM]  0.0-10.0 sec  2.02 GBytes  1.73 Gbits/sec
-[  3] MSS size 1448 bytes (MTU 1500 bytes, ethernet)
-"""
-    
-    #result = parse_output(test_output.split("\n"))
-    #print(pscheduler.json_dump(result, pretty=True))
+[  1] local 127.0.0.1%lo port 49449 connected with 127.0.0.1 port 5001 (sock=3) on 2024-02-26 22:22:07.973 (UTC)
+[ ID] Interval        Transfer     Bandwidth      Write/Err  PPS
+[  1] 0.00-2.00 sec  264600 Bytes  1058400 bits/sec  179/0       90 pps
+[  1] 2.00-4.00 sec  261660 Bytes  1046640 bits/sec  178/0       89 pps
+[  1] 4.00-6.00 sec  261660 Bytes  1046640 bits/sec  178/0       89 pps
+[  1] 0.00-6.01 sec  790860 Bytes  1052461 bits/sec  537/0       90 pps
+[  1] Sent 539 datagrams
+[  1] Server Report:
+[ ID] Interval       Transfer     Bandwidth        Jitter   Lost/Total Datagrams
+[  1] 0.00-6.01 sec  790860 Bytes  1052469 bits/sec   0.013 ms 0/538 (0%)
+'''         
+        },
+
+        {
+            'label': 'UDP Multi-Stream',
+            'expect_udp': True,
+            'text': '''
+iperf -c localhost -e  --format b -i 2 -t 6 -P 2 -u
+------------------------------------------------------------
+Client connecting to localhost, UDP port 5001 with pid 133597 (2 flows)
+TOS set to 0x0 (Nagle on)
+Sending 1470 byte datagrams, IPG target: 11215.21 us (kalman adjust)
+UDP buffer size: 212992 Byte (default)
+------------------------------------------------------------
+[  1] local 127.0.0.1%lo port 42613 connected with 127.0.0.1 port 5001 (sock=3) on 2024-02-23 15:52:44.280 (UTC)
+[  2] local 127.0.0.1%lo port 50674 connected with 127.0.0.1 port 5001 (sock=4) on 2024-02-23 15:52:44.281 (UTC)
+[ ID] Interval        Transfer     Bandwidth      Write/Err  PPS
+[  2] 0.00-2.00 sec  264600 Bytes  1058400 bits/sec  179/0       90 pps
+[  1] 0.00-2.00 sec  264600 Bytes  1058400 bits/sec  179/0       90 pps
+[SUM] 0.00-2.00 sec  529200 Bytes  2116800 bits/sec  358/0     180 pps
+[  2] 2.00-4.00 sec  261660 Bytes  1046640 bits/sec  178/0       89 pps
+[  1] 2.00-4.00 sec  261660 Bytes  1046640 bits/sec  178/0       89 pps
+[SUM] 2.00-4.00 sec  523320 Bytes  2093280 bits/sec  356/0     178 pps
+[  2] 4.00-6.00 sec  261660 Bytes  1046640 bits/sec  178/0       89 pps
+[  1] 4.00-6.00 sec  261660 Bytes  1046640 bits/sec  178/0       89 pps
+[SUM] 4.00-6.00 sec  523320 Bytes  2093280 bits/sec  356/0     178 pps
+[  2] 0.00-6.01 sec  790860 Bytes  1052473 bits/sec  537/0       90 pps
+[  2] Sent 539 datagrams
+[  1] 0.00-6.01 sec  790860 Bytes  1052455 bits/sec  537/0       90 pps
+[  1] Sent 539 datagrams
+[SUM] 0.00-6.01 sec  1581720 Bytes  2104909 bits/sec  1074/0     179 pps
+[SUM-2] Sent 1078 datagrams
+[  2] Server Report:
+[ ID] Interval       Transfer     Bandwidth        Jitter   Lost/Total Datagrams
+[  2] 0.00-5.99 sec  789390 Bytes  1053488 bits/sec   0.006 ms 1/538 (0.19%)
+[  1] Server Report:
+[ ID] Interval       Transfer     Bandwidth        Jitter   Lost/Total Datagrams
+[  1] 0.00-6.01 sec  792330 Bytes  1054424 bits/sec   0.008 ms 0/538 (0%)
+[  1] 0.00-6.01 sec  1 datagrams received out-of-order
+'''
+        },
+        {
+            'label': 'Uneven final interval',
+            'expect_udp': False,
+            'text': '''
+------------------------------------------------------------
+Client connecting to denv.ps.internet2.edu, TCP port 5001 with pid 188114 (4 flows)
+Write buffer size: 131072 Byte
+MSS size 536 bytes
+TOS set to 0x0 (Nagle on)
+TCP window size: 16384 Byte (default)
+------------------------------------------------------------
+[  3] local 10.88.0.116%eth0 port 54908 connected with 163.253.16.23 port 5001 (sock=3) (icwnd/mss/irtt=14/1460/31343) (ct=31.43 ms) on 2024-02-29 20:24:26.026 (UTC)
+[  1] local 10.88.0.116%eth0 port 54916 connected with 163.253.16.23 port 5001 (sock=5) (icwnd/mss/irtt=14/1460/31149) (ct=31.26 ms) on 2024-02-29 20:24:26.026 (UTC)
+[  4] local 10.88.0.116%eth0 port 54912 connected with 163.253.16.23 port 5001 (sock=4) (icwnd/mss/irtt=14/1460/31210) (ct=31.33 ms) on 2024-02-29 20:24:26.026 (UTC)
+[  2] local 10.88.0.116%eth0 port 54932 connected with 163.253.16.23 port 5001 (sock=6) (icwnd/mss/irtt=14/1460/31083) (ct=31.18 ms) on 2024-02-29 20:24:26.026 (UTC)
+[ ID] Interval        Transfer    Bandwidth       Write/Err  Rtry     Cwnd/RTT(var)        NetPwr
+[  4] 0.00-2.00 sec  34078780 Bytes  136315120 bits/sec  260/0       387       58K/1107(145) us  15392
+[  2] 0.00-2.00 sec  27000892 Bytes  108003568 bits/sec  206/0       254       41K/1451(36) us  9304
+[  3] 0.00-2.00 sec  31326268 Bytes  125305072 bits/sec  239/0       562       69K/1024(210) us  15296
+[  1] 0.00-2.00 sec  29491260 Bytes  117965040 bits/sec  225/0       444       54K/3966(192) us  3718
+[SUM] 0.00-2.00 sec  121897200 Bytes  487588800 bits/sec  930/0      1647
+[  1] 2.00-4.00 sec  28049408 Bytes  112197632 bits/sec  214/0       111       25K/2323(352) us  6037
+[  4] 2.00-4.00 sec  33161216 Bytes  132644864 bits/sec  253/0       272       65K/2349(46) us  7059
+[  2] 2.00-4.00 sec  29884416 Bytes  119537664 bits/sec  228/0       128       65K/1550(65) us  9640
+[  3] 2.00-4.00 sec  32505856 Bytes  130023424 bits/sec  248/0       193       65K/1621(157) us  10026
+[SUM] 2.00-4.00 sec  123600896 Bytes  494403584 bits/sec  943/0       704
+[  1] 4.00-6.00 sec  31850496 Bytes  127401984 bits/sec  243/0       647       22K/1545(58) us  10308
+[  3] 4.00-6.00 sec  32112640 Bytes  128450560 bits/sec  245/0       334       14K/1866(129) us  8605
+[  4] 4.00-6.00 sec  38797312 Bytes  155189248 bits/sec  296/0       568       57K/1798(8) us  10789
+[  2] 4.00-6.00 sec  29491200 Bytes  117964800 bits/sec  225/0       526       27K/1683(55) us  8761
+[SUM] 4.00-6.00 sec  132251648 Bytes  529006592 bits/sec  1009/0      2075
+[  3] 6.00-8.00 sec  39452672 Bytes  157810688 bits/sec  301/0       230       72K/2468(225) us  7993
+[  4] 6.00-8.00 sec  40763392 Bytes  163053568 bits/sec  311/0        77       68K/2218(142) us  9189
+[  2] 6.00-8.00 sec  34865152 Bytes  139460608 bits/sec  266/0       509       48K/1181(106) us  14761
+[  1] 6.00-8.00 sec  36438016 Bytes  145752064 bits/sec  278/0       168       67K/920(164) us  19803
+[SUM] 6.00-8.00 sec  151519232 Bytes  606076928 bits/sec  1156/0       984
+[  1] 8.00-10.00 sec  38010880 Bytes  152043520 bits/sec  290/0       157       59K/2268(289) us  8380
+[  3] 8.00-10.00 sec  39583744 Bytes  158334976 bits/sec  302/0        44       67K/2700(92) us  7330
+[  4] 8.00-10.00 sec  42598400 Bytes  170393600 bits/sec  325/0        18       67K/1622(60) us  13131
+[  2] 8.00-10.00 sec  36175872 Bytes  144703488 bits/sec  276/0       253       38K/2034(207) us  8893
+[SUM] 8.00-10.00 sec  156368896 Bytes  625475584 bits/sec  1193/0       472
+[  2] 0.00-10.14 sec  157548604 Bytes  124306045 bits/sec  1202/0      1670       38K/458(18) us  33926
+[  3] 0.00-10.19 sec  175112252 Bytes  137469482 bits/sec  1336/0      1363       67K/1805(283) us  9520
+[  4] 0.00-10.19 sec  189530172 Bytes  148792118 bits/sec  1446/0      1322       67K/897(131) us  20735
+[  1] 0.00-10.21 sec  163971132 Bytes  128471237 bits/sec  1251/0      1527       62K/2821(112) us  5693
+[SUM] 0.00-10.01 sec  686162160 Bytes  548236045 bits/sec  5235/0      5882
+[ CT] final connect times (min/avg/max/stdev) = 31.182/31.303/31.434/107.410 ms (tot/err) = 4/0
+'''
+        }
+    ]
+
+    logger = pscheduler.Log(debug=True, verbose=True)
+
+    # Enable this to test a specific element
+    # TEST_OUTPUTS = [ TEST_OUTPUTS[-1] ]
+
+    for test in TEST_OUTPUTS:
+        print(f'''\n{test['label']}\n''')
+        result = parse_output(
+            test['text'].split('\n'),
+            expect_udp=test['expect_udp'],
+            logger=logger
+        )
+        print(pscheduler.json_dump(result, pretty=True))

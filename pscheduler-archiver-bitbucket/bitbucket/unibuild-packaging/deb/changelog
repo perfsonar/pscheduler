@@ -1,3 +1,9 @@
+pscheduler-archiver-bitbucket (5.1.0-1) perfsonar-5.1; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Mon, 10 Jun 2024 10:42:17 +0200
+
 pscheduler-archiver-bitbucket (5.0.8-4) perfsonar-5.0; urgency=low
 
   * New upstream version.

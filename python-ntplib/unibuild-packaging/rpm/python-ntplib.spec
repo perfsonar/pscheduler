@@ -42,11 +42,11 @@ Python.
 
 
 %build
-%{_pscheduler_python} setup.py build
+python setup.py build
 
 
 %install
-%{_pscheduler_python} setup.py install --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES -O1
+python setup.py install --root=$RPM_BUILD_ROOT --record=INSTALLED_FILES -O1
 
 
 %clean

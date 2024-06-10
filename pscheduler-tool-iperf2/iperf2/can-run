@@ -32,7 +32,7 @@ if not json.get('spec'):
 
 try:
     spec = json["spec"]
-    pscheduler.json_check_schema(spec, 5)
+    pscheduler.json_check_schema(spec, 7)
 except KeyError:
     pscheduler.succeed_json({
         "can-run": False,
@@ -53,20 +53,18 @@ supported_options = ["schema",
                      "source", "source-node",
                      "dest", "dest-node",
                      "ip-version", "duration", "interval", "link-rtt",
-                     "parallel", "window-size", "bandwidth",
+                     "parallel", "window-size", "bandwidth", "fq-rate",
                      "buffer-length", "local-address", "congestion",
                      "udp", "single-ended", "single-ended-port", "loopback"
                      ]
 
 for option in spec:
     if option not in supported_options:
-        logger.debug("iperf2 unsupported option %s" % option)
-        errors.append('iperf2 does not support %s option' % option)    
-
+        errors.append(f'''Option '{option}' is not supported.''')
 
 # bandwidth only supported in udp mode
 if "bandwidth" in spec and "udp" not in spec:
-    errors.append('iperf2 does not support specifying bandwidth on non-udp tests')
+    errors.append('Cannot set bandwidth on non-udp tests')
 
 logger.debug("can-run succeeded")
 

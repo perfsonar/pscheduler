@@ -482,7 +482,7 @@ BEGIN
     IF TG_OP = 'INSERT' AND NOT run_state_is_finished(NEW.state) THEN
 
         pdata_out := row_to_json(t) FROM ( SELECT taskrec.participant AS participant,
-                                           cast ( taskrec.json #>> '{test, spec}' AS json ) AS test ) t;
+                                           cast ( taskrec.json #>> '{test}' AS json ) AS test ) t;
 
         run_result := pscheduler_plugin_invoke('tool', tool_name, 'participant-data', pdata_out::TEXT );
         IF run_result.status <> 0 THEN

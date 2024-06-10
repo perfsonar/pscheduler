@@ -93,6 +93,10 @@ opt_parser.add_option("-f", "--fail",
                       action="store", type="float",
                       dest="fail")
 
+opt_parser.add_option("-p", "--port",
+                      help="port",
+                      action="store", type="int",
+                      dest="port")
 
 (options, remaining_args) = opt_parser.parse_args(args)
 
@@ -130,6 +134,10 @@ if options.timeout is not None:
 
 if options.fail is not None:
    result['fail'] = options.fail
+
+if options.port is not None:
+   result['port'] = options.port
+   spec_schema.set(3)
 
 result['schema'] = spec_schema.value()
 

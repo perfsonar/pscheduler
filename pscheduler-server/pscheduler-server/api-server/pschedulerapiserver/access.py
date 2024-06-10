@@ -5,6 +5,7 @@
 import pscheduler
 
 from .args import *
+from .util import *
 
 from flask import request
 
@@ -15,7 +16,7 @@ def access_write_task(original_requester, key=None):
     Determine whether a requester can write to a task or its runs.
     """
 
-    requester = request.remote_addr
+    requester = remote_address()
 
     # Local interfaces are always okay.
     if requester in local_ips:

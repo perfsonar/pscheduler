@@ -19,8 +19,8 @@ class TestSpecIsValid(pscheduler.TestSpecIsValidUnitTest):
         test_input = {
             "dest": "fe80::a00:27ff:fea3:14ba",
             "dest-node": "perf.test.net",
-            "source": "127.0.0.1",
-            "source-node": "127.0.0.1",
+            "source": "localhost",
+            "source-node": "localhost",
             "schema": 1,
             "duration": "PT10S",
             "interval": "PT1S",
@@ -32,7 +32,7 @@ class TestSpecIsValid(pscheduler.TestSpecIsValidUnitTest):
             "buffer-length": 100,
             "ip-tos": 10,
             "ip-version": 4,
-            "local-address": "127.0.0.1",
+            "local-address": "localhost",
             "omit": "PT10S",
             "no-delay": False,
             "congestion": "reno",
@@ -63,7 +63,7 @@ class TestSpecIsValid(pscheduler.TestSpecIsValidUnitTest):
         self.assert_cmd(dumps(test_input), expected_valid=False)
 
         # wrong type, bandwidth is integer
-        test_input = {"bandwidth": "100", "dest": "127.0.0.1"}
+        test_input = {"bandwidth": "100", "dest": "localhost"}
         self.assert_cmd(dumps(test_input), expected_valid=False)
         
 

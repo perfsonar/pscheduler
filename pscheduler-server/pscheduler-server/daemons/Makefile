@@ -11,7 +11,8 @@
 #   PGSERVICE - Name of the PostgreSQL systemd service
 #   PGUSER - Name of pScheduler PostgreSQL account
 #   PSUSER - Name of pScheduler user account
-#   RUNDIR - Location of run directory (nominally /run)
+#   STORAGEDIR - Location of temporary storage.  Must not be
+#                  in a directory where 'noexec' is in effect.
 #   VAR - Location of /var directory
 #
 
@@ -21,10 +22,6 @@ DAEMONS=\
 	ticker \
 	scheduler \
 
-DAEMON_UTILITIES=\
-	wait-for-database
-
-DAEMON_INSTALL=$(DAEMONS) $(DAEMON_UTILITIES)
 
 COMMANDS=\
 	debug \
@@ -64,7 +61,7 @@ ifndef PSUSER
 endif
 	sed \
 		-e 's|__PSUSER__|$(PSUSER)|g' \
-		-e 's|__RUNDIR__|$(RUNDIR)|g' \
+		-e 's|__STORAGEDIR__|$(STORAGEDIR)|g' \
 		< $< > $@
 	@if egrep -e '__[A-Z_]+__' $@ ; then \
 		echo "Found un-substituted values in processed file $@" ; \
@@ -127,9 +124,9 @@ endif
 	fi
 TO_CLEAN += resume
 
-SYSTEMD_VERSION := $(shell systemctl --version | awk '$$1 == "systemd" { print $$2 }')
 
-$(UNITS): service-template.m4
+
+$(UNITS): service-template.raw
 ifndef CONFIGDIR
 	@echo No CONFIGDIR specified for build
 	@false
@@ -154,25 +151,24 @@ ifndef PGSERVICE
 	@echo No PGSERVICE specified for build
 	@false
 endif
-ifndef RUNDIR
-	@echo No RUNDIR specified for build
+ifndef STORAGEDIR
+	@echo No STORAGEDIR specified for build
 	@false
 endif
 ifndef VAR
 	@echo No VAR specified for build
 	@false
 endif
-	m4 \
-		-D '__CONFIGDIR__=$(CONFIGDIR)' \
-		-D '__DAEMONDIR__=$(DAEMONDIR)' \
-		-D '__DSN__=$(DSNFILE)' \
-		-D '__PROG__=$(@:service-%=%)' \
-		-D '__PSUSER__=$(PSUSER)' \
-		-D '__RUNDIR__=$(RUNDIR)' \
-		-D '__VAR__=$(VAR)' \
-		-D '__LOGDIR__=$(LOGDIR)' \
-		-D '__PGSERVICE__=$(PGSERVICE)' \
-		-D '__SYSTEMD_VERSION__=$(SYSTEMD_VERSION)' \
+	sed \
+		-e 's|__CONFIGDIR__|$(CONFIGDIR)|g' \
+		-e 's|__DAEMONDIR__|$(DAEMONDIR)|g' \
+		-e 's|__DSN__|$(DSNFILE)|g' \
+		-e 's|__PROG__|$(@:service-%=%)|g' \
+		-e 's|__PSUSER__|$(PSUSER)|g' \
+		-e 's|__STORAGEDIR__|$(STORAGEDIR)|g' \
+		-e 's|__VAR__|$(VAR)|g' \
+		-e 's|__LOGDIR__|$(LOGDIR)|g' \
+		-e 's|__PGSERVICE__|$(PGSERVICE)|g' \
 		< $< > $@
 	@if egrep -e '__[A-Z_]+__' $@ ; then \
 		echo "Found un-substituted values in processed file $@" ; \
@@ -192,7 +188,7 @@ $(CONFIGS): config-template.raw
 TO_CLEAN += $(CONFIGS)
 
 
-build: $(DAEMON_INSTALL) $(UNITS) $(CONFIGS) $(COMMANDS) $(INTERNALS)
+build: $(DAEMONS) $(UNITS) $(CONFIGS) $(COMMANDS) $(INTERNALS)
 	@true
 
 
@@ -221,6 +217,10 @@ ifndef INTERNALSDIR
 	@echo No INTERNALSDIR specified for installation
 	@false
 endif
+ifndef STORAGEDIR
+	@echo No STORAGEDIR specified for installation
+	@false
+endif
 	mkdir -p $(CONFIGDIR)
 	cp -f $(CONFIGS) $(CONFIGDIR)
 	chmod 600 $(CONFIGS:%=$(CONFIGDIR)/%)
@@ -228,11 +228,13 @@ endif
 	cp -f $(COMMANDS) $(COMMANDDIR)
 	chmod 555 $(COMMANDS:%=$(COMMANDDIR)/%)
 	mkdir -p $(DAEMONDIR)
-	cp -f $(DAEMON_INSTALL) $(DAEMONDIR)
-	chmod 555 $(DAEMON_INSTALL:%=$(DAEMONDIR)/%)
+	cp -f $(DAEMONS) $(DAEMONDIR)
+	chmod 555 $(DAEMONS:%=$(DAEMONDIR)/%)
 	mkdir -p $(INTERNALSDIR)
 	cp -f $(INTERNALS) $(INTERNALSDIR)
 	chmod 555 $(INTERNALS:%=$(INTERNALSDIR)/%)
+	mkdir -p $(STORAGEDIR)
+	chmod 700 $(STORAGEDIR)
 	mkdir -p $(UNITDIR)
 	@for SCRIPT in $(DAEMONS) ; \
 	do \

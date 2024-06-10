@@ -24,13 +24,22 @@ def tools():
 
     if test_filter is None:
         return json_query("SELECT json FROM tool WHERE available ORDER BY NAME")
+
+    log.debug("Looking for tools against filter %s", test_filter)
+    cursor = dbcursor_query("SELECT * FROM api_tools_for_test(%s)",
+                            [test_filter],
+                            onerow=False)
+
+    if requested_api() < 6:
+        # API 1-5: Return a lot of the tool enumerations that
+        # accepted.
+        result = [ row[1] for row in cursor if row[0]['can-run']]
     else:
-        log.debug("Looking for tools against filter %s", test_filter)
-        cursor = dbcursor_query("SELECT api_tools_for_test(%s)",
-                                [test_filter],
-                                onerow=True)
-        # Sanitized, even though there should be nothing special in these.
-        return ok_json( cursor.fetchone()[0] )
+        # API 6+: Return all tools that were asked and their responses
+        result = [ { "can-run": row[0], "tool": row[1] } for row in cursor ]
+
+    # Sanitized, even though there should be nothing special in these.
+    return ok_json( result )
 
 
 @application.route("/tools/<name>", methods=['GET'])

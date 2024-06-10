@@ -12,8 +12,6 @@ License:	MIT
 Group:		Development/Libraries
 
 Provides:	%{name} = %{version}-%{release}
-Provides:	python-%{short} = %{version}-%{release}
-Provides:	%{_pscheduler_python}-%{short} = %{version}-%{release}
 Prefix:		%{_prefix}
 
 Vendor:		Julian Berman
@@ -22,9 +20,7 @@ URL:		http://pypi.python.org/pypi/jsonschema
 Source:		%{short}-%{version}.tar.gz
 
 Requires:       %{_pscheduler_python}
-%if 0%{?el7}
-Requires:       %{_pscheduler_python_epel}-attrs
-%endif
+
 %if 0%{?el8}
 Requires:       %{_pscheduler_python}-attrs
 %endif
@@ -35,10 +31,6 @@ Requires:       %{_pscheduler_python}-setuptools
 
 BuildRequires:  %{_pscheduler_python}
 BuildRequires:  %{_pscheduler_python}-setuptools
-
-%if 0%{?el7}
-BuildRequires:  %{_pscheduler_python_epel}-setuptools_scm
-%endif
 %if 0%{?el8}
 BuildRequires:  %{_pscheduler_python}-setuptools_scm
 %endif

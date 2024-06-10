@@ -13,3 +13,4 @@ Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
  pscheduler-server
 Description: postgresql archiver class for pScheduler
+ Archiver sends data to a PostgreSQL database.

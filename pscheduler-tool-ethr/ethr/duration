@@ -14,7 +14,7 @@ import pscheduler
 
 logger = pscheduler.Log(prefix='tool-ethr', quiet=True)
 
-json = pscheduler.json_load(exit_on_error=True)
+json = pscheduler.json_load(exit_on_error=True)['spec']
 
 
 # Duration: How long the test should run

@@ -1,6 +1,12 @@
-pscheduler-bundle-snmp (5.0.8.4) perfsonar-5.0; urgency=low
+pscheduler-bundle-snmp (5.1.0) perfsonar-5.1; urgency=low
 
   * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Mon, 10 Jun 2024 10:42:19 +0200
+
+pscheduler-bundle-snmp (5.0.8.4) perfsonar-5.0; urgency=low
+
+  * Not using revision number as it is a Debian native package.
 
  -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Mon, 22 Apr 2024 16:56:46 +0200
 

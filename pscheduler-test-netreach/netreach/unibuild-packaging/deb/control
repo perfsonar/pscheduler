@@ -11,6 +11,6 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 Package: pscheduler-test-netreach
 Architecture: all
 Depends: ${misc:Depends}, python3, python3-pscheduler,
- pscheduler-server, python3-jsontemplate
+ pscheduler-server
 Description: pScheduler netreach test
  Network reachability test class for pScheduler

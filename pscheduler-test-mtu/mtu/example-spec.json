@@ -1,1 +1,1 @@
-{"schema": 1, "source": "test-src", "dest": "test-dest"}
+{"schema": 2, "source": "test-src", "dest": "test-dest", "ip-version": 6}

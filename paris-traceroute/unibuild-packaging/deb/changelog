@@ -1,3 +1,9 @@
+paris-traceroute (0.93.ps-3) unstable; urgency=low
+
+  * Porting to Ubuntu 20 (libc 2.29)
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Wed, 17 Apr 2024 23:43:20 +0200 
+
 paris-traceroute (0.93.ps-2) unstable; urgency=low
 
   * Exclude implementation of ping from installation

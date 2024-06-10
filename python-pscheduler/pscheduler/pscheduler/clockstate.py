@@ -220,7 +220,7 @@ def clock_state():
         # Assume NTP for the time being
 
         try:
-            ntp = ntplib.NTPClient().request("127.0.0.1")
+            ntp = ntplib.NTPClient().request("localhost")
             result["offset"] = ntp.offset
             result["source"] = "ntp"
             result["reference"] = "%s from %s" % (

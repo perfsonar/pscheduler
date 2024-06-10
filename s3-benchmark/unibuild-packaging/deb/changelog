@@ -1,3 +1,9 @@
+s3-benchmark (1.0-3) perfsonar-5.0-staging; urgency=low
+
+  * Build on Debian 11 and 12.
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Sat, 04 Nov 2023 23:49:49 +0100 
+
 s3-benchmark (1.0-2) perfsonar-4.4-staging; urgency=low
 
   * Building only on amd64 and i386 because of Go compilation issue when

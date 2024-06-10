@@ -2,8 +2,6 @@
 # Makefile for any tool class
 #
 
-NAME=simplestreamer
-
 FILES=\
 	can-run \
 	duration \
@@ -11,6 +9,7 @@ FILES=\
 	merged-results \
 	participant-data \
 	run \
+	ping_utils.py
 
 
 

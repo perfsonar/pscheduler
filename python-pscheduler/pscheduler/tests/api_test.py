@@ -3,6 +3,7 @@
 test for the api module.
 """
 
+import socket
 import unittest
 
 from pscheduler.api import *
@@ -14,6 +15,15 @@ class TestApi(PschedTestBase):
     """
     Api tests.
     """
+
+
+    def test_local_host(self):
+        self.assertTrue(api_local_host_name() in [
+            socket.gethostname(),
+            '::1',
+            '127.0.0.1'
+            ])
+
 
     def test_api(self):
         """taken from api.__main__"""

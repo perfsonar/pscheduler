@@ -1,0 +1,10 @@
+{
+  "cleanup": false,
+  "dest": "baz",
+  "duration": "PT30S",
+  "host": "foo",
+  "parallel": 5,
+  "schema": 1,
+  "source": "bar",
+  "timeout": "PT60S"
+}

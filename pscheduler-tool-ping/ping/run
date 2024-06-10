@@ -9,6 +9,8 @@ import icmperror
 import pscheduler
 import re
 
+from ping_utils import *
+
 log = pscheduler.Log(prefix='tool-ping', quiet=True)
 
 input = pscheduler.json_load(exit_on_error=True);
@@ -21,9 +23,6 @@ if participant != 0:
     pscheduler.fail("Invalid participant.")
 
 spec = input['test']['spec']
-
-
-run_timeout = datetime.timedelta()
 
 
 #
@@ -129,7 +128,6 @@ if interval < datetime.timedelta(seconds=0.2):
 
 argv.append('-i')
 argv.append(str(pscheduler.timedelta_as_seconds(interval)))
-run_timeout += ( count * interval )
 
 
 # Interface/Source Address
@@ -187,8 +185,8 @@ except KeyError:
 # Deadline
 
 try:
-    deadline = pscheduler.timedelta_as_seconds(
-        pscheduler.iso8601_as_timedelta(spec['deadline']) )
+    deadline = int(pscheduler.timedelta_as_seconds(
+        pscheduler.iso8601_as_timedelta(spec['deadline']) ))
     argv.append('-w')
     argv.append(str(deadline))
 except KeyError:
@@ -225,12 +223,9 @@ argv = [str(x) for x in argv]
 argv_string =  ' '.join(argv)
 log.debug("Running %s", argv_string)
 
-# Add some run slop
-run_timeout += datetime.timedelta(seconds=2)
-log.debug("Timeout is %s", run_timeout)
-
+run_timeout = ping_tool_duration(spec)
 run_timeout_secs = pscheduler.timedelta_as_seconds(run_timeout)
-
+log.debug("Timeout is %s", run_timeout)
 try:
     start_at = input['schedule']['start']
     log.debug("Sleeping until %s", start_at)
@@ -245,15 +240,28 @@ status, stdout, stderr \
 log.debug("Program exited %d: %s",
           status, stdout if status == 0 else stderr)
 
-# Ping exits 1 if the host isn't up, which for us is still a success.
-if not status in [0, 1]:
+diags = f'{argv_string}\n\nStandard output:\n{stdout}\n\nStandard error:\n{stderr}'
+
+# Ping exits 1 if the host isn't up, which for us is still a success,
+# but it also exits 1 on error.  The presence of anything in stderr is
+# what signifies a "real" error.
+
+if (status != 0) and stderr:
     pscheduler.succeed_json( {
             'succeeded': False,
-            'diags': argv_string,
+            'diags': diags,
             'error': stderr,
             'result': None
             } )
 
+# At this point there should be output.
+if not stdout:
+    pscheduler.succeed_json( {
+            'succeeded': False,
+            'diags': diags,
+            'error': 'No output from ping',
+            'result': None
+            } )
 
 #
 # Dissect the results
@@ -262,7 +270,7 @@ if not status in [0, 1]:
 final_result = {
     'schema': 1,
     'succeeded': True,
-    'diags': argv_string + '\n\n' + stdout,
+    'diags': diags,
     'error': None
 }
 
@@ -291,8 +299,6 @@ result['succeeded'] = True
 
 #calculate some stats
 packets_seen = {}
-sent = count
-recvd = 0
 dups = 0
 reorders = 0
 prev_seq = None
@@ -307,16 +313,18 @@ for rt in roundtrips:
         continue
     #made it to other end
     packets_seen[rt["seq"]] = True
-    recvd += 1
     #check for reorder
     if prev_seq is not None and rt["seq"] < prev_seq:
         reorders += 1
     prev_seq = rt["seq"]
+
 #save results
+sent = parsed_results.get('sent', 0)
 result['sent'] = sent
-result['received'] = recvd
-result['lost'] = sent - recvd
-result['loss'] = float((sent - recvd)/float(sent)) if sent > 0 else 0
+received = parsed_results.get('received', 0)
+result['received'] = received
+result['lost'] = sent - received
+result['loss'] = parsed_results.get('loss', 100.0)
 result['duplicates'] = dups
 result['reorders'] = reorders
 

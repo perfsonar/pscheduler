@@ -19,7 +19,7 @@ coverage and profiling, flexible attribute-based test selection,\
 output capture and more.\
 
 
-Name:           python-%{modname}
+Name:           %{_pscheduler_python}-%{modname}
 Version:        1.3.7
 Release:        23%{?dist}
 BuildArch:      noarch
@@ -60,14 +60,11 @@ Documentation for Nose.
 
 %package -n python3-%{modname}
 Summary:        %{summary}
-BuildRequires:  python3-devel
-BuildRequires:  python3-setuptools
-BuildRequires:  python3-coverage >= 3.4-1
-%if 0%{?rhel} && 0%{?rhel} >= 8
-Requires:       platform-python-setuptools
-%else
-Requires:       python3-setuptools
-%endif
+BuildRequires:  %{_pscheduler_python}3-devel
+BuildRequires:  %{_pscheduler_python}3-setuptools
+BuildRequires:  %{_pscheduler_python}3-coverage >= 3.4-1
+Requires:       %{_pscheduler_python}3-setuptools
+
 %{?python_provide:%python_provide python3-%{modname}}
 Obsoletes:      platform-python-%{modname} < %{version}-%{release}
 
