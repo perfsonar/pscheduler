@@ -10,7 +10,7 @@
 # they should be added here (line 25).
 %define short	fwmtu
 %define perfsonar_auto_version 5.1.0
-%define perfsonar_auto_relnum 0.b2.7
+%define perfsonar_auto_relnum 1
 
 Name:		pscheduler-tool-%{short}
 Version:	%{perfsonar_auto_version}
