@@ -3,8 +3,8 @@
 #
 
 %define short	trace
-%define perfsonar_auto_version 5.1.0
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 5.2.0
+%define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-test-%{short}
 Version:	%{perfsonar_auto_version}
