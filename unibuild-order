@@ -126,7 +126,6 @@ ifelse(DISTRO/eval(MAJOR <= 18),Ubuntu/1,,      # Doesn't build on U18, TODO: no
 iperf
 ifelse(FAMILY/eval(MAJOR == 12),Debian/1,iperf3,        # We only want iperf3 on D12
        DISTRO/eval(MAJOR == 20),Ubuntu/1,iperf3,        # and U20
-       DISTRO/eval(MAJOR == 24),Ubuntu/1,iperf3,        # and U24
        FAMILY,Debian,,
        iperf3)
 nuttcp
