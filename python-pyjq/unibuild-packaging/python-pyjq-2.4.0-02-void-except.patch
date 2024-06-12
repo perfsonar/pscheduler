@@ -1,0 +1,21 @@
+diff -rupN pyjq-2.4.0-orig/_pyjq.pyx pyjq-2.4.0/_pyjq.pyx
+--- pyjq-2.4.0-orig/_pyjq.pyx	2019-09-18 07:14:51.000000000 +0000
++++ pyjq-2.4.0/_pyjq.pyx	2024-06-12 15:02:15.594836560 +0000
+@@ -80,7 +80,7 @@ cdef extern from "jq.h":
+     ctypedef struct jq_state:
+         pass
+ 
+-    ctypedef void (*jq_err_cb)(void *, jv)
++    ctypedef void (*jq_err_cb)(void *, jv) except *
+ 
+     jq_state *jq_init()
+     void jq_set_attr(jq_state *, jv, jv)
+@@ -173,7 +173,7 @@ cdef class Script:
+         self._jq = jq_init()
+         if not self._jq:
+             raise RuntimeError('Failed to initialize jq')
+-        jq_set_error_cb(self._jq, Script_error_cb, <void*>self)
++        jq_set_error_cb(self._jq, Script_error_cb, <void *>self)
+ 
+         args = pyobj_to_jv([
+             dict(name=k, value=v)

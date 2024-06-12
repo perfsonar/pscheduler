@@ -21,6 +21,10 @@ Source:		%{short}-%{version}.tar.gz
 Patch0:		python-%{short}-%{version}-00-nodownloads.patch
 Patch1:		python-%{short}-%{version}-01-integer.patch
 
+# TODO: On systems where Cython is >= 3.0 (not EL9), this patch will
+# need to be added here and in the prep secion:
+# python-%{short}-%{version}-02-void-except.patch
+
 Requires:       %{_pscheduler_python}
 # Note that 1.6.10 is a pScheduler-specific version that includes a
 # bug fix required for this module.  See #717.
