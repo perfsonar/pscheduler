@@ -139,6 +139,7 @@ paris-traceroute
 # build this.
 define(HAVE_S3_BENCHMARK,ifelse(HAVE_GOLANG,0,0,
 	   FAMILY/eval(MAJOR == 11),Debian/1,HAVE_GOLANG,
+       DISTRO/eval(MAJOR >= 24),Ubuntu/1,HAVE_GOLANG,
        FAMILY,Debian,,
        1))
 ifelse(HAVE_S3_BENCHMARK,1,s3-benchmark)
@@ -181,8 +182,7 @@ pscheduler-test-throughput
 # This has not been released.  See also pscheduler-tool-nmapscan
 # pscheduler-test-openports		--bundle extras
 pscheduler-test-rtt
-#ifelse(HAVE_S3_BENCHMARK,1,pscheduler-test-s3throughput)
-pscheduler-test-s3throughput
+ifelse(HAVE_S3_BENCHMARK,1,pscheduler-test-s3throughput)
 pscheduler-test-simplestream
 pscheduler-test-snmpget			--bundle snmp
 pscheduler-test-snmpgetbgm		--bundle snmp
@@ -223,8 +223,7 @@ pscheduler-tool-psclock
 pscheduler-tool-pstimer
 pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
-#ifelse(HAVE_S3_BENCHMARK,1,pscheduler-tool-s3-benchmark)
-pscheduler-tool-s3-benchmark
+ifelse(HAVE_S3_BENCHMARK,1,pscheduler-tool-s3-benchmark)
 pscheduler-tool-simplestreamer
 pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
