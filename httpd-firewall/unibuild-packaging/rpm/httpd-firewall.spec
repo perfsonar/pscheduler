@@ -18,6 +18,7 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	httpd
 Requires:	firewalld
+Requires:	rpm-post-wrapper
 
 
 %description
