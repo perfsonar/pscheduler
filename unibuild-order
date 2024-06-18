@@ -76,10 +76,7 @@ ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of th
        FAMILY/eval(MAJOR >= 9),RedHat/1,,               # And EL9+
        python-pyrsistent)
 python-nmap3
-ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of this.
-       DISTRO/eval(MAJOR > 10),Debian/1,,               # As does Debian 11.
-       FAMILY/eval(MAJOR > 8),RedHat/1,,                # As does EL9+
-       python-jsonschema)
+ifelse(FAMILY/eval(MAJOR <= 8),RedHat/1,python-jsonschema)  # Only build on EL8 and lower
 python-kafka
 python-nmap3
 
@@ -89,7 +86,7 @@ ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-nose)
 ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-ntplib)
 python-parse-crontab
 python-vine
-ifelse(DISTRO/eval(MAJOR > 21),Ubuntu/1,,		# Ubuntu 22 has a newer version of this.
+ifelse(DISTRO/eval(MAJOR > 21),Ubuntu/1,,		# Ubuntu 22 and up have a newer version of this.
        DISTRO/eval(MAJOR > 11),Debian/1,,       # As does Debian 12.
        python-py-amqp)
 python-py-radix
@@ -133,10 +130,9 @@ iperf
 # non-x86 architectures have to be built under an emulator that runs
 # at 20% the speed of native.  Binary builds get re-used between
 # distributions.
-ifelse(FAMILY/eval(MAJOR == 12),Debian/1,iperf3,  # D12 binary is reused on D11.
-       DISTRO/eval(MAJOR == 20),Ubuntu/1,iperf3,  # U20 binary is reused on 22.
-       DISTRO/eval(MAJOR == 24),Ubuntu/1,iperf3,  # The jury is still out on U24, so build it.
-       FAMILY/BUILD_ALL_DEB,Debian/0,,            # Diable all else in the Debian family unless forced
+ifelse(FAMILY/eval(MAJOR == 12),Debian/1,iperf3,  # D12 binary is reused on U24 (and the resulting binary packages are called iperf3-ssl3).
+       DISTRO/eval(MAJOR == 20),Ubuntu/1,iperf3,  # U20 binary is reused on D11 and U22.
+       FAMILY/BUILD_ALL_DEB,Debian/0,,            # Disable all else in the Debian family unless forced
        iperf3)                                    # Always build on non-Debuntu.
 nuttcp
 
