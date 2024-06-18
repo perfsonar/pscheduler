@@ -32,6 +32,7 @@ Requires:	postgresql-devel >= %{_pscheduler_postgresql_version}
 Requires:	postgresql-libs >= %{_pscheduler_postgresql_version}
 Requires:	postgresql-plpython3 >= %{_pscheduler_postgresql_version}
 Requires:	postgresql-server  >= %{_pscheduler_postgresql_version}
+Requires:	rpm-post-wrapper
 
 Requires:       pscheduler-rpm
 
@@ -51,6 +52,7 @@ and makes sure it runs at boot.
 
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 
 # Note that if any of this fails, the install doesn't.  This is an
 # problem inherent in RPM that the developers won't fix.
@@ -76,6 +78,7 @@ systemctl start postgresql
 
 # Set up run at boot
 systemctl enable postgresql
+POST-WRAPPER-EOF
 
 
 %files

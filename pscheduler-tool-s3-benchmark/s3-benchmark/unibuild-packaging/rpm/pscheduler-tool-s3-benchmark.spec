@@ -30,6 +30,7 @@ Requires:	pscheduler-server
 Requires:	%{_pscheduler_python}-pscheduler
 Requires: 	s3-benchmark
 Requires:   pscheduler-test-s3throughput
+Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 
@@ -47,7 +48,9 @@ make \
      install
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 pscheduler internal warmboot
+POST-WRAPPER-EOF
 
 %postun
 pscheduler internal warmboot

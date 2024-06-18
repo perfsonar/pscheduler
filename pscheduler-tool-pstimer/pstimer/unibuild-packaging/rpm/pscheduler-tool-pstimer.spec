@@ -30,6 +30,7 @@ Requires:	pscheduler-server >= 4.3.0
 Requires:	pscheduler-test-psresponse
 Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	%{_pscheduler_python}-pycurl
+Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 
@@ -48,7 +49,9 @@ make \
      install
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 pscheduler internal warmboot
+POST-WRAPPER-EOF
 
 %postun
 pscheduler internal warmboot
