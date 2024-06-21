@@ -31,6 +31,13 @@ build:
 TO_CLEAN += $(BUILD_LOG)
 
 
+# Minimal build
+
+MINIMAL_STOP_AT=pscheduler-tool-passthrough
+minimal:
+	$(MAKE) 'STOP=$(MINIMAL_STOP_AT)'
+
+
 uninstall:
 	unibuild make --reverse $@
 
