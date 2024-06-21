@@ -128,7 +128,7 @@ pscheduler-server
 
 # Things needed for a very-minimal functioning installation
 
-# Idle
+# Idle Test and Tools
 pscheduler-test-idle
 pscheduler-test-idlebgm
 pscheduler-test-idleex
@@ -136,9 +136,13 @@ pscheduler-tool-sleep
 pscheduler-tool-sleepbgm
 pscheduler-tool-snooze
 
-# No-Op
+# No-Op Test and Tools
 pscheduler-test-noop
 pscheduler-tool-passthrough
+
+# One archiver
+pscheduler-archiver-bitbucket
+
 
 # NOTE: If any additional packages are added here, the MINIMAL_STOP_AT
 # variable in the Makefile must be adjusted to reflect the last one.
@@ -256,7 +260,6 @@ pscheduler-tool-umichwpa		--bundle extras
 # Archivers
 #
 
-pscheduler-archiver-bitbucket
 pscheduler-archiver-esmond			--bundle obsolete
 pscheduler-archiver-failer
 pscheduler-archiver-http

@@ -33,7 +33,7 @@ TO_CLEAN += $(BUILD_LOG)
 
 # Minimal build
 
-MINIMAL_STOP_AT=pscheduler-tool-passthrough
+MINIMAL_STOP_AT=pscheduler-archiver-bitbucket
 minimal:
 	$(MAKE) 'STOP=$(MINIMAL_STOP_AT)'
 
