@@ -13,13 +13,18 @@ LOGBASE="__LOGFILE__"
 
 if [ $# -eq 0 ]
 then
-    exec cat "${LOGDIR}/${LOGBASE}"
+    LATEST_LOG="${LOGDIR}/${LOGBASE}"
+    if [ -s "${LATEST_LOG}" ]
+    then
+        exec cat "${LATEST_LOG}"
+    fi
 elif [ "$1" = "--all" ]
 then
+    # PORT: xargs -r is non-POSIX
     find "${LOGDIR}" -type f -name "${LOGBASE}*" -print0 \
-	| xargs -0 ls -htr \
+	| xargs -r -0 ls -htr \
 	| tr "\n" "\0" \
-	| xargs -0 cat
+	| xargs -r -0 cat
 else
     echo "Usage: $(basename "$0") [ --all ]"
     exit 1
