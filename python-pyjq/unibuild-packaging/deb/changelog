@@ -1,3 +1,10 @@
+pyjq (2.4.0-3~bpo10+3) perfsonar-5.1-staging; urgency=low
+
+  * Port to Ubuntu 24.
+  * Forcing jq version 1.6.something only.
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Mon, 24 Jun 2024 18:32:33 +0200 
+
 pyjq (2.4.0-3~bpo10+2) perfsonar-5.1-staging; urgency=low
 
   * Building on Ubuntu 20.

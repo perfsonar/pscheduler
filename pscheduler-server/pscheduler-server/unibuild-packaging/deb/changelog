@@ -1,6 +1,7 @@
 pscheduler-server (5.1.1~a1.0-1) perfsonar-5.1-snapshot; urgency=low
 
   * New upstream version.
+  * Depends on PostgreSQL 16 for Ubuntu 24.
 
  -- perfSONAR developers <debian@perfsonar.net>  Tue, 11 Jun 2024 18:29:04 +0200
 

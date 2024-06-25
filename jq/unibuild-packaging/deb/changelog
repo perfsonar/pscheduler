@@ -1,3 +1,9 @@
+jq (1.6.0-1~bpo8+4) perfsonar-5.1-staging; urgency=medium
+
+  * Port to Ubuntu 24
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Mon, 24 Jun 2024 18:31:02 +0200 
+
 jq (1.6.0-1~bpo8+3) perfsonar-5.1-staging; urgency=medium
 
   * Building on Ubuntu 20.
