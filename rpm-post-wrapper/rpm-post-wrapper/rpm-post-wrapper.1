@@ -1,0 +1,55 @@
+.\" rpm-post-wrapper man page
+.if !\n(.g \{\
+.	if !\w|\*(lq| \{\
+.		ds lq ``
+.		if \w'\(lq' .ds lq "\(lq
+.	\}
+.	if !\w|\*(rq| \{\
+.		ds rq ''
+.		if \w'\(rq' .ds rq "\(rq
+.	\}
+.\}
+.de Id
+.ds Dt \\$4
+..
+.TH RPM-POST-WRAPPER 1
+.SH NAME
+rpm-post-wrapper \- Wrap an RPM %post scriptlet and log errors
+.SH SYNOPSIS
+.B rpm-post-wrapper
+.I PACKAGE-NAME
+.I [ ARG ... ]
+
+.SH DESCRIPTION
+.PP
+
+This program runs a shell script provided on the standard input using
+BASH, captures its output and sends it to syslog if the script exits
+with a non-zero status.
+
+.SH ARGUMENTS
+
+.IR PACKAGE-NAME
+The name of the package being installed, usually provided by the
+.I %name
+macro in the RPM spec.
+
+.IR ARG
+Arguments to pass to the script when it is run, usually passed
+directly in unaltered with the
+.I $@
+substitution.
+
+.SH USAGE
+
+Sample nominal usage in an RPM spec:
+
+%post
+.br
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
+.br
+    touch /etc/foo.config
+.br
+    systemctl enable --now foo
+.br
+POST-WRAPPER-EOF

@@ -12,7 +12,15 @@ endif
 get-orig-source:
 	uscan --force-download --rename --destdir .
 
-override_dh_auto_configure:
+
+# This target replaces the version script with one that doesn't get
+# the wrong answer by depending on git.
+_fix-version:
+	printf "#!/bin/sh -e\necho '%s.10+pscheduler-patches'\n" \
+		$$(./configure --version | head -1 | sed -e "s/^[^']*'//g; s/'.*\$$//g") \
+		> ./scripts/version
+
+override_dh_auto_configure: _fix-version
 	cd docs && rake manpage > ../jq.1
 	dh_auto_configure -- --disable-static --disable-fpectl --without-fpectl
 

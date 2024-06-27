@@ -20,6 +20,8 @@ Group:		Unspecified
 
 Provides:	%{name} = %{version}-%{release}
 
+Requires:	rpm-post-wrapper
+
 BuildRequires:	pscheduler-rpm
 Requires: shadow-utils
 Requires(post): shadow-utils
@@ -47,6 +49,7 @@ EOF
 
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 
 if [ $1 -eq 1 ]  # One instance, new install
 then
@@ -87,6 +90,7 @@ chage \
     --inactive -1 \
     --maxdays 99999 \
     '%{user}'
+POST-WRAPPER-EOF
 
 
 
