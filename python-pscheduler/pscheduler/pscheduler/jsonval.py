@@ -350,7 +350,7 @@ __dictionary__ = {
         "oneOf": [
             {
                 "type": "string",
-                "pattern": r'^[0-9]+(\\.[0-9]+)?(\\s*[KkMmGgTtPpEeZzYy][Ii]?)?$'
+                "pattern": r'^[0-9]+(\.[0-9]+)?(\s*[KkMmGgTtPpEeZzYy][Ii]?)?$'
             },
             {
                 "type": "integer"
