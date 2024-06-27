@@ -27,7 +27,7 @@ si_multipliers = {
     'yi': 1024 ** 8
 }
 
-si_regex = re.compile('^(-?[0-9]+(\.[0-9]+)?)\s*([kmgtpezy][i]?)?$')
+si_regex = re.compile(r'^(-?[0-9]+(\.[0-9]+)?)\s*([kmgtpezy][i]?)?$')
 
 
 def si_as_number(text):

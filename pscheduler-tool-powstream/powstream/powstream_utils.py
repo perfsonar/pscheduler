@@ -157,7 +157,7 @@ def parse_raw_owamp_output(file, raw_output=False, bucket_width=TIME_SCALE):
         'schema': LATENCY_SCHEMA_VERSION, 
         'succeeded': False 
     }
-    powstream_regex = re.compile('^(\d+) (\d+) (\d) ([-.0-9e+]*) (\d+) (\d) ([-.0-9e+]*) (\d+)$')
+    powstream_regex = re.compile(r'^(\d+) (\d+) (\d) ([-.0-9e+]*) (\d+) (\d) ([-.0-9e+]*) (\d+)$')
     results['packets-sent'] = 0
     results['packets-received'] = 0
     results['packets-duplicated'] = 0

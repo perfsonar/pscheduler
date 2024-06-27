@@ -20,20 +20,24 @@ def parse_ping(output, count):
     # Matchers for output lines we care about
     #
 
-    PACKET_RETURNED = re.compile("^([0-9]+) bytes"
-    "\s+from (.*):"
-    "\s+icmp_[rs]eq=([0-9]+)"
-    "\s+ttl=([0-9]+)"
-    "\s+time=([0-9.]+) ms"
-    "$")
+    PACKET_RETURNED = re.compile(
+        r'^([0-9]+) bytes'
+        r'\s+from (.*):'                    
+        r'\s+icmp_[rs]eq=([0-9]+)'
+        r'\s+ttl=([0-9]+)'
+        r'\s+time=([0-9.]+) ms'
+        r'$'
+    )
 
     # Error:   From 5.6.7.8 icmp_seq=7 Destination Net Unreachable
 
-    ERROR_RETURNED = re.compile("^From"
-    "\s+([^\s]+)"
-    "\s+icmp_seq=([0-9]+)"
-    "\s+(.*)"
-    "$")
+    ERROR_RETURNED = re.compile(
+        r'^From'
+        r'\s+([^\s]+)'
+        r'\s+icmp_seq=([0-9]+)'
+        r'\s+(.*)'
+        r'$'
+    )
 
     # Error messages known to be output by ping
     ERROR_STRINGS = {
@@ -47,24 +51,26 @@ def parse_ping(output, count):
 
     # Same, but require regexps to match
     ERROR_MATCHES = [
-        ( re.compile("^Frag needed and DF set"), 'fragmentation-needed-and-df-set' )
+        ( re.compile(r'^Frag needed and DF set'), 'fragmentation-needed-and-df-set' )
         ]
 
 
     # Sent/received/loss statistics:
     # 5 packets transmitted, 5 received, 0% packet loss, time 4131ms
     LOSS_STATS = re.compile(
-        '^([0-9]+) packets transmitted,'
-        ' ([0-9]+) received,'
-        ' ([0-9.]+)% packet loss')
+        r'^([0-9]+) packets transmitted,'
+        r' ([0-9]+) received,'
+        r' ([0-9.]+)% packet loss')
 
     # Times:   rtt min/avg/max/mdev = 19.631/24.191/29.874/4.262 ms
-    TIMES_RETURNED = re.compile("^rtt min/avg/max/mdev\s*=\s*"
-    "([0-9.]+)"
-    "/([0-9.]+)"
-    "/([0-9.]+)"
-    "/([0-9.]+)"
-    "\s+ms$")
+    TIMES_RETURNED = re.compile(
+        r'^rtt min/avg/max/mdev\s*=\s*'
+        r'([0-9.]+)'
+        r'/([0-9.]+)'
+        r'/([0-9.]+)'
+        r'/([0-9.]+)'
+        r'\s+ms$'
+    )
 
     roundtrips = []
     ips = []

@@ -71,7 +71,7 @@ def parse_output(lines, expect_udp=False, logger=None):
 
         # Bogus numbers
 
-        if re.match('\(nan%\)', line):
+        if re.match(r'\(nan%\)', line):
             return {
                 'succeeded': False,
                 'error': 'Found NaN result'
@@ -79,7 +79,7 @@ def parse_output(lines, expect_udp=False, logger=None):
 
         # Connection failures
 
-        if re.match('read failed: Connection refused', line):
+        if re.match(r'read failed: Connection refused', line):
             return {
                 'succeeded': False,
                 'error': 'Connection refused'
@@ -91,7 +91,7 @@ def parse_output(lines, expect_udp=False, logger=None):
         # Client connecting to localhost, TCP port 5001 with pid 119661 (1 flows)
         # Client connecting to localhost, UDP port 5001 with pid 119686 (1 flows)
 
-        test = re.match('^Client connecting to .*, (TCP|UDP) port', line)
+        test = re.match(r'^Client connecting to .*, (TCP|UDP) port', line)
         if test:
             protocol = test.group(1)
             if (protocol == 'TCP' and expect_udp) or (protocol == 'UDP' and not expect_udp):
@@ -108,7 +108,7 @@ def parse_output(lines, expect_udp=False, logger=None):
         # TCP window size: 2626560 Byte (default)
         # TCP window size: 425984 Byte (WARNING: requested 1000000 Byte)
 
-        test = re.match('^TCP window size:\s+(\d+) Byte (\(WARNING: requested (\d+) Byte\))?', line)
+        test = re.match(r'^TCP window size:\s+(\d+) Byte (\(WARNING: requested (\d+) Byte\))?', line)
         if test:
             assert not expect_udp
             results['tcp-window-size'] = int(test.group(1))
@@ -126,7 +126,7 @@ def parse_output(lines, expect_udp=False, logger=None):
         # stream.  This shouldn't matter because, in theory, they
         # should all be the same.
 
-        test = re.match('^\[\s*\d+\].*\(icwnd/mss/irtt=\d+/(\d+)/\d+\)', line)
+        test = re.match(r'^\[\s*\d+\].*\(icwnd/mss/irtt=\d+/(\d+)/\d+\)', line)
         if test:
             assert not expect_udp
             results['mss'] = int(test.group(1))
@@ -134,7 +134,7 @@ def parse_output(lines, expect_udp=False, logger=None):
 
         # If we start seeing server reports, we've seen everything
         # from the client side.  Treat it as EOF.
-        if re.match('^\[\s*(\d+|SUM) Server Report:', line):
+        if re.match(r'^\[\s*(\d+|SUM) Server Report:', line):
             break
 
         # Interval
@@ -151,14 +151,14 @@ def parse_output(lines, expect_udp=False, logger=None):
             # [  1] 4.00-6.00 sec  263130 Bytes  1052520 bits/sec  179/0       89 pps
 
             test = re.match(
-                '^\[\s*(\d+|SUM)\]'   # 1 - Stream ID
-                '\s+(\d+\.\d+)'       # 2 - Interval start
-                '-(\d+\.\d+) sec'     # 3 - Interval end
-                '\s+(\d+) Bytes'      # 4 - Bytes transferred
-                '\s+(\d+) bits/sec'   # 5 - Bandwidth
-                '\s+(\d+)'            # 6 - Writes
-                '/(\d+)'              # 7 - Errors
-                '\s+(\d+) pps$'       # 8 - Packets per second
+                r'^\[\s*(\d+|SUM)\]'   # 1 - Stream ID
+                r'\s+(\d+\.\d+)'       # 2 - Interval start
+                r'-(\d+\.\d+) sec'     # 3 - Interval end
+                r'\s+(\d+) Bytes'      # 4 - Bytes transferred
+                r'\s+(\d+) bits/sec'   # 5 - Bandwidth
+                r'\s+(\d+)'            # 6 - Writes
+                r'/(\d+)'              # 7 - Errors
+                r'\s+(\d+) pps$'       # 8 - Packets per second
                 , line)
 
             if not test:
@@ -184,21 +184,21 @@ def parse_output(lines, expect_udp=False, logger=None):
             # [  1] 2.00-4.00 sec  11173888000 Bytes  44695552000 bits/sec  85250/0        10     1470K/33(4) us  169301333
 
             test = re.match(
-                '^\[\s*(\d+|SUM)\]'   # 1 - Stream ID
-                '\s+(\d+\.\d+)'       # 2 - Interval start
-                '-(\d+\.\d+) sec'     # 3 - Interval end
-                '\s+(\d+) Bytes'      # 4 - Bytes transferred
-                '\s+(\d+) bits/sec'   # 5 - Bandwidth
-                '\s+(\d+)'            # 6 - Writes
-                '/(\d+)'              # 7 - Errors
-                '\s+(\d+)'            # 8 - Retransmits
-                '('                   # 9 - Begin optional stuff
-                '\s+(\d+K)'           # 10 - Window size in SI units
-                '/(\d+)'              # 11 - RTT
-                '\((\d+)\) us'        # 12 - RTT Variance(?)
-                '\s*(\d+)'            # 13 - Net Power (Experimental)
-                ')?'
-                '\s*$'
+                r'^\[\s*(\d+|SUM)\]'   # 1 - Stream ID
+                r'\s+(\d+\.\d+)'       # 2 - Interval start
+                r'-(\d+\.\d+) sec'     # 3 - Interval end
+                r'\s+(\d+) Bytes'      # 4 - Bytes transferred
+                r'\s+(\d+) bits/sec'   # 5 - Bandwidth
+                r'\s+(\d+)'            # 6 - Writes
+                r'/(\d+)'              # 7 - Errors
+                r'\s+(\d+)'            # 8 - Retransmits
+                r'('                   # 9 - Begin optional stuff
+                r'\s+(\d+K)'           # 10 - Window size in SI units
+                r'/(\d+)'              # 11 - RTT
+                r'\((\d+)\) us'        # 12 - RTT Variance(?)
+                r'\s*(\d+)'            # 13 - Net Power (Experimental)
+                r')?'
+                r'\s*$'
                 , line)
             
             if not test:
