@@ -1,0 +1,50 @@
+#!/bin/sh
+#
+# Find and adjust all compat levels
+#
+# Usage: fix-compat LEVEL [ DIR ]
+#
+# Where:
+#
+#   LEVEL is the lowest desired compatibility level
+#   DIR is the directory where the search should start (default .)
+#
+
+die()
+{
+    echo "$@" 1>&2
+    exit 1
+}
+
+[ $# -gt 0 -a $# -lt 3 ] \
+    || die 'Usage: fix-compat LEVEL [ DIR ]'
+
+MIN_LEVEL=$1
+if ! echo "${MIN_LEVEL}" | egrep -qe '^[0-9]+$'
+then
+    die "Invalid compatibility level."
+fi
+
+DIR=${2:-.}
+[ -d "${DIR}" ] \
+    || die "${DIR} is not a directory"
+
+
+find "${DIR}" -type f -name "compat" \
+    | (
+    while read FILE
+    do
+	egrep -qe '^[0-9]+$' "${FILE}" \
+	      || die "${FILE}: Invalid compatibility level '$(cat ${FILE})'"
+
+	LEVEL=$(cat "${FILE}")
+	if [ "${LEVEL}" -lt "${MIN_LEVEL}" ]
+	then
+	    echo "${FILE}: ${LEVEL} -> ${MIN_LEVEL}"
+	    echo "${MIN_LEVEL}" > "${FILE}"
+	elif [ "${LEVEL}" -gt "${MIN_LEVEL}" ]
+	then
+	    echo "${FILE}: ${LEVEL} > ${MIN_LEVEL} (Left alone)"
+	fi
+    done
+)
