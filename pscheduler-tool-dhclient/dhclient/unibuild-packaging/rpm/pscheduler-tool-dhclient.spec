@@ -28,6 +28,7 @@ Provides:	%{name} = %{version}-%{release}
 # Include all required libraries here
 Requires:	pscheduler-server
 Requires:	%{_pscheduler_python}-pscheduler
+Requires:	rpm-post-wrapper
 
 # TODO: Why is there a discrepancy between dhcp-client and dhclient here?
 
@@ -67,7 +68,9 @@ Defaults!PSCHEDULER_TOOL_DHCLIENT !requiretty
 EOF
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 pscheduler internal warmboot
+POST-WRAPPER-EOF
 
 %postun
 pscheduler internal warmboot

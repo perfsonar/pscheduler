@@ -27,6 +27,7 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server
 Requires:	%{_pscheduler_python}-pscheduler
 Requires:	iproute
+Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm >= 1.0.0.5.1
 
@@ -64,7 +65,9 @@ EOF
 
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 pscheduler internal warmboot
+POST-WRAPPER-EOF
 
 %postun
 pscheduler internal warmboot

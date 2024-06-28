@@ -27,6 +27,7 @@ Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	pscheduler-test-latencybg
 Requires:	owamp-client
 Requires:	owamp-server
+Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:	%{_pscheduler_python}-pscheduler
@@ -50,11 +51,13 @@ make \
      install
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 #make data directory
 mkdir -p %{resultdir}
 chown pscheduler:pscheduler %{resultdir}/
 chmod 755 %{resultdir}
 pscheduler internal warmboot
+POST-WRAPPER-EOF
 
 %postun
 pscheduler internal warmboot

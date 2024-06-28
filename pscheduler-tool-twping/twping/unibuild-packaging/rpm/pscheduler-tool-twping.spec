@@ -24,6 +24,7 @@ Requires:	pscheduler-server >= 4.3.0
 Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	pscheduler-test-latency
 Requires:	twamp-client
+Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:	%{_pscheduler_python}-pscheduler
@@ -48,7 +49,9 @@ make \
 
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 pscheduler internal warmboot
+POST-WRAPPER-EOF
 
 
 %postun

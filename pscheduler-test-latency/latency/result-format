@@ -32,6 +32,8 @@ if not valid:
     pscheduler.fail(message)
 
 json = input["result"]
+# get bucket width and default to 1ms
+bucket_width = input.get('spec', {}).get('bucket-width', 0.001)
 
 #Output basic stats
 output = "\nPacket Statistics\n"
@@ -46,7 +48,7 @@ output += "Packets Reordered .... %s packets\n" % json.get('packets-reordered', 
 output += "\nOne-way Latency Statistics\n"
 output += "--------------------------\n"
 owd_hist = Histogram(json.get('histogram-latency', {}))
-stats = owd_hist.get_stats()
+stats = owd_hist.get_stats(bucket_width=bucket_width, units=0.001)
 output += format_float("Delay Median", stats.get('median', None), units="ms")
 output += format_float("Delay Minimum", stats.get('minimum', None), units="ms")
 output += format_float("Delay Maximum", stats.get('maximum', None), units="ms")
@@ -68,7 +70,7 @@ if stats.get('percentile-75', None) and stats.get('percentile-25', None):
 output += format_float("    Variance", stats.get('variance', None), units="ms")
 output += format_float("    Std Deviation", stats.get('standard-deviation', None), units="ms")
 output += "Histogram:\n"
-for owd_bucket in sorted(list(json.get('histogram-latency', {}).items()), key=lambda k: float(k[0])):
+for owd_bucket in sorted(list(owd_hist.hist_dict.items()), key=lambda k: float(k[0])):
     output += "    %s ms: %d packets\n" % (owd_bucket[0], owd_bucket[1])
     
 #Output TTL histogram

@@ -30,6 +30,7 @@ Requires:	%{_pscheduler_python}-icmperror
 # This supplies ping.
 Requires:	iputils
 Requires:	sudo
+Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
@@ -70,7 +71,9 @@ EOF
 
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 pscheduler internal warmboot
+POST-WRAPPER-EOF
 
 %postun
 pscheduler internal warmboot

@@ -26,6 +26,7 @@ Requires:	libpcap
 Requires:	libtins
 Requires:	jsoncpp
 Requires:	openssl
+Requires:	rpm-post-wrapper
 
 BuildRequires:  cmake
 BuildRequires:  gcc-c++ >= 4.9
@@ -71,8 +72,10 @@ rm -rf %{buildroot}
 
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 # Deferred from the build
 setcap cap_net_raw+ep %{_bindir}/%{name}
+POST-WRAPPER-EOF
 
 
 

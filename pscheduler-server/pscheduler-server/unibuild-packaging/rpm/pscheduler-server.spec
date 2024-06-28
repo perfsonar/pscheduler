@@ -47,6 +47,7 @@ Requires:	postgresql-load >= 1.2
 Requires:	pscheduler-account
 Requires:	pscheduler-core
 Requires:	postgresql-init
+Requires:	rpm-post-wrapper
 
 # Daemons
 BuildRequires:	m4
@@ -337,6 +338,7 @@ fi
 # ------------------------------------------------------------------------------
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 
 #
 # Database
@@ -487,6 +489,8 @@ systemctl start httpd
 #
 
 pscheduler internal service restart
+
+POST-WRAPPER-EOF
 
 
 # ------------------------------------------------------------------------------

@@ -24,6 +24,7 @@ Requires:	pscheduler-server >= 4.3.0
 Requires:	%{_pscheduler_python}-dns
 Requires:	%{_pscheduler_python}-pscheduler
 Requires:	pscheduler-test-dns
+Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 
@@ -47,7 +48,9 @@ make \
 
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 pscheduler internal warmboot
+POST-WRAPPER-EOF
 
 %postun
 pscheduler internal warmboot

@@ -30,6 +30,7 @@ Provides:	%{name} = %{version}-%{release}
 # Include all required libraries here
 Requires:	pscheduler-server
 Requires:	%{_pscheduler_python}-pscheduler >= 1.3
+Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 
@@ -53,7 +54,9 @@ make \
 
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 pscheduler internal warmboot
+POST-WRAPPER-EOF
 
 
 %postun
