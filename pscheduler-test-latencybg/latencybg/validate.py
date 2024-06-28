@@ -333,4 +333,4 @@ def result_max_schema():
     return json_standard_template_max_schema(RESULT_SCHEMA)
 
 def result_is_valid(json):
-    return json_validate_from_standard_template(json, RESPONSE_SCHEMA)
+    return json_validate_from_standard_template(json, RESULT_SCHEMA)

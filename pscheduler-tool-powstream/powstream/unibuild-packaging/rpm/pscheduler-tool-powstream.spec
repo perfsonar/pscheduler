@@ -5,7 +5,7 @@
 %define short	    powstream
 %define resultdir	%{_pscheduler_tool_vardir}/%{short}
 
-%define perfsonar_auto_version 5.1.0
+%define perfsonar_auto_version 5.1.1
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-tool-%{short}
@@ -27,6 +27,7 @@ Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	pscheduler-test-latencybg
 Requires:	owamp-client
 Requires:	owamp-server
+Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:	%{_pscheduler_python}-pscheduler
@@ -50,11 +51,13 @@ make \
      install
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 #make data directory
 mkdir -p %{resultdir}
 chown pscheduler:pscheduler %{resultdir}/
 chmod 755 %{resultdir}
 pscheduler internal warmboot
+POST-WRAPPER-EOF
 
 %postun
 pscheduler internal warmboot

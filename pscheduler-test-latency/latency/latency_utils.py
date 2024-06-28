@@ -70,11 +70,25 @@ class Histogram(object):
     def __init__(self, hist_dict):
         self.hist_dict = hist_dict
     
-    def get_stats(self):
+    def get_stats(self, bucket_width=None, units=None):
         #pass one: mode, mean and sample size
         stats = {}
         mean_num = 0
         sample_size = 0
+        #First format the dict if bucket_width and units are provided
+        if bucket_width and units:
+            new_hist_dict = {}
+            for k in self.hist_dict:
+                new_k = float(k) * (bucket_width / units)
+                digits = math.log10(bucket_width)
+                if digits > 0:
+                    digits = 0
+                else:
+                    digits = abs(digits)
+                formatted_k = '{:.{prec}f}'.format(new_k, prec=int(digits))
+                new_hist_dict[formatted_k] = self.hist_dict[k]
+            self.hist_dict = new_hist_dict
+
         for k in self.hist_dict:
             #only can do statistics for histograms with numeric buckets
             try:

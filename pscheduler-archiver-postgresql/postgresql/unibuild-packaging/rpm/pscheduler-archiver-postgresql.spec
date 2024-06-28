@@ -3,7 +3,7 @@
 #
 
 %define short	postgresql
-%define perfsonar_auto_version 5.1.0
+%define perfsonar_auto_version 5.1.1
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-archiver-%{short}
@@ -21,6 +21,7 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 1.0.2
 Requires:	%{_pscheduler_python}-psycopg2 >= 2.6.1
+Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 
@@ -44,7 +45,9 @@ make \
      install
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 pscheduler internal warmboot
+POST-WRAPPER-EOF
 
 %postun
 pscheduler internal warmboot

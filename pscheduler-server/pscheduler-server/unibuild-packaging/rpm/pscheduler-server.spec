@@ -6,7 +6,7 @@
 # make the scriptlets use them on CentOS 7.  For now the old-style
 # init scripts function just fine.
 
-%define perfsonar_auto_version 5.1.0
+%define perfsonar_auto_version 5.1.1
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-server
@@ -47,6 +47,7 @@ Requires:	postgresql-load >= 1.2
 Requires:	pscheduler-account
 Requires:	pscheduler-core
 Requires:	postgresql-init
+Requires:	rpm-post-wrapper
 
 # Daemons
 BuildRequires:	m4
@@ -337,6 +338,7 @@ fi
 # ------------------------------------------------------------------------------
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 
 #
 # Database
@@ -487,6 +489,8 @@ systemctl start httpd
 #
 
 pscheduler internal service restart
+
+POST-WRAPPER-EOF
 
 
 # ------------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 #
 
 %define short	esmond
-%define perfsonar_auto_version 5.1.0
+%define perfsonar_auto_version 5.1.1
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-archiver-esmond
@@ -26,6 +26,7 @@ Requires:	%{_pscheduler_python}-memcached
 Requires:	memcached
 Requires(post):	memcached
 Requires:		chkconfig
+Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:  %{_pscheduler_python}-pscheduler
@@ -51,6 +52,7 @@ make \
 
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 pscheduler internal warmboot
 
 #Only start memcached on new install so people have ability to disable if they so desire
@@ -58,6 +60,7 @@ if [ "$1" = "1" ]; then
     /sbin/chkconfig memcached on
     /sbin/service memcached start
 fi
+POST-WRAPPER-EOF
 
 
 

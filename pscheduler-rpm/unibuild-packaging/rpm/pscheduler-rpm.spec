@@ -2,7 +2,7 @@
 # RPM Spec for pScheduler RPM Macros
 #
 
-%define perfsonar_auto_version 5.1.0
+%define perfsonar_auto_version 5.1.1
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-rpm

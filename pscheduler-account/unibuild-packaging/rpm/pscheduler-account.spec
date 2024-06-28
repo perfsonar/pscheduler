@@ -2,7 +2,7 @@
 # RPM Spec for PostgreSQL Initializer
 #
 
-%define perfsonar_auto_version 5.1.0
+%define perfsonar_auto_version 5.1.1
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-account
@@ -19,6 +19,8 @@ Group:		Unspecified
 # No Source:
 
 Provides:	%{name} = %{version}-%{release}
+
+Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 Requires: shadow-utils
@@ -47,6 +49,7 @@ EOF
 
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 
 if [ $1 -eq 1 ]  # One instance, new install
 then
@@ -87,6 +90,7 @@ chage \
     --inactive -1 \
     --maxdays 99999 \
     '%{user}'
+POST-WRAPPER-EOF
 
 
 

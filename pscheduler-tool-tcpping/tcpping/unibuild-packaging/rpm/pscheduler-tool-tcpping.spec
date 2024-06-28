@@ -3,7 +3,7 @@
 #
 
 %define short	tcpping
-%define perfsonar_auto_version 5.1.0
+%define perfsonar_auto_version 5.1.1
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-tool-%{short}
@@ -26,6 +26,7 @@ Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	pscheduler-test-rtt
 Requires:	%{_pscheduler_python}-icmperror
 Requires:	tcpping
+Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
@@ -48,7 +49,9 @@ make \
 
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 pscheduler internal warmboot
+POST-WRAPPER-EOF
 
 %postun
 pscheduler internal warmboot

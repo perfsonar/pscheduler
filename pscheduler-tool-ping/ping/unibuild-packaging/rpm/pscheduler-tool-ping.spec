@@ -5,7 +5,7 @@
 #TODO: Requires pscheduler version >= 5.0 for ping parsing
 
 %define short	ping
-%define perfsonar_auto_version 5.1.0
+%define perfsonar_auto_version 5.1.1
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-tool-%{short}
@@ -30,6 +30,7 @@ Requires:	%{_pscheduler_python}-icmperror
 # This supplies ping.
 Requires:	iputils
 Requires:	sudo
+Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-account
 BuildRequires:	pscheduler-rpm
@@ -70,7 +71,9 @@ EOF
 
 
 %post
+rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
 pscheduler internal warmboot
+POST-WRAPPER-EOF
 
 %postun
 pscheduler internal warmboot
