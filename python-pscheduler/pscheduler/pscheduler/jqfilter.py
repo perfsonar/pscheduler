@@ -109,7 +109,7 @@ class JQFilter(object):
             filter_spec = filter_spec.get("script", ".")
 
         if isinstance(filter_spec, list):
-            filter_spec = "\n".join([str(line) for line in filter_spec])
+            filter_spec = "\n".join([str(line) for line in filter_spec]) if filter_spec else '.'
 
         if not isinstance(filter_spec, str):
             raise ValueError("Filter spec must be plain text, list or dict")
