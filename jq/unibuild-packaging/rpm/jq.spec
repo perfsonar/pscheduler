@@ -83,6 +83,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_docdir}/*
 %{_mandir}/man1/*
 %{_libdir}/libjq.so.*
+%{_libdir}/pkgconfig/*
 
 %files devel
 %{_includedir}/*
