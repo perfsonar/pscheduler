@@ -573,6 +573,9 @@ for host in hosts:
                          {
                              "archiver": "bitbucket",
                              "data": {},
+			     "transform": {
+				 "script": "."
+			     },
                              "ttl": "PT1M"
                          },
                          {
@@ -581,6 +584,9 @@ for host in hosts:
                                  "fail": 0.0,  # Don't fail, ever.
                                  "retry": 0.0
                              },
+			     "transform": {
+				 "script": ".",
+			     },
                              "ttl": "PT1M"
                          }
                      ],
