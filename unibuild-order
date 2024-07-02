@@ -58,7 +58,6 @@ ifelse(DISTRO/eval(MAJOR >= 24),Ubuntu/1,,jq)
 # Python Modules
 
 ifelse(FAMILY/DISTRO/MAJOR,RedHat/ol/8,Cython)
-ifelse(FAMILY/MAJOR,Debian/9,python-attrs)              # Needed here only.
 
 # EL9 doesn't have a good version of this
 ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-daemon)
