@@ -15,26 +15,23 @@ get-orig-source:
 
 # This target replaces the version script with one that doesn't get
 # the wrong answer by depending on git.
-_fix-version:
-	printf "#!/bin/sh -e\necho '%s.10+pscheduler-patches'\n" \
-		$$(./configure --version | head -1 | sed -e "s/^[^']*'//g; s/'.*\$$//g") \
+_fix-version: libjq.pc
+	printf '#!/bin/sh -e \necho %s\n' "$$(awk '$$1 == "Version:" { print $$2 }' libjq.pc | head -1)" \
 		> ./scripts/version
 
+
 override_dh_auto_configure: _fix-version
-	cd docs && rake manpage > ../jq.1
 	dh_auto_configure -- --disable-static --disable-fpectl --without-fpectl
 
-override_dh_auto_test:
 
-override_dh_auto_clean:
-	dh_auto_clean
-	test ! -f ./jq.1.old || mv ./jq.1.old jq.1
+override_dh_installdocs:
+	cd docs && ./build_manpage.py > jq.1
+	dh_installdocs
 
-override_dh_install:
-	dh_install --list-missing
 
 %:
 	dh $@ --with autoreconf
+
 
 # Ubuntu dbgsym.ddeb are currently not supported by reprepro
 override_dh_strip:

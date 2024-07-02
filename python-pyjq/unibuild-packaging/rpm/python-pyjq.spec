@@ -19,8 +19,7 @@ URL:		https://github.com/doloopwhile/pyjq
 
 Source:		%{short}-%{version}.tar.gz
 Patch0:		python-%{short}-%{version}-00-nodownloads.patch
-Patch1:		python-%{short}-%{version}-01-integer.patch
-Patch2:		python-%{short}-%{version}-02-void-except.patch
+Patch1:		python-%{short}-%{version}-01-void-except.patch
 
 Requires:       %{_pscheduler_python}
 # Note that 1.6.10 is a pScheduler-specific version that includes a
@@ -56,7 +55,6 @@ Python bindings to JQ
 %setup -q -n %{short}-%{version}
 %patch0 -p1
 %patch1 -p1
-%patch2 -p1
 
 
 %build

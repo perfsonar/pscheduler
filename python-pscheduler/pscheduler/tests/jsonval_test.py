@@ -59,7 +59,11 @@ class TestJsonval(PschedTestBase):
 
         self.assertFalse(valid)
 
-        self.assertEqual(message, "At /archspec: 'archiver' is a required property")
+        self.assertTrue(message in [
+            # Different versions of JSONSchema return different errors
+            '''At /archspec: 'archiver' is a required property''',
+            '''At /archspec: {'data': {'bar': 'baz'}} is not valid under any of the given schemas'''
+            ])
 
         # add it in now
         sample['archspec']['archiver'] = 'tar'

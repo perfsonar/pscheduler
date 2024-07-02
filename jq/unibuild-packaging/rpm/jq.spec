@@ -5,20 +5,8 @@
 # https://github.com/stedolan/jq/blob/master/jq.spec
 #
 
-
-# This is the version of jq we build, plus our patches
-# TODO: Set Release: back to 1 when a new version is released.
-%define actual_version 1.6
-
-# The jq developers don't do bugfix releases, so our is numbered with
-# a bugfix release number to force our patched version to be
-# considered newer and installed.  This is because of the integer
-# patch, which has been accepted into jq but not yet released.
-%define release_version %{actual_version}.10
-
-%define short	jq
-Name:		%{short}
-Version:	%{release_version}
+Name:		jq
+Version:	1.7.1
 # There was no real difference between -2 and -3, but this bump will
 # force some older systems to upgrade properly.
 Release:	3%{?dist}
@@ -31,12 +19,9 @@ Provides:	%{name} = %{version}-%{release}
 Prefix:		%{_prefix}
 
 Vendor:		Stephen Dolan <mu@netsoc.tcd.ie>
-URL:		https://stedolan.github.io/jq
+URL:		https://jqlang.github.io
 
-Source:		%{short}-%{actual_version}.tar.gz
-
-Patch0:		%{short}-%{actual_version}-00-jv_is_integer_large.patch
-
+Source:		%{name}-%{version}.tar.gz
 
 
 Requires:	oniguruma
@@ -55,10 +40,6 @@ jq is like sed for JSON data - you can use it to slice and filter and
 map and transform structured data with the same ease that sed, awk,
 grep and friends let you play with text.
 
-NOTE:  This version contains a bugfix patch that the jq maintainers
-       have not yet released.  Its version number was bumped to %{release_version}
-       to keep it ahead of EPEL and the jq developers (%{actual_version}).
-
 %package devel
 Summary:	Development files for %{name}
 Requires:	%{name} = %{version}-%{release}
@@ -72,16 +53,13 @@ Development files for %{name}
 
 
 %prep
-%setup -q -n %{name}-%{actual_version}
+%setup -q -n %{name}-%{version}
 
 # Replace the version generator with one that doesn't depend on git
 cat > scripts/version <<EOF
 #!/bin/sh
-echo "%{version}+pscheduler-patches"
+echo "%{version}"
 EOF
-
-%patch0 -p1
-
 
 
 %build
@@ -105,6 +83,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_docdir}/*
 %{_mandir}/man1/*
 %{_libdir}/libjq.so.*
+%{_libdir}/pkgconfig/*
 
 %files devel
 %{_includedir}/*
