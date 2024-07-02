@@ -579,13 +579,10 @@ for host in hosts:
                              "ttl": "PT1M"
                          },
                          {
-                             "archiver": "failer",
-                             "data": {
-                                 "fail": 0.0,  # Don't fail, ever.
-                                 "retry": 0.0
-                             },
+                             "archiver": "bitbucket",
+                             "data": {},
 			     "transform": {
-				 "script": ".",
+				 "script": "."
 			     },
                              "ttl": "PT1M"
                          }
