@@ -4,7 +4,7 @@
 
 %define short   werkzeug
 Name:           %{_pscheduler_python}-%{short}
-Version:        0.15.5
+Version:        3.0.3
 Release:        1%{?dist}
 BuildArch:      noarch
 Summary:        The Swiss Army knife of Python web development 
@@ -20,16 +20,15 @@ Prefix:         %{_prefix}
 Source:         %{short}-%{version}.tar.gz
 
 Requires:       %{_pscheduler_python}
-BuildRequires:  %{_pscheduler_python}-devel
-BuildRequires:  %{_pscheduler_python}-setuptools
+Requires:       %{_pscheduler_python}-tomli
+Requires:       %{_pscheduler_python}-markupsafe
 
-%if %{?ol8:0}%{!?ol8:1}
-# OL8 doesn't have this, but the build succeeds without it.
-# TODO: See of we can live without this on CentOS
-BuildRequires:  %{_pscheduler_python}-sphinx
-%endif
+BuildRequires:	%{_pscheduler_python}-devel
+# TODO: See if -devel pulls this in on OL8
+BuildRequires:	pyproject-rpm-macros
+BuildRequires:	%{_pscheduler_python}-flit-core
+BuildRequires:	%{_pscheduler_python}-markupsafe
 
-BuildRequires:  %{_pscheduler_python}-setuptools
 
 %description
 Werkzeug
@@ -60,16 +59,21 @@ bulletin boards, etc.).
 
 
 %build
-%{_pscheduler_python} setup.py build
+%pyproject_wheel
 
 
 %install
-%{_pscheduler_python} setup.py install --root=$RPM_BUILD_ROOT --single-version-externally-managed -O1  --record=INSTALLED_FILES
+%pyproject_install
+%pyproject_save_files '*'
+
+
+%check
+%pyproject_check_import
 
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 
-%files -f INSTALLED_FILES
+%files -f %{pyproject_files}
 %defattr(-,root,root)

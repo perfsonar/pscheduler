@@ -597,6 +597,17 @@ fi
 %triggerin -- %{_pscheduler_python}-pscheduler
 systemctl reload-or-try-restart postgresql
 
+# Restart the API server when Flask or its dependencies are upgraded.
+
+%triggerin -- %{_pscheduler_python}-itsdangerous
+pscheduler internal service restart api
+
+%triggerin -- %{_pscheduler_python}-werkzeug
+pscheduler internal service restart api
+
+%triggerin -- %{_pscheduler_python}-flask
+pscheduler internal service restart api
+
 # ------------------------------------------------------------------------------
 %files
 

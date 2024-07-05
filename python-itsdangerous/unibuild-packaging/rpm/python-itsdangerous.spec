@@ -4,7 +4,7 @@
 
 %define short	itsdangerous
 Name:		%{_pscheduler_python}-%{short}
-Version:	1.1.0
+Version:	2.2.0
 Release:	1%{?dist}
 Summary:	JSON Signature Module
 BuildArch:	noarch
@@ -21,13 +21,17 @@ Source:		%{short}-%{version}.tar.gz
 
 Requires:	%{_pscheduler_python}
 
-BuildRequires:	%{_pscheduler_python}
-BuildRequires:	%{_pscheduler_python}-setuptools
+BuildRequires:	%{_pscheduler_python}-devel
+# TODO: See if -devel pulls this in on OL8
+BuildRequires:	pyproject-rpm-macros
+BuildRequires:	%{_pscheduler_python}-flit-core
+
+%generate_buildrequires
+%pyproject_buildrequires
 
 
 %description
 JSON signature module
-
 
 
 # Don't do automagic post-build things.
@@ -39,20 +43,21 @@ JSON signature module
 
 
 %build
-python setup.py build
+%pyproject_wheel
 
 
 %install
-python setup.py install \
-    --root=$RPM_BUILD_ROOT \
-    --single-version-externally-managed \
-    -O1 \
-    --record=INSTALLED_FILES
+%pyproject_install
+%pyproject_save_files '*'
+
+
+%check
+%pyproject_check_import
 
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 
-%files -f INSTALLED_FILES
+%files -f %{pyproject_files}
 %defattr(-,root,root)
