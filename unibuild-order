@@ -143,11 +143,8 @@ pscheduler-tool-passthrough
 # One archiver
 pscheduler-archiver-bitbucket
 
-
-# NOTE: If any additional packages are added here, the MINIMAL_STOP_AT
-# variable in the Makefile must be adjusted to reflect the last one.
-
 # ----- MINIMAL BUILD STOPS HERE -----
+pscheduler-minimal-marker
 
 # All other plugins
 

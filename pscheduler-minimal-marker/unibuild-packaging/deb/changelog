@@ -1,0 +1,5 @@
+postgresql-load (5.2-1) perfsonar-minor-staging; urgency=low
+
+  * Initial version
+
+ -- Mark Feit <mfeit@internet2.edu>  Mon,  8 Jul 2024 16:11:34 -0500
