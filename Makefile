@@ -33,9 +33,15 @@ TO_CLEAN += $(BUILD_LOG)
 
 # Minimal build
 
-MINIMAL_STOP_AT=pscheduler-minimal-marker
+ifdef START
+MINIMAL_OPTS += START=$(START)
+endif
+MINIMAL_OPTS += STOP=pscheduler-minimal-marker
+ifdef RELEASE
+MINIMAL_OPTS += RELEASE=1
+endif
 minimal:
-	$(MAKE) 'STOP=$(MINIMAL_STOP_AT)'
+	$(MAKE) $(MINIMAL_OPTS)
 
 
 uninstall:
