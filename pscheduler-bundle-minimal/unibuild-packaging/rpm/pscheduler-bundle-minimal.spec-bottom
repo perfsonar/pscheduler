@@ -1,0 +1,6 @@
+
+%description
+Bundle of packages required for a minimally-functional pScheduler
+
+%files
+# No files.

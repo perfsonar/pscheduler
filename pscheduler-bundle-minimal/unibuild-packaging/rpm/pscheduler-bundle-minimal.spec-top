@@ -1,0 +1,19 @@
+#
+# RPM Spec for Minimal pScheduler Bundle
+#
+
+%define perfsonar_auto_version 5.2.0
+%define perfsonar_auto_relnum 0.a1.0
+
+Name:		pscheduler-bundle-minimal
+Version:	%{perfsonar_auto_version}
+Release:	%{perfsonar_auto_relnum}%{?dist}
+
+Summary:	Minimal pScheduler Bundle
+BuildArch:	noarch
+
+License:	ASL 2.0
+Vendor:	perfSONAR
+Group:		Unspecified
+
+
