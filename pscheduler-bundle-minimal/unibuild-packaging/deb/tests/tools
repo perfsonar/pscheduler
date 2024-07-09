@@ -1,5 +1,0 @@
-#!/bin/sh
-
-set -e
-
-curl -sk https://localhost/pscheduler/tools?pretty | grep https
