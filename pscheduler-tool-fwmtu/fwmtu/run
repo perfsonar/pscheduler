@@ -25,8 +25,10 @@ input = pscheduler.json_load(exit_on_error=True)
 # Get arguments
 try:
     spec = input['test']['spec']
+    source = spec.get('source')
     dest = spec['dest']
     port = spec.get('port', 1060)  # Default UDP port is 1060
+    ipversion = spec.get('ip-version')
 except KeyError:
     pscheduler.fail('Missing data in input')
 
@@ -35,10 +37,33 @@ duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(dura
 timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
 
+# Lookup ip address so ping does not have to and determine ip version
+
+source_ip = None
+dest_ip = None
+
+if source is not None:
+    (source_ip, dest_ip) = pscheduler.ip_normalize_version(source, dest, ip_version=ipversion)
+    if source_ip is None and dest_ip is None:
+        pscheduler.fail("Can't find same-family IPs for %s and %s." % (source, dest))
+    if dest_ip is not None:
+        (ipversion, dest_ip) = pscheduler.ip_addr_version(dest_ip)
+elif ipversion is None:
+    (ipversion, dest_ip) = pscheduler.ip_addr_version(dest)
+    if ipversion is None:
+        dest_ip = None
+
+# Make a best guess at the IP if we didn't find one above.
+if dest_ip is None:
+    dest_ip_map = pscheduler.dns_bulk_resolve([dest], ip_version=ipversion)
+    # For failed resolution, just try the hostname and let find_mtu deal with it.
+    dest_ip = dest_ip_map.get(dest, dest)
+
+
 BIG_PACKET = 999999
 
 # Define method to get MTU
-def find_mtu(dest, port, ip_version):
+def find_mtu(source, dest, port, ip_version):
     OVERHEAD_SIZE = 28
     # Python 3.6 dropped the IN module
     class IN:
@@ -50,6 +75,9 @@ def find_mtu(dest, port, ip_version):
     if family is None or ip is None:
         raise Exception("Cannot convert destination to an IP address.")
     sock = socket.socket(family, socket.SOCK_DGRAM)
+    if source is not None:
+        (src_family, src_ip) = pscheduler.ip_addr_version(source, family=True, ip_version=ip_version)
+        sock.bind((src_ip, 0))
     sock.setsockopt(socket.IPPROTO_IP, IN.IP_MTU_DISCOVER, IN.IP_PMTUDISC_DO)
     sock.connect((ip, port))
 
@@ -78,10 +106,8 @@ except KeyError:
 
 # Run tool
 
-ip_version = input['test']['spec'].get('ip-version', None)
-
 try:
-    mtu = find_mtu(dest, port, ip_version)
+    mtu = find_mtu(source_ip, dest_ip, port, ipversion)
     results = {
         'succeeded': True,
         'result': {
