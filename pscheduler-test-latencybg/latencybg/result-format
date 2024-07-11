@@ -144,7 +144,7 @@ try:
 except IndexError:
    format = 'text/plain'
 
-if format != 'text/plain':
+if format not in [ 'text/html', 'text/plain' ]:
     pscheduler.fail("Unsupported format '%s'" % format)
 
 #parse JSON input
@@ -224,6 +224,11 @@ if 'raw-packets' in json:
     output +=  "SEQ SRC-TS SRC-CLOCK-SYNC SRC-CLOCK-ERR DST-TS DST-CLOCK-SYNC DST-CLOCK-ERR TTL\n"
     for p in json['raw-packets']:
         output += "%d %d %s %s %d %s %s %d\n" % (p['seq-num'], p['src-ts'], p['src-clock-sync'], p.get('src-clock-err', 'n/a'),  p['dst-ts'], p['dst-clock-sync'], p.get('dst-clock-err', 'n/a'), p['ip-ttl'])
+
+
+# Use preformatted HTML until there's a real formatter
+if format == 'text/html':
+   output = f'<pre>\n{output}\n</pre>\n'
 
 #Print to stdout
 print(output)

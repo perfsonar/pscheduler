@@ -18,7 +18,7 @@ except IndexError:
    format = 'text/plain'
 
 # TODO: Implement text/html
-if format != 'text/plain':
+if format not in [ 'text/plain', 'text/html' ]:
    pscheduler.fail(f'Unsupported format {format}')
 
 #load JSON
@@ -109,5 +109,9 @@ if json.get('tcp-window-size'):
 
 #output += "\n\nDiag....\n"
 #output += json['diags']
+
+# Use preformatted HTML until there's a real formatter
+if format == 'text/html':
+   output = f'<pre>\n{output}\n</pre>\n'
 
 print(output)
