@@ -17,7 +17,8 @@ def json_dump(dump):
                                 )
 
 
-def json_query_simple(query, query_args=[], empty_ok=False, key=None):
+def json_query_simple(query, query_args=[], empty_ok=False, key=None,
+                      not_found_message=None):
     """Do a SQL query that selects one column and dump those values as
     a JSON array"""
 
@@ -32,7 +33,7 @@ def json_query_simple(query, query_args=[], empty_ok=False, key=None):
             # This is safe to return unsanitized
             return ok_json([], sanitize=False)
         else:
-            return not_found()
+            return not_found(not_found_message)
 
     result = []
     for row in cursor:
@@ -42,7 +43,8 @@ def json_query_simple(query, query_args=[], empty_ok=False, key=None):
 
 
 
-def json_query(query, query_args=[], name='name', single=False, key=None):
+def json_query(query, query_args=[], name='name', single=False, key=None,
+               not_found_message=None):
     """Do a SQL query that selects one column containing JSON and dump
     the results, honoring the 'expanded' and 'pretty' arguments.  If
     the 'single' argument is True, the first-returned row will be
@@ -55,7 +57,7 @@ def json_query(query, query_args=[], name='name', single=False, key=None):
 
     if single and cursor.rowcount == 0:
         cursor.close()
-        return not_found()
+        return not_found(not_found_message)
     result = []
     for row in cursor:
         this = base_url(None if single else row[0][name])

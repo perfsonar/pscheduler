@@ -28,7 +28,9 @@ def tests():
 def tests_name(name):
     return json_query("SELECT json FROM test"
                       " WHERE available AND name = %s",
-                      [name], single=True)
+                      [name], single=True,
+                      not_found_message=f'No test "{name}" is available.'
+                      )
 
 
 # Derive a spec from command line arguments in 'arg'
@@ -42,7 +44,7 @@ def tests_name_spec(name):
     exists = cursor.fetchone()[0]
     cursor.close()
     if not exists:
-        return not_found()
+        return not_found(f'No test "{name}" is available.')
 
     try:
         args = arg_json('args')
@@ -76,7 +78,7 @@ def tests_name_spec_is_valid(name):
     exists = cursor.fetchone()[0]
     cursor.close()
     if not exists:
-        return not_found()
+        return not_found(f'No test "{name}" is available.')
 
     spec = request.args.get('spec')
     if spec is None:

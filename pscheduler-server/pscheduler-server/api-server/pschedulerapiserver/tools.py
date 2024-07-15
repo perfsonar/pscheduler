@@ -46,4 +46,6 @@ def tools():
 def tools_name(name):
     return json_query("SELECT json FROM tool"
                       " WHERE available AND name = %s",
-                      [name], single=True)
+                      [name], single=True,
+                      not_found_message=f'No tool "{name}" is available.'
+                      )

@@ -14,7 +14,9 @@ from .log import log
 
 # Responses
 
-def ok(message="OK", mimetype=None):
+def ok(message=None, mimetype=None):
+    if message is None:
+        message = 'OK'
     log.debug("Response 200: %s", message)
     return Response(message + '\n',
                     status=200,
@@ -41,15 +43,24 @@ def ok_json_sanitize_checked(data, required_key=None):
         return forbidden()
     return ok_json(data, sanitize=sanitize)
 
-def bad_request(message="Bad request"):
+def bad_request(message=None):
+    if message is None:
+        message = 'Bad request'
+
     log.debug("Response 400: %s", message)
     return Response(message + '\n', status=400, mimetype="text/plain")
 
-def forbidden(message="Forbidden."):
+def forbidden(message=None):
+    if message is None:
+        message = 'Forbidden'
+
     log.debug("Response 403: %s", message)
     return Response(message + "\n", status=403, mimetype="text/plain")
 
-def not_found(message="Resource Not found.", mimetype="text/plain"):
+def not_found(message=None, mimetype="text/plain"):
+    if message is None:
+        message = 'Resource not found.'
+
     log.debug("Response 404: %s", message)
     return Response(message + "\n", status=404, mimetype="text/plain")
 
@@ -58,8 +69,10 @@ def not_allowed():
     return Response("%s not allowed on this resource\n" % (request.method),
                     status=405, mimetype="text/plain")
 
-def conflict(message="Request would create a conflict."):
-    log.debug("Response 409: Conflict")
+def conflict(message=None):
+    if message is None:
+        message = 'Request would create a conflict.'
+    log.debug(f'Response 409: {message}')
     return Response(message + '\n', status=409, mimetype="text/plain")
 
 def no_can_do(message=None):
@@ -71,12 +84,16 @@ def no_can_do(message=None):
                         + '\n',
                     status=422, mimetype="text/plain")
 
-def error(message="Unknown internal error"):
+def error(message=None):
+    if message is None:
+        message = 'Unknown internal error'
     log.debug("Response 500: %s", message)
     log.error("Internal error %s %s %s: %s", request.remote_addr, request.method, request.base_url, message)
     return Response(message + '\n', status=500, mimetype="text/plain")
 
-def not_implemented(message="Not implemented."):
+def not_implemented(message=None):
+    if message is None:
+        message = 'Not implemented.'
     log.debug("Response 501: %s", message)
     log.warning("Not implemented %s %s %s: %s", request.remote_addr, request.method, request.base_url, message)
     return Response(message + "\n", status=501, mimetype="text/plain")
