@@ -9,7 +9,7 @@
 # If additional libraries or parts of pScheduler are required,
 # they should be added here (line 25).
 %define short	curl-d2d
-%define perfsonar_auto_version 5.1.1
+%define perfsonar_auto_version 5.1.2
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-tool-%{short}

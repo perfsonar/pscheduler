@@ -27,7 +27,9 @@ def contexts():
 def contexts_name(name):
     return json_query("SELECT json FROM context"
                       " WHERE available AND name = %s",
-                      [name], single=True)
+                      [name], single=True,
+                      not_found_message=f'No context "{name}" is available.'
+                      )
 
 
 # Context spec validation
@@ -42,11 +44,12 @@ def contexts_name_data_is_valid(name):
     exists = cursor.fetchone()[0]
     cursor.close()
     if not exists:
-        return not_found()
+        return not_found(f'No context "{name}" is available.')
+
 
     data = request.args.get('data')
     if data is None:
-        return bad_request("No archive data provided")
+        return bad_request("No context data provided")
 
     try:
         returncode, stdout, stderr = pscheduler.plugin_invoke(

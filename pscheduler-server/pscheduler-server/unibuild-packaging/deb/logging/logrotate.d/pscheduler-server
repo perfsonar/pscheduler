@@ -6,6 +6,7 @@
     compress
     delaycompress
     missingok
+    create 0644
     sharedscripts
     postrotate
         invoke-rc.d rsyslog restart > /dev/null

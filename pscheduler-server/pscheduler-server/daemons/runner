@@ -681,9 +681,13 @@ class RunWorker(pscheduler.GenericWorker):
             merge_input_text = pscheduler.json_dump(merge_input)
             self.log_debug("%d: Merging %s", self.id, merge_input_text)
 
+            # Child_env sill still be valid from when we ran the 'run'
+            # method above.
             returncode, stdout, stderr = pscheduler.plugin_invoke(
                 "tool", tool, "merged-results",
-                stdin=merge_input_text, timeout=5)
+                stdin=merge_input_text,
+                env_add=child_env,
+                timeout=5)
 
             self.log_debug("%d: Merged results: %d %s %s", self.id, returncode, stdout, stderr)
 

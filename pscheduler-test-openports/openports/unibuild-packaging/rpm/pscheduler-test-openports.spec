@@ -11,7 +11,7 @@
 #
 
 %define short	openports
-%define perfsonar_auto_version 5.1.1
+%define perfsonar_auto_version 5.1.2
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-test-%{short}
