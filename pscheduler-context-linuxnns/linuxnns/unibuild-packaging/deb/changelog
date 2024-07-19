@@ -1,8 +1,8 @@
-pscheduler-context-linuxnns (5.1.2~a1.0-1) perfsonar-5.1-snapshot; urgency=low
+pscheduler-context-linuxnns (5.1.2-1) perfsonar-5.1; urgency=low
 
   * New upstream version.
 
- -- perfSONAR developers <debian@perfsonar.net>  Tue, 09 Jul 2024 14:19:02 -0400
+ -- perfSONAR developers <debian@perfsonar.net>  Fri, 19 Jul 2024 14:37:51 -0400
 
 pscheduler-context-linuxnns (5.1.1-1) perfsonar-5.1; urgency=low
 
