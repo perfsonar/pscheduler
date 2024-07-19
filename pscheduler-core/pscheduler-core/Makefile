@@ -21,6 +21,7 @@ RAWPROGRAMS=\
 	pscheduler
 
 COMMANDS=\
+	archiving-summary \
 	batch \
 	cancel \
 	clock \
