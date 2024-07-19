@@ -28,7 +28,9 @@ def archivers():
 def archivers_name(name):
     return json_query("SELECT json FROM archiver"
                       " WHERE available AND name = %s",
-                      [name], single=True)
+                      [name], single=True,
+                      not_found_message=f'No archiver "{name}" is available.'
+                      )
 
 
 # Archiver spec validation
@@ -42,7 +44,7 @@ def archivers_name_data_is_valid(name):
     exists = cursor.fetchone()[0]
     cursor.close()
     if not exists:
-        return not_found()
+        return not_found(f'No archiver "{name}" is available.')
 
     data = request.args.get('data')
     if data is None:
