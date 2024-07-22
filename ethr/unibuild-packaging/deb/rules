@@ -7,6 +7,10 @@ export GOPATH=$(CURDIR)/GOPATH
 export GOBIN=$(GOPATH)/bin
 export GOCACHE=$(GOPATH)/.cache
 
+# TODO: May need these for U24+
+#export GO111MODULE=on
+#export GOPROXY=direct
+
 # main packaging script based on dh7 syntax
 %:
 	dh $@

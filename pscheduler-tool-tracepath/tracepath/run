@@ -151,15 +151,15 @@ traced_hops = []
 ips = []
 last_hop = 0
 
-ttl_re = re.compile('^(\d*)\??:');
-no_reply_re = re.compile('no reply');
-reached_re = re.compile('reached');
-rtt_re = re.compile('([0-9]+\.[0-9]+)ms');
-mtu_re = re.compile('pmtu ([0-9]+)');
-error_re = re.compile('!(\w+)$');
+ttl_re = re.compile(r'^(\d*)\??:');
+no_reply_re = re.compile(r'no reply');
+reached_re = re.compile(r'reached');
+rtt_re = re.compile(r'([0-9]+\.[0-9]+)ms');
+mtu_re = re.compile(r'pmtu ([0-9]+)');
+error_re = re.compile(r'!(\w+)$');
 path_mtu = None
 for line in stdout.split('\n'):
-    line = re.sub('\s+', ' ', line).strip()
+    line = re.sub(r'\s+', ' ', line).strip()
     matches = ttl_re.match(line)
     if matches is None:
         continue

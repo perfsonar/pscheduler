@@ -78,7 +78,7 @@ if True:
   for line in lines:
       logger.debug("searching line: {0}".format(line))
       #make sure you grab the last one because each screen update its own line
-      test = re.search('\s*(\d+) bytes\s+(\S+) ([A-za-z])B/sec avg\s+\S+ [A-za-z]B/sec inst$', line)
+      test = re.search(r'\s*(\d+) bytes\s+(\S+) ([A-za-z])B/sec avg\s+\S+ [A-za-z]B/sec inst$', line)
       if test:
           logger.debug("looks like a performance metric line")
           bytes_sent = int(test.group(1))

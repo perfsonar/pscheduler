@@ -20,6 +20,10 @@ changecom()dnl
 
 # GENERAL-PURPOSE MACROS
 
+# Setting this to 1 forces builds of all packages on Debian systems.
+# See commentary surrounding iperf3.
+define(BUILD_ALL_DEB,1)
+
 # Setting this to zero removes all tools that depend on OWAMP, which
 # is built in a separate repository.  The only time you'd want to do
 # this is when doing unrelated development.
@@ -69,10 +73,7 @@ ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of th
        FAMILY/eval(MAJOR >= 9),RedHat/1,,               # And EL9+
        python-pyrsistent)
 python-nmap3
-ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of this.
-       DISTRO/eval(MAJOR > 10),Debian/1,,               # As does Debian 11.
-       FAMILY/eval(MAJOR > 8),RedHat/1,,                # As does EL9+
-       python-jsonschema)
+ifelse(FAMILY/eval(MAJOR <= 8),RedHat/1,python-jsonschema)  # Only build on EL8 and lower
 python-kafka
 python-nmap3
 
@@ -82,7 +83,7 @@ ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-nose)
 ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-ntplib)
 python-parse-crontab
 python-vine
-ifelse(DISTRO/eval(MAJOR > 21),Ubuntu/1,,		# Ubuntu 22 has a newer version of this.
+ifelse(DISTRO/eval(MAJOR > 21),Ubuntu/1,,		# Ubuntu 22 and up have a newer version of this.
        DISTRO/eval(MAJOR > 11),Debian/1,,       # As does Debian 12.
        python-py-amqp)
 python-py-radix
@@ -167,8 +168,7 @@ pscheduler-test-throughput
 # This has not been released.  See also pscheduler-tool-nmapscan
 # pscheduler-test-openports		--bundle extras
 pscheduler-test-rtt
-#ifelse(HAVE_S3_BENCHMARK,1,pscheduler-test-s3throughput)
-pscheduler-test-s3throughput
+ifelse(HAVE_S3_BENCHMARK,1,pscheduler-test-s3throughput)
 pscheduler-test-simplestream
 pscheduler-test-snmpget			--bundle snmp
 pscheduler-test-snmpgetbgm		--bundle snmp

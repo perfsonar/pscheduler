@@ -167,7 +167,7 @@ def run_client():
 
     # Make the result and return it
 
-    matcher = re.compile('^\[([^]]+)\]\s+(TCP|UDP)\s+([^\s]+)-([^\s]+)\s+[^\s]+\s*([^\s]+)$')
+    matcher = re.compile(r'^\[([^]]+)\]\s+(TCP|UDP)\s+([^\s]+)-([^\s]+)\s+[^\s]+\s*([^\s]+)$')
 
 
     def group_block(stream, start, end, bps):

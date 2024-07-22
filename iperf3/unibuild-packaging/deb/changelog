@@ -1,3 +1,10 @@
+iperf3 (3.17.1-2) perfsonar-5.1-staging; urgency=low
+
+  * Building on Ubuntu 20 and Debian 12
+  * Port to Debian 11 and 12, Ubuntu 22 and 24
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Mon, 24 Jun 2024 18:37:14 +0200 
+
 iperf3 (3.17.1-1) perfsonar-5.1-staging; urgency=low
 
   * New upstream version

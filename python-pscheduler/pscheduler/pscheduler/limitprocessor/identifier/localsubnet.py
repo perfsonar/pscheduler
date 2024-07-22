@@ -20,7 +20,7 @@ def data_is_valid(data):
 
 # These are for ue by ipv6_netmask_size()
 
-ipv6_netmask_re = re.compile("^([f]*)([ec80]?)0*$")
+ipv6_netmask_re = re.compile(r'^([f]*)([ec80]?)0*$')
 
 ipv6_digit_bits = {
     "e": 3,

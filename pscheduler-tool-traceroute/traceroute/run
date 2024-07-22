@@ -326,10 +326,10 @@ ips = []
 last_hop = 0
 
 for line in stdout.split('\n'):
-    line = re.sub('\s+', ' ', line).strip()
+    line = re.sub(r'\s+', ' ', line).strip()
 
 
-    matches = re.match('^(\d*)\s+(.*)$', line)
+    matches = re.match(r'^(\d*)\s+(.*)$', line)
     if matches is None:
         log.debug("Discarding: %s", line)
         continue

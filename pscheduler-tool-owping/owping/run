@@ -167,7 +167,7 @@ if role == CLIENT_ROLE:
         pscheduler.succeed_json(results)
         
     #Parse output
-    owping_regex = re.compile('^(\d+) (\d+) (\d) ([-.0-9e+]*) (\d+) (\d) ([-.0-9e+]*) (\d+)$')
+    owping_regex = re.compile(r'^(\d+) (\d+) (\d) ([-.0-9e+]*) (\d+) (\d) ([-.0-9e+]*) (\d+)$')
     results['packets-sent'] = 0
     results['packets-received'] = 0
     results['packets-duplicated'] = 0
@@ -285,7 +285,7 @@ elif role == SERVER_ROLE:
 #         pscheduler.fail("Control port must be an integer")
 #     
 #     #data-port-range must be in form N-M where N < M and both are integers
-#     range_match = re.compile("(\d+)-(\d+)").match(recv_participant_data['data-port-range'])
+#     range_match = re.compile(r'(\d+)-(\d+)').match(recv_participant_data['data-port-range'])
 #     if not range_match:
 #         pscheduler.fail("Data port range is not a valid range. Must be in form N-M where N < M and both are integers")
 #     elif range_match.group(1) >= range_match.group(2):

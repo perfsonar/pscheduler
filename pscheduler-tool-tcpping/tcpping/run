@@ -184,18 +184,18 @@ result = {
 
 
 # TCP Ping Results: Connections (Total/Pass/Fail): [3/3/0] (Failed: 0%)
-CONNECTED = re.compile('^Connected to\\s*[^\\s]+'
-                       '\\s+\\(([^)]+)\)'
-                       '\\s+.*:'
-                       '\\s+tcp_seq=([0-9]+)'
-                       '\\s+time=([0-9.]+) ms$')
+CONNECTED = re.compile(r'^Connected to\s*[^\s]+'
+                       r'\s+\(([^)]+)\)'
+                       r'\s+.*:'
+                       r'\s+tcp_seq=([0-9]+)'
+                       r'\s+time=([0-9.]+) ms$')
 
 # TCP Ping Results: Connections (Total/Pass/Fail): [3/3/0] (Failed: 0%)
-COUNTED = re.compile('^TCP Ping Results: Connections \\(Total/Pass/Fail\\): \\[([0-9]+)/([0-9]+)/([0-9]+)\\]')
+COUNTED = re.compile(r'^TCP Ping Results: Connections \(Total/Pass/Fail\): \[([0-9]+)/([0-9]+)/([0-9]+)\]')
 
 # rtt min/avg/max/mdev = 32.660/32.827/33.150/0.280 ms
-STATS = re.compile('^rtt min/avg/max/mdev\\s+=\\s+'
-                   '([0-9.]+)/([0-9.]+)/([0-9.]+)/([0-9.]+)\\s+ms')
+STATS = re.compile(r'^rtt min/avg/max/mdev\s+=\s+'
+                   r'([0-9.]+)/([0-9.]+)/([0-9.]+)/([0-9.]+)\s+ms')
 
 
 
