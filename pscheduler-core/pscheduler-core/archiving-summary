@@ -39,6 +39,10 @@ Example:
 
   check-archiving PT23M
       Check on archiving for runs in the last 23 minutes      
+
+  check-archiving --to 2024-07-22T12:34:56Z PT23M
+      Check on archiving for runs in the 23 minutes leading
+      up to 2024-07-22T12:34:56Z
 '''
     )
 opt_parser.disable_interspersed_args()
@@ -54,6 +58,11 @@ opt_parser.add_option('--host',
                       default=pscheduler.api_local_host(),
                       action='store', type='string',
                       dest='host')
+
+opt_parser.add_option('--to',
+                      help='Check archiving leading up to the ISO8601 time specified',
+                      action='store', type='string',
+                      dest='to')
 
 opt_parser.add_option('--verbose',
                       help='Add additional information where appropriate',
@@ -83,7 +92,13 @@ if delta > datetime.timedelta(hours=6):
     print(f'Warning: Long time deltas may put a heavy load on the pScheduler server.', file=sys.stderr)
 
 
-now = pscheduler.time_now()
+if options.to is None:
+    now = pscheduler.time_now()
+else:
+    try:
+        now = pscheduler.iso8601_as_datetime(options.to)
+    except ValueError as ex:
+        pscheduler.fail(f'{options.to}: {ex}')
 
 #
 # Fetch the schedule
