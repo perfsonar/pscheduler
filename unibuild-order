@@ -49,23 +49,19 @@ ifelse(PACKAGING,rpm,pscheduler-rpm)
 # DEVELOPMENT, LIBRARIES AND UTILITIES
 #
 
-# PostgreSQL and Additions
-
+# PostgreSQL Additions
 postgresql-init
 postgresql-load
 
-
 # jq and friends
-
 ifelse(DISTRO/MAJOR,ol/8,oniguruma)
 ifelse(DISTRO/eval(MAJOR < 20),Ubuntu/1,oniguruma)		# Ubuntu 20 and up are good.
-jq							# Ours has patches.
+ifelse(DISTRO/eval(MAJOR >= 24),Ubuntu/1,,jq)
 
 
 # Python Modules
 
 ifelse(FAMILY/DISTRO/MAJOR,RedHat/ol/8,Cython)
-ifelse(FAMILY/MAJOR,Debian/9,python-attrs)              # Needed here only.
 
 # EL9 doesn't have a good version of this
 ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-daemon)
@@ -108,47 +104,12 @@ python-pysnmp
 # Home-grown Python Modules
 python-icmperror
 
-
 # Apache add-ons
 httpd-firewall						# TODO: May no longer be used.  Maybe for development?
 httpd-wsgi-socket
 
-
-#
 # Utility and Tool programs
-#
 drop-in
-
-ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,libtins)		# Dublin-traceroute needs this
-ifelse(FAMILY,Debian,,dublin-traceroute)		# TODO: Doesn't build on Debian.
-define(HAVE_ETHR,HAVE_GOLANG)
-ifelse(DISTRO/eval(MAJOR <= 18),Ubuntu/1,,      # Doesn't build on U18, TODO: not sure about U20…
-       HAVE_ETHR,1,ethr)                        # But D10 build can be used on U18 and up
-
-iperf
-
-# The Debian and Ubuntu builds look to minimize build time because
-# non-x86 architectures have to be built under an emulator that runs
-# at 20% the speed of native.  Binary builds get re-used between
-# distributions.
-ifelse(FAMILY/eval(MAJOR == 12),Debian/1,iperf3,  # D12 binary is reused on U24 (and the resulting binary packages are called iperf3-ssl3).
-       DISTRO/eval(MAJOR == 20),Ubuntu/1,iperf3,  # U20 binary is reused on D11 and U22.
-       FAMILY/BUILD_ALL_DEB,Debian/0,,            # Disable all else in the Debian family unless forced
-       iperf3)                                    # Always build on non-Debuntu.
-nuttcp
-
-paris-traceroute
-
-# Some Debian and all Ubuntus don't have a recent-enough Golang to
-# build this.
-define(HAVE_S3_BENCHMARK,ifelse(HAVE_GOLANG,0,0,
-	   FAMILY/eval(MAJOR == 11),Debian/1,HAVE_GOLANG,
-       DISTRO/eval(MAJOR >= 24),Ubuntu/1,HAVE_GOLANG,
-       FAMILY,Debian,,
-       1))
-ifelse(HAVE_S3_BENCHMARK,1,s3-benchmark)
-
-tcpping
 
 
 #
@@ -166,21 +127,42 @@ pscheduler-server
 # PSCHEDULER PLUG-INS
 #
 
+# Things needed for a very-minimal functioning installation
+
+# Idle Test and Tools
+pscheduler-test-idle
+pscheduler-test-idlebgm
+pscheduler-test-idleex
+pscheduler-tool-sleep
+pscheduler-tool-sleepbgm
+pscheduler-tool-snooze
+
+# No-Op Test and Tools
+pscheduler-test-noop
+pscheduler-tool-passthrough
+
+# One archiver
+pscheduler-archiver-bitbucket
+
+# ----- MINIMAL BUILD STOPS HERE -----
+pscheduler-minimal-marker
+
+# All other plugins
+
+#
 # Tests
+#
+
 pscheduler-test-clock
 pscheduler-test-dhcp			--bundle extras
 pscheduler-test-disk-to-disk		--bundle extras
 pscheduler-test-dns
 pscheduler-test-dot1x			--bundle extras
 pscheduler-test-http
-pscheduler-test-idle
-pscheduler-test-idlebgm
-pscheduler-test-idleex
 pscheduler-test-latency
 pscheduler-test-latencybg
 pscheduler-test-mtu
 pscheduler-test-netreach		--bundle extras
-pscheduler-test-noop
 pscheduler-test-psresponse
 pscheduler-test-throughput
 # This has not been released.  See also pscheduler-tool-nmapscan
@@ -194,7 +176,11 @@ pscheduler-test-snmpset			--bundle snmp
 pscheduler-test-trace
 pscheduler-test-wifibssid
 
+
+#
 # Tools
+#
+
 pscheduler-tool-bssidscanner
 pscheduler-tool-bwctliperf2		--bundle obsolete
 pscheduler-tool-bwctliperf3		--bundle obsolete
@@ -205,42 +191,72 @@ pscheduler-tool-curl
 pscheduler-tool-curl-d2d		--bundle extras
 pscheduler-tool-dhclient		--bundle extras
 pscheduler-tool-dnspy
+
+ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,libtins)		# Dublin-traceroute needs this
+ifelse(FAMILY,Debian,,dublin-traceroute)		# TODO: Doesn't build on Debian.
 ifelse(FAMILY,Debian,,pscheduler-tool-dublin-traceroute)	# TODO: DT doesn't build on Debian, so no plugin.
-pscheduler-tool-ethr
+
+define(HAVE_ETHR,HAVE_GOLANG)
+ifelse(DISTRO/eval(MAJOR <= 18),Ubuntu/1,,      # Doesn't build on U18, TODO: not sure about U20…
+       HAVE_ETHR,1,ethr)                        # But D10 build can be used on U18 and up
+ifelse(HAVE_ETHR,1,pscheduler-tool-ethr)
+
 pscheduler-tool-fpingreach		--bundle extras
 pscheduler-tool-fwmtu
 pscheduler-tool-globus			--bundle extras
 pscheduler-tool-halfping
+
+iperf
 pscheduler-tool-iperf2
+
+ifelse(FAMILY/eval(MAJOR == 12),Debian/1,iperf3,        # We only want iperf3 on D12
+       DISTRO/eval(MAJOR == 20),Ubuntu/1,iperf3,        # and U20
+       FAMILY,Debian,,
+       iperf3)
 pscheduler-tool-iperf3
+
 pscheduler-tool-net-snmp-set		--bundle snmp
 pscheduler-tool-nmapreach			--bundle extras
 # TODO: This has problems.  See #1223.
 #pscheduler-tool-nmapscan		--bundle extras
+
+nuttcp
 pscheduler-tool-nuttcp
+
 OWAMP_TOOL(pscheduler-tool-owping)
-pscheduler-tool-paris-traceroute
-pscheduler-tool-passthrough
-pscheduler-tool-ping
 OWAMP_TOOL(pscheduler-tool-powstream)
+OWAMP_TOOL(pscheduler-tool-twping)
+
+paris-traceroute
+pscheduler-tool-paris-traceroute
+
+pscheduler-tool-ping
 pscheduler-tool-psclock
 pscheduler-tool-pstimer
 pscheduler-tool-psurl			--bundle obsolete
 pscheduler-tool-pysnmp			--bundle snmp
+
+define(HAVE_S3_BENCHMARK,ifelse(HAVE_GOLANG,0,0,
+	   FAMILY/eval(MAJOR == 11),Debian/1,HAVE_GOLANG,
+       FAMILY,Debian,,
+       1))
+ifelse(HAVE_S3_BENCHMARK,1,s3-benchmark)
 ifelse(HAVE_S3_BENCHMARK,1,pscheduler-tool-s3-benchmark)
+
 pscheduler-tool-simplestreamer
-pscheduler-tool-sleep
-pscheduler-tool-sleepbgm
-pscheduler-tool-snooze
+
+tcpping
 pscheduler-tool-tcpping
-OWAMP_TOOL(pscheduler-tool-twping)
+
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
 pscheduler-tool-umichwpa		--bundle extras
 
 
+#
 # Archivers
-pscheduler-archiver-bitbucket
+#
+
 pscheduler-archiver-esmond			--bundle obsolete
 pscheduler-archiver-failer
 pscheduler-archiver-http

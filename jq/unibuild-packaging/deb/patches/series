@@ -1,5 +1,0 @@
-enable-manpages.patch
-patch-version-into-build.patch
-dont-distribute-duplicate-docs.patch
-disable-static-libtool.patch
-jv_is_integer_large.patch

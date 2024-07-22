@@ -18,10 +18,13 @@ class VerbatimParser(optparse.OptionParser):
         return self.epilog
 
 opt_parser = VerbatimParser(
-    usage="Usage: %prog host",
+    usage="Usage: %prog [ HOST ]",
     epilog=
 """
 Example:
+
+  ping
+      Check on the local host
 
   ping perfsonar6.example.org
       Check on the host at perfsonar6.example.org
@@ -47,19 +50,24 @@ opt_parser.add_option("--timeout", "-W",
 
 (options, remaining_args) = opt_parser.parse_args()
 
-if len(remaining_args) != 1:
+if len(remaining_args) > 1:
     opt_parser.print_usage()
     pscheduler.fail()
 
 if options.timeout <= 0:
     pscheduler.fail("Timeout must be >= 0")
 
-host = remaining_args[0]
+try:
+    host = remaining_args[0]
+    host_display = host
+except IndexError:
+    host = None
+    host_display = pscheduler.api_local_host()
 
 up, reason = pscheduler.api_ping(host, timeout=options.timeout,
                                  bind=options.bind)
 
-message = "%s: %s" % (host, reason)
+message = "%s: %s" % (host_display, reason)
 
 if up:
     pscheduler.succeed(message)

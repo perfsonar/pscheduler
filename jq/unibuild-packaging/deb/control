@@ -2,7 +2,8 @@ Source: jq
 Section: utils
 Priority: optional
 Maintainer: ChangZhuo Chen (陳昌倬) <czchen@debian.org>
-Build-Depends: debhelper (>= 10), dh-autoreconf, flex, bison, libtool-bin, valgrind [amd64 i386], rake, ruby-ronn, libonig-dev
+Build-Depends: debhelper (>= 10), dh-autoreconf, flex, bison, libtool-bin, valgrind [amd64 i386], rake, ruby-ronn, libonig-dev,
+ python3-lxml, python3-markdown, python3-yaml
 Standards-Version: 3.9.6
 Homepage: https://github.com/stedolan/jq
 Vcs-Git: git://anonscm.debian.org/users/else-guest/jq.git

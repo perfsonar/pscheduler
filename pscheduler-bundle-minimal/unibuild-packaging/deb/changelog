@@ -1,0 +1,5 @@
+pscheduler-bundle-minimal (5.2.0~a1.0-1) perfsonar-5.2-snapshot; urgency=low
+
+  * First version
+
+ -- perfSONAR developers <perfsonar-developer@internet2.edu>  Tue,  8 Jul 2024 16:50:33 -0500

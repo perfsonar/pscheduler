@@ -1,8 +1,20 @@
-pscheduler-tool-bwctliperf3 (5.1.1~a1.0-1) perfsonar-5.1-snapshot; urgency=low
+pscheduler-tool-bwctliperf3 (5.2.0~a1.0-1) perfsonar-5.2-snapshot; urgency=low
 
   * New upstream version.
 
- -- perfSONAR developers <debian@perfsonar.net>  Tue, 11 Jun 2024 18:29:04 +0200
+ -- perfSONAR developers <debian@perfsonar.net>  Tue, 11 Jun 2024 18:29:36 +0200
+
+pscheduler-tool-bwctliperf3 (5.1.2-1) perfsonar-5.1; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Fri, 19 Jul 2024 14:37:45 -0400
+
+pscheduler-tool-bwctliperf3 (5.1.1-1) perfsonar-5.1; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Fri, 28 Jun 2024 10:50:40 -0400
 
 pscheduler-tool-bwctliperf3 (5.1.0-1) perfsonar-5.1; urgency=low
 

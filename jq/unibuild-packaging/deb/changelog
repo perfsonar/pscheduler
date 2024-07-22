@@ -1,3 +1,10 @@
+jq (1.7.1-1~bpo8+3) perfsonar-5.2-staging; urgency=medium
+
+  * New upstream version
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Tue, 23 Apr 2024 01:02:58 +0200 
+	>>>>>>> 5.2.0
+
 jq (1.6.0-1~bpo8+4) perfsonar-5.1-staging; urgency=medium
 
   * Port to Ubuntu 24

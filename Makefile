@@ -31,6 +31,19 @@ build:
 TO_CLEAN += $(BUILD_LOG)
 
 
+# Minimal build
+
+ifdef START
+MINIMAL_OPTS += START=$(START)
+endif
+MINIMAL_OPTS += STOP=pscheduler-minimal-marker
+ifdef RELEASE
+MINIMAL_OPTS += RELEASE=1
+endif
+minimal:
+	$(MAKE) $(MINIMAL_OPTS)
+
+
 uninstall:
 	unibuild make --reverse $@
 
