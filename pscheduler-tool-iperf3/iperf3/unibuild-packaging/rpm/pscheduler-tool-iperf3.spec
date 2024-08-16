@@ -25,7 +25,10 @@ Requires:	%{_pscheduler_python}-pscheduler >= 4.4.1
 Requires:	%{_pscheduler_python}-cryptography
 Requires:	%{_pscheduler_python}-packaging
 Requires:	pscheduler-test-throughput
-requires:	iperf3 >= 3.17.1
+Requires:	iperf3 >= 3.17.1
+%if 0%{?el9}
+Requires:	kernel-modules-extra
+%endif
 Requires:	numactl
 Requires:	rpm-post-wrapper
 
