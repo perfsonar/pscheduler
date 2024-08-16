@@ -26,9 +26,8 @@ Requires:	%{_pscheduler_python}-cryptography
 Requires:	%{_pscheduler_python}-packaging
 Requires:	pscheduler-test-throughput
 Requires:	iperf3 >= 3.17.1
-%if 0%{?el9}
+# For additrional TCP congestion control modules
 Requires:	kernel-modules-extra
-%endif
 Requires:	numactl
 Requires:	rpm-post-wrapper
 

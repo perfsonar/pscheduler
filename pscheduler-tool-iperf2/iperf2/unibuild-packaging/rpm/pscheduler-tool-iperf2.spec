@@ -24,9 +24,8 @@ Requires:	pscheduler-server >= 4.3.0
 Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
 Requires:	pscheduler-test-throughput
 Requires:	iperf >= 2.1.9
-%if 0%{?el9}
+# For additrional TCP congestion control modules
 Requires:	kernel-modules-extra
-%endif
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
