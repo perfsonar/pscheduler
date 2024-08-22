@@ -97,8 +97,6 @@ def _end_process(process):
     except subprocess.TimeoutExpired:
         process.kill()
 
-
-
 def run_program(argv,              # Program name and args
                 stdin="",          # What to send to stdin
                 line_call=None,    # Lambda to call when a line arrives
@@ -279,6 +277,231 @@ def run_program(argv,              # Program name and args
 
     return status, stdout, stderr
 
+
+class Program:
+    def __init__(self, argv,              # Program name and args
+                    stdin="",          # What to send to stdin
+                    line_call=None,    # Lambda to call when a line arrives
+                    timeout=None,      # Seconds
+                    timeout_ok=False,  # Treat timeouts as not being an error
+                    fail_message=None, # Exit with this failure message
+                    env=None,          # Environment for new process, None=existing
+                    env_add=None,      # Add hash to existing environment
+                    attempts=10):      # Max attempts to start the process
+        self.argv = argv
+        self.stdin = stdin
+        self.line_call = line_call
+        self.timeout = timeout
+        self.timeout_ok = timeout_ok
+        self.fail_message = fail_message
+        self.env = env
+        self.env_add = env_add
+        self.attempts = attempts
+        self.module = sys.modules[__name__]
+        self.lock = threading.Lock()
+        self.terminating = False
+        self.running = None
+    
+    def terminate_early(self):
+        if self.running is not None:
+            self.terminate_running()
+        else:
+            print("No process to terminate")
+    
+    def init_running(self):
+        """Internal use:  Initialize the running hash if it isn't."""
+        with self.lock:
+            if self.running is None:
+                self.running = {}
+                on_graceful_exit(self.terminate_running)
+    
+    def running_add(self, process):
+        """Internal use:  Add a running process."""
+        self.init_running()
+        self.running[process] = 1
+
+    def terminate_running(self):
+        """Internal use:  Terminate a running process."""
+        self.init_running()
+        while len(self.running) > 0:
+            with self.lock:
+                process = list(self.running.keys())[0]
+            try:
+                process.terminate()
+                process.wait()
+            except Exception:
+                pass  # This is a best-effort effort.
+            with self.lock:
+                try:
+                    del self.running[process]
+                except KeyError:
+                    pass  # Best effort.
+    
+        # Sometimes this gets called twice, so clean the list.
+        self.running.clear()
+    
+    def running_drop(self, process):
+        """Internal use:  Drop a running process."""
+        self.init_running()
+        try:
+            del self.running[process]
+        except KeyError:
+            pass
+    
+    def run_program(self):
+        """
+        Run a program and return the results.
+        
+        Return Values:
+        
+        status - Status code returned by the program
+        stdout - Contents of standard output as a single string
+        stderr - Contents of standard erroras a single string
+        
+        NOTE: This function is only intended to process strings.  It will
+        throw an exception if handed binary data by the caller or the
+        program it runs.
+        """
+        process = None
+        
+        if [arg for arg in self.argv if arg is None]:
+            raise Exception("Can't run with null arguments.")
+        
+        
+        # Build up a new, incorruptable copy of the environment for the
+        # child process to use.
+        
+        if self.env_add is None:
+            env_add = {}
+        
+        if self.env is None and len(env_add) == 0:
+            new_env = None
+        else:
+            new_env = (os.environ if self.env is None else self.env).copy()
+            new_env.update(env_add)
+        
+        
+        def __get_process(argv, new_env, attempts):
+            """Try to start a process, handling EAGAINs."""
+            while attempts > 0:
+                attempts -= 1
+                try:
+                    return subprocess.Popen(argv,
+                                            stdin=subprocess.PIPE,
+                                            stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE,
+                                            env=new_env,
+                                            universal_newlines=True
+                                        )
+                except OSError as ex:
+                    # Non-EAGAIN or last attempt gets re-raised.
+                    if ex.errno != errno.EAGAIN or attempts == 0:
+                        raise ex
+                    # TODO: Should we sleep a bit here?
+            
+            
+            assert False, "This code should not be reached."
+        
+        
+        try:
+            process = __get_process(self.argv, new_env, self.attempts)
+            
+            self.running_add(process)
+            
+            if self.line_call is None:
+                
+                # Single-shot I/O with optional timeout
+                
+                try:
+                    stdout, stderr = process.communicate(self.stdin, timeout=self.timeout)
+                    status = process.returncode
+                
+                except subprocess.TimeoutExpired:
+                    _end_process(process)
+                    status = 0 if self.timeout_ok else 2
+                    stdout = ''
+                    stderr = "Process took too long to run."
+            
+            else:
+                
+                # Read one line at a time, passing each to the line_call lambda
+                
+                if not isinstance(self.line_call, type(lambda: 0)):
+                    raise ValueError("Function provided is not a lambda.")
+                
+                if self.stdin is not None:
+                    process.stdin.write(self.stdin)
+                process.stdin.close()
+                
+                stderr = ''
+                
+                stdout_fileno = process.stdout.fileno()
+                stderr_fileno = process.stderr.fileno()
+                
+                fds = [stdout_fileno, stderr_fileno]
+                
+                if self.timeout is not None:
+                    end_time = time_now() \
+                        + seconds_as_timedelta(self.timeout)
+                else:
+                    time_left = None
+                
+                while True: 
+                    if self.timeout is not None:
+                        time_left = timedelta_as_seconds(
+                            end_time - time_now())
+                    
+                    reads, _, _ = polled_select(fds, [], [], time_left)
+                    
+                    if len(reads) == 0:
+                        self.running_drop(process)
+                        _end_process(process)
+                        return (0 if self.timeout_ok else 2), None, "Process took too long to run."
+                    
+                    for readfd in reads:
+                        if readfd == stdout_fileno:
+                            got_line = process.stdout.readline()
+                            if got_line != '':
+                                line_call(got_line[:-1])
+                        elif readfd == stderr_fileno:
+                            got_line = process.stderr.readline()
+                            if got_line != '':
+                                stderr += got_line
+                    
+                    if process.poll() != None:
+                        break
+                
+                # Siphon off anything left on stdout and stderr
+                
+                while True:
+                    got_line = process.stdout.readline()
+                    if got_line == '':
+                        break
+                    line_call(got_line[:-1])
+                
+                stderr += process.stderr.read()
+                
+                process.wait()
+                
+                status = process.returncode
+                stdout = None
+                
+        except Exception as ex:
+            extype, _, trace = sys.exc_info()
+            status = 2
+            stdout = ''
+            stderr = ''.join(traceback.format_exception_only(extype, ex)) \
+                + ''.join(traceback.format_exception(extype, ex, trace)).strip()
+        
+        if process is not None:
+            self.running_drop(process)
+            _end_process(process)
+        
+        if self.fail_message is not None and status != 0:
+            fail("%s: %s" % (self.fail_message, stderr))
+       
+        return status, stdout, stderr
+
 class ChainedExecRunner(object):
 
     """Run a series of programs that maintain the same PID and context by
@@ -442,7 +665,7 @@ class ExternalProgram(object):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             universal_newlines=True
-        )
+    )
         self.pid = self.process.pid
         self.returned_code = None
         self.err = None
