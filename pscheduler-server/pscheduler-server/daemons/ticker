@@ -107,7 +107,7 @@ def main_program():
 
     http_queue_worker = threading.Thread(
         target=lambda: http_queue_maintainer(log))
-    http_queue_worker.setDaemon(True)
+    http_queue_worker.daemon = True
     http_queue_worker.start()
 
     # TODO: Bulletproof the SQL queries
