@@ -65,7 +65,7 @@ class DBCursor(object):
 
         # Make sure we have a cursor.
 
-        if self.ccursor is None or self.ccursor.closed():
+        if self.ccursor is None or self.ccursor.closed:
             self.ccursor = self.db.cursor()
 
         return self.ccursor
