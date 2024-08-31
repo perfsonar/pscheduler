@@ -36,7 +36,6 @@ class TestProgram(PschedTestBase):
         self.assertNotEqual(status,0)
 
     def test_stdout(self):
-        pass
         '''
         program = Program(["printf", "abcd"])
         status, stdout, stderr = program.run_program()
@@ -44,9 +43,13 @@ class TestProgram(PschedTestBase):
         self.assertEqual(stderr, "")
         self.assertEqual(stdout, "abcd")
         '''
+        program = Program(["printf", "abcd"])
+        status, stdout, stderr = program.join()
+        self.assertEqual(status,0)
+        self.assertEqual(stderr, "")
+        self.assertEqual(stdout, "abcd")
 
     def test_stderr(self):
-        pass
         '''
         program = Program(["sh", "-c", "printf 'abcd' 1>&2"])
         status, stdout, stderr = program.run_program()
@@ -54,9 +57,13 @@ class TestProgram(PschedTestBase):
         self.assertEqual(stdout, "")
         self.assertEqual(stderr, "abcd")
         '''
+        program = Program(["sh", "-c", "printf 'abcd' 1>&2"])
+        status, stdout, stderr = program.join()
+        self.assertEqual(status,0)
+        self.assertEqual(stdout, "")
+        self.assertEqual(stderr, "abcd")
 
     def test_stdin(self):
-        pass
         '''
         program = Program(["cat"], stdin="abcd")
         status, stdout, stderr = program.run_program()
@@ -64,9 +71,13 @@ class TestProgram(PschedTestBase):
         self.assertEqual(stdout, "abcd")
         self.assertEqual(stderr, "")
         '''
+        program = Program(["cat"], stdin="abcd")
+        status, stdout, stderr = program.join()
+        self.assertEqual(status,0)
+        self.assertEqual(stdout, "abcd")
+        self.assertEqual(stderr, "")
 
     def test_timeout(self):
-        pass
         '''
         program = Program(["sleep", "1"], timeout=0.1)
         status, stdout, stderr = program.run_program()
@@ -74,6 +85,11 @@ class TestProgram(PschedTestBase):
         self.assertEqual(stdout, "")
         self.assertEqual(stderr, "Process took too long to run.")
         '''
+        program = Program(["sleep", "1"], timeout=0.1)
+        status, stdout, stderr = program.join()
+        self.assertEqual(status,2)
+        self.assertEqual(stdout, "")
+        self.assertEqual(stderr, "Process took too long to run.")
 
     def test_early_terminate(self):
         pass
@@ -85,7 +101,10 @@ class TestProgram(PschedTestBase):
         self.assertEqual(stdout, "")
         self.assertEqual(stderr, "Process took too long to run.")
         '''
-
+        program = Program(["sleep", "30"])
+        t = threading.Thread(target=program.join)
+        t.start()
+        program.kill(timeout=0.1)
 
 if __name__ == '__main__':
     unittest.main()

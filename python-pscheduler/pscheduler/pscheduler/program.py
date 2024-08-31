@@ -304,7 +304,7 @@ class Program:
         self._running = None
         self._process = None
         self._worker = None
-        
+       
         if [arg for arg in self._argv if arg is None]:
             raise Exception("Can't run with null arguments.")
         
@@ -465,7 +465,7 @@ class Program:
             if self._line_call is None:
             
                 # Single-shot I/O with optional timeout
-            
+                
                 try:
                     stdout, stderr = self._process.communicate(self._stdin, timeout=self._timeout)
                     status = self._process.returncode
@@ -475,6 +475,7 @@ class Program:
                     status = 0 if self._timeout_ok else 2
                     stdout = ''
                     stderr = "Process took too long to run."
+            
             else:
                 self._worker.join()
             
@@ -498,9 +499,9 @@ class Program:
             stderr = ''.join(traceback.format_exception_only(extype, ex)) \
                 + ''.join(traceback.format_exception(extype, ex, trace)).strip()
         
-        if process is not None:
-            self._running_drop(process)
-            _end_process(process)
+        if self._process is not None:
+            self._running_drop(self._process)
+            _end_process(self._process)
         
         if self._fail_message is not None and status != 0:
             fail("%s: %s" % (self._fail_message, stderr))
