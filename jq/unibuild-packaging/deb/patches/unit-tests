@@ -1,7 +1,9 @@
+The NO_COLOR patch is only needed when building in a color terminal.
+i.e. not needed, but harmless, under Jenkins
 Index: b/tests/local.supp
 ===================================================================
---- a/tests/local.supp	2023-12-13 20:24:02.000000000 +0100
-+++ b/tests/local.supp	2024-09-04 19:00:58.884554745 +0200
+--- a/tests/local.supp	2024-09-04 19:01:58.924811000 +0200
++++ b/tests/local.supp	2024-09-04 20:54:20.317843663 +0200
 @@ -12,3 +12,11 @@
     fun:libSystem_initializer
     ...
@@ -14,3 +16,28 @@ Index: b/tests/local.supp
 +   fun:jq_testsuite
 +   fun:main
 +}
+Index: b/tests/shtest
+===================================================================
+--- a/tests/shtest	2024-09-04 20:54:54.404382507 +0200
++++ b/tests/shtest	2024-09-04 20:55:53.762425780 +0200
+@@ -520,17 +520,17 @@
+   od -tc $d/expect
+   od -tc $d/color
+   cmp $d/color $d/expect
+-  NO_COLOR= faketty $JQ_NO_B -n . > $d/color
++  faketty NO_COLOR= $JQ_NO_B -n . > $d/color
+   printf '\033[0;90mnull\033[0m\r\n' > $d/expect
+   od -tc $d/expect
+   od -tc $d/color
+   cmp $d/color $d/expect
+-  NO_COLOR=1 faketty $JQ_NO_B -n . > $d/color
++  faketty NO_COLOR=1 $JQ_NO_B -n . > $d/color
+   printf 'null\r\n' > $d/expect
+   od -tc $d/expect
+   od -tc $d/color
+   cmp $d/color $d/expect
+-  NO_COLOR=1 faketty $JQ_NO_B -Cn . > $d/color
++  faketty NO_COLOR=1 $JQ_NO_B -Cn . > $d/color
+   printf '\033[0;90mnull\033[0m\r\n' > $d/expect
+   od -tc $d/expect
+   od -tc $d/color
