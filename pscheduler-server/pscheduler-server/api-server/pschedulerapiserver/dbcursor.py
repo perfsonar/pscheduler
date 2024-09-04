@@ -65,7 +65,7 @@ class DBCursor(object):
 
         # Make sure we have a cursor.
 
-        if self.ccursor is None or self.ccursor.closed():
+        if self.ccursor is None or self.ccursor.closed:
             self.ccursor = self.db.cursor()
 
         return self.ccursor
@@ -74,7 +74,12 @@ class DBCursor(object):
 
 def dbcursor():
     """Get this thread's database cursor"""
-    return getattr(module.threadlocal, "cursor", DBCursor()).cursor()
+    try:
+        cursor = getattr(module.threadlocal, 'cursor')
+    except AttributeError:
+        cursor = DBCursor()
+        setattr(module.threadlocal, 'cursor', cursor)
+    return cursor.cursor()
 
 
 def dbcursor_query(query,
