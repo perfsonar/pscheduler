@@ -1,0 +1,16 @@
+Index: b/tests/local.supp
+===================================================================
+--- a/tests/local.supp	2023-12-13 20:24:02.000000000 +0100
++++ b/tests/local.supp	2024-09-04 19:00:58.884554745 +0200
+@@ -12,3 +12,11 @@
+    fun:libSystem_initializer
+    ...
+ }
++{
++   ubuntu 20 build
++   Memcheck:Cond
++   fun:checkfail
++   fun:run_jq_tests
++   fun:jq_testsuite
++   fun:main
++}

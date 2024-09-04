@@ -1,9 +1,9 @@
-jq (1.7.1-1~bpo8+3) perfsonar-5.2-staging; urgency=medium
+jq (1.7.1-3) perfsonar-5.2-staging; urgency=medium
 
   * New upstream version
+  * Make sure all unit-tests pass on Ubuntu 20
 
- -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Tue, 23 Apr 2024 01:02:58 +0200 
-	>>>>>>> 5.2.0
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Wed, 28 Aug 2024 16:57:11 +0200 
 
 jq (1.6.0-1~bpo8+4) perfsonar-5.1-staging; urgency=medium
 
