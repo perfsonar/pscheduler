@@ -58,6 +58,8 @@ cleanup()
 trap cleanup EXIT
 
 go mod init wasabi.com/s3-benchmark
+# Any version higher break the rpm builds so hardcoding the required version
+go mod edit -require "code.cloudfoundry.org/bytefmt@v0.3.0"
 go mod tidy
 go get ./...
 
