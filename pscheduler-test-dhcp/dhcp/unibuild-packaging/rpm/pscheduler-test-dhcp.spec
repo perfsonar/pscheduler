@@ -11,7 +11,7 @@
 #
 
 %define short	dhcp
-%define perfsonar_auto_version 5.1.2
+%define perfsonar_auto_version 5.1.3
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-test-%{short}

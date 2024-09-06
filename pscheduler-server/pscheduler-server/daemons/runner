@@ -249,7 +249,7 @@ class RunWorker(pscheduler.GenericWorker):
 
 
         except Exception as ex:
-            self.log.excpetion()
+            self.log.exception()
             self.log.error("%d: Failed to post run for result: %s", self.id, str(ex))
 
 
