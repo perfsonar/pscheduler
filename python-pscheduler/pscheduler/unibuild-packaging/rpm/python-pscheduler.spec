@@ -53,7 +53,7 @@ Requires:	rpm-post-wrapper
 BuildRequires:	pscheduler-rpm
 BuildRequires:  %{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-coverage
-BuildRequires:	%{_pscheduler_python}-nose
+BuildRequires:	%{_pscheduler_python}-nose2
 BuildRequires:	%{_pscheduler_python}-setuptools
 # NOTE:  Cloned from above.
 BuildRequires:	iputils
