@@ -77,9 +77,6 @@ ifelse(FAMILY/eval(MAJOR <= 8),RedHat/1,python-jsonschema)  # Only build on EL8 
 python-kafka
 python-nmap3
 
-# TODO: This was deprecated after EL8.  Switch to something new.
-ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-nose)
-
 ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-ntplib)
 python-parse-crontab
 python-vine

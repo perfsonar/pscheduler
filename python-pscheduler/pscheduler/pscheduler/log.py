@@ -424,7 +424,7 @@ if __name__ == "__main__":
         log.info("Info")
         log.warning("Warning")
         log.error("Error")
-        log.critical("Crtitical")
+        log.critical("Critical")
         os.kill(os.getpid(),
                 signal.SIGUSR1 if (num % 2) != 0 else signal.SIGUSR2)
         time.sleep(1)

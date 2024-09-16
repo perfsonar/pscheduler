@@ -26,7 +26,7 @@ Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:	%{_pscheduler_python}-pscheduler
-BuildRequires:  %{_pscheduler_python}-nose
+BuildRequires:  %{_pscheduler_python}-nose2
 
 %description
 Throughput test class for pScheduler
