@@ -238,6 +238,7 @@ define(HAVE_S3_BENCHMARK,ifelse(HAVE_GOLANG,0,0,
        FAMILY,Debian,,
        1))
 ifelse(HAVE_S3_BENCHMARK,1,s3-benchmark)
+ifelse(HAVE_S3_BENCHMARK,1,pscheduler-test-s3throughput)
 ifelse(HAVE_S3_BENCHMARK,1,pscheduler-tool-s3-benchmark)
 
 pscheduler-tool-simplestreamer

@@ -13,8 +13,7 @@ Build-Depends:
  python3-six,
  python3-mock,
  cython3,
- libjq-dev (>=1.6~),
- libjq-dev (<<1.7),
+ libjq-dev (>=1.7),
  libonig-dev (>=5.9),
  libpython3-dev
 Standards-Version: 3.9.8
