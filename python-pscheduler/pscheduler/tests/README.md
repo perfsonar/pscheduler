@@ -31,22 +31,10 @@ nose2 tests
 ```
 The arg `tests` refers to the tests directory that lives in that directory. That command will run all of the unit tests.
 
-To run the tests in a single module:
+To run the tests in a single module, enter the `tests` directory and run nose2 with the test of your choice:
 
 ```
 nose2 tests/sinumber_test
-```
-
-To run the tests in just one test class:
-
-```
-nose2 tests/sinumber_test.py:TestSinumber
-```
-
-To run a single test in a test class:
-
-```
-nosetests tests/sinumber_test.py:TestSinumber.test_si_range
 ```
 
 The requirements file also installs `coverage`. It can be invoked from `nosetests` to create a coverage report by using the ` --with-coverage` flag.
