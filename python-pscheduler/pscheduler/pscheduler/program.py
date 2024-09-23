@@ -304,7 +304,9 @@ class Program:
         self._running = None
         self._process = None
         self._worker = None
-       
+        
+        print("creating Program object")
+
         if [arg for arg in self._argv if arg is None]:
             raise Exception("Can't run with null arguments.")
         
@@ -367,7 +369,7 @@ class Program:
         if not isinstance(self._line_call, type(lambda: 0)):
             raise ValueError("Function provided is not a lambda.")
         
-        if self.stdin is not None:
+        if self._stdin is not None:
             self._process.stdin.write(self._stdin)
         self._process.stdin.close()
         
@@ -398,9 +400,9 @@ class Program:
             
             for readfd in reads:
                 if readfd == stdout_fileno:
-                    got_line = process.stdout.readline()
+                    got_line = self._process.stdout.readline()
                     if got_line != '':
-                        line_call(got_line[:-1])
+                        self._line_call(got_line[:-1])
                 elif readfd == stderr_fileno:
                     got_line = self._process.stderr.readline()
                     if got_line != '':
@@ -458,9 +460,10 @@ class Program:
         if self._line_call is not None:
             # i think this will have to be factored out and moved beneath line call worker *function*
             self._worker = threading.Thread(target=self._line_worker)
-            
+            self._worker.start() 
             
     def join(self):
+        print("joining process")
         try:
             if self._line_call is None:
             
@@ -483,8 +486,9 @@ class Program:
                     got_line = self._process.stdout.readline()
                     if got_line == '':
                         break
-                    line_call(got_line[:-1])
-            
+                    self._line_call(got_line[:-1])
+                
+                stderr = ""
                 stderr += self._process.stderr.read()
             
                 self._process.wait()
