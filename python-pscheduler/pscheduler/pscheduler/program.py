@@ -115,7 +115,9 @@ def run_program(argv,              # Program name and args
     stdin=s - String containing what should be sent to standard input
     line_call=l - Call lambda l with one argument containing a line which
         arrived on stdout each time that happens.  If provided, the
-        'stdout' return value will be None.
+        'stdout' return value will be None. If the last line of output
+        does not end with a newline character, the last character of
+        output may be truncated
     timeout=n - Wait n seconds for the program to finish, otherwise kill it.
     timeout_ok - True to prevent timeouts from being treated as errors.
     fail_message=s - Exit program and include string s if program fails.
@@ -280,6 +282,8 @@ def run_program(argv,              # Program name and args
 
 class Program:
     
+    """ Run a program and return the results. """
+
     def __init__(self, argv,              # Program name and args
                     stdin="",          # What to send to stdin
                     line_call=None,    # Lambda to call when a line arrives
@@ -289,6 +293,30 @@ class Program:
                     env=None,          # Environment for new process, None=existing
                     env_add=None,      # Add hash to existing environment
                     attempts=10):      # Max attempts to start the process
+        """
+        Set up and initiate the running of the program
+
+        Arguments:
+
+        argv - Array containing arguments, including name of program
+        stdin=s - String containing what should be sent to standard input
+        line_call=l - Call lambda l with one argument containing a line which
+            arrived on stdout each time that happens.  If provided, the
+            'stdout' return value will be None. If the last line of output
+            does not end with a newline character, the last character of
+            output may be truncated
+        timeout=n - Wait n seconds for the program to finish, otherwise kill it.
+        timeout_ok - True to prevent timeouts from being treated as errors.
+        fail_message=s - Exit program and include string s if program fails.
+        env=h - Pass environment hash 'h' to the child process, using the
+        existing environment if the value is None.
+        env_add=h - Add contents of hash 'h' to environment.
+
+        NOTE: This class is only intended to process strings.  It will
+        throw an exception if handed binary data by the caller or the
+        program it runs.
+        """
+
         self._argv = argv
         self._stdin = stdin
         self._line_call = line_call
@@ -305,8 +333,6 @@ class Program:
         self._process = None
         self._worker = None
         
-        print("creating Program object")
-
         if [arg for arg in self._argv if arg is None]:
             raise Exception("Can't run with null arguments.")
         
@@ -365,7 +391,7 @@ class Program:
     
     
     def _line_worker(self):
-        
+        """Internal use: Create a thread to process the line call if needed""" 
         if not isinstance(self._line_call, type(lambda: 0)):
             raise ValueError("Function provided is not a lambda.")
         
@@ -413,9 +439,7 @@ class Program:
     
     
     def _start_process(self):
-        # Build up a new, incorruptable copy of the environment for the
-        # child process to use.
-        
+        """Internal use: start the process""" 
         if self._env_add is None:
             env_add = {}
         
@@ -463,7 +487,15 @@ class Program:
             self._worker.start() 
             
     def join(self):
-        print("joining process")
+        """
+        Returns the results of the program run initiated by __init__
+
+        Return Values:
+        
+        status - Status code returned by the program
+        stdout - Contents of standard output as a single string
+        stderr - Contents of standard erroras a single string
+        """
         try:
             if self._line_call is None:
             
