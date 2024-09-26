@@ -120,6 +120,10 @@ def run_program(argv,              # Program name and args
         output may be truncated
     timeout=n - Wait n seconds for the program to finish, otherwise kill it.
     timeout_ok - True to prevent timeouts from being treated as errors.
+    timeout=n - Wait n seconds for the program to finish, otherwise kill it.
+    timeout_ok - True to prevent timeouts from being treated as errors.
+    timeout=n - Wait n seconds for the program to finish, otherwise kill it.
+    timeout_ok - True to prevent timeouts from being treated as errors.
     fail_message=s - Exit program and include string s if program fails.
     env=h - Pass environment hash 'h' to the child process, using the
         existing environment if the value is None.
@@ -230,20 +234,16 @@ def run_program(argv,              # Program name and args
                 reads, _, _ = polled_select(fds, [], [], time_left)
 
                 if len(reads) == 0:
-                    __running_drop(process)
-                    _end_process(process)
-                    return (0 if timeout_ok else 2), None, "Process took too long to run."
-
-                for readfd in reads:
-                    if readfd == stdout_fileno:
-                        got_line = process.stdout.readline()
-                        if got_line != '':
-                            line_call(got_line[:-1])
-                    elif readfd == stderr_fileno:
-                        got_line = process.stderr.readline()
-                        if got_line != '':
-                            stderr += got_line
-
+                    for readfd in reads:
+                        if readfd == stdout_fileno:
+                            got_line = process.stdout.readline()
+                            if got_line != '':
+                                line_call(got_line[:-1])
+                        elif readfd == stderr_fileno:
+                            got_line = process.stderr.readline()
+                            if got_line != '':
+                                stderr += got_line
+                
                 if process.poll() != None:
                     break
 
@@ -282,8 +282,6 @@ def run_program(argv,              # Program name and args
 
 class Program:
     
-    """ Run a program and return the results. """
-
     def __init__(self, argv,              # Program name and args
                     stdin="",          # What to send to stdin
                     line_call=None,    # Lambda to call when a line arrives
@@ -294,7 +292,7 @@ class Program:
                     env_add=None,      # Add hash to existing environment
                     attempts=10):      # Max attempts to start the process
         """
-        Set up and initiate the running of the program
+        Run a program and return the results.
 
         Arguments:
 
@@ -333,6 +331,8 @@ class Program:
         self._process = None
         self._worker = None
         
+        print("creating Program object")
+
         if [arg for arg in self._argv if arg is None]:
             raise Exception("Can't run with null arguments.")
         
@@ -391,7 +391,7 @@ class Program:
     
     
     def _line_worker(self):
-        """Internal use: Create a thread to process the line call if needed""" 
+        
         if not isinstance(self._line_call, type(lambda: 0)):
             raise ValueError("Function provided is not a lambda.")
         
@@ -442,14 +442,14 @@ class Program:
         """Internal use: start the process""" 
         if self._env_add is None:
             env_add = {}
-        
+
         if self._env is None and len(env_add) == 0:
             new_env = None
         else:
             new_env = (os.environ if self._env is None else self._env).copy()
             new_env.update(env_add)
-        
-        
+
+
         def __get_process(argv, new_env, attempts):
             """Try to start a process, handling EAGAINs."""
             while attempts > 0:
@@ -467,25 +467,25 @@ class Program:
                     if ex.errno != errno.EAGAIN or attempts == 0:
                         raise ex
                     # TODO: Should we sleep a bit here?
-            
+
             assert False, "This code should not be reached."
-        
+
         try:
             self._process = __get_process(self._argv, new_env, self._attempts)
             self._running_add(process)
-            
+
         except Exception as ex:
             extype, _, trace = sys.exc_info()
             status = 2
             stdout = ''
             stderr = ''.join(traceback.format_exception_only(extype, ex)) \
                 + ''.join(traceback.format_exception(extype, ex, trace)).strip()
-        
+
         if self._line_call is not None:
             # i think this will have to be factored out and moved beneath line call worker *function*
             self._worker = threading.Thread(target=self._line_worker)
-            self._worker.start() 
-            
+            self._worker.start()         
+    
     def join(self):
         """
         Returns the results of the program run initiated by __init__
@@ -762,64 +762,6 @@ class ExternalProgram(object):
     def __del__(self):
         self.done()
 
-
-
-
-
-
-class StreamingJSONProgramFailure(Exception):
-    pass
-
-
-class StreamingJSONProgram(Debuggable):
-
-    """
-    Interface to a program that repeatedly takes a single blob of RFC
-    7464-delimited JSON and returns the same.  Should the program fail
-    more than the specified number of times, a StreamingJSONProgramFailure
-    exception (with explanation) will be thrown.
-
-    This class is fully thread-safe.
-    """
-
-    def __init__(self, args, retries=3, timeout=None, debug=lambda s: None, label=None):
-        """Construct an instance.
-
-        Arguments:
-
-        args - Array of program arguments
-        retries - Number of times to try restarting the program before
-            giving up.
-        """
-
-        self.args = args
-        self.retries = retries
-        self.timeout = timeout
-
-        self.lock = threading.Lock()
-        self.program = None
-        self.emitter = None
-        self.parser = None
-
-        super().__init__(debug, label=label if label else args[0])
-
-        self.__establish()
-
-    def __establish(self):
-        """Start the program"""
-
-        if self.program is not None:
-            if self.program.running():
-                return
-            else:
-                del self.program
-                # TODO: Not strictly necessary.
-                self.program = None
-
-        # At this point, there is no program.
-
-        self.debug("Starting program %s", self.args)
-        self.program = ExternalProgram(self.args)
         self.emitter = RFC7464Emitter(self.program.stdin(), timeout=self.timeout)
         self.parser = RFC7464Parser(self.program.stdout(), timeout=self.timeout)
         self.debug("Program is running")
