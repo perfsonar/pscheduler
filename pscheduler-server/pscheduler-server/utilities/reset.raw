@@ -1,0 +1,49 @@
+#!/bin/sh
+#
+# Do a full reset on pScheduler
+#
+
+if [ "$(id -u)" != "0" ]
+then
+    echo "This must be done as root." 1>&2
+    exit 1
+fi
+
+INTERACTIVE=false
+
+if [ -t 0 -a -t 1 -a -t 2 ]
+then
+    INTERACTIVE=true
+    cat <<EOF
+
+WARNING
+
+You are about to obliterate all stored data in pScheduler on this host.
+
+Please confirm this by typing today's date in YYYY-MM-DD format at the
+prompt below.
+
+EOF
+    printf "Confirm (YYYY-MM-DD): "
+    read DATE
+    if [ "${DATE}" != "$(date +%F)" ]
+    then
+	printf "\nDate does not match today's date.  Doing nothing.\n\n"
+	exit 1
+    fi
+
+fi
+
+
+${INTERACTIVE} && printf "\n"
+pscheduler internal service stop
+
+${INTERACTIVE} && printf "\nClearing all pScheduler data..."
+pscheduler internal db-reset < /dev/null
+${INTERACTIVE} && printf "  Done.\n\n"
+
+pscheduler internal service start
+
+${INTERACTIVE} && printf "\n\nDone.  Hope you meant to do that.\n\n"
+
+exit 0

@@ -25,8 +25,14 @@ COMMAND="$1"
 shift
 
 case "${COMMAND}" in
-    stop|start|restart)
-	true
+    stop)
+	OP='Stopping'
+	;;
+    start)
+	OP='Starting'
+	;;
+    restart)
+	OP='Restarting'
 	;;
     *)
 	die "Unknown command '${COMMAND}'"
@@ -70,7 +76,7 @@ else
     ARGS="ticker scheduler runner archiver api"
 fi
 
-$INTERACTIVE &&  printf "Performing %s:" "${COMMAND}"
+$INTERACTIVE &&  printf "%s:" "${OP}"
 for SERVICE in ${ARGS}
 do
 

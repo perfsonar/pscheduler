@@ -65,11 +65,11 @@ SQL=$(BUILD_SUPER_SQL) $(BUILD_SQL) $(TEARDOWN_SQL)
 INTERNALS=\
 	db-connections \
 	db-change-password \
+	db-reset \
 	db-update \
 	key \
 	purge-runs \
 	psql \
-	reset \
 	warmboot
 
 
