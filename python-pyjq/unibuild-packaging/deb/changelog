@@ -1,3 +1,9 @@
+pyjq (2.4.0-3~bpo10+4) perfsonar-5.2-staging; urgency=low
+
+  * Require jq >= 1.7
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Wed, 16 Oct 2024 12:34:46 +0200 
+
 pyjq (2.4.0-3~bpo10+3) perfsonar-5.1-staging; urgency=low
 
   * Port to Ubuntu 24.
