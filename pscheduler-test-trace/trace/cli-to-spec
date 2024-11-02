@@ -3,7 +3,7 @@
 # Convert comamnd-line options to a test specification
 #
 
-import optparse
+import argparse
 import pscheduler
 import sys
 
@@ -31,7 +31,7 @@ else:
 
 # Gargle the arguments
 
-opt_parser = pscheduler.FailingOptionParser(epilog=
+arg_parser = argparse.ArgumentParser(epilog=
 """Examples:
 
   task trace --dest www.example.com
@@ -45,178 +45,181 @@ opt_parser = pscheduler.FailingOptionParser(epilog=
 
   task trace --sendwait PT3S --dest www.example.com
       Wait 3 seconds between probes
-"""
-                                            )
+""",
+    formatter_class=argparse.RawTextHelpFormatter)
 
-opt_parser.add_option("--algorithm",
+
+arg_parser.add_argument("--algorithm",
                       help="Trace algorithm",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="algorithm")
 
-opt_parser.add_option("--as",
+arg_parser.add_argument("--as",
                       help="Find AS for each hop",
+                      default=None,
                       action="store_true",
                       dest="as_")
-opt_parser.add_option("--no-as",
+arg_parser.add_argument("--no-as",
                       help="Don't find AS for each hop",
+                      default=None,
                       action="store_false",
                       dest="as_")
 
-opt_parser.add_option("-d","--dest",
+arg_parser.add_argument("-d","--dest",
                       help="Destination host",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="dest")
 
-opt_parser.add_option("--ip-version",
+arg_parser.add_argument("--ip-version",
                       help="IP Version",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="ipversion")
 
-opt_parser.add_option("--length",
+arg_parser.add_argument("--length",
                       help="Packet length",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="length")
 
-opt_parser.add_option("--probe-type",
+arg_parser.add_argument("--probe-type",
                       help="Probe type",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="probetype")
 
-opt_parser.add_option("--fragment",
+arg_parser.add_argument("--fragment",
                       help="Allow fragmentation",
+                      default=None,
                       action="store_true",
                       dest="fragment")
-opt_parser.add_option("--no-fragment",
+arg_parser.add_argument("--no-fragment",
                       help="Don't allow fragmentation",
+                      default=None,
                       action="store_false",
                       dest="fragment")
 
-opt_parser.add_option("--first-ttl",
+arg_parser.add_argument("--first-ttl",
                       help="First TTL value",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="firstttl")
 
-opt_parser.add_option("--flow-label",
+arg_parser.add_argument("--flow-label",
                       help="IPv6 flow label (ignored for IPv4)",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="flowlabel")
 
-opt_parser.add_option("-s","--source",
+arg_parser.add_argument("-s","--source",
                       help="Source address",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="source")
 
-opt_parser.add_option("--source-node",
+arg_parser.add_argument("--source-node",
                       help="Source address",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="source_node")
 
-opt_parser.add_option("--hops",
+arg_parser.add_argument("--hops",
                       help="Maximum number of hops",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="hops")
 
-opt_parser.add_option("--queries",
+arg_parser.add_argument("--queries",
                       help="Queries sent per hop",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="queries")
 
-opt_parser.add_option("--hostnames",
+arg_parser.add_argument("--hostnames",
                       help="Resolve IPs to host names",
+                      default=None,
                       action="store_true",
                       dest="hostnames")
-opt_parser.add_option("--no-hostnames",
+arg_parser.add_argument("--no-hostnames",
                       help="Don't resolve IPs to host names",
+                      default=None,
                       action="store_false",
                       dest="hostnames")
 
-opt_parser.add_option("--dest-port",
+arg_parser.add_argument("--dest-port",
                       help="Destination port",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="destport")
 
-opt_parser.add_option("--wait",
+arg_parser.add_argument("--wait",
                       help="Wait time",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="wait")
 
-opt_parser.add_option("--sendwait",
+arg_parser.add_argument("--sendwait",
                       help="Wait time between probes",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="sendwait")
 
 
-opt_parser.add_option("--ip-tos",
+arg_parser.add_argument("--ip-tos",
                       help="IP type-of-service octet (integer)",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="ip_tos")
 
 
-(options, remaining_args) = opt_parser.parse_args(args)
-
-if len(remaining_args) != 0:
-   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
+args = arg_parser.parse_args(args)
 
 
 result = { }
 schema = pscheduler.HighInteger(1)
 
 
-if options.algorithm is not None:
-   result['algorithm'] = options.algorithm
+if args.algorithm is not None:
+   result['algorithm'] = args.algorithm
 
-if options.dest is not None:
-   result['dest'] = options.dest
+if args.dest is not None:
+   result['dest'] = args.dest
 
-if options.ipversion is not None:
-   result['ip-version'] = options.ipversion
+if args.ipversion is not None:
+   result['ip-version'] = args.ipversion
 
-if options.length is not None:
-   result['length'] = options.length
+if args.length is not None:
+   result['length'] = args.length
 
-if options.probetype is not None:
-   result['probe-type'] = options.probetype
+if args.probetype is not None:
+   result['probe-type'] = args.probetype
 
-if options.fragment:
-   result['fragment'] = True
+if args.fragment is not None:
+   result['fragment'] = args.fragment
 
-if options.firstttl is not None:
-   result['first-ttl'] = options.firstttl
+if args.firstttl is not None:
+   result['first-ttl'] = args.firstttl
 
-if options.flowlabel is not None:
-   result['flow-label'] = options.flowlabel
+if args.flowlabel is not None:
+   result['flow-label'] = args.flowlabel
    schema.set(2)
 
-if options.source is not None:
-   result['source'] = options.source
+if args.source is not None:
+   result['source'] = args.source
 
-if options.source_node is not None:
-   result['source-node'] = options.source_node
+if args.source_node is not None:
+   result['source-node'] = args.source_node
 
-if options.hops is not None:
-   result['hops'] = options.hops
+if args.hops is not None:
+   result['hops'] = args.hops
 
-if options.queries is not None:
-   result['queries'] = options.queries
+if args.queries is not None:
+   result['queries'] = args.queries
 
-if options.hostnames is not None:
-   result['hostnames'] = options.hostnames
+if args.hostnames is not None:
+   result['hostnames'] = args.hostnames
 
-if options.destport is not None:
-   result['dest-port'] = options.destport
+if args.destport is not None:
+   result['dest-port'] = args.destport
 
-if options.wait is not None:
-   result['wait'] = options.wait
+if args.wait is not None:
+   result['wait'] = args.wait
 
-if options.sendwait is not None:
-   result['sendwait'] = options.sendwait
+if args.sendwait is not None:
+   result['sendwait'] = args.sendwait
 
-if options.ip_tos is not None:
-   result['ip-tos'] = options.ip_tos
+if args.ip_tos is not None:
+   result['ip-tos'] = args.ip_tos
 
-if options.as_ is not None:
-   result['as'] = options.as_ if \
-       options.as_ is not None else True
+if args.as_ is not None:
+   result['as'] = args.as_
 
 result["schema"] = schema.value()
 

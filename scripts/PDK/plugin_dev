@@ -6,44 +6,42 @@
 import glob
 import os
 import shutil
-import optparse
+import argparse
 import sys
 
 
 
 # Parse the arguments
-
-usage = """
+parser = argparse.ArgumentParser(
+    usage="""
   plugin_dev (options) [test|archiver] [name]
   plugin_dev (options) [tool] [test-associated] [name]
+""",
+    epilog=
 """
+Examples:
 
-epilog = """
-Example usage:
   plugin_dev test ftp
   plugin_dev tool ftp dns
   plugin_dev archiver ftp
-  plugin-dev --directory /home/user/pscheduler test ftp
-"""
+  plugin-dev -directory /home/user/pscheduler test ftp
+""",
+    formatter_class=argparse.RawTextHelpFormatter
 
-class VerbatimParser(optparse.OptionParser):
-    def format_epilog(self, formatter):
-        return self.epilog
-
-parser = VerbatimParser(usage=usage, epilog=epilog)
+)
 
 # Add Options
-parser.add_option("-d", "--dir", "--directory", dest="directory",
+parser.add_argument("-d", "--dir", "--directory", dest="directory",
             help="Write plugin skeleton in DIRECTORY",
-            action="store", type="string")
+            action="store", type=str)
 
-parser.add_option("--debug", dest="debug",
+parser.add_argument("--debug", dest="debug",
                   help="Debug to standard error",
                   action="store_true", default=False)
 
-(options, args) = parser.parse_args(sys.argv[1:])
-
-
+parser.add_argument("args",
+                    help=argparse.SUPPRESS,
+                    nargs="*")
 
 # Utilities
 
@@ -56,19 +54,17 @@ def debug(*args):
         print(*args, file=sys.stderr)
 
 
-
 # Constants
 
 PLUGIN_NAME_TAG = '__PLUGIN_NAME__'
 TEST_NAME_TAG = '__TEST_NAME__'
 
-
-
+args = parser.parse_args()
 
 where_am_i = os.path.dirname(sys.argv[0])
 
 try:
-    if args[0] not in [ "test", "tool", "archiver" ]:
+    if args.args[0] not in [ "test", "tool", "archiver" ]:
         parser.print_usage()
         exit(1)
 except IndexError:
@@ -76,20 +72,20 @@ except IndexError:
     exit(1)
 
 try:
-    plugin_type = args[0]
+    plugin_type = args.args[0]
     if (plugin_type == "tool"):
-        plugin_name = args[2]
-        test_name = args[1]
+        plugin_name = args.args[2]
+        test_name = args.args[1]
     else:
-        plugin_name = args[1]
+        plugin_name = args.args[1]
         test_name = ""
 except IndexError:
     parser.print_usage()
     exit(1)
 
 
-if options.directory is not None:
-    dest_dir = options.directory
+if args.directory is not None:
+    dest_dir = args.directory
 else:
 
     # By default, point at the top of the pScheduler tree, which we
@@ -130,6 +126,7 @@ for (path, dirs, files) in os.walk(new_plugin_dir, topdown=False, onerror=die):
     for candidate in files:
 
         location = os.path.join(path, candidate)
+absDir = os.path.abspath(newDir)
 
         # Replace key strings inside the file
 

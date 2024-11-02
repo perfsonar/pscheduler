@@ -3,7 +3,7 @@
 # Convert command-line options to a test specification
 #
 
-import optparse
+import argparse
 import pscheduler
 import sys
 
@@ -31,7 +31,7 @@ else:
 
 # Gargle the arguments
 
-opt_parser = pscheduler.FailingOptionParser(epilog=
+arg_parser = argparse.ArgumentParser(epilog=
 """Examples:
 
   task netreach --network 192.0.2.0/24 --gateway 192.0.2.1
@@ -43,87 +43,83 @@ opt_parser = pscheduler.FailingOptionParser(epilog=
   task netreach --network 192.0.2.0/24 --gateway -1
     Test 192.0.2.0/24 reached via the last host in the block.
 
-"""
-)
+""",
+    formatter_class=argparse.RawTextHelpFormatter)
 
 
-opt_parser.add_option("--network",
+arg_parser.add_argument("--network",
                       help="Network to check",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="network")
 
-opt_parser.add_option("--gateway",
+arg_parser.add_argument("--gateway",
                       help="Network's gateway address",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="gateway")
 
-opt_parser.add_option("--host",
+arg_parser.add_argument("--host",
                       help="Host where the test should be run",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="host")
 
-opt_parser.add_option("--host-node",
+arg_parser.add_argument("--host-node",
                       help="pScheduler to contact for setup",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="host_node")
 
-opt_parser.add_option("--limit",
+arg_parser.add_argument("--limit",
                       help="Maximum number of addresses to scan",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="limit")
 
-opt_parser.add_option("--parallel",
+arg_parser.add_argument("--parallel",
                       help="Number of parallel tests (default 1)",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="parallel")
 
-opt_parser.add_option("--scan",
+arg_parser.add_argument("--scan",
                       help="Scan type (up, down, edges, random)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="scan")
 
-opt_parser.add_option("--timeout",
+arg_parser.add_argument("--timeout",
                       help="Maximum time to wait for responses.",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="timeout")
 
 
-(options, remaining_args) = opt_parser.parse_args(args)
-
-if len(remaining_args) != 0:
-   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
-
+args = arg_parser.parse_args(args)
 
 result = { 'schema': 1 }
 
 
-if options.network is not None:
-   result['network'] = options.network
+if args.network is not None:
+   result['network'] = args.network
 
-if options.gateway is not None:
+if args.gateway is not None:
    # This can be an integer or a string.
    try:
-      result['gateway'] = int(options.gateway)
+      result['gateway'] = int(args.gateway)
    except ValueError:
-      result['gateway'] = options.gateway
+      result['gateway'] = args.gateway
 
-if options.host is not None:
-   result['host'] = options.host
+if args.host is not None:
+   result['host'] = args.host
 
-if options.host_node is not None:
-   result['host-node'] = options.host_node
+if args.host_node is not None:
+   result['host-node'] = args.host_node
 
-if options.limit is not None:
-   result['limit'] = options.limit
+if args.limit is not None:
+   result['limit'] = args.limit
 
-if options.parallel is not None:
-   result['parallel'] = options.parallel
+if args.parallel is not None:
+   result['parallel'] = args.parallel
 
-if options.scan is not None:
-   result['scan'] = options.scan
+if args.scan is not None:
+   result['scan'] = args.scan
 
-if options.timeout is not None:
-   result['timeout'] = options.timeout
+if args.timeout is not None:
+   result['timeout'] = args.timeout
 
 
 pscheduler.succeed_json(result)

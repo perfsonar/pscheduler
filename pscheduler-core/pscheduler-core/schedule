@@ -7,7 +7,7 @@
 #     pscheduler schedule [options]
 
 import datetime
-import optparse
+import argparse
 import os
 import pscheduler
 import pytz
@@ -79,13 +79,8 @@ if len(args) > 0:
 
 
 
-class VerbatimParser(optparse.OptionParser):
-    def format_epilog(self, formatter):
-        return self.epilog
-
-
-opt_parser = VerbatimParser(
-    usage="Usage: %prog [ OPTIONS ] [ delta | start end ]",
+arg_parser = argparse.ArgumentParser(
+    usage="%(prog)s [ options ] [ delta [ delta ] | start end ]",
     epilog=
 """
 Example:
@@ -111,76 +106,80 @@ Example:
   schedule 2016-05-01T12:40:00 2016-05-01T12:55:00
       Show the schedule on the local host between the times
       specified.
-"""
+""",
+    formatter_class=argparse.RawTextHelpFormatter
     )
-opt_parser.disable_interspersed_args()
 
-opt_parser.add_option("--bind",
+arg_parser.add_argument("--bind",
                       help="Make the request from the provided address",
                       default=None,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="bind")
 
-opt_parser.add_option("--filter-test",
+arg_parser.add_argument("--filter-test",
                       help="Include the named type of test (May be repeated for multiple)",
                       default=[],
-                      action="append", type="string",
+                      action="append", type=str,
                       dest="filter_test")
 
-opt_parser.add_option("--format",
+arg_parser.add_argument("--format",
                       help="Select output format (plain or json)",
                       default="plain",
                       action="store", type="string",
                       dest="out_format")
 
-opt_parser.add_option("--host",
+arg_parser.add_argument("--host",
                       help="Request schedule from named host",
                       default=pscheduler.api_local_host(),
                       action="store", type="string",
                       dest="host")
 
-opt_parser.add_option("--invert",
+arg_parser.add_argument("--invert",
                       help="If filtering, invert the result",
                       default=False,
                       action="store_true",
                       dest="invert")
 
-opt_parser.add_option("--task",
+arg_parser.add_argument("--task",
                       help="Show only runs for the specified task URL",
                       default=None,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="task")
 
-opt_parser.add_option("--verbose",
+arg_parser.add_argument("--verbose",
                       help="Add additional information where appropriate",
                       default=False,
                       action="store_true",
                       dest="verbose")
 
+arg_parser.add_argument("remaining",
+                        help=argparse.SUPPRESS,
+                        nargs=argparse.REMAINDER)
 
-(options, remaining_args) = opt_parser.parse_args(args)
+
+args = arg_parser.parse_args(args)
+
+remaining_args = args.remaining
 
 
-
-
-if len(options.filter_test) > 0:
-    filter_test = dict( (value, 1) for value in options.filter_test )
+if len(args.filter_test) > 0:
+    filter_test = dict( (value, 1) for value in args.filter_test )
 else:
     filter_test = None
 
-filter_invert = options.invert
+filter_invert = args.invert
 
-host = options.host
+host = args.host
 
-if options.out_format not in [ "plain", "json" ]:
+if args.out_format not in [ "plain", "json" ]:
     pscheduler.fail("Format must be plain or json.")
 
-if options.task is not None:
+if args.task is not None:
 
-    if not pscheduler.api_is_task(options.task):
+    if not pscheduler.api_is_task(args.task):
         pscheduler.fail("Task does not look like a valid task URL")
 
-    parsed = list(urllib.parse.urlsplit(options.task))
+    parsed = list(urllib.parse.urlsplit(args.task))
     new_host = parsed[1]
     if host is not None and new_host != host:
         pscheduler.fail("Hosts in --host and --task must be the same.")
@@ -232,7 +231,7 @@ elif len(remaining_args) == 2:
         start, end = end, start
 
 else:
-    opt_parser.print_usage()
+    arg_parser.print_usage()
     pscheduler.fail()
 
 
@@ -255,7 +254,7 @@ if task_uuid is not None:
 
 status, schedule = pscheduler.url_get(
     pscheduler.api_url(host=host, path="schedule"),
-    bind=options.bind, params=params, throw=False)
+    bind=args.bind, params=params, throw=False)
 
 if status != 200:
     pscheduler.fail("Server returned status %d: %s" % (status, schedule))
@@ -265,10 +264,10 @@ if status != 200:
 # Dump it out
 #
 
-if options.out_format == 'json':
+if args.out_format == 'json':
     pscheduler.succeed_json(schedule)
 
-assert options.out_format == 'plain'
+assert args.out_format == 'plain'
 
 if len(schedule) == 0:
     print("Nothing scheduled %s to %s" % (
@@ -306,7 +305,7 @@ for run in schedule:
         run["state-display"]
         ))
 
-    if options.verbose and run["state"] == "nonstart":
+    if args.verbose and run["state"] == "nonstart":
         print("Non-Start Reason:")
         error = run.get("errors") or "Unspecified error"
         print(pscheduler.indent(error.strip()))

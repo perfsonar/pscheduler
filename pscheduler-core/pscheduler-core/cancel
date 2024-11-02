@@ -3,7 +3,7 @@
 # Cancel a task
 #
 
-import optparse
+import argparse
 import pscheduler
 import urllib
 
@@ -15,45 +15,45 @@ pscheduler.set_graceful_exit()
 # Gargle the arguments
 #
 
-
-class VerbatimParser(optparse.OptionParser):
-    def format_epilog(self, formatter):
-        return self.epilog
-
-opt_parser = VerbatimParser(
-    usage="Usage: %prog task-url",
+arg_parser = argparse.ArgumentParser(
+    usage="%(prog)s task",
     epilog=
 """
 Example:
 
   cancel https://ps.foo.org/pscheduler/task/12345...
       Cancel a task
-"""
+""",
+    formatter_class=argparse.RawTextHelpFormatter
     )
-opt_parser.disable_interspersed_args()
 
-opt_parser.add_option("--bind",
+arg_parser.add_argument("--bind",
                       help="Make the request from the provided address",
                       default=None,
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="bind")
 
-opt_parser.add_option("--key",
+arg_parser.add_argument("--key",
                       help="Key required for write access to the task (Optional @/path/to/file)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="key")
 
+arg_parser.add_argument("task",
+                        help="URL of task",
+                        nargs="?")
 
 
-(options, remaining_args) = opt_parser.parse_args()
 
-if len(remaining_args) != 1:
-    opt_parser.print_usage()
+args = arg_parser.parse_args()
+
+if not args.task:
+    arg_parser.print_usage()
     pscheduler.fail()
 
-task_url = remaining_args[0]
+task_url = args.task
 params = {}
 
+# TODO: Find out why Pyling complains about this but Python doesn't.
 parsed = list(urllib.parse.urlsplit(task_url))
 
 path_parts = parsed[2].split("/")
@@ -63,14 +63,14 @@ if (len(path_parts) != 4) \
     pscheduler.fail("%s: Not a task URL" % task_url)
 
 
-if options.key is not None:
+if args.key is not None:
     try:
-        params["key"] = pscheduler.string_from_file(options.key)
+        params["key"] = pscheduler.string_from_file(args.key)
     except IOError as ex:
         pscheduler.fail("Unable to read key file: " + str(ex))
 
 
-status, result = pscheduler.url_delete(task_url, bind=options.bind,
+status, result = pscheduler.url_delete(task_url, bind=args.bind,
                                        params=params,
                                        throw=False)
 

@@ -6,7 +6,7 @@
 
 import collections
 import datetime
-import optparse
+import argparse
 import os
 import psycopg2
 import queue
@@ -24,103 +24,107 @@ pscheduler.set_graceful_exit()
 
 # Gargle the arguments
 
-opt_parser = optparse.OptionParser()
+arg_parser = argparse.ArgumentParser()
 
 # Program options
 
-opt_parser.add_option("-a", "--archive-defaults",
+arg_parser.add_argument("-a", "--archive-defaults",
                       help="Directory containing default archivers",
-                      action="store", type="string", dest="archive_defaults",
+                      action="store", type=str, dest="archive_defaults",
                       default="__DEFAULT_DIR__")
-opt_parser.add_option("-d", "--dsn",
+arg_parser.add_argument("-d", "--dsn",
                       help="Database connection string",
-                      action="store", type="string", dest="dsn",
+                      action="store", type=str, dest="dsn",
                       default="dbname=pscheduler")
-opt_parser.add_option("-m", "--max-parallel",
+arg_parser.add_argument("-m", "--max-parallel",
                       help="Maximum concurrent archivings",
-                      action="store", type="int", dest="max_parallel",
+                      action="store", type=int, dest="max_parallel",
                       default=100)
-opt_parser.add_option("-p", "--pool-size",
+arg_parser.add_argument("-p", "--pool-size",
                       help="Size of pool per archive type",
-                      action="store", type="int", dest="pool_size",
+                      action="store", type=int, dest="pool_size",
                       default=25)
-opt_parser.add_option("-r", "--refresh",
+arg_parser.add_argument("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
-                      action="store", type="string", dest="refresh",
+                      action="store", type=str, dest="refresh",
                       default="PT1M")
-opt_parser.add_option("--timeout",
+arg_parser.add_argument("-s", "--skim-interval",
+                      help="How often to skim archiver pools (ISO8601)",
+                      action="store", type=str, dest="skim_interval",
+                      default="PT2M")
+arg_parser.add_argument("--timeout",
                       help="Timeout for archiver I/O (ISO8601)",
-                      action="store", type="string", dest="timeout",
+                      action="store", type=str, dest="timeout",
                       default="PT2M")
 
-opt_parser.add_option("--worker-idle",
+arg_parser.add_argument("--worker-idle",
                       help="Idle time before worker processes exit",
                       action="store", type="string", dest="worker_idle",
                       default="PT1M")
-opt_parser.add_option("--worker-threads",
+arg_parser.add_argument("--worker-threads",
                       help="Maximum threads per worker process",
                       action="store", type="int", dest="worker_threads",
                       default=25)
 
-opt_parser.add_option("--skim-interval",
+arg_parser.add_argument("--skim-interval",
                       help="How often to skim archiver pools (ISO8601)",
                       action="store", type="string", dest="skim_interval",
                       default="PT30S")
-opt_parser.add_option("--archiver-iterations",
+arg_parser.add_argument("--archiver-iterations",
                       help="How many iterations before an archiver is stopped",
                       action="store", type="int", dest="archiver_iterations",
                       default=10000)
-opt_parser.add_option("--archiver-idle",
+arg_parser.add_argument("--archiver-idle",
                       help="How long idle archivers are kept",
                       action="store", type="string", dest="archiver_idle",
                       default="PT1M")
 
 
-opt_parser.add_option("--verbose", action="store_true", dest="verbose")
-opt_parser.add_option("--debug", action="store_true", dest="debug")
-opt_parser.add_option("--debug_noio", action="store_true", dest="debug_noio")
+arg_parser.add_argument("--verbose", action="store_true", dest="verbose")
+arg_parser.add_argument("--debug", action="store_true", dest="debug")
+arg_parser.add_argument("--debug_noio", action="store_true", dest="debug_noio")
 
 
-(options, _args) = opt_parser.parse_args()
+args = arg_parser.parse_args()
 
-if options.max_parallel < 1:
-    opt_parser.error("Number of concurrent archivings must be positive.")
+if args.max_parallel < 1:
+    arg_parser.error("Number of concurrent archivings must be positive.")
 
-if options.pool_size < 1:
-    opt_parser.error("Pool size must be positive.")
+if args.pool_size < 1:
+    arg_parser.error("Pool size must be positive.")
 
-refresh = pscheduler.iso8601_as_timedelta(options.refresh)
+refresh = pscheduler.iso8601_as_timedelta(args.refresh)
 if refresh is None:
-    opt_parser.error('Invalid refresh interval "' + options.refresh + '"')
+    arg_parser.error('Invalid refresh interval "' + args.refresh + '"')
 refresh = pscheduler.timedelta_as_seconds(refresh)
 
 
-if options.worker_threads < 1:
-    opt_parser.error("Number of worker threads must be positive.")
+if args.worker_threads < 1:
+    arg_parser.error("Number of worker threads must be positive.")
 
-skim_interval = pscheduler.iso8601_as_timedelta(options.skim_interval)
+skim_interval = pscheduler.iso8601_as_timedelta(args.skim_interval)
 if skim_interval is None:
-    opt_parser.error('Invalid skim interval "' + options.skim_interval + '"')
+    arg_parser.error('Invalid skim interval "' + args.skim_interval + '"')
 
-if options.archiver_iterations < 1:
-    opt_parser.error("Number of archiver iterations must be positive.")
-archiver_iterations = options.archiver_iterations
+if args.archiver_iterations < 1:
+    arg_parser.error("Number of archiver iterations must be positive.")
+archiver_iterations = args.archiver_iterations
 
-archiver_idle = pscheduler.iso8601_as_timedelta(options.archiver_idle)
+archiver_idle = pscheduler.iso8601_as_timedelta(args.archiver_idle)
 if archiver_idle is None:
-    opt_parser.error('Invalid archiver idle time "' + options.archiver_idle + '"')
+    arg_parser.error('Invalid archiver idle time "' + args.archiver_idle + '"')
 
-timeout = pscheduler.iso8601_as_timedelta(options.timeout)
+timeout = pscheduler.iso8601_as_timedelta(args.timeout)
 if timeout is None:
-    opt_parser.error('Invalid timeout "' + options.timeout + '"')
+    arg_parser.error('Invalid timeout "' + args.timeout + '"')
 timeout = pscheduler.timedelta_as_seconds(timeout)
 
-worker_idle_td = pscheduler.iso8601_as_timedelta(options.worker_idle)
+worker_idle_td = pscheduler.iso8601_as_timedelta(args.worker_idle)
 if worker_idle_td is None:
-    opt_parser.error('Invalid worker idle time "' + options.worker_idle + '"')
+    arg_parser.error('Invalid worker idle time "' + args.worker_idle + '"')
 worker_idle = pscheduler.timedelta_as_seconds(worker_idle_td)
 
-log = pscheduler.Log(verbose=options.verbose, debug=options.debug, propagate=True)
+log = pscheduler.Log(verbose=args.verbose, debug=args.debug, propagate=True)
 
 dsn = pscheduler.string_from_file(options.dsn)
 
@@ -970,14 +974,14 @@ def main_program():
     db.listen("warmboot")
 
     # Something to maintain the default archiver list
-    default_maintainer = DefaultArchiveMaintainer(options.archive_defaults, dsn, log)
+    default_maintainer = DefaultArchiveMaintainer(args.archive_defaults, dsn, log)
     default_maintainer.refresh()
 
     worker_pool = pscheduler.WorkerProcessPool(
         name="archiver-pool",
         load_limit=options.worker_threads,
         setup=worker_process_setup,
-        setup_args=(dsn, options.worker_threads,),
+        setup_args=(dsn, args.worker_threads,),
         teardown=worker_process_teardown,
         teardown_args=(),
         debug_callback=log.debug,
@@ -1042,7 +1046,7 @@ def main_program():
         # Until we hear otherwise...
         next_refresh = refresh
 
-        query_limit = options.max_parallel - len(ids_archiving)
+        query_limit = args.max_parallel - len(ids_archiving)
 
         # If we're already full up on workers, don't bother hitting the database
         if query_limit < 1:
@@ -1087,7 +1091,7 @@ def main_program():
 
             # Don't bother if there are already too many archivers running.
             # TODO: Why do we do this when we checked for it above?
-            if len(ids_archiving) >= options.max_parallel:
+            if len(ids_archiving) >= args.max_parallel:
                 log.debug("Already running %d archivers.", len(ids_archiving))
                 break
 

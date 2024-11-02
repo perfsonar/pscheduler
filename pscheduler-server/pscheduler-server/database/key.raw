@@ -4,7 +4,7 @@
 #
 
 import getpass
-import optparse
+import argparse
 import pscheduler
 import psycopg2
 import sys
@@ -13,15 +13,11 @@ import sys
 # Gargle the arguments
 #
 
-class VerbatimParser(optparse.OptionParser):
-    def format_epilog(self, formatter):
-        return self.epilog
-
-opt_parser = VerbatimParser(
-    usage="Usage: %prog COMMAND [ arg ... ]",
+arg_parser = argparse.ArgumentParser(
+    usage="%(prog)s command [ arg ... ]",
     epilog=
 """
-COMMAND is one of:
+command is one of:
 
   add     Add a new key
   delete  Delete a key
@@ -38,27 +34,30 @@ Examples:
   key list
       Produce a list of all keys by type and name
 
-"""
+""",
+    formatter_class=argparse.RawTextHelpFormatter
 )
-opt_parser.disable_interspersed_args()
 
 # Program options
 
-opt_parser.add_option("-d", "--dsn",
+arg_parser.add_argument("-d", "--dsn",
                       help="Database connection string, prefix with @ to read from file",
-                      action="store", type="string", dest="dsn",
+                      action="store", type=str, dest="dsn",
                       default="@__DSNFILE__")
 
-(options, args) = opt_parser.parse_args()
+arg_parser.add_argument("command",
+                        help="Command",
+                        nargs="?")
 
-# Use of args will vary depending on the command.
+arg_parser.add_argument("command_args",
+                        help="Optional arguments for the command",
+                        nargs="*")
 
-if len(args) < 1:
-    opt_parser.print_usage()
-    pscheduler.fail()
+args = arg_parser.parse_args()
+
 
 try:
-    dsn = pscheduler.string_from_file(options.dsn)
+    dsn = pscheduler.string_from_file(args.dsn)
 except IOError as ex:
     pscheduler.fail("Unable to read DSN: %s" % (str(ex)))
 
@@ -69,7 +68,7 @@ try:
 except Exception as ex:
     pscheduler.fail("Unable to connect to the database: %s" % str(ex))
 
-command = args.pop(0)
+command = args.command
 
 
 #
@@ -111,7 +110,7 @@ def command_add(db, args):
 def command_delete(db, args):
 
     try:
-        key_type, name = args
+        key_type, name = args.command_args
     except ValueError:
         pscheduler.fail("Usage: delete type name")
 
@@ -152,9 +151,9 @@ COMMANDS = {
 }
 
 if command not in COMMANDS:
-    pscheduler.fail("Invalid command '%s'" % (command))
+    pscheduler.fail("Invalid command.")
 
-COMMANDS[command](db, args)
+COMMANDS[command](db, args.command_args)
 
 pscheduler.succeed()
 

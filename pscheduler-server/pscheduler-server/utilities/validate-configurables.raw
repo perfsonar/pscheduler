@@ -4,7 +4,7 @@
 #
 
 import errno
-import optparse
+import argparse
 import pscheduler
 import sys
 
@@ -41,12 +41,8 @@ SCHEMA = {
 # Gargle the arguments
 #
 
-class VerbatimParser(optparse.OptionParser):
-    def format_epilog(self, formatter):
-        return self.epilog
-
-opt_parser = VerbatimParser(
-    usage="Usage: %prog [ FILE ]",
+arg_parser = argparse.ArgumentParser(
+    usage="%(prog)s [ input ]",
     epilog=
 """
 Examples:
@@ -59,21 +55,28 @@ Examples:
 
   validate-limits
       Validate __CONFIGURABLESFILE__ if readable.
-"""
+""",
+    formatter_class=argparse.RawTextHelpFormatter
     )
-opt_parser.disable_interspersed_args()
 
-opt_parser.add_option("--dump",
+arg_parser.add_argument("--dump",
                       help="Dump the configurables if valid",
                       action="store_true",
                       dest="dump")
 
-opt_parser.add_option("--quiet",
+arg_parser.add_argument("--quiet",
                       help="Print nothing if successful",
                       action="store_true",
                       dest="quiet")
 
-(options, remaining_args) = opt_parser.parse_args()
+# Positional Arguments
+
+arg_parser.add_argument("input",
+                        help="Input file.  Defaults to __CONFIGURABLESFILE__, '-' for standard input",
+                        nargs="?",
+                        default="__CONFIGURABLESFILE__")
+
+args = arg_parser.parse_args()
 
 
 #
@@ -82,21 +85,15 @@ opt_parser.add_option("--quiet",
 
 explicit_file = False
 try:
-    if len(remaining_args) == 0:
-        infile = open(CONFIGURABLES_FILE, 'r')
-    elif len(remaining_args) == 1 and remaining_args[0] == '-':
+    if args.input == "-":
         infile = sys.stdin
-    elif len(remaining_args) == 1:
-        explicit_file = True
-        infile = open(remaining_args[0], 'r')
     else:
-        opt_parser.print_usage()
-        pscheduler.fail()
+        infile = open(args.input, 'r')
 except IOError as ex:
-    if explicit_file or ex.errno != errno.ENOENT:
+    if args.input == "__CONFIGURABLESFILE__" and ex.errno == errno.ENOENT:
+        pscheduler.fail("No configurables file is installed.")
+    else:
         pscheduler.fail("Unable to read input: %s" % (str(ex)))
-    # ENOENT means we continue with nothing.
-    infile = "null"
 
 
 #
@@ -109,24 +106,27 @@ except Exception as ex:
     pscheduler.fail(str(ex))
 
 if json is None:
-    if options.dump:
+    if args.dump:
         pscheduler.succeed("null")
-    pscheduler.succeed(None if options.quiet else "No configurables file installed.")
+    pscheduler.succeed(None if args.quiet else "No configurables file installed.")
 
 
 #
 # Validate it
 #
 
-valid, error = pscheduler.json_validate(json, SCHEMA)
+try:
+    valid, error = pscheduler.json_validate(json, SCHEMA)
+except ValueError:
+    pscheduler.fail("Configurables file must be a JSON object.")
 
 if not valid:
     pscheduler.fail(error)
 
-if options.dump:
+if args.dump:
     pscheduler.succeed(pscheduler.json_dump(json))
 
-if sys.stdout.isatty() and not options.quiet:
+if sys.stdout.isatty() and not args.quiet:
     print("Configurables are valid.")
 
 pscheduler.succeed()

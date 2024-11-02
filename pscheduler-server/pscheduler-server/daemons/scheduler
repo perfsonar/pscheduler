@@ -6,7 +6,7 @@
 import copy
 import datetime
 import errno
-import optparse
+import argparse
 import os
 import pscheduler
 import random
@@ -22,59 +22,59 @@ random.seed()
 
 # Gargle the arguments
 
-opt_parser = optparse.OptionParser()
+arg_parser = argparse.ArgumentParser()
 
 # Program options
 
-opt_parser.add_option("-d", "--dsn",
+arg_parser.add_argument("-d", "--dsn",
                       help="Database connection string",
-                      action="store", type="string", dest="dsn",
+                      action="store", type=str, dest="dsn",
                       default="dbname=pscheduler")
-opt_parser.add_option("--first-run-offset-multi",
+arg_parser.add_argument("--first-run-offset-multi",
                       help="Time offset for first runs in multi-participant tests (ISO8601)",
-                      action="store", type="string", dest="firstoffsetmulti",
+                      action="store", type=str, dest="firstoffsetmulti",
                       default="PT10S")
-opt_parser.add_option("--first-run-offset-single",
+arg_parser.add_argument("--first-run-offset-single",
                       help="Time offset for first runs in single-participant tests (ISO8601)",
-                      action="store", type="string", dest="firstoffsetsingle",
+                      action="store", type=str, dest="firstoffsetsingle",
                       default="PT5S")
-opt_parser.add_option("-m", "--max-parallel",
+arg_parser.add_argument("-m", "--max-parallel",
                       help="Maximum concurrent archivings",
-                      action="store", type="int", dest="max_parallel",
+                      action="store", type=int, dest="max_parallel",
                       default=100)
-opt_parser.add_option("-r", "--refresh",
+arg_parser.add_argument("-r", "--refresh",
                       help="Forced refresh interval (ISO8601)",
-                      action="store", type="string", dest="refresh",
+                      action="store", type=str, dest="refresh",
                       default="PT10S")
-opt_parser.add_option("-R", "--retries",
+arg_parser.add_argument("-R", "--retries",
                       help="Number of times to retry after a conflict",
                       action="store", type="int", dest="retries",
                       default=5)
-opt_parser.add_option("--retry-backoff",
+arg_parser.add_argument("--retry-backoff",
                       help="Maximum random backoff between retries (ISO8601)",
                       action="store", type="string", dest="retrybackoff",
                       default="PT10S")
-opt_parser.add_option("-t", "--timeout",
+arg_parser.add_argument("-t", "--timeout",
                       help="Communication timeout (ISO8601)",
-                      action="store", type="string", dest="timeout",
+                      action="store", type=str, dest="timeout",
                       default="PT10S")
 
-opt_parser.add_option("--worker-idle",
+arg_parser.add_argument("--worker-idle",
                       help="Idle time before worker processes exit",
                       action="store", type="string", dest="worker_idle",
                       default="PT1M")
-opt_parser.add_option("--worker-threads",
+arg_parser.add_argument("--worker-threads",
                       help="Maximum threads per worker process",
                       action="store", type="int", dest="worker_threads",
                       default=20)
 
-opt_parser.add_option("-v", "--verbose", action="store_true", dest="verbose")
-opt_parser.add_option("--debug", action="store_true", dest="debug")
+arg_parser.add_argument("-v", "--verbose", action="store_true", dest="verbose")
+arg_parser.add_argument("--debug", action="store_true", dest="debug")
 
-(options, args) = opt_parser.parse_args()
+args = arg_parser.parse_args()
 
-if options.max_parallel < 1:
-    opt_parser.error("Number of concurrent archivings must be positive.")
+if args.max_parallel < 1:
+    arg_parser.error("Number of concurrent archivings must be positive.")
 
 
 # Minimum amount of time from now when the first run of a task can be
@@ -82,53 +82,53 @@ if options.max_parallel < 1:
 # a time before the participants can prepare for them.
 # TODO: Potential race condition?  Yep.
 try:
-    first_run_offset_multi = pscheduler.iso8601_as_timedelta(options.firstoffsetmulti)
+    first_run_offset_multi = pscheduler.iso8601_as_timedelta(args.firstoffsetmulti)
 except ValueError:
-    opt_parser.error('Invalid first offset for multi "' + options.firstoffsetmulti + '"')
+    arg_parser.error('Invalid first offset for multi "' + args.firstoffsetmulti + '"')
 try:
-    first_run_offset_single = pscheduler.iso8601_as_timedelta(options.firstoffsetsingle)
+    first_run_offset_single = pscheduler.iso8601_as_timedelta(args.firstoffsetsingle)
 except ValueError:
-    opt_parser.error('Invalid first offset for single "' + options.firstoffsetsingle + '"')
+    arg_parser.error('Invalid first offset for single "' + args.firstoffsetsingle + '"')
 
 try:
-    refresh = pscheduler.iso8601_as_timedelta(options.refresh)
+    refresh = pscheduler.iso8601_as_timedelta(args.refresh)
 except ValueError:
-    opt_parser.error('Invalid refresh interval "' + options.refresh + '"')
+    arg_parser.error('Invalid refresh interval "' + args.refresh + '"')
 if pscheduler.timedelta_as_seconds(refresh) == 0:
-    opt_parser.error("Refresh interval must be calculable as seconds.")
+    arg_parser.error("Refresh interval must be calculable as seconds.")
 
-conflict_retries = options.retries
+conflict_retries = args.retries
 if conflict_retries < 0:
-    opt_parser.error("Retries cannot be negative.")
+    arg_parser.error("Retries cannot be negative.")
 
 try:
     conflict_retry_backoff = pscheduler.timedelta_as_seconds(
-        pscheduler.iso8601_as_timedelta(options.retrybackoff)
+        pscheduler.iso8601_as_timedelta(args.retrybackoff)
     )
 except ValueError:
-    opt_parser.error('Invalid retry backoff "%s"' % options.retrybackoff)
+    arg_parser.error('Invalid retry backoff "%s"' % args.retrybackoff)
 
 
 try:
-    timeout_td = pscheduler.iso8601_as_timedelta(options.timeout)
+    timeout_td = pscheduler.iso8601_as_timedelta(args.timeout)
 except ValueError:
-    opt_parser.error('Invalid timeout "' + options.timeout + '"')
+    arg_parser.error('Invalid timeout "' + args.timeout + '"')
 timeout = pscheduler.timedelta_as_seconds(timeout_td)
 
 
-worker_idle_td = pscheduler.iso8601_as_timedelta(options.worker_idle)
+worker_idle_td = pscheduler.iso8601_as_timedelta(args.worker_idle)
 if worker_idle_td is None:
-    opt_parser.error('Invalid worker idle time "' + options.worker_idle + '"')
+    arg_parser.error('Invalid worker idle time "' + args.worker_idle + '"')
 worker_idle = pscheduler.timedelta_as_seconds(worker_idle_td)
 
-worker_threads = options.worker_threads
+worker_threads = args.worker_threads
 if worker_threads < 1:
-    opt_parser.error("Worker threads must be positive.")
+    arg_parser.error("Worker threads must be positive.")
 
 
-log = pscheduler.Log(verbose=options.verbose, debug=options.debug, propagate=True)
+log = pscheduler.Log(verbose=args.verbose, debug=args.debug, propagate=True)
 
-dsn = pscheduler.string_from_file(options.dsn)
+dsn = pscheduler.string_from_file(args.dsn)
 
 TIMEDELTA_ZERO = datetime.timedelta()
 
@@ -145,7 +145,7 @@ def worker_process_setup(args):
     dsn, max_size = args
     global dbpool
     dbpool = pscheduler.DBConnectionPool(dsn,
-                                         options.worker_threads,
+                                         args.worker_threads,
                                          name='runner-%s' % (os.getpid()),
                                          log_callback=log.warning)
 
@@ -715,7 +715,7 @@ def run_post(
 
 
     # TODO: Probably also want to return the start and end times?
-    log_debug("%d: Run posting finished", number)    
+    log_debug("%d: Run posting finished", number)
 
     return (runs_posted[0], schedule_lower, schedule_upper, False, False, None)
 
@@ -904,9 +904,9 @@ def main_program():
 
     worker_pool = pscheduler.WorkerProcessPool(
         name="scheduler-pool",
-        load_limit=options.worker_threads,
+        load_limit=args.worker_threads,
         setup=worker_process_setup,
-        setup_args=(dsn, options.worker_threads,),
+        setup_args=(dsn, args.worker_threads,),
         teardown=worker_process_teardown,
         teardown_args=(),
         debug_callback=lambda m: log.debug(m),
@@ -926,7 +926,7 @@ def main_program():
     # they're quick.
 
     # What workers are running
-    max_workers = options.max_parallel
+    max_workers = args.max_parallel
 
     workers = pscheduler.ThreadSafeSet()
     worker_threads = {}

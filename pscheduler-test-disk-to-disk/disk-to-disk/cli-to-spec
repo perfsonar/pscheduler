@@ -11,7 +11,7 @@
 #
 
 import re
-import optparse
+import argparse
 import pscheduler
 import sys
 
@@ -40,7 +40,7 @@ else:
 # Gargle the arguments
 
 # TODO: Write an epilog.
-opt_parser = pscheduler.FailingOptionParser(epilog=
+arg_parser = argparse.ArgumentParser(epilog=
 """
     This software is a plugin for the pScheduler project that adds a
     disk-to-disk feature to the testing suite. This test supports three
@@ -55,83 +55,80 @@ opt_parser = pscheduler.FailingOptionParser(epilog=
         pscheduler task --tool ftp disk-to-disk \
         --source ftp://speedtest.tele2.net/1KB.zip \
         --dest /tmp/test.out --timeout PT5S
-   
-      
-
-"""
-)
+""",
+    formatter_class=argparse.RawTextHelpFormatter)
 
 # Add all potential command line options here
 # Check https://docs.python.org/2/library/optparse.html for more
 # documentation on the opt parser
 
 
-opt_parser.add_option("--duration",
+arg_parser.add_argument("--duration",
                       help="Duration of idle test.",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="duration")
 
-opt_parser.add_option("--timeout",
+arg_parser.add_argument("--timeout",
                       help="Timeout for each query attempt (in seconds)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="timeout")
 
-opt_parser.add_option("--host",
+arg_parser.add_argument("--host",
                       help="Host where the test should be run",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="host")
 
-opt_parser.add_option("--source",
+arg_parser.add_argument("--source",
                       help="Source URL",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="source")
 
 
-opt_parser.add_option("--dest",
+arg_parser.add_argument("--dest",
                       help="Destination URL",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="dest")
 
-opt_parser.add_option("--cleanup",
-                      help="If specified then test file is not deleted after transfer",
-                      action="store_false",
+arg_parser.add_argument("--cleanup",
+                      help="Delete test file after transfer",
+                      default=None,
+                      action="store_true",
+                      dest="cleanup")
+arg_parser.add_argument("--no-cleanup",
+                      help="Keep test file after transfer",
+                      default=None,
+                      action="store_true",
                       dest="cleanup")
 
-opt_parser.add_option("--parallel", 
+arg_parser.add_argument("--parallel", 
                       help="Number of parallel streams to use with GridFTP transfers",
-                      action="store", type="int",
+                      action="store", type=int,
                       dest="parallel")
 
-(options, remaining_args) = opt_parser.parse_args(args)
+args = arg_parser.parse_args(args)
 
 result = { 'schema': 1 }
 
-if options.source is not None:
-  result['source'] = options.source
+if args.source is not None:
+  result['source'] = args.source
 
-if options.dest is not None:
-  result['dest'] = options.dest
+if args.dest is not None:
+  result['dest'] = args.dest
 
-if options.host is not None:
-  result['host'] = options.host
+if args.host is not None:
+  result['host'] = args.host
 
-if options.parallel is None:
-  result["parallel"] = 1
-else:
-  if options.parallel <= 1:
-    pscheduler.fail('Error: Number of parallel streams must be greater than 1')
-  result["parallel"] = options.parallel
+if args.parallel is not None:
+   result["parallel"] = args.parallel
 
-if options.cleanup is not None:
-  result['cleanup'] = options.cleanup
+if args.cleanup is not None:
+  result['cleanup'] = args.cleanup
 
-if options.timeout is not None:
-   result['timeout'] = options.timeout
+if args.timeout is not None:
+   result['timeout'] = args.timeout
 
-if options.duration is not None:
-   result['duration'] = options.duration
+if args.duration is not None:
+   result['duration'] = args.duration
 
-#if result['testtype'] not in [ 'api', 'system' ]:
-#    pscheduler.fail('Invalid test type. Choose api or system.')
 
 pscheduler.succeed_json(result)

@@ -5,7 +5,7 @@
 #
 
 import re
-import optparse
+import argparse
 import pscheduler
 import sys
 
@@ -33,7 +33,7 @@ else:
 
 # Gargle the arguments
 
-opt_parser = pscheduler.FailingOptionParser(epilog=
+opt_parser = argparse.ArgumentParser(epilog=
 """
   Can be used with multiple oids by calling --oidargs multiple times.
 
@@ -41,115 +41,127 @@ opt_parser = pscheduler.FailingOptionParser(epilog=
   task snmpset --version 2c --community public --dest example.net
   --oidargs sysLocation.0:s:'Ann Arbor' --oidargs sysContact.0:s:'John'
 
-"""
-)
+""",
+    formatter_class=argparse.RawTextHelpFormatter)
 
-v1args = [ '--community' ]
-v3args = [ '--security-name', '--auth-protocol', '--priv-protocol', '--auth-key',
-'--priv-key', '--security-level', '--context', ]
-
-opt_parser.add_option("--host",
+opt_parser.add_argument("--host",
                       help="Host to run the test.",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="host")
 
-opt_parser.add_option("--host-node",
+opt_parser.add_argument("--host-node",
                       help="Host to run the test.",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="host_node")
 
-opt_parser.add_option("--dest",
+opt_parser.add_argument("--dest",
                       help="Destination that will be queried.",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="dest")
                     
-opt_parser.add_option("--version",
+opt_parser.add_argument("--version",
                       help="Version of SNMP to be used. (1|2c|3)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="version")
 
-opt_parser.add_option("--oidargs",
+opt_parser.add_argument("--oidargs",
                       help="OID, type, and value",
-                      action="append", type="string",
+                      action="append", type=str, default=[],
                       dest="oidargs")
 
-opt_parser.add_option("--protocol",
+opt_parser.add_argument("--protocol",
                       help="Transport specifier (tcp|udp)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="protocol")
 
-opt_parser.add_option("--timeout",
+opt_parser.add_argument("--timeout",
                       help="Timeout for each query attempt",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="timeout")
 
 # snmp v3 specific options
 
-opt_parser.add_option("--security-name",
+opt_parser.add_argument("--security-name",
                       help="Security Name",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="security_name") 
-opt_parser.add_option("--auth-protocol",
+opt_parser.add_argument("--auth-protocol",
                       help="Authentication Protocol (md5|sha)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="auth_protocol")
 
-opt_parser.add_option("--priv-protocol",
+opt_parser.add_argument("--priv-protocol",
                       help="Privacy Protocol (des|aes)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="priv_protocol")
 
-opt_parser.add_option("--auth-key",
+opt_parser.add_argument("--auth-key",
                       help="Authentication Passphrase",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="auth_key")
 
-opt_parser.add_option("--priv-key",
+opt_parser.add_argument("--priv-key",
                       help="Privacy Passphrase",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="priv_key")
 
-opt_parser.add_option("--security-level",
+opt_parser.add_argument("--security-level",
                       help="Security Level (noAuthNoPriv|authNoPriv|authPriv)",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="security_level")
 
-opt_parser.add_option("--context",
+opt_parser.add_argument("--context",
                       help="Context Name",
-                      action="store", type="string",
+                      action="store", type=str,
                       dest="context")
 
 #Not v3
 
-opt_parser.add_option("--community",
+opt_parser.add_argument("--community",
                           help="Community string",
-                          action="store", type="string",
+                          action="store", type=str,
                           dest="community")
 
-(options, remaining_args) = opt_parser.parse_args(args)
+options = opt_parser.parse_args(args)
 
-for i in range(len(args)):
-    if args[i] == '--version':
-        if args[i + 1] == '3':
-            version = 3
-            for item in v1args:
-                if item in args:
-                    pscheduler.fail("Args do not apply to this SNMP version.")
 
-        if args[i + 1] == '2c':
-            version = 1
-            for item in v3args:
-                if item in args:
-                    pscheduler.fail("Args do not apply to this SNMP version.")
+# Complain if there are arguments that don't match the SNMP version.
 
-        if args[i + 1] == '1':
-            version = 1
-            for item in v3args:
-                if item in args:
-                    pscheduler.fail("Args do not apply to this SNMP version.")
+# TODO: This should really be done in the validator and not here.
 
-if len(remaining_args) != 0:
-   pscheduler.fail("Unusable arguments: %s" % " ".join(remaining_args))
+arg_validity = {
+
+   # SNMPv1 only
+   "community": 1,
+
+   # SNMPv2c and SNMPv3
+   "security-name": 3,
+   "auth-protocol": 3,
+   "priv-protocol": 3,
+   "auth-key": 3,
+   "priv-key": 3,
+   "security-level": 3,
+   "context": 3
+}
+
+
+version = options.version or "1"
+
+if options.version in ["2c", "3"]:
+   check_version = 3
+elif options.version in [None, "1"]:
+   check_version = 1
+else:
+   pscheduler.fail("Invalid SNMP version (must be 1, 2c or 3)")
+
+option_values = vars(options)
+for option in option_values:
+   if (option_values[option] is not None) \
+      and (option in arg_validity) \
+      and (arg_validity[option] != check_version):
+      pscheduler.fail("--%s not allowed in SNMPv%s" % (option, version))
+
+
 
 result = { 'schema': 1 }
 
@@ -171,7 +183,7 @@ if options.dest is not None:
 if options.version is not None:
    result['version'] = options.version
 
-if options.oidargs is not None:
+if options.oidargs is not None and len(options.oidargs):
    result['oidargs'] = dictargs
 
 if options.protocol is not None:
@@ -180,11 +192,17 @@ if options.protocol is not None:
 if options.timeout is not None:
    result['timeout'] = options.timeout
 
+
+# TODO: This shouldn't be passing judgment on what combinations of
+# options are valid.  If it's there, just convert it to JSON.
+
 if version == 1:
+
   if options.community is not None:
     result['_community'] = options.community
 
 else:
+
     if options.security_name is not None:
       result['security-name'] = options.security_name
 
