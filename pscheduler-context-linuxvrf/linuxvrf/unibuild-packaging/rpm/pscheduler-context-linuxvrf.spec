@@ -58,7 +58,7 @@ cat > $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}/%{name} <<'EOF'
 #
 # %{name}
 #
-Cmnd_Alias PSCHEDULER_CONTEXT_LINUXVRF=/sbin/ip vrf exec *
+Cmnd_Alias PSCHEDULER_CONTEXT_LINUXVRF=%{dest}/change-secure
 %{_pscheduler_user} ALL = (root) NOPASSWD: PSCHEDULER_CONTEXT_LINUXVRF
 Defaults!PSCHEDULER_CONTEXT_LINUXVRF !requiretty
 EOF
