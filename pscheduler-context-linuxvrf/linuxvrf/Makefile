@@ -7,7 +7,8 @@
 FILES=\
 	enumerate \
 	data-is-valid \
-	change
+	change \
+	change-secure
 
 
 install: $(FILES)

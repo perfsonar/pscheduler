@@ -57,7 +57,7 @@ cat > $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}/%{name} <<'EOF'
 #
 # %{name}
 #
-Cmnd_Alias PSCHEDULER_CONTEXT_LINUXNNS=/sbin/ip netns exec *
+Cmnd_Alias PSCHEDULER_CONTEXT_LINUXNNS=%{dest}/change-secure
 %{_pscheduler_user} ALL = (root) NOPASSWD: PSCHEDULER_CONTEXT_LINUXNNS
 Defaults!PSCHEDULER_CONTEXT_LINUXNNS !requiretty
 EOF
