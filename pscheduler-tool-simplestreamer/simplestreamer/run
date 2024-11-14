@@ -65,18 +65,21 @@ except KeyError:
     pass  # Skip it if not in the input
 
 
-# Both participants need this.
+# Both participants need these.
 
-try:
-    ip_version = input['test']['spec']['ip-version']
-except KeyError:
-    (ip_version, err) = pscheduler.ip_addr_version(
-        input['test']['spec']['dest'])
-    if ip_version is None:
-        pscheduler.succeed_json({
-            'succeeded': False,
-            'error': err
-        })
+ip_version = input['test']['spec'].get('ip-version')
+
+source_host = input['test']['spec'].get('source', pscheduler.api_local_host())
+dest_host = input['test']['spec']['dest']
+
+log.debug(f'''Normalizing {source_host} -> {dest_host}''')
+send_ip, recv_ip = pscheduler.ip_normalize_version(source_host, dest_host, ip_version=ip_version)
+log.debug(f'''Got {send_ip} -> {recv_ip}''')
+if send_ip is None or recv_ip is None:
+    pscheduler.succeed_json({
+        "succeeded": False,
+        "error": f'''Unable to find common IP version between {source_host} and {dest_host}.'''
+    })
 
 
 
@@ -120,10 +123,8 @@ if participant == 0:
         material = "Data sent at " + str(datetime.datetime.now())
 
 
-    source_address = (input['test']['spec'].get('source', ""), 0)
-
-    server_address = (input['test']['spec']['dest'],
-                      input['participant-data'][1]['listen-port'])
+    source_address = (send_ip, 0)
+    server_address = (recv_ip, input['participant-data'][1]['listen-port'])
 
     try_num = 1
     succeeded = False
@@ -187,8 +188,7 @@ elif participant == 1:
     full = ''
     error = None
 
-    server_host = input['test']['spec']['dest']
-    server_address = (server_host, input['participant-data'][1]['listen-port'])
+    server_address = (recv_ip, input['participant-data'][1]['listen-port'])
     diags.append("Listening on %s" % str(server_address))
 
     try:
