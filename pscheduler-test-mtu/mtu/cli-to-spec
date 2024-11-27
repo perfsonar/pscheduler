@@ -11,20 +11,22 @@
 #
 
 import re
-import optparse
+import argparse
 import pscheduler
 import sys
+
+input_args = []
 
 if len(sys.argv) > 1:
 
    # Args are on the command line
-   args = sys.argv[1:]
+   input_args = sys.argv[1:]
 
 else:
 
    # Args are in a JSON array on stdin
    json_args = pscheduler.json_load(exit_on_error=True)
-   args = []
+   input_args = []
 
    if not isinstance(json_args,list):
       pscheduler.fail("Invalid JSON for this operation")
@@ -33,13 +35,13 @@ else:
                or isinstance(arg, int)
                or isinstance(arg, float) ):
          pscheduler.fail("Invalid JSON for this operation")
-   args = [ str(arg) for arg in json_args ]
+   input_args = [ str(arg) for arg in json_args ]
 
 
 
 # Gargle the arguments
 
-opt_parser = pscheduler.FailingOptionParser(epilog=
+arg_parser = argparse.ArgumentParser(epilog=
 """
 Finds the path MTU (Maximum Transmission Unit) from this machine to a specified destination.
 Can specify a port.
@@ -49,58 +51,55 @@ pscheduler task mtu --dest www.google.com
 
 pscheduler task mtu --dest www.google.com --port 80
     Finds the MTU to www.google.com at port 80
-"""
+""",
+formatter_class=argparse.RawTextHelpFormatter
 )
 
-# Add all potential command line options here
-# Check https://docs.python.org/3/library/optparse.html for more
-# documentation on the opt parser
 
-
-opt_parser.add_option("--source",
+arg_parser.add_argument("--source",
                       help="Sending host",
                       action="store", type="string",
                       dest="source")
 
-opt_parser.add_option("--source-node",
+arg_parser.add_argument("--source-node",
                       help="pScheduler node on sending host, if different",
                       action="store", type="string",
                       dest="source_node")
 
-opt_parser.add_option("--dest",
+arg_parser.add_argument("--dest",
                       help="Receiving host",
                       action="store", type="string",
                       dest="dest")
 
-opt_parser.add_option("-i", "--ip-version",
+arg_parser.add_argument("-i", "--ip-version",
                       help="Force IP version (4 or 6)",
                       action="store", type="int",
                       dest="ip_version")
 
-opt_parser.add_option("--port",
+arg_parser.add_argument("--port",
                       help="Receiving port. Defaults to 1060.",
                       action="store", type="int",
                       dest="port")
 
-(options, remaining_args) = opt_parser.parse_args(args)
+args = arg_parser.parse_args(input_args)
 
 spec_schema = pscheduler.HighInteger(1)
 result = {}
 
-if options.source is not None:
-   result['source'] = options.source
+if args.source is not None:
+   result['source'] = args.source
 
-if options.source_node is not None:
-   result['source-node'] = options.source_node
+if args.source_node is not None:
+   result['source-node'] = args.source_node
 
-if options.dest is not None:
-   result['dest'] = options.dest
+if args.dest is not None:
+   result['dest'] = args.dest
 
-if options.port is not None:
-   result['port'] = options.port
+if args.port is not None:
+   result['port'] = args.port
 
-if options.ip_version is not None:
-   result['ip-version'] = options.ip_version
+if args.ip_version is not None:
+   result['ip-version'] = args.ip_version
    spec_schema.set(2)
 
 result['schema'] = spec_schema.value()

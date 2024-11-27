@@ -58,10 +58,6 @@ arg_parser = argparse.ArgumentParser(epilog=
 """,
     formatter_class=argparse.RawTextHelpFormatter)
 
-# Add all potential command line options here
-# Check https://docs.python.org/2/library/optparse.html for more
-# documentation on the opt parser
-
 
 arg_parser.add_argument("--duration",
                       help="Duration of idle test.",
@@ -105,7 +101,7 @@ arg_parser.add_argument("--parallel",
                       action="store", type=int,
                       dest="parallel")
 
-args = arg_parser.parse_args(args)
+args = arg_parser.parse_intermixed_args(args)
 
 result = { 'schema': 1 }
 

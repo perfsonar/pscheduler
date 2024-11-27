@@ -41,38 +41,33 @@ else:
 
 # Gargle the arguments
 
-opt_parser = pscheduler.FailingOptionParser(epilog=
+arg_parser = argparse.ArgumentParser(epilog=
 """
 """
 )
 # no epilog string required?
 
-# Add all potential command line options here
-# Check https://docs.python.org/3/library/optparse.html for more
-# documentation on the opt parser
-
-
-opt_parser.add_option("--host",
+arg_parser.add_argument("--host",
                       help="Host to run the test.",
                       action="store", type="string",
                       dest="host")
 
-opt_parser.add_option("--host-node",
+arg_parser.add_argument("--host-node",
                       help="Host to run the test.",
                       action="store", type="string",
                       dest="host_node")
 
-opt_parser.add_option("--timeout",
+arg_parser.add_argument("--timeout",
                       help="Timeout for each query attempt",
                       action="store", type="string",
                       dest="timeout")
 
-opt_parser.add_option("--interface",
+arg_parser.add_argument("--interface",
 		      help="Interface to be used.",
 		      action="store", type="string",
 		      dest="interface")
 
-(options, remaining_args) = opt_parser.parse_args(input_args)
+args = arg_parser.parse_intermixed_args()
 
 
 # Call .set(n) on this object to indicate that a parameter requires
@@ -92,17 +87,17 @@ schema = pscheduler.HighInteger(1)
 
 result = { }
 
-if options.host is not None:
-   result['host'] = options.host
+if args.host is not None:
+   result['host'] = args.host
 
-if options.host_node is not None:
-   result['host-node'] = options.host_node
+if args.host_node is not None:
+   result['host-node'] = args.host_node
 
-if options.timeout is not None:
-   result['timeout'] = options.timeout
+if args.timeout is not None:
+   result['timeout'] = args.timeout
 
-if options.interface is not None:
-   result['interface'] = options.interface
+if args.interface is not None:
+   result['interface'] = args.interface
 
 
 result['schema'] = schema.value()

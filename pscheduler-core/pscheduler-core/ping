@@ -47,7 +47,7 @@ arg_parser.add_argument("host",
                         help="pScheduler host to ping",
                         nargs="?")
 
-args = arg_parser.parse_args()
+args = arg_parser.parse_intermixed_args()
 
 if not args.host:
     arg_parser.print_usage()

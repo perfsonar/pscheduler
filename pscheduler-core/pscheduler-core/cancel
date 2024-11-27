@@ -44,7 +44,7 @@ arg_parser.add_argument("task",
 
 
 
-args = arg_parser.parse_args()
+args = arg_parser.parse_intermixed_args()
 
 if not args.task:
     arg_parser.print_usage()
