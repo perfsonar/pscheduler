@@ -4,7 +4,7 @@
 # To be used with node-exporter textfile collector
 #
 
-import optparse
+import argparse
 import pscheduler
 import json
 
@@ -48,11 +48,11 @@ pscheduler_stats = {
 # Gargle the arguments
 #
 
-class VerbatimParser(optparse.OptionParser):
+class VerbatimParser(argparse.ArgumentParser):
     def format_epilog(self, formatter):
         return self.epilog
 
-opt_parser = VerbatimParser(
+arg_parser = VerbatimParser(
     usage="Usage: %prog [options]",
     epilog=
 """
@@ -70,33 +70,32 @@ Examples:
       pscheduler.host.net machine.
 """
     )
-opt_parser.disable_interspersed_args()
 
-opt_parser.add_option("--format",
+arg_parser.add_argument("--format",
                       help="The output format to use, either json (default) or prometheus",
                       default="json",
                       action="store", type="string",
                       dest="format")
 
-opt_parser.add_option("--host",
+arg_parser.add_argument("--host",
                       help="Request statistics from named host",
                       default=pscheduler.api_local_host(),
                       action="store", type="string",
                       dest="host")
 
-opt_parser.add_option("--timeout", "-W",
+arg_parser.add_argument("--timeout", "-W",
                       help="How long to wait for the server to respond, in seconds (default 5)",
                       default=5,
                       action="store", type="int",
                       dest="timeout")
 
 
-(options, remaining_args) = opt_parser.parse_args()
+args = arg_parser.parse_args()
 
-if options.timeout <= 0:
+if args.timeout <= 0:
     pscheduler.fail("Timeout must be >= 0")
 
-if options.format not in ["json", "prometheus"]:
+if args.format not in ["json", "prometheus"]:
     pscheduler.fail("Format must be either json or prometheus")
 
 log = pscheduler.Log(verbose=False, debug=False, quiet=True, propagate=True)
@@ -106,8 +105,8 @@ all_stats = {}
 for k,v in pscheduler_stats.items():
     my_stat = {}
     for state in v["state"]:
-        url = pscheduler.api_url(host=options.host, path=v["url"]+state)
-        status, result = pscheduler.url_get(url, throw=False, timeout=options.timeout)
+        url = pscheduler.api_url(host=args.host, path=v["url"]+state)
+        status, result = pscheduler.url_get(url, throw=False, timeout=args.timeout)
 
         if status != 200:
             log.error("Couldn't collect stat for {}/{} API return code:{}, message: {}".format(k, state, status,
@@ -121,10 +120,10 @@ for k,v in pscheduler_stats.items():
     all_stats[k] = my_stat
 
 # Output the collected statistics
-if options.format == "json":
+if args.format == "json":
     pscheduler.succeed_json(all_stats)
 
-elif options.format == "prometheus":
+elif args.format == "prometheus":
     output = ""
     for k,v in all_stats.items():
         output += '# HELP {} {}\n'.format(pscheduler_stats[k]["prometheus-name"], pscheduler_stats[k]["desc"])

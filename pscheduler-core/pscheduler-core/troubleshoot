@@ -16,7 +16,6 @@ import argparse
 import babel.dates
 import datetime
 import ipaddress
-import optparse
 import os
 import re
 import shlex

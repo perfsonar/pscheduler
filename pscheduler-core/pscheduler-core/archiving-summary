@@ -7,7 +7,7 @@ from dateutil.parser import isoparse
 
 import copy
 import datetime
-import optparse
+import argparse
 import os
 import pscheduler
 import sys
@@ -20,15 +20,15 @@ pscheduler.set_graceful_exit()
 #
 
 whoami = os.path.basename(sys.argv[0])
-args = sys.argv[1:]
+input_args = sys.argv[1:]
 
 
-class VerbatimParser(optparse.OptionParser):
+class VerbatimParser(argparse.ArgumentParser):
     def format_epilog(self, formatter):
         return self.epilog
 
 
-opt_parser = VerbatimParser(
+arg_parser = VerbatimParser(
     usage='Usage: %prog [ OPTIONS ] [ DELTA ]',
     epilog=
 '''
@@ -45,60 +45,57 @@ Example:
       up to 2024-07-22T12:34:56Z
 '''
     )
-opt_parser.disable_interspersed_args()
 
-opt_parser.add_option('--bind',
+arg_parser.add_argument('--bind',
                       help='Make the request from the provided address',
                       default=None,
                       action='store', type='string',
                       dest='bind')
 
-opt_parser.add_option('--host',
+arg_parser.add_argument('--host',
                       help='Check arciving on the named host',
                       default=pscheduler.api_local_host(),
                       action='store', type='string',
                       dest='host')
 
-opt_parser.add_option('--to',
+arg_parser.add_argument('--to',
                       help='Check archiving leading up to the ISO8601 time specified',
                       action='store', type='string',
                       dest='to')
 
-opt_parser.add_option('--verbose',
+arg_parser.add_argument('--verbose',
                       help='Add additional information where appropriate',
                       default=False,
                       action='store_true',
                       dest='verbose')
 
+arg_parser.add_argument('delta_text',
+                        help="Time delta to archive",
+                        type='string',
+                        nargs='?',
+                        default='PT1H')
 
-(options, remaining_args) = opt_parser.parse_args(args)
 
-
-# The one remaining argument should be a delta.
-
-if len(remaining_args) > 1:
-    opt_parser.print_help()
-    pscheduler.fail()
-
-delta_text = remaining_args[0] if remaining_args else 'PT1H'
+args = arg_parser.parse_args(input_args)
+delta = None
 
 try:
-    delta = pscheduler.iso8601_as_timedelta(delta_text)
+    delta = pscheduler.iso8601_as_timedelta(args.delta_text)
 except ValueError as ex:
-    pscheduler.fail(f'Invalid time delta "{delta_text}": {ex}')
+    pscheduler.fail(f'Invalid time delta "{args.delta_text}": {ex}')
 
 
 if delta > datetime.timedelta(hours=6):
     print(f'Warning: Long time deltas may put a heavy load on the pScheduler server.', file=sys.stderr)
 
-
-if options.to is None:
+now = None
+if args.to is None:
     now = pscheduler.time_now()
 else:
     try:
-        now = pscheduler.iso8601_as_datetime(options.to)
+        now = pscheduler.iso8601_as_datetime(args.to)
     except ValueError as ex:
-        pscheduler.fail(f'{options.to}: {ex}')
+        pscheduler.fail(f'{args.to}: {ex}')
 
 #
 # Fetch the schedule
@@ -110,8 +107,8 @@ params = {
 }
 
 status, schedule = pscheduler.url_get(
-    pscheduler.api_url(host=options.host, path='schedule'),
-    bind=options.bind,
+    pscheduler.api_url(host=args.host, path='schedule'),
+    bind=args.bind,
     params=params,
     throw=False
 )
@@ -159,7 +156,7 @@ for run_item in schedule:
 
     href = run_item['href']
 
-    (status, run) = pscheduler.url_get(href, bind=options.bind, throw=False)
+    (status, run) = pscheduler.url_get(href, bind=args.bind, throw=False)
 
     archivings = run.get('archivings')
 
