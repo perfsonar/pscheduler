@@ -78,13 +78,13 @@ args = arg_parser.parse_args(input_args)
 
 
 # Call .set(n) on this object to indicate that a parameter requires
-# schema level n or higher.  The object will return the highes-set
+# schema level n or higher.  The object will return the highest-set
 # value when .value() is called.
 #
 # For example, if the 'foo' paramater was introduced in schema level 2:
 #
-#  if options.foo is not None:
-#      result['foo'] = options.foo
+#  if args.foo is not None:
+#      result['foo'] = args.foo
 #      schema.set(2)
 #
 # If this is a brand-new test, you won't need to call .set() since the

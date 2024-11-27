@@ -9,16 +9,18 @@ import argparse
 import pscheduler
 import sys
 
+input_args = []
+
 if len(sys.argv) > 1:
 
    # Args are on the command line
-   args = sys.argv[1:]
+   input_args = sys.argv[1:]
 
 else:
 
    # Args are in a JSON array on stdin
    json_args = pscheduler.json_load(exit_on_error=True)
-   args = []
+   input_args = []
 
    if not isinstance(json_args,list):
       pscheduler.fail("Invalid JSON for this operation")
@@ -27,13 +29,13 @@ else:
                or isinstance(arg, int)
                or isinstance(arg, float) ):
          pscheduler.fail("Invalid JSON for this operation")
-   args = [ str(arg) for arg in json_args ]
+   input_args = [ str(arg) for arg in json_args ]
 
 
 
 # Gargle the arguments
 
-opt_parser = argparse.ArgumentParser(epilog=
+arg_parser = argparse.ArgumentParser(epilog=
 """
   Can be used with multiple oids by calling --oidargs multiple times.
 
@@ -44,85 +46,85 @@ opt_parser = argparse.ArgumentParser(epilog=
 """,
     formatter_class=argparse.RawTextHelpFormatter)
 
-opt_parser.add_argument("--host",
+arg_parser.add_argument("--host",
                       help="Host to run the test.",
                       action="store", type=str,
                       dest="host")
 
-opt_parser.add_argument("--host-node",
+arg_parser.add_argument("--host-node",
                       help="Host to run the test.",
                       action="store", type=str,
                       dest="host_node")
 
-opt_parser.add_argument("--dest",
+arg_parser.add_argument("--dest",
                       help="Destination that will be queried.",
                       action="store", type=str,
                       dest="dest")
                     
-opt_parser.add_argument("--version",
+arg_parser.add_argument("--version",
                       help="Version of SNMP to be used. (1|2c|3)",
                       action="store", type=str,
                       dest="version")
 
-opt_parser.add_argument("--oidargs",
+arg_parser.add_argument("--oidargs",
                       help="OID, type, and value",
                       action="append", type=str, default=[],
                       dest="oidargs")
 
-opt_parser.add_argument("--protocol",
+arg_parser.add_argument("--protocol",
                       help="Transport specifier (tcp|udp)",
                       action="store", type=str,
                       dest="protocol")
 
-opt_parser.add_argument("--timeout",
+arg_parser.add_argument("--timeout",
                       help="Timeout for each query attempt",
                       action="store", type=str,
                       dest="timeout")
 
 # snmp v3 specific options
 
-opt_parser.add_argument("--security-name",
+arg_parser.add_argument("--security-name",
                       help="Security Name",
                       action="store", type=str,
                       dest="security_name") 
-opt_parser.add_argument("--auth-protocol",
+arg_parser.add_argument("--auth-protocol",
                       help="Authentication Protocol (md5|sha)",
                       action="store", type=str,
                       dest="auth_protocol")
 
-opt_parser.add_argument("--priv-protocol",
+arg_parser.add_argument("--priv-protocol",
                       help="Privacy Protocol (des|aes)",
                       action="store", type=str,
                       dest="priv_protocol")
 
-opt_parser.add_argument("--auth-key",
+arg_parser.add_argument("--auth-key",
                       help="Authentication Passphrase",
                       action="store", type=str,
                       dest="auth_key")
 
-opt_parser.add_argument("--priv-key",
+arg_parser.add_argument("--priv-key",
                       help="Privacy Passphrase",
                       action="store", type=str,
                       dest="priv_key")
 
-opt_parser.add_argument("--security-level",
+arg_parser.add_argument("--security-level",
                       help="Security Level (noAuthNoPriv|authNoPriv|authPriv)",
                       action="store", type=str,
                       dest="security_level")
 
-opt_parser.add_argument("--context",
+arg_parser.add_argument("--context",
                       help="Context Name",
                       action="store", type=str,
                       dest="context")
 
 #Not v3
 
-opt_parser.add_argument("--community",
+arg_parser.add_argument("--community",
                           help="Community string",
                           action="store", type=str,
                           dest="community")
 
-options = opt_parser.parse_args(args)
+args = arg_parser.parse_args(input_args)
 
 
 # Complain if there are arguments that don't match the SNMP version.
@@ -145,16 +147,16 @@ arg_validity = {
 }
 
 
-version = options.version or "1"
+version = args.version or "1"
 
-if options.version in ["2c", "3"]:
+if args.version in ["2c", "3"]:
    check_version = 3
-elif options.version in [None, "1"]:
+elif args.version in [None, "1"]:
    check_version = 1
 else:
    pscheduler.fail("Invalid SNMP version (must be 1, 2c or 3)")
 
-option_values = vars(options)
+option_values = vars(args)
 for option in option_values:
    if (option_values[option] is not None) \
       and (option in arg_validity) \
@@ -167,30 +169,30 @@ result = { 'schema': 1 }
 
 #oidargs manipulation
 dictargs=[]
-for item in options.oidargs:
+for item in args.oidargs:
     s = item.split(':') 
     d = { "oid": s[0], "type": s[1], "value": s[2] }
     dictargs.append(d) 
-if options.host is not None:
-   result['host'] = options.host
+if args.host is not None:
+   result['host'] = args.host
 
-if options.host_node is not None:
-   result['host-node'] = options.host_node
+if args.host_node is not None:
+   result['host-node'] = args.host_node
 
-if options.dest is not None:
-   result['dest'] = options.dest
+if args.dest is not None:
+   result['dest'] = args.dest
 
-if options.version is not None:
-   result['version'] = options.version
+if args.version is not None:
+   result['version'] = args.version
 
-if options.oidargs is not None and len(options.oidargs):
+if args.oidargs is not None and len(args.oidargs):
    result['oidargs'] = dictargs
 
-if options.protocol is not None:
-   result['protocol'] = options.protocol
+if args.protocol is not None:
+   result['protocol'] = args.protocol
 
-if options.timeout is not None:
-   result['timeout'] = options.timeout
+if args.timeout is not None:
+   result['timeout'] = args.timeout
 
 
 # TODO: This shouldn't be passing judgment on what combinations of
@@ -198,30 +200,30 @@ if options.timeout is not None:
 
 if version == 1:
 
-  if options.community is not None:
-    result['_community'] = options.community
+  if args.community is not None:
+    result['_community'] = args.community
 
 else:
 
-    if options.security_name is not None:
-      result['security-name'] = options.security_name
+    if args.security_name is not None:
+      result['security-name'] = args.security_name
 
-    if options.auth_protocol is not None:
-      result['auth-protocol'] = options.auth_protocol
+    if args.auth_protocol is not None:
+      result['auth-protocol'] = args.auth_protocol
 
-    if options.priv_protocol is not None:
-      result['priv-protocol'] = options.priv_protocol
+    if args.priv_protocol is not None:
+      result['priv-protocol'] = args.priv_protocol
 
-    if options.auth_key is not None:
-      result['auth-key'] = options.auth_key
+    if args.auth_key is not None:
+      result['auth-key'] = args.auth_key
 
-    if options.priv_key is not None:
-      result['priv-key'] = options.priv_key
+    if args.priv_key is not None:
+      result['priv-key'] = args.priv_key
 
-    if options.security_level is not None:
-      result['security-level'] = options.security_level
+    if args.security_level is not None:
+      result['security-level'] = args.security_level
 
-    if options.context is not None:
-      result['context'] = options.context
+    if args.context is not None:
+      result['context'] = args.context
 
 pscheduler.succeed_json(result)
