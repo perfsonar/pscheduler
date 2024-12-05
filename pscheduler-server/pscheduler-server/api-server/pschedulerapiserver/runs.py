@@ -117,7 +117,7 @@ def tasks_uuid_runs(task):
     cursor.close()
 
     if not exists:
-        return not_found(f'No task "{task}" is available.')
+        return not_found(f'Task "{task}" does not exist.')
 
     if request.method == 'GET':
 
