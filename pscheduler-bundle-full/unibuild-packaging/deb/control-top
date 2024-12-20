@@ -2,7 +2,7 @@ Source: pscheduler-bundle-full
 Section: net
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
-Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
+Uploaders: Lætitia Delvaux <lætitia.delvaux@man.poznan.pl>
 Build-Depends: debhelper (>= 10)
 Standards-Version: 3.9.8
 Homepage: https://github.com/perfsonar/pscheduler
