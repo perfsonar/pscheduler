@@ -2,7 +2,7 @@ Source: py-amqp
 Section: python
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
-Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
+Uploaders: Lætitia Delvaux <lætitia.delvaux@man.poznan.pl>
 Build-Depends:
  debhelper (>= 10),
  dh-python,
