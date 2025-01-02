@@ -194,7 +194,7 @@ def schedule():
                     log.error("LINE %s", line)
                 data.close()
             if out_format == "data":
-                return send_file(data_path, cache_timeout=1)
+                return send_file(data_path)
 
             # Script
             script = CHART_SCRIPT.format(
