@@ -71,12 +71,11 @@ fi
 #
 #Check for directory and if not create it and set permissions
 
-if [ ! -d "/var/run/postgresql/" ]; then
-    echo "/var/run/postgresql/ does not exist. Creating it..."
-    mkdir -p "/var/run/postgresql/"
-    chown postgres:postgres "/var/run/postgresql/"
-else
-    echo "/var/run/postgresql/ already exists."
+if [ ! -d "%{_rundir}/postgresql/" ]; then
+    echo "%{_rundir}/postgresql/ does not exist. Creating it..."
+    mkdir -p "%{_rundir}/postgresql/"
+    chown postgres:postgres "%{_rundir}/postgresql/"
+    chmod 755  "%{_rundir}/postgresql/"
 fi
 
 
