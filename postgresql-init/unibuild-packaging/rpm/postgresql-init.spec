@@ -66,6 +66,19 @@ then
     exit 0
 fi
 
+#TODO Remove if updates are made to future  postgres version that
+#     create the following directory during initalization
+#
+#Check for directory and if not create it and set permissions
+
+if [ ! -d "/var/run/postgresql/" ]; then
+    echo "/var/run/postgresql/ does not exist. Creating it..."
+    mkdir -p "/var/run/postgresql/"
+    chown postgres:postgres "/var/run/postgresql/"
+else
+    echo "/var/run/postgresql/ already exists."
+fi
+
 
 # Initialize PostgreSQL
 
