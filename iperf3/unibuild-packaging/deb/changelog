@@ -1,3 +1,9 @@
+iperf3 (3.18-1) perfsonar-5.2-staging; urgency=low
+
+  * New upstream version
+
+ -- Abigail Fox <afox@internet2.edu>  Wed, 08 Jan 2025 12:23:00 -0800
+
 iperf3 (3.17.1-2) perfsonar-5.1-staging; urgency=low
 
   * Building on Ubuntu 20 and Debian 12
