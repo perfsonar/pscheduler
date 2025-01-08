@@ -7,7 +7,7 @@ Name:		postgresql-init
 # Note that the dot after this is for versions of this package rather
 # than the Pg relese.
 Version:	%{_pscheduler_postgresql_version}.1
-Release:	1%{?dist}
+Release:	2%{?dist}
 
 Summary:	Initializes PostgreSQL
 BuildArch:	noarch
@@ -64,6 +64,18 @@ then
     echo "PostgreSQL is already initialized.  Doing nothing."
     systemctl enable --now postgresql
     exit 0
+fi
+
+#TODO Remove if updates are made to future  postgres version that
+#     create the following directory during initalization
+#
+#Check for directory and if not create it and set permissions
+
+if [ ! -d "%{_rundir}/postgresql/" ]; then
+    echo "%{_rundir}/postgresql/ does not exist. Creating it..."
+    mkdir -p "%{_rundir}/postgresql/"
+    chown postgres:postgres "%{_rundir}/postgresql/"
+    chmod 755  "%{_rundir}/postgresql/"
 fi
 
 
