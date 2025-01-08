@@ -25,7 +25,7 @@ Requires:	%{_pscheduler_python}-pscheduler >= 4.4.1
 Requires:	%{_pscheduler_python}-cryptography
 Requires:	%{_pscheduler_python}-packaging
 Requires:	pscheduler-test-throughput
-Requires:	iperf3 >= 3.17.1
+Requires:	iperf3 >= 3.18
 # For additrional TCP congestion control modules
 Requires:	kernel-modules-extra
 Requires:	numactl
