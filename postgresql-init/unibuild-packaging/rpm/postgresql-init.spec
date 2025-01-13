@@ -70,7 +70,7 @@ fi
 # BEGIN PSQL FIXES
 
 # The two fixes in this section work around problems created when Red
-Hat upgraded from 13.16 to 13.18.
+# Hat upgraded from 13.16 to 13.18.
 
 # TODO: Remove if the software shiped with Alma/Rocky is ever fixed.
 
@@ -94,7 +94,7 @@ cleanup()
 }
 trap cleanup EXIT
 
-TE="${WORK}/psql.te""
+TE="${WORK}/psql.te"
 
 rm -f "${TE}"
 cat > "${TE}" << TE_EOF
