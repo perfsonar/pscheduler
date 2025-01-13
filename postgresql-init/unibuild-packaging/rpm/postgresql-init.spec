@@ -7,7 +7,7 @@ Name:		postgresql-init
 # Note that the dot after this is for versions of this package rather
 # than the Pg relese.
 Version:	%{_pscheduler_postgresql_version}.1
-Release:	2%{?dist}
+Release:	3%{?dist}
 
 Summary:	Initializes PostgreSQL
 BuildArch:	noarch
@@ -35,6 +35,7 @@ Requires:	postgresql-server  >= %{_pscheduler_postgresql_version}
 Requires:	rpm-post-wrapper
 
 Requires:       pscheduler-rpm
+Requires:       selinux-policy-devel
 
 BuildRequires:	pscheduler-rpm
 
@@ -66,10 +67,14 @@ then
     exit 0
 fi
 
-#TODO Remove if updates are made to future  postgres version that
-#     create the following directory during initalization
-#
-#Check for directory and if not create it and set permissions
+# BEGIN PSQL FIXES
+
+# The two fixes in this section work around problems created when Red
+# Hat upgraded from 13.16 to 13.18.
+
+# TODO: Remove if the software shiped with Alma/Rocky is ever fixed.
+
+# Fix 1: Create run directory and set permissions
 
 if [ ! -d "%{_rundir}/postgresql/" ]; then
     echo "%{_rundir}/postgresql/ does not exist. Creating it..."
@@ -77,6 +82,38 @@ if [ ! -d "%{_rundir}/postgresql/" ]; then
     chown postgres:postgres "%{_rundir}/postgresql/"
     chmod 755  "%{_rundir}/postgresql/"
 fi
+
+# Fix 2: Install SELinux policy to allow PostgreSQL to set up its
+#        socket.
+
+WORK=$(mktemp -d)
+
+cleanup()
+{
+    rm -rf "${WORK}"
+}
+trap cleanup EXIT
+
+TE="${WORK}/psql.te"
+
+rm -f "${TE}"
+cat > "${TE}" << TE_EOF
+module psql 1.0;
+require {
+    type postgresql_t;
+    type var_run_t;
+    class sock_file create;
+    class sock_file setattr;
+}
+
+allow postgresql_t var_run_t:sock_file { create setattr };
+TE_EOF
+
+make -f /usr/share/selinux/devel/Makefile -C "${WORK}" psql.pp
+semodule -i "${WORK}/psql.pp"
+
+# END PSQL FIXES
+
 
 
 # Initialize PostgreSQL
