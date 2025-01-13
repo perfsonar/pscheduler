@@ -7,7 +7,7 @@ Name:		postgresql-init
 # Note that the dot after this is for versions of this package rather
 # than the Pg relese.
 Version:	%{_pscheduler_postgresql_version}.1
-Release:	2%{?dist}
+Release:	3%{?dist}
 
 Summary:	Initializes PostgreSQL
 BuildArch:	noarch
