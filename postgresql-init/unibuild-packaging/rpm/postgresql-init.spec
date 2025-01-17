@@ -7,7 +7,7 @@ Name:		postgresql-init
 # Note that the dot after this is for versions of this package rather
 # than the Pg relese.
 Version:	%{_pscheduler_postgresql_version}.1
-Release:	4%{?dist}
+Release:	5%{?dist}
 
 Summary:	Initializes PostgreSQL
 BuildArch:	noarch
@@ -104,6 +104,7 @@ module psql 1.0;
 require {
     type postgresql_t;    # PostgreSQL process type
     type var_run_t;       # PostgreSQL database files type
+    type httpd_t;         # Apache process type
     class sock_file read;
     class sock_file write;
     class sock_file create;
@@ -116,6 +117,7 @@ require {
 }
 
 allow postgresql_t var_run_t:sock_file { read write create open getattr setattr unlink append rename };
+allow httpd_t var_run_t:sock_file write;
 
 TE_EOF
 
