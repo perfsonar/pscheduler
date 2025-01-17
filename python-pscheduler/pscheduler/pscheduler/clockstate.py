@@ -6,6 +6,7 @@ clock_state() below.
 import pscheduler
 import datetime
 import ntplib
+import psutil
 import pytz
 import tzlocal
 
@@ -104,67 +105,100 @@ class TimexStruct(Structure):
         return (self.status & STA_UNSYNC) == 0
 
 
+_libc = cdll.LoadLibrary(find_library("c"))
+
 def ntp_adjtime():
 
-    libc = cdll.LoadLibrary(find_library("c"))
     timex = TimexStruct()
     p_timex = pointer(timex)
 
-    libc.ntp_adjtime(p_timex)
+    _libc.ntp_adjtime(p_timex)
 
     return p_timex.contents
 
 
 # ---------------------------
 
-def chrony_clock_state(stdout, stderr):
-    adjtime = ntp_adjtime()
-    system_synchronized = adjtime.synchronized
-    utc = datetime.datetime.utcnow()
-    local_tz = tzlocal.get_localzone()
-    time_here = pytz.utc.localize(utc).astimezone(local_tz)
+def _chronyc_status():
+    '''
+    Return time state as Chrony understands it or None if unable.
+    '''
 
-    raw_offset = time_here.strftime("%z")
-    if len(raw_offset):
-        offset = raw_offset[:3] + ":" + raw_offset[-2:]
-    else:
-        offset = ""
+    status, stdout, stderr = pscheduler.run_program([ 'chronyc', 'tracking' ])
 
-    result = {
-        "time": time_here.strftime("%Y-%m-%dT%H:%M:%S.%f") + offset,
-        "synchronized": system_synchronized,
-    }
-    if system_synchronized:
+    if status == 2:
+        # Chronyc wasn't found.
+        return None
 
-    # chrony implementation
-        parameters = stdout.split("\n")
-        reference_str = ""
-        offset_str = ""
-        for parameter in parameters:
-            if "Reference" in parameter:
-                reference_str = parameter
-            if "Last offset" in parameter:
-                offset_str = parameter
+    if status == 1:
+        # Ran but failed.
+        if stdout.startswith('506 '):
+            # No daemon to talk to
+            return None
 
-        try:
-            offset = offset_str[offset_str.find(':'):]
-            if offset != "":
-                result["offset"] = float(offset[2:].split(" ")[0][1:])
-            else:
-                raise Exception("Offset not found")
-            
-            result["source"] = "chrony"
+    parameters = stdout.split("\n")
 
-            reference = reference_str[reference_str.find('('):reference_str.find(')')]
-            if reference != "":
-                result["reference"] = reference[1:]
-            else:
-                raise Exception("Reference server not found")
-        
-        except Exception as ex:
-            result["synchronized"] = False
-            result["error"] = str(ex)
+    # TODO: Find a neater way to do this.
+    reference_str = ""
+    offset_str = ""
+    for parameter in parameters:
+        if "Reference" in parameter:
+            reference_str = parameter
+        if "Last offset" in parameter:
+            offset_str = parameter
+
+    try:
+        offset = offset_str[offset_str.find(':'):]
+        if offset != "":
+            result["offset"] = float(offset[2:].split(" ")[0][1:])
+        else:
+            raise Exception("Offset not found")
+
+        result["source"] = "chrony"
+
+        reference = reference_str[reference_str.find('('):reference_str.find(')')]
+        if reference != "":
+            result["reference"] = reference[1:]
+        else:
+            raise Exception("Reference server not found")
+
+    except Exception as ex:
+        result["synchronized"] = False
+        result["error"] = str(ex)
+
     return result
+
+
+def _ntp_status():
+    '''
+    Return the time state as NTP understands it or None if unable.
+    '''
+
+    # Look for anything NTP in the process table before trying to talk
+    # to the daemon.  This is fast
+
+    found = False
+    for proc in psutil.process_iter(['name']):
+        if proc.info['name'].startswith('ntp'):
+            found = True
+            break
+
+    if not found:
+        return None
+
+    # NTPD might be running.  Try to query it.
+
+    try:
+        ntp = ntplib.NTPClient().request('localhost', timeout=2)
+    except ntplib.NTPException:
+        return None
+
+    # Got some status.
+    return {
+        'offest': ntp.offset,
+        'source': 'ntp',
+        'reference': f'{ntplib.stratum_to_text(ntp.stratum)} from {ntplib.ref_id_to_text(ntp.ref_id)}'
+    }
 
 
 def clock_state():
@@ -190,15 +224,8 @@ def clock_state():
     error -
 
     """
-    status, stdout, stderr = pscheduler.run_program(["chronyc"," tracking"])
-    if "FileNotFound" not in stderr:
-        if "506 Cannot talk to daemon" not in stdout:
-            return chrony_clock_state(stdout, stderr)
-    adjtime = ntp_adjtime()
-    system_synchronized = adjtime.synchronized
 
-    # Format the local time with offset as ISO 8601.  Python's
-    # strftime() only does "-0400" format; we need "-04:00".
+    # Grab the time now in case anyting below takes awhile.
 
     utc = datetime.datetime.utcnow()
     local_tz = tzlocal.get_localzone()
@@ -210,25 +237,23 @@ def clock_state():
     else:
         offset = ""
 
+    # See if the system thinks its clock is synchronized
+    adjtime = ntp_adjtime()
+    system_synchronized = adjtime.synchronized
+
     result = {
         "time": time_here.strftime("%Y-%m-%dT%H:%M:%S.%f") + offset,
         "synchronized": system_synchronized
     }
 
-    if system_synchronized:
+    chronyc_result = _chronyc_status()
+    if chronyc_result is not None:
+        return result | chronyc_result
 
-        # Assume NTP for the time being
+    ntp_result = _ntp_status()
+    if ntp_result is not None:
+        return result | ntp_result
 
-        try:
-            ntp = ntplib.NTPClient().request("localhost")
-            result["offset"] = ntp.offset
-            result["source"] = "ntp"
-            result["reference"] = "%s from %s" % (
-                ntplib.stratum_to_text(ntp.stratum),
-                ntplib.ref_id_to_text(ntp.ref_id)
-            )
-        except Exception as ex:
-            result["synchronized"] = False
-            result["error"] = str(ex)
-
+    # If nothing returned before this point, go with whatever we have.
+    result['source'] = 'unknown'
     return result
