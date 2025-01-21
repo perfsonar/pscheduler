@@ -7,7 +7,7 @@ Name:		postgresql-init
 # Note that the dot after this is for versions of this package rather
 # than the Pg relese.
 Version:	%{_pscheduler_postgresql_version}.1
-Release:	3%{?dist}
+Release:	5%{?dist}
 
 Summary:	Initializes PostgreSQL
 BuildArch:	noarch
@@ -73,14 +73,19 @@ fi
 # Hat upgraded from 13.16 to 13.18.
 
 # TODO: Remove if the software shiped with Alma/Rocky is ever fixed.
+# Red Hat changed the way PostgreSQL was packaged between 13.16 and
+# 13.18.  Creating /run/postgresql was passed off to systemd-tmpfiles,
+# which expects a reboot before it does its thing.  This means the @
+# system needs to be rebooted for PostgreSQL to function, which isn't
+# acceptable here because builds require a functioning database.
 
 # Fix 1: Create run directory and set permissions
 
 if [ ! -d "%{_rundir}/postgresql/" ]; then
     echo "%{_rundir}/postgresql/ does not exist. Creating it..."
     mkdir -p "%{_rundir}/postgresql/"
-    chown postgres:postgres "%{_rundir}/postgresql/"
-    chmod 755  "%{_rundir}/postgresql/"
+    chown -R postgres:postgres "%{_rundir}/postgresql/"
+    chmod -R 755  "%{_rundir}/postgresql/"
 fi
 
 # Fix 2: Install SELinux policy to allow PostgreSQL to set up its
@@ -99,14 +104,25 @@ TE="${WORK}/psql.te"
 rm -f "${TE}"
 cat > "${TE}" << TE_EOF
 module psql 1.0;
+
 require {
-    type postgresql_t;
-    type var_run_t;
+    type postgresql_t;    # PostgreSQL process type
+    type var_run_t;       # PostgreSQL database files type
+    type httpd_t;         # Apache process type
+    class sock_file read;
+    class sock_file write;
     class sock_file create;
+    class sock_file open;
+    class sock_file getattr;
     class sock_file setattr;
+    class sock_file unlink;
+    class sock_file append;
+    class sock_file rename;
 }
 
-allow postgresql_t var_run_t:sock_file { create setattr };
+allow postgresql_t var_run_t:sock_file { read write create open getattr setattr unlink append rename };
+allow httpd_t var_run_t:sock_file write;
+
 TE_EOF
 
 make -f /usr/share/selinux/devel/Makefile -C "${WORK}" psql.pp
