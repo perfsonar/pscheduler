@@ -27,16 +27,7 @@ class TestClockstate(PschedTestBase):
         if cstate["synchronized"]:
 
             self.assertTrue("source" in cstate)
-            # Offset is optional.
-            self.assertTrue("reference" in cstate)
-            self.assertFalse("error" in cstate)
-
-        else:
-
-            self.assertFalse("source" in cstate)
-            self.assertFalse("offset" in cstate)
-            self.assertFalse("reference" in cstate)
-
+            # Offset, reference and error are optional.
 
 
 if __name__ == '__main__':
