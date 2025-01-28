@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #8:
+#
+# This will format a test result into something that is human readable.
+#
+# To test this file, a spec is needed. You can generate one by pulling
+# a result out of the pScheduler API or modifying inputs/result-format
+# to suit your format.
+#
+# Invoke this program as follows:
+#
+#
+# ./result-format text/plain < inputs/result-format
+# ./result-format text/html < inputs/result-format
+#
+
+import pscheduler
+
+from validate import result_is_valid
+from validate import MAX_SCHEMA
+
+# This is a Jinja2 template with the contents of the test
+# specification provided as variables.
+#
+# Input provided to the template will be the original test spec in
+# spec.* and the result to bef formatted in result.*.
+#
+# See the documentation for spec_result_method() in
+# python-pscheduler/pscheduler/pscheduler/text.py for a list of
+# variables and functions provided.
+
+TEMPLATE = '''
+{% if _mime_type == 'text/plain' %}
+
+Elapsed Time ... {{ unspec(result.time) }}
+
+{% elif _mime_type == 'text/html' %}
+
+<table>
+<tr><td>Elapsed Time</td><td>{{ unspec(result.time) }}</td></tr>
+</table>
+
+{% else %}
+
+{{ error('Unsupported MIME type "' + _mime_type + '"') }}
+
+{% endif %}
+'''
+
+pscheduler.result_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=result_is_valid)
