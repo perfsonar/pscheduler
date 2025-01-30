@@ -17,6 +17,7 @@ from pschedulerapiserver import application
 from flask import request
 from flask import Response
 
+from .address import *
 from .args import *
 from .util import *
 
