@@ -456,21 +456,20 @@ BEGIN
             RAISE EXCEPTION 'UUID cannot be changed';
         END IF;
 
-        IF NEW.state <> OLD.state AND NEW.state = run_state_canceled() THEN
-	    PERFORM pg_notify('run_canceled', NEW.id::TEXT);
-        END IF;
+	IF NEW.state <> OLD.state THEN
+	    IF NEW.state = run_state_pending() THEN
+	        PERFORM pg_notify('run_ready', NEW.id::TEXT);
+	    ELSE IF NEW.state = run_state_running() THEN
+	        UPDATE task
+	        SET runs_started = runs_started + 1
+	        WHERE id = NEW.task;
+	    ELSE IF NEW.state = run_state_canceled() THEN
+                PERFORM pg_notify(run_canceled, NEW.id::TEXT);
+            END IF;
 
-        IF NEW.state <> OLD.state AND NEW.state = run_state_running() THEN
-	    UPDATE task
-	    SET runs_started = runs_started + 1
-	    WHERE id = NEW.task;
-        END IF;
+	END IF;
 
-	-- TODO: Make sure part_data_full, result_ful and
-	-- result_merged happen in the right order.
-
-	NOTIFY run_change;
-
+	PERFORM pg_notify('run_ready');
     END IF;
 
 
