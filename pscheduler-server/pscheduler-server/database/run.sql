@@ -459,17 +459,18 @@ BEGIN
 	IF NEW.state <> OLD.state THEN
 	    IF NEW.state = run_state_pending() THEN
 	        PERFORM pg_notify('run_ready', NEW.id::TEXT);
-	    ELSE IF NEW.state = run_state_running() THEN
+	    ELSIF NEW.state = run_state_running() THEN
 	        UPDATE task
 	        SET runs_started = runs_started + 1
 	        WHERE id = NEW.task;
-	    ELSE IF NEW.state = run_state_canceled() THEN
+	    ELSIF NEW.state = run_state_canceled() THEN
                 PERFORM pg_notify(run_canceled, NEW.id::TEXT);
             END IF;
-
 	END IF;
 
-	PERFORM pg_notify('run_ready');
+	-- TODO: Can probably get rid of this.
+	PERFORM pg_notify('run_changed', NEW.id::TEXT);
+
     END IF;
 
 

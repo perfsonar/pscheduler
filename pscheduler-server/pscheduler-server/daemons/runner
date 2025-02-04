@@ -792,7 +792,7 @@ def main_program():
     log.debug("Connected to DB")
 
     # Listen for notifications.
-    for listen in ["run_ready", "run_change", "configurables_changed" ]:
+    for listen in ["run_ready", "configurables_changed" ]:
         log.debug("Listening for notification %s" % (listen))
         db.listen(listen)
 
@@ -822,9 +822,7 @@ def main_program():
 
             log.debug("Next run or check in %s", wait_time)
 
-            if db.wait(pscheduler.timedelta_as_seconds(refresh)):
-                log.debug('Something happened.')
-            else:
+            if not db.wait(pscheduler.timedelta_as_seconds(refresh)):
                 log.debug("Timed out.")
 
         else:
@@ -851,17 +849,38 @@ def main_program():
         RUNS_QUERY = """
             SELECT * FROM (
 
-            -- Runs that haven't started
+            -- Runs we were explicity notified are ready and start
+            -- and start before the next time we run this query.
             SELECT
-                id AS run,
+                run.id AS run,
                 lower(times) - normalized_wall_clock() AS start_in,
                 lower(times) AS start_at,
                 FALSE as background_multi
             FROM
                 run
+                JOIN task ON task.id = run.task
+                JOIN test ON test.id = task.test
             WHERE
-                lower(run.times) < (normalized_wall_clock() + %s)
+                lower(run.times) < (normalized_wall_clock() + %s + %s)
+                AND run.id in %s
+                AND test.scheduling_class <> scheduling_class_background_multi()
+
+            UNION
+
+            -- Non-background runs that haven't started
+            SELECT
+                run.id AS run,
+                lower(times) - normalized_wall_clock() AS start_in,
+                lower(times) AS start_at,
+                FALSE as background_multi
+            FROM
+                run
+                JOIN task ON task.id = run.task
+                JOIN test ON test.id = task.test
+            WHERE
+                lower(run.times) < (normalized_wall_clock() + %s + %s)
                 AND state = run_state_pending()
+                AND test.scheduling_class <> scheduling_class_background_multi()
 
             UNION
 
@@ -881,7 +900,7 @@ def main_program():
                 AND test.scheduling_class = scheduling_class_background_multi()
                 AND run.state IN (run_state_pending(), run_state_running())
             ) t
-            WHERE start_in > '0'::INTERVAL
+            WHERE start_in >= '0'::INTERVAL
             ORDER BY start_in
             """
 
@@ -890,7 +909,15 @@ def main_program():
         run_ids = []
         runs_started = False
 
-        for row in db.query(RUNS_QUERY, [refresh]):
+        for row in db.query(RUNS_QUERY, [
+                refresh,
+                run_start_margin(),
+                # IN (x) has to have something, so use an array that will
+                # never match anything in the table.
+                tuple(runs_ready or [None]),
+                refresh,
+                run_start_margin()
+        ]):
 
             run_id, start_in, start_at, background_multi = row
 
