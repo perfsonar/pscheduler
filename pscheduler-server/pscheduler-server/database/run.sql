@@ -468,9 +468,6 @@ BEGIN
             END IF;
 	END IF;
 
-	-- TODO: Can probably get rid of this.
-	PERFORM pg_notify('run_changed', NEW.id::TEXT);
-
     END IF;
 
 
