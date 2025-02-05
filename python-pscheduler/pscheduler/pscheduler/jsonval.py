@@ -147,8 +147,13 @@ __dictionary__ = {
 
     "HostName": {
         "type": "string",
-        "format": "hostname"
-        },
+        "minLength": 1,
+        "maxLength": 255,
+        # This is derived from the pattern in the JSONSchema module
+        # but allows the first element to begin with an underscore.
+        # See #1514.
+        "pattern": r'^[A-Za-z0-9_][A-Za-z0-9\-]{0,62}(\.[A-Za-z0-9][A-Za-z0-9\-]{1,62})*\.?$'
+    },
 
     "HostNamePort": {
         # Note that this will cover valid IPv4 addresses, too.
