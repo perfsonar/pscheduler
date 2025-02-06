@@ -51,8 +51,9 @@ arg_parser = argparse.ArgumentParser(epilog=
 arg_parser.add_argument("query",
                       help="Hostname to look up.")
 
-arg_parser.add_argument("nameserver",
-                      help="Nameserver to query.")
+arg_parser.add_argument("--nameserver",
+                      help="Nameserver to query.",
+                        dest="nameserver")
 
 arg_parser.add_argument("--host",
                       help="Host to run the test.", dest="host")

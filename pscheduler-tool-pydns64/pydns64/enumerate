@@ -14,7 +14,7 @@
     "schema": 1,
 
     "name": "pydns64",
-    "description": "EDIT ME",
+    "description": "Tool to validate DNS64 queries",
     "version": "1.0",
     "tests": [ "dns64" ],
 

@@ -1,14 +1,16 @@
 {
   "test": {
-    "type": "itest",
+    "type": "dns64",
     "spec": {
-      "duration": "PT2S",
-      "testtype": "api",
+      "query": "ip4.me",
+      "nameserver": "2001:4860:4860::64",
+      "translation-prefix": "64:ff9b::/96",
+      "timeout": "PT15S",
       "schema": 1
     }
   },
   "schema": 1,
-  "tool": "itool",
+  "tool": "pydns64",
   "href": "https://localhost.localdomain/pscheduler/tasks/d0035107-6ef0-4cc7-83b4-19367b502bfc",
   "schedule": {
     "slip": "PT5M"

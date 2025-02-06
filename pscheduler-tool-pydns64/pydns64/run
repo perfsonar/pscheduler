@@ -14,60 +14,88 @@ import subprocess
 import json
 import sys
 import time
+import ipaddress
+from ipaddress import IPv6Address, IPv4Address
+from ipaddress import IPv6Network
 
 import pscheduler
+import dns.resolver
+
+
+log = pscheduler.Log(prefix='tool-pydns64', quiet=True)
 
 # from stdin
 input = pscheduler.json_load(exit_on_error=True)
+resolver = dns.resolver.Resolver()
 
 # Take input from test spec
 try:
-    implementation = input['test']['spec']['implementation']
-
+    query = input['test']['spec']['query']
 except KeyError:
-    pscheduler.fail('Missing data in input')
+    pscheduler.fail('missing data in input')
 
-duration = input['test']['spec'].get('duration', 'PT5S')
-duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
-timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
+try:
+    resolver.nameservers = [input['test']['spec']['nameserver']]
+except KeyError:
+    pass  # Not there?  Don't care.
+
+timeout_iso = input['test']['spec'].get("timeout", "PT10S")
 timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+
+prefix = input['test']['spec'].get("translation-prefix", "64:ff9b::/96")
+
+# Run the actual task here:
+
 start_time = datetime.datetime.now()
 succeeded = False
 error = ''
 diags = ''
+ip4answers = None
+ip6answers = None
+ip4result_list = None
+ip6result_list = None
+translated = True
 
-# Run the actual task here:
-
-# IMPORTANT NOTE: This code puts the process to sleep until the
-# scheduled start time has arrived.  It should be placed after all
-# preparatory code has been executed and immediately before the tool
-# is invoked (for plugins that run other programs) or any activity
-# that does a measurement (for those that don't).
+# do test here
 
 try:
-    pscheduler.sleep_until(input['schedule']['start'])
-except KeyError:
-    pscheduler.fail("Unable to find start time in input")
-
-
-# API Call:
-if implementation == 'api':
-    argv = [ 'sleep', str(duration) ]
-    status, stdout, stderr = pscheduler.run_program(argv, timeout=timeout)
-
-    if status:
-        succeeded = False
-        error = "Error returned: \n%s" % stderr.strip('\n')
-    else:
-        succeeded = True
-        diags = stdout
-
-# System Call:
-elif implementation == 'system':
-    subprocess.check_call( ['sleep', str(duration) ])
+    ip4answers = resolver.resolve(query, 'A')
+    ip6answers = resolver.resolve(query, 'AAAA' )
     succeeded = True
+except dns.exception.Timeout:
+    error = 'Timeout'
+except dns.resolver.NoAnswer:
+    error = 'No answer'
+except dns.resolver.NXDOMAIN:
+    error = 'Domain does not exist'
 
 end_time = datetime.datetime.now()
+
+#TODO: update for translated (all in prefix)
+# >>> ipaddress.IPv6Address("64:ff9b::1799:847") in ipaddress.IPv6Network("64:ff9b::/96")
+if ip4answers is None:
+    ip4result_list = None
+else:
+    ip4result_list = sorted(list(ip4answers))
+
+if ip6answers is None:
+    ip6result_list = None
+else:
+    ip6result_list = sorted(list(ip6answers))
+
+# TODO: check for translation success
+if len(ip4result_list) != len(ip6result_list):
+    translated = False
+for index, ip in enumerate(ip6result_list):
+    ipaddr = IPv6Address(ip)
+    if ipaddr not in IPv6Network(prefix):
+        translated = False
+        break
+    else:
+        if IPv4Address(ip4result_list[index]).packed != ipaddr.packed[-4:] :
+            translated = False
+            break
+
 
 # Organize results into json data
 results = {
@@ -75,10 +103,15 @@ results = {
     'result': {
         'schema': 1,
         'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
-        'succeeded': succeeded
+        'succeeded': succeeded,
+        'translated': translated
     },
     'error': error,
     'diags': diags }
 
+if ip4result_list is not None:
+    results [ 'result' ][ 'IPv4 records' ] = [str(ip) for ip in ip4result_list]
+if ip6result_list is not None:
+    results [ 'result' ][ 'IPv6 records' ] = [str(ip) for ip in ip6result_list]
 pscheduler.succeed_json(results)
 

@@ -157,6 +157,7 @@ pscheduler-test-clock
 pscheduler-test-dhcp			--bundle extras
 pscheduler-test-disk-to-disk		--bundle extras
 pscheduler-test-dns
+pscheduler-test-dns64
 pscheduler-test-dot1x			--bundle extras
 pscheduler-test-http
 pscheduler-test-latency
@@ -234,6 +235,7 @@ pscheduler-tool-ping
 pscheduler-tool-psclock
 pscheduler-tool-pstimer
 pscheduler-tool-psurl			--bundle obsolete
+pscheduler-tool-pydns64
 pscheduler-tool-pysnmp			--bundle snmp
 
 define(HAVE_S3_BENCHMARK,ifelse(HAVE_GOLANG,0,0,
