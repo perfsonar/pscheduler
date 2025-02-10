@@ -1,7 +1,13 @@
 {
-  "result": {
-    "time": "PT5.002407S",
     "succeeded": true,
-    "schema": 1
-  }
+    "result": {
+        "schema": 1,
+        "time": "PT0.071234S",
+        "succeeded": true,
+        "translated": true,
+        "ipv4": ["27.173.202.254", "190.173.250.206", "222.173.190.239"],
+        "ipv6": ["64:ff9b::1bad:cafe", "64:ff9b::bead:face", "64:ff9b::dead:beef"]
+    },
+    "error": "",
+    "diags": ""
 }

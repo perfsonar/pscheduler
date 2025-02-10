@@ -9,8 +9,12 @@
 # them capable of formatting the new specifications and results.
 
 from pscheduler import json_validate_from_standard_template
+from pscheduler import json_validate
+import pscheduler
 
 MAX_SCHEMA = 1
+
+log = pscheduler.Log(prefix='test-dns64')
 
 #
 # Test Specification
@@ -24,27 +28,21 @@ MAX_SCHEMA = 1
 SPEC_SCHEMA = {
     
     "local": {
-        
+
         # Define any local types used in the spec here
-        "TestImplementation": {
-            "type": "string",
-            "enum": [ "system", "api" ]
-        },
 
     },
-    
+
     "versions": {
-        
+
         # Initial version of the specification
         "1": {
             "type": "object",
             # schema, host, host-node, and timeout are standard and
             # should be included in most single-participant tests.
             "properties": {
-                # The schema should always be constrained to a single
-                # value per version.
-                "schema":         { "type": "integer", "enum": [ 1 ] },
-                "query":           { "$ref": "#/pScheduler/Host" },
+                "schema":            { "$ref": "#/pScheduler/Cardinal", "enum": [ 1 ] },
+                "query":           { "$ref": "#/pScheduler/URL" },
                 "nameserver":      { "$ref": "#/pScheduler/Host" },
                 "host":           { "$ref": "#/pScheduler/Host" },
                 "host-node":           { "$ref": "#/pScheduler/Host" },
@@ -53,13 +51,13 @@ SPEC_SCHEMA = {
             },
             # If listed here, these parameters MUST be in the test spec.
             "required": [
-                "query",
+                "query"
             ],
             # Treat other properties as acceptable.  This should
             # ALWAYS be false.
             "additionalProperties": False
         },
-        
+
         # Second and later versions of the specification
         # "2": {
         #    "type": "object",
@@ -73,7 +71,7 @@ SPEC_SCHEMA = {
         #    ],
         #    "additionalProperties": False
         #},
-        
+
     }
 
 }
@@ -83,19 +81,12 @@ SPEC_SCHEMA = {
 def spec_is_valid(json):
 
     (valid, errors) = json_validate_from_standard_template(json, SPEC_SCHEMA)
+    #return json_validate(json, SPEC_SCHEMA, max_schema=MAX_SCHEMA)
+    log.debug(json)
 
     if not valid:
         return (valid, errors)
 
-    # If there are semantic relationships that can't be expressed the
-    # JSON Schema (e.g., parameter X can't be less then 5 when
-    # parameter Y is an odd number), evaluate them here and complain
-    # if there's a problem.  E.g.,:
-    #
-    #if some_condition_which_is_an_error
-    #    return(False, "...Error Message...")
-
-    # By this point, everything is okay.
     return (valid, errors)
 
 
@@ -118,8 +109,16 @@ RESULT_SCHEMA = {
                 "schema":     { "type": "integer", "enum": [ 1 ] },
                 "succeeded":  { "$ref": "#/pScheduler/Boolean" },
                 "time":       { "$ref": "#/pScheduler/Duration" },
-                "ipv4 address": { "$ref": "#/pScheduler/Host" },
-                "ipv6 address": { "$ref": "#/pScheduler/Host" },
+                "ipv4": {
+                    "type": "array",
+                    "items": { "$ref": "#/pScheduler/IPv4" },
+                "minItems" : 0
+                },
+                "ipv6": {
+                    "type": "array",
+                    "items": {"$ref": "#/pScheduler/IPv6"},
+                    "minItems": 0
+                },
                 "translated": { "$ref": "#/pScheduler/Boolean" },
             },
             "required": [

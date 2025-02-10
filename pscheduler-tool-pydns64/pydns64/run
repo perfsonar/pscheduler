@@ -65,36 +65,40 @@ try:
 except dns.exception.Timeout:
     error = 'Timeout'
 except dns.resolver.NoAnswer:
-    error = 'No answer'
+    if ip4answers:
+        error = 'No IPv6 answer'
+    else:
+        error = 'No IPv4 answer, aborting'
 except dns.resolver.NXDOMAIN:
     error = 'Domain does not exist'
 
 end_time = datetime.datetime.now()
 
-#TODO: update for translated (all in prefix)
-# >>> ipaddress.IPv6Address("64:ff9b::1799:847") in ipaddress.IPv6Network("64:ff9b::/96")
 if ip4answers is None:
-    ip4result_list = None
+    ip4result_list = []
 else:
     ip4result_list = sorted(list(ip4answers))
 
 if ip6answers is None:
-    ip6result_list = None
+    ip6result_list = []
 else:
     ip6result_list = sorted(list(ip6answers))
 
-# TODO: check for translation success
-if len(ip4result_list) != len(ip6result_list):
+# Check to see if results are correctly translated
+if len(ip4result_list) == 0 or len(ip6result_list) == 0:
     translated = False
-for index, ip in enumerate(ip6result_list):
-    ipaddr = IPv6Address(ip)
-    if ipaddr not in IPv6Network(prefix):
-        translated = False
-        break
-    else:
-        if IPv4Address(ip4result_list[index]).packed != ipaddr.packed[-4:] :
+elif len(ip4result_list) != len(ip6result_list):
+    translated = False
+else:
+    for index, ip in enumerate(ip6result_list):
+        ipaddr = IPv6Address(ip)
+        if ipaddr not in IPv6Network(prefix):
             translated = False
             break
+        else:
+            if IPv4Address(ip4result_list[index]).packed != ipaddr.packed[-4:]:
+                translated = False
+                break
 
 
 # Organize results into json data
@@ -109,9 +113,8 @@ results = {
     'error': error,
     'diags': diags }
 
-if ip4result_list is not None:
-    results [ 'result' ][ 'IPv4 records' ] = [str(ip) for ip in ip4result_list]
-if ip6result_list is not None:
-    results [ 'result' ][ 'IPv6 records' ] = [str(ip) for ip in ip6result_list]
+results [ 'result' ][ 'ipv4' ] = [str(ip) for ip in ip4result_list]
+results [ 'result' ][ 'ipv6' ] = [str(ip) for ip in ip6result_list]
+
 pscheduler.succeed_json(results)
 

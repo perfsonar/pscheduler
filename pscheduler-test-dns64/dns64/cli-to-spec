@@ -48,15 +48,14 @@ arg_parser = argparse.ArgumentParser(epilog=
 # Add all potential command line options here
 
 
-arg_parser.add_argument("query",
+arg_parser.add_argument("--query",
                       help="Hostname to look up.")
 
 arg_parser.add_argument("--nameserver",
-                      help="Nameserver to query.",
-                        dest="nameserver")
+                      help="Nameserver to query.")
 
 arg_parser.add_argument("--host",
-                      help="Host to run the test.", dest="host")
+                      help="Host to run the test.")
 
 arg_parser.add_argument("--host-node",
                       help="Hostname to run the test.", dest="host_node")
@@ -70,7 +69,7 @@ arg_parser.add_argument("--timeout",
                       dest="timeout")
 
 
-arguments = arg_parser.parse_args()
+arguments = arg_parser.parse_args(args)
 
 
 # Call .set(n) on this object to indicate that a parameter requires
@@ -113,5 +112,6 @@ if arguments.timeout is not None:
    result['timeout'] = arguments.timeout
 
 result['schema'] = schema.value()
+
 
 pscheduler.succeed_json(result)

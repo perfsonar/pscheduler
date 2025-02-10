@@ -35,11 +35,23 @@ TEMPLATE = '''
 {% if _mime_type == 'text/plain' %}
 
 Elapsed Time ... {{ unspec(result.time) }}
+{% for record in result.ipv4 -%}
+IPv4 address ... {{ record }}
+{% endfor -%}
+
+{%- for record in result.ipv6 -%}
+IPv6 address ... {{ record }}
+{% endfor -%}
+
+Translated ..... {{ result.translated }}
 
 {% elif _mime_type == 'text/html' %}
 
 <table>
 <tr><td>Elapsed Time</td><td>{{ unspec(result.time) }}</td></tr>
+<tr><td>IPv4</td><td><ul><li>{{ result.ipv4 | join('</li><li>') }}</li></ul></td></tr>
+<tr><td>IPv6</td><td><ul><li>{{ result.ipv6 | join('</li><li>') }}</li></ul></td></tr>
+<tr><td>Translated</td><td>{{ result.translated }}</td></tr>
 </table>
 
 {% else %}

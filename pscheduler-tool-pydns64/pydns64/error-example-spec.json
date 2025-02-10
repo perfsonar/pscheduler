@@ -2,10 +2,8 @@
   "test": {
     "type": "dns64",
     "spec": {
-      "query": "v4onlytest.notonthe.net",
-      "nameserver": "2001:4860:4860::64",
-      "translation-prefix": "64:ff9b::/96",
-      "timeout": "PT15S",
+      "query": "ip4.me",
+      "timeout": "PT10S",
       "schema": 1
     }
   },
