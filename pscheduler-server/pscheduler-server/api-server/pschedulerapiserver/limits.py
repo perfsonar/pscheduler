@@ -9,6 +9,7 @@ from pschedulerapiserver import application
 from flask import request
 
 from .args import *
+from .hints import *
 from .limitproc import *
 from .response import *
 from .util import *

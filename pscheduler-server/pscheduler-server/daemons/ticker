@@ -62,7 +62,7 @@ def http_queue_maintainer(log):
     with conn as db:
         with db.cursor() as cursor:
             # Don't catch anything here; if it dies, it dies.
-            cursor.execute("LISTEN run_change")
+            cursor.execute("LISTEN http_queue_new")
             log.debug("QM: Listening")
 
     # Work forever

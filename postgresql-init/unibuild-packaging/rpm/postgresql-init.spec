@@ -67,6 +67,9 @@ then
     exit 0
 fi
 
+#skip if building for EL8
+%if %{?ol8:0}%{!?ol8:1}
+
 # BEGIN PSQL FIXES
 
 # The two fixes in this section work around problems created when Red
@@ -129,6 +132,8 @@ make -f /usr/share/selinux/devel/Makefile -C "${WORK}" psql.pp
 semodule -i "${WORK}/psql.pp"
 
 # END PSQL FIXES
+
+%endif
 
 
 

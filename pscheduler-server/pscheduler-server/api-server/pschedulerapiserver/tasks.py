@@ -12,6 +12,7 @@ from flask import request
 
 from .access import *
 from .dbcursor import dbcursor_query
+from .hints import *
 from .json import *
 from .limitproc import *
 from .log import log

@@ -792,7 +792,7 @@ def main_program():
     log.debug("Connected to DB")
 
     # Listen for notifications.
-    for listen in ["run_new", "run_change", "configurables_changed" ]:
+    for listen in ["run_ready", "configurables_changed" ]:
         log.debug("Listening for notification %s" % (listen))
         db.listen(listen)
 
@@ -822,18 +822,7 @@ def main_program():
 
             log.debug("Next run or check in %s", wait_time)
 
-            if db.wait(pscheduler.timedelta_as_seconds(refresh)):
-                notifies = [ notify[0] for notify in db.notifications() ]
-                if len(notifies) > 0:
-                    log.debug("Notified: %s", notifies)
-                    if 'configurables_changed' in notifies:
-                        log.debug("Configurables changed.")
-                        run_start_margin_set(db)
-                    else:
-                        log.debug("Schedule change.")
-
-            else:
-
+            if not db.wait(pscheduler.timedelta_as_seconds(refresh)):
                 log.debug("Timed out.")
 
         else:
@@ -842,6 +831,17 @@ def main_program():
 
         db.query("SELECT heartbeat('runner')")
 
+        runs_ready = []
+
+        for (channel, payload, count) in db.notifications():
+            log.debug(f'Notified: {channel} {payload} {count}')
+            if channel == 'run_ready':
+                log.debug(f'Run {payload} became ready')
+                runs_ready.append(int(payload))
+            elif channel == 'configurables_changed':
+                log.debug('Configurables changed.')
+                run_start_margin_set(db)
+
         # Operate only on runs that are scheduled to start before the next
         # forced refresh.
         # TODO: This should be moved into a stored procedure
@@ -849,18 +849,38 @@ def main_program():
         RUNS_QUERY = """
             SELECT * FROM (
 
-            -- Tasks that haven't started
+            -- Runs we were explicity notified are ready and start
+            -- and start before the next time we run this query.
             SELECT
-                id AS run,
+                run.id AS run,
                 lower(times) - normalized_wall_clock() AS start_in,
                 lower(times) AS start_at,
                 FALSE as background_multi
             FROM
                 run
+                JOIN task ON task.id = run.task
+                JOIN test ON test.id = task.test
             WHERE
-                lower(run.times) < (normalized_wall_clock() + %s)
+                lower(run.times) < (normalized_wall_clock() + %s + %s)
+                AND run.id in %s
+                AND test.scheduling_class <> scheduling_class_background_multi()
+
+            UNION
+
+            -- Non-background runs that haven't started
+            SELECT
+                run.id AS run,
+                lower(times) - normalized_wall_clock() AS start_in,
+                lower(times) AS start_at,
+                FALSE as background_multi
+            FROM
+                run
+                JOIN task ON task.id = run.task
+                JOIN test ON test.id = task.test
+            WHERE
+                lower(run.times) < (normalized_wall_clock() + %s + %s)
                 AND state = run_state_pending()
-                AND part_data_full IS NOT NULL
+                AND test.scheduling_class <> scheduling_class_background_multi()
 
             UNION
 
@@ -880,7 +900,7 @@ def main_program():
                 AND test.scheduling_class = scheduling_class_background_multi()
                 AND run.state IN (run_state_pending(), run_state_running())
             ) t
-            WHERE start_in > '0'::INTERVAL
+            WHERE start_in >= '0'::INTERVAL
             ORDER BY start_in
             """
 
@@ -889,7 +909,15 @@ def main_program():
         run_ids = []
         runs_started = False
 
-        for row in db.query(RUNS_QUERY, [refresh]):
+        for row in db.query(RUNS_QUERY, [
+                refresh,
+                run_start_margin(),
+                # IN (x) has to have something, so use an array that will
+                # never match anything in the table.
+                tuple(runs_ready or [None]),
+                refresh,
+                run_start_margin()
+        ]):
 
             run_id, start_in, start_at, background_multi = row
 
