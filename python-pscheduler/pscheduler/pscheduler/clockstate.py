@@ -147,6 +147,7 @@ def _chronyc_status():
         if "Last offset" in parameter:
             offset_str = parameter
 
+    result = {}
     try:
         offset = offset_str[offset_str.find(':'):]
         if offset != "":
