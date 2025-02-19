@@ -2,8 +2,8 @@
 # RPM Spec for Python pScheduler Module
 #
 
-%define perfsonar_auto_version 5.1.4
-%define perfsonar_auto_relnum 1
+%define perfsonar_auto_version 5.1.5
+%define perfsonar_auto_relnum 0.a1.0
 
 %define short	pscheduler
 Name:		%{_pscheduler_python}-%{short}
