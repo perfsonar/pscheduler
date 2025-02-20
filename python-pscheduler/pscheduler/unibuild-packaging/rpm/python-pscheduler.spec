@@ -160,12 +160,12 @@ EOF
 fi
 
 systemctl enable rsyslog
-systemctl reload-or-try-restart rsyslog
+systemctl reload-or-restart rsyslog
 POST-WRAPPER-EOF
 
 
 %postun
-systemctl reload-or-try-restart rsyslog
+systemctl reload-or-restart rsyslog
 
 
 %files -f INSTALLED_FILES
