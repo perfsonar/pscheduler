@@ -240,6 +240,18 @@ else
 fi
 
 
+section "PostgreSQL Connection Summary"
+
+postgresql-load <<EOF
+
+SELECT datname, application_name, count(*)
+FROM pg_stat_activity
+GROUP BY datname, application_name
+ORDER BY datname, application_name
+;
+EOF
+
+
 section "PostgreSQL Log (Last ${LOG_LIMIT} Lines)"
 
 PG_DATA=$(postgresql-load <<EOF
@@ -267,7 +279,12 @@ dmesg
 
 
 section Open Files
-lsof
+if [ -e '/.dockerenv' ]
+then
+    echo "Skipping this step because lsof doesn't work well under Docker."
+else
+    lsof
+fi
 
 
 section Installed Packages
