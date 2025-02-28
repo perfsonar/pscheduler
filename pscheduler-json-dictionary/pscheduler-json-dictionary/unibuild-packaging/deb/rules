@@ -6,10 +6,16 @@
 %:
 	dh $@
 
+override_dh_auto_build:
+	make \
+		DATADIR=/usr/share/pscheduler
+
+
 override_dh_auto_install:
-	make install \
+	make \
 		INTERNALSDIR=$(CURDIR)/debian/pscheduler-json-dictionary/usr/bin \
-		DATADIR=$(CURDIR)/debian/pscheduler-json-dictionary/usr/share/pscheduler \
-		INSTALLED_DATADIR=/usr/share/pscheduler
+		INSTALLED_DATADIR=$(CURDIR)/debian/pscheduler-json-dictionary/usr/share/pscheduler \
+		install
+
 
 override_dh_auto_clean:

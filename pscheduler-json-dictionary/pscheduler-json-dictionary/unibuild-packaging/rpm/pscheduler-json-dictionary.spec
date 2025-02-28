@@ -21,7 +21,7 @@ Source0:	%{name}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	pscheduler-core
+# Requires:	Nothing...
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:	%{_pscheduler_python}

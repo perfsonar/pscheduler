@@ -34,10 +34,6 @@ ifndef INTERNALSDIR
 	@echo No INTERNALSDIR specified for installation
 	@false
 endif
-ifndef DATADIR
-	@echo No DATADIR specified for installation
-	@false
-endif
 ifndef INSTALLED_DATADIR
 	@echo No INSTALLED_DATADIR specified for installation
 	@false

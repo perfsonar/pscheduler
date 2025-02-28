@@ -9,7 +9,7 @@ Vcs-Browser: https://github.com/perfsonar/pscheduler
 
 Package: pscheduler-json-dictionary
 Architecture: all
-Depends: ${misc:Depends}, pscheduler-core
+Depends: ${misc:Depends}
 Description: JSON dictionary for pScheduler
   JSON dictionary used for validating pScheduler data plus
   an internal command to retrieve it.
