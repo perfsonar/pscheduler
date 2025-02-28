@@ -118,6 +118,9 @@ drop-in
 
 pscheduler-account
 pscheduler-jq-library
+# Note: This requires pscheduler-core to work, but not build and
+# python-pscheduler uses it.
+pscheduler-json-dictionary
 python-pscheduler
 pscheduler-core
 pscheduler-server

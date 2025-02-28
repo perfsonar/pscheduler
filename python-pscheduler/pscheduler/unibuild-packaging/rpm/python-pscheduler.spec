@@ -99,7 +99,9 @@ Utility functions for pScheduler
 
 %build
 
-make CLASSES="%{_pscheduler_classes}"
+make \
+    CLASSES="%{_pscheduler_classes}" \
+    DATADIR="%{_pscheduler_datadir}"
 
 
 %install

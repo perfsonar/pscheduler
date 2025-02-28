@@ -1,0 +1,15 @@
+#!/usr/bin/make -f
+# See debhelper(7) (uncomment to enable)
+# output every command that modifies files on the build system.
+#DH_VERBOSE = 1
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	make install \
+		INTERNALSDIR=$(CURDIR)/debian/pscheduler-json-dictionary/usr/bin \
+		DATADIR=$(CURDIR)/debian/pscheduler-json-dictionary/usr/share/pscheduler \
+		INSTALLED_DATADIR=/usr/share/pscheduler
+
+override_dh_auto_clean:
