@@ -5,8 +5,7 @@
 
 import pscheduler
 
-from validate import spec_is_valid
-from validate import MAX_SCHEMA
+from validate import spec_is_valid, spec_max_schema
 
 TEMPLATE='''
 {%- set schema = 1 if schema is undefined else schema -%}
@@ -53,4 +52,4 @@ Parting Comment .... {{ unspec(partingcomment) }}
 {% endif %}
 '''
 
-pscheduler.spec_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=spec_is_valid)
+pscheduler.spec_format_method(TEMPLATE, max_schema=spec_max_schema(), validator=spec_is_valid)
