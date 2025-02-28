@@ -110,6 +110,7 @@ httpd-wsgi-socket
 
 # Utility and Tool programs
 drop-in
+json2pickle
 
 
 #

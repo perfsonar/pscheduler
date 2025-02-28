@@ -1,0 +1,28 @@
+.\" pickle2json man page
+.if !\n(.g \{\
+.	if !\w|\*(lq| \{\
+.		ds lq ``
+.		if \w'\(lq' .ds lq "\(lq
+.	\}
+.	if !\w|\*(rq| \{\
+.		ds rq ''
+.		if \w'\(rq' .ds rq "\(rq
+.	\}
+.\}
+.de Id
+.ds Dt \\$4
+..
+.TH PICKLE2JSON 1
+.SH NAME
+pickle2json \- Generate JSON from Python-pickled data
+.SH SYNOPSIS
+.B pickle2json
+
+.SH DESCRIPTION
+.PP
+This program reads Python-pickled data from stdin and writes
+it to stdout as JSON.
+
+Note that the program will fail if any of the pickled data is
+not renderable as JSON.
+

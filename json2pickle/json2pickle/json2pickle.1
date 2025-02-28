@@ -1,0 +1,24 @@
+.\" json2pickle man page
+.if !\n(.g \{\
+.	if !\w|\*(lq| \{\
+.		ds lq ``
+.		if \w'\(lq' .ds lq "\(lq
+.	\}
+.	if !\w|\*(rq| \{\
+.		ds rq ''
+.		if \w'\(rq' .ds rq "\(rq
+.	\}
+.\}
+.de Id
+.ds Dt \\$4
+..
+.TH JSON2PICKLE 1
+.SH NAME
+json2pickle \- Generated Python-pickled data from JSON
+.SH SYNOPSIS
+.B json2pickle
+
+.SH DESCRIPTION
+.PP
+This program reads JSON data from stdin, pickles it using Python's
+pickling module and writes the result to stdout.
