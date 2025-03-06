@@ -1,0 +1,39 @@
+{
+    "local": { },
+
+    "versions": {
+
+        "1": {
+            "type": "object",
+            "properties": {
+                "schema":           { "type": "integer", "enum": [ 1 ] },
+                "duration":         { "$ref": "#/pScheduler/Duration" },
+                "host":             { "$ref": "#/pScheduler/Host" },
+                "host-node":        { "$ref": "#/pScheduler/URLHostPort" },
+                "parting-comment":  { "$ref": "#/pScheduler/String" },
+                "starting-comment": { "$ref": "#/pScheduler/String" }
+            },
+            "additionalProperties": false,
+            "required": [
+                "duration"
+            ]
+        },
+
+        "2": {
+            "type": "object",
+            "properties": {
+		"schema":           { "type": "integer", "enum": [ 2 ] },
+                "duration":         { "$ref": "#/pScheduler/Duration" },
+                "host":             { "type": "array",
+                                      "items": { "$ref": "#/pScheduler/Host" },
+                                      "minItems" : 1 },
+                "parting-comment":  { "$ref": "#/pScheduler/String" },
+                "starting-comment": { "$ref": "#/pScheduler/String" }
+            },
+            "additionalProperties": false,
+            "required": [
+                "duration"
+            ]
+        }
+    }
+}
