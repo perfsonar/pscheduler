@@ -247,13 +247,15 @@ def clock_state():
         "synchronized": system_synchronized
     }
 
+
+    # TODO: Can use result | xxx_result in Python >= 3.9
     chronyc_result = _chronyc_status()
     if chronyc_result is not None:
-        return result | chronyc_result
+        return { **result, **chronyc_result }
 
     ntp_result = _ntp_status()
     if ntp_result is not None:
-        return result | ntp_result
+        return { **result, **ntp_result }
 
     # If nothing returned before this point, go with whatever we have.
     result['source'] = 'unknown'
