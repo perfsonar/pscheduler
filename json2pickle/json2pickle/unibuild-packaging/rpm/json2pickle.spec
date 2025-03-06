@@ -18,8 +18,7 @@ Source0:	%{name}-%{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
-Requires:	postgresql-server
-Requires:	procps-ng
+Requires:	python >= 3.5
 
 BuildRequires:	pscheduler-rpm
 
