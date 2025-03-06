@@ -1,0 +1,15 @@
+Source: json2pickle
+Section: misc
+Priority: optional
+Maintainer: perfSONAR Developers <perfsonar-developer@internet2.edu>
+Build-Depends: debhelper (>= 10)
+Standards-Version: 3.9.8
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: json2pickle
+Architecture: all
+Depends: ${misc:Depends}, python3
+Description: Tools for converting between Python-pickled data and JSON
+ This package contains json2pickle and pickle2json, which
+ convert between JSON and Python-pickled data.

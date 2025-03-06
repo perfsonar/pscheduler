@@ -1,0 +1,383 @@
+#!/usr/bin/env python3
+#
+# jsonschematool - Merge and dereference JSON Schema
+#
+# See the manual page for documentation.
+#
+
+import argparse
+import copy
+import json
+import sys
+
+
+# -----------------------------------------------------------------------------
+
+#
+# Utilities
+#
+
+def die(message):
+    '''Print an error message and bail out.'''
+    print(message, file=sys.stderr)
+    exit(1)
+
+
+def get_ref(struct, ref, leaf=False):
+    '''
+    Figure out if a reference (e.g., '#/foo/bar') exists within a
+    given structure and return it.
+    '''
+
+    if not isinstance(struct, dict):
+        return None
+
+    parts = ref_parts(ref)
+
+    result = {}
+    result_current = result
+    
+    struct_current = struct
+
+    for part in parts:
+        if part not in struct_current:
+            return None
+        result_current[part] = {}
+        result_current = result_current[part]
+        struct_current = struct_current[part]
+
+    if leaf:
+        return struct_current
+
+    result_current.update(struct_current)
+
+    return result
+
+
+def ref_parts(ref):
+    parts = ref.split('/')
+    if parts[0] != '#' or len(parts) < 2:
+        raise ValueError('Invalid refernce {0}'.format(ref))
+    return parts[1:]
+
+
+# -----------------------------------------------------------------------------
+
+#
+# Gargle the arguments
+#
+
+arg_parser = argparse.ArgumentParser()
+
+# Merge Options
+
+arg_merge_group = arg_parser.add_argument_group('Merge-Related Arguments')
+
+arg_merge_group.add_argument('--merge-all', '-a',
+                             help='Merge all JSON, even unused references',
+                             action='store_true',
+                             dest='merge_all', default=False)
+
+arg_merge_group.add_argument('--strip', '-s',
+                             help='Strip out any non-top-level item with no references',
+                             action='store_true',
+                             dest='strip', default=False)
+
+arg_merge_group.add_argument('--unresolved-ok', '-u',
+                             help='Don\'t complain about unresolved references',
+                             action='store_true',
+                             dest='unresolved_ok', default=False)
+
+# Dereferencing Options
+
+arg_deref_group = arg_parser.add_argument_group('Dereferencing-Related Arguments')
+
+arg_deref_group.add_argument('--dereference', '-d',
+                             help='Resolve all references to the places that make them',
+                             action='store_true',
+                             dest='dereference', default=False)
+
+arg_deref_group.add_argument('--overlay', '-o',
+                             help='Overlay referenced content when dereferencing instead of replacing',
+                             action='store_true',
+                             dest='overlay', default=False)
+
+
+# Output
+
+arg_output_group = arg_parser.add_argument_group('Output-Related Arguments')
+
+arg_output_group.add_argument('--pretty', '-p',
+                        help='Format the output for humans',
+                        action='store_true',
+                        dest='pretty', default=False)
+
+arg_output_group.add_argument('--quiet', '-q',
+                        help='Don\'t produce output',
+                        action='store_true',
+                        dest='quiet', default=False)
+
+
+# What's left after the switches
+
+arg_parser.add_argument('remaining',
+                        help=argparse.SUPPRESS,
+                        nargs=argparse.REMAINDER)
+
+args = arg_parser.parse_args()
+
+
+# Make sure '-' doesn't occur twice in args.remaining
+
+if len(list(filter(lambda v: v == '-', args.remaining))) > 1:
+    die('Can only read from stdin once.')
+
+
+# -----------------------------------------------------------------------------
+
+#
+# Merging
+#
+
+
+def all_refs(struct):
+
+    '''Return all references in a structure as a dictionary'''
+
+    if not isinstance(struct, dict):
+        return {}
+
+    refs = {}
+
+    for key,value in struct.items():
+
+        if isinstance(value, dict):
+            refs.update(all_refs(value))
+
+        elif isinstance(value, list):
+            for item in value:
+                add = dict([ (ref, 1) for ref in all_refs(item) ])
+                refs.update(add)
+
+        else:
+            if key == '$ref' and isinstance(value, str):
+                refs[value] = 1
+
+    return refs
+
+
+def merge_dicts(dict1, dict2):
+    '''
+    Merge two dictionaries.
+    Source: https://stackoverflow.com/a/7205672
+    '''
+    for k in set(dict1.keys()).union(dict2.keys()):
+        if k in dict1 and k in dict2:
+            if isinstance(dict1[k], dict) and isinstance(dict2[k], dict):
+                yield (k, dict(merge_dicts(dict1[k], dict2[k])))
+            else:
+                # If one of the values is not a dict, you can't continue merging it.
+                # Value from second dict overrides one in first and we move on.
+                yield (k, dict2[k])
+                # Alternatively, replace this with exception raiser to alert you of value conflicts
+        elif k in dict1:
+            yield (k, dict1[k])
+        else:
+            yield (k, dict2[k])
+
+
+def merge(inputs):
+
+    unresolved_refs = {}
+    result = {}
+    first = True
+
+    for data in inputs:
+
+        if args.merge_all:
+            result = dict(merge_dicts(result, data))
+            continue
+
+        # The first file is a special case
+
+        if first:
+            first = False
+
+            # Drop it in wholesale because there's nothing to reference it
+            result = dict(merge_dicts(result, data))
+
+            # Find non-resolving references
+            for ref in all_refs(data).keys():
+                if get_ref(data, ref) is None:
+                    unresolved_refs[ref] = 1
+
+            continue
+
+
+        # For the second and later files, merge in only the parts that are
+        # referred to by an unresolved reference.
+
+        added = True
+
+        while added:
+
+            added = False
+
+            # Listify this so we can alter the hash on the fly.
+            for unresolved in list(unresolved_refs.keys()):
+
+                ref = get_ref(data, unresolved)
+                if ref is not None:
+                    result = dict(merge_dicts(result, ref))
+                    for add in all_refs(ref).keys():
+                        unresolved_refs[add] = 1
+                        added = True
+                try:
+                    del unresolved_refs[unresolved]
+                except KeyError:
+                    pass  # We may have deleted this one already.
+
+
+        # Complain if anything was unresolved
+
+        if not args.unresolved_ok and unresolved_refs:
+            die('Unresolved references:\n {0}'.format(
+                              '\n '.join(unresolved_refs.keys())))
+
+    return result
+
+# -----------------------------------------------------------------------------
+
+# Dereferencing
+
+def walk_all(struct, struct_top):
+    '''Walk a tree and find a list of the references.'''
+
+    if not isinstance(struct, dict):
+        return {}
+
+    refs = {}
+
+    for key,value in struct.items():
+
+        if isinstance(value, dict):
+
+            if '$ref' in value:
+                ref = value['$ref']
+                refs[ref] = 1
+                if args.overlay:
+                    # TODO: Start with what's in the ref and overlay
+                    # what's in the main stuff so things can be
+                    # overridden properly.
+                    del struct[key]['$ref']
+                    struct[key].update(get_ref(struct_top, ref, leaf=True))
+                else:
+                    struct[key] = copy.deepcopy(get_ref(struct_top, value['$ref'], leaf=True))
+                new_refs = walk_all(struct[key], struct_top)
+                refs.update(new_refs)
+            else:
+                new_refs = walk_all(value, struct_top)
+                refs.update(new_refs)
+
+
+        elif isinstance(value, list):
+            for num, item in enumerate(value):
+                if isinstance(item, dict) and '$ref' in item:
+                    new_value = copy.deepcopy(get_ref(struct_top, item['$ref'], leaf=True))
+                    refs[item['$ref']] = 1
+                    new_refs = walk_all(new_value, struct_top)
+                    refs.update(new_refs)
+                    value[num] = new_value
+
+        else:
+            if key == '$ref' and isinstance(value, str):
+                assert False, 'Found a stray $ref {0}'.format(value['$ref'])
+
+    return refs
+
+
+
+#
+# Delete anything that was referenced
+#
+
+def delete_ref(data, parts):
+    '''Recursively delete references'''
+
+    assert len(parts) > 0
+
+    if len(parts) == 1:
+        del data[parts[0]]
+    else:
+        if delete_ref(data[parts[0]], parts[1:]):
+            # What we sent in came up empty, so get rid of it, too.
+            del data[parts[0]]
+
+    return len(data) == 0
+
+
+def dereference(data):
+    refs = walk_all(data, data)
+    for key in [ ref_parts(ref) for ref in refs.keys() ]:
+        delete_ref(data, key)
+    return data
+
+
+
+# -----------------------------------------------------------------------------
+
+# Main Program
+
+# Read the input(s).
+
+inputs = []
+if not args.remaining:
+    args.remaining = [ '-' ]
+
+for source in args.remaining:
+
+    try:
+        if source == '-':
+            source = 'stdin'
+            loaded = json.load(sys.stdin)
+        else:
+            with open(source, 'r') as data:
+                loaded = json.load(data)
+    except Exception as ex:
+        die(f'{source}: {ex}')
+
+    if type(loaded) != dict:
+        die(f'{source}: Must contain a JSON object')
+    inputs.append(loaded)
+
+
+# Merge and dereference
+
+merged = merge(inputs)
+
+# Make sure this at least looks like JSONSchema, at least on a cursory level.
+
+# TODO: Remove this once bugs are worked out.
+#def jd(x):
+#    json.dump(x, sys.stdout, sort_keys=True, indent=4, separators=(',', ': '))
+#    print()
+#
+#jd(inputs)
+#jd(merged)
+
+
+if type(merged) != dict or \
+   ('type' not in merged and '$ref' not in merged):
+    die('JSON does not appear to be JSONSchema.')
+
+result = dereference(merged) if args.dereference else merged
+
+# Make output
+
+if not args.quiet:
+    json.dump(result, sys.stdout, sort_keys=True, indent=4, separators=(',', ': ')) \
+        if args.pretty \
+           else json.dump(result, sys.stdout)
+    print()
+
+exit(0)
