@@ -158,7 +158,7 @@ __dictionary__ = {
     "HostNamePort": {
         # Note that this will cover valid IPv4 addresses, too.
         "type": "string",
-        "pattern": r'^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])(:[0-9]+)?$'
+        "pattern": r'^(([a-zA-Z0-9_]|[a-zA-Z0-9_][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])(:[0-9]+)?$'
     },
 
     "Integer": { "type": "integer" },
