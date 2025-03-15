@@ -377,6 +377,7 @@ class WorkerProcess(object):
             self.__debug("Setup succeeded")
 
             # These only exist on the process side
+            #TODO: why?
 
             self.proc_lock = threading.Lock()
             self.proc_workers = {}
@@ -409,6 +410,14 @@ class WorkerProcess(object):
                             callback=self.__proc_result_callback,
                             debug_callback=self.__debug
                         )
+                        #TODO: test logging
+                        # self.__debug("proc workers:")
+                        # for id, proc in self.proc_workers:
+                        #     self.__debug(id)
+                        #     self.__debug(proc)
+                            # if proc.id == incoming.identifier:
+                            #     self.__debug("proc match on %d", proc.id)
+                        #self.__debug(self.proc_workers[incoming.identifier].worker)
                         self.__debug("%s: Started worker runner" % incoming.identifier)
 
                 elif isinstance(incoming, self._MessageAction):
@@ -434,6 +443,13 @@ class WorkerProcess(object):
                     self.teardown(self.teardown_args)
                     self.__debug("Tore down")
                     break
+
+                #TODO: new message type: cancel
+                elif isinstance(incoming, self._MessageCancel):
+                    #TODO: terminate process
+                    self.__debug("Cancelling")
+
+
 
                 else:
                     message = "Client sent invalid message type '%s' received" % (type(incoming))
@@ -672,6 +688,8 @@ class WorkerProcessPool(object):
                 self.processors[name] = use
 
             use(identifier, worker, callback)
+
+            return use.name
 
 
     def action(self, action=lambda a: None, args=None):

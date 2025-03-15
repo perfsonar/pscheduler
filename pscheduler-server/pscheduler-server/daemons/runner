@@ -72,8 +72,8 @@ if worker_threads < 1:
     opt_parser.error("Worker threads must be positive.")
 
 
-
-log = pscheduler.Log(verbose=options.verbose, debug=options.debug, propagate=True)
+#TODO: this is hacky, undo later
+log = pscheduler.Log(verbose=options.verbose, debug=True, propagate=True)
 
 dsn = pscheduler.string_from_file(options.dsn)
 
@@ -249,7 +249,7 @@ class RunWorker(pscheduler.GenericWorker):
 
 
         except Exception as ex:
-            self.log.excpetion()
+            self.log.excpetion() #TODO: is this a problem? was already here
             self.log.error("%d: Failed to post run for result: %s", self.id, str(ex))
 
 
@@ -771,6 +771,9 @@ pscheduler.on_graceful_exit(kill_subprocesses)
 
 def main_program():
 
+    #TODO: test workaround flaky logging
+    log.debug("HELLO WORLD")
+
     log.debug("Begin main")
 
     worker_pool = pscheduler.WorkerProcessPool(
@@ -792,7 +795,7 @@ def main_program():
     log.debug("Connected to DB")
 
     # Listen for notifications.
-    for listen in ["run_ready", "configurables_changed" ]:
+    for listen in ["run_ready", "configurables_changed", "run_canceled" ]:
         log.debug("Listening for notification %s" % (listen))
         db.listen(listen)
 
@@ -803,6 +806,7 @@ def main_program():
     run_start_margin_set(db)
 
     worker_threads = {}
+    worker_processes = {}
 
     while True:
 
@@ -811,6 +815,12 @@ def main_program():
                        if worker_threads[worker_id].is_complete()]:
             log.debug("Purging completed thread %d", remove)
             del worker_threads[remove]
+
+        #TODO NEW: clean out processes dict
+        for remove_process in [pid for pid in worker_processes
+                       if not worker_processes[pid].is_running()]:
+            log.debug("Purging completed process identifier %d", remove_process)
+            del worker_processes[remove_process]
 
         if not pscheduler.timedelta_is_zero(wait_time):
 
@@ -832,6 +842,7 @@ def main_program():
         db.query("SELECT heartbeat('runner')")
 
         runs_ready = []
+        runs_canceled = []
 
         for (channel, payload, count) in db.notifications():
             log.debug(f'Notified: {channel} {payload} {count}')
@@ -841,6 +852,12 @@ def main_program():
             elif channel == 'configurables_changed':
                 log.debug('Configurables changed.')
                 run_start_margin_set(db)
+            #TODO: add elif for cancel
+            elif channel == 'run_canceled':
+                log.debug(f'Run {payload} was canceled')
+                #TODO: will id from worker be the same as in id pool? I think so
+                runs_canceled.append(int(payload))
+
 
         # Operate only on runs that are scheduled to start before the next
         # forced refresh.
@@ -921,6 +938,15 @@ def main_program():
 
             run_id, start_in, start_at, background_multi = row
 
+            if run_id in runs_canceled:
+                log.debug("Terminating process %d" % run_id)
+                #TODO: how to find in worker pool by id? how to get out of pool?
+                #TODO: where does the RunWorker actually live? that's what I need to terminate
+                # actually I think I need to terminate the WorkerProcess that runs the RunWorker
+                # which seems to be harder to get at
+                process = worker_pool.processors[worker_processes[run_id]]
+                process.terminate()
+
             if run_id in ids_running:
                 log.debug("%d is already running" % (run_id))
                 continue
@@ -932,9 +958,21 @@ def main_program():
             try:
 
                 # Make a worker and throw it into the pool.
-                worker_pool(run_id, RunWorker(run_id, start_at, log.is_forced_debugging()), run_completion)
+                name = worker_pool(run_id, RunWorker(run_id, start_at, log.is_forced_debugging()), run_completion)
+                worker_processes[run_id] = name
+                log.debug("name: %s", name)
+                #TODO: when this is called, worker_pool __call__ creates a WorkerProcess
+                # the WorkerProcess has a PID and a terminate method
+                # how to know which WorkerProcess is being used? they have a name
+                # it can use an existing WorkerProcess also
                 log.debug("%d: Created worker", run_id)
                 ids_running.add(run_id)
+                #TODO: need to kill by specific run_id, kill process but also mark completed
+                # is it allowed to keep track of id and processor? how to know what processor?
+                log.debug("processors:")
+                for name, processor in worker_pool.processors.items():
+                    log.debug("name: %s", name)
+                    log.debug(dir(processor))
 
                 log.debug("%d processors in pool: %s", len(worker_pool), worker_pool.status())
 
