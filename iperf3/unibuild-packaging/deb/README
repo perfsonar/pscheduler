@@ -10,3 +10,9 @@ should be the master build OS control file. This metapackage takes
 care of creating a dependency  list  to  get  the  correct  binary
 package for each distribution we support. It only needs  to  exist
 in one of the control files.
+
+U20 and D11 builds are called plain iperf3 as they are linked
+with libssl (>1.1)
+
+U22, U24 and D12 builds are called iperf3-ssl3 as they are linked
+with libssl3 (>3.0)
