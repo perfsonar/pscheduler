@@ -1,34 +1,7 @@
 Index: b/diags.raw
 ===================================================================
---- a/diags.raw	2025-01-27 14:41:38.237790673 +0100
-+++ b/diags.raw	2025-01-27 14:44:29.117974572 +0100
-@@ -121,7 +121,7 @@
- 
- section "New Tasks by Hour Added"
- 
--postgresql-load <<EOF
-+su -l -c psql postgres <<EOF
- \c pscheduler
- SELECT
- date_trunc('hour', added) AS hour,
-@@ -136,7 +136,7 @@
- 
- section "New Runs by Hour Added"
- 
--postgresql-load <<EOF
-+su -l -c psql postgres <<EOF
- \c pscheduler
- SELECT
- date_trunc('hour', added) AS hour,
-@@ -151,7 +151,7 @@
- 
- section "Run States by Hour"
- 
--postgresql-load <<EOF
-+su -l -c psql postgres <<EOF
- \c pscheduler
- SELECT
- run_state.enum AS state,
+--- a/diags.raw	2025-03-03 16:50:14.202953565 +0100
++++ b/diags.raw	2025-03-14 18:05:46.354604727 +0100
 @@ -231,7 +231,7 @@
  
  
@@ -38,7 +11,7 @@ Index: b/diags.raw
  if [ -r "${LOG}" ]
  then
      tail "-${LOG_LIMIT}" "${LOG}"
-@@ -242,17 +242,11 @@
+@@ -254,17 +254,11 @@
  
  section "PostgreSQL Log (Last ${LOG_LIMIT} Lines)"
  
