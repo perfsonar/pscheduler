@@ -191,7 +191,7 @@ def schedule():
                         row[1].isoformat()
                     )
                     data.write(line)
-                    log.error("LINE %s", line)
+                    log.debug("LINE %s", line)
                 data.close()
             if out_format == "data":
                 return send_file(data_path)
