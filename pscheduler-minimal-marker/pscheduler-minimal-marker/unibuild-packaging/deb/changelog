@@ -1,5 +1,5 @@
-pscheduler-minimal-marker (5.2-1) perfsonar-minor-staging; urgency=low
+pscheduler-minimal-marker (5.2.0~1.b1-1) perfsonar-5.2; urgency=low
 
   * Initial version
 
- -- Mark Feit <mfeit@internet2.edu>  Mon,  8 Jul 2024 16:11:34 -0500
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 19 Mar 2025 12:32:29 -0400
