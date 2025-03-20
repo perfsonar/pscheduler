@@ -5,16 +5,12 @@
 
 import atexit
 import datetime
-import fcntl
-import json
 import pscheduler
 import sys
 import os
 import signal
-import time
 from powstream_defaults import *
-from powstream_utils import get_config, parse_raw_owamp_output, cleanup_dir, cleanup_file, handle_run_error, sleep_or_end, graceful_exit
-from subprocess import Popen, PIPE, call
+from powstream_utils import get_config, parse_raw_owamp_output, cleanup_dir, cleanup_file, handle_run_error, graceful_exit
 from dateutil import tz
 
 #track when this run starts - make sure it is aware that it is UTC
