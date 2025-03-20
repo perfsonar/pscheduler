@@ -12,13 +12,13 @@ import sys
 import os
 import signal
 import time
-import pytz
 from powstream_defaults import *
 from powstream_utils import get_config, parse_raw_owamp_output, cleanup_dir, cleanup_file, handle_run_error, sleep_or_end, graceful_exit
 from subprocess import Popen, PIPE, call
+from dateutil import tz
 
 #track when this run starts - make sure it is aware that it is UTC
-start_time = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
+start_time = datetime.datetime.now(tz=tz.UTC)
 #create tag to include in data directory based on current time
 #prevents old processes from stomping on new during restart
 time_tag = start_time.strftime("%Y%b%dT%H%M%S%f")

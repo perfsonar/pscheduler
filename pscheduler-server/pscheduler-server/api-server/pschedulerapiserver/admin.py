@@ -4,10 +4,8 @@
 
 import datetime
 import pscheduler
-import pytz
 import socket
 import time
-import tzlocal
 import werkzeug
 
 from pschedulerapiserver import application
