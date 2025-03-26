@@ -3,7 +3,7 @@
 #
 
 COMBINED := combined.json
-SCHEMAS := schema.json dictionary.json
+SCHEMAS := dictionary.json schema.json
 
 default: build
 

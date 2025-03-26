@@ -351,23 +351,17 @@ for source in args.remaining:
 
     if type(loaded) != dict:
         die(f'{source}: Must contain a JSON object')
-    inputs.append(loaded)
+
+    # This reverses the list so references are processed properly.
+    inputs.insert(0, loaded)
 
 
 # Merge and dereference
 
 merged = merge(inputs)
 
-# Make sure this at least looks like JSONSchema, at least on a cursory level.
-
-# TODO: Remove this once bugs are worked out.
-#def jd(x):
-#    json.dump(x, sys.stdout, sort_keys=True, indent=4, separators=(',', ': '))
-#    print()
-#
-#jd(inputs)
-#jd(merged)
-
+# Make sure this at least looks like JSONSchema, at least on a
+# cursory level.
 
 if type(merged) != dict or \
    ('type' not in merged and '$ref' not in merged):
