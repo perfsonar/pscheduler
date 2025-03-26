@@ -18,24 +18,53 @@ jsonschematool \- Merge and dereference JSON Schema documents
 .SH SYNOPSIS
 .B jsonschematool
 .I [ OPTIONS ]
-.I INPUT
 .I [ INPUT ... ]
 
 .SH DESCRIPTION
 .PP
 
-This program combines JSONSchama 
-
-TODO: Finish this.
+This program combines JSONSchema files and, optionally, replaces
+references with their actual definitions.
 
 .SH ARGUMENTS
 
-.IR XXX
-Xxx
+Each
+.I INPUT
+argument to the program is the path to a JSON file containing a
+full or partial JSON Schema documents.  The path
+.I -
+may be used once to signify the standard input.  If no arguments are
+provided, the program will read one input file from the standard
+input.
+
+Inputs should be provided in "dependency order," meaning that files
+containing referenced definitions should be placed before those that
+reference them.
+
 
 .SH OPTIONS
+
 .TP
-.BI --foo\ FOO
-Foo some
-.I BAR
-before baz.
+.BI --merge-all
+Do a raw merge of all files.
+
+.TP
+.BI --unresolved-ok
+Leave unresolved references unchanged and don't complain about them.
+
+.TP
+.BI --dereference
+Resolve all references to their definitions
+
+.TP
+.BI --overlay
+Overlay (merge) referenced content when dereferencing instead of
+replacing the entire object
+
+.TP
+.BI --pretty
+Format JSON output for human consumption
+
+.TP
+.BI --quiet
+Don't produce output

@@ -78,11 +78,6 @@ arg_merge_group.add_argument('--merge-all', '-a',
                              action='store_true',
                              dest='merge_all', default=False)
 
-arg_merge_group.add_argument('--strip', '-s',
-                             help='Strip out any non-top-level item with no references',
-                             action='store_true',
-                             dest='strip', default=False)
-
 arg_merge_group.add_argument('--unresolved-ok', '-u',
                              help='Don\'t complain about unresolved references',
                              action='store_true',
@@ -272,7 +267,10 @@ def walk_all(struct, struct_top):
                     del struct[key]['$ref']
                     struct[key].update(get_ref(struct_top, ref, leaf=True))
                 else:
-                    struct[key] = copy.deepcopy(get_ref(struct_top, value['$ref'], leaf=True))
+                    ref = get_ref(struct_top, value['$ref'], leaf=True)
+                    if ref is not None:
+                        struct[key] = copy.deepcopy(ref)
+
                 new_refs = walk_all(struct[key], struct_top)
                 refs.update(new_refs)
             else:
@@ -291,7 +289,8 @@ def walk_all(struct, struct_top):
 
         else:
             if key == '$ref' and isinstance(value, str):
-                assert False, 'Found a stray $ref {0}'.format(value['$ref'])
+                if not args.unresolved_ok:
+                    die(f'Found unresolvable $ref {value}')
 
     return refs
 
@@ -309,9 +308,13 @@ def delete_ref(data, parts):
     if len(parts) == 1:
         del data[parts[0]]
     else:
-        if delete_ref(data[parts[0]], parts[1:]):
-            # What we sent in came up empty, so get rid of it, too.
-            del data[parts[0]]
+        try:
+            if delete_ref(data[parts[0]], parts[1:]):
+                # What we sent in came up empty, so get rid of it, too.
+                del data[parts[0]]
+        except KeyError:
+            # TODO: Ref didn't exist.  Do something here?
+            pass
 
     return len(data) == 0
 
@@ -368,6 +371,7 @@ merged = merge(inputs)
 
 if type(merged) != dict or \
    ('type' not in merged and '$ref' not in merged):
+    json.dump(merged, sys.stdout, sort_keys=True, indent=4, separators=(',', ': '))
     die('JSON does not appear to be JSONSchema.')
 
 result = dereference(merged) if args.dereference else merged

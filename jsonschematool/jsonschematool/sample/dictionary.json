@@ -1,0 +1,21 @@
+{
+    "Dictionary": {
+
+        "Boolean": { "type": "boolean" },
+
+        "Cardinal": {
+            "type": "integer",
+            "minimum": 1
+        },
+
+	"String": {
+	    "type": "string"
+	},
+
+        "Email": { "type": "string", "format": "email" },
+
+        "Float": {
+            "type": "number"
+        }
+    }
+}

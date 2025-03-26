@@ -1,0 +1,8 @@
+{
+    "type": "object",
+    "properties": {
+	"foo": { "$ref": "#/Dictionary/Cardinal" },
+	"bar": { "$ref": "#/Dictionary/String" },
+	"baz": { "$ref": "#/Dictionary/Email" }
+    }
+}
