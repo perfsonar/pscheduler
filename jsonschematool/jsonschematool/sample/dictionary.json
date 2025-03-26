@@ -1,6 +1,8 @@
 {
     "Dictionary": {
 
+	"Anything": { },
+
         "Boolean": { "type": "boolean" },
 
         "Cardinal": {

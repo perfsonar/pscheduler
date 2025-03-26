@@ -12,10 +12,13 @@ default: build
 $(COMBINED): $(SCHEMAS)
 	../jsonschematool --pretty --dereference $(SCHEMAS) > $@
 
-
 build: $(COMBINED)
 	cat $<
 TO_CLEAN += $(COMBINED)
+
+DATA := data.json
+test:  build $(DATA)
+	jsonschema -i $(DATA) $(COMBINED)
 
 
 clean:
