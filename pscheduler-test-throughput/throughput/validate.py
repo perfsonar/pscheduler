@@ -1,5 +1,5 @@
 #
-# Validator for "throughput" Test
+
 #
 
 from pscheduler import json_validate
@@ -425,23 +425,6 @@ RESULT_SCHEMA = {
         }
     }
 
-LIMIT_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "schema":     { "$ref": "#/pScheduler/Cardinal" },
-        "bandwidth":  { "$ref": "#/pScheduler/Limit/SINumber" },
-        "duration":   { "$ref": "#/pScheduler/Limit/Duration" },
-        "udp":        { "$ref": "#/pScheduler/Limit/Boolean" },
-        "ip-version": { "$ref": "#/pScheduler/Limit/IPVersionList" },
-        "parallel":   { "$ref": "#/pScheduler/Limit/Cardinal"},
-        "source":     { "$ref": "#/pScheduler/Limit/IPCIDRList"},
-        "dest":       { "$ref": "#/pScheduler/Limit/IPCIDRList"},
-        "endpoint":   { "$ref": "#/pScheduler/Limit/IPCIDRList"}
-        },
-    "additionalProperties": False
-    }
-
-
 def spec_is_valid(input_json):
 
     # Build a temporary structure with a reference that points
@@ -459,10 +442,6 @@ def spec_is_valid(input_json):
 
 def result_is_valid(input_json):
     return json_validate(input_json, RESULT_SCHEMA)
-
-
-def limit_is_valid(input_json):
-    return json_validate(input_json, LIMIT_SCHEMA)
 
 
 if __name__ == "__main__":
