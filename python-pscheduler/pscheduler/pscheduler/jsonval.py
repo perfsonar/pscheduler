@@ -70,10 +70,11 @@ def json_validate(json, skeleton, max_schema=None):
 
     # Load the dictionary into the default schema if that hasn't
     # already happened.
-
+    # TODO: Consider auto-reloading the dictionary if it has changed
     if 'pScheduler' not in __default_schema:
         with open('__DATADIR__/json-dictionary.pickled', 'rb') as pickled:
-            __default_schema['pScheduler'] = pickle.load(pickled)
+            # TODO: Consider merging instead of hand-picking an element.
+            __default_schema['pScheduler'] = pickle.load(pickled)['pScheduler']
 
     # Validate what came in
 
