@@ -11,6 +11,8 @@ import threading
 import time
 import traceback
 import types
+from os import remove
+from symbol import continue_stmt
 
 
 class GenericWorker(object):
@@ -24,6 +26,13 @@ class GenericWorker(object):
     def __call__(self):
         raise NotImplementedError("Attempted to use an incomplete GenericWorker")
 
+    #TODO:
+    def action(self, actionLambda=lambda a: None, args=None):
+        #TODO: similar to WPP action
+        assert isinstance(actionLambda, types.LambdaType)
+
+        with self.lock:
+            actionLambda(args)
 
 
 class WorkerProcess(object):
@@ -222,6 +231,9 @@ class WorkerProcess(object):
         # Outstanding callbacks by identifier
         self.callbacks = {}
 
+        # TODO: keeps track of active runs on this worker process
+        self.active_runs = pscheduler.ThreadSafeSet()
+
         # Used by the relay to notify close() that all work is done.
         self.ended = threading.Condition()
 
@@ -306,6 +318,7 @@ class WorkerProcess(object):
                         incoming.diags)
                     with self.lock:
                         del self.callbacks[incoming.identifier]
+                        self.active_runs.remove(incoming.identifier)
 
                 elif isinstance(incoming, self._MessageDebug):
 
@@ -377,7 +390,6 @@ class WorkerProcess(object):
             self.__debug("Setup succeeded")
 
             # These only exist on the process side
-            #TODO: why?
 
             self.proc_lock = threading.Lock()
             self.proc_workers = {}
@@ -404,20 +416,13 @@ class WorkerProcess(object):
                     self.__debug("%s: Starting worker runner" % incoming.identifier)
                     with self.proc_lock:
                         self.__debug("%s: Got lock" % incoming.identifier)
+                        self.active_runs.append(incoming.identifier) #TODO: adding new run
                         self.proc_workers[incoming.identifier] = self.WorkerRunner(
                             incoming.identifier,
                             incoming.worker,
                             callback=self.__proc_result_callback,
                             debug_callback=self.__debug
                         )
-                        #TODO: test logging
-                        # self.__debug("proc workers:")
-                        # for id, proc in self.proc_workers:
-                        #     self.__debug(id)
-                        #     self.__debug(proc)
-                            # if proc.id == incoming.identifier:
-                            #     self.__debug("proc match on %d", proc.id)
-                        #self.__debug(self.proc_workers[incoming.identifier].worker)
                         self.__debug("%s: Started worker runner" % incoming.identifier)
 
                 elif isinstance(incoming, self._MessageAction):
@@ -575,6 +580,7 @@ class WorkerProcessPool(object):
         self.running = True
         self.processor_number = 0
         self.processors = {}
+        self.worker_runs = {}
 
         self.__debug("Started")
 
@@ -589,6 +595,18 @@ class WorkerProcessPool(object):
         """
         self.debug_callback("%s: %s" % (self.processor_name, message))
 
+
+    def worker_for_run(self, identifier):
+        #TODO: this should return the worker for a given run identifier
+        if identifier in self.worker_runs:
+            if identifier in self.worker_runs[identifier]:
+                return self.worker_runs[identifier]
+        return None
+
+#TODO: new, remove callback
+    def remove_id(self, identifier):
+        with self.lock:
+            del self.worker_runs[identifier]
 
     def groom(self):
         """
@@ -687,7 +705,9 @@ class WorkerProcessPool(object):
                 )
                 self.processors[name] = use
 
-            use(identifier, worker, callback)
+            self.worker_runs[identifier] = use
+            full_callback = lambda: [self.remove_id(identifier), callback]
+            use(identifier, worker, full_callback)
 
             return use.name
 
@@ -702,6 +722,21 @@ class WorkerProcessPool(object):
             self.__debug("Taking action on all processors in pool:")
             for name, processor in self.processors.items():
                 self.__debug("  %s" % (name))
+                processor.action(action, args)
+    #TODO:
+    # step 1: find WP for ID
+    # step 2: take action
+    def run_action(self, identifier, action=lambda a: None, args=None):
+        """
+        Take an action on the processor handling a specific run
+        """
+        assert isinstance(action, types.LambdaType)
+
+        #TODO: should it act on the whole WorkerProcess or just the RunWorker/GenericWorker?
+        with self.lock:
+            self.__debug("Taking action on specified run: %d" % (identifier))
+            processor = self.worker_for_run(identifier)
+            if processor is not None:
                 processor.action(action, args)
 
 
