@@ -943,12 +943,8 @@ def main_program():
 
             if run_id in runs_canceled:
                 log.debug("Terminating process %d" % run_id)
-                #TODO: how to find in worker pool by id? how to get out of pool?
-                #TODO: where does the RunWorker actually live? that's what I need to terminate
-                # actually I think I need to terminate the WorkerProcess that runs the RunWorker
-                # which seems to be harder to get at
-                process = worker_pool.processors[worker_processes[run_id]]
-                process.terminate()
+                worker_pool.run_action(run_id) # TODO: how to transcribe cancel action
+
 
             if run_id in ids_running:
                 log.debug("%d is already running" % (run_id))
@@ -964,18 +960,8 @@ def main_program():
                 name = worker_pool(run_id, RunWorker(run_id, start_at, log.is_forced_debugging()), run_completion)
                 worker_processes[run_id] = name
                 log.debug("name: %s", name)
-                #TODO: when this is called, worker_pool __call__ creates a WorkerProcess
-                # the WorkerProcess has a PID and a terminate method
-                # how to know which WorkerProcess is being used? they have a name
-                # it can use an existing WorkerProcess also
                 log.debug("%d: Created worker", run_id)
                 ids_running.add(run_id)
-                #TODO: need to kill by specific run_id, kill process but also mark completed
-                # is it allowed to keep track of id and processor? how to know what processor?
-                log.debug("processors:")
-                for name, processor in worker_pool.processors.items():
-                    log.debug("name: %s", name)
-                    #log.debug(dir(processor))
 
                 log.debug("%d processors in pool: %s", len(worker_pool), worker_pool.status())
 

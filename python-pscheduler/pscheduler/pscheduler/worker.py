@@ -609,11 +609,9 @@ class WorkerProcessPool(object):
 
 #TODO: new, remove callback
     def remove_id(self, identifier):
-        self.__debug(self.worker_runs)
         self.__debug("Removing id: %d" % (identifier))
         with self.lock:
             del self.worker_runs[identifier]
-            self.__debug(self.worker_runs)
 
     def groom(self):
         """
@@ -740,7 +738,6 @@ class WorkerProcessPool(object):
         """
         assert isinstance(action, types.LambdaType)
 
-        #TODO: should it act on the whole WorkerProcess or just the RunWorker/GenericWorker?
         with self.lock:
             self.__debug("Taking action on specified run: %d" % (identifier))
             processor = self.worker_for_run(identifier)
