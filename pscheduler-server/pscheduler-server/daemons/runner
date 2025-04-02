@@ -139,6 +139,7 @@ ids_running = pscheduler.ThreadSafeSet()
 
 # This is run when a task completes
 def run_completion(identifier, value, diags):
+    log.debug("ABIGAIL: run_completion")
     ids_running.remove(identifier)
     if value is None:
         log.debug("%d: Worker reported completion", identifier)
@@ -286,6 +287,8 @@ class RunWorker(pscheduler.GenericWorker):
         self.log = log
 
         self.log_debug = log.debug_always if self.debug else lambda *args: None
+
+        self.log_debug("ABIGAIL: calling RunWorker")
 
         try:
             self.log_debug("%d: Running", self.id)
@@ -817,10 +820,10 @@ def main_program():
             del worker_threads[remove]
 
         #TODO NEW: clean out processes dict
-        for remove_process in [pid for pid in worker_processes
-                       if not worker_processes[pid].is_running()]:
-            log.debug("Purging completed process identifier %d", remove_process)
-            del worker_processes[remove_process]
+        # for remove_process in [pid for pid in worker_processes
+        #                if not worker_processes[pid].is_running()]:
+        #     log.debug("Purging completed process identifier %d", remove_process)
+        #     del worker_processes[remove_process]
 
         if not pscheduler.timedelta_is_zero(wait_time):
 
@@ -972,7 +975,7 @@ def main_program():
                 log.debug("processors:")
                 for name, processor in worker_pool.processors.items():
                     log.debug("name: %s", name)
-                    log.debug(dir(processor))
+                    #log.debug(dir(processor))
 
                 log.debug("%d processors in pool: %s", len(worker_pool), worker_pool.status())
 

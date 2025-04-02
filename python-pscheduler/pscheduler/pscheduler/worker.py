@@ -59,7 +59,9 @@ class WorkerProcess(object):
             self.debug_callback = debug_callback
             self.__debug("New thread")
             self.thread = threading.Thread(target=self.__run)
+            self.__debug("ABIGAIL: threading")
             self.thread.setDaemon(True)
+            self.__debug("ABIGAIL: set daemon")
             self.thread.start()
             self.__debug("Thread started")
 
@@ -231,9 +233,6 @@ class WorkerProcess(object):
         # Outstanding callbacks by identifier
         self.callbacks = {}
 
-        # TODO: keeps track of active runs on this worker process
-        self.active_runs = pscheduler.ThreadSafeSet()
-
         # Used by the relay to notify close() that all work is done.
         self.ended = threading.Condition()
 
@@ -318,7 +317,6 @@ class WorkerProcess(object):
                         incoming.diags)
                     with self.lock:
                         del self.callbacks[incoming.identifier]
-                        self.active_runs.remove(incoming.identifier)
 
                 elif isinstance(incoming, self._MessageDebug):
 
@@ -413,10 +411,11 @@ class WorkerProcess(object):
 
                 if isinstance(incoming, self._MessageNewTask):
 
+                    self.__debug("ABIGAIL: new task incoming")
+
                     self.__debug("%s: Starting worker runner" % incoming.identifier)
                     with self.proc_lock:
                         self.__debug("%s: Got lock" % incoming.identifier)
-                        self.active_runs.append(incoming.identifier) #TODO: adding new run
                         self.proc_workers[incoming.identifier] = self.WorkerRunner(
                             incoming.identifier,
                             incoming.worker,
@@ -484,7 +483,11 @@ class WorkerProcess(object):
         assert isinstance(worker, GenericWorker)
         assert callback is None or callable(callback)
 
+        self.__debug("ABIGAIL: Call WorkerProcess")
+
         self.__raise()
+
+        self.__debug("ABIGAIL: No exceptions")
 
         with self.lock:
 
@@ -494,6 +497,7 @@ class WorkerProcess(object):
             if self.load_limit > 0 and len(self.callbacks) >= self.load_limit:
                 raise RuntimeError("Processor has a full workload")
 
+            self.__debug("ABIGAIL: callback time")
             self.callbacks[identifier] = callback
             self.to_proc.put(self._MessageNewTask(identifier, worker))
 
@@ -605,8 +609,11 @@ class WorkerProcessPool(object):
 
 #TODO: new, remove callback
     def remove_id(self, identifier):
+        self.__debug(self.worker_runs)
+        self.__debug("Removing id: %d" % (identifier))
         with self.lock:
             del self.worker_runs[identifier]
+            self.__debug(self.worker_runs)
 
     def groom(self):
         """
@@ -706,7 +713,8 @@ class WorkerProcessPool(object):
                 self.processors[name] = use
 
             self.worker_runs[identifier] = use
-            full_callback = lambda: [self.remove_id(identifier), callback]
+            full_callback = lambda id, value, diags: [self.remove_id(id), callback(id, value, diags)]
+
             use(identifier, worker, full_callback)
 
             return use.name
