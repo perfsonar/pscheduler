@@ -39,3 +39,8 @@ def plugin_invoke(pltype, which, method, argv=[], **kwargs):
     """
 
     return run_program([ plugin_method_path(pltype, which, method) ] + argv, **kwargs)
+
+class PluginInvoker:
+    # TODO: owns a Program object (need to pull in new run_program class work)
+
+

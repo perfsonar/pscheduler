@@ -139,13 +139,15 @@ ids_running = pscheduler.ThreadSafeSet()
 
 # This is run when a task completes
 def run_completion(identifier, value, diags):
-    log.debug("ABIGAIL: run_completion")
     ids_running.remove(identifier)
     if value is None:
         log.debug("%d: Worker reported completion", identifier)
     else:
         log.error("%d: Worker failed; returned %s: %s", identifier, value, diags)
 
+# TODO: for testing only
+def test_action(identifier):
+    log.debug("ABIGAIL: testing %d", identifier)
 
 #
 # Clock Survey
@@ -961,7 +963,11 @@ def main_program():
                 worker_processes[run_id] = name
                 log.debug("name: %s", name)
                 log.debug("%d: Created worker", run_id)
+                log.debug("testing")
                 ids_running.add(run_id)
+
+                # TODO: test
+                worker_pool.run_action(run_id, test_action, run_id)
 
                 log.debug("%d processors in pool: %s", len(worker_pool), worker_pool.status())
 

@@ -27,12 +27,12 @@ class GenericWorker(object):
         raise NotImplementedError("Attempted to use an incomplete GenericWorker")
 
     #TODO:
-    def action(self, actionLambda=lambda a: None, args=None):
+    def action(self, action=lambda a: None, args=None):
         #TODO: similar to WPP action
-        assert isinstance(actionLambda, types.LambdaType)
+        assert isinstance(action, types.LambdaType)
 
         with self.lock:
-            actionLambda(args)
+            action(args)
 
 
 class WorkerProcess(object):
@@ -59,9 +59,7 @@ class WorkerProcess(object):
             self.debug_callback = debug_callback
             self.__debug("New thread")
             self.thread = threading.Thread(target=self.__run)
-            self.__debug("ABIGAIL: threading")
             self.thread.setDaemon(True)
-            self.__debug("ABIGAIL: set daemon")
             self.thread.start()
             self.__debug("Thread started")
 
@@ -428,6 +426,8 @@ class WorkerProcess(object):
 
                     self.__debug("Taking action: %s %s" % (incoming.action, incoming.args))
                     incoming.action(incoming.args)
+                    # TODO: this just invokes the lambda that was passed through
+                    #  what lambda would terminate RunWorker?
 
                 elif isinstance(incoming, self._MessageFinish):
 
@@ -602,10 +602,10 @@ class WorkerProcessPool(object):
 
     def worker_for_run(self, identifier):
         #TODO: this should return the worker for a given run identifier
-        if identifier in self.worker_runs:
-            if identifier in self.worker_runs[identifier]:
+        with self.lock:
+            if identifier in self.worker_runs:
                 return self.worker_runs[identifier]
-        return None
+            return None
 
 #TODO: new, remove callback
     def remove_id(self, identifier):
