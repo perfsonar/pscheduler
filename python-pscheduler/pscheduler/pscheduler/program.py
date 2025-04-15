@@ -441,13 +441,13 @@ class Program:
     def _start_process(self):
         """Internal use: start the process""" 
         if self._env_add is None:
-            env_add = {}
+            self._env_add = {}
 
-        if self._env is None and len(env_add) == 0:
+        if self._env is None and len(self._env_add) == 0:
             new_env = None
         else:
             new_env = (os.environ if self._env is None else self._env).copy()
-            new_env.update(env_add)
+            new_env.update(self._env_add)
 
 
         def __get_process(argv, new_env, attempts):

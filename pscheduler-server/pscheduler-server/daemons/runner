@@ -500,12 +500,19 @@ class RunWorker(pscheduler.GenericWorker):
 
         if context_runner is None:
 
-            returncode, stdout, stderr = pscheduler.plugin_invoke(
+            # returncode, stdout, stderr = pscheduler.plugin_invoke(
+            #     "tool", tool, "run",
+            #     stdin=tool_input,
+            #     env_add=child_env,
+            #     timeout=timeout,
+            #     line_call=lambda l: self.__accumulate_output(l))
+            plugin_invoker = pscheduler.PluginInvoker(
                 "tool", tool, "run",
                 stdin=tool_input,
                 env_add=child_env,
                 timeout=timeout,
                 line_call=lambda l: self.__accumulate_output(l))
+            returncode, stdout, stderr = plugin_invoker.run_plugin()
 
         else:
 

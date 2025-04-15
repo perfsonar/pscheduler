@@ -45,7 +45,7 @@ class PluginInvoker:
     def __init__(self, pltype, which, method, argv=[], **kwargs):
         self.program = Program([ plugin_method_path(pltype, which, method) ] + argv, **kwargs)
 
-    def run(self):
+    def run_plugin(self):
         status, stdout, stderr = self.program.join()
         return status, stdout, stderr
 
