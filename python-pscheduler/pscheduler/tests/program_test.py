@@ -88,8 +88,9 @@ class TestProgram(PschedTestBase):
         program = Program(["sleep", "30"])
         t = threading.Thread(target=program.join)
         t.start()
-        program.kill(timeout=0.1)
-    
+        s = program.kill(timeout=0.1)
+        print(s)
+
     def test_line_call_class(self):
         lines = []
         def _line_function(line):

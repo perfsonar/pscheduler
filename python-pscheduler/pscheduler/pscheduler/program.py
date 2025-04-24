@@ -552,6 +552,8 @@ class Program:
         except subprocess.TimeoutExpired:
             self._process.kill()
             self._process.wait()
+        status = self._process.returncode
+        return status
 
 class ChainedExecRunner(object):
 
