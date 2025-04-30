@@ -5,7 +5,7 @@
 %define short	pyjq
 Name:		%{_pscheduler_python}-%{short}
 Version:	2.4.0
-Release:	2%{?dist}
+Release:	3%{?dist}
 Summary:	Python bindings to JQ
 BuildArch:	%(uname -m)
 License:	BSD 2-Clause
