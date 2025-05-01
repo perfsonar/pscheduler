@@ -10,12 +10,11 @@ import datetime
 import optparse
 import os
 import pscheduler
-import pytz
 import shutil
 import sys
 import tempfile
 import urllib.parse
-
+from dateutil import tz
 
 pscheduler.set_graceful_exit()
 
@@ -35,7 +34,7 @@ def get_time_with_delta(string):
         absolute = pscheduler.iso8601_as_datetime(string)
         # Default behavior is to localize naive times.
         if absolute.tzinfo is None:
-            absolute = pytz.utc.localize(absolute)
+            absolute = absolute.astimezone(tz.UTC)
             return pscheduler.datetime_as_iso8601(absolute)
     except ValueError:
         pass

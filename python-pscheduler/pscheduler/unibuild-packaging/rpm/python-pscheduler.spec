@@ -43,8 +43,6 @@ Requires:	%{_pscheduler_python}-py-radix
 Requires:	pscheduler-jq-library
 Requires:	%{_pscheduler_python}-pycurl
 Requires:	%{_pscheduler_python}-pyjq >= 2.2.0
-Requires:	%{_pscheduler_python}-tzlocal
-Requires:	%{_pscheduler_python}-pytz
 Requires:	rsyslog
 Requires:	logrotate
 Requires:       numactl
@@ -72,8 +70,6 @@ BuildRequires:	%{_pscheduler_python}-py-radix
 BuildRequires:	pscheduler-jq-library
 BuildRequires:	%{_pscheduler_python}-pycurl
 BuildRequires:	%{_pscheduler_python}-pyjq >= 2.2.0
-BuildRequires:	%{_pscheduler_python}-tzlocal
-BuildRequires:	%{_pscheduler_python}-pytz
 BuildRequires:  numactl
 
 %define limit_config %{_pscheduler_sysconfdir}/limits.conf

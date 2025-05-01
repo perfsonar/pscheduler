@@ -7,8 +7,7 @@ import pscheduler
 import datetime
 import ntplib
 import psutil
-import pytz
-import tzlocal
+from dateutil import tz
 
 # The ntp_adjtime code is the only bit of BWCTL (actually BWCTL2) that
 # survived into pScheduler.
@@ -228,9 +227,8 @@ def clock_state():
 
     # Grab the time now in case anyting below takes awhile.
 
-    utc = datetime.datetime.utcnow()
-    local_tz = tzlocal.get_localzone()
-    time_here = pytz.utc.localize(utc).astimezone(local_tz)
+    utc = datetime.datetime.now(tz=tz.UTC)
+    time_here = utc.astimezone(tz.tzlocal())
 
     raw_offset = time_here.strftime("%z")
     if len(raw_offset):

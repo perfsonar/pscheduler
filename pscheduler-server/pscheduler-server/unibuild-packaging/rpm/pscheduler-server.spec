@@ -73,7 +73,6 @@ Requires:	mod_ssl
 Requires:	mod_wsgi > 4.0
 Requires:	%{_pscheduler_python}-parse-crontab
 Requires:	%{_pscheduler_python}-pscheduler >= 5.1.0
-Requires:	%{_pscheduler_python}-pytz
 
 # General
 BuildRequires:	pscheduler-rpm

@@ -20,7 +20,6 @@ setup(
     install_requires=[
         'dnspython >= 1.12.0',
         'requests >= 2.6.0',
-        'pytz >= 2016.6',
         'psycopg2 >= 2.6.2',
         'jsonschema >= 2.5.1',
         'pyjq >= 2.2.0',
