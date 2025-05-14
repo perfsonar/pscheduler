@@ -1,5 +1,5 @@
-pscheduler-minimal-marker (5.2.0~2.b1-1) perfsonar-5.2; urgency=low
+pscheduler-minimal-marker (5.2.0~b1.2-1) perfsonar-5.2; urgency=low
 
   * Initial version
 
- -- perfSONAR developers <debian@perfsonar.net>  Mon, 12 May 2025 10:22:48 -0400
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 14 May 2025 10:50:56 -0400

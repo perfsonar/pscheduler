@@ -7,7 +7,7 @@
 # init scripts function just fine.
 
 %define perfsonar_auto_version 5.2.0
-%define perfsonar_auto_relnum 0.2.b1
+%define perfsonar_auto_relnum 0.b1.2
 
 Name:		pscheduler-server
 Version:	%{perfsonar_auto_version}
