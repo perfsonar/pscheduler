@@ -81,10 +81,10 @@ class Histogram(object):
             for k in self.hist_dict:
                 new_k = float(k) * (bucket_width / units)
                 digits = math.log10(bucket_width)
-                if digits > 0:
+                if digits >= 0:
                     digits = 0
                 else:
-                    digits = abs(digits)
+                    digits = abs(digits) - 1 # remove 1 otherwise always have extra digit
                 formatted_k = '{:.{prec}f}'.format(new_k, prec=int(digits))
                 new_hist_dict[formatted_k] = self.hist_dict[k]
             self.hist_dict = new_hist_dict
