@@ -77,6 +77,7 @@
         },
 
         "Host": {
+	    "#": "#1526: Need a single regex",
             "anyOf": [
                 { "$ref": "#/pScheduler/HostName" },
                 { "$ref": "#/pScheduler/IPAddress" }
@@ -102,6 +103,7 @@
         "Integer": { "type": "integer" },
 
         "IPAddress": {
+	    "#": "#1526: Need a single regex",
             "oneOf": [
                 { "type": "string", "format": "ipv4" },
                 { "type": "string", "format": "ipv6" }
@@ -132,6 +134,7 @@
         },
 
         "IPCIDR": {
+            "#": "#1526: Need a single regex",
             "oneOf": [
                 { "$ref": "#/pScheduler/IPv4CIDR" },
                 { "$ref": "#/pScheduler/IPv6CIDR" }
@@ -260,18 +263,6 @@
             "required": [ "attempts", "wait" ]
         },
 
-        "SINumber":  {
-            "oneOf": [
-                {
-                    "type": "string",
-                    "pattern": "^[0-9]+(\\.[0-9]+)?(\\s*[KkMmGgTtPpEeZzYy][Ii]?)?$"
-                },
-                {
-                    "type": "integer"
-                }
-            ]
-        },
-
         "String": { "type": "string" },
 
         "StringList": {
@@ -305,6 +296,7 @@
             ]
         },
 
+	"#": "#1526: This and everything that uses it can go",
         "EnumMatch": {
             "type": "object",
             "properties": {
@@ -328,6 +320,7 @@
         },
 
         "TimestampAbsoluteRelative": {
+	    "#": "#1526: Need a single regex",
             "oneOf" : [
                 { "$ref": "#/pScheduler/Timestamp" },
                 { "$ref": "#/pScheduler/Duration" },
@@ -343,6 +336,7 @@
 
         "URLHostPort": {
             "#": "Any valid host/port pair as you'd find in a URI per RFC 2396",
+	    "#": "#1526: Need a single regex",
             "anyOf": [
                 { "$ref": "#/pScheduler/HostNamePort" },
                 { "$ref": "#/pScheduler/IPv6RFC2732" }
@@ -598,6 +592,7 @@
         },
 
         "SNMPOID": {
+	    "#": "#1526: Need a single regex",
             "anyOf": [
                 { "$ref": "#/pScheduler/SNMPNumericOID" },
                 { "$ref": "#/pScheduler/SNMPAlphaNumOID"},

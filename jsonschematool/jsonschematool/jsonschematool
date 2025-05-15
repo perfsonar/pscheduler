@@ -346,6 +346,7 @@ for source in args.remaining:
         else:
             with open(source, 'r') as data:
                 loaded = json.load(data)
+                # TODO: Strip out comments
     except Exception as ex:
         die(f'{source}: {ex}')
 
