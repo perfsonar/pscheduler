@@ -1,9 +1,9 @@
-pscheduler-server (5.2.0~b1.2-1) perfsonar-5.2; urgency=low
+pscheduler-server (5.2.0~3.b1-1) perfsonar-5.2; urgency=low
 
   * New upstream version.
   * Depends on PostgreSQL 16 for Ubuntu 24.
 
- -- perfSONAR developers <debian@perfsonar.net>  Wed, 14 May 2025 10:50:48 -0400
+ -- perfSONAR developers <debian@perfsonar.net>  Tue, 20 May 2025 12:09:34 -0400
 
 pscheduler-server (5.1.4-2) perfsonar-5.1; urgency=low
 
