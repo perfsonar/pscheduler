@@ -1,5 +1,5 @@
 %define perfsonar_auto_version 5.2.0
-%define perfsonar_auto_relnum 0.3.b1
+%define perfsonar_auto_relnum 0.b1.3
 
 Name:           I2util
 Version:        %{perfsonar_auto_version}
