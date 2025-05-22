@@ -1,3 +1,9 @@
+ethr (1.0.0.1-4) perfsonar-5.2-staging; urgency=low
+
+  * New upstream version
+
+ -- Mark Feit <mfeit@internet2.edu>  Thu, 15 May 2025 13:30:00 -0400
+
 ethr (0.2.1-4) perfsonar-5.1-staging; urgency=low
 
   * Building on Ubuntu 20.
