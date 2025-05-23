@@ -3,7 +3,7 @@ Section: misc
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
 Uploaders: Lætitia Delvaux <adelvaux@man.poznan.pl>
-Build-Depends: debhelper (>= 10), golang-go (>= 2:1.8), git, ca-certificates
+Build-Depends: debhelper (>= 10), golang-go (>= 2:1.19), git, ca-certificates
 Standards-Version: 3.9.8
 Homepage: https://github.com/perfsonar/pscheduler
 Vcs-Git: git://github.com/perfsonar/pscheduler
