@@ -196,10 +196,9 @@ ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,libtins)		# Dublin-traceroute needs this
 ifelse(FAMILY,Debian,,dublin-traceroute)		# TODO: Doesn't build on Debian.
 ifelse(FAMILY,Debian,,pscheduler-tool-dublin-traceroute)	# TODO: DT doesn't build on Debian, so no plugin.
 
-define(HAVE_ETHR,HAVE_GOLANG)
-ifelse(DISTRO/eval(MAJOR <= 18),Ubuntu/1,,      # Doesn't build on U18, TODO: not sure about U20…
-       HAVE_ETHR,1,ethr)                        # But D10 build can be used on U18 and up
-ifelse(HAVE_ETHR,1,pscheduler-tool-ethr)
+# Ethr 1.x doesn't build on D11/12 or U20/22/24, so disable it there.
+ifelse(FAMILY,Debian,,ethr)
+ifelse(FAMILY,Debian,,pscheduler-tool-ethr)
 
 pscheduler-tool-fpingreach		--bundle extras
 pscheduler-tool-fwmtu
