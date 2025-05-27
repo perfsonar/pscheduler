@@ -45,6 +45,20 @@ participants = len(participant_data)
 if not(participants == 2 or (participants == 1 and (single_ended or loopback))):
     pscheduler.fail('ethr requires exactly 2 participants, got %s' % (len(participant_data)))
 
+# Make sure all participants report a version that this one is
+# compatible with.
+# TODO: This assumes we're going to be on 1.x for awhile.
+num_compatible = len(list(filter(
+    lambda v: v.get('ethr_major_version', 0) > 0,
+    participant_data)))
+if num_compatible < participants:
+    pscheduler.succeed_json({
+        'succeeded': False,
+        'error': 'Cannot interoperate with systems using older, incompatible versions of Ethr.'
+    })
+
+
+
 config = ethr_utils.get_config()
 
 # look up our local ethr command path

@@ -12,7 +12,12 @@ from ethr_defaults import *
 
 json = pscheduler.json_load(exit_on_error=True)
 result = {
-    'schema': 3
+    'schema': 4,
+
+    # TODO: Ethr doesn't have a way to get its version number, so this
+    # is hard-wired for now.  They'll probably be on this version for
+    # a long time.
+    'ethr_major_version': 1
 }
 
 
