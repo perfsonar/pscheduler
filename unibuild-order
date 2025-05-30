@@ -196,7 +196,9 @@ ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,libtins)		# Dublin-traceroute needs this
 ifelse(FAMILY,Debian,,dublin-traceroute)		# TODO: Doesn't build on Debian.
 ifelse(FAMILY,Debian,,pscheduler-tool-dublin-traceroute)	# TODO: DT doesn't build on Debian, so no plugin.
 
+
 # Ethr 1.x doesn't build on D11/12 or U20/22/24, so disable it there.
+ifelse(FAMILY,Debian,,ethr0)
 ifelse(FAMILY,Debian,,ethr)
 ifelse(FAMILY,Debian,,pscheduler-tool-ethr)
 

@@ -29,6 +29,8 @@ Provides:	%{name} = %{version}-%{release}
 Requires:	pscheduler-server
 Requires:	%{_pscheduler_python}-pscheduler
 Requires:	ethr >= 1.0.0
+# TODO: For backward compatibility; to be removed in 5.3.
+Requires:	ethr0
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
