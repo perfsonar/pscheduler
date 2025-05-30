@@ -88,6 +88,9 @@ def run_client():
 
         "ethr0",
 
+        # No logs
+        "-no",
+
         # Client
         "-c", test_spec['dest'],
 
