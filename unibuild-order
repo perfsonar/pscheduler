@@ -59,7 +59,10 @@ postgresql-load
 # jq and friends
 ifelse(DISTRO/MAJOR,ol/8,oniguruma)
 ifelse(DISTRO/eval(MAJOR < 20),Ubuntu/1,oniguruma)		# Ubuntu 20 and up are good.
-ifelse(DISTRO/eval(MAJOR >= 24),Ubuntu/1,,jq)
+ifelse(
+  DISTRO/eval(MAJOR >= 24),Ubuntu/1,,
+  FAMILY/eval(MAJOR >= 10),RedHat/1,,
+  jq)
 
 
 # Python Modules
