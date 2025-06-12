@@ -1,0 +1,21 @@
+diff -up gnuplot-5.4.8/man/gnuplot.1.cmd-opts gnuplot-5.4.8/man/gnuplot.1
+--- gnuplot-5.4.8/man/gnuplot.1.cmd-opts	2023-04-20 21:50:18.000000000 -0600
++++ gnuplot-5.4.8/man/gnuplot.1	2023-06-07 18:56:00.158338378 -0600
+@@ -48,7 +48,7 @@ Support for a huge variety of output dev
+ .PP
+ \fB\-c scriptname ARG1 ARG2 ..., load script using gnuplot's "call" mechanism and pass it the remainder of the command line as arguments
+ .PP
+-\fB\-d, \-\-default\fP settings.  Do not read from gnuplotrc, ~/.gnuplot, and $XDG_CONFIG_HOME/gnuplot/gnuplotrc on entry.
++\fB\-d, \-\-default-settings\fP do not read from gnuplotrc, ~/.gnuplot, and $XDG_CONFIG_HOME/gnuplot/gnuplotrc on entry.
+ .PP
+ \fB\-e "command list"\fP executes the requested commands before loading the next input file.
+ .PP
+@@ -56,7 +56,7 @@ Support for a huge variety of output dev
+ .PP
+ \fB\-h, \-\-help\fP print summary of usage
+ .PP
+-\fB\-V\fP show current version
++\fB\-V, \-\-version\fP show current version
+ .SH X11 OPTIONS
+ For terminal type x11, \fIgnuplot\fP
+ accepts the standard X Toolkit options and resources such as geometry, font,

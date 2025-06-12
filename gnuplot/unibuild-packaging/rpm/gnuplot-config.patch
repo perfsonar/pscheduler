@@ -1,0 +1,13 @@
+diff --git a/configure b/configure
+index f1046e4..e0c4f76 100755
+--- a/configure
++++ b/configure
+@@ -2092,7 +2092,7 @@ else
+ #ifdef __cplusplus
+ extern "C"
+ #endif
+-char $2 ();
++__attribute__ ((used)) char $2 ();
+ /* The GNU C library defines this for functions which it implements
+     to always fail with ENOSYS.  Some functions are actually named
+     something starting with __ and the normal name is an alias.  */
