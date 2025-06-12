@@ -114,6 +114,8 @@ httpd-wsgi-socket
 
 # Utility and Tool programs
 drop-in
+# This vanished from EPEL 10.
+ifelse(FAMILY/eval(MAJOR >= 10),RedHat/1,gnuplot)
 
 
 #
