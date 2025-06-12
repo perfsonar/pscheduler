@@ -82,7 +82,7 @@ python-nmap3
 
 # TODO: This was deprecated after EL8.  Switch to something new.
 ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-nose)
-
+ifelse(FAMILY/eval(MAJOR >= 10),RedHat/1,python-netifaces)
 ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-ntplib)
 python-parse-crontab
 python-vine
