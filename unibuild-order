@@ -195,12 +195,16 @@ pscheduler-tool-bwctltracepath		--bundle obsolete
 pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl
 pscheduler-tool-curl-d2d		--bundle extras
-pscheduler-tool-dhclient		--bundle extras
+ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,pscheduler-tool-dhclient		--bundle extras)
 pscheduler-tool-dnspy
 
 ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,libtins)		# Dublin-traceroute needs this
-ifelse(FAMILY,Debian,,dublin-traceroute)		# TODO: Doesn't build on Debian.
-ifelse(FAMILY,Debian,,pscheduler-tool-dublin-traceroute)	# TODO: DT doesn't build on Debian, so no plugin.
+ifelse(FAMILY,Debian,,
+       FAMILY/eval(MAJOR >= 10),RedHat/1,,
+       dublin-traceroute)		# TODO: Doesn't build on Debian.
+ifelse(FAMILY,Debian,,
+       FAMILY/eval(MAJOR >= 10),RedHat/1,,
+       pscheduler-tool-dublin-traceroute)	# TODO: DT doesn't build on Debian, so no plugin.
 
 define(HAVE_ETHR,HAVE_GOLANG)
 ifelse(DISTRO/eval(MAJOR <= 18),Ubuntu/1,,      # Doesn't build on U18, TODO: not sure about U20…
@@ -264,7 +268,7 @@ pscheduler-tool-umichwpa		--bundle extras
 # Archivers
 #
 
-pscheduler-archiver-esmond			--bundle obsolete
+ifelse(FAMILY/eval(MAJOR >= 10 ),RedHat/1,,pscheduler-archiver-esmond			--bundle obsolete)
 pscheduler-archiver-failer
 pscheduler-archiver-http
 pscheduler-archiver-kafka
