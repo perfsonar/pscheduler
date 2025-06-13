@@ -51,13 +51,18 @@ cat > $RPM_BUILD_ROOT/%{macro_prefix}%{name} <<EOF
 # EL8 standardized on just the major version, as did EPEL.
 %%_pscheduler_python python%%{_pscheduler_python_version_major}
 %%_pscheduler_python_epel python%%{_pscheduler_python_version_major}
+%endif
 
-%else
-
-# EL9+ has everyting as just plain python
+%if 0%{?el9}
+# EL9 has everyting as just plain python
 %%_pscheduler_python python
 %%_pscheduler_python_epel python
+%endif
 
+%if 0%{?el10}
+# EL10 went back to a mixed bag.
+%%_pscheduler_python python
+%%_pscheduler_python_epel python%%{_pscheduler_python_version_major}
 %endif
 
 

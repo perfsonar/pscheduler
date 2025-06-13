@@ -56,7 +56,7 @@ Requires:	psmisc
 Requires:	pscheduler-account
 # This is from EPEL but doesn't have a python36 prefix
 Requires:	%{_pscheduler_python}-daemon
-Requires:	%{_pscheduler_python}-flask
+Requires:	%{_pscheduler_python_epel}-flask
 Requires:	%{_pscheduler_python}-psutil
 
 # API Server

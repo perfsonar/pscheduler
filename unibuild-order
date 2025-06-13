@@ -72,8 +72,8 @@ ifelse(FAMILY/DISTRO/MAJOR,RedHat/ol/8,Cython)
 # EL9 doesn't have a good version of this
 ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-daemon)
 
-# This needs to be built on EL9 and later
-ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-itsdangerous)
+# This needs to be built on EL9
+ifelse(FAMILY/eval(MAJOR == 9),RedHat/1,python-itsdangerous)
 ifelse(DISTRO/eval(MAJOR > 19),Ubuntu/1,,		# Ubuntu 20 has a newer version of this.
        DISTRO/eval(MAJOR > 10),Debian/1,,		# As does Debian 11
        FAMILY/eval(MAJOR >= 9),RedHat/1,,               # And EL9+
@@ -101,7 +101,7 @@ python-pyasn1-modules
 
 # TODO: EL8 had these, ours was newer.  See about upgrading to current. (#1387)
 python-werkzeug						# EL8 has this, ours is newer
-python-flask						# EL8 has this, ours is newer
+ifelse(FAMILY/eval(MAJOR < 10),python-flask)  # Ours is newer than EL8 and EL9.
 
 # TODO: See if this is available in EL9
 python-pysnmp
