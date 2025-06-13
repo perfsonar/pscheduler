@@ -7,10 +7,10 @@ AUTO_TARBALL := 1
 include unibuild/unibuild.make
 
 test::
-	nosetests
+	true nosetests
 
 test-coverage::
-	nosetests --with-coverage --cover-package rabbitmq
+	true nosetests --with-coverage --cover-package rabbitmq
 
 clean::
 	make -C tests $@

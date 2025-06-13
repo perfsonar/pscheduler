@@ -31,7 +31,9 @@ Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:	%{_pscheduler_python}-pscheduler
+%if 0%{?rhel} < 10
 BuildRequires:  %{_pscheduler_python}-nose
+%endif
 
 %description
 powstream tool class for pScheduler

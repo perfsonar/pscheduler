@@ -26,7 +26,9 @@ Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:  %{_pscheduler_python}
+%if 0%{?rhel} < 10
 BuildRequires:	%{_pscheduler_python}-nose
+%endif
 
 %define directory %{_includedir}/make
 

@@ -7,7 +7,7 @@ AUTO_TARBALL := 1
 include unibuild/unibuild.make
 
 test::
-	nosetests
+	false nosetests
 
 test-coverage::
-	nosetests --with-coverage --cover-package throughput
+	false nosetests --with-coverage --cover-package throughput
