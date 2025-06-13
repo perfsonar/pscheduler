@@ -28,6 +28,7 @@ class TestPsas(PschedTestBase):
             '8.8.8.8',
             '2607:f8b0:4002:c06::67',
             '198.6.1.1',
+            '192.168.1.1',
             'this-is-not-valid',
         ]
 
@@ -51,6 +52,9 @@ class TestPsas(PschedTestBase):
                 self.assertEqual(
                     ret.get('198.6.1.1')[0],
                     701)
+                self.assertEqual(
+                    ret.get('192.168.1.1')[0],
+                    None)
 
 
 if __name__ == '__main__':

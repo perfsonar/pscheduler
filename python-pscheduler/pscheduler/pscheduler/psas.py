@@ -22,8 +22,21 @@ def __asresolve__(arg):
     except netaddr.core.AddrFormatError:
         return (arg, None)
 
+    # Newer versions of netaddr can canonicalize 4-to-6 mapped addresses
+    try:
+        ip = ip.to_canonical()
+    except AttributeError:
+        pass
+
+    # Older version of netaddr don't have is_global but do have
+    # is_private.
+    try:
+        is_private = not ip.is_global()
+    except AttributeError:
+        is_private = ip.is_private()
+
     # Don't try for things that are unroutable
-    if not ip.is_unicast() or ip.is_private():
+    if not ip.is_unicast() or is_private:
         return (arg, None)
 
     revoctets = ip.reverse_dns.split('.')
