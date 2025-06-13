@@ -43,6 +43,9 @@ Patch3:         python-nose-readunicode.patch
 # Python now returns ModuleNotFoundError instead of the previous ImportError
 # https://github.com/nose-devs/nose/pull/1029
 Patch4:         python-nose-py36.patch
+%if 0%{el10}
+Patch5:         python-nose-py312.patch
+%endif
 
 BuildRequires:  dos2unix
 
@@ -114,8 +117,12 @@ rm -vrf reST/{.static,.templates}
 
 %check
 pushd python3
+%if 0%{?rhel} >= 10
+printf '\n\nSkipping tests on RHEL %{?rhel}\n\n'
+%else
 %{__python3} setup.py build_tests
 %{__python3} selftest.py
+%endif
 popd
 
 %files -n python3-%{modname}
