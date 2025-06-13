@@ -60,6 +60,8 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_includedir}/iperf_api.h
 %{_libdir}/libiperf.a
+%if 0%{?rhel} < 10
 %{_libdir}/libiperf.la
+%endif
 %{_libdir}/*.so
 %{_libdir}/*.so.*
