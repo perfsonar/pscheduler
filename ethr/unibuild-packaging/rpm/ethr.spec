@@ -1,4 +1,5 @@
-#
+#tchpath
+
 # RPM Spec for Ethr
 #
 
@@ -18,6 +19,8 @@ Vendor:		Microsoft Corporation
 URL:		https://github.com/microsoft/ethr
 
 Source:		%{short}-%{version}.tar.gz
+
+Patch3:         common-golang-sys.patch
 
 BuildRequires:  golang
 
@@ -40,6 +43,7 @@ such as Windows, Linux and other Unix systems.
 
 %prep
 %setup -q
+%patch3 -p1
 
 
 %build
@@ -62,7 +66,9 @@ cleanup()
 }
 trap cleanup EXIT
 
-go mod init microsoft.com/ethr
+if [ ! -f go.mod ]; then
+    go mod init microsoft.com/ethr
+fi
 go mod tidy -e
 go get ./...
 

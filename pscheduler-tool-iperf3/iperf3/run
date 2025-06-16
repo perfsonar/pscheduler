@@ -218,6 +218,10 @@ def run_client():
         iperf3_args.append('-b')
         iperf3_args.append(test_spec['bandwidth'])
 
+    if 'fq-rate' in test_spec and test_spec['fq-rate'] != None:
+        iperf3_args.append('--fq-rate')
+        iperf3_args.append(test_spec['fq-rate'])
+
     if test_spec.get('udp', False):
         iperf3_args.append('-u')
 

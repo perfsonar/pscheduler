@@ -19,9 +19,11 @@ from .debug import *
 from .log import *
 
 from .access import *
+from .address import *
 from .admin import *
 from .args import *
 from .dbcursor import *
+from .hints import *
 from .json import *
 from .limitproc import *
 from .limits import *

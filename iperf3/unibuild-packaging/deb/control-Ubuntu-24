@@ -2,12 +2,14 @@ Source: iperf3
 Section: net
 Priority: optional
 Maintainer: perfSONAR developers <debian@perfsonar.net>
-Uploaders: Antoine Delvaux <antoine.delvaux@man.poznan.pl>
+Uploaders: Lætitia Delvaux <lætitia.delvaux@man.poznan.pl>
 Build-Depends: debhelper (>= 10), libssl-dev, libsctp-dev [linux-any]
 Standards-Version: 3.9.8
 Homepage: http://software.es.net/iperf/
 
-Package: iperf3
+Package: iperf3-ssl3
+Provides: iperf3
+Conflicts: iperf3
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Internet Protocol bandwidth measuring tool
@@ -19,7 +21,9 @@ Description: Internet Protocol bandwidth measuring tool
  .
  This package contains the command line utility.
 
-Package: libiperf0
+Package: libiperf0-ssl3
+Provides: libiperf0
+Conflicts: libiperf0
 Architecture: any
 Section: libs
 Multi-Arch: same
@@ -35,11 +39,13 @@ Description: Internet Protocol bandwidth measuring tool (runtime files)
  This is the runtime package for programs that use the shared iperf
  library.
 
-Package: libiperf-dev
+Package: libiperf-dev-ssl3
+Provides: libiperf-dev
+Conflicts: libiperf-dev
 Architecture: any
 Section: libdevel
 Multi-Arch: same
-Depends: libiperf0 (= ${binary:Version}), ${misc:Depends}
+Depends: libiperf0-ssl3 (= ${binary:Version}), ${misc:Depends}
 Description: Internet Protocol bandwidth measuring tool (development files)
  Iperf3 is a tool for performing network throughput measurements. It can
  test either TCP or UDP throughput.

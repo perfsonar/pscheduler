@@ -83,6 +83,51 @@ class TestJsonval(PschedTestBase):
         self.assertEqual((valid, message), (False, "Schema value must be an integer."))
 
 
+    def test_hostname(self):
+        schema = {
+            'type': 'object',
+            'properties': {
+                'value': {'$ref': '#/pScheduler/HostName'}
+            }
+        }
+
+        for (test, expected) in [
+                # First element length
+                ('', False),
+                ('a', True),
+                ('a' * 62, True),
+                ('a' * 63, True),
+                ('a' * 64, False),
+                ('_' + 'a' * 61, True),
+                ('_' + 'a' * 62, True),
+                ('_' + 'a' * 63, False),
+
+                # First element content
+                ('foo123', True),
+                ('foo123.', True),
+                ('foo-123', True),
+                ('_foo123', True),
+                ('foo_123', False),
+                ('@foo123', False),
+                ('foo@123', False),
+                ('.bar.org', False),
+                ('.bar.org.', False),
+
+                # Second and subsequent element length
+                ('foo.123456789-123456789-123456789-123456789-123456789-123456789-123.bar.org', True),
+                ('foo.123456789-123456789-123456789-123456789-123456789-123456789-1234.bar.org', False),
+
+                # Second and subsequent element content
+                ('foo.bar.org', True),
+                ('foo.bar-baz.org', True),
+                ('_foo.bar.org', True),
+                ('_foo.bar.org.', True),
+                ('foo._bar.org.', False),
+        ]:
+            valid, message = json_validate({ 'value': test }, schema)
+            self.assertEqual(valid, expected, f'''{test} - Should be {'valid' if expected else 'invalid'}''')
+
+
     def test_json_validate_from_standard_template(self):
 
         template = {

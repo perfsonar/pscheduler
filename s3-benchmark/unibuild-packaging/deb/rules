@@ -16,6 +16,8 @@ export GOPATH := $(CURDIR)/$(BUILD_DIR)
 # work on older OS versions.
 override_dh_auto_configure:
 	go mod init wasabi.com/s3-benchmark
+	# Any version higher break the builds so hardcoding the required version
+	go mod edit -require "code.cloudfoundry.org/bytefmt@v0.3.0"
 	go mod tidy
 	go get ./...
 	dh_auto_configure

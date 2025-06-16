@@ -13,6 +13,7 @@ COMMANDS=\
 	validate-configurables
 
 INTERNALS=\
+	reset \
 	service
 
 default: build

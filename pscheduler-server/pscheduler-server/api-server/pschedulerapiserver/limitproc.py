@@ -77,7 +77,12 @@ def __limitproc_update():
         # Only complain if the file changed so the logs don't get
         # flooded.
         if not file_unchanged:
-            log.critical("Failed to load limit file: %s", this.whynot)
+            # Log ValueErrors with less gusto.
+            if type(ex) == ValueError:
+                log.critical("Failed to load limit file: %s", this.whynot)
+            else:
+                log.exception()
+
 
     this.file_exists = True
     this.modified = modified

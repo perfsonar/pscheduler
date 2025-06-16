@@ -2,7 +2,7 @@
 # RPM Spec for Python pScheduler Module
 #
 
-%define perfsonar_auto_version 5.2.0
+%define perfsonar_auto_version 5.3.0
 %define perfsonar_auto_relnum 0.a1.0
 
 %define short	pscheduler
@@ -160,12 +160,12 @@ EOF
 fi
 
 systemctl enable rsyslog
-systemctl reload-or-try-restart rsyslog
+systemctl reload-or-restart rsyslog
 POST-WRAPPER-EOF
 
 
 %postun
-systemctl reload-or-try-restart rsyslog
+systemctl reload-or-restart rsyslog
 
 
 %files -f INSTALLED_FILES

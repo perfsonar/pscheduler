@@ -55,6 +55,8 @@ dump_url()
 }
 
 
+LOG_LIMIT=1000
+
 # ------------------------------------------------------------------------------
 
 #
@@ -164,6 +166,18 @@ ORDER BY run_state.id, hour
 EOF
 
 
+section pScheduler Log
+PSCHEDULER_LOG=/var/log/pscheduler/pscheduler.log
+echo $PSCHEDULER_LOG
+if [ -r "${PSCHEDULER_LOG}" ]
+then
+    tail "-${LOG_LIMIT}" "${PSCHEDULER_LOG}"
+else
+    echo "Unable to find a readable pScheduler log."
+fi
+
+
+
 #
 # Network
 #
@@ -196,16 +210,25 @@ vmstat
 section Storage
 df -h
 
-LOG_LIMIT=1000
-
 section "System Message Log (Last ${LOG_LIMIT} Lines)"
-LOG="/var/log/messages"
-if [ -r "${LOG}" ]
+
+for LOG in /var/log/messages /var/log/syslog
+do
+    if [ -r "${LOG}" ]
+    then
+	tail "-${LOG_LIMIT}" "${LOG}"
+	break
+    fi
+    # This makes sure LOG is empty after the last iteration if the
+    # file wasn't found.
+    LOG=
+done
+
+if [ -z "${LOG}" ]
 then
-    tail "-${LOG_LIMIT}" "${LOG}"
-else
-    echo "${LOG} is unreadable."
+    echo "Unable to find a readable system log."
 fi
+
 
 section "HTTPD Error Log (Last ${LOG_LIMIT} Lines)"
 LOG="/var/log/httpd/error_log"
@@ -215,6 +238,18 @@ then
 else
     echo "${LOG} is unreadable."
 fi
+
+
+section "PostgreSQL Connection Summary"
+
+postgresql-load <<EOF
+
+SELECT datname, application_name, count(*)
+FROM pg_stat_activity
+GROUP BY datname, application_name
+ORDER BY datname, application_name
+;
+EOF
 
 
 section "PostgreSQL Log (Last ${LOG_LIMIT} Lines)"
@@ -244,7 +279,12 @@ dmesg
 
 
 section Open Files
-lsof
+if [ -e '/.dockerenv' ]
+then
+    echo "Skipping this step because lsof doesn't work well under Docker."
+else
+    lsof
+fi
 
 
 section Installed Packages

@@ -28,6 +28,8 @@ Requires:	%{_pscheduler_python}-werkzeug
 BuildRequires:	%{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-setuptools
 
+AutoReqProv:    no
+
 %description
 Flask is called a “micro-framework” because the idea to keep the core
 simple but extensible. There is no database abstraction layer, no form
@@ -37,8 +39,6 @@ that can add this functionality into your application as if it was
 implemented in Flask itself. There are currently extensions for object
 relational mappers, form validation, upload handling, various open
 authentication technologies and more.
-
-
 
 # Don't do automagic post-build things.
 %global              __os_install_post %{nil}

@@ -86,8 +86,15 @@ class LimitProcessor(object):
         # Try to parse it as a URL.  If it's got a scheme, fetch it
         # and replace the contents with that.
 
-        url_parsed = urlparse(limit_file_contents)
-        if url_parsed.scheme != '':
+        url_parsed = None
+        try:
+            url_parsed = urlparse(limit_file_contents)
+        except UnicodeDecodeError:
+            # If it doesn't look like a URL, make the next block skip
+            # it.
+            pass
+
+        if url_parsed is not None and url_parsed.scheme != '' and url_parsed.scheme != b'':
             url = limit_file_contents
             status, limit_file_contents = url_get(limit_file_contents, throw=False, json=False)
             if status != 200:

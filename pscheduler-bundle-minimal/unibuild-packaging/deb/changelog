@@ -1,5 +1,11 @@
-pscheduler-bundle-minimal (5.2.0~a1.0-1) perfsonar-5.2-snapshot; urgency=low
+pscheduler-bundle-minimal (5.3.0~a1.0-1) perfsonar-5.3-snapshot; urgency=low
+
+  * New upstream version.
+
+ -- perfSONAR developers <debian@perfsonar.net>  Fri, 30 May 2025 10:11:46 -0400
+
+pscheduler-bundle-minimal (5.2.0) perfsonar-5.2; urgency=low
 
   * First version
 
- -- perfSONAR developers <perfsonar-developer@internet2.edu>  Tue,  8 Jul 2024 16:50:33 -0500
+ -- perfSONAR developers <debian@perfsonar.net>  Wed, 28 May 2025 12:55:59 -0400

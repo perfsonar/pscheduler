@@ -7,7 +7,7 @@
 
 
 %define short	linuxnns
-%define perfsonar_auto_version 5.2.0
+%define perfsonar_auto_version 5.3.0
 %define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-context-%{short}
@@ -57,7 +57,7 @@ cat > $RPM_BUILD_ROOT/%{_pscheduler_sudoersdir}/%{name} <<'EOF'
 #
 # %{name}
 #
-Cmnd_Alias PSCHEDULER_CONTEXT_LINUXNNS=/sbin/ip netns exec *
+Cmnd_Alias PSCHEDULER_CONTEXT_LINUXNNS=%{dest}/change-secure
 %{_pscheduler_user} ALL = (root) NOPASSWD: PSCHEDULER_CONTEXT_LINUXNNS
 Defaults!PSCHEDULER_CONTEXT_LINUXNNS !requiretty
 EOF

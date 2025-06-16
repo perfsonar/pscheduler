@@ -13,7 +13,7 @@ except ValueError as ex:
         "error": str(ex)
         })
 
-MAX_SCHEMA = 3
+MAX_SCHEMA = 4
 
 SPEC_SCHEMA = {
 
@@ -89,7 +89,35 @@ SPEC_SCHEMA = {
             },
             "required": [ "schema", "_url" ],
             "additionalProperties": False
+         },
+        "v4": {
+            "type": "object",
+            "properties": {
+                "schema": {" type": "integer", "enum": [ 4 ] },
+                "_url": { "$ref": "#/pScheduler/URL" },
+                "op": {
+                    "type": "string",
+                    "enum": [
+                        "put",
+                        "post",
+                    ]
+                },
+                "verify-ssl": { "$ref": "#/pScheduler/Boolean" },
+                "_headers": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^.*$": { "$ref": "#/pScheduler/String" }
+                    },
+                    "additionalProperties": False
+                },
+                "timeout": { "$ref": "#/pScheduler/Duration" },
+                "bind": { "$ref": "#/pScheduler/Host" },
+                "retry-policy": { "$ref": "#/pScheduler/RetryPolicy" }
+            },
+            "required": [ "schema", "_url" ],
+            "additionalProperties": False
         }
+
     }
 }
 

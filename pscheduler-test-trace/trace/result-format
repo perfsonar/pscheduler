@@ -24,6 +24,9 @@ Path {{ loop.index }}:
        hop.ip,
        (iso8601_duration_seconds(hop.rtt) * 1000)
     ) }}
+{%- if hop.mtu is defined -%}
+{{ " mtu %d" | format (hop.mtu) }}
+{%- endif -%}
 {%- if hop.as is defined %}
 {{ "%10sAS%d %s" | format("", hop.as.number, hop.as.owner) }}
 {%- endif -%}
@@ -45,19 +48,26 @@ Path {{ loop.index }}:
   <th>Host</th>
   <th>Address</th>
   <th>RTT (ms)</th>
+  <th>MTU</th>
   <th>AS</th>
   <th>AS Owner</th>
 </tr>
 <tr>
 {% for hop in path -%}
+{% if hop.ip is defined %}
   <td>{{ loop.index }}</td>
   <td>{{ hop.hostname or hop.ip }}</td>
   <td>{{ hop.ip }}</td>
   <td>{{ "%.1f" | format(iso8601_duration_seconds(hop.rtt) * 1000) }}</td>
+  <td>{{ hop.mtu if hop.mtu is defined else "&nbsp;" }}</td>
   {%- if hop.as is defined %}
   <td>{{ hop.as.number if hop.as.number is defined else "&nbsp;" }}</td>
   <td>{{ hop.as.owner if hop.as.owner is defined else "&nbsp;" }}</td>
   {% endif %}
+{% else %}
+  <td>{{ loop.index }}</td>
+  <td colspan="6">No Response</td>
+{% endif %}
 </tr>
 {% endfor -%}
 {%- endfor -%}

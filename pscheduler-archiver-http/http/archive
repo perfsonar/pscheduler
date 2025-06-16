@@ -12,7 +12,7 @@ import pycurl
 import http.client
 from urllib.parse import urlparse
 
-MAX_SCHEMA = 3
+MAX_SCHEMA = 4
 
 log = pscheduler.Log(prefix="archiver-http", quiet=True)
 
@@ -73,7 +73,7 @@ class PyCURLHandlePool(object):
                 self.pool[key].close()
                 del self.pool[key]
 
-    def __call__(self, key, bind=None):
+    def __call__(self, key, bind=None, timeout=None):
         """Create a new handle or return one that exists."""
         self.skim()
 
@@ -81,6 +81,8 @@ class PyCURLHandlePool(object):
             handle = PycURLHandle()
             if bind is not None:
                 handle().setopt(pycurl.INTERFACE, str(bind))
+            if timeout is not None:
+                handle().setopt(pycurl.TIMEOUT, timeout)
             self.pool[key] = handle
 
         return self.pool[key]()
@@ -109,6 +111,9 @@ def archive(json):
     log.debug("%s to %s", op, url)
     bind = json['data'].get('bind')
     verify_ssl = json['data'].get('verify-ssl', False)
+    timeout = int(pscheduler.timedelta_as_seconds(
+        pscheduler.iso8601_as_timedelta(json['data'].get('timeout', 'PT30S'))
+    ))
 
     # This must default to an empty hash so any previous headers are
     # cleared out.
@@ -129,17 +134,18 @@ def archive(json):
 
     parsed_url = urlparse(url)
 
-    key = "%s|%s|%s|%s|%s" % (
+    key = "%s|%s|%s|%s|%s|%s" % (
         parsed_url.scheme,
         parsed_url.hostname,
         '' if parsed_url.port is None else parsed_url.port,
         '' if bind is None else bind,
-        '' if not verify_ssl else 'verify-ssl'
+        '' if not verify_ssl else 'verify-ssl',
+        timeout
     )
 
     log.debug("Key is %s", key)
 
-    curl = handle_pool(key, bind)
+    curl = handle_pool(key, bind, timeout)
 
     # URL and headers may be different for each request.
 
