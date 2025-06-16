@@ -17,36 +17,24 @@ This will:
 
 * Install `pscheduler` in "editable" mode. That installs an egg link into the python installation that points to the checked out source code for "live" editing and testing.
 * Install all of the third-party requirements for `pscheduler`.
-* Install a couple of testing and development tools like `pylint` and `nose`.
+* Install a couple of testing and development tools like `pylint` and `nose2`.
 
 ## Running the tests
 
-The test modules are standard issue python unit tests. They can be run however you please, but `dev-requirements.txt` installs the `nose` test runner.
+The test modules are standard issue python unit tests. They can be run however you please, but `dev-requirements.txt` installs the `nose2` test runner.
 
 To run the tests:
 
 ```
 cd python-pscheduler/pscheduler
-nosetests tests
+nose2 tests
 ```
 The arg `tests` refers to the tests directory that lives in that directory. That command will run all of the unit tests.
 
-To run the tests in a single module:
+To run the tests in a single module, enter the `tests` directory and run nose2 with the test of your choice:
 
 ```
-nosetests tests/sinumber_test.py
-```
-
-To run the tests in just one test class:
-
-```
-nosetests tests/sinumber_test.py:TestSinumber
-```
-
-To run a single test in a test class:
-
-```
-nosetests tests/sinumber_test.py:TestSinumber.test_si_range
+nose2 tests/sinumber_test
 ```
 
 The requirements file also installs `coverage`. It can be invoked from `nosetests` to create a coverage report by using the ` --with-coverage` flag.
