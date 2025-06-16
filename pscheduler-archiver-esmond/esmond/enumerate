@@ -2,7 +2,7 @@
 {
     "schema": 1,
     "name": "esmond",
-    "description": "Send results to Esmond",
+    "description": "Send results to Esmond - NON-FUNCTIONING",
     "version": "1.0",
     "maintainer": {
         "name": "perfSONAR Development Team",
