@@ -86,7 +86,7 @@ python-vine
 ifelse(DISTRO/eval(MAJOR > 21),Ubuntu/1,,		# Ubuntu 22 and up have a newer version of this.
        DISTRO/eval(MAJOR > 11),Debian/1,,       # As does Debian 12.
        python-py-amqp)
-python-py-radix
+ifelse(FAMILY/eval(MAJOR < 10),RedHat/1,python-py-radix) # EL10+ has this.
 python-pyjq
 python-tzlocal
 python-vcversioner
