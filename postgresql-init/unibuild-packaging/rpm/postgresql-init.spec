@@ -16,7 +16,7 @@ License:	Apache 2.0
 Group:		Unspecified
 
 # No source file.
-# Source:		%{name}-%{version}.tar.gz
+# Source:		{name}-{version}.tar.gz
 
 Provides:	%{name} = %{version}-%{release}
 
@@ -140,6 +140,7 @@ semodule -i "${WORK}/psql.pp"
 # Initialize PostgreSQL
 
 systemctl stop postgresql
+systemctl daemon-reload
 
 echo 'Initializing PostgreSQL.'
 postgresql-setup --initdb
