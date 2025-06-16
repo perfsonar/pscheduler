@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+"""
+test for the Stringmatcher module.
+"""
+
+import unittest
+
+from test_base import PschedTestBase
+
+from pscheduler.stringmatcher import StringMatcher
+
+
+class TestStringmatcher(PschedTestBase):
+    """
+    Stringmatcher tests.
+    """
+
+    def test_smatcher(self):
+        """String matcher test"""
+        matcher = StringMatcher({
+            "style": "regex",
+            "match": "fo+",
+            "case-insensitive": False,
+            "invert": False
+        })
+
+        match_map = {
+            'foo': True,
+            'bar': False,
+            'foobar': True,
+            'bazbarfoo': True,
+        }
+
+        for k, v in list(match_map.items()):
+            self.assertEqual(matcher.matches(k), v)
+
+
+if __name__ == '__main__':
+    unittest.main()
