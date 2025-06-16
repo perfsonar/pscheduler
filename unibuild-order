@@ -35,6 +35,9 @@ define(HAVE_GOLANG,ifelse(FAMILY/ARCH,Debian/armv7,,
               FAMILY/ARCH,Debian/ppc64le,,
               1))
 
+# Dhclient is unavailable on EL10+
+define(HAVE_DHCLIENT,ifelse(FAMILY/eval(MAJOR >= 10),RedHat/1,,1))
+
 
 #
 # PACKAGE BUILD UTILITIES
@@ -154,7 +157,7 @@ pscheduler-minimal-marker
 #
 
 pscheduler-test-clock
-pscheduler-test-dhcp			--bundle extras
+ifelse(HAVE_DHCLIENT,1,pscheduler-test-dhcp --bundle extras)
 pscheduler-test-disk-to-disk		--bundle extras
 pscheduler-test-dns
 pscheduler-test-dot1x			--bundle extras
@@ -189,7 +192,7 @@ pscheduler-tool-bwctltracepath		--bundle obsolete
 pscheduler-tool-bwctltraceroute		--bundle obsolete
 pscheduler-tool-curl
 pscheduler-tool-curl-d2d		--bundle extras
-pscheduler-tool-dhclient		--bundle extras
+ifelse(HAVE_DHCLIENT,1,pscheduler-tool-dhclient --bundle extras)
 pscheduler-tool-dnspy
 
 ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,libtins)		# Dublin-traceroute needs this
