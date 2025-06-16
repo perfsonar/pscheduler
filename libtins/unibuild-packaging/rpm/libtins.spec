@@ -5,7 +5,7 @@
 %define short tins
 
 Name:		lib%{short}
-Version:	4.2
+Version:	4.5
 Release:	1%{?dist}
 Summary:	C++ library for manipulating raw network packets
 License:	BSD-2-Clause

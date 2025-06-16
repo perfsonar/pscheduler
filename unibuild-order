@@ -195,9 +195,10 @@ pscheduler-tool-curl-d2d		--bundle extras
 ifelse(HAVE_DHCLIENT,1,pscheduler-tool-dhclient --bundle extras)
 pscheduler-tool-dnspy
 
-ifelse(FAMILY/eval(MAJOR < 9),RedHat/1,libtins)		# Dublin-traceroute needs this
-ifelse(FAMILY,Debian,,dublin-traceroute)		# TODO: Doesn't build on Debian.
-ifelse(FAMILY,Debian,,pscheduler-tool-dublin-traceroute)	# TODO: DT doesn't build on Debian, so no plugin.
+# TODO: dublin-traceroute doesn't build on Debian.
+ifelse(FAMILY,Debian,,libtins)
+ifelse(FAMILY,Debian,,dublin-traceroute)
+ifelse(FAMILY,Debian,,pscheduler-tool-dublin-traceroute)
 
 define(HAVE_ETHR,HAVE_GOLANG)
 ifelse(DISTRO/eval(MAJOR <= 18),Ubuntu/1,,      # Doesn't build on U18, TODO: not sure about U20…
