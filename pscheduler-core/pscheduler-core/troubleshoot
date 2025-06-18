@@ -339,18 +339,18 @@ def run_task(message, lead, task, bind=None):
         throw=False)
 
     if status != 200:
-        failed("Failed to post task. Code: [%d] Error: [%s]" % (status, task_url))
+        failed(f'Failed to post task. Code: [{status}] Error: [{task_url}]')
 
     # Fetch posted task
 
     status, task_data = pscheduler.url_get("%s?detail" % (task_url), throw=False)
     if status != 200:
-        failed("Failed to get task data. Code: [%d] Error: [%s]" % (status, task_data))
+        failed(f'Failed to get task data. Code: [{status}] Error: [{task_data}]')
 
     try:
         first_run_url = task_data["detail"]["first-run-href"]
     except KeyError:
-        failed("Something has gone terribly wrong. Server returned incomplete data for the task. [first-run-href] is missing.")
+        failed('Something has gone terribly wrong. Server returned incomplete data for the task. [first-run-href] is missing.')
 
     progress()
 
@@ -360,20 +360,20 @@ def run_task(message, lead, task, bind=None):
     status, run_data = pscheduler.url_get(first_run_url, throw=False)
 
     if status == 404:
-        failed("The server never scheduled a run for the task. The server is too busy or there is a problem with [pscheduler-scheduler] service.")
+        failed('The server never scheduled a run for the task. The server is too busy or there is a problem with [pscheduler-scheduler] service.')
     if status != 200:
-        failed("Error getting first run data: Code: [%d] Error: [%s]" % (status, run_data))
+        failed(f'Error getting first run data: Code: [{status}] Error: [{run_data}]')
 
     for key in ["end-time", "result-href"]:
         if key not in run_data:
-            failed("Something has gone terribly wrong. Server did not return [%s] with run data" % (key))
+            failed(f'Something has gone terribly wrong. Server did not return [{key}] with run data')
 
     # Wait for the end time to pass
 
     try:
         end_time = pscheduler.iso8601_as_datetime(run_data["end-time"])
     except ValueError as ex:
-        failed("Something has gone terribly wrong. Server did not return a valid [end-time] for the task: %s" % (str(ex)))
+        failed(f'Something has gone terribly wrong. Server did not return a valid [end-time] for the task: {str(ex)}')
 
     sleep_time = pscheduler.time_until_seconds(end_time)
 
@@ -389,9 +389,9 @@ def run_task(message, lead, task, bind=None):
     # Whatever the outcome, grab a fresh copy of the run so we can get its status.
     second_status, second_run_data = pscheduler.url_get(first_run_url, throw=False)
     if second_status == 404:
-        failed("Test was scheduled but not run. Check that the [pscheduler-runner] service is running.")
+        failed('Test was scheduled but not run. Check that the [pscheduler-runner] service is running.')
     if second_status != 200:
-        failed("Unable to get run data: Code: [%d] Error: [%s]" % (second_status, second_run_data))
+        failed(f'Unable to get run data: Code: [{second_status}] Error: [{second_run_data}]')
 
     extra_comment = progress(
         second_run_data.get("state-display")
@@ -399,9 +399,9 @@ def run_task(message, lead, task, bind=None):
     )
 
     if status == 404:
-        failed("Test was scheduled but not run. Check that the [pscheduler-runner] service is running.")
+        failed('Test was scheduled but not run. Check that the [pscheduler-runner] service is running.')
     if status != 200:
-        failed("Error while waiting for result. Code: [%d] Error: [%s]" % (status, run_data))
+        failed(f'Error while waiting for result. Code: [{status}] Error: [{run_data}]')
 
 
     # Get the result
@@ -410,15 +410,15 @@ def run_task(message, lead, task, bind=None):
                                              params={"wait-merged": True},
                                              throw=False)
     if status == 404:
-        failed("Test was scheduled but not run. Check that the [pscheduler-runner] service is running.")
+        failed('Test was scheduled but not run. Check that the [pscheduler-runner] service is running.')
     if status != 200:
-        failed("Did not get a result. Code: [%d] Error: [%s]" % (status, result_data))
+        failed(f'Did not get a result. Code: [{status}] Error: [{result_data}]')
 
     try:
         if not result_data["succeeded"]:
             failed_diags(first_run_url)
     except KeyError:
-        failed("Something has gone terribly wrong. Server didn't return the expected result. [succeeded] is missing from the result.")
+        failed('Something has gone terribly wrong. Server didn\'t return the expected result. [succeeded] is missing from the result.')
 
     # If there were archivings, see if they worked.
 
@@ -431,7 +431,7 @@ def run_task(message, lead, task, bind=None):
             status, archive_data = pscheduler.url_get(first_run_url,
                                                       throw=False)
             if status != 200:
-                failed("Unable to fetch archive status. Code: [%d] Error: [%s]" % (status, archive_data))
+                failed(f'Unable to fetch archive status. Code: [{status}] Error: [{archive_data}]')
 
             archived = [ True
                          for ar in archive_data["archivings"]
