@@ -434,7 +434,7 @@ class ArchiverPoolCollection(object):
             self.skim_interval = skim_time.total_seconds()
             self.skimmer = threading.Thread(
                 target=self._skimmer)
-            self.skimmer.setDaemon(True)
+            self.skimmer.daemon = True
             self.skimmer.start()
 
 

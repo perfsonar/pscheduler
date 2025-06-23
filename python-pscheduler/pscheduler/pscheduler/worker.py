@@ -50,7 +50,7 @@ class WorkerProcess(object):
             self.debug_callback = debug_callback
             self.__debug("New thread")
             self.thread = threading.Thread(target=self.__run)
-            self.thread.setDaemon(True)
+            self.thread.daemon = True
             self.thread.start()
             self.__debug("Thread started")
 
@@ -235,7 +235,7 @@ class WorkerProcess(object):
         # Caller-side thread to relay results
 
         self.relay = threading.Thread(name="%s Relay" % (name), target=self.__relay)
-        self.relay.setDaemon(True)
+        self.relay.daemon = True
 
         self.relayed_exception = None
         self.relayed_traceback = None
