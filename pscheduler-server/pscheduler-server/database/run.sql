@@ -464,7 +464,7 @@ BEGIN
 	        SET runs_started = runs_started + 1
 	        WHERE id = NEW.task;
 	    ELSIF NEW.state = run_state_canceled() THEN
-                PERFORM pg_notify(run_canceled, NEW.id::TEXT);
+                PERFORM pg_notify('run_canceled', NEW.id::TEXT);
             END IF;
 	END IF;
 
