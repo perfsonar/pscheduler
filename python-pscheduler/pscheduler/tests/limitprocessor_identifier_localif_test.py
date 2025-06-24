@@ -34,7 +34,20 @@ class TestLimitprocessorIdentifierJQ(PschedTestBase):
         ident = IdentifierLocalIF(DATA)
 
         self.assertEqual(ident.evaluate({ "requester": "192.168.1.1" }), False)
-        self.assertEqual(ident.evaluate({ "requester": socket.gethostbyname("localhost") }), True)
+
+        # Find an IP for localhost, preferring IPv6
+
+        all_ips = filter(
+            lambda ip: ip[1] == socket.SocketKind.SOCK_STREAM,
+            socket.getaddrinfo('localhost', 0)
+        )
+
+        local_ip = sorted(
+            all_ips,
+            key=lambda b: b[0] == socket.AddressFamily.AF_INET
+        )[0][4][0]
+
+        self.assertEqual(ident.evaluate({ "requester": local_ip }), True)
 
 
 if __name__ == '__main__':

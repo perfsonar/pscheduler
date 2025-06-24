@@ -16,7 +16,17 @@ class TestInterface(PschedTestBase):
     Interface tests.
     """
 
-    ip_to_test = socket.gethostbyname('localhost')
+    # Find an IP for localhost, preferring IPv6
+
+    all_ips = filter(
+        lambda ip: ip[1] == socket.SocketKind.SOCK_STREAM,
+        socket.getaddrinfo('localhost', 0)
+    )
+
+    ip_to_test = sorted(
+        all_ips,
+        key=lambda b: b[0] == socket.AddressFamily.AF_INET
+    )[0][4][0]
 
     # The following are wrappers around another library and don't need
     # testing:
