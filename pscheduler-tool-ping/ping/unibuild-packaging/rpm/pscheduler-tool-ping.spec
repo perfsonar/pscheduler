@@ -29,6 +29,8 @@ Requires:	pscheduler-test-rtt
 Requires:	%{_pscheduler_python}-icmperror
 # This supplies ping.
 Requires:	iputils
+# For setcap
+Requires:	libcap
 Requires:	sudo
 Requires:	rpm-post-wrapper
 
@@ -72,6 +74,22 @@ EOF
 
 %post
 rpm-post-wrapper '%{name}' "$@" <<'POST-WRAPPER-EOF'
+
+# Make sure whatever ping is authorized in sudoers.d can send raw
+# packets without being root.
+
+PING=$(awk '$1 == "Cmnd_Alias" && $2 == "PSCHEDULER_TOOL_PING" { print $4 }' \
+	   %{_pscheduler_sudoersdir}/%{name})
+
+if [ -x "${PING}" ]
+then
+    setcap cap_net_raw+p "${PING}"
+else
+    echo "Can't find executable ping '${PING}'"
+    exit 1
+fi
+
+
 pscheduler internal warmboot
 POST-WRAPPER-EOF
 
