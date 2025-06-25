@@ -111,6 +111,15 @@ def tasks_uuid_runs(task):
         return not_found()
 
     if request.method == 'GET':
+        cursor = dbcursor_query("""SELECT EXISTS (SELECT * FROM run JOIN task ON task.id = run.task
+                                  WHERE task.uuid = %s)""",
+                                [task])
+
+        exists = cursor.fetchone()[0]
+        cursor.close()
+
+        if not exists:
+            return not_found(f'Task "{task}" does not exist.')
 
         query = "SELECT '" + base_url() + """/' || run.uuid
              FROM
