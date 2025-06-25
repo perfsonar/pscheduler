@@ -219,6 +219,16 @@ BEGIN
     END IF;
 
 
+    -- Version 10 to version 11
+    -- Drop times_actual
+    IF t_version = 10
+    THEN
+        ALTER TABLE run DROP COLUMN times_actual;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --
@@ -518,29 +528,11 @@ BEGIN
         END IF;
 
 
-	-- Handle times for runs reaching a state where they may have
-	-- been running to one where they've stopped.
+	-- Truncate the run time to now if the new state merits it
 
-	IF NEW.state <> OLD.state AND run_state_is_finished(NEW.state)
+	IF NEW.state <> OLD.state AND run_state_update_times(NEW.state)
         THEN
-
-	    -- Adjust the end times only if there's a sane case for
-	    -- doing so.  If the clock is out of whack, the current
-	    -- time could be less than the start time, which would
-	    -- make for an invalid range.
-
-	    IF normalized_now() >= lower(OLD.times)
-            THEN
-	        -- Record the actual times the run ran
-	    	NEW.times_actual = tstzrange(lower(OLD.times), normalized_now(), '[]');
-
-	    	-- If the run took less than the scheduled time, return
-	    	-- the remainder to the timeline.
-	    	IF upper(OLD.times) > normalized_now() THEN
-	           NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
-	    	END IF;
-            END IF;
-
+	    NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
         END IF;
 
 	-- If there's now a merged result, notify anyone watching for those.

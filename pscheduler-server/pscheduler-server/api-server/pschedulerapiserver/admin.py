@@ -153,7 +153,10 @@ def get_status():
     runs = {}
 
     # query database for last run information
-    cursor = dbcursor_query("SELECT max(upper(times_actual)) FROM run WHERE state=run_state_finished()")
+    cursor = dbcursor_query(
+        '''SELECT max(upper(times)) FROM run
+           WHERE state IN (SELECT id FROM run_state WHERE finished)'''
+        )
     result = cursor.fetchone()[0]
     runs["last-finished"] = str(pscheduler.datetime_as_iso8601(result)) if result is not None else None
     
