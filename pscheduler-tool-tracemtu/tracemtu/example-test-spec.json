@@ -1,0 +1,13 @@
+{
+    "test": {
+	"type": "mtu",
+	"spec": {
+	    "schema": 1,
+	    "dest": "localhost"
+	}
+    },
+    "schema": 1,
+    "tool": "tracemtu",
+    "schedule": {
+    }
+}

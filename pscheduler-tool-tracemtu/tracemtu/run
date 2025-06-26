@@ -1,0 +1,70 @@
+#!/usr/bin/env python3
+
+import datetime
+import subprocess
+import json
+import sys
+import time
+import pscheduler
+import socket
+
+from common import *
+
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+
+# Get arguments
+try:
+    spec = input['test']['spec']
+    dest = spec['dest']
+    ip_version = spec.get('ip-version', None)
+except KeyError:
+    pscheduler.fail('Missing data in input')
+
+duration = input['test']['spec'].get('duration', 'PT5S')
+duration = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(duration) ) 
+timeout_iso = input['test']['spec'].get('timeout', 'PT10S')
+timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+
+# Sleep until it's time to start
+
+try:
+    pscheduler.sleep_until(input['schedule']['start'])
+except KeyError:
+    pscheduler.fail("Unable to find start time in input")
+
+# Run the tool
+
+try:
+    (min_mtu, all_mtus, hops, message) = pscheduler.mtu_traceroute(
+        dest,
+        ip_version=ip_version,
+        max_hops=MAX_HOPS,
+        hop_time=HOP_TIME
+    )
+except Exception as ex:
+    pscheduler.succeed_json({
+        'succeeded': False,
+        'error': str(ex),
+        'diags': ''
+    })
+
+
+if min_mtu is None:
+    # Failure.
+    pscheduler.succeed_json({
+        'succeeded': False,
+        'error': message,
+        'diags': ''
+    })
+
+
+# Success
+pscheduler.succeed_json({
+    'succeeded': True,
+    'result': {
+        'succeeded': True,
+        'mtu': min_mtu
+    },
+    'diags': f'MTU: {min_mtu} of {all_mtus}\nHops: {hops}\nMessage: {message}'
+})

@@ -181,7 +181,9 @@ def check_mtu(host_a, host_z=None):
         else:
             ok("Unsafe or unknown: %s" % (result["message"]))
     elif status == 404:
-        ok("Not supported")
+         ok("Not supported")
+    elif status == 504:
+	 ok("Unable to measure: timed out")
     else:
         failed(result)
 

@@ -1,0 +1,8 @@
+{
+    "type": "mtu",
+    "spec": {
+	"schema": 2,
+	"dest": "foo.example.org",
+	"ip-version": 4
+    }
+}
