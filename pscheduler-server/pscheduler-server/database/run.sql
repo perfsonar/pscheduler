@@ -532,7 +532,8 @@ BEGIN
 
 	IF NEW.state <> OLD.state AND run_state_update_times(NEW.state)
         THEN
-	    NEW.times = tstzrange(lower(OLD.times), normalized_now(), '[]');
+	    NEW.times = tstzrange(lower(OLD.times),
+	                          greatest(lower(OLD.times),normalized_now()), '[]');
         END IF;
 
 	-- If there's now a merged result, notify anyone watching for those.
