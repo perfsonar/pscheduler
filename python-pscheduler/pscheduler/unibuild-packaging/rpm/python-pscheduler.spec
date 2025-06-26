@@ -48,6 +48,7 @@ Requires:	%{_pscheduler_python}-pytz
 Requires:	rsyslog
 Requires:	logrotate
 Requires:       numactl
+Requires:	traceroute
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
