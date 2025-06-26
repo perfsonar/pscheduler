@@ -1,0 +1,17 @@
+#!/usr/bin/env python3
+#
+# Determine the duration of a specified test.
+#
+
+import datetime
+import pscheduler
+
+from common import *
+
+json = pscheduler.json_load(exit_on_error=True);
+
+# Nothing in the test spec matters for now
+
+pscheduler.succeed_json({
+    "duration": pscheduler.timedelta_as_iso8601(datetime.timedelta(seconds=duration()))
+    })

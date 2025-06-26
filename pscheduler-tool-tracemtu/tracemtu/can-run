@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+
+# Determine if this tool can run a proposed test
+
+import pscheduler
+
+MAX_SCHEMA = 2
+
+json = pscheduler.json_load(exit_on_error=True);
+
+try:
+    if json['type'] != 'mtu':
+        pscheduler.succeed_json({
+            "can-run": False,
+            "reasons": [ "Unsupported test type" ]
+        })
+except KeyError:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ "Missing test type" ]
+    })
+
+spec = json['spec']
+
+schema = spec.get('schema', 2)
+if schema > MAX_SCHEMA:
+    pscheduler.succeed_json({
+        "can-run": False,
+        "reasons": [ 'Unsupported schema version %d' % (schema) ]
+    })
+
+
+errors = []
+
+supported_options = ["schema",
+                     "source", "source-node",
+                     "dest",
+                     "ip-version"
+                     ]
+
+for option in spec:
+    if option not in supported_options:
+        errors.append(f'''Option '{option}' is not supported.''')
+
+result = {
+    "can-run": len(errors) == 0
+}
+
+if len(errors) > 0:
+    result["reasons"] = errors
+
+pscheduler.succeed_json(result)
