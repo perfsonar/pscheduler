@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+# Make sure whatever ping is authorized in sudoers.d can send raw
+# packets without being root.
+
+PING=$(awk '$1 == "Cmnd_Alias" && $2 == "PSCHEDULER_TOOL_PING" { print $4 }' \
+	   /etc/sudoers.d/pscheduler-tool-ping)
+
+if [ -x "${PING}" ]
+then
+    setcap cap_net_raw+p "${PING}"
+else
+    echo "Can't find executable ping '${PING}'"
+    exit 1
+fi

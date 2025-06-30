@@ -5,7 +5,7 @@
 %define short	    powstream
 %define resultdir	%{_pscheduler_tool_vardir}/%{short}
 
-%define perfsonar_auto_version 5.2.0
+%define perfsonar_auto_version 5.2.1
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-tool-%{short}

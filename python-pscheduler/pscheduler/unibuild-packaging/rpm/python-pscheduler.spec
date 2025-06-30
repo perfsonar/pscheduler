@@ -2,7 +2,7 @@
 # RPM Spec for Python pScheduler Module
 #
 
-%define perfsonar_auto_version 5.2.0
+%define perfsonar_auto_version 5.2.1
 %define perfsonar_auto_relnum 1
 
 %define short	pscheduler
@@ -48,6 +48,7 @@ Requires:	%{_pscheduler_python}-pytz
 Requires:	rsyslog
 Requires:	logrotate
 Requires:       numactl
+Requires:	traceroute
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm

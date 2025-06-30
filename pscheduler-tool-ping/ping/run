@@ -240,7 +240,7 @@ status, stdout, stderr \
 log.debug("Program exited %d: %s",
           status, stdout if status == 0 else stderr)
 
-diags = f'{argv_string}\n\nStandard output:\n{stdout}\n\nStandard error:\n{stderr}'
+diags = f'Exited {status}\n\n{argv_string}\n\nStandard output:\n{stdout}\n\nStandard error:\n{stderr}'
 
 # Ping exits 1 if the host isn't up, which for us is still a success,
 # but it also exits 1 on error.  The presence of anything in stderr is
