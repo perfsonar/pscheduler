@@ -3,8 +3,9 @@
 test for the Interface module.
 """
 
-import unittest
+import netifaces
 import socket
+import unittest
 
 from base_test import PschedTestBase
 
@@ -16,7 +17,22 @@ class TestInterface(PschedTestBase):
     Interface tests.
     """
 
-    ip_to_test = socket.gethostbyname('localhost')
+    # This is essentially a clean-room re-implementation of what's in
+    # the function we're testing.
+
+    # Protocols we care about
+    protocols = [ socket.AF_INET, socket.AF_INET6 ]
+    addresses = []
+
+    for interface in netifaces.interfaces():
+        ifaddresses = netifaces.ifaddresses(interface)
+        for protocol in protocols:
+            try:
+                addresses.append(ifaddresses[protocol][0]['addr'])
+            except KeyError:
+                pass
+
+    ip_to_test = addresses[0] if len(addresses) > 0 else None
 
     # The following are wrappers around another library and don't need
     # testing:
@@ -25,11 +41,16 @@ class TestInterface(PschedTestBase):
 
     def test_local_ip(self):
         """Local ip test"""
+
+        self.assertTrue(self.ip_to_test is not None)
         localips = LocalIPList(refresh=5)
         self.assertTrue(self.ip_to_test in localips)
 
+
     def test_source_interface(self):
         """Source interface test"""
+
+        self.assertTrue(self.ip_to_test is not None)
         address, interface = source_interface(self.ip_to_test)
         self.assertEqual(address, self.ip_to_test)
         self.assertNotEqual(interface, None)
