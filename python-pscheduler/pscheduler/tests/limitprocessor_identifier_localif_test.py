@@ -8,6 +8,7 @@ import socket
 
 from base_test import PschedTestBase
 
+from pscheduler.interface import LocalIPList
 from pscheduler.limitprocessor.identifier.localif import *
 
 
@@ -35,19 +36,12 @@ class TestLimitprocessorIdentifierJQ(PschedTestBase):
 
         self.assertEqual(ident.evaluate({ "requester": "192.168.1.1" }), False)
 
-        # Find an IP for localhost, preferring IPv6
+        local_ips = list(LocalIPList())
+        # Very unusual, but you never can tell with IPs.
+        self.assertTrue(len(local_ips) > 0)
 
-        all_ips = filter(
-            lambda ip: ip[1] == socket.SocketKind.SOCK_STREAM,
-            socket.getaddrinfo('localhost', 0)
-        )
-
-        local_ip = sorted(
-            all_ips,
-            key=lambda b: b[0] == socket.AddressFamily.AF_INET
-        )[0][4][0]
-
-        self.assertEqual(ident.evaluate({ "requester": local_ip }), True)
+        # Any local IP will do.
+        self.assertEqual(ident.evaluate({ "requester": local_ips[0] }), True)
 
 
 if __name__ == '__main__':
