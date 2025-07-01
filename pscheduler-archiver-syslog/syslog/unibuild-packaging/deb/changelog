@@ -8,7 +8,7 @@ pscheduler-archiver-syslog (5.2.1-1) perfsonar-5.2; urgency=low
 
   * New upstream version.
 
- -- perfSONAR developers <debian@perfsonar.net>  Mon, 30 Jun 2025 11:41:45 -0400
+ -- perfSONAR developers <debian@perfsonar.net>  Tue, 01 Jul 2025 14:53:24 -0400
 
 pscheduler-archiver-syslog (5.2.0-1) perfsonar-5.2; urgency=low
 
