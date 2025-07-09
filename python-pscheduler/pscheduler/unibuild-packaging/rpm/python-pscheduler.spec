@@ -76,6 +76,7 @@ BuildRequires:	%{_pscheduler_python}-pyjq >= 2.2.0
 BuildRequires:	%{_pscheduler_python}-tzlocal
 BuildRequires:	%{_pscheduler_python}-pytz
 BuildRequires:  numactl
+BuildRequires:  traceroute
 
 %define limit_config %{_pscheduler_sysconfdir}/limits.conf
 %define logdir %{_var}/log/pscheduler
