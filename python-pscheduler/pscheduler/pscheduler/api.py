@@ -36,7 +36,7 @@ def api_local_host_name():
 
     hostname = socket.gethostname()
     try:
-        socket.gethostbyname(hostname)
+        socket.getaddrinfo(hostname, 0)
         # Local host name resolves.  Use that.
         return hostname
     except socket.gaierror:

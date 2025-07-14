@@ -9,10 +9,10 @@ BUILD_LOG=unibuild-log
 UNIBUILD_REPO=unibuild-repo
 
 ifdef START
-UNIBUILD_OPTS += --start $(START)
+BUILD_OPTS += --start $(START)
 endif
 ifdef STOP
-UNIBUILD_OPTS += --stop $(STOP)
+BUILD_OPTS += --stop $(STOP)
 endif
 ifdef RELEASE
 UNIBUILD_OPTS += --release
@@ -24,7 +24,7 @@ endif
 build:
 	rm -rf $(BUILD_LOG) $(UNIBUILD_REPO)
 	((( \
-	(unibuild build $(UNIBUILD_OPTS); echo $$? >&3) \
+	(unibuild $(UNIBUILD_OPTS) build $(BUILD_OPTS); echo $$? >&3) \
 	| tee $(BUILD_LOG) >&4) 3>&1) \
 	| (read XS; exit $$XS) \
 	) 4>&1
