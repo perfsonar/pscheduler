@@ -1,3 +1,5 @@
-pscheduler-tool-tracemtu (5.2.1-1) perfsonar-5.2; urgency=low
+pscheduler-tool-tracemtu (5.2.1-2) perfsonar-5.2; urgency=low
 
   * New upstream version.
+
+ -- Lætitia Delvaux <adelvaux@man.poznan.pl>  Tue, 15 Jul 2025 11:13:04 +0200 
