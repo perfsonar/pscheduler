@@ -14,7 +14,7 @@ TEMPLATE = '''
 Dawdled ......... {{ unspec(result.dawdled) }}
 Text Sent ....... {{ unspec(result.sent) }}
 Text Received ... {{ unspec(result.received) }}
-Elapsed Time .... {{ unspec(result.elapsedtime) }}
+Elapsed Time .... {{ unspec(result.get('elapsed-time')) }}
 
 {% elif _mime_type == 'text/html' %}
 
@@ -22,7 +22,7 @@ Elapsed Time .... {{ unspec(result.elapsedtime) }}
 <tr><td>Dawdled</td><td>{{ unspec(result.dawdled) }}</td></tr>
 <tr><td>Text Sent</td><td>{{ unspec(result.sent) }}</td></tr>
 <tr><td>Text Received</td><td>{{ unspec(result.received) }}</td></tr>
-<tr><td>Elapsed Time</td><td>{{ unspec(result.elapsedtime) }}</td></tr>
+<tr><td>Elapsed Time</td><td>{{ unspec(result.get('elapsed-time')) }}</td></tr>
 </table>
 
 {% else %}

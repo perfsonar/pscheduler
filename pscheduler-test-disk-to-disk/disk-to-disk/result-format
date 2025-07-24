@@ -22,14 +22,14 @@ TEMPLATE = '''
 {% if _mime_type == 'text/plain' %}
 
 Duration ......... {{ result.time }}
-Sent ............. {{ siformat(result.bytessent) }}B
+Sent ............. {{ siformat(result.get('bytes-sent')) }}B
 Throughput ....... {{ siformat(result.throughput) }}b/sec
 
 {% elif _mime_type == 'text/html' %}
 
 <table>
 <tr><td>Time</td><td>{{ time }}</td></tr>
-<tr><td>Sent</td><td>{{ siformat(result.bytessent) }}B</td></tr>
+<tr><td>Sent</td><td>{{ siformat(result.get('bytes-sent')) }}B</td></tr>
 <tr><td>Sent</td><td>{{ siformat(result.throughput) }}b/sec</td></tr>
 </table>
 {% else %}

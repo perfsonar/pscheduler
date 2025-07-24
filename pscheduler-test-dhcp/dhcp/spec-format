@@ -21,7 +21,7 @@ TEMPLATE='''
 {% if _mime_type == 'text/plain' %}
 
 Host ........ {{ unspec(host) }}
-Host Node ... {{ unspec(hostnode) }}
+Host Node ... {{ unspec(get('host-node')) }}
 Timeout ..... {{ unspec(timeout) }}
 Interface ... {{ unspec(interface) }}
 
@@ -29,7 +29,7 @@ Interface ... {{ unspec(interface) }}
 
 <table>
 <tr><td>Host</td><td>{{ unspec(host) }}</td></tr>
-<tr><td>Host Node</td><td>{{ unspec(hostnode) }}</td></tr>
+<tr><td>Host Node</td><td>{{ unspec(get('host-node')) }}</td></tr>
 <tr><td>Interface</td><td>{{ unspec(interface) }}</td></tr>
 <tr><td>Timeout</td><td>{{ unspec(timeout) }}</td></tr>
 </table>

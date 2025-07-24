@@ -22,22 +22,22 @@ TEMPLATE='''
 {% if _mime_type == 'text/plain' %}
 
 Source ........ {{ unspec(source) }}
-Source Node ... {{ unspec(sourcenode) }}
+Source Node ... {{ unspec(get('source-node')) }}
 Destination ... {{ unspec(dest) }}
 Port .......... {{ unspec(port) }}
 {% if schema >= 2 -%}
-IP Version .... {{ unspec(ipversion) }}
+IP Version .... {{ unspec(get('ip-version')) }}
 {%- endif %}
 
 {% elif _mime_type == 'text/html' %}
 
 <table>
 <tr><td>Source</td><td>{{ unspec(source) }}</td></tr>
-<tr><td>Source Node</td><td>{{ unspec(sourcenode) }}</td></tr>
+<tr><td>Source Node</td><td>{{ unspec(get('source-node')) }}</td></tr>
 <tr><td>Destination</td><td>{{ unspec(dest) }}</td></tr>
 <tr><td>Port</td><td>{{ unspec(port) }}</td></tr>
 {% if schema >= 2 -%}
-<tr><td>IP Version</td><td>{{ unspec(ipversion) }}</td></tr>
+<tr><td>IP Version</td><td>{{ unspec(get('ip-version')) }}</td></tr>
 {%- endif %}
 </table>
 

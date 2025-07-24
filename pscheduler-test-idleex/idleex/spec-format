@@ -13,8 +13,8 @@ TEMPLATE='''
 Host ............... {{ unspec(host) }}
 Host Node .......... {{ unspec(hostnode) }}
 Duration ........... {{ unspec(duration) }}
-Starting Comment ... {{ unspec(startingcomment) }}
-Parting Comment .... {{ unspec(partingcomment) }}
+Starting Comment ... {{ unspec(get('starting-comment')) }}
+Parting Comment .... {{ unspec(get('parting-comment')) }}
 
 {% elif _mime_type == 'text/html' %}
 
@@ -22,8 +22,8 @@ Parting Comment .... {{ unspec(partingcomment) }}
 <tr><td>Host</td><td>{{ unspec(host) }}</td></tr>
 <tr><td>Host Node</td><td>{{ unspec(hostnode) }}</td></tr>
 <tr><td>Duration</td><td>{{ unspec(duration) }}</td></tr>
-<tr><td>Starting Comment</td><td>{{ unspec(startingcomment) }}</td></tr>
-<tr><td>Parting Comment</td><td>{{ unspec(partingcomment) }}</td></tr>
+<tr><td>Starting Comment</td><td>{{ unspec(get('starting-comment')) }}</td></tr>
+<tr><td>Parting Comment</td><td>{{ unspec(get('parting-comment')) }}</td></tr>
 </table>
 
 {% else %}

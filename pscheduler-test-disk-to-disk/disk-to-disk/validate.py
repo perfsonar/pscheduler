@@ -51,7 +51,9 @@ def result_is_valid(json):
             },
         "required": [
             "succeeded",
-            "time"
+            "time",
+            "bytes-sent",
+            "throughput"
             ]
         }
     return json_validate(json, schema)

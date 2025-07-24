@@ -11,7 +11,7 @@ from validate import MAX_SCHEMA
 TEMPLATE='''
 {% if _mime_type == 'text/plain' %}
 Host ............... {{ unspec(host) }}
-Host Node .......... {{ unspec(hostnode) }}
+Host Node .......... {{ unspec(get('host-node')) }}
 Duration ........... {{ unspec(duration) }}
 Starting Comment ... {{ unspec(startingcomment) }}
 Parting Comment .... {{ unspec(partingcomment) }}
@@ -20,10 +20,10 @@ Parting Comment .... {{ unspec(partingcomment) }}
 
 <table>
 <tr><td>Host</td><td>{{ unspec(host) }}</td></tr>
-<tr><td>Host Node</td><td>{{ unspec(hostnode) }}</td></tr>
+<tr><td>Host Node</td><td>{{ unspec(get('host-node')) }}</td></tr>
 <tr><td>Duration</td><td>{{ unspec(duration) }}</td></tr>
-<tr><td>Starting Comment</td><td>{{ unspec(startingcomment) }}</td></tr>
-<tr><td>Parting Comment</td><td>{{ unspec(partingcomment) }}</td></tr>
+<tr><td>Starting Comment</td><td>{{ unspec(get('starting-comment')) }}</td></tr>
+<tr><td>Parting Comment</td><td>{{ unspec(get('parting-comment')) }}</td></tr>
 </table>
 
 {% else %}

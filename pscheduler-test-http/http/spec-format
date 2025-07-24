@@ -12,9 +12,9 @@ TEMPLATE='''
 {% if _mime_type == 'text/plain' %}
 
 Host ............. {{ unspec(host) }}
-Host Node ........ {{ unspec(hostnode) }}
+Host Node ........ {{ unspec(get('host-node')) }}
 URL .............. {{ unspec(url) }}
-IP Version ....... {{ unspec(ipversion) }}
+IP Version ....... {{ unspec(get('ip-version')) }}
 {% if headers is defined -%}
 Headers:   (May be missing hyphens)
 {#- TODO: The hyphens get deleted from the keys. #}
@@ -26,15 +26,15 @@ Headers .......... {{ unspec(not_specified) }}
 {%- endif %}
 Parse ............ {{ unspec(parse) }}
 Timeout .......... {{ unspec(timeout) }}
-Always Succeed ... {{ unspec(alwayssucceed) }}
-Keep Content ..... {{ unspec(keepcontent) }}
+Always Succeed ... {{ unspec(get('always-succeed')) }}
+Keep Content ..... {{ unspec(get('keep-content')) }}
 
 {% elif _mime_type == 'text/html' %}
 <table>
 <tr><td>Host</td><td>{{ unspec(host) }}</td></tr>
-<tr><td>Host Node</td><td>{{ unspec(hostnode) }}</td></tr>
+<tr><td>Host Node</td><td>{{ unspec(get('host-node')) }}</td></tr>
 <tr><td>URL</td><td>{{ unspec(url) }}</td></tr>
-<tr><td>IP Version</td><td>{{ unspec(ipversion) }}</td></tr>
+<tr><td>IP Version</td><td>{{ unspec(get('ip-version')) }}</td></tr>
 <tr><td>Headers</td><td>
 {% if headers is defined -%}
 (May be missing hyphens)
@@ -50,8 +50,8 @@ Keep Content ..... {{ unspec(keepcontent) }}
 </td></tr>
 <tr><td>Parse</td><td>{{ unspec(parse) }}</td></tr>
 <tr><td>Timeout</td><td>{{ unspec(timeout) }}</td></tr>
-<tr><td>Always Succeed</td><td>{{ unspec(alwayssucceed) }}</td></tr>
-<tr><td>Keep Content</td><td>{{ unspec(keepcontent) }}</td></tr>
+<tr><td>Always Succeed</td><td>{{ unspec(get('always-succeed')) }}</td></tr>
+<tr><td>Keep Content</td><td>{{ unspec(get('keep-content')) }}</td></tr>
 </table>
 
 {% else %}

@@ -13,22 +13,22 @@ TEMPLATE='''
 {% if _mime_type == 'text/plain' %}
 
 Source ............... {{ unspec(source) }}
-Source Node .......... {{ unspec(sourcenode) }}
+Source Node .......... {{ unspec(get('source-node')) }}
 Destination .......... {{ unspec(dest) }}
-Destination Port ..... {{ unspec(destport) }}
-IP Version ........... {{ unspec(ipversion) }}
+Destination Port ..... {{ unspec(get('dest-port')) }}
+IP Version ........... {{ unspec(get('ip-version')) }}
 Packet Length ........ {{ unspec(length) }}
-Probe Type ........... {{ unspec(probe-type) }}
+Probe Type ........... {{ unspec(get('probe-type')) }}
 Hops ................. {{ unspec(hops) }}
 Queries .............. {{ unspec(queries) }}
-First TTL ............ {{ unspec(firstttl) }}
+First TTL ............ {{ unspec(get('first-ttl')) }}
 Fragment ............. {{ unspec(fragment) }}
 Resolve Hostnames .... {{ unspec(hostnames} }}
 Algorithm ............ {{ unspec(algorithm) }}
 Reslove ASes ......... {{ unspec(as) }}
-IP Type of Service ... {{ unspec(iptos) }}
+IP Type of Service ... {{ unspec(get('ip-tos')) }}
 {%- if schema >= 2 %}
-Flow Label ........... {{ unspec(flowlabel) }}
+Flow Label ........... {{ unspec(get('flow-label')) }}
 {%- endif -%}
 Send Wait ............ {{ unspec(sendwait }}
 Wait ................. {{ unspec(wait) }}
@@ -37,22 +37,22 @@ Wait ................. {{ unspec(wait) }}
 
 <table>
 <tr><td>Source</td><td>{{ unspec(source) }}</td></tr>
-<tr><td>Source Node</td><td>{{ unspec(sourcenode) }}</td></tr>
+<tr><td>Source Node</td><td>{{ unspec(get('source-node')) }}</td></tr>
 <tr><td>Destination</td><td>{{ unspec(dest) }}</td></tr>
-<tr><td>Destination Port</td><td>{{ unspec(destport) }}</td></tr>
-<tr><td>IP Version</td><td>{{ unspec(ipversion) }}</td></tr>
+<tr><td>Destination Port</td><td>{{ unspec(get('dest-port') }}</td></tr>
+<tr><td>IP Version</td><td>{{ unspec(get('ip-version')) }}</td></tr>
 <tr><td>Packet Length</td><td>{{ unspec(length) }}</td></tr>
-<tr><td>Probe Type</td><td>{{ unspec(probe-type) }}</td></tr>
+<tr><td>Probe Type</td><td>{{ unspec(get('probe-type')) }}</td></tr>
 <tr><td>Hops</td><td>{{ unspec(hops) }}</td></tr>
 <tr><td>Queries</td><td>{{ unspec(queries) }}</td></tr>
-<tr><td>First TTL</td><td>{{ unspec(firstttl) }}</td></tr>
+<tr><td>First TTL</td><td>{{ unspec(get('first-ttl')) }}</td></tr>
 <tr><td>Fragment</td><td>{{ unspec(fragment) }}</td></tr>
 <tr><td>Resolve Hostnames</td><td>{{ unspec(hostnames} }}</td></tr>
 <tr><td>Algorithm</td><td>{{ unspec(algorithm) }}</td></tr>
 <tr><td>Reslove ASes</td><td>{{ unspec(as) }}</td></tr>
-<tr><td>IP Type of Service</td><td>{{ unspec(iptos) }}</td></tr>
+<tr><td>IP Type of Service</td><td>{{ unspec(get('ip-tos')) }}</td></tr>
 {%- if schema >= 2 %}
-<tr><td>Flow Label</td><td>{{ unspec(flowlabel) }}</td></tr>
+<tr><td>Flow Label</td><td>{{ unspec(get('flow-label')) }}</td></tr>
 {%- endif -%}
 <tr><td>Send Wait</td><td>{{ unspec(sendwait }}</td></tr>
 <tr><td>Wait</td><td>{{ unspec(wait) }}</td></tr>

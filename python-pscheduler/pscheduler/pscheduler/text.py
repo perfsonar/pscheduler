@@ -13,7 +13,6 @@ from .exitstatus import fail
 from .exitstatus import succeed
 from .iso8601 import iso8601_as_timedelta
 from .psjson import json_load
-from .psjson import json_strip_hyphens
 from .pstime import timedelta_as_seconds
 
 # This is not available on Debian 9, so if it isn't, roll our own.
@@ -126,6 +125,9 @@ def jinja2_format(template, info, strip=True):
     error(msg) - Raises a RuntimeError (e.g.: {{ error('Something went
     wrong') }})
 
+    get(name) - Gets a variable by name from the top level, useful for when
+    hyphens are present that trip up Jinja2 (e.g., {{ get('foo-bar') }})
+
     iso8601_duration_seconds(duration) - Convert ISO8601 duration into
     seconds.
 
@@ -143,6 +145,9 @@ def jinja2_format(template, info, strip=True):
     def error_helper(message):
         raise RuntimeError(message)
 
+    def get_helper(item):
+        return info.get(item,jinja2.Undefined())
+
     def iso8601_duration_seconds_helper(duration):
         try:
             delta = iso8601_as_timedelta(duration)
@@ -153,20 +158,22 @@ def jinja2_format(template, info, strip=True):
     def json_pretty_helper(data):
         return json.dumps(data, indent=2)
 
+    def unspec_helper(value):
+        return 'Not Specified' if isinstance(value, jinja2.Undefined) else str(value)
+
     HEADER = '''
 {%- macro siformat(arg) -%}
 {{ arg | filesizeformat | replace('ytes', '') | replace('B','') }}
 {%- endmacro -%}
-{% macro unspec(arg) -%}
-{{ arg if arg is defined else 'Not Specified' }}
-{%- endmacro -%}
-    '''
+'''
 
     j2 = jinja2.Environment()
     j2.globals.update(
         error=error_helper,
         iso8601_duration_seconds=iso8601_duration_seconds_helper,
-        json_pretty=json_pretty_helper
+        json_pretty=json_pretty_helper,
+        get=get_helper,
+        unspec=unspec_helper
         )
     finished = j2.from_string(HEADER + template).render(info)
 
@@ -244,11 +251,10 @@ def _format_method(template,
         if not valid:
             fail(message)
 
-    json_stripped = json_strip_hyphens(json_in)
-    json_stripped['_mime_type'] = mime_type
+    json_in['_mime_type'] = mime_type
 
     try:
-        succeed(jinja2_format(template, json_stripped, strip=True))
+        succeed(jinja2_format(template, json_in, strip=True))
     except RuntimeError as ex:
         fail(str(ex))
     except jinja2.TemplateError as ex:

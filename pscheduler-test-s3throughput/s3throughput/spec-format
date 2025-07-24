@@ -15,10 +15,10 @@ TEMPLATE='''
 {% if _mime_type == 'text/plain' %}
 
 Host .......... {{ unspec(host) }}
-Host Node ..... {{ unspec(hostnode) }}
+Host Node ..... {{ unspec(get('host-node')) }}
 URL ........... {{ unspec(url) }}
 Bucket ........ {{ unspec(bucket) }}
-Object Size ... {{ unspec(objectsize) }}
+Object Size ... {{ unspec(get('object-size')) }}
 Iterations .... {{ unspec(iterations) }}
 Duration ...... {{ unspec(duration) }}
 Timeout ....... {{ unspec(timeout) }}

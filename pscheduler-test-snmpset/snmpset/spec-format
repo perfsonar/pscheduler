@@ -12,7 +12,7 @@ TEMPLATE='''
 {% if _mime_type == 'text/plain' %}
 
 Host ............... {{ unspec(host) }}
-Host Node .......... {{ unspec(hostnode) }}
+Host Node .......... {{ unspec(get('host-node')) }}
 Destination ........ {{ unspec(dest) }}
 Version ............ {{ unspec(version) }}
 OID ................ {{ oid | join(", ") }}
@@ -21,10 +21,10 @@ Variable Type ...... {{ unspec(vartype) }}
 Variable Value ..... {{ unspec(varvalue) }}
 Timeout ............ {{ unspec(timeout) }}
 {% if version == '3' -%}
-Security Name ...... {{ unspec(securityname) }}
-Auth Protocol ...... {{ unspec(authprotocol) }}
-Privacy Protocol ... {{ unspec(privprotocol) }}
-Security Level ..... {{ unspec(securitylevel) }}
+Security Name ...... {{ unspec(get('security-name')) }}
+Auth Protocol ...... {{ unspec(get('auth-protocol')) }}
+Privacy Protocol ... {{ unspec(get('priv-protocol')) }}
+Security Level ..... {{ unspec(get('security-level')) }}
 Context .............{{ unspec(context) }}
 {%- endif -%}
 
@@ -32,7 +32,7 @@ Context .............{{ unspec(context) }}
 
 <table>
 <tr><td>Host</td><td>{{ unspec(host) }}</td></tr>
-<tr><td>Host Node</td><td>{{ unspec(hostnode) }}</td></tr>
+<tr><td>Host Node</td><td>{{ unspec(get('host-node')) }}</td></tr>
 <tr><td>Destination</td><td>{{ unspec(dest) }}</td></tr>
 <tr><td>Version</td><td>{{ unspec(version) }}</td></tr>
 <tr><td>OID</td><td>{{ oid | join(", ") }}</td></tr>
@@ -41,10 +41,10 @@ Context .............{{ unspec(context) }}
 <tr><td>Variable Value</td><td>{{ unspec(varvalue) }}</td></tr>
 <tr><td>Timeout</td><td>{{ unspec(timeout) }}</td></tr>
 {% if version == '3' -%}
-<tr><td>Security Name</td><td>{{ unspec(securityname) }}</td></tr>
-<tr><td>Auth Protocol</td><td>{{ unspec(authprotocol) }}</td></tr>
-<tr><td>Privacy Protocol</td><td>{{ unspec(privprotocol) }}</td></tr>
-<tr><td>Security Level</td><td>{{ unspec(securitylevel) }}</td></tr>
+<tr><td>Security Name</td><td>{{ unspec(get('security-name')) }}</td></tr>
+<tr><td>Auth Protocol</td><td>{{ unspec(get('auth-protocol')) }}</td></tr>
+<tr><td>Privacy Protocol</td><td>{{ unspec(get('priv-protocol')) }}</td></tr>
+<tr><td>Security Level</td><td>{{ unspec(get('security-level')) }}</td></tr>
 <tr><td>Context</td><td>{{ unspec(context) }}</td></tr>
 {%- endif -%}
 </table>

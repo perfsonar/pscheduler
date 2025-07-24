@@ -12,7 +12,7 @@ TEMPLATE='''
 {% if _mime_type == 'text/plain' %}
 
 Host ........ {{ unspec(host) }}
-Host Node ... {{ unspec(hostnode) }}
+Host Node ... {{ unspec(get('host-node')) }}
 Network ..... {{ unspec(network) }}
 Gateway ..... {{ unspec(gateway) }}
 Scan Type ... {{ unspec(scan) }}
@@ -24,7 +24,7 @@ Timeout ..... {{ unspec(timeout) }}
 
 <table>
 <tr><td>Host</td><td>{{ unspec(host) }}</td></tr>
-<tr><td>Host Node</td><td>{{ unspec(hostnode) }}</td></tr>
+<tr><td>Host Node</td><td>{{ unspec(get('host-node')) }}</td></tr>
 <tr><td>Network</td><td>{{ unspec(network) }}</td></tr>
 <tr><td>Gateway</td><td>{{ unspec(gateway) }}</td></tr>
 <tr><td>Scan Type</td><td>{{ unspec(scan) }}</td></tr>

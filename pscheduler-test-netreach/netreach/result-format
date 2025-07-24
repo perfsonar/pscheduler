@@ -11,13 +11,13 @@ from validate import MAX_SCHEMA
 TEMPLATE = '''
 {% if _mime_type == 'text/plain' %}
 
-Gateway Up ... {{ unspec(result.gatewayup) }}
-Network Up ... {{ unspec(result.networkup) }}
+Gateway Up ... {{ unspec(result.get('gateway-up')) }}
+Network Up ... {{ unspec(result.get('network-up') }}
 
 {% elif _mime_type == 'text/html' %}
 <table>
-  <tr><td >Gateway Up</td><td>{{ unspec(result.gatewayup) }}</td></tr>
-  <tr><td >Network Up</td><td>{{ unspec(result.networkup) }}</td></tr>
+  <tr><td >Gateway Up</td><td>{{ unspec(result.get('gateway-up')) }}</td></tr>
+  <tr><td >Network Up</td><td>{{ unspec(result.get('network-up')) }}</td></tr>
 </table>
 
 {% else %}

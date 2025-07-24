@@ -63,31 +63,6 @@ def json_substitute(json, value, replacement):
         return json
 
 
-def json_strip_hyphens(data):
-    """
-    Strip hyphens from key names.  Based on json_decomment().
-    """
-    if isinstance(data, dict):
-        result = {}
-        for item in data:
-            new_name = item.replace('-', '')
-            value = data[item]
-            if isinstance(value, dict):
-                value = json_strip_hyphens(value)
-            item.replace('-', '_')
-            result[new_name] = value
-        return result
-
-    elif isinstance(json, list):
-        result = []
-        for item in json:
-            result.append(json_strip_hyphens(item))
-        return result
-
-    else:
-        return json
-
-
 def json_check_schema(json, max_schema=None):
     """
     Check that the 'schema' value for a blob of JSON is no more than
@@ -115,7 +90,7 @@ def json_check_schema(json, max_schema=None):
 
 
 def json_load(source=None, exit_on_error=False, strip=True,
-              strip_hyphens=False, max_schema=None):
+              max_schema=None):
     """
     Load a blob of JSON and exit with failure if it didn't read.
 
@@ -130,8 +105,6 @@ def json_load(source=None, exit_on_error=False, strip=True,
     strip - Remove all pairs whose names begin with '#'.  This is a
     low-budget way to support comments wthout requiring a parser that
     understands them.  (Default True)
-
-    strip_hyphens - Remove hyphens from all keys.
 
     max_schema - Check for a "schema" of no more than this integer value.
     """
@@ -158,7 +131,6 @@ def json_load(source=None, exit_on_error=False, strip=True,
         json_check_schema(json_in, max_schema)
 
     result = json_decomment(json_in) if strip else json_in
-    result = json_strip_hyphens(result) if strip_hyphens else result
 
     return result
 

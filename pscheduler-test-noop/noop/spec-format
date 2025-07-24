@@ -12,7 +12,7 @@ TEMPLATE='''
 {% if _mime_type == 'text/plain' %}
 
 Host ........ {{ unspec(host) }}
-Host Node ... {{ unspec(hostnode) }}
+Host Node ... {{ unspec(get('host-node')) }}
 Fail ........ {{ unspec(fail) }}
 Data:
 {% if data is defined -%}
@@ -25,7 +25,7 @@ Data:
 
 <table>
 <tr><td>Host</td><td>{{ unspec(host) }}</td></tr>
-<tr><td>Host Node</td><td>{{ unspec(hostnode) }}</td></tr>
+<tr><td>Host Node</td><td>{{ unspec(get('host-node')) }}</td></tr>
 <tr><td>Fail</td><td>{{ unspec(fail) }}</td></tr>
 <tr><td>Data</td><td>
 {% if data is defined -%}

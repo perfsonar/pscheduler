@@ -13,16 +13,16 @@ TEMPLATE='''
 {% if _mime_type == 'text/plain' %}
 
 Source ................ {{ unspec(source) }}
-Source Node ........... {{ unspec(sourcenode) }}
+Source Node ........... {{ unspec(get('source-node')) }}
 Destination ........... {{ unspec(dest) }}
-Destination Node ...... {{ unspec(destnode) }}
+Destination Node ...... {{ unspec(get('dest-node')) }}
 {%- if schema >= 2 %}
 IP Version ............ {{ unspec(ipversion) }}
 {%- endif -%}
 {%- if schema >= 3 %}
 Port .................. {{ unspec(port) }}
 {%- endif -%}
-Test Material ......... {{ unspec(testmaterial) }}
+Test Material ......... {{ unspec(get('test-material')) }}
 Dawdle ................ {{ unspec(dawdle) }}
 Timeout ............... {{ unspec(timeout) }}
 Failure Probability ... {{ unspec(fail) }}
@@ -31,16 +31,16 @@ Failure Probability ... {{ unspec(fail) }}
 
 <table>
 <tr><td>Source</td><td>{{ unspec(source) }}</td></tr>
-<tr><td>Source Node</td><td>{{ unspec(sourcenode) }}</td></tr>
+<tr><td>Source Node</td><td>{{ unspec(get('source-node')) }}</td></tr>
 <tr><td>Destination</td><td>{{ unspec(dest) }}</td></tr>
-<tr><td>Destination Node</td><td>{{ unspec(destnode) }}</td></tr>
+<tr><td>Destination Node</td><td>{{ unspec(get('dest-node')) }}</td></tr>
 {%- if schema >= 2 %}
-<tr><td>IP Version</td><td>{{ unspec(ipversion) }}</td></tr>
+<tr><td>IP Version</td><td>{{ unspec(get('ip-version')) }}</td></tr>
 {%- endif -%}
 {%- if schema >= 3 %}
 <tr><td>Port</td><td>{{ unspec(port) }}</td></tr>
 {%- endif -%}
-<tr><td>Test Material</td><td>{{ unspec(testmaterial) }}</td></tr>
+<tr><td>Test Material</td><td>{{ unspec(get('test-material')) }}</td></tr>
 <tr><td>Dawdle</td><td>{{ unspec(dawdle) }}</td></tr>
 <tr><td>Timeout</td><td>{{ unspec(timeout) }}</td></tr>
 <tr><td>Failure Probability</td><td>{{ unspec(fail) }}</td></tr>

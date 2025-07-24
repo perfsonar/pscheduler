@@ -13,7 +13,7 @@ TEMPLATE='''
 
 Destination ... {{ unspec(dest) }}
 Source ........ {{ unspec(source) }}
-Source Node ... {{ unspec(sourcenode) }}
+Source Node ... {{ unspec(get('source-node')) }}
 Timeout ....... {{ unspec(timeout) }}
 
 {% elif _mime_type == 'text/html' %}
@@ -21,7 +21,7 @@ Timeout ....... {{ unspec(timeout) }}
 <table>
 <tr><td>Destination</td><td>{{ unspec(dest) }}</td></tr>
 <tr><td>Source</td><td>{{ unspec(source) }}</td></tr>
-<tr><td>Source Node</td><td>{{ unspec(sourcenode) }}</td></tr>
+<tr><td>Source Node</td><td>{{ unspec(get('source-node')) }}</td></tr>
 <tr><td>Timeout</td><td>{{ unspec(timeout) }}</td></tr>
 </table>
 

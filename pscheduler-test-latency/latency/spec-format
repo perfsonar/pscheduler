@@ -13,61 +13,61 @@ TEMPLATE='''
 {% if _mime_type == 'text/plain' %}
 
 Source ............... {{ unspec(source) }}
-Source Node .......... {{ unspec(sourcenode) }}
+Source Node .......... {{ unspec(get('source-node')) }}
 Destination .......... {{ unspec(dest) }}
-Destination Node ..... {{ unspec(destnode) }}
+Destination Node ..... {{ unspec(get('dest-node')) }}
 {% if schema >= 4 -%}
 Protocol ............. {{ unspec(protocol) }}
 {%- endif %}
-Packet Count ......... {{ unspec(packetcount) }}
-Packet Interval ...... {{ unspec(packetinterval) }}
-Packet Timeout ....... {{ unspec(packettimeout) }}
-Packet Padding ....... {{ unspec(packetpadding) }}
-Control Port ......... {{ unspec(ctrlport) }}
-{%- if dataports is defined %}
-Data Ports ........... {{ unspec(dataports.lower) }}-{{ unspec(dataports.upper) }}
+Packet Count ......... {{ unspec(get('packet-count')) }}
+Packet Interval ...... {{ unspec(get('packet-interval')) }}
+Packet Timeout ....... {{ unspec(get('packet-timeout')) }}
+Packet Padding ....... {{ unspec(get('packet-padding')) }}
+Control Port ......... {{ unspec(get('ctrl-port')) }}
+{%- if get('data-ports') is defined %}
+Data Ports ........... {{ unspec(get('data-ports').lower) }}-{{ unspec(get('data-ports').upper) }}
 {%- else %}
 Data Ports ........... {{ unspec(not_specified) }}
 {%- endif %}
-IP TOS ............... {{ unspec(iptos) }}
-IP Version ........... {{ unspec(ipversion) }}
-Bucket Width ......... {{ unspec(bucketwidth) }}
-Output Raw Packets ... {{ unspec(outputraw) }}
+IP TOS ............... {{ unspec(get('ip-tos')) }}
+IP Version ........... {{ unspec(get('ip-version')) }}
+Bucket Width ......... {{ unspec(get('bucket-width')) }}
+Output Raw Packets ... {{ unspec(get('output-raw')) }}
 Flip Mode ............ {{ unspec(flip) }}
 {% if schema >= 2 -%}
 Reverse .............. {{ unspec(reverse) }}
 {%- endif %}
 {% if schema >= 3 -%}
-NAT Traversal ........ {{ unspec(traversenat) }}
+NAT Traversal ........ {{ unspec(get('traverse-nat')) }}
 {%- endif %}
 
 {% elif _mime_type == 'text/html' %}
 
 <table>
 <tr><td>Source</td><td>{{ unspec(source) }}</td></tr>
-<tr><td>Source Node</td><td>{{ unspec(sourcenode) }}</td></tr>
+<tr><td>Source Node</td><td>{{ unspec(get('source-node')) }}</td></tr>
 <tr><td>Destination</td><td>{{ unspec(dest) }}</td></tr>
-<tr><td>Destination Node</td><td>{{ unspec(destnode) }}</td></tr>
-<tr><td>Packet Count</td><td>{{ unspec(packetcount) }}</td></tr>
-<tr><td>Packet Interval</td><td>{{ unspec(packetinterval) }}</td></tr>
-<tr><td>Packet Timeout</td><td>{{ unspec(packettimeout) }}</td></tr>
-<tr><td>Packet Padding</td><td>{{ unspec(packetpadding) }}</td></tr>
-<tr><td>Control Port</td><td>{{ unspec(ctrlport) }}</td></tr>
-{%- if dataports is defined %}
-<tr><td>Data Ports</td><td>{{ unspec(dataports.lower) }}-{{ unspec(dataports.upper) }}</td></tr>
+<tr><td>Destination Node</td><td>{{ unspec(get('dest-node')) }}</td></tr>
+<tr><td>Packet Count</td><td>{{ unspec(get('packet-count')) }}</td></tr>
+<tr><td>Packet Interval</td><td>{{ unspec(get('packet-interval')) }}</td></tr>
+<tr><td>Packet Timeout</td><td>{{ unspec(get('packet-timeout')) }}</td></tr>
+<tr><td>Packet Padding</td><td>{{ unspec(get('packet-padding')) }}</td></tr>
+<tr><td>Control Port</td><td>{{ unspec(get('ctrl-port')) }}</td></tr>
+{%- if get('data-ports') is defined %}
+<tr><td>Data Ports</td><td>{{ unspec(get('data-ports').lower) }}-{{ unspec(get('data-ports').upper) }}</td></tr>
 {%- else %}
 <tr><td>Data Ports</td><td>{{ unspec(not_specified) }}</td></tr>
 {%- endif %}
-<tr><td>IP TOS</td><td>{{ unspec(iptos) }}</td></tr>
-<tr><td>IP Version</td><td>{{ unspec(ipversion) }}</td></tr>
-<tr><td>Bucket Width</td><td>{{ unspec(bucketwidth) }}</td></tr>
-<tr><td>Output Raw Packets</td><td>{{ unspec(outputraw) }}</td></tr>
+<tr><td>IP TOS</td><td>{{ unspec(get('ip-tos')) }}</td></tr>
+<tr><td>IP Version</td><td>{{ unspec(get('ip-version')) }}</td></tr>
+<tr><td>Bucket Width</td><td>{{ unspec(get('bucket-width')) }}</td></tr>
+<tr><td>Output Raw Packets</td><td>{{ unspec(get('output-raw')) }}</td></tr>
 <tr><td>Flip Mode</td><td>{{ unspec(flip) }}</td></tr>
 {% if schema >= 2 -%}
 <tr><td>Reverse</td><td>{{ unspec(reverse) }}</td></tr>
 {%- endif %}
 {% if schema >= 3 -%}
-<tr><td>NAT Traversal</td><td>{{ unspec(traversenat) }}</td></tr>
+<tr><td>NAT Traversal</td><td>{{ unspec(get('traverse-nat')) }}</td></tr>
 {%- endif %}
 </table>
 

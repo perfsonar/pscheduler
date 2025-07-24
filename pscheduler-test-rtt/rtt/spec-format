@@ -13,9 +13,9 @@ TEMPLATE='''
 {% if _mime_type == 'text/plain' %}
 
 Source ........................ {{ unspec(source) }}
-Source Node ................... {{ unspec(sourcenode) }}
+Source Node ................... {{ unspec(get('source-node')) }}
 Destination ................... {{ unspec(dest) }}
-IP Version .................... {{ unspec(ipversion) }}
+IP Version .................... {{ unspec(get('ip-version')) }}
 {%- if schema >= 2 %}
 Protocol ...................... {{ unspec(protocol) }}
 {%- endif -%}
@@ -24,14 +24,14 @@ Port .......................... {{ unspec(port) }}
 {% endif -%}
 Packet Count .................. {{ unspec(count) }}
 Interval ...................... {{ unspec(interval) }}
-Flow Label .................... {{ unspec(flowlabel) }}
-Suppress Multicast Loopback ... {{ unspec(suppressloopback) }}
+Flow Label .................... {{ unspec(get('flow-label')) }}
+Suppress Multicast Loopback ... {{ unspec(get('suppress-loopback')) }}
 Packet Length ................. {{ unspec(length) }}
 {%- if schema >= 3 %}
 Fragment ...................... {{ unspec(fragment) }}
 {% endif -%}
 Time to Live .................. {{ unspec(ttl) }}
-IP Type of Service ............ {{ unspec(iptos) }}
+IP Type of Service ............ {{ unspec(get('ip-tos')) }}
 Deadline ...................... {{ unspec(deadline) }}
 Timeout ....................... {{ unspec(timeout) }}
 Resolve Hostnames ............. {{ unspec(hostnames) }}
@@ -40,9 +40,9 @@ Resolve Hostnames ............. {{ unspec(hostnames) }}
 
 <table>
 <tr><td>Source</td><td>{{ unspec(source) }}</td></tr>
-<tr><td>Source Node</td><td>{{ unspec(sourcenode) }}</td></tr>
+<tr><td>Source Node</td><td>{{ unspec(get('source-node')) }}</td></tr>
 <tr><td>Destination</td><td>{{ unspec(dest) }}</td></tr>
-<tr><td>IP Version</td><td>{{ unspec(ipversion) }}</td></tr>
+<tr><td>IP Version</td><td>{{ unspec(get('ip-version')) }}</td></tr>
 {%- if schema >= 2 %}
 <tr><td>Protocol</td><td>{{ unspec(protocol) }}</td></tr>
 {% endif -%}
@@ -51,14 +51,14 @@ Resolve Hostnames ............. {{ unspec(hostnames) }}
 {% endif -%}
 <tr><td>Packet Count</td><td>{{ unspec(count) }}</td></tr>
 <tr><td>Interval</td><td>{{ unspec(interval) }}</td></tr>
-<tr><td>Flow Label</td><td>{{ unspec(flowlabel) }}</td></tr>
-<tr><td>Suppress Multicast Loopback</td><td>{{ unspec(suppressloopback) }}</td></tr>
+<tr><td>Flow Label</td><td>{{ unspec(get('flow-label')) }}</td></tr>
+<tr><td>Suppress Multicast Loopback</td><td>{{ unspec(get('suppress-loopback')) }}</td></tr>
 <tr><td>Packet Length</td><td>{{ unspec(length) }}</td></tr>
 {%- if schema >= 3 %}
 <tr><td>Fragment</td><td>{{ unspec(fragment) }}</td></tr>
 {% endif -%}
 <tr><td>Time to Live</td><td>{{ unspec(ttl) }}</td></tr>
-<tr><td>IP Type of Service</td><td>{{ unspec(iptos) }}</td></tr>
+<tr><td>IP Type of Service</td><td>{{ unspec(get('ip-tos')) }}</td></tr>
 <tr><td>Deadline</td><td>{{ unspec(deadline) }}</td></tr>
 <tr><td>Timeout</td><td>{{ unspec(timeout) }}</td></tr>
 <tr><td>Resolve Hostnames</td><td>{{ unspec(hostnames) }}</td></tr>

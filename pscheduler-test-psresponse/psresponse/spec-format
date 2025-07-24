@@ -12,7 +12,7 @@ TEMPLATE='''
 {% if _mime_type == 'text/plain' %}
 
 Source ........ {{ unspec(source) }}
-Source Node ... {{ unspec(sourcenode) }}
+Source Node ... {{ unspec(get('source-node') }}
 Destination ... {{ unspec(dest) }}
 Timeout ....... {{ unspec(timeout) }}
 

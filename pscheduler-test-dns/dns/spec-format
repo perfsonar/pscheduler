@@ -12,7 +12,7 @@ TEMPLATE='''
 {% if _mime_type == 'text/plain' %}
 
 Host ......... {{ unspec(host) }}
-Host Node .... {{ unspec(hostnode) }}
+Host Node .... {{ unspec(get('host-node')) }}
 Nameserver ... {{ unspec(nameserver) }}
 Record ....... {{ unspec(record) }}
 Query ........ {{ unspec(query) }}
@@ -22,7 +22,7 @@ Timeout ...... {{ unspec(timeout) }}
 
 <table>
 <tr><td>Host</td><td>{{ unspec(host) }}</td></tr>
-<tr><td>Host Node</td><td>{{ unspec(hostnode) }}</td></tr>
+<tr><td>Host Node</td><td>{{ unspec(get('host-node')) }}</td></tr>
 <tr><td>Nameserver</td><td>{{ unspec(nameserver) }}</td></tr>
 <tr><td>Record</td><td>{{ unspec(record) }}</td></tr>
 <tr><td>Query</td><td>{{ unspec(query) }}</td></tr>
