@@ -18,6 +18,7 @@ data_validator = {
     "type": "object",
     "properties": {
         "source": { "$ref": "#/pScheduler/URL" },
+        "proxy": { "$ref": "#/pScheduler/URL" },
         "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
         "bind": { "$ref": "#/pScheduler/Host" },
         "transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
@@ -69,7 +70,7 @@ class IdentifierIPCIDRListURL(object):
         """
 
         status, text = url_get(self.source, bind=self.bind,
-                               json=False, throw=False)
+                               json=False, throw=False, proxy=self.proxy)
 
         possible_next_attempt = datetime.datetime.now() + self.retry
 
@@ -146,6 +147,7 @@ class IdentifierIPCIDRListURL(object):
             raise ValueError("Invalid data: %s" % message)
 
         self.source = data['source']
+        self.proxy = data.get('proxy', None)
         self.bind = data.get('bind', None)
         self.update = iso8601_as_timedelta(data['update'])
         self.retry = iso8601_as_timedelta(data['retry'])
