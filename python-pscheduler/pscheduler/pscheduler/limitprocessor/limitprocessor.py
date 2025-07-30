@@ -88,15 +88,16 @@ class LimitProcessor(object):
 
         url_parsed = None
         try:
-            url_parsed = urlparse(limit_file_contents)
+            url_parsed = urlparse(limit_file_contents.split('\n')[0])
         except UnicodeDecodeError:
             # If it doesn't look like a URL, make the next block skip
             # it.
             pass
 
         if url_parsed is not None and url_parsed.scheme != '' and url_parsed.scheme != b'':
-            url = limit_file_contents
-            status, limit_file_contents = url_get(limit_file_contents, throw=False, json=False)
+            url = limit_file_contents.split('\n')[0]
+            proxy = None if len(limit_file_contents.split('\n')) != 2 else limit_file_contents.split('\n')[1]
+            status, limit_file_contents = url_get(url=url, throw=False, json=False, proxy=proxy)
             if status != 200:
                 raise ValueError("Unable to load limit configuration from %s: Status %d" % (url, status))
 
