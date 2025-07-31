@@ -86,21 +86,45 @@ class LimitProcessor(object):
         # Try to parse it as a URL.  If it's got a scheme, fetch it
         # and replace the contents with that.
 
-        url_parsed = None
+        check_url = False
         try:
-            url_parsed = urlparse(limit_file_contents.split('\n')[0])
-        except UnicodeDecodeError:
-            # If it doesn't look like a URL, make the next block skip
-            # it.
-            pass
+            _ = json_load(limit_file_contents)
+        except:
+            # not a valid JSON, maybe a URL
+            check_url = True
 
-        if url_parsed is not None and url_parsed.scheme != '' and url_parsed.scheme != b'':
-            url = limit_file_contents.split('\n')[0]
-            proxy = None if len(limit_file_contents.split('\n')) != 2 else limit_file_contents.split('\n')[1]
-            status, limit_file_contents = url_get(url=url, throw=False, json=False, proxy=proxy)
-            if status != 200:
-                raise ValueError("Unable to load limit configuration from %s: Status %d" % (url, status))
-
+        
+        if check_url:
+            stripped_lines = [x.strip() for x in limit_file_contents.split('\n') if x.strip() != '']
+            if len(stripped_lines) == 0:
+                raise ValueError('Limits configuration is empty')
+            
+            if len(stripped_lines) <= 2:
+                # 1 line URL
+                # 2 lines URL and proxy
+                # > 2 lines, most likely a invalid JSON
+                url_parsed = None
+                proxy_parsed = None
+                try:
+                    url_parsed = urlparse(stripped_lines[0])
+                    if len(stripped_lines) == 2:
+                        proxy_parsed = urlparse(stripped_lines[1])
+                except Exception as ex:
+                    raise ValueError(f'Failed to parse URL or proxy string in limits configuration: {ex}')
+                
+                if url_parsed is None or url_parsed.scheme == '' or url_parsed.scheme == b'' or url_parsed.netloc == '':
+                    raise ValueError(f'URL string in limits configuration is invalid: {stripped_lines[0]} . Should be something like: https://example.com...')
+            
+                if len(stripped_lines) == 2:
+                    if proxy_parsed is None or proxy_parsed.scheme == '' or proxy_parsed.scheme == b'' or proxy_parsed.netloc == '':
+                        raise ValueError(f'Proxy string in limits configuration is invalid: {stripped_lines[1]} . Should be something like: http://user:pass@example.com:8080...')
+                
+                url = stripped_lines[0]
+                proxy = stripped_lines[1] if len(stripped_lines) == 2 else None
+                status, limit_file_contents = url_get(url=url, throw=False, json=False, proxy=proxy)
+                if status != 200:
+                    tmp_msg = '' if proxy is None else f' (using proxy {proxy})'
+                    raise ValueError(f'Unable to load limit configuration from {url}{tmp_msg}: Status {status}')
 
         # Parse it.
 
