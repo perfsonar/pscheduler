@@ -34,6 +34,20 @@ def arg_datetime(name):
     return timestamp
 
 
+def arg_duration(name):
+    """Fetch and validate an argument as an ISO8601 duration,
+    returning a timedelta if specificed, None if not and throwing a
+    ValueError if invalid."""
+    argval = request.args.get(name)
+    if argval is None:
+        return None
+    try:
+        duration = pscheduler.iso8601_as_timedelta(argval)
+    except ValueError:
+        raise ValueError("Invalid duration; expecting ISO8601.")
+    return duration
+
+
 def arg_cardinal(name):
     """Fetch and validate an argument as a cardinal number."""
     argval = request.args.get(name)
