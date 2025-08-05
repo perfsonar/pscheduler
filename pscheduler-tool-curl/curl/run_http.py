@@ -4,9 +4,13 @@
 
 import io
 import datetime
+import pscheduler
 import pycurl
 
-import pscheduler
+from urllib.parse import urlparse
+
+from utilities import file_ok
+
 
 def run(input):
 
@@ -31,22 +35,15 @@ def run(input):
     # Choke on anything that would allow insight into the contents of
     # local files.
 
-    if source[0:5] == "file:":
+    parsed_url = urlparse(source)
 
-        if keep_content is not None:
+    if parsed_url.scheme == 'file':
+        reasons = file_ok(parsed_url.path)
+        if reasons:
             return({
-                "succeeded": False,
-                "error": "Cannot keep content from file:// URLs",
-                "diags": None
+                'succeeded': False,
+                'error': '\n'.join(reasons)
             })
-
-        if input['test']['spec'].get("parse", None):
-            return({
-                "succeeded": False,
-                "error": "Cannot parse content from file:// URLs",
-                "diags": None
-            })
-
 
 
     succeeded = False
