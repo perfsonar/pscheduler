@@ -5,7 +5,6 @@ Functions for dealing with ISO 8601 timestamps and intervals
 import datetime
 import isodate
 
-from tzlocal import get_localzone
 from dateutil.tz import tzlocal
 
 
@@ -30,7 +29,7 @@ def iso8601_as_datetime(iso,
     try:
         parsed = isodate.parse_datetime(iso)
         if localize and parsed.tzinfo is None:
-            parsed = get_localzone().localize(parsed)
+            parsed = parsed.astimezone(tzlocal())
         return parsed
     except isodate.isoerror.ISO8601Error as ex:
         raise ValueError("Invalid ISO8601 date")

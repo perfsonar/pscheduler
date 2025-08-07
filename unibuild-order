@@ -85,7 +85,6 @@ ifelse(DISTRO/eval(MAJOR > 21),Ubuntu/1,,		# Ubuntu 22 and up have a newer versi
        python-py-amqp)
 python-py-radix
 python-pyjq
-python-tzlocal
 python-vcversioner
 # TODO: We were building this; EL9 has a newer version.
 python-pyasn1						# EL8 has this, ours is newer
