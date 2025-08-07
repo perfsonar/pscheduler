@@ -537,6 +537,7 @@ for host in hosts:
         continue
 
     start("  Exercising API")
+    results = {}
     for test in [
             ("archivers", "Archivers", False),
             ("contexts", "Contexts", False),
@@ -548,6 +549,7 @@ for host in hosts:
         status, result = pscheduler.url_get(
             pscheduler.api_url(host, endpoint),
             throw=False)
+        results[test[0]] = result
         if status not in [ 200, 404 ] or (status == 404 and not ok_404):
             failed(result)
     ok()
@@ -560,37 +562,74 @@ for host in hosts:
 
 
     if not options.quick:
-        run_task("  Idle test", host,
-                 {
-                     "schema": 1,
-                     "test": {
-                         "spec": {
-                             "duration": "PT1S",
-                             "schema": 1
+        test_type = "idle"
+        for test in results["tests"]:
+            if test[-4:] == "noop":
+                test_type = "noop"
+                break
+        if test_type == "noop":
+            run_task("  Noop test", host,
+                     {
+                         "schema": 1,
+                         "test": {
+                             "spec": {
+                                 "schema": 1
+                             },
+                             "type": "noop"
                          },
-                         "type": "idle"
-                     },
-                     "schedule": {},
-                     "archives": [
-                         {
-                             "archiver": "bitbucket",
-                             "data": {},
-			     "transform": {
-				 "script": "."
-			     },
-                             "ttl": "PT1M"
+                         "schedule": {},
+                         "archives": [
+                             {
+                                 "archiver": "bitbucket",
+                                 "data": {},
+                                 "transform": {
+                                     "script": "."
+                                 },
+                                 "ttl": "PT1M"
+                             },
+                             {
+                                 "archiver": "bitbucket",
+                                 "data": {},
+                                 "transform": {
+                                     "script": "."
+                                 },
+                                 "ttl": "PT1M"
+                             }
+                         ],
+                     }
+                 )
+        else:
+                 run_task("  Idle test", host,
+                     {
+                         "schema": 1,
+                         "test": {
+                             "spec": {
+                                 "duration": "PT1S",
+                                 "schema": 1
+                             },
+                             "type": "idle"
                          },
-                         {
-                             "archiver": "bitbucket",
-                             "data": {},
-			     "transform": {
-				 "script": "."
-			     },
-                             "ttl": "PT1M"
-                         }
-                     ],
-                 }
-             )
+                         "schedule": {},
+                         "archives": [
+                             {
+                                 "archiver": "bitbucket",
+                                 "data": {},
+                                 "transform": {
+                                     "script": "."
+                                 },
+                                 "ttl": "PT1M"
+                             },
+                             {
+                                 "archiver": "bitbucket",
+                                 "data": {},
+                                 "transform": {
+                                     "script": "."
+                                 },
+                                 "ttl": "PT1M"
+                             }
+                         ],
+                     }
+                 )
 
 
 
