@@ -1,5 +1,5 @@
 # extra python packages for testing/etc.
-nose
+nose2
 coverage
 pylint
 -e .

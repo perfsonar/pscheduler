@@ -2,8 +2,8 @@
 # RPM Spec for Python pScheduler Module
 #
 
-%define perfsonar_auto_version 5.2.0
-%define perfsonar_auto_relnum 0.1.b1
+%define perfsonar_auto_version 5.3.0
+%define perfsonar_auto_relnum 0.a1.0
 
 %define short	pscheduler
 Name:		%{_pscheduler_python}-%{short}
@@ -46,12 +46,13 @@ Requires:	%{_pscheduler_python}-pyjq >= 2.2.0
 Requires:	rsyslog
 Requires:	logrotate
 Requires:       numactl
+Requires:	traceroute
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:  %{_pscheduler_python}
 BuildRequires:	%{_pscheduler_python}-coverage
-BuildRequires:	%{_pscheduler_python}-nose
+BuildRequires:	%{_pscheduler_python}-nose2
 BuildRequires:	%{_pscheduler_python}-setuptools
 # NOTE:  Cloned from above.
 BuildRequires:	iputils
@@ -71,6 +72,7 @@ BuildRequires:	pscheduler-jq-library
 BuildRequires:	%{_pscheduler_python}-pycurl
 BuildRequires:	%{_pscheduler_python}-pyjq >= 2.2.0
 BuildRequires:  numactl
+BuildRequires:  traceroute
 
 %define limit_config %{_pscheduler_sysconfdir}/limits.conf
 %define logdir %{_var}/log/pscheduler

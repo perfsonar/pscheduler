@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+#
+# Development Order #9:
+#
+# This will format a test spec into something that is human readable.
+#
+# To test this file, a spec is needed. You can generate one with
+# cli-to-spec or modify inputs/spec-format after you've written
+# it.
+#
+# Invoke this program as follows:
+#
+#
+# ./spec-format text/plain < inputs/spec-format
+# ./spec-format text/html < inputs/spec-format
+#
+
+import pscheduler
+
+from validate import spec_is_valid
+from validate import MAX_SCHEMA
+
+# This is a Jinja2 template with the contents of the test
+# specification provided as variables.
+#
+# See the documentation for spec_result_method() in
+# python-pscheduler/pscheduler/pscheduler/text.py for a list of
+# variables and functions provided.
+
+TEMPLATE='''
+{# If dealing with a spec that has multiple schemas, do this:
+  {%- set schema = 1 if schema is undefined else schema -%}
+#}
+
+{% if _mime_type == 'text/plain' %}
+
+Query ............. {{ unspec(query) }}
+Nameserver ........ {{ unspec(nameserver) }}
+Host ............. {{ unspec(host) }}
+Host node ............. {{ unspec(hostnode) }}
+Translation prefix ......... {{ unspec(translationprefix) }}
+Timeout .......... {{ unspec(timeout) }}
+
+
+{% elif _mime_type == 'text/html' %}
+
+<table>
+<tr><td>Query</td><td>{{ unspec(query) }}</td></tr>
+<tr><td>Nameserver</td><td>{{ unspec(nameserver) }}</td></tr>
+<tr><td>Host</td><td>{{ unspec(host) }}</td></tr>
+<tr><td>Host node</td><td>{{ unspec(hostnode) }}</td></tr>
+<tr><td>Translation prefix</td><td>{{ unspec(translationprefix) }}</td></tr>
+<tr><td>Timeout</td><td>{{ unspec(timeout) }}</td></tr>
+
+</table>
+
+{% else %}
+
+{{ error('Unsupported MIME type "' + _mime_type + '"') }}
+
+{% endif %}
+'''
+
+pscheduler.spec_format_method(TEMPLATE, max_schema=MAX_SCHEMA, validator=spec_is_valid)

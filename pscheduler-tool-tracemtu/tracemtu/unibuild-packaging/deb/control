@@ -1,0 +1,15 @@
+Source: pscheduler-tool-tracemtu
+Section: net
+Priority: optional
+Maintainer: perfSONAR developers <debian@perfsonar.net>
+Build-Depends: debhelper (>= 10)
+Standards-Version: 3.9.8
+Homepage: https://github.com/perfsonar/pscheduler
+Vcs-Git: git://github.com/perfsonar/pscheduler
+Vcs-Browser: https://github.com/perfsonar/pscheduler
+
+Package: pscheduler-tool-tracemtu
+Architecture: all
+Depends: ${misc:Depends}, python3, python3-pscheduler,
+ pscheduler-server, pscheduler-test-mtu
+Description: pScheduler traceroute-based MTU tool

@@ -30,6 +30,6 @@ setup(
     include_package_data=True,
     package_data={'pscheduler.limitprocessor': ['*.json']},
 
-    tests_require=['nose'],
-    test_suite='nose.collector',
+    tests_require=['nose2'],
+    test_suite='nose2.collector.collector',
 )

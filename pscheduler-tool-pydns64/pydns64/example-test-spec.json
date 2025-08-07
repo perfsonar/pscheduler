@@ -1,0 +1,19 @@
+{
+  "test": {
+    "type": "dns64",
+    "spec": {
+      "query": "v4onlytest.notonthe.net",
+      "nameserver": "2001:4860:4860::64",
+      "translation-prefix": "64:ff9b::/96",
+      "timeout": "PT15S",
+      "schema": 1
+    }
+  },
+  "schema": 1,
+  "tool": "pydns64",
+  "href": "https://localhost.localdomain/pscheduler/tasks/d0035107-6ef0-4cc7-83b4-19367b502bfc",
+  "schedule": {
+    "slip": "PT5M"
+  }
+}
+

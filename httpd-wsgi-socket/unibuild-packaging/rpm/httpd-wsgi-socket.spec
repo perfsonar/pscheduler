@@ -16,6 +16,8 @@ Group:		Unspecified
 
 Provides:	%{name} = %{version}-%{release}
 
+# mod_wsgi doesn't appear to depend on this.
+Requires:	httpd
 Requires:	mod_wsgi
 Requires:	rpm-post-wrapper
 

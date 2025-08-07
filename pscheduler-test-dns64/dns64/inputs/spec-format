@@ -1,0 +1,7 @@
+{
+    "query": "ipv4.me",
+    "nameserver": "2001:4860:4860::64",
+    "host": "foo.example.com",
+    "translation-prefix": "64:ff9b::/96",
+    "timeout": "PT15S"
+}

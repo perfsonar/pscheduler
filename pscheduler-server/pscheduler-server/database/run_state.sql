@@ -72,6 +72,39 @@ BEGIN
     END IF;
 
 
+    -- Version 3 to version 4
+    IF t_version = 3
+    THEN
+
+        -- Indicates whether upper(times) of a run should be updated
+        -- upon reaching a finished state.
+
+	ALTER TABLE run_state ADD COLUMN
+        update_times BOOLEAN DEFAULT NULL
+
+	-- In this upgrade (released with 5.2.1), adding this
+	-- constraint caused a fatal failure in the the upgrade (and a
+	-- non-functioning system) because the DEFAULT NULL added to
+	-- each row caused some to not meet the constraint.  No
+	-- upgrade to 5.2.1 will have succeeded because the entire
+	-- database will have been rolled back to its 5.2.0 state
+	-- (with this table still at version 3).  Any post-5.2.1
+	-- package will do the 3-to-4 upgrade, hopefully correctly.
+	--
+	-- This commented-out code is being left here as a cautionary
+	-- tale.
+	--
+	-- CONSTRAINT update_times_nullness CHECK (
+	--    (NOT finished AND update_times IS NULL)
+	--    OR 	(finished AND update_times IS NOT NULL)
+	-- )
+
+	;
+
+        t_version := t_version + 1;
+    END IF;
+
+
     --
     -- Cleanup
     --

@@ -41,7 +41,7 @@ help you make progress in developing it._
 
 1. Obtain output JSON
 
--The easiest way to do this is to use the syslog archiver provided by pScheduler (https://github.com/perfsonar/pscheduler/wiki/Archivers#syslog)
+-The easiest way to do this is to use the syslog archiver provided by pScheduler (https://docs.perfsonar.net/pscheduler_ref_archivers.html#syslog)
 Run a pScheduler task of your choice (a good default choice is idle) and output to the syslog archiver. The syslog archiver 
 will generate a JSON blob of output that you can then use with your archiver. To access the output from the syslog archiver 
 type in 
@@ -51,7 +51,9 @@ type in
  2. Create basic JSON for your archiver
  
  -The JSON piped directly into the archiver has two main parts: the archiver input that is fed to every archiver and the output from the task. To create a JSON file with all the data your archiver needs, simply follow this template used by 
- pScheduler when it generates the JSON that is actually used by an archiver when used normally: https://github.com/perfsonar/pscheduler/blob/b1e76b88c0ec712b43b01bb51e47575f40e0d49c/pscheduler-server/pscheduler-server/daemons/archiver.raw#L588
+ pScheduler when it generates the JSON that is actually used by an archiver when used normally: 
+
+ https://github.com/perfsonar/pscheduler/blob/b1e76b88c0ec712b43b01bb51e47575f40e0d49c/pscheduler-server/pscheduler-server/daemons/archiver.raw#L588-L612
  
  -Only insert the fields you actually need. ```archiver-data``` will be replaced with a JSON blob that contains the actual data fields your archiver is expecting to see as input. Everything else can be filled in from the output JSON blob generated 
  by the syslog archiver. Delete any fields that are unnecessary based on the task you ran.
