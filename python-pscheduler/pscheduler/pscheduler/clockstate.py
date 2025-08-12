@@ -180,7 +180,7 @@ def _ntp_status():
 
     found = False
     for proc in psutil.process_iter(['name']):
-        if proc.info['name'].startswith('ntp'):
+        if proc.info.get('name', '').startswith('ntp'):
             found = True
             break
 
