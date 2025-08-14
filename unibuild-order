@@ -108,7 +108,7 @@ httpd-wsgi-socket
 drop-in
 json2pickle
 
-jsonschema-tool
+jsonschematool
 
 #
 # PSCHEDULER CORE PARTS
