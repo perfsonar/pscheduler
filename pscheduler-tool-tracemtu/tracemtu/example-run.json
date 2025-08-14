@@ -1,0 +1,13 @@
+{
+    "test": {
+        "spec": {
+            "schema": 2,
+            "dest": "www.umich.edu",
+	    "ip-version": 4
+        }, 
+        "type": "mtu"
+    },
+    "schedule": {
+        "start": "2021-06-19T00:00:00Z"
+    }
+}

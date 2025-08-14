@@ -12,8 +12,8 @@ import re
 import shutil
 import sys
 import time
-import pytz
 from subprocess import call
+from dateutil import tz
 
 #output contants
 DELAY_BUCKET_DIGITS = 2 #number of digits to round delay buckets
@@ -113,7 +113,7 @@ def handle_run_error(emitter, msg, diags=None, do_log=True, exception=False):
 # Calculates time to sleep or returns True if end time reached
 def sleep_or_end(seconds, end_time, parent_pid):
     #determine if we need to exit
-    now = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
+    now = datetime.datetime.now(tz=tz.UTC)
     if now >= end_time:
         #check if we are at or beyond endtime
         return True

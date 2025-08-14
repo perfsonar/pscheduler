@@ -3,7 +3,7 @@
 #
 
 %define short	esmond
-%define perfsonar_auto_version 5.2.0
+%define perfsonar_auto_version 5.3.0
 %define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-archiver-esmond
@@ -30,7 +30,7 @@ Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:  %{_pscheduler_python}-pscheduler
-BuildRequires:  %{_pscheduler_python}-nose
+BuildRequires:  %{_pscheduler_python}-nose2
 
 %define directory %{_includedir}/make
 

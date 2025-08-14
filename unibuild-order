@@ -77,9 +77,6 @@ ifelse(FAMILY/eval(MAJOR <= 8),RedHat/1,python-jsonschema)  # Only build on EL8 
 python-kafka
 python-nmap3
 
-# TODO: This was deprecated after EL8.  Switch to something new.
-ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-nose)
-
 ifelse(FAMILY/eval(MAJOR >= 9),RedHat/1,python-ntplib)
 python-parse-crontab
 python-vine
@@ -88,7 +85,6 @@ ifelse(DISTRO/eval(MAJOR > 21),Ubuntu/1,,		# Ubuntu 22 and up have a newer versi
        python-py-amqp)
 python-py-radix
 python-pyjq
-python-tzlocal
 python-vcversioner
 # TODO: We were building this; EL9 has a newer version.
 python-pyasn1						# EL8 has this, ours is newer
@@ -162,6 +158,7 @@ pscheduler-test-clock
 pscheduler-test-dhcp			--bundle extras
 pscheduler-test-disk-to-disk		--bundle extras
 pscheduler-test-dns
+pscheduler-test-dns64
 pscheduler-test-dot1x			--bundle extras
 pscheduler-test-http
 pscheduler-test-latency
@@ -239,6 +236,7 @@ pscheduler-tool-ping
 pscheduler-tool-psclock
 pscheduler-tool-pstimer
 pscheduler-tool-psurl			--bundle obsolete
+pscheduler-tool-pydns64
 pscheduler-tool-pysnmp			--bundle snmp
 
 define(HAVE_S3_BENCHMARK,ifelse(HAVE_GOLANG,0,0,
@@ -254,6 +252,7 @@ pscheduler-tool-simplestreamer
 tcpping
 pscheduler-tool-tcpping
 
+pscheduler-tool-tracemtu
 pscheduler-tool-tracepath
 pscheduler-tool-traceroute
 pscheduler-tool-umichwpa		--bundle extras

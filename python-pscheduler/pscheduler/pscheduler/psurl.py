@@ -27,7 +27,7 @@ class URLException(Exception):
 
 class PycURLRunner(object):
 
-    def __init__(self, url, params, bind, timeout, allow_redirects, headers, verify_keys):
+    def __init__(self, url, params, bind, timeout, allow_redirects, headers, verify_keys, proxy=None):
         """Constructor"""
 
         self.curl = pycurl.Curl()
@@ -57,6 +57,8 @@ class PycURLRunner(object):
         self.buf = io.BytesIO()
         self.curl.setopt(pycurl.WRITEFUNCTION, self.buf.write)
 
+        if proxy is not None:
+            self.curl.setopt(pycurl.PROXY, proxy)
 
 
     def __call__(self, json, throw):
@@ -107,13 +109,14 @@ def url_get( url,          # GET URL
              timeout=None, # Seconds before giving up
              allow_redirects=True, # Allows URL to be redirected
              headers=None, # Hash of HTTP headers
-             verify_keys=verify_keys_default  # Verify SSL keys
+             verify_keys=verify_keys_default,  # Verify SSL keys
+             proxy=None  # Proxy string
              ):
     """
     Fetch a URL using GET with parameters, returning whatever came back.
     """
 
-    curl = PycURLRunner(url, params, bind, timeout, allow_redirects, headers, verify_keys)
+    curl = PycURLRunner(url, params, bind, timeout, allow_redirects, headers, verify_keys, proxy)
     return curl(json, throw)
 
 
@@ -155,7 +158,8 @@ def url_post( url,          # GET URL
               timeout=None, # Seconds before giving up
               allow_redirects=True, #Allows URL to be redirected
               headers={},   # Hash of HTTP headers
-              verify_keys=verify_keys_default  # Verify SSL keys
+              verify_keys=verify_keys_default,  # Verify SSL keys
+              proxy=None  # Proxy string
               ):
     """
     Post to a URL, returning whatever came back.
@@ -164,7 +168,7 @@ def url_post( url,          # GET URL
     content_type, data = __content_type_data(content_type, headers, data)
     headers["Content-Type"] = content_type
 
-    curl = PycURLRunner(url, params, bind, timeout, allow_redirects, headers, verify_keys)
+    curl = PycURLRunner(url, params, bind, timeout, allow_redirects, headers, verify_keys, proxy)
 
     curl.curl.setopt(pycurl.POSTFIELDS, data)
 
@@ -182,7 +186,8 @@ def url_put( url,          # GET URL
              timeout=None, # Seconds before giving up
              allow_redirects=True, #Allows URL to be redirected
              headers={},   # Hash of HTTP headers
-             verify_keys=verify_keys_default  # Verify SSL keys
+             verify_keys=verify_keys_default,  # Verify SSL keys
+             proxy=None  # Proxy string
              ):
     """
     PUT to a URL, returning whatever came back.
@@ -191,7 +196,7 @@ def url_put( url,          # GET URL
     content_type, data = __content_type_data(content_type, headers, data)
     headers["Content-Type"] = content_type
 
-    curl = PycURLRunner(url, params, bind, timeout, allow_redirects, headers, verify_keys)
+    curl = PycURLRunner(url, params, bind, timeout, allow_redirects, headers, verify_keys, proxy)
 
     curl.curl.setopt(pycurl.CUSTOMREQUEST, "PUT")
     curl.curl.setopt(pycurl.POSTFIELDS, data)
@@ -207,13 +212,14 @@ def url_delete( url,          # DELETE URL
                 timeout=None, # Seconds before giving up
                 allow_redirects=True, #Allows URL to be redirected
                 headers=None, # Hash of HTTP headers
-                verify_keys=verify_keys_default  # Verify SSL keys
+                verify_keys=verify_keys_default,  # Verify SSL keys
+                proxy=None  # Proxy string
              ):
     """
     Delete a URL.
     """
 
-    curl = PycURLRunner(url, params, bind, timeout, allow_redirects, headers, verify_keys)
+    curl = PycURLRunner(url, params, bind, timeout, allow_redirects, headers, verify_keys, proxy)
 
     curl.curl.setopt(pycurl.CUSTOMREQUEST, "DELETE")
 
@@ -228,7 +234,8 @@ def url_delete_list(
         timeout=None, # Seconds before giving up
         allow_redirects=True, #Allows URL to be redirected
         headers=None, # Hash of HTTP headers
-        verify_keys=verify_keys_default  # Verify SSL keys
+        verify_keys=verify_keys_default,  # Verify SSL keys
+        proxy=None  # Proxy string
         ):
     """
     Delete a list of URLs and return tuples of the status and error for
@@ -237,5 +244,5 @@ def url_delete_list(
     """
     return [ url_delete(url, throw=False, timeout=timeout, params=params,
                         bind=bind, headers=headers, verify_keys=verify_keys, 
-                        allow_redirects=allow_redirects)
+                        allow_redirects=allow_redirects, proxy=proxy)
              for url in urls ]

@@ -70,11 +70,26 @@ class Histogram(object):
     def __init__(self, hist_dict):
         self.hist_dict = hist_dict
     
-    def get_stats(self):
+    def get_stats(self, bucket_width=None, units=None):
         #pass one: mode, mean and sample size
         stats = {}
         mean_num = 0
         sample_size = 0
+
+        #First format the dict if bucket_width and units are provided
+        if bucket_width and units:
+            new_hist_dict = {}
+            for k in self.hist_dict:
+                new_k = float(k) * (bucket_width / units)
+                digits = math.log10(bucket_width)
+                if digits >= 0:
+                    digits = 0
+                else:
+                    digits = abs(digits) - 1 # remove 1 otherwise always have extra digit
+                formatted_k = '{:.{prec}f}'.format(new_k, prec=int(digits))
+                new_hist_dict[formatted_k] = self.hist_dict[k]
+            self.hist_dict = new_hist_dict
+
         for k in self.hist_dict:
             #only can do statistics for histograms with numeric buckets
             try:
@@ -158,6 +173,8 @@ if not valid:
     pscheduler.fail(message)
 
 json = input["result"]
+# get bucket width and default to 1ms
+bucket_width = input.get('spec', {}).get('bucket-width', 0.001)
 
 #Output basic stats
 output = "\nPacket Statistics\n"
@@ -172,7 +189,7 @@ output += "Packets Reordered .... %s packets\n" % json.get('packets-reordered', 
 output += "\nOne-way Latency Statistics\n"
 output += "--------------------------\n"
 owd_hist = Histogram(json.get('histogram-latency', {}))
-stats = owd_hist.get_stats()
+stats = owd_hist.get_stats(bucket_width=bucket_width, units=0.001)
 output += format_float("Delay Median", stats.get('median', None), units="ms")
 output += format_float("Delay Minimum", stats.get('minimum', None), units="ms")
 output += format_float("Delay Maximum", stats.get('maximum', None), units="ms")
@@ -194,7 +211,7 @@ if stats.get('percentile-75', None) and stats.get('percentile-25', None):
 output += format_float("    Variance", stats.get('variance', None), units="ms")
 output += format_float("    Std Deviation", stats.get('standard-deviation', None), units="ms")
 output += "Histogram:\n"
-for owd_bucket in sorted(json.get('histogram-latency', {}).items()):
+for owd_bucket in sorted(list(owd_hist.hist_dict.items()), key=lambda k: float(k[0])):
     output += "    %s ms: %d packets\n" % (owd_bucket[0], owd_bucket[1])
     
 #Output TTL histogram

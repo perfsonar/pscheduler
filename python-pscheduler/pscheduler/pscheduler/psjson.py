@@ -142,7 +142,7 @@ def json_load(source=None, exit_on_error=False, strip=True,
         if isinstance(source, str):
             json_in = loads(str(source))
         elif isinstance(source, bytes):
-            json_in = loads(source.decode("ascii"))
+            json_in = loads(source.decode('utf-8'))
         elif isinstance(source,io.IOBase):
             json_in = load(source)
         else:

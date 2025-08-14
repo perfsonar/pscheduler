@@ -191,7 +191,7 @@ def schedule():
                         row[1].isoformat()
                     )
                     data.write(line)
-                    log.error("LINE %s", line)
+                    log.debug("LINE %s", line)
                 data.close()
             if out_format == "data":
                 return send_file(data_path)
@@ -281,3 +281,86 @@ def monitor():
 
     # This is sanitized because it contains data from multiple tasks
     return ok_json(result)
+
+
+@application.route('/schedule/availability', methods=['GET'])
+def schedule_availability():
+    """
+        Returns the fraction of the given time range that the server is
+        free from exclusive tasks.
+
+        The time range is specified either by:
+        - 'start' and 'end' - ISO 8601 timestamp
+        or
+        - 'next' - ISO 8601 duration (from now)
+
+        Returns:
+        - {
+            'availability': <float>,
+            'start': <ISO 8601 timestamp>,
+            'end': <ISO 8601 timestamp>
+        }
+    """
+    start, end, next = None, None, None
+
+    try:
+        start = arg_datetime('start')
+        end = arg_datetime('end')
+        next = arg_duration('next')
+    except ValueError as e:
+        return bad_request(f'Invalid argument [start, end or next] provided. Error: {e}')
+    
+    # start, end and next are mutually exclusive
+    if (start or end) and next:
+        return bad_request('Start and end are mutually exclusive with next')
+    
+    if (start or end) and not (start and end):
+        return bad_request('Both start and end are required')
+    
+    if not (start or end or next):
+        return bad_request('Start and end or next is required')
+
+    if next:
+        start = pscheduler.time_now()
+        end = start + next
+
+    # sanity check
+    if start >= end:
+        return bad_request('start must be before end')
+
+    try:
+        cursor = dbcursor_query("""
+            WITH params AS (
+                SELECT tstzrange(%s, %s, '[]') AS period
+            ),
+            overlap_runs AS (
+                SELECT r.times * p.period AS overlap_period
+                FROM run_conflictable r, params p
+                WHERE r.exclusive AND r.times && p.period
+            ),
+            agg_periods AS (
+                SELECT unnest(range_agg(overlap_period)) AS period
+                FROM overlap_runs
+            ),
+            overlap_seconds AS (
+                SELECT COALESCE(SUM(EXTRACT(EPOCH FROM upper(period) - lower(period))), 0) AS o_sec
+                FROM agg_periods
+            ),
+            total_seconds AS (
+                SELECT EXTRACT(EPOCH FROM upper(period) - lower(period)) AS t_sec
+                FROM params
+            )
+            SELECT 1.0 - (o_sec / t_sec) AS availability
+            FROM overlap_seconds, total_seconds;
+        """, [start, end], onerow=True)
+
+        availability = cursor.fetchone()[0]
+
+        return ok_json({
+            'availability': float(availability),
+            'start': f'{start.isoformat()}',
+            'end': f'{end.isoformat()}'
+        })
+    except Exception as e:
+        log.exception()
+        return error(f'Error: {e}')

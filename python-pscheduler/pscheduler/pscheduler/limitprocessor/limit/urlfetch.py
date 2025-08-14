@@ -14,6 +14,7 @@ DATA_VALIDATOR = {
     "type": "object",
     "properties": {
         "url": { "$ref": "#/pScheduler/URL" },
+        "proxy": { "$ref": "#/pScheduler/URL" },
         "url-transform": { "$ref": "#/pScheduler/JQTransformSpecification" },
         "bind": { "$ref": "#/pScheduler/Host" },
         "verify-keys": { "$ref": "#/pScheduler/Boolean" },
@@ -88,6 +89,7 @@ class LimitURLFetch(object):
             raise ValueError("Invalid data: %s" % message)
 
         self.url = data["url"]
+        self.proxy = data.get('proxy', None)
         self.url_transform = _jq_filter(data.get("url-transform", None))
         self.bind = data.get("bind", None)
         self.follow = data.get("follow-redirects", True)
@@ -174,7 +176,8 @@ class LimitURLFetch(object):
                                throw=False,
                                timeout=self.timeout,
                                allow_redirects=self.follow,
-                               verify_keys=self.verify
+                               verify_keys=self.verify,
+                               proxy=self.proxy
         )
 
         if self.success_only:

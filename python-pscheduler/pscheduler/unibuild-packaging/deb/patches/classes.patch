@@ -1,7 +1,7 @@
 Index: b/Makefile
 ===================================================================
---- a/Makefile	2024-06-04 17:56:23.133680227 +0200
-+++ b/Makefile	2024-10-16 16:47:17.956697608 +0200
+--- a/Makefile	2025-07-01 14:53:13.115472821 -0400
++++ b/Makefile	2025-07-01 14:53:25.202543277 -0400
 @@ -4,24 +4,14 @@
  
  default: build
@@ -18,11 +18,11 @@ Index: b/Makefile
 -
 -test: file-setup
 +test:
- 	python3 -m nose
+ 	python3 -m nose2
  
 -test-coverage: file-setup
 +test-coverage:
- 	python3 -m nose --with-coverage --cover-package rabbitmq
+ 	python3 -m nose2 --with-coverage --cover-package rabbitmq
  
  
 -build: file-setup test
@@ -32,8 +32,8 @@ Index: b/Makefile
  clean:
 Index: b/pscheduler/plugins.py
 ===================================================================
---- a/pscheduler/plugins.py	2024-06-04 17:56:23.291422500 +0200
-+++ b/pscheduler/plugins.py	2024-10-16 16:47:17.958207121 +0200
+--- a/pscheduler/plugins.py	2025-07-01 14:53:13.123366747 -0400
++++ b/pscheduler/plugins.py	2025-07-01 14:53:25.203148576 -0400
 @@ -7,7 +7,7 @@
  from .program import run_program
  

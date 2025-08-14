@@ -1,8 +1,17 @@
-iperf3 (3.18-1) perfsonar-5.2-staging; urgency=low
+iperf3 (3.19-1) perfsonar-5.2-staging; urgency=low
 
   * New upstream version
 
- -- Abigail Fox <afox@internet2.edu>  Wed, 08 Jan 2025 12:23:00 -0800
+ -- Mark Feit <mfeit@internet2.edu>  Thu, 22 May 2025 12:39:00 -0400
+
+iperf3 (3.18-1) perfsonar-5.2-staging; urgency=low
+
+  * New upstream version
+  * Binaries are called iperf3 on D11 and U20
+  * Binaries are called iperf3-ssl3 on D12, U22 and U24
+
+ -- Abigail Fox <afox@internet2.edu>  Tue, 18 Mar 2025 17:52:05 +0100
+
 
 iperf3 (3.17.1-2) perfsonar-5.1-staging; urgency=low
 

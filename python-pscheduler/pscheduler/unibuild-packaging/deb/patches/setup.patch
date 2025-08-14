@@ -1,7 +1,7 @@
 Index: b/setup.py
 ===================================================================
---- a/setup.py	2024-06-04 17:56:23.304954584 +0200
-+++ b/setup.py	2024-10-16 16:47:18.244260606 +0200
+--- a/setup.py	2025-07-01 14:53:13.125697149 -0400
++++ b/setup.py	2025-07-01 14:53:25.450067719 -0400
 @@ -17,17 +17,6 @@
          'pscheduler.limitprocessor.identifier',
          'pscheduler.limitprocessor.limit',
@@ -9,7 +9,6 @@ Index: b/setup.py
 -    install_requires=[
 -        'dnspython >= 1.12.0',
 -        'requests >= 2.6.0',
--        'pytz >= 2016.6',
 -        'psycopg2 >= 2.6.2',
 -        'jsonschema >= 2.5.1',
 -        'pyjq >= 2.2.0',

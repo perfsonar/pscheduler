@@ -20,7 +20,6 @@ setup(
     install_requires=[
         'dnspython >= 1.12.0',
         'requests >= 2.6.0',
-        'pytz >= 2016.6',
         'psycopg2 >= 2.6.2',
         'jsonschema >= 2.5.1',
         'pyjq >= 2.2.0',
@@ -31,6 +30,6 @@ setup(
     include_package_data=True,
     package_data={'pscheduler.limitprocessor': ['*.json']},
 
-    tests_require=['nose'],
-    test_suite='nose.collector',
+    tests_require=['nose2'],
+    test_suite='nose2.collector.collector',
 )

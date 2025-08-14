@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+
+#
+# Development Order #5:
+#
+# This is the meat and bones of the tool, where the actual desired
+# commands or operation will be run. The results are then recorded
+# and added to the 'results' JSON data, which will then be sent
+# back to the test. Both system and api are able to be used here.
+#
+
+import datetime
+import subprocess
+import json
+import sys
+import time
+import ipaddress
+from ipaddress import IPv6Address, IPv4Address
+from ipaddress import IPv6Network
+
+import pscheduler
+import dns.resolver
+
+
+log = pscheduler.Log(prefix='tool-pydns64', quiet=True)
+
+# from stdin
+input = pscheduler.json_load(exit_on_error=True)
+resolver = dns.resolver.Resolver()
+
+# Take input from test spec
+try:
+    query = input['test']['spec']['query']
+except KeyError:
+    pscheduler.fail('missing data in input')
+
+try:
+    resolver.nameservers = [input['test']['spec']['nameserver']]
+except KeyError:
+    pass  # Not there?  Don't care.
+
+timeout_iso = input['test']['spec'].get("timeout", "PT10S")
+timeout = pscheduler.timedelta_as_seconds( pscheduler.iso8601_as_timedelta(timeout_iso) )
+
+prefix = input['test']['spec'].get("translation-prefix", "64:ff9b::/96")
+
+# Run the actual task here:
+
+start_time = datetime.datetime.now()
+succeeded = False
+error = ''
+diags = ''
+ip4answers = None
+ip6answers = None
+ip4result_list = None
+ip6result_list = None
+translated = True
+
+# do test here
+
+try:
+    ip4answers = resolver.resolve(query, 'A')
+    ip6answers = resolver.resolve(query, 'AAAA' )
+    succeeded = True
+except dns.exception.Timeout:
+    error = 'Timeout'
+except dns.resolver.NoAnswer:
+    if ip4answers:
+        error = 'No IPv6 answer'
+    else:
+        error = 'No IPv4 answer, aborting'
+except dns.resolver.NXDOMAIN:
+    error = 'Domain does not exist'
+
+end_time = datetime.datetime.now()
+
+if ip4answers is None:
+    ip4result_list = []
+else:
+    ip4result_list = sorted(list(ip4answers))
+
+if ip6answers is None:
+    ip6result_list = []
+else:
+    ip6result_list = sorted(list(ip6answers))
+
+# Check to see if results are correctly translated
+if len(ip4result_list) == 0 or len(ip6result_list) == 0:
+    translated = False
+elif len(ip4result_list) != len(ip6result_list):
+    translated = False
+else:
+    for index, ip in enumerate(ip6result_list):
+        ipaddr = IPv6Address(ip)
+        if ipaddr not in IPv6Network(prefix):
+            translated = False
+            break
+        else:
+            if IPv4Address(ip4result_list[index]).packed != ipaddr.packed[-4:]:
+                translated = False
+                break
+
+
+# Organize results into json data
+results = {
+    'succeeded': succeeded,
+    'result': {
+        'schema': 1,
+        'time': pscheduler.timedelta_as_iso8601( end_time - start_time),
+        'succeeded': succeeded,
+        'translated': translated
+    },
+    'error': error,
+    'diags': diags }
+
+results [ 'result' ][ 'ipv4' ] = [str(ip) for ip in ip4result_list]
+results [ 'result' ][ 'ipv6' ] = [str(ip) for ip in ip6result_list]
+
+pscheduler.succeed_json(results)
+

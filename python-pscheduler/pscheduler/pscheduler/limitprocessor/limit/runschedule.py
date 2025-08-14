@@ -320,8 +320,6 @@ class LimitRunSchedule(object):
             if name not in self.matches:
                 continue
 
-            print("CHECK", name, lower, upper, wrap_after, wrap_to)
-
             if not wrappable_range_overlaps(lower, upper, self.matches[name],
                                             wrap_after=wrap_after,
                                             wrap_to=wrap_to,

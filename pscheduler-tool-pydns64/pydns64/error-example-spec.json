@@ -1,0 +1,17 @@
+{
+  "test": {
+    "type": "dns64",
+    "spec": {
+      "query": "ip4.me",
+      "timeout": "PT10S",
+      "schema": 1
+    }
+  },
+  "schema": 1,
+  "tool": "pydns64",
+  "href": "https://localhost.localdomain/pscheduler/tasks/d0035107-6ef0-4cc7-83b4-19367b502bfc",
+  "schedule": {
+    "slip": "PT5M"
+  }
+}
+

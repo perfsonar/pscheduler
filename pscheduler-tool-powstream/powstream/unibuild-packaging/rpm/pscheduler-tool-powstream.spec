@@ -5,7 +5,7 @@
 %define short	    powstream
 %define resultdir	%{_pscheduler_tool_vardir}/%{short}
 
-%define perfsonar_auto_version 5.2.0
+%define perfsonar_auto_version 5.3.0
 %define perfsonar_auto_relnum 0.a1.0
 
 Name:		pscheduler-tool-%{short}
@@ -31,7 +31,7 @@ Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm
 BuildRequires:	%{_pscheduler_python}-pscheduler
-BuildRequires:  %{_pscheduler_python}-nose
+BuildRequires:  %{_pscheduler_python}-nose2
 
 %description
 powstream tool class for pScheduler

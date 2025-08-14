@@ -54,7 +54,7 @@ def __dns_resolve_host(host, ip_version, timeout):
 
     timing_queue = queue.Queue()
     thread = threading.Thread(target=proc, args=(host, family, timing_queue))
-    thread.setDaemon(True)
+    thread.daemon = True
     thread.start()
     try:
         results = timing_queue.get(True, timeout)
@@ -139,7 +139,7 @@ def dns_resolve_reverse(ip,
 
     timing_queue = queue.Queue()
     thread = threading.Thread(target=proc, args=(ip, timing_queue))
-    thread.setDaemon(True)
+    thread.daemon = True
     thread.start()
     try:
         return timing_queue.get(True, timeout)

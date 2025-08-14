@@ -21,10 +21,10 @@ endif
 
 
 test: file-setup
-	python3 -m nose
+	python3 -m nose2
 
 test-coverage: file-setup
-	python3 -m nose --with-coverage --cover-package rabbitmq
+	python3 -m nose2 --with-coverage --cover-package rabbitmq
 
 
 build: file-setup test
