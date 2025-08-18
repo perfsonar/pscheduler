@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+
+import argparse
+import json
+import jsonschema
+import re
+import sys
+
+
+# Gargle the arguments
+
+arg_parser = argparse.ArgumentParser(
+    usage='%(prog)s [options]',
+    epilog=None,
+    formatter_class=argparse.RawTextHelpFormatter
+    )
+
+arg_parser.add_argument('--prefix',
+                        help='Prefix to use in dictionary to find test classes',
+                        action='store',
+                        type=str,
+                        default=None,
+                        dest='prefix')
+
+arg_parser.add_argument('DICTIONARY', help='Path to dictionary')
+arg_parser.add_argument('TESTS', help='Path to the test list.')
+
+args = arg_parser.parse_args()
+
+
+def die(message):
+    '''Print an error message and bail out.'''
+    print(message, file=sys.stderr)
+    exit(1)
+
+
+
+TRUEFALSE = {
+    'true': True,
+    'false': False
+}
+
+
+with open(args.DICTIONARY) as json_dict:
+    json_dict = json.load(json_dict)
+for element in [ 'type', 'items', 'properties', 'additionalProperties',
+                 'required', 'local', '$ref' ]:
+    if element in json_dict:
+        die(f'{args.DICTIONARY}: Must not contain any schema at the top level.')
+
+if args.prefix is not None:
+    dict_check = json_dict
+    for depth in args.prefix.split('/'):
+        try:
+            dict_check = dict_check[depth]
+        except KeyError:
+            die(f'''{args.DICTIONARY}: Prefix '{args.prefix}' not found.''')
+
+
+line_no = 0
+errors = False
+
+with open(args.TESTS) as tests:
+    for in_line in tests:
+
+        line_no += 1
+
+        line = re.sub(r'#.*$', '', in_line).strip()
+        if len(line) == 0:
+            continue
+
+
+        items = line.split(maxsplit=2)
+        if len(items) != 3:
+            die(f'Line {line_no}: Line is incomplete; need three items.')
+        (schema_type, expected, test) = items
+
+
+        try:
+            expected = TRUEFALSE[expected.lower()]
+        except KeyError:
+            die(f'Line {line_no}: Invalid match value (must be true/false)')
+
+
+        try:
+            test_json = json.loads(test)
+        except json.decoder.JSONDecodeError as ex:
+            die(f'Line {line_no}: Invalid JSON: {str(ex)}')
+
+        validator = jsonschema.Draft7Validator.check_schema(json_dict)
+        try:
+            json_dict['$ref'] = f'#/{args.prefix}/{schema_type}'
+            jsonschema.validate(test_json,
+                                json_dict,
+                                format_checker=jsonschema.draft7_format_checker
+                                )
+            valid = True
+            error = None
+        except (jsonschema.exceptions.ValidationError, jsonschema.exceptions.RefResolutionError) as ex:
+            valid = False
+            error = str(ex)
+
+        if valid != expected:
+            print(f'\nLine {line_no}', file=sys.stderr)
+            print(f'''  {test} {'did not match' if expected  else 'unexpectedly matched'} {schema_type}.''', file=sys.stderr)
+            if error is not None:
+                print(f'  {error}', file=sys.stderr)
+            errors = True
+
+
+exit(1 if errors else 0)

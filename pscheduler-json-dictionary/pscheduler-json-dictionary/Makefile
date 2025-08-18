@@ -25,7 +25,12 @@ endif
 TO_CLEAN += $(INTERNAL)
 
 
-build: $(PICKLED) $(INTERNAL)
+TESTS := ./tests
+test: $(JSON) $(TESTS)
+	./run-tests --prefix pScheduler "$(JSON)" "$(TESTS)"
+
+
+build: test $(PICKLED) $(INTERNAL)
 
 
 

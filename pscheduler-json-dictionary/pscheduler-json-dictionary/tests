@@ -1,0 +1,210 @@
+#
+# Tests for the JSON Dictionary
+#
+
+# Item		Match	JSON Test Value
+
+AnyJSON		true	{"foo": "bar", "baz": 123}
+AnyJSON		true	12345
+AnyJSON		true	null
+
+Array		true	[1, 2, 3]
+Array		false	"NotAnArray"
+
+AS		true	{"number": 12345, "owner": "Bob's Intertubes"}
+AS		false	{"number": 12.34, "owner": "Bob's Intertubes"}
+AS		false	{"number": 12.34, "other": "Should not be here"}
+
+Boolean		true	true
+Boolean		true	false
+Boolean		false	38
+
+Cardinal	true	12
+Cardinal	false	0
+Cardinal	false	-7
+
+CardinalList	true	[1, 2, 3, 4]
+CardinalList	false	[1, 2, 4, -4]
+CardinalList	false	null
+
+CardinalZero	true	0
+CardinalZero	true	5
+CardinalZero	false	-9
+
+CardinalZeroList	true	[0, 1, 2, 3]
+CardinalZeroList	false	[0, 1, 2, -3]
+CardinalZeroList	false	{}
+
+# TODO: ClockState
+
+Duration	true	"PT5S"
+Duration	true	"P3DT6H5M12.75S"
+Duration	false	"P3QT6H5M12.75S"
+
+Email		true	"perfsonar@example.com"
+Email		false	"gloop"
+Email		false	99
+
+Float		true	3.14
+Float		true	3
+Float		false	"float"
+
+GeographicPosition	true "+40.6894-074.0447"
+GeographicPosition	false "+40.6894?074.0447"
+GeographicPosition	false 1919
+
+# TODO: Host
+
+HostName	true	"quack"
+HostName	true	"quack.example.org"
+HostName	false	"quack.example!org"
+HostName	false	12.34
+
+HostNamePort	true	"quack.example.org:1234"
+HostNamePort	false	"quack.example.org:beef"
+
+Integer		true	52
+Integer		false	3.1415
+Integer		false	"NotAnInteger"
+
+IPAddress	true	"128.82.4.1"
+IPAddress	false	"821.82.4.1"
+IPAddress	true	"dead::beef"
+IPAddress	false	"dead!:beef"
+IPAddress	false	null
+
+IPv4		true	"128.82.4.1"
+IPv4		false	"821.82.4.1"
+IPv4		false	"128.82.4.q"
+IPv4		false	"Eh?"
+
+IPv6		true	"dead::beef"
+IPv6		false	"dead!:beef"
+IPv6		false	"dead::beefy"
+IPv6		false	"Nope."
+
+IPv6RFC2732	true	"[dead::beef]"
+IPv6RFC2732	true	"[dead::beef]:9600"
+IPv6RFC2732	false	"dead::beef"
+
+IPv4CIDR	true	"192.168.1.0/24"
+IPv4CIDR	false	"192.168.1.x/24"
+IPv4CIDR	false	"192.168.1.0/9000"
+
+IPv6CIDR	true	"dead:beef::/64"
+IPv6CIDR	true	"dead::beef/128"
+IPv6CIDR	false	"dead::beef/1280"
+
+IPCIDR		true	"192.168.1.0/24"
+IPCIDR		false	"192.168.1.x/24"
+IPCIDR		false	"192.168.1.0/9000"
+IPCIDR		true	"dead:beef::/64"
+IPCIDR		true	"dead::beef/128"
+IPCIDR		false	"dead::beef/1280"
+
+IPCIDRList	true	[]
+IPCIDRList	true	[ "192.168.1.0/24", "dead:beef::/64" ]
+IPCIDRList	false	[ "192.168.1.0/24", "dead:beef::/64", "Yeeha" ]
+
+Int8		false	-129
+Int8		true	-128
+Int8		true	0
+Int8		true	127
+Int8		false	128
+
+UInt8		false	-11
+UInt8		true	0
+UInt8		true	255
+UInt8		false	256
+
+Int16		false	-32769
+Int16		true	-32768
+Int16		true	0
+Int16		true	32767
+Int16		false	32768
+
+UInt16		false	-1
+UInt16		true	0
+UInt16		true	65535
+UInt16		false	65536
+
+Int32		false	-2147483649
+Int32		true	-2147483648
+Int32		true	0
+Int32		true	2147483647
+Int32		false	2147483648
+
+UInt32		false	-1
+UInt32		true	0
+UInt32		true	4294967295
+UInt32		false	4294967296
+
+Int64		false	-9223372036854775809
+Int64		true	-9223372036854775808
+Int64		true	0
+Int64		true	9223372036854775807
+Int64		false	9223372036854775808
+
+UInt64		false	-1
+UInt64		true	0
+UInt64		true	184446744073709551615
+UInt64		false	184446744073709551616
+
+IPPort		false	-1
+IPPort		true	0
+IPPort		true	65535
+IPPort		false	65536
+
+# TODO: IPPortRange
+
+IPTOS		false	-1
+IPTOS		true	0
+IPTOS		true	255
+IPTOS		false	256
+
+# TODO: JQTransformSpecification
+
+Number		true	19
+Number		true	-19
+Number		true	3.14
+Number		false	"ou812"
+
+# TODO: POSIXCronSpecification
+
+Probability	false	-1
+Probability	true	0.0
+Probability	true	0
+Probability	true	1.0
+Probability	false	1.1
+
+# TODO: RetryPolicy
+
+# TODO: RetryPolicyEntry
+
+String		true	"foo"
+String		true	""
+String		false	null
+
+StringList	true	[ ]
+StringList	true	[ "foo", "bar", "baz" ]
+StringList	false	[ "foo", "bar", "baz", 38 ]
+StringList	false	"Not an array."
+
+# Some things to test failures
+#Integer		true	"NotAnInteger"
+#Duration	true	"NotADuration"
+#Duration	false	"PT5S"
+
+# TODO: STringMatch
+
+StringNull	true	"foo"
+StringNull	true	null
+StringNull	false	12345
+
+Timestamp	true	"2025-01-01"
+Timestamp	true	"2025-01-01T12:34:55"
+Timestamp	false	"2025-01-01Q12:34:55"
+
+#TimestampAbsoluteRelative	true	"2025-01-01T12:34:55"
+#TimestampAbsoluteRelative	true	"-PT5M"
+

@@ -24,7 +24,7 @@ Provides:	%{name} = %{version}-%{release}
 # Requires:	Nothing...
 
 BuildRequires:	pscheduler-rpm
-BuildRequires:	%{_pscheduler_python}
+BuildRequires:	%{_pscheduler_python}-jsonschema
 
 %description
 JSON dictionary used for validating pScheduler data plus
