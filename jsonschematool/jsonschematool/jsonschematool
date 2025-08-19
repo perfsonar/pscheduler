@@ -331,6 +331,37 @@ def dereference(data):
 
 # Main Program
 
+# This is stolen from the pScheduler library.
+
+def json_decomment(json, prefix='#', null=False):
+    """
+    Remove any JSON object member whose name begins with 'prefix'
+    (default '#') and return the result.  If 'null' is True, replace
+    the prefixed items with a null value instead of deleting them.
+    """
+    if isinstance(json, dict):
+        result = {}
+        for item in json:
+            if item.startswith(prefix):
+                if null:
+                    result[item] = None
+                else:
+                    next
+            else:
+                result[item] = json_decomment(json[item], prefix=prefix,
+                                              null=null)
+        return result
+
+    elif isinstance(json, list):
+        result = []
+        for item in json:
+            result.append(json_decomment(item, prefix=prefix, null=null))
+        return result
+
+    else:
+        return json
+
+
 # Read the input(s).
 
 inputs = []
@@ -345,8 +376,7 @@ for source in args.remaining:
             loaded = json.load(sys.stdin)
         else:
             with open(source, 'r') as data:
-                loaded = json.load(data)
-                # TODO: Strip out comments
+                loaded = json_decomment(json.load(data))
     except Exception as ex:
         die(f'{source}: {ex}')
 
@@ -360,14 +390,6 @@ for source in args.remaining:
 # Merge and dereference
 
 merged = merge(inputs)
-
-# Make sure this at least looks like JSONSchema, at least on a
-# cursory level.
-
-if type(merged) != dict or \
-   ('type' not in merged and '$ref' not in merged):
-    json.dump(merged, sys.stdout, sort_keys=True, indent=4, separators=(',', ': '))
-    die('JSON does not appear to be JSONSchema.')
 
 result = dereference(merged) if args.dereference else merged
 
