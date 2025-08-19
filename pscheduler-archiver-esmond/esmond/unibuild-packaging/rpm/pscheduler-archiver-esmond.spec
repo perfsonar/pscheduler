@@ -10,7 +10,7 @@ Name:		pscheduler-archiver-esmond
 Version:	%{perfsonar_auto_version}
 Release:	%{perfsonar_auto_relnum}%{?dist}
 
-Summary:	Esmond archiver class for pScheduler
+Summary:	Esmond archiver class for pScheduler (DISABLED)
 BuildArch:	noarch
 License:	ASL 2.0
 Vendor:	perfSONAR
@@ -35,7 +35,7 @@ BuildRequires:  %{_pscheduler_python}-nose2
 %define directory %{_includedir}/make
 
 %description
-This archiver sends JSON test results to Esmond Measurement Archive
+This archiver sends JSON test results to Esmond Measurement Archive (DISABLED)
 
 
 %prep
