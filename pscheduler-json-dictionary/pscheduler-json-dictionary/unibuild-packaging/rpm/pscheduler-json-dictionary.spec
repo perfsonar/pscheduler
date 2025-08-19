@@ -38,7 +38,7 @@ an internal command to retrieve it.
 %build
 make \
      INTERNALSDIR=$RPM_BUILD_ROOT/%{_pscheduler_internals} \
-     DATADIR=$RPM_BUILD_ROOT/%{_pscheduler_datadir} \
+     DATADIR=%{_pscheduler_datadir} \
      INSTALLED_DATADIR=$RPM_BUILD_ROOT/%{_pscheduler_datadir} \
      install
 
