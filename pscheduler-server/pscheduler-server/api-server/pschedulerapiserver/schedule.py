@@ -215,9 +215,10 @@ def schedule():
             status, out, err = pscheduler.run_program(["gnuplot"], stdin=script)
             if status != 0:
                 log.error("GNUPlot failed: %s" % (err))
-                return error("Failed to plot schedule; see system logs.")
+                return error("Failed to plot schedule; see system logs. %s" % (err))
 
-            return send_file(image_path, cache_timeout=1)
+            filetype = "image/" + out_format
+            return send_file(image_path, mimetype=filetype, cache_timeout=1)
 
 
         except Exception as ex:
