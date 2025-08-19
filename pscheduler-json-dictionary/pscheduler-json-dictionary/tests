@@ -1,6 +1,9 @@
 #
 # Tests for the JSON Dictionary
 #
+# This only tests the basic types, many of which were changed from
+# anyOf to regular experessions to make JSON Forms happy.  See #1526.
+#
 
 # Item		Match	JSON Test Value
 
@@ -35,7 +38,7 @@ CardinalZeroList	true	[0, 1, 2, 3]
 CardinalZeroList	false	[0, 1, 2, -3]
 CardinalZeroList	false	{}
 
-# TODO: ClockState
+# ClockState is compound; not sure why it's in with the simple types.
 
 Duration	true	"PT5S"
 Duration	true	"P3DT6H5M12.75S"
@@ -53,7 +56,11 @@ GeographicPosition	true "+40.6894-074.0447"
 GeographicPosition	false "+40.6894?074.0447"
 GeographicPosition	false 1919
 
-# TODO: Host
+Host		true	"foo"
+Host		true	"foo.bar.org"
+Host		true	"128.82.4.1"
+Host		false	"foo.bar!org"
+Host		false	"128.82.4!1"
 
 HostName	true	"quack"
 HostName	true	"quack.example.org"
@@ -155,21 +162,30 @@ IPPort		true	0
 IPPort		true	65535
 IPPort		false	65536
 
-# TODO: IPPortRange
+IPPortRange	true	{ "lower": 1234, "upper": 5678 }
+IPPortRange	false	{ "lower": -1234, "upper": 5678 }
+IPPortRange	false	{ "lower": 1234, "middle": 2345, "upper": 5678 }
 
 IPTOS		false	-1
 IPTOS		true	0
 IPTOS		true	255
 IPTOS		false	256
 
-# TODO: JQTransformSpecification
+JQTransformSpecification	true	{ "script": "." }
+JQTransformSpecification	true	{ "script": ".", "output-raw": true }
+JQTransformSpecification	true	{ "script": ".", "args": {} }
+JQTransformSpecification	true	{ "script": [ ".", "" ] }
+JQTransformSpecification	false	{ "script": 39 }
+JQTransformSpecification	false	{ "script": ".", "extra": "stuff" }
 
 Number		true	19
 Number		true	-19
 Number		true	3.14
 Number		false	"ou812"
 
-# TODO: POSIXCronSpecification
+POSIXCronSpecification	true	"* * * * *"
+POSIXCronSpecification	true	"1-15,30 * * * *"
+POSIXCronSpecification	false	"1-15,30 * * * Q"
 
 Probability	false	-1
 Probability	true	0.0
@@ -177,9 +193,8 @@ Probability	true	0
 Probability	true	1.0
 Probability	false	1.1
 
-# TODO: RetryPolicy
-
-# TODO: RetryPolicyEntry
+# RetryPolicy is compound.
+# RetryPolicyEntry is compound.
 
 String		true	"foo"
 String		true	""
@@ -195,7 +210,7 @@ StringList	false	"Not an array."
 #Duration	true	"NotADuration"
 #Duration	false	"PT5S"
 
-# TODO: STringMatch
+# StringMatch is compound
 
 StringNull	true	"foo"
 StringNull	true	null
@@ -205,6 +220,30 @@ Timestamp	true	"2025-01-01"
 Timestamp	true	"2025-01-01T12:34:55"
 Timestamp	false	"2025-01-01Q12:34:55"
 
-#TimestampAbsoluteRelative	true	"2025-01-01T12:34:55"
-#TimestampAbsoluteRelative	true	"-PT5M"
+TimestampAbsoluteRelative	true	"2025-01-01T12:34:55"
+TimestampAbsoluteRelative	true	"PT5M"
+TimestampAbsoluteRelative	true	"-PT5M"
+TimestampAbsoluteRelative	true	"+PT5M"
+TimestampAbsoluteRelative	true	"@PT5M"
+TimestampAbsoluteRelative	false	"@+PT5M"
+TimestampAbsoluteRelative	false	"notPT5Mvalid"
 
+URL				true	"https://www.example.com/~beep/boop"
+URL				true	"www.example.com/~beep/boop"
+URL				true	"mailto:bob@example.com"
+URL				true	"192.168.1.1"
+# TODO: Find some invalid URLs.  This is difficult.
+
+URLHostPort			true	"foo.example.com"
+URLHostPort			true	"foo.example.com:1234"
+URLHostPort			false	"foo.example.com:123x"
+URLHostPort			false	"74!75!"
+
+UUID				true	"b4ef29fa-6e29-4aab-8e98-5cb8406f1770"
+UUID				true	"664eb5fa-301b-4297-86ea-3c4f27a9e9b5"
+UUID				false	"664eb5fa-301q-4297-86ea-3c4f27a9e9b5"
+UUID				false	"664eb5fa-301b-4297-86ea-3c4f27a9e9"
+
+Version				true	"1.2.34.9"
+Version				true	"1.2.34.9beta"
+Version				false	"1.2.34!9beta"
