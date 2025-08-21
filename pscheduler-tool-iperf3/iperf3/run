@@ -49,6 +49,11 @@ if not(participants == 2 or (participants == 1 and (single_ended or loopback))):
 
 config = iperf3_utils.get_config()
 
+# look up our local bind_address override for NAT config
+if "bind_address" in config:
+    local_bind_address = config["bind_address"]
+else:
+    local_bind_address = None
 # look up our local iperf3 command path
 iperf3_cmd  = config["iperf3_cmd"]
 
@@ -126,6 +131,10 @@ def run_client():
     iperf3_args = iperf3_first_args.copy()
 
     iperf3_args.append('-p')
+        # local bind address overides test specs for NAT
+        if local_bind_address:
+            source = local_bind_address
+
     iperf3_args.append(server_port)
     
     #Determine if we need to bind to an address and have enough info to do so intelligently
@@ -384,12 +393,20 @@ def run_server():
         # we prefer IPv6 but fallback to IPv4 if they don't both have IPv6. If one end only 
         # has IPv4 and the other only has IPv6 we don't bind at all but don't throw error in 
         # case there is some external factor we don't know about (maybe should change this?)
-        source_ip, bind_address = pscheduler.ip_normalize_version(source, test_spec['dest'])
+
+        # local bind address overides test specs for NAT
+        if local_bind_address:
+            destination = local_bind_address
+        else:
+            destination = test_spec['dest']
+
+        source_ip, bind_address = pscheduler.ip_normalize_version(source, destination)
         if bind_address is not None:
             iperf3_args.append('-B')
             iperf3_args.append(bind_address)
-            normalized_dest = bind_address
-            ip_version = pscheduler.ip_addr_version(bind_address)[0]
+            # return to original setting of normalized_dest in case of bind_address override
+            _, normalized_dest = pscheduler.ip_normalize_version(source, test_spec['dest'])
+            ip_version = pscheduler.ip_addr_version(normalized_dest)[0]
         else:
             logger.debug("Server: Skipping bind. Source %s and destination %s don't have any common IPs of the same version as far as tool can tell." % (source, test_spec['dest']))
     else:
