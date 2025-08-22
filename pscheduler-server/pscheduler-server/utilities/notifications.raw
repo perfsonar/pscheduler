@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+#
+# Display all notirications coming from PostgreSQL
+#
+
+import errno
+import optparse
+import os
+import pscheduler
+import psycopg2
+import select
+import sys
+
+# Gargle the arguments
+
+opt_parser = optparse.OptionParser()
+
+# Program options
+
+opt_parser.add_option('-d', '--dsn',
+                      help='Database connection string',
+                      action='store', type='string', dest='dsn',
+                      default='@__CONFIGDIR__/database/database-dsn')
+
+(options, args) = opt_parser.parse_args()
+
+dsn = pscheduler.string_from_file(options.dsn)
+
+name = os.path.basename(sys.argv[0])
+
+dsn += f' application_name={name}'
+
+pg = psycopg2.connect(dsn)
+pg.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+
+
+# Listen to all channels covered in daemon code.  There is no way to
+# LISTEN *.  :-(
+
+for channel in [
+        'archiving_change',
+        'configurables_changed',
+        'run_ready',
+        'task_change',
+        'warmboot'
+]:
+    pg.cursor().execute(f'LISTEN {channel}')
+
+
+timeout = 1
+
+while True:
+
+    try:
+        selected = pscheduler.polled_select([pg], [], [], timeout)
+    except KeyboardInterrupt:
+        print('')
+        exit(0)
+    except OSError as ex:
+        err_no, message = ex
+        if err_no == errno.EINTR:
+            continue
+        raise ex
+
+    if selected == ([], [], []):
+        continue
+
+    pg.poll()
+
+    while pg.notifies:
+
+        notification = pg.notifies[0]
+        channel = notification.channel
+        payload = notification.payload
+
+        print(channel, payload)
+
+        del pg.notifies[0]
