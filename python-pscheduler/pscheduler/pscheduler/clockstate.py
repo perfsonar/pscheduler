@@ -9,6 +9,7 @@ import ntplib
 import psutil
 from dateutil import tz
 
+
 # The ntp_adjtime code is the only bit of BWCTL (actually BWCTL2) that
 # survived into pScheduler.
 
@@ -131,7 +132,7 @@ def _chronyc_status():
 
     if status == 1:
         # Ran but failed.
-        if stdout.startswith('506 '):
+        if stdout is None or stdout.startswith('506 '):
             # No daemon to talk to
             return None
 
@@ -174,17 +175,12 @@ def _ntp_status():
     Return the time state as NTP understands it or None if unable.
     '''
 
-    # Look for anything NTP in the process table before trying to talk
-    # to the daemon.  This is fast
+    # See if ntpq is installed on the system.  This should keep
+    # SELinux from raising its hackles over trying to access the
+    # process table.
 
-    found = False
-    for proc in psutil.process_iter(['name']):
-        if proc.info['name'].startswith('ntp'):
-            found = True
-            break
-
-    if not found:
-        return None
+    if shutil.which('ntpq') is None:
+         return None
 
     # NTPD might be running.  Try to query it.
 

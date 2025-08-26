@@ -12,7 +12,9 @@ TEMPLATE = '''
 {% if _mime_type == 'text/plain' %}
 
 Response Time ... {{ unspec(result.time) }}
+{% if result.status is defined -%}
 Status Code ..... {{ unspec(result.status) }}
+{%- endif -%}
 {% if spec.parse is defined -%}
 String Found .... {{ result.found }}
 {%- endif -%}
