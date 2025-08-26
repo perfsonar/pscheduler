@@ -478,6 +478,18 @@ BEGIN
             END IF;
 	END IF;
 
+	-- Older systems, notably OL8 with Pg 10, do not properly
+	-- register the difference in old/new state above, which
+	-- causes the runner to miss some runs.  This forces an extra
+	-- notification that should ultimately get deduplicated by the
+	-- client library.
+	-- TODO: Remove this when support for OL8 is dropped.
+
+	IF NEW.state = run_state_pending() THEN
+	        PERFORM pg_notify('run_ready', NEW.id::TEXT);
+        END IF;
+
+
     END IF;
 
 
