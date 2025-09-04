@@ -1,8 +1,8 @@
-pscheduler-archiver-kafka (5.2.2~a1.0-1) perfsonar-5.2-snapshot; urgency=low
+pscheduler-archiver-kafka (5.2.2-1) perfsonar-5.2; urgency=low
 
   * New upstream version.
 
- -- perfSONAR developers <debian@perfsonar.net>  Thu, 17 Jul 2025 10:09:09 -0400
+ -- perfSONAR developers <debian@perfsonar.net>  Thu, 04 Sep 2025 10:34:12 -0400
 
 pscheduler-archiver-kafka (5.2.1-1) perfsonar-5.2; urgency=low
 
