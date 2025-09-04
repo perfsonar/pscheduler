@@ -3,7 +3,7 @@
 #
 
 %define short	passthrough
-%define perfsonar_auto_version 5.2.1
+%define perfsonar_auto_version 5.2.2
 %define perfsonar_auto_relnum 1
 
 Name:		pscheduler-tool-%{short}
@@ -22,7 +22,7 @@ Provides:	%{name} = %{version}-%{release}
 
 Requires:	pscheduler-server >= 4.3.0
 Requires:	%{_pscheduler_python}-pscheduler >= 4.3.0
-Requires:	pscheduler-test-idle
+Requires:	pscheduler-test-noop
 Requires:	rpm-post-wrapper
 
 BuildRequires:	pscheduler-rpm

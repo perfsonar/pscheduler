@@ -4,9 +4,14 @@
 
 import io
 import datetime
+import os
+import pscheduler
 import pycurl
 
-import pscheduler
+from urllib.parse import urlparse, urlunparse
+
+from utilities import file_ok
+
 
 def run(input):
 
@@ -31,27 +36,28 @@ def run(input):
     # Choke on anything that would allow insight into the contents of
     # local files.
 
-    if source[0:5] == "file:":
+    parsed_url = urlparse(source)
 
-        if keep_content is not None:
+    if parsed_url.scheme == 'file':
+        real_path = os.path.realpath(parsed_url.path)
+        reasons = file_ok(real_path)
+        if reasons:
             return({
-                "succeeded": False,
-                "error": "Cannot keep content from file:// URLs",
-                "diags": None
+                'succeeded': False,
+                'error': '\n'.join(reasons)
             })
 
-        if input['test']['spec'].get("parse", None):
-            return({
-                "succeeded": False,
-                "error": "Cannot parse content from file:// URLs",
-                "diags": None
-            })
-
-
+        # Make cURL use the canonical path because it doesn't deal
+        # well with symlinks.  This looks like a private API but
+        # isn't.
+        parsed_url = parsed_url._replace(path=real_path)
+        source = urlunparse(parsed_url)
 
     succeeded = False
     error = None
-    diags = []
+    diags = [
+        f'Fetching {source}'
+    ]
 
     STDERR = ""
 
@@ -149,16 +155,17 @@ def run(input):
 
         return {
             "succeeded": True,
-            "diags": None,
+            "diags": '\n'.join(diags) if diags else None,
             "error": None,
             "result": run_result
         }
 
     else:
 
+        diags.append(f'Fetch returned non-success status {status}')
         return {
             "succeeded": False,
-            "diags": "Fetch returned non-success status %d" % (status),
+            "diags": '\n'.join(diags) if diags else None,
             "error": text
         }
 

@@ -13,6 +13,11 @@
 
 import pscheduler
 
+from urllib.parse import urlparse
+
+from utilities import file_ok
+
+
 json = pscheduler.json_load(exit_on_error=True);
 
 
@@ -50,4 +55,39 @@ except KeyError:
     })
 
 
-pscheduler.succeed_json({ "can-run": True })
+try:
+    test_type = json['type']
+    spec = json['spec']
+    source = spec['url']
+    keep_content = spec.get('keep-content', None)
+except KeyError:
+    pscheduler.succeed_json({
+        'can-run': False,
+        'reasons': [ 'Missing data in input' ]
+    })
+
+if test_type != 'http':
+    pscheduler.succeed_json({
+        'can-run': False,
+        'reasons': [ 'Unsupported test type' ]
+    })
+
+reasons = []
+
+parsed_url = urlparse(source)
+
+if parsed_url.scheme == 'file':
+
+    if keep_content is not None:
+        reasons.append('Cannot keep content from file:// URLs')
+
+    if spec.get("parse", None):
+        reasons.append('Cannot parse content from file:// URLs')
+
+    reasons.extend(file_ok(parsed_url.path))
+
+
+pscheduler.succeed_json(
+    { 'can-run': False, 'reasons': reasons } if reasons else { 'can-run': True }
+)
+

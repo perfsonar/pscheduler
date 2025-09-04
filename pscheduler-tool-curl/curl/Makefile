@@ -12,7 +12,9 @@ PROGRAMS := \
 	participant-data \
 	run
 
-MODULES :=  run_http
+MODULES := \
+	run_http \
+	utilities
 
 PYS := $(MODULES:%=%.py)
 PYCACHE := __pycache__
